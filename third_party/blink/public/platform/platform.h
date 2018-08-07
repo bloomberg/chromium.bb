@@ -141,6 +141,21 @@ class BLINK_PLATFORM_EXPORT Platform {
   static void Initialize(Platform*, WebThread* main_thread);
   static Platform* Current();
 
+  // This is another entry point for embedders that only require single-
+  // threaded execution of Blink. This version automatically sets up Blink
+  // with a minimally viable implementation of WebThread for the main thread.
+  // The WebThread object is returned by Platform::CurrentThread(), therefore
+  // embedders do not need to override CurrentThread().
+  //
+  // When this function is used, the WebThread instance for the main thread
+  // is owned by Platform (unlike Initialize()).
+  //
+  // In the future, we would like to let Platform own the WebThread object for
+  // the main thread in all cases, as part of Blink Thread Initialization
+  // Cleanup project:
+  // https://docs.google.com/document/d/1ehd6Lp5czBzOCHWrDkL9x62gjdlrtbMtJqt_eRaauYo/edit?usp=sharing
+  static void CreateMainThreadAndInitialize(Platform*);
+
   // Used to switch the current platform only for testing.
   // You should not pass in a Platform object that is not fully instantiated.
   static void SetCurrentPlatformForTesting(Platform*);
@@ -392,9 +407,13 @@ class BLINK_PLATFORM_EXPORT Platform {
   // for any other purpose.
   virtual std::unique_ptr<WebThread> CreateWebAudioThread();
 
-  // Returns an interface to the current thread. This is owned by the
-  // embedder.
-  virtual WebThread* CurrentThread() { return nullptr; }
+  // Returns an interface to the current thread. This is usually owned by the
+  // embedder, except when CreateMainThreadAndInitialize() is used. See comments
+  // above for details.
+  //
+  // The default implementation works only if CreateMainThreadAndInitialize() is
+  // used. Otherwise, the embedder *must* implement their own version.
+  virtual WebThread* CurrentThread();
 
   // Returns a blame context for attributing top-level work which does not
   // belong to a particular frame scope.
@@ -687,6 +706,17 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual ~Platform();
 
   WebThread* main_thread_;
+
+ private:
+  static void InitializeCommon(Platform* platform);
+
+  // We eventually want to let Platform own the main thread WebThread, but
+  // currently the main thread is owned in a few selected cases. This variable
+  // is non-null when the main thread is owned by Platform. The pointer value
+  // is the same as main_thread_.
+  //
+  // For details, see comments around CreateMainThreadAndInitialize() above.
+  std::unique_ptr<WebThread> owned_main_thread_;
 };
 
 }  // namespace blink
