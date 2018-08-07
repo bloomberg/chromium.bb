@@ -16,6 +16,7 @@
 #include "cros-disks/dbus-constants.h"
 #include "cryptohome/dbus-constants.h"
 #include "debugd/dbus-constants.h"
+#include "diagnosticsd/dbus-constants.h"
 #include "drivefs/dbus-constants.h"
 #include "hammerd/dbus-constants.h"
 #include "login_manager/dbus-constants.h"
