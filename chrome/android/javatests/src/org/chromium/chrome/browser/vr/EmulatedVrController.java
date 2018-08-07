@@ -24,14 +24,35 @@ import java.util.concurrent.TimeUnit;
  */
 public class EmulatedVrController {
     public enum ScrollDirection { UP, DOWN, LEFT, RIGHT }
+    private static final int FIRST_INPUT_DELAY_MS = 500;
     private final ControllerTestApi mApi;
+    private boolean mHaveSentInputSinceEnteringVr;
 
     public EmulatedVrController(Context context) {
         mApi = new ControllerTestApi(context);
     }
 
     public ControllerTestApi getApi() {
+        // We flakily disconnect and reconnect the controller immediately after VR entry, which can
+        // cause controller input to get eaten. Sleeping a bit after VR entry fixes this, so instead
+        // of adding a bunch of sleeps everywhere, sleep for a bit before sending the first input
+        // after VR entry.
+        // TODO(https://crbug.com/870031): Remove this sleep if/when the controller disconnect/
+        // reconnect issue caused by DON flow skipping that flakily eats controller input is
+        // resolved.
+        if (!mHaveSentInputSinceEnteringVr) {
+            SystemClock.sleep(FIRST_INPUT_DELAY_MS);
+            mHaveSentInputSinceEnteringVr = true;
+        }
         return mApi;
+    }
+
+    /**
+     * Resets the flag used to keep track of whether we have sent input since entering VR. Should
+     * be called anytime the emulated controller is used and a test re-enters VR.
+     */
+    public void resetFirstInputFlag() {
+        mHaveSentInputSinceEnteringVr = false;
     }
 
     /**
@@ -50,7 +71,7 @@ public class EmulatedVrController {
      * the button is currently pressed or not.
      */
     public void sendClickButtonToggleEvent() {
-        mApi.buttonEvent.sendClickButtonToggleEvent();
+        getApi().buttonEvent.sendClickButtonToggleEvent();
     }
 
     /**
@@ -58,7 +79,7 @@ public class EmulatedVrController {
      * Or, if the button is already pressed, releases and quickly presses again.
      */
     public void pressReleaseTouchpadButton() {
-        mApi.buttonEvent.sendClickButtonEvent();
+        getApi().buttonEvent.sendClickButtonEvent();
     }
 
     /**
@@ -66,7 +87,7 @@ public class EmulatedVrController {
      * Or, if the button is already pressed, releases and quickly presses again.
      */
     public void pressReleaseAppButton() {
-        mApi.buttonEvent.sendAppButtonEvent();
+        getApi().buttonEvent.sendAppButtonEvent();
     }
 
     /**
@@ -74,22 +95,22 @@ public class EmulatedVrController {
      * orientation quaternion.
      */
     public void recenterView() {
-        mApi.buttonEvent.sendHomeButtonToggleEvent();
+        getApi().buttonEvent.sendHomeButtonToggleEvent();
         // A valid position must be sent a short time after the home button
         // is pressed in order for recentering to actually complete, and no
         // way to be signalled that we should send the event, so sleep
         SystemClock.sleep(500);
         // We don't care where the controller is pointing when recentering occurs as long
         // as it results in a successful recenter, so send an arbitrary, valid orientation
-        mApi.moveEvent.sendMoveEvent(0.0f, 0.0f, 0.0f, 1.0f);
-        mApi.buttonEvent.sendHomeButtonToggleEvent();
+        getApi().moveEvent.sendMoveEvent(0.0f, 0.0f, 0.0f, 1.0f);
+        getApi().buttonEvent.sendHomeButtonToggleEvent();
     }
 
     /**
      * Performs a short home button press/release, which launches the Daydream Home app.
      */
     public void goToDaydreamHome() {
-        mApi.buttonEvent.sendShortHomeButtonEvent();
+        getApi().buttonEvent.sendShortHomeButtonEvent();
     }
 
     /**
@@ -140,7 +161,7 @@ public class EmulatedVrController {
         int delay = 500;
         long simulatedDelay = TimeUnit.MILLISECONDS.toNanos(delay);
         long timestamp = mApi.touchEvent.startTouchSequence(0.5f, 0.5f, simulatedDelay, delay);
-        mApi.touchEvent.endTouchSequence(0.5f, 0.5f, timestamp, simulatedDelay, delay);
+        getApi().touchEvent.endTouchSequence(0.5f, 0.5f, timestamp, simulatedDelay, delay);
     }
 
     /**
@@ -164,7 +185,7 @@ public class EmulatedVrController {
         long timestamp = mApi.touchEvent.startTouchSequence(xStart, yStart, simulatedDelay, speed);
         timestamp = mApi.touchEvent.dragFromTo(
                 xStart, yStart, xEnd, yEnd, steps, timestamp, simulatedDelay, speed);
-        mApi.touchEvent.endTouchSequence(xEnd, yEnd, timestamp, simulatedDelay, speed);
+        getApi().touchEvent.endTouchSequence(xEnd, yEnd, timestamp, simulatedDelay, speed);
     }
 
     /**
@@ -176,7 +197,7 @@ public class EmulatedVrController {
      * @param w the w component of the quaternion.
      */
     public void moveControllerInstant(float x, float y, float z, float w) {
-        mApi.moveEvent.sendMoveEvent(x, y, z, w, 0);
+        getApi().moveEvent.sendMoveEvent(x, y, z, w, 0);
     }
 
     /**
@@ -192,7 +213,7 @@ public class EmulatedVrController {
         if (startAngles.length != 3 || endAngles.length != 3) {
             throw new IllegalArgumentException("Angle arrays must be length 3");
         }
-        mApi.moveEvent.sendMoveEvent(new float[] {startAngles[0], endAngles[0]},
+        getApi().moveEvent.sendMoveEvent(new float[] {startAngles[0], endAngles[0]},
                 new float[] {startAngles[1], endAngles[1]},
                 new float[] {startAngles[2], endAngles[2]}, steps, delayBetweenSteps);
     }
