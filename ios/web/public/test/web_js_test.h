@@ -30,6 +30,10 @@ class WebJsTest : public WebTestT {
     WebTestT::LoadHtml(html);
     Inject();
   }
+  void LoadHtmlAndInject(NSString* html, const GURL& url) {
+    WebTestT::LoadHtml(html, url);
+    Inject();
+  }
 
   // Returns an id representation of the JavaScript's evaluation results;
   // the JavaScript is passed in as a |format| and its arguments.
