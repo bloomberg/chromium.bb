@@ -4821,10 +4821,10 @@
     Google assistant logo
   </message>
   <message name="IDS_ASSISTANT_HOTWORD_TITLE" desc="Title for assistant hotword optin.">
-    OK Google
+    Ok Google
   </message>
   <message name="IDS_ASSISTANT_HOTWORD_DESC" desc="Description for assistant hotword optin.">
-    Access your Assistant anytime you say "OK Google" when your device is awake and unlocked.
+    Access your Assistant anytime you say "Ok Google" when your device is awake and unlocked.
   </message>
   <message name="IDS_ASSISTANT_SCREEN_CONTEXT_TITLE" desc="Title for assistant screen context optin.">
     Get info for what's on screen
@@ -4839,7 +4839,7 @@
     Your Assistant is ready
   </message>
   <message name="IDS_ASSISTANT_READY_SCREEN_MESSAGE" desc="Message for assistant ready screen.">
-    When your Chromebook is set up, press the Assistant button or say "OK Google" to get help from your Assistant anytime.
+    When your Chromebook is set up, press the Assistant button or say "Ok Google" to get help from your Assistant anytime.
   </message>
   <message name="IDS_ASSISTANT_THIRD_PARTY_SCREEN_TITLE" desc="Title for assitant third party screen.">
     Google Partners work with your Assistant to help you
