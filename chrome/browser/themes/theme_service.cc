@@ -340,8 +340,11 @@ void ThemeService::UseDefaultTheme() {
   }
 #endif
   ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
-  if (native_theme && native_theme->UsesHighContrastColors())
+  // IncreasedContrastThemeSupplier is designed for the Refresh UI only.
+  if (native_theme && native_theme->UsesHighContrastColors() &&
+      ui::MaterialDesignController::IsRefreshUi()) {
     SetCustomDefaultTheme(new IncreasedContrastThemeSupplier);
+  }
   ClearAllThemeData();
   NotifyThemeChanged();
 }
