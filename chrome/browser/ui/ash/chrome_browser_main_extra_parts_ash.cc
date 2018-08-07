@@ -70,10 +70,6 @@
 #include "chrome/browser/exo_parts.h"
 #endif
 
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-#include "chrome/browser/ui/ash/assistant/assistant_client.h"
-#endif
-
 namespace {
 
 void PushProcessCreationTimeToAsh() {
@@ -198,12 +194,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
       chromeos::input_method::InputMethodManager::Get());
   ime_controller_client_->Init();
 
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-  // Assistant has to be initialized before session_controller_client to avoid
-  // race of SessionChanged event and assistant_client initialization.
-  assistant_client_ = std::make_unique<AssistantClient>();
-#endif
-
   session_controller_client_ = std::make_unique<SessionControllerClient>();
   session_controller_client_->Init();
 
@@ -288,9 +278,6 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   system_tray_client_.reset();
   shell_state_client_.reset();
   session_controller_client_.reset();
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-  assistant_client_.reset();
-#endif
   chrome_new_window_client_.reset();
   network_portal_notification_controller_.reset();
   media_client_.reset();

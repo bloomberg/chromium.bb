@@ -12,6 +12,7 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
+#include "chromeos/assistant/buildflags.h"
 
 class SpokenFeedbackEventRewriterDelegate;
 
@@ -23,6 +24,10 @@ namespace arc {
 class ArcServiceLauncher;
 class VoiceInteractionControllerClient;
 }
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+class AssistantClient;
+#endif
 
 namespace chromeos {
 
@@ -110,6 +115,10 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<arc::VoiceInteractionControllerClient>
       arc_voice_interaction_controller_client_;
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  std::unique_ptr<AssistantClient> assistant_client_;
+#endif
 
   std::unique_ptr<LowDiskNotification> low_disk_notification_;
   std::unique_ptr<ArcKioskAppManager> arc_kiosk_app_manager_;
