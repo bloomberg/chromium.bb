@@ -46,6 +46,7 @@ using syncer::EntityDataPtr;
 using syncer::KeyAndData;
 using syncer::MockModelTypeChangeProcessor;
 using syncer::ModelType;
+using testing::_;
 using testing::ElementsAre;
 using testing::IsEmpty;
 using testing::UnorderedElementsAre;
@@ -90,30 +91,77 @@ class FakeAutofillBackend : public AutofillWebDataBackend {
   WebDatabase* db_;
 };
 
-WalletMetadataSpecifics CreateWalletMetadataSpecificsForAddress(
-    const std::string& specifics_id) {
+base::Time UseDateFromProtoValue(int64_t use_date_proto_value) {
+  return base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(use_date_proto_value));
+}
+
+int64_t UseDateToProtoValue(base::Time use_date) {
+  return use_date.ToDeltaSinceWindowsEpoch().InMicroseconds();
+}
+
+WalletMetadataSpecifics CreateWalletMetadataSpecificsForAddressWithUseStats(
+    const std::string& specifics_id,
+    size_t use_count,
+    int64_t use_date) {
   WalletMetadataSpecifics specifics;
   specifics.set_id(specifics_id);
   specifics.set_type(WalletMetadataSpecifics::ADDRESS);
+  specifics.set_use_count(use_count);
+  specifics.set_use_date(use_date);
+  // Set the default value according to the constructor of AutofillProfile.
+  specifics.set_address_has_converted(false);
+  return specifics;
+}
+
+WalletMetadataSpecifics CreateWalletMetadataSpecificsForAddress(
+    const std::string& specifics_id) {
   // Set default values according to the constructor of AutofillProfile (the
   // clock value is overrided by TestAutofillClock in the test fixture).
-  specifics.set_use_count(1);
-  specifics.set_use_date(kJune2017.ToDeltaSinceWindowsEpoch().InMicroseconds());
-  specifics.set_address_has_converted(false);
+  return CreateWalletMetadataSpecificsForAddressWithUseStats(
+      specifics_id, /*use_count=*/1,
+      /*use_date=*/UseDateToProtoValue(kJune2017));
+}
+
+WalletMetadataSpecifics CreateWalletMetadataSpecificsForCardWithUseStats(
+    const std::string& specifics_id,
+    size_t use_count,
+    int64_t use_date) {
+  WalletMetadataSpecifics specifics;
+  specifics.set_id(specifics_id);
+  specifics.set_type(WalletMetadataSpecifics::CARD);
+  specifics.set_use_count(use_count);
+  specifics.set_use_date(use_date);
+  // Set the default value according to the constructor of AutofillProfile.
+  specifics.set_card_billing_address_id("");
   return specifics;
 }
 
 WalletMetadataSpecifics CreateWalletMetadataSpecificsForCard(
     const std::string& specifics_id) {
-  WalletMetadataSpecifics specifics;
-  specifics.set_id(specifics_id);
-  specifics.set_type(WalletMetadataSpecifics::CARD);
-  // Make it consistent with the constructor of CreditCard (the clock value is
-  // overrided by TestAutofillClock in the test fixture).
-  specifics.set_use_count(1);
-  specifics.set_use_date(kJune2017.ToDeltaSinceWindowsEpoch().InMicroseconds());
-  specifics.set_card_billing_address_id("");
-  return specifics;
+  // Set default values according to the constructor of AutofillProfile (the
+  // clock value is overrided by TestAutofillClock in the test fixture).
+  return CreateWalletMetadataSpecificsForCardWithUseStats(
+      specifics_id, /*use_count=*/1,
+      /*use_date=*/UseDateToProtoValue(kJune2017));
+}
+
+AutofillProfile CreateServerProfileWithUseStats(const std::string& server_id,
+                                                size_t use_count,
+                                                int64_t use_date) {
+  AutofillProfile profile = CreateServerProfile(server_id);
+  profile.set_use_count(use_count);
+  profile.set_use_date(UseDateFromProtoValue(use_date));
+  return profile;
+}
+
+CreditCard CreateServerCreditCardWithUseStats(const std::string& server_id,
+                                              size_t use_count,
+                                              int64_t use_date) {
+  CreditCard card = CreateServerCreditCard(server_id);
+  card.set_use_count(use_count);
+  card.set_use_date(UseDateFromProtoValue(use_date));
+  return card;
 }
 
 void ExtractWalletMetadataSpecificsFromDataBatch(
@@ -130,9 +178,8 @@ std::string WalletMetadataSpecificsAsDebugString(
   std::ostringstream output;
   output << "[id: " << specifics.id()
          << ", type: " << static_cast<int>(specifics.type())
-         << ", use_count: " << specifics.use_count() << ", use_date: "
-         << base::Time::FromDeltaSinceWindowsEpoch(
-                base::TimeDelta::FromMicroseconds(specifics.use_date()))
+         << ", use_count: " << specifics.use_count()
+         << ", use_date: " << UseDateFromProtoValue(specifics.use_date())
          << ", card_billing_address_id: "
          << (specifics.has_card_billing_address_id()
                  ? specifics.card_billing_address_id()
@@ -156,6 +203,20 @@ MATCHER_P(EqualsSpecifics, expected, "") {
   return true;
 }
 
+MATCHER_P(HasSpecifics, expected, "") {
+  const WalletMetadataSpecifics& arg_specifics =
+      arg->specifics.wallet_metadata();
+
+  if (arg_specifics.SerializeAsString() != expected.SerializeAsString()) {
+    *result_listener << "entry\n"
+                     << WalletMetadataSpecificsAsDebugString(arg_specifics)
+                     << "\ndid not match expected\n"
+                     << WalletMetadataSpecificsAsDebugString(expected);
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 class AutofillWalletMetadataSyncBridgeTest : public testing::Test {
@@ -172,7 +233,6 @@ class AutofillWalletMetadataSyncBridgeTest : public testing::Test {
     db_.Init(temp_dir_.GetPath().AppendASCII("SyncTestWebDatabase"));
     backend_.SetWebDatabase(&db_);
     ResetProcessor();
-    ResetBridge();
   }
 
   void ResetProcessor() {
@@ -251,6 +311,7 @@ class AutofillWalletMetadataSyncBridgeTest : public testing::Test {
 
 // The following 2 tests make sure client tags stay stable.
 TEST_F(AutofillWalletMetadataSyncBridgeTest, GetClientTagForAddress) {
+  ResetBridge();
   WalletMetadataSpecifics specifics =
       CreateWalletMetadataSpecificsForAddress(kAddr1SpecificsId);
   EXPECT_EQ(bridge()->GetClientTag(SpecificsToEntity(specifics)),
@@ -258,6 +319,7 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, GetClientTagForAddress) {
 }
 
 TEST_F(AutofillWalletMetadataSyncBridgeTest, GetClientTagForCard) {
+  ResetBridge();
   WalletMetadataSpecifics specifics =
       CreateWalletMetadataSpecificsForCard(kCard1SpecificsId);
   EXPECT_EQ(bridge()->GetClientTag(SpecificsToEntity(specifics)),
@@ -266,6 +328,7 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, GetClientTagForCard) {
 
 // The following 2 tests make sure storage keys stay stable.
 TEST_F(AutofillWalletMetadataSyncBridgeTest, GetStorageKeyForAddress) {
+  ResetBridge();
   WalletMetadataSpecifics specifics =
       CreateWalletMetadataSpecificsForAddress(kAddr1SpecificsId);
   EXPECT_EQ(bridge()->GetStorageKey(SpecificsToEntity(specifics)),
@@ -273,6 +336,7 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, GetStorageKeyForAddress) {
 }
 
 TEST_F(AutofillWalletMetadataSyncBridgeTest, GetStorageKeyForCard) {
+  ResetBridge();
   WalletMetadataSpecifics specifics =
       CreateWalletMetadataSpecificsForCard(kCard1SpecificsId);
   EXPECT_EQ(bridge()->GetStorageKey(SpecificsToEntity(specifics)),
@@ -285,6 +349,7 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
                               CreateServerProfile(kAddr2ServerId)});
   table()->SetServerCreditCards({CreateServerCreditCard(kCard1ServerId),
                                  CreateServerCreditCard(kCard2ServerId)});
+  ResetBridge();
 
   EXPECT_THAT(
       GetAllLocalData(),
@@ -301,6 +366,7 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
 
 TEST_F(AutofillWalletMetadataSyncBridgeTest,
        GetData_ShouldNotReturnNonexistentData) {
+  ResetBridge();
   EXPECT_THAT(GetLocalData({kAddr1SpecificsId}), IsEmpty());
 }
 
@@ -309,6 +375,7 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, GetData_ShouldReturnSelectedData) {
                               CreateServerProfile(kAddr2ServerId)});
   table()->SetServerCreditCards({CreateServerCreditCard(kCard1ServerId),
                                  CreateServerCreditCard(kCard2ServerId)});
+  ResetBridge();
 
   EXPECT_THAT(GetLocalData({kAddr1SpecificsId, kCard1SpecificsId}),
               UnorderedElementsAre(
@@ -321,17 +388,16 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, GetData_ShouldReturnSelectedData) {
 TEST_F(AutofillWalletMetadataSyncBridgeTest, GetData_ShouldReturnCompleteData) {
   AutofillProfile profile = CreateServerProfile(kAddr1ServerId);
   profile.set_use_count(5);
-  profile.set_use_date(base::Time::FromDeltaSinceWindowsEpoch(
-      base::TimeDelta::FromMicroseconds(2)));
+  profile.set_use_date(UseDateFromProtoValue(2));
   profile.set_has_converted(true);
   table()->SetServerProfiles({profile});
 
   CreditCard card = CreateServerCreditCard(kCard1ServerId);
   card.set_use_count(6);
-  card.set_use_date(base::Time::FromDeltaSinceWindowsEpoch(
-      base::TimeDelta::FromMicroseconds(3)));
+  card.set_use_date(UseDateFromProtoValue(3));
   card.set_billing_address_id(kAddr1ServerId);
   table()->SetServerCreditCards({card});
+  ResetBridge();
 
   // Expect to retrieve following specifics:
   WalletMetadataSpecifics profile_specifics =
@@ -349,6 +415,86 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, GetData_ShouldReturnCompleteData) {
   EXPECT_THAT(GetLocalData({kAddr1SpecificsId, kCard1SpecificsId}),
               UnorderedElementsAre(EqualsSpecifics(profile_specifics),
                                    EqualsSpecifics(card_specifics)));
+}
+
+// Verify that lower values of metadata are not sent to the sync server when
+// local metadata is updated.
+TEST_F(AutofillWalletMetadataSyncBridgeTest,
+       DontSendLowerValueToServerOnSingleChange) {
+  table()->SetServerProfiles({CreateServerProfileWithUseStats(
+      kAddr1ServerId, /*use_count=*/2, /*use_date=*/5)});
+  table()->SetServerCreditCards({CreateServerCreditCardWithUseStats(
+      kCard1ServerId, /*use_count=*/3, /*use_date=*/6)});
+  ResetBridge();
+
+  AutofillProfile updated_profile = CreateServerProfileWithUseStats(
+      kAddr1ServerId, /*use_count=*/1, /*use_date=*/4);
+  CreditCard updated_card = CreateServerCreditCardWithUseStats(
+      kCard1ServerId, /*use_count=*/2, /*use_date=*/5);
+
+  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+
+  bridge()->AutofillProfileChanged(AutofillProfileChange(
+      AutofillProfileChange::UPDATE, updated_profile.guid(), &updated_profile));
+  bridge()->CreditCardChanged(CreditCardChange(
+      CreditCardChange::UPDATE, updated_card.guid(), &updated_card));
+}
+
+// Verify that one-off addition of metadata is not sent to the sync
+// server. Metadata add and delete trigger multiple changes notification
+// instead.
+TEST_F(AutofillWalletMetadataSyncBridgeTest, DontAddToServerOnSingleChange) {
+  table()->SetServerProfiles({CreateServerProfileWithUseStats(
+      kAddr1ServerId, /*use_count=*/1, /*use_date=*/2)});
+  table()->SetServerCreditCards({CreateServerCreditCardWithUseStats(
+      kCard1ServerId, /*use_count=*/3, /*use_date=*/4)});
+  ResetBridge();
+
+  AutofillProfile new_profile = CreateServerProfileWithUseStats(
+      kAddr2ServerId, /*use_count=*/10, /*use_date=*/20);
+  CreditCard new_card = CreateServerCreditCardWithUseStats(
+      kCard2ServerId, /*use_count=*/30, /*use_date=*/40);
+
+  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+
+  bridge()->AutofillProfileChanged(AutofillProfileChange(
+      AutofillProfileChange::UPDATE, new_profile.guid(), &new_profile));
+  bridge()->CreditCardChanged(
+      CreditCardChange(CreditCardChange::UPDATE, new_card.guid(), &new_card));
+}
+
+// Verify that higher values of metadata are sent to the sync server when local
+// metadata is updated.
+TEST_F(AutofillWalletMetadataSyncBridgeTest,
+       SendHigherValuesToServerOnLocalSingleChange) {
+  table()->SetServerProfiles({CreateServerProfileWithUseStats(
+      kAddr1ServerId, /*use_count=*/1, /*use_date=*/2)});
+  table()->SetServerCreditCards({CreateServerCreditCardWithUseStats(
+      kCard1ServerId, /*use_count=*/3, /*use_date=*/4)});
+  ResetBridge();
+
+  AutofillProfile updated_profile = CreateServerProfileWithUseStats(
+      kAddr1ServerId, /*use_count=*/10, /*use_date=*/20);
+  CreditCard updated_card = CreateServerCreditCardWithUseStats(
+      kCard1ServerId, /*use_count=*/30, /*use_date=*/40);
+
+  WalletMetadataSpecifics expected_profile_specifics =
+      CreateWalletMetadataSpecificsForAddressWithUseStats(
+          kAddr1SpecificsId, /*use_count=*/10, /*use_date=*/20);
+  WalletMetadataSpecifics expected_card_specifics =
+      CreateWalletMetadataSpecificsForCardWithUseStats(
+          kCard1SpecificsId, /*use_count=*/30, /*use_date=*/40);
+
+  EXPECT_CALL(
+      mock_processor(),
+      Put(kAddr1SpecificsId, HasSpecifics(expected_profile_specifics), _));
+  EXPECT_CALL(mock_processor(),
+              Put(kCard1SpecificsId, HasSpecifics(expected_card_specifics), _));
+
+  bridge()->AutofillProfileChanged(AutofillProfileChange(
+      AutofillProfileChange::UPDATE, updated_profile.guid(), &updated_profile));
+  bridge()->CreditCardChanged(CreditCardChange(
+      CreditCardChange::UPDATE, updated_card.guid(), &updated_card));
 }
 
 }  // namespace autofill

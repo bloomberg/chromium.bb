@@ -19,6 +19,7 @@
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
+#include "components/sync/model_impl/sync_metadata_store_change_list.h"
 
 namespace autofill {
 
@@ -26,6 +27,7 @@ namespace {
 
 using sync_pb::WalletMetadataSpecifics;
 using syncer::EntityData;
+using syncer::MetadataChangeList;
 
 // Address to this variable used as the user data key.
 static int kAutofillWalletMetadataSyncBridgeUserDataKey = 0;
@@ -62,7 +64,7 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillDataModel(
 }
 
 // Returns EntityData for wallet_metadata for |local_profile|.
-std::unique_ptr<EntityData> CreateWalletMetadataEntityDataFromAutofillProfile(
+std::unique_ptr<EntityData> CreateMetadataEntityDataFromAutofillServerProfile(
     const AutofillProfile& local_profile) {
   std::unique_ptr<EntityData> entity_data =
       CreateEntityDataFromAutofillDataModel(
@@ -76,7 +78,7 @@ std::unique_ptr<EntityData> CreateWalletMetadataEntityDataFromAutofillProfile(
 }
 
 // Returns EntityData for wallet_metadata for |local_card|.
-std::unique_ptr<EntityData> CreateEntityDataFromCreditCard(
+std::unique_ptr<EntityData> CreateMetadataEntityDataFromCard(
     const CreditCard& local_card) {
   std::unique_ptr<EntityData> entity_data =
       CreateEntityDataFromAutofillDataModel(
@@ -103,7 +105,7 @@ void AutofillWalletMetadataSyncBridge::CreateForWebDataServiceAndBackend(
       &kAutofillWalletMetadataSyncBridgeUserDataKey,
       std::make_unique<AutofillWalletMetadataSyncBridge>(
           std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-              syncer::AUTOFILL_WALLET_DATA,
+              syncer::AUTOFILL_WALLET_METADATA,
               /*dump_stack=*/base::RepeatingClosure()),
           web_data_backend));
 }
@@ -121,14 +123,22 @@ AutofillWalletMetadataSyncBridge::AutofillWalletMetadataSyncBridge(
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
     AutofillWebDataBackend* web_data_backend)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      web_data_backend_(web_data_backend) {}
+      web_data_backend_(web_data_backend),
+      scoped_observer_(this) {
+  DCHECK(web_data_backend_);
+
+  scoped_observer_.Add(web_data_backend_);
+
+  LoadDataCacheAndMetadata();
+}
 
 AutofillWalletMetadataSyncBridge::~AutofillWalletMetadataSyncBridge() {}
 
 std::unique_ptr<syncer::MetadataChangeList>
 AutofillWalletMetadataSyncBridge::CreateMetadataChangeList() {
-  NOTIMPLEMENTED();
-  return nullptr;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return std::make_unique<syncer::SyncMetadataStoreChangeList>(
+      GetAutofillTable(), syncer::AUTOFILL_WALLET_METADATA);
 }
 
 base::Optional<syncer::ModelError>
@@ -175,8 +185,109 @@ std::string AutofillWalletMetadataSyncBridge::GetStorageKey(
       entity_data.specifics.wallet_metadata().id());
 }
 
+void AutofillWalletMetadataSyncBridge::AutofillProfileChanged(
+    const AutofillProfileChange& change) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const AutofillProfile* changed = change.data_model();
+  if (!changed || changed->record_type() != AutofillProfile::SERVER_PROFILE) {
+    return;
+  }
+
+  // The only legal change on a server profile is that its use count or use date
+  // or has-converted status gets updated. Other changes (adding, deleting) are
+  // only done by the AutofillWalletSyncBridge and result only in the
+  // AutofillMultipleChanged() notification.
+  DCHECK(change.type() == AutofillProfileChange::UPDATE);
+  SyncUpUpdatedEntity(
+      CreateMetadataEntityDataFromAutofillServerProfile(*changed));
+}
+
+void AutofillWalletMetadataSyncBridge::CreditCardChanged(
+    const CreditCardChange& change) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const CreditCard* changed = change.data_model();
+  if (!changed || changed->record_type() == CreditCard::LOCAL_CARD) {
+    return;
+  }
+
+  // The only legal change on a server card is that its use count or use date or
+  // billing address id gets updated. Other changes (adding, deleting) are only
+  // done by the AutofillWalletSyncBridge and result only in the
+  // AutofillMultipleChanged() notification.
+  DCHECK(change.type() == CreditCardChange::UPDATE);
+  SyncUpUpdatedEntity(CreateMetadataEntityDataFromCard(*changed));
+}
+
+void AutofillWalletMetadataSyncBridge::AutofillMultipleChanged() {
+  NOTIMPLEMENTED();
+}
+
+void AutofillWalletMetadataSyncBridge::SyncUpUpdatedEntity(
+    std::unique_ptr<EntityData> entity_after_change) {
+  std::string storage_key = GetStorageKey(*entity_after_change);
+  auto it = cache_.find(storage_key);
+
+  // This *changed* entity should already be in the cache, ignore otherwise.
+  if (it == cache_.end())
+    return;
+
+  const WalletMetadataSpecifics& specifics_before = it->second;
+  const WalletMetadataSpecifics& specifics_after =
+      entity_after_change->specifics.wallet_metadata();
+
+  if (specifics_before.use_count() < specifics_after.use_count() &&
+      specifics_before.use_date() < specifics_after.use_date()) {
+    std::unique_ptr<MetadataChangeList> metadata_change_list =
+        CreateMetadataChangeList();
+    cache_[storage_key] = specifics_after;
+    change_processor()->Put(storage_key, std::move(entity_after_change),
+                            metadata_change_list.get());
+  }
+}
+
 AutofillTable* AutofillWalletMetadataSyncBridge::GetAutofillTable() {
   return AutofillTable::FromWebDatabase(web_data_backend_->GetDatabase());
+}
+
+void AutofillWalletMetadataSyncBridge::LoadDataCacheAndMetadata() {
+  if (!web_data_backend_ || !web_data_backend_->GetDatabase() ||
+      !GetAutofillTable()) {
+    change_processor()->ReportError(
+        {FROM_HERE, "Failed to load AutofillWebDatabase."});
+    return;
+  }
+
+  // Load the data cache.
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
+  std::vector<std::unique_ptr<CreditCard>> cards;
+  if (!GetAutofillTable()->GetServerProfiles(&profiles) ||
+      !GetAutofillTable()->GetServerCreditCards(&cards)) {
+    change_processor()->ReportError(
+        {FROM_HERE, "Failed reading autofill data from WebDatabase."});
+    return;
+  }
+  for (const std::unique_ptr<AutofillProfile>& entry : profiles) {
+    cache_[GetStorageKeyForEntryServerId(entry->server_id())] =
+        CreateMetadataEntityDataFromAutofillServerProfile(*entry)
+            ->specifics.wallet_metadata();
+  }
+  for (const std::unique_ptr<CreditCard>& entry : cards) {
+    cache_[GetStorageKeyForEntryServerId(entry->server_id())] =
+        CreateMetadataEntityDataFromCard(*entry)->specifics.wallet_metadata();
+  }
+
+  // Load the metadata and send to the processor.
+  auto batch = std::make_unique<syncer::MetadataBatch>();
+  if (!GetAutofillTable()->GetAllSyncMetadata(syncer::AUTOFILL_WALLET_METADATA,
+                                              batch.get())) {
+    change_processor()->ReportError(
+        {FROM_HERE, "Failed reading autofill metadata from WebDatabase."});
+    return;
+  }
+
+  change_processor()->ModelReadyToSync(std::move(batch));
 }
 
 void AutofillWalletMetadataSyncBridge::GetDataImpl(
@@ -199,14 +310,14 @@ void AutofillWalletMetadataSyncBridge::GetDataImpl(
     std::string key = GetStorageKeyForEntryServerId(entry->server_id());
     if (!storage_keys_set || base::ContainsKey(*storage_keys_set, key)) {
       batch->Put(key,
-                 CreateWalletMetadataEntityDataFromAutofillProfile(*entry));
+                 CreateMetadataEntityDataFromAutofillServerProfile(*entry));
     }
   }
   for (const std::unique_ptr<CreditCard>& entry : cards) {
     std::string key = GetStorageKeyForEntryServerId(entry->server_id());
     if (!storage_keys_set || base::ContainsKey(*storage_keys_set, key)) {
       batch->Put(GetStorageKeyForEntryServerId(entry->server_id()),
-                 CreateEntityDataFromCreditCard(*entry));
+                 CreateMetadataEntityDataFromCard(*entry));
     }
   }
 
