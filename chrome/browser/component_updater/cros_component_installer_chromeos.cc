@@ -47,9 +47,12 @@ const ComponentConfig kConfigs[] = {
 };
 
 const ComponentConfig* FindConfig(const std::string& name) {
-  return std::find_if(
+  const ComponentConfig* config = std::find_if(
       std::begin(kConfigs), std::end(kConfigs),
       [&name](const ComponentConfig& config) { return config.name == name; });
+  if (config == std::end(kConfigs))
+    return nullptr;
+  return config;
 }
 
 // TODO(xiaochu): add metrics for component usage (https://crbug.com/793052).
