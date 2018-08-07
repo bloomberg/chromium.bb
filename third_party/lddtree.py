@@ -138,22 +138,13 @@ def GenerateLdsoWrapper(root, path, interp, libpaths=(), elfsubdir=None):
     elf_wrappath = wrappath + '.elf'
     replacements['elf_path'] = '${base}.elf'
 
-  # Use --relative-to for invoking compiler in relative path so that compiler's
-  # resource dir becomes relative when -no-canonical-prefixes flag is given.
   wrapper = """#!/bin/sh
-: "${PWD:=$(pwd)}"
 if ! base=$(realpath "$0" 2>/dev/null); then
   case $0 in
   /*) base=$0;;
-  *)  base=${PWD}/$0;;
+  *)  base=${PWD:-`pwd`}/$0;;
   esac
 fi
-
-# If $PWD exists and is constant (no symlinks), use that to relativize $0.
-if [ "$(realpath "${PWD}" 2> /dev/null)" = "${PWD}" ]; then
-  base=$(realpath --relative-to="${PWD}" "$0")
-fi
-
 basedir=${base%%/*}
 exec \
   "${basedir}/%(interp)s" \
