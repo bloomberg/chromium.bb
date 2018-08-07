@@ -25,6 +25,7 @@
 #include "ui/native_theme/native_theme_mac.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
+#import "ui/views/cocoa/bridged_native_widget_host_impl.h"
 #include "ui/views/cocoa/cocoa_mouse_capture.h"
 #import "ui/views/cocoa/drag_drop_client_mac.h"
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"
@@ -75,9 +76,8 @@ NSInteger StyleMaskForParams(const Widget::InitParams& params) {
 
 NativeWidgetMac::NativeWidgetMac(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
-      bridge_(new BridgedNativeWidget(this)),
-      ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET) {
-}
+      bridge_host_(new BridgedNativeWidgetHostImpl(this)),
+      ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET) {}
 
 NativeWidgetMac::~NativeWidgetMac() {
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
@@ -93,13 +93,13 @@ BridgedNativeWidget* NativeWidgetMac::GetBridgeForNativeWindow(
   if ([window_delegate respondsToSelector:@selector(nativeWidgetMac)]) {
     ViewsNSWindowDelegate* delegate =
         base::mac::ObjCCastStrict<ViewsNSWindowDelegate>(window_delegate);
-    return [delegate nativeWidgetMac]->bridge_.get();
+    return [delegate nativeWidgetMac]->bridge();
   }
   return nullptr;  // Not created by NativeWidgetMac.
 }
 
 bool NativeWidgetMac::IsWindowModalSheet() const {
-  return bridge_ && bridge_->parent() &&
+  return bridge() && bridge()->parent() &&
          GetWidget()->widget_delegate()->GetModalType() ==
              ui::MODAL_TYPE_WINDOW;
 }
@@ -110,8 +110,8 @@ void NativeWidgetMac::WindowDestroying() {
 }
 
 void NativeWidgetMac::WindowDestroyed() {
-  DCHECK(bridge_);
-  bridge_.reset();
+  DCHECK(bridge());
+  bridge_host_.reset();
   delegate_->OnNativeWidgetDestroyed();
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
     delete this;
@@ -131,7 +131,7 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   name_ = params.name;
   base::scoped_nsobject<NSWindow> window([CreateNSWindow(params) retain]);
   [window setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
-  bridge_->Init(window, params);
+  bridge()->Init(window, params);
 
   // Only set always-on-top here if it is true since setting it may affect how
   // the window is treated by Expose.
@@ -141,21 +141,21 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   delegate_->OnNativeWidgetCreated(true);
 
   DCHECK(GetWidget()->GetRootView());
-  bridge_->SetRootView(GetWidget()->GetRootView());
+  bridge()->SetRootView(GetWidget()->GetRootView());
   if (auto* focus_manager = GetWidget()->GetFocusManager()) {
-    [window makeFirstResponder:bridge_->ns_view()];
-    bridge_->SetFocusManager(focus_manager);
+    [window makeFirstResponder:bridge()->ns_view()];
+    bridge()->SetFocusManager(focus_manager);
   }
 
   // "Infer" must be handled by ViewsDelegate::OnBeforeWidgetInit().
   DCHECK_NE(Widget::InitParams::INFER_OPACITY, params.opacity);
   bool translucent = params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW;
-  bridge_->CreateLayer(params.layer_type, translucent);
+  bridge()->CreateLayer(params.layer_type, translucent);
 }
 
 void NativeWidgetMac::OnWidgetInitDone() {
   OnSizeConstraintsChanged();
-  bridge_->OnWidgetInitDone();
+  bridge()->OnWidgetInitDone();
 }
 
 NonClientFrameView* NativeWidgetMac::CreateNonClientFrameView() {
@@ -193,7 +193,7 @@ gfx::NativeView NativeWidgetMac::GetNativeView() const {
 }
 
 gfx::NativeWindow NativeWidgetMac::GetNativeWindow() const {
-  return bridge_ ? bridge_->ns_window() : nil;
+  return bridge() ? bridge()->ns_window() : nil;
 }
 
 Widget* NativeWidgetMac::GetTopLevelWidget() {
@@ -202,60 +202,60 @@ Widget* NativeWidgetMac::GetTopLevelWidget() {
 }
 
 const ui::Compositor* NativeWidgetMac::GetCompositor() const {
-  return bridge_ && bridge_->layer() ? bridge_->layer()->GetCompositor()
-                                     : nullptr;
+  return bridge() && bridge()->layer() ? bridge()->layer()->GetCompositor()
+                                       : nullptr;
 }
 
 const ui::Layer* NativeWidgetMac::GetLayer() const {
-  return bridge_ ? bridge_->layer() : nullptr;
+  return bridge() ? bridge()->layer() : nullptr;
 }
 
 void NativeWidgetMac::ReorderNativeViews() {
-  if (bridge_)
-    bridge_->ReorderChildViews();
+  if (bridge())
+    bridge()->ReorderChildViews();
 }
 
 void NativeWidgetMac::ViewRemoved(View* view) {
-  DragDropClientMac* client = bridge_ ? bridge_->drag_drop_client() : nullptr;
+  DragDropClientMac* client = bridge() ? bridge()->drag_drop_client() : nullptr;
   if (client)
     client->drop_helper()->ResetTargetViewIfEquals(view);
 }
 
 void NativeWidgetMac::SetNativeWindowProperty(const char* name, void* value) {
-  if (bridge_)
-    bridge_->SetNativeWindowProperty(name, value);
+  if (bridge())
+    bridge()->SetNativeWindowProperty(name, value);
 }
 
 void* NativeWidgetMac::GetNativeWindowProperty(const char* name) const {
-  if (bridge_)
-    return bridge_->GetNativeWindowProperty(name);
+  if (bridge())
+    return bridge()->GetNativeWindowProperty(name);
 
   return nullptr;
 }
 
 TooltipManager* NativeWidgetMac::GetTooltipManager() const {
-  if (bridge_)
-    return bridge_->tooltip_manager();
+  if (bridge())
+    return bridge()->tooltip_manager();
 
   return nullptr;
 }
 
 void NativeWidgetMac::SetCapture() {
-  if (bridge_ && !bridge_->HasCapture())
-    bridge_->AcquireCapture();
+  if (bridge() && !bridge()->HasCapture())
+    bridge()->AcquireCapture();
 }
 
 void NativeWidgetMac::ReleaseCapture() {
-  if (bridge_)
-    bridge_->ReleaseCapture();
+  if (bridge())
+    bridge()->ReleaseCapture();
 }
 
 bool NativeWidgetMac::HasCapture() const {
-  return bridge_ && bridge_->HasCapture();
+  return bridge() && bridge()->HasCapture();
 }
 
 ui::InputMethod* NativeWidgetMac::GetInputMethod() {
-  return bridge_ ? bridge_->GetInputMethod() : nullptr;
+  return bridge() ? bridge()->GetInputMethod() : nullptr;
 }
 
 void NativeWidgetMac::CenterWindow(const gfx::Size& size) {
@@ -307,7 +307,7 @@ void NativeWidgetMac::InitModalType(ui::ModalType modal_type) {
   // A peculiarity of the constrained window framework is that it permits a
   // dialog of MODAL_TYPE_WINDOW to have a null parent window; falling back to
   // a non-modal window in this case.
-  DCHECK(bridge_->parent() || modal_type == ui::MODAL_TYPE_WINDOW);
+  DCHECK(bridge()->parent() || modal_type == ui::MODAL_TYPE_WINDOW);
 
   // Everything happens upon show.
 }
@@ -323,7 +323,7 @@ gfx::Rect NativeWidgetMac::GetClientAreaBoundsInScreen() const {
 }
 
 gfx::Rect NativeWidgetMac::GetRestoredBounds() const {
-  return bridge_ ? bridge_->GetRestoredBounds() : gfx::Rect();
+  return bridge() ? bridge()->GetRestoredBounds() : gfx::Rect();
 }
 
 std::string NativeWidgetMac::GetWorkspace() const {
@@ -331,18 +331,18 @@ std::string NativeWidgetMac::GetWorkspace() const {
 }
 
 void NativeWidgetMac::SetBounds(const gfx::Rect& bounds) {
-  if (bridge_)
-    bridge_->SetBounds(bounds);
+  if (bridge())
+    bridge()->SetBounds(bounds);
 }
 
 void NativeWidgetMac::SetBoundsConstrained(const gfx::Rect& bounds) {
-  if (!bridge_)
+  if (!bridge())
     return;
 
   gfx::Rect new_bounds(bounds);
   NativeWidgetPrivate* ancestor =
-      bridge_ && bridge_->parent()
-          ? GetNativeWidgetForNativeWindow(bridge_->parent()->GetNSWindow())
+      bridge() && bridge()->parent()
+          ? GetNativeWidgetForNativeWindow(bridge()->parent()->GetNSWindow())
           : nullptr;
   if (!ancestor) {
     new_bounds = ConstrainBoundsToDisplayWorkArea(new_bounds);
@@ -373,7 +373,7 @@ void NativeWidgetMac::SetShape(std::unique_ptr<Widget::ShapeRects> shape) {
 }
 
 void NativeWidgetMac::Close() {
-  if (!bridge_)
+  if (!bridge())
     return;
 
   // Keep |window| on the stack so that the ObjectiveC block below can capture
@@ -395,13 +395,13 @@ void NativeWidgetMac::Close() {
   }
 
   // For other modal types, animate the close.
-  if (bridge_->ShouldRunCustomAnimationFor(Widget::ANIMATE_HIDE)) {
+  if (bridge()->ShouldRunCustomAnimationFor(Widget::ANIMATE_HIDE)) {
     [ViewsNSWindowCloseAnimator closeWindowWithAnimation:window];
     return;
   }
 
   // Clear the view early to suppress repaints.
-  bridge_->SetRootView(nullptr);
+  bridge()->SetRootView(nullptr);
 
   // Widget::Close() ensures [Non]ClientView::CanClose() returns true, so there
   // is no need to call the NSWindow or its delegate's -windowShouldClose:
@@ -420,7 +420,7 @@ void NativeWidgetMac::Close() {
 }
 
 void NativeWidgetMac::CloseNow() {
-  if (!bridge_)
+  if (!bridge())
     return;
 
   // NSWindows must be retained until -[NSWindow close] returns.
@@ -438,10 +438,10 @@ void NativeWidgetMac::Show() {
 }
 
 void NativeWidgetMac::Hide() {
-  if (!bridge_)
+  if (!bridge())
     return;
 
-  bridge_->SetVisibilityState(BridgedNativeWidget::HIDE_WINDOW);
+  bridge()->SetVisibilityState(BridgedNativeWidget::HIDE_WINDOW);
 }
 
 void NativeWidgetMac::ShowMaximizedWithBounds(
@@ -450,7 +450,7 @@ void NativeWidgetMac::ShowMaximizedWithBounds(
 }
 
 void NativeWidgetMac::ShowWithWindowState(ui::WindowShowState state) {
-  if (!bridge_)
+  if (!bridge())
     return;
 
   switch (state) {
@@ -467,9 +467,10 @@ void NativeWidgetMac::ShowWithWindowState(ui::WindowShowState state) {
       NOTREACHED();
       break;
   }
-  bridge_->SetVisibilityState(state == ui::SHOW_STATE_INACTIVE
-      ? BridgedNativeWidget::SHOW_INACTIVE
-      : BridgedNativeWidget::SHOW_AND_ACTIVATE_WINDOW);
+  bridge()->SetVisibilityState(
+      state == ui::SHOW_STATE_INACTIVE
+          ? BridgedNativeWidget::SHOW_INACTIVE
+          : BridgedNativeWidget::SHOW_AND_ACTIVATE_WINDOW);
 
   // Ignore the SetInitialFocus() result. BridgedContentView should get
   // firstResponder status regardless.
@@ -477,14 +478,14 @@ void NativeWidgetMac::ShowWithWindowState(ui::WindowShowState state) {
 }
 
 bool NativeWidgetMac::IsVisible() const {
-  return bridge_ && bridge_->window_visible();
+  return bridge() && bridge()->window_visible();
 }
 
 void NativeWidgetMac::Activate() {
-  if (!bridge_)
+  if (!bridge())
     return;
 
-  bridge_->SetVisibilityState(BridgedNativeWidget::SHOW_AND_ACTIVATE_WINDOW);
+  bridge()->SetVisibilityState(BridgedNativeWidget::SHOW_AND_ACTIVATE_WINDOW);
 }
 
 void NativeWidgetMac::Deactivate() {
@@ -541,14 +542,14 @@ void NativeWidgetMac::Restore() {
 }
 
 void NativeWidgetMac::SetFullscreen(bool fullscreen) {
-  if (!bridge_ || fullscreen == IsFullscreen())
+  if (!bridge() || fullscreen == IsFullscreen())
     return;
 
-  bridge_->ToggleDesiredFullscreenState();
+  bridge()->ToggleDesiredFullscreenState();
 }
 
 bool NativeWidgetMac::IsFullscreen() const {
-  return bridge_ && bridge_->target_fullscreen_state();
+  return bridge() && bridge()->target_fullscreen_state();
 }
 
 void NativeWidgetMac::SetOpacity(float opacity) {
@@ -569,7 +570,7 @@ void NativeWidgetMac::RunShellDrag(View* view,
                                    const gfx::Point& location,
                                    int operation,
                                    ui::DragDropTypes::DragEventSource source) {
-  bridge_->drag_drop_client()->StartDragAndDrop(view, data, operation, source);
+  bridge()->drag_drop_client()->StartDragAndDrop(view, data, operation, source);
 }
 
 void NativeWidgetMac::SchedulePaintInRect(const gfx::Rect& rect) {
@@ -582,13 +583,13 @@ void NativeWidgetMac::SchedulePaintInRect(const gfx::Rect& rect) {
   target_rect.origin.y =
       NSHeight(client_rect) - target_rect.origin.y - NSHeight(target_rect);
   [GetNativeView() setNeedsDisplayInRect:target_rect];
-  if (bridge_ && bridge_->layer())
-    bridge_->layer()->SchedulePaint(rect);
+  if (bridge() && bridge()->layer())
+    bridge()->layer()->SchedulePaint(rect);
 }
 
 void NativeWidgetMac::SetCursor(gfx::NativeCursor cursor) {
-  if (bridge_)
-    bridge_->SetCursor(cursor);
+  if (bridge())
+    bridge()->SetCursor(cursor);
 }
 
 bool NativeWidgetMac::IsMouseEventsEnabled() const {
@@ -613,20 +614,20 @@ Widget::MoveLoopResult NativeWidgetMac::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     Widget::MoveLoopSource source,
     Widget::MoveLoopEscapeBehavior escape_behavior) {
-  if (!bridge_)
+  if (!bridge())
     return Widget::MOVE_LOOP_CANCELED;
 
-  return bridge_->RunMoveLoop(drag_offset);
+  return bridge()->RunMoveLoop(drag_offset);
 }
 
 void NativeWidgetMac::EndMoveLoop() {
-  if (bridge_)
-    bridge_->EndMoveLoop();
+  if (bridge())
+    bridge()->EndMoveLoop();
 }
 
 void NativeWidgetMac::SetVisibilityChangedAnimationsEnabled(bool value) {
-  if (bridge_)
-    bridge_->SetAnimationEnabled(value);
+  if (bridge())
+    bridge()->SetAnimationEnabled(value);
 }
 
 void NativeWidgetMac::SetVisibilityAnimationDuration(
@@ -636,8 +637,8 @@ void NativeWidgetMac::SetVisibilityAnimationDuration(
 
 void NativeWidgetMac::SetVisibilityAnimationTransition(
     Widget::VisibilityTransition transition) {
-  if (bridge_)
-    bridge_->set_transitions_to_animate(transition);
+  if (bridge())
+    bridge()->set_transitions_to_animate(transition);
 }
 
 bool NativeWidgetMac::IsTranslucentWindowOpacitySupported() const {
@@ -645,7 +646,7 @@ bool NativeWidgetMac::IsTranslucentWindowOpacitySupported() const {
 }
 
 void NativeWidgetMac::OnSizeConstraintsChanged() {
-  bridge_->OnSizeConstraintsChanged();
+  bridge()->OnSizeConstraintsChanged();
 }
 
 void NativeWidgetMac::RepostNativeEvent(gfx::NativeEvent native_event) {
@@ -666,6 +667,10 @@ NativeWidgetMacNSWindow* NativeWidgetMac::CreateNSWindow(
                 styleMask:StyleMaskForParams(params)
                   backing:NSBackingStoreBuffered
                     defer:NO] autorelease];
+}
+
+BridgedNativeWidget* NativeWidgetMac::bridge() const {
+  return bridge_host_ ? bridge_host_->bridge() : nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

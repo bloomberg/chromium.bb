@@ -22,6 +22,7 @@ class MockNativeWidgetMac;
 }
 
 class BridgedNativeWidget;
+class BridgedNativeWidgetHostImpl;
 
 class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
  public:
@@ -152,13 +153,14 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   virtual void OnWindowDestroying(NSWindow* window) {}
 
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
+  BridgedNativeWidget* bridge() const;
 
  private:
   friend class test::MockNativeWidgetMac;
   friend class test::HitTestNativeWidgetMac;
 
   internal::NativeWidgetDelegate* delegate_;
-  std::unique_ptr<BridgedNativeWidget> bridge_;
+  std::unique_ptr<BridgedNativeWidgetHostImpl> bridge_host_;
 
   Widget::InitParams::Ownership ownership_;
 
