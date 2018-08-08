@@ -2815,6 +2815,10 @@ public class ToolbarPhone extends ToolbarLayout
         if (mExperimentalButton == null) {
             ViewStub viewStub = findViewById(R.id.experimental_button_stub);
             mExperimentalButton = (TintedImageButton) viewStub.inflate();
+
+            if (FeatureUtilities.isBottomToolbarEnabled()) {
+                mExperimentalButton.setPadding(0, 0, 0, 0);
+            }
         } else {
             assert mExperimentalButton.getVisibility()
                     == View.GONE : "#disableExperimentalButton() should be called first.";
