@@ -34,7 +34,7 @@ class ASH_EXPORT PointerWatcherAdapterClassic : public ui::EventHandler {
   PointerWatcherAdapterClassic();
   ~PointerWatcherAdapterClassic() override;
 
-  // See ShellPort::AddPointerWatcher() for details.
+  // See Shell::AddPointerWatcher() for details.
   void AddPointerWatcher(views::PointerWatcher* watcher,
                          views::PointerWatcherEventTypes events);
   void RemovePointerWatcher(views::PointerWatcher* watcher);

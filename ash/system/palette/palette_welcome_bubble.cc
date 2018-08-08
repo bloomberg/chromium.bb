@@ -8,7 +8,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/palette/palette_tray.h"
 #include "chromeos/chromeos_switches.h"
@@ -80,7 +79,7 @@ PaletteWelcomeBubble::PaletteWelcomeBubble(PaletteTray* tray) : tray_(tray) {
 PaletteWelcomeBubble::~PaletteWelcomeBubble() {
   if (bubble_view_) {
     bubble_view_->GetWidget()->RemoveObserver(this);
-    ShellPort::Get()->RemovePointerWatcher(this);
+    Shell::Get()->RemovePointerWatcher(this);
   }
   Shell::Get()->session_controller()->RemoveObserver(this);
 }
@@ -93,7 +92,7 @@ void PaletteWelcomeBubble::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 void PaletteWelcomeBubble::OnWidgetClosing(views::Widget* widget) {
   widget->RemoveObserver(this);
   bubble_view_ = nullptr;
-  ShellPort::Get()->RemovePointerWatcher(this);
+  Shell::Get()->RemovePointerWatcher(this);
 }
 
 void PaletteWelcomeBubble::OnActiveUserPrefServiceChanged(
@@ -145,8 +144,7 @@ void PaletteWelcomeBubble::Show(bool shown_by_stylus) {
                                         true);
   bubble_view_->GetWidget()->Show();
   bubble_view_->GetWidget()->AddObserver(this);
-  ShellPort::Get()->AddPointerWatcher(this,
-                                      views::PointerWatcherEventTypes::BASIC);
+  Shell::Get()->AddPointerWatcher(this, views::PointerWatcherEventTypes::BASIC);
 
   // If the bubble is shown after the device first reads a stylus, ignore the
   // first up event so the event responsible for showing the bubble does not

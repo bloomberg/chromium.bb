@@ -20,7 +20,6 @@
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/audio/tray_audio.h"
 #include "ash/system/bluetooth/tray_bluetooth.h"

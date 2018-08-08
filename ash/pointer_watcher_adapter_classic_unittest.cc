@@ -4,7 +4,6 @@
 
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
@@ -31,11 +30,9 @@ enum TestPointerCaptureEvents {
 class TestPointerWatcher : public views::PointerWatcher {
  public:
   explicit TestPointerWatcher(views::PointerWatcherEventTypes events) {
-    ShellPort::Get()->AddPointerWatcher(this, events);
+    Shell::Get()->AddPointerWatcher(this, events);
   }
-  ~TestPointerWatcher() override {
-    ShellPort::Get()->RemovePointerWatcher(this);
-  }
+  ~TestPointerWatcher() override { Shell::Get()->RemovePointerWatcher(this); }
 
   void ClearCounts() {
     pointer_event_count_ = capture_changed_count_ = mouse_wheel_event_count_ =

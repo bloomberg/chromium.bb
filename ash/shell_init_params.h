@@ -28,15 +28,12 @@ class GpuInterfaceProvider;
 namespace ash {
 
 class ShellDelegate;
-class ShellPort;
 
 struct ASH_EXPORT ShellInitParams {
   ShellInitParams();
   ShellInitParams(ShellInitParams&& other);
   ~ShellInitParams();
 
-  // TODO(sky): remove this, no longer needed. https://crbug.com/842365
-  std::unique_ptr<ShellPort> shell_port;
   std::unique_ptr<ShellDelegate> delegate;
   ui::ContextFactory* context_factory = nullptr;                 // Non-owning.
   ui::ContextFactoryPrivate* context_factory_private = nullptr;  // Non-owning.

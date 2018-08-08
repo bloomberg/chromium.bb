@@ -10,7 +10,6 @@
 #include "ash/display/display_prefs.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
-#include "ash/shell_port_classic.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "content/public/browser/context_factory.h"
@@ -21,7 +20,6 @@ namespace {
 
 void CreateClassicShell() {
   ash::ShellInitParams shell_init_params;
-  shell_init_params.shell_port = std::make_unique<ash::ShellPortClassic>();
   shell_init_params.delegate = std::make_unique<ChromeShellDelegate>();
   shell_init_params.context_factory = content::GetContextFactory();
   shell_init_params.context_factory_private =

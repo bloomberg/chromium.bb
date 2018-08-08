@@ -9,7 +9,6 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
 #include "ash/system/tray/tray_constants.h"

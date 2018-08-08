@@ -9,7 +9,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -233,7 +232,7 @@ bool WallpaperView::OnMousePressed(const ui::MouseEvent& event) {
 void WallpaperView::ShowContextMenuForView(views::View* source,
                                            const gfx::Point& point,
                                            ui::MenuSourceType source_type) {
-  ShellPort::Get()->ShowContextMenu(point, source_type);
+  Shell::Get()->ShowContextMenu(point, source_type);
 }
 
 views::Widget* CreateWallpaperWidget(aura::Window* root_window,

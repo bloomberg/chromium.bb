@@ -10,7 +10,6 @@
 #include "ash/shelf/shelf_tooltip_preview_bubble.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/strings/string16.h"
@@ -37,12 +36,11 @@ ShelfTooltipManager::ShelfTooltipManager(ShelfView* shelf_view)
       bubble_(nullptr),
       weak_factory_(this) {
   shelf_view_->shelf()->AddObserver(this);
-  ShellPort::Get()->AddPointerWatcher(this,
-                                      views::PointerWatcherEventTypes::BASIC);
+  Shell::Get()->AddPointerWatcher(this, views::PointerWatcherEventTypes::BASIC);
 }
 
 ShelfTooltipManager::~ShelfTooltipManager() {
-  ShellPort::Get()->RemovePointerWatcher(this);
+  Shell::Get()->RemovePointerWatcher(this);
   shelf_view_->shelf()->RemoveObserver(this);
   aura::Window* window = nullptr;
   if (shelf_view_->GetWidget())

@@ -9,7 +9,6 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate_mash.h"
 #include "ash/shell_init_params.h"
-#include "ash/shell_port_classic.h"
 #include "ash/ws/ash_gpu_interface_provider.h"
 #include "ash/ws/window_service_owner.h"
 #include "base/bind.h"
@@ -172,7 +171,6 @@ void AshService::InitForMash() {
   statistics_provider_->SetMachineStatistic("keyboard_layout", "");
 
   ShellInitParams shell_init_params;
-  shell_init_params.shell_port = std::make_unique<ash::ShellPortClassic>();
   shell_init_params.delegate = std::make_unique<ShellDelegateMash>();
   shell_init_params.context_factory = context_factory_.get();
   shell_init_params.context_factory_private =

@@ -11,7 +11,6 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
-#include "ash/shell_port_classic.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
 #include "base/command_line.h"
@@ -65,7 +64,6 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
 
   env_ = aura::Env::CreateInstance();
   ash::ShellInitParams init_params;
-  init_params.shell_port = std::make_unique<ash::ShellPortClassic>();
   init_params.delegate = std::make_unique<ash::TestShellDelegate>();
   init_params.context_factory = context_factory;
   init_params.context_factory_private = context_factory_private;
