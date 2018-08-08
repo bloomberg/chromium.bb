@@ -366,6 +366,10 @@ bool BrowserTabStripController::IsSingleTabModeAvailable() {
   return GetFrameView()->IsSingleTabModeAvailable();
 }
 
+bool BrowserTabStripController::ShouldDrawStrokes() const {
+  return GetFrameView()->ShouldDrawStrokes();
+}
+
 void BrowserTabStripController::OnStartedDraggingTabs() {
   if (!immersive_reveal_lock_.get()) {
     // The top-of-window views should be revealed while the user is dragging

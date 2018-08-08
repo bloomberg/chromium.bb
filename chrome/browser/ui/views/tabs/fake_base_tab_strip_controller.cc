@@ -140,6 +140,10 @@ bool FakeBaseTabStripController::IsSingleTabModeAvailable() {
   return false;
 }
 
+bool FakeBaseTabStripController::ShouldDrawStrokes() const {
+  return false;
+}
+
 void FakeBaseTabStripController::OnStartedDraggingTabs() {
 }
 

@@ -73,6 +73,7 @@ class BrowserTabStripController : public TabStripController,
   bool IsIncognito() override;
   void StackedLayoutMaybeChanged() override;
   bool IsSingleTabModeAvailable() override;
+  bool ShouldDrawStrokes() const override;
   void OnStartedDraggingTabs() override;
   void OnStoppedDraggingTabs() override;
   SkColor GetFrameColor() const override;

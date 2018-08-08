@@ -837,17 +837,6 @@ void TabStrip::StopAnimating(bool layout) {
     DoLayout();
 }
 
-bool TabStrip::ShouldDrawStrokes() const {
-  if (!MD::IsRefreshUi())
-    return true;
-
-  // Refresh normally avoids strokes and relies on the active tab contrasting
-  // sufficiently with the frame background.  When there isn't enough contrast,
-  // fall back to a stroke.
-  return color_utils::GetContrastRatio(GetTabBackgroundColor(TAB_ACTIVE),
-                                       controller_->GetFrameColor()) < 1.3;
-}
-
 const ui::ListSelectionModel& TabStrip::GetSelectionModel() const {
   return controller_->GetSelectionModel();
 }
@@ -1134,7 +1123,7 @@ bool TabStrip::ShouldPaintTab(
 }
 
 int TabStrip::GetStrokeThickness() const {
-  return ShouldDrawStrokes() ? 1 : 0;
+  return controller_->ShouldDrawStrokes() ? 1 : 0;
 }
 
 bool TabStrip::CanPaintThrobberToLayer() const {
@@ -1328,7 +1317,7 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   if (active_tab && is_dragging)
     active_tab->Paint(paint_info);
 
-  if (ShouldDrawStrokes()) {
+  if (controller_->ShouldDrawStrokes()) {
     // Keep the recording scales consistent for the tab strip and its children.
     // See https://crbug.com/753911
     ui::PaintRecorder recorder(paint_info.context(),

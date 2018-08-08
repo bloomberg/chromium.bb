@@ -246,6 +246,19 @@ bool BrowserNonClientFrameView::IsSingleTabModeAvailable() const {
          MD::IsRefreshUi() && ShouldPaintAsActive() && GetFrameImage().isNull();
 }
 
+bool BrowserNonClientFrameView::ShouldDrawStrokes() const {
+  if (!MD::IsRefreshUi())
+    return true;
+
+  // Refresh normally avoids strokes and relies on the active tab contrasting
+  // sufficiently with the frame background.  When there isn't enough contrast,
+  // fall back to a stroke.  Always compute the contrast ratio against the
+  // active frame color, to avoid toggling the stroke on and off as the window
+  // activation state changes.
+  return color_utils::GetContrastRatio(GetTabBackgroundColor(TAB_ACTIVE),
+                                       GetFrameColor(true)) < 1.3;
+}
+
 bool BrowserNonClientFrameView::ShouldPaintAsSingleTabMode() const {
   return browser_view()->IsTabStripVisible() &&
          browser_view()->tabstrip()->SingleTabMode();
@@ -367,7 +380,7 @@ void BrowserNonClientFrameView::LayoutIncognitoButton() {
 
 void BrowserNonClientFrameView::PaintToolbarTopStroke(
     gfx::Canvas* canvas) const {
-  if (browser_view()->tabstrip()->ShouldDrawStrokes()) {
+  if (ShouldDrawStrokes()) {
     gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
     gfx::Point toolbar_origin(toolbar_bounds.origin());
     ConvertPointToTarget(browser_view(), this, &toolbar_origin);
@@ -581,7 +594,11 @@ bool BrowserNonClientFrameView::ShouldShowProfileIndicatorIcon() const {
 }
 
 SkColor BrowserNonClientFrameView::GetThemeOrDefaultColor(int color_id) const {
-  return ShouldPaintAsThemed() ? GetThemeProvider()->GetColor(color_id)
-                               : ThemeProperties::GetDefaultColor(
-                                     color_id, browser_view_->IsIncognito());
+  // During shutdown, there may no longer be a widget, and thus no theme
+  // provider.
+  const auto* theme_provider = GetThemeProvider();
+  return ShouldPaintAsThemed() && theme_provider
+             ? theme_provider->GetColor(color_id)
+             : ThemeProperties::GetDefaultColor(color_id,
+                                                browser_view_->IsIncognito());
 }

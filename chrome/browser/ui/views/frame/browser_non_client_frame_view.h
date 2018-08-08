@@ -131,6 +131,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // many tabs there are right now.
   virtual bool IsSingleTabModeAvailable() const;
 
+  // Returns whether or not strokes should be drawn around and under the tabs.
+  virtual bool ShouldDrawStrokes() const;
+
   // views::NonClientFrameView:
   void ChildPreferredSizeChanged(views::View* child) override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;

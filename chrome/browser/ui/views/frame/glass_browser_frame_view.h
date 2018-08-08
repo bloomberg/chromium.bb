@@ -43,6 +43,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   gfx::Size GetMinimumSize() const override;
   int GetTabStripLeftInset() const override;
   bool IsSingleTabModeAvailable() const override;
+  bool ShouldDrawStrokes() const override;
   void OnTabRemoved(int index) override;
   void OnTabsMaxXChanged() override;
 
