@@ -29,15 +29,35 @@
 function checkContextMenu(commandId, path, expectedEnabledState) {
   let appId;
   StepsRunner.run([
-    // Set up Files App.
+    // Open Files App on Drive.
     function() {
       setupAndWaitUntilReady(
-          null, RootPath.DRIVE, this.next, BASIC_LOCAL_ENTRY_SET,
-          COMPLEX_DRIVE_ENTRY_SET);
+          null, RootPath.DRIVE, this.next, [], COMPLEX_DRIVE_ENTRY_SET);
     },
-    // Select the file.
+    // Optionally copy hello.txt into the clipboard if needed.
     function(results) {
       appId = results.windowId;
+
+      const needsClipboardCopy = /^paste/.test(commandId);
+      if (!needsClipboardCopy) {
+        this.next();
+        return;
+      }
+
+      const file = ['hello.txt'];
+      remoteCall.callRemoteTestUtil('selectFile', appId, file)
+          .then(result => {
+            chrome.test.assertTrue(!!result, 'selectFile failed');
+            return remoteCall.callRemoteTestUtil(
+                'execCommand', appId, ['copy']);
+          })
+          .then((result) => {
+            chrome.test.assertTrue(!!result, 'execCommand failed');
+            this.next();
+          });
+    },
+    // Select the file |path|.
+    function() {
       remoteCall.callRemoteTestUtil('selectFile', appId, [path], this.next);
     },
     // Wait for the file to be selected.
@@ -45,7 +65,7 @@ function checkContextMenu(commandId, path, expectedEnabledState) {
       chrome.test.assertTrue(!!result);
       remoteCall.waitForElement(appId, '.table-row[selected]').then(this.next);
     },
-    // Right-click on the file.
+    // Right-click the selected file.
     function() {
       remoteCall.callRemoteTestUtil(
           'fakeMouseRightClick', appId, ['.table-row[selected]'], this.next);
@@ -58,82 +78,17 @@ function checkContextMenu(commandId, path, expectedEnabledState) {
     },
     // Wait for the command option to appear.
     function() {
-      let query;
+      let query = '#file-context-menu:not([hidden])';
       if (expectedEnabledState) {
-        query = `[command="#${commandId}"]:not([hidden]):not([disabled])`;
+        query += ` [command="#${commandId}"]:not([hidden]):not([disabled])`;
       } else {
-        query = `[command="#${commandId}"][disabled]:not([hidden])`;
+        query += ` [command="#${commandId}"][disabled]:not([hidden])`;
       }
       remoteCall.waitForElement(appId, query).then(this.next);
     },
     // Check for Javascript errors.
     function() {
       checkIfNoErrorsOccured(this.next);
-    }
-  ]);
-}
-
-/**
- * Right-clicks on the specified item and selects "Copy".
- *
- * @param {string} path Path to the file or folder to copy.
- * @param {function()=} opt_callback Callback to call after the copy has
- *     completed.
- */
-function copyEntryToClipboard(path, opt_callback) {
-  var appId;
-  StepsRunner.run([
-    // Set up Files App.
-    function() {
-      setupAndWaitUntilReady(
-          null, RootPath.DRIVE, this.next, BASIC_LOCAL_ENTRY_SET,
-          COMPLEX_DRIVE_ENTRY_SET);
-    },
-    // Select the file.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil('selectFile', appId, [path], this.next);
-    },
-    // Wait for the file to be selected.
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForElement(appId, '.table-row[selected]').then(this.next);
-    },
-    // Right-click on the file.
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseRightClick', appId, ['.table-row[selected]'], this.next);
-    },
-    // Wait for the context menu to appear.
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])')
-          .then(this.next);
-    },
-    // Wait for the 'copy' command to appear.
-    function() {
-      remoteCall
-          .waitForElement(
-              appId, '[command="#copy"]:not([hidden]):not([disabled])')
-          .then(this.next);
-    },
-    // Select 'copy'.
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId,
-          ['[command="#copy"]:not([hidden]):not([disabled])'], this.next);
-    },
-    // Wait for the context menu to disappear.
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForElement(appId, '#file-context-menu[hidden]')
-          .then(this.next);
-    },
-    // Check for Javascript errors.
-    function() {
-      checkIfNoErrorsOccured(this.next);
-      if (opt_callback)
-        opt_callback();
     }
   ]);
 }
@@ -307,23 +262,17 @@ testcase.checkCutDisabledForReadOnlyFolder = function() {
 /**
  * Tests that the Paste into Folder menu item is enabled if a read-write folder
  * is selected.
- * TODO(sashab): Make this test only open one window, instead of two.
  */
 testcase.checkPasteIntoFolderEnabledForReadWriteFolder = function() {
-  copyEntryToClipboard('hello.txt', () => {
-    checkContextMenu('paste-into-folder', 'photos', true);
-  });
+  checkContextMenu('paste-into-folder', 'photos', true);
 };
 
 /**
  * Tests that the Paste into Folder menu item is disabled if a read-only folder
  * is selected.
- * TODO(sashab): Make this test only open one window, instead of two.
  */
 testcase.checkPasteIntoFolderDisabledForReadOnlyFolder = function() {
-  copyEntryToClipboard('hello.txt', () => {
-    checkContextMenu('paste-into-folder', 'Read-Only Folder', false);
-  });
+  checkContextMenu('paste-into-folder', 'Read-Only Folder', false);
 };
 
 /**
@@ -348,7 +297,7 @@ testcase.checkNewFolderDisabledForReadOnlyFolder = function() {
 testcase.checkContextMenusForInputElements = function() {
   let appId;
   StepsRunner.run([
-    // Start FilesApp.
+    // Open FilesApp on Downloads.
     function() {
       setupAndWaitUntilReady(null, RootPath.DOWNLOADS).then(this.next);
     },
@@ -430,15 +379,41 @@ function checkContextMenuInDriveFolder(
     commandId, folderName, expectedEnabledState) {
   let appId;
   StepsRunner.run([
-    // Set up Files App.
+    // Open Files App on Drive.
     function() {
       setupAndWaitUntilReady(
-          null, RootPath.DRIVE, this.next, BASIC_LOCAL_ENTRY_SET,
-          COMPLEX_DRIVE_ENTRY_SET);
+          null, RootPath.DRIVE, this.next, [], COMPLEX_DRIVE_ENTRY_SET);
     },
-    // Select 'My Drive'.
+    // Optionally copy hello.txt into the clipboard if needed.
     function(results) {
       appId = results.windowId;
+
+      const needsClipboardCopy = /^paste/.test(commandId);
+      if (!needsClipboardCopy) {
+        this.next();
+        return;
+      }
+
+      const file = ['hello.txt'];
+      remoteCall.callRemoteTestUtil('selectFile', appId, file)
+          .then(result => {
+            chrome.test.assertTrue(!!result, 'selectFile failed');
+            return remoteCall.callRemoteTestUtil(
+                'execCommand', appId, ['copy']);
+          })
+          .then((result) => {
+            chrome.test.assertTrue(!!result, 'execCommand failed');
+            this.next();
+          });
+    },
+    // Focus the file list.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'focus', appId, ['#file-list:not([hidden])'], this.next);
+    },
+    // Select 'My Drive'.
+    function(result) {
+      chrome.test.assertTrue(!!result);
       remoteCall.callRemoteTestUtil(
           'selectFolderInTree', appId, ['My Drive'], this.next);
     },
@@ -467,11 +442,11 @@ function checkContextMenuInDriveFolder(
     },
     // Wait for the command option to appear.
     function() {
-      let query;
+      let query = '#file-context-menu:not([hidden])';
       if (expectedEnabledState) {
-        query = `[command="#${commandId}"]:not([hidden]):not([disabled])`;
+        query += ` [command="#${commandId}"]:not([hidden]):not([disabled])`;
       } else {
-        query = `[command="#${commandId}"][disabled]:not([hidden])`;
+        query += ` [command="#${commandId}"][disabled]:not([hidden])`;
       }
       remoteCall.waitForElement(appId, query).then(this.next);
     },
@@ -501,25 +476,18 @@ testcase.checkNewFolderDisabledInsideReadOnlyFolder = function() {
 /**
  * Tests that the Paste menu item is enabled inside a folder that has read-write
  * permissions.
- * TODO(sashab): Make this test only open one window, instead of two.
  */
 testcase.checkPasteEnabledInsideReadWriteFolder = function() {
-  copyEntryToClipboard('hello.txt', () => {
-    checkContextMenuInDriveFolder('paste', 'photos', true);
-  });
+  checkContextMenuInDriveFolder('paste', 'photos', true);
 };
 
 /**
  * Tests that the Paste menu item is disabled inside a folder that has read-only
  * permissions.
- * TODO(sashab): Make this test only open one window, instead of two.
  */
 testcase.checkPasteDisabledInsideReadOnlyFolder = function() {
-  copyEntryToClipboard('hello.txt', () => {
-    checkContextMenuInDriveFolder('paste', 'Read-Only Folder', false);
-  });
+  checkContextMenuInDriveFolder('paste', 'Read-Only Folder', false);
 };
-
 
 /**
  * Tests that the specified menu item is in |expectedEnabledState| when the
@@ -536,15 +504,35 @@ function checkContextMenuForDriveFolderInTree(
     commandId, folderSelector, expectedEnabledState) {
   let appId;
   StepsRunner.run([
-    // Set up Files App.
+    // Open Files App on Drive.
     function() {
       setupAndWaitUntilReady(
-          null, RootPath.DRIVE, this.next, BASIC_LOCAL_ENTRY_SET,
-          COMPLEX_DRIVE_ENTRY_SET);
+          null, RootPath.DRIVE, this.next, [], COMPLEX_DRIVE_ENTRY_SET);
     },
-    // Set focus on the file list.
+    // Optionally copy hello.txt into the clipboard if needed.
     function(results) {
       appId = results.windowId;
+
+      const needsClipboardCopy = /^paste/.test(commandId);
+      if (!needsClipboardCopy) {
+        this.next();
+        return;
+      }
+
+      const file = ['hello.txt'];
+      remoteCall.callRemoteTestUtil('selectFile', appId, file)
+          .then(result => {
+            chrome.test.assertTrue(!!result, 'selectFile failed');
+            return remoteCall.callRemoteTestUtil(
+                'execCommand', appId, ['copy']);
+          })
+          .then((result) => {
+            chrome.test.assertTrue(!!result, 'execCommand failed');
+            this.next();
+          });
+    },
+    // Focus the file list.
+    function() {
       remoteCall.callRemoteTestUtil(
           'focus', appId, ['#file-list:not([hidden])'], this.next);
     },
@@ -572,7 +560,8 @@ function checkContextMenuForDriveFolderInTree(
           'focus', appId, ['#directory-tree'], this.next);
     },
     // Right-click the selected folder.
-    function() {
+    function(result) {
+      chrome.test.assertTrue(!!result);
       remoteCall.callRemoteTestUtil(
           'fakeMouseRightClick', appId,
           [`${folderSelector}:not([hidden]) .label`], this.next);
@@ -586,11 +575,11 @@ function checkContextMenuForDriveFolderInTree(
     },
     // Wait for the command option to appear.
     function() {
-      let query;
+      let query = '#directory-tree-context-menu:not([hidden])';
       if (expectedEnabledState) {
-        query = `[command="#${commandId}"]:not([hidden]):not([disabled])`;
+        query += ` [command="#${commandId}"]:not([hidden]):not([disabled])`;
       } else {
-        query = `[command="#${commandId}"][disabled]:not([hidden])`;
+        query += ` [command="#${commandId}"][disabled]:not([hidden])`;
       }
       remoteCall.waitForElement(appId, query).then(this.next);
     },
@@ -650,30 +639,24 @@ testcase.checkCutDisabledForReadOnlyFolderInTree = function() {
 /**
  * Tests that the Paste menu item is enabled in the directory
  * tree for a folder that has read-write permissions.
- * TODO(sashab): Make this test only open one window, instead of two.
  */
 testcase.checkPasteEnabledForReadWriteFolderInTree = function() {
-  copyEntryToClipboard('hello.txt', () => {
-    checkContextMenuForDriveFolderInTree(
-        'paste-into-folder',
-        '#directory-tree [full-path-for-testing="/root/photos"]:not([hidden])',
-        true);
-  });
+  checkContextMenuForDriveFolderInTree(
+      'paste-into-folder',
+      '#directory-tree [full-path-for-testing="/root/photos"]:not([hidden])',
+      true);
 };
 
 /**
  * Tests that the Paste menu item is disabled in the directory tree for a folder
  * that has read-only permissions.
- * TODO(sashab): Make this test only open one window, instead of two.
  */
 testcase.checkPasteDisabledForReadOnlyFolderInTree = function() {
-  copyEntryToClipboard('hello.txt', () => {
-    checkContextMenuForDriveFolderInTree(
-        'paste-into-folder',
-        '#directory-tree [full-path-for-testing="/root/Read-Only Folder"]' +
-            ':not([hidden])',
-        false);
-  });
+  checkContextMenuForDriveFolderInTree(
+      'paste-into-folder',
+      '#directory-tree [full-path-for-testing="/root/Read-Only Folder"]' +
+          ':not([hidden])',
+      false);
 };
 
 /**
@@ -695,13 +678,12 @@ function checkTeamDriveContextMenuInTree(
       `.tree-item[full-path-for-testing="/team_drives/${teamDriveName}"]`;
   let appId;
   StepsRunner.run([
-    // Set up Files App.
+    // Open Files App on Drive.
     function() {
       setupAndWaitUntilReady(
-          null, RootPath.DRIVE, this.next, BASIC_LOCAL_ENTRY_SET,
-          TEAM_DRIVE_ENTRY_SET);
+          null, RootPath.DRIVE, this.next, [], TEAM_DRIVE_ENTRY_SET);
     },
-    // Set focus on the file list.
+    // Focus the file list.
     function(results) {
       appId = results.windowId;
       remoteCall.callRemoteTestUtil(
@@ -731,7 +713,8 @@ function checkTeamDriveContextMenuInTree(
           'focus', appId, ['#directory-tree'], this.next);
     },
     // Right-click the selected team drive.
-    function() {
+    function(result) {
+      chrome.test.assertTrue(result);
       remoteCall.callRemoteTestUtil(
           'fakeMouseRightClick', appId,
           [`${navItemSelector}:not([hidden]) .label`], this.next);
@@ -745,16 +728,17 @@ function checkTeamDriveContextMenuInTree(
     },
     // Wait for the command options to appear.
     function() {
-      let query;
       let promises = [];
       for (let commandId in expectedContextMenuState) {
+        let query = '#directory-tree-context-menu:not([hidden])';
         if (expectedContextMenuState[commandId] == true) {
-          query = `[command="#${commandId}"]:not([hidden]):not([disabled])`;
+          query += ` [command="#${commandId}"]:not([hidden]):not([disabled])`;
         } else {
-          query = `[command="#${commandId}"][disabled]:not([hidden])`;
+          query += ` [command="#${commandId}"][disabled]:not([hidden])`;
         }
         promises.push(remoteCall.waitForElement(appId, query));
       }
+
       Promise.all(promises).then(this.next);
     },
     // Check for Javascript errors.
