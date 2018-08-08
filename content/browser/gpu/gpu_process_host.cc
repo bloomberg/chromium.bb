@@ -731,7 +731,7 @@ GpuProcessHost::~GpuProcessHost() {
   if (in_process_gpu_thread_)
     DCHECK(process_);
 
-  SendOutstandingReplies(EstablishChannelStatus::GPU_HOST_INVALID);
+  SendOutstandingReplies();
 
 #if defined(OS_MACOSX)
   if (ca_transaction_gpu_coordinator_) {
@@ -953,7 +953,7 @@ bool GpuProcessHost::Send(IPC::Message* msg) {
     // Channel is hosed, but we may not get destroyed for a while. Send
     // outstanding channel creation failures now so that the caller can restart
     // with a new process/channel without waiting.
-    SendOutstandingReplies(EstablishChannelStatus::GPU_HOST_INVALID);
+    SendOutstandingReplies();
   }
   return result;
 }
@@ -977,45 +977,39 @@ void GpuProcessHost::OnChannelConnected(int32_t peer_pid) {
   }
 }
 
-void GpuProcessHost::EstablishGpuChannel(
-    int client_id,
-    uint64_t client_tracing_id,
-    bool preempts,
-    bool allow_view_command_buffers,
-    bool allow_real_time_streams,
-    const EstablishChannelCallback& callback) {
+void GpuProcessHost::EstablishGpuChannel(int client_id,
+                                         uint64_t client_tracing_id,
+                                         bool is_gpu_host,
+                                         EstablishChannelCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT0("gpu", "GpuProcessHost::EstablishGpuChannel");
 
   // If GPU features are already blacklisted, no need to establish the channel.
   if (!GpuDataManagerImpl::GetInstance()->GpuAccessAllowed(nullptr)) {
     DVLOG(1) << "GPU blacklisted, refusing to open a GPU channel.";
-    callback.Run(mojo::ScopedMessagePipeHandle(), gpu::GPUInfo(),
-                 gpu::GpuFeatureInfo(),
-                 EstablishChannelStatus::GPU_ACCESS_DENIED);
+    std::move(callback).Run(mojo::ScopedMessagePipeHandle(), gpu::GPUInfo(),
+                            gpu::GpuFeatureInfo(),
+                            EstablishChannelStatus::GPU_ACCESS_DENIED);
     return;
   }
 
   if (gpu::IsReservedClientId(client_id)) {
     // The display-compositor/GrShaderCache in the gpu process uses these
     // special client ids.
-    callback.Run(mojo::ScopedMessagePipeHandle(), gpu::GPUInfo(),
-                 gpu::GpuFeatureInfo(),
-                 EstablishChannelStatus::GPU_ACCESS_DENIED);
+    std::move(callback).Run(mojo::ScopedMessagePipeHandle(), gpu::GPUInfo(),
+                            gpu::GpuFeatureInfo(),
+                            EstablishChannelStatus::GPU_ACCESS_DENIED);
     return;
   }
 
-  DCHECK_EQ(preempts, allow_view_command_buffers);
-  DCHECK_EQ(preempts, allow_real_time_streams);
-  bool is_gpu_host = preempts;
   bool cache_shaders_on_disk =
       GetShaderCacheFactorySingleton()->Get(client_id) != nullptr;
 
-  channel_requests_.push(callback);
+  channel_requests_.push(std::move(callback));
   gpu_service_ptr_->EstablishGpuChannel(
       client_id, client_tracing_id, is_gpu_host, cache_shaders_on_disk,
       base::BindOnce(&GpuProcessHost::OnChannelEstablished,
-                     weak_ptr_factory_.GetWeakPtr(), client_id, callback));
+                     weak_ptr_factory_.GetWeakPtr(), client_id));
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGpuShaderDiskCache)) {
@@ -1090,11 +1084,10 @@ void GpuProcessHost::RequestHDRStatus(RequestHDRStatusCallback request_cb) {
 
 void GpuProcessHost::OnChannelEstablished(
     int client_id,
-    const EstablishChannelCallback& callback,
     mojo::ScopedMessagePipeHandle channel_handle) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnChannelEstablished");
   DCHECK(!channel_requests_.empty());
-  DCHECK(channel_requests_.front().Equals(callback));
+  auto callback = std::move(channel_requests_.front());
   channel_requests_.pop();
 
   auto* gpu_data_manager = GpuDataManagerImpl::GetInstance();
@@ -1103,17 +1096,17 @@ void GpuProcessHost::OnChannelEstablished(
   if (channel_handle.is_valid() &&
       !gpu_data_manager->GpuAccessAllowed(nullptr)) {
     gpu_service_ptr_->CloseChannel(client_id);
-    callback.Run(mojo::ScopedMessagePipeHandle(), gpu::GPUInfo(),
-                 gpu::GpuFeatureInfo(),
-                 EstablishChannelStatus::GPU_ACCESS_DENIED);
+    std::move(callback).Run(mojo::ScopedMessagePipeHandle(), gpu::GPUInfo(),
+                            gpu::GpuFeatureInfo(),
+                            EstablishChannelStatus::GPU_ACCESS_DENIED);
     RecordLogMessage(logging::LOG_WARNING, "WARNING",
                      "Hardware acceleration is unavailable.");
     return;
   }
 
-  callback.Run(std::move(channel_handle), gpu_data_manager->GetGPUInfo(),
-               gpu_data_manager->GetGpuFeatureInfo(),
-               EstablishChannelStatus::SUCCESS);
+  std::move(callback).Run(
+      std::move(channel_handle), gpu_data_manager->GetGPUInfo(),
+      gpu_data_manager->GetGpuFeatureInfo(), EstablishChannelStatus::SUCCESS);
 }
 
 void GpuProcessHost::OnGpuMemoryBufferCreated(
@@ -1179,7 +1172,7 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
           cache_key.first, base::Time(), base::Time::Max(), base::Bind([] {}));
     }
   }
-  SendOutstandingReplies(EstablishChannelStatus::GPU_HOST_INVALID);
+  SendOutstandingReplies();
 
   ChildProcessTerminationInfo info =
       process_->GetTerminationInfo(true /* known_dead */);
@@ -1469,17 +1462,16 @@ bool GpuProcessHost::LaunchGpuProcess() {
   return true;
 }
 
-void GpuProcessHost::SendOutstandingReplies(
-    EstablishChannelStatus failure_status) {
-  DCHECK_NE(failure_status, EstablishChannelStatus::SUCCESS);
+void GpuProcessHost::SendOutstandingReplies() {
   valid_ = false;
 
   // First send empty channel handles for all EstablishChannel requests.
   while (!channel_requests_.empty()) {
-    auto callback = channel_requests_.front();
+    auto callback = std::move(channel_requests_.front());
     channel_requests_.pop();
     std::move(callback).Run(mojo::ScopedMessagePipeHandle(), gpu::GPUInfo(),
-                            gpu::GpuFeatureInfo(), failure_status);
+                            gpu::GpuFeatureInfo(),
+                            EstablishChannelStatus::GPU_HOST_INVALID);
   }
 
   while (!create_gpu_memory_buffer_requests_.empty()) {

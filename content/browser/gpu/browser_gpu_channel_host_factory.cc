@@ -136,13 +136,10 @@ void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
     return;
   }
 
-  bool preempts = true;
-  bool allow_view_command_buffers = true;
-  bool allow_real_time_streams = true;
+  bool is_gpu_host = true;
   host->EstablishGpuChannel(
-      gpu_client_id_, gpu_client_tracing_id_, preempts,
-      allow_view_command_buffers, allow_real_time_streams,
-      base::Bind(
+      gpu_client_id_, gpu_client_tracing_id_, is_gpu_host,
+      base::BindOnce(
           &BrowserGpuChannelHostFactory::EstablishRequest::OnEstablishedOnIO,
           this));
 }

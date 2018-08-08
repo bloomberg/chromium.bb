@@ -89,6 +89,7 @@
 #include "content/browser/fileapi/fileapi_message_filter.h"
 #include "content/browser/font_unique_name_lookup/font_unique_name_lookup_service.h"
 #include "content/browser/frame_host/render_frame_message_filter.h"
+#include "content/browser/gpu/browser_gpu_client_delegate.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_client_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -1465,7 +1466,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
     const uint64_t tracing_id =
         ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(id);
     gpu_client_.reset(new GpuClientImpl(
-        id, tracing_id,
+        std::make_unique<BrowserGpuClientDelegate>(), id, tracing_id,
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
   }
 

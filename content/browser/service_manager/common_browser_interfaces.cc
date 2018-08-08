@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/gpu/browser_gpu_client_delegate.h"
 #include "content/browser/gpu/gpu_client_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -105,7 +106,8 @@ class ConnectionFilterImpl : public ConnectionFilter {
         ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
             gpu_client_id);
     auto gpu_client = std::make_unique<GpuClientImpl>(
-        gpu_client_id, gpu_client_tracing_id,
+        std::make_unique<BrowserGpuClientDelegate>(), gpu_client_id,
+        gpu_client_tracing_id,
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
     gpu_client->SetConnectionErrorHandler(
         base::BindOnce(&ConnectionFilterImpl::OnGpuConnectionClosed,
