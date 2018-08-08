@@ -415,6 +415,8 @@ class PersonalDataManager : public KeyedService,
                            ClearProfileNonSettingsOrigins);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            ClearCreditCardNonSettingsOrigins);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           MoveJapanCityToStreetAddress);
 
   friend class autofill::AutofillInteractiveTest;
   friend class autofill::PersonalDataManagerFactory;
@@ -502,6 +504,12 @@ class PersonalDataManager : public KeyedService,
   // were not created from the settings page.
   void ClearProfileNonSettingsOrigins();
   void ClearCreditCardNonSettingsOrigins();
+
+  // Appends the value of the city field of a JP address to its street address
+  // field, separated by a newline, and clears the city field.
+  // TODO(rouslan): Remove this migration in or after October 2019. See bug:
+  // https://crbug.com/871301
+  void MoveJapanCityToStreetAddress();
 
   // Decides which database type to use for server and local cards.
   std::unique_ptr<PersonalDatabaseHelper> database_helper_;

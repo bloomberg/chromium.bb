@@ -6265,6 +6265,105 @@ TEST_F(PersonalDataManagerTest, ClearCreditCardNonSettingsOrigins) {
             personal_data_->GetCreditCardsToSuggest(false)[3]->origin());
 }
 
+// Tests that all city fields in a Japan profile are moved to the street address
+// field.
+TEST_F(PersonalDataManagerTest, MoveJapanCityToStreetAddress) {
+  // A US profile with both street address and a city.
+  std::string guid0 = base::GenerateGUID();
+  {
+    AutofillProfile profile0(guid0, test::kEmptyOrigin);
+    test::SetProfileInfo(&profile0, "Homer", "J", "Simpson",
+                         "homer.simpson@abc.com", "", "742. Evergreen Terrace",
+                         "", "Springfield", "IL", "91601", "US", "");
+    personal_data_->AddProfile(profile0);
+  }
+
+  // A JP profile with both street address and a city.
+  std::string guid1 = base::GenerateGUID();
+  {
+    AutofillProfile profile1(guid1, test::kEmptyOrigin);
+    test::SetProfileInfo(&profile1, "Homer", "J", "Simpson",
+                         "homer.simpson@abc.com", "", "742. Evergreen Terrace",
+                         "", "Springfield", "IL", "91601", "JP", "");
+    personal_data_->AddProfile(profile1);
+  }
+
+  // A JP profile with only a city.
+  std::string guid2 = base::GenerateGUID();
+  {
+    AutofillProfile profile2(guid2, test::kEmptyOrigin);
+    test::SetProfileInfo(&profile2, "Homer", "J", "Simpson",
+                         "homer.simpson@abc.com", "", "", "", "Springfield",
+                         "IL", "91601", "JP", "");
+    personal_data_->AddProfile(profile2);
+  }
+
+  // A JP profile with only a street address.
+  std::string guid3 = base::GenerateGUID();
+  {
+    AutofillProfile profile3(guid3, test::kEmptyOrigin);
+    test::SetProfileInfo(&profile3, "Homer", "J", "Simpson",
+                         "homer.simpson@abc.com", "", "742. Evergreen Terrace",
+                         "", "", "IL", "91601", "JP", "");
+    personal_data_->AddProfile(profile3);
+  }
+
+  // A JP profile with neither a street address nor a city.
+  std::string guid4 = base::GenerateGUID();
+  {
+    AutofillProfile profile4(guid4, test::kEmptyOrigin);
+    test::SetProfileInfo(&profile4, "Homer", "J", "Simpson",
+                         "homer.simpson@abc.com", "", "", "", "", "IL", "91601",
+                         "JP", "");
+    personal_data_->AddProfile(profile4);
+  }
+
+  WaitForOnPersonalDataChanged();
+
+  personal_data_->MoveJapanCityToStreetAddress();
+
+  WaitForOnPersonalDataChanged();
+
+  {
+    AutofillProfile* profile0 = personal_data_->GetProfileByGUID(guid0);
+    EXPECT_EQ(base::ASCIIToUTF16("742. Evergreen Terrace"),
+              profile0->GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
+    EXPECT_EQ(base::ASCIIToUTF16("Springfield"),
+              profile0->GetRawInfo(ADDRESS_HOME_CITY));
+  }
+
+  {
+    AutofillProfile* profile1 = personal_data_->GetProfileByGUID(guid1);
+    EXPECT_EQ(base::ASCIIToUTF16("742. Evergreen Terrace\nSpringfield"),
+              profile1->GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
+    EXPECT_EQ(base::ASCIIToUTF16("742. Evergreen Terrace"),
+              profile1->GetRawInfo(ADDRESS_HOME_LINE1));
+    EXPECT_EQ(base::ASCIIToUTF16("Springfield"),
+              profile1->GetRawInfo(ADDRESS_HOME_LINE2));
+    EXPECT_TRUE(profile1->GetRawInfo(ADDRESS_HOME_CITY).empty());
+  }
+
+  {
+    AutofillProfile* profile2 = personal_data_->GetProfileByGUID(guid2);
+    EXPECT_EQ(base::ASCIIToUTF16("Springfield"),
+              profile2->GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
+    EXPECT_TRUE(profile2->GetRawInfo(ADDRESS_HOME_CITY).empty());
+  }
+
+  {
+    AutofillProfile* profile3 = personal_data_->GetProfileByGUID(guid3);
+    EXPECT_EQ(base::ASCIIToUTF16("742. Evergreen Terrace"),
+              profile3->GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
+    EXPECT_TRUE(profile3->GetRawInfo(ADDRESS_HOME_CITY).empty());
+  }
+
+  {
+    AutofillProfile* profile4 = personal_data_->GetProfileByGUID(guid4);
+    EXPECT_TRUE(profile4->GetRawInfo(ADDRESS_HOME_STREET_ADDRESS).empty());
+    EXPECT_TRUE(profile4->GetRawInfo(ADDRESS_HOME_CITY).empty());
+  }
+}
+
 // Tests that all the non settings origins of autofill profiles are cleared even
 // if sync is disabled.
 TEST_F(

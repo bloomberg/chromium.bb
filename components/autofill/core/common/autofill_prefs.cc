@@ -29,11 +29,13 @@ const char kAutofillCreditCardEnabled[] = "autofill.credit_card_enabled";
 const char kAutofillCreditCardSigninPromoImpressionCount[] =
     "autofill.credit_card_signin_promo_impression_count";
 
-// Boolean that is true if Autofill is enabled and allowed to save profile data.
-const char kAutofillProfileEnabled[] = "autofill.profile_enabled";
-
 // Boolean that is true if Autofill is enabled and allowed to save data.
 const char kAutofillEnabled[] = "autofill.enabled";
+
+// Boolean that is true if Japan address city field has been migrated to be a
+// part of the street field.
+const char kAutofillJapanCityFieldMigrated[] =
+    "autofill.japan_city_field_migrated_to_street_address";
 
 // Integer that is set to the last version where the profile deduping routine
 // was run. This routine will be run once per version.
@@ -51,6 +53,9 @@ const char kAutofillLastVersionDisusedCreditCardsDeleted[] =
 
 // Boolean that is true if the orphan rows in the autofill table were removed.
 const char kAutofillOrphanRowsRemoved[] = "autofill.orphan_rows_removed";
+
+// Boolean that is true if Autofill is enabled and allowed to save profile data.
+const char kAutofillProfileEnabled[] = "autofill.profile_enabled";
 
 // Boolean that's true when Wallet card and address import is enabled by the
 // user.
@@ -74,6 +79,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kAutofillProfileEnabled, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAutofillJapanCityFieldMigrated, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kAutofillLastVersionDeduped, 0,
