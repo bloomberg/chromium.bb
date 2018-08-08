@@ -17,6 +17,7 @@ from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import remote_access
 from chromite.lib import remote_access_unittest
+from chromite.lib import repo_util_unittest
 
 
 class RemoteShScpMock(remote_access_unittest.RemoteShMock):
@@ -550,13 +551,15 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
     """
     command_mock = self.StartPatcher(cros_test_lib.RunCommandMock())
     command_mock.AddCmdResult(
-        ['repo', 'init', '-u',
+        ['repo', 'init', '--manifest-url',
          'https://chromium.googlesource.com/chromiumos/manifest.git',
          '--repo-url',
          'https://chromium.googlesource.com/external/repo.git'],
+        kwargs={'cwd': cwd},
+        side_effect=repo_util_unittest.RepoInitSideEffects)
+    command_mock.AddCmdResult(
+        [repo_util_unittest.RepoCmdPath(cwd), 'sync', '--jobs', '8'],
         kwargs={'cwd': cwd})
-    command_mock.AddCmdResult(['repo', 'sync', '-j8'],
-                              kwargs={'cwd': cwd})
     return command_mock
 
   def testSetupCrosRepo(self):

@@ -124,33 +124,6 @@ def FindRepoCheckoutRoot(path):
     return None
 
 
-def RunRepo(repo_checkout, cmd, **kwargs):
-  """RunCommand wrapper for repo commands.
-
-  Args:
-    repo_checkout: Path within an initialized repo checkout.
-    cmd: List of arguments to pass to the repo command; 'repo' is added for you.
-    kwargs: Keyword arguments to RunCommand; 'cwd' will default to
-      repo_checkout.
-
-  Returns:
-    A CommandResult object.
-  """
-  # Use the checkout's copy of repo so that it doesn't have to be in PATH
-  repo_dir = FindRepoDir(repo_checkout)
-  if repo_dir:
-    repo_path = os.path.join(repo_dir, 'repo', 'repo')
-  elif cmd and cmd[0] == 'init':
-    # `repo init` may be creating a new checkout; fallback to searching PATH.
-    repo_path = 'repo'
-  else:
-    raise OSError("Couldn't find repo dir from %r." % repo_checkout)
-
-  cmd = [repo_path] + cmd
-  kwargs.setdefault('cwd', repo_checkout)
-  return cros_build_lib.RunCommand(cmd, **kwargs)
-
-
 def IsSubmoduleCheckoutRoot(path, remote, url):
   """Tests to see if a directory is the root of a git submodule checkout.
 

@@ -19,6 +19,7 @@ from chromite.lib import json_lib
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import remote_access
+from chromite.lib import repo_util
 
 
 class AutotestEvaluator(evaluator.Evaluator):
@@ -182,14 +183,11 @@ class AutotestEvaluator(evaluator.Evaluator):
     command.
     """
     osutils.SafeMakedirs(self.cros_dir)
-    cros_build_lib.RunCommand(
-        ['repo', 'init', '-u',
-         'https://chromium.googlesource.com/chromiumos/manifest.git',
-         '--repo-url',
-         'https://chromium.googlesource.com/external/repo.git'],
-        cwd=self.cros_dir)
-    cros_build_lib.RunCommand(['repo', 'sync', '-j8'],
-                              cwd=self.cros_dir)
+    repo = repo_util.Repository.Initialize(
+        self.cros_dir,
+        'https://chromium.googlesource.com/chromiumos/manifest.git',
+        repo_url='https://chromium.googlesource.com/external/repo.git')
+    repo.Sync(jobs=8)
 
   def MaySetupBoard(self):
     """Checks if /build/${board} exists. Sets it up if not.
