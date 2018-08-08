@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_error_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_window.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_worker_or_worklet_event_listener.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 
 namespace blink {
@@ -80,11 +79,8 @@ V8AbstractEventListener* V8EventListenerHelper::GetEventListener(
   return GetEventListenerInternal<V8AbstractEventListener>(
       script_state, object, listener_property, lookup,
       [object, is_attribute, script_state, listener_property]() {
-        return script_state->World().IsWorkerWorld()
-                   ? V8WorkerOrWorkletEventListener::Create(
-                         object, is_attribute, script_state, listener_property)
-                   : V8EventListener::Create(object, is_attribute, script_state,
-                                             listener_property);
+        return V8EventListener::Create(object, is_attribute, script_state,
+                                       listener_property);
       });
 }
 

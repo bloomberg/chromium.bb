@@ -150,8 +150,6 @@ bindings_core_v8_files =
                     "core/v8/v8_v0_custom_element_lifecycle_callbacks.h",
                     "core/v8/v8_wasm_response_extensions.cc",
                     "core/v8/v8_wasm_response_extensions.h",
-                    "core/v8/v8_worker_or_worklet_event_listener.cc",
-                    "core/v8/v8_worker_or_worklet_event_listener.h",
                     "core/v8/window_proxy.cc",
                     "core/v8/window_proxy.h",
                     "core/v8/window_proxy_manager.cc",
