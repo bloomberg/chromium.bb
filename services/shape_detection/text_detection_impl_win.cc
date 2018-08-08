@@ -15,6 +15,7 @@
 #include "base/win/windows_version.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shape_detection/text_detection_impl.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace shape_detection {
 
@@ -23,6 +24,8 @@ using ABI::Windows::Globalization::ILanguageFactory;
 using ABI::Windows::Media::Ocr::IOcrEngineStatics;
 using ABI::Windows::Media::Ocr::IOcrLine;
 using ABI::Windows::Media::Ocr::OcrLine;
+using ABI::Windows::Media::Ocr::IOcrWord;
+using ABI::Windows::Media::Ocr::OcrWord;
 using base::win::GetActivationFactory;
 using base::win::ScopedHString;
 
@@ -200,7 +203,34 @@ TextDetectionImplWin::BuildTextDetectionResult(
     if (FAILED(hr))
       break;
 
+    // Gets bounding box with the words detected in the current line of Text.
+    Microsoft::WRL::ComPtr<IVectorView<OcrWord*>> ocr_words;
+    hr = line->get_Words(ocr_words.GetAddressOf());
+    if (FAILED(hr))
+      break;
+
+    uint32_t words_count;
+    hr = ocr_words->get_Size(&words_count);
+    if (FAILED(hr))
+      break;
+
     auto result = shape_detection::mojom::TextDetectionResult::New();
+    for (uint32_t i = 0; i < words_count; ++i) {
+      Microsoft::WRL::ComPtr<IOcrWord> word;
+      hr = ocr_words->GetAt(i, &word);
+      if (FAILED(hr))
+        break;
+
+      ABI::Windows::Foundation::Rect bounds;
+      hr = word->get_BoundingRect(&bounds);
+      if (FAILED(hr))
+        break;
+
+      result->bounding_box = gfx::UnionRects(
+          result->bounding_box,
+          gfx::RectF(bounds.X, bounds.Y, bounds.Width, bounds.Height));
+    }
+
     result->raw_value = ScopedHString(text).GetAsUTF8();
     results.push_back(std::move(result));
   }
