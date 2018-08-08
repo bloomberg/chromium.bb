@@ -192,7 +192,10 @@ if(NOT BUILD_SHARED_LIBS)
               "${AOM_ROOT}/test/reconinter_test.cc"
               "${AOM_ROOT}/test/sum_squares_test.cc"
               "${AOM_ROOT}/test/variance_test.cc"
-              "${AOM_ROOT}/test/wiener_test.cc")
+              "${AOM_ROOT}/test/wiener_test.cc"
+              "${AOM_ROOT}/test/warp_filter_test.cc"
+              "${AOM_ROOT}/test/warp_filter_test_util.cc"
+              "${AOM_ROOT}/test/warp_filter_test_util.h")
 
   list(APPEND AOM_UNIT_TEST_ENCODER_INTRIN_SSE4_1
               "${AOM_ROOT}/test/av1_highbd_iht_test.cc"
@@ -205,10 +208,8 @@ if(NOT BUILD_SHARED_LIBS)
     list(APPEND AOM_UNIT_TEST_ENCODER_SOURCES
                 "${AOM_ROOT}/test/av1_convolve_scale_test.cc"
                 "${AOM_ROOT}/test/av1_horz_only_frame_superres_test.cc"
-                "${AOM_ROOT}/test/intra_edge_test.cc"
-                "${AOM_ROOT}/test/warp_filter_test.cc"
-                "${AOM_ROOT}/test/warp_filter_test_util.cc"
-                "${AOM_ROOT}/test/warp_filter_test_util.h")
+                "${AOM_ROOT}/test/intra_edge_test.cc")
+
   endif()
 
   if(HAVE_SSE4_2)
