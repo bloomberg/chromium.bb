@@ -77,7 +77,6 @@ base::SingleThreadTaskRunner* MainThread::GetWorkerTaskRunner() {
 OwningAudioManagerAccessor::OwningAudioManagerAccessor(
     AudioManagerFactoryCallback audio_manager_factory_cb)
     : audio_manager_factory_cb_(std::move(audio_manager_factory_cb)) {
-  DLOG(WARNING) << "Out of process audio service initializing.";
   DCHECK(audio_manager_factory_cb_);
 }
 
