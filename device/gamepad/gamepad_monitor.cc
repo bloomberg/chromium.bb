@@ -27,16 +27,22 @@ void GamepadMonitor::Create(mojom::GamepadMonitorRequest request) {
                           std::move(request));
 }
 
-void GamepadMonitor::OnGamepadConnected(unsigned index,
+void GamepadMonitor::OnGamepadConnected(uint32_t index,
                                         const Gamepad& gamepad) {
   if (gamepad_observer_)
     gamepad_observer_->GamepadConnected(index, gamepad);
 }
 
-void GamepadMonitor::OnGamepadDisconnected(unsigned index,
+void GamepadMonitor::OnGamepadDisconnected(uint32_t index,
                                            const Gamepad& gamepad) {
   if (gamepad_observer_)
     gamepad_observer_->GamepadDisconnected(index, gamepad);
+}
+
+void GamepadMonitor::OnGamepadButtonOrAxisChanged(uint32_t index,
+                                                  const Gamepad& gamepad) {
+  if (gamepad_observer_)
+    gamepad_observer_->GamepadButtonOrAxisChanged(index, gamepad);
 }
 
 void GamepadMonitor::GamepadStartPolling(GamepadStartPollingCallback callback) {

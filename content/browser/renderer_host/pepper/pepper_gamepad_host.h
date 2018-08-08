@@ -49,11 +49,13 @@ class CONTENT_EXPORT PepperGamepadHost :
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 
-  // GamepadConsumer implementation.
-  void OnGamepadConnected(unsigned index,
+  // device::GamepadConsumer implementation.
+  void OnGamepadConnected(uint32_t index,
                           const device::Gamepad& gamepad) override {}
-  void OnGamepadDisconnected(unsigned index,
+  void OnGamepadDisconnected(uint32_t index,
                              const device::Gamepad& gamepad) override {}
+  void OnGamepadButtonOrAxisChanged(uint32_t index,
+                                    const device::Gamepad& gamepad) override {}
 
  private:
   int32_t OnRequestMemory(ppapi::host::HostMessageContext* context);

@@ -26,7 +26,7 @@ void GamepadDispatcher::SampleGamepads(device::Gamepads& gamepads) {
 }
 
 void GamepadDispatcher::PlayVibrationEffectOnce(
-    int pad_index,
+    uint32_t pad_index,
     device::mojom::blink::GamepadHapticEffectType type,
     device::mojom::blink::GamepadEffectParametersPtr params,
     GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
@@ -36,7 +36,7 @@ void GamepadDispatcher::PlayVibrationEffectOnce(
 }
 
 void GamepadDispatcher::ResetVibrationActuator(
-    int pad_index,
+    uint32_t pad_index,
     GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
   InitializeHaptics();
   gamepad_haptics_manager_->ResetVibrationActuator(pad_index,
@@ -58,21 +58,27 @@ void GamepadDispatcher::Trace(blink::Visitor* visitor) {
   PlatformEventDispatcher::Trace(visitor);
 }
 
-void GamepadDispatcher::DidConnectGamepad(unsigned index,
+void GamepadDispatcher::DidConnectGamepad(uint32_t index,
                                           const device::Gamepad& gamepad) {
   DispatchDidConnectOrDisconnectGamepad(index, gamepad, true);
 }
 
-void GamepadDispatcher::DidDisconnectGamepad(unsigned index,
+void GamepadDispatcher::DidDisconnectGamepad(uint32_t index,
                                              const device::Gamepad& gamepad) {
   DispatchDidConnectOrDisconnectGamepad(index, gamepad, false);
 }
 
+void GamepadDispatcher::ButtonOrAxisDidChange(uint32_t index,
+                                              const device::Gamepad& gamepad) {
+  DCHECK_LT(index, device::Gamepads::kItemsLengthCap);
+  NotifyControllers();
+}
+
 void GamepadDispatcher::DispatchDidConnectOrDisconnectGamepad(
-    unsigned index,
+    uint32_t index,
     const device::Gamepad& gamepad,
     bool connected) {
-  DCHECK(index < device::Gamepads::kItemsLengthCap);
+  DCHECK_LT(index, device::Gamepads::kItemsLengthCap);
   DCHECK_EQ(connected, gamepad.connected);
 
   NotifyControllers();

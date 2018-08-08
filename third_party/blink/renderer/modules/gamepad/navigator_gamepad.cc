@@ -88,7 +88,7 @@ bool HasUserActivation(GamepadList* gamepads) {
 }  // namespace
 
 template <typename T>
-static void SampleGamepad(unsigned index,
+static void SampleGamepad(size_t index,
                           T& gamepad,
                           const device::Gamepad& device_gamepad,
                           const TimeTicks& navigation_start) {
@@ -138,7 +138,7 @@ static void SampleGamepads(ListType* into,
 
   GamepadDispatcher::Instance().SampleGamepads(gamepads);
 
-  for (unsigned i = 0; i < device::Gamepads::kItemsLengthCap; ++i) {
+  for (size_t i = 0; i < device::Gamepads::kItemsLengthCap; ++i) {
     device::Gamepad& web_gamepad = gamepads.items[i];
 
     bool hide_xr_gamepad = false;
@@ -384,7 +384,7 @@ void NavigatorGamepad::SampleAndCheckConnectedGamepads() {
 bool NavigatorGamepad::CheckConnectedGamepads(GamepadList* old_gamepads,
                                               GamepadList* new_gamepads) {
   int disconnection_count = 0;
-  for (unsigned i = 0; i < device::Gamepads::kItemsLengthCap; ++i) {
+  for (size_t i = 0; i < device::Gamepads::kItemsLengthCap; ++i) {
     Gamepad* old_gamepad = old_gamepads ? old_gamepads->item(i) : nullptr;
     Gamepad* new_gamepad = new_gamepads->item(i);
     bool connected, disconnected;

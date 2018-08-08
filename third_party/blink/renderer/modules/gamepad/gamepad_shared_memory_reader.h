@@ -37,8 +37,12 @@ class GamepadSharedMemoryReader : public device::mojom::blink::GamepadObserver {
 
  private:
   // device::mojom::blink::GamepadObserver methods.
-  void GamepadConnected(int index, const device::Gamepad& gamepad) override;
-  void GamepadDisconnected(int index, const device::Gamepad& gamepad) override;
+  void GamepadConnected(uint32_t index,
+                        const device::Gamepad& gamepad) override;
+  void GamepadDisconnected(uint32_t index,
+                           const device::Gamepad& gamepad) override;
+  void GamepadButtonOrAxisChanged(uint32_t index,
+                                  const device::Gamepad& gamepad) override;
 
   base::ReadOnlySharedMemoryRegion renderer_shared_buffer_region_;
   base::ReadOnlySharedMemoryMapping renderer_shared_buffer_mapping_;

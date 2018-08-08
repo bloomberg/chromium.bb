@@ -25,12 +25,14 @@ class ConnectionListener : public device::GamepadConsumer {
  public:
   ConnectionListener() { ClearCounters(); }
 
-  void OnGamepadConnected(unsigned index, const Gamepad& gamepad) override {
+  void OnGamepadConnected(uint32_t index, const Gamepad& gamepad) override {
     connected_counter_++;
   }
-  void OnGamepadDisconnected(unsigned index, const Gamepad& gamepad) override {
+  void OnGamepadDisconnected(uint32_t index, const Gamepad& gamepad) override {
     disconnected_counter_++;
   }
+  void OnGamepadButtonOrAxisChanged(uint32_t index,
+                                    const Gamepad& gamepad) override {}
 
   void ClearCounters() {
     connected_counter_ = 0;

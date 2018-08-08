@@ -77,16 +77,16 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
   void Terminate();
 
   // Called on IO thread when a gamepad is connected.
-  void OnGamepadConnected(int index, const Gamepad& pad);
+  void OnGamepadConnected(uint32_t index, const Gamepad& pad);
 
   // Called on IO thread when a gamepad is disconnected.
-  void OnGamepadDisconnected(int index, const Gamepad& pad);
+  void OnGamepadDisconnected(uint32_t index, const Gamepad& pad);
 
   // Request playback of a haptic effect on the specified gamepad. Once effect
   // playback is complete or is preempted by a different effect, the callback
   // will be called.
   void PlayVibrationEffectOnce(
-      int pad_index,
+      uint32_t pad_index,
       mojom::GamepadHapticEffectType,
       mojom::GamepadEffectParametersPtr,
       mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback);
@@ -95,7 +95,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
   // effects are currently being played, they are preempted and vibration is
   // stopped.
   void ResetVibrationActuator(
-      int pad_index,
+      uint32_t pad_index,
       mojom::GamepadHapticsManager::ResetVibrationActuatorCallback);
 
  private:
@@ -116,7 +116,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
   void OnUserGesture();
 
   void OnGamepadConnectionChange(bool connected,
-                                 int index,
+                                 uint32_t index,
                                  const Gamepad& pad) override;
 
   void SetSanitizationEnabled(bool sanitize);

@@ -288,11 +288,7 @@ void GamepadPlatformDataFetcherLinux::EnumerateSubsystemDevices(
 }
 
 void GamepadPlatformDataFetcherLinux::ReadDeviceData(size_t index) {
-  // Linker does not like CHECK_LT(index, Gamepads::kItemsLengthCap). =/
-  if (index >= Gamepads::kItemsLengthCap) {
-    CHECK(false);
-    return;
-  }
+  CHECK_LT(index, Gamepads::kItemsLengthCap);
 
   GamepadDeviceLinux* device = GetDeviceWithJoydevIndex(index);
   if (!device)

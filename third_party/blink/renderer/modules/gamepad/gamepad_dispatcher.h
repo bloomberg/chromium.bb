@@ -27,12 +27,12 @@ class GamepadDispatcher final
 
   void SampleGamepads(device::Gamepads&);
 
-  void PlayVibrationEffectOnce(int pad_index,
+  void PlayVibrationEffectOnce(uint32_t pad_index,
                                device::mojom::blink::GamepadHapticEffectType,
                                device::mojom::blink::GamepadEffectParametersPtr,
                                device::mojom::blink::GamepadHapticsManager::
                                    PlayVibrationEffectOnceCallback);
-  void ResetVibrationActuator(int pad_index,
+  void ResetVibrationActuator(uint32_t pad_index,
                               device::mojom::blink::GamepadHapticsManager::
                                   ResetVibrationActuatorCallback);
 
@@ -44,14 +44,15 @@ class GamepadDispatcher final
   void InitializeHaptics();
 
   // WebGamepadListener
-  void DidConnectGamepad(unsigned index, const device::Gamepad&) override;
-  void DidDisconnectGamepad(unsigned index, const device::Gamepad&) override;
+  void DidConnectGamepad(uint32_t index, const device::Gamepad&) override;
+  void DidDisconnectGamepad(uint32_t index, const device::Gamepad&) override;
+  void ButtonOrAxisDidChange(uint32_t index, const device::Gamepad&) override;
 
   // PlatformEventDispatcher
   void StartListening(LocalFrame* frame) override;
   void StopListening() override;
 
-  void DispatchDidConnectOrDisconnectGamepad(unsigned index,
+  void DispatchDidConnectOrDisconnectGamepad(uint32_t index,
                                              const device::Gamepad&,
                                              bool connected);
 
