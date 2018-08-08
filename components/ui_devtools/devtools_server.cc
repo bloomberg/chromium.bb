@@ -133,10 +133,11 @@ void UiDevToolsServer::Start(network::mojom::NetworkContext* network_context,
     return;
 
   constexpr int kBacklog = 1;
+  auto request = mojo::MakeRequest(&server_socket);
   network_context->CreateTCPServerSocket(
       net::IPEndPoint(address, port_), kBacklog,
       net::MutableNetworkTrafficAnnotationTag(kUIDevtoolsServer),
-      mojo::MakeRequest(&server_socket),
+      std::move(request),
       base::BindOnce(&UiDevToolsServer::MakeServer,
                      weak_ptr_factory_.GetWeakPtr(), std::move(server_socket)));
 }
