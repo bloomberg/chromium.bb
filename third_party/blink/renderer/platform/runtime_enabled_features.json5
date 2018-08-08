@@ -205,11 +205,6 @@
       status: "experimental",
     },
     {
-      name: "CompositeOpaqueScrollers",
-      settable_from_internals: true,
-      status: "stable",
-    },
-    {
       name: "CompositorTouchAction",
       status: "test",
     },

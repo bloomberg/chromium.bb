@@ -1,9 +1,6 @@
 <script src="../../resources/run-after-layout-and-paint.js"></script>
 <script src="resources/composited-scroll.js"></script>
 <script>
-    if (window.internals)
-        internals.runtimeFlags.compositeOpaqueScrollersEnabled = true;
-
     if (window.testRunner) {
         testRunner.dumpAsTextWithPixelResults();
         testRunner.waitUntilDone();
