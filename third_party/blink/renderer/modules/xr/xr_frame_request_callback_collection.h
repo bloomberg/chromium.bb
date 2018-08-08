@@ -45,8 +45,9 @@ class XRFrameRequestCallbackCollection final
       HeapHashMap<CallbackId, TraceWrapperMember<V8XRFrameRequestCallback>>;
   CallbackMap callbacks_;
   Vector<CallbackId> pending_callbacks_;
+
   // Only non-empty while inside executeCallbacks.
-  Vector<CallbackId> callbacks_to_invoke_;
+  CallbackMap current_callbacks_;
 
   CallbackId next_callback_id_ = 0;
 

@@ -19,6 +19,8 @@
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+
 namespace blink {
 
 class Element;
@@ -34,8 +36,10 @@ class XRLayer;
 class XRPresentationContext;
 class XRView;
 
-class XRSession final : public EventTargetWithInlineData {
+class XRSession final : public EventTargetWithInlineData,
+                        public ActiveScriptWrappable<XRSession> {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(XRSession);
 
  public:
   enum EnvironmentBlendMode {
@@ -142,6 +146,9 @@ class XRSession final : public EventTargetWithInlineData {
   void SetNonImmersiveProjectionMatrix(const WTF::Vector<float>&);
 
   void Trace(blink::Visitor*) override;
+
+  // ScriptWrappable
+  bool HasPendingActivity() const override;
 
  private:
   class XRSessionResizeObserverDelegate;

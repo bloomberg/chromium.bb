@@ -782,6 +782,10 @@ const HeapVector<Member<XRView>>& XRSession::views() {
   return views_;
 }
 
+bool XRSession::HasPendingActivity() const {
+  return !callback_collection_->IsEmpty() && !ended_;
+}
+
 void XRSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(device_);
   visitor->Trace(output_context_);

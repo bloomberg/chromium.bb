@@ -399,12 +399,12 @@ void XRFrameProvider::ProcessScheduledFrame(
     // In the process of fulfilling the frame requests for each session they are
     // extremely likely to request another frame. Work off of a separate list
     // from the requests to prevent infinite loops.
-    HeapVector<Member<XRSession>> processing_sessions;
-    swap(requesting_sessions_, processing_sessions);
+    DCHECK(processing_sessions_.IsEmpty());
+    swap(requesting_sessions_, processing_sessions_);
 
     // Inform sessions with a pending request of the new frame
-    for (unsigned i = 0; i < processing_sessions.size(); ++i) {
-      XRSession* session = processing_sessions.at(i).Get();
+    for (unsigned i = 0; i < processing_sessions_.size(); ++i) {
+      XRSession* session = processing_sessions_.at(i).Get();
 
       if (frame_pose_ && frame_pose_->input_state.has_value()) {
         session->OnInputStateChange(frame_id_,
@@ -432,6 +432,8 @@ void XRFrameProvider::ProcessScheduledFrame(
                          base::nullopt, base::nullopt);
       }
     }
+
+    processing_sessions_.clear();
   }
 }
 
@@ -544,6 +546,7 @@ void XRFrameProvider::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_transport_);
   visitor->Trace(immersive_session_);
   visitor->Trace(requesting_sessions_);
+  visitor->Trace(processing_sessions_);
 }
 
 }  // namespace blink
