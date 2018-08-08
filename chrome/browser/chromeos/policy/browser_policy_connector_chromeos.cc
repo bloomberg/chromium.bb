@@ -65,6 +65,8 @@
 
 namespace policy {
 
+namespace em = enterprise_management;
+
 namespace {
 
 // Install attributes for tests.
@@ -178,7 +180,7 @@ void BrowserPolicyConnectorChromeOS::Init(
   if (device_cloud_policy_manager_) {
     device_cloud_policy_invalidator_ =
         std::make_unique<AffiliatedCloudPolicyInvalidator>(
-            enterprise_management::DeviceRegisterRequest::DEVICE,
+            em::DeviceRegisterRequest::DEVICE,
             device_cloud_policy_manager_->core(),
             affiliated_invalidation_service_provider_.get());
     device_remote_commands_invalidator_ =
@@ -254,12 +256,9 @@ std::string BrowserPolicyConnectorChromeOS::GetEnterpriseEnrollmentDomain()
 }
 
 std::string BrowserPolicyConnectorChromeOS::GetEnterpriseDisplayDomain() const {
-  if (device_cloud_policy_manager_) {
-    const enterprise_management::PolicyData* policy =
-        device_cloud_policy_manager_->device_store()->policy();
-    if (policy && policy->has_display_domain())
-      return policy->display_domain();
-  }
+  const em::PolicyData* policy = GetDevicePolicy();
+  if (policy && policy->has_display_domain())
+    return policy->display_domain();
   return GetEnterpriseEnrollmentDomain();
 }
 
@@ -268,32 +267,23 @@ std::string BrowserPolicyConnectorChromeOS::GetRealm() const {
 }
 
 std::string BrowserPolicyConnectorChromeOS::GetDeviceAssetID() const {
-  if (device_cloud_policy_manager_) {
-    const enterprise_management::PolicyData* policy =
-        device_cloud_policy_manager_->device_store()->policy();
-    if (policy && policy->has_annotated_asset_id())
-      return policy->annotated_asset_id();
-  }
+  const em::PolicyData* policy = GetDevicePolicy();
+  if (policy && policy->has_annotated_asset_id())
+    return policy->annotated_asset_id();
   return std::string();
 }
 
 std::string BrowserPolicyConnectorChromeOS::GetDeviceAnnotatedLocation() const {
-  if (device_cloud_policy_manager_) {
-    const enterprise_management::PolicyData* policy =
-        device_cloud_policy_manager_->device_store()->policy();
-    if (policy && policy->has_annotated_location())
-      return policy->annotated_location();
-  }
+  const em::PolicyData* policy = GetDevicePolicy();
+  if (policy && policy->has_annotated_location())
+    return policy->annotated_location();
   return std::string();
 }
 
 std::string BrowserPolicyConnectorChromeOS::GetDirectoryApiID() const {
-  if (device_cloud_policy_manager_) {
-    const enterprise_management::PolicyData* policy =
-        device_cloud_policy_manager_->device_store()->policy();
-    if (policy && policy->has_directory_api_id())
-      return policy->directory_api_id();
-  }
+  const em::PolicyData* policy = GetDevicePolicy();
+  if (policy && policy->has_directory_api_id())
+    return policy->directory_api_id();
   return std::string();
 }
 
@@ -409,15 +399,22 @@ BrowserPolicyConnectorChromeOS::CreateAttestationFlow() {
 chromeos::AffiliationIDSet
 BrowserPolicyConnectorChromeOS::GetDeviceAffiliationIDs() const {
   chromeos::AffiliationIDSet affiliation_ids;
-  if (device_cloud_policy_manager_) {
-    const enterprise_management::PolicyData* const policy_data =
-        device_cloud_policy_manager_->device_store()->policy();
-    if (policy_data) {
-      affiliation_ids.insert(policy_data->device_affiliation_ids().begin(),
-                             policy_data->device_affiliation_ids().end());
-    }
+  const em::PolicyData* policy = GetDevicePolicy();
+  if (policy) {
+    affiliation_ids.insert(policy->device_affiliation_ids().begin(),
+                           policy->device_affiliation_ids().end());
   }
   return affiliation_ids;
+}
+
+const em::PolicyData* BrowserPolicyConnectorChromeOS::GetDevicePolicy() const {
+  if (device_cloud_policy_manager_)
+    return device_cloud_policy_manager_->device_store()->policy();
+
+  if (device_active_directory_policy_manager_)
+    return device_active_directory_policy_manager_->store()->policy();
+
+  return nullptr;
 }
 
 }  // namespace policy

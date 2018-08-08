@@ -8,7 +8,9 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/active_directory_test_helper.h"
 #include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/net/nss_context.h"
@@ -19,6 +21,8 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_auth_policy_client.h"
+#include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/account_id/account_id.h"
@@ -43,19 +47,29 @@ namespace {
 
 constexpr char kAffiliatedUser[] = "affiliated-user@example.com";
 constexpr char kAffiliatedUserGaiaId[] = "1234567890";
+constexpr char kAffiliatedUserObjGuid[] =
+    "{11111111-1111-1111-1111-111111111111}";
 constexpr char kAffiliationID[] = "some-affiliation-id";
 constexpr char kAnotherAffiliationID[] = "another-affiliation-id";
 
 struct Params {
-  explicit Params(bool affiliated) : affiliated_(affiliated) {}
+  Params(bool affiliated, bool active_directory)
+      : affiliated(affiliated), active_directory(active_directory) {}
 
-  friend std::ostream& operator<<(std::ostream& os, const Params& p) {
-    os << "{ affiliated: " << p.affiliated_ << " }";
-    return os;
-  }
+  // Whether the user is expected to be affiliated.
+  bool affiliated;
 
-  bool affiliated_;
+  // Whether the user account is an Active Directory account.
+  bool active_directory;
 };
+
+// Must be a valid test name (no spaces etc.). Makes the test show up as e.g.
+// AffiliationCheck/U.A.B.T.Affiliated/NotAffiliated_NotActiveDirectory
+std::string PrintParam(testing::TestParamInfo<Params> param_info) {
+  return base::StringPrintf("%sAffiliated_%sActiveDirectory",
+                            param_info.param.affiliated ? "" : "Not",
+                            param_info.param.active_directory ? "" : "Not");
+}
 
 void CheckIsSystemSlotAvailableOnIOThreadWithCertDb(
     bool* out_system_slot_available,
@@ -105,10 +119,16 @@ class UserAffiliationBrowserTest
     : public InProcessBrowserTest,
       public ::testing::WithParamInterface<Params> {
  public:
-  UserAffiliationBrowserTest()
-      : account_id_(AccountId::FromUserEmailGaiaId(kAffiliatedUser,
-                                                   kAffiliatedUserGaiaId)) {
+  UserAffiliationBrowserTest() {
     set_exit_when_last_browser_closes(false);
+
+    if (GetParam().active_directory) {
+      account_id_ = AccountId::AdFromUserEmailObjGuid(kAffiliatedUser,
+                                                      kAffiliatedUserObjGuid);
+    } else {
+      account_id_ = AccountId::FromUserEmailGaiaId(kAffiliatedUser,
+                                                   kAffiliatedUserGaiaId);
+    }
   }
 
  protected:
@@ -138,23 +158,37 @@ class UserAffiliationBrowserTest
         base::WrapUnique<chromeos::SessionManagerClient>(
             fake_session_manager_client));
 
-    UserPolicyBuilder user_policy;
-    DevicePolicyCrosTestHelper test_helper;
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
+        std::make_unique<chromeos::FakeCryptohomeClient>());
 
-    std::set<std::string> device_affiliation_ids;
-    device_affiliation_ids.insert(kAffiliationID);
-    affiliation_test_helper::SetDeviceAffiliationID(
-        &test_helper, fake_session_manager_client, device_affiliation_ids);
+    chromeos::FakeAuthPolicyClient* fake_auth_policy_client = nullptr;
+    if (GetParam().active_directory) {
+      auto fake_auth_policy_client_owned =
+          std::make_unique<chromeos::FakeAuthPolicyClient>();
+      fake_auth_policy_client = fake_auth_policy_client_owned.get();
+      fake_auth_policy_client->DisableOperationDelayForTesting();
+      chromeos::DBusThreadManager::GetSetterForTesting()->SetAuthPolicyClient(
+          std::move(fake_auth_policy_client_owned));
 
-    std::set<std::string> user_affiliation_ids;
-    if (GetParam().affiliated_) {
-      user_affiliation_ids.insert(kAffiliationID);
-    } else {
-      user_affiliation_ids.insert(kAnotherAffiliationID);
+      // PrepareLogin requires a message loop, which isn't available yet here.
+      base::MessageLoop message_loop;
+      chromeos::active_directory_test_helper::PrepareLogin(
+          account_id_.GetUserEmail());
     }
+
+    DevicePolicyCrosTestHelper test_helper;
+    UserPolicyBuilder user_policy;
+    const std::set<std::string> device_affiliation_ids = {kAffiliationID};
+    const std::set<std::string> user_affiliation_ids = {
+        GetParam().affiliated ? kAffiliationID : kAnotherAffiliationID};
+
+    affiliation_test_helper::SetDeviceAffiliationIDs(
+        &test_helper, fake_session_manager_client, fake_auth_policy_client,
+        device_affiliation_ids);
+
     affiliation_test_helper::SetUserAffiliationIDs(
-        &user_policy, fake_session_manager_client, account_id_,
-        user_affiliation_ids);
+        &user_policy, fake_session_manager_client, fake_auth_policy_client,
+        account_id_, user_affiliation_ids);
 
     // Set retry delay to prevent timeouts.
     policy::DeviceManagementService::SetRetryDelayForTesting(0);
@@ -182,7 +216,7 @@ class UserAffiliationBrowserTest
     TearDownTestSystemSlot();
   }
 
-  const AccountId account_id_;
+  AccountId account_id_;
 
   void SetUpTestSystemSlot() {
     bool system_slot_constructed_successfully = false;
@@ -195,6 +229,20 @@ class UserAffiliationBrowserTest
         loop.QuitClosure());
     loop.Run();
     ASSERT_TRUE(system_slot_constructed_successfully);
+  }
+
+  void VerifyAffiliationExpectations() {
+    EXPECT_EQ(GetParam().affiliated, user_manager::UserManager::Get()
+                                         ->FindUser(account_id_)
+                                         ->IsAffiliated());
+
+    // Also test system slot availability, which is tied to user affiliation.
+    // This gives us additional information, because for the system slot to be
+    // available for an affiliated user, IsAffiliated() must already be
+    // returning true in the ProfileIOData constructor.
+    ASSERT_NO_FATAL_FAILURE(SetUpTestSystemSlot());
+    EXPECT_EQ(GetParam().affiliated,
+              IsSystemSlotAvailable(ProfileManager::GetPrimaryUserProfile()));
   }
 
  private:
@@ -225,50 +273,36 @@ class UserAffiliationBrowserTest
   DISALLOW_COPY_AND_ASSIGN(UserAffiliationBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_P(UserAffiliationBrowserTest, PRE_PRE_Affiliated) {
+IN_PROC_BROWSER_TEST_P(UserAffiliationBrowserTest, PRE_PRE_TestAffiliation) {
   affiliation_test_helper::PreLoginUser(account_id_);
 }
 
 // This part of the test performs a regular sign-in through the login manager.
-IN_PROC_BROWSER_TEST_P(UserAffiliationBrowserTest, PRE_Affiliated) {
+IN_PROC_BROWSER_TEST_P(UserAffiliationBrowserTest, PRE_TestAffiliation) {
   affiliation_test_helper::LoginUser(account_id_);
-
-  EXPECT_EQ(
-      GetParam().affiliated_,
-      user_manager::UserManager::Get()->FindUser(account_id_)->IsAffiliated());
-
-  // Also test system slot availability, which is tied to user affiliation. This
-  // gives us additional information, because for the system slot to be
-  // available for an affiliated user, IsAffiliated() must already be returning
-  // true in the ProfileIOData constructor.
-  ASSERT_NO_FATAL_FAILURE(SetUpTestSystemSlot());
-  EXPECT_EQ(GetParam().affiliated_,
-            IsSystemSlotAvailable(ProfileManager::GetPrimaryUserProfile()));
+  ASSERT_NO_FATAL_FAILURE(VerifyAffiliationExpectations());
 }
 
 // This part of the test performs a direct sign-in into the user profile using
 // the --login-user command-line switch, simulating the restart after crash
 // behavior on Chrome OS.
 // See SetUpCommandLine for details.
-IN_PROC_BROWSER_TEST_P(UserAffiliationBrowserTest, Affiliated) {
+IN_PROC_BROWSER_TEST_P(UserAffiliationBrowserTest, TestAffiliation) {
   // Note: We don't log in the user, because the login has implicitly been
   // performed using a command-line flag (see SetUpCommandLine).
-
-  EXPECT_EQ(
-      GetParam().affiliated_,
-      user_manager::UserManager::Get()->FindUser(account_id_)->IsAffiliated());
-
-  // Also test system slot availability, which is tied to user affiliation. This
-  // gives us additional information, because for the system slot to be
-  // available for an affiliated user, IsAffiliated() must already be returning
-  // true in the ProfileIOData constructor.
-  ASSERT_NO_FATAL_FAILURE(SetUpTestSystemSlot());
-  EXPECT_EQ(GetParam().affiliated_,
-            IsSystemSlotAvailable(ProfileManager::GetPrimaryUserProfile()));
+  ASSERT_NO_FATAL_FAILURE(VerifyAffiliationExpectations());
 }
 
 INSTANTIATE_TEST_CASE_P(AffiliationCheck,
                         UserAffiliationBrowserTest,
-                        ::testing::Values(Params(true), Params(false)));
+                        //         affiliated            active_directory
+                        //              |                         |
+                        //              +----------+      ______  +---------+
+                        //                         |     /      \______     |
+                        ::testing::Values(Params(true, true),     //   \   /
+                                          Params(false, true),    //    \ /
+                                          Params(true, false),    //     X
+                                          Params(false, false)),  //    / \<--!
+                        PrintParam);                              //    \_/
 
 }  // namespace policy

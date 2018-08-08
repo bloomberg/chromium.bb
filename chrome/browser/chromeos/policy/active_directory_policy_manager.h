@@ -45,7 +45,7 @@ class ActiveDirectoryPolicyManager
   void OnStoreLoaded(CloudPolicyStore* cloud_policy_store) override;
   void OnStoreError(CloudPolicyStore* cloud_policy_store) override;
 
-  // ComponentActiveDirectoryPolicyService::Delegate
+  // ComponentActiveDirectoryPolicyService::Delegate:
   void OnComponentActiveDirectoryPolicyUpdated() override;
 
   CloudPolicyStore* store() const { return store_.get(); }
@@ -87,6 +87,9 @@ class ActiveDirectoryPolicyManager
   // initialization tasks have completed) or to exit the session in case the
   // requirements to continue have not been met.
   virtual void CancelWaitForInitialPolicy() {}
+
+  // Called by PublishPolicy() before the policy is sent off to UpdatePolicy().
+  virtual void OnPublishPolicy() {}
 
   // Whether policy fetch has ever been reported as completed by authpolicyd
   // during lifetime of the object (after Chrome was started).
@@ -154,8 +157,15 @@ class UserActiveDirectoryPolicyManager : public ActiveDirectoryPolicyManager {
 
  protected:
   // ActiveDirectoryPolicyManager:
+
+  // Calls AuthPolicyClient to fetch user policy.
   void DoPolicyFetch(PolicyScheduler::TaskCallback callback) override;
+
+  // Cancels the initial wait timeout for policy fetches during sign-in.
   void CancelWaitForInitialPolicy() override;
+
+  // Updates user affiliation IDs.
+  void OnPublishPolicy() override;
 
  private:
   // Called when |initial_policy_timeout_| times out, to cancel the blocking
@@ -204,6 +214,8 @@ class DeviceActiveDirectoryPolicyManager : public ActiveDirectoryPolicyManager {
 
  protected:
   // ActiveDirectoryPolicyManager:
+
+  // Calls AuthPolicyClient to fetch device policy.
   void DoPolicyFetch(PolicyScheduler::TaskCallback callback) override;
 
  private:

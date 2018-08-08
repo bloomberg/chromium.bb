@@ -210,15 +210,6 @@ void PostReply(const base::Location& from_here,
       from_here, base::BindOnce(std::move(callback), std::move(response)));
 }
 
-// Posts a task to call callback(response, policy).
-void PostReplyWithPolicy(const base::Location& from_here,
-                         RetrievePolicyCallback callback,
-                         RetrievePolicyResponseType response,
-                         const std::string& policy) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      from_here, base::BindOnce(std::move(callback), response, policy));
-}
-
 }  // namespace
 
 FakeSessionManagerClient::FakeSessionManagerClient()
@@ -387,9 +378,10 @@ void FakeSessionManagerClient::RetrievePolicy(
         base::BindOnce(std::move(callback),
                        RetrievePolicyResponseType::SUCCESS));
   } else {
-    PostReplyWithPolicy(FROM_HERE, std::move(callback),
-                        RetrievePolicyResponseType::SUCCESS,
-                        policy_[GetMemoryStorageKey(descriptor)]);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), RetrievePolicyResponseType::SUCCESS,
+                       policy_[GetMemoryStorageKey(descriptor)]));
   }
 }
 

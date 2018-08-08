@@ -55,13 +55,6 @@ void DevicePolicyCrosTestHelper::MarkAsEnterpriseOwnedBy(
           GetEnterpriseOwnedInstallAttributesBlobForTesting(user_name));
 }
 
-// static
-void DevicePolicyCrosTestHelper::MarkAsActiveDirectoryEnterpriseOwned(
-    const std::string& realm) {
-  OverridePaths();
-  ASSERT_TRUE(chromeos::tpm_util::LockDeviceActiveDirectoryForTesting(realm));
-}
-
 void DevicePolicyCrosTestHelper::MarkAsEnterpriseOwned() {
   MarkAsEnterpriseOwnedBy(device_policy_.policy_data().username());
 }
@@ -90,11 +83,9 @@ void DevicePolicyCrosTestHelper::OverridePaths() {
 }
 
 DevicePolicyCrosBrowserTest::DevicePolicyCrosBrowserTest()
-    : fake_session_manager_client_(new chromeos::FakeSessionManagerClient) {
-}
+    : fake_session_manager_client_(new chromeos::FakeSessionManagerClient) {}
 
-DevicePolicyCrosBrowserTest::~DevicePolicyCrosBrowserTest() {
-}
+DevicePolicyCrosBrowserTest::~DevicePolicyCrosBrowserTest() = default;
 
 void DevicePolicyCrosBrowserTest::SetUp() {
   // Set some fake state keys to make surethey are not empty.
