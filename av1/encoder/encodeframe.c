@@ -3511,10 +3511,11 @@ BEGIN_PARTITION_SEARCH:
         best_rdc = sum_rdc;
         pc_tree->partitioning = PARTITION_SPLIT;
       }
-    } else if (cpi->sf.less_rectangular_check) {
+    } else if (cpi->sf.less_rectangular_check_level > 0) {
       // skip rectangular partition test when larger block size
       // gives better rd cost
-      do_rectangular_split &= !partition_none_allowed;
+      if (cpi->sf.less_rectangular_check_level == 2 || idx <= 2)
+        do_rectangular_split &= !partition_none_allowed;
     }
 
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);

@@ -175,6 +175,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->inter_mode_rd_model_estimation = 1;
   sf->prune_ref_frame_for_rect_partitions =
       !(boosted || cpi->refresh_bwd_ref_frame || cpi->refresh_alt2_ref_frame);
+  sf->less_rectangular_check_level = 1;
 
   if (speed >= 1) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_1;
@@ -227,7 +228,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
 
   if (speed >= 3) {
     sf->tx_size_search_method = boosted ? USE_FULL_RD : USE_LARGESTALL;
-    sf->less_rectangular_check = 1;
+    sf->less_rectangular_check_level = 2;
     sf->mode_skip_start = 10;
     sf->adaptive_pred_interp_filter = 1;
     // adaptive_motion_search breaks encoder multi-thread tests.
@@ -416,7 +417,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->tx_type_search.fast_inter_tx_type_search = 0;
   sf->tx_type_search.skip_tx_search = 0;
   sf->selective_ref_frame = 0;
-  sf->less_rectangular_check = 0;
+  sf->less_rectangular_check_level = 0;
   sf->use_square_partition_only_threshold = BLOCK_128X128;
   sf->prune_ref_frame_for_rect_partitions = 0;
   sf->auto_min_max_partition_size = NOT_IN_USE;

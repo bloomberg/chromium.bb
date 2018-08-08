@@ -413,8 +413,9 @@ typedef struct SPEED_FEATURES {
   int mode_pruning_based_on_two_pass_partition_search;
 
   // Skip rectangular partition test when partition type none gives better
-  // rd than partition type split.
-  int less_rectangular_check;
+  // rd than partition type split. Can take values 0 - 2, 0 referring to no
+  // skipping, and 1 - 2 increasing aggressiveness of skipping in order.
+  int less_rectangular_check_level;
 
   // Use square partition only beyond this block size.
   BLOCK_SIZE use_square_partition_only_threshold;
