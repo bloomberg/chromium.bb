@@ -233,6 +233,11 @@ class ASH_EXPORT ShelfView : public views::View,
   // Updates the background for the shelf items.
   void UpdateShelfItemBackground(SkColor color);
 
+  // Update the layout when entering or exiting tablet mode. Have the owning
+  // widget call this instead of observing changes ourselves to ensure this
+  // happens after the tablet related changes in ShelfController.
+  void OnTabletModeChanged();
+
   // True if the current |drag_view_| is the given |drag_view|.
   bool IsDraggedView(const ShelfButton* drag_view) const;
 

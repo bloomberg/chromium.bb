@@ -60,6 +60,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   void OnShelfAlignmentChanged();
 
+  void OnTabletModeChanged();
+
   // Sets the shelf's background type.
   void SetPaintsBackground(ShelfBackgroundType background_type,
                            AnimationChangeType change_type);

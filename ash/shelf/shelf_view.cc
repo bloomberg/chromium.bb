@@ -909,6 +909,10 @@ void ShelfView::UpdateShelfItemBackground(SkColor color) {
   SchedulePaint();
 }
 
+void ShelfView::OnTabletModeChanged() {
+  OnBoundsChanged(GetBoundsInScreen());
+}
+
 void ShelfView::UpdateAllButtonsVisibilityInOverflowMode() {
   // The overflow button is not shown in overflow mode.
   overflow_button_->SetVisible(false);

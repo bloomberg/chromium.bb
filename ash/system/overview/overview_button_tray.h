@@ -59,8 +59,7 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   void OnOverviewModeEnded() override;
 
   // TabletModeObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnded() override;
+  void OnTabletModeEventsBlockingChanged() override;
 
   // TrayBackgroundView:
   void ClickedOutsideBubble() override;
