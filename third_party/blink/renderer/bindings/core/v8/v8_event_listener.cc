@@ -97,12 +97,6 @@ v8::Local<v8::Value> V8EventListener::CallListenerFunction(
 
   ExecutionContext* execution_context =
       ToExecutionContext(script_state->GetContext());
-  if (!execution_context->IsDocument())
-    return v8::Local<v8::Value>();
-
-  LocalFrame* frame = ToDocument(execution_context)->GetFrame();
-  if (!frame)
-    return v8::Local<v8::Value>();
 
   // TODO(jochen): Consider moving this check into canExecuteScripts.
   // http://crbug.com/608641
@@ -112,7 +106,7 @@ v8::Local<v8::Value> V8EventListener::CallListenerFunction(
 
   v8::Local<v8::Value> parameters[1] = {js_event};
   v8::Local<v8::Value> result;
-  if (!V8ScriptRunner::CallFunction(handler_function, frame->GetDocument(),
+  if (!V8ScriptRunner::CallFunction(handler_function, execution_context,
                                     receiver, base::size(parameters),
                                     parameters, script_state->GetIsolate())
            .ToLocal(&result))
