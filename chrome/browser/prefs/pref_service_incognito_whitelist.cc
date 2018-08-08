@@ -87,6 +87,15 @@ const char* persistent_pref_names[] = {
     ash::prefs::kShouldAlwaysShowAccessibilityMenu,
 #endif  // defined(OS_CHROMEOS)
 
+    // Bookmark preferences are common between incognito and regular mode.
+    bookmarks::prefs::kBookmarkEditorExpandedNodes,
+    bookmarks::prefs::kEditBookmarksEnabled,
+    bookmarks::prefs::kManagedBookmarks,
+    bookmarks::prefs::kManagedBookmarksFolderName,
+    bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
+    bookmarks::prefs::kShowManagedBookmarksInBookmarkBar,
+    bookmarks::prefs::kShowBookmarkBar,
+
     // Metrics preferences are out of profile scope and are merged between
     // incognito and regular modes.
     metrics::prefs::kInstallDate, metrics::prefs::kMetricsClientID,
@@ -763,15 +772,6 @@ const char* temporary_incognito_whitelist[] = {
     chromeos::prefs::kAudioDevicesState,
     chromeos::prefs::kQuirksClientLastServerCheck,
 #endif  // defined(OS_CHROMEOS)
-
-    // components/bookmarks/common/bookmark_pref_names.h
-    bookmarks::prefs::kBookmarkEditorExpandedNodes,
-    bookmarks::prefs::kEditBookmarksEnabled,
-    bookmarks::prefs::kManagedBookmarks,
-    bookmarks::prefs::kManagedBookmarksFolderName,
-    bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
-    bookmarks::prefs::kShowManagedBookmarksInBookmarkBar,
-    bookmarks::prefs::kShowBookmarkBar,
 
     // components/certificate_transparency/pref_names.h
     certificate_transparency::prefs::kCTRequiredHosts,
