@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_CHROME_CONTENT_BROWSER_CLIENT_EXTENSIONS_PART_H_
 #define CHROME_BROWSER_EXTENSIONS_CHROME_CONTENT_BROWSER_CLIENT_EXTENSIONS_PART_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
+#include "content/public/common/resource_type.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
@@ -78,6 +81,11 @@ class ChromeContentBrowserClientExtensionsPart
   static bool ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
       const GURL& url,
       content::SiteInstance* parent_site_instance);
+
+  static void LogInitiatorSchemeBypassingDocumentBlocking(
+      const url::Origin& initiator_origin,
+      int render_process_id,
+      content::ResourceType resource_type);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeContentBrowserClientExtensionsPartTest,

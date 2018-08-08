@@ -56,8 +56,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // Creates a ResponseAnalyzer for the |request|, |response| pair.  The
     // ResponseAnalyzer will decide whether |response| needs to be blocked.
     ResponseAnalyzer(const net::URLRequest& request,
-                     const ResourceResponse& response,
-                     base::StringPiece excluded_initiator_scheme);
+                     const ResourceResponse& response);
 
     ~ResponseAnalyzer();
 
@@ -121,8 +120,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     };
     BlockingDecision ShouldBlockBasedOnHeaders(
         const net::URLRequest& request,
-        const ResourceResponse& response,
-        base::StringPiece excluded_initiator_scheme);
+        const ResourceResponse& response);
 
     // Populates |sniffers_| container based on |canonical_mime_type_|.  Called
     // if ShouldBlockBasedOnHeaders returns kNeedToSniffMore

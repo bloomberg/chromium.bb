@@ -1178,6 +1178,23 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="Extensions.CrossOriginFetchFromContentScript"
+    type="UMA_RAPPOR_TYPE">
+  <owner>lukasza@chromium.org</owner>
+  <summary>
+    The ID of an extension which triggers a cross-origin request from its
+    content script if such a request results in a non-empty, non-4xx response
+    that would have been blocked by CORB if the request didn't come from a
+    content script.
+
+    Note that gathering of this data is not reimplemented in the NetworkService
+    version of Cross-Origin Read Blocking feature.  This should be okay since we
+    hope to gather enough data before NetworkService ships.
+
+    TODO(lukasza): Around Q4 2018: Remove code after we've gathered enough data.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Extensions.PossibleAdInjection2" type="ETLD_PLUS_ONE">
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>

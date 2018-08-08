@@ -221,6 +221,16 @@ void CrossSiteDocumentResourceHandler::OnResponseStarted(
     std::unique_ptr<ResourceController> controller) {
   has_response_started_ = true;
 
+  if (request()->initiator().has_value()) {
+    const char* initiator_scheme_exception =
+        GetContentClient()
+            ->browser()
+            ->GetInitiatorSchemeBypassingDocumentBlocking();
+    is_initiator_scheme_excluded_ =
+        initiator_scheme_exception &&
+        request()->initiator().value().scheme() == initiator_scheme_exception;
+  }
+
   network::CrossOriginReadBlocking::LogAction(
       network::CrossOriginReadBlocking::Action::kResponseStarted);
 
@@ -358,6 +368,12 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
     return;
   }
 
+  // If |next_handler_->OnReadCompleted(...)| was not called above, then the
+  // response bytes are being accumulated in the local buffer we've allocated in
+  // ResumeOnWillRead.
+  const size_t new_data_offset = local_buffer_bytes_read_;
+  local_buffer_bytes_read_ += bytes_read;
+
   // If we intended to block the response and haven't sniffed yet, try to
   // confirm that we should block it.  If sniffing is needed, look at the local
   // buffer and either report that zero bytes were read (to indicate the
@@ -377,8 +393,6 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
     // JSONP, or another allowable data type and we should let it through.
     // Record how many bytes were read to see how often it's too small.  (This
     // will typically be under 100,000.)
-    const size_t new_data_offset = local_buffer_bytes_read_;
-    local_buffer_bytes_read_ += bytes_read;
     DCHECK_LE(local_buffer_bytes_read_, next_handler_buffer_size_);
     const bool more_data_possible =
         bytes_read != 0 && local_buffer_bytes_read_ < net::kMaxBytesToSniff &&
@@ -404,6 +418,16 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
       controller->Resume();
       return;
     }
+  }
+
+  // At this point the block-vs-allow decision was made, but might be still
+  // suppressed because of |is_initiator_scheme_excluded_|.  We perform the
+  // suppression at such a late point, because we want to ensure we only call
+  // LogInitiatorSchemeBypassingDocumentBlocking for cases that actuall matter
+  // in practice.
+  if (confirmed_blockable && is_initiator_scheme_excluded_) {
+    initiator_scheme_prevented_blocking_ = true;
+    confirmed_blockable = false;
   }
 
   // At this point we have already made a block-vs-allow decision and we know
@@ -534,8 +558,20 @@ void CrossSiteDocumentResourceHandler::OnResponseCompleted(
   } else {
     // Only report CORB status for successful (i.e. non-aborted,
     // non-errored-out) requests.
-    if (status.is_success())
+    if (status.is_success()) {
       analyzer_->LogAllowedResponse();
+      if (initiator_scheme_prevented_blocking_ &&
+          analyzer_->ShouldReportBlockedResponse() && GetRequestInfo()) {
+        BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
+            base::BindOnce(&ContentBrowserClient::
+                               LogInitiatorSchemeBypassingDocumentBlocking,
+                           base::Unretained(GetContentClient()->browser()),
+                           request()->initiator().value(),
+                           GetRequestInfo()->GetChildID(),
+                           GetRequestInfo()->GetResourceType()));
+      }
+    }
 
     next_handler_->OnResponseCompleted(status, std::move(controller));
   }
@@ -543,16 +579,10 @@ void CrossSiteDocumentResourceHandler::OnResponseCompleted(
 
 bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
     const network::ResourceResponse& response) {
-  // Give embedder a chance to skip document blocking for this response.
-  const char* initiator_scheme_exception =
-      GetContentClient()
-          ->browser()
-          ->GetInitiatorSchemeBypassingDocumentBlocking();
-
   // Delegate most decisions to CrossOriginReadBlocking::ResponseAnalyzer.
   analyzer_ =
       std::make_unique<network::CrossOriginReadBlocking::ResponseAnalyzer>(
-          *request(), response, initiator_scheme_exception);
+          *request(), response);
   if (analyzer_->ShouldAllow())
     return false;
 
