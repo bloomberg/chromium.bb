@@ -94,6 +94,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/plugin_instance_throttler.h"
@@ -628,6 +629,38 @@ SkBitmap* ChromeContentRendererClient::GetSadWebViewBitmap() {
   return const_cast<SkBitmap*>(ui::ResourceBundle::GetSharedInstance()
                                    .GetImageNamed(IDR_SAD_WEBVIEW)
                                    .ToSkBitmap());
+}
+
+bool ChromeContentRendererClient::IsPluginHandledByMimeHandlerView(
+    content::RenderFrame* render_frame,
+    const blink::WebElement& plugin_element,
+    const GURL& original_url,
+    const std::string& mime_type,
+    int32_t instance_id_to_use) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  DCHECK(plugin_element.HasHTMLTagName("object") ||
+         plugin_element.HasHTMLTagName("embed"));
+  if (!content::MimeHandlerViewMode::UsesCrossProcessFrame())
+    return false;
+  // Blink will next try to load a WebPlugin which would end up in
+  // OverrideCreatePlugin, sending another IPC only to find out the plugin is
+  // not supported. Here it suffices to return false but there should perhaps be
+  // a more unified approach to avoid sending the IPC twice.
+  chrome::mojom::PluginInfoPtr plugin_info = chrome::mojom::PluginInfo::New();
+  GetPluginInfoHost()->GetPluginInfo(
+      render_frame->GetRoutingID(), original_url,
+      render_frame->GetWebFrame()->Top()->GetSecurityOrigin(), mime_type,
+      &plugin_info);
+  if (plugin_info->status == chrome::mojom::PluginStatus::kNotFound ||
+      !ChromeExtensionsRendererClient::IsPluginHandledByMimeHandlerView(
+          plugin_element, original_url, plugin_info->actual_mime_type,
+          plugin_info->plugin, instance_id_to_use)) {
+    return false;
+  }
+  return true;
+#else
+  return false;
+#endif
 }
 
 bool ChromeContentRendererClient::OverrideCreatePlugin(
