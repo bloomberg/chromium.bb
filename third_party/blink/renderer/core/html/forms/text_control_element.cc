@@ -68,7 +68,6 @@ TextControlElement::TextControlElement(const QualifiedName& tag_name,
                                        Document& doc)
     : HTMLFormControlElementWithState(tag_name, doc),
       last_change_was_user_edit_(false),
-      user_has_edited_the_field_(false),
       cached_selection_start_(0),
       cached_selection_end_(0) {
   cached_selection_direction_ =
@@ -751,12 +750,6 @@ void TextControlElement::ParseAttribute(
   } else {
     HTMLFormControlElementWithState::ParseAttribute(params);
   }
-}
-
-bool TextControlElement::UserHasEditedTheField() const {
-  if (!IsTextControl())
-    return false;
-  return user_has_edited_the_field_;
 }
 
 bool TextControlElement::LastChangeWasUserEdit() const {

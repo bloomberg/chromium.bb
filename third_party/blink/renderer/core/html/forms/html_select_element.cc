@@ -1705,6 +1705,11 @@ void HTMLSelectElement::DefaultEventHandler(Event* event) {
   if (!GetLayoutObject())
     return;
 
+  if (event->type() == EventTypeNames::click ||
+      event->type() == EventTypeNames::change) {
+    user_has_edited_the_field_ = true;
+  }
+
   if (IsDisabledFormControl()) {
     HTMLFormControlElementWithState::DefaultEventHandler(event);
     return;
@@ -2077,6 +2082,14 @@ void HTMLSelectElement::DidMutateSubtree() {
   DCHECK(PopupIsVisible());
   DCHECK(popup_);
   popup_->UpdateFromElement(PopupMenu::kByDOMChange);
+}
+
+void HTMLSelectElement::CloneNonAttributePropertiesFrom(
+    const Element& source,
+    CloneChildrenFlag flag) {
+  const auto& source_element = static_cast<const HTMLSelectElement&>(source);
+  user_has_edited_the_field_ = source_element.user_has_edited_the_field_;
+  HTMLFormControlElement::CloneNonAttributePropertiesFrom(source, flag);
 }
 
 }  // namespace blink

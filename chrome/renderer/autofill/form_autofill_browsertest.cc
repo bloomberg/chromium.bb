@@ -1226,7 +1226,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
                                    const char* placeholder_lastname,
                                    const char* placeholder_phone,
                                    const char* placeholder_creditcard,
-                                   const char* placeholder_city) {
+                                   const char* placeholder_city,
+                                   const char* placeholder_state) {
     LoadHTML(html);
     WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
@@ -1241,7 +1242,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     std::vector<WebFormControlElement> control_elements =
         ExtractAutofillableElementsInForm(form_element);
 
-    ASSERT_EQ(5U, control_elements.size());
+    ASSERT_EQ(6U, control_elements.size());
     // We now modify the values.
     // This will be ignored, the string will be sanitized into an empty string.
     control_elements[0].SetValue(WebString::FromUTF16(
@@ -1264,6 +1265,9 @@ class FormAutofillTest : public ChromeRenderViewTest {
     control_elements[4].SetValue(
         WebString::FromUTF16(ASCIIToUTF16("Enter your city..")));
 
+    control_elements[5].SetValue(WebString::FromUTF16(ASCIIToUTF16("AK")));
+    control_elements[5].SetUserHasEditedTheFieldForTest();
+
     // Find the form that contains the input element.
     FormData form;
     FormFieldData field;
@@ -1275,7 +1279,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     EXPECT_EQ(GURL("http://abc.com"), form.action);
 
     const std::vector<FormFieldData>& fields = form.fields;
-    ASSERT_EQ(5U, fields.size());
+    ASSERT_EQ(6U, fields.size());
 
     // Preview the form and verify that the cursor position has been updated.
     form.fields[0].value = ASCIIToUTF16("Wyatt");
@@ -1283,11 +1287,13 @@ class FormAutofillTest : public ChromeRenderViewTest {
     form.fields[2].value = ASCIIToUTF16("888-123-4567");
     form.fields[3].value = ASCIIToUTF16("1111-2222-3333-4444");
     form.fields[4].value = ASCIIToUTF16("Montreal");
+    form.fields[5].value = ASCIIToUTF16("AA");
     form.fields[0].is_autofilled = true;
     form.fields[1].is_autofilled = true;
     form.fields[2].is_autofilled = true;
     form.fields[3].is_autofilled = true;
     form.fields[4].is_autofilled = true;
+    form.fields[5].is_autofilled = true;
     PreviewForm(form, input_element);
     // The selection should be set after the fifth character.
     EXPECT_EQ(5, input_element.SelectionStart());
@@ -1307,7 +1313,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     EXPECT_EQ(GURL("http://abc.com"), form2.action);
 
     const std::vector<FormFieldData>& fields2 = form2.fields;
-    ASSERT_EQ(5U, fields2.size());
+    ASSERT_EQ(6U, fields2.size());
 
     FormFieldData expected;
     expected.form_control_type = "text";
@@ -1377,6 +1383,24 @@ class FormAutofillTest : public ChromeRenderViewTest {
     expected.is_autofilled =
         base::FeatureList::IsEnabled(features::kAutofillPrefilledFields);
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[4]);
+
+    expected.form_control_type = "select-one";
+    expected.name = ASCIIToUTF16("state");
+    expected.value =
+        base::FeatureList::IsEnabled(features::kAutofillPrefilledFields)
+            ? ASCIIToUTF16("AA")
+            : control_elements[5].Value().Utf16();
+    if (placeholder_state) {
+      expected.label = ASCIIToUTF16(placeholder_state);
+      expected.placeholder = ASCIIToUTF16(placeholder_state);
+    } else {
+      expected.label.clear();
+      expected.placeholder.clear();
+    }
+    expected.is_autofilled =
+        base::FeatureList::IsEnabled(features::kAutofillPrefilledFields);
+    expected.max_length = 0;
+    EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[5]);
 
     // Verify that the cursor position has been updated.
     EXPECT_EQ(5, input_element.SelectionStart());
@@ -4796,9 +4820,16 @@ TEST_F(FormAutofillTest, FillFormModifyValues) {
       "  <INPUT type='text' id='cc' placeholder='Credit Card Number' "
       "value='Credit Card'/>"
       "  <INPUT type='text' id='city' placeholder='City' value='City'/>"
+      "  <SELECT id='state' name='state' placeholder='State'>"
+      "    <OPTION selected>?</OPTION>"
+      "    <OPTION>AA</OPTION>"
+      "    <OPTION>AE</OPTION>"
+      "    <OPTION>AK</OPTION>"
+      "  </SELECT>"
       "  <INPUT type='submit' value='Send'/>"
       "</FORM>",
-      "First Name", "Last Name", "Phone", "Credit Card Number", "City");
+      "First Name", "Last Name", "Phone", "Credit Card Number", "City",
+      "State");
 }
 
 TEST_F(FormAutofillTest, FillFormModifyInitiatingValue) {

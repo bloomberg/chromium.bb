@@ -876,6 +876,13 @@ void ForEachMatchingFormFieldCommon(
              base::i18n::ToLower(element->Value().Utf16())))
       continue;
 
+    // Check if we should autofill/preview/clear a select element or leave it.
+    if (!force_override && !is_initiating_element &&
+        IsSelectElement(*element) && element->UserHasEditedTheField() &&
+        base::FeatureList::IsEnabled(features::kAutofillPrefilledFields) &&
+        !SanitizedFieldIsEmpty(element->Value().Utf16()))
+      continue;
+
     if (((filters & FILTER_DISABLED_ELEMENTS) && !element->IsEnabled()) ||
         ((filters & FILTER_READONLY_ELEMENTS) && element->IsReadOnly()) ||
         // See description for FILTER_NON_FOCUSABLE_ELEMENTS.
