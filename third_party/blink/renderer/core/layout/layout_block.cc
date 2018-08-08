@@ -446,7 +446,6 @@ void LayoutBlock::UpdateLayout() {
   if (HasControlClip() && overflow_)
     ClearLayoutOverflow();
 
-  InvalidateBackgroundObscurationStatus();
   height_available_to_children_changed_ = false;
 }
 
