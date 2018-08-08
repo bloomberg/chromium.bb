@@ -131,6 +131,26 @@ const char* persistent_pref_names[] = {
     metrics::prefs::kUninstallMetricsPageLoadCount,
     metrics::prefs::kUninstallMetricsUptimeSec, metrics::prefs::kUkmCellDataUse,
     metrics::prefs::kUmaCellDataUse, metrics::prefs::kUserCellDataUse,
+
+    // Variations preferences maybe changed from incognito mode and should be
+    // kept in sync between incognito and regular modes.
+    variations::prefs::kVariationsCompressedSeed,
+    variations::prefs::kVariationsCountry,
+    variations::prefs::kVariationsCrashStreak,
+    variations::prefs::kVariationsFailedToFetchSeedStreak,
+    variations::prefs::kVariationsLastFetchTime,
+    variations::prefs::kVariationsPermanentConsistencyCountry,
+    variations::prefs::kVariationsPermutedEntropyCache,
+    variations::prefs::kVariationsRestrictParameter,
+    variations::prefs::kVariationsSafeCompressedSeed,
+    variations::prefs::kVariationsSafeSeedDate,
+    variations::prefs::kVariationsSafeSeedFetchTime,
+    variations::prefs::kVariationsSafeSeedLocale,
+    variations::prefs::kVariationsSafeSeedPermanentConsistencyCountry,
+    variations::prefs::kVariationsSafeSeedSessionConsistencyCountry,
+    variations::prefs::kVariationsSafeSeedSignature,
+    variations::prefs::kVariationsSeedDate,
+    variations::prefs::kVariationsSeedSignature,
 };
 
 // TODO(https://crbug.com/861722): Remove this list.
@@ -852,25 +872,6 @@ const char* temporary_incognito_whitelist[] = {
     unified_consent::prefs::kUnifiedConsentGiven,
     unified_consent::prefs::kUnifiedConsentMigrationState,
     unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
-
-    // components/variations/pref_names.h
-    variations::prefs::kVariationsCompressedSeed,
-    variations::prefs::kVariationsCountry,
-    variations::prefs::kVariationsCrashStreak,
-    variations::prefs::kVariationsFailedToFetchSeedStreak,
-    variations::prefs::kVariationsLastFetchTime,
-    variations::prefs::kVariationsPermanentConsistencyCountry,
-    variations::prefs::kVariationsPermutedEntropyCache,
-    variations::prefs::kVariationsRestrictParameter,
-    variations::prefs::kVariationsSafeCompressedSeed,
-    variations::prefs::kVariationsSafeSeedDate,
-    variations::prefs::kVariationsSafeSeedFetchTime,
-    variations::prefs::kVariationsSafeSeedLocale,
-    variations::prefs::kVariationsSafeSeedPermanentConsistencyCountry,
-    variations::prefs::kVariationsSafeSeedSessionConsistencyCountry,
-    variations::prefs::kVariationsSafeSeedSignature,
-    variations::prefs::kVariationsSeedDate,
-    variations::prefs::kVariationsSeedSignature,
 
     // components/web_resource/web_resource_pref_names.h
     prefs::kEulaAccepted,
