@@ -90,18 +90,26 @@ class PerfettoTraceEventAgent : public TraceEventAgent {
 std::unique_ptr<TraceEventAgent> TraceEventAgent::Create(
     service_manager::Connector* connector,
     bool request_clock_sync_marker_on_android) {
+  std::unique_ptr<TraceEventAgent> new_agent;
+
   if (TracingUsesPerfettoBackend()) {
 #if defined(PERFETTO_AVAILABLE)
-    return std::make_unique<PerfettoTraceEventAgent>(
+    new_agent = std::make_unique<PerfettoTraceEventAgent>(
         connector, request_clock_sync_marker_on_android);
 #else
-    LOG(FATAL) << "Perfetto is not yet available for this platform.";
-    return nullptr;
+    LOG(ERROR) << "Perfetto is not yet available for this platform; falling "
+                  "back to using legacy TraceLog";
 #endif
-  } else {
-    return std::make_unique<LegacyTraceEventAgent>(
+  }
+
+  // Use legacy tracing if we're on an unsupported platform or the feature flag
+  // is disabled.
+  if (!new_agent) {
+    new_agent = std::make_unique<LegacyTraceEventAgent>(
         connector, request_clock_sync_marker_on_android);
   }
+
+  return new_agent;
 }
 
 TraceEventAgent::TraceEventAgent(service_manager::Connector* connector,
