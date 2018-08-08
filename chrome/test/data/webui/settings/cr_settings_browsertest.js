@@ -1960,29 +1960,6 @@ TEST_F('CrSettingsMultidevicePageTest', 'All', function() {
 });
 
 /**
- * Test fixture for the multidevice settings subpage.
- * @constructor
- * @extends {CrSettingsBrowserTest}
- */
-function CrSettingsMultideviceSubpageTest() {}
-
-CrSettingsMultideviceSubpageTest.prototype = {
-  __proto__: CrSettingsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload: 'chrome://settings/multidevice_page/multidevice_subpage.html',
-
-  /** @override */
-  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'multidevice_subpage_tests.js',
-  ]),
-};
-
-TEST_F('CrSettingsMultideviceSubpageTest', 'All', function() {
-  mocha.run();
-});
-
-/**
  * Test fixture for the Linux for Chromebook (Crostini) page.
  * @constructor
  * @extends {CrSettingsBrowserTest}
