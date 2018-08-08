@@ -21,7 +21,7 @@ void MockGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
   {
     base::AutoLock lock(lock_);
 
-    for (unsigned int i = 0; i < Gamepads::kItemsLengthCap; ++i) {
+    for (size_t i = 0; i < Gamepads::kItemsLengthCap; ++i) {
       if (test_data_.items[i].connected) {
         PadState* pad = GetPadState(i);
         if (pad)

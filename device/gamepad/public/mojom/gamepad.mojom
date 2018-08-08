@@ -67,8 +67,19 @@ struct Gamepad {
 };
 
 interface GamepadObserver {
-  GamepadConnected(int32 index, Gamepad gamepad);
-  GamepadDisconnected(int32 index, Gamepad gamepad);
+  // Called when a gamepad is connected. |index| is the index of the gamepad in
+  // the gamepad array, and |gamepad| is a reference to the connected gamepad.
+  GamepadConnected(uint32 index, Gamepad gamepad);
+
+  // Called when a gamepad is disconnected. |index| is the former index of the
+  // gamepad in the gamepad array, and |gamepad| is a reference to the
+  // connected gamepad.
+  GamepadDisconnected(uint32 index, Gamepad gamepad);
+
+  // Called when a button or axis is changed on a connected gamepad. |index| is
+  // the index of the gamepad in the gamepad array, and |gamepad| is a reference
+  // to the gamepad.
+  GamepadButtonOrAxisChanged(uint32 index, Gamepad gamepad);
 };
 
 // Asks the browser process to start polling, and return a shared memory
@@ -102,9 +113,9 @@ enum GamepadHapticsResult {
 };
 
 interface GamepadHapticsManager {
-  PlayVibrationEffectOnce(int32 pad_index,
+  PlayVibrationEffectOnce(uint32 pad_index,
                           GamepadHapticEffectType type,
                           GamepadEffectParameters params)
       => (GamepadHapticsResult result);
-  ResetVibrationActuator(int32 pad_index) => (GamepadHapticsResult result);
+  ResetVibrationActuator(uint32 pad_index) => (GamepadHapticsResult result);
 };

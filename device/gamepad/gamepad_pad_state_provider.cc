@@ -20,7 +20,7 @@ const float kMinAxisResetValue = 0.1f;
 GamepadPadStateProvider::GamepadPadStateProvider() {
   pad_states_.reset(new PadState[Gamepads::kItemsLengthCap]);
 
-  for (unsigned i = 0; i < Gamepads::kItemsLengthCap; ++i)
+  for (size_t i = 0; i < Gamepads::kItemsLengthCap; ++i)
     ClearPadState(pad_states_.get()[i]);
 }
 
@@ -50,8 +50,8 @@ PadState* GamepadPadStateProvider::GetPadState(GamepadSource source,
   return empty_slot;
 }
 
-PadState* GamepadPadStateProvider::GetConnectedPadState(int pad_index) {
-  if (pad_index < 0 || pad_index >= (int)Gamepads::kItemsLengthCap)
+PadState* GamepadPadStateProvider::GetConnectedPadState(uint32_t pad_index) {
+  if (pad_index >= Gamepads::kItemsLengthCap)
     return nullptr;
 
   PadState& pad_state = pad_states_.get()[pad_index];

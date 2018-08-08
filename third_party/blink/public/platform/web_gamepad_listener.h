@@ -15,8 +15,22 @@ namespace blink {
 
 class WebGamepadListener : public WebPlatformEventListener {
  public:
-  virtual void DidConnectGamepad(unsigned index, const device::Gamepad&) = 0;
-  virtual void DidDisconnectGamepad(unsigned index, const device::Gamepad&) = 0;
+  // Called when a gamepad is connected. |index| is the index of the gamepad in
+  // the gamepad array, and |gamepad| is a reference to the connected gamepad.
+  virtual void DidConnectGamepad(uint32_t index,
+                                 const device::Gamepad& gamepad) = 0;
+
+  // Called when a gamepad is disconnected. |index| is the former index of the
+  // gamepad in the gamepad array, and |gamepad| is a reference to the
+  // connected gamepad.
+  virtual void DidDisconnectGamepad(uint32_t index,
+                                    const device::Gamepad& gamepad) = 0;
+
+  // Called when a button or axis is changed on a connected gamepad. |index| is
+  // the index of the gamepad in the gamepad array, and |gamepad| is a reference
+  // to the gamepad.
+  virtual void ButtonOrAxisDidChange(uint32_t index,
+                                     const device::Gamepad& gamepad) = 0;
 
  protected:
   ~WebGamepadListener() override = default;

@@ -110,7 +110,7 @@ void GamepadSharedMemoryReader::SampleGamepads(device::Gamepads& gamepads) {
     // gamepads to prevent fingerprinting. The actual data is not cleared.
     // WebKit will only copy out data into the JS buffers for connected
     // gamepads so this is sufficient.
-    for (unsigned i = 0; i < device::Gamepads::kItemsLengthCap; i++)
+    for (size_t i = 0; i < device::Gamepads::kItemsLengthCap; i++)
       gamepads.items[i].connected = false;
   }
 }
@@ -121,7 +121,7 @@ GamepadSharedMemoryReader::~GamepadSharedMemoryReader() {
 }
 
 void GamepadSharedMemoryReader::GamepadConnected(
-    int index,
+    uint32_t index,
     const device::Gamepad& gamepad) {
   // The browser already checks if the user actually interacted with a device.
   ever_interacted_with_ = true;
@@ -131,10 +131,17 @@ void GamepadSharedMemoryReader::GamepadConnected(
 }
 
 void GamepadSharedMemoryReader::GamepadDisconnected(
-    int index,
+    uint32_t index,
     const device::Gamepad& gamepad) {
   if (listener_)
     listener_->DidDisconnectGamepad(index, gamepad);
+}
+
+void GamepadSharedMemoryReader::GamepadButtonOrAxisChanged(
+    uint32_t index,
+    const device::Gamepad& gamepad) {
+  if (listener_)
+    listener_->ButtonOrAxisDidChange(index, gamepad);
 }
 
 }  // namespace blink

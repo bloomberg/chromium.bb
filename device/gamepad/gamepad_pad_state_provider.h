@@ -91,7 +91,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadPadStateProvider {
   // Gets a PadState object for a connected gamepad by specifying its index in
   // the pad_states_ array. Returns NULL if there is no connected gamepad at
   // that index.
-  PadState* GetConnectedPadState(int pad_index);
+  PadState* GetConnectedPadState(uint32_t pad_index);
 
  protected:
   void ClearPadState(PadState& state);

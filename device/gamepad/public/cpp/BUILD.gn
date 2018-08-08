@@ -17,6 +17,7 @@ source_set("shared_with_blink") {
   sources = [
     "gamepad.cc",
     "gamepad.h",
+    "gamepads.cc",
     "gamepads.h",
   ]
   # Do not add deps here per the above comment.

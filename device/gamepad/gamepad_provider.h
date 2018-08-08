@@ -35,7 +35,7 @@ class GamepadDataFetcher;
 class DEVICE_GAMEPAD_EXPORT GamepadConnectionChangeClient {
  public:
   virtual void OnGamepadConnectionChange(bool connected,
-                                         int index,
+                                         uint32_t index,
                                          const Gamepad& pad) = 0;
 };
 
@@ -59,13 +59,13 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   void GetCurrentGamepadData(Gamepads* data);
 
   void PlayVibrationEffectOnce(
-      int pad_index,
+      uint32_t pad_index,
       mojom::GamepadHapticEffectType,
       mojom::GamepadEffectParametersPtr,
       mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback);
 
   void ResetVibrationActuator(
-      int pad_index,
+      uint32_t pad_index,
       mojom::GamepadHapticsManager::ResetVibrationActuatorCallback);
 
   // Pause and resume the background polling thread. Can be called from any
@@ -106,7 +106,9 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   void DoPoll();
   void ScheduleDoPoll();
 
-  void OnGamepadConnectionChange(bool connected, int index, const Gamepad& pad);
+  void OnGamepadConnectionChange(bool connected,
+                                 uint32_t index,
+                                 const Gamepad& pad);
 
   // Checks the gamepad state to see if the user has interacted with it. Returns
   // true if any user gesture observers were notified.
