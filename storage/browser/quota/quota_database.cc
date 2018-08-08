@@ -29,8 +29,8 @@ namespace {
 
 // Definitions for database schema.
 
-const int kCurrentVersion = 5;
-const int kCompatibleVersion = 2;
+const int kQuotaDatabaseCurrentSchemaVersion = 5;
+const int kQuotaDatabaseCompatibleVersion = 2;
 
 const char kHostQuotaTable[] = "HostQuotaTable";
 const char kOriginInfoTable[] = "OriginInfoTable";
@@ -568,19 +568,21 @@ bool QuotaDatabase::EnsureDatabaseVersion() {
   static const size_t kIndexCount = arraysize(kIndexes);
   if (!sql::MetaTable::DoesTableExist(db_.get()))
     return CreateSchema(db_.get(), meta_table_.get(),
-                        kCurrentVersion, kCompatibleVersion,
-                        kTables, kTableCount,
+                        kQuotaDatabaseCurrentSchemaVersion,
+                        kQuotaDatabaseCompatibleVersion, kTables, kTableCount,
                         kIndexes, kIndexCount);
 
-  if (!meta_table_->Init(db_.get(), kCurrentVersion, kCompatibleVersion))
+  if (!meta_table_->Init(db_.get(), kQuotaDatabaseCurrentSchemaVersion,
+                         kQuotaDatabaseCompatibleVersion))
     return false;
 
-  if (meta_table_->GetCompatibleVersionNumber() > kCurrentVersion) {
+  if (meta_table_->GetCompatibleVersionNumber() >
+      kQuotaDatabaseCurrentSchemaVersion) {
     LOG(WARNING) << "Quota database is too new.";
     return false;
   }
 
-  if (meta_table_->GetVersionNumber() < kCurrentVersion) {
+  if (meta_table_->GetVersionNumber() < kQuotaDatabaseCurrentSchemaVersion) {
     if (!UpgradeSchema(meta_table_->GetVersionNumber()))
       return ResetSchema();
   }

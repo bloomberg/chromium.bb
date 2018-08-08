@@ -49,9 +49,10 @@ bool OriginSetContainsOrigin(const OriginSetByHost& origins,
   return itr != origins.end() && base::ContainsKey(itr->second, origin);
 }
 
-void DidGetGlobalUsageForLimitedGlobalUsage(UsageCallback callback,
-                                            int64_t total_global_usage,
-                                            int64_t global_unlimited_usage) {
+void DidGetGlobalClientUsageForLimitedGlobalClientUsage(
+    UsageCallback callback,
+    int64_t total_global_usage,
+    int64_t global_unlimited_usage) {
   std::move(callback).Run(total_global_usage - global_unlimited_usage);
 }
 
@@ -85,8 +86,9 @@ ClientUsageTracker::~ClientUsageTracker() {
 
 void ClientUsageTracker::GetGlobalLimitedUsage(UsageCallback callback) {
   if (!global_usage_retrieved_) {
-    GetGlobalUsage(base::BindOnce(&DidGetGlobalUsageForLimitedGlobalUsage,
-                                  std::move(callback)));
+    GetGlobalUsage(
+        base::BindOnce(&DidGetGlobalClientUsageForLimitedGlobalClientUsage,
+                       std::move(callback)));
     return;
   }
 

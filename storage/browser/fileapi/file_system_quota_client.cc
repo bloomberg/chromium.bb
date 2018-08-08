@@ -58,8 +58,9 @@ void GetOriginsForHostOnFileTaskRunner(FileSystemContext* context,
     origins_ptr->insert(url::Origin::Create(origin));
 }
 
-void DidGetOrigins(storage::QuotaClient::GetOriginsCallback callback,
-                   std::set<url::Origin>* origins_ptr) {
+void DidGetFileSystemQuotaClientOrigins(
+    storage::QuotaClient::GetOriginsCallback callback,
+    std::set<url::Origin>* origins_ptr) {
   std::move(callback).Run(*origins_ptr);
 }
 
@@ -144,7 +145,7 @@ void FileSystemQuotaClient::GetOriginsForType(StorageType storage_type,
       base::BindOnce(&GetOriginsForTypeOnFileTaskRunner,
                      base::RetainedRef(file_system_context_), storage_type,
                      base::Unretained(origins_ptr)),
-      base::BindOnce(&DidGetOrigins, std::move(callback),
+      base::BindOnce(&DidGetFileSystemQuotaClientOrigins, std::move(callback),
                      base::Owned(origins_ptr)));
 }
 
@@ -166,7 +167,7 @@ void FileSystemQuotaClient::GetOriginsForHost(StorageType storage_type,
       base::BindOnce(&GetOriginsForHostOnFileTaskRunner,
                      base::RetainedRef(file_system_context_), storage_type,
                      host, base::Unretained(origins_ptr)),
-      base::BindOnce(&DidGetOrigins, std::move(callback),
+      base::BindOnce(&DidGetFileSystemQuotaClientOrigins, std::move(callback),
                      base::Owned(origins_ptr)));
 }
 

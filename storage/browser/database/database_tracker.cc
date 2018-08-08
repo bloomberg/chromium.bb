@@ -37,8 +37,8 @@ const base::FilePath::CharType kIncognitoDatabaseDirectoryName[] =
     FILE_PATH_LITERAL("databases-incognito");
 const base::FilePath::CharType kTrackerDatabaseFileName[] =
     FILE_PATH_LITERAL("Databases.db");
-static const int kCurrentVersion = 2;
-static const int kCompatibleVersion = 1;
+static const int kDatabaseTrackerCurrentSchemaVersion = 2;
+static const int kDatabaseTrackerCompatibleVersion = 1;
 
 const base::FilePath::CharType kTemporaryDirectoryPrefix[] =
     FILE_PATH_LITERAL("DeleteMe");
@@ -499,13 +499,15 @@ bool DatabaseTracker::UpgradeToCurrentVersion() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   sql::Transaction transaction(db_.get());
   if (!transaction.Begin() ||
-      !meta_table_->Init(db_.get(), kCurrentVersion, kCompatibleVersion) ||
-      (meta_table_->GetCompatibleVersionNumber() > kCurrentVersion) ||
+      !meta_table_->Init(db_.get(), kDatabaseTrackerCurrentSchemaVersion,
+                         kDatabaseTrackerCompatibleVersion) ||
+      (meta_table_->GetCompatibleVersionNumber() >
+       kDatabaseTrackerCurrentSchemaVersion) ||
       !databases_table_->Init())
     return false;
 
-  if (meta_table_->GetVersionNumber() < kCurrentVersion)
-    meta_table_->SetVersionNumber(kCurrentVersion);
+  if (meta_table_->GetVersionNumber() < kDatabaseTrackerCurrentSchemaVersion)
+    meta_table_->SetVersionNumber(kDatabaseTrackerCurrentSchemaVersion);
 
   return transaction.Commit();
 }

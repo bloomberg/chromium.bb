@@ -72,16 +72,17 @@ const base::FilePath::CharType kDirectoryDatabaseName[] =
     FILE_PATH_LITERAL("Paths");
 const char kChildLookupPrefix[] = "CHILD_OF:";
 const char kChildLookupSeparator[] = ":";
-const char kLastFileIdKey[] = "LAST_FILE_ID";
-const char kLastIntegerKey[] = "LAST_INTEGER";
-const int64_t kMinimumReportIntervalHours = 1;
-const char kInitStatusHistogramLabel[] = "FileSystem.DirectoryDatabaseInit";
-const char kDatabaseRepairHistogramLabel[] =
+const char kSandboxDirectoryLastFileIdKey[] = "LAST_FILE_ID";
+const char kSandboxDirectoryLastIntegerKey[] = "LAST_INTEGER";
+const int64_t kSandboxDirectoryMinimumReportIntervalHours = 1;
+const char kSandboxDirectoryInitStatusHistogramLabel[] =
+    "FileSystem.DirectoryDatabaseInit";
+const char kSandboxDirectoryDatabaseRepairHistogramLabel[] =
     "FileSystem.DirectoryDatabaseRepair";
 
 // These values are recorded in UMA. Changing existing values will invalidate
 // results for older Chrome releases. Only add new values.
-enum InitStatus {
+enum class SandboxDirectoryInitStatus {
   INIT_STATUS_OK = 0,
   INIT_STATUS_CORRUPTION,
   INIT_STATUS_IO_ERROR,
@@ -91,7 +92,7 @@ enum InitStatus {
 
 // These values are recorded in UMA. Changing existing values will invalidate
 // results for older Chrome releases. Only add new values.
-enum RepairResult {
+enum class SandboxDirectoryRepairResult {
   DB_REPAIR_SUCCEEDED = 0,
   DB_REPAIR_FAILED,
   DB_REPAIR_MAX
@@ -113,11 +114,11 @@ std::string GetChildListingKeyPrefix(
 }
 
 const char* LastFileIdKey() {
-  return kLastFileIdKey;
+  return kSandboxDirectoryLastFileIdKey;
 }
 
 const char* LastIntegerKey() {
-  return kLastIntegerKey;
+  return kSandboxDirectoryLastIntegerKey;
 }
 
 std::string GetFileLookupKey(
@@ -213,7 +214,7 @@ bool DatabaseCheckHelper::ScanDatabase() {
       // key: "CHILD_OF:<parent_id>:<name>"
       // value: "<child_id>"
       ++num_hierarchy_links_in_db_;
-    } else if (key == kLastFileIdKey) {
+    } else if (key == kSandboxDirectoryLastFileIdKey) {
       // key: "LAST_FILE_ID"
       // value: "<last_file_id>"
       if (last_file_id_ >= 0 ||
@@ -222,7 +223,7 @@ bool DatabaseCheckHelper::ScanDatabase() {
 
       if (last_file_id_ < 0)
         return false;
-    } else if (key == kLastIntegerKey) {
+    } else if (key == kSandboxDirectoryLastIntegerKey) {
       // key: "LAST_INTEGER"
       // value: "<last_integer>"
       if (last_integer_ >= 0 ||
@@ -751,12 +752,15 @@ bool SandboxDirectoryDatabase::Init(RecoveryOption recovery_option) {
       LOG(WARNING) << "Corrupted SandboxDirectoryDatabase detected."
                    << " Attempting to repair.";
       if (RepairDatabase(path)) {
-        UMA_HISTOGRAM_ENUMERATION(kDatabaseRepairHistogramLabel,
-                                  DB_REPAIR_SUCCEEDED, DB_REPAIR_MAX);
+        UMA_HISTOGRAM_ENUMERATION(
+            kSandboxDirectoryDatabaseRepairHistogramLabel,
+            SandboxDirectoryRepairResult::DB_REPAIR_SUCCEEDED,
+            SandboxDirectoryRepairResult::DB_REPAIR_MAX);
         return true;
       }
-      UMA_HISTOGRAM_ENUMERATION(kDatabaseRepairHistogramLabel,
-                                DB_REPAIR_FAILED, DB_REPAIR_MAX);
+      UMA_HISTOGRAM_ENUMERATION(kSandboxDirectoryDatabaseRepairHistogramLabel,
+                                SandboxDirectoryRepairResult::DB_REPAIR_FAILED,
+                                SandboxDirectoryRepairResult::DB_REPAIR_MAX);
       LOG(WARNING) << "Failed to repair SandboxDirectoryDatabase.";
       FALLTHROUGH;
     case DELETE_ON_CORRUPTION:
@@ -811,23 +815,29 @@ void SandboxDirectoryDatabase::ReportInitStatus(
     const leveldb::Status& status) {
   base::Time now = base::Time::Now();
   const base::TimeDelta minimum_interval =
-      base::TimeDelta::FromHours(kMinimumReportIntervalHours);
+      base::TimeDelta::FromHours(kSandboxDirectoryMinimumReportIntervalHours);
   if (last_reported_time_ + minimum_interval >= now)
     return;
   last_reported_time_ = now;
 
   if (status.ok()) {
-    UMA_HISTOGRAM_ENUMERATION(kInitStatusHistogramLabel,
-                              INIT_STATUS_OK, INIT_STATUS_MAX);
+    UMA_HISTOGRAM_ENUMERATION(kSandboxDirectoryInitStatusHistogramLabel,
+                              SandboxDirectoryInitStatus::INIT_STATUS_OK,
+                              SandboxDirectoryInitStatus::INIT_STATUS_MAX);
   } else if (status.IsCorruption()) {
-    UMA_HISTOGRAM_ENUMERATION(kInitStatusHistogramLabel,
-                              INIT_STATUS_CORRUPTION, INIT_STATUS_MAX);
+    UMA_HISTOGRAM_ENUMERATION(
+        kSandboxDirectoryInitStatusHistogramLabel,
+        SandboxDirectoryInitStatus::INIT_STATUS_CORRUPTION,
+        SandboxDirectoryInitStatus::INIT_STATUS_MAX);
   } else if (status.IsIOError()) {
-    UMA_HISTOGRAM_ENUMERATION(kInitStatusHistogramLabel,
-                              INIT_STATUS_IO_ERROR, INIT_STATUS_MAX);
+    UMA_HISTOGRAM_ENUMERATION(kSandboxDirectoryInitStatusHistogramLabel,
+                              SandboxDirectoryInitStatus::INIT_STATUS_IO_ERROR,
+                              SandboxDirectoryInitStatus::INIT_STATUS_MAX);
   } else {
-    UMA_HISTOGRAM_ENUMERATION(kInitStatusHistogramLabel,
-                              INIT_STATUS_UNKNOWN_ERROR, INIT_STATUS_MAX);
+    UMA_HISTOGRAM_ENUMERATION(
+        kSandboxDirectoryInitStatusHistogramLabel,
+        SandboxDirectoryInitStatus::INIT_STATUS_UNKNOWN_ERROR,
+        SandboxDirectoryInitStatus::INIT_STATUS_MAX);
   }
 }
 
