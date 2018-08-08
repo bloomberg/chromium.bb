@@ -7,13 +7,21 @@
 
 .p2align	4
 _gcm_gmult_4bit:
+
 	pushq	%rbx
+
 	pushq	%rbp
+
 	pushq	%r12
+
 	pushq	%r13
+
 	pushq	%r14
+
 	pushq	%r15
+
 	subq	$280,%rsp
+
 L$gmult_prologue:
 
 	movzbq	15(%rdi),%r8
@@ -91,23 +99,35 @@ L$break1:
 	movq	%r9,(%rdi)
 
 	leaq	280+48(%rsp),%rsi
+
 	movq	-8(%rsi),%rbx
+
 	leaq	(%rsi),%rsp
+
 L$gmult_epilogue:
 	.byte	0xf3,0xc3
+
 
 .globl	_gcm_ghash_4bit
 .private_extern _gcm_ghash_4bit
 
 .p2align	4
 _gcm_ghash_4bit:
+
 	pushq	%rbx
+
 	pushq	%rbp
+
 	pushq	%r12
+
 	pushq	%r13
+
 	pushq	%r14
+
 	pushq	%r15
+
 	subq	$280,%rsp
+
 L$ghash_prologue:
 	movq	%rdx,%r14
 	movq	%rcx,%r15
@@ -653,15 +673,24 @@ L$outer_loop:
 	movq	%r9,(%rdi)
 
 	leaq	280+48(%rsp),%rsi
+
 	movq	-48(%rsi),%r15
+
 	movq	-40(%rsi),%r14
+
 	movq	-32(%rsi),%r13
+
 	movq	-24(%rsi),%r12
+
 	movq	-16(%rsi),%rbp
+
 	movq	-8(%rsi),%rbx
+
 	leaq	0(%rsi),%rsp
+
 L$ghash_epilogue:
 	.byte	0xf3,0xc3
+
 
 .globl	_gcm_init_clmul
 .private_extern _gcm_init_clmul

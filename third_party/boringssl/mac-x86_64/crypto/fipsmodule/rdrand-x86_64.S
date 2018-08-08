@@ -9,6 +9,7 @@
 
 .p2align	4
 _CRYPTO_rdrand:
+
 	xorq	%rax,%rax
 
 
@@ -22,11 +23,13 @@ _CRYPTO_rdrand:
 
 
 
+
 .globl	_CRYPTO_rdrand_multiple8_buf
 .private_extern _CRYPTO_rdrand_multiple8_buf
 
 .p2align	4
 _CRYPTO_rdrand_multiple8_buf:
+
 	testq	%rsi,%rsi
 	jz	L$out
 	movq	$8,%rdx
@@ -45,4 +48,5 @@ L$out:
 L$err:
 	xorq	%rax,%rax
 	.byte	0xf3,0xc3
+
 #endif

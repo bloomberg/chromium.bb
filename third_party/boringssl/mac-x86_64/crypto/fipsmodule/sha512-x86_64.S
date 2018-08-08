@@ -7,6 +7,7 @@
 
 .p2align	4
 _sha512_block_data_order:
+
 	leaq	_OPENSSL_ia32cap_P(%rip),%r11
 	movl	0(%r11),%r9d
 	movl	4(%r11),%r10d
@@ -19,12 +20,19 @@ _sha512_block_data_order:
 	cmpl	$1342177792,%r10d
 	je	L$avx_shortcut
 	movq	%rsp,%rax
+
 	pushq	%rbx
+
 	pushq	%rbp
+
 	pushq	%r12
+
 	pushq	%r13
+
 	pushq	%r14
+
 	pushq	%r15
+
 	shlq	$4,%rdx
 	subq	$128+32,%rsp
 	leaq	(%rsi,%rdx,8),%rdx
@@ -32,7 +40,8 @@ _sha512_block_data_order:
 	movq	%rdi,128+0(%rsp)
 	movq	%rsi,128+8(%rsp)
 	movq	%rdx,128+16(%rsp)
-	movq	%rax,128+24(%rsp)
+	movq	%rax,152(%rsp)
+
 L$prologue:
 
 	movq	0(%rdi),%rax
@@ -1696,16 +1705,25 @@ L$rounds_16_xx:
 	movq	%r11,56(%rdi)
 	jb	L$loop
 
-	movq	128+24(%rsp),%rsi
+	movq	152(%rsp),%rsi
+
 	movq	-48(%rsi),%r15
+
 	movq	-40(%rsi),%r14
+
 	movq	-32(%rsi),%r13
+
 	movq	-24(%rsi),%r12
+
 	movq	-16(%rsi),%rbp
+
 	movq	-8(%rsi),%rbx
+
 	leaq	(%rsi),%rsp
+
 L$epilogue:
 	.byte	0xf3,0xc3
+
 
 .p2align	6
 
@@ -1797,14 +1815,22 @@ K512:
 
 .p2align	6
 sha512_block_data_order_xop:
+
 L$xop_shortcut:
 	movq	%rsp,%rax
+
 	pushq	%rbx
+
 	pushq	%rbp
+
 	pushq	%r12
+
 	pushq	%r13
+
 	pushq	%r14
+
 	pushq	%r15
+
 	shlq	$4,%rdx
 	subq	$160,%rsp
 	leaq	(%rsi,%rdx,8),%rdx
@@ -1812,7 +1838,8 @@ L$xop_shortcut:
 	movq	%rdi,128+0(%rsp)
 	movq	%rsi,128+8(%rsp)
 	movq	%rdx,128+16(%rsp)
-	movq	%rax,128+24(%rsp)
+	movq	%rax,152(%rsp)
+
 L$prologue_xop:
 
 	vzeroupper
@@ -2865,29 +2892,46 @@ L$xop_00_47:
 	movq	%r11,56(%rdi)
 	jb	L$loop_xop
 
-	movq	128+24(%rsp),%rsi
+	movq	152(%rsp),%rsi
+
 	vzeroupper
 	movq	-48(%rsi),%r15
+
 	movq	-40(%rsi),%r14
+
 	movq	-32(%rsi),%r13
+
 	movq	-24(%rsi),%r12
+
 	movq	-16(%rsi),%rbp
+
 	movq	-8(%rsi),%rbx
+
 	leaq	(%rsi),%rsp
+
 L$epilogue_xop:
 	.byte	0xf3,0xc3
 
 
+
 .p2align	6
 sha512_block_data_order_avx:
+
 L$avx_shortcut:
 	movq	%rsp,%rax
+
 	pushq	%rbx
+
 	pushq	%rbp
+
 	pushq	%r12
+
 	pushq	%r13
+
 	pushq	%r14
+
 	pushq	%r15
+
 	shlq	$4,%rdx
 	subq	$160,%rsp
 	leaq	(%rsi,%rdx,8),%rdx
@@ -2895,7 +2939,8 @@ L$avx_shortcut:
 	movq	%rdi,128+0(%rsp)
 	movq	%rsi,128+8(%rsp)
 	movq	%rdx,128+16(%rsp)
-	movq	%rax,128+24(%rsp)
+	movq	%rax,152(%rsp)
+
 L$prologue_avx:
 
 	vzeroupper
@@ -4012,16 +4057,25 @@ L$avx_00_47:
 	movq	%r11,56(%rdi)
 	jb	L$loop_avx
 
-	movq	128+24(%rsp),%rsi
+	movq	152(%rsp),%rsi
+
 	vzeroupper
 	movq	-48(%rsi),%r15
+
 	movq	-40(%rsi),%r14
+
 	movq	-32(%rsi),%r13
+
 	movq	-24(%rsi),%r12
+
 	movq	-16(%rsi),%rbp
+
 	movq	-8(%rsi),%rbx
+
 	leaq	(%rsi),%rsp
+
 L$epilogue_avx:
 	.byte	0xf3,0xc3
+
 
 #endif
