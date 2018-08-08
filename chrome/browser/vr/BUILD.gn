@@ -225,6 +225,8 @@ component("vr_common") {
   sources = [
     "browser_ui_interface.h",
     "controller_delegate.h",
+    "controller_delegate_for_testing.cc",
+    "controller_delegate_for_testing.h",
     "fps_meter.cc",
     "fps_meter.h",
     "gesture_detector.cc",

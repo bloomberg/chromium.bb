@@ -19,8 +19,6 @@ static_library("vr_android") {
     "android_vsync_helper.h",
     "autocomplete_controller.cc",
     "autocomplete_controller.h",
-    "controller_delegate_for_testing.cc",
-    "controller_delegate_for_testing.h",
     "gl_browser_interface.h",
     "gvr_controller_delegate.cc",
     "gvr_controller_delegate.h",
