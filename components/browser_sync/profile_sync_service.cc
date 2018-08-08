@@ -2256,12 +2256,14 @@ void ProfileSyncService::OnSetupInProgressHandleDestroyed() {
 
 void ProfileSyncService::ReconfigureDueToPassphrase(
     syncer::ConfigureReason reason) {
-  if (!CanConfigureDataTypes()) {
-    return;
+  if (CanConfigureDataTypes()) {
+    DCHECK(data_type_manager_->IsNigoriEnabled());
+    ConfigureDataTypeManager(reason);
   }
-  DCHECK(data_type_manager_->IsNigoriEnabled());
-  ConfigureDataTypeManager(reason);
-  // Notify observers that the passphrase status may have changed.
+  // Notify observers that the passphrase status may have changed, regardless of
+  // whether we triggered configuration or not. This is needed for the
+  // IsSetupInProgress() case where the UI needs to be updated to reflect that
+  // the passphrase was accepted (https://crbug.com/870256).
   NotifyObservers();
 }
 
