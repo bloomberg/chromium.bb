@@ -471,7 +471,9 @@ TEST_P(WebContentsAudioInputStreamTest, MirroringOutputWithinSession) {
   RUN_ON_AUDIO_THREAD(Close);
 }
 
-TEST_P(WebContentsAudioInputStreamTest, MirroringNothingWithTargetChange) {
+// TODO(https://crbug.com/872340): Test appears to have timing-dependent flake.
+TEST_P(WebContentsAudioInputStreamTest,
+       DISABLE_MirroringNothingWithTargetChange) {
   RUN_ON_AUDIO_THREAD(Open);
   RUN_ON_AUDIO_THREAD(Start);
   RUN_ON_AUDIO_THREAD(ChangeMirroringTarget);
