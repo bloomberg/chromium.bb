@@ -704,9 +704,11 @@ html[dir=rtl] #attribution,
 
 #one-google {
   position: absolute;
-  right: 0;
   top: 0;
   transition: opacity 130ms;
+  /* One Google Bar can automatically align to left and right
+    based on the profile language preference */
+  width: 100%;
 }
 
 #one-google.hidden {
