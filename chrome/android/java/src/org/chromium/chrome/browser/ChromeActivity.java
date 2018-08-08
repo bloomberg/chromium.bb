@@ -943,6 +943,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         VrModuleProvider.getDelegate().maybeRegisterVrEntryHook(this);
 
         OfflineIndicatorController.onUpdate();
+
+        if (getManualFillingController() != null) getManualFillingController().onResume();
     }
 
     @Override
@@ -960,6 +962,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         RecordUserAction.record("MobileGoToBackground");
         Tab tab = getActivityTab();
         if (tab != null) getTabContentManager().cacheTabThumbnail(tab);
+        if (getManualFillingController() != null) getManualFillingController().onPause();
 
         VrModuleProvider.getDelegate().maybeUnregisterVrEntryHook();
         markSessionEnd();

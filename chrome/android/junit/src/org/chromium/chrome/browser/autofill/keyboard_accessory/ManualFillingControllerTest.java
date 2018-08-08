@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -284,9 +285,100 @@ public class ManualFillingControllerTest {
         assertThat(keyboardAccessoryModel.getActionList().size(), is(0));
     }
 
-    // TODO(fhorschig): Test that updating tab1 works if tab2 is active.
-    // TODO(fhorschig): Test that destroying a tab cleans the model.
-    // TODO(fhorschig): Test that unregistering a provider affects only one tab.
+    @Test
+    public void testUpdatesInactiveAccessory() {
+        ManualFillingMediator mediator = mController.getMediatorForTesting();
+        KeyboardAccessoryModel keyboardAccessoryModel =
+                mediator.getKeyboardAccessory().getMediatorForTesting().getModelForTesting();
+
+        // Open a tab.
+        Tab tab = addTab(mediator, 1111, null);
+        // Add an action provider that hasn't provided actions yet.
+        PropertyProvider<Action> delayedProvider = new PropertyProvider<>();
+        mController.registerActionProvider(delayedProvider);
+        assertThat(keyboardAccessoryModel.getActionList().size(), is(0));
+
+        // Create and switch to a new tab:
+        Tab secondTab = addTab(mediator, 1111, tab);
+        PropertyProvider<Action> provider = new PropertyProvider<>();
+        mController.registerActionProvider(provider);
+
+        // And provide data to the active tab.
+        provider.notifyObservers(new Action[] {
+                new Action("Test Action", GENERATE_PASSWORD_AUTOMATIC, (action) -> {})});
+        // Now, have the delayed provider provide data for the backgrounded tab.
+        delayedProvider.notifyObservers(
+                new Action[] {new Action("Delayed", GENERATE_PASSWORD_AUTOMATIC, (action) -> {})});
+
+        // The current tab should not be influenced by the delayed provider.
+        assertThat(keyboardAccessoryModel.getActionList().size(), is(1));
+        assertThat(keyboardAccessoryModel.getActionList().get(0).getCaption(), is("Test Action"));
+
+        // Switching tabs back should only show the action that was received in the background.
+        switchTab(mediator, secondTab, tab);
+        assertThat(keyboardAccessoryModel.getActionList().size(), is(1));
+        assertThat(keyboardAccessoryModel.getActionList().get(0).getCaption(), is("Delayed"));
+    }
+
+    @Test
+    public void testDestroyingTabCleansModelForThisTab() {
+        ManualFillingMediator mediator = mController.getMediatorForTesting();
+        KeyboardAccessoryModel keyboardAccessoryModel =
+                mediator.getKeyboardAccessory().getMediatorForTesting().getModelForTesting();
+        AccessorySheetModel accessorySheetModel = mController.getMediatorForTesting()
+                                                          .getAccessorySheet()
+                                                          .getMediatorForTesting()
+                                                          .getModelForTesting();
+
+        Provider<Item> firstTabProvider = new PropertyProvider<>();
+        PropertyProvider<Action> firstActionProvider = new PropertyProvider<>();
+        Provider<Item> secondTabProvider = new PropertyProvider<>();
+        PropertyProvider<Action> secondActionProvider = new PropertyProvider<>();
+
+        // Simulate opening a new tab:
+        Tab firstTab = addTab(mediator, 1111, null);
+        mController.registerPasswordProvider(firstTabProvider);
+        mController.registerActionProvider(firstActionProvider);
+        firstTabProvider.notifyObservers(new Item[] {
+                Item.createSuggestion("FirstPassword", "FirstPassword", true, result -> {}, null)});
+        firstActionProvider.notifyObservers(new Action[] {
+                new Action("2BDestroyed", GENERATE_PASSWORD_AUTOMATIC, (action) -> {})});
+
+        // Create and switch to a new tab: (because destruction shouldn't rely on tab to be active)
+        addTab(mediator, 2222, firstTab);
+        mController.registerPasswordProvider(secondTabProvider);
+        mController.registerActionProvider(secondActionProvider);
+        secondTabProvider.notifyObservers(new Item[] {Item.createSuggestion(
+                "SecondPassword", "SecondPassword", true, result -> {}, null)});
+        secondActionProvider.notifyObservers(
+                new Action[] {new Action("2BKept", GENERATE_PASSWORD_AUTOMATIC, (action) -> {})});
+
+        // The current tab should be valid.
+        assertThat(keyboardAccessoryModel.getTabList().size(), is(1));
+        assertThat(accessorySheetModel.getTabList().size(), is(1));
+        assertThat(keyboardAccessoryModel.getActionList().size(), is(1));
+        assertThat(keyboardAccessoryModel.getActionList().get(0).getCaption(), is("2BKept"));
+
+        // Request destruction of the first Tab:
+        mediator.getTabObserverForTesting().onDestroyed(firstTab);
+
+        // The current tab should not be influenced by the destruction.
+        assertThat(keyboardAccessoryModel.getTabList().size(), is(1));
+        assertThat(accessorySheetModel.getTabList().size(), is(1));
+        assertThat(keyboardAccessoryModel.getActionList().size(), is(1));
+        assertThat(keyboardAccessoryModel.getActionList().get(0).getCaption(), is("2BKept"));
+
+        // The other tabs data should be gone.
+        ManualFillingMediator.AccessoryState oldState = mediator.getModelForTesting().get(firstTab);
+        if (oldState == null)
+            return; // Having no state is fine - it would be completely destroyed then.
+
+        assertThat(oldState.mActionsProvider, nullValue());
+
+        if (oldState.mPasswordAccessorySheet == null)
+            return; // Having no password sheet is fine - it would be completely destroyed then.
+        assertThat(oldState.mPasswordAccessorySheet.getModelForTesting().size(), is(0));
+    }
 
     /**
      * Creates a tab and calls the observer events as if it was just created and switched to.

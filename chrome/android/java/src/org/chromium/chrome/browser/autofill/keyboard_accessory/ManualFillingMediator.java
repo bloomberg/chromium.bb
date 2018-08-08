@@ -37,7 +37,8 @@ class ManualFillingMediator
      * observers.
      * @param <T> The data that is sent to observers.
      */
-    private class ProviderCacheAdapter<T> extends KeyboardAccessoryData.PropertyProvider<T>
+    @VisibleForTesting
+    protected class ProviderCacheAdapter<T> extends KeyboardAccessoryData.PropertyProvider<T>
             implements KeyboardAccessoryData.Observer<T> {
         private final Tab mTab;
         private T[] mLastItems;
@@ -99,31 +100,25 @@ class ManualFillingMediator
         @Override
         public void onSceneChange(Layout layout) {
             // Includes events like side-swiping between tabs and triggering contextual search.
-            mAccessorySheet.hide();
+            mKeyboardAccessory.dismiss();
         }
     };
 
     private final TabObserver mTabObserver = new EmptyTabObserver() {
         @Override
         public void onHidden(Tab tab) {
-            // TODO(fhorschig): Test that the accessory is reset and close if a tab changes.
-            // TODO(fhorschig): Test that this hides everything.
-            mAccessorySheet.hide();
-            resetAccessory();
+            mKeyboardAccessory.dismiss();
         }
 
         @Override
         public void onDestroyed(Tab tab) {
-            // TODO(fhorschig): Test that this hides everything.
-            mAccessorySheet.hide();
-            resetAccessory();
             mModel.remove(tab); // Clears tab if still present.
+            restoreCachedState(mActiveBrowserTab);
         }
 
         @Override
         public void onEnterFullscreenMode(Tab tab, FullscreenOptions options) {
-            // TODO(fhorschig): Test that this hides everything.
-            mAccessorySheet.hide();
+            mKeyboardAccessory.dismiss();
         }
     };
 
@@ -148,9 +143,8 @@ class ManualFillingMediator
 
             @Override
             public void willCloseTab(Tab tab, boolean animate) {
-                mAccessorySheet.hide();
-                resetAccessory();
                 mModel.remove(tab);
+                restoreCachedState(mActiveBrowserTab);
             }
         };
         Tab currentTab = activity.getTabModelSelector().getCurrentTab();
@@ -173,7 +167,6 @@ class ManualFillingMediator
     }
 
     void destroy() {
-        // TODO(fhorschig): Remove all tabs. Remove observers from tabs. Destroy all providers.
         mTabModelObserver.destroy();
         mKeyboardAccessory.destroy();
     }
@@ -188,6 +181,14 @@ class ManualFillingMediator
 
     void notifyPopupOpened(DropdownPopupWindow popup) {
         mPopup = popup;
+    }
+
+    public void pause() {
+        mKeyboardAccessory.dismiss();
+    }
+
+    void resume() {
+        restoreCachedState(mActiveBrowserTab);
     }
 
     @Override
@@ -211,13 +212,6 @@ class ManualFillingMediator
     }
 
     @Override
-    public void onCloseKeyboardAccessory() {
-        assert mActivity != null : "ManualFillingMediator needs initialization.";
-        mAccessorySheet.hide();
-        UiUtils.hideKeyboard(mActivity.getCurrentFocus());
-    }
-
-    @Override
     public void onOpenKeyboard() {
         assert mActivity != null : "ManualFillingMediator needs initialization.";
         UiUtils.showKeyboard(mActivity.getCurrentFocus());
@@ -233,21 +227,18 @@ class ManualFillingMediator
     }
 
     private void restoreCachedState(Tab browserTab) {
+        mKeyboardAccessory.dismiss();
+        clearTabs();
         AccessoryState state = getOrCreateAccessoryState(browserTab);
-        resetAccessory();
         if (state.mPasswordAccessorySheet != null) {
             addTab(state.mPasswordAccessorySheet.getTab());
         }
         if (state.mActionsProvider != null) state.mActionsProvider.notifyAboutCachedItems();
     }
 
-    private void resetAccessory() {
-        setTabs(new KeyboardAccessoryData.Tab[0]);
-    }
-
-    private void setTabs(KeyboardAccessoryData.Tab[] tabs) {
-        mKeyboardAccessory.setTabs(tabs);
-        mAccessorySheet.setTabs(tabs);
+    private void clearTabs() {
+        mKeyboardAccessory.setTabs(new KeyboardAccessoryData.Tab[0]);
+        mAccessorySheet.setTabs(new KeyboardAccessoryData.Tab[0]);
     }
 
     @VisibleForTesting
