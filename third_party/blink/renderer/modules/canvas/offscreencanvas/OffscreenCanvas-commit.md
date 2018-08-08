@@ -192,8 +192,8 @@ placeholder canvas.
 The image resources of OffscreenCanvas’s 2d rendering context are centrally
 managed by a CanvasResourceProvider instance. CanvasResourceProvider is an
 abstract class that encapsulates a drawable graphics resources and its
-implementations could be managing different specific resource types, ranging
-from Gpu textures, Gpu memory buffer, to shared bitmap in RAM. When `commit()`
+implementations and could be managing different specific resource types, ranging
+from Gpu textures, Gpu Memory Buffers, to shared bitmap in RAM. When `commit()`
 is invoked by the user, an image snapshot would be taken from the SkSurface
 managed by the CanvasResourceProvider; the SkSurface can be on Gpu context (see
 SkSurface::MakeRenderTarget()) or on RAM memory (see SkSurface::MakeRaster()).
@@ -218,10 +218,9 @@ handled by a release callback. This release callback is saved in the
 DrawingBuffer instance and is swapped only when a new `commit()` is coming or
 the DrawingBuffer is destructed; when the swapping happens, the previously
 saved callback will be run, releasing the ColorBuffer that holds up the GPU
-memory resource (see DrawingBuffer::SwapPreviousFrameCallback()) . This
-release mechanism is not consistent with the rest of canvas resource; ideally,
-everything should be kept under CanvasResourceProvider; this might be a future
-to-do item.
+memory resource. This release mechanism is not consistent with the rest of
+canvas resource; ideally, everything should be kept under
+CanvasResourceProvider; this might be a future to-do item.
 
 ## Preparing the CompositorFrame
 
