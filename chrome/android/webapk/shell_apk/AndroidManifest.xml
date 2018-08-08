@@ -65,6 +65,7 @@
         <meta-data android:name="org.chromium.webapk.shell_apk.orientation" android:value="{{{orientation}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.themeColor" android:value="{{{theme_color}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.backgroundColor" android:value="{{{background_color}}}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.hasLargeSplashIcons" android:value="{{{has_large_splash_icons}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.iconId" android:resource="@mipmap/app_icon" />
         <meta-data android:name="org.chromium.webapk.shell_apk.splashId" android:resource="@drawable/splash_icon" />
 
