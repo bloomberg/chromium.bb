@@ -126,7 +126,6 @@ class DraggedNodeImageBuilder {
                                          kGlobalPaintFlattenCompositingLayers,
                                          LayoutSize());
     PaintLayerFlags flags = kPaintLayerHaveTransparency |
-                            kPaintLayerAppliedTransform |
                             kPaintLayerUncachedClipRects;
     PaintRecordBuilder builder;
 

@@ -3099,7 +3099,7 @@ void CompositedLayerMapping::LocalClipRectForSquashedLayer(
 void CompositedLayerMapping::DoPaintTask(
     const GraphicsLayerPaintInfo& paint_info,
     const GraphicsLayer& graphics_layer,
-    const PaintLayerFlags& paint_layer_flags,
+    PaintLayerFlags paint_layer_flags,
     GraphicsContext& context,
     const IntRect& clip /* In the coords of rootLayer */) const {
   FontCachePurgePreventer font_cache_purge_preventer;
