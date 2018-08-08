@@ -35,6 +35,7 @@ DisplayICCProfiles::~DisplayICCProfiles() {
 void DisplayICCProfiles::UpdateIfNeeded() {
   if (!needs_update_)
     return;
+  needs_update_ = false;
   map_.clear();
 
   // Always add Apple's sRGB profile.
