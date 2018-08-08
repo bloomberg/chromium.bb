@@ -335,13 +335,7 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   // Top container requires updated toolbar and bookmark bar to compute bounds.
   UpdateTopContainerBounds();
 
-  int bottom = LayoutDownloadShelf(browser_view->height());
-  // Treat a detached bookmark bar as if the web contents container is shifted
-  // upwards and overlaps it.
-  int active_top_margin = GetContentsOffsetForBookmarkBar();
-  contents_layout_manager_->SetActiveTopMargin(active_top_margin);
-  top -= active_top_margin;
-  LayoutContentsContainerView(top, bottom);
+  LayoutContentsContainerView(top, LayoutDownloadShelf(browser_view->height()));
 
   // This must be done _after_ we lay out the WebContents since this
   // code calls back into us to find the bounding box the find bar
@@ -434,7 +428,7 @@ int BrowserViewLayout::LayoutBookmarkBar(int top) {
     return y;
   }
 
-  bookmark_bar_->set_infobar_visible(InfobarVisible());
+  bookmark_bar_->SetInfoBarVisible(IsInfobarVisible());
   int bookmark_bar_height = bookmark_bar_->GetPreferredSize().height();
   y -= bookmark_bar_->GetToolbarOverlap();
   bookmark_bar_->SetBounds(vertical_layout_rect_.x(),
@@ -453,7 +447,7 @@ int BrowserViewLayout::LayoutInfoBar(int top) {
   if (immersive_mode_controller_->IsEnabled())
     top = browser_view_->y();
 
-  infobar_container_->SetVisible(InfobarVisible());
+  infobar_container_->SetVisible(IsInfobarVisible());
   infobar_container_->SetBounds(
       vertical_layout_rect_.x(), top, vertical_layout_rect_.width(),
       infobar_container_->GetPreferredSize().height());
@@ -503,19 +497,6 @@ void BrowserViewLayout::UpdateTopContainerBounds() {
   top_container_->SetBoundsRect(top_container_bounds);
 }
 
-int BrowserViewLayout::GetContentsOffsetForBookmarkBar() {
-  // If the bookmark bar is hidden or attached to the omnibox the web contents
-  // will appear directly underneath it and does not need an offset.
-  if (!bookmark_bar_ ||
-      !delegate_->IsBookmarkBarVisible() ||
-      !bookmark_bar_->IsDetached()) {
-    return 0;
-  }
-
-  // Offset for the detached bookmark bar.
-  return bookmark_bar_->height();
-}
-
 int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
   if (delegate_->DownloadShelfNeedsLayout()) {
     bool visible = browser()->SupportsWindowFeature(
@@ -531,7 +512,7 @@ int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
   return bottom;
 }
 
-bool BrowserViewLayout::InfobarVisible() const {
+bool BrowserViewLayout::IsInfobarVisible() const {
   // Cast to a views::View to access GetPreferredSize().
   views::View* infobar_container = infobar_container_;
   // NOTE: Can't check if the size IsEmpty() since it's always 0-width.

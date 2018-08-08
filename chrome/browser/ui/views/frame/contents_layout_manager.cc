@@ -6,14 +6,11 @@
 
 #include "ui/views/view.h"
 
-ContentsLayoutManager::ContentsLayoutManager(
-    views::View* devtools_view,
-    views::View* contents_view)
+ContentsLayoutManager::ContentsLayoutManager(views::View* devtools_view,
+                                             views::View* contents_view)
     : devtools_view_(devtools_view),
       contents_view_(contents_view),
-      host_(nullptr),
-      active_top_margin_(0) {
-}
+      host_(nullptr) {}
 
 ContentsLayoutManager::~ContentsLayoutManager() {
 }
@@ -28,20 +25,10 @@ void ContentsLayoutManager::SetContentsResizingStrategy(
     host_->InvalidateLayout();
 }
 
-void ContentsLayoutManager::SetActiveTopMargin(int margin) {
-  if (active_top_margin_ == margin)
-    return;
-
-  active_top_margin_ = margin;
-  if (host_)
-    host_->InvalidateLayout();
-}
-
 void ContentsLayoutManager::Layout(views::View* contents_container) {
   DCHECK(host_ == contents_container);
 
-  int top = active_top_margin_;
-  int height = std::max(0, contents_container->height() - top);
+  int height = contents_container->height();
   int width = contents_container->width();
 
   gfx::Size container_size(width, height);
@@ -50,8 +37,6 @@ void ContentsLayoutManager::Layout(views::View* contents_container) {
 
   ApplyDevToolsContentsResizingStrategy(strategy_, container_size,
       &new_devtools_bounds, &new_contents_bounds);
-  new_devtools_bounds.Offset(0, top);
-  new_contents_bounds.Offset(0, top);
 
   // DevTools cares about the specific position, so we have to compensate RTL
   // layout here.

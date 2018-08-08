@@ -198,7 +198,7 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
 TEST_F(BrowserViewLayoutTest, BrowserViewLayout) {
   EXPECT_TRUE(layout()->browser());
   EXPECT_TRUE(layout()->GetWebContentsModalDialogHost());
-  EXPECT_FALSE(layout()->InfobarVisible());
+  EXPECT_FALSE(layout()->IsInfobarVisible());
 }
 
 // Test the core layout functions.

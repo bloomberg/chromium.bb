@@ -210,6 +210,8 @@ class BrowserView : public BrowserWindow,
   // Returns true if various window components are visible.
   bool IsTabStripVisible() const;
 
+  bool IsInfoBarVisible() const;
+
   // Returns true if the profile associated with this Browser window is
   // incognito.
   bool IsIncognito() const;
@@ -516,6 +518,17 @@ class BrowserView : public BrowserWindow,
   // Gets the FullscreenControlHost for this BrowserView, creating it if it does
   // not yet exist.
   FullscreenControlHost* GetFullscreenControlHost();
+
+  // Gets the additional bottom margin for the bookmark bar. Returns non-zero
+  // when the bookmark bar is attached. This ensures the buttons appear centered
+  // between the bottom of the omnibox and the bottom of the bookmark bar.
+  int GetAdditionalBookmarkBarBottomMargin();
+
+  // Gets the additional top margin for the bookmark bar. Returns non-zero when
+  // the bookmark bar is detached and an infobar is showing. This ensures the
+  // bookmark buttons appear centered within the area that is not covered by the
+  // infobar's shadow.
+  int GetAdditionalBookmarkBarTopMargin();
 
  private:
   // Do not friend BrowserViewLayout. Use the BrowserViewLayoutDelegate
