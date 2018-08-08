@@ -7,5 +7,5 @@
     ImplementedAs=MediaStreamTrackContentHint,
     RuntimeEnabled=MediaStreamTrackContentHint
 ] partial interface MediaStreamTrack {
-    attribute DOMString contentHint;
+    [Measure] attribute DOMString contentHint;
 };

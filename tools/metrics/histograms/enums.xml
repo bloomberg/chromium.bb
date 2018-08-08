@@ -19565,6 +19565,8 @@ Called by update_net_error_codes.py.-->
   <int value="2522" label="ShapeDetectionAPI"/>
   <int value="2523" label="V8SourceBuffer_ChangeType_Method"/>
   <int value="2524" label="PPAPIWebSocket"/>
+  <int value="2525" label="V8MediaStreamTrack_ContentHint_AttributeGetter"/>
+  <int value="2526" label="V8MediaStreamTrack_ContentHint_AttributeSetter"/>
 </enum>
 
 <enum name="FeedbackSource">

@@ -1981,6 +1981,8 @@ enum WebFeature {
   kShapeDetectionAPI = 2522,
   kV8SourceBuffer_ChangeType_Method = 2523,
   kPPAPIWebSocket = 2524,
+  kV8MediaStreamTrack_ContentHint_AttributeGetter = 2525,
+  kV8MediaStreamTrack_ContentHint_AttributeSetter = 2526,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
