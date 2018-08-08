@@ -137,16 +137,16 @@ void VolumeControlImpl::SetAudioFocus(
     assistant_client::OutputStreamType focused_stream) {}
 
 float VolumeControlImpl::GetSystemVolume() {
-  return volume_;
+  return volume_ * 1.0 / 100.0;
 }
 
 void VolumeControlImpl::SetSystemVolume(float new_volume, bool user_initiated) {
-  volume_control_ptr_->SetVolume(new_volume, user_initiated);
+  volume_control_ptr_->SetVolume(new_volume * 100.0, user_initiated);
 }
 
 float VolumeControlImpl::GetAlarmVolume() {
   // TODO(muyuanli): implement.
-  return 100.0f;
+  return 1.0f;
 }
 
 void VolumeControlImpl::SetAlarmVolume(float new_volume, bool user_initiated) {
