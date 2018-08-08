@@ -3290,6 +3290,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'coral',
       'cyan',
       'daisy_skate',
+      'eve',
       'eve-arcnext',
       'kevin-arcnext',
       'peach_pit',
