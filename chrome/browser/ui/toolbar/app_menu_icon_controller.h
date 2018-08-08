@@ -67,6 +67,8 @@ class AppMenuIconController :
   // UpgradeObserver:
   void OnUpgradeRecommended() override;
 
+  // True for desktop Chrome on dev and canary channels.
+  const bool is_unstable_channel_;
   Profile* profile_;
   Delegate* delegate_;
   content::NotificationRegistrar registrar_;

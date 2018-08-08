@@ -47986,6 +47986,7 @@ Full version information for the fingerprint enum values:
   <int value="3" label="High"/>
   <int value="4" label="(Obsolete) Severe"/>
   <int value="5" label="Critical"/>
+  <int value="6" label="Very Low (desktop canary and dev)"/>
 </enum>
 
 <enum name="UploadAcceptedCardOrigin">

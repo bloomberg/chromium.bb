@@ -36,6 +36,7 @@ SkColor IconColorForUpdateSeverity(mojom::UpdateSeverity severity,
   const SkColor default_color = for_menu ? kMenuIconColor : kTrayIconColor;
   switch (severity) {
     case mojom::UpdateSeverity::NONE:
+    case mojom::UpdateSeverity::VERY_LOW:  // Not used on Chrome OS.
       return default_color;
     case mojom::UpdateSeverity::LOW:
       return for_menu ? gfx::kGoogleGreen700 : kTrayIconColor;
@@ -44,10 +45,8 @@ SkColor IconColorForUpdateSeverity(mojom::UpdateSeverity severity,
     case mojom::UpdateSeverity::HIGH:
     case mojom::UpdateSeverity::CRITICAL:
       return for_menu ? gfx::kGoogleRed700 : gfx::kGoogleRed300;
-    default:
-      NOTREACHED();
-      break;
   }
+  NOTREACHED() << severity;
   return default_color;
 }
 

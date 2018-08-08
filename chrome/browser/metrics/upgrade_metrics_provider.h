@@ -8,9 +8,8 @@
 #include "base/macros.h"
 #include "components/metrics/metrics_provider.h"
 
-// UpgradeMetricsProvider groups various constants and functions used for
-// reporting extension IDs with UMA reports (after hashing the extension IDs
-// for privacy).
+// UpgradeMetricsProvider reports the state of detected pending updates in UMA
+// reports.
 class UpgradeMetricsProvider : public metrics::MetricsProvider {
  public:
   UpgradeMetricsProvider();
