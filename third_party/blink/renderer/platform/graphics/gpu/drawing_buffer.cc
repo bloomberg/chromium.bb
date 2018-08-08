@@ -190,7 +190,6 @@ DrawingBuffer::DrawingBuffer(
 
 DrawingBuffer::~DrawingBuffer() {
   DCHECK(destruction_in_progress_);
-  SwapPreviousFrameCallback(nullptr);
   if (layer_) {
     layer_->ClearClient();
     layer_ = nullptr;
@@ -1651,15 +1650,6 @@ DrawingBuffer::ScopedStateRestorer::~ScopedStateRestorer() {
     client->DrawingBufferClientRestorePixelUnpackBufferBinding();
   if (pixel_pack_buffer_binding_dirty_)
     client->DrawingBufferClientRestorePixelPackBufferBinding();
-}
-
-void DrawingBuffer::SwapPreviousFrameCallback(
-    std::unique_ptr<viz::SingleReleaseCallback> release_callback) {
-  if (previous_image_release_callback_) {
-    previous_image_release_callback_->Run(gpu::SyncToken(), false);
-  }
-
-  previous_image_release_callback_ = std::move(release_callback);
 }
 
 bool DrawingBuffer::ShouldUseChromiumImage() {
