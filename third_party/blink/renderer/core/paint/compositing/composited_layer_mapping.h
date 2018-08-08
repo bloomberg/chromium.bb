@@ -465,7 +465,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 
   void DoPaintTask(const GraphicsLayerPaintInfo&,
                    const GraphicsLayer&,
-                   const PaintLayerFlags&,
+                   PaintLayerFlags,
                    GraphicsContext&,
                    const IntRect& clip) const;
 

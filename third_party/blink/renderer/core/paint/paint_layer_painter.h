@@ -43,12 +43,10 @@ class CORE_EXPORT PaintLayerPainter {
                     const PaintLayerPaintingInfo&,
                     PaintLayerFlags);
   // PaintLayerContents() assumes that the caller will clip to the bounds of the
-  // painting dirty rect if necessary. If PaintLayerFragment is not nullptr,
-  // only the specified fragment will be painted.
+  // painting dirty rect if necessary.
   PaintResult PaintLayerContents(GraphicsContext&,
                                  const PaintLayerPaintingInfo&,
-                                 PaintLayerFlags,
-                                 const PaintLayerFragment* = nullptr);
+                                 PaintLayerFlags);
 
   void PaintOverlayScrollbars(GraphicsContext&,
                               const LayoutRect& damage_rect,
@@ -61,27 +59,6 @@ class CORE_EXPORT PaintLayerPainter {
 
  private:
   friend class PaintLayerPainterTest;
-
-  bool ShouldAdjustPaintingRoot(const PaintLayerPaintingInfo& painting_info,
-                                PaintLayerFlags paint_flags);
-
-  PaintResult PaintLayerContentsCompositingAllPhases(
-      GraphicsContext&,
-      const PaintLayerPaintingInfo&,
-      PaintLayerFlags,
-      const PaintLayerFragment* = nullptr);
-  PaintResult PaintLayerWithAdjustedRoot(GraphicsContext&,
-                                         const PaintLayerPaintingInfo&,
-                                         PaintLayerFlags);
-  PaintResult PaintFragmentByApplyingTransform(GraphicsContext&,
-                                               const PaintLayerPaintingInfo&,
-                                               PaintLayerFlags,
-                                               const PaintLayerFragment&);
-  PaintResult PaintSingleFragment(GraphicsContext&,
-                                  const PaintLayerPaintingInfo&,
-                                  PaintLayerFlags,
-                                  const PaintLayerFragment&,
-                                  const LayoutSize& subpixel_accumulation);
 
   PaintResult PaintChildren(unsigned children_to_visit,
                             GraphicsContext&,

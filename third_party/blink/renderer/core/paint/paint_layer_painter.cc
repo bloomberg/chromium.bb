@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
-#include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_display_item_fragment.h"
@@ -97,24 +96,6 @@ bool PaintLayerPainter::PaintedOutputInvisible(
   return false;
 }
 
-bool PaintLayerPainter::ShouldAdjustPaintingRoot(
-    const PaintLayerPaintingInfo& painting_info,
-    PaintLayerFlags paint_flags) {
-  // Cull rects and clips can't be propagated into a different 2D transform
-  // space.
-  if (paint_layer_.PaintsWithTransform(painting_info.GetGlobalPaintFlags()) &&
-      !(paint_flags & kPaintLayerAppliedTransform))
-    return true;
-
-  // Cull rects and clips can't be propagated across a filter which moves
-  // pixels, since the input of the filter may be outside the cull rect/clips
-  // yet still result in painted output.
-  if (paint_layer_.HasFilterThatMovesPixels())
-    return true;
-
-  return false;
-}
-
 PaintResult PaintLayerPainter::Paint(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& painting_info,
@@ -155,34 +136,18 @@ PaintResult PaintLayerPainter::Paint(
     return kFullyPainted;
   }
 
+  // If the transform can't be inverted, then don't paint anything.
+  if (paint_layer_.PaintsWithTransform(painting_info.GetGlobalPaintFlags()) &&
+      !paint_layer_.RenderableTransform(painting_info.GetGlobalPaintFlags())
+           .IsInvertible()) {
+    return kFullyPainted;
+  }
+
   if (paint_layer_.PaintsWithTransparency(painting_info.GetGlobalPaintFlags()))
     paint_flags |= kPaintLayerHaveTransparency;
 
-  // The painting root should be adjusted if clips or cull rects for the
-  // current root don't make sense for content underneath |paint_layer_|.
-  // See ShouldAdjustPaintingRoot for examples when this is the case.
-  // In these cases, we reset the cull rect to infinite, collect fragments,
-  // and paint each fragment's subtree separately.
-  if (ShouldAdjustPaintingRoot(painting_info, paint_flags))
-    return PaintLayerWithAdjustedRoot(context, painting_info, paint_flags);
-
-  return PaintLayerContentsCompositingAllPhases(context, painting_info,
-                                                paint_flags);
-}
-
-PaintResult PaintLayerPainter::PaintLayerContentsCompositingAllPhases(
-    GraphicsContext& context,
-    const PaintLayerPaintingInfo& painting_info,
-    PaintLayerFlags paint_flags,
-    const PaintLayerFragment* fragment) {
-  DCHECK(paint_layer_.IsSelfPaintingLayer() ||
-         paint_layer_.HasSelfPaintingLayerDescendant());
-
-  PaintLayerFlags local_paint_flags =
-      paint_flags & ~(kPaintLayerAppliedTransform);
-  local_paint_flags |= kPaintLayerPaintingCompositingAllPhases;
-  return PaintLayerContents(context, painting_info, local_paint_flags,
-                            fragment);
+  paint_flags |= kPaintLayerPaintingCompositingAllPhases;
+  return PaintLayerContents(context, painting_info, paint_flags);
 }
 
 static bool ShouldCreateSubsequence(const PaintLayer& paint_layer,
@@ -267,42 +232,55 @@ static bool ShouldRepaintSubsequence(
 void PaintLayerPainter::AdjustForPaintProperties(
     PaintLayerPaintingInfo& painting_info,
     PaintLayerFlags& paint_flags) {
-  // Paint properties for transforms, composited layers or LayoutView is already
-  // taken care of.
-  // TODO(wangxianzhu): Also use this for PaintsWithTransform() and remove
-  // PaintLayerWithTransform().
-  if (&paint_layer_ == painting_info.root_layer ||
-      paint_layer_.PaintsWithTransform(painting_info.GetGlobalPaintFlags()) ||
-      paint_layer_.PaintsIntoOwnOrGroupedBacking(
-          painting_info.GetGlobalPaintFlags()) ||
-      paint_layer_.GetLayoutObject().IsLayoutView())
-    return;
-
+  // TODO(wangxianzhu): Make this function fragment aware.
   const auto& current_fragment = paint_layer_.GetLayoutObject().FirstFragment();
-  const auto* current_transform =
-      current_fragment.LocalBorderBoxProperties().Transform();
-  const auto& root_fragment =
-      painting_info.root_layer->GetLayoutObject().FirstFragment();
-  const auto* root_transform =
-      root_fragment.LocalBorderBoxProperties().Transform();
-  if (current_transform == root_transform)
+
+  bool use_infinite_dirty_rect =
+      // Cull rects and clips can't be propagated across a filter which moves
+      // pixels, since the input of the filter may be outside the cull rect /
+      // clips yet still result in painted output.
+      paint_layer_.HasFilterThatMovesPixels() ||
+      // We do not apply cull rect optimizations across transforms for two
+      // reasons:
+      //   1) Performance: We can optimize transform changes by not repainting.
+      //   2) Complexity: Difficulty updating clips when ancestor transforms
+      //      change.
+      // For these reasons, we use an infinite dirty rect here.
+      paint_layer_.PaintsWithTransform(painting_info.GetGlobalPaintFlags());
+
+  if (use_infinite_dirty_rect)
+    painting_info.paint_dirty_rect = LayoutRect(LayoutRect::InfiniteIntRect());
+
+  if (painting_info.root_layer == &paint_layer_)
     return;
 
-  // painting_info.paint_dirty_rect is currently in |painting_info.root_layer|'s
-  // pixel-snapped border box space. We need to adjust it into |paint_layer_|'s
-  // space. This handles the following cases:
-  // - The current layer has PaintOffsetTranslation;
-  // - The current layer's transform state escapes the root layers contents
-  //   transform, e.g. a fixed-position layer;
-  // - Scroll offsets.
-  const auto& matrix = GeometryMapper::SourceToDestinationProjection(
-      root_transform, current_transform);
-  painting_info.paint_dirty_rect.MoveBy(
-      RoundedIntPoint(root_fragment.PaintOffset()));
-  painting_info.paint_dirty_rect =
-      matrix.MapRect(painting_info.paint_dirty_rect);
-  painting_info.paint_dirty_rect.MoveBy(
-      -RoundedIntPoint(current_fragment.PaintOffset()));
+  if (!use_infinite_dirty_rect) {
+    const auto* current_transform =
+        current_fragment.LocalBorderBoxProperties().Transform();
+    const auto& root_fragment =
+        painting_info.root_layer->GetLayoutObject().FirstFragment();
+    const auto* root_transform =
+        root_fragment.LocalBorderBoxProperties().Transform();
+    if (current_transform == root_transform)
+      return;
+
+    // painting_info.paint_dirty_rect is currently in
+    // |painting_info.root_layer|'s pixel-snapped border box space. We need to
+    // adjust it into |paint_layer_|'s space.
+    // This handles the following cases:
+    // - The current layer has PaintOffsetTranslation;
+    // - The current layer's transform state escapes the root layers contents
+    //   transform, e.g. a fixed-position layer;
+    // - Scroll offsets.
+    const auto& matrix = GeometryMapper::SourceToDestinationProjection(
+        root_transform, current_transform);
+    painting_info.paint_dirty_rect.MoveBy(
+        RoundedIntPoint(root_fragment.PaintOffset()));
+    painting_info.paint_dirty_rect =
+        matrix.MapRect(painting_info.paint_dirty_rect);
+    painting_info.paint_dirty_rect.MoveBy(
+        -RoundedIntPoint(current_fragment.PaintOffset()));
+  }
 
   // Make the current layer the new root layer.
   painting_info.root_layer = &paint_layer_;
@@ -311,7 +289,7 @@ void PaintLayerPainter::AdjustForPaintProperties(
   paint_flags &= ~kPaintLayerPaintingOverflowContents;
   paint_flags &= ~kPaintLayerPaintingCompositingScrollingPhase;
 
-  // TODO(chrishtr): is this correct for fragmentation?
+  // TODO(wangxianzhu): Make this function fragment aware.
   if (current_fragment.PaintProperties() &&
       current_fragment.PaintProperties()->PaintOffsetTranslation()) {
     painting_info.sub_pixel_accumulation =
@@ -322,8 +300,7 @@ void PaintLayerPainter::AdjustForPaintProperties(
 PaintResult PaintLayerPainter::PaintLayerContents(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& painting_info_arg,
-    PaintLayerFlags paint_flags_arg,
-    const PaintLayerFragment* fragment) {
+    PaintLayerFlags paint_flags_arg) {
   PaintLayerFlags paint_flags = paint_flags_arg;
   PaintResult result = kFullyPainted;
 
@@ -344,7 +321,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
 
   DCHECK(paint_layer_.IsSelfPaintingLayer() ||
          paint_layer_.HasSelfPaintingLayerDescendant());
-  DCHECK(!(paint_flags & kPaintLayerAppliedTransform));
 
   bool is_self_painting_layer = paint_layer_.IsSelfPaintingLayer();
   bool is_painting_overlay_scrollbars =
@@ -466,32 +442,17 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       respect_overflow_clip = kIgnoreOverflowClip;
     }
 
-    if (fragment) {
-      // We are painting a single specified fragment.
-      // TODO(wangxianzhu): we could use |fragment| directly, but because
-      // the value of |fragment| is for SPv175 only for descendants to find the
-      // correct fragment state, we don't bother to modify SPv1 code with
-      // the risk of regressions. Eventually we will remove the whole
-      // PaintLayerWithTransform() path.
-      paint_layer_for_fragments->AppendSingleFragmentIgnoringPagination(
-          layer_fragments, local_painting_info.root_layer,
-          &local_painting_info.paint_dirty_rect,
-          kIgnorePlatformOverlayScrollbarSize, respect_overflow_clip,
-          &offset_from_root, local_painting_info.sub_pixel_accumulation);
-      layer_fragments[0].fragment_data = fragment->fragment_data;
-    } else {
-      paint_layer_for_fragments->CollectFragments(
-          layer_fragments, local_painting_info.root_layer,
-          &local_painting_info.paint_dirty_rect,
-          kIgnorePlatformOverlayScrollbarSize, respect_overflow_clip,
-          &offset_from_root, local_painting_info.sub_pixel_accumulation);
+    paint_layer_for_fragments->CollectFragments(
+        layer_fragments, local_painting_info.root_layer,
+        &local_painting_info.paint_dirty_rect,
+        kIgnorePlatformOverlayScrollbarSize, respect_overflow_clip,
+        &offset_from_root, local_painting_info.sub_pixel_accumulation);
 
-      // PaintLayer::CollectFragments depends on the paint dirty rect in
-      // complicated ways. For now, always assume a partially painted output
-      // for fragmented content.
-      if (layer_fragments.size() > 1)
-        result = kMayBeClippedByPaintDirtyRect;
-    }
+    // PaintLayer::CollectFragments depends on the paint dirty rect in
+    // complicated ways. For now, always assume a partially painted output
+    // for fragmented content.
+    if (layer_fragments.size() > 1)
+      result = kMayBeClippedByPaintDirtyRect;
 
     if (paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase) {
       // Fragment offsets have been computed in the clipping container's
@@ -708,137 +669,6 @@ static void ForAllFragments(GraphicsContext& context,
   }
 }
 
-PaintResult PaintLayerPainter::PaintLayerWithAdjustedRoot(
-    GraphicsContext& context,
-    const PaintLayerPaintingInfo& painting_info,
-    PaintLayerFlags paint_flags) {
-  TransformationMatrix layer_transform =
-      paint_layer_.RenderableTransform(painting_info.GetGlobalPaintFlags());
-  // If the transform can't be inverted, then don't paint anything.
-  if (!layer_transform.IsInvertible())
-    return kFullyPainted;
-
-  // FIXME: We should make sure that we don't walk past paintingInfo.rootLayer
-  // here.  m_paintLayer may be the "root", and then we should avoid looking at
-  // its parent.
-  PaintLayer* parent_layer = paint_layer_.Parent();
-
-  PaintResult result = kFullyPainted;
-  PaintLayerFragments layer_fragments;
-
-  // This works around a bug in squashed-layer painting.
-  // Squashed layers paint into a backing in its compositing container's
-  // space, but painting_info.root_layer points to the squashed layer
-  // itself, thus PaintLayerClipper would return a clip rect in the
-  // squashed layer's local space, instead of the backing's space.
-  // Fortunately, CompositedLayerMapping::DoPaintTask already applied
-  // appropriate ancestor clip for us, so we can simply skip it.
-  bool is_squashed_layer = painting_info.root_layer == &paint_layer_;
-
-  if (is_squashed_layer) {
-    // We don't need to collect any fragments in the regular way here. We have
-    // already calculated a clip rectangle for the ancestry if it was needed,
-    // and clipping this layer is something that can be done further down the
-    // path, when the transform has been applied.
-    PaintLayerFragment fragment;
-    fragment.background_rect = painting_info.paint_dirty_rect;
-    fragment.fragment_data = &paint_layer_.GetLayoutObject().FirstFragment();
-    layer_fragments.push_back(fragment);
-  } else if (parent_layer) {
-    ShouldRespectOverflowClipType respect_overflow_clip =
-        ShouldRespectOverflowClip(paint_flags, paint_layer_.GetLayoutObject());
-    paint_layer_.CollectFragments(
-        layer_fragments, painting_info.root_layer,
-        &painting_info.paint_dirty_rect, kIgnorePlatformOverlayScrollbarSize,
-        respect_overflow_clip, nullptr, painting_info.sub_pixel_accumulation);
-    // PaintLayer::CollectFragments depends on the paint dirty rect in
-    // complicated ways. For now, always assume a partially painted output
-    // for fragmented content.
-    if (layer_fragments.size() > 1)
-      result = kMayBeClippedByPaintDirtyRect;
-  }
-
-  // We have to skip cache for fragments under transform because we will paint
-  // all the fragments of sublayers in each fragment like the following:
-  //  fragment 0 { sub-layer fragment 0; sub-layer fragment 1 }
-  //  fragment 1 { sub-layer fragment 0; sub-layer fragment 1 }
-  base::Optional<DisplayItemCacheSkipper> cache_skipper;
-  if (layer_fragments.size() > 1)
-    cache_skipper.emplace(context);
-
-  ForAllFragments(
-      context, layer_fragments, [&](const PaintLayerFragment& fragment) {
-        if (paint_layer_.PaintsWithTransform(
-                painting_info.GetGlobalPaintFlags())) {
-          if (PaintFragmentByApplyingTransform(context, painting_info,
-                                               paint_flags, fragment) ==
-              kMayBeClippedByPaintDirtyRect)
-            result = kMayBeClippedByPaintDirtyRect;
-        } else {
-          if (PaintSingleFragment(context, painting_info, paint_flags, fragment,
-                                  painting_info.sub_pixel_accumulation) ==
-              kMayBeClippedByPaintDirtyRect)
-            result = kMayBeClippedByPaintDirtyRect;
-        }
-      });
-  return result;
-}
-
-PaintResult PaintLayerPainter::PaintFragmentByApplyingTransform(
-    GraphicsContext& context,
-    const PaintLayerPaintingInfo& painting_info,
-    PaintLayerFlags paint_flags,
-    const PaintLayerFragment& fragment) {
-  // This involves subtracting out the position of the layer in our current
-  // coordinate space, but preserving the accumulated error for sub-pixel
-  // layout.
-  LayoutPoint delta;
-  paint_layer_.ConvertToLayerCoords(painting_info.root_layer, delta);
-  delta.MoveBy(fragment.pagination_offset);
-  delta += painting_info.sub_pixel_accumulation;
-  IntPoint rounded_delta = RoundedIntPoint(delta);
-
-  TransformationMatrix transform(
-      paint_layer_.RenderableTransform(painting_info.GetGlobalPaintFlags()));
-  transform.PostTranslate(rounded_delta.X(), rounded_delta.Y());
-
-  LayoutSize new_sub_pixel_accumulation;
-  if (transform.IsIdentityOrTranslation())
-    new_sub_pixel_accumulation += delta - rounded_delta;
-  // Otherwise discard the sub-pixel remainder because paint offset can't be
-  // transformed by a non-translation transform.
-  return PaintSingleFragment(context, painting_info, paint_flags, fragment,
-                             new_sub_pixel_accumulation);
-}
-
-PaintResult PaintLayerPainter::PaintSingleFragment(
-    GraphicsContext& context,
-    const PaintLayerPaintingInfo& painting_info,
-    PaintLayerFlags paint_flags,
-    const PaintLayerFragment& fragment,
-    const LayoutSize& subpixel_accumulation) {
-  // Now do a paint with the root layer shifted to be us.
-
-  // We do not apply cull rect optimizations across transforms for two reasons:
-  //   1) Performance: We can optimize transform changes by not repainting.
-  //   2) Complexity: Difficulty updating clips when ancestor transforms change.
-  // For these reasons, we use an infinite dirty rect here.
-  PaintLayerPaintingInfo new_paint_info(
-      &paint_layer_, LayoutRect(LayoutRect::InfiniteIntRect()),
-      painting_info.GetGlobalPaintFlags(), subpixel_accumulation);
-
-  if (&paint_layer_ != painting_info.root_layer) {
-    // Remove skip root background flag when we're painting with a new root.
-    paint_flags &= ~kPaintLayerPaintingSkipRootBackground;
-    // When painting a new root we are no longer painting overflow contents.
-    paint_flags &= ~kPaintLayerPaintingOverflowContents;
-    paint_flags &= ~kPaintLayerPaintingCompositingScrollingPhase;
-  }
-
-  return PaintLayerContentsCompositingAllPhases(context, new_paint_info,
-                                                paint_flags, &fragment);
-}
-
 PaintResult PaintLayerPainter::PaintChildren(
     unsigned children_to_visit,
     GraphicsContext& context,
@@ -943,23 +773,23 @@ void PaintLayerPainter::PaintFragmentWithPhase(
   LayoutRect new_cull_rect(clip_rect.Rect());
   // We paint in the containing transform node's space. Now |new_cull_rect| is
   // in the pixel-snapped border box space of |painting_info.root_layer|.
-  // Adjust it to the correct space. |paint_offset| is already in the correct
-  // space.
+  // Adjust it to the correct space.
   new_cull_rect.MoveBy(
       RoundedIntPoint(painting_info.root_layer->GetLayoutObject()
                           .FirstFragment()
                           .PaintOffset()));
+  // If we had pending stylesheets, we should avoid painting descendants of
+  // layout view to avoid FOUC.
+  bool suppress_painting_descendants = paint_layer_.GetLayoutObject()
+                                           .GetDocument()
+                                           .DidLayoutWithPendingStylesheets();
   PaintInfo paint_info(context, PixelSnappedIntRect(new_cull_rect), phase,
                        painting_info.GetGlobalPaintFlags(), paint_flags,
                        &painting_info.root_layer->GetLayoutObject(),
                        fragment.fragment_data
                            ? fragment.fragment_data->LogicalTopInFlowThread()
                            : LayoutUnit(),
-                       // If we had pending stylesheets, we should avoid
-                       // painting descendants of layout view to avoid FOUC.
-                       paint_layer_.GetLayoutObject()
-                           .GetDocument()
-                           .DidLayoutWithPendingStylesheets());
+                       suppress_painting_descendants);
 
   paint_layer_.GetLayoutObject().Paint(paint_info);
 }
