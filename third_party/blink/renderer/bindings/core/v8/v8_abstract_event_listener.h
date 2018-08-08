@@ -132,7 +132,7 @@ class CORE_EXPORT V8AbstractEventListener : public EventListener {
   virtual v8::Local<v8::Value>
   CallListenerFunction(ScriptState*, v8::Local<v8::Value> jsevent, Event*) = 0;
 
-  virtual bool ShouldPreventDefault(v8::Local<v8::Value> return_value);
+  virtual bool ShouldPreventDefault(v8::Local<v8::Value> return_value, Event*);
 
   static void WrapperCleared(
       const v8::WeakCallbackInfo<V8AbstractEventListener>&);

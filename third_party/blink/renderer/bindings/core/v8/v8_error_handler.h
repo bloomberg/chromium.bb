@@ -65,7 +65,7 @@ class V8ErrorHandler final : public V8EventListener {
   v8::Local<v8::Value> CallListenerFunction(ScriptState*,
                                             v8::Local<v8::Value>,
                                             Event*) override;
-  bool ShouldPreventDefault(v8::Local<v8::Value> return_value) override;
+  bool ShouldPreventDefault(v8::Local<v8::Value> return_value, Event*) override;
 };
 
 }  // namespace blink
