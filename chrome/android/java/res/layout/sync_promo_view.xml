@@ -44,8 +44,7 @@
                 android:id="@+id/sign_in"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAllCaps="true"
-                android:textAppearance="@style/WhiteLink"
+                android:textAppearance="@style/WhiteButtonText"
                 app:buttonColor="@color/light_active_color" />
         </LinearLayout>
 

@@ -29,8 +29,7 @@
             android:lineSpacingExtra="6dp"
             android:paddingTop="16dp"
             android:textAlignment="viewStart"
-            android:textColor="@color/url_emphasis_default_text"
-            android:textSize="16sp"/>
+            android:textAppearance="@style/BlackTitle1" />
 
         <TextView
             android:id="@+id/page_info_connection_summary"
@@ -62,8 +61,7 @@
         android:paddingEnd="@dimen/page_info_popup_button_padding_sides"
         android:paddingStart="@dimen/page_info_popup_button_padding_sides"
         android:text="@string/page_info_instant_app_button"
-        android:textSize="14sp"
-        android:textColor="@android:color/white"
+        android:textAppearance="@style/WhiteButtonText"
         app:buttonRaised="false"
         app:buttonColor="@color/app_banner_install_button_bg" />
 
