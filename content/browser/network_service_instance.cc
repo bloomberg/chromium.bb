@@ -13,6 +13,7 @@
 #include "net/log/net_log_util.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -21,6 +22,7 @@ namespace content {
 namespace {
 
 network::mojom::NetworkServicePtr* g_network_service_ptr = nullptr;
+network::NetworkConnectionTracker* g_network_connection_tracker;
 network::NetworkService* g_network_service;
 
 void CreateNetworkServiceOnIO(network::mojom::NetworkServiceRequest request) {
@@ -102,6 +104,20 @@ void FlushNetworkServiceInstanceForTesting() {
 
   if (g_network_service_ptr)
     g_network_service_ptr->FlushForTesting();
+}
+
+network::NetworkConnectionTracker* GetNetworkConnectionTracker() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!g_network_connection_tracker) {
+    g_network_connection_tracker = new network::NetworkConnectionTracker(
+        base::BindRepeating(&GetNetworkService));
+  }
+  return g_network_connection_tracker;
+}
+
+void SetNetworkConnectionTrackerForTesting(
+    network::NetworkConnectionTracker* network_connection_tracker) {
+  g_network_connection_tracker = network_connection_tracker;
 }
 
 }  // namespace content

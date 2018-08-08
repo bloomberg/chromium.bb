@@ -13,6 +13,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_process_host.h"
 
 namespace {
@@ -527,7 +528,7 @@ void WebRtcEventLogManager::OnFirstBrowserContextLoaded() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   network::NetworkConnectionTracker* network_connection_tracker =
-      g_browser_process->network_connection_tracker();
+      content::GetNetworkConnectionTracker();
   DCHECK(network_connection_tracker);
 
   net::URLRequestContextGetter* url_request_context_getter =

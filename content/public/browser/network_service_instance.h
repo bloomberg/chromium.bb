@@ -8,6 +8,7 @@
 #include "content/common/content_export.h"
 
 namespace network {
+class NetworkConnectionTracker;
 class NetworkService;
 namespace mojom {
 class NetworkService;
@@ -33,6 +34,17 @@ CONTENT_EXPORT network::NetworkService* GetNetworkServiceImpl();
 // Call |FlushForTesting()| on cached |NetworkServicePtr|. For testing only.
 // Must only be called on the UI thread.
 CONTENT_EXPORT void FlushNetworkServiceInstanceForTesting();
+
+// Returns a NetworkConnectionTracker that can be used to subscribe for
+// network change events.
+// Must only be called on the UI thread.
+CONTENT_EXPORT network::NetworkConnectionTracker* GetNetworkConnectionTracker();
+
+// Sets the NetworkConnectionTracker instance to use. For testing only.
+// Must be called on the UI thread. Must be called before the first call to
+// GetNetworkConnectionTracker.
+CONTENT_EXPORT void SetNetworkConnectionTrackerForTesting(
+    network::NetworkConnectionTracker* network_connection_tracker);
 
 }  // namespace content
 

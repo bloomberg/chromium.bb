@@ -20,6 +20,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/profile_management_switches.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/test/test_network_connection_tracker.h"
@@ -63,8 +64,9 @@ class ChromeSigninClientTest : public testing::Test {
   ChromeSigninClientTest() {}
 
   void Initialize(std::unique_ptr<network::NetworkConnectionTracker> tracker) {
-    TestingBrowserProcess::GetGlobal()->SetNetworkConnectionTracker(
-        std::move(tracker));
+    network_connection_tracker_ = std::move(tracker);
+    content::SetNetworkConnectionTrackerForTesting(
+        network_connection_tracker_.get());
     // Create a signed-in profile.
     TestingProfile::Builder builder;
     profile_ = builder.Build();
@@ -77,6 +79,8 @@ class ChromeSigninClientTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
+  std::unique_ptr<network::NetworkConnectionTracker>
+      network_connection_tracker_;
   std::unique_ptr<Profile> profile_;
   SigninClient* signin_client_;
 };

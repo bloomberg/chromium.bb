@@ -43,6 +43,10 @@ namespace gcm {
 class GCMDriver;
 }
 
+namespace network {
+class TestNetworkConnectionTracker;
+}
+
 namespace policy {
 class PolicyService;
 }
@@ -74,7 +78,6 @@ class TestingBrowserProcess : public BrowserProcess {
   SystemNetworkContextManager* system_network_context_manager() override;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory()
       override;
-  network::NetworkConnectionTracker* network_connection_tracker() override;
   network::NetworkQualityTracker* network_quality_tracker() override;
   WatchDogThread* watchdog_thread() override;
   ProfileManager* profile_manager() override;
@@ -149,8 +152,6 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetSystemRequestContext(net::URLRequestContextGetter* context_getter);
   void SetSharedURLLoaderFactory(
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
-  void SetNetworkConnectionTracker(
-      std::unique_ptr<network::NetworkConnectionTracker> tracker);
   void SetNotificationUIManager(
       std::unique_ptr<NotificationUIManager> notification_ui_manager);
   void SetNotificationPlatformBridge(
@@ -171,8 +172,6 @@ class TestingBrowserProcess : public BrowserProcess {
   std::unique_ptr<policy::ChromeBrowserPolicyConnector>
       browser_policy_connector_;
   bool created_browser_policy_connector_ = false;
-  std::unique_ptr<network::NetworkConnectionTracker>
-      network_connection_tracker_;
   std::unique_ptr<ProfileManager> profile_manager_;
   std::unique_ptr<NotificationUIManager> notification_ui_manager_;
   std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge_;
@@ -212,6 +211,8 @@ class TestingBrowserProcess : public BrowserProcess {
   rappor::RapporServiceImpl* rappor_service_;
 
   std::unique_ptr<BrowserProcessPlatformPart> platform_part_;
+  std::unique_ptr<network::TestNetworkConnectionTracker>
+      test_network_connection_tracker_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   std::unique_ptr<MediaFileSystemRegistry> media_file_system_registry_;

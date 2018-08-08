@@ -134,7 +134,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
-#include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
@@ -630,18 +629,6 @@ BrowserProcessImpl::system_network_context_manager() {
 scoped_refptr<network::SharedURLLoaderFactory>
 BrowserProcessImpl::shared_url_loader_factory() {
   return system_network_context_manager()->GetSharedURLLoaderFactory();
-}
-
-network::NetworkConnectionTracker*
-BrowserProcessImpl::network_connection_tracker() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(io_thread_);
-  if (!network_connection_tracker_) {
-    network_connection_tracker_ =
-        std::make_unique<network::NetworkConnectionTracker>(
-            base::BindRepeating(&content::GetNetworkService));
-  }
-  return network_connection_tracker_.get();
 }
 
 network::NetworkQualityTracker* BrowserProcessImpl::network_quality_tracker() {

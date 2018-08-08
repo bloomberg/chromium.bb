@@ -44,6 +44,7 @@
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -79,8 +80,7 @@ ChromeSigninClient::ChromeSigninClient(
       weak_ptr_factory_(this) {
   signin_error_controller_->AddObserver(this);
 #if !defined(OS_CHROMEOS)
-  g_browser_process->network_connection_tracker()->AddNetworkConnectionObserver(
-      this);
+  content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
 #else
   // UserManager may not exist in unit_tests.
   if (!user_manager::UserManager::IsInitialized())
@@ -113,8 +113,7 @@ ChromeSigninClient::ChromeSigninClient(
 ChromeSigninClient::~ChromeSigninClient() {
   signin_error_controller_->RemoveObserver(this);
 #if !defined(OS_CHROMEOS)
-  g_browser_process->network_connection_tracker()
-      ->RemoveNetworkConnectionObserver(this);
+  content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
 #endif
 }
 
@@ -398,10 +397,9 @@ void ChromeSigninClient::DelayNetworkCall(const base::Closure& callback) {
 #else
   // Don't bother if we don't have any kind of network connection.
   network::mojom::ConnectionType type;
-  bool sync =
-      g_browser_process->network_connection_tracker()->GetConnectionType(
-          &type, base::BindOnce(&ChromeSigninClient::OnConnectionChanged,
-                                weak_ptr_factory_.GetWeakPtr()));
+  bool sync = content::GetNetworkConnectionTracker()->GetConnectionType(
+      &type, base::BindOnce(&ChromeSigninClient::OnConnectionChanged,
+                            weak_ptr_factory_.GetWeakPtr()));
   if (!sync || type == network::mojom::ConnectionType::CONNECTION_NONE) {
     // Connection type cannot be retrieved synchronously so delay the callback.
     delayed_callbacks_.push_back(callback);

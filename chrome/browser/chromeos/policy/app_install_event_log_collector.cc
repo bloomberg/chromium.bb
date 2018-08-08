@@ -16,6 +16,7 @@
 #include "chromeos/network/network_type_pattern.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/network_service_instance.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace em = enterprise_management;
@@ -65,8 +66,7 @@ AppInstallEventLogCollector::AppInstallEventLogCollector(
       pending_packages_(pending_packages) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
-  g_browser_process->network_connection_tracker()->AddNetworkConnectionObserver(
-      this);
+  content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
   // Might not be available in unit test.
   arc::ArcPolicyBridge* const policy_bridge =
       arc::ArcPolicyBridge::GetForBrowserContext(profile_);
@@ -86,8 +86,7 @@ AppInstallEventLogCollector::~AppInstallEventLogCollector() {
   }
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
-  g_browser_process->network_connection_tracker()
-      ->RemoveNetworkConnectionObserver(this);
+  content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
   arc::ArcPolicyBridge* const policy_bridge =
       arc::ArcPolicyBridge::GetForBrowserContext(profile_);
   if (policy_bridge) {

@@ -14,8 +14,8 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/browser_process.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
@@ -80,8 +80,7 @@ PrivetTrafficDetector::~PrivetTrafficDetector() {
 
 void PrivetTrafficDetector::Start() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  g_browser_process->network_connection_tracker()->AddNetworkConnectionObserver(
-      this);
+  content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&PrivetTrafficDetector::ScheduleRestart,
@@ -90,8 +89,7 @@ void PrivetTrafficDetector::Start() {
 
 void PrivetTrafficDetector::Stop() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  g_browser_process->network_connection_tracker()
-      ->RemoveNetworkConnectionObserver(this);
+  content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
 }
 
 void PrivetTrafficDetector::HandleConnectionChanged(

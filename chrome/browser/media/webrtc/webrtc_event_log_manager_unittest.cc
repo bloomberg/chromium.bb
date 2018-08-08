@@ -47,6 +47,7 @@
 #include "components/prefs/testing_pref_store.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_request_test_util.h"
@@ -235,8 +236,9 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
   }
 
   void SetUp(std::unique_ptr<network::NetworkConnectionTracker> tracker) {
-    TestingBrowserProcess::GetGlobal()->SetNetworkConnectionTracker(
-        std::move(tracker));
+    network_connection_tracker_ = std::move(tracker);
+    content::SetNetworkConnectionTrackerForTesting(
+        network_connection_tracker_.get());
     SetLocalLogsObserver(&local_observer_);
     SetRemoteLogsObserver(&remote_observer_);
     LoadMainTestProfile();
@@ -673,6 +675,10 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
 
   // Unit under test.
   std::unique_ptr<WebRtcEventLogManager> event_log_manager_;
+
+  // The NetworkConnectionTracker instance used by the WebRtcEventLogManager.
+  std::unique_ptr<network::NetworkConnectionTracker>
+      network_connection_tracker_;
 
   // Extensions associated with local/remote-bound event logs. Depends on
   // whether they're compressed.

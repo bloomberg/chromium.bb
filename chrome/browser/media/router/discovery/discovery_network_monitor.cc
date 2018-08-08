@@ -16,9 +16,9 @@
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
 #include "base/time/default_tick_clock.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/router/discovery/discovery_network_list.h"
 #include "chrome/browser/media/router/discovery/discovery_network_monitor_metric_observer.h"
+#include "content/public/browser/network_service_instance.h"
 #include "net/base/network_interfaces.h"
 
 namespace media_router {
@@ -106,7 +106,7 @@ DiscoveryNetworkMonitor::DiscoveryNetworkMonitor(NetworkInfoFunction strategy)
   DETACH_FROM_SEQUENCE(sequence_checker_);
   AddObserver(metric_observer_.get());
 
-  g_browser_process->network_connection_tracker()
+  content::GetNetworkConnectionTracker()
       ->AddLeakyNetworkConnectionObserver(this);
 
   task_runner_->PostTask(
