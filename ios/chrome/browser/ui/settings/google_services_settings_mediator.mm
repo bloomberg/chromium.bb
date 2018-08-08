@@ -296,7 +296,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                   IDS_IOS_GOOGLE_SERVICES_SETTINGS_GOOGLE_ACTIVITY_CONTROL_DETAIL
                accessoryType:MDCCollectionViewCellAccessoryDisclosureIndicator
                    commandID:
-                       GoogleServicesSettingsCommandIDOpenGoogleActivityPage];
+                       GoogleServicesSettingsCommandIDOpenGoogleActivityControlsDialog];
     CollectionViewTextItem* encryptionItem = [self
         textItemWithItemType:EncryptionItemType
                 textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_ENCRYPTION_TEXT
@@ -311,7 +311,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
               detailStringID:0
                accessoryType:MDCCollectionViewCellAccessoryNone
                    commandID:
-                       GoogleServicesSettingsCommandIDOpenManageSyncedDataPage];
+                       GoogleServicesSettingsCommandIDOpenManageSyncedDataWebPage];
     _personalizedItems = @[
       syncBookmarksItem, syncHistoryItem, syncPasswordsItem, syncOpenTabsItem,
       syncAutofillItem, syncSettingsItem, syncReadingListItem,
@@ -512,18 +512,6 @@ textItemWithItemType:(NSInteger)itemType
       static_cast<SyncSetupService::SyncableDatatype>(dataTypeInt);
   syncer::ModelType modelType = self.syncSetupService->GetModelType(dataType);
   self.syncSetupService->SetDataTypeEnabled(modelType, value);
-}
-
-- (void)openGoogleActivityPage {
-  // Needs to be implemented.
-}
-
-- (void)openEncryptionDialog {
-  // Needs to be implemented.
-}
-
-- (void)openManageSyncedDataPage {
-  // Needs to be implemented.
 }
 
 - (void)toggleAutocompleteSearchesServiceWithValue:(BOOL)value {

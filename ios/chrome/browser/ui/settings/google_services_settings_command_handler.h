@@ -16,11 +16,11 @@ typedef NS_ENUM(NSInteger, GoogleServicesSettingsCommandID) {
   // Enable/disabble bookmark sync.
   GoogleServicesSettingsCommandIDToggleDataTypeSync,
   // Opens the Google activity controls dialog.
-  GoogleServicesSettingsCommandIDOpenGoogleActivityPage,
+  GoogleServicesSettingsCommandIDOpenGoogleActivityControlsDialog,
   // Opens the encryption dialog.
   GoogleServicesSettingsCommandIDOpenEncryptionDialog,
-  // Opens manage synced data page.
-  GoogleServicesSettingsCommandIDOpenManageSyncedDataPage,
+  // Opens manage synced data web page.
+  GoogleServicesSettingsCommandIDOpenManageSyncedDataWebPage,
 
   // Non-personalized section.
   // Enable/disabble autocomplete searches service.
@@ -42,15 +42,6 @@ typedef NS_ENUM(NSInteger, GoogleServicesSettingsCommandID) {
 // Personalized section.
 // Called when GoogleServicesSettingsCommandIDToggleDataTypeSync is triggered.
 - (void)toggleSyncDataSync:(NSInteger)dataType withValue:(BOOL)value;
-// Called when GoogleServicesSettingsCommandIDOpenGoogleActivityPage is
-// triggered.
-- (void)openGoogleActivityPage;
-// Called when GoogleServicesSettingsCommandIDOpenEncryptionDialog is
-// triggered.
-- (void)openEncryptionDialog;
-// Called when GoogleServicesSettingsCommandIDOpenManageSyncedDataPage is
-// triggered.
-- (void)openManageSyncedDataPage;
 
 // Non-personalized section.
 // Called when GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService
