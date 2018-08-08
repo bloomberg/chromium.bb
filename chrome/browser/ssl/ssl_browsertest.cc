@@ -5928,7 +5928,8 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, SameDocumentNavigationAfterLoadSSLState) {
 }
 
 // Checks that navigations after pushState maintain the SSL status.
-IN_PROC_BROWSER_TEST_P(SSLUITest, PushStateSSLState) {
+// Flaky, see https://crbug.com/872029 and https://crbug.com/872030.
+IN_PROC_BROWSER_TEST_P(SSLUITest, DISABLED_PushStateSSLState) {
   ASSERT_TRUE(https_server_.Start());
 
   ui_test_utils::NavigateToURL(browser(),
