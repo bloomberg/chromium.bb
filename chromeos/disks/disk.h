@@ -5,8 +5,10 @@
 #ifndef CHROMEOS_DISKS_DISK_H_
 #define CHROMEOS_DISKS_DISK_H_
 
+#include <memory>
 #include <string>
 
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/cros_disks_client.h"
 
@@ -15,6 +17,8 @@ namespace disks {
 
 class CHROMEOS_EXPORT Disk {
  public:
+  class Builder;
+
   Disk(const DiskInfo& disk_info,
        // Whether the device is mounted in read-only mode by the policy.
        // Valid only when the device mounted and mount_path_ is non-empty.
@@ -23,32 +27,7 @@ class CHROMEOS_EXPORT Disk {
        const std::string& base_mount_path);
 
   // For tests.
-  // TODO(amistry): Replace with a builder.
-  Disk(const std::string& device_path,
-       // The path to the mount point of this device. Empty if not mounted.
-       // (e.g. /media/removable/VOLUME)
-       const std::string& mount_path,
-       bool write_disabled_by_policy,
-       const std::string& system_path,
-       const std::string& file_path,
-       const std::string& device_label,
-       const std::string& drive_label,
-       const std::string& vendor_id,
-       const std::string& vendor_name,
-       const std::string& product_id,
-       const std::string& product_name,
-       const std::string& fs_uuid,
-       const std::string& system_path_prefix,
-       DeviceType device_type,
-       uint64_t total_size_in_bytes,
-       bool is_parent,
-       bool is_read_only_hardware,
-       bool has_media,
-       bool on_boot_device,
-       bool on_removable_device,
-       bool is_hidden,
-       const std::string& file_system_type,
-       const std::string& base_mount_path);
+  // TODO(amistry): Eliminate this copy constructor. It is only used in tests.
   Disk(const Disk&);
 
   ~Disk();
@@ -152,11 +131,13 @@ class CHROMEOS_EXPORT Disk {
   bool IsStatefulPartition() const;
 
  private:
-  Disk() = delete;
+  friend class Builder;
+
+  Disk();
 
   std::string device_path_;
   std::string mount_path_;
-  bool write_disabled_by_policy_;
+  bool write_disabled_by_policy_ = false;
   std::string system_path_;
   std::string file_path_;
   std::string device_label_;
@@ -167,17 +148,54 @@ class CHROMEOS_EXPORT Disk {
   std::string product_name_;
   std::string fs_uuid_;
   std::string system_path_prefix_;
-  DeviceType device_type_;
-  uint64_t total_size_in_bytes_;
-  bool is_parent_;
-  bool is_read_only_hardware_;
-  bool has_media_;
-  bool on_boot_device_;
-  bool on_removable_device_;
-  bool is_hidden_;
+  DeviceType device_type_ = DEVICE_TYPE_UNKNOWN;
+  uint64_t total_size_in_bytes_ = 0;
+  bool is_parent_ = false;
+  bool is_read_only_hardware_ = false;
+  bool has_media_ = false;
+  bool on_boot_device_ = false;
+  bool on_removable_device_ = false;
+  bool is_hidden_ = false;
   bool is_auto_mountable_ = false;
   std::string file_system_type_;
   std::string base_mount_path_;
+};
+
+class CHROMEOS_EXPORT Disk::Builder {
+ public:
+  Builder();
+  ~Builder();
+
+  Builder& SetDevicePath(const std::string& device_path);
+  Builder& SetMountPath(const std::string& mount_path);
+  Builder& SetWriteDisabledByPolicy(bool write_disabled_by_policy);
+  Builder& SetSystemPath(const std::string& system_path);
+  Builder& SetFilePath(const std::string& file_path);
+  Builder& SetDeviceLabel(const std::string& device_label);
+  Builder& SetDriveLabel(const std::string& drive_label);
+  Builder& SetVendorId(const std::string& vendor_id);
+  Builder& SetVendorName(const std::string& vendor_name);
+  Builder& SetProductId(const std::string& product_id);
+  Builder& SetProductName(const std::string& product_name);
+  Builder& SetFileSystemUUID(const std::string& fs_uuid);
+  Builder& SetSystemPathPrefix(const std::string& system_path_prefix);
+  Builder& SetDeviceType(DeviceType device_type);
+  Builder& SetSizeInBytes(uint64_t total_size_in_bytes);
+  Builder& SetIsParent(bool is_parent);
+  Builder& SetIsReadOnlyHardware(bool is_read_only_hardware);
+  Builder& SetHasMedia(bool has_media);
+  Builder& SetOnBootDevice(bool on_boot_device);
+  Builder& SetOnRemovableDevice(bool on_removable_device);
+  Builder& SetIsHidden(bool is_hidden);
+  Builder& SetFileSystemType(const std::string& file_system_type);
+  Builder& SetBaseMountPath(const std::string& base_mount_path);
+
+  std::unique_ptr<Disk> Build();
+
+ private:
+  std::unique_ptr<Disk> disk_;
+
+  DISALLOW_COPY_AND_ASSIGN(Builder);
 };
 
 }  // namespace disks

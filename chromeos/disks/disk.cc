@@ -4,6 +4,10 @@
 
 #include "chromeos/disks/disk.h"
 
+#include <utility>
+
+#include "base/memory/ptr_util.h"
+
 namespace chromeos {
 namespace disks {
 
@@ -40,52 +44,7 @@ Disk::Disk(const DiskInfo& disk_info,
       file_system_type_(disk_info.file_system_type()),
       base_mount_path_(base_mount_path) {}
 
-Disk::Disk(const std::string& device_path,
-           const std::string& mount_path,
-           bool write_disabled_by_policy,
-           const std::string& system_path,
-           const std::string& file_path,
-           const std::string& device_label,
-           const std::string& drive_label,
-           const std::string& vendor_id,
-           const std::string& vendor_name,
-           const std::string& product_id,
-           const std::string& product_name,
-           const std::string& fs_uuid,
-           const std::string& system_path_prefix,
-           DeviceType device_type,
-           uint64_t total_size_in_bytes,
-           bool is_parent,
-           bool is_read_only_hardware,
-           bool has_media,
-           bool on_boot_device,
-           bool on_removable_device,
-           bool is_hidden,
-           const std::string& file_system_type,
-           const std::string& base_mount_path)
-    : device_path_(device_path),
-      mount_path_(mount_path),
-      write_disabled_by_policy_(write_disabled_by_policy),
-      system_path_(system_path),
-      file_path_(file_path),
-      device_label_(device_label),
-      drive_label_(drive_label),
-      vendor_id_(vendor_id),
-      vendor_name_(vendor_name),
-      product_id_(product_id),
-      product_name_(product_name),
-      fs_uuid_(fs_uuid),
-      system_path_prefix_(system_path_prefix),
-      device_type_(device_type),
-      total_size_in_bytes_(total_size_in_bytes),
-      is_parent_(is_parent),
-      is_read_only_hardware_(is_read_only_hardware),
-      has_media_(has_media),
-      on_boot_device_(on_boot_device),
-      on_removable_device_(on_removable_device),
-      is_hidden_(is_hidden),
-      file_system_type_(file_system_type),
-      base_mount_path_(base_mount_path) {}
+Disk::Disk() = default;
 
 Disk::Disk(const Disk&) = default;
 
@@ -100,6 +59,130 @@ void Disk::SetMountPath(const std::string& mount_path) {
 
 bool Disk::IsStatefulPartition() const {
   return mount_path_ == kStatefulPartition;
+}
+
+Disk::Builder::Builder() : disk_(base::WrapUnique(new Disk())) {}
+
+Disk::Builder::~Builder() = default;
+
+Disk::Builder& Disk::Builder::SetDevicePath(const std::string& device_path) {
+  disk_->device_path_ = device_path;
+  return *this;
+}
+
+Disk::Builder& Disk::Builder::SetMountPath(const std::string& mount_path) {
+  disk_->mount_path_ = mount_path;
+  return *this;
+}
+
+Disk::Builder& Disk::Builder::SetWriteDisabledByPolicy(
+    bool write_disabled_by_policy) {
+  disk_->write_disabled_by_policy_ = write_disabled_by_policy;
+  return *this;
+}
+Disk::Builder& Disk::Builder::SetSystemPath(const std::string& system_path) {
+  disk_->system_path_ = system_path;
+  return *this;
+}
+Disk::Builder& Disk::Builder::SetFilePath(const std::string& file_path) {
+  disk_->file_path_ = file_path;
+  return *this;
+}
+Disk::Builder& Disk::Builder::SetDeviceLabel(const std::string& device_label) {
+  disk_->device_label_ = device_label;
+  return *this;
+}
+Disk::Builder& Disk::Builder::SetDriveLabel(const std::string& drive_label) {
+  disk_->drive_label_ = drive_label;
+  return *this;
+}
+
+Disk::Builder& Disk::Builder::SetVendorId(const std::string& vendor_id) {
+  disk_->vendor_id_ = vendor_id;
+  return *this;
+}
+
+Disk::Builder& Disk::Builder::SetVendorName(const std::string& vendor_name) {
+  disk_->vendor_name_ = vendor_name;
+  return *this;
+}
+
+Disk::Builder& Disk::Builder::SetProductId(const std::string& product_id) {
+  disk_->product_id_ = product_id;
+  return *this;
+}
+
+Disk::Builder& Disk::Builder::SetProductName(const std::string& product_name) {
+  disk_->product_name_ = product_name;
+  return *this;
+}
+
+Disk::Builder& Disk::Builder::SetFileSystemUUID(const std::string& fs_uuid) {
+  disk_->fs_uuid_ = fs_uuid;
+  return *this;
+}
+
+Disk::Builder& Disk::Builder::SetSystemPathPrefix(
+    const std::string& system_path_prefix) {
+  disk_->system_path_prefix_ = system_path_prefix;
+  return *this;
+}
+
+Disk::Builder& Disk::Builder::SetDeviceType(DeviceType device_type) {
+  disk_->device_type_ = device_type;
+  return *this;
+}
+
+Disk::Builder& Disk::Builder::SetSizeInBytes(uint64_t total_size_in_bytes) {
+  disk_->total_size_in_bytes_ = total_size_in_bytes;
+  return *this;
+}
+
+Disk::Builder& Disk::Builder::SetIsParent(bool is_parent) {
+  disk_->is_parent_ = is_parent;
+  return *this;
+}
+
+Disk::Builder& Disk::Builder::SetIsReadOnlyHardware(
+    bool is_read_only_hardware) {
+  disk_->is_read_only_hardware_ = is_read_only_hardware;
+  return *this;
+}
+
+Disk::Builder& Disk::Builder::SetHasMedia(bool has_media) {
+  disk_->has_media_ = has_media;
+  return *this;
+}
+
+Disk::Builder& Disk::Builder::SetOnBootDevice(bool on_boot_device) {
+  disk_->on_boot_device_ = on_boot_device;
+  return *this;
+}
+
+Disk::Builder& Disk::Builder::SetOnRemovableDevice(bool on_removable_device) {
+  disk_->on_removable_device_ = on_removable_device;
+  return *this;
+}
+
+Disk::Builder& Disk::Builder::SetIsHidden(bool is_hidden) {
+  disk_->is_hidden_ = is_hidden;
+  return *this;
+}
+
+Disk::Builder& Disk::Builder::SetFileSystemType(
+    const std::string& file_system_type) {
+  disk_->file_system_type_ = file_system_type;
+  return *this;
+}
+
+Disk::Builder& Disk::Builder::SetBaseMountPath(
+    const std::string& base_mount_path) {
+  disk_->base_mount_path_ = base_mount_path;
+  return *this;
+}
+
+std::unique_ptr<Disk> Disk::Builder::Build() {
+  return std::move(disk_);
 }
 
 }  // namespace disks

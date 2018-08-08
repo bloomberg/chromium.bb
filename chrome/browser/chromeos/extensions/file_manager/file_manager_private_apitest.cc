@@ -285,31 +285,39 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
         if (static_cast<size_t>(disk_info_index) >= arraysize(kTestDisks))
           return;
 
+        std::unique_ptr<Disk> disk =
+            Disk::Builder()
+                .SetDevicePath(kTestMountPoints[i].source_path)
+                .SetMountPath(kTestMountPoints[i].mount_path)
+                .SetWriteDisabledByPolicy(
+                    kTestDisks[disk_info_index].write_disabled_by_policy)
+                .SetSystemPath(kTestDisks[disk_info_index].system_path)
+                .SetFilePath(kTestDisks[disk_info_index].file_path)
+                .SetDeviceLabel(kTestDisks[disk_info_index].device_label)
+                .SetDriveLabel(kTestDisks[disk_info_index].drive_label)
+                .SetVendorId(kTestDisks[disk_info_index].vendor_id)
+                .SetVendorName(kTestDisks[disk_info_index].vendor_name)
+                .SetProductId(kTestDisks[disk_info_index].product_id)
+                .SetProductName(kTestDisks[disk_info_index].product_name)
+                .SetFileSystemUUID(kTestDisks[disk_info_index].fs_uuid)
+                .SetSystemPathPrefix(
+                    kTestDisks[disk_info_index].system_path_prefix)
+                .SetDeviceType(kTestDisks[disk_info_index].device_type)
+                .SetSizeInBytes(kTestDisks[disk_info_index].size_in_bytes)
+                .SetIsParent(kTestDisks[disk_info_index].is_parent)
+                .SetIsReadOnlyHardware(
+                    kTestDisks[disk_info_index].is_read_only_hardware)
+                .SetHasMedia(kTestDisks[disk_info_index].has_media)
+                .SetOnBootDevice(kTestDisks[disk_info_index].on_boot_device)
+                .SetOnRemovableDevice(
+                    kTestDisks[disk_info_index].on_removable_device)
+                .SetIsHidden(kTestDisks[disk_info_index].is_hidden)
+                .SetFileSystemType(kTestDisks[disk_info_index].file_system_type)
+                .SetBaseMountPath(kTestDisks[disk_info_index].base_mount_path)
+                .Build();
+
         volumes_.insert(DiskMountManager::DiskMap::value_type(
-            kTestMountPoints[i].source_path,
-            std::make_unique<Disk>(
-                kTestMountPoints[i].source_path, kTestMountPoints[i].mount_path,
-                kTestDisks[disk_info_index].write_disabled_by_policy,
-                kTestDisks[disk_info_index].system_path,
-                kTestDisks[disk_info_index].file_path,
-                kTestDisks[disk_info_index].device_label,
-                kTestDisks[disk_info_index].drive_label,
-                kTestDisks[disk_info_index].vendor_id,
-                kTestDisks[disk_info_index].vendor_name,
-                kTestDisks[disk_info_index].product_id,
-                kTestDisks[disk_info_index].product_name,
-                kTestDisks[disk_info_index].fs_uuid,
-                kTestDisks[disk_info_index].system_path_prefix,
-                kTestDisks[disk_info_index].device_type,
-                kTestDisks[disk_info_index].size_in_bytes,
-                kTestDisks[disk_info_index].is_parent,
-                kTestDisks[disk_info_index].is_read_only_hardware,
-                kTestDisks[disk_info_index].has_media,
-                kTestDisks[disk_info_index].on_boot_device,
-                kTestDisks[disk_info_index].on_removable_device,
-                kTestDisks[disk_info_index].is_hidden,
-                kTestDisks[disk_info_index].file_system_type,
-                kTestDisks[disk_info_index].base_mount_path)));
+            kTestMountPoints[i].source_path, std::move(disk)));
       }
     }
   }

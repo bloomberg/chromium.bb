@@ -272,17 +272,18 @@ TEST_F(VolumeManagerTest, OnBootDeviceDiskEvent) {
   LoggingObserver observer;
   volume_manager()->AddObserver(&observer);
 
-  const Disk disk("device1", "", false, "", "", "", "", "", "", "", "", "", "",
-                  chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, false, true,
-                  false, false, "", "");
+  std::unique_ptr<const Disk> disk =
+      Disk::Builder().SetDevicePath("device1").SetOnBootDevice(true).Build();
 
-  volume_manager()->OnBootDeviceDiskEvent(DiskMountManager::DISK_ADDED, disk);
+  volume_manager()->OnBootDeviceDiskEvent(DiskMountManager::DISK_ADDED, *disk);
   EXPECT_EQ(0U, observer.events().size());
 
-  volume_manager()->OnBootDeviceDiskEvent(DiskMountManager::DISK_REMOVED, disk);
+  volume_manager()->OnBootDeviceDiskEvent(DiskMountManager::DISK_REMOVED,
+                                          *disk);
   EXPECT_EQ(0U, observer.events().size());
 
-  volume_manager()->OnBootDeviceDiskEvent(DiskMountManager::DISK_CHANGED, disk);
+  volume_manager()->OnBootDeviceDiskEvent(DiskMountManager::DISK_CHANGED,
+                                          *disk);
   EXPECT_EQ(0U, observer.events().size());
 
   volume_manager()->RemoveObserver(&observer);
@@ -292,21 +293,19 @@ TEST_F(VolumeManagerTest, OnAutoMountableDiskEvent_Hidden) {
   LoggingObserver observer;
   volume_manager()->AddObserver(&observer);
 
-  const bool kIsHidden = true;
-  const Disk kDisk("device1", "", false, "", "", "", "", "", "", "", "", "", "",
-                   chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, false, false,
-                   false, kIsHidden, "", "");
+  std::unique_ptr<const Disk> disk =
+      Disk::Builder().SetDevicePath("device1").SetIsHidden(true).Build();
 
   volume_manager()->OnAutoMountableDiskEvent(DiskMountManager::DISK_ADDED,
-                                             kDisk);
+                                             *disk);
   EXPECT_EQ(0U, observer.events().size());
 
   volume_manager()->OnAutoMountableDiskEvent(DiskMountManager::DISK_REMOVED,
-                                             kDisk);
+                                             *disk);
   EXPECT_EQ(0U, observer.events().size());
 
   volume_manager()->OnAutoMountableDiskEvent(DiskMountManager::DISK_CHANGED,
-                                             kDisk);
+                                             *disk);
   EXPECT_EQ(0U, observer.events().size());
 
   volume_manager()->RemoveObserver(&observer);
@@ -319,20 +318,15 @@ TEST_F(VolumeManagerTest, OnAutoMountableDiskEvent_Added) {
   LoggingObserver observer;
   volume_manager()->AddObserver(&observer);
 
-  const Disk kEmptyDevicePathDisk("",  // empty device path.
-                                  "", false, "", "", "", "", "", "", "", "", "",
-                                  "", chromeos::DEVICE_TYPE_UNKNOWN, 0, false,
-                                  false, false, false, false, false, "", "");
+  std::unique_ptr<const Disk> empty_device_path_disk = Disk::Builder().Build();
   volume_manager()->OnAutoMountableDiskEvent(DiskMountManager::DISK_ADDED,
-                                             kEmptyDevicePathDisk);
+                                             *empty_device_path_disk);
   EXPECT_EQ(0U, observer.events().size());
 
-  const bool kHasMedia = true;
-  const Disk kMediaDisk("device1", "", false, "", "", "", "", "", "", "", "",
-                        "", "", chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false,
-                        kHasMedia, false, false, false, "", "");
+  std::unique_ptr<const Disk> media_disk =
+      Disk::Builder().SetDevicePath("device1").SetHasMedia(true).Build();
   volume_manager()->OnAutoMountableDiskEvent(DiskMountManager::DISK_ADDED,
-                                             kMediaDisk);
+                                             *media_disk);
   ASSERT_EQ(1U, observer.events().size());
   const LoggingObserver::Event& event = observer.events()[0];
   EXPECT_EQ(LoggingObserver::Event::DISK_ADDED, event.type);
@@ -359,13 +353,14 @@ TEST_F(VolumeManagerTest, OnAutoMountableDiskEvent_AddedNonMounting) {
     LoggingObserver observer;
     volume_manager()->AddObserver(&observer);
 
-    const bool kHasMedia = true;
-    const Disk kMountedMediaDisk("device1", "mounted", false, "", "", "", "",
-                                 "", "", "", "", "", "",
-                                 chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false,
-                                 kHasMedia, false, false, false, "", "");
+    std::unique_ptr<const Disk> mounted_media_disk =
+        Disk::Builder()
+            .SetDevicePath("device1")
+            .SetMountPath("mounted")
+            .SetHasMedia(true)
+            .Build();
     volume_manager()->OnAutoMountableDiskEvent(DiskMountManager::DISK_ADDED,
-                                               kMountedMediaDisk);
+                                               *mounted_media_disk);
     ASSERT_EQ(1U, observer.events().size());
     const LoggingObserver::Event& event = observer.events()[0];
     EXPECT_EQ(LoggingObserver::Event::DISK_ADDED, event.type);
@@ -382,12 +377,10 @@ TEST_F(VolumeManagerTest, OnAutoMountableDiskEvent_AddedNonMounting) {
     LoggingObserver observer;
     volume_manager()->AddObserver(&observer);
 
-    const bool kWithoutMedia = false;
-    const Disk kNoMediaDisk("device1", "", false, "", "", "", "", "", "", "",
-                            "", "", "", chromeos::DEVICE_TYPE_UNKNOWN, 0, false,
-                            false, kWithoutMedia, false, false, false, "", "");
+    std::unique_ptr<const Disk> no_media_disk =
+        Disk::Builder().SetDevicePath("device1").Build();
     volume_manager()->OnAutoMountableDiskEvent(DiskMountManager::DISK_ADDED,
-                                               kNoMediaDisk);
+                                               *no_media_disk);
     ASSERT_EQ(1U, observer.events().size());
     const LoggingObserver::Event& event = observer.events()[0];
     EXPECT_EQ(LoggingObserver::Event::DISK_ADDED, event.type);
@@ -406,12 +399,10 @@ TEST_F(VolumeManagerTest, OnAutoMountableDiskEvent_AddedNonMounting) {
     LoggingObserver observer;
     volume_manager()->AddObserver(&observer);
 
-    const bool kHasMedia = true;
-    const Disk kMediaDisk("device1", "", false, "", "", "", "", "", "", "", "",
-                          "", "", chromeos::DEVICE_TYPE_UNKNOWN, 0, false,
-                          false, kHasMedia, false, false, false, "", "");
+    std::unique_ptr<const Disk> media_disk =
+        Disk::Builder().SetDevicePath("device1").SetHasMedia(true).Build();
     volume_manager()->OnAutoMountableDiskEvent(DiskMountManager::DISK_ADDED,
-                                               kMediaDisk);
+                                               *media_disk);
     ASSERT_EQ(1U, observer.events().size());
     const LoggingObserver::Event& event = observer.events()[0];
     EXPECT_EQ(LoggingObserver::Event::DISK_ADDED, event.type);
@@ -428,11 +419,12 @@ TEST_F(VolumeManagerTest, OnDiskAutoMountableEvent_Removed) {
   LoggingObserver observer;
   volume_manager()->AddObserver(&observer);
 
-  const Disk kMountedDisk("device1", "mount_path", false, "", "", "", "", "",
-                          "", "", "", "", "", chromeos::DEVICE_TYPE_UNKNOWN, 0,
-                          false, false, false, false, false, false, "", "");
+  std::unique_ptr<const Disk> mounted_disk = Disk::Builder()
+                                                 .SetDevicePath("device1")
+                                                 .SetMountPath("mount_path")
+                                                 .Build();
   volume_manager()->OnAutoMountableDiskEvent(DiskMountManager::DISK_REMOVED,
-                                             kMountedDisk);
+                                             *mounted_disk);
 
   ASSERT_EQ(1U, observer.events().size());
   const LoggingObserver::Event& event = observer.events()[0];
@@ -452,11 +444,10 @@ TEST_F(VolumeManagerTest, OnAutoMountableDiskEvent_RemovedNotMounted) {
   LoggingObserver observer;
   volume_manager()->AddObserver(&observer);
 
-  const Disk kNotMountedDisk("device1", "", false, "", "", "", "", "", "", "",
-                             "", "", "", chromeos::DEVICE_TYPE_UNKNOWN, 0,
-                             false, false, false, false, false, false, "", "");
+  std::unique_ptr<const Disk> not_mounted_disk =
+      Disk::Builder().SetDevicePath("device1").Build();
   volume_manager()->OnAutoMountableDiskEvent(DiskMountManager::DISK_REMOVED,
-                                             kNotMountedDisk);
+                                             *not_mounted_disk);
 
   ASSERT_EQ(1U, observer.events().size());
   const LoggingObserver::Event& event = observer.events()[0];
@@ -473,11 +464,10 @@ TEST_F(VolumeManagerTest, OnAutoMountableDiskEvent_Changed) {
   LoggingObserver observer;
   volume_manager()->AddObserver(&observer);
 
-  const Disk kDisk("device1", "", false, "", "", "", "", "", "", "", "", "", "",
-                   chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, true, false,
-                   false, false, "", "");
+  std::unique_ptr<const Disk> disk =
+      Disk::Builder().SetDevicePath("device1").SetHasMedia(true).Build();
   volume_manager()->OnAutoMountableDiskEvent(DiskMountManager::DISK_CHANGED,
-                                             kDisk);
+                                             *disk);
 
   EXPECT_EQ(1U, observer.events().size());
   EXPECT_EQ(1U, disk_mount_manager_->mount_requests().size());
@@ -496,11 +486,10 @@ TEST_F(VolumeManagerTest, OnAutoMountableDiskEvent_ChangedInReadonly) {
   LoggingObserver observer;
   volume_manager()->AddObserver(&observer);
 
-  const Disk kDisk("device1", "", false, "", "", "", "", "", "", "", "", "", "",
-                   chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, true, false,
-                   false, false, "", "");
+  std::unique_ptr<const Disk> disk =
+      Disk::Builder().SetDevicePath("device1").SetHasMedia(true).Build();
   volume_manager()->OnAutoMountableDiskEvent(DiskMountManager::DISK_CHANGED,
-                                             kDisk);
+                                             *disk);
 
   EXPECT_EQ(1U, observer.events().size());
   EXPECT_EQ(1U, disk_mount_manager_->mount_requests().size());
@@ -582,10 +571,10 @@ TEST_F(VolumeManagerTest, OnMountEvent_MountingAndUnmounting) {
 }
 
 TEST_F(VolumeManagerTest, OnMountEvent_Remounting) {
-  std::unique_ptr<Disk> disk(
-      new Disk("device1", "", false, "", "", "", "", "", "", "", "", "uuid1",
-               "", chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, false, false,
-               false, false, "", ""));
+  std::unique_ptr<Disk> disk = Disk::Builder()
+                                   .SetDevicePath("device1")
+                                   .SetFileSystemUUID("uuid1")
+                                   .Build();
   disk_mount_manager_->AddDiskForTest(std::move(disk));
   disk_mount_manager_->MountPath("device1", "", "", {},
                                  chromeos::MOUNT_TYPE_DEVICE,
@@ -777,13 +766,12 @@ TEST_F(VolumeManagerTest, ExternalStorageDisabledPolicyMultiProfile) {
   secondary.volume_manager()->AddObserver(&secondary_observer);
 
   // Add 1 disk.
-  const Disk kMediaDisk("device1", "", false, "", "", "", "", "", "", "", "",
-                        "", "", chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false,
-                        true, false, false, false, "", "");
+  std::unique_ptr<const Disk> media_disk =
+      Disk::Builder().SetDevicePath("device1").SetHasMedia(true).Build();
   volume_manager()->OnAutoMountableDiskEvent(DiskMountManager::DISK_ADDED,
-                                             kMediaDisk);
+                                             *media_disk);
   secondary.volume_manager()->OnAutoMountableDiskEvent(
-      DiskMountManager::DISK_ADDED, kMediaDisk);
+      DiskMountManager::DISK_ADDED, *media_disk);
 
   // The profile with external storage enabled should have mounted the volume.
   bool has_volume_mounted = false;
