@@ -57,7 +57,7 @@ TEST_F(TextSuggestionControllerTest, ApplyTextSuggestion) {
       "word1 word2 word3 word4"
       "</div>");
   Element* div = GetDocument().QuerySelector("div");
-  Node* text = div->firstChild();
+  Text* text = ToText(div->firstChild());
 
   // Add marker on "word1". This marker should *not* be cleared by the
   // replace operation.
@@ -169,7 +169,7 @@ TEST_F(TextSuggestionControllerTest,
       "mispelled"
       "</div>");
   Element* div = GetDocument().QuerySelector("div");
-  Node* text = div->firstChild();
+  Text* text = ToText(div->firstChild());
 
   // Add marker on "mispelled". This marker should be cleared by the replace
   // operation.

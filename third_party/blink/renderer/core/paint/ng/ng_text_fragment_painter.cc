@@ -73,7 +73,7 @@ DocumentMarkerVector ComputeMarkersToPaint(
     const NGPaintFragment& paint_fragment) {
   // TODO(yoichio): Handle first-letter
   Node* const node = paint_fragment.GetNode();
-  if (!node)
+  if (!node || !node->IsTextNode())
     return DocumentMarkerVector();
   // We don't paint any marker on ellipsis.
   if (paint_fragment.PhysicalFragment().StyleVariant() ==
@@ -82,7 +82,7 @@ DocumentMarkerVector ComputeMarkersToPaint(
 
   DocumentMarkerController& document_marker_controller =
       node->GetDocument().Markers();
-  return document_marker_controller.ComputeMarkersToPaint(*node);
+  return document_marker_controller.ComputeMarkersToPaint(ToText(*node));
 }
 
 unsigned GetTextContentOffset(const Text& text, unsigned offset) {
