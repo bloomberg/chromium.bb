@@ -8,7 +8,7 @@
 
 #include "base/time/time.h"
 #include "base/trace_event/common/trace_event_common.h"
-#include "chrome/browser/vr/controller_delegate.h"
+#include "chrome/browser/vr/controller_delegate_for_testing.h"
 #include "chrome/browser/vr/graphics_delegate.h"
 #include "chrome/browser/vr/input_event.h"
 #include "chrome/browser/vr/model/controller_model.h"
@@ -27,6 +27,17 @@ RenderLoop::RenderLoop(std::unique_ptr<UiInterface> ui,
       ui_processing_time_(sliding_time_size),
       ui_controller_update_time_(sliding_time_size) {}
 RenderLoop::~RenderLoop() = default;
+
+void RenderLoop::OnPause() {
+  DCHECK(controller_delegate_);
+  controller_delegate_->OnPause();
+  ui_->OnPause();
+}
+
+void RenderLoop::OnResume() {
+  DCHECK(controller_delegate_);
+  controller_delegate_->OnResume();
+}
 
 void RenderLoop::SetUiExpectingActivityForTesting(
     UiTestActivityExpectation ui_expectation) {
@@ -50,8 +61,7 @@ void RenderLoop::UpdateUi(const RenderInfo& render_info,
   // WebXR handles controller input in OnVsync.
   base::TimeDelta controller_time;
   if (frame_type == kUiFrame)
-    controller_time =
-        ProcessControllerInput(render_info, current_time, kUiFrame);
+    controller_time = ProcessControllerInput(render_info, current_time);
 
   if (ui_->SceneHasDirtyTextures()) {
     if (!graphics_delegate_->MakeSkiaContextCurrent()) {
@@ -73,27 +83,38 @@ void RenderLoop::UpdateUi(const RenderInfo& render_info,
   TRACE_EVENT_END0("gpu", "SceneUpdate");
 }
 
-base::TimeDelta RenderLoop::ProcessControllerInput(
+device::mojom::XRInputSourceStatePtr RenderLoop::ProcessControllerInputForWebXr(
     const RenderInfo& render_info,
-    base::TimeTicks current_time,
-    FrameType frame_type) {
+    base::TimeTicks current_time) {
   TRACE_EVENT0("gpu", __func__);
   DCHECK(controller_delegate_);
   DCHECK(ui_);
   base::TimeTicks timing_start = base::TimeTicks::Now();
 
-  controller_delegate_->UpdateController(render_info, current_time, frame_type);
+  controller_delegate_->UpdateController(render_info, current_time, true);
   auto input_event_list = controller_delegate_->GetGestures(current_time);
-  if (frame_type == kWebXrFrame) {
-    ui_->HandleMenuButtonEvents(&input_event_list);
-  } else {
-    ReticleModel reticle_model;
-    ControllerModel controller_model =
-        controller_delegate_->GetModel(render_info);
-    ui_->HandleInput(current_time, render_info, controller_model,
-                     &reticle_model, &input_event_list);
-    ui_->OnControllerUpdated(controller_model, reticle_model);
-  }
+  ui_->HandleMenuButtonEvents(&input_event_list);
+
+  ui_controller_update_time_.AddSample(base::TimeTicks::Now() - timing_start);
+  return controller_delegate_->GetInputSourceState();
+}
+
+base::TimeDelta RenderLoop::ProcessControllerInput(
+    const RenderInfo& render_info,
+    base::TimeTicks current_time) {
+  TRACE_EVENT0("gpu", __func__);
+  DCHECK(controller_delegate_);
+  DCHECK(ui_);
+  base::TimeTicks timing_start = base::TimeTicks::Now();
+
+  controller_delegate_->UpdateController(render_info, current_time, false);
+  auto input_event_list = controller_delegate_->GetGestures(current_time);
+  ReticleModel reticle_model;
+  ControllerModel controller_model =
+      controller_delegate_->GetModel(render_info);
+  ui_->HandleInput(current_time, render_info, controller_model, &reticle_model,
+                   &input_event_list);
+  ui_->OnControllerUpdated(controller_model, reticle_model);
 
   auto controller_time = base::TimeTicks::Now() - timing_start;
   ui_controller_update_time_.AddSample(controller_time);
@@ -102,6 +123,36 @@ base::TimeDelta RenderLoop::ProcessControllerInput(
 
 void RenderLoop::ForceExitVr() {
   browser_->ForceExitVr();
+}
+
+void RenderLoop::PerformControllerActionForTesting(
+    ControllerTestInput controller_input) {
+  DCHECK(controller_delegate_);
+  if (controller_input.action ==
+      VrControllerTestAction::kRevertToRealController) {
+    if (using_controller_delegate_for_testing_) {
+      DCHECK(
+          static_cast<ControllerDelegateForTesting*>(controller_delegate_.get())
+              ->IsQueueEmpty())
+          << "Attempted to revert to using real controller with actions still "
+             "queued";
+      using_controller_delegate_for_testing_ = false;
+      controller_delegate_for_testing_.swap(controller_delegate_);
+    }
+    return;
+  }
+  if (!using_controller_delegate_for_testing_) {
+    using_controller_delegate_for_testing_ = true;
+    if (!controller_delegate_for_testing_)
+      controller_delegate_for_testing_ =
+          std::make_unique<ControllerDelegateForTesting>(ui_.get());
+    controller_delegate_for_testing_.swap(controller_delegate_);
+  }
+  if (controller_input.action !=
+      VrControllerTestAction::kEnableMockedController) {
+    static_cast<ControllerDelegateForTesting*>(controller_delegate_.get())
+        ->QueueControllerActionForTesting(controller_input);
+  }
 }
 
 void RenderLoop::ReportUiStatusForTesting(const base::TimeTicks& current_time,

@@ -114,9 +114,11 @@ class VrShellGl : public RenderLoop,
                   base::OnceCallback<gfx::AcceleratedWidget()> callback);
 
   void OnTriggerEvent(bool pressed);
-  void OnPause();
-  void OnResume();
   void OnExitPresent();
+
+  // RenderLoop overrides.
+  void OnPause() override;
+  void OnResume() override;
 
   base::WeakPtr<BrowserUiInterface> GetBrowserUiWeakPtr();
 
@@ -157,7 +159,6 @@ class VrShellGl : public RenderLoop,
   void CancelToast();
 
   void AcceptDoffPromptForTesting();
-  void PerformControllerActionForTesting(ControllerTestInput controller_input);
 
  private:
   void InitializeGl(gfx::AcceleratedWidget surface);
@@ -263,8 +264,6 @@ class VrShellGl : public RenderLoop,
   void ClosePresentationBindings();
 
   device::mojom::XRInputSourceStatePtr GetGazeInputSourceState();
-
-  std::unique_ptr<ControllerDelegate> controller_delegate_for_testing_;
 
   // samplerExternalOES texture data for WebVR content image.
   int webvr_texture_id_ = 0;
@@ -407,7 +406,6 @@ class VrShellGl : public RenderLoop,
 
   std::unique_ptr<PlatformUiInputDelegate> vr_dialog_input_delegate_;
   bool showing_vr_dialog_ = false;
-  bool using_controller_delegate_for_testing_ = false;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
 

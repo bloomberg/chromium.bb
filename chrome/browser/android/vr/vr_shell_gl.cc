@@ -20,7 +20,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "chrome/browser/android/vr/controller_delegate_for_testing.h"
 #include "chrome/browser/android/vr/gl_browser_interface.h"
 #include "chrome/browser/android/vr/gvr_controller_delegate.h"
 #include "chrome/browser/android/vr/gvr_util.h"
@@ -223,8 +222,8 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser,
       webvr_submit_time_(kWebVRSlidingAverageSize),
       weak_ptr_factory_(this) {
   GvrInit(gvr_api);
-  controller_delegate_ = std::make_unique<GvrControllerDelegate>(
-      std::make_unique<VrController>(gvr_api), browser_);
+  set_controller_delegate(std::make_unique<GvrControllerDelegate>(
+      std::make_unique<VrController>(gvr_api), browser_));
 }
 
 VrShellGl::~VrShellGl() {
@@ -958,8 +957,6 @@ VrShellGl::GetWebVrFrameTransportOptions(
 
 void VrShellGl::InitializeRenderer() {
   gvr_api_->InitializeGl();
-  gfx::Transform head_pose;
-  device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(), &head_pose);
 
   // Create multisampled and non-multisampled buffers.
   specs_.push_back(gvr_api_->CreateBufferSpec());
@@ -1671,8 +1668,7 @@ void VrShellGl::DrawContentQuad(bool draw_overlay_texture) {
 
 void VrShellGl::OnPause() {
   vsync_helper_.CancelVSyncRequest();
-  controller_delegate_->OnPause();
-  ui_->OnPause();
+  RenderLoop::OnPause();
   gvr_api_->PauseTracking();
   webvr_frame_timeout_.Cancel();
   webvr_spinner_timeout_.Cancel();
@@ -1682,8 +1678,7 @@ void VrShellGl::OnResume() {
   gvr_api_->RefreshViewerProfile();
   viewports_need_updating_ = true;
   gvr_api_->ResumeTracking();
-  controller_delegate_->OnResume();
-
+  RenderLoop::OnResume();
   vsync_helper_.CancelVSyncRequest();
   OnVSync(base::TimeTicks::Now());
   if (web_vr_mode_)
@@ -1888,12 +1883,11 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
   if (ShouldDrawWebVr()) {
     // When drawing WebVR, controller input doesn't need to be synchronized with
     // rendering as WebVR uses the gamepad api. To ensure we always handle input
-    // like app button presses, update the controller here, but not in
-    // DrawFrame.
+    // like app button presses, process the controller here.
     device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(),
                                                  &render_info_.head_pose);
-    ProcessControllerInput(render_info_, frame_time, kWebXrFrame);
-    input_states_.push_back(controller_delegate_->GetInputSourceState());
+    input_states_.push_back(
+        ProcessControllerInputForWebXr(render_info_, frame_time));
   } else {
     DrawFrame(-1, frame_time);
   }
@@ -2153,35 +2147,6 @@ void VrShellGl::OnTriggerEvent(bool pressed) {
 
 void VrShellGl::AcceptDoffPromptForTesting() {
   ui_->AcceptDoffPromptForTesting();
-}
-
-void VrShellGl::PerformControllerActionForTesting(
-    ControllerTestInput controller_input) {
-  if (controller_input.action ==
-      VrControllerTestAction::kRevertToRealController) {
-    if (using_controller_delegate_for_testing_) {
-      DCHECK(
-          static_cast<ControllerDelegateForTesting*>(controller_delegate_.get())
-              ->IsQueueEmpty())
-          << "Attempted to revert to using real controller with actions still "
-             "queued";
-      using_controller_delegate_for_testing_ = false;
-      controller_delegate_for_testing_.swap(controller_delegate_);
-    }
-    return;
-  }
-  if (!using_controller_delegate_for_testing_) {
-    using_controller_delegate_for_testing_ = true;
-    if (!controller_delegate_for_testing_)
-      controller_delegate_for_testing_ =
-          std::make_unique<ControllerDelegateForTesting>(ui_.get());
-    controller_delegate_for_testing_.swap(controller_delegate_);
-  }
-  if (controller_input.action !=
-      VrControllerTestAction::kEnableMockedController) {
-    static_cast<ControllerDelegateForTesting*>(controller_delegate_.get())
-        ->QueueControllerActionForTesting(controller_input);
-  }
 }
 
 }  // namespace vr

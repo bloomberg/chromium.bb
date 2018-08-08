@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/vr/controller_delegate_for_testing.h"
+#include "chrome/browser/vr/controller_delegate_for_testing.h"
 
 #include "chrome/browser/vr/input_event.h"
 #include "chrome/browser/vr/test/constants.h"
