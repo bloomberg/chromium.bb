@@ -13,6 +13,7 @@
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/ssl_status.h"
+#include "ios/web/public/url_util.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -81,6 +82,10 @@ void FullscreenWebStateObserver::SetWebState(web::WebState* web_state) {
 void FullscreenWebStateObserver::DidFinishNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
+  const GURL& navigation_url = navigation_context->GetUrl();
+  bool url_changed = web::GURLByRemovingRefFromGURL(navigation_url) !=
+                     web::GURLByRemovingRefFromGURL(last_navigation_url_);
+  last_navigation_url_ = navigation_url;
   // Due to limitations in WKWebView's rendering, different MIME types must be
   // inset using different techniques:
   // - PDFs need to be inset using the scroll view's |contentInset| property or
@@ -94,9 +99,9 @@ void FullscreenWebStateObserver::DidFinishNavigation(
   web_state->GetWebViewProxy().shouldUseViewContentInset =
       force_content_inset ||
       web_state->GetContentsMimeType() == "application/pdf";
-  // Reset the model so that the toolbar is visible when navigating to a new
-  // document.
-  if (!navigation_context->IsSameDocument())
+  // Only reset the model for document-changing navigations or same-document
+  // navigations that update the visible URL.
+  if (!navigation_context->IsSameDocument() || url_changed)
     model_->ResetForNavigation();
   // Disable fullscreen if there is a problem with the SSL status.
   SetDisableFullscreenForSSL(ShouldDisableFullscreenForWebStateSSL(web_state));

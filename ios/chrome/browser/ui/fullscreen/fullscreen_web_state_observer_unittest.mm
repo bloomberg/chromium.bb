@@ -71,17 +71,58 @@ TEST_F(FullscreenWebStateObserverTest, ResetForNavigation) {
   EXPECT_EQ(model().progress(), 1.0);
 }
 
-// Tests that the FullscreenModel is not reset for a same-document navigation.
-TEST_F(FullscreenWebStateObserverTest, NoResetForSameDocument) {
+// Tests that the FullscreenModel is not reset for same-document navigations
+// with the same URL.
+TEST_F(FullscreenWebStateObserverTest, NoResetForSameDocumentSameURL) {
+  // Navigate to a URL.
+  web::FakeNavigationContext context;
+  context.SetUrl(GURL("https://www.test.com"));
+  web_state().OnNavigationFinished(&context);
+  model().SetYContentOffset(0.0);
   // Simulate a scroll to 0.5 progress.
   SimulateFullscreenUserScrollForProgress(&model(), 0.5);
   EXPECT_EQ(model().progress(), 0.5);
-  // Simulate a same-document navigation and verify that the 0.5 progress hasn't
-  // been reset to 1.0.
-  web::FakeNavigationContext context;
+  // Simulate a same-document navigation to the same URL and verify that the 0.5
+  // progress hasn't been reset to 1.0.
   context.SetIsSameDocument(true);
   web_state().OnNavigationFinished(&context);
   EXPECT_EQ(model().progress(), 0.5);
+}
+
+// Tests that the FullscreenModel is not reset for a same-document navigation.
+TEST_F(FullscreenWebStateObserverTest, NoResetForSameDocumentFragmentChange) {
+  // Navigate to a URL.
+  web::FakeNavigationContext context;
+  context.SetUrl(GURL("https://www.test.com"));
+  web_state().OnNavigationFinished(&context);
+  model().SetYContentOffset(0.0);
+  // Simulate a scroll to 0.5 progress.
+  SimulateFullscreenUserScrollForProgress(&model(), 0.5);
+  EXPECT_EQ(model().progress(), 0.5);
+  // Simulate a same-document navigation to a URL with a different fragment and
+  // verify that the 0.5 progress hasn't been reset to 1.0.
+  context.SetUrl(GURL("https://www.test.com#fragment"));
+  context.SetIsSameDocument(true);
+  web_state().OnNavigationFinished(&context);
+  EXPECT_EQ(model().progress(), 0.5);
+}
+
+// Tests that the FullscreenModel is not reset for a same-document navigation.
+TEST_F(FullscreenWebStateObserverTest, ResetForSameDocumentURLChange) {
+  // Navigate to a URL.
+  web::FakeNavigationContext context;
+  context.SetUrl(GURL("https://www.test.com"));
+  web_state().OnNavigationFinished(&context);
+  model().SetYContentOffset(0.0);
+  // Simulate a scroll to 0.5 progress.
+  SimulateFullscreenUserScrollForProgress(&model(), 0.5);
+  EXPECT_EQ(model().progress(), 0.5);
+  // Simulate a same-document navigation to a new URL and verify that the 0.5
+  // progress is reset to 1.0.
+  context.SetUrl(GURL("https://www.test2.com"));
+  context.SetIsSameDocument(true);
+  web_state().OnNavigationFinished(&context);
+  EXPECT_EQ(model().progress(), 1.0);
 }
 
 // Tests that the model is disabled when a load is occurring.
