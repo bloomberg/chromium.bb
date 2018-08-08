@@ -57,7 +57,7 @@ void ArcAppsPrivateAPI::OnAppRegistered(
   if (!app_info.launchable)
     return;
   api::arc_apps_private::AppInfo app_info_result;
-  app_info_result.id = app_id;
+  app_info_result.package_name = app_info.package_name;
   auto event = std::make_unique<Event>(
       events::ARC_APPS_PRIVATE_ON_INSTALLED,
       api::arc_apps_private::OnInstalled::kEventName,
@@ -84,7 +84,7 @@ ArcAppsPrivateGetLaunchableAppsFunction::Run() {
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
     if (app_info && app_info->launchable) {
       api::arc_apps_private::AppInfo app_info_result;
-      app_info_result.id = app_id;
+      app_info_result.package_name = app_info->package_name;
       result.push_back(std::move(app_info_result));
     }
   }
@@ -100,11 +100,16 @@ ExtensionFunction::ResponseAction ArcAppsPrivateLaunchAppFunction::Run() {
   std::unique_ptr<api::arc_apps_private::LaunchApp::Params> params(
       api::arc_apps_private::LaunchApp::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  if (!ArcAppListPrefs::Get(Profile::FromBrowserContext(browser_context())))
+  ArcAppListPrefs* prefs =
+      ArcAppListPrefs::Get(Profile::FromBrowserContext(browser_context()));
+  if (!prefs)
     return RespondNow(Error("Not available"));
 
+  const std::string app_id = prefs->GetAppIdByPackageName(params->package_name);
+  if (app_id.empty())
+    return RespondNow(Error("App not found"));
   if (!arc::LaunchApp(
-          browser_context(), params->app_id, ui::EF_NONE,
+          browser_context(), app_id, ui::EF_NONE,
           arc::UserInteractionType::APP_STARTED_FROM_EXTENSION_API)) {
     return RespondNow(Error("Launch failed"));
   }
