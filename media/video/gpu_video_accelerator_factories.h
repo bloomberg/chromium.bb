@@ -95,6 +95,8 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   virtual void ShallowFlushCHROMIUM() = 0;
 
   virtual void WaitSyncToken(const gpu::SyncToken& sync_token) = 0;
+  virtual void SignalSyncToken(const gpu::SyncToken& sync_token,
+                               base::OnceClosure callback) = 0;
 
   virtual std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,

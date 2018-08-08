@@ -182,9 +182,13 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
 
   // Callback called when a VideoFrame generated with GetFrameResources is no
   // longer referenced.
-  // This must be called on the thread where |media_task_runner_| is current.
   void MailboxHoldersReleased(FrameResources* frame_resources,
                               const gpu::SyncToken& sync_token);
+
+  // Callback called when a VideoFrame generated with GetFrameResources has
+  // outlived its release SyncToken.
+  // This must be called on the thread where |media_task_runner_| is current.
+  void MailboxHoldersWaited(FrameResources* frame_resources);
 
   // Delete resources. This has to be called on the thread where |task_runner|
   // is current.
@@ -1051,6 +1055,27 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::MailboxHoldersReleased(
                                   frame_resources, release_sync_token));
     return;
   }
+
+  // TODO(sandersd): Remove once https://crbug.com/819914 is fixed. Correct
+  // clients must wait for READ_LOCK_FENCES_ENABLED frames to be read before
+  // returning the frame, so waiting on the sync token should be a no-op.
+  //
+  // If the context is lost, SignalSyncToken() drops its callbacks. Using a
+  // ScopedClosureRunner ensures MailboxHoldersWaited() is called if that
+  // happens.
+  std::unique_ptr<base::ScopedClosureRunner> waited_cb =
+      std::make_unique<base::ScopedClosureRunner>(base::BindOnce(
+          &GpuMemoryBufferVideoFramePool::PoolImpl::MailboxHoldersWaited, this,
+          frame_resources));
+  gpu_factories_->SignalSyncToken(
+      release_sync_token,
+      base::BindOnce(&base::ScopedClosureRunner::RunAndReset,
+                     std::move(waited_cb)));
+}
+
+void GpuMemoryBufferVideoFramePool::PoolImpl::MailboxHoldersWaited(
+    FrameResources* frame_resources) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   if (in_shutdown_) {
     DeleteFrameResources(gpu_factories_, frame_resources);

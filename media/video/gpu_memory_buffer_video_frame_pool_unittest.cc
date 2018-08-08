@@ -16,6 +16,9 @@
 #include "media/video/mock_gpu_video_accelerator_factories.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using ::testing::_;
+using ::testing::AtLeast;
+
 namespace media {
 
 namespace {
@@ -77,6 +80,8 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
         new base::ThreadTaskRunnerHandle(media_task_runner_));
     mock_gpu_factories_.reset(
         new MockGpuVideoAcceleratorFactories(gles2_.get()));
+    EXPECT_CALL(*mock_gpu_factories_.get(), SignalSyncToken(_, _))
+        .Times(AtLeast(0));
     gpu_memory_buffer_pool_.reset(new GpuMemoryBufferVideoFramePool(
         media_task_runner_, copy_task_runner_.get(),
         mock_gpu_factories_.get()));
