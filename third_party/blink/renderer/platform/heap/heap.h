@@ -679,11 +679,17 @@ Address ThreadHeap::Reallocate(void* previous, size_t size) {
 template <typename T>
 void Visitor::HandleWeakCell(Visitor* self, void* object) {
   T** cell = reinterpret_cast<T**>(object);
-  // '-1' means deleted value. This can happen when weak fields are deleted
-  // while incremental marking is running.
-  if (*cell && (*cell == reinterpret_cast<T*>(-1) ||
-                !ObjectAliveTrait<T>::IsHeapObjectAlive(*cell)))
-    *cell = nullptr;
+  T* contents = *cell;
+  if (contents) {
+    if (contents == reinterpret_cast<T*>(-1)) {
+      // '-1' means deleted value. This can happen when weak fields are deleted
+      // while incremental marking is running. Deleted values need to be
+      // preserved to avoid reviving objects in containers.
+      return;
+    }
+    if (!ObjectAliveTrait<T>::IsHeapObjectAlive(contents))
+      *cell = nullptr;
+  }
 }
 
 }  // namespace blink
