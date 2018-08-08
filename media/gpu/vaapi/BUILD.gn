@@ -140,6 +140,7 @@ source_set("unit_test") {
     "//base/test:test_support",
     "//gpu:test_support",
     "//media/gpu:common",
+    "//mojo/core/embedder",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx:test_support",

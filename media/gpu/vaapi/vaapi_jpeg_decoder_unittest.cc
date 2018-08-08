@@ -22,6 +22,7 @@
 #include "media/base/video_frame.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
+#include "mojo/core/embedder/embedder.h"
 
 namespace media {
 namespace {
@@ -132,6 +133,7 @@ TEST_F(VaapiJpegDecoderTest, DecodeFail) {
 }  // namespace media
 
 int main(int argc, char** argv) {
+  mojo::core::Init();
   testing::InitGoogleTest(&argc, argv);
   base::AtExitManager exit_manager;
   media::VaapiWrapper::PreSandboxInitialization();

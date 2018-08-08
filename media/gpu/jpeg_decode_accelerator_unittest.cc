@@ -31,6 +31,7 @@
 #include "media/gpu/gpu_jpeg_decode_accelerator_factory.h"
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
 #include "media/video/jpeg_decode_accelerator.h"
+#include "mojo/core/embedder/embedder.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -842,6 +843,7 @@ TEST_F(JpegDecodeAcceleratorTest, PerfSW) {
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   base::CommandLine::Init(argc, argv);
+  mojo::core::Init();
   base::ShadowingAtExitManager at_exit_manager;
 
   // Needed to enable DVLOG through --vmodule.
