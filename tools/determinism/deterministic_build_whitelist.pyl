@@ -22,10 +22,6 @@
   # https://crbug.com/330263
   'linux': [
     'ppapi_nacl_tests_pnacl_newlib_x64.nexe',
-
-    # TODO(tikuta): Remove this when crbug.com/870611 is fixed.
-    'remoting-webapp.v2.zip',
-
     'zucchini_apply_fuzzer_seed_corpus.zip',
 
     # TODO(tikuta): Remove this when crbug.com/870584 is fixed.
