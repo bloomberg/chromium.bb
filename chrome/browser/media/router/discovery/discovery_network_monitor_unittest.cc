@@ -8,7 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/task/task_scheduler/task_scheduler.h"
-#include "base/test/scoped_task_environment.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,7 +31,7 @@ class DiscoveryNetworkMonitorTest : public testing::Test {
     fake_network_info.clear();
     discovery_network_monitor =
         DiscoveryNetworkMonitor::CreateInstanceForTest(&FakeGetNetworkInfo);
-    scoped_task_environment.RunUntilIdle();
+    thread_bundle.RunUntilIdle();
   }
 
   static std::vector<DiscoveryNetworkInfo> FakeGetNetworkInfo() {
@@ -42,7 +42,7 @@ class DiscoveryNetworkMonitorTest : public testing::Test {
     discovery_network_monitor->OnConnectionChanged(connection_type);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  content::TestBrowserThreadBundle thread_bundle;
   MockDiscoveryObserver mock_observer;
 
   std::vector<DiscoveryNetworkInfo> fake_ethernet_info{
@@ -72,7 +72,7 @@ TEST_F(DiscoveryNetworkMonitorTest, NetworkIdIsConsistent) {
       .WillOnce(Invoke(capture_network_id));
 
   ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_ETHERNET);
-  scoped_task_environment.RunUntilIdle();
+  thread_bundle.RunUntilIdle();
 
   std::string ethernet_network_id = current_network_id;
 
@@ -81,14 +81,14 @@ TEST_F(DiscoveryNetworkMonitorTest, NetworkIdIsConsistent) {
       .WillOnce(Invoke(capture_network_id));
 
   ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
-  scoped_task_environment.RunUntilIdle();
+  thread_bundle.RunUntilIdle();
 
   fake_network_info = fake_wifi_info;
   EXPECT_CALL(mock_observer, OnNetworksChanged(_))
       .WillOnce(Invoke(capture_network_id));
 
   ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_WIFI);
-  scoped_task_environment.RunUntilIdle();
+  thread_bundle.RunUntilIdle();
 
   std::string wifi_network_id = current_network_id;
   fake_network_info = fake_ethernet_info;
@@ -96,7 +96,7 @@ TEST_F(DiscoveryNetworkMonitorTest, NetworkIdIsConsistent) {
       .WillOnce(Invoke(capture_network_id));
 
   ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_ETHERNET);
-  scoped_task_environment.RunUntilIdle();
+  thread_bundle.RunUntilIdle();
 
   EXPECT_EQ(ethernet_network_id, current_network_id);
   EXPECT_NE(ethernet_network_id, wifi_network_id);
@@ -111,13 +111,13 @@ TEST_F(DiscoveryNetworkMonitorTest, RemoveObserverStopsNotifications) {
   EXPECT_CALL(mock_observer, OnNetworksChanged(_));
 
   ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_ETHERNET);
-  scoped_task_environment.RunUntilIdle();
+  thread_bundle.RunUntilIdle();
 
   discovery_network_monitor->RemoveObserver(&mock_observer);
   fake_network_info.clear();
 
   ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
-  scoped_task_environment.RunUntilIdle();
+  thread_bundle.RunUntilIdle();
 }
 
 TEST_F(DiscoveryNetworkMonitorTest, RefreshIndependentOfChangeObserver) {
@@ -133,11 +133,11 @@ TEST_F(DiscoveryNetworkMonitorTest, RefreshIndependentOfChangeObserver) {
   };
 
   discovery_network_monitor->Refresh(base::BindOnce(force_refresh_callback));
-  scoped_task_environment.RunUntilIdle();
+  thread_bundle.RunUntilIdle();
 }
 
 TEST_F(DiscoveryNetworkMonitorTest, GetNetworkIdWithoutRefresh) {
-  scoped_task_environment.RunUntilIdle();
+  thread_bundle.RunUntilIdle();
 
   fake_network_info = fake_ethernet_info;
 
@@ -145,7 +145,7 @@ TEST_F(DiscoveryNetworkMonitorTest, GetNetworkIdWithoutRefresh) {
     EXPECT_EQ(DiscoveryNetworkMonitor::kNetworkIdDisconnected, network_id);
   };
   discovery_network_monitor->GetNetworkId(base::BindOnce(check_network_id));
-  scoped_task_environment.RunUntilIdle();
+  thread_bundle.RunUntilIdle();
 }
 
 TEST_F(DiscoveryNetworkMonitorTest, GetNetworkIdWithRefresh) {
@@ -162,7 +162,7 @@ TEST_F(DiscoveryNetworkMonitorTest, GetNetworkIdWithRefresh) {
   };
   discovery_network_monitor->Refresh(
       base::BindOnce(capture_network_id, &current_network_id));
-  scoped_task_environment.RunUntilIdle();
+  thread_bundle.RunUntilIdle();
 
   auto check_network_id = [](const std::string& refresh_network_id,
                              const std::string& network_id) {
@@ -170,7 +170,7 @@ TEST_F(DiscoveryNetworkMonitorTest, GetNetworkIdWithRefresh) {
   };
   discovery_network_monitor->GetNetworkId(
       base::BindOnce(check_network_id, base::ConstRef(current_network_id)));
-  scoped_task_environment.RunUntilIdle();
+  thread_bundle.RunUntilIdle();
 }
 
 TEST_F(DiscoveryNetworkMonitorTest, GetNetworkIdWithObserver) {
@@ -180,7 +180,7 @@ TEST_F(DiscoveryNetworkMonitorTest, GetNetworkIdWithObserver) {
   EXPECT_CALL(mock_observer, OnNetworksChanged(_));
 
   ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_ETHERNET);
-  scoped_task_environment.RunUntilIdle();
+  thread_bundle.RunUntilIdle();
 
   std::string current_network_id;
   auto check_network_id = [](const std::string& network_id) {
@@ -190,7 +190,7 @@ TEST_F(DiscoveryNetworkMonitorTest, GetNetworkIdWithObserver) {
               network_id);
   };
   discovery_network_monitor->GetNetworkId(base::BindOnce(check_network_id));
-  scoped_task_environment.RunUntilIdle();
+  thread_bundle.RunUntilIdle();
 }
 
 }  // namespace media_router

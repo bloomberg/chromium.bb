@@ -10,11 +10,11 @@
 #include "base/sequence_checker.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -127,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(NetworkConnectionTrackerBrowserTest,
     return;
 #endif
   network::NetworkConnectionTracker* tracker =
-      g_browser_process->network_connection_tracker();
+      content::GetNetworkConnectionTracker();
   EXPECT_NE(nullptr, tracker);
   // Issue a GetConnectionType() request to make sure NetworkService has been
   // started up. This way, NetworkService will receive the broadcast when
@@ -162,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(NetworkConnectionTrackerBrowserTest,
     return;
 
   network::NetworkConnectionTracker* tracker =
-      g_browser_process->network_connection_tracker();
+      content::GetNetworkConnectionTracker();
   EXPECT_NE(nullptr, tracker);
 
   // Issue a GetConnectionType() request to make sure NetworkService has been

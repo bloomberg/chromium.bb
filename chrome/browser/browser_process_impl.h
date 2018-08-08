@@ -123,7 +123,6 @@ class BrowserProcessImpl : public BrowserProcess,
   SystemNetworkContextManager* system_network_context_manager() override;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory()
       override;
-  network::NetworkConnectionTracker* network_connection_tracker() override;
   network::NetworkQualityTracker* network_quality_tracker() override;
   WatchDogThread* watchdog_thread() override;
   ProfileManager* profile_manager() override;
@@ -239,9 +238,6 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<PrefService> local_state_;
 
   std::unique_ptr<SystemNetworkContextManager> system_network_context_manager_;
-
-  std::unique_ptr<network::NetworkConnectionTracker>
-      network_connection_tracker_;
 
   std::unique_ptr<network::NetworkQualityTracker> network_quality_tracker_;
 

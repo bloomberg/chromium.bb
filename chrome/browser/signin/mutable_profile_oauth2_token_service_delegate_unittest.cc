@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -28,6 +27,7 @@
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -121,6 +121,7 @@ class MutableProfileOAuth2TokenServiceDelegateTest
   }
 
   void TearDown() override {
+    base::RunLoop().RunUntilIdle();
     oauth2_service_delegate_->RemoveObserver(this);
     oauth2_service_delegate_->Shutdown();
     OSCryptMocker::TearDown();
@@ -216,7 +217,7 @@ class MutableProfileOAuth2TokenServiceDelegateTest
   }
 
  protected:
-  base::MessageLoop message_loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestSigninClient> client_;
   std::unique_ptr<MutableProfileOAuth2TokenServiceDelegate>
       oauth2_service_delegate_;

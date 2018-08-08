@@ -14,7 +14,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
@@ -24,6 +23,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "crypto/sha2.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
@@ -376,8 +376,7 @@ AutoEnrollmentClientImpl::FactoryImpl::CreateForInitialEnrollment(
 }
 
 AutoEnrollmentClientImpl::~AutoEnrollmentClientImpl() {
-  g_browser_process->network_connection_tracker()
-      ->RemoveNetworkConnectionObserver(this);
+  content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
 }
 
 // static
@@ -388,10 +387,8 @@ void AutoEnrollmentClientImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 
 void AutoEnrollmentClientImpl::Start() {
   // (Re-)register the network change observer.
-  g_browser_process->network_connection_tracker()
-      ->RemoveNetworkConnectionObserver(this);
-  g_browser_process->network_connection_tracker()->AddNetworkConnectionObserver(
-      this);
+  content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
+  content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
 
   // Drop the previous job and reset state.
   request_job_.reset();

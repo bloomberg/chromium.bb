@@ -12,10 +12,10 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "chrome/browser/media/router/discovery/dial/dial_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -49,8 +49,7 @@ DialRegistry::DialRegistry()
   DCHECK_GT(max_devices_, 0U);
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&BrowserProcess::network_connection_tracker,
-                     base::Unretained(g_browser_process)),
+      base::BindOnce(&content::GetNetworkConnectionTracker),
       base::BindOnce(&DialRegistry::SetNetworkConnectionTracker,
                      base::Unretained(this)));
 }
