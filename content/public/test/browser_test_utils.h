@@ -413,12 +413,10 @@ struct JsLiteralHelper {
     return base::Value(std::forward<U>(arg));
   }
 
-  template <>
   static base::Value Convert(const base::Value& value) {
     return value.Clone();
   }
 
-  template <>
   static base::Value Convert(const base::ListValue& value) {
     return value.Clone();
   }
