@@ -106,7 +106,7 @@ class Ws2UserActivityMonitorTest : public TaskRunnerTestBase {
     env_ = aura::Env::CreateInstance(aura::Env::Mode::LOCAL);
     TaskRunnerTestBase::SetUp();
     monitor_ = std::make_unique<UserActivityMonitor>(
-        task_runner()->DeprecatedGetMockTickClock());
+        env_.get(), task_runner()->DeprecatedGetMockTickClock());
   }
 
   std::unique_ptr<aura::Env> env_;

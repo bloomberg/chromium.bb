@@ -4,6 +4,7 @@
 
 #include "services/ui/ws2/pointer_watcher.h"
 
+#include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_tree.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -26,11 +27,11 @@ std::unique_ptr<Event> PointerWatcher::CreateEventForClient(
 }
 
 PointerWatcher::PointerWatcher(WindowTree* tree) : tree_(tree) {
-  aura::Env::GetInstance()->AddWindowEventDispatcherObserver(this);
+  tree->window_service()->env()->AddWindowEventDispatcherObserver(this);
 }
 
 PointerWatcher::~PointerWatcher() {
-  aura::Env::GetInstance()->RemoveWindowEventDispatcherObserver(this);
+  tree_->window_service()->env()->RemoveWindowEventDispatcherObserver(this);
 }
 
 bool PointerWatcher::DoesEventMatch(const ui::Event& event) const {
