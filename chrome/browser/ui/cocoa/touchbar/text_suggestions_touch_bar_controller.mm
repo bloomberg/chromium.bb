@@ -72,6 +72,13 @@ class WebContentsTextObserver : public content::WebContentsObserver {
   // is no word currently being edited and the suggestion will be placed at the
   // cursor.
   NSRange editingWordRange_;
+
+  // When YES, -updateTextSelection:range: should ignore a text selection that
+  // is equal to the editing word range. Set to YES when
+  // -replaceEditingWordWithSuggestion: modifies the current text selection.
+  // Reset to NO when the text selection for replacing the editing word reaches
+  // -updateTextSelection:range:.
+  BOOL shouldIgnoreReplacementSelection_;
 }
 @end
 
@@ -89,6 +96,7 @@ class WebContentsTextObserver : public content::WebContentsObserver {
     controller_ = controller;
     observer_.reset(
         new text_observer::WebContentsTextObserver(webContents_, self));
+    shouldIgnoreReplacementSelection_ = NO;
   }
 
   return self;
@@ -147,6 +155,12 @@ class WebContentsTextObserver : public content::WebContentsObserver {
 - (void)updateTextSelection:(const base::string16&)text
                       range:(const gfx::Range&)range {
   if (@available(macOS 10.12.2, *)) {
+    if (shouldIgnoreReplacementSelection_ &&
+        range == gfx::Range(editingWordRange_)) {
+      shouldIgnoreReplacementSelection_ = NO;
+      return;
+    }
+
     if (![self isTextfieldFocused]) {
       [controller_ invalidateTouchBar];
       return;
@@ -218,6 +232,7 @@ class WebContentsTextObserver : public content::WebContentsObserver {
   // If the editing word is not selected in its entirety, modify the selection
   // to cover the current editing word.
   if (!NSEqualRanges(editingWordRange_, selectionRange_)) {
+    shouldIgnoreReplacementSelection_ = YES;
     int start_adjust = editingWordRange_.location - selectionRange_.location;
     int end_adjust = (editingWordRange_.location + editingWordRange_.length) -
                      (selectionRange_.location + selectionRange_.length);
@@ -225,26 +240,6 @@ class WebContentsTextObserver : public content::WebContentsObserver {
                                                    false);
   }
   webContents_->Replace(base::SysNSStringToUTF16(text));
-}
-
-- (void)setText:(NSString*)text {
-  text_.reset([text copy]);
-}
-
-- (NSString*)text {
-  return text_;
-}
-
-- (void)setSuggestions:(NSArray*)suggestions {
-  suggestions_.reset([suggestions copy]);
-}
-
-- (NSArray*)suggestions {
-  return suggestions_;
-}
-
-- (WebTextfieldTouchBarController*)controller {
-  return controller_;
 }
 
 - (void)setWebContents:(content::WebContents*)webContents {
@@ -270,12 +265,40 @@ class WebContentsTextObserver : public content::WebContentsObserver {
   return webContents_;
 }
 
+- (void)setText:(NSString*)text {
+  text_.reset([text copy]);
+}
+
+- (NSString*)text {
+  return text_;
+}
+
 - (void)setSelectionRange:(const gfx::Range&)range {
   selectionRange_ = range.ToNSRange();
 }
 
 - (gfx::Range)selectionRange {
   return gfx::Range(selectionRange_);
+}
+
+- (void)setSuggestions:(NSArray*)suggestions {
+  suggestions_.reset([suggestions copy]);
+}
+
+- (NSArray*)suggestions {
+  return suggestions_;
+}
+
+- (WebTextfieldTouchBarController*)controller {
+  return controller_;
+}
+
+- (void)setShouldIgnoreReplacementSelection:(BOOL)shouldIgnore {
+  shouldIgnoreReplacementSelection_ = shouldIgnore;
+}
+
+- (void)setEditingWordRange:(const gfx::Range&)range {
+  editingWordRange_ = range.ToNSRange();
 }
 
 @end
