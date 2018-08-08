@@ -57,6 +57,9 @@ class PLATFORM_EXPORT CallbackFunctionBase
   Member<ScriptState> incumbent_script_state_;
 
   friend class V8PersistentCallbackFunctionBase;
+  friend v8::Local<v8::Value> ToV8(CallbackFunctionBase* callback,
+                                   v8::Local<v8::Object> creation_context,
+                                   v8::Isolate*);
 };
 
 // V8PersistentCallbackFunctionBase retains the underlying v8::Function of a
