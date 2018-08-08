@@ -82,7 +82,7 @@ EXTERN_C_BEGIN
 #define WRAP(name) __nacl_irt_##name##_wrap
 
 // Declare REAL function pointer.
-#define DECLARE_REAL_PTR(name) typeof(__nacl_irt_##name) REAL(name);
+#define DECLARE_REAL_PTR(name) __typeof__(__nacl_irt_##name) REAL(name);
 
 // Assign the REAL function pointer.
 #define ASSIGN_REAL_PTR(name)        \
@@ -90,10 +90,12 @@ EXTERN_C_BEGIN
   REAL(name) = __nacl_irt_##name;
 
 // Switch IRT's pointer to the REAL pointer
-#define USE_REAL(name) __nacl_irt_##name = (typeof(__nacl_irt_##name))REAL(name)
+#define USE_REAL(name) \
+  __nacl_irt_##name = (__typeof__(__nacl_irt_##name))REAL(name)
 
 // Switch IRT's pointer to the WRAP function
-#define USE_WRAP(name) __nacl_irt_##name = (typeof(__nacl_irt_##name))WRAP(name)
+#define USE_WRAP(name) \
+  __nacl_irt_##name = (__typeof__(__nacl_irt_##name))WRAP(name)
 
 #define EXPAND_SYMBOL_LIST_OPERATION(OP) \
   OP(chdir);                             \
