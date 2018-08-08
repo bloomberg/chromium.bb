@@ -1046,10 +1046,6 @@
       status: "stable",
     },
     {
-      name: "RenderUnicodeControlCharacters",
-      status: "stable",
-    },
-    {
       name: "ReportingObserver",
       implied_by: ["DeprecationReporting", "InterventionReporting"],
       status: "stable",

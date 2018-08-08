@@ -83,11 +83,6 @@ String TextRun::NormalizedUTF16() const {
     } else if (Character::TreatAsSpace(character) &&
                character != kNoBreakSpaceCharacter) {
       character = kSpaceCharacter;
-    } else if (!RuntimeEnabledFeatures::
-                   RenderUnicodeControlCharactersEnabled() &&
-               Character::LegacyTreatAsZeroWidthSpaceInComplexScript(
-                   character)) {
-      character = kZeroWidthSpaceCharacter;
     } else if (Character::TreatAsZeroWidthSpaceInComplexScript(character)) {
       character = kZeroWidthSpaceCharacter;
     }
