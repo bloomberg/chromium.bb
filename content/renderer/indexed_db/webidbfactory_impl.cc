@@ -53,7 +53,7 @@ void WebIDBFactoryImpl::Open(
       base::WrapUnique(callbacks), transaction_id, nullptr, task_runner);
   auto database_callbacks_impl =
       std::make_unique<IndexedDBDatabaseCallbacksImpl>(
-          base::WrapUnique(database_callbacks), std::move(task_runner));
+          base::WrapUnique(database_callbacks));
   factory_->Open(GetCallbacksProxy(std::move(callbacks_impl)),
                  GetDatabaseCallbacksProxy(std::move(database_callbacks_impl)),
                  url::Origin(origin), name.Utf16(), version, transaction_id);
