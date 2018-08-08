@@ -21,15 +21,10 @@
 -PreviewsStateBrowserTest.ShouldEnableLoFiModeReload
 -PreviewsStateBrowserTest.ShouldEnableLoFiModeReloadDisableLoFi
 
--AsyncResourceHandlerBrowserTest/AsyncResourceHandlerBrowserTest.UploadProgress*
-
 # services/network/url_loader.cc should handle failure in
 # URLLoaderImpl::OnResponseBodyStreamRead(). Note this is flaky, so it will pass
 # sometimes.
 -SRC_ClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
-
-# Cross-origin request to file:// URL should be blocked. crbug.com/759230
--BrowserSideNavigationBrowserDisableWebSecurityTest.ValidateBaseUrlForDataUrl
 
 # https://crbug.com/846352: CORB/NetworkService: Remove
 # CrossSiteDocumentResourceHandler while preserving test coverage - the tests
