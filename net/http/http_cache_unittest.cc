@@ -4290,14 +4290,18 @@ TEST_F(HttpCacheTest, DeleteCacheWaitingForBackend) {
   EXPECT_FALSE(c->callback.have_result());
 
   // We cannot call FinishCreation because the factory itself will go away with
-  // the cache, so grab the callback and attempt to use it.
+  // the cache.
   CompletionOnceCallback callback = factory->ReleaseCallback();
   std::unique_ptr<disk_cache::Backend>* backend = factory->backend();
 
   cache.reset();
   base::RunLoop().RunUntilIdle();
 
+  // Even though |HttpCache| is destroyed, the Backend that was passed in to
+  // disk_cache::CreateCacheBackend() must still be valid until the callback is
+  // called.
   backend->reset();
+  // |callback| will destroy |backend|.
   std::move(callback).Run(ERR_ABORTED);
 }
 
