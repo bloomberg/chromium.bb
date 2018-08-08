@@ -156,7 +156,7 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
 
   DispatchEventResult DispatchEvent(Event&);
 
-  void EnqueueEvent(Event*, TaskType);
+  void EnqueueEvent(Event&, TaskType);
 
   // dispatchEventForBindings is intended to only be called from
   // javascript originated calls. This method will validate and may adjust

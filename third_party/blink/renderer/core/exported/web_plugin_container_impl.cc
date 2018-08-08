@@ -460,7 +460,7 @@ void WebPluginContainerImpl::EnqueueMessageEvent(
     const WebDOMMessageEvent& event) {
   if (!element_->GetExecutionContext())
     return;
-  element_->EnqueueEvent(event, TaskType::kInternalDefault);
+  element_->EnqueueEvent(*event, TaskType::kInternalDefault);
 }
 
 void WebPluginContainerImpl::Invalidate() {

@@ -107,7 +107,7 @@ void BroadcastChannel::OnMessage(BlinkCloneableMessage message) {
     event = MessageEvent::CreateError(
         GetExecutionContext()->GetSecurityOrigin()->ToString());
   }
-  EnqueueEvent(event, TaskType::kPostedMessage);
+  EnqueueEvent(*event, TaskType::kPostedMessage);
 }
 
 void BroadcastChannel::OnError() {

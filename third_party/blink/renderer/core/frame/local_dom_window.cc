@@ -338,11 +338,11 @@ Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
   return document_;
 }
 
-void LocalDOMWindow::EnqueueWindowEvent(Event* event, TaskType task_type) {
+void LocalDOMWindow::EnqueueWindowEvent(Event& event, TaskType task_type) {
   EnqueueEvent(event, task_type);
 }
 
-void LocalDOMWindow::EnqueueDocumentEvent(Event* event, TaskType task_type) {
+void LocalDOMWindow::EnqueueDocumentEvent(Event& event, TaskType task_type) {
   if (document_)
     document_->EnqueueEvent(event, task_type);
 }
@@ -379,7 +379,7 @@ void LocalDOMWindow::EnqueuePageshowEvent(PageshowEventPersistence persisted) {
     // The task source should be kDOMManipulation, but the spec doesn't say
     // anything about this.
     EnqueueWindowEvent(
-        PageTransitionEvent::Create(EventTypeNames::pageshow, persisted),
+        *PageTransitionEvent::Create(EventTypeNames::pageshow, persisted),
         TaskType::kMiscPlatformAPI);
     return;
   }
@@ -391,7 +391,7 @@ void LocalDOMWindow::EnqueuePageshowEvent(PageshowEventPersistence persisted) {
 void LocalDOMWindow::EnqueueHashchangeEvent(const String& old_url,
                                             const String& new_url) {
   // https://html.spec.whatwg.org/#history-traversal
-  EnqueueWindowEvent(HashChangeEvent::Create(old_url, new_url),
+  EnqueueWindowEvent(*HashChangeEvent::Create(old_url, new_url),
                      TaskType::kDOMManipulation);
 }
 

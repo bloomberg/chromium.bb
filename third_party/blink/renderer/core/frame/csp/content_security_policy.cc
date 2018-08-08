@@ -1420,9 +1420,9 @@ void ContentSecurityPolicy::DispatchViolationEvents(
   if (execution_context_->IsWorkletGlobalScope())
     return;
 
-  SecurityPolicyViolationEvent* event = SecurityPolicyViolationEvent::Create(
+  SecurityPolicyViolationEvent& event = *SecurityPolicyViolationEvent::Create(
       EventTypeNames::securitypolicyviolation, violation_data);
-  DCHECK(event->bubbles());
+  DCHECK(event.bubbles());
 
   if (execution_context_->IsDocument()) {
     Document* document = ToDocument(execution_context_);
