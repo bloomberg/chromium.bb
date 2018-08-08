@@ -47,6 +47,11 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/android_theme_resources.h"
+#else
+#include "base/test/scoped_feature_list.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "media/base/media_switches.h"
 #endif
 
 using content::SSLStatus;
@@ -1076,3 +1081,113 @@ TEST_F(PageInfoTest, SubresourceFilterSetting_MatchesActivation) {
   page_info();
   EXPECT_TRUE(showing_setting(last_permission_info_list()));
 }
+
+#if !defined(OS_ANDROID)
+
+// Unit tests with the unified autoplay sound settings UI enabled. When enabled
+// the sound settings dropdown on the page info UI will have custom wording.
+
+class UnifiedAutoplaySoundSettingsPageInfoTest
+    : public ChromeRenderViewHostTestHarness {
+ public:
+  ~UnifiedAutoplaySoundSettingsPageInfoTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(media::kAutoplaySoundSettings);
+    ChromeRenderViewHostTestHarness::SetUp();
+  }
+
+  void SetAutoplayPrefValue(bool value) {
+    profile()->GetPrefs()->SetBoolean(prefs::kBlockAutoplayEnabled, value);
+  }
+
+  void SetDefaultSoundContentSetting(ContentSetting default_setting) {
+    default_setting_ = default_setting;
+  }
+
+  base::string16 GetDefaultSoundSettingString() {
+    return PageInfoUI::PermissionActionToUIString(
+        profile(), CONTENT_SETTINGS_TYPE_SOUND, CONTENT_SETTING_DEFAULT,
+        default_setting_, content_settings::SettingSource::SETTING_SOURCE_USER);
+  }
+
+  base::string16 GetSoundSettingString(ContentSetting setting) {
+    return PageInfoUI::PermissionActionToUIString(
+        profile(), CONTENT_SETTINGS_TYPE_SOUND, setting, default_setting_,
+        content_settings::SettingSource::SETTING_SOURCE_USER);
+  }
+
+ private:
+  ContentSetting default_setting_ = CONTENT_SETTING_DEFAULT;
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// This test checks that the strings for the sound settings dropdown when
+// block autoplay is enabled and the default sound setting is allow.
+// The three options should be Automatic (default), Allow and Mute.
+TEST_F(UnifiedAutoplaySoundSettingsPageInfoTest, DefaultAllow_PrefOn) {
+  SetDefaultSoundContentSetting(CONTENT_SETTING_ALLOW);
+  SetAutoplayPrefValue(true);
+
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_BUTTON_TEXT_AUTOMATIC_BY_DEFAULT),
+      GetDefaultSoundSettingString());
+
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_BUTTON_TEXT_ALLOWED_BY_USER),
+      GetSoundSettingString(CONTENT_SETTING_ALLOW));
+
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAGE_INFO_BUTTON_TEXT_MUTED_BY_USER),
+            GetSoundSettingString(CONTENT_SETTING_BLOCK));
+}
+
+// This test checks that the strings for the sound settings dropdown when
+// block autoplay is disabled and the default sound setting is allow.
+// The three options should be Allow (default), Allow and Mute.
+TEST_F(UnifiedAutoplaySoundSettingsPageInfoTest, DefaultAllow_PrefOff) {
+  SetDefaultSoundContentSetting(CONTENT_SETTING_ALLOW);
+  SetAutoplayPrefValue(false);
+
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_BUTTON_TEXT_ALLOWED_BY_DEFAULT),
+      GetDefaultSoundSettingString());
+
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_BUTTON_TEXT_ALLOWED_BY_USER),
+      GetSoundSettingString(CONTENT_SETTING_ALLOW));
+
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAGE_INFO_BUTTON_TEXT_MUTED_BY_USER),
+            GetSoundSettingString(CONTENT_SETTING_BLOCK));
+}
+
+// This test checks that the strings for the sound settings dropdown when
+// the default sound setting is block. The three options should be
+// Block (default), Allow and Mute.
+TEST_F(UnifiedAutoplaySoundSettingsPageInfoTest, DefaultBlock) {
+  SetDefaultSoundContentSetting(CONTENT_SETTING_BLOCK);
+  SetAutoplayPrefValue(false);
+
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_BUTTON_TEXT_MUTED_BY_DEFAULT),
+      GetDefaultSoundSettingString());
+
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_BUTTON_TEXT_ALLOWED_BY_USER),
+      GetSoundSettingString(CONTENT_SETTING_ALLOW));
+
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAGE_INFO_BUTTON_TEXT_MUTED_BY_USER),
+            GetSoundSettingString(CONTENT_SETTING_BLOCK));
+}
+
+// This test checks that the string for a permission dropdown that is not the
+// sound setting is unaffected.
+TEST_F(UnifiedAutoplaySoundSettingsPageInfoTest, NotSoundSetting_Noop) {
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_BUTTON_TEXT_ALLOWED_BY_DEFAULT),
+      PageInfoUI::PermissionActionToUIString(
+          profile(), CONTENT_SETTINGS_TYPE_ADS, CONTENT_SETTING_DEFAULT,
+          CONTENT_SETTING_ALLOW,
+          content_settings::SettingSource::SETTING_SOURCE_USER));
+}
+
+#endif  // !defined(OS_ANDROID)

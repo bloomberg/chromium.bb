@@ -29,7 +29,11 @@
 #include "chrome/browser/android/android_theme_resources.h"
 #else
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/vector_icons/vector_icons.h"
+#include "media/base/media_switches.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -99,9 +103,40 @@ const int kPermissionButtonTextIDDefaultSetting[] = {
     IDS_PAGE_INFO_BUTTON_TEXT_ASK_BY_DEFAULT,
     kInvalidResourceID,
     IDS_PAGE_INFO_BUTTON_TEXT_DETECT_IMPORTANT_CONTENT_BY_DEFAULT};
-static_assert(arraysize(kPermissionButtonTextIDDefaultSetting) ==
+static_assert(base::size(kPermissionButtonTextIDDefaultSetting) ==
                   CONTENT_SETTING_NUM_SETTINGS,
               "kPermissionButtonTextIDDefaultSetting array size is incorrect");
+
+#if !defined(OS_ANDROID)
+// The resource IDs for the strings that are displayed on the sound permission
+// button if the sound permission setting is managed by the user.
+const int kSoundPermissionButtonTextIDUserManaged[] = {
+    kInvalidResourceID,
+    IDS_PAGE_INFO_BUTTON_TEXT_ALLOWED_BY_USER,
+    IDS_PAGE_INFO_BUTTON_TEXT_MUTED_BY_USER,
+    kInvalidResourceID,
+    kInvalidResourceID,
+    kInvalidResourceID};
+static_assert(
+    base::size(kSoundPermissionButtonTextIDUserManaged) ==
+        CONTENT_SETTING_NUM_SETTINGS,
+    "kSoundPermissionButtonTextIDUserManaged array size is incorrect");
+
+// The resource IDs for the strings that are displayed on the sound permission
+// button if the permission setting is the global default setting and the
+// block autoplay preference is disabled.
+const int kSoundPermissionButtonTextIDDefaultSetting[] = {
+    kInvalidResourceID,
+    IDS_PAGE_INFO_BUTTON_TEXT_ALLOWED_BY_DEFAULT,
+    IDS_PAGE_INFO_BUTTON_TEXT_MUTED_BY_DEFAULT,
+    kInvalidResourceID,
+    kInvalidResourceID,
+    kInvalidResourceID};
+static_assert(
+    base::size(kSoundPermissionButtonTextIDDefaultSetting) ==
+        CONTENT_SETTING_NUM_SETTINGS,
+    "kSoundPermissionButtonTextIDDefaultSetting array size is incorrect");
+#endif
 
 struct PermissionsUIInfo {
   ContentSettingsType type;
@@ -295,12 +330,38 @@ base::string16 PageInfoUI::PermissionActionToUIString(
   switch (source) {
     case content_settings::SETTING_SOURCE_USER:
       if (setting == CONTENT_SETTING_DEFAULT) {
+#if !defined(OS_ANDROID)
+        if (type == CONTENT_SETTINGS_TYPE_SOUND &&
+            base::FeatureList::IsEnabled(media::kAutoplaySoundSettings)) {
+          // If the block autoplay enabled preference is enabled then the
+          // sound default setting has to be ALLOW and we will return a custom
+          // string indicating that Chrome is controlling autoplay and sound
+          // automatically.
+          if (profile->GetPrefs()->GetBoolean(prefs::kBlockAutoplayEnabled)) {
+            DCHECK_EQ(ContentSetting::CONTENT_SETTING_ALLOW, effective_setting);
+            return l10n_util::GetStringUTF16(
+                IDS_PAGE_INFO_BUTTON_TEXT_AUTOMATIC_BY_DEFAULT);
+          }
+
+          button_text_ids = kSoundPermissionButtonTextIDDefaultSetting;
+          break;
+        }
+#endif
+
         button_text_ids = kPermissionButtonTextIDDefaultSetting;
         break;
       }
       FALLTHROUGH;
     case content_settings::SETTING_SOURCE_POLICY:
     case content_settings::SETTING_SOURCE_EXTENSION:
+#if !defined(OS_ANDROID)
+      if (type == CONTENT_SETTINGS_TYPE_SOUND &&
+          base::FeatureList::IsEnabled(media::kAutoplaySoundSettings)) {
+        button_text_ids = kSoundPermissionButtonTextIDUserManaged;
+        break;
+      }
+#endif
+
       button_text_ids = kPermissionButtonTextIDUserManaged;
       break;
     case content_settings::SETTING_SOURCE_WHITELIST:
