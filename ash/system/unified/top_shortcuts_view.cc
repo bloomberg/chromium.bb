@@ -146,6 +146,7 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
   if (Shell::Get()->session_controller()->login_status() !=
       LoginStatus::NOT_LOGGED_IN) {
     user_avatar_button_ = new UserAvatarButton(this);
+    user_avatar_button_->SetEnabled(controller->IsUserChooserEnabled());
     container_->AddChildView(user_avatar_button_);
   }
 
@@ -198,7 +199,7 @@ void TopShortcutsView::SetExpandedAmount(double expanded_amount) {
 void TopShortcutsView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   if (sender == user_avatar_button_)
-    controller_->ShowUserChooserWidget();
+    controller_->ShowUserChooserView();
   else if (sender == sign_out_button_)
     controller_->HandleSignOutAction();
   else if (sender == lock_button_)
