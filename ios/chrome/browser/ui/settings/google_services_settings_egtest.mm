@@ -175,7 +175,7 @@ using unified_consent::prefs::kUnifiedConsentGiven;
                                    grey_kindOfClass(
                                        [UICollectionViewCell class]),
                                    grey_sufficientlyVisible(), nil)]
-         usingSearchAction:grey_swipeSlowInDirection(kGREYDirectionUp)
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 150)
       onElementWithMatcher:self.scrollViewMatcher]
       assertWithMatcher:grey_notNil()];
 }
