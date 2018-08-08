@@ -218,10 +218,14 @@ void PdfMetafileSkia::FinishFrameContent() {
   DCHECK_EQ(data_->type_, SkiaDocumentType::MSKP);
   DCHECK(!data_->pdf_data_);
 
-  SkDynamicMemoryWStream stream;
+  cc::PlaybackParams::CustomDataRasterCallback custom_callback =
+      base::BindRepeating(&PdfMetafileSkia::CustomDataToSkPictureCallback,
+                          base::Unretained(this));
   sk_sp<SkPicture> pic = ToSkPicture(data_->pages_[0].content_,
-                                     SkRect::MakeSize(data_->pages_[0].size_));
+                                     SkRect::MakeSize(data_->pages_[0].size_),
+                                     nullptr, custom_callback);
   SkSerialProcs procs = SerializationProcs(&data_->subframe_content_info_);
+  SkDynamicMemoryWStream stream;
   pic->serialize(&stream, &procs);
   data_->pdf_data_ = stream.detachAsStream();
 }
