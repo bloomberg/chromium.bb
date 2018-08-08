@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 
 #include "base/barrier_closure.h"
+#include "base/base64.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
@@ -136,6 +137,25 @@ std::string GetCrostiniMountPointName(Profile* profile) {
 
 base::FilePath GetCrostiniMountDirectory(Profile* profile) {
   return base::FilePath("/media/fuse/" + GetCrostiniMountPointName(profile));
+}
+
+std::vector<std::string> GetCrostiniMountOptions(
+    const std::string& hostname,
+    const std::string& host_private_key,
+    const std::string& container_public_key) {
+  const std::string port = "2222";
+  std::vector<std::string> options;
+  std::string base64_known_hosts;
+  std::string base64_identity;
+  base::Base64Encode(host_private_key, &base64_identity);
+  base::Base64Encode(
+      base::StringPrintf("[%s]:%s %s", hostname.c_str(), port.c_str(),
+                         container_public_key.c_str()),
+      &base64_known_hosts);
+  options.push_back("UserKnownHostsBase64=" + base64_known_hosts);
+  options.push_back("IdentityBase64=" + base64_identity);
+  options.push_back("Port=" + port);
+  return options;
 }
 
 std::string ConvertFileSystemURLToPathInsideCrostini(

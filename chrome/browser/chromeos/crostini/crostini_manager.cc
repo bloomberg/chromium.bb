@@ -16,15 +16,19 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_remover.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chromeos/dbus/concierge_client.h"
+#include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/image_loader_client.h"
+#include "chromeos/disks/disk_mount_manager.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "content/public/browser/browser_thread.h"
@@ -32,6 +36,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "net/base/escape.h"
 #include "net/base/network_change_notifier.h"
+#include "storage/browser/fileapi/external_mount_points.h"
 
 namespace crostini {
 
@@ -58,10 +63,9 @@ class CrostiniRestarterService : public KeyedService {
   ~CrostiniRestarterService() override = default;
 
   CrostiniManager::RestartId Register(
+      Profile* profile,
       std::string vm_name,
-      std::string crypothome_id,
       std::string container_name,
-      std::string container_username,
       CrostiniManager::RestartCrostiniCallback callback,
       CrostiniManager::RestartObserver* observer);
 
@@ -113,15 +117,18 @@ class CrostiniRestarterServiceFactory
   }
 };
 
-class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
+class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter>,
+                          public chromeos::disks::DiskMountManager::Observer {
  public:
   CrostiniRestarter(CrostiniRestarterService* restarter_service,
+                    Profile* profile,
                     std::string vm_name,
                     std::string cryptohome_id,
                     std::string container_name,
                     std::string container_username,
                     CrostiniManager::RestartCrostiniCallback callback)
-      : vm_name_(std::move(vm_name)),
+      : profile_(profile),
+        vm_name_(std::move(vm_name)),
         cryptohome_id_(std::move(cryptohome_id)),
         container_name_(std::move(container_name)),
         container_username_(std::move(container_username)),
@@ -135,11 +142,11 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
       return;
 
     CrostiniManager* crostini_manager = CrostiniManager::GetInstance();
-    // Finish Restart immediately if testing.
+    // Go to StartContainerFinished immediately if testing.
     if (crostini_manager->skip_restart_for_testing()) {
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
-          base::BindOnce(&CrostiniRestarter::FinishRestart,
+          base::BindOnce(&CrostiniRestarter::StartContainerFinished,
                          base::WrapRefCounted(this),
                          ConciergeClientResult::SUCCESS));
       return;
@@ -169,7 +176,7 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
  private:
   friend class base::RefCountedThreadSafe<CrostiniRestarter>;
 
-  ~CrostiniRestarter() {
+  ~CrostiniRestarter() override {
     if (callback_) {
       LOG(ERROR) << "Destroying without having called the callback.";
     }
@@ -258,18 +265,109 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
 
   void StartContainerFinished(ConciergeClientResult result) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (result != ConciergeClientResult::SUCCESS) {
-      LOG(ERROR) << "Failed to start container.";
+    // Tell observers.
+    for (auto& observer : observer_list_) {
+      observer.OnContainerStarted(result);
     }
     if (is_aborted_)
       return;
-    FinishRestart(result);
+    if (result != ConciergeClientResult::SUCCESS) {
+      LOG(ERROR) << "Failed to start container.";
+      FinishRestart(result);
+      return;
+    }
+
+    // If default termina/penguin, then do sshfs mount, else we are finished.
+    if (vm_name_ == kCrostiniDefaultVmName &&
+        container_name_ == kCrostiniDefaultContainerName) {
+      CrostiniManager::GetInstance()->GetContainerSshKeys(
+          vm_name_, container_name_, cryptohome_id_,
+          base::BindOnce(&CrostiniRestarter::GetContainerSshKeysFinished,
+                         this));
+    } else {
+      FinishRestart(result);
+    }
   }
 
+  void GetContainerSshKeysFinished(crostini::ConciergeClientResult result,
+                                   const std::string& container_public_key,
+                                   const std::string& host_private_key,
+                                   const std::string& hostname) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // Tell observers.
+    for (auto& observer : observer_list_) {
+      observer.OnSshKeysFetched(result);
+    }
+    if (is_aborted_)
+      return;
+    if (result != crostini::ConciergeClientResult::SUCCESS) {
+      LOG(ERROR) << "Failed to get ssh keys.";
+      FinishRestart(result);
+      return;
+    }
+
+    // Add DiskMountManager::OnMountEvent observer.
+    auto* dmgr = chromeos::disks::DiskMountManager::GetInstance();
+    dmgr->AddObserver(this);
+
+    // Call to sshfs to mount.
+    source_path_ = base::StringPrintf(
+        "sshfs://%s@%s:", container_username_.c_str(), hostname.c_str());
+    dmgr->MountPath(source_path_, "",
+                    file_manager::util::GetCrostiniMountPointName(profile_),
+                    file_manager::util::GetCrostiniMountOptions(
+                        hostname, host_private_key, container_public_key),
+                    chromeos::MOUNT_TYPE_NETWORK_STORAGE,
+                    chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
+  }
+
+  void OnMountEvent(chromeos::disks::DiskMountManager::MountEvent event,
+                    chromeos::MountError error_code,
+                    const chromeos::disks::DiskMountManager::MountPointInfo&
+                        mount_info) override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    // Ignore any other mount/unmount events.
+    if (event != chromeos::disks::DiskMountManager::MountEvent::MOUNTING ||
+        mount_info.source_path != source_path_) {
+      return;
+    }
+    // Remove DiskMountManager::OnMountEvent observer.
+    chromeos::disks::DiskMountManager::GetInstance()->RemoveObserver(this);
+
+    if (error_code != chromeos::MountError::MOUNT_ERROR_NONE) {
+      LOG(ERROR) << "Error mounting crostini container: error_code="
+                 << error_code << ", source_path=" << mount_info.source_path
+                 << ", mount_path=" << mount_info.mount_path
+                 << ", mount_type=" << mount_info.mount_type
+                 << ", mount_condition=" << mount_info.mount_condition;
+    } else {
+      // Register filesystem and add volume to VolumeManager.
+      base::FilePath mount_path =
+          base::FilePath(FILE_PATH_LITERAL(mount_info.mount_path));
+      storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+          file_manager::util::GetCrostiniMountPointName(profile_),
+          storage::kFileSystemTypeNativeLocal, storage::FileSystemMountOption(),
+          mount_path);
+
+      // VolumeManager is null in unittest.
+      if (auto* vmgr = file_manager::VolumeManager::Get(profile_))
+        vmgr->AddSshfsCrostiniVolume(mount_path);
+    }
+
+    // Abort not checked until end of function.  On abort, do not call
+    // FinishRestart, but still remove observer and add volume as per above.
+    if (is_aborted_)
+      return;
+    FinishRestart(ConciergeClientResult::SUCCESS);
+  }
+
+  Profile* profile_;
   std::string vm_name_;
   std::string cryptohome_id_;
   std::string container_name_;
   std::string container_username_;
+  std::string source_path_;
   CrostiniManager::RestartCrostiniCallback callback_;
   base::ObserverList<CrostiniManager::RestartObserver> observer_list_;
   CrostiniManager::RestartId restart_id_;
@@ -282,15 +380,14 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
 CrostiniManager::RestartId CrostiniRestarter::next_restart_id_ = 0;
 
 CrostiniManager::RestartId CrostiniRestarterService::Register(
+    Profile* profile,
     std::string vm_name,
-    std::string cryptohome_id,
     std::string container_name,
-    std::string container_username,
     CrostiniManager::RestartCrostiniCallback callback,
     CrostiniManager::RestartObserver* observer) {
   auto restarter = base::MakeRefCounted<CrostiniRestarter>(
-      this, std::move(vm_name), std::move(cryptohome_id),
-      std::move(container_name), std::move(container_username),
+      this, profile, std::move(vm_name), CryptohomeIdForProfile(profile),
+      std::move(container_name), ContainerUserNameForProfile(profile),
       std::move(callback));
   if (observer)
     restarter->AddObserver(observer);
@@ -968,8 +1065,7 @@ CrostiniManager::RestartId CrostiniManager::RestartCrostini(
     RestartObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return CrostiniRestarterServiceFactory::GetForProfile(profile)->Register(
-      std::move(vm_name), CryptohomeIdForProfile(profile),
-      std::move(container_name), ContainerUserNameForProfile(profile),
+      profile, std::move(vm_name), std::move(container_name),
       std::move(callback), observer);
 }
 

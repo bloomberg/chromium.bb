@@ -44,6 +44,7 @@ enum class ConciergeClientResult {
   LAUNCH_CONTAINER_APPLICATION_FAILED,
   INSTALL_LINUX_PACKAGE_FAILED,
   INSTALL_LINUX_PACKAGE_ALREADY_ACTIVE,
+  SSHFS_MOUNT_ERROR,
   UNKNOWN_ERROR,
 };
 
@@ -143,6 +144,8 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
     virtual void OnConciergeStarted(ConciergeClientResult result) = 0;
     virtual void OnDiskImageCreated(ConciergeClientResult result) = 0;
     virtual void OnVmStarted(ConciergeClientResult result) = 0;
+    virtual void OnContainerStarted(ConciergeClientResult result) = 0;
+    virtual void OnSshKeysFetched(ConciergeClientResult result) = 0;
   };
 
   // Checks if the cros-termina component is installed.
