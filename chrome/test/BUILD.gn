@@ -5497,7 +5497,6 @@ if (!is_android && !is_fuchsia) {
       "//third_party/pyftpdlib/",
       "//third_party/pywebsocket/",
       "//third_party/tlslite/",
-      "$root_out_dir/pyproto/",
       "//testing/xvfb.py",
     ]
 
@@ -5526,6 +5525,7 @@ if (!is_android && !is_fuchsia) {
       "//chrome/common",
       "//chrome/renderer",
       "//components/sync",
+      "//components/sync/protocol:chromiumsync_pyproto",
       "//crypto:platform",
       "//testing/gmock",
       "//testing/gtest",
