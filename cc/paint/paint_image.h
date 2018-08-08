@@ -137,7 +137,6 @@ class CC_PAINT_EXPORT PaintImage {
   bool is_multipart() const { return is_multipart_; }
   int repetition_count() const { return repetition_count_; }
   bool ShouldAnimate() const;
-  size_t frame_index() const { return frame_index_; }
   AnimationSequenceId reset_animation_sequence_id() const {
     return reset_animation_sequence_id_;
   }
@@ -203,9 +202,6 @@ class CC_PAINT_EXPORT PaintImage {
   // If non-empty, holds the subset of this image relative to the original image
   // at the origin.
   gfx::Rect subset_rect_;
-
-  // The frame index to use when rasterizing this image.
-  size_t frame_index_ = kDefaultFrameIndex;
 
   // Whether the data fetched for this image is a part of a multpart response.
   bool is_multipart_ = false;

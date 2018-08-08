@@ -8342,7 +8342,6 @@ class LayerTreeHostTestImageAnimation : public LayerTreeHostTest {
         PaintImageBuilder::WithDefault()
             .set_id(PaintImage::GetNextId())
             .set_paint_image_generator(generator_)
-            .set_frame_index(0u)
             .set_animation_type(PaintImage::AnimationType::ANIMATED)
             .set_repetition_count(kAnimationLoopOnce)
             .TakePaintImage();

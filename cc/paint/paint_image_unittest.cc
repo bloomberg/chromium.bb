@@ -52,7 +52,6 @@ TEST(PaintImageTest, DecodesCorrectFrames) {
   PaintImage image = PaintImageBuilder::WithDefault()
                          .set_id(PaintImage::GetNextId())
                          .set_paint_image_generator(generator)
-                         .set_frame_index(0u)
                          .TakePaintImage();
 
   // The recorded index is 0u but ask for 1u frame.
@@ -93,7 +92,6 @@ TEST(PaintImageTest, SupportedDecodeSize) {
   PaintImage image = PaintImageBuilder::WithDefault()
                          .set_id(PaintImage::GetNextId())
                          .set_paint_image_generator(generator)
-                         .set_frame_index(0u)
                          .TakePaintImage();
   EXPECT_EQ(image.GetSupportedDecodeSize(supported_sizes[0]),
             supported_sizes[0]);

@@ -53,7 +53,6 @@ PaintImage CreateAnimatedImage(
     const gfx::Size& size,
     std::vector<FrameMetadata> frames,
     int repetition_count = kAnimationLoopInfinite,
-    size_t frame_index = PaintImage::kDefaultFrameIndex,
     PaintImage::Id id = PaintImage::GetNextId());
 
 PaintImage CreateBitmapImage(const gfx::Size& size);

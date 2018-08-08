@@ -1941,7 +1941,6 @@ TEST_P(GpuImageDecodeCacheTest, CacheDecodesExpectedFrames) {
   PaintImage image = PaintImageBuilder::WithDefault()
                          .set_id(PaintImage::GetNextId())
                          .set_paint_image_generator(generator)
-                         .set_frame_index(0u)
                          .TakePaintImage();
 
   viz::ContextProvider::ScopedContextLock context_lock(context_provider());
@@ -2417,7 +2416,6 @@ TEST_P(GpuImageDecodeCacheTest, DecodeToScale) {
   PaintImage paint_image = PaintImageBuilder::WithDefault()
                                .set_id(PaintImage::GetNextId())
                                .set_paint_image_generator(generator)
-                               .set_frame_index(0u)
                                .TakePaintImage();
 
   DrawImage draw_image1(
@@ -2455,7 +2453,6 @@ TEST_P(GpuImageDecodeCacheTest, DecodeToScaleNoneQuality) {
   PaintImage paint_image = PaintImageBuilder::WithDefault()
                                .set_id(PaintImage::GetNextId())
                                .set_paint_image_generator(generator)
-                               .set_frame_index(0u)
                                .TakePaintImage();
 
   DrawImage draw_image(

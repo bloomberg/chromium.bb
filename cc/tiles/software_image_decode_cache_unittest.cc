@@ -1598,7 +1598,6 @@ TEST(SoftwareImageDecodeCacheTest, CacheDecodesExpectedFrames) {
   PaintImage image = PaintImageBuilder::WithDefault()
                          .set_id(PaintImage::GetNextId())
                          .set_paint_image_generator(generator)
-                         .set_frame_index(0u)
                          .TakePaintImage();
 
   bool is_decomposable = true;
@@ -1794,7 +1793,6 @@ TEST(SoftwareImageDecodeCacheTest, DecodeToScale) {
   PaintImage paint_image = PaintImageBuilder::WithDefault()
                                .set_id(PaintImage::GetNextId())
                                .set_paint_image_generator(generator)
-                               .set_frame_index(0u)
                                .TakePaintImage();
 
   // Scale to mip level 1, there should be a single entry in the cache from
@@ -1853,7 +1851,6 @@ TEST(SoftwareImageDecodeCacheTest, DecodeToScaleSubrect) {
   PaintImage paint_image = PaintImageBuilder::WithDefault()
                                .set_id(PaintImage::GetNextId())
                                .set_paint_image_generator(generator)
-                               .set_frame_index(0u)
                                .TakePaintImage();
 
   // Scale to mip level 1, there should be 2 entries in the cache, since the
@@ -1891,7 +1888,6 @@ TEST(SoftwareImageDecodeCacheTest, DecodeToScaleNoneQuality) {
   PaintImage paint_image = PaintImageBuilder::WithDefault()
                                .set_id(PaintImage::GetNextId())
                                .set_paint_image_generator(generator)
-                               .set_frame_index(0u)
                                .TakePaintImage();
 
   DrawImage draw_image(

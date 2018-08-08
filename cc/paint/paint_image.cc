@@ -52,8 +52,6 @@ bool PaintImage::operator==(const PaintImage& other) const {
     return false;
   if (subset_rect_ != other.subset_rect_)
     return false;
-  if (frame_index_ != other.frame_index_)
-    return false;
   if (is_multipart_ != other.is_multipart_)
     return false;
   return true;
@@ -136,7 +134,7 @@ void PaintImage::CreateSkImage() {
   } else if (paint_image_generator_) {
     cached_sk_image_ =
         SkImage::MakeFromGenerator(std::make_unique<SkiaPaintImageGenerator>(
-            paint_image_generator_, frame_index_));
+            paint_image_generator_, kDefaultFrameIndex));
   }
 
   if (!subset_rect_.IsEmpty() && cached_sk_image_) {
@@ -278,7 +276,7 @@ size_t PaintImage::FrameCount() const {
 sk_sp<SkImage> PaintImage::GetSkImageForFrame(size_t index) const {
   DCHECK_LT(index, FrameCount());
 
-  if (index == frame_index_)
+  if (index == kDefaultFrameIndex)
     return GetSkImage();
 
   sk_sp<SkImage> image = SkImage::MakeFromGenerator(
@@ -297,7 +295,6 @@ std::string PaintImage::ToString() const {
       << " animation_type_: " << static_cast<int>(animation_type_)
       << " completion_state_: " << static_cast<int>(completion_state_)
       << " subset_rect_: " << subset_rect_.ToString()
-      << " frame_index_: " << frame_index_
       << " is_multipart_: " << is_multipart_;
   return str.str();
 }
