@@ -31,7 +31,6 @@ static_library("vr_android") {
     "mailbox_to_surface_bridge.h",
     "metrics_util_android.cc",
     "metrics_util_android.h",
-    "register_jni.h",
     "scoped_gpu_trace.cc",
     "scoped_gpu_trace.h",
     "vr_controller.cc",
@@ -42,7 +41,6 @@ static_library("vr_android") {
     "vr_gl_thread.h",
     "vr_input_connection.cc",
     "vr_input_connection.h",
-    "vr_module_provider.cc",
     "vr_shell.cc",
     "vr_shell.h",
     "vr_shell_delegate.cc",
@@ -129,66 +127,12 @@ static_library("vr_android") {
   }
 }
 
-android_library("java") {
-  java_files = [
-    "//chrome/android/java/src/org/chromium/chrome/browser/component_updater/VrAssetsComponentInstaller.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/AndroidUiGestureTarget.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/AndroidVSyncHelper.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/EmptySniffingVrViewContainer.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/keyboard/BuildConstants.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/keyboard/GvrKeyboardLoaderClient.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/keyboard/TextEditAction.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/keyboard/VrInputMethodManagerWrapper.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/NoopCanvas.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/OnDispatchTouchEventCallback.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrAlertDialog.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrCancelAnimationActivity.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrCompositorSurfaceManager.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrCoreInfo.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrCoreVersionChecker.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrDaydreamApi.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrDelegateImpl.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrDelegateProviderImpl.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrDialog.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrDialogManager.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrFeedbackStatus.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrFirstRunActivity.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrInputConnection.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrIntentUtils.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrModalPresenter.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrPopupWindow.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrShell.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrShellDelegate.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrToast.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrToastManager.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrUiWidgetFactory.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrViewContainer.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrWindowAndroid.java",
-  ]
-
-  classpath_deps = [
-    "//base:base_java",
-    "//chrome/android:chrome_java",
-    "//components/policy/android:policy_java",
-    "//content/public/android:content_java",
-    "//third_party/android_tools:android_arch_lifecycle_common_java",
-    "//third_party/android_tools:android_arch_lifecycle_runtime_java",
-    "//third_party/android_tools:android_support_annotations_java",
-    "//third_party/android_tools:android_support_v7_appcompat_java",
-    "//third_party/gvr-android-keyboard:kb_java",
-    "//third_party/gvr-android-sdk:gvr_common_java",
-    "//ui/android:ui_full_java",
-    "//ui/android:ui_utils_java",
-  ]
-}
-
 generate_jni("vr_jni_headers") {
   sources = [
     "//chrome/android/java/src/org/chromium/chrome/browser/vr/AndroidUiGestureTarget.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr/AndroidVSyncHelper.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrCoreInfo.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrInputConnection.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrModuleProvider.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrShell.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrShellDelegate.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr/keyboard/GvrKeyboardLoaderClient.java",
@@ -203,13 +147,5 @@ if (enable_arcore) {
       "//chrome/android/java/src/org/chromium/chrome/browser/vr/ArCoreJavaUtils.java",
     ]
     jni_package = "vr"
-  }
-}
-
-if (current_toolchain == default_toolchain) {
-  generate_jni_registration("jni_registration") {
-    target = ":java"
-    output = "$target_gen_dir/${target_name}.h"
-    namespace = "vr"
   }
 }

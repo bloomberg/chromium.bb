@@ -4,9 +4,6 @@
 
 package org.chromium.chrome.browser.vr;
 
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chrome.R;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +11,6 @@ import java.util.List;
  * Instantiates the VR delegates. If the VR module is not available this provider will
  * instantiate a fallback implementation.
  */
-@JNINamespace("vr")
 public class VrModuleProvider {
     private static VrDelegateProvider sDelegateProvider;
     private static final List<VrModeObserver> sVrModeObservers = new ArrayList<>();
@@ -53,12 +49,6 @@ public class VrModuleProvider {
         for (VrModeObserver observer : sVrModeObservers) observer.onExitVr();
     }
 
-    // TODO(crbug.com/870055): JNI should be registered in the shared VR library's JNI_OnLoad
-    // function. Do this once we have a shared VR library.
-    /* package */ static void registerJni() {
-        nativeRegisterJni();
-    }
-
     private static VrDelegateProvider getDelegateProvider() {
         if (sDelegateProvider == null) {
             try {
@@ -75,19 +65,4 @@ public class VrModuleProvider {
     }
 
     private VrModuleProvider() {}
-
-    // TODO(crbug/870056): Move resources into VR DFM.
-    private void silenceLintErrors() {
-        int[] res = new int[] {
-                R.string.vr_shell_feedback_infobar_feedback_button,
-                R.string.vr_shell_feedback_infobar_description,
-                R.string.vr_services_check_infobar_install_text,
-                R.string.vr_services_check_infobar_update_text,
-                R.string.vr_services_check_infobar_install_button,
-                R.string.vr_services_check_infobar_update_button, R.anim.stay_hidden,
-                R.drawable.vr_services,
-        };
-    }
-
-    private static native void nativeRegisterJni();
 }

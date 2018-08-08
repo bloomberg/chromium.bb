@@ -9,5 +9,5 @@ jni_exception_files =
 
 # Exclude it from JNI registration if VR is not enabled.
 if (!enable_vr) {
-  jni_exception_files += [ "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrModuleProvider.java" ]
+  jni_exception_files += [ "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrShellDelegate.java" ]
 }
