@@ -63,6 +63,7 @@ TEST(CrosDisksClientTest, DiskInfo) {
   const std::string kVendorId = "0000";
   const std::string kVendorName = "Vendor Name";
   const std::string kFileSystemType = "exfat";
+  const bool kIsAutoMountable = true;
 
   // Construct a fake response of GetDeviceProperties().
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
@@ -84,6 +85,8 @@ TEST(CrosDisksClientTest, DiskInfo) {
                         kDeviceIsOnRemovableDevice);
     AppendBoolDictEntry(&array_writer, cros_disks::kDeviceIsReadOnly,
                         kDeviceIsReadOnly);
+    AppendBoolDictEntry(&array_writer, cros_disks::kIsAutoMountable,
+                        kIsAutoMountable);
     {
       dbus::MessageWriter entry_writer(NULL);
       array_writer.OpenDictEntry(&entry_writer);
@@ -157,6 +160,7 @@ TEST(CrosDisksClientTest, DiskInfo) {
   EXPECT_EQ(DEVICE_TYPE_SD, result.device_type());
   EXPECT_EQ(kMountPath, result.mount_path());
   EXPECT_EQ(kFileSystemType, result.file_system_type());
+  EXPECT_EQ(kIsAutoMountable, result.is_auto_mountable());
 }
 
 TEST(CrosDisksClientTest, ComposeMountOptions) {

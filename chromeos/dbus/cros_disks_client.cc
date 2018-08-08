@@ -459,6 +459,7 @@ DiskInfo::DiskInfo(const std::string& device_path, dbus::Response* response)
       is_read_only_(false),
       is_hidden_(true),
       is_virtual_(false),
+      is_auto_mountable_(false),
       device_type_(DEVICE_TYPE_UNKNOWN),
       total_size_in_bytes_(0) {
   InitializeFromResponse(response);
@@ -589,6 +590,8 @@ void DiskInfo::InitializeFromResponse(dbus::Response* response) {
       cros_disks::kDeviceIsOnRemovableDevice, &on_removable_device_);
   properties->GetBooleanWithoutPathExpansion(cros_disks::kDeviceIsVirtual,
                                              &is_virtual_);
+  properties->GetBooleanWithoutPathExpansion(cros_disks::kIsAutoMountable,
+                                             &is_auto_mountable_);
   properties->GetStringWithoutPathExpansion(
       cros_disks::kNativePath, &system_path_);
   properties->GetStringWithoutPathExpansion(

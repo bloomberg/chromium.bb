@@ -173,6 +173,9 @@ class CHROMEOS_EXPORT DiskInfo {
   // Is the disk virtual.
   bool is_virtual() const { return is_virtual_; }
 
+  // Is the disk auto-mountable.
+  bool is_auto_mountable() const { return is_auto_mountable_; }
+
   // Disk file path (e.g. /dev/sdb).
   const std::string& file_path() const { return file_path_; }
 
@@ -219,6 +222,7 @@ class CHROMEOS_EXPORT DiskInfo {
   bool is_read_only_;
   bool is_hidden_;
   bool is_virtual_;
+  bool is_auto_mountable_;
 
   std::string file_path_;
   std::string label_;
