@@ -138,11 +138,7 @@ void OverviewButtonTray::OnSessionStateChanged(
   UpdateIconVisibility();
 }
 
-void OverviewButtonTray::OnTabletModeStarted() {
-  UpdateIconVisibility();
-}
-
-void OverviewButtonTray::OnTabletModeEnded() {
+void OverviewButtonTray::OnTabletModeEventsBlockingChanged() {
   UpdateIconVisibility();
 }
 
@@ -171,13 +167,10 @@ void OverviewButtonTray::UpdateIconVisibility() {
   // not change during transient times in which CanSelect is false. Such as when
   // a modal dialog is present.
   SessionController* session_controller = Shell::Get()->session_controller();
-
-  Shell* shell = Shell::Get();
-  SetVisible(
-      shell->tablet_mode_controller()->IsTabletModeWindowManagerEnabled() &&
-      session_controller->GetSessionState() ==
-          session_manager::SessionState::ACTIVE &&
-      !session_controller->IsRunningInAppMode());
+  SetVisible(Shell::Get()->tablet_mode_controller()->AreEventsBlocked() &&
+             session_controller->GetSessionState() ==
+                 session_manager::SessionState::ACTIVE &&
+             !session_controller->IsRunningInAppMode());
 }
 
 }  // namespace ash

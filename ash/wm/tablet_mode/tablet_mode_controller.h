@@ -67,9 +67,9 @@ class ASH_EXPORT TabletModeController
   // clamshell/tablet regardless of hardware orientation.
   // TODO(oshima): Move this to common place.
   enum class UiMode {
-    NONE = 0,
-    CLAMSHELL,
-    TABLETMODE,
+    kNone = 0,
+    kClamshell,
+    kTabletMode,
   };
 
   // Public so it can be used by unit tests.
@@ -115,6 +115,9 @@ class ASH_EXPORT TabletModeController
   // Otherwise, returns false.
   bool TriggerRecordLidAngleTimerForTesting() WARN_UNUSED_RESULT;
 
+  // Whether the events from the internal mouse/keyboard are blocked.
+  bool AreEventsBlocked() const;
+
   // ShellObserver:
   void OnShellInitialized() override;
 
@@ -141,6 +144,7 @@ class ASH_EXPORT TabletModeController
   void OnDeviceListsComplete() override;
 
  private:
+  friend class OverviewButtonTrayTest;
   friend class TabletModeControllerTest;
   friend class TabletModeWindowManagerTest;
   friend class MultiUserWindowManagerChromeOSTest;
@@ -268,7 +272,7 @@ class ASH_EXPORT TabletModeController
   mojom::TabletModeClientPtr client_;
 
   // Tracks whether a flag is used to force ui mode.
-  UiMode force_ui_mode_ = UiMode::NONE;
+  UiMode force_ui_mode_ = UiMode::kNone;
 
   // Calls RecordLidAngle() periodically.
   base::RepeatingTimer record_lid_angle_timer_;

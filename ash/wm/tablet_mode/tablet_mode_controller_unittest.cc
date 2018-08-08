@@ -172,7 +172,7 @@ class TabletModeControllerTest : public AshTestBase {
   }
 
   bool AreEventsBlocked() {
-    return !!tablet_mode_controller()->event_blocker_.get();
+    return tablet_mode_controller()->AreEventsBlocked();
   }
 
   TabletModeController::UiMode forced_ui_mode() {
@@ -681,11 +681,11 @@ TEST_F(TabletModeControllerTest, InitializedWhileTabletModeSwitchOn) {
 // Verify when the force touch view mode flag is turned on, tablet mode is on
 // initially, and opening the lid to less than 180 degress or setting tablet
 // mode to off will not turn off tablet mode.
-TEST_F(TabletModeControllerTest, ForceTabletModeModeTest) {
+TEST_F(TabletModeControllerTest, ForceTabletModeTest) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAshUiMode, switches::kAshUiModeTablet);
   tablet_mode_controller()->OnShellInitialized();
-  EXPECT_EQ(TabletModeController::UiMode::TABLETMODE, forced_ui_mode());
+  EXPECT_EQ(TabletModeController::UiMode::kTabletMode, forced_ui_mode());
   EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 
@@ -696,6 +696,33 @@ TEST_F(TabletModeControllerTest, ForceTabletModeModeTest) {
   SetTabletMode(false);
   EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
+
+  // Tests that attaching a external mouse will not change the mode.
+  ui::InputDeviceClientTestApi().SetMouseDevices({ui::InputDevice(
+      3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "mouse")});
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(IsTabletModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
+}
+
+// Tests that when the force touch view mode flag is set to clamshell, clamshell
+// mode is on initially, and cannot be changed by lid angle or manually entering
+// tablet mode.
+TEST_F(TabletModeControllerTest, ForceClamshellModeTest) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAshUiMode, switches::kAshUiModeClamshell);
+  tablet_mode_controller()->OnShellInitialized();
+  EXPECT_EQ(TabletModeController::UiMode::kClamshell, forced_ui_mode());
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+
+  OpenLidToAngle(200.0f);
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+
+  SetTabletMode(true);
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
 }
 
 TEST_F(TabletModeControllerTest, RestoreAfterExit) {

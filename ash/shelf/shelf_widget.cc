@@ -304,6 +304,10 @@ void ShelfWidget::OnShelfAlignmentChanged() {
   delegate_view_->SchedulePaint();
 }
 
+void ShelfWidget::OnTabletModeChanged() {
+  shelf_view_->OnTabletModeChanged();
+}
+
 void ShelfWidget::PostCreateShelf() {
   SetFocusCycler(Shell::Get()->focus_cycler());
 

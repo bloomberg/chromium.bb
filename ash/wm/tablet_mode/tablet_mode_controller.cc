@@ -105,12 +105,12 @@ TabletModeController::UiMode GetTabletMode() {
     std::string switch_value =
         command_line->GetSwitchValueASCII(switches::kAshUiMode);
     if (switch_value == switches::kAshUiModeClamshell)
-      return TabletModeController::UiMode::CLAMSHELL;
+      return TabletModeController::UiMode::kClamshell;
 
     if (switch_value == switches::kAshUiModeTablet)
-      return TabletModeController::UiMode::TABLETMODE;
+      return TabletModeController::UiMode::kTabletMode;
   }
-  return TabletModeController::UiMode::NONE;
+  return TabletModeController::UiMode::kNone;
 }
 
 std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
@@ -410,6 +410,8 @@ void TabletModeController::HandleHingeRotation(
 void TabletModeController::AttemptEnterTabletMode() {
   event_blocker_.reset();
   event_blocker_ = CreateScopedDisableInternalMouseAndKeyboard();
+  for (auto& observer : tablet_mode_observers_)
+    observer.OnTabletModeEventsBlockingChanged();
 
   if (IsTabletModeWindowManagerEnabled())
     return;
@@ -426,8 +428,11 @@ void TabletModeController::AttemptLeaveTabletMode(
     bool called_by_device_update) {
   // Do not unlock internal keyboard if we enter clamshell by plugging in an
   // external mouse.
-  if (!called_by_device_update)
+  if (!called_by_device_update) {
     event_blocker_.reset();
+    for (auto& observer : tablet_mode_observers_)
+      observer.OnTabletModeEventsBlockingChanged();
+  }
 
   if (!IsTabletModeWindowManagerEnabled())
     return;
@@ -450,9 +455,13 @@ bool TabletModeController::TriggerRecordLidAngleTimerForTesting() {
   return true;
 }
 
+bool TabletModeController::AreEventsBlocked() const {
+  return !!event_blocker_.get();
+}
+
 void TabletModeController::OnShellInitialized() {
   force_ui_mode_ = GetTabletMode();
-  if (force_ui_mode_ == UiMode::TABLETMODE)
+  if (force_ui_mode_ == UiMode::kTabletMode)
     AttemptEnterTabletMode();
 }
 
@@ -513,10 +522,13 @@ void TabletModeController::SetClient(mojom::TabletModeClientPtr client) {
 }
 
 bool TabletModeController::AllowEnterExitTabletMode() const {
-  return force_ui_mode_ == UiMode::NONE;
+  return force_ui_mode_ == UiMode::kNone;
 }
 
 void TabletModeController::HandleMouseAddedOrRemoved() {
+  if (!AllowEnterExitTabletMode())
+    return;
+
   bool has_external_mouse = false;
   for (const ui::InputDevice& mouse :
        ui::InputDeviceManager::GetInstance()->GetMouseDevices()) {

@@ -15,6 +15,7 @@
 #include "ash/shelf/app_list_shelf_item_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/message_center/arc/arc_notification_constants.h"
@@ -348,6 +349,7 @@ void ShelfController::OnTabletModeStarted() {
         shelf->set_is_tablet_mode_animation_running(true);
       shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
       shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+      shelf->shelf_widget()->OnTabletModeChanged();
     }
   }
 }
@@ -361,8 +363,11 @@ void ShelfController::OnTabletModeEnded() {
   // Only animate out of tablet mode if the shelf alignment will not change.
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
     Shelf* shelf = GetShelfForDisplay(display.id());
-    if (shelf && shelf->IsHorizontalAlignment())
-      shelf->set_is_tablet_mode_animation_running(true);
+    if (shelf) {
+      if (shelf->IsHorizontalAlignment())
+        shelf->set_is_tablet_mode_animation_running(true);
+      shelf->shelf_widget()->OnTabletModeChanged();
+    }
   }
 }
 
