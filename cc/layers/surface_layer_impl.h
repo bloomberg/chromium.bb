@@ -20,7 +20,7 @@
 namespace cc {
 
 // This must match SurfaceLayer::UpdateSubmissionStateCB.
-using UpdateSubmissionStateCB = base::RepeatingCallback<void(bool)>;
+using UpdateSubmissionStateCB = base::RepeatingCallback<void(bool is_visible)>;
 
 class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
  public:

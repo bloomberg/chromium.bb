@@ -177,4 +177,9 @@ void VideoFrameProviderClientImpl::DidDrawFrame() {
   needs_put_current_frame_ = false;
 }
 
+bool VideoFrameProviderClientImpl::IsDrivingFrameUpdates() const {
+  // We drive frame updates any time we're rendering, even if we're off-screen.
+  return rendering_;
+}
+
 }  // namespace cc

@@ -18,7 +18,7 @@ namespace cc {
 
 // If given true, we should submit frames, as we are unoccluded on screen.
 // If given false, we should not submit compositor frames.
-using UpdateSubmissionStateCB = base::RepeatingCallback<void(bool)>;
+using UpdateSubmissionStateCB = base::RepeatingCallback<void(bool is_visible)>;
 
 // A layer that renders a surface referencing the output of another compositor
 // instance or client.

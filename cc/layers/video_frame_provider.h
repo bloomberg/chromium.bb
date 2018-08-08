@@ -39,11 +39,22 @@ class CC_EXPORT VideoFrameProvider {
     // Callers should use these methods to indicate when it expects and no
     // longer expects (respectively) to have new frames for the client. Clients
     // may use this information for power conservation.
+    //
+    // Note that the client may also choose to stop driving frame updates, such
+    // as if it believes that the frames are not visible.  In this case, the
+    // client should report this via IsDrivingFrameUpdates().
     virtual void StartRendering() = 0;
     virtual void StopRendering() = 0;
 
     // Notifies the client that GetCurrentFrame() will return new data.
     virtual void DidReceiveFrame() = 0;
+
+    // Should return true if and only if the client is actively driving frame
+    // updates.  Note that this implies that the client has been told to
+    // StartRendering by the VideoFrameProvider.  However, it's okay if the
+    // client chooses to elide these calls, for example to save power when the
+    // client knows that the frames are not visible.
+    virtual bool IsDrivingFrameUpdates() const = 0;
 
    protected:
     virtual ~Client() {}

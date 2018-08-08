@@ -82,7 +82,7 @@ void VideoFrameSubmitter::SetForceSubmit(bool force_submit) {
 
 void VideoFrameSubmitter::UpdateSubmissionStateInternal() {
   if (compositor_frame_sink_) {
-    compositor_frame_sink_->SetNeedsBeginFrame(is_rendering_ && ShouldSubmit());
+    compositor_frame_sink_->SetNeedsBeginFrame(IsDrivingFrameUpdates());
     if (ShouldSubmit())
       SubmitSingleFrame();
     else if (!frame_size_.IsEmpty())
@@ -117,15 +117,23 @@ void VideoFrameSubmitter::SubmitSingleFrame() {
   scoped_refptr<media::VideoFrame> video_frame = provider_->GetCurrentFrame();
   if (video_frame) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&VideoFrameSubmitter::SubmitFrame,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  current_begin_frame_ack, video_frame));
+        FROM_HERE,
+        base::BindOnce(base::IgnoreResult(&VideoFrameSubmitter::SubmitFrame),
+                       weak_ptr_factory_.GetWeakPtr(), current_begin_frame_ack,
+                       video_frame));
     provider_->PutCurrentFrame();
   }
 }
 
 bool VideoFrameSubmitter::ShouldSubmit() const {
   return should_submit_internal_ || force_submit_;
+}
+
+bool VideoFrameSubmitter::IsDrivingFrameUpdates() const {
+  // We drive frame updates only when we believe that something is consuming
+  // them.  This is different than VideoLayer, which drives updates any time
+  // they're in the layer tree.
+  return is_rendering_ && ShouldSubmit();
 }
 
 void VideoFrameSubmitter::DidReceiveFrame() {
@@ -206,13 +214,14 @@ void VideoFrameSubmitter::StartSubmitting() {
   UpdateSubmissionStateInternal();
 }
 
-void VideoFrameSubmitter::SubmitFrame(
+bool VideoFrameSubmitter::SubmitFrame(
     const viz::BeginFrameAck& begin_frame_ack,
     scoped_refptr<media::VideoFrame> video_frame) {
   TRACE_EVENT0("media", "VideoFrameSubmitter::SubmitFrame");
+  DCHECK(video_frame);
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
   if (!compositor_frame_sink_ || !ShouldSubmit())
-    return;
+    return false;
 
   if (frame_size_ != gfx::Rect(video_frame->coded_size())) {
     if (!frame_size_.IsEmpty())
@@ -228,6 +237,9 @@ void VideoFrameSubmitter::SubmitFrame(
   resource_provider_->AppendQuads(render_pass.get(), video_frame, rotation_,
                                   is_opaque_);
   compositor_frame.metadata.begin_frame_ack = begin_frame_ack;
+  // We don't assume that the ack is marked as having damage.  However, we're
+  // definitely emitting a CompositorFrame that damages the entire surface.
+  compositor_frame.metadata.begin_frame_ack.has_damage = true;
   compositor_frame.metadata.device_scale_factor = 1;
   compositor_frame.metadata.may_contain_video = true;
 
@@ -250,6 +262,7 @@ void VideoFrameSubmitter::SubmitFrame(
   resource_provider_->ReleaseFrameResources();
 
   waiting_for_compositor_ack_ = true;
+  return true;
 }
 
 void VideoFrameSubmitter::SubmitEmptyFrame() {
@@ -296,18 +309,17 @@ void VideoFrameSubmitter::OnBeginFrame(const viz::BeginFrameArgs& args) {
     return;
   }
 
+  scoped_refptr<media::VideoFrame> video_frame = provider_->GetCurrentFrame();
+
   // We do have a new frame that we could display.  See if we're supposed to
-  // actually submit a frame or not.
-  if (!is_rendering_ || waiting_for_compositor_ack_) {
+  // actually submit a frame or not, and try to submit one.
+  if (!is_rendering_ || waiting_for_compositor_ack_ ||
+      !SubmitFrame(current_begin_frame_ack, std::move(video_frame))) {
     compositor_frame_sink_->DidNotProduceFrame(current_begin_frame_ack);
     return;
   }
 
-  current_begin_frame_ack.has_damage = true;
-
-  scoped_refptr<media::VideoFrame> video_frame = provider_->GetCurrentFrame();
-
-  SubmitFrame(current_begin_frame_ack, video_frame);
+  // We submitted a frame!
 
   // We still signal PutCurrentFrame here, rather than on the ack, so that it
   // lines up with the correct frame.  Otherwise, any intervening calls to
