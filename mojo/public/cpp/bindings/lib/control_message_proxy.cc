@@ -127,7 +127,12 @@ ControlMessageProxy::ControlMessageProxy(MessageReceiverWithResponder* receiver)
     : receiver_(receiver) {
 }
 
-ControlMessageProxy::~ControlMessageProxy() = default;
+ControlMessageProxy::~ControlMessageProxy() {
+  // If this is destroyed in the middle of a flush, make sure the callback is
+  // still run.
+  if (!pending_flush_callback_.is_null())
+    RunFlushForTestingClosure();
+}
 
 void ControlMessageProxy::QueryVersion(
     const base::Callback<void(uint32_t)>& callback) {

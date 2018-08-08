@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -361,6 +362,9 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, ReusedActionInstance) {
   ExtensionTestMessageListener ready("ready", false);
   const Extension* extension = LoadExtension(ext_dir_.UnpackedPath());
   ASSERT_TRUE(extension);
+  // Wait for declarative rules to be set up.
+  content::BrowserContext::GetDefaultStoragePartition(profile())
+      ->FlushNetworkInterfaceForTesting();
   const ExtensionAction* page_action =
       ExtensionActionManager::Get(browser()->profile())
           ->GetPageAction(*extension);
@@ -605,6 +609,9 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
   ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundHelpers);
   const Extension* extension = LoadExtension(ext_dir_.UnpackedPath());
   ASSERT_TRUE(extension);
+  // Wait for declarative rules to be set up.
+  content::BrowserContext::GetDefaultStoragePartition(profile())
+      ->FlushNetworkInterfaceForTesting();
   const std::string extension_id = extension->id();
   const ExtensionAction* page_action = ExtensionActionManager::Get(
       browser()->profile())->GetPageAction(*extension);
@@ -631,6 +638,9 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
   EXPECT_EQ(1u, extension_action_test_util::GetTotalPageActionCount(tab));
 
   ReloadExtension(extension_id);  // Invalidates page_action and extension.
+  // Wait for declarative rules to be removed.
+  content::BrowserContext::GetDefaultStoragePartition(profile())
+      ->FlushNetworkInterfaceForTesting();
   EXPECT_EQ("test_rule",
             ExecuteScriptInBackgroundPage(extension_id, kTestRule));
   // TODO(jyasskin): Apply new rules to existing tabs, without waiting for a
@@ -641,6 +651,9 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
   EXPECT_EQ(1u, extension_action_test_util::GetTotalPageActionCount(tab));
 
   UnloadExtension(extension_id);
+  // Wait for declarative rules to be removed.
+  content::BrowserContext::GetDefaultStoragePartition(profile())
+      ->FlushNetworkInterfaceForTesting();
   NavigateInRenderer(tab, GURL("http://test/"));
   EXPECT_TRUE(WaitForPageActionVisibilityChangeTo(0));
   EXPECT_EQ(0u, extension_action_test_util::GetVisiblePageActionCount(tab));
@@ -722,6 +735,9 @@ IN_PROC_BROWSER_TEST_P(ShowPageActionWithoutPageActionTest, Test) {
   scoped_refptr<const Extension> extension =
       loader.LoadExtension(ext_dir_.UnpackedPath());
   ASSERT_TRUE(extension);
+  // Wait for declarative rules to be set up.
+  content::BrowserContext::GetDefaultStoragePartition(profile())
+      ->FlushNetworkInterfaceForTesting();
 
   const char kScript[] =
       "setRules([{\n"

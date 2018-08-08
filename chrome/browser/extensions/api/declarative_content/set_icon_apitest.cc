@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/storage_partition.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_extension_dir.h"
@@ -74,6 +75,9 @@ IN_PROC_BROWSER_TEST_F(SetIconAPITest, Overview) {
   ExtensionTestMessageListener ready("ready", false);
   const Extension* extension = LoadExtension(ext_dir_.UnpackedPath());
   ASSERT_TRUE(extension);
+  // Wait for declarative rules to be set up.
+  content::BrowserContext::GetDefaultStoragePartition(profile())
+      ->FlushNetworkInterfaceForTesting();
   const ExtensionAction* page_action =
       ExtensionActionManager::Get(browser()->profile())->
       GetPageAction(*extension);

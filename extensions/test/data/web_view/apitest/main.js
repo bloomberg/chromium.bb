@@ -1673,25 +1673,35 @@ function testWebRequestAPIWithHeaders() {
   }, requestFilter, extraInfoSpec);
 
   var loadstartCalled = false;
-  webview.addEventListener('loadstart', function(e) {
-    embedder.test.assertTrue(e.isTopLevel);
-    embedder.test.assertEq(embedder.detectUserAgentURL, e.url);
-    loadstartCalled = true;
-  });
 
-  webview.addEventListener('loadredirect', function(e) {
-    embedder.test.assertTrue(e.isTopLevel);
-    embedder.test.assertEq(embedder.detectUserAgentURL,
-        e.oldUrl.replace('127.0.0.1', 'localhost'));
-    embedder.test.assertEq(embedder.redirectGuestURLDest,
-        e.newUrl.replace('127.0.0.1', 'localhost'));
-    if (loadstartCalled) {
-      embedder.test.succeed();
-    } else {
-      embedder.test.fail();
-    }
-  });
-  webview.src = embedder.detectUserAgentURL;
+  var listener = function() {
+    webview.removeEventListener('loadstop', listener);
+    // Now load the real URL for the test.
+    webview.src = embedder.detectUserAgentURL;
+
+    webview.addEventListener('loadstart', function(e) {
+      embedder.test.assertTrue(e.isTopLevel);
+      embedder.test.assertEq(embedder.detectUserAgentURL, e.url);
+      loadstartCalled = true;
+    });
+
+    webview.addEventListener('loadredirect', function(e) {
+      embedder.test.assertTrue(e.isTopLevel);
+      embedder.test.assertEq(embedder.detectUserAgentURL,
+          e.oldUrl.replace('127.0.0.1', 'localhost'));
+      embedder.test.assertEq(embedder.redirectGuestURLDest,
+          e.newUrl.replace('127.0.0.1', 'localhost'));
+      if (loadstartCalled) {
+        embedder.test.succeed();
+      } else {
+        embedder.test.fail();
+      }
+    });
+  };
+  webview.addEventListener('loadstop', listener);
+
+  // Load an empty URL to wait for the webRequest listener to be set up.
+  webview.src = embedder.emptyGuestURL;
   document.body.appendChild(webview);
 }
 

@@ -1547,6 +1547,9 @@ IN_PROC_BROWSER_TEST_F(NTPInterceptionWebRequestAPITest,
       LoadExtension(test_data_dir_.AppendASCII("extension"));
   ASSERT_TRUE(extension);
   EXPECT_TRUE(listener.WaitUntilSatisfied());
+  // Wait for webRequest listeners to be set up.
+  content::BrowserContext::GetDefaultStoragePartition(profile())
+      ->FlushNetworkInterfaceForTesting();
 
   // Have the extension listen for requests to |fake_ntp_script.js|.
   listener.Reply(https_test_server()->GetURL("/fake_ntp_script.js").spec());
