@@ -43,7 +43,10 @@ class ProfileSyncComponentsFactoryImpl
       const char* history_disabled_pref,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
-      const scoped_refptr<autofill::AutofillWebDataService>& web_data_service,
+      const scoped_refptr<autofill::AutofillWebDataService>&
+          web_data_service_on_disk,
+      const scoped_refptr<autofill::AutofillWebDataService>&
+          web_data_service_in_memory,
       const scoped_refptr<password_manager::PasswordStore>& password_store);
   ~ProfileSyncComponentsFactoryImpl() override;
 
@@ -87,6 +90,15 @@ class ProfileSyncComponentsFactoryImpl
       const base::RepeatingCallback<
           base::WeakPtr<syncer::ModelTypeControllerDelegate>(
               autofill::AutofillWebDataService*)>& delegate_from_web_data);
+  // Same as above, but for datatypes supporting STORAGE_IN_MEMORY implemented
+  // as an independent AutofillWebDataService,
+  // namely |web_data_service_in_memory_|.
+  std::unique_ptr<syncer::ModelTypeController>
+  CreateWebDataModelTypeControllerWithInMemorySupport(
+      syncer::ModelType type,
+      const base::RepeatingCallback<
+          base::WeakPtr<syncer::ModelTypeControllerDelegate>(
+              autofill::AutofillWebDataService*)>& delegate_from_web_data);
 
   // Client/platform specific members.
   syncer::SyncClient* const sync_client_;
@@ -96,7 +108,10 @@ class ProfileSyncComponentsFactoryImpl
   const char* history_disabled_pref_;
   const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
   const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
-  const scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
+  const scoped_refptr<autofill::AutofillWebDataService>
+      web_data_service_on_disk_;
+  const scoped_refptr<autofill::AutofillWebDataService>
+      web_data_service_in_memory_;
   const scoped_refptr<password_manager::PasswordStore> password_store_;
 
   // Whether to override PREFERENCES to use USS.

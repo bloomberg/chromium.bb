@@ -106,7 +106,10 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
     const char* history_disabled_pref,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
-    const scoped_refptr<autofill::AutofillWebDataService>& web_data_service,
+    const scoped_refptr<autofill::AutofillWebDataService>&
+        web_data_service_on_disk,
+    const scoped_refptr<autofill::AutofillWebDataService>&
+        web_data_service_in_memory,
     const scoped_refptr<password_manager::PasswordStore>& password_store)
     : sync_client_(sync_client),
       channel_(channel),
@@ -115,7 +118,8 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
       history_disabled_pref_(history_disabled_pref),
       ui_thread_(ui_thread),
       db_thread_(db_thread),
-      web_data_service_(web_data_service),
+      web_data_service_on_disk_(web_data_service_on_disk),
+      web_data_service_in_memory_(web_data_service_in_memory),
       password_store_(password_store) {}
 
 ProfileSyncComponentsFactoryImpl::~ProfileSyncComponentsFactoryImpl() {}
@@ -153,7 +157,8 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
       } else {
         controllers.push_back(
             std::make_unique<AutofillProfileDataTypeController>(
-                db_thread_, error_callback, sync_client_, web_data_service_));
+                db_thread_, error_callback, sync_client_,
+                web_data_service_on_disk_));
       }
     }
 
@@ -162,14 +167,15 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
     bool wallet_disabled = disabled_types.Has(syncer::AUTOFILL_WALLET_DATA);
     if (!wallet_disabled) {
       if (base::FeatureList::IsEnabled(switches::kSyncUSSAutofillWalletData)) {
-        controllers.push_back(CreateWebDataModelTypeController(
-            syncer::AUTOFILL_WALLET_DATA,
-            base::BindRepeating(&AutofillWalletDelegateFromDataService)));
+        controllers.push_back(
+            CreateWebDataModelTypeControllerWithInMemorySupport(
+                syncer::AUTOFILL_WALLET_DATA,
+                base::BindRepeating(&AutofillWalletDelegateFromDataService)));
       } else {
         controllers.push_back(
             std::make_unique<AutofillWalletDataTypeController>(
                 syncer::AUTOFILL_WALLET_DATA, db_thread_, error_callback,
-                sync_client_, web_data_service_));
+                sync_client_, web_data_service_on_disk_));
       }
     }
 
@@ -187,7 +193,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
         controllers.push_back(
             std::make_unique<AutofillWalletDataTypeController>(
                 syncer::AUTOFILL_WALLET_METADATA, db_thread_, error_callback,
-                sync_client_, web_data_service_));
+                sync_client_, web_data_service_on_disk_));
       }
     }
   }
@@ -413,9 +419,28 @@ ProfileSyncComponentsFactoryImpl::CreateWebDataModelTypeController(
             autofill::AutofillWebDataService*)>& delegate_from_web_data) {
   return std::make_unique<ModelTypeController>(
       type, std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-                db_thread_,
-                base::BindRepeating(delegate_from_web_data,
-                                    base::RetainedRef(web_data_service_))));
+                db_thread_, base::BindRepeating(
+                                delegate_from_web_data,
+                                base::RetainedRef(web_data_service_on_disk_))));
+}
+
+std::unique_ptr<ModelTypeController> ProfileSyncComponentsFactoryImpl::
+    CreateWebDataModelTypeControllerWithInMemorySupport(
+        syncer::ModelType type,
+        const base::RepeatingCallback<
+            base::WeakPtr<syncer::ModelTypeControllerDelegate>(
+                autofill::AutofillWebDataService*)>& delegate_from_web_data) {
+  return std::make_unique<ModelTypeController>(
+      type, /*delegate_on_disk=*/
+      std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+          db_thread_,
+          base::BindRepeating(delegate_from_web_data,
+                              base::RetainedRef(web_data_service_on_disk_))),
+      /*delegate_in_memory=*/
+      std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+          db_thread_,
+          base::BindRepeating(delegate_from_web_data,
+                              base::RetainedRef(web_data_service_in_memory_))));
 }
 
 }  // namespace browser_sync

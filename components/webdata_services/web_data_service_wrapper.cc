@@ -176,6 +176,9 @@ WebDataServiceWrapper::WebDataServiceWrapper(
   profile_autofill_web_data_->GetAutofillBackend(base::Bind(
       &InitSyncableProfileServicesOnDBSequence, db_task_runner, flare,
       profile_autofill_web_data_, context_path, application_locale));
+  profile_autofill_web_data_->GetAutofillBackend(base::Bind(
+      &InitSyncableAccountServicesOnDBSequence, db_task_runner, flare,
+      profile_autofill_web_data_, context_path, application_locale));
 
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableAccountWalletStorage)) {
@@ -192,12 +195,6 @@ WebDataServiceWrapper::WebDataServiceWrapper(
     account_autofill_web_data_->GetAutofillBackend(base::Bind(
         &InitSyncableAccountServicesOnDBSequence, db_task_runner, flare,
         account_autofill_web_data_, context_path, application_locale));
-
-  } else {
-    account_autofill_web_data_ = nullptr;
-    profile_autofill_web_data_->GetAutofillBackend(base::Bind(
-        &InitSyncableAccountServicesOnDBSequence, db_task_runner, flare,
-        profile_autofill_web_data_, context_path, application_locale));
   }
 }
 

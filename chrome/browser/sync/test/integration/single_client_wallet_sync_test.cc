@@ -20,6 +20,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "content/public/browser/notification_service.h"
@@ -185,20 +186,42 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, DownloadProfileStorage) {
   EXPECT_EQ(1U, GetServerCards(GetProfileWebDataService(0)).size());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, DownloadAccountStorage) {
+// ChromeOS does not support late signin after profile creation, so the test
+// below does not apply, at least in the current form.
+#if !defined(OS_CHROMEOS)
+// TODO(crbug.com/853688): Reenable once the USS implementation of
+// AUTOFILL_WALLET_DATA (AutofillWalletSyncBridge) has sufficient functionality.
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
+                       DISABLED_DownloadAccountStorage) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       // Enabled.
-      {autofill::features::kAutofillEnableAccountWalletStorage},
+      {switches::kSyncStandaloneTransport, switches::kSyncUSSAutofillWalletData,
+       autofill::features::kAutofillEnableAccountWalletStorage},
       // Disabled.
       {});
+
+  ASSERT_TRUE(SetupClients());
   AddDefaultCard(GetFakeServer());
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed";
+  ASSERT_TRUE(GetClient(0)->SignIn());
+  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization(
+      /*skip_passphrase_verification=*/false));
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+  ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(
+      syncer::AUTOFILL_WALLET_DATA));
 
   auto profile_data = GetProfileWebDataService(0);
   ASSERT_NE(nullptr, profile_data);
   auto account_data = GetAccountWebDataService(0);
   ASSERT_NE(nullptr, account_data);
+
+  // Check that no card is stored in the profile storage.
+  EXPECT_EQ(0U, GetServerCards(profile_data).size());
+
+  // Check that one card is stored in the account storage.
+  EXPECT_EQ(1U, GetServerCards(account_data).size());
 
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
@@ -214,13 +237,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, DownloadAccountStorage) {
   EXPECT_EQ(kDefaultCardExpYear, card->expiration_year());
   EXPECT_EQ(base::UTF8ToUTF16(kDefaultCardName),
             card->GetRawInfo(autofill::ServerFieldType::CREDIT_CARD_NAME_FULL));
-
-  // Check that the card is *not* stored in the profile storage.
-  EXPECT_EQ(0U, GetServerCards(GetProfileWebDataService(0)).size());
-
-  // Check that the card is stored in the account storage.
-  EXPECT_EQ(1U, GetServerCards(GetAccountWebDataService(0)).size());
 }
+#endif  // !defined(OS_CHROMEOS)
 
 // Wallet data should get cleared from the database when sync is disabled.
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableSync) {
