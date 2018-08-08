@@ -2980,12 +2980,6 @@
           'gtest_tests': 'chromium_mac_gtests',
         },
       },
-      'win-asan': {
-        # TODO(thakis): test_suites 'gtest_tests': 'chromium_win_gtests' instead
-        'additional_compile_targets': [
-          'base_unittests',
-        ],
-      },
     },
   },
   {
