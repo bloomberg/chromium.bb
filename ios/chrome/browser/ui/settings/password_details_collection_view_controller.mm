@@ -634,6 +634,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
   switch (item.type) {
+    case ItemTypeSite:
     case ItemTypeUsername:
     case ItemTypePassword:
       return [MDCCollectionViewCell
