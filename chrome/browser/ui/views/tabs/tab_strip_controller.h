@@ -108,6 +108,9 @@ class TabStripController {
   // Whether the special painting mode for one tab is allowed.
   virtual bool IsSingleTabModeAvailable() = 0;
 
+  // Returns whether or not strokes should be drawn around and under the tabs.
+  virtual bool ShouldDrawStrokes() const = 0;
+
   // Notifies controller that the user started dragging this tabstrip's tabs.
   virtual void OnStartedDraggingTabs() = 0;
 

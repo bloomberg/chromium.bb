@@ -224,6 +224,15 @@ bool GlassBrowserFrameView::IsSingleTabModeAvailable() const {
          BrowserNonClientFrameView::IsSingleTabModeAvailable();
 }
 
+bool GlassBrowserFrameView::ShouldDrawStrokes() const {
+  // On Win 7, the tabs are drawn as flat shapes against the glass frame, so
+  // the active tab always has a visible shape and strokes are unnecessary.
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return false;
+
+  return BrowserNonClientFrameView::ShouldDrawStrokes();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // GlassBrowserFrameView, views::NonClientFrameView implementation:
 
