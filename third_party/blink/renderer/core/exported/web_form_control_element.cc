@@ -79,6 +79,8 @@ bool WebFormControlElement::IsAutofilled() const {
 bool WebFormControlElement::UserHasEditedTheField() const {
   if (auto* input = ToHTMLInputElementOrNull(*private_))
     return input->UserHasEditedTheField();
+  if (auto* select_element = ToHTMLSelectElementOrNull(*private_))
+    return select_element->UserHasEditedTheField();
   return true;
 }
 

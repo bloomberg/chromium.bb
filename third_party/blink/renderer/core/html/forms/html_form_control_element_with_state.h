@@ -55,8 +55,12 @@ class CORE_EXPORT HTMLFormControlElementWithState
   void NotifyFormStateChanged();
 
   void Trace(Visitor*) override;
+  bool UserHasEditedTheField() const { return user_has_edited_the_field_; }
+  // This is only used in tests, to fake the user's action
+  void SetUserHasEditedTheFieldForTest() { user_has_edited_the_field_ = true; }
 
  protected:
+  bool user_has_edited_the_field_ = false;
   HTMLFormControlElementWithState(const QualifiedName& tag_name, Document&);
 
   void FinishParsingChildren() override;

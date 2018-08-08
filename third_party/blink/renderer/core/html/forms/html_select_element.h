@@ -173,6 +173,8 @@ class CORE_EXPORT HTMLSelectElement final
   bool HasNonInBodyInsertionMode() const override { return true; }
 
   void Trace(blink::Visitor*) override;
+  void CloneNonAttributePropertiesFrom(const Element&,
+                                       CloneChildrenFlag) override;
 
  protected:
   explicit HTMLSelectElement(Document&);

@@ -194,6 +194,7 @@ static const char kTestEventFormString[] =
     " onchange=\"selectchange = true\" onblur=\"selectblur = true\" >"
     " <option value=\"\" selected=\"yes\">--</option>"
     " <option value=\"CA\">California</option>"
+    " <option value=\"NY\">New York</option>"
     " <option value=\"TX\">Texas</option>"
     " </select><br>"
     "<label for=\"zip\">ZIP code:</label>"
@@ -715,8 +716,9 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, ClearTwoSection) {
   ExpectFilledTestForm();
 }
 
-// Test that autofill doesn't refill a field initially modified by the user.
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, ModifyFieldAndFill) {
+// Test that autofill doesn't refill a text field initially modified by the
+// user.
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, ModifyTextFieldAndFill) {
   CreateTestProfile();
 
   // Load the test page.
@@ -732,11 +734,39 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, ModifyFieldAndFill) {
   AcceptSuggestionUsingArrowDown();
 
   ExpectFieldValue("firstname", "Milton");
-  ExpectFieldValue("lastname", "Waddams");  // Modified by the user.
+  ExpectFieldValue("lastname", "Waddams");
   ExpectFieldValue("address1", "4120 Freidrich Lane");
   ExpectFieldValue("address2", "Basement");
-  ExpectFieldValue("city", "Montreal");
+  ExpectFieldValue("city", "Montreal");  // Modified by the user.
   ExpectFieldValue("state", "TX");
+  ExpectFieldValue("zip", "78744");
+  ExpectFieldValue("country", "US");
+  ExpectFieldValue("phone", "15125551234");
+}
+
+// Test that autofill doesn't refill a select field initially modified by the
+// user.
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, ModifySelectFieldAndFill) {
+  CreateTestProfile();
+
+  // Load the test page.
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString)));
+
+  // Modify a field.
+  FocusFieldByName("state");
+  FillElementWithValue("state", "CA");
+
+  // Fill
+  FocusFirstNameField();
+  AcceptSuggestionUsingArrowDown();
+
+  ExpectFieldValue("firstname", "Milton");
+  ExpectFieldValue("lastname", "Waddams");
+  ExpectFieldValue("address1", "4120 Freidrich Lane");
+  ExpectFieldValue("address2", "Basement");
+  ExpectFieldValue("city", "Austin");
+  ExpectFieldValue("state", "CA");  // Modified by the user.
   ExpectFieldValue("zip", "78744");
   ExpectFieldValue("country", "US");
   ExpectFieldValue("phone", "15125551234");
