@@ -529,6 +529,45 @@ int amdgpu_bo_wait_for_idle(amdgpu_bo_handle bo,
 	}
 }
 
+int amdgpu_find_bo_by_cpu_mapping(amdgpu_device_handle dev,
+				  void *cpu,
+				  uint64_t size,
+				  amdgpu_bo_handle *buf_handle,
+				  uint64_t *offset_in_bo)
+{
+	int i;
+	struct amdgpu_bo *bo;
+
+	if (cpu == NULL || size == 0)
+		return -EINVAL;
+
+	/*
+	 * Workaround for a buggy application which tries to import previously
+	 * exposed CPU pointers. If we find a real world use case we should
+	 * improve that by asking the kernel for the right handle.
+	 */
+	pthread_mutex_lock(&dev->bo_table_mutex);
+	for (i = 0; i < dev->bo_handles.max_key; i++) {
+		bo = handle_table_lookup(&dev->bo_handles, i);
+		if (!bo || !bo->cpu_ptr || size > bo->alloc_size)
+			continue;
+		if (cpu >= bo->cpu_ptr && cpu < (bo->cpu_ptr + bo->alloc_size))
+			break;
+	}
+
+	if (i < dev->bo_handles.max_key) {
+		atomic_inc(&bo->refcount);
+		*buf_handle = bo;
+		*offset_in_bo = cpu - bo->cpu_ptr;
+	} else {
+		*buf_handle = NULL;
+		*offset_in_bo = 0;
+	}
+	pthread_mutex_unlock(&dev->bo_table_mutex);
+
+	return 0;
+}
+
 int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
 				    void *cpu,
 				    uint64_t size,
