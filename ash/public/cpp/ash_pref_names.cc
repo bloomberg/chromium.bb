@@ -225,6 +225,9 @@ const char kPowerWaitForInitialUserActivity[] =
 const char kPowerForceNonzeroBrightnessForUserActivity[] =
     "power.force_nonzero_brightness_for_user_activity";
 
+// Boolean controlling whether smart dim model is enabled.
+const char kPowerSmartDimEnabled[] = "power.smart_dim_enabled";
+
 // |kShelfAlignment| and |kShelfAutoHideBehavior| have a local variant. The
 // local variant is not synced and is used if set. If the local variant is not
 // set its value is set from the synced value (once prefs have been

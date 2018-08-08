@@ -98,6 +98,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   registry->RegisterBooleanPref(
       prefs::kPowerForceNonzeroBrightnessForUserActivity, true,
       PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(prefs::kPowerSmartDimEnabled, true,
+                                PrefRegistry::PUBLIC);
 
   if (for_test) {
     registry->RegisterBooleanPref(prefs::kAllowScreenLock, true,
@@ -296,6 +298,7 @@ void PowerPrefs::ObservePrefs(PrefService* prefs) {
   pref_change_registrar_->Add(
       prefs::kPowerForceNonzeroBrightnessForUserActivity, update_callback);
   pref_change_registrar_->Add(prefs::kAllowScreenLock, update_callback);
+  pref_change_registrar_->Add(prefs::kPowerSmartDimEnabled, update_callback);
 
   UpdatePowerPolicyFromPrefs();
 }
