@@ -377,7 +377,10 @@ void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {
 }
 
 int UnifiedSystemTrayView::GetExpandedHeight() const {
-  return top_shortcuts_view_->GetPreferredSize().height() +
+  return (notification_hidden_view_->visible()
+              ? notification_hidden_view_->GetPreferredSize().height()
+              : 0) +
+         top_shortcuts_view_->GetPreferredSize().height() +
          feature_pods_container_->GetExpandedHeight() +
          sliders_container_->GetExpandedHeight() +
          system_info_view_->GetPreferredSize().height();
