@@ -504,6 +504,11 @@ void SynchronousCompositorHost::UpdateState(
   renderer_param_version_ = params.version;
   need_animate_scroll_ = params.need_animate_scroll;
   root_scroll_offset_ = params.total_scroll_offset;
+  max_scroll_offset_ = params.max_scroll_offset;
+  scrollable_size_ = params.scrollable_size;
+  page_scale_factor_ = params.page_scale_factor;
+  min_page_scale_factor_ = params.min_page_scale_factor;
+  max_page_scale_factor_ = params.max_page_scale_factor;
   invalidate_needs_draw_ |= params.invalidate_needs_draw;
 
   if (need_invalidate_count_ != params.need_invalidate_count) {
@@ -521,15 +526,22 @@ void SynchronousCompositorHost::UpdateState(
     client_->DidUpdateContent(this);
   }
 
+  UpdateRootLayerStateOnClient();
+}
+
+void SynchronousCompositorHost::DidBecomeActive() {
+  UpdateRootLayerStateOnClient();
+}
+
+void SynchronousCompositorHost::UpdateRootLayerStateOnClient() {
   // Ensure only valid values from compositor are sent to client.
   // Compositor has page_scale_factor set to 0 before initialization, so check
   // for that case here.
-  if (params.page_scale_factor) {
+  if (page_scale_factor_) {
     client_->UpdateRootLayerState(
-        this, gfx::ScrollOffsetToVector2dF(params.total_scroll_offset),
-        gfx::ScrollOffsetToVector2dF(params.max_scroll_offset),
-        params.scrollable_size, params.page_scale_factor,
-        params.min_page_scale_factor, params.max_page_scale_factor);
+        this, gfx::ScrollOffsetToVector2dF(root_scroll_offset_),
+        gfx::ScrollOffsetToVector2dF(max_scroll_offset_), scrollable_size_,
+        page_scale_factor_, min_page_scale_factor_, max_page_scale_factor_);
   }
 }
 

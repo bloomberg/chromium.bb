@@ -515,8 +515,8 @@ void BrowserViewRenderer::DidInitializeCompositor(
   // At this point, the RVHChanged event for the new RVH that contains the
   // |compositor| might have been fired already, in which case just set the
   // current compositor with the new compositor.
-  if (!compositor_ && compositor_id.Equals(compositor_id_))
-    compositor_ = compositor;
+  if (compositor_id.Equals(compositor_id_))
+    SetActiveCompositor(compositor);
 }
 
 void BrowserViewRenderer::DidDestroyCompositor(
@@ -537,24 +537,22 @@ void BrowserViewRenderer::DidDestroyCompositor(
 
 void BrowserViewRenderer::SetActiveCompositorID(
     const CompositorID& compositor_id) {
-  // Set the old compositor memory policy to 0.
-  if (!compositor_id_.Equals(compositor_id) && compositor_)
-    compositor_->SetMemoryPolicy(0u);
-
-  if (content::SynchronousCompositor* compositor =
-          FindCompositor(compositor_id)) {
-    compositor_ = compositor;
-    UpdateMemoryPolicy();
-    gfx::Vector2dF scroll_offset =
-        content::IsUseZoomForDSFEnabled()
-            ? gfx::ScaleVector2d(scroll_offset_dip_, dip_scale_)
-            : scroll_offset_dip_;
-    compositor_->DidChangeRootLayerScrollOffset(
-        gfx::ScrollOffset(scroll_offset));
-  } else {
-    compositor_ = nullptr;
-  }
   compositor_id_ = compositor_id;
+  SetActiveCompositor(FindCompositor(compositor_id));
+}
+
+void BrowserViewRenderer::SetActiveCompositor(
+    content::SynchronousCompositor* compositor) {
+  if (compositor_ == compositor)
+    return;
+
+  if (compositor_)
+    compositor_->SetMemoryPolicy(0u);
+  compositor_ = compositor;
+  if (compositor_) {
+    UpdateMemoryPolicy();
+    compositor_->DidBecomeActive();
+  }
 }
 
 void BrowserViewRenderer::SetDipScale(float dip_scale) {
