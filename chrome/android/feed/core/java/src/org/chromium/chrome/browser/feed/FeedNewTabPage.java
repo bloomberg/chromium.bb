@@ -16,7 +16,9 @@ import android.widget.FrameLayout;
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.api.scope.FeedStreamScope;
 import com.google.android.libraries.feed.api.stream.Stream;
+import com.google.android.libraries.feed.common.functional.Consumer;
 import com.google.android.libraries.feed.host.action.ActionApi;
+import com.google.android.libraries.feed.host.offlineindicator.OfflineIndicatorApi;
 import com.google.android.libraries.feed.host.stream.CardConfiguration;
 import com.google.android.libraries.feed.host.stream.SnackbarApi;
 import com.google.android.libraries.feed.host.stream.StreamConfiguration;
@@ -44,6 +46,8 @@ import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Provides a new tab page that displays an interest feed rendered list of content suggestions.
@@ -138,6 +142,20 @@ public class FeedNewTabPage extends NewTabPage implements TouchEnabledDelegate {
         }
     }
 
+    private static class StubOfflineIndicatorApi implements OfflineIndicatorApi {
+        @Override
+        public void getOfflineStatus(
+                List<String> urlsToRetrieve, Consumer<List<String>> urlListConsumer) {
+            urlListConsumer.accept(Collections.emptyList());
+        }
+
+        @Override
+        public void addOfflineStatusListener(OfflineStatusListener offlineStatusListener) {}
+
+        @Override
+        public void removeOfflineStatusListener(OfflineStatusListener offlineStatusListener) {}
+    }
+
     /**
      * Constructs a new FeedNewTabPage.
      *
@@ -163,7 +181,8 @@ public class FeedNewTabPage extends NewTabPage implements TouchEnabledDelegate {
                         .createFeedStreamScopeBuilder(activity, mImageLoader, actionApi,
                                 new BasicStreamConfiguration(activity.getResources()),
                                 new BasicCardConfiguration(activity.getResources()),
-                                new BasicSnackbarApi(), new FeedBasicLogging())
+                                new BasicSnackbarApi(), new FeedBasicLogging(),
+                                new StubOfflineIndicatorApi())
                         .build();
 
         mStream = streamScope.getStream();
