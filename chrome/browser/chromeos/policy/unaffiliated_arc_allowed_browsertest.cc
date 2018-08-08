@@ -36,8 +36,8 @@ constexpr char kAffiliationID[] = "some-affiliation-id";
 constexpr char kAnotherAffiliationID[] = "another-affiliation-id";
 
 struct Params {
-  explicit Params(bool affiliated) : affiliated_(affiliated) {}
-  bool affiliated_;
+  explicit Params(bool _affiliated) : affiliated(_affiliated) {}
+  bool affiliated;
 };
 
 }  // namespace
@@ -62,22 +62,21 @@ class UnaffiliatedArcAllowedTest
 
   void SetUpInProcessBrowserTestFixture() override {
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
+
     UserPolicyBuilder user_policy;
     DevicePolicyCrosTestHelper test_helper;
 
-    std::set<std::string> device_affiliation_ids;
-    device_affiliation_ids.insert(kAffiliationID);
-    affiliation_test_helper::SetDeviceAffiliationID(
-        &test_helper, session_manager_client(), device_affiliation_ids);
+    const std::set<std::string> device_affiliation_ids = {kAffiliationID};
+    const std::set<std::string> user_affiliation_ids = {
+        GetParam().affiliated ? kAffiliationID : kAnotherAffiliationID};
 
-    std::set<std::string> user_affiliation_ids;
-    if (GetParam().affiliated_)
-      user_affiliation_ids.insert(kAffiliationID);
-    else
-      user_affiliation_ids.insert(kAnotherAffiliationID);
+    affiliation_test_helper::SetDeviceAffiliationIDs(
+        &test_helper, session_manager_client(),
+        nullptr /* fake_auth_policy_client */, device_affiliation_ids);
 
     affiliation_test_helper::SetUserAffiliationIDs(
-        &user_policy, session_manager_client(), affiliated_account_id_,
+        &user_policy, session_manager_client(),
+        nullptr /* fake_auth_policy_client */, affiliated_account_id_,
         user_affiliation_ids);
   }
 
@@ -125,7 +124,7 @@ IN_PROC_BROWSER_TEST_P(UnaffiliatedArcAllowedTest, ProfileTest) {
       user_manager::UserManager::Get()->FindUser(affiliated_account_id_);
   const Profile* profile =
       chromeos::ProfileHelper::Get()->GetProfileByUser(user);
-  const bool affiliated = GetParam().affiliated_;
+  const bool affiliated = GetParam().affiliated;
 
   EXPECT_EQ(affiliated, user->IsAffiliated());
   EXPECT_TRUE(arc::IsArcAllowedForProfile(profile))

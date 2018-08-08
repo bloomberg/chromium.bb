@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DBUS_FAKE_AUTH_POLICY_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_AUTH_POLICY_CLIENT_H_
 
+#include <set>
 #include <string>
 #include <utility>
 
@@ -114,6 +115,14 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
     device_policy_ = device_policy;
   }
 
+  void set_user_affiliation_ids(std::set<std::string> ids) {
+    user_affiliation_ids_ = std::move(ids);
+  }
+
+  void set_device_affiliation_ids(std::set<std::string> ids) {
+    device_affiliation_ids_ = std::move(ids);
+  }
+
   void DisableOperationDelayForTesting() {
     dbus_operation_delay_ = disk_operation_delay_ =
         base::TimeDelta::FromSeconds(0);
@@ -127,6 +136,9 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
       RefreshPolicyCallback callback,
       SessionManagerClient::RetrievePolicyResponseType response_type,
       const std::string& protobuf);
+
+  void StoreDevicePolicy(RefreshPolicyCallback callback);
+
   bool started_ = false;
   // If valid called after GetUserStatusCallback is called.
   base::OnceClosure on_get_status_closure_;
@@ -136,15 +148,22 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
   std::string dm_token_;
   std::string user_kerberos_creds_;
   std::string user_kerberos_conf_;
+
+  std::set<std::string> user_affiliation_ids_;
+  std::set<std::string> device_affiliation_ids_;
+
   dbus::ObjectProxy::SignalCallback user_kerberos_files_changed_callback_;
+
   authpolicy::ActiveDirectoryUserStatus::PasswordStatus password_status_ =
       authpolicy::ActiveDirectoryUserStatus::PASSWORD_VALID;
   authpolicy::ActiveDirectoryUserStatus::TgtStatus tgt_status_ =
       authpolicy::ActiveDirectoryUserStatus::TGT_VALID;
+
   // Delay operations to be more realistic.
   base::TimeDelta dbus_operation_delay_ = base::TimeDelta::FromSeconds(3);
   base::TimeDelta disk_operation_delay_ =
       base::TimeDelta::FromMilliseconds(100);
+
   enterprise_management::ChromeDeviceSettingsProto device_policy_;
 
   std::vector<WaitForServiceToBeAvailableCallback>

@@ -102,9 +102,9 @@ void PlatformKeysTestBase::SetUpInProcessBrowserTestFixture() {
   if (enrollment_status() == EnrollmentStatus::ENROLLED) {
     std::set<std::string> device_affiliation_ids;
     device_affiliation_ids.insert(kAffiliationID);
-    policy::affiliation_test_helper::SetDeviceAffiliationID(
+    policy::affiliation_test_helper::SetDeviceAffiliationIDs(
         &device_policy_test_helper_, fake_session_manager_client,
-        device_affiliation_ids);
+        nullptr /* fake_auth_policy_client */, device_affiliation_ids);
   }
 
   if (user_status() == UserStatus::MANAGED_AFFILIATED_DOMAIN) {
@@ -112,7 +112,8 @@ void PlatformKeysTestBase::SetUpInProcessBrowserTestFixture() {
     user_affiliation_ids.insert(kAffiliationID);
     policy::UserPolicyBuilder user_policy;
     policy::affiliation_test_helper::SetUserAffiliationIDs(
-        &user_policy, fake_session_manager_client, account_id_,
+        &user_policy, fake_session_manager_client,
+        nullptr /* fake_auth_policy_client */, account_id_,
         user_affiliation_ids);
   }
 

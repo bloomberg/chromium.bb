@@ -20,6 +20,10 @@
 class PrefRegistrySimple;
 class PrefService;
 
+namespace enterprise_management {
+class PolicyData;
+}
+
 namespace chromeos {
 
 class InstallAttributes;
@@ -196,6 +200,9 @@ class BrowserPolicyConnectorChromeOS
   // cryptohome client.
   std::unique_ptr<chromeos::attestation::AttestationFlow>
   CreateAttestationFlow();
+
+  // Returns the device policy data or nullptr if it does not exist.
+  const enterprise_management::PolicyData* GetDevicePolicy() const;
 
   // Components of the device cloud policy implementation.
   std::unique_ptr<ServerBackedStateKeysBroker> state_keys_broker_;

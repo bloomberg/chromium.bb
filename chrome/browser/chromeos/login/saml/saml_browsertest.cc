@@ -107,8 +107,8 @@ namespace em = enterprise_management;
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
-using testing::Return;
 using testing::_;
+using testing::Return;
 
 namespace chromeos {
 
@@ -1078,8 +1078,9 @@ void SAMLPolicyTest::SetUpInProcessBrowserTestFixture() {
   // Initialize device policy.
   std::set<std::string> device_affiliation_ids;
   device_affiliation_ids.insert(kAffiliationID);
-  policy::affiliation_test_helper::SetDeviceAffiliationID(
-      &test_helper_, fake_session_manager_client_, device_affiliation_ids);
+  policy::affiliation_test_helper::SetDeviceAffiliationIDs(
+      &test_helper_, fake_session_manager_client_,
+      nullptr /* fake_auth_policy_client */, device_affiliation_ids);
 
   // Initialize user policy.
   EXPECT_CALL(provider_, IsInitializationComplete(_))
