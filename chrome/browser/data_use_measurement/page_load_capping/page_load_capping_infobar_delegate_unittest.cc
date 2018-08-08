@@ -18,7 +18,6 @@ namespace {
 // A test URL used for simulated navigations that do not trigger real URL
 // requests.
 const char kTestURL[] = "http://www.test.com";
-static constexpr int64_t test_capping_threshold_bytes = 10 * 1024 * 1024;
 }  // namespace
 
 class PageLoadCappingInfoBarDelegateTest
@@ -59,7 +58,7 @@ TEST_F(PageLoadCappingInfoBarDelegateTest, ClickingCreatesNewInfobar) {
 
   histogram_tester.ExpectTotalCount("HeavyPageCapping.InfoBarInteraction", 0);
   EXPECT_TRUE(PageLoadCappingInfoBarDelegate::Create(
-      test_capping_threshold_bytes, web_contents(),
+      web_contents(),
       base::BindRepeating(
           &PageLoadCappingInfoBarDelegateTest::PauseSubresourceLoading,
           base::Unretained(this))));

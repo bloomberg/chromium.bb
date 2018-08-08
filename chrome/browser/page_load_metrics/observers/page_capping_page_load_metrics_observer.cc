@@ -126,7 +126,7 @@ void PageCappingPageLoadMetricsObserver::MaybeCreate() {
     return;
 
   if (PageLoadCappingInfoBarDelegate::Create(
-          page_cap_.value(), web_contents_,
+          web_contents_,
           base::BindRepeating(
               &PageCappingPageLoadMetricsObserver::PauseSubresourceLoading,
               weak_factory_.GetWeakPtr()))) {

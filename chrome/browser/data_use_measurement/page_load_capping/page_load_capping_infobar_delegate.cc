@@ -65,16 +65,14 @@ class PauseDelegate : public PageLoadCappingInfoBarDelegate {
   // navigations.
   // |pause_callback| is a callback that will pause subresource loading on the
   // page.
-  PauseDelegate(int64_t bytes_threshold, const PauseCallback& pause_callback)
-      : bytes_threshold_(bytes_threshold), pause_callback_(pause_callback) {}
+  explicit PauseDelegate(const PauseCallback& pause_callback)
+      : pause_callback_(pause_callback) {}
   ~PauseDelegate() override = default;
 
  private:
   // PageLoadCappingInfoBarDelegate:
   base::string16 GetMessageText() const override {
-    return l10n_util::GetStringFUTF16Int(
-        IDS_PAGE_CAPPING_TITLE,
-        static_cast<int>(bytes_threshold_ / 1024 / 1024));
+    return l10n_util::GetStringUTF16(IDS_PAGE_CAPPING_TITLE);
   }
 
   base::string16 GetLinkText() const override {
@@ -98,9 +96,6 @@ class PauseDelegate : public PageLoadCappingInfoBarDelegate {
   }
 
  private:
-  // The amount of bytes that was exceeded to trigger this infobar.
-  int64_t bytes_threshold_;
-
   // |pause_callback| will either pause subresource loading or resume it based
   // on the passed in bool.
   PauseCallback pause_callback_;
@@ -112,14 +107,13 @@ class PauseDelegate : public PageLoadCappingInfoBarDelegate {
 
 // static
 bool PageLoadCappingInfoBarDelegate::Create(
-    int64_t bytes_threshold,
     content::WebContents* web_contents,
     const PauseCallback& pause_callback) {
   auto* infobar_service = InfoBarService::FromWebContents(web_contents);
   RecordInteractionUMA(InfoBarInteraction::kShowedInfoBar);
   // WrapUnique is used to allow for a private constructor.
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      std::make_unique<PauseDelegate>(bytes_threshold, pause_callback)));
+      std::make_unique<PauseDelegate>(pause_callback)));
 }
 
 PageLoadCappingInfoBarDelegate::~PageLoadCappingInfoBarDelegate() = default;
