@@ -174,7 +174,8 @@ class MojomProcessor(object):
           MakeImportStackMessage(imported_filename_stack + [rel_filename.path])
       sys.exit(1)
 
-    tree = _UnpickleAST(_GetPicklePath(rel_filename, args.output_dir))
+    tree = _UnpickleAST(_FindPicklePath(rel_filename, args.gen_directories +
+                                        [args.output_dir]))
     dirname = os.path.dirname(rel_filename.path)
 
     # Process all our imports first and collect the module object for each.
@@ -254,6 +255,17 @@ def _Generate(args, remaining_args):
                               RelativePath(filename, args.depth), [])
 
   return 0
+
+
+def _FindPicklePath(rel_filename, search_dirs):
+  filename, _ = os.path.splitext(rel_filename.relative_path())
+  pickle_path = filename + '.p'
+  for search_dir in search_dirs:
+    path = os.path.join(search_dir, pickle_path)
+    if os.path.isfile(path):
+      return path
+  raise Exception("%s: Error: Could not find file in %r" %
+                  (pickle_path, search_dirs))
 
 
 def _GetPicklePath(rel_filename, output_dir):
@@ -402,6 +414,9 @@ def main():
                                metavar="GENERATORS",
                                default="c++,javascript,java",
                                help="comma-separated list of generators")
+  generate_parser.add_argument(
+      "--gen_dir", dest="gen_directories", action="append", metavar="directory",
+      default=[], help="add a directory to be searched for the syntax trees.")
   generate_parser.add_argument(
       "-I", dest="import_directories", action="append", metavar="directory",
       default=[],
