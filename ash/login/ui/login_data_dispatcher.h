@@ -72,6 +72,12 @@ class ASH_EXPORT LoginDataDispatcher {
         const AccountId& user,
         const mojom::EasyUnlockIconOptionsPtr& icon);
 
+    // Called when a warning banner message should be displayed.
+    virtual void OnShowWarningBanner(const base::string16& message);
+
+    // Called when a warning banner message should be hidden.
+    virtual void OnHideWarningBanner();
+
     // Called when the info shown for dev and canary channels are changed.
     virtual void OnDevChannelInfoChanged(
         const std::string& os_version_label_text,
@@ -126,6 +132,8 @@ class ASH_EXPORT LoginDataDispatcher {
   void SetLockScreenNoteState(mojom::TrayActionState state);
   void ShowEasyUnlockIcon(const AccountId& user,
                           const mojom::EasyUnlockIconOptionsPtr& icon);
+  void ShowWarningBanner(const base::string16& message);
+  void HideWarningBanner();
   void SetDevChannelInfo(const std::string& os_version_label_text,
                          const std::string& enterprise_info_text,
                          const std::string& bluetooth_name);

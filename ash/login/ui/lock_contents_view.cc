@@ -301,6 +301,10 @@ LoginBubble* LockContentsView::TestApi::detachable_base_error_bubble() const {
   return view_->detachable_base_error_bubble_.get();
 }
 
+LoginBubble* LockContentsView::TestApi::warning_banner_bubble() const {
+  return view_->warning_banner_bubble_.get();
+}
+
 views::View* LockContentsView::TestApi::dev_channel_info() const {
   return view_->dev_channel_info_;
 }
@@ -349,6 +353,7 @@ LockContentsView::LockContentsView(
   auth_error_bubble_ = std::make_unique<LoginBubble>();
   detachable_base_error_bubble_ = std::make_unique<LoginBubble>();
   tooltip_bubble_ = std::make_unique<LoginBubble>();
+  warning_banner_bubble_ = std::make_unique<LoginBubble>();
 
   // We reuse the focusable state on this view as a signal that focus should
   // switch to the system tray. LockContentsView should otherwise not be
@@ -689,6 +694,31 @@ void LockContentsView::OnShowEasyUnlockIcon(
     tooltip_bubble_->ShowTooltip(
         icon->tooltip, big_user->auth_user()->password_view() /*anchor_view*/);
   }
+}
+
+void LockContentsView::OnShowWarningBanner(const base::string16& message) {
+  DCHECK(!message.empty());
+  if (!CurrentBigUserView() || !CurrentBigUserView()->auth_user()) {
+    LOG(ERROR) << "Unable to find the current active big user to show a "
+                  "warning banner.";
+    return;
+  }
+  warning_banner_bubble_->Close();
+  // Shows warning banner as a persistent error bubble.
+  views::Label* label =
+      new views::Label(message, views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT,
+                       views::style::STYLE_PRIMARY);
+  label->SetMultiLine(true);
+  label->SetAutoColorReadabilityEnabled(false);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetEnabledColor(SK_ColorWHITE);
+  warning_banner_bubble_->ShowErrorBubble(
+      label, CurrentBigUserView()->auth_user()->password_view() /*anchor_view*/,
+      LoginBubble::kFlagPersistent);
+}
+
+void LockContentsView::OnHideWarningBanner() {
+  warning_banner_bubble_->Close();
 }
 
 void LockContentsView::OnLockScreenNoteStateChanged(

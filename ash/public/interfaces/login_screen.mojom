@@ -38,6 +38,18 @@ interface LoginScreen {
                    string help_link_text,
                    int32 help_topic_id);
 
+  // Shows a warning banner message on the login screen. A warning banner is
+  // used to notify users of important messages before they log in to their
+  // session. (e.g. Tell the user that an update of the user data will start
+  // on login)
+  // |message|: The message to show.
+  ShowWarningBanner(mojo_base.mojom.String16 message);
+
+  // Hide a warning banner if it is displayed.
+  // TODO(fukino): Ideally chrome-side should not have this level of UI
+  // control. Make the API simpler and let ash determine the UI behavior.
+  HideWarningBanner();
+
   // Requests to close any displayed error messages in ash lock screen.
   ClearErrors();
 

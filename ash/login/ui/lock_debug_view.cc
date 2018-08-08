@@ -50,6 +50,7 @@ enum {
   kGlobalCycleDetachableBaseStatus,
   kGlobalCycleDetachableBaseId,
   kGlobalCycleAuthErrorMessage,
+  kGlobalToggleWarningBanner,
   kPerUserTogglePin,
   kPerUserToggleTap,
   kPerUserCycleEasyUnlockState,
@@ -409,6 +410,12 @@ class LockDebugView::DebugDataDispatcherTransformer
                                         bluetooth_name);
   }
 
+  void ShowWarningBanner(const base::string16& message) {
+    debug_dispatcher_.ShowWarningBanner(message);
+  }
+
+  void HideWarningBanner() { debug_dispatcher_.HideWarningBanner(); }
+
   // LoginDataDispatcher::Observer:
   void OnUsersChanged(
       const std::vector<mojom::LoginUserInfoPtr>& users) override {
@@ -673,6 +680,8 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
       "Auth (allowed)", ButtonId::kGlobalToggleAuth, toggle_container);
   AddButton("Cycle auth error", ButtonId::kGlobalCycleAuthErrorMessage,
             toggle_container);
+  AddButton("Toggle warning banner", ButtonId::kGlobalToggleWarningBanner,
+            toggle_container);
 
   auto* kiosk_container = add_horizontal_container();
   AddButton("Add kiosk app", ButtonId::kGlobalAddKioskApp, kiosk_container);
@@ -903,6 +912,17 @@ void LockDebugView::ButtonPressed(views::Button* sender,
   if (sender->id() == ButtonId::kGlobalCycleAuthErrorMessage) {
     CycleAuthErrorMessage();
     return;
+  }
+
+  // Show or hide warning banner.
+  if (sender->id() == ButtonId::kGlobalToggleWarningBanner) {
+    if (is_warning_banner_shown_) {
+      debug_data_dispatcher_->HideWarningBanner();
+    } else {
+      debug_data_dispatcher_->ShowWarningBanner(base::ASCIIToUTF16(
+          "A critical update is ready to install. Sign in to get started."));
+    }
+    is_warning_banner_shown_ = !is_warning_banner_shown_;
   }
 
   // Enable or disable PIN.

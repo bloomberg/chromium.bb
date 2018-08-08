@@ -1823,4 +1823,51 @@ TEST_F(LockContentsViewUnitTest, UsersChangedRetainsExistingState) {
           ->visible());
 }
 
+TEST_F(LockContentsViewUnitTest, ShowHideWarningBannerBubble) {
+  // Build lock screen with a single user.
+  auto* lock = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      data_dispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+  SetUserCount(1);
+  SetWidget(CreateWidgetWithContent(lock));
+
+  const AccountId& kUserAccountId = users()[0]->basic_user_info->account_id;
+
+  LockContentsView::TestApi test_api(lock);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  // Creating lock screen does not show warning banner bubble.
+  EXPECT_FALSE(test_api.warning_banner_bubble()->IsVisible());
+
+  // Verifies that a warning banner is shown by giving a non-empty message.
+  data_dispatcher()->ShowWarningBanner(base::ASCIIToUTF16("foo"));
+  EXPECT_TRUE(test_api.warning_banner_bubble()->IsVisible());
+
+  // Verifies that a warning banner is hidden by HideWarningBanner().
+  data_dispatcher()->HideWarningBanner();
+  EXPECT_FALSE(test_api.warning_banner_bubble()->IsVisible());
+
+  // Shows a warning banner again.
+  data_dispatcher()->ShowWarningBanner(base::ASCIIToUTF16("foo"));
+  EXPECT_TRUE(test_api.warning_banner_bubble()->IsVisible());
+
+  // Attempt and fail user auth - an auth error is expected to be shown.
+  // The warning banner should not be hidden.
+  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  client->set_authenticate_user_callback_result(false);
+  EXPECT_CALL(*client, AuthenticateUser_(kUserAccountId, _, false, _));
+
+  // Submit password.
+  LoginAuthUserView::TestApi(test_api.primary_big_view()->auth_user())
+      .password_view()
+      ->RequestFocus();
+  generator->PressKey(ui::KeyboardCode::VKEY_A, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(test_api.auth_error_bubble()->IsVisible());
+  EXPECT_TRUE(test_api.warning_banner_bubble()->IsVisible());
+}
+
 }  // namespace ash
