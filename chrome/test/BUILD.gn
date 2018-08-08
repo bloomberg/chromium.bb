@@ -41,6 +41,25 @@ group("test") {
   testonly = true
 }
 
+group("policy_testserver_pyproto") {
+  # Python proto files used by chrome/browser/policy/test/policy_testserver.py
+
+  data = [
+    "$root_out_dir/pyproto/components/policy/proto/device_management_backend_pb2.py",
+    "$root_out_dir/pyproto/components/policy/proto/cloud_policy_pb2.py",
+  ]
+
+  if (!is_android && !is_ios) {
+    # Used by chrome/browser/policy/test/policy_testserver.py
+    data += [ "$root_out_dir/pyproto/components/policy/proto/chrome_extension_policy_pb2.py" ]
+  }
+
+  if (is_chromeos) {
+    # Used by chrome/browser/policy/test/policy_testserver.py
+    data += [ "$root_out_dir/pyproto/components/policy/proto/chrome_device_policy_pb2.py" ]
+  }
+}
+
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient.
 static_library("test_support") {
@@ -964,6 +983,7 @@ test("browser_tests") {
     ]
 
     deps += [
+      ":policy_testserver_pyproto",
       ":test_support_ui",
       "//base:i18n",
       "//base/test:test_support",
@@ -1075,7 +1095,6 @@ test("browser_tests") {
       "//third_party/simplejson/",
       "//third_party/tlslite/",
       "//ui/webui/resources/js/",
-      "$root_out_dir/pyproto/",
       "$root_out_dir/browser_tests.pak",
       "$root_out_dir/remoting/unittests/",
       "$root_out_dir/test_case.html",
