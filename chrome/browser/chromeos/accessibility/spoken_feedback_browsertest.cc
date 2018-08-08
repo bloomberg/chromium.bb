@@ -58,10 +58,6 @@ using extensions::api::braille_display_private::StubBrailleController;
 
 namespace chromeos {
 
-// All tests hang in EnableChromeVox() and times out on ChromeOS dbg.
-// https://crbug.com/872267
-#if defined(NDEBUG) || !defined(OS_CHROMEOS)
-
 //
 // Spoken feedback tests only in a logged in user's window.
 //
@@ -786,7 +782,5 @@ IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, DISABLED_SpokenFeedbackInOobe) {
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
                                  "Combo box * of *"));
 }
-
-#endif  //  defined(NDEBUG) || !defined(OS_CHROMEOS)
 
 }  // namespace chromeos
