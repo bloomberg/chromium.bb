@@ -3323,22 +3323,20 @@ def _CheckCrbugLinksHaveHttps(input_api, output_api):
   """Checks that crbug(.com) links are correctly prefixed by https://,
    unless they come in the accepted form TODO(crbug.com/...)
   """
-  white_list = [r'.+%s' % _IMPLEMENTATION_EXTENSIONS]
-  black_list = (_EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS)
-  sources = lambda f: input_api.FilterSourceFile(
-      f, white_list=white_list, black_list=black_list)
 
-  pattern = input_api.re.compile(r'//.*(?<!:\/\/)crbug[.com]*')
-  accepted_pattern = input_api.re.compile(r'//.*TODO\(crbug[.com]*')
+  # The cr bug strings are split to avoid matching in real presubmit
+  # checkings.
+  pattern = input_api.re.compile(r'//.*(?<!:\/\/)cr''bug[.com]*')
+  accepted_pattern = input_api.re.compile(r'//.*TODO\(cr''bug[.com]*')
   problems = []
-  for f in input_api.AffectedSourceFiles(sources):
+  for f in input_api.AffectedSourceFiles(input_api.FilterSourceFile):
     for line_num, line in f.ChangedContents():
       if pattern.search(line) and not accepted_pattern.search(line):
         problems.append('    %s:%d %s' % (f.LocalPath(), line_num, line))
 
   if problems:
     return [output_api.PresubmitPromptWarning(
-      'Found unprefixed crbug.com URL(s), consider prepending https://\n'+
+      'Found unprefixed crbug.com URL(s), consider prepending https://\n' +
       '\n'.join(problems))]
   return []
 
