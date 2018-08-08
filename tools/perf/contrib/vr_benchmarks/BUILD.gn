@@ -32,6 +32,7 @@ group("vr_perf_tests") {
   ]
   data_deps = [
     "//chrome/android:vr_nfc_simulator_apk",
+    "//testing:run_perf_test",
   ]
 
   # We'll only ever use the assets if it's a Chrome-branded build. We don't have
