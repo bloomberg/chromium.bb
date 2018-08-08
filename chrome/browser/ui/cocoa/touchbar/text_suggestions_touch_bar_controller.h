@@ -62,15 +62,17 @@ class Range;
 
 @interface TextSuggestionsTouchBarController (ExposedForTesting)
 
+- (void)setWebContents:(content::WebContents*)webContents;
+- (content::WebContents*)webContents;
 - (void)setText:(NSString*)text;
 - (NSString*)text;
+- (void)setSelectionRange:(const gfx::Range&)range;
+- (gfx::Range)selectionRange;
 - (void)setSuggestions:(NSArray*)suggestions;
 - (NSArray*)suggestions;
 - (WebTextfieldTouchBarController*)controller;
-- (void)setWebContents:(content::WebContents*)webContents;
-- (content::WebContents*)webContents;
-- (void)setSelectionRange:(const gfx::Range&)range;
-- (gfx::Range)selectionRange;
+- (void)setShouldIgnoreReplacementSelection:(BOOL)shouldIgnore;
+- (void)setEditingWordRange:(const gfx::Range&)range;
 
 @end
 
