@@ -65,17 +65,11 @@ MessagePopupView::MessagePopupView(PopupAlignmentDelegate* alignment_delegate,
 MessagePopupView::~MessagePopupView() = default;
 
 void MessagePopupView::UpdateContents(const Notification& notification) {
-  ui::AXNodeData old_data;
-  message_view_->GetAccessibleNodeData(&old_data);
   message_view_->UpdateWithNotification(notification);
   popup_collection_->NotifyPopupResized();
   if (notification.rich_notification_data()
           .should_make_spoken_feedback_for_popup_updates) {
-    ui::AXNodeData new_data;
-    message_view_->GetAccessibleNodeData(&new_data);
-    if (old_data.GetStringAttribute(ax::mojom::StringAttribute::kName) !=
-        new_data.GetStringAttribute(ax::mojom::StringAttribute::kName))
-      NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
   }
 }
 
