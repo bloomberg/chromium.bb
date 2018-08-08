@@ -161,7 +161,7 @@ bool CrostiniInstallerView::Accept() {
   // Kick off the Crostini Restart sequence. We will be added as an observer.
   restart_id_ = crostini::CrostiniManager::GetInstance()->RestartCrostini(
       profile_, kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
-      base::BindOnce(&CrostiniInstallerView::StartContainerFinished,
+      base::BindOnce(&CrostiniInstallerView::MountContainerFinished,
                      weak_ptr_factory_.GetWeakPtr()),
       this);
   return false;
@@ -250,6 +250,36 @@ void CrostiniInstallerView::OnVmStarted(ConciergeClientResult result) {
     return;
   }
   VLOG(1) << "Started Termina VM successfully";
+  StepProgress();
+}
+
+void CrostiniInstallerView::OnContainerStarted(ConciergeClientResult result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  state_ = State::START_CONTAINER;
+  if (result != ConciergeClientResult::SUCCESS) {
+    LOG(ERROR) << "Failed to start container with error code: "
+               << static_cast<int>(result);
+    HandleError(
+        l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_START_CONTAINER_ERROR),
+        SetupResult::kErrorStartingContainer);
+    return;
+  }
+  VLOG(1) << "Started container successfully";
+  StepProgress();
+}
+
+void CrostiniInstallerView::OnSshKeysFetched(ConciergeClientResult result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  state_ = State::FETCH_SSH_KEYS;
+  if (result != ConciergeClientResult::SUCCESS) {
+    LOG(ERROR) << "Failed to fetch ssh keys with error code: "
+               << static_cast<int>(result);
+    HandleError(
+        l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_FETCH_SSH_KEYS_ERROR),
+        SetupResult::kErrorFetchingSshKeys);
+    return;
+  }
+  VLOG(1) << "Fetched ssh keys successfully";
   StepProgress();
 }
 
@@ -375,16 +405,16 @@ void CrostiniInstallerView::HandleError(const base::string16& error_message,
   GetWidget()->GetRootView()->Layout();
 }
 
-void CrostiniInstallerView::StartContainerFinished(
+void CrostiniInstallerView::MountContainerFinished(
     ConciergeClientResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  state_ = State::START_CONTAINER;
+  state_ = State::MOUNT_CONTAINER;
   if (result != ConciergeClientResult::SUCCESS) {
-    LOG(ERROR) << "Failed to start container with error code: "
+    LOG(ERROR) << "Failed to mount container with error code: "
                << static_cast<int>(result);
     HandleError(
-        l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_START_CONTAINER_ERROR),
-        SetupResult::kErrorStartingContainer);
+        l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_MOUNT_CONTAINER_ERROR),
+        SetupResult::kErrorMountingContainer);
     return;
   }
   StepProgress();
@@ -392,7 +422,7 @@ void CrostiniInstallerView::StartContainerFinished(
 }
 
 void CrostiniInstallerView::ShowLoginShell() {
-  DCHECK_EQ(state_, State::START_CONTAINER);
+  DCHECK_EQ(state_, State::MOUNT_CONTAINER);
   state_ = State::SHOW_LOGIN_SHELL;
 
   crostini::CrostiniManager::GetInstance()->LaunchContainerTerminal(
@@ -432,6 +462,10 @@ void CrostiniInstallerView::SetMessageLabel() {
     message_id = IDS_CROSTINI_INSTALLER_START_TERMINA_VM_MESSAGE;
   } else if (state_ == State::START_TERMINA_VM) {
     message_id = IDS_CROSTINI_INSTALLER_START_CONTAINER_MESSAGE;
+  } else if (state_ == State::START_CONTAINER) {
+    message_id = IDS_CROSTINI_INSTALLER_FETCH_SSH_KEYS_MESSAGE;
+  } else if (state_ == State::FETCH_SSH_KEYS) {
+    message_id = IDS_CROSTINI_INSTALLER_MOUNT_CONTAINER_MESSAGE;
   }
   if (message_id != 0) {
     message_label_->SetText(l10n_util::GetStringUTF16(message_id));

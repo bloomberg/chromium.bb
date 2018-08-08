@@ -545,8 +545,12 @@ base::WeakPtr<Volume> VolumeManager::FindVolumeById(
 void VolumeManager::AddSshfsCrostiniVolume(
     const base::FilePath& sshfs_mount_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DoMountEvent(chromeos::MOUNT_ERROR_NONE,
-               Volume::CreateForSshfsCrostini(sshfs_mount_path));
+  std::unique_ptr<Volume> volume =
+      Volume::CreateForSshfsCrostini(sshfs_mount_path);
+  // Ignore if volume already exists.
+  if (mounted_volumes_.find(volume->volume_id()) != mounted_volumes_.end())
+    return;
+  DoMountEvent(chromeos::MOUNT_ERROR_NONE, std::move(volume));
 
   // Listen for crostini container shutdown and remove volume.
   crostini::CrostiniManager::GetInstance()->AddShutdownContainerCallback(

@@ -44,6 +44,8 @@ class CrostiniInstallerView
     kErrorStartingTermina = 6,
     kErrorStartingContainer = 7,
     kErrorOffline = 8,
+    kErrorFetchingSshKeys = 9,
+    kErrorMountingContainer = 10,
     kCount
   };
 
@@ -66,6 +68,8 @@ class CrostiniInstallerView
   void OnConciergeStarted(crostini::ConciergeClientResult result) override;
   void OnDiskImageCreated(crostini::ConciergeClientResult result) override;
   void OnVmStarted(crostini::ConciergeClientResult result) override;
+  void OnContainerStarted(crostini::ConciergeClientResult result) override;
+  void OnSshKeysFetched(crostini::ConciergeClientResult result) override;
 
   static CrostiniInstallerView* GetActiveViewForTesting();
 
@@ -80,6 +84,8 @@ class CrostiniInstallerView
     CREATE_DISK_IMAGE,     // Creating the image for the Termina VM.
     START_TERMINA_VM,      // Starting the Termina VM.
     START_CONTAINER,       // Starting the container inside the Termina VM.
+    FETCH_SSH_KEYS,        // Fetch ssh keys from concierge.
+    MOUNT_CONTAINER,       // Do sshfs mount of container.
     SHOW_LOGIN_SHELL,      // Showing a new crosh window.
     INSTALL_END = SHOW_LOGIN_SHELL,  // Marker enum for last install state.
   };
@@ -88,7 +94,7 @@ class CrostiniInstallerView
   ~CrostiniInstallerView() override;
 
   void HandleError(const base::string16& error_message, SetupResult result);
-  void StartContainerFinished(crostini::ConciergeClientResult result);
+  void MountContainerFinished(crostini::ConciergeClientResult result);
   void ShowLoginShell();
   void StepProgress();
   void SetMessageLabel();

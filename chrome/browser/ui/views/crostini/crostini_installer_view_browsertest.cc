@@ -17,8 +17,11 @@
 #include "chrome/browser/ui/views/crostini/crostini_browser_test_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_concierge_client.h"
+#include "chromeos/dbus/fake_cros_disks_client.h"
+#include "chromeos/disks/disk_mount_manager.h"
 #include "components/crx_file/id_util.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/base/network_change_notifier_factory.h"
@@ -53,10 +56,37 @@ class CrostiniInstallerViewBrowserTest : public CrostiniDialogBrowserTest {
     base::OnceClosure closure_;
   };
 
+  class WaitingDiskMountManagerObserver
+      : public chromeos::disks::DiskMountManager::Observer {
+   public:
+    void OnMountEvent(chromeos::disks::DiskMountManager::MountEvent event,
+                      chromeos::MountError error_code,
+                      const chromeos::disks::DiskMountManager::MountPointInfo&
+                          mount_info) override {
+      run_loop_->Quit();
+    }
+
+    void WaitForMountEvent() {
+      chromeos::disks::DiskMountManager::GetInstance()->AddObserver(this);
+      run_loop_ = std::make_unique<base::RunLoop>();
+      run_loop_->Run();
+    }
+
+   private:
+    std::unique_ptr<base::RunLoop> run_loop_;
+  };
+
   CrostiniInstallerViewBrowserTest()
-      : waiting_fake_concierge_client_(new WaitingFakeConciergeClient()) {
+      : waiting_fake_concierge_client_(new WaitingFakeConciergeClient()),
+        waiting_disk_mount_manager_observer_(
+            new WaitingDiskMountManagerObserver) {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetConciergeClient(
         base::WrapUnique(waiting_fake_concierge_client_));
+    static_cast<chromeos::FakeCrosDisksClient*>(
+        chromeos::DBusThreadManager::Get()->GetCrosDisksClient())
+        ->AddCustomMountPointCallback(base::BindRepeating(
+            &CrostiniInstallerViewBrowserTest::MaybeMountCrostini,
+            base::Unretained(this)));
   }
 
   // DialogBrowserTest:
@@ -80,8 +110,22 @@ class CrostiniInstallerViewBrowserTest : public CrostiniDialogBrowserTest {
  protected:
   // Owned by chromeos::DBusThreadManager
   WaitingFakeConciergeClient* waiting_fake_concierge_client_ = nullptr;
+  WaitingDiskMountManagerObserver* waiting_disk_mount_manager_observer_ =
+      nullptr;
 
  private:
+  base::FilePath MaybeMountCrostini(
+      const std::string& source_path,
+      const std::vector<std::string>& mount_options) {
+    GURL source_url(source_path);
+    DCHECK(source_url.is_valid());
+    if (source_url.scheme() != "sshfs") {
+      return {};
+    }
+    EXPECT_EQ("sshfs://stub-user@hostname:", source_path);
+    return base::FilePath(
+        browser()->profile()->GetPath().Append("crostini_test"));
+  }
   DISALLOW_COPY_AND_ASSIGN(CrostiniInstallerViewBrowserTest);
 };
 
@@ -106,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InstallFlow) {
   EXPECT_FALSE(HasAcceptButton());
   EXPECT_TRUE(HasCancelButton());
 
-  waiting_fake_concierge_client_->WaitForStartTerminaVmCalled();
+  waiting_disk_mount_manager_observer_->WaitForMountEvent();
 
   // RunUntilIdle in this case will run the rest of the install steps including
   // launching the terminal, on the UI thread.
