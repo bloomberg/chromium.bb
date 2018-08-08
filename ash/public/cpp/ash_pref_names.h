@@ -87,6 +87,7 @@ ASH_PUBLIC_EXPORT extern const char kPowerUserActivityScreenDimDelayFactor[];
 ASH_PUBLIC_EXPORT extern const char kPowerWaitForInitialUserActivity[];
 ASH_PUBLIC_EXPORT extern const char
     kPowerForceNonzeroBrightnessForUserActivity[];
+ASH_PUBLIC_EXPORT extern const char kPowerSmartDimEnabled[];
 
 ASH_PUBLIC_EXPORT extern const char kShelfAlignment[];
 ASH_PUBLIC_EXPORT extern const char kShelfAlignmentLocal[];

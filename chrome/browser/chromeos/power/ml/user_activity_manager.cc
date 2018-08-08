@@ -6,10 +6,13 @@
 
 #include <cmath>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/power/ml/real_boot_clock.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -235,7 +238,16 @@ void UserActivityManager::OnIdleEventObserved(
   screen_off_occurred_ = false;
   screen_lock_occurred_ = false;
   ExtractFeatures(activity_data);
-  if (base::FeatureList::IsEnabled(features::kUserActivityPrediction) &&
+  // Default is to enable smart dim, unless user profile specifically says
+  // otherwise.
+  bool smart_dim_enabled = true;
+  const Profile* const profile = ProfileManager::GetActiveUserProfile();
+  if (profile) {
+    smart_dim_enabled =
+        profile->GetPrefs()->GetBoolean(ash::prefs::kPowerSmartDimEnabled);
+  }
+  if (smart_dim_enabled &&
+      base::FeatureList::IsEnabled(features::kUserActivityPrediction) &&
       smart_dim_model_) {
     // Decide whether to defer the imminent screen dim.
     UserActivityEvent::ModelPrediction model_prediction =
