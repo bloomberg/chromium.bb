@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_IME_IME_FEATURE_POD_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/system/ime/ime_observer.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "base/macros.h"
 
@@ -14,7 +15,8 @@ namespace ash {
 class UnifiedSystemTrayController;
 
 // Controller of IME feature pod button.
-class ASH_EXPORT IMEFeaturePodController : public FeaturePodControllerBase {
+class ASH_EXPORT IMEFeaturePodController : public FeaturePodControllerBase,
+                                           public IMEObserver {
  public:
   IMEFeaturePodController(UnifiedSystemTrayController* tray_controller);
   ~IMEFeaturePodController() override;
@@ -26,6 +28,10 @@ class ASH_EXPORT IMEFeaturePodController : public FeaturePodControllerBase {
 
  private:
   void Update();
+
+  // IMEObserver:
+  void OnIMERefresh() override;
+  void OnIMEMenuActivationChanged(bool is_activated) override;
 
   // Unowned.
   UnifiedSystemTrayController* const tray_controller_;
