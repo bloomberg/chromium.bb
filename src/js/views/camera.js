@@ -144,6 +144,13 @@ camera.views.Camera = function(context, router, model) {
   // End of properties, seal the object.
   Object.seal(this);
 
+  this.video_.addEventListener('resize', () => {
+    if (this.video_.videoHeight) {
+      this.context_.onAspectRatio(
+          this.video_.videoWidth / this.video_.videoHeight);
+      this.updateVideoSize_();
+    }
+  });
   this.shutterButton_.addEventListener(
       'click', this.onShutterButtonClicked_.bind(this));
 };
@@ -257,7 +264,9 @@ camera.views.Camera.prototype.setShutterLabel_ = function(label) {
  * @override
  */
 camera.views.Camera.prototype.onResize = function() {
-  this.updateVideoSize_();
+  if (this.video_.videoHeight) {
+    this.updateVideoSize_();
+  }
 };
 
 /**
@@ -540,10 +549,6 @@ camera.views.Camera.prototype.startWithConstraints_ = function(
           this.onstop_();
         }
       }, 100);
-      this.context_.onAspectRatio(
-          this.video_.videoWidth / this.video_.videoHeight);
-      this.updateVideoSize_();
-
       this.stream_ = stream;
       this.options_.updateStreamOptions(constraints, stream);
       this.setShutterLabel_(this.options_.recordMode ?
@@ -563,9 +568,6 @@ camera.views.Camera.prototype.startWithConstraints_ = function(
  * @private
  */
 camera.views.Camera.prototype.updateVideoSize_ = function() {
-  if (!this.video_.videoHeight) {
-    return;
-  }
   // The video content keeps its aspect ratio and is filled up or letterboxed
   // inside the window's inner-bounds. Don't use app-window.innerBounds' width
   // and height properties during resizing as they are not updated immediately.

@@ -274,6 +274,7 @@ camera.Camera.prototype.updateWindowSize_ = function() {
   }
 
   // Keep the width fixed and calculate the height by the aspect ratio.
+  // TODO(yuli): Update min-width for resizing at portrait orientation.
   var appWindow = chrome.app.window.current();
   var inner = appWindow.innerBounds;
   var innerW = inner.minWidth;
