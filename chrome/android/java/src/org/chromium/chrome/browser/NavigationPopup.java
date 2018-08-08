@@ -260,7 +260,7 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
     }
 
     private class NavigationAdapter extends BaseAdapter {
-        private boolean mInReverseOrder;
+        boolean mInReverseOrder;
 
         public void reverseOrder() {
             mInReverseOrder = true;
@@ -299,6 +299,8 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
     }
 
     private class NewNavigationAdapter extends NavigationAdapter {
+        private Integer mTopPadding;
+
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             EntryViewHolder viewHolder;
@@ -306,6 +308,7 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
                 LayoutInflater inflater = LayoutInflater.from(parent.getContext());
                 convertView = inflater.inflate(R.layout.navigation_popup_item, parent, false);
                 viewHolder = new EntryViewHolder();
+                viewHolder.mContainer = convertView;
                 viewHolder.mImageView = convertView.findViewById(R.id.favicon_img);
                 viewHolder.mTextView = convertView.findViewById(R.id.entry_title);
                 convertView.setTag(viewHolder);
@@ -317,11 +320,23 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
             setViewText(entry, viewHolder.mTextView);
             viewHolder.mImageView.setImageBitmap(entry.getFavicon());
 
+            if (mInReverseOrder) {
+                View container = viewHolder.mContainer;
+                if (mTopPadding == null) {
+                    mTopPadding = container.getResources().getDimensionPixelSize(
+                            R.dimen.navigation_popup_top_padding);
+                }
+                viewHolder.mContainer.setPadding(container.getPaddingLeft(),
+                        position == 0 ? mTopPadding : 0, container.getPaddingRight(),
+                        container.getPaddingBottom());
+            }
+
             return convertView;
         }
     }
 
     private static class EntryViewHolder {
+        View mContainer;
         ImageView mImageView;
         TextView mTextView;
     }
