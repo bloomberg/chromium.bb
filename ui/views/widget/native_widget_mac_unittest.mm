@@ -103,15 +103,11 @@ class BridgedNativeWidgetTestApi {
   // Simulate a frame swap from the compositor.
   void SimulateFrameSwap(const gfx::Size& size) {
     const float kScaleFactor = 1.0f;
-    ui::CALayerFrameSink* ca_layer_frame_sink =
-        ui::CALayerFrameSink::FromAcceleratedWidget(
-            bridge_->compositor_->widget()->accelerated_widget());
     gfx::CALayerParams ca_layer_params;
     ca_layer_params.is_empty = false;
     ca_layer_params.pixel_size = size;
     ca_layer_params.scale_factor = kScaleFactor;
-    ca_layer_frame_sink->UpdateCALayerTree(ca_layer_params);
-    bridge_->AcceleratedWidgetCALayerParamsUpdated();
+    bridge_->SetCALayerParams(ca_layer_params);
   }
 
   NSAnimation* show_animation() {

@@ -14,6 +14,13 @@ namespace views {
 class VIEWS_EXPORT BridgedNativeWidgetHost {
  public:
   virtual ~BridgedNativeWidgetHost() = default;
+
+  // Update the ui::Compositor and ui::Layer's size.
+  virtual void SetCompositorSize(const gfx::Size& size_in_dip,
+                                 float scale_factor) = 0;
+
+  // Update the ui::Compositor and ui::Layer's visibility.
+  virtual void SetCompositorVisibility(bool visible) = 0;
 };
 
 }  // namespace views

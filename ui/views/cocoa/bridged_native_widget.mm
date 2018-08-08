@@ -23,12 +23,12 @@
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/compositor/recyclable_compositor_mac.h"
 #include "ui/gfx/geometry/dip_util.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
 #import "ui/native_theme/native_theme_mac.h"
 #import "ui/views/cocoa/bridged_content_view.h"
+#import "ui/views/cocoa/bridged_native_widget_host.h"
 #import "ui/views/cocoa/cocoa_mouse_capture.h"
 #import "ui/views/cocoa/cocoa_window_move_loop.h"
 #import "ui/views/cocoa/drag_drop_client_mac.h"
@@ -36,7 +36,6 @@
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #import "ui/views/cocoa/widget_owner_nswindow_adapter.h"
 #include "ui/views/view.h"
-#include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_aura_utils.h"
@@ -222,8 +221,10 @@ gfx::Size BridgedNativeWidget::GetWindowSizeForClientSize(
   return gfx::Size(NSWidth(frame_rect), NSHeight(frame_rect));
 }
 
-BridgedNativeWidget::BridgedNativeWidget(NativeWidgetMac* parent)
-    : native_widget_mac_(parent),
+BridgedNativeWidget::BridgedNativeWidget(BridgedNativeWidgetHost* host,
+                                         NativeWidgetMac* parent)
+    : host_(host),
+      native_widget_mac_(parent),
       focus_manager_(nullptr),
       widget_type_(Widget::InitParams::TYPE_WINDOW),  // Updated in Init().
       parent_(nullptr),
@@ -248,12 +249,13 @@ BridgedNativeWidget::~BridgedNativeWidget() {
   DCHECK(child_windows_.empty());
   SetFocusManager(nullptr);
   SetRootView(nullptr);
-  DestroyCompositor();
 }
 
 void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window,
                                const Widget::InitParams& params) {
   widget_type_ = params.type;
+  is_translucent_window_ =
+      params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW;
 
   DCHECK(!window_);
   window_.swap(window);
@@ -432,7 +434,7 @@ void BridgedNativeWidget::SetRootView(views::View* view) {
 
   // If this is ever false, the compositor will need to be properly torn down
   // and replaced, pointing at the new view.
-  DCHECK(!view || !compositor_);
+  DCHECK(!view || !compositor_superview_);
 
   drag_drop_client_.reset();
   [bridged_view_ clearView];
@@ -744,11 +746,7 @@ void BridgedNativeWidget::OnSizeChanged() {
   // purposes of detecting a window move.
   gfx::Size new_size = GetClientAreaSize();
   native_widget_mac_->GetWidget()->OnNativeWidgetSizeChanged(new_size);
-  if (layer()) {
-    UpdateLayerProperties();
-    if ([window_ inLiveResize])
-      MaybeWaitForFrame(new_size);
-  }
+  UpdateCompositorSizeAndScale();
 }
 
 void BridgedNativeWidget::OnPositionChanged() {
@@ -790,24 +788,11 @@ void BridgedNativeWidget::OnVisibilityChanged() {
       [parent_->GetNSWindow() removeChildWindow:window_];
   }
 
-  // TODO(tapted): Investigate whether we want this for Mac. This is what Aura
-  // does, and it is what tests expect. However, because layer drawing is
-  // asynchronous (and things like deminiaturize in AppKit are not), it can
-  // result in the compositor producing a blank frame during the time that the
-  // layer is not visible. Avoid this by locking the compositor (preventing any
-  // new frames) in UpdateLayerVisibility whenever the layer is hidden.
-  if (layer()) {
-    UpdateLayerVisibility();
-    layer()->SchedulePaint(gfx::Rect(GetClientAreaSize()));
-
-    // For translucent windows which are made visible, recalculate shadow when
-    // the frame from the compositor arrives.
-    if (![window_ isOpaque])
-      invalidate_shadow_on_frame_swap_ = window_visible_;
-  }
-
+  // Inform the compositor of the view's size before making it visible.
+  if (window_visible_)
+    UpdateCompositorSizeAndScale();
+  UpdateCompositorVisibility();
   NotifyVisibilityChangeDown();
-
   native_widget_mac_->GetWidget()->OnNativeWidgetVisibilityChanged(
       window_visible_);
 
@@ -823,8 +808,7 @@ void BridgedNativeWidget::OnSystemControlTintChanged() {
 }
 
 void BridgedNativeWidget::OnBackingPropertiesChanged() {
-  if (layer())
-    UpdateLayerProperties();
+  UpdateCompositorSizeAndScale();
 }
 
 void BridgedNativeWidget::OnWindowKeyStatusChangedTo(bool is_key) {
@@ -889,34 +873,16 @@ gfx::Rect BridgedNativeWidget::GetRestoredBounds() const {
   return gfx::ScreenRectFromNSRect([window_ frame]);
 }
 
-void BridgedNativeWidget::CreateLayer(ui::LayerType layer_type,
-                                      bool translucent) {
-  DCHECK(bridged_view_);
-  DCHECK(!layer());
+void BridgedNativeWidget::InitCompositorView() {
+  AddCompositorSuperview();
 
-  CreateCompositor();
-  DCHECK(compositor_);
-
-  SetLayer(std::make_unique<ui::Layer>(layer_type));
-  // Note, except for controls, this will set the layer to be hidden, since it
-  // is only called during Init().
-  UpdateLayerVisibility();
-  layer()->set_delegate(this);
-
-  InitCompositor();
-
-  // Transparent window support.
-  layer()->GetCompositor()->SetBackgroundColor(translucent ? SK_ColorTRANSPARENT
-                                                           : SK_ColorWHITE);
-  layer()->SetFillsBoundsOpaquely(!translucent);
-
-  // Use the regular window background for window modal sheets. The layer() will
+  // Use the regular window background for window modal sheets. The layer will
   // still paint over most of it, but the native -[NSApp beginSheet:] animation
   // blocks the UI thread, so there's no way to invalidate the shadow to match
   // the composited layer. This assumes the native window shape is a good match
   // for the composited NonClientFrameView, which should be the case since the
   // native shape is what's most appropriate for displaying sheets on Mac.
-  if (translucent && !native_widget_mac_->IsWindowModalSheet()) {
+  if (is_translucent_window_ && !native_widget_mac_->IsWindowModalSheet()) {
     [window_ setOpaque:NO];
     [window_ setBackgroundColor:[NSColor clearColor]];
 
@@ -930,7 +896,10 @@ void BridgedNativeWidget::CreateLayer(ui::LayerType layer_type,
     DCHECK(!ca_transaction_sync_suppressed_);
   }
 
-  UpdateLayerProperties();
+  UpdateCompositorSizeAndScale();
+  // Note, except for controls, this will set the layer to be hidden, since it
+  // is only called during initialization.
+  UpdateCompositorVisibility();
 }
 
 void BridgedNativeWidget::SetAssociationForView(const views::View* view,
@@ -1032,9 +1001,9 @@ bool BridgedNativeWidget::ShouldWaitInPreCommit() {
     return false;
   if (ca_transaction_sync_suppressed_)
     return false;
-  if (!compositor_)
+  if (!compositor_superview_)
     return false;
-  return !compositor_->widget()->HasFrameOfSize(GetClientAreaSize());
+  return GetClientAreaSize() != compositor_frame_dip_size_;
 }
 
 base::TimeDelta BridgedNativeWidget::PreCommitTimeout() {
@@ -1090,34 +1059,22 @@ void BridgedNativeWidget::OnDidChangeFocus(View* focused_before,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BridgedNativeWidget, LayerDelegate:
+// TODO(ccameron): Update class names to:
+// BridgedNativeWidgetImpl, BridgedNativeWidget:
 
-void BridgedNativeWidget::OnPaintLayer(const ui::PaintContext& context) {
-  native_widget_mac_->GetWidget()->OnNativeWidgetPaint(context);
-}
-
-void BridgedNativeWidget::OnDeviceScaleFactorChanged(
-    float old_device_scale_factor,
-    float new_device_scale_factor) {
-  native_widget_mac_->GetWidget()->DeviceScaleFactorChanged(
-      old_device_scale_factor, new_device_scale_factor);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BridgedNativeWidget, AcceleratedWidgetMac:
-
-void BridgedNativeWidget::AcceleratedWidgetCALayerParamsUpdated() {
+void BridgedNativeWidget::SetCALayerParams(
+    const gfx::CALayerParams& ca_layer_params) {
   // Ignore frames arriving "late" for an old size. A frame at the new size
   // should arrive soon.
-  if (!compositor_->widget()->HasFrameOfSize(GetClientAreaSize()))
+  gfx::Size frame_dip_size = gfx::ConvertSizeToDIP(ca_layer_params.scale_factor,
+                                                   ca_layer_params.pixel_size);
+  if (GetClientAreaSize() != frame_dip_size)
     return;
+  compositor_frame_dip_size_ = frame_dip_size;
 
   // Update the DisplayCALayerTree with the most recent CALayerParams, to make
   // the content display on-screen.
-  const gfx::CALayerParams* ca_layer_params =
-      compositor_->widget()->GetCALayerParams();
-  if (ca_layer_params)
-    display_ca_layer_tree_->UpdateCALayerTree(*ca_layer_params);
+  display_ca_layer_tree_->UpdateCALayerTree(ca_layer_params);
 
   if (ca_transaction_sync_suppressed_)
     ca_transaction_sync_suppressed_ = false;
@@ -1237,54 +1194,6 @@ gfx::Size BridgedNativeWidget::GetClientAreaSize() const {
   return gfx::Size(NSWidth(content_rect), NSHeight(content_rect));
 }
 
-void BridgedNativeWidget::CreateCompositor() {
-  DCHECK(!compositor_);
-  DCHECK(ViewsDelegate::GetInstance());
-
-  ui::ContextFactory* context_factory =
-      ViewsDelegate::GetInstance()->GetContextFactory();
-  DCHECK(context_factory);
-  ui::ContextFactoryPrivate* context_factory_private =
-      ViewsDelegate::GetInstance()->GetContextFactoryPrivate();
-
-  AddCompositorSuperview();
-
-  compositor_ = ui::RecyclableCompositorMacFactory::Get()->CreateCompositor(
-      context_factory, context_factory_private);
-  compositor_->widget()->SetNSView(this);
-}
-
-void BridgedNativeWidget::InitCompositor() {
-  TRACE_EVENT0("ui", "BridgedNativeWidget::InitCompositor");
-  DCHECK(layer());
-  float scale_factor = GetDeviceScaleFactorFromView(compositor_superview_);
-  gfx::Size size_in_dip = GetClientAreaSize();
-  compositor_->UpdateSurface(ConvertSizeToPixel(scale_factor, size_in_dip),
-                             scale_factor);
-  compositor_->compositor()->SetRootLayer(layer());
-  compositor_->Unsuspend();
-}
-
-void BridgedNativeWidget::DestroyCompositor() {
-  if (layer()) {
-    // LayerOwner supports a change in ownership, e.g., to animate a closing
-    // window, but that won't work as expected for the root layer in
-    // BridgedNativeWidget.
-    DCHECK_EQ(this, layer()->owner());
-    layer()->CompleteAllAnimations();
-    layer()->SuppressPaint();
-    layer()->set_delegate(nullptr);
-  }
-  DestroyLayer();
-
-  if (!compositor_)
-    return;
-  compositor_->widget()->ResetNSView();
-  compositor_->compositor()->SetRootLayer(nullptr);
-  ui::RecyclableCompositorMacFactory::Get()->RecycleCompositor(
-      std::move(compositor_));
-}
-
 void BridgedNativeWidget::AddCompositorSuperview() {
   DCHECK(!compositor_superview_);
   compositor_superview_.reset(
@@ -1314,18 +1223,18 @@ void BridgedNativeWidget::AddCompositorSuperview() {
   [bridged_view_ addSubview:compositor_superview_];
 }
 
-void BridgedNativeWidget::UpdateLayerProperties() {
-  DCHECK(layer());
-  DCHECK(compositor_superview_);
+void BridgedNativeWidget::UpdateCompositorSizeAndScale() {
+  // Avoid transient updates during initialization by waiting until after
+  // |compositor_superview_| is created.
+  if (!compositor_superview_)
+    return;
   float scale_factor = GetDeviceScaleFactorFromView(compositor_superview_);
   gfx::Size size_in_dip = GetClientAreaSize();
-  gfx::Size size_in_pixel = ConvertSizeToPixel(scale_factor, size_in_dip);
 
   if (!ca_transaction_sync_suppressed_)
     ui::CATransactionCoordinator::Get().Synchronize();
 
-  layer()->SetBounds(gfx::Rect(size_in_dip));
-  compositor_->UpdateSurface(size_in_pixel, scale_factor);
+  host_->SetCompositorSize(size_in_dip, scale_factor);
 
   // For a translucent window, the shadow calculation needs to be carried out
   // after the frame from the compositor arrives.
@@ -1333,37 +1242,13 @@ void BridgedNativeWidget::UpdateLayerProperties() {
     invalidate_shadow_on_frame_swap_ = true;
 }
 
-void BridgedNativeWidget::MaybeWaitForFrame(const gfx::Size& size_in_dip) {
-  return;  // TODO(https://crbug.com/682825): Delete this during cleanup.
-  if (!layer()->IsDrawn() || compositor_->widget()->HasFrameOfSize(size_in_dip))
-    return;
-
-  const int kPaintMsgTimeoutMS = 50;
-  const base::TimeTicks start_time = base::TimeTicks::Now();
-  const base::TimeTicks timeout_time =
-      start_time + base::TimeDelta::FromMilliseconds(kPaintMsgTimeoutMS);
-
-  ui::WindowResizeHelperMac* resize_helper = ui::WindowResizeHelperMac::Get();
-  for (base::TimeTicks now = start_time; now < timeout_time;
-       now = base::TimeTicks::Now()) {
-    if (!resize_helper->WaitForSingleTaskToRun(timeout_time - now))
-      return;  // Timeout.
-
-    // Since the UI thread is blocked, the size shouldn't change.
-    DCHECK(size_in_dip == GetClientAreaSize());
-    if (compositor_->widget()->HasFrameOfSize(size_in_dip))
-      return;  // Frame arrived.
-  }
-}
-
 void BridgedNativeWidget::ShowAsModalSheet() {
   // -[NSApp beginSheet:] will block the UI thread while the animation runs.
   // So that it doesn't animate a fully transparent window, first wait for a
   // frame. The first step is to pretend that the window is already visible.
   window_visible_ = true;
-  UpdateLayerVisibility();
+  UpdateCompositorVisibility();
   native_widget_mac_->GetWidget()->OnNativeWidgetVisibilityChanged(true);
-  MaybeWaitForFrame(GetClientAreaSize());
 
   NSWindow* parent_window = parent_->GetNSWindow();
   DCHECK(parent_window);
@@ -1390,12 +1275,12 @@ NSMutableDictionary* BridgedNativeWidget::GetWindowProperties() const {
   return properties;
 }
 
-void BridgedNativeWidget::UpdateLayerVisibility() {
-  layer()->SetVisible(window_visible_);
-  if (window_visible_)
-    compositor_->Unsuspend();
-  else
-    compositor_->Suspend();
+void BridgedNativeWidget::UpdateCompositorVisibility() {
+  // Avoid transient updates during initialization by waiting until after
+  // |compositor_superview_| is created.
+  if (!compositor_superview_)
+    return;
+  host_->SetCompositorVisibility(window_visible_);
 }
 
 }  // namespace views

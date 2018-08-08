@@ -147,10 +147,7 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
     bridge()->SetFocusManager(focus_manager);
   }
 
-  // "Infer" must be handled by ViewsDelegate::OnBeforeWidgetInit().
-  DCHECK_NE(Widget::InitParams::INFER_OPACITY, params.opacity);
-  bool translucent = params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW;
-  bridge()->CreateLayer(params.layer_type, translucent);
+  bridge_host_->CreateCompositor(params);
 }
 
 void NativeWidgetMac::OnWidgetInitDone() {
@@ -202,12 +199,13 @@ Widget* NativeWidgetMac::GetTopLevelWidget() {
 }
 
 const ui::Compositor* NativeWidgetMac::GetCompositor() const {
-  return bridge() && bridge()->layer() ? bridge()->layer()->GetCompositor()
-                                       : nullptr;
+  return bridge_host_ && bridge_host_->layer()
+             ? bridge_host_->layer()->GetCompositor()
+             : nullptr;
 }
 
 const ui::Layer* NativeWidgetMac::GetLayer() const {
-  return bridge() ? bridge()->layer() : nullptr;
+  return bridge_host_ ? bridge_host_->layer() : nullptr;
 }
 
 void NativeWidgetMac::ReorderNativeViews() {
@@ -583,8 +581,8 @@ void NativeWidgetMac::SchedulePaintInRect(const gfx::Rect& rect) {
   target_rect.origin.y =
       NSHeight(client_rect) - target_rect.origin.y - NSHeight(target_rect);
   [GetNativeView() setNeedsDisplayInRect:target_rect];
-  if (bridge() && bridge()->layer())
-    bridge()->layer()->SchedulePaint(rect);
+  if (bridge_host_ && bridge_host_->layer())
+    bridge_host_->layer()->SchedulePaint(rect);
 }
 
 void NativeWidgetMac::SetCursor(gfx::NativeCursor cursor) {
