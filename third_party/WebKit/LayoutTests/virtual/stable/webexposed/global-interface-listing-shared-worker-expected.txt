@@ -760,6 +760,15 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method moveTo
 [Worker]     method quadraticCurveTo
 [Worker]     method rect
+[Worker] interface PaymentInstruments
+[Worker]     attribute @@toStringTag
+[Worker]     method clear
+[Worker]     method constructor
+[Worker]     method delete
+[Worker]     method get
+[Worker]     method has
+[Worker]     method keys
+[Worker]     method set
 [Worker] interface Performance : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter onresourcetimingbufferfull
@@ -926,6 +935,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter installing
 [Worker]     getter navigationPreload
 [Worker]     getter onupdatefound
+[Worker]     getter paymentManager
 [Worker]     getter pushManager
 [Worker]     getter scope
 [Worker]     getter sync

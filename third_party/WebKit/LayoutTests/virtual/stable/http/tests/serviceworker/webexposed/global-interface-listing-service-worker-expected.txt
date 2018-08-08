@@ -4,6 +4,10 @@ interface AbortController
     getter signal
     method abort
     method constructor
+interface AbortPaymentEvent : ExtendableEvent
+    attribute @@toStringTag
+    method constructor
+    method respondWith
 interface AbortSignal : EventTarget
     attribute @@toStringTag
     getter aborted
@@ -51,6 +55,14 @@ interface CacheStorage
     method keys
     method match
     method open
+interface CanMakePaymentEvent : ExtendableEvent
+    attribute @@toStringTag
+    getter methodData
+    getter modifiers
+    getter paymentRequestOrigin
+    getter topOrigin
+    method constructor
+    method respondWith
 interface CanvasGradient
     attribute @@toStringTag
     method addColorStop
@@ -790,6 +802,27 @@ interface Path2D
     method moveTo
     method quadraticCurveTo
     method rect
+interface PaymentInstruments
+    attribute @@toStringTag
+    method clear
+    method constructor
+    method delete
+    method get
+    method has
+    method keys
+    method set
+interface PaymentRequestEvent : ExtendableEvent
+    attribute @@toStringTag
+    getter instrumentKey
+    getter methodData
+    getter modifiers
+    getter paymentRequestId
+    getter paymentRequestOrigin
+    getter topOrigin
+    getter total
+    method constructor
+    method openWindow
+    method respondWith
 interface Performance : EventTarget
     attribute @@toStringTag
     getter onresourcetimingbufferfull
@@ -964,6 +997,7 @@ interface ServiceWorkerRegistration : EventTarget
     getter installing
     getter navigationPreload
     getter onupdatefound
+    getter paymentManager
     getter pushManager
     getter scope
     getter sync
@@ -2440,24 +2474,30 @@ interface WritableStream
     attribute console
     attribute internals
     getter clients
+    getter onabortpayment
     getter onactivate
+    getter oncanmakepayment
     getter onfetch
     getter oninstall
     getter onmessage
     getter onnotificationclick
     getter onnotificationclose
+    getter onpaymentrequest
     getter onpush
     getter onsync
     getter registration
     method fetch
     method gc
     method skipWaiting
+    setter onabortpayment
     setter onactivate
+    setter oncanmakepayment
     setter onfetch
     setter oninstall
     setter onmessage
     setter onnotificationclick
     setter onnotificationclose
+    setter onpaymentrequest
     setter onpush
     setter onsync
 PASS Verify the interface of ServiceWorkerGlobalScope

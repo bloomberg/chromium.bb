@@ -373,8 +373,8 @@ const base::Feature kSecMetadata{"SecMetadata",
 
 // Service worker based payment apps as defined by w3c here:
 // https://w3c.github.io/webpayments-payment-apps-api/
-const base::Feature kServiceWorkerPaymentApps{
-    "ServiceWorkerPaymentApps", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kServiceWorkerPaymentApps{"ServiceWorkerPaymentApps",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Generate V8 full code cache of service worker scripts.
 const base::Feature kServiceWorkerScriptFullCodeCache{

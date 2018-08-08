@@ -9,6 +9,7 @@
 #include "base/guid.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -16,6 +17,7 @@
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/test_content_payment_request_delegate.h"
 #include "components/payments/core/journey_logger.h"
+#include "content/public/common/content_features.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/payments/payment_request.mojom.h"
@@ -33,6 +35,8 @@ class PaymentRequestStateTest : public testing::Test,
                         ukm::UkmRecorder::GetNewSourceID()),
         address_(autofill::test::GetFullProfile()),
         credit_card_visa_(autofill::test::GetCreditCard()) {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kServiceWorkerPaymentApps);
     test_personal_data_manager_.SetAutofillCreditCardEnabled(true);
     test_personal_data_manager_.SetAutofillProfileEnabled(true);
     test_personal_data_manager_.SetAutofillWalletImportEnabled(true);
@@ -119,6 +123,7 @@ class PaymentRequestStateTest : public testing::Test,
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<PaymentRequestState> state_;
   std::unique_ptr<PaymentRequestSpec> spec_;
   int num_on_selected_information_changed_called_;
