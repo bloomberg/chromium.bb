@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen_view.h"
 #include "components/sync/driver/sync_service_observer.h"
@@ -32,6 +33,26 @@ class SyncConsentScreen : public BaseScreen,
   };
 
  public:
+  class SyncConsentScreenTestDelegate {
+   public:
+    SyncConsentScreenTestDelegate() = default;
+
+    // This is called from SyncConsentScreen when user consent is passed to
+    // consent auditor with resource ids recorder as consent.
+    virtual void OnConsentRecordedIds(
+        const std::vector<int>& consent_description,
+        const int consent_confirmation) = 0;
+
+    // This is called from SyncConsentScreenHandler when user consent is passed
+    // to consent auditor with resource strings recorder as consent.
+    virtual void OnConsentRecordedStrings(
+        const ::login::StringList& consent_description,
+        const std::string& consent_confirmation) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(SyncConsentScreenTestDelegate);
+  };
+
   SyncConsentScreen(BaseScreenDelegate* base_screen_delegate,
                     SyncConsentScreenView* view);
   ~SyncConsentScreen() override;
@@ -44,12 +65,41 @@ class SyncConsentScreen : public BaseScreen,
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
 
+  // Reacts to "Continue and review settings after sign-in"
+  void OnContinueAndReview(const std::vector<int>& consent_description,
+                           const int consent_confirmation);
+
+  // Reacts to "Continue with default settings"
+  void OnContinueWithDefaults(const std::vector<int>& consent_description,
+                              const int consent_confirmation);
+
+  // Sets internal condition "Sync disabled by policy" for tests.
+  void SetProfileSyncDisabledByPolicyForTesting(bool value);
+
+  // Sets internal condition "Sync engine initialized" for tests.
+  void SetProfileSyncEngineInitializedForTesting(bool value);
+
+  // Test API.
+  void SetDelegateForTesting(
+      SyncConsentScreen::SyncConsentScreenTestDelegate* delegate);
+  SyncConsentScreenTestDelegate* GetDelegateForTesting() const;
+
  private:
   // Returns new SyncScreenBehavior value.
   SyncScreenBehavior GetSyncScreenBehavior() const;
 
   // Calculates updated |behavior_| and performs required update actions.
   void UpdateScreen();
+
+  // Records user Sync consent.
+  void RecordConsent(const std::vector<int>& consent_description,
+                     const int consent_confirmation);
+
+  // Returns true if profile sync is disabled by policy.
+  bool IsProfileSyncDisabledByPolicy() const;
+
+  // Returns true if profile sync has finished initialization.
+  bool IsProfileSyncEngineInitialized() const;
 
   // Controls screen appearance.
   // Spinner is shown until sync status has been decided.
@@ -63,6 +113,12 @@ class SyncConsentScreen : public BaseScreen,
 
   // True when screen is shown.
   bool shown_ = false;
+
+  base::Optional<bool> test_sync_disabled_by_policy_;
+  base::Optional<bool> test_sync_engine_initialized_;
+
+  // Notify tests.
+  SyncConsentScreenTestDelegate* test_delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SyncConsentScreen);
 };
