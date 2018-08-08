@@ -4216,7 +4216,7 @@ WebGLSync* WebGL2RenderingContextBase::fenceSync(GLenum condition,
 }
 
 GLboolean WebGL2RenderingContextBase::isSync(WebGLSync* sync) {
-  if (isContextLost() || !sync)
+  if (isContextLost() || !sync || !sync->Validate(ContextGroup(), this))
     return 0;
 
   return sync->Object() != 0;

@@ -43,10 +43,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Conformance expectations
     # ========================
 
-    # Failing new test added in https://github.com/KhronosGroup/WebGL/pull/2654
-    self.Fail('conformance2/context/incorrect-context-object-behaviour.html',
-        bug=857303)
-
     # Failing new test added in https://github.com/KhronosGroup/WebGL/pull/2665
     self.Fail('conformance2/textures/misc/tex-subimage3d-canvas-bug.html',
               ['linux'], bug=859400)
