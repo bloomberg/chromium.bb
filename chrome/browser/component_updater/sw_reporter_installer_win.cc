@@ -275,80 +275,6 @@ bool ExtractInvocationSequenceFromManifest(
   return true;
 }
 
-// Check if we have information from the Cleaner and record UMA statistics.
-void ReportUMAForLastCleanerRun() {
-  base::string16 cleaner_key_name(
-      chrome_cleaner::kSoftwareRemovalToolRegistryKey);
-  cleaner_key_name.append(1, L'\\').append(chrome_cleaner::kCleanerSubKey);
-  base::win::RegKey cleaner_key(HKEY_CURRENT_USER, cleaner_key_name.c_str(),
-                                KEY_ALL_ACCESS);
-  // Cleaner is assumed to have run if we have a start time.
-  if (cleaner_key.Valid()) {
-    if (cleaner_key.HasValue(chrome_cleaner::kStartTimeValueName)) {
-      // Get version number.
-      if (cleaner_key.HasValue(chrome_cleaner::kVersionValueName)) {
-        DWORD version;
-        cleaner_key.ReadValueDW(chrome_cleaner::kVersionValueName, &version);
-        base::UmaHistogramSparse("SoftwareReporter.Cleaner.Version", version);
-        cleaner_key.DeleteValue(chrome_cleaner::kVersionValueName);
-      }
-      // Get start & end time. If we don't have an end time, we can assume the
-      // cleaner has not completed.
-      int64_t start_time_value;
-      cleaner_key.ReadInt64(chrome_cleaner::kStartTimeValueName,
-                            &start_time_value);
-
-      bool completed = cleaner_key.HasValue(chrome_cleaner::kEndTimeValueName);
-      SRTHasCompleted(completed ? SRT_COMPLETED_YES : SRT_COMPLETED_NOT_YET);
-      if (completed) {
-        int64_t end_time_value;
-        cleaner_key.ReadInt64(chrome_cleaner::kEndTimeValueName,
-                              &end_time_value);
-        cleaner_key.DeleteValue(chrome_cleaner::kEndTimeValueName);
-        base::TimeDelta run_time(
-            base::Time::FromInternalValue(end_time_value) -
-            base::Time::FromInternalValue(start_time_value));
-        UMA_HISTOGRAM_LONG_TIMES("SoftwareReporter.Cleaner.RunningTime",
-                                 run_time);
-      }
-      // Get exit code. Assume nothing was found if we can't read the exit code.
-      DWORD exit_code = chrome_cleaner::kSwReporterNothingFound;
-      if (cleaner_key.HasValue(chrome_cleaner::kExitCodeValueName)) {
-        cleaner_key.ReadValueDW(chrome_cleaner::kExitCodeValueName, &exit_code);
-        base::UmaHistogramSparse("SoftwareReporter.Cleaner.ExitCode",
-                                 exit_code);
-        cleaner_key.DeleteValue(chrome_cleaner::kExitCodeValueName);
-      }
-      cleaner_key.DeleteValue(chrome_cleaner::kStartTimeValueName);
-
-      if (exit_code == chrome_cleaner::kSwReporterPostRebootCleanupNeeded ||
-          exit_code ==
-              chrome_cleaner::kSwReporterDelayedPostRebootCleanupNeeded) {
-        // Check if we are running after the user has rebooted.
-        base::TimeDelta elapsed(
-            base::Time::Now() -
-            base::Time::FromInternalValue(start_time_value));
-        DCHECK_GT(elapsed.InMilliseconds(), 0);
-        UMA_HISTOGRAM_BOOLEAN(
-            "SoftwareReporter.Cleaner.HasRebooted",
-            static_cast<uint64_t>(elapsed.InMilliseconds()) > ::GetTickCount());
-      }
-
-      if (cleaner_key.HasValue(chrome_cleaner::kUploadResultsValueName)) {
-        base::string16 upload_results;
-        cleaner_key.ReadValue(chrome_cleaner::kUploadResultsValueName,
-                              &upload_results);
-        ReportUploadsWithUma(upload_results);
-      }
-    } else {
-      if (cleaner_key.HasValue(chrome_cleaner::kEndTimeValueName)) {
-        SRTHasCompleted(SRT_COMPLETED_LATER);
-        cleaner_key.DeleteValue(chrome_cleaner::kEndTimeValueName);
-      }
-    }
-  }
-}
-
 void ReportOnDemandUpdateSucceededHistogram(bool value) {
   UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.OnDemandUpdateSucceeded", value);
 }
@@ -522,6 +448,79 @@ void RegisterProfilePrefsForSwReporter(
   registry->RegisterStringPref(prefs::kSwReporterPromptVersion, "");
 
   registry->RegisterStringPref(prefs::kSwReporterPromptSeed, "");
+}
+
+void ReportUMAForLastCleanerRun() {
+  base::string16 cleaner_key_name =
+      chrome_cleaner::kSoftwareRemovalToolRegistryKey;
+  cleaner_key_name.append(1, L'\\').append(chrome_cleaner::kCleanerSubKey);
+  base::win::RegKey cleaner_key(HKEY_CURRENT_USER, cleaner_key_name.c_str(),
+                                KEY_ALL_ACCESS);
+  // Cleaner is assumed to have run if we have a start time.
+  if (cleaner_key.Valid()) {
+    if (cleaner_key.HasValue(chrome_cleaner::kStartTimeValueName)) {
+      // Get version number.
+      if (cleaner_key.HasValue(chrome_cleaner::kVersionValueName)) {
+        DWORD version = {};
+        cleaner_key.ReadValueDW(chrome_cleaner::kVersionValueName, &version);
+        base::UmaHistogramSparse("SoftwareReporter.Cleaner.Version", version);
+        cleaner_key.DeleteValue(chrome_cleaner::kVersionValueName);
+      }
+      // Get start & end time. If we don't have an end time, we can assume the
+      // cleaner has not completed.
+      int64_t start_time_value = {};
+      cleaner_key.ReadInt64(chrome_cleaner::kStartTimeValueName,
+                            &start_time_value);
+
+      const bool completed =
+          cleaner_key.HasValue(chrome_cleaner::kEndTimeValueName);
+      SRTHasCompleted(completed ? SRT_COMPLETED_YES : SRT_COMPLETED_NOT_YET);
+      if (completed) {
+        int64_t end_time_value = {};
+        cleaner_key.ReadInt64(chrome_cleaner::kEndTimeValueName,
+                              &end_time_value);
+        cleaner_key.DeleteValue(chrome_cleaner::kEndTimeValueName);
+        const base::TimeDelta run_time =
+            base::Time::FromInternalValue(end_time_value) -
+            base::Time::FromInternalValue(start_time_value);
+        UMA_HISTOGRAM_LONG_TIMES("SoftwareReporter.Cleaner.RunningTime",
+                                 run_time);
+      }
+      // Get exit code. Assume nothing was found if we can't read the exit code.
+      DWORD exit_code = chrome_cleaner::kSwReporterNothingFound;
+      if (cleaner_key.HasValue(chrome_cleaner::kExitCodeValueName)) {
+        cleaner_key.ReadValueDW(chrome_cleaner::kExitCodeValueName, &exit_code);
+        base::UmaHistogramSparse("SoftwareReporter.Cleaner.ExitCode",
+                                 exit_code);
+        cleaner_key.DeleteValue(chrome_cleaner::kExitCodeValueName);
+      }
+      cleaner_key.DeleteValue(chrome_cleaner::kStartTimeValueName);
+
+      if (exit_code == chrome_cleaner::kSwReporterPostRebootCleanupNeeded ||
+          exit_code ==
+              chrome_cleaner::kSwReporterDelayedPostRebootCleanupNeeded) {
+        // Check if we are running after the user has rebooted.
+        const base::TimeDelta elapsed =
+            base::Time::Now() - base::Time::FromInternalValue(start_time_value);
+        DCHECK_GT(elapsed.InMilliseconds(), 0);
+        UMA_HISTOGRAM_BOOLEAN(
+            "SoftwareReporter.Cleaner.HasRebooted",
+            static_cast<uint64_t>(elapsed.InMilliseconds()) > ::GetTickCount());
+      }
+
+      if (cleaner_key.HasValue(chrome_cleaner::kUploadResultsValueName)) {
+        base::string16 upload_results;
+        cleaner_key.ReadValue(chrome_cleaner::kUploadResultsValueName,
+                              &upload_results);
+        ReportUploadsWithUma(upload_results);
+      }
+    } else {
+      if (cleaner_key.HasValue(chrome_cleaner::kEndTimeValueName)) {
+        SRTHasCompleted(SRT_COMPLETED_LATER);
+        cleaner_key.DeleteValue(chrome_cleaner::kEndTimeValueName);
+      }
+    }
+  }
 }
 
 }  // namespace component_updater
