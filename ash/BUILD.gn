@@ -1823,6 +1823,7 @@ test("ash_unittests") {
     "system/enterprise/tray_enterprise_unittest.cc",
     "system/flag_warning/flag_warning_tray_unittest.cc",
     "system/ime/tray_ime_chromeos_unittest.cc",
+    "system/ime/ime_feature_pod_controller_unittest.cc",
     "system/ime_menu/ime_menu_tray_unittest.cc",
     "system/keyboard_brightness/tray_keyboard_brightness_unittest.cc",
     "system/media_security/multi_profile_media_tray_item_unittest.cc",

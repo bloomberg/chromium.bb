@@ -8,6 +8,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -53,9 +54,13 @@ base::string16 GetTooltipString() {
 
 IMEFeaturePodController::IMEFeaturePodController(
     UnifiedSystemTrayController* tray_controller)
-    : tray_controller_(tray_controller) {}
+    : tray_controller_(tray_controller) {
+  Shell::Get()->system_tray_notifier()->AddIMEObserver(this);
+}
 
-IMEFeaturePodController::~IMEFeaturePodController() = default;
+IMEFeaturePodController::~IMEFeaturePodController() {
+  Shell::Get()->system_tray_notifier()->RemoveIMEObserver(this);
+}
 
 FeaturePodButton* IMEFeaturePodController::CreateButton() {
   button_ = new FeaturePodButton(this);
@@ -74,6 +79,14 @@ void IMEFeaturePodController::OnIconPressed() {
 
 SystemTrayItemUmaType IMEFeaturePodController::GetUmaType() const {
   return SystemTrayItemUmaType::UMA_IME;
+}
+
+void IMEFeaturePodController::OnIMERefresh() {
+  Update();
+}
+
+void IMEFeaturePodController::OnIMEMenuActivationChanged(bool is_activated) {
+  Update();
 }
 
 void IMEFeaturePodController::Update() {
