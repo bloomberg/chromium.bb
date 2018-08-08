@@ -125,18 +125,11 @@ using views::View;
 // Maximum size of buttons on the bookmark bar.
 static const int kBookmarkBarMaxButtonWidth = 150;
 
-// Margins around the content.
-// When attached, we use 0 and let the
-// toolbar above serve as the margin.
-static const int kBookmarkBarDetachedTopMargin = 1;
-static const int kBookmarkBarBottomMargin = 4;
+// Margin around the content.
 static const int kBookmarkBarHorizontalMargin = 8;
 
 // Width of the drop indicator.
 static const int kBookmarkBarDropIndicatorWidth = 2;
-
-// Distance between the bottom of the bar and the separator.
-static const int kBookmarkBarSeparatorMargin = 1;
 
 // Width of the separator between the recently bookmarked button and the
 // overflow indicator.
@@ -689,6 +682,13 @@ void BookmarkBarView::SetPageNavigator(PageNavigator* navigator) {
     context_menu_->SetPageNavigator(navigator);
 }
 
+void BookmarkBarView::SetInfoBarVisible(bool infobar_visible) {
+  if (infobar_visible == infobar_visible_)
+    return;
+  InvalidateLayout();
+  infobar_visible_ = infobar_visible;
+}
+
 void BookmarkBarView::SetBookmarkBarState(
     BookmarkBar::State state,
     BookmarkBar::AnimateChangeType animate_type) {
@@ -944,23 +944,14 @@ void BookmarkBarView::Layout() {
     return;
 
   int x = kBookmarkBarHorizontalMargin;
-  int top_margin = IsDetached() ? kBookmarkBarDetachedTopMargin : 0;
-  int y = top_margin;
   int width = View::width() - 2 * kBookmarkBarHorizontalMargin;
-  int preferred_height = GetPreferredHeight();
-  int height = preferred_height - kBookmarkBarBottomMargin;
-  int separator_margin = kBookmarkBarSeparatorMargin;
 
-  if (IsDetached()) {
-    double current_state = 1 - size_animation_.GetCurrentValue();
-    y += (View::height() - preferred_height) / 2;
-    separator_margin -=
-        static_cast<int>(kBookmarkBarSeparatorMargin * current_state);
-  } else {
-    // For the attached appearance, pin the content to the bottom of the bar
-    // when animating in/out, as shrinking its height instead looks weird.  This
-    // also matches how we layout infobars.
-    y += View::height() - preferred_height;
+  int height = GetPreferredHeight();
+  int y = (GetContentsBounds().height() - height) / 2;
+
+  if (browser_view_) {
+    height -= browser_view_->GetAdditionalBookmarkBarBottomMargin();
+    y += browser_view_->GetAdditionalBookmarkBarTopMargin();
   }
 
   gfx::Size other_bookmarks_pref = other_bookmarks_button_->visible() ?
@@ -1045,9 +1036,8 @@ void BookmarkBarView::Layout() {
 
   // Separator.
   if (bookmarks_separator_view_->visible()) {
-    bookmarks_separator_view_->SetBounds(
-        x, y - top_margin, bookmarks_separator_pref.width(),
-        height + top_margin + kBookmarkBarBottomMargin - separator_margin);
+    bookmarks_separator_view_->SetBounds(x, y, bookmarks_separator_pref.width(),
+                                         height);
 
     x += bookmarks_separator_pref.width();
   }

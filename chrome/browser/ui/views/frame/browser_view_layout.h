@@ -82,6 +82,9 @@ class BrowserViewLayout : public views::LayoutManager {
   void Layout(views::View* host) override;
   gfx::Size GetPreferredSize(const views::View* host) const override;
 
+  // Returns true if an infobar is showing.
+  bool IsInfobarVisible() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserViewLayoutTest, BrowserViewLayout);
   FRIEND_TEST_ALL_PREFIXES(BrowserViewLayoutTest, Layout);
@@ -107,10 +110,6 @@ class BrowserViewLayout : public views::LayoutManager {
   // the bookmark bar and the toolbar.
   void UpdateTopContainerBounds();
 
-  // Returns the vertical offset for the web contents to account for a
-  // detached bookmarks bar.
-  int GetContentsOffsetForBookmarkBar();
-
   // Returns the top margin to adjust the contents_container_ by. This is used
   // to make the bookmark bar and contents_container_ overlap so that the
   // preview contents hides the bookmark bar.
@@ -119,9 +118,6 @@ class BrowserViewLayout : public views::LayoutManager {
   // Layout the Download Shelf, returns the coordinate of the top of the
   // control, for laying out the previous control.
   int LayoutDownloadShelf(int bottom);
-
-  // Returns true if an infobar is showing.
-  bool InfobarVisible() const;
 
   // The delegate interface. May be a mock in tests.
   std::unique_ptr<BrowserViewLayoutDelegate> delegate_;

@@ -567,7 +567,6 @@ void ToolbarView::Layout() {
   const int location_y = (height() - location_height) / 2;
   location_bar_->SetBounds(next_element_x, location_y,
                            location_bar_width, location_height);
-
   next_element_x = location_bar_->bounds().right();
 
   // Note height() may be zero in fullscreen.

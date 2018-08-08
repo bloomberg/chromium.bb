@@ -95,9 +95,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
 
   // Sets whether the containing browser is showing an infobar.  This affects
   // layout during animation.
-  void set_infobar_visible(bool infobar_visible) {
-    infobar_visible_ = infobar_visible;
-  }
+  void SetInfoBarVisible(bool infobar_visible);
 
   // Changes the state of the bookmark bar.
   void SetBookmarkBarState(BookmarkBar::State state,

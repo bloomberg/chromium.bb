@@ -736,12 +736,12 @@ void BrowserView::BookmarkBarStateChanged(
     // We don't properly support animating the bookmark bar to and from the
     // detached state in immersive fullscreen.
     bool detached_changed = (new_state == BookmarkBar::DETACHED) ||
-        bookmark_bar_view_->IsDetached();
+                            bookmark_bar_view_->IsDetached();
     if (detached_changed && immersive_mode_controller_->IsEnabled())
       change_type = BookmarkBar::DONT_ANIMATE_STATE_CHANGE;
-
     bookmark_bar_view_->SetBookmarkBarState(new_state, change_type);
   }
+
   if (MaybeShowBookmarkBar(GetActiveWebContents()))
     Layout();
 }
@@ -1108,8 +1108,7 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
 
 void BrowserView::FocusBookmarksToolbar() {
   DCHECK(!immersive_mode_controller_->IsEnabled());
-  if (bookmark_bar_view_.get() &&
-      bookmark_bar_view_->visible() &&
+  if (bookmark_bar_view_ && bookmark_bar_view_->visible() &&
       bookmark_bar_view_->GetPreferredSize().height() != 0) {
     bookmark_bar_view_->SetPaneFocusAndFocusDefault();
   }
@@ -1169,7 +1168,7 @@ void BrowserView::DestroyBrowser() {
 bool BrowserView::IsBookmarkBarVisible() const {
   if (!browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR))
     return false;
-  if (!bookmark_bar_view_.get())
+  if (!bookmark_bar_view_)
     return false;
   if (!bookmark_bar_view_->parent())
     return false;
@@ -1204,6 +1203,10 @@ bool BrowserView::IsToolbarVisible() const {
 
 bool BrowserView::IsToolbarShowing() const {
   return IsToolbarVisible();
+}
+
+bool BrowserView::IsInfoBarVisible() const {
+  return GetBrowserViewLayout()->IsInfobarVisible();
 }
 
 void BrowserView::ShowUpdateChromeDialog() {
@@ -1780,6 +1783,33 @@ FullscreenControlHost* BrowserView::GetFullscreenControlHost() {
   }
 
   return fullscreen_control_host_.get();
+}
+
+int BrowserView::GetAdditionalBookmarkBarBottomMargin() {
+  // If the bookmark bar is attached, the bottom inset should be the same as the
+  // height between the bottom of the location bar to the bottom of the toolbar,
+  // taking into account the overlap between the bookmark bar and toolbar.
+  if (toolbar_ && bookmark_bar_view_.get() &&
+      !bookmark_bar_view_->IsDetached()) {
+    return (toolbar_->height() - GetLocationBarView()->height() -
+            bookmark_bar_view_->GetToolbarOverlap()) /
+           2;
+  }
+  return 0;
+}
+
+int BrowserView::GetAdditionalBookmarkBarTopMargin() {
+  // If the infobar is being displayed and the bookmark is detached, there
+  // should be an additional inset at the top to center the bookmarks a bit
+  // below the shadow of the infobar.
+  if (IsInfoBarVisible() && bookmark_bar_view_.get() &&
+      bookmark_bar_view_->IsDetached()) {
+    // 2 is roughly the number of visible pixels of the shadow over the bookmark
+    // bar, so if we shift the top of the bookmark buttons down by this value,
+    // it will appear centered.
+    return 2;
+  }
+  return 0;
 }
 
 views::View* BrowserView::GetInitiallyFocusedView() {

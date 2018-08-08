@@ -163,9 +163,9 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   EXPECT_EQ(tabstrip->bounds().bottom() + toolbar->height() -
                 GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP),
             bookmark_bar->y());
-  EXPECT_EQ(toolbar->bounds().bottom(), contents_container->y());
-  EXPECT_EQ(bookmark_bar->height(), devtools_web_view->y());
-  EXPECT_EQ(bookmark_bar->height(), contents_web_view->y());
+  EXPECT_EQ(bookmark_bar->height() + bookmark_bar->y(),
+            contents_container->y());
+  EXPECT_EQ(contents_web_view->y(), devtools_web_view->y());
 
   // Bookmark bar is parented back to top container on normal page.
   NavigateAndCommitActiveTabWithTitle(browser,
