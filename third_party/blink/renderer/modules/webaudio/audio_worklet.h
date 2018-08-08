@@ -24,8 +24,6 @@ class MODULES_EXPORT AudioWorklet final : public Worklet {
   WTF_MAKE_NONCOPYABLE(AudioWorklet);
 
  public:
-  // When the AudioWorklet runtime flag is not enabled, this constructor returns
-  // |nullptr|.
   static AudioWorklet* Create(BaseAudioContext*);
 
   ~AudioWorklet() override = default;
