@@ -84,7 +84,8 @@ int BrowserDesktopWindowTreeHostWin::GetInitialShowState() const {
 }
 
 bool BrowserDesktopWindowTreeHostWin::GetClientAreaInsets(
-    gfx::Insets* insets) const {
+    gfx::Insets* insets,
+    HMONITOR monitor) const {
   // Always use default insets for opaque frame.
   if (!ShouldUseNativeFrame())
     return false;
@@ -100,8 +101,8 @@ bool BrowserDesktopWindowTreeHostWin::GetClientAreaInsets(
     *insets = gfx::Insets();
   } else {
     const int frame_thickness =
-        display::win::ScreenWin::GetSystemMetricsForHwnd(
-            GetHWND(), SM_CXSIZEFRAME);
+        display::win::ScreenWin::GetSystemMetricsForMonitor(monitor,
+                                                            SM_CXSIZEFRAME);
     // Reduce the Windows non-client border size because we extend the border
     // into our client area in UpdateDWMFrame(). The top inset must be 0 or
     // else Windows will draw a full native titlebar outside the client area.
@@ -191,7 +192,9 @@ void BrowserDesktopWindowTreeHostWin::PostHandleMSG(UINT message,
     }
     case WM_ERASEBKGND: {
       gfx::Insets insets;
-      if (!did_gdi_clear_ && GetClientAreaInsets(&insets)) {
+      if (!did_gdi_clear_ &&
+          GetClientAreaInsets(
+              &insets, MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST))) {
         // This is necessary to avoid white flashing in the titlebar area around
         // the minimize/maximize/close buttons.
         DCHECK_EQ(0, insets.top());

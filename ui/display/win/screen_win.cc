@@ -41,12 +41,12 @@ float GetMonitorScaleFactor(HMONITOR monitor) {
     return Display::GetForcedDeviceScaleFactor();
 
   if (base::win::IsProcessPerMonitorDpiAware()) {
-    static auto get_dpi_for_monitor_func = [](){
+    static auto get_dpi_for_monitor_func = []() {
       using GetDpiForMonitorPtr = decltype(::GetDpiForMonitor)*;
       HMODULE shcore_dll = ::LoadLibrary(L"shcore.dll");
       if (shcore_dll) {
         return reinterpret_cast<GetDpiForMonitorPtr>(
-                   ::GetProcAddress(shcore_dll, "GetDpiForMonitor"));
+            ::GetProcAddress(shcore_dll, "GetDpiForMonitor"));
       }
       return static_cast<GetDpiForMonitorPtr>(nullptr);
     }();
@@ -54,8 +54,8 @@ float GetMonitorScaleFactor(HMONITOR monitor) {
     UINT dpi_x;
     UINT dpi_y;
     if (get_dpi_for_monitor_func &&
-        SUCCEEDED(get_dpi_for_monitor_func(monitor, MDT_EFFECTIVE_DPI,
-                                           &dpi_x, &dpi_y))) {
+        SUCCEEDED(get_dpi_for_monitor_func(monitor, MDT_EFFECTIVE_DPI, &dpi_x,
+                                           &dpi_y))) {
       DCHECK_EQ(dpi_x, dpi_y);
       return GetScalingFactorFromDPI(dpi_x);
     }
@@ -300,6 +300,34 @@ ScreenWin::~ScreenWin() {
 }
 
 // static
+int ScreenWin::GetSystemMetricsForScaleFactor(float scale_factor, int metric) {
+  if (base::win::IsProcessPerMonitorDpiAware()) {
+    static auto get_metric_for_dpi_func = []() {
+      using GetSystemMetricsForDpiPtr = decltype(::GetSystemMetricsForDpi)*;
+      HMODULE user32_dll = ::LoadLibrary(L"user32.dll");
+      if (user32_dll) {
+        return reinterpret_cast<GetSystemMetricsForDpiPtr>(
+            ::GetProcAddress(user32_dll, "GetSystemMetricsForDpi"));
+      }
+      return static_cast<GetSystemMetricsForDpiPtr>(nullptr);
+    }();
+
+    if (get_metric_for_dpi_func) {
+      return get_metric_for_dpi_func(metric,
+                                     GetDPIFromScalingFactor(scale_factor));
+    }
+  }
+
+  // Fallback for when we're running Windows 8.1, which doesn't support
+  // GetSystemMetricsForDpi and yet does support per-process dpi awareness.
+  Display primary_display(g_screen_win_instance->GetPrimaryDisplay());
+  int system_metrics_result = g_screen_win_instance->GetSystemMetrics(metric);
+
+  return static_cast<int>(std::round(scale_factor * system_metrics_result /
+                                     primary_display.device_scale_factor()));
+}
+
+// static
 gfx::PointF ScreenWin::ScreenToDIPPoint(const gfx::PointF& pixel_point) {
   const ScreenWinDisplay screen_win_display =
       GetScreenWinDisplayVia(&ScreenWin::GetScreenWinDisplayNearestScreenPoint,
@@ -389,19 +417,28 @@ gfx::Size ScreenWin::DIPToScreenSize(HWND hwnd, const gfx::Size& dip_size) {
 
 // static
 int ScreenWin::GetSystemMetricsForHwnd(HWND hwnd, int metric) {
-  // GetSystemMetrics returns screen values based off of the primary monitor's
-  // DPI. This will further scale based off of the DPI for |hwnd|.
   if (!g_screen_win_instance)
     return ::GetSystemMetrics(metric);
 
   Display primary_display(g_screen_win_instance->GetPrimaryDisplay());
-  int system_metrics_result = g_screen_win_instance->GetSystemMetrics(metric);
 
-  float metrics_relative_scale_factor = hwnd
-      ? GetScaleFactorForHWND(hwnd) / primary_display.device_scale_factor()
-      : 1.0f;
-  return static_cast<int>(std::round(
-      system_metrics_result * metrics_relative_scale_factor));
+  return GetSystemMetricsForScaleFactor(
+      hwnd ? GetScaleFactorForHWND(hwnd)
+           : primary_display.device_scale_factor(),
+      metric);
+}
+
+// static
+int ScreenWin::GetSystemMetricsForMonitor(HMONITOR monitor, int metric) {
+  if (!g_screen_win_instance)
+    return ::GetSystemMetrics(metric);
+
+  Display primary_display(g_screen_win_instance->GetPrimaryDisplay());
+
+  return GetSystemMetricsForScaleFactor(
+      monitor ? GetMonitorScaleFactor(monitor)
+              : primary_display.device_scale_factor(),
+      metric);
 }
 
 // static
@@ -409,12 +446,7 @@ int ScreenWin::GetSystemMetricsInDIP(int metric) {
   if (!g_screen_win_instance)
     return ::GetSystemMetrics(metric);
 
-  // GetSystemMetrics returns screen values based off of the primary monitor's
-  // DPI.
-  Display primary_display(g_screen_win_instance->GetPrimaryDisplay());
-  int system_metrics_result = g_screen_win_instance->GetSystemMetrics(metric);
-  return static_cast<int>(std::round(
-      system_metrics_result / primary_display.device_scale_factor()));
+  return GetSystemMetricsForScaleFactor(1.0f, metric);
 }
 
 // static

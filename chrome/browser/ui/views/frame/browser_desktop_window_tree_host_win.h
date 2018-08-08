@@ -42,7 +42,8 @@ class BrowserDesktopWindowTreeHostWin : public BrowserDesktopWindowTreeHost,
 
   // Overridden from DesktopWindowTreeHostWin:
   int GetInitialShowState() const override;
-  bool GetClientAreaInsets(gfx::Insets* insets) const override;
+  bool GetClientAreaInsets(gfx::Insets* insets,
+                           HMONITOR monitor) const override;
   void HandleCreate() override;
   void HandleDestroying() override;
   void HandleFrameChanged() override;

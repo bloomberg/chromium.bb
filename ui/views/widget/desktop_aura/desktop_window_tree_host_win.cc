@@ -729,7 +729,8 @@ void DesktopWindowTreeHostWin::GetWindowMask(const gfx::Size& size,
   }
 }
 
-bool DesktopWindowTreeHostWin::GetClientAreaInsets(gfx::Insets* insets) const {
+bool DesktopWindowTreeHostWin::GetClientAreaInsets(gfx::Insets* insets,
+                                                   HMONITOR monitor) const {
   return false;
 }
 

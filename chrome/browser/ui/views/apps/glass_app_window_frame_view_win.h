@@ -20,8 +20,11 @@ class GlassAppWindowFrameViewWin : public views::NonClientFrameView {
   // The insets to the client area due to the glass frame.
   gfx::Insets GetGlassInsets() const;
 
-  // Additional insets to the client area.
-  gfx::Insets GetClientAreaInsets() const;
+  // Additional insets to the client area.  |monitor| is the monitor this
+  // window is on.  Normally that would be determined from the HWND, but
+  // during WM_NCCALCSIZE Windows does not return the correct monitor for the
+  // HWND, so it must be passed in explicitly.
+  gfx::Insets GetClientAreaInsets(HMONITOR monitor) const;
 
  private:
   // views::NonClientFrameView implementation.
