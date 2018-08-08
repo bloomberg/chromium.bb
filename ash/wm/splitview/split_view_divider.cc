@@ -398,7 +398,7 @@ void SplitViewDivider::RemoveObservedWindow(aura::Window* window) {
 
 void SplitViewDivider::OnWindowDragStarted(aura::Window* dragged_window) {
   is_dragging_window_ = true;
-  divider_widget_->SetAlwaysOnTop(false);
+  SetAlwaysOnTop(false);
   // Make sure |divider_widget_| is placed below the dragged window.
   dragged_window->parent()->StackChildBelow(divider_widget_->GetNativeWindow(),
                                             dragged_window);
@@ -406,7 +406,7 @@ void SplitViewDivider::OnWindowDragStarted(aura::Window* dragged_window) {
 
 void SplitViewDivider::OnWindowDragEnded() {
   is_dragging_window_ = false;
-  divider_widget_->SetAlwaysOnTop(true);
+  SetAlwaysOnTop(true);
 }
 
 void SplitViewDivider::OnWindowDestroying(aura::Window* window) {
@@ -419,12 +419,12 @@ void SplitViewDivider::OnWindowActivated(ActivationReason reason,
   if (!is_dragging_window_ &&
       (!gained_active ||
        base::ContainsValue(observed_windows_, gained_active))) {
-    divider_widget_->SetAlwaysOnTop(true);
+    SetAlwaysOnTop(true);
   } else {
     // If |gained_active| is not one of the observed windows, or there is one
     // window that is currently being dragged, |divider_widget_| should not
     // be placed on top.
-    divider_widget_->SetAlwaysOnTop(false);
+    SetAlwaysOnTop(false);
   }
 }
 
@@ -443,6 +443,22 @@ void SplitViewDivider::CreateDividerWidget(aura::Window* root_window) {
   divider_widget_->SetContentsView(divider_view);
   divider_widget_->SetBounds(GetDividerBoundsInScreen(false /* is_dragging */));
   divider_widget_->Show();
+}
+
+void SplitViewDivider::SetAlwaysOnTop(bool on_top) {
+  if (on_top) {
+    divider_widget_->SetAlwaysOnTop(true);
+
+    // Special handling when put divider into always_on_top container. We want
+    // to put it at the bottom so it won't block other always_on_top windows.
+    aura::Window* always_on_top_container =
+        Shell::GetContainer(divider_widget_->GetNativeWindow()->GetRootWindow(),
+                            kShellWindowId_AlwaysOnTopContainer);
+    always_on_top_container->StackChildAtBottom(
+        divider_widget_->GetNativeWindow());
+  } else {
+    divider_widget_->SetAlwaysOnTop(false);
+  }
 }
 
 }  // namespace ash
