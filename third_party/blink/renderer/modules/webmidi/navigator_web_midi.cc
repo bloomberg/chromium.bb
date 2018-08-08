@@ -102,20 +102,14 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
   UseCounter::CountCrossOriginIframe(
       document, WebFeature::kRequestMIDIAccessIframe_ObscuredByFootprinting);
 
-  if (RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
-    if (!document.GetFrame()->IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kMidiFeature)) {
-      UseCounter::Count(document, WebFeature::kMidiDisabledByFeaturePolicy);
-      document.AddConsoleMessage(
-          ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
-                                 kFeaturePolicyConsoleWarning));
-      return ScriptPromise::RejectWithDOMException(
-          script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
-                                             kFeaturePolicyErrorMessage));
-    }
-  } else {
-    Deprecation::CountDeprecationFeaturePolicy(
-        document, mojom::FeaturePolicyFeature::kMidiFeature);
+  if (!document.GetFrame()->IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kMidiFeature)) {
+    UseCounter::Count(document, WebFeature::kMidiDisabledByFeaturePolicy);
+    document.AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kWarningMessageLevel, kFeaturePolicyConsoleWarning));
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+                                           kFeaturePolicyErrorMessage));
   }
 
   return MIDIAccessInitializer::Start(script_state, options);
