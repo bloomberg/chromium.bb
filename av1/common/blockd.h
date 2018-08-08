@@ -540,7 +540,7 @@ typedef struct macroblockd {
   SgrprojInfo sgrproj_info[MAX_MB_PLANE];
 
   // block dimension in the unit of mode_info.
-  uint8_t n8_w, n8_h;
+  uint8_t n4_w, n4_h;
 
   uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
   CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];

@@ -143,7 +143,7 @@ static void scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                           uint8_t *ref_match_count, uint8_t *newmv_count,
                           int_mv *gm_mv_candidates, int max_row_offset,
                           int *processed_rows) {
-  int end_mi = AOMMIN(xd->n8_w, cm->mi_cols - mi_col);
+  int end_mi = AOMMIN(xd->n4_w, cm->mi_cols - mi_col);
   end_mi = AOMMIN(end_mi, mi_size_wide[BLOCK_64X64]);
   const int n8_w_8 = mi_size_wide[BLOCK_8X8];
   const int n8_w_16 = mi_size_wide[BLOCK_16X16];
@@ -153,24 +153,24 @@ static void scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   // TODO(jingning): Revisit this part after cb4x4 is stable.
   if (abs(row_offset) > 1) {
     col_offset = 1;
-    if ((mi_col & 0x01) && xd->n8_w < n8_w_8) --col_offset;
+    if ((mi_col & 0x01) && xd->n4_w < n8_w_8) --col_offset;
   }
-  const int use_step_16 = (xd->n8_w >= 16);
+  const int use_step_16 = (xd->n4_w >= 16);
   MB_MODE_INFO **const candidate_mi0 = xd->mi + row_offset * xd->mi_stride;
   (void)mi_row;
 
   for (i = 0; i < end_mi;) {
     const MB_MODE_INFO *const candidate = candidate_mi0[col_offset + i];
     const int candidate_bsize = candidate->sb_type;
-    const int n8_w = mi_size_wide[candidate_bsize];
-    int len = AOMMIN(xd->n8_w, n8_w);
+    const int n4_w = mi_size_wide[candidate_bsize];
+    int len = AOMMIN(xd->n4_w, n4_w);
     if (use_step_16)
       len = AOMMAX(n8_w_16, len);
     else if (abs(row_offset) > 1)
       len = AOMMAX(len, n8_w_8);
 
     int weight = 2;
-    if (xd->n8_w >= n8_w_8 && xd->n8_w <= n8_w) {
+    if (xd->n4_w >= n8_w_8 && xd->n4_w <= n4_w) {
       int inc = AOMMIN(-max_row_offset + row_offset + 1,
                        mi_size_high[candidate_bsize]);
       // Obtain range used in weight calculation.
@@ -194,7 +194,7 @@ static void scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                           uint8_t *ref_match_count, uint8_t *newmv_count,
                           int_mv *gm_mv_candidates, int max_col_offset,
                           int *processed_cols) {
-  int end_mi = AOMMIN(xd->n8_h, cm->mi_rows - mi_row);
+  int end_mi = AOMMIN(xd->n4_h, cm->mi_rows - mi_row);
   end_mi = AOMMIN(end_mi, mi_size_high[BLOCK_64X64]);
   const int n8_h_8 = mi_size_high[BLOCK_8X8];
   const int n8_h_16 = mi_size_high[BLOCK_16X16];
@@ -203,24 +203,24 @@ static void scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const int shift = 0;
   if (abs(col_offset) > 1) {
     row_offset = 1;
-    if ((mi_row & 0x01) && xd->n8_h < n8_h_8) --row_offset;
+    if ((mi_row & 0x01) && xd->n4_h < n8_h_8) --row_offset;
   }
-  const int use_step_16 = (xd->n8_h >= 16);
+  const int use_step_16 = (xd->n4_h >= 16);
   (void)mi_col;
 
   for (i = 0; i < end_mi;) {
     const MB_MODE_INFO *const candidate =
         xd->mi[(row_offset + i) * xd->mi_stride + col_offset];
     const int candidate_bsize = candidate->sb_type;
-    const int n8_h = mi_size_high[candidate_bsize];
-    int len = AOMMIN(xd->n8_h, n8_h);
+    const int n4_h = mi_size_high[candidate_bsize];
+    int len = AOMMIN(xd->n4_h, n4_h);
     if (use_step_16)
       len = AOMMAX(n8_h_16, len);
     else if (abs(col_offset) > 1)
       len = AOMMAX(len, n8_h_8);
 
     int weight = 2;
-    if (xd->n8_h >= n8_h_8 && xd->n8_h <= n8_h) {
+    if (xd->n4_h >= n8_h_8 && xd->n4_h <= n4_h) {
       int inc = AOMMIN(-max_col_offset + col_offset + 1,
                        mi_size_wide[candidate_bsize]);
       // Obtain range used in weight calculation.
@@ -292,19 +292,19 @@ static int has_top_right(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   // The left hand of two vertical rectangles always has a top right (as the
   // block above will have been decoded)
-  if (xd->n8_w < xd->n8_h)
+  if (xd->n4_w < xd->n4_h)
     if (!xd->is_sec_rect) has_tr = 1;
 
   // The bottom of two horizontal rectangles never has a top right (as the block
   // to the right won't have been decoded)
-  if (xd->n8_w > xd->n8_h)
+  if (xd->n4_w > xd->n4_h)
     if (xd->is_sec_rect) has_tr = 0;
 
   // The bottom left square of a Vertical A (in the old format) does
   // not have a top right as it is decoded before the right hand
   // rectangle of the partition
   if (xd->mi[0]->partition == PARTITION_VERT_A) {
-    if (xd->n8_w == xd->n8_h)
+    if (xd->n4_w == xd->n4_h)
       if (mask_row & bs) has_tr = 0;
   }
 
@@ -493,14 +493,14 @@ static void setup_ref_mv_list(
     CANDIDATE_MV ref_mv_stack[][MAX_REF_MV_STACK_SIZE],
     int_mv mv_ref_list[][MAX_MV_REF_CANDIDATES], int_mv *gm_mv_candidates,
     int mi_row, int mi_col, int16_t *mode_context) {
-  const int bs = AOMMAX(xd->n8_w, xd->n8_h);
+  const int bs = AOMMAX(xd->n4_w, xd->n4_h);
   const int has_tr = has_top_right(cm, xd, mi_row, mi_col, bs);
   MV_REFERENCE_FRAME rf[2];
 
   const TileInfo *const tile = &xd->tile;
   int max_row_offset = 0, max_col_offset = 0;
-  const int row_adj = (xd->n8_h < mi_size_high[BLOCK_8X8]) && (mi_row & 0x01);
-  const int col_adj = (xd->n8_w < mi_size_wide[BLOCK_8X8]) && (mi_col & 0x01);
+  const int row_adj = (xd->n4_h < mi_size_high[BLOCK_8X8]) && (mi_row & 0x01);
+  const int col_adj = (xd->n4_w < mi_size_wide[BLOCK_8X8]) && (mi_col & 0x01);
   int processed_rows = 0;
   int processed_cols = 0;
 
@@ -512,7 +512,7 @@ static void setup_ref_mv_list(
   if (xd->up_available) {
     max_row_offset = -(MVREF_ROW_COLS << 1) + row_adj;
 
-    if (xd->n8_h < mi_size_high[BLOCK_8X8])
+    if (xd->n4_h < mi_size_high[BLOCK_8X8])
       max_row_offset = -(2 << 1) + row_adj;
 
     max_row_offset =
@@ -522,7 +522,7 @@ static void setup_ref_mv_list(
   if (xd->left_available) {
     max_col_offset = -(MVREF_ROW_COLS << 1) + col_adj;
 
-    if (xd->n8_w < mi_size_wide[BLOCK_8X8])
+    if (xd->n4_w < mi_size_wide[BLOCK_8X8])
       max_col_offset = -(2 << 1) + col_adj;
 
     max_col_offset = find_valid_col_offset(tile, mi_col, max_col_offset);
@@ -544,7 +544,7 @@ static void setup_ref_mv_list(
                   gm_mv_candidates, max_col_offset, &processed_cols);
   // Check top-right boundary
   if (has_tr)
-    scan_blk_mbmi(cm, xd, mi_row, mi_col, rf, -1, xd->n8_w,
+    scan_blk_mbmi(cm, xd, mi_row, mi_col, rf, -1, xd->n4_w,
                   ref_mv_stack[ref_frame], &row_match_count, &newmv_count,
                   gm_mv_candidates, &refmv_count[ref_frame]);
 
@@ -557,25 +557,25 @@ static void setup_ref_mv_list(
 
   if (cm->allow_ref_frame_mvs) {
     int is_available = 0;
-    const int voffset = AOMMAX(mi_size_high[BLOCK_8X8], xd->n8_h);
-    const int hoffset = AOMMAX(mi_size_wide[BLOCK_8X8], xd->n8_w);
-    const int blk_row_end = AOMMIN(xd->n8_h, mi_size_high[BLOCK_64X64]);
-    const int blk_col_end = AOMMIN(xd->n8_w, mi_size_wide[BLOCK_64X64]);
+    const int voffset = AOMMAX(mi_size_high[BLOCK_8X8], xd->n4_h);
+    const int hoffset = AOMMAX(mi_size_wide[BLOCK_8X8], xd->n4_w);
+    const int blk_row_end = AOMMIN(xd->n4_h, mi_size_high[BLOCK_64X64]);
+    const int blk_col_end = AOMMIN(xd->n4_w, mi_size_wide[BLOCK_64X64]);
 
     const int tpl_sample_pos[3][2] = {
       { voffset, -2 },
       { voffset, hoffset },
       { voffset - 2, hoffset },
     };
-    const int allow_extension = (xd->n8_h >= mi_size_high[BLOCK_8X8]) &&
-                                (xd->n8_h < mi_size_high[BLOCK_64X64]) &&
-                                (xd->n8_w >= mi_size_wide[BLOCK_8X8]) &&
-                                (xd->n8_w < mi_size_wide[BLOCK_64X64]);
+    const int allow_extension = (xd->n4_h >= mi_size_high[BLOCK_8X8]) &&
+                                (xd->n4_h < mi_size_high[BLOCK_64X64]) &&
+                                (xd->n4_w >= mi_size_wide[BLOCK_8X8]) &&
+                                (xd->n4_w < mi_size_wide[BLOCK_64X64]);
 
-    int step_h = (xd->n8_h >= mi_size_high[BLOCK_64X64])
+    int step_h = (xd->n4_h >= mi_size_high[BLOCK_64X64])
                      ? mi_size_high[BLOCK_16X16]
                      : mi_size_high[BLOCK_8X8];
-    int step_w = (xd->n8_w >= mi_size_wide[BLOCK_64X64])
+    int step_w = (xd->n4_w >= mi_size_wide[BLOCK_64X64])
                      ? mi_size_wide[BLOCK_16X16]
                      : mi_size_wide[BLOCK_8X8];
 
@@ -693,9 +693,9 @@ static void setup_ref_mv_list(
       int_mv ref_id[2][2], ref_diff[2][2];
       int ref_id_count[2] = { 0 }, ref_diff_count[2] = { 0 };
 
-      int mi_width = AOMMIN(mi_size_wide[BLOCK_64X64], xd->n8_w);
+      int mi_width = AOMMIN(mi_size_wide[BLOCK_64X64], xd->n4_w);
       mi_width = AOMMIN(mi_width, cm->mi_cols - mi_col);
-      int mi_height = AOMMIN(mi_size_high[BLOCK_64X64], xd->n8_h);
+      int mi_height = AOMMIN(mi_size_high[BLOCK_64X64], xd->n4_h);
       mi_height = AOMMIN(mi_height, cm->mi_rows - mi_row);
       int mi_size = AOMMIN(mi_width, mi_height);
 
@@ -762,15 +762,15 @@ static void setup_ref_mv_list(
 
     for (int idx = 0; idx < refmv_count[ref_frame]; ++idx) {
       clamp_mv_ref(&ref_mv_stack[ref_frame][idx].this_mv.as_mv,
-                   xd->n8_w << MI_SIZE_LOG2, xd->n8_h << MI_SIZE_LOG2, xd);
+                   xd->n4_w << MI_SIZE_LOG2, xd->n4_h << MI_SIZE_LOG2, xd);
       clamp_mv_ref(&ref_mv_stack[ref_frame][idx].comp_mv.as_mv,
-                   xd->n8_w << MI_SIZE_LOG2, xd->n8_h << MI_SIZE_LOG2, xd);
+                   xd->n4_w << MI_SIZE_LOG2, xd->n4_h << MI_SIZE_LOG2, xd);
     }
   } else {
     // Handle single reference frame extension
-    int mi_width = AOMMIN(mi_size_wide[BLOCK_64X64], xd->n8_w);
+    int mi_width = AOMMIN(mi_size_wide[BLOCK_64X64], xd->n4_w);
     mi_width = AOMMIN(mi_width, cm->mi_cols - mi_col);
-    int mi_height = AOMMIN(mi_size_high[BLOCK_64X64], xd->n8_h);
+    int mi_height = AOMMIN(mi_size_high[BLOCK_64X64], xd->n4_h);
     mi_height = AOMMIN(mi_height, cm->mi_rows - mi_row);
     int mi_size = AOMMIN(mi_width, mi_height);
 
@@ -792,7 +792,7 @@ static void setup_ref_mv_list(
 
     for (int idx = 0; idx < refmv_count[ref_frame]; ++idx) {
       clamp_mv_ref(&ref_mv_stack[ref_frame][idx].this_mv.as_mv,
-                   xd->n8_w << MI_SIZE_LOG2, xd->n8_h << MI_SIZE_LOG2, xd);
+                   xd->n4_w << MI_SIZE_LOG2, xd->n4_h << MI_SIZE_LOG2, xd);
     }
 
     if (mv_ref_list != NULL) {
@@ -1140,14 +1140,14 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
   if (up_available) {
     int mi_row_offset = -1;
     MB_MODE_INFO *mbmi = xd->mi[mi_row_offset * xd->mi_stride];
-    uint8_t n8_w = mi_size_wide[mbmi->sb_type];
+    uint8_t n4_w = mi_size_wide[mbmi->sb_type];
 
-    if (xd->n8_w <= n8_w) {
+    if (xd->n4_w <= n4_w) {
       // Handle "current block width <= above block width" case.
-      int col_offset = -mi_col % n8_w;
+      int col_offset = -mi_col % n4_w;
 
       if (col_offset < 0) do_tl = 0;
-      if (col_offset + n8_w > xd->n8_w) do_tr = 0;
+      if (col_offset + n4_w > xd->n4_w) do_tr = 0;
 
       if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE_FRAME) {
         record_samples(mbmi, pts, pts_inref, 0, -1, col_offset, 1);
@@ -1158,11 +1158,11 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
       }
     } else {
       // Handle "current block width > above block width" case.
-      for (i = 0; i < AOMMIN(xd->n8_w, cm->mi_cols - mi_col); i += mi_step) {
+      for (i = 0; i < AOMMIN(xd->n4_w, cm->mi_cols - mi_col); i += mi_step) {
         int mi_col_offset = i;
         mbmi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
-        n8_w = mi_size_wide[mbmi->sb_type];
-        mi_step = AOMMIN(xd->n8_w, n8_w);
+        n4_w = mi_size_wide[mbmi->sb_type];
+        mi_step = AOMMIN(xd->n4_w, n4_w);
 
         if (mbmi->ref_frame[0] == ref_frame &&
             mbmi->ref_frame[1] == NONE_FRAME) {
@@ -1182,11 +1182,11 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
     int mi_col_offset = -1;
 
     MB_MODE_INFO *mbmi = xd->mi[mi_col_offset];
-    uint8_t n8_h = mi_size_high[mbmi->sb_type];
+    uint8_t n4_h = mi_size_high[mbmi->sb_type];
 
-    if (xd->n8_h <= n8_h) {
+    if (xd->n4_h <= n4_h) {
       // Handle "current block height <= above block height" case.
-      int row_offset = -mi_row % n8_h;
+      int row_offset = -mi_row % n4_h;
 
       if (row_offset < 0) do_tl = 0;
 
@@ -1199,11 +1199,11 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
       }
     } else {
       // Handle "current block height > above block height" case.
-      for (i = 0; i < AOMMIN(xd->n8_h, cm->mi_rows - mi_row); i += mi_step) {
+      for (i = 0; i < AOMMIN(xd->n4_h, cm->mi_rows - mi_row); i += mi_step) {
         int mi_row_offset = i;
         mbmi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
-        n8_h = mi_size_high[mbmi->sb_type];
-        mi_step = AOMMIN(xd->n8_h, n8_h);
+        n4_h = mi_size_high[mbmi->sb_type];
+        mi_step = AOMMIN(xd->n4_h, n4_h);
 
         if (mbmi->ref_frame[0] == ref_frame &&
             mbmi->ref_frame[1] == NONE_FRAME) {
@@ -1237,18 +1237,18 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
 
   // Top-right block
   if (do_tr &&
-      has_top_right(cm, xd, mi_row, mi_col, AOMMAX(xd->n8_w, xd->n8_h))) {
-    POSITION trb_pos = { -1, xd->n8_w };
+      has_top_right(cm, xd, mi_row, mi_col, AOMMAX(xd->n4_w, xd->n4_h))) {
+    POSITION trb_pos = { -1, xd->n4_w };
 
     if (is_inside(tile, mi_col, mi_row, cm->mi_rows, &trb_pos)) {
       int mi_row_offset = -1;
-      int mi_col_offset = xd->n8_w;
+      int mi_col_offset = xd->n4_w;
 
       MB_MODE_INFO *mbmi =
           xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
 
       if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE_FRAME) {
-        record_samples(mbmi, pts, pts_inref, 0, -1, xd->n8_w, 1);
+        record_samples(mbmi, pts, pts_inref, 0, -1, xd->n4_w, 1);
         np++;
         if (np >= LEAST_SQUARES_SAMPLES_MAX) return LEAST_SQUARES_SAMPLES_MAX;
       }

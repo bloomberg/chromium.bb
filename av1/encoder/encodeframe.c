@@ -5525,7 +5525,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       tx_size = (bsize > BLOCK_4X4) ? tx_size : TX_4X4;
     }
     mbmi->tx_size = tx_size;
-    set_txfm_ctxs(tx_size, xd->n8_w, xd->n8_h,
+    set_txfm_ctxs(tx_size, xd->n4_w, xd->n4_h,
                   (mbmi->skip || seg_skip) && is_inter_block(mbmi), xd);
   }
   CFL_CTX *const cfl = &xd->cfl;

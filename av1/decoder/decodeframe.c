@@ -931,7 +931,7 @@ static void dec_build_prediction_by_above_preds(
   // Adjust mb_to_bottom_edge to have the correct value for the OBMC
   // prediction block. This is half the height of the original block,
   // except for 128-wide blocks, where we only use a height of 32.
-  int this_height = xd->n8_h * MI_SIZE;
+  int this_height = xd->n4_h * MI_SIZE;
   int pred_height = AOMMIN(this_height / 2, 32);
   xd->mb_to_bottom_edge += (this_height - pred_height) * 8;
 
@@ -984,7 +984,7 @@ static void dec_build_prediction_by_left_preds(
   // Adjust mb_to_right_edge to have the correct value for the OBMC
   // prediction block. This is half the width of the original block,
   // except for 128-wide blocks, where we only use a width of 32.
-  int this_width = xd->n8_w * MI_SIZE;
+  int this_width = xd->n4_w * MI_SIZE;
   int pred_width = AOMMIN(this_width / 2, 32);
   xd->mb_to_right_edge += (this_width - pred_width) * 8;
 
@@ -1358,7 +1358,7 @@ static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
     mbmi->tx_size = read_tx_size(cm, xd, inter_block_tx, !mbmi->skip, r);
     if (inter_block_tx)
       memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
-    set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h,
+    set_txfm_ctxs(mbmi->tx_size, xd->n4_w, xd->n4_h,
                   mbmi->skip && is_inter_block(mbmi), xd);
   }
 
