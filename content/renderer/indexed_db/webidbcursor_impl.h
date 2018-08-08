@@ -21,10 +21,6 @@
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace content {
 
 class IndexedDBCallbacksImpl;
@@ -32,8 +28,7 @@ class IndexedDBCallbacksImpl;
 class CONTENT_EXPORT WebIDBCursorImpl : public blink::WebIDBCursor {
  public:
   WebIDBCursorImpl(indexed_db::mojom::CursorAssociatedPtrInfo cursor,
-                   int64_t transaction_id,
-                   scoped_refptr<base::SingleThreadTaskRunner> callback_runner);
+                   int64_t transaction_id);
   ~WebIDBCursorImpl() override;
 
   void Advance(unsigned long count, blink::WebIDBCallbacks* callback) override;
@@ -71,7 +66,6 @@ class CONTENT_EXPORT WebIDBCursorImpl : public blink::WebIDBCursor {
 
   int64_t transaction_id_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> callback_runner_;
   indexed_db::mojom::CursorAssociatedPtr cursor_;
 
   // Prefetch cache.
