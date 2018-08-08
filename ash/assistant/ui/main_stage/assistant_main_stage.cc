@@ -602,8 +602,8 @@ void AssistantMainStage::UpdateTopPadding() {
       views::CreateEmptyBorder(top_padding, 0, 0, 0));
 
   // Force a layout/paint pass.
-  content_layout_container_->Layout();
-  content_layout_container_->SchedulePaint();
+  ui_element_container_->Layout();
+  ui_element_container_->SchedulePaint();
 
   // Apply top padding to the overlay layout container by applying an empty
   // border to its children.
