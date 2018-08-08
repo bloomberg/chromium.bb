@@ -36,6 +36,7 @@ Disk::Disk(const DiskInfo& disk_info,
       on_boot_device_(disk_info.on_boot_device()),
       on_removable_device_(disk_info.on_removable_device()),
       is_hidden_(disk_info.is_hidden()),
+      is_auto_mountable_(disk_info.is_auto_mountable()),
       file_system_type_(disk_info.file_system_type()),
       base_mount_path_(base_mount_path) {}
 
@@ -95,15 +96,6 @@ void Disk::SetMountPath(const std::string& mount_path) {
 
   if (base_mount_path_.empty())
     base_mount_path_ = mount_path;
-}
-
-bool Disk::IsAutoMountable() const {
-  // Disks are considered auto-mountable if they are:
-  // 1. Non-virtual
-  // 2. Not on boot device
-  // Only the second condition is checked here, because Disks are created from
-  // non-virtual mount devices only.
-  return !on_boot_device_;
 }
 
 bool Disk::IsStatefulPartition() const {

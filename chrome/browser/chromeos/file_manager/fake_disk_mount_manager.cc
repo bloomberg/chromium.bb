@@ -160,8 +160,8 @@ void FakeDiskMountManager::InvokeDiskEventForTest(
     chromeos::disks::DiskMountManager::DiskEvent event,
     const chromeos::disks::Disk* disk) {
   for (auto& observer : observers_) {
-    disk->IsAutoMountable() ? observer.OnAutoMountableDiskEvent(event, *disk)
-                            : observer.OnBootDeviceDiskEvent(event, *disk);
+    disk->is_auto_mountable() ? observer.OnAutoMountableDiskEvent(event, *disk)
+                              : observer.OnBootDeviceDiskEvent(event, *disk);
   }
 }
 

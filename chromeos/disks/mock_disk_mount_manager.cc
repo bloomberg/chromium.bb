@@ -228,8 +228,8 @@ void MockDiskMountManager::EnsureMountInfoRefreshedInternal(
 void MockDiskMountManager::NotifyDiskChanged(DiskEvent event,
                                              const Disk* disk) {
   for (auto& observer : observers_) {
-    disk->IsAutoMountable() ? observer.OnAutoMountableDiskEvent(event, *disk)
-                            : observer.OnBootDeviceDiskEvent(event, *disk);
+    disk->is_auto_mountable() ? observer.OnAutoMountableDiskEvent(event, *disk)
+                              : observer.OnBootDeviceDiskEvent(event, *disk);
   }
 }
 

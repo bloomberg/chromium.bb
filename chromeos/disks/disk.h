@@ -128,6 +128,9 @@ class CHROMEOS_EXPORT Disk {
   // Shoud the device be shown in the UI, or automounted.
   bool is_hidden() const { return is_hidden_; }
 
+  // Is the disk auto-mountable.
+  bool is_auto_mountable() const { return is_auto_mountable_; }
+
   void set_write_disabled_by_policy(bool disable) {
     write_disabled_by_policy_ = disable;
   }
@@ -145,8 +148,6 @@ class CHROMEOS_EXPORT Disk {
   const std::string& base_mount_path() const { return base_mount_path_; }
 
   void SetMountPath(const std::string& mount_path);
-
-  bool IsAutoMountable() const;
 
   bool IsStatefulPartition() const;
 
@@ -174,6 +175,7 @@ class CHROMEOS_EXPORT Disk {
   bool on_boot_device_;
   bool on_removable_device_;
   bool is_hidden_;
+  bool is_auto_mountable_ = false;
   std::string file_system_type_;
   std::string base_mount_path_;
 };

@@ -140,12 +140,10 @@ TEST(DiskTest, ConstructFromDiskInfo) {
   EXPECT_FALSE(disk.on_removable_device());
   EXPECT_FALSE(disk.is_mounted());
   EXPECT_FALSE(disk.IsStatefulPartition());
+  EXPECT_FALSE(disk.is_auto_mountable());
 
   // Drives are hidden by default.
   EXPECT_TRUE(disk.is_hidden());
-
-  // Drives not on the boot device are auto-mountable.
-  EXPECT_TRUE(disk.IsAutoMountable());
 }
 
 std::unique_ptr<Disk> BuildDiskWithProperty(const std::string& property,
@@ -187,6 +185,10 @@ TEST(DiskTest, ConstructFromDiskInfo_BoolProperties) {
     auto disk =
         BuildDiskWithProperty(cros_disks::kDeviceIsOnRemovableDevice, true);
     EXPECT_TRUE(disk->on_removable_device());
+  }
+  {
+    auto disk = BuildDiskWithProperty(cros_disks::kIsAutoMountable, true);
+    EXPECT_TRUE(disk->is_auto_mountable());
   }
 }
 
