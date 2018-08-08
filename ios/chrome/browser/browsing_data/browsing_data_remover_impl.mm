@@ -276,7 +276,8 @@ void BrowsingDataRemoverImpl::Remove(browsing_data::TimePeriod time_period,
 void BrowsingDataRemoverImpl::RunNextTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!removal_queue_.empty());
-  const RemovalTask& removal_task = removal_queue_.front();
+  RemovalTask& removal_task = removal_queue_.front();
+  removal_task.task_started = base::Time::Now();
   RemoveImpl(removal_task.delete_begin, removal_task.delete_end,
              removal_task.mask);
 }
@@ -674,6 +675,22 @@ void BrowsingDataRemoverImpl::NotifyRemovalComplete() {
 
   {
     RemovalTask task = std::move(removal_queue_.front());
+    // Only log clear browsing data on regular browsing mode. In OTR mode, only
+    // few types of data are cleared and the rest is handled by deleting the
+    // browser state, so logging in these cases will render the histogram not
+    // useful.
+    if (!browser_state_->IsOffTheRecord()) {
+      base::TimeDelta delta = base::Time::Now() - task.task_started;
+      bool is_deletion_start_earliest = task.delete_begin.is_null();
+      bool is_deletion_end_now = task.delete_end.is_max();
+      if (is_deletion_start_earliest && is_deletion_end_now) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "History.ClearBrowsingData.Duration.FullDeletion", delta);
+      } else {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "History.ClearBrowsingData.Duration.PartialDeletion", delta);
+      }
+    }
     removal_queue_.pop();
 
     // Schedule the task to be executed soon. This ensure that the IsRemoving()

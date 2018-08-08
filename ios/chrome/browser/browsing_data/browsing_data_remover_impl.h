@@ -64,6 +64,7 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
     base::Time delete_end;
     BrowsingDataRemoveMask mask;
     base::OnceClosure callback;
+    base::Time task_started;
   };
 
   // Setter for |is_removing_|; DCHECKs that we can only start removing if we're
