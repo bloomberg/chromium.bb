@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -39,8 +40,12 @@ class TestBookmarkAppShortcutInstallationTask
       content::WebContents* web_contents,
       BookmarkAppInstallationTask::ResultCallback callback) override {
     std::move(callback).Run(
-        succeeds_ ? BookmarkAppInstallationTask::Result::kSuccess
-                  : BookmarkAppInstallationTask::Result::kInstallationFailed);
+        succeeds_
+            ? BookmarkAppInstallationTask::Result(
+                  BookmarkAppInstallationTask::ResultCode::kSuccess, "12345")
+            : BookmarkAppInstallationTask::Result(
+                  BookmarkAppInstallationTask::ResultCode::kInstallationFailed,
+                  std::string()));
   }
 
  private:
@@ -85,8 +90,8 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
                                                                      false);
   }
 
-  void InstallCallback(bool succeeded) {
-    install_succeeded_ = succeeded;
+  void InstallCallback(const std::string& app_id) {
+    install_succeeded_ = !app_id.empty();
   }
 
  protected:

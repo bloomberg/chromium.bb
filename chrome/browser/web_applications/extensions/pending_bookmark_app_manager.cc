@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -43,7 +44,7 @@ void PendingBookmarkAppManager::Install(AppInfo app_to_install,
                                         InstallCallback callback) {
   // The app is already being installed.
   if (current_install_info_ && *current_install_info_ == app_to_install) {
-    std::move(callback).Run(false);
+    std::move(callback).Run(std::string());
     return;
   }
 
@@ -82,7 +83,7 @@ void PendingBookmarkAppManager::DidFinishLoad(
   }
 
   if (validated_url != current_install_info_->url) {
-    std::move(current_install_callback_).Run(false);
+    std::move(current_install_callback_).Run(std::string());
     return;
   }
 
@@ -114,7 +115,7 @@ void PendingBookmarkAppManager::DidFailLoad(
   web_contents_.reset();
   current_install_info_.reset();
 
-  std::move(current_install_callback_).Run(false);
+  std::move(current_install_callback_).Run(std::string());
 }
 
 void PendingBookmarkAppManager::OnInstalled(
@@ -123,8 +124,7 @@ void PendingBookmarkAppManager::OnInstalled(
   // queued installation requests.
   web_contents_.reset();
   current_install_info_.reset();
-  std::move(current_install_callback_)
-      .Run(result == BookmarkAppInstallationTask::Result::kSuccess);
+  std::move(current_install_callback_).Run(result.app_id);
 }
 
 }  // namespace extensions

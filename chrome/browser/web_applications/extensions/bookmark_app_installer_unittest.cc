@@ -18,6 +18,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/browser/install/crx_install_error.h"
+#include "extensions/common/extension_id.h"
 
 namespace extensions {
 
@@ -82,8 +83,9 @@ class BookmarkAppInstallerTest : public ChromeRenderViewHostTestHarness {
                                         false /* autoupdate_enabled */);
   }
 
-  void InstallCallback(base::OnceClosure quit_closure, bool app_installed) {
-    app_installed_ = app_installed;
+  void InstallCallback(base::OnceClosure quit_closure,
+                       const ExtensionId& extension_id) {
+    app_installed_ = !extension_id.empty();
     std::move(quit_closure).Run();
   }
 

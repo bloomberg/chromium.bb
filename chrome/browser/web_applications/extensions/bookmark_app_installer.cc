@@ -10,7 +10,10 @@
 #include "base/callback.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/web_application_info.h"
+#include "extensions/common/extension.h"
+#include "url/gurl.h"
 
 namespace extensions {
 
@@ -22,9 +25,9 @@ BookmarkAppInstaller::~BookmarkAppInstaller() = default;
 
 void BookmarkAppInstaller::Install(const WebApplicationInfo& web_app_info,
                                    ResultCallback callback) {
-  crx_installer_->set_installer_callback(
-      base::BindOnce(&BookmarkAppInstaller::OnInstall,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  crx_installer_->set_installer_callback(base::BindOnce(
+      &BookmarkAppInstaller::OnInstall, weak_ptr_factory_.GetWeakPtr(),
+      std::move(callback), web_app_info.app_url));
   crx_installer_->InstallWebApp(web_app_info);
 }
 
@@ -35,11 +38,18 @@ void BookmarkAppInstaller::SetCrxInstallerForTesting(
 
 void BookmarkAppInstaller::OnInstall(
     ResultCallback callback,
+    const GURL& app_url,
     const base::Optional<CrxInstallError>& error) {
-  // TODO(crbug.com/864904): Finish the installation i.e. set launch container.
+  if (error) {
+    std::move(callback).Run(std::string());
+    return;
+  }
 
-  const bool installation_succeeded = !error;
-  std::move(callback).Run(installation_succeeded);
+  auto* installed_extension = crx_installer_->extension();
+  DCHECK(installed_extension);
+  DCHECK_EQ(AppLaunchInfo::GetLaunchWebURL(installed_extension), app_url);
+
+  std::move(callback).Run(installed_extension->id());
 }
 
 }  // namespace extensions
