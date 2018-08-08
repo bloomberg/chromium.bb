@@ -4,6 +4,7 @@
 
 [
     SecureContext,
+    Exposed=Window,
     OriginTrialEnabled=WebXR
 ] interface XRInputPose {
   readonly attribute XRRay targetRay;

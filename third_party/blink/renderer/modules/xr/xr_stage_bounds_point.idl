@@ -5,6 +5,7 @@
 // https://immersive-web.github.io/webxr/#xrstageboundspoint-interface
 [
     SecureContext,
+    Exposed=Window,
     OriginTrialEnabled=WebXR
 ] interface XRStageBoundsPoint {
   readonly attribute double x;

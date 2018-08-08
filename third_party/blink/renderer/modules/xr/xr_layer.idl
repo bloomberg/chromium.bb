@@ -5,5 +5,6 @@
 // https://immersive-web.github.io/webxr/#xrlayer-interface
 [
     SecureContext,
+    Exposed=Window,
     OriginTrialEnabled=WebXR
 ] interface XRLayer {};

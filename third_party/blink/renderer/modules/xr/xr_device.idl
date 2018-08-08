@@ -5,6 +5,7 @@
 // https://immersive-web.github.io/webxr/#xrdevice-interface
 [
     SecureContext,
+    Exposed=Window,
     OriginTrialEnabled=WebXR
 ] interface XRDevice {
   [CallWith=ScriptState, MeasureAs=XRSupportsSession] Promise<void> supportsSession([PermissiveDictionaryConversion] optional XRSessionCreationOptions options);

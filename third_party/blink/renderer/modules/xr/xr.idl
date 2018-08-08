@@ -5,6 +5,7 @@
 // https://immersive-web.github.io/webxr/#xr-interface
 [
     SecureContext,
+    Exposed=Window,
     OriginTrialEnabled=WebXR
 ] interface XR : EventTarget {
   attribute EventHandler ondevicechange;

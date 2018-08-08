@@ -5,6 +5,7 @@
 // https://immersive-web.github.io/webxr/#xrdevicepose-interface
 [
     SecureContext,
+    Exposed=Window,
     OriginTrialEnabled=WebXR
 ] interface XRDevicePose {
   readonly attribute Float32Array poseModelMatrix;

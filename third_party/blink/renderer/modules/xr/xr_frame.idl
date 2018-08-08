@@ -5,6 +5,7 @@
 // https://immersive-web.github.io/webxr/#xrframe
 [
     SecureContext,
+    Exposed=Window,
     OriginTrialEnabled=WebXR
 ] interface XRFrame {
   readonly attribute XRSession session;

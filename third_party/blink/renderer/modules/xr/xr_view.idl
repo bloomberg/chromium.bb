@@ -5,6 +5,7 @@
 // https://immersive-web.github.io/webxr/#xrview-interface
 [
     SecureContext,
+    Exposed=Window,
     OriginTrialEnabled=WebXR
 ] interface XRView {
   readonly attribute VREye? eye;
