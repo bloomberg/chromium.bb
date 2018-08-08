@@ -2799,7 +2799,6 @@ test("unit_tests") {
     "//third_party/tlslite/",
     "//third_party/zlib/google/test/data/",
     "//tools/metrics/histograms/enums.xml",
-    "$root_out_dir/pyproto/google/",
   ]
   if (is_android || is_linux || is_win) {
     data += [
@@ -4820,7 +4819,6 @@ if (!is_android) {
       "//third_party/zlib/google/test/data/",
       "//tools/metrics/histograms/enums.xml",
       "//ui/webui/resources/js/",
-      "$root_out_dir/pyproto/google/",
       "$root_out_dir/test_case.html",
       "$root_out_dir/test_case.html.mock-http-headers",
       "$root_out_dir/test_page.css",
