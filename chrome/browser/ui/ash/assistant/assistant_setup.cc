@@ -96,7 +96,7 @@ void AssistantSetup::StartAssistantOptInFlow(
 }
 
 void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
-  if (state != ash::mojom::VoiceInteractionState::RUNNING)
+  if (state == ash::mojom::VoiceInteractionState::NOT_READY)
     return;
 
   // If the optin flow is active, no need to show the notification since it is
@@ -110,6 +110,7 @@ void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
            ->IsDefaultValue()) {
     return;
   }
+  // TODO(xiaohuic): need better ways to decide when to show the notification.
   // Avoid the notification from keep showing up.
   prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, false);
 

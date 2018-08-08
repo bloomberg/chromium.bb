@@ -270,7 +270,7 @@ void AssistantController::NotifyUrlOpened(const GURL& url) {
 
 void AssistantController::OnVoiceInteractionStatusChanged(
     mojom::VoiceInteractionState state) {
-  if (state == mojom::VoiceInteractionState::STOPPED)
+  if (state == mojom::VoiceInteractionState::NOT_READY)
     assistant_ui_controller_->HideUi(AssistantSource::kUnspecified);
 }
 

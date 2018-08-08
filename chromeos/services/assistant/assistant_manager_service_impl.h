@@ -176,9 +176,6 @@ class AssistantManagerServiceImpl
   void OnSpeechLevelUpdatedOnMainThread(const float speech_level);
   void OnModifySettingsAction(const std::string& modify_setting_args_proto);
 
-  void IsVoiceInteractionSetupCompleted(
-      ash::mojom::VoiceInteractionController::IsSetupCompletedCallback
-          callback);
   void RegisterFallbackMediaHandler();
 
   void SendContextQueryAndRunCallback(RequestScreenContextCallback callback);

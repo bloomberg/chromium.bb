@@ -111,17 +111,11 @@ void AssistantNotificationController::SetAssistant(
 void AssistantNotificationController::RetrieveNotification(
     AssistantNotificationPtr notification,
     int action_index) {
-  if (Shell::Get()->voice_interaction_controller()->voice_interaction_state() !=
-      mojom::VoiceInteractionState::RUNNING)
-    return;
   assistant_->RetrieveNotification(std::move(notification), action_index);
 }
 
 void AssistantNotificationController::DismissNotification(
     AssistantNotificationPtr notification) {
-  if (Shell::Get()->voice_interaction_controller()->voice_interaction_state() !=
-      mojom::VoiceInteractionState::RUNNING)
-    return;
   assistant_->DismissNotification(std::move(notification));
 }
 

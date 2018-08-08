@@ -172,10 +172,6 @@ void AssistantScreenContextController::RequestScreenshot(
 
 void AssistantScreenContextController::RequestScreenContext(
     const gfx::Rect& rect) {
-  if (Shell::Get()->voice_interaction_controller()->voice_interaction_state() !=
-      mojom::VoiceInteractionState::RUNNING)
-    return;
-
   // Abort any request in progress and update request state.
   screen_context_request_factory_.InvalidateWeakPtrs();
   assistant_screen_context_model_.SetRequestState(

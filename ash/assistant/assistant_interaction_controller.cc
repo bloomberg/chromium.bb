@@ -363,10 +363,6 @@ void AssistantInteractionController::StartTextInteraction(
     const std::string text) {
   StopActiveInteraction();
 
-  if (Shell::Get()->voice_interaction_controller()->voice_interaction_state() !=
-      mojom::VoiceInteractionState::RUNNING)
-    return;
-
   assistant_interaction_model_.SetPendingQuery(
       std::make_unique<AssistantTextQuery>(text));
 
@@ -375,10 +371,6 @@ void AssistantInteractionController::StartTextInteraction(
 
 void AssistantInteractionController::StartVoiceInteraction() {
   StopActiveInteraction();
-
-  if (Shell::Get()->voice_interaction_controller()->voice_interaction_state() !=
-      mojom::VoiceInteractionState::RUNNING)
-    return;
 
   assistant_interaction_model_.SetPendingQuery(
       std::make_unique<AssistantVoiceQuery>());
@@ -394,9 +386,6 @@ void AssistantInteractionController::StopActiveInteraction() {
   assistant_interaction_model_.SetInteractionState(InteractionState::kInactive);
   assistant_interaction_model_.ClearPendingQuery();
 
-  if (Shell::Get()->voice_interaction_controller()->voice_interaction_state() !=
-      mojom::VoiceInteractionState::RUNNING)
-    return;
   assistant_->StopActiveInteraction();
 
   // Because we are stopping an interaction in progress, we discard any pending
