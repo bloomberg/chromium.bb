@@ -291,13 +291,6 @@ void PPAPIDownloadRequest::Finish(RequestOutcome reason,
                                   DownloadCheckResult response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(2) << __func__ << " response: " << static_cast<int>(response);
-  base::UmaHistogramSparse(
-      "SBClientDownload.PPAPIDownloadRequest.RequestOutcome",
-      static_cast<int>(reason));
-  base::UmaHistogramSparse("SBClientDownload.PPAPIDownloadRequest.Result",
-                           static_cast<int>(response));
-  UMA_HISTOGRAM_TIMES("SBClientDownload.PPAPIDownloadRequest.RequestDuration",
-                      base::TimeTicks::Now() - start_time_);
   if (!callback_.is_null())
     base::ResetAndReturn(&callback_).Run(response);
   loader_.reset();
