@@ -2940,7 +2940,7 @@
                     "params": {
                         "prefix_length": "0",
                         "timeout": "5000",
-                        "version": "0"
+                        "version": "1"
                     },
                     "enable_features": [
                         "PasswordGenerationRequirements",
