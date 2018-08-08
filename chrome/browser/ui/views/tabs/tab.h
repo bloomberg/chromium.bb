@@ -313,6 +313,9 @@ class Tab : public gfx::AnimationDelegate,
   // Computes and stores opacities derived from contrast ratios.
   void UpdateOpacities();
 
+  // Generate and update close button colors for proper contrast.
+  void UpdateCloseButtonColors(SkColor title_color);
+
   // The controller, never NULL.
   TabController* const controller_;
 
