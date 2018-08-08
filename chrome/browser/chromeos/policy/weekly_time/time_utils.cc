@@ -7,18 +7,22 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/policy/weekly_time/weekly_time.h"
+#include "chrome/browser/chromeos/policy/weekly_time/weekly_time_interval.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
 #include "third_party/icu/source/i18n/unicode/gregocal.h"
-#include "third_party/icu/source/i18n/unicode/timezone.h"
 
 namespace policy {
 namespace weekly_time_utils {
 namespace {
 constexpr base::TimeDelta kWeek = base::TimeDelta::FromDays(7);
+const char* kFormatWeekdayHourMinute = "EEEE jj:mm a";
 }  // namespace
 
 bool GetOffsetFromTimezoneToGmt(const std::string& timezone,
@@ -35,7 +39,7 @@ bool GetOffsetFromTimezoneToGmt(const std::string& timezone,
 }
 
 bool GetOffsetFromTimezoneToGmt(const icu::TimeZone& timezone,
-                                const base::Clock* clock,
+                                base::Clock* clock,
                                 int* offset) {
   // Time in milliseconds which is added to GMT to get local time.
   int gmt_offset = timezone.getRawOffset();
@@ -70,20 +74,34 @@ bool GetOffsetFromTimezoneToGmt(const icu::TimeZone& timezone,
   return true;
 }
 
+base::string16 WeeklyTimeToLocalizedString(const WeeklyTime& weekly_time,
+                                           base::Clock* clock) {
+  WeeklyTime result = weekly_time;
+  if (!weekly_time.timezone_offset()) {
+    // Get offset to convert the WeeklyTime
+    int offset;
+    if (!GetOffsetFromTimezoneToGmt(*icu::TimeZone::createDefault(), clock,
+                                    &offset)) {
+      LOG(ERROR) << "Unable to obtain offset for time agnostic timezone";
+      return base::string16();
+    }
+    result = weekly_time.ConvertToCustomTimezone(-offset);
+  }
+  // Clock with the current time.
+  WeeklyTime now_weekly_time = WeeklyTime::GetCurrentGmtWeeklyTime(clock);
+  // Offset the current time so that its day of the week and time match
+  // |day_of_week| and |milliseconds_|.
+  base::Time offset_time =
+      clock->Now() + now_weekly_time.GetDurationTo(result.ConvertToTimezone(0));
+  return base::TimeFormatWithPattern(offset_time, kFormatWeekdayHourMinute);
+}
+
 std::vector<WeeklyTimeInterval> ConvertIntervalsToGmt(
-    const std::vector<WeeklyTimeInterval>& intervals,
-    base::Clock* clock,
-    const std::string& timezone) {
-  int gmt_offset = 0;
-  bool no_offset_error =
-      GetOffsetFromTimezoneToGmt(timezone, clock, &gmt_offset);
-  if (!no_offset_error)
-    return {};
+    const std::vector<WeeklyTimeInterval>& intervals) {
   std::vector<WeeklyTimeInterval> gmt_intervals;
   for (const auto& interval : intervals) {
-    // |gmt_offset| is added to input time to get GMT time.
-    auto gmt_start = interval.start().AddMilliseconds(gmt_offset);
-    auto gmt_end = interval.end().AddMilliseconds(gmt_offset);
+    auto gmt_start = interval.start().ConvertToTimezone(0);
+    auto gmt_end = interval.end().ConvertToTimezone(0);
     gmt_intervals.push_back(WeeklyTimeInterval(gmt_start, gmt_end));
   }
   return gmt_intervals;

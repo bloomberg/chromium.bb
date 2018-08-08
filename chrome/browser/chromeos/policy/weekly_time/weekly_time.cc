@@ -4,29 +4,39 @@
 
 #include "chrome/browser/chromeos/policy/weekly_time/weekly_time.h"
 
-#include "base/i18n/time_formatting.h"
 #include "base/logging.h"
-#include "base/strings/string16.h"
-#include "base/time/default_clock.h"
 #include "base/time/time.h"
 
 namespace em = enterprise_management;
 
 namespace policy {
-namespace {
 
+namespace {
 constexpr base::TimeDelta kWeek = base::TimeDelta::FromDays(7);
 constexpr base::TimeDelta kDay = base::TimeDelta::FromDays(1);
 constexpr base::TimeDelta kHour = base::TimeDelta::FromHours(1);
 constexpr base::TimeDelta kMinute = base::TimeDelta::FromMinutes(1);
 constexpr base::TimeDelta kSecond = base::TimeDelta::FromSeconds(1);
 
-const char* kFormatWeekdayHourMinute = "EEEE jj:mm a";
+WeeklyTime GetWeeklyTimeFromExploded(
+    const base::Time::Exploded& exploded,
+    const base::Optional<int> timezone_offset) {
+  int day_of_week = exploded.day_of_week == 0 ? 7 : exploded.day_of_week;
+  int milliseconds = exploded.hour * kHour.InMilliseconds() +
+                     exploded.minute * kMinute.InMilliseconds() +
+                     exploded.second * kSecond.InMilliseconds() +
+                     exploded.millisecond;
+  return WeeklyTime(day_of_week, milliseconds, timezone_offset);
+}
 
 }  // namespace
 
-WeeklyTime::WeeklyTime(int day_of_week, int milliseconds)
-    : day_of_week_(day_of_week), milliseconds_(milliseconds) {
+WeeklyTime::WeeklyTime(int day_of_week,
+                       int milliseconds,
+                       base::Optional<int> timezone_offset)
+    : day_of_week_(day_of_week),
+      milliseconds_(milliseconds),
+      timezone_offset_(timezone_offset) {
   DCHECK_GT(day_of_week, 0);
   DCHECK_LE(day_of_week, 7);
   DCHECK_GE(milliseconds, 0);
@@ -41,12 +51,21 @@ std::unique_ptr<base::DictionaryValue> WeeklyTime::ToValue() const {
   auto weekly_time = std::make_unique<base::DictionaryValue>();
   weekly_time->SetInteger("day_of_week", day_of_week_);
   weekly_time->SetInteger("time", milliseconds_);
+  if (timezone_offset_)
+    weekly_time->SetInteger("timezone_offset", timezone_offset_.value());
   return weekly_time;
 }
 
 base::TimeDelta WeeklyTime::GetDurationTo(const WeeklyTime& other) const {
-  int duration = (other.day_of_week() - day_of_week_) * kDay.InMilliseconds() +
-                 other.milliseconds() - milliseconds_;
+  // Can't compare timezone agnostic intervals and non-timezone agnostic
+  // intervals.
+  DCHECK_EQ(timezone_offset_.has_value(), other.timezone_offset().has_value());
+  WeeklyTime other_converted =
+      timezone_offset_ ? other.ConvertToTimezone(timezone_offset_.value())
+                       : other;
+  int duration =
+      (other_converted.day_of_week() - day_of_week_) * kDay.InMilliseconds() +
+      other_converted.milliseconds() - milliseconds_;
   if (duration < 0)
     duration += kWeek.InMilliseconds();
   return base::TimeDelta::FromMilliseconds(duration);
@@ -64,35 +83,40 @@ WeeklyTime WeeklyTime::AddMilliseconds(int milliseconds) const {
   // Convert day of week considering week is cyclic. +/- 1 is
   // because day of week is from 1 to 7.
   int result_day_of_week = (day_of_week_ + day_offset - 1) % 7 + 1;
-  return WeeklyTime(result_day_of_week, result_milliseconds);
+  // AddMilliseconds should preserve the timezone.
+  return WeeklyTime(result_day_of_week, result_milliseconds, timezone_offset_);
 }
 
-base::string16 WeeklyTime::ToLocalizedString() const {
-  // Clock with the current time.
-  base::Clock* default_clock = base::DefaultClock::GetInstance();
-  WeeklyTime now_weekly_time = GetCurrentWeeklyTime(default_clock);
-  // Offset the current time so that its day of the week and time match
-  // |day_of_week| and |milliseconds_|.
-  base::Time offset_time =
-      default_clock->Now() + now_weekly_time.GetDurationTo(*this);
-  return base::TimeFormatWithPattern(offset_time, kFormatWeekdayHourMinute);
+WeeklyTime WeeklyTime::ConvertToTimezone(int timezone_offset) const {
+  DCHECK(timezone_offset_);
+  return WeeklyTime(day_of_week_, milliseconds_, timezone_offset)
+      .AddMilliseconds(timezone_offset - timezone_offset_.value());
+}
+
+WeeklyTime WeeklyTime::ConvertToCustomTimezone(int timezone_offset) const {
+  DCHECK(!timezone_offset_);
+  return WeeklyTime(day_of_week_, milliseconds_, timezone_offset);
 }
 
 // static
-WeeklyTime WeeklyTime::GetCurrentWeeklyTime(base::Clock* clock) {
+WeeklyTime WeeklyTime::GetCurrentGmtWeeklyTime(base::Clock* clock) {
   base::Time::Exploded exploded;
   clock->Now().UTCExplode(&exploded);
-  int day_of_week = exploded.day_of_week == 0 ? 7 : exploded.day_of_week;
-  int milliseconds = exploded.hour * kHour.InMilliseconds() +
-                     exploded.minute * kMinute.InMilliseconds() +
-                     exploded.second * kSecond.InMilliseconds() +
-                     exploded.millisecond;
-  return WeeklyTime(day_of_week, milliseconds);
+  return GetWeeklyTimeFromExploded(exploded, 0);
+}
+
+// static
+WeeklyTime WeeklyTime::GetCurrentLocalWeeklyTime(base::Clock* clock) {
+  base::Time::Exploded exploded;
+  clock->Now().LocalExplode(&exploded);
+  WeeklyTime result = GetWeeklyTimeFromExploded(exploded, base::nullopt);
+  return result;
 }
 
 // static
 std::unique_ptr<WeeklyTime> WeeklyTime::ExtractFromProto(
-    const em::WeeklyTimeProto& container) {
+    const em::WeeklyTimeProto& container,
+    base::Optional<int> timezone_offset) {
   if (!container.has_day_of_week() ||
       container.day_of_week() == em::WeeklyTimeProto::DAY_OF_WEEK_UNSPECIFIED) {
     LOG(ERROR) << "Day of week is absent or unspecified.";
@@ -109,7 +133,8 @@ std::unique_ptr<WeeklyTime> WeeklyTime::ExtractFromProto(
                << ").";
     return nullptr;
   }
-  return std::make_unique<WeeklyTime>(container.day_of_week(), time_of_day);
+  return std::make_unique<WeeklyTime>(container.day_of_week(), time_of_day,
+                                      timezone_offset);
 }
 
 }  // namespace policy

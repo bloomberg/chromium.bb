@@ -95,8 +95,8 @@ class ConvertOffHoursProtoToValueTest : public testing::Test {
 };
 
 TEST_F(ConvertOffHoursProtoToValueTest, Test) {
-  WeeklyTime start = WeeklyTime(1, kHour.InMilliseconds());
-  WeeklyTime end = WeeklyTime(3, kHour.InMilliseconds() * 2);
+  WeeklyTime start = WeeklyTime(1, kHour.InMilliseconds(), 0);
+  WeeklyTime end = WeeklyTime(3, kHour.InMilliseconds() * 2, 0);
   std::vector<WeeklyTimeInterval> intervals = {WeeklyTimeInterval(start, end)};
 
   em::ChromeDeviceSettingsProto proto;

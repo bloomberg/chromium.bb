@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/weekly_time/weekly_time.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -16,6 +17,7 @@ namespace policy {
 // Represents non-empty time interval [start, end) between two weekly times.
 // Interval can be wrapped across the end of the week.
 // Interval is empty if start = end. Empty intervals aren't allowed.
+// Both WeeklyTimes need to have the same timezone_offset.
 class WeeklyTimeInterval {
  public:
   WeeklyTimeInterval(const WeeklyTime& start, const WeeklyTime& end);
@@ -31,18 +33,27 @@ class WeeklyTimeInterval {
   // { "day_of_week" : int # value is from 1 to 7 (1 = Monday, 2 = Tuesday,
   // etc.)
   //   "time" : int # in milliseconds from the beginning of the day.
+  //   "timezone_offset" : int # in milliseconds, how much time ahead of GMT.
   // }
   std::unique_ptr<base::DictionaryValue> ToValue() const;
 
   // Check if |w| is in [WeeklyTimeIntervall.start, WeeklyTimeInterval.end).
   // |end| time is always after |start| time. It's possible because week time is
   // cyclic. (i.e. [Friday 17:00, Monday 9:00) )
+  // |w| must be in the same type of timezone as the interval (timezone agnostic
+  // or in a set timezone).
   bool Contains(const WeeklyTime& w) const;
+
+  // Returns the timezone_offset that |start_| and |end_| have.
+  base::Optional<int> GetIntervalOffset(int timezone_offset) const {
+    return start_.timezone_offset();
+  }
 
   // Return time interval made from WeeklyTimeIntervalProto structure. Return
   // nullptr if the proto contains an invalid interval.
   static std::unique_ptr<WeeklyTimeInterval> ExtractFromProto(
-      const enterprise_management::WeeklyTimeIntervalProto& container);
+      const enterprise_management::WeeklyTimeIntervalProto& container,
+      base::Optional<int> timezone_offset);
 
   WeeklyTime start() const { return start_; }
 

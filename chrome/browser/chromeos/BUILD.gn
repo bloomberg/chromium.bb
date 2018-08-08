@@ -2165,6 +2165,7 @@ source_set("unit_tests") {
     "policy/upload_job_unittest.cc",
     "policy/user_cloud_policy_manager_chromeos_unittest.cc",
     "policy/user_cloud_policy_store_chromeos_unittest.cc",
+    "policy/weekly_time/time_utils_unittest.cc",
     "policy/weekly_time/weekly_time_interval_unittest.cc",
     "policy/weekly_time/weekly_time_unittest.cc",
     "power/cpu_data_collector_unittest.cc",

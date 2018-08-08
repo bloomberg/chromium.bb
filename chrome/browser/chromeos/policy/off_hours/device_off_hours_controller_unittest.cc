@@ -200,13 +200,14 @@ TEST_F(DeviceOffHoursControllerSimpleTest, CheckOffHoursModeOff) {
                    .guest_mode_enabled());
   int current_day_of_week = ExtractDayOfWeek(base::Time::Now());
   SetOffHoursPolicyToProto(
-      &proto, OffHoursPolicy(
-                  kUtcTimezone,
-                  {WeeklyTimeInterval(
-                      WeeklyTime(NextDayOfWeek(current_day_of_week),
-                                 TimeDelta::FromHours(10).InMilliseconds()),
-                      WeeklyTime(NextDayOfWeek(current_day_of_week),
-                                 TimeDelta::FromHours(15).InMilliseconds()))}));
+      &proto,
+      OffHoursPolicy(
+          kUtcTimezone,
+          {WeeklyTimeInterval(
+              WeeklyTime(NextDayOfWeek(current_day_of_week),
+                         TimeDelta::FromHours(10).InMilliseconds(), 0),
+              WeeklyTime(NextDayOfWeek(current_day_of_week),
+                         TimeDelta::FromHours(15).InMilliseconds(), 0))}));
   UpdateDeviceSettings();
   EXPECT_FALSE(device_settings_service_.device_settings()
                    ->guest_mode_enabled()
@@ -224,12 +225,13 @@ TEST_F(DeviceOffHoursControllerSimpleTest, CheckOffHoursModeOn) {
                    .guest_mode_enabled());
   int current_day_of_week = ExtractDayOfWeek(base::Time::Now());
   SetOffHoursPolicyToProto(
-      &proto, OffHoursPolicy(
-                  kUtcTimezone,
-                  {WeeklyTimeInterval(
-                      WeeklyTime(current_day_of_week, 0),
-                      WeeklyTime(NextDayOfWeek(current_day_of_week),
-                                 TimeDelta::FromHours(10).InMilliseconds()))}));
+      &proto,
+      OffHoursPolicy(
+          kUtcTimezone,
+          {WeeklyTimeInterval(
+              WeeklyTime(current_day_of_week, 0, 0),
+              WeeklyTime(NextDayOfWeek(current_day_of_week),
+                         TimeDelta::FromHours(10).InMilliseconds(), 0))}));
   UpdateDeviceSettings();
   EXPECT_TRUE(device_settings_service_.device_settings()
                   ->guest_mode_enabled()
@@ -247,12 +249,13 @@ TEST_F(DeviceOffHoursControllerSimpleTest, NoNetworkSynchronization) {
                    .guest_mode_enabled());
   int current_day_of_week = ExtractDayOfWeek(base::Time::Now());
   SetOffHoursPolicyToProto(
-      &proto, OffHoursPolicy(
-                  kUtcTimezone,
-                  {WeeklyTimeInterval(
-                      WeeklyTime(current_day_of_week, 0),
-                      WeeklyTime(NextDayOfWeek(current_day_of_week),
-                                 TimeDelta::FromHours(10).InMilliseconds()))}));
+      &proto,
+      OffHoursPolicy(
+          kUtcTimezone,
+          {WeeklyTimeInterval(
+              WeeklyTime(current_day_of_week, 0, 0),
+              WeeklyTime(NextDayOfWeek(current_day_of_week),
+                         TimeDelta::FromHours(10).InMilliseconds(), 0))}));
   EXPECT_FALSE(device_settings_service_.device_settings()
                    ->guest_mode_enabled()
                    .guest_mode_enabled());
@@ -273,12 +276,13 @@ TEST_F(DeviceOffHoursControllerSimpleTest,
   proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(false);
   int current_day_of_week = ExtractDayOfWeek(base::Time::Now());
   SetOffHoursPolicyToProto(
-      &proto, OffHoursPolicy(
-                  kUtcTimezone,
-                  {WeeklyTimeInterval(
-                      WeeklyTime(current_day_of_week, 0),
-                      WeeklyTime(NextDayOfWeek(current_day_of_week),
-                                 TimeDelta::FromHours(10).InMilliseconds()))}));
+      &proto,
+      OffHoursPolicy(
+          kUtcTimezone,
+          {WeeklyTimeInterval(
+              WeeklyTime(current_day_of_week, 0, 0),
+              WeeklyTime(NextDayOfWeek(current_day_of_week),
+                         TimeDelta::FromHours(10).InMilliseconds(), 0))}));
   UpdateDeviceSettings();
 
   EXPECT_FALSE(
@@ -326,13 +330,14 @@ TEST_F(DeviceOffHoursControllerFakeClockTest, FakeClock) {
   int current_day_of_week = ExtractDayOfWeek(clock()->Now());
   em::ChromeDeviceSettingsProto& proto(device_policy_.payload());
   SetOffHoursPolicyToProto(
-      &proto, OffHoursPolicy(
-                  kUtcTimezone,
-                  {WeeklyTimeInterval(
-                      WeeklyTime(current_day_of_week,
-                                 TimeDelta::FromHours(14).InMilliseconds()),
-                      WeeklyTime(current_day_of_week,
-                                 TimeDelta::FromHours(15).InMilliseconds()))}));
+      &proto,
+      OffHoursPolicy(
+          kUtcTimezone,
+          {WeeklyTimeInterval(
+              WeeklyTime(current_day_of_week,
+                         TimeDelta::FromHours(14).InMilliseconds(), 0),
+              WeeklyTime(current_day_of_week,
+                         TimeDelta::FromHours(15).InMilliseconds(), 0))}));
   AdvanceTestClock(TimeDelta::FromHours(14));
   UpdateDeviceSettings();
   EXPECT_TRUE(device_off_hours_controller()->is_off_hours_mode());
@@ -347,11 +352,11 @@ TEST_F(DeviceOffHoursControllerFakeClockTest, CheckSendSuspendDone) {
   em::ChromeDeviceSettingsProto& proto(device_policy_.payload());
   SetOffHoursPolicyToProto(
       &proto,
-      OffHoursPolicy(
-          kUtcTimezone,
-          {WeeklyTimeInterval(WeeklyTime(NextDayOfWeek(current_day_of_week), 0),
-                              WeeklyTime(NextDayOfWeek(current_day_of_week),
-                                         kHour.InMilliseconds()))}));
+      OffHoursPolicy(kUtcTimezone,
+                     {WeeklyTimeInterval(
+                         WeeklyTime(NextDayOfWeek(current_day_of_week), 0, 0),
+                         WeeklyTime(NextDayOfWeek(current_day_of_week),
+                                    kHour.InMilliseconds(), 0))}));
   UpdateDeviceSettings();
   EXPECT_FALSE(device_off_hours_controller()->is_off_hours_mode());
 
@@ -392,9 +397,11 @@ INSTANTIATE_TEST_CASE_P(
                 kUtcTimezone,
                 {WeeklyTimeInterval(
                     WeeklyTime(em::WeeklyTimeProto::THURSDAY,
-                               TimeDelta::FromHours(1).InMilliseconds()),
+                               TimeDelta::FromHours(1).InMilliseconds(),
+                               0),
                     WeeklyTime(em::WeeklyTimeProto::THURSDAY,
-                               TimeDelta::FromHours(2).InMilliseconds()))}),
+                               TimeDelta::FromHours(2).InMilliseconds(),
+                               0))}),
             kHour,
             true),
         std::make_tuple(
@@ -402,9 +409,11 @@ INSTANTIATE_TEST_CASE_P(
                 kUtcTimezone,
                 {WeeklyTimeInterval(
                     WeeklyTime(em::WeeklyTimeProto::THURSDAY,
-                               TimeDelta::FromHours(1).InMilliseconds()),
+                               TimeDelta::FromHours(1).InMilliseconds(),
+                               0),
                     WeeklyTime(em::WeeklyTimeProto::THURSDAY,
-                               TimeDelta::FromHours(2).InMilliseconds()))}),
+                               TimeDelta::FromHours(2).InMilliseconds(),
+                               0))}),
             kHour * 2,
             false),
         std::make_tuple(
@@ -412,9 +421,11 @@ INSTANTIATE_TEST_CASE_P(
                 kUtcTimezone,
                 {WeeklyTimeInterval(
                     WeeklyTime(em::WeeklyTimeProto::THURSDAY,
-                               TimeDelta::FromHours(1).InMilliseconds()),
+                               TimeDelta::FromHours(1).InMilliseconds(),
+                               0),
                     WeeklyTime(em::WeeklyTimeProto::THURSDAY,
-                               TimeDelta::FromHours(2).InMilliseconds()))}),
+                               TimeDelta::FromHours(2).InMilliseconds(),
+                               0))}),
             kHour * 1.5,
             true),
         std::make_tuple(
@@ -422,9 +433,11 @@ INSTANTIATE_TEST_CASE_P(
                 kUtcTimezone,
                 {WeeklyTimeInterval(
                     WeeklyTime(em::WeeklyTimeProto::THURSDAY,
-                               TimeDelta::FromHours(1).InMilliseconds()),
+                               TimeDelta::FromHours(1).InMilliseconds(),
+                               0),
                     WeeklyTime(em::WeeklyTimeProto::THURSDAY,
-                               TimeDelta::FromHours(2).InMilliseconds()))}),
+                               TimeDelta::FromHours(2).InMilliseconds(),
+                               0))}),
             kHour * 3,
             false)));
 

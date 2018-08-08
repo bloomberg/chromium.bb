@@ -9,6 +9,7 @@
 
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/policy/weekly_time/weekly_time.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,10 +54,10 @@ class SingleWeeklyTimeIntervalTest
 };
 
 TEST_P(SingleWeeklyTimeIntervalTest, Constructor) {
-  WeeklyTime start =
-      WeeklyTime(start_day_of_week(), start_time() * kMinute.InMilliseconds());
+  WeeklyTime start = WeeklyTime(start_day_of_week(),
+                                start_time() * kMinute.InMilliseconds(), 0);
   WeeklyTime end =
-      WeeklyTime(end_day_of_week(), end_time() * kMinute.InMilliseconds());
+      WeeklyTime(end_day_of_week(), end_time() * kMinute.InMilliseconds(), 0);
   WeeklyTimeInterval interval = WeeklyTimeInterval(start, end);
   EXPECT_EQ(interval.start().day_of_week(), start_day_of_week());
   EXPECT_EQ(interval.start().milliseconds(),
@@ -64,11 +65,14 @@ TEST_P(SingleWeeklyTimeIntervalTest, Constructor) {
   EXPECT_EQ(interval.end().day_of_week(), end_day_of_week());
   EXPECT_EQ(interval.end().milliseconds(),
             end_time() * kMinute.InMilliseconds());
+  EXPECT_EQ(interval.start().timezone_offset(),
+            interval.end().timezone_offset());
+  EXPECT_EQ(interval.start().timezone_offset(), 0);
 }
 
 TEST_P(SingleWeeklyTimeIntervalTest, ToValue) {
-  WeeklyTime start = WeeklyTime(start_day_of_week(), start_time());
-  WeeklyTime end = WeeklyTime(end_day_of_week(), end_time());
+  WeeklyTime start = WeeklyTime(start_day_of_week(), start_time(), 0);
+  WeeklyTime end = WeeklyTime(end_day_of_week(), end_time(), 0);
   WeeklyTimeInterval interval = WeeklyTimeInterval(start, end);
   std::unique_ptr<base::DictionaryValue> interval_value = interval.ToValue();
   base::DictionaryValue expected_interval_value;
@@ -79,7 +83,7 @@ TEST_P(SingleWeeklyTimeIntervalTest, ToValue) {
 
 TEST_P(SingleWeeklyTimeIntervalTest, ExtractFromProto_Empty) {
   em::WeeklyTimeIntervalProto interval_proto;
-  auto result = WeeklyTimeInterval::ExtractFromProto(interval_proto);
+  auto result = WeeklyTimeInterval::ExtractFromProto(interval_proto, 0);
   ASSERT_FALSE(result);
 }
 
@@ -88,7 +92,7 @@ TEST_P(SingleWeeklyTimeIntervalTest, ExtractFromProto_NoEnd) {
   em::WeeklyTimeProto* start = interval_proto.mutable_start();
   start->set_day_of_week(kWeekdays[start_day_of_week()]);
   start->set_time(start_time());
-  auto result = WeeklyTimeInterval::ExtractFromProto(interval_proto);
+  auto result = WeeklyTimeInterval::ExtractFromProto(interval_proto, 0);
   ASSERT_FALSE(result);
 }
 
@@ -97,7 +101,7 @@ TEST_P(SingleWeeklyTimeIntervalTest, ExtractFromProto_NoStart) {
   em::WeeklyTimeProto* end = interval_proto.mutable_end();
   end->set_day_of_week(kWeekdays[end_day_of_week()]);
   end->set_time(end_time());
-  auto result = WeeklyTimeInterval::ExtractFromProto(interval_proto);
+  auto result = WeeklyTimeInterval::ExtractFromProto(interval_proto, 0);
   ASSERT_FALSE(result);
 }
 
@@ -109,7 +113,7 @@ TEST_P(SingleWeeklyTimeIntervalTest, ExtractFromProto_InvalidStart) {
   start->set_time(start_time());
   end->set_day_of_week(kWeekdays[end_day_of_week()]);
   end->set_time(end_time());
-  auto result = WeeklyTimeInterval::ExtractFromProto(interval_proto);
+  auto result = WeeklyTimeInterval::ExtractFromProto(interval_proto, 0);
   ASSERT_FALSE(result);
 }
 
@@ -121,7 +125,7 @@ TEST_P(SingleWeeklyTimeIntervalTest, ExtractFromProto_InvalidEnd) {
   start->set_time(start_time());
   end->set_day_of_week(kWeekdays[0]);
   end->set_time(end_time());
-  auto result = WeeklyTimeInterval::ExtractFromProto(interval_proto);
+  auto result = WeeklyTimeInterval::ExtractFromProto(interval_proto, 0);
   ASSERT_FALSE(result);
 }
 
@@ -133,12 +137,13 @@ TEST_P(SingleWeeklyTimeIntervalTest, ExtractFromProto_Valid) {
   start->set_time(start_time());
   end->set_day_of_week(kWeekdays[end_day_of_week()]);
   end->set_time(end_time());
-  auto result = WeeklyTimeInterval::ExtractFromProto(interval_proto);
+  auto result = WeeklyTimeInterval::ExtractFromProto(interval_proto, 0);
   ASSERT_TRUE(result);
   EXPECT_EQ(result->start().day_of_week(), start_day_of_week());
   EXPECT_EQ(result->start().milliseconds(), start_time());
   EXPECT_EQ(result->end().day_of_week(), end_day_of_week());
   EXPECT_EQ(result->end().milliseconds(), end_time());
+  EXPECT_EQ(result->start().timezone_offset(), 0);
 }
 
 INSTANTIATE_TEST_CASE_P(OneMinuteInterval,
@@ -175,13 +180,13 @@ class WeeklyTimeIntervalAndWeeklyTimeTest
 };
 
 TEST_P(WeeklyTimeIntervalAndWeeklyTimeTest, Contains) {
-  WeeklyTime start =
-      WeeklyTime(start_day_of_week(), start_time() * kMinute.InMilliseconds());
+  WeeklyTime start = WeeklyTime(start_day_of_week(),
+                                start_time() * kMinute.InMilliseconds(), 0);
   WeeklyTime end =
-      WeeklyTime(end_day_of_week(), end_time() * kMinute.InMilliseconds());
+      WeeklyTime(end_day_of_week(), end_time() * kMinute.InMilliseconds(), 0);
   WeeklyTimeInterval interval = WeeklyTimeInterval(start, end);
   WeeklyTime weekly_time = WeeklyTime(
-      current_day_of_week(), current_time() * kMinute.InMilliseconds());
+      current_day_of_week(), current_time() * kMinute.InMilliseconds(), 0);
   EXPECT_EQ(interval.Contains(weekly_time), expected_contains());
 }
 
