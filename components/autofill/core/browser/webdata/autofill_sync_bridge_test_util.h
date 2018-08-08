@@ -9,12 +9,20 @@
 
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/sync/protocol/sync.pb.h"
 
 namespace autofill {
 
 AutofillProfile CreateServerProfile(const std::string& server_id);
 
 CreditCard CreateServerCreditCard(const std::string& server_id);
+
+sync_pb::AutofillWalletSpecifics CreateAutofillWalletSpecificsForAddress(
+    const std::string& specifics_id);
+
+sync_pb::AutofillWalletSpecifics CreateAutofillWalletSpecificsForCard(
+    const std::string& specifics_id,
+    const std::string& billing_address_id = "");
 
 }  // namespace autofill
 

@@ -8,11 +8,13 @@
 #include <memory>
 #include <string>
 
+#include "components/sync/model/entity_change.h"
 #include "components/sync/model/entity_data.h"
 
 namespace autofill {
 
 class AutofillProfile;
+class AutofillTable;
 class CreditCard;
 
 // Returns the wallet specifics id for the specified |server_id|.
@@ -40,6 +42,10 @@ void SetAutofillWalletSpecificsFromServerProfile(
 std::unique_ptr<syncer::EntityData> CreateEntityDataFromAutofillServerProfile(
     const AutofillProfile& address);
 
+// Creates an AutofillProfile from the specified |address| specifics.
+AutofillProfile ProfileFromSpecifics(
+    const sync_pb::WalletPostalAddress& address);
+
 // Sets the fields of the |wallet_specifics| based on the the specified |card|.
 void SetAutofillWalletSpecificsFromServerCard(
     const CreditCard& card,
@@ -48,6 +54,26 @@ void SetAutofillWalletSpecificsFromServerCard(
 // Creates a EntityData object corresponding to the specified |card|.
 std::unique_ptr<syncer::EntityData> CreateEntityDataFromCard(
     const CreditCard& card);
+
+// Creates an AutofillProfile from the specified |card| specifics.
+CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card);
+
+// TODO(sebsg): This should probably copy the converted state for the address
+// too.
+// Copies the metadata from the local cards (if present) to the corresponding
+// server cards so that they don't get overwritten. This is because the wallet
+// data does not include those. They are handled by the
+// AutofillWalletMetadataSyncBridge.
+void CopyRelevantWalletMetadataFromDisk(
+    const AutofillTable& table,
+    std::vector<CreditCard>* cards_from_server);
+
+// Populates the wallet cards and addresses from the sync data and uses the
+// sync data to link the card to its billing address.
+void PopulateWalletCardsAndAddresses(
+    const ::syncer::EntityChangeList& entity_data,
+    std::vector<CreditCard>* wallet_cards,
+    std::vector<AutofillProfile>* wallet_addresses);
 
 }  // namespace autofill
 

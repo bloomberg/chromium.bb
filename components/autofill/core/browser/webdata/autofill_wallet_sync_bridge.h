@@ -19,9 +19,11 @@
 
 namespace autofill {
 
+class AutofillProfile;
 class AutofillTable;
 class AutofillWebDataBackend;
 class AutofillWebDataService;
+class CreditCard;
 
 // Sync bridge responsible for propagating local changes to the processor and
 // applying remote changes to the local database.
@@ -59,12 +61,40 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
 
  private:
+  struct AutofillWalletDiff {
+    int items_added = 0;
+    int items_removed = 0;
+
+    bool IsEmpty() const { return items_added == 0 && items_removed == 0; }
+  };
+
+  // Sets the wallet data from |entity_data| to this client. Records metrics
+  // about added/deleted data if not the |is_initial_data|.
+  void SetSyncData(const syncer::EntityChangeList& entity_data,
+                   bool is_initial_data);
+
+  // Computes a "diff" (items added, items removed) of two vectors of items,
+  // which should be either CreditCard or AutofillProfile. This is used for two
+  // purposes:
+  // 1) Detecting if anything has changed, so that we don't write to disk in the
+  //    common case where nothing has changed.
+  // 2) Recording metrics on the number of added/removed items.
+  // This is exposed as a static method so that it can be tested.
+  template <class Item>
+  static AutofillWalletDiff ComputeAutofillWalletDiff(
+      const std::vector<std::unique_ptr<Item>>& old_data,
+      const std::vector<Item>& new_data);
+
   // Returns the table associated with the |web_data_backend_|.
   AutofillTable* GetAutofillTable();
 
   // AutofillProfileSyncBridge is owned by |web_data_backend_| through
   // SupportsUserData, so it's guaranteed to outlive |this|.
   AutofillWebDataBackend* const web_data_backend_;
+
+  // Synchronously load sync metadata from the autofill table and pass it to the
+  // processor so that it can start tracking changes.
+  void LoadMetadata();
 
   // The bridge should be used on the same sequence where it is constructed.
   SEQUENCE_CHECKER(sequence_checker_);
