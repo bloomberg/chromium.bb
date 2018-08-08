@@ -162,11 +162,19 @@
     'viz_benchmark',
     'webkit_unit_tests',
     'wtf_unittests',
+
+    # TODO(tikuta): Remove this when crbug.com/870584 is fixed.
+    'v8_context_snapshot.bin',
   ],
 
   # https://crbug.com/330260
   'win': [
     'crashpad_snapshot_test_image_reader.exe',
     'crashpad_snapshot_test_image_reader_module.dll',
+    'mini_installer.exe',
+    'previous_version_mini_installer.exe',
+
+    # TODO(tikuta): Remove this when crbug.com/870584 is fixed.
+    'v8_context_snapshot.bin',
   ],
 }
