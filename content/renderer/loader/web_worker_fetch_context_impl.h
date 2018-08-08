@@ -29,6 +29,7 @@ class Message;
 
 namespace content {
 
+class FrameRequestBlocker;
 class ResourceDispatcher;
 class ThreadSafeSender;
 class URLLoaderThrottleProvider;
@@ -114,6 +115,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   void set_is_controlled_by_service_worker(
       blink::mojom::ControllerServiceWorkerMode mode);
   void set_ancestor_frame_id(int id);
+  void set_frame_request_blocker(
+      scoped_refptr<FrameRequestBlocker> frame_request_blocker);
   void set_site_for_cookies(const blink::WebURL& site_for_cookies);
   // Sets whether the worker context is a secure context.
   // https://w3c.github.io/webappsec-secure-contexts/
@@ -195,6 +198,10 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // workers, this is the shadow page.
   bool is_on_sub_frame_ = false;
   int ancestor_frame_id_ = MSG_ROUTING_NONE;
+  // Set to non-null if the ancestor frame has an associated RequestBlocker,
+  // which blocks requests from this worker too when the ancestor frame is
+  // blocked.
+  scoped_refptr<FrameRequestBlocker> frame_request_blocker_;
   GURL site_for_cookies_;
   bool is_secure_context_ = false;
   GURL origin_url_;

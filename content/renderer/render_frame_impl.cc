@@ -1619,6 +1619,8 @@ void RenderFrameImpl::Initialize() {
     enabled_bindings_ |= BINDINGS_POLICY_DOM_AUTOMATION;
   if (command_line.HasSwitch(switches::kStatsCollectionController))
     enabled_bindings_ |= BINDINGS_POLICY_STATS_COLLECTION;
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    frame_request_blocker_ = base::MakeRefCounted<FrameRequestBlocker>();
 }
 
 void RenderFrameImpl::InitializeBlameContext(RenderFrameImpl* parent_frame) {
@@ -3031,6 +3033,18 @@ void RenderFrameImpl::GetCanonicalUrlForSharing(
                               : base::make_optional(GURL(canonical_url)));
 }
 
+void RenderFrameImpl::BlockRequests() {
+  frame_request_blocker_->Block();
+}
+
+void RenderFrameImpl::ResumeBlockedRequests() {
+  frame_request_blocker_->Resume();
+}
+
+void RenderFrameImpl::CancelBlockedRequests() {
+  frame_request_blocker_->Cancel();
+}
+
 void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {
   if (IsMainFrame() && (enabled_bindings_flags & BINDINGS_POLICY_WEB_UI) &&
       !(enabled_bindings_ & BINDINGS_POLICY_WEB_UI)) {
@@ -3601,6 +3615,7 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       ChildThreadImpl::current()->GetConnector()->Clone());
 
   worker_fetch_context->set_ancestor_frame_id(routing_id_);
+  worker_fetch_context->set_frame_request_blocker(frame_request_blocker_);
   worker_fetch_context->set_site_for_cookies(
       frame_->GetDocument().SiteForCookies());
   worker_fetch_context->set_is_secure_context(
@@ -4910,6 +4925,7 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
       is_for_no_state_prefetch && resource_type != RESOURCE_TYPE_MAIN_FRAME);
   extra_data->set_initiated_in_secure_context(frame_document.IsSecureContext());
   extra_data->set_attach_same_site_cookies(attach_same_site_cookies);
+  extra_data->set_frame_request_blocker(frame_request_blocker_);
 
   // The RenderThreadImpl or its URLLoaderThrottleProvider member may not be
   // valid in some tests.
