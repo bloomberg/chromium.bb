@@ -285,11 +285,6 @@ VizProcessTransportFactory::GetContextFactoryPrivate() {
   return this;
 }
 
-viz::GLHelper* VizProcessTransportFactory::GetGLHelper() {
-  NOTREACHED();  // Readback happens in the GPU process and this isn't used.
-  return nullptr;
-}
-
 void VizProcessTransportFactory::OnContextLost() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
