@@ -477,19 +477,29 @@ void LocationBarView::Layout() {
 
   int leading_edit_item_padding = item_padding;
   if (OmniboxFieldTrial::IsJogTextfieldOnPopupEnabled()) {
-    // With jog enabled, the text should be indented only when the popup is open
-    // and the location icon view does *not* have a label. In most cases, we
-    // only care that the popup is open, in which case we indent to align with
-    // the text in the popup. But if there's text in the location icon view
-    // (which can happen with zero suggest, which continues to show security or
-    // EV cert text at the same time as the popup is open), the text in the
-    // omnibox can't align with the text of the suggestions, so the indent just
-    // moves the text for no apparent reason.
-
+    // With jog enabled, the text should be indented only if these are all true:
+    //  - The popup is open.
+    //  - The location icon view does *not* have a label.
+    //  - The selected keyword view is *not* shown.
+    //
+    // In most cases, we only care that the popup is open, in which case we
+    // indent to align with the text in the popup. But there's two edge cases:
+    //  - If there is text in the location icon view (which can happen with zero
+    //    suggest, which continues to show security or EV cert text at the same
+    //    time as the popup is open), the text in the omnibox can't align with
+    //    the text of the suggestions, so the indent just moves the text for no
+    //    apparent reason.
+    //  - If there is a selected keyword label (i.e. "Search Google") shown, we
+    //    already indent this label to align with the suggestions text, so
+    //    further indenting the textfield just moves the text for no apparent
+    //    reason.
+    //
     // TODO(jdonnelly): The better solution may be to remove the location icon
     // text when zero suggest triggers.
     const bool should_indent = GetOmniboxPopupView()->IsOpen() &&
-                               !location_icon_view_->ShouldShowLabel();
+                               !location_icon_view_->ShouldShowLabel() &&
+                               !ShouldShowKeywordBubble();
+
     // We have an odd indent value because this is what matches the odd text
     // indent value in OmniboxMatchCellView.
     constexpr int kTextJogIndentDp = 11;
