@@ -9,10 +9,12 @@
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/favicon/ios/web_favicon_driver.h"
+#include "components/sessions/core/tab_restore_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -99,6 +101,8 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 @property(nonatomic, weak) id<GridConsumer> consumer;
 // The saved session window just before close all tabs is called.
 @property(nonatomic, strong) SessionWindowIOS* closedSessionWindow;
+// The number of tabs closed when close all tabs is called.
+@property(nonatomic, assign) int closedTabsCount;
 @end
 
 @implementation TabGridMediator {
@@ -118,6 +122,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 @synthesize webStateList = _webStateList;
 @synthesize consumer = _consumer;
 @synthesize closedSessionWindow = _closedSessionWindow;
+@synthesize closedTabsCount = _closedTabsCount;
 
 - (instancetype)initWithConsumer:(id<GridConsumer>)consumer {
   if (self = [super init]) {
@@ -285,6 +290,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
     [cache markImageWithSessionID:tabHelper->tab_id()];
   }
   self.closedSessionWindow = SerializeWebStateList(self.webStateList);
+  self.closedTabsCount = self.webStateList->count();
   self.webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
 }
 
@@ -298,6 +304,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
       base::BindRepeating(&web::WebState::CreateWithStorageSession,
                           createParams));
   self.closedSessionWindow = nil;
+  [self removeEntriesFromTabRestoreService];
   // Unmark all images for deletion since they are now active tabs again.
   ios::ChromeBrowserState* browserState = self.tabModel.browserState;
   [SnapshotCacheFactory::GetForBrowserState(browserState) unmarkAllImages];
@@ -306,6 +313,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 - (void)discardSavedClosedItems {
   if (!self.closedSessionWindow)
     return;
+  self.closedTabsCount = 0;
   self.closedSessionWindow = nil;
   // Delete all marked images from the cache.
   DCHECK(self.tabModel.browserState);
@@ -365,6 +373,25 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
     [self.consumer populateItems:CreateItems(self.webStateList)
                   selectedItemID:GetActiveTabId(self.webStateList)];
   }
+}
+
+// Removes |self.closedTabsCount| most recent entries from the
+// TabRestoreService.
+- (void)removeEntriesFromTabRestoreService {
+  sessions::TabRestoreService* tabRestoreService =
+      IOSChromeTabRestoreServiceFactory::GetForBrowserState(
+          self.tabModel.browserState);
+  std::vector<SessionID> identifiers;
+  auto iter = tabRestoreService->entries().begin();
+  auto end = tabRestoreService->entries().end();
+  for (int i = 0; i < self.closedTabsCount && iter != end; i++) {
+    identifiers.push_back(iter->get()->id);
+    iter++;
+  }
+  for (const SessionID sessionID : identifiers) {
+    tabRestoreService->RemoveTabEntryById(sessionID);
+  }
+  self.closedTabsCount = 0;
 }
 
 @end
