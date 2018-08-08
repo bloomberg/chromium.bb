@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -40,6 +41,20 @@ void LogQueryDuration(net::Error error, const base::TimeDelta& duration) {
   if (error == net::OK) {
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "Net.CertificateTransparency.DnsQueryDuration.Success", duration);
+  }
+}
+
+void LogQueryResult(const std::string& name,
+                    net::Error error,
+                    const net::DnsResponse* response) {
+  base::UmaHistogramSparse(
+      base::StrCat({"Net.CertificateTransparency.DnsQuery", name, "Error"}),
+      -error);
+
+  if (response) {
+    base::UmaHistogramSparse(
+        base::StrCat({"Net.CertificateTransparency.DnsQuery", name, "Rcode"}),
+        response->rcode());
   }
 }
 
@@ -250,6 +265,7 @@ AuditProofQueryImpl::AuditProofQueryImpl(net::DnsClient* dns_client,
     : next_state_(State::NONE),
       domain_for_log_(domain_for_log),
       dns_client_(dns_client),
+      last_dns_response_(nullptr),
       net_log_(net_log),
       weak_ptr_factory_(this) {
   DCHECK(dns_client_);
@@ -297,10 +313,8 @@ net::Error AuditProofQueryImpl::DoLoop(net::Error result) {
         break;
       case State::REQUEST_LEAF_INDEX_COMPLETE:
         result = RequestLeafIndexComplete(result);
-        if (result == net::OK) {
-          base::UmaHistogramSparse(
-              "Net.CertificateTransparency.DnsQueryLeafIndexError", net::OK);
-        }
+        if (result == net::OK)
+          LogQueryResult("LeafIndex", net::OK, last_dns_response_);
         break;
       case State::REQUEST_AUDIT_PROOF_NODES:
         result = RequestAuditProofNodes();
@@ -321,14 +335,12 @@ net::Error AuditProofQueryImpl::DoLoop(net::Error result) {
       case State::REQUEST_LEAF_INDEX:
       case State::REQUEST_LEAF_INDEX_COMPLETE:
         // An error must have occurred if the query completed in this state.
-        base::UmaHistogramSparse(
-            "Net.CertificateTransparency.DnsQueryLeafIndexError", -result);
+        LogQueryResult("LeafIndex", result, last_dns_response_);
         break;
       case State::REQUEST_AUDIT_PROOF_NODES:
       case State::REQUEST_AUDIT_PROOF_NODES_COMPLETE:
         // The query may have completed successfully.
-        base::UmaHistogramSparse(
-            "Net.CertificateTransparency.DnsQueryAuditProofError", -result);
+        LogQueryResult("AuditProof", result, last_dns_response_);
         break;
       case State::NONE:
         NOTREACHED();
@@ -453,6 +465,7 @@ bool AuditProofQueryImpl::StartDnsTransaction(const std::string& qname) {
     return false;
   }
 
+  last_dns_response_ = nullptr;
   current_dns_transaction_ = factory->CreateTransaction(
       qname, net::dns_protocol::kTypeTXT,
       base::BindOnce(&AuditProofQueryImpl::OnDnsTransactionComplete,
