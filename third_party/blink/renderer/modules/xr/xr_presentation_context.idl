@@ -5,6 +5,7 @@
 // https://immersive-web.github.io/webxr/#xrpresentationcontext-interface
 [
     SecureContext,
+    Exposed=Window,
     OriginTrialEnabled=WebXR
 ] interface XRPresentationContext {
     // back-reference to the canvas

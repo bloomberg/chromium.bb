@@ -12,6 +12,7 @@ enum XRFrameOfReferenceType {
 
 [
     SecureContext,
+    Exposed=Window,
     OriginTrialEnabled=WebXR
 ] interface XRFrameOfReference : XRCoordinateSystem {
   readonly attribute XRStageBounds? bounds;

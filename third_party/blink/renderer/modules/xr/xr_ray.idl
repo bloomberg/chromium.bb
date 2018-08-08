@@ -3,7 +3,11 @@
 // found in the LICENSE file.
 
 // https://immersive-web.github.io/webxr/#xrray-interface
-[SecureContext, OriginTrialEnabled=WebXR] interface XRRay {
+[
+    SecureContext,
+    Exposed=Window,
+    OriginTrialEnabled=WebXR
+] interface XRRay {
   readonly attribute DOMPointReadOnly origin;
   readonly attribute DOMPointReadOnly direction;
   readonly attribute Float32Array transformMatrix;

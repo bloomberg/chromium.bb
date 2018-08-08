@@ -11,6 +11,7 @@ enum XREnvironmentBlendMode {
 
 [
     SecureContext,
+    Exposed=Window,
     OriginTrialEnabled=WebXR
 ] interface XRSession : EventTarget {
   readonly attribute XRDevice device;

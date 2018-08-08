@@ -4,6 +4,7 @@
 
 [
     SecureContext,
+    Exposed=Window,
     OriginTrialEnabled=WebXR,
     Constructor(DOMString type, XRInputSourceEventInit eventInitDict)
 ] interface XRInputSourceEvent : Event {

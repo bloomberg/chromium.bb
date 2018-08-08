@@ -15,6 +15,7 @@ enum XRTargetRayMode {
 
 [
     SecureContext,
+    Exposed=Window,
     OriginTrialEnabled=WebXR
 ] interface XRInputSource {
   readonly attribute XRHandedness handedness;
