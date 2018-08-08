@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import contextlib
 import functools
 import json
@@ -28,8 +30,12 @@ DISABLE_METRICS_COLLECTION = os.environ.get('DEPOT_TOOLS_METRICS') == '0'
 DEFAULT_COUNTDOWN = 10
 
 INVALID_CONFIG_WARNING = (
-    'WARNING: Your metrics.cfg file was invalid or nonexistent. A new one has '
-    'been created'
+    'WARNING: Your metrics.cfg file was invalid or nonexistent. A new one will '
+    'been created.'
+)
+PERMISSION_DENIED_WARNING = (
+    'Could not write the metrics collection config:\n\t%s\n'
+    'Metrics collection will be disabled.'
 )
 
 
@@ -65,13 +71,17 @@ class _Config(object):
     self._config.setdefault('opt-in', None)
 
     if config != self._config:
-      print INVALID_CONFIG_WARNING
+      print(INVALID_CONFIG_WARNING, file=sys.stderr)
       self._write_config()
 
     self._initialized = True
 
   def _write_config(self):
-    gclient_utils.FileWrite(CONFIG_FILE, json.dumps(self._config))
+    try:
+      gclient_utils.FileWrite(CONFIG_FILE, json.dumps(self._config))
+    except IOError as e:
+      print(PERMISSION_DENIED_WARNING % e, file=sys.stderr)
+      self._config['opt-in'] = False
 
   @property
   def is_googler(self):

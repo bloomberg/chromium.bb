@@ -72,6 +72,51 @@ class MetricsCollectorTest(unittest.TestCase):
 
     self.addCleanup(mock.patch.stopall)
 
+  def assert_writes_file(self, expected_filename, expected_content):
+    self.assertEqual(len(self.FileWrite.mock_calls), 1)
+    filename, content = self.FileWrite.mock_calls[0][1]
+
+    self.assertEqual(filename, expected_filename)
+    self.assertEqual(json.loads(content), expected_content)
+
+  def test_writes_config_if_not_exists(self):
+    self.FileRead.side_effect = [IOError(2, "No such file or directory")]
+    mock_response = mock.Mock()
+    self.urllib2.urlopen.side_effect = [mock_response]
+    mock_response.getcode.side_effect = [200]
+
+    self.assertTrue(self.collector.config.is_googler)
+    self.assertIsNone(self.collector.config.opted_in)
+    self.assertEqual(self.collector.config.countdown, 10)
+
+    self.assert_writes_file(
+        self.config_file, {'is-googler': True, 'countdown': 10, 'opt-in': None})
+
+  def test_writes_config_if_not_exists_non_googler(self):
+    self.FileRead.side_effect = [IOError(2, "No such file or directory")]
+    mock_response = mock.Mock()
+    self.urllib2.urlopen.side_effect = [mock_response]
+    mock_response.getcode.side_effect = [403]
+
+    self.assertFalse(self.collector.config.is_googler)
+    self.assertIsNone(self.collector.config.opted_in)
+    self.assertEqual(self.collector.config.countdown, 10)
+
+    self.assert_writes_file(
+        self.config_file,
+        {'is-googler': False, 'countdown': 10, 'opt-in': None})
+
+  def test_disables_metrics_if_cant_write_config(self):
+    self.FileRead.side_effect = [IOError(2, 'No such file or directory')]
+    mock_response = mock.Mock()
+    self.urllib2.urlopen.side_effect = [mock_response]
+    mock_response.getcode.side_effect = [200]
+    self.FileWrite.side_effect = [IOError(13, 'Permission denied.')]
+
+    self.assertTrue(self.collector.config.is_googler)
+    self.assertFalse(self.collector.config.opted_in)
+    self.assertEqual(self.collector.config.countdown, 10)
+
   def assert_collects_metrics(self, update_metrics=None):
     expected_metrics = self.default_metrics
     self.default_metrics.update(update_metrics or {})
@@ -357,12 +402,8 @@ class MetricsCollectorTest(unittest.TestCase):
     self.assertEqual(self.collector.config.countdown, 9)
     self.print_notice.assert_called_once_with(10)
 
-    self.assertEqual(len(self.FileWrite.mock_calls), 1)
-    config_file, config = self.FileWrite.mock_calls[0][1]
-
-    self.assertEqual(config_file, self.config_file)
-    self.assertEqual(json.loads(config),
-                     {'is-googler': True, 'countdown': 9, 'opt-in': None})
+    self.assert_writes_file(
+        self.config_file, {'is-googler': True, 'countdown': 9, 'opt-in': None})
 
   def test_nested_functions(self):
     """Tests that a function can call another function for which metrics are
