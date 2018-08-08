@@ -54,6 +54,7 @@ class SynchronousCompositorHost : public SynchronousCompositor,
       uint32_t layer_tree_frame_sink_id,
       const std::vector<viz::ReturnedResource>& resources) override;
   void SetMemoryPolicy(size_t bytes_limit) override;
+  void DidBecomeActive() override;
   void DidChangeRootLayerScrollOffset(
       const gfx::ScrollOffset& root_offset) override;
   void SynchronouslyZoomBy(float zoom_delta, const gfx::Point& anchor) override;
@@ -102,6 +103,7 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   // Whether the synchronous compositor host is ready to
   // handle blocking calls.
   bool IsReadyForSynchronousCall();
+  void UpdateRootLayerStateOnClient();
 
   RenderWidgetHostViewAndroid* const rwhva_;
   SynchronousCompositorClient* const client_;
@@ -144,6 +146,11 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   bool invalidate_needs_draw_;
   uint32_t did_activate_pending_tree_count_;
   uint32_t frame_metadata_version_ = 0u;
+  gfx::ScrollOffset max_scroll_offset_;
+  gfx::SizeF scrollable_size_;
+  float page_scale_factor_ = 0.f;
+  float min_page_scale_factor_ = 0.f;
+  float max_page_scale_factor_ = 0.f;
 
   scoped_refptr<SynchronousCompositorSyncCallBridge> bridge_;
 

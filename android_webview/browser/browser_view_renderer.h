@@ -155,6 +155,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   bool window_visible_for_tests() const { return window_visible_; }
 
  private:
+  void SetActiveCompositor(content::SynchronousCompositor* compositor);
   void SetTotalRootLayerScrollOffset(const gfx::Vector2dF& new_value_dip);
   bool CanOnDraw();
   bool CompositeSW(SkCanvas* canvas);
