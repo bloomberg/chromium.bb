@@ -7127,10 +7127,5 @@
         "test": "wtf_unittests"
       }
     ]
-  },
-  "win-asan": {
-    "additional_compile_targets": [
-      "base_unittests"
-    ]
   }
 }
