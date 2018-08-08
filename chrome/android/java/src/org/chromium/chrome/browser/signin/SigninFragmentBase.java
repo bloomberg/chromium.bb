@@ -292,6 +292,11 @@ public abstract class SigninFragmentBase
 
         updateConsentText();
         setHasAccounts(true); // Assume there are accounts, updateAccounts will set the real value.
+
+        // When a fragment that was in the FragmentManager backstack becomes visible again, the view
+        // will be recreated by onCreateView. Update the state of this recreated UI.
+        if (mSelectedAccountName != null) updateProfileData();
+
         return mView;
     }
 
