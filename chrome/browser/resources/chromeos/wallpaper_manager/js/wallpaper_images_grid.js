@@ -642,6 +642,14 @@ cr.define('wallpapers', function() {
     },
 
     /**
+     * The opacity that the slideshow images should have.
+     * @type {number} opacity The desired opacity.
+     */
+    get slideShowImageOpacity() {
+      return this.classList.contains('image-picker-offline') ? 0.5 : 1;
+    },
+
+    /**
      * The selected item.
      * @type {!Object} Wallpaper information inserted into the data model.
      */
@@ -724,7 +732,7 @@ cr.define('wallpapers', function() {
       }
 
       slideShowImage.style.opacity =
-          this.dailyRefreshImages.length == 0 ? 1 : 0;
+          this.dailyRefreshImages.length == 0 ? this.slideShowImageOpacity : 0;
       slideShowImage.classList.add('slide-show');
       this.dailyRefreshItem.insertBefore(
           slideShowImage, this.dailyRefreshItem.firstChild);
@@ -741,7 +749,7 @@ cr.define('wallpapers', function() {
       if (images.length <= index)
         return;
       for (var i = 0; i < images.length; ++i) {
-        images[i].style.opacity = i === index ? 1 : 0;
+        images[i].style.opacity = i === index ? this.slideShowImageOpacity : 0;
       }
       var nextIndex = (index + 1) % images.length;
       this.dailyRefreshTimer_ =

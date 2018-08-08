@@ -389,9 +389,6 @@ chrome.app.runtime.onLaunched.addListener(function() {
             'focus', function() {
               chrome.wallpaperPrivate.minimizeInactiveWindows();
             });
-        window.onMinimized.addListener(function() {
-          chrome.wallpaperPrivate.restoreMinimizedWindows();
-        });
       }
       WallpaperUtil.testSendMessage('wallpaper-window-created');
     });

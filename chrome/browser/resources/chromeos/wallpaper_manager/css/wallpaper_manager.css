@@ -448,7 +448,7 @@ body.v2 {
 .v2 #categories-list > li > div {
   color: rgb(95, 99, 104);
   font-family: 'Roboto';
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   padding: 0 30px;
 }
@@ -464,7 +464,6 @@ body.v2 {
 
 .v2 #categories-list > li[selected] > div {
   color: rgb(26, 115, 232);
-  font-weight: 700;
 }
 
 .v2 #surprise-me {
@@ -521,6 +520,7 @@ body.v2 {
   border-radius: 4px;
   box-shadow: 0 4px 8px rgba(32, 33, 36, 0.17);
   transform: scale(0.8);
+  transition: transform 240ms;
 }
 
 .v2 .image-picker .check {
@@ -600,7 +600,7 @@ body.v2 {
 }
 
 .v2 .top-header-contents > div:not(.divider) {
-  padding-top: 15px;
+  padding-top: 16px;
 }
 
 .v2 .top-header-contents #cancel-preview-wallpaper {
@@ -609,7 +609,7 @@ body.v2 {
   background-size: 20px 20px;
   height: 4px;
   margin-inline-start: 16px;
-  margin-top: 12px;
+  margin-top: 13px;
   padding-inline-start: 32px;
 }
 
@@ -826,6 +826,10 @@ html[dir='rtl'] .v2 .top-header-contents .more-options {
 
 .v2 .image-picker-offline img.slide-show {
   -webkit-filter: grayscale(1);
+}
+
+.v2 .image-picker-offline img:not([offline]) {
+  opacity: 0.5;
 }
 
 .v2 .daily-refresh-slider::before {
