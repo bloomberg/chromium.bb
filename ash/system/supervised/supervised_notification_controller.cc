@@ -79,8 +79,8 @@ void SupervisedNotificationController::CreateOrUpdateNotification() {
       Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL),
-          GetSupervisedUserMessage(), gfx::Image(),
-          base::string16() /* display_source */, GURL(),
+          GetSupervisedUserMessage(), base::string16() /* display_source */,
+          GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               kNotifierSupervisedUser),

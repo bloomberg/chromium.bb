@@ -137,7 +137,7 @@ bool PowerNotificationController::MaybeShowUsbChargerNotification() {
                 IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE),
             ui::SubstituteChromeOSDeviceType(
                 IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE_SHORT),
-            gfx::Image(), base::string16(), GURL(),
+            base::string16(), GURL(),
             message_center::NotifierId(
                 message_center::NotifierId::SYSTEM_COMPONENT, kNotifierPower),
             message_center::RichNotificationData(),

@@ -142,7 +142,7 @@ void AssistantNotificationController::OnShowNotification(
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
           GetNotificationId(notification->grouping_key), title, message,
-          gfx::Image(), display_source, GURL(), notifier_id_, optional_field,
+          display_source, GURL(), notifier_id_, optional_field,
           new AssistantNotificationDelegate(weak_factory_.GetWeakPtr(),
                                             assistant_controller_->GetWeakPtr(),
                                             notification.Clone()),

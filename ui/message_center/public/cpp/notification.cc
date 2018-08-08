@@ -160,12 +160,11 @@ std::unique_ptr<Notification> Notification::CreateSystemNotification(
     const std::string& notification_id,
     const base::string16& title,
     const base::string16& message,
-    const gfx::Image& icon,
     const std::string& system_component_id,
     const base::RepeatingClosure& click_callback) {
   DCHECK(!click_callback.is_null());
   std::unique_ptr<Notification> notification = CreateSystemNotification(
-      NOTIFICATION_TYPE_SIMPLE, notification_id, title, message, icon,
+      NOTIFICATION_TYPE_SIMPLE, notification_id, title, message,
       base::string16() /* display_source */, GURL(),
       NotifierId(NotifierId::SYSTEM_COMPONENT, system_component_id),
       RichNotificationData(),
@@ -181,7 +180,6 @@ std::unique_ptr<Notification> Notification::CreateSystemNotification(
     const std::string& id,
     const base::string16& title,
     const base::string16& message,
-    const gfx::Image& icon,
     const base::string16& display_source,
     const GURL& origin_url,
     const NotifierId& notifier_id,
@@ -203,8 +201,8 @@ std::unique_ptr<Notification> Notification::CreateSystemNotification(
       break;
   }
   std::unique_ptr<Notification> notification = std::make_unique<Notification>(
-      type, id, title, message, icon, display_source, origin_url, notifier_id,
-      optional_fields, delegate);
+      type, id, title, message, gfx::Image(), display_source, origin_url,
+      notifier_id, optional_fields, delegate);
   notification->set_accent_color(color);
   if (!small_image.is_empty())
     notification->set_vector_small_image(small_image);

@@ -155,7 +155,7 @@ void ShowDisplayErrorNotification(const base::string16& message,
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kDisplayErrorNotificationId,
           base::string16(),  // title
-          message, gfx::Image(),
+          message,
           base::string16(),  // display_source
           GURL(),
           message_center::NotifierId(

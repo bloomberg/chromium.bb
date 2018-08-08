@@ -102,7 +102,6 @@ void ShowSupervisionTransitionNotification(Profile* profile) {
           kSupervisionTransitionNotificationId,
           l10n_util::GetStringUTF16(IDS_ARC_CHILD_TRANSITION_TITLE),
           l10n_util::GetStringUTF16(IDS_ARC_CHILD_TRANSITION_MESSAGE),
-          gfx::Image(),
           l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_DISPLAY_SOURCE),
           GURL(), notifier_id, message_center::RichNotificationData(),
           new NotificationDelegate(profile), ash::kNotificationFamilyLinkIcon,

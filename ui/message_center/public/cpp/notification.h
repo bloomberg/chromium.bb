@@ -443,7 +443,6 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
       const std::string& notification_id,
       const base::string16& title,
       const base::string16& message,
-      const gfx::Image& icon,
       const std::string& system_component_id,
       const base::RepeatingClosure& click_callback);
 
@@ -457,7 +456,6 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
       const std::string& id,
       const base::string16& title,
       const base::string16& message,
-      const gfx::Image& icon,
       const base::string16& display_source,
       const GURL& origin_url,
       const NotifierId& notifier_id,

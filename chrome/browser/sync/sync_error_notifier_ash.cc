@@ -110,7 +110,6 @@ void SyncErrorNotifier::OnErrorChanged() {
           l10n_util::GetStringUTF16(IDS_SYNC_ERROR_BUBBLE_VIEW_TITLE),
           l10n_util::GetStringUTF16(
               IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE),
-          gfx::Image(),
           l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
           GURL(notification_id_), notifier_id,
           message_center::RichNotificationData(),

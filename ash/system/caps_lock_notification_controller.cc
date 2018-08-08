@@ -37,7 +37,7 @@ std::unique_ptr<Notification> CreateNotification() {
       Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kCapsLockNotificationId,
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED),
-          l10n_util::GetStringUTF16(string_id), gfx::Image(),
+          l10n_util::GetStringUTF16(string_id),
           base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT, kNotifierCapsLock),

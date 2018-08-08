@@ -98,7 +98,7 @@ void CastNotificationController::ShowNotification(
         Notification::CreateSystemNotification(
             message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
             GetNotificationTitle(sink, route), GetNotificationMessage(route),
-            gfx::Image(), base::string16() /* display_source */, GURL(),
+            base::string16() /* display_source */, GURL(),
             message_center::NotifierId(
                 message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId),
             data,

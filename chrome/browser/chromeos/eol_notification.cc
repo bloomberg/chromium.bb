@@ -152,7 +152,7 @@ void EolNotification::Update() {
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kEolNotificationId,
           GetStringUTF16(IDS_EOL_NOTIFICATION_TITLE),
-          GetStringUTF16(IDS_EOL_NOTIFICATION_EOL), gfx::Image(),
+          GetStringUTF16(IDS_EOL_NOTIFICATION_EOL),
           GetStringUTF16(IDS_EOL_NOTIFICATION_DISPLAY_SOURCE),
           GURL(kEolNotificationId),
           message_center::NotifierId(

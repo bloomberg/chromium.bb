@@ -242,8 +242,8 @@ MultiDeviceNotificationPresenter::CreateNotification(
     const base::string16& message) {
   return message_center::Notification::CreateSystemNotification(
       message_center::NotificationType::NOTIFICATION_TYPE_SIMPLE,
-      kNotificationId, title, message, gfx::Image() /* image */,
-      base::string16() /* display_source */, GURL() /* origin_url */,
+      kNotificationId, title, message, base::string16() /* display_source */,
+      GURL() /* origin_url */,
       message_center::NotifierId(
           message_center::NotifierId::NotifierType::SYSTEM_COMPONENT,
           kNotifierMultiDevice),

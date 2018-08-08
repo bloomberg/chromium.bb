@@ -98,7 +98,7 @@ void SigninErrorNotifier::OnErrorChanged() {
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, notification_id_,
           l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE),
-          GetMessageBody(), gfx::Image(),
+          GetMessageBody(),
           l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
           GURL(notification_id_), notifier_id, data,
           new message_center::HandleNotificationClickDelegate(
