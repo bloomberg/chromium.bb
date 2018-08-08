@@ -103,8 +103,6 @@ CONTENT_EXPORT extern const base::Feature kTouchpadAsyncPinchEvents;
 CONTENT_EXPORT extern const base::Feature kTouchpadOverscrollHistoryNavigation;
 CONTENT_EXPORT extern const base::Feature kUseFeaturePolicyForPermissions;
 CONTENT_EXPORT extern const base::Feature kUserActivationV2;
-CONTENT_EXPORT extern const base::Feature
-    kUseVideoCaptureApiForDevToolsSnapshots;
 CONTENT_EXPORT extern const base::Feature kV8ContextSnapshot;
 CONTENT_EXPORT extern const base::Feature kV8LowMemoryModeForSubframes;
 CONTENT_EXPORT extern const base::Feature kV8Orinoco;

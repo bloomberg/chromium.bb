@@ -284,9 +284,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // not a WebContents, returns nullptr.
   virtual WebContents* GetAsWebContents();
 
-  // Notifies that a CompositorFrame was received from the renderer.
-  virtual void DidReceiveCompositorFrame() {}
-
   // Gets the size set by a top-level frame with auto-resize enabled.
   virtual gfx::Size GetAutoResizeSize();
 

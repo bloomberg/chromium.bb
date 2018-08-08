@@ -80,14 +80,6 @@ DevToolsFrameTraceRecorder::DevToolsFrameTraceRecorder() { }
 
 DevToolsFrameTraceRecorder::~DevToolsFrameTraceRecorder() { }
 
-void DevToolsFrameTraceRecorder::OnSwapCompositorFrame(
-    RenderFrameHostImpl* host,
-    const viz::CompositorFrameMetadata& frame_metadata) {
-  if (!host || !ScreenshotCategoryEnabled())
-    return;
-  CaptureFrame(host, frame_metadata);
-}
-
 void DevToolsFrameTraceRecorder::OnSynchronousSwapCompositorFrame(
     RenderFrameHostImpl* host,
     const viz::CompositorFrameMetadata& frame_metadata) {

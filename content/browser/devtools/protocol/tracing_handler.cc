@@ -24,7 +24,6 @@
 #include "base/trace_event/trace_event_impl.h"
 #include "base/trace_event/tracing_agent.h"
 #include "components/tracing/common/trace_startup_config.h"
-#include "components/viz/common/features.h"
 #include "content/browser/devtools/devtools_frame_trace_recorder.h"
 #include "content/browser/devtools/devtools_io_context.h"
 #include "content/browser/devtools/devtools_session.h"
@@ -38,7 +37,6 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_features.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 
@@ -218,10 +216,7 @@ TracingHandler::TracingHandler(FrameTreeNode* frame_tree_node_,
       return_as_stream_(false),
       gzip_compression_(false),
       weak_factory_(this) {
-  bool use_video_capture_api =
-      base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      base::FeatureList::IsEnabled(
-          features::kUseVideoCaptureApiForDevToolsSnapshots);
+  bool use_video_capture_api = true;
 #ifdef OS_ANDROID
   // Video capture API cannot be used on Android WebView.
   if (!CompositorImpl::IsInitialized())

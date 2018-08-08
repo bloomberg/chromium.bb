@@ -517,9 +517,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // focus.
   virtual void OnWebContentsLostFocus(RenderWidgetHost* render_widget_host) {}
 
-  // Notifes that a CompositorFrame was received from the renderer.
-  virtual void DidReceiveCompositorFrame() {}
-
   // Notifies that the manifest URL for the main frame changed to
   // |manifest_url|. This will be invoked when a document with a manifest loads
   // or when the manifest URL changes (possibly to nothing). It is not invoked

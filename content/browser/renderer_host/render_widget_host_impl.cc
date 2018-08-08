@@ -2968,9 +2968,6 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
       }
     }
   }
-
-  if (delegate_)
-    delegate_->DidReceiveCompositorFrame();
 }
 
 void RenderWidgetHostImpl::DidProcessFrame(uint32_t frame_token) {

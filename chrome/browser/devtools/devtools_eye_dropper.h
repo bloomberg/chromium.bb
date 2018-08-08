@@ -34,13 +34,11 @@ class DevToolsEyeDropper : public content::WebContentsObserver,
   void DetachFromHost();
 
   // content::WebContentsObserver.
-  void DidReceiveCompositorFrame() override;
   void RenderViewCreated(content::RenderViewHost* host) override;
   void RenderViewDeleted(content::RenderViewHost* host) override;
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
 
-  void UpdateFrame();
   void ResetFrame();
   void FrameUpdated(const SkBitmap&);
   bool HandleMouseEvent(const blink::WebMouseEvent& event);
@@ -70,7 +68,6 @@ class DevToolsEyeDropper : public content::WebContentsObserver,
   content::RenderWidgetHost::MouseEventCallback mouse_event_callback_;
   content::RenderWidgetHost* host_;
   std::unique_ptr<viz::ClientFrameSinkVideoCapturer> video_capturer_;
-  const bool use_video_capture_api_;
   media::PaintCanvasVideoRenderer video_renderer_;
   base::WeakPtrFactory<DevToolsEyeDropper> weak_factory_;
 

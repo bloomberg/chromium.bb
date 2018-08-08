@@ -23,7 +23,6 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/viz/common/features.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_helper.h"
@@ -47,7 +46,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
@@ -206,10 +204,7 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler)
       emulation_handler_(emulation_handler),
       observer_(this),
       weak_factory_(this) {
-  bool create_video_consumer =
-      base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      base::FeatureList::IsEnabled(
-          features::kUseVideoCaptureApiForDevToolsSnapshots);
+  bool create_video_consumer = true;
 #ifdef OS_ANDROID
   // Video capture doesn't work on Android WebView. Use CopyFromSurface instead.
   if (!CompositorImpl::IsInitialized())
@@ -273,18 +268,6 @@ void PageHandler::SetRenderer(int process_host_id,
 void PageHandler::Wire(UberDispatcher* dispatcher) {
   frontend_.reset(new Page::Frontend(dispatcher->channel()));
   Page::Dispatcher::wire(dispatcher, this);
-}
-
-void PageHandler::OnSwapCompositorFrame(
-    viz::CompositorFrameMetadata frame_metadata) {
-  if (video_consumer_)
-    return;
-
-  last_compositor_frame_metadata_ = std::move(frame_metadata);
-  has_compositor_frame_metadata_ = true;
-
-  if (screencast_enabled_)
-    InnerSwapCompositorFrame();
 }
 
 void PageHandler::OnSynchronousSwapCompositorFrame(

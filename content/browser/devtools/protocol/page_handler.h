@@ -68,7 +68,6 @@ class PageHandler : public DevToolsDomainHandler,
   void Wire(UberDispatcher* dispatcher) override;
   void SetRenderer(int process_host_id,
                    RenderFrameHostImpl* frame_host) override;
-  void OnSwapCompositorFrame(viz::CompositorFrameMetadata frame_metadata);
   void OnSynchronousSwapCompositorFrame(
       viz::CompositorFrameMetadata frame_metadata);
   void DidAttachInterstitialPage();

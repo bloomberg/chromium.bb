@@ -24,10 +24,6 @@ class DevToolsFrameTraceRecorder {
   DevToolsFrameTraceRecorder();
   ~DevToolsFrameTraceRecorder();
 
-  void OnSwapCompositorFrame(
-      RenderFrameHostImpl* host,
-      const viz::CompositorFrameMetadata& frame_metadata);
-
   void OnSynchronousSwapCompositorFrame(
       RenderFrameHostImpl* host,
       const viz::CompositorFrameMetadata& frame_metadata);
