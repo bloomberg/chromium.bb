@@ -91,7 +91,7 @@ crypto_sources = [
   "src/crypto/dsa/dsa.c",
   "src/crypto/dsa/dsa_asn1.c",
   "src/crypto/ec_extra/ec_asn1.c",
-  "src/crypto/ecdh/ecdh.c",
+  "src/crypto/ecdh_extra/ecdh_extra.c",
   "src/crypto/ecdsa_extra/ecdsa_asn1.c",
   "src/crypto/engine/engine.c",
   "src/crypto/err/err.c",
@@ -340,7 +340,6 @@ crypto_headers = [
 
 ssl_sources = [
   "src/ssl/bio_ssl.cc",
-  "src/ssl/custom_extensions.cc",
   "src/ssl/d1_both.cc",
   "src/ssl/d1_lib.cc",
   "src/ssl/d1_pkt.cc",

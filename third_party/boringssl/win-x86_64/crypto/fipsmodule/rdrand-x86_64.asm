@@ -19,6 +19,7 @@ $L$SEH_begin_CRYPTO_rdrand:
 	mov	rdi,rcx
 
 
+
 	xor	rax,rax
 
 
@@ -34,6 +35,7 @@ DB	0x48,0x0f,0xc7,0xf1
 
 
 
+
 global	CRYPTO_rdrand_multiple8_buf
 
 ALIGN	16
@@ -44,6 +46,7 @@ CRYPTO_rdrand_multiple8_buf:
 $L$SEH_begin_CRYPTO_rdrand_multiple8_buf:
 	mov	rdi,rcx
 	mov	rsi,rdx
+
 
 
 	test	rsi,rsi
@@ -68,3 +71,4 @@ $L$err:
 	mov	rdi,QWORD[8+rsp]	;WIN64 epilogue
 	mov	rsi,QWORD[16+rsp]
 	DB	0F3h,0C3h		;repret
+

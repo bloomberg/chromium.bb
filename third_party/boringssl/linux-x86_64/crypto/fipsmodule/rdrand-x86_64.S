@@ -9,6 +9,7 @@
 .type	CRYPTO_rdrand,@function
 .align	16
 CRYPTO_rdrand:
+.cfi_startproc	
 	xorq	%rax,%rax
 
 
@@ -17,6 +18,7 @@ CRYPTO_rdrand:
 	adcq	%rax,%rax
 	movq	%rcx,0(%rdi)
 	.byte	0xf3,0xc3
+.cfi_endproc	
 
 
 
@@ -27,6 +29,7 @@ CRYPTO_rdrand:
 .type	CRYPTO_rdrand_multiple8_buf,@function
 .align	16
 CRYPTO_rdrand_multiple8_buf:
+.cfi_startproc	
 	testq	%rsi,%rsi
 	jz	.Lout
 	movq	$8,%rdx
@@ -45,4 +48,5 @@ CRYPTO_rdrand_multiple8_buf:
 .Lerr:
 	xorq	%rax,%rax
 	.byte	0xf3,0xc3
+.cfi_endproc	
 #endif

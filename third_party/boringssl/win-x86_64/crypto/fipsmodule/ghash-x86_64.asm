@@ -18,13 +18,21 @@ $L$SEH_begin_gcm_gmult_4bit:
 	mov	rsi,rdx
 
 
+
 	push	rbx
+
 	push	rbp
+
 	push	r12
+
 	push	r13
+
 	push	r14
+
 	push	r15
+
 	sub	rsp,280
+
 $L$gmult_prologue:
 
 	movzx	r8,BYTE[15+rdi]
@@ -102,12 +110,16 @@ $L$break1:
 	mov	QWORD[rdi],r9
 
 	lea	rsi,[((280+48))+rsp]
+
 	mov	rbx,QWORD[((-8))+rsi]
+
 	lea	rsp,[rsi]
+
 $L$gmult_epilogue:
 	mov	rdi,QWORD[8+rsp]	;WIN64 epilogue
 	mov	rsi,QWORD[16+rsp]
 	DB	0F3h,0C3h		;repret
+
 $L$SEH_end_gcm_gmult_4bit:
 global	gcm_ghash_4bit
 
@@ -123,13 +135,21 @@ $L$SEH_begin_gcm_ghash_4bit:
 	mov	rcx,r9
 
 
+
 	push	rbx
+
 	push	rbp
+
 	push	r12
+
 	push	r13
+
 	push	r14
+
 	push	r15
+
 	sub	rsp,280
+
 $L$ghash_prologue:
 	mov	r14,rdx
 	mov	r15,rcx
@@ -675,17 +695,26 @@ $L$outer_loop:
 	mov	QWORD[rdi],r9
 
 	lea	rsi,[((280+48))+rsp]
+
 	mov	r15,QWORD[((-48))+rsi]
+
 	mov	r14,QWORD[((-40))+rsi]
+
 	mov	r13,QWORD[((-32))+rsi]
+
 	mov	r12,QWORD[((-24))+rsi]
+
 	mov	rbp,QWORD[((-16))+rsi]
+
 	mov	rbx,QWORD[((-8))+rsi]
+
 	lea	rsp,[rsi]
+
 $L$ghash_epilogue:
 	mov	rdi,QWORD[8+rsp]	;WIN64 epilogue
 	mov	rsi,QWORD[16+rsp]
 	DB	0F3h,0C3h		;repret
+
 $L$SEH_end_gcm_ghash_4bit:
 global	gcm_init_clmul
 
