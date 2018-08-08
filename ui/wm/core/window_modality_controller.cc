@@ -89,17 +89,16 @@ aura::Window* GetModalTransient(aura::Window* window) {
 // WindowModalityController, public:
 
 WindowModalityController::WindowModalityController(
-    ui::EventTarget* event_target,
-    aura::Env* env)
-    : env_(env ? env : aura::Env::GetInstance()), event_target_(event_target) {
-  env_->AddObserver(this);
+    ui::EventTarget* event_target)
+    : event_target_(event_target) {
+  aura::Env::GetInstance()->AddObserver(this);
   DCHECK(event_target->IsPreTargetListEmpty());
   event_target_->AddPreTargetHandler(this);
 }
 
 WindowModalityController::~WindowModalityController() {
   event_target_->RemovePreTargetHandler(this);
-  env_->RemoveObserver(this);
+  aura::Env::GetInstance()->RemoveObserver(this);
   for (size_t i = 0; i < windows_.size(); ++i)
     windows_[i]->RemoveObserver(this);
 }

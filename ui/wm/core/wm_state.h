@@ -22,10 +22,11 @@ class WM_CORE_EXPORT WMState {
   WMState();
   ~WMState();
 
+  CaptureController* capture_controller() { return capture_controller_.get(); }
+
  private:
   std::unique_ptr<TransientWindowStackingClient> window_stacking_client_;
   std::unique_ptr<TransientWindowController> transient_window_client_;
-  // NOTE: this is really only needed in ash
   std::unique_ptr<CaptureController> capture_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WMState);

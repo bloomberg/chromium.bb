@@ -426,7 +426,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   bool IsEmbeddingClient() const;
 
   Env* env() { return env_; }
-  const Env* env() const { return env_; }
 
   // ui::GestureConsumer:
   bool RequiresDoubleTapGestureEvents() const override;
