@@ -328,23 +328,22 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 // performBatchUpdates on iOS11+.
 - (void)removeSessionSections {
   // |_syncedSessions| has been updated by now, that means that
-  // |self.tableViewModel| does not reflect |_syncedSessions| data. A
-  // SectionIdentifier could've been deleted previously, do not rely on these
-  // being in sequential order at this point.
+  // |self.tableViewModel| does not reflect |_syncedSessions| data.
   NSInteger sectionIdentifierToRemove = kFirstSessionSectionIdentifier;
   NSInteger sectionToDelete = kNumberOfSectionsBeforeSessions;
   while ([self.tableViewModel numberOfSections] >
          kNumberOfSectionsBeforeSessions) {
-    // Without this DCHECK, |sectionIdentifierToRemove| can continue to
-    // increment indefinitely. It is a programmer error for the model not to
-    // have an expected session section.
-    DCHECK([self.tableViewModel
-        hasSectionForSectionIdentifier:sectionIdentifierToRemove]);
-    [self.tableView
-          deleteSections:[NSIndexSet indexSetWithIndex:sectionToDelete]
-        withRowAnimation:UITableViewRowAnimationNone];
-    sectionToDelete++;
-    [self.tableViewModel removeSectionWithIdentifier:sectionIdentifierToRemove];
+    // A SectionIdentifier could've been deleted previously, do not rely on
+    // these being in sequential order at this point.
+    if ([self.tableViewModel
+            hasSectionForSectionIdentifier:sectionIdentifierToRemove]) {
+      [self.tableView
+            deleteSections:[NSIndexSet indexSetWithIndex:sectionToDelete]
+          withRowAnimation:UITableViewRowAnimationNone];
+      sectionToDelete++;
+      [self.tableViewModel
+          removeSectionWithIdentifier:sectionIdentifierToRemove];
+    }
     sectionIdentifierToRemove++;
   }
 }
