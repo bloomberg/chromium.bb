@@ -58,6 +58,7 @@
 #include "media/video/fake_video_encode_accelerator.h"
 #include "media/video/h264_parser.h"
 #include "media/video/video_encode_accelerator.h"
+#include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(USE_VAAPI)
@@ -2587,6 +2588,7 @@ class VEATestSuite : public base::TestSuite {
 }  // namespace media
 
 int main(int argc, char** argv) {
+  mojo::core::Init();
   media::VEATestSuite test_suite(argc, argv);
 
   base::ShadowingAtExitManager at_exit_manager;
