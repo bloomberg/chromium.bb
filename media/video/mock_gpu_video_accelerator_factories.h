@@ -50,6 +50,9 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   MOCK_METHOD1(DeleteTexture, void(uint32_t texture_id));
   MOCK_METHOD0(CreateSyncToken, gpu::SyncToken());
   MOCK_METHOD1(WaitSyncToken, void(const gpu::SyncToken& sync_token));
+  MOCK_METHOD2(SignalSyncToken,
+               void(const gpu::SyncToken& sync_token,
+                    base::OnceClosure callback));
   MOCK_METHOD0(ShallowFlushCHROMIUM, void());
   MOCK_METHOD0(GetTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(GetVideoDecodeAcceleratorCapabilities,

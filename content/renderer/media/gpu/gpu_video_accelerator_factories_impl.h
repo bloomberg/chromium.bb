@@ -78,6 +78,8 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   void DeleteTexture(uint32_t texture_id) override;
   gpu::SyncToken CreateSyncToken() override;
   void WaitSyncToken(const gpu::SyncToken& sync_token) override;
+  void SignalSyncToken(const gpu::SyncToken& sync_token,
+                       base::OnceClosure callback) override;
   void ShallowFlushCHROMIUM() override;
 
   std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(

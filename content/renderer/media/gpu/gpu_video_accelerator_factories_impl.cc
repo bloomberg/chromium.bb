@@ -17,6 +17,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/render_thread_impl.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
@@ -264,6 +265,17 @@ void GpuVideoAcceleratorFactoriesImpl::WaitSyncToken(
   // Callers expect the WaitSyncToken to affect the next IPCs. Make sure to
   // flush the command buffers to ensure that.
   gles2->ShallowFlushCHROMIUM();
+}
+
+void GpuVideoAcceleratorFactoriesImpl::SignalSyncToken(
+    const gpu::SyncToken& sync_token,
+    base::OnceClosure callback) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (CheckContextLost())
+    return;
+
+  context_provider_->ContextSupport()->SignalSyncToken(sync_token,
+                                                       std::move(callback));
 }
 
 void GpuVideoAcceleratorFactoriesImpl::ShallowFlushCHROMIUM() {
