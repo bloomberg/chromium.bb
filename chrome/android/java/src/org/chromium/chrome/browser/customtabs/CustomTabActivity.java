@@ -17,6 +17,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.os.SystemClock;
 import android.provider.Browser;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -373,6 +374,11 @@ public class CustomTabActivity extends ChromeActivity {
 
     public void setBottomBarHeight(int height) {
         mBottomBarDelegate.setBottomBarHeight(height);
+    }
+
+    public void loadUri(Uri uri) {
+        assert mMainTab != null;
+        loadUrlInTab(mMainTab, new LoadUrlParams(uri.toString()), SystemClock.elapsedRealtime());
     }
 
     @Override

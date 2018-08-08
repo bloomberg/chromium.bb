@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
+import android.net.Uri;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.IObjectWrapper;
 
 interface IActivityHost {
@@ -14,4 +15,12 @@ interface IActivityHost {
   void setOverlayView(in IObjectWrapper /* View */ overlayView) = 2;
 
   void setBottomBarHeight(int height) = 3;
+
+  /**
+   * Loads a URI in the existing CCT activity. This is used by features that
+   * want to show web content (e.g. saves when reopening a saved page).
+   *
+   * Introduced in API version 3.
+   */
+  void loadUri(in Uri uri) = 4;
 }
