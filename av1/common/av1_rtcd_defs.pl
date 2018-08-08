@@ -108,6 +108,20 @@ specialize qw/av1_highbd_convolve8_vert/, "$sse2_x86_64";
 add_proto qw/void av1_inv_txfm_add/, "const tran_low_t *dqcoeff, uint8_t *dst, int stride, const TxfmParam *txfm_param";
 specialize qw/av1_inv_txfm_add ssse3 avx2 neon/;
 
+add_proto qw/void av1_highbd_inv_txfm_add/, "const tran_low_t *dqcoeff, uint8_t *dst, int stride, const TxfmParam *txfm_param";
+specialize qw/av1_highbd_inv_txfm_add sse4_1 avx2/;
+
+add_proto qw/void av1_highbd_inv_txfm_add_4x4/,  "const tran_low_t *dqcoeff, uint8_t *dst, int stride, const TxfmParam *txfm_param";
+specialize qw/av1_highbd_inv_txfm_add_4x4 sse4_1/;
+add_proto qw/void av1_highbd_inv_txfm_add_8x8/,  "const tran_low_t *dqcoeff, uint8_t *dst, int stride, const TxfmParam *txfm_param";
+specialize qw/av1_highbd_inv_txfm_add_8x8 sse4_1/;
+add_proto qw/void av1_highbd_inv_txfm_add_16x16/,  "const tran_low_t *dqcoeff, uint8_t *dst, int stride, const TxfmParam *txfm_param";
+specialize qw/av1_highbd_inv_txfm_add_16x16 sse4_1/;
+add_proto qw/void av1_highbd_inv_txfm_add_32x32/,  "const tran_low_t *dqcoeff, uint8_t *dst, int stride, const TxfmParam *txfm_param";
+specialize qw/av1_highbd_inv_txfm_add_32x32 avx2/;
+add_proto qw/void av1_highbd_inv_txfm_add_64x64/,  "const tran_low_t *dqcoeff, uint8_t *dst, int stride, const TxfmParam *txfm_param";
+specialize qw/av1_highbd_inv_txfm_add_64x64 sse4_1/;
+
 add_proto qw/void av1_highbd_iwht4x4_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
 add_proto qw/void av1_highbd_iwht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
 
