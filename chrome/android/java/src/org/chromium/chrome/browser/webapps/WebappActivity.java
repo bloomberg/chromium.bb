@@ -17,7 +17,6 @@ import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.support.customtabs.TrustedWebUtils;
 import android.text.TextUtils;
@@ -47,10 +46,9 @@ import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.browserservices.BrowserSessionDataProvider;
 import org.chromium.chrome.browser.browserservices.Origin;
-import org.chromium.chrome.browser.browserservices.OriginVerifier;
-import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerificationListener;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityDisclosure;
 import org.chromium.chrome.browser.browserservices.UkmRecorder;
+import org.chromium.chrome.browser.browserservices.VerificationState;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
@@ -130,13 +128,9 @@ public class WebappActivity extends SingleTabActivity {
     private BrowserSessionDataProvider mBrowserSessionDataProvider;
 
     private TrustedWebContentProvider mTrustedWebContentProvider;
+    private VerificationState mVerificationState;
 
-    private class TrustedWebContentProvider
-            implements BrowserSessionContentHandler, OriginVerificationListener {
-        private boolean mVerificationFailed;
-        private OriginVerifier mOriginVerifier;
-        private final UkmRecorder mUkmRecorder = new UkmRecorder.Bridge();
-
+    private class TrustedWebContentProvider implements BrowserSessionContentHandler {
         @Override
         public void loadUrlAndTrackFromTimestamp(LoadUrlParams params, long timestamp) {}
 
@@ -175,45 +169,6 @@ public class WebappActivity extends SingleTabActivity {
             NavigationEntry entry = getActivityTab().getWebContents().getNavigationController()
                     .getPendingEntry();
             return entry != null ? entry.getUrl() : null;
-        }
-
-        /**
-         * Verify the Digital Asset Links declared by the Android native client with the currently
-         * loading origin. See {@link TrustedWebContentProvider#didVerificationFail()} for the
-         * result.
-         */
-        void verifyRelationship() {
-            mOriginVerifier = new OriginVerifier(mTrustedWebContentProvider,
-                    getNativeClientPackageName(), CustomTabsService.RELATION_HANDLE_ALL_URLS);
-            mOriginVerifier.start(new Origin(mWebappInfo.uri()));
-        }
-
-        @Override
-        public void onOriginVerified(String packageName, Origin origin, boolean verified,
-                Boolean online) {
-            mVerificationFailed = !verified;
-            mOriginVerifier = null;
-
-            if (mVerificationFailed) {
-                getFullscreenManager().setPositionsForTabToNonFullscreen();
-                return;
-            }
-
-            BrowserServicesMetrics.recordTwaOpened();
-            TrustedWebActivityDisclosure.showIfNeeded(WebappActivity.this, packageName);
-
-            // When verification occurs instantly (eg the result is cached) then it returns before
-            // there is an active tab.
-            if (areTabModelsInitialized() && getActivityTab() != null) {
-                mUkmRecorder.recordTwaOpened(getActivityTab().getWebContents());
-            }
-        }
-
-        /**
-         * @return Whether origin verification for the corresponding client failed.
-         */
-        boolean didVerificationFail() {
-            return mVerificationFailed;
         }
     }
 
@@ -632,7 +587,26 @@ public class WebappActivity extends SingleTabActivity {
 
     @Override
     public void postInflationStartup() {
-        if (getBrowserSession() != null) mTrustedWebContentProvider.verifyRelationship();
+        if (getBrowserSession() != null) {
+            String packageName = getNativeClientPackageName();
+
+            mVerificationState = new VerificationState(packageName,
+                    new Origin(mWebappInfo.uri()), success -> {
+                if (!success) {
+                    getFullscreenManager().setPositionsForTabToNonFullscreen();
+                    return;
+                }
+
+                BrowserServicesMetrics.recordTwaOpened();
+                TrustedWebActivityDisclosure.showIfNeeded(this, packageName);
+
+                // When verification occurs instantly (eg the result is cached) then it returns
+                // before there is an active tab.
+                if (areTabModelsInitialized() && getActivityTab() != null) {
+                    new UkmRecorder.Bridge().recordTwaOpened(getActivityTab().getWebContents());
+                }
+            });
+        }
 
         super.postInflationStartup();
     }
@@ -1020,7 +994,7 @@ public class WebappActivity extends SingleTabActivity {
      */
     boolean didVerificationFail() {
         if (!isVerified()) return false;
-        return mTrustedWebContentProvider.didVerificationFail();
+        return mVerificationState.didVerificationFail();
     }
 
     /**
