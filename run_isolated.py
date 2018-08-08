@@ -1313,7 +1313,7 @@ def main(args):
       #
       # If the Swarming bot cannot clean up the cache, it will handle it like
       # any other bot file that could not be removed.
-      for path, name in caches:
+      for path, name in reversed(caches):
         try:
           # uninstall() doesn't trim but does call save() implicitly. Trimming
           # *must* be done manually via periodic 'run_isolated.py --clean'.
