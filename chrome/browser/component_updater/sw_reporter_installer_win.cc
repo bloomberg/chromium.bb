@@ -471,6 +471,8 @@ void ReportUMAForLastCleanerRun() {
       int64_t start_time_value = {};
       cleaner_key.ReadInt64(chrome_cleaner::kStartTimeValueName,
                             &start_time_value);
+      const base::Time start_time = base::Time::FromDeltaSinceWindowsEpoch(
+          base::TimeDelta::FromMicroseconds(start_time_value));
 
       const bool completed =
           cleaner_key.HasValue(chrome_cleaner::kEndTimeValueName);
@@ -479,12 +481,12 @@ void ReportUMAForLastCleanerRun() {
         int64_t end_time_value = {};
         cleaner_key.ReadInt64(chrome_cleaner::kEndTimeValueName,
                               &end_time_value);
+        const base::Time end_time = base::Time::FromDeltaSinceWindowsEpoch(
+            base::TimeDelta::FromMicroseconds(end_time_value));
+
         cleaner_key.DeleteValue(chrome_cleaner::kEndTimeValueName);
-        const base::TimeDelta run_time =
-            base::Time::FromInternalValue(end_time_value) -
-            base::Time::FromInternalValue(start_time_value);
         UMA_HISTOGRAM_LONG_TIMES("SoftwareReporter.Cleaner.RunningTime",
-                                 run_time);
+                                 end_time - start_time);
       }
       // Get exit code. Assume nothing was found if we can't read the exit code.
       DWORD exit_code = chrome_cleaner::kSwReporterNothingFound;
@@ -500,8 +502,7 @@ void ReportUMAForLastCleanerRun() {
           exit_code ==
               chrome_cleaner::kSwReporterDelayedPostRebootCleanupNeeded) {
         // Check if we are running after the user has rebooted.
-        const base::TimeDelta elapsed =
-            base::Time::Now() - base::Time::FromInternalValue(start_time_value);
+        const base::TimeDelta elapsed = base::Time::Now() - start_time;
         DCHECK_GT(elapsed.InMilliseconds(), 0);
         UMA_HISTOGRAM_BOOLEAN(
             "SoftwareReporter.Cleaner.HasRebooted",
