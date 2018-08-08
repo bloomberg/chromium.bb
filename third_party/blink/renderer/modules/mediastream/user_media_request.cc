@@ -480,27 +480,17 @@ bool UserMediaRequest::IsSecureContextUse(String& error_message) {
 
     // Feature policy deprecation messages.
     if (Audio()) {
-      if (RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
-        if (!document->GetFrame()->IsFeatureEnabled(
-                mojom::FeaturePolicyFeature::kMicrophone)) {
-          UseCounter::Count(
-              document, WebFeature::kMicrophoneDisabledByFeaturePolicyEstimate);
-        }
-      } else {
-        Deprecation::CountDeprecationFeaturePolicy(
-            *document, mojom::FeaturePolicyFeature::kMicrophone);
+      if (!document->GetFrame()->IsFeatureEnabled(
+              mojom::FeaturePolicyFeature::kMicrophone)) {
+        UseCounter::Count(
+            document, WebFeature::kMicrophoneDisabledByFeaturePolicyEstimate);
       }
     }
     if (Video()) {
-      if (RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
-        if (!document->GetFrame()->IsFeatureEnabled(
-                mojom::FeaturePolicyFeature::kCamera)) {
-          UseCounter::Count(document,
-                            WebFeature::kCameraDisabledByFeaturePolicyEstimate);
-        }
-      } else {
-        Deprecation::CountDeprecationFeaturePolicy(
-            *document, mojom::FeaturePolicyFeature::kCamera);
+      if (!document->GetFrame()->IsFeatureEnabled(
+              mojom::FeaturePolicyFeature::kCamera)) {
+        UseCounter::Count(document,
+                          WebFeature::kCameraDisabledByFeaturePolicyEstimate);
       }
     }
 

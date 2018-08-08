@@ -301,24 +301,19 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   Document* document = ToDocument(execution_context);
 
-  if (RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
-    if (!document->GetFrame() ||
-        !document->GetFrame()->IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kEncryptedMedia)) {
-      UseCounter::Count(document,
-                        WebFeature::kEncryptedMediaDisabledByFeaturePolicy);
-      document->AddConsoleMessage(
-          ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
-                                 kEncryptedMediaFeaturePolicyConsoleWarning));
-      return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(
-              DOMExceptionCode::kSecurityError,
-              "requestMediaKeySystemAccess is disabled by feature policy."));
-    }
-  } else {
-    Deprecation::CountDeprecationFeaturePolicy(
-        *document, mojom::FeaturePolicyFeature::kEncryptedMedia);
+  if (!document->GetFrame() ||
+      !document->GetFrame()->IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kEncryptedMedia)) {
+    UseCounter::Count(document,
+                      WebFeature::kEncryptedMediaDisabledByFeaturePolicy);
+    document->AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                               kEncryptedMediaFeaturePolicyConsoleWarning));
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(
+            DOMExceptionCode::kSecurityError,
+            "requestMediaKeySystemAccess is disabled by feature policy."));
   }
 
   // From https://w3c.github.io/encrypted-media/#requestMediaKeySystemAccess

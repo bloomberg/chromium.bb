@@ -151,10 +151,6 @@ void Geolocation::RecordOriginTypeAccess() const {
     UseCounter::Count(document, WebFeature::kGeolocationSecureOrigin);
     UseCounter::CountCrossOriginIframe(
         *document, WebFeature::kGeolocationSecureOriginIframe);
-    if (!RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
-      Deprecation::CountDeprecationFeaturePolicy(
-          *document, mojom::FeaturePolicyFeature::kGeolocation);
-    }
   } else if (GetFrame()
                  ->GetSettings()
                  ->GetAllowGeolocationOnInsecureOrigins()) {
@@ -169,10 +165,6 @@ void Geolocation::RecordOriginTypeAccess() const {
         WebFeature::kGeolocationInsecureOriginIframeDeprecatedNotRemoved);
     HostsUsingFeatures::CountAnyWorld(
         *document, HostsUsingFeatures::Feature::kGeolocationInsecureHost);
-    if (!RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
-      Deprecation::CountDeprecationFeaturePolicy(
-          *document, mojom::FeaturePolicyFeature::kGeolocation);
-    }
   } else {
     Deprecation::CountDeprecation(document,
                                   WebFeature::kGeolocationInsecureOrigin);
@@ -232,18 +224,15 @@ void Geolocation::StartRequest(GeoNotifier* notifier) {
     return;
   }
 
-  if (RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
-    if (!GetFrame()->IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kGeolocation)) {
-      UseCounter::Count(GetDocument(),
-                        WebFeature::kGeolocationDisabledByFeaturePolicy);
-      GetDocument()->AddConsoleMessage(
-          ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel,
-                                 kFeaturePolicyConsoleWarning));
-      notifier->SetFatalError(PositionError::Create(
-          PositionError::kPermissionDenied, kFeaturePolicyErrorMessage));
-      return;
-    }
+  if (!GetFrame()->IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kGeolocation)) {
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kGeolocationDisabledByFeaturePolicy);
+    GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kErrorMessageLevel, kFeaturePolicyConsoleWarning));
+    notifier->SetFatalError(PositionError::Create(
+        PositionError::kPermissionDenied, kFeaturePolicyErrorMessage));
+    return;
   }
 
   ReportGeolocationViolation(GetDocument());
