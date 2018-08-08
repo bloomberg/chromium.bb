@@ -91,6 +91,8 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
   // views::WidgetObservers:
   void OnWidgetClosing(views::Widget* widget) override;
   void OnWidgetDestroying(views::Widget* widget) override;
+  void OnWidgetBoundsChanged(views::Widget* widget,
+                             const gfx::Rect& new_bounds) override;
 
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -122,6 +124,9 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
   // |widget_already_closing| : True if we don't need to close the widget
   // explicitly. False otherwise.
   void Reset(bool widget_already_closing);
+
+  // Repositions the bubble view if it extends too far right or down.
+  void EnsureBubbleInWorkArea();
 
   // Flags passed to ShowErrorBubble().
   uint32_t flags_ = kFlagsNone;
