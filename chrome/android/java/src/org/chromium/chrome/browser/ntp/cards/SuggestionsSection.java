@@ -161,8 +161,10 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
             itemRemovedCallback.onResult(suggestion.mTitle);
         }
 
-        public void updateSuggestionOfflineId(int position, Long newId, boolean isPrefetched) {
-            SnippetArticle article = mSuggestions.get(position);
+        public void updateSuggestionOfflineId(
+                SnippetArticle article, Long newId, boolean isPrefetched) {
+            int position = this.mSuggestions.indexOf(article);
+
             // The suggestions could have been removed / replaced in the meantime.
             if (position == -1) return;
 
@@ -597,8 +599,8 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
                     && TextUtils.equals(item.getClientId().getNamespace(),
                                OfflinePageBridge.SUGGESTED_ARTICLES_NAMESPACE);
 
-            mSuggestionsList.updateSuggestionOfflineId(mSuggestions.indexOf(suggestion),
-                    item == null ? null : item.getOfflineId(), isPrefetched);
+            mSuggestionsList.updateSuggestionOfflineId(
+                    suggestion, item == null ? null : item.getOfflineId(), isPrefetched);
         }
 
         @Override

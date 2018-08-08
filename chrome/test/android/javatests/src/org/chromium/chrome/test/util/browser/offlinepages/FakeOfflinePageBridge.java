@@ -17,6 +17,8 @@ import java.util.List;
 public class FakeOfflinePageBridge extends OfflinePageBridge {
     private boolean mIsOfflinePageModelLoaded;
     private final List<OfflinePageItem> mItems = new ArrayList<>();
+    private final List<SelectPageRequest> mRequests = new ArrayList<>();
+    private boolean mAnswersRequestsImmediately = true;
 
     public FakeOfflinePageBridge() {
         super(0);
@@ -35,6 +37,10 @@ public class FakeOfflinePageBridge extends OfflinePageBridge {
         return mIsOfflinePageModelLoaded;
     }
 
+    public void setAnswersRequestsImmediately(boolean answersRequestsImmediately) {
+        mAnswersRequestsImmediately = answersRequestsImmediately;
+    }
+
     public void setItems(List<OfflinePageItem> items) {
         mItems.clear();
         mItems.addAll(items);
@@ -43,6 +49,16 @@ public class FakeOfflinePageBridge extends OfflinePageBridge {
     @Override
     public void selectPageForOnlineUrl(
             String onlineUrl, int tabId, Callback<OfflinePageItem> callback) {
+        assert tabId == 0;
+        if (mAnswersRequestsImmediately) {
+            answerRequest(onlineUrl, callback);
+            return;
+        }
+
+        mRequests.add(new SelectPageRequest(onlineUrl, callback));
+    }
+
+    private void answerRequest(String onlineUrl, Callback<OfflinePageItem> callback) {
         OfflinePageItem result = null;
         for (OfflinePageItem item : mItems) {
             if (!item.getUrl().equals(onlineUrl)) continue;
@@ -53,7 +69,24 @@ public class FakeOfflinePageBridge extends OfflinePageBridge {
         callback.onResult(result);
     }
 
+    public void answerAllRequests() {
+        for (SelectPageRequest request : mRequests) {
+            answerRequest(request.onlineUrl, request.callback);
+        }
+        mRequests.clear();
+    }
+
     public void fireOfflinePageModelLoaded() {
         super.offlinePageModelLoaded();
+    }
+
+    private static class SelectPageRequest {
+        public final String onlineUrl;
+        public final Callback<OfflinePageItem> callback;
+
+        public SelectPageRequest(String onlineUrl, Callback<OfflinePageItem> callback) {
+            this.onlineUrl = onlineUrl;
+            this.callback = callback;
+        }
     }
 }
