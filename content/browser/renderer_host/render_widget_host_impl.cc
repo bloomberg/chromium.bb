@@ -408,8 +408,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   const auto* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kDisableHangMonitor)) {
     input_event_ack_timeout_.reset(new TimeoutMonitor(
-        base::BindRepeating(&RenderWidgetHostImpl::OnInputEventAckTimeout,
-                            weak_factory_.GetWeakPtr())));
+        base::Bind(&RenderWidgetHostImpl::RendererIsUnresponsive,
+                   weak_factory_.GetWeakPtr())));
   }
 
   if (!command_line->HasSwitch(switches::kDisableNewContentRenderingTimeout)) {
@@ -2086,24 +2086,18 @@ void RenderWidgetHostImpl::Destroy(bool also_delete) {
   }
 }
 
-void RenderWidgetHostImpl::OnInputEventAckTimeout() {
-  RendererIsUnresponsive(base::BindRepeating(
-      &RenderWidgetHostImpl::RestartInputEventAckTimeoutIfNecessary,
-      weak_factory_.GetWeakPtr()));
-}
-
-void RenderWidgetHostImpl::RendererIsUnresponsive(
-    base::RepeatingClosure restart_hang_monitor_timeout) {
+void RenderWidgetHostImpl::RendererIsUnresponsive() {
   NotificationService::current()->Notify(
       NOTIFICATION_RENDER_WIDGET_HOST_HANG,
       Source<RenderWidgetHost>(this),
       NotificationService::NoDetails());
   is_unresponsive_ = true;
 
-  if (delegate_) {
-    delegate_->RendererUnresponsive(this,
-                                    std::move(restart_hang_monitor_timeout));
-  }
+  if (delegate_)
+    delegate_->RendererUnresponsive(
+        this, base::BindRepeating(
+                  &RenderWidgetHostImpl::RestartInputEventAckTimeoutIfNecessary,
+                  weak_factory_.GetWeakPtr()));
 
   // Do not add code after this since the Delegate may delete this
   // RenderWidgetHostImpl in RendererUnresponsive.
