@@ -79,6 +79,7 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
 
  private:
   void CreateDividerWidget(aura::Window* root_window);
+  void SetAlwaysOnTop(bool on_top);
 
   SplitViewController* controller_;
 
