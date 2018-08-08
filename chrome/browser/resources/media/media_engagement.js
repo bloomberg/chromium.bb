@@ -124,6 +124,15 @@ function renderConfigTable(config) {
       formatFeatureFlag(config.featureBypassAutoplay)));
   configTableBody.appendChild(createConfigRow(
       'Preload MEI data', formatFeatureFlag(config.featurePreloadData)));
+  configTableBody.appendChild(createConfigRow(
+      'Autoplay sound settings',
+      formatFeatureFlag(config.featureAutoplaySoundSettings)));
+  configTableBody.appendChild(createConfigRow(
+      'Unified autoplay (preference)',
+      formatFeatureFlag(config.prefUnifiedAutoplay)));
+  configTableBody.appendChild(createConfigRow(
+      'Custom autoplay policy',
+      formatFeatureFlag(config.hasCustomAutoplayPolicy)));
   configTableBody.appendChild(
       createConfigRow('Autoplay Policy', config.autoplayPolicy));
   configTableBody.appendChild(createConfigRow(
