@@ -3,24 +3,25 @@
 // found in the LICENSE file.
 
 chrome.app.runtime.onLaunched.addListener(function() {
-  var EXPECTED_APP_ID = null;
+  var expectedPackageName = null;
 
   chrome.test.runTests([
     function getConfig() {
       chrome.test.getConfig(chrome.test.callbackPass(config => {
-        EXPECTED_APP_ID = config.customArg;
+        expectedPackageName = config.customArg;
       }));
     },
 
-    function getAppIdAndLaunchApp() {
+    function getPackageNameAndLaunchApp() {
       chrome.arcAppsPrivate.launchApp(
-          'invalid app id', chrome.test.callbackFail('Launch failed'));
-      chrome.test.assertTrue(!!EXPECTED_APP_ID);
+          'invalid package name', chrome.test.callbackFail('App not found'));
+      chrome.test.assertTrue(!!expectedPackageName);
       chrome.arcAppsPrivate.getLaunchableApps(
           chrome.test.callbackPass(appsInfo => {
-            chrome.test.assertEq([{id: EXPECTED_APP_ID}], appsInfo);
+            chrome.test.assertEq(
+                [{packageName: expectedPackageName}], appsInfo);
             chrome.arcAppsPrivate.launchApp(
-                appsInfo[0].id, chrome.test.callbackPass());
+                appsInfo[0].packageName, chrome.test.callbackPass());
           }));
     }
   ]);

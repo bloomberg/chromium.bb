@@ -66,7 +66,7 @@ class ArcAppsPrivateApiTest : public extensions::ExtensionApiTest {
   DISALLOW_COPY_AND_ASSIGN(ArcAppsPrivateApiTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ArcAppsPrivateApiTest, GetAppIdAndLaunchApp) {
+IN_PROC_BROWSER_TEST_F(ArcAppsPrivateApiTest, GetPackageNameAndLaunchApp) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(browser()->profile());
   ASSERT_TRUE(prefs);
   std::unique_ptr<arc::FakeAppInstance> app_instance = CreateAppInstance(prefs);
@@ -81,11 +81,10 @@ IN_PROC_BROWSER_TEST_F(ArcAppsPrivateApiTest, GetAppIdAndLaunchApp) {
   arc::ArcServiceManager::Get()->arc_bridge_service()->app()->CloseInstance(
       app_instance.get());
   EXPECT_EQ(0u, app_instance->launch_requests().size());
-  // Verify |chrome.arcAppsPrivate.getLaunchableApps| returns the id of
-  // the launchable app only. The JS test will attempt to launch the app.
-  EXPECT_TRUE(RunPlatformAppTestWithArg(
-      "arc_app_launcher/launch_app",
-      ArcAppListPrefs::GetAppId("Package_0", "Dummy_activity_0").c_str()))
+  // Verify |chrome.arcAppsPrivate.getLaunchableApps| returns the package name
+  // of the launchable app only. The JS test will attempt to launch the app.
+  EXPECT_TRUE(
+      RunPlatformAppTestWithArg("arc_app_launcher/launch_app", "Package_0"))
       << message_;
 
   // Verify the app is not launched because it's not ready.
@@ -106,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppsPrivateApiTest, OnInstalled) {
 
   // The JS test will observe the onInstalled event and attempt to launch the
   // newly installed app.
-  SetCustomArg(ArcAppListPrefs::GetAppId("Package_0", "Dummy_activity_0"));
+  SetCustomArg("Package_0");
   extensions::ResultCatcher catcher;
   ExtensionTestMessageListener ready_listener("ready", false);
 
