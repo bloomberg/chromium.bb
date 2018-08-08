@@ -14,6 +14,7 @@
 #include "extensions/common/value_builder.h"
 #include "extensions/shell/browser/shell_oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace extensions {
 namespace shell {
@@ -43,7 +44,7 @@ class MockOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
   ~MockOAuth2MintTokenFlow() override {}
 
   // OAuth2ApiCallFlow:
-  void Start(net::URLRequestContextGetter* context,
+  void Start(scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
              const std::string& access_token) override {
     EXPECT_EQ("logged-in-user-token", access_token);
     delegate_->OnMintTokenSuccess("app-access-token", 12345);

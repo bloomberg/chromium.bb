@@ -65,6 +65,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -169,7 +170,7 @@ class TestHangOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
   TestHangOAuth2MintTokenFlow()
       : OAuth2MintTokenFlow(NULL, OAuth2MintTokenFlow::Parameters()) {}
 
-  void Start(net::URLRequestContextGetter* context,
+  void Start(scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
              const std::string& access_token) override {
     // Do nothing, simulating a hanging network call.
   }
@@ -191,7 +192,7 @@ class TestOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
         result_(result),
         delegate_(delegate) {}
 
-  void Start(net::URLRequestContextGetter* context,
+  void Start(scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
              const std::string& access_token) override {
     switch (result_) {
       case ISSUE_ADVICE_SUCCESS: {

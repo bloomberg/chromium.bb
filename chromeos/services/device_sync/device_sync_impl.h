@@ -39,9 +39,9 @@ namespace identity {
 class IdentityManager;
 }  // namespace identity
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace service_manager {
 class Connector;
@@ -69,7 +69,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
         gcm::GCMDriver* gcm_driver,
         service_manager::Connector* connector,
         const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
-        scoped_refptr<net::URLRequestContextGetter> url_request_context);
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
     static void SetInstanceForTesting(Factory* test_factory);
 
     virtual ~Factory();
@@ -78,7 +78,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
         gcm::GCMDriver* gcm_driver,
         service_manager::Connector* connector,
         const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
-        scoped_refptr<net::URLRequestContextGetter> url_request_context);
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
    private:
     static Factory* test_factory_instance_;
@@ -137,7 +137,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
       gcm::GCMDriver* gcm_driver,
       service_manager::Connector* connector,
       const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       base::Clock* clock,
       std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate);
 
@@ -176,7 +176,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
   gcm::GCMDriver* gcm_driver_;
   service_manager::Connector* connector_;
   const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider_;
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   base::Clock* clock_;
   std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate_;
 

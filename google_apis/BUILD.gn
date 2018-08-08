@@ -245,6 +245,7 @@ test("google_apis_unittests") {
     "gaia/ubertoken_fetcher_unittest.cc",
     "google_api_keys_unittest.cc",
     "google_api_keys_unittest.h",
+    "test/run_all_unittests.cc",
   ]
 
   data = [
@@ -257,7 +258,7 @@ test("google_apis_unittests") {
     ":google_apis",
     ":test_support",
     "//base",
-    "//base/test:run_all_unittests",
+    "//base/test:test_support",
     "//mojo/core/embedder",
     "//testing/gmock",
     "//testing/gtest",

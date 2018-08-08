@@ -14,7 +14,6 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
-#include "mojo/core/embedder/embedder.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -80,7 +79,6 @@ class OAuth2AccessTokenFetcherImplTest : public testing::Test {
     url_loader_factory_.SetInterceptor(base::BindRepeating(
         &URLLoaderFactoryInterceptor::Intercept,
         base::Unretained(&url_loader_factory_interceptor_)));
-    mojo::core::Init();
     base::RunLoop().RunUntilIdle();
   }
 

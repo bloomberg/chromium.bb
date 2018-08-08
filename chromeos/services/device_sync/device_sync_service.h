@@ -24,9 +24,9 @@ namespace identity {
 class IdentityManager;
 }  // namespace identity
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace chromeos {
 
@@ -43,7 +43,7 @@ class DeviceSyncService : public service_manager::Service {
       identity::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
       const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~DeviceSyncService() override;
 
  protected:
@@ -57,7 +57,7 @@ class DeviceSyncService : public service_manager::Service {
   identity::IdentityManager* identity_manager_;
   gcm::GCMDriver* gcm_driver_;
   const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider_;
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   std::unique_ptr<DeviceSyncBase> device_sync_;
   service_manager::BinderRegistry registry_;

@@ -14,9 +14,8 @@
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/switches.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -53,13 +52,14 @@ class MockCryptAuthApiCallFlow : public CryptAuthApiCallFlow {
   }
   virtual ~MockCryptAuthApiCallFlow() {}
 
-  MOCK_METHOD6(Start,
-               void(const GURL&,
-                    net::URLRequestContextGetter* context,
-                    const std::string& access_token,
-                    const std::string& serialized_request,
-                    const ResultCallback& result_callback,
-                    const ErrorCallback& error_callback));
+  MOCK_METHOD6(
+      Start,
+      void(const GURL&,
+           scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+           const std::string& access_token,
+           const std::string& serialized_request,
+           const ResultCallback& result_callback,
+           const ErrorCallback& error_callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCryptAuthApiCallFlow);
@@ -95,9 +95,14 @@ class CryptAuthClientTest : public testing::Test {
  protected:
   CryptAuthClientTest()
       : api_call_flow_(new StrictMock<MockCryptAuthApiCallFlow>()),
-        url_request_context_(
-            new net::TestURLRequestContextGetter(new base::NullTaskRunner())),
-        serialized_request_(std::string()) {}
+        serialized_request_(std::string()) {
+    shared_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            base::BindOnce([]() -> network::mojom::URLLoaderFactory* {
+              ADD_FAILURE() << "Did not expect this to actually be used";
+              return nullptr;
+            }));
+  }
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -115,7 +120,7 @@ class CryptAuthClientTest : public testing::Test {
     client_.reset(
         new CryptAuthClientImpl(base::WrapUnique(api_call_flow_),
                                 identity_test_environment_.identity_manager(),
-                                url_request_context_, device_classifier));
+                                shared_factory_, device_classifier));
   }
 
   // Sets up an expectation and captures a CryptAuth API request to
@@ -123,7 +128,7 @@ class CryptAuthClientTest : public testing::Test {
   void ExpectRequest(const std::string& request_url) {
     GURL url(request_url);
     EXPECT_CALL(*api_call_flow_,
-                Start(url, url_request_context_.get(), kAccessToken, _, _, _))
+                Start(url, shared_factory_, kAccessToken, _, _, _))
         .WillOnce(DoAll(SaveArg<3>(&serialized_request_),
                         SaveArg<4>(&flow_result_callback_),
                         SaveArg<5>(&flow_error_callback_)));
@@ -147,7 +152,8 @@ class CryptAuthClientTest : public testing::Test {
   // Owned by |client_|.
   StrictMock<MockCryptAuthApiCallFlow>* api_call_flow_;
 
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
+
   std::unique_ptr<CryptAuthClient> client_;
 
   std::string serialized_request_;

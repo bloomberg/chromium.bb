@@ -297,8 +297,9 @@ class DriveIntegrationService::DriveFsHolder
 
  private:
   // drivefs::DriveFsHost::Delegate:
-  net::URLRequestContextGetter* GetRequestContext() override {
-    return profile_->GetRequestContext();
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
+      override {
+    return profile_->GetURLLoaderFactory();
   }
 
   service_manager::Connector* GetConnector() override {

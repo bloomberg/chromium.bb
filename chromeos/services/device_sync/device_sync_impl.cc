@@ -23,8 +23,8 @@
 #include "components/cryptauth/software_feature_manager_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
@@ -51,17 +51,17 @@ std::unique_ptr<DeviceSyncBase> DeviceSyncImpl::Factory::NewInstance(
     gcm::GCMDriver* gcm_driver,
     service_manager::Connector* connector,
     const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
-    scoped_refptr<net::URLRequestContextGetter> url_request_context) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   if (test_factory_instance_) {
     return test_factory_instance_->BuildInstance(
         identity_manager, gcm_driver, connector, gcm_device_info_provider,
-        std::move(url_request_context));
+        std::move(url_loader_factory));
   }
 
   static base::NoDestructor<DeviceSyncImpl::Factory> default_factory;
   return default_factory->BuildInstance(identity_manager, gcm_driver, connector,
                                         gcm_device_info_provider,
-                                        std::move(url_request_context));
+                                        std::move(url_loader_factory));
 }
 
 // static
@@ -76,10 +76,10 @@ std::unique_ptr<DeviceSyncBase> DeviceSyncImpl::Factory::BuildInstance(
     gcm::GCMDriver* gcm_driver,
     service_manager::Connector* connector,
     const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
-    scoped_refptr<net::URLRequestContextGetter> url_request_context) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   return base::WrapUnique(new DeviceSyncImpl(
       identity_manager, gcm_driver, connector, gcm_device_info_provider,
-      std::move(url_request_context), base::DefaultClock::GetInstance(),
+      std::move(url_loader_factory), base::DefaultClock::GetInstance(),
       std::make_unique<PrefConnectionDelegate>()));
 }
 
@@ -105,14 +105,14 @@ DeviceSyncImpl::DeviceSyncImpl(
     gcm::GCMDriver* gcm_driver,
     service_manager::Connector* connector,
     const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
-    scoped_refptr<net::URLRequestContextGetter> url_request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::Clock* clock,
     std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate)
     : identity_manager_(identity_manager),
       gcm_driver_(gcm_driver),
       connector_(connector),
       gcm_device_info_provider_(gcm_device_info_provider),
-      url_request_context_(url_request_context),
+      url_loader_factory_(std::move(url_loader_factory)),
       clock_(clock),
       pref_connection_delegate_(std::move(pref_connection_delegate)),
       status_(Status::FETCHING_ACCOUNT_INFO),
@@ -329,7 +329,7 @@ void DeviceSyncImpl::InitializeCryptAuthManagementObjects() {
 
   cryptauth_client_factory_ =
       std::make_unique<cryptauth::CryptAuthClientFactoryImpl>(
-          identity_manager_, url_request_context_,
+          identity_manager_, url_loader_factory_,
           cryptauth::device_classifier_util::GetDeviceClassifier());
 
   // Initialize |crypauth_device_manager_| and start observing. Start() is not

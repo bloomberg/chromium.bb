@@ -19,6 +19,7 @@
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -94,9 +95,9 @@ class ForwardingOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
                                 MockOAuth2MintTokenFlow* mock)
       : OAuth2MintTokenFlow(delegate, {}), delegate_(delegate), mock_(mock) {}
 
-  void Start(net::URLRequestContextGetter* context_getter,
+  void Start(scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
              const std::string& access_token) override {
-    EXPECT_EQ(nullptr, context_getter);
+    EXPECT_EQ(nullptr, url_loader_factory);
     mock_->Start(delegate_, access_token);
   }
 
@@ -125,7 +126,10 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate {
 
  private:
   // DriveFsHost::Delegate:
-  net::URLRequestContextGetter* GetRequestContext() override { return nullptr; }
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
+      override {
+    return nullptr;
+  }
   service_manager::Connector* GetConnector() override {
     return connector_.get();
   }

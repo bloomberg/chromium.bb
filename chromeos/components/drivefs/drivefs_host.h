@@ -20,9 +20,9 @@
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "services/identity/public/mojom/identity_manager.mojom.h"
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace service_manager {
 class Connector;
@@ -57,7 +57,8 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
     Delegate() = default;
     virtual ~Delegate() = default;
 
-    virtual net::URLRequestContextGetter* GetRequestContext() = 0;
+    virtual scoped_refptr<network::SharedURLLoaderFactory>
+    GetURLLoaderFactory() = 0;
     virtual service_manager::Connector* GetConnector() = 0;
     virtual const AccountId& GetAccountId() = 0;
     virtual std::string GetObfuscatedAccountId() = 0;

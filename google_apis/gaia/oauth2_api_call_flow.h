@@ -9,32 +9,30 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
+namespace network {
+struct ResourceResponseHead;
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
 }
 
 // Base class for all classes that implement a flow to call OAuth2 enabled APIs,
 // given an access token to the service.  This class abstracts the basic steps
 // and exposes template methods for sub-classes to implement for API specific
 // details.
-class OAuth2ApiCallFlow : public net::URLFetcherDelegate {
+class OAuth2ApiCallFlow {
  public:
   OAuth2ApiCallFlow();
 
-  ~OAuth2ApiCallFlow() override;
+  virtual ~OAuth2ApiCallFlow();
 
   // Start the flow.
-  virtual void Start(net::URLRequestContextGetter* context,
-                     const std::string& access_token);
-
-  // net::URLFetcherDelegate implementation.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  virtual void Start(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const std::string& access_token);
 
  protected:
   // Template methods for sub-classes.
@@ -46,15 +44,18 @@ class OAuth2ApiCallFlow : public net::URLFetcherDelegate {
 
   // Returns the request type (e.g. GET, POST) for the |body| that will be sent
   // with the request.
-  virtual net::URLFetcher::RequestType GetRequestTypeForBody(
-      const std::string& body);
+  virtual std::string GetRequestTypeForBody(const std::string& body);
 
   // Sub-classes can expose an appropriate observer interface by implementing
   // these template methods.
-  // Called when the API call finished successfully.
-  virtual void ProcessApiCallSuccess(const net::URLFetcher* source) = 0;
-  // Called when the API call failed.
-  virtual void ProcessApiCallFailure(const net::URLFetcher* source) = 0;
+  // Called when the API call finished successfully. |body| may be null.
+  virtual void ProcessApiCallSuccess(const network::ResourceResponseHead* head,
+                                     std::unique_ptr<std::string> body) = 0;
+
+  // Called when the API call failed. |head| or |body| might be null.
+  virtual void ProcessApiCallFailure(int net_error,
+                                     const network::ResourceResponseHead* head,
+                                     std::unique_ptr<std::string> body) = 0;
 
   virtual net::PartialNetworkTrafficAnnotationTag
   GetNetworkTrafficAnnotationTag() = 0;
@@ -67,20 +68,22 @@ class OAuth2ApiCallFlow : public net::URLFetcherDelegate {
     ERROR_STATE
   };
 
-  // Creates an instance of URLFetcher that does not send or save cookies.
+  // Called when loading has finished.
+  void OnURLLoadComplete(std::unique_ptr<std::string> body);
+
+  // Creates an instance of SimpleURLLoader that does not send or save cookies.
   // Template method CreateApiCallUrl is used to get the URL.
   // Template method CreateApiCallBody is used to get the body.
-  // The URLFether's method will be GET if body is empty, POST otherwise.
-  std::unique_ptr<net::URLFetcher> CreateURLFetcher(
-      net::URLRequestContextGetter* context,
+  // The http method will be GET if body is empty, POST otherwise.
+  std::unique_ptr<network::SimpleURLLoader> CreateURLLoader(
       const std::string& access_token);
 
   // Helper methods to implement the state machine for the flow.
   void BeginApiCall();
-  void EndApiCall(const net::URLFetcher* source);
+  void EndApiCall(std::unique_ptr<std::string> body);
 
   State state_;
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2ApiCallFlow);
 };

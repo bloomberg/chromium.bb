@@ -13,7 +13,7 @@ namespace network {
 
 std::string GetUploadData(const network::ResourceRequest& request) {
   auto body = request.request_body;
-  if (!body)
+  if (!body || body->elements()->empty())
     return std::string();
 
   CHECK_EQ(1u, body->elements()->size());

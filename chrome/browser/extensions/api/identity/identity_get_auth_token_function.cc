@@ -684,7 +684,7 @@ void IdentityGetAuthTokenFunction::StartGaiaRequest(
     const std::string& login_access_token) {
   DCHECK(!login_access_token.empty());
   mint_token_flow_.reset(CreateMintTokenFlow());
-  mint_token_flow_->Start(GetProfile()->GetRequestContext(),
+  mint_token_flow_->Start(GetProfile()->GetURLLoaderFactory(),
                           login_access_token);
 }
 

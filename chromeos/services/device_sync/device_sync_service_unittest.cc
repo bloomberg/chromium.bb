@@ -33,8 +33,8 @@
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -332,23 +332,6 @@ class FakeSoftwareFeatureManagerFactory
   cryptauth::FakeSoftwareFeatureManager* instance_ = nullptr;
 };
 
-class FakeURLRequestContextGetter : public net::URLRequestContextGetter {
- public:
-  FakeURLRequestContextGetter() : null_task_runner_(new base::NullTaskRunner) {}
-
-  net::URLRequestContext* GetURLRequestContext() override { return nullptr; }
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
-      const override {
-    return null_task_runner_;
-  }
-
- private:
-  ~FakeURLRequestContextGetter() override {}
-
-  scoped_refptr<base::SingleThreadTaskRunner> null_task_runner_;
-};
-
 }  // namespace
 
 class DeviceSyncServiceTest : public testing::Test {
@@ -416,11 +399,11 @@ class DeviceSyncServiceTest : public testing::Test {
         gcm::GCMDriver* gcm_driver,
         service_manager::Connector* connector,
         const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
-        scoped_refptr<net::URLRequestContextGetter> url_request_context)
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
         override {
       return base::WrapUnique(new DeviceSyncImpl(
           identity_manager, gcm_driver, connector, gcm_device_info_provider,
-          std::move(url_request_context), simple_test_clock_,
+          std::move(url_loader_factory), simple_test_clock_,
           std::move(fake_pref_connection_delegate_)));
     }
 
@@ -501,8 +484,12 @@ class DeviceSyncServiceTest : public testing::Test {
         std::make_unique<cryptauth::FakeGcmDeviceInfoProvider>(
             GetTestGcmDeviceInfo());
 
-    fake_url_request_context_getter_ =
-        base::MakeRefCounted<FakeURLRequestContextGetter>();
+    auto shared_url_loader_factory =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            base::BindOnce([]() -> network::mojom::URLLoaderFactory* {
+              ADD_FAILURE() << "Did not expect this to actually be used";
+              return nullptr;
+            }));
 
     fake_device_sync_observer_ = std::make_unique<FakeDeviceSyncObserver>();
     connector_factory_ =
@@ -510,7 +497,7 @@ class DeviceSyncServiceTest : public testing::Test {
             std::make_unique<DeviceSyncService>(
                 identity_test_environment_->identity_manager(),
                 fake_gcm_driver_.get(), fake_gcm_device_info_provider_.get(),
-                fake_url_request_context_getter_.get()));
+                shared_url_loader_factory));
   }
 
   void TearDown() override { DBusThreadManager::Shutdown(); }
@@ -943,7 +930,6 @@ class DeviceSyncServiceTest : public testing::Test {
   std::unique_ptr<gcm::FakeGCMDriver> fake_gcm_driver_;
   std::unique_ptr<cryptauth::FakeGcmDeviceInfoProvider>
       fake_gcm_device_info_provider_;
-  scoped_refptr<FakeURLRequestContextGetter> fake_url_request_context_getter_;
 
   std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
