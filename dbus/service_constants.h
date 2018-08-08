@@ -437,6 +437,7 @@ const char kErrorNotReady[] = "org.bluez.Error.NotReady";
 const char kErrorFailed[] = "org.bluez.Error.Failed";
 const char kErrorInProgress[] = "org.bluez.Error.InProgress";
 const char kErrorAlreadyConnected[] = "org.bluez.Error.AlreadyConnected";
+const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
 const char kErrorNotConnected[] = "org.bluez.Error.NotConnected";
 const char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
 const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
