@@ -16,6 +16,9 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "ui/base/cocoa/touch_bar_util.h"
@@ -83,14 +86,17 @@ class TextSuggestionsTouchBarControllerTest : public InProcessBrowserTest {
   }
 
   void FocusTextfield() {
+    content::WindowedNotificationObserver focus_observer(
+        content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
+        content::NotificationService::AllSources());
     ui_test_utils::NavigateToURL(
         browser(),
         GURL("data:text/html;charset=utf-8,<input type=\"text\" autofocus>"));
+    focus_observer.Wait();
   }
 
   void UnfocusTextfield() {
-    ui_test_utils::NavigateToURL(
-        browser(), GURL("data:text/html;charset=utf-8,<input type=\"text\">"));
+    ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
   }
 
   content::WebContents* GetActiveWebContents() {
@@ -105,10 +111,7 @@ class TextSuggestionsTouchBarControllerTest : public InProcessBrowserTest {
 };
 
 // Tests to check if the touch bar shows up properly.
-// DISABLED because it consistently fails "Mac10.12 Tests"
-// https://crbug.com/871740
-IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest,
-                       DISABLED_MakeTouchBar) {
+IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest, MakeTouchBar) {
   if (@available(macOS 10.12.2, *)) {
     NSString* const kTextSuggestionsTouchBarId = @"text-suggestions";
 
@@ -126,10 +129,8 @@ IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest,
 }
 
 // Tests that a change in text selection is handled properly.
-// DISABLED because it consistently fails "Mac10.12 Tests"
-// https://crbug.com/871740
 IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest,
-                       DISABLED_UpdateTextSelection) {
+                       UpdateTextSelection) {
   NSString* const kText = @"text";
   NSString* const kEmptyText = @"";
   const gfx::Range kRange = gfx::Range(0, 4);
@@ -180,15 +181,11 @@ IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest,
 }
 
 // Tests that a change in WebContents is handled properly.
-// DISABLED because it consistently fails "Mac10.12 Tests"
-// https://crbug.com/871740
-IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest,
-                       DISABLED_SetWebContents) {
+IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest, SetWebContents) {
   NSString* const kText = @"text";
   const gfx::Range kRange = gfx::Range(1, 1);
 
   // A null-pointer should not break the controller.
-  UnfocusTextfield();
   [touch_bar_controller_ setWebContents:nullptr];
   EXPECT_FALSE([touch_bar_controller_ webContents]);
 
