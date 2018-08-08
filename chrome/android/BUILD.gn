@@ -348,6 +348,7 @@ android_library("chrome_java") {
   srcjar_deps += feed_srcjar_deps
 
   if (enable_vr) {
+    java_files += chrome_vr_java_sources
     deps += [
       "//device/vr:java",
       "//third_party/gvr-android-keyboard:kb_java",
@@ -680,7 +681,6 @@ if (enable_vr || (enable_arcore && package_arcore)) {
     "//base:base_java_test_support",
     "//chrome/android:app_hooks_java",
     "//chrome/android:chrome_java",
-    "//chrome/browser/android/vr:java",
     "//chrome/test/android:chrome_java_test_support",
     "//components/policy/android:policy_java",
     "//content/public/android:content_java",
@@ -930,11 +930,6 @@ chrome_shared_library("libchrome") {
   deps = [
     ":chrome_jni_registration($default_toolchain)",
   ]
-  if (enable_vr) {
-    sources += [ "../browser/android/vr/register_jni.cc" ]
-    deps +=
-        [ "//chrome/browser/android/vr:jni_registration($default_toolchain)" ]
-  }
 }
 
 chrome_shared_library("libchromefortest") {
@@ -950,11 +945,6 @@ chrome_shared_library("libchromefortest") {
     "//components/heap_profiling:test_support",
     "//content/public/test/android:content_native_test_support",
   ]
-  if (enable_vr) {
-    sources += [ "../browser/android/vr/register_jni.cc" ]
-    deps +=
-        [ "//chrome/browser/android/vr:jni_registration($default_toolchain)" ]
-  }
 }
 
 # Ensure that .pak files are built only once (build them in the default
@@ -962,21 +952,21 @@ chrome_shared_library("libchromefortest") {
 # is generated from Java code so it just needs to be generated once.
 if (current_toolchain == default_toolchain) {
   generate_jni_registration("chrome_jni_registration") {
-    target = ":chrome_public_base_module_java"
+    target = ":chrome_public_apk"
     output = "$root_gen_dir/chrome/browser/android/${target_name}.h"
     exception_files = jni_exception_files
   }
 
   generate_jni_registration("chrome_jni_for_test_registration") {
     testonly = true
-    target = ":chrome_public_base_module_java_for_test"
+    target = ":chrome_public_apk_for_test"
     output = "$root_gen_dir/chrome/browser/android/${target_name}.h"
     exception_files = jni_exception_files
   }
 
   generate_jni_registration("chrome_sync_shell_jni_registration") {
     testonly = true
-    target = ":chrome_sync_shell_java"
+    target = ":chrome_sync_shell_apk"
     output = "$root_gen_dir/chrome/browser/android/${target_name}.h"
     exception_files = jni_exception_files
   }
@@ -1119,9 +1109,6 @@ if (!android_64bit_target_cpu ||
     sources = [
       "../browser/android/monochrome_entry_point.cc",
     ]
-    if (enable_vr) {
-      sources += [ "../browser/android/vr/register_jni_monochrome.cc" ]
-    }
     deps = [
       "//android_webview:common",
       "//chrome:chrome_android_core",
@@ -1167,62 +1154,17 @@ shared_library("chrome_sync_shell") {
   if (chromium_linker_supported && use_lld) {
     configs += [ "//build/config/android:lld_pack_relocations" ]
   }
-  if (enable_vr) {
-    sources += [ "../browser/android/vr/register_jni.cc" ]
-    deps +=
-        [ "//chrome/browser/android/vr:jni_registration($default_toolchain)" ]
-  }
-}
-
-# Java libraries that go into each public chrome APK and base module. The chrome
-# JNI registration is generated based on this target.
-# TODO(tiborg): Remove the following three groups once we have a APK / module
-# target that contain exactly the grouped java libraries.
-java_group("chrome_public_base_module_java") {
-  deps = [
-    ":app_hooks_java",
-    ":chrome_java",
-  ]
-}
-
-# Similar to chrome_public_base_module_java but for Java libraries that go into
-# the public chrome test APK.
-java_group("chrome_public_base_module_java_for_test") {
-  testonly = true
-  deps = [
-    ":browser_java_test_support",
-    ":chrome_public_base_module_java",
-    "//chrome/browser/android/metrics:ukm_utils_java",
-    "//components/heap_profiling:heap_profiling_java_test_support",
-    "//content/public/test/android:content_java_test_support",
-    "//third_party/android_tools:android_test_mock_java",
-  ]
-}
-
-# Similar to chrome_public_base_module_java but for Java libraries that go into
-# the chrome sync shell APK.
-android_library("chrome_sync_shell_java") {
-  # This exists here rather than in chrome_sync_shell_test_apk for JNI
-  # registration to be able to find the native side functions.
-  java_files = [ "sync_shell/javatests/src/org/chromium/chrome/browser/sync/FakeServerHelper.java" ]
-  deps = [
-    ":chrome_public_base_module_java",
-
-    # This exists here because com.google.protobuf.nano is needed in tests,
-    # but that code is stripped out via proguard. Adding this deps adds
-    # usages and prevents removal of the proto code.
-    "//components/sync:test_support_proto_java",
-    "//third_party/android_protobuf:protobuf_nano_javalib",
-  ]
 }
 
 # Dependencies that are common to any chrome_public derivative targets, as well
 # as to chrome_sync_shell_apk.
 _chrome_public_and_sync_shell_shared_deps = [
+  ":app_hooks_java",
+  ":chrome_java",
   ":chrome_public_apk_resources",
-  ":chrome_public_base_module_java",
   ":chrome_public_non_pak_assets",
   ":chrome_public_pak_assets",
+  "//base:base_java",
 ]
 
 generate_jni("test_support_jni_headers") {
@@ -1361,8 +1303,13 @@ chrome_public_common_apk_or_module_tmpl("chrome_public_apk_for_test") {
   if (_add_unwind_tables_in_chrome_public_apk) {
     shared_library_for_unwind_asset = "chromefortest"
   }
-  deps = _chrome_public_and_sync_shell_shared_deps +
-         [ ":chrome_public_base_module_java_for_test" ]
+  deps = _chrome_public_and_sync_shell_shared_deps + [
+           ":browser_java_test_support",
+           "//chrome/browser/android/metrics:ukm_utils_java",
+           "//components/heap_profiling:heap_profiling_java_test_support",
+           "//content/public/test/android:content_java_test_support",
+           "//third_party/android_tools:android_test_mock_java",
+         ]
   if (!is_java_debug) {
     proguard_configs = [ "//chrome/android/java/apk_for_test.flags" ]
   }
@@ -1454,10 +1401,19 @@ chrome_public_common_apk_or_module_tmpl("chrome_sync_shell_apk") {
   apk_name = "ChromeSyncShell"
   shared_libraries = [ ":chrome_sync_shell" ]
 
-  deps = _chrome_public_and_sync_shell_shared_deps + [
-           ":chrome_sync_shell_apk_template_resources",
-           ":chrome_sync_shell_java",
-         ]
+  # This exists here rather than in chrome_sync_shell_test_apk for JNI
+  # registration to be able to find the native side functions.
+  java_files = [ "sync_shell/javatests/src/org/chromium/chrome/browser/sync/FakeServerHelper.java" ]
+  deps =
+      _chrome_public_and_sync_shell_shared_deps + [
+        ":chrome_sync_shell_apk_template_resources",
+
+        # This exists here because com.google.protobuf.nano is needed in tests,
+        # but that code is stripped out via proguard. Adding this deps adds
+        # usages and prevents removal of the proto code.
+        "//components/sync:test_support_proto_java",
+        "//third_party/android_protobuf:protobuf_nano_javalib",
+      ]
 }
 
 chrome_public_test_apk_manifest =

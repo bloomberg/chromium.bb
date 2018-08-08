@@ -170,10 +170,6 @@ template("chrome_public_common_apk_or_module_tmpl") {
         invoker.add_unwind_tables_in_apk) {
       deps += [ ":$_unwind_asset" ]
     }
-
-    if (enable_vr) {
-      deps += [ "//chrome/browser/android/vr:java" ]
-    }
   }
 }
 
