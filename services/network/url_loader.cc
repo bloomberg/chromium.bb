@@ -676,14 +676,16 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
                  base::Unretained(this)));
 
   // Figure out if we need to sniff (for MIME type detection or for CORB).
-  if (factory_params_->is_corb_enabled && !is_nocors_corb_excluded_request_) {
+  if (factory_params_->is_corb_enabled && !is_nocors_corb_excluded_request_ &&
+      (factory_params_->corb_excluded_initiator_scheme.empty() ||
+       factory_params_->corb_excluded_initiator_scheme !=
+           url_request->initiator().value_or(url::Origin()).scheme())) {
     CrossOriginReadBlocking::LogAction(
         CrossOriginReadBlocking::Action::kResponseStarted);
 
     corb_analyzer_ =
         std::make_unique<CrossOriginReadBlocking::ResponseAnalyzer>(
-            *url_request_, *response_,
-            factory_params_->corb_excluded_initiator_scheme);
+            *url_request_, *response_);
     is_more_corb_sniffing_needed_ = corb_analyzer_->needs_sniffing();
     if (corb_analyzer_->ShouldBlock()) {
       DCHECK(!is_more_corb_sniffing_needed_);

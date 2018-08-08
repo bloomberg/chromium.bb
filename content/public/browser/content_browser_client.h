@@ -296,6 +296,17 @@ class CONTENT_EXPORT ContentBrowserClient {
   // exceptions should be granted based on initiator's scheme.
   virtual const char* GetInitiatorSchemeBypassingDocumentBlocking();
 
+  // Gives the embedder a chance to log that CORB would have blocked a response
+  // if it wasn't for GetInitatorSchemeBypassingDocumentBlocking above.  Called
+  // only after all the other CORB checks (potentially including sniffing) have
+  // been already run / right before blocking would have otherwise happened (and
+  // only for non-empty, non-4xx responses).
+  // TODO(lukasza): Remove once we gather enough data.
+  virtual void LogInitiatorSchemeBypassingDocumentBlocking(
+      const url::Origin& initiator_origin,
+      int render_process_id,
+      ResourceType resource_type);
+
   // Returns a list additional WebUI schemes, if any.  These additional schemes
   // act as aliases to the chrome: scheme.  The additional schemes may or may
   // not serve specific WebUI pages depending on the particular URLDataSource

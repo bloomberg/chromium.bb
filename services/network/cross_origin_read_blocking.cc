@@ -541,14 +541,12 @@ class CrossOriginReadBlocking::ResponseAnalyzer::FetchOnlyResourceSniffer
 
 CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
     const net::URLRequest& request,
-    const ResourceResponse& response,
-    base::StringPiece excluded_initiator_scheme) {
+    const ResourceResponse& response) {
   content_length_ = response.head.content_length;
   http_response_code_ =
       response.head.headers ? response.head.headers->response_code() : 0;
 
-  should_block_based_on_headers_ =
-      ShouldBlockBasedOnHeaders(request, response, excluded_initiator_scheme);
+  should_block_based_on_headers_ = ShouldBlockBasedOnHeaders(request, response);
   if (should_block_based_on_headers_ == kNeedToSniffMore)
     CreateSniffers();
 }
@@ -558,8 +556,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::~ResponseAnalyzer() = default;
 CrossOriginReadBlocking::ResponseAnalyzer::BlockingDecision
 CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
     const net::URLRequest& request,
-    const ResourceResponse& response,
-    base::StringPiece excluded_initiator_scheme) {
+    const ResourceResponse& response) {
   // The checks in this method are ordered to rule out blocking in most cases as
   // quickly as possible.  Checks that are likely to lead to returning false or
   // that are inexpensive should be near the top.
@@ -586,14 +583,6 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // preference is set.  See https://crbug.com/789781.
   if (initiator.scheme() == url::kFileScheme)
     return kAllow;
-
-  // Give embedder a chance to skip document blocking of some initiator schemes
-  // (e.g. chrome-extension to avoid blocking requests initiated by content
-  // scripts).
-  if (!excluded_initiator_scheme.empty() &&
-      initiator.scheme() == excluded_initiator_scheme) {
-    return kAllow;
-  }
 
   // Allow the response through if it has valid CORS headers.
   std::string cors_header;

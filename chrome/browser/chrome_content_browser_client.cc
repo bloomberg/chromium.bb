@@ -1433,6 +1433,17 @@ ChromeContentBrowserClient::GetInitiatorSchemeBypassingDocumentBlocking() {
 #endif
 }
 
+void ChromeContentBrowserClient::LogInitiatorSchemeBypassingDocumentBlocking(
+    const url::Origin& initiator_origin,
+    int render_process_id,
+    content::ResourceType resource_type) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  ChromeContentBrowserClientExtensionsPart::
+      LogInitiatorSchemeBypassingDocumentBlocking(
+          initiator_origin, render_process_id, resource_type);
+#endif
+}
+
 // These are treated as WebUI schemes but do not get WebUI bindings. Also,
 // view-source is allowed for these schemes.
 void ChromeContentBrowserClient::GetAdditionalWebUISchemes(

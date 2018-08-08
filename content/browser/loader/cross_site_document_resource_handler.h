@@ -164,6 +164,14 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // completed, and thus it is safe to cancel or detach on the next read.
   bool blocked_read_completed_ = false;
 
+  // Whether the request should be allowed because of
+  // ContentBrowserClient::GetInitatorSchemeBypassingDocumentBlocking
+  bool is_initiator_scheme_excluded_ = false;
+
+  // Whether |is_initiator_scheme_excluded_| actually prevented blocking from
+  // happening.
+  bool initiator_scheme_prevented_blocking_ = false;
+
   base::WeakPtrFactory<CrossSiteDocumentResourceHandler> weak_this_;
 
   DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentResourceHandler);
