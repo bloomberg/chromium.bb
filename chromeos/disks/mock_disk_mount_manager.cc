@@ -36,6 +36,24 @@ const char kTestProductName[] = "A product";
 const char kTestUuid[] = "FFFF-FFFF";
 const char kTestFileSystemType[] = "vfat";
 
+std::unique_ptr<Disk::Builder> MakeDiskBuilder() {
+  std::unique_ptr<Disk::Builder> builder = std::make_unique<Disk::Builder>();
+  builder->SetDevicePath(kTestDevicePath)
+      .SetSystemPath(kTestSystemPath)
+      .SetFilePath(kTestFilePath)
+      .SetDriveLabel(kTestDriveLabel)
+      .SetVendorId(kTestVendorId)
+      .SetVendorName(kTestVendorName)
+      .SetProductId(kTestProductId)
+      .SetProductName(kTestProductName)
+      .SetFileSystemUUID(kTestUuid)
+      .SetSystemPathPrefix(kTestSystemPathPrefix)
+      .SetHasMedia(true)
+      .SetOnRemovableDevice(true)
+      .SetFileSystemType(kTestFileSystemType);
+  return builder;
+}
+
 }  // namespace
 
 void MockDiskMountManager::AddObserverInternal(
@@ -69,21 +87,10 @@ MockDiskMountManager::MockDiskMountManager() {
 MockDiskMountManager::~MockDiskMountManager() = default;
 
 void MockDiskMountManager::NotifyDeviceInsertEvents() {
-  std::unique_ptr<Disk> disk1_ptr = std::make_unique<Disk>(
-      std::string(kTestDevicePath), std::string(),
-      false,  // write_disabled_by_policy
-      std::string(kTestSystemPath), std::string(kTestFilePath), std::string(),
-      std::string(kTestDriveLabel), std::string(kTestVendorId),
-      std::string(kTestVendorName), std::string(kTestProductId),
-      std::string(kTestProductName), std::string(kTestUuid),
-      std::string(kTestSystemPathPrefix), DEVICE_TYPE_USB, 4294967295U,
-      false,  // is_parent
-      false,  // is_read_only
-      true,   // has_media
-      false,  // on_boot_device
-      true,   // on_removable_device
-      false,  // is_hidden
-      std::string(kTestFileSystemType), std::string());
+  std::unique_ptr<Disk> disk1_ptr = MakeDiskBuilder()
+                                        ->SetDeviceType(DEVICE_TYPE_USB)
+                                        .SetSizeInBytes(4294967295U)
+                                        .Build();
   Disk* disk1 = disk1_ptr.get();
 
   disks_.clear();
@@ -96,22 +103,11 @@ void MockDiskMountManager::NotifyDeviceInsertEvents() {
   NotifyDiskChanged(DISK_ADDED, disk1);
 
   // Disk Changed
-  std::unique_ptr<Disk> disk2_ptr = std::make_unique<Disk>(
-      std::string(kTestDevicePath), std::string(kTestMountPath),
-      false,  // write_disabled_by_policy
-      std::string(kTestSystemPath), std::string(kTestFilePath),
-      std::string(kTestDeviceLabel), std::string(kTestDriveLabel),
-      std::string(kTestVendorId), std::string(kTestVendorName),
-      std::string(kTestProductId), std::string(kTestProductName),
-      std::string(kTestUuid), std::string(kTestSystemPathPrefix),
-      DEVICE_TYPE_MOBILE, 1073741824,
-      false,  // is_parent
-      false,  // is_read_only
-      true,   // has_media
-      false,  // on_boot_device
-      true,   // on_removable_device
-      false,  // is_hidden
-      std::string(kTestFileSystemType), std::string());
+  std::unique_ptr<Disk> disk2_ptr = MakeDiskBuilder()
+                                        ->SetMountPath(kTestMountPath)
+                                        .SetDeviceType(DEVICE_TYPE_MOBILE)
+                                        .SetSizeInBytes(1073741824)
+                                        .Build();
   Disk* disk2 = disk2_ptr.get();
   disks_.clear();
   disks_[std::string(kTestDevicePath)] = std::move(disk2_ptr);
@@ -119,22 +115,12 @@ void MockDiskMountManager::NotifyDeviceInsertEvents() {
 }
 
 void MockDiskMountManager::NotifyDeviceRemoveEvents() {
-  std::unique_ptr<Disk> disk_ptr = std::make_unique<Disk>(
-      std::string(kTestDevicePath), std::string(kTestMountPath),
-      false,  // write_disabled_by_policy
-      std::string(kTestSystemPath), std::string(kTestFilePath),
-      std::string(kTestDeviceLabel), std::string(kTestDriveLabel),
-      std::string(kTestVendorId), std::string(kTestVendorName),
-      std::string(kTestProductId), std::string(kTestProductName),
-      std::string(kTestUuid), std::string(kTestSystemPathPrefix),
-      DEVICE_TYPE_SD, 1073741824,
-      false,  // is_parent
-      false,  // is_read_only
-      true,   // has_media
-      false,  // on_boot_device
-      true,   // on_removable_device
-      false,  // is_hidden
-      std::string(kTestFileSystemType), std::string());
+  std::unique_ptr<Disk> disk_ptr = MakeDiskBuilder()
+                                       ->SetMountPath(kTestMountPath)
+                                       .SetDeviceLabel(kTestDeviceLabel)
+                                       .SetDeviceType(DEVICE_TYPE_SD)
+                                       .SetSizeInBytes(1073741824)
+                                       .Build();
   Disk* disk = disk_ptr.get();
   disks_.clear();
   disks_[std::string(kTestDevicePath)] = std::move(disk_ptr);
@@ -184,22 +170,22 @@ void MockDiskMountManager::CreateDiskEntryForMountDevice(
     bool on_removable_device,
     const std::string& file_system_type) {
   std::unique_ptr<Disk> disk_ptr =
-      std::make_unique<Disk>(mount_info.source_path, mount_info.mount_path,
-                             false,          // write_disabled_by_policy
-                             std::string(),  // system_path
-                             mount_info.source_path, device_label,
-                             std::string(),  // drive_label
-                             std::string(),  // vendor_id
-                             vendor_name,
-                             std::string(),  // product_id
-                             product_name,
-                             device_id,      // fs_uuid
-                             std::string(),  // system_path_prefix
-                             device_type, total_size_in_bytes, is_parent,
-                             false,  // is_read_only
-                             has_media, on_boot_device, on_removable_device,
-                             false,  // is_hidden
-                             file_system_type, std::string());
+      Disk::Builder()
+          .SetDevicePath(mount_info.source_path)
+          .SetMountPath(mount_info.mount_path)
+          .SetFilePath(mount_info.source_path)
+          .SetDeviceLabel(device_label)
+          .SetVendorName(vendor_name)
+          .SetProductName(product_name)
+          .SetFileSystemUUID(device_id)
+          .SetDeviceType(device_type)
+          .SetSizeInBytes(total_size_in_bytes)
+          .SetIsParent(is_parent)
+          .SetHasMedia(has_media)
+          .SetOnBootDevice(on_boot_device)
+          .SetOnRemovableDevice(on_removable_device)
+          .SetFileSystemType(file_system_type)
+          .Build();
   disks_[std::string(mount_info.source_path)] = std::move(disk_ptr);
 }
 

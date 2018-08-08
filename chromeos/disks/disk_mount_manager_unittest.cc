@@ -43,7 +43,6 @@ const char kFileSystemType2[] = "exfat";
 struct TestDiskInfo {
   const char* source_path;
   const char* mount_path;
-  bool write_disabled_by_policy;
   const char* system_path;
   const char* file_path;
   const char* device_label;
@@ -56,14 +55,8 @@ struct TestDiskInfo {
   const char* system_path_prefix;
   chromeos::DeviceType device_type;
   uint64_t size_in_bytes;
-  bool is_parent;
   bool is_read_only;
-  bool has_media;
-  bool on_boot_device;
-  bool on_removable_device;
-  bool is_hidden;
   const char* file_system_type;
-  const char* base_mount_path;
 };
 
 // Holds information to create a DiskMOuntManager::MountPointInfo instance.
@@ -79,7 +72,6 @@ const TestDiskInfo kTestDisks[] = {
     {
         kDevice1SourcePath,
         kDevice1MountPath,
-        false,  // write_disabled_by_policy
         "/device/prefix/system_path",
         "/device/file_path",
         "/device/device_label",
@@ -92,19 +84,12 @@ const TestDiskInfo kTestDisks[] = {
         "/device/prefix",
         chromeos::DEVICE_TYPE_USB,
         1073741824,  // size in bytes
-        false,       // is parent
         false,       // is read only
-        true,        // has media
-        false,       // is on boot device
-        true,        // is on removable device
-        false,       // is hidden
         kFileSystemType1,
-        ""  // base mount path
     },
     {
         kDevice2SourcePath,
         "",     // not mounted initially
-        false,  // write_disabled_by_policy
         "/device/prefix/system_path2",
         "/device/file_path2",
         "/device/device_label2",
@@ -117,19 +102,12 @@ const TestDiskInfo kTestDisks[] = {
         "/device/prefix2",
         chromeos::DEVICE_TYPE_SD,
         1073741824,  // size in bytes
-        false,       // is parent
         false,       // is read only
-        true,        // has media
-        false,       // is on boot device
-        true,        // is on removable device
-        false,       // is hidden
         kFileSystemType2,
-        ""  // base mount path
     },
     {
         kReadOnlyDeviceSourcePath,
         kReadOnlyDeviceMountPath,
-        false,  // write_disabled_by_policy
         "/device/prefix/system_path_3",
         "/device/file_path_3",
         "/device/device_label_3",
@@ -142,14 +120,8 @@ const TestDiskInfo kTestDisks[] = {
         "/device/prefix",
         chromeos::DEVICE_TYPE_USB,
         1073741824,  // size in bytes
-        false,       // is parent
         true,        // is read only
-        true,        // has media
-        false,       // is on boot device
-        true,        // is on removable device
-        false,       // is hidden
         kFileSystemType2,
-        ""  // base mount path
     },
 };
 
@@ -556,16 +528,29 @@ class DiskMountManagerTest : public testing::Test {
  private:
   // Adds a new disk to the disk mount manager.
   void AddTestDisk(const TestDiskInfo& disk) {
+    std::unique_ptr<Disk> test_disk =
+        Disk::Builder()
+            .SetDevicePath(disk.source_path)
+            .SetMountPath(disk.mount_path)
+            .SetSystemPath(disk.system_path)
+            .SetFilePath(disk.file_path)
+            .SetDeviceLabel(disk.device_label)
+            .SetDriveLabel(disk.drive_label)
+            .SetVendorId(disk.vendor_id)
+            .SetVendorName(disk.vendor_name)
+            .SetProductId(disk.product_id)
+            .SetProductName(disk.product_name)
+            .SetFileSystemUUID(disk.fs_uuid)
+            .SetSystemPathPrefix(disk.system_path_prefix)
+            .SetDeviceType(disk.device_type)
+            .SetSizeInBytes(disk.size_in_bytes)
+            .SetIsReadOnlyHardware(disk.is_read_only)
+            .SetHasMedia(true)
+            .SetOnRemovableDevice(true)
+            .SetFileSystemType(disk.file_system_type)
+            .Build();
     EXPECT_TRUE(
-        DiskMountManager::GetInstance()->AddDiskForTest(std::make_unique<Disk>(
-            disk.source_path, disk.mount_path, disk.write_disabled_by_policy,
-            disk.system_path, disk.file_path, disk.device_label,
-            disk.drive_label, disk.vendor_id, disk.vendor_name, disk.product_id,
-            disk.product_name, disk.fs_uuid, disk.system_path_prefix,
-            disk.device_type, disk.size_in_bytes, disk.is_parent,
-            disk.is_read_only, disk.has_media, disk.on_boot_device,
-            disk.on_removable_device, disk.is_hidden, disk.file_system_type,
-            disk.base_mount_path)));
+        DiskMountManager::GetInstance()->AddDiskForTest(std::move(test_disk)));
   }
 
   // Adds a new mount point to the disk mount manager.
