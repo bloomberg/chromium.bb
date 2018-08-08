@@ -38,6 +38,7 @@ using testing::NiceMock;
 using testing::StrictMock;
 using testing::TestWithParam;
 using testing::ValuesIn;
+using testing::_;
 
 using content::BrowserThread;
 using net::EmbeddedTestServer;
@@ -254,7 +255,7 @@ const char kSampleCJTMono[] =
 
 const char* const kTestParams[] = {"8.8.4.4", "2001:4860:4860::8888"};
 
-// Return the representation of the given JSON that would be outputted by
+// Returns the representation of the given JSON that would be outputted by
 // JSONWriter. This ensures the same JSON values are represented by the same
 // string.
 std::string NormalizeJson(const std::string& json) {
@@ -431,16 +432,10 @@ class MockJSONCallback{
 
 class MockRegisterDelegate : public PrivetRegisterOperation::Delegate {
  public:
-  void OnPrivetRegisterClaimToken(
-      PrivetRegisterOperation* operation,
-      const std::string& token,
-      const GURL& url) override {
-    OnPrivetRegisterClaimTokenInternal(token, url);
-  }
-
-  MOCK_METHOD2(OnPrivetRegisterClaimTokenInternal, void(
-      const std::string& token,
-      const GURL& url));
+  MOCK_METHOD3(OnPrivetRegisterClaimToken,
+               void(PrivetRegisterOperation* operation,
+                    const std::string& token,
+                    const GURL& url));
 
   void OnPrivetRegisterError(
       PrivetRegisterOperation* operation,
@@ -457,31 +452,17 @@ class MockRegisterDelegate : public PrivetRegisterOperation::Delegate {
                     PrivetRegisterOperation::FailureReason reason,
                     int printer_http_code));
 
-  void OnPrivetRegisterDone(
-      PrivetRegisterOperation* operation,
-      const std::string& device_id) override {
-    OnPrivetRegisterDoneInternal(device_id);
-  }
-
-  MOCK_METHOD1(OnPrivetRegisterDoneInternal,
-               void(const std::string& device_id));
+  MOCK_METHOD2(OnPrivetRegisterDone,
+               void(PrivetRegisterOperation* operation,
+                    const std::string& device_id));
 };
 
 class MockLocalPrintDelegate : public PrivetLocalPrintOperation::Delegate {
  public:
-  void OnPrivetPrintingDone(
-      const PrivetLocalPrintOperation* print_operation) override {
-    OnPrivetPrintingDoneInternal();
-  }
-
-  MOCK_METHOD0(OnPrivetPrintingDoneInternal, void());
-
-  void OnPrivetPrintingError(const PrivetLocalPrintOperation* print_operation,
-                             int http_code) override {
-    OnPrivetPrintingErrorInternal(http_code);
-  }
-
-  MOCK_METHOD1(OnPrivetPrintingErrorInternal, void(int http_code));
+  MOCK_METHOD1(OnPrivetPrintingDone, void(const PrivetLocalPrintOperation*));
+  MOCK_METHOD2(OnPrivetPrintingError,
+               void(const PrivetLocalPrintOperation* print_operation,
+                    int http_code));
 };
 
 class PrivetInfoTest : public PrivetHTTPTest {
@@ -574,9 +555,9 @@ TEST_P(PrivetRegisterTest, RegisterSuccessSimple) {
   EXPECT_TRUE(
       SuccessfulResponseToURL(kRegisterStartURL, kSampleRegisterStartResponse));
 
-  EXPECT_CALL(register_delegate_, OnPrivetRegisterClaimTokenInternal(
-      "MySampleToken",
-      GURL("https://domain.com/SoMeUrL")));
+  EXPECT_CALL(register_delegate_,
+              OnPrivetRegisterClaimToken(_, "MySampleToken",
+                                         GURL("https://domain.com/SoMeUrL")));
 
   EXPECT_TRUE(SuccessfulResponseToURL(kRegisterGetTokenURL,
                                       kSampleRegisterGetClaimTokenResponse));
@@ -586,8 +567,7 @@ TEST_P(PrivetRegisterTest, RegisterSuccessSimple) {
   EXPECT_TRUE(SuccessfulResponseToURL(kRegisterCompleteURL,
                                       kSampleRegisterCompleteResponse));
 
-  EXPECT_CALL(register_delegate_, OnPrivetRegisterDoneInternal(
-      "MyDeviceID"));
+  EXPECT_CALL(register_delegate_, OnPrivetRegisterDone(_, "MyDeviceID"));
 
   EXPECT_TRUE(SuccessfulResponseToURL(kInfoURL, kSampleInfoResponseRegistered));
 }
@@ -605,8 +585,9 @@ TEST_P(PrivetRegisterTest, RegisterXSRFFailure) {
 
   EXPECT_TRUE(SuccessfulResponseToURL(kInfoURL, kSampleInfoResponse));
 
-  EXPECT_CALL(register_delegate_, OnPrivetRegisterClaimTokenInternal(
-      "MySampleToken", GURL("https://domain.com/SoMeUrL")));
+  EXPECT_CALL(register_delegate_,
+              OnPrivetRegisterClaimToken(_, "MySampleToken",
+                                         GURL("https://domain.com/SoMeUrL")));
 
   EXPECT_TRUE(SuccessfulResponseToURL(kRegisterGetTokenURL,
                                       kSampleRegisterGetClaimTokenResponse));
@@ -829,7 +810,7 @@ TEST_P(PrivetLocalPrintTest, SuccessfulLocalPrint) {
 
   EXPECT_TRUE(SuccessfulResponseToURL(kInfoURL, kSampleInfoResponse));
 
-  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDone(_));
 
   EXPECT_TRUE(SuccessfulResponseToURLAndData(kSubmitDocURL, "Sample print data",
                                              kSampleLocalPrintResponse));
@@ -848,7 +829,7 @@ TEST_P(PrivetLocalPrintTest, SuccessfulLocalPrintWithAnyMimetype) {
 
   EXPECT_TRUE(SuccessfulResponseToURL(kInfoURL, kSampleInfoResponse));
 
-  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDone(_));
 
   EXPECT_TRUE(SuccessfulResponseToURLAndData(kSubmitDocURL, "Sample print data",
                                              kSampleLocalPrintResponse));
@@ -865,7 +846,7 @@ TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrint) {
 
   EXPECT_TRUE(SuccessfulResponseToURL(kInfoURL, kSampleInfoResponse));
 
-  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDone(_));
 
   EXPECT_TRUE(SuccessfulResponseToURLAndFileData(kSubmitDocURL, "foobar",
                                                  kSampleLocalPrintResponse));
@@ -896,7 +877,7 @@ TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrintDuplex) {
   EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(
       kCreateJobURL, kSampleCJTDuplex, kSampleCreateJobResponse));
 
-  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDone(_));
 
   EXPECT_TRUE(SuccessfulResponseToURLAndFileData(
       kSubmitDocWithJobIDURL, "foobar", kSampleLocalPrintResponse));
@@ -927,7 +908,7 @@ TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrintMono) {
   EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(kCreateJobURL, kSampleCJTMono,
                                                  kSampleCreateJobResponse));
 
-  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDone(_));
 
   EXPECT_TRUE(SuccessfulResponseToURLAndFileData(
       kSubmitDocWithJobIDURL, "foobar", kSampleLocalPrintResponse));
@@ -958,7 +939,7 @@ TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrintMonoToGRAY8Printer) {
   EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(kCreateJobURL, kSampleCJTMono,
                                                  kSampleCreateJobResponse));
 
-  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDone(_));
 
   EXPECT_TRUE(SuccessfulResponseToURLAndFileData(
       kSubmitDocWithJobIDURL, "foobar", kSampleLocalPrintResponse));
@@ -989,7 +970,7 @@ TEST_P(PrivetLocalPrintTest, SuccessfulLocalPrintWithCreatejob) {
   EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(kCreateJobURL, kSampleCJT,
                                                  kSampleCreateJobResponse));
 
-  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDone(_));
 
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
       kSubmitDocWithJobIDURL, "Sample print data", kSampleLocalPrintResponse));
@@ -1013,7 +994,7 @@ TEST_P(PrivetLocalPrintTest, SuccessfulLocalPrintWithOverlongName) {
   EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(kCreateJobURL, kSampleCJT,
                                                  kSampleCreateJobResponse));
 
-  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDone(_));
 
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
       GetUrl("/privet/printer/submitdoc?"
@@ -1043,7 +1024,7 @@ TEST_P(PrivetLocalPrintTest, PDFPrintInvalidDocumentTypeRetry) {
       SuccessfulResponseToURLAndData(kSubmitDocWithJobIDURL, "sample_data",
                                      kSampleInvalidDocumentTypeResponse));
 
-  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDone(_));
 
   EXPECT_TRUE(SuccessfulResponseToURLAndFileData(
       kSubmitDocWithJobIDURL, "sample_data", kSampleLocalPrintResponse));
