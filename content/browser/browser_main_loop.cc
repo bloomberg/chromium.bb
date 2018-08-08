@@ -642,8 +642,7 @@ int BrowserMainLoop::EarlyInitialization() {
   // Up the priority of the UI thread unless it was already high (since recent
   // versions of Android (O+) do this automatically).
   if (base::PlatformThread::GetCurrentThreadPriority() <
-          base::ThreadPriority::DISPLAY ||
-      base::FeatureList::IsEnabled(features::kOverrideUIThreadPriority)) {
+      base::ThreadPriority::DISPLAY) {
     base::PlatformThread::SetCurrentThreadPriority(
         base::ThreadPriority::DISPLAY);
   }
