@@ -354,14 +354,18 @@ FloatRect SimpleFontData::PlatformBoundsForGlyph(Glyph glyph) const {
   return FloatRect(bounds);
 }
 
-void SimpleFontData::BoundsForGlyphs(const Vector<Glyph> glyphs,
-                                     Vector<SkRect>* bounds) const {
+void SimpleFontData::BoundsForGlyphs(const Vector<Glyph, 256> glyphs,
+                                     Vector<FloatRect, 256>* bounds) const {
   DCHECK_EQ(glyphs.size(), bounds->size());
 
   if (!platform_data_.size())
     return;
 
-  SkiaTextMetrics(&paint_).GetSkiaBoundsForGlyphs(glyphs, bounds->data());
+  Vector<SkRect, 256> skia_bounds(glyphs.size());
+  SkiaTextMetrics(&paint_).GetSkiaBoundsForGlyphs(glyphs, skia_bounds.data());
+
+  for (unsigned i = 0; i < skia_bounds.size(); i++)
+    (*bounds)[i] = FloatRect(skia_bounds[i]);
 }
 
 float SimpleFontData::PlatformWidthForGlyph(Glyph glyph) const {

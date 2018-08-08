@@ -876,13 +876,6 @@ void ShapeResult::ComputeGlyphPositions(ShapeResult::RunInfo* run,
   float total_advance = 0.0f;
   bool has_vertical_offsets = !is_horizontal_run;
 
-#if !defined(OS_MACOSX)
-  // Allocate and populate vector for BoundsForGlyphs call in ComputeGlyphBounds
-  // here to avoid having to iterate over all glyphs an extra time.
-  Vector<Glyph> glyphs(
-      std::min(num_glyphs, HarfBuzzRunGlyphData::kMaxCharacterIndex));
-#endif
-
   // HarfBuzz returns result in visual order, no need to flip for RTL.
   for (unsigned i = 0; i < num_glyphs; ++i) {
     uint16_t glyph = glyph_infos[start_glyph + i].codepoint;
@@ -913,67 +906,49 @@ void ShapeResult::ComputeGlyphPositions(ShapeResult::RunInfo* run,
         IsSafeToBreakBefore(glyph_infos + start_glyph, num_glyphs, i));
     total_advance += advance;
     has_vertical_offsets |= (offset.Height() != 0);
-
-#if !defined(OS_MACOSX)
-    // See comment in ShapeResult::ComputeGlyphBounds.
-    glyphs[i] = run->glyph_data_[i].glyph;
-#endif
   }
 
   run->width_ = std::max(0.0f, total_advance);
   has_vertical_offsets_ |= has_vertical_offsets;
-#if defined(OS_MACOSX)
+
   ComputeGlyphBounds<is_horizontal_run>(*run);
-#else
-  ComputeGlyphBounds<is_horizontal_run>(*run, glyphs);
-#endif
 }
 
-// TODO(kojii): MacOS does not benefit from batching the Skia request due to
-// https://bugs.chromium.org/p/skia/issues/detail?id=5328 , and the cost to
-// prepare batching, which is normally much less than the benefit of batching,
-// is not ignorable unfortunately.
-#if defined(OS_MACOSX)
 template <bool is_horizontal_run>
 void ShapeResult::ComputeGlyphBounds(const ShapeResult::RunInfo& run) {
+  // Skia runs much faster if we give a list of glyph ID rather than calling it
+  // on each glyph.
   const SimpleFontData& current_font_data = *run.font_data_;
-
+#if defined(OS_MACOSX)
+  // TODO(kojii): MacOS does not benefit from batching the Skia request due to
+  // https://bugs.chromium.org/p/skia/issues/detail?id=5328 , and the cost to
+  // prepare batching, which is normally much less than the benefit of batching,
+  // is not ignorable unfortunately.
   GlyphBoundsAccumulator bounds(width_);
   for (const HarfBuzzRunGlyphData& glyph_data : run.glyph_data_) {
     bounds.Unite<is_horizontal_run>(
         glyph_data, current_font_data.BoundsForGlyph(glyph_data.glyph));
     bounds.origin += glyph_data.advance;
   }
-
-  if (!is_horizontal_run)
-    bounds.ConvertVerticalRunToLogical(current_font_data.GetFontMetrics());
-  glyph_bounding_box_.Unite(bounds.bounds);
-}
-
-#else   // !OS_MACOSX
-template <bool is_horizontal_run>
-void ShapeResult::ComputeGlyphBounds(const ShapeResult::RunInfo& run,
-                                     const Vector<Glyph>& glyphs) {
-  const SimpleFontData& current_font_data = *run.font_data_;
-
-  // Skia runs much faster if we give a list of glyph ID rather than calling it
-  // on each glyph.
+#else
   unsigned num_glyphs = run.glyph_data_.size();
-  Vector<SkRect> bounds_list(num_glyphs);
+  Vector<Glyph, 256> glyphs(num_glyphs);
+  for (unsigned i = 0; i < num_glyphs; i++)
+    glyphs[i] = run.glyph_data_[i].glyph;
+  Vector<FloatRect, 256> bounds_list(num_glyphs);
   current_font_data.BoundsForGlyphs(glyphs, &bounds_list);
 
   GlyphBoundsAccumulator bounds(width_);
   for (unsigned i = 0; i < num_glyphs; i++) {
     const HarfBuzzRunGlyphData& glyph_data = run.glyph_data_[i];
-    bounds.Unite<is_horizontal_run>(glyph_data, FloatRect(bounds_list[i]));
+    bounds.Unite<is_horizontal_run>(glyph_data, bounds_list[i]);
     bounds.origin += glyph_data.advance;
   }
-
+#endif
   if (!is_horizontal_run)
     bounds.ConvertVerticalRunToLogical(current_font_data.GetFontMetrics());
   glyph_bounding_box_.Unite(bounds.bounds);
 }
-#endif  // !OS_MACOSX
 
 void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run_to_insert,
                             unsigned start_glyph,
