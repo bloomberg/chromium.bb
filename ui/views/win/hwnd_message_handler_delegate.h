@@ -87,8 +87,13 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
 
   // Returns true if the delegate modifies |insets| to define a custom client
   // area for the window, false if the default client area should be used. If
-  // false is returned, |insets| is not modified.
-  virtual bool GetClientAreaInsets(gfx::Insets* insets) const = 0;
+  // false is returned, |insets| is not modified.  |monitor| is the monitor
+  // this window is on.  Normally that would be determined from the HWND, but
+  // during WM_NCCALCSIZE Windows does not return the correct monitor for the
+  // HWND, so it must be passed in explicitly (see HWNDMessageHandler::
+  // OnNCCalcSize for more details).
+  virtual bool GetClientAreaInsets(gfx::Insets* insets,
+                                   HMONITOR monitor) const = 0;
 
   // Returns the minimum and maximum size the window can be resized to by the
   // user.

@@ -270,9 +270,14 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // or subsequently.
   void ClientAreaSizeChanged();
 
-  // Returns the insets of the client area relative to the non-client area of
-  // the window.
-  bool GetClientAreaInsets(gfx::Insets* insets) const;
+  // Returns true if |insets| was modified to define a custom client area for
+  // the window, false if the default client area should be used. If false is
+  // returned, |insets| is not modified.  |monitor| is the monitor this
+  // window is on.  Normally that would be determined from the HWND, but
+  // during WM_NCCALCSIZE Windows does not return the correct monitor for the
+  // HWND, so it must be passed in explicitly (see HWNDMessageHandler::
+  // OnNCCalcSize for more details).
+  bool GetClientAreaInsets(gfx::Insets* insets, HMONITOR monitor) const;
 
   // Resets the window region for the current widget bounds if necessary.
   // If |force| is true, the window region is reset to NULL even for native

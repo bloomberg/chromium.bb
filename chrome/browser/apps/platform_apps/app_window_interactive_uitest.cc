@@ -330,7 +330,8 @@ void AppWindowInteractiveTest::TestOuterBoundsHelper(
   // Note that this does not include the the client area insets so we need to
   // add them.
   gfx::Insets insets;
-  host->GetClientAreaInsets(&insets);
+  host->GetClientAreaInsets(&insets,
+                            MonitorFromWindow(hwnd, MONITOR_DEFAULTTONULL));
   min_size = gfx::Size(min_size.width() + insets.left() + insets.right(),
                        min_size.height() + insets.top() + insets.bottom());
   max_size = gfx::Size(

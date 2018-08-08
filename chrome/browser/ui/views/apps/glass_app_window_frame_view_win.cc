@@ -4,12 +4,15 @@
 
 #include "chrome/browser/ui/views/apps/glass_app_window_frame_view_win.h"
 
+#include <windows.h>
+
 #include "base/win/windows_version.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/win/hwnd_util.h"
 
 namespace {
 
@@ -39,7 +42,8 @@ gfx::Insets GlassAppWindowFrameViewWin::GetGlassInsets() const {
   return gfx::Insets(caption_height, frame_size, frame_size, frame_size);
 }
 
-gfx::Insets GlassAppWindowFrameViewWin::GetClientAreaInsets() const {
+gfx::Insets GlassAppWindowFrameViewWin::GetClientAreaInsets(
+    HMONITOR monitor) const {
   gfx::Insets insets;
   if (base::win::GetVersion() < base::win::VERSION_WIN10) {
     // This tells Windows that most of the window is a client area, meaning
@@ -54,8 +58,8 @@ gfx::Insets GlassAppWindowFrameViewWin::GetClientAreaInsets() const {
   } else {
     // On Windows 10 we use a 1 pixel non client border which is too thin as a
     // resize target. This inset extends the resize region.
-    int resize_border =
-        display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
+    int resize_border = display::win::ScreenWin::GetSystemMetricsForMonitor(
+        monitor, SM_CXSIZEFRAME);
     insets.Set(0, resize_border, resize_border, resize_border);
   }
   return insets;
@@ -78,7 +82,8 @@ gfx::Rect GlassAppWindowFrameViewWin::GetWindowBoundsForClientBounds(
     return bounds();
 
   gfx::Insets insets = GetGlassInsets();
-  insets += GetClientAreaInsets();
+  insets += GetClientAreaInsets(
+      MonitorFromWindow(HWNDForView(this), MONITOR_DEFAULTTONEAREST));
   gfx::Rect window_bounds(
       client_bounds.x() - insets.left(), client_bounds.y() - insets.top(),
       client_bounds.width() + insets.left() + insets.right(),
