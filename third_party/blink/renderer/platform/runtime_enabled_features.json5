@@ -104,10 +104,6 @@
       status: "experimental",
     },
     {
-      name: "AudioWorklet",
-      status: "stable",
-    },
-    {
       name: "AutomationControlled",
       settable_from_internals: true,
     },
