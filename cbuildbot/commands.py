@@ -1798,14 +1798,24 @@ def CleanupChromeKeywordsFile(boards, buildroot):
       cros_build_lib.SudoRunCommand(['rm', '-f', keywords_file])
 
 
-def UprevPackages(buildroot, boards, overlays):
-  """Uprevs non-browser chromium os packages that have changed."""
+def UprevPackages(buildroot, boards, overlays, workspace=None):
+  """Uprevs non-browser chromium os packages that have changed.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    boards: List of boards to uprev.
+    overlays: The overlays to check for ebuilds to uprev.
+    workspace: Alternative buildroot directory to uprev.
+  """
   drop_file = _PACKAGE_FILE % {'buildroot': buildroot}
   cmd = ['cros_mark_as_stable', '--all',
          '--boards=%s' % ':'.join(boards),
          '--overlays=%s' % ':'.join(overlays),
          '--drop_file=%s' % drop_file,
          'commit']
+  if workspace:
+    cmd.extend(['--srcroot', os.path.join(workspace, 'src')])
+
   RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
 
@@ -1815,7 +1825,7 @@ def RegenPortageCache(overlays):
   parallel.RunTasksInProcessPool(portage_util.RegenCache, task_inputs)
 
 
-def UprevPush(buildroot, overlays, dryrun, staging_branch=None):
+def UprevPush(buildroot, overlays, dryrun, staging_branch=None, workspace=None):
   """Pushes uprev changes to the main line.
 
   Args:
@@ -1824,11 +1834,13 @@ def UprevPush(buildroot, overlays, dryrun, staging_branch=None):
     dryrun: If True, do not actually push.
     staging_branch: If not None, push uprev commits to this
                     staging_branch.
+    workspace: Alternative buildroot directory to uprev.
   """
   cmd = ['cros_mark_as_stable',
-         '--srcroot=%s' % os.path.join(buildroot, 'src'),
          '--overlays=%s' % ':'.join(overlays)
         ]
+  if workspace:
+    cmd.extend(['--srcroot', os.path.join(workspace, 'src')])
   if staging_branch is not None:
     cmd.append('--staging_branch=%s' % staging_branch)
   if dryrun:

@@ -33,6 +33,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import cros_sdk_lib
 from chromite.lib import failures_lib
 from chromite.lib import osutils
+from chromite.lib import portage_util
 
 
 class InvalidWorkspace(failures_lib.StepFailure):
@@ -46,7 +47,7 @@ class WorkspaceStageBase(generic_stages.BuilderStage):
 
     Properties for subclasses:
       self._build_root to access the workspace directory,
-      self._tot_root to access the original buildroot.
+      self._orig_root to access the original buildroot.
 
     Args:
       builder_run: BuilderRun object.
@@ -55,7 +56,7 @@ class WorkspaceStageBase(generic_stages.BuilderStage):
     super(WorkspaceStageBase, self).__init__(
         builder_run, build_root=build_root, **kwargs)
 
-    self._tot_root = builder_run.buildroot
+    self._orig_root = builder_run.buildroot
 
   def GetWorkspaceVersionInfo(self):
     """WorkspaceVersion
@@ -136,6 +137,38 @@ class WorkspaceSyncStage(WorkspaceStageBase):
         git_cache_dir=self._run.options.git_cache_dir)
 
     repo.Sync(detach=True)
+
+
+class WorkspaceUprevAndPublishStage(WorkspaceStageBase):
+  """Uprev ebuilds, and immediately publish them.
+
+  This stage updates ebuilds to top of branch with no verification, or prebuilt
+  generation. This is generally intended only for branch builds.
+  """
+  config = 'push_overlays'
+
+  def __init__(self, builder_run, boards=None, **kwargs):
+    super(WorkspaceUprevAndPublishStage, self).__init__(builder_run, **kwargs)
+    if boards is not None:
+      self._boards = boards
+
+  def PerformStage(self):
+    """Perform the uprev and push."""
+    # Find uprevs to uprev.
+    logging.info('Uprevving.')
+    overlays = portage_util.FindOverlays(
+        self._run.config.overlays, buildroot=self._build_root)
+
+    commands.UprevPackages(self._orig_root, self._boards, overlays,
+                           workspace=self._build_root)
+
+    logging.info('Pushing.')
+    push_overlays = portage_util.FindOverlays(
+        self._run.config.push_overlays, buildroot=self._build_root)
+
+    commands.UprevPush(self._orig_root, push_overlays,
+                       dryrun=self._run.options.debug,
+                       workspace=self._build_root)
 
 
 class WorkspaceInitSDKStage(WorkspaceStageBase):
