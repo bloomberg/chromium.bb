@@ -31,16 +31,12 @@ class WebContents;
 class PageLoadCappingInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // A callback that triggers the page to have its subresource loading paused or
-  // unpaused based on |pause|.
+  // resumed based on |pause|.
   using PauseCallback = base::RepeatingCallback<void(bool pause)>;
 
-  // Creates an InfoBar for page load capping. Returns whether the infobar was
-  // created. |bytes_threshold| is the amount of bytes used to determine if the
-  // page was large enough to cap. It will be truncated to megabytes and shown
-  // on the InfoBar. |web_contents| is the WebContents that caused the data
-  // usage.
-  static bool Create(int64_t bytes_threshold,
-                     content::WebContents* web_contents,
+  // Creates an InfoBar for page load capping. Returns whether the InfoBar was
+  // created. |web_contents| is the WebContents that caused the data usage.
+  static bool Create(content::WebContents* web_contents,
                      const PauseCallback& set_handles_callback);
 
   ~PageLoadCappingInfoBarDelegate() override;
