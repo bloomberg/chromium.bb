@@ -38,6 +38,15 @@ const char kDmTokenBaseDir[] =
     FILE_PATH_LITERAL("Google/Chrome Cloud Enrollment/");
 const CFStringRef kEnrollmentTokenPolicyName =
     CFSTR("MachineLevelUserCloudPolicyEnrollmentToken");
+const char kEnrollmentTokenFilePath[] =
+#if defined(GOOGLE_CHROME_BUILD)
+    FILE_PATH_LITERAL(
+        "/Library/Google/Chrome/MachineLevelUserCloudPolicyEnrollmentToken");
+#else
+    FILE_PATH_LITERAL(
+        "/Library/Application "
+        "Support/Chromium/MachineLevelUserCloudPolicyEnrollmentToken");
+#endif
 
 bool GetDmTokenFilePath(base::FilePath* token_file_path,
                         const std::string& client_id,
@@ -67,6 +76,46 @@ bool StoreDMTokenInDirAppDataDir(const std::string& token,
   }
 
   return base::ImportantFileWriter::WriteFileAtomically(token_file_path, token);
+}
+
+// Get the enrollment token from policy file: /Library/com.google.Chrome.plist.
+// Return true if policy is set, otherwise false.
+bool GetEnrollmentTokenFromPolicy(std::string* enrollment_token) {
+// Since the configuration management infrastructure is not initialized when
+// this code runs, read the policy preference directly.
+#if defined(GOOGLE_CHROME_BUILD)
+  // Explicitly access the "com.google.Chrome" bundle ID, no matter what this
+  // app's bundle ID actually is. All channels of Chrome should obey the same
+  // policies.
+  CFStringRef bundle_id = CFSTR("com.google.Chrome");
+#else
+  base::ScopedCFTypeRef<CFStringRef> bundle_id(
+      base::SysUTF8ToCFStringRef(base::mac::BaseBundleID()));
+#endif
+
+  base::ScopedCFTypeRef<CFPropertyListRef> value(
+      CFPreferencesCopyAppValue(kEnrollmentTokenPolicyName, bundle_id));
+
+  if (!value ||
+      !CFPreferencesAppValueIsForced(kEnrollmentTokenPolicyName, bundle_id)) {
+    return false;
+  }
+  CFStringRef value_string = base::mac::CFCast<CFStringRef>(value);
+  if (!value_string)
+    return false;
+
+  *enrollment_token = base::SysCFStringRefToUTF8(value_string);
+  return true;
+}
+
+bool GetEnrollmentTokenFromFile(std::string* enrollment_token) {
+  if (!base::ReadFileToString(base::FilePath(kEnrollmentTokenFilePath),
+                              enrollment_token)) {
+    return false;
+  }
+  *enrollment_token =
+      base::TrimWhitespaceASCII(*enrollment_token, base::TRIM_ALL).as_string();
+  return true;
 }
 
 }  // namespace
@@ -110,29 +159,14 @@ std::string BrowserDMTokenStorageMac::InitClientId() {
 }
 
 std::string BrowserDMTokenStorageMac::InitEnrollmentToken() {
-  // Since the configuration management infrastructure is not initialized when
-  // this code runs, read the policy preference directly.
-#if defined(GOOGLE_CHROME_BUILD)
-  // Explicitly access the "com.google.Chrome" bundle ID, no matter what this
-  // app's bundle ID actually is. All channels of Chrome should obey the same
-  // policies.
-  CFStringRef bundle_id = CFSTR("com.google.Chrome");
-#else
-  base::ScopedCFTypeRef<CFStringRef> bundle_id(
-      base::SysUTF8ToCFStringRef(base::mac::BaseBundleID()));
-#endif
+  std::string enrollment_token;
+  if (GetEnrollmentTokenFromPolicy(&enrollment_token))
+    return enrollment_token;
 
-  base::ScopedCFTypeRef<CFPropertyListRef> value(
-      CFPreferencesCopyAppValue(kEnrollmentTokenPolicyName, bundle_id));
+  if (GetEnrollmentTokenFromFile(&enrollment_token))
+    return enrollment_token;
 
-  if (!value ||
-      !CFPreferencesAppValueIsForced(kEnrollmentTokenPolicyName, bundle_id))
-    return std::string();
-  CFStringRef value_string = base::mac::CFCast<CFStringRef>(value);
-  if (!value_string)
-    return std::string();
-
-  return base::SysCFStringRefToUTF8(value_string);
+  return std::string();
 }
 
 std::string BrowserDMTokenStorageMac::InitDMToken() {
