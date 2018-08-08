@@ -217,9 +217,12 @@ int UnifiedSystemTrayBubble::CalculateMaxHeight() const {
   // TODO(yamaguchi): Reconsider this formula. The y-position of the top edge
   // still differes by few pixels between the horizontal and vertical shelf
   // modes.
+  gfx::Rect anchor_bounds =
+      tray_->shelf()->GetSystemTrayAnchor()->GetBoundsInScreen();
+  int bottom = tray_->shelf()->IsHorizontalAlignment() ? anchor_bounds.y()
+                                                       : anchor_bounds.bottom();
   int free_space_height_above_anchor =
-      tray_->shelf()->GetSystemTrayAnchor()->GetBoundsInScreen().y() -
-      tray_->shelf()->GetUserWorkAreaBounds().y();
+      bottom - tray_->shelf()->GetUserWorkAreaBounds().y();
   return free_space_height_above_anchor - kPaddingFromScreenTop -
          bubble_view_->GetBorderInsets().height();
 }
