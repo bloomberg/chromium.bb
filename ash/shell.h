@@ -153,7 +153,7 @@ class OverlayEventFilter;
 class PartialMagnificationController;
 class PeripheralBatteryNotifier;
 class PersistentWindowController;
-class PointerWatcherAdapterClassic;
+class PointerWatcherAdapter;
 class PolicyRecommendationRestorer;
 class PowerButtonController;
 class PowerEventObserver;
@@ -755,7 +755,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<MultiDeviceNotificationPresenter>
       multidevice_notification_presenter_;
   std::unique_ptr<NewWindowController> new_window_controller_;
-  std::unique_ptr<PointerWatcherAdapterClassic> pointer_watcher_adapter_;
+  std::unique_ptr<PointerWatcherAdapter> pointer_watcher_adapter_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
   std::unique_ptr<SessionController> session_controller_;
   std::unique_ptr<NightLightController> night_light_controller_;
