@@ -30,6 +30,7 @@
 #include "ui/base/mojo/clipboard.mojom.h"
 
 namespace aura {
+class Env;
 class Window;
 namespace client {
 class FocusClient;
@@ -74,7 +75,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   WindowService(WindowServiceDelegate* delegate,
                 std::unique_ptr<GpuInterfaceProvider> gpu_support,
                 aura::client::FocusClient* focus_client,
-                bool decrement_client_ids = false);
+                bool decrement_client_ids = false,
+                aura::Env* env = nullptr);
   ~WindowService() override;
 
   // Gets the ServerWindow for |window|, creating if necessary.
@@ -96,6 +98,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   // Whether |window| hosts a remote client.
   static bool HasRemoteClient(const aura::Window* window);
+
+  aura::Env* env() { return env_; }
 
   void AddObserver(WindowServiceObserver* observer);
   void RemoveObserver(WindowServiceObserver* observer);
@@ -167,6 +171,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
       const service_manager::BindSourceInfo& source_info);
 
   WindowServiceDelegate* delegate_;
+
+  aura::Env* env_;
 
   // GpuInterfaceProvider may be null in tests.
   std::unique_ptr<GpuInterfaceProvider> gpu_interface_provider_;
