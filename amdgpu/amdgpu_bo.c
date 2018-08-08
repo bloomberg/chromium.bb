@@ -556,7 +556,16 @@ int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
 	bo->alloc_size = size;
 	bo->handle = args.handle;
 
-	*buf_handle = bo;
+	pthread_mutex_lock(&bo->dev->bo_table_mutex);
+	r = handle_table_insert(&bo->dev->bo_handles, bo->handle, bo);
+	pthread_mutex_unlock(&bo->dev->bo_table_mutex);
+
+	pthread_mutex_init(&bo->cpu_access_mutex, NULL);
+
+	if (r)
+		amdgpu_bo_free(bo);
+	else
+		*buf_handle = bo;
 
 	return r;
 }
