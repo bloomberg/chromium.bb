@@ -1611,13 +1611,20 @@
     _keydownHandler: function(e) {
       switch (e.keyCode) {
         case /* ARROW_DOWN */ 40:
-          e.preventDefault();
+          // TODO (aee): remove when iron-list issue is fixed.
+          // https://github.com/PolymerElements/iron-list/issues/542
+          if (this._focusedVirtualIndex < this._virtualCount - 1)
+            e.preventDefault();
           this._focusPhysicalItem(this._focusedVirtualIndex + (this.grid ? this._itemsPerRow : 1));
           break;
         case /* ARROW_RIGHT */ 39:
           if (this.grid) this._focusPhysicalItem(this._focusedVirtualIndex + (this._isRTL ? -1 : 1));
           break;
         case /* ARROW_UP */ 38:
+          // TODO (aee): remove when iron-list issue is fixed.
+          // https://github.com/PolymerElements/iron-list/issues/542
+          if (this._focusedVirtualIndex > 0)
+            e.preventDefault();
           this._focusPhysicalItem(this._focusedVirtualIndex - (this.grid ? this._itemsPerRow : 1));
           break;
         case /* ARROW_LEFT */ 37:
