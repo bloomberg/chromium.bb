@@ -210,8 +210,6 @@ def _RunAntTest(java_tests_src_dir, test_filter, chromedriver_path,
 
   ant_file = open(os.path.join(java_tests_src_dir, 'build.xml'), 'w')
   file_contents = _CreateBuildConfig(java_tests_src_dir, jvm_args, sys_props)
-  if util.IsMac():
-    print file_contents
   ant_file.write(file_contents)
   ant_file.close()
 
@@ -351,8 +349,10 @@ def main():
     return PrintTestResults(results)
   finally:
     environment.GlobalTearDown()
-    os.remove(os.path.join(java_tests_src_dir, "build.xml"))
-    os.remove(os.path.join(java_tests_src_dir, "results.xml"))
+    if(os.path.exists(os.path.join(java_tests_src_dir, "build.xml"))):
+      os.remove(os.path.join(java_tests_src_dir, "build.xml"))
+    if(os.path.exists(os.path.join(java_tests_src_dir, "results.xml"))):
+      os.remove(os.path.join(java_tests_src_dir, "results.xml"))
     if(os.path.exists(os.path.join(java_tests_src_dir, "chrome-wrapper-no-sandbox"))):
       os.remove(os.path.join(java_tests_src_dir, "chrome-wrapper-no-sandbox"))
     if(os.path.exists(os.path.join(java_tests_src_dir, "chrome-wrapper"))):
