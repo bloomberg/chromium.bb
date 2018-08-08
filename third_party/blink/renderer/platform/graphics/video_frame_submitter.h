@@ -56,13 +56,14 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   void StartRendering() override;
   void StopRendering() override;
   void DidReceiveFrame() override;
+  bool IsDrivingFrameUpdates() const override;
 
   // WebVideoFrameSubmitter implementation.
   void Initialize(cc::VideoFrameProvider*) override;
   void SetRotation(media::VideoRotation) override;
   void SetIsOpaque(bool) override;
   void EnableSubmission(viz::SurfaceId, WebFrameSinkDestroyedCallback) override;
-  void UpdateSubmissionState(bool) override;
+  void UpdateSubmissionState(bool is_visible) override;
   void SetForceSubmit(bool) override;
 
   // viz::ContextLostObserver implementation.
@@ -102,7 +103,8 @@ class PLATFORM_EXPORT VideoFrameSubmitter
 
   void StartSubmitting();
   void UpdateSubmissionStateInternal();
-  void SubmitFrame(const viz::BeginFrameAck&, scoped_refptr<media::VideoFrame>);
+  // Returns whether a frame was submitted.
+  bool SubmitFrame(const viz::BeginFrameAck&, scoped_refptr<media::VideoFrame>);
   void SubmitEmptyFrame();
 
   // Pulls frame and submits it to compositor.
@@ -127,7 +129,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   bool is_rendering_;
   // If we are not on screen, we should not submit.
   bool should_submit_internal_ = false;
-  // Whether frames should always be submitted.
+  // Whether frames should always be submitted, even if we're not visible.
   bool force_submit_ = false;
   media::VideoRotation rotation_;
   bool is_opaque_ = true;

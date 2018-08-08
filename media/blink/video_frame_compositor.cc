@@ -59,9 +59,9 @@ VideoFrameCompositor::GetUpdateSubmissionStateCallback() {
   return update_submission_state_callback_;
 }
 
-void VideoFrameCompositor::UpdateSubmissionState(bool state) {
+void VideoFrameCompositor::UpdateSubmissionState(bool is_visible) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  submitter_->UpdateSubmissionState(state);
+  submitter_->UpdateSubmissionState(is_visible);
 }
 
 void VideoFrameCompositor::InitializeSubmitter() {
@@ -220,8 +220,17 @@ void VideoFrameCompositor::PaintSingleFrame(
 void VideoFrameCompositor::UpdateCurrentFrameIfStale() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (IsClientSinkAvailable() || !rendering_ || !is_background_rendering_)
+  // If we're not rendering, then the frame can't be stale.
+  if (!rendering_ || !is_background_rendering_)
     return;
+
+  // If we have a client, and it is currently rendering, then it's not stale
+  // since the client is driving the frame updates at the proper rate.
+  if (IsClientSinkAvailable() && client_->IsDrivingFrameUpdates())
+    return;
+
+  // We're rendering, but the client isn't driving the updates.  See if the
+  // frame is stale, and update it.
 
   DCHECK(!last_background_render_.is_null());
 

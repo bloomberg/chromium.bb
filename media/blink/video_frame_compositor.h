@@ -162,8 +162,9 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // Ran on the |task_runner_| to initalize |submitter_|;
   void InitializeSubmitter();
 
-  // Signals the VideoFrameSubmitter to stop submitting frames.
-  void UpdateSubmissionState(bool);
+  // Signals the VideoFrameSubmitter to stop submitting frames.  |is_visible|
+  // indicates whether or not the consumer of the frames is (probably) visible.
+  void UpdateSubmissionState(bool is_visible);
 
   // Indicates whether the endpoint for the VideoFrame exists.
   bool IsClientSinkAvailable();

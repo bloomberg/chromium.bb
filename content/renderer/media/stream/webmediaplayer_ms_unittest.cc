@@ -573,6 +573,7 @@ class WebMediaPlayerMSTest
   void StartRendering() override;
   void StopRendering() override;
   void DidReceiveFrame() override;
+  bool IsDrivingFrameUpdates() const override { return true; }
 
   // For test use
   void SetBackgroundRendering(bool background_rendering) {

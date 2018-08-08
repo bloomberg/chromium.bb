@@ -24,7 +24,10 @@ SurfaceLayerImpl::SurfaceLayerImpl(
       update_submission_state_callback_(
           std::move(update_submission_state_callback)) {}
 
-SurfaceLayerImpl::~SurfaceLayerImpl() = default;
+SurfaceLayerImpl::~SurfaceLayerImpl() {
+  if (update_submission_state_callback_)
+    update_submission_state_callback_.Run(false);
+}
 
 std::unique_ptr<LayerImpl> SurfaceLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
