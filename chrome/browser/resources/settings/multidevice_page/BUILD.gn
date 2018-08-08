@@ -61,6 +61,7 @@ js_library("multidevice_page_container") {
 
 js_library("multidevice_subpage") {
   deps = [
+    ":multidevice_constants",
     "..:route",
     "../prefs:prefs_behavior",
     "//ui/webui/resources/js:i18n_behavior",
