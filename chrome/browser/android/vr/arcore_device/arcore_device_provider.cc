@@ -13,10 +13,10 @@ ARCoreDeviceProvider::ARCoreDeviceProvider() = default;
 ARCoreDeviceProvider::~ARCoreDeviceProvider() = default;
 
 void ARCoreDeviceProvider::Initialize(
-    base::RepeatingCallback<void(unsigned int,
+    base::RepeatingCallback<void(mojom::XRDeviceId,
                                  mojom::VRDisplayInfoPtr,
                                  mojom::XRRuntimePtr)> add_device_callback,
-    base::RepeatingCallback<void(unsigned int)> remove_device_callback,
+    base::RepeatingCallback<void(mojom::XRDeviceId)> remove_device_callback,
     base::OnceClosure initialization_complete) {
   arcore_device_ = base::WrapUnique(new ARCoreDevice());
   add_device_callback.Run(arcore_device_->GetId(),

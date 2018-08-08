@@ -21,7 +21,7 @@ namespace {
 
 class VRDeviceBaseForTesting : public VRDeviceBase {
  public:
-  VRDeviceBaseForTesting() : VRDeviceBase(VRDeviceId::FAKE_DEVICE_ID) {}
+  VRDeviceBaseForTesting() : VRDeviceBase(mojom::XRDeviceId::FAKE_DEVICE_ID) {}
   ~VRDeviceBaseForTesting() override = default;
 
   void SetVRDisplayInfoForTest(mojom::VRDisplayInfoPtr display_info) {
@@ -102,9 +102,9 @@ class VRDeviceTest : public testing::Test {
     return device;
   }
 
-  mojom::VRDisplayInfoPtr MakeVRDisplayInfo(unsigned int device_id) {
+  mojom::VRDisplayInfoPtr MakeVRDisplayInfo(mojom::XRDeviceId device_id) {
     mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
-    display_info->index = device_id;
+    display_info->id = device_id;
     display_info->capabilities = mojom::VRDisplayCapabilities::New();
     return display_info;
   }
@@ -150,7 +150,8 @@ TEST_F(VRDeviceTest, DisplayActivateRegsitered) {
 }
 
 TEST_F(VRDeviceTest, NoMagicWindowPosesWhileBrowsing) {
-  auto device = std::make_unique<FakeVRDevice>(1);
+  auto device =
+      std::make_unique<FakeVRDevice>(static_cast<device::mojom::XRDeviceId>(1));
   device->SetPose(mojom::VRPose::New());
 
   device->GetFrameData(base::BindOnce(

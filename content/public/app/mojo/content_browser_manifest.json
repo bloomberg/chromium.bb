@@ -196,7 +196,6 @@
           "device.mojom.VibrationManager",
           "device.mojom.UsbDeviceManager",
           "device.mojom.VRService",
-          "device.mojom.VRService",
           "device.mojom.WakeLock",
           "discardable_memory.mojom.DiscardableSharedMemoryManager",
           "media.mojom.ImageCapture",

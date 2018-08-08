@@ -163,7 +163,6 @@ class VRDisplay final : public EventTargetWithInlineData,
       std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
 
   Member<NavigatorVR> navigator_vr_;
-  unsigned display_id_ = 0;
   String display_name_;
   bool is_connected_ = false;
   bool is_presenting_ = false;

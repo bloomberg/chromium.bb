@@ -21,22 +21,24 @@ OculusVRDeviceProvider::~OculusVRDeviceProvider() {
 }
 
 void OculusVRDeviceProvider::Initialize(
-    base::RepeatingCallback<void(unsigned int,
+    base::RepeatingCallback<void(device::mojom::XRDeviceId,
                                  mojom::VRDisplayInfoPtr,
                                  mojom::XRRuntimePtr)> add_device_callback,
-    base::RepeatingCallback<void(unsigned int)> remove_device_callback,
+    base::RepeatingCallback<void(device::mojom::XRDeviceId)>
+        remove_device_callback,
     base::OnceClosure initialization_complete) {
   CreateDevice();
   if (device_) {
-    add_device_callback.Run(
-        static_cast<unsigned int>(VRDeviceId::OCULUS_DEVICE_ID),
-        device_->GetVRDisplayInfo(), device_->BindXRRuntimePtr());
+    add_device_callback.Run(device::mojom::XRDeviceId::OCULUS_DEVICE_ID,
+                            device_->GetVRDisplayInfo(),
+                            device_->BindXRRuntimePtr());
 
     // Removed in our destructor, as VRDeviceId::OCULUS_DEVICE_ID corresponds to
     // device::GAMEPAD_SOURCE_OCULUS.
     GamepadDataFetcherManager::GetInstance()->AddFactory(
-        new IsolatedGamepadDataFetcher::Factory(VRDeviceId::OCULUS_DEVICE_ID,
-                                                device_->BindGamepadFactory()));
+        new IsolatedGamepadDataFetcher::Factory(
+            device::mojom::XRDeviceId::OCULUS_DEVICE_ID,
+            device_->BindGamepadFactory()));
   }
   initialized_ = true;
   std::move(initialization_complete).Run();

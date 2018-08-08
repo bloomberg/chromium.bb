@@ -6,6 +6,8 @@ module device.mojom;
 
 import "device/vr/public/mojom/vr_service.mojom";
 
+const string kVrIsolatedServiceName = "xr_device_service";
+
 // The XRSessionController lives in the vr device service, and corresponds to
 // a set of the XRSession bindings.  The client is the browser process, which
 // will pause or stop sessions depending events/state such as focus or other
@@ -131,4 +133,35 @@ interface IsolatedXRGamepadProviderFactory {
   // OpenVR, which are currently the only two that are hosted outside of the
   // browser process).
   GetIsolatedXRGamepadProvider(IsolatedXRGamepadProvider& provider);
+};
+
+// Notify the browser process about a set of runtimes.  The browser process
+// implements this interface to be notified about runtime changes from the XR
+// device service.
+interface IsolatedXRRuntimeProviderClient {
+  // Called when runtimes are initially enumerated, or when devices are later
+  // attached and become available.
+  OnDeviceAdded(XRRuntime runtime,
+      IsolatedXRGamepadProviderFactory gamepad_factory,
+      device.mojom.VRDisplayInfo display_info);
+
+  // Called when runtimes become unavailable - for example if the hardware is
+  // disconnected or the APIs notify us that they are shutting down.
+  // device_index corresponds to display_info->index for a previously added
+  // device.
+  OnDeviceRemoved(device.mojom.XRDeviceId device_index);
+
+  // Called once after all the initial OnDeviceAdded calls are completed.
+  // This is a signal to the browser that it knows what hardware is available,
+  // and can unblock any callbacks/promises that WebXR APIs are blocked.
+  OnDevicesEnumerated();
+};
+
+// Provides access to XRRuntimes.  This is implemented in the XR device service,
+// and consumed by the browser.
+interface IsolatedXRRuntimeProvider {
+  // Register a client, and triggers OnDeviceAdded for all available runtimes,
+  // followed by OnDevicesEnumerated.
+  // Should only be called once.
+  RequestDevices(IsolatedXRRuntimeProviderClient client);
 };

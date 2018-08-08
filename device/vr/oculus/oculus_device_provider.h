@@ -12,8 +12,6 @@
 #include "device/vr/vr_device_provider.h"
 #include "device/vr/vr_export.h"
 
-typedef struct ovrHmdStruct* ovrSession;
-
 namespace device {
 
 class OculusDevice;
@@ -24,10 +22,11 @@ class DEVICE_VR_EXPORT OculusVRDeviceProvider : public VRDeviceProvider {
   ~OculusVRDeviceProvider() override;
 
   void Initialize(
-      base::RepeatingCallback<void(unsigned int,
+      base::RepeatingCallback<void(device::mojom::XRDeviceId,
                                    mojom::VRDisplayInfoPtr,
                                    mojom::XRRuntimePtr)> add_device_callback,
-      base::RepeatingCallback<void(unsigned int)> remove_device_callback,
+      base::RepeatingCallback<void(device::mojom::XRDeviceId)>
+          remove_device_callback,
       base::OnceClosure initialization_complete) override;
 
   bool Initialized() override;

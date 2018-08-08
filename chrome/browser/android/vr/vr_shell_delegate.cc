@@ -271,7 +271,7 @@ bool VrShellDelegate::ShouldDisableGvrDevice() {
          VrSupportLevel::kVrNeedsUpdate;
 }
 
-void VrShellDelegate::SetDeviceId(unsigned int device_id) {
+void VrShellDelegate::SetDeviceId(device::mojom::XRDeviceId device_id) {
   device_id_ = device_id;
   if (vr_shell_) {
     device::GvrDevice* device = GetDevice();

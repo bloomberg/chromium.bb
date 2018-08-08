@@ -22,13 +22,13 @@ class DEVICE_VR_EXPORT FakeVRDeviceProvider : public VRDeviceProvider {
   // Adds devices to the provider with the given device, which will be
   // returned when GetDevices is queried.
   void AddDevice(std::unique_ptr<VRDeviceBase> device);
-  void RemoveDevice(unsigned int device_id);
+  void RemoveDevice(mojom::XRDeviceId device_id);
 
   void Initialize(
-      base::RepeatingCallback<void(unsigned int,
+      base::RepeatingCallback<void(mojom::XRDeviceId,
                                    mojom::VRDisplayInfoPtr,
                                    mojom::XRRuntimePtr)> add_device_callback,
-      base::RepeatingCallback<void(unsigned int)> remove_device_callback,
+      base::RepeatingCallback<void(mojom::XRDeviceId)> remove_device_callback,
       base::OnceClosure initialization_complete) override;
   bool Initialized() override;
 
@@ -36,9 +36,9 @@ class DEVICE_VR_EXPORT FakeVRDeviceProvider : public VRDeviceProvider {
   std::vector<std::unique_ptr<VRDeviceBase>> devices_;
   bool initialized_;
   base::RepeatingCallback<
-      void(unsigned int, mojom::VRDisplayInfoPtr, mojom::XRRuntimePtr)>
+      void(mojom::XRDeviceId, mojom::VRDisplayInfoPtr, mojom::XRRuntimePtr)>
       add_device_callback_;
-  base::RepeatingCallback<void(unsigned int)> remove_device_callback_;
+  base::RepeatingCallback<void(mojom::XRDeviceId)> remove_device_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeVRDeviceProvider);
 };

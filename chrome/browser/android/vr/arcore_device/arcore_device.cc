@@ -34,9 +34,9 @@ namespace device {
 
 namespace {
 
-mojom::VRDisplayInfoPtr CreateVRDisplayInfo(uint32_t device_id) {
+mojom::VRDisplayInfoPtr CreateVRDisplayInfo(mojom::XRDeviceId device_id) {
   mojom::VRDisplayInfoPtr device = mojom::VRDisplayInfo::New();
-  device->index = device_id;
+  device->id = device_id;
   device->displayName = "ARCore VR Device";
   device->capabilities = mojom::VRDisplayCapabilities::New();
   device->capabilities->hasPosition = true;
@@ -68,7 +68,7 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(uint32_t device_id) {
 }  // namespace
 
 ARCoreDevice::ARCoreDevice()
-    : VRDeviceBase(VRDeviceId::ARCORE_DEVICE_ID),
+    : VRDeviceBase(mojom::XRDeviceId::ARCORE_DEVICE_ID),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       mailbox_bridge_(std::make_unique<vr::MailboxToSurfaceBridge>()),
       weak_ptr_factory_(this) {

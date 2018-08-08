@@ -129,7 +129,6 @@ VRController* VRDisplay::Controller() {
 }
 
 void VRDisplay::Update(const device::mojom::blink::VRDisplayInfoPtr& display) {
-  display_id_ = display->index;
   display_name_ = display->displayName;
   is_connected_ = true;
 

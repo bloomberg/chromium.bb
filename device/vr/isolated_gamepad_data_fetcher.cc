@@ -8,7 +8,7 @@
 namespace device {
 
 IsolatedGamepadDataFetcher::Factory::Factory(
-    VRDeviceId display_id,
+    device::mojom::XRDeviceId display_id,
     device::mojom::IsolatedXRGamepadProviderFactoryPtr factory)
     : display_id_(display_id), factory_(std::move(factory)) {}
 
@@ -23,12 +23,13 @@ IsolatedGamepadDataFetcher::Factory::CreateDataFetcher() {
 }
 
 GamepadSource IsolatedGamepadDataFetcher::Factory::source() {
-  return (display_id_ == VRDeviceId::OPENVR_DEVICE_ID) ? GAMEPAD_SOURCE_OPENVR
-                                                       : GAMEPAD_SOURCE_OCULUS;
+  return (display_id_ == device::mojom::XRDeviceId::OPENVR_DEVICE_ID)
+             ? GAMEPAD_SOURCE_OPENVR
+             : GAMEPAD_SOURCE_OCULUS;
 }
 
 IsolatedGamepadDataFetcher::IsolatedGamepadDataFetcher(
-    VRDeviceId display_id,
+    device::mojom::XRDeviceId display_id,
     device::mojom::IsolatedXRGamepadProviderPtr provider)
     : display_id_(display_id) {
   // We bind provider_ on the poling thread, but we're created on the main UI
@@ -39,8 +40,9 @@ IsolatedGamepadDataFetcher::IsolatedGamepadDataFetcher(
 IsolatedGamepadDataFetcher::~IsolatedGamepadDataFetcher() = default;
 
 GamepadSource IsolatedGamepadDataFetcher::source() {
-  return (display_id_ == VRDeviceId::OPENVR_DEVICE_ID) ? GAMEPAD_SOURCE_OPENVR
-                                                       : GAMEPAD_SOURCE_OCULUS;
+  return (display_id_ == device::mojom::XRDeviceId::OPENVR_DEVICE_ID)
+             ? GAMEPAD_SOURCE_OPENVR
+             : GAMEPAD_SOURCE_OCULUS;
 }
 
 void IsolatedGamepadDataFetcher::OnDataUpdated(
@@ -164,10 +166,10 @@ void IsolatedGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
     // Gamepad extensions refer to display_id, corresponding to the WebVR
     // VRDisplay's dipslayId property.
     // As WebVR is deprecated, and we only hand out a maximum of one "display"
-    // per runtime, we use the VRDeviceId now to associate the controller with
+    // per runtime, we use the XRDeviceId now to associate the controller with
     // a headset.  This doesn't change behavior, but the device/display naming
     // could be confusing here.
-    if (display_id_ == VRDeviceId::OPENVR_DEVICE_ID) {
+    if (display_id_ == device::mojom::XRDeviceId::OPENVR_DEVICE_ID) {
       swprintf(dest.id, Gamepad::kIdLengthCap, L"OpenVR Gamepad");
     } else {
       if (dest.hand == GamepadHand::kLeft) {
@@ -197,5 +199,27 @@ void IsolatedGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
 void IsolatedGamepadDataFetcher::PauseHint(bool paused) {}
 
 void IsolatedGamepadDataFetcher::OnAddedToProvider() {}
+
+void IsolatedGamepadDataFetcher::Factory::RemoveGamepad(
+    device::mojom::XRDeviceId id) {
+  using namespace device;
+  // TODO(crbug.com/868101) - Remove this.
+  std::map<device::mojom::XRDeviceId, GamepadSource>
+      device_id_to_gamepad_source = {
+          {device::mojom::XRDeviceId::OCULUS_DEVICE_ID, GAMEPAD_SOURCE_OCULUS},
+          {device::mojom::XRDeviceId::OPENVR_DEVICE_ID, GAMEPAD_SOURCE_OPENVR},
+      };
+
+  GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
+      device_id_to_gamepad_source[id]);
+}
+
+void IsolatedGamepadDataFetcher::Factory::AddGamepad(
+    device::mojom::XRDeviceId device_id,
+    device::mojom::IsolatedXRGamepadProviderFactoryPtr gamepad_factory) {
+  device::GamepadDataFetcherManager::GetInstance()->AddFactory(
+      new device::IsolatedGamepadDataFetcher::Factory(
+          device_id, std::move(gamepad_factory)));
+}
 
 }  // namespace device

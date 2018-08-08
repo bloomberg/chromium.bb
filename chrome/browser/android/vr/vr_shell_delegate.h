@@ -76,7 +76,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
  private:
   // device::GvrDelegateProvider implementation.
   bool ShouldDisableGvrDevice() override;
-  void SetDeviceId(unsigned int device_id) override;
+  void SetDeviceId(device::mojom::XRDeviceId device_id) override;
   void StartWebXRPresentation(
       device::mojom::VRDisplayInfoPtr display_info,
       device::mojom::XRRuntimeSessionOptionsPtr options,
@@ -94,7 +94,8 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   std::unique_ptr<VrCoreInfo> MakeVrCoreInfo(JNIEnv* env);
 
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_delegate_;
-  unsigned int device_id_ = 0;
+  device::mojom::XRDeviceId device_id_ =
+      device::mojom::XRDeviceId::GVR_DEVICE_ID;
   VrShell* vr_shell_ = nullptr;
 
   // Deferred callback stored for later use in cases where vr_shell

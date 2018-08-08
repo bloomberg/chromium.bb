@@ -21,10 +21,10 @@ VROrientationDeviceProvider::VROrientationDeviceProvider(
 VROrientationDeviceProvider::~VROrientationDeviceProvider() = default;
 
 void VROrientationDeviceProvider::Initialize(
-    base::RepeatingCallback<void(unsigned int,
+    base::RepeatingCallback<void(mojom::XRDeviceId,
                                  mojom::VRDisplayInfoPtr,
                                  mojom::XRRuntimePtr)> add_device_callback,
-    base::RepeatingCallback<void(unsigned int)> remove_device_callback,
+    base::RepeatingCallback<void(mojom::XRDeviceId)> remove_device_callback,
     base::OnceClosure initialization_complete) {
   if (device_ && device_->IsAvailable()) {
     add_device_callback.Run(device_->GetId(), device_->GetVRDisplayInfo(),

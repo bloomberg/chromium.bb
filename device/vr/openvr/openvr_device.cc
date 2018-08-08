@@ -62,9 +62,9 @@ std::vector<float> HmdMatrix34ToWebVRTransformMatrix(
 }
 
 mojom::VRDisplayInfoPtr CreateVRDisplayInfo(vr::IVRSystem* vr_system,
-                                            unsigned int id) {
+                                            device::mojom::XRDeviceId id) {
   mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
-  display_info->index = id;
+  display_info->id = id;
   display_info->displayName =
       GetOpenVRString(vr_system, vr::Prop_ManufacturerName_String) + " " +
       GetOpenVRString(vr_system, vr::Prop_ModelNumber_String);
@@ -128,7 +128,7 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(vr::IVRSystem* vr_system,
 }  // namespace
 
 OpenVRDevice::OpenVRDevice()
-    : VRDeviceBase(VRDeviceId::OPENVR_DEVICE_ID),
+    : VRDeviceBase(device::mojom::XRDeviceId::OPENVR_DEVICE_ID),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       exclusive_controller_binding_(this),
       gamepad_provider_factory_binding_(this),

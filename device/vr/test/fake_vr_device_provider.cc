@@ -22,7 +22,7 @@ void FakeVRDeviceProvider::AddDevice(std::unique_ptr<VRDeviceBase> device) {
                              device_base->BindXRRuntimePtr());
 }
 
-void FakeVRDeviceProvider::RemoveDevice(unsigned int device_id) {
+void FakeVRDeviceProvider::RemoveDevice(mojom::XRDeviceId device_id) {
   auto it = std::find_if(
       devices_.begin(), devices_.end(),
       [device_id](const std::unique_ptr<VRDeviceBase>& device) {
@@ -34,10 +34,10 @@ void FakeVRDeviceProvider::RemoveDevice(unsigned int device_id) {
 }
 
 void FakeVRDeviceProvider::Initialize(
-    base::RepeatingCallback<void(unsigned int,
+    base::RepeatingCallback<void(mojom::XRDeviceId,
                                  mojom::VRDisplayInfoPtr,
                                  mojom::XRRuntimePtr)> add_device_callback,
-    base::RepeatingCallback<void(unsigned int)> remove_device_callback,
+    base::RepeatingCallback<void(mojom::XRDeviceId)> remove_device_callback,
     base::OnceClosure initialization_complete) {
   add_device_callback_ = std::move(add_device_callback);
   remove_device_callback_ = std::move(remove_device_callback);

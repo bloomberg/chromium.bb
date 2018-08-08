@@ -9,12 +9,12 @@
 
 namespace device {
 
-VRDeviceBase::VRDeviceBase(VRDeviceId id)
-    : id_(static_cast<unsigned int>(id)), runtime_binding_(this) {}
+VRDeviceBase::VRDeviceBase(mojom::XRDeviceId id)
+    : id_(id), runtime_binding_(this) {}
 
 VRDeviceBase::~VRDeviceBase() = default;
 
-unsigned int VRDeviceBase::GetId() const {
+mojom::XRDeviceId VRDeviceBase::GetId() const {
   return id_;
 }
 
@@ -64,7 +64,7 @@ void VRDeviceBase::GetFrameData(
 
 void VRDeviceBase::SetVRDisplayInfo(mojom::VRDisplayInfoPtr display_info) {
   DCHECK(display_info);
-  DCHECK(display_info->index == id_);
+  DCHECK(display_info->id == id_);
   bool initialized = !!display_info_;
   display_info_ = std::move(display_info);
 

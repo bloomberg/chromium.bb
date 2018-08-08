@@ -6,6 +6,7 @@ import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
 import("//chromeos/assistant/assistant.gni")
 import("//components/nacl/features.gni")
+import("//device/vr/buildflags/buildflags.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//services/catalog/public/tools/catalog.gni")
@@ -436,6 +437,11 @@ service_manifest("chrome_content_packaged_services_manifest_overlay") {
       "//chrome/services/wifi_util_win:manifest",
     ]
   }
+
+  if (enable_isolated_xr_service) {
+    packaged_services += [ "//chrome/services/isolated_xr_device:manifest" ]
+  }
+
   if (is_android) {
     packaged_services += [ ":chrome_download_manager_manifest" ]
   } else {

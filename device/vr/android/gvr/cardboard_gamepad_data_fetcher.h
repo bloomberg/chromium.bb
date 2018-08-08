@@ -9,6 +9,7 @@
 
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/vr/android/gvr/cardboard_gamepad_data_provider.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_export.h"
 
 namespace device {
@@ -17,18 +18,19 @@ class DEVICE_VR_EXPORT CardboardGamepadDataFetcher : public GamepadDataFetcher {
  public:
   class Factory : public GamepadDataFetcherFactory {
    public:
-    Factory(CardboardGamepadDataProvider*, unsigned int display_id);
+    Factory(CardboardGamepadDataProvider*,
+            device::mojom::XRDeviceId display_id);
     ~Factory() override;
     std::unique_ptr<GamepadDataFetcher> CreateDataFetcher() override;
     GamepadSource source() override;
 
    private:
     CardboardGamepadDataProvider* data_provider_;
-    unsigned int display_id_;
+    device::mojom::XRDeviceId display_id_;
   };
 
   CardboardGamepadDataFetcher(CardboardGamepadDataProvider*,
-                              unsigned int display_id);
+                              device::mojom::XRDeviceId display_id);
   ~CardboardGamepadDataFetcher() override;
 
   GamepadSource source() override;
@@ -41,7 +43,7 @@ class DEVICE_VR_EXPORT CardboardGamepadDataFetcher : public GamepadDataFetcher {
   void SetGamepadData(CardboardGamepadData);
 
  private:
-  unsigned int display_id_;
+  device::mojom::XRDeviceId display_id_;
   CardboardGamepadData gamepad_data_;
 
   DISALLOW_COPY_AND_ASSIGN(CardboardGamepadDataFetcher);

@@ -19,7 +19,7 @@ void FakeVRDisplayImplClient::SetServiceClient(
 }
 
 void FakeVRDisplayImplClient::OnChanged(mojom::VRDisplayInfoPtr display) {
-  service_client_->SetLastDeviceId(display->index);
+  service_client_->SetLastDeviceId(display->id);
 }
 
 }  // namespace device
