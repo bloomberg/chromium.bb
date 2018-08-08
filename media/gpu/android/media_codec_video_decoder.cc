@@ -755,6 +755,16 @@ void MediaCodecVideoDecoder::StartDrainingCodec(DrainType drain_type) {
   // the codec isn't already draining.
   drain_type_ = drain_type;
 
+  // We can safely invalidate outstanding buffers for both types of drain, and
+  // doing so can only make the drain complete quicker.  Note that we do this
+  // even if we're eliding the drain, since we're either going to flush the
+  // codec or destroy it.  While we're not required to do this, it might affect
+  // stability if we don't (https://crbug.com/869365).  AVDA, in particular,
+  // dropped all pending codec output buffers when starting a reset (seek) or
+  // a destroy.
+  if (codec_)
+    codec_->DiscardOutputBuffers();
+
   // Skip the drain if possible. Only VP8 codecs need draining because
   // they can hang in release() or flush() otherwise
   // (http://crbug.com/598963).
@@ -770,9 +780,6 @@ void MediaCodecVideoDecoder::StartDrainingCodec(DrainType drain_type) {
   if (!codec_->IsDraining())
     pending_decodes_.push_back(PendingDecode::CreateEos());
 
-  // We can safely invalidate outstanding buffers for both types of drain, and
-  // doing so can only make the drain complete quicker.
-  codec_->DiscardOutputBuffers();
   PumpCodec(true);
 }
 
