@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_PENDING_APP_MANAGER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_PENDING_APP_MANAGER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -21,7 +22,7 @@ namespace web_app {
 // should wait for the update request to finish before uninstalling the app.
 class PendingAppManager {
  public:
-  using InstallCallback = base::OnceCallback<void(bool)>;
+  using InstallCallback = base::OnceCallback<void(const std::string&)>;
 
   // How the app will be launched after installation.
   enum class LaunchContainer {
@@ -47,7 +48,9 @@ class PendingAppManager {
 
   // Queues an installation operation with the highest priority. Essentially
   // installing the app immediately if there are no ongoing operations or
-  // installing the app right after the current operation finishes.
+  // installing the app right after the current operation finishes. Runs its
+  // callback with the id of the installed app or an empty string if the
+  // installation fails.
   //
   // Fails if the same operation has been queued before. Should only be used in
   // response to a user action e.g. the user clicked an install button.

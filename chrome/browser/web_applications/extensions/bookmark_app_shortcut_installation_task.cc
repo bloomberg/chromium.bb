@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_shortcut_installation_task.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -41,7 +42,8 @@ void BookmarkAppShortcutInstallationTask::OnGetWebApplicationInfo(
     std::unique_ptr<WebApplicationInfo> web_app_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!web_app_info) {
-    std::move(result_callback).Run(Result::kGetWebApplicationInfoFailed);
+    std::move(result_callback)
+        .Run(Result(ResultCode::kGetWebApplicationInfoFailed, std::string()));
     return;
   }
 
@@ -76,9 +78,10 @@ void BookmarkAppShortcutInstallationTask::OnGetIcons(
 
 void BookmarkAppShortcutInstallationTask::OnInstalled(
     ResultCallback result_callback,
-    bool success) {
-  std::move(result_callback)
-      .Run(success ? Result::kSuccess : Result::kInstallationFailed);
+    const std::string& app_id) {
+  ResultCode code =
+      app_id.empty() ? ResultCode::kInstallationFailed : ResultCode::kSuccess;
+  std::move(result_callback).Run(Result(code, app_id));
 }
 
 }  // namespace extensions

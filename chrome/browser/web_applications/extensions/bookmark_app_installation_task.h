@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_INSTALLATION_TASK_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -21,10 +22,22 @@ class BookmarkAppInstaller;
 // or WebApplicationInfo. Can only be called from the UI thread.
 class BookmarkAppInstallationTask {
  public:
-  enum class Result {
+  enum class ResultCode {
     kSuccess,
     kGetWebApplicationInfoFailed,
     kInstallationFailed,
+  };
+
+  struct Result {
+    Result(ResultCode code, const std::string& app_id);
+    Result(Result&&);
+    ~Result();
+
+    const ResultCode code;
+    // Empty unless |code| is ResultCode::kSuccess.
+    std::string app_id;
+
+    DISALLOW_COPY_AND_ASSIGN(Result);
   };
 
   using ResultCallback = base::OnceCallback<void(Result)>;

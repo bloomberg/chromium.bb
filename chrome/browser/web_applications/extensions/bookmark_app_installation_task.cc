@@ -14,6 +14,16 @@
 
 namespace extensions {
 
+BookmarkAppInstallationTask::Result::Result(ResultCode code,
+                                            const std::string& app_id)
+    : code(code), app_id(app_id) {
+  DCHECK_EQ(code == ResultCode::kSuccess, !app_id.empty());
+}
+
+BookmarkAppInstallationTask::Result::Result(Result&&) = default;
+
+BookmarkAppInstallationTask::Result::~Result() = default;
+
 BookmarkAppInstallationTask::~BookmarkAppInstallationTask() = default;
 
 void BookmarkAppInstallationTask::SetDataRetrieverForTesting(

@@ -23,10 +23,14 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/web_contents_tester.h"
+#include "extensions/common/extension_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 
 namespace extensions {
+
+using Result = BookmarkAppInstallationTask::Result;
+using ResultCode = BookmarkAppInstallationTask::ResultCode;
 
 namespace {
 
@@ -40,9 +44,8 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
   BookmarkAppInstallationTaskTest() = default;
   ~BookmarkAppInstallationTaskTest() override = default;
 
-  void OnInstallationTaskResult(base::OnceClosure quit_closure,
-                                BookmarkAppInstallationTask::Result result) {
-    app_installation_result_ = result;
+  void OnInstallationTaskResult(base::OnceClosure quit_closure, Result result) {
+    app_installation_result_ = std::make_unique<Result>(std::move(result));
     std::move(quit_closure).Run();
   }
 
@@ -59,16 +62,15 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
 
  protected:
   bool app_installed() {
-    return app_installation_result_.value() ==
-           BookmarkAppInstallationTask::Result::kSuccess;
+    bool app_installed = app_installation_result_->code == ResultCode::kSuccess;
+    EXPECT_NE(app_installed, app_installation_result_->app_id.empty());
+    return app_installed;
   }
 
-  BookmarkAppInstallationTask::Result app_installation_result() {
-    return app_installation_result_.value();
-  }
+  const Result& app_installation_result() { return *app_installation_result_; }
 
  private:
-  base::Optional<BookmarkAppInstallationTask::Result> app_installation_result_;
+  std::unique_ptr<Result> app_installation_result_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppInstallationTaskTest);
 };
@@ -115,13 +117,14 @@ class TestInstaller : public BookmarkAppInstaller {
                ResultCallback callback) override {
     web_app_info_ = web_app_info;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), succeeds_));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  succeeds_ ? "12345" : std::string()));
   }
 
   const WebApplicationInfo& web_app_info() { return web_app_info_.value(); }
 
  private:
-  bool succeeds_;
+  const bool succeeds_;
   base::Optional<WebApplicationInfo> web_app_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInstaller);
@@ -156,8 +159,9 @@ TEST_F(BookmarkAppInstallationTaskTest, ShortcutFromContents_NoWebAppInfo) {
   run_loop.Run();
 
   EXPECT_FALSE(app_installed());
-  EXPECT_EQ(BookmarkAppInstallationTask::Result::kGetWebApplicationInfoFailed,
-            app_installation_result());
+  EXPECT_EQ(
+      BookmarkAppInstallationTask::ResultCode::kGetWebApplicationInfoFailed,
+      app_installation_result().code);
 }
 
 TEST_F(BookmarkAppInstallationTaskTest, ShortcutFromContents_NoManifest) {
@@ -208,8 +212,8 @@ TEST_F(BookmarkAppInstallationTaskTest,
   run_loop.Run();
 
   EXPECT_FALSE(app_installed());
-  EXPECT_EQ(BookmarkAppInstallationTask::Result::kInstallationFailed,
-            app_installation_result());
+  EXPECT_EQ(BookmarkAppInstallationTask::ResultCode::kInstallationFailed,
+            app_installation_result().code);
 }
 
 }  // namespace extensions

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_SHORTCUT_INSTALLATION_TASK_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -40,7 +41,7 @@ class BookmarkAppShortcutInstallationTask : public BookmarkAppInstallationTask {
   void OnGetIcons(ResultCallback result_callback,
                   std::unique_ptr<WebApplicationInfo> web_app_info,
                   std::vector<WebApplicationInfo::IconInfo> icons);
-  void OnInstalled(ResultCallback result_callback, bool success);
+  void OnInstalled(ResultCallback result_callback, const std::string& app_id);
 
   base::WeakPtrFactory<BookmarkAppShortcutInstallationTask> weak_ptr_factory_{
       this};

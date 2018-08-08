@@ -10,7 +10,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "extensions/common/extension_id.h"
 
+class GURL;
 class Profile;
 
 struct WebApplicationInfo;
@@ -24,7 +26,7 @@ class CrxInstallError;
 // App in the system.
 class BookmarkAppInstaller {
  public:
-  using ResultCallback = base::OnceCallback<void(bool)>;
+  using ResultCallback = base::OnceCallback<void(const ExtensionId&)>;
 
   // Constructs a BookmarkAppInstaller that will install the Bookmark App in
   // |profile|.
@@ -40,6 +42,7 @@ class BookmarkAppInstaller {
 
  private:
   void OnInstall(ResultCallback callback,
+                 const GURL& app_url,
                  const base::Optional<CrxInstallError>& error);
 
   scoped_refptr<CrxInstaller> crx_installer_;
