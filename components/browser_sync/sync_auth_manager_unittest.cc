@@ -128,6 +128,35 @@ TEST_F(SyncAuthManagerTest, ForwardsPrimaryAccountEvents) {
   EXPECT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id,
             second_account_id);
 }
+
+TEST_F(SyncAuthManagerTest, ClearsAuthErrorOnSignout) {
+  // Start out already signed in before the SyncAuthManager is created.
+  std::string account_id =
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
+
+  auto auth_manager = CreateAuthManager();
+  ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
+
+  auth_manager->RegisterForAuthNotifications();
+
+  ASSERT_EQ(auth_manager->GetLastAuthError().state(),
+            GoogleServiceAuthError::NONE);
+
+  // Sign out of the account.
+  // The ordering of removing the refresh token and the actual sign-out is
+  // undefined, see comment on IdentityManager::Observer. Here, explicitly
+  // revoke the refresh token first to force an auth error.
+  identity_env()->RemoveRefreshTokenForPrimaryAccount();
+
+  ASSERT_NE(auth_manager->GetLastAuthError().state(),
+            GoogleServiceAuthError::NONE);
+
+  // Now actually sign out, i.e. remove the primary account. This should clear
+  // the auth error, since it's now not meaningful anymore.
+  identity_env()->ClearPrimaryAccount();
+  EXPECT_EQ(auth_manager->GetLastAuthError().state(),
+            GoogleServiceAuthError::NONE);
+}
 #endif  // !OS_CHROMEOS
 
 TEST_F(SyncAuthManagerTest, ForwardsCredentialsEvents) {
