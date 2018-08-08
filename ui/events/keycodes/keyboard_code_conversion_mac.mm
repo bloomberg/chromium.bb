@@ -543,17 +543,17 @@ UniChar MacKeycodeAndModifiersToCharacter(unsigned short mac_keycode,
   UInt32 modifier_key_state = (unicode_modifiers >> 8) & 0xFF;
 
   UInt32 dead_key_state = 0;
+  base::ScopedCFTypeRef<TISInputSourceRef> input_source(
+      TISCopyCurrentKeyboardLayoutInputSource());
   UniChar translated_char = TranslatedUnicodeCharFromKeyCode(
-      TISCopyCurrentKeyboardLayoutInputSource(),
-      static_cast<UInt16>(mac_keycode), kUCKeyActionDown, modifier_key_state,
-      LMGetKbdLast(), &dead_key_state);
+      input_source.get(), static_cast<UInt16>(mac_keycode), kUCKeyActionDown,
+      modifier_key_state, LMGetKbdLast(), &dead_key_state);
 
   *is_dead_key = dead_key_state != 0;
   if (*is_dead_key) {
     translated_char = TranslatedUnicodeCharFromKeyCode(
-        TISCopyCurrentKeyboardLayoutInputSource(),
-        static_cast<UInt16>(kVK_Space), kUCKeyActionDown, 0, LMGetKbdLast(),
-        &dead_key_state);
+        input_source.get(), static_cast<UInt16>(kVK_Space), kUCKeyActionDown, 0,
+        LMGetKbdLast(), &dead_key_state);
   }
 
   return translated_char;
@@ -876,11 +876,8 @@ UniChar TranslatedUnicodeCharFromKeyCode(TISInputSourceRef input_source,
                                          UInt32* dead_key_state) {
   DCHECK(dead_key_state);
 
-  base::ScopedCFTypeRef<TISInputSourceRef> input_source_copy(
-      input_source, base::scoped_policy::RETAIN);
-
   CFDataRef layout_data = static_cast<CFDataRef>(TISGetInputSourceProperty(
-      input_source_copy, kTISPropertyUnicodeKeyLayoutData));
+      input_source, kTISPropertyUnicodeKeyLayoutData));
 
   const UCKeyboardLayout* keyboard_layout =
       reinterpret_cast<const UCKeyboardLayout*>(CFDataGetBytePtr(layout_data));

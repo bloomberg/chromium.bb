@@ -38,10 +38,11 @@ bool ConvertKeyCodeToText(
   UInt32 modifier_key_state = (mac_modifiers >> 8) & 0xFF;
 
   UInt32 dead_key_state = 0;
+  base::ScopedCFTypeRef<TISInputSourceRef> input_source(
+      TISCopyCurrentKeyboardLayoutInputSource());
   UniChar character = ui::TranslatedUnicodeCharFromKeyCode(
-      TISCopyCurrentKeyboardLayoutInputSource(),
-      static_cast<UInt16>(mac_key_code), kUCKeyActionDown, modifier_key_state,
-      LMGetKbdLast(), &dead_key_state);
+      input_source.get(), static_cast<UInt16>(mac_key_code), kUCKeyActionDown,
+      modifier_key_state, LMGetKbdLast(), &dead_key_state);
 
   if (character && !std::iscntrl(character)) {
     base::string16 text16;
