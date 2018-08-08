@@ -10,7 +10,7 @@
 namespace blink {
 
 struct PaintInfo;
-class LayoutPoint;
+class PaintInfoWithOffset;
 class LayoutReplaced;
 
 class ReplacedPainter {
@@ -22,7 +22,7 @@ class ReplacedPainter {
 
   void Paint(const PaintInfo&);
 
-  bool ShouldPaint(const PaintInfo&, const LayoutPoint& paint_offset) const;
+  bool ShouldPaint(const PaintInfoWithOffset&) const;
 
  private:
   const LayoutReplaced& layout_replaced_;

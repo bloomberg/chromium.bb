@@ -8,13 +8,13 @@
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_table_col.h"
 #include "third_party/blink/renderer/core/layout/layout_table_row.h"
-#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
 #include "third_party/blink/renderer/core/paint/box_clipper.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/box_painter_base.h"
 #include "third_party/blink/renderer/core/paint/collapsed_border_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/table_cell_painter.h"
 #include "third_party/blink/renderer/core/paint/table_row_painter.h"
@@ -65,9 +65,9 @@ void TableSectionPainter::PaintSection(const PaintInfo& paint_info) {
   if (!total_rows || !total_cols)
     return;
 
-  AdjustPaintOffsetScope adjustment(layout_table_section_, paint_info);
-  const auto& local_paint_info = adjustment.GetPaintInfo();
-  auto paint_offset = adjustment.PaintOffset();
+  PaintInfoWithOffset paint_info_with_offset(layout_table_section_, paint_info);
+  const auto& local_paint_info = paint_info_with_offset.GetPaintInfo();
+  auto paint_offset = paint_info_with_offset.PaintOffset();
 
   if (local_paint_info.phase != PaintPhase::kSelfOutlineOnly) {
     base::Optional<BoxClipper> box_clipper;
@@ -125,9 +125,9 @@ void TableSectionPainter::PaintCollapsedSectionBorders(
       !layout_table_section_.Table()->EffectiveColumns().size())
     return;
 
-  AdjustPaintOffsetScope adjustment(layout_table_section_, paint_info);
-  const auto& local_paint_info = adjustment.GetPaintInfo();
-  auto paint_offset = adjustment.PaintOffset();
+  PaintInfoWithOffset paint_info_with_offset(layout_table_section_, paint_info);
+  const auto& local_paint_info = paint_info_with_offset.GetPaintInfo();
+  auto paint_offset = paint_info_with_offset.PaintOffset();
   BoxClipper box_clipper(layout_table_section_, local_paint_info);
 
   CellSpan dirtied_rows;

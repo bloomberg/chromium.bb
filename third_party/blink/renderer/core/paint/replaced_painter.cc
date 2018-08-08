@@ -8,11 +8,11 @@
 #include "third_party/blink/renderer/core/layout/api/selection_state.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
-#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/rounded_inner_rect_clipper.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
@@ -35,13 +35,12 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
       cache_skipper.emplace(paint_info.context);
   }
 
-  AdjustPaintOffsetScope adjustment(layout_replaced_, paint_info);
-  const auto& local_paint_info = adjustment.GetPaintInfo();
-  auto paint_offset = adjustment.PaintOffset();
-
-  if (!ShouldPaint(local_paint_info, paint_offset))
+  PaintInfoWithOffset paint_info_with_offset(layout_replaced_, paint_info);
+  if (!ShouldPaint(paint_info_with_offset))
     return;
 
+  const auto& local_paint_info = paint_info_with_offset.GetPaintInfo();
+  auto paint_offset = paint_info_with_offset.PaintOffset();
   LayoutRect border_rect(paint_offset, layout_replaced_.Size());
 
   if (ShouldPaintSelfBlockBackground(local_paint_info.phase)) {
@@ -161,8 +160,9 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   }
 }
 
-bool ReplacedPainter::ShouldPaint(const PaintInfo& paint_info,
-                                  const LayoutPoint& paint_offset) const {
+bool ReplacedPainter::ShouldPaint(
+    const PaintInfoWithOffset& paint_info_with_offset) const {
+  const auto& paint_info = paint_info_with_offset.GetPaintInfo();
   if (paint_info.phase != PaintPhase::kForeground &&
       !ShouldPaintSelfOutline(paint_info.phase) &&
       paint_info.phase != PaintPhase::kSelection &&
@@ -180,11 +180,9 @@ bool ReplacedPainter::ShouldPaint(const PaintInfo& paint_info,
       layout_replaced_.Style()->Visibility() != EVisibility::kVisible)
     return false;
 
-  LayoutRect paint_rect(layout_replaced_.VisualOverflowRect());
-  paint_rect.Unite(layout_replaced_.LocalSelectionRect());
-  paint_rect.MoveBy(paint_offset);
-
-  if (!paint_info.GetCullRect().IntersectsCullRect(paint_rect))
+  LayoutRect local_rect(layout_replaced_.VisualOverflowRect());
+  local_rect.Unite(layout_replaced_.LocalSelectionRect());
+  if (!paint_info_with_offset.LocalRectIntersectsCullRect(local_rect))
     return false;
 
   return true;

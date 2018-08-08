@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
-#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
 #include "third_party/blink/renderer/core/paint/list_marker_painter.h"
@@ -28,6 +27,7 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_text_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
@@ -130,16 +130,15 @@ NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
 }
 
 void NGBoxFragmentPainter::Paint(const PaintInfo& paint_info) {
-  AdjustPaintOffsetScope adjustment(box_fragment_, paint_info);
-  auto& info = adjustment.MutablePaintInfo();
-  auto paint_offset = adjustment.PaintOffset();
-
-  if (!IntersectsPaintRect(info, paint_offset))
+  PaintInfoWithOffset paint_info_with_offset(box_fragment_, paint_info);
+  if (!ShouldPaint(paint_info_with_offset))
     return;
 
+  PaintInfo& info = paint_info_with_offset.MutablePaintInfo();
   if (PhysicalFragment().IsAtomicInline())
     return PaintAtomicInline(info);
 
+  LayoutPoint paint_offset = paint_info_with_offset.PaintOffset();
   PaintPhase original_phase = info.phase;
 
   if (original_phase == PaintPhase::kOutline) {
@@ -521,9 +520,9 @@ void NGBoxFragmentPainter::PaintInlineChildBoxUsingLegacyFallback(
 void NGBoxFragmentPainter::PaintAllPhasesAtomically(
     const PaintInfo& paint_info,
     bool is_self_painting) {
-  AdjustPaintOffsetScope adjustment(box_fragment_, paint_info);
-  auto paint_offset = adjustment.PaintOffset();
-  PaintInfo local_paint_info = adjustment.MutablePaintInfo();
+  PaintInfoWithOffset paint_info_with_offset(box_fragment_, paint_info);
+  auto paint_offset = paint_info_with_offset.PaintOffset();
+  PaintInfo& local_paint_info = paint_info_with_offset.MutablePaintInfo();
 
   // Pass PaintPhaseSelection and PaintPhaseTextClip is handled by the regular
   // foreground paint implementation. We don't need complete painting for these
@@ -733,14 +732,11 @@ void NGBoxFragmentPainter::PaintOverflowControlsIfNeeded(
   }
 }
 
-bool NGBoxFragmentPainter::IntersectsPaintRect(
-    const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) const {
-  // TODO(layout-dev): Add support for scrolling, see
-  // BlockPainter::IntersectsPaintRect.
-  LayoutRect overflow_rect(box_fragment_.SelfInkOverflow());
-  overflow_rect.MoveBy(paint_offset);
-  return paint_info.GetCullRect().IntersectsCullRect(overflow_rect);
+bool NGBoxFragmentPainter::ShouldPaint(
+    const PaintInfoWithOffset& paint_info_with_offset) const {
+  // TODO(layout-dev): Add support for scrolling, see BlockPainter::ShouldPaint.
+  return paint_info_with_offset.LocalRectIntersectsCullRect(
+      box_fragment_.SelfInkOverflow());
 }
 
 void NGBoxFragmentPainter::PaintTextClipMask(GraphicsContext& context,

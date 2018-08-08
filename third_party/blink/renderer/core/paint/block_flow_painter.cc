@@ -6,7 +6,6 @@
 
 #include "third_party/blink/renderer/core/layout/floating_objects.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
 #include "third_party/blink/renderer/core/paint/block_painter.h"
 #include "third_party/blink/renderer/core/paint/line_box_list_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"

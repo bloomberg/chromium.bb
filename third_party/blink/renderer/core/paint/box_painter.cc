@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_foreign_object.h"
-#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
@@ -20,6 +19,7 @@
 #include "third_party/blink/renderer/core/paint/nine_piece_image_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
 #include "third_party/blink/renderer/core/paint/svg_foreign_object_painter.h"
 #include "third_party/blink/renderer/core/paint/theme_painter.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
@@ -33,8 +33,8 @@ namespace blink {
 
 void BoxPainter::Paint(const PaintInfo& paint_info) {
   // Default implementation. Just pass paint through to the children.
-  AdjustPaintOffsetScope adjustment(layout_box_, paint_info);
-  PaintChildren(adjustment.GetPaintInfo());
+  PaintInfoWithOffset paint_info_with_offset(layout_box_, paint_info);
+  PaintChildren(paint_info_with_offset.GetPaintInfo());
 }
 
 void BoxPainter::PaintChildren(const PaintInfo& paint_info) {

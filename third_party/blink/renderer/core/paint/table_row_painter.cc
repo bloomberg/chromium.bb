@@ -6,12 +6,12 @@
 
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_table_row.h"
-#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/box_painter_base.h"
 #include "third_party/blink/renderer/core/paint/collapsed_border_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
 #include "third_party/blink/renderer/core/paint/table_cell_painter.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
@@ -50,9 +50,10 @@ void TableRowPainter::Paint(const PaintInfo& paint_info) {
 
 void TableRowPainter::PaintOutline(const PaintInfo& paint_info) {
   DCHECK(ShouldPaintSelfOutline(paint_info.phase));
-  AdjustPaintOffsetScope adjustment(layout_table_row_, paint_info);
+  PaintInfoWithOffset paint_info_with_offset(layout_table_row_, paint_info);
   ObjectPainter(layout_table_row_)
-      .PaintOutline(adjustment.GetPaintInfo(), adjustment.PaintOffset());
+      .PaintOutline(paint_info_with_offset.GetPaintInfo(),
+                    paint_info_with_offset.PaintOffset());
 }
 
 void TableRowPainter::HandleChangedPartialPaint(
@@ -77,14 +78,14 @@ void TableRowPainter::PaintBoxDecorationBackground(
 
   HandleChangedPartialPaint(paint_info, dirtied_columns);
 
+  PaintInfoWithOffset paint_info_with_offset(layout_table_row_, paint_info);
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_table_row_,
           DisplayItem::kBoxDecorationBackground))
     return;
 
-  AdjustPaintOffsetScope adjustment(layout_table_row_, paint_info);
-  const auto& local_paint_info = adjustment.GetPaintInfo();
-  auto paint_offset = adjustment.PaintOffset();
+  const auto& local_paint_info = paint_info_with_offset.GetPaintInfo();
+  auto paint_offset = paint_info_with_offset.PaintOffset();
   DrawingRecorder recorder(local_paint_info.context, layout_table_row_,
                            DisplayItem::kBoxDecorationBackground);
   LayoutRect paint_rect(paint_offset, layout_table_row_.Size());

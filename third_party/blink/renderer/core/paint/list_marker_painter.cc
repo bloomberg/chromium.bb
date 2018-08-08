@@ -7,9 +7,9 @@
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/list_marker_text.h"
-#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
 #include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
 #include "third_party/blink/renderer/core/paint/text_painter.h"
 #include "third_party/blink/renderer/platform/fonts/text_run_paint_info.h"
@@ -61,14 +61,14 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
           paint_info.context, layout_list_marker_, paint_info.phase))
     return;
 
-  AdjustPaintOffsetScope adjustment(layout_list_marker_, paint_info);
-  const auto& local_paint_info = adjustment.GetPaintInfo();
-  auto box_origin = adjustment.PaintOffset();
-  LayoutRect overflow_rect(layout_list_marker_.VisualOverflowRect());
-  overflow_rect.MoveBy(box_origin);
-
-  if (!local_paint_info.GetCullRect().IntersectsCullRect(overflow_rect))
+  PaintInfoWithOffset paint_info_with_offset(layout_list_marker_, paint_info);
+  // TODO(wangxianzhu): Flip VisualOverflowRect into physical coordinates.
+  if (!paint_info_with_offset.LocalRectIntersectsCullRect(
+          layout_list_marker_.VisualOverflowRect()))
     return;
+
+  const auto& local_paint_info = paint_info_with_offset.GetPaintInfo();
+  auto box_origin = paint_info_with_offset.PaintOffset();
 
   DrawingRecorder recorder(local_paint_info.context, layout_list_marker_,
                            local_paint_info.phase);
