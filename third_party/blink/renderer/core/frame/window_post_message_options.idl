@@ -4,8 +4,7 @@
 
 // https://github.com/dtapuska/useractivation
 
-dictionary WindowPostMessageOptions {
+dictionary WindowPostMessageOptions : PostMessageOptions {
     USVString targetOrigin = "/";
-    sequence<object> transfer = [];
     [RuntimeEnabled=UserActivationAPI] boolean includeUserActivation = false;
 };
