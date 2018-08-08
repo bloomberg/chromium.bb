@@ -20,9 +20,9 @@
 namespace {
 
 // The total number of Ash accelerators.
-constexpr int kAshAcceleratorsTotalNum = 100;
+constexpr int kAshAcceleratorsTotalNum = 101;
 // The hash of Ash accelerators.
-constexpr char kAshAcceleratorsHash[] = "4232f3c0c55cc5e487c820b1c2813dcc";
+constexpr char kAshAcceleratorsHash[] = "48e2af8115132ccec79dc16ebe7da7fb";
 #if defined(GOOGLE_CHROME_BUILD)
 // Internal builds add an extra accelerator for the Feedback app.
 // The total number of Chrome accelerators (available on Chrome OS).

@@ -653,7 +653,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_TRUE(ProcessInController(
         ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN)));
     EXPECT_TRUE(
-        ProcessInController(ui::Accelerator(ui::VKEY_PRINT, ui::EF_NONE)));
+        ProcessInController(ui::Accelerator(ui::VKEY_SNAPSHOT, ui::EF_NONE)));
     EXPECT_TRUE(ProcessInController(ui::Accelerator(
         ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
 
@@ -663,7 +663,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
         ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN)));
     EXPECT_EQ(1, delegate->handle_take_screenshot_count());
     EXPECT_TRUE(
-        ProcessInController(ui::Accelerator(ui::VKEY_PRINT, ui::EF_NONE)));
+        ProcessInController(ui::Accelerator(ui::VKEY_SNAPSHOT, ui::EF_NONE)));
     EXPECT_EQ(2, delegate->handle_take_screenshot_count());
     EXPECT_TRUE(ProcessInController(ui::Accelerator(
         ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
@@ -909,9 +909,9 @@ TEST_F(AcceleratorControllerTest, PreferredReservedAccelerators) {
 
   // Others are not reserved nor preferred
   EXPECT_FALSE(GetController()->IsReserved(
-      ui::Accelerator(ui::VKEY_PRINT, ui::EF_NONE)));
+      ui::Accelerator(ui::VKEY_SNAPSHOT, ui::EF_NONE)));
   EXPECT_FALSE(GetController()->IsPreferred(
-      ui::Accelerator(ui::VKEY_PRINT, ui::EF_NONE)));
+      ui::Accelerator(ui::VKEY_SNAPSHOT, ui::EF_NONE)));
   EXPECT_FALSE(
       GetController()->IsReserved(ui::Accelerator(ui::VKEY_TAB, ui::EF_NONE)));
   EXPECT_FALSE(
@@ -1119,7 +1119,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
     EXPECT_TRUE(ProcessInController(
         ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN)));
     EXPECT_TRUE(
-        ProcessInController(ui::Accelerator(ui::VKEY_PRINT, ui::EF_NONE)));
+        ProcessInController(ui::Accelerator(ui::VKEY_SNAPSHOT, ui::EF_NONE)));
     EXPECT_TRUE(ProcessInController(ui::Accelerator(
         ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
     delegate->set_can_take_screenshot(true);
@@ -1128,7 +1128,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
         ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN)));
     EXPECT_EQ(1, delegate->handle_take_screenshot_count());
     EXPECT_TRUE(
-        ProcessInController(ui::Accelerator(ui::VKEY_PRINT, ui::EF_NONE)));
+        ProcessInController(ui::Accelerator(ui::VKEY_SNAPSHOT, ui::EF_NONE)));
     EXPECT_EQ(2, delegate->handle_take_screenshot_count());
     EXPECT_TRUE(ProcessInController(ui::Accelerator(
         ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));

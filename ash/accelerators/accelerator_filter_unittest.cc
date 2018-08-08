@@ -35,10 +35,11 @@ TEST_F(AcceleratorFilterTest, TestFilterWithoutFocus) {
 
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   // AcceleratorController calls ScreenshotDelegate::HandleTakeScreenshot() when
-  // VKEY_PRINT is pressed. See kAcceleratorData[] in accelerator_controller.cc.
-  generator.PressKey(ui::VKEY_PRINT, 0);
+  // VKEY_SNAPSHOT is pressed. See kAcceleratorData[] in
+  // accelerator_controller.cc.
+  generator.PressKey(ui::VKEY_SNAPSHOT, 0);
   EXPECT_EQ(1, delegate->handle_take_screenshot_count());
-  generator.ReleaseKey(ui::VKEY_PRINT, 0);
+  generator.ReleaseKey(ui::VKEY_SNAPSHOT, 0);
   EXPECT_EQ(1, delegate->handle_take_screenshot_count());
 }
 
@@ -55,9 +56,9 @@ TEST_F(AcceleratorFilterTest, TestFilterWithFocus) {
   // AcceleratorFilter should ignore the key events since the root window is
   // not focused.
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  generator.PressKey(ui::VKEY_PRINT, 0);
+  generator.PressKey(ui::VKEY_SNAPSHOT, 0);
   EXPECT_EQ(0, delegate->handle_take_screenshot_count());
-  generator.ReleaseKey(ui::VKEY_PRINT, 0);
+  generator.ReleaseKey(ui::VKEY_SNAPSHOT, 0);
   EXPECT_EQ(0, delegate->handle_take_screenshot_count());
 
   // Reset window before |test_delegate| gets deleted.
@@ -70,16 +71,16 @@ TEST_F(AcceleratorFilterTest, TestCapsLockMask) {
   EXPECT_EQ(0, delegate->handle_take_screenshot_count());
 
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  generator.PressKey(ui::VKEY_PRINT, 0);
+  generator.PressKey(ui::VKEY_SNAPSHOT, 0);
   EXPECT_EQ(1, delegate->handle_take_screenshot_count());
-  generator.ReleaseKey(ui::VKEY_PRINT, 0);
+  generator.ReleaseKey(ui::VKEY_SNAPSHOT, 0);
   EXPECT_EQ(1, delegate->handle_take_screenshot_count());
 
   // Check if AcceleratorFilter ignores the mask for Caps Lock. Note that there
   // is no ui::EF_ mask for Num Lock.
-  generator.PressKey(ui::VKEY_PRINT, ui::EF_CAPS_LOCK_ON);
+  generator.PressKey(ui::VKEY_SNAPSHOT, ui::EF_CAPS_LOCK_ON);
   EXPECT_EQ(2, delegate->handle_take_screenshot_count());
-  generator.ReleaseKey(ui::VKEY_PRINT, ui::EF_CAPS_LOCK_ON);
+  generator.ReleaseKey(ui::VKEY_SNAPSHOT, ui::EF_CAPS_LOCK_ON);
   EXPECT_EQ(2, delegate->handle_take_screenshot_count());
 }
 

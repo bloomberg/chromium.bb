@@ -99,7 +99,12 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_BROWSER_REFRESH,
      ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, ROTATE_WINDOW},
     {true, ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, RESTORE_TAB},
+    // These correspond to the "Print Screen" key, which changed from VKEY_PRINT
+    // to VKEY_SNAPSHOT in the XKB code used by Chrome OS in M66. The X11 code
+    // used when running an OS_CHROMEOS build on a Linux workstation still uses
+    // VKEY_PRINT: https://crbug.com/872094
     {true, ui::VKEY_PRINT, ui::EF_NONE, TAKE_SCREENSHOT},
+    {true, ui::VKEY_SNAPSHOT, ui::EF_NONE, TAKE_SCREENSHOT},
     // On Chrome OS, Search key is mapped to LWIN. The Search key binding should
     // act on release instead of press when using Search as a modifier key for
     // extended keyboard shortcuts.
