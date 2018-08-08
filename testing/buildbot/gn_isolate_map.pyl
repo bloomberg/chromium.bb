@@ -158,7 +158,7 @@
   "vr_perf_tests": {
     "label": "//tools/perf/contrib/vr_benchmarks:vr_perf_tests",
     "type": "script",
-    "script": "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
+    "script": "//testing/scripts/run_performance_tests.py",
     "args": [
       "../../tools/perf/run_benchmark",
     ],
@@ -1199,9 +1199,10 @@
   "vr_common_perftests": {
     "label": "//chrome/browser/vr:vr_common_perftests",
     "type": "script",
-    "script": "//testing/scripts/run_performance_tests_wrapper.py",
+    "script": "//testing/scripts/run_performance_tests.py",
     "args": [
       "vr_common_perftests",
+      "--non-telemetry=1",
       "--adb-path",
       "src/third_party/android_tools/sdk/platform-tools/adb",
     ]
