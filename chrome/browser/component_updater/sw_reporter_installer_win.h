@@ -117,6 +117,9 @@ void RegisterPrefsForSwReporter(PrefRegistrySimple* registry);
 void RegisterProfilePrefsForSwReporter(
     user_prefs::PrefRegistrySyncable* registry);
 
+// Checks if we have information from the Cleaner and records UMA statistics.
+void ReportUMAForLastCleanerRun();
+
 }  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_SW_REPORTER_INSTALLER_WIN_H_
