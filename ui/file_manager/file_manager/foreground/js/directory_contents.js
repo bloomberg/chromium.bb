@@ -333,34 +333,24 @@ function MediaViewContentScanner(rootEntry) {
 MediaViewContentScanner.prototype.__proto__ = ContentScanner.prototype;
 
 /**
- * This scanner provides flattened view of media providers. In each view all
- * media-view files are located just under the root directory and the root
- * directory doesn't have any directories (i.e. Directories are ignored).
+ * This scanner provides flattened view of media providers.
  *
- * In FileSystem API level, the root directory contains only directories, and
- * all files are guaranteed to be located inside first-level directories.
- * For example, in Pictures view, we have directories in the first level and
- * files in the second level.
- *
- * Pictures/
- *     DCIM/
- *         a.jpg
- *     Snapsheed/
- *         foo.jpg
- *
- * We can retrieve all files by scanning directories up to one level.
- *
+ * In FileSystem API level, each media-view root directory has directory
+ * hierarchy. We need to list files under the root directory to provide flatten
+ * view. A file will not be shown in multiple directories in media-view
+ * hierarchy since no folders will be added in media documents provider. We can
+ * list all files without duplication by just retrieveing files in directories
+ * recursively.
  * @override
  */
 MediaViewContentScanner.prototype.scan = function(
     entriesCallback, successCallback, errorCallback) {
-  // To provide flatten view of files, it is enough to retrieve file recursively
-  // up to one level from the root.
-  const recursionLevel = 1;
+  // To provide flatten view of files, this media-view scanner retrieves files
+  // in directories inside the media's root entry recursively.
   util.readEntriesRecursively(
       this.rootEntry_,
       entries => entriesCallback(entries.filter(entry => !entry.isDirectory)),
-      successCallback, errorCallback, () => false, recursionLevel);
+      successCallback, errorCallback, () => false);
 };
 
 /**
