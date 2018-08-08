@@ -32,9 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPE_RESULT_H_
 
 #include <memory>
-#include "build/build_config.h"
 #include "third_party/blink/renderer/platform/fonts/canvas_rotation_in_vertical.h"
-#include "third_party/blink/renderer/platform/fonts/glyph.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -324,15 +322,8 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                              unsigned start_glyph,
                              unsigned num_glyphs,
                              hb_buffer_t*);
-
-#if defined(OS_MACOSX)
   template <bool is_horizontal_run>
   void ComputeGlyphBounds(const ShapeResult::RunInfo&);
-#else
-  template <bool is_horizontal_run>
-  void ComputeGlyphBounds(const ShapeResult::RunInfo&, const Vector<Glyph>&);
-#endif
-
   void InsertRun(std::unique_ptr<ShapeResult::RunInfo>,
                  unsigned start_glyph,
                  unsigned num_glyphs,
