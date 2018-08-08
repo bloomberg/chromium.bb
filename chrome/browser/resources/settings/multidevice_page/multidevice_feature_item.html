@@ -19,8 +19,7 @@
         padding-inline-start: 18px;
       }
     </style>
-    <div id="card"
-        class="settings-box two-line"
+    <div class="settings-box two-line"
         on-click="handleItemClick_"
         actionable$="[[hasSubpageClickHandler_(subpageRoute)]]">
       <iron-icon icon="[[iconName]]"></iron-icon>
@@ -38,7 +37,7 @@
         </paper-icon-button-light>
         <div class="separator"></div>
       </template>
-      <slot name="feature-controller"></slot>
+      <slot name="feature-contoller"></slot>
     </div>
   </template>
   <script src="multidevice_feature_item.js"></script>

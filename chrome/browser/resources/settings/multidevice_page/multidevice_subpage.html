@@ -36,8 +36,7 @@
         if="[[shouldShowIndividualFeatures_(pageContentData)]]"
         restamp>
       <div class="feature-item-container">
-        <settings-multidevice-feature-item id="smart-lock-item"
-            icon-name="settings:smart-lock"
+        <settings-multidevice-feature-item icon-name="settings:smart-lock"
             subpage-route="[[routes.LOCK_SCREEN]]"
             feature-name="$i18n{multideviceSmartLockItemTitle}"
             feature-summary-html="$i18n{multideviceSmartLockItemSummary}">
@@ -50,21 +49,16 @@
             </settings-multidevice-feature-toggle>
           </div>
         </settings-multidevice-feature-item>
-        <settings-multidevice-feature-item id="android-messages-item"
-            icon-name="settings:sms-connect"
+        <settings-multidevice-feature-item icon-name="settings:sms-connect"
             feature-name="$i18n{multideviceAndroidMessagesItemTitle}"
             feature-summary-html="$i18n{multideviceAndroidMessagesItemSummary}">
-          <div slot="feature-controller">
-            <template is="dom-if"
-                if="[[androidMessagesRequiresSetup_]]"
-                restamp>
+          <div slot="feature-contoller">
+            <template is="dom-if" if="[[androidMessagesRequiresSetup_]]">
               <paper-button on-click="handleAndroidMessagesButtonClick_">
                 $i18n{multideviceSetupButton}
               </paper-button>
             </template>
-            <template is="dom-if"
-                if="[[!androidMessagesRequiresSetup_]]"
-                restamp>
+            <template is="dom-if" if="[[!androidMessagesRequiresSetup_]]">
               <settings-multidevice-feature-toggle
                   pref="{{prefs.multidevice.sms_connect_enabled}}">
               </settings-multidevice-feature-toggle>
