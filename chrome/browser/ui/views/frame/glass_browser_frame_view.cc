@@ -790,6 +790,8 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
 }
 
 void GlassBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
+  DCHECK_LT(base::win::GetVersion(), base::win::VERSION_WIN10);
+
   // Draw the client edge images.
   gfx::Rect client_bounds = CalculateClientAreaBounds();
   const int x = client_bounds.x();
@@ -798,23 +800,22 @@ void GlassBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
   const int bottom = std::max(y, height() - ClientBorderThickness(false));
 
   const ui::ThemeProvider* tp = GetThemeProvider();
-  if (base::win::GetVersion() < base::win::VERSION_WIN10) {
-    const gfx::ImageSkia* const right_image =
-        tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
-    const int img_w = right_image->width();
-    const int height = bottom - y;
-    canvas->TileImageInt(*right_image, right, y, img_w, height);
-    canvas->DrawImageInt(
-        *tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER), right, bottom);
-    const gfx::ImageSkia* const bottom_image =
-        tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_CENTER);
-    canvas->TileImageInt(*bottom_image, x, bottom, client_bounds.width(),
-                         bottom_image->height());
-    canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER),
-                         x - img_w, bottom);
-    canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_LEFT_SIDE),
-                         x - img_w, y, img_w, height);
-  }
+  const gfx::ImageSkia* const right_image =
+      tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
+  const int img_w = right_image->width();
+  const int height = bottom - y;
+  canvas->TileImageInt(*right_image, right, y, img_w, height);
+  canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER),
+                       right, bottom);
+  const gfx::ImageSkia* const bottom_image =
+      tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_CENTER);
+  canvas->TileImageInt(*bottom_image, x, bottom, client_bounds.width(),
+                       bottom_image->height());
+  canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER),
+                       x - img_w, bottom);
+  canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_LEFT_SIDE), x - img_w,
+                       y, img_w, height);
+
   FillClientEdgeRects(x, y, right, bottom,
                       tp->GetColor(ThemeProperties::COLOR_TOOLBAR), canvas);
 }
