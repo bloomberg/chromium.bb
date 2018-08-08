@@ -104,18 +104,19 @@ base::Optional<network::CORSErrorStatus> CheckPreflightAccess(
       !privilege->block_local_access_from_local_origin_);
 }
 
-base::Optional<network::mojom::CORSError> CheckRedirectLocation(
-    const KURL& url) {
-  static const bool run_blink_side_scheme_check =
-      !RuntimeEnabledFeatures::OutOfBlinkCORSEnabled();
-  // TODO(toyoshim): Deprecate Blink side scheme check when we enable
-  // out-of-renderer CORS support. This will need to deprecate Blink APIs that
-  // are currently used by an embedder. See https://crbug.com/800669.
-  if (run_blink_side_scheme_check &&
-      !SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(url.Protocol())) {
-    return network::mojom::CORSError::kRedirectDisallowedScheme;
-  }
-  return network::cors::CheckRedirectLocation(url, run_blink_side_scheme_check);
+base::Optional<network::CORSErrorStatus> CheckRedirectLocation(
+    const KURL& url,
+    network::mojom::FetchRequestMode request_mode,
+    const SecurityOrigin* origin,
+    CORSFlag cors_flag) {
+  base::Optional<url::Origin> origin_to_pass;
+  if (origin)
+    origin_to_pass = origin->ToUrlOrigin();
+
+  // Blink-side implementations rewrite the origin instead of setting the
+  // tainted flag.
+  return network::cors::CheckRedirectLocation(
+      url, request_mode, origin_to_pass, cors_flag == CORSFlag::Set, false);
 }
 
 base::Optional<network::mojom::CORSError> CheckPreflight(

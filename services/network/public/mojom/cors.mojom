@@ -90,7 +90,6 @@ enum CORSError {
   // Not allowed by Access-Control-Allow-Headers in CORS-preflight response.
   kHeaderDisallowedByPreflightResponse,
 
-  // Redirect
-  kRedirectDisallowedScheme,
+  // Cross origin redirect location contains credentials such as 'user:pass'.
   kRedirectContainsCredentials,
 };

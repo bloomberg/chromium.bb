@@ -129,53 +129,6 @@ class HTTPHeaderNameListParser {
 
 }  // namespace
 
-base::Optional<network::CORSErrorStatus> HandleRedirect(
-    WebSecurityOrigin& current_security_origin,
-    WebURLRequest& new_request,
-    const WebURL redirect_response_url,
-    const int redirect_response_status_code,
-    const WebHTTPHeaderMap& redirect_response_header,
-    network::mojom::FetchCredentialsMode credentials_mode,
-    ResourceLoaderOptions& options) {
-  const KURL& last_url = redirect_response_url;
-  const KURL& new_url = new_request.Url();
-
-  WebSecurityOrigin& new_security_origin = current_security_origin;
-
-  // TODO(tyoshino): This should be fixed to check not only the last one but
-  // all redirect responses.
-  if (!current_security_origin.CanRequest(last_url)) {
-    base::Optional<CORSError> redirect_error =
-        CORS::CheckRedirectLocation(new_url);
-    if (redirect_error)
-      return network::CORSErrorStatus(*redirect_error);
-
-    KURL redirect_response_kurl = redirect_response_url;
-    base::Optional<network::CORSErrorStatus> access_error =
-        CORS::CheckAccess(redirect_response_kurl, redirect_response_status_code,
-                          redirect_response_header.GetHTTPHeaderMap(),
-                          credentials_mode, *current_security_origin.Get());
-    if (access_error)
-      return access_error;
-
-    scoped_refptr<const SecurityOrigin> last_origin =
-        SecurityOrigin::Create(last_url);
-    // Set request's origin to a globally unique identifier as specified in
-    // the step 10 in https://fetch.spec.whatwg.org/#http-redirect-fetch.
-    if (!last_origin->CanRequest(new_url)) {
-      options.security_origin = SecurityOrigin::CreateUniqueOpaque();
-      new_security_origin = options.security_origin;
-    }
-  }
-
-  if (!current_security_origin.CanRequest(new_url)) {
-    new_request.SetHTTPHeaderField(WebString(HTTPNames::Origin),
-                                   new_security_origin.ToString());
-    options.cors_flag = true;
-  }
-  return base::nullopt;
-}
-
 WebHTTPHeaderSet ExtractCorsExposedHeaderNamesList(
     network::mojom::FetchCredentialsMode credentials_mode,
     const WebURLResponse& response) {

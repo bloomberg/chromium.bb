@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/platform/network/network_instrumentation.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -321,14 +322,16 @@ bool ResourceLoader::WillFollowRedirect(
             kEnableCORSHandlingByResourceFetcher &&
         fetch_request_mode == network::mojom::FetchRequestMode::kCORS) {
       scoped_refptr<const SecurityOrigin> source_origin = GetSourceOrigin();
-      WebSecurityOrigin source_web_origin(source_origin.get());
-      WrappedResourceRequest new_request_wrapper(*new_request);
-      base::Optional<network::CORSErrorStatus> cors_error =
-          WebCORS::HandleRedirect(
-              source_web_origin, new_request_wrapper, redirect_response.Url(),
-              redirect_response.HttpStatusCode(),
-              redirect_response.HttpHeaderFields(), fetch_credentials_mode,
-              resource_->MutableOptions());
+      base::Optional<network::CORSErrorStatus> cors_error;
+      cors_error = CORS::CheckRedirectLocation(
+          new_url, fetch_request_mode, source_origin.get(),
+          GetCORSFlag() ? CORSFlag::Set : CORSFlag::Unset);
+      if (!cors_error && GetCORSFlag()) {
+        cors_error =
+            CORS::CheckAccess(new_url, redirect_response.HttpStatusCode(),
+                              redirect_response.HttpHeaderFields(),
+                              fetch_credentials_mode, *source_origin);
+      }
       if (cors_error) {
         resource_->SetCORSStatus(CORSStatus::kFailed);
 
@@ -345,8 +348,18 @@ bool ResourceLoader::WillFollowRedirect(
                                           ResourceRequestBlockedReason::kOther);
         return false;
       }
-
-      source_origin = source_web_origin;
+      // If |actualResponse|’s location URL’s origin is not same origin with
+      // |request|’s current url’s origin and |request|’s origin is not same
+      // origin with |request|’s current url’s origin, then set |request|’s
+      // tainted origin flag.
+      if (resource_->Options().security_origin &&
+          !SecurityOrigin::AreSameSchemeHostPort(new_url,
+                                                 redirect_response.Url()) &&
+          !resource_->Options().security_origin->CanRequest(
+              redirect_response.Url())) {
+        resource_->MutableOptions().security_origin =
+            SecurityOrigin::CreateUniqueOpaque();
+      }
     }
     if (resource_type == Resource::kImage &&
         fetcher_->ShouldDeferImageLoad(new_url)) {
@@ -421,6 +434,24 @@ bool ResourceLoader::WillFollowRedirect(
     CancelForRedirectAccessCheckError(new_request->Url(),
                                       ResourceRequestBlockedReason::kOther);
     return false;
+  }
+
+  if (options.cors_handling_by_resource_fetcher ==
+          kEnableCORSHandlingByResourceFetcher &&
+      CORS::IsCORSEnabledRequestMode(fetch_request_mode)) {
+    const auto origin = GetSourceOrigin();
+    if (!origin->CanRequest(new_request->Url()))
+      resource_->MutableOptions().cors_flag = true;
+    if (GetCORSFlag()) {
+      // Cross-origin requests are only allowed certain registered schemes.
+      if (!SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(
+              KURL(new_url).Protocol())) {
+        HandleError(ResourceError(
+            new_url, network::CORSErrorStatus(
+                         network::mojom::CORSError::kCORSDisabledScheme)));
+        return false;
+      }
+    }
   }
 
   report_raw_headers = new_request->ReportRawHeaders();

@@ -174,6 +174,8 @@ class PLATFORM_EXPORT ResourceLoader final
   void OnProgress(uint64_t delta) override;
   void FinishedCreatingBlob(const scoped_refptr<BlobDataHandle>&);
 
+  bool GetCORSFlag() const { return resource_->Options().cors_flag; }
+
   base::Optional<ResourceRequestBlockedReason> CheckResponseNosniff(
       WebURLRequest::RequestContext,
       const ResourceResponse&) const;

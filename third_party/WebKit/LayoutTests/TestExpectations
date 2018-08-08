@@ -1685,7 +1685,6 @@ crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/send-redirect-bogus
 
 # Failing tests in dictionary order.
 crbug.com/867834 virtual/outofblink-cors/external/wpt/fetch/api/cors/sandboxed-iframe.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/access-control-and-redirects-async.htm [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/access-control-sandboxed-iframe-denied-without-wildcard.htm [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/access-control-sandboxed-iframe-denied.htm [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/data-uri.htm [ Failure ]
@@ -1700,7 +1699,6 @@ crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitel
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
 crbug.com/867834 virtual/outofblink-cors-ns/external/wpt/fetch/api/cors/sandboxed-iframe.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/access-control-and-redirects-async.htm [ Failure ]
 crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/access-control-sandboxed-iframe-denied-without-wildcard.htm [ Failure ]
 crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/access-control-sandboxed-iframe-denied.htm [ Failure ]
 crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/data-uri.htm [ Failure ]

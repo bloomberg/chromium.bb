@@ -199,11 +199,6 @@ String GetErrorString(const network::CORSErrorStatus& status,
                        " is not allowed by "
                        "Access-Control-Allow-Headers in preflight response."});
       break;
-    case CORSError::kRedirectDisallowedScheme:
-      Append(builder, {"Redirect location '", hint,
-                       "' has a disallowed scheme for cross-origin "
-                       "requests."});
-      break;
     case CORSError::kRedirectContainsCredentials:
       Append(builder, {"Redirect location '", hint,
                        "' contains a username and password, which is "

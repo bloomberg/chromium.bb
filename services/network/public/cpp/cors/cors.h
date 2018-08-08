@@ -75,12 +75,13 @@ base::Optional<CORSErrorStatus> CheckPreflightAccess(
 // according to CORS. That is:
 // - the URL has a CORS supported scheme and
 // - the URL does not contain the userinfo production.
-// TODO(toyoshim): Remove |skip_scheme_check| that is used when customized
-// scheme check runs in Blink side in the legacy mode.
-// See https://crbug.com/800669.
 COMPONENT_EXPORT(NETWORK_CPP)
-base::Optional<mojom::CORSError> CheckRedirectLocation(const GURL& redirect_url,
-                                                       bool skip_scheme_check);
+base::Optional<CORSErrorStatus> CheckRedirectLocation(
+    const GURL& url,
+    mojom::FetchRequestMode request_mode,
+    const base::Optional<url::Origin>& origin,
+    bool cors_flag,
+    bool tainted);
 
 // Performs the required CORS checks on the response to a preflight request.
 // Returns |kPreflightSuccess| if preflight response was successful.
