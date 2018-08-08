@@ -4869,4 +4869,4 @@ crbug.com/851090 [ Mac ] virtual/user-activation-v2/fast/events/autoscroll-over-
 crbug.com/871105 [ Linux ] svg/dom/remove-use-target-element-indirectly.html [ Pass Crash ]
 crbug.com/872025 [ Mac Linux ] fast/css-grid-layout/crash-large-positions.html [ Pass Timeout ]
 crbug.com/871416 fast/spatial-navigation/snav-stay-in-overflow-div.html [ Pass Failure ]
-crbug.com/872242 [ Mac10.10 ] fast/events/autoscroll-over-scrollbar.html [ Pass Failure ]
+crbug.com/872242 [ Mac ] fast/events/autoscroll-over-scrollbar.html [ Pass Failure ]
