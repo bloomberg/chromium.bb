@@ -1286,10 +1286,6 @@
       status: "experimental",
     },
     {
-      name: "VisualViewportAPI",
-      status: "stable",
-    },
-    {
       name: "WakeLock",
       status: "experimental",
     },

@@ -991,8 +991,7 @@ void LocalFrameView::UpdateLayout() {
     GetLayoutView()->AssertSubtreeIsLaidOut();
 #endif
 
-    if (frame_->IsMainFrame() &&
-        RuntimeEnabledFeatures::VisualViewportAPIEnabled()) {
+    if (frame_->IsMainFrame()) {
       // Scrollbars changing state can cause a visual viewport size change.
       DoubleSize new_viewport_size(visual_viewport.VisibleWidthCSSPx(),
                                    visual_viewport.VisibleHeightCSSPx());
@@ -2083,8 +2082,7 @@ void LocalFrameView::SendResizeEventIfNeeded() {
   last_viewport_size_ = GetLayoutSize();
   last_zoom_factor_ = layout_view->StyleRef().Zoom();
 
-  if (RuntimeEnabledFeatures::VisualViewportAPIEnabled())
-    frame_->GetDocument()->EnqueueVisualViewportResizeEvent();
+  frame_->GetDocument()->EnqueueVisualViewportResizeEvent();
 
   frame_->GetDocument()->EnqueueResizeEvent();
 

@@ -27,7 +27,6 @@
  // WICG proposal: https://github.com/WICG/ViewportAPI
 
 [
-    RuntimeEnabled=VisualViewportAPI,
     ImplementedAs=DOMVisualViewport
 ] interface VisualViewport : EventTarget {
     [Measure] readonly attribute double offsetLeft;
