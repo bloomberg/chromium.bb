@@ -52,11 +52,6 @@ public class KeyboardAccessoryCoordinator {
         void onCloseAccessorySheet();
 
         /**
-         * Called when the whole accessory should be hidden (e.g. due to selecting a suggestion).
-         */
-        void onCloseKeyboardAccessory();
-
-        /**
          * Called when the normal keyboard should be brought back (e.g. the user dismissed a bottom
          * sheet manually because they didn't find a suitable suggestion).
          */

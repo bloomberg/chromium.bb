@@ -82,6 +82,14 @@ public class ManualFillingCoordinator {
         mMediator.registerPasswordProvider(itemProvider);
     }
 
+    public void onResume() {
+        mMediator.resume();
+    }
+
+    public void onPause() {
+        mMediator.pause();
+    }
+
     // TODO(fhorschig): Should be @VisibleForTesting.
     /**
      * Allows access to the keyboard accessory. This can be used to explicitly modify the the bar of

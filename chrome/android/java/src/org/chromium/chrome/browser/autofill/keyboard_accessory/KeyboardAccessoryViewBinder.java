@@ -112,6 +112,7 @@ class KeyboardAccessoryViewBinder
     public void bind(
             KeyboardAccessoryModel model, KeyboardAccessoryView view, PropertyKey propertyKey) {
         if (propertyKey == PropertyKey.VISIBLE) {
+            view.setActiveTabColor(model.activeTab());
             view.setVisible(model.isVisible());
             return;
         }

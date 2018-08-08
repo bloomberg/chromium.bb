@@ -198,6 +198,45 @@ public class ManualFillingIntegrationTest {
 
     @Test
     @SmallTest
+    public void testResumingTheAppDismissesAllInputMethods()
+            throws InterruptedException, TimeoutException {
+        mHelper.loadTestPage(false);
+        mHelper.createTestTab();
+
+        // Focus the field to bring up the accessory.
+        mHelper.clickPasswordField();
+        mHelper.waitForKeyboard();
+
+        // Click the tab to show the sheet and hide the keyboard.
+        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+        mHelper.waitForKeyboardToDisappear();
+        whenDisplayed(withId(R.id.keyboard_accessory_sheet));
+
+        // Simulate backgrounding the main activity.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { mActivityTestRule.getActivity().onPauseWithNative(); });
+
+        // This should completely dismiss any input method.
+        mHelper.waitForKeyboardToDisappear();
+        mHelper.waitToBeHidden(withId(R.id.keyboard_accessory_sheet));
+        mHelper.waitToBeHidden(withId(R.id.keyboard_accessory));
+
+        // Simulate foregrounding the main activity.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { mActivityTestRule.getActivity().onResumeWithNative(); });
+
+        // Clicking the field should bring it back up
+        mHelper.clickPasswordField();
+        mHelper.waitForKeyboard();
+
+        // Click the tab to show the sheet and hide the keyboard.
+        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+        mHelper.waitForKeyboardToDisappear();
+        whenDisplayed(withId(R.id.keyboard_accessory_sheet));
+    }
+
+    @Test
+    @SmallTest
     public void testPressingBackButtonHidesAccessorySheet()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
