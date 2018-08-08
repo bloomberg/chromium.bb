@@ -15,6 +15,7 @@
   * [infra_paths](#recipe_modules-infra_paths)
   * [presubmit](#recipe_modules-presubmit)
   * [tryserver](#recipe_modules-tryserver)
+  * [windows_sdk](#recipe_modules-windows_sdk) &mdash; The `windows_sdk` module provides safe functions to access a hermetic Microsoft Visual Studio installation.
 
 **[Recipes](#Recipes)**
   * [bot_update:examples/buildbucket](#recipes-bot_update_examples_buildbucket)
@@ -33,6 +34,7 @@
   * [infra_paths:examples/full](#recipes-infra_paths_examples_full)
   * [presubmit:examples/full](#recipes-presubmit_examples_full)
   * [tryserver:examples/full](#recipes-tryserver_examples_full)
+  * [windows_sdk:examples/full](#recipes-windows_sdk_examples_full)
 ## Recipe Modules
 
 ### *recipe_modules* / [bot\_update](/recipes/recipe_modules/bot_update)
@@ -743,6 +745,32 @@ Mark the tryjob result as a test failure.
 
 This means we started running actual tests (not prerequisite steps
 like checkout or compile), and some of these tests have failed.
+### *recipe_modules* / [windows\_sdk](/recipes/recipe_modules/windows_sdk)
+
+[DEPS](/recipes/recipe_modules/windows_sdk/__init__.py#5): [recipe\_engine/cipd][recipe_engine/recipe_modules/cipd], [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/platform][recipe_engine/recipe_modules/platform], [recipe\_engine/step][recipe_engine/recipe_modules/step]
+
+The `windows_sdk` module provides safe functions to access a hermetic
+Microsoft Visual Studio installation.
+
+Available only to Google-run bots.
+
+#### **class [WindowsSDKApi](/recipes/recipe_modules/windows_sdk/api.py#15)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
+
+API for using Windows SDK distributed via CIPD.
+
+&emsp; **@contextmanager**<br>&mdash; **def [\_\_call\_\_](/recipes/recipe_modules/windows_sdk/api.py#23)(self, path=None, version=None, enabled=True):**
+
+Setups the SDK environment when enabled.
+
+Args:
+  path (path): Path to a directory where to install the SDK
+    (default is '[start_dir]/windows_sdk')
+  version (str): CIPD version of the SDK
+    (default is set via $infra/windows_sdk.version property)
+  enabled (bool): Whether the SDK should be used or not.
+
+Raises:
+    StepFailure or InfraFailure.
 ## Recipes
 
 ### *recipes* / [bot\_update:examples/buildbucket](/recipes/recipe_modules/bot_update/examples/buildbucket.py)
@@ -827,8 +855,14 @@ Move things around in a loop!
 [DEPS](/recipes/recipe_modules/tryserver/examples/full.py#5): [tryserver](#recipe_modules-tryserver), [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/platform][recipe_engine/recipe_modules/platform], [recipe\_engine/properties][recipe_engine/recipe_modules/properties], [recipe\_engine/python][recipe_engine/recipe_modules/python], [recipe\_engine/raw\_io][recipe_engine/recipe_modules/raw_io], [recipe\_engine/step][recipe_engine/recipe_modules/step]
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/tryserver/examples/full.py#17)(api):**
+### *recipes* / [windows\_sdk:examples/full](/recipes/recipe_modules/windows_sdk/examples/full.py)
+
+[DEPS](/recipes/recipe_modules/windows_sdk/examples/full.py#5): [windows\_sdk](#recipe_modules-windows_sdk), [recipe\_engine/platform][recipe_engine/recipe_modules/platform], [recipe\_engine/properties][recipe_engine/recipe_modules/properties], [recipe\_engine/step][recipe_engine/recipe_modules/step]
+
+&mdash; **def [RunSteps](/recipes/recipe_modules/windows_sdk/examples/full.py#13)(api):**
 
 [recipe_engine/recipe_modules/buildbucket]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/1f25d6536d9972411f4540f2e883e1560ddeb0ad/README.recipes.md#recipe_modules-buildbucket
+[recipe_engine/recipe_modules/cipd]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/1f25d6536d9972411f4540f2e883e1560ddeb0ad/README.recipes.md#recipe_modules-cipd
 [recipe_engine/recipe_modules/context]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/1f25d6536d9972411f4540f2e883e1560ddeb0ad/README.recipes.md#recipe_modules-context
 [recipe_engine/recipe_modules/file]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/1f25d6536d9972411f4540f2e883e1560ddeb0ad/README.recipes.md#recipe_modules-file
 [recipe_engine/recipe_modules/json]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/1f25d6536d9972411f4540f2e883e1560ddeb0ad/README.recipes.md#recipe_modules-json
