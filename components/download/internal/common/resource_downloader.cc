@@ -208,6 +208,7 @@ void ResourceDownloader::OnResponseStarted(
   download_create_info->tab_referrer_url = tab_referrer_url_;
   download_create_info->render_process_id = render_process_id_;
   download_create_info->render_frame_id = render_frame_id_;
+  download_create_info->has_user_gesture = resource_request_->has_user_gesture;
 
   delegate_task_runner_->PostTask(
       FROM_HERE,

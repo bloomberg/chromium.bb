@@ -144,9 +144,6 @@
 -DnsProbeBrowserTest.CorrectionsLoadStopped
 -DnsProbeBrowserTest.NoInternetProbeResultWithSlowBrokenCorrections
 
-# crbug.com/776589 Intercepting requests with net::URLRequestFilter.
--PolicyTest.ExtensionInstallSources
-
 # crbug.com/859594 Migrate storage::FileWriterDelegate to use SimpleURLLoader
 -SBNavigationObserverBrowserTest.DownloadViaHTML5FileApi
 

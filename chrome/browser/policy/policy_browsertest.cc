@@ -2618,13 +2618,17 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallSources) {
       extensions::ScopedTestDialogAutoConfirm::ACCEPT);
   extensions::ScopedInstallVerifierBypassForTest install_verifier_bypass;
 
-  const GURL install_source_url(
-      URLRequestMockHTTPJob::GetMockUrl("extensions/*"));
-  const GURL referrer_url(URLRequestMockHTTPJob::GetMockUrl("policy/*"));
+  embedded_test_server()->AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(embedded_test_server()->Start());
 
-  const GURL download_page_url(URLRequestMockHTTPJob::GetMockUrl(
-      "policy/extension_install_sources_test.html"));
+  GURL download_page_url = embedded_test_server()->GetURL(
+      "/policy/extension_install_sources_test.html");
   ui_test_utils::NavigateToURL(browser(), download_page_url);
+
+  const GURL install_source_url(
+      embedded_test_server()->GetURL("/extensions/*"));
+  const GURL referrer_url(embedded_test_server()->GetURL("/policy/*"));
 
   // As long as the policy is not present, extensions are considered dangerous.
   content::DownloadTestObserverTerminal download_observer(
