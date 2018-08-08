@@ -22,6 +22,8 @@ public final class WebApkMetaDataKeys {
     public static final String ORIENTATION = "org.chromium.webapk.shell_apk.orientation";
     public static final String THEME_COLOR = "org.chromium.webapk.shell_apk.themeColor";
     public static final String BACKGROUND_COLOR = "org.chromium.webapk.shell_apk.backgroundColor";
+    public static final String HAS_LARGE_SPLASH_ICONS =
+            "org.chromium.webapk.shell_apk.hasLargeSplashIcons";
     public static final String ICON_ID = "org.chromium.webapk.shell_apk.iconId";
     public static final String SPLASH_ID = "org.chromium.webapk.shell_apk.splashId";
 

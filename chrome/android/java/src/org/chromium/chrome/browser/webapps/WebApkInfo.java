@@ -12,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
@@ -146,8 +147,7 @@ public class WebApkInfo extends WebappInfo {
         int badgeIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.BADGE_ICON_ID, 0);
         Bitmap badgeIcon = decodeBitmapFromDrawable(res, badgeIconId);
 
-        int splashIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.SPLASH_ID, 0);
-        Bitmap splashIcon = decodeBitmapFromDrawable(res, splashIconId);
+        Bitmap splashIcon = decodeSplashIcon(bundle, res, primaryIconId);
 
         return create(WebApkConstants.WEBAPK_ID_PREFIX + webApkPackageName, url, scope,
                 new Icon(primaryIcon), new Icon(badgeIcon), new Icon(splashIcon), name, shortName,
@@ -304,6 +304,66 @@ public class WebApkInfo extends WebappInfo {
         } catch (Resources.NotFoundException e) {
             return null;
         }
+    }
+
+    /**
+     * Decodes a bitmap drawable from the WebAPK's resources for a specific density.
+     */
+    private static Bitmap decodeBitmapFromDrawableForDensity(
+            Resources webApkResources, int resourceId, int density) {
+        if (resourceId == 0) {
+            return null;
+        }
+        try {
+            BitmapDrawable bitmapDrawable =
+                    (BitmapDrawable) ApiCompatibilityUtils.getDrawableForDensity(
+                            webApkResources, resourceId, density);
+            return bitmapDrawable != null ? bitmapDrawable.getBitmap() : null;
+        } catch (Resources.NotFoundException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Computes the density of app icon to use for the splash screen based on the device density.
+     */
+    private static int computeDensityforSplashIcon(int deviceDensity) {
+        if (deviceDensity < DisplayMetrics.DENSITY_HIGH) {
+            return DisplayMetrics.DENSITY_XHIGH;
+        }
+        if (deviceDensity < DisplayMetrics.DENSITY_XHIGH) {
+            return DisplayMetrics.DENSITY_XXHIGH;
+        }
+        return DisplayMetrics.DENSITY_XXXHIGH;
+    }
+
+    /**
+     * Decodes a splash icon with logic dependent on the device's density.
+     */
+    private static Bitmap decodeSplashIcon(
+            Bundle bundle, Resources webApkResources, int appIconId) {
+        DisplayMetrics metrics = webApkResources.getDisplayMetrics();
+        if (metrics == null) {
+            // We have no basis on which to choose a higher DPI, so default to primary icon.
+            return null;
+        }
+        int deviceDensity = metrics.densityDpi;
+        int splashIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.SPLASH_ID, 0);
+        boolean hasLargeSplashIcons = IntentUtils.safeGetBoolean(
+                bundle, WebApkMetaDataKeys.HAS_LARGE_SPLASH_ICONS, false);
+
+        if (deviceDensity >= DisplayMetrics.DENSITY_XXHIGH && hasLargeSplashIcons) {
+            // If the server was able to provide larger splash icons we use those. This can be
+            // one or both of xxhdpi and xxxhdpi. If only one exists the up/down sampling is only
+            // for a single density and will still look good.
+            return decodeBitmapFromDrawable(webApkResources, splashIconId);
+        }
+        // If there is no drawable for a density this will down-sample or up-sample whatever app
+        // icons are provided to fit the target density. This can result in lower graphical
+        // fidelity; however, Chrome already does this for xxxhdpi icons in most cases so this isn't
+        // a concern.
+        return decodeBitmapFromDrawableForDensity(
+                webApkResources, appIconId, computeDensityforSplashIcon(deviceDensity));
     }
 
     /**
