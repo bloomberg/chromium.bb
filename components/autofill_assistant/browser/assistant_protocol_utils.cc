@@ -48,13 +48,32 @@ bool AssistantProtocolUtils::ParseAssistantScripts(
   }
 
   for (const auto& script : response_proto.scripts()) {
-    std::string name = "";
-    if (script.has_presentation() && script.presentation().has_name()) {
-      name = script.presentation().name();
-    }
     auto assistant_script = std::make_unique<AssistantScript>();
-    assistant_script->name = name;
     assistant_script->path = script.path();
+
+    if (script.has_presentation()) {
+      const auto& presentation = script.presentation();
+      if (presentation.has_name())
+        assistant_script->name = presentation.name();
+
+      if (presentation.has_precondition()) {
+        std::vector<std::vector<std::string>> elements_exist;
+        for (const auto& element :
+             presentation.precondition().elements_exist()) {
+          std::vector<std::string> selectors;
+          for (const auto& selector : element.selectors()) {
+            selectors.emplace_back(selector);
+          }
+          elements_exist.emplace_back(selectors);
+        }
+
+        if (!elements_exist.empty()) {
+          assistant_script->precondition =
+              std::make_unique<AssistantScriptPrecondition>(elements_exist);
+        }
+      }
+    }
+
     (*assistant_scripts)[assistant_script.get()] = std::move(assistant_script);
   }
 

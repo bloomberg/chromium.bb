@@ -25,6 +25,10 @@ class AssistantWebController {
   void ClickElement(const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback);
 
+  // Check whether the element given by |selectors| exists on the web page.
+  void ElementExists(const std::vector<std::string>& selectors,
+                     base::OnceCallback<void(bool)> callback);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AssistantWebController);
 };

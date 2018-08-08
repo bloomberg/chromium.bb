@@ -7,12 +7,18 @@
 
 #include <string>
 
+#include "components/autofill_assistant/browser/assistant_script_precondition.h"
+
 namespace autofill_assistant {
 
 // Assistant script represents a sequence of client actions.
 struct AssistantScript {
+  AssistantScript();
+  ~AssistantScript();
+
   std::string name;
   std::string path;
+  std::unique_ptr<AssistantScriptPrecondition> precondition;
 };
 
 }  // namespace autofill_assistant

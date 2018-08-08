@@ -19,4 +19,11 @@ void AssistantWebController::ClickElement(
   std::move(callback).Run(true);
 }
 
+void AssistantWebController::ElementExists(
+    const std::vector<std::string>& selectors,
+    base::OnceCallback<void(bool)> callback) {
+  // TODO(crbug.com/806868): Implement check existence operation.
+  std::move(callback).Run(true);
+}
+
 }  // namespace autofill_assistant.

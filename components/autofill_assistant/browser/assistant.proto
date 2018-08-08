@@ -33,8 +33,18 @@ message SupportedScriptProto {
   message PresentationProto {
     // Name to use when suggesting this script to users.
     optional string name = 1;
+
+    // Precondition contains a set of conditions that must hold for a script to
+    // be executed. No precondition means that a script can run in any
+    // case.
+    optional ScriptPreconditionProto precondition = 2;
   }
   optional PresentationProto presentation = 2;
+}
+
+message ScriptPreconditionProto {
+  // Combined with AND: the elements referenced here must be present.
+  repeated ElementReferenceProto elements_exist = 1;
 }
 
 enum PolicyType {
