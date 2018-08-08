@@ -45,11 +45,7 @@ GURL GetURLOfAnyHungFrame(content::WebContents* web_contents,
     if (frame->GetProcess() == hung_process)
       return frame->GetLastCommittedURL();
   }
-
-  // If a frame is attempting to commit a navigation into a hung renderer
-  // process, then its |frame->GetProcess()| will still return the process
-  // hosting the previously committed navigation.  In such case, the loop above
-  // might not find any matching frame.
+  NOTREACHED();
   return GURL();
 }
 
@@ -67,15 +63,9 @@ std::vector<content::WebContents*> GetHungWebContentsList(
   std::copy_if(AllTabContentses().begin(), AllTabContentses().end(),
                std::back_inserter(result), is_hung);
 
-  // Move |hung_web_contents| to the front.  It might be missing from the
-  // initial |results| when it hasn't yet committed a navigation into the hung
-  // process.
+  // Move |hung_web_contents| to the front.
   auto first = std::find(result.begin(), result.end(), hung_web_contents);
-  if (first != result.end())
-    std::rotate(result.begin(), first, std::next(first));
-  else
-    result.insert(result.begin(), hung_web_contents);
-
+  std::rotate(result.begin(), first, std::next(first));
   return result;
 }
 
@@ -97,8 +87,6 @@ base::string16 GetHungWebContentsTitle(
     return page_title;
 
   GURL hung_url = GetURLOfAnyHungFrame(affected_web_contents, hung_process);
-  if (!hung_url.is_valid() || !hung_url.has_host())
-    return page_title;
 
   // N.B. using just the host here is OK since this is a notification and the
   // user doesn't need to make a security critical decision about the page in

@@ -6,10 +6,8 @@
 
 #include <iterator>
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/time/time.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -27,7 +25,6 @@
 #include "content/browser/frame_host/origin_policy_throttle.h"
 #include "content/browser/frame_host/webui_navigation_throttle.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/common/child_process_host_impl.h"
@@ -48,15 +45,6 @@
 namespace content {
 
 namespace {
-
-// Default timeout for the READY_TO_COMMIT -> COMMIT transition.
-// Chosen based on the Navigation.ReadyToCommitUntilCommit UMA.
-constexpr base::TimeDelta kDefaultCommitTimeout =
-    base::TimeDelta::FromSeconds(10);
-
-// Timeout for the READY_TO_COMMIT -> COMMIT transition.
-// Overrideable via SetCommitTimeoutForTesting.
-base::TimeDelta g_commit_timeout = kDefaultCommitTimeout;
 
 // Use this to get a new unique ID for a NavigationHandle during construction.
 // The returned ID is guaranteed to be nonzero (zero is the "no ID" indicator).
@@ -834,7 +822,6 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
   render_frame_host_ = render_frame_host;
   state_ = READY_TO_COMMIT;
   ready_to_commit_time_ = base::TimeTicks::Now();
-  RestartCommitTimeout();
 
   // Record metrics for the time it takes to get to this state from the
   // beginning of the navigation.
@@ -910,8 +897,6 @@ void NavigationHandleImpl::DidCommitNavigation(
                                  "DidCommitNavigation");
     state_ = DID_COMMIT;
   }
-  commit_timeout_timer_.Stop();
-  GetRenderFrameHost()->GetRenderWidgetHost()->RendererIsResponsive();
 
   // Record metrics for the time it took to commit the navigation if it was to
   // another document without error.
@@ -1394,33 +1379,6 @@ NavigationThrottle* NavigationHandleImpl::GetDeferringThrottle() const {
   if (next_index_ == 0)
     return nullptr;
   return throttles_[next_index_ - 1].get();
-}
-
-void NavigationHandleImpl::RestartCommitTimeout() {
-  commit_timeout_timer_.Stop();
-  if (state_ >= DID_COMMIT)
-    return;
-
-  commit_timeout_timer_.Start(
-      FROM_HERE, g_commit_timeout,
-      base::BindRepeating(&NavigationHandleImpl::OnCommitTimeout,
-                          weak_factory_.GetWeakPtr()));
-}
-
-void NavigationHandleImpl::OnCommitTimeout() {
-  DCHECK_EQ(READY_TO_COMMIT, state_);
-  GetRenderFrameHost()->GetRenderWidgetHost()->RendererIsUnresponsive(
-      base::BindRepeating(&NavigationHandleImpl::RestartCommitTimeout,
-                          weak_factory_.GetWeakPtr()));
-}
-
-// static
-void NavigationHandleImpl::SetCommitTimeoutForTesting(
-    const base::TimeDelta& timeout) {
-  if (timeout.is_zero())
-    g_commit_timeout = kDefaultCommitTimeout;
-  else
-    g_commit_timeout = timeout;
 }
 
 }  // namespace content
