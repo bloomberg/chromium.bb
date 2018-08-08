@@ -260,12 +260,6 @@
     ],
   },
   'chrome_public_test_apk': {
-    'remove_from': [
-      # chromium.clang
-      'ToTAndroidCFI',  # https://crbug.com/862581
-      # chromium.memory
-      'Android CFI',  # https://crbug.com/862581
-    ],
     'modifications': {
       # chromium.android
       'android-kitkat-arm-rel': {
