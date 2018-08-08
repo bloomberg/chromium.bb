@@ -3486,8 +3486,8 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
   if (ProcessingBeforeUnload())
     return false;
 
-  BeforeUnloadEvent* before_unload_event = BeforeUnloadEvent::Create();
-  before_unload_event->initEvent(EventTypeNames::beforeunload, false, true);
+  BeforeUnloadEvent& before_unload_event = *BeforeUnloadEvent::Create();
+  before_unload_event.initEvent(EventTypeNames::beforeunload, false, true);
   load_event_progress_ = kBeforeUnloadEventInProgress;
   const TimeTicks beforeunload_event_start = CurrentTimeTicks();
   dom_window_->DispatchEvent(before_unload_event, this);
@@ -3498,8 +3498,8 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
       ("DocumentEventTiming.BeforeUnloadDuration", 0, 10000000, 50));
   beforeunload_histogram.CountMicroseconds(beforeunload_event_end -
                                            beforeunload_event_start);
-  if (!before_unload_event->defaultPrevented())
-    DefaultEventHandler(before_unload_event);
+  if (!before_unload_event.defaultPrevented())
+    DefaultEventHandler(&before_unload_event);
 
   enum BeforeUnloadDialogHistogramEnum {
     kNoDialogNoText,
@@ -3510,10 +3510,10 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
   };
   DEFINE_STATIC_LOCAL(EnumerationHistogram, beforeunload_dialog_histogram,
                       ("Document.BeforeUnloadDialog", kDialogEnumMax));
-  if (before_unload_event->returnValue().IsNull()) {
+  if (before_unload_event.returnValue().IsNull()) {
     beforeunload_dialog_histogram.Count(kNoDialogNoText);
   }
-  if (!GetFrame() || before_unload_event->returnValue().IsNull())
+  if (!GetFrame() || before_unload_event.returnValue().IsNull())
     return true;
 
   if (!GetFrame()->HasBeenActivated()) {
@@ -3535,7 +3535,7 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
     Intervention::GenerateReport(frame_, "BeforeUnloadMultiple", message);
     return true;
   }
-  String text = before_unload_event->returnValue();
+  String text = before_unload_event.returnValue();
   beforeunload_dialog_histogram.Count(
       BeforeUnloadDialogHistogramEnum::kShowDialog);
   if (chrome_client.OpenBeforeUnloadConfirmPanel(text, frame_, is_reload)) {
@@ -3563,7 +3563,8 @@ void Document::DispatchUnloadEvents() {
       if (LocalDOMWindow* window = domWindow()) {
         const TimeTicks pagehide_event_start = CurrentTimeTicks();
         window->DispatchEvent(
-            PageTransitionEvent::Create(EventTypeNames::pagehide, false), this);
+            *PageTransitionEvent::Create(EventTypeNames::pagehide, false),
+            this);
         const TimeTicks pagehide_event_end = CurrentTimeTicks();
         DEFINE_STATIC_LOCAL(
             CustomCountHistogram, pagehide_histogram,
@@ -3599,7 +3600,7 @@ void Document::DispatchUnloadEvents() {
       DocumentLoader* document_loader =
           frame_->Loader().GetProvisionalDocumentLoader();
       load_event_progress_ = kUnloadEventInProgress;
-      Event* unload_event(Event::Create(EventTypeNames::unload));
+      Event& unload_event = *Event::Create(EventTypeNames::unload);
       if (document_loader &&
           document_loader->GetTiming().UnloadEventStart().is_null() &&
           document_loader->GetTiming().UnloadEventEnd().is_null()) {

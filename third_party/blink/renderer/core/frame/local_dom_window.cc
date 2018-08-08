@@ -384,7 +384,7 @@ void LocalDOMWindow::EnqueuePageshowEvent(PageshowEventPersistence persisted) {
     return;
   }
   DispatchEvent(
-      PageTransitionEvent::Create(EventTypeNames::pageshow, persisted),
+      *PageTransitionEvent::Create(EventTypeNames::pageshow, persisted),
       document_.Get());
 }
 
@@ -1447,7 +1447,7 @@ void LocalDOMWindow::WarnUnusedPreloads(TimerBase* base) {
 }
 
 void LocalDOMWindow::DispatchLoadEvent() {
-  Event* load_event(Event::Create(EventTypeNames::load));
+  Event& load_event = *Event::Create(EventTypeNames::load);
   DocumentLoader* document_loader =
       GetFrame() ? GetFrame()->Loader().GetDocumentLoader() : nullptr;
   if (document_loader &&
