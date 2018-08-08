@@ -63,8 +63,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/search_engine_dialog_footer"
-        android:textColor="@color/descriptive_text_color"
-        android:textSize="@dimen/text_size_medium"
+        android:textAppearance="@style/BlackBody"
         android:padding="@dimen/signin_chooser_padding" />
 
     <!--suppress ButtonStyle -->
@@ -79,9 +78,7 @@
         android:paddingStart="@dimen/fre_button_padding"
         android:paddingEnd="@dimen/fre_button_padding"
         android:text="@string/ok"
-        android:textAllCaps="true"
-        android:textColor="@android:color/white"
-        android:textSize="14sp"
+        android:textAppearance="@style/WhiteButtonText"
         app:buttonColor="@color/light_active_color"
         app:buttonRaised="false" />
 

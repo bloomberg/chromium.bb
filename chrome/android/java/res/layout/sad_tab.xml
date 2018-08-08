@@ -72,7 +72,7 @@
             android:id="@+id/sad_tab_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#fff"
+            android:textAppearance="@style/WhiteButtonText"
             android:minWidth="222dp"
             app:buttonColor="@color/light_active_color"
             android:layout_gravity="end" />
