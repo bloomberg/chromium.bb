@@ -133,7 +133,6 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
       int start_pos,
       int end_pos,
       bool include_newline_space_width = true) const;
-  bool IsSelected(int start_pos, int end_pos) const;
   void SelectionStartEnd(int& s_pos, int& e_pos) const;
 
   virtual void PaintDocumentMarker(GraphicsContext&,
