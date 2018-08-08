@@ -441,6 +441,13 @@ public class SuggestionsSectionTest {
         assertNull(snippets.get(0).getOfflinePageOfflineId());
         assertEquals(Long.valueOf(1L), snippets.get(1).getOfflinePageOfflineId());
         assertEquals(Long.valueOf(2L), snippets.get(2).getOfflinePageOfflineId());
+
+        // TODO(bauerb): Once this code switches away from partial bind callbacks in favor of
+        // property keys, verify that this is an offline badge update.
+        verify(mObserver).onItemRangeChanged(
+                eq(section), eq(0), eq(1), any(PartialBindCallback.class));
+        verify(mObserver).onItemRangeChanged(
+                eq(section), eq(2), eq(1), any(PartialBindCallback.class));
     }
 
     @Test
@@ -472,6 +479,45 @@ public class SuggestionsSectionTest {
         // The offline status should not change any more.
         assertEquals(Long.valueOf(0L), suggestions.get(0).getOfflinePageOfflineId());
         assertNull(suggestions.get(1).getOfflinePageOfflineId());
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testOfflineStatusIgnoredIfSuggestionRemoved() {
+        final List<SnippetArticle> suggestions =
+                mSuggestionsSource.createAndSetSuggestions(2, TEST_CATEGORY_ID);
+        assertNull(suggestions.get(0).getOfflinePageOfflineId());
+        assertNull(suggestions.get(1).getOfflinePageOfflineId());
+
+        final OfflinePageItem item0 = createOfflinePageItem(suggestions.get(0).mUrl, 0L);
+        mBridge.setIsOfflinePageModelLoaded(true);
+        mBridge.setItems(Collections.singletonList(item0));
+
+        SuggestionsSection section = createSectionWithSuggestions(suggestions);
+
+        // The offline status should propagate.
+        assertEquals(Long.valueOf(0L), suggestions.get(0).getOfflinePageOfflineId());
+        assertNull(suggestions.get(1).getOfflinePageOfflineId());
+
+        // Let the fake bridge answer requests asynchronously.
+        mBridge.setAnswersRequestsImmediately(false);
+        final OfflinePageItem item1 = createOfflinePageItem(suggestions.get(1).mUrl, 1L);
+        mBridge.setItems(Arrays.asList(item0, item1));
+        mBridge.fireOfflinePageModelLoaded();
+
+        // Remove a suggestion while an OfflinePageItem callback is in progress.
+        section.removeSuggestionById(suggestions.get(1).mIdWithinCategory);
+        assertEquals(section.getSuggestionsCount(), 1);
+
+        // Reset any previous change notifications.
+        // TODO(bauerb): Once this code switches away from partial bind callbacks in favor of
+        // property keys, we can distinguish the offline badge update from others.
+        Mockito.<ListObserver>reset(mObserver);
+        mBridge.answerAllRequests();
+
+        // The offline status should not change.
+        assertNull(suggestions.get(1).getOfflinePageOfflineId());
+        verify(mObserver, never()).onItemRangeChanged(any(), anyInt(), anyInt(), any());
     }
 
     @Test
