@@ -47,7 +47,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_pref_names.h"
-#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chromeos/chromeos_pref_names.h"
 #include "components/drive/drive_pref_names.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -195,11 +194,6 @@ const char* temporary_incognito_whitelist[] = {
 
     // TODO(https://crbug.com/861722):  Check with mukai@ before removing.
     ash::prefs::kTouchpadEnabled, ash::prefs::kTouchscreenEnabled,
-#endif  // defined(OS_CHROMEOS)
-
-// chrome/browser/chromeos/crostini/crostini_pref_names.h
-#if defined(OS_CHROMEOS)
-    crostini::prefs::kCrostiniEnabled,
 #endif  // defined(OS_CHROMEOS)
 
 // chrome/browser/accessibility/animation_policy_prefs.h
