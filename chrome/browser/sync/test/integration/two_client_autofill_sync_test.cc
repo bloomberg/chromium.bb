@@ -72,7 +72,7 @@ class TwoClientAutofillProfileSyncTest : public UssSwitchToggler,
 
 IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
                        PersonalDataManagerSanity) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(SetupSync());
 
   // Client0 adds a profile.
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
@@ -109,18 +109,18 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, AddDuplicateProfiles) {
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  ASSERT_TRUE(SetupClients());
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(SetupSync());
   EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
   EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
                        SameProfileWithConflict) {
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  ASSERT_TRUE(SetupClients());
 
   AutofillProfile profile0 = CreateAutofillProfile(PROFILE_HOMER);
   AutofillProfile profile1 = CreateAutofillProfile(PROFILE_HOMER);
@@ -129,14 +129,14 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
 
   AddProfile(0, profile0);
   AddProfile(1, profile1);
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(SetupSync());
   EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
   EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
 
 // Tests that a null profile does not get synced across clients.
 IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, AddEmptyProfile) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(SetupSync());
 
   AddProfile(0, CreateAutofillProfile(PROFILE_NULL));
   EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, AddEmptyProfile) {
 // Tests that adding a profile on one client results in it being added on the
 // other client when sync is running.
 IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, AddProfile) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(SetupSync());
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
 
@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
 
   // Add the new autofill profile before starting sync.
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(SetupSync());
 
   // Wait for the sync to happen.
   EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
@@ -191,7 +191,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
             GetAllAutoFillProfiles(1)[0]->guid());
 
   // Wait for the sync to happen.
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(SetupSync());
   EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
 
   // Make sure that both clients have one profile.
@@ -207,12 +207,12 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
 // being added to the other client.
 IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
                        AddMultipleProfilesOnOneClient) {
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  ASSERT_TRUE(SetupClients());
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   AddProfile(0, CreateAutofillProfile(PROFILE_MARION));
   AddProfile(0, CreateAutofillProfile(PROFILE_FRASIER));
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(SetupSync());
   EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
   EXPECT_EQ(3U, GetAllAutoFillProfiles(0).size());
 }
@@ -221,12 +221,12 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
 // all profiles.
 IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
                        AddMultipleProfilesOnTwoClients) {
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  ASSERT_TRUE(SetupClients());
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   AddProfile(1, CreateAutofillProfile(PROFILE_MARION));
   AddProfile(1, CreateAutofillProfile(PROFILE_FRASIER));
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(SetupSync());
   EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
   EXPECT_EQ(3U, GetAllAutoFillProfiles(0).size());
 }
@@ -234,7 +234,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
 // Tests that deleting a profile on one client results in it being deleted on
 // the other client.
 IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, DeleteProfile) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(SetupSync());
 
   // Setup the test by making the 2 clients have the same profile.
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, DeleteProfile) {
 // Tests that modifying a profile while syncing results in the other client
 // getting the updated profile.
 IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, UpdateFields) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(SetupSync());
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
@@ -284,7 +284,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, UpdateFields) {
 // which one).
 IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
                        UpdateConflictingFields) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(SetupSync());
 
   // Make the two clients have the same profile.
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
@@ -309,7 +309,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
 // which one).
 IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
                        UpdateConflictingFieldsDuringInitialMerge) {
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  ASSERT_TRUE(SetupClients());
 
   // Make the two clients have the same profile.
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
@@ -322,7 +322,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
                 AutofillType(autofill::NAME_FIRST), base::ASCIIToUTF16("Bart"));
 
   // Start sync.
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(SetupSync());
 
   // Don't care which write wins the conflict, only that the two clients agree.
   EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
@@ -333,7 +333,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
 // syncing results in both client having the same profile (doesn't matter which
 // one).
 IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, DeleteAndUpdate) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(SetupSync());
 
   // Make the two clients have the same profile.
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
@@ -353,7 +353,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, DeleteAndUpdate) {
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, MaxLength) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(SetupSync());
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
@@ -377,7 +377,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, MaxLength) {
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, ExceedsMaxLength) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(SetupSync());
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
@@ -408,7 +408,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, ExceedsMaxLength) {
 
 // Test credit cards don't sync.
 IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, NoCreditCardSync) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(SetupSync());
 
   CreditCard card;
   card.SetRawInfo(autofill::CREDIT_CARD_NUMBER,
@@ -431,7 +431,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, NoCreditCardSync) {
 
 IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
                        E2E_ONLY(TwoClientsAddAutofillProfiles)) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(SetupSync());
 
   // All profiles should sync same autofill profiles.
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait())
