@@ -52,15 +52,13 @@
 
 namespace aura {
 
-Window::Window(WindowDelegate* delegate, client::WindowType type, Env* env)
-    : Window(delegate, nullptr, type, env) {}
+Window::Window(WindowDelegate* delegate, client::WindowType type)
+    : Window(delegate, nullptr, type) {}
 
 Window::Window(WindowDelegate* delegate,
                std::unique_ptr<WindowPort> port,
-               client::WindowType type,
-               Env* env)
-    : env_(env ? env : Env::GetInstance()),
-      port_owner_(std::move(port)),
+               client::WindowType type)
+    : port_owner_(std::move(port)),
       port_(port_owner_.get()),
       host_(nullptr),
       type_(type),
@@ -150,7 +148,7 @@ void Window::Init(ui::LayerType layer_type) {
   WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
 
   if (!port_owner_) {
-    port_owner_ = env_->CreateWindowPort(this);
+    port_owner_ = Env::GetInstance()->CreateWindowPort(this);
     port_ = port_owner_.get();
   }
   SetLayer(std::make_unique<ui::Layer>(layer_type));
@@ -159,7 +157,7 @@ void Window::Init(ui::LayerType layer_type) {
   layer()->set_delegate(this);
   UpdateLayerName();
   layer()->SetFillsBoundsOpaquely(!transparent_);
-  env_->NotifyWindowInitialized(this);
+  Env::GetInstance()->NotifyWindowInitialized(this);
 }
 
 void Window::SetType(client::WindowType type) {
@@ -360,8 +358,6 @@ void Window::AddChild(Window* child) {
 
   DCHECK(layer()) << "Parent has not been Init()ed yet.";
   DCHECK(child->layer()) << "Child has not been Init()ed yt.";
-  DCHECK_EQ(env_, child->env_) << "All windows in a hierarchy must share the "
-                                  " same Env.";
   WindowObserver::HierarchyChangeParams params;
   params.target = child;
   params.new_parent = this;
@@ -1215,9 +1211,9 @@ bool Window::CanAcceptEvent(const ui::Event& event) {
 
 ui::EventTarget* Window::GetParentTarget() {
   if (IsRootWindow()) {
-    return client::GetEventClient(this)
-               ? client::GetEventClient(this)->GetToplevelEventTarget()
-               : env_;
+    return client::GetEventClient(this) ?
+        client::GetEventClient(this)->GetToplevelEventTarget() :
+            Env::GetInstance();
   }
   return parent_;
 }

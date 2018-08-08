@@ -66,8 +66,9 @@ const Window* WindowFromTarget(const ui::EventTarget* event_target) {
 }  // namespace
 
 void InitializeAuraEventGeneratorDelegate() {
-  if (!ui::test::EventGenerator::default_delegate)
+  if (!ui::test::EventGenerator::default_delegate) {
     DefaultEventGeneratorDelegate::GetInstance();
+  }
 }
 
 EventGeneratorDelegateAura::EventGeneratorDelegateAura() {

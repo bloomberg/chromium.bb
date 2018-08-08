@@ -161,10 +161,7 @@ void TestScreen::OnWindowDestroying(Window* window) {
 }
 
 gfx::Point TestScreen::GetCursorScreenPoint() {
-  // This may be hit during shutdown, after |host_| has been destroyed.
-  return host_ && host_->window()
-             ? host_->window()->env()->last_mouse_location()
-             : gfx::Point();
+  return Env::GetInstance()->last_mouse_location();
 }
 
 bool TestScreen::IsWindowUnderCursor(gfx::NativeWindow window) {
