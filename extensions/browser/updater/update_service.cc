@@ -136,11 +136,18 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
       complete_event = true;
       finish_delayed_installation = true;
       {
+        update_client::ErrorCategory error_category =
+            update_client::ErrorCategory::kNone;
         update_client::CrxUpdateItem update_item;
-        if (!update_client_->GetCrxUpdateState(extension_id, &update_item)) {
-          NOTREACHED();
+        if (update_client_->GetCrxUpdateState(extension_id, &update_item)) {
+          // When update_client_->GetCrxUpdateState(...) returns false, it means
+          // that |update_client_| can't find any information about this
+          // |extension_id|. It could be possible that |extension_id| was
+          // uninstalled when |update_client_| was checking for updates.
+          // (see bug http://crbug.com/869663).
+          error_category = update_item.error_category;
         }
-        switch (update_item.error_category) {
+        switch (error_category) {
           case update_client::ErrorCategory::kUpdateCheck:
             ReportUpdateCheckResult(
                 ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR,
