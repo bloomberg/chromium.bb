@@ -5,6 +5,11 @@
  *     * Antonio Gomes <tonikitoo@webkit.org>
  **/
 
+/* NOTE:
+ * This file is deprecated.
+ * New tests should use snav-testharness.js instead.
+ */
+
 var gExpectedResults = 0;
 var gIndex = 0;
 var gClosureCallback = null;
