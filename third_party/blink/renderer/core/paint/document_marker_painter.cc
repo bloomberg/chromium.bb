@@ -141,7 +141,6 @@ void DrawDocumentMarker(GraphicsContext& context,
 
 }  // anonymous ns
 
-// TODO(yoichio) : Move this to document_marker_painter.cc
 void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
     GraphicsContext& context,
     const LayoutPoint& box_origin,
@@ -192,7 +191,6 @@ void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
 
 static const int kMisspellingLineThickness = 3;
 
-// TODO(yoichio): Move this to document_marker_painter.cc
 void DocumentMarkerPainter::PaintDocumentMarker(
     GraphicsContext& context,
     const LayoutPoint& box_origin,
