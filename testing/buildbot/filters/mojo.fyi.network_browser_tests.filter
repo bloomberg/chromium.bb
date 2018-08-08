@@ -20,7 +20,6 @@
 # mock out network responses, and use ExtensionDownloader to issue requests,
 # which has yet to be switched from URLFetcher.
 # https://crbug.com/844928
--PolicyTest.ExtensionInstallBlacklistSharedModules
 -PolicyTest.ExtensionInstallForcelist
 -PolicyTest.ExtensionInstallForcelist_DefaultedUpdateUrl
 -PolicyTest.ExtensionMinimumVersionForceInstalled
@@ -179,8 +178,6 @@
 # These rely on proxy configuration and PAC execution being configured on the
 # legacy in-process URLRequestContext. They should be removed or updated to
 # use Mojo APIs instead.
--HangingPacRequestProxyScriptBrowserTest.Shutdown
--IOThreadBrowserTestWithHangingPacRequest.Shutdown
 -ProxySettingsApiTest.ProxyEventsParseError
 
 # http://crbug.com/827582
