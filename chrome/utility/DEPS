@@ -5,6 +5,7 @@ include_rules = [
   "+chrome/services/cups_ipp_validator/public/mojom",
   "+chrome/services/file_util/file_util_service.h",
   "+chrome/services/file_util/public/mojom",
+  "+chrome/services/isolated_xr_device",
   "+chrome/services/media_gallery_util/media_gallery_util_service.h",
   "+chrome/services/media_gallery_util/public/mojom",
   # TODO(crbug.com/798782): remove dependency to pdf_to_emf_converter_factory.h
@@ -29,6 +30,8 @@ include_rules = [
   "+components/wifi",
   "+content/public/child",
   "+content/public/utility",
+  "+device/vr/buildflags",
+  "+device/vr/public",
   "+extensions/common",
   "+extensions/buildflags",
   "+media",

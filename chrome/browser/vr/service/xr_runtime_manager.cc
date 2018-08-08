@@ -27,6 +27,12 @@
 #include "device/vr/android/gvr/gvr_device_provider.h"
 #endif
 
+#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+// We are hosting Oculus and OpenVR in a separate process
+#include "chrome/browser/vr/service/isolated_device_provider.h"
+#else
+// We are hosting Oculus and OpenVR in the browser process if enabled.
+
 #if BUILDFLAG(ENABLE_OPENVR)
 #include "device/vr/openvr/openvr_device_provider.h"
 #endif
@@ -34,6 +40,8 @@
 #if BUILDFLAG(ENABLE_OCULUS_VR)
 #include "device/vr/oculus/oculus_device_provider.h"
 #endif
+
+#endif  // BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
 
 namespace vr {
 
@@ -56,6 +64,9 @@ XRRuntimeManager* XRRuntimeManager::GetInstance() {
     providers.emplace_back(std::make_unique<device::GvrDeviceProvider>());
 #endif
 
+#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+    providers.emplace_back(std::make_unique<vr::IsolatedVRDeviceProvider>());
+#else
 #if BUILDFLAG(ENABLE_OPENVR)
     if (base::FeatureList::IsEnabled(features::kOpenVR))
       providers.emplace_back(std::make_unique<device::OpenVRDeviceProvider>());
@@ -70,6 +81,7 @@ XRRuntimeManager* XRRuntimeManager::GetInstance() {
       providers.emplace_back(
           std::make_unique<device::OculusVRDeviceProvider>());
 #endif
+#endif  // ENABLE_ISOLATED_XR_SERVICE
 
     if (base::FeatureList::IsEnabled(features::kWebXrOrientationSensorDevice)) {
       content::ServiceManagerConnection* connection =
@@ -90,19 +102,19 @@ XRRuntimeManager* XRRuntimeManager::GetInstance() {
 
 BrowserXRRuntime* XRRuntimeManager::GetImmersiveRuntime() {
 #if defined(OS_ANDROID)
-  auto* gvr = GetRuntime(device::VRDeviceId::GVR_DEVICE_ID);
+  auto* gvr = GetRuntime(device::mojom::XRDeviceId::GVR_DEVICE_ID);
   if (gvr)
     return gvr;
 #endif
 
 #if BUILDFLAG(ENABLE_OPENVR)
-  auto* openvr = GetRuntime(device::VRDeviceId::OPENVR_DEVICE_ID);
+  auto* openvr = GetRuntime(device::mojom::XRDeviceId::OPENVR_DEVICE_ID);
   if (openvr)
     return openvr;
 #endif
 
 #if BUILDFLAG(ENABLE_OCULUS_VR)
-  auto* oculus = GetRuntime(device::VRDeviceId::OCULUS_DEVICE_ID);
+  auto* oculus = GetRuntime(device::mojom::XRDeviceId::OCULUS_DEVICE_ID);
   if (oculus)
     return oculus;
 #endif
@@ -110,8 +122,8 @@ BrowserXRRuntime* XRRuntimeManager::GetImmersiveRuntime() {
   return nullptr;
 }
 
-BrowserXRRuntime* XRRuntimeManager::GetRuntime(device::VRDeviceId id) {
-  auto it = runtimes_.find(static_cast<unsigned int>(id));
+BrowserXRRuntime* XRRuntimeManager::GetRuntime(device::mojom::XRDeviceId id) {
+  auto it = runtimes_.find(id);
   if (it == runtimes_.end())
     return nullptr;
 
@@ -124,12 +136,12 @@ BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
   if (options->immersive && !options->provide_passthrough_camera) {
     return GetImmersiveRuntime();
   } else if (options->provide_passthrough_camera && !options->immersive) {
-    return GetRuntime(device::VRDeviceId::ARCORE_DEVICE_ID);
+    return GetRuntime(device::mojom::XRDeviceId::ARCORE_DEVICE_ID);
   } else if (!options->provide_passthrough_camera && !options->immersive) {
     // Non immersive session.
     // Try the orientation provider if it exists.
     auto* orientation_runtime =
-        GetRuntime(device::VRDeviceId::ORIENTATION_DEVICE_ID);
+        GetRuntime(device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID);
     if (orientation_runtime) {
       return orientation_runtime;
     }
@@ -180,7 +192,7 @@ void XRRuntimeManager::RemoveService(VRServiceImpl* service) {
   }
 }
 
-void XRRuntimeManager::AddRuntime(unsigned int id,
+void XRRuntimeManager::AddRuntime(device::mojom::XRDeviceId id,
                                   device::mojom::VRDisplayInfoPtr info,
                                   device::mojom::XRRuntimePtr runtime) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -192,7 +204,7 @@ void XRRuntimeManager::AddRuntime(unsigned int id,
     service->ConnectRuntime(runtimes_[id].get());
 }
 
-void XRRuntimeManager::RemoveRuntime(unsigned int id) {
+void XRRuntimeManager::RemoveRuntime(device::mojom::XRDeviceId id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto it = runtimes_.find(id);
   DCHECK(it != runtimes_.end());
@@ -207,7 +219,7 @@ void XRRuntimeManager::RemoveRuntime(unsigned int id) {
 }
 
 void XRRuntimeManager::RecordVrStartupHistograms() {
-#if BUILDFLAG(ENABLE_OPENVR)
+#if BUILDFLAG(ENABLE_OPENVR) && !BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
   device::OpenVRDeviceProvider::RecordRuntimeAvailability();
 #endif
 }
@@ -253,7 +265,8 @@ device::mojom::XRRuntime* XRRuntimeManager::GetRuntimeForTest(unsigned int id) {
   if (id == 0)
     return nullptr;
 
-  DeviceRuntimeMap::iterator iter = runtimes_.find(id);
+  DeviceRuntimeMap::iterator iter =
+      runtimes_.find(static_cast<device::mojom::XRDeviceId>(id));
   if (iter == runtimes_.end())
     return nullptr;
 

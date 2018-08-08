@@ -93,12 +93,12 @@ mojom::VREyeParametersPtr CreateEyeParamater(
 }
 
 mojom::VRDisplayInfoPtr CreateVRDisplayInfo(gvr::GvrApi* gvr_api,
-                                            uint32_t device_id) {
+                                            mojom::XRDeviceId device_id) {
   TRACE_EVENT0("input", "GvrDelegate::CreateVRDisplayInfo");
 
   mojom::VRDisplayInfoPtr device = mojom::VRDisplayInfo::New();
 
-  device->index = device_id;
+  device->id = device_id;
 
   device->capabilities = mojom::VRDisplayCapabilities::New();
   device->capabilities->hasPosition = false;
@@ -143,7 +143,7 @@ std::unique_ptr<GvrDevice> GvrDevice::Create() {
 }
 
 GvrDevice::GvrDevice()
-    : VRDeviceBase(VRDeviceId::GVR_DEVICE_ID),
+    : VRDeviceBase(mojom::XRDeviceId::GVR_DEVICE_ID),
       exclusive_controller_binding_(this),
       weak_ptr_factory_(this) {
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();

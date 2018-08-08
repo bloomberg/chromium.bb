@@ -250,6 +250,7 @@
 #include "content/public/common/web_preferences.h"
 #include "device/usb/public/mojom/chooser_service.mojom.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
+#include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/google_api_keys.h"
@@ -513,6 +514,10 @@
 
 #if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE)
 #include "services/content/simple_browser/public/mojom/constants.mojom.h"
+#endif
+
+#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #endif
 
 using base::FileDescriptor;
@@ -3626,6 +3631,11 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
 
 void ChromeContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
+#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+  (*services)[device::mojom::kVrIsolatedServiceName] = base::BindRepeating(
+      &l10n_util::GetStringUTF16, IDS_ISOLATED_XR_PROCESS_NAME);
+#endif
+
 #if BUILDFLAG(ENABLE_PRINTING)
   (*services)[printing::mojom::kServiceName] =
       base::BindRepeating(&l10n_util::GetStringUTF16,

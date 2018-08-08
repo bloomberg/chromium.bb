@@ -59,6 +59,7 @@ class VR_EXPORT XRRuntimeManager {
   // Used by tests to supply providers.
   explicit XRRuntimeManager(ProviderList providers);
   // Used by tests to check on device state.
+  // TODO: Use XRDeviceId as appropriate.
   device::mojom::XRRuntime* GetRuntimeForTest(unsigned int id);
 
   size_t NumberOfConnectedServices();
@@ -68,19 +69,19 @@ class VR_EXPORT XRRuntimeManager {
   void OnProviderInitialized();
   bool AreAllProvidersInitialized();
 
-  void AddRuntime(unsigned int id,
+  void AddRuntime(device::mojom::XRDeviceId id,
                   device::mojom::VRDisplayInfoPtr info,
                   device::mojom::XRRuntimePtr runtime);
-  void RemoveRuntime(unsigned int id);
+  void RemoveRuntime(device::mojom::XRDeviceId id);
 
-  BrowserXRRuntime* GetRuntime(device::VRDeviceId id);
+  BrowserXRRuntime* GetRuntime(device::mojom::XRDeviceId id);
 
   ProviderList providers_;
 
   // VRDevices are owned by their providers, each correspond to a
   // BrowserXRRuntime that is owned by XRRuntimeManager.
   using DeviceRuntimeMap = base::small_map<
-      std::map<unsigned int, std::unique_ptr<BrowserXRRuntime>>>;
+      std::map<device::mojom::XRDeviceId, std::unique_ptr<BrowserXRRuntime>>>;
   DeviceRuntimeMap runtimes_;
 
   bool providers_initialized_ = false;

@@ -22,7 +22,7 @@ class VRDisplayImpl;
 // TODO(mthiesse, crbug.com/769373): Remove DEVICE_VR_EXPORT.
 class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
  public:
-  explicit VRDeviceBase(VRDeviceId id);
+  explicit VRDeviceBase(mojom::XRDeviceId id);
   ~VRDeviceBase() override;
 
   // VRDevice Implementation
@@ -36,7 +36,7 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
   virtual void RequestHitTest(
       mojom::XRRayPtr ray,
       mojom::XREnviromentIntegrationProvider::RequestHitTestCallback callback);
-  unsigned int GetId() const;
+  device::mojom::XRDeviceId GetId() const;
 
   bool HasExclusiveSession();
   void EndMagicWindowSession(VRDisplayImpl* session);
@@ -91,7 +91,7 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
 
   bool presenting_ = false;
 
-  unsigned int id_;
+  device::mojom::XRDeviceId id_;
   bool magic_window_enabled_ = true;
 
   mojo::Binding<mojom::XRRuntime> runtime_binding_;

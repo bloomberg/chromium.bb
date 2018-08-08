@@ -48,10 +48,10 @@ mojom::VREyeParametersPtr GetEyeDetails(ovrSession session,
   return eye_parameters;
 }
 
-mojom::VRDisplayInfoPtr CreateVRDisplayInfo(unsigned int id,
+mojom::VRDisplayInfoPtr CreateVRDisplayInfo(mojom::XRDeviceId id,
                                             ovrSession session) {
   mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
-  display_info->index = id;
+  display_info->id = id;
   display_info->displayName = std::string("Oculus");
   display_info->capabilities = mojom::VRDisplayCapabilities::New();
   display_info->capabilities->hasPosition = true;
@@ -84,7 +84,7 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(unsigned int id,
 }  // namespace
 
 OculusDevice::OculusDevice()
-    : VRDeviceBase(VRDeviceId::OCULUS_DEVICE_ID),
+    : VRDeviceBase(mojom::XRDeviceId::OCULUS_DEVICE_ID),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       exclusive_controller_binding_(this),
       gamepad_provider_factory_binding_(this),

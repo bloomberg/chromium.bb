@@ -26,7 +26,7 @@ void CopyToUString(UChar* dest, size_t dest_length, base::string16 src) {
 }  // namespace
 
 GvrGamepadDataFetcher::Factory::Factory(GvrGamepadDataProvider* data_provider,
-                                        unsigned int display_id)
+                                        mojom::XRDeviceId display_id)
     : data_provider_(data_provider), display_id_(display_id) {
   DVLOG(1) << __FUNCTION__ << "=" << this;
 }
@@ -46,7 +46,7 @@ GamepadSource GvrGamepadDataFetcher::Factory::source() {
 
 GvrGamepadDataFetcher::GvrGamepadDataFetcher(
     GvrGamepadDataProvider* data_provider,
-    unsigned int display_id)
+    mojom::XRDeviceId display_id)
     : display_id_(display_id) {
   // Called on UI thread.
   DVLOG(1) << __FUNCTION__ << "=" << this;
@@ -93,7 +93,7 @@ void GvrGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
     pad.buttons_length = 1;
     pad.axes_length = 2;
 
-    pad.display_id = display_id_;
+    pad.display_id = static_cast<unsigned int>(display_id_);
 
     pad.is_xr = true;
 

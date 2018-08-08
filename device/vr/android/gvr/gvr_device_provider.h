@@ -21,10 +21,10 @@ class DEVICE_VR_EXPORT GvrDeviceProvider : public VRDeviceProvider {
   ~GvrDeviceProvider() override;
 
   void Initialize(
-      base::RepeatingCallback<void(unsigned int,
+      base::RepeatingCallback<void(mojom::XRDeviceId,
                                    mojom::VRDisplayInfoPtr,
                                    mojom::XRRuntimePtr)> add_device_callback,
-      base::RepeatingCallback<void(unsigned int)> remove_device_callback,
+      base::RepeatingCallback<void(mojom::XRDeviceId)> remove_device_callback,
       base::OnceClosure initialization_complete) override;
 
   bool Initialized() override;

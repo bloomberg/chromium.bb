@@ -37,10 +37,11 @@ OpenVRDeviceProvider::~OpenVRDeviceProvider() {
 }
 
 void OpenVRDeviceProvider::Initialize(
-    base::RepeatingCallback<void(unsigned int,
+    base::RepeatingCallback<void(device::mojom::XRDeviceId,
                                  mojom::VRDisplayInfoPtr,
                                  mojom::XRRuntimePtr)> add_device_callback,
-    base::RepeatingCallback<void(unsigned int)> remove_device_callback,
+    base::RepeatingCallback<void(device::mojom::XRDeviceId)>
+        remove_device_callback,
     base::OnceClosure initialization_complete) {
   CreateDevice();
   if (device_) {
@@ -62,8 +63,9 @@ void OpenVRDeviceProvider::CreateDevice() {
   device_ = std::make_unique<OpenVRDevice>();
   if (device_->IsInitialized()) {
     GamepadDataFetcherManager::GetInstance()->AddFactory(
-        new IsolatedGamepadDataFetcher::Factory(VRDeviceId::OPENVR_DEVICE_ID,
-                                                device_->BindGamepadFactory()));
+        new IsolatedGamepadDataFetcher::Factory(
+            device::mojom::XRDeviceId::OPENVR_DEVICE_ID,
+            device_->BindGamepadFactory()));
   } else {
     device_ = nullptr;
   }

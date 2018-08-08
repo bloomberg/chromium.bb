@@ -247,6 +247,8 @@ component("vr_common") {
     "sample_queue.h",
     "service/browser_xr_runtime.cc",
     "service/browser_xr_runtime.h",
+    "service/isolated_device_provider.cc",
+    "service/isolated_device_provider.h",
     "service/vr_service_impl.cc",
     "service/vr_service_impl.h",
     "service/xr_device_impl.cc",

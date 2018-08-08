@@ -6,6 +6,7 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/sysroot.gni")
 import("//chrome/common/features.gni")
+import("//device/vr/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//services/service_manager/public/service_manifest.gni")
@@ -38,6 +39,7 @@ static_library("utility") {
     "//content/public/child",
     "//content/public/common",
     "//content/public/utility",
+    "//device/vr/buildflags",
     "//extensions/buildflags",
     "//ipc",
     "//media",
@@ -202,6 +204,13 @@ static_library("utility") {
 
   if (is_android || enable_extensions) {
     deps += [ "//chrome/services/media_gallery_util:lib" ]
+  }
+
+  if (enable_isolated_xr_service) {
+    deps += [
+      "//chrome/services/isolated_xr_device:lib",
+      "//device/vr/public/mojom",
+    ]
   }
 
   if (enable_simple_browser_service) {

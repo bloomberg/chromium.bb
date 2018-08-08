@@ -6,8 +6,8 @@
 
 namespace device {
 
-FakeVRDevice::FakeVRDevice(unsigned int id)
-    : VRDeviceBase(static_cast<VRDeviceId>(id)), controller_binding_(this) {
+FakeVRDevice::FakeVRDevice(mojom::XRDeviceId id)
+    : VRDeviceBase(id), controller_binding_(this) {
   SetVRDisplayInfo(InitBasicDevice());
 }
 
@@ -15,7 +15,7 @@ FakeVRDevice::~FakeVRDevice() {}
 
 mojom::VRDisplayInfoPtr FakeVRDevice::InitBasicDevice() {
   mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
-  display_info->index = GetId();
+  display_info->id = GetId();
   display_info->displayName = "FakeVRDevice";
 
   display_info->capabilities = mojom::VRDisplayCapabilities::New();

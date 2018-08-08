@@ -24,11 +24,11 @@ void FakeVRServiceClient::OnDisplayConnected(
   display_clients_.push_back(std::move(display_client));
 }
 
-void FakeVRServiceClient::SetLastDeviceId(unsigned int id) {
+void FakeVRServiceClient::SetLastDeviceId(mojom::XRDeviceId id) {
   last_device_id_ = id;
 }
 
-bool FakeVRServiceClient::CheckDeviceId(unsigned int id) {
+bool FakeVRServiceClient::CheckDeviceId(mojom::XRDeviceId id) {
   return id == last_device_id_;
 }
 

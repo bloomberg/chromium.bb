@@ -18,9 +18,10 @@ namespace device {
 
 class OculusRenderLoop;
 
-class OculusDevice : public VRDeviceBase,
-                     public mojom::XRSessionController,
-                     public mojom::IsolatedXRGamepadProviderFactory {
+class DEVICE_VR_EXPORT OculusDevice
+    : public VRDeviceBase,
+      public mojom::XRSessionController,
+      public mojom::IsolatedXRGamepadProviderFactory {
  public:
   explicit OculusDevice();
   ~OculusDevice() override;

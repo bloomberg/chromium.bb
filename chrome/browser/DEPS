@@ -29,6 +29,7 @@ include_rules = [
   "+device/gamepad/public/cpp",
   "+device/usb",
   "+device/vr/buildflags/buildflags.h",
+  "+device/vr/public",
   "+extensions/browser",
   "+extensions/common",
   "+extensions/components/javascript_dialog_extensions_client",

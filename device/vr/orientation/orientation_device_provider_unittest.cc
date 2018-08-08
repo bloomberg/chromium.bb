@@ -83,22 +83,26 @@ class VROrientationDeviceProviderTest : public testing::Test {
     return init_params;
   }
 
-  base::RepeatingCallback<
-      void(unsigned int, mojom::VRDisplayInfoPtr, mojom::XRRuntimePtr device)>
+  base::RepeatingCallback<void(device::mojom::XRDeviceId,
+                               mojom::VRDisplayInfoPtr,
+                               mojom::XRRuntimePtr device)>
   DeviceAndIdCallbackFailIfCalled() {
-    return base::BindRepeating([](unsigned int id, mojom::VRDisplayInfoPtr,
+    return base::BindRepeating([](device::mojom::XRDeviceId id,
+                                  mojom::VRDisplayInfoPtr,
                                   mojom::XRRuntimePtr device) { FAIL(); });
   };
 
-  base::RepeatingCallback<void(unsigned int)> DeviceIdCallbackFailIfCalled() {
-    return base::BindRepeating([](unsigned int id) { FAIL(); });
+  base::RepeatingCallback<void(device::mojom::XRDeviceId)>
+  DeviceIdCallbackFailIfCalled() {
+    return base::BindRepeating([](device::mojom::XRDeviceId id) { FAIL(); });
   };
 
-  base::RepeatingCallback<
-      void(unsigned int, mojom::VRDisplayInfoPtr, mojom::XRRuntimePtr device)>
+  base::RepeatingCallback<void(device::mojom::XRDeviceId,
+                               mojom::VRDisplayInfoPtr,
+                               mojom::XRRuntimePtr device)>
   DeviceAndIdCallbackMustBeCalled(base::RunLoop* loop) {
     return base::BindRepeating(
-        [](base::OnceClosure quit_closure, unsigned int id,
+        [](base::OnceClosure quit_closure, device::mojom::XRDeviceId id,
            mojom::VRDisplayInfoPtr info, mojom::XRRuntimePtr device) {
           ASSERT_TRUE(device);
           ASSERT_TRUE(info);
@@ -107,10 +111,10 @@ class VROrientationDeviceProviderTest : public testing::Test {
         loop->QuitClosure());
   };
 
-  base::RepeatingCallback<void(unsigned int)> DeviceIdCallbackMustBeCalled(
-      base::RunLoop* loop) {
+  base::RepeatingCallback<void(device::mojom::XRDeviceId)>
+  DeviceIdCallbackMustBeCalled(base::RunLoop* loop) {
     return base::BindRepeating(
-        [](base::OnceClosure quit_closure, unsigned int id) {
+        [](base::OnceClosure quit_closure, device::mojom::XRDeviceId id) {
           std::move(quit_closure).Run();
         },
         loop->QuitClosure());

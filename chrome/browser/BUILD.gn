@@ -4293,6 +4293,10 @@ jumbo_split_static_library("browser") {
     deps += [ "//chrome/browser/vr:vr_common" ]
   }
 
+  if (enable_isolated_xr_service) {
+    deps += [ "//device/vr/public/mojom" ]
+  }
+
   if (enable_wayland_server) {
     deps += [
       "//components/exo",

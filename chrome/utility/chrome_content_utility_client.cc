@@ -22,6 +22,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/simple_connection_filter.h"
 #include "content/public/utility/utility_thread.h"
+#include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/service_manager/embedder/embedded_service_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -41,6 +42,10 @@
 #if defined(OS_WIN)
 #include "chrome/services/util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/util_win/util_win_service.h"
+#endif
+
+#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+#include "chrome/services/isolated_xr_device/xr_device_service.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -184,6 +189,13 @@ void ChromeContentUtilityClient::RegisterServices(
 #endif
     return;
   }
+
+#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+  service_manager::EmbeddedServiceInfo service_info;
+  service_info.factory =
+      base::BindRepeating(&device::XrDeviceService::CreateXrDeviceService);
+  services->emplace(device::mojom::kVrIsolatedServiceName, service_info);
+#endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
   service_manager::EmbeddedServiceInfo pdf_compositor_info;

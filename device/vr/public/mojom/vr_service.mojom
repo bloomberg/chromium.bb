@@ -16,6 +16,19 @@ import "ui/gfx/mojo/transform.mojom";
 // WebXR interfaces
 //
 
+// TODO: Use EnableIf to only define values on platforms that have
+// implementations.
+enum XRDeviceId {
+  LAYOUT_TEST_DEVICE_ID = 0, // Fake device used by layout tests.
+  GVR_DEVICE_ID = 1,
+  OPENVR_DEVICE_ID = 2,
+  OCULUS_DEVICE_ID = 3,
+  ARCORE_DEVICE_ID = 4,
+  ORIENTATION_DEVICE_ID = 5,
+  FAKE_DEVICE_ID = 6, // Fake device used by unit tests.
+};
+
+
 enum XRHandedness {
   NONE = 0,
   LEFT = 1,
@@ -166,7 +179,7 @@ struct VRStageParameters {
 };
 
 struct VRDisplayInfo {
-  uint32 index;
+  XRDeviceId id;
   string displayName;
   VRDisplayCapabilities capabilities;
   VRStageParameters? stageParameters;
