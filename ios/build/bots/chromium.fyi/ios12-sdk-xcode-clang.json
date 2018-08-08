@@ -25,7 +25,6 @@
     "all"
   ],
   "configuration": "Debug",
-  "sdk": "iphonesimulator12.0",
   "tests": [
   ]
 }

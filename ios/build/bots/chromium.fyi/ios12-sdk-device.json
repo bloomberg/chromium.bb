@@ -20,7 +20,6 @@
   ],
   "configuration": "Release",
   "explain": true,
-  "sdk": "iphoneos12.0",
   "tests": [
   ]
 }

@@ -4,7 +4,7 @@
     "on iPad, iPhone, @3x, and @2x on main and CQ ios12-beta-simulator.",
     "Note: Xcode 10.3 requires Mac OS 10.13.X or higher, hence 'host os'."
   ],
-  "xcode build version": "10l213o",
+  "xcode build version": "10L221o",
   "gn_args": [
     "additional_target_cpus=[\"x86\"]",
     "goma_dir=\"$(goma_dir)\"",
@@ -19,121 +19,196 @@
     "all"
   ],
   "configuration": "Debug",
-  "sdk": "iphonesimulator12.0",
   "tests": [
     {
       "include": "eg_cq_tests.json",
       "device type": "iPhone X",
       "os": "12.0",
-      "host os": "Mac-10.13.5"
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ]
     },
     {
       "include": "eg_tests.json",
       "device type": "iPhone X",
       "os": "12.0",
-      "host os": "Mac-10.13.5"
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ]
     },
     {
       "include": "eg_tests.json",
       "device type": "iPad Air 2",
       "os": "12.0",
-      "host os": "Mac-10.13.5"
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ]
     },
     {
       "include": "eg_tests.json",
       "device type": "iPhone 7",
       "os": "12.0",
-      "host os": "Mac-10.13.5"
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ]
     },
     {
       "include": "eg_tests.json",
       "device type": "iPhone 6s Plus",
       "os": "10.3",
-      "host os": "Mac-10.13.5"
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ]
     },
     {
       "include": "eg_tests.json",
       "device type": "iPhone 7",
       "os": "11.4",
-      "host os": "Mac-10.13.5"
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ]
     },
     {
       "include": "eg_tests.json",
       "device type": "iPad Air 2",
       "os": "11.4",
-      "host os": "Mac-10.13.5"
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ]
     },
     {
       "include": "eg_tests.json",
       "device type": "iPad Air 2",
       "os": "10.3",
-      "host os": "Mac-10.13.5"
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ]
     },
     {
       "include": "eg_tests.json",
       "device type": "iPhone X",
       "os": "11.4",
-      "host os": "Mac-10.13.5"
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ]
     },
     {
       "include": "eg_cq_tests.json",
       "device type": "iPad Air 2",
       "os": "10.3",
-      "host os": "Mac-10.13.5"
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ]
     },
     {
       "include": "eg_cq_tests.json",
       "device type": "iPhone X",
       "os": "11.4",
-      "host os": "Mac-10.13.5"
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ]
     },
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone 6s Plus",
       "os": "12.0",
-      "host os": "Mac-10.13.5"
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ]
     },
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone 6s",
       "os": "12.0",
-      "host os": "Mac-10.13.5"
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ]
     },
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPad Air 2",
       "os": "12.0",
-      "host os": "Mac-10.13.5"
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ]
     },
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPad Air 2",
       "os": "11.4",
-      "host os": "Mac-10.13.5"
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ]
     },
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPad Air 2",
       "os": "10.3",
-      "host os": "Mac-10.13.5"
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ]
     },
     {
       "include": "common_tests.json",
       "device type": "iPhone 6s",
       "os": "11.4",
-      "host os": "Mac-10.13.5"
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ]
     },
     {
       "include": "eg_cq_tests.json",
       "device type": "iPhone 6s",
       "os": "12.0",
-      "host os": "Mac-10.13.5"
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ]
     },
     {
       "include": "eg_cq_tests.json",
       "device type": "iPhone 6s",
       "os": "11.4",
-      "host os": "Mac-10.13.5"
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ]
     }
   ]
 }
