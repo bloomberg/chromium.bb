@@ -148,7 +148,7 @@
 
     // Visual Viewport API
     // https://github.com/WICG/ViewportAPI
-    [RuntimeEnabled=VisualViewportAPI, Replaceable, SameObject] readonly attribute VisualViewport visualViewport;
+    [Replaceable, SameObject] readonly attribute VisualViewport visualViewport;
 
     // client
     [Affects=Nothing, Replaceable] readonly attribute long screenX;

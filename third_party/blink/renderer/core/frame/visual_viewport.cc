@@ -183,17 +183,11 @@ void VisualViewport::UpdateStyleAndLayoutIgnorePendingStylesheets() const {
 }
 
 void VisualViewport::EnqueueScrollEvent() {
-  if (!RuntimeEnabledFeatures::VisualViewportAPIEnabled())
-    return;
-
   if (Document* document = MainFrame()->GetDocument())
     document->EnqueueVisualViewportScrollEvent();
 }
 
 void VisualViewport::EnqueueResizeEvent() {
-  if (!RuntimeEnabledFeatures::VisualViewportAPIEnabled())
-    return;
-
   if (Document* document = MainFrame()->GetDocument())
     document->EnqueueVisualViewportResizeEvent();
 }
