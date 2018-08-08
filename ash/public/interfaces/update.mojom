@@ -5,10 +5,17 @@
 module ash.mojom;
 
 // Urgency of a pending software update. Sets the system tray update icon color.
+// These correspond to values in UpgradeDetector's
+// UpgradeNotificationAnnoyanceLevel enum. Their use is platform-specific. On
+// Chrome OS, LOW severity is issued when an update is detected. ELEVATED
+// follows after two days, and HIGH two days after that. These time deltas may
+// be overridden by administrators via the RelaunchNotificationPeriod policy
+// setting.
 // TODO(jamescook): UpgradeDetector::UpgradeNotificationAnnoyanceLevel could be
 // replaced with this if this moves into a component shared with non-ash chrome.
 enum UpdateSeverity {
   NONE,
+  VERY_LOW,
   LOW,
   ELEVATED,
   HIGH,

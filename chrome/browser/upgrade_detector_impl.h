@@ -5,8 +5,7 @@
 #ifndef CHROME_BROWSER_UPGRADE_DETECTOR_IMPL_H_
 #define CHROME_BROWSER_UPGRADE_DETECTOR_IMPL_H_
 
-#include <utility>
-#include <vector>
+#include <array>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -62,14 +61,27 @@ class UpgradeDetectorImpl : public UpgradeDetector,
   base::TimeDelta GetThresholdForLevel(UpgradeNotificationAnnoyanceLevel level);
 
  private:
+  // The index of a level in stages_.
+  enum LevelIndex {
+    kStagesIndexHigh = 0,
+    kStagesIndexElevated = 1,
+    kStagesIndexLow = 2,
+    kStagesIndexVeryLow = 3,
+    kNumStages
+  };
+
   friend class base::NoDestructor<UpgradeDetectorImpl>;
 
   // A callback that receives the results of |DetectUpgradeTask|.
   using UpgradeDetectedCallback = base::OnceCallback<void(UpgradeAvailable)>;
 
-  using DeltaAndStage =
-      std::pair<base::TimeDelta, UpgradeNotificationAnnoyanceLevel>;
-  using Stages = std::vector<DeltaAndStage>;
+  // Returns the index of |level| in |stages_|.
+  static LevelIndex AnnoyanceLevelToStagesIndex(
+      UpgradeNotificationAnnoyanceLevel level);
+
+  // Returns the annoyance level of |index| in |stages_|.
+  static UpgradeNotificationAnnoyanceLevel StageIndexToAnnoyanceLevel(
+      size_t index);
 
   // UpgradeDetector:
   void OnRelaunchNotificationPeriodPrefChanged() override;
@@ -133,9 +145,7 @@ class UpgradeDetectorImpl : public UpgradeDetector,
 
   // The various deltas from detection time to the different annoyance levels;
   // lazy-initialized by InitializeThresholds.
-  base::TimeDelta high_threshold_;
-  base::TimeDelta elevated_threshold_;
-  Stages stages_;
+  std::array<base::TimeDelta, kNumStages> stages_;
 
   // The date the binaries were built.
   base::Time build_date_;

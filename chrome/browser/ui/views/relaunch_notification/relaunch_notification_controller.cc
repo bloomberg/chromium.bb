@@ -141,8 +141,9 @@ void RelaunchNotificationController::OnUpgradeRecommended() {
 
   switch (current_level) {
     case UpgradeDetector::UPGRADE_ANNOYANCE_NONE:
-      // While it's unexpected that the level could move back down to none, it's
-      // not a challenge to do the right thing.
+    case UpgradeDetector::UPGRADE_ANNOYANCE_VERY_LOW:
+      // While it's unexpected that the level could move back down, it's not a
+      // challenge to do the right thing.
       CloseRelaunchNotification();
       break;
     case UpgradeDetector::UPGRADE_ANNOYANCE_LOW:
@@ -260,8 +261,10 @@ void RelaunchNotificationController::ShowRelaunchNotification(
 void RelaunchNotificationController::CloseRelaunchNotification() {
   DCHECK_NE(last_notification_style_, NotificationStyle::kNone);
 
-  // Nothing needs to be closed if the annoyance level is none or critical.
+  // Nothing needs to be closed if the annoyance level is none, very low, or
+  // critical.
   if (last_level_ == UpgradeDetector::UPGRADE_ANNOYANCE_NONE ||
+      last_level_ == UpgradeDetector::UPGRADE_ANNOYANCE_VERY_LOW ||
       last_level_ == UpgradeDetector::UPGRADE_ANNOYANCE_CRITICAL) {
     return;
   }

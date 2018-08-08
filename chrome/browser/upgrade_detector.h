@@ -43,12 +43,9 @@ class UpgradeDetector {
     UPGRADE_ANNOYANCE_HIGH = 3,      // Red.
     // UPGRADE_ANNOYANCE_SEVERE = 4,  // Removed in 2018-03 for lack of use.
     UPGRADE_ANNOYANCE_CRITICAL = 5,  // Red exclamation mark.
-    UPGRADE_ANNOYANCE_LAST = UPGRADE_ANNOYANCE_CRITICAL  // The last value
+    UPGRADE_ANNOYANCE_VERY_LOW = 6,  // Green early warning for canary and dev.
+    UPGRADE_ANNOYANCE_MAX_VALUE = UPGRADE_ANNOYANCE_VERY_LOW
   };
-
-  // The number of UpgradeNotificationAnnoyanceLevel enum values.
-  static constexpr int kUpgradeNotificationAnnoyanceLevelCount =
-      UPGRADE_ANNOYANCE_LAST + 1;
 
   // Returns the singleton implementation instance.
   static UpgradeDetector* GetInstance();
@@ -97,9 +94,9 @@ class UpgradeDetector {
   bool is_rollback() const { return is_rollback_; }
 #endif  // defined(OS_CHROMEOS)
 
-  // Retrieves the right icon based on the degree of severity (see
-  // UpgradeNotificationAnnoyanceLevel, each level has an an accompanying icon
-  // to go with it) to display within the app menu.
+  // Retrieves the right icon based on the degree of severity (each
+  // UpgradeNotificationAnnoyanceLevel has an an accompanying icon) to display
+  // within the app menu.
   gfx::Image GetIcon();
 
   UpgradeNotificationAnnoyanceLevel upgrade_notification_stage() const {

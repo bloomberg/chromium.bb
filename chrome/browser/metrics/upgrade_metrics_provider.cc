@@ -14,8 +14,7 @@ UpgradeMetricsProvider::~UpgradeMetricsProvider() {}
 void UpgradeMetricsProvider::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
   UpgradeDetector* upgrade_detector = UpgradeDetector::GetInstance();
-  UMA_HISTOGRAM_ENUMERATION(
-      "UpgradeDetector.NotificationStage",
-      upgrade_detector->upgrade_notification_stage(),
-      UpgradeDetector::kUpgradeNotificationAnnoyanceLevelCount);
+  UMA_HISTOGRAM_ENUMERATION("UpgradeDetector.NotificationStage",
+                            upgrade_detector->upgrade_notification_stage(),
+                            UpgradeDetector::UPGRADE_ANNOYANCE_MAX_VALUE + 1);
 }

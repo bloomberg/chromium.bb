@@ -44,6 +44,7 @@ gfx::Image UpgradeDetector::GetIcon() {
   switch (upgrade_notification_stage_) {
     case UPGRADE_ANNOYANCE_NONE:
       return gfx::Image();
+    case UPGRADE_ANNOYANCE_VERY_LOW:
     case UPGRADE_ANNOYANCE_LOW:
       color = gfx::kGoogleGreen700;
       break;
@@ -55,7 +56,8 @@ gfx::Image UpgradeDetector::GetIcon() {
       color = gfx::kGoogleRed700;
       break;
   }
-  DCHECK_NE(gfx::kPlaceholderColor, color);
+  DCHECK_NE(gfx::kPlaceholderColor, color)
+      << static_cast<int>(upgrade_notification_stage_);
 
   return gfx::Image(gfx::CreateVectorIcon(kBrowserToolsUpdateIcon, color));
 }

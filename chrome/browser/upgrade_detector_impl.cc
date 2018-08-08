@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/build_time.h"
@@ -28,7 +29,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_brand.h"
-#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/network_time/network_time_tracker.h"
@@ -47,6 +47,8 @@
 namespace {
 
 // The default thresholds for reaching annoyance levels.
+constexpr base::TimeDelta kDefaultVeryLowThreshold =
+    base::TimeDelta::FromHours(1);
 constexpr base::TimeDelta kDefaultLowThreshold = base::TimeDelta::FromDays(2);
 constexpr base::TimeDelta kDefaultElevatedThreshold =
     base::TimeDelta::FromDays(4);
@@ -100,16 +102,6 @@ base::TimeDelta GetCheckForUpgradeDelay() {
     return base::TimeDelta::FromSeconds(seconds);
 
   return kCheckForUpgrade;
-}
-
-// Return true if the browser is updating on the dev or canary channels.
-bool IsUnstableChannel() {
-  // Unbranded (Chromium) builds are on the UNKNOWN channel, so check explicitly
-  // for the Google Chrome channels that are considered "unstable". This ensures
-  // that Chromium builds get the default behavior.
-  const version_info::Channel channel = chrome::GetChannel();
-  return channel == version_info::Channel::DEV ||
-         channel == version_info::Channel::CANARY;
 }
 
 // Gets the currently installed version. On Windows, if |critical_update| is not
@@ -324,84 +316,51 @@ void UpgradeDetectorImpl::StartUpgradeNotificationTimer() {
 
 void UpgradeDetectorImpl::InitializeThresholds() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!stages_.empty())
+  if (!stages_[0].is_zero())
     return;
 
   DoInitializeThresholds();
+
 #if DCHECK_IS_ON()
-  // |stages_| must have at least one element, and must be sorted in decreasing
-  // order of time.
-  DCHECK(!stages_.empty());
-  for (auto scan = stages_.begin() + 1; scan != stages_.end(); ++scan)
-    DCHECK_GT((scan - 1)->first, scan->first);
-
-  // elevated_threshold_ must be greater than low_threshold (the last item in)
-  // |stages_|.
-  DCHECK_GT(elevated_threshold_, stages_.back().first);
-
-  // high_threshold_ must be greater than elevated_threshold_.
-  DCHECK_GT(high_threshold_, elevated_threshold_);
-
-  // If elevated_threshold_ and high_threshold_ are present in |stages_|, they
-  // must be equal.
-  if (stages_.size() != 1) {
-    DCHECK(!IsUnstableChannel());
-    DCHECK_EQ(stages_.size(), 3U);
-    DCHECK_EQ(stages_[1].first, elevated_threshold_);
-    DCHECK_EQ(stages_[0].first, high_threshold_);
-  } else {
-    DCHECK(IsUnstableChannel());
+  // |stages_| must be sorted in decreasing order of time.
+  for (std::array<base::TimeDelta, kNumStages>::iterator scan =
+           stages_.begin() + 1;
+       scan != stages_.end(); ++scan) {
+    DCHECK_GE(*(scan - 1), *scan);
   }
 #endif  // DCHECK_IS_ON()
 }
 
 void UpgradeDetectorImpl::DoInitializeThresholds() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(stages_.empty());
-
-  base::TimeDelta low_threshold;
+  DCHECK(stages_[0].is_zero());
 
   // Use a custom notification period for the "high" level, dividing it evenly
   // to set the "low" and "elevated" levels. Such overrides trump all else.
   const base::TimeDelta custom_high = GetRelaunchNotificationPeriod();
   if (!custom_high.is_zero()) {
-    low_threshold = custom_high / 3;
-    elevated_threshold_ = custom_high - low_threshold;
-    high_threshold_ = custom_high;
-    // Stages must be sorted by decreasing TimeDelta.
-    stages_.emplace_back(high_threshold_, UPGRADE_ANNOYANCE_HIGH);
-    stages_.emplace_back(elevated_threshold_, UPGRADE_ANNOYANCE_ELEVATED);
-    stages_.emplace_back(low_threshold, UPGRADE_ANNOYANCE_LOW);
+    stages_[kStagesIndexHigh] = custom_high;
+    stages_[kStagesIndexLow] = custom_high / 3;
+    stages_[kStagesIndexElevated] = custom_high - stages_[kStagesIndexLow];
+    // "Very low" is one hour, unless "low" is even less.
+    stages_[kStagesIndexVeryLow] =
+        std::min(stages_[kStagesIndexLow], kDefaultVeryLowThreshold);
     return;
   }
 
   // Use the default values when no override is set.
-  low_threshold = kDefaultLowThreshold;
-  elevated_threshold_ = kDefaultElevatedThreshold;
-  high_threshold_ = kDefaultHighThreshold;
+  stages_[kStagesIndexHigh] = kDefaultHighThreshold;
+  stages_[kStagesIndexElevated] = kDefaultElevatedThreshold;
+  stages_[kStagesIndexLow] = kDefaultLowThreshold;
+  stages_[kStagesIndexVeryLow] = kDefaultVeryLowThreshold;
 
   // When testing, scale everything back so that a day passes in ten seconds.
   if (is_testing_) {
     static constexpr int64_t scale_factor =
         base::TimeDelta::FromDays(1) / base::TimeDelta::FromSeconds(10);
-    low_threshold /= scale_factor;
-    elevated_threshold_ /= scale_factor;
-    high_threshold_ /= scale_factor;
+    for (auto& stage : stages_)
+      stage /= scale_factor;
   }
-
-  // Canary and dev channels are extra special, and reach "low" annoyance after
-  // one hour (one second in testing) and never advance beyond that.
-  if (IsUnstableChannel()) {
-    low_threshold = is_testing_ ? base::TimeDelta::FromSeconds(1)
-                                : base::TimeDelta::FromHours(1);
-    // High and elevated thresholds are not added to |stages_| on unstable
-    // channels.
-  } else {
-    // Stages must be sorted by decreasing TimeDelta.
-    stages_.emplace_back(high_threshold_, UPGRADE_ANNOYANCE_HIGH);
-    stages_.emplace_back(elevated_threshold_, UPGRADE_ANNOYANCE_ELEVATED);
-  }
-  stages_.emplace_back(low_threshold, UPGRADE_ANNOYANCE_LOW);
 }
 
 void UpgradeDetectorImpl::CheckForUpgrade() {
@@ -507,14 +466,15 @@ void UpgradeDetectorImpl::NotifyOnUpgradeWithTimePassed(
     new_stage = UPGRADE_ANNOYANCE_CRITICAL;
   } else {
     // |stages_| must be sorted by decreasing TimeDelta.
-    auto it = std::find_if(stages_.begin(), stages_.end(),
-                           [time_passed](const DeltaAndStage& delta_and_stage) {
-                             return time_passed >= delta_and_stage.first;
-                           });
+    std::array<base::TimeDelta, kNumStages>::iterator it =
+        std::find_if(stages_.begin(), stages_.end(),
+                     [time_passed](const base::TimeDelta& delta) {
+                       return time_passed >= delta;
+                     });
     if (it != stages_.end())
-      new_stage = it->second;
+      new_stage = StageIndexToAnnoyanceLevel(it - stages_.begin());
     if (it != stages_.begin())
-      next_delay = (it - 1)->first - time_passed;
+      next_delay = *(it - 1) - time_passed;
   }
 
   set_upgrade_notification_stage(new_stage);
@@ -543,30 +503,51 @@ void UpgradeDetectorImpl::NotifyOnUpgradeWithTimePassed(
 
 base::TimeDelta UpgradeDetectorImpl::GetThresholdForLevel(
     UpgradeNotificationAnnoyanceLevel level) {
-  DCHECK(!stages_.empty());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!stages_[0].is_zero());
+  return stages_[AnnoyanceLevelToStagesIndex(level)];
+}
+
+// static
+UpgradeDetectorImpl::LevelIndex
+UpgradeDetectorImpl::AnnoyanceLevelToStagesIndex(
+    UpgradeNotificationAnnoyanceLevel level) {
   switch (level) {
+    case UPGRADE_ANNOYANCE_NONE:
+      break;  // Invalid input.
+    case UPGRADE_ANNOYANCE_VERY_LOW:
+      return kStagesIndexVeryLow;
     case UPGRADE_ANNOYANCE_LOW:
-      // Low is always the last item in |stages_|.
-      return stages_.back().first;
+      return kStagesIndexLow;
     case UPGRADE_ANNOYANCE_ELEVATED:
-      // Elevated is not present in |stages_| on unstable channels.
-      return elevated_threshold_;
+      return kStagesIndexElevated;
     case UPGRADE_ANNOYANCE_HIGH:
       break;
-    case UPGRADE_ANNOYANCE_NONE:
     case UPGRADE_ANNOYANCE_CRITICAL:
-      NOTREACHED();
-      break;
+      break;  // Invalid input.
   }
-  // High is not present in |stages_| on unstable channels.
-  return high_threshold_;
+  DCHECK_EQ(level, UPGRADE_ANNOYANCE_HIGH);
+  return kStagesIndexHigh;
+}
+
+// static
+UpgradeDetector::UpgradeNotificationAnnoyanceLevel
+UpgradeDetectorImpl::StageIndexToAnnoyanceLevel(size_t index) {
+  static constexpr UpgradeNotificationAnnoyanceLevel kIndexToLevel[] = {
+      UpgradeDetector::UPGRADE_ANNOYANCE_HIGH,
+      UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED,
+      UpgradeDetector::UPGRADE_ANNOYANCE_LOW,
+      UpgradeDetector::UPGRADE_ANNOYANCE_VERY_LOW};
+  static_assert(base::size(kIndexToLevel) == kNumStages, "mismatch");
+  DCHECK_LT(index, base::size(kIndexToLevel));
+  return kIndexToLevel[index];
 }
 
 void UpgradeDetectorImpl::OnRelaunchNotificationPeriodPrefChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Force a recomputation of the thresholds.
-  stages_.clear();
+  stages_.fill(base::TimeDelta());
   InitializeThresholds();
 
   // Broadcast the appropriate notification if an upgrade has been detected.
@@ -599,9 +580,7 @@ UpgradeDetectorImpl* UpgradeDetectorImpl::GetInstance() {
 
 base::TimeDelta UpgradeDetectorImpl::GetHighAnnoyanceLevelDelta() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Elevated and high thresholds are not present in |stages_| for unstable
-  // channels, but their delta is still valid in such case.
-  return high_threshold_ - elevated_threshold_;
+  return stages_[kStagesIndexHigh] - stages_[kStagesIndexElevated];
 }
 
 base::TimeTicks UpgradeDetectorImpl::GetHighAnnoyanceDeadline() {
@@ -609,9 +588,7 @@ base::TimeTicks UpgradeDetectorImpl::GetHighAnnoyanceDeadline() {
   const base::TimeTicks detected_time = upgrade_detected_time();
   if (detected_time.is_null())
     return detected_time;
-  // While dev and canary will never reach high annoyance (see comment in
-  // NotifyOnUpgradeWithTimePassed), they do obey its default deadline.
-  return detected_time + high_threshold_;
+  return detected_time + stages_[kStagesIndexHigh];
 }
 
 // static

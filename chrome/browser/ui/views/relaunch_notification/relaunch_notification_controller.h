@@ -148,10 +148,9 @@ class RelaunchNotificationController : public UpgradeObserver,
   // notification.
   NotificationStyle last_notification_style_;
 
-  // The last observed annoyance level for which a notification was shown. This
-  // member is unconditionally UPGRADE_ANNOYANCE_NONE when the controller is
-  // dormant (browser.relaunch_notification is 0). It is any other value only
-  // when a notification has been shown.
+  // The last observed annoyance level. This member is unconditionally
+  // UPGRADE_ANNOYANCE_NONE when the controller is dormant
+  // (browser.relaunch_notification is 0).
   UpgradeDetector::UpgradeNotificationAnnoyanceLevel last_level_;
 
   // The last observed high annoyance deadline.

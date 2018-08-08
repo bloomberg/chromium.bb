@@ -174,6 +174,8 @@ TEST_F(RelaunchNotificationControllerTest, PolicyUnset) {
       upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
 
   fake_upgrade_detector().BroadcastLevelChange(
+      UpgradeDetector::UPGRADE_ANNOYANCE_VERY_LOW);
+  fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_LOW);
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED);
@@ -185,7 +187,7 @@ TEST_F(RelaunchNotificationControllerTest, PolicyUnset) {
 
 // With the browser.relaunch_notification preference set to 1, the controller
 // should be observing the UpgradeDetector and should show "Requested"
-// notifications on each level change.
+// notifications on each level change above "very low".
 TEST_F(RelaunchNotificationControllerTest, RecommendedByPolicy) {
   SetNotificationPref(1);
   ::testing::StrictMock<MockControllerDelegate> mock_controller_delegate;
@@ -193,9 +195,12 @@ TEST_F(RelaunchNotificationControllerTest, RecommendedByPolicy) {
   FakeRelaunchNotificationController controller(
       upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
 
-  // Nothing shown if the level is broadcast at NONE.
+  // Nothing shown if the level is broadcast at NONE or VERY_LOW.
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_NONE);
+  ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
+  fake_upgrade_detector().BroadcastLevelChange(
+      UpgradeDetector::UPGRADE_ANNOYANCE_VERY_LOW);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // Show for each level change, but not for repeat notifications.
@@ -236,7 +241,22 @@ TEST_F(RelaunchNotificationControllerTest, RecommendedByPolicy) {
   FastForwardBy(upgrade_detector()->GetHighAnnoyanceLevelDelta());
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
-  // And closed if the level drops back to none.
+  // And closed if the level drops back to very low.
+  EXPECT_CALL(mock_controller_delegate, CloseWidget());
+  fake_upgrade_detector().BroadcastLevelChange(
+      UpgradeDetector::UPGRADE_ANNOYANCE_VERY_LOW);
+  ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
+  fake_upgrade_detector().BroadcastLevelChange(
+      UpgradeDetector::UPGRADE_ANNOYANCE_VERY_LOW);
+  ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
+
+  // Back up to elevated brings the bubble back.
+  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRecommendedBubble());
+  fake_upgrade_detector().BroadcastLevelChange(
+      UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED);
+  ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
+
+  // And it is closed if the level drops back to none.
   EXPECT_CALL(mock_controller_delegate, CloseWidget());
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_NONE);
@@ -304,12 +324,28 @@ TEST_F(RelaunchNotificationControllerTest, RequiredByPolicy) {
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 }
 
-// Flipping the policy should have no effect when at level NONE
+// Flipping the policy should have no effect when at level NONE or VERY_LOW.
 TEST_F(RelaunchNotificationControllerTest, PolicyChangesNoUpgrade) {
   ::testing::StrictMock<MockControllerDelegate> mock_controller_delegate;
 
   FakeRelaunchNotificationController controller(
       upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
+
+  SetNotificationPref(1);
+  ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
+
+  SetNotificationPref(2);
+  ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
+
+  SetNotificationPref(3);  // Bogus value!
+  ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
+
+  SetNotificationPref(0);
+  ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
+
+  fake_upgrade_detector().BroadcastLevelChange(
+      UpgradeDetector::UPGRADE_ANNOYANCE_VERY_LOW);
+  ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   SetNotificationPref(1);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
@@ -402,6 +438,37 @@ TEST_F(RelaunchNotificationControllerTest, NonePeriodChange) {
 
   FakeRelaunchNotificationController controller(
       upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
+
+  // Reduce the period.
+  fake_upgrade_detector().BroadcastHighThresholdChange(
+      base::TimeDelta::FromDays(1));
+  FastForwardBy(fake_upgrade_detector().high_threshold());
+  ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
+
+  SetNotificationPref(1);
+  fake_upgrade_detector().BroadcastHighThresholdChange(
+      base::TimeDelta::FromHours(23));
+  FastForwardBy(fake_upgrade_detector().high_threshold());
+  ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
+
+  SetNotificationPref(2);
+  fake_upgrade_detector().BroadcastHighThresholdChange(
+      base::TimeDelta::FromHours(22));
+  FastForwardBy(fake_upgrade_detector().high_threshold());
+  ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
+}
+
+// NotificationPeriod changes should do nothing at any policy setting when the
+// annoyance level is at very low.
+TEST_F(RelaunchNotificationControllerTest, VeryLowPeriodChange) {
+  ::testing::StrictMock<MockControllerDelegate> mock_controller_delegate;
+
+  FakeRelaunchNotificationController controller(
+      upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
+
+  fake_upgrade_detector().BroadcastLevelChange(
+      UpgradeDetector::UPGRADE_ANNOYANCE_VERY_LOW);
+  ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // Reduce the period.
   fake_upgrade_detector().BroadcastHighThresholdChange(

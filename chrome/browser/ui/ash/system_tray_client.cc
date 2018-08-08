@@ -81,6 +81,8 @@ ash::mojom::UpdateSeverity GetUpdateSeverity(UpgradeDetector* detector) {
   switch (detector->upgrade_notification_stage()) {
     case UpgradeDetector::UPGRADE_ANNOYANCE_NONE:
       return ash::mojom::UpdateSeverity::NONE;
+    case UpgradeDetector::UPGRADE_ANNOYANCE_VERY_LOW:
+      return ash::mojom::UpdateSeverity::VERY_LOW;
     case UpgradeDetector::UPGRADE_ANNOYANCE_LOW:
       return ash::mojom::UpdateSeverity::LOW;
     case UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED:
@@ -88,9 +90,10 @@ ash::mojom::UpdateSeverity GetUpdateSeverity(UpgradeDetector* detector) {
     case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
       return ash::mojom::UpdateSeverity::HIGH;
     case UpgradeDetector::UPGRADE_ANNOYANCE_CRITICAL:
-      return ash::mojom::UpdateSeverity::CRITICAL;
+      break;
   }
-  NOTREACHED();
+  DCHECK_EQ(detector->upgrade_notification_stage(),
+            UpgradeDetector::UPGRADE_ANNOYANCE_CRITICAL);
   return ash::mojom::UpdateSeverity::CRITICAL;
 }
 
