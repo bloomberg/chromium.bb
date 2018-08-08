@@ -24,7 +24,6 @@ build_dotfile_settings = {
     "//build/config/sysroot.gni",
     "//build/config/win/BUILD.gn",
     "//build/config/win/visual_studio_version.gni",
-    "//build/timestamp.gni",
     "//build/toolchain/BUILD.gn",
     "//build/toolchain/concurrent_links.gni",
     "//build/toolchain/mac/BUILD.gn",
