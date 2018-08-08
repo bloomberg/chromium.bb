@@ -60,12 +60,6 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
       !descendant_outlines_.IsEmpty());
 }
 
-bool NGPhysicalBoxFragment::IsFirstLineAnonymousInlineBox() const {
-  return IsInlineBox() && UsesFirstLineStyle() &&
-         layout_object_->IsAnonymous() && layout_object_->IsLayoutInline() &&
-         ToLayoutInline(layout_object_)->IsFirstLineAnonymous();
-}
-
 const NGBaseline* NGPhysicalBoxFragment::Baseline(
     const NGBaselineRequest& request) const {
   for (const auto& baseline : baselines_) {
