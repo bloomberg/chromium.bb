@@ -69,7 +69,7 @@
 #include "ash/multi_device_setup/multi_device_notification_presenter.h"
 #include "ash/new_window_controller.h"
 #include "ash/note_taking_controller.h"
-#include "ash/pointer_watcher_adapter_classic.h"
+#include "ash/pointer_watcher_adapter.h"
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_features.h"
@@ -1200,7 +1200,7 @@ void Shell::Init(
 
   // Must occur after Shell has installed its early pre-target handlers (for
   // example, WindowModalityController).
-  pointer_watcher_adapter_ = std::make_unique<PointerWatcherAdapterClassic>();
+  pointer_watcher_adapter_ = std::make_unique<PointerWatcherAdapter>();
 
   resize_shadow_controller_.reset(new ResizeShadowController());
   shadow_controller_.reset(new ::wm::ShadowController(

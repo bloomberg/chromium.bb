@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_POINTER_WATCHER_ADAPTER_CLASSIC_H_
-#define ASH_POINTER_WATCHER_ADAPTER_CLASSIC_H_
+#ifndef ASH_POINTER_WATCHER_ADAPTER_H_
+#define ASH_POINTER_WATCHER_ADAPTER_H_
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
@@ -27,12 +27,12 @@ enum class PointerWatcherEventTypes;
 
 namespace ash {
 
-// Support for PointerWatchers in non-mus ash, implemented with a pre-target
+// Support for PointerWatchers in ash, implemented with a pre-target
 // EventHandler on the Shell.
-class ASH_EXPORT PointerWatcherAdapterClassic : public ui::EventHandler {
+class ASH_EXPORT PointerWatcherAdapter : public ui::EventHandler {
  public:
-  PointerWatcherAdapterClassic();
-  ~PointerWatcherAdapterClassic() override;
+  PointerWatcherAdapter();
+  ~PointerWatcherAdapter() override;
 
   // See Shell::AddPointerWatcher() for details.
   void AddPointerWatcher(views::PointerWatcher* watcher,
@@ -62,9 +62,9 @@ class ASH_EXPORT PointerWatcherAdapterClassic : public ui::EventHandler {
   base::ObserverList<views::PointerWatcher, true> move_watchers_;
   base::ObserverList<views::PointerWatcher, true> drag_watchers_;
 
-  DISALLOW_COPY_AND_ASSIGN(PointerWatcherAdapterClassic);
+  DISALLOW_COPY_AND_ASSIGN(PointerWatcherAdapter);
 };
 
 }  // namespace ash
 
-#endif  // ASH_POINTER_WATCHER_ADAPTER_CLASSIC_H_
+#endif  // ASH_POINTER_WATCHER_ADAPTER_H_

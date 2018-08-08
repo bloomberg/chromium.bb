@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/pointer_watcher_adapter_classic.h"
+#include "ash/pointer_watcher_adapter.h"
 
 #include "ash/shell.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -16,15 +16,15 @@
 
 namespace ash {
 
-PointerWatcherAdapterClassic::PointerWatcherAdapterClassic() {
+PointerWatcherAdapter::PointerWatcherAdapter() {
   Shell::Get()->AddPreTargetHandler(this);
 }
 
-PointerWatcherAdapterClassic::~PointerWatcherAdapterClassic() {
+PointerWatcherAdapter::~PointerWatcherAdapter() {
   Shell::Get()->RemovePreTargetHandler(this);
 }
 
-void PointerWatcherAdapterClassic::AddPointerWatcher(
+void PointerWatcherAdapter::AddPointerWatcher(
     views::PointerWatcher* watcher,
     views::PointerWatcherEventTypes events) {
   // We only allow a watcher to be added once. That is, we don't consider
@@ -40,14 +40,14 @@ void PointerWatcherAdapterClassic::AddPointerWatcher(
     non_move_watchers_.AddObserver(watcher);
 }
 
-void PointerWatcherAdapterClassic::RemovePointerWatcher(
+void PointerWatcherAdapter::RemovePointerWatcher(
     views::PointerWatcher* watcher) {
   non_move_watchers_.RemoveObserver(watcher);
   move_watchers_.RemoveObserver(watcher);
   drag_watchers_.RemoveObserver(watcher);
 }
 
-void PointerWatcherAdapterClassic::OnMouseEvent(ui::MouseEvent* event) {
+void PointerWatcherAdapter::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_PRESSED &&
       event->type() != ui::ET_MOUSE_RELEASED &&
       event->type() != ui::ET_MOUSE_MOVED &&
@@ -60,7 +60,7 @@ void PointerWatcherAdapterClassic::OnMouseEvent(ui::MouseEvent* event) {
   NotifyWatchers(ui::PointerEvent(*event), *event);
 }
 
-void PointerWatcherAdapterClassic::OnTouchEvent(ui::TouchEvent* event) {
+void PointerWatcherAdapter::OnTouchEvent(ui::TouchEvent* event) {
   if (event->type() != ui::ET_TOUCH_PRESSED &&
       event->type() != ui::ET_TOUCH_RELEASED &&
       event->type() != ui::ET_TOUCH_MOVED)
@@ -70,7 +70,7 @@ void PointerWatcherAdapterClassic::OnTouchEvent(ui::TouchEvent* event) {
   NotifyWatchers(ui::PointerEvent(*event), *event);
 }
 
-gfx::Point PointerWatcherAdapterClassic::GetLocationInScreen(
+gfx::Point PointerWatcherAdapter::GetLocationInScreen(
     const ui::LocatedEvent& event) const {
   gfx::Point location_in_screen;
   if (event.type() == ui::ET_MOUSE_CAPTURE_CHANGED) {
@@ -84,7 +84,7 @@ gfx::Point PointerWatcherAdapterClassic::GetLocationInScreen(
   return location_in_screen;
 }
 
-void PointerWatcherAdapterClassic::NotifyWatchers(
+void PointerWatcherAdapter::NotifyWatchers(
     const ui::PointerEvent& event,
     const ui::LocatedEvent& original_event) {
   const gfx::Point screen_location(GetLocationInScreen(original_event));
