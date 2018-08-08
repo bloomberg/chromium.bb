@@ -313,13 +313,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   using EventTarget::DispatchEvent;
   DispatchEventResult DispatchEvent(Event&, EventTarget*);
-  // Deprecated: Use DispatchEvent(Event&, ...), instead of this.
-  // This will be removed after every callers of this function are replaced.
-  // See crbub.com/871637.
-  DispatchEventResult DispatchEvent(Event* event, EventTarget* event_target) {
-    DCHECK(event);
-    return DispatchEvent(*event, event_target);
-  }
 
   void FinishedLoading();
 

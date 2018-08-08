@@ -120,7 +120,7 @@ void ScriptedAnimationController::DispatchEvents(
     // tree.
     probe::AsyncTask async_task(event_target->GetExecutionContext(), event);
     if (LocalDOMWindow* window = event_target->ToLocalDOMWindow())
-      window->DispatchEvent(event, nullptr);
+      window->DispatchEvent(*event, nullptr);
     else
       event_target->DispatchEvent(*event);
   }
