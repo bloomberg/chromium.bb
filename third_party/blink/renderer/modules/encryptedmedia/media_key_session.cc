@@ -900,7 +900,7 @@ void MediaKeySession::Message(MessageType message_type,
   MediaKeyMessageEvent* event =
       MediaKeyMessageEvent::Create(EventTypeNames::message, init);
   event->SetTarget(this);
-  async_event_queue_->EnqueueEvent(FROM_HERE, event);
+  async_event_queue_->EnqueueEvent(FROM_HERE, *event);
 }
 
 void MediaKeySession::Close() {
@@ -985,7 +985,7 @@ void MediaKeySession::KeysStatusesChange(
   //    at the session.
   Event* event = Event::Create(EventTypeNames::keystatuseschange);
   event->SetTarget(this);
-  async_event_queue_->EnqueueEvent(FROM_HERE, event);
+  async_event_queue_->EnqueueEvent(FROM_HERE, *event);
 
   // 6. Queue a task to run the attempt to resume playback if necessary
   //    algorithm on each of the media element(s) whose mediaKeys attribute

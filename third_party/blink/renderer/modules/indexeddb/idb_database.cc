@@ -497,7 +497,7 @@ void IDBDatabase::OnVersionChange(int64_t old_version, int64_t new_version) {
 void IDBDatabase::EnqueueEvent(Event* event) {
   DCHECK(GetExecutionContext());
   event->SetTarget(this);
-  event_queue_->EnqueueEvent(FROM_HERE, event);
+  event_queue_->EnqueueEvent(FROM_HERE, *event);
 }
 
 DispatchEventResult IDBDatabase::DispatchEventInternal(Event& event) {

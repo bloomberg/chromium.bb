@@ -762,7 +762,7 @@ void IDBRequest::EnqueueEvent(Event* event) {
 
   event->SetTarget(this);
 
-  event_queue_->EnqueueEvent(FROM_HERE, event);
+  event_queue_->EnqueueEvent(FROM_HERE, *event);
 }
 
 }  // namespace blink
