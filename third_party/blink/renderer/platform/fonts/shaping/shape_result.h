@@ -113,6 +113,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // even when the result is in vertical flow.
   const FloatRect& Bounds() const { return glyph_bounding_box_; }
   unsigned NumCharacters() const { return num_characters_; }
+  unsigned NumGlyphs() const { return num_glyphs_; }
   CharacterRange GetCharacterRange(const StringView& text,
                                    unsigned from,
                                    unsigned to) const;

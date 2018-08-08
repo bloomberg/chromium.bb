@@ -8,6 +8,7 @@
 
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
@@ -22,7 +23,58 @@
 #include "third_party/blink/renderer/platform/text/text_run.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
+using testing::ElementsAre;
+
 namespace blink {
+
+namespace {
+
+ShapeResultTestInfo* TestInfo(const scoped_refptr<ShapeResult>& result) {
+  return static_cast<ShapeResultTestInfo*>(result.get());
+}
+
+// Test helper to compare all RunInfo with the expected array.
+struct ShapeResultRunData {
+  unsigned start_index;
+  unsigned num_characters;
+  unsigned num_glyphs;
+  hb_script_t script;
+
+  static Vector<ShapeResultRunData> Get(
+      const scoped_refptr<ShapeResult>& result) {
+    const ShapeResultTestInfo* test_info = TestInfo(result);
+    const unsigned num_runs = test_info->NumberOfRunsForTesting();
+    Vector<ShapeResultRunData> runs(num_runs);
+    for (unsigned i = 0; i < num_runs; i++) {
+      ShapeResultRunData& run = runs[i];
+      test_info->RunInfoForTesting(i, run.start_index, run.num_characters,
+                                   run.num_glyphs, run.script);
+    }
+    return runs;
+  }
+};
+
+bool operator==(const ShapeResultRunData& x, const ShapeResultRunData& y) {
+  return x.start_index == y.start_index &&
+         x.num_characters == y.num_characters && x.num_glyphs == y.num_glyphs &&
+         x.script == y.script;
+}
+
+void operator<<(std::ostream& output, const ShapeResultRunData& x) {
+  output << "{ start_index=" << x.start_index
+         << ", num_characters=" << x.num_characters
+         << ", num_glyphs=" << x.num_glyphs << ", script=" << x.script << " }";
+}
+
+// Create a string of the specified length, filled with |ch|.
+String CreateStringOf(UChar ch, unsigned length) {
+  UChar* data;
+  String string(StringImpl::CreateUninitialized(length, data));
+  string.Fill(ch);
+  return string;
+}
+
+}  // namespace
 
 class HarfBuzzShaperTest : public testing::Test {
  protected:
@@ -123,11 +175,6 @@ INSTANTIATE_TEST_CASE_P(HarfBuzzShaperTest,
                         ShapeParameterTest,
                         testing::Values(TextDirection::kLtr,
                                         TextDirection::kRtl));
-
-static inline ShapeResultTestInfo* TestInfo(
-    scoped_refptr<ShapeResult>& result) {
-  return static_cast<ShapeResultTestInfo*>(result.get());
-}
 
 TEST_F(HarfBuzzShaperTest, MutableUnique) {
   scoped_refptr<ShapeResult> result =
@@ -491,6 +538,90 @@ TEST_P(ShapeParameterTest, MissingGlyph) {
   scoped_refptr<ShapeResult> result = ShapeWithParameter(&shaper);
   EXPECT_EQ(0u, result->StartIndexForResult());
   EXPECT_EQ(string.length(), result->EndIndexForResult());
+}
+
+// Test splitting runs by kMaxCharacterIndex using a simple string that has code
+// point:glyph:cluster are all 1:1.
+TEST_P(ShapeParameterTest, MaxGlyphsSimple) {
+  const unsigned length = HarfBuzzRunGlyphData::kMaxCharacterIndex + 2;
+  String string = CreateStringOf('X', length);
+  HarfBuzzShaper shaper(string);
+  scoped_refptr<ShapeResult> result = ShapeWithParameter(&shaper);
+  EXPECT_EQ(length, result->NumCharacters());
+  EXPECT_EQ(length, result->NumGlyphs());
+  Vector<ShapeResultRunData> runs = ShapeResultRunData::Get(result);
+  if (IsRtl(GetParam()))
+    runs.Reverse();
+  EXPECT_THAT(
+      runs, testing::ElementsAre(
+                ShapeResultRunData{0, length - 1, length - 1, HB_SCRIPT_LATIN},
+                ShapeResultRunData{length - 1, 1, 1, HB_SCRIPT_LATIN}));
+}
+
+// 'X' + U+0300 COMBINING GRAVE ACCENT is a cluster, but most fonts do not have
+// a pre-composed glyph for it, so code points and glyphs are 1:1. Because the
+// length is "+1" and the last character is combining, this string does not hit
+// kMaxCharacterIndex but hits kMaxGlyphs.
+TEST_P(ShapeParameterTest, MaxGlyphsClusterLatin) {
+  const unsigned length = HarfBuzzRunGlyphData::kMaxGlyphs + 1;
+  String string = CreateStringOf('X', length);
+  string.replace(1, 1, u"\u0300");
+  string.replace(length - 2, 2, u"Z\u0300");
+  HarfBuzzShaper shaper(string);
+  scoped_refptr<ShapeResult> result = ShapeWithParameter(&shaper);
+  EXPECT_EQ(length, result->NumCharacters());
+  EXPECT_EQ(length, result->NumGlyphs());
+  Vector<ShapeResultRunData> runs = ShapeResultRunData::Get(result);
+  if (IsRtl(GetParam()))
+    runs.Reverse();
+  EXPECT_THAT(
+      runs, testing::ElementsAre(
+                ShapeResultRunData{0, length - 2, length - 2, HB_SCRIPT_LATIN},
+                ShapeResultRunData{length - 2, 2u, 2u, HB_SCRIPT_LATIN}));
+}
+
+// Same as MaxGlyphsClusterLatin, but by making the length "+2", this string
+// hits kMaxCharacterIndex.
+TEST_P(ShapeParameterTest, MaxGlyphsClusterLatin2) {
+  const unsigned length = HarfBuzzRunGlyphData::kMaxGlyphs + 2;
+  String string = CreateStringOf('X', length);
+  string.replace(1, 1, u"\u0300");
+  string.replace(length - 2, 2, u"Z\u0300");
+  HarfBuzzShaper shaper(string);
+  scoped_refptr<ShapeResult> result = ShapeWithParameter(&shaper);
+  EXPECT_EQ(length, result->NumCharacters());
+  EXPECT_EQ(length, result->NumGlyphs());
+  Vector<ShapeResultRunData> runs = ShapeResultRunData::Get(result);
+  if (IsRtl(GetParam()))
+    runs.Reverse();
+  EXPECT_THAT(
+      runs, testing::ElementsAre(
+                ShapeResultRunData{0, length - 2, length - 2, HB_SCRIPT_LATIN},
+                ShapeResultRunData{length - 2, 2u, 2u, HB_SCRIPT_LATIN}));
+}
+
+TEST_P(ShapeParameterTest, MaxGlyphsClusterDevanagari) {
+  const unsigned length = HarfBuzzRunGlyphData::kMaxCharacterIndex + 2;
+  String string = CreateStringOf(0x930, length);
+  string.replace(0, 3, u"\u0930\u093F\u0902");
+  string.replace(length - 3, 3, u"\u0930\u093F\u0902");
+  HarfBuzzShaper shaper(string);
+  scoped_refptr<ShapeResult> result = ShapeWithParameter(&shaper);
+  EXPECT_EQ(length, result->NumCharacters());
+#if defined(OS_LINUX)
+  // Linux doesn't have glyphs. We can't test RunInfo without all glyphs.
+  if (result->NumGlyphs() != length)
+    return;
+#endif
+  EXPECT_EQ(length, result->NumGlyphs());
+  Vector<ShapeResultRunData> runs = ShapeResultRunData::Get(result);
+  if (IsRtl(GetParam()))
+    runs.Reverse();
+  EXPECT_THAT(
+      runs,
+      testing::ElementsAre(
+          ShapeResultRunData{0, length - 3, length - 3, HB_SCRIPT_DEVANAGARI},
+          ShapeResultRunData{length - 3, 3u, 3u, HB_SCRIPT_DEVANAGARI}));
 }
 
 TEST_P(ShapeParameterTest, ZeroWidthSpace) {
