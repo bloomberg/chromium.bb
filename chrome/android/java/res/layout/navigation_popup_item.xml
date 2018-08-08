@@ -7,7 +7,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/navigation_popup_item_height"
+    android:layout_height="wrap_content"
     android:paddingStart="@dimen/navigation_popup_default_padding"
     android:paddingEnd="@dimen/navigation_popup_default_padding"
     android:gravity="center_vertical"
@@ -32,9 +32,11 @@
 
     <TextView
         android:id="@+id/entry_title"
+        android:gravity="center_vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/navigation_popup_default_padding"
+        android:minHeight="@dimen/navigation_popup_item_height"
         android:textAppearance="@style/BlackTitle1"
         android:singleLine="true" />
 </LinearLayout>
