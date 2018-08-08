@@ -102,8 +102,19 @@ message SharePathRequest {
   // The handle to the server with whom the path should be shared.
   uint32 handle = 1;
 
-  // The actual path to be shared.
+  // The actual path to be shared.  Must be relative to |storage_location|
+  // and must not contain any "../" elements or end with ".".
   SharedPath shared_path = 2;
+
+  // The location where the path to be shared lives.
+  enum StorageLocation {
+    // The user's Downloads/ directory.
+    DOWNLOADS = 0;
+  }
+  StorageLocation storage_location = 3;
+
+  // The user's cryptohome.  This is the <hash> part of /home/user/<hash>.
+  string owner_id = 4;
 }
 
 // Information sent back by seneschal when it receives a SharePath request.

@@ -317,7 +317,7 @@
         'proto_out_dir': 'include/seneschal/proto_bindings',
       },
       'sources': [
-        '<(proto_in_dir)/service.proto',
+        '<(proto_in_dir)/seneschal_service.proto',
       ],
       'includes': ['../../platform2/common-mk/protoc.gypi'],
     },
@@ -329,7 +329,7 @@
         'system_api-seneschal-protos-gen',
       ],
       'sources': [
-        '<(SHARED_INTERMEDIATE_DIR)/include/seneschal/proto_bindings/service.pb.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/include/seneschal/proto_bindings/seneschal_service.pb.cc',
       ]
     },
   ],
