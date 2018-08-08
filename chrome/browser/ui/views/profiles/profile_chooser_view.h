@@ -175,6 +175,10 @@ class ProfileChooserView : public content::WebContentsDelegate,
 
   bool ShouldShowGoIncognito() const;
 
+  // Return maximal height for the view after which it becomes scrollable.
+  // TODO(crbug.com/870303): remove when a general solution is available.
+  int GetMaxHeight() const;
+
   // Clean-up done after an action was performed in the ProfileChooser.
   void PostActionPerformed(ProfileMetrics::ProfileDesktopMenu action_performed);
 

@@ -77,6 +77,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/clip_recorder.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
@@ -97,6 +99,7 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/webview/webview.h"
@@ -118,6 +121,12 @@ constexpr int kIconSize = 16;
 // Spacing between the edge of the material design user menu and the
 // top/bottom or left/right of the menu items.
 constexpr int kMenuEdgeMargin = 16;
+
+// If the bubble is too large to fit on the screen, it still needs to be at
+// least this tall to show the default items. The default items is what a signed
+// in user with 1 profile sees: account name, autofill home and 3 profile
+// actions.
+constexpr int kMinimumScrollableContentHeight = 340;
 
 constexpr int kVerticalSpacing = 16;
 
@@ -537,8 +546,15 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
       break;
   }
 
+  views::ScrollView* scroll_view = new views::ScrollView;
+  scroll_view->set_hide_horizontal_scrollbar(true);
+  // TODO(https://crbug.com/871762): it's a workaround for the crash.
+  scroll_view->set_draw_overflow_indicator(false);
+  scroll_view->ClipHeightTo(0, GetMaxHeight());
+  scroll_view->SetContents(sub_view);
+
   layout->StartRow(1.0, 0);
-  layout->AddView(sub_view);
+  layout->AddView(scroll_view);
   if (GetBubbleFrameView()) {
     SizeToContents();
     // SizeToContents() will perform a layout, but only if the size changed.
@@ -1579,6 +1595,21 @@ bool ProfileChooserView::ShouldShowGoIncognito() const {
       IncognitoModePrefs::GetAvailability(browser_->profile()->GetPrefs()) !=
           IncognitoModePrefs::DISABLED;
   return incognito_available && !browser_->profile()->IsGuestSession();
+}
+
+int ProfileChooserView::GetMaxHeight() const {
+  gfx::Rect anchor_rect = GetAnchorRect();
+  gfx::Rect screen_space =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestPoint(anchor_rect.CenterPoint())
+          .work_area();
+  int available_space = screen_space.bottom() - anchor_rect.bottom();
+#if defined(OS_WIN)
+  // On Windows the bubble can also be show to the top of the anchor.
+  available_space =
+      std::max(available_space, anchor_rect.y() - screen_space.y());
+#endif
+  return std::max(kMinimumScrollableContentHeight, available_space);
 }
 
 void ProfileChooserView::PostActionPerformed(
