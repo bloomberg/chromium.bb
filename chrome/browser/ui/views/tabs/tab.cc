@@ -1694,21 +1694,8 @@ void Tab::OnButtonColorMaybeChanged() {
   if (!theme_provider)
     return;
 
-  const SkColor title_color = controller_->GetTabForegroundColor(
-      IsActive() ? TAB_ACTIVE : TAB_INACTIVE);
-
-  SkColor new_button_color = title_color;
-  if (IsActive()) {
-    // This alpha value (0x2f) blends GoogleGrey800 close to GoogleGrey700.
-    new_button_color = color_utils::BlendTowardOppositeLuma(title_color, 0x2f);
-  }
-
-  if (button_color_ != new_button_color) {
-    button_color_ = new_button_color;
-    title_->SetEnabledColor(title_color);
-    alert_indicator_button_->OnParentTabButtonColorChanged();
-  }
-  UpdateCloseButtonColors(title_color);
+  UpdateButtonIconColors(controller_->GetTabForegroundColor(
+      IsActive() ? TAB_ACTIVE : TAB_INACTIVE));
 }
 
 void Tab::UpdateTabIconNeedsAttentionBlocked() {
@@ -1762,7 +1749,7 @@ void Tab::UpdateOpacities() {
   radial_highlight_opacity_ = radial_highlight_alpha / 255.0f;
 }
 
-void Tab::UpdateCloseButtonColors(SkColor title_color) {
+void Tab::UpdateButtonIconColors(SkColor title_color) {
   // These ratios are calculated from the default colors specified in the
   // Material Refresh design document. Active/inactive are the contrast ratios
   // of the close X against the tab background. Hovered/pressed are the contrast
@@ -1771,6 +1758,8 @@ void Tab::UpdateCloseButtonColors(SkColor title_color) {
   constexpr float kMinimumInactiveContrastRatio = 4.61f;
   constexpr float kMinimumHoveredContrastRatio = 5.02f;
   constexpr float kMinimumPressedContrastRatio = 4.41f;
+
+  title_->SetEnabledColor(title_color);
 
   const SkColor tab_bg_color = controller_->GetTabBackgroundColor(
       IsActive() ? TAB_ACTIVE : TAB_INACTIVE);
@@ -1811,6 +1800,11 @@ void Tab::UpdateCloseButtonColors(SkColor title_color) {
       generated_icon_color, generated_hovered_icon_color,
       generated_pressed_icon_color, generated_hovered_color,
       generated_pressed_color);
+
+  if (button_color_ != generated_icon_color) {
+    button_color_ = generated_icon_color;
+    alert_indicator_button_->OnParentTabButtonColorChanged();
+  }
 }
 
 Tab::BackgroundCache::BackgroundCache() = default;
