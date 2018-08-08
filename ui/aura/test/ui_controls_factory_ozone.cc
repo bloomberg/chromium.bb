@@ -155,7 +155,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
                                      int button_state,
                                      base::OnceClosure closure,
                                      int accelerator_state) override {
-    gfx::Point root_location = aura::Env::GetInstance()->last_mouse_location();
+    gfx::Point root_location = host_->window()->env()->last_mouse_location();
     aura::client::ScreenPositionClient* screen_position_client =
         aura::client::GetScreenPositionClient(host_->window());
     if (screen_position_client) {
@@ -218,7 +218,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
 
  private:
   void SendEventToSink(ui::Event* event, base::OnceClosure closure) {
-    if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS) {
+    if (host_->window()->env()->mode() == aura::Env::Mode::MUS) {
       std::unique_ptr<ui::Event> event_to_send;
       if (event->IsMouseEvent()) {
         // WindowService expects MouseEvents as PointerEvents.
@@ -297,7 +297,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
   // Returns the ui::mojom::EventInjector, which is used to send events
   // to the Window Service for dispatch.
   ui::mojom::EventInjector* GetEventInjector() {
-    DCHECK_EQ(aura::Env::Mode::MUS, aura::Env::GetInstance()->mode());
+    DCHECK_EQ(aura::Env::Mode::MUS, host_->window()->env()->mode());
     if (!event_injector_) {
       DCHECK(aura::test::EnvTestHelper().GetWindowTreeClient());
       aura::test::EnvTestHelper()

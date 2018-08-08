@@ -38,13 +38,15 @@ static uint32_t accelerated_widget_count = 1;
 // WindowTreeHostMus, public:
 
 WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
-    : WindowTreeHostPlatform(std::move(init_params.window_port)),
+    : WindowTreeHostPlatform(
+          std::make_unique<Window>(nullptr,
+                                   std::move(init_params.window_port))),
       display_id_(init_params.display_id),
       delegate_(init_params.window_tree_client) {
   gfx::Rect bounds_in_pixels;
   window()->SetProperty(kWindowTreeHostMusKey, this);
-  // TODO(sky): find a cleaner way to set this! Better solution is to likely
-  // have constructor take aura::Window.
+  // TODO(sky): find a cleaner way to set this! Revisit this now that
+  // constructor takes a Window.
   WindowPortMus* window_mus = WindowPortMus::Get(window());
   window_mus->window_ = window();
   // Apply the properties before initializing the window, that way the server

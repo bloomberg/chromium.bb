@@ -8,6 +8,7 @@
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
@@ -38,9 +39,9 @@ EventInjector::~EventInjector() {}
 
 ui::EventDispatchDetails EventInjector::Inject(WindowTreeHost* host,
                                                ui::Event* event) {
-  Env* env = Env::GetInstance();
-  DCHECK(env);
   DCHECK(host);
+  Env* env = host->window()->env();
+  DCHECK(env);
   DCHECK(event);
 
   if (env->mode() == Env::Mode::LOCAL)

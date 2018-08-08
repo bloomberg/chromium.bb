@@ -28,7 +28,7 @@ class ScopedCursorHider {
     if (!window_->IsRootWindow())
       return;
     const bool cursor_is_in_bounds = window_->GetBoundsInScreen().Contains(
-        Env::GetInstance()->last_mouse_location());
+        window->env()->last_mouse_location());
     client::CursorClient* cursor_client = client::GetCursorClient(window_);
     if (cursor_is_in_bounds && cursor_client &&
         cursor_client->IsCursorVisible()) {
@@ -133,8 +133,7 @@ void WindowPortLocal::OnPropertyChanged(
 std::unique_ptr<cc::LayerTreeFrameSink>
 WindowPortLocal::CreateLayerTreeFrameSink() {
   DCHECK(!frame_sink_id_.is_valid());
-  auto* context_factory_private =
-      aura::Env::GetInstance()->context_factory_private();
+  auto* context_factory_private = window_->env()->context_factory_private();
   auto* host_frame_sink_manager =
       context_factory_private->GetHostFrameSinkManager();
   frame_sink_id_ = context_factory_private->AllocateFrameSinkId();
@@ -154,7 +153,7 @@ WindowPortLocal::CreateLayerTreeFrameSink() {
 
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
   params.gpu_memory_buffer_manager =
-      aura::Env::GetInstance()->context_factory()->GetGpuMemoryBufferManager();
+      window_->env()->context_factory()->GetGpuMemoryBufferManager();
   params.pipes.compositor_frame_sink_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
   params.enable_surface_synchronization = true;
