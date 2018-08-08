@@ -27,6 +27,7 @@ component("drivefs") {
     "//mojo/public/cpp/platform",
     "//net",
     "//services/identity/public/mojom",
+    "//services/network/public/cpp:cpp",
     "//services/service_manager/public/cpp",
   ]
   defines = [ "IS_DRIVEFS_IMPL" ]
@@ -63,6 +64,7 @@ source_set("unit_tests") {
     "//mojo/public/cpp/bindings",
     "//net",
     "//services/identity/public/mojom",
+    "//services/network/public/cpp:cpp",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",

@@ -11,7 +11,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "mojo/core/embedder/embedder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,8 +56,6 @@ class UbertokenFetcherTest : public testing::Test {
                 &url_loader_factory_)) {}
 
   void SetUp() override {
-    mojo::core::Init();
-
     fetcher_ = std::make_unique<UbertokenFetcher>(&token_service_, &consumer_,
                                                   GaiaConstants::kChromeSource,
                                                   test_shared_loader_factory_);

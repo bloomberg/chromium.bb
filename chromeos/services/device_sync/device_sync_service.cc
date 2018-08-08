@@ -7,7 +7,7 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/device_sync/device_sync_base.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace chromeos {
@@ -18,11 +18,11 @@ DeviceSyncService::DeviceSyncService(
     identity::IdentityManager* identity_manager,
     gcm::GCMDriver* gcm_driver,
     const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
-    scoped_refptr<net::URLRequestContextGetter> url_request_context)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : identity_manager_(identity_manager),
       gcm_driver_(gcm_driver),
       gcm_device_info_provider_(gcm_device_info_provider),
-      url_request_context_(url_request_context) {}
+      url_loader_factory_(std::move(url_loader_factory)) {}
 
 DeviceSyncService::~DeviceSyncService() = default;
 
@@ -33,7 +33,7 @@ void DeviceSyncService::OnStart() {
   // |device_sync_impl_| cannot be initialized until OnStart().
   device_sync_ = DeviceSyncImpl::Factory::NewInstance(
       identity_manager_, gcm_driver_, context()->connector(),
-      gcm_device_info_provider_, url_request_context_);
+      gcm_device_info_provider_, url_loader_factory_);
 
   registry_.AddInterface(base::Bind(&DeviceSyncBase::BindRequest,
                                     base::Unretained(device_sync_.get())));

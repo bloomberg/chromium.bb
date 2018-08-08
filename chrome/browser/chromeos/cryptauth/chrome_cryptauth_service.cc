@@ -47,7 +47,7 @@ std::unique_ptr<cryptauth::CryptAuthClientFactory>
 CreateCryptAuthClientFactoryImpl(Profile* profile) {
   return std::make_unique<cryptauth::CryptAuthClientFactoryImpl>(
       IdentityManagerFactory::GetForProfile(profile),
-      profile->GetRequestContext(),
+      profile->GetURLLoaderFactory(),
       cryptauth::device_classifier_util::GetDeviceClassifier());
 }
 

@@ -11,13 +11,17 @@
 #include "components/cryptauth/cryptauth_client.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/identity/public/cpp/access_token_info.h"
 
 namespace identity {
 class IdentityManager;
 class PrimaryAccountAccessTokenFetcher;
 }  // namespace identity
+
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 class GoogleServiceAuthError;
 
 namespace cryptauth {
@@ -33,7 +37,7 @@ class CryptAuthClientImpl : public CryptAuthClient {
   CryptAuthClientImpl(
       std::unique_ptr<CryptAuthApiCallFlow> api_call_flow,
       identity::IdentityManager* identity_manager,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const DeviceClassifier& device_classifier);
   ~CryptAuthClientImpl() override;
 
@@ -108,7 +112,7 @@ class CryptAuthClientImpl : public CryptAuthClient {
       access_token_fetcher_;
 
   // The context for network requests.
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Contains basic device info of the client making the request that is sent to
   // CryptAuth with each API call.
@@ -141,7 +145,7 @@ class CryptAuthClientFactoryImpl : public CryptAuthClientFactory {
   // |device_classifier|: Contains basic device information of the client.
   CryptAuthClientFactoryImpl(
       identity::IdentityManager* identity_manager,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const DeviceClassifier& device_classifier);
   ~CryptAuthClientFactoryImpl() override;
 
@@ -150,7 +154,7 @@ class CryptAuthClientFactoryImpl : public CryptAuthClientFactory {
 
  private:
   identity::IdentityManager* identity_manager_;
-  const scoped_refptr<net::URLRequestContextGetter> url_request_context_;
+  const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   const DeviceClassifier device_classifier_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthClientFactoryImpl);

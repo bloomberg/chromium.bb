@@ -23,7 +23,6 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/mock_url_fetcher_factory.h"
 #include "google_apis/google_api_keys.h"
-#include "mojo/core/embedder/embedder.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -127,8 +126,6 @@ class GaiaAuthFetcherTest : public testing::Test {
   GURL deprecated_client_login_to_oauth2_url_;
 
  protected:
-  void SetUp() override { mojo::core::Init(); }
-
   void OnResourceIntercepted(const network::ResourceRequest& resource) {
     received_requests_.push_back(resource);
   }

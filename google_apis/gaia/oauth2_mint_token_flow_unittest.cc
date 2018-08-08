@@ -16,14 +16,11 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "net/base/net_errors.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_response.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using net::TestURLFetcher;
-using net::URLFetcher;
-using net::URLRequestStatus;
 using testing::_;
 using testing::StrictMock;
 
@@ -299,71 +296,70 @@ TEST_F(OAuth2MintTokenFlowTest, ParseIssueAdviceResponse) {
 }
 
 TEST_F(OAuth2MintTokenFlowTest, ProcessApiCallSuccess) {
+  network::ResourceResponseHead head_200 =
+      network::CreateResourceResponseHead(net::HTTP_OK);
+
   {  // No body.
-    TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
-    url_fetcher.SetResponseString(std::string());
     CreateFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
     EXPECT_CALL(delegate_, OnMintTokenFailure(_));
-    flow_->ProcessApiCallSuccess(&url_fetcher);
+    flow_->ProcessApiCallSuccess(&head_200, nullptr);
   }
   {  // Bad json.
-    TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
-    url_fetcher.SetResponseString("foo");
     CreateFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
     EXPECT_CALL(delegate_, OnMintTokenFailure(_));
-    flow_->ProcessApiCallSuccess(&url_fetcher);
+    flow_->ProcessApiCallSuccess(&head_200,
+                                 std::make_unique<std::string>("foo"));
   }
   {  // Valid json: no access token.
-    TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
-    url_fetcher.SetResponseString(kTokenResponseNoAccessToken);
     CreateFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
     EXPECT_CALL(delegate_, OnMintTokenFailure(_));
-    flow_->ProcessApiCallSuccess(&url_fetcher);
+    flow_->ProcessApiCallSuccess(
+        &head_200, std::make_unique<std::string>(kTokenResponseNoAccessToken));
   }
   {  // Valid json: good token response.
-    TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
-    url_fetcher.SetResponseString(kValidTokenResponse);
     CreateFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
     EXPECT_CALL(delegate_, OnMintTokenSuccess("at1", 3600));
-    flow_->ProcessApiCallSuccess(&url_fetcher);
+    flow_->ProcessApiCallSuccess(
+        &head_200, std::make_unique<std::string>(kValidTokenResponse));
   }
   {  // Valid json: no description.
-    TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
-    url_fetcher.SetResponseString(kIssueAdviceResponseNoDescription);
     CreateFlow(OAuth2MintTokenFlow::MODE_ISSUE_ADVICE);
     EXPECT_CALL(delegate_, OnMintTokenFailure(_));
-    flow_->ProcessApiCallSuccess(&url_fetcher);
+    flow_->ProcessApiCallSuccess(
+        &head_200,
+        std::make_unique<std::string>(kIssueAdviceResponseNoDescription));
   }
   {  // Valid json: no detail.
-    TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
-    url_fetcher.SetResponseString(kIssueAdviceResponseNoDetail);
     CreateFlow(OAuth2MintTokenFlow::MODE_ISSUE_ADVICE);
     EXPECT_CALL(delegate_, OnMintTokenFailure(_));
-    flow_->ProcessApiCallSuccess(&url_fetcher);
+    flow_->ProcessApiCallSuccess(
+        &head_200, std::make_unique<std::string>(kIssueAdviceResponseNoDetail));
   }
   {  // Valid json: good issue advice response.
-    TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
-    url_fetcher.SetResponseString(kValidIssueAdviceResponse);
     CreateFlow(OAuth2MintTokenFlow::MODE_ISSUE_ADVICE);
     IssueAdviceInfo ia(CreateIssueAdvice());
     EXPECT_CALL(delegate_, OnIssueAdviceSuccess(ia));
-    flow_->ProcessApiCallSuccess(&url_fetcher);
+    flow_->ProcessApiCallSuccess(
+        &head_200, std::make_unique<std::string>(kValidIssueAdviceResponse));
   }
 }
 
 TEST_F(OAuth2MintTokenFlowTest, ProcessApiCallFailure) {
+  network::ResourceResponseHead head;
   {  // Null delegate should work fine.
-    TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
-    url_fetcher.set_status(URLRequestStatus::FromError(net::ERR_FAILED));
     CreateFlow(NULL, OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE, "");
-    flow_->ProcessApiCallFailure(&url_fetcher);
+    flow_->ProcessApiCallFailure(net::ERR_FAILED, &head, nullptr);
   }
 
   {  // Non-null delegate.
-    TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
-    url_fetcher.set_status(URLRequestStatus::FromError(net::ERR_FAILED));
     CreateFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
     EXPECT_CALL(delegate_, OnMintTokenFailure(_));
-    flow_->ProcessApiCallFailure(&url_fetcher);
+    flow_->ProcessApiCallFailure(net::ERR_FAILED, &head, nullptr);
+  }
+
+  {  // Null head might happen.
+    CreateFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
+    EXPECT_CALL(delegate_, OnMintTokenFailure(_));
+    flow_->ProcessApiCallFailure(net::ERR_FAILED, nullptr, nullptr);
   }
 }

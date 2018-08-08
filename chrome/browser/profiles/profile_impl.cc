@@ -1513,7 +1513,8 @@ ProfileImpl::CreateDeviceSyncService() {
   return std::make_unique<chromeos::device_sync::DeviceSyncService>(
       IdentityManagerFactory::GetForProfile(this),
       gcm::GCMProfileServiceFactory::GetForProfile(this)->driver(),
-      chromeos::GcmDeviceInfoProviderImpl::GetInstance(), GetRequestContext());
+      chromeos::GcmDeviceInfoProviderImpl::GetInstance(),
+      GetURLLoaderFactory());
 }
 
 std::unique_ptr<service_manager::Service>

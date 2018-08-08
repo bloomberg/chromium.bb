@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "services/identity/public/mojom/constants.mojom.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace drivefs {
@@ -262,7 +263,7 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
       OnMintTokenFailure(error);
       return;
     }
-    mint_token_flow_->Start(host_->delegate_->GetRequestContext(),
+    mint_token_flow_->Start(host_->delegate_->GetURLLoaderFactory(),
                             *access_token);
   }
 

@@ -112,8 +112,8 @@ void IdentityGetAuthTokenFunction::OnGetTokenSuccess(
 
   // Use the logging-in-user access token to mint an access token for this app.
   mint_token_flow_->Start(
-      content::BrowserContext::GetDefaultStoragePartition(browser_context())->
-          GetURLRequestContext(),
+      content::BrowserContext::GetDefaultStoragePartition(browser_context())
+          ->GetURLLoaderFactoryForBrowserProcess(),
       access_token);
 }
 
