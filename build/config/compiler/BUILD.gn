@@ -547,16 +547,22 @@ config("compiler") {
       cxx11_override = use_cxx11
     }
 
-    # gnu11/gnu++11 instead of c11/c++11 is needed because some code uses typeof()
-    # (a GNU extension).
-    # TODO(thakis): Eventually switch this to c++11 instead,
-    # http://crbug.com/427584
-    cflags_c += [ "-std=gnu11" ]
+    # Since we build with -std=c* and not -std=gnu*, _GNU_SOURCE will not be
+    # defined by the compiler.  However, lots of code relies on the non-standard
+    # features that _GNU_SOURCE enables, so define it manually.
+    defines += [ "_GNU_SOURCE" ]
+
+    cflags_c += [ "-std=c11" ]
     if (cxx11_override) {
       # Override Chromium's default for projects that wish to stay on C++11.
-      cflags_cc += [ "-std=gnu++11" ]
+      cflags_cc += [ "-std=c++11" ]
     } else {
-      cflags_cc += [ "-std=gnu++14" ]
+      cflags_cc += [ "-std=c++14" ]
+    }
+    if (is_nacl) {
+      # Undefine __STRICT_ANSI__ to get non-standard features which would
+      # otherwise not be enabled by NaCl's sysroots.
+      cflags += [ "-U__STRICT_ANSI__" ]
     }
   } else if (!is_win && !is_nacl) {
     if (target_os == "android") {
