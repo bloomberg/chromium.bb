@@ -67,6 +67,15 @@ class DatabaseTask : public DatabaseTaskHost {
   virtual void Start() = 0;
 
  protected:
+  // This enum is append-only since it is used by UMA.
+  enum class BackgroundFetchStorageError {
+    kNone,
+    kServiceWorkerStorageError,
+    kCacheStorageError,
+    kStorageError,
+    kMaxValue = kStorageError
+  };
+
   explicit DatabaseTask(DatabaseTaskHost* host);
 
   // Each task MUST call this once finished, even if exceptions occur, to
@@ -80,24 +89,30 @@ class DatabaseTask : public DatabaseTaskHost {
   // Abandon all fetches for a given service worker.
   void AbandonFetches(int64_t service_worker_registration_id);
 
+  // Getters.
   ServiceWorkerContextWrapper* service_worker_context();
-
   CacheStorageManager* cache_manager();
-
   std::set<std::string>& ref_counted_unique_ids();
-
   ChromeBlobStorageContext* blob_storage_context();
 
   // DatabaseTaskHost implementation.
   void OnTaskFinished(DatabaseTask* finished_subtask) override;
   BackgroundFetchDataManager* data_manager() override;
 
+  // UMA reporting.
+  void SetStorageError(BackgroundFetchStorageError error);
+  void SetStorageErrorAndFinish(BackgroundFetchStorageError error);
+  void ReportStorageError();
+
  private:
   // Each task must override this function and perform the following steps:
-  // 1) Report error (UMA) if applicable.
+  // 1) Report storage error (UMA) if applicable.
   // 2) Run the provided callback.
   // 3) Call Finished().
   virtual void FinishWithError(blink::mojom::BackgroundFetchError error) = 0;
+
+  // The Histogram name to report with the Error.
+  virtual std::string HistogramName() const;
 
   DatabaseTaskHost* host_;
 
@@ -107,6 +122,10 @@ class DatabaseTask : public DatabaseTaskHost {
 
   // Map the raw pointer to its unique_ptr, to make lookups easier.
   std::map<DatabaseTask*, std::unique_ptr<DatabaseTask>> active_subtasks_;
+
+  // The storage error to report.
+  BackgroundFetchStorageError storage_error_ =
+      BackgroundFetchStorageError::kNone;
 
   DISALLOW_COPY_AND_ASSIGN(DatabaseTask);
 };

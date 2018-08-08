@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
@@ -59,6 +60,42 @@ void DatabaseTask::AddSubTask(std::unique_ptr<DatabaseTask> task) {
 void DatabaseTask::AbandonFetches(int64_t service_worker_registration_id) {
   for (auto& observer : data_manager()->observers())
     observer.OnServiceWorkerDatabaseCorrupted(service_worker_registration_id);
+}
+
+void DatabaseTask::SetStorageError(BackgroundFetchStorageError error) {
+  DCHECK_NE(BackgroundFetchStorageError::kNone, error);
+  switch (storage_error_) {
+    case BackgroundFetchStorageError::kNone:
+      storage_error_ = error;
+      break;
+    case BackgroundFetchStorageError::kServiceWorkerStorageError:
+    case BackgroundFetchStorageError::kCacheStorageError:
+      DCHECK(error == BackgroundFetchStorageError::kServiceWorkerStorageError ||
+             error == BackgroundFetchStorageError::kCacheStorageError);
+      if (storage_error_ != error)
+        storage_error_ = BackgroundFetchStorageError::kStorageError;
+      break;
+    case BackgroundFetchStorageError::kStorageError:
+      break;
+  }
+}
+
+void DatabaseTask::SetStorageErrorAndFinish(BackgroundFetchStorageError error) {
+  SetStorageError(error);
+  FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+}
+
+void DatabaseTask::ReportStorageError() {
+  if (host_ != data_manager())
+    return;  // This is a SubTask.
+
+  base::UmaHistogramEnumeration("BackgroundFetch.Storage." + HistogramName(),
+                                storage_error_);
+}
+
+std::string DatabaseTask::HistogramName() const {
+  NOTREACHED() << "HistogramName needs to be provided.";
+  return "GeneralDatabaseTask";
 }
 
 ServiceWorkerContextWrapper* DatabaseTask::service_worker_context() {
