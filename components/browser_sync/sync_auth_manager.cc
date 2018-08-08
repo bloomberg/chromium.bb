@@ -186,6 +186,7 @@ void SyncAuthManager::Clear() {
 
 void SyncAuthManager::OnPrimaryAccountSet(
     const AccountInfo& primary_account_info) {
+  DCHECK_EQ(GoogleServiceAuthError::NONE, last_auth_error_.state());
   account_state_changed_callback_.Run();
 }
 
@@ -193,6 +194,9 @@ void SyncAuthManager::OnPrimaryAccountCleared(
     const AccountInfo& previous_primary_account_info) {
   UMA_HISTOGRAM_ENUMERATION("Sync.StopSource", syncer::SIGN_OUT,
                             syncer::STOP_SOURCE_LIMIT);
+  // Clear any pending request or auth errors we might have, since they aren't
+  // meaningful anymore.
+  Clear();
   account_state_changed_callback_.Run();
 }
 
