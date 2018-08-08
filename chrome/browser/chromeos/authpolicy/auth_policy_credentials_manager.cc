@@ -323,7 +323,7 @@ void AuthPolicyCredentialsManager::ShowNotification(int message_id) {
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
           l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE),
-          l10n_util::GetStringUTF16(message_id), gfx::Image(),
+          l10n_util::GetStringUTF16(message_id),
           l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
           GURL(notification_id), notifier_id, data, std::move(delegate),
           ash::kNotificationWarningIcon,

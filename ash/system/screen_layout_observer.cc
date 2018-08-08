@@ -366,7 +366,7 @@ void ScreenLayoutObserver::CreateOrUpdateNotification(
   std::unique_ptr<Notification> notification =
       Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, message,
-          additional_message, gfx::Image(),
+          additional_message,
           base::string16(),  // display_source
           GURL(),
           message_center::NotifierId(

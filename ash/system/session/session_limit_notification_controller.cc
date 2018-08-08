@@ -91,7 +91,7 @@ void SessionLimitNotificationController::UpdateNotification() {
           ComposeNotificationTitle(),
           l10n_util::GetStringUTF16(
               IDS_ASH_STATUS_TRAY_NOTIFICATION_SESSION_LENGTH_LIMIT_MESSAGE),
-          gfx::Image(), base::string16() /* display_source */, GURL(),
+          base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               kNotifierSessionLengthTimeout),

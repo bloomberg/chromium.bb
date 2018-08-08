@@ -59,7 +59,7 @@ void DoShowArcMigrationSuccessNotification(Profile* profile) {
           message_center::NOTIFICATION_TYPE_SIMPLE, kSuccessNotificationId,
           l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_TITLE),
           l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE),
-          gfx::Image(), base::string16(), GURL(), notifier_id,
+          base::string16(), GURL(), notifier_id,
           message_center::RichNotificationData(), std::move(delegate),
           ash::kNotificationSettingsIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
@@ -101,7 +101,7 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
           message_center::NOTIFICATION_TYPE_SIMPLE, kSuggestNotificationId,
           l10n_util::GetStringUTF16(
               IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_TITLE),
-          message, gfx::Image(), base::string16(), GURL(), notifier_id,
+          message, base::string16(), GURL(), notifier_id,
           message_center::RichNotificationData(), std::move(delegate),
           ash::kNotificationSettingsIcon,
           message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);

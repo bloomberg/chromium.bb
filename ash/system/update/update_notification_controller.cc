@@ -52,7 +52,7 @@ void UpdateNotificationController::OnUpdateAvailable() {
   std::unique_ptr<Notification> notification =
       Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
-          GetNotificationTitle(), GetNotificationMessage(), gfx::Image(),
+          GetNotificationTitle(), GetNotificationMessage(),
           base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId),

@@ -66,8 +66,8 @@ void DetachableBaseNotificationController::
   std::unique_ptr<message_center::Notification> notification =
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
-          kBaseRequiresUpdateNotificationId, title, message, gfx::Image(),
-          base::string16(), GURL(),
+          kBaseRequiresUpdateNotificationId, title, message, base::string16(),
+          GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               kDetachableBaseNotifierId),
@@ -142,7 +142,7 @@ void DetachableBaseNotificationController::ShowPairingNotificationIfNeeded() {
   std::unique_ptr<message_center::Notification> notification =
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kBaseChangedNotificationId,
-          title, message, gfx::Image(), base::string16(), GURL(),
+          title, message, base::string16(), GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               kDetachableBaseNotifierId),

@@ -347,8 +347,8 @@ NetworkPortalNotificationController::CreateDefaultCaptivePortalNotification(
               is_wifi ? IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIFI
                       : IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIRED,
               base::UTF8ToUTF16(network->name())),
-          gfx::Image(), base::string16(), GURL(), notifier_id, data,
-          std::move(delegate), ash::kNotificationCaptivePortalIcon,
+          base::string16(), GURL(), notifier_id, data, std::move(delegate),
+          ash::kNotificationCaptivePortalIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
   return notification;
@@ -400,9 +400,9 @@ NetworkPortalNotificationController::
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
           l10n_util::GetStringUTF16(
               IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIFI),
-          notification_text, gfx::Image(),
-          base::string16() /* display_source */, GURL(), notifier_id, data,
-          std::move(delegate), ash::kNotificationCaptivePortalIcon,
+          notification_text, base::string16() /* display_source */, GURL(),
+          notifier_id, data, std::move(delegate),
+          ash::kNotificationCaptivePortalIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
   return notification;

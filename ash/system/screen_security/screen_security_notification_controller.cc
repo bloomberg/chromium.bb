@@ -70,7 +70,7 @@ void ScreenSecurityNotificationController::CreateNotification(
           is_capture ? kScreenCaptureNotificationId
                      : kScreenShareNotificationId,
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCREEN_SHARE_TITLE),
-          message, gfx::Image(), base::string16() /* display_source */, GURL(),
+          message, base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               is_capture ? kNotifierScreenCapture : kNotifierScreenShare),

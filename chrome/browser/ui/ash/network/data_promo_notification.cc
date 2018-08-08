@@ -254,7 +254,7 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kDataPromoNotificationId,
           l10n_util::GetStringUTF16(IDS_MOBILE_DATA_NOTIFICATION_TITLE),
-          message, gfx::Image(), base::string16() /* display_source */, GURL(),
+          message, base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT, kNotifierDataPromo),
           message_center::RichNotificationData(),
@@ -292,8 +292,7 @@ bool DataPromoNotification::ShowDataSaverNotification() {
   std::unique_ptr<message_center::Notification> notification =
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kDataSaverNotificationId,
-          title, message, gfx::Image(), base::string16() /* display_source */,
-          GURL(),
+          title, message, base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT, kNotifierDataSaver),
           message_center::RichNotificationData(),

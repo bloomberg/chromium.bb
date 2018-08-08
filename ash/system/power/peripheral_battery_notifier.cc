@@ -280,7 +280,7 @@ bool PeripheralBatteryNotifier::PostNotification(const std::string& path,
 
   auto notification = message_center::Notification::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, params.id, params.title,
-      params.message, gfx::Image(), base::string16(), params.url,
+      params.message, base::string16(), params.url,
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  params.notifier_name),
       message_center::RichNotificationData(), nullptr, *params.icon,

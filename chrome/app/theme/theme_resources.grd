@@ -198,9 +198,6 @@
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_KIOSK_APP_USER_POD_ICON" file="cros/kiosk_app_user_pod_icon.png" />
         <structure type="chrome_scaled_image" name="IDR_LOGIN_PASSWORD_CAPS_LOCK" file="cros/login_password_capslock.png" />
-        <structure type="chrome_scaled_image" name="IDR_NETWORK_FAILED_CELLULAR" file="cros/status_cellular_failed.png" />
-        <structure type="chrome_scaled_image" name="IDR_NETWORK_ACTIVATED_3G" file="cros/notification_3g.png" />
-        <structure type="chrome_scaled_image" name="IDR_NETWORK_ACTIVATED_LTE" file="cros/notification_lte.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_THEME_FRAME" file="common/supervised_user_theme/theme_frame_supervised.png" />
       <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_THEME_FRAME_INACTIVE" file="common/supervised_user_theme/theme_frame_supervised_inactive.png" />

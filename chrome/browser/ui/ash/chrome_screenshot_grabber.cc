@@ -691,7 +691,6 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
           kNotificationId,
           l10n_util::GetStringUTF16(GetScreenshotNotificationTitle(result)),
           l10n_util::GetStringUTF16(GetScreenshotNotificationText(result)),
-          gfx::Image(),
           l10n_util::GetStringUTF16(IDS_SCREENSHOT_NOTIFICATION_NOTIFIER_NAME),
           GURL(kNotificationOriginUrl),
           message_center::NotifierId(

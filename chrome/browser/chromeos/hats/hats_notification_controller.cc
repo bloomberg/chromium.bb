@@ -193,7 +193,7 @@ void HatsNotificationController::OnPortalDetectionCompleted(
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
           l10n_util::GetStringUTF16(IDS_HATS_NOTIFICATION_TITLE),
-          l10n_util::GetStringUTF16(IDS_HATS_NOTIFICATION_BODY), gfx::Image(),
+          l10n_util::GetStringUTF16(IDS_HATS_NOTIFICATION_BODY),
           l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_HATS_NAME),
           GURL(kNotificationOriginUrl),
           message_center::NotifierId(

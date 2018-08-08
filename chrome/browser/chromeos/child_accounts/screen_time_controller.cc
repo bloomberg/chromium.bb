@@ -220,7 +220,6 @@ void ScreenTimeController::ShowNotification(
           title,
           ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
                                  ui::TimeFormat::LENGTH_LONG, time_remaining),
-          gfx::Image(),
           l10n_util::GetStringUTF16(IDS_TIME_LIMIT_NOTIFICATION_DISPLAY_SOURCE),
           GURL(),
           message_center::NotifierId(

@@ -215,7 +215,7 @@ void ShowAccessibilityNotification(A11yNotificationType type) {
   std::unique_ptr<message_center::Notification> notification =
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, title,
-          text, gfx::Image(), base::string16(), GURL(),
+          text, base::string16(), GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               kNotifierAccessibility),

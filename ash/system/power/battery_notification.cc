@@ -96,7 +96,7 @@ std::unique_ptr<Notification> CreateNotification(
   std::unique_ptr<Notification> notification =
       Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kBatteryNotificationId,
-          base::string16(), message, gfx::Image(), base::string16(), GURL(),
+          base::string16(), message, base::string16(), GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT, kNotifierBattery),
           message_center::RichNotificationData(), nullptr,
