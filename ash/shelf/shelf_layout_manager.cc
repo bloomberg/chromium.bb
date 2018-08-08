@@ -24,6 +24,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -163,8 +164,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
       shelf_widget_(shelf_widget),
       shelf_(shelf),
       is_background_blur_enabled_(
-          app_list::features::IsBackgroundBlurEnabled()),
-      scoped_session_observer_(this) {
+          app_list::features::IsBackgroundBlurEnabled()) {
   DCHECK(shelf_widget_);
   DCHECK(shelf_);
   Shell::Get()->AddShellObserver(this);
@@ -172,6 +172,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
   Shell::Get()->activation_client()->AddObserver(this);
   state_.session_state = Shell::Get()->session_controller()->GetSessionState();
   keyboard::KeyboardController::Get()->AddObserver(this);
+  wallpaper_controller_observer_.Add(Shell::Get()->wallpaper_controller());
 }
 
 ShelfLayoutManager::~ShelfLayoutManager() {
@@ -518,8 +519,11 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
     return SHELF_BACKGROUND_DEFAULT;
 
   // Handle all non active screen states, including OOBE and pre-login.
-  if (state_.session_state != session_manager::SessionState::ACTIVE)
+  if (state_.session_state != session_manager::SessionState::ACTIVE) {
+    if (!Shell::Get()->wallpaper_controller()->IsWallpaperBlurred())
+      return SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER;
     return SHELF_BACKGROUND_OVERLAP;
+  }
 
   // If the app list is active, hide the shelf background to prevent overlap.
   if (is_app_list_visible_)
@@ -1094,6 +1098,10 @@ void ShelfLayoutManager::OnSessionStateChanged(
   CalculateTargetBounds(state_, &target_bounds);
   UpdateBoundsAndOpacity(target_bounds, true /* animate */, nullptr);
   UpdateVisibilityState();
+}
+
+void ShelfLayoutManager::OnWallpaperBlurChanged() {
+  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
 }
 
 void ShelfLayoutManager::OnLoginStatusChanged(LoginStatus loing_status) {

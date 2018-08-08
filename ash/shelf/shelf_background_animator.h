@@ -174,7 +174,7 @@ class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
   // The last background type this is animating away from.
   ShelfBackgroundType previous_background_type_ = SHELF_BACKGROUND_MAXIMIZED;
 
-  // Drives the animtion.
+  // Drives the animation.
   std::unique_ptr<gfx::SlideAnimation> animator_;
 
   // Tracks the shelf background animation values.

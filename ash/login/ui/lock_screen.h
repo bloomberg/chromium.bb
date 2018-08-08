@@ -6,7 +6,6 @@
 #define ASH_LOGIN_UI_LOCK_SCREEN_H_
 
 #include <memory>
-#include <unordered_map>
 
 #include "ash/ash_export.h"
 #include "ash/session/session_observer.h"
@@ -16,10 +15,6 @@
 
 namespace base {
 class OneShotTimer;
-}
-
-namespace ui {
-class Layer;
 }
 
 namespace ash {
@@ -65,9 +60,6 @@ class ASH_EXPORT LockScreen : public TrayActionObserver,
 
   ScreenType screen_type() const { return type_; }
 
-  // Enables/disables background blur. Used for debugging purpose.
-  void ToggleBlurForDebug();
-
   // Returns the active data dispatcher.
   LoginDataDispatcher* data_dispatcher();
 
@@ -96,9 +88,6 @@ class ASH_EXPORT LockScreen : public TrayActionObserver,
 
   // Unowned pointer to the LockContentsView hosted in lock window.
   LockContentsView* contents_view_ = nullptr;
-
-  // The wallpaper bluriness before entering lock_screen.
-  std::unordered_map<ui::Layer*, float> initial_blur_;
 
   // The fallback timer that ensures the login screen is shown in case the first
   // wallpaper animation takes an extra long time to complete.

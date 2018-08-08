@@ -1850,15 +1850,15 @@ TEST_F(WallpaperControllerTest, WallpaperBlurDuringLockScreenTransition) {
   controller_->AddObserver(&observer);
 
   // Simulate lock and unlock sequence.
-  controller_->PrepareWallpaperForLockScreenChange(true);
+  controller_->UpdateWallpaperBlur(true);
   EXPECT_TRUE(controller_->IsWallpaperBlurred());
   EXPECT_EQ(1, observer.wallpaper_blur_changed_count_);
 
   SetSessionState(SessionState::LOCKED);
   EXPECT_TRUE(controller_->IsWallpaperBlurred());
 
-  // Change of state to ACTIVE trigers post lock animation and
-  // PrepareWallpaperForLockScreenChange(false)
+  // Change of state to ACTIVE triggers post lock animation and
+  // UpdateWallpaperBlur(false)
   SetSessionState(SessionState::ACTIVE);
   EXPECT_FALSE(controller_->IsWallpaperBlurred());
   EXPECT_EQ(2, observer.wallpaper_blur_changed_count_);

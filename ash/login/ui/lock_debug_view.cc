@@ -23,6 +23,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
@@ -138,12 +139,12 @@ mojom::LoginUserInfoPtr PopulateUserData(const mojom::LoginUserInfoPtr& user,
       result->basic_user_info->account_id.GetUserEmail();
 
   if (is_public_account) {
-    result->public_account_info = ash::mojom::PublicAccountInfo::New();
+    result->public_account_info = mojom::PublicAccountInfo::New();
     result->public_account_info->enterprise_domain = kDebugEnterpriseDomain;
     result->public_account_info->default_locale = kDebugDefaultLocaleCode;
 
-    std::vector<ash::mojom::LocaleItemPtr> locales;
-    mojom::LocaleItemPtr locale_item = ash::mojom::LocaleItem::New();
+    std::vector<mojom::LocaleItemPtr> locales;
+    mojom::LocaleItemPtr locale_item = mojom::LocaleItem::New();
     locale_item->language_code = kDebugDefaultLocaleCode;
     locale_item->title = kDebugDefaultLocaleTitle;
     locales.push_back(std::move(locale_item));
@@ -789,7 +790,8 @@ void LockDebugView::ButtonPressed(views::Button* sender,
 
   // Enable or disable wallpaper blur.
   if (sender->id() == ButtonId::kGlobalToggleBlur) {
-    LockScreen::Get()->ToggleBlurForDebug();
+    Shell::Get()->wallpaper_controller()->UpdateWallpaperBlur(
+        !Shell::Get()->wallpaper_controller()->IsWallpaperBlurred());
     return;
   }
 

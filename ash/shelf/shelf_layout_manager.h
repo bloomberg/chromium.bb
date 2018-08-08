@@ -12,6 +12,7 @@
 #include "ash/session/session_observer.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell_observer.h"
+#include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wm/lock_state_observer.h"
 #include "ash/wm/wm_snap_to_pixel_layout_manager.h"
 #include "ash/wm/workspace/workspace_types.h"
@@ -51,7 +52,8 @@ class ASH_EXPORT ShelfLayoutManager
       public keyboard::KeyboardControllerObserver,
       public LockStateObserver,
       public wm::WmSnapToPixelLayoutManager,
-      public SessionObserver {
+      public SessionObserver,
+      public WallpaperControllerObserver {
  public:
   // The snapping threshold for dragging app list from shelf in tablet mode,
   // measured in DIPs.
@@ -172,6 +174,9 @@ class ASH_EXPORT ShelfLayoutManager
   // Overridden from SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
   void OnLoginStatusChanged(LoginStatus loing_status) override;
+
+  // Overridden from WallpaperControllerObserver:
+  void OnWallpaperBlurChanged() override;
 
   // TODO(harrym|oshima): These templates will be moved to a new Shelf class.
   // A helper function for choosing values specific to a shelf alignment.
@@ -425,7 +430,9 @@ class ASH_EXPORT ShelfLayoutManager
   ShelfBackgroundType shelf_background_type_before_drag_ =
       SHELF_BACKGROUND_OVERLAP;
 
-  ScopedSessionObserver scoped_session_observer_;
+  ScopedSessionObserver scoped_session_observer_{this};
+  ScopedObserver<WallpaperController, ShelfLayoutManager>
+      wallpaper_controller_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

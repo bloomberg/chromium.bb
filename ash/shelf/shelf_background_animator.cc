@@ -5,9 +5,11 @@
 #include "ash/shelf/shelf_background_animator.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "ash/animation/animation_change_type.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/login_constants.h"
 #include "ash/public/cpp/wallpaper_types.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
@@ -91,8 +93,9 @@ std::pair<int, int> GetTargetColorAlphaValues(
       target_shelf_color_alpha = ShelfBackgroundAnimator::kMaxAlpha;
       target_item_color_alpha = 0;
       break;
-    default:
+    case SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER:
       NOTREACHED();
+      break;
   }
   return std::pair<int, int>(target_shelf_color_alpha, target_item_color_alpha);
 }
@@ -267,11 +270,12 @@ void ShelfBackgroundAnimator::CreateAnimator(
       break;
     case SHELF_BACKGROUND_MAXIMIZED:
     case SHELF_BACKGROUND_SPLIT_VIEW:
+    case SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER:
       duration_ms = 250;
       break;
   }
 
-  animator_.reset(new gfx::SlideAnimation(this));
+  animator_ = std::make_unique<gfx::SlideAnimation>(this);
   animator_->SetSlideDuration(duration_ms);
 }
 
@@ -290,6 +294,16 @@ void ShelfBackgroundAnimator::GetTargetValues(
     ShelfBackgroundType background_type,
     AnimationValues* shelf_background_values,
     AnimationValues* item_background_values) const {
+  // Always use the login base color if the wallpaper is not blurred.
+  if (background_type == SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER) {
+    auto color =
+        SkColorSetA(login_constants::kDefaultBaseColor,
+                    login_constants::kNonBlurredWallpaperBackgroundAlpha);
+    shelf_background_values->SetTargetValues(color);
+    item_background_values->SetTargetValues(color);
+    return;
+  }
+
   // Shell may not have instance in tests.
   if (Shell::HasInstance()) {
     auto session_state = Shell::Get()->session_controller()->GetSessionState();
@@ -332,6 +346,9 @@ void ShelfBackgroundAnimator::GetTargetValues(
         break;
       case SHELF_BACKGROUND_SPLIT_VIEW:
         darkening_alpha = ShelfBackgroundAnimator::kMaxAlpha;
+        break;
+      case SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER:
+        NOTREACHED();
         break;
     }
     target_color = color_utils::GetResultingPaintColor(

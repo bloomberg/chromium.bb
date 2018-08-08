@@ -35,6 +35,7 @@
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/box_layout.h"
@@ -156,6 +157,8 @@ class LoginAuthUserView::FingerprintView : public views::View {
     AddChildView(label_);
   }
 
+  ~FingerprintView() override = default;
+
   void SetIcon(mojom::FingerprintUnlockState state) {
     switch (state) {
       case mojom::FingerprintUnlockState::UNAVAILABLE:
@@ -215,8 +218,6 @@ class LoginAuthUserView::FingerprintView : public views::View {
                               mojom::FingerprintUnlockState::AVAILABLE));
     }
   }
-
-  ~FingerprintView() override = default;
 
   gfx::Size CalculatePreferredSize() const override {
     gfx::Size size = views::View::CalculatePreferredSize();
@@ -362,8 +363,7 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
                                      const Callbacks& callbacks)
     : NonAccessibleView(kLoginAuthUserViewClassName),
       on_auth_(callbacks.on_auth),
-      on_tap_(callbacks.on_tap),
-      weak_factory_(this) {
+      on_tap_(callbacks.on_tap) {
   DCHECK(callbacks.on_auth);
   DCHECK(callbacks.on_tap);
   DCHECK(callbacks.on_remove_warning_shown);
@@ -471,6 +471,10 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
   // Update authentication UI.
   SetAuthMethods(auth_methods_);
   user_view_->UpdateForUser(user, false /*animate*/);
+
+  observer_.Add(Shell::Get()->wallpaper_controller());
+  // Ensure initial blur state is set correctly.
+  OnWallpaperBlurChanged();
 }
 
 LoginAuthUserView::~LoginAuthUserView() = default;
@@ -698,6 +702,21 @@ void LoginAuthUserView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
   DCHECK_EQ(online_sign_in_message_, sender);
   OnOnlineSignInMessageTap();
+}
+
+void LoginAuthUserView::OnWallpaperBlurChanged() {
+  if (Shell::Get()->wallpaper_controller()->IsWallpaperBlurred()) {
+    SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
+    SetBackground(nullptr);
+  } else {
+    SetPaintToLayer();
+    layer()->SetFillsBoundsOpaquely(false);
+    SetBackground(views::CreateBackgroundFromPainter(
+        views::Painter::CreateSolidRoundRectPainter(
+            SkColorSetA(login_constants::kDefaultBaseColor,
+                        login_constants::kNonBlurredWallpaperBackgroundAlpha),
+            login_constants::kNonBlurredWallpaperBackgroundRadiusDp)));
+  }
 }
 
 void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
