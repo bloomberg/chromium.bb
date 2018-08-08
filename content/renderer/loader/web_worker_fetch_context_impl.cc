@@ -19,6 +19,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
+#include "content/renderer/loader/frame_request_blocker.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
@@ -215,6 +216,7 @@ WebWorkerFetchContextImpl::CloneForNestedWorker() {
       is_controlled_by_service_worker_;
   new_context->is_on_sub_frame_ = is_on_sub_frame_;
   new_context->ancestor_frame_id_ = ancestor_frame_id_;
+  new_context->frame_request_blocker_ = frame_request_blocker_;
   new_context->appcache_host_id_ = appcache_host_id_;
   return new_context;
 }
@@ -283,6 +285,7 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
   auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_service_worker_provider_id(service_worker_provider_id_);
   extra_data->set_render_frame_id(ancestor_frame_id_);
+  extra_data->set_frame_request_blocker(frame_request_blocker_);
   extra_data->set_initiated_in_secure_context(is_secure_context_);
   if (throttle_provider_) {
     extra_data->set_url_loader_throttles(throttle_provider_->CreateThrottles(
@@ -372,6 +375,11 @@ void WebWorkerFetchContextImpl::set_is_controlled_by_service_worker(
 
 void WebWorkerFetchContextImpl::set_ancestor_frame_id(int id) {
   ancestor_frame_id_ = id;
+}
+
+void WebWorkerFetchContextImpl::set_frame_request_blocker(
+    scoped_refptr<FrameRequestBlocker> frame_request_blocker) {
+  frame_request_blocker_ = frame_request_blocker;
 }
 
 void WebWorkerFetchContextImpl::set_site_for_cookies(

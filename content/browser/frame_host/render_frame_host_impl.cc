@@ -314,7 +314,7 @@ void CreateFrameResourceCoordinator(
       std::move(request));
 }
 
-using FrameCallback =
+using FrameNotifyCallback =
     base::RepeatingCallback<void(ResourceDispatcherHostImpl*,
                                  const GlobalFrameRoutingId&)>;
 
@@ -322,7 +322,7 @@ using FrameCallback =
 // ResourceDispatcherHostImpl of information pertaining to loading behavior of
 // frame hosts.
 void NotifyRouteChangesOnIO(
-    const FrameCallback& frame_callback,
+    const FrameNotifyCallback& frame_callback,
     std::unique_ptr<std::set<GlobalFrameRoutingId>> routing_ids) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
@@ -332,13 +332,11 @@ void NotifyRouteChangesOnIO(
     frame_callback.Run(rdh, routing_id);
 }
 
-void NotifyForEachFrameFromUI(RenderFrameHost* root_frame_host,
-                              const FrameCallback& frame_callback) {
+void NotifyForEachFrameFromUI(RenderFrameHostImpl* root_frame_host,
+                              const FrameNotifyCallback& frame_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  FrameTree* frame_tree = static_cast<RenderFrameHostImpl*>(root_frame_host)
-                              ->frame_tree_node()
-                              ->frame_tree();
+  FrameTree* frame_tree = root_frame_host->frame_tree_node()->frame_tree();
   DCHECK_EQ(root_frame_host, frame_tree->GetMainFrame());
 
   auto routing_ids = std::make_unique<std::set<GlobalFrameRoutingId>>();
@@ -355,6 +353,25 @@ void NotifyForEachFrameFromUI(RenderFrameHost* root_frame_host,
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&NotifyRouteChangesOnIO, frame_callback,
                      std::move(routing_ids)));
+}
+
+using FrameCallback = base::RepeatingCallback<void(RenderFrameHostImpl*)>;
+void ForEachFrame(RenderFrameHostImpl* root_frame_host,
+                  const FrameCallback& frame_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  FrameTree* frame_tree = root_frame_host->frame_tree_node()->frame_tree();
+  DCHECK_EQ(root_frame_host, frame_tree->GetMainFrame());
+
+  for (FrameTreeNode* node : frame_tree->Nodes()) {
+    RenderFrameHostImpl* frame_host = node->current_frame_host();
+    RenderFrameHostImpl* pending_frame_host =
+        node->render_manager()->speculative_frame_host();
+    if (frame_host)
+      frame_callback.Run(frame_host);
+    if (pending_frame_host)
+      frame_callback.Run(pending_frame_host);
+  }
 }
 
 void LookupRenderFrameHostOrProxy(int process_id,
@@ -3228,17 +3245,19 @@ void RenderFrameHostImpl::CreateNewWindow(
     // be needed if a response ends up creating a plugin. We'll only have a
     // single frame at this point. These requests will be resumed either in
     // WebContentsImpl::CreateNewWindow or RenderFrameHost::Init.
-    // TODO(crbug.com/581037): Now that NPAPI is deprecated we should be able to
-    // remove this, but more investigation is needed.
-    auto block_requests_for_route = base::Bind(
-        [](const GlobalFrameRoutingId& id) {
-          auto* rdh = ResourceDispatcherHostImpl::Get();
-          if (rdh)
-            rdh->BlockRequestsForRoute(id);
-        },
-        GlobalFrameRoutingId(render_process_id, main_frame_route_id));
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            std::move(block_requests_for_route));
+    // TODO(crbug.com/581037): Even though NPAPI is deleted, other features
+    // depend on this behavior. See the bug for more information.
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      auto block_requests_for_route = base::Bind(
+          [](const GlobalFrameRoutingId& id) {
+            auto* rdh = ResourceDispatcherHostImpl::Get();
+            if (rdh)
+              rdh->BlockRequestsForRoute(id);
+          },
+          GlobalFrameRoutingId(render_process_id, main_frame_route_id));
+      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                              std::move(block_requests_for_route));
+    }
   }
 
   DCHECK(IsRenderFrameLive());
@@ -3272,6 +3291,14 @@ void RenderFrameHostImpl::CreateNewWindow(
   RenderFrameHostImpl* rfh =
       RenderFrameHostImpl::FromID(GetProcess()->GetID(), main_frame_route_id);
   DCHECK(rfh);
+
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      rfh->waiting_for_init_) {
+    // Need to check |waiting_for_init_| as some paths inside CreateNewWindow
+    // call above (namely, if WebContentsDelegate::ShouldCreateWebContents
+    // returns false) will resume requests by calling RenderFrameHostImpl::Init.
+    rfh->frame_->BlockRequests();
+  }
 
   service_manager::mojom::InterfaceProviderPtrInfo
       main_frame_interface_provider_info;
@@ -4433,22 +4460,47 @@ bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {
 
 void RenderFrameHostImpl::BlockRequestsForFrame() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  NotifyForEachFrameFromUI(
-      this,
-      base::BindRepeating(&ResourceDispatcherHostImpl::BlockRequestsForRoute));
+
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    ForEachFrame(
+        this, base::BindRepeating([](RenderFrameHostImpl* render_frame_host) {
+          if (render_frame_host->frame_)
+            render_frame_host->frame_->BlockRequests();
+        }));
+  } else {
+    NotifyForEachFrameFromUI(
+        this, base::BindRepeating(
+                  &ResourceDispatcherHostImpl::BlockRequestsForRoute));
+  }
 }
 
 void RenderFrameHostImpl::ResumeBlockedRequestsForFrame() {
-  NotifyForEachFrameFromUI(
-      this, base::BindRepeating(
-                &ResourceDispatcherHostImpl::ResumeBlockedRequestsForRoute));
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    ForEachFrame(
+        this, base::BindRepeating([](RenderFrameHostImpl* render_frame_host) {
+          if (render_frame_host->frame_)
+            render_frame_host->frame_->ResumeBlockedRequests();
+        }));
+  } else {
+    NotifyForEachFrameFromUI(
+        this, base::BindRepeating(
+                  &ResourceDispatcherHostImpl::ResumeBlockedRequestsForRoute));
+  }
 }
 
 void RenderFrameHostImpl::CancelBlockedRequestsForFrame() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  NotifyForEachFrameFromUI(
-      this, base::BindRepeating(
-                &ResourceDispatcherHostImpl::CancelBlockedRequestsForRoute));
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    ForEachFrame(
+        this, base::BindRepeating([](RenderFrameHostImpl* render_frame_host) {
+          if (render_frame_host->frame_)
+            render_frame_host->frame_->CancelBlockedRequests();
+        }));
+  } else {
+    NotifyForEachFrameFromUI(
+        this, base::BindRepeating(
+                  &ResourceDispatcherHostImpl::CancelBlockedRequestsForRoute));
+  }
 }
 
 bool RenderFrameHostImpl::IsSameSiteInstance(

@@ -753,6 +753,17 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
         std::make_unique<WebURLLoaderImpl::RequestPeerImpl>(this, discard_body);
   }
 
+  auto throttles = extra_data->TakeURLLoaderThrottles();
+  // The frame request blocker is only for a frame's subresources.
+  if (extra_data->frame_request_blocker() &&
+      !IsResourceTypeFrame(
+          static_cast<ResourceType>(resource_request->resource_type))) {
+    auto throttle =
+        extra_data->frame_request_blocker()->GetThrottleIfRequestsBlocked();
+    if (throttle)
+      throttles.push_back(std::move(throttle));
+  }
+
   if (sync_load_response) {
     DCHECK(defers_loading_ == NOT_DEFERRING);
 
@@ -764,9 +775,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     resource_dispatcher_->StartSync(
         std::move(resource_request), request.RequestorID(),
         GetTrafficAnnotationTag(request), sync_load_response,
-        url_loader_factory_, extra_data->TakeURLLoaderThrottles(),
-        request.TimeoutInterval(), std::move(download_to_blob_registry),
-        std::move(peer));
+        url_loader_factory_, std::move(throttles), request.TimeoutInterval(),
+        std::move(download_to_blob_registry), std::move(peer));
     return;
   }
 
@@ -777,7 +787,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       std::move(resource_request), request.RequestorID(), task_runner_,
       GetTrafficAnnotationTag(request), false /* is_sync */,
       request.PassResponsePipeToClient(), std::move(peer), url_loader_factory_,
-      extra_data->TakeURLLoaderThrottles(), std::move(response_override),
+      std::move(throttles), std::move(response_override),
       &continue_navigation_function);
   extra_data->set_continue_navigation_function(
       std::move(continue_navigation_function));

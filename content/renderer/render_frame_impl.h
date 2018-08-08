@@ -157,6 +157,7 @@ namespace content {
 class BlinkInterfaceRegistryImpl;
 class CompositorDependencies;
 class ExternalPopupMenu;
+class FrameRequestBlocker;
 class HistoryEntry;
 class ManifestManager;
 class MediaPermissionDispatcher;
@@ -511,6 +512,9 @@ class CONTENT_EXPORT RenderFrameImpl
       service_manager::mojom::InterfaceProviderRequest request) override;
   void GetCanonicalUrlForSharing(
       GetCanonicalUrlForSharingCallback callback) override;
+  void BlockRequests() override;
+  void ResumeBlockedRequests() override;
+  void CancelBlockedRequests() override;
 #if defined(OS_ANDROID)
   void ExtractSmartClipData(
       const gfx::Rect& rect,
@@ -1624,6 +1628,8 @@ class CONTENT_EXPORT RenderFrameImpl
   //   * |HostChildURLLoaderFactoryBundle| for standalone frames, or
   //   * |TrackedChildURLLoaderFactoryBundle| for frames opened by other frames.
   scoped_refptr<ChildURLLoaderFactoryBundle> loader_factories_;
+
+  scoped_refptr<FrameRequestBlocker> frame_request_blocker_;
 
   // AndroidOverlay routing token from the browser, if we have one yet.
   base::Optional<base::UnguessableToken> overlay_routing_token_;

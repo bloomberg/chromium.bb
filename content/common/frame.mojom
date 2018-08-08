@@ -36,6 +36,17 @@ interface Frame {
   GetInterfaceProvider(service_manager.mojom.InterfaceProvider& interfaces);
   GetCanonicalUrlForSharing() => (url.mojom.Url? canonical_url);
 
+  // Causes all new subresource requests to be blocked (not being started) until
+  // ResumeBlockedRequests is called.
+  BlockRequests();
+
+  // Resumes blocked requests.
+  // It is safe to call this without calling BlockRequests.
+  ResumeBlockedRequests();
+
+  // Cancels blocked requests. BlockRequests must have been called before.
+  CancelBlockedRequests();
+
   // Samsung Galaxy Note-specific "smart clip" stylus text getter.
   // Extracts the data at the given rect.
   [EnableIf=is_android]
