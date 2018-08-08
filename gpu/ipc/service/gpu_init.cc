@@ -100,8 +100,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // Blacklist decisions based on basic GPUInfo may not be final. It might
   // need more context based GPUInfo. In such situations, switching to
   // SwiftShader needs to wait until creating a context.
-  bool needs_more_info = false;
+  bool needs_more_info = true;
 #if !defined(OS_ANDROID) && !defined(IS_CHROMECAST)
+  needs_more_info = false;
   if (!PopGPUInfoCache(&gpu_info_)) {
     CollectBasicGraphicsInfo(command_line, &gpu_info_);
   }
@@ -355,8 +356,9 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   ui::OzonePlatform::InitializeForGPU(params);
   ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 #endif
-  bool needs_more_info = false;
+  bool needs_more_info = true;
 #if !defined(IS_CHROMECAST)
+  needs_more_info = false;
   if (!PopGPUInfoCache(&gpu_info_)) {
     CollectBasicGraphicsInfo(command_line, &gpu_info_);
   }
