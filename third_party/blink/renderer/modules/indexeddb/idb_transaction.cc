@@ -558,7 +558,7 @@ void IDBTransaction::EnqueueEvent(Event* event) {
     return;
 
   event->SetTarget(this);
-  event_queue_->EnqueueEvent(FROM_HERE, event);
+  event_queue_->EnqueueEvent(FROM_HERE, *event);
 }
 
 void IDBTransaction::AbortOutstandingRequests() {
