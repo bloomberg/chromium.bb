@@ -704,7 +704,7 @@ TEST_F(RTCPeerConnectionHandlerTest, setLocalDescriptionParseError) {
   pc_handler_->SetLocalDescription(request, description);
   RunMessageLoopsUntilIdle();
   // A description that failed to be applied shouldn't be stored.
-  EXPECT_TRUE(pc_handler_->LocalDescription().Sdp().IsEmpty());
+  EXPECT_TRUE(pc_handler_->LocalDescription().IsNull());
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescription) {
@@ -760,7 +760,7 @@ TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescriptionParseError) {
   pc_handler_->SetRemoteDescription(request, description);
   RunMessageLoopsUntilIdle();
   // A description that failed to be applied shouldn't be stored.
-  EXPECT_TRUE(pc_handler_->RemoteDescription().Sdp().IsEmpty());
+  EXPECT_TRUE(pc_handler_->RemoteDescription().IsNull());
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, setConfiguration) {
