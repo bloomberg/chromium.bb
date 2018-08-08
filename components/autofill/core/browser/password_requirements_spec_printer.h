@@ -9,11 +9,15 @@
 
 #include "components/autofill/core/browser/proto/password_requirements.pb.h"
 
+namespace autofill {
+
 std::ostream& operator<<(
     std::ostream& out,
-    const autofill::PasswordRequirementsSpec::CharacterClass& character_class);
+    const PasswordRequirementsSpec::CharacterClass& character_class);
 
 std::ostream& operator<<(std::ostream& out,
-                         const autofill::PasswordRequirementsSpec& spec);
+                         const PasswordRequirementsSpec& spec);
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_PASSWORD_REQUIREMENTS_SPEC_PRINTER_H_

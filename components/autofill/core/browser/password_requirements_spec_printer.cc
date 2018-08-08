@@ -4,9 +4,11 @@
 
 #include "components/autofill/core/browser/password_requirements_spec_printer.h"
 
+namespace autofill {
+
 std::ostream& operator<<(
     std::ostream& out,
-    const autofill::PasswordRequirementsSpec::CharacterClass& character_class) {
+    const PasswordRequirementsSpec::CharacterClass& character_class) {
   out << "{";
   if (character_class.has_character_set())
     out << "character_set: \"" << character_class.character_set() << "\", ";
@@ -19,7 +21,7 @@ std::ostream& operator<<(
 }
 
 std::ostream& operator<<(std::ostream& out,
-                         const autofill::PasswordRequirementsSpec& spec) {
+                         const PasswordRequirementsSpec& spec) {
   out << "{";
   if (spec.has_priority())
     out << "priority: " << spec.priority() << ", ";
@@ -42,3 +44,5 @@ std::ostream& operator<<(std::ostream& out,
   out << "}";
   return out;
 }
+
+}  // namespace autofill
