@@ -14,12 +14,22 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 
+namespace {
+
+SkColor GetDefaultInactiveFrameColor() {
+  return base::win::GetVersion() < base::win::VERSION_WIN10
+             ? SkColorSetRGB(0xEB, 0xEB, 0xEB)
+             : SK_ColorWHITE;
+}
+
+}  // namespace
+
 ThemeServiceWin::ThemeServiceWin() {
-  // This just checks for Windows 10 instead of calling DwmColorsAllowed()
+  // This just checks for Windows 8+ instead of calling DwmColorsAllowed()
   // because we want to monitor the frame color even when a custom frame is in
   // use, so that it will be correct if at any time the user switches to the
   // native frame.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
     dwm_key_.reset(new base::win::RegKey(
         HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\DWM", KEY_READ));
     if (dwm_key_->Valid())
@@ -60,7 +70,7 @@ SkColor ThemeServiceWin::GetDefaultColor(int id, bool incognito) const {
       if (!ShouldCustomDrawSystemTitlebar()) {
         return inactive_frame_color_from_registry_
                    ? dwm_inactive_frame_color_.value()
-                   : SK_ColorWHITE;
+                   : GetDefaultInactiveFrameColor();
       }
       if (dwm_inactive_frame_color_)
         return dwm_inactive_frame_color_.value();
@@ -73,38 +83,11 @@ SkColor ThemeServiceWin::GetDefaultColor(int id, bool incognito) const {
 
 bool ThemeServiceWin::DwmColorsAllowed() const {
   return ShouldUseNativeFrame() &&
-         (base::win::GetVersion() >= base::win::VERSION_WIN10);
+         (base::win::GetVersion() >= base::win::VERSION_WIN8);
 }
 
 void ThemeServiceWin::OnDwmKeyUpdated() {
-  DWORD accent_color, color_prevalence;
-  bool use_dwm_frame_color =
-      dwm_key_->ReadValueDW(L"AccentColor", &accent_color) == ERROR_SUCCESS &&
-      dwm_key_->ReadValueDW(L"ColorPrevalence", &color_prevalence) ==
-          ERROR_SUCCESS &&
-      color_prevalence == 1;
-  inactive_frame_color_from_registry_ = false;
-  if (use_dwm_frame_color) {
-    dwm_frame_color_ = skia::COLORREFToSkColor(accent_color);
-    DWORD accent_color_inactive;
-    if (dwm_key_->ReadValueDW(L"AccentColorInactive", &accent_color_inactive) ==
-        ERROR_SUCCESS) {
-      dwm_inactive_frame_color_ =
-          skia::COLORREFToSkColor(accent_color_inactive);
-      inactive_frame_color_from_registry_ = true;
-    } else {
-      // Tint to create inactive color. Always use the non-incognito version of
-      // the tint, since the frame should look the same in both modes.
-      dwm_inactive_frame_color_ = color_utils::HSLShift(
-          dwm_frame_color_.value(),
-          GetTint(ThemeProperties::TINT_FRAME_INACTIVE, false));
-    }
-  } else {
-    dwm_frame_color_.reset();
-    dwm_inactive_frame_color_.reset();
-  }
-
-  dwm_accent_border_color_ = SK_ColorWHITE;
+  dwm_accent_border_color_ = GetDefaultInactiveFrameColor();
   DWORD colorization_color, colorization_color_balance;
   if ((dwm_key_->ReadValueDW(L"ColorizationColor", &colorization_color) ==
        ERROR_SUCCESS) &&
@@ -129,6 +112,39 @@ void ThemeServiceWin::OnDwmKeyUpdated() {
     dwm_accent_border_color_ = color_utils::AlphaBlend(
         input_color, SkColorSetRGB(0xd9, 0xd9, 0xd9),
         gfx::ToRoundedInt(255 * colorization_color_balance / 100.f));
+  }
+
+  inactive_frame_color_from_registry_ = false;
+  if (base::win::GetVersion() < base::win::VERSION_WIN10) {
+    dwm_frame_color_ = dwm_accent_border_color_;
+  } else {
+    DWORD accent_color, color_prevalence;
+    bool use_dwm_frame_color =
+        dwm_key_->ReadValueDW(L"AccentColor", &accent_color) == ERROR_SUCCESS &&
+        dwm_key_->ReadValueDW(L"ColorPrevalence", &color_prevalence) ==
+            ERROR_SUCCESS &&
+        color_prevalence == 1;
+    if (use_dwm_frame_color) {
+      dwm_frame_color_ = skia::COLORREFToSkColor(accent_color);
+      DWORD accent_color_inactive;
+      if (dwm_key_->ReadValueDW(L"AccentColorInactive",
+                                &accent_color_inactive) == ERROR_SUCCESS) {
+        dwm_inactive_frame_color_ =
+            skia::COLORREFToSkColor(accent_color_inactive);
+        inactive_frame_color_from_registry_ = true;
+      }
+    } else {
+      dwm_frame_color_.reset();
+      dwm_inactive_frame_color_.reset();
+    }
+  }
+
+  if (dwm_frame_color_ && !inactive_frame_color_from_registry_) {
+    // Tint to create inactive color. Always use the non-incognito version of
+    // the tint, since the frame should look the same in both modes.
+    dwm_inactive_frame_color_ = color_utils::HSLShift(
+        dwm_frame_color_.value(),
+        GetTint(ThemeProperties::TINT_FRAME_INACTIVE, false));
   }
 
   // Watch for future changes.
