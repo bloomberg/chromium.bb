@@ -46,7 +46,9 @@ ClientRoot::~ClientRoot() {
     window_->GetHost()->RemoveObserver(this);
 
   viz::HostFrameSinkManager* host_frame_sink_manager =
-      window_->env()->context_factory_private()->GetHostFrameSinkManager();
+      aura::Env::GetInstance()
+          ->context_factory_private()
+          ->GetHostFrameSinkManager();
   host_frame_sink_manager->InvalidateFrameSinkId(
       server_window->frame_sink_id());
 }
@@ -54,7 +56,9 @@ ClientRoot::~ClientRoot() {
 void ClientRoot::RegisterVizEmbeddingSupport() {
   // This function should only be called once.
   viz::HostFrameSinkManager* host_frame_sink_manager =
-      window_->env()->context_factory_private()->GetHostFrameSinkManager();
+      aura::Env::GetInstance()
+          ->context_factory_private()
+          ->GetHostFrameSinkManager();
   viz::FrameSinkId frame_sink_id =
       ServerWindow::GetMayBeNull(window_)->frame_sink_id();
   host_frame_sink_manager->RegisterFrameSinkId(frame_sink_id, this);

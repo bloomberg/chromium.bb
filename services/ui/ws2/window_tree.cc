@@ -604,9 +604,8 @@ bool WindowTree::NewWindowImpl(
   const bool is_top_level = false;
   // WindowDelegateImpl deletes itself when |window| is destroyed.
   WindowDelegateImpl* window_delegate = new WindowDelegateImpl();
-  std::unique_ptr<aura::Window> window_ptr = std::make_unique<aura::Window>(
-      window_delegate, aura::client::WINDOW_TYPE_UNKNOWN,
-      window_service_->env());
+  std::unique_ptr<aura::Window> window_ptr =
+      std::make_unique<aura::Window>(window_delegate);
   window_delegate->set_window(window_ptr.get());
   aura::Window* window = AddClientCreatedWindow(client_window_id, is_top_level,
                                                 std::move(window_ptr));
@@ -1733,7 +1732,7 @@ void WindowTree::PerformWindowMove(uint32_t change_id,
   }
 
   if (source == ui::mojom::MoveLoopSource::MOUSE &&
-      !window->env()->IsMouseButtonDown()) {
+      !aura::Env::GetInstance()->IsMouseButtonDown()) {
     DVLOG(1) << "PerformWindowMove failed (mouse not down)";
     window_tree_client_->OnChangeCompleted(change_id, false);
     return;
