@@ -89,11 +89,29 @@ v8::Maybe<{{return_cpp_type}}> {{cpp_class}}::Invoke({{argument_declarations | j
   v8::Local<v8::Object> argument_creation_context =
       CallbackRelevantScriptState()->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
-  {% for argument in arguments %}
+  {% set has_variadic_argument = arguments[-1].is_variadic %}
+  {% set non_variadic_arguments = arguments | rejectattr('is_variadic') | list %}
+  {% set variadic_argument = arguments[-1] if has_variadic_argument else None %}
+  {% set arguments_length = '%d + %s.size()' % (non_variadic_arguments|length, variadic_argument.name) if has_variadic_argument else non_variadic_arguments|length %}
+  {% for argument in non_variadic_arguments %}
   v8::Local<v8::Value> {{argument.v8_name}} = {{argument.cpp_value_to_v8_value}};
   {% endfor %}
-  v8::Local<v8::Value> argv[] = { {{arguments | join(', ', 'v8_name')}} };
-  {% else %}
+  {% if has_variadic_argument %}
+  const int argc = {{arguments_length}};
+  v8::Local<v8::Value> argv[argc];
+  {% for argument in non_variadic_arguments %}
+  argv[{{loop.index0}}] = {{argument.v8_name}};
+  {% endfor %}
+  for (wtf_size_t i = 0; i < {{variadic_argument.name}}.size(); ++i) {
+    argv[{{non_variadic_arguments|length}} + i] = ToV8({{variadic_argument.name}}[i], argument_creation_context, GetIsolate());
+  }
+  {% else %}{# if has_variadic_argument #}
+  constexpr int argc = {{arguments_length}};
+  v8::Local<v8::Value> argv[] = { {{non_variadic_arguments | join(', ', 'v8_name')}} };
+  static_assert(static_cast<size_t>(argc) == base::size(argv), "size mismatch");
+  {% endif %}
+  {% else %}{# if arguments #}
+  const int argc = 0;
   {# Zero-length arrays are ill-formed in C++. #}
   v8::Local<v8::Value> *argv = nullptr;
   {% endif %}
@@ -104,7 +122,7 @@ v8::Maybe<{{return_cpp_type}}> {{cpp_class}}::Invoke({{argument_declarations | j
           CallbackFunction(),
           ExecutionContext::From(CallbackRelevantScriptState()),
           this_arg,
-          {{arguments | length}},
+          argc,
           argv,
           GetIsolate()).ToLocal(&call_result)) {
     // step 12. If callResult is an abrupt completion, set completion to

@@ -73,6 +73,7 @@ v8::Maybe<void> V8VoidCallbackFunction::Invoke(ScriptWrappable* callback_this_va
   //   arguments list. If this throws an exception, set completion to the
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
+  const int argc = 0;
   v8::Local<v8::Value> *argv = nullptr;
 
   // step 11. Let callResult be Call(X, thisArg, esArgs).
@@ -81,7 +82,7 @@ v8::Maybe<void> V8VoidCallbackFunction::Invoke(ScriptWrappable* callback_this_va
           CallbackFunction(),
           ExecutionContext::From(CallbackRelevantScriptState()),
           this_arg,
-          0,
+          argc,
           argv,
           GetIsolate()).ToLocal(&call_result)) {
     // step 12. If callResult is an abrupt completion, set completion to

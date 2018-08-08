@@ -9,12 +9,12 @@
 
 // clang-format off
 
-#include "third_party/blink/renderer/bindings/tests/results/core/v8_void_callback_function_typedef.h"
+#include "third_party/blink/renderer/bindings/tests/results/core/v8_any_callback_function_variadic_any_args.h"
 
 #include "base/stl_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h"
-#include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -23,11 +23,11 @@
 
 namespace blink {
 
-const char* V8VoidCallbackFunctionTypedef::NameInHeapSnapshot() const {
-  return "V8VoidCallbackFunctionTypedef";
+const char* V8AnyCallbackFunctionVariadicAnyArgs::NameInHeapSnapshot() const {
+  return "V8AnyCallbackFunctionVariadicAnyArgs";
 }
 
-v8::Maybe<void> V8VoidCallbackFunctionTypedef::Invoke(ScriptWrappable* callback_this_value, const String& arg) {
+v8::Maybe<ScriptValue> V8AnyCallbackFunctionVariadicAnyArgs::Invoke(ScriptWrappable* callback_this_value, const Vector<ScriptValue>& arguments) {
   // This function implements "invoke" algorithm defined in
   // "3.10. Invoking callback functions".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
@@ -44,9 +44,9 @@ v8::Maybe<void> V8VoidCallbackFunctionTypedef::Invoke(ScriptWrappable* callback_
         GetIsolate(),
         ExceptionMessages::FailedToExecute(
             "invoke",
-            "VoidCallbackFunctionTypedef",
+            "AnyCallbackFunctionVariadicAnyArgs",
             "The provided callback is no longer runnable."));
-    return v8::Nothing<void>();
+    return v8::Nothing<ScriptValue>();
   }
 
   // step 4. If ! IsCallable(F) is false:
@@ -77,10 +77,11 @@ v8::Maybe<void> V8VoidCallbackFunctionTypedef::Invoke(ScriptWrappable* callback_
   v8::Local<v8::Object> argument_creation_context =
       CallbackRelevantScriptState()->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
-  v8::Local<v8::Value> v8_arg = V8String(GetIsolate(), arg);
-  constexpr int argc = 1;
-  v8::Local<v8::Value> argv[] = { v8_arg };
-  static_assert(static_cast<size_t>(argc) == base::size(argv), "size mismatch");
+  const int argc = 0 + arguments.size();
+  v8::Local<v8::Value> argv[argc];
+  for (wtf_size_t i = 0; i < arguments.size(); ++i) {
+    argv[0 + i] = ToV8(arguments[i], argument_creation_context, GetIsolate());
+  }
 
   // step 11. Let callResult be Call(X, thisArg, esArgs).
   v8::Local<v8::Value> call_result;
@@ -93,32 +94,24 @@ v8::Maybe<void> V8VoidCallbackFunctionTypedef::Invoke(ScriptWrappable* callback_
           GetIsolate()).ToLocal(&call_result)) {
     // step 12. If callResult is an abrupt completion, set completion to
     //   callResult and jump to the step labeled return.
-    return v8::Nothing<void>();
+    return v8::Nothing<ScriptValue>();
   }
 
   // step 13. Set completion to the result of converting callResult.[[Value]] to
   //   an IDL value of the same type as the operation's return type.
-  return v8::JustVoid();
+  {
+    ExceptionState exceptionState(GetIsolate(),
+                                  ExceptionState::kExecutionContext,
+                                  "AnyCallbackFunctionVariadicAnyArgs",
+                                  "invoke");
+    ScriptValue native_result = ScriptValue(ScriptState::Current(GetIsolate()), call_result);
+    return v8::Just<ScriptValue>(native_result);
+  }
 }
 
-void V8VoidCallbackFunctionTypedef::InvokeAndReportException(ScriptWrappable* callback_this_value, const String& arg) {
-  v8::TryCatch try_catch(GetIsolate());
-  try_catch.SetVerbose(true);
-
-  v8::Maybe<void> maybe_result =
-      Invoke(callback_this_value, arg);
-  // An exception if any is killed with the v8::TryCatch above.
-  ALLOW_UNUSED_LOCAL(maybe_result);
-}
-
-v8::Maybe<void> V8PersistentCallbackFunction<V8VoidCallbackFunctionTypedef>::Invoke(ScriptWrappable* callback_this_value, const String& arg) {
+v8::Maybe<ScriptValue> V8PersistentCallbackFunction<V8AnyCallbackFunctionVariadicAnyArgs>::Invoke(ScriptWrappable* callback_this_value, const Vector<ScriptValue>& arguments) {
   return Proxy()->Invoke(
-      callback_this_value, arg);
-}
-
-void V8PersistentCallbackFunction<V8VoidCallbackFunctionTypedef>::InvokeAndReportException(ScriptWrappable* callback_this_value, const String& arg) {
-  Proxy()->InvokeAndReportException(
-      callback_this_value, arg);
+      callback_this_value, arguments);
 }
 
 }  // namespace blink

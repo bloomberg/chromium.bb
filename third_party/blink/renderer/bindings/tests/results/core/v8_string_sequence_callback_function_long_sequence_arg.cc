@@ -78,7 +78,9 @@ v8::Maybe<Vector<String>> V8StringSequenceCallbackFunctionLongSequenceArg::Invok
       CallbackRelevantScriptState()->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
   v8::Local<v8::Value> v8_arg = ToV8(arg, argument_creation_context, GetIsolate());
+  constexpr int argc = 1;
   v8::Local<v8::Value> argv[] = { v8_arg };
+  static_assert(static_cast<size_t>(argc) == base::size(argv), "size mismatch");
 
   // step 11. Let callResult be Call(X, thisArg, esArgs).
   v8::Local<v8::Value> call_result;
@@ -86,7 +88,7 @@ v8::Maybe<Vector<String>> V8StringSequenceCallbackFunctionLongSequenceArg::Invok
           CallbackFunction(),
           ExecutionContext::From(CallbackRelevantScriptState()),
           this_arg,
-          1,
+          argc,
           argv,
           GetIsolate()).ToLocal(&call_result)) {
     // step 12. If callResult is an abrupt completion, set completion to
