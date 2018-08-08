@@ -36,6 +36,7 @@ class SimpleMenuModel;
 namespace views {
 class BoundsAnimator;
 class MenuRunner;
+class Separator;
 }
 
 namespace ash {
@@ -218,9 +219,16 @@ class ASH_EXPORT ShelfView : public views::View,
                                Pointer pointer,
                                bool canceled);
 
+  // Returns whether |item| should belong in the pinned section of the shelf.
+  bool IsItemPinned(const ShelfItem& item) const;
+
   // Enumerates the shelf items that are centered in the new UI and returns
   // the total size they occupy.
   int GetDimensionOfCenteredShelfItemsInNewUi() const;
+
+  // Returns the index of the item after which the separator should be shown,
+  // or -1 if no separator is required.
+  int GetSeparatorIndex() const;
 
   // Updates the background for the shelf items.
   void UpdateShelfItemBackground(SkColor color);
@@ -568,6 +576,10 @@ class ASH_EXPORT ShelfView : public views::View,
   // Color used to paint the background behind the app list button and back
   // button.
   SkColor shelf_item_background_color_;
+
+  // A reference to the view used as a separator between pinned and unpinned
+  // items.
+  views::Separator* separator_;
 
   base::WeakPtrFactory<ShelfView> weak_factory_;
 

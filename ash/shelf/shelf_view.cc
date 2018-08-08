@@ -55,6 +55,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
@@ -74,6 +75,14 @@ constexpr int kAppListButtonIndex = 1;
 // The distance of the cursor from the outer rim of the shelf before it
 // separates.
 constexpr int kRipOffDistance = 48;
+
+// The dimensions, in pixels, of the separator between pinned and unpinned
+// items.
+constexpr int kSeparatorSize = 20;
+constexpr int kSeparatorThickness = 1;
+
+// White with ~20% opacity.
+constexpr SkColor kSeparatorColor = SkColorSetARGB(0x32, 0xFF, 0xFF, 0xFF);
 
 // The rip off drag and drop proxy image should get scaled by this factor.
 constexpr float kDragAndDropProxyScale = 1.2f;
@@ -355,6 +364,14 @@ void ShelfView::Init() {
   ConfigureChildView(overflow_button_);
   AddChildView(overflow_button_);
   UpdateBackButton();
+
+  separator_ = new views::Separator();
+  separator_->SetColor(kSeparatorColor);
+  separator_->SetPreferredHeight(kSeparatorSize);
+  separator_->SetVisible(false);
+  ConfigureChildView(separator_);
+  AddChildView(separator_);
+
   // We'll layout when our bounds change.
 }
 
@@ -856,6 +873,22 @@ void ShelfView::LayoutToIdealBounds() {
   UpdateBackButton();
 }
 
+bool ShelfView::IsItemPinned(const ShelfItem& item) const {
+  return item.type == TYPE_PINNED_APP || item.type == TYPE_BROWSER_SHORTCUT;
+}
+
+int ShelfView::GetSeparatorIndex() const {
+  if (!chromeos::switches::ShouldUseShelfNewUi())
+    return -1;
+  for (int i = 0; i < model_->item_count() - 1; ++i) {
+    if (IsItemPinned(model_->items()[i]) &&
+        model_->items()[i + 1].type == TYPE_APP) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 int ShelfView::GetDimensionOfCenteredShelfItemsInNewUi() const {
   int size = 0;
   int added_items = 0;
@@ -899,6 +932,8 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
                                  : kShelfButtonSpacing;
 
   const int available_size = shelf_->PrimaryAxisValue(width(), height());
+  const int separator_index = GetSeparatorIndex();
+  separator_->SetVisible(separator_index != -1);
   int app_list_button_position;
 
   int x = 0;
@@ -947,6 +982,22 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
     // to be bottom aligned.
     x = shelf_->PrimaryAxisValue(x + w + (i == 0 ? 0 : button_spacing), x);
     y = shelf_->PrimaryAxisValue(y, y + h + button_spacing);
+
+    if (i == separator_index) {
+      // Place the separator halfway between the two icons it separates,
+      // vertically centered.
+      int half_space = button_spacing / 2;
+      int secondary_offset = (kShelfSize - kSeparatorSize) / 2;
+      x -= shelf_->PrimaryAxisValue(half_space, 0);
+      y -= shelf_->PrimaryAxisValue(0, half_space);
+      separator_->SetBounds(
+          x + shelf_->PrimaryAxisValue(0, secondary_offset),
+          y + shelf_->PrimaryAxisValue(secondary_offset, 0),
+          shelf_->PrimaryAxisValue(kSeparatorThickness, kSeparatorSize),
+          shelf_->PrimaryAxisValue(kSeparatorSize, kSeparatorThickness));
+      x += shelf_->PrimaryAxisValue(half_space, 0);
+      y += shelf_->PrimaryAxisValue(0, half_space);
+    }
   }
 
   if (is_overflow_mode()) {
