@@ -578,11 +578,15 @@ int inter_mode_data_block_idx(BLOCK_SIZE bsize) {
 
 void av1_inter_mode_data_init(TileDataEnc *tile_data) {
   for (int i = 0; i < BLOCK_SIZES_ALL; ++i) {
-    const int block_idx = inter_mode_data_block_idx(i);
-    if (block_idx != -1) tile_data->inter_mode_data_idx[block_idx] = 0;
     InterModeRdModel *md = &tile_data->inter_mode_rd_models[i];
     md->ready = 0;
     md->bracket_idx = 0;
+    md->num = 0;
+    md->dist_sum = 0;
+    md->ld_sum = 0;
+    md->sse_sum = 0;
+    md->sse_sse_sum = 0;
+    md->sse_ld_sum = 0;
   }
 }
 
@@ -630,33 +634,14 @@ void av1_inter_mode_data_fit(TileDataEnc *tile_data, int rdmult) {
     const int block_idx = inter_mode_data_block_idx(bsize);
     InterModeRdModel *md = &tile_data->inter_mode_rd_models[bsize];
     if (block_idx == -1) continue;
-    int data_num = tile_data->inter_mode_data_idx[block_idx];
-    if (data_num < data_num_threshold[md->bracket_idx]) {
+    if (md->num < data_num_threshold[md->bracket_idx]) {
       continue;
     }
-    double my = 0;
-    double mx = 0;
-    double dx = 0;
-    double dxy = 0;
-    double dist_mean = 0;
-    const int train_num = data_num;
-    for (int i = 0; i < train_num; ++i) {
-      const double sse = (double)tile_data->inter_mode_data_sse[block_idx][i];
-      const double dist = (double)tile_data->inter_mode_data_dist[block_idx][i];
-      const double residue_cost =
-          tile_data->inter_mode_data_residue_cost[block_idx][i];
-      const double ld = (sse - dist) / residue_cost;
-      dist_mean += dist;
-      my += ld;
-      mx += sse;
-      dx += sse * sse;
-      dxy += sse * ld;
-    }
-    dist_mean = dist_mean / data_num;
-    my = my / train_num;
-    mx = mx / train_num;
-    dx = sqrt(dx / train_num);
-    dxy = dxy / train_num;
+    const double dist_mean = md->dist_sum / md->num;
+    const double my = md->ld_sum / md->num;
+    const double mx = md->sse_sum / md->num;
+    const double dx = sqrt(md->sse_sse_sum / md->num);
+    const double dxy = md->sse_ld_sum / md->num;
 
     md->dist_mean = dist_mean;
     md->a = (dxy - mx * my) / (dx * dx - mx * mx);
@@ -674,13 +659,16 @@ static void inter_mode_data_push(TileDataEnc *tile_data, BLOCK_SIZE bsize,
   if (residue_cost == 0 || sse == dist) return;
   const int block_idx = inter_mode_data_block_idx(bsize);
   if (block_idx == -1) return;
-  if (tile_data->inter_mode_data_idx[block_idx] <
-      INTER_MODE_RD_DATA_OVERALL_SIZE) {
-    const int data_idx = tile_data->inter_mode_data_idx[block_idx];
-    tile_data->inter_mode_data_sse[block_idx][data_idx] = sse;
-    tile_data->inter_mode_data_dist[block_idx][data_idx] = dist;
-    tile_data->inter_mode_data_residue_cost[block_idx][data_idx] = residue_cost;
-    ++tile_data->inter_mode_data_idx[block_idx];
+  InterModeRdModel *rd_model = &tile_data->inter_mode_rd_models[bsize];
+  if (rd_model->num < INTER_MODE_RD_DATA_OVERALL_SIZE) {
+    aom_clear_system_state();
+    const double ld = (sse - dist) * 1. / residue_cost;
+    ++rd_model->num;
+    rd_model->dist_sum += dist;
+    rd_model->ld_sum += ld;
+    rd_model->sse_sum += sse;
+    rd_model->sse_sse_sum += sse * sse;
+    rd_model->sse_ld_sum += sse * ld;
   }
 }
 

@@ -409,6 +409,12 @@ typedef struct {
   double b;
   double dist_mean;
   int bracket_idx;
+  int num;
+  double dist_sum;
+  double ld_sum;
+  double sse_sum;
+  double sse_sse_sum;
+  double sse_ld_sum;
 } InterModeRdModel;
 
 typedef struct {
@@ -440,10 +446,6 @@ typedef struct TileDataEnc {
   uint8_t allow_update_cdf;
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
   InterModeRdModel inter_mode_rd_models[BLOCK_SIZES_ALL];
-  int inter_mode_data_idx[4];
-  int64_t inter_mode_data_sse[4][INTER_MODE_RD_DATA_OVERALL_SIZE];
-  int64_t inter_mode_data_dist[4][INTER_MODE_RD_DATA_OVERALL_SIZE];
-  int inter_mode_data_residue_cost[4][INTER_MODE_RD_DATA_OVERALL_SIZE];
   InterModesInfo inter_modes_info;
 #endif
 } TileDataEnc;
