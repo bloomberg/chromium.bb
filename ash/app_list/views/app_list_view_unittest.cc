@@ -143,7 +143,7 @@ class AppListViewTest : public views::ViewsTestBase,
   void Initialize(int initial_apps_page,
                   bool is_tablet_mode,
                   bool is_side_shelf) {
-    delegate_.reset(new AppListTestViewDelegate);
+    delegate_ = std::make_unique<AppListTestViewDelegate>();
     view_ = new AppListView(delegate_.get());
     AppListView::InitParams params;
     params.parent = GetContext();
@@ -270,7 +270,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     }
 
     // Initialize app list view.
-    delegate_.reset(new AppListTestViewDelegate);
+    delegate_ = std::make_unique<AppListTestViewDelegate>();
     view_ = new AppListView(delegate_.get());
     AppListView::InitParams params;
     params.parent = GetContext();

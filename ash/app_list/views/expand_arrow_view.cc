@@ -108,7 +108,7 @@ ExpandArrowView::ExpandArrowView(ContentsView* contents_view,
 
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_APP_LIST_EXPAND_BUTTON));
 
-  animation_.reset(new gfx::SlideAnimation(this));
+  animation_ = std::make_unique<gfx::SlideAnimation>(this);
   animation_->SetTweenType(gfx::Tween::LINEAR);
   animation_->SetSlideDuration(kCycleDurationInMs * 2 + kCycleIntervalInMs);
   ResetHintingAnimation();

@@ -36,7 +36,7 @@ class SearchResultListViewTest : public views::ViewsTestBase {
   // Overridden from testing::Test:
   void SetUp() override {
     views::ViewsTestBase::SetUp();
-    view_.reset(new SearchResultListView(nullptr, &view_delegate_));
+    view_ = std::make_unique<SearchResultListView>(nullptr, &view_delegate_);
     view_->SetResults(view_delegate_.GetSearchModel()->results());
   }
 

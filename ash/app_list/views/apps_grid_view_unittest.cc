@@ -70,7 +70,7 @@ class PageFlipWaiter : public PaginationModelObserver {
     DCHECK(!wait_);
     wait_ = true;
 
-    ui_run_loop_.reset(new base::RunLoop);
+    ui_run_loop_ = std::make_unique<base::RunLoop>();
     ui_run_loop_->Run();
     wait_ = false;
   }
@@ -212,7 +212,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
     gfx::NativeView parent = GetContext();
     // Ensure that parent is big enough to show the full AppListView.
     parent->SetBounds(gfx::Rect(gfx::Point(0, 0), gfx::Size(1024, 768)));
-    delegate_.reset(new AppListTestViewDelegate);
+    delegate_ = std::make_unique<AppListTestViewDelegate>();
     app_list_view_ = new AppListView(delegate_.get());
     AppListView::InitParams params;
     params.parent = parent;
@@ -241,7 +241,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
     app_list_view_->SetState(AppListViewState::FULLSCREEN_ALL_APPS);
     app_list_view_->Layout();
 
-    test_api_.reset(new AppsGridViewTestApi(apps_grid_view_));
+    test_api_ = std::make_unique<AppsGridViewTestApi>(apps_grid_view_);
   }
   void TearDown() override {
     app_list_view_->GetWidget()->Close();

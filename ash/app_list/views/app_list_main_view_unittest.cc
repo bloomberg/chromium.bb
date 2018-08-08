@@ -48,7 +48,7 @@ class GridViewVisibleWaiter {
     check_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(50),
                        base::Bind(&GridViewVisibleWaiter::OnTimerCheck,
                                   base::Unretained(this)));
-    run_loop_.reset(new base::RunLoop);
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
     check_timer_.Stop();
   }
@@ -82,7 +82,7 @@ class AppListMainViewTest : public views::ViewsTestBase {
     // list (http://crbug.com/759779).
     views::ViewsTestBase::SetUp();
 #if 0
-    delegate_.reset(new AppListTestViewDelegate);
+    delegate_ = std::make_unique<AppListTestViewDelegate>();
     main_view_ = new AppListMainView(delegate_.get(), nullptr);
     main_view_->SetPaintToLayer();
 
