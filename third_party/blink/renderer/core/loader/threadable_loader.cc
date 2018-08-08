@@ -187,12 +187,12 @@ class ThreadableLoader::AssignOnScopeExit final {
   DISALLOW_COPY_AND_ASSIGN(AssignOnScopeExit);
 };
 
-// Max number of CORS redirects handled in ThreadableLoader. Same number
-// as net/url_request/url_request.cc, and same number as
-// https://fetch.spec.whatwg.org/#concept-http-fetch, Step 4.
-// FIXME: currently the number of redirects is counted and limited here and in
-// net/url_request/url_request.cc separately.
-static const int kMaxCORSRedirects = 20;
+// Max number of CORS redirects handled in ThreadableLoader.
+// See https://fetch.spec.whatwg.org/#http-redirect-fetch.
+// //net/url_request/url_request.cc and
+// //services/network/cors/cors_url_loader.cc also implement the same logic
+// separately.
+static const int kMaxRedirects = 20;
 
 // static
 std::unique_ptr<ResourceRequest>
@@ -252,7 +252,6 @@ ThreadableLoader::ThreadableLoader(
       execution_context_(execution_context),
       resource_loader_options_(resource_loader_options),
       out_of_blink_cors_(RuntimeEnabledFeatures::OutOfBlinkCORSEnabled()),
-      cors_flag_(false),
       security_origin_(resource_loader_options_.security_origin),
       is_using_data_consumer_handle_(false),
       async_(resource_loader_options.synchronous_policy ==
@@ -263,7 +262,7 @@ ThreadableLoader::ThreadableLoader(
       timeout_timer_(execution_context_->GetTaskRunner(TaskType::kNetworking),
                      this,
                      &ThreadableLoader::DidTimeout),
-      redirect_limit_(kMaxCORSRedirects),
+      redirect_limit_(kMaxRedirects),
       redirect_mode_(network::mojom::FetchRedirectMode::kFollow),
       override_referrer_(false) {
   DCHECK(client);
@@ -689,11 +688,10 @@ bool ThreadableLoader::RedirectReceived(
             : nullptr,
         redirect_response, resource);
 
-    base::Optional<network::mojom::CORSError> redirect_error =
-        CORS::CheckRedirectLocation(new_url);
-    if (redirect_error) {
-      DispatchDidFail(ResourceError(original_url,
-                                    network::CORSErrorStatus(*redirect_error)));
+    if (auto error_status = CORS::CheckRedirectLocation(
+            new_url, fetch_request_mode_, GetSecurityOrigin(),
+            cors_flag_ ? CORSFlag::Set : CORSFlag::Unset)) {
+      DispatchDidFail(ResourceError(original_url, *error_status));
       return false;
     }
 

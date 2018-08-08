@@ -258,26 +258,33 @@ base::Optional<CORSErrorStatus> CheckPreflightAccess(
   return CORSErrorStatus(error, error_status->failed_parameter);
 }
 
-base::Optional<mojom::CORSError> CheckRedirectLocation(const GURL& redirect_url,
-                                                       bool skip_scheme_check) {
-  if (!skip_scheme_check) {
-    // Block non HTTP(S) schemes as specified in the step 4 in
-    // https://fetch.spec.whatwg.org/#http-redirect-fetch. Chromium also allows
-    // the data scheme.
-    auto& schemes = url::GetCORSEnabledSchemes();
-    if (std::find(std::begin(schemes), std::end(schemes),
-                  redirect_url.scheme()) == std::end(schemes)) {
-      return mojom::CORSError::kRedirectDisallowedScheme;
-    }
+base::Optional<CORSErrorStatus> CheckRedirectLocation(
+    const GURL& url,
+    mojom::FetchRequestMode request_mode,
+    const base::Optional<url::Origin>& origin,
+    bool cors_flag,
+    bool tainted) {
+  // If |actualResponse|’s location URL’s scheme is not an HTTP(S) scheme,
+  // then return a network error.
+  // This should be addressed in //net.
+
+  // Note: The redirect count check is done elsewhere.
+
+  const bool url_has_credentials = url.has_username() || url.has_password();
+  // If |request|’s mode is "cors", |actualResponse|’s location URL includes
+  // credentials, and either |request|’s tainted origin flag is set or
+  // |request|’s origin is not same origin with |actualResponse|’s location
+  // URL’s origin, then return a network error.
+  DCHECK(!IsCORSEnabledRequestMode(request_mode) || origin);
+  if (IsCORSEnabledRequestMode(request_mode) && url_has_credentials &&
+      (tainted || !origin->IsSameOriginWith(url::Origin::Create(url)))) {
+    return CORSErrorStatus(mojom::CORSError::kRedirectContainsCredentials);
   }
 
-  // Block URLs including credentials as specified in the step 9 in
-  // https://fetch.spec.whatwg.org/#http-redirect-fetch.
-  //
-  // TODO(tyoshino): This check should be performed also when request's
-  // origin is not same origin with the redirect destination's origin.
-  if (redirect_url.has_username() || redirect_url.has_password())
-    return mojom::CORSError::kRedirectContainsCredentials;
+  // If CORS flag is set and |actualResponse|’s location URL includes
+  // credentials, then return a network error.
+  if (cors_flag && url_has_credentials)
+    return CORSErrorStatus(mojom::CORSError::kRedirectContainsCredentials);
 
   return base::nullopt;
 }

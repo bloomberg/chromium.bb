@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
+#include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
@@ -59,6 +60,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
@@ -746,11 +748,23 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   if (!params.Url().IsValid())
     return ResourceRequestBlockedReason::kOther;
 
-  params.MutableOptions().cors_flag =
-      !origin || !origin->CanRequest(params.Url());
-
-  if (options.cors_handling_by_resource_fetcher ==
-      kEnableCORSHandlingByResourceFetcher) {
+  if (!RuntimeEnabledFeatures::OutOfBlinkCORSEnabled() &&
+      options.cors_handling_by_resource_fetcher ==
+          kEnableCORSHandlingByResourceFetcher) {
+    if (CORS::IsCORSEnabledRequestMode(
+            resource_request.GetFetchRequestMode())) {
+      DCHECK(origin);
+      if (!origin->CanRequest(params.Url())) {
+        params.MutableOptions().cors_flag = true;
+        // Cross-origin requests are only allowed certain registered schemes.
+        if (!SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(
+                url.Protocol())) {
+          // This won't create a CORS related console error.
+          // TODO(yhirano): Fix this.
+          return ResourceRequestBlockedReason::kOther;
+        }
+      }
+    }
     bool allow_stored_credentials = false;
     switch (resource_request.GetFetchCredentialsMode()) {
       case network::mojom::FetchCredentialsMode::kOmit:

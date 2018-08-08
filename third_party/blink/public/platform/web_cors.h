@@ -39,22 +39,8 @@
 namespace blink {
 
 class WebURLResponse;
-class WebSecurityOrigin;
-struct ResourceLoaderOptions;
 
 namespace WebCORS {
-
-// TODO(toyoshim): Using platform/loader/fetch/ResourceLoaderOptions violates
-// the DEPS rule. This will be fixed soon by making HandleRedirect() not
-// depending on ResourceLoaderOptions.
-BLINK_PLATFORM_EXPORT base::Optional<network::CORSErrorStatus> HandleRedirect(
-    WebSecurityOrigin&,
-    WebURLRequest&,
-    const WebURL,
-    const int redirect_response_status_code,
-    const WebHTTPHeaderMap&,
-    network::mojom::FetchCredentialsMode,
-    ResourceLoaderOptions&);
 
 BLINK_PLATFORM_EXPORT WebHTTPHeaderSet
 ExtractCorsExposedHeaderNamesList(network::mojom::FetchCredentialsMode,

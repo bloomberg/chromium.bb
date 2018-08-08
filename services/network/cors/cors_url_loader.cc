@@ -239,6 +239,12 @@ void CORSURLLoader::OnReceiveRedirect(
   DCHECK(forwarding_client_);
   DCHECK(!is_waiting_follow_redirect_call_);
 
+  if (request_.fetch_redirect_mode == mojom::FetchRedirectMode::kManual) {
+    is_waiting_follow_redirect_call_ = true;
+    forwarding_client_->OnReceiveRedirect(redirect_info, response_head);
+    return;
+  }
+
   // If |CORS flag| is set and a CORS check for |request| and |response| returns
   // failure, then return a network error.
   if (fetch_cors_flag_ &&
@@ -270,15 +276,13 @@ void CORSURLLoader::OnReceiveRedirect(
     return;
   }
 
-  // TODO(yhirano): Implement the following:
-  // If |request|’s mode is "cors", |actualResponse|’s location URL includes
-  // credentials, and either |request|’s tainted origin flag is set or
-  // |request|’s origin is not same origin with |actualResponse|’s location
-  // URL’s origin, then return a network error.
-
-  // TODO(yhirano): Implement the following:
-  // If |CORS flag| is set and |actualResponse|’s location URL includes
-  // credentials, then return a network error.
+  const auto error_status = CheckRedirectLocation(
+      redirect_info.new_url, request_.fetch_request_mode,
+      request_.request_initiator, fetch_cors_flag_, tainted_);
+  if (error_status) {
+    HandleComplete(URLLoaderCompletionStatus(*error_status));
+    return;
+  }
 
   // TODO(yhirano): Implement the following (Note: this is needed when upload
   // streaming is implemented):

@@ -167,43 +167,119 @@ TEST_F(CORSTest, CheckAccessDetectsInvalidAllowCredential) {
   EXPECT_EQ("fuga", error2->failed_parameter);
 }
 
-// Tests if cors::CheckRedirectLocation detects kRedirectDisallowedScheme and
+// Tests if cors::CheckRedirectLocation detects kCORSDisabledScheme and
 // kRedirectContainsCredentials errors correctly.
-TEST_F(CORSTest, CheckRedirectLocationDetectsErrors) {
-  // Following URLs should pass.
-  EXPECT_FALSE(cors::CheckRedirectLocation(GURL("http://example.com/"), false));
-  EXPECT_FALSE(
-      cors::CheckRedirectLocation(GURL("https://example.com/"), false));
-  EXPECT_FALSE(cors::CheckRedirectLocation(GURL("data:,Hello"), false));
-  EXPECT_FALSE(
-      cors::CheckRedirectLocation(GURL("file:///not_allow_scheme"), true));
+TEST_F(CORSTest, CheckRedirectLocation) {
+  struct TestCase {
+    GURL url;
+    mojom::FetchRequestMode request_mode;
+    bool cors_flag;
+    bool tainted;
+    base::Optional<CORSErrorStatus> expectation;
+  };
 
-  // Following URLs should result in kRedirectDisallowedScheme.
-  base::Optional<mojom::CORSError> error1 =
-      cors::CheckRedirectLocation(GURL("file:///not_allow_scheme"), false);
-  ASSERT_TRUE(error1);
-  EXPECT_EQ(mojom::CORSError::kRedirectDisallowedScheme, *error1);
+  const auto kCORS = mojom::FetchRequestMode::kCORS;
+  const auto kCORSWithForcedPreflight =
+      mojom::FetchRequestMode::kCORSWithForcedPreflight;
+  const auto kNoCORS = mojom::FetchRequestMode::kNoCORS;
 
-  // Following checks should result in the kRedirectContainsCredentials error.
-  base::Optional<mojom::CORSError> error2 = cors::CheckRedirectLocation(
-      GURL("http://yukari:tamura@example.com/"), false);
-  ASSERT_TRUE(error2);
-  EXPECT_EQ(mojom::CORSError::kRedirectContainsCredentials, *error2);
+  const url::Origin origin = url::Origin::Create(GURL("http://example.com/"));
+  const GURL same_origin_url("http://example.com/");
+  const GURL cross_origin_url("http://example2.com/");
+  const GURL data_url("data:,Hello");
+  const GURL same_origin_url_with_user("http://yukari@example.com/");
+  const GURL same_origin_url_with_pass("http://:tamura@example.com/");
+  const GURL cross_origin_url_with_user("http://yukari@example2.com/");
+  const GURL cross_origin_url_with_pass("http://:tamura@example2.com/");
+  const auto ok = base::nullopt;
+  const CORSErrorStatus kCORSDisabledScheme(
+      mojom::CORSError::kCORSDisabledScheme);
+  const CORSErrorStatus kRedirectContainsCredentials(
+      mojom::CORSError::kRedirectContainsCredentials);
 
-  base::Optional<mojom::CORSError> error3 = cors::CheckRedirectLocation(
-      GURL("http://yukari:tamura@example.com/"), true);
-  ASSERT_TRUE(error3);
-  EXPECT_EQ(mojom::CORSError::kRedirectContainsCredentials, *error3);
+  TestCase cases[] = {
+      // "cors", no credentials information
+      {same_origin_url, kCORS, false, false, ok},
+      {cross_origin_url, kCORS, false, false, ok},
+      {data_url, kCORS, false, false, ok},
+      {same_origin_url, kCORS, true, false, ok},
+      {cross_origin_url, kCORS, true, false, ok},
+      {data_url, kCORS, true, false, ok},
+      {same_origin_url, kCORS, false, true, ok},
+      {cross_origin_url, kCORS, false, true, ok},
+      {data_url, kCORS, false, true, ok},
+      {same_origin_url, kCORS, true, true, ok},
+      {cross_origin_url, kCORS, true, true, ok},
+      {data_url, kCORS, true, true, ok},
 
-  base::Optional<mojom::CORSError> error4 =
-      cors::CheckRedirectLocation(GURL("http://tamura@example.com/"), true);
-  ASSERT_TRUE(error4);
-  EXPECT_EQ(mojom::CORSError::kRedirectContainsCredentials, *error4);
+      // "cors" with forced preflight, no credentials information
+      {same_origin_url, kCORSWithForcedPreflight, false, false, ok},
+      {cross_origin_url, kCORSWithForcedPreflight, false, false, ok},
+      {data_url, kCORSWithForcedPreflight, false, false, ok},
+      {same_origin_url, kCORSWithForcedPreflight, true, false, ok},
+      {cross_origin_url, kCORSWithForcedPreflight, true, false, ok},
+      {data_url, kCORSWithForcedPreflight, true, false, ok},
+      {same_origin_url, kCORSWithForcedPreflight, false, true, ok},
+      {cross_origin_url, kCORSWithForcedPreflight, false, true, ok},
+      {data_url, kCORSWithForcedPreflight, false, true, ok},
+      {same_origin_url, kCORSWithForcedPreflight, true, true, ok},
+      {cross_origin_url, kCORSWithForcedPreflight, true, true, ok},
+      {data_url, kCORSWithForcedPreflight, true, true, ok},
 
-  base::Optional<mojom::CORSError> error5 =
-      cors::CheckRedirectLocation(GURL("http://yukari:@example.com/"), true);
-  ASSERT_TRUE(error5);
-  EXPECT_EQ(mojom::CORSError::kRedirectContainsCredentials, *error5);
+      // "no-cors", no credentials information
+      {same_origin_url, kNoCORS, false, false, ok},
+      {cross_origin_url, kNoCORS, false, false, ok},
+      {data_url, kNoCORS, false, false, ok},
+      {same_origin_url, kNoCORS, false, true, ok},
+      {cross_origin_url, kNoCORS, false, true, ok},
+      {data_url, kNoCORS, false, true, ok},
+
+      // with credentials information (same origin)
+      {same_origin_url_with_user, kCORS, false, false, ok},
+      {same_origin_url_with_user, kCORS, true, false,
+       kRedirectContainsCredentials},
+      {same_origin_url_with_user, kCORS, true, true,
+       kRedirectContainsCredentials},
+      {same_origin_url_with_user, kNoCORS, false, false, ok},
+      {same_origin_url_with_user, kNoCORS, false, true, ok},
+      {same_origin_url_with_pass, kCORS, false, false, ok},
+      {same_origin_url_with_pass, kCORS, true, false,
+       kRedirectContainsCredentials},
+      {same_origin_url_with_pass, kCORS, true, true,
+       kRedirectContainsCredentials},
+      {same_origin_url_with_pass, kNoCORS, false, false, ok},
+      {same_origin_url_with_pass, kNoCORS, false, true, ok},
+
+      // with credentials information (cross origin)
+      {cross_origin_url_with_user, kCORS, false, false,
+       kRedirectContainsCredentials},
+      {cross_origin_url_with_user, kCORS, true, false,
+       kRedirectContainsCredentials},
+      {cross_origin_url_with_user, kCORS, true, true,
+       kRedirectContainsCredentials},
+      {cross_origin_url_with_user, kNoCORS, false, true, ok},
+      {cross_origin_url_with_user, kNoCORS, false, false, ok},
+      {cross_origin_url_with_pass, kCORS, false, false,
+       kRedirectContainsCredentials},
+      {cross_origin_url_with_pass, kCORS, true, false,
+       kRedirectContainsCredentials},
+      {cross_origin_url_with_pass, kCORS, true, true,
+       kRedirectContainsCredentials},
+      {cross_origin_url_with_pass, kNoCORS, false, true, ok},
+      {cross_origin_url_with_pass, kNoCORS, false, false, ok},
+  };
+
+  for (const auto& test : cases) {
+    SCOPED_TRACE(testing::Message()
+                 << "url: " << test.url
+                 << ", request mode: " << test.request_mode
+                 << ", origin: " << origin << ", cors_flag: " << test.cors_flag
+                 << ", tainted: " << test.tainted);
+
+    EXPECT_EQ(test.expectation,
+              cors::CheckRedirectLocation(test.url, test.request_mode, origin,
+                                          test.cors_flag, test.tainted));
+  }
 }
 
 TEST_F(CORSTest, CheckPreflightDetectsErrors) {

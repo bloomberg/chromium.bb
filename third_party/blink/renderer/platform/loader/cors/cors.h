@@ -18,6 +18,11 @@ class HTTPHeaderMap;
 class KURL;
 class SecurityOrigin;
 
+enum class CORSFlag : uint8_t {
+  Unset,
+  Set,
+};
+
 // CORS related utility functions.
 namespace CORS {
 
@@ -38,8 +43,11 @@ PLATFORM_EXPORT base::Optional<network::CORSErrorStatus> CheckPreflightAccess(
     network::mojom::FetchCredentialsMode,
     const SecurityOrigin&);
 
-PLATFORM_EXPORT base::Optional<network::mojom::CORSError> CheckRedirectLocation(
-    const KURL&);
+PLATFORM_EXPORT base::Optional<network::CORSErrorStatus> CheckRedirectLocation(
+    const KURL&,
+    network::mojom::FetchRequestMode,
+    const SecurityOrigin*,
+    CORSFlag);
 
 PLATFORM_EXPORT base::Optional<network::mojom::CORSError> CheckPreflight(
     const int preflight_response_status_code);
