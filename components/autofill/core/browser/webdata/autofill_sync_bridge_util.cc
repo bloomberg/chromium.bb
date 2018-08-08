@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "components/sync/model/entity_data.h"
 
 using sync_pb::AutofillWalletSpecifics;
@@ -30,8 +31,17 @@ sync_pb::WalletMaskedCreditCard::WalletCardStatus LocalToServerStatus(
     case CreditCard::OK:
       return sync_pb::WalletMaskedCreditCard::VALID;
     case CreditCard::EXPIRED:
-    default:
       return sync_pb::WalletMaskedCreditCard::EXPIRED;
+  }
+}
+
+CreditCard::ServerStatus ServerToLocalStatus(
+    sync_pb::WalletMaskedCreditCard::WalletCardStatus status) {
+  switch (status) {
+    case sync_pb::WalletMaskedCreditCard::VALID:
+      return CreditCard::OK;
+    case sync_pb::WalletMaskedCreditCard::EXPIRED:
+      return CreditCard::EXPIRED;
   }
 }
 
@@ -54,6 +64,31 @@ sync_pb::WalletMaskedCreditCard::WalletCardType WalletCardTypeFromCardNetwork(
   return sync_pb::WalletMaskedCreditCard::UNKNOWN;
 }
 
+const char* CardNetworkFromWalletCardType(
+    sync_pb::WalletMaskedCreditCard::WalletCardType type) {
+  switch (type) {
+    case sync_pb::WalletMaskedCreditCard::AMEX:
+      return kAmericanExpressCard;
+    case sync_pb::WalletMaskedCreditCard::DISCOVER:
+      return kDiscoverCard;
+    case sync_pb::WalletMaskedCreditCard::JCB:
+      return kJCBCard;
+    case sync_pb::WalletMaskedCreditCard::MASTER_CARD:
+      return kMasterCard;
+    case sync_pb::WalletMaskedCreditCard::UNIONPAY:
+      return kUnionPay;
+    case sync_pb::WalletMaskedCreditCard::VISA:
+      return kVisaCard;
+
+    // These aren't supported by the client, so just declare a generic card.
+    case sync_pb::WalletMaskedCreditCard::MAESTRO:
+    case sync_pb::WalletMaskedCreditCard::SOLO:
+    case sync_pb::WalletMaskedCreditCard::SWITCH:
+    case sync_pb::WalletMaskedCreditCard::UNKNOWN:
+      return kGenericCard;
+  }
+}
+
 sync_pb::WalletMaskedCreditCard::WalletCardClass WalletCardClassFromCardType(
     CreditCard::CardType card_type) {
   switch (card_type) {
@@ -63,8 +98,22 @@ sync_pb::WalletMaskedCreditCard::WalletCardClass WalletCardClassFromCardType(
       return sync_pb::WalletMaskedCreditCard::DEBIT;
     case CreditCard::CARD_TYPE_PREPAID:
       return sync_pb::WalletMaskedCreditCard::PREPAID;
-    default:
+    case CreditCard::CARD_TYPE_UNKNOWN:
       return sync_pb::WalletMaskedCreditCard::UNKNOWN_CARD_CLASS;
+  }
+}
+
+CreditCard::CardType CardTypeFromWalletCardClass(
+    sync_pb::WalletMaskedCreditCard::WalletCardClass card_class) {
+  switch (card_class) {
+    case sync_pb::WalletMaskedCreditCard::CREDIT:
+      return CreditCard::CARD_TYPE_CREDIT;
+    case sync_pb::WalletMaskedCreditCard::DEBIT:
+      return CreditCard::CARD_TYPE_DEBIT;
+    case sync_pb::WalletMaskedCreditCard::PREPAID:
+      return CreditCard::CARD_TYPE_PREPAID;
+    case sync_pb::WalletMaskedCreditCard::UNKNOWN_CARD_CLASS:
+      return CreditCard::CARD_TYPE_UNKNOWN;
   }
 }
 
@@ -172,6 +221,44 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillServerProfile(
   return entity_data;
 }
 
+AutofillProfile ProfileFromSpecifics(
+    const sync_pb::WalletPostalAddress& address) {
+  AutofillProfile profile(AutofillProfile::SERVER_PROFILE, std::string());
+
+  // AutofillProfile stores multi-line addresses with newline separators.
+  std::vector<base::StringPiece> street_address(
+      address.street_address().begin(), address.street_address().end());
+  profile.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
+                     base::UTF8ToUTF16(base::JoinString(street_address, "\n")));
+
+  profile.SetRawInfo(COMPANY_NAME, base::UTF8ToUTF16(address.company_name()));
+  profile.SetRawInfo(ADDRESS_HOME_STATE,
+                     base::UTF8ToUTF16(address.address_1()));
+  profile.SetRawInfo(ADDRESS_HOME_CITY, base::UTF8ToUTF16(address.address_2()));
+  profile.SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                     base::UTF8ToUTF16(address.address_3()));
+  // AutofillProfile doesn't support address_4 ("sub dependent locality").
+  profile.SetRawInfo(ADDRESS_HOME_ZIP,
+                     base::UTF8ToUTF16(address.postal_code()));
+  profile.SetRawInfo(ADDRESS_HOME_SORTING_CODE,
+                     base::UTF8ToUTF16(address.sorting_code()));
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY,
+                     base::UTF8ToUTF16(address.country_code()));
+  profile.set_language_code(address.language_code());
+
+  // SetInfo instead of SetRawInfo so the constituent pieces will be parsed
+  // for these data types.
+  profile.SetInfo(NAME_FULL, base::UTF8ToUTF16(address.recipient_name()),
+                  profile.language_code());
+  profile.SetInfo(PHONE_HOME_WHOLE_NUMBER,
+                  base::UTF8ToUTF16(address.phone_number()),
+                  profile.language_code());
+
+  profile.GenerateServerProfileIdentifier();
+
+  return profile;
+}
+
 void SetAutofillWalletSpecificsFromServerCard(
     const CreditCard& card,
     AutofillWalletSpecifics* wallet_specifics) {
@@ -207,6 +294,89 @@ std::unique_ptr<EntityData> CreateEntityDataFromCard(const CreditCard& card) {
   SetAutofillWalletSpecificsFromServerCard(card, wallet_specifics);
 
   return entity_data;
+}
+
+CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
+  CreditCard result(CreditCard::MASKED_SERVER_CARD, card.id());
+  result.SetNumber(base::UTF8ToUTF16(card.last_four()));
+  result.SetServerStatus(ServerToLocalStatus(card.status()));
+  result.SetNetworkForMaskedCard(CardNetworkFromWalletCardType(card.type()));
+  result.set_card_type(CardTypeFromWalletCardClass(card.card_class()));
+  result.SetRawInfo(CREDIT_CARD_NAME_FULL,
+                    base::UTF8ToUTF16(card.name_on_card()));
+  result.SetExpirationMonth(card.exp_month());
+  result.SetExpirationYear(card.exp_year());
+  result.set_billing_address_id(card.billing_address_id());
+  result.set_bank_name(card.bank_name());
+  return result;
+}
+
+void CopyRelevantWalletMetadataFromDisk(
+    const AutofillTable& table,
+    std::vector<CreditCard>* cards_from_server) {
+  std::vector<std::unique_ptr<CreditCard>> cards_on_disk;
+  table.GetServerCreditCards(&cards_on_disk);
+
+  // Since the number of cards is fairly small, the brute-force search is good
+  // enough.
+  for (const auto& saved_card : cards_on_disk) {
+    for (CreditCard& server_card : *cards_from_server) {
+      if (saved_card->server_id() == server_card.server_id()) {
+        // The wallet data doesn't have the use stats. Use the ones present on
+        // disk to not overwrite them with bad data.
+        server_card.set_use_count(saved_card->use_count());
+        server_card.set_use_date(saved_card->use_date());
+
+        // Keep the billing address id of the saved cards only if it points to
+        // a local address.
+        if (saved_card->billing_address_id().length() == kLocalGuidSize) {
+          server_card.set_billing_address_id(saved_card->billing_address_id());
+          break;
+        }
+      }
+    }
+  }
+}
+
+void PopulateWalletCardsAndAddresses(
+    const syncer::EntityChangeList& entity_data,
+    std::vector<CreditCard>* wallet_cards,
+    std::vector<AutofillProfile>* wallet_addresses) {
+  std::map<std::string, std::string> ids;
+
+  for (const syncer::EntityChange& change : entity_data) {
+    DCHECK(change.data().specifics.has_autofill_wallet());
+
+    const sync_pb::AutofillWalletSpecifics& autofill_specifics =
+        change.data().specifics.autofill_wallet();
+
+    switch (autofill_specifics.type()) {
+      case sync_pb::AutofillWalletSpecifics::MASKED_CREDIT_CARD:
+        wallet_cards->push_back(
+            CardFromSpecifics(autofill_specifics.masked_card()));
+        break;
+      case sync_pb::AutofillWalletSpecifics::POSTAL_ADDRESS:
+        wallet_addresses->push_back(
+            ProfileFromSpecifics(autofill_specifics.address()));
+
+        // Map the sync billing address id to the profile's id.
+        ids[autofill_specifics.address().id()] =
+            wallet_addresses->back().server_id();
+        break;
+      case sync_pb::AutofillWalletSpecifics::CUSTOMER_DATA:
+      case sync_pb::AutofillWalletSpecifics::UNKNOWN:
+        // Just ignore new entry types that the client doesn't know about.
+        break;
+    }
+  }
+
+  // Set the billing address of the wallet cards to the id of the appropriate
+  // profile.
+  for (CreditCard& card : *wallet_cards) {
+    auto it = ids.find(card.billing_address_id());
+    if (it != ids.end())
+      card.set_billing_address_id(it->second);
+  }
 }
 
 }  // namespace autofill

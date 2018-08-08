@@ -16,4 +16,32 @@ CreditCard CreateServerCreditCard(const std::string& server_id) {
   return CreditCard(CreditCard::MASKED_SERVER_CARD, server_id);
 }
 
+sync_pb::AutofillWalletSpecifics CreateAutofillWalletSpecificsForCard(
+    const std::string& specifics_id,
+    const std::string& billing_address_id) {
+  sync_pb::AutofillWalletSpecifics wallet_specifics;
+  wallet_specifics.set_type(
+      sync_pb::AutofillWalletSpecifics_WalletInfoType::
+          AutofillWalletSpecifics_WalletInfoType_MASKED_CREDIT_CARD);
+
+  sync_pb::WalletMaskedCreditCard* card_specifics =
+      wallet_specifics.mutable_masked_card();
+  card_specifics->set_id(specifics_id);
+  card_specifics->set_billing_address_id(billing_address_id);
+  return wallet_specifics;
+}
+
+sync_pb::AutofillWalletSpecifics CreateAutofillWalletSpecificsForAddress(
+    const std::string& specifics_id) {
+  sync_pb::AutofillWalletSpecifics wallet_specifics;
+  wallet_specifics.set_type(
+      sync_pb::AutofillWalletSpecifics_WalletInfoType::
+          AutofillWalletSpecifics_WalletInfoType_POSTAL_ADDRESS);
+
+  sync_pb::WalletPostalAddress* profile_specifics =
+      wallet_specifics.mutable_address();
+  profile_specifics->set_id(specifics_id);
+  return wallet_specifics;
+}
+
 }  // namespace autofill

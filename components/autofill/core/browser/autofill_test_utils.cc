@@ -36,6 +36,8 @@ namespace test {
 
 namespace {
 
+const int kValidityStateBitfield = 1984;
+
 std::string GetRandomCardNumber() {
   const size_t length = 16;
   std::string value;
@@ -332,6 +334,50 @@ AutofillProfile GetVerifiedProfile2() {
   return profile;
 }
 
+AutofillProfile GetServerProfile() {
+  AutofillProfile profile(AutofillProfile::SERVER_PROFILE, "id1");
+  // Note: server profiles don't have email addresses and only have full names.
+  SetProfileInfo(&profile, "", "", "", "", "Google, Inc.", "123 Fake St.",
+                 "Apt. 42", "Mountain View", "California", "94043", "US",
+                 "1.800.555.1234");
+
+  profile.SetInfo(NAME_FULL, ASCIIToUTF16("John K. Doe"), "en");
+  profile.SetRawInfo(ADDRESS_HOME_SORTING_CODE, ASCIIToUTF16("CEDEX"));
+  profile.SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                     ASCIIToUTF16("Santa Clara"));
+
+  profile.set_language_code("en");
+  profile.SetValidityFromBitfieldValue(kValidityStateBitfield);
+  profile.set_use_count(7);
+  profile.set_use_date(base::Time::FromTimeT(54321));
+
+  profile.GenerateServerProfileIdentifier();
+
+  return profile;
+}
+
+AutofillProfile GetServerProfile2() {
+  AutofillProfile profile(AutofillProfile::SERVER_PROFILE, "id2");
+  // Note: server profiles don't have email addresses.
+  SetProfileInfo(&profile, "", "", "", "", "Main, Inc.", "4323 Wrong St.",
+                 "Apt. 1032", "Sunnyvale", "California", "10011", "US",
+                 "+1 514-123-1234");
+
+  profile.SetInfo(NAME_FULL, ASCIIToUTF16("Jim S. Bristow"), "en");
+  profile.SetRawInfo(ADDRESS_HOME_SORTING_CODE, ASCIIToUTF16("XEDEC"));
+  profile.SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                     ASCIIToUTF16("Santa Monica"));
+
+  profile.set_language_code("en");
+  profile.SetValidityFromBitfieldValue(kValidityStateBitfield);
+  profile.set_use_count(14);
+  profile.set_use_date(base::Time::FromTimeT(98765));
+
+  profile.GenerateServerProfileIdentifier();
+
+  return profile;
+}
+
 CreditCard GetCreditCard() {
   CreditCard credit_card(base::GenerateGUID(), kEmptyOrigin);
   SetCreditCardInfo(&credit_card, "Test User", "4111111111111111" /* Visa */,
@@ -363,6 +409,7 @@ CreditCard GetMaskedServerCard() {
   test::SetCreditCardInfo(&credit_card, "Bonnie Parker",
                           "2109" /* Mastercard */, "12", "2020", "1");
   credit_card.SetNetworkForMaskedCard(kMasterCard);
+  credit_card.set_card_type(CreditCard::CARD_TYPE_CREDIT);
   return credit_card;
 }
 
@@ -371,6 +418,7 @@ CreditCard GetMaskedServerCardAmex() {
   test::SetCreditCardInfo(&credit_card, "Justin Thyme", "8431" /* Amex */, "9",
                           "2020", "1");
   credit_card.SetNetworkForMaskedCard(kAmericanExpressCard);
+  credit_card.set_card_type(CreditCard::CARD_TYPE_PREPAID);
   return credit_card;
 }
 

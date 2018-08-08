@@ -107,6 +107,12 @@ AutofillProfile GetVerifiedProfile();
 // Returns a verified profile full of dummy info, different to the above.
 AutofillProfile GetVerifiedProfile2();
 
+// Returns a server profile full of dummy info.
+AutofillProfile GetServerProfile();
+
+// Returns a server profile full of dummy info, different to the above.
+AutofillProfile GetServerProfile2();
+
 // Returns a credit card full of dummy info.
 CreditCard GetCreditCard();
 

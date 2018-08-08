@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -17,8 +18,10 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/mutable_data_batch.h"
+#include "components/sync/model/sync_merge_result.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/model_impl/sync_metadata_store_change_list.h"
 
@@ -75,7 +78,11 @@ AutofillWalletSyncBridge::AutofillWalletSyncBridge(
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
     AutofillWebDataBackend* web_data_backend)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      web_data_backend_(web_data_backend) {}
+      web_data_backend_(web_data_backend) {
+  DCHECK(web_data_backend_);
+
+  LoadMetadata();
+}
 
 AutofillWalletSyncBridge::~AutofillWalletSyncBridge() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -91,14 +98,14 @@ AutofillWalletSyncBridge::CreateMetadataChangeList() {
 base::Optional<syncer::ModelError> AutofillWalletSyncBridge::MergeSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
-  return ApplySyncChanges(std::move(metadata_change_list),
-                          std::move(entity_data));
+  SetSyncData(entity_data, /*is_initial_data=*/true);
+  return base::nullopt;
 }
 
 base::Optional<syncer::ModelError> AutofillWalletSyncBridge::ApplySyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
-  NOTIMPLEMENTED();
+  SetSyncData(entity_data, /*is_initial_data=*/false);
   return base::nullopt;
 }
 
@@ -149,8 +156,132 @@ std::string AutofillWalletSyncBridge::GetStorageKey(
       entity_data.specifics.autofill_wallet());
 }
 
+void AutofillWalletSyncBridge::SetSyncData(
+    const syncer::EntityChangeList& entity_data,
+    bool is_initial_data) {
+  std::vector<CreditCard> wallet_cards;
+  std::vector<AutofillProfile> wallet_addresses;
+  PopulateWalletCardsAndAddresses(entity_data, &wallet_cards,
+                                  &wallet_addresses);
+
+  // Users can set billing address of the server credit card locally, but that
+  // information does not propagate to either Chrome Sync or Google Payments
+  // server. To preserve user's preferred billing address and most recent use
+  // stats, copy them from disk into |wallet_cards|.
+  AutofillTable* table = GetAutofillTable();
+  CopyRelevantWalletMetadataFromDisk(*table, &wallet_cards);
+
+  // In the common case, the database won't have changed. Committing an update
+  // to the database will require at least one DB page write and will schedule
+  // a fsync. To avoid this I/O, it should be more efficient to do a read and
+  // only do the writes if something changed.
+  std::vector<std::unique_ptr<CreditCard>> existing_cards;
+  table->GetServerCreditCards(&existing_cards);
+  AutofillWalletDiff cards_diff =
+      ComputeAutofillWalletDiff(existing_cards, wallet_cards);
+  if (!cards_diff.IsEmpty())
+    table->SetServerCreditCards(wallet_cards);
+
+  std::vector<std::unique_ptr<AutofillProfile>> existing_addresses;
+  table->GetServerProfiles(&existing_addresses);
+  AutofillWalletDiff addresses_diff =
+      ComputeAutofillWalletDiff(existing_addresses, wallet_addresses);
+  if (!addresses_diff.IsEmpty())
+    table->SetServerProfiles(wallet_addresses);
+
+  if (!is_initial_data) {
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCardsAdded",
+                             cards_diff.items_added);
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCardsRemoved",
+                             cards_diff.items_removed);
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCardsAddedOrRemoved",
+                             cards_diff.items_added + cards_diff.items_removed);
+
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddressesAdded",
+                             addresses_diff.items_added);
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddressesRemoved",
+                             addresses_diff.items_removed);
+    UMA_HISTOGRAM_COUNTS_100(
+        "Autofill.WalletAddressesAddedOrRemoved",
+        addresses_diff.items_added + addresses_diff.items_removed);
+  }
+
+  if (web_data_backend_ && (!cards_diff.IsEmpty() || !addresses_diff.IsEmpty()))
+    web_data_backend_->NotifyOfMultipleAutofillChanges();
+}
+
+// static
+template <class Item>
+AutofillWalletSyncBridge::AutofillWalletDiff
+AutofillWalletSyncBridge::ComputeAutofillWalletDiff(
+    const std::vector<std::unique_ptr<Item>>& old_data,
+    const std::vector<Item>& new_data) {
+  // Build vectors of pointers, so that we can mutate (sort) them.
+  std::vector<const Item*> old_ptrs;
+  old_ptrs.reserve(old_data.size());
+  for (const std::unique_ptr<Item>& old_item : old_data)
+    old_ptrs.push_back(old_item.get());
+  std::vector<const Item*> new_ptrs;
+  new_ptrs.reserve(new_data.size());
+  for (const Item& new_item : new_data)
+    new_ptrs.push_back(&new_item);
+
+  // Sort our vectors.
+  auto compare = [](const Item* lhs, const Item* rhs) {
+    return lhs->Compare(*rhs) < 0;
+  };
+  std::sort(old_ptrs.begin(), old_ptrs.end(), compare);
+  std::sort(new_ptrs.begin(), new_ptrs.end(), compare);
+
+  // Walk over both of them and count added/removed elements.
+  AutofillWalletDiff result;
+  auto old_it = old_ptrs.begin();
+  auto new_it = new_ptrs.begin();
+  while (old_it != old_ptrs.end()) {
+    if (new_it == new_ptrs.end()) {
+      result.items_removed += std::distance(old_it, old_ptrs.end());
+      break;
+    }
+    int cmp = (*old_it)->Compare(**new_it);
+    if (cmp < 0) {
+      ++result.items_removed;
+      ++old_it;
+    } else if (cmp == 0) {
+      ++old_it;
+      ++new_it;
+    } else {
+      ++result.items_added;
+      ++new_it;
+    }
+  }
+  result.items_added += std::distance(new_it, new_ptrs.end());
+
+  DCHECK_EQ(old_data.size() + result.items_added - result.items_removed,
+            new_data.size());
+
+  return result;
+}
+
 AutofillTable* AutofillWalletSyncBridge::GetAutofillTable() {
   return AutofillTable::FromWebDatabase(web_data_backend_->GetDatabase());
+}
+
+void AutofillWalletSyncBridge::LoadMetadata() {
+  if (!web_data_backend_ || !web_data_backend_->GetDatabase() ||
+      !GetAutofillTable()) {
+    change_processor()->ReportError(
+        {FROM_HERE, "Failed to load AutofillWebDatabase."});
+    return;
+  }
+
+  auto batch = std::make_unique<syncer::MetadataBatch>();
+  if (!GetAutofillTable()->GetAllSyncMetadata(syncer::AUTOFILL_PROFILE,
+                                              batch.get())) {
+    change_processor()->ReportError(
+        {FROM_HERE, "Failed reading autofill metadata from WebDatabase."});
+    return;
+  }
+  change_processor()->ModelReadyToSync(std::move(batch));
 }
 
 }  // namespace autofill

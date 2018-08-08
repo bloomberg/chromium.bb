@@ -16,7 +16,10 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/country_names.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/autofill_sync_bridge_test_util.h"
 #include "components/autofill/core/browser/webdata/autofill_sync_bridge_util.h"
@@ -39,18 +42,13 @@ namespace {
 using base::ScopedTempDir;
 using sync_pb::AutofillWalletSpecifics;
 using syncer::DataBatch;
+using syncer::EntityChange;
 using syncer::EntityData;
 using syncer::EntityDataPtr;
 using syncer::KeyAndData;
 using syncer::MockModelTypeChangeProcessor;
 using syncer::ModelType;
 using testing::UnorderedElementsAre;
-
-// Non-UTF8 server IDs.
-const char kAddr1ServerId[] = "addr1\xEF\xBF\xBE";
-const char kAddr2ServerId[] = "addr2\xEF\xBF\xBE";
-const char kCard1ServerId[] = "card1\xEF\xBF\xBE";
-const char kCard2ServerId[] = "card2\xEF\xBF\xBE";
 
 // Base64 encodings of the server IDs, used as ids in WalletMetadataSpecifics
 // (these are suitable for syncing, because they are valid UTF-8).
@@ -85,32 +83,6 @@ class FakeAutofillBackend : public AutofillWebDataBackend {
  private:
   WebDatabase* db_;
 };
-
-AutofillWalletSpecifics CreateAutofillWalletSpecificsForCard(
-    const std::string& specifics_id) {
-  sync_pb::AutofillWalletSpecifics wallet_specifics;
-  wallet_specifics.set_type(
-      sync_pb::AutofillWalletSpecifics_WalletInfoType::
-          AutofillWalletSpecifics_WalletInfoType_MASKED_CREDIT_CARD);
-
-  sync_pb::WalletMaskedCreditCard* card_specifics =
-      wallet_specifics.mutable_masked_card();
-  card_specifics->set_id(specifics_id);
-  return wallet_specifics;
-}
-
-AutofillWalletSpecifics CreateAutofillWalletSpecificsForAddress(
-    const std::string& specifics_id) {
-  sync_pb::AutofillWalletSpecifics wallet_specifics;
-  wallet_specifics.set_type(
-      sync_pb::AutofillWalletSpecifics_WalletInfoType::
-          AutofillWalletSpecifics_WalletInfoType_POSTAL_ADDRESS);
-
-  sync_pb::WalletPostalAddress* address_specifics =
-      wallet_specifics.mutable_address();
-  address_specifics->set_id(specifics_id);
-  return wallet_specifics;
-}
 
 void ExtractAutofillWalletSpecificsFromDataBatch(
     std::unique_ptr<DataBatch> batch,
@@ -220,6 +192,29 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
         mock_processor_.CreateForwardingProcessor(), &backend_));
   }
 
+  void StartSyncing(
+      const std::vector<AutofillWalletSpecifics>& remote_data = {}) {
+    base::RunLoop loop;
+    syncer::DataTypeActivationRequest request;
+    request.error_handler = base::DoNothing();
+    real_processor_->OnSyncStarting(
+        request,
+        base::BindLambdaForTesting(
+            [&loop](std::unique_ptr<syncer::DataTypeActivationResponse>) {
+              loop.Quit();
+            }));
+    loop.Run();
+
+    // Initialize the processor with initial_sync_done.
+    sync_pb::ModelTypeState state;
+    state.set_initial_sync_done(true);
+    syncer::UpdateResponseDataList initial_updates;
+    for (const AutofillWalletSpecifics& specifics : remote_data) {
+      initial_updates.push_back(SpecificsToUpdateResponse(specifics));
+    }
+    real_processor_->OnUpdateReceived(state, initial_updates);
+  }
+
   EntityData SpecificsToEntity(const AutofillWalletSpecifics& specifics) {
     EntityData data;
     *data.specifics.mutable_autofill_wallet() = specifics;
@@ -238,6 +233,13 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
           loop.Quit();
         }));
     loop.Run();
+    return data;
+  }
+
+  syncer::UpdateResponseData SpecificsToUpdateResponse(
+      const AutofillWalletSpecifics& specifics) {
+    syncer::UpdateResponseData data;
+    data.entity = SpecificsToEntity(specifics).PassToPtr();
     return data;
   }
 
@@ -297,27 +299,208 @@ TEST_F(AutofillWalletSyncBridgeTest, GetStorageKeyForCard) {
 
 TEST_F(AutofillWalletSyncBridgeTest,
        GetAllDataForDebugging_ShouldReturnAllData) {
-  AutofillProfile address1 = CreateServerProfile(kAddr1ServerId);
-  AutofillProfile address2 = CreateServerProfile(kAddr2ServerId);
+  AutofillProfile address1 = test::GetServerProfile();
+  AutofillProfile address2 = test::GetServerProfile2();
   table()->SetServerProfiles({address1, address2});
-  CreditCard card1 = CreateServerCreditCard(kCard1ServerId);
-  CreditCard card2 = CreateServerCreditCard(kCard2ServerId);
+  CreditCard card1 = test::GetMaskedServerCard();
+  CreditCard card2 = test::GetMaskedServerCardAmex();
   table()->SetServerCreditCards({card1, card2});
 
-  AutofillWalletSpecifics address_specifics1;
-  SetAutofillWalletSpecificsFromServerProfile(address1, &address_specifics1);
-  AutofillWalletSpecifics address_specifics2;
-  SetAutofillWalletSpecificsFromServerProfile(address2, &address_specifics2);
+  AutofillWalletSpecifics profile_specifics1;
+  SetAutofillWalletSpecificsFromServerProfile(address1, &profile_specifics1);
+  AutofillWalletSpecifics profile_specifics2;
+  SetAutofillWalletSpecificsFromServerProfile(address2, &profile_specifics2);
   AutofillWalletSpecifics card_specifics1;
   SetAutofillWalletSpecificsFromServerCard(card1, &card_specifics1);
   AutofillWalletSpecifics card_specifics2;
   SetAutofillWalletSpecificsFromServerCard(card2, &card_specifics2);
 
   EXPECT_THAT(GetAllLocalData(),
-              UnorderedElementsAre(EqualsSpecifics(address_specifics1),
-                                   EqualsSpecifics(address_specifics2),
+              UnorderedElementsAre(EqualsSpecifics(profile_specifics1),
+                                   EqualsSpecifics(profile_specifics2),
                                    EqualsSpecifics(card_specifics1),
                                    EqualsSpecifics(card_specifics2)));
+}
+
+// Tests that when a new wallet card and new wallet address are sent by the
+// server, the client only keeps the new data.
+TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_NewWalletAddressAndCard) {
+  // Create one profile and one card on the client.
+  AutofillProfile address1 = test::GetServerProfile();
+  table()->SetServerProfiles({address1});
+  CreditCard card1 = test::GetMaskedServerCard();
+  table()->SetServerCreditCards({card1});
+
+  // Create a different profile and a different card on the server.
+  AutofillProfile address2 = test::GetServerProfile2();
+  AutofillWalletSpecifics profile_specifics2;
+  SetAutofillWalletSpecificsFromServerProfile(address2, &profile_specifics2);
+  CreditCard card2 = test::GetMaskedServerCardAmex();
+  AutofillWalletSpecifics card_specifics2;
+  SetAutofillWalletSpecificsFromServerCard(card2, &card_specifics2);
+
+  StartSyncing({profile_specifics2, card_specifics2});
+
+  // Only the server card should be present on the client.
+  EXPECT_THAT(GetAllLocalData(),
+              UnorderedElementsAre(EqualsSpecifics(profile_specifics2),
+                                   EqualsSpecifics(card_specifics2)));
+}
+
+// Tests that when the server sends no cards or address, the client should
+// delete all it's existing data.
+TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_NoWalletAddressOrCard) {
+  // Create one profile and one card on the client.
+  AutofillProfile local_profile = test::GetServerProfile();
+  table()->SetServerProfiles({local_profile});
+  CreditCard local_card = test::GetMaskedServerCard();
+  table()->SetServerCreditCards({local_card});
+
+  StartSyncing({});
+
+  EXPECT_TRUE(GetAllLocalData().empty());
+}
+
+// Test that when the server sends the same address and card as the client has,
+// nothing changes on the client.
+TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SameWalletAddressAndCard) {
+  // Create one profile and one card on the client.
+  AutofillProfile profile = test::GetServerProfile();
+  table()->SetServerProfiles({profile});
+  CreditCard card = test::GetMaskedServerCard();
+  table()->SetServerCreditCards({card});
+
+  // Create the same profile and card on the server.
+  AutofillWalletSpecifics profile_specifics;
+  SetAutofillWalletSpecificsFromServerProfile(profile, &profile_specifics);
+  AutofillWalletSpecifics card_specifics;
+  SetAutofillWalletSpecificsFromServerCard(card, &card_specifics);
+
+  StartSyncing({profile_specifics, card_specifics});
+
+  EXPECT_THAT(GetAllLocalData(),
+              UnorderedElementsAre(EqualsSpecifics(profile_specifics),
+                                   EqualsSpecifics(card_specifics)));
+}
+
+// Tests that when there are multiple changes happening at the same time, the
+// data from the server is what the client ends up with,
+TEST_F(AutofillWalletSyncBridgeTest,
+       MergeSyncData_AddRemoveAndPreserveWalletAddressAndCard) {
+  // Create two profile and one card on the client.
+  AutofillProfile profile = test::GetServerProfile();
+  AutofillProfile profile2 = test::GetServerProfile2();
+  table()->SetServerProfiles({profile, profile2});
+  CreditCard card = test::GetMaskedServerCard();
+  table()->SetServerCreditCards({card});
+
+  // Create one of the same profiles and a different card on the server.
+  AutofillWalletSpecifics profile_specifics;
+  SetAutofillWalletSpecificsFromServerProfile(profile, &profile_specifics);
+  // The Amex card has different values for the relevant fields.
+  CreditCard card2 = test::GetMaskedServerCardAmex();
+  AutofillWalletSpecifics card_specifics;
+  SetAutofillWalletSpecificsFromServerCard(card, &card_specifics);
+
+  StartSyncing({profile_specifics, card_specifics});
+
+  // Make sure that the client only has the data from the server.
+  EXPECT_THAT(GetAllLocalData(),
+              UnorderedElementsAre(EqualsSpecifics(profile_specifics),
+                                   EqualsSpecifics(card_specifics)));
+}
+
+// Test that all field values for a address sent form the server are copied on
+// the address on the client.
+TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletAddressData) {
+  // Create a profile to be synced from the server.
+  AutofillProfile profile = test::GetServerProfile();
+  AutofillWalletSpecifics profile_specifics;
+  SetAutofillWalletSpecificsFromServerProfile(profile, &profile_specifics);
+
+  StartSyncing({profile_specifics});
+
+  EXPECT_THAT(GetAllLocalData(),
+              UnorderedElementsAre(EqualsSpecifics(profile_specifics)));
+
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
+  table()->GetServerProfiles(&profiles);
+  ASSERT_EQ(1U, profiles.size());
+
+  // Make sure that all the data was set properly.
+  EXPECT_EQ(profile.GetRawInfo(NAME_FULL), profiles[0]->GetRawInfo(NAME_FULL));
+  EXPECT_EQ(profile.GetRawInfo(COMPANY_NAME),
+            profiles[0]->GetRawInfo(COMPANY_NAME));
+  EXPECT_EQ(profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS),
+            profiles[0]->GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
+  EXPECT_EQ(profile.GetRawInfo(ADDRESS_HOME_STATE),
+            profiles[0]->GetRawInfo(ADDRESS_HOME_STATE));
+  EXPECT_EQ(profile.GetRawInfo(ADDRESS_HOME_CITY),
+            profiles[0]->GetRawInfo(ADDRESS_HOME_CITY));
+  EXPECT_EQ(profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY),
+            profiles[0]->GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY));
+  EXPECT_EQ(profile.GetRawInfo(ADDRESS_HOME_ZIP),
+            profiles[0]->GetRawInfo(ADDRESS_HOME_ZIP));
+  EXPECT_EQ(profile.GetRawInfo(ADDRESS_HOME_COUNTRY),
+            profiles[0]->GetRawInfo(ADDRESS_HOME_COUNTRY));
+  EXPECT_EQ(profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER),
+            profiles[0]->GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+  EXPECT_EQ(profile.GetRawInfo(ADDRESS_HOME_SORTING_CODE),
+            profiles[0]->GetRawInfo(ADDRESS_HOME_SORTING_CODE));
+  EXPECT_EQ(profile.language_code(), profiles[0]->language_code());
+
+  // Also make sure that those types are not empty, to exercice all the code
+  // paths.
+  EXPECT_FALSE(profile.GetRawInfo(NAME_FULL).empty());
+  EXPECT_FALSE(profile.GetRawInfo(COMPANY_NAME).empty());
+  EXPECT_FALSE(profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS).empty());
+  EXPECT_FALSE(profile.GetRawInfo(ADDRESS_HOME_STATE).empty());
+  EXPECT_FALSE(profile.GetRawInfo(ADDRESS_HOME_CITY).empty());
+  EXPECT_FALSE(profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY).empty());
+  EXPECT_FALSE(profile.GetRawInfo(ADDRESS_HOME_ZIP).empty());
+  EXPECT_FALSE(profile.GetRawInfo(ADDRESS_HOME_COUNTRY).empty());
+  EXPECT_FALSE(profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER).empty());
+  EXPECT_FALSE(profile.GetRawInfo(ADDRESS_HOME_SORTING_CODE).empty());
+  EXPECT_FALSE(profile.language_code().empty());
+}
+
+// Test that all field values for a card sent form the server are copied on the
+// card on the client.
+TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletCardData) {
+  // Create a card to be synced from the server.
+  CreditCard card = test::GetMaskedServerCard();
+  // Add this value type as it is not added by default but should be synced.
+  card.set_bank_name("The Bank");
+  AutofillWalletSpecifics card_specifics;
+  SetAutofillWalletSpecificsFromServerCard(card, &card_specifics);
+
+  StartSyncing({card_specifics});
+
+  EXPECT_THAT(GetAllLocalData(),
+              UnorderedElementsAre(EqualsSpecifics(card_specifics)));
+
+  std::vector<std::unique_ptr<CreditCard>> cards;
+  table()->GetServerCreditCards(&cards);
+  ASSERT_EQ(1U, cards.size());
+
+  // Make sure that all the data was set properly.
+  EXPECT_EQ(card.network(), cards[0]->network());
+  EXPECT_EQ(card.LastFourDigits(), cards[0]->LastFourDigits());
+  EXPECT_EQ(card.expiration_month(), cards[0]->expiration_month());
+  EXPECT_EQ(card.expiration_year(), cards[0]->expiration_year());
+  EXPECT_EQ(card.billing_address_id(), cards[0]->billing_address_id());
+  EXPECT_EQ(card.card_type(), cards[0]->card_type());
+  EXPECT_EQ(card.bank_name(), cards[0]->bank_name());
+
+  // Also make sure that those types are not empty, to exercice all the code
+  // paths.
+  EXPECT_FALSE(card.network().empty());
+  EXPECT_FALSE(card.LastFourDigits().empty());
+  EXPECT_NE(0, card.expiration_month());
+  EXPECT_NE(0, card.expiration_year());
+  EXPECT_FALSE(card.billing_address_id().empty());
+  EXPECT_NE(CreditCard::CARD_TYPE_UNKNOWN, card.card_type());
+  EXPECT_FALSE(card.bank_name().empty());
 }
 
 }  // namespace autofill
