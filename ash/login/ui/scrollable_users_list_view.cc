@@ -258,8 +258,8 @@ ScrollableUsersListView::ScrollableUsersListView(
   SetBackgroundColor(SK_ColorTRANSPARENT);
   set_draw_overflow_indicator(false);
 
-  scroll_bar_ = new ScrollBar(false);
-  SetVerticalScrollBar(scroll_bar_);
+  vertical_scroll_bar_ = new ScrollBar(false);
+  SetVerticalScrollBar(vertical_scroll_bar_);
   SetHorizontalScrollBar(new ScrollBar(true));
 
   hover_notifier_ = std::make_unique<HoverNotifier>(
@@ -303,8 +303,8 @@ void ScrollableUsersListView::Layout() {
   ScrollView::Layout();
 
   // Update scrollbar visibility.
-  if (scroll_bar_)
-    scroll_bar_->SetThumbVisible(IsMouseHovered());
+  if (vertical_scroll_bar_)
+    vertical_scroll_bar_->SetThumbVisible(IsMouseHovered());
 }
 
 void ScrollableUsersListView::OnPaintBackground(gfx::Canvas* canvas) {
@@ -321,28 +321,35 @@ void ScrollableUsersListView::OnPaintBackground(gfx::Canvas* canvas) {
   // Only draw a gradient if the wallpaper is blurred. Otherwise, draw a rounded
   // rectangle.
   if (ash::Shell::Get()->wallpaper_controller()->IsWallpaperBlurred()) {
-    // Draws symmetrical linear gradient at the top and bottom of the view.
-    SkScalar view_height = render_bounds.height();
-    SkScalar gradient_height = gradient_params_.height;
-    if (gradient_height == 0)
-      gradient_height = view_height;
-
-    // Start and end point of the drawing in view space.
-    SkPoint in_view_coordinates[2] = {SkPoint(),
-                                      SkPoint::Make(0.f, view_height)};
-    // Positions of colors to create gradient define in 0 to 1 range.
-    SkScalar top_gradient_end = gradient_height / view_height;
-    SkScalar bottom_gradient_start = 1.f - top_gradient_end;
-    SkScalar color_positions[4] = {0.f, top_gradient_end, bottom_gradient_start,
-                                   1.f};
-    SkColor colors[4] = {gradient_params_.color_from, gradient_params_.color_to,
-                         gradient_params_.color_to,
-                         gradient_params_.color_from};
-
     cc::PaintFlags flags;
-    flags.setShader(cc::PaintShader::MakeLinearGradient(
-        in_view_coordinates, colors, color_positions, 4,
-        SkShader::kClamp_TileMode));
+
+    // Only draw a gradient if the content can be scrolled.
+    if (vertical_scroll_bar_->visible()) {
+      // Draws symmetrical linear gradient at the top and bottom of the view.
+      SkScalar view_height = render_bounds.height();
+      SkScalar gradient_height = gradient_params_.height;
+      if (gradient_height == 0)
+        gradient_height = view_height;
+
+      // Start and end point of the drawing in view space.
+      SkPoint in_view_coordinates[2] = {SkPoint(),
+                                        SkPoint::Make(0.f, view_height)};
+      // Positions of colors to create gradient define in 0 to 1 range.
+      SkScalar top_gradient_end = gradient_height / view_height;
+      SkScalar bottom_gradient_start = 1.f - top_gradient_end;
+      SkScalar color_positions[4] = {0.f, top_gradient_end,
+                                     bottom_gradient_start, 1.f};
+      SkColor colors[4] = {gradient_params_.color_from,
+                           gradient_params_.color_to, gradient_params_.color_to,
+                           gradient_params_.color_from};
+
+      flags.setShader(cc::PaintShader::MakeLinearGradient(
+          in_view_coordinates, colors, color_positions, 4,
+          SkShader::kClamp_TileMode));
+    } else {
+      flags.setColor(gradient_params_.color_to);
+    }
+
     flags.setStyle(cc::PaintFlags::kFill_Style);
     canvas->DrawRect(render_bounds, flags);
   } else {
@@ -371,7 +378,7 @@ void ScrollableUsersListView::OnWallpaperBlurChanged() {
 }
 
 void ScrollableUsersListView::OnHover(bool has_hover) {
-  scroll_bar_->SetThumbVisible(has_hover);
+  vertical_scroll_bar_->SetThumbVisible(has_hover);
 }
 
 }  // namespace ash

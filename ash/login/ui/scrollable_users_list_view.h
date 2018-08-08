@@ -101,7 +101,7 @@ class ASH_EXPORT ScrollableUsersListView : public views::ScrollView,
   views::BoxLayout* user_view_host_layout_ = nullptr;
 
   // Owned by ScrollView.
-  ScrollBar* scroll_bar_ = nullptr;
+  ScrollBar* vertical_scroll_bar_ = nullptr;
 
   std::vector<LoginUserView*> user_views_;
 
