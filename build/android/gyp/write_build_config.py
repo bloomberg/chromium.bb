@@ -1012,7 +1012,10 @@ def main(argv):
       else:
         gradle['dependent_java_projects'].append(c['path'])
 
-  if is_apk_or_module_target:
+  # TODO(tiborg): Remove creation of JNI info for type group and java_library
+  # once we can generate the JNI registration based on APK / module targets as
+  # opposed to groups and libraries.
+  if is_apk_or_module_target or options.type in ('group', 'java_library'):
     config['jni'] = {}
     all_java_sources = [c['java_sources_file'] for c in all_library_deps
                         if 'java_sources_file' in c]
@@ -1168,22 +1171,27 @@ def main(argv):
 
     # Deps to add to the compile-time classpath (but not the runtime classpath).
     # TODO(agrieve): Might be less confusing to fold these into bootclasspath.
-    extra_jars = [c['unprocessed_jar_path']
+    javac_extra_jars = [c['unprocessed_jar_path']
+                  for c in classpath_deps.Direct('java_library')]
+    extra_jars = [c['jar_path']
                   for c in classpath_deps.Direct('java_library')]
 
     if options.extra_classpath_jars:
       # These are .jars to add to javac classpath but not to runtime classpath.
+      javac_extra_jars.extend(
+          build_utils.ParseGnList(options.extra_classpath_jars))
       extra_jars.extend(build_utils.ParseGnList(options.extra_classpath_jars))
 
-    extra_jars = [p for p in extra_jars if p not in javac_classpath]
-    javac_classpath.extend(extra_jars)
-    javac_interface_classpath.extend(extra_jars)
-    javac_full_interface_classpath.extend(
-        p for p in extra_jars if p not in javac_full_classpath)
-    javac_full_classpath.extend(
-        p for p in extra_jars if p not in javac_full_classpath)
     if extra_jars:
       deps_info['extra_classpath_jars'] = extra_jars
+
+    javac_extra_jars = [p for p in javac_extra_jars if p not in javac_classpath]
+    javac_classpath.extend(javac_extra_jars)
+    javac_interface_classpath.extend(javac_extra_jars)
+    javac_full_interface_classpath.extend(
+        p for p in javac_extra_jars if p not in javac_full_classpath)
+    javac_full_classpath.extend(
+        p for p in javac_extra_jars if p not in javac_full_classpath)
 
   if is_java_target or options.type == 'android_app_bundle':
     # The classpath to use to run this target (or as an input to ProGuard).
