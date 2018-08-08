@@ -130,18 +130,19 @@ WebSocketChannelImpl::BlobLoader::BlobLoader(
 
 void WebSocketChannelImpl::BlobLoader::Cancel() {
   loader_->Cancel();
-  loader_ = nullptr;
+  // DidFail will be called immediately.
+  // |this| is deleted here.
 }
 
 void WebSocketChannelImpl::BlobLoader::DidFinishLoading() {
   channel_->DidFinishLoadingBlob(loader_->ArrayBufferResult());
-  loader_ = nullptr;
+  // |this| is deleted here.
 }
 
 void WebSocketChannelImpl::BlobLoader::DidFail(
     FileError::ErrorCode error_code) {
   channel_->DidFailLoadingBlob(error_code);
-  loader_ = nullptr;
+  // |this| is deleted here.
 }
 
 struct WebSocketChannelImpl::ConnectInfo {
@@ -544,6 +545,7 @@ void WebSocketChannelImpl::HandleDidClose(bool was_clean,
       was_clean ? WebSocketChannelClient::kClosingHandshakeComplete
                 : WebSocketChannelClient::kClosingHandshakeIncomplete;
   client->DidClose(status, code, reason);
+  // client->DidClose may delete this object.
 }
 
 void WebSocketChannelImpl::DidConnect(WebSocketHandle* handle,
@@ -619,6 +621,7 @@ void WebSocketChannelImpl::DidFail(WebSocketHandle* handle,
   // WebSocketConnection. Hence we fail this channel by calling
   // |this->failAsError| function.
   FailAsError(message);
+  // |this| may be deleted.
 }
 
 void WebSocketChannelImpl::DidReceiveData(WebSocketHandle* handle,
@@ -672,6 +675,7 @@ void WebSocketChannelImpl::DidReceiveData(WebSocketHandle* handle,
     receiving_message_data_.clear();
     if (message.IsNull()) {
       FailAsError("Could not decode a text frame as UTF-8.");
+      // failAsError may delete this object.
     } else {
       client_->DidReceiveTextMessage(message);
     }
@@ -706,6 +710,7 @@ void WebSocketChannelImpl::DidClose(WebSocketHandle* handle,
   }
 
   HandleDidClose(was_clean, code, reason);
+  // HandleDidClose may delete this object.
 }
 
 void WebSocketChannelImpl::DidReceiveFlowControl(WebSocketHandle* handle,
@@ -774,6 +779,7 @@ void WebSocketChannelImpl::DidFailLoadingBlob(FileError::ErrorCode error_code) {
   // FIXME: Generate human-friendly reason message.
   FailAsError("Failed to load Blob: error code = " +
               String::Number(error_code));
+  // |this| can be deleted here.
 }
 
 void WebSocketChannelImpl::TearDownFailedConnection() {
@@ -785,6 +791,7 @@ void WebSocketChannelImpl::TearDownFailedConnection() {
     client_->DidError();
 
   HandleDidClose(false, kCloseEventCodeAbnormalClosure, String());
+  // HandleDidClose may delete this object.
 }
 
 bool WebSocketChannelImpl::ShouldDisallowConnection(const KURL& url) {
