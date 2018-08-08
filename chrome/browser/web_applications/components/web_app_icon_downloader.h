@@ -42,9 +42,6 @@ class WebAppIconDownloader : public content::WebContentsObserver {
       WebAppIconDownloaderCallback;
   // |extra_favicon_urls| allows callers to provide icon urls that aren't
   // provided by the renderer (e.g touch icons on non-android environments).
-  // |skip_page_favicons| instructs the downloader to not query the page
-  // for favicons (e.g. when a favicon URL has already been provided in
-  // |extra_favicon_urls|).
   // |https_status_code_class_histogram_name| optionally specifies a histogram
   // to use for logging http status code class results from fetch attempts.
   WebAppIconDownloader(content::WebContents* web_contents,
@@ -53,6 +50,9 @@ class WebAppIconDownloader : public content::WebContentsObserver {
                        WebAppIconDownloaderCallback callback);
   ~WebAppIconDownloader() override;
 
+  // Instructs the downloader to not query the page for favicons (e.g. when a
+  // favicon URL has already been provided in the constructor's
+  // |extra_favicon_urls| argument).
   void SkipPageFavicons();
 
   void Start();
