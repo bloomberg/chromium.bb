@@ -273,23 +273,6 @@ bool ScopedTempDirNoWow64::CreateEmptyFileInUniqueSystem32TempDir(
   return CreateEmptyFile(GetPath().Append(file_name));
 }
 
-std::unique_ptr<base::WaitableEvent> CreateInheritableEvent(
-    base::WaitableEvent::ResetPolicy reset_policy,
-    base::WaitableEvent::InitialState initial_state) {
-  SECURITY_ATTRIBUTES attributes = {sizeof(SECURITY_ATTRIBUTES)};
-  attributes.bInheritHandle = true;
-
-  HANDLE handle = ::CreateEvent(
-      &attributes, reset_policy == base::WaitableEvent::ResetPolicy::MANUAL,
-      initial_state == base::WaitableEvent::InitialState::SIGNALED, nullptr);
-  if (handle == nullptr || handle == INVALID_HANDLE_VALUE) {
-    PLOG(ERROR) << "Could not create inheritable event";
-    return std::unique_ptr<base::WaitableEvent>();
-  }
-  base::win::ScopedHandle event_handle(handle);
-  return std::make_unique<base::WaitableEvent>(std::move(event_handle));
-}
-
 bool CheckTestPrivileges() {
   // Check for administrator privileges, unless running in the sandbox.
   const bool is_sandboxed_process =

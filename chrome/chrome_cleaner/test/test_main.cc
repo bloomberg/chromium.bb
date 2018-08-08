@@ -10,6 +10,7 @@
 #include "base/test/test_suite.h"
 #include "base/win/scoped_com_initializer.h"
 #include "chrome/chrome_cleaner/crash/crash_client.h"
+#include "chrome/chrome_cleaner/ipc/sandbox.h"
 #include "chrome/chrome_cleaner/logging/scoped_logging.h"
 #include "chrome/chrome_cleaner/os/rebooter.h"
 #include "chrome/chrome_cleaner/os/secure_dll_loading.h"
@@ -38,7 +39,9 @@ class ChromeCleanerTestSuite : public base::TestSuite {
  protected:
   void Initialize() override {
     base::TestSuite::Initialize();
-    scoped_logging.reset(new chrome_cleaner::ScopedLogging(nullptr));
+    scoped_logging.reset(new chrome_cleaner::ScopedLogging(
+        IsSandboxedProcess() ? chrome_cleaner::kSandboxLogFileSuffix
+                             : nullptr));
   }
 
  private:

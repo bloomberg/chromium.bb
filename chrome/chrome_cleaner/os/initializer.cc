@@ -20,6 +20,33 @@
 
 namespace chrome_cleaner {
 
+namespace {
+
+std::unique_ptr<base::WaitableEvent> SignalInitializationDone() {
+  base::win::ScopedHandle init_done_notifier;
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  uint32_t handle = 0;
+  if (command_line->HasSwitch(kInitDoneNotifierSwitch) &&
+      base::StringToUint(
+          command_line->GetSwitchValueNative(kInitDoneNotifierSwitch),
+          &handle)) {
+    init_done_notifier.Set(base::win::Uint32ToHandle(handle));
+  }
+
+  std::unique_ptr<base::WaitableEvent> notifier_event;
+  if (init_done_notifier.IsValid()) {
+    notifier_event.reset(
+        new base::WaitableEvent(std::move(init_done_notifier)));
+
+    // Wake up the test that is waiting on this event.
+    notifier_event->Signal();
+  }
+  return notifier_event;
+}
+
+}  // namespace
+
 bool InitializeOSUtils() {
   chrome_cleaner::InitializeFilePathSanitization();
   chrome_cleaner::InitializeDiskUtil();
@@ -36,29 +63,20 @@ bool InitializeOSUtils() {
   return true;
 }
 
+void NotifyInitializationDone() {
+  SignalInitializationDone();
+}
+
 void NotifyInitializationDoneForTesting() {
-  base::win::ScopedHandle init_done_notifier;
+  std::unique_ptr<base::WaitableEvent> notifier_event =
+      SignalInitializationDone();
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  uint32_t handle = 0;
-  if (command_line->HasSwitch(kInitDoneNotifierSwitch) &&
-      base::StringToUint(
-          command_line->GetSwitchValueNative(kInitDoneNotifierSwitch),
-          &handle)) {
-    init_done_notifier.Set(base::win::Uint32ToHandle(handle));
-  }
-
-  if (init_done_notifier.IsValid()) {
-    base::WaitableEvent notifier_event(std::move(init_done_notifier));
-
-    // Wake up the test that is waiting on this event.
-    notifier_event.Signal();
-
+  if (notifier_event) {
     // The event has ResetPolicy AUTOMATIC, so after the test is woken up it is
     // immediately reset. Wait at most 5 seconds for the test to signal that
     // it's ready using the same event before continuing. If the test takes
     // longer than that stop waiting to prevent hangs.
-    notifier_event.TimedWait(base::TimeDelta::FromSeconds(5));
+    notifier_event->TimedWait(base::TimeDelta::FromSeconds(5));
   }
 }
 

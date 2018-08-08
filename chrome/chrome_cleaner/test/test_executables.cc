@@ -12,6 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/win/win_util.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
+#include "chrome/chrome_cleaner/os/inheritable_event.h"
 #include "chrome/chrome_cleaner/test/test_strings.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
 
