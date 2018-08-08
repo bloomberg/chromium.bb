@@ -3451,6 +3451,30 @@ void RenderFrameImpl::SetHostZoomLevel(const GURL& url, double zoom_level) {
 // blink::WebLocalFrameClient implementation
 // ----------------------------------------
 
+bool RenderFrameImpl::IsPluginHandledExternally(
+    const blink::WebElement& plugin_element,
+    const blink::WebURL& url,
+    const blink::WebString& suggested_mime_type) {
+#if BUILDFLAG(ENABLE_PLUGINS)
+  if (!BrowserPluginManager::Get()) {
+    // BrowserPluginManager needs a RenderThreadImpl, but some renderer tests
+    // use a MockRenderThread instead.
+    return false;
+  }
+  // TODO(ekaramad): The instance ID is mostly used for GuestView attaching and
+  // lookup. See if this can be removed (https://crbug.com/659750).
+  // The instance ID will not be consumed if the contents cannot be rendered
+  // externally.
+  int32_t tentative_element_instance_id =
+      BrowserPluginManager::Get()->GetNextInstanceID();
+  return GetContentClient()->renderer()->IsPluginHandledByMimeHandlerView(
+      this, plugin_element, GURL(url), suggested_mime_type.Utf8(),
+      tentative_element_instance_id);
+#else
+  return false;
+#endif
+}
+
 blink::WebPlugin* RenderFrameImpl::CreatePlugin(
     const blink::WebPluginParams& params) {
   blink::WebPlugin* plugin = nullptr;

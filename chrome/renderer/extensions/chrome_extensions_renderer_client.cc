@@ -22,6 +22,7 @@
 #include "chrome/renderer/media/cast_ipc_dispatcher.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/constants.h"
@@ -329,6 +330,19 @@ ChromeExtensionsRendererClient::CreateBrowserPluginDelegate(
     return new extensions::ExtensionsGuestViewContainer(render_frame);
   return new extensions::MimeHandlerViewContainer(render_frame, info, mime_type,
                                                   original_url);
+}
+
+// static
+bool ChromeExtensionsRendererClient::IsPluginHandledByMimeHandlerView(
+    const blink::WebElement& plugin_element,
+    const GURL& resource_url,
+    const std::string& mime_type,
+    const content::WebPluginInfo& plugin_info,
+    int32_t element_instance_id) {
+  CHECK(content::MimeHandlerViewMode::UsesCrossProcessFrame());
+  // TODO(ekaramad): Implement the renderer side logic here
+  // (https://crbug.com/659750).
+  return false;
 }
 
 // static

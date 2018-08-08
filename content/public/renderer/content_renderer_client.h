@@ -39,6 +39,7 @@ class SingleThreadTaskRunner;
 }
 
 namespace blink {
+class WebElement;
 class WebFrame;
 class WebLocalFrame;
 class WebMIDIAccessor;
@@ -86,6 +87,15 @@ class CONTENT_EXPORT ContentRendererClient {
   // Returns the bitmap to show when a <webview> guest has crashed, or NULL for
   // none.
   virtual SkBitmap* GetSadWebViewBitmap();
+
+  // Returns true if the embedder renders the contents of the |plugin_element|
+  // in a cross-process frame using MimeHandlerView.
+  virtual bool IsPluginHandledByMimeHandlerView(
+      RenderFrame* embedder_frame,
+      const blink::WebElement& plugin_element,
+      const GURL& original_url,
+      const std::string& original_mime_type,
+      int32_t instance_id_to_use);
 
   // Allows the embedder to override creating a plugin. If it returns true, then
   // |plugin| will contain the created plugin, although it could be NULL. If it

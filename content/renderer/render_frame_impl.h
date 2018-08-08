@@ -114,11 +114,14 @@ struct FrameMsg_TextTrackSettings_Params;
 namespace blink {
 class WebComputedAXTree;
 class WebContentDecryptionModule;
+class WebElement;
 class WebLayerTreeView;
 class WebLocalFrame;
 class WebPushClient;
 class WebRelatedAppsFetcher;
 class WebSecurityOrigin;
+class WebString;
+class WebURL;
 struct FramePolicy;
 struct WebContextMenuData;
 struct WebCursorInfo;
@@ -1278,6 +1281,10 @@ class CONTENT_EXPORT RenderFrameImpl
 
   std::unique_ptr<blink::WebSocketHandshakeThrottle>
   CreateWebSocketHandshakeThrottle() override;
+  bool IsPluginHandledExternally(
+      const blink::WebElement& plugin_element,
+      const blink::WebURL& url,
+      const blink::WebString& suggested_mime_type) override;
 
   // Updates the state of this frame when asked to commit a navigation.
   void PrepareFrameForCommit(const GURL& url,

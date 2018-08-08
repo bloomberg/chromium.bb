@@ -113,6 +113,11 @@ class ChromeContentRendererClient
   void RenderViewCreated(content::RenderView* render_view) override;
   SkBitmap* GetSadPluginBitmap() override;
   SkBitmap* GetSadWebViewBitmap() override;
+  bool IsPluginHandledByMimeHandlerView(content::RenderFrame* render_frame,
+                                        const blink::WebElement& plugin_element,
+                                        const GURL& original_url,
+                                        const std::string& mime_type,
+                                        int32_t instance_id_to_use) override;
   bool OverrideCreatePlugin(content::RenderFrame* render_frame,
                             const blink::WebPluginParams& params,
                             blink::WebPlugin** plugin) override;
