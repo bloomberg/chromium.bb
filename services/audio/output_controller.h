@@ -26,7 +26,7 @@
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_power_monitor.h"
 #include "media/audio/audio_source_diverter.h"
-#include "services/audio/group_member.h"
+#include "services/audio/loopback_group_member.h"
 
 // An OutputController controls an AudioOutputStream and provides data to this
 // output stream. It executes audio operations like play, pause, stop, etc. on
@@ -60,7 +60,7 @@
 namespace audio {
 
 class OutputController : public media::AudioOutputStream::AudioSourceCallback,
-                         public GroupMember,
+                         public LoopbackGroupMember,
                          public media::AudioManager::AudioDeviceListener {
  public:
   // An event handler that receives events from the OutputController. The
@@ -108,7 +108,6 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
                    EventHandler* handler,
                    const media::AudioParameters& params,
                    const std::string& output_device_id,
-                   const base::UnguessableToken& group_id,
                    SyncReader* sync_reader);
   ~OutputController() override;
 
@@ -149,11 +148,11 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
                  media::AudioBus* dest) override;
   void OnError() override;
 
-  // GroupMember implementation.
-  const base::UnguessableToken& GetGroupId() override;
-  const media::AudioParameters& GetAudioParameters() override;
-  void StartSnooping(Snooper* snooper) override;
-  void StopSnooping(Snooper* snooper) override;
+  // LoopbackGroupMember implementation.
+  const media::AudioParameters& GetAudioParameters() const override;
+  std::string GetDeviceId() const override;
+  void StartSnooping(Snooper* snooper, SnoopingMode mode) override;
+  void StopSnooping(Snooper* snooper, SnoopingMode mode) override;
   void StartMuting() override;
   void StopMuting() override;
 
@@ -238,9 +237,6 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   // Specifies the device id of the output device to open or empty for the
   // default output device.
   const std::string output_device_id_;
-
-  // A token indicating membership in a group of output controllers/streams.
-  const base::UnguessableToken group_id_;
 
   media::AudioOutputStream* stream_;
 

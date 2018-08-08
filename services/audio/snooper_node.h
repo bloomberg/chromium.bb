@@ -15,7 +15,7 @@
 #include "media/base/channel_mixer.h"
 #include "media/base/multi_channel_resampler.h"
 #include "services/audio/delay_buffer.h"
-#include "services/audio/group_member.h"
+#include "services/audio/loopback_group_member.h"
 
 namespace media {
 class AudioBus;
@@ -53,7 +53,7 @@ namespace audio {
 // because the inbound audio is from a source that pre-renders audio for playout
 // in the near future, while the outbound audio is audio that would have been
 // played-out in the recent past.
-class SnooperNode : public GroupMember::Snooper {
+class SnooperNode : public LoopbackGroupMember::Snooper {
  public:
   // Use sample counts as a precise measure of audio signal position and time
   // duration.

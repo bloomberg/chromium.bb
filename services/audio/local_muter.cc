@@ -6,17 +6,18 @@
 
 #include <utility>
 
-#include "services/audio/group_member.h"
+#include "services/audio/loopback_group_member.h"
 
 namespace audio {
 
-LocalMuter::LocalMuter(GroupCoordinator* coordinator,
+LocalMuter::LocalMuter(LoopbackCoordinator* coordinator,
                        const base::UnguessableToken& group_id)
     : coordinator_(coordinator), group_id_(group_id) {
   DCHECK(coordinator_);
 
   coordinator_->AddObserver(group_id_, this);
-  for (GroupMember* member : coordinator_->GetCurrentMembers(group_id_)) {
+  for (LoopbackGroupMember* member :
+       coordinator_->GetCurrentMembers(group_id_)) {
     member->StartMuting();
   }
 
@@ -27,7 +28,8 @@ LocalMuter::LocalMuter(GroupCoordinator* coordinator,
 LocalMuter::~LocalMuter() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  for (GroupMember* member : coordinator_->GetCurrentMembers(group_id_)) {
+  for (LoopbackGroupMember* member :
+       coordinator_->GetCurrentMembers(group_id_)) {
     member->StopMuting();
   }
 
@@ -46,13 +48,13 @@ void LocalMuter::AddBinding(mojom::LocalMuterAssociatedRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void LocalMuter::OnMemberJoinedGroup(GroupMember* member) {
+void LocalMuter::OnMemberJoinedGroup(LoopbackGroupMember* member) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   member->StartMuting();
 }
 
-void LocalMuter::OnMemberLeftGroup(GroupMember* member) {
+void LocalMuter::OnMemberLeftGroup(LoopbackGroupMember* member) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // No change to muting state.

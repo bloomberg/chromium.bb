@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "services/audio/group_coordinator.h"
 
 namespace audio {
 
@@ -28,8 +27,8 @@ OutputStream::OutputStream(
     media::AudioManager* audio_manager,
     const std::string& output_device_id,
     const media::AudioParameters& params,
-    GroupCoordinator* coordinator,
-    const base::UnguessableToken& group_id)
+    LoopbackCoordinator* coordinator,
+    const base::UnguessableToken& loopback_group_id)
     : foreign_socket_(),
       delete_callback_(std::move(delete_callback)),
       binding_(this, std::move(stream_request)),
@@ -43,12 +42,8 @@ OutputStream::OutputStream(
                    : base::DoNothing(),
               params,
               &foreign_socket_),
-      controller_(audio_manager,
-                  this,
-                  params,
-                  output_device_id,
-                  group_id,
-                  &reader_),
+      controller_(audio_manager, this, params, output_device_id, &reader_),
+      loopback_group_id_(loopback_group_id),
       weak_factory_(this) {
   DCHECK(binding_.is_bound());
   DCHECK(created_callback);
@@ -71,7 +66,7 @@ OutputStream::OutputStream(
   if (log_)
     log_->get()->OnCreated(params, output_device_id);
 
-  coordinator_->RegisterGroupMember(&controller_);
+  coordinator_->RegisterMember(loopback_group_id_, &controller_);
   if (!reader_.IsValid() || !controller_.Create(false)) {
     // Either SyncReader initialization failed or the controller failed to
     // create the stream. In the latter case, the controller will have called
@@ -96,7 +91,7 @@ OutputStream::~OutputStream() {
         std::string());
 
   controller_.Close();
-  coordinator_->UnregisterGroupMember(&controller_);
+  coordinator_->UnregisterMember(loopback_group_id_, &controller_);
 
   if (is_audible_)
     TRACE_EVENT_NESTABLE_ASYNC_END0("audio", "Audible", this);

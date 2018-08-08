@@ -9,8 +9,8 @@
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/unguessable_token.h"
-#include "services/audio/group_coordinator.h"
-#include "services/audio/group_member.h"
+#include "services/audio/loopback_coordinator.h"
+#include "services/audio/loopback_group_member.h"
 #include "services/audio/test/mock_group_member.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,24 +25,24 @@ namespace audio {
 namespace {
 
 TEST(LocalMuterTest, MutesExistingMembers) {
-  GroupCoordinator coordinator;
+  LoopbackCoordinator coordinator;
 
   // Create a group with two members.
   const UnguessableToken group_id = UnguessableToken::Create();
-  StrictMock<MockGroupMember> member1(group_id);
-  StrictMock<MockGroupMember> member2(group_id);
+  StrictMock<MockGroupMember> member1;
+  StrictMock<MockGroupMember> member2;
 
   // Create another group with one member, which should never have its mute
   // state changed.
   const UnguessableToken other_group_id = UnguessableToken::Create();
   ASSERT_NE(group_id, other_group_id);
-  StrictMock<MockGroupMember> non_member(other_group_id);
+  StrictMock<MockGroupMember> non_member;
   EXPECT_CALL(non_member, StartMuting()).Times(0);
   EXPECT_CALL(non_member, StopMuting()).Times(0);
 
   // When the members join the group, no mute change should occur.
-  coordinator.RegisterGroupMember(&member1);
-  coordinator.RegisterGroupMember(&member2);
+  coordinator.RegisterMember(group_id, &member1);
+  coordinator.RegisterMember(group_id, &member2);
 
   // When the muter is created, both members should be muted.
   EXPECT_CALL(member1, StartMuting());
@@ -58,34 +58,34 @@ TEST(LocalMuterTest, MutesExistingMembers) {
   Mock::VerifyAndClearExpectations(&member1);
   Mock::VerifyAndClearExpectations(&member2);
 
-  coordinator.UnregisterGroupMember(&member1);
-  coordinator.UnregisterGroupMember(&member2);
+  coordinator.UnregisterMember(group_id, &member1);
+  coordinator.UnregisterMember(group_id, &member2);
 }
 
 TEST(LocalMuterTest, MutesJoiningMembers) {
-  GroupCoordinator coordinator;
+  LoopbackCoordinator coordinator;
   const UnguessableToken group_id = UnguessableToken::Create();
 
   LocalMuter muter(&coordinator, group_id);
 
-  StrictMock<MockGroupMember> member(group_id);
+  StrictMock<MockGroupMember> member;
 
   // Since muting is in-effect, the group member is immediately muted when
   // joining the group.
   EXPECT_CALL(member, StartMuting());
-  coordinator.RegisterGroupMember(&member);
+  coordinator.RegisterMember(group_id, &member);
   Mock::VerifyAndClearExpectations(&member);
 
   // Leaving the group should have no effect on the mute state of the member.
   EXPECT_CALL(member, StartMuting()).Times(0);
   EXPECT_CALL(member, StopMuting()).Times(0);
-  coordinator.UnregisterGroupMember(&member);
+  coordinator.UnregisterMember(group_id, &member);
   Mock::VerifyAndClearExpectations(&member);
 }
 
 TEST(LocalMuter, UnmutesWhenLastBindingIsLost) {
   base::test::ScopedTaskEnvironment task_environment;
-  GroupCoordinator coordinator;
+  LoopbackCoordinator coordinator;
   const UnguessableToken group_id = UnguessableToken::Create();
 
   // Later in this test, once both bindings have been closed, the following
@@ -108,9 +108,9 @@ TEST(LocalMuter, UnmutesWhenLastBindingIsLost) {
   ASSERT_TRUE(!!muter_ptr2);
 
   // A member joins the group and should be muted.
-  StrictMock<MockGroupMember> member(group_id);
+  StrictMock<MockGroupMember> member;
   EXPECT_CALL(member, StartMuting());
-  coordinator.RegisterGroupMember(&member);
+  coordinator.RegisterMember(group_id, &member);
   Mock::VerifyAndClearExpectations(&member);
 
   // Nothing happens to the member when one of the bindings is closed.
@@ -128,7 +128,7 @@ TEST(LocalMuter, UnmutesWhenLastBindingIsLost) {
   // At this point, the LocalMuter should have been destroyed.
   EXPECT_FALSE(muter);
 
-  coordinator.UnregisterGroupMember(&member);
+  coordinator.UnregisterMember(group_id, &member);
 }
 
 }  // namespace

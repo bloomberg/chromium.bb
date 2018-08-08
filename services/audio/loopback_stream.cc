@@ -35,7 +35,7 @@ LoopbackStream::LoopbackStream(
     media::mojom::AudioInputStreamObserverPtr observer,
     const media::AudioParameters& params,
     uint32_t shared_memory_count,
-    GroupCoordinator* coordinator,
+    LoopbackCoordinator* coordinator,
     const base::UnguessableToken& group_id)
     : binding_lost_callback_(std::move(binding_lost_callback)),
       binding_(this, std::move(request)),
@@ -108,7 +108,8 @@ LoopbackStream::~LoopbackStream() {
   if (network_) {
     if (network_->is_started()) {
       coordinator_->RemoveObserver(group_id_, this);
-      for (GroupMember* member : coordinator_->GetCurrentMembers(group_id_)) {
+      for (LoopbackGroupMember* member :
+           coordinator_->GetCurrentMembers(group_id_)) {
         OnMemberLeftGroup(member);
       }
     }
@@ -128,7 +129,8 @@ void LoopbackStream::Record() {
   // Begin snooping on all group members. This will set up the mixer network
   // and begin accumulating audio data in the Snoopers' buffers.
   DCHECK(snoopers_.empty());
-  for (GroupMember* member : coordinator_->GetCurrentMembers(group_id_)) {
+  for (LoopbackGroupMember* member :
+       coordinator_->GetCurrentMembers(group_id_)) {
     OnMemberJoinedGroup(member);
   }
   coordinator_->AddObserver(group_id_, this);
@@ -158,7 +160,7 @@ void LoopbackStream::SetVolume(double volume) {
   }
 }
 
-void LoopbackStream::OnMemberJoinedGroup(GroupMember* member) {
+void LoopbackStream::OnMemberJoinedGroup(LoopbackGroupMember* member) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!network_) {
@@ -174,11 +176,11 @@ void LoopbackStream::OnMemberJoinedGroup(GroupMember* member) {
       std::forward_as_tuple(input_params, network_->output_params()));
   DCHECK(emplace_result.second);  // There was no pre-existing map entry.
   SnooperNode* const snooper = &(emplace_result.first->second);
-  member->StartSnooping(snooper);
+  member->StartSnooping(snooper, Snoopable::SnoopingMode::kDeferred);
   network_->AddInput(snooper);
 }
 
-void LoopbackStream::OnMemberLeftGroup(GroupMember* member) {
+void LoopbackStream::OnMemberLeftGroup(LoopbackGroupMember* member) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!network_) {
@@ -190,7 +192,7 @@ void LoopbackStream::OnMemberLeftGroup(GroupMember* member) {
   const auto snoop_it = snoopers_.find(member);
   DCHECK(snoop_it != snoopers_.end());
   SnooperNode* const snooper = &(snoop_it->second);
-  member->StopSnooping(snooper);
+  member->StopSnooping(snooper, Snoopable::SnoopingMode::kDeferred);
   network_->RemoveInput(snooper);
   snoopers_.erase(snoop_it);
 }
