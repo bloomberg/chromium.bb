@@ -511,9 +511,7 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
           : 0;
   frame_background_->set_theme_image_y_inset(y_inset);
   frame_background_->set_theme_overlay_image(GetFrameOverlayImage());
-  frame_background_->set_top_area_height(
-      GetTopAreaHeight() - ThemeProperties::kFrameHeightAboveTabs +
-      GetTopInset(false));
+  frame_background_->set_top_area_height(GetTopAreaHeight());
 
   if (layout_->IsTitleBarCondensed())
     PaintMaximizedFrameBorder(canvas);
