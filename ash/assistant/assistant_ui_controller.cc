@@ -218,6 +218,11 @@ void AssistantUiController::ShowUi(AssistantSource source) {
   if (!Shell::Get()->voice_interaction_controller()->settings_enabled())
     return;
 
+  if (Shell::Get()->voice_interaction_controller()->voice_interaction_state() ==
+      mojom::VoiceInteractionState::NOT_READY) {
+    return;
+  }
+
   if (!assistant_) {
     ShowToast(kUnboundServiceToastId, IDS_ASH_ASSISTANT_ERROR_GENERIC);
     return;

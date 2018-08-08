@@ -241,8 +241,8 @@ void AssistantOptInHandler::RegisterMessages() {
 }
 
 void AssistantOptInHandler::Initialize() {
-  if (arc::VoiceInteractionControllerClient::Get()->voice_interaction_state() !=
-      ash::mojom::VoiceInteractionState::RUNNING) {
+  if (arc::VoiceInteractionControllerClient::Get()->voice_interaction_state() ==
+      ash::mojom::VoiceInteractionState::NOT_READY) {
     arc::VoiceInteractionControllerClient::Get()->AddObserver(this);
   } else {
     BindAssistantSettingsManager();
@@ -282,8 +282,10 @@ void AssistantOptInHandler::OnEmailOptInResult(bool opted_in) {
 
 void AssistantOptInHandler::OnStateChanged(
     ash::mojom::VoiceInteractionState state) {
-  if (state == ash::mojom::VoiceInteractionState::RUNNING)
+  if (state != ash::mojom::VoiceInteractionState::NOT_READY) {
     BindAssistantSettingsManager();
+    arc::VoiceInteractionControllerClient::Get()->RemoveObserver(this);
+  }
 }
 
 void AssistantOptInHandler::BindAssistantSettingsManager() {

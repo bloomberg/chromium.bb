@@ -729,11 +729,6 @@ void AssistantManagerServiceImpl::OnSpeechLevelUpdatedOnMainThread(
       [&speech_level](auto* ptr) { ptr->OnSpeechLevelUpdated(speech_level); });
 }
 
-void AssistantManagerServiceImpl::IsVoiceInteractionSetupCompleted(
-    ash::mojom::VoiceInteractionController::IsSetupCompletedCallback callback) {
-  voice_interaction_controller_->IsSetupCompleted(std::move(callback));
-}
-
 void AssistantManagerServiceImpl::OnAssistantStructureReceived(
     base::OnceClosure on_done,
     ax::mojom::AssistantExtraPtr assistant_extra,
