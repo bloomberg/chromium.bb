@@ -320,7 +320,6 @@ class LoginUserMenuView : public LoginBaseBubbleView,
       SetSize(GetPreferredSize());
       SizeToContents();
       Layout();
-      EnsureWidgetInWorkArea();
       if (on_remove_user_warning_shown_)
         std::move(on_remove_user_warning_shown_).Run();
       return;
@@ -332,26 +331,6 @@ class LoginUserMenuView : public LoginBaseBubbleView,
 
     if (on_remove_user_requested_)
       std::move(on_remove_user_requested_).Run();
-  }
-
-  void EnsureWidgetInWorkArea() {
-    const int view_bottom = GetBoundsInScreen().bottom();
-    const int work_area_bottom =
-        display::Screen::GetScreen()
-            ->GetDisplayNearestWindow(GetWidget()->GetNativeWindow())
-            .work_area()
-            .bottom();
-
-    if (work_area_bottom >= view_bottom)
-      return;
-
-    // If the bubble extends into the shelf, move the bubble up so that the
-    // bottom edge just touches the top of the shelf. Also shift the bubble
-    // right so that the anchor (arrow) remains visible.
-    set_anchor_view_insets(anchor_view_insets().Offset(gfx::Vector2d(
-        GetAnchorView()->GetBoundsInScreen().right() - GetBoundsInScreen().x(),
-        work_area_bottom - view_bottom)));
-    OnAnchorBoundsChanged();
   }
 
   views::View* remove_user_button() { return remove_user_button_; }
@@ -512,6 +491,11 @@ void LoginBubble::OnWidgetDestroying(views::Widget* widget) {
   OnWidgetClosing(widget);
 }
 
+void LoginBubble::OnWidgetBoundsChanged(views::Widget* widget,
+                                        const gfx::Rect& new_bounds) {
+  EnsureBubbleInWorkArea();
+}
+
 void LoginBubble::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED)
     ProcessPressedEvent(event->AsLocatedEvent());
@@ -569,6 +553,7 @@ void LoginBubble::Show() {
   DCHECK(bubble_view_);
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
+  EnsureBubbleInWorkArea();
   widget->ShowInactive();
   widget->AddObserver(this);
   widget->StackAtTop();
@@ -651,6 +636,41 @@ void LoginBubble::Reset(bool widget_already_closing) {
   bubble_opener_ = nullptr;
   bubble_view_ = nullptr;
   flags_ = kFlagsNone;
+}
+
+void LoginBubble::EnsureBubbleInWorkArea() {
+  DCHECK(bubble_view_);
+  DCHECK(bubble_view_->GetWidget());
+
+  const gfx::Rect view_bounds = bubble_view_->GetBoundsInScreen();
+  const gfx::Rect work_area =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(
+              bubble_view_->GetWidget()->GetNativeWindow())
+          .work_area();
+
+  int vertical_offset = 0;
+  int horizontal_offset = 0;
+
+  // If the widget extends down into the shelf, move it up. Also shift right
+  // so the arrow is still showing.
+  if (work_area.bottom() < view_bounds.bottom()) {
+    vertical_offset = work_area.bottom() - view_bounds.bottom();
+    horizontal_offset =
+        bubble_view_->GetAnchorView()->GetBoundsInScreen().right() -
+        view_bounds.x();
+  }
+
+  // If the widget extends past the right side of the screen, make it go to
+  // the left instead.
+  if (work_area.right() < view_bounds.right()) {
+    horizontal_offset = -view_bounds.width();
+  }
+
+  bubble_view_->set_anchor_view_insets(
+      bubble_view_->anchor_view_insets().Offset(
+          gfx::Vector2d(horizontal_offset, vertical_offset)));
+  bubble_view_->OnAnchorBoundsChanged();
 }
 
 }  // namespace ash
