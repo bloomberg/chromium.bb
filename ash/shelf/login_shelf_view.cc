@@ -106,7 +106,11 @@ class LoginShelfButton : public views::LabelButton {
     set_has_ink_drop_action_on_click(true);
     set_ink_drop_base_color(kShelfInkDropBaseColor);
     set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
-    SetTextSubpixelRenderingEnabled(false);
+
+    // Layer rendering is required when the shelf background is visible, which
+    // happens when the wallpaper is not blurred.
+    SetPaintToLayer();
+    layer()->SetFillsBoundsOpaquely(false);
 
     SetImageLabelSpacing(kImageLabelSpacingDp);
     SetTextColor(views::Button::STATE_NORMAL,
@@ -165,6 +169,12 @@ class KioskAppsButton : public views::MenuButton,
     set_has_ink_drop_action_on_click(true);
     set_ink_drop_base_color(kShelfInkDropBaseColor);
     set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
+
+    // Layer rendering is required when the shelf background is visible, which
+    // happens when the wallpaper is not blurred.
+    SetPaintToLayer();
+    layer()->SetFillsBoundsOpaquely(false);
+
     SetTextSubpixelRenderingEnabled(false);
 
     SetImage(views::Button::STATE_NORMAL, image);

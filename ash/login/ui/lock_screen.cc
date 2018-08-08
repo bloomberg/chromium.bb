@@ -12,18 +12,12 @@
 #include "ash/login/ui/lock_window.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/login_detachable_base_model.h"
-#include "ash/public/cpp/login_constants.h"
-#include "ash/public/interfaces/session_controller.mojom.h"
-#include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/tray_action/tray_action.h"
 #include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "base/command_line.h"
 #include "base/timer/timer.h"
 #include "chromeos/chromeos_switches.h"
-#include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/wm/core/capture_controller.h"
@@ -33,13 +27,6 @@ namespace {
 
 constexpr base::TimeDelta kShowLoginScreenTimeout =
     base::TimeDelta::FromSeconds(5);
-
-ui::Layer* GetWallpaperLayerForWindow(aura::Window* window) {
-  return RootWindowController::ForWindow(window)
-      ->wallpaper_widget_controller()
-      ->GetWidget()
-      ->GetLayer();
-}
 
 // Global lock screen instance. There can only ever be on lock screen at a
 // time.
@@ -140,30 +127,9 @@ void LockScreen::Destroy() {
   }
   CHECK_EQ(instance_, this);
 
-  // Restore the initial wallpaper bluriness if they were changed.
-  for (auto it = initial_blur_.begin(); it != initial_blur_.end(); ++it)
-    it->first->SetLayerBlur(it->second);
   window_->Close();
   delete instance_;
   instance_ = nullptr;
-}
-
-void LockScreen::ToggleBlurForDebug() {
-  // Save the initial wallpaper bluriness upon the first time this is called.
-  if (instance_->initial_blur_.empty()) {
-    for (aura::Window* window : Shell::GetAllRootWindows()) {
-      ui::Layer* layer = GetWallpaperLayerForWindow(window);
-      instance_->initial_blur_[layer] = layer->layer_blur();
-    }
-  }
-  for (aura::Window* window : Shell::GetAllRootWindows()) {
-    ui::Layer* layer = GetWallpaperLayerForWindow(window);
-    if (layer->layer_blur() > 0.0f) {
-      layer->SetLayerBlur(0.0f);
-    } else {
-      layer->SetLayerBlur(login_constants::kBlurSigma);
-    }
-  }
 }
 
 LoginDataDispatcher* LockScreen::data_dispatcher() {

@@ -378,8 +378,7 @@ void LockStateController::StartCancellablePreLockAnimation() {
 void LockStateController::PreLockAnimation(
     SessionStateAnimator::AnimationSpeed speed,
     bool request_lock_on_completion) {
-  Shell::Get()->wallpaper_controller()->PrepareWallpaperForLockScreenChange(
-      true);
+  Shell::Get()->wallpaper_controller()->UpdateWallpaperBlur(true);
   base::Closure next_animation_starter =
       base::Bind(&LockStateController::PreLockAnimationFinished,
                  weak_ptr_factory_.GetWeakPtr(), request_lock_on_completion);
@@ -403,8 +402,7 @@ void LockStateController::PreLockAnimation(
 
 void LockStateController::CancelPreLockAnimation() {
   VLOG(1) << "CancelPreLockAnimation";
-  Shell::Get()->wallpaper_controller()->PrepareWallpaperForLockScreenChange(
-      false);
+  Shell::Get()->wallpaper_controller()->UpdateWallpaperBlur(false);
   base::Closure next_animation_starter =
       base::Bind(&LockStateController::LockAnimationCancelled,
                  weak_ptr_factory_.GetWeakPtr());
@@ -535,8 +533,7 @@ void LockStateController::PostLockAnimationFinished() {
 }
 
 void LockStateController::UnlockAnimationAfterUIDestroyedFinished() {
-  Shell::Get()->wallpaper_controller()->PrepareWallpaperForLockScreenChange(
-      false);
+  Shell::Get()->wallpaper_controller()->UpdateWallpaperBlur(false);
   RestoreUnlockedProperties();
 }
 

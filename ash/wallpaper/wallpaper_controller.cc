@@ -708,7 +708,7 @@ bool WallpaperController::IsPolicyControlled(const AccountId& account_id,
          info.type == POLICY;
 }
 
-void WallpaperController::PrepareWallpaperForLockScreenChange(bool locking) {
+void WallpaperController::UpdateWallpaperBlur(bool locking) {
   bool needs_blur = locking && IsBlurEnabled();
   if (needs_blur == is_wallpaper_blurred_)
     return;

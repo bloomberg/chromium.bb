@@ -11,7 +11,6 @@
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/public/interfaces/login_user_info.mojom.h"
-#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "base/scoped_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -25,6 +24,7 @@ class BoxLayout;
 namespace ash {
 
 class HoverNotifier;
+class WallpaperController;
 
 // Scrollable list of the users. Stores the list of login user views. Can be
 // styled with GradientParams that define gradient tinting at the top and at the
@@ -72,6 +72,7 @@ class ASH_EXPORT ScrollableUsersListView : public views::ScrollView,
 
   // WallpaperControllerObserver:
   void OnWallpaperColorsChanged() override;
+  void OnWallpaperBlurChanged() override;
 
  private:
   class ScrollBar;
@@ -91,10 +92,13 @@ class ASH_EXPORT ScrollableUsersListView : public views::ScrollView,
   void OnHover(bool has_hover);
 
   // Display style to determine layout and sizing of users list.
-  LoginDisplayStyle display_style_;
+  const LoginDisplayStyle display_style_;
 
-  // Layout for |contents()|.
-  views::BoxLayout* contents_layout_ = nullptr;
+  // The view which contains all of the user views.
+  views::View* user_view_host_ = nullptr;
+
+  // Layout for |user_view_host_|.
+  views::BoxLayout* user_view_host_layout_ = nullptr;
 
   // Owned by ScrollView.
   ScrollBar* scroll_bar_ = nullptr;

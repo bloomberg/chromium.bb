@@ -13,6 +13,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -32,6 +33,7 @@
 #include "ash/system/tray/test_system_tray_item.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -962,9 +964,20 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLoginScreenShowing) {
   mojom::SessionInfoPtr info = mojom::SessionInfo::New();
   info->state = session_manager::SessionState::LOGIN_PRIMARY;
   ash::Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
-
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+
+  // Blurred wallpaper.
+  ash::Shell::Get()->wallpaper_controller()->UpdateWallpaperBlur(
+      true /*locking*/);
   EXPECT_EQ(SHELF_BACKGROUND_OVERLAP, GetShelfWidget()->GetBackgroundType());
+
+  // Non-blurred wallpaper.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ash::switches::kAshDisableLoginDimAndBlur);
+  ash::Shell::Get()->wallpaper_controller()->UpdateWallpaperBlur(
+      true /*locking*/);
+  EXPECT_EQ(SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER,
+            GetShelfWidget()->GetBackgroundType());
 }
 
 // Assertions around the lock screen showing.

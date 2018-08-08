@@ -13,7 +13,9 @@
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/interfaces/user_info.mojom.h"
+#include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -25,6 +27,7 @@ namespace ash {
 
 class LoginPasswordView;
 class LoginPinView;
+class WallpaperController;
 
 // Wraps a UserView which also has authentication available. Adds additional
 // views below the UserView instance which show authentication UIs.
@@ -33,7 +36,8 @@ class LoginPinView;
 // receive some events about the results of those mojo
 // authentication attempts (ie, success/failure).
 class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
-                                     public views::ButtonListener {
+                                     public views::ButtonListener,
+                                     public WallpaperControllerObserver {
  public:
   // TestApi is used for tests to get internal implementation details.
   class ASH_EXPORT TestApi {
@@ -129,6 +133,9 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // WallpaperControllerObserver:
+  void OnWallpaperBlurChanged() override;
+
  private:
   struct AnimationState;
   class FingerprintView;
@@ -178,7 +185,9 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   // |ApplyAnimationPostLayout|.
   std::unique_ptr<AnimationState> cached_animation_state_;
 
-  base::WeakPtrFactory<LoginAuthUserView> weak_factory_;
+  ScopedObserver<WallpaperController, LoginAuthUserView> observer_{this};
+
+  base::WeakPtrFactory<LoginAuthUserView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoginAuthUserView);
 };
