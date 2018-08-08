@@ -82,6 +82,11 @@ public class UrlBarMediatorUnitTest {
     public void urlDataComparison_equals() {
         Assert.assertTrue(UrlBarMediator.isNewTextEquivalentToExistingText(null, null));
 
+        // Empty display text, regardless of spanned state.
+        Assert.assertTrue(UrlBarMediator.isNewTextEquivalentToExistingText(
+                UrlBarData.create(null, spannable(""), 0, 0, null),
+                UrlBarData.create(null, "", 0, 0, null)));
+
         // No editing text, equal display text
         Assert.assertTrue(UrlBarMediator.isNewTextEquivalentToExistingText(
                 UrlBarData.create(null, spannable("Test"), 0, 0, null),

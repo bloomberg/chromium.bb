@@ -81,7 +81,8 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate {
             }
         }
 
-        if (isNewTextEquivalentToExistingText(mUrlBarData, data) && mScrollType == scrollType) {
+        if (!mHasFocus && isNewTextEquivalentToExistingText(mUrlBarData, data)
+                && mScrollType == scrollType) {
             return false;
         }
         mUrlBarData = data;
@@ -118,6 +119,10 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate {
 
         // Regardless of focus state, ensure the text content is the same.
         if (!TextUtils.equals(existingCharSequence, newCharSequence)) return false;
+
+        // If both existing and new text is empty, then treat them equal regardless of their
+        // spanned state.
+        if (TextUtils.isEmpty(newCharSequence)) return true;
 
         // When not focused, compare the emphasis spans applied to the text to determine
         // equality.  Internally, TextView applies many additional spans that need to be

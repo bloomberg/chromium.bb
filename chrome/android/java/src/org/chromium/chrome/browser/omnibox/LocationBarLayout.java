@@ -272,12 +272,10 @@ public class LocationBarLayout extends FrameLayout
                 OmniboxResultItem selectedItem =
                         (OmniboxResultItem) mSuggestionListAdapter.getItem(
                                 mSuggestionList.getSelectedItemPosition());
-                // Set the UrlBar text to empty, so that it will trigger a text change when we
-                // set the text to the suggestion again.
-                setUrlBarTextEmpty();
                 setUrlBarText(
                         UrlBarData.forNonUrlText(selectedItem.getSuggestion().getFillIntoEdit()),
                         UrlBar.ScrollType.NO_SCROLL, SelectionState.SELECT_END);
+                onTextChangedForAutocomplete();
                 mSuggestionList.setSelection(0);
                 return true;
             } else if (KeyNavigationUtil.isEnter(event)
@@ -931,6 +929,7 @@ public class LocationBarLayout extends FrameLayout
             // This must be happen after requestUrlFocus(), which changes the selection.
             mUrlCoordinator.setUrlBarData(UrlBarData.forNonUrlText(pastedText),
                     UrlBar.ScrollType.NO_SCROLL, UrlBarCoordinator.SelectionState.SELECT_END);
+            onTextChangedForAutocomplete();
         } else {
             ToolbarManager.recordOmniboxFocusReason(ToolbarManager.OmniboxFocusReason.FAKE_BOX_TAP);
         }
@@ -1346,6 +1345,7 @@ public class LocationBarLayout extends FrameLayout
 
                 mUrlCoordinator.setUrlBarData(UrlBarData.forNonUrlText(refineText),
                         UrlBar.ScrollType.NO_SCROLL, UrlBarCoordinator.SelectionState.SELECT_END);
+                onTextChangedForAutocomplete();
                 if (isUrlSuggestion) {
                     RecordUserAction.record("MobileOmniboxRefineSuggestion.Url");
                 } else {
