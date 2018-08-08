@@ -1645,7 +1645,7 @@ TEST(IncrementalMarkingTest, TestDriver) {
 }
 
 TEST(IncrementalMarkingTest, DropBackingStore) {
-  // Regression test: crbug.com/828537
+  // Regression test: https://crbug.com/828537
   using WeakStore = HeapHashCountedSet<WeakMember<Object>>;
 
   Persistent<WeakStore> persistent(new WeakStore);
@@ -1657,6 +1657,42 @@ TEST(IncrementalMarkingTest, DropBackingStore) {
   // Marking verifier should not crash on a black backing store with all
   // black->white edges.
   driver.FinishGC();
+}
+
+TEST(IncrementalMarkingTest, WeakCallbackDoesNotReviveDeletedValue) {
+  // Regression test: https://crbug.com/870196
+
+  // std::pair avoids treating the hashset backing as weak backing.
+  using WeakStore = HeapHashCountedSet<std::pair<WeakMember<Object>, size_t>>;
+
+  Persistent<WeakStore> persistent(new WeakStore);
+  // Create at least two entries to avoid completely emptying out the data
+  // structure. The values for .second are chosen to be non-null as they
+  // would otherwise count as empty and be skipped during iteration after the
+  // first part died.
+  persistent->insert({Object::Create(), 1});
+  persistent->insert({Object::Create(), 2});
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  driver.Start();
+  // The backing is not treated as weak backing and thus eagerly processed,
+  // effectively registering the slots of WeakMembers.
+  driver.FinishSteps();
+  // The following deletes the first found entry. The second entry is left
+  // untouched.
+  for (auto& entries : *persistent) {
+    persistent->erase(entries.key);
+    break;
+  }
+  driver.FinishGC();
+
+  size_t count = 0;
+  for (const auto& entry : *persistent) {
+    count++;
+    // Use the entry to keep compilers happy.
+    if (entry.key.second > 0) {
+    }
+  }
+  CHECK_EQ(1u, count);
 }
 
 }  // namespace incremental_marking_test
