@@ -412,12 +412,18 @@ void AppListControllerImpl::Show(int64_t display_id,
 void AppListControllerImpl::UpdateYPositionAndOpacity(
     int y_position_in_screen,
     float background_opacity) {
+  // Avoid changing app list opacity and position when homecher is enabled.
+  if (IsHomeLauncherEnabledInTabletMode())
+    return;
   presenter_.UpdateYPositionAndOpacity(y_position_in_screen,
                                        background_opacity);
 }
 
 void AppListControllerImpl::EndDragFromShelf(
     app_list::AppListViewState app_list_state) {
+  // Avoid dragging app list when homecher is enabled.
+  if (IsHomeLauncherEnabledInTabletMode())
+    return;
   presenter_.EndDragFromShelf(app_list_state);
 }
 
@@ -461,8 +467,14 @@ void AppListControllerImpl::OnOverviewModeEnding() {
 
 void AppListControllerImpl::OnTabletModeStarted() {
   if (IsVisible()) {
-    presenter_.GetView()->OnTabletModeChanged(true);
-    return;
+    if (!presenter_.is_animating_to_close()) {
+      presenter_.GetView()->OnTabletModeChanged(true);
+      return;
+    }
+
+    // The launcher is running close animation, so close it immediately before
+    // reshow the launcher in tablet mode.
+    presenter_.GetView()->GetWidget()->CloseNow();
   }
 
   if (!is_home_launcher_enabled_ || !display::Display::HasInternalDisplay())
