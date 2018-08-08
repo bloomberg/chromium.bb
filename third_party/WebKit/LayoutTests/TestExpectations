@@ -4585,8 +4585,9 @@ crbug.com/847697 virtual/video-surface-layer/media/controls/overflow-menu-always
 # Sheriff 2018-06-06
 crbug.com/849975 external/wpt/css/css-animations/Element-getAnimations.tentative.html [ Pass Failure ]
 
-# This won't pass as a layout test until the linked bug is fixed.
+# These won't pass as layout tests until the linked bug is fixed.
 crbug.com/828858 external/wpt/css/selectors/focus-visible-007.html [ Failure ]
+crbug.com/828858 external/wpt/html/editing/focus/inert/inert-node-is-uneditable.html [ Failure ]
 
 # Sheriff 2018-06-07
 crbug.com/850349 external/wpt/css/css-animations/CSSAnimation-getComputedTiming.tentative.html [ Pass Failure ]
