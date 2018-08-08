@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="17">
+  <interface name="zcr_remote_shell_v1" version="18">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -195,7 +195,7 @@
     </request>
   </interface>
 
-  <interface name="zcr_remote_surface_v1" version="15">
+  <interface name="zcr_remote_surface_v1" version="18">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -252,9 +252,9 @@
 
     <request name="set_window_geometry">
       <description summary="set the new window geometry">
-	The window geometry of a window is its "visible bounds" from the
-	user's perspective. Client-side decorations often have invisible
-	portions like drop-shadows which should be ignored for the
+	[Deprecated] The window geometry of a window is its "visible bounds"
+	from the user's perspective. Client-side decorations often have
+	invisible portions like drop-shadows which should be ignored for the
 	purposes of aligning, placing and constraining windows.
 
 	The window geometry is double buffered, and will be applied at the
@@ -671,8 +671,8 @@
 	The client may ignore move request depending on the state,
 	e.g, if it becomes resizable or other constrants.
       </description>
-      <arg name="workspace_id_hi" type="uint"/>
-      <arg name="workspace_id_lo" type="uint"/>
+      <arg name="display_id_hi" type="uint"/>
+      <arg name="display_id_lo" type="uint"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
       <arg name="width" type="int"/>
@@ -901,6 +901,38 @@
       <description summary="set pip for a remote surface">
 	Request that surface is set to Picture-in-Picture (PIP).
       </description>
+    </request>
+
+    <!-- Version 18 additions -->
+
+    <request name="set_bounds" since="18">
+      <description summary="set window bounds">
+	Set the "visible bounds" of a window from the user's perspective.
+	Client-side decorations often have invisible portions like drop shadows
+	which should be ignored for the purposes of aligning, placing and
+	constraining windows.
+
+	The bounds are double buffered, and will be applied at the
+	time wl_surface.commit of the corresponding wl_surface is called.
+
+	Once the bounds are set, it is not possible to unset them, and they will
+	remain the same until set_bounds is called again, even if a new sub-
+	surface or buffer is attached.
+
+	If never set, the value is the surface content bounds. This updates
+	dynamically on every commit.
+
+	The bounds are relative to the given display. If the display is invalid,
+	they are assumed to be relative to the primary display.
+
+	The width and height must be greater than zero.
+      </description>
+      <arg name="display_id_hi" type="uint"/>
+      <arg name="display_id_lo" type="uint"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
     </request>
 
   </interface>
