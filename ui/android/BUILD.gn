@@ -243,6 +243,8 @@ android_library("ui_utils_java") {
 
 android_library("ui_full_java") {
   java_files = [
+    "java/src/org/chromium/ui/AsyncViewStub.java",
+    "java/src/org/chromium/ui/AsyncViewProvider.java",
     "java/src/org/chromium/ui/DropdownAdapter.java",
     "java/src/org/chromium/ui/DropdownDividerDrawable.java",
     "java/src/org/chromium/ui/DropdownItem.java",
@@ -339,12 +341,21 @@ android_library("ui_java_test_support") {
   ]
 }
 
+android_resources("ui_javatest_resources") {
+  custom_package = "org.chromium.test.ui"
+  resource_dirs = [ "junit/res" ]
+}
+
 junit_binary("ui_junit_tests") {
+  package_name = "org.chromium.test.ui"
   java_files = [
+    "junit/src/org/chromium/ui/AsyncViewStubTest.java",
+    "junit/src/org/chromium/ui/AsyncViewProviderTest.java",
     "junit/src/org/chromium/ui/base/ClipboardTest.java",
     "junit/src/org/chromium/ui/base/SelectFileDialogTest.java",
     "junit/src/org/chromium/ui/drawable/StateListDrawableBuilderTest.java",
     "junit/src/org/chromium/ui/text/SpanApplierTest.java",
+    "junit/src/org/chromium/ui/shadows/ShadowAsyncLayoutInflater.java",
     "junit/src/org/chromium/ui/shadows/ShadowAppCompatResources.java",
     "junit/src/org/chromium/ui/shadows/ShadowAppCompatResourcesTest.java",
     "junit/src/org/chromium/ui/shadows/ShadowAnimatedStateListDrawable.java",
@@ -352,6 +363,7 @@ junit_binary("ui_junit_tests") {
   ]
   deps = [
     ":ui_java",
+    ":ui_javatest_resources",
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
