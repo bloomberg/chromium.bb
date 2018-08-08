@@ -207,23 +207,6 @@ SelectionState InlineTextBox::GetSelectionState() const {
     else if (state == SelectionState::kStartAndEnd)
       state = SelectionState::kNone;
   }
-
-  // If there are ellipsis following, make sure their selection is updated.
-  if (EllipsisBox* ellipsis = Root().GetEllipsisBox()) {
-    if (state != SelectionState::kNone) {
-      int start, end;
-      SelectionStartEnd(start, end);
-      // The ellipsis should be considered to be selected if the end of the
-      // selection is past the beginning of the truncation and the beginning of
-      // the selection is before or at the beginning of the truncation.
-      ellipsis->SetSelectionState(end >= truncation_ && start <= truncation_
-                                      ? SelectionState::kInside
-                                      : SelectionState::kNone);
-    } else {
-      ellipsis->SetSelectionState(SelectionState::kNone);
-    }
-  }
-
   return state;
 }
 
