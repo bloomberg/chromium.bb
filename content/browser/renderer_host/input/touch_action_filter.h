@@ -113,14 +113,7 @@ class CONTENT_EXPORT TouchActionFilter {
   // Whitelisted touch action received from the compositor.
   base::Optional<cc::TouchAction> white_listed_touch_action_;
 
-  // DEBUG ONLY! Record the sequence of function calls, cleared at GSE. When it
-  // is GSB and |scrolling_touch_action_| has no value, check this sequence.
-  enum FunctionCalls {
-    kOnSetTouchActionCall,
-    kResetTouchActionCall,
-  };
-
-  std::vector<FunctionCalls> function_call_sequence_;
+  std::string gesture_sequence_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchActionFilter);
 };

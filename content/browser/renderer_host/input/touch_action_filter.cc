@@ -6,6 +6,7 @@
 
 #include <math.h>
 
+#include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -42,7 +43,7 @@ TouchActionFilter::TouchActionFilter()
       force_enable_zoom_(false) {}
 
 TouchActionFilter::~TouchActionFilter() {
-  function_call_sequence_.clear();
+  gesture_sequence_.clear();
 }
 
 FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
@@ -56,6 +57,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
     case WebInputEvent::kGestureScrollBegin: {
       DCHECK(!suppress_manipulation_events_);
       DCHECK(!touchscreen_scroll_in_progress_);
+      gesture_sequence_.append("GSB ");
       touchscreen_scroll_in_progress_ = true;
       // TODO(https://crbug.com/851644): Make sure the value is properly set.
       if (!scrolling_touch_action_.has_value())
@@ -101,7 +103,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       break;
 
     case WebInputEvent::kGestureScrollEnd:
-      function_call_sequence_.clear();
+      gesture_sequence_.clear();
       DCHECK(touchscreen_scroll_in_progress_);
       touchscreen_scroll_in_progress_ = false;
       ReportGestureEventFiltered(suppress_manipulation_events_);
@@ -154,17 +156,10 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       scrolling_touch_action_ = allowed_touch_action_;
       // TODO(https://crbug.com/851644): Make sure the value is properly set.
       if (!scrolling_touch_action_.has_value()) {
-        auto index_of_set =
-            std::find(std::begin(function_call_sequence_),
-                      std::end(function_call_sequence_), kOnSetTouchActionCall);
-        auto index_of_reset =
-            std::find(std::begin(function_call_sequence_),
-                      std::end(function_call_sequence_), kResetTouchActionCall);
-        if (index_of_set != std::end(function_call_sequence_) &&
-            index_of_reset != std::end(function_call_sequence_) &&
-            index_of_reset > index_of_set) {
-          base::debug::DumpWithoutCrashing();
-        }
+        static auto* crash_key = base::debug::AllocateCrashKeyString(
+            "touchaction-gestures", base::debug::CrashKeySize::Size256);
+        base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
+        base::debug::DumpWithoutCrashing();
         SetTouchAction(cc::kTouchActionAuto);
       }
       DCHECK(!drop_current_tap_ending_event_);
@@ -194,7 +189,7 @@ bool TouchActionFilter::FilterManipulationEventAndResetState() {
 
 void TouchActionFilter::OnSetTouchAction(cc::TouchAction touch_action) {
   if (touch_action != cc::kTouchActionAuto)
-    function_call_sequence_.push_back(kOnSetTouchActionCall);
+    gesture_sequence_.append("Set ");
   // TODO(https://crbug.com/849819): add a DCHECK for
   // |has_touch_event_handler_|.
   // For multiple fingers, we take the intersection of the touch actions for
@@ -253,7 +248,7 @@ void TouchActionFilter::ResetTouchAction() {
   // their begin event(s) suppressed will be suppressed until the next
   // sequenceo.
   if (has_touch_event_handler_) {
-    function_call_sequence_.push_back(kResetTouchActionCall);
+    gesture_sequence_.append("Reset ");
     allowed_touch_action_.reset();
     white_listed_touch_action_.reset();
   } else {
