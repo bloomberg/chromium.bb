@@ -13,7 +13,7 @@
 
 namespace keyboard_shortcut_viewer_util {
 
-void ShowKeyboardShortcutViewer() {
+void ToggleKeyboardShortcutViewer() {
   base::TimeTicks user_gesture_time = base::TimeTicks::Now();
   if (ash::features::IsKeyboardShortcutViewerAppEnabled()) {
     shortcut_viewer::mojom::ShortcutViewerPtr shortcut_viewer_ptr;

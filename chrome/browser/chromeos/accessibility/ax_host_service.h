@@ -51,6 +51,7 @@ class AXHostService : public service_manager::Service,
  private:
   void AddBinding(ax::mojom::AXHostRequest request);
   void NotifyAutomationEnabled();
+  void OnRemoteHostDisconnected();
 
   static AXHostService* instance_;
   static bool automation_enabled_;
