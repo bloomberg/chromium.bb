@@ -233,7 +233,6 @@ void LayoutSVGRoot::UpdateLayout() {
   has_box_decoration_background_ = IsDocumentElement()
                                        ? StyleRef().HasBoxDecorationBackground()
                                        : HasBoxDecorationBackground();
-  InvalidateBackgroundObscurationStatus();
 
   ClearNeedsLayout();
 }

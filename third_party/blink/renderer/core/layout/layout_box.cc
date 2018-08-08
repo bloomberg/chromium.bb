@@ -509,7 +509,7 @@ void LayoutBox::UpdateLayout() {
     DCHECK(!child->NeedsLayout());
     child = child->NextSibling();
   }
-  InvalidateBackgroundObscurationStatus();
+  UpdateAfterLayout();
   ClearNeedsLayout();
 }
 
@@ -750,6 +750,8 @@ FloatRect LayoutBox::LocalBoundingBoxRectForAccessibility() const {
 }
 
 void LayoutBox::UpdateAfterLayout() {
+  InvalidateBackgroundObscurationStatus();
+
   // Transform-origin depends on box size, so we need to update the layer
   // transform after layout.
   if (HasLayer()) {
