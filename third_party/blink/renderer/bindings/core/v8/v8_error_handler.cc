@@ -130,8 +130,15 @@ v8::Local<v8::Value> V8ErrorHandler::LoadExceptionFromErrorEventWrapper(
   return error;
 }
 
-bool V8ErrorHandler::ShouldPreventDefault(v8::Local<v8::Value> return_value) {
-  return return_value->IsBoolean() && return_value.As<v8::Boolean>()->Value();
+bool V8ErrorHandler::ShouldPreventDefault(v8::Local<v8::Value> return_value,
+                                          Event* event) {
+  // Special event handling should be done here according to HTML Standard:
+  // https://html.spec.whatwg.org/multipage/webappapis.html#the-event-handler-processing-algorithm
+  // We do not need to check current target of event because it must be window
+  // or worker on calling this method.
+  if (event->HasInterface(EventNames::ErrorEvent) && event->type() == "error")
+    return return_value->IsBoolean() && return_value.As<v8::Boolean>()->Value();
+  return return_value->IsBoolean() && !return_value.As<v8::Boolean>()->Value();
 }
 
 }  // namespace blink

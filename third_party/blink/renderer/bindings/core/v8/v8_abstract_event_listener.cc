@@ -215,14 +215,15 @@ void V8AbstractEventListener::InvokeEventHandler(
         ToBeforeUnloadEvent(event)->setReturnValue(string_return_value);
       }
     }
-  } else if (ShouldPreventDefault(return_value) &&
+  } else if (ShouldPreventDefault(return_value, event) &&
              event->type() != EventTypeNames::beforeunload) {
     event->preventDefault();
   }
 }
 
 bool V8AbstractEventListener::ShouldPreventDefault(
-    v8::Local<v8::Value> return_value) {
+    v8::Local<v8::Value> return_value,
+    Event*) {
   // Prevent default action if the return value is false in accord with the spec
   // http://www.w3.org/TR/html5/webappapis.html#event-handler-attributes
   return return_value->IsBoolean() && !return_value.As<v8::Boolean>()->Value();
