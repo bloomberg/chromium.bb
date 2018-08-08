@@ -111,153 +111,21 @@ IndexedDBCallbacksImpl::IndexedDBCallbacksImpl(
     int64_t transaction_id,
     const base::WeakPtr<WebIDBCursorImpl>& cursor,
     scoped_refptr<base::SingleThreadTaskRunner> callback_runner)
-    : internal_state_(new InternalState(std::move(callbacks),
-                                        transaction_id,
-                                        cursor,
-                                        callback_runner)),
-      callback_runner_(std::move(callback_runner)) {}
+    : callback_runner_(std::move(callback_runner)),
+      callbacks_(std::move(callbacks)),
+      cursor_(cursor),
+      transaction_id_(transaction_id) {}
 
-IndexedDBCallbacksImpl::~IndexedDBCallbacksImpl() {
-  callback_runner_->DeleteSoon(FROM_HERE, internal_state_);
-}
+IndexedDBCallbacksImpl::~IndexedDBCallbacksImpl() = default;
 
 void IndexedDBCallbacksImpl::Error(int32_t code,
                                    const base::string16& message) {
-  callback_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&InternalState::Error, base::Unretained(internal_state_),
-                     code, message));
-}
-
-void IndexedDBCallbacksImpl::SuccessStringList(
-    const std::vector<base::string16>& value) {
-  callback_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&InternalState::SuccessStringList,
-                                base::Unretained(internal_state_), value));
-}
-
-void IndexedDBCallbacksImpl::Blocked(int64_t existing_version) {
-  callback_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&InternalState::Blocked, base::Unretained(internal_state_),
-                     existing_version));
-}
-
-void IndexedDBCallbacksImpl::UpgradeNeeded(
-    DatabaseAssociatedPtrInfo database,
-    int64_t old_version,
-    blink::WebIDBDataLoss data_loss,
-    const std::string& data_loss_message,
-    const content::IndexedDBDatabaseMetadata& metadata) {
-  callback_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&InternalState::UpgradeNeeded,
-                     base::Unretained(internal_state_), std::move(database),
-                     old_version, data_loss, data_loss_message, metadata));
-}
-
-void IndexedDBCallbacksImpl::SuccessDatabase(
-    DatabaseAssociatedPtrInfo database,
-    const content::IndexedDBDatabaseMetadata& metadata) {
-  callback_runner_->PostTask(FROM_HERE,
-                             base::BindOnce(&InternalState::SuccessDatabase,
-                                            base::Unretained(internal_state_),
-                                            std::move(database), metadata));
-}
-
-void IndexedDBCallbacksImpl::SuccessCursor(
-    indexed_db::mojom::CursorAssociatedPtrInfo cursor,
-    const IndexedDBKey& key,
-    const IndexedDBKey& primary_key,
-    indexed_db::mojom::ValuePtr value) {
-  callback_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&InternalState::SuccessCursor,
-                     base::Unretained(internal_state_), std::move(cursor), key,
-                     primary_key, std::move(value)));
-}
-
-void IndexedDBCallbacksImpl::SuccessValue(
-    indexed_db::mojom::ReturnValuePtr value) {
-  callback_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&InternalState::SuccessValue,
-                     base::Unretained(internal_state_), std::move(value)));
-}
-
-void IndexedDBCallbacksImpl::SuccessCursorContinue(
-    const IndexedDBKey& key,
-    const IndexedDBKey& primary_key,
-    indexed_db::mojom::ValuePtr value) {
-  callback_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&InternalState::SuccessCursorContinue,
-                                base::Unretained(internal_state_), key,
-                                primary_key, std::move(value)));
-}
-
-void IndexedDBCallbacksImpl::SuccessCursorPrefetch(
-    const std::vector<IndexedDBKey>& keys,
-    const std::vector<IndexedDBKey>& primary_keys,
-    std::vector<indexed_db::mojom::ValuePtr> values) {
-  callback_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&InternalState::SuccessCursorPrefetch,
-                                base::Unretained(internal_state_), keys,
-                                primary_keys, std::move(values)));
-}
-
-void IndexedDBCallbacksImpl::SuccessArray(
-    std::vector<indexed_db::mojom::ReturnValuePtr> values) {
-  callback_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&InternalState::SuccessArray,
-                     base::Unretained(internal_state_), std::move(values)));
-}
-
-void IndexedDBCallbacksImpl::SuccessKey(const IndexedDBKey& key) {
-  callback_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&InternalState::SuccessKey,
-                                base::Unretained(internal_state_), key));
-}
-
-void IndexedDBCallbacksImpl::SuccessInteger(int64_t value) {
-  callback_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&InternalState::SuccessInteger,
-                                base::Unretained(internal_state_), value));
-}
-
-void IndexedDBCallbacksImpl::Success() {
-  callback_runner_->PostTask(FROM_HERE,
-                             base::BindOnce(&InternalState::Success,
-                                            base::Unretained(internal_state_)));
-}
-
-IndexedDBCallbacksImpl::InternalState::InternalState(
-    std::unique_ptr<blink::WebIDBCallbacks> callbacks,
-    int64_t transaction_id,
-    const base::WeakPtr<WebIDBCursorImpl>& cursor,
-    scoped_refptr<base::SingleThreadTaskRunner> callback_runner)
-    : callbacks_(std::move(callbacks)),
-      transaction_id_(transaction_id),
-      cursor_(cursor),
-      callback_runner_(std::move(callback_runner)) {
-  IndexedDBDispatcher::ThreadSpecificInstance()->RegisterMojoOwnedCallbacks(
-      this);
-}
-
-IndexedDBCallbacksImpl::InternalState::~InternalState() {
-  IndexedDBDispatcher::ThreadSpecificInstance()->UnregisterMojoOwnedCallbacks(
-      this);
-}
-
-void IndexedDBCallbacksImpl::InternalState::Error(
-    int32_t code,
-    const base::string16& message) {
   callbacks_->OnError(
       blink::WebIDBDatabaseError(code, WebString::FromUTF16(message)));
   callbacks_.reset();
 }
 
-void IndexedDBCallbacksImpl::InternalState::SuccessStringList(
+void IndexedDBCallbacksImpl::SuccessStringList(
     const std::vector<base::string16>& value) {
   WebVector<WebString> web_value(value.size());
   std::transform(
@@ -267,12 +135,12 @@ void IndexedDBCallbacksImpl::InternalState::SuccessStringList(
   callbacks_.reset();
 }
 
-void IndexedDBCallbacksImpl::InternalState::Blocked(int64_t existing_version) {
+void IndexedDBCallbacksImpl::Blocked(int64_t existing_version) {
   callbacks_->OnBlocked(existing_version);
   // Not resetting |callbacks_|.
 }
 
-void IndexedDBCallbacksImpl::InternalState::UpgradeNeeded(
+void IndexedDBCallbacksImpl::UpgradeNeeded(
     DatabaseAssociatedPtrInfo database_info,
     int64_t old_version,
     blink::WebIDBDataLoss data_loss,
@@ -287,7 +155,7 @@ void IndexedDBCallbacksImpl::InternalState::UpgradeNeeded(
   // Not resetting |callbacks_|.
 }
 
-void IndexedDBCallbacksImpl::InternalState::SuccessDatabase(
+void IndexedDBCallbacksImpl::SuccessDatabase(
     DatabaseAssociatedPtrInfo database_info,
     const content::IndexedDBDatabaseMetadata& metadata) {
   WebIDBDatabase* database = nullptr;
@@ -302,7 +170,7 @@ void IndexedDBCallbacksImpl::InternalState::SuccessDatabase(
   callbacks_.reset();
 }
 
-void IndexedDBCallbacksImpl::InternalState::SuccessCursor(
+void IndexedDBCallbacksImpl::SuccessCursor(
     indexed_db::mojom::CursorAssociatedPtrInfo cursor_info,
     const IndexedDBKey& key,
     const IndexedDBKey& primary_key,
@@ -315,19 +183,13 @@ void IndexedDBCallbacksImpl::InternalState::SuccessCursor(
   callbacks_.reset();
 }
 
-void IndexedDBCallbacksImpl::InternalState::SuccessKey(
-    const IndexedDBKey& key) {
-  callbacks_->OnSuccess(WebIDBKeyBuilder::Build(key));
-  callbacks_.reset();
-}
-
-void IndexedDBCallbacksImpl::InternalState::SuccessValue(
+void IndexedDBCallbacksImpl::SuccessValue(
     indexed_db::mojom::ReturnValuePtr value) {
   callbacks_->OnSuccess(ConvertReturnValue(value));
   callbacks_.reset();
 }
 
-void IndexedDBCallbacksImpl::InternalState::SuccessCursorContinue(
+void IndexedDBCallbacksImpl::SuccessCursorContinue(
     const IndexedDBKey& key,
     const IndexedDBKey& primary_key,
     indexed_db::mojom::ValuePtr value) {
@@ -337,7 +199,7 @@ void IndexedDBCallbacksImpl::InternalState::SuccessCursorContinue(
   callbacks_.reset();
 }
 
-void IndexedDBCallbacksImpl::InternalState::SuccessCursorPrefetch(
+void IndexedDBCallbacksImpl::SuccessCursorPrefetch(
     const std::vector<IndexedDBKey>& keys,
     const std::vector<IndexedDBKey>& primary_keys,
     std::vector<indexed_db::mojom::ValuePtr> values) {
@@ -353,7 +215,7 @@ void IndexedDBCallbacksImpl::InternalState::SuccessCursorPrefetch(
   callbacks_.reset();
 }
 
-void IndexedDBCallbacksImpl::InternalState::SuccessArray(
+void IndexedDBCallbacksImpl::SuccessArray(
     std::vector<indexed_db::mojom::ReturnValuePtr> values) {
   WebVector<WebIDBValue> web_values;
   web_values.reserve(values.size());
@@ -363,12 +225,17 @@ void IndexedDBCallbacksImpl::InternalState::SuccessArray(
   callbacks_.reset();
 }
 
-void IndexedDBCallbacksImpl::InternalState::SuccessInteger(int64_t value) {
+void IndexedDBCallbacksImpl::SuccessKey(const IndexedDBKey& key) {
+  callbacks_->OnSuccess(WebIDBKeyBuilder::Build(key));
+  callbacks_.reset();
+}
+
+void IndexedDBCallbacksImpl::SuccessInteger(int64_t value) {
   callbacks_->OnSuccess(value);
   callbacks_.reset();
 }
 
-void IndexedDBCallbacksImpl::InternalState::Success() {
+void IndexedDBCallbacksImpl::Success() {
   callbacks_->OnSuccess();
   callbacks_.reset();
 }

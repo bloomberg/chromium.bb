@@ -21,25 +21,35 @@ using blink::WebIDBObservation;
 
 namespace content {
 
-namespace {
+IndexedDBDatabaseCallbacksImpl::IndexedDBDatabaseCallbacksImpl(
+    std::unique_ptr<WebIDBDatabaseCallbacks> callbacks)
+    : callbacks_(std::move(callbacks)) {}
 
-void DeleteDatabaseCallbacks(WebIDBDatabaseCallbacks* callbacks) {
-  IndexedDBDispatcher::ThreadSpecificInstance()
-      ->UnregisterMojoOwnedDatabaseCallbacks(callbacks);
-  delete callbacks;
+IndexedDBDatabaseCallbacksImpl::~IndexedDBDatabaseCallbacksImpl() = default;
+
+void IndexedDBDatabaseCallbacksImpl::ForcedClose() {
+  callbacks_->OnForcedClose();
 }
 
-void BuildErrorAndAbort(WebIDBDatabaseCallbacks* callbacks,
-                        int64_t transaction_id,
-                        int32_t code,
-                        const base::string16& message) {
-  callbacks->OnAbort(
+void IndexedDBDatabaseCallbacksImpl::VersionChange(int64_t old_version,
+                                                   int64_t new_version) {
+  callbacks_->OnVersionChange(old_version, new_version);
+}
+
+void IndexedDBDatabaseCallbacksImpl::Abort(int64_t transaction_id,
+                                           int32_t code,
+                                           const base::string16& message) {
+  callbacks_->OnAbort(
       transaction_id,
       blink::WebIDBDatabaseError(code, blink::WebString::FromUTF16(message)));
 }
 
-void BuildObservationsAndNotify(WebIDBDatabaseCallbacks* callbacks,
-                                indexed_db::mojom::ObserverChangesPtr changes) {
+void IndexedDBDatabaseCallbacksImpl::Complete(int64_t transaction_id) {
+  callbacks_->OnComplete(transaction_id);
+}
+
+void IndexedDBDatabaseCallbacksImpl::Changes(
+    indexed_db::mojom::ObserverChangesPtr changes) {
   WebVector<WebIDBObservation> web_observations;
   web_observations.reserve(changes->observations.size());
   for (const auto& observation : changes->observations) {
@@ -64,63 +74,8 @@ void BuildObservationsAndNotify(WebIDBDatabaseCallbacks* callbacks,
             std::move(transaction_pair.second->scope));
   }
 
-  callbacks->OnChanges(observation_index_map, std::move(web_observations),
-                       observer_transactions);
-}
-
-}  // namespace
-
-IndexedDBDatabaseCallbacksImpl::IndexedDBDatabaseCallbacksImpl(
-    std::unique_ptr<WebIDBDatabaseCallbacks> callbacks,
-    scoped_refptr<base::SingleThreadTaskRunner> callback_runner)
-    : callback_runner_(std::move(callback_runner)),
-      callbacks_(callbacks.release()) {
-  IndexedDBDispatcher::ThreadSpecificInstance()
-      ->RegisterMojoOwnedDatabaseCallbacks(callbacks_);
-}
-
-IndexedDBDatabaseCallbacksImpl::~IndexedDBDatabaseCallbacksImpl() {
-  callback_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&DeleteDatabaseCallbacks, callbacks_));
-}
-
-void IndexedDBDatabaseCallbacksImpl::ForcedClose() {
-  callback_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&WebIDBDatabaseCallbacks::OnForcedClose,
-                                base::Unretained(callbacks_)));
-}
-
-void IndexedDBDatabaseCallbacksImpl::VersionChange(int64_t old_version,
-                                                   int64_t new_version) {
-  callback_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&WebIDBDatabaseCallbacks::OnVersionChange,
-                     base::Unretained(callbacks_), old_version, new_version));
-}
-
-void IndexedDBDatabaseCallbacksImpl::Abort(int64_t transaction_id,
-                                           int32_t code,
-                                           const base::string16& message) {
-  // Indirect through BuildErrorAndAbort because it isn't safe to pass a
-  // WebIDBDatabaseError between threads.
-  callback_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&BuildErrorAndAbort, base::Unretained(callbacks_),
-                     transaction_id, code, message));
-}
-
-void IndexedDBDatabaseCallbacksImpl::Complete(int64_t transaction_id) {
-  callback_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&WebIDBDatabaseCallbacks::OnComplete,
-                                base::Unretained(callbacks_), transaction_id));
-}
-
-void IndexedDBDatabaseCallbacksImpl::Changes(
-    indexed_db::mojom::ObserverChangesPtr changes) {
-  callback_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&BuildObservationsAndNotify, base::Unretained(callbacks_),
-                     std::move(changes)));
+  callbacks_->OnChanges(observation_index_map, std::move(web_observations),
+                        observer_transactions);
 }
 
 }  // namespace content
