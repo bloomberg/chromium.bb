@@ -255,15 +255,12 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   enum class HeaderFadeInMode {
     // Used when entering overview mode, to fade in the header background color.
     kEnter,
-    // Used when the overview header bounds change for the first time, to
-    // skip animating when in tablet mode.
+    // Used when the overview header bounds change for the first time to
+    // skip animating.
     kFirstUpdate,
     // Used when the overview header bounds change, to animate or move the
-    // header
-    // to the desired bounds.
+    // header to the desired bounds.
     kUpdate,
-    // Used when exiting overview mode, to fade out the header background color.
-    kExit,
   };
 
   // Sets the bounds of this selector's items to |target_bounds| in

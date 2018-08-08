@@ -14,8 +14,6 @@ enum OverviewAnimationType {
   OVERVIEW_ANIMATION_NONE,
   // Used to fade in the close button and label.
   OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
-  // Used to fade in the close button and label, in tablet mode.
-  OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_TABLET_FADE_IN,
   // Used to fade out the label.
   OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT,
   // Used to position windows when entering/exiting overview mode and when a

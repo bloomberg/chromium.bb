@@ -18,42 +18,37 @@ namespace ash {
 namespace {
 
 // The time duration for transformation animations.
-constexpr int kTransitionMilliseconds = 300;
+constexpr int kTransitionMs = 300;
 
 // The time duration for fading out when closing an item.
-constexpr int kCloseFadeOutMilliseconds = 50;
+constexpr int kCloseFadeOutMs = 100;
 
 // The time duration for scaling down when an item is closed.
-constexpr int kCloseScaleMilliseconds = 100;
+constexpr int kCloseScaleMs = 100;
 
 // The time duration for widgets to fade in.
-constexpr int kFadeInMilliseconds = 60;
-
-// The time duration for widgets to fade in in tablet mode.
-constexpr int kFadeInTabletMs = 300;
+constexpr int kFadeInDelayMs = 83;
+constexpr int kFadeInMs = 167;
 
 // The time duration for widgets to fade out.
-constexpr int kFadeOutDelayMilliseconds = kTransitionMilliseconds * 1 / 5;
-constexpr int kFadeOutMilliseconds = kTransitionMilliseconds * 3 / 5;
+constexpr int kFadeOutMs = 100;
 
 base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
   switch (animation_type) {
     case OVERVIEW_ANIMATION_NONE:
       return base::TimeDelta();
     case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN:
-      return base::TimeDelta::FromMilliseconds(kFadeInMilliseconds);
-    case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_TABLET_FADE_IN:
-      return base::TimeDelta::FromMilliseconds(kFadeInTabletMs);
+      return base::TimeDelta::FromMilliseconds(kFadeInMs);
     case OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT:
-      return base::TimeDelta::FromMilliseconds(kFadeOutMilliseconds);
+      return base::TimeDelta::FromMilliseconds(kFadeOutMs);
     case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO:
-      return base::TimeDelta::FromMilliseconds(kTransitionMilliseconds);
+      return base::TimeDelta::FromMilliseconds(kTransitionMs);
     case OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM:
-      return base::TimeDelta::FromMilliseconds(kCloseScaleMilliseconds);
+      return base::TimeDelta::FromMilliseconds(kCloseScaleMs);
     case OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM:
-      return base::TimeDelta::FromMilliseconds(kCloseFadeOutMilliseconds);
+      return base::TimeDelta::FromMilliseconds(kCloseFadeOutMs);
   }
   NOTREACHED();
   return base::TimeDelta();
@@ -114,7 +109,6 @@ ui::AnimationMetricsReporter* GetMetricsReporter(
     case OVERVIEW_ANIMATION_NONE:
       return nullptr;
     case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN:
-    case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_TABLET_FADE_IN:
     case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS:
       return g_reporter_enter.Pointer();
     case OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT:
@@ -142,16 +136,15 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
       break;
     case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN:
-    case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_TABLET_FADE_IN:
-      animation_settings_->SetTweenType(gfx::Tween::EASE_IN);
+      window->layer()->GetAnimator()->SchedulePauseForProperties(
+          base::TimeDelta::FromMilliseconds(kFadeInDelayMs),
+          ui::LayerAnimationElement::OPACITY);
+      animation_settings_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
       break;
     case OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT:
-      window->layer()->GetAnimator()->SchedulePauseForProperties(
-          base::TimeDelta::FromMilliseconds(kFadeOutDelayMilliseconds),
-          ui::LayerAnimationElement::OPACITY);
-      animation_settings_->SetTweenType(gfx::Tween::EASE_OUT);
+      animation_settings_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
       break;

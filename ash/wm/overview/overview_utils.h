@@ -27,6 +27,9 @@ bool CanCoverAvailableWorkspace(aura::Window* window);
 
 bool IsOverviewSwipeToCloseEnabled();
 
+// Fades |widget| to opacity one with the enter overview settings.
+void FadeInWidgetOnEnter(views::Widget* widget);
+
 // Fades |widget| to opacity zero with animation settings depending on
 // |animation_type|. Used by several classes which need to be destroyed on
 // exiting overview, but have some widgets which need to continue animating.

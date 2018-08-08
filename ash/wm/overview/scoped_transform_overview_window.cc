@@ -225,7 +225,7 @@ void ScopedTransformOverviewWindow::RestoreWindow(bool reset_transform) {
 void ScopedTransformOverviewWindow::BeginScopedAnimation(
     OverviewAnimationType animation_type,
     ScopedAnimationSettings* animation_settings) {
-  if (animation_type == OverviewAnimationType::OVERVIEW_ANIMATION_NONE)
+  if (animation_type == OVERVIEW_ANIMATION_NONE)
     return;
 
   // Remove the mask before animating because masks affect animation
@@ -584,11 +584,7 @@ void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {
   minimized_widget_->SetBounds(bounds);
   minimized_widget_->Show();
 
-  minimized_widget_->SetOpacity(0.f);
-  ScopedOverviewAnimationSettings animation_settings(
-      OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_TABLET_FADE_IN,
-      minimized_widget_->GetNativeWindow());
-  minimized_widget_->SetOpacity(1.f);
+  FadeInWidgetOnEnter(minimized_widget_.get());
 }
 
 void ScopedTransformOverviewWindow::CreateAndApplyMaskAndShadow() {
