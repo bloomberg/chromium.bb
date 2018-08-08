@@ -1659,23 +1659,38 @@ class MojoManifestOwnerTest(unittest.TestCase):
     self.assertEqual([], errors)
 
 
-class CrbugUrlFormatTest(unittest.TestCase):
-
-  def testCheckCrbugLinksHaveHttps(self):
+class CheckCrbugLinksHaveHttpsTest(unittest.TestCase):
+  def assertWarningsWithFile(self, content, expected_warnings, file_name):
     input_api = MockInputApi()
     input_api.files = [
-      MockFile('somewhere/file.cc',
-               ['// TODO(developer): crbug.com should be linkified',
-                '// TODO(developer): (crbug.com) should be linkified',
-                '// TODO(developer): crbug/123 should be well formed',
-                '// TODO(developer): http://crbug.com it\'s OK',
-                '// TODO(developer): https://crbug.com is just great',
-                '// TODO(crbug.com/123456): this pattern it\'s also OK']),
+      MockFile(file_name, [content])
     ]
 
     warnings = PRESUBMIT._CheckCrbugLinksHaveHttps(input_api, MockOutputApi())
-    self.assertEqual(1, len(warnings))
-    self.assertEqual(3, warnings[0].message.count('\n'))
+    self.assertEqual(expected_warnings, len(warnings))
+
+  def assertWarnings(self, content, expected_warnings):
+    for f in ['somewhere/file.cc', 'file.java', 'file.py', 'file_test.cc']:
+      self.assertWarningsWithFile(content, expected_warnings, f)
+
+  # The cr bug strings are split to avoid matching in real PRESUBMIT, so meta!
+  def testNoScheme(self):
+    self.assertWarnings('// TODO(dev): cr''bug.com should be linkified', 1)
+
+  def testNoScheme2(self):
+    self.assertWarnings('// TODO(dev): (cr''bug.com) should be linkified', 1)
+
+  def testNoCom(self):
+    self.assertWarnings('// TODO(dev): cr''bug/123 should be well formed', 1)
+
+  def testHttp(self):
+    self.assertWarnings('// TODO(dev): http://cr''bug.com it\'s OK', 0)
+
+  def testHttps(self):
+    self.assertWarnings('// TODO(dev): https://cr''bug.com is just great', 0)
+
+  def testTodo(self):
+    self.assertWarnings('// TODO(cr''bug.com/123456): it\'s also OK', 0)
 
 
 class BannedFunctionCheckTest(unittest.TestCase):
