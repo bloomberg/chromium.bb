@@ -33,14 +33,12 @@ WindowService::WindowService(
     WindowServiceDelegate* delegate,
     std::unique_ptr<GpuInterfaceProvider> gpu_interface_provider,
     aura::client::FocusClient* focus_client,
-    bool decrement_client_ids,
-    aura::Env* env)
+    bool decrement_client_ids)
     : delegate_(delegate),
-      env_(env ? env : aura::Env::GetInstance()),
       gpu_interface_provider_(std::move(gpu_interface_provider)),
       screen_provider_(std::make_unique<ScreenProvider>()),
       focus_client_(focus_client),
-      user_activity_monitor_(std::make_unique<UserActivityMonitor>(env_)),
+      user_activity_monitor_(std::make_unique<UserActivityMonitor>()),
       next_client_id_(decrement_client_ids ? kInitialClientIdDecrement
                                            : kInitialClientId),
       decrement_client_ids_(decrement_client_ids),

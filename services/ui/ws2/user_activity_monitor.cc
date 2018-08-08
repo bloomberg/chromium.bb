@@ -16,18 +16,17 @@ namespace ui {
 namespace ws2 {
 
 UserActivityMonitor::UserActivityMonitor(
-    aura::Env* env,
     std::unique_ptr<const base::TickClock> clock)
-    : env_(env), now_clock_(std::move(clock)) {
+    : now_clock_(std::move(clock)) {
   if (!now_clock_)
     now_clock_ = std::make_unique<base::DefaultTickClock>();
   last_activity_ = now_clock_->NowTicks();
 
-  env_->AddPreTargetHandler(this);
+  aura::Env::GetInstance()->AddPreTargetHandler(this);
 }
 
 UserActivityMonitor::~UserActivityMonitor() {
-  env_->RemovePreTargetHandler(this);
+  aura::Env::GetInstance()->RemovePreTargetHandler(this);
 }
 
 void UserActivityMonitor::AddBinding(
