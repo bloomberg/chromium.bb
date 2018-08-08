@@ -5,9 +5,12 @@
 #ifndef UI_VIEWS_WIDGET_NATIVE_WIDGET_H_
 #define UI_VIEWS_WIDGET_NATIVE_WIDGET_H_
 
-#include "ui/views/widget/widget.h"
+#include "ui/views/views_export.h"
 
 namespace views {
+
+class Widget;
+
 namespace internal {
 class NativeWidgetPrivate;
 }

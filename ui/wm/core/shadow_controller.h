@@ -14,6 +14,7 @@
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace aura {
+class Env;
 class Window;
 }
 
@@ -36,7 +37,8 @@ class WM_CORE_EXPORT ShadowController : public ActivationChangeObserver {
   static ui::Shadow* GetShadowForWindow(aura::Window* window);
 
   ShadowController(ActivationClient* activation_client,
-                   std::unique_ptr<ShadowControllerDelegate> delegate);
+                   std::unique_ptr<ShadowControllerDelegate> delegate,
+                   aura::Env* env = nullptr);
   ~ShadowController() override;
 
   bool IsShadowVisibleForWindow(aura::Window* window);

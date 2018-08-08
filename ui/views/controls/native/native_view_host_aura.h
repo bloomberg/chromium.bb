@@ -7,12 +7,15 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/controls/native/native_view_host_wrapper.h"
 #include "ui/views/views_export.h"
+
+namespace aura {
+class Window;
+}
 
 namespace views {
 
@@ -53,6 +56,8 @@ class NativeViewHostAura : public NativeViewHostWrapper,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
 
+  void CreateClippingWindow();
+
   // Reparents the native view with the clipping window existing between it and
   // its old parent, so that the fast resize path works.
   void AddClippingWindow();
@@ -75,7 +80,7 @@ class NativeViewHostAura : public NativeViewHostWrapper,
   // Window that exists between the native view and the parent that allows for
   // clipping to occur. This is positioned in the coordinate space of
   // host_->GetWidget().
-  aura::Window clipping_window_;
+  std::unique_ptr<aura::Window> clipping_window_;
   std::unique_ptr<gfx::Rect> clip_rect_;
 
   // This mask exists for the sake of SetCornerRadius().

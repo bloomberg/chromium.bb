@@ -70,7 +70,7 @@ NativeWidget* CreateNativeWidget(const Widget::InitParams& params,
     if (native_widget)
       return native_widget;
   }
-  return internal::NativeWidgetPrivate::CreateNativeWidget(delegate);
+  return internal::NativeWidgetPrivate::CreateNativeWidget(params, delegate);
 }
 
 void NotifyCaretBoundsChanged(ui::InputMethod* input_method) {
@@ -334,11 +334,9 @@ void Widget::Init(const InitParams& in_params) {
   native_widget_ = CreateNativeWidget(params, this)->AsNativeWidgetPrivate();
   root_view_.reset(CreateRootView());
   default_theme_provider_.reset(new ui::DefaultThemeProvider);
-  if (params.type == InitParams::TYPE_MENU) {
-    is_mouse_button_pressed_ =
-        internal::NativeWidgetPrivate::IsMouseButtonDown();
-  }
   native_widget_->InitNativeWidget(params);
+  if (params.type == InitParams::TYPE_MENU)
+    is_mouse_button_pressed_ = native_widget_->IsMouseButtonDown();
   if (RequiresNonClientView(params.type)) {
     non_client_view_ = new NonClientView;
     non_client_view_->SetFrameView(CreateNonClientFrameView());
@@ -949,7 +947,7 @@ void Widget::SetCapture(View* view) {
       return;
   }
 
-  if (internal::NativeWidgetPrivate::IsMouseButtonDown())
+  if (native_widget_->IsMouseButtonDown())
     is_mouse_button_pressed_ = true;
   root_view_->SetMouseHandler(view);
 }
@@ -1198,7 +1196,7 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
       // mouse-button is still down before attempting to do a capture.
       if (root_view && root_view->OnMousePressed(*event) &&
           widget_deletion_observer.IsWidgetAlive() && IsVisible() &&
-          internal::NativeWidgetPrivate::IsMouseButtonDown() &&
+          native_widget_->IsMouseButtonDown() &&
           current_capture == internal::NativeWidgetPrivate::GetGlobalCapture(
                                  native_widget_->GetNativeView())) {
         is_mouse_button_pressed_ = true;

@@ -97,7 +97,9 @@ class NativeViewHostAuraTest : public test::NativeViewHostTestBase {
     return child_.get();
   }
 
-  aura::Window* clipping_window() { return &(native_host()->clipping_window_); }
+  aura::Window* clipping_window() {
+    return native_host()->clipping_window_.get();
+  }
 
   void CreateHost() {
     CreateTopLevel();
