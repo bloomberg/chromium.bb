@@ -33,18 +33,12 @@ DevToolsEyeDropper::DevToolsEyeDropper(content::WebContents* web_contents,
       last_cursor_x_(-1),
       last_cursor_y_(-1),
       host_(nullptr),
-      use_video_capture_api_(
-          base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-          base::FeatureList::IsEnabled(
-              features::kUseVideoCaptureApiForDevToolsSnapshots)),
       weak_factory_(this) {
   mouse_event_callback_ =
       base::Bind(&DevToolsEyeDropper::HandleMouseEvent, base::Unretained(this));
   content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
-  if (rvh) {
+  if (rvh)
     AttachToHost(rvh->GetWidget());
-    UpdateFrame();
-  }
 }
 
 DevToolsEyeDropper::~DevToolsEyeDropper() {
@@ -54,9 +48,6 @@ DevToolsEyeDropper::~DevToolsEyeDropper() {
 void DevToolsEyeDropper::AttachToHost(content::RenderWidgetHost* host) {
   host_ = host;
   host_->AddMouseEventCallback(mouse_event_callback_);
-
-  if (!use_video_capture_api_)
-    return;
 
   // The view can be null if the renderer process has crashed.
   // (https://crbug.com/847363)
@@ -94,10 +85,8 @@ void DevToolsEyeDropper::DetachFromHost() {
 }
 
 void DevToolsEyeDropper::RenderViewCreated(content::RenderViewHost* host) {
-  if (!host_) {
+  if (!host_)
     AttachToHost(host->GetWidget());
-    UpdateFrame();
-  }
 }
 
 void DevToolsEyeDropper::RenderViewDeleted(content::RenderViewHost* host) {
@@ -113,41 +102,13 @@ void DevToolsEyeDropper::RenderViewHostChanged(
   if ((old_host && old_host->GetWidget() == host_) || (!old_host && !host_)) {
     DetachFromHost();
     AttachToHost(new_host->GetWidget());
-    UpdateFrame();
   }
-}
-
-void DevToolsEyeDropper::DidReceiveCompositorFrame() {
-  UpdateFrame();
-}
-
-void DevToolsEyeDropper::UpdateFrame() {
-  if (use_video_capture_api_ || !host_ || !host_->GetView())
-    return;
-
-  // TODO(miu): This is the wrong size. It's the size of the view on-screen, and
-  // not the rendering size of the view. The latter is what is wanted here, so
-  // that the resulting bitmap's pixel coordinates line-up with the
-  // blink::WebMouseEvent coordinates. http://crbug.com/73362
-  gfx::Size should_be_rendering_size = host_->GetView()->GetViewBounds().size();
-  host_->GetView()->CopyFromSurface(
-      gfx::Rect(), should_be_rendering_size,
-      base::BindOnce(&DevToolsEyeDropper::FrameUpdated,
-                     weak_factory_.GetWeakPtr()));
 }
 
 void DevToolsEyeDropper::ResetFrame() {
   frame_.reset();
   last_cursor_x_ = -1;
   last_cursor_y_ = -1;
-}
-
-void DevToolsEyeDropper::FrameUpdated(const SkBitmap& bitmap) {
-  DCHECK(!use_video_capture_api_);
-  if (bitmap.drawsNothing())
-    return;
-  frame_ = bitmap;
-  UpdateCursor();
 }
 
 bool DevToolsEyeDropper::HandleMouseEvent(const blink::WebMouseEvent& event) {

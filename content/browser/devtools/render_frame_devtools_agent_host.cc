@@ -12,7 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/viz/common/features.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_frame_trace_recorder.h"
@@ -51,7 +50,6 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
@@ -477,10 +475,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
     session->AttachToAgent(agent_ptr_);
 
   if (sessions().size() == 1) {
-    bool use_video_capture_api =
-        base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-        base::FeatureList::IsEnabled(
-            features::kUseVideoCaptureApiForDevToolsSnapshots);
+    bool use_video_capture_api = true;
 #ifdef OS_ANDROID
     // Video capture API cannot be used on Android WebView.
     if (!CompositorImpl::IsInitialized())
@@ -784,23 +779,6 @@ void RenderFrameDevToolsAgentHost::OnVisibilityChanged(
   else
     GetWakeLock()->RequestWakeLock();
 #endif
-}
-
-void RenderFrameDevToolsAgentHost::DidReceiveCompositorFrame() {
-  const viz::CompositorFrameMetadata& metadata =
-      RenderWidgetHostImpl::From(
-          web_contents()->GetRenderViewHost()->GetWidget())
-          ->last_frame_metadata();
-  for (auto* page : protocol::PageHandler::ForAgentHost(this))
-    page->OnSwapCompositorFrame(metadata.Clone());
-
-  if (!frame_trace_recorder_)
-    return;
-  bool did_initiate_recording = false;
-  for (auto* tracing : protocol::TracingHandler::ForAgentHost(this))
-    did_initiate_recording |= tracing->did_initiate_recording();
-  if (did_initiate_recording)
-    frame_trace_recorder_->OnSwapCompositorFrame(frame_host_, metadata);
 }
 
 void RenderFrameDevToolsAgentHost::OnPageScaleFactorChanged(
