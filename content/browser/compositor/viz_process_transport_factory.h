@@ -78,7 +78,6 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   bool IsGpuCompositingDisabled() override;
   ui::ContextFactory* GetContextFactory() override;
   ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
-  viz::GLHelper* GetGLHelper() override;
 
   // viz::ContextLostObserver implementation.
   void OnContextLost() override;

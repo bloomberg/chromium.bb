@@ -15,10 +15,6 @@ class ContextFactory;
 class ContextFactoryPrivate;
 }
 
-namespace viz {
-class GLHelper;
-}
-
 namespace content {
 
 // This class provides the interface for creating the support for the
@@ -54,11 +50,6 @@ class CONTENT_EXPORT ImageTransportFactory {
   // compositor. TODO(fsamuel): This interface should eventually go away once
   // Mus subsumes this functionality.
   virtual ui::ContextFactoryPrivate* GetContextFactoryPrivate() = 0;
-
-  // Gets a GLHelper instance, associated with the shared context. This
-  // GLHelper will get destroyed whenever the shared context is lost
-  // (ImageTransportFactoryObserver::OnLostResources is called).
-  virtual viz::GLHelper* GetGLHelper() = 0;
 };
 
 }  // namespace content

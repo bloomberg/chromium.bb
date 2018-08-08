@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "components/viz/common/features.h"
-#include "components/viz/common/gl_helper.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/test/test_frame_sink_manager.h"
@@ -71,8 +70,6 @@ TestImageTransportFactory::TestImageTransportFactory()
 }
 
 TestImageTransportFactory::~TestImageTransportFactory() {
-  std::unique_ptr<viz::GLHelper> lost_gl_helper = std::move(gl_helper_);
-
   for (auto& observer : observer_list_)
     observer.OnLostSharedContext();
 }
@@ -174,21 +171,6 @@ ui::ContextFactory* TestImageTransportFactory::GetContextFactory() {
 ui::ContextFactoryPrivate*
 TestImageTransportFactory::GetContextFactoryPrivate() {
   return this;
-}
-
-viz::GLHelper* TestImageTransportFactory::GetGLHelper() {
-  if (enable_viz_) {
-    // Nothing should use GLHelper with VizDisplayCompositor enabled.
-    NOTREACHED();
-    return nullptr;
-  }
-
-  if (!gl_helper_) {
-    auto context_provider = SharedMainThreadContextProvider();
-    gl_helper_ = std::make_unique<viz::GLHelper>(
-        context_provider->ContextGL(), context_provider->ContextSupport());
-  }
-  return gl_helper_.get();
 }
 
 }  // namespace content

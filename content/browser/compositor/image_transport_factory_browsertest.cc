@@ -82,8 +82,8 @@ IN_PROC_BROWSER_TEST_F(ImageTransportFactoryTearDownBrowserTest,
                        LoseOnTearDown) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
 
-  // TODO(crbug.com/844469): Delete after OOP-D is launched because GLHelper
-  // and OwnedMailbox aren't used.
+  // TODO(crbug.com/844469): Delete after OOP-D is launched because OwnedMailbox
+  // isn't used.
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
     return;
 

@@ -26,7 +26,6 @@
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
-#include "components/viz/common/gl_helper.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/host/host_display_client.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -731,21 +730,10 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
   }
   per_compositor_data_.erase(it);
   if (per_compositor_data_.empty()) {
-    // Destroying the GLHelper may cause some async actions to be cancelled,
-    // causing things to request a new GLHelper. Due to crbug.com/176091 the
-    // GLHelper created in this case would be lost/leaked if we just reset()
-    // on the |gl_helper_| variable directly. So instead we call reset() on a
-    // local std::unique_ptr.
-    std::unique_ptr<viz::GLHelper> helper = std::move(gl_helper_);
-
-    // If there are any observer left at this point, make sure they clean up
-    // before we destroy the GLHelper.
+    // If there are any observers left at this point, notify them that the
+    // context has been lost.
     for (auto& observer : observer_list_)
       observer.OnLostSharedContext();
-
-    helper.reset();
-    DCHECK(!gl_helper_) << "Destroying the GLHelper should not cause a new "
-                           "GLHelper to be created.";
   }
 #if defined(OS_WIN)
   gfx::RenderingWindowManager::GetInstance()->UnregisterParent(
@@ -927,16 +915,6 @@ viz::FrameSinkManagerImpl* GpuProcessTransportFactory::GetFrameSinkManager() {
   return BrowserMainLoop::GetInstance()->GetFrameSinkManager();
 }
 
-viz::GLHelper* GpuProcessTransportFactory::GetGLHelper() {
-  if (!gl_helper_ && !per_compositor_data_.empty()) {
-    scoped_refptr<ContextProvider> provider = SharedMainThreadContextProvider();
-    if (provider.get())
-      gl_helper_.reset(
-          new viz::GLHelper(provider->ContextGL(), provider->ContextSupport()));
-  }
-  return gl_helper_.get();
-}
-
 scoped_refptr<ContextProvider>
 GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   if (is_gpu_compositing_disabled_)
@@ -957,8 +935,6 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
     return nullptr;
   }
 
-  // We need a separate context from the compositor's so that skia and gl_helper
-  // don't step on each other.
   bool need_alpha_channel = false;
   bool support_locking = false;
   bool support_gles2_interface = true;
@@ -1016,13 +992,10 @@ void GpuProcessTransportFactory::OnLostMainThreadSharedContext() {
       shared_main_thread_contexts_;
   shared_main_thread_contexts_ = nullptr;
 
-  std::unique_ptr<viz::GLHelper> lost_gl_helper = std::move(gl_helper_);
-
   for (auto& observer : observer_list_)
     observer.OnLostSharedContext();
 
   // Kill things that use the shared context before killing the shared context.
-  lost_gl_helper.reset();
   lost_shared_main_thread_contexts = nullptr;
 }
 
