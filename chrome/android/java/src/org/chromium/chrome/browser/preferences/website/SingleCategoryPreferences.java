@@ -326,8 +326,10 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
         mSearchItem = menu.findItem(R.id.search);
         SearchUtils.initializeSearchView(mSearchItem, mSearch, getActivity(), (query) -> {
+            boolean queryHasChanged =
+                    mSearch == null ? query != null && !query.isEmpty() : !mSearch.equals(query);
             mSearch = query;
-            getInfoForOrigins();
+            if (queryHasChanged) getInfoForOrigins();
         });
 
         if (mCategory.showSites(SiteSettingsCategory.Type.PROTECTED_MEDIA)) {
@@ -363,8 +365,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
             return true;
         }
         if (handleSearchNavigation(item, mSearchItem, mSearch, getActivity())) {
+            boolean queryHasChanged = mSearch != null && !mSearch.isEmpty();
             mSearch = null;
-            getInfoForOrigins();
+            if (queryHasChanged) getInfoForOrigins();
             return true;
         }
         return false;
