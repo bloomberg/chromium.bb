@@ -1502,6 +1502,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
       resource_request->method = common_params_.method;
       resource_request->request_initiator = begin_params_->initiator_origin;
       resource_request->referrer = common_params_.referrer.url;
+      resource_request->has_user_gesture = common_params_.has_user_gesture;
 
       BrowserContext* browser_context =
           frame_tree_node_->navigator()->GetController()->GetBrowserContext();
