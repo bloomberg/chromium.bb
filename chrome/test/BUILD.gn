@@ -5025,6 +5025,12 @@ if (!is_android) {
         "//ash/wm/native_cursor_manager_ash_interactive_uitest.cc",
         "data/chromeos/service_login.html",
       ]
+      if (is_chrome_branded) {
+        sources += [
+          # The screen this test is checking exists in official build only.
+          "../browser/chromeos/login/sync_consent_interactive_ui_test.cc",
+        ]
+      }
       sources -= [
         # Use only the _chromeos version on Ash / Chrome OS.
         "base/view_event_test_platform_part_default.cc",
