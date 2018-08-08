@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
-#include "components/certificate_transparency/pref_names.h"
 #include "components/consent_auditor/pref_names.h"
 #include "components/dom_distiller/core/pref_names.h"
 #include "components/flags_ui/flags_ui_pref_names.h"
@@ -766,12 +765,6 @@ const char* temporary_incognito_whitelist[] = {
     chromeos::prefs::kAudioDevicesState,
     chromeos::prefs::kQuirksClientLastServerCheck,
 #endif  // defined(OS_CHROMEOS)
-
-    // components/certificate_transparency/pref_names.h
-    certificate_transparency::prefs::kCTRequiredHosts,
-    certificate_transparency::prefs::kCTExcludedHosts,
-    certificate_transparency::prefs::kCTExcludedSPKIs,
-    certificate_transparency::prefs::kCTExcludedLegacySPKIs,
 
     // components/consent_auditor/pref_names.h
     consent_auditor::prefs::kLocalConsentsDictionary,
