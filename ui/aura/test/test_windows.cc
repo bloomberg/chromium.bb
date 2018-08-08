@@ -8,22 +8,12 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace aura {
 namespace test {
-namespace {
-
-static Env* g_env = nullptr;
-
-}  // namespace
-
-void SetEnvForTestWindows(Env* env) {
-  g_env = env;
-}
 
 Window* CreateTestWindowWithId(int id, Window* parent) {
   return CreateTestWindowWithDelegate(NULL, id, gfx::Rect(), parent);
@@ -55,8 +45,9 @@ Window* CreateTestWindowWithDelegateAndType(WindowDelegate* delegate,
                                             const gfx::Rect& bounds,
                                             Window* parent,
                                             bool show_on_creation) {
-  Window* window = new Window(delegate, type, g_env);
+  Window* window = new Window(delegate);
   window->set_id(id);
+  window->SetType(type);
   window->Init(ui::LAYER_TEXTURED);
   window->SetProperty(aura::client::kResizeBehaviorKey,
                       ui::mojom::kResizeBehaviorCanResize |

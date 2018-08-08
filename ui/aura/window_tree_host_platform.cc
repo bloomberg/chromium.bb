@@ -10,8 +10,8 @@
 #include "base/run_loop.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_port.h"
 #include "ui/base/layout.h"
 #include "ui/compositor/compositor.h"
 #include "ui/events/event.h"
@@ -46,16 +46,18 @@ std::unique_ptr<WindowTreeHost> WindowTreeHost::Create(
 }
 
 WindowTreeHostPlatform::WindowTreeHostPlatform(
-    ui::PlatformWindowInitProperties properties,
-    std::unique_ptr<Window> window)
-    : WindowTreeHost(std::move(window)) {
+    ui::PlatformWindowInitProperties properties) {
   bounds_ = properties.bounds;
   CreateCompositor();
   CreateAndSetPlatformWindow(std::move(properties));
 }
 
-WindowTreeHostPlatform::WindowTreeHostPlatform(std::unique_ptr<Window> window)
-    : WindowTreeHost(std::move(window)),
+WindowTreeHostPlatform::WindowTreeHostPlatform()
+    : WindowTreeHostPlatform(nullptr) {}
+
+WindowTreeHostPlatform::WindowTreeHostPlatform(
+    std::unique_ptr<WindowPort> window_port)
+    : WindowTreeHost(std::move(window_port)),
       widget_(gfx::kNullAcceleratedWidget),
       current_cursor_(ui::CursorType::kNull) {}
 
