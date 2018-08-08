@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/media_engagement_score.h"
 #include "chrome/browser/media/media_engagement_service.h"
@@ -16,11 +17,19 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/component_updater/component_updater_service.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/web_preferences.h"
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/binding.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
+#endif
 
 namespace {
 
@@ -37,10 +46,13 @@ class MediaEngagementScoreDetailsProviderImpl
     : public media::mojom::MediaEngagementScoreDetailsProvider {
  public:
   MediaEngagementScoreDetailsProviderImpl(
-      Profile* profile,
+      content::WebUI* web_ui,
       mojo::InterfaceRequest<media::mojom::MediaEngagementScoreDetailsProvider>
           request)
-      : profile_(profile), binding_(this, std::move(request)) {
+      : web_ui_(web_ui),
+        profile_(Profile::FromWebUI(web_ui)),
+        binding_(this, std::move(request)) {
+    DCHECK(web_ui_);
     DCHECK(profile_);
     service_ = MediaEngagementService::Get(profile_);
   }
@@ -65,12 +77,30 @@ class MediaEngagementScoreDetailsProviderImpl
         base::FeatureList::IsEnabled(
             media::kMediaEngagementBypassAutoplayPolicies),
         base::FeatureList::IsEnabled(media::kPreloadMediaEngagementData),
-        media::GetEffectiveAutoplayPolicy(
-            *base::CommandLine::ForCurrentProcess()),
-        GetPreloadVersion()));
+        base::FeatureList::IsEnabled(media::kAutoplaySoundSettings),
+        GetBlockAutoplayPref(),
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kAutoplayPolicy),
+        GetAppliedAutoplayPolicy(), GetPreloadVersion()));
   }
 
  private:
+  const std::string GetAppliedAutoplayPolicy() {
+    switch (web_ui_->GetWebContents()
+                ->GetRenderViewHost()
+                ->GetWebkitPreferences()
+                .autoplay_policy) {
+      case content::AutoplayPolicy::kNoUserGestureRequired:
+        return "no-user-gesture-required";
+      case content::AutoplayPolicy::kUserGestureRequired:
+        return "user-gesture-required";
+      case content::AutoplayPolicy::kUserGestureRequiredForCrossOrigin:
+        return "user-gesture-required-for-cross-origin";
+      case content::AutoplayPolicy::kDocumentUserActivationRequired:
+        return "document-user-activation-required";
+    }
+  }
+
   const std::string GetPreloadVersion() {
     component_updater::ComponentUpdateService* cus =
         g_browser_process->component_updater();
@@ -83,6 +113,17 @@ class MediaEngagementScoreDetailsProviderImpl
 
     return std::string();
   }
+
+  // Pref is not available on Android.
+  bool GetBlockAutoplayPref() {
+#if defined(OS_ANDROID)
+    return false;
+#else
+    return profile_->GetPrefs()->GetBoolean(prefs::kBlockAutoplayEnabled);
+#endif
+  }
+
+  content::WebUI* web_ui_;
 
   Profile* profile_;
 
@@ -118,5 +159,5 @@ MediaEngagementUI::~MediaEngagementUI() = default;
 void MediaEngagementUI::BindMediaEngagementScoreDetailsProvider(
     media::mojom::MediaEngagementScoreDetailsProviderRequest request) {
   ui_handler_ = std::make_unique<MediaEngagementScoreDetailsProviderImpl>(
-      Profile::FromWebUI(web_ui()), std::move(request));
+      web_ui(), std::move(request));
 }
