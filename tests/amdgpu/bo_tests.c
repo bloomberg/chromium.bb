@@ -27,6 +27,7 @@
 
 #include "amdgpu_test.h"
 #include "amdgpu_drm.h"
+#include "amdgpu_internal.h"
 
 #define BUFFER_SIZE (4*1024)
 #define BUFFER_ALIGN (4*1024)
@@ -44,6 +45,7 @@ static void amdgpu_bo_metadata(void);
 static void amdgpu_bo_map_unmap(void);
 static void amdgpu_memory_alloc(void);
 static void amdgpu_mem_fail_alloc(void);
+static void amdgpu_bo_find_by_cpu_mapping(void);
 
 CU_TestInfo bo_tests[] = {
 	{ "Export/Import",  amdgpu_bo_export_import },
@@ -51,6 +53,7 @@ CU_TestInfo bo_tests[] = {
 	{ "CPU map/unmap",  amdgpu_bo_map_unmap },
 	{ "Memory alloc Test",  amdgpu_memory_alloc },
 	{ "Memory fail alloc Test",  amdgpu_mem_fail_alloc },
+	{ "Find bo by CPU mapping",  amdgpu_bo_find_by_cpu_mapping },
 	CU_TEST_INFO_NULL,
 };
 
@@ -261,4 +264,34 @@ static void amdgpu_mem_fail_alloc(void)
 		r = amdgpu_bo_free(bo);
 		CU_ASSERT_EQUAL(r, 0);
 	}
+}
+
+static void amdgpu_bo_find_by_cpu_mapping(void)
+{
+	amdgpu_bo_handle bo_handle, find_bo_handle;
+	amdgpu_va_handle va_handle;
+	void *bo_cpu;
+	uint64_t bo_mc_address;
+	uint64_t offset;
+	int r;
+
+	r = amdgpu_bo_alloc_and_map(device_handle, 4096, 4096,
+				    AMDGPU_GEM_DOMAIN_GTT, 0,
+				    &bo_handle, &bo_cpu,
+				    &bo_mc_address, &va_handle);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_find_bo_by_cpu_mapping(device_handle,
+					  bo_cpu,
+					  4096,
+					  &find_bo_handle,
+					  &offset);
+	CU_ASSERT_EQUAL(r, 0);
+	CU_ASSERT_EQUAL(offset, 0);
+	CU_ASSERT_EQUAL(bo_handle->handle, find_bo_handle->handle);
+
+	atomic_dec(&find_bo_handle->refcount, 1);
+	r = amdgpu_bo_unmap_and_free(bo_handle, va_handle,
+				     bo_mc_address, 4096);
+	CU_ASSERT_EQUAL(r, 0);
 }
