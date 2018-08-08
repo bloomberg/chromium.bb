@@ -66,7 +66,7 @@ class SearchResultPageViewTest
     ASSERT_EQ(test_with_answer_card, features::IsAnswerCardEnabled());
 
     // Setting up views.
-    delegate_.reset(new AppListTestViewDelegate);
+    delegate_ = std::make_unique<AppListTestViewDelegate>();
     app_list_view_ = new AppListView(delegate_.get());
     AppListView::InitParams params;
     params.parent = GetContext();

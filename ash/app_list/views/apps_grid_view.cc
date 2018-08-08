@@ -321,7 +321,7 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
     if (features::IsBackgroundBlurEnabled()) {
       // TODO(newcomer): Improve implementation of the mask layer so we can
       // enable it on all devices crbug.com/765292.
-      fadeout_layer_delegate_.reset(new FadeoutLayerDelegate);
+      fadeout_layer_delegate_ = std::make_unique<FadeoutLayerDelegate>();
       layer()->SetMaskLayer(fadeout_layer_delegate_->layer());
     }
 
@@ -335,10 +335,10 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
 
   pagination_model_.AddObserver(this);
 
-  pagination_controller_.reset(new PaginationController(
+  pagination_controller_ = std::make_unique<PaginationController>(
       &pagination_model_, folder_delegate_
                               ? PaginationController::SCROLL_AXIS_HORIZONTAL
-                              : PaginationController::SCROLL_AXIS_VERTICAL));
+                              : PaginationController::SCROLL_AXIS_VERTICAL);
 }
 
 AppsGridView::~AppsGridView() {

@@ -236,7 +236,7 @@ void PaginationModel::StartTransitionAnimation(const Transition& transition) {
   NotifyTransitionStarted();
   SetTransition(transition);
 
-  transition_animation_.reset(new gfx::SlideAnimation(this));
+  transition_animation_ = std::make_unique<gfx::SlideAnimation>(this);
   transition_animation_->SetDampeningValue(kPageTransitionDurationDampening);
   transition_animation_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
   transition_animation_->Reset(transition_.progress);

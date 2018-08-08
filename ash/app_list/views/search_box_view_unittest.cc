@@ -70,7 +70,8 @@ class SearchBoxViewTest : public views::test::WidgetTest,
     app_list_view()->Initialize(params);
 
     widget_ = CreateTopLevelPlatformWidget();
-    view_.reset(new SearchBoxView(this, &view_delegate_, app_list_view()));
+    view_ =
+        std::make_unique<SearchBoxView>(this, &view_delegate_, app_list_view());
     view_->Init();
     widget_->SetBounds(gfx::Rect(0, 0, 300, 200));
     counter_view_ = new KeyPressCounterView(app_list_view_);
