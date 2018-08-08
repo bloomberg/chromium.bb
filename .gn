@@ -85,7 +85,7 @@ check_targets = [
   "//chrome/app/*",
   "//chrome/app_shim/*",
 
-  #"//chrome/browser/android/*",  # Only metrics and vr have errors.
+  #"//chrome/browser/android/*",  # Only vr has errors. https://crbug.com/871623
   "//chrome/browser/android/accessibility/*",
   "//chrome/browser/android/autofill_assistant/*",
   "//chrome/browser/android/bookmarks/*",
@@ -119,6 +119,7 @@ check_targets = [
   "//chrome/browser/android/history_report/*",
   "//chrome/browser/android/instantapps/*",
   "//chrome/browser/android/locale/*",
+  "//chrome/browser/android/metrics/*",
   "//chrome/browser/android/mojo/*",
   "//chrome/browser/android/net/*",
   "//chrome/browser/android/ntp/*",
