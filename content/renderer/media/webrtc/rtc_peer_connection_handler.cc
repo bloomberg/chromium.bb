@@ -161,15 +161,19 @@ void RunSynchronousClosure(const base::Closure& closure,
   event->Signal();
 }
 
-void GetSdpAndTypeFromSessionDescription(
+// Initializes |web_description| if |description_callback| returns non-null,
+// otherwise does nothing.
+void GetWebRTCSessionDescriptionFromSessionDescriptionCallback(
     const base::Callback<const webrtc::SessionDescriptionInterface*()>&
         description_callback,
-    std::string* sdp, std::string* type) {
+    blink::WebRTCSessionDescription* web_description) {
   const webrtc::SessionDescriptionInterface* description =
       description_callback.Run();
   if (description) {
-    description->ToString(sdp);
-    *type = description->type();
+    std::string sdp;
+    description->ToString(&sdp);
+    web_description->Initialize(blink::WebString::FromUTF8(description->type()),
+                                blink::WebString::FromUTF8(sdp));
   }
 }
 
@@ -1355,41 +1359,45 @@ blink::WebRTCSessionDescription RTCPeerConnectionHandler::LocalDescription() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::localDescription");
 
-  // Since local_description returns a pointer to a non-reference-counted object
-  // that lives on the signaling thread, we cannot fetch a pointer to it and use
-  // it directly here. Instead, we access the object completely on the signaling
-  // thread.
-  std::string sdp, type;
+  // Since webrtc::PeerConnectionInterface::local_description() returns a
+  // pointer to a non-reference-counted object that lives on the signaling
+  // thread, we cannot fetch a pointer to it and use it directly here. Instead,
+  // we access the object completely on the signaling thread. Initializing
+  // |local_description| on the signaling thread is safe because we own it and
+  // wait for it to be initialized here.
+  blink::WebRTCSessionDescription local_description;  // IsNull() by default.
   base::Callback<const webrtc::SessionDescriptionInterface*()> description_cb =
       base::Bind(&webrtc::PeerConnectionInterface::local_description,
                  native_peer_connection_);
   RunSynchronousClosureOnSignalingThread(
-      base::Bind(&GetSdpAndTypeFromSessionDescription,
-                 std::move(description_cb), base::Unretained(&sdp),
-                 base::Unretained(&type)),
+      base::Bind(&GetWebRTCSessionDescriptionFromSessionDescriptionCallback,
+                 std::move(description_cb),
+                 base::Unretained(&local_description)),
       "localDescription");
 
-  return CreateWebKitSessionDescription(sdp, type);
+  return local_description;
 }
 
 blink::WebRTCSessionDescription RTCPeerConnectionHandler::RemoteDescription() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::remoteDescription");
-  // Since local_description returns a pointer to a non-reference-counted object
-  // that lives on the signaling thread, we cannot fetch a pointer to it and use
-  // it directly here. Instead, we access the object completely on the signaling
-  // thread.
-  std::string sdp, type;
+  // Since webrtc::PeerConnectionInterface::remote_description() returns a
+  // pointer to a non-reference-counted object that lives on the signaling
+  // thread, we cannot fetch a pointer to it and use it directly here. Instead,
+  // we access the object completely on the signaling thread. Initializing
+  // |remote_description| on the signaling thread is safe because we own it and
+  // wait for it to be initialized here.
+  blink::WebRTCSessionDescription remote_description;  // IsNull() by default.
   base::Callback<const webrtc::SessionDescriptionInterface*()> description_cb =
       base::Bind(&webrtc::PeerConnectionInterface::remote_description,
                  native_peer_connection_);
   RunSynchronousClosureOnSignalingThread(
-      base::Bind(&GetSdpAndTypeFromSessionDescription,
-                 std::move(description_cb), base::Unretained(&sdp),
-                 base::Unretained(&type)),
+      base::Bind(&GetWebRTCSessionDescriptionFromSessionDescriptionCallback,
+                 std::move(description_cb),
+                 base::Unretained(&remote_description)),
       "remoteDescription");
 
-  return CreateWebKitSessionDescription(sdp, type);
+  return remote_description;
 }
 
 webrtc::RTCErrorType RTCPeerConnectionHandler::SetConfiguration(
