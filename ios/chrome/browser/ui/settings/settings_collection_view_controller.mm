@@ -1007,6 +1007,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       [[GoogleServicesSettingsCoordinator alloc]
           initWithBaseViewController:self.navigationController
                         browserState:_browserState];
+  _googleServicesSettingsCoordinator.dispatcher = self.dispatcher;
   _googleServicesSettingsCoordinator.navigationController =
       self.navigationController;
   _googleServicesSettingsCoordinator.delegate = self;

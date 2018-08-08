@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_collapsible_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_command_handler.h"
+#import "ios/chrome/browser/ui/settings/google_services_settings_local_commands.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller_model_delegate.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -32,6 +33,7 @@ constexpr NSInteger kSectionOffset = 1000;
 @synthesize presentationDelegate = _presentationDelegate;
 @synthesize modelDelegate = _modelDelegate;
 @synthesize commandHandler = _commandHandler;
+@synthesize localDispatcher = _localDispatcher;
 
 - (instancetype)initWithLayout:(UICollectionViewLayout*)layout
                          style:(CollectionViewControllerStyle)style {
@@ -121,9 +123,9 @@ constexpr NSInteger kSectionOffset = 1000;
       [self.commandHandler toggleBetterSearchAndBrowsingServiceWithValue:isOn];
       break;
     case GoogleServicesSettingsCommandIDNoOp:
-    case GoogleServicesSettingsCommandIDOpenGoogleActivityPage:
+    case GoogleServicesSettingsCommandIDOpenGoogleActivityControlsDialog:
     case GoogleServicesSettingsCommandIDOpenEncryptionDialog:
-    case GoogleServicesSettingsCommandIDOpenManageSyncedDataPage:
+    case GoogleServicesSettingsCommandIDOpenManageSyncedDataWebPage:
       NOTREACHED();
       break;
   }
@@ -221,14 +223,14 @@ constexpr NSInteger kSectionOffset = 1000;
   GoogleServicesSettingsCommandID commandID =
       static_cast<GoogleServicesSettingsCommandID>(textItem.commandID);
   switch (commandID) {
-    case GoogleServicesSettingsCommandIDOpenGoogleActivityPage:
-      [self.commandHandler openGoogleActivityPage];
+    case GoogleServicesSettingsCommandIDOpenGoogleActivityControlsDialog:
+      [self.localDispatcher openGoogleActivityControlsDialog];
       break;
     case GoogleServicesSettingsCommandIDOpenEncryptionDialog:
-      [self.commandHandler openEncryptionDialog];
+      [self.localDispatcher openEncryptionDialog];
       break;
-    case GoogleServicesSettingsCommandIDOpenManageSyncedDataPage:
-      [self.commandHandler openManageSyncedDataPage];
+    case GoogleServicesSettingsCommandIDOpenManageSyncedDataWebPage:
+      [self.localDispatcher openManageSyncedDataWebPage];
       break;
     case GoogleServicesSettingsCommandIDNoOp:
     case GoogleServicesSettingsCommandIDToggleSyncEverything:

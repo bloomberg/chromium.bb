@@ -4,10 +4,16 @@
 
 #import "ios/chrome/browser/ui/settings/google_services_settings_coordinator.h"
 
+#include "components/google/core/common/google_util.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/settings/google_services_settings_local_commands.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
 
@@ -16,6 +22,7 @@
 #endif
 
 @interface GoogleServicesSettingsCoordinator ()<
+    GoogleServicesSettingsLocalCommands,
     GoogleServicesSettingsViewControllerPresentationDelegate>
 
 // Google services settings mediator.
@@ -25,8 +32,9 @@
 
 @implementation GoogleServicesSettingsCoordinator
 
-@synthesize delegate = _delegate;
 @synthesize viewController = _viewController;
+@synthesize delegate = _delegate;
+@synthesize dispatcher = _dispatcher;
 @synthesize mediator = _mediator;
 
 - (void)start {
@@ -36,6 +44,7 @@
           initWithLayout:layout
                    style:CollectionViewControllerStyleAppBar];
   controller.presentationDelegate = self;
+  controller.localDispatcher = self;
   self.viewController = controller;
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(self.browserState);
@@ -53,6 +62,25 @@
   DCHECK(self.navigationController);
   [self.navigationController pushViewController:self.viewController
                                        animated:YES];
+}
+
+#pragma mark - GoogleServicesSettingsLocalCommands
+
+- (void)openGoogleActivityControlsDialog {
+  // Needs to be implemented.
+}
+
+- (void)openEncryptionDialog {
+  // Needs to be implemented.
+}
+
+- (void)openManageSyncedDataWebPage {
+  GURL learnMoreUrl = google_util::AppendGoogleLocaleParam(
+      GURL(kSyncGoogleDashboardURL),
+      GetApplicationContext()->GetApplicationLocale());
+  OpenNewTabCommand* command =
+      [OpenNewTabCommand commandWithURLFromChrome:learnMoreUrl];
+  [self.dispatcher closeSettingsUIAndOpenURL:command];
 }
 
 #pragma mark - GoogleServicesSettingsViewControllerPresentationDelegate

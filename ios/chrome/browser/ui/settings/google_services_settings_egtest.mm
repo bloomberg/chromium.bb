@@ -135,6 +135,38 @@ using unified_consent::prefs::kUnifiedConsentGiven;
   [self assertNonPersonalizedServicesCollapsed:NO];
 }
 
+// Tests the "Manage synced data" cell does nothing when the user is not signed
+// in.
+- (void)testOpenManageSyncedDataWebPage {
+  if (!IsUIRefreshPhase1Enabled())
+    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
+  PrefService* prefService = GetOriginalBrowserState()->GetPrefs();
+  prefService->SetBoolean(kUnifiedConsentGiven, false);
+  [self openGoogleServicesSettings];
+  [self togglePersonalizedServicesSection];
+  [[self cellElementInteractionWithTitleID:
+             IDS_IOS_GOOGLE_SERVICES_SETTINGS_MANAGED_SYNC_DATA_TEXT
+                              detailTextID:0] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:self.scrollViewMatcher]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests the "Manage synced data" cell closes the settings, to open the web
+// page.
+- (void)testOpenManageSyncedDataWebPageWhileSignedIn {
+  if (!IsUIRefreshPhase1Enabled())
+    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
+  PrefService* prefService = GetOriginalBrowserState()->GetPrefs();
+  prefService->SetBoolean(kUnifiedConsentGiven, false);
+  [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
+  [self openGoogleServicesSettings];
+  [[self cellElementInteractionWithTitleID:
+             IDS_IOS_GOOGLE_SERVICES_SETTINGS_MANAGED_SYNC_DATA_TEXT
+                              detailTextID:0] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:self.scrollViewMatcher]
+      assertWithMatcher:grey_nil()];
+}
+
 #pragma mark - Helpers
 
 - (void)openGoogleServicesSettings {
@@ -162,21 +194,31 @@ using unified_consent::prefs::kUnifiedConsentGiven;
       performAction:grey_tap()];
 }
 
-- (void)assertCellWithTitleID:(int)titleID detailTextID:(int)detailTextID {
+// Returns GREYElementInteraction for a cell based on the title string ID and
+// the detail text string ID. |detailTextID| should be set to 0 if it doesn't
+// exist in the cell.
+- (GREYElementInteraction*)cellElementInteractionWithTitleID:(int)titleID
+                                                detailTextID:(int)detailTextID {
   NSString* accessibilityLabel = GetNSString(titleID);
   if (detailTextID) {
     accessibilityLabel =
         [NSString stringWithFormat:@"%@, %@", accessibilityLabel,
                                    GetNSString(detailTextID)];
   }
-  [[[EarlGrey
+  return [[EarlGrey
       selectElementWithMatcher:grey_allOf(
                                    grey_accessibilityLabel(accessibilityLabel),
                                    grey_kindOfClass(
                                        [UICollectionViewCell class]),
                                    grey_sufficientlyVisible(), nil)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 150)
-      onElementWithMatcher:self.scrollViewMatcher]
+      onElementWithMatcher:self.scrollViewMatcher];
+}
+
+// Asserts that a cell exists, based on its title string ID and its detail text
+// string ID. |detailTextID| should be set to 0 if it doesn't exist in the cell.
+- (void)assertCellWithTitleID:(int)titleID detailTextID:(int)detailTextID {
+  [[self cellElementInteractionWithTitleID:titleID detailTextID:detailTextID]
       assertWithMatcher:grey_notNil()];
 }
 

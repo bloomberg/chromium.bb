@@ -7,6 +7,7 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
+@protocol ApplicationCommands;
 @class GoogleServicesSettingsCoordinator;
 
 // Delegate for GoogleServicesSettingsCoordinator.
@@ -23,10 +24,11 @@
 
 // View controller for the Google services settings.
 @property(nonatomic, strong) UIViewController* viewController;
-
 // Delegate.
 @property(nonatomic, weak) id<GoogleServicesSettingsCoordinatorDelegate>
     delegate;
+// Global dispatcher.
+@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 
 @end
 
