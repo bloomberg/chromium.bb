@@ -44,7 +44,7 @@ class MediaControlTimelineElement : public MediaControlSliderElement {
 
  private:
   void DefaultEventHandler(Event*) override;
-  bool KeepEventInNode(Event*) override;
+  bool KeepEventInNode(const Event&) const override;
 
   // Checks if we can begin or end a scrubbing event. If the event is a pointer
   // event then it needs to start and end with valid pointer events. If the

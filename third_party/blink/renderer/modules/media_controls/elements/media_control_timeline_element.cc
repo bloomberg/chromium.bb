@@ -172,7 +172,7 @@ void MediaControlTimelineElement::DefaultEventHandler(Event* event) {
   GetMediaControls().UpdateCurrentTimeDisplay();
 }
 
-bool MediaControlTimelineElement::KeepEventInNode(Event* event) {
+bool MediaControlTimelineElement::KeepEventInNode(const Event& event) const {
   return MediaControlElementsHelper::IsUserInteractionEventForSlider(
       event, GetLayoutObject());
 }

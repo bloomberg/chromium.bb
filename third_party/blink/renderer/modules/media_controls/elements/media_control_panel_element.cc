@@ -175,7 +175,7 @@ void MediaControlPanelElement::DefaultEventHandler(Event* event) {
   HTMLDivElement::DefaultEventHandler(event);
 }
 
-bool MediaControlPanelElement::KeepEventInNode(Event* event) {
+bool MediaControlPanelElement::KeepEventInNode(const Event& event) const {
   return !MediaControlsImpl::IsModern() &&
          MediaControlElementsHelper::IsUserInteractionEvent(event);
 }

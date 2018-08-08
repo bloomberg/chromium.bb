@@ -114,7 +114,7 @@ void MediaControlCastButtonElement::DefaultEventHandler(Event* event) {
   MediaControlInputElement::DefaultEventHandler(event);
 }
 
-bool MediaControlCastButtonElement::KeepEventInNode(Event* event) {
+bool MediaControlCastButtonElement::KeepEventInNode(const Event& event) const {
   return MediaControlElementsHelper::IsUserInteractionEvent(event);
 }
 
