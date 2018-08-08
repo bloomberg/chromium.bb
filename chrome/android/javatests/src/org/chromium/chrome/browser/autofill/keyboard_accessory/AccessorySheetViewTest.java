@@ -60,6 +60,8 @@ public class AccessorySheetViewTest {
         mStubHolder = new LazyViewBinderAdapter.StubHolder<>(
                 mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory_sheet_stub));
         mModel = new AccessorySheetModel();
+        mModel.setHeight(mActivityTestRule.getActivity().getResources().getDimensionPixelSize(
+                org.chromium.chrome.R.dimen.keyboard_accessory_sheet_height));
         mModel.addObserver(new PropertyModelChangeProcessor<>(mModel, mStubHolder,
                 new LazyViewBinderAdapter<>(new AccessorySheetViewBinder(),
                         view -> view.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {

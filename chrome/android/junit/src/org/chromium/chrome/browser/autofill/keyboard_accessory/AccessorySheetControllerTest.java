@@ -93,6 +93,25 @@ public class AccessorySheetControllerTest {
     }
 
     @Test
+    public void testModelNotifiesHeightChanges() {
+        mModel.addObserver(mMockPropertyObserver);
+
+        // Setting height triggers the observer and changes the model.
+        mCoordinator.setHeight(123);
+        verify(mMockPropertyObserver).onPropertyChanged(mModel, PropertyKey.HEIGHT);
+        assertThat(mModel.getHeight(), is(123));
+
+        // Setting the same height doesn't trigger anything.
+        mCoordinator.setHeight(123);
+        verify(mMockPropertyObserver).onPropertyChanged(mModel, PropertyKey.HEIGHT); // No 2nd call.
+
+        // Setting a different height triggers again.
+        mCoordinator.setHeight(234);
+        verify(mMockPropertyObserver, times(2)).onPropertyChanged(mModel, PropertyKey.HEIGHT);
+        assertThat(mModel.getHeight(), is(234));
+    }
+
+    @Test
     public void testModelNotifiesChangesForNewSheet() {
         mModel.addObserver(mMockPropertyObserver);
         mModel.getTabList().addObserver(mTabListObserver);

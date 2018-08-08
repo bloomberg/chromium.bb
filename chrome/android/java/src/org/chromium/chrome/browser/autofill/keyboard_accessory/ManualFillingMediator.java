@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import android.support.annotation.Nullable;
+import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -199,9 +200,12 @@ class ManualFillingMediator
     @Override
     public void onOpenAccessorySheet() {
         assert mActivity != null : "ManualFillingMediator needs initialization.";
-        UiUtils.hideKeyboard(mActivity.getCurrentFocus());
-        if (mPopup != null && mPopup.isShowing()) {
-            mPopup.dismiss();
+        if (mPopup != null && mPopup.isShowing()) mPopup.dismiss();
+        // If there is a keyboard, update the accessory sheet's height and hide the keyboard.
+        View focusedView = mActivity.getCurrentFocus();
+        if (focusedView != null && UiUtils.isKeyboardShowing(mActivity, focusedView)) {
+            mAccessorySheet.setHeight(calculateAccessorySheetHeight(focusedView.getRootView()));
+            UiUtils.hideKeyboard(focusedView);
         }
         mAccessorySheet.show();
     }
@@ -239,6 +243,16 @@ class ManualFillingMediator
     private void clearTabs() {
         mKeyboardAccessory.setTabs(new KeyboardAccessoryData.Tab[0]);
         mAccessorySheet.setTabs(new KeyboardAccessoryData.Tab[0]);
+    }
+
+    private int calculateAccessorySheetHeight(View rootView) {
+        int accessoryHeight = mActivity.getResources().getDimensionPixelSize(
+                org.chromium.chrome.R.dimen.keyboard_accessory_height);
+        int accessorySheetSuggestionHeight = mActivity.getResources().getDimensionPixelSize(
+                org.chromium.chrome.R.dimen.keyboard_accessory_suggestion_height);
+        // Ensure that the minimum height is always sufficient to display the bar and a suggestion.
+        return Math.max(accessoryHeight + accessorySheetSuggestionHeight,
+                UiUtils.calculateKeyboardHeight(mActivity, rootView) + accessoryHeight);
     }
 
     @VisibleForTesting
