@@ -23,15 +23,13 @@
     case ConsentBumpScreenUnifiedConsent:
       [self.consumer setPrimaryButtonTitle:l10n_util::GetNSString(
                                                IDS_IOS_CONSENT_BUMP_IM_IN)];
-      [self.consumer setSecondaryButtonTitle:l10n_util::GetNSString(
-                                                 IDS_IOS_CONSENT_BUMP_MORE)];
+      [self.consumer showMoreOptionsButton:YES];
       break;
 
     case ConsentBumpScreenPersonalization:
       [self.consumer
           setPrimaryButtonTitle:l10n_util::GetNSString(IDS_ACCNAME_OK)];
-      [self.consumer
-          setSecondaryButtonTitle:l10n_util::GetNSString(IDS_ACCNAME_BACK)];
+      [self.consumer showMoreOptionsButton:NO];
       [self consumerCanProceed];
       break;
   }
