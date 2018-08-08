@@ -253,6 +253,7 @@ void AppListPresenterImpl::ScheduleAnimation() {
   gfx::Transform transform;
   transform.Translate(-offset.x(), -offset.y());
   layer->SetTransform(transform);
+  is_animating_to_close_ = true;
 
   {
     ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
@@ -318,10 +319,12 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
 // AppListPresenterImpl, ui::ImplicitAnimationObserver implementation:
 
 void AppListPresenterImpl::OnImplicitAnimationsCompleted() {
-  if (is_visible_)
+  if (is_visible_) {
     view_->GetWidget()->Activate();
-  else
+  } else {
     view_->GetWidget()->Close();
+    is_animating_to_close_ = false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

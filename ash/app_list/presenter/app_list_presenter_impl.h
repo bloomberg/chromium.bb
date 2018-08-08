@@ -84,6 +84,8 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // Passes a MouseWheelEvent from the shelf to the AppListView.
   void ProcessMouseWheelOffset(int y_scroll_offset);
 
+  bool is_animating_to_close() const { return is_animating_to_close_; }
+
  private:
   // Sets the app list view and attempts to show it.
   void SetView(AppListView* view);
@@ -150,6 +152,9 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // The last visibility change and its display id.
   bool last_visible_ = false;
   int64_t last_display_id_ = display::kInvalidDisplayId;
+
+  // True if app list is running close animation.
+  bool is_animating_to_close_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterImpl);
 };

@@ -10,6 +10,7 @@
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/search_box_view.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -1489,6 +1490,84 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, WallpaperContextMenu) {
   generator->PressLeftButton();
   GetAppListTestHelper()->WaitUntilIdle();
   EXPECT_FALSE(root_window_controller->IsContextMenuShown());
+}
+
+// Tests app list visibility when switching to tablet mode during dragging from
+// shelf.
+TEST_F(AppListPresenterDelegateHomeLauncherTest,
+       SwitchToTabletModeDuringDraggingFromShelf) {
+  UpdateDisplay("1080x900");
+  GetAppListTestHelper()->CheckVisibility(false);
+
+  // Drag from the shelf to show the app list.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  const int x = 540;
+  const int closed_y = 890;
+  const int fullscreen_y = 0;
+  generator->MoveTouch(gfx::Point(x, closed_y));
+  generator->PressTouch();
+  generator->MoveTouch(gfx::Point(x, fullscreen_y));
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  // Drag to shelf to close app list.
+  generator->MoveTouch(gfx::Point(x, closed_y));
+  generator->ReleaseTouch();
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
+
+  // Drag from the shelf to show the app list.
+  generator->MoveTouch(gfx::Point(x, closed_y));
+  generator->PressTouch();
+  generator->MoveTouch(gfx::Point(x, fullscreen_y));
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  // Switch to tablet mode.
+  EnableTabletMode(true);
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  // Drag to shelf to try to close app list.
+  generator->MoveTouch(gfx::Point(x, closed_y));
+  generator->ReleaseTouch();
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+}
+
+// Tests app list visibility when switching to tablet mode during dragging to
+// close app list.
+TEST_F(AppListPresenterDelegateHomeLauncherTest,
+       SwitchToTabletModeDuringDraggingToClose) {
+  UpdateDisplay("1080x900");
+
+  // Open app list.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  // Drag to shelf to close app list.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  const int x = 540;
+  const int peeking_height =
+      900 - app_list::AppListConfig::instance().peeking_app_list_height();
+  const int closed_y = 890;
+  generator->MoveTouch(gfx::Point(x, peeking_height));
+  generator->PressTouch();
+  generator->MoveTouch(gfx::Point(x, closed_y));
+  generator->ReleaseTouch();
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
+
+  // Open app list.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  // Drag to shelf to close app list, meanwhile switch to tablet mode.
+  generator->MoveTouch(gfx::Point(x, peeking_height));
+  generator->PressTouch();
+  generator->MoveTouch(gfx::Point(x, peeking_height + 10));
+  EnableTabletMode(true);
+  generator->MoveTouch(gfx::Point(x, closed_y));
+  generator->ReleaseTouch();
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
 }
 
 }  // namespace ash

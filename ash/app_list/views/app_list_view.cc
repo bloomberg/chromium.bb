@@ -1024,7 +1024,8 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
       event->SetHandled();
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      if (is_side_shelf_)
+      // Avoid scrolling events for the app list in tablet mode.
+      if (is_side_shelf_ || IsHomeLauncherEnabledInTabletMode())
         return;
       SetIsInDrag(true);
       last_fling_velocity_ = event->details().scroll_y();
@@ -1034,7 +1035,8 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_END:
       if (!is_in_drag_)
         break;
-      if (is_side_shelf_)
+      // Avoid scrolling events for the app list in tablet mode.
+      if (is_side_shelf_ || IsHomeLauncherEnabledInTabletMode())
         return;
       SetIsInDrag(false);
       EndDrag(event->location());
@@ -1115,6 +1117,18 @@ void AppListView::OnTabletModeChanged(bool started) {
       return;
     }
 
+    if (is_in_drag_) {
+      SetIsInDrag(false);
+      DraggingLayout();
+    }
+
+    // Set fullscreen state. When current state is fullscreen, we still need to
+    // set it again because app list may be in dragging.
+    SetState(app_list_state_ == AppListViewState::HALF ||
+                     app_list_state_ == AppListViewState::FULLSCREEN_SEARCH
+                 ? AppListViewState::FULLSCREEN_SEARCH
+                 : AppListViewState::FULLSCREEN_ALL_APPS);
+
     // Put app list window in corresponding container based on whether the
     // tablet mode is enabled.
     aura::Window* window = GetWidget()->GetNativeWindow();
@@ -1131,6 +1145,8 @@ void AppListView::OnTabletModeChanged(bool started) {
     // Update background blur.
     if (is_background_blur_enabled_)
       app_list_background_shield_->layer()->SetBackgroundBlur(0);
+
+    return;
   }
 
   if (is_tablet_mode_ && !is_fullscreen()) {
