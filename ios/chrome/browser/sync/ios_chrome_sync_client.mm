@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
@@ -18,6 +19,7 @@
 #include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -158,11 +160,18 @@ IOSChromeSyncClient::~IOSChromeSyncClient() {}
 void IOSChromeSyncClient::Initialize() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
-  web_data_service_ =
+  profile_web_data_service_ =
       ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
           browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
-  db_thread_ =
-      web_data_service_ ? web_data_service_->GetDBTaskRunner() : nullptr;
+  account_web_data_service_ =
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableAccountWalletStorage)
+          ? ios::WebDataServiceFactory::GetAutofillWebDataForAccount(
+                browser_state_, ServiceAccessType::IMPLICIT_ACCESS)
+          : nullptr;
+  db_thread_ = profile_web_data_service_
+                   ? profile_web_data_service_->GetDBTaskRunner()
+                   : nullptr;
   password_store_ = IOSChromePasswordStoreFactory::GetForBrowserState(
       browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
 
@@ -173,7 +182,7 @@ void IOSChromeSyncClient::Initialize() {
         ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
         prefs::kSavingBrowserHistoryDisabled,
         web::WebThread::GetTaskRunnerForThread(web::WebThread::UI), db_thread_,
-        web_data_service_, password_store_));
+        profile_web_data_service_, account_web_data_service_, password_store_));
   }
 }
 
@@ -277,19 +286,19 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     case syncer::AUTOFILL_PROFILE:
     case syncer::AUTOFILL_WALLET_DATA:
     case syncer::AUTOFILL_WALLET_METADATA: {
-      if (!web_data_service_)
+      if (!profile_web_data_service_)
         return base::WeakPtr<syncer::SyncableService>();
       if (type == syncer::AUTOFILL_PROFILE) {
         return autofill::AutofillProfileSyncableService::FromWebDataService(
-                   web_data_service_.get())
+                   profile_web_data_service_.get())
             ->AsWeakPtr();
       } else if (type == syncer::AUTOFILL_WALLET_METADATA) {
         return autofill::AutofillWalletMetadataSyncableService::
-            FromWebDataService(web_data_service_.get())
+            FromWebDataService(profile_web_data_service_.get())
                 ->AsWeakPtr();
       }
       return autofill::AutofillWalletSyncableService::FromWebDataService(
-                 web_data_service_.get())
+                 profile_web_data_service_.get())
           ->AsWeakPtr();
     }
     case syncer::HISTORY_DELETE_DIRECTIVES: {
@@ -342,32 +351,6 @@ IOSChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->change_processor()
           ->GetControllerDelegate();
     }
-    case syncer::AUTOFILL:
-      return autofill::AutocompleteSyncBridge::FromWebDataService(
-                 web_data_service_.get())
-          ->change_processor()
-          ->GetControllerDelegate();
-    case syncer::AUTOFILL_PROFILE:
-      return autofill::AutofillProfileSyncBridge::FromWebDataService(
-                 web_data_service_.get())
-          ->change_processor()
-          ->GetControllerDelegate();
-    case syncer::AUTOFILL_WALLET_DATA: {
-      return autofill::AutofillWalletSyncBridge::FromWebDataService(
-                 web_data_service_.get())
-          ->change_processor()
-          ->GetControllerDelegate();
-    }
-    case syncer::AUTOFILL_WALLET_METADATA: {
-      return autofill::AutofillWalletMetadataSyncBridge::FromWebDataService(
-                 web_data_service_.get())
-          ->change_processor()
-          ->GetControllerDelegate();
-    }
-    case syncer::TYPED_URLS:
-      // TypedURLModelTypeController doesn't exercise this function.
-      NOTREACHED();
-      return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
     case syncer::USER_CONSENTS:
       return ConsentAuditorFactory::GetForBrowserState(browser_state_)
           ->GetControllerDelegate();
@@ -379,6 +362,17 @@ IOSChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
     case syncer::SESSIONS:
       return ProfileSyncServiceFactory::GetForBrowserState(browser_state_)
           ->GetSessionSyncControllerDelegate();
+
+    // We don't exercise this function for certain datatypes, because their
+    // controllers get the delegate elsewhere.
+    case syncer::AUTOFILL:
+    case syncer::AUTOFILL_PROFILE:
+    case syncer::AUTOFILL_WALLET_DATA:
+    case syncer::AUTOFILL_WALLET_METADATA:
+    case syncer::TYPED_URLS:
+      NOTREACHED();
+      return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
+
     default:
       NOTREACHED();
       return base::WeakPtr<syncer::ModelTypeControllerDelegate>();

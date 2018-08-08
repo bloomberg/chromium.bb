@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/sync_auth_manager.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
@@ -1589,8 +1590,17 @@ void ProfileSyncService::ConfigureDataTypeManager(
   // is supported.
   if (!IsSyncFeatureEnabled()) {
     DCHECK(IsStandaloneTransportEnabled());
-    const syncer::ModelTypeSet allowed_types = {syncer::USER_CONSENTS};
+    syncer::ModelTypeSet allowed_types = {syncer::USER_CONSENTS};
+
+    if (base::FeatureList::IsEnabled(
+            autofill::features::kAutofillEnableAccountWalletStorage) &&
+        base::FeatureList::IsEnabled(switches::kSyncUSSAutofillWalletData)) {
+      allowed_types.Put(syncer::AUTOFILL_WALLET_DATA);
+    }
+
     types = Intersection(types, allowed_types);
+    configure_context.storage_option =
+        syncer::ConfigureContext::STORAGE_IN_MEMORY;
   }
   data_type_manager_->Configure(types, configure_context);
 }

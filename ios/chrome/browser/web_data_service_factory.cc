@@ -53,6 +53,16 @@ WebDataServiceFactory::GetAutofillWebDataForBrowserState(
 }
 
 // static
+scoped_refptr<autofill::AutofillWebDataService>
+WebDataServiceFactory::GetAutofillWebDataForAccount(
+    ios::ChromeBrowserState* browser_state,
+    ServiceAccessType access_type) {
+  WebDataServiceWrapper* wrapper =
+      GetForBrowserState(browser_state, access_type);
+  return wrapper ? wrapper->GetAccountAutofillWebData() : nullptr;
+}
+
+// static
 scoped_refptr<KeywordWebDataService>
 WebDataServiceFactory::GetKeywordWebDataForBrowserState(
     ios::ChromeBrowserState* browser_state,

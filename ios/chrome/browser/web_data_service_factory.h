@@ -46,6 +46,12 @@ class WebDataServiceFactory : public BrowserStateKeyedServiceFactory {
   GetAutofillWebDataForBrowserState(ios::ChromeBrowserState* browser_state,
                                     ServiceAccessType access_type);
 
+  // Returns the account-scoped AutofillWebDataService associated with the
+  // |browser_state|.
+  static scoped_refptr<autofill::AutofillWebDataService>
+  GetAutofillWebDataForAccount(ios::ChromeBrowserState* browser_state,
+                               ServiceAccessType access_type);
+
   // Returns the KeywordWebDataService associated with |browser_state|.
   static scoped_refptr<KeywordWebDataService> GetKeywordWebDataForBrowserState(
       ios::ChromeBrowserState* browser_state,

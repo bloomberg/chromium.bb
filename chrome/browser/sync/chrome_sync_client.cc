@@ -255,7 +255,8 @@ void ChromeSyncClient::Initialize() {
         prefs::kSavingBrowserHistoryDisabled,
         content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::UI),
-        web_data_service_thread_, profile_web_data_service_, password_store_);
+        web_data_service_thread_, profile_web_data_service_,
+        account_web_data_service_, password_store_);
   }
 }
 
@@ -589,38 +590,6 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
       // Reading List is only supported on iOS at the moment.
       NOTREACHED();
       return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
-    case syncer::AUTOFILL:
-      return autofill::AutocompleteSyncBridge::FromWebDataService(
-                 profile_web_data_service_.get())
-          ->change_processor()
-          ->GetControllerDelegate();
-    case syncer::AUTOFILL_PROFILE:
-      return autofill::AutofillProfileSyncBridge::FromWebDataService(
-                 profile_web_data_service_.get())
-          ->change_processor()
-          ->GetControllerDelegate();
-    case syncer::AUTOFILL_WALLET_DATA: {
-      // TODO(feuunk): This doesn't allow switching which database to use at
-      // runtime. This should be fixed as part of the USS migration for
-      // payments.
-      auto service = account_web_data_service_ ? account_web_data_service_
-                                               : profile_web_data_service_;
-      return autofill::AutofillWalletSyncBridge::FromWebDataService(
-                 service.get())
-          ->change_processor()
-          ->GetControllerDelegate();
-    }
-    case syncer::AUTOFILL_WALLET_METADATA: {
-      // TODO(feuunk): This doesn't allow switching which database to use at
-      // runtime. This should be fixed as part of the USS migration for
-      // payments.
-      auto service = account_web_data_service_ ? account_web_data_service_
-                                               : profile_web_data_service_;
-      return autofill::AutofillWalletMetadataSyncBridge::FromWebDataService(
-                 service.get())
-          ->change_processor()
-          ->GetControllerDelegate();
-    }
 #if defined(OS_CHROMEOS)
     case syncer::PRINTERS:
       return chromeos::SyncedPrintersManagerFactory::GetForBrowserContext(
@@ -629,10 +598,6 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->change_processor()
           ->GetControllerDelegate();
 #endif  // defined(OS_CHROMEOS)
-    case syncer::TYPED_URLS:
-      // TypedURLModelTypeController doesn't exercise this function.
-      NOTREACHED();
-      return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
     case syncer::USER_CONSENTS:
       return ConsentAuditorFactory::GetForProfile(profile_)
           ->GetControllerDelegate();
@@ -649,6 +614,17 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
       return BookmarkSyncServiceFactory::GetForProfile(profile_)
           ->GetBookmarkSyncControllerDelegate();
     }
+
+    // We don't exercise this function for certain datatypes, because their
+    // controllers get the delegate elsewhere.
+    case syncer::AUTOFILL:
+    case syncer::AUTOFILL_PROFILE:
+    case syncer::AUTOFILL_WALLET_DATA:
+    case syncer::AUTOFILL_WALLET_METADATA:
+    case syncer::TYPED_URLS:
+      NOTREACHED();
+      return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
+
     default:
       NOTREACHED();
       return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
