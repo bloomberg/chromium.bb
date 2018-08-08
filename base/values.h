@@ -96,6 +96,10 @@ class BASE_EXPORT Value {
     // Note: Do not add more types. See the file-level comment above for why.
   };
 
+  // Magic IsAlive signature to debug double frees.
+  // TODO(crbug.com/859477): Remove once root cause is found.
+  static constexpr uint32_t kMagicIsAlive = 0x15272f19;
+
   // For situations where you want to keep ownership of your buffer, this
   // factory method creates a new BinaryValue by copying the contents of the
   // buffer that's passed in.
@@ -382,6 +386,10 @@ class BASE_EXPORT Value {
  private:
   void InternalMoveConstructFrom(Value&& that);
   void InternalCleanup();
+
+  // IsAlive member to debug double frees.
+  // TODO(crbug.com/859477): Remove once root cause is found.
+  uint32_t is_alive_ = kMagicIsAlive;
 
   DISALLOW_COPY_AND_ASSIGN(Value);
 };

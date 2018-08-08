@@ -76,6 +76,8 @@ std::unique_ptr<Value> CopyWithoutEmptyChildren(const Value& node) {
 
 }  // namespace
 
+constexpr uint32_t Value::kMagicIsAlive;
+
 // static
 std::unique_ptr<Value> Value::CreateWithCopiedBuffer(const char* buffer,
                                                      size_t size) {
@@ -215,6 +217,7 @@ Value Value::Clone() const {
 
 Value::~Value() {
   InternalCleanup();
+  is_alive_ = 0;
 }
 
 // static
@@ -701,6 +704,8 @@ void Value::InternalMoveConstructFrom(Value&& that) {
 }
 
 void Value::InternalCleanup() {
+  CHECK_EQ(is_alive_, kMagicIsAlive);
+
   switch (type_) {
     case Type::NONE:
     case Type::BOOLEAN:
