@@ -871,19 +871,13 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonWindowLeak) {
   EXPECT_EQ(browser2, test_browser);
 }
 
-// TODO(crbug.com/822071): Flaky on Windows 7 (dbg) bot.
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_SingletonIncognitoLeak DISABLED_SingletonIncognitoLeak
-#else
-#define MAYBE_SingletonIncognitoLeak SingletonIncognitoLeak
-#endif
 // Tests that a disposition of SINGLETON_TAB cannot see across anonymity,
 // except for certain non-incognito affinity URLs (e.g. settings).
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_SingletonIncognitoLeak) {
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonIncognitoLeak) {
   Browser* orig_browser;
 
   // Navigate to a site.
-  orig_browser = NavigateHelper(GURL("http://maps.google.com/"), browser(),
+  orig_browser = NavigateHelper(GURL("chrome://version"), browser(),
                                 WindowOpenDisposition::CURRENT_TAB, true);
 
   // Open about for (not) finding later.
@@ -892,7 +886,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_SingletonIncognitoLeak) {
 
   // Also open settings for finding later.
   NavigateHelper(GURL("chrome://settings"), orig_browser,
-                 WindowOpenDisposition::NEW_FOREGROUND_TAB, true);
+                 WindowOpenDisposition::NEW_FOREGROUND_TAB, false);
 
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
 
@@ -928,24 +922,18 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_SingletonIncognitoLeak) {
   EXPECT_EQ(browser(), test_browser);
 }
 
-// TODO(crbug.com/822071): Flaky on Windows 7 (dbg) bot.
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_SwitchToTabIncognitoLeak DISABLED_SwitchToTabIncognitoLeak
-#else
-#define MAYBE_SwitchToTabIncognitoLeak SwitchToTabIncognitoLeak
-#endif
 // Tests that a disposition of SWITCH_TAB cannot see across anonymity,
 // except for certain non-incognito affinity URLs (e.g. settings).
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_SwitchToTabIncognitoLeak) {
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SwitchToTabIncognitoLeak) {
   Browser* orig_browser;
 
   // Navigate to a site.
-  orig_browser = NavigateHelper(GURL("http://maps.google.com/"), browser(),
+  orig_browser = NavigateHelper(GURL("chrome://version"), browser(),
                                 WindowOpenDisposition::CURRENT_TAB, true);
 
   // Also open settings for finding later.
   NavigateHelper(GURL("chrome://settings"), orig_browser,
-                 WindowOpenDisposition::NEW_FOREGROUND_TAB, true);
+                 WindowOpenDisposition::NEW_FOREGROUND_TAB, false);
 
   // Also open about for searching too.
   NavigateHelper(GURL("chrome://about"), orig_browser,
