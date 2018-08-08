@@ -9,8 +9,8 @@
 #include "base/run_loop.h"
 #include "services/device/public/cpp/test/fake_sensor_and_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/device_orientation/web_device_orientation_listener.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/renderer/core/frame/platform_event_controller.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_data.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_event_pump.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -25,18 +25,25 @@ namespace blink {
 
 using device::FakeSensorProvider;
 
-class MockDeviceOrientationListener
-    : public blink::WebDeviceOrientationListener {
- public:
-  MockDeviceOrientationListener() : did_change_device_orientation_(false) {
-    data_ = DeviceOrientationData::Create();
-  }
-  ~MockDeviceOrientationListener() override {}
+class MockDeviceOrientationController final
+    : public GarbageCollectedFinalized<MockDeviceOrientationController>,
+      public PlatformEventController {
+  USING_GARBAGE_COLLECTED_MIXIN(MockDeviceOrientationController);
 
-  void DidChangeDeviceOrientation(DeviceOrientationData* data) override {
-    data_ = data;
-    did_change_device_orientation_ = true;
+ public:
+  explicit MockDeviceOrientationController(
+      DeviceOrientationEventPump* orientation_pump)
+      : PlatformEventController(nullptr),
+        did_change_device_orientation_(false),
+        orientation_pump_(orientation_pump) {}
+  ~MockDeviceOrientationController() override {}
+
+  void Trace(Visitor* visitor) override {
+    PlatformEventController::Trace(visitor);
+    visitor->Trace(orientation_pump_);
   }
+
+  void DidUpdateData() override { did_change_device_orientation_ = true; }
 
   bool did_change_device_orientation() const {
     return did_change_device_orientation_;
@@ -44,25 +51,32 @@ class MockDeviceOrientationListener
   void set_did_change_device_orientation(bool value) {
     did_change_device_orientation_ = value;
   }
-  const DeviceOrientationData* data() const { return data_.Get(); }
+
+  void RegisterWithDispatcher() override {
+    orientation_pump_->AddController(this);
+  }
+
+  bool HasLastData() override {
+    return orientation_pump_->LatestDeviceOrientationData();
+  }
+
+  void UnregisterWithDispatcher() override {
+    orientation_pump_->RemoveController(this);
+  }
+
+  const DeviceOrientationData* data() {
+    return orientation_pump_->LatestDeviceOrientationData();
+  };
+
+  DeviceOrientationEventPump* orientation_pump() {
+    return orientation_pump_.Get();
+  }
 
  private:
   bool did_change_device_orientation_;
-  Persistent<DeviceOrientationData> data_;
+  Member<DeviceOrientationEventPump> orientation_pump_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockDeviceOrientationListener);
-};
-
-class DeviceOrientationEventPumpForTesting : public DeviceOrientationEventPump {
- public:
-  explicit DeviceOrientationEventPumpForTesting(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      bool absolute)
-      : DeviceOrientationEventPump(task_runner, absolute) {}
-  ~DeviceOrientationEventPumpForTesting() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeviceOrientationEventPumpForTesting);
+  DISALLOW_COPY_AND_ASSIGN(MockDeviceOrientationController);
 };
 
 class DeviceOrientationEventPumpTest : public testing::Test {
@@ -71,95 +85,92 @@ class DeviceOrientationEventPumpTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    orientation_pump_.reset(new DeviceOrientationEventPumpForTesting(
-        base::ThreadTaskRunnerHandle::Get(), false /* absolute */));
     device::mojom::SensorProviderPtrInfo sensor_provider_ptr_info;
     sensor_provider_.Bind(mojo::MakeRequest(&sensor_provider_ptr_info));
-    orientation_pump_->SetSensorProviderForTesting(
+    auto* orientation_pump = new DeviceOrientationEventPump(
+        base::ThreadTaskRunnerHandle::Get(), false /* absolute */);
+    orientation_pump->SetSensorProviderForTesting(
         device::mojom::blink::SensorProviderPtr(
             device::mojom::blink::SensorProviderPtrInfo(
                 sensor_provider_ptr_info.PassHandle(),
                 device::mojom::SensorProvider::Version_)));
 
-    listener_.reset(new MockDeviceOrientationListener);
+    controller_ = new MockDeviceOrientationController(orientation_pump);
 
     ExpectRelativeOrientationSensorStateToBe(
         DeviceOrientationEventPump::SensorState::NOT_INITIALIZED);
     ExpectAbsoluteOrientationSensorStateToBe(
         DeviceOrientationEventPump::SensorState::NOT_INITIALIZED);
     EXPECT_EQ(DeviceOrientationEventPump::PumpState::STOPPED,
-              orientation_pump()->GetPumpStateForTesting());
+              controller_->orientation_pump()->GetPumpStateForTesting());
   }
 
-  void FireEvent() { orientation_pump_->FireEvent(nullptr); }
+  void FireEvent() { controller_->orientation_pump()->FireEvent(nullptr); }
 
   void ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState expected_sensor_state) {
     EXPECT_EQ(expected_sensor_state,
-              orientation_pump_->relative_orientation_sensor_.sensor_state);
+              controller_->orientation_pump()
+                  ->relative_orientation_sensor_.sensor_state);
   }
 
   void ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState expected_sensor_state) {
     EXPECT_EQ(expected_sensor_state,
-              orientation_pump_->absolute_orientation_sensor_.sensor_state);
+              controller_->orientation_pump()
+                  ->absolute_orientation_sensor_.sensor_state);
   }
 
-  DeviceOrientationEventPump* orientation_pump() {
-    return orientation_pump_.get();
-  }
-
-  MockDeviceOrientationListener* listener() { return listener_.get(); }
+  MockDeviceOrientationController* controller() { return controller_.Get(); }
 
   FakeSensorProvider* sensor_provider() { return &sensor_provider_; }
 
  private:
-  std::unique_ptr<DeviceOrientationEventPumpForTesting> orientation_pump_;
-  std::unique_ptr<MockDeviceOrientationListener> listener_;
+  Persistent<MockDeviceOrientationController> controller_;
   FakeSensorProvider sensor_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOrientationEventPumpTest);
 };
 
 TEST_F(DeviceOrientationEventPumpTest, MultipleStartAndStopWithWait) {
-  orientation_pump()->Start(nullptr, listener());
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::ACTIVE);
   EXPECT_EQ(DeviceOrientationEventPump::PumpState::RUNNING,
-            orientation_pump()->GetPumpStateForTesting());
+            controller()->orientation_pump()->GetPumpStateForTesting());
 
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::SUSPENDED);
   EXPECT_EQ(DeviceOrientationEventPump::PumpState::STOPPED,
-            orientation_pump()->GetPumpStateForTesting());
+            controller()->orientation_pump()->GetPumpStateForTesting());
 
-  orientation_pump()->Start(nullptr, listener());
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::ACTIVE);
   EXPECT_EQ(DeviceOrientationEventPump::PumpState::RUNNING,
-            orientation_pump()->GetPumpStateForTesting());
+            controller()->orientation_pump()->GetPumpStateForTesting());
 
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::SUSPENDED);
   EXPECT_EQ(DeviceOrientationEventPump::PumpState::STOPPED,
-            orientation_pump()->GetPumpStateForTesting());
+            controller()->orientation_pump()->GetPumpStateForTesting());
 }
 
 TEST_F(DeviceOrientationEventPumpTest,
        MultipleStartAndStopWithWaitWithSensorFallback) {
   sensor_provider()->set_relative_orientation_sensor_is_available(false);
 
-  orientation_pump()->Start(nullptr, listener());
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -167,9 +178,9 @@ TEST_F(DeviceOrientationEventPumpTest,
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::ACTIVE);
   EXPECT_EQ(DeviceOrientationEventPump::PumpState::RUNNING,
-            orientation_pump()->GetPumpStateForTesting());
+            controller()->orientation_pump()->GetPumpStateForTesting());
 
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -177,9 +188,9 @@ TEST_F(DeviceOrientationEventPumpTest,
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::SUSPENDED);
   EXPECT_EQ(DeviceOrientationEventPump::PumpState::STOPPED,
-            orientation_pump()->GetPumpStateForTesting());
+            controller()->orientation_pump()->GetPumpStateForTesting());
 
-  orientation_pump()->Start(nullptr, listener());
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -187,9 +198,9 @@ TEST_F(DeviceOrientationEventPumpTest,
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::ACTIVE);
   EXPECT_EQ(DeviceOrientationEventPump::PumpState::RUNNING,
-            orientation_pump()->GetPumpStateForTesting());
+            controller()->orientation_pump()->GetPumpStateForTesting());
 
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -197,11 +208,11 @@ TEST_F(DeviceOrientationEventPumpTest,
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::SUSPENDED);
   EXPECT_EQ(DeviceOrientationEventPump::PumpState::STOPPED,
-            orientation_pump()->GetPumpStateForTesting());
+            controller()->orientation_pump()->GetPumpStateForTesting());
 }
 
 TEST_F(DeviceOrientationEventPumpTest, CallStop) {
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -211,7 +222,7 @@ TEST_F(DeviceOrientationEventPumpTest, CallStop) {
 TEST_F(DeviceOrientationEventPumpTest, CallStopWithSensorFallback) {
   sensor_provider()->set_relative_orientation_sensor_is_available(false);
 
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -221,8 +232,8 @@ TEST_F(DeviceOrientationEventPumpTest, CallStopWithSensorFallback) {
 }
 
 TEST_F(DeviceOrientationEventPumpTest, CallStartAndStop) {
-  orientation_pump()->Start(nullptr, listener());
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Start(nullptr);
+  controller()->orientation_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -232,8 +243,8 @@ TEST_F(DeviceOrientationEventPumpTest, CallStartAndStop) {
 TEST_F(DeviceOrientationEventPumpTest, CallStartAndStopWithSensorFallback) {
   sensor_provider()->set_relative_orientation_sensor_is_available(false);
 
-  orientation_pump()->Start(nullptr, listener());
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Start(nullptr);
+  controller()->orientation_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -243,9 +254,9 @@ TEST_F(DeviceOrientationEventPumpTest, CallStartAndStopWithSensorFallback) {
 }
 
 TEST_F(DeviceOrientationEventPumpTest, CallStartMultipleTimes) {
-  orientation_pump()->Start(nullptr, listener());
-  orientation_pump()->Start(nullptr, listener());
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Start(nullptr);
+  controller()->orientation_pump()->Start(nullptr);
+  controller()->orientation_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -256,9 +267,9 @@ TEST_F(DeviceOrientationEventPumpTest,
        CallStartMultipleTimesWithSensorFallback) {
   sensor_provider()->set_relative_orientation_sensor_is_available(false);
 
-  orientation_pump()->Start(nullptr, listener());
-  orientation_pump()->Start(nullptr, listener());
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Start(nullptr);
+  controller()->orientation_pump()->Start(nullptr);
+  controller()->orientation_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -268,9 +279,9 @@ TEST_F(DeviceOrientationEventPumpTest,
 }
 
 TEST_F(DeviceOrientationEventPumpTest, CallStopMultipleTimes) {
-  orientation_pump()->Start(nullptr, listener());
-  orientation_pump()->Stop();
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Start(nullptr);
+  controller()->orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -281,9 +292,9 @@ TEST_F(DeviceOrientationEventPumpTest,
        CallStopMultipleTimesWithSensorFallback) {
   sensor_provider()->set_relative_orientation_sensor_is_available(false);
 
-  orientation_pump()->Start(nullptr, listener());
-  orientation_pump()->Stop();
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Start(nullptr);
+  controller()->orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -294,15 +305,15 @@ TEST_F(DeviceOrientationEventPumpTest,
 
 // Test a sequence of Start(), Stop(), Start() calls only bind sensor once.
 TEST_F(DeviceOrientationEventPumpTest, SensorOnlyBindOnce) {
-  orientation_pump()->Start(nullptr, listener());
-  orientation_pump()->Stop();
-  orientation_pump()->Start(nullptr, listener());
+  controller()->orientation_pump()->Start(nullptr);
+  controller()->orientation_pump()->Stop();
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::ACTIVE);
 
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
 
   ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::SUSPENDED);
@@ -313,9 +324,9 @@ TEST_F(DeviceOrientationEventPumpTest, SensorOnlyBindOnce) {
 TEST_F(DeviceOrientationEventPumpTest, SensorOnlyBindOnceWithSensorFallback) {
   sensor_provider()->set_relative_orientation_sensor_is_available(false);
 
-  orientation_pump()->Start(nullptr, listener());
-  orientation_pump()->Stop();
-  orientation_pump()->Start(nullptr, listener());
+  controller()->orientation_pump()->Start(nullptr);
+  controller()->orientation_pump()->Stop();
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -323,7 +334,7 @@ TEST_F(DeviceOrientationEventPumpTest, SensorOnlyBindOnceWithSensorFallback) {
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::ACTIVE);
 
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
 
   ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::NOT_INITIALIZED);
@@ -332,7 +343,8 @@ TEST_F(DeviceOrientationEventPumpTest, SensorOnlyBindOnceWithSensorFallback) {
 }
 
 TEST_F(DeviceOrientationEventPumpTest, SensorIsActive) {
-  orientation_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -343,8 +355,8 @@ TEST_F(DeviceOrientationEventPumpTest, SensorIsActive) {
 
   FireEvent();
 
-  const DeviceOrientationData* received_data = listener()->data();
-  EXPECT_TRUE(listener()->did_change_device_orientation());
+  const DeviceOrientationData* received_data = controller()->data();
+  EXPECT_TRUE(controller()->did_change_device_orientation());
 
   // DeviceOrientation Event provides relative orientation data when it is
   // available.
@@ -356,7 +368,7 @@ TEST_F(DeviceOrientationEventPumpTest, SensorIsActive) {
   EXPECT_TRUE(received_data->CanProvideGamma());
   EXPECT_FALSE(received_data->Absolute());
 
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
 
   ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::SUSPENDED);
@@ -365,7 +377,8 @@ TEST_F(DeviceOrientationEventPumpTest, SensorIsActive) {
 TEST_F(DeviceOrientationEventPumpTest, SensorIsActiveWithSensorFallback) {
   sensor_provider()->set_relative_orientation_sensor_is_available(false);
 
-  orientation_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -378,8 +391,8 @@ TEST_F(DeviceOrientationEventPumpTest, SensorIsActiveWithSensorFallback) {
 
   FireEvent();
 
-  const DeviceOrientationData* received_data = listener()->data();
-  EXPECT_TRUE(listener()->did_change_device_orientation());
+  const DeviceOrientationData* received_data = controller()->data();
+  EXPECT_TRUE(controller()->did_change_device_orientation());
 
   // DeviceOrientation Event provides absolute orientation data when relative
   // orientation data is not available but absolute orientation data is
@@ -395,7 +408,7 @@ TEST_F(DeviceOrientationEventPumpTest, SensorIsActiveWithSensorFallback) {
   // fallback to provide absolute orientation data.
   EXPECT_TRUE(received_data->Absolute());
 
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
 
   ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::NOT_INITIALIZED);
@@ -404,7 +417,8 @@ TEST_F(DeviceOrientationEventPumpTest, SensorIsActiveWithSensorFallback) {
 }
 
 TEST_F(DeviceOrientationEventPumpTest, SomeSensorDataFieldsNotAvailable) {
-  orientation_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -415,8 +429,8 @@ TEST_F(DeviceOrientationEventPumpTest, SomeSensorDataFieldsNotAvailable) {
 
   FireEvent();
 
-  const DeviceOrientationData* received_data = listener()->data();
-  EXPECT_TRUE(listener()->did_change_device_orientation());
+  const DeviceOrientationData* received_data = controller()->data();
+  EXPECT_TRUE(controller()->did_change_device_orientation());
 
   EXPECT_FALSE(received_data->CanProvideAlpha());
   EXPECT_DOUBLE_EQ(2, received_data->Beta());
@@ -425,7 +439,7 @@ TEST_F(DeviceOrientationEventPumpTest, SomeSensorDataFieldsNotAvailable) {
   EXPECT_TRUE(received_data->CanProvideGamma());
   EXPECT_FALSE(received_data->Absolute());
 
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
 
   ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::SUSPENDED);
@@ -435,7 +449,8 @@ TEST_F(DeviceOrientationEventPumpTest,
        SomeSensorDataFieldsNotAvailableWithSensorFallback) {
   sensor_provider()->set_relative_orientation_sensor_is_available(false);
 
-  orientation_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -448,8 +463,8 @@ TEST_F(DeviceOrientationEventPumpTest,
 
   FireEvent();
 
-  const DeviceOrientationData* received_data = listener()->data();
-  EXPECT_TRUE(listener()->did_change_device_orientation());
+  const DeviceOrientationData* received_data = controller()->data();
+  EXPECT_TRUE(controller()->did_change_device_orientation());
 
   // DeviceOrientation Event provides absolute orientation data when relative
   // orientation data is not available but absolute orientation data is
@@ -463,7 +478,7 @@ TEST_F(DeviceOrientationEventPumpTest,
   // fallback to provide absolute orientation data.
   EXPECT_TRUE(received_data->Absolute());
 
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
 
   ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::NOT_INITIALIZED);
@@ -476,7 +491,8 @@ TEST_F(DeviceOrientationEventPumpTest, FireAllNullEvent) {
   sensor_provider()->set_relative_orientation_sensor_is_available(false);
   sensor_provider()->set_absolute_orientation_sensor_is_available(false);
 
-  orientation_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -486,15 +502,15 @@ TEST_F(DeviceOrientationEventPumpTest, FireAllNullEvent) {
 
   FireEvent();
 
-  const DeviceOrientationData* received_data = listener()->data();
-  EXPECT_TRUE(listener()->did_change_device_orientation());
+  const DeviceOrientationData* received_data = controller()->data();
+  EXPECT_TRUE(controller()->did_change_device_orientation());
 
   EXPECT_FALSE(received_data->CanProvideAlpha());
   EXPECT_FALSE(received_data->CanProvideBeta());
   EXPECT_FALSE(received_data->CanProvideGamma());
   EXPECT_FALSE(received_data->Absolute());
 
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
 
   ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::NOT_INITIALIZED);
@@ -504,7 +520,8 @@ TEST_F(DeviceOrientationEventPumpTest, FireAllNullEvent) {
 
 TEST_F(DeviceOrientationEventPumpTest,
        NotFireEventWhenSensorReadingTimeStampIsZero) {
-  orientation_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -512,9 +529,9 @@ TEST_F(DeviceOrientationEventPumpTest,
 
   FireEvent();
 
-  EXPECT_FALSE(listener()->did_change_device_orientation());
+  EXPECT_FALSE(controller()->did_change_device_orientation());
 
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
 
   ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::SUSPENDED);
@@ -524,7 +541,8 @@ TEST_F(DeviceOrientationEventPumpTest,
        NotFireEventWhenSensorReadingTimeStampIsZeroWithSensorFallback) {
   sensor_provider()->set_relative_orientation_sensor_is_available(false);
 
-  orientation_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -534,9 +552,9 @@ TEST_F(DeviceOrientationEventPumpTest,
 
   FireEvent();
 
-  EXPECT_FALSE(listener()->did_change_device_orientation());
+  EXPECT_FALSE(controller()->did_change_device_orientation());
 
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
 
   ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::NOT_INITIALIZED);
@@ -545,7 +563,8 @@ TEST_F(DeviceOrientationEventPumpTest,
 }
 
 TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
-  orientation_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -556,8 +575,8 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
 
   FireEvent();
 
-  const DeviceOrientationData* received_data = listener()->data();
-  EXPECT_TRUE(listener()->did_change_device_orientation());
+  const DeviceOrientationData* received_data = controller()->data();
+  EXPECT_TRUE(controller()->did_change_device_orientation());
 
   // DeviceOrientation Event provides relative orientation data when it is
   // available.
@@ -569,7 +588,7 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
   EXPECT_TRUE(received_data->CanProvideGamma());
   EXPECT_FALSE(received_data->Absolute());
 
-  listener()->set_did_change_device_orientation(false);
+  controller()->set_did_change_device_orientation(false);
 
   sensor_provider()->UpdateRelativeOrientationSensorData(
       1 + DeviceOrientationEventPump::kOrientationThreshold / 2.0 /* alpha */,
@@ -577,8 +596,8 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
 
   FireEvent();
 
-  received_data = listener()->data();
-  EXPECT_FALSE(listener()->did_change_device_orientation());
+  received_data = controller()->data();
+  EXPECT_FALSE(controller()->did_change_device_orientation());
 
   EXPECT_DOUBLE_EQ(1, received_data->Alpha());
   EXPECT_TRUE(received_data->CanProvideAlpha());
@@ -588,7 +607,7 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
   EXPECT_TRUE(received_data->CanProvideGamma());
   EXPECT_FALSE(received_data->Absolute());
 
-  listener()->set_did_change_device_orientation(false);
+  controller()->set_did_change_device_orientation(false);
 
   sensor_provider()->UpdateRelativeOrientationSensorData(
       1 + DeviceOrientationEventPump::kOrientationThreshold /* alpha */,
@@ -596,8 +615,8 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
 
   FireEvent();
 
-  received_data = listener()->data();
-  EXPECT_TRUE(listener()->did_change_device_orientation());
+  received_data = controller()->data();
+  EXPECT_TRUE(controller()->did_change_device_orientation());
 
   EXPECT_DOUBLE_EQ(1 + DeviceOrientationEventPump::kOrientationThreshold,
                    received_data->Alpha());
@@ -608,7 +627,7 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
   EXPECT_TRUE(received_data->CanProvideGamma());
   EXPECT_FALSE(received_data->Absolute());
 
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
 
   ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::SUSPENDED);
@@ -618,7 +637,8 @@ TEST_F(DeviceOrientationEventPumpTest,
        UpdateRespectsOrientationThresholdWithSensorFallback) {
   sensor_provider()->set_relative_orientation_sensor_is_available(false);
 
-  orientation_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectRelativeOrientationSensorStateToBe(
@@ -631,8 +651,8 @@ TEST_F(DeviceOrientationEventPumpTest,
 
   FireEvent();
 
-  const DeviceOrientationData* received_data = listener()->data();
-  EXPECT_TRUE(listener()->did_change_device_orientation());
+  const DeviceOrientationData* received_data = controller()->data();
+  EXPECT_TRUE(controller()->did_change_device_orientation());
 
   // DeviceOrientation Event provides absolute orientation data when relative
   // orientation data is not available but absolute orientation data is
@@ -647,7 +667,7 @@ TEST_F(DeviceOrientationEventPumpTest,
   // fallback to provide absolute orientation data.
   EXPECT_TRUE(received_data->Absolute());
 
-  listener()->set_did_change_device_orientation(false);
+  controller()->set_did_change_device_orientation(false);
 
   sensor_provider()->UpdateAbsoluteOrientationSensorData(
       4 /* alpha */,
@@ -656,8 +676,8 @@ TEST_F(DeviceOrientationEventPumpTest,
 
   FireEvent();
 
-  received_data = listener()->data();
-  EXPECT_FALSE(listener()->did_change_device_orientation());
+  received_data = controller()->data();
+  EXPECT_FALSE(controller()->did_change_device_orientation());
 
   EXPECT_DOUBLE_EQ(4, received_data->Alpha());
   EXPECT_TRUE(received_data->CanProvideAlpha());
@@ -667,7 +687,7 @@ TEST_F(DeviceOrientationEventPumpTest,
   EXPECT_TRUE(received_data->CanProvideGamma());
   EXPECT_TRUE(received_data->Absolute());
 
-  listener()->set_did_change_device_orientation(false);
+  controller()->set_did_change_device_orientation(false);
 
   sensor_provider()->UpdateAbsoluteOrientationSensorData(
       4 /* alpha */,
@@ -677,8 +697,8 @@ TEST_F(DeviceOrientationEventPumpTest,
 
   FireEvent();
 
-  received_data = listener()->data();
-  EXPECT_TRUE(listener()->did_change_device_orientation());
+  received_data = controller()->data();
+  EXPECT_TRUE(controller()->did_change_device_orientation());
 
   EXPECT_DOUBLE_EQ(4, received_data->Alpha());
   EXPECT_TRUE(received_data->CanProvideAlpha());
@@ -690,7 +710,7 @@ TEST_F(DeviceOrientationEventPumpTest,
   EXPECT_TRUE(received_data->CanProvideGamma());
   EXPECT_TRUE(received_data->Absolute());
 
-  orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
 
   ExpectRelativeOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::NOT_INITIALIZED);
@@ -704,85 +724,80 @@ class DeviceAbsoluteOrientationEventPumpTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    absolute_orientation_pump_.reset(new DeviceOrientationEventPumpForTesting(
-        base::ThreadTaskRunnerHandle::Get(), true /* absolute */));
     device::mojom::SensorProviderPtrInfo sensor_provider_ptr_info;
     sensor_provider_.Bind(mojo::MakeRequest(&sensor_provider_ptr_info));
-    absolute_orientation_pump_->SetSensorProviderForTesting(
+    auto* absolute_orientation_pump = new DeviceOrientationEventPump(
+        base::ThreadTaskRunnerHandle::Get(), true /* absolute */);
+    absolute_orientation_pump->SetSensorProviderForTesting(
         device::mojom::blink::SensorProviderPtr(
             device::mojom::blink::SensorProviderPtrInfo(
                 sensor_provider_ptr_info.PassHandle(),
                 device::mojom::SensorProvider::Version_)));
-    listener_.reset(new MockDeviceOrientationListener);
+    controller_ =
+        new MockDeviceOrientationController(absolute_orientation_pump);
 
     ExpectAbsoluteOrientationSensorStateToBe(
         DeviceOrientationEventPump::SensorState::NOT_INITIALIZED);
     EXPECT_EQ(DeviceOrientationEventPump::PumpState::STOPPED,
-              absolute_orientation_pump()->GetPumpStateForTesting());
+              controller_->orientation_pump()->GetPumpStateForTesting());
   }
 
-  void FireEvent() { absolute_orientation_pump_->FireEvent(nullptr); }
+  void FireEvent() { controller_->orientation_pump()->FireEvent(nullptr); }
 
   void ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState expected_sensor_state) {
-    EXPECT_EQ(
-        expected_sensor_state,
-        absolute_orientation_pump_->absolute_orientation_sensor_.sensor_state);
+    EXPECT_EQ(expected_sensor_state,
+              controller_->orientation_pump()
+                  ->absolute_orientation_sensor_.sensor_state);
   }
 
-  DeviceOrientationEventPump* absolute_orientation_pump() {
-    return absolute_orientation_pump_.get();
-  }
-
-  MockDeviceOrientationListener* listener() { return listener_.get(); }
+  MockDeviceOrientationController* controller() { return controller_.Get(); }
 
   FakeSensorProvider* sensor_provider() { return &sensor_provider_; }
 
  private:
-  std::unique_ptr<DeviceOrientationEventPumpForTesting>
-      absolute_orientation_pump_;
-  std::unique_ptr<MockDeviceOrientationListener> listener_;
+  Persistent<MockDeviceOrientationController> controller_;
   FakeSensorProvider sensor_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceAbsoluteOrientationEventPumpTest);
 };
 
 TEST_F(DeviceAbsoluteOrientationEventPumpTest, MultipleStartAndStopWithWait) {
-  absolute_orientation_pump()->Start(nullptr, listener());
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::ACTIVE);
   EXPECT_EQ(DeviceOrientationEventPump::PumpState::RUNNING,
-            absolute_orientation_pump()->GetPumpStateForTesting());
+            controller()->orientation_pump()->GetPumpStateForTesting());
 
-  absolute_orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::SUSPENDED);
   EXPECT_EQ(DeviceOrientationEventPump::PumpState::STOPPED,
-            absolute_orientation_pump()->GetPumpStateForTesting());
+            controller()->orientation_pump()->GetPumpStateForTesting());
 
-  absolute_orientation_pump()->Start(nullptr, listener());
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::ACTIVE);
   EXPECT_EQ(DeviceOrientationEventPump::PumpState::RUNNING,
-            absolute_orientation_pump()->GetPumpStateForTesting());
+            controller()->orientation_pump()->GetPumpStateForTesting());
 
-  absolute_orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::SUSPENDED);
   EXPECT_EQ(DeviceOrientationEventPump::PumpState::STOPPED,
-            absolute_orientation_pump()->GetPumpStateForTesting());
+            controller()->orientation_pump()->GetPumpStateForTesting());
 }
 
 TEST_F(DeviceAbsoluteOrientationEventPumpTest, CallStop) {
-  absolute_orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectAbsoluteOrientationSensorStateToBe(
@@ -790,8 +805,8 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest, CallStop) {
 }
 
 TEST_F(DeviceAbsoluteOrientationEventPumpTest, CallStartAndStop) {
-  absolute_orientation_pump()->Start(nullptr, listener());
-  absolute_orientation_pump()->Stop();
+  controller()->orientation_pump()->Start(nullptr);
+  controller()->orientation_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectAbsoluteOrientationSensorStateToBe(
@@ -799,9 +814,9 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest, CallStartAndStop) {
 }
 
 TEST_F(DeviceAbsoluteOrientationEventPumpTest, CallStartMultipleTimes) {
-  absolute_orientation_pump()->Start(nullptr, listener());
-  absolute_orientation_pump()->Start(nullptr, listener());
-  absolute_orientation_pump()->Stop();
+  controller()->orientation_pump()->Start(nullptr);
+  controller()->orientation_pump()->Start(nullptr);
+  controller()->orientation_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectAbsoluteOrientationSensorStateToBe(
@@ -809,9 +824,9 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest, CallStartMultipleTimes) {
 }
 
 TEST_F(DeviceAbsoluteOrientationEventPumpTest, CallStopMultipleTimes) {
-  absolute_orientation_pump()->Start(nullptr, listener());
-  absolute_orientation_pump()->Stop();
-  absolute_orientation_pump()->Stop();
+  controller()->orientation_pump()->Start(nullptr);
+  controller()->orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectAbsoluteOrientationSensorStateToBe(
@@ -820,22 +835,23 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest, CallStopMultipleTimes) {
 
 // Test multiple DeviceSensorEventPump::Start() calls only bind sensor once.
 TEST_F(DeviceAbsoluteOrientationEventPumpTest, SensorOnlyBindOnce) {
-  absolute_orientation_pump()->Start(nullptr, listener());
-  absolute_orientation_pump()->Stop();
-  absolute_orientation_pump()->Start(nullptr, listener());
+  controller()->orientation_pump()->Start(nullptr);
+  controller()->orientation_pump()->Stop();
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::ACTIVE);
 
-  absolute_orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
 
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::SUSPENDED);
 }
 
 TEST_F(DeviceAbsoluteOrientationEventPumpTest, SensorIsActive) {
-  absolute_orientation_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectAbsoluteOrientationSensorStateToBe(
@@ -846,8 +862,8 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest, SensorIsActive) {
 
   FireEvent();
 
-  const DeviceOrientationData* received_data = listener()->data();
-  EXPECT_TRUE(listener()->did_change_device_orientation());
+  const DeviceOrientationData* received_data = controller()->data();
+  EXPECT_TRUE(controller()->did_change_device_orientation());
 
   EXPECT_DOUBLE_EQ(4, received_data->Alpha());
   EXPECT_TRUE(received_data->CanProvideAlpha());
@@ -857,7 +873,7 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest, SensorIsActive) {
   EXPECT_TRUE(received_data->CanProvideGamma());
   EXPECT_TRUE(received_data->Absolute());
 
-  absolute_orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
 
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::SUSPENDED);
@@ -865,7 +881,8 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest, SensorIsActive) {
 
 TEST_F(DeviceAbsoluteOrientationEventPumpTest,
        SomeSensorDataFieldsNotAvailable) {
-  absolute_orientation_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectAbsoluteOrientationSensorStateToBe(
@@ -876,8 +893,8 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest,
 
   FireEvent();
 
-  const DeviceOrientationData* received_data = listener()->data();
-  EXPECT_TRUE(listener()->did_change_device_orientation());
+  const DeviceOrientationData* received_data = controller()->data();
+  EXPECT_TRUE(controller()->did_change_device_orientation());
 
   EXPECT_DOUBLE_EQ(4, received_data->Alpha());
   EXPECT_TRUE(received_data->CanProvideAlpha());
@@ -886,7 +903,7 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest,
   EXPECT_TRUE(received_data->CanProvideGamma());
   EXPECT_TRUE(received_data->Absolute());
 
-  absolute_orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
 
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::SUSPENDED);
@@ -896,7 +913,8 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest, FireAllNullEvent) {
   // No active sensor.
   sensor_provider()->set_absolute_orientation_sensor_is_available(false);
 
-  absolute_orientation_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectAbsoluteOrientationSensorStateToBe(
@@ -904,15 +922,15 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest, FireAllNullEvent) {
 
   FireEvent();
 
-  const DeviceOrientationData* received_data = listener()->data();
-  EXPECT_TRUE(listener()->did_change_device_orientation());
+  const DeviceOrientationData* received_data = controller()->data();
+  EXPECT_TRUE(controller()->did_change_device_orientation());
 
   EXPECT_FALSE(received_data->CanProvideAlpha());
   EXPECT_FALSE(received_data->CanProvideBeta());
   EXPECT_FALSE(received_data->CanProvideGamma());
   EXPECT_TRUE(received_data->Absolute());
 
-  absolute_orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
 
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::NOT_INITIALIZED);
@@ -920,7 +938,8 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest, FireAllNullEvent) {
 
 TEST_F(DeviceAbsoluteOrientationEventPumpTest,
        NotFireEventWhenSensorReadingTimeStampIsZero) {
-  absolute_orientation_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectAbsoluteOrientationSensorStateToBe(
@@ -928,9 +947,9 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest,
 
   FireEvent();
 
-  EXPECT_FALSE(listener()->did_change_device_orientation());
+  EXPECT_FALSE(controller()->did_change_device_orientation());
 
-  absolute_orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
 
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::SUSPENDED);
@@ -938,7 +957,8 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest,
 
 TEST_F(DeviceAbsoluteOrientationEventPumpTest,
        UpdateRespectsOrientationThreshold) {
-  absolute_orientation_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->orientation_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectAbsoluteOrientationSensorStateToBe(
@@ -949,8 +969,8 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest,
 
   FireEvent();
 
-  const DeviceOrientationData* received_data = listener()->data();
-  EXPECT_TRUE(listener()->did_change_device_orientation());
+  const DeviceOrientationData* received_data = controller()->data();
+  EXPECT_TRUE(controller()->did_change_device_orientation());
 
   EXPECT_DOUBLE_EQ(4, received_data->Alpha());
   EXPECT_TRUE(received_data->CanProvideAlpha());
@@ -960,7 +980,7 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest,
   EXPECT_TRUE(received_data->CanProvideGamma());
   EXPECT_TRUE(received_data->Absolute());
 
-  listener()->set_did_change_device_orientation(false);
+  controller()->set_did_change_device_orientation(false);
 
   sensor_provider()->UpdateAbsoluteOrientationSensorData(
       4 /* alpha */,
@@ -969,8 +989,8 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest,
 
   FireEvent();
 
-  received_data = listener()->data();
-  EXPECT_FALSE(listener()->did_change_device_orientation());
+  received_data = controller()->data();
+  EXPECT_FALSE(controller()->did_change_device_orientation());
 
   EXPECT_DOUBLE_EQ(4, received_data->Alpha());
   EXPECT_TRUE(received_data->CanProvideAlpha());
@@ -980,7 +1000,7 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest,
   EXPECT_TRUE(received_data->CanProvideGamma());
   EXPECT_TRUE(received_data->Absolute());
 
-  listener()->set_did_change_device_orientation(false);
+  controller()->set_did_change_device_orientation(false);
 
   sensor_provider()->UpdateAbsoluteOrientationSensorData(
       4 /* alpha */,
@@ -990,8 +1010,8 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest,
 
   FireEvent();
 
-  received_data = listener()->data();
-  EXPECT_TRUE(listener()->did_change_device_orientation());
+  received_data = controller()->data();
+  EXPECT_TRUE(controller()->did_change_device_orientation());
 
   EXPECT_DOUBLE_EQ(4, received_data->Alpha());
   EXPECT_TRUE(received_data->CanProvideAlpha());
@@ -1003,7 +1023,7 @@ TEST_F(DeviceAbsoluteOrientationEventPumpTest,
   EXPECT_TRUE(received_data->CanProvideGamma());
   EXPECT_TRUE(received_data->Absolute());
 
-  absolute_orientation_pump()->Stop();
+  controller()->orientation_pump()->Stop();
 
   ExpectAbsoluteOrientationSensorStateToBe(
       DeviceOrientationEventPump::SensorState::SUSPENDED);

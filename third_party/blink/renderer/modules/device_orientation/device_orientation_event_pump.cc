@@ -35,14 +35,12 @@ bool IsSignificantlyDifferent(const blink::DeviceOrientationData* data1,
 
 namespace blink {
 
-template class DeviceSensorEventPump<blink::WebDeviceOrientationListener>;
-
 const double DeviceOrientationEventPump::kOrientationThreshold = 0.1;
 
 DeviceOrientationEventPump::DeviceOrientationEventPump(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     bool absolute)
-    : DeviceSensorEventPump<blink::WebDeviceOrientationListener>(task_runner),
+    : DeviceSensorEventPump(task_runner),
       relative_orientation_sensor_(
           this,
           device::mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES),
@@ -56,6 +54,23 @@ DeviceOrientationEventPump::~DeviceOrientationEventPump() {
   StopIfObserving();
 }
 
+DeviceOrientationData*
+DeviceOrientationEventPump::LatestDeviceOrientationData() {
+  return data_.Get();
+}
+
+void DeviceOrientationEventPump::Trace(blink::Visitor* visitor) {
+  visitor->Trace(data_);
+  PlatformEventDispatcher::Trace(visitor);
+}
+
+void DeviceOrientationEventPump::StartListening(LocalFrame* frame) {
+  // TODO(crbug.com/850619): ensure a valid frame is passed
+  if (!frame)
+    return;
+  Start(frame);
+}
+
 void DeviceOrientationEventPump::SendStartMessage(LocalFrame* frame) {
   if (!sensor_provider_) {
     DCHECK(frame);
@@ -64,7 +79,7 @@ void DeviceOrientationEventPump::SendStartMessage(LocalFrame* frame) {
         mojo::MakeRequest(&sensor_provider_));
     sensor_provider_.set_connection_error_handler(
         WTF::Bind(&DeviceSensorEventPump::HandleSensorProviderError,
-                  WTF::Unretained(this)));
+                  WrapPersistent(this)));
   }
 
   if (absolute_) {
@@ -74,6 +89,11 @@ void DeviceOrientationEventPump::SendStartMessage(LocalFrame* frame) {
     should_suspend_absolute_orientation_sensor_ = false;
     relative_orientation_sensor_.Start(sensor_provider_.get());
   }
+}
+
+void DeviceOrientationEventPump::StopListening() {
+  Stop();
+  data_.Clear();
 }
 
 void DeviceOrientationEventPump::SendStopMessage() {
@@ -107,13 +127,11 @@ void DeviceOrientationEventPump::SendStopMessage() {
 }
 
 void DeviceOrientationEventPump::FireEvent(TimerBase*) {
-  DCHECK(listener());
-
   DeviceOrientationData* data = GetDataFromSharedMemory();
 
   if (ShouldFireEvent(data)) {
     data_ = data;
-    listener()->DidChangeDeviceOrientation(data);
+    NotifyControllers();
   }
 }
 

@@ -26,10 +26,12 @@ class MODULES_EXPORT DeviceOrientationAbsoluteController final
   void Trace(blink::Visitor*) override;
 
  private:
+  // Inherited from PlatformEventController.
+  void RegisterWithDispatcher() override;
+
   explicit DeviceOrientationAbsoluteController(Document&);
 
   // Inherited from DeviceOrientationController.
-  DeviceOrientationDispatcher& DispatcherInstance() const override;
   const AtomicString& EventTypeName() const override;
 };
 
