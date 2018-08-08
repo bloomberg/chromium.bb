@@ -409,7 +409,6 @@ test.util.sync.fakeMouseClick = function(contentWindow, targetQuery) {
  *     otherwise.
  */
 test.util.sync.fakeMouseRightClick = function(contentWindow, targetQuery) {
-  contentWindow.document.querySelector(targetQuery).focus();
   var mouseDownEvent = new MouseEvent('mousedown', {bubbles: true, button: 2});
   if (!test.util.sync.sendEvent(contentWindow, targetQuery, mouseDownEvent)) {
     return false;
