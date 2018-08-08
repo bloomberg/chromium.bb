@@ -3,9 +3,16 @@
 // found in the LICENSE file.
 
 (function() {
-let GOOD = 'good';
-let BAD = 'bad';
-let INFO = 'info';
+/**
+ * CSS classes for different statuses.
+ * @enum {string}
+ */
+const StatusClass = {
+  GOOD: 'good',
+  BAD: 'bad',
+  MEDIUM: 'medium',
+  INFO: 'info'
+};
 
 /**
  * Adds a row to the sandbox status table.
@@ -39,7 +46,8 @@ function addStatusRow(name, value, cssClass) {
  * @return {Element} The newly added TR.
  */
 function addGoodBadRow(name, result) {
-  return addStatusRow(name, result ? 'Yes' : 'No', result ? GOOD : BAD);
+  return addStatusRow(
+      name, result ? 'Yes' : 'No', result ? StatusClass.GOOD : StatusClass.BAD);
 }
 
 /**
@@ -61,19 +69,21 @@ function androidHandler() {
     var isTsync = false;
     var isChromeSeccomp = false;
 
-    addStatusRow('PID', status.pid, INFO);
-    addStatusRow('UID', status.uid, INFO);
+    addStatusRow('PID', status.pid, StatusClass.INFO);
+    addStatusRow('UID', status.uid, StatusClass.INFO);
     isIsolated = status.secontext.indexOf(':isolated_app:') != -1;
-    addStatusRow('SELinux Context', status.secontext, isIsolated ? GOOD : BAD);
+    addStatusRow(
+        'SELinux Context', status.secontext,
+        isIsolated ? StatusClass.GOOD : StatusClass.BAD);
 
     let procStatus = status.procStatus.split('\n');
     for (let line of procStatus) {
       if (line.startsWith('Seccomp')) {
         var value = line.split(':')[1].trim();
-        var cssClass = BAD;
+        var cssClass = StatusClass.BAD;
         if (value == '2') {
           value = 'Yes - TSYNC (' + line + ')';
-          cssClass = GOOD;
+          cssClass = StatusClass.GOOD;
           isTsync = true;
         } else if (value == '1') {
           value = 'Yes (' + line + ')';
@@ -106,9 +116,9 @@ function androidHandler() {
     }
     addStatusRow(
         'Seccomp-BPF Enabled (Chrome)', seccompStatus,
-        status.seccompStatus == 4 ? GOOD : BAD);
+        status.seccompStatus == 4 ? StatusClass.GOOD : StatusClass.BAD);
 
-    addStatusRow('Android Build ID', status.androidBuildId, INFO);
+    addStatusRow('Android Build ID', status.androidBuildId, StatusClass.INFO);
 
     setEvaluation(isIsolated && isTsync && isChromeSeccomp);
   });
@@ -118,15 +128,42 @@ function androidHandler() {
  * Main page handler for desktop Linux.
  */
 function linuxHandler() {
-  addGoodBadRow('SUID Sandbox', loadTimeData.getBoolean('suid'));
-  addGoodBadRow('Namespace Sandbox', loadTimeData.getBoolean('userNs'));
+  let suidSandbox = loadTimeData.getBoolean('suid');
+  let nsSandbox = loadTimeData.getBoolean('userNs');
+
+  let layer1SandboxType = 'None';
+  let layer1SandboxCssClass = StatusClass.BAD;
+  if (suidSandbox) {
+    layer1SandboxType = 'SUID';
+    layer1SandboxCssClass = StatusClass.MEDIUM;
+  } else if (nsSandbox) {
+    layer1SandboxType = 'Namespace';
+    layer1SandboxCssClass = StatusClass.GOOD;
+  }
+
+  addStatusRow('Layer 1 Sandbox', layer1SandboxType, layer1SandboxCssClass);
   addGoodBadRow('PID namespaces', loadTimeData.getBoolean('pidNs'));
   addGoodBadRow('Network namespaces', loadTimeData.getBoolean('netNs'));
   addGoodBadRow('Seccomp-BPF sandbox', loadTimeData.getBoolean('seccompBpf'));
   addGoodBadRow(
       'Seccomp-BPF sandbox supports TSYNC',
       loadTimeData.getBoolean('seccompTsync'));
-  addGoodBadRow('Yama LSM Enforcing', loadTimeData.getBoolean('yama'));
+
+  let enforcingYamaBroker = loadTimeData.getBoolean('yamaBroker');
+  addGoodBadRow(
+      'Ptrace Protection with Yama LSM (Broker)', enforcingYamaBroker);
+
+  let enforcingYamaNonbroker = loadTimeData.getBoolean('yamaNonbroker');
+  // If there is no ptrace protection anywhere, that is bad.
+  // If there is no ptrace protection for nonbroker processes because of the
+  // user namespace sandbox, that is fine and we display as medium.
+  let yamaNonbrokerCssClass = enforcingYamaBroker ?
+      (enforcingYamaNonbroker ? StatusClass.GOOD : StatusClass.MEDIUM) :
+      StatusClass.BAD;
+  addStatusRow(
+      'Ptrace Protection with Yama LSM (Non-broker)',
+      enforcingYamaNonbroker ? 'Yes' : 'No', yamaNonbrokerCssClass);
+
   setEvaluation(loadTimeData.getBoolean('sandboxGood'));
 }
 
