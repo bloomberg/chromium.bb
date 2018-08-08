@@ -64,6 +64,7 @@ class XRFrameProvider final
 
   // Non-immersive Sessions which have requested a frame update.
   HeapVector<Member<XRSession>> requesting_sessions_;
+  HeapVector<Member<XRSession>> processing_sessions_;
 
   device::mojom::blink::XRPresentationProviderPtr presentation_provider_;
   device::mojom::blink::XRFrameDataProviderPtr immersive_data_provider_;

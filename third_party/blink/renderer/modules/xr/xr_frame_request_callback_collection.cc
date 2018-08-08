@@ -30,6 +30,7 @@ XRFrameRequestCallbackCollection::RegisterCallback(
 void XRFrameRequestCallbackCollection::CancelCallback(CallbackId id) {
   if (IsValidCallbackId(id)) {
     callbacks_.erase(id);
+    current_callbacks_.erase(id);
   }
 }
 
@@ -38,26 +39,36 @@ void XRFrameRequestCallbackCollection::ExecuteCallbacks(XRSession* session,
                                                         XRFrame* frame) {
   // First, generate a list of callbacks to consider.  Callbacks registered from
   // this point on are considered only for the "next" frame, not this one.
-  DCHECK(callbacks_to_invoke_.IsEmpty());
-  callbacks_to_invoke_.swap(pending_callbacks_);
 
-  for (const auto& id : callbacks_to_invoke_) {
-    V8XRFrameRequestCallback* callback = callbacks_.Take(id);
+  // Conceptually we are just going to iterate through current_callbacks_, and
+  // call each callback.  However, if we had multiple callbacks, subsequent ones
+  // could be removed while we are iterating.  HeapHashMap iterators aren't
+  // valid after collection modifications, so we also store a corresponding set
+  // of ids for iteration purposes.  current_callback_ids is the set of ids for
+  // callbacks we will call, and is kept in sync with current_callbacks_ but
+  // safe to iterate over.
+  DCHECK(current_callbacks_.IsEmpty());
+  current_callbacks_.swap(callbacks_);
 
-    // Callback won't be found if it was cancelled.
-    if (!callback)
+  Vector<CallbackId> current_callback_ids;
+  current_callback_ids.swap(pending_callbacks_);
+
+  for (const auto& id : current_callback_ids) {
+    auto it = current_callbacks_.find(id);
+    if (it == current_callbacks_.end())
       continue;
 
-    probe::AsyncTask async_task(context_, callback);
+    probe::AsyncTask async_task(context_, it->value);
     probe::UserCallback probe(context_, "XRRequestFrame", AtomicString(), true);
-    callback->InvokeAndReportException(session, timestamp, frame);
+    it->value->InvokeAndReportException(session, timestamp, frame);
   }
 
-  callbacks_to_invoke_.clear();
+  current_callbacks_.clear();
 }
 
 void XRFrameRequestCallbackCollection::Trace(blink::Visitor* visitor) {
   visitor->Trace(callbacks_);
+  visitor->Trace(current_callbacks_);
   visitor->Trace(context_);
 }
 
