@@ -1012,7 +1012,8 @@ CrSettingsCategorySettingExceptionsTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsCategorySettingExceptionsTest', 'All', function() {
+// Flaky, see https://crbug.com/872026.
+TEST_F('CrSettingsCategorySettingExceptionsTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -1038,7 +1039,8 @@ CrSettingsSiteEntryTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsSiteEntryTest', 'All', function() {
+// Flaky, see https://crbug.com/872027.
+TEST_F('CrSettingsSiteEntryTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -1160,7 +1162,8 @@ TEST_F('CrSettingsSiteListTest', 'EditExceptionDialog', function() {
   mocha.grep('EditExceptionDialog').run();
 });
 
-TEST_F('CrSettingsSiteListTest', 'AddExceptionDialog', function() {
+// Flaky, see https://crbug.com/872028.
+TEST_F('CrSettingsSiteListTest', 'DISABLED_AddExceptionDialog', function() {
   mocha.grep('AddExceptionDialog').run();
 });
 
