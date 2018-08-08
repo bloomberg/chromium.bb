@@ -327,8 +327,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // recurse on its child frames.
   void SendOrientationChangeEvent();
 
-  void EnqueueWindowEvent(Event*, TaskType);
-  void EnqueueDocumentEvent(Event*, TaskType);
+  void EnqueueWindowEvent(Event&, TaskType);
+  void EnqueueDocumentEvent(Event&, TaskType);
   void EnqueuePageshowEvent(PageshowEventPersistence);
   void EnqueueHashchangeEvent(const String& old_url, const String& new_url);
   void EnqueuePopstateEvent(scoped_refptr<SerializedScriptValue>);

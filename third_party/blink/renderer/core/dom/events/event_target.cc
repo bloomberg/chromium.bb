@@ -907,15 +907,15 @@ void EventTarget::RemoveAllEventListeners() {
   }
 }
 
-void EventTarget::EnqueueEvent(Event* event, TaskType task_type) {
+void EventTarget::EnqueueEvent(Event& event, TaskType task_type) {
   ExecutionContext* context = GetExecutionContext();
   if (!context)
     return;
-  probe::AsyncTaskScheduled(context, event->type(), event);
+  probe::AsyncTaskScheduled(context, event.type(), &event);
   context->GetTaskRunner(task_type)->PostTask(
       FROM_HERE,
       WTF::Bind(&EventTarget::DispatchEnqueuedEvent, WrapPersistent(this),
-                WrapPersistent(event), WrapPersistent(context)));
+                WrapPersistent(&event), WrapPersistent(context)));
 }
 
 void EventTarget::DispatchEnqueuedEvent(Event* event,

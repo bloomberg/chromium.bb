@@ -224,8 +224,8 @@ void StorageArea::DispatchLocalStorageEvent(
           !IsEventSource(storage, source_area_instance)) {
         // https://www.w3.org/TR/webstorage/#the-storage-event
         local_frame->DomWindow()->EnqueueWindowEvent(
-            StorageEvent::Create(EventTypeNames::storage, key, old_value,
-                                 new_value, page_url, storage),
+            *StorageEvent::Create(EventTypeNames::storage, key, old_value,
+                                  new_value, page_url, storage),
             TaskType::kDOMManipulation);
       }
     }
@@ -265,8 +265,8 @@ void StorageArea::DispatchSessionStorageEvent(
         !IsEventSource(storage, source_area_instance)) {
       // https://www.w3.org/TR/webstorage/#the-storage-event
       local_frame->DomWindow()->EnqueueWindowEvent(
-          StorageEvent::Create(EventTypeNames::storage, key, old_value,
-                               new_value, page_url, storage),
+          *StorageEvent::Create(EventTypeNames::storage, key, old_value,
+                                new_value, page_url, storage),
           TaskType::kDOMManipulation);
     }
   }
