@@ -84,6 +84,8 @@ bool IsKnownRoot(CERTCertificate* root) {
         }
       }
     }
+
+    return false;
   }
 
   // This magic name is taken from
