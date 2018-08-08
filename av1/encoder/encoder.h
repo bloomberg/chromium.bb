@@ -444,7 +444,6 @@ typedef struct TileDataEnc {
   int64_t inter_mode_data_sse[4][INTER_MODE_RD_DATA_OVERALL_SIZE];
   int64_t inter_mode_data_dist[4][INTER_MODE_RD_DATA_OVERALL_SIZE];
   int inter_mode_data_residue_cost[4][INTER_MODE_RD_DATA_OVERALL_SIZE];
-  int inter_mode_data_all_cost[4][INTER_MODE_RD_DATA_OVERALL_SIZE];
   InterModesInfo inter_modes_info;
 #endif
 } TileDataEnc;

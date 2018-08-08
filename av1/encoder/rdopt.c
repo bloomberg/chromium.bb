@@ -670,8 +670,7 @@ void av1_inter_mode_data_fit(TileDataEnc *tile_data, int rdmult) {
 }
 
 static void inter_mode_data_push(TileDataEnc *tile_data, BLOCK_SIZE bsize,
-                                 int64_t sse, int64_t dist, int residue_cost,
-                                 int all_cost) {
+                                 int64_t sse, int64_t dist, int residue_cost) {
   if (residue_cost == 0 || sse == dist) return;
   const int block_idx = inter_mode_data_block_idx(bsize);
   if (block_idx == -1) return;
@@ -681,7 +680,6 @@ static void inter_mode_data_push(TileDataEnc *tile_data, BLOCK_SIZE bsize,
     tile_data->inter_mode_data_sse[block_idx][data_idx] = sse;
     tile_data->inter_mode_data_dist[block_idx][data_idx] = dist;
     tile_data->inter_mode_data_residue_cost[block_idx][data_idx] = residue_cost;
-    tile_data->inter_mode_data_all_cost[block_idx][data_idx] = all_cost;
     ++tile_data->inter_mode_data_idx[block_idx];
   }
 }
@@ -8851,8 +8849,7 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
           inter_mode_data_push(tile_data, mbmi->sb_type, rd_stats->sse,
                                rd_stats->dist,
                                rd_stats_y->rate + rd_stats_uv->rate +
-                                   x->skip_cost[skip_ctx][mbmi->skip],
-                               rd_stats->rate);
+                                   x->skip_cost[skip_ctx][mbmi->skip]);
         }
 #endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
       } else {
