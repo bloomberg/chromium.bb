@@ -172,25 +172,6 @@ const char* temporary_incognito_whitelist[] = {
     ash::prefs::kDetachableBaseDevices, ash::prefs::kEnableStylusTools,
     ash::prefs::kHasSeenStylus,
 
-    // TODO(https://crbug.com/861722):  Check with derat@ before removing.
-    ash::prefs::kPowerAcScreenDimDelayMs, ash::prefs::kPowerAcScreenOffDelayMs,
-    ash::prefs::kPowerAcScreenLockDelayMs,
-    ash::prefs::kPowerAcIdleWarningDelayMs, ash::prefs::kPowerAcIdleDelayMs,
-    ash::prefs::kPowerBatteryScreenDimDelayMs,
-    ash::prefs::kPowerBatteryScreenOffDelayMs,
-    ash::prefs::kPowerBatteryScreenLockDelayMs,
-    ash::prefs::kPowerBatteryIdleWarningDelayMs,
-    ash::prefs::kPowerBatteryIdleDelayMs,
-    ash::prefs::kPowerLockScreenDimDelayMs,
-    ash::prefs::kPowerLockScreenOffDelayMs, ash::prefs::kPowerAcIdleAction,
-    ash::prefs::kPowerBatteryIdleAction, ash::prefs::kPowerLidClosedAction,
-    ash::prefs::kPowerUseAudioActivity, ash::prefs::kPowerUseVideoActivity,
-    ash::prefs::kPowerAllowScreenWakeLocks,
-    ash::prefs::kPowerPresentationScreenDimDelayFactor,
-    ash::prefs::kPowerUserActivityScreenDimDelayFactor,
-    ash::prefs::kPowerWaitForInitialUserActivity,
-    ash::prefs::kPowerForceNonzeroBrightnessForUserActivity,
-
     // TODO(https://crbug.com/861722):  Check with mukai@ before removing.
     ash::prefs::kTouchpadEnabled, ash::prefs::kTouchscreenEnabled,
 #endif  // defined(OS_CHROMEOS)
