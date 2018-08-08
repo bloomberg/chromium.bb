@@ -27,10 +27,13 @@
     shouldBeFalse('nodeFilterObservation.wasCollected');
     shouldBeFalse('callbackObservation.wasCollected');
 
-    nodeIterator.nextNode();
+    (function() {
+      nodeIterator.nextNode();
+      nodeIterator = null;
+    })();
+
     shouldBeTrue('callbackWasTriggered');
 
-    nodeIterator = null;
     gc();
     shouldBeTrue('nodeIteratorObservation.wasCollected');
     shouldBeTrue('nodeFilterObservation.wasCollected');
