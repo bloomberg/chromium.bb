@@ -545,13 +545,13 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   bool VisualViewportSuppliesScrollbars() const override;
 
+  bool HasHorizontalOverflow() const;
+  bool HasVerticalOverflow() const;
+
   void Trace(blink::Visitor*) override;
 
  private:
   explicit PaintLayerScrollableArea(PaintLayer&);
-
-  bool HasHorizontalOverflow() const;
-  bool HasVerticalOverflow() const;
 
   bool NeedsScrollbarReconstruction() const;
 
