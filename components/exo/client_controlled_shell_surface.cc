@@ -807,16 +807,6 @@ gfx::Rect ClientControlledShellSurface::GetShadowBounds() const {
         frame_view->GetWindowBoundsForClientBounds(shadow_bounds).size());
   }
 
-  if (geometry_changed_callback_.is_null()) {
-    aura::Window* window = widget_->GetNativeWindow();
-
-    // Convert from screen to display coordinates.
-    wm::ConvertRectFromScreen(window->parent(), &shadow_bounds);
-
-    // Convert from display to window coordinates.
-    shadow_bounds -= window->bounds().OffsetFromOrigin();
-  }
-
   return shadow_bounds;
 }
 
@@ -858,11 +848,7 @@ gfx::Rect ClientControlledShellSurface::GetWidgetBounds() const {
 
 gfx::Point ClientControlledShellSurface::GetSurfaceOrigin() const {
   DCHECK(resize_component_ == HTCAPTION);
-  if (geometry_changed_callback_)
-    return gfx::Point();
-  // TODO(oshima): geometry_changed_callback_ must be always set by now, so
-  // this is not necessary any more. Remove this.
-  return gfx::Point() - GetVisibleBounds().OffsetFromOrigin();
+  return gfx::Point();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
