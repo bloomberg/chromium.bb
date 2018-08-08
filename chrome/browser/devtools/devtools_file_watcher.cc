@@ -235,7 +235,7 @@ void DevToolsFileWatcher::AddWatch(base::FilePath path) {
 
 void DevToolsFileWatcher::RemoveWatch(base::FilePath path) {
   impl_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&DevToolsFileWatcher::AddWatchOnImpl,
+      FROM_HERE, base::BindOnce(&DevToolsFileWatcher::RemoveWatchOnImpl,
                                 base::Unretained(this), std::move(path)));
 }
 
