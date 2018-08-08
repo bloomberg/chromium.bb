@@ -21,6 +21,7 @@
 #include "base/observer_list.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_target.h"
 #include "ui/wm/core/cursor_manager.h"
@@ -46,6 +47,7 @@ class FileHelper;
 
 namespace gfx {
 class Insets;
+class Point;
 }
 
 namespace keyboard {
@@ -68,6 +70,8 @@ class GpuInterfaceProvider;
 
 namespace views {
 class NonClientFrameView;
+class PointerWatcher;
+enum class PointerWatcherEventTypes;
 class Widget;
 namespace corewm {
 class TooltipController;
@@ -149,6 +153,7 @@ class OverlayEventFilter;
 class PartialMagnificationController;
 class PeripheralBatteryNotifier;
 class PersistentWindowController;
+class PointerWatcherAdapterClassic;
 class PolicyRecommendationRestorer;
 class PowerButtonController;
 class PowerEventObserver;
@@ -157,7 +162,6 @@ class ProjectingObserver;
 class ResizeShadowController;
 class ResolutionNotificationController;
 class RootWindowController;
-class ShellPort;
 class ScreenLayoutObserver;
 class ScreenOrientationController;
 class ScreenshotController;
@@ -587,6 +591,20 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Returns true if split view mode is active.
   bool IsSplitViewModeActive() const;
 
+  // Shows the context menu for the wallpaper or shelf at |location_in_screen|.
+  void ShowContextMenu(const gfx::Point& location_in_screen,
+                       ui::MenuSourceType source_type);
+
+  // If |events| is PointerWatcherEventTypes::MOVES,
+  // PointerWatcher::OnPointerEventObserved() is called for pointer move events.
+  // If |events| is PointerWatcherEventTypes::DRAGS,
+  // PointerWatcher::OnPointerEventObserved() is called for pointer drag events.
+  // Requesting pointer moves or drags may incur a performance hit and should be
+  // avoided if possible.
+  void AddPointerWatcher(views::PointerWatcher* watcher,
+                         views::PointerWatcherEventTypes events);
+  void RemovePointerWatcher(views::PointerWatcher* watcher);
+
   void AddShellObserver(ShellObserver* observer);
   void RemoveShellObserver(ShellObserver* observer);
 
@@ -647,7 +665,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   friend class SmsObserverTest;
 
   Shell(std::unique_ptr<ShellDelegate> shell_delegate,
-        std::unique_ptr<ShellPort> shell_port,
         service_manager::Connector* connector);
   ~Shell() override;
 
@@ -691,8 +708,6 @@ class ASH_EXPORT Shell : public SessionObserver,
       std::unique_ptr<::PrefService> pref_service);
 
   static Shell* instance_;
-
-  std::unique_ptr<ShellPort> shell_port_;
 
   // The CompoundEventFilter owned by aura::Env object.
   std::unique_ptr<::wm::CompoundEventFilter> env_filter_;
@@ -740,6 +755,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<MultiDeviceNotificationPresenter>
       multidevice_notification_presenter_;
   std::unique_ptr<NewWindowController> new_window_controller_;
+  std::unique_ptr<PointerWatcherAdapterClassic> pointer_watcher_adapter_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
   std::unique_ptr<SessionController> session_controller_;
   std::unique_ptr<NightLightController> night_light_controller_;

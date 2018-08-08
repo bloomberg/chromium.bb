@@ -17,8 +17,6 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
-#include "ash/shell_port.h"
-#include "ash/shell_port_classic.h"
 #include "ash/system/screen_layout_observer.h"
 #include "ash/test/ash_test_environment.h"
 #include "ash/test/ash_test_views_delegate.h"
@@ -363,7 +361,6 @@ void AshTestHelper::CreateShell() {
   ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
                                        &context_factory_private);
   ShellInitParams init_params;
-  init_params.shell_port = std::make_unique<ash::ShellPortClassic>();
   init_params.delegate.reset(test_shell_delegate_);
   init_params.context_factory = context_factory;
   init_params.context_factory_private = context_factory_private;

@@ -7,7 +7,6 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/client/aura_constants.h"
@@ -85,12 +84,11 @@ void RecordUMA(ui::EventPointerType type, views::Widget* target) {
 }  // namespace
 
 PointerMetricsRecorder::PointerMetricsRecorder() {
-  ShellPort::Get()->AddPointerWatcher(this,
-                                      views::PointerWatcherEventTypes::BASIC);
+  Shell::Get()->AddPointerWatcher(this, views::PointerWatcherEventTypes::BASIC);
 }
 
 PointerMetricsRecorder::~PointerMetricsRecorder() {
-  ShellPort::Get()->RemovePointerWatcher(this);
+  Shell::Get()->RemovePointerWatcher(this);
 }
 
 void PointerMetricsRecorder::OnPointerEventObserved(

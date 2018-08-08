@@ -69,6 +69,7 @@
 #include "ash/multi_device_setup/multi_device_notification_presenter.h"
 #include "ash/new_window_controller.h"
 #include "ash/note_taking_controller.h"
+#include "ash/pointer_watcher_adapter_classic.h"
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_features.h"
@@ -85,8 +86,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_init_params.h"
 #include "ash/shell_observer.h"
-#include "ash/shell_port.h"
-#include "ash/shell_port_classic.h"
 #include "ash/shell_state.h"
 #include "ash/shutdown_controller.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
@@ -270,9 +269,7 @@ Shell* Shell::instance_ = nullptr;
 // static
 Shell* Shell::CreateInstance(ShellInitParams init_params) {
   CHECK(!instance_);
-  instance_ =
-      new Shell(std::move(init_params.delegate),
-                std::move(init_params.shell_port), init_params.connector);
+  instance_ = new Shell(std::move(init_params.delegate), init_params.connector);
   instance_->Init(init_params.context_factory,
                   init_params.context_factory_private,
                   std::move(init_params.initial_display_prefs),
@@ -500,7 +497,6 @@ void Shell::EnableKeyboard() {
 }
 
 void Shell::DisableKeyboard() {
-  // TODO(jamescook): Move keyboard create and hide into ShellPort.
   keyboard_ui_->Hide();
   if (keyboard_controller_->enabled()) {
     for (auto* const controller : GetAllRootWindowControllers())
@@ -588,6 +584,29 @@ bool Shell::IsSplitViewModeActive() const {
          split_view_controller_->IsSplitViewModeActive();
 }
 
+void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
+                            ui::MenuSourceType source_type) {
+  // Bail with no active user session, in the lock screen, or in app/kiosk mode.
+  if (session_controller_->NumberOfLoggedInUsers() < 1 ||
+      session_controller_->IsScreenLocked() ||
+      session_controller_->IsRunningInAppMode()) {
+    return;
+  }
+
+  aura::Window* root = wm::GetRootWindowAt(location_in_screen);
+  RootWindowController::ForWindow(root)->ShowContextMenu(location_in_screen,
+                                                         source_type);
+}
+
+void Shell::AddPointerWatcher(views::PointerWatcher* watcher,
+                              views::PointerWatcherEventTypes events) {
+  pointer_watcher_adapter_->AddPointerWatcher(watcher, events);
+}
+
+void Shell::RemovePointerWatcher(views::PointerWatcher* watcher) {
+  pointer_watcher_adapter_->RemovePointerWatcher(watcher);
+}
+
 void Shell::AddShellObserver(ShellObserver* observer) {
   shell_observers_.AddObserver(observer);
 }
@@ -667,10 +686,8 @@ void Shell::NotifyAppListVisibilityChanged(bool visible,
 // Shell, private:
 
 Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
-             std::unique_ptr<ShellPort> shell_port,
              service_manager::Connector* connector)
-    : shell_port_(std::move(shell_port)),
-      ash_display_controller_(std::make_unique<AshDisplayController>()),
+    : ash_display_controller_(std::make_unique<AshDisplayController>()),
       brightness_control_delegate_(
           std::make_unique<system::BrightnessControllerChromeos>()),
       cast_config_(std::make_unique<CastConfigController>()),
@@ -887,7 +904,7 @@ Shell::~Shell() {
   // Must be released before |focus_controller_|.
   ime_focus_handler_.reset();
 
-  shell_port_->Shutdown();
+  pointer_watcher_adapter_.reset();
 
   // Stop observing window activation changes before closing all windows.
   focus_controller_->RemoveObserver(this);
@@ -916,8 +933,6 @@ Shell::~Shell() {
   // Depends on SessionController.
   power_event_observer_.reset();
 
-  // Needs to happen right before |instance_| is reset.
-  shell_port_.reset();
   session_controller_->RemoveObserver(this);
   // BluetoothPowerController depends on the PrefService and must be destructed
   // before it.
@@ -991,8 +1006,6 @@ void Shell::Init(
 
   tablet_mode_controller_ = std::make_unique<TabletModeController>();
 
-  // Some delegates access ShellPort during their construction. Create them here
-  // instead of the ShellPort constructor.
   accessibility_focus_ring_controller_ =
       std::make_unique<AccessibilityFocusRingController>();
   accessibility_delegate_.reset(shell_delegate_->CreateAccessibilityDelegate());
@@ -1187,7 +1200,7 @@ void Shell::Init(
 
   // Must occur after Shell has installed its early pre-target handlers (for
   // example, WindowModalityController).
-  shell_port_->CreatePointerWatcherAdapter();
+  pointer_watcher_adapter_ = std::make_unique<PointerWatcherAdapterClassic>();
 
   resize_shadow_controller_.reset(new ResizeShadowController());
   shadow_controller_.reset(new ::wm::ShadowController(

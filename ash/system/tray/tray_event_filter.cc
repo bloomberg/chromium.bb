@@ -6,7 +6,6 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_base.h"
 #include "ash/wm/container_finder.h"
@@ -27,15 +26,15 @@ void TrayEventFilter::AddBubble(TrayBubbleBase* bubble) {
   bool was_empty = bubbles_.empty();
   bubbles_.insert(bubble);
   if (was_empty && !bubbles_.empty()) {
-    ShellPort::Get()->AddPointerWatcher(this,
-                                        views::PointerWatcherEventTypes::BASIC);
+    Shell::Get()->AddPointerWatcher(this,
+                                    views::PointerWatcherEventTypes::BASIC);
   }
 }
 
 void TrayEventFilter::RemoveBubble(TrayBubbleBase* bubble) {
   bubbles_.erase(bubble);
   if (bubbles_.empty())
-    ShellPort::Get()->RemovePointerWatcher(this);
+    Shell::Get()->RemovePointerWatcher(this);
 }
 
 void TrayEventFilter::OnPointerEventObserved(

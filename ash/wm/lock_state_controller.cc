@@ -15,7 +15,6 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/shell_port.h"
 #include "ash/shutdown_controller.h"
 #include "ash/shutdown_reason.h"
 #include "ash/wallpaper/wallpaper_controller.h"

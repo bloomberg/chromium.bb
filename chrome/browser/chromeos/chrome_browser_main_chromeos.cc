@@ -1039,7 +1039,7 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
             ash::Shell::Get()->sticky_keys_controller()));
   }
 
-  // In classic ash must occur after ash::ShellPort is initialized. Triggers a
+  // In classic ash must occur after ash::Shell is initialized. Triggers a
   // fetch of the initial CrosSettings DeviceRebootOnShutdown policy.
   shutdown_policy_forwarder_ = std::make_unique<ShutdownPolicyForwarder>();
 

@@ -18,7 +18,6 @@
 #include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/logging.h"
@@ -622,7 +621,7 @@ void AppListControllerImpl::ContextMenuItemSelected(const std::string& id,
 void AppListControllerImpl::ShowWallpaperContextMenu(
     const gfx::Point& onscreen_location,
     ui::MenuSourceType source_type) {
-  ShellPort::Get()->ShowContextMenu(onscreen_location, source_type);
+  Shell::Get()->ShowContextMenu(onscreen_location, source_type);
 }
 
 void AppListControllerImpl::OnVisibilityChanged(bool visible) {

@@ -12,7 +12,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/wm/window_dimmer.h"
 #include "ash/wm/window_util.h"
 #include "base/stl_util.h"

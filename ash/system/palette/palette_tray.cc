@@ -15,7 +15,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/palette/palette_tool_manager.h"
@@ -160,8 +159,7 @@ PaletteTray::PaletteTray(Shelf* shelf)
   tray_container()->AddChildView(icon_);
 
   Shell::Get()->AddShellObserver(this);
-  ShellPort::Get()->AddPointerWatcher(this,
-                                      views::PointerWatcherEventTypes::BASIC);
+  Shell::Get()->AddPointerWatcher(this, views::PointerWatcherEventTypes::BASIC);
 }
 
 PaletteTray::~PaletteTray() {
@@ -170,7 +168,7 @@ PaletteTray::~PaletteTray() {
 
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
-  ShellPort::Get()->RemovePointerWatcher(this);
+  Shell::Get()->RemovePointerWatcher(this);
 }
 
 // static

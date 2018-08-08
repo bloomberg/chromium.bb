@@ -7,7 +7,6 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -53,11 +52,11 @@ gfx::Rect ImmersiveContextAsh::GetDisplayBoundsInScreen(views::Widget* widget) {
 void ImmersiveContextAsh::AddPointerWatcher(
     views::PointerWatcher* watcher,
     views::PointerWatcherEventTypes events) {
-  ShellPort::Get()->AddPointerWatcher(watcher, events);
+  Shell::Get()->AddPointerWatcher(watcher, events);
 }
 
 void ImmersiveContextAsh::RemovePointerWatcher(views::PointerWatcher* watcher) {
-  ShellPort::Get()->RemovePointerWatcher(watcher);
+  Shell::Get()->RemovePointerWatcher(watcher);
 }
 
 bool ImmersiveContextAsh::DoesAnyWindowHaveCapture() {

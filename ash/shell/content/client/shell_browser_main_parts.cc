@@ -19,7 +19,6 @@
 #include "ash/shell/window_type_launcher.h"
 #include "ash/shell/window_watcher.h"
 #include "ash/shell_init_params.h"
-#include "ash/shell_port_classic.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
@@ -88,7 +87,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   ui::MaterialDesignController::Initialize();
   ash::ShellInitParams init_params;
-  init_params.shell_port = std::make_unique<ash::ShellPortClassic>();
   init_params.delegate = std::make_unique<ash::shell::ShellDelegateImpl>();
   init_params.context_factory = content::GetContextFactory();
   init_params.context_factory_private = content::GetContextFactoryPrivate();
