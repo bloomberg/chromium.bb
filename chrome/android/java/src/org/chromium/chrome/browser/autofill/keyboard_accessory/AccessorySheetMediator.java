@@ -39,6 +39,10 @@ class AccessorySheetMediator
         mModel.setVisible(true);
     }
 
+    void setHeight(int height) {
+        mModel.setHeight(height);
+    }
+
     void hide() {
         mModel.setVisible(false);
     }
@@ -104,7 +108,8 @@ class AccessorySheetMediator
             }
             return;
         }
-        if (propertyKey == AccessorySheetModel.PropertyKey.ACTIVE_TAB_INDEX) {
+        if (propertyKey == AccessorySheetModel.PropertyKey.ACTIVE_TAB_INDEX
+                || propertyKey == AccessorySheetModel.PropertyKey.HEIGHT) {
             return;
         }
         assert false : "Every property update needs to be handled explicitly!";

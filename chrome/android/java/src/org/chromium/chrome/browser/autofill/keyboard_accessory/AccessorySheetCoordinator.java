@@ -95,6 +95,14 @@ public class AccessorySheetCoordinator {
     }
 
     /**
+     * Sets the height of the accessory sheet (i.e. adapts to keyboard heights).
+     * @param height The height of the sheet.
+     */
+    public void setHeight(int height) {
+        mMediator.setHeight(height);
+    }
+
+    /**
      * Shows the Accessory Sheet.
      */
     public void show() {

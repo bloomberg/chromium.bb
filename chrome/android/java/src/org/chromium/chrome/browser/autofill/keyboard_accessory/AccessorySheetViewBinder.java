@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import android.support.v4.view.ViewPager;
 import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetModel.PropertyKey;
 import org.chromium.chrome.browser.modelutil.LazyViewBinderAdapter;
@@ -31,6 +32,7 @@ class AccessorySheetViewBinder
     public void onInitialInflation(AccessorySheetModel model, ViewPager inflatedView) {
         inflatedView.setAdapter(
                 AccessorySheetCoordinator.createTabViewAdapter(model, inflatedView));
+        bind(model, inflatedView, PropertyKey.HEIGHT);
         bind(model, inflatedView, PropertyKey.ACTIVE_TAB_INDEX);
     }
 
@@ -38,6 +40,12 @@ class AccessorySheetViewBinder
     public void bind(AccessorySheetModel model, ViewPager inflatedView, PropertyKey propertyKey) {
         if (propertyKey == PropertyKey.VISIBLE) {
             inflatedView.setVisibility(model.isVisible() ? View.VISIBLE : View.GONE);
+            return;
+        }
+        if (propertyKey == PropertyKey.HEIGHT) {
+            ViewGroup.LayoutParams p = inflatedView.getLayoutParams();
+            p.height = model.getHeight();
+            inflatedView.setLayoutParams(p);
             return;
         }
         if (propertyKey == PropertyKey.ACTIVE_TAB_INDEX) {

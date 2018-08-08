@@ -69,7 +69,8 @@ class KeyboardAccessoryMetricsRecorder {
                 }
                 return;
             }
-            if (propertyKey == AccessorySheetModel.PropertyKey.ACTIVE_TAB_INDEX) {
+            if (propertyKey == AccessorySheetModel.PropertyKey.ACTIVE_TAB_INDEX
+                    || propertyKey == AccessorySheetModel.PropertyKey.HEIGHT) {
                 return;
             }
             assert false : "Every property update needs to be handled explicitly!";

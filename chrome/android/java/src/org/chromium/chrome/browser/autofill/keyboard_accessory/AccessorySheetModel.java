@@ -17,12 +17,13 @@ class AccessorySheetModel extends PropertyObservable<AccessorySheetModel.Propert
     public static class PropertyKey {
         public static final PropertyKey ACTIVE_TAB_INDEX = new PropertyKey();
         public static final PropertyKey VISIBLE = new PropertyKey();
+        public static final PropertyKey HEIGHT = new PropertyKey();
     }
-
     public static final int NO_ACTIVE_TAB = -1;
 
     private int mActiveTabIndex = NO_ACTIVE_TAB;
     private boolean mVisible;
+    private int mHeight;
     private final SimpleListObservable<Tab> mTabList = new SimpleListObservable<>();
 
     SimpleListObservable<Tab> getTabList() {
@@ -37,6 +38,16 @@ class AccessorySheetModel extends PropertyObservable<AccessorySheetModel.Propert
 
     boolean isVisible() {
         return mVisible;
+    }
+
+    void setHeight(int height) {
+        if (height == mHeight) return; // Same value, nothing to do here.
+        mHeight = height;
+        notifyPropertyChanged(PropertyKey.HEIGHT);
+    }
+
+    int getHeight() {
+        return mHeight;
     }
 
     int getActiveTabIndex() {
