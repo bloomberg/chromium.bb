@@ -5,7 +5,6 @@
 #ifndef CONTENT_RENDERER_INDEXED_DB_INDEXED_DB_CALLBACKS_IMPL_H_
 #define CONTENT_RENDERER_INDEXED_DB_INDEXED_DB_CALLBACKS_IMPL_H_
 
-#include "base/single_thread_task_runner.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
@@ -28,11 +27,9 @@ class IndexedDBCallbacksImpl : public indexed_db::mojom::Callbacks {
   static blink::WebIDBValue ConvertValue(
       const indexed_db::mojom::ValuePtr& value);
 
-  IndexedDBCallbacksImpl(
-      std::unique_ptr<blink::WebIDBCallbacks> callbacks,
-      int64_t transaction_id,
-      const base::WeakPtr<WebIDBCursorImpl>& cursor,
-      scoped_refptr<base::SingleThreadTaskRunner> callback_runner);
+  IndexedDBCallbacksImpl(std::unique_ptr<blink::WebIDBCallbacks> callbacks,
+                         int64_t transaction_id,
+                         const base::WeakPtr<WebIDBCursorImpl>& cursor);
   ~IndexedDBCallbacksImpl() override;
 
   // indexed_db::mojom::Callbacks implementation:

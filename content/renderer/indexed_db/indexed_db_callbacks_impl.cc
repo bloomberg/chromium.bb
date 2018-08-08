@@ -4,7 +4,6 @@
 
 #include "content/renderer/indexed_db/indexed_db_callbacks_impl.h"
 
-#include "base/threading/thread_task_runner_handle.h"
 #include "content/common/indexed_db/indexed_db_constants.h"
 #include "content/renderer/indexed_db/indexed_db_dispatcher.h"
 #include "content/renderer/indexed_db/indexed_db_key_builders.h"
@@ -109,10 +108,8 @@ WebIDBValue IndexedDBCallbacksImpl::ConvertValue(
 IndexedDBCallbacksImpl::IndexedDBCallbacksImpl(
     std::unique_ptr<WebIDBCallbacks> callbacks,
     int64_t transaction_id,
-    const base::WeakPtr<WebIDBCursorImpl>& cursor,
-    scoped_refptr<base::SingleThreadTaskRunner> callback_runner)
-    : callback_runner_(std::move(callback_runner)),
-      callbacks_(std::move(callbacks)),
+    const base::WeakPtr<WebIDBCursorImpl>& cursor)
+    : callbacks_(std::move(callbacks)),
       cursor_(cursor),
       transaction_id_(transaction_id) {}
 
@@ -146,8 +143,7 @@ void IndexedDBCallbacksImpl::UpgradeNeeded(
     blink::WebIDBDataLoss data_loss,
     const std::string& data_loss_message,
     const content::IndexedDBDatabaseMetadata& metadata) {
-  WebIDBDatabase* database =
-      new WebIDBDatabaseImpl(std::move(database_info), callback_runner_);
+  WebIDBDatabase* database = new WebIDBDatabaseImpl(std::move(database_info));
   WebIDBMetadata web_metadata;
   ConvertDatabaseMetadata(metadata, &web_metadata);
   callbacks_->OnUpgradeNeeded(old_version, database, web_metadata, data_loss,
@@ -160,8 +156,7 @@ void IndexedDBCallbacksImpl::SuccessDatabase(
     const content::IndexedDBDatabaseMetadata& metadata) {
   WebIDBDatabase* database = nullptr;
   if (database_info.is_valid()) {
-    database =
-        new WebIDBDatabaseImpl(std::move(database_info), callback_runner_);
+    database = new WebIDBDatabaseImpl(std::move(database_info));
   }
 
   WebIDBMetadata web_metadata;
@@ -175,8 +170,8 @@ void IndexedDBCallbacksImpl::SuccessCursor(
     const IndexedDBKey& key,
     const IndexedDBKey& primary_key,
     indexed_db::mojom::ValuePtr value) {
-  WebIDBCursorImpl* cursor = new WebIDBCursorImpl(
-      std::move(cursor_info), transaction_id_, callback_runner_);
+  WebIDBCursorImpl* cursor =
+      new WebIDBCursorImpl(std::move(cursor_info), transaction_id_);
   callbacks_->OnSuccess(cursor, WebIDBKeyBuilder::Build(key),
                         WebIDBKeyBuilder::Build(primary_key),
                         ConvertValue(value));
