@@ -27,7 +27,7 @@ void WrapperTypeInfo::WrapperDestroyed() {
   stats_collector->IncreaseCollectedWrapperCount(1);
 }
 
-void WrapperTypeInfo::Trace(Visitor* visitor, void* impl) {
+void WrapperTypeInfo::Trace(Visitor* visitor, void* impl) const {
   switch (wrapper_class_id) {
     case WrapperTypeInfo::kNodeClassId:
     case WrapperTypeInfo::kObjectClassId:
@@ -41,7 +41,7 @@ void WrapperTypeInfo::Trace(Visitor* visitor, void* impl) {
   }
 }
 
-void WrapperTypeInfo::TraceWithWrappers(Visitor* visitor, void* impl) {
+void WrapperTypeInfo::TraceWithWrappers(Visitor* visitor, void* impl) const {
   switch (wrapper_class_id) {
     case WrapperTypeInfo::kNodeClassId:
     case WrapperTypeInfo::kObjectClassId:
