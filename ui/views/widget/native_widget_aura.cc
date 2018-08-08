@@ -101,12 +101,11 @@ void SetIcon(aura::Window* window,
 // NativeWidgetAura, public:
 
 NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate,
-                                   bool is_parallel_widget_in_window_manager,
-                                   aura::Env* env)
+                                   bool is_parallel_widget_in_window_manager)
     : delegate_(delegate),
       is_parallel_widget_in_window_manager_(
           is_parallel_widget_in_window_manager),
-      window_(new aura::Window(this, aura::client::WINDOW_TYPE_UNKNOWN, env)),
+      window_(new aura::Window(this)),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       destroying_(false),
       cursor_(gfx::kNullCursor),
@@ -708,11 +707,6 @@ bool NativeWidgetAura::IsMouseEventsEnabled() const {
   return cursor_client ? cursor_client->IsMouseEventsEnabled() : true;
 }
 
-bool NativeWidgetAura::IsMouseButtonDown() const {
-  return window_ ? window_->env()->IsMouseButtonDown()
-                 : aura::Env::GetInstance()->IsMouseButtonDown();
-}
-
 void NativeWidgetAura::ClearNativeFocus() {
   aura::client::FocusClient* client = aura::client::GetFocusClient(window_);
   if (window_ && client && window_->Contains(client->GetFocusedWindow()))
@@ -1093,15 +1087,8 @@ namespace internal {
 
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::CreateNativeWidget(
-    const Widget::InitParams& init_params,
     internal::NativeWidgetDelegate* delegate) {
-  aura::Env* env = nullptr;
-  if (init_params.parent)
-    env = init_params.parent->env();
-  else if (init_params.context)
-    env = init_params.context->env();
-  return new NativeWidgetAura(
-      delegate, /*is_parallel_widget_in_window_manager*/ false, env);
+  return new NativeWidgetAura(delegate);
 }
 
 // static
@@ -1208,6 +1195,11 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
       it != widgets.end(); ++it) {
     (*it)->NotifyNativeViewHierarchyChanged();
   }
+}
+
+// static
+bool NativeWidgetPrivate::IsMouseButtonDown() {
+  return aura::Env::GetInstance()->IsMouseButtonDown();
 }
 
 // static
