@@ -4403,6 +4403,21 @@ interface PaymentAddress
     getter sortingCode
     method constructor
     method toJSON
+interface PaymentInstruments
+    attribute @@toStringTag
+    method clear
+    method constructor
+    method delete
+    method get
+    method has
+    method keys
+    method set
+interface PaymentManager
+    attribute @@toStringTag
+    getter instruments
+    getter userHint
+    method constructor
+    setter userHint
 interface PaymentRequest : EventTarget
     attribute @@toStringTag
     getter id
@@ -6228,6 +6243,7 @@ interface ServiceWorkerRegistration : EventTarget
     getter installing
     getter navigationPreload
     getter onupdatefound
+    getter paymentManager
     getter pushManager
     getter scope
     getter sync

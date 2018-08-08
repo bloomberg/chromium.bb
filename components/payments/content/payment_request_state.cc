@@ -55,6 +55,7 @@ PaymentRequestState::PaymentRequestState(
       profile_comparator_(app_locale, *spec),
       weak_ptr_factory_(this) {
   if (base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps)) {
+    DCHECK(web_contents);
     get_all_instruments_finished_ = false;
     ServiceWorkerPaymentAppFactory::GetInstance()->GetAllPaymentApps(
         web_contents,
