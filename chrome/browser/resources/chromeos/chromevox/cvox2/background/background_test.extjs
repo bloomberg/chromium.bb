@@ -1473,8 +1473,7 @@ TEST_F('BackgroundTest', 'DISABLED_ActiveDescendantUpdates', function() {
   });
 });
 
-// Fails consistently (timeout) on linux-chromeos-dbg https://crbug.com/872258
-TEST_F('BackgroundTest', 'DISABLED_NavigationEscapesEdit', function() {
+TEST_F('BackgroundTest', 'NavigationEscapesEdit', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <p>before content editable</p>
