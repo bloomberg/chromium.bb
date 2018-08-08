@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
+import android.net.Uri;
 import android.view.View;
 
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -36,5 +37,10 @@ public class ActivityHostImpl extends IActivityHost.Stub {
     @Override
     public void setBottomBarHeight(int height) {
         mActivity.setBottomBarHeight(height);
+    }
+
+    @Override
+    public void loadUri(Uri uri) {
+        mActivity.loadUri(uri);
     }
 }
