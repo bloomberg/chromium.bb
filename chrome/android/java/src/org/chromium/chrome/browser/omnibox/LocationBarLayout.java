@@ -1109,6 +1109,14 @@ public class LocationBarLayout extends FrameLayout
 
         findViewById(R.id.location_bar_verbose_status_extra_space)
                 .setVisibility(verboseStatusVisibility);
+
+        if (!verboseStatusVisible) {
+            // Return early since everything past here requires the verbose status to be visible
+            // and able to be populated with content.
+            return;
+        }
+
+        mVerboseStatusTextView.setText(mToolbarDataProvider.getVerboseStatusString());
     }
 
     /**

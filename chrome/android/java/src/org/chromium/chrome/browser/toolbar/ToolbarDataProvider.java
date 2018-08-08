@@ -102,6 +102,18 @@ public interface ToolbarDataProvider {
     int getSecurityIconResource(boolean isTablet);
 
     /**
+     * @return The resource ID of the display string for the verbose status view or 0 if none
+     * applies.
+     */
+    @StringRes
+    default int getVerboseStatusString() {
+        if (isOfflinePage()) {
+            return R.string.location_bar_verbose_status_offline;
+        }
+        return 0;
+    }
+
+    /**
      * @return The resource ID of the content description for the security icon.
      */
     @StringRes
