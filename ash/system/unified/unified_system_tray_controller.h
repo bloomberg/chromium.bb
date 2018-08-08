@@ -69,8 +69,8 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   void EndDrag(const gfx::Point& location);
   void Fling(int velocity);
 
-  // Show user selector popup widget. Called from the view.
-  void ShowUserChooserWidget();
+  // Show user selector view. Called from the view.
+  void ShowUserChooserView();
   // Show the detailed view of network. If |force| is true, it shows the
   // detailed view even if it's collapsed. Called from the view.
   void ShowNetworkDetailedView(bool force);
@@ -102,6 +102,9 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
 
   // Ensure the main view is expanded. Called from the slider bubble controller.
   void EnsureExpanded();
+
+  // Return true if user chooser is enabled. Called from the view.
+  bool IsUserChooserEnabled() const;
 
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;

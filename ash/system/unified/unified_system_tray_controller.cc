@@ -213,22 +213,9 @@ void UnifiedSystemTrayController::Fling(int velocity) {
   StartAnimation(velocity < 0);
 }
 
-void UnifiedSystemTrayController::ShowUserChooserWidget() {
-  // Don't allow user add or switch when CancelCastingDialog is open.
-  // See http://crrev.com/291276 and http://crbug.com/353170.
-  if (Shell::IsSystemModalWindowOpen())
+void UnifiedSystemTrayController::ShowUserChooserView() {
+  if (!IsUserChooserEnabled())
     return;
-
-  // Don't allow at login, lock or when adding a multi-profile user.
-  SessionController* session = Shell::Get()->session_controller();
-  if (session->IsUserSessionBlocked())
-    return;
-
-  // Don't show if we cannot add or switch users.
-  if (session->GetAddUserPolicy() != AddUserSessionPolicy::ALLOWED &&
-      session->NumberOfLoggedInUsers() <= 1)
-    return;
-
   unified_view_->SetDetailedView(new UserChooserView(this));
 }
 
@@ -303,6 +290,24 @@ void UnifiedSystemTrayController::EnsureExpanded() {
     unified_view_->ResetDetailedView();
   }
   animation_->Show();
+}
+
+bool UnifiedSystemTrayController::IsUserChooserEnabled() const {
+  // Don't allow user add or switch when CancelCastingDialog is open.
+  // See http://crrev.com/291276 and http://crbug.com/353170.
+  if (Shell::IsSystemModalWindowOpen())
+    return false;
+
+  // Don't allow at login, lock or when adding a multi-profile user.
+  SessionController* session = Shell::Get()->session_controller();
+  if (session->IsUserSessionBlocked())
+    return false;
+
+  // Don't show if we cannot add or switch users.
+  if (session->GetAddUserPolicy() != AddUserSessionPolicy::ALLOWED &&
+      session->NumberOfLoggedInUsers() <= 1)
+    return false;
+  return true;
 }
 
 void UnifiedSystemTrayController::AnimationEnded(
