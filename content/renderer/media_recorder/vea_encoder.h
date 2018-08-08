@@ -65,12 +65,13 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
 
   // VideoTrackRecorder::Encoder implementation.
   ~VEAEncoder() override;
+  void Initialize(const gfx::Size& resolution) override;
   void EncodeOnEncodingTaskRunner(scoped_refptr<media::VideoFrame> frame,
                                   base::TimeTicks capture_timestamp) override;
 
   void ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size);
 
-  void DestroyOnEncodingTaskRunner(base::WaitableEvent* async_waiter);
+  void DestroyOnEncodingTaskRunner(base::WaitableEvent* async_waiter = nullptr);
 
   media::GpuVideoAcceleratorFactories* const gpu_factories_;
 

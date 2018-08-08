@@ -163,6 +163,23 @@ media::VideoCodecProfile CodecEnumerator::CodecIdToVEAProfile(CodecId codec) {
 
 }  // anonymous namespace
 
+VideoTrackRecorder::Counter::Counter() : count_(0u), weak_factory_(this) {}
+
+VideoTrackRecorder::Counter::~Counter() = default;
+
+void VideoTrackRecorder::Counter::IncreaseCount() {
+  count_++;
+}
+
+void VideoTrackRecorder::Counter::DecreaseCount() {
+  count_--;
+}
+
+base::WeakPtr<VideoTrackRecorder::Counter>
+VideoTrackRecorder::Counter::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 VideoTrackRecorder::Encoder::Encoder(
     const OnEncodedVideoCB& on_encoded_video_callback,
     int32_t bits_per_second,
@@ -173,7 +190,7 @@ VideoTrackRecorder::Encoder::Encoder(
       paused_(false),
       on_encoded_video_callback_(on_encoded_video_callback),
       bits_per_second_(bits_per_second),
-      num_frames_in_encode_(0) {
+      num_frames_in_encode_(std::make_unique<VideoTrackRecorder::Counter>()) {
   DCHECK(!on_encoded_video_callback_.is_null());
   if (encoding_task_runner_)
     return;
@@ -184,6 +201,10 @@ VideoTrackRecorder::Encoder::Encoder(
 
 VideoTrackRecorder::Encoder::~Encoder() {
   main_task_runner_->DeleteSoon(FROM_HERE, video_renderer_.release());
+  if (origin_task_runner_ && !origin_task_runner_->BelongsToCurrentThread()) {
+    origin_task_runner_->DeleteSoon(FROM_HERE,
+                                    std::move(num_frames_in_encode_));
+  }
 }
 
 void VideoTrackRecorder::Encoder::StartFrameEncode(
@@ -204,7 +225,7 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
     return;
   }
 
-  if (num_frames_in_encode_ > kMaxNumberOfFramesInEncode) {
+  if (num_frames_in_encode_->count() > kMaxNumberOfFramesInEncode) {
     DLOG(WARNING) << "Too many frames are queued up. Dropping this one.";
     return;
   }
@@ -226,9 +247,13 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
         video_frame, video_frame->format(), video_frame->visible_rect(),
         video_frame->natural_size());
   }
-  wrapped_frame->AddDestructionObserver(media::BindToCurrentLoop(base::Bind(
-      &VideoTrackRecorder::Encoder::FrameReleased, this, video_frame)));
-  ++num_frames_in_encode_;
+  wrapped_frame->AddDestructionObserver(media::BindToCurrentLoop(
+      base::BindOnce(&VideoTrackRecorder::Counter::DecreaseCount,
+                     num_frames_in_encode_->GetWeakPtr())));
+  wrapped_frame->AddDestructionObserver(
+      base::BindOnce([](const scoped_refptr<VideoFrame>& video_frame) {},
+                     std::move(video_frame)));
+  num_frames_in_encode_->IncreaseCount();
 
   encoding_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&Encoder::EncodeOnEncodingTaskRunner, this,
@@ -349,12 +374,6 @@ bool VideoTrackRecorder::Encoder::CanEncodeAlphaChannel() {
   return false;
 }
 
-void VideoTrackRecorder::Encoder::FrameReleased(
-    const scoped_refptr<VideoFrame>& frame) {
-  DCHECK(origin_task_runner_->BelongsToCurrentThread());
-  --num_frames_in_encode_;
-}
-
 // static
 VideoTrackRecorder::CodecId VideoTrackRecorder::GetPreferredCodecId() {
   return GetCodecEnumerator()->GetPreferredCodecId();
@@ -377,7 +396,7 @@ VideoTrackRecorder::VideoTrackRecorder(
     int32_t bits_per_second,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
     : track_(track),
-      paused_before_init_(false),
+      should_pause_encoder_on_initialization_(false),
       main_task_runner_(std::move(main_task_runner)),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
@@ -407,7 +426,7 @@ void VideoTrackRecorder::Pause() {
   if (encoder_)
     encoder_->SetPaused(true);
   else
-    paused_before_init_ = true;
+    should_pause_encoder_on_initialization_ = true;
 }
 
 void VideoTrackRecorder::Resume() {
@@ -415,7 +434,7 @@ void VideoTrackRecorder::Resume() {
   if (encoder_)
     encoder_->SetPaused(false);
   else
-    paused_before_init_ = false;
+    should_pause_encoder_on_initialization_ = false;
 }
 
 void VideoTrackRecorder::OnVideoFrameForTesting(
@@ -478,9 +497,10 @@ void VideoTrackRecorder::InitializeEncoder(
         NOTREACHED() << "Unsupported codec " << static_cast<int>(codec);
     }
   }
+  encoder_->Initialize(input_size);
 
-  if (paused_before_init_)
-    encoder_->SetPaused(paused_before_init_);
+  if (should_pause_encoder_on_initialization_)
+    encoder_->SetPaused(should_pause_encoder_on_initialization_);
 
   // StartFrameEncode() will be called on Render IO thread.
   MediaStreamVideoSink::ConnectToTrack(
