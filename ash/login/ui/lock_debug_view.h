@@ -104,6 +104,9 @@ class LockDebugView : public views::View, public views::ButtonListener {
   // error" button is clicked.
   AuthErrorType next_auth_error_type_ = AuthErrorType::kFirstUnlockFailed;
 
+  // True if a warning banner is shown.
+  bool is_warning_banner_shown_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(LockDebugView);
 };
 

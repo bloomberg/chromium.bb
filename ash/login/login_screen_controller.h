@@ -105,6 +105,8 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
                         const std::string& error_text,
                         const std::string& help_link_text,
                         int32_t help_topic_id) override;
+  void ShowWarningBanner(const base::string16& message) override;
+  void HideWarningBanner() override;
   void ClearErrors() override;
   void ShowUserPodCustomIcon(const AccountId& account_id,
                              mojom::EasyUnlockIconOptionsPtr icon) override;

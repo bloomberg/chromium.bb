@@ -34,6 +34,11 @@ void LoginDataDispatcher::Observer::OnShowEasyUnlockIcon(
     const AccountId& user,
     const mojom::EasyUnlockIconOptionsPtr& icon) {}
 
+void LoginDataDispatcher::Observer::OnShowWarningBanner(
+    const base::string16& message) {}
+
+void LoginDataDispatcher::Observer::OnHideWarningBanner() {}
+
 void LoginDataDispatcher::Observer::OnDevChannelInfoChanged(
     const std::string& os_version_label_text,
     const std::string& enterprise_info_text,
@@ -116,6 +121,16 @@ void LoginDataDispatcher::ShowEasyUnlockIcon(
     const mojom::EasyUnlockIconOptionsPtr& icon) {
   for (auto& observer : observers_)
     observer.OnShowEasyUnlockIcon(user, icon);
+}
+
+void LoginDataDispatcher::ShowWarningBanner(const base::string16& message) {
+  for (auto& observer : observers_)
+    observer.OnShowWarningBanner(message);
+}
+
+void LoginDataDispatcher::HideWarningBanner() {
+  for (auto& observer : observers_)
+    observer.OnHideWarningBanner();
 }
 
 void LoginDataDispatcher::SetDevChannelInfo(

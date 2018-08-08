@@ -91,6 +91,19 @@ void UserBoardViewMojo::SetPublicSessionLocales(
                                                                 default_locale);
 }
 
+void UserBoardViewMojo::ShowBannerMessage(const base::string16& message,
+                                          bool is_warning) {
+  // As of M69, ShowBannerMessage is used only for showing ext4 migration
+  // warning banner message.
+  // TODO(fukino): Remove ShowWarningMessage and related implementation along
+  // with the migration screen once the transition to ext4 is compilete.
+  if (!message.empty()) {
+    LoginScreenClient::Get()->login_screen()->ShowWarningBanner(message);
+  } else {
+    LoginScreenClient::Get()->login_screen()->HideWarningBanner();
+  }
+}
+
 void UserBoardViewMojo::ShowUserPodCustomIcon(
     const AccountId& account_id,
     const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions&
