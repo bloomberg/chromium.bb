@@ -6474,10 +6474,12 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   const int num_planes = av1_num_planes(cm);
   const int pw = block_size_wide[bsize];
   const int ph = block_size_high[bsize];
+  const int plane = 0;
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = xd->mi[0];
   // This function should only ever be called for compound modes
   assert(has_second_ref(mbmi));
+  const int_mv init_mv[2] = { cur_mv[0], cur_mv[1] };
   const int refs[2] = { mbmi->ref_frame[0], mbmi->ref_frame[1] };
   int_mv ref_mv[2];
   int ite, ref;
@@ -6487,11 +6489,16 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   struct macroblockd_plane *const pd = &xd->plane[0];
   const int p_col = ((mi_col * MI_SIZE) >> pd->subsampling_x) + 4 * ic;
   const int p_row = ((mi_row * MI_SIZE) >> pd->subsampling_y) + 4 * ir;
-  int is_global[2];
+
+  ConvolveParams conv_params = get_conv_params(0, plane, xd->bd);
+  conv_params.use_jnt_comp_avg = 0;
+  WarpTypesAllowed warp_types[2];
   for (ref = 0; ref < 2; ++ref) {
     const WarpedMotionParams *const wm =
         &xd->global_motion[xd->mi[0]->ref_frame[ref]];
-    is_global[ref] = is_global_mv_block(xd->mi[0], wm->wmtype);
+    const int is_global = is_global_mv_block(xd->mi[0], wm->wmtype);
+    warp_types[ref].global_warp_allowed = is_global;
+    warp_types[ref].local_warp_allowed = mbmi->motion_mode == WARPED_CAUSAL;
   }
 
   // Do joint motion search in compound mode to get more accurate mv.
@@ -6503,30 +6510,28 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   };
 
   // Prediction buffer from second frame.
-  DECLARE_ALIGNED(16, uint16_t, second_pred_alloc_16[MAX_SB_SQUARE]);
-  uint8_t *second_pred;
+  DECLARE_ALIGNED(16, uint8_t, second_pred16[MAX_SB_SQUARE * sizeof(uint16_t)]);
+  uint8_t *second_pred = get_buf_by_bd(xd, second_pred16);
   (void)ref_mv_sub8x8;
 
+  const int have_newmv = have_nearmv_in_inter_mode(mbmi->mode);
+  const int ref_mv_idx = mbmi->ref_mv_idx + (have_newmv ? 1 : 0);
+  MV *const best_mv = &x->best_mv.as_mv;
+  const int search_range = 3;
+  const int sadpb = x->sadperbit16;
   // Allow joint search multiple times iteratively for each reference frame
   // and break out of the search loop if it couldn't find a better mv.
   for (ite = 0; ite < 4; ite++) {
     struct buf_2d ref_yv12[2];
     int bestsme = INT_MAX;
-    int sadpb = x->sadperbit16;
-    MV *const best_mv = &x->best_mv.as_mv;
-    int search_range = 3;
-
     MvLimits tmp_mv_limits = x->mv_limits;
     int id = ite % 2;  // Even iterations search in the first reference frame,
                        // odd iterations search in the second. The predictor
                        // found for the 'other' reference frame is factored in.
-    const int plane = 0;
-    ConvolveParams conv_params = get_conv_params(0, plane, xd->bd);
-    conv_params.use_jnt_comp_avg = 0;
-    WarpTypesAllowed warp_types;
-    warp_types.global_warp_allowed = is_global[!id];
-    warp_types.local_warp_allowed = mbmi->motion_mode == WARPED_CAUSAL;
-
+    if (ite >= 2 && cur_mv[0].as_int == init_mv[0].as_int &&
+        cur_mv[1].as_int == init_mv[1].as_int) {
+      break;
+    }
     for (ref = 0; ref < 2; ++ref) {
       ref_mv[ref] = av1_get_ref_mv(x, ref);
       // Swap out the reference frame for a version that's been scaled to
@@ -6553,23 +6558,21 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     ref_yv12[1] = xd->plane[plane].pre[1];
 
     // Get the prediction block from the 'other' reference frame.
-    InterpFilters interp_filters = EIGHTTAP_REGULAR;
+    const InterpFilters interp_filters = EIGHTTAP_REGULAR;
 
     // Since we have scaled the reference frames to match the size of the
     // current frame we must use a unit scaling factor during mode selection.
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-      second_pred = CONVERT_TO_BYTEPTR(second_pred_alloc_16);
       av1_highbd_build_inter_predictor(
           ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
           &cur_mv[!id].as_mv, &cm->sf_identity, pw, ph, 0, interp_filters,
-          &warp_types, p_col, p_row, plane, MV_PRECISION_Q3, mi_col * MI_SIZE,
-          mi_row * MI_SIZE, xd, cm->allow_warped_motion);
+          &warp_types[!id], p_col, p_row, plane, MV_PRECISION_Q3,
+          mi_col * MI_SIZE, mi_row * MI_SIZE, xd, cm->allow_warped_motion);
     } else {
-      second_pred = (uint8_t *)second_pred_alloc_16;
       av1_build_inter_predictor(ref_yv12[!id].buf, ref_yv12[!id].stride,
                                 second_pred, pw, &cur_mv[!id].as_mv,
                                 &cm->sf_identity, pw, ph, &conv_params,
-                                interp_filters, &warp_types, p_col, p_row,
+                                interp_filters, &warp_types[!id], p_col, p_row,
                                 plane, !id, MV_PRECISION_Q3, mi_col * MI_SIZE,
                                 mi_row * MI_SIZE, xd, cm->allow_warped_motion);
     }
@@ -6584,15 +6587,12 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     av1_set_mv_search_range(&x->mv_limits, &ref_mv[id].as_mv);
 
     // Use the mv result from the single mode as mv predictor.
-    // Use the mv result from the single mode as mv predictor.
     *best_mv = cur_mv[id].as_mv;
 
     best_mv->col >>= 3;
     best_mv->row >>= 3;
 
-    av1_set_mvcost(
-        x, id,
-        mbmi->ref_mv_idx + (have_nearmv_in_inter_mode(mbmi->mode) ? 1 : 0));
+    av1_set_mvcost(x, id, ref_mv_idx);
 
     // Small-range full-pixel motion search.
     bestsme = av1_refining_search_8p_c(x, sadpb, search_range,
@@ -6644,7 +6644,6 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 
     // Restore the pointer to the first prediction buffer.
     if (id) xd->plane[plane].pre[0] = ref_yv12[0];
-
     if (bestsme < last_besterr[id]) {
       cur_mv[id].as_mv = *best_mv;
       last_besterr[id] = bestsme;
