@@ -16,6 +16,8 @@ source_set("common_os") {
     "file_path_sanitization.h",
     "file_path_set.cc",
     "file_path_set.h",
+    "inheritable_event.cc",
+    "inheritable_event.h",
     "initializer.cc",
     "initializer.h",
     "layered_service_provider_api.h",

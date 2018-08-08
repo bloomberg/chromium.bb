@@ -48,6 +48,7 @@ source_set("test_executables") {
     ":test_util",
     "//base:base",
     "//chrome/chrome_cleaner/constants:common_strings",
+    "//chrome/chrome_cleaner/os:common_os",
   ]
 }
 

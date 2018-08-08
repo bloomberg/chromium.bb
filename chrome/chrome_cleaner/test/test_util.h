@@ -163,9 +163,6 @@ class ScopedTempDirNoWow64 : protected base::ScopedTempDir {
   // directory.
 };
 
-std::unique_ptr<base::WaitableEvent> CreateInheritableEvent(
-    base::WaitableEvent::ResetPolicy reset_policy,
-    base::WaitableEvent::InitialState initial_state);
 
 // Check that the test has administrator privileges, but not debug privileges.
 // This function drops unneeded privileges if possible, but won't try to raise

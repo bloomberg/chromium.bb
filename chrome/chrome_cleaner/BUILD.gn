@@ -17,6 +17,7 @@ test("chrome_cleaner_unittests") {
     "//base/test:test_support",
     "//chrome/chrome_cleaner/crash:crashpad_lib",
     "//chrome/chrome_cleaner/engines:resources",
+    "//chrome/chrome_cleaner/ipc:sandbox",
     "//chrome/chrome_cleaner/logging:common",
     "//chrome/chrome_cleaner/os:cleaner_os",
     "//chrome/chrome_cleaner/os:common_os",
@@ -30,6 +31,7 @@ test("chrome_cleaner_unittests") {
 
     # Tests from sub-directories.
     "//chrome/chrome_cleaner/http:unittest_sources",
+    "//chrome/chrome_cleaner/ipc:unittest_sources",
     "//chrome/chrome_cleaner/logging:unittest_sources",
     "//chrome/chrome_cleaner/os:unittest_sources",
     "//chrome/chrome_cleaner/pup_data:unittest_sources",
