@@ -493,7 +493,6 @@ void PersonalDataManager::Init(
   LoadProfiles();
   LoadCreditCards();
 
-
   // Check if profile cleanup has already been performed this major version.
   is_autofill_profile_cleanup_pending_ =
       pref_service_->GetInteger(prefs::kAutofillLastVersionDeduped) >=
@@ -1493,6 +1492,44 @@ void PersonalDataManager::ClearCreditCardNonSettingsOrigins() {
   // was made.
   if (has_updated)
     Refresh();
+}
+
+void PersonalDataManager::MoveJapanCityToStreetAddress() {
+  if (!database_helper_->GetLocalDatabase())
+    return;
+
+  // Don't run if the migration has already been performed.
+  if (pref_service_->GetBoolean(prefs::kAutofillJapanCityFieldMigrated))
+    return;
+
+  bool has_updated = false;
+  base::string16 japan_country_code = base::ASCIIToUTF16("JP");
+  base::string16 line_separator = base::ASCIIToUTF16("\n");
+  for (AutofillProfile* profile : GetProfiles()) {
+    base::string16 country_code = profile->GetRawInfo(ADDRESS_HOME_COUNTRY);
+    base::string16 city = profile->GetRawInfo(ADDRESS_HOME_CITY);
+    if (country_code == japan_country_code && !city.empty()) {
+      base::string16 street_address =
+          profile->GetRawInfo(ADDRESS_HOME_STREET_ADDRESS);
+      street_address = street_address.empty()
+                           ? city
+                           : street_address + line_separator + city;
+      profile->SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, street_address);
+      profile->SetRawInfo(ADDRESS_HOME_CITY, base::EmptyString16());
+
+      // Make the update.
+      database_helper_->GetLocalDatabase()->UpdateAutofillProfile(*profile);
+      has_updated = true;
+    }
+  }
+
+  // Refresh the local cache and send notifications to observers if a change was
+  // made.
+  if (has_updated)
+    Refresh();
+
+  // Set the pref so that this migration is never run again.
+  pref_service_->SetBoolean(prefs::kAutofillJapanCityFieldMigrated, true);
 }
 
 // TODO(crbug.com/618448): Refactor MergeProfile to not depend on class
@@ -2527,6 +2564,7 @@ void PersonalDataManager::ApplyAddressFixesAndCleanups() {
   DeleteDisusedAddresses();          // Once per major version, otherwise NOP.
   MaybeCreateTestAddresses();        // Once per user profile startup.
   ClearProfileNonSettingsOrigins();  // Ran everytime it is called.
+  MoveJapanCityToStreetAddress();    // One-time fix, otherwise NOP.
 }
 
 void PersonalDataManager::ApplyCardFixesAndCleanups() {

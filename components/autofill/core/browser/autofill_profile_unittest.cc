@@ -383,14 +383,13 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_Latn) {
                                                        test::kEmptyOrigin));
   test::SetProfileInfo(profiles.back().get(), "Miku", "", "Hatsune",
                        "miku@rei.com", "Rei Inc", "Roppongi Hills Mori Tower",
-                       "6-10-1 Roppongi", "Minato-ku", "Tokyo", "106-6126",
+                       "6-10-1 Roppongi, Minato-ku", "", "Tokyo", "106-6126",
                        "JP", "+81-3-6384-9000");
   profiles.back()->set_language_code("ja_Latn");
   static const char* kExpectedLabels[] = {
     "",
     "Miku Hatsune",
     "Miku Hatsune, Roppongi Hills Mori Tower",
-    "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi",
     "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku",
     "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku, "
         "Tokyo",
@@ -420,24 +419,23 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_ja) {
   profiles.push_back(std::make_unique<AutofillProfile>(base::GenerateGUID(),
                                                        test::kEmptyOrigin));
   test::SetProfileInfo(profiles.back().get(), "ミク", "", "初音",
-                       "miku@rei.com", "例", "六本木ヒルズ森タワー",
-                       "六本木 6-10-1", "港区", "東京都", "106-6126", "JP",
+                       "miku@rei.com", "例", "港区六本木ヒルズ森タワー",
+                       "六本木 6-10-1", "", "東京都", "106-6126", "JP",
                        "03-6384-9000");
   profiles.back()->set_language_code("ja_JP");
   static const char* kExpectedLabels[] = {
-    "",
-    "初音ミク",
-    "六本木ヒルズ森タワー初音ミク",
-    "六本木ヒルズ森タワー六本木 6-10-1初音ミク",
-    "港区六本木ヒルズ森タワー六本木 6-10-1初音ミク",
-    "東京都港区六本木ヒルズ森タワー六本木 6-10-1初音ミク",
-    "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1初音ミク",
-    "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1例初音ミク",
-    "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1例初音ミク, Japan",
-    "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1例初音ミク, Japan, "
-        "miku@rei.com",
-    "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1例初音ミク, Japan, "
-        "miku@rei.com, 03-6384-9000",
+      "",
+      "初音ミク",
+      "港区六本木ヒルズ森タワー初音ミク",
+      "港区六本木ヒルズ森タワー六本木 6-10-1初音ミク",
+      "東京都港区六本木ヒルズ森タワー六本木 6-10-1初音ミク",
+      "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1初音ミク",
+      "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1例初音ミク",
+      "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1例初音ミク, Japan",
+      "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1例初音ミク, Japan, "
+      "miku@rei.com",
+      "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1例初音ミク, Japan, "
+      "miku@rei.com, 03-6384-9000",
   };
 
   std::vector<base::string16> labels;

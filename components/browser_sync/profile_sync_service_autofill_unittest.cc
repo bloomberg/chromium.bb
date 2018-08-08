@@ -103,6 +103,8 @@ void RegisterAutofillPrefs(user_prefs::PrefRegistrySyncable* registry) {
                                 atoi(version_info::GetVersionNumber().c_str()));
   registry->RegisterDoublePref(autofill::prefs::kAutofillBillingCustomerNumber,
                                0.0);
+  registry->RegisterBooleanPref(
+      autofill::prefs::kAutofillJapanCityFieldMigrated, true);
   registry->RegisterBooleanPref(autofill::prefs::kAutofillOrphanRowsRemoved,
                                 true);
 }
@@ -127,9 +129,9 @@ class AutofillTableMock : public AutofillTable {
                     Time* date_last_used));
   MOCK_METHOD1(GetAutofillProfiles,
                bool(std::vector<std::unique_ptr<AutofillProfile>>*));  // NOLINT
-  MOCK_METHOD1(UpdateAutofillProfile, bool(const AutofillProfile&));  // NOLINT
-  MOCK_METHOD1(AddAutofillProfile, bool(const AutofillProfile&));     // NOLINT
-  MOCK_METHOD1(RemoveAutofillProfile, bool(const std::string&));      // NOLINT
+  MOCK_METHOD1(UpdateAutofillProfile, bool(const AutofillProfile&));   // NOLINT
+  MOCK_METHOD1(AddAutofillProfile, bool(const AutofillProfile&));      // NOLINT
+  MOCK_METHOD1(RemoveAutofillProfile, bool(const std::string&));       // NOLINT
 };
 
 MATCHER_P(MatchProfiles, profile, "") {
@@ -922,7 +924,6 @@ TEST_F(ProfileSyncServiceAutofillTest, MergeProfileWithDifferentGuid) {
   // Check that the sync profile use date was kept.
   EXPECT_EQ(base::Time::FromTimeT(1234), new_sync_profiles[0].use_date());
 }
-
 
 TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfile) {
   EXPECT_CALL(autofill_table(), GetAutofillProfiles(_)).WillOnce(Return(true));
