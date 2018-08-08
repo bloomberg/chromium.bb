@@ -55,8 +55,10 @@ class DeviceSensorEventPump {
     SUSPENDED
   };
 
+  // The default nullptr for listener is temporary until listener is eliminated
+  // TODO(crbug.com/861902)
   virtual void Start(LocalFrame* frame,
-                     blink::WebPlatformEventListener* listener) {
+                     blink::WebPlatformEventListener* listener = nullptr) {
     DVLOG(2) << "requested start";
 
     if (state_ != PumpState::STOPPED)

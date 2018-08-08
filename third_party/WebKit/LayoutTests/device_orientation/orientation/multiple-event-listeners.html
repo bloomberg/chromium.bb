@@ -29,13 +29,7 @@ sensor_test(async sensorProvider => {
 
   // At this point only the first listener is still active.
   setMockOrientationData(sensorProvider, orientationData2);
-  let childFrame = document.createElement('iframe');
-  document.body.appendChild(childFrame);
-  // Expect the cached event because Device Orientation was already active
-  // when third listener was added.
-  await waitForOrientation(orientationData1, childFrame.contentWindow);
   window.removeEventListener('deviceorientation', firstListener);
-
   return waitForOrientation(orientationData2);
 }, 'Tests using multiple event handlers for the Device Orientation API.');
 </script>
