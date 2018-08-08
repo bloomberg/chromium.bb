@@ -51,6 +51,7 @@
 namespace blink {
 
 constexpr unsigned HarfBuzzRunGlyphData::kMaxCharacterIndex;
+constexpr unsigned HarfBuzzRunGlyphData::kMaxGlyphs;
 
 unsigned ShapeResult::RunInfo::NextSafeToBreakOffset(unsigned offset) const {
   DCHECK_LE(offset, num_characters_);
@@ -851,6 +852,82 @@ bool IsSafeToBreakBefore(const hb_glyph_info_t* glyph_infos,
 
 }  // anonymous namespace
 
+// This function computes the number of glyphs and characters that can fit into
+// this RunInfo.
+//
+// HarfBuzzRunGlyphData has a limit kMaxCharacterIndex for the character index
+// in order to packsave memory. Also, RunInfo has kMaxGlyphs to make the number
+// of glyphs predictable and to minimize the buffer reallocations.
+unsigned ShapeResult::RunInfo::LimitNumGlyphs(
+    unsigned start_glyph,
+    unsigned* num_glyphs_in_out,
+    const bool is_ltr,
+    const hb_glyph_info_t* glyph_infos) {
+  unsigned num_glyphs = *num_glyphs_in_out;
+
+  // If there were larger character indexes than kMaxCharacterIndex, reduce
+  // num_glyphs so that all character indexes can fit to kMaxCharacterIndex.
+  // Because code points and glyphs are not always 1:1, we need to check the
+  // first and the last cluster.
+  unsigned start_cluster;
+  if (is_ltr) {
+    start_cluster = glyph_infos[start_glyph].cluster;
+    unsigned last_cluster = glyph_infos[start_glyph + num_glyphs - 1].cluster;
+    unsigned last_character_index = last_cluster - start_cluster;
+    if (UNLIKELY(last_character_index >
+                 HarfBuzzRunGlyphData::kMaxCharacterIndex)) {
+      // Make sure the end is a cluster boundary.
+      do {
+        num_glyphs--;
+        num_characters_ = last_character_index;
+        last_cluster = glyph_infos[start_glyph + num_glyphs - 1].cluster;
+        last_character_index = last_cluster - start_cluster;
+      } while (last_character_index > HarfBuzzRunGlyphData::kMaxCharacterIndex);
+    }
+  } else {
+    start_cluster = glyph_infos[start_glyph + num_glyphs - 1].cluster;
+    const unsigned last_cluster = glyph_infos[start_glyph].cluster;
+    unsigned last_character_index = last_cluster - start_cluster;
+    if (UNLIKELY(last_character_index >
+                 HarfBuzzRunGlyphData::kMaxCharacterIndex)) {
+      do {
+        num_glyphs--;
+        num_characters_ = last_character_index;
+        start_cluster = glyph_infos[start_glyph + num_glyphs - 1].cluster;
+        last_character_index = last_cluster - start_cluster;
+      } while (last_character_index > HarfBuzzRunGlyphData::kMaxCharacterIndex);
+    }
+  }
+
+  // num_glyphs maybe still larger than kMaxGlyphs after it was reduced to fit
+  // to kMaxCharacterIndex. Reduce to kMaxGlyphs if so.
+  if (UNLIKELY(num_glyphs > HarfBuzzRunGlyphData::kMaxGlyphs)) {
+    num_glyphs = HarfBuzzRunGlyphData::kMaxGlyphs;
+
+    // If kMaxGlyphs is not a cluster boundary, reduce further until the last
+    // boundary.
+    const unsigned end_cluster = glyph_infos[start_glyph + num_glyphs].cluster;
+    for (;; num_glyphs--) {
+      if (!num_glyphs) {
+        // Extreme edge case when kMaxGlyphs is one grapheme cluster. We don't
+        // have much choices, just cut at kMaxGlyphs.
+        num_glyphs = HarfBuzzRunGlyphData::kMaxGlyphs;
+        break;
+      }
+      if (glyph_infos[start_glyph + num_glyphs - 1].cluster != end_cluster)
+        break;
+    }
+    num_characters_ = is_ltr ? end_cluster - start_cluster
+                             : glyph_infos[start_glyph].cluster - end_cluster;
+  }
+
+  if (num_glyphs == *num_glyphs_in_out)
+    return start_cluster;
+  glyph_data_.Shrink(num_glyphs);
+  *num_glyphs_in_out = num_glyphs;
+  return start_cluster;
+}
+
 // Computes glyph positions, sets advance and offset of each glyph to RunInfo.
 //
 // Also computes glyph bounding box of the run. In this function, glyph bounding
@@ -865,10 +942,12 @@ void ShapeResult::ComputeGlyphPositions(ShapeResult::RunInfo* run,
       hb_buffer_get_glyph_infos(harfbuzz_buffer, nullptr);
   const hb_glyph_position_t* glyph_positions =
       hb_buffer_get_glyph_positions(harfbuzz_buffer, nullptr);
-  const unsigned start_cluster =
-      HB_DIRECTION_IS_FORWARD(hb_buffer_get_direction(harfbuzz_buffer))
-          ? glyph_infos[start_glyph].cluster
-          : glyph_infos[start_glyph + num_glyphs - 1].cluster;
+
+  const bool is_ltr =
+      HB_DIRECTION_IS_FORWARD(hb_buffer_get_direction(harfbuzz_buffer));
+  unsigned start_cluster =
+      run->LimitNumGlyphs(start_glyph, &num_glyphs, is_ltr, glyph_infos);
+  DCHECK_LE(num_glyphs, HarfBuzzRunGlyphData::kMaxGlyphs);
 
   // Compute glyph_origin and glyph_bounding_box in physical, since both offsets
   // and boudning box of glyphs are in physical. It's the caller's
@@ -893,13 +972,7 @@ void ShapeResult::ComputeGlyphPositions(ShapeResult::RunInfo* run,
 
     uint16_t character_index =
         glyph_infos[start_glyph + i].cluster - start_cluster;
-    if (UNLIKELY(character_index >= HarfBuzzRunGlyphData::kMaxCharacterIndex)) {
-      // If the character index exceeds the limit, abort and shrink the run to
-      // what are actually stored.
-      run->num_characters_ = character_index;
-      run->glyph_data_.Shrink(i);
-      break;
-    }
+    DCHECK_LE(character_index, HarfBuzzRunGlyphData::kMaxCharacterIndex);
     HarfBuzzRunGlyphData& glyph_data = run->glyph_data_[i];
     glyph_data.SetGlyphAndPositions(
         glyph, character_index, advance, offset,
