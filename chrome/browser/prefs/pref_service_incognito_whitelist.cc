@@ -378,8 +378,6 @@ const char* temporary_incognito_whitelist[] = {
 
     prefs::kGCMProductCategoryForSubtypes,
 
-    prefs::kEasyUnlockAllowed, prefs::kEasyUnlockPairing,
-
     prefs::kWebRTCMultipleRoutesEnabled, prefs::kWebRTCNonProxiedUdpEnabled,
     prefs::kWebRTCIPHandlingPolicy, prefs::kWebRTCUDPPortRange,
 
@@ -631,9 +629,6 @@ const char* temporary_incognito_whitelist[] = {
 
     prefs::kQuickCheckEnabled, prefs::kPacHttpsUrlStrippingEnabled,
     prefs::kBrowserGuestModeEnabled, prefs::kBrowserAddPersonEnabled,
-
-    prefs::kEasyUnlockHardlockState, prefs::kEasyUnlockLocalStateTpmKeys,
-    prefs::kEasyUnlockLocalStateUserPrefs,
 
     prefs::kRecoveryComponentNeedsElevation,
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
