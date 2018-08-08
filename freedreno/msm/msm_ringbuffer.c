@@ -109,6 +109,8 @@ static void ring_bo_del(struct fd_device *dev, struct fd_bo *bo)
 {
 	int ret;
 
+	assert(atomic_read(&bo->refcnt) == 1);
+
 	pthread_mutex_lock(&table_lock);
 	ret = fd_bo_cache_free(&to_msm_device(dev)->ring_cache, bo);
 	pthread_mutex_unlock(&table_lock);
@@ -310,6 +312,8 @@ static void flush_reset(struct fd_ringbuffer *ring)
 
 	for (i = 0; i < msm_ring->nr_bos; i++) {
 		struct msm_bo *msm_bo = to_msm_bo(msm_ring->bos[i]);
+		if (!msm_bo)
+			continue;
 		msm_bo->current_ring_seqno = 0;
 		fd_bo_del(&msm_bo->base);
 	}
@@ -317,7 +321,7 @@ static void flush_reset(struct fd_ringbuffer *ring)
 	/* for each of the cmd buffers, clear their reloc's: */
 	for (i = 0; i < msm_ring->submit.nr_cmds; i++) {
 		struct msm_cmd *target_cmd = msm_ring->cmds[i];
-		if (target_cmd->ring->flags & FD_RINGBUFFER_OBJECT)
+		if (!target_cmd)
 			continue;
 		target_cmd->nr_relocs = 0;
 	}
@@ -484,6 +488,16 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 		struct drm_msm_gem_submit_cmd *cmd = &msm_ring->submit.cmds[i];
 		struct msm_cmd *msm_cmd = msm_ring->cmds[i];
 		if (msm_cmd->ring->flags & FD_RINGBUFFER_OBJECT) {
+			/* we could have dropped last reference: */
+			msm_ring->cmds[i] = NULL;
+
+			/* need to drop ring_bo ref prior to unref'ing the ring,
+			 * because ring_bo_del assumes it is dropping the *last*
+			 * reference:
+			 */
+			fd_bo_del(msm_ring->bos[cmd->submit_idx]);
+			msm_ring->bos[cmd->submit_idx] = NULL;
+
 			msm_ringbuffer_unref(msm_cmd->ring);
 			free(U642VOID(cmd->relocs));
 		}
