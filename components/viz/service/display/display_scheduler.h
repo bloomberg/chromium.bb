@@ -123,10 +123,11 @@ class VIZ_SERVICE_EXPORT DisplayScheduler : public BeginFrameObserverBase,
   void MaybeStartObservingBeginFrames();
   void StartObservingBeginFrames();
   void StopObservingBeginFrames();
-  bool ShouldDraw();
+  bool ShouldDraw() const;
   void DidFinishFrame(bool did_draw);
   // Updates |has_pending_surfaces_| and returns whether its value changed.
   bool UpdateHasPendingSurfaces();
+  void ReportNotDrawReason();
 
   DisplaySchedulerClient* client_;
   BeginFrameSource* begin_frame_source_;
