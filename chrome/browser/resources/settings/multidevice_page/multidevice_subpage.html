@@ -8,6 +8,7 @@
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../settings_vars_css.html">
+<link rel="import" href="multidevice_constants.html">
 <link rel="import" href="multidevice_feature_item.html">
 <link rel="import" href="multidevice_feature_toggle.html">
 
@@ -36,7 +37,8 @@
         if="[[shouldShowIndividualFeatures_(pageContentData)]]"
         restamp>
       <div class="feature-item-container">
-        <settings-multidevice-feature-item icon-name="settings:smart-lock"
+        <settings-multidevice-feature-item id="smart-lock-item"
+            icon-name="settings:smart-lock"
             subpage-route="[[routes.LOCK_SCREEN]]"
             feature-name="$i18n{multideviceSmartLockItemTitle}"
             feature-summary-html="$i18n{multideviceSmartLockItemSummary}">
@@ -49,16 +51,21 @@
             </settings-multidevice-feature-toggle>
           </div>
         </settings-multidevice-feature-item>
-        <settings-multidevice-feature-item icon-name="settings:sms-connect"
+        <settings-multidevice-feature-item id="android-messages-item"
+            icon-name="settings:sms-connect"
             feature-name="$i18n{multideviceAndroidMessagesItemTitle}"
             feature-summary-html="$i18n{multideviceAndroidMessagesItemSummary}">
-          <div slot="feature-contoller">
-            <template is="dom-if" if="[[androidMessagesRequiresSetup_]]">
+          <div slot="feature-controller">
+            <template is="dom-if"
+                if="[[androidMessagesRequiresSetup_]]"
+                restamp>
               <paper-button on-click="handleAndroidMessagesButtonClick_">
                 $i18n{multideviceSetupButton}
               </paper-button>
             </template>
-            <template is="dom-if" if="[[!androidMessagesRequiresSetup_]]">
+            <template is="dom-if"
+                if="[[!androidMessagesRequiresSetup_]]"
+                restamp>
               <settings-multidevice-feature-toggle
                   pref="{{prefs.multidevice.sms_connect_enabled}}">
               </settings-multidevice-feature-toggle>
