@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
-#include "chrome/chrome_cleaner/test/test_name_helper.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -78,7 +77,6 @@ INSTANTIATE_TEST_CASE_P(
                                              ExecutionMode::kCleanup),
         /*with_scanning_mode_logs=*/::testing::Bool(),
         /*with_cleanup_mode_logs=*/::testing::Bool(),
-        /*uploading_blocked=*/::testing::Bool()),
-    GetParamNameForTest());
+        /*uploading_blocked=*/::testing::Bool()));
 
 }  // namespace chrome_cleaner
