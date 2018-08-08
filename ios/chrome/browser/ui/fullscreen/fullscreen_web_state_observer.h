@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ios/web/public/web_state/web_state_observer.h"
+#include "url/gurl.h"
 
 class FullscreenController;
 class FullscreenMediator;
@@ -52,6 +53,8 @@ class FullscreenWebStateObserver : public web::WebStateObserver {
   std::unique_ptr<ScopedFullscreenDisabler> ssl_disabler_;
   // The disabler for loading.
   std::unique_ptr<ScopedFullscreenDisabler> loading_disabler_;
+  // The URL received in the NavigationContext of the last finished navigation.
+  GURL last_navigation_url_;
 };
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_WEB_STATE_OBSERVER_H_
