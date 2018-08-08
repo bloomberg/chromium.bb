@@ -12,12 +12,12 @@
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
 #include "third_party/blink/renderer/core/paint/block_flow_painter.h"
 #include "third_party/blink/renderer/core/paint/box_clipper.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -28,18 +28,18 @@ namespace blink {
 
 DISABLE_CFI_PERF
 void BlockPainter::Paint(const PaintInfo& paint_info) {
-  AdjustPaintOffsetScope adjustment(layout_block_, paint_info);
-  auto paint_offset = adjustment.PaintOffset();
-  auto& local_paint_info = adjustment.MutablePaintInfo();
-
+  PaintInfoWithOffset paint_info_with_offset(layout_block_, paint_info);
   // We can't early return if there is no fragment to paint for this block,
   // because there may be overflowing children that exist in the painting
-  // fragment. We also can't check IntersectsPaintRect() in the case because we
+  // fragment. We also can't check ShouldPaint() in the case because we
   // don't have a meaningful paint offset. TODO(wangxianzhu): only paint
   // children if !adjustment.FragmentToPaint().
-  if (adjustment.FragmentToPaint() &&
-      !IntersectsPaintRect(local_paint_info, paint_offset))
+  if (paint_info_with_offset.FragmentToPaint() &&
+      !ShouldPaint(paint_info_with_offset))
     return;
+
+  auto paint_offset = paint_info_with_offset.PaintOffset();
+  auto& local_paint_info = paint_info_with_offset.MutablePaintInfo();
 
   PaintPhase original_phase = local_paint_info.phase;
 
@@ -276,16 +276,16 @@ void BlockPainter::PaintCarets(const PaintInfo& paint_info,
 }
 
 DISABLE_CFI_PERF
-bool BlockPainter::IntersectsPaintRect(const PaintInfo& paint_info,
-                                       const LayoutPoint& paint_offset) const {
+bool BlockPainter::ShouldPaint(
+    const PaintInfoWithOffset& paint_info_with_offset) const {
   LayoutRect overflow_rect;
-  if (paint_info.IsPrinting() && layout_block_.IsAnonymousBlock() &&
-      layout_block_.ChildrenInline()) {
-    // For case <a href="..."><div>...</div></a>, when m_layoutBlock is the
+  if (paint_info_with_offset.GetPaintInfo().IsPrinting() &&
+      layout_block_.IsAnonymousBlock() && layout_block_.ChildrenInline()) {
+    // For case <a href="..."><div>...</div></a>, when layout_block_ is the
     // anonymous container of <a>, the anonymous container's visual overflow is
     // empty, but we need to continue painting to output <a>'s PDF URL rect
     // which covers the continuations, as if we included <a>'s PDF URL rect into
-    // m_layoutBlock's visual overflow.
+    // layout_block_'s visual overflow.
     Vector<LayoutRect> rects;
     layout_block_.AddElementVisualOverflowRects(rects, LayoutPoint());
     overflow_rect = UnionRect(rects);
@@ -307,8 +307,7 @@ bool BlockPainter::IntersectsPaintRect(const PaintInfo& paint_info,
     overflow_rect.Move(-layout_block_.ScrolledContentOffset());
   }
 
-  overflow_rect.MoveBy(paint_offset);
-  return paint_info.GetCullRect().IntersectsCullRect(overflow_rect);
+  return paint_info_with_offset.LocalRectIntersectsCullRect(overflow_rect);
 }
 
 void BlockPainter::PaintContents(const PaintInfo& paint_info,

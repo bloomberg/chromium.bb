@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
+#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
 
 namespace blink {
 
-void AdjustPaintOffsetScope::AdjustForPaintOffsetTranslation(
+void PaintInfoWithOffset::AdjustForPaintOffsetTranslation(
     const LayoutObject& object,
     const TransformPaintPropertyNode* paint_offset_translation) {
   if (input_paint_info_.context.InDrawingRecorder()) {
@@ -32,7 +32,7 @@ void AdjustPaintOffsetScope::AdjustForPaintOffsetTranslation(
       paint_offset_translation->Matrix().ToAffineTransform());
 }
 
-void AdjustPaintOffsetScope::FinishPaintOffsetTranslationAsDrawing() {
+void PaintInfoWithOffset::FinishPaintOffsetTranslationAsDrawing() {
   // This scope should not interlace with scopes of DrawingRecorders.
   DCHECK(paint_offset_translation_as_drawing_);
   DCHECK(input_paint_info_.context.InDrawingRecorder());

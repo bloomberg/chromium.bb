@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_ADJUST_PAINT_OFFSET_SCOPE_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_ADJUST_PAINT_OFFSET_SCOPE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_INFO_WITH_OFFSET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_INFO_WITH_OFFSET_H_
 
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
@@ -14,15 +14,14 @@ namespace blink {
 
 // Adjusts cull rect of the input PaintInfo and finds the paint offset for a
 // LayoutObject or an NGPaintFragment before painting. Normally a
-// Paint(const PaintInfo&) method creates an AdjustPaintOffsetScope and holds it
+// Paint(const PaintInfo&) method creates an PaintInfoWithOffset and holds it
 // in the stack, and passes it to other PaintXXX() methods that paint different
 // parts of the object.
-class AdjustPaintOffsetScope {
+class PaintInfoWithOffset {
   STACK_ALLOCATED();
 
  public:
-  AdjustPaintOffsetScope(const LayoutObject& object,
-                         const PaintInfo& paint_info)
+  PaintInfoWithOffset(const LayoutObject& object, const PaintInfo& paint_info)
       : fragment_to_paint_(paint_info.FragmentToPaint(object)),
         input_paint_info_(paint_info) {
     if (!fragment_to_paint_) {
@@ -41,11 +40,11 @@ class AdjustPaintOffsetScope {
     }
   }
 
-  AdjustPaintOffsetScope(const NGPaintFragment& fragment,
-                         const PaintInfo& paint_info)
-      : AdjustPaintOffsetScope(*fragment.GetLayoutObject(), paint_info) {}
+  PaintInfoWithOffset(const NGPaintFragment& fragment,
+                      const PaintInfo& paint_info)
+      : PaintInfoWithOffset(*fragment.GetLayoutObject(), paint_info) {}
 
-  ~AdjustPaintOffsetScope() {
+  ~PaintInfoWithOffset() {
     if (paint_offset_translation_as_drawing_)
       FinishPaintOffsetTranslationAsDrawing();
   }
@@ -70,6 +69,13 @@ class AdjustPaintOffsetScope {
 
   const FragmentData* FragmentToPaint() const { return fragment_to_paint_; }
 
+  bool LocalRectIntersectsCullRect(const LayoutRect& local_rect) const {
+    LayoutRect rect_in_paint_info_space = local_rect;
+    rect_in_paint_info_space.MoveBy(PaintOffset());
+    return GetPaintInfo().GetCullRect().IntersectsCullRect(
+        rect_in_paint_info_space);
+  }
+
  private:
   void AdjustForPaintOffsetTranslation(
       const LayoutObject&,
@@ -86,4 +92,4 @@ class AdjustPaintOffsetScope {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_ADJUST_PAINT_OFFSET_SCOPE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_INFO_WITH_OFFSET_H_

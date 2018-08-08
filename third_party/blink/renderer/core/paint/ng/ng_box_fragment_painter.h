@@ -23,6 +23,7 @@ class HitTestResult;
 class LayoutRect;
 class NGPaintFragment;
 class NGPhysicalFragment;
+class PaintInfoWithOffset;
 struct PaintInfo;
 
 // Painter for LayoutNG box fragments, paints borders and background. Delegates
@@ -66,8 +67,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   bool IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
       const NGPaintFragment&,
       const PaintInfo&);
-  bool IntersectsPaintRect(const PaintInfo&,
-                           const LayoutPoint& paint_offset) const;
+  bool ShouldPaint(const PaintInfoWithOffset&) const;
 
   void PaintBoxDecorationBackground(const PaintInfo&,
                                     const LayoutPoint& paint_offset);

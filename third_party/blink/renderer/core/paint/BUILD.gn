@@ -7,8 +7,6 @@ import("//third_party/blink/renderer/core/core.gni")
 blink_core_sources("paint") {
   split_count = 2
   sources = [
-    "adjust_paint_offset_scope.cc",
-    "adjust_paint_offset_scope.h",
     "applied_decoration_painter.cc",
     "applied_decoration_painter.h",
     "background_image_geometry.cc",
@@ -159,6 +157,8 @@ blink_core_sources("paint") {
     "object_painter_base.h",
     "paint_event.h",
     "paint_info.h",
+    "paint_info_with_offset.cc",
+    "paint_info_with_offset.h",
     "paint_invalidator.cc",
     "paint_invalidator.h",
     "paint_layer.cc",
