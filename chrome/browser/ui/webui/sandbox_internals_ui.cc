@@ -41,7 +41,14 @@ static void SetSandboxStatusData(content::WebUIDataSource* source) {
                      status & service_manager::SandboxLinux::kSeccompBPF);
   source->AddBoolean("seccompTsync",
                      status & service_manager::SandboxLinux::kSeccompTSYNC);
-  source->AddBoolean("yama", status & service_manager::SandboxLinux::kYama);
+  source->AddBoolean("yamaBroker",
+                     status & service_manager::SandboxLinux::kYama);
+
+  // Yama does not enforce in user namespaces.
+  bool enforcing_yama_nonbroker =
+      status & service_manager::SandboxLinux::kYama &&
+      !(status & service_manager::SandboxLinux::kUserNS);
+  source->AddBoolean("yamaNonbroker", enforcing_yama_nonbroker);
 
   // Require either the setuid or namespace sandbox for our first-layer sandbox.
   bool good_layer1 = (status & service_manager::SandboxLinux::kSUID ||
