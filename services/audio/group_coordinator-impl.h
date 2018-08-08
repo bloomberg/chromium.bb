@@ -2,30 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/audio/group_coordinator.h"
-
-#include <algorithm>
-
-#include "base/stl_util.h"
-#include "services/audio/group_member.h"
+#ifndef SERVICES_AUDIO_GROUP_COORDINATOR_IMPL_H_
+#define SERVICES_AUDIO_GROUP_COORDINATOR_IMPL_H_
 
 namespace audio {
 
-GroupCoordinator::GroupCoordinator() {
+template <typename Member>
+GroupCoordinator<Member>::GroupCoordinator() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-GroupCoordinator::~GroupCoordinator() {
+template <typename Member>
+GroupCoordinator<Member>::~GroupCoordinator() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(groups_.empty());
 }
 
-void GroupCoordinator::RegisterGroupMember(GroupMember* member) {
+template <typename Member>
+void GroupCoordinator<Member>::RegisterMember(
+    const base::UnguessableToken& group_id,
+    Member* member) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(member);
 
-  const auto it = FindGroup(member->GetGroupId());
-  std::vector<GroupMember*>& members = it->second.members;
+  const auto it = FindGroup(group_id);
+  std::vector<Member*>& members = it->second.members;
   DCHECK(!base::ContainsValue(members, member));
   members.push_back(member);
 
@@ -34,12 +35,15 @@ void GroupCoordinator::RegisterGroupMember(GroupMember* member) {
   }
 }
 
-void GroupCoordinator::UnregisterGroupMember(GroupMember* member) {
+template <typename Member>
+void GroupCoordinator<Member>::UnregisterMember(
+    const base::UnguessableToken& group_id,
+    Member* member) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(member);
 
-  const auto group_it = FindGroup(member->GetGroupId());
-  std::vector<GroupMember*>& members = group_it->second.members;
+  const auto group_it = FindGroup(group_id);
+  std::vector<Member*>& members = group_it->second.members;
   const auto member_it = std::find(members.begin(), members.end(), member);
   DCHECK(member_it != members.end());
   members.erase(member_it);
@@ -51,8 +55,10 @@ void GroupCoordinator::UnregisterGroupMember(GroupMember* member) {
   MaybePruneGroupMapEntry(group_it);
 }
 
-void GroupCoordinator::AddObserver(const base::UnguessableToken& group_id,
-                                   Observer* observer) {
+template <typename Member>
+void GroupCoordinator<Member>::AddObserver(
+    const base::UnguessableToken& group_id,
+    Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(observer);
 
@@ -61,8 +67,10 @@ void GroupCoordinator::AddObserver(const base::UnguessableToken& group_id,
   observers.push_back(observer);
 }
 
-void GroupCoordinator::RemoveObserver(const base::UnguessableToken& group_id,
-                                      Observer* observer) {
+template <typename Member>
+void GroupCoordinator<Member>::RemoveObserver(
+    const base::UnguessableToken& group_id,
+    Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(observer);
 
@@ -75,7 +83,8 @@ void GroupCoordinator::RemoveObserver(const base::UnguessableToken& group_id,
   MaybePruneGroupMapEntry(group_it);
 }
 
-const std::vector<GroupMember*>& GroupCoordinator::GetCurrentMembers(
+template <typename Member>
+const std::vector<Member*>& GroupCoordinator<Member>::GetCurrentMembers(
     const base::UnguessableToken& group_id) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -85,12 +94,13 @@ const std::vector<GroupMember*>& GroupCoordinator::GetCurrentMembers(
     }
   }
 
-  static const std::vector<GroupMember*> empty_set;
+  static const std::vector<Member*> empty_set;
   return empty_set;
 }
 
-GroupCoordinator::GroupMap::iterator GroupCoordinator::FindGroup(
-    const base::UnguessableToken& group_id) {
+template <typename Member>
+typename GroupCoordinator<Member>::GroupMap::iterator
+GroupCoordinator<Member>::FindGroup(const base::UnguessableToken& group_id) {
   for (auto it = groups_.begin(); it != groups_.end(); ++it) {
     if (it->first == group_id) {
       return it;
@@ -104,18 +114,28 @@ GroupCoordinator::GroupMap::iterator GroupCoordinator::FindGroup(
   return new_it;
 }
 
-void GroupCoordinator::MaybePruneGroupMapEntry(GroupMap::iterator it) {
+template <typename Member>
+void GroupCoordinator<Member>::MaybePruneGroupMapEntry(
+    typename GroupMap::iterator it) {
   if (it->second.members.empty() && it->second.observers.empty()) {
     groups_.erase(it);
   }
 }
 
-GroupCoordinator::Observer::~Observer() = default;
+template <typename Member>
+GroupCoordinator<Member>::Observer::~Observer() = default;
 
-GroupCoordinator::Group::Group() = default;
-GroupCoordinator::Group::~Group() = default;
-GroupCoordinator::Group::Group(GroupCoordinator::Group&& other) = default;
-GroupCoordinator::Group& GroupCoordinator::Group::operator=(
-    GroupCoordinator::Group&& other) = default;
+template <typename Member>
+GroupCoordinator<Member>::Group::Group() = default;
+template <typename Member>
+GroupCoordinator<Member>::Group::~Group() = default;
+template <typename Member>
+GroupCoordinator<Member>::Group::Group(
+    GroupCoordinator<Member>::Group&& other) = default;
+template <typename Member>
+typename GroupCoordinator<Member>::Group& GroupCoordinator<Member>::Group::
+operator=(GroupCoordinator::Group&& other) = default;
 
 }  // namespace audio
+
+#endif  // SERVICES_AUDIO_GROUP_COORDINATOR_IMPL_H_

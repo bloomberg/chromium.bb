@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/audio/test/mock_group_member.h"
+#include "services/audio/loopback_coordinator.h"
+#include "services/audio/group_coordinator-impl.h"
 
 namespace audio {
-
-MockGroupMember::MockGroupMember() = default;
-MockGroupMember::~MockGroupMember() = default;
-
+template class GroupCoordinator<LoopbackGroupMember>;
 }  // namespace audio

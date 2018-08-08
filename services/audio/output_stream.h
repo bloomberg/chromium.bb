@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "services/audio/loopback_coordinator.h"
 #include "services/audio/output_controller.h"
 #include "services/audio/sync_reader.h"
 
@@ -35,8 +36,6 @@ class AudioParameters;
 }  // namespace media
 
 namespace audio {
-
-class GroupCoordinator;
 
 class OutputStream final : public media::mojom::AudioOutputStream,
                            public OutputController::EventHandler {
@@ -53,8 +52,8 @@ class OutputStream final : public media::mojom::AudioOutputStream,
                media::AudioManager* audio_manager,
                const std::string& output_device_id,
                const media::AudioParameters& params,
-               GroupCoordinator* coordinator,
-               const base::UnguessableToken& group_id);
+               LoopbackCoordinator* coordinator,
+               const base::UnguessableToken& loopback_group_id);
 
   ~OutputStream() final;
 
@@ -83,10 +82,12 @@ class OutputStream final : public media::mojom::AudioOutputStream,
   mojo::Binding<AudioOutputStream> binding_;
   media::mojom::AudioOutputStreamObserverAssociatedPtr observer_;
   const scoped_refptr<media::mojom::ThreadSafeAudioLogPtr> log_;
-  GroupCoordinator* const coordinator_;
+  LoopbackCoordinator* const coordinator_;
 
   SyncReader reader_;
   OutputController controller_;
+  // A token indicating membership in a group of output controllers/streams.
+  const base::UnguessableToken loopback_group_id_;
 
   // This flag ensures that we only send OnStreamStateChanged notifications
   // and (de)register with the stream monitor when the state actually changes.

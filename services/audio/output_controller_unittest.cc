@@ -33,7 +33,7 @@
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/gmock_callback_support.h"
-#include "services/audio/group_member.h"
+#include "services/audio/loopback_group_member.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -216,7 +216,7 @@ class MockAudioOutputStream : public AudioOutputStream,
   DISALLOW_COPY_AND_ASSIGN(MockAudioOutputStream);
 };
 
-class MockSnooper : public GroupMember::Snooper {
+class MockSnooper : public Snoopable::Snooper {
  public:
   MockSnooper() = default;
   ~MockSnooper() override = default;
@@ -315,7 +315,7 @@ class OutputControllerTest : public ::testing::Test {
 
   void SetUp() override {
     controller_.emplace(&audio_manager_, &mock_event_handler_, GetTestParams(),
-                        std::string(), group_id_, &mock_sync_reader_);
+                        std::string(), &mock_sync_reader_);
     controller_->SetVolume(kTestVolume);
   }
 
@@ -403,7 +403,7 @@ class OutputControllerTest : public ::testing::Test {
   }
 
   void StartSnooping(MockSnooper* snooper) {
-    controller_->StartSnooping(snooper);
+    controller_->StartSnooping(snooper, Snoopable::SnoopingMode::kDeferred);
   }
 
   void WaitForSnoopedData(MockSnooper* snooper) {
@@ -416,7 +416,7 @@ class OutputControllerTest : public ::testing::Test {
   }
 
   void StopSnooping(MockSnooper* snooper) {
-    controller_->StopSnooping(snooper);
+    controller_->StopSnooping(snooper, Snoopable::SnoopingMode::kDeferred);
   }
 
   void Close() {

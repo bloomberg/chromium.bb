@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/audio/test/fake_group_member.h"
+#include "services/audio/test/fake_loopback_group_member.h"
 
 #include <algorithm>
 #include <cmath>
@@ -12,28 +12,28 @@
 
 namespace audio {
 
-FakeGroupMember::FakeGroupMember(const base::UnguessableToken& group_id,
-                                 const media::AudioParameters& params)
-    : group_id_(group_id),
-      params_(params),
+FakeLoopbackGroupMember::FakeLoopbackGroupMember(
+    const media::AudioParameters& params)
+    : params_(params),
       audio_bus_(media::AudioBus::Create(params_)),
       frequency_by_channel_(params_.channels(), 0.0) {
   CHECK(params_.IsValid());
 }
 
-FakeGroupMember::~FakeGroupMember() = default;
+FakeLoopbackGroupMember::~FakeLoopbackGroupMember() = default;
 
-void FakeGroupMember::SetChannelTone(int ch, double frequency) {
+void FakeLoopbackGroupMember::SetChannelTone(int ch, double frequency) {
   frequency_by_channel_[ch] = frequency;
 }
 
-void FakeGroupMember::SetVolume(double volume) {
+void FakeLoopbackGroupMember::SetVolume(double volume) {
   CHECK_GE(volume, 0.0);
   CHECK_LE(volume, 1.0);
   volume_ = volume;
 }
 
-void FakeGroupMember::RenderMoreAudio(base::TimeTicks output_timestamp) {
+void FakeLoopbackGroupMember::RenderMoreAudio(
+    base::TimeTicks output_timestamp) {
   if (snooper_) {
     for (int ch = 0; ch < params_.channels(); ++ch) {
       const double step = 2.0 * base::kPiDouble * frequency_by_channel_[ch] /
@@ -48,28 +48,32 @@ void FakeGroupMember::RenderMoreAudio(base::TimeTicks output_timestamp) {
   at_frame_ += params_.frames_per_buffer();
 }
 
-const base::UnguessableToken& FakeGroupMember::GetGroupId() {
-  return group_id_;
-}
-
-const media::AudioParameters& FakeGroupMember::GetAudioParameters() {
+const media::AudioParameters& FakeLoopbackGroupMember::GetAudioParameters()
+    const {
   return params_;
 }
 
-void FakeGroupMember::StartSnooping(Snooper* snooper) {
+std::string FakeLoopbackGroupMember::GetDeviceId() const {
+  // FIXME(ossu): Provide a device ID or return default!
+  return "";
+}
+
+void FakeLoopbackGroupMember::StartSnooping(Snooper* snooper,
+                                            SnoopingMode mode) {
   CHECK(!snooper_);
   snooper_ = snooper;
 }
 
-void FakeGroupMember::StopSnooping(Snooper* snooper) {
+void FakeLoopbackGroupMember::StopSnooping(Snooper* snooper,
+                                           SnoopingMode mode) {
   snooper_ = nullptr;
 }
 
-void FakeGroupMember::StartMuting() {
+void FakeLoopbackGroupMember::StartMuting() {
   // No effect for this fake implementation.
 }
 
-void FakeGroupMember::StopMuting() {
+void FakeLoopbackGroupMember::StopMuting() {
   // No effect for this fake implementation.
 }
 

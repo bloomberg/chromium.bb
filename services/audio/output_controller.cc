@@ -92,14 +92,12 @@ OutputController::OutputController(media::AudioManager* audio_manager,
                                    EventHandler* handler,
                                    const media::AudioParameters& params,
                                    const std::string& output_device_id,
-                                   const base::UnguessableToken& group_id,
                                    SyncReader* sync_reader)
     : audio_manager_(audio_manager),
       params_(params),
       handler_(handler),
       task_runner_(audio_manager->GetTaskRunner()),
       output_device_id_(output_device_id),
-      group_id_(group_id),
       stream_(NULL),
       disable_local_output_(false),
       should_duplicate_(0),
@@ -394,17 +392,20 @@ void OutputController::StopCloseAndClearStream() {
   state_ = kEmpty;
 }
 
-const base::UnguessableToken& OutputController::GetGroupId() {
-  return group_id_;
-}
-
-const media::AudioParameters& OutputController::GetAudioParameters() {
+const media::AudioParameters& OutputController::GetAudioParameters() const {
   return params_;
 }
 
-void OutputController::StartSnooping(Snooper* snooper) {
+std::string OutputController::GetDeviceId() const {
+  // FIXME(ossu): Should this return "" or
+  // AudioDeviceDescription::kDefaultDeviceId for the default device.
+  return output_device_id_;
+}
+
+void OutputController::StartSnooping(Snooper* snooper, SnoopingMode mode) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(snooper);
+  DCHECK_EQ(mode, SnoopingMode::kDeferred);
 
   if (snoopers_.empty())
     should_duplicate_.Increment();
@@ -412,8 +413,9 @@ void OutputController::StartSnooping(Snooper* snooper) {
   snoopers_.push_back(snooper);
 }
 
-void OutputController::StopSnooping(Snooper* snooper) {
+void OutputController::StopSnooping(Snooper* snooper, SnoopingMode mode) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_EQ(mode, SnoopingMode::kDeferred);
 
   const auto it = std::find(snoopers_.begin(), snoopers_.end(), snooper);
   DCHECK(it != snoopers_.end());

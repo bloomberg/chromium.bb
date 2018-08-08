@@ -17,7 +17,7 @@
 #include "media/mojo/interfaces/audio_logging.mojom.h"
 #include "media/mojo/interfaces/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/audio/group_coordinator.h"
+#include "services/audio/loopback_coordinator.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 #include "services/audio/traced_service_ref.h"
 
@@ -101,7 +101,7 @@ class StreamFactory final : public mojom::StreamFactory {
   mojo::BindingSet<mojom::StreamFactory, TracedServiceRef> bindings_;
 
   // Order of the following members is important for a clean shutdown.
-  GroupCoordinator coordinator_;
+  LoopbackCoordinator coordinator_;
   std::vector<std::unique_ptr<LocalMuter>> muters_;
   std::vector<std::unique_ptr<LoopbackStream>> loopback_streams_;
   InputStreamSet input_streams_;

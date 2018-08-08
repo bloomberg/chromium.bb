@@ -15,7 +15,7 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "services/audio/test/fake_consumer.h"
-#include "services/audio/test/fake_group_member.h"
+#include "services/audio/test/fake_loopback_group_member.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace audio {
@@ -76,7 +76,7 @@ class SnooperNodeTest : public testing::TestWithParam<InputAndOutputParams> {
     return GetParam().output;
   }
 
-  FakeGroupMember* group_member() { return &*group_member_; }
+  FakeLoopbackGroupMember* group_member() { return &*group_member_; }
   SnooperNode* node() { return &*node_; }
   FakeConsumer* consumer() { return &*consumer_; }
 
@@ -89,7 +89,7 @@ class SnooperNodeTest : public testing::TestWithParam<InputAndOutputParams> {
   }
 
   void CreateNewPipeline() {
-    group_member_.emplace(base::UnguessableToken(), input_params());
+    group_member_.emplace(input_params());
     group_member_->SetChannelTone(0, kLeftChannelFrequency);
     if (input_params().channels() > 1) {
       // Set the right channel to kRightChannelFrequency unless the test
@@ -103,7 +103,7 @@ class SnooperNodeTest : public testing::TestWithParam<InputAndOutputParams> {
     group_member_->SetVolume(kSourceVolume);
 
     node_.emplace(input_params(), output_params());
-    group_member_->StartSnooping(node());
+    group_member_->StartSnooping(node(), Snoopable::SnoopingMode::kDeferred);
 
     consumer_.emplace(output_params().channels(),
                       output_params().sample_rate());
@@ -131,10 +131,10 @@ class SnooperNodeTest : public testing::TestWithParam<InputAndOutputParams> {
         break;
       }
 
-      // FakeGroupMember pushes audio into the SnooperNode.
+      // FakeLoopbackGroupMember pushes audio into the SnooperNode.
       task_runner_->PostDelayedTask(
           FROM_HERE,
-          base::BindOnce(&FakeGroupMember::RenderMoreAudio,
+          base::BindOnce(&FakeLoopbackGroupMember::RenderMoreAudio,
                          base::Unretained(group_member()), next_time),
           next_time - start_time);
     }
@@ -195,7 +195,7 @@ class SnooperNodeTest : public testing::TestWithParam<InputAndOutputParams> {
 
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::Optional<FakeGroupMember> group_member_;
+  base::Optional<FakeLoopbackGroupMember> group_member_;
   base::Optional<SnooperNode> node_;
   base::Optional<FakeConsumer> consumer_;
 };
