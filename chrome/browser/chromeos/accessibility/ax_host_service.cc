@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/accessibility/ax_host_service.h"
 
+#include "base/bind.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -46,6 +47,10 @@ void AXHostService::OnBindInterface(
 void AXHostService::SetRemoteHost(ax::mojom::AXRemoteHostPtr remote) {
   remote_host_ = std::move(remote);
 
+  // Handle both clean and unclean shutdown.
+  remote_host_.set_connection_error_handler(base::BindOnce(
+      &AXHostService::OnRemoteHostDisconnected, base::Unretained(this)));
+
   // Ensure remote host knows the initial state.
   remote_host_->OnAutomationEnabled(automation_enabled_);
 }
@@ -54,6 +59,7 @@ void AXHostService::HandleAccessibilityEvent(
     int32_t tree_id,
     const std::vector<ui::AXTreeUpdate>& updates,
     const ui::AXEvent& event) {
+  DCHECK_EQ(tree_id, views::AXRemoteHost::kRemoteAXTreeID);
   ExtensionMsg_AccessibilityEventBundleParams event_bundle;
   event_bundle.tree_id = tree_id;
   for (const ui::AXTreeUpdate& update : updates)
@@ -84,4 +90,9 @@ void AXHostService::AddBinding(ax::mojom::AXHostRequest request) {
 void AXHostService::NotifyAutomationEnabled() {
   if (remote_host_)
     remote_host_->OnAutomationEnabled(automation_enabled_);
+}
+
+void AXHostService::OnRemoteHostDisconnected() {
+  extensions::AutomationEventRouter::GetInstance()->DispatchTreeDestroyedEvent(
+      views::AXRemoteHost::kRemoteAXTreeID, nullptr /* browser_context */);
 }

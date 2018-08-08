@@ -234,7 +234,7 @@ void ChromeNewWindowClient::RestoreTab() {
 void ChromeNewWindowClient::ShowKeyboardOverlay() {
   // Show the new keyboard shortcut viewer if the feature is enabled.
   if (ash::features::IsKeyboardShortcutViewerEnabled()) {
-    keyboard_shortcut_viewer_util::ShowKeyboardShortcutViewer();
+    keyboard_shortcut_viewer_util::ToggleKeyboardShortcutViewer();
     return;
   }
 
@@ -246,7 +246,7 @@ void ChromeNewWindowClient::ShowKeyboardOverlay() {
 }
 
 void ChromeNewWindowClient::ShowKeyboardShortcutViewer() {
-  keyboard_shortcut_viewer_util::ShowKeyboardShortcutViewer();
+  keyboard_shortcut_viewer_util::ToggleKeyboardShortcutViewer();
 }
 
 void ChromeNewWindowClient::ShowTaskManager() {

@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "chrome/common/extensions/api/automation_internal.h"
@@ -65,6 +66,8 @@ class AutomationEventRouter : public content::NotificationObserver {
   // Notify the source extension of the action of an action result.
   void DispatchActionResult(const ui::AXActionData& data, bool result);
 
+  void SetTreeDestroyedCallbackForTest(base::RepeatingCallback<void(int)> cb);
+
  private:
   struct AutomationListener {
     AutomationListener();
@@ -108,6 +111,8 @@ class AutomationEventRouter : public content::NotificationObserver {
   std::vector<AutomationListener> listeners_;
 
   Profile* active_profile_;
+
+  base::RepeatingCallback<void(int)> tree_destroyed_callback_for_test_;
 
   friend struct base::DefaultSingletonTraits<AutomationEventRouter>;
 

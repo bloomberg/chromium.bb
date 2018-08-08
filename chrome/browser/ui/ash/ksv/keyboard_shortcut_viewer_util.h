@@ -7,8 +7,8 @@
 
 namespace keyboard_shortcut_viewer_util {
 
-// Show the keyboard shortcut viewer.
-void ShowKeyboardShortcutViewer();
+// Opens or closes the keyboard shortcut viewer.
+void ToggleKeyboardShortcutViewer();
 
 }  // namespace keyboard_shortcut_viewer_util
 

@@ -533,7 +533,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, CaretHighlightInRemoteApp) {
       base::BindRepeating(wait_for_bounds, &run_loop));
 
   // Focus will move to the search field and show a text caret highlight.
-  keyboard_shortcut_viewer_util::ShowKeyboardShortcutViewer();
+  keyboard_shortcut_viewer_util::ToggleKeyboardShortcutViewer();
 
   // Wait for the app to launch, the IME session to start and the caret bounds
   // to be set.

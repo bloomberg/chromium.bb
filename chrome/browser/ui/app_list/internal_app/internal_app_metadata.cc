@@ -146,7 +146,7 @@ void OpenInternalApp(const std::string& app_id,
                      Profile* profile,
                      int event_flags) {
   if (app_id == kInternalAppIdKeyboardShortcutViewer) {
-    keyboard_shortcut_viewer_util::ShowKeyboardShortcutViewer();
+    keyboard_shortcut_viewer_util::ToggleKeyboardShortcutViewer();
   } else if (app_id == kInternalAppIdSettings) {
     chrome::ShowSettingsSubPageForProfile(profile, std::string());
   } else if (app_id == kInternalAppIdCamera) {
