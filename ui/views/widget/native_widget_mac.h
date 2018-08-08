@@ -127,6 +127,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   void SchedulePaintInRect(const gfx::Rect& rect) override;
   void SetCursor(gfx::NativeCursor cursor) override;
   bool IsMouseEventsEnabled() const override;
+  bool IsMouseButtonDown() const override;
   void ClearNativeFocus() override;
   gfx::Rect GetWorkAreaBoundsInScreen() const override;
   Widget::MoveLoopResult RunMoveLoop(

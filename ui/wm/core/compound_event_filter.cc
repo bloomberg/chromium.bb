@@ -238,10 +238,11 @@ void CompoundEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
 void CompoundEventFilter::OnTouchEvent(ui::TouchEvent* event) {
   FilterTouchEvent(event);
   if (!event->handled() && event->type() == ui::ET_TOUCH_PRESSED &&
-      ShouldHideCursorOnTouch(*event) &&
-      !aura::Env::GetInstance()->IsMouseButtonDown()) {
-    SetMouseEventsEnableStateOnEvent(
-        static_cast<aura::Window*>(event->target()), event, false);
+      ShouldHideCursorOnTouch(*event)) {
+    aura::Window* target = static_cast<aura::Window*>(event->target());
+    DCHECK(target);
+    if (!target->env()->IsMouseButtonDown())
+      SetMouseEventsEnableStateOnEvent(target, event, false);
   }
 }
 

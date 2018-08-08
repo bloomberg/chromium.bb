@@ -14,6 +14,7 @@
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_parenting_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_occlusion_tracker.h"
@@ -910,6 +911,11 @@ bool DesktopNativeWidgetAura::IsMouseEventsEnabled() const {
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(host_->window());
   return cursor_client ? cursor_client->IsMouseEventsEnabled() : true;
+}
+
+bool DesktopNativeWidgetAura::IsMouseButtonDown() const {
+  return content_window_ ? content_window_->env()->IsMouseButtonDown()
+                         : aura::Env::GetInstance()->IsMouseButtonDown();
 }
 
 void DesktopNativeWidgetAura::ClearNativeFocus() {
