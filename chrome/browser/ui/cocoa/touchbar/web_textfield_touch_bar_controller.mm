@@ -44,7 +44,8 @@
   if ((self = [super init])) {
     controller_ = controller;
 
-    if (base::FeatureList::IsEnabled(features::kTextSuggestionsTouchBar)) {
+    if (base::FeatureList::IsEnabled(features::kTextSuggestionsTouchBar) ||
+        base::FeatureList::IsEnabled(features::kExperimentalUi)) {
       textSuggestionsTouchBarController_.reset(
           [[TextSuggestionsTouchBarController alloc]
               initWithWebContents:[controller_ webContents]
