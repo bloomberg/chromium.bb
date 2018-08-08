@@ -1340,9 +1340,10 @@ void GiveItSomeTime(int t) {
 // Regression test for https://crbug.com/851644. The test passes as long as it
 // doesn't crash.
 // Touch action ack timeout is enabled on Android only.
+// Flaky, see https://crbug.com/871062.
 #if defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       TouchActionAckTimeout) {
+                       DISABLED_TouchActionAckTimeout) {
   GURL main_url(
       embedded_test_server()->GetURL("/frame_tree/page_with_janky_frame.html"));
   ASSERT_TRUE(NavigateToURL(shell(), main_url));
