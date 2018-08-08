@@ -1265,8 +1265,7 @@ bool ChromeContentRendererClient::ShouldFork(WebLocalFrame* frame,
                                              const GURL& url,
                                              const std::string& http_method,
                                              bool is_initial_navigation,
-                                             bool is_server_redirect,
-                                             bool* send_referrer) {
+                                             bool is_server_redirect) {
   DCHECK(!frame->Parent());
 
 #if !defined(OS_ANDROID)
@@ -1278,7 +1277,6 @@ bool ChromeContentRendererClient::ShouldFork(WebLocalFrame* frame,
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kInstantProcess) ||
       SearchBouncer::GetInstance()->ShouldFork(url)) {
-    *send_referrer = true;
     return true;
   }
 #endif
@@ -1299,13 +1297,12 @@ bool ChromeContentRendererClient::ShouldFork(WebLocalFrame* frame,
   // navigation is attempted.
   if (prerender_dispatcher_.get() &&
       prerender_dispatcher_->IsPrerenderURL(url)) {
-    *send_referrer = true;
     return true;
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   bool should_fork = ChromeExtensionsRendererClient::ShouldFork(
-      frame, url, is_initial_navigation, is_server_redirect, send_referrer);
+      frame, url, is_initial_navigation, is_server_redirect);
   if (should_fork)
     return true;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)

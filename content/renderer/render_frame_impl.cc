@@ -5980,8 +5980,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   if (IsTopLevelNavigation(frame_) &&
       render_view_->renderer_preferences_
           .browser_handles_all_top_level_requests) {
-    OpenURL(info, /*send_referrer=*/true,
-            /*is_history_navigation_in_new_child=*/false);
+    OpenURL(info, /*is_history_navigation_in_new_child=*/false);
     return blink::kWebNavigationPolicyIgnore;  // Suppress the load here.
   }
 
@@ -6010,8 +6009,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
       // case JavaScript on the page is trying to interrupt the history
       // navigation.
       if (!info.is_client_redirect) {
-        OpenURL(info, /*send_referrer=*/true,
-                /*is_history_navigation_in_new_child=*/true);
+        OpenURL(info, /*is_history_navigation_in_new_child=*/true);
         // Suppress the load in Blink but mark the frame as loading.
         return blink::kWebNavigationPolicyHandledByClientForInitialHistory;
       } else {
@@ -6062,10 +6060,8 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
       info.navigation_type == blink::kWebNavigationTypeOther;
 
   if (is_fork) {
-    // Open the URL via the browser, not via WebKit. Make sure the referrer is
-    // stripped.
-    OpenURL(info, /*send_referrer=*/false,
-            /*is_history_navigation_in_new_child=*/false);
+    // Open the URL via the browser, not via WebKit.
+    OpenURL(info, /*is_history_navigation_in_new_child=*/false);
     return blink::kWebNavigationPolicyIgnore;
   }
 
@@ -6074,8 +6070,6 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   // top-level navigations (not iframes). But we sometimes navigate to
   // about:blank to clear a tab, and we want to still allow that.
   if (!frame_->Parent() && !url.SchemeIs(url::kAboutScheme)) {
-    bool send_referrer = false;
-
     // All navigations to or from WebUI URLs or within WebUI-enabled
     // RenderProcesses must be handled by the browser process so that the
     // correct bindings and data sources can be registered.
@@ -6104,12 +6098,11 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
       // Give the embedder a chance.
       should_fork = GetContentClient()->renderer()->ShouldFork(
           frame_, url, info.url_request.HttpMethod().Utf8(),
-          is_initial_navigation, false /* is_redirect */, &send_referrer);
+          is_initial_navigation, false /* is_redirect */);
     }
 
     if (should_fork) {
-      OpenURL(info, send_referrer,
-              /*is_history_navigation_in_new_child=*/false);
+      OpenURL(info, /*is_history_navigation_in_new_child=*/false);
       return blink::kWebNavigationPolicyIgnore;  // Suppress the load here.
     }
   }
@@ -6165,8 +6158,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
                 blink::WebLocalFrameClient::CrossOriginRedirects::kFollow,
                 blob_url_token.PassHandle());
   } else {
-    OpenURL(info, /*send_referrer=*/true,
-            /*is_history_navigation_in_new_child=*/false);
+    OpenURL(info, /*is_history_navigation_in_new_child=*/false);
   }
   return blink::kWebNavigationPolicyIgnore;
 }
@@ -6464,7 +6456,6 @@ void RenderFrameImpl::OnSelectPopupMenuItems(
 #endif
 
 void RenderFrameImpl::OpenURL(const NavigationPolicyInfo& info,
-                              bool send_referrer,
                               bool is_history_navigation_in_new_child) {
   WebNavigationPolicy policy = info.default_policy;
   FrameHostMsg_OpenURL_Params params;
@@ -6473,9 +6464,8 @@ void RenderFrameImpl::OpenURL(const NavigationPolicyInfo& info,
   params.resource_request_body =
       GetRequestBodyForWebURLRequest(info.url_request);
   params.extra_headers = GetWebURLRequestHeadersAsString(info.url_request);
-  params.referrer = send_referrer ? RenderViewImpl::GetReferrerFromRequest(
-                                        frame_, info.url_request)
-                                  : content::Referrer();
+  params.referrer =
+      RenderViewImpl::GetReferrerFromRequest(frame_, info.url_request);
   params.disposition = RenderViewImpl::NavigationPolicyToDisposition(policy);
   params.triggering_event_info = info.triggering_event_info;
   params.blob_url_token =
