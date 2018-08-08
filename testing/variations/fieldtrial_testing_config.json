@@ -3349,7 +3349,7 @@
             ],
             "experiments": [
                 {
-                    "name": "RecurrentInterstitialWithUIEnabled",
+                    "name": "RecurrentInterstitialWithUIEnabled_V2",
                     "params": {
                         "show_error_ui": "true"
                     },
@@ -3365,7 +3365,7 @@
             ],
             "experiments": [
                 {
-                    "name": "RecurrentInterstitialWithUIEnabled",
+                    "name": "RecurrentInterstitialWithUIEnabled_V2",
                     "params": {
                         "mode": "pref",
                         "show_error_ui": "true"
