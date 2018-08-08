@@ -106,7 +106,7 @@ void DeviceOffHoursController::UpdateOffHoursPolicy(
     base::Optional<std::string> timezone = ExtractTimezoneFromProto(container);
     if (timezone) {
       off_hours_intervals = weekly_time_utils::ConvertIntervalsToGmt(
-          ExtractWeeklyTimeIntervalsFromProto(container), clock_, *timezone);
+          ExtractWeeklyTimeIntervalsFromProto(container, *timezone, clock_));
     }
   }
   off_hours_intervals_.swap(off_hours_intervals);
@@ -141,7 +141,7 @@ void DeviceOffHoursController::UpdateOffHoursMode() {
     SetOffHoursMode(false);
     return;
   }
-  WeeklyTime current_time = WeeklyTime::GetCurrentWeeklyTime(clock_);
+  WeeklyTime current_time = WeeklyTime::GetCurrentGmtWeeklyTime(clock_);
   for (const auto& interval : off_hours_intervals_) {
     if (interval.Contains(current_time)) {
       base::TimeDelta remaining_off_hours_duration =

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/strings/string16.h"
+#include "base/optional.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -17,11 +17,12 @@ namespace policy {
 
 // WeeklyTime class contains day of week and time. Day of week is number from 1
 // to 7 (1 = Monday, 2 = Tuesday, etc.) Time is in milliseconds from the
-// beginning of the day. WeeklyTime's timezone should be interpreted to be in
-// UTC.
+// beginning of the day.
 class WeeklyTime {
  public:
-  WeeklyTime(int day_of_week, int milliseconds);
+  WeeklyTime(int day_of_week,
+             int milliseconds,
+             base::Optional<int> timezone_offset);
 
   WeeklyTime(const WeeklyTime& rhs);
 
@@ -38,30 +39,42 @@ class WeeklyTime {
 
   int milliseconds() const { return milliseconds_; }
 
+  base::Optional<int> timezone_offset() const { return timezone_offset_; }
+
   // Return duration from |start| till |end| week times. |end| time
   // is always after |start| time. It's possible because week time is cyclic.
   // (i.e. [Friday 17:00, Monday 9:00) )
+  // Both WeeklyTimes have to have the same kind of timezone (timezone agnostic
+  // or set timezone).
   base::TimeDelta GetDurationTo(const WeeklyTime& other) const;
 
   // Add milliseconds to WeeklyTime.
   WeeklyTime AddMilliseconds(int milliseconds) const;
 
-  // Convert WeeklyTime to a string that is in local time and localized to the
-  // system's language and time display settings. The output is in the format
-  // "EEEE jj:mm a" E.g. for |day_of_week_| = 4 and |milliseconds_| = 5 hours
-  // (in ms) then the output should be "Thursday 5:00 AM" in an US locale in UTC
-  // timezone. Similarly, the output will be "Donnerstag 05:00" in a german
-  // locale in UTC timezone (there may be slight changes due to different
-  // standards in different locales).
-  base::string16 ToLocalizedString() const;
+  // Creates a new WeeklyTime from the current one that has
+  // |timezone_offset_| set to |timezone_offset|. Furthermore, the new
+  // WeeklyTime is offset based on the difference between the timezones. This
+  // function should only take in WeeklyTimes with a defined timezone (i.e. not
+  // nullopt).
+  WeeklyTime ConvertToTimezone(int timezone_offset) const;
+
+  // Creates a new WeeklyTime that has |timezone_offset_| set to
+  // |timezone_offset|. This function is to be used to set the timezone of
+  // timezone agnostic WeeklyTime objects, i.e. objects where |timezone_offset_|
+  // == nullopt.
+  WeeklyTime ConvertToCustomTimezone(int timezone_offset) const;
 
   // Return WeeklyTime structure from WeeklyTimeProto. Return nullptr if
   // WeeklyTime structure isn't correct.
   static std::unique_ptr<WeeklyTime> ExtractFromProto(
-      const enterprise_management::WeeklyTimeProto& container);
+      const enterprise_management::WeeklyTimeProto& container,
+      base::Optional<int> timezone_offset);
 
-  // Return current time in WeeklyTime structure.
-  static WeeklyTime GetCurrentWeeklyTime(base::Clock* clock);
+  // Return the current time in GMT in WeeklyTime structure.
+  static WeeklyTime GetCurrentGmtWeeklyTime(base::Clock* clock);
+
+  // Return the current time in the system's local time in WeeklyTime structure.
+  static WeeklyTime GetCurrentLocalWeeklyTime(base::Clock* clock);
 
  private:
   // Number of weekday (1 = Monday, 2 = Tuesday, etc.)
@@ -69,6 +82,14 @@ class WeeklyTime {
 
   // Time of day in milliseconds from the beginning of the day.
   int milliseconds_;
+
+  // Offset from GMT in milliseconds for the timezone that the Weekly Time is
+  // in. If |timezone_offset_| is 0 then it the WeeklyTime will be considered to
+  // be in GMT. If |timezone_offset_| is non-zero, then the WeeklyTime will be
+  // considered to be in the timezone corresponding to that offset. If
+  // |timezone_offset_| is |nullopt|, then it will be interpreted to be in the
+  // system's local timezone.
+  base::Optional<int> timezone_offset_;
 };
 
 }  // namespace policy

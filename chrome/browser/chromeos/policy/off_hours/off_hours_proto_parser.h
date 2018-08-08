@@ -15,12 +15,20 @@
 #include "chrome/browser/chromeos/policy/weekly_time/weekly_time_interval.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 
+namespace base {
+class Clock;
+}
+
 namespace policy {
 namespace off_hours {
 
-// Return list of time intervals from DeviceOffHoursProto structure.
+// Return list of time intervals from DeviceOffHoursProto structure. Takes the
+// timezone into account, this is to be used for non-value conversion purposes,
+// i.e. if the intervals are going to be used in code.
 std::vector<WeeklyTimeInterval> ExtractWeeklyTimeIntervalsFromProto(
-    const enterprise_management::DeviceOffHoursProto& container);
+    const enterprise_management::DeviceOffHoursProto& container,
+    const std::string& timezone,
+    base::Clock* clock);
 
 // Return list of proto tags of ignored policies from DeviceOffHoursProto
 // structure.

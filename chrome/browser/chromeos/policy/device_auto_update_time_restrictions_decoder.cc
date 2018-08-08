@@ -61,7 +61,8 @@ base::Optional<WeeklyTime> WeeklyTimeFromDictValue(
   int minutes = minutes_val->GetInt();
   int milliseconds =
       hours * kHour.InMilliseconds() + minutes * kMinute.InMilliseconds();
-  return WeeklyTime(day_of_week, milliseconds);
+  return WeeklyTime(day_of_week, milliseconds,
+                    base::nullopt /* timezone_offset */);
 }
 
 bool WeeklyTimeIntervalsFromListValue(
