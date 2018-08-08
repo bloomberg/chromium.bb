@@ -37,8 +37,8 @@ TEST_F(SplitTextNodeCommandTest, splitInMarkerInterior) {
   EditingState editingState;
   command->DoApply(&editingState);
 
-  Node* text1 = ToText(div->firstChild());
-  Node* text2 = ToText(text1->nextSibling());
+  Text* text1 = ToText(div->firstChild());
+  Text* text2 = ToText(text1->nextSibling());
 
   // The first marker should end up in text1, the second marker should be
   // truncated and end up text1, the third marker should end up in text2
@@ -60,7 +60,7 @@ TEST_F(SplitTextNodeCommandTest, splitInMarkerInterior) {
   // Test undo
   command->DoUnapply();
 
-  Node* text = ToText(div->firstChild());
+  Text* text = ToText(div->firstChild());
 
   EXPECT_EQ(3u, GetDocument().Markers().MarkersFor(text).size());
 

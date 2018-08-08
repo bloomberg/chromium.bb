@@ -117,11 +117,10 @@ class CORE_EXPORT DocumentMarkerController final
   MarkersIntersectingRange(const EphemeralRangeInFlatTree&,
                            DocumentMarker::MarkerTypes);
   DocumentMarkerVector MarkersFor(
-      const Node*,
-      DocumentMarker::MarkerTypes = DocumentMarker::MarkerTypes::All());
-  DocumentMarkerVector Markers();
-  // TODO(yoichio): Make const by making PossiblyHasMarkers const.
-  DocumentMarkerVector ComputeMarkersToPaint(const Node&);
+      const Text*,
+      DocumentMarker::MarkerTypes = DocumentMarker::MarkerTypes::All()) const;
+  DocumentMarkerVector Markers() const;
+  DocumentMarkerVector ComputeMarkersToPaint(const Text&) const;
 
   Vector<IntRect> LayoutRectsForTextMatchMarkers();
   void InvalidateRectsForAllTextMatchMarkers();

@@ -530,12 +530,12 @@ void InlineTextBoxPainter::PaintSingleMarkerBackgroundRun(
 
 DocumentMarkerVector InlineTextBoxPainter::ComputeMarkersToPaint() const {
   Node* const node = inline_text_box_.GetLineLayoutItem().GetNode();
-  if (!node)
+  if (!node || !node->IsTextNode())
     return DocumentMarkerVector();
 
   DocumentMarkerController& document_marker_controller =
       inline_text_box_.GetLineLayoutItem().GetDocument().Markers();
-  return document_marker_controller.ComputeMarkersToPaint(*node);
+  return document_marker_controller.ComputeMarkersToPaint(ToText(*node));
 }
 
 void InlineTextBoxPainter::PaintDocumentMarkers(

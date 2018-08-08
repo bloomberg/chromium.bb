@@ -472,8 +472,8 @@ DocumentMarkerController::MarkersIntersectingRange(
 }
 
 DocumentMarkerVector DocumentMarkerController::MarkersFor(
-    const Node* node,
-    DocumentMarker::MarkerTypes marker_types) {
+    const Text* node,
+    DocumentMarker::MarkerTypes marker_types) const {
   DocumentMarkerVector result;
   if (!PossiblyHasMarkers(marker_types))
     return result;
@@ -498,10 +498,10 @@ DocumentMarkerVector DocumentMarkerController::MarkersFor(
   return result;
 }
 
-DocumentMarkerVector DocumentMarkerController::Markers() {
+DocumentMarkerVector DocumentMarkerController::Markers() const {
   DocumentMarkerVector result;
-  for (MarkerMap::iterator i = markers_.begin(); i != markers_.end(); ++i) {
-    MarkerLists* markers = i->value.Get();
+  for (const auto& node_markers : markers_) {
+    MarkerLists* markers = node_markers.value;
     for (DocumentMarker::MarkerType type : DocumentMarker::MarkerTypes::All()) {
       DocumentMarkerList* const list = ListForType(markers, type);
       if (!list)
@@ -518,7 +518,7 @@ DocumentMarkerVector DocumentMarkerController::Markers() {
 }
 
 DocumentMarkerVector DocumentMarkerController::ComputeMarkersToPaint(
-    const Node& node) {
+    const Text& node) const {
   // We don't render composition or spelling markers that overlap suggestion
   // markers.
   // Note: DocumentMarkerController::MarkersFor() returns markers sorted by

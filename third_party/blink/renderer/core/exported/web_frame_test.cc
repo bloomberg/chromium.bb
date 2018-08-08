@@ -328,7 +328,7 @@ class WebFrameTest : public testing::Test {
     int node_count = 0;
     for (Node& node : range.Nodes()) {
       const DocumentMarkerVector& markers_in_node =
-          document->Markers().MarkersFor(&node, marker_types);
+          document->Markers().MarkersFor(ToText(&node), marker_types);
       node_count += std::count_if(
           markers_in_node.begin(), markers_in_node.end(),
           [start_offset, end_offset, &node, &start_container,
