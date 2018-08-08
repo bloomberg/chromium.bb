@@ -631,26 +631,6 @@
             ]
         }
     ],
-    "BackgroundPagePriority": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "ios",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "LowPriorityEnabled",
-                    "enable_features": [
-                        "BlinkSchedulerLowPriorityForBackgroundPages"
-                    ]
-                }
-            ]
-        }
-    ],
     "BackgroundTaskComponentUpdate": [
         {
             "platforms": [
@@ -1695,10 +1675,29 @@
             ],
             "experiments": [
                 {
-                    "name": "LowPriorityForHiddenFrameDuringLoadingEnabled",
+                    "name": "LowPriorityForHiddenFrameDuringLoadingEnabled_V2",
                     "enable_features": [
                         "BlinkSchedulerFrameExperimentOnlyWhenLoading",
                         "BlinkSchedulerLowPriorityForHiddenFrame"
+                    ]
+                }
+            ]
+        }
+    ],
+    "FrameTypePriorityExperiment2": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "LowPriorityForBackgroundPageEnabled_V2",
+                    "enable_features": [
+                        "BlinkSchedulerLowPriorityForBackgroundPages"
                     ]
                 }
             ]
@@ -3519,7 +3518,7 @@
             ],
             "experiments": [
                 {
-                    "name": "BlinkSchedulerUseResourceFetchPriority_Map3",
+                    "name": "BlinkSchedulerUseResourceFetchPriority_Map3_V2",
                     "params": {
                         "HIGHEST": "HIGH",
                         "IDLE": "LOW",
