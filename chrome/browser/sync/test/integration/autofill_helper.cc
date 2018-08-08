@@ -110,6 +110,14 @@ std::vector<AutofillEntry> GetAllAutofillEntries(AutofillWebDataService* wds) {
   return entries;
 }
 
+void SetServerCardsOnDBSequence(
+    AutofillWebDataService* wds,
+    const std::vector<autofill::CreditCard>& credit_cards) {
+  DCHECK(wds->GetDBTaskRunner()->RunsTasksInCurrentSequence());
+  AutofillTable::FromWebDatabase(wds->GetDatabase())
+      ->SetServerCreditCards(credit_cards);
+}
+
 bool ProfilesMatchImpl(
     int profile_a,
     const std::vector<AutofillProfile*>& autofill_profiles_a,
@@ -282,6 +290,16 @@ void SetProfiles(int profile, std::vector<AutofillProfile>* autofill_profiles) {
 
 void SetCreditCards(int profile, std::vector<CreditCard>* credit_cards) {
   GetPersonalDataManager(profile)->SetCreditCards(credit_cards);
+}
+
+void SetServerCreditCards(
+    int profile,
+    const std::vector<autofill::CreditCard>& credit_cards) {
+  scoped_refptr<AutofillWebDataService> wds = GetProfileWebDataService(profile);
+  wds->GetDBTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&SetServerCardsOnDBSequence,
+                                base::Unretained(wds.get()), credit_cards));
+  WaitForCurrentTasksToComplete(wds->GetDBTaskRunner());
 }
 
 void AddProfile(int profile, const AutofillProfile& autofill_profile) {
