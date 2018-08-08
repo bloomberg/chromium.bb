@@ -16,13 +16,3 @@ mojom_component("mojom") {
   output_prefix = "gamepad_mojom"
   macro_prefix = "GAMEPAD_MOJOM"
 }
-
-mojom("gamepad_mojom_traits_test") {
-  sources = [
-    "gamepad_mojom_traits_test.mojom",
-  ]
-
-  public_deps = [
-    ":mojom",
-  ]
-}

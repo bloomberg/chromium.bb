@@ -95,7 +95,7 @@ test("device_unittests") {
     "gamepad/abstract_haptic_gamepad_unittest.cc",
     "gamepad/gamepad_provider_unittest.cc",
     "gamepad/gamepad_service_unittest.cc",
-    "gamepad/public/mojom/gamepad_mojom_traits_unittest.cc",
+    "gamepad/public/cpp/gamepad_mojom_traits_unittest.cc",
     "test/run_all_unittests.cc",
   ]
 
@@ -116,9 +116,9 @@ test("device_unittests") {
     "//device/gamepad:test_helpers",
     "//device/gamepad/public/cpp:shared_with_blink",
     "//device/gamepad/public/mojom",
-    "//device/gamepad/public/mojom:gamepad_mojom_traits_test",
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/test_support:test_utils",
     "//net",
     "//testing/gmock",
     "//testing/gtest",

@@ -2,15 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <utility>
-
+#include "device/gamepad/public/cpp/gamepad_mojom_traits.h"
 #include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
-#include "base/time/time.h"
 #include "device/gamepad/public/cpp/gamepad.h"
-#include "device/gamepad/public/mojom/gamepad_mojom_traits_test.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "device/gamepad/public/mojom/gamepad.mojom.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
@@ -163,72 +159,51 @@ bool isWebGamepadEqual(const Gamepad& send, const Gamepad& echo) {
   }
   return true;
 }
-
-void ExpectWebGamepad(const Gamepad& send,
-                      base::OnceClosure closure,
-                      const Gamepad& echo) {
-  EXPECT_EQ(true, isWebGamepadEqual(send, echo));
-  std::move(closure).Run();
-}
-
 }  // namespace
 
-class GamepadStructTraitsTest : public testing::Test,
-                                public mojom::GamepadStructTraitsTest {
+class GamepadStructTraitsTest : public testing::Test {
  protected:
-  GamepadStructTraitsTest() : binding_(this) {}
-
-  void PassGamepad(const Gamepad& send, PassGamepadCallback callback) override {
-    std::move(callback).Run(send);
-  }
-
-  mojom::GamepadStructTraitsTestPtr GetGamepadStructTraitsTestProxy() {
-    mojom::GamepadStructTraitsTestPtr proxy;
-    binding_.Bind(mojo::MakeRequest(&proxy));
-    return proxy;
-  }
+  GamepadStructTraitsTest() {}
 
  private:
   base::MessageLoop message_loop_;
-  mojo::Binding<mojom::GamepadStructTraitsTest> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadStructTraitsTest);
 };
 
 TEST_F(GamepadStructTraitsTest, GamepadCommon) {
-  Gamepad send = GetWebGamepadInstance(GamepadCommon);
-  base::RunLoop loop;
-  mojom::GamepadStructTraitsTestPtr proxy = GetGamepadStructTraitsTestProxy();
-  proxy->PassGamepad(
-      send, base::BindOnce(&ExpectWebGamepad, send, loop.QuitClosure()));
-  loop.Run();
+  Gamepad gamepad_in = GetWebGamepadInstance(GamepadCommon);
+  Gamepad gamepad_out;
+
+  ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::Gamepad>(
+      &gamepad_in, &gamepad_out));
+  EXPECT_EQ(true, isWebGamepadEqual(gamepad_in, gamepad_out));
 }
 
 TEST_F(GamepadStructTraitsTest, GamepadPose_HasOrientation) {
-  Gamepad send = GetWebGamepadInstance(GamepadPose_HasOrientation);
-  base::RunLoop loop;
-  mojom::GamepadStructTraitsTestPtr proxy = GetGamepadStructTraitsTestProxy();
-  proxy->PassGamepad(
-      send, base::BindOnce(&ExpectWebGamepad, send, loop.QuitClosure()));
-  loop.Run();
+  Gamepad gamepad_in = GetWebGamepadInstance(GamepadPose_HasOrientation);
+  Gamepad gamepad_out;
+
+  ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::Gamepad>(
+      &gamepad_in, &gamepad_out));
+  EXPECT_EQ(true, isWebGamepadEqual(gamepad_in, gamepad_out));
 }
 
 TEST_F(GamepadStructTraitsTest, GamepadPose_HasPosition) {
-  Gamepad send = GetWebGamepadInstance(GamepadPose_HasPosition);
-  base::RunLoop loop;
-  mojom::GamepadStructTraitsTestPtr proxy = GetGamepadStructTraitsTestProxy();
-  proxy->PassGamepad(
-      send, base::BindOnce(&ExpectWebGamepad, send, loop.QuitClosure()));
-  loop.Run();
+  Gamepad gamepad_in = GetWebGamepadInstance(GamepadPose_HasPosition);
+  Gamepad gamepad_out;
+
+  ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::Gamepad>(
+      &gamepad_in, &gamepad_out));
+  EXPECT_EQ(true, isWebGamepadEqual(gamepad_in, gamepad_out));
 }
 
 TEST_F(GamepadStructTraitsTest, GamepadPose_Null) {
-  Gamepad send = GetWebGamepadInstance(GamepadPose_Null);
-  base::RunLoop loop;
-  mojom::GamepadStructTraitsTestPtr proxy = GetGamepadStructTraitsTestProxy();
-  proxy->PassGamepad(
-      send, base::BindOnce(&ExpectWebGamepad, send, loop.QuitClosure()));
-  loop.Run();
-}
+  Gamepad gamepad_in = GetWebGamepadInstance(GamepadPose_Null);
+  Gamepad gamepad_out;
 
+  ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::Gamepad>(
+      &gamepad_in, &gamepad_out));
+  EXPECT_EQ(true, isWebGamepadEqual(gamepad_in, gamepad_out));
+}
 }  // namespace device
