@@ -2235,7 +2235,6 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
   // TODO(flackr): Allow integer transforms as long as all of the ancestor
   // transforms are also integer.
   bool background_supports_lcd_text =
-      RuntimeEnabledFeatures::CompositeOpaqueScrollersEnabled() &&
       layer->GetLayoutObject().Style()->IsStackingContext() &&
       layer->GetBackgroundPaintLocation(
           &non_composited_main_thread_scrolling_reasons_) &

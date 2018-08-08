@@ -196,7 +196,6 @@ TEST_F(CompositingReasonFinderTest, OnlyNonTransformedFixedLayersPromoted) {
     </div>
   )HTML");
 
-  EXPECT_TRUE(RuntimeEnabledFeatures::CompositeOpaqueScrollersEnabled());
   Element* parent = GetDocument().getElementById("parent");
   Element* fixed = GetDocument().getElementById("fixed");
   PaintLayer* paint_layer =
@@ -245,7 +244,6 @@ TEST_F(CompositingReasonFinderTest, OnlyOpaqueFixedLayersPromoted) {
     </div>
   )HTML");
 
-  EXPECT_TRUE(RuntimeEnabledFeatures::CompositeOpaqueScrollersEnabled());
   Element* parent = GetDocument().getElementById("parent");
   Element* fixed = GetDocument().getElementById("fixed");
   PaintLayer* paint_layer =

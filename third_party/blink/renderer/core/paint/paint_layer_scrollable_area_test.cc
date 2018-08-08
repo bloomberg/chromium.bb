@@ -249,8 +249,6 @@ TEST_F(PaintLayerScrollableAreaTest,
 }
 
 TEST_F(PaintLayerScrollableAreaTest, OpaqueContainedLayersPromoted) {
-  ScopedCompositeOpaqueScrollersForTest composite_opaque_scrollers(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller { overflow: scroll; height: 200px; width: 200px;
@@ -262,7 +260,6 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueContainedLayersPromoted) {
   )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_TRUE(RuntimeEnabledFeatures::CompositeOpaqueScrollersEnabled());
   Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
@@ -276,8 +273,6 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueContainedLayersPromoted) {
 // Promoting the scroller would also require promoting the positioned div
 // which would lose subpixel anti-aliasing due to its transparent background.
 TEST_F(PaintLayerScrollableAreaTest, NonContainedLayersNotPromoted) {
-  ScopedCompositeOpaqueScrollersForTest composite_opaque_scrollers(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller { overflow: scroll; height: 200px; width: 200px;
@@ -293,7 +288,6 @@ TEST_F(PaintLayerScrollableAreaTest, NonContainedLayersNotPromoted) {
   )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_TRUE(RuntimeEnabledFeatures::CompositeOpaqueScrollersEnabled());
   Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
@@ -303,8 +297,6 @@ TEST_F(PaintLayerScrollableAreaTest, NonContainedLayersNotPromoted) {
 }
 
 TEST_F(PaintLayerScrollableAreaTest, TransparentLayersNotPromoted) {
-  ScopedCompositeOpaqueScrollersForTest composite_opaque_scrollers(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller { overflow: scroll; height: 200px; width: 200px; background:
@@ -316,7 +308,6 @@ TEST_F(PaintLayerScrollableAreaTest, TransparentLayersNotPromoted) {
   )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_TRUE(RuntimeEnabledFeatures::CompositeOpaqueScrollersEnabled());
   Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
@@ -326,8 +317,6 @@ TEST_F(PaintLayerScrollableAreaTest, TransparentLayersNotPromoted) {
 }
 
 TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersDepromotedOnStyleChange) {
-  ScopedCompositeOpaqueScrollersForTest composite_opaque_scrollers(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller { overflow: scroll; height: 200px; width: 200px; background:
@@ -338,7 +327,6 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersDepromotedOnStyleChange) {
   )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_TRUE(RuntimeEnabledFeatures::CompositeOpaqueScrollersEnabled());
   Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
@@ -357,8 +345,6 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersDepromotedOnStyleChange) {
 }
 
 TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersPromotedOnStyleChange) {
-  ScopedCompositeOpaqueScrollersForTest composite_opaque_scrollers(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller { overflow: scroll; height: 200px; width: 200px; background:
@@ -369,7 +355,6 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersPromotedOnStyleChange) {
   )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_TRUE(RuntimeEnabledFeatures::CompositeOpaqueScrollersEnabled());
   Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
@@ -392,8 +377,6 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersPromotedOnStyleChange) {
 // TODO(flackr): Allow integer transforms as long as all of the ancestor
 // transforms are also integer.
 TEST_F(PaintLayerScrollableAreaTest, OnlyNonTransformedOpaqueLayersPromoted) {
-  ScopedCompositeOpaqueScrollersForTest composite_opaque_scrollers(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller { overflow: scroll; height: 200px; width: 200px; background:
@@ -406,7 +389,6 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyNonTransformedOpaqueLayersPromoted) {
   )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_TRUE(RuntimeEnabledFeatures::CompositeOpaqueScrollersEnabled());
   Element* parent = GetDocument().getElementById("parent");
   Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
@@ -447,8 +429,6 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyNonTransformedOpaqueLayersPromoted) {
 // Test that opacity applied to the scroller or an ancestor will cause the
 // scrolling contents layer to not be promoted.
 TEST_F(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
-  ScopedCompositeOpaqueScrollersForTest composite_opaque_scrollers(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller { overflow: scroll; height: 200px; width: 200px; background:
@@ -461,7 +441,6 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
   )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_TRUE(RuntimeEnabledFeatures::CompositeOpaqueScrollersEnabled());
   Element* parent = GetDocument().getElementById("parent");
   Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =

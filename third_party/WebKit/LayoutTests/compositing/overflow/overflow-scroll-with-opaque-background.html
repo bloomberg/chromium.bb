@@ -4,9 +4,6 @@
 if (window.testRunner)
     testRunner.dumpAsText();
 
-if (window.internals)
-    internals.runtimeFlags.compositeOpaqueScrollersEnabled = true;
-
 onload = function() {
     if (!window.testRunner || !window.internals)
         return;
