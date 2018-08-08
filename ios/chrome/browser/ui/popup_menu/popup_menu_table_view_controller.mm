@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller.h"
 
+#include "base/ios/ios_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -137,6 +138,15 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
   self.tableView.tableHeaderView = [[UIView alloc]
       initWithFrame:CGRectMake(0.0f, 0.0f, self.tableView.bounds.size.width,
                                0.01f)];
+
+  if (!base::ios::IsRunningOnIOS11OrLater()) {
+    // On iOS 10, a footer with a height of 0 is also needed to prevent inset at
+    // the bottom.
+    self.tableView.tableFooterView = [[UIView alloc]
+        initWithFrame:CGRectMake(0.0f, 0.0f, self.tableView.bounds.size.width,
+                                 0.01f)];
+    self.tableView.sectionFooterHeight = 0.0;
+  }
 
   self.view.layer.cornerRadius = kPopupMenuCornerRadius;
   self.view.layer.masksToBounds = YES;
