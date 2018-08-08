@@ -4,6 +4,9 @@
 
 callback VoidCallbackFunction = void ();
 callback AnyCallbackFunctionOptionalAnyArg = any (optional any optionalAnyArg);
+// |AnyCallbackFunctionVariadicAnyArgs| is the same as Function.
+// https://heycam.github.io/webidl/#Function
+callback AnyCallbackFunctionVariadicAnyArgs = any (any... arguments);
 callback LongCallbackFunction = long (long num1, long num2);
 
 // Following callback functions are to be generated as expected.

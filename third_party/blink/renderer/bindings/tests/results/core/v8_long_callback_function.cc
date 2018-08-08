@@ -79,7 +79,9 @@ v8::Maybe<int32_t> V8LongCallbackFunction::Invoke(ScriptWrappable* callback_this
   ALLOW_UNUSED_LOCAL(argument_creation_context);
   v8::Local<v8::Value> v8_num1 = v8::Integer::New(GetIsolate(), num1);
   v8::Local<v8::Value> v8_num2 = v8::Integer::New(GetIsolate(), num2);
+  constexpr int argc = 2;
   v8::Local<v8::Value> argv[] = { v8_num1, v8_num2 };
+  static_assert(static_cast<size_t>(argc) == base::size(argv), "size mismatch");
 
   // step 11. Let callResult be Call(X, thisArg, esArgs).
   v8::Local<v8::Value> call_result;
@@ -87,7 +89,7 @@ v8::Maybe<int32_t> V8LongCallbackFunction::Invoke(ScriptWrappable* callback_this
           CallbackFunction(),
           ExecutionContext::From(CallbackRelevantScriptState()),
           this_arg,
-          2,
+          argc,
           argv,
           GetIsolate()).ToLocal(&call_result)) {
     // step 12. If callResult is an abrupt completion, set completion to

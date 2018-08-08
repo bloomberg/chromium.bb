@@ -78,7 +78,9 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionOptionalAnyArg::Invoke(ScriptWrappab
       CallbackRelevantScriptState()->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
   v8::Local<v8::Value> v8_optionalAnyArg = optionalAnyArg.V8Value();
+  constexpr int argc = 1;
   v8::Local<v8::Value> argv[] = { v8_optionalAnyArg };
+  static_assert(static_cast<size_t>(argc) == base::size(argv), "size mismatch");
 
   // step 11. Let callResult be Call(X, thisArg, esArgs).
   v8::Local<v8::Value> call_result;
@@ -86,7 +88,7 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionOptionalAnyArg::Invoke(ScriptWrappab
           CallbackFunction(),
           ExecutionContext::From(CallbackRelevantScriptState()),
           this_arg,
-          1,
+          argc,
           argv,
           GetIsolate()).ToLocal(&call_result)) {
     // step 12. If callResult is an abrupt completion, set completion to

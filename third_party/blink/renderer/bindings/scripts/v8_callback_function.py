@@ -85,13 +85,21 @@ def arguments_context(arguments):
                 creation_context='argument_creation_context'),
             'enum_type': idl_type.enum_type,
             'enum_values': idl_type.enum_values,
+            'is_variadic': argument.is_variadic,
             'name': argument.name,
             'v8_name': 'v8_%s' % argument.name,
         }
 
+    def argument_cpp_type(argument):
+        cpp_type = argument.idl_type.callback_cpp_type
+        if argument.is_variadic:
+            return 'const Vector<%s>&' % cpp_type
+        else:
+            return cpp_type
+
     argument_declarations = ['ScriptWrappable* callback_this_value']
     argument_declarations.extend(
-        '%s %s' % (argument.idl_type.callback_cpp_type, argument.name)
+        '%s %s' % (argument_cpp_type(argument), argument.name)
         for argument in arguments)
     return {
         'argument_declarations': argument_declarations,
