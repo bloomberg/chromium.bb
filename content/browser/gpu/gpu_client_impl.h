@@ -7,7 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/gpu/gpu_client_delegate.h"
 #include "content/public/browser/gpu_client.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
@@ -19,9 +19,10 @@ class GpuClientImpl : public ui::mojom::GpuMemoryBufferFactory,
  public:
   // GpuClientImpl must be destroyed on the thread associated with
   // |task_runner|.
-  GpuClientImpl(int client_id,
+  GpuClientImpl(std::unique_ptr<GpuClientDelegate> delegate,
+                int client_id,
                 uint64_t client_tracing_id,
-                scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+                scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   ~GpuClientImpl() override;
 
@@ -62,14 +63,16 @@ class GpuClientImpl : public ui::mojom::GpuMemoryBufferFactory,
     kConnectionLost
   };
   void OnError(ErrorReason reason);
-  void OnEstablishGpuChannel(mojo::ScopedMessagePipeHandle channel_handle,
-                             const gpu::GPUInfo& gpu_info,
-                             const gpu::GpuFeatureInfo& gpu_feature_info,
-                             GpuProcessHost::EstablishChannelStatus status);
+  void OnEstablishGpuChannel(
+      mojo::ScopedMessagePipeHandle channel_handle,
+      const gpu::GPUInfo& gpu_info,
+      const gpu::GpuFeatureInfo& gpu_feature_info,
+      GpuClientDelegate::EstablishGpuChannelStatus status);
   void OnCreateGpuMemoryBuffer(CreateGpuMemoryBufferCallback callback,
                                gfx::GpuMemoryBufferHandle handle);
   void ClearCallback();
 
+  std::unique_ptr<GpuClientDelegate> delegate_;
   const int client_id_;
   const uint64_t client_tracing_id_;
   mojo::BindingSet<ui::mojom::GpuMemoryBufferFactory>

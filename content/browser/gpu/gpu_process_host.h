@@ -79,10 +79,10 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
     SUCCESS
   };
   using EstablishChannelCallback =
-      base::Callback<void(mojo::ScopedMessagePipeHandle channel_handle,
-                          const gpu::GPUInfo&,
-                          const gpu::GpuFeatureInfo&,
-                          EstablishChannelStatus status)>;
+      base::OnceCallback<void(mojo::ScopedMessagePipeHandle channel_handle,
+                              const gpu::GPUInfo&,
+                              const gpu::GpuFeatureInfo&,
+                              EstablishChannelStatus status)>;
 
   enum class BufferCreationStatus {
     GPU_HOST_INVALID,
@@ -137,10 +137,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // and GPUInfo, we call the callback.
   void EstablishGpuChannel(int client_id,
                            uint64_t client_tracing_id,
-                           bool preempts,
-                           bool allow_view_command_buffers,
-                           bool allow_real_time_streams,
-                           const EstablishChannelCallback& callback);
+                           bool is_gpu_host,
+                           EstablishChannelCallback callback);
 
   // Tells the GPU process to create a new GPU memory buffer.
   void CreateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
@@ -238,7 +236,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                         const std::string& message) override;
 
   void OnChannelEstablished(int client_id,
-                            const EstablishChannelCallback& callback,
                             mojo::ScopedMessagePipeHandle channel_handle);
   void OnGpuMemoryBufferCreated(gfx::GpuMemoryBufferHandle handle);
 
@@ -252,7 +249,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   bool LaunchGpuProcess();
 
-  void SendOutstandingReplies(EstablishChannelStatus failure_status);
+  void SendOutstandingReplies();
 
   void RunRequestGPUInfoCallbacks(const gpu::GPUInfo& gpu_info);
 

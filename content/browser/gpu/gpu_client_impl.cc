@@ -4,12 +4,13 @@
 
 #include "content/browser/gpu/gpu_client_impl.h"
 
+#include "content/browser/gpu/browser_gpu_client_delegate.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
-#include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/child_process_host_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_shared_memory.h"
+#include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 
 namespace content {
 
@@ -22,7 +23,8 @@ std::unique_ptr<GpuClient, base::OnTaskRunnerDeleter> GpuClient::Create(
   const uint64_t client_tracing_id =
       ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(client_id);
   std::unique_ptr<GpuClientImpl, base::OnTaskRunnerDeleter> gpu_client(
-      new GpuClientImpl(client_id, client_tracing_id, task_runner),
+      new GpuClientImpl(std::make_unique<BrowserGpuClientDelegate>(), client_id,
+                        client_tracing_id, task_runner),
       base::OnTaskRunnerDeleter(task_runner));
   gpu_client->SetConnectionErrorHandler(std::move(connection_error_handler));
   gpu_client->Add(std::move(request));
@@ -30,13 +32,16 @@ std::unique_ptr<GpuClient, base::OnTaskRunnerDeleter> GpuClient::Create(
 }
 
 GpuClientImpl::GpuClientImpl(
+    std::unique_ptr<GpuClientDelegate> delegate,
     int client_id,
     uint64_t client_tracing_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : client_id_(client_id),
+    : delegate_(std::move(delegate)),
+      client_id_(client_id),
       client_tracing_id_(client_tracing_id),
       task_runner_(std::move(task_runner)),
       weak_factory_(this) {
+  DCHECK(delegate_);
   gpu_bindings_.set_connection_error_handler(
       base::BindRepeating(&GpuClientImpl::OnError, base::Unretained(this),
                           ErrorReason::kConnectionLost));
@@ -86,14 +91,14 @@ void GpuClientImpl::OnEstablishGpuChannel(
     mojo::ScopedMessagePipeHandle channel_handle,
     const gpu::GPUInfo& gpu_info,
     const gpu::GpuFeatureInfo& gpu_feature_info,
-    GpuProcessHost::EstablishChannelStatus status) {
+    GpuClientDelegate::EstablishGpuChannelStatus status) {
   DCHECK_EQ(channel_handle.is_valid(),
-            status == GpuProcessHost::EstablishChannelStatus::SUCCESS);
+            status == GpuClientDelegate::EstablishGpuChannelStatus::kSuccess);
   gpu_channel_requested_ = false;
   EstablishGpuChannelCallback callback = std::move(callback_);
   DCHECK(!callback_);
 
-  if (status == GpuProcessHost::EstablishChannelStatus::GPU_HOST_INVALID) {
+  if (status == GpuClientDelegate::EstablishGpuChannelStatus::kGpuHostInvalid) {
     // GPU process may have crashed or been killed. Try again.
     EstablishGpuChannel(std::move(callback));
     return;
@@ -104,7 +109,7 @@ void GpuClientImpl::OnEstablishGpuChannel(
                             gpu_feature_info);
     return;
   }
-  if (status == GpuProcessHost::EstablishChannelStatus::SUCCESS) {
+  if (status == GpuClientDelegate::EstablishGpuChannelStatus::kSuccess) {
     // This is the case we pre-establish a channel before a request arrives.
     // Cache the channel for a future request.
     channel_handle_ = std::move(channel_handle);
@@ -144,42 +149,28 @@ void GpuClientImpl::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
     }
     return;
   }
-  GpuProcessHost* host = GpuProcessHost::Get();
-  if (!host) {
-    if (callback) {
-      std::move(callback).Run(client_id_, mojo::ScopedMessagePipeHandle(),
-                              gpu::GPUInfo(), gpu::GpuFeatureInfo());
-    }
-    return;
-  }
   callback_ = std::move(callback);
   if (gpu_channel_requested_)
     return;
   gpu_channel_requested_ = true;
-  bool preempts = false;
-  bool allow_view_command_buffers = false;
-  bool allow_real_time_streams = false;
-  host->EstablishGpuChannel(
-      client_id_, client_tracing_id_, preempts, allow_view_command_buffers,
-      allow_real_time_streams,
-      base::BindRepeating(&GpuClientImpl::OnEstablishGpuChannel,
-                          weak_factory_.GetWeakPtr()));
+  delegate_->EstablishGpuChannel(
+      client_id_, client_tracing_id_,
+      base::BindOnce(&GpuClientImpl::OnEstablishGpuChannel,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void GpuClientImpl::CreateJpegDecodeAccelerator(
     media::mojom::JpegDecodeAcceleratorRequest jda_request) {
-  GpuProcessHost* host = GpuProcessHost::Get();
-  if (host)
-    host->gpu_service()->CreateJpegDecodeAccelerator(std::move(jda_request));
+  if (auto* gpu_service = delegate_->EnsureGpuService())
+    gpu_service->CreateJpegDecodeAccelerator(std::move(jda_request));
 }
 
 void GpuClientImpl::CreateVideoEncodeAcceleratorProvider(
     media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request) {
-  GpuProcessHost* host = GpuProcessHost::Get();
-  if (!host)
-    return;
-  host->gpu_service()->CreateVideoEncodeAcceleratorProvider(
-      std::move(vea_provider_request));
+  if (auto* gpu_service = delegate_->EnsureGpuService()) {
+    gpu_service->CreateVideoEncodeAcceleratorProvider(
+        std::move(vea_provider_request));
+  }
 }
 
 void GpuClientImpl::CreateGpuMemoryBuffer(
