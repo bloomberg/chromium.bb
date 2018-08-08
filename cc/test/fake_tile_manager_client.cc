@@ -30,7 +30,7 @@ RasterColorSpace FakeTileManagerClient::GetRasterColorSpace() const {
 size_t FakeTileManagerClient::GetFrameIndexForImage(
     const PaintImage& paint_image,
     WhichTree tree) const {
-  return paint_image.frame_index();
+  return PaintImage::kDefaultFrameIndex;
 }
 
 }  // namespace cc

@@ -56,7 +56,7 @@ PlaybackImageProvider::GetDecodedDrawImage(const DrawImage& draw_image) {
   const auto& it =
       settings_->image_to_current_frame_index.find(paint_image.stable_id());
   size_t frame_index = it == settings_->image_to_current_frame_index.end()
-                           ? paint_image.frame_index()
+                           ? PaintImage::kDefaultFrameIndex
                            : it->second;
 
   DrawImage adjusted_image(draw_image, 1.f, frame_index, target_color_space_);

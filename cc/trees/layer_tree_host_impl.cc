@@ -1610,7 +1610,7 @@ void LayerTreeHostImpl::RequestImplSideInvalidationForCheckerImagedTiles() {
 size_t LayerTreeHostImpl::GetFrameIndexForImage(const PaintImage& paint_image,
                                                 WhichTree tree) const {
   if (!paint_image.ShouldAnimate())
-    return paint_image.frame_index();
+    return PaintImage::kDefaultFrameIndex;
 
   return image_animation_controller_.GetFrameIndexForImage(
       paint_image.stable_id(), tree);
@@ -3036,7 +3036,7 @@ void LayerTreeHostImpl::QueueImageDecode(int request_id,
                                          const PaintImage& image) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "LayerTreeHostImpl::QueueImageDecode", "frame_key",
-               image.GetKeyForFrame(image.frame_index()).ToString());
+               image.GetKeyForFrame(PaintImage::kDefaultFrameIndex).ToString());
   // Optimistically specify the current raster color space, since we assume that
   // it won't change.
   tile_manager_.decoded_image_tracker().QueueImageDecode(

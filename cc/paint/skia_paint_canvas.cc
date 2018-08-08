@@ -26,8 +26,11 @@ SkiaPaintCanvas::SkiaPaintCanvas(SkCanvas* canvas,
       image_provider_(image_provider),
       context_flushes_(context_flushes) {}
 
-SkiaPaintCanvas::SkiaPaintCanvas(const SkBitmap& bitmap)
-    : canvas_(new SkCanvas(bitmap)), owned_(canvas_) {}
+SkiaPaintCanvas::SkiaPaintCanvas(const SkBitmap& bitmap,
+                                 ImageProvider* image_provider)
+    : canvas_(new SkCanvas(bitmap)),
+      owned_(canvas_),
+      image_provider_(image_provider) {}
 
 SkiaPaintCanvas::SkiaPaintCanvas(const SkBitmap& bitmap,
                                  const SkSurfaceProps& props)

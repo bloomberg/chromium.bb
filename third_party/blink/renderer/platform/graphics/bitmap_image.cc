@@ -109,13 +109,14 @@ size_t BitmapImage::TotalFrameBytes() {
   return 0u;
 }
 
-PaintImage BitmapImage::PaintImageForTesting(size_t frame_index) {
-  return CreatePaintImage(frame_index);
+PaintImage BitmapImage::PaintImageForTesting() {
+  return CreatePaintImage();
 }
 
-PaintImage BitmapImage::CreatePaintImage(size_t index) {
+PaintImage BitmapImage::CreatePaintImage() {
   sk_sp<PaintImageGenerator> generator =
-      decoder_ ? decoder_->CreateGenerator(index) : nullptr;
+      decoder_ ? decoder_->CreateGenerator(PaintImage::kDefaultFrameIndex)
+               : nullptr;
   if (!generator)
     return PaintImage();
 
@@ -125,7 +126,6 @@ PaintImage BitmapImage::CreatePaintImage(size_t index) {
   auto builder =
       CreatePaintImageBuilder()
           .set_paint_image_generator(std::move(generator))
-          .set_frame_index(index)
           .set_repetition_count(GetRepetitionCountWithPolicyOverride(
               RepetitionCount(), animation_policy_))
           .set_completion_state(completion_state)
@@ -305,7 +305,7 @@ PaintImage BitmapImage::PaintImageForCurrentFrame() {
   if (cached_frame_)
     return cached_frame_;
 
-  cached_frame_ = CreatePaintImage(PaintImage::kDefaultFrameIndex);
+  cached_frame_ = CreatePaintImage();
 
   // Create the SkImage backing for this PaintImage here to ensure that copies
   // of the PaintImage share the same SkImage. Skia's caching of the decoded

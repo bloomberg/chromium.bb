@@ -50,6 +50,26 @@
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {
+namespace {
+
+class FrameSettingImageProvider : public cc::ImageProvider {
+ public:
+  FrameSettingImageProvider(size_t frame_index) : frame_index_(frame_index) {}
+  ~FrameSettingImageProvider() override = default;
+
+  ScopedDecodedDrawImage GetDecodedDrawImage(
+      const cc::DrawImage& draw_image) override {
+    auto sk_image = draw_image.paint_image().GetSkImageForFrame(frame_index_);
+    return ScopedDecodedDrawImage(
+        cc::DecodedDrawImage(sk_image, SkSize::MakeEmpty(), SkSize::Make(1, 1),
+                             draw_image.filter_quality(), true));
+  }
+
+ private:
+  size_t frame_index_;
+};
+
+}  // namespace
 
 class BitmapImageTest : public testing::Test {
  public:
@@ -98,16 +118,16 @@ class BitmapImageTest : public testing::Test {
 
   SkBitmap GenerateBitmap(size_t frame_index) {
     CHECK_GE(image_->FrameCount(), frame_index);
-    auto paint_image = image_->PaintImageForTesting(frame_index);
+    auto paint_image = image_->PaintImageForTesting();
     CHECK(paint_image);
-    CHECK_EQ(paint_image.frame_index(), frame_index);
 
     SkBitmap bitmap;
     SkImageInfo info = SkImageInfo::MakeN32Premul(image_->Size().Width(),
                                                   image_->Size().Height());
     bitmap.allocPixels(info, image_->Size().Width() * 4);
     bitmap.eraseColor(SK_AlphaTRANSPARENT);
-    cc::SkiaPaintCanvas canvas(bitmap);
+    FrameSettingImageProvider image_provider(frame_index);
+    cc::SkiaPaintCanvas canvas(bitmap, &image_provider);
     canvas.drawImage(paint_image, 0u, 0u, nullptr);
     return bitmap;
   }
@@ -122,7 +142,6 @@ class BitmapImageTest : public testing::Test {
     image->SetData(image_data, true);
     auto paint_image = image->PaintImageForCurrentFrame();
     CHECK(paint_image);
-    CHECK_EQ(paint_image.frame_index(), 0u);
 
     SkBitmap bitmap;
     SkImageInfo info = SkImageInfo::MakeN32Premul(image->Size().Width(),
@@ -313,10 +332,8 @@ TEST_F(BitmapImageTest, ConstantImageIdForPartiallyLoadedImages) {
   EXPECT_EQ(sk_image1->uniqueID(), sk_image2->uniqueID());
 
   // Frame keys should be the same for these PaintImages.
-  EXPECT_EQ(image1.GetKeyForFrame(image1.frame_index()),
-            image2.GetKeyForFrame(image2.frame_index()));
-  EXPECT_EQ(image1.frame_index(), 0u);
-  EXPECT_EQ(image2.frame_index(), 0u);
+  EXPECT_EQ(image1.GetKeyForFrame(PaintImage::kDefaultFrameIndex),
+            image2.GetKeyForFrame(PaintImage::kDefaultFrameIndex));
 
   // Destroy the decoded data. This generates a new id since we don't cache
   // image ids for partial decodes.
@@ -328,9 +345,8 @@ TEST_F(BitmapImageTest, ConstantImageIdForPartiallyLoadedImages) {
 
   // Since the cached generator is discarded on destroying the cached decode,
   // the new content id is generated resulting in an updated frame key.
-  EXPECT_NE(image1.GetKeyForFrame(image1.frame_index()),
-            image3.GetKeyForFrame(image3.frame_index()));
-  EXPECT_EQ(image3.frame_index(), 0u);
+  EXPECT_NE(image1.GetKeyForFrame(PaintImage::kDefaultFrameIndex),
+            image3.GetKeyForFrame(PaintImage::kDefaultFrameIndex));
 
   // Load complete. This should generate a new image id.
   image_->SetData(image_data, true);
@@ -338,9 +354,8 @@ TEST_F(BitmapImageTest, ConstantImageIdForPartiallyLoadedImages) {
   auto complete_sk_image = complete_image.GetSkImage();
   EXPECT_NE(sk_image3, complete_sk_image);
   EXPECT_NE(sk_image3->uniqueID(), complete_sk_image->uniqueID());
-  EXPECT_NE(complete_image.GetKeyForFrame(complete_image.frame_index()),
-            image3.GetKeyForFrame(image3.frame_index()));
-  EXPECT_EQ(complete_image.frame_index(), 0u);
+  EXPECT_NE(complete_image.GetKeyForFrame(PaintImage::kDefaultFrameIndex),
+            image3.GetKeyForFrame(PaintImage::kDefaultFrameIndex));
 
   // Destroy the decoded data and re-create the PaintImage. The frame key
   // remains constant but the SkImage id will change since we don't cache skia
@@ -349,9 +364,8 @@ TEST_F(BitmapImageTest, ConstantImageIdForPartiallyLoadedImages) {
   auto new_complete_image = image_->PaintImageForCurrentFrame();
   auto new_complete_sk_image = new_complete_image.GetSkImage();
   EXPECT_NE(new_complete_sk_image, complete_sk_image);
-  EXPECT_EQ(new_complete_image.GetKeyForFrame(new_complete_image.frame_index()),
-            complete_image.GetKeyForFrame(complete_image.frame_index()));
-  EXPECT_EQ(new_complete_image.frame_index(), 0u);
+  EXPECT_EQ(new_complete_image.GetKeyForFrame(PaintImage::kDefaultFrameIndex),
+            complete_image.GetKeyForFrame(PaintImage::kDefaultFrameIndex));
 }
 
 TEST_F(BitmapImageTest, ImageForDefaultFrame_MultiFrame) {

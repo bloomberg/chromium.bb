@@ -93,7 +93,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   PaintImage PaintImageForCurrentFrame() override;
   ImageOrientation CurrentFrameOrientation();
 
-  PaintImage PaintImageForTesting(size_t frame_index);
+  PaintImage PaintImageForTesting();
   void AdvanceAnimationForTesting() override {
     NOTREACHED() << "Supported only with svgs";
   }
@@ -129,7 +129,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
             ImageClampingMode,
             ImageDecodingMode) override;
 
-  PaintImage CreatePaintImage(size_t index);
+  PaintImage CreatePaintImage();
   void UpdateSize() const;
 
   // Called to wipe out the entire frame buffer cache and tell the image

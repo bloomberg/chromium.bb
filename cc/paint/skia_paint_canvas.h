@@ -36,7 +36,8 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
   explicit SkiaPaintCanvas(SkCanvas* canvas,
                            ImageProvider* image_provider = nullptr,
                            ContextFlushes context_flushes = ContextFlushes());
-  explicit SkiaPaintCanvas(const SkBitmap& bitmap);
+  explicit SkiaPaintCanvas(const SkBitmap& bitmap,
+                           ImageProvider* image_provider = nullptr);
   explicit SkiaPaintCanvas(const SkBitmap& bitmap, const SkSurfaceProps& props);
   // If |target_color_space| is non-nullptr, then this will wrap |canvas| in a
   // SkColorSpaceXformCanvas.

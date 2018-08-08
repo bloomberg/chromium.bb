@@ -93,7 +93,6 @@ DrawImage CreateDiscardableDrawImage(const gfx::Size& size,
 PaintImage CreateAnimatedImage(const gfx::Size& size,
                                std::vector<FrameMetadata> frames,
                                int repetition_count,
-                               size_t frame_index,
                                PaintImage::Id id) {
   return PaintImageBuilder::WithDefault()
       .set_id(id)
@@ -102,7 +101,6 @@ PaintImage CreateAnimatedImage(const gfx::Size& size,
           std::move(frames)))
       .set_animation_type(PaintImage::AnimationType::ANIMATED)
       .set_repetition_count(repetition_count)
-      .set_frame_index(frame_index)
       .TakePaintImage();
 }
 

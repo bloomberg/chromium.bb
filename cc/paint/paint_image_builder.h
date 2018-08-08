@@ -73,10 +73,6 @@ class CC_PAINT_EXPORT PaintImageBuilder {
     paint_image_.is_multipart_ = is_multipart;
     return std::move(*this);
   }
-  PaintImageBuilder&& set_frame_index(size_t frame_index) {
-    paint_image_.frame_index_ = frame_index;
-    return std::move(*this);
-  }
   PaintImageBuilder&& set_repetition_count(int count) {
     paint_image_.repetition_count_ = count;
     return std::move(*this);

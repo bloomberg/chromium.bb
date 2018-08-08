@@ -51,7 +51,7 @@ class AnimatedImagesProvider : public cc::ImageProvider {
     const auto& paint_image = draw_image.paint_image();
     auto it = image_animation_map_->find(paint_image.stable_id());
     size_t frame_index = it == image_animation_map_->end()
-                             ? paint_image.frame_index()
+                             ? cc::PaintImage::kDefaultFrameIndex
                              : it->second;
     return ScopedDecodedDrawImage(cc::DecodedDrawImage(
         paint_image.GetSkImageForFrame(frame_index), SkSize::Make(0, 0),
