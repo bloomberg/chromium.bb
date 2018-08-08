@@ -371,12 +371,8 @@ TEST_F(ClientControlledShellSurfaceTest, ShadowWithStateChange) {
   surface->SetFrame(SurfaceFrameType::SHADOW);
   surface->Commit();
 
-  // Placing a shadow at screen origin will make the shadow's origin (-10, -10).
-  const gfx::Rect shadow_bounds(content_size);
-
-  // Expected shadow position/bounds in parent coordinates.
-  const gfx::Point expected_shadow_origin(-10, -10);
-  const gfx::Rect expected_shadow_bounds(expected_shadow_origin, content_size);
+  // In parent coordinates.
+  const gfx::Rect shadow_bounds(gfx::Point(-10, -10), content_size);
 
   views::Widget* widget = shell_surface->GetWidget();
   aura::Window* window = widget->GetNativeWindow();
@@ -388,7 +384,7 @@ TEST_F(ClientControlledShellSurfaceTest, ShadowWithStateChange) {
 
   EXPECT_TRUE(shadow->layer()->visible());
   // Origin must be in sync.
-  EXPECT_EQ(expected_shadow_origin, shadow->content_bounds().origin());
+  EXPECT_EQ(shadow_bounds.origin(), shadow->content_bounds().origin());
 
   const gfx::Rect work_area =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
@@ -405,13 +401,12 @@ TEST_F(ClientControlledShellSurfaceTest, ShadowWithStateChange) {
   // area,/ thus not visible until new bounds is committed.
   widget->Restore();
   EXPECT_TRUE(shadow->layer()->visible());
-  const gfx::Rect shadow_in_maximized(expected_shadow_origin, work_area.size());
-  EXPECT_EQ(shadow_in_maximized, shadow->content_bounds());
+  EXPECT_EQ(work_area, shadow->content_bounds());
 
   // The bounds is updated.
   shell_surface->SetShadowBounds(shadow_bounds);
   surface->Commit();
-  EXPECT_EQ(expected_shadow_bounds, shadow->content_bounds());
+  EXPECT_EQ(shadow_bounds, shadow->content_bounds());
 }
 
 TEST_F(ClientControlledShellSurfaceTest, ShadowWithTransform) {
@@ -433,8 +428,8 @@ TEST_F(ClientControlledShellSurfaceTest, ShadowWithTransform) {
   aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
   ui::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
 
-  // Placing a shadow at screen origin will make the shadow's origin (-10, -10).
-  const gfx::Rect shadow_bounds(content_size);
+  // In parent coordinates.
+  const gfx::Rect shadow_bounds(gfx::Point(-10, -10), content_size);
 
   // Shadow bounds relative to its parent should not be affected by a transform.
   gfx::Transform transform;

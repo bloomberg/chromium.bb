@@ -2550,10 +2550,6 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
     display::Screen::GetScreen()->RemoveObserver(this);
   }
 
-  bool HasRelativeSurfaceHierarchy() const {
-    return wl_resource_get_version(remote_shell_resource_) >= 9;
-  }
-
   std::unique_ptr<ClientControlledShellSurface> CreateShellSurface(
       Surface* surface,
       int container,
@@ -2883,11 +2879,9 @@ void remote_shell_get_remote_surface(wl_client* client,
   shell_surface->set_configure_callback(
       base::Bind(&HandleRemoteSurfaceConfigureCallback,
                  base::Unretained(remote_surface_resource)));
-  if (shell->HasRelativeSurfaceHierarchy()) {
-    shell_surface->set_geometry_changed_callback(
-        base::BindRepeating(&HandleRemoteSurfaceGeometryChangedCallback,
-                            base::Unretained(remote_surface_resource)));
-  }
+  shell_surface->set_geometry_changed_callback(
+      base::BindRepeating(&HandleRemoteSurfaceGeometryChangedCallback,
+                          base::Unretained(remote_surface_resource)));
 
   if (wl_resource_get_version(remote_surface_resource) >= 10) {
     shell_surface->set_client_controlled_move_resize(false);

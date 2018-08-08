@@ -41,14 +41,13 @@ class ClientControlledShellSurface
       public display::DisplayObserver,
       public ui::CompositorLockClient {
  public:
-  using GeometryChangedCallback =
-      base::RepeatingCallback<void(const gfx::Rect& geometry)>;
-
   ClientControlledShellSurface(Surface* surface,
                                bool can_minimize,
                                int container);
   ~ClientControlledShellSurface() override;
 
+  using GeometryChangedCallback =
+      base::RepeatingCallback<void(const gfx::Rect& geometry)>;
   void set_geometry_changed_callback(const GeometryChangedCallback& callback) {
     geometry_changed_callback_ = callback;
   }
