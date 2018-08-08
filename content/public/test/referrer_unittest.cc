@@ -23,6 +23,14 @@ TEST_F(ReferrerSanitizerTest, SanitizesPolicyForNonEmptyReferrers) {
       Referrer(GURL("http://b"), static_cast<blink::WebReferrerPolicy>(200)))));
 }
 
+TEST(ReferrerSanitizerTest, OnlyHTTPFamilyReferrer) {
+  auto result = Referrer::SanitizeForRequest(
+      GURL("https://a"),
+      Referrer(GURL("chrome-extension://ghbmnnjooekpmoecnnnilnnbdlolhkhi"),
+               blink::kWebReferrerPolicyAlways));
+  EXPECT_TRUE(result.url.is_empty());
+}
+
 TEST(ReferrerTest, BlinkNetRoundTripConversion) {
   const net::URLRequest::ReferrerPolicy policies[] = {
       net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,

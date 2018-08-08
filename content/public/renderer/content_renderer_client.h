@@ -228,15 +228,11 @@ class CONTENT_EXPORT ContentRendererClient {
 #endif
 
   // Returns true if we should fork a new process for the given navigation.
-  // If |send_referrer| is set to false (which is the default), no referrer
-  // header will be send for the navigation. Otherwise, the referrer header is
-  // set according to the frame's referrer policy.
   virtual bool ShouldFork(blink::WebLocalFrame* frame,
                           const GURL& url,
                           const std::string& http_method,
                           bool is_initial_navigation,
-                          bool is_server_redirect,
-                          bool* send_referrer);
+                          bool is_server_redirect);
 
   // Notifies the embedder that the given frame is requesting the resource at
   // |url|. If the function returns a valid |new_url|, the request must be

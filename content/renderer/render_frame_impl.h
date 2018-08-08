@@ -1080,7 +1080,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // look for a matching FrameNavigationEntry in the last committed entry to use
   // instead of |url|.
   void OpenURL(const NavigationPolicyInfo& info,
-               bool send_referrer,
                bool is_history_navigation_in_new_child);
 
   // Creates a WebURLRequest to use fo the commit of a navigation.
