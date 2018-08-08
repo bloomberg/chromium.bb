@@ -102,6 +102,17 @@ bool IsOverviewSwipeToCloseEnabled() {
   return base::FeatureList::IsEnabled(features::kOverviewSwipeToClose);
 }
 
+void FadeInWidgetOnEnter(views::Widget* widget) {
+  aura::Window* window = widget->GetNativeWindow();
+  if (window->layer()->GetTargetOpacity() == 1.f)
+    return;
+
+  window->layer()->SetOpacity(0.0f);
+  ScopedOverviewAnimationSettings scoped_overview_animation_settings(
+      OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN, window);
+  window->layer()->SetOpacity(1.0f);
+}
+
 void FadeOutWidgetOnExit(std::unique_ptr<views::Widget> widget,
                          OverviewAnimationType animation_type) {
   // The window selector controller may be nullptr on shutdown.
