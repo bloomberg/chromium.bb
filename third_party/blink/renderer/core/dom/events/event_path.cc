@@ -101,7 +101,7 @@ void EventPath::CalculatePath() {
 
   nodes_in_path.push_back(current);
   while (current) {
-    if (event_ && current->KeepEventInNode(event_))
+    if (event_ && current->KeepEventInNode(*event_))
       break;
     HeapVector<Member<V0InsertionPoint>, 8> insertion_points;
     CollectDestinationInsertionPoints(*current, insertion_points);

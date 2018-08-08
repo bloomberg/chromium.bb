@@ -17,18 +17,18 @@
 namespace blink {
 
 // static
-bool MediaControlElementsHelper::IsUserInteractionEvent(Event* event) {
-  const AtomicString& type = event->type();
+bool MediaControlElementsHelper::IsUserInteractionEvent(const Event& event) {
+  const AtomicString& type = event.type();
   return type == EventTypeNames::pointerdown ||
          type == EventTypeNames::pointerup ||
          type == EventTypeNames::mousedown || type == EventTypeNames::mouseup ||
          type == EventTypeNames::click || type == EventTypeNames::dblclick ||
-         event->IsKeyboardEvent() || event->IsTouchEvent();
+         event.IsKeyboardEvent() || event.IsTouchEvent();
 }
 
 // static
 bool MediaControlElementsHelper::IsUserInteractionEventForSlider(
-    Event* event,
+    const Event& event,
     LayoutObject* layout_object) {
   // It is unclear if this can be converted to isUserInteractionEvent(), since
   // mouse* events seem to be eaten during a drag anyway, see
@@ -45,7 +45,7 @@ bool MediaControlElementsHelper::IsUserInteractionEventForSlider(
   if (slider && !slider->InDragMode())
     return false;
 
-  const AtomicString& type = event->type();
+  const AtomicString& type = event.type();
   return type == EventTypeNames::mouseover ||
          type == EventTypeNames::mouseout ||
          type == EventTypeNames::mousemove ||

@@ -30,7 +30,7 @@ class MediaControlVolumeSliderElement final : public MediaControlSliderElement {
 
  private:
   void DefaultEventHandler(Event*) override;
-  bool KeepEventInNode(Event*) override;
+  bool KeepEventInNode(const Event&) const override;
   void SetVolumeInternal(double);
 };
 

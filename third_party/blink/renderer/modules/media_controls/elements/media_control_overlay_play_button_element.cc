@@ -217,7 +217,7 @@ void MediaControlOverlayPlayButtonElement::MaybeJump(int seconds) {
 }
 
 void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event* event) {
-  if (ShouldCausePlayPause(event)) {
+  if (ShouldCausePlayPause(*event)) {
     event->SetDefaultHandled();
     MaybePlayPause();
   } else if (event->type() == EventTypeNames::click) {
@@ -267,26 +267,27 @@ void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event* event) {
   MediaControlInputElement::DefaultEventHandler(event);
 }
 
-bool MediaControlOverlayPlayButtonElement::KeepEventInNode(Event* event) {
+bool MediaControlOverlayPlayButtonElement::KeepEventInNode(
+    const Event& event) const {
   // We only care about user interaction events.
   if (!MediaControlElementsHelper::IsUserInteractionEvent(event))
     return false;
 
   // For mouse events, only keep in node if they're on the internal button.
-  if (event->IsMouseEvent() && MediaControlsImpl::IsModern())
+  if (event.IsMouseEvent() && MediaControlsImpl::IsModern())
     return IsMouseEventOnInternalButton(ToMouseEvent(event));
 
   return true;
 }
 
 bool MediaControlOverlayPlayButtonElement::ShouldCausePlayPause(
-    Event* event) const {
+    const Event& event) const {
   // Only click events cause a play/pause.
-  if (event->type() != EventTypeNames::click)
+  if (event.type() != EventTypeNames::click)
     return false;
 
   // Double tap to navigate should only be available on modern controls.
-  if (!MediaControlsImpl::IsModern() || !event->IsMouseEvent())
+  if (!MediaControlsImpl::IsModern() || !event.IsMouseEvent())
     return true;
 
   // TODO(beccahughes): Move to PointerEvent.
@@ -294,9 +295,9 @@ bool MediaControlOverlayPlayButtonElement::ShouldCausePlayPause(
 }
 
 bool MediaControlOverlayPlayButtonElement::IsMouseEventOnInternalButton(
-    MouseEvent* mouse_event) const {
+    const MouseEvent& mouse_event) const {
   // If no position data available, default to yes.
-  if (!mouse_event->HasPosition())
+  if (!mouse_event.HasPosition())
     return true;
 
   // Find the zoom-adjusted internal button bounding box.
@@ -310,7 +311,7 @@ bool MediaControlOverlayPlayButtonElement::IsMouseEventOnInternalButton(
 
   // Check the button and a margin around it.
   return IsPointInRect(*box, kInnerButtonTouchPaddingSize,
-                       mouse_event->clientX(), mouse_event->clientY());
+                       mouse_event.clientX(), mouse_event.clientY());
 }
 
 WebSize MediaControlOverlayPlayButtonElement::GetSizeOrDefault() const {

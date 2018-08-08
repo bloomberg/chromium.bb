@@ -15,7 +15,7 @@ MediaControlButtonPanelElement::MediaControlButtonPanelElement(
   SetShadowPseudoId(AtomicString("-internal-media-controls-button-panel"));
 }
 
-bool MediaControlButtonPanelElement::KeepEventInNode(Event* event) {
+bool MediaControlButtonPanelElement::KeepEventInNode(const Event& event) const {
   return MediaControlElementsHelper::IsUserInteractionEvent(event);
 }
 

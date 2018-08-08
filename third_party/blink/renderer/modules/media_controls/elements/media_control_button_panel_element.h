@@ -20,7 +20,7 @@ class MediaControlButtonPanelElement final : public MediaControlDivElement {
   explicit MediaControlButtonPanelElement(MediaControlsImpl&);
 
  private:
-  bool KeepEventInNode(Event*) override;
+  bool KeepEventInNode(const Event&) const override;
 };
 
 }  // namespace blink

@@ -80,10 +80,10 @@ class MODULES_EXPORT MediaControlOverlayPlayButtonElement final
   void TapTimerFired(TimerBase*);
 
   void DefaultEventHandler(Event*) override;
-  bool KeepEventInNode(Event*) override;
+  bool KeepEventInNode(const Event&) const override;
 
-  bool ShouldCausePlayPause(Event*) const;
-  bool IsMouseEventOnInternalButton(MouseEvent*) const;
+  bool ShouldCausePlayPause(const Event&) const;
+  bool IsMouseEventOnInternalButton(const MouseEvent&) const;
   void MaybePlayPause();
   void MaybeJump(int);
 

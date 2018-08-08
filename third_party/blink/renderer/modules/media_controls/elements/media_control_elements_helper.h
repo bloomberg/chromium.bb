@@ -30,11 +30,11 @@ class MediaControlElementsHelper final {
   STATIC_ONLY(MediaControlElementsHelper);
 
  public:
-  static bool IsUserInteractionEvent(Event*);
+  static bool IsUserInteractionEvent(const Event&);
 
   // Sliders (the volume control and timeline) need to capture some additional
   // events used when dragging the thumb.
-  static bool IsUserInteractionEventForSlider(Event*, LayoutObject*);
+  static bool IsUserInteractionEventForSlider(const Event&, LayoutObject*);
 
   // Returns the MediaControlElementType associated with a given |Node|. The
   // |node| _must_ be a media control element.

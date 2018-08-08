@@ -82,7 +82,8 @@ void MediaControlVolumeSliderElement::SetVolumeInternal(double volume) {
   SetAfterSegmentPosition(MediaControlSliderElement::Position(0, volume));
 }
 
-bool MediaControlVolumeSliderElement::KeepEventInNode(Event* event) {
+bool MediaControlVolumeSliderElement::KeepEventInNode(
+    const Event& event) const {
   return MediaControlElementsHelper::IsUserInteractionEventForSlider(
       event, GetLayoutObject());
 }
