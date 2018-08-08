@@ -160,14 +160,6 @@ LayoutUnit InlineTextBox::VerticalPosition(
   return LogicalTop() + OffsetTo(position_type, baseline_type);
 }
 
-bool InlineTextBox::IsSelected(int start_pos, int end_pos) const {
-  int s_pos = std::max(start_pos - start_, 0);
-  // The position after a hard line break is considered to be past its end.
-  // See the corresponding code in InlineTextBox::getSelectionState.
-  int e_pos = std::min(end_pos - start_, int(len_) + (IsLineBreak() ? 0 : 1));
-  return (s_pos < e_pos);
-}
-
 SelectionState InlineTextBox::GetSelectionState() const {
   SelectionState state = GetLineLayoutItem().GetSelectionState();
   if (state == SelectionState::kStart || state == SelectionState::kEnd ||
