@@ -21,21 +21,17 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/avatar_icon_util.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_client.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "skia/ext/image_operations.h"
 #include "url/gurl.h"
 
@@ -49,12 +45,13 @@ constexpr char kAuthorizationHeader[] = "Bearer %s";
 }  // namespace
 
 ProfileDownloader::ProfileDownloader(ProfileDownloaderDelegate* delegate)
-    : OAuth2TokenService::Consumer("profile_downloader"),
-      delegate_(delegate),
+    : delegate_(delegate),
       picture_status_(PICTURE_FAILED),
-      account_tracker_service_(
-          AccountTrackerServiceFactory::GetForProfile(
-              delegate_->GetBrowserProfile())),
+      account_tracker_service_(AccountTrackerServiceFactory::GetForProfile(
+          delegate_->GetBrowserProfile())),
+      identity_manager_(IdentityManagerFactory::GetForProfile(
+          delegate_->GetBrowserProfile())),
+      identity_manager_observer_(this),
       waiting_for_account_info_(false) {
   DCHECK(delegate_);
   account_tracker_service_->AddObserver(this);
@@ -68,26 +65,21 @@ void ProfileDownloader::StartForAccount(const std::string& account_id) {
   VLOG(1) << "Starting profile downloader...";
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  ProfileOAuth2TokenService* service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(
-          delegate_->GetBrowserProfile());
-  if (!service) {
+  if (!identity_manager_) {
     // This can happen in some test paths.
-    LOG(WARNING) << "User has no token service";
+    LOG(WARNING) << "User has no identity manager";
     delegate_->OnProfileDownloadFailure(
         this, ProfileDownloaderDelegate::TOKEN_ERROR);
     return;
   }
 
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(delegate_->GetBrowserProfile());
-  account_id_ =
-      account_id.empty() ?
-          signin_manager->GetAuthenticatedAccountId() : account_id;
-  if (service->RefreshTokenIsAvailable(account_id_))
+  account_id_ = account_id.empty()
+                    ? identity_manager_->GetPrimaryAccountInfo().account_id
+                    : account_id;
+  if (identity_manager_->HasAccountWithRefreshToken(account_id_))
     StartFetchingOAuth2AccessToken();
   else
-    service->AddObserver(this);
+    identity_manager_observer_.Add(identity_manager_);
 }
 
 base::string16 ProfileDownloader::GetProfileHostedDomain() const {
@@ -145,26 +137,21 @@ void ProfileDownloader::StartFetchingImage() {
 }
 
 void ProfileDownloader::StartFetchingOAuth2AccessToken() {
-  Profile* profile = delegate_->GetBrowserProfile();
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kGoogleUserInfoProfile);
   // Required to determine if lock should be enabled.
   scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  oauth2_access_token_request_ = token_service->StartRequest(
-      account_id_, scopes, this);
+
+  oauth2_access_token_fetcher_ =
+      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+          "profile_downloader", identity_manager_, scopes,
+          base::BindOnce(&ProfileDownloader::OnAccessTokenFetchComplete,
+                         base::Unretained(this)),
+          identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 }
 
 ProfileDownloader::~ProfileDownloader() {
-  // Ensures PO2TS observation is cleared when ProfileDownloader is destructed
-  // before refresh token is available.
-  ProfileOAuth2TokenService* service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(
-          delegate_->GetBrowserProfile());
-  if (service)
-    service->RemoveObserver(this);
-
+  oauth2_access_token_fetcher_.reset();
   account_tracker_service_->RemoveObserver(this);
 }
 
@@ -302,39 +289,30 @@ void ProfileDownloader::OnDecodeImageFailed() {
       this, ProfileDownloaderDelegate::IMAGE_DECODE_FAILED);
 }
 
-void ProfileDownloader::OnRefreshTokenAvailable(const std::string& account_id) {
-  ProfileOAuth2TokenService* service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(
-          delegate_->GetBrowserProfile());
-  if (account_id != account_id_)
+void ProfileDownloader::OnRefreshTokenUpdatedForAccount(
+    const AccountInfo& account_info,
+    bool is_valid) {
+  if (!is_valid || account_info.account_id != account_id_)
     return;
 
-  service->RemoveObserver(this);
+  identity_manager_observer_.Remove(identity_manager_);
   StartFetchingOAuth2AccessToken();
 }
 
-// Callback for OAuth2TokenService::Request on success. |access_token| is the
-// token used to start fetching user data.
-void ProfileDownloader::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
-  DCHECK_EQ(request, oauth2_access_token_request_.get());
-  oauth2_access_token_request_.reset();
-  auth_token_ = access_token;
+void ProfileDownloader::OnAccessTokenFetchComplete(
+    GoogleServiceAuthError error,
+    identity::AccessTokenInfo access_token_info) {
+  oauth2_access_token_fetcher_.reset();
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    LOG(WARNING)
+        << "ProfileDownloader: token request using refresh token failed:"
+        << error.ToString();
+    delegate_->OnProfileDownloadFailure(this,
+                                        ProfileDownloaderDelegate::TOKEN_ERROR);
+    return;
+  }
+  auth_token_ = access_token_info.token;
   StartFetchingImage();
-}
-
-// Callback for OAuth2TokenService::Request on failure.
-void ProfileDownloader::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  DCHECK_EQ(request, oauth2_access_token_request_.get());
-  oauth2_access_token_request_.reset();
-  LOG(WARNING) << "ProfileDownloader: token request using refresh token failed:"
-               << error.ToString();
-  delegate_->OnProfileDownloadFailure(
-      this, ProfileDownloaderDelegate::TOKEN_ERROR);
 }
 
 void ProfileDownloader::OnAccountUpdated(const AccountInfo& info) {

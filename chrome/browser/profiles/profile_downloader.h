@@ -10,22 +10,25 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/image_decoder.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+namespace identity {
+class PrimaryAccountAccessTokenFetcher;
+}
 class ProfileDownloaderDelegate;
 
 // Downloads user profile information. The profile picture is decoded in a
 // sandboxed process.
 class ProfileDownloader : public ImageDecoder::ImageRequest,
-                          public OAuth2TokenService::Observer,
-                          public OAuth2TokenService::Consumer,
+                          public identity::IdentityManager::Observer,
                           public AccountTrackerService::Observer {
  public:
   enum PictureStatus {
@@ -92,19 +95,16 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   void OnImageDecoded(const SkBitmap& decoded_image) override;
   void OnDecodeImageFailed() override;
 
-  // Overriden from OAuth2TokenService::Observer:
-  void OnRefreshTokenAvailable(const std::string& account_id) override;
-
-  // Overriden from OAuth2TokenService::Consumer:
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
-
+  // Overriden from identity::IdentityManager::Observer:
+  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
+                                       bool is_valid) override;
 
   // Implementation of AccountTrackerService::Observer.
   void OnAccountUpdated(const AccountInfo& info) override;
+
+  // Callback for PrimaryAccountAccessTokenFetcher.
+  void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
+                                  identity::AccessTokenInfo access_token_info);
 
   // Issues the first request to get user profile image.
   void StartFetchingImage();
@@ -120,11 +120,15 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   std::string account_id_;
   std::string auth_token_;
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;
-  std::unique_ptr<OAuth2TokenService::Request> oauth2_access_token_request_;
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+      oauth2_access_token_fetcher_;
   AccountInfo account_info_;
   SkBitmap profile_picture_;
   PictureStatus picture_status_;
   AccountTrackerService* account_tracker_service_;
+  identity::IdentityManager* identity_manager_;
+  ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
+      identity_manager_observer_;
   bool waiting_for_account_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileDownloader);
