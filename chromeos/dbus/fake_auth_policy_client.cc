@@ -8,17 +8,13 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/md5.h"
-#include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/chromeos_paths.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -227,9 +223,10 @@ void FakeAuthPolicyClient::RefreshUserPolicy(const AccountId& account_id,
   em::PolicyFetchResponse response;
   response.set_policy_data(policy_data.SerializeAsString());
 
+  cryptohome::AccountIdentifier account_identifier;
+  account_identifier.set_account_id(account_id.GetAccountIdKey());
   session_manager_client->StorePolicyForUser(
-      cryptohome::CreateAccountIdentifierFromAccountId(account_id),
-      response.SerializeAsString(),
+      account_identifier, response.SerializeAsString(),
       base::BindOnce(&OnStorePolicy, std::move(callback)));
 }
 

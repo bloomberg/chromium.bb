@@ -17,7 +17,6 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/cryptohome_client.h"
