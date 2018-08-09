@@ -519,6 +519,11 @@ DBusHandlerResult ObjectProxy::HandleMessage(
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }
 
+  std::string sender = signal->GetSender();
+  // Ignore message from sender we are not interested in.
+  if (service_name_owner_ != sender)
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+
   const std::string interface = signal->GetInterface();
   const std::string member = signal->GetMember();
 
@@ -533,12 +538,6 @@ DBusHandlerResult ObjectProxy::HandleMessage(
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }
   VLOG(1) << "Signal received: " << signal->ToString();
-
-  std::string sender = signal->GetSender();
-  if (service_name_owner_ != sender) {
-    LOG(ERROR) << "Rejecting a message from a wrong sender.";
-    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-  }
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
   if (bus_->HasDBusThread()) {
