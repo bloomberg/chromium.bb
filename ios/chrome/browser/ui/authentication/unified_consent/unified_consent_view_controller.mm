@@ -193,7 +193,7 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
   _consentStringIds.push_back(IDS_IOS_ACCOUNT_UNIFIED_CONSENT_TITLE);
   title.textColor =
       [UIColor colorWithWhite:0 alpha:kAuthenticationTitleColorAlpha];
-  title.font = [UIFont systemFontOfSize:kAuthenticationTitleFontSize];
+  title.font = [UIFont preferredFontForTextStyle:kAuthenticationTitleFontStyle];
   title.numberOfLines = 0;
 
   [container addSubview:title];
@@ -374,7 +374,7 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
   DCHECK(parentView);
   UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
   label.translatesAutoresizingMaskIntoConstraints = NO;
-  label.font = [UIFont systemFontOfSize:kAuthenticationTextFontSize];
+  label.font = [UIFont preferredFontForTextStyle:kAuthenticationTextFontStyle];
   label.text = l10n_util::GetNSString(stringId);
   _consentStringIds.push_back(stringId);
   label.textColor =

@@ -11,8 +11,8 @@
 const CGFloat kAuthenticationHeaderImageHeight = 88.;
 const CGFloat kAuthenticationHeaderImageWidth = 360.;
 
-const CGFloat kAuthenticationTitleFontSize = 23.;
-const CGFloat kAuthenticationTextFontSize = 12.;
+const UIFontTextStyle kAuthenticationTitleFontStyle = UIFontTextStyleTitle2;
+const UIFontTextStyle kAuthenticationTextFontStyle = UIFontTextStyleCaption1;
 
 const int kAuthenticationHeaderBackgroundColor = 0xf8f9fa;
 const CGFloat kAuthenticationHorizontalMargin = 16.;

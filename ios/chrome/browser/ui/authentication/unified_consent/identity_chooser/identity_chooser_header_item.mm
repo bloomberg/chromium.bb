@@ -52,6 +52,10 @@ CGFloat kFontAlpha = .87;
       @"V:|-(TopMargin)-[label]",
     ];
     ApplyVisualConstraintsWithMetrics(constraints, views, metrics);
+
+    self.isAccessibilityElement = YES;
+    self.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_ACCOUNT_IDENTITY_CHOOSER_CHOOSE_ACCOUNT);
   }
   return self;
 }
