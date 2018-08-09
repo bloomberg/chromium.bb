@@ -122,12 +122,12 @@ using LoadErrorBehavior = ExtensionRegistrar::LoadErrorBehavior;
 
 namespace {
 
-// Wait this many seconds after an extensions becomes idle before updating it.
-const int kUpdateIdleDelay = 5;
+// Wait this long after an extensions becomes idle before updating it.
+constexpr base::TimeDelta kUpdateIdleDelay = base::TimeDelta::FromSeconds(5);
 
 // IDs of extensions that have been replaced by component extensions and need to
 // be uninstalled.
-const char* kMigratedExtensionIds[] = {
+const char* const kMigratedExtensionIds[] = {
     "boadgeojelhgndaghljhdicfkmllpafd",  // Google Cast
     "dliochdbjfkdbacpmhlcpmleaejidimm"   // Google Cast (Beta)
 };
@@ -1812,7 +1812,7 @@ void ExtensionService::Observe(int type,
                     base::IgnoreResult(
                         &ExtensionService::FinishDelayedInstallationIfReady),
                     AsWeakPtr(), *it, false /*install_immediately*/),
-                base::TimeDelta::FromSeconds(kUpdateIdleDelay));
+                kUpdateIdleDelay);
           }
         }
       }

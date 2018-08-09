@@ -102,7 +102,8 @@ const char kAppLauncherInstallSource[] = "applauncher";
 // See http://crbug.com/371398.
 const char kAuthUserQueryKey[] = "authuser";
 
-const size_t kTimeRemainingMinutesThreshold = 1u;
+constexpr base::TimeDelta kTimeRemainingThreshold =
+    base::TimeDelta::FromSeconds(1);
 
 // Folder for downloading crx files from the webstore. This is used so that the
 // crx files don't go via the usual downloads folder.
@@ -738,13 +739,9 @@ void WebstoreInstaller::UpdateDownloadProgress() {
   // timer.
   base::TimeDelta time_remaining;
   if (download_item_->TimeRemaining(&time_remaining) &&
-      time_remaining >
-          base::TimeDelta::FromSeconds(kTimeRemainingMinutesThreshold)) {
-    download_progress_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromSeconds(kTimeRemainingMinutesThreshold),
-        this,
-        &WebstoreInstaller::UpdateDownloadProgress);
+      time_remaining > kTimeRemainingThreshold) {
+    download_progress_timer_.Start(FROM_HERE, kTimeRemainingThreshold, this,
+                                   &WebstoreInstaller::UpdateDownloadProgress);
   } else {
     download_progress_timer_.Stop();
   }

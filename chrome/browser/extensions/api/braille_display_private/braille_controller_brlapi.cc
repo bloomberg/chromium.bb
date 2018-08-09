@@ -27,12 +27,17 @@ namespace api {
 namespace braille_display_private {
 
 namespace {
+
 // Delay between detecting a directory update and trying to connect
 // to the brlapi.
-const int64_t kConnectionDelayMs = 500;
+constexpr base::TimeDelta kConnectionDelay =
+    base::TimeDelta::FromMilliseconds(500);
+
 // How long to periodically retry connecting after a brltty restart.
 // Some displays are slow to connect.
-const int64_t kConnectRetryTimeout = 20000;
+constexpr base::TimeDelta kConnectRetryTimeout =
+    base::TimeDelta::FromSeconds(20);
+
 }  // namespace
 
 BrailleController::BrailleController() {
@@ -248,19 +253,16 @@ void BrailleControllerImpl::TryToConnect() {
 
 void BrailleControllerImpl::ResetRetryConnectHorizon() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  retry_connect_horizon_ =
-      base::Time::Now() +
-      base::TimeDelta::FromMilliseconds(kConnectRetryTimeout);
+  retry_connect_horizon_ = base::Time::Now() + kConnectRetryTimeout;
 }
 
 void BrailleControllerImpl::ScheduleTryToConnect() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::TimeDelta delay(base::TimeDelta::FromMilliseconds(kConnectionDelayMs));
   // Don't reschedule if there's already a connect scheduled or
   // the next attempt would fall outside of the retry limit.
   if (connect_scheduled_)
     return;
-  if (base::Time::Now() + delay > retry_connect_horizon_) {
+  if (base::Time::Now() + kConnectionDelay > retry_connect_horizon_) {
     VLOG(1) << "Stopping to retry to connect to brlapi";
     return;
   }
@@ -270,7 +272,7 @@ void BrailleControllerImpl::ScheduleTryToConnect() {
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&BrailleControllerImpl::TryToConnect,
                      base::Unretained(this)),
-      delay);
+      kConnectionDelay);
 }
 
 void BrailleControllerImpl::Disconnect() {

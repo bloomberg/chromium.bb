@@ -23,7 +23,8 @@ const char kCRXFileExtension[] = ".crx";
 
 // Delay between checks for flag file presence when waiting for the cache to
 // become ready.
-const int64_t kCacheStatusPollingDelayMs = 1000;
+constexpr base::TimeDelta kCacheStatusPollingDelay =
+    base::TimeDelta::FromSeconds(1);
 
 }  // namespace
 
@@ -39,8 +40,7 @@ LocalExtensionCache::LocalExtensionCache(
       min_cache_age_(base::Time::Now() - max_cache_age),
       backend_task_runner_(backend_task_runner),
       state_(kUninitialized),
-      cache_status_polling_delay_(
-          base::TimeDelta::FromMilliseconds(kCacheStatusPollingDelayMs)),
+      cache_status_polling_delay_(kCacheStatusPollingDelay),
       weak_ptr_factory_(this) {}
 
 LocalExtensionCache::~LocalExtensionCache() {
