@@ -1836,6 +1836,7 @@ test("browser_tests") {
         "//ui/login:resources",
         "//url",
       ]
+      data_deps += [ "//ui/file_manager:unit_test_data" ]
       if (use_dbus) {
         deps += [ "//dbus:test_support" ]
       }

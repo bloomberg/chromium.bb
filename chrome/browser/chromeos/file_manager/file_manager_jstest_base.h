@@ -15,7 +15,13 @@ class FileManagerJsTestBase : public InProcessBrowserTest {
   // Runs all test functions in |file|, waiting for them to complete.
   void RunTest(const base::FilePath& file);
 
+  // Same as RunTest, but starts the EmbeddedTestServer to serve a generated
+  // |file|, relative to DIR_EXE/gen/base_path.
+  void RunGeneratedTest(const std::string& file);
+
  private:
+  void RunTestImpl(const GURL& url);
+
   base::FilePath base_path_;
 };
 
