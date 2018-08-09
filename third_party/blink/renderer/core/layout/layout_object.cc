@@ -2082,7 +2082,7 @@ void LayoutObject::SetStyle(scoped_refptr<ComputedStyle> style) {
   if (!IsText() && (diff.TransformChanged() || diff.OpacityChanged() ||
                     diff.ZIndexChanged() || diff.FilterChanged() ||
                     diff.BackdropFilterChanged() || diff.CssClipChanged() ||
-                    diff.BlendModeChanged())) {
+                    diff.BlendModeChanged() || diff.MaskChanged())) {
     SetNeedsPaintPropertyUpdate();
     if (HasLayer() && IsBoxModelObject()) {
       ToLayoutBoxModelObject(this)->Layer()->SetNeedsCompositingInputsUpdate();

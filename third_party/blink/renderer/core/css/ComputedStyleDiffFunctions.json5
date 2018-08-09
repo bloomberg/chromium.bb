@@ -233,7 +233,6 @@
         name: "DiffNeedsPaintInvalidationSubtree",
         fields_to_diff: ["mix-blend-mode", "isolation", "Mask", "MaskBoxImage"],
     },
-
     {
         name: "DiffNeedsPaintInvalidationObject",
         fields_to_diff: ["-webkit-user-modify", "user-select", "image-rendering",
@@ -363,6 +362,10 @@
             field_dependencies: ["filter"]
           },
         ]
+    },
+    {
+        name: "UpdatePropertySpecificDifferencesMask",
+        fields_to_diff: ["Mask", "MaskBoxImage"],
     },
     {
         name: "UpdatePropertySpecificDifferencesNeedsRecomputeOverflow",
