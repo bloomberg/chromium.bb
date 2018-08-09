@@ -8,9 +8,13 @@
 #include <array>
 
 #include "base/containers/span.h"
+#include "base/memory/ref_counted.h"
+#include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/fido/cable/fido_cable_device.h"
 #include "device/fido/cable/fido_cable_handshake_handler.h"
 #include "device/fido/fido_constants.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
@@ -30,7 +34,9 @@ constexpr char kTestDeviceAddress[] = "Fake_Address";
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* raw_data, size_t size) {
   auto data_span = base::make_span(raw_data, size);
-  device::FidoCableDevice test_cable_device(kTestDeviceAddress);
+  auto adapter =
+      base::MakeRefCounted<::testing::NiceMock<device::MockBluetoothAdapter>>();
+  device::FidoCableDevice test_cable_device(adapter.get(), kTestDeviceAddress);
   device::FidoCableHandshakeHandler handshake_handler(
       &test_cable_device, kTestNonce, kTestSessionPreKey);
   handshake_handler.ValidateAuthenticatorHandshakeMessage(data_span);

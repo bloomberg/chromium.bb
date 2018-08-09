@@ -75,7 +75,7 @@ class FidoBleDeviceTest : public Test {
  public:
   FidoBleDeviceTest() {
     auto connection = std::make_unique<MockFidoBleConnection>(
-        BluetoothTestBase::kTestDeviceAddress1);
+        adapter_.get(), BluetoothTestBase::kTestDeviceAddress1);
     connection_ = connection.get();
     device_ = std::make_unique<FidoBleDevice>(std::move(connection));
     connection_->connection_status_callback() =
@@ -83,6 +83,7 @@ class FidoBleDeviceTest : public Test {
     connection_->read_callback() = device_->GetReadCallbackForTesting();
   }
 
+  MockBluetoothAdapter* adapter() { return adapter_.get(); }
   FidoBleDevice* device() { return device_.get(); }
   MockFidoBleConnection* connection() { return connection_; }
 
@@ -102,6 +103,8 @@ class FidoBleDeviceTest : public Test {
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
 
  private:
+  scoped_refptr<MockBluetoothAdapter> adapter_ =
+      base::MakeRefCounted<NiceMockBluetoothAdapter>();
   MockFidoBleConnection* connection_;
   std::unique_ptr<FidoBleDevice> device_;
 };
@@ -223,10 +226,7 @@ TEST_F(FidoBleDeviceTest, IsInPairingMode) {
   // By default, a device is not in pairing mode.
   EXPECT_FALSE(device()->IsInPairingMode());
 
-  // Initiate default connection behavior, which will attempt to obtain an
-  // adapter.
-  auto mock_adapter = base::MakeRefCounted<NiceMockBluetoothAdapter>();
-  BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
+  // Initiate default connection behavior.
   EXPECT_CALL(*connection(), Connect()).WillOnce(Invoke([this] {
     connection()->FidoBleConnection::Connect();
   }));
@@ -235,11 +235,11 @@ TEST_F(FidoBleDeviceTest, IsInPairingMode) {
   // Add a mock fido device. This should also not be considered to be in pairing
   // mode.
   auto mock_bluetooth_device = std::make_unique<NiceMockBluetoothDevice>(
-      mock_adapter.get(), /* bluetooth_class */ 0u,
+      adapter(), /* bluetooth_class */ 0u,
       BluetoothTestBase::kTestDeviceNameU2f,
       BluetoothTestBase::kTestDeviceAddress1, /* paired */ true,
       /* connected */ false);
-  EXPECT_CALL(*mock_adapter, GetDevice(BluetoothTestBase::kTestDeviceAddress1))
+  EXPECT_CALL(*adapter(), GetDevice(BluetoothTestBase::kTestDeviceAddress1))
       .WillRepeatedly(Return(mock_bluetooth_device.get()));
 
   EXPECT_FALSE(device()->IsInPairingMode());

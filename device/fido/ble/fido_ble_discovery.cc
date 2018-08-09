@@ -34,7 +34,8 @@ void FidoBleDiscovery::OnSetPowered() {
   for (BluetoothDevice* device : adapter()->GetDevices()) {
     if (base::ContainsKey(device->GetUUIDs(), FidoServiceUUID())) {
       VLOG(2) << "U2F BLE device: " << device->GetAddress();
-      AddDevice(std::make_unique<FidoBleDevice>(device->GetAddress()));
+      AddDevice(
+          std::make_unique<FidoBleDevice>(adapter(), device->GetAddress()));
     }
   }
 
@@ -56,7 +57,7 @@ void FidoBleDiscovery::DeviceAdded(BluetoothAdapter* adapter,
                                    BluetoothDevice* device) {
   if (base::ContainsKey(device->GetUUIDs(), FidoServiceUUID())) {
     VLOG(2) << "Discovered U2F BLE device: " << device->GetAddress();
-    AddDevice(std::make_unique<FidoBleDevice>(device->GetAddress()));
+    AddDevice(std::make_unique<FidoBleDevice>(adapter, device->GetAddress()));
   }
 }
 
@@ -66,7 +67,7 @@ void FidoBleDiscovery::DeviceChanged(BluetoothAdapter* adapter,
       !GetDevice(FidoBleDevice::GetId(device->GetAddress()))) {
     VLOG(2) << "Discovered U2F service on existing BLE device: "
             << device->GetAddress();
-    AddDevice(std::make_unique<FidoBleDevice>(device->GetAddress()));
+    AddDevice(std::make_unique<FidoBleDevice>(adapter, device->GetAddress()));
   }
 }
 

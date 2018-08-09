@@ -62,7 +62,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
   using ServiceRevisionsCallback =
       base::OnceCallback<void(std::set<ServiceRevision>)>;
 
-  FidoBleConnection(std::string device_address,
+  FidoBleConnection(BluetoothAdapter* adapter,
+                    std::string device_address,
                     ConnectionStatusCallback connection_status_callback,
                     ReadCallback read_callback);
   ~FidoBleConnection() override;
@@ -79,8 +80,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
                                     WriteCallback callback);
 
  protected:
-  explicit FidoBleConnection(std::string device_address);
+  // Used for testing.
+  FidoBleConnection(BluetoothAdapter* adapter, std::string device_address);
 
+  scoped_refptr<BluetoothAdapter> adapter_;
   std::string address_;
   ConnectionStatusCallback connection_status_callback_;
   ReadCallback read_callback_;
@@ -100,9 +103,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
   void GattServicesDiscovered(BluetoothAdapter* adapter,
                               BluetoothDevice* device) override;
 
-  void OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter);
-
-  void CreateGattConnection();
   void OnCreateGattConnection(
       std::unique_ptr<BluetoothGattConnection> connection);
   void OnCreateGattConnectionError(
@@ -142,7 +142,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
   static void OnWriteError(WriteCallback callback,
                            BluetoothGattService::GattErrorCode error_code);
 
-  scoped_refptr<BluetoothAdapter> adapter_;
   std::unique_ptr<BluetoothGattConnection> connection_;
   std::unique_ptr<BluetoothGattNotifySession> notify_session_;
 
