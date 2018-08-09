@@ -1722,6 +1722,12 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
         validated_params,
     service_manager::mojom::InterfaceProviderRequest
         interface_provider_request) {
+  if (GetNavigationHandle()) {
+    main_frame_request_ids_ = {validated_params->request_id,
+                               GetNavigationHandle()->GetGlobalRequestID()};
+    if (deferred_main_frame_load_info_)
+      ResourceLoadComplete(std::move(deferred_main_frame_load_info_));
+  }
   // DidCommitProvisionalLoad IPC should be associated with the URL being
   // committed (not with the *last* committed URL that most other IPCs are
   // associated with).
@@ -3413,7 +3419,20 @@ void RenderFrameHostImpl::SubresourceResponseStarted(
 
 void RenderFrameHostImpl::ResourceLoadComplete(
     mojom::ResourceLoadInfoPtr resource_load_info) {
-  delegate_->ResourceLoadComplete(this, std::move(resource_load_info));
+  GlobalRequestID global_request_id;
+  if (main_frame_request_ids_.first == resource_load_info->request_id) {
+    global_request_id = main_frame_request_ids_.second;
+  } else if (resource_load_info->resource_type ==
+             content::RESOURCE_TYPE_MAIN_FRAME) {
+    // The load complete message for the main resource arrived before
+    // |DidCommitProvisionalLoad()|. We save the load info so
+    // |ResourceLoadComplete()| can be called later in
+    // |DidCommitProvisionalLoad()| when we can map to the global request ID.
+    deferred_main_frame_load_info_ = std::move(resource_load_info);
+    return;
+  }
+  delegate_->ResourceLoadComplete(this, global_request_id,
+                                  std::move(resource_load_info));
 }
 
 void RenderFrameHostImpl::RegisterMojoInterfaces() {

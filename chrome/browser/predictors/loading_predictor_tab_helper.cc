@@ -79,6 +79,7 @@ void LoadingPredictorTabHelper::DidFinishNavigation(
 
 void LoadingPredictorTabHelper::ResourceLoadComplete(
     content::RenderFrameHost* render_frame_host,
+    const content::GlobalRequestID& request_id,
     const content::mojom::ResourceLoadInfo& resource_load_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!predictor_)

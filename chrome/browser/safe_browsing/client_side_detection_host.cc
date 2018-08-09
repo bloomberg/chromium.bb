@@ -456,6 +456,7 @@ void ClientSideDetectionHost::DidFinishNavigation(
 
 void ClientSideDetectionHost::ResourceLoadComplete(
     content::RenderFrameHost* render_frame_host,
+    const content::GlobalRequestID& request_id,
     const content::mojom::ResourceLoadInfo& resource_load_info) {
   if (!content::IsResourceTypeFrame(resource_load_info.resource_type) &&
       browse_info_.get() && should_extract_malware_features_ &&

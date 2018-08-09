@@ -70,6 +70,7 @@ struct AXEventNotificationDetails;
 struct AXLocationChangeNotificationDetails;
 struct ContextMenuParams;
 struct FileChooserParams;
+struct GlobalRequestID;
 
 namespace mojom {
 class CreateNewWindowParams;
@@ -364,6 +365,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // associated with |render_frame_host|.
   virtual void ResourceLoadComplete(
       RenderFrameHost* render_frame_host,
+      const GlobalRequestID& request_id,
       mojom::ResourceLoadInfoPtr resource_load_info) {}
 
   // Request to print a frame that is in a different process than its parent.

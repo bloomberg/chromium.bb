@@ -744,6 +744,7 @@ class ResourceLoadObserver : public WebContentsObserver {
   // WebContentsObserver implementation:
   void ResourceLoadComplete(
       content::RenderFrameHost* render_frame_host,
+      const GlobalRequestID& request_id,
       const mojom::ResourceLoadInfo& resource_load_info) override {
     EXPECT_NE(nullptr, render_frame_host);
     resource_load_infos_.push_back(resource_load_info.Clone());

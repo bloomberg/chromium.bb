@@ -691,7 +691,7 @@ TEST_F(WebURLLoaderImplTest, ResponseIPAddress) {
     network::ResourceResponseInfo info;
     info.socket_address = net::HostPortPair(test.ip, 443);
     blink::WebURLResponse response;
-    WebURLLoaderImpl::PopulateURLResponse(url, info, &response, true);
+    WebURLLoaderImpl::PopulateURLResponse(url, info, &response, true, -1);
     EXPECT_EQ(test.expected, response.RemoteIPAddress().Utf8());
   };
 }
@@ -718,7 +718,7 @@ TEST_F(WebURLLoaderImplTest, ResponseCert) {
   network::ResourceResponseInfo info;
   info.ssl_info = ssl_info;
   blink::WebURLResponse web_url_response;
-  WebURLLoaderImpl::PopulateURLResponse(url, info, &web_url_response, true);
+  WebURLLoaderImpl::PopulateURLResponse(url, info, &web_url_response, true, -1);
 
   blink::WebURLResponse::WebSecurityDetails security_details =
       web_url_response.SecurityDetailsForTesting();
@@ -755,7 +755,7 @@ TEST_F(WebURLLoaderImplTest, ResponseCertWithNoSANs) {
   network::ResourceResponseInfo info;
   info.ssl_info = ssl_info;
   blink::WebURLResponse web_url_response;
-  WebURLLoaderImpl::PopulateURLResponse(url, info, &web_url_response, true);
+  WebURLLoaderImpl::PopulateURLResponse(url, info, &web_url_response, true, -1);
 
   blink::WebURLResponse::WebSecurityDetails security_details =
       web_url_response.SecurityDetailsForTesting();

@@ -813,7 +813,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   WebURLResponse response;
-  PopulateURLResponse(url_, info, &response, report_raw_headers_);
+  PopulateURLResponse(url_, info, &response, report_raw_headers_, request_id_);
 
   url_ = WebURL(redirect_info.new_url);
   return client_->WillFollowRedirect(
@@ -835,7 +835,7 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   WebURLResponse response;
-  PopulateURLResponse(url_, info, &response, report_raw_headers_);
+  PopulateURLResponse(url_, info, &response, report_raw_headers_, request_id_);
 
   bool show_raw_listing = false;
   if (info.mime_type == "text/vnd.chromium.ftp-dir") {
@@ -1171,7 +1171,8 @@ void WebURLLoaderImpl::PopulateURLResponse(
     const WebURL& url,
     const network::ResourceResponseInfo& info,
     WebURLResponse* response,
-    bool report_security_info) {
+    bool report_security_info,
+    int request_id) {
   response->SetURL(url);
   response->SetResponseTime(info.response_time);
   response->SetMIMEType(WebString::FromUTF8(info.mime_type));
@@ -1227,6 +1228,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
   extra_data->set_was_alternate_protocol_available(
       info.was_alternate_protocol_available);
   extra_data->set_effective_connection_type(info.effective_connection_type);
+  extra_data->set_request_id(request_id);
 
   // If there's no received headers end time, don't set load timing.  This is
   // the case for non-HTTP requests, requests that don't go over the wire, and
@@ -1337,7 +1339,7 @@ void WebURLLoaderImpl::LoadSynchronously(
   }
 
   PopulateURLResponse(final_url, sync_load_response.info, &response,
-                      request.ReportRawHeaders());
+                      request.ReportRawHeaders(), context_->request_id());
   encoded_data_length = sync_load_response.info.encoded_data_length;
   encoded_body_length = sync_load_response.info.encoded_body_length;
   if (sync_load_response.downloaded_blob) {
