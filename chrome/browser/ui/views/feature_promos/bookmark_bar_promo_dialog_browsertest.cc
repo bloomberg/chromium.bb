@@ -8,7 +8,9 @@
 #include "chrome/browser/ui/views/feature_promos/bookmark_bar_promo_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/prefs/pref_member.h"
 #include "components/strings/grit/components_strings.h"
 
 class BookmarkBarPromoDialogTest : public DialogBrowserTest {
@@ -38,5 +40,9 @@ class BookmarkBarPromoDialogTest : public DialogBrowserTest {
 // Test that calls ShowUi("default").
 IN_PROC_BROWSER_TEST_F(BookmarkBarPromoDialogTest,
                        InvokeUi_BookmarkBarPromoBubble) {
+  BookmarkBarView::DisableAnimationsForTesting(true);
+  browser()->profile()->GetPrefs()->SetBoolean(
+      bookmarks::prefs::kShowBookmarkBar, true);
   ShowAndVerifyUi();
+  BookmarkBarView::DisableAnimationsForTesting(false);
 }

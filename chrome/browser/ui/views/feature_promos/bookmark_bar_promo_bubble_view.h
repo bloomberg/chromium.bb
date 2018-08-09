@@ -31,6 +31,7 @@ class BookmarkBarPromoBubbleView : public ShowPromoDelegate {
 
  private:
   struct BubbleImpl;
+  class BookmarkBarViewObserverImpl;
 
   // The string that will be shown on this bubble.
   int string_specifier;
