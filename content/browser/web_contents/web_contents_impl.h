@@ -582,6 +582,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                   net::CertStatus cert_status) override;
   void ResourceLoadComplete(
       RenderFrameHost* render_frame_host,
+      const GlobalRequestID& request_id,
       mojom::ResourceLoadInfoPtr resource_load_information) override;
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;

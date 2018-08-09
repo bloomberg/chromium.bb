@@ -120,20 +120,7 @@
 -ClientHintsBrowserTest.ClientHintsNoLifetimeCookiesNotAllowed/1
 
 # http://crbug.com/816684 Track Page Load Metrics.
--AdsPageLoadMetricsObserverBrowserTest.OriginStatusMetricEmbedded
--AdsPageLoadMetricsObserverBrowserTest.OriginStatusMetricEmbeddedEmpty
--AdsPageLoadMetricsObserverBrowserTest.OriginStatusMetricSame
--AdsPageLoadMetricsObserverBrowserTest.OriginStatusMetricCross
--AdsPageLoadMetricsObserverBrowserTest.DocOverwritesNavigation
--AdsPageLoadMetricsObserverBrowserTest.SubresourceFilter
--AdTaggingBrowserTest.VerifyCrossOriginWithoutNavigate
--AdTaggingBrowserTest.VerifySameOriginWithoutNavigate
--AdTaggingBrowserTest.VerifyCrossOriginWithImmediateNavigate
--AdTaggingBrowserTest.VerifySameOriginWithCrossOriginRenavigate
--PageLoadMetricsBrowserTest.LoadingMetrics
 -PageLoadMetricsBrowserTest.LoadingMetricsFailed
--PageLoadMetricsBrowserTest.PayloadSize
--PageLoadMetricsBrowserTest.PayloadSizeChildFrame
 
 # https://crbug.com/810329 DnsProbe browsertests that rely on delaying requests:
 -DnsProbeBrowserTest.NxdomainProbeResultWithWorkingSlowCorrections

@@ -264,9 +264,11 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
       ResourceType resource_type) {}
 
   // This method is invoked when a resource associate with the frame
-  // |render_frame_host| has been loaded, successfully or not.
+  // |render_frame_host| has been loaded, successfully or not. |request_id| will
+  // only be populated for main frame resources.
   virtual void ResourceLoadComplete(
       RenderFrameHost* render_frame_host,
+      const GlobalRequestID& request_id,
       const mojom::ResourceLoadInfo& resource_load_info) {}
 
   // This method is invoked when a new non-pending navigation entry is created.

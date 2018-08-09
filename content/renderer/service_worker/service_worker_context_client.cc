@@ -565,7 +565,8 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
     // TODO(horo): Set report_security_info to true when DevTools is attached.
     const bool report_security_info = false;
     WebURLLoaderImpl::PopulateURLResponse(url_, response_head, response_.get(),
-                                          report_security_info);
+                                          report_security_info,
+                                          -1 /* request_id */);
     MaybeReportResponseToClient();
   }
 
@@ -582,7 +583,8 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
       return;
     response_ = std::make_unique<blink::WebURLResponse>();
     WebURLLoaderImpl::PopulateURLResponse(url_, response_head, response_.get(),
-                                          false /* report_security_info */);
+                                          false /* report_security_info */,
+                                          -1 /* request_id */);
     client->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
                                         nullptr);
     // This will delete |this|.

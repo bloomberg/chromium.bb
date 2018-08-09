@@ -4422,9 +4422,11 @@ void WebContentsImpl::SubresourceResponseStarted(const GURL& url,
 
 void WebContentsImpl::ResourceLoadComplete(
     RenderFrameHost* render_frame_host,
+    const GlobalRequestID& request_id,
     mojom::ResourceLoadInfoPtr resource_load_info) {
   for (auto& observer : observers_) {
-    observer.ResourceLoadComplete(render_frame_host, *resource_load_info);
+    observer.ResourceLoadComplete(render_frame_host, request_id,
+                                  *resource_load_info);
   }
 }
 

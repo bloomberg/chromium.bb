@@ -192,7 +192,8 @@ TEST_F(LoadingPredictorTabHelperTest, ResourceLoadComplete) {
   EXPECT_CALL(*mock_collector_,
               RecordResourceLoadComplete(navigation_id,
                                          Eq(ByRef(*resource_load_info))));
-  tab_helper_->ResourceLoadComplete(main_rfh(), *resource_load_info);
+  tab_helper_->ResourceLoadComplete(main_rfh(), content::GlobalRequestID(),
+                                    *resource_load_info);
 }
 
 // Tests that a resource loaded in a subframe is not recorded.
@@ -207,7 +208,8 @@ TEST_F(LoadingPredictorTabHelperTest, ResourceLoadCompleteInSubFrame) {
   // Resource loaded in subframe shouldn't be recorded.
   auto resource_load_info = CreateResourceLoadInfo(
       "http://sub.test.org/script.js", content::RESOURCE_TYPE_SCRIPT);
-  tab_helper_->ResourceLoadComplete(subframe, *resource_load_info);
+  tab_helper_->ResourceLoadComplete(subframe, content::GlobalRequestID(),
+                                    *resource_load_info);
 }
 
 // Tests that a resource load from the memory cache is correctly recorded.

@@ -1677,6 +1677,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
   network::mojom::URLLoaderFactoryPtr
       network_service_connection_error_handler_holder_;
 
+  // Holds the renderer generated ID and global request ID for the main frame
+  // request.
+  std::pair<int, GlobalRequestID> main_frame_request_ids_;
+
+  // If |ResourceLoadComplete()| is called for the main resource before
+  // |DidCommitProvisionalLoad()|, the load info is saved here to call
+  // |ResourceLoadComplete()| when |DidCommitProvisionalLoad()| is called. This
+  // is necessary so the renderer ID can be mapped to the global ID in
+  // |DidCommitProvisionalLoad()|. This situation should only happen when an
+  // empty document is loaded.
+  mojom::ResourceLoadInfoPtr deferred_main_frame_load_info_;
+
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;
 
