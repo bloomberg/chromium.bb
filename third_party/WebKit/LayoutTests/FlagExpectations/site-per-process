@@ -34,10 +34,6 @@ crbug.com/582245 http/tests/security/xssAuditor/block-does-not-leak-location.htm
 crbug.com/582245 http/tests/security/xssAuditor/block-does-not-leak-referrer.html [ Failure ]
 crbug.com/582245 http/tests/security/xssAuditor/full-block-script-tag-cross-domain.html [ Failure ]
 
-# https://crbug.com/582176 - InspectorTest.changeExecutionContext doesn't like OOPIFs.
-crbug.com/582176 http/tests/devtools/console-cd-completions.js [ Failure ]
-crbug.com/582176 http/tests/devtools/console-cd.js [ Failure ]
-
 # https://crbug.com/608015 - node.contentDocument is undefined.
 crbug.com/608015 http/tests/inspector-protocol/access-inspected-object.js [ Failure Timeout ]
 
