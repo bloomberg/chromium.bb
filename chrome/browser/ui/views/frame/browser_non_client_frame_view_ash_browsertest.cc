@@ -480,7 +480,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
 }
 
 // This is a regression test that session restore minimized browser should
-// update caption buttons (https://crbug.com/827444).
+// re-layout the header (https://crbug.com/827444).
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
                        RestoreMinimizedBrowserUpdatesCaption) {
   // Enable session service.
@@ -506,19 +506,25 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   SessionRestoreTestHelper restore_observer;
 
   Browser* new_browser = window_observer.WaitForSingleNewBrowser();
-  restore_observer.Wait();
 
-  // Check that caption button image is set.
+  // Check that a layout occurs.
   BrowserView* browser_view =
       BrowserView::GetBrowserViewForBrowser(new_browser);
   Widget* widget = browser_view->GetWidget();
-  // We know we're using Ash, so static cast.
+  restore_observer.Wait();
+
   BrowserNonClientFrameViewAsh* frame_view =
       static_cast<BrowserNonClientFrameViewAsh*>(
           widget->non_client_view()->frame_view());
-  ash::FrameCaptionButtonContainerView::TestApi test(
-      frame_view->caption_button_container_);
-  EXPECT_TRUE(test.size_button()->icon_definition_for_test());
+
+  if (features::IsAshInBrowserProcess()) {
+    ash::FrameCaptionButtonContainerView::TestApi test(
+        frame_view->caption_button_container_);
+    EXPECT_TRUE(test.size_button()->icon_definition_for_test());
+  } else {
+    EXPECT_NE(
+        0, widget->GetNativeWindow()->GetProperty(ash::kFrameImageYInsetKey));
+  }
 }
 
 namespace {
