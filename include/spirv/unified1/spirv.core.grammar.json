@@ -4659,12 +4659,11 @@
         {
           "enumerant" : "1D",
           "value" : 0,
-          "capabilities" : [ "Sampled1D", "Image1D" ]
+          "capabilities" : [ "Sampled1D" ]
         },
         {
           "enumerant" : "2D",
-          "value" : 1,
-          "capabilities" : [ "ImageMSArray" ]
+          "value" : 1
         },
         {
           "enumerant" : "3D",
@@ -4673,17 +4672,17 @@
         {
           "enumerant" : "Cube",
           "value" : 3,
-          "capabilities" : [ "Shader", "ImageCubeArray" ]
+          "capabilities" : [ "Shader" ]
         },
         {
           "enumerant" : "Rect",
           "value" : 4,
-          "capabilities" : [ "SampledRect", "ImageRect" ]
+          "capabilities" : [ "SampledRect" ]
         },
         {
           "enumerant" : "Buffer",
           "value" : 5,
-          "capabilities" : [ "SampledBuffer", "ImageBuffer" ]
+          "capabilities" : [ "SampledBuffer" ]
         },
         {
           "enumerant" : "SubpassData",
