@@ -902,4 +902,19 @@ TEST_F(MessagePopupCollectionTest, LeftPositioningWithLeftTaskbar) {
   EXPECT_TRUE(work_area().Contains(r1));
 }
 
+TEST_F(MessagePopupCollectionTest, PopupWidgetClosedOutsideDuringFadeOut) {
+  std::string id = AddNotification();
+  AnimateUntilIdle();
+
+  MessageCenter::Get()->MarkSinglePopupAsShown(id, false);
+  AnimateToMiddle();
+
+  // On Windows it might be possible that the widget is closed outside
+  // MessagePopupCollection?  https://crbug.com/871199
+  GetPopup(id)->GetWidget()->CloseNow();
+  AnimateToEnd();
+
+  EXPECT_FALSE(IsAnimating());
+}
+
 }  // namespace message_center

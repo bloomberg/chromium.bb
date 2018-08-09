@@ -43,6 +43,9 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // Notify the popup size is changed. Called from MessagePopupView.
   void NotifyPopupResized();
 
+  // Notify the popup is closed. Called from MessagePopupView.
+  void NotifyPopupClosed(MessagePopupView* popup);
+
   // MessageCenterObserver:
   void OnNotificationAdded(const std::string& notification_id) override;
   void OnNotificationRemoved(const std::string& notification_id,

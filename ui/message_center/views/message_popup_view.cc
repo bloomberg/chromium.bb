@@ -62,7 +62,9 @@ MessagePopupView::MessagePopupView(PopupAlignmentDelegate* alignment_delegate,
   SetLayoutManager(std::make_unique<views::FillLayout>());
 }
 
-MessagePopupView::~MessagePopupView() = default;
+MessagePopupView::~MessagePopupView() {
+  popup_collection_->NotifyPopupClosed(this);
+}
 
 void MessagePopupView::UpdateContents(const Notification& notification) {
   message_view_->UpdateWithNotification(notification);
@@ -74,14 +76,20 @@ void MessagePopupView::UpdateContents(const Notification& notification) {
 }
 
 float MessagePopupView::GetOpacity() const {
+  if (!GetWidget() || GetWidget()->IsClosed())
+    return 0.f;
   return GetWidget()->GetLayer()->opacity();
 }
 
 void MessagePopupView::SetPopupBounds(const gfx::Rect& bounds) {
+  if (!GetWidget() || GetWidget()->IsClosed())
+    return;
   GetWidget()->SetBounds(bounds);
 }
 
 void MessagePopupView::SetOpacity(float opacity) {
+  if (!GetWidget() || GetWidget()->IsClosed())
+    return;
   GetWidget()->SetOpacity(opacity);
 }
 
@@ -170,7 +178,7 @@ void MessagePopupView::OnDisplayChanged() {
 
 void MessagePopupView::OnWorkAreaChanged() {
   views::Widget* widget = GetWidget();
-  if (!widget)
+  if (!widget || widget->IsClosed())
     return;
 
   gfx::NativeView native_view = widget->GetNativeView();
