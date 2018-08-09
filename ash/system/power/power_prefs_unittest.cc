@@ -40,8 +40,11 @@ PrefService* GetSigninScreenPrefService() {
   return Shell::Get()->session_controller()->GetSigninScreenPrefService();
 }
 
-PrefService* GetLastActiveUserPrefService() {
-  return Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+// Returns prefs for the user identified by |user_email|, or null if the user's
+// prefs are unavailable (e.g. because they don't exist).
+PrefService* GetUserPrefService(const std::string& user_email) {
+  return Shell::Get()->session_controller()->GetUserPrefServiceForUser(
+      AccountId::FromUserEmail(user_email));
 }
 
 std::string GetExpectedPowerPolicyForPrefs(PrefService* prefs,
@@ -191,21 +194,49 @@ TEST_F(PowerPrefsTest, LoginScreen) {
 }
 
 TEST_F(PowerPrefsTest, UserSession) {
-  SimulateUserLogin("user@test.com");
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetActivePrefService();
-  EXPECT_EQ(GetLastActiveUserPrefService(), prefs);
+  const char kUserEmail[] = "user@example.net";
+  SimulateUserLogin(kUserEmail);
+  PrefService* prefs = GetUserPrefService(kUserEmail);
+  ASSERT_TRUE(prefs);
   EXPECT_EQ(GetExpectedPowerPolicyForPrefs(prefs, ScreenLockState::UNLOCKED),
             GetCurrentPowerPolicy());
   EXPECT_EQ(GetExpectedAllowScreenWakeLocksForPrefs(prefs),
             GetCurrentAllowScreenWakeLocks());
 }
 
+TEST_F(PowerPrefsTest, PrimaryUserPrefs) {
+  // Add a user with restrictive prefs.
+  const char kFirstUserEmail[] = "user1@example.net";
+  SimulateUserLogin(kFirstUserEmail);
+  PrefService* first_prefs = GetUserPrefService(kFirstUserEmail);
+  ASSERT_TRUE(first_prefs);
+  first_prefs->SetBoolean(prefs::kPowerAllowScreenWakeLocks, false);
+  first_prefs->SetInteger(prefs::kPowerLidClosedAction,
+                          chromeos::PowerPolicyController::ACTION_SHUT_DOWN);
+
+  // Add a second user with lenient prefs.
+  const char kSecondUserEmail[] = "user2@example.net";
+  SimulateUserLogin(kSecondUserEmail);
+  PrefService* second_prefs = GetUserPrefService(kSecondUserEmail);
+  ASSERT_TRUE(second_prefs);
+  second_prefs->SetBoolean(prefs::kPowerAllowScreenWakeLocks, true);
+  second_prefs->SetInteger(prefs::kPowerLidClosedAction,
+                           chromeos::PowerPolicyController::ACTION_DO_NOTHING);
+
+  // Even though the second user is active, the first (primary) user's prefs
+  // should still be used.
+  ASSERT_EQ(second_prefs,
+            Shell::Get()->session_controller()->GetActivePrefService());
+  EXPECT_EQ(
+      GetExpectedPowerPolicyForPrefs(first_prefs, ScreenLockState::UNLOCKED),
+      GetCurrentPowerPolicy());
+}
+
 TEST_F(PowerPrefsTest, AvoidLockDelaysAfterInactivity) {
-  SimulateUserLogin("user@test.com");
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetActivePrefService();
-  EXPECT_EQ(GetLastActiveUserPrefService(), prefs);
+  const char kUserEmail[] = "user@example.net";
+  SimulateUserLogin(kUserEmail);
+  PrefService* prefs = GetUserPrefService(kUserEmail);
+  ASSERT_TRUE(prefs);
   EXPECT_EQ(GetExpectedPowerPolicyForPrefs(prefs, ScreenLockState::UNLOCKED),
             GetCurrentPowerPolicy());
 
@@ -231,10 +262,10 @@ TEST_F(PowerPrefsTest, AvoidLockDelaysAfterInactivity) {
 }
 
 TEST_F(PowerPrefsTest, DisabledLockScreen) {
-  SimulateUserLogin("user@test.com");
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetActivePrefService();
-  EXPECT_EQ(GetLastActiveUserPrefService(), prefs);
+  const char kUserEmail[] = "user@example.net";
+  SimulateUserLogin(kUserEmail);
+  PrefService* prefs = GetUserPrefService(kUserEmail);
+  ASSERT_TRUE(prefs);
 
   // Verify that the power policy actions are set to default values initially.
   EXPECT_EQ(std::vector<power_manager::PowerManagementPolicy_Action>(

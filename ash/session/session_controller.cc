@@ -244,12 +244,18 @@ PrefService* SessionController::GetSigninScreenPrefService() const {
 }
 
 PrefService* SessionController::GetUserPrefServiceForUser(
-    const AccountId& account_id) {
+    const AccountId& account_id) const {
   auto it = per_user_prefs_.find(account_id);
   if (it != per_user_prefs_.end())
     return it->second.get();
 
   return nullptr;
+}
+
+PrefService* SessionController::GetPrimaryUserPrefService() const {
+  const mojom::UserSession* session = GetPrimaryUserSession();
+  return session ? GetUserPrefServiceForUser(session->user_info->account_id)
+                 : nullptr;
 }
 
 PrefService* SessionController::GetLastActiveUserPrefService() const {

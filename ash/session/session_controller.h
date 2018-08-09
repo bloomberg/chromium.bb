@@ -149,7 +149,11 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   PrefService* GetSigninScreenPrefService() const;
 
   // Returns the PrefService for |account_id| or null if one does not exist.
-  PrefService* GetUserPrefServiceForUser(const AccountId& account_id);
+  PrefService* GetUserPrefServiceForUser(const AccountId& account_id) const;
+
+  // Returns the PrefService for the primary user or null if no user is signed
+  // in or the PrefService connection hasn't been established.
+  PrefService* GetPrimaryUserPrefService() const;
 
   // Returns the PrefService for the last active user that had one or null if no
   // PrefService connection has been successfully established.

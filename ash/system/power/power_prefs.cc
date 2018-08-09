@@ -49,8 +49,14 @@ chromeos::PowerPolicyController::Action GetPowerPolicyAction(
   return pref_action;
 }
 
-PrefService* GetActivePrefService() {
-  return Shell::Get()->session_controller()->GetActivePrefService();
+// Returns the PrefService that should be used for determining power-related
+// behavior. When one or more users are logged in, the primary user's prefs are
+// used: if more-restrictive power-related prefs are set by policy, it's most
+// likely to be on this profile.
+PrefService* GetPrefService() {
+  ash::SessionController* controller = Shell::Get()->session_controller();
+  PrefService* prefs = controller->GetPrimaryUserPrefService();
+  return prefs ? prefs : controller->GetActivePrefService();
 }
 
 // Registers power prefs whose default values are the same in user prefs and
@@ -180,7 +186,7 @@ void PowerPrefs::OnLockStateChanged(bool locked) {
 
   screen_lock_time_ = locked ? tick_clock_->NowTicks() : base::TimeTicks();
   // OnLockStateChanged could be called before ash connects user prefs in tests.
-  if (GetActivePrefService())
+  if (GetPrefService())
     UpdatePowerPolicyFromPrefs();
 }
 
@@ -193,7 +199,7 @@ void PowerPrefs::OnActiveUserPrefServiceChanged(PrefService* prefs) {
 }
 
 void PowerPrefs::UpdatePowerPolicyFromPrefs() {
-  PrefService* prefs = GetActivePrefService();
+  PrefService* prefs = GetPrefService();
   DCHECK(prefs);
 
   // It's possible to end up in a situation where a shortened lock-screen idle
