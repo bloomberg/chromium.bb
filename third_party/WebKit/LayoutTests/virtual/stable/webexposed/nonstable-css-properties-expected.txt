@@ -79,6 +79,30 @@ el.style.setProperty('text-underline-position', 'right under')
 el.style.getPropertyValue('text-underline-position') is 
 getComputedStyle(el).getPropertyValue('text-underline-position') is auto
 
+el.style.setProperty('clear', 'inline-start')
+el.style.getPropertyValue('clear') is 
+getComputedStyle(el).getPropertyValue('clear') is none
+
+el.style.setProperty('clear', 'inline-end')
+el.style.getPropertyValue('clear') is 
+getComputedStyle(el).getPropertyValue('clear') is none
+
+el.style.setProperty('float', 'inline-start')
+el.style.getPropertyValue('float') is 
+getComputedStyle(el).getPropertyValue('float') is none
+
+el.style.setProperty('float', 'inline-end')
+el.style.getPropertyValue('float') is 
+getComputedStyle(el).getPropertyValue('float') is none
+
+el.style.setProperty('resize', 'block')
+el.style.getPropertyValue('resize') is 
+getComputedStyle(el).getPropertyValue('resize') is none
+
+el.style.setProperty('resize', 'inline')
+el.style.getPropertyValue('resize') is 
+getComputedStyle(el).getPropertyValue('resize') is none
+
 PASS successfullyParsed is true
 
 TEST COMPLETE

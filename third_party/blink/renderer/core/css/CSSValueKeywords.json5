@@ -265,6 +265,8 @@
     "-webkit-auto",
     "left",
     "right",
+    "inline-start",
+    "inline-end",
     "center",
     "justify",
     "-webkit-left",
