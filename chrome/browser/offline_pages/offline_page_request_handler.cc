@@ -701,6 +701,10 @@ OfflinePageRequestHandler::GetAccessEntryPoint() const {
       return AccessEntryPoint::FILE_URL_INTENT;
     case OfflinePageHeader::Reason::CONTENT_URL_INTENT:
       return AccessEntryPoint::CONTENT_URL_INTENT;
+    case OfflinePageHeader::Reason::PROGRESS_BAR:
+      return AccessEntryPoint::PROGRESS_BAR;
+    case OfflinePageHeader::Reason::SUGGESTION:
+      return AccessEntryPoint::NTP_SUGGESTIONS_OR_BOOKMARKS;
     default:
       break;
   }

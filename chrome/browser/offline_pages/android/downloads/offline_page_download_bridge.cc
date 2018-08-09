@@ -67,7 +67,9 @@ class DownloadUIAdapterDelegate : public DownloadUIAdapter::Delegate {
   // DownloadUIAdapter::Delegate
   bool IsVisibleInUI(const ClientId& client_id) override;
   void SetUIAdapter(DownloadUIAdapter* ui_adapter) override;
-  void OpenItem(const OfflineItem& item, int64_t offline_id) override;
+  void OpenItem(const OfflineItem& item,
+                int64_t offline_id,
+                offline_items_collection::LaunchLocation location) override;
   bool MaybeSuppressNotification(const std::string& origin,
                                  const ClientId& id) override;
 
@@ -87,11 +89,14 @@ bool DownloadUIAdapterDelegate::IsVisibleInUI(const ClientId& client_id) {
 
 void DownloadUIAdapterDelegate::SetUIAdapter(DownloadUIAdapter* ui_adapter) {}
 
-void DownloadUIAdapterDelegate::OpenItem(const OfflineItem& item,
-                                         int64_t offline_id) {
+void DownloadUIAdapterDelegate::OpenItem(
+    const OfflineItem& item,
+    int64_t offline_id,
+    offline_items_collection::LaunchLocation location) {
   JNIEnv* env = AttachCurrentThread();
   Java_OfflinePageDownloadBridge_openItem(
       env, ConvertUTF8ToJavaString(env, item.page_url.spec()), offline_id,
+      static_cast<int>(location),
       offline_pages::ShouldOfflinePagesInDownloadHomeOpenInCct());
 }
 

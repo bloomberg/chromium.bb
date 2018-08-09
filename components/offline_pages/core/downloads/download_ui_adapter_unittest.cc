@@ -84,7 +84,9 @@ class DownloadUIAdapterDelegate : public DownloadUIAdapter::Delegate {
   // DownloadUIAdapter::Delegate
   bool IsVisibleInUI(const ClientId& client_id) override { return is_visible; }
   void SetUIAdapter(DownloadUIAdapter* ui_adapter) override {}
-  void OpenItem(const OfflineItem& item, int64_t offline_id) override {}
+  void OpenItem(const OfflineItem& item,
+                int64_t offline_id,
+                LaunchLocation launch_location) override {}
   bool MaybeSuppressNotification(const std::string& origin,
                                  const ClientId& item) override {
     return maybe_suppress_notification_;

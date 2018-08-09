@@ -362,13 +362,14 @@ void DownloadUIAdapter::OnAllRequestsGetForGetItem(
       FROM_HERE, base::BindOnce(std::move(callback), offline_item));
 }
 
-void DownloadUIAdapter::OpenItem(const ContentId& id) {
-  model_->GetPageByGuid(id.id,
-                        base::BindOnce(&DownloadUIAdapter::OnPageGetForOpenItem,
-                                       weak_ptr_factory_.GetWeakPtr()));
+void DownloadUIAdapter::OpenItem(LaunchLocation location, const ContentId& id) {
+  model_->GetPageByGuid(
+      id.id, base::BindOnce(&DownloadUIAdapter::OnPageGetForOpenItem,
+                            weak_ptr_factory_.GetWeakPtr(), location));
 }
 
-void DownloadUIAdapter::OnPageGetForOpenItem(const OfflinePageItem* page) {
+void DownloadUIAdapter::OnPageGetForOpenItem(LaunchLocation location,
+                                             const OfflinePageItem* page) {
   if (!page)
     return;
 
@@ -376,7 +377,7 @@ void DownloadUIAdapter::OnPageGetForOpenItem(const OfflinePageItem* page) {
       model_->GetPolicyController()->IsSuggested(page->client_id.name_space);
   OfflineItem item =
       OfflineItemConversions::CreateOfflineItem(*page, is_suggested);
-  delegate_->OpenItem(item, page->offline_id);
+  delegate_->OpenItem(item, page->offline_id, location);
 }
 
 void DownloadUIAdapter::RemoveItem(const ContentId& id) {
