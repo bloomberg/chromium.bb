@@ -1036,6 +1036,9 @@ def _GetRunSkylabSuiteArgs(
   if suite_args is not None:
     args += ['--suite_args', repr(suite_args)]
 
+  # Use fallback request for every skylab suite.
+  args += ['--use_fallback']
+
   return args
 # pylint: enable=docstring-missing-args
 

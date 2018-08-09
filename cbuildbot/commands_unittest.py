@@ -274,9 +274,11 @@ FAKE OUTPUT. Will be filled in later.
                  '--tags=suite:test-suite',
                  '--tags=board:test-board',
                  '--', commands.SKYLAB_RUN_SUITE_PATH,
-                 '--build', self._build, '--board', self._board]
+                 '--build', self._build, '--board', self._board,
+                 '--suite_name', self._suite,
+                 '--use_fallback']
     args = list(args)
-    base_cmd = base_cmd + ['--suite_name', self._suite] + args
+    base_cmd = base_cmd + args
 
     self.create_cmd = base_cmd + ['--create_and_return']
     create_results = iter([
