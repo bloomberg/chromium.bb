@@ -19,9 +19,11 @@ source_set("consent_bump") {
     ":consent_bump_ui",
     "//base",
     "//components/strings",
+    "//components/unified_consent",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/authentication/unified_consent",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/unified_consent",
     "//ui/base",
   ]
 }

@@ -7,6 +7,9 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
+namespace ios {
+class ChromeBrowserState;
+}  // namespace ios
 @protocol ConsentBumpCoordinatorDelegate;
 
 // Coordinator handling the consent bump.
@@ -17,6 +20,10 @@
 
 // Delegate for this coordinator.
 @property(nonatomic, weak) id<ConsentBumpCoordinatorDelegate> delegate;
+
+// Returns YES if the consent bump should be presented to the user.
++ (BOOL)shouldShowConsentBumpWithBrowserState:
+    (ios::ChromeBrowserState*)browserState;
 
 @end
 

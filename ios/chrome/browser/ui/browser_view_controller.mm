@@ -117,6 +117,8 @@
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/app_launcher/app_launcher_coordinator.h"
+#import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator.h"
+#import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_coordinator.h"
 #import "ios/chrome/browser/ui/background_generator.h"
@@ -424,6 +426,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     AppRatingPromptDelegate,
                                     BubblePresenterDelegate,
                                     CaptivePortalDetectorTabHelperDelegate,
+                                    ConsentBumpCoordinatorDelegate,
                                     CRWNativeContentProvider,
                                     CRWWebStateDelegate,
                                     DialogPresenterDelegate,
@@ -737,6 +740,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Whether the safe area insets should be used to adjust the viewport.
 @property(nonatomic, readonly) BOOL usesSafeInsetsForViewportAdjustments;
 
+// Coordinator to ask the user for the new consent.
+@property(nonatomic, strong) ConsentBumpCoordinator* consentBumpCoordinator;
+
 // BVC initialization
 // ------------------
 // If the BVC is initialized with a valid browser state & tab model immediately,
@@ -944,6 +950,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // DialogPresenterDelegate property
 @synthesize dialogPresenterDelegateIsPresenting =
     _dialogPresenterDelegateIsPresenting;
+@synthesize consentBumpCoordinator = _consentBumpCoordinator;
 
 #pragma mark - Object lifecycle
 
@@ -5046,6 +5053,21 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 }
 
+- (void)showConsentBumpIfNeeded {
+  DCHECK(!self.consentBumpCoordinator);
+  if (![ConsentBumpCoordinator
+          shouldShowConsentBumpWithBrowserState:_browserState]) {
+    return;
+  }
+  self.consentBumpCoordinator =
+      [[ConsentBumpCoordinator alloc] initWithBaseViewController:self];
+  self.consentBumpCoordinator.delegate = self;
+  [self.consentBumpCoordinator start];
+  [self presentViewController:self.consentBumpCoordinator.viewController
+                     animated:YES
+                   completion:nil];
+}
+
 #pragma mark - ToolbarOwner (Public)
 
 - (CGRect)toolbarFrame {
@@ -5970,6 +5992,22 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
 
 - (void)showSignin:(ShowSigninCommand*)command {
   [self.dispatcher showSignin:command baseViewController:self];
+}
+
+#pragma mark - ConsentBumpCoordinatorDelegate
+
+- (void)consentBumpCoordinator:(ConsentBumpCoordinator*)coordinator
+    didFinishNeedingToShowSettings:(BOOL)shouldShowSettings {
+  DCHECK(self.consentBumpCoordinator);
+  DCHECK(self.consentBumpCoordinator.viewController);
+  [self.consentBumpCoordinator.viewController
+      dismissViewControllerAnimated:YES
+                         completion:nil];
+  self.consentBumpCoordinator = nil;
+  if (shouldShowSettings) {
+    // TODO(crbug.com/827072): Needs to open the sync and Google services
+    // panel from the settings.
+  }
 }
 
 @end
