@@ -62,21 +62,6 @@ bool ShouldForgetOpenersForTransition(ui::PageTransition transition) {
                                       ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
 }
 
-// Fill TabStripSelectionChange with given |contents| and |selection_model|.
-// note that |new_contents| and |new_model| will be filled too so that
-// selection_changed() and active_tab_changed() won't return true.
-TabStripSelectionChange GetDefaultSelection(
-    content::WebContents* contents,
-    const ui::ListSelectionModel& selection_model) {
-  TabStripSelectionChange selection;
-  selection.old_contents = contents;
-  selection.new_contents = contents;
-  selection.old_model = selection_model;
-  selection.new_model = selection_model;
-  selection.reason = 0;
-  return selection;
-}
-
 // This tracks (and reports via UMA and tracing) how long it takes before a
 // RenderWidgetHost is requested to become visible.
 class RenderWidgetHostVisibilityTracker
@@ -358,8 +343,7 @@ void TabStripModel::InsertWebContentsAt(int index,
   if (manager)
     data->set_blocked(manager->IsDialogActive());
 
-  TabStripSelectionChange selection =
-      GetDefaultSelection(GetActiveWebContents(), selection_model_);
+  TabStripSelectionChange selection(GetActiveWebContents(), selection_model_);
 
   contents_data_.insert(contents_data_.begin() + index, std::move(data));
 
@@ -376,9 +360,9 @@ void TabStripModel::InsertWebContentsAt(int index,
                              /*triggered_by_other_operation=*/true);
   }
 
-  base::Optional<TabStripModelChange> change(TabStripModelChange(
+  TabStripModelChange change(
       TabStripModelChange::kInserted,
-      TabStripModelChange::CreateInsertDelta(raw_contents, index)));
+      TabStripModelChange::CreateInsertDelta(raw_contents, index));
   for (auto& observer : observers_)
     observer.OnTabStripModelChanged(change, selection);
 }
@@ -392,8 +376,7 @@ std::unique_ptr<content::WebContents> TabStripModel::ReplaceWebContentsAt(
 
   FixOpenersAndGroupsReferencing(index);
 
-  TabStripSelectionChange selection =
-      GetDefaultSelection(GetActiveWebContents(), selection_model_);
+  TabStripSelectionChange selection(GetActiveWebContents(), selection_model_);
   WebContents* raw_new_contents = new_contents.get();
   std::unique_ptr<WebContents> old_contents =
       contents_data_[index]->ReplaceWebContents(std::move(new_contents));
@@ -414,10 +397,9 @@ std::unique_ptr<content::WebContents> TabStripModel::ReplaceWebContentsAt(
     }
   }
 
-  base::Optional<TabStripModelChange> change(
-      TabStripModelChange(TabStripModelChange::kReplaced,
-                          TabStripModelChange::CreateReplaceDelta(
-                              old_contents.get(), raw_new_contents, index)));
+  TabStripModelChange change(TabStripModelChange::kReplaced,
+                             TabStripModelChange::CreateReplaceDelta(
+                                 old_contents.get(), raw_new_contents, index));
   for (auto& observer : observers_)
     observer.OnTabStripModelChanged(change, selection);
 
@@ -573,8 +555,7 @@ void TabStripModel::SendDetachWebContentsNotifications(
       observer.TabStripEmpty();
   }
 
-  base::Optional<TabStripModelChange> change(
-      TabStripModelChange(TabStripModelChange::kRemoved, deltas));
+  TabStripModelChange change(TabStripModelChange::kRemoved, deltas);
   for (auto& observer : observers_)
     observer.OnTabStripModelChanged(change, selection);
 }
@@ -1553,8 +1534,9 @@ TabStripSelectionChange TabStripModel::SetSelection(
 
   if (!triggered_by_other_operation &&
       (selection.active_tab_changed() || selection.selection_changed())) {
+    TabStripModelChange change;
     for (auto& observer : observers_)
-      observer.OnTabStripModelChanged({}, selection);
+      observer.OnTabStripModelChanged(change, selection);
   }
 
   return selection;
@@ -1577,8 +1559,7 @@ void TabStripModel::MoveWebContentsAtImpl(int index,
                                           bool select_after_move) {
   FixOpenersAndGroupsReferencing(index);
 
-  TabStripSelectionChange selection =
-      GetDefaultSelection(GetActiveWebContents(), selection_model_);
+  TabStripSelectionChange selection(GetActiveWebContents(), selection_model_);
 
   std::unique_ptr<WebContentsData> moved_data =
       std::move(contents_data_[index]);
@@ -1597,9 +1578,9 @@ void TabStripModel::MoveWebContentsAtImpl(int index,
   for (auto& observer : observers_)
     observer.TabMoved(web_contents, index, to_position);
 
-  base::Optional<TabStripModelChange> change(TabStripModelChange(
+  TabStripModelChange change(
       TabStripModelChange::kMoved,
-      TabStripModelChange::CreateMoveDelta(web_contents, index, to_position)));
+      TabStripModelChange::CreateMoveDelta(web_contents, index, to_position));
   for (auto& observer : observers_)
     observer.OnTabStripModelChanged(change, selection);
 }

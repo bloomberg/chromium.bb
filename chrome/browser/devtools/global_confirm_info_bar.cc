@@ -177,11 +177,14 @@ GlobalConfirmInfoBar::~GlobalConfirmInfoBar() {
   }
 }
 
-void GlobalConfirmInfoBar::TabInsertedAt(TabStripModel* tab_strip_model,
-                                         content::WebContents* web_contents,
-                                         int index,
-                                         bool foreground) {
-  MaybeAddInfoBar(web_contents);
+void GlobalConfirmInfoBar::OnTabStripModelChanged(
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (change.type() != TabStripModelChange::kInserted)
+    return;
+
+  for (const auto& delta : change.deltas())
+    MaybeAddInfoBar(delta.insert.contents);
 }
 
 void GlobalConfirmInfoBar::TabChangedAt(content::WebContents* web_contents,

@@ -15,10 +15,9 @@ class DevToolsAutoOpener : public TabStripModelObserver {
 
  private:
   // TabStripModelObserver overrides.
-  void TabInsertedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* contents,
-                     int index,
-                     bool foreground) override;
+  void OnTabStripModelChanged(
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
 
   BrowserTabStripTracker browser_tab_strip_tracker_;
 

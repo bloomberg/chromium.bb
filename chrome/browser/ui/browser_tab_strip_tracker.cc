@@ -68,11 +68,22 @@ void BrowserTabStripTracker::MaybeTrackBrowser(Browser* browser) {
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   tab_strip_model->AddObserver(tab_strip_model_observer_);
   const int active_index = tab_strip_model->active_index();
+
+  std::vector<TabStripModelChange::Delta> deltas;
   for (int i = 0; i < tab_strip_model->count(); ++i) {
+    // TODO(sangwoo108): Delete this. https://crbug.com/842194.
     tab_strip_model_observer_->TabInsertedAt(
         tab_strip_model, tab_strip_model->GetWebContentsAt(i), i,
         i == active_index);
+
+    deltas.push_back(TabStripModelChange::CreateInsertDelta(
+        tab_strip_model->GetWebContentsAt(i), i));
   }
+
+  TabStripModelChange change(TabStripModelChange::kInserted, deltas);
+  TabStripSelectionChange selection(tab_strip_model->GetActiveWebContents(),
+                                    tab_strip_model->selection_model());
+  tab_strip_model_observer_->OnTabStripModelChanged(change, selection);
 }
 
 void BrowserTabStripTracker::OnBrowserAdded(Browser* browser) {

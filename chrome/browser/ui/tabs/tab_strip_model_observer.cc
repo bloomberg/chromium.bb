@@ -45,6 +45,8 @@ TabStripModelChange::Delta TabStripModelChange::CreateReplaceDelta(
   return delta;
 }
 
+TabStripModelChange::TabStripModelChange() = default;
+
 TabStripModelChange::TabStripModelChange(Type type, const Delta& delta)
     : type_(type), deltas_({delta}) {}
 
@@ -59,11 +61,20 @@ TabStripModelChange::TabStripModelChange(TabStripModelChange&& other) = default;
 
 TabStripSelectionChange::TabStripSelectionChange() = default;
 
+TabStripSelectionChange::TabStripSelectionChange(
+    content::WebContents* contents,
+    const ui::ListSelectionModel& selection_model)
+    : old_contents(contents),
+      new_contents(contents),
+      old_model(selection_model),
+      new_model(selection_model),
+      reason(0) {}
+
 TabStripModelObserver::TabStripModelObserver() {
 }
 
 void TabStripModelObserver::OnTabStripModelChanged(
-    const base::Optional<TabStripModelChange>& change,
+    const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {}
 
 void TabStripModelObserver::TabInsertedAt(TabStripModel* tab_strip_model,
