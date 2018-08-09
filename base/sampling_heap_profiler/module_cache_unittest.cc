@@ -17,7 +17,7 @@ int AFunctionForTest() {
 
 // Checks that ModuleCache returns the same module instance for
 // addresses within the module.
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX) && !defined(OS_IOS) || defined(OS_WIN)
 #define MAYBE_ModuleCache ModuleCache
 #define MAYBE_ModulesList ModulesList
 #else
@@ -32,7 +32,8 @@ TEST_F(ModuleCacheTest, MAYBE_ModuleCache) {
   const ModuleCache::Module& module2 = cache.GetModuleForAddress(ptr2);
   EXPECT_EQ(&module1, &module2);
   EXPECT_TRUE(module1.is_valid);
-  EXPECT_LT(module1.base_address, ptr1);
+  EXPECT_GT(module1.size, 0u);
+  EXPECT_LE(module1.base_address, ptr1);
   EXPECT_GT(module1.base_address + module1.size, ptr2);
 }
 

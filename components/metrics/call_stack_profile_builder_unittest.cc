@@ -11,7 +11,7 @@
 
 using StackSamplingProfiler = base::StackSamplingProfiler;
 using InternalFrame = StackSamplingProfiler::InternalFrame;
-using InternalModule = StackSamplingProfiler::InternalModule;
+using Module = base::ModuleCache::Module;
 using CallStackProfile = StackSamplingProfiler::CallStackProfile;
 
 namespace metrics {
@@ -55,10 +55,10 @@ TEST(CallStackProfileBuilderTest, OnSampleCompleted) {
   auto profile_builder = std::make_unique<CallStackProfileBuilder>(
       Bind(&SaveProfile, Unretained(&profile)));
 
-  InternalModule module1 = {0xccccdddd, "1",
-                            base::FilePath(FILE_PATH_LITERAL("file_path_1"))};
-  InternalModule module2 = {0xccddccdd, "2",
-                            base::FilePath(FILE_PATH_LITERAL("file_path_2"))};
+  Module module1 = {0xccccdddd, "1",
+                    base::FilePath(FILE_PATH_LITERAL("file_path_1"))};
+  Module module2 = {0xccddccdd, "2",
+                    base::FilePath(FILE_PATH_LITERAL("file_path_2"))};
   InternalFrame frame1 = {0xaaaabbbb, module1};
   InternalFrame frame2 = {0xaabbaabb, module2};
 
@@ -81,10 +81,10 @@ TEST(CallStackProfileBuilderTest, OnProfileCompleted) {
   auto profile_builder = std::make_unique<CallStackProfileBuilder>(
       Bind(&SaveProfile, Unretained(&profile)));
 
-  InternalModule module1 = {0xccccdddd, "1",
-                            base::FilePath(FILE_PATH_LITERAL("file_path_1"))};
-  InternalModule module2 = {0xccddccdd, "2",
-                            base::FilePath(FILE_PATH_LITERAL("file_path_2"))};
+  Module module1 = {0xccccdddd, "1",
+                    base::FilePath(FILE_PATH_LITERAL("file_path_1"))};
+  Module module2 = {0xccddccdd, "2",
+                    base::FilePath(FILE_PATH_LITERAL("file_path_2"))};
   InternalFrame frame1 = {0xaaaabbbb, module1};
   InternalFrame frame2 = {0xaabbaabb, module2};
 
@@ -108,9 +108,9 @@ TEST(CallStackProfileBuilderTest, InvalidModule) {
   auto profile_builder = std::make_unique<CallStackProfileBuilder>(
       Bind(&SaveProfile, Unretained(&profile)));
 
-  InternalModule module1;
-  InternalModule module2 = {0xccddccdd, "2",
-                            base::FilePath(FILE_PATH_LITERAL("file_path_2"))};
+  Module module1;
+  Module module2 = {0xccddccdd, "2",
+                    base::FilePath(FILE_PATH_LITERAL("file_path_2"))};
   InternalFrame frame1 = {0xaaaabbbb, module1};
   InternalFrame frame2 = {0xaabbaabb, module2};
 
@@ -135,10 +135,10 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
   auto profile_builder = std::make_unique<CallStackProfileBuilder>(
       Bind(&SaveProfile, Unretained(&profile)));
 
-  InternalModule module1 = {0xccccdddd, "1",
-                            base::FilePath(FILE_PATH_LITERAL("file_path_1"))};
-  InternalModule module2 = {0xccccdddd, "2",
-                            base::FilePath(FILE_PATH_LITERAL("file_path_2"))};
+  Module module1 = {0xccccdddd, "1",
+                    base::FilePath(FILE_PATH_LITERAL("file_path_1"))};
+  Module module2 = {0xccccdddd, "2",
+                    base::FilePath(FILE_PATH_LITERAL("file_path_2"))};
   InternalFrame frame1 = {0xaaaabbbb, module1};
   InternalFrame frame2 = {0xaabbaabb, module2};
 

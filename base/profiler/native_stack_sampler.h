@@ -56,13 +56,6 @@ class NativeStackSampler {
   // any NativeStackSampler object.
   static std::unique_ptr<StackBuffer> CreateStackBuffer();
 
-  // Creates a Module object for the specified memory address. If the address
-  // does not belong to a module returns an invalid module.
-  // TODO(alph): Move platform-specific module lookup code into
-  // base::ModuleCache and remove this function.
-  static StackSamplingProfiler::InternalModule GetModuleForAddress(
-      uintptr_t address);
-
   // The following functions are all called on the SamplingThread (not the
   // thread being sampled).
 

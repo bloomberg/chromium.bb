@@ -52,27 +52,6 @@ StackSamplingProfiler::Module::Module(uintptr_t base_address,
 
 StackSamplingProfiler::Module::~Module() = default;
 
-// StackSamplingProfiler::InternalModule --------------------------------------
-
-StackSamplingProfiler::InternalModule::InternalModule() : is_valid(false) {}
-
-StackSamplingProfiler::InternalModule::InternalModule(uintptr_t base_address,
-                                                      const std::string& id,
-                                                      const FilePath& filename)
-    : InternalModule(base_address, id, filename, 0) {}
-
-StackSamplingProfiler::InternalModule::InternalModule(uintptr_t base_address,
-                                                      const std::string& id,
-                                                      const FilePath& filename,
-                                                      size_t size)
-    : base_address(base_address),
-      id(id),
-      filename(filename),
-      is_valid(true),
-      size(size) {}
-
-StackSamplingProfiler::InternalModule::~InternalModule() = default;
-
 // StackSamplingProfiler::Frame -----------------------------------------------
 
 StackSamplingProfiler::Frame::Frame(uintptr_t instruction_pointer,
@@ -88,7 +67,7 @@ StackSamplingProfiler::Frame::Frame()
 
 StackSamplingProfiler::InternalFrame::InternalFrame(
     uintptr_t instruction_pointer,
-    InternalModule internal_module)
+    ModuleCache::Module internal_module)
     : instruction_pointer(instruction_pointer),
       internal_module(std::move(internal_module)) {}
 

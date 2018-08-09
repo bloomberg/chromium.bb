@@ -60,8 +60,7 @@ void CallStackProfileBuilder::OnSampleCompleted(
 
   // Dedup modules and convert InternalFrames to Frames.
   for (const auto& internal_frame : internal_frames) {
-    const StackSamplingProfiler::InternalModule& module(
-        internal_frame.internal_module);
+    const base::ModuleCache::Module& module(internal_frame.internal_module);
     if (!module.is_valid) {
       sample_.frames.emplace_back(internal_frame.instruction_pointer,
                                   base::kUnknownModuleIndex);

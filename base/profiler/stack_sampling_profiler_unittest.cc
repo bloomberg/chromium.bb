@@ -68,9 +68,6 @@ using Frames = std::vector<Frame>;
 using InternalFrame = StackSamplingProfiler::InternalFrame;
 using InternalFrames = std::vector<InternalFrame>;
 using InternalFrameSets = std::vector<std::vector<InternalFrame>>;
-using Module = StackSamplingProfiler::Module;
-using InternalModule = StackSamplingProfiler::InternalModule;
-using Sample = StackSamplingProfiler::Sample;
 
 namespace {
 
