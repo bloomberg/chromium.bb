@@ -171,6 +171,11 @@ void UnifiedSystemTrayController::OnClearAllAnimationEnded() {
       message_center::MessageCenter::RemoveType::NON_PINNED);
 }
 
+void UnifiedSystemTrayController::OnMessageCenterVisibilityUpdated() {
+  if (bubble_)
+    bubble_->UpdateTransform();
+}
+
 void UnifiedSystemTrayController::BeginDrag(const gfx::Point& location) {
   drag_init_point_ = location;
   was_expanded_ = IsExpanded();
