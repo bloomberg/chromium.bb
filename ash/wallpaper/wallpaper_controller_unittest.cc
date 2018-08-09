@@ -1803,7 +1803,7 @@ TEST_F(WallpaperControllerTest, IsActiveUserWallpaperControlledByPolicy) {
 }
 
 TEST_F(WallpaperControllerTest, WallpaperBlur) {
-  ASSERT_TRUE(controller_->IsBlurEnabled());
+  ASSERT_TRUE(controller_->IsBlurAllowed());
   ASSERT_FALSE(controller_->IsWallpaperBlurred());
 
   TestWallpaperControllerObserver observer;
@@ -1843,7 +1843,7 @@ TEST_F(WallpaperControllerTest, WallpaperBlur) {
 }
 
 TEST_F(WallpaperControllerTest, WallpaperBlurDuringLockScreenTransition) {
-  ASSERT_TRUE(controller_->IsBlurEnabled());
+  ASSERT_TRUE(controller_->IsBlurAllowed());
   ASSERT_FALSE(controller_->IsWallpaperBlurred());
 
   TestWallpaperControllerObserver observer;
@@ -1876,7 +1876,7 @@ TEST_F(WallpaperControllerTest, OnlyShowDevicePolicyWallpaperOnLoginScreen) {
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_TRUE(IsDevicePolicyWallpaper());
   // Verify the device policy wallpaper shouldn't be blurred.
-  ASSERT_FALSE(controller_->IsBlurEnabled());
+  ASSERT_FALSE(controller_->IsBlurAllowed());
   ASSERT_FALSE(controller_->IsWallpaperBlurred());
 
   // Verify the device policy wallpaper is replaced when session state is no
