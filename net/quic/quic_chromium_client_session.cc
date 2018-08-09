@@ -1743,6 +1743,7 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(
 }
 
 void QuicChromiumClientSession::OnNoNewNetwork() {
+  DCHECK(IsCryptoHandshakeConfirmed());
   wait_for_new_network_ = true;
 
   DVLOG(1) << "Force blocking the packet writer";
@@ -2089,6 +2090,13 @@ void QuicChromiumClientSession::OnPathDegrading() {
   }
 
   LogHandshakeStatusOnConnectionMigrationSignal();
+
+  if (!IsCryptoHandshakeConfirmed()) {
+    HistogramAndLogMigrationFailure(
+        net_log_, MIGRATION_STATUS_PATH_DEGRADING_BEFORE_HANDSHAKE_CONFIRMED,
+        connection_id(), "Path degrading before handshake confirmed");
+    return;
+  }
 
   const NetLogWithSource migration_net_log = NetLogWithSource::Make(
       net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);

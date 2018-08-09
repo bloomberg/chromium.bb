@@ -47,6 +47,11 @@ class QuicStreamFactoryPeer {
   static bool HasActiveCertVerifierJob(QuicStreamFactory* factory,
                                        const quic::QuicServerId& server_id);
 
+  static QuicChromiumClientSession* GetPendingSession(
+      QuicStreamFactory* factory,
+      const quic::QuicServerId& server_id,
+      const HostPortPair& destination);
+
   static QuicChromiumClientSession* GetActiveSession(
       QuicStreamFactory* factory,
       const quic::QuicServerId& server_id);

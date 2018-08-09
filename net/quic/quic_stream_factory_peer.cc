@@ -49,6 +49,19 @@ bool QuicStreamFactoryPeer::HasActiveCertVerifierJob(
   return factory->HasActiveCertVerifierJob(server_id);
 }
 
+// static
+QuicChromiumClientSession* QuicStreamFactoryPeer::GetPendingSession(
+    QuicStreamFactory* factory,
+    const quic::QuicServerId& server_id,
+    const HostPortPair& destination) {
+  QuicSessionKey session_key(server_id, SocketTag());
+  QuicStreamFactory::QuicSessionAliasKey key(destination, session_key);
+  DCHECK(factory->HasActiveJob(session_key));
+  DCHECK_EQ(factory->all_sessions_.size(), 1u);
+  DCHECK(key == factory->all_sessions_.begin()->second);
+  return factory->all_sessions_.begin()->first;
+}
+
 QuicChromiumClientSession* QuicStreamFactoryPeer::GetActiveSession(
     QuicStreamFactory* factory,
     const quic::QuicServerId& server_id) {

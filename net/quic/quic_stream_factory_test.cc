@@ -333,6 +333,15 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
                                                            server_id);
   }
 
+  // Get the pending, not activated session, if there is only one session alive.
+  QuicChromiumClientSession* GetPendingSession(
+      const HostPortPair& host_port_pair) {
+    quic::QuicServerId server_id(host_port_pair.host(), host_port_pair.port(),
+                                 false);
+    return QuicStreamFactoryPeer::GetPendingSession(factory_.get(), server_id,
+                                                    host_port_pair);
+  }
+
   QuicChromiumClientSession* GetActiveSession(
       const HostPortPair& host_port_pair) {
     quic::QuicServerId server_id(host_port_pair.host(), host_port_pair.port(),
@@ -4380,6 +4389,54 @@ TEST_P(QuicStreamFactoryTest, MigrateBackToDefaultPostMigrationOnWriteError) {
   EXPECT_TRUE(quic_data2.AllWriteDataConsumed());
   EXPECT_TRUE(quic_data3.AllReadDataConsumed());
   EXPECT_TRUE(quic_data3.AllWriteDataConsumed());
+}
+
+// This test verifies that the connection will not attempt connection migration
+// (send connectivity probes on alternate path) when path degrading is detected
+// and handshake is not confirmed.
+TEST_P(QuicStreamFactoryTest,
+       NoMigrationOnPathDegradingBeforeHandshakeConfirmed) {
+  InitializeConnectionMigrationV2Test(
+      {kDefaultNetworkForTests, kNewNetworkForTests});
+
+  // Using a testing task runner.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
+
+  // Use cold start mode to send crypto message for handshake.
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::COLD_START_WITH_CHLO_SENT);
+
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(ASYNC, client_maker_.MakeDummyCHLOPacket(1));
+  socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, version_, privacy_mode_,
+                            DEFAULT_PRIORITY, SocketTag(),
+                            /*cert_verify_flags=*/0, url_, net_log_,
+                            &net_error_details_, callback_.callback()));
+
+  base::RunLoop().RunUntilIdle();
+
+  // Ensure that session is alive but not active.
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_TRUE(HasActiveJob(host_port_pair_, privacy_mode_));
+  QuicChromiumClientSession* session = GetPendingSession(host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
+
+  // Cause the connection to report path degrading to the session.
+  // Session will ignore the signal as handshake is not completed.
+  session->connection()->OnPathDegradingTimeout();
+  EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
+
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 // Test that connection will be closed with PACKET_WRITE_ERROR if a write error
