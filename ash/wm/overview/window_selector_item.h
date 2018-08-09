@@ -238,7 +238,7 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   bool animating_to_close() const { return animating_to_close_; }
   void set_animating_to_close(bool val) { animating_to_close_ = val; }
 
-  bool GetCloseButtonVisibilityForTesting() const;
+  float GetCloseButtonVisibilityForTesting() const;
   float GetTitlebarOpacityForTesting() const;
   gfx::Rect GetShadowBoundsForTesting();
 

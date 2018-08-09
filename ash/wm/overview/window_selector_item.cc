@@ -347,13 +347,16 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
   gfx::Rect backdrop_bounds() const { return backdrop_bounds_; }
 
   void SetHeaderVisibility(HeaderVisibility visibility) {
+    DCHECK(close_button_->layer());
     DCHECK(header_view_->layer());
 
-    // Set the close button invisible if the rest of the header is to be shown.
-    // If the rest of the header is to be hidden, set the close visiblilty to
-    // true as |header_view_|'s opacity will be 0.f, hiding the close button.
-    close_button_->SetVisible(visibility !=
-                              HeaderVisibility::kCloseButtonInvisibleOnly);
+    // Make the close button invisible if the rest of the header is to be shown.
+    // If the rest of the header is to be hidden, make the close button visible
+    // as |header_view_|'s opacity will be 0.f, hiding the close button. Modify
+    // |close_button_|'s opacity instead of visibilty so the flex from its
+    // sibling views do not mess up its layout.
+    close_button_->layer()->SetOpacity(
+        visibility == HeaderVisibility::kCloseButtonInvisibleOnly ? 0.f : 1.f);
     const bool visible = visibility != HeaderVisibility::kInvisible;
     AnimateLayerOpacity(header_view_->layer(), visible);
   }
@@ -917,8 +920,8 @@ OverviewAnimationType WindowSelectorItem::GetExitTransformAnimationType() {
                                       : OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO;
 }
 
-bool WindowSelectorItem::GetCloseButtonVisibilityForTesting() const {
-  return close_button_->visible();
+float WindowSelectorItem::GetCloseButtonVisibilityForTesting() const {
+  return close_button_->layer()->opacity();
 }
 
 float WindowSelectorItem::GetTitlebarOpacityForTesting() const {

@@ -2541,16 +2541,17 @@ TEST_F(WindowSelectorTest, WindowItemTitleCloseVisibilityOnDrag) {
   WindowSelectorItem* item1 = GetWindowItemForWindow(0, window1.get());
   WindowSelectorItem* item2 = GetWindowItemForWindow(0, window2.get());
   // Start the drag on |item1|. Verify the dragged item, |item1| has both the
-  // close button and titlebar hidden. All other items, |item2| should only have
-  // the close button hidden.
+  // close button and titlebar hidden. The close button opacity however is
+  // opaque as its a child of the header which handles fading away the whole
+  // header. All other items, |item2| should only have the close button hidden.
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(item1->target_bounds().CenterPoint());
   generator->PressLeftButton();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0.f, item1->GetTitlebarOpacityForTesting());
-  EXPECT_TRUE(item1->GetCloseButtonVisibilityForTesting());
+  EXPECT_EQ(1.f, item1->GetCloseButtonVisibilityForTesting());
   EXPECT_EQ(1.f, item2->GetTitlebarOpacityForTesting());
-  EXPECT_FALSE(item2->GetCloseButtonVisibilityForTesting());
+  EXPECT_EQ(0.f, item2->GetCloseButtonVisibilityForTesting());
 
   // Drag |item1| in a way so that |window1| does not get activated (drags
   // within a certain threshold count as clicks). Verify the close button and
@@ -2559,9 +2560,9 @@ TEST_F(WindowSelectorTest, WindowItemTitleCloseVisibilityOnDrag) {
   generator->ReleaseLeftButton();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1.f, item1->GetTitlebarOpacityForTesting());
-  EXPECT_TRUE(item1->GetCloseButtonVisibilityForTesting());
+  EXPECT_EQ(1.f, item1->GetCloseButtonVisibilityForTesting());
   EXPECT_EQ(1.f, item2->GetTitlebarOpacityForTesting());
-  EXPECT_TRUE(item2->GetCloseButtonVisibilityForTesting());
+  EXPECT_EQ(1.f, item2->GetCloseButtonVisibilityForTesting());
 }
 
 // Tests that overview widgets are stacked in the correct order.
