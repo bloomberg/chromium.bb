@@ -49,6 +49,9 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
   // Returns true if the given |document| should force allow autoplay.
   static bool DocumentHasForceAllowFlag(const Document&);
 
+  // Returns true if the given |document| has the user exception flag.
+  static bool DocumentHasUserExceptionFlag(const Document&);
+
   // Returns true if the given |document| should autoplay muted videos.
   static bool DocumentShouldAutoplayMutedVideos(const Document&);
 

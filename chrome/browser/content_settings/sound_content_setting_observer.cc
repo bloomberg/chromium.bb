@@ -10,12 +10,17 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings_utils.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/url_constants.h"
+#include "media/base/media_switches.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/platform/autoplay.mojom.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/tabs/tab_utils.h"
@@ -43,6 +48,45 @@ SoundContentSettingObserver::SoundContentSettingObserver(
 }
 
 SoundContentSettingObserver::~SoundContentSettingObserver() = default;
+
+void SoundContentSettingObserver::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsSameDocument())
+    return;
+
+  if (!base::FeatureList::IsEnabled(media::kAutoplaySoundSettings))
+    return;
+
+  GURL url = navigation_handle->IsInMainFrame()
+                 ? navigation_handle->GetURL()
+                 : navigation_handle->GetWebContents()->GetLastCommittedURL();
+
+  content_settings::SettingInfo setting_info;
+  std::unique_ptr<base::Value> setting =
+      host_content_settings_map_->GetWebsiteSetting(
+          url, navigation_handle->GetURL(),
+          CONTENT_SETTINGS_TYPE_SOUND, std::string(), &setting_info);
+
+  if (content_settings::ValueToContentSetting(setting.get()) !=
+      CONTENT_SETTING_ALLOW) {
+    return;
+  }
+
+  if (setting_info.source != content_settings::SETTING_SOURCE_USER)
+    return;
+
+  if (setting_info.primary_pattern == ContentSettingsPattern::Wildcard() &&
+      setting_info.secondary_pattern == ContentSettingsPattern::Wildcard()) {
+    return;
+  }
+
+  blink::mojom::AutoplayConfigurationClientAssociatedPtr client;
+  navigation_handle->GetRenderFrameHost()
+      ->GetRemoteAssociatedInterfaces()
+      ->GetInterface(&client);
+  client->AddAutoplayFlags(url::Origin::Create(navigation_handle->GetURL()),
+                           blink::mojom::kAutoplayFlagUserException);
+}
 
 void SoundContentSettingObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
