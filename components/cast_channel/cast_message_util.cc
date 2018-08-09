@@ -39,6 +39,7 @@ constexpr char kKeepAlivePingType[] = "PING";
 constexpr char kKeepAlivePongType[] = "PONG";
 constexpr char kGetAppAvailabilityRequestType[] = "GET_APP_AVAILABILITY";
 constexpr char kConnectionRequestType[] = "CONNECT";
+constexpr char kCloseConnectionRequestType[] = "CLOSE";
 constexpr char kBroadcastRequestType[] = "APPLICATION_BROADCAST";
 constexpr char kLaunchRequestType[] = "LAUNCH";
 constexpr char kStopRequestType[] = "STOP";
@@ -144,6 +145,8 @@ const char* CastMessageTypeToString(CastMessageType message_type) {
       return kGetAppAvailabilityRequestType;
     case CastMessageType::kConnect:
       return kConnectionRequestType;
+    case CastMessageType::kCloseConnection:
+      return kCloseConnectionRequestType;
     case CastMessageType::kBroadcast:
       return kBroadcastRequestType;
     case CastMessageType::kLaunch:
@@ -170,6 +173,8 @@ CastMessageType CastMessageTypeFromString(const std::string& type) {
     return CastMessageType::kGetAppAvailability;
   if (type == kConnectionRequestType)
     return CastMessageType::kConnect;
+  if (type == kCloseConnectionRequestType)
+    return CastMessageType::kCloseConnection;
   if (type == kBroadcastRequestType)
     return CastMessageType::kBroadcast;
   if (type == kLaunchRequestType)
