@@ -37,6 +37,7 @@ class SharedWorkerScriptLoaderFactory
   // the NetworkService. However, it may internally contain non-NetworkService
   // factories used for non-http(s) URLs, e.g., a chrome-extension:// URL.
   SharedWorkerScriptLoaderFactory(
+      int process_id,
       ServiceWorkerContextWrapper* context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       base::WeakPtr<AppCacheHost> appcache_host,
@@ -56,6 +57,7 @@ class SharedWorkerScriptLoaderFactory
   void Clone(network::mojom::URLLoaderFactoryRequest request) override;
 
  private:
+  const int process_id_;
   base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
   base::WeakPtr<AppCacheHost> appcache_host_;
   ResourceContext* resource_context_ = nullptr;

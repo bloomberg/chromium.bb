@@ -164,20 +164,13 @@ void SharedWorkerHost::Start(
 
   // Add the network factory to the bundle to pass to the renderer. The bundle
   // is only provided (along with |script_loader_factory|) if
-  // NetworkService/S13nSW is enabled.
+  // NetworkService/S13nServiceWorker is enabled, and default factory isn't
+  // provided if NetworkService is on but S13nServiceWorker is off.
   DCHECK(!script_loader_factory || factory_bundle);
-  if (factory_bundle) {
+  if (factory_bundle && !factory_bundle->default_factory_info()) {
+    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     network::mojom::URLLoaderFactoryPtrInfo network_factory_info;
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // NetworkService is on: Use the network service.
-      CreateNetworkFactory(mojo::MakeRequest(&network_factory_info));
-    } else {
-      // NetworkService is off: RenderProcessHost gives us a non-NetworkService
-      // network factory.
-      RenderProcessHost::FromID(process_id_)
-          ->CreateURLLoaderFactory(mojo::MakeRequest(&network_factory_info));
-    }
-    DCHECK(!factory_bundle->default_factory_info());
+    CreateNetworkFactory(mojo::MakeRequest(&network_factory_info));
     factory_bundle->default_factory_info() = std::move(network_factory_info);
 
     // TODO(falken): We might need to set the default factory to AppCache

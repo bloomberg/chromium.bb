@@ -83,6 +83,17 @@ std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
     factory_bundle->factories_info().emplace(url::kFileScheme,
                                              file_factory_ptr.PassInterface());
   }
+
+  // Use RenderProcessHost's network factory as the default factory if
+  // NetworkService is off. If NetworkService is on the default factory is
+  // set in CreateScriptLoaderOnIO().
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    network::mojom::URLLoaderFactoryPtr default_factory;
+    RenderProcessHost::FromID(process_id)
+        ->CreateURLLoaderFactory(mojo::MakeRequest(&default_factory));
+    factory_bundle->default_factory_info() = default_factory.PassInterface();
+  }
+
   return factory_bundle;
 }
 
@@ -116,20 +127,25 @@ void CreateScriptLoaderOnIO(
     url_loader_factory = network::SharedURLLoaderFactory::Create(
         std::move(blob_url_loader_factory_info));
   } else {
+    // Add the network factory to the bundle. If NetworkService is off the
+    // default factory was already set in CreateFactoryBundle().
+    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+           factory_bundle_for_browser_info->default_factory_info());
     // Create a factory bundle to use.
     scoped_refptr<URLLoaderFactoryBundle> factory_bundle =
         base::MakeRefCounted<URLLoaderFactoryBundle>(
             std::move(factory_bundle_for_browser_info));
     url_loader_factory = factory_bundle;
 
-    // Add the network factory to the bundle. The factory from
-    // CloneNetworkFactory() doesn't support reconnection to the network service
-    // after a crash, but it's OK since it's used for a single shared worker
-    // startup.
-    network::mojom::URLLoaderFactoryPtr network_factory_ptr;
-    loader_factory_getter->CloneNetworkFactory(
-        mojo::MakeRequest(&network_factory_ptr));
-    factory_bundle->SetDefaultFactory(std::move(network_factory_ptr));
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      // The factory from CloneNetworkFactory() doesn't support reconnection to
+      // the network service after a crash, but it's OK since it's used for a
+      // single shared worker startup.
+      network::mojom::URLLoaderFactoryPtr network_factory_ptr;
+      loader_factory_getter->CloneNetworkFactory(
+          mojo::MakeRequest(&network_factory_ptr));
+      factory_bundle->SetDefaultFactory(std::move(network_factory_ptr));
+    }
   }
 
   // It's safe for |appcache_handle_core| to be a raw pointer. The core is owned
@@ -144,8 +160,9 @@ void CreateScriptLoaderOnIO(
   network::mojom::URLLoaderFactoryAssociatedPtrInfo script_loader_factory;
   mojo::MakeStrongAssociatedBinding(
       std::make_unique<SharedWorkerScriptLoaderFactory>(
-          context.get(), host->AsWeakPtr(), std::move(appcache_host),
-          context->resource_context(), std::move(url_loader_factory)),
+          process_id, context.get(), host->AsWeakPtr(),
+          std::move(appcache_host), context->resource_context(),
+          std::move(url_loader_factory)),
       mojo::MakeRequest(&script_loader_factory));
 
   // We continue in StartWorker.

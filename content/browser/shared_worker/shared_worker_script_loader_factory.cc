@@ -20,12 +20,14 @@
 namespace content {
 
 SharedWorkerScriptLoaderFactory::SharedWorkerScriptLoaderFactory(
+    int process_id,
     ServiceWorkerContextWrapper* context,
     base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
     base::WeakPtr<AppCacheHost> appcache_host,
     ResourceContext* resource_context,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
-    : service_worker_provider_host_(std::move(service_worker_provider_host)),
+    : process_id_(process_id),
+      service_worker_provider_host_(std::move(service_worker_provider_host)),
       appcache_host_(std::move(appcache_host)),
       resource_context_(resource_context),
       loader_factory_(std::move(loader_factory)) {
@@ -61,9 +63,9 @@ void SharedWorkerScriptLoaderFactory::CreateLoaderAndStart(
   // Create a SharedWorkerScriptLoader to load the script.
   mojo::MakeStrongBinding(
       std::make_unique<SharedWorkerScriptLoader>(
-          routing_id, request_id, options, resource_request, std::move(client),
-          service_worker_provider_host_, appcache_host_, resource_context_,
-          loader_factory_, traffic_annotation),
+          process_id_, routing_id, request_id, options, resource_request,
+          std::move(client), service_worker_provider_host_, appcache_host_,
+          resource_context_, loader_factory_, traffic_annotation),
       std::move(request));
 }
 
