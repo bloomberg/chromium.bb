@@ -52,12 +52,13 @@ class PdfCompositorImplTest : public testing::Test {
     return is_ready_;
   }
 
-  void OnCompositeToPdfCallback(mojom::PdfCompositor::Status status,
-                                base::ReadOnlySharedMemoryRegion region) {
+  static void OnCompositeToPdfCallback(
+      mojom::PdfCompositor::Status status,
+      base::ReadOnlySharedMemoryRegion region) {
     // A stub for testing, no implementation.
   }
 
- protected:
+ private:
   base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
   bool is_ready_;
@@ -89,44 +90,35 @@ TEST_F(PdfCompositorImplTest, IsReadyToComposite) {
 
   // Frame 1 contains content 3 which corresponds to frame 2.
   // Frame 1 should be ready as frame 2 is ready.
-  ContentToFrameMap subframe_content_map;
-  subframe_content_map[3u] = 2u;
+  ContentToFrameMap subframe_content_map = {{3u, 2u}};
   base::flat_set<uint64_t> pending_subframes;
-  bool is_ready = impl.IsReadyToComposite(1u, std::move(subframe_content_map),
-                                          &pending_subframes);
+  bool is_ready =
+      impl.IsReadyToComposite(1u, subframe_content_map, &pending_subframes);
   EXPECT_TRUE(is_ready);
   EXPECT_TRUE(pending_subframes.empty());
 
   // If another page of frame 1 needs content 2 which corresponds to frame 3.
   // This page is ready since frame 3 was painted also.
-  subframe_content_map.clear();
-  subframe_content_map[2u] = 3u;
-  is_ready = impl.IsReadyToComposite(1u, std::move(subframe_content_map),
-                                     &pending_subframes);
+  subframe_content_map = {{2u, 3u}};
+  is_ready =
+      impl.IsReadyToComposite(1u, subframe_content_map, &pending_subframes);
   EXPECT_TRUE(is_ready);
   EXPECT_TRUE(pending_subframes.empty());
 
   // Frame 1 with content 1, 2 and 3 should not be ready since content 1's
   // content in frame 4 is not painted yet.
-  subframe_content_map.clear();
-  subframe_content_map[1u] = 4u;
-  subframe_content_map[2u] = 3u;
-  subframe_content_map[3u] = 2u;
-  is_ready = impl.IsReadyToComposite(1u, std::move(subframe_content_map),
-                                     &pending_subframes);
+  subframe_content_map = {{1u, 4u}, {2u, 3u}, {3u, 2u}};
+  is_ready =
+      impl.IsReadyToComposite(1u, subframe_content_map, &pending_subframes);
   EXPECT_FALSE(is_ready);
   ASSERT_EQ(pending_subframes.size(), 1u);
   EXPECT_EQ(*pending_subframes.begin(), 4u);
 
   // Add content of frame 4. Now it is ready for composition.
-  subframe_content_map.clear();
-  subframe_content_map[1u] = 4u;
-  subframe_content_map[2u] = 3u;
-  subframe_content_map[3u] = 2u;
   impl.AddSubframeContent(4u, mojo::SharedBufferHandle::Create(10),
                           ContentToFrameMap());
-  is_ready = impl.IsReadyToComposite(1u, std::move(subframe_content_map),
-                                     &pending_subframes);
+  is_ready =
+      impl.IsReadyToComposite(1u, subframe_content_map, &pending_subframes);
   EXPECT_TRUE(is_ready);
   EXPECT_TRUE(pending_subframes.empty());
 }
@@ -134,28 +126,25 @@ TEST_F(PdfCompositorImplTest, IsReadyToComposite) {
 TEST_F(PdfCompositorImplTest, MultiLayerDependency) {
   PdfCompositorImpl impl("unittest", nullptr);
   // Frame 3 has content 1 which refers to subframe 1.
-  ContentToFrameMap subframe_content_map;
-  subframe_content_map[1u] = 1u;
+  ContentToFrameMap subframe_content_map = {{1u, 1u}};
   impl.AddSubframeContent(3u, mojo::SharedBufferHandle::Create(10),
-                          std::move(subframe_content_map));
+                          subframe_content_map);
 
   // Frame 5 has content 3 which refers to subframe 3.
   // Although frame 3's content is added, its subframe 1's content is not added.
   // So frame 5 is not ready.
-  subframe_content_map.clear();
-  subframe_content_map[3u] = 3u;
+  subframe_content_map = {{3u, 3u}};
   base::flat_set<uint64_t> pending_subframes;
-  bool is_ready = impl.IsReadyToComposite(5u, std::move(subframe_content_map),
-                                          &pending_subframes);
+  bool is_ready =
+      impl.IsReadyToComposite(5u, subframe_content_map, &pending_subframes);
   EXPECT_FALSE(is_ready);
   ASSERT_EQ(pending_subframes.size(), 1u);
   EXPECT_EQ(*pending_subframes.begin(), 1u);
 
   // Frame 6 is not ready either since it needs frame 5 to be ready.
-  subframe_content_map.clear();
-  subframe_content_map[1u] = 5u;
-  is_ready = impl.IsReadyToComposite(6u, std::move(subframe_content_map),
-                                     &pending_subframes);
+  subframe_content_map = {{1u, 5u}};
+  is_ready =
+      impl.IsReadyToComposite(6u, subframe_content_map, &pending_subframes);
   EXPECT_FALSE(is_ready);
   ASSERT_EQ(pending_subframes.size(), 1u);
   EXPECT_EQ(*pending_subframes.begin(), 5u);
@@ -163,24 +152,20 @@ TEST_F(PdfCompositorImplTest, MultiLayerDependency) {
   // When frame 1's content is added, frame 5 is ready.
   impl.AddSubframeContent(1u, mojo::SharedBufferHandle::Create(10),
                           ContentToFrameMap());
-  subframe_content_map.clear();
-  subframe_content_map[3u] = 3u;
-  is_ready = impl.IsReadyToComposite(5u, std::move(subframe_content_map),
-                                     &pending_subframes);
+  subframe_content_map = {{3u, 3u}};
+  is_ready =
+      impl.IsReadyToComposite(5u, subframe_content_map, &pending_subframes);
   EXPECT_TRUE(is_ready);
   EXPECT_TRUE(pending_subframes.empty());
 
   // Add frame 5's content.
-  subframe_content_map.clear();
-  subframe_content_map[3u] = 3u;
   impl.AddSubframeContent(5u, mojo::SharedBufferHandle::Create(10),
-                          std::move(subframe_content_map));
+                          subframe_content_map);
 
   // Frame 6 is ready too.
-  subframe_content_map.clear();
-  subframe_content_map[1u] = 5u;
-  is_ready = impl.IsReadyToComposite(6u, std::move(subframe_content_map),
-                                     &pending_subframes);
+  subframe_content_map = {{1u, 5u}};
+  is_ready =
+      impl.IsReadyToComposite(6u, subframe_content_map, &pending_subframes);
   EXPECT_TRUE(is_ready);
   EXPECT_TRUE(pending_subframes.empty());
 }
@@ -189,36 +174,31 @@ TEST_F(PdfCompositorImplTest, DependencyLoop) {
   PdfCompositorImpl impl("unittest", nullptr);
   // Frame 3 has content 1, which refers to frame 1.
   // Frame 1 has content 3, which refers to frame 3.
-  ContentToFrameMap subframe_content_map;
-  subframe_content_map[3u] = 3u;
+  ContentToFrameMap subframe_content_map = {{3u, 3u}};
   impl.AddSubframeContent(1u, mojo::SharedBufferHandle::Create(10),
-                          std::move(subframe_content_map));
+                          subframe_content_map);
 
-  subframe_content_map.clear();
-  subframe_content_map[1u] = 1u;
+  subframe_content_map = {{1u, 1u}};
   impl.AddSubframeContent(3u, mojo::SharedBufferHandle::Create(10),
-                          std::move(subframe_content_map));
+                          subframe_content_map);
 
   // Both frame 1 and 3 are painted, frame 5 should be ready.
   base::flat_set<uint64_t> pending_subframes;
-  subframe_content_map.clear();
-  subframe_content_map[1u] = 3u;
-  bool is_ready = impl.IsReadyToComposite(5u, std::move(subframe_content_map),
-                                          &pending_subframes);
+  subframe_content_map = {{1u, 3u}};
+  bool is_ready =
+      impl.IsReadyToComposite(5u, subframe_content_map, &pending_subframes);
   EXPECT_TRUE(is_ready);
   EXPECT_TRUE(pending_subframes.empty());
 
   // Frame 6 has content 7, which refers to frame 7.
-  subframe_content_map.clear();
-  subframe_content_map[7u] = 7u;
+  subframe_content_map = {{7u, 7u}};
   impl.AddSubframeContent(6, mojo::SharedBufferHandle::Create(10),
-                          std::move(subframe_content_map));
+                          subframe_content_map);
   // Frame 7 should be ready since frame 6's own content is added and it only
   // depends on frame 7.
-  subframe_content_map.clear();
-  subframe_content_map[6u] = 6u;
-  is_ready = impl.IsReadyToComposite(7u, std::move(subframe_content_map),
-                                     &pending_subframes);
+  subframe_content_map = {{6u, 6u}};
+  is_ready =
+      impl.IsReadyToComposite(7u, subframe_content_map, &pending_subframes);
   EXPECT_TRUE(is_ready);
   EXPECT_TRUE(pending_subframes.empty());
 }
@@ -227,71 +207,51 @@ TEST_F(PdfCompositorImplTest, MultiRequestsBasic) {
   MockPdfCompositorImpl impl;
   // Page 0 with frame 3 has content 1, which refers to frame 8.
   // When the content is not available, the request is not fulfilled.
-  ContentToFrameMap subframe_content_map;
-  subframe_content_map[1u] = 8u;
+  const ContentToFrameMap subframe_content_map = {{1u, 8u}};
   EXPECT_CALL(impl, OnFulfillRequest(testing::_, testing::_)).Times(0);
   impl.CompositePageToPdf(
-      3u, 0, mojo::SharedBufferHandle::Create(10),
-      std::move(subframe_content_map),
-      base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback,
-                     base::Unretained(this)));
+      3u, 0, mojo::SharedBufferHandle::Create(10), subframe_content_map,
+      base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback));
   testing::Mock::VerifyAndClearExpectations(&impl);
 
   // When frame 8's content is ready, the previous request should be fulfilled.
   EXPECT_CALL(impl, OnFulfillRequest(3u, 0)).Times(1);
   impl.AddSubframeContent(8u, mojo::SharedBufferHandle::Create(10),
-                          std::move(subframe_content_map));
+                          ContentToFrameMap());
   testing::Mock::VerifyAndClearExpectations(&impl);
 
   // The following requests which only depends on frame 8 should be
   // immediately fulfilled.
   EXPECT_CALL(impl, OnFulfillRequest(3u, 1)).Times(1);
   EXPECT_CALL(impl, OnFulfillRequest(3u, -1)).Times(1);
-  subframe_content_map.clear();
-  subframe_content_map[1u] = 8u;
   impl.CompositePageToPdf(
-      3u, 1, mojo::SharedBufferHandle::Create(10),
-      std::move(subframe_content_map),
-      base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback,
-                     base::Unretained(this)));
+      3u, 1, mojo::SharedBufferHandle::Create(10), subframe_content_map,
+      base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback));
 
-  subframe_content_map.clear();
-  subframe_content_map[1u] = 8u;
   impl.CompositeDocumentToPdf(
-      3u, mojo::SharedBufferHandle::Create(10), std::move(subframe_content_map),
-      base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback,
-                     base::Unretained(this)));
+      3u, mojo::SharedBufferHandle::Create(10), subframe_content_map,
+      base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback));
 }
 
 TEST_F(PdfCompositorImplTest, MultiRequestsOrder) {
   MockPdfCompositorImpl impl;
-  // Page 0 with frame  3 has content 1, which refers to frame 8.
+  // Page 0 with frame 3 has content 1, which refers to frame 8.
   // When the content is not available, the request is not fulfilled.
-  ContentToFrameMap subframe_content_map;
-  subframe_content_map[1u] = 8u;
+  const ContentToFrameMap subframe_content_map = {{1u, 8u}};
   EXPECT_CALL(impl, OnFulfillRequest(testing::_, testing::_)).Times(0);
   impl.CompositePageToPdf(
-      3u, 0, mojo::SharedBufferHandle::Create(10),
-      std::move(subframe_content_map),
-      base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback,
-                     base::Unretained(this)));
+      3u, 0, mojo::SharedBufferHandle::Create(10), subframe_content_map,
+      base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback));
 
   // The following requests which only depends on frame 8 should be
   // immediately fulfilled.
-  subframe_content_map.clear();
-  subframe_content_map[1u] = 8u;
   impl.CompositePageToPdf(
-      3u, 1, mojo::SharedBufferHandle::Create(10),
-      std::move(subframe_content_map),
-      base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback,
-                     base::Unretained(this)));
+      3u, 1, mojo::SharedBufferHandle::Create(10), subframe_content_map,
+      base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback));
 
-  subframe_content_map.clear();
-  subframe_content_map[1u] = 8u;
   impl.CompositeDocumentToPdf(
-      3u, mojo::SharedBufferHandle::Create(10), std::move(subframe_content_map),
-      base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback,
-                     base::Unretained(this)));
+      3u, mojo::SharedBufferHandle::Create(10), subframe_content_map,
+      base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback));
   testing::Mock::VerifyAndClearExpectations(&impl);
 
   // When frame 8's content is ready, the previous request should be
@@ -299,9 +259,8 @@ TEST_F(PdfCompositorImplTest, MultiRequestsOrder) {
   EXPECT_CALL(impl, OnFulfillRequest(3u, 0)).Times(1);
   EXPECT_CALL(impl, OnFulfillRequest(3u, 1)).Times(1);
   EXPECT_CALL(impl, OnFulfillRequest(3u, -1)).Times(1);
-  subframe_content_map.clear();
   impl.AddSubframeContent(8u, mojo::SharedBufferHandle::Create(10),
-                          std::move(subframe_content_map));
+                          ContentToFrameMap());
 }
 
 TEST_F(PdfCompositorImplTest, MultiRequestsDepOrder) {
@@ -310,24 +269,18 @@ TEST_F(PdfCompositorImplTest, MultiRequestsDepOrder) {
   // 2. When the content is not available, the request is not
   // fulfilled.
   EXPECT_CALL(impl, OnFulfillRequest(testing::_, testing::_)).Times(0);
-  ContentToFrameMap subframe_content_map;
-  subframe_content_map[1u] = 2u;
+  ContentToFrameMap subframe_content_map = {{1u, 2u}};
   impl.CompositePageToPdf(
-      1u, 0, mojo::SharedBufferHandle::Create(10),
-      std::move(subframe_content_map),
-      base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback,
-                     base::Unretained(this)));
+      1u, 0, mojo::SharedBufferHandle::Create(10), subframe_content_map,
+      base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback));
 
   // Page 1 with frame 1 has content 1, which refers to frame
   // 3. When the content is not available, the request is not
   // fulfilled either.
-  subframe_content_map.clear();
-  subframe_content_map[1u] = 3u;
+  subframe_content_map = {{1u, 3u}};
   impl.CompositePageToPdf(
-      1u, 1, mojo::SharedBufferHandle::Create(10),
-      std::move(subframe_content_map),
-      base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback,
-                     base::Unretained(this)));
+      1u, 1, mojo::SharedBufferHandle::Create(10), subframe_content_map,
+      base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback));
   testing::Mock::VerifyAndClearExpectations(&impl);
 
   // When frame 3 and 2 become available, the pending requests should be
@@ -335,25 +288,21 @@ TEST_F(PdfCompositorImplTest, MultiRequestsDepOrder) {
   testing::Sequence order;
   EXPECT_CALL(impl, OnFulfillRequest(1, 1)).Times(1).InSequence(order);
   EXPECT_CALL(impl, OnFulfillRequest(1, 0)).Times(1).InSequence(order);
-  subframe_content_map.clear();
   impl.AddSubframeContent(3u, mojo::SharedBufferHandle::Create(10),
-                          std::move(subframe_content_map));
+                          ContentToFrameMap());
   impl.AddSubframeContent(2u, mojo::SharedBufferHandle::Create(10),
-                          std::move(subframe_content_map));
+                          ContentToFrameMap());
 }
 
 TEST_F(PdfCompositorImplTest, NotifyUnavailableSubframe) {
   MockPdfCompositorImpl impl;
   // Page 0 with frame 3 has content 1, which refers to frame 8.
   // When the content is not available, the request is not fulfilled.
-  ContentToFrameMap subframe_content_map;
-  subframe_content_map[1u] = 8u;
+  const ContentToFrameMap subframe_content_map = {{1u, 8u}};
   EXPECT_CALL(impl, OnFulfillRequest(testing::_, testing::_)).Times(0);
   impl.CompositePageToPdf(
-      3u, 0, mojo::SharedBufferHandle::Create(10),
-      std::move(subframe_content_map),
-      base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback,
-                     base::Unretained(this)));
+      3u, 0, mojo::SharedBufferHandle::Create(10), subframe_content_map,
+      base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback));
   testing::Mock::VerifyAndClearExpectations(&impl);
 
   // Notifies that frame 8's unavailable, the previous request should be
