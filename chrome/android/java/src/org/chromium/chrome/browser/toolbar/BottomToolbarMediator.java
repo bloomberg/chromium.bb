@@ -115,10 +115,10 @@ class BottomToolbarMediator implements ContextualSearchObserver, FullscreenListe
     @Override
     public void onControlsOffsetChanged(float topOffset, float bottomOffset, boolean needsAnimate) {
         mModel.setValue(BottomToolbarModel.Y_OFFSET, (int) bottomOffset);
-        if (bottomOffset > 0) {
+        if (bottomOffset > 0 || mFullscreenManager.getBottomControlsHeight() == 0) {
             mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, false);
         } else {
-            mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, true);
+            tryShowingAndroidView();
         }
     }
 
@@ -157,28 +157,36 @@ class BottomToolbarMediator implements ContextualSearchObserver, FullscreenListe
 
     @Override
     public void onHideContextualSearch() {
-        // If the scroll offset for the toolbar is non-zero, it needs to remain hidden after
-        // contextual search is hidden.
-        if (mModel.getValue(BottomToolbarModel.Y_OFFSET) != 0) return;
-        mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, true);
+        tryShowingAndroidView();
     }
 
     @Override
     public void keyboardVisibilityChanged(boolean isShowing) {
         // The toolbars are force shown when the keyboard is visible, so we can blindly set
         // the bottom toolbar view to visible or invisible regardless of the previous state.
-        ChromeFullscreenManager fullscreenManager =
-                mModel.getValue(BottomToolbarModel.LAYOUT_MANAGER).getFullscreenManager();
         if (isShowing) {
-            mBottomToolbarHeightBeforeHide = fullscreenManager.getBottomControlsHeight();
+            mBottomToolbarHeightBeforeHide = mFullscreenManager.getBottomControlsHeight();
             mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, false);
             mModel.setValue(BottomToolbarModel.COMPOSITED_VIEW_VISIBLE, false);
-            fullscreenManager.setBottomControlsHeight(0);
+            mFullscreenManager.setBottomControlsHeight(0);
         } else {
-            fullscreenManager.setBottomControlsHeight(mBottomToolbarHeightBeforeHide);
-            mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, true);
+            mFullscreenManager.setBottomControlsHeight(mBottomToolbarHeightBeforeHide);
+            tryShowingAndroidView();
+            mModel.setValue(
+                    BottomToolbarModel.Y_OFFSET, (int) mFullscreenManager.getBottomControlOffset());
             mModel.setValue(BottomToolbarModel.COMPOSITED_VIEW_VISIBLE, true);
         }
+    }
+
+    /**
+     * Try showing the toolbar's Android view after it has been hidden. This accounts for cases
+     * where a browser signal would ordinarily re-show the view, but others still require it to be
+     * hidden.
+     */
+    private void tryShowingAndroidView() {
+        if (mFullscreenManager.getBottomControlOffset() > 0) return;
+        if (mModel.getValue(BottomToolbarModel.Y_OFFSET) != 0) return;
+        mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, true);
     }
 
     void setLayoutManager(LayoutManager layoutManager) {
