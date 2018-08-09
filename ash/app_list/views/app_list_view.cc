@@ -588,6 +588,7 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
   auto* const keyboard_controller = keyboard::KeyboardController::Get();
   if (keyboard_controller->enabled() &&
       keyboard_controller->IsKeyboardVisible()) {
+    search_box_view_->NotifyGestureEvent();
     keyboard_controller->HideKeyboardByUser();
     return;
   }
@@ -1011,6 +1012,9 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
       break;
     case ui::ET_SCROLL_FLING_START:
     case ui::ET_GESTURE_SCROLL_BEGIN:
+      // If the search box is active when we start our drag, let it know.
+      if (search_box_view_->is_search_box_active())
+        search_box_view_->NotifyGestureEvent();
       // Avoid scrolling events for the app list in tablet mode.
       if (is_side_shelf_ || IsHomeLauncherEnabledInTabletMode())
         return;

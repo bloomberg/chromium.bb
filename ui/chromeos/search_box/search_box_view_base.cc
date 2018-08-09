@@ -267,6 +267,8 @@ void SearchBoxViewBase::SetSearchBoxActive(bool active,
   if (active) {
     search_box_->RequestFocus();
     RecordSearchBoxActivationHistogram(event_type);
+  } else {
+    search_box_->DestroyTouchSelection();
   }
 
   search_box_right_space_->SetVisible(!active);
@@ -309,6 +311,10 @@ void SearchBoxViewBase::OnGestureEvent(ui::GestureEvent* event) {
 
 void SearchBoxViewBase::OnMouseEvent(ui::MouseEvent* event) {
   HandleSearchBoxEvent(event);
+}
+
+void SearchBoxViewBase::NotifyGestureEvent() {
+  search_box_->DestroyTouchSelection();
 }
 
 ax::mojom::Role SearchBoxViewBase::GetAccessibleWindowRole() const {
