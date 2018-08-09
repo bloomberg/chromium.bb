@@ -133,19 +133,13 @@ def _Run(java_tests_src_dir, test_filter,
     jvm_args += ['-agentlib:jdwp=transport=%s,server=y,suspend=y,'
                  'address=33081' % transport]
 
-  return _RunAntTest(java_tests_src_dir, test_filter, chromedriver_path,
-                     chrome_path, log_path, android_package_key,
-                     jvm_args, verbose, debug, sys_props)
+  return _RunAntTest(java_tests_src_dir, jvm_args, verbose, sys_props)
 
-def _RunAntTest(java_tests_src_dir, test_filter, chromedriver_path,
-                    chrome_path, log_path, android_package_key,
-                    jvm_args, verbose, debug, sys_props):
+def _RunAntTest(java_tests_src_dir, jvm_args, verbose, sys_props):
   """Runs a single Ant JUnit test suite and returns the |TestResult|s.
 
   Args:
-    test_dir: the directory to run the tests in.
-    test_class: the name of the JUnit test suite class to run.
-    class_path: the Java class path used when running the tests, colon delimited
+    java_tests_src_dir: the directory to run the tests in.
     sys_props: Java system properties to set when running the tests.
     jvm_args: Java VM command line args to use.
     verbose: whether the output should be verbose.
