@@ -23,7 +23,7 @@ import java.util.List;
  * Describes a portion of UI responsible for rendering a group of categories.
  * It abstracts general tasks related to initializing and fetching data for the UI.
  */
-public class ExploreSitesSection {
+public class ExperimentalExploreSitesSection {
     private static final int MAX_TILES = 3;
 
     private Profile mProfile;
@@ -31,7 +31,7 @@ public class ExploreSitesSection {
     private View mExploreSection;
     private LinearLayout mCategorySection;
 
-    public ExploreSitesSection(
+    public ExperimentalExploreSitesSection(
             View view, Profile profile, SuggestionsNavigationDelegate navigationDelegate) {
         mProfile = profile;
         mExploreSection = view;
@@ -72,10 +72,11 @@ public class ExploreSitesSection {
             tileCount++;
             if (tileCount > MAX_TILES) break;
 
-            final ExploreSitesCategoryTileView tileView =
-                    (ExploreSitesCategoryTileView) LayoutInflater.from(mExploreSection.getContext())
-                            .inflate(R.layout.explore_sites_category_tile_view, mCategorySection,
-                                    false);
+            final ExperimentalExploreSitesCategoryTileView tileView =
+                    (ExperimentalExploreSitesCategoryTileView) LayoutInflater
+                            .from(mExploreSection.getContext())
+                            .inflate(R.layout.experimental_explore_sites_category_tile_view,
+                                    mCategorySection, false);
 
             tileView.initialize(tile, tileWidth);
             mCategorySection.addView(tileView);
@@ -88,7 +89,7 @@ public class ExploreSitesSection {
         }
     }
 
-    private void onIconRetrieved(ExploreSitesCategoryTileView tileView, Bitmap icon) {
+    private void onIconRetrieved(ExperimentalExploreSitesCategoryTileView tileView, Bitmap icon) {
         tileView.updateIcon(icon);
     }
 }

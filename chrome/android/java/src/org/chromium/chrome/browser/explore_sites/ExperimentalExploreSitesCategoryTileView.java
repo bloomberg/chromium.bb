@@ -23,7 +23,7 @@ import org.chromium.chrome.browser.widget.RoundedIconGenerator;
  * The View representing a single explore sites category.
  * Consists of a large image icon over descriptive text.
  */
-public class ExploreSitesCategoryTileView extends LinearLayout {
+public class ExperimentalExploreSitesCategoryTileView extends LinearLayout {
     /** The data represented by this tile. */
     private ExploreSitesCategoryTile mCategoryData;
 
@@ -37,7 +37,7 @@ public class ExploreSitesCategoryTileView extends LinearLayout {
     private int mIconHeightPx;
 
     /** Constructor for inflating from XML. */
-    public ExploreSitesCategoryTileView(Context context, AttributeSet attrs) {
+    public ExperimentalExploreSitesCategoryTileView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mResources = context.getResources();
     }
