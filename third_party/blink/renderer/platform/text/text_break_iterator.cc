@@ -59,8 +59,7 @@ void GraphemesClusterList(const StringView& text, Vector<unsigned>* graphemes) {
   if (!length)
     return;
 
-  String string = text.ToString();
-  NonSharedCharacterBreakIterator it(string);
+  NonSharedCharacterBreakIterator it(text);
   int cursor_pos = it.Next();
   unsigned count = 0;
   unsigned pos = 0;

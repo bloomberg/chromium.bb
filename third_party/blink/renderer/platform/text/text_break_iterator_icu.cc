@@ -751,7 +751,7 @@ static TextBreakIterator* GetNonSharedCharacterBreakIterator() {
 }
 
 NonSharedCharacterBreakIterator::NonSharedCharacterBreakIterator(
-    const String& string)
+    const StringView& string)
     : is8_bit_(true),
       charaters8_(nullptr),
       offset_(0),
