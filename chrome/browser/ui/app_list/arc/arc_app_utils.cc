@@ -85,10 +85,11 @@ constexpr char kLaunchFlags[] = "launchFlags";
 constexpr char kAndroidClockAppId[] = "ddmmnabaeomoacfpfjgghfpocfolhjlg";
 constexpr char kAndroidFilesAppId[] = "gmiohhmfhgfclpeacmdfancbipocempm";
 constexpr char kAndroidCameraAppId[] = "goamfaniemdfcajgcmmflhchgkmbngka";
+constexpr char kAndroidLegacyCameraAppId[] = "obfofkigjfamlldmipdegnjlcpincibc";
 
 constexpr char const* kAppIdsHiddenInLauncher[] = {
-    kAndroidClockAppId, kSettingsAppId, kAndroidFilesAppId,
-    kAndroidCameraAppId};
+    kAndroidClockAppId, kSettingsAppId, kAndroidFilesAppId, kAndroidCameraAppId,
+    kAndroidLegacyCameraAppId};
 
 // Returns true if |event_flags| came from a mouse or touch event.
 bool IsMouseOrTouchEventFromFlags(int event_flags) {
