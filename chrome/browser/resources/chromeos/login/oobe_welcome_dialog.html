@@ -66,41 +66,17 @@
         <div class="layout vertical end-justified" id="titleContainer">
           <h1 id="title">[[i18nDynamic(locale, 'welcomeScreenGreeting')]]</h1>
         </div>
-        <div class="welcome-illustration">
-          <if expr="chromeos and _google_chrome">
-            <video muted hidden oobe_devices="laptop_G"
-                oobe_orientations="portrait,landscape" oobe_types="intro"
-                src="../../../internal/resources/chromeos/animations/oobe-welcome/laptop_G_intro.webm">
-            </video>
-            <video muted loop hidden oobe_devices="laptop_G"
-                oobe_orientations="portrait,landscape" oobe_types="loop"
-                src="../../../internal/resources/chromeos/animations/oobe-welcome/laptop_G_loop.webm">
-            </video>
-            <video muted hidden oobe_devices="laptop"
-                oobe_orientations="portrait,landscape" oobe_types="intro"
-                src="../../../internal/resources/chromeos/animations/oobe-welcome/laptop_intro.webm">
-            </video>
-            <video muted loop hidden oobe_devices="laptop"
-                oobe_orientations="portrait,landscape" oobe_types="loop"
-                src="../../../internal/resources/chromeos/animations/oobe-welcome/laptop_loop.webm">
-            </video>
-            <video muted hidden oobe_devices="tablet_G"
-                oobe_orientations="portrait,landscape" oobe_types="intro"
-                src="../../../internal/resources/chromeos/animations/oobe-welcome/tablet_G_intro.webm">
-            </video>
-            <video muted loop hidden oobe_devices="tablet_G"
-                oobe_orientations="portrait,landscape" oobe_types="loop"
-                src="../../../internal/resources/chromeos/animations/oobe-welcome/tablet_G_loop.webm">
-            </video>
-            <video muted hidden oobe_devices="tablet"
-                oobe_orientations="portrait,landscape" oobe_types="intro"
-                src="../../../internal/resources/chromeos/animations/oobe-welcome/tablet_intro.webm">
-            </video>
-            <video muted loop hidden oobe_devices="tablet"
-                oobe_orientations="portrait,landscape" oobe_types="loop"
-                src="../../../internal/resources/chromeos/animations/oobe-welcome/tablet_loop.webm">
-            </video>
-          </if>
+        <div class="welcome-illustration" hidden="[[isInTabletMode]]">
+          <img srcset="images/welcome_illustration_1x.png 1x,
+                       images/welcome_illustration_2x.png 2x">
+        </div>
+        <div class="welcome-illustration" hidden="[[!isInTabletMode]]">
+          <img hidden="[[!isInPortraitMode]]"
+              srcset="images/welcome_illustration_tablet_mode_portraight_1x.png 1x,
+                      images/welcome_illustration_tablet_mode_portraight_2x.png 2x">
+          <img hidden="[[isInPortraitMode]]"
+              srcset="images/welcome_illustration_tablet_mode_1x.png 1x,
+                      images/welcome_illustration_tablet_mode_2x.png 2x">
         </div>
         <div hidden="[[!debuggingLinkVisible]]">
           <a href="#" on-tap="onDebuggingLinkClicked_">
