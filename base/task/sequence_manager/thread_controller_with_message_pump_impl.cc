@@ -5,7 +5,6 @@
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 
 #include "base/auto_reset.h"
-#include "base/message_loop/message_pump_default.h"
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
 
@@ -14,16 +13,22 @@ namespace sequence_manager {
 namespace internal {
 
 ThreadControllerWithMessagePumpImpl::ThreadControllerWithMessagePumpImpl(
+    std::unique_ptr<MessagePump> message_pump,
     const TickClock* time_source)
     : associated_thread_(AssociatedThreadId::CreateUnbound()),
-      pump_(new MessagePumpDefault()),
+      pump_(std::move(message_pump)),
       time_source_(time_source) {
+  scoped_set_sequence_local_storage_map_for_current_thread_ = std::make_unique<
+      base::internal::ScopedSetSequenceLocalStorageMapForCurrentThread>(
+      &sequence_local_storage_map_);
   RunLoop::RegisterDelegateForCurrentThread(this);
 }
 
 ThreadControllerWithMessagePumpImpl::~ThreadControllerWithMessagePumpImpl() {
   // Destructors of RunLoop::Delegate and ThreadTaskRunnerHandle
   // will do all the clean-up.
+  // ScopedSetSequenceLocalStorageMapForCurrentThread destructor will
+  // de-register the current thread as a sequence.
 }
 
 ThreadControllerWithMessagePumpImpl::MainThreadOnly::MainThreadOnly() = default;
