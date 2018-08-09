@@ -70,7 +70,8 @@ FieldCandidatesMap FormField::ParseFormFields(
   ParseFormFieldsPass(PhoneField::Parse, processed_fields, &field_candidates);
 
   // Address pass.
-  ParseFormFieldsPass(AddressField::Parse, processed_fields, &field_candidates);
+  ParseFormFieldsPass(autofill::AddressField::Parse, processed_fields,
+                      &field_candidates);
 
   // Credit card pass.
   ParseFormFieldsPass(CreditCardField::Parse, processed_fields,
