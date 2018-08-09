@@ -36,6 +36,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/common/content_switches.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_LINUX)
 #include "chromecast/browser/metrics/external_metrics.h"
@@ -243,7 +244,7 @@ CastMetricsServiceClient::CreateUploader(
     ::metrics::MetricsLogUploader::MetricServiceType service_type,
     const ::metrics::MetricsLogUploader::UploadCallback& on_upload_complete) {
   return std::unique_ptr<::metrics::MetricsLogUploader>(
-      new ::metrics::NetMetricsLogUploader(request_context_, server_url,
+      new ::metrics::NetMetricsLogUploader(url_loader_factory_, server_url,
                                            insecure_server_url, mime_type,
                                            service_type, on_upload_complete));
 }
@@ -274,7 +275,7 @@ void CastMetricsServiceClient::EnableMetricsService(bool enabled) {
 
 CastMetricsServiceClient::CastMetricsServiceClient(
     PrefService* pref_service,
-    net::URLRequestContextGetter* request_context)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : pref_service_(pref_service),
       client_info_loaded_(false),
 #if defined(OS_LINUX)
@@ -282,7 +283,7 @@ CastMetricsServiceClient::CastMetricsServiceClient(
       platform_metrics_(nullptr),
 #endif  // defined(OS_LINUX)
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      request_context_(request_context) {
+      url_loader_factory_(url_loader_factory) {
 }
 
 CastMetricsServiceClient::~CastMetricsServiceClient() {

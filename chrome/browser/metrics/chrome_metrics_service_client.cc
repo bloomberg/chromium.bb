@@ -92,6 +92,7 @@
 #include "content/public/browser/notification_service.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -528,7 +529,7 @@ ChromeMetricsServiceClient::CreateUploader(
     metrics::MetricsLogUploader::MetricServiceType service_type,
     const metrics::MetricsLogUploader::UploadCallback& on_upload_complete) {
   return std::make_unique<metrics::NetMetricsLogUploader>(
-      g_browser_process->system_request_context(), server_url,
+      g_browser_process->shared_url_loader_factory(), server_url,
       insecure_server_url, mime_type, service_type, on_upload_complete);
 }
 

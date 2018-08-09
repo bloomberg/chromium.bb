@@ -7,8 +7,14 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/encrypted_messages/encrypted_message.pb.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/reporting_info.pb.h"
 #include "third_party/zlib/google/compression_utils.h"
@@ -18,14 +24,25 @@ namespace metrics {
 
 class NetMetricsLogUploaderTest : public testing::Test {
  public:
-  NetMetricsLogUploaderTest() : on_upload_complete_count_(0) {
+  NetMetricsLogUploaderTest()
+      : on_upload_complete_count_(0),
+        test_shared_url_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)) {
+    test_url_loader_factory_.SetInterceptor(base::BindLambdaForTesting(
+        [&](const network::ResourceRequest& request) {
+          upload_data_ = network::GetUploadData(request);
+          headers_ = request.headers;
+          loop_.Quit();
+        }));
   }
 
   void CreateAndOnUploadCompleteReuseUploader() {
     ReportingInfo reporting_info;
     reporting_info.set_attempt_count(10);
     uploader_.reset(new NetMetricsLogUploader(
-        nullptr, "https://dummy_server", "dummy_mime", MetricsLogUploader::UMA,
+        test_shared_url_loader_factory_, "https://dummy_server", "dummy_mime",
+        MetricsLogUploader::UMA,
         base::Bind(&NetMetricsLogUploaderTest::OnUploadCompleteReuseUploader,
                    base::Unretained(this))));
     uploader_->UploadLog("initial_dummy_data", "initial_dummy_hash",
@@ -35,7 +52,8 @@ class NetMetricsLogUploaderTest : public testing::Test {
   void CreateUploaderAndUploadToSecureURL(const std::string& url) {
     ReportingInfo dummy_reporting_info;
     uploader_.reset(new NetMetricsLogUploader(
-        nullptr, url, "dummy_mime", MetricsLogUploader::UMA,
+        test_shared_url_loader_factory_, url, "dummy_mime",
+        MetricsLogUploader::UMA,
         base::Bind(&NetMetricsLogUploaderTest::DummyOnUploadComplete,
                    base::Unretained(this))));
     uploader_->UploadLog("dummy_data", "dummy_hash", dummy_reporting_info);
@@ -44,8 +62,8 @@ class NetMetricsLogUploaderTest : public testing::Test {
   void CreateUploaderAndUploadToInsecureURL() {
     ReportingInfo dummy_reporting_info;
     uploader_.reset(new NetMetricsLogUploader(
-        nullptr, "http://dummy_insecure_server", "dummy_mime",
-        MetricsLogUploader::UMA,
+        test_shared_url_loader_factory_, "http://dummy_insecure_server",
+        "dummy_mime", MetricsLogUploader::UMA,
         base::Bind(&NetMetricsLogUploaderTest::DummyOnUploadComplete,
                    base::Unretained(this))));
     std::string compressed_message;
@@ -71,20 +89,48 @@ class NetMetricsLogUploaderTest : public testing::Test {
     }
   }
 
+  network::TestURLLoaderFactory::PendingRequest* GetPendingRequest(
+      size_t index) {
+    if (index >= test_url_loader_factory_.pending_requests()->size())
+      return nullptr;
+    auto* request = &(*test_url_loader_factory_.pending_requests())[index];
+    DCHECK(request);
+    return request;
+  }
+
   int on_upload_complete_count() const {
     return on_upload_complete_count_;
   }
 
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return &test_url_loader_factory_;
+  }
+
+  const net::HttpRequestHeaders& last_request_headers() { return headers_; }
+
+  const std::string& last_upload_data() { return upload_data_; }
+
+  void WaitForRequest() { loop_.Run(); }
+
  private:
   std::unique_ptr<NetMetricsLogUploader> uploader_;
   int on_upload_complete_count_;
+
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory>
+      test_shared_url_loader_factory_;
+
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
+  base::RunLoop loop_;
+  std::string upload_data_;
+  net::HttpRequestHeaders headers_;
+
   DISALLOW_COPY_AND_ASSIGN(NetMetricsLogUploaderTest);
 };
 
-void CheckReportingInfoHeader(net::TestURLFetcher* fetcher,
+void CheckReportingInfoHeader(net::HttpRequestHeaders headers,
                               int expected_attempt_count) {
-  net::HttpRequestHeaders headers;
-  fetcher->GetExtraRequestHeaders(&headers);
   std::string reporting_info_base64;
   EXPECT_TRUE(
       headers.GetHeader("X-Chrome-UMA-ReportingInfo", &reporting_info_base64));
@@ -97,18 +143,18 @@ void CheckReportingInfoHeader(net::TestURLFetcher* fetcher,
 }
 
 TEST_F(NetMetricsLogUploaderTest, OnUploadCompleteReuseUploader) {
-  net::TestURLFetcherFactory factory;
   CreateAndOnUploadCompleteReuseUploader();
+  WaitForRequest();
 
   // Mimic the initial fetcher callback.
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  CheckReportingInfoHeader(fetcher, 10);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  CheckReportingInfoHeader(last_request_headers(), 10);
+  test_url_loader_factory()->SimulateResponseWithoutRemovingFromPendingList(
+      GetPendingRequest(0), "");
 
   // Mimic the second fetcher callback.
-  fetcher = factory.GetFetcherByID(0);
-  CheckReportingInfoHeader(fetcher, 20);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  CheckReportingInfoHeader(last_request_headers(), 20);
+  test_url_loader_factory()->SimulateResponseWithoutRemovingFromPendingList(
+      GetPendingRequest(1), "");
 
   EXPECT_EQ(on_upload_complete_count(), 2);
 }
@@ -116,29 +162,26 @@ TEST_F(NetMetricsLogUploaderTest, OnUploadCompleteReuseUploader) {
 // Test that attempting to upload to an HTTP URL results in an encrypted
 // message.
 TEST_F(NetMetricsLogUploaderTest, MessageOverHTTPIsEncrypted) {
-  net::TestURLFetcherFactory factory;
   CreateUploaderAndUploadToInsecureURL();
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  WaitForRequest();
   encrypted_messages::EncryptedMessage message;
-  EXPECT_TRUE(message.ParseFromString(fetcher->upload_data()));
+  EXPECT_TRUE(message.ParseFromString(last_upload_data()));
 }
 
 // Test that attempting to upload to an HTTPS URL results in an unencrypted
 // message.
 TEST_F(NetMetricsLogUploaderTest, MessageOverHTTPSIsNotEncrypted) {
-  net::TestURLFetcherFactory factory;
   CreateUploaderAndUploadToSecureURL("https://dummy_secure_server");
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  EXPECT_EQ(fetcher->upload_data(), "dummy_data");
+  WaitForRequest();
+  EXPECT_EQ(last_upload_data(), "dummy_data");
 }
 
 // Test that attempting to upload to localhost over http results in an
 // unencrypted message.
 TEST_F(NetMetricsLogUploaderTest, MessageOverHTTPLocalhostIsNotEncrypted) {
-  net::TestURLFetcherFactory factory;
   CreateUploaderAndUploadToSecureURL("http://localhost");
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  EXPECT_EQ(fetcher->upload_data(), "dummy_data");
+  WaitForRequest();
+  EXPECT_EQ(last_upload_data(), "dummy_data");
 }
 
 }  // namespace metrics
