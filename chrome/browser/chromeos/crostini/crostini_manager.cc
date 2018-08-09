@@ -532,6 +532,8 @@ void CrostiniManager::MaybeUpgradeCrostini(Profile* profile) {
 void CrostiniManager::MaybeUpgradeCrostiniAfterTerminaCheck(
     bool is_registered) {
   is_cros_termina_registered_ = is_registered;
+  VLOG(1) << "cros-termina is "
+          << (is_registered ? "registered" : "not registered");
   if (!is_cros_termina_registered_) {
     return;
   }
@@ -606,7 +608,9 @@ void CrostiniManager::OnInstallTerminaComponent(
   bool is_successful =
       error == component_updater::CrOSComponentManager::Error::NONE;
 
-  if (!is_successful) {
+  if (is_successful) {
+    is_cros_termina_registered_ = true;
+  } else {
     LOG(ERROR)
         << "Failed to install the cros-termina component with error code: "
         << static_cast<int>(error);
