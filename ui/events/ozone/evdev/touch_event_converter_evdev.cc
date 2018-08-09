@@ -411,7 +411,7 @@ void TouchEventConverterEvdev::ProcessAbs(const input_event& input) {
       events_[current_slot_].major = input.value;
       break;
     case ABS_MT_TOUCH_MINOR:
-      events_[current_slot_].radius_y = input.value * touch_major_scale_ / 2.0f;
+      events_[current_slot_].radius_y = input.value * touch_minor_scale_ / 2.0f;
       break;
     case ABS_MT_POSITION_X:
       events_[current_slot_].x = input.value;
