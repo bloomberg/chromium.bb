@@ -27,9 +27,11 @@ base::Optional<HitTestRegionList> HitTestDataProviderDrawQuad::GetHitTestData(
   for (const auto& render_pass : compositor_frame.render_pass_list) {
     // Skip the render_pass if the transform is not invertible (i.e. it will not
     // be able to receive events).
+    gfx::Transform transform_to_root_target =
+        render_pass->transform_to_root_target;
+    transform_to_root_target.FlattenTo2d();
     gfx::Transform transform_from_root_target;
-    if (!render_pass->transform_to_root_target.GetInverse(
-            &transform_from_root_target)) {
+    if (!transform_to_root_target.GetInverse(&transform_from_root_target)) {
       continue;
     }
 
@@ -49,9 +51,11 @@ base::Optional<HitTestRegionList> HitTestDataProviderDrawQuad::GetHitTestData(
 
         // Skip the quad if the transform is not invertible (i.e. it will not
         // be able to receive events).
+        gfx::Transform quad_to_target_transform =
+            quad->shared_quad_state->quad_to_target_transform;
+        quad_to_target_transform.FlattenTo2d();
         gfx::Transform target_to_quad_transform;
-        if (!quad->shared_quad_state->quad_to_target_transform.GetInverse(
-                &target_to_quad_transform)) {
+        if (!quad_to_target_transform.GetInverse(&target_to_quad_transform)) {
           continue;
         }
 
