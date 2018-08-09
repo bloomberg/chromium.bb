@@ -31,7 +31,6 @@ CGFloat kFontAlpha = .87;
 - (instancetype)initWithReuseIdentifier:(NSString*)reuseIdentifier {
   self = [super initWithReuseIdentifier:reuseIdentifier];
   if (self) {
-    self.contentView.backgroundColor = UIColor.whiteColor;
     UILabel* label = [[UILabel alloc] init];
     label.translatesAutoresizingMaskIntoConstraints = NO;
     label.text =
