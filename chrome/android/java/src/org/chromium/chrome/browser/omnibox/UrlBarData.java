@@ -25,8 +25,9 @@ public class UrlBarData {
     /**
      * The URL schemes that should be displayed complete with path.
      */
-    public static final HashSet<String> UNSUPPORTED_SCHEMES_TO_SPLIT = CollectionUtil.newHashSet(
-            UrlConstants.FILE_SCHEME, UrlConstants.JAVASCRIPT_SCHEME, UrlConstants.DATA_SCHEME);
+    public static final HashSet<String> UNSUPPORTED_SCHEMES_TO_SPLIT =
+            CollectionUtil.newHashSet(UrlConstants.FILE_SCHEME, UrlConstants.JAVASCRIPT_SCHEME,
+                    UrlConstants.DATA_SCHEME, UrlConstants.CONTENT_SCHEME);
     /**
      * URI schemes that ContentView can handle.
      *
