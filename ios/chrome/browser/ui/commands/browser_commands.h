@@ -119,6 +119,9 @@
 // Prepares the browser to display a popup menu.
 - (void)prepareForPopupMenuPresentation:(PopupMenuCommandType)type;
 
+// Shows the consent bump if it is required.
+- (void)showConsentBumpIfNeeded;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COMMANDS_H_

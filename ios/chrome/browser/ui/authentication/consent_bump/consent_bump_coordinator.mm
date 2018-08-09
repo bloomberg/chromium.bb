@@ -5,12 +5,14 @@
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator.h"
 
 #include "base/logging.h"
+#include "components/unified_consent/unified_consent_service.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_mediator.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_personalization_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_view_controller.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_coordinator.h"
+#include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -45,6 +47,13 @@
 @synthesize unifiedConsentCoordinator = _unifiedConsentCoordinator;
 @synthesize personalizationCoordinator = _personalizationCoordinator;
 @synthesize mediator = _mediator;
+
++ (BOOL)shouldShowConsentBumpWithBrowserState:
+    (ios::ChromeBrowserState*)browserState {
+  unified_consent::UnifiedConsentService* consent_service =
+      UnifiedConsentServiceFactory::GetForBrowserState(browserState);
+  return consent_service && consent_service->ShouldShowConsentBump();
+}
 
 #pragma mark - Properties
 
