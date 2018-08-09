@@ -69,6 +69,9 @@ bool DrmDeviceHandle::Initialize(const base::FilePath& dev_path,
       struct drm_set_client_cap cap = {DRM_CLIENT_CAP_ATOMIC, 1};
       has_atomic_capabilities_ =
           !drmIoctl(file_.get(), DRM_IOCTL_SET_CLIENT_CAP, &cap);
+
+      cap = {DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1};
+      drmIoctl(file_.get(), DRM_IOCTL_SET_CLIENT_CAP, &cap);
       break;
     }
 
