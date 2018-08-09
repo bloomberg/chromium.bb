@@ -146,8 +146,6 @@ group("gn_all") {
       "//third_party/cacheinvalidation:cacheinvalidation_unittests",
       "//third_party/pdfium/samples:pdfium_test",
       "//third_party/webrtc/rtc_tools:frame_analyzer",
-      "//tools/battor_agent",
-      "//tools/battor_agent:battor_agent_unittests",
       "//tools/perf/clear_system_cache",
       "//tools/traffic_annotation/auditor:traffic_annotation_auditor",
       "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests",
