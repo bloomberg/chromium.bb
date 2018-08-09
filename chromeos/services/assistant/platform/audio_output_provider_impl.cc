@@ -16,22 +16,22 @@ namespace {
 
 constexpr int kNumberOfBuffersPerSec = 10;
 
-int32_t GetBytesPerFrame(const assistant_client::OutputStreamFormat& format) {
-  int bytes = 0;
+int32_t GetBytesPerSample(const assistant_client::OutputStreamFormat& format) {
   switch (format.encoding) {
     case assistant_client::OutputStreamEncoding::STREAM_PCM_S16:
-      bytes = 2;
-      break;
+      return 2;
     case assistant_client::OutputStreamEncoding::STREAM_PCM_S32:
     case assistant_client::OutputStreamEncoding::STREAM_PCM_F32:
-      bytes = 4;
-      break;
+      return 4;
     default:
-      NOTREACHED();
       break;
   }
-  DCHECK(bytes);
-  return bytes * format.pcm_num_channels;
+  NOTREACHED();
+  return 1;
+}
+
+int32_t GetBytesPerFrame(const assistant_client::OutputStreamFormat& format) {
+  return GetBytesPerSample(format) * format.pcm_num_channels;
 }
 
 int32_t GetBufferSizeInBytesFromBufferFormat(
@@ -73,8 +73,9 @@ void FillAudioFifoWithDataOfBufferFormat(
     const assistant_client::OutputStreamFormat& output_format,
     int num_bytes) {
   int bytes_per_frame = GetBytesPerFrame(output_format);
+  int bytes_per_sample = GetBytesPerSample(output_format);
   int frames = num_bytes / bytes_per_frame;
-  fifo->Push(data.data(), frames, bytes_per_frame);
+  fifo->Push(data.data(), frames, bytes_per_sample);
 }
 
 class AudioOutputImpl : public assistant_client::AudioOutput {
