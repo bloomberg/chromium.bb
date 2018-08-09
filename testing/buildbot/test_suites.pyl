@@ -571,6 +571,13 @@
         'shards': 3,
       },
     },
+    'perfetto_content_browsertests': {
+      'args': [
+        '--enable-features=TracingPerfettoBackend',
+        '--gtest_filter=TracingControllerTest.*',
+      ],
+      'test': 'content_browsertests',
+    },
     'services_unittests': {},
     'shell_dialogs_unittests': {},
     'skia_unittests': {},
