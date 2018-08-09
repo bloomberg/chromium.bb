@@ -10,8 +10,8 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_collapsible_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
-#import "ios/chrome/browser/ui/settings/google_services_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_local_commands.h"
+#import "ios/chrome/browser/ui/settings/google_services_settings_service_delegate.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller_model_delegate.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -32,7 +32,7 @@ constexpr NSInteger kSectionOffset = 1000;
 
 @synthesize presentationDelegate = _presentationDelegate;
 @synthesize modelDelegate = _modelDelegate;
-@synthesize commandHandler = _commandHandler;
+@synthesize serviceDelegate = _serviceDelegate;
 @synthesize localDispatcher = _localDispatcher;
 
 - (instancetype)initWithLayout:(UICollectionViewLayout*)layout
@@ -104,23 +104,23 @@ constexpr NSInteger kSectionOffset = 1000;
       static_cast<GoogleServicesSettingsCommandID>(syncSwitchItem.commandID);
   switch (commandID) {
     case GoogleServicesSettingsCommandIDToggleSyncEverything:
-      [self.commandHandler toggleSyncEverythingWithValue:isOn];
+      [self.serviceDelegate toggleSyncEverythingWithValue:isOn];
       break;
     case GoogleServicesSettingsCommandIDToggleDataTypeSync:
-      [self.commandHandler toggleSyncDataSync:syncSwitchItem.dataType
-                                    withValue:isOn];
+      [self.serviceDelegate toggleSyncDataSync:syncSwitchItem.dataType
+                                     withValue:isOn];
       break;
     case GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService:
-      [self.commandHandler toggleAutocompleteSearchesServiceWithValue:isOn];
+      [self.serviceDelegate toggleAutocompleteSearchesServiceWithValue:isOn];
       break;
     case GoogleServicesSettingsCommandIDTogglePreloadPagesService:
-      [self.commandHandler togglePreloadPagesServiceWithValue:isOn];
+      [self.serviceDelegate togglePreloadPagesServiceWithValue:isOn];
       break;
     case GoogleServicesSettingsCommandIDToggleImproveChromeService:
-      [self.commandHandler toggleImproveChromeServiceWithValue:isOn];
+      [self.serviceDelegate toggleImproveChromeServiceWithValue:isOn];
       break;
     case GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService:
-      [self.commandHandler toggleBetterSearchAndBrowsingServiceWithValue:isOn];
+      [self.serviceDelegate toggleBetterSearchAndBrowsingServiceWithValue:isOn];
       break;
     case GoogleServicesSettingsCommandIDNoOp:
     case GoogleServicesSettingsCommandIDOpenGoogleActivityControlsDialog:

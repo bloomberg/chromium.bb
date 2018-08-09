@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_SETTINGS_COMMAND_HANDLER_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_SETTINGS_COMMAND_HANDLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_SETTINGS_SERVICE_DELEGATE_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_SETTINGS_SERVICE_DELEGATE_H_
 
 // List of Google Services Settings commands.
 typedef NS_ENUM(NSInteger, GoogleServicesSettingsCommandID) {
@@ -34,7 +34,7 @@ typedef NS_ENUM(NSInteger, GoogleServicesSettingsCommandID) {
 };
 
 // Protocol to handle Google services settings commands.
-@protocol GoogleServicesSettingsCommandHandler<NSObject>
+@protocol GoogleServicesSettingsServiceDelegate<NSObject>
 
 // Called when GoogleServicesSettingsCommandIDToggleSyncEverything is triggered.
 - (void)toggleSyncEverythingWithValue:(BOOL)value;
@@ -60,4 +60,4 @@ typedef NS_ENUM(NSInteger, GoogleServicesSettingsCommandID) {
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_SETTINGS_COMMAND_HANDLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_SETTINGS_SERVICE_DELEGATE_H_

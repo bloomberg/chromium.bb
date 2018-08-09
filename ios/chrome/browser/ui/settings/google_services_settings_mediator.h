@@ -7,8 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/settings/google_services_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_consumer.h"
+#import "ios/chrome/browser/ui/settings/google_services_settings_service_delegate.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller_model_delegate.h"
 
@@ -23,7 +23,7 @@ class ProfileSyncService;
 
 // Mediator for the Google services settings.
 @interface GoogleServicesSettingsMediator
-    : NSObject<GoogleServicesSettingsCommandHandler,
+    : NSObject<GoogleServicesSettingsServiceDelegate,
                GoogleServicesSettingsViewControllerModelDelegate>
 
 // View controller.
