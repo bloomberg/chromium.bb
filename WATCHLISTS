@@ -855,6 +855,10 @@
                   'media/cdm/|' \
                   'third_party/widevine/cdm/'
     },
+    'explore_sites': {
+      'filepath': 'chrome/browser/android/explore_sites/|' \
+                  'chrome/android/java/src/org/chromium/chrome/browser/explore_sites/'
+    },
     'extension': {
       'filepath': 'extension',
     },
@@ -2082,6 +2086,10 @@
     'drive': ['tfarina@chromium.org'],
     'drive_resource_metadata': ['hashimoto+watch@chromium.org'],
     'eme': ['eme-reviews@chromium.org'],
+    'explore_sites': ['chili+watch@chromium.org',
+                      'dewittj+watch@chromium.org',
+                      'dimich+watch@chromium.org',
+                      'freedjm+watch@chromium.org'],
     'extension': ['chromium-apps-reviews@chromium.org',
                   'extensions-reviews@chromium.org'],
     'feature_policy': ['loonybear@chromium.org',
