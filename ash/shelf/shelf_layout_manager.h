@@ -212,10 +212,6 @@ class ASH_EXPORT ShelfLayoutManager
   // panel height. The Docked Magnifier appears above the ChromeVox panel.
   void SetDockedMagnifierHeight(int height);
 
-  gfx::Rect keyboard_occluded_bounds() const {
-    return keyboard_occluded_bounds_;
-  }
-
  private:
   class UpdateShelfObserver;
   friend class PanelLayoutManagerTest;

@@ -28,6 +28,7 @@ class TrayContainer : public views::View {
   void ChildVisibilityChanged(View* child) override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
+  gfx::Rect GetAnchorBoundsInScreen() const override;
 
  private:
   void UpdateLayout();

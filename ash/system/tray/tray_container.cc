@@ -9,6 +9,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -44,6 +45,18 @@ void TrayContainer::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.parent == this)
     PreferredSizeChanged();
+}
+
+gfx::Rect TrayContainer::GetAnchorBoundsInScreen() const {
+  if (shelf_->IsHorizontalAlignment()) {
+    // When the virtual keyboard is up, any anchored widgets should anchor to
+    // the virtual keyboard instead because it will cover the shelf.
+    const gfx::Rect occluded_bounds =
+        keyboard::KeyboardController::Get()->GetWorkspaceOccludedBounds();
+    if (!occluded_bounds.IsEmpty())
+      return occluded_bounds;
+  }
+  return GetBoundsInScreen();
 }
 
 void TrayContainer::UpdateLayout() {
