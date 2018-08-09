@@ -40,6 +40,18 @@ PictureInPictureWindowManager* PictureInPictureWindowManager::GetInstance() {
   return base::Singleton<PictureInPictureWindowManager>::get();
 }
 
+void PictureInPictureWindowManager::EnterPictureInPictureWithController(
+    content::PictureInPictureWindowController* pip_window_controller) {
+  // If there was already a controller, close the existing window before
+  // creating the next one.
+  if (pip_window_controller_)
+    CloseWindowInternal();
+
+  pip_window_controller_ = pip_window_controller;
+
+  pip_window_controller_->Show();
+}
+
 gfx::Size PictureInPictureWindowManager::EnterPictureInPicture(
     content::WebContents* web_contents,
     const viz::SurfaceId& surface_id,
@@ -49,9 +61,11 @@ gfx::Size PictureInPictureWindowManager::EnterPictureInPicture(
   if (pip_window_controller_)
     CloseWindowInternal();
 
-  // Create or update |pip_window_controller_| for the current WebContents.
+  // Create or update |pip_window_controller_| for the current WebContents, if
+  // it is a WebContents based PIP.
   if (!pip_window_controller_ ||
-      pip_window_controller_->GetInitiatorWebContents() != web_contents) {
+      (pip_window_controller_->GetInitiatorWebContents() != nullptr &&
+       pip_window_controller_->GetInitiatorWebContents() != web_contents)) {
     CreateWindowInternal(web_contents);
   }
 
@@ -73,7 +87,6 @@ void PictureInPictureWindowManager::CreateWindowInternal(
 }
 
 void PictureInPictureWindowManager::CloseWindowInternal() {
-  DCHECK(contents_observer_);
   DCHECK(pip_window_controller_);
 
   contents_observer_.reset();

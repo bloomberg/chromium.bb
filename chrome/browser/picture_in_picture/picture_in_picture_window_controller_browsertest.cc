@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -19,12 +20,41 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/views/overlay/overlay_window_views.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget_observer.h"
 #endif
+
+using ::testing::_;
+
+namespace {
+
+class MockPictureInPictureWindowController
+    : public content::PictureInPictureWindowController {
+ public:
+  MockPictureInPictureWindowController() = default;
+
+  // PictureInPictureWindowController:
+  MOCK_METHOD0(Show, gfx::Size());
+  MOCK_METHOD1(Close, void(bool));
+  MOCK_METHOD0(OnWindowDestroyed, void());
+  MOCK_METHOD1(ClickCustomControl, void(const std::string&));
+  MOCK_METHOD2(EmbedSurface, void(const viz::SurfaceId&, const gfx::Size&));
+  MOCK_METHOD0(GetWindowForTesting, content::OverlayWindow*());
+  MOCK_METHOD0(UpdateLayerBounds, void());
+  MOCK_METHOD0(IsPlayerActive, bool());
+  MOCK_METHOD0(GetInitiatorWebContents, content::WebContents*());
+  MOCK_METHOD2(UpdatePlaybackState, void(bool, bool));
+  MOCK_METHOD0(TogglePlayPause, bool());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockPictureInPictureWindowController);
+};
+
+}  // namespace
 
 class PictureInPictureWindowControllerBrowserTest
     : public InProcessBrowserTest {
@@ -45,6 +75,10 @@ class PictureInPictureWindowControllerBrowserTest
 
   content::PictureInPictureWindowController* window_controller() {
     return pip_window_controller_;
+  }
+
+  MockPictureInPictureWindowController& mock_controller() {
+    return mock_controller_;
   }
 
   void LoadTabAndEnterPictureInPicture(Browser* browser) {
@@ -95,6 +129,7 @@ class PictureInPictureWindowControllerBrowserTest
 
  private:
   content::PictureInPictureWindowController* pip_window_controller_ = nullptr;
+  MockPictureInPictureWindowController mock_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(PictureInPictureWindowControllerBrowserTest);
 };
@@ -1001,6 +1036,68 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
     EXPECT_FALSE(overlay_window->play_pause_controls_view_for_testing()
                      ->toggled_for_testing());
   }
+}
+
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       EnterUsingControllerShowsWindow) {
+  auto* pip_window_manager = PictureInPictureWindowManager::GetInstance();
+  ASSERT_NE(nullptr, pip_window_manager);
+
+  // Show the non-WebContents based Picture-in-Picture window controller.
+  EXPECT_CALL(mock_controller(), Show());
+  pip_window_manager->EnterPictureInPictureWithController(&mock_controller());
+}
+
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       EnterUsingWebContentsThenUsingController) {
+  // Enter using WebContents.
+  LoadTabAndEnterPictureInPicture(browser());
+
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+  ASSERT_NE(nullptr, overlay_window);
+  EXPECT_TRUE(overlay_window->IsVisible());
+
+  auto* pip_window_manager = PictureInPictureWindowManager::GetInstance();
+  ASSERT_NE(nullptr, pip_window_manager);
+
+  // The new Picture-in-Picture window should be shown.
+  EXPECT_CALL(mock_controller(), Show());
+  pip_window_manager->EnterPictureInPictureWithController(&mock_controller());
+
+  // WebContents sourced Picture-in-Picture should stop.
+  bool in_picture_in_picture = false;
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
+  EXPECT_FALSE(in_picture_in_picture);
+
+  // TODO(edcourtney): When the renderer process is destroyed, it calls into
+  // MediaWebContentsObserver::ExitPictureInPictureInternal which Closes the
+  // current PIP. However, this may not be a WebContents sourced PIP, so this
+  // close can be spurious.
+  EXPECT_CALL(mock_controller(), Close(_));
+}
+
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       EnterUsingControllerThenEnterUsingWebContents) {
+  auto* pip_window_manager = PictureInPictureWindowManager::GetInstance();
+  ASSERT_NE(nullptr, pip_window_manager);
+
+  // Show the non-WebContents based Picture-in-Picture window controller.
+  EXPECT_CALL(mock_controller(), Show());
+  pip_window_manager->EnterPictureInPictureWithController(&mock_controller());
+
+  // Now show the WebContents based Picture-in-Picture window controller.
+  // This should close the existing window and show the new one.
+  EXPECT_CALL(mock_controller(), Close(_));
+  LoadTabAndEnterPictureInPicture(browser());
+
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+  ASSERT_TRUE(overlay_window);
+  EXPECT_TRUE(overlay_window->IsVisible());
 }
 
 #endif  // !defined(OS_ANDROID)
