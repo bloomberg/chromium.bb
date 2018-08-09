@@ -240,15 +240,16 @@ std::string GetCookiesTreeModelInfo(const CookieTreeNode* root) {
 
 class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
  public:
-  BrowsingDataRemoverBrowserTest() {}
-
-  void SetUpOnMainThread() override {
+  BrowsingDataRemoverBrowserTest() {
     feature_list_.InitWithFeatures(
         {browsing_data::features::kRemoveNavigationHistory,
          // Ensure that MojoSessionStorage is enabled because the old
          // SessionStorage implementation causes flaky tests.
          features::kMojoSessionStorage},
         {});
+  }
+
+  void SetUpOnMainThread() override {
     base::FilePath path;
     base::PathService::Get(content::DIR_TEST_DATA, &path);
     host_resolver()->AddRule(kExampleHost, "127.0.0.1");
