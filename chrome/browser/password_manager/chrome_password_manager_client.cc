@@ -155,6 +155,19 @@ void ReportMetrics(bool password_manager_enabled,
           profile->GetPrefs()));
 }
 
+#if !defined(OS_ANDROID)
+// Adds |observer| to the input observers of |widget_host|.
+void AddToWidgetInputEventObservers(
+    content::RenderWidgetHost* widget_host,
+    content::RenderWidgetHost::InputEventObserver* observer) {
+  // Since Widget API doesn't allow to check whether the observer is already
+  // added, the observer is removed and added again, to ensure that it is added
+  // only once.
+  widget_host->RemoveInputEventObserver(observer);
+  widget_host->AddInputEventObserver(observer);
+}
+#endif
+
 }  // namespace
 
 // static
@@ -550,13 +563,8 @@ void ChromePasswordManagerClient::DidFinishNavigation(
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if !defined(OS_ANDROID)
   password_reuse_detection_manager_.DidNavigateMainFrame(GetMainFrameURL());
-  // After some navigations RenderViewHost persists and just adding the observer
-  // will cause multiple call of OnInputEvent. Since Widget API doesn't allow to
-  // check whether the observer is already added, the observer is removed and
-  // added again, to ensure that it is added only once.
-  web_contents()->GetRenderViewHost()->GetWidget()->RemoveInputEventObserver(
-      this);
-  web_contents()->GetRenderViewHost()->GetWidget()->AddInputEventObserver(this);
+  AddToWidgetInputEventObservers(
+      web_contents()->GetRenderViewHost()->GetWidget(), this);
 #else   // defined(OS_ANDROID)
   PasswordAccessoryController* accessory =
       PasswordAccessoryController::FromWebContents(web_contents());
@@ -564,6 +572,18 @@ void ChromePasswordManagerClient::DidFinishNavigation(
     accessory->DidNavigateMainFrame();
 #endif  // defined(OS_ANDROID)
 }
+
+#if !defined(OS_ANDROID)
+void ChromePasswordManagerClient::RenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
+  // TODO(drubery): We should handle input events on subframes separately, so
+  // that we can accurately report that the password was reused on a subframe.
+  // Currently any password reuse for this WebContents will report password
+  // reuse on the main frame URL.
+  AddToWidgetInputEventObservers(
+      render_frame_host->GetView()->GetRenderWidgetHost(), this);
+}
+#endif
 
 #if !defined(OS_ANDROID)
 void ChromePasswordManagerClient::OnInputEvent(
