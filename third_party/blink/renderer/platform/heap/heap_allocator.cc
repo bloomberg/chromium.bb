@@ -40,8 +40,10 @@ void HeapAllocator::FreeInlineVectorBacking(void* address) {
   BackingFree(address);
 }
 
-void HeapAllocator::FreeHashTableBacking(void* address, bool is_weak_table) {
-  if (!ThreadState::Current()->IsMarkingInProgress() || !is_weak_table)
+void HeapAllocator::FreeHashTableBacking(void* address) {
+  // When incremental marking is enabled weak callbacks may have been
+  // registered.
+  if (!ThreadState::Current()->IsMarkingInProgress())
     BackingFree(address);
 }
 

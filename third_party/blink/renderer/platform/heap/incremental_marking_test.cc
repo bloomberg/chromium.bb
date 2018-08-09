@@ -1695,6 +1695,28 @@ TEST(IncrementalMarkingTest, WeakCallbackDoesNotReviveDeletedValue) {
   CHECK_EQ(1u, count);
 }
 
+TEST(IncrementalMarkingTest, NoBackingFreeDuringIncrementalMarking) {
+  // Regression test: https://crbug.com/870306
+  // Only reproduces in ASAN configurations.
+  using WeakStore = HeapHashCountedSet<std::pair<WeakMember<Object>, size_t>>;
+
+  Persistent<WeakStore> persistent(new WeakStore);
+  // Prefill the collection to grow backing store. A new backing store allocaton
+  // would trigger the write barrier, mitigating the bug where a backing store
+  // is promptly freed.
+  for (size_t i = 0; i < 8; i++) {
+    persistent->insert({Object::Create(), i});
+  }
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  driver.Start();
+  persistent->insert({Object::Create(), 8});
+  // Is not allowed to free the backing store as the previous insert may have
+  // registered a slot.
+  persistent->clear();
+  driver.FinishSteps();
+  driver.FinishGC();
+}
+
 }  // namespace incremental_marking_test
 }  // namespace blink
 
