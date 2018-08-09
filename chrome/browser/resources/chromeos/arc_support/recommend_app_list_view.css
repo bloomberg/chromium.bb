@@ -17,6 +17,7 @@ body {
   max-height: 300px;
   overflow: auto;
   padding: 12px 64px 0 64px;
+  width: 640px;
 }
 
 .shadow {

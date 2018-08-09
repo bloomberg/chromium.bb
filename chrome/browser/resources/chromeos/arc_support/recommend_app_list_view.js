@@ -75,18 +75,27 @@ function getSelectedPackages() {
   return selectedPackages;
 }
 
-// Add the scrolling shadow effect.
-(function() {
-const shadowThreshold = 5;
-var doc = document;
-doc.getElementById('recommend-apps-container').onscroll = function() {
+function toggleScrollShadow(container) {
+  const shadowThreshold = 5;
+  var doc = document;
   doc.getElementById('scroll-top')
-      .classList[this.scrollTop > shadowThreshold ? 'add' : 'remove']('shadow');
+      .classList.toggle('shadow', container.scrollTop > shadowThreshold);
   doc.getElementById('scroll-bottom')
-      .classList
-          [this.scrollHeight - this.clientHeight - this.scrollTop <
-                   shadowThreshold ?
-               'remove' :
-               'add']('shadow');
-};
-})();
+      .classList.toggle(
+          'shadow',
+          container.scrollHeight - container.clientHeight -
+                  container.scrollTop >=
+              shadowThreshold);
+}
+
+// Add the scroll shadow effect. This contains two parts. First initialize the
+// effect after all the contents have been generated. Then attach it to the
+// onscroll event.
+function addScrollShadowEffect() {
+  var doc = document;
+  var container = doc.getElementById('recommend-apps-container');
+  toggleScrollShadow(container);
+  container.onscroll = function() {
+    toggleScrollShadow(this);
+  };
+}
