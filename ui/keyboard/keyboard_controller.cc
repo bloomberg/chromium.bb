@@ -780,6 +780,9 @@ void KeyboardController::ReportLingeringState() {
 }
 
 gfx::Rect KeyboardController::GetWorkspaceOccludedBounds() const {
+  if (!enabled())
+    return gfx::Rect();
+
   const gfx::Rect visual_bounds_in_window(visual_bounds_in_screen_.size());
   const gfx::Rect occluded_bounds_in_window =
       container_behavior_->GetOccludedBounds(visual_bounds_in_window);
