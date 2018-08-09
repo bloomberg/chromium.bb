@@ -46,7 +46,7 @@ bool DidReserveQuota(bool accepted,
 class MockQuotaManagerProxy : public storage::QuotaManagerProxy {
  public:
   MockQuotaManagerProxy()
-      : QuotaManagerProxy(NULL, NULL),
+      : QuotaManagerProxy(nullptr, nullptr),
         storage_modified_count_(0),
         usage_(0),
         quota_(0) {}
@@ -101,7 +101,7 @@ class QuotaBackendImplTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     in_memory_env_ = leveldb_chrome::NewMemEnv("quota");
     file_util_.reset(ObfuscatedFileUtil::CreateForTesting(
-        NULL, data_dir_.GetPath(), in_memory_env_.get()));
+        nullptr, data_dir_.GetPath(), in_memory_env_.get()));
     backend_.reset(new QuotaBackendImpl(file_task_runner(), file_util_.get(),
                                         &file_system_usage_cache_,
                                         quota_manager_proxy_.get()));
@@ -109,7 +109,7 @@ class QuotaBackendImplTest : public testing::Test {
 
   void TearDown() override {
     backend_.reset();
-    quota_manager_proxy_ = NULL;
+    quota_manager_proxy_ = nullptr;
     file_util_.reset();
     base::RunLoop().RunUntilIdle();
   }
@@ -119,7 +119,7 @@ class QuotaBackendImplTest : public testing::Test {
                                   storage::FileSystemType type) {
     ASSERT_TRUE(
         file_util_->InitOriginDatabase(origin.GetURL(), true /* create */));
-    ASSERT_TRUE(file_util_->origin_database_ != NULL);
+    ASSERT_TRUE(file_util_->origin_database_ != nullptr);
 
     std::string type_string =
         SandboxFileSystemBackendDelegate::GetTypeString(type);

@@ -140,7 +140,7 @@ class UsageTrackerTest : public testing::Test {
         usage_tracker_(GetUsageTrackerList(),
                        StorageType::kTemporary,
                        storage_policy_.get(),
-                       NULL) {}
+                       nullptr) {}
 
   ~UsageTrackerTest() override = default;
 

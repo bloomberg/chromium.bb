@@ -53,7 +53,7 @@ class MockQuotaManagerTest : public testing::Test {
 
   void TearDown() override {
     // Make sure the quota manager cleans up correctly.
-    manager_ = NULL;
+    manager_ = nullptr;
     base::RunLoop().RunUntilIdle();
   }
 

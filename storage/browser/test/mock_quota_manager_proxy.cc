@@ -16,7 +16,7 @@ MockQuotaManagerProxy::MockQuotaManagerProxy(
       storage_modified_count_(0),
       last_notified_type_(blink::mojom::StorageType::kUnknown),
       last_notified_delta_(0),
-      registered_client_(NULL) {}
+      registered_client_(nullptr) {}
 
 void MockQuotaManagerProxy::RegisterClient(QuotaClient* client) {
   DCHECK(!registered_client_);
@@ -28,7 +28,7 @@ void MockQuotaManagerProxy::SimulateQuotaManagerDestroyed() {
     // We cannot call this in the destructor as the client (indirectly)
     // holds a refptr of the proxy.
     registered_client_->OnQuotaManagerDestroyed();
-    registered_client_ = NULL;
+    registered_client_ = nullptr;
   }
 }
 

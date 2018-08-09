@@ -29,14 +29,14 @@ class TransientFileUtilTest : public testing::Test {
 
   void SetUp() override {
     file_system_context_ = CreateFileSystemContextForTesting(
-        NULL, base::FilePath(FILE_PATH_LITERAL("dummy")));
+        nullptr, base::FilePath(FILE_PATH_LITERAL("dummy")));
     transient_file_util_.reset(new storage::TransientFileUtil);
 
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
   }
 
   void TearDown() override {
-    file_system_context_ = NULL;
+    file_system_context_ = nullptr;
     base::RunLoop().RunUntilIdle();
   }
 

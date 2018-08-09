@@ -53,12 +53,12 @@ void SandboxFileSystemBackend::Initialize(FileSystemContext* context) {
 
   // Set quota observers.
   delegate_->RegisterQuotaUpdateObserver(storage::kFileSystemTypeTemporary);
-  delegate_->AddFileAccessObserver(
-      storage::kFileSystemTypeTemporary, delegate_->quota_observer(), NULL);
+  delegate_->AddFileAccessObserver(storage::kFileSystemTypeTemporary,
+                                   delegate_->quota_observer(), nullptr);
 
   delegate_->RegisterQuotaUpdateObserver(storage::kFileSystemTypePersistent);
-  delegate_->AddFileAccessObserver(
-      storage::kFileSystemTypePersistent, delegate_->quota_observer(), NULL);
+  delegate_->AddFileAccessObserver(storage::kFileSystemTypePersistent,
+                                   delegate_->quota_observer(), nullptr);
 }
 
 void SandboxFileSystemBackend::ResolveURL(const FileSystemURL& url,
@@ -87,7 +87,7 @@ AsyncFileUtil* SandboxFileSystemBackend::GetAsyncFileUtil(
 
 WatcherManager* SandboxFileSystemBackend::GetWatcherManager(
     FileSystemType type) {
-  return NULL;
+  return nullptr;
 }
 
 CopyOrMoveFileValidatorFactory*
@@ -96,7 +96,7 @@ SandboxFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
     base::File::Error* error_code) {
   DCHECK(error_code);
   *error_code = base::File::FILE_OK;
-  return NULL;
+  return nullptr;
 }
 
 FileSystemOperation* SandboxFileSystemBackend::CreateFileSystemOperation(
@@ -110,7 +110,7 @@ FileSystemOperation* SandboxFileSystemBackend::CreateFileSystemOperation(
   std::unique_ptr<FileSystemOperationContext> operation_context =
       delegate_->CreateFileSystemOperationContext(url, context, error_code);
   if (!operation_context)
-    return NULL;
+    return nullptr;
 
   SpecialStoragePolicy* policy = delegate_->special_storage_policy();
   if (policy && policy->IsStorageUnlimited(url.origin()))

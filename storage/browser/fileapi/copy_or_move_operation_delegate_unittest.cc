@@ -186,10 +186,10 @@ class CopyOrMoveOperationTestHelper {
             base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
 
   ~CopyOrMoveOperationTestHelper() {
-    file_system_context_ = NULL;
+    file_system_context_ = nullptr;
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
-    quota_manager_ = NULL;
-    quota_manager_proxy_ = NULL;
+    quota_manager_ = nullptr;
+    quota_manager_proxy_ = nullptr;
     scoped_task_environment_.RunUntilIdle();
   }
 
@@ -208,7 +208,7 @@ class CopyOrMoveOperationTestHelper {
     quota_manager_ =
         new MockQuotaManager(false /* is_incognito */, base_dir,
                              base::ThreadTaskRunnerHandle::Get().get(),
-                             NULL /* special storage policy */);
+                             nullptr /* special storage policy */);
     quota_manager_proxy_ = new MockQuotaManagerProxy(
         quota_manager_.get(), base::ThreadTaskRunnerHandle::Get().get());
     file_system_context_ =
@@ -252,13 +252,13 @@ class CopyOrMoveOperationTestHelper {
 
   int64_t GetSourceUsage() {
     int64_t usage = 0;
-    GetUsageAndQuota(src_type_, &usage, NULL);
+    GetUsageAndQuota(src_type_, &usage, nullptr);
     return usage;
   }
 
   int64_t GetDestUsage() {
     int64_t usage = 0;
-    GetUsageAndQuota(dest_type_, &usage, NULL);
+    GetUsageAndQuota(dest_type_, &usage, nullptr);
     return usage;
   }
 

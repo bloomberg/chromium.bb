@@ -73,7 +73,7 @@ class FileSystemOperationImplWriteTest : public testing::Test {
     quota_manager_ =
         new MockQuotaManager(false /* is_incognito */, dir_.GetPath(),
                              base::ThreadTaskRunnerHandle::Get().get(),
-                             NULL /* special storage policy */);
+                             nullptr /* special storage policy */);
     virtual_path_ = base::FilePath(FILE_PATH_LITERAL("temporary file"));
 
     file_system_context_ = CreateFileSystemContextForTesting(
@@ -90,8 +90,8 @@ class FileSystemOperationImplWriteTest : public testing::Test {
   }
 
   void TearDown() override {
-    quota_manager_ = NULL;
-    file_system_context_ = NULL;
+    quota_manager_ = nullptr;
+    file_system_context_ = nullptr;
     base::RunLoop().RunUntilIdle();
   }
 

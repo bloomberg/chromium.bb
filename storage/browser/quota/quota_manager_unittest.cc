@@ -98,7 +98,7 @@ class QuotaManagerTest : public testing::Test {
 
   void TearDown() override {
     // Make sure the quota manager cleans up correctly.
-    quota_manager_ = NULL;
+    quota_manager_ = nullptr;
     scoped_task_environment_.RunUntilIdle();
   }
 
@@ -288,7 +288,7 @@ class QuotaManagerTest : public testing::Test {
   }
 
   void GetCachedOrigins(StorageType type, std::set<GURL>* origins) {
-    ASSERT_TRUE(origins != NULL);
+    ASSERT_TRUE(origins != nullptr);
     origins->clear();
     quota_manager_->GetCachedOrigins(type, origins);
   }
@@ -611,7 +611,7 @@ TEST_F(QuotaManagerTest, GetUsage_NoClient) {
 }
 
 TEST_F(QuotaManagerTest, GetUsage_EmptyClient) {
-  RegisterClient(CreateClient(NULL, 0, QuotaClient::kFileSystem));
+  RegisterClient(CreateClient(nullptr, 0, QuotaClient::kFileSystem));
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
@@ -983,7 +983,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_NukeManager) {
   DeleteOriginData(GURL("http://bar.com/"), kTemp, kAllClients);
 
   // Nuke before waiting for callbacks.
-  set_quota_manager(NULL);
+  set_quota_manager(nullptr);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kErrorAbort, status());
 }
@@ -1155,7 +1155,7 @@ TEST_F(QuotaManagerTest, OriginInUse) {
 }
 
 TEST_F(QuotaManagerTest, GetAndSetPerststentHostQuota) {
-  RegisterClient(CreateClient(NULL, 0, QuotaClient::kFileSystem));
+  RegisterClient(CreateClient(nullptr, 0, QuotaClient::kFileSystem));
 
   GetPersistentHostQuota("foo.com");
   scoped_task_environment_.RunUntilIdle();
@@ -1182,7 +1182,7 @@ TEST_F(QuotaManagerTest, GetAndSetPerststentHostQuota) {
 }
 
 TEST_F(QuotaManagerTest, GetAndSetPersistentUsageAndQuota) {
-  RegisterClient(CreateClient(NULL, 0, QuotaClient::kFileSystem));
+  RegisterClient(CreateClient(nullptr, 0, QuotaClient::kFileSystem));
 
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kPerm);
   scoped_task_environment_.RunUntilIdle();
@@ -1212,7 +1212,7 @@ TEST_F(QuotaManagerTest, GetAndSetPersistentUsageAndQuota) {
 }
 
 TEST_F(QuotaManagerTest, GetSyncableQuota) {
-  RegisterClient(CreateClient(NULL, 0, QuotaClient::kFileSystem));
+  RegisterClient(CreateClient(nullptr, 0, QuotaClient::kFileSystem));
 
   // Pre-condition check: available disk space (for testing) is less than
   // the default quota for syncable storage.
@@ -1302,7 +1302,7 @@ TEST_F(QuotaManagerTest, GetPersistentUsageAndQuota_NukeManager) {
   RunAdditionalUsageAndQuotaTask(GURL("http://bar.com/"), kPerm);
 
   // Nuke before waiting for callbacks.
-  set_quota_manager(NULL);
+  set_quota_manager(nullptr);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kErrorAbort, status());
 }

@@ -47,7 +47,7 @@ ScopedFile TransientFileUtil::CreateSnapshotFile(
       ScopedFile::DELETE_ON_SCOPE_OUT,
       context->task_runner());
   scoped_file.AddScopeOutCallback(
-      base::BindOnce(&RevokeFileSystem, url.filesystem_id()), NULL);
+      base::BindOnce(&RevokeFileSystem, url.filesystem_id()), nullptr);
 
   return scoped_file;
 }

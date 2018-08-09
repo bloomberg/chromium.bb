@@ -479,7 +479,7 @@ const UpdateObserverList* SandboxFileSystemBackendDelegate::GetUpdateObservers(
   std::map<FileSystemType, UpdateObserverList>::const_iterator iter =
       update_observers_.find(type);
   if (iter == update_observers_.end())
-    return NULL;
+    return nullptr;
   return &iter->second;
 }
 
@@ -488,7 +488,7 @@ const ChangeObserverList* SandboxFileSystemBackendDelegate::GetChangeObservers(
   std::map<FileSystemType, ChangeObserverList>::const_iterator iter =
       change_observers_.find(type);
   if (iter == change_observers_.end())
-    return NULL;
+    return nullptr;
   return &iter->second;
 }
 
@@ -497,7 +497,7 @@ const AccessObserverList* SandboxFileSystemBackendDelegate::GetAccessObservers(
   std::map<FileSystemType, AccessObserverList>::const_iterator iter =
       access_observers_.find(type);
   if (iter == access_observers_.end())
-    return NULL;
+    return nullptr;
   return &iter->second;
 }
 
@@ -704,12 +704,9 @@ ObfuscatedFileUtil* ObfuscatedFileUtil::CreateForTesting(
     storage::SpecialStoragePolicy* special_storage_policy,
     const base::FilePath& file_system_directory,
     leveldb::Env* env_override) {
-  return new ObfuscatedFileUtil(special_storage_policy,
-                                file_system_directory,
-                                env_override,
-                                base::Bind(&GetTypeStringForURL),
-                                GetKnownTypeStrings(),
-                                NULL);
+  return new ObfuscatedFileUtil(special_storage_policy, file_system_directory,
+                                env_override, base::Bind(&GetTypeStringForURL),
+                                GetKnownTypeStrings(), nullptr);
 }
 
 }  // namespace storage

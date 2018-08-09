@@ -38,7 +38,7 @@ const char kEvictionInfoTable[] = "EvictionInfoTable";
 const char kIsOriginTableBootstrapped[] = "IsOriginTableBootstrapped";
 
 bool VerifyValidQuotaConfig(const char* key) {
-  return (key != NULL &&
+  return (key != nullptr &&
           (!strcmp(key, QuotaDatabase::kDesiredAvailableSpaceKey) ||
            !strcmp(key, QuotaDatabase::kTemporaryQuotaOverrideKey)));
 }

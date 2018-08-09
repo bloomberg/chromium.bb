@@ -72,7 +72,7 @@ scoped_refptr<ShareableFileReference> ShareableFileReference::Get(
     const base::FilePath& path) {
   ShareableFileMap::iterator found = g_file_map.Get().Find(path);
   ShareableFileReference* reference =
-      (found == g_file_map.Get().End()) ? NULL : found->second;
+      (found == g_file_map.Get().End()) ? nullptr : found->second;
   return scoped_refptr<ShareableFileReference>(reference);
 }
 
@@ -120,12 +120,12 @@ void ShareableFileReference::AddFinalReleaseCallback(
 #if DCHECK_IS_ON()
   g_file_map.Get().AssertCalledOnValidSequence();
 #endif  // DCHECK_IS_ON()
-  scoped_file_.AddScopeOutCallback(std::move(callback), NULL);
+  scoped_file_.AddScopeOutCallback(std::move(callback), nullptr);
 }
 
 ShareableFileReference::ShareableFileReference(ScopedFile scoped_file)
     : scoped_file_(std::move(scoped_file)) {
-  DCHECK(g_file_map.Get().Find(path())->second == NULL);
+  DCHECK(g_file_map.Get().Find(path())->second == nullptr);
 }
 
 ShareableFileReference::~ShareableFileReference() {

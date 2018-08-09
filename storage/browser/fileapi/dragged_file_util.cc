@@ -69,7 +69,8 @@ base::File::Error DraggedFileUtil::GetFileInfo(
   if (url.path().empty()) {
     // The root directory case.
     // For now we leave three time fields (modified/accessed/creation time)
-    // NULL as it is not really clear what to be set for this virtual directory.
+    // nullptr as it is not really clear what to be set for this virtual
+    // directory.
     // TODO(kinuko): Maybe we want to set the time when this filesystem is
     // created (i.e. when the files/directories are dropped).
     file_info->is_directory = true;

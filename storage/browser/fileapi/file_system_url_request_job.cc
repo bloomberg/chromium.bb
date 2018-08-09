@@ -86,7 +86,7 @@ int FileSystemURLRequestJob::ReadRawData(net::IOBuffer* dest, int dest_size) {
   DCHECK_NE(dest_size, 0);
   DCHECK_GE(remaining_bytes_, 0);
 
-  if (reader_.get() == NULL)
+  if (reader_.get() == nullptr)
     return net::ERR_FAILED;
 
   if (remaining_bytes_ < dest_size)

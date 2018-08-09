@@ -110,7 +110,7 @@ class DraggedFileUtilTest : public testing::Test {
     SimulateDropFiles();
 
     file_system_context_ = CreateFileSystemContextForTesting(
-        NULL /* quota_manager */, partition_dir_.GetPath());
+        nullptr /* quota_manager */, partition_dir_.GetPath());
 
     isolated_context()->AddReference(filesystem_id_);
   }
@@ -270,7 +270,7 @@ class DraggedFileUtilTest : public testing::Test {
         base::FilePath root = root_path().Append(
             kRootPaths[(root_path_index++) % arraysize(kRootPaths)]);
         toplevel_root_map_[toplevel] = root;
-        toplevels.AddPath(root.Append(path), NULL);
+        toplevels.AddPath(root.Append(path), nullptr);
       }
 
       SetUpOneFileSystemTestCase(toplevel_root_map_[toplevel], test_case);

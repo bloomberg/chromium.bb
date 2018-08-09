@@ -59,7 +59,7 @@ class STORAGE_EXPORT QuotaManagerProxy
                                 UsageAndQuotaCallback callback);
 
   // This method may only be called on the IO thread.
-  // It may return NULL if the manager has already been deleted.
+  // It may return nullptr if the manager has already been deleted.
   QuotaManager* quota_manager() const;
 
  protected:

@@ -50,8 +50,8 @@ class PluginPrivateFileSystemBackendTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    context_ = CreateFileSystemContextForTesting(NULL /* quota_manager_proxy */,
-                                                 data_dir_.GetPath());
+    context_ = CreateFileSystemContextForTesting(
+        nullptr /* quota_manager_proxy */, data_dir_.GetPath());
   }
 
   FileSystemURL CreateURL(const GURL& root_url, const std::string& relative) {
@@ -222,8 +222,8 @@ TEST_F(PluginPrivateFileSystemBackendTest, DeleteOriginDirectory) {
       context_.get(), file2, AsyncFileTestHelper::kDontCheckSize));
 
   // Delete data for kOrigin1.
-  error = backend()->DeleteOriginDataOnFileTaskRunner(
-      context_.get(), NULL, kOrigin1, kType);
+  error = backend()->DeleteOriginDataOnFileTaskRunner(context_.get(), nullptr,
+                                                      kOrigin1, kType);
   EXPECT_EQ(base::File::FILE_OK, error);
 
   // Confirm 'foo' in kOrigin1 is deleted.

@@ -377,7 +377,7 @@ FileSystemOperationImpl::FileSystemOperationImpl(
     std::unique_ptr<FileSystemOperationContext> operation_context)
     : file_system_context_(file_system_context),
       operation_context_(std::move(operation_context)),
-      async_file_util_(NULL),
+      async_file_util_(nullptr),
       pending_operation_(kOperationNone),
       weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();

@@ -31,19 +31,17 @@ namespace content {
 SandboxFileSystemTestHelper::SandboxFileSystemTestHelper(
     const GURL& origin,
     storage::FileSystemType type)
-    : origin_(origin), type_(type), file_util_(NULL) {
-}
+    : origin_(origin), type_(type), file_util_(nullptr) {}
 
 SandboxFileSystemTestHelper::SandboxFileSystemTestHelper()
     : origin_(GURL("http://foo.com")),
       type_(storage::kFileSystemTypeTemporary),
-      file_util_(NULL) {
-}
+      file_util_(nullptr) {}
 
 SandboxFileSystemTestHelper::~SandboxFileSystemTestHelper() = default;
 
 void SandboxFileSystemTestHelper::SetUp(const base::FilePath& base_dir) {
-  SetUp(base_dir, NULL);
+  SetUp(base_dir, nullptr);
 }
 
 void SandboxFileSystemTestHelper::SetUp(
@@ -63,7 +61,7 @@ void SandboxFileSystemTestHelper::SetUp(
 }
 
 void SandboxFileSystemTestHelper::TearDown() {
-  file_system_context_ = NULL;
+  file_system_context_ = nullptr;
   base::RunLoop().RunUntilIdle();
 }
 
@@ -132,13 +130,13 @@ SandboxFileSystemTestHelper::NewOperationContext() {
 void SandboxFileSystemTestHelper::AddFileChangeObserver(
     storage::FileChangeObserver* observer) {
   file_system_context_->sandbox_delegate()->AddFileChangeObserver(
-      type_, observer, NULL);
+      type_, observer, nullptr);
 }
 
 void SandboxFileSystemTestHelper::AddFileUpdateObserver(
     storage::FileUpdateObserver* observer) {
   file_system_context_->sandbox_delegate()->AddFileUpdateObserver(
-      type_, observer, NULL);
+      type_, observer, nullptr);
 }
 
 storage::FileSystemUsageCache* SandboxFileSystemTestHelper::usage_cache() {

@@ -133,7 +133,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
 
     special_storage_policy_ = new MockSpecialStoragePolicy;
     file_system_context_ =
-        CreateFileSystemContextForTesting(NULL, temp_dir_.GetPath());
+        CreateFileSystemContextForTesting(nullptr, temp_dir_.GetPath());
 
     file_system_context_->OpenFileSystem(
         GURL("http://remote/"), storage::kFileSystemTypeTemporary,
@@ -145,8 +145,8 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
 
   void TearDown() override {
     // NOTE: order matters, request must die before delegate
-    request_.reset(NULL);
-    delegate_.reset(NULL);
+    request_.reset(nullptr);
+    delegate_.reset(nullptr);
   }
 
   void SetUpAutoMountContext(base::FilePath* mnt_point) {
@@ -162,7 +162,8 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     handlers.push_back(base::Bind(&TestAutoMountForURLRequest));
 
     file_system_context_ = CreateFileSystemContextWithAutoMountersForTesting(
-        NULL, std::move(additional_providers), handlers, temp_dir_.GetPath());
+        nullptr, std::move(additional_providers), handlers,
+        temp_dir_.GetPath());
   }
 
   void OnOpenFileSystem(const GURL& root_url,
@@ -225,8 +226,9 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   void EnsureFileExists(const base::StringPiece file_name) {
     base::FilePath path = base::FilePath().AppendASCII(file_name);
     std::unique_ptr<FileSystemOperationContext> context(NewOperationContext());
-    ASSERT_EQ(base::File::FILE_OK, file_util()->EnsureFileExists(
-        context.get(), CreateURL(path), NULL));
+    ASSERT_EQ(
+        base::File::FILE_OK,
+        file_util()->EnsureFileExists(context.get(), CreateURL(path), nullptr));
   }
 
   void TruncateFile(const base::StringPiece file_name, int64_t length) {
@@ -375,7 +377,7 @@ TEST_F(FileSystemDirURLRequestJobTest, Incognito) {
   CreateDirectory("foo");
 
   scoped_refptr<FileSystemContext> file_system_context =
-      CreateIncognitoFileSystemContextForTesting(NULL, temp_dir_.GetPath());
+      CreateIncognitoFileSystemContextForTesting(nullptr, temp_dir_.GetPath());
 
   TestRequestWithContext(CreateFileSystemURL("/"),
                          file_system_context.get());

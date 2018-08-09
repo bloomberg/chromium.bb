@@ -1138,7 +1138,7 @@ void QuotaManager::RemoveStorageObserver(StorageObserver* observer) {
 }
 
 QuotaManager::~QuotaManager() {
-  proxy_->manager_ = NULL;
+  proxy_->manager_ = nullptr;
   for (auto* client : clients_)
     client->OnQuotaManagerDestroyed();
   if (database_)
@@ -1228,11 +1228,11 @@ UsageTracker* QuotaManager::GetUsageTracker(StorageType type) const {
     case StorageType::kSyncable:
       return syncable_usage_tracker_.get();
     case StorageType::kQuotaNotManaged:
-      return NULL;
+      return nullptr;
     case StorageType::kUnknown:
       NOTREACHED();
   }
-  return NULL;
+  return nullptr;
 }
 
 void QuotaManager::GetCachedOrigins(

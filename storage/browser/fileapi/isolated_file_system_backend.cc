@@ -82,12 +82,12 @@ AsyncFileUtil* IsolatedFileSystemBackend::GetAsyncFileUtil(
     default:
       NOTREACHED();
   }
-  return NULL;
+  return nullptr;
 }
 
 WatcherManager* IsolatedFileSystemBackend::GetWatcherManager(
     FileSystemType type) {
-  return NULL;
+  return nullptr;
 }
 
 CopyOrMoveFileValidatorFactory*
@@ -95,7 +95,7 @@ IsolatedFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
     FileSystemType type, base::File::Error* error_code) {
   DCHECK(error_code);
   *error_code = base::File::FILE_OK;
-  return NULL;
+  return nullptr;
 }
 
 FileSystemOperation* IsolatedFileSystemBackend::CreateFileSystemOperation(
@@ -143,22 +143,22 @@ IsolatedFileSystemBackend::CreateFileStreamWriter(
 
 FileSystemQuotaUtil* IsolatedFileSystemBackend::GetQuotaUtil() {
   // No quota support.
-  return NULL;
+  return nullptr;
 }
 
 const UpdateObserverList* IsolatedFileSystemBackend::GetUpdateObservers(
     FileSystemType type) const {
-  return NULL;
+  return nullptr;
 }
 
 const ChangeObserverList* IsolatedFileSystemBackend::GetChangeObservers(
     FileSystemType type) const {
-  return NULL;
+  return nullptr;
 }
 
 const AccessObserverList* IsolatedFileSystemBackend::GetAccessObservers(
     FileSystemType type) const {
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace storage

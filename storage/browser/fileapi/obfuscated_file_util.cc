@@ -874,7 +874,8 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DestroyDirectoryDatabase(origin, type_string);
 
-  const base::FilePath origin_path = GetDirectoryForOrigin(origin, false, NULL);
+  const base::FilePath origin_path =
+      GetDirectoryForOrigin(origin, false, nullptr);
   if (origin_path.empty())
     return true;
 
@@ -1197,7 +1198,7 @@ SandboxDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
   std::string key = GetDirectoryDatabaseKey(
       url.origin(), CallGetTypeStringForURL(url));
   if (key.empty())
-    return NULL;
+    return nullptr;
 
   auto iter = directories_.find(key);
   if (iter != directories_.end()) {
@@ -1210,7 +1211,7 @@ SandboxDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
   if (error != base::File::FILE_OK) {
     LOG(WARNING) << "Failed to get origin+type directory: "
                  << url.DebugString() << " error:" << error;
-    return NULL;
+    return nullptr;
   }
   MarkUsed();
   directories_[key] =

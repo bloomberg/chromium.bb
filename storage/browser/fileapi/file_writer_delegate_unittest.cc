@@ -181,7 +181,7 @@ void FileWriterDelegateTest::SetUp() {
   ASSERT_TRUE(dir_.CreateUniqueTempDir());
 
   file_system_context_ =
-      CreateFileSystemContextForTesting(NULL, dir_.GetPath());
+      CreateFileSystemContextForTesting(nullptr, dir_.GetPath());
   ASSERT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::CreateFile(file_system_context_.get(),
                                             GetFileSystemURL("test")));
@@ -189,7 +189,7 @@ void FileWriterDelegateTest::SetUp() {
 }
 
 void FileWriterDelegateTest::TearDown() {
-  file_system_context_ = NULL;
+  file_system_context_ = nullptr;
   base::RunLoop().RunUntilIdle();
 }
 

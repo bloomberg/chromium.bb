@@ -376,7 +376,7 @@ OperationID FileSystemOperationRunner::CreateSnapshotFile(
   base::AutoReset<bool> beginning(&is_beginning_operation_, true);
   if (!operation_raw) {
     DidCreateSnapshot(id, callback, error, base::File::Info(), base::FilePath(),
-                      NULL);
+                      nullptr);
     return id;
   }
   PrepareForRead(id, url);

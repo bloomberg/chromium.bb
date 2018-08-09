@@ -131,7 +131,7 @@ void LocalFileStreamWriter::DidOpen(
 
   if (result != net::OK) {
     has_pending_operation_ = false;
-    stream_impl_.reset(NULL);
+    stream_impl_.reset(nullptr);
     error_callback.Run(result);
     return;
   }
