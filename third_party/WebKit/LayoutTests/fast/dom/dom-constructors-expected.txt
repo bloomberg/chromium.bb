@@ -74,7 +74,7 @@ PASS TryAllocate('CSSRule') is 'exception'
 PASS TryAllocate('CSSRuleList') is 'exception'
 PASS TryAllocate('CSSStyleDeclaration') is 'exception'
 PASS TryAllocate('CSSStyleRule') is 'exception'
-FAIL TryAllocate('CSSStyleSheet') should be exception. Was [object CSSStyleSheet].
+PASS TryAllocate('CSSStyleSheet') is 'exception'
 PASS TryAllocate('DOMImplementation') is 'exception'
 PASS TryAllocate('HTMLCollection') is 'exception'
 PASS TryAllocate('MediaList') is 'exception'

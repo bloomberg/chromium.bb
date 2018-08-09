@@ -435,9 +435,11 @@ TEST_F(CustomElementRegistryTest, lookupCustomElementDefinition) {
 
 TEST_F(CustomElementRegistryTest, defineCustomElementWithStyle) {
   RuntimeEnabledFeatures::SetConstructableStylesheetsEnabled(true);
+  V8TestingScope scope;
   NonThrowableExceptionState should_not_throw;
   ElementDefinitionOptions options;
-  CSSStyleSheet* sheet = CSSStyleSheet::Create(GetDocument(), should_not_throw);
+  CSSStyleSheet* sheet = GetDocument().createEmptyCSSStyleSheet(
+      scope.GetScriptState(), CSSStyleSheetInit(), should_not_throw);
   options.setStyle(sheet);
   TestCustomElementDefinitionBuilder builder(sheet);
   CustomElementDefinition* definition_a =

@@ -9,26 +9,6 @@
 const redStyleTexts = [".red { color: red; }", ".red + span + span { color: red; }"];
 
 test(() => {
-  const sheet = new CSSStyleSheet({title: "Red", disabled: true, media: "screen, print"});
-  assert_equals(sheet.title, "Red");
-  assert_equals(sheet.ownerNode, null);
-  assert_equals(sheet.ownerRule, null);
-  assert_equals(sheet.media.length, 2);
-  assert_equals(sheet.media.item(0), "screen");
-  assert_equals(sheet.media.item(1), "print");
-  assert_true(sheet.disabled);
-  assert_equals(sheet.cssRules.length, 0);
-
-  sheet.insertRule(redStyleTexts[0]);
-  assert_equals(sheet.cssRules.length, 1);
-  assert_equals(sheet.cssRules[0].cssText, redStyleTexts[0]);
-
-  sheet.insertRule(redStyleTexts[1]);
-  assert_equals(sheet.cssRules.length, 2);
-  assert_equals(sheet.cssRules[0].cssText, redStyleTexts[1]);
-}, 'Empty CSSStyleSheet can be constructed using script');
-
-test(() => {
   const sheet = document.createEmptyCSSStyleSheet({title: "Red", disabled: true, media: "screen, print"});
   assert_equals(sheet.title, "Red");
   assert_equals(sheet.ownerNode, null);
