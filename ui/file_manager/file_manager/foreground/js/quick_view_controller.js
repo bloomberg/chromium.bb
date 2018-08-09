@@ -135,6 +135,7 @@ QuickViewController.LOCAL_VOLUME_TYPES_ = [
   VolumeManagerCommon.VolumeType.REMOVABLE,
   VolumeManagerCommon.VolumeType.ANDROID_FILES,
   VolumeManagerCommon.VolumeType.CROSTINI,
+  VolumeManagerCommon.VolumeType.MEDIA_VIEW,
 ];
 
 /**
