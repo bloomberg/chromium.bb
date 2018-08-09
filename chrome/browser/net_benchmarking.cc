@@ -77,39 +77,36 @@ bool NetBenchmarking::CheckBenchmarkingEnabled() {
   return command_line.HasSwitch(switches::kEnableNetBenchmarking);
 }
 
-void NetBenchmarking::ClearCache(const ClearCacheCallback& callback) {
+void NetBenchmarking::ClearCache(ClearCacheCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* network_context = GetNetworkContext(render_process_id_);
-  if (network_context) {
-    network_context->ClearHttpCache(base::Time(), base::Time(), nullptr,
-                                    callback);
-  }
+  CHECK(network_context);
+  network_context->ClearHttpCache(base::Time(), base::Time(), nullptr,
+                                  std::move(callback));
 }
 
 void NetBenchmarking::ClearHostResolverCache(
-    const ClearHostResolverCacheCallback& callback) {
+    ClearHostResolverCacheCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* network_context = GetNetworkContext(render_process_id_);
-  if (network_context) {
-    network_context->ClearHostCache(nullptr, callback);
-  }
+  CHECK(network_context);
+  network_context->ClearHostCache(nullptr, std::move(callback));
 }
 
 void NetBenchmarking::CloseCurrentConnections(
-    const CloseCurrentConnectionsCallback& callback) {
+    CloseCurrentConnectionsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* network_context = GetNetworkContext(render_process_id_);
-  if (network_context) {
-    network_context->CloseAllConnections(callback);
-  }
+  CHECK(network_context);
+  network_context->CloseAllConnections(std::move(callback));
 }
 
 void NetBenchmarking::ClearPredictorCache(
-    const ClearPredictorCacheCallback& callback) {
+    ClearPredictorCacheCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (loading_predictor_)
     loading_predictor_->resource_prefetch_predictor()->DeleteAllUrls();
   if (predictor_)
     predictor_->DiscardAllResultsAndClearPrefsOnUIThread();
-  callback.Run();
+  std::move(callback).Run();
 }

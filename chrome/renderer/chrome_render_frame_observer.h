@@ -79,11 +79,10 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
       int32_t thumbnail_min_area_pixels,
       const gfx::Size& thumbnail_max_size_pixels,
       chrome::mojom::ImageFormat image_format,
-      const RequestThumbnailForContextNodeCallback& callback) override;
+      RequestThumbnailForContextNodeCallback callback) override;
   void RequestReloadImageForContextNode() override;
   void SetClientSidePhishingDetection(bool enable_phishing_detection) override;
-  void GetWebApplicationInfo(
-      const GetWebApplicationInfoCallback& callback) override;
+  void GetWebApplicationInfo(GetWebApplicationInfoCallback callback) override;
 #if defined(OS_ANDROID)
   void UpdateBrowserControlsState(content::BrowserControlsState constraints,
                                   content::BrowserControlsState current,

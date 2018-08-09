@@ -58,9 +58,8 @@ class FakeChromeRenderFrame
         mojo::AssociatedInterfaceRequest<ChromeRenderFrame>(std::move(handle)));
   }
 
-  void GetWebApplicationInfo(
-      const GetWebApplicationInfoCallback& callback) override {
-    callback.Run(web_app_info_);
+  void GetWebApplicationInfo(GetWebApplicationInfoCallback callback) override {
+    std::move(callback).Run(web_app_info_);
   }
 
  private:

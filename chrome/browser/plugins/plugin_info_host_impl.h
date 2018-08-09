@@ -135,7 +135,7 @@ class PluginInfoHostImpl
                      const GURL& url,
                      const url::Origin& origin,
                      const std::string& mime_type,
-                     const GetPluginInfoCallback& callback) override;
+                     GetPluginInfoCallback callback) override;
 
   // |params| wraps the parameters passed to |OnGetPluginInfo|, because
   // |base::Bind| doesn't support the required arity <http://crbug.com/98542>.

@@ -223,7 +223,7 @@ void ChromeRenderFrameObserver::RequestThumbnailForContextNode(
     int32_t thumbnail_min_area_pixels,
     const gfx::Size& thumbnail_max_size_pixels,
     chrome::mojom::ImageFormat image_format,
-    const RequestThumbnailForContextNodeCallback& callback) {
+    RequestThumbnailForContextNodeCallback callback) {
   WebNode context_node = render_frame()->GetWebFrame()->ContextMenuNode();
   SkBitmap thumbnail;
   gfx::Size original_size;
@@ -261,7 +261,7 @@ void ChromeRenderFrameObserver::RequestThumbnailForContextNode(
         thumbnail_data.swap(data);
       break;
   }
-  callback.Run(thumbnail_data, original_size);
+  std::move(callback).Run(thumbnail_data, original_size);
 }
 
 void ChromeRenderFrameObserver::OnPrintNodeUnderContextMenu() {
@@ -274,7 +274,7 @@ void ChromeRenderFrameObserver::OnPrintNodeUnderContextMenu() {
 }
 
 void ChromeRenderFrameObserver::GetWebApplicationInfo(
-    const GetWebApplicationInfoCallback& callback) {
+    GetWebApplicationInfoCallback callback) {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
 
   WebApplicationInfo web_app_info;
