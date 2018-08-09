@@ -55,28 +55,17 @@ void ThreadControllerWithMessagePumpImpl::WillQueueTask(
 }
 
 void ThreadControllerWithMessagePumpImpl::ScheduleWork() {
-  // Continuation will be posted if necessary.
-  if (RunsTasksInCurrentSequence() && is_doing_work())
-    return;
-
   pump_->ScheduleWork();
 }
 
 void ThreadControllerWithMessagePumpImpl::SetNextDelayedDoWork(
     LazyNow* lazy_now,
     TimeTicks run_time) {
-  if (main_thread_only().next_delayed_work == run_time)
-    return;
-  main_thread_only().next_delayed_work = run_time;
-
-  if (run_time == TimeTicks::Max())
-    return;
-
-  // Continuation will be posted if necessary.
+  // Since this method must be called on the main thread, we're probably
+  // inside of DoWork() except some initialization code.
+  // DoWork() will schedule next wake-up if necessary.
   if (is_doing_work())
     return;
-
-  // |lazy_now| will be removed in this method soon.
   DCHECK_LT(time_source_->NowTicks(), run_time);
   pump_->ScheduleDelayedWork(run_time);
 }
@@ -156,9 +145,8 @@ bool ThreadControllerWithMessagePumpImpl::DoWork() {
     // Need to run new work immediately.
     pump_->ScheduleWork();
   } else if (do_work_delay != TimeDelta::Max()) {
-    SetNextDelayedDoWork(&lazy_now, lazy_now.Now() + do_work_delay);
-  } else {
-    SetNextDelayedDoWork(&lazy_now, TimeTicks::Max());
+    // Cancels any previously scheduled delayed wake-ups.
+    pump_->ScheduleDelayedWork(lazy_now.Now() + do_work_delay);
   }
 
   return task_ran;
