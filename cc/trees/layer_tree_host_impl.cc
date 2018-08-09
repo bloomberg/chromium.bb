@@ -2522,6 +2522,7 @@ static void PopulateHitTestRegion(viz::HitTestRegion* hit_test_region,
   gfx::Transform surface_to_root_transform = layer->ScreenSpaceTransform();
   surface_to_root_transform.Scale(SK_MScalar1 / device_scale_factor,
                                   SK_MScalar1 / device_scale_factor);
+  surface_to_root_transform.FlattenTo2d();
   // TODO(sunxd): Avoid losing precision by not using inverse if possible.
   bool ok = surface_to_root_transform.GetInverse(&hit_test_region->transform);
   // Note: If |ok| is false, the |transform| is set to the identity before

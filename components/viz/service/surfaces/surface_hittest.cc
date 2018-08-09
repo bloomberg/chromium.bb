@@ -70,8 +70,9 @@ bool SurfaceHittest::TransformPointToTargetSurface(
   // embedded in target_surface_id, or vice versa.
   if (GetTransformToTargetSurface(target_surface_id, original_surface_id,
                                   &transform)) {
-    if (transform.GetInverse(&transform))
-      transform.TransformPoint(point);
+    gfx::Transform inverse_transform;
+    if (transform.GetInverse(&inverse_transform))
+      inverse_transform.TransformPoint(point);
     else
       return false;
   } else if (GetTransformToTargetSurface(original_surface_id, target_surface_id,
@@ -105,11 +106,13 @@ bool SurfaceHittest::GetTargetSurfaceAtPointInternal(
 
   referenced_passes->insert(render_pass);
 
-  // The |transform_to_root_target| matrix cannot be inverted if it has a
-  // z-scale of 0 or due to floating point errors.
+  // The |transform_to_root_target| matrix may have no back-projection if the
+  // forward projection is degenerate.
   gfx::Transform transform_from_root_target;
-  if (!render_pass->transform_to_root_target.GetInverse(
-          &transform_from_root_target)) {
+  gfx::Transform transform_to_root_target =
+      render_pass->transform_to_root_target;
+  transform_to_root_target.FlattenTo2d();
+  if (!transform_to_root_target.GetInverse(&transform_from_root_target)) {
     return false;
   }
 
@@ -234,19 +237,23 @@ bool SurfaceHittest::GetTransformToTargetSurfaceInternal(
 
   referenced_passes->insert(render_pass);
 
-  // The |transform_to_root_target| matrix cannot be inverted if it has a
-  // z-scale of 0 or due to floating point errors.
+  // The |transform_to_root_target| matrix may have no back-projection if the
+  // forward projection is degenerate.
   gfx::Transform transform_from_root_target;
-  if (!render_pass->transform_to_root_target.GetInverse(
-          &transform_from_root_target)) {
+  gfx::Transform transform_to_root_target =
+      render_pass->transform_to_root_target;
+  transform_to_root_target.FlattenTo2d();
+  if (!transform_to_root_target.GetInverse(&transform_from_root_target)) {
     return false;
   }
 
   for (const DrawQuad* quad : render_pass->quad_list) {
     if (quad->material == DrawQuad::SURFACE_CONTENT) {
       gfx::Transform target_to_quad_transform;
-      if (!quad->shared_quad_state->quad_to_target_transform.GetInverse(
-              &target_to_quad_transform)) {
+      gfx::Transform quad_to_target_transform =
+          quad->shared_quad_state->quad_to_target_transform;
+      quad_to_target_transform.FlattenTo2d();
+      if (!quad_to_target_transform.GetInverse(&target_to_quad_transform)) {
         return false;
       }
 
@@ -326,8 +333,9 @@ bool SurfaceHittest::PointInQuad(const DrawQuad* quad,
 
   // We now transform the point to content space and test if it hits the
   // rect.
-  if (!quad->shared_quad_state->quad_to_target_transform.GetInverse(
-          target_to_quad_transform)) {
+  gfx::Transform transform = quad->shared_quad_state->quad_to_target_transform;
+  transform.FlattenTo2d();
+  if (!transform.GetInverse(target_to_quad_transform)) {
     return false;
   }
 
