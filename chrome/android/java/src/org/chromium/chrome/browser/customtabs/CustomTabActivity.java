@@ -58,6 +58,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.autofill_assistant.AssistantUiController;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
+import org.chromium.chrome.browser.browserservices.TrustedWebActivityUi;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ActivityDelegate;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ActivityHostImpl;
@@ -66,7 +67,7 @@ import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleMetrics;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
-import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.page_info.PageInfoController;
@@ -97,7 +98,6 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
-import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -158,6 +158,8 @@ public class CustomTabActivity extends ChromeActivity {
     /** Adds and removes observers from tabs when needed. */
     private final TabObserverRegistrar mTabObserverRegistrar = new TabObserverRegistrar();
 
+    private final TrustedWebActivityUi mTrustedWebActivityUi = new TrustedWebActivityUi();
+
     private String mSpeculatedUrl;
 
     private boolean mUsingHiddenTab;
@@ -184,27 +186,6 @@ public class CustomTabActivity extends ChromeActivity {
     private boolean mModuleOnStartPending;
     private boolean mModuleOnResumePending;
     private boolean mHasSetOverlayView;
-
-    private static class CustomTabCreator extends ChromeTabCreator {
-        private final boolean mSupportsUrlBarHiding;
-        private final boolean mIsOpenedByChrome;
-        private final BrowserStateBrowserControlsVisibilityDelegate mVisibilityDelegate;
-
-        public CustomTabCreator(
-                ChromeActivity activity, WindowAndroid nativeWindow, boolean incognito,
-                boolean supportsUrlBarHiding, boolean isOpenedByChrome) {
-            super(activity, nativeWindow, incognito);
-            mSupportsUrlBarHiding = supportsUrlBarHiding;
-            mIsOpenedByChrome = isOpenedByChrome;
-            mVisibilityDelegate = activity.getFullscreenManager().getBrowserVisibilityDelegate();
-        }
-
-        @Override
-        public TabDelegateFactory createDefaultTabDelegateFactory() {
-            return new CustomTabDelegateFactory(
-                    mSupportsUrlBarHiding, mIsOpenedByChrome, mVisibilityDelegate);
-        }
-    }
 
     private TabModelObserver mCloseActivityWhenEmptyTabModelObserver = new EmptyTabModelObserver() {
         @Override
@@ -431,16 +412,26 @@ public class CustomTabActivity extends ChromeActivity {
     }
 
     @Override
-    protected Pair<CustomTabCreator, CustomTabCreator> createTabCreators() {
-        return Pair.create(
-                new CustomTabCreator(
-                        this, getWindowAndroid(), false,
-                        mIntentDataProvider.shouldEnableUrlBarHiding(),
-                        mIntentDataProvider.isOpenedByChrome()),
-                new CustomTabCreator(
-                        this, getWindowAndroid(), true,
-                        mIntentDataProvider.shouldEnableUrlBarHiding(),
-                        mIntentDataProvider.isOpenedByChrome()));
+    protected Pair<ChromeTabCreator, ChromeTabCreator> createTabCreators() {
+        return Pair.create(createTabCreator(false), createTabCreator(true));
+    }
+
+    private ChromeTabCreator createTabCreator(boolean incognito) {
+        return new ChromeTabCreator(this, getWindowAndroid(), incognito) {
+            @Override
+            public TabDelegateFactory createDefaultTabDelegateFactory() {
+                return createCustomTabDelegateFactory();
+            }
+        };
+    }
+
+    private CustomTabDelegateFactory createCustomTabDelegateFactory() {
+        return new CustomTabDelegateFactory(mIntentDataProvider.shouldEnableUrlBarHiding(),
+                mIntentDataProvider.isOpenedByChrome(),
+                new ComposedBrowserControlsVisibilityDelegate(
+                        getFullscreenManager().getBrowserVisibilityDelegate(),
+                        mTrustedWebActivityUi.getBrowserControlsVisibilityDelegate()
+                ));
     }
 
     @Override
@@ -486,10 +477,7 @@ public class CustomTabActivity extends ChromeActivity {
         if (mUsingHiddenTab) {
             TabReparentingParams params =
                     (TabReparentingParams) AsyncTabParamsManager.remove(mMainTab.getId());
-            mMainTab.attachAndFinishReparenting(this,
-                    new CustomTabDelegateFactory(mIntentDataProvider.shouldEnableUrlBarHiding(),
-                            mIntentDataProvider.isOpenedByChrome(),
-                            getFullscreenManager().getBrowserVisibilityDelegate()),
+            mMainTab.attachAndFinishReparenting(this, createCustomTabDelegateFactory(),
                     (params == null ? null : params.getFinalizeCallback()));
         }
 
@@ -654,12 +642,7 @@ public class CustomTabActivity extends ChromeActivity {
         } else {
             tab.setAppAssociatedWith(mConnection.getClientPackageNameForSession(mSession));
         }
-        tab.initialize(
-                webContents, getTabContentManager(),
-                new CustomTabDelegateFactory(
-                        mIntentDataProvider.shouldEnableUrlBarHiding(),
-                        mIntentDataProvider.isOpenedByChrome(),
-                        getFullscreenManager().getBrowserVisibilityDelegate()),
+        tab.initialize(webContents, getTabContentManager(), createCustomTabDelegateFactory(),
                 false, false);
 
         if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
