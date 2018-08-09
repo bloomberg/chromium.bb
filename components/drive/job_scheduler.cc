@@ -156,8 +156,8 @@ void CollectCopyHistogramSample(const std::string& histogram_name,
 
 // Metadata jobs are cheap, so we run them concurrently. File jobs run serially.
 const int JobScheduler::kMaxJobCount[] = {
-  5,  // METADATA_QUEUE
-  1,  // FILE_QUEUE
+    20,  // METADATA_QUEUE
+    1,   // FILE_QUEUE
 };
 
 JobScheduler::JobEntry::JobEntry(JobType type)
