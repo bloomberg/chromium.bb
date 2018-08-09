@@ -100,7 +100,7 @@ HttpHandler::HttpHandler(
           WrapToCommand("GetTimeouts", base::Bind(&ExecuteGetTimeouts))),
       CommandMapping(
           kPost, "session/:sessionId/timeouts",
-          WrapToCommand("SetTimeout", base::Bind(&ExecuteSetTimeout))),
+          WrapToCommand("SetTimeouts", base::Bind(&ExecuteSetTimeouts))),
       CommandMapping(kPost, "session/:sessionId/url",
                      WrapToCommand("Navigate", base::Bind(&ExecuteGet))),
       CommandMapping(

@@ -485,7 +485,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
                       self._driver.ExecuteScript, '{{{')
 
   def testExecuteAsyncScript(self):
-    self._driver.SetTimeout('script', 3000)
+    self._driver.SetTimeouts({'script': 3000})
     self.assertRaises(
         chromedriver.ScriptTimeout,
         self._driver.ExecuteAsyncScript,
@@ -1699,7 +1699,7 @@ class ChromeDriverSiteIsolation(ChromeDriverBaseTestWithWebServer):
       # This test is unreliable on Windows, as FindElement can be called too
       # soon, before the child frame is fully loaded. This causes element not
       # found error. Add an implicit wait works around this issue.
-      self._driver.SetTimeout('implicit', 2000)
+      self._driver.SetTimeouts({'implicit': 2000})
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/cross_domain_iframe.html'))
     a_outer = self._driver.FindElement('tag name', 'a')
@@ -1741,7 +1741,7 @@ class ChromeDriverPageLoadTimeoutTest(ChromeDriverBaseTestWithWebServer):
     # about 0.1 second on Linux and Windows, but takes half a second or longer
     # on Mac. So we use longer timeout on Mac, 0.5 second on others.
     timeout = 3000 if util.GetPlatformName() == 'mac' else 500
-    self._driver.SetTimeout('page load', timeout)
+    self._driver.SetTimeouts({'pageLoad': timeout})
 
   def tearDown(self):
     super(ChromeDriverPageLoadTimeoutTest, self).tearDown()

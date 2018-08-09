@@ -356,9 +356,8 @@ class ChromeDriver(object):
     return self.ExecuteCommand(
         Command.FIND_ELEMENTS, {'using': strategy, 'value': target})
 
-  def SetTimeout(self, type, timeout):
-    return self.ExecuteCommand(
-        Command.SET_TIMEOUT, {'type' : type, 'ms': timeout})
+  def SetTimeouts(self, params):
+    return self.ExecuteCommand(Command.SET_TIMEOUTS, params)
 
   def GetCurrentUrl(self):
     return self.ExecuteCommand(Command.GET_CURRENT_URL)

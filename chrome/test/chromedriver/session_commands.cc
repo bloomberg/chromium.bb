@@ -542,9 +542,11 @@ Status ExecuteSwitchToWindow(Session* session,
   return Status(kOk);
 }
 
-Status ExecuteSetTimeout(Session* session,
-                         const base::DictionaryValue& params,
-                         std::unique_ptr<base::Value>* value) {
+// Handles legacy format SetTimeout command.
+// TODO(johnchen@chromium.org): Remove when we stop supporting legacy protocol.
+Status ExecuteSetTimeoutLegacy(Session* session,
+                               const base::DictionaryValue& params,
+                               std::unique_ptr<base::Value>* value) {
   double ms_double;
   if (!params.GetDouble("ms", &ms_double))
     return Status(kUnknownError, "'ms' must be a double");
@@ -554,8 +556,6 @@ Status ExecuteSetTimeout(Session* session,
 
   base::TimeDelta timeout =
       base::TimeDelta::FromMilliseconds(static_cast<int>(ms_double));
-  // TODO(frankf): implicit and script timeout should be cleared
-  // if negative timeout is specified.
   if (type == "implicit") {
     session->implicit_wait = timeout;
   } else if (type == "script") {
@@ -568,6 +568,41 @@ Status ExecuteSetTimeout(Session* session,
     return Status(kUnknownError, "unknown type of timeout:" + type);
   }
   return Status(kOk);
+}
+
+Status ExecuteSetTimeoutsW3C(Session* session,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value) {
+  for (const auto& setting : params.DictItems()) {
+    int timeout_ms;
+    if (!setting.second.GetAsInteger(&timeout_ms) || timeout_ms < 0)
+      return Status(kInvalidArgument, "value must be a non-negative integer");
+    base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(timeout_ms);
+    const std::string& type = setting.first;
+    if (type == "script") {
+      session->script_timeout = timeout;
+    } else if (type == "pageLoad") {
+      session->page_load_timeout = timeout;
+    } else if (type == "implicit") {
+      session->implicit_wait = timeout;
+    } else {
+      return Status(kInvalidArgument, "unknown type of timeout: " + type);
+    }
+  }
+  return Status(kOk);
+}
+
+Status ExecuteSetTimeouts(Session* session,
+                          const base::DictionaryValue& params,
+                          std::unique_ptr<base::Value>* value) {
+  // TODO(johnchen@chromium.org): Remove legacy version support when we stop
+  // supporting non-W3C protocol. At that time, we can delete the legacy
+  // function and merge the W3C function into this function.
+  if (params.HasKey("ms")) {
+    return ExecuteSetTimeoutLegacy(session, params, value);
+  } else {
+    return ExecuteSetTimeoutsW3C(session, params, value);
+  }
 }
 
 Status ExecuteGetTimeouts(Session* session,
