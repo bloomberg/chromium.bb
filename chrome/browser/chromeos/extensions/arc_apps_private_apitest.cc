@@ -17,6 +17,7 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
+#include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 
@@ -45,6 +46,10 @@ class ArcAppsPrivateApiTest : public extensions::ExtensionApiTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     arc::SetArcAvailableCommandLineForTesting(command_line);
+    // Whitelist the test platform app.
+    command_line->AppendSwitchASCII(
+        extensions::switches::kWhitelistedExtensionID,
+        "fgkfegllpjfhppblcabhjjipnfelohej");
   }
 
   void SetUpInProcessBrowserTestFixture() override {
