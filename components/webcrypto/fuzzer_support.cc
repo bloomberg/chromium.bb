@@ -26,7 +26,7 @@ class InitOnce : public blink::Platform {
   InitOnce() {
     base::CommandLine::Init(0, nullptr);
     mojo::core::Init();
-    blink::Platform::Initialize(this, CurrentThread());
+    blink::Platform::CreateMainThreadAndInitialize(this);
   }
   ~InitOnce() override {}
 
