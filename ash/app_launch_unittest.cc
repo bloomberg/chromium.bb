@@ -35,16 +35,7 @@ class AppLaunchTest : public service_manager::test::ServiceTest {
   DISALLOW_COPY_AND_ASSIGN(AppLaunchTest);
 };
 
-#if defined(ADDRESS_SANITIZER)
-// TODO: fix. See https://crbug.com/838520
-#define MAYBE_TestQuickLaunch DISABLED_TestQuickLaunch
-#elif defined(MEMORY_SANITIZER)
-// TODO: fix. See https://crbug.com/725095
-#define MAYBE_TestQuickLaunch DISABLED_TestQuickLaunch
-#else
-#define MAYBE_TestQuickLaunch TestQuickLaunch
-#endif
-TEST_F(AppLaunchTest, MAYBE_TestQuickLaunch) {
+TEST_F(AppLaunchTest, TestQuickLaunch) {
   connector()->StartService(mojom::kServiceName);
   connector()->StartService(quick_launch::mojom::kServiceName);
 

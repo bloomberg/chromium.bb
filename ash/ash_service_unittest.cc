@@ -91,16 +91,7 @@ void OnEmbed(bool success) {
   ASSERT_TRUE(success);
 }
 
-#if defined(ADDRESS_SANITIZER)
-// TODO: fix. See https://crbug.com/838520
-#define MAYBE_OpenWindow DISABLED_OpenWindow
-#elif defined(MEMORY_SANITIZER)
-// TODO: fix. See https://crbug.com/725095
-#define MAYBE_OpenWindow DISABLED_OpenWindow
-#else
-#define MAYBE_OpenWindow OpenWindow
-#endif
-TEST_F(AshServiceTest, MAYBE_OpenWindow) {
+TEST_F(AshServiceTest, OpenWindow) {
   display::ScreenBase screen;
   screen.display_list().AddDisplay(
       display::Display(1, gfx::Rect(0, 0, 200, 200)),
