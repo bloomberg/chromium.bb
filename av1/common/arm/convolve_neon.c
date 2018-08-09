@@ -960,10 +960,17 @@ void av1_convolve_2d_sr_neon(const uint8_t *src, int src_stride, uint8_t *dst,
     width = w;
 
     if (width <= 4) {
-      int16x4_t s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10;
-      uint16x4_t d0, d1, d2, d3;
-      uint16x8_t dd0, dd1;
-      uint8x8_t d01, d23;
+      int16x4_t s0, s1, s2, s3, s4, s5, s6, s7;
+      uint16x4_t d0;
+      uint16x8_t dd0;
+      uint8x8_t d01;
+
+#if defined(__aarch64__)
+      int16x4_t s8, s9, s10;
+      uint16x4_t d1, d2, d3;
+      uint16x8_t dd1;
+      uint8x8_t d23;
+#endif
 
       d_u8 = dst_u8_ptr;
       v_s = v_src_ptr;
@@ -981,6 +988,7 @@ void av1_convolve_2d_sr_neon(const uint8_t *src, int src_stride, uint8_t *dst,
       v_s += (7 * im_stride);
 
       do {
+#if defined(__aarch64__)
         load_s16_4x4(v_s, im_stride, &s7, &s8, &s9, &s10);
         v_s += (im_stride << 2);
 
@@ -1058,11 +1066,48 @@ void av1_convolve_2d_sr_neon(const uint8_t *src, int src_stride, uint8_t *dst,
         s5 = s9;
         s6 = s10;
         height -= 4;
+#else
+        s7 = vld1_s16(v_s);
+        v_s += im_stride;
+
+        __builtin_prefetch(d_u8 + 0 * dst_stride);
+
+        d0 = convolve8_vert_4x4_s32(s0, s1, s2, s3, s4, s5, s6, s7, y_filter,
+                                    round_shift_vec, offset_const,
+                                    sub_const_vec);
+
+        dd0 = vqrshlq_u16(vcombine_u16(d0, d0), vec_round_bits);
+        d01 = vqmovn_u16(dd0);
+
+        if (w == 4) {
+          vst1_lane_u32((uint32_t *)d_u8, vreinterpret_u32_u8(d01),
+                        0);  // 00 01 02 03
+          d_u8 += dst_stride;
+
+        } else if (w == 2) {
+          vst1_lane_u16((uint16_t *)d_u8, vreinterpret_u16_u8(d01),
+                        0);  // 00 01
+          d_u8 += dst_stride;
+        }
+
+        s0 = s1;
+        s1 = s2;
+        s2 = s3;
+        s3 = s4;
+        s4 = s5;
+        s5 = s6;
+        s6 = s7;
+        height -= 1;
+#endif
       } while (height > 0);
     } else {
       // if width is a multiple of 8 & height is a multiple of 4
-      int16x8_t s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10;
-      uint8x8_t res0, res1, res2, res3;
+      int16x8_t s0, s1, s2, s3, s4, s5, s6, s7;
+      uint8x8_t res0;
+#if defined(__aarch64__)
+      int16x8_t s8, s9, s10;
+      uint8x8_t res1, res2, res3;
+#endif
 
       do {
         __builtin_prefetch(v_src_ptr + 0 * im_stride);
@@ -1082,6 +1127,7 @@ void av1_convolve_2d_sr_neon(const uint8_t *src, int src_stride, uint8_t *dst,
         height = h;
 
         do {
+#if defined(__aarch64__)
           load_s16_8x4(v_s, im_stride, &s7, &s8, &s9, &s10);
           v_s += (im_stride << 2);
 
@@ -1126,6 +1172,28 @@ void av1_convolve_2d_sr_neon(const uint8_t *src, int src_stride, uint8_t *dst,
           s5 = s9;
           s6 = s10;
           height -= 4;
+#else
+          s7 = vld1q_s16(v_s);
+          v_s += im_stride;
+
+          __builtin_prefetch(d_u8 + 0 * dst_stride);
+
+          res0 = convolve8_vert_8x4_s32(s0, s1, s2, s3, s4, s5, s6, s7,
+                                        y_filter, round_shift_vec, offset_const,
+                                        sub_const_vec, vec_round_bits);
+
+          vst1_u8(d_u8, res0);
+          d_u8 += dst_stride;
+
+          s0 = s1;
+          s1 = s2;
+          s2 = s3;
+          s3 = s4;
+          s4 = s5;
+          s5 = s6;
+          s6 = s7;
+          height -= 1;
+#endif
         } while (height > 0);
         v_src_ptr += 8;
         dst_u8_ptr += 8;
