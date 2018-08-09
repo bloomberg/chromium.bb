@@ -23,6 +23,10 @@ struct NameParts {
   base::string16 family;
 };
 
+// Truncates a string to the nearest UTF-8 character that will leave
+// the string less than or equal to the specified byte size.
+std::string TruncateUTF8(const std::string& data);
+
 bool IsCreditCardExpirationType(ServerFieldType type);
 
 // Used to map Chrome card issuer networks to Payment Request API basic card

@@ -7,6 +7,7 @@
 #include "base/guid.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -16,18 +17,12 @@
 
 using base::UTF16ToUTF8;
 using base::UTF8ToUTF16;
+using autofill::data_util::TruncateUTF8;
 using sync_pb::AutofillProfileSpecifics;
 using syncer::EntityData;
 
 namespace autofill {
 namespace {
-
-std::string TruncateUTF8(const std::string& data) {
-  std::string trimmed_value;
-  base::TruncateUTF8ToByteSize(data, AutofillTable::kMaxDataLength,
-                               &trimmed_value);
-  return trimmed_value;
-}
 
 bool IsAutofillProfileSpecificsValid(
     const AutofillProfileSpecifics& specifics) {
