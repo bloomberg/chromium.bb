@@ -54,6 +54,7 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/throb_animation.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
@@ -318,6 +319,7 @@ void TabStrip::FrameColorsChanged() {
   for (int i = 0; i < tab_count(); ++i)
     tab_at(i)->FrameColorsChanged();
   new_tab_button_->FrameColorsChanged();
+  UpdateOpacities();
   SchedulePaint();
 }
 
@@ -1183,6 +1185,15 @@ void TabStrip::MouseMovedOutOfHost() {
   }
 }
 
+float TabStrip::GetHoverOpacityForTab(float range_parameter) const {
+  return gfx::Tween::FloatValueBetween(range_parameter, hover_opacity_min_,
+                                       hover_opacity_max_);
+}
+
+float TabStrip::GetHoverOpacityForRadialHighlight() const {
+  return radial_highlight_opacity_;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // TabStrip, views::View overrides:
 
@@ -1495,6 +1506,8 @@ void TabStrip::Init() {
     drop_indicator_width = drop_image->width();
     drop_indicator_height = drop_image->height();
   }
+
+  UpdateOpacities();
 }
 
 void TabStrip::StartInsertTabAnimation(int model_index) {
@@ -2045,6 +2058,48 @@ void TabStrip::UpdateStackedLayoutFromMouseEvent(views::View* source,
     default:
       break;
   }
+}
+
+void TabStrip::UpdateOpacities() {
+  // There may be no controller in unit tests, and call to GetTabBackgroundColor
+  // below requires one, so bail early if it is absent.
+  if (!controller_)
+    return;
+
+  // The contrast ratio for the hover effect on standard-width tabs.
+  // In the default Refresh color scheme, this corresponds to a hover
+  // opacity of 0.4.
+  constexpr float kDesiredContrastHoveredStandardWidthTab = 1.11f;
+
+  // The contrast ratio for the hover effect on min-width tabs.
+  // In the default Refresh color scheme, this corresponds to a hover
+  // opacity of 0.65.
+  constexpr float kDesiredContrastHoveredMinWidthTab = 1.19f;
+
+  // The contrast ratio for the radial gradient effect on hovered tabs.
+  // In the default Refresh color scheme, this corresponds to a hover
+  // opacity of 0.45.
+  constexpr float kDesiredContrastRadialGradient = 1.13728f;
+
+  const SkColor active_tab_bg_color = GetTabBackgroundColor(TAB_ACTIVE);
+  const SkColor inactive_tab_bg_color = GetTabBackgroundColor(TAB_INACTIVE);
+
+  const SkAlpha hover_base_alpha_wide =
+      color_utils::GetBlendValueWithMinimumContrast(
+          inactive_tab_bg_color, active_tab_bg_color, inactive_tab_bg_color,
+          kDesiredContrastHoveredStandardWidthTab);
+  const SkAlpha hover_base_alpha_narrow =
+      color_utils::GetBlendValueWithMinimumContrast(
+          inactive_tab_bg_color, active_tab_bg_color, inactive_tab_bg_color,
+          kDesiredContrastHoveredMinWidthTab);
+  const SkAlpha radial_highlight_alpha =
+      color_utils::GetBlendValueWithMinimumContrast(
+          inactive_tab_bg_color, active_tab_bg_color, inactive_tab_bg_color,
+          kDesiredContrastRadialGradient);
+
+  hover_opacity_min_ = hover_base_alpha_wide / 255.0f;
+  hover_opacity_max_ = hover_base_alpha_narrow / 255.0f;
+  radial_highlight_opacity_ = radial_highlight_alpha / 255.0f;
 }
 
 void TabStrip::ResizeLayoutTabs() {

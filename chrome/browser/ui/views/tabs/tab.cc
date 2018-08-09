@@ -536,8 +536,6 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
   title_animation_.SetContainer(animation_container_.get());
 
   hover_controller_.SetAnimationContainer(animation_container_.get());
-
-  UpdateOpacities();
 }
 
 Tab::~Tab() {
@@ -852,7 +850,8 @@ void Tab::OnMouseMoved(const ui::MouseEvent& event) {
 
 void Tab::OnMouseEntered(const ui::MouseEvent& event) {
   mouse_hovered_ = true;
-  hover_controller_.SetSubtleOpacityScale(radial_highlight_opacity_);
+  hover_controller_.SetSubtleOpacityScale(
+      controller_->GetHoverOpacityForRadialHighlight());
   hover_controller_.Show(GlowHoverController::SUBTLE);
   Layout();
 }
@@ -968,7 +967,6 @@ void Tab::AddedToWidget() {
 
 void Tab::OnThemeChanged() {
   OnButtonColorMaybeChanged();
-  UpdateOpacities();
 }
 
 void Tab::SetClosing(bool closing) {
@@ -1672,10 +1670,9 @@ float Tab::GetThrobValue() const {
     // narrow tabs will still stand out on the high end.
     const float range_start = float{GetStandardWidth()};
     const float range_end = float{GetMinimumInactiveWidth()};
-    const float value_in_range = float{bounds().width()};
+    const float value_in_range = float{width()};
     const float t = (value_in_range - range_start) / (range_end - range_start);
-    const float opacity = gfx::Tween::FloatValueBetween(
-        t * t, hover_opacity_min_, hover_opacity_max_);
+    const float opacity = controller_->GetHoverOpacityForTab(t * t);
     return is_selected ? (kSelectedTabThrobScale * opacity) : opacity;
   };
 
@@ -1708,45 +1705,6 @@ void Tab::UpdateTabIconNeedsAttentionBlocked() {
     icon_->SetAttention(TabIcon::AttentionType::kBlockedWebContents,
                         data_.blocked);
   }
-}
-
-void Tab::UpdateOpacities() {
-  // The contrast ratio for the hover effect on standard-width tabs.
-  // In the default Refresh color scheme, this corresponds to a hover
-  // opacity of 0.4.
-  constexpr float kDesiredContrastHoveredStandardWidthTab = 1.11f;
-
-  // The contrast ratio for the hover effect on min-width tabs.
-  // In the default Refresh color scheme, this corresponds to a hover
-  // opacity of 0.65.
-  constexpr float kDesiredContrastHoveredMinWidthTab = 1.19f;
-
-  // The contrast ratio for the radial gradient effect on hovered tabs.
-  // In the default Refresh color scheme, this corresponds to a hover
-  // opacity of 0.45.
-  constexpr float kDesiredContrastRadialGradient = 1.13728f;
-
-  const SkColor active_tab_bg_color =
-      controller_->GetTabBackgroundColor(TAB_ACTIVE);
-  const SkColor inactive_tab_bg_color =
-      controller_->GetTabBackgroundColor(TAB_INACTIVE);
-
-  const SkAlpha hover_base_alpha_wide =
-      color_utils::GetBlendValueWithMinimumContrast(
-          inactive_tab_bg_color, active_tab_bg_color, inactive_tab_bg_color,
-          kDesiredContrastHoveredStandardWidthTab);
-  const SkAlpha hover_base_alpha_narrow =
-      color_utils::GetBlendValueWithMinimumContrast(
-          inactive_tab_bg_color, active_tab_bg_color, inactive_tab_bg_color,
-          kDesiredContrastHoveredMinWidthTab);
-  const SkAlpha radial_highlight_alpha =
-      color_utils::GetBlendValueWithMinimumContrast(
-          inactive_tab_bg_color, active_tab_bg_color, inactive_tab_bg_color,
-          kDesiredContrastRadialGradient);
-
-  hover_opacity_min_ = hover_base_alpha_wide / 255.0f;
-  hover_opacity_max_ = hover_base_alpha_narrow / 255.0f;
-  radial_highlight_opacity_ = radial_highlight_alpha / 255.0f;
 }
 
 void Tab::UpdateButtonIconColors(SkColor title_color) {

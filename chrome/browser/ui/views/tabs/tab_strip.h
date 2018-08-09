@@ -262,6 +262,8 @@ class TabStrip : public views::View,
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   int GetBackgroundResourceId(bool* has_custom_image) const override;
   gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) override;
+  float GetHoverOpacityForTab(float range_parameter) const override;
+  float GetHoverOpacityForRadialHighlight() const override;
 
   // MouseWatcherListener:
   void MouseMovedOutOfHost() override;
@@ -453,6 +455,9 @@ class TabStrip : public views::View,
   // |stacked_layout_|.
   void UpdateStackedLayoutFromMouseEvent(views::View* source,
                                          const ui::MouseEvent& event);
+
+  // Computes and stores tab hover opacities derived from contrast ratios.
+  void UpdateOpacities();
 
   // -- Tab Resize Layout -----------------------------------------------------
 
@@ -673,6 +678,17 @@ class TabStrip : public views::View,
   // selection model, and is always consistent with |tabs_|. This must be
   // updated to account for tab insertions/removals/moves.
   ui::ListSelectionModel selected_tabs_;
+
+  // When tabs are hovered, a radial highlight is shown and the tab opacity is
+  // adjusted using some value between |hover_opacity_min_| and
+  // |hover_opacity_max_| (depending on tab width). All these opacities depend
+  // on contrast ratios and are updated when colors or active state changes,
+  // so for efficiency's sake they are computed and stored once here instead
+  // of with each tab. Note: these defaults will be overwritten at construction
+  // except in cases where a unit test provides no controller_.
+  float hover_opacity_min_ = 1.0f;
+  float hover_opacity_max_ = 1.0f;
+  float radial_highlight_opacity_ = 1.0f;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };
