@@ -5,6 +5,10 @@
 #ifndef UI_VIEWS_COCOA_BRIDGED_NATIVE_WIDGET_HOST_H_
 #define UI_VIEWS_COCOA_BRIDGED_NATIVE_WIDGET_HOST_H_
 
+#include "ui/events/event_utils.h"
+#include "ui/gfx/decorated_text.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -21,6 +25,37 @@ class VIEWS_EXPORT BridgedNativeWidgetHost {
 
   // Update the ui::Compositor and ui::Layer's visibility.
   virtual void SetCompositorVisibility(bool visible) = 0;
+
+  // Resize the underlying views::View to |new_size|.
+  virtual void SetSize(const gfx::Size& new_size) = 0;
+
+  // Indicate if full keyboard accessibility is needed and updates focus if
+  // needed.
+  virtual void SetKeyboardAccessible(bool enabled) = 0;
+
+  // Indicate if the NSView is the first responder.
+  virtual void SetIsFirstResponder(bool is_first_responder) = 0;
+
+  // Handle events. Note that whether or not the event is actually handled is
+  // not returned.
+  virtual void OnScrollEvent(const ui::ScrollEvent& const_event) = 0;
+  virtual void OnMouseEvent(const ui::MouseEvent& const_event) = 0;
+  virtual void OnGestureEvent(const ui::GestureEvent& const_event) = 0;
+
+  // Synchronously query if |location_in_content| is a draggable background.
+  virtual void GetIsDraggableBackgroundAt(const gfx::Point& location_in_content,
+                                          bool* is_draggable_background) = 0;
+
+  // Synchronously query the tooltip text for |location_in_content|.
+  virtual void GetTooltipTextAt(const gfx::Point& location_in_content,
+                                base::string16* new_tooltip_text) = 0;
+
+  // Synchronously query the quicklook text at |location_in_content|. Return in
+  // |found_word| whether or not a word was found.
+  virtual void GetWordAt(const gfx::Point& location_in_content,
+                         bool* found_word,
+                         gfx::DecoratedText* decorated_word,
+                         gfx::Point* baseline_point) = 0;
 };
 
 }  // namespace views

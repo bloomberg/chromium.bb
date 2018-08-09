@@ -14,7 +14,6 @@
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_mac.h"
-#include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
@@ -32,6 +31,7 @@
 #import "ui/gfx/path_mac.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
+#import "ui/views/cocoa/bridged_native_widget_host.h"
 #import "ui/views/cocoa/drag_drop_client_mac.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -39,7 +39,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/word_lookup_client.h"
 
 using views::MenuController;
 
@@ -277,7 +276,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 @synthesize textInputClient = textInputClient_;
 @synthesize drawMenuBackgroundForBlur = drawMenuBackgroundForBlur_;
 
-- (id)initWithView:(views::View*)viewToHost {
+- (id)initWithHost:(views::BridgedNativeWidgetHost*)host
+              view:(views::View*)viewToHost {
   DCHECK(viewToHost);
   gfx::Rect bounds = viewToHost->bounds();
   // To keep things simple, assume the origin is (0, 0) until there exists a use
@@ -285,6 +285,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   DCHECK(bounds.origin().IsOrigin());
   NSRect initialFrame = NSMakeRect(0, 0, bounds.width(), bounds.height());
   if ((self = [super initWithFrame:initialFrame])) {
+    host_ = host;
     hostedView_ = viewToHost;
 
     // Apple's documentation says that NSTrackingActiveAlways is incompatible
@@ -326,6 +327,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 - (void)clearView {
   [self setTextInputClient:nullptr];
+  host_ = nullptr;
   hostedView_ = nullptr;
   [[NSDistributedNotificationCenter defaultCenter] removeObserver:self];
   [cursorTrackingArea_.get() clearOwner];
@@ -391,20 +393,21 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   }
 }
 
-// If |point| is classified as HTCAPTION (draggable background), return nil so
+// If |point| is classified as a draggable background (HTCAPTION), return nil so
 // that it can lead to a window drag or double-click in the title bar. Dragging
 // could be optimized by telling the window server which regions should be
 // instantly draggable without asking (tracked at https://crbug.com/830962).
 - (NSView*)hitTest:(NSPoint)point {
   gfx::Point flippedPoint(point.x, NSHeight(self.superview.bounds) - point.y);
-  int component = hostedView_->GetWidget()->GetNonClientComponent(flippedPoint);
-  if (component == HTCAPTION)
+  bool isDraggableBackground = false;
+  host_->GetIsDraggableBackgroundAt(flippedPoint, &isDraggableBackground);
+  if (isDraggableBackground)
     return nil;
   return [super hitTest:point];
 }
 
 - (void)processCapturedMouseEvent:(NSEvent*)theEvent {
-  if (!hostedView_)
+  if (!host_)
     return;
 
   NSWindow* source = [theEvent window];
@@ -430,26 +433,19 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   if (isScrollEvent) {
     ui::ScrollEvent event(theEvent);
     event.set_location(event_location);
-    hostedView_->GetWidget()->OnScrollEvent(&event);
+    host_->OnScrollEvent(event);
   } else {
     ui::MouseEvent event(theEvent);
     event.set_location(event_location);
-    hostedView_->GetWidget()->OnMouseEvent(&event);
+    host_->OnMouseEvent(event);
   }
 }
 
 - (void)updateTooltipIfRequiredAt:(const gfx::Point&)locationInContent {
-  DCHECK(hostedView_);
+  DCHECK(host_);
   base::string16 newTooltipText;
 
-  views::View* view = hostedView_->GetTooltipHandlerForPoint(locationInContent);
-  if (view) {
-    gfx::Point viewPoint = locationInContent;
-    views::View::ConvertPointToScreen(hostedView_, &viewPoint);
-    views::View::ConvertPointFromScreen(view, &viewPoint);
-    if (!view->GetTooltipText(viewPoint, &newTooltipText))
-      DCHECK(newTooltipText.empty());
-  }
+  host_->GetTooltipTextAt(locationInContent, &newTooltipText);
   if (newTooltipText != lastTooltipText_) {
     std::swap(newTooltipText, lastTooltipText_);
     [self setToolTipAtMousePoint:base::SysUTF16ToNSString(lastTooltipText_)];
@@ -457,13 +453,9 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (void)updateFullKeyboardAccess {
-  if (!hostedView_)
+  if (!host_)
     return;
-
-  views::FocusManager* focusManager =
-      hostedView_->GetWidget()->GetFocusManager();
-  if (focusManager)
-    focusManager->SetKeyboardAccessible([NSApp isFullKeyboardAccessEnabled]);
+  host_->SetKeyboardAccessible([NSApp isFullKeyboardAccessEnabled]);
 }
 
 // BridgedContentView private implementation.
@@ -689,7 +681,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 // Translates the location of |theEvent| to toolkit-views coordinates and passes
 // the event to NativeWidgetMac for handling.
 - (void)mouseEvent:(NSEvent*)theEvent {
-  if (!hostedView_)
+  if (!host_)
     return;
 
   DCHECK([theEvent type] != NSScrollWheel);
@@ -699,8 +691,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   // Aura updates tooltips with the help of aura::Window::AddPreTargetHandler().
   // Mac hooks in here.
   [self updateTooltipIfRequiredAt:event.location()];
-
-  hostedView_->GetWidget()->OnMouseEvent(&event);
+  host_->OnMouseEvent(event);
 }
 
 - (void)forceTouchEvent:(NSEvent*)theEvent {
@@ -720,15 +711,15 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   if ([[self window] firstResponder] != self)
     return NO;
   BOOL result = [super becomeFirstResponder];
-  if (result && hostedView_)
-    hostedView_->GetWidget()->GetFocusManager()->RestoreFocusedView();
+  if (result && host_)
+    host_->SetIsFirstResponder(true);
   return result;
 }
 
 - (BOOL)resignFirstResponder {
   BOOL result = [super resignFirstResponder];
-  if (result && hostedView_)
-    hostedView_->GetWidget()->GetFocusManager()->StoreFocusedView(true);
+  if (result && host_)
+    host_->SetIsFirstResponder(false);
   return result;
 }
 
@@ -751,16 +742,16 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
     newSize = [window contentRectForFrameRect:[window frame]].size;
 
   [super setFrameSize:newSize];
-  if (!hostedView_)
+  if (!host_)
     return;
-
-  hostedView_->SetSize(gfx::Size(newSize.width, newSize.height));
+  host_->SetSize(gfx::Size(newSize.width, newSize.height));
 }
 
 - (BOOL)isOpaque {
   if (!hostedView_)
     return NO;
 
+  // TODO(ccameron): Plumb this from BridgedNativeWidget to here.
   ui::Layer* layer = hostedView_->GetWidget()->GetLayer();
   return layer && layer->fills_bounds_opaquely();
 }
@@ -857,7 +848,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (void)scrollWheel:(NSEvent*)theEvent {
-  if (!hostedView_)
+  if (!host_)
     return;
 
   ui::ScrollEvent event(theEvent);
@@ -866,14 +857,13 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   // Aura updates tooltips with the help of aura::Window::AddPreTargetHandler().
   // Mac hooks in here.
   [self updateTooltipIfRequiredAt:event.location()];
-
-  hostedView_->GetWidget()->OnScrollEvent(&event);
+  host_->OnScrollEvent(event);
 }
 
 // Called when we get a three-finger swipe, and they're enabled in System
 // Preferences.
 - (void)swipeWithEvent:(NSEvent*)event {
-  if (!hostedView_)
+  if (!host_)
     return;
 
   // themblsha: In my testing all three-finger swipes send only a single event
@@ -894,35 +884,24 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   ui::GestureEvent gestureEvent(location.x(), location.y(),
                                 ui::EventFlagsFromNative(event),
                                 ui::EventTimeFromNative(event), swipeDetails);
-
-  hostedView_->GetWidget()->OnGestureEvent(&gestureEvent);
+  host_->OnGestureEvent(gestureEvent);
 }
 
 - (void)quickLookWithEvent:(NSEvent*)theEvent {
-  if (!hostedView_)
+  if (!host_)
     return;
 
   const gfx::Point locationInContent =
       gfx::ToFlooredPoint(ui::EventLocationFromNative(theEvent));
-  views::View* target = hostedView_->GetEventHandlerForPoint(locationInContent);
-  if (!target)
-    return;
 
-  views::WordLookupClient* wordLookupClient = target->GetWordLookupClient();
-  if (!wordLookupClient)
-    return;
-
-  gfx::Point locationInTarget = locationInContent;
-  views::View::ConvertPointToTarget(hostedView_, target, &locationInTarget);
+  bool foundWord = false;
   gfx::DecoratedText decoratedWord;
   gfx::Point baselinePoint;
-  if (!wordLookupClient->GetWordLookupDataAtPoint(
-          locationInTarget, &decoratedWord, &baselinePoint)) {
+  host_->GetWordAt(locationInContent, &foundWord, &decoratedWord,
+                   &baselinePoint);
+  if (!foundWord)
     return;
-  }
 
-  // Convert |baselinePoint| to the coordinate system of |hostedView_|.
-  views::View::ConvertPointToTarget(target, hostedView_, &baselinePoint);
   NSPoint baselinePointAppKit = NSMakePoint(
       baselinePoint.x(), NSHeight([self frame]) - baselinePoint.y());
   [self showDefinitionForAttributedString:

@@ -155,6 +155,9 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
 
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
   BridgedNativeWidget* bridge() const;
+  BridgedNativeWidgetHostImpl* bridge_host_for_testing() const {
+    return bridge_host_.get();
+  }
 
  private:
   friend class test::MockNativeWidgetMac;

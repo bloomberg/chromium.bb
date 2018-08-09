@@ -444,7 +444,8 @@ void BridgedNativeWidget::SetRootView(views::View* view) {
   // the old views::View will be gone, so any method calls will become no-ops.
 
   if (view) {
-    bridged_view_.reset([[BridgedContentView alloc] initWithView:view]);
+    bridged_view_.reset(
+        [[BridgedContentView alloc] initWithHost:host_ view:view]);
     drag_drop_client_.reset(new DragDropClientMac(this, view));
 
     // Objective C initializers can return nil. However, if |view| is non-NULL
