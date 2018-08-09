@@ -158,6 +158,8 @@ void PictureInPictureWindowControllerImpl::UpdatePlaybackState(
     return;
   }
 
+  DCHECK(media_player_id_.has_value());
+
   window_->SetPlaybackState(is_playing ? OverlayWindow::PlaybackState::kPlaying
                                        : OverlayWindow::PlaybackState::kPaused);
 }
