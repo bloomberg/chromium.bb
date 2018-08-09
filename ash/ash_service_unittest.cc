@@ -17,6 +17,7 @@
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -117,6 +118,8 @@ TEST_F(AshServiceTest, OpenWindow) {
       aura::CreateInitParamsForTopLevel(client.get(), std::move(properties)));
   window_tree_host_mus.InitHost();
   aura::Window* child_window = new aura::Window(nullptr);
+  child_window->SetProperty(aura::client::kEmbedType,
+                            aura::client::WindowEmbedType::EMBED_IN_OWNER);
   child_window->Init(ui::LAYER_NOT_DRAWN);
   window_tree_host_mus.window()->AddChild(child_window);
 
