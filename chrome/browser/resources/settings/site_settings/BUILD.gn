@@ -155,6 +155,7 @@ js_library("site_data_entry") {
     ":local_data_browser_proxy",
     "..:focus_row_behavior",
     "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:icon",
   ]
 }

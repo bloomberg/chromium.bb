@@ -39,7 +39,6 @@ js_type_check("closure_compile") {
 js_library("closure_compile_externs") {
   sources = []
   externs_list = [
-    "$externs_path/chrome_extensions.js",
     "$externs_path/command_line_private.js",
     "$externs_path/file_manager_private.js",
     "$externs_path/file_system_provider.js",
@@ -240,6 +239,17 @@ js_library("test_util_base") {
   deps = [
     ":app_windows",
     "../../common/js:error_util",
+  ]
+
+  # The callback test_util_base.js passes to chrome.runtime.onMessageExternal()
+  # requires chrome_extensions.js, which has a dependency on chrome.js. Ensure
+  # the externs are introduced at the same time (in this order). Note we are
+  # lucky the list below also sorts in this order, or we'd need some other fix.
+  # A compile error results if the dependency walker encounters a target
+  # that puts chrome_extensions.js into the argument list before chrome.js.
+  externs_list = [
+    "$externs_path/chrome.js",
+    "$externs_path/chrome_extensions.js",
   ]
 }
 

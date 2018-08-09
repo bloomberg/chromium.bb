@@ -19,3 +19,5 @@ Local modifications:
   third_party/closure_compiler/externs/chrome_extensions.js.
 - Some externs here are for chrome-specific use; these primarily include the
   *_private.js files.
+- Fix bug in js_binary.py causing it to drop externs.
+- Cache dependency subtrees in js_binary.py for a huge performance boost.
