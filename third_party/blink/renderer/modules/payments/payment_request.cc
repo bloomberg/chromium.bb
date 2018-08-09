@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/uuid.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -518,8 +517,7 @@ void StringifyAndParseMethodSpecificData(const String& supported_method,
     if (exception_state.HadException())
       exception_state.ClearException();
   }
-  if (RuntimeEnabledFeatures::PaymentRequestBasicCardEnabled() &&
-      supported_method == "basic-card") {
+  if (supported_method == "basic-card") {
     SetBasicCardMethodData(input, output, exception_state);
     if (exception_state.HadException())
       exception_state.ClearException();
