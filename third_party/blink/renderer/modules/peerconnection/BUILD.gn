@@ -20,6 +20,8 @@ blink_modules_sources("peerconnection") {
     "rtc_error_util.h",
     "rtc_ice_candidate.cc",
     "rtc_ice_candidate.h",
+    "rtc_ice_transport.cc",
+    "rtc_ice_transport.h",
     "rtc_legacy_stats_report.cc",
     "rtc_legacy_stats_report.h",
     "rtc_peer_connection.cc",

@@ -1057,6 +1057,11 @@
       name: "RestrictCanRequestURLCharacterSet",
       status: "stable",
     },
+    // Enables the use of the RTCIceTransport with extensions.
+    {
+      name: "RTCIceTransportExtension",
+      status: "test",
+    },
     {
       name: "RtcPeerConnectionId",
       origin_trial_feature_name: "RtcPeerConnectionId",

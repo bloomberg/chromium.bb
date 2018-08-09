@@ -1,0 +1,48 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://w3c.github.io/webrtc-pc/#dom-rtcicerole
+enum RTCIceRole {
+    "controlling",
+    "controlled",
+};
+
+// https://w3c.github.io/webrtc-pc/#dom-rtcicetransportstate
+enum RTCIceTransportState {
+    "new",
+    "checking",
+    "connected",
+    "completed",
+    "disconnected",
+    "failed",
+    "closed",
+};
+
+// https://w3c.github.io/webrtc-pc/#dom-rtcicegatheringstate
+enum RTCIceGatheringState {
+    "new",
+    "gathering",
+    "complete"
+};
+
+// https://w3c.github.io/webrtc-pc/#rtcicetransport
+[
+   // Constructor from https://w3c.github.io/webrtc-ice/#rtcicetransport*
+   Constructor(),
+   Exposed=Window,
+   RuntimeEnabled=RTCIceTransportExtension
+] interface RTCIceTransport {
+    // TODO(github.com/w3c/webrtc-ice/issues/4): role is non-null in the
+    // WebRTC-PC specification.
+    readonly attribute RTCIceRole? role;
+    readonly attribute RTCIceTransportState state;
+    readonly attribute RTCIceGatheringState gatheringState;
+    sequence<RTCIceCandidate> getLocalCandidates();
+    sequence<RTCIceCandidate> getRemoteCandidates();
+    RTCIceCandidatePair? getSelectedCandidatePair();
+    RTCIceParameters? getLocalParameters();
+    RTCIceParameters? getRemoteParameters();
+
+    // TODO(crbug.com/864871): Add events and extension methods.
+};
