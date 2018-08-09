@@ -5,8 +5,7 @@
 // https://wicg.github.io/budget-api/#navigator-workernavigator-extensions
 
 [
-    ImplementedAs=WorkerNavigatorBudget,
-    RuntimeEnabled=Budget
+    ImplementedAs=WorkerNavigatorBudget
 ] partial interface WorkerNavigator {
     [SameObject, CallWith=ExecutionContext] readonly attribute BudgetService budget;
 };
