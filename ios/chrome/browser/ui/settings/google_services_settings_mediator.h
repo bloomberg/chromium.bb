@@ -20,9 +20,6 @@ class SyncSetupService;
 namespace browser_sync {
 class ProfileSyncService;
 };
-namespace unified_consent {
-class UnifiedConsentService;
-}  // namespace unified_consent
 
 // Mediator for the Google services settings.
 @interface GoogleServicesSettingsMediator
@@ -40,8 +37,6 @@ class UnifiedConsentService;
                         syncService:
                             (browser_sync::ProfileSyncService*)syncService
                    syncSetupService:(SyncSetupService*)syncSetupService
-              unifiedConsentService:
-                  (unified_consent::UnifiedConsentService*)unifiedConsentService
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

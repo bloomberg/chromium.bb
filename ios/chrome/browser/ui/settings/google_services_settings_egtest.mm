@@ -98,8 +98,7 @@ using unified_consent::prefs::kUnifiedConsentGiven;
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
   PrefService* prefService = GetOriginalBrowserState()->GetPrefs();
-  GREYAssert(prefService->GetBoolean(kUnifiedConsentGiven),
-             @"Unified consent should be given");
+  prefService->SetBoolean(kUnifiedConsentGiven, true);
   [self openGoogleServicesSettings];
   [self assertSyncEverythingSection];
   [self assertPersonalizedServicesCollapsed:YES];
