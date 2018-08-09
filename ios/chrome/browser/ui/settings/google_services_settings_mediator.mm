@@ -496,7 +496,7 @@ textItemWithItemType:(NSInteger)itemType
   [self loadNonPersonalizedSection];
 }
 
-#pragma mark - GoogleServicesSettingsCommandHandler
+#pragma mark - GoogleServicesSettingsServiceDelegate
 
 - (void)toggleSyncEverythingWithValue:(BOOL)value {
   if (value == self.isConsentGiven)

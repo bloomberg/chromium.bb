@@ -39,13 +39,13 @@
 
 - (void)start {
   UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
-  GoogleServicesSettingsViewController* controller =
+  GoogleServicesSettingsViewController* viewController =
       [[GoogleServicesSettingsViewController alloc]
           initWithLayout:layout
                    style:CollectionViewControllerStyleAppBar];
-  controller.presentationDelegate = self;
-  controller.localDispatcher = self;
-  self.viewController = controller;
+  viewController.presentationDelegate = self;
+  viewController.localDispatcher = self;
+  self.viewController = viewController;
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(self.browserState);
   browser_sync::ProfileSyncService* syncService =
@@ -54,11 +54,11 @@
       initWithPrefService:self.browserState->GetPrefs()
               syncService:syncService
          syncSetupService:syncSetupService];
-  self.mediator.consumer = controller;
+  self.mediator.consumer = viewController;
   self.mediator.authService =
       AuthenticationServiceFactory::GetForBrowserState(self.browserState);
-  controller.modelDelegate = self.mediator;
-  controller.commandHandler = self.mediator;
+  viewController.modelDelegate = self.mediator;
+  viewController.serviceDelegate = self.mediator;
   DCHECK(self.navigationController);
   [self.navigationController pushViewController:self.viewController
                                        animated:YES];
