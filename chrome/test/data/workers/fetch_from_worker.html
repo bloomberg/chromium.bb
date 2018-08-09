@@ -1,0 +1,13 @@
+<script>
+const worker = new Worker('fetch_from_worker.js');
+worker.onmessage = e => {
+  document.body.innerText += e.data;
+  document.title = 'DONE';
+};
+
+function fetch_from_worker(url) {
+  document.title = 'Fetching';
+  document.body.innerText = '';
+  worker.postMessage({url: url});
+}
+</script>
