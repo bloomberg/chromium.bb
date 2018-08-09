@@ -30,15 +30,10 @@ void ProcessInternalsHandlerImpl::GetIsolationMode(
                                         : base::JoinString(modes, ", "));
 }
 
-void ProcessInternalsHandlerImpl::GetIsolatedOrigins(
-    GetIsolatedOriginsCallback callback) {
-  std::vector<url::Origin> origins_list =
-      SiteIsolationPolicy::GetIsolatedOrigins();
-  std::vector<std::string> origins;
-  for (size_t i = 0; i < origins_list.size(); ++i)
-    origins.push_back(origins_list[i].Serialize());
-
-  std::move(callback).Run(origins);
+void ProcessInternalsHandlerImpl::GetIsolatedOriginsSize(
+    GetIsolatedOriginsSizeCallback callback) {
+  int size = SiteIsolationPolicy::GetIsolatedOrigins().size();
+  std::move(callback).Run(size);
 }
 
 }  // namespace content

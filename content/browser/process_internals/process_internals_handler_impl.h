@@ -22,7 +22,7 @@ class ProcessInternalsHandlerImpl : public ::mojom::ProcessInternalsHandler {
 
   // mojom::ProcessInternalsHandler overrides:
   void GetIsolationMode(GetIsolationModeCallback callback) override;
-  void GetIsolatedOrigins(GetIsolatedOriginsCallback callback) override;
+  void GetIsolatedOriginsSize(GetIsolatedOriginsSizeCallback callback) override;
 
  private:
   mojo::Binding<::mojom::ProcessInternalsHandler> binding_;
