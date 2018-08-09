@@ -380,11 +380,13 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
     DCHECK_EQ(not_streamed_reason, ScriptStreamer::kInvalid);
     if (streamer_->StreamingSuppressed()) {
       not_streamed_reason = streamer_->StreamingSuppressedReason();
-    } else if (ready_state_ != kReady) {
-      DCHECK_EQ(ready_state_, kReadyStreaming);
+    } else if (ready_state_ == kErrorOccurred) {
+      not_streamed_reason = ScriptStreamer::kErrorOccurred;
+    } else if (ready_state_ == kReadyStreaming) {
       not_streamed_reason = ScriptStreamer::kStreamerNotReadyOnGetSource;
     } else {
       // Streamer can be used to compile script.
+      DCHECK_EQ(ready_state_, kReady);
       streamer_ready = true;
     }
   }

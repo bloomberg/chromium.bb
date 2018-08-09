@@ -34595,6 +34595,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="10" label="Streamer not ready when GetSource called"/>
   <int value="11" label="Internal script"/>
   <int value="12" label="Streaming was never started"/>
+  <int value="13" label="An error had occurred before GetSource was called"/>
 </enum>
 
 <enum name="NPAPIPluginStatus">

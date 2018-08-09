@@ -384,6 +384,8 @@ const char* NotStreamedReasonString(ScriptStreamer::NotStreamingReason reason) {
       return "inline script";
     case ScriptStreamer::kDidntTryToStartStreaming:
       return "start streaming not called";
+    case ScriptStreamer::kErrorOccurred:
+      return "an error occurred";
     case ScriptStreamer::kAlreadyLoaded:
     case ScriptStreamer::kCount:
     case ScriptStreamer::kInvalid:
