@@ -4870,7 +4870,7 @@ crbug.com/869470 external/wpt/background-fetch/get-ids.https.window.html [ Pass 
 # Flaky middleClinkAutoscroll increased flakiness on Mac
 crbug.com/851090 [ Mac ] fast/events/middleClickAutoscroll-click-hyperlink.html [ Failure Pass ]
 crbug.com/851090 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-nested-divs.html [ Failure Pass ]
-crbug.com/851090 [ Mac ] fast/events/middleClickAutoscroll-nested-divs.html [ Failure Pass ]
+crbug.com/851090 [ Mac ] fast/events/middleClickAutoscroll-nested-divs.html [ Failure Pass Timeout ]
 crbug.com/851090 [ Mac ] virtual/user-activation-v2/fast/events/autoscroll-over-scrollbar.html [ Failure Pass ]
 
 # Sheriff 2018-08-08
