@@ -589,11 +589,7 @@ public class ChromeTabbedActivity
                     // launching into VR.
                     && !VrModuleProvider.getIntentDelegate().isLaunchingIntoVr(this, getIntent())
                     && !isLegacyMultiWindow) {
-                // Data reduction promo should be temporarily suppressed if the sign in promo is
-                // shown to avoid nagging users too much.
-                isShowingPromo = SigninPromoUtil.launchSigninPromoIfNeeded(this)
-                        || DataReductionPromoScreen.launchDataReductionPromo(
-                                   this, mTabModelSelectorImpl.getCurrentModel().isIncognito());
+                isShowingPromo = maybeShowPromo();
             } else {
                 preferenceManager.writeBoolean(
                         ChromePreferenceManager.PROMOS_SKIPPED_ON_FIRST_START, true);
@@ -607,6 +603,14 @@ public class ChromeTabbedActivity
         } finally {
             TraceEvent.end("ChromeTabbedActivity.finishNativeInitialization");
         }
+    }
+
+    private boolean maybeShowPromo() {
+        // Only one promo can be shown in one run to avoid nagging users too much.
+        if (SigninPromoUtil.launchConsentBumpIfNeeded(this)) return true;
+        if (SigninPromoUtil.launchSigninPromoIfNeeded(this)) return true;
+        return DataReductionPromoScreen.launchDataReductionPromo(
+                this, mTabModelSelectorImpl.getCurrentModel().isIncognito());
     }
 
     /**
