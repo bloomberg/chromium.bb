@@ -7,6 +7,7 @@
 #include <vector>
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "content/public/common/request_context_type.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/test_request_peer.h"
@@ -25,8 +26,13 @@ class URLLoaderClientImplTest : public ::testing::Test,
                                 public network::mojom::URLLoaderFactory {
  protected:
   URLLoaderClientImplTest() : dispatcher_(new ResourceDispatcher()) {
+    auto request = std::make_unique<network::ResourceRequest>();
+    // Set request context type to fetch so that ResourceDispatcher doesn't
+    // install MimeSniffingThrottle, which makes URLLoaderThrottleLoader
+    // defer the request.
+    request->fetch_request_context_type = REQUEST_CONTEXT_TYPE_FETCH;
     request_id_ = dispatcher_->StartAsync(
-        std::make_unique<network::ResourceRequest>(), 0,
+        std::move(request), 0,
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
         TRAFFIC_ANNOTATION_FOR_TESTS, false, false,
         std::make_unique<TestRequestPeer>(dispatcher_.get(),
