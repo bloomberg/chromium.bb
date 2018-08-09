@@ -8,6 +8,7 @@
 #include <string>
 
 #include "build/build_config.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/welcome_handler.h"
 #include "chrome/common/pref_names.h"
@@ -16,6 +17,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -115,6 +117,8 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     web_ui->AddMessageHandler(
         std::make_unique<nux_google_apps::GoogleAppsHandler>(
             profile->GetPrefs(),
+            FaviconServiceFactory::GetForProfile(
+                profile, ServiceAccessType::EXPLICIT_ACCESS),
             BookmarkModelFactory::GetForBrowserContext(browser_context)));
 
     nux_google_apps::GoogleAppsHandler::AddSources(html_source);

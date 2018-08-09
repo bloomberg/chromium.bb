@@ -19,6 +19,10 @@ namespace content {
 class WebUIDataSource;
 }  // namespace content
 
+namespace favicon {
+class FaviconService;
+}  // namespace favicon
+
 namespace nux_google_apps {
 
 extern const char* kGoogleAppsInteractionHistogram;
@@ -35,6 +39,7 @@ enum class GoogleAppsInteraction {
 class GoogleAppsHandler : public content::WebUIMessageHandler {
  public:
   GoogleAppsHandler(PrefService* prefs,
+                    favicon::FaviconService* favicon_service,
                     bookmarks::BookmarkModel* bookmark_model);
   ~GoogleAppsHandler() override;
 
@@ -51,6 +56,9 @@ class GoogleAppsHandler : public content::WebUIMessageHandler {
  private:
   // Weak reference.
   PrefService* prefs_;
+
+  // Weak reference.
+  favicon::FaviconService* favicon_service_;
 
   // Weak reference.
   bookmarks::BookmarkModel* bookmark_model_;

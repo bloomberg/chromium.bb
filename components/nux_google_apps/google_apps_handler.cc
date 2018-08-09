@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/favicon/core/favicon_service.h"
 #include "components/grit/components_resources.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/nux/show_promo_delegate.h"
@@ -20,6 +21,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace nux_google_apps {
 
@@ -51,14 +53,26 @@ constexpr const char* kGoogleAppUrls[] = {
     "https://news.google.com", "https://chrome.google.com/webstore",
 };
 
+constexpr const int kGoogleAppIconSize = 48;  // Pixels.
+constexpr const int kGoogleAppIcons[] = {
+    IDR_NUX_GOOGLE_APPS_GMAIL_1X, IDR_NUX_GOOGLE_APPS_YOUTUBE_1X,
+    IDR_NUX_GOOGLE_APPS_MAPS_1X,  IDR_NUX_GOOGLE_APPS_TRANSLATE_1X,
+    IDR_NUX_GOOGLE_APPS_NEWS_1X,  IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X,
+};
+
 static_assert(base::size(kGoogleAppNames) == base::size(kGoogleAppUrls),
               "names and urls must match");
 static_assert(base::size(kGoogleAppNames) == (size_t)GoogleApps::kCount,
               "names and histograms must match");
+static_assert(base::size(kGoogleAppNames) == base::size(kGoogleAppIcons),
+              "names and icons must match");
 
 GoogleAppsHandler::GoogleAppsHandler(PrefService* prefs,
+                                     favicon::FaviconService* favicon_service,
                                      bookmarks::BookmarkModel* bookmark_model)
-    : prefs_(prefs), bookmark_model_(bookmark_model) {}
+    : prefs_(prefs),
+      favicon_service_(favicon_service),
+      bookmark_model_(bookmark_model) {}
 
 GoogleAppsHandler::~GoogleAppsHandler() {}
 
@@ -90,9 +104,19 @@ void GoogleAppsHandler::HandleAddGoogleApps(const base::ListValue* args) {
       UMA_HISTOGRAM_ENUMERATION(
           "FirstRun.NewUserExperience.GoogleAppsSelection", (GoogleApps)i,
           GoogleApps::kCount);
-      bookmark_model_->AddURL(
-          bookmark_model_->bookmark_bar_node(), bookmarkIndex++,
-          base::ASCIIToUTF16(kGoogleAppNames[i]), GURL(kGoogleAppUrls[i]));
+      GURL app_url = GURL(kGoogleAppUrls[i]);
+      bookmark_model_->AddURL(bookmark_model_->bookmark_bar_node(),
+                              bookmarkIndex++,
+                              base::ASCIIToUTF16(kGoogleAppNames[i]), app_url);
+
+      // Preload the favicon cache with Chrome-bundled images. Otherwise, the
+      // pre-populated bookmarks don't have favicons and look bad. Favicons are
+      // updated automatically when a user visits a site.
+      favicon_service_->MergeFavicon(
+          app_url, app_url, favicon_base::IconType::kFavicon,
+          ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+              kGoogleAppIcons[i]),
+          gfx::Size(kGoogleAppIconSize, kGoogleAppIconSize));
     }
   }
 
