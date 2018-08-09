@@ -13,6 +13,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_features.h"
+#include "ui/events/keycodes/keyboard_code_conversion_mac.h"
 
 namespace {
 
@@ -31,19 +32,25 @@ int CommandForKeys(bool command_key,
   if (opt_key)
     modifierFlags |= NSAlternateKeyMask;
 
-  // Use a two-length string as a dummy character.
-  NSString* chars = @"ab";
+  unichar shifted_character;
+  unichar character;
+  int result = ui::MacKeyCodeForWindowsKeyCode(
+      ui::KeyboardCodeFromKeyCode(vkey_code), modifierFlags, &shifted_character,
+      &character);
+  DCHECK_NE(result, -1);
 
-  NSEvent* event = [NSEvent keyEventWithType:NSKeyDown
-                                    location:NSZeroPoint
-                               modifierFlags:modifierFlags
-                                   timestamp:0.0
-                                windowNumber:0
-                                     context:nil
-                                  characters:chars
-                 charactersIgnoringModifiers:chars
-                                   isARepeat:NO
-                                     keyCode:vkey_code];
+  NSEvent* event = [NSEvent
+                 keyEventWithType:NSKeyDown
+                         location:NSZeroPoint
+                    modifierFlags:modifierFlags
+                        timestamp:0.0
+                     windowNumber:0
+                          context:nil
+                       characters:[NSString stringWithFormat:@"%C", character]
+      charactersIgnoringModifiers:[NSString
+                                      stringWithFormat:@"%C", shifted_character]
+                        isARepeat:NO
+                          keyCode:vkey_code];
 
   return CommandForKeyEvent(event).chrome_command;
 }
@@ -86,20 +93,21 @@ TEST(GlobalKeyboardShortcuts, KeypadNumberKeysMatch) {
     {kVK_ANSI_9, kVK_ANSI_Keypad9},
   };
 
+  // We only consider unshifted keys. A shifted numpad key gives a different
+  // keyEquivalent than a shifted number key.
+  int shift = 0;
   for (unsigned int i = 0; i < base::size(equivalents); ++i) {
     for (int command = 0; command <= 1; ++command) {
-      for (int shift = 0; shift <= 1; ++shift) {
-        for (int control = 0; control <= 1; ++control) {
-          for (int option = 0; option <= 1; ++option) {
-            EXPECT_EQ(CommandForKeys(command, shift, control, option,
-                                     equivalents[i].keycode),
-                      CommandForKeys(command, shift, control, option,
-                                     equivalents[i].keypad_keycode));
-            EXPECT_EQ(CommandForKeys(command, shift, control, option,
-                                     equivalents[i].keycode),
-                      CommandForKeys(command, shift, control, option,
-                                     equivalents[i].keypad_keycode));
-          }
+      for (int control = 0; control <= 1; ++control) {
+        for (int option = 0; option <= 1; ++option) {
+          EXPECT_EQ(CommandForKeys(command, shift, control, option,
+                                   equivalents[i].keycode),
+                    CommandForKeys(command, shift, control, option,
+                                   equivalents[i].keypad_keycode));
+          EXPECT_EQ(CommandForKeys(command, shift, control, option,
+                                   equivalents[i].keycode),
+                    CommandForKeys(command, shift, control, option,
+                                   equivalents[i].keypad_keycode));
         }
       }
     }

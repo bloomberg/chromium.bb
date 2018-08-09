@@ -267,12 +267,30 @@ TEST(NSMenuItemAdditionsTest, TestFiresForKeyEvent) {
   ExpectKeyDoesntFireItem(key, MenuItem(@"z", 0x100000));
   ExpectKeyFiresItem(key, MenuItem(@";", 0x100000));
 
+  // Change to Dvorak-QWERTY
+  SetIsInputSourceDvorakQwertyForTesting(true);
+
   // cmd-z on dvorak qwerty layout (so that the key produces ';', but 'z' if
   // cmd is down)
-  SetIsInputSourceDvorakQwertyForTesting(true);
   key = KeyEvent(0x100108, @"z", @";", 6);
   ExpectKeyFiresItem(key, MenuItem(@"z", 0x100000), false);
   ExpectKeyDoesntFireItem(key, MenuItem(@";", 0x100000), false);
+
+  // On dvorak-qwerty, pressing the keys for 'cmd' and '=' triggers an event
+  // whose characters are cmd-'+'.
+  // cmd-'+' on dvorak qwerty should not trigger a menu item for cmd-']', and
+  // not a menu item for cmd-'+'.
+  key = KeyEvent(0x100108, @"+", @"+", 30);
+  ExpectKeyFiresItem(key, MenuItem(@"]", 0x100000), false);
+  ExpectKeyDoesntFireItem(key, MenuItem(@"+", 0x100000), false);
+
+  // cmd-shift-'+' on dvorak qwerty should trigger a menu item for cmd-shift-'}'
+  // and not a menu item for cmd-shift-'+'.
+  key = KeyEvent(0x12010a, @"}", @"+", 30);
+  ExpectKeyFiresItem(key, MenuItem(@"}", 0x100000), false);
+  ExpectKeyDoesntFireItem(key, MenuItem(@"+", 0x100000), false);
+
+  // Change away from Dvorak-QWERTY
   SetIsInputSourceDvorakQwertyForTesting(false);
 
   // cmd-shift-z on dvorak layout (so that we get a ':')

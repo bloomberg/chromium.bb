@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "ui/events/keycodes/keyboard_code_conversion_mac.h"
 
 namespace {
 bool g_is_input_source_dvorak_qwerty = false;
@@ -127,24 +128,15 @@ void SetIsInputSourceDvorakQwertyForTesting(bool is_dvorak_qwerty) {
   // We typically want to compare [NSMenuItem keyEquivalent] against [NSEvent
   // charactersIgnoringModifiers]. There is a special keyboard layout "Dvorak -
   // QWERTY" which uses QWERTY-style shortcuts when the Command key is held
-  // down. In this case, we want to use [NSEvent characters] instead of [NSEvent
-  // charactersIgnoringModifiers]. The problem is, this has the wrong behavior
-  // for every other keyboard layout.
-  //
-  // The documentation for -[NSEvent charactersIgnoringModifiers] states that
-  // it is the appropriate method to use for implementing keyEquivalents.
+  // down. In this case, we want to use the keycode of the event rather than
+  // looking at the characters.
   if (g_is_input_source_dvorak_qwerty) {
-    // When both |characters| and |charactersIgnoringModifiers| are ascii, we
-    // want to use |characters| if it's a character and
-    // |charactersIgnoringModifiers| else (on dvorak, cmd-shift-z should fire
-    // "cmd-:" instead of "cmd-;", but on dvorak-qwerty, cmd-shift-z should fire
-    // cmd-shift-z instead of cmd-:).
-    if ([eventString characterAtIndex:0] <= 0x7f &&
-        [[event characters] length] > 0 &&
-        [[event characters] characterAtIndex:0] <= 0x7f &&
-        isalpha([[event characters] characterAtIndex:0])) {
-      eventString = [event characters];
-    }
+    ui::KeyboardCode windows_keycode =
+        ui::KeyboardCodeFromKeyCode(event.keyCode);
+    unichar shifted_character, character;
+    ui::MacKeyCodeForWindowsKeyCode(windows_keycode, event.modifierFlags,
+                                    &shifted_character, &character);
+    eventString = [NSString stringWithFormat:@"%C", shifted_character];
   }
 
   // [ctr + shift + tab] generates the "End of Medium" keyEquivalent rather than
