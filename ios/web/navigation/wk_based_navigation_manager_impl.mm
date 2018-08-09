@@ -86,6 +86,12 @@ void WKBasedNavigationManagerImpl::OnNavigationItemCommitted() {
   LoadCommittedDetails details;
   details.item = GetLastCommittedItem();
   DCHECK(details.item);
+
+  if (!wk_navigation_util::IsRestoreSessionUrl(details.item->GetURL())) {
+    is_restore_session_in_progress_ = false;
+    restored_visible_item_.reset();
+  }
+
   details.previous_item_index = GetPreviousItemIndex();
   NavigationItem* previous_item = GetItemAtIndex(details.previous_item_index);
   details.is_in_page =
@@ -279,6 +285,9 @@ WebState* WKBasedNavigationManagerImpl::GetWebState() const {
 }
 
 NavigationItem* WKBasedNavigationManagerImpl::GetVisibleItem() const {
+  if (is_restore_session_in_progress_)
+    return restored_visible_item_.get();
+
   NavigationItem* transient_item = GetTransientItem();
   if (transient_item) {
     return transient_item;
@@ -319,9 +328,8 @@ NavigationItem* WKBasedNavigationManagerImpl::GetItemAtIndex(
 
 int WKBasedNavigationManagerImpl::GetIndexOfItem(
     const NavigationItem* item) const {
-  if (item == empty_window_open_item_.get()) {
+  if (item == empty_window_open_item_.get())
     return 0;
-  }
 
   for (size_t index = 0; index < web_view_cache_.GetBackForwardListItemCount();
        index++) {
@@ -466,6 +474,15 @@ void WKBasedNavigationManagerImpl::Restore(
 
   // This pending item will become the first item in the restored history.
   params.virtual_url = items[0]->GetVirtualURL();
+
+  // Ordering is important. Cache the visible item of the restored session
+  // before starting the new navigation, which may trigger client lookup of
+  // visible item. The visible item of the restored session is the last
+  // committed item, because a restored session has no pending or transient
+  // item.
+  is_restore_session_in_progress_ = true;
+  if (last_committed_item_index > -1)
+    restored_visible_item_ = std::move(items[last_committed_item_index]);
 
   LoadURLWithParams(params);
 }

@@ -238,6 +238,17 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
 
   WKWebViewCache web_view_cache_;
 
+  // Whether this navigation manager is in the process of restoring session
+  // history into WKWebView. It is set in Restore() and unset in the first
+  // OnNavigationItemCommitted() callback.
+  bool is_restore_session_in_progress_ = false;
+
+  // The active navigation entry in the restored session. GetVisibleItem()
+  // returns this item when |is_restore_session_in_progress_| is true so that
+  // clients of this navigation manager gets sane values for visible title and
+  // URL.
+  std::unique_ptr<NavigationItem> restored_visible_item_;
+
   DISALLOW_COPY_AND_ASSIGN(WKBasedNavigationManagerImpl);
 };
 

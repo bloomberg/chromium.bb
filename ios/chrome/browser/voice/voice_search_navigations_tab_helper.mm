@@ -55,7 +55,6 @@ bool VoiceSearchNavigationTabHelper::IsNavigationFromVoiceSearch(
   if (item && (item == pending_item || item == transient_item))
     return will_navigate_to_voice_search_result_;
   // Check if the marker exists if it's a committed navigation.
-  DCHECK_NE(manager->GetIndexOfItem(item), -1);
   return item->GetUserData(kNavigationMarkerKey) != nullptr;
 }
 
