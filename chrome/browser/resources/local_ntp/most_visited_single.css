@@ -433,6 +433,7 @@ body.dark-theme .md-tile-container:active + .md-menu::after {
   display: flex;
   flex-flow: column nowrap;
   height: 100%;
+  position: relative;
   width: 100%;
   z-index: -1;
 }
