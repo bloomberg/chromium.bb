@@ -1793,6 +1793,7 @@ if (is_android) {
       "//chrome/gpu",
       "//chrome/renderer",
       "//chrome/utility",
+      "//components/minidump_uploader",
       "//components/safe_browsing/android:safe_browsing_mobile",
       "//components/services/heap_profiling",
       "//content/public/app:both",
