@@ -78,6 +78,10 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns whether the content is painted with a client edge or not.
   virtual bool HasClientEdge() const;
 
+  // Returns whether the shapes of background tabs are visible against the
+  // frame.
+  virtual bool HasVisibleBackgroundTabShapes() const;
+
   // Retrieves the icon to use in the frame to indicate an incognito window.
   gfx::ImageSkia GetIncognitoAvatarIcon() const;
 

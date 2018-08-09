@@ -64,6 +64,10 @@ GFX_EXPORT bool IsWithinHSLRange(const HSL& hsl,
 // special value which indicates 'no change'.
 GFX_EXPORT void MakeHSLShiftValid(HSL* hsl);
 
+// Returns whether pasing |hsl| to HSLShift() would have any effect.  Assumes
+// |hsl| is a valid shift (as defined by MakeHSLShiftValid()).
+GFX_EXPORT bool IsHSLShiftMeaningful(const HSL& hsl);
+
 // HSL-Shift an SkColor. The shift values are in the range of 0-1, with the
 // option to specify -1 for 'no change'. The shift values are defined as:
 // hsl_shift[0] (hue): The absolute hue value - 0 and 1 map

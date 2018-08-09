@@ -343,10 +343,10 @@ bool TabStrip::IsRectInWindowCaption(const gfx::Rect& rect) {
   // draggability.  This region starts 1 DIP above the top of the separator.
   const int drag_handle_extension =
       (height() - Tab::GetTabSeparatorHeight()) / 2 - 1;
-  // TODO(pkasting): https://crbug.com/862276  Set this condition false when tab
-  // shapes are visible.
-  const bool extend_drag_handle =
-      MD::IsRefreshUi() && !SizeTabButtonToTopOfTabStrip();
+
+  // Disable drag handle extension when tab shapes are visible.
+  bool extend_drag_handle = !SizeTabButtonToTopOfTabStrip() &&
+                            !controller_->HasVisibleBackgroundTabShapes();
 
   // A hit on the tab is not in the caption unless it is in the thin strip
   // mentioned above.
