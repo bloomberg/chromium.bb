@@ -114,6 +114,7 @@ class BASE_EXPORT SequenceManagerImpl
   void SweepCanceledDelayedTasks() override;
   bool GetAndClearSystemIsQuiescentBit() override;
   void SetWorkBatchSize(int work_batch_size) override;
+  void SetTimerSlack(TimerSlack timer_slack) override;
   void EnableCrashKeys(const char* file_name_crash_key,
                        const char* function_name_crash_key) override;
   const MetricRecordingSettings& GetMetricRecordingSettings() const override;

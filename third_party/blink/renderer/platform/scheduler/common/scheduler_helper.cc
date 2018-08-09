@@ -147,6 +147,10 @@ base::TimeTicks SchedulerHelper::NowTicks() const {
   return base::TimeTicks::Now();
 }
 
+void SchedulerHelper::SetTimerSlack(base::TimerSlack timer_slack) {
+  sequence_manager_->SetTimerSlack(timer_slack);
+}
+
 double SchedulerHelper::GetSamplingRateForRecordingCPUTime() const {
   if (sequence_manager_) {
     return sequence_manager_->GetMetricRecordingSettings()
