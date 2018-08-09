@@ -25,6 +25,7 @@
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/appcache_storage_impl.h"
+#include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
@@ -89,11 +90,11 @@ void AppCacheServiceImpl::AsyncHelper::Cancel() {
 
 class AppCacheServiceImpl::DeleteHelper : public AsyncHelper {
  public:
-  DeleteHelper(AppCacheServiceImpl* service,
-               const GURL& manifest_url,
-               net::CompletionOnceCallback callback)
-      : AsyncHelper(service, std::move(callback)),
-        manifest_url_(manifest_url) {}
+  DeleteHelper(
+      AppCacheServiceImpl* service, const GURL& manifest_url,
+      const net::CompletionCallback& callback)
+      : AsyncHelper(service, callback), manifest_url_(manifest_url) {
+  }
 
   void Start() override {
     service_->storage()->LoadOrCreateGroup(manifest_url_, this);
@@ -136,8 +137,8 @@ class AppCacheServiceImpl::DeleteOriginHelper : public AsyncHelper {
  public:
   DeleteOriginHelper(AppCacheServiceImpl* service,
                      const url::Origin& origin,
-                     net::CompletionOnceCallback callback)
-      : AsyncHelper(service, std::move(callback)),
+                     const net::CompletionCallback& callback)
+      : AsyncHelper(service, callback),
         origin_(origin),
         num_caches_to_delete_(0),
         successes_(0),
@@ -260,7 +261,7 @@ class AppCacheServiceImpl::CheckResponseHelper : AsyncHelper {
                       const GURL& manifest_url,
                       int64_t cache_id,
                       int64_t response_id)
-      : AsyncHelper(service, net::CompletionOnceCallback()),
+      : AsyncHelper(service, net::CompletionCallback()),
         manifest_url_(manifest_url),
         cache_id_(cache_id),
         response_id_(response_id),
@@ -319,8 +320,7 @@ void AppCacheServiceImpl::CheckResponseHelper::OnGroupLoaded(
     if (cache_->cache_id() == cache_id_) {
       AppCacheHistograms::CountCheckResponseResult(
           AppCacheHistograms::ENTRY_NOT_FOUND);
-      service_->DeleteAppCacheGroup(manifest_url_,
-                                    net::CompletionOnceCallback());
+      service_->DeleteAppCacheGroup(manifest_url_, net::CompletionCallback());
     } else {
       AppCacheHistograms::CountCheckResponseResult(
           AppCacheHistograms::RESPONSE_OUT_OF_DATE);
@@ -344,7 +344,7 @@ void AppCacheServiceImpl::CheckResponseHelper::OnReadInfoComplete(int result) {
   if (result < 0) {
     AppCacheHistograms::CountCheckResponseResult(
         AppCacheHistograms::READ_HEADERS_ERROR);
-    service_->DeleteAppCacheGroup(manifest_url_, net::CompletionOnceCallback());
+    service_->DeleteAppCacheGroup(manifest_url_, net::CompletionCallback());
     delete this;
     return;
   }
@@ -380,7 +380,7 @@ void AppCacheServiceImpl::CheckResponseHelper::OnReadDataComplete(int result) {
   AppCacheHistograms::CountCheckResponseResult(check_result);
 
   if (check_result != AppCacheHistograms::RESPONSE_OK)
-    service_->DeleteAppCacheGroup(manifest_url_, net::CompletionOnceCallback());
+    service_->DeleteAppCacheGroup(manifest_url_, net::CompletionCallback());
   delete this;
 }
 
@@ -484,17 +484,15 @@ void AppCacheServiceImpl::GetAllAppCacheInfo(AppCacheInfoCollection* collection,
 
 void AppCacheServiceImpl::DeleteAppCacheGroup(
     const GURL& manifest_url,
-    net::CompletionOnceCallback callback) {
-  DeleteHelper* helper =
-      new DeleteHelper(this, manifest_url, std::move(callback));
+    const net::CompletionCallback& callback) {
+  DeleteHelper* helper = new DeleteHelper(this, manifest_url, callback);
   helper->Start();
 }
 
 void AppCacheServiceImpl::DeleteAppCachesForOrigin(
     const url::Origin& origin,
-    net::CompletionOnceCallback callback) {
-  DeleteOriginHelper* helper =
-      new DeleteOriginHelper(this, origin, std::move(callback));
+    const net::CompletionCallback& callback) {
+  DeleteOriginHelper* helper = new DeleteOriginHelper(this, origin, callback);
   helper->Start();
 }
 

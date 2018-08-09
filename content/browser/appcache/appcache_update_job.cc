@@ -893,8 +893,7 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
                                GURL(), 0, false /*is_cross_origin*/),
           DB_ERROR, GURL());
       AppCacheHistograms::AddMissingManifestEntrySample();
-      service->DeleteAppCacheGroup(manifest_url_,
-                                   net::CompletionOnceCallback());
+      service->DeleteAppCacheGroup(manifest_url_, net::CompletionCallback());
     }
     return;
   }

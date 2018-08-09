@@ -21,6 +21,8 @@ typedef base::Callback<void(int)> CompletionCallback;
 // error code.
 typedef base::Callback<void(int64_t)> Int64CompletionCallback;
 
+typedef base::CancelableCallback<void(int)> CancelableCompletionCallback;
+
 }  // namespace net
 
 #endif  // NET_BASE_COMPLETION_CALLBACK_H_
