@@ -73,9 +73,9 @@ bool ShouldExcludeWindowFromOverview(const aura::Window* window) {
   return false;
 }
 
-bool IsBlurEnabled() {
+bool IsBlurAllowed() {
   return !g_disable_wallpaper_blur_for_tests &&
-         Shell::Get()->wallpaper_controller()->IsBlurEnabled();
+         Shell::Get()->wallpaper_controller()->IsBlurAllowed();
 }
 
 }  // namespace
@@ -260,7 +260,7 @@ bool WindowSelectorController::ToggleOverview() {
     window_selector_.reset(new WindowSelector(this));
     Shell::Get()->NotifyOverviewModeStarting();
     window_selector_->Init(windows, hide_windows);
-    if (IsBlurEnabled())
+    if (IsBlurAllowed())
       overview_blur_controller_->Blur();
     OnSelectionStarted();
   }
@@ -401,7 +401,7 @@ void WindowSelectorController::OnSelectionEnded() {
   if (is_shutting_down_)
     return;
 
-  if (IsBlurEnabled())
+  if (IsBlurAllowed())
     overview_blur_controller_->Unblur();
   is_shutting_down_ = true;
   Shell::Get()->NotifyOverviewModeEnding();

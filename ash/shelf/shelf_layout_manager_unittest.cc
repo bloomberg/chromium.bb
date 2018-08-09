@@ -967,15 +967,13 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLoginScreenShowing) {
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   // Blurred wallpaper.
-  ash::Shell::Get()->wallpaper_controller()->UpdateWallpaperBlur(
-      true /*locking*/);
+  ash::Shell::Get()->wallpaper_controller()->UpdateWallpaperBlur(/*blur=*/true);
   EXPECT_EQ(SHELF_BACKGROUND_OVERLAP, GetShelfWidget()->GetBackgroundType());
 
   // Non-blurred wallpaper.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ash::switches::kAshDisableLoginDimAndBlur);
-  ash::Shell::Get()->wallpaper_controller()->UpdateWallpaperBlur(
-      true /*locking*/);
+  ash::Shell::Get()->wallpaper_controller()->UpdateWallpaperBlur(/*blur=*/true);
   EXPECT_EQ(SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER,
             GetShelfWidget()->GetBackgroundType());
 }

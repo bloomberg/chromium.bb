@@ -708,8 +708,8 @@ bool WallpaperController::IsPolicyControlled(const AccountId& account_id,
          info.type == POLICY;
 }
 
-void WallpaperController::UpdateWallpaperBlur(bool locking) {
-  bool needs_blur = locking && IsBlurEnabled();
+void WallpaperController::UpdateWallpaperBlur(bool blur) {
+  bool needs_blur = blur && IsBlurAllowed();
   if (needs_blur == is_wallpaper_blurred_)
     return;
 
@@ -732,7 +732,7 @@ bool WallpaperController::ShouldApplyDimming() const {
              switches::kAshDisableLoginDimAndBlur);
 }
 
-bool WallpaperController::IsBlurEnabled() const {
+bool WallpaperController::IsBlurAllowed() const {
   return !IsDevicePolicyWallpaper() &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kAshDisableLoginDimAndBlur);
@@ -1441,7 +1441,7 @@ void WallpaperController::InstallDesktopController(aura::Window* root_window) {
       Shell::Get()->session_controller()->IsUserSessionBlocked();
   bool in_overview = Shell::Get()->window_selector_controller()->IsSelecting();
   bool is_wallpaper_blurred =
-      (session_blocked || in_overview) && IsBlurEnabled();
+      (session_blocked || in_overview) && IsBlurAllowed();
 
   if (is_wallpaper_blurred_ != is_wallpaper_blurred) {
     is_wallpaper_blurred_ = is_wallpaper_blurred;

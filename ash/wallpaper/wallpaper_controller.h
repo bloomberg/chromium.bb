@@ -159,17 +159,17 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // including device policy).
   bool IsPolicyControlled(const AccountId& account_id, bool is_ephemeral) const;
 
-  // Prepares wallpaper to lock screen transition. Will apply blur if |locking|
-  // is true and blur is enabled by the controller, otherwise any existing blur
-  // will be removed.
-  void UpdateWallpaperBlur(bool locking);
+  // Update the blurred state of the current wallpaper. Applies blur if |blur|
+  // is true and blur is allowed by the controller, otherwise any existing blur
+  // is removed.
+  void UpdateWallpaperBlur(bool blur);
 
   // Wallpaper should be dimmed for login, lock, OOBE and add user screens.
   bool ShouldApplyDimming() const;
 
-  // Returns whether blur is enabled for login, lock, OOBE and add user screens.
-  // See crbug.com/775591.
-  bool IsBlurEnabled() const;
+  // Returns whether the current wallpaper is allowed to be blurred. See
+  // https://crbug.com/775591.
+  bool IsBlurAllowed() const;
 
   // Returns whether the current wallpaper is blurred.
   bool IsWallpaperBlurred() const { return is_wallpaper_blurred_; }
