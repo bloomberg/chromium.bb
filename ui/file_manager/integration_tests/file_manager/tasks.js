@@ -194,13 +194,14 @@ function defaultTaskDialog(expectedTaskId, windowId) {
                 'fakeMouseClick', windowId, ['#tasks']);
             // Wait for dropdown menu to show.
             return remoteCall.waitForElement(
-                windowId, '#tasks-menu cr-menu-item');
+                windowId, '#tasks-menu:not([hidden]) cr-menu-item');
           })
           .then(function(result) {
+            chrome.test.assertTrue(!!result);
             // Click on first menu item.
             remoteCall.callRemoteTestUtil(
                 'fakeMouseClick', windowId,
-                ['#tasks-menu cr-menu-item:nth-child(1)']);
+                ['#tasks-menu:not([hidden]) cr-menu-item:nth-child(1)']);
             // Wait dropdown menu to hide.
             return remoteCall.waitForElement(windowId, '#tasks-menu[hidden]');
           })
