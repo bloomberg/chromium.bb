@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_setup_controller.h"
 #include "ash/assistant/ui/main_stage/assistant_opt_in_view.h"
 #include "ash/assistant/ui/main_stage/suggestion_container_view.h"
 #include "ui/views/layout/fill_layout.h"
@@ -55,6 +56,7 @@ void AssistantFooterView::InitLayout() {
   // Opt in view.
   opt_in_view_ = new AssistantOptInView();
   opt_in_view_->SetVisible(false);
+  opt_in_view_->set_delegate(assistant_controller_->setup_controller());
   AddChildView(opt_in_view_);
 }
 
