@@ -318,11 +318,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void preInflationStartup() {
         super.preInflationStartup();
 
-        // We need to explicitly enable VR mode here so that the system doesn't kick us out of VR,
-        // or drop us into the 2D-in-VR rendering mode, while we prepare for VR rendering.
-        if (VrModuleProvider.getIntentDelegate().isLaunchingIntoVr(this, getIntent())) {
-            VrModuleProvider.getDelegate().setVrModeEnabled(this, true);
-        }
+        VrModuleProvider.getDelegate().doPreInflationStartup(this, getSavedInstanceState());
 
         // Force a partner customizations refresh if it has yet to be initialized.  This can happen
         // if Chrome is killed and you refocus a previous activity from Android recents, which does
@@ -1194,6 +1190,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public long getOnCreateTimestampMs() {
         return super.getOnCreateTimestampMs();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        VrModuleProvider.getDelegate().onSaveInstanceState(outState);
     }
 
     /**
