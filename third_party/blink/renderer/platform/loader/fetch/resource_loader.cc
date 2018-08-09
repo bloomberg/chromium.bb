@@ -823,6 +823,7 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
 
 void ResourceLoader::Dispose() {
   loader_ = nullptr;
+  progress_binding_.Close();
 
   // Release() should be called to release |scheduler_client_id_| beforehand in
   // DidFinishLoading() or DidFail(), but when a timer to call Cancel() is
