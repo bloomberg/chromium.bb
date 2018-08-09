@@ -46184,6 +46184,11 @@ would be helpful to identify which type is being sent.
   <int value="1" label="Synced favicons not full"/>
 </enum>
 
+<enum name="SyncFeatureOrTransport">
+  <int value="0" label="Full Sync feature."/>
+  <int value="1" label="Sync transport only."/>
+</enum>
+
 <enum name="SyncFSConflictResolutionPolicy">
   <int value="0" label="Unknown"/>
   <int value="1" label="LastWriteWin"/>
