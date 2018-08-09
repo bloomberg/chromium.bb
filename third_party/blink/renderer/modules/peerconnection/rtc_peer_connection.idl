@@ -39,12 +39,6 @@ enum RTCSignalingState {
     "closed"
 };
 
-enum RTCIceGatheringState {
-    "new",
-    "gathering",
-    "complete"
-};
-
 enum RTCIceConnectionState {
     "new",
     "checking",
