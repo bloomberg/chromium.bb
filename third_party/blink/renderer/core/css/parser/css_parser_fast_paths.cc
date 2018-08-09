@@ -583,7 +583,10 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueTop || value_id == CSSValueBottom;
     case CSSPropertyClear:
       return value_id == CSSValueNone || value_id == CSSValueLeft ||
-             value_id == CSSValueRight || value_id == CSSValueBoth;
+             value_id == CSSValueRight || value_id == CSSValueBoth ||
+             (RuntimeEnabledFeatures::CSSLogicalEnabled() &&
+              (value_id == CSSValueInlineStart ||
+               value_id == CSSValueInlineEnd));
     case CSSPropertyClipRule:
     case CSSPropertyFillRule:
       return value_id == CSSValueNonzero || value_id == CSSValueEvenodd;
@@ -611,6 +614,9 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueShow || value_id == CSSValueHide;
     case CSSPropertyFloat:
       return value_id == CSSValueLeft || value_id == CSSValueRight ||
+             (RuntimeEnabledFeatures::CSSLogicalEnabled() &&
+              (value_id == CSSValueInlineStart ||
+               value_id == CSSValueInlineEnd)) ||
              value_id == CSSValueNone;
     case CSSPropertyImageRendering:
       return value_id == CSSValueAuto ||
@@ -668,6 +674,8 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyResize:
       return value_id == CSSValueNone || value_id == CSSValueBoth ||
              value_id == CSSValueHorizontal || value_id == CSSValueVertical ||
+             (RuntimeEnabledFeatures::CSSLogicalEnabled() &&
+              (value_id == CSSValueBlock || value_id == CSSValueInline)) ||
              value_id == CSSValueAuto;
     case CSSPropertyScrollBehavior:
       DCHECK(RuntimeEnabledFeatures::CSSOMSmoothScrollEnabled());

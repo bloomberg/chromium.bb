@@ -25,14 +25,27 @@ void Resize::ApplyValue(StyleResolverState& state,
   const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
 
   EResize r = EResize::kNone;
-  if (identifier_value.GetValueID() == CSSValueAuto) {
-    if (Settings* settings = state.GetDocument().GetSettings()) {
-      r = settings->GetTextAreasAreResizable() ? EResize::kBoth
-                                               : EResize::kNone;
-    }
-    UseCounter::Count(state.GetDocument(), WebFeature::kCSSResizeAuto);
-  } else {
-    r = identifier_value.ConvertTo<EResize>();
+  CSSValueID id = identifier_value.GetValueID();
+  switch (id) {
+    case CSSValueAuto:
+      if (Settings* settings = state.GetDocument().GetSettings()) {
+        r = settings->GetTextAreasAreResizable() ? EResize::kBoth
+                                                 : EResize::kNone;
+      }
+      UseCounter::Count(state.GetDocument(), WebFeature::kCSSResizeAuto);
+      break;
+    case CSSValueBlock:
+    case CSSValueInline:
+      if ((id == CSSValueBlock) ==
+          IsHorizontalWritingMode(state.Style()->GetWritingMode())) {
+        r = EResize::kVertical;
+      } else {
+        r = EResize::kHorizontal;
+      }
+      break;
+    default:
+      r = identifier_value.ConvertTo<EResize>();
+      break;
   }
   state.Style()->SetResize(r);
 }

@@ -1393,6 +1393,7 @@
       keywords: ["none", "left", "right", "both"],
       typedom_types: ["Keyword"],
       default_value: "none",
+      style_builder_custom_functions: ["value"],
     },
     {
       name: "clip",
@@ -1691,6 +1692,7 @@
       default_value: "none",
       name_for_methods: "Floating",
       type_name: "EFloat",
+      style_builder_custom_functions: ["value"],
     },
     {
       name: "flood-color",
