@@ -597,6 +597,10 @@ bool NativeWidgetMac::IsMouseEventsEnabled() const {
   return true;
 }
 
+bool NativeWidgetMac::IsMouseButtonDown() const {
+  return [NSEvent pressedMouseButtons] != 0;
+}
+
 void NativeWidgetMac::ClearNativeFocus() {
   // To quote DesktopWindowTreeHostX11, "This method is weird and misnamed."
   // The goal is to set focus to the content window, thereby removing focus from
@@ -712,6 +716,7 @@ namespace internal {
 
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::CreateNativeWidget(
+    const Widget::InitParams& init_params,
     internal::NativeWidgetDelegate* delegate) {
   return new NativeWidgetMac(delegate);
 }
@@ -842,11 +847,6 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
   // And now, notify them that they have a brand new parent.
   for (auto* child : widgets)
     child->NotifyNativeViewHierarchyChanged();
-}
-
-// static
-bool NativeWidgetPrivate::IsMouseButtonDown() {
-  return [NSEvent pressedMouseButtons] != 0;
 }
 
 // static

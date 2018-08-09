@@ -89,7 +89,7 @@ EasyResizeWindowTargeter::~EasyResizeWindowTargeter() {}
 void EasyResizeWindowTargeter::OnSetInsets(
     const gfx::Insets& last_mouse_extend,
     const gfx::Insets& last_touch_extend) {
-  if (aura::Env::GetInstance()->mode() != aura::Env::Mode::MUS)
+  if (container_->env()->mode() != aura::Env::Mode::MUS)
     return;
 
   // Positive values equate to a hit test mask.
