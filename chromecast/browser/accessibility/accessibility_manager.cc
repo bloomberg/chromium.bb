@@ -15,7 +15,8 @@ namespace shell {
 
 AccessibilityManager::AccessibilityManager(
     aura::WindowTreeHost* window_tree_host)
-    : window_tree_host_(window_tree_host) {
+    : window_tree_host_(window_tree_host),
+      accessibility_sound_proxy_(std::make_unique<AccessibilitySoundPlayer>()) {
   DCHECK(window_tree_host);
   aura::Window* root_window = window_tree_host->window()->GetRootWindow();
   wm::ActivationClient* activation_client =
@@ -26,7 +27,8 @@ AccessibilityManager::AccessibilityManager(
       std::make_unique<AccessibilityFocusRingController>(root_window);
   touch_exploration_manager_ = std::make_unique<TouchExplorationManager>(
       root_window, activation_client,
-      accessibility_focus_ring_controller_.get());
+      accessibility_focus_ring_controller_.get(),
+      &accessibility_sound_proxy_);
   triple_tap_detector_ = std::make_unique<TripleTapDetector>(root_window, this);
   magnification_controller_ =
       std::make_unique<PartialMagnificationController>(root_window);
@@ -69,8 +71,12 @@ void AccessibilityManager::HideHighlights() {
   accessibility_focus_ring_controller_->HideHighlights();
 }
 
-void AccessibilityManager::EnableTouchExploration(bool enable) {
+void AccessibilityManager::SetScreenReader(bool enable) {
   touch_exploration_manager_->Enable(enable);
+}
+
+void AccessibilityManager::EnableTouchExploration(bool enable) {
+  SetScreenReader(enable);
 }
 
 void AccessibilityManager::SetTouchAccessibilityAnchorPoint(
@@ -96,10 +102,9 @@ void AccessibilityManager::OnTripleTap(const gfx::Point& tap_location) {
       !magnification_controller_->IsEnabled());
 }
 
-void AccessibilityManager::SetAccessibilitySoundDelegate(
-    std::unique_ptr<AccessibilitySoundDelegate> delegate) {
-  touch_exploration_manager_->SetAccessibilitySoundDelegate(
-      std::move(delegate));
+void AccessibilityManager::SetAccessibilitySoundPlayer(
+    std::unique_ptr<AccessibilitySoundPlayer> player) {
+  accessibility_sound_proxy_.ResetPlayer(std::move(player));
 }
 
 }  // namespace shell

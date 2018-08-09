@@ -91,10 +91,10 @@ class MockTouchExplorationControllerDelegate
   ax::mojom::Gesture last_gesture_ = ax::mojom::Gesture::kNone;
 };
 
-class MockAccessibilitySoundDelegate : public AccessibilitySoundDelegate {
+class MockAccessibilitySoundPlayer : public AccessibilitySoundPlayer {
  public:
-  MockAccessibilitySoundDelegate() {}
-  ~MockAccessibilitySoundDelegate() override {}
+  MockAccessibilitySoundPlayer() {}
+  ~MockAccessibilitySoundPlayer() override {}
 
   void PlayPassthroughEarcon() override { ++num_times_passthrough_played_; }
   void PlayExitScreenEarcon() override { ++num_times_exit_screen_played_; }
@@ -318,7 +318,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     } else if (on && !touch_exploration_controller_.get()) {
       touch_exploration_controller_.reset(
           new TouchExplorationControllerTestApi(new TouchExplorationController(
-              root_window(), &delegate_, &accessibility_sound_delegate_)));
+              root_window(), &delegate_, &accessibility_sound_player_)));
       touch_exploration_controller_->InstallRewriter(root_window());
       cursor_client()->ShowCursor();
       cursor_client()->DisableMouseEvents();
@@ -337,7 +337,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
   // Checks that Corner Passthrough is working. Assumes that corner is the
   // bottom left corner or the bottom right corner.
   void AssertCornerPassthroughWorking(gfx::Point corner) {
-    ASSERT_EQ(0U, accessibility_sound_delegate_.NumPassthroughSounds());
+    ASSERT_EQ(0U, accessibility_sound_player_.NumPassthroughSounds());
 
     ui::TouchEvent first_press(
         ui::ET_TOUCH_PRESSED, corner, Now(),
@@ -355,7 +355,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     ui::TouchEvent passthrough_press(
         ui::ET_TOUCH_PRESSED, passthrough, Now(),
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
-    ASSERT_EQ(1U, accessibility_sound_delegate_.NumPassthroughSounds());
+    ASSERT_EQ(1U, accessibility_sound_player_.NumPassthroughSounds());
     generator_->Dispatch(&passthrough_press);
     generator_->ReleaseTouchId(1);
     generator_->PressTouchId(1);
@@ -433,7 +433,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
   ui::GestureDetector::Config gesture_detector_config_;
   base::SimpleTestTickClock simulated_clock_;
   MockTouchExplorationControllerDelegate delegate_;
-  MockAccessibilitySoundDelegate accessibility_sound_delegate_;
+  MockAccessibilitySoundPlayer accessibility_sound_player_;
 
  private:
   EventCapturer event_capturer_;
@@ -1788,9 +1788,9 @@ TEST_F(TouchExplorationTest, EnterEarconPlays) {
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
 
     generator_->Dispatch(&touch_event);
-    ASSERT_EQ(1U, accessibility_sound_delegate_.NumEnterScreenSounds());
+    ASSERT_EQ(1U, accessibility_sound_player_.NumEnterScreenSounds());
     generator_->ReleaseTouchId(1);
-    accessibility_sound_delegate_.ResetCountersToZero();
+    accessibility_sound_player_.ResetCountersToZero();
   }
 }
 
@@ -1830,8 +1830,8 @@ TEST_F(TouchExplorationTest, ExitEarconPlays) {
     generator_->MoveTouch(initial_press);
     generator_->MoveTouch(*point);
     generator_->ReleaseTouch();
-    ASSERT_EQ(1U, accessibility_sound_delegate_.NumExitScreenSounds());
-    accessibility_sound_delegate_.ResetCountersToZero();
+    ASSERT_EQ(1U, accessibility_sound_player_.NumExitScreenSounds());
+    accessibility_sound_player_.ResetCountersToZero();
   }
 }
 

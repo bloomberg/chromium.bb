@@ -41,10 +41,10 @@ void SetTouchAccessibilityFlag(ui::Event* event) {
 TouchExplorationController::TouchExplorationController(
     aura::Window* root_window,
     TouchExplorationControllerDelegate* delegate,
-    AccessibilitySoundDelegate* accessibility_sound_delegate)
+    AccessibilitySoundPlayer* accessibility_sound_player)
     : root_window_(root_window),
       delegate_(delegate),
-      accessibility_sound_delegate_(accessibility_sound_delegate),
+      accessibility_sound_player_(accessibility_sound_player),
       state_(NO_FINGERS_DOWN),
       anchor_point_state_(ANCHOR_POINT_NONE),
       gesture_provider_(new ui::GestureProviderAura(this, this)),
@@ -187,7 +187,7 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
       VLOG(1) << "Leaving screen";
 
     // Indicates to the user that they are leaving the screen.
-    accessibility_sound_delegate_->PlayExitScreenEarcon();
+    accessibility_sound_player_->PlayExitScreenEarcon();
 
     if (current_touch_ids_.size() == 0) {
       SET_STATE(NO_FINGERS_DOWN);
@@ -301,7 +301,7 @@ ui::EventRewriteStatus TouchExplorationController::InNoFingersDown(
     // handle it.
     int edge = FindEdgesWithinInset(event.location(), kLeavingScreenEdge);
     if (edge != NO_EDGE) {
-      accessibility_sound_delegate_->PlayEnterScreenEarcon();
+      accessibility_sound_player_->PlayEnterScreenEarcon();
       SET_STATE(EDGE_PASSTHROUGH);
       return ui::EVENT_REWRITE_CONTINUE;
     }
@@ -542,6 +542,7 @@ ui::EventRewriteStatus TouchExplorationController::InCornerPassthrough(
     if (type == ui::ET_TOUCH_MOVED && in_a_bottom_corner)
       return ui::EVENT_REWRITE_DISCARD;
 
+    accessibility_sound_player_->PlayPassthroughEndEarcon();
     if (current_touch_ids_.size() == 0) {
       SET_STATE(NO_FINGERS_DOWN);
       return ui::EVENT_REWRITE_DISCARD;
@@ -705,7 +706,7 @@ void TouchExplorationController::MaybeSendSimulatedTapInLiftActivationBounds(
   if (lift_activation_bounds_.Contains(anchor_location.x(),
                                        anchor_location.y()) &&
       lift_activation_bounds_.Contains(location)) {
-    accessibility_sound_delegate_->PlayTouchTypeEarcon();
+    accessibility_sound_player_->PlayTouchTypeEarcon();
     SendSimulatedTap();
   }
 }
@@ -843,7 +844,7 @@ void TouchExplorationController::OnPassthroughTimerFired() {
 
   if (sound_timer_.IsRunning())
     sound_timer_.Stop();
-  accessibility_sound_delegate_->PlayPassthroughEarcon();
+  accessibility_sound_player_->PlayPassthroughEarcon();
   SET_STATE(CORNER_PASSTHROUGH);
   return;
 }

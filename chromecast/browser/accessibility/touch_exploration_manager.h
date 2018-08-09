@@ -8,7 +8,7 @@
 #ifndef CHROMECAST_BROWSER_ACCESSIBILITY_TOUCH_EXPLORATION_MANAGER_H_
 #define CHROMECAST_BROWSER_ACCESSIBILITY_TOUCH_EXPLORATION_MANAGER_H_
 
-#include "chromecast/browser/accessibility/accessibility_sound_delegate.h"
+#include "chromecast/browser/accessibility/accessibility_sound_player.h"
 #include "chromecast/browser/accessibility/touch_exploration_controller.h"
 #include "chromecast/graphics/accessibility/accessibility_focus_ring_controller.h"
 #include "ui/events/event_rewriter.h"
@@ -28,7 +28,8 @@ class TouchExplorationManager : public ui::EventRewriter,
   TouchExplorationManager(
       aura::Window* root_window,
       wm::ActivationClient* activation_client,
-      AccessibilityFocusRingController* accessibility_focus_ring_controller);
+      AccessibilityFocusRingController* accessibility_focus_ring_controller,
+      AccessibilitySoundPlayer* accessibility_sound_player);
   ~TouchExplorationManager() override;
 
   // Enable or disable touch exploration.
@@ -56,10 +57,6 @@ class TouchExplorationManager : public ui::EventRewriter,
   // events are anchored at this point.
   void SetTouchAccessibilityAnchorPoint(const gfx::Point& anchor_point);
 
-  // Sets the delegate for earcons.
-  void SetAccessibilitySoundDelegate(
-      std::unique_ptr<AccessibilitySoundDelegate> delegate);
-
  private:
   void UpdateTouchExplorationState();
 
@@ -70,7 +67,7 @@ class TouchExplorationManager : public ui::EventRewriter,
   aura::Window* root_window_;
   wm::ActivationClient* activation_client_;
   AccessibilityFocusRingController* accessibility_focus_ring_controller_;
-  std::unique_ptr<AccessibilitySoundDelegate> accessibility_sound_delegate_;
+  AccessibilitySoundPlayer* accessibility_sound_player_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationManager);
 };

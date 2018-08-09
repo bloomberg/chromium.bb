@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "chromecast/browser/accessibility/accessibility_sound_delegate.h"
+#include "chromecast/browser/accessibility/accessibility_sound_player.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/events/event.h"
 #include "ui/events/event_rewriter.h"
@@ -164,7 +164,7 @@ class TouchExplorationController : public ui::EventRewriter,
   TouchExplorationController(
       aura::Window* root_window,
       TouchExplorationControllerDelegate* delegate,
-      AccessibilitySoundDelegate* accessibility_sound_delegate);
+      AccessibilitySoundPlayer* accessibility_sound_player);
   ~TouchExplorationController() override;
 
   // Make synthesized touch events are anchored at this point. This is
@@ -434,7 +434,7 @@ class TouchExplorationController : public ui::EventRewriter,
   TouchExplorationControllerDelegate* delegate_;
 
   // Handles earcons. Not owned.
-  AccessibilitySoundDelegate* accessibility_sound_delegate_;
+  AccessibilitySoundPlayer* accessibility_sound_player_;
 
   // A set of touch ids for fingers currently touching the screen.
   std::vector<int> current_touch_ids_;
