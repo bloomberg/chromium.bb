@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import cStringIO
 import contextlib
 import copy
 import difflib
@@ -326,8 +327,8 @@ class IntegrationTest(unittest.TestCase):
 
   @_CompareWithGolden()
   def test_Diff_Basic(self):
-    size_info1 = self._CloneSizeInfo(use_elf=False)
-    size_info2 = self._CloneSizeInfo(use_elf=False)
+    size_info1 = self._CloneSizeInfo(use_elf=False, use_pak=True)
+    size_info2 = self._CloneSizeInfo(use_elf=False, use_pak=True)
     size_info1.metadata = {"foo": 1, "bar": [1,2,3], "baz": "yes"}
     size_info2.metadata = {"foo": 1, "bar": [1,3], "baz": "yes"}
 
@@ -338,16 +339,30 @@ class IntegrationTest(unittest.TestCase):
     padding_sym = size_info2.raw_symbols.WhereNameMatches('symbol gap 0')[0]
     padding_sym.padding += 20
     padding_sym.size += 20
+    pak_sym = size_info2.raw_symbols.WhereInSection(
+        models.SECTION_PAK_TRANSLATIONS)[0]
+    pak_sym.full_name = 'foo: ' + pak_sym.full_name.split()[-1]
+
+    # Serialize & de-serialize so that name normalization runs again for the pak
+    # symbol.
+    stringio = cStringIO.StringIO()
+    file_format.SaveSizeInfo(size_info2, 'path', file_obj=stringio)
+    stringio.seek(0)
+    size_info2 = archive.LoadAndPostProcessSizeInfo('path', file_obj=stringio)
+
     d = diff.Diff(size_info1, size_info2)
     d.raw_symbols = d.raw_symbols.Sorted()
     self.assertEquals(d.raw_symbols.CountsByDiffStatus()[1:], [2, 2, 3])
     changed_sym = d.raw_symbols.WhereNameMatches('Patcher::Name_')[0]
     padding_sym = d.raw_symbols.WhereNameMatches('symbol gap 0')[0]
+    bss_sym = d.raw_symbols.WhereInSection(models.SECTION_BSS)[0]
     # Padding-only deltas should sort after all non-padding changes.
     padding_idx = d.raw_symbols.index(padding_sym)
-    self.assertLess(d.raw_symbols.index(changed_sym), padding_idx)
+    changed_idx = d.raw_symbols.index(changed_sym)
+    bss_idx = d.raw_symbols.index(bss_sym)
+    self.assertLess(changed_idx, padding_idx)
     # And before bss.
-    self.assertTrue(d.raw_symbols[padding_idx + 1].IsBss())
+    self.assertLess(padding_idx, bss_idx)
 
     return describe.GenerateLines(d, verbose=True)
 
