@@ -721,8 +721,8 @@ class TryjobTestCbuildbotArgs(TryjobTest):
     args_out = self.helperOptionsToCbuildbotArgs(args_in)
 
     self.assertEqual(args_out, [
-        '--buildbot', '--nobootstrap', '--noreexec',
-        '--no-buildbot-tags', '--debug',
+        '--debug', '--nobootstrap', '--noreexec',
+        '--no-buildbot-tags',
         '--buildroot', '/buildroot',
         '--git-cache-dir', '/buildroot/.git_cache',
         '-b', 'source_branch',

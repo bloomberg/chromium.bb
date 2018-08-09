@@ -111,10 +111,12 @@ def CbuildbotArgs(options):
       args.append('--debug')
 
   elif options.where == CBUILDBOT:
-    args.extend(('--buildbot', '--nobootstrap', '--noreexec',
+    args.extend(('--debug', '--nobootstrap', '--noreexec',
                  '--no-buildbot-tags'))
-    if not options.production:
-      args.append('--debug')
+    if options.production:
+      # This is expected to fail on workstations without an explicit --debug,
+      # or running 'branch-util'.
+      args.append('--buildbot')
 
   else:
     raise Exception('Unknown options.where: %s', options.where)
