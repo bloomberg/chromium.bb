@@ -14,21 +14,11 @@ if (build_with_chromium) {
   visibility = [ "*" ]
 }
 
-config("suppress_unguarded_availability") {
-  # TODO(bugs.webrtc.org/9557): Remove -Wno-unguarded-availability when
-  # abseil will support Xcode 9.0+ (it currently supports Xcode 7.3.1+
-  # which doesn't have -Wunguarded-availability and __builtin_available).
-  cflags = [
-    "-Wno-unguarded-availability",
-  ]
-}
-
 source_set("time") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
     "//build/config/compiler:no_chromium_code",
     "//third_party/abseil-cpp:absl_default_cflags_cc",
-    ":suppress_unguarded_availability",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   sources = [
