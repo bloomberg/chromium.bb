@@ -24,10 +24,11 @@ enum class CastMessageType {
   kPing,
   kPong,
   kGetAppAvailability,
-  kConnect,    // Virtual connection request
-  kBroadcast,  // Application broadcast / precache
-  kLaunch,     // Session launch request
-  kStop,       // Session stop request
+  kConnect,          // Virtual connection request
+  kCloseConnection,  // Close virtual connection
+  kBroadcast,        // Application broadcast / precache
+  kLaunch,           // Session launch request
+  kStop,             // Session stop request
   kReceiverStatus,
   kLaunchError,
   kOther  // Add new types above |kOther|.

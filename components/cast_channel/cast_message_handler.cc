@@ -237,14 +237,11 @@ void CastMessageHandler::OnMessage(const CastSocket& socket,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << __func__ << ", channel_id: " << socket.id()
            << ", message: " << CastMessageToString(message);
-
-  // TODO(crbug.com/698940): Support Observers for both kinds of messages.
   if (IsCastInternalNamespace(message.namespace_())) {
     HandleCastInternalMessage(socket, message);
   } else {
     DVLOG(2) << "Got app message from cast channel with namespace: "
              << message.namespace_();
-
     for (auto& observer : observers_)
       observer.OnAppMessage(socket.id(), message);
   }
@@ -252,7 +249,7 @@ void CastMessageHandler::OnMessage(const CastSocket& socket,
 
 void CastMessageHandler::HandleCastInternalMessage(const CastSocket& socket,
                                                    const CastMessage& message) {
-  // TODO(crbug.com/698940): Handle other messages (VIRTUAL_CONNECT_CLOSE).
+  // TODO(https://crbug.com/809249): Parse message with data_decoder service.
   std::unique_ptr<base::DictionaryValue> payload =
       GetDictionaryFromCastMessage(message);
   if (!payload)
@@ -268,6 +265,13 @@ void CastMessageHandler::HandleCastInternalMessage(const CastSocket& socket,
   CastMessageType type = ParseMessageTypeFromPayload(*payload);
   if (type == CastMessageType::kOther) {
     DVLOG(2) << "Unknown message type: " << CastMessageToString(message);
+    return;
+  }
+
+  if (type == CastMessageType::kCloseConnection) {
+    // Source / destination is flipped.
+    virtual_connections_.erase(VirtualConnection(
+        socket.id(), message.destination_id(), message.source_id()));
     return;
   }
 

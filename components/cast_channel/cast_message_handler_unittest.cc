@@ -22,6 +22,8 @@ namespace {
 constexpr char kTestUserAgentString[] =
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/66.0.3331.0 Safari/537.36";
+constexpr char kSourceId[] = "sourceId";
+constexpr char kDestinationId[] = "destinationId";
 
 std::string GetMessageType(const CastMessage& message) {
   std::unique_ptr<base::Value> dict = GetDictionaryFromCastMessage(message);
@@ -209,13 +211,34 @@ TEST_F(CastMessageHandlerTest, EnsureConnection) {
   EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _, _))
       .WillOnce(SaveArg<0>(&virtual_connection_request));
 
-  handler_.EnsureConnection(cast_socket_.id(), "sourceId", "destinationId");
+  handler_.EnsureConnection(cast_socket_.id(), kSourceId, kDestinationId);
   EXPECT_EQ(CastMessageType::kConnect,
             ParseMessageType(virtual_connection_request));
 
   // No-op because connection is already created the first time.
   EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _, _)).Times(0);
-  handler_.EnsureConnection(cast_socket_.id(), "sourceId", "destinationId");
+  handler_.EnsureConnection(cast_socket_.id(), kSourceId, kDestinationId);
+}
+
+TEST_F(CastMessageHandlerTest, CloseConnectionFromReceiver) {
+  CastMessage virtual_connection_request;
+  EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _, _));
+  handler_.EnsureConnection(cast_socket_.id(), kSourceId, kDestinationId);
+
+  CastMessage response;
+  response.set_namespace_("urn:x-cast:com.google.cast.tp.connection");
+  response.set_source_id(kDestinationId);
+  response.set_destination_id(kSourceId);
+  response.set_payload_type(
+      CastMessage::PayloadType::CastMessage_PayloadType_STRING);
+  response.set_payload_utf8(R"({
+      "type": "CLOSE"
+  })");
+  OnMessage(response);
+
+  // Re-open virtual connection should cause message to be sent.
+  EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _, _));
+  handler_.EnsureConnection(cast_socket_.id(), kSourceId, kDestinationId);
 }
 
 TEST_F(CastMessageHandlerTest, LaunchSession) {
@@ -291,7 +314,7 @@ TEST_F(CastMessageHandlerTest, SendAppMessage) {
   base::Value body(base::Value::Type::DICTIONARY);
   body.SetKey("foo", base::Value("bar"));
   CastMessage message =
-      CreateCastMessage("namespace", body, "sourceId", "destinationId");
+      CreateCastMessage("namespace", body, kSourceId, kDestinationId);
   handler_.SendAppMessage(cast_socket_.id(), message);
 
   EXPECT_EQ(CastMessageType::kConnect,
