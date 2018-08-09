@@ -131,7 +131,9 @@ scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
         separate_leading_margins = false;
       }
 
-      LayoutUnit block_size = NGBoxFragment(writing_mode, *column).BlockSize();
+      LayoutUnit block_size =
+          NGBoxFragment(writing_mode, ConstraintSpace().Direction(), *column)
+              .BlockSize();
       intrinsic_block_size =
           std::max(intrinsic_block_size, column_block_offset + block_size);
 

@@ -796,7 +796,8 @@ LayoutRectOutsets NGBoxFragmentPainter::ComputeBorders() const {
 
 LayoutRectOutsets NGBoxFragmentPainter::ComputePadding() const {
   return BoxStrutToLayoutRectOutsets(
-      ToNGPhysicalBoxFragment(box_fragment_.PhysicalFragment()).Padding());
+      ToNGPhysicalBoxFragment(box_fragment_.PhysicalFragment())
+          .PixelSnappedPadding());
 }
 
 BoxPainterBase::FillLayerInfo NGBoxFragmentPainter::GetFillLayerInfo(

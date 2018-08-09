@@ -75,7 +75,7 @@ bool NGUnpositionedListMarker::AddToBox(
 
     content_metrics = line_box.Metrics();
   } else {
-    NGBoxFragment content_fragment(space.GetWritingMode(),
+    NGBoxFragment content_fragment(space.GetWritingMode(), space.Direction(),
                                    ToNGPhysicalBoxFragment(content));
     content_metrics = content_fragment.BaselineMetricsWithoutSynthesize(
         {NGBaselineAlgorithmType::kFirstLine, baseline_type});
@@ -95,7 +95,7 @@ bool NGUnpositionedListMarker::AddToBox(
       ToNGPhysicalBoxFragment(*marker_layout_result->PhysicalFragment());
 
   // Compute the inline offset of the marker.
-  NGBoxFragment marker_fragment(space.GetWritingMode(),
+  NGBoxFragment marker_fragment(space.GetWritingMode(), space.Direction(),
                                 marker_physical_fragment);
   NGLogicalOffset marker_offset(
       InlineOffset(marker_fragment.Size().inline_size),

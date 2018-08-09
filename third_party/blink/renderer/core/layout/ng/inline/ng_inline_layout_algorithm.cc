@@ -424,7 +424,7 @@ void NGInlineLayoutAlgorithm::PlaceLayoutResult(NGInlineItemResult* item_result,
   const NGInlineItem& item = *item_result->item;
   DCHECK(item.Style());
   NGBoxFragment fragment(
-      ConstraintSpace().GetWritingMode(),
+      ConstraintSpace().GetWritingMode(), ConstraintSpace().Direction(),
       ToNGPhysicalBoxFragment(*item_result->layout_result->PhysicalFragment()));
   NGLineHeightMetrics metrics = fragment.BaselineMetrics(
       {NGBaselineAlgorithmType::kAtomicInline, baseline_type_},
