@@ -209,7 +209,7 @@ void PluginInfoHostImpl::GetPluginInfo(int32_t render_frame_id,
                                        const GURL& url,
                                        const url::Origin& origin,
                                        const std::string& mime_type,
-                                       const GetPluginInfoCallback& callback) {
+                                       GetPluginInfoCallback callback) {
   GetPluginInfo_Params params = {render_frame_id, url, origin, mime_type};
   PluginService::GetInstance()->GetPlugins(base::BindOnce(
       &PluginInfoHostImpl::PluginsLoaded, this, params, std::move(callback)));

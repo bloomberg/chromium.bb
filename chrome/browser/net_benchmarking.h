@@ -42,12 +42,10 @@ class NetBenchmarking : public chrome::mojom::NetBenchmarking {
  private:
   // chrome:mojom:NetBenchmarking.
   void CloseCurrentConnections(
-      const CloseCurrentConnectionsCallback& callback) override;
-  void ClearCache(const ClearCacheCallback& callback) override;
-  void ClearHostResolverCache(
-      const ClearHostResolverCacheCallback& callback) override;
-  void ClearPredictorCache(
-      const ClearPredictorCacheCallback& callback) override;
+      CloseCurrentConnectionsCallback callback) override;
+  void ClearCache(ClearCacheCallback callback) override;
+  void ClearHostResolverCache(ClearHostResolverCacheCallback callback) override;
+  void ClearPredictorCache(ClearPredictorCacheCallback callback) override;
 
   // These weak pointers should be dereferenced only on the UI thread.
   base::WeakPtr<predictors::LoadingPredictor> loading_predictor_;
