@@ -61,7 +61,9 @@ void ConfigureCommonWidgetProperties(views::Widget* widget) {
 void CreateHeaderView(views::Widget* frame,
                       views::Widget* detached_widget,
                       Source source) {
-  HeaderView* header_view = new HeaderView(frame);
+  HeaderView* header_view = new HeaderView(
+      frame, source == Source::CLIENT ? mojom::WindowStyle::BROWSER
+                                      : mojom::WindowStyle::DEFAULT);
   if (source == Source::CLIENT) {
     // HeaderView behaves differently when the widget it is associated with is
     // fullscreen (HeaderView is normally the
