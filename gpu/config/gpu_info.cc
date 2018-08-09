@@ -19,6 +19,8 @@ void EnumerateGPUDevice(const gpu::GPUInfo::GPUDevice& device,
   enumerator->AddString("driverVendor", device.driver_vendor);
   enumerator->AddString("driverVersion", device.driver_version);
   enumerator->AddString("driverDate", device.driver_date);
+  enumerator->AddInt("cudaComputeCapabilityMajor",
+                     device.cuda_compute_capability_major);
   enumerator->EndGPUDevice();
 }
 
@@ -94,8 +96,8 @@ VideoDecodeAcceleratorCapabilities::~VideoDecodeAcceleratorCapabilities() =
 GPUInfo::GPUDevice::GPUDevice()
     : vendor_id(0),
       device_id(0),
-      active(false) {
-}
+      active(false),
+      cuda_compute_capability_major(0) {}
 
 GPUInfo::GPUDevice::GPUDevice(const GPUInfo::GPUDevice& other) = default;
 

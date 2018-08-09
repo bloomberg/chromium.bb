@@ -16,6 +16,7 @@ bool StructTraits<gpu::mojom::GpuDeviceDataView, gpu::GPUInfo::GPUDevice>::Read(
   out->vendor_id = data.vendor_id();
   out->device_id = data.device_id();
   out->active = data.active();
+  out->cuda_compute_capability_major = data.cuda_compute_capability_major();
   return data.ReadVendorString(&out->vendor_string) &&
          data.ReadDeviceString(&out->device_string) &&
          data.ReadDriverVendor(&out->driver_vendor) &&

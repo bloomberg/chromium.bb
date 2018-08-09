@@ -489,7 +489,7 @@
       "vendor_id": "0x10de",
       "driver_version": {
         "op": "<=",
-        "value": "8.17.12.6973"
+        "value": "269.73"
       },
       "features": [
         "disable_d3d11"
@@ -1850,7 +1850,7 @@
       },
       "driver_version": {
         "op": "<",
-        "value": "21.21.13.7576"
+        "value": "375.76"
       },
       "vendor_id": "0x10de",
       "features": [

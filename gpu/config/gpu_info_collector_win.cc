@@ -36,6 +36,7 @@
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_com_initializer.h"
+#include "gpu/config/nvml_info.h"
 #include "third_party/vulkan/include/vulkan/vulkan.h"
 
 namespace gpu {
@@ -124,6 +125,28 @@ bool GetAMDSwitchableInfo(bool* is_switchable,
 }
 #endif
 
+std::string ParseNVIDIARegistryDriverVersion(std::string registry_version) {
+  // The NVIDIA driver version in the registry is most commonly in the format:
+  // XX.XX.XD.DDDD
+  // Where "X" corresponds to an OS-specific digit and "D" corresponds to a
+  // digit of the actual driver version. We convert it to the following format:
+  // DDD.DD
+  // This matches with the actual driver version that NVML also returns.
+  std::string second_to_last_digits;
+  std::string last_digits;
+  if (!RE2::FullMatch(registry_version, "\\d+\\.\\d+\\.(\\d+)\\.(\\d+)",
+                      &second_to_last_digits, &last_digits)) {
+    return registry_version;
+  }
+  std::string digits = second_to_last_digits + last_digits;
+  if (digits.length() < 5u) {
+    return registry_version;
+  }
+  digits.erase(0, digits.length() - 5u);
+  DCHECK(digits.length() == 5u);
+  return digits.substr(0u, 3u) + "." + digits.substr(3u);
+}
+
 bool CollectDriverInfoD3D(const std::wstring& device_id, GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectDriverInfoD3D");
 
@@ -199,6 +222,28 @@ bool CollectDriverInfoD3D(const std::wstring& device_id, GPUInfo* gpu_info) {
             found_intel = true;
           if (device.vendor_id == 0x1002)
             found_amd = true;
+          if (device.vendor_id == 0x10de) {
+            std::string nvml_driver_version;
+            int major_cuda_compute_capability = 0;
+            int minor_cuda_compute_capability = 0;
+            bool nvml_success = GetNvmlDeviceInfo(
+                device.device_id, &nvml_driver_version,
+                &major_cuda_compute_capability, &minor_cuda_compute_capability);
+            if (nvml_success) {
+              // We use the NVML driver version instead of the registry version,
+              // since the registry version includes OS-specific digits that are
+              // not part of the actual driver version.
+              device.driver_version = nvml_driver_version;
+              device.cuda_compute_capability_major =
+                  major_cuda_compute_capability;
+            } else {
+              // If we can't get the actual driver version from NVML, do
+              // best-effort parsing of the actual driver version from the
+              // registry driver version.
+              device.driver_version =
+                  ParseNVIDIARegistryDriverVersion(device.driver_version);
+            }
+          }
           devices.push_back(device);
         }
 
