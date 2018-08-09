@@ -173,7 +173,10 @@ void NonBlockingTypeCommitContribution::PopulateCommitProto(
     sync_pb::SyncEntity* commit_proto) {
   const EntityData& entity_data = commit_entity.entity.value();
   commit_proto->set_id_string(entity_data.id);
-  commit_proto->set_client_defined_unique_tag(entity_data.client_tag_hash);
+  // Populate client_defined_unique_tag only for non-bookmark data types.
+  if (!entity_data.specifics.has_bookmark()) {
+    commit_proto->set_client_defined_unique_tag(entity_data.client_tag_hash);
+  }
   commit_proto->set_version(commit_entity.base_version);
   commit_proto->set_deleted(entity_data.is_deleted());
   commit_proto->set_folder(entity_data.is_folder);
