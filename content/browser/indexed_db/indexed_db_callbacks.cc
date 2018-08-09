@@ -738,10 +738,9 @@ std::unique_ptr<storage::BlobDataHandle>
 IndexedDBCallbacks::IOThreadHelper::CreateBlobData(
     const IndexedDBBlobInfo& blob_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!blob_info.uuid().empty()) {
+  if (blob_info.blob_handle()) {
     // We're sending back a live blob, not a reference into our backing store.
-    return dispatcher_host_->blob_storage_context()->GetBlobDataFromUUID(
-        blob_info.uuid());
+    return std::make_unique<storage::BlobDataHandle>(*blob_info.blob_handle());
   }
   scoped_refptr<ShareableFileReference> shareable_file =
       ShareableFileReference::Get(blob_info.file_path());

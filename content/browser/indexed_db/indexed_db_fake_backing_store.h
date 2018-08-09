@@ -34,7 +34,6 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
       int64_t object_store_id,
       const IndexedDBKey& key,
       IndexedDBValue* value,
-      std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles,
       RecordIdentifier* record) override;
 
   leveldb::Status ClearObjectStore(Transaction*,

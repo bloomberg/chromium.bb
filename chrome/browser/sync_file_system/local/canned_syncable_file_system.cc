@@ -437,13 +437,12 @@ File::Error CannedSyncableFileSystem::ReadDirectory(
 }
 
 int64_t CannedSyncableFileSystem::Write(
-    net::URLRequestContext* url_request_context,
     const FileSystemURL& url,
     std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
   return RunOnThread<int64_t>(
       io_task_runner_.get(), FROM_HERE,
       base::BindOnce(&CannedSyncableFileSystem::DoWrite, base::Unretained(this),
-                     url_request_context, url, std::move(blob_data_handle)));
+                     url, std::move(blob_data_handle)));
 }
 
 int64_t CannedSyncableFileSystem::WriteString(const FileSystemURL& url,
@@ -636,7 +635,6 @@ void CannedSyncableFileSystem::DoReadDirectory(
 }
 
 void CannedSyncableFileSystem::DoWrite(
-    net::URLRequestContext* url_request_context,
     const FileSystemURL& url,
     std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
     const WriteCallback& callback) {
@@ -644,7 +642,7 @@ void CannedSyncableFileSystem::DoWrite(
   EXPECT_TRUE(is_filesystem_opened_);
   WriteHelper* helper = new WriteHelper;
   operation_runner()->Write(
-      url_request_context, url, std::move(blob_data_handle), 0,
+      url, std::move(blob_data_handle), 0,
       base::Bind(&WriteHelper::DidWrite, base::Owned(helper), callback));
 }
 
@@ -657,10 +655,10 @@ void CannedSyncableFileSystem::DoWriteString(
   MockBlobURLRequestContext* url_request_context(
       new MockBlobURLRequestContext());
   WriteHelper* helper = new WriteHelper(url_request_context, data);
-  operation_runner()->Write(url_request_context, url,
+  operation_runner()->Write(url,
                             helper->scoped_text_blob()->GetBlobDataHandle(), 0,
-                            base::Bind(&WriteHelper::DidWrite,
-                                       base::Owned(helper), callback));
+                            base::BindRepeating(&WriteHelper::DidWrite,
+                                                base::Owned(helper), callback));
 }
 
 void CannedSyncableFileSystem::DoGetUsageAndQuota(

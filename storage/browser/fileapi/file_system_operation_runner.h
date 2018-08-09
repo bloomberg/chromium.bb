@@ -21,10 +21,6 @@
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/storage_browser_export.h"
 
-namespace net {
-class URLRequestContext;
-}
-
 namespace storage {
 
 class FileSystemURL;
@@ -114,9 +110,7 @@ class STORAGE_EXPORT FileSystemOperationRunner {
                      const StatusCallback& callback);
 
   // Writes contents of |blob_url| to |url| at |offset|.
-  // |url_request_context| is used to read contents in |blob|.
-  OperationID Write(const net::URLRequestContext* url_request_context,
-                    const FileSystemURL& url,
+  OperationID Write(const FileSystemURL& url,
                     std::unique_ptr<storage::BlobDataHandle> blob,
                     int64_t offset,
                     const WriteCallback& callback);

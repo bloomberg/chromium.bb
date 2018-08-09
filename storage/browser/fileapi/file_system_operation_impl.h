@@ -64,7 +64,7 @@ class STORAGE_EXPORT FileSystemOperationImpl : public FileSystemOperation {
               const StatusCallback& callback) override;
   void Write(const FileSystemURL& url,
              std::unique_ptr<FileWriterDelegate> writer_delegate,
-             std::unique_ptr<net::URLRequest> blob_request,
+             std::unique_ptr<BlobReader> blob_reader,
              const WriteCallback& callback) override;
   void Truncate(const FileSystemURL& url,
                 int64_t length,

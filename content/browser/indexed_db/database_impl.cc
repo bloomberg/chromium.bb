@@ -78,7 +78,6 @@ class DatabaseImpl::IDBSequenceHelper {
   void Put(int64_t transaction_id,
            int64_t object_store_id,
            ::indexed_db::mojom::ValuePtr value,
-           std::vector<std::unique_ptr<storage::BlobDataHandle>> handles,
            std::vector<IndexedDBBlobInfo> blob_info,
            const IndexedDBKey& key,
            blink::WebIDBPutMode mode,
@@ -281,8 +280,6 @@ void DatabaseImpl::Put(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
                              std::move(callbacks_info), idb_runner_));
 
-  std::vector<std::unique_ptr<storage::BlobDataHandle>> handles(
-      value->blob_or_file_info.size());
   base::CheckedNumeric<uint64_t> total_blob_size = 0;
   std::vector<IndexedDBBlobInfo> blob_info(value->blob_or_file_info.size());
   for (size_t i = 0; i < value->blob_or_file_info.size(); ++i) {
@@ -309,7 +306,6 @@ void DatabaseImpl::Put(
     uint64_t size = handle->size();
     UMA_HISTOGRAM_MEMORY_KB("Storage.IndexedDB.PutBlobSizeKB", size / 1024ull);
     total_blob_size += size;
-    handles[i] = std::move(handle);
 
     if (info->file) {
       if (!info->file->path.empty() &&
@@ -318,14 +314,15 @@ void DatabaseImpl::Put(
         mojo::ReportBadMessage(kInvalidBlobFilePath);
         return;
       }
-      blob_info[i] = IndexedDBBlobInfo(info->uuid, info->file->path,
+      blob_info[i] = IndexedDBBlobInfo(std::move(handle), info->file->path,
                                        info->file->name, info->mime_type);
       if (info->size != -1) {
         blob_info[i].set_last_modified(info->file->last_modified);
         blob_info[i].set_size(info->size);
       }
     } else {
-      blob_info[i] = IndexedDBBlobInfo(info->uuid, info->mime_type, info->size);
+      blob_info[i] =
+          IndexedDBBlobInfo(std::move(handle), info->mime_type, info->size);
     }
   }
   UMA_HISTOGRAM_COUNTS_1000("WebCore.IndexedDB.PutBlobsCount",
@@ -340,8 +337,8 @@ void DatabaseImpl::Put(
       FROM_HERE,
       base::BindOnce(&IDBSequenceHelper::Put, base::Unretained(helper_),
                      transaction_id, object_store_id, std::move(value),
-                     std::move(handles), std::move(blob_info), key, mode,
-                     index_keys, std::move(callbacks)));
+                     std::move(blob_info), key, mode, index_keys,
+                     std::move(callbacks)));
 }
 
 void DatabaseImpl::SetIndexKeys(
@@ -657,7 +654,6 @@ void DatabaseImpl::IDBSequenceHelper::Put(
     int64_t transaction_id,
     int64_t object_store_id,
     ::indexed_db::mojom::ValuePtr mojo_value,
-    std::vector<std::unique_ptr<storage::BlobDataHandle>> handles,
     std::vector<IndexedDBBlobInfo> blob_info,
     const IndexedDBKey& key,
     blink::WebIDBPutMode mode,
@@ -681,7 +677,7 @@ void DatabaseImpl::IDBSequenceHelper::Put(
   IndexedDBValue value;
   swap(value.bits, mojo_value->bits);
   swap(value.blob_info, blob_info);
-  connection_->database()->Put(transaction, object_store_id, &value, &handles,
+  connection_->database()->Put(transaction, object_store_id, &value,
                                std::make_unique<IndexedDBKey>(key), mode,
                                std::move(callbacks), index_keys);
 

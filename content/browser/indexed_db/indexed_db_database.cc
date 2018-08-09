@@ -1216,7 +1216,6 @@ struct IndexedDBDatabase::PutOperationParams {
   PutOperationParams() {}
   int64_t object_store_id;
   IndexedDBValue value;
-  std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
   std::unique_ptr<IndexedDBKey> key;
   blink::WebIDBPutMode put_mode;
   scoped_refptr<IndexedDBCallbacks> callbacks;
@@ -1230,7 +1229,6 @@ void IndexedDBDatabase::Put(
     IndexedDBTransaction* transaction,
     int64_t object_store_id,
     IndexedDBValue* value,
-    std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles,
     std::unique_ptr<IndexedDBKey> key,
     blink::WebIDBPutMode put_mode,
     scoped_refptr<IndexedDBCallbacks> callbacks,
@@ -1248,7 +1246,6 @@ void IndexedDBDatabase::Put(
       std::make_unique<PutOperationParams>());
   params->object_store_id = object_store_id;
   params->value.swap(*value);
-  params->handles.swap(*handles);
   params->key = std::move(key);
   params->put_mode = put_mode;
   params->callbacks = callbacks;
@@ -1336,7 +1333,7 @@ Status IndexedDBDatabase::PutOperation(
   // transaction in case of error.
   s = backing_store_->PutRecord(transaction->BackingStoreTransaction(), id(),
                                 params->object_store_id, *key, &params->value,
-                                &params->handles, &record_identifier);
+                                &record_identifier);
   if (!s.ok())
     return s;
 

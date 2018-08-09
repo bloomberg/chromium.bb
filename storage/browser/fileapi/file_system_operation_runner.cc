@@ -237,7 +237,6 @@ OperationID FileSystemOperationRunner::Remove(
 }
 
 OperationID FileSystemOperationRunner::Write(
-    const net::URLRequestContext* url_request_context,
     const FileSystemURL& url,
     std::unique_ptr<storage::BlobDataHandle> blob,
     int64_t offset,
@@ -264,12 +263,12 @@ OperationID FileSystemOperationRunner::Write(
   std::unique_ptr<FileWriterDelegate> writer_delegate(new FileWriterDelegate(
       std::move(writer), url.mount_option().flush_policy()));
 
-  std::unique_ptr<net::URLRequest> blob_request(
-      storage::BlobProtocolHandler::CreateBlobRequest(
-          std::move(blob), url_request_context, writer_delegate.get()));
+  std::unique_ptr<BlobReader> blob_reader;
+  if (blob)
+    blob_reader = blob->CreateReader();
 
   PrepareForWrite(id, url);
-  operation_raw->Write(url, std::move(writer_delegate), std::move(blob_request),
+  operation_raw->Write(url, std::move(writer_delegate), std::move(blob_reader),
                        base::Bind(&FileSystemOperationRunner::DidWrite,
                                   weak_ptr_, id, callback));
   return id;

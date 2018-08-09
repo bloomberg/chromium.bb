@@ -14,11 +14,12 @@ IndexedDBBlobInfo::IndexedDBBlobInfo()
     : is_file_(false), size_(-1), key_(DatabaseMetaDataKey::kInvalidBlobKey) {
 }
 
-IndexedDBBlobInfo::IndexedDBBlobInfo(const std::string& uuid,
-                                     const base::string16& type,
-                                     int64_t size)
+IndexedDBBlobInfo::IndexedDBBlobInfo(
+    std::unique_ptr<storage::BlobDataHandle> blob_handle,
+    const base::string16& type,
+    int64_t size)
     : is_file_(false),
-      uuid_(uuid),
+      blob_handle_(*blob_handle),
       type_(type),
       size_(size),
       key_(DatabaseMetaDataKey::kInvalidBlobKey) {}
@@ -28,18 +29,18 @@ IndexedDBBlobInfo::IndexedDBBlobInfo(const base::string16& type,
                                      int64_t key)
     : is_file_(false), type_(type), size_(size), key_(key) {}
 
-IndexedDBBlobInfo::IndexedDBBlobInfo(const std::string& uuid,
-                                     const base::FilePath& file_path,
-                                     const base::string16& file_name,
-                                     const base::string16& type)
+IndexedDBBlobInfo::IndexedDBBlobInfo(
+    std::unique_ptr<storage::BlobDataHandle> blob_handle,
+    const base::FilePath& file_path,
+    const base::string16& file_name,
+    const base::string16& type)
     : is_file_(true),
-      uuid_(uuid),
+      blob_handle_(*blob_handle),
       type_(type),
       size_(-1),
       file_name_(file_name),
       file_path_(file_path),
-      key_(DatabaseMetaDataKey::kInvalidBlobKey) {
-}
+      key_(DatabaseMetaDataKey::kInvalidBlobKey) {}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(int64_t key,
                                      const base::string16& type,
@@ -60,12 +61,6 @@ IndexedDBBlobInfo& IndexedDBBlobInfo::operator=(
 void IndexedDBBlobInfo::set_size(int64_t size) {
   DCHECK_EQ(-1, size_);
   size_ = size;
-}
-
-void IndexedDBBlobInfo::set_uuid(const std::string& uuid) {
-  DCHECK(uuid_.empty());
-  uuid_ = uuid;
-  DCHECK(!uuid_.empty());
 }
 
 void IndexedDBBlobInfo::set_file_path(const base::FilePath& file_path) {

@@ -297,8 +297,7 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
   EXPECT_EQ(base::File::FILE_OK,
             file_system_.CreateFile(URL(kPath4)));    // Creates another file.
   EXPECT_EQ(static_cast<int64_t>(kData.size()),       // Modifies the file.
-            file_system_.Write(&url_request_context, URL(kPath4),
-                               blob.GetBlobDataHandle()));
+            file_system_.Write(URL(kPath4), blob.GetBlobDataHandle()));
 
   // Verify the changes.
   file_system_.GetChangedURLsInTracker(&urls);
@@ -448,8 +447,8 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCopyChanges) {
   EXPECT_EQ(base::File::FILE_OK,
             file_system_.CreateFile(URL(kPath4)));    // Creates another file.
   EXPECT_EQ(static_cast<int64_t>(kData.size()),
-            file_system_.Write(&url_request_context,  // Modifies the file.
-                               URL(kPath4), blob.GetBlobDataHandle()));
+            file_system_.Write(URL(kPath4),  // Modifies the file.
+                               blob.GetBlobDataHandle()));
 
   // Verify we have 5 changes for preparation.
   file_system_.GetChangedURLsInTracker(&urls);

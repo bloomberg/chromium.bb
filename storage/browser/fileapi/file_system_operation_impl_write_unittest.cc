@@ -178,9 +178,9 @@ class FileSystemOperationImplWriteTest : public testing::Test {
 TEST_F(FileSystemOperationImplWriteTest, TestWriteSuccess) {
   ScopedTextBlob blob(url_request_context(), "blob-id:success",
                       "Hello, world!\n");
-  file_system_context_->operation_runner()->Write(
-      &url_request_context(), URLForPath(virtual_path_),
-      blob.GetBlobDataHandle(), 0, RecordWriteCallback());
+  file_system_context_->operation_runner()->Write(URLForPath(virtual_path_),
+                                                  blob.GetBlobDataHandle(), 0,
+                                                  RecordWriteCallback());
   base::RunLoop().Run();
 
   EXPECT_EQ(14, bytes_written());
@@ -192,9 +192,9 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteSuccess) {
 
 TEST_F(FileSystemOperationImplWriteTest, TestWriteZero) {
   ScopedTextBlob blob(url_request_context(), "blob_id:zero", "");
-  file_system_context_->operation_runner()->Write(
-      &url_request_context(), URLForPath(virtual_path_),
-      blob.GetBlobDataHandle(), 0, RecordWriteCallback());
+  file_system_context_->operation_runner()->Write(URLForPath(virtual_path_),
+                                                  blob.GetBlobDataHandle(), 0,
+                                                  RecordWriteCallback());
   base::RunLoop().Run();
 
   EXPECT_EQ(0, bytes_written());
@@ -204,11 +204,11 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteZero) {
   EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
 }
 
-TEST_F(FileSystemOperationImplWriteTest, TestWriteInvalidBlobUrl) {
+TEST_F(FileSystemOperationImplWriteTest, TestWriteInvalidBlob) {
   std::unique_ptr<storage::BlobDataHandle> null_handle;
-  file_system_context_->operation_runner()->Write(
-      &url_request_context(), URLForPath(virtual_path_), std::move(null_handle),
-      0, RecordWriteCallback());
+  file_system_context_->operation_runner()->Write(URLForPath(virtual_path_),
+                                                  std::move(null_handle), 0,
+                                                  RecordWriteCallback());
   base::RunLoop().Run();
 
   EXPECT_EQ(0, bytes_written());
@@ -222,7 +222,6 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteInvalidFile) {
   ScopedTextBlob blob(url_request_context(), "blob_id:writeinvalidfile",
                       "It\'ll not be written.");
   file_system_context_->operation_runner()->Write(
-      &url_request_context(),
       URLForPath(base::FilePath(FILE_PATH_LITERAL("nonexist"))),
       blob.GetBlobDataHandle(), 0, RecordWriteCallback());
   base::RunLoop().Run();
@@ -242,9 +241,9 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteDir) {
 
   ScopedTextBlob blob(url_request_context(), "blob:writedir",
                       "It\'ll not be written, too.");
-  file_system_context_->operation_runner()->Write(
-      &url_request_context(), URLForPath(virtual_dir_path),
-      blob.GetBlobDataHandle(), 0, RecordWriteCallback());
+  file_system_context_->operation_runner()->Write(URLForPath(virtual_dir_path),
+                                                  blob.GetBlobDataHandle(), 0,
+                                                  RecordWriteCallback());
   base::RunLoop().Run();
 
   EXPECT_EQ(0, bytes_written());
@@ -262,9 +261,9 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteFailureByQuota) {
   ScopedTextBlob blob(url_request_context(), "blob:success", "Hello, world!\n");
   quota_manager_->SetQuota(
       kOrigin, FileSystemTypeToQuotaStorageType(kFileSystemType), 10);
-  file_system_context_->operation_runner()->Write(
-      &url_request_context(), URLForPath(virtual_path_),
-      blob.GetBlobDataHandle(), 0, RecordWriteCallback());
+  file_system_context_->operation_runner()->Write(URLForPath(virtual_path_),
+                                                  blob.GetBlobDataHandle(), 0,
+                                                  RecordWriteCallback());
   base::RunLoop().Run();
 
   EXPECT_EQ(10, bytes_written());
@@ -277,9 +276,9 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteFailureByQuota) {
 TEST_F(FileSystemOperationImplWriteTest, TestImmediateCancelSuccessfulWrite) {
   ScopedTextBlob blob(url_request_context(), "blob:success", "Hello, world!\n");
   FileSystemOperationRunner::OperationID id =
-      file_system_context_->operation_runner()->Write(
-          &url_request_context(), URLForPath(virtual_path_),
-          blob.GetBlobDataHandle(), 0, RecordWriteCallback());
+      file_system_context_->operation_runner()->Write(URLForPath(virtual_path_),
+                                                      blob.GetBlobDataHandle(),
+                                                      0, RecordWriteCallback());
   file_system_context_->operation_runner()->Cancel(id, RecordCancelCallback());
   // We use RunAllPendings() instead of Run() here, because we won't dispatch
   // callbacks after Cancel() is issued (so no chance to Quit) nor do we need
@@ -301,7 +300,6 @@ TEST_F(FileSystemOperationImplWriteTest, TestImmediateCancelFailingWrite) {
                       "It\'ll not be written.");
   FileSystemOperationRunner::OperationID id =
       file_system_context_->operation_runner()->Write(
-          &url_request_context(),
           URLForPath(base::FilePath(FILE_PATH_LITERAL("nonexist"))),
           blob.GetBlobDataHandle(), 0, RecordWriteCallback());
   file_system_context_->operation_runner()->Cancel(id, RecordCancelCallback());

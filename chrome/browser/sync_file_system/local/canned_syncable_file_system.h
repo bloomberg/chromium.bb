@@ -36,10 +36,6 @@ class FileSystemOperationRunner;
 class FileSystemURL;
 }
 
-namespace net {
-class URLRequestContext;
-}
-
 namespace storage {
 class QuotaManager;
 }
@@ -137,8 +133,7 @@ class CannedSyncableFileSystem
                                   FileEntryList* entries);
 
   // Returns the # of bytes written (>=0) or an error code (<0).
-  int64_t Write(net::URLRequestContext* url_request_context,
-                const storage::FileSystemURL& url,
+  int64_t Write(const storage::FileSystemURL& url,
                 std::unique_ptr<storage::BlobDataHandle> blob_data_handle);
   int64_t WriteString(const storage::FileSystemURL& url,
                       const std::string& data);
@@ -200,8 +195,7 @@ class CannedSyncableFileSystem
   void DoReadDirectory(const storage::FileSystemURL& url,
                        FileEntryList* entries,
                        const StatusCallback& callback);
-  void DoWrite(net::URLRequestContext* url_request_context,
-               const storage::FileSystemURL& url,
+  void DoWrite(const storage::FileSystemURL& url,
                std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
                const WriteCallback& callback);
   void DoWriteString(const storage::FileSystemURL& url,

@@ -122,15 +122,12 @@ class CONTENT_EXPORT IndexedDBBackingStore
     const std::vector<IndexedDBBlobInfo>& blob_info() const {
       return blob_info_;
     }
-    void SetHandles(
-        std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles);
     std::unique_ptr<BlobChangeRecord> Clone() const;
 
    private:
     std::string key_;
     int64_t object_store_id_;
     std::vector<IndexedDBBlobInfo> blob_info_;
-    std::vector<std::unique_ptr<storage::BlobDataHandle>> handles_;
     DISALLOW_COPY_AND_ASSIGN(BlobChangeRecord);
   };
 
@@ -164,14 +161,11 @@ class CONTENT_EXPORT IndexedDBBackingStore
         int64_t database_id,
         int64_t object_store_id,
         const std::string& object_store_data_key,
-        std::vector<IndexedDBBlobInfo>*,
-        std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles);
-    void PutBlobInfo(
-        int64_t database_id,
-        int64_t object_store_id,
-        const std::string& object_store_data_key,
-        std::vector<IndexedDBBlobInfo>*,
-        std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles);
+        std::vector<IndexedDBBlobInfo>*);
+    void PutBlobInfo(int64_t database_id,
+                     int64_t object_store_id,
+                     const std::string& object_store_data_key,
+                     std::vector<IndexedDBBlobInfo>*);
 
     LevelDBTransaction* transaction() { return transaction_.get(); }
 
@@ -189,7 +183,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
     class CONTENT_EXPORT WriteDescriptor {
      public:
-      WriteDescriptor(const GURL& url,
+      WriteDescriptor(const storage::BlobDataHandle* blob,
                       int64_t key,
                       int64_t size,
                       base::Time last_modified);
@@ -202,9 +196,9 @@ class CONTENT_EXPORT IndexedDBBackingStore
       WriteDescriptor& operator=(const WriteDescriptor& other);
 
       bool is_file() const { return is_file_; }
-      const GURL& url() const {
+      const storage::BlobDataHandle* blob() const {
         DCHECK(!is_file_);
-        return url_;
+        return &blob_.value();
       }
       const base::FilePath& file_path() const {
         DCHECK(is_file_);
@@ -216,7 +210,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
      private:
       bool is_file_;
-      GURL url_;
+      base::Optional<storage::BlobDataHandle> blob_;
       base::FilePath file_path_;
       int64_t key_;
       int64_t size_;
@@ -456,7 +450,6 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64_t object_store_id,
       const IndexedDBKey& key,
       IndexedDBValue* value,
-      std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles,
       RecordIdentifier* record) WARN_UNUSED_RESULT;
   virtual leveldb::Status ClearObjectStore(
       IndexedDBBackingStore::Transaction* transaction,

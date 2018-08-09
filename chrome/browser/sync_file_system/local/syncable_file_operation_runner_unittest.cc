@@ -316,7 +316,6 @@ TEST_F(SyncableFileOperationRunnerTest, Write) {
 
   ResetCallbackStatus();
   file_system_.operation_runner()->Write(
-      &url_request_context_,
       URL(kFile), blob.GetBlobDataHandle(), 0, GetWriteCallback(FROM_HERE));
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(0, callback_count_);
