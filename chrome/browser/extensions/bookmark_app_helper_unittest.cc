@@ -53,11 +53,18 @@ const char kAppIcon2[] = "fav2.png";
 const char kAppIcon3[] = "fav3.png";
 const char kAppIconURL1[] = "http://foo.com/1.png";
 const char kAppIconURL2[] = "http://foo.com/2.png";
+const char kAppIconURL3[] = "http://foo.com/3.png";
+const char kAppIconURL4[] = "http://foo.com/4.png";
 
 const int kIconSizeTiny = extension_misc::EXTENSION_ICON_BITTY;
 const int kIconSizeSmall = extension_misc::EXTENSION_ICON_SMALL;
 const int kIconSizeMedium = extension_misc::EXTENSION_ICON_MEDIUM;
 const int kIconSizeLarge = extension_misc::EXTENSION_ICON_LARGE;
+const int kIconSizeGigantor = extension_misc::EXTENSION_ICON_GIGANTOR;
+const int kIconSizeUnsupported = 123;
+
+const int kIconSizeSmallBetweenMediumAndLarge = 63;
+const int kIconSizeLargeBetweenMediumAndLarge = 96;
 
 class BookmarkAppHelperTest : public testing::Test {
  public:
@@ -105,12 +112,172 @@ SkBitmap CreateSquareBitmapWithColor(int size, SkColor color) {
   return bitmap;
 }
 
+BookmarkAppHelper::BitmapAndSource CreateSquareBitmapAndSourceWithColor(
+    int size,
+    SkColor color) {
+  return BookmarkAppHelper::BitmapAndSource(
+      GURL(), CreateSquareBitmapWithColor(size, color));
+}
+
+void ValidateBitmapSizeAndColor(SkBitmap bitmap, int size, SkColor color) {
+  // Obtain pixel lock to access pixels.
+  EXPECT_EQ(color, bitmap.getColor(0, 0));
+  EXPECT_EQ(size, bitmap.width());
+  EXPECT_EQ(size, bitmap.height());
+}
+
 WebApplicationInfo::IconInfo CreateIconInfoWithBitmap(int size, SkColor color) {
   WebApplicationInfo::IconInfo icon_info;
   icon_info.width = size;
   icon_info.height = size;
   icon_info.data = CreateSquareBitmapWithColor(size, color);
   return icon_info;
+}
+
+std::set<int> TestSizesToGenerate() {
+  const int kIconSizesToGenerate[] = {
+      extension_misc::EXTENSION_ICON_SMALL,
+      extension_misc::EXTENSION_ICON_MEDIUM,
+      extension_misc::EXTENSION_ICON_LARGE,
+  };
+  return std::set<int>(kIconSizesToGenerate,
+                       kIconSizesToGenerate + arraysize(kIconSizesToGenerate));
+}
+
+void ValidateAllIconsWithURLsArePresent(const WebApplicationInfo& info_to_check,
+                                        const WebApplicationInfo& other_info) {
+  for (const auto& icon : info_to_check.icons) {
+    if (!icon.url.is_empty()) {
+      bool found = false;
+      for (const auto& other_icon : info_to_check.icons) {
+        if (other_icon.url == icon.url && other_icon.width == icon.width) {
+          found = true;
+          break;
+        }
+      }
+      EXPECT_TRUE(found);
+    }
+  }
+}
+
+std::vector<BookmarkAppHelper::BitmapAndSource>::const_iterator
+FindLargestBitmapAndSourceVector(
+    const std::vector<BookmarkAppHelper::BitmapAndSource>& bitmap_vector) {
+  auto result = bitmap_vector.end();
+  int largest = -1;
+  for (std::vector<BookmarkAppHelper::BitmapAndSource>::const_iterator it =
+           bitmap_vector.begin();
+       it != bitmap_vector.end(); ++it) {
+    if (it->bitmap.width() > largest) {
+      result = it;
+    }
+  }
+  return result;
+}
+
+std::vector<BookmarkAppHelper::BitmapAndSource>::const_iterator
+FindMatchingBitmapAndSourceVector(
+    const std::vector<BookmarkAppHelper::BitmapAndSource>& bitmap_vector,
+    int size) {
+  for (std::vector<BookmarkAppHelper::BitmapAndSource>::const_iterator it =
+           bitmap_vector.begin();
+       it != bitmap_vector.end(); ++it) {
+    if (it->bitmap.width() == size) {
+      return it;
+    }
+  }
+  return bitmap_vector.end();
+}
+
+std::vector<BookmarkAppHelper::BitmapAndSource>::const_iterator
+FindEqualOrLargerBitmapAndSourceVector(
+    const std::vector<BookmarkAppHelper::BitmapAndSource>& bitmap_vector,
+    int size) {
+  for (std::vector<BookmarkAppHelper::BitmapAndSource>::const_iterator it =
+           bitmap_vector.begin();
+       it != bitmap_vector.end(); ++it) {
+    if (it->bitmap.width() >= size) {
+      return it;
+    }
+  }
+  return bitmap_vector.end();
+}
+
+void ValidateIconsGeneratedAndResizedCorrectly(
+    std::vector<BookmarkAppHelper::BitmapAndSource> downloaded,
+    std::map<int, BookmarkAppHelper::BitmapAndSource> size_map,
+    std::set<int> sizes_to_generate,
+    int expected_generated,
+    int expected_resized) {
+  GURL empty_url("");
+  int number_generated = 0;
+  int number_resized = 0;
+
+  auto icon_largest = FindLargestBitmapAndSourceVector(downloaded);
+  for (const auto& size : sizes_to_generate) {
+    auto icon_downloaded = FindMatchingBitmapAndSourceVector(downloaded, size);
+    auto icon_larger = FindEqualOrLargerBitmapAndSourceVector(downloaded, size);
+    if (icon_downloaded == downloaded.end()) {
+      auto icon_resized = size_map.find(size);
+      if (icon_largest == downloaded.end()) {
+        // There are no downloaded icons. Expect an icon to be generated.
+        EXPECT_NE(size_map.end(), icon_resized);
+        EXPECT_EQ(size, icon_resized->second.bitmap.width());
+        EXPECT_EQ(size, icon_resized->second.bitmap.height());
+        EXPECT_EQ(size, icon_resized->second.bitmap.height());
+        EXPECT_EQ(empty_url, icon_resized->second.source_url);
+        ++number_generated;
+      } else {
+        // If there is a larger downloaded icon, it should be resized. Otherwise
+        // the largest downloaded icon should be resized.
+        auto icon_to_resize = icon_largest;
+        if (icon_larger != downloaded.end())
+          icon_to_resize = icon_larger;
+        EXPECT_NE(size_map.end(), icon_resized);
+        EXPECT_EQ(size, icon_resized->second.bitmap.width());
+        EXPECT_EQ(size, icon_resized->second.bitmap.height());
+        EXPECT_EQ(size, icon_resized->second.bitmap.height());
+        EXPECT_EQ(icon_to_resize->source_url, icon_resized->second.source_url);
+        ++number_resized;
+      }
+    } else {
+      // There is an icon of exactly this size downloaded. Expect no icon to be
+      // generated, and the existing downloaded icon to be used.
+      auto icon_resized = size_map.find(size);
+      EXPECT_NE(size_map.end(), icon_resized);
+      EXPECT_EQ(size, icon_resized->second.bitmap.width());
+      EXPECT_EQ(size, icon_resized->second.bitmap.height());
+      EXPECT_EQ(size, icon_downloaded->bitmap.width());
+      EXPECT_EQ(size, icon_downloaded->bitmap.height());
+      EXPECT_EQ(icon_downloaded->source_url, icon_resized->second.source_url);
+    }
+  }
+  EXPECT_EQ(expected_generated, number_generated);
+  EXPECT_EQ(expected_resized, number_resized);
+}
+
+void TestIconGeneration(int icon_size,
+                        int expected_generated,
+                        int expected_resized) {
+  std::vector<BookmarkAppHelper::BitmapAndSource> downloaded;
+
+  // Add an icon with a URL and bitmap. 'Download' it.
+  WebApplicationInfo::IconInfo icon_info =
+      CreateIconInfoWithBitmap(icon_size, SK_ColorRED);
+  icon_info.url = GURL(kAppIconURL1);
+  downloaded.push_back(BookmarkAppHelper::BitmapAndSource(
+        icon_info.url, icon_info.data));
+
+  // Now run the resizing/generation and validation.
+  WebApplicationInfo web_app_info;
+  std::map<int, BookmarkAppHelper::BitmapAndSource> size_map =
+      BookmarkAppHelper::ResizeIconsAndGenerateMissing(
+          downloaded, TestSizesToGenerate(), &web_app_info);
+
+  ValidateIconsGeneratedAndResizedCorrectly(downloaded, size_map,
+                                            TestSizesToGenerate(),
+                                            expected_generated,
+                                            expected_resized);
 }
 
 class TestBookmarkAppHelper : public BookmarkAppHelper {
@@ -524,6 +691,53 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {
   }
 }
 
+TEST_F(BookmarkAppHelperExtensionServiceTest, LinkedAppIconsAreNotChanged) {
+  WebApplicationInfo web_app_info;
+
+  // Add two icons with a URL and bitmap, two icons with just a bitmap, an
+  // icon with just URL and an icon in an unsupported size with just a URL.
+  WebApplicationInfo::IconInfo icon_info =
+      CreateIconInfoWithBitmap(kIconSizeSmall, SK_ColorRED);
+  icon_info.url = GURL(kAppIconURL1);
+  web_app_info.icons.push_back(icon_info);
+
+  icon_info = CreateIconInfoWithBitmap(kIconSizeMedium, SK_ColorRED);
+  icon_info.url = GURL(kAppIconURL2);
+  web_app_info.icons.push_back(icon_info);
+
+  icon_info.data = SkBitmap();
+  icon_info.url = GURL(kAppIconURL3);
+  icon_info.width = 0;
+  icon_info.height = 0;
+  web_app_info.icons.push_back(icon_info);
+
+  icon_info.url = GURL(kAppIconURL4);
+  web_app_info.icons.push_back(icon_info);
+
+  icon_info = CreateIconInfoWithBitmap(kIconSizeLarge, SK_ColorRED);
+  web_app_info.icons.push_back(icon_info);
+
+  icon_info = CreateIconInfoWithBitmap(kIconSizeUnsupported, SK_ColorRED);
+  web_app_info.icons.push_back(icon_info);
+
+  // 'Download' one of the icons without a size or bitmap.
+  std::vector<BookmarkAppHelper::BitmapAndSource> downloaded;
+  downloaded.push_back(BookmarkAppHelper::BitmapAndSource(
+      GURL(kAppIconURL3),
+      CreateSquareBitmapWithColor(kIconSizeLarge, SK_ColorBLACK)));
+
+  // Now run the resizing and generation into a new web app info.
+  WebApplicationInfo new_web_app_info;
+  std::map<int, BookmarkAppHelper::BitmapAndSource> size_map =
+      BookmarkAppHelper::ResizeIconsAndGenerateMissing(
+          downloaded, TestSizesToGenerate(), &new_web_app_info);
+
+  // Now check that the linked app icons (i.e. those with URLs) are matching in
+  // both lists.
+  ValidateAllIconsWithURLsArePresent(web_app_info, new_web_app_info);
+  ValidateAllIconsWithURLsArePresent(new_web_app_info, web_app_info);
+}
+
 TEST_F(BookmarkAppHelperTest, UpdateWebAppInfoFromManifest) {
   WebApplicationInfo web_app_info;
   web_app_info.title = base::UTF8ToUTF16(kAlternativeAppTitle);
@@ -598,6 +812,53 @@ TEST_F(BookmarkAppHelperTest, UpdateWebAppInfoFromManifestInstallableSite) {
   }
 }
 
+TEST_F(BookmarkAppHelperTest, ConstrainBitmapsToSizes) {
+  std::set<int> desired_sizes;
+  desired_sizes.insert(16);
+  desired_sizes.insert(32);
+  desired_sizes.insert(48);
+  desired_sizes.insert(96);
+  desired_sizes.insert(128);
+  desired_sizes.insert(256);
+
+  {
+    std::vector<BookmarkAppHelper::BitmapAndSource> bitmaps;
+    bitmaps.push_back(CreateSquareBitmapAndSourceWithColor(16, SK_ColorRED));
+    bitmaps.push_back(CreateSquareBitmapAndSourceWithColor(32, SK_ColorGREEN));
+    bitmaps.push_back(
+        CreateSquareBitmapAndSourceWithColor(144, SK_ColorYELLOW));
+
+    std::map<int, BookmarkAppHelper::BitmapAndSource> results(
+        BookmarkAppHelper::ConstrainBitmapsToSizes(bitmaps, desired_sizes));
+
+    EXPECT_EQ(6u, results.size());
+    ValidateBitmapSizeAndColor(results[16].bitmap, 16, SK_ColorRED);
+    ValidateBitmapSizeAndColor(results[32].bitmap, 32, SK_ColorGREEN);
+    ValidateBitmapSizeAndColor(results[48].bitmap, 48, SK_ColorYELLOW);
+    ValidateBitmapSizeAndColor(results[96].bitmap, 96, SK_ColorYELLOW);
+    ValidateBitmapSizeAndColor(results[128].bitmap, 128, SK_ColorYELLOW);
+    ValidateBitmapSizeAndColor(results[256].bitmap, 256, SK_ColorYELLOW);
+  }
+  {
+    std::vector<BookmarkAppHelper::BitmapAndSource> bitmaps;
+    bitmaps.push_back(CreateSquareBitmapAndSourceWithColor(512, SK_ColorRED));
+    bitmaps.push_back(CreateSquareBitmapAndSourceWithColor(18, SK_ColorGREEN));
+    bitmaps.push_back(CreateSquareBitmapAndSourceWithColor(33, SK_ColorBLUE));
+    bitmaps.push_back(CreateSquareBitmapAndSourceWithColor(17, SK_ColorYELLOW));
+
+    std::map<int, BookmarkAppHelper::BitmapAndSource> results(
+        BookmarkAppHelper::ConstrainBitmapsToSizes(bitmaps, desired_sizes));
+
+    EXPECT_EQ(6u, results.size());
+    ValidateBitmapSizeAndColor(results[16].bitmap, 16, SK_ColorYELLOW);
+    ValidateBitmapSizeAndColor(results[32].bitmap, 32, SK_ColorBLUE);
+    ValidateBitmapSizeAndColor(results[48].bitmap, 48, SK_ColorRED);
+    ValidateBitmapSizeAndColor(results[96].bitmap, 96, SK_ColorRED);
+    ValidateBitmapSizeAndColor(results[128].bitmap, 128, SK_ColorRED);
+    ValidateBitmapSizeAndColor(results[256].bitmap, 256, SK_ColorRED);
+  }
+}
+
 TEST_F(BookmarkAppHelperTest, IsValidBookmarkAppUrl) {
   EXPECT_TRUE(IsValidBookmarkAppUrl(GURL("https://chromium.org")));
   EXPECT_TRUE(IsValidBookmarkAppUrl(GURL("https://www.chromium.org")));
@@ -616,6 +877,142 @@ TEST_F(BookmarkAppHelperTest, IsValidBookmarkAppUrl) {
   EXPECT_FALSE(IsValidBookmarkAppUrl(
       GURL("file://mhjfbmdgcfjbbpaeojofohoefgiehjai")));
   EXPECT_FALSE(IsValidBookmarkAppUrl(GURL("chrome://extensions")));
+}
+
+TEST_F(BookmarkAppHelperTest, IconsResizedFromOddSizes) {
+  std::vector<BookmarkAppHelper::BitmapAndSource> downloaded;
+
+  // Add three icons with a URL and bitmap. 'Download' each of them.
+  WebApplicationInfo::IconInfo icon_info =
+      CreateIconInfoWithBitmap(kIconSizeSmall, SK_ColorRED);
+  icon_info.url = GURL(kAppIconURL1);
+  downloaded.push_back(BookmarkAppHelper::BitmapAndSource(
+        icon_info.url, icon_info.data));
+
+  icon_info = CreateIconInfoWithBitmap(kIconSizeSmallBetweenMediumAndLarge,
+                                       SK_ColorRED);
+  icon_info.url = GURL(kAppIconURL2);
+  downloaded.push_back(BookmarkAppHelper::BitmapAndSource(
+        icon_info.url, icon_info.data));
+
+  icon_info = CreateIconInfoWithBitmap(kIconSizeLargeBetweenMediumAndLarge,
+                                       SK_ColorRED);
+  icon_info.url = GURL(kAppIconURL3);
+  downloaded.push_back(BookmarkAppHelper::BitmapAndSource(
+        icon_info.url, icon_info.data));
+
+  // Now run the resizing and generation.
+  WebApplicationInfo web_app_info;
+  std::map<int, BookmarkAppHelper::BitmapAndSource> size_map =
+      BookmarkAppHelper::ResizeIconsAndGenerateMissing(
+          downloaded, TestSizesToGenerate(), &web_app_info);
+
+  // No icons should be generated. The LARGE and MEDIUM sizes should be resized.
+  ValidateIconsGeneratedAndResizedCorrectly(
+      downloaded, size_map, TestSizesToGenerate(), 0, 2);
+}
+
+TEST_F(BookmarkAppHelperTest, IconsResizedFromLarger) {
+  std::vector<BookmarkAppHelper::BitmapAndSource> downloaded;
+
+  // Add three icons with a URL and bitmap. 'Download' two of them and pretend
+  // the third failed to download.
+  WebApplicationInfo::IconInfo icon_info =
+      CreateIconInfoWithBitmap(kIconSizeSmall, SK_ColorRED);
+  icon_info.url = GURL(kAppIconURL1);
+  downloaded.push_back(BookmarkAppHelper::BitmapAndSource(
+        icon_info.url, icon_info.data));
+
+  icon_info = CreateIconInfoWithBitmap(kIconSizeLarge, SK_ColorBLUE);
+  icon_info.url = GURL(kAppIconURL2);
+
+  icon_info = CreateIconInfoWithBitmap(kIconSizeGigantor, SK_ColorBLACK);
+  icon_info.url = GURL(kAppIconURL3);
+  downloaded.push_back(BookmarkAppHelper::BitmapAndSource(
+        icon_info.url, icon_info.data));
+
+  // Now run the resizing and generation.
+  WebApplicationInfo web_app_info;
+  std::map<int, BookmarkAppHelper::BitmapAndSource> size_map =
+      BookmarkAppHelper::ResizeIconsAndGenerateMissing(
+          downloaded, TestSizesToGenerate(), &web_app_info);
+
+  // Expect icon for MEDIUM and LARGE to be resized from the gigantor icon
+  // as it was not downloaded.
+  ValidateIconsGeneratedAndResizedCorrectly(
+      downloaded, size_map, TestSizesToGenerate(), 0, 2);
+}
+
+TEST_F(BookmarkAppHelperTest, AllIconsGeneratedWhenNotDownloaded) {
+  std::vector<BookmarkAppHelper::BitmapAndSource> downloaded;
+
+  // Add three icons with a URL and bitmap. 'Download' none of them.
+  WebApplicationInfo::IconInfo icon_info =
+      CreateIconInfoWithBitmap(kIconSizeSmall, SK_ColorRED);
+  icon_info.url = GURL(kAppIconURL1);
+
+  icon_info = CreateIconInfoWithBitmap(kIconSizeLarge, SK_ColorBLUE);
+  icon_info.url = GURL(kAppIconURL2);
+
+  icon_info = CreateIconInfoWithBitmap(kIconSizeGigantor, SK_ColorBLACK);
+  icon_info.url = GURL(kAppIconURL3);
+
+  // Now run the resizing and generation.
+  WebApplicationInfo web_app_info;
+  std::map<int, BookmarkAppHelper::BitmapAndSource> size_map =
+      BookmarkAppHelper::ResizeIconsAndGenerateMissing(
+          downloaded, TestSizesToGenerate(), &web_app_info);
+
+  // Expect all icons to be generated.
+  ValidateIconsGeneratedAndResizedCorrectly(
+      downloaded, size_map, TestSizesToGenerate(), 3, 0);
+}
+
+TEST_F(BookmarkAppHelperTest, IconResizedFromLargerAndSmaller) {
+  std::vector<BookmarkAppHelper::BitmapAndSource> downloaded;
+
+  // Pretend the huge icon wasn't downloaded but two smaller ones were.
+  WebApplicationInfo::IconInfo icon_info =
+      CreateIconInfoWithBitmap(kIconSizeTiny, SK_ColorRED);
+  icon_info.url = GURL(kAppIconURL1);
+  downloaded.push_back(BookmarkAppHelper::BitmapAndSource(
+        icon_info.url, icon_info.data));
+
+  icon_info = CreateIconInfoWithBitmap(kIconSizeMedium, SK_ColorBLUE);
+  icon_info.url = GURL(kAppIconURL2);
+  downloaded.push_back(BookmarkAppHelper::BitmapAndSource(
+        icon_info.url, icon_info.data));
+
+  icon_info = CreateIconInfoWithBitmap(kIconSizeGigantor, SK_ColorBLACK);
+  icon_info.url = GURL(kAppIconURL3);
+
+  // Now run the resizing and generation.
+  WebApplicationInfo web_app_info;
+  std::map<int, BookmarkAppHelper::BitmapAndSource> size_map =
+      BookmarkAppHelper::ResizeIconsAndGenerateMissing(
+          downloaded, TestSizesToGenerate(), &web_app_info);
+
+  // Expect no icons to be generated, but the LARGE and SMALL icons to be
+  // resized from the MEDIUM icon.
+  ValidateIconsGeneratedAndResizedCorrectly(
+      downloaded, size_map, TestSizesToGenerate(), 0, 2);
+
+  // Verify specifically that the LARGE icons was resized from the medium icon.
+  const auto it = size_map.find(kIconSizeLarge);
+  EXPECT_NE(size_map.end(), it);
+  EXPECT_EQ(GURL(kAppIconURL2), it->second.source_url);
+}
+
+TEST_F(BookmarkAppHelperTest, IconsResizedWhenOnlyATinyOneIsProvided) {
+  // When only a tiny icon is downloaded (smaller than the three desired
+  // sizes), 3 icons should be resized.
+  TestIconGeneration(kIconSizeTiny, 0, 3);
+}
+
+TEST_F(BookmarkAppHelperTest, IconsResizedWhenOnlyAGigantorOneIsProvided) {
+  // When an enormous icon is provided, each desired icon size should be resized
+  // from it, and no icons should be generated.
+  TestIconGeneration(kIconSizeGigantor, 0, 3);
 }
 
 }  // namespace extensions
