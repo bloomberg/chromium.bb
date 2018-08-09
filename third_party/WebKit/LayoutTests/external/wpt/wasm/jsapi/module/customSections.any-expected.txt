@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+FAIL Missing arguments assert_throws: function "() => WebAssembly.Module.customSections(module)" did not throw
+PASS Non-Module arguments
+PASS Branding
+PASS Empty module
+PASS Empty module: array caching
+FAIL Custom sections WebAssembly.Module(): Wasm decoding failed: unexpected section: name @+33
+Harness: the test ran to completion.
+

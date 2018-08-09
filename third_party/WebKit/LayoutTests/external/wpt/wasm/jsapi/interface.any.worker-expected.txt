@@ -1,0 +1,67 @@
+This is a testharness.js-based test.
+Found 63 tests; 48 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS WebAssembly: property descriptor
+PASS WebAssembly: constructing
+PASS WebAssembly.Module: property descriptor
+PASS WebAssembly.Module: prototype
+PASS WebAssembly.Instance: property descriptor
+PASS WebAssembly.Instance: prototype
+PASS WebAssembly.Memory: property descriptor
+PASS WebAssembly.Memory: prototype
+PASS WebAssembly.Table: property descriptor
+PASS WebAssembly.Table: prototype
+PASS WebAssembly.Global: property descriptor
+PASS WebAssembly.Global: prototype
+PASS WebAssembly.CompileError: property descriptor
+PASS WebAssembly.CompileError: prototype
+PASS WebAssembly.LinkError: property descriptor
+PASS WebAssembly.LinkError: prototype
+PASS WebAssembly.RuntimeError: property descriptor
+PASS WebAssembly.RuntimeError: prototype
+FAIL WebAssembly.validate assert_true: enumerable expected true got false
+PASS WebAssembly.validate: name
+PASS WebAssembly.validate: length
+FAIL WebAssembly.compile assert_true: enumerable expected true got false
+PASS WebAssembly.compile: name
+PASS WebAssembly.compile: length
+FAIL WebAssembly.instantiate assert_true: enumerable expected true got false
+PASS WebAssembly.instantiate: name
+PASS WebAssembly.instantiate: length
+FAIL WebAssembly.Module.exports assert_true: enumerable expected true got false
+PASS WebAssembly.Module.exports: name
+PASS WebAssembly.Module.exports: length
+FAIL WebAssembly.Module.imports assert_true: enumerable expected true got false
+PASS WebAssembly.Module.imports: name
+PASS WebAssembly.Module.imports: length
+FAIL WebAssembly.Module.customSections assert_true: enumerable expected true got false
+PASS WebAssembly.Module.customSections: name
+PASS WebAssembly.Module.customSections: length
+FAIL WebAssembly.Instance.exports assert_true: enumerable expected true got false
+PASS WebAssembly.Instance.exports: getter
+PASS WebAssembly.Instance.exports: setter
+FAIL WebAssembly.Memory.grow assert_true: enumerable expected true got false
+PASS WebAssembly.Memory.grow: name
+PASS WebAssembly.Memory.grow: length
+FAIL WebAssembly.Memory.buffer assert_true: enumerable expected true got false
+PASS WebAssembly.Memory.buffer: getter
+PASS WebAssembly.Memory.buffer: setter
+FAIL WebAssembly.Table.grow assert_true: enumerable expected true got false
+PASS WebAssembly.Table.grow: name
+PASS WebAssembly.Table.grow: length
+FAIL WebAssembly.Table.get assert_true: enumerable expected true got false
+PASS WebAssembly.Table.get: name
+PASS WebAssembly.Table.get: length
+FAIL WebAssembly.Table.set assert_true: enumerable expected true got false
+PASS WebAssembly.Table.set: name
+PASS WebAssembly.Table.set: length
+FAIL WebAssembly.Table.length assert_true: enumerable expected true got false
+PASS WebAssembly.Table.length: getter
+PASS WebAssembly.Table.length: setter
+FAIL WebAssembly.Global.valueOf assert_true: enumerable expected true got false
+PASS WebAssembly.Global.valueOf: name
+PASS WebAssembly.Global.valueOf: length
+FAIL WebAssembly.Global.value assert_true: enumerable expected true got false
+PASS WebAssembly.Global.value: getter
+PASS WebAssembly.Global.value: setter
+Harness: the test ran to completion.
+
