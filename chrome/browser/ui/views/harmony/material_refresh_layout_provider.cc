@@ -64,6 +64,7 @@ int MaterialRefreshLayoutProvider::GetShadowElevationMetric(
 }
 
 gfx::ShadowValues MaterialRefreshLayoutProvider::MakeShadowValues(
-    int elevation) const {
-  return gfx::ShadowValue::MakeRefreshShadowValues(elevation);
+    int elevation,
+    SkColor color) const {
+  return gfx::ShadowValue::MakeRefreshShadowValues(elevation, color);
 }

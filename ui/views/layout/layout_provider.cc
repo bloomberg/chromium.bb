@@ -166,8 +166,9 @@ int LayoutProvider::GetShadowElevationMetric(
   return 3;
 }
 
-gfx::ShadowValues LayoutProvider::MakeShadowValues(int elevation) const {
-  return gfx::ShadowValue::MakeMdShadowValues(elevation);
+gfx::ShadowValues LayoutProvider::MakeShadowValues(int elevation,
+                                                   SkColor color) const {
+  return gfx::ShadowValue::MakeMdShadowValues(elevation, color);
 }
 
 }  // namespace views

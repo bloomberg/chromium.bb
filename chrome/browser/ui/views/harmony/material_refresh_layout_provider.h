@@ -20,7 +20,8 @@ class MaterialRefreshLayoutProvider : public HarmonyLayoutProvider {
                             const gfx::Size& size = gfx::Size()) const override;
   int GetShadowElevationMetric(
       views::EmphasisMetric emphasis_metric) const override;
-  gfx::ShadowValues MakeShadowValues(int elevation) const override;
+  gfx::ShadowValues MakeShadowValues(int elevation,
+                                     SkColor color) const override;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_HARMONY_MATERIAL_REFRESH_LAYOUT_PROVIDER_H_
