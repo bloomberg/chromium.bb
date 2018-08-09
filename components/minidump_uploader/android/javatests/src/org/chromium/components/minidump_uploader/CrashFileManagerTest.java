@@ -36,6 +36,7 @@ public class CrashFileManagerTest {
     public CrashTestRule mTestRule = new CrashTestRule();
 
     private static final int TEST_PID = 23;
+    private static final int TEST_PID2 = 24;
 
     private long mInitialModificationTimestamp;
     private long mModificationTimestamp;
@@ -49,6 +50,7 @@ public class CrashFileManagerTest {
 
     private File mDmpSansLogcatFile1;
     private File mDmpSansLogcatFile2;
+    private File mDmpSansLogcatFileForPid2;
 
     private File mDmpFile1;
     private File mDmpFile2;
@@ -94,6 +96,11 @@ public class CrashFileManagerTest {
                 new File(mTestRule.getCrashDir(), "chromium-renderer_abc.dmp" + TEST_PID);
         mDmpSansLogcatFile2.createNewFile();
         mDmpSansLogcatFile2.setLastModified(mModificationTimestamp);
+        mModificationTimestamp += 1000;
+
+        mDmpSansLogcatFileForPid2 = new File(mTestRule.getCrashDir(), "321_cba.dmp" + TEST_PID2);
+        mDmpSansLogcatFileForPid2.createNewFile();
+        mDmpSansLogcatFileForPid2.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
 
         mDmpFile1 = new File(mTestRule.getCrashDir(), "123_abc.dmp.try0");
@@ -193,8 +200,8 @@ public class CrashFileManagerTest {
         CrashFileManager crashFileManager = new CrashFileManager(mTestRule.getCacheDir());
         File[] expectedFiles = new File[] {mLogfile, mUpFile2, mUpFile1, mMultiDigitMaxTriesFile,
                 mOneBelowMultiDigitMaxTriesFile, mMaxTriesFile, mOneBelowMaxTriesFile, mDmpFile2,
-                mDmpFile1, mDmpSansLogcatFile2, mDmpSansLogcatFile1, mTmpFile3, mTmpFile2,
-                mTmpFile1};
+                mDmpFile1, mDmpSansLogcatFileForPid2, mDmpSansLogcatFile2, mDmpSansLogcatFile1,
+                mTmpFile3, mTmpFile2, mTmpFile1};
         File[] actualFiles = crashFileManager.listCrashFiles(null);
         Assert.assertNotNull(actualFiles);
         assertArrayEquals(
@@ -266,9 +273,21 @@ public class CrashFileManagerTest {
     @Test
     @SmallTest
     @Feature({"Android-AppBase"})
+    public void testGetMinidumpSansLogcatForPid() {
+        CrashFileManager crashFileManager = new CrashFileManager(mTestRule.getCacheDir());
+        File expectedFile = mDmpSansLogcatFileForPid2;
+        File actualFile = crashFileManager.getMinidumpSansLogcatForPid(TEST_PID2);
+        Assert.assertNotNull(actualFile);
+        Assert.assertEquals(expectedFile, actualFile);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Android-AppBase"})
     public void testGetMinidumpsSansLogcat() {
         CrashFileManager crashFileManager = new CrashFileManager(mTestRule.getCacheDir());
-        File[] expectedFiles = new File[] {mDmpSansLogcatFile2, mDmpSansLogcatFile1};
+        File[] expectedFiles =
+                new File[] {mDmpSansLogcatFileForPid2, mDmpSansLogcatFile2, mDmpSansLogcatFile1};
         File[] actualFiles = crashFileManager.getMinidumpsSansLogcat();
         Assert.assertNotNull(actualFiles);
         assertArrayEquals("Failed to get the correct minidump files in directory", expectedFiles,
