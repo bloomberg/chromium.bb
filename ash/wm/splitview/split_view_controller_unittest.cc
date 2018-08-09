@@ -2529,4 +2529,44 @@ TEST_F(SplitViewAppDraggingTest, ShelfVisibilityIfDraggingFullscreenedWindow) {
   EXPECT_TRUE(shelf_layout_manager->IsVisible());
 }
 
+// Tests that the app drag will be reverted if the screen is being rotated.
+TEST_F(SplitViewAppDraggingTest, DisplayConfigurationChangeTest) {
+  UpdateDisplay("800x600");
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager,
+                                                         display_id);
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+  // Set the screen orientation to LANDSCAPE_PRIMARY.
+  test_api.SetDisplayRotation(display::Display::ROTATE_0,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kLandscapePrimary);
+
+  std::unique_ptr<aura::Window> window = CreateTestWindowWithWidget();
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+  gfx::Rect display_bounds =
+      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window.get());
+
+  // Start to drag the window long enough to snap.
+  const float long_scroll_delta = display_bounds.height() / 4 + 5;
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+  SendScrollStartAndUpdate(gfx::Point(0, 0), long_scroll_delta, timestamp,
+                           window.get());
+  WindowSelectorController* window_selector_controller =
+      Shell::Get()->window_selector_controller();
+  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->is_dragged());
+
+  // Rotate the screen during drag.
+  test_api.SetDisplayRotation(display::Display::ROTATE_270,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kPortraitPrimary);
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+  EXPECT_FALSE(window_selector_controller->IsSelecting());
+  EXPECT_FALSE(wm::GetWindowState(window.get())->is_dragged());
+}
+
 }  // namespace ash
