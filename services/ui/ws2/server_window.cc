@@ -494,9 +494,7 @@ void ServerWindow::AttachCompositorFrameSink(
     viz::mojom::CompositorFrameSinkClientPtr client) {
   attached_compositor_frame_sink_ = true;
   viz::HostFrameSinkManager* host_frame_sink_manager =
-      aura::Env::GetInstance()
-          ->context_factory_private()
-          ->GetHostFrameSinkManager();
+      window_->env()->context_factory_private()->GetHostFrameSinkManager();
   host_frame_sink_manager->CreateCompositorFrameSink(
       frame_sink_id_, std::move(compositor_frame_sink), std::move(client));
 }

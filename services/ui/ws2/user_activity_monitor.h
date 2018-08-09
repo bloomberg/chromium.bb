@@ -17,6 +17,10 @@
 #include "services/ui/public/interfaces/user_activity_monitor.mojom.h"
 #include "ui/events/event_handler.h"
 
+namespace aura {
+class Env;
+}
+
 namespace ui {
 namespace ws2 {
 
@@ -33,6 +37,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) UserActivityMonitor
   // |now_clock| is used to get the timestamp. If |now_clock| is nullptr, then
   // DefaultTickClock is used.
   explicit UserActivityMonitor(
+      aura::Env* env,
       std::unique_ptr<const base::TickClock> now_clock = nullptr);
   ~UserActivityMonitor() override;
 
@@ -60,6 +65,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) UserActivityMonitor
 
   void OnActivityObserverDisconnected(mojom::UserActivityObserver* observer);
   void OnIdleObserverDisconnected(mojom::UserIdleObserver* observer);
+
+  aura::Env* env_;
 
   mojo::BindingSet<mojom::UserActivityMonitor> bindings_;
   std::unique_ptr<const base::TickClock> now_clock_;
