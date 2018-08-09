@@ -715,25 +715,6 @@ video::-webkit-media-controls.sizing-large div[pseudo="-internal-media-controls-
 }
 
 /* TODO(https://crbug.com/857120): All these are the same, so these are unnecessary. */
-video::-webkit-media-controls.sizing-small label[pseudo="-internal-media-controls-overflow-menu-list-item" i] {
-  font-size: 14px;
-  height: 48px;
-  padding: 0 16px 0;
-}
-
-video::-webkit-media-controls.sizing-medium label[pseudo="-internal-media-controls-overflow-menu-list-item" i] {
-  font-size: 14px;
-  height: 48px;
-  padding: 0 16px 0;
-}
-
-video::-webkit-media-controls.sizing-large label[pseudo="-internal-media-controls-overflow-menu-list-item" i] {
-  font-size: 14px;
-  height: 48px;
-  padding: 0 16px 0;
-}
-
-/* TODO(https://crbug.com/857120): All these are the same, so these are unnecessary. */
 video::-webkit-media-controls.sizing-small label[pseudo="-internal-media-controls-overflow-menu-list-item" i] input {
   margin-left: 0;
   margin-right: 16px;
