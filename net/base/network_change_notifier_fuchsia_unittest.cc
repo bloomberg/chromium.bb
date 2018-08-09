@@ -152,6 +152,11 @@ class FakeNetstack : public fuchsia::netstack::Netstack {
                            fuchsia::netstack::NetAddress addr,
                            uint8_t prefixLen,
                            SetInterfaceAddressCallback callback) override {}
+  void RemoveInterfaceAddress(
+      uint32_t nicid,
+      fuchsia::netstack::NetAddress addr,
+      uint8_t prefixLen,
+      RemoveInterfaceAddressCallback callback) override {}
   void SetDhcpClientStatus(uint32_t nicid,
                            bool enabled,
                            SetDhcpClientStatusCallback callback) override {}

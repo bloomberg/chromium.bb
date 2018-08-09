@@ -209,7 +209,7 @@ fuchsia_sdk_fidl_pkg("math") {
   namespace = "fuchsia"
   namespace_path = "fuchsia"
   sources = [
-    "geometry.fidl",
+    "math.fidl",
   ]
 }
 
