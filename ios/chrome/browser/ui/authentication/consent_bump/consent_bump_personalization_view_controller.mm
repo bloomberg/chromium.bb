@@ -86,7 +86,7 @@ const CGFloat kOptionsVerticalMargin = 16;
       l10n_util::GetNSString(IDS_IOS_CONSENT_BUMP_PERSONALIZATION_TITLE);
   title.textColor =
       [UIColor colorWithWhite:0 alpha:kAuthenticationTitleColorAlpha];
-  title.font = [UIFont systemFontOfSize:kAuthenticationTitleFontSize];
+  title.font = [UIFont preferredFontForTextStyle:kAuthenticationTitleFontStyle];
   title.numberOfLines = 0;
   [container addSubview:title];
 
@@ -97,7 +97,7 @@ const CGFloat kOptionsVerticalMargin = 16;
       l10n_util::GetNSString(IDS_IOS_CONSENT_BUMP_PERSONALIZATION_MESSAGE);
   text.textColor =
       [UIColor colorWithWhite:0 alpha:kAuthenticationTextColorAlpha];
-  text.font = [UIFont systemFontOfSize:kAuthenticationTextFontSize];
+  text.font = [UIFont preferredFontForTextStyle:kAuthenticationTextFontStyle];
   text.numberOfLines = 0;
   [container addSubview:text];
 

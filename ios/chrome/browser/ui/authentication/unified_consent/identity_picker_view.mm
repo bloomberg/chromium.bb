@@ -116,6 +116,10 @@ const int kHeaderBackgroundColor = 0xf1f3f4;
     AddSameCenterYConstraint(self, _arrowDownImageView);
     AddSameCenterConstraints(_checkmarkImageView, _arrowDownImageView);
     ApplyVisualConstraintsWithMetrics(constraints, views, metrics);
+
+    // Accessibility.
+    self.isAccessibilityElement = YES;
+    self.accessibilityTraits = UIAccessibilityTraitButton;
   }
   return self;
 }
@@ -127,6 +131,8 @@ const int kHeaderBackgroundColor = 0xf1f3f4;
   self.enabled = canChangeIdentity;
   self.arrowDownImageView.hidden = !canChangeIdentity;
   self.checkmarkImageView.hidden = canChangeIdentity;
+  self.accessibilityTraits = canChangeIdentity ? UIAccessibilityTraitButton
+                                               : UIAccessibilityTraitStaticText;
 }
 
 - (void)setIdentityAvatar:(UIImage*)identityAvatar {
@@ -137,8 +143,11 @@ const int kHeaderBackgroundColor = 0xf1f3f4;
   DCHECK(email);
   if (!name.length) {
     [self.identityView setTitle:email subtitle:nil];
+    self.accessibilityLabel = email;
   } else {
     [self.identityView setTitle:name subtitle:email];
+    self.accessibilityLabel =
+        [NSString stringWithFormat:@"%@, %@", name, email];
   }
 }
 

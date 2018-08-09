@@ -12,8 +12,8 @@ extern const CGFloat kAuthenticationHeaderImageHeight;
 extern const CGFloat kAuthenticationHeaderImageWidth;
 
 // Font sizes
-extern const CGFloat kAuthenticationTitleFontSize;
-extern const CGFloat kAuthenticationTextFontSize;
+extern const UIFontTextStyle kAuthenticationTitleFontStyle;
+extern const UIFontTextStyle kAuthenticationTextFontStyle;
 
 // Color displayed in the non-safe area.
 extern const int kAuthenticationHeaderBackgroundColor;
