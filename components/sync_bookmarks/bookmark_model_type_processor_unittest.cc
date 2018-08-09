@@ -339,6 +339,34 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldDecodeEncodedSyncMetadata) {
   AssertState(&new_processor, bookmarks);
 }
 
+// Verifies that the model type state stored in the tracker gets
+// updated upon handling remote updates by assigning a new encryption
+// key name.
+TEST_F(BookmarkModelTypeProcessorTest,
+       ShouldUpdateModelTypeStateUponHandlingRemoteUpdates) {
+  // Initialize the process to make sure the tracker has been created.
+  InitWithSyncedBookmarks({}, processor());
+  const SyncedBookmarkTracker* tracker = processor()->GetTrackerForTest();
+  // The encryption key name should be empty.
+  ASSERT_TRUE(tracker->model_type_state().encryption_key_name().empty());
+
+  // Build a model type state with an encryption key name.
+  const std::string kEncryptionKeyName = "new_encryption_key_name";
+  sync_pb::ModelTypeState model_type_state(CreateDummyModelTypeState());
+  model_type_state.set_encryption_key_name(kEncryptionKeyName);
+
+  EXPECT_CALL(*schedule_save_closure(), Run());
+  // Push empty updates list to the processor together with the updated model
+  // type state.
+  processor()->OnUpdateReceived(model_type_state,
+                                syncer::UpdateResponseDataList());
+
+  // The model type state inside the tracker should have been updated, and
+  // carries the new encryption key name.
+  EXPECT_THAT(tracker->model_type_state().encryption_key_name(),
+              Eq(kEncryptionKeyName));
+}
+
 }  // namespace
 
 }  // namespace sync_bookmarks
