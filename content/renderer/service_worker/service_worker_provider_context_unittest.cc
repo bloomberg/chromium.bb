@@ -639,6 +639,13 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   // Subresource loader factory must not be available.
   EXPECT_EQ(nullptr, provider_context->GetSubresourceLoaderFactory());
 
+  // The SetController() call results in another Mojo call to
+  // ControllerServiceWorkerConnector.UpdateController(). Flush that interface
+  // pointer to ensure the message was received.
+  LOG(ERROR) << "3 FlushControllerConnector()";
+  FlushControllerConnector(provider_context.get());
+  LOG(ERROR) << "3 FlushControllerConnector() finished";
+
   // Performing a request using the subresource factory obtained before
   // falls back to the network.
   const GURL kURL3("https://www.example.com/foo3.png");
