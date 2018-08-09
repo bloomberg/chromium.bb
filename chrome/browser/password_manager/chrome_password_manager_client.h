@@ -215,6 +215,7 @@ class ChromePasswordManagerClient
 
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if !defined(OS_ANDROID)
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   // content::RenderWidgetHost::InputEventObserver overrides.
   void OnInputEvent(const blink::WebInputEvent&) override;
 #endif
