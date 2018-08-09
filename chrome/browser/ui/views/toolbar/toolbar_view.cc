@@ -308,14 +308,8 @@ void ToolbarView::ShowBookmarkBubble(
     const GURL& url,
     bool already_bookmarked,
     bookmarks::BookmarkBubbleObserver* observer) {
-  views::View* anchor_view = location_bar();
+  views::View* const anchor_view = location_bar();
   PageActionIconView* const star_view = location_bar()->star_view();
-  if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    if (star_view && star_view->visible())
-      anchor_view = star_view;
-    else
-      anchor_view = app_menu_button_;
-  }
 
   std::unique_ptr<BubbleSyncPromoDelegate> delegate;
   delegate.reset(new BookmarkBubbleSignInDelegate(browser_));
@@ -331,15 +325,9 @@ void ToolbarView::ShowTranslateBubble(
     translate::TranslateStep step,
     translate::TranslateErrors::Type error_type,
     bool is_user_gesture) {
-  views::View* anchor_view = location_bar();
+  views::View* const anchor_view = location_bar();
   PageActionIconView* translate_icon_view =
       location_bar()->translate_icon_view();
-  if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    if (translate_icon_view && translate_icon_view->visible())
-      anchor_view = translate_icon_view;
-    else
-      anchor_view = app_menu_button_;
-  }
 
   views::Widget* bubble_widget = TranslateBubbleView::ShowBubble(
       anchor_view, gfx::Point(), web_contents, step, error_type,

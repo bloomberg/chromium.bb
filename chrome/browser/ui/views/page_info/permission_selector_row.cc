@@ -16,7 +16,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
@@ -42,7 +41,7 @@ int CalculatePaddingBeneathPermissionRow(bool has_reason) {
   const int list_item_padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
                                     DISTANCE_CONTROL_LIST_VERTICAL) /
                                 2;
-  if (!ui::MaterialDesignController::IsSecondaryUiMaterial() || !has_reason)
+  if (!has_reason)
     return list_item_padding;
 
   const int combobox_height =
@@ -241,10 +240,8 @@ PermissionCombobox::PermissionCombobox(ComboboxModelAdapter* model,
   set_listener(this);
   SetEnabled(enabled);
   UpdateSelectedIndex(use_default);
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    set_size_to_largest_label(false);
-    ModelChanged();
-  }
+  set_size_to_largest_label(false);
+  ModelChanged();
 }
 
 PermissionCombobox::~PermissionCombobox() {}
@@ -304,18 +301,8 @@ PermissionSelectorRow::PermissionSelectorRow(
       base::Bind(&PermissionSelectorRow::PermissionChanged,
                  base::Unretained(this))));
 
-// Create the permission menu button.
-#if defined(OS_MACOSX)
-  bool use_real_combobox = true;
-#else
-  bool use_real_combobox =
-      ui::MaterialDesignController::IsSecondaryUiMaterial();
-#endif
-  if (use_real_combobox) {
-    InitializeComboboxView(layout, permission);
-  } else {
-    InitializeMenuButtonView(layout, permission);
-  }
+  // Create the permission menu button.
+  InitializeComboboxView(layout, permission);
 
   // Show the permission decision reason, if it was not the user.
   base::string16 reason =
@@ -337,15 +324,13 @@ PermissionSelectorRow::PermissionSelectorRow(
     DCHECK(column_set);
     // Secondary labels in Harmony may not overlap into space shared with the
     // combobox column.
-    const int column_span =
-        ui::MaterialDesignController::IsSecondaryUiMaterial() ? 1 : 3;
+    const int column_span = 1;
 
-    // In Harmony, long labels that cannot fit in the existing space under the
-    // permission label should be allowed to use up to |kMaxSecondaryLabelWidth|
-    // for display.
+    // Long labels that cannot fit in the existing space under the permission
+    // label should be allowed to use up to |kMaxSecondaryLabelWidth| for
+    // display.
     constexpr int kMaxSecondaryLabelWidth = 140;
-    if (ui::MaterialDesignController::IsSecondaryUiMaterial() &&
-        preferred_width > kMaxSecondaryLabelWidth) {
+    if (preferred_width > kMaxSecondaryLabelWidth) {
       layout->AddView(secondary_label, column_span, 1.0,
                       views::GridLayout::LEADING, views::GridLayout::CENTER,
                       kMaxSecondaryLabelWidth, 0);
@@ -382,23 +367,6 @@ int PermissionSelectorRow::MinHeightForPermissionRow() {
 void PermissionSelectorRow::AddObserver(
     PermissionSelectorRowObserver* observer) {
   observer_list_.AddObserver(observer);
-}
-
-void PermissionSelectorRow::InitializeMenuButtonView(
-    views::GridLayout* layout,
-    const PageInfoUI::PermissionInfo& permission) {
-  bool button_enabled =
-      permission.source == content_settings::SETTING_SOURCE_USER;
-  menu_button_ = new internal::PermissionMenuButton(
-      PageInfoUI::PermissionActionToUIString(
-          profile_, permission.type, permission.setting,
-          permission.default_setting, permission.source),
-      menu_model_.get(), button_enabled);
-  menu_button_->SetEnabled(button_enabled);
-  menu_button_->SetTooltipText(l10n_util::GetStringFUTF16(
-      IDS_PAGE_INFO_SELECTOR_TOOLTIP,
-      PageInfoUI::PermissionTypeToUIString(permission.type)));
-  layout->AddView(menu_button_);
 }
 
 void PermissionSelectorRow::InitializeComboboxView(

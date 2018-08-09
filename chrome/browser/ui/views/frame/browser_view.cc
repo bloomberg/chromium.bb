@@ -1247,30 +1247,22 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
   LocationBarView* location_bar = GetLocationBarView();
   PageActionIconView* card_view = location_bar->save_credit_card_icon_view();
 
-  views::View* anchor_view = location_bar;
-  if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    if (card_view && card_view->visible())
-      anchor_view = card_view;
-    else
-      anchor_view = toolbar_button_provider()->GetAppMenuButton();
-  }
-
   autofill::BubbleType bubble_type = controller->GetBubbleType();
   autofill::SaveCardBubbleViews* bubble = nullptr;
 
   switch (bubble_type) {
     case autofill::BubbleType::LOCAL_SAVE:
     case autofill::BubbleType::UPLOAD_SAVE:
-      bubble = new autofill::SaveCardOfferBubbleViews(anchor_view, gfx::Point(),
-                                                      web_contents, controller);
+      bubble = new autofill::SaveCardOfferBubbleViews(
+          location_bar, gfx::Point(), web_contents, controller);
       break;
     case autofill::BubbleType::SIGN_IN_PROMO:
       bubble = new autofill::SaveCardSignInPromoBubbleViews(
-          anchor_view, gfx::Point(), web_contents, controller);
+          location_bar, gfx::Point(), web_contents, controller);
       break;
     case autofill::BubbleType::MANAGE_CARDS:
       bubble = new autofill::SaveCardManageCardsBubbleViews(
-          anchor_view, gfx::Point(), web_contents, controller);
+          location_bar, gfx::Point(), web_contents, controller);
       break;
     case autofill::BubbleType::INACTIVE:
       break;
@@ -1296,16 +1288,8 @@ autofill::LocalCardMigrationBubble* BrowserView::ShowLocalCardMigrationBubble(
   PageActionIconView* card_view =
       location_bar->local_card_migration_icon_view();
 
-  views::View* anchor_view = location_bar;
-  if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    if (card_view && card_view->visible())
-      anchor_view = card_view;
-    else
-      anchor_view = toolbar_button_provider()->GetAppMenuButton();
-  }
-
   autofill::LocalCardMigrationBubbleViews* bubble =
-      new autofill::LocalCardMigrationBubbleViews(anchor_view, gfx::Point(),
+      new autofill::LocalCardMigrationBubbleViews(location_bar, gfx::Point(),
                                                   web_contents, controller);
   views::Widget* bubble_widget =
       views::BubbleDialogDelegateView::CreateBubble(bubble);

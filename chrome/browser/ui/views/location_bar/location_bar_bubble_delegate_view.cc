@@ -14,7 +14,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/accessibility/view_accessibility.h"
 
@@ -82,16 +81,7 @@ LocationBarBubbleDelegateView::~LocationBarBubbleDelegateView() {}
 
 void LocationBarBubbleDelegateView::ShowForReason(DisplayReason reason) {
   if (reason == USER_GESTURE) {
-#if defined(OS_MACOSX)
-    // In the USER_GESTURE case, the icon will be in an active state so the
-    // bubble doesn't need an arrow (except on non-MD MacViews).
-    const bool hide_arrow =
-        ui::MaterialDesignController::IsSecondaryUiMaterial();
-#else
-    const bool hide_arrow = true;
-#endif
-    if (hide_arrow)
-      SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
+    SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
     GetWidget()->Show();
   } else {
     GetWidget()->ShowInactive();

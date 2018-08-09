@@ -38,11 +38,12 @@ ChromeLayoutProvider* ChromeLayoutProvider::Get() {
 // static
 std::unique_ptr<views::LayoutProvider>
 ChromeLayoutProvider::CreateLayoutProvider() {
+  // TODO(pbos): Consolidate HarmonyLayoutProvider into ChromeLayoutProvider as
+  // it is no longer active, or wait until Refresh is always on then consolidate
+  // all three.
   if (ui::MaterialDesignController::IsRefreshUi())
     return std::make_unique<MaterialRefreshLayoutProvider>();
-  return ui::MaterialDesignController::IsSecondaryUiMaterial()
-             ? std::make_unique<HarmonyLayoutProvider>()
-             : std::make_unique<ChromeLayoutProvider>();
+  return std::make_unique<HarmonyLayoutProvider>();
 }
 
 gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {

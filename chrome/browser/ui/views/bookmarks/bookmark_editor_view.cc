@@ -26,7 +26,6 @@
 #include "components/user_prefs/user_prefs.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/event.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -42,13 +41,6 @@
 using bookmarks::BookmarkExpandedStateTracker;
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
-
-namespace {
-
-// Background color of text field when URL is invalid.
-const SkColor kErrorColor = SkColorSetRGB(0xFF, 0xBC, 0xBC);
-
-}  // namespace
 
 BookmarkEditorView::BookmarkEditorView(
     Profile* profile,
@@ -454,12 +446,7 @@ GURL BookmarkEditorView::GetInputURL() const {
 void BookmarkEditorView::UserInputChanged() {
   if (details_.GetNodeType() != BookmarkNode::FOLDER) {
     const GURL url(GetInputURL());
-    if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-      url_tf_->SetInvalid(!url.is_valid());
-    else if (!url.is_valid())
-      url_tf_->SetBackgroundColor(kErrorColor);
-    else
-      url_tf_->UseDefaultBackgroundColor();
+    url_tf_->SetInvalid(!url.is_valid());
   }
   DialogModelChanged();
 }

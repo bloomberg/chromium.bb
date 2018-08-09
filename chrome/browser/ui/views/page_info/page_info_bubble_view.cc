@@ -43,7 +43,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_features.h"
@@ -90,10 +89,6 @@ namespace {
 constexpr int kMinBubbleWidth = 320;
 constexpr int kMaxBubbleWidth = 1000;
 
-bool UseHarmonyStyle() {
-  return ui::MaterialDesignController::IsSecondaryUiMaterial();
-}
-
 SkColor GetRelatedTextColor() {
   views::Label label;
   return views::style::GetColor(label, views::style::CONTEXT_LABEL,
@@ -108,67 +103,6 @@ void AddColumnWithSideMargin(views::GridLayout* layout, int margin, int id) {
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
                         views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(views::GridLayout::kFixedSize, margin);
-}
-
-// Creates a section containing a title, icon, and link. Used to display Cookies
-// and Certificate information. Hovering over the |subtitle_text| will show the
-// |tooltip_text|.
-// *----------------------------------------------*
-// | Icon | Title |title_resource_id| string      |
-// |----------------------------------------------|
-// |      | Link |subtitle_text|                  |
-// *----------------------------------------------*
-views::View* CreateMoreInfoLinkSection(views::LinkListener* listener,
-                                       const gfx::ImageSkia& image_icon,
-                                       int title_resource_id,
-                                       const base::string16& subtitle_text,
-                                       int click_target_id,
-                                       const base::string16& tooltip_text,
-                                       views::Link** link) {
-  *link = new views::Link(subtitle_text);
-  (*link)->set_id(click_target_id);
-  (*link)->set_listener(listener);
-  (*link)->SetUnderline(false);
-  (*link)->SetTooltipText(tooltip_text);
-
-  views::View* new_view = new views::View();
-  views::GridLayout* layout =
-      new_view->SetLayoutManager(std::make_unique<views::GridLayout>(new_view));
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  const int side_margin =
-      provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION).left();
-  const int vert_spacing =
-      provider->GetDistanceMetric(DISTANCE_CONTROL_LIST_VERTICAL) / 2;
-
-  const int column = 0;
-  views::ColumnSet* column_set = layout->AddColumnSet(column);
-  column_set->AddPaddingColumn(views::GridLayout::kFixedSize, side_margin);
-  column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
-                        views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-                        PageInfoBubbleView::kIconColumnWidth, 0);
-  column_set->AddPaddingColumn(
-      views::GridLayout::kFixedSize,
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL));
-  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
-                        views::GridLayout::kFixedSize,
-                        views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(views::GridLayout::kFixedSize, side_margin);
-
-  layout->StartRowWithPadding(1.0, column, views::GridLayout::kFixedSize,
-                              vert_spacing);
-  views::ImageView* icon = new NonAccessibleImageView();
-  icon->SetImage(image_icon);
-  layout->AddView(icon);
-
-  views::Label* title_label = new views::Label(
-      l10n_util::GetStringUTF16(title_resource_id), CONTEXT_BODY_TEXT_LARGE);
-  layout->AddView(title_label);
-
-  layout->StartRow(1.0, column);
-  layout->SkipColumns(1);
-  layout->AddView(*link);
-  layout->AddPaddingRow(views::GridLayout::kFixedSize, vert_spacing);
-  return new_view;
 }
 
 // Formats strings and returns the |gfx::Range| of the newly inserted string.
@@ -215,25 +149,11 @@ std::unique_ptr<views::View> CreateSiteSettingsLink(
     PageInfoBubbleView* listener) {
   const base::string16& tooltip =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_SETTINGS_TOOLTIP);
-  if (UseHarmonyStyle()) {
-    return CreateMoreInfoButton(
-        listener, PageInfoUI::GetSiteSettingsIcon(GetRelatedTextColor()),
-        IDS_PAGE_INFO_SITE_SETTINGS_LINK, base::string16(),
-        PageInfoBubbleView::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS,
-        tooltip);
-  }
-  views::Link* site_settings_link = new views::Link(
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_SETTINGS_LINK));
-  site_settings_link->set_id(
-      PageInfoBubbleView::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS);
-  site_settings_link->SetTooltipText(tooltip);
-  site_settings_link->set_listener(listener);
-  site_settings_link->SetUnderline(false);
-  auto link_section = std::make_unique<views::View>();
-  link_section->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(0, side_margin)));
-  link_section->AddChildView(site_settings_link);
-  return link_section;
+  return CreateMoreInfoButton(
+      listener, PageInfoUI::GetSiteSettingsIcon(GetRelatedTextColor()),
+      IDS_PAGE_INFO_SITE_SETTINGS_LINK, base::string16(),
+      PageInfoBubbleView::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS,
+      tooltip);
 }
 
 }  // namespace
@@ -510,7 +430,7 @@ InternalPageInfoBubbleView::~InternalPageInfoBubbleView() {}
 bool InternalPageInfoBubbleView::ShouldShowCloseButton() const {
   // TODO(patricialor): When Harmony is default, also remove |bubble_icon_| and
   // supporting code.
-  return ui::MaterialDesignController::IsSecondaryUiMaterial();
+  return true;
 }
 
 gfx::ImageSkia InternalPageInfoBubbleView::GetWindowIcon() {
@@ -566,7 +486,6 @@ PageInfoBubbleView::PageInfoBubbleView(
       profile_(profile),
       header_(nullptr),
       site_settings_view_(nullptr),
-      cookie_link_legacy_(nullptr),
       cookie_button_(nullptr),
       weak_factory_(this) {
   // Capture the default bubble margin, and move it to the Layout classes. This
@@ -582,8 +501,7 @@ PageInfoBubbleView::PageInfoBubbleView(
   // assuming that the "Cookies" & "Site settings" buttons will always be shown.
   const int hover_list_spacing =
       layout_provider->GetDistanceMetric(DISTANCE_CONTENT_LIST_VERTICAL_MULTI);
-  const int bottom_margin =
-      UseHarmonyStyle() ? hover_list_spacing : margins().bottom();
+  const int bottom_margin = hover_list_spacing;
   set_margins(gfx::Insets(margins().top(), 0, bottom_margin, 0));
 
   views::GridLayout* layout =
@@ -604,21 +522,14 @@ PageInfoBubbleView::PageInfoBubbleView(
   layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
   layout->AddView(new views::Separator());
 
-  // The views inside |site_settings_view_| have their own padding, so subtract
-  // that from the actual padding needed to get the correct value.
-  const int vertical_spacing =
-      layout_provider->GetDistanceMetric(
-          views::DISTANCE_UNRELATED_CONTROL_VERTICAL) -
-      layout_provider->GetDistanceMetric(DISTANCE_CONTROL_LIST_VERTICAL) / 2;
-  layout->StartRowWithPadding(
-      views::GridLayout::kFixedSize, kColumnId, views::GridLayout::kFixedSize,
-      UseHarmonyStyle() ? hover_list_spacing : vertical_spacing);
+  layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnId,
+                              views::GridLayout::kFixedSize,
+                              hover_list_spacing);
   site_settings_view_ = CreateSiteSettingsView();
   layout->AddView(site_settings_view_);
 
   layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnId,
-                              views::GridLayout::kFixedSize,
-                              UseHarmonyStyle() ? 0 : vertical_spacing);
+                              views::GridLayout::kFixedSize, 0);
   layout->AddView(CreateSiteSettingsLink(side_margin, this).release());
 
   views::BubbleDialogDelegateView::CreateBubble(this);
@@ -702,19 +613,13 @@ void PageInfoBubbleView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
   }
 
   // Get the string to display the number of cookies.
-  base::string16 num_cookies_text;
-  if (UseHarmonyStyle()) {
-    num_cookies_text = l10n_util::GetPluralStringFUTF16(
-        IDS_PAGE_INFO_NUM_COOKIES_PARENTHESIZED, total_allowed);
-  } else {
-    num_cookies_text = l10n_util::GetPluralStringFUTF16(
-        IDS_PAGE_INFO_NUM_COOKIES, total_allowed);
-  }
+  const base::string16 num_cookies_text = l10n_util::GetPluralStringFUTF16(
+      IDS_PAGE_INFO_NUM_COOKIES_PARENTHESIZED, total_allowed);
 
-  // Create the cookie link / button if it doesn't yet exist. This method gets
-  // called each time site data is updated, so if it *does* already exist, skip
-  // this part and just update the text.
-  if (cookie_link_legacy_ == nullptr && cookie_button_ == nullptr) {
+  // Create the cookie button if it doesn't yet exist. This method gets called
+  // each time site data is updated, so if it *does* already exist, skip this
+  // part and just update the text.
+  if (cookie_button_ == nullptr) {
     // Get the icon.
     PageInfoUI::PermissionInfo info;
     info.type = CONTENT_SETTINGS_TYPE_COOKIES;
@@ -728,31 +633,19 @@ void PageInfoBubbleView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
     const base::string16& tooltip =
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_COOKIES_TOOLTIP);
 
-    if (UseHarmonyStyle()) {
-      cookie_button_ =
-          CreateMoreInfoButton(
-              this, icon, IDS_PAGE_INFO_COOKIES_BUTTON_TEXT, num_cookies_text,
-              VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG, tooltip)
-              .release();
-      site_settings_view_->AddChildView(cookie_button_);
-    } else {
-      site_settings_view_->AddChildView(CreateMoreInfoLinkSection(
-          this, icon, IDS_PAGE_INFO_COOKIES, num_cookies_text,
-          VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG, tooltip,
-          &cookie_link_legacy_));
-    }
+    cookie_button_ =
+        CreateMoreInfoButton(
+            this, icon, IDS_PAGE_INFO_COOKIES_BUTTON_TEXT, num_cookies_text,
+            VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG, tooltip)
+            .release();
+    site_settings_view_->AddChildView(cookie_button_);
   }
 
   // Update the text displaying the number of allowed cookies.
-  DCHECK((cookie_link_legacy_ == nullptr) != (cookie_button_ == nullptr));
-  if (UseHarmonyStyle()) {
-    base::string16 button_text;
-    gfx::Range styled_range = GetRangeForFormatString(
-        IDS_PAGE_INFO_COOKIES_BUTTON_TEXT, num_cookies_text, &button_text);
-    cookie_button_->SetTitleTextWithHintRange(button_text, styled_range);
-  } else {
-    cookie_link_legacy_->SetText(num_cookies_text);
-  }
+  base::string16 button_text;
+  gfx::Range styled_range = GetRangeForFormatString(
+      IDS_PAGE_INFO_COOKIES_BUTTON_TEXT, num_cookies_text, &button_text);
+  cookie_button_->SetTitleTextWithHintRange(button_text, styled_range);
 
   Layout();
   SizeToContents();
@@ -846,24 +739,22 @@ void PageInfoBubbleView::SetPermissionInfo(
     selector_rows_.push_back(std::move(selector));
   }
 
-  // In Harmony, ensure most comboboxes are the same width by setting them all
-  // to the widest combobox size, provided it does not exceed a maximum width.
+  // Ensure most comboboxes are the same width by setting them all to the widest
+  // combobox size, provided it does not exceed a maximum width.
   // For selected options that are over the maximum width, allow them to assume
   // their full width. If the combobox selection is changed, this may make the
   // widths inconsistent again, but that is OK since the widths will be updated
   // on the next time the bubble is opened.
-  if (UseHarmonyStyle()) {
-    const int maximum_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-        views::DISTANCE_BUTTON_MAX_LINKABLE_WIDTH);
-    int combobox_width = 0;
-    for (const auto& selector : selector_rows_) {
-      int curr_width = selector->GetComboboxWidth();
-      if (maximum_width >= curr_width)
-        combobox_width = std::max(combobox_width, curr_width);
+  const int maximum_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_BUTTON_MAX_LINKABLE_WIDTH);
+  int combobox_width = 0;
+  for (const auto& selector : selector_rows_) {
+    int curr_width = selector->GetComboboxWidth();
+    if (maximum_width >= curr_width)
+      combobox_width = std::max(combobox_width, curr_width);
     }
     for (const auto& selector : selector_rows_)
       selector->SetMinComboboxWidth(combobox_width);
-  }
 
   for (auto& object : chosen_object_info_list) {
     // Since chosen objects are presented after permissions in the same list,
@@ -890,7 +781,6 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
   // Set the bubble title, update the title label text, then apply color.
   set_window_title(security_description->summary);
   GetBubbleFrameView()->UpdateWindowTitle();
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     int text_style = views::style::STYLE_PRIMARY;
     switch (security_description->summary_style) {
       case SecuritySummaryColor::RED:
@@ -903,7 +793,6 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
     static_cast<views::Label*>(GetBubbleFrameView()->title())
         ->SetEnabledColor(views::style::GetColor(
             *this, views::style::CONTEXT_DIALOG_TITLE, text_style));
-  }
 
   if (identity_info.certificate) {
     certificate_ = identity_info.certificate;
@@ -930,7 +819,6 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
     // Add the Certificate Section.
     const gfx::ImageSkia icon =
         PageInfoUI::GetCertificateIcon(GetRelatedTextColor());
-    if (UseHarmonyStyle()) {
       const base::string16 secondary_text = l10n_util::GetStringUTF16(
           valid_identity ? IDS_PAGE_INFO_CERTIFICATE_VALID_PARENTHESIZED
                          : IDS_PAGE_INFO_CERTIFICATE_INVALID_PARENTHESIZED);
@@ -939,16 +827,6 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
           VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER, tooltip);
       certificate_button->set_auto_compute_tooltip(false);
       site_settings_view_->AddChildView(certificate_button.release());
-    } else {
-      const base::string16 link_title = l10n_util::GetStringUTF16(
-          valid_identity ? IDS_PAGE_INFO_CERTIFICATE_VALID_LINK
-                         : IDS_PAGE_INFO_CERTIFICATE_INVALID_LINK);
-      views::Link* certificate_viewer_link = nullptr;
-      site_settings_view_->AddChildView(CreateMoreInfoLinkSection(
-          this, icon, IDS_PAGE_INFO_CERTIFICATE, link_title,
-          VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER, tooltip,
-          &certificate_viewer_link));
-    }
   }
 
   if (identity_info.show_change_password_buttons) {

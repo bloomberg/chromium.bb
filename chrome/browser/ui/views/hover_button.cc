@@ -9,7 +9,6 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -80,9 +79,6 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   SetBorder(CreateBorderWithVerticalSpacing(vert_spacing));
 
   SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
-  // Don't show the ripple on non-MD.
-  if (!ui::MaterialDesignController::IsSecondaryUiMaterial())
-    set_ink_drop_visible_opacity(0);
 }
 
 HoverButton::HoverButton(views::ButtonListener* button_listener,

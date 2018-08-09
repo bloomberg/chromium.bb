@@ -164,9 +164,7 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
   // The view that contains the certificate, cookie, and permissions sections.
   views::View* site_settings_view_;
 
-  // The link that opens the "Cookies" dialog. Non-harmony mode only.
-  views::Link* cookie_link_legacy_;
-  // The bubble that opens the "Cookies" dialog. Harmony mode only.
+  // The button that opens the "Cookies" dialog.
   HoverButton* cookie_button_;
 
   // The view that contains the "Permissions" table of the bubble.

@@ -489,11 +489,7 @@ void BrowserWindowCocoa::UpdateAlertState(TabAlertState alert_state) {
 }
 
 void BrowserWindowCocoa::ShowUpdateChromeDialog() {
-  if (chrome::ShowPilotDialogsWithViewsToolkit()) {
-    chrome::ShowUpdateChromeDialogViews(GetNativeWindow());
-  } else {
-    restart_browser::RequestRestart(window());
-  }
+  chrome::ShowUpdateChromeDialogViews(GetNativeWindow());
 }
 
 void BrowserWindowCocoa::ShowBookmarkBubble(const GURL& url,

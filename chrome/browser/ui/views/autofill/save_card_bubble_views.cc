@@ -17,7 +17,6 @@
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
@@ -120,10 +119,7 @@ bool SaveCardBubbleViews::Close() {
 }
 
 int SaveCardBubbleViews::GetDialogButtons() const {
-  // Material UI has no "No thanks" button in favor of an [X].
-  return ui::MaterialDesignController::IsSecondaryUiMaterial()
-             ? ui::DIALOG_BUTTON_OK
-             : ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
+  return ui::DIALOG_BUTTON_OK;
 }
 
 gfx::Size SaveCardBubbleViews::CalculatePreferredSize() const {
@@ -183,8 +179,7 @@ void SaveCardBubbleViews::AddedToWidget() {
 }
 
 bool SaveCardBubbleViews::ShouldShowCloseButton() const {
-  // The [X] is shown for Material UI.
-  return ui::MaterialDesignController::IsSecondaryUiMaterial();
+  return true;
 }
 
 base::string16 SaveCardBubbleViews::GetWindowTitle() const {

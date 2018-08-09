@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
 #include "chrome/browser/ui/views/passwords/password_pending_view.h"
 #include "chrome/browser/ui/views/passwords/password_save_confirmation_view.h"
-#include "ui/base/material_design/material_design_controller.h"
 
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -36,15 +35,8 @@ void PasswordBubbleViewBase::ShowBubble(content::WebContents* web_contents,
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   bool is_fullscreen = browser_view->IsFullscreen();
-  views::View* anchor_view = nullptr;
-  if (!is_fullscreen) {
-    if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-      anchor_view = browser_view->GetLocationBarView();
-    } else {
-      anchor_view =
-          browser_view->GetLocationBarView()->manage_passwords_icon_view();
-    }
-  }
+  views::View* const anchor_view =
+      is_fullscreen ? nullptr : browser_view->GetLocationBarView();
 
   PasswordBubbleViewBase* bubble =
       CreateBubble(web_contents, anchor_view, gfx::Point(), reason);

@@ -26,7 +26,7 @@ namespace {
 
 // Whether the toolkit-views zoom bubble should be used.
 bool UseViews() {
-  return chrome::ShowPilotDialogsWithViewsToolkit();
+  return true;
 }
 
 }  // namespace

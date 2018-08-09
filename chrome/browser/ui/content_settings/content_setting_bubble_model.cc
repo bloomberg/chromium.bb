@@ -64,7 +64,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -1013,18 +1012,11 @@ ContentSettingPopupBubbleModel::CreateListItem(int32_t id, const GURL& url) {
   else
     title = base::UTF8ToUTF16(url.spec());
 
-  const bool use_md = ui::MaterialDesignController::IsSecondaryUiMaterial();
-  if (use_md) {
-    // Format the title to include the unicode single dot bullet code-point
-    // \u2022 and two spaces.
-    title = l10n_util::GetStringFUTF16(IDS_LIST_BULLET, title);
-  }
+  // Format the title to include the unicode single dot bullet code-point \u2022
+  // and two spaces.
+  title = l10n_util::GetStringFUTF16(IDS_LIST_BULLET, title);
 
-  return ListItem(use_md
-                      ? gfx::Image()
-                      : ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-                            IDR_DEFAULT_FAVICON),
-                  title, true, id);
+  return ListItem(gfx::Image(), title, true, id);
 }
 
 void ContentSettingPopupBubbleModel::OnListItemClicked(int index,
@@ -1646,18 +1638,11 @@ ContentSettingFramebustBlockBubbleModel::CreateListItem(const GURL& url) {
                              ? base::UTF8ToUTF16(url.spec())
                              : l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
 
-  const bool use_md = ui::MaterialDesignController::IsSecondaryUiMaterial();
-  if (use_md) {
-    // Format the title to include the unicode single dot bullet code-point
-    // \u2022 and two spaces.
-    title = l10n_util::GetStringFUTF16(IDS_LIST_BULLET, title);
-  }
+  // Format the title to include the unicode single dot bullet code-point
+  // \u2022 and two spaces.
+  title = l10n_util::GetStringFUTF16(IDS_LIST_BULLET, title);
 
-  gfx::Image image =
-      use_md ? gfx::Image()
-             : ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-                   IDR_DEFAULT_FAVICON);
-  return ListItem(image, title, true, 0);
+  return ListItem(gfx::Image(), title, true, 0);
 }
 
 // ContentSettingBubbleModel ---------------------------------------------------

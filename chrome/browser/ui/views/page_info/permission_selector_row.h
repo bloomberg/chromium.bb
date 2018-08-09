@@ -67,8 +67,6 @@ class PermissionSelectorRow {
  private:
   friend class test::PageInfoBubbleViewTestApi;
 
-  void InitializeMenuButtonView(views::GridLayout* layout,
-                                const PageInfoUI::PermissionInfo& permission);
   void InitializeComboboxView(views::GridLayout* layout,
                               const PageInfoUI::PermissionInfo& permission);
 

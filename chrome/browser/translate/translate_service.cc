@@ -20,7 +20,6 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "content/public/common/url_constants.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -105,12 +104,8 @@ void TranslateService::OnResourceRequestsAllowed() {
 
 // static
 bool TranslateService::IsTranslateBubbleEnabled() {
-#if defined(USE_AURA)
+#if defined(USE_AURA) || defined(OS_MACOSX)
   return true;
-#elif defined(OS_MACOSX)
-  // On Mac, the translate bubble is shown instead of the infobar if the
-  // --secondary-ui-md flag is enabled.
-  return ui::MaterialDesignController::IsSecondaryUiMaterial();
 #else
   // The bubble UX is not implemented on other platforms.
   return false;

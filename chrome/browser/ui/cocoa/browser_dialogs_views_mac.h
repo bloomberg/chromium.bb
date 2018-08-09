@@ -34,9 +34,6 @@ struct SecurityInfo;
 
 namespace chrome {
 
-// Whether to use toolkit-views rather than Cocoa for dialogs ready to "pilot".
-bool ShowPilotDialogsWithViewsToolkit();
-
 // Whether to show all dialogs with toolkit-views on Mac, rather than Cocoa.
 bool ShowAllDialogsWithViewsToolkit();
 

@@ -34,7 +34,6 @@
 #include "extensions/browser/extension_zoom_request_client.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_features.h"
 #include "ui/gfx/favicon_size.h"
@@ -130,13 +129,8 @@ views::View* GetAnchorViewForBrowser(Browser* browser, bool is_fullscreen) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   if (!is_fullscreen ||
       browser_view->immersive_mode_controller()->IsRevealed()) {
-    PageActionIconContainerView* container =
-        browser_view->toolbar_button_provider()
-            ->GetPageActionIconContainerView();
-    return ui::MaterialDesignController::IsSecondaryUiMaterial()
-               ? static_cast<views::View*>(container)
-               : static_cast<views::View*>(container->GetPageActionIconView(
-                     PageActionIconType::kZoom));
+    return browser_view->toolbar_button_provider()
+        ->GetPageActionIconContainerView();
   }
   return nullptr;
 #else  // OS_MACOSX && !MAC_VIEWS_BROWSER
