@@ -4,7 +4,7 @@
 
 #include "base/task/sequence_manager/lazily_deallocated_deque.h"
 
-#include "base/time/time_override.h"
+#include "base/test/scoped_mock_clock_override.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {
@@ -162,13 +162,8 @@ TEST_F(LazilyDeallocatedDequeTest, MaybeShrinkQueueToEmpty) {
   EXPECT_EQ(LazilyDeallocatedDeque<int>::kMinimumRingSize, d.capacity());
 }
 
-namespace {
-TimeTicks fake_now;
-}
-
 TEST_F(LazilyDeallocatedDequeTest, MaybeShrinkQueueRateLimiting) {
-  subtle::ScopedTimeClockOverrides time_overrides(
-      nullptr, []() { return fake_now; }, nullptr);
+  ScopedMockClockOverride clock;
   LazilyDeallocatedDeque<int> d;
 
   for (int i = 0; i < 1000; i++) {
@@ -211,8 +206,8 @@ TEST_F(LazilyDeallocatedDequeTest, MaybeShrinkQueueRateLimiting) {
   EXPECT_EQ(901u, d.capacity());
 
   // After time passes we re-sample max_size.
-  fake_now += TimeDelta::FromSeconds(
-      LazilyDeallocatedDeque<int>::kMinimumShrinkIntervalInSeconds);
+  clock.Advance(TimeDelta::FromSeconds(
+      LazilyDeallocatedDeque<int>::kMinimumShrinkIntervalInSeconds));
   d.MaybeShrinkQueue();
   EXPECT_EQ(800u, d.max_size());
   EXPECT_EQ(901u, d.capacity());

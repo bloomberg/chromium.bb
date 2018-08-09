@@ -2423,6 +2423,7 @@ test("base_unittests") {
     "test/metrics/user_action_tester_unittest.cc",
     "test/mock_callback_unittest.cc",
     "test/scoped_feature_list_unittest.cc",
+    "test/scoped_mock_clock_override_unittest.cc",
     "test/scoped_mock_time_message_loop_task_runner_unittest.cc",
     "test/scoped_task_environment_unittest.cc",
     "test/test_mock_time_task_runner_unittest.cc",
