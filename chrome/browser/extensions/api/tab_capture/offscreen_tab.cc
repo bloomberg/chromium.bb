@@ -34,8 +34,8 @@ const int kMaxOffscreenTabsPerExtension = 4;
 
 // Time intervals used by the logic that detects when the capture of an
 // offscreen tab has stopped, to automatically tear it down and free resources.
-const int kMaxSecondsToWaitForCapture = 60;
-const int kPollIntervalInSeconds = 1;
+constexpr base::TimeDelta kMaxWaitForCapture = base::TimeDelta::FromMinutes(1);
+constexpr base::TimeDelta kPollInterval = base::TimeDelta::FromSeconds(1);
 
 }  // namespace
 
@@ -392,8 +392,7 @@ void OffscreenTab::DieIfContentCaptureEnded() {
     DVLOG(2) << "Capture of OffscreenTab content has started for start_url="
              << start_url_.spec();
     content_capture_was_detected_ = true;
-  } else if (base::TimeTicks::Now() - start_time_ >
-                 base::TimeDelta::FromSeconds(kMaxSecondsToWaitForCapture)) {
+  } else if (base::TimeTicks::Now() - start_time_ > kMaxWaitForCapture) {
     // More than a minute has elapsed since this OffscreenTab was started and
     // content capture still hasn't started.  As a safety precaution, assume
     // that content capture is never going to start and die to free up
@@ -405,11 +404,9 @@ void OffscreenTab::DieIfContentCaptureEnded() {
   }
 
   // Schedule the timer to check again in a second.
-  capture_poll_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(kPollIntervalInSeconds),
-      base::Bind(&OffscreenTab::DieIfContentCaptureEnded,
-                 base::Unretained(this)));
+  capture_poll_timer_.Start(FROM_HERE, kPollInterval,
+                            base::Bind(&OffscreenTab::DieIfContentCaptureEnded,
+                                       base::Unretained(this)));
 }
 
 void OffscreenTab::DieIfOriginalProfileDestroyed(Profile* profile) {

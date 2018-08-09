@@ -56,7 +56,7 @@ using extensions::Action;
 
 // Delay between cleaning passes (to delete old action records) through the
 // database.
-const int kCleaningDelayInHours = 12;
+constexpr base::TimeDelta kCleaningDelay = base::TimeDelta::FromHours(12);
 
 // We should log the arguments to these API calls.  Be careful when
 // constructing this whitelist to not keep arguments that might compromise
@@ -244,8 +244,7 @@ bool CountingPolicy::FlushDatabase(sql::Database* db) {
   // always check on the first database flush (since there might be a large
   // amount of data to clear).
   bool clean_database = (last_database_cleaning_time_.is_null() ||
-                         Now() - last_database_cleaning_time_ >
-                             base::TimeDelta::FromHours(kCleaningDelayInHours));
+                         Now() - last_database_cleaning_time_ > kCleaningDelay);
 
   if (queue.empty() && !clean_database)
     return true;
