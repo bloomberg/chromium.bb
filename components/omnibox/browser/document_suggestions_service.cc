@@ -74,8 +74,10 @@ void DocumentSuggestionsService::CreateDocumentSuggestionsRequest(
     const TemplateURLService* template_url_service,
     StartCallback start_callback,
     CompletionCallback completion_callback) {
-  std::string endpoint = variations::GetVariationParamValueByFeature(
-      omnibox::kDocumentProvider, "Endpoint");
+  std::string endpoint = base::GetFieldTrialParamValueByFeature(
+      omnibox::kDocumentProvider, "DocumentProviderEndpoint");
+  if (endpoint.empty())
+    endpoint = "https://cloudsearch.googleapis.com/v1/query/search";
   const GURL suggest_url = GURL(endpoint);
   DCHECK(suggest_url.is_valid());
 
@@ -111,16 +113,9 @@ void DocumentSuggestionsService::CreateDocumentSuggestionsRequest(
   // TODO(https://crbug.com/808498) re-add data use measurement once
   // SimpleURLLoader supports it.
   // We should attach data_use_measurement::DataUseUserData::OMNIBOX.
-  StartDownloadAndTransferLoader(std::move(request), std::string(),
-                                 traffic_annotation, std::move(start_callback),
-                                 std::move(completion_callback));
-
-  // TODO(skare): Include code to catch token fetch in-progress; otherwise
-  // we'll lose one set of results.
 
   // Create and fetch an OAuth2 token.
-  std::string scope = base::GetFieldTrialParamValueByFeature(
-      omnibox::kDocumentProvider, "OAuth2Scope");
+  std::string scope = "https://www.googleapis.com/auth/cloud_search.query";
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(scope);
   token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
