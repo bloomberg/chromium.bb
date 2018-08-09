@@ -35,6 +35,7 @@ namespace ash {
 class AssistantInteractionController;
 class AssistantNotificationController;
 class AssistantScreenContextController;
+class AssistantSetupController;
 class AssistantUiController;
 
 class ASH_EXPORT AssistantController
@@ -129,6 +130,11 @@ class ASH_EXPORT AssistantController
     return assistant_screen_context_controller_.get();
   }
 
+  AssistantSetupController* setup_controller() {
+    DCHECK(assistant_setup_controller_);
+    return assistant_setup_controller_.get();
+  }
+
   AssistantUiController* ui_controller() {
     DCHECK(assistant_ui_controller_);
     return assistant_ui_controller_.get();
@@ -181,6 +187,8 @@ class ASH_EXPORT AssistantController
 
   std::unique_ptr<AssistantScreenContextController>
       assistant_screen_context_controller_;
+
+  std::unique_ptr<AssistantSetupController> assistant_setup_controller_;
 
   std::unique_ptr<AssistantUiController> assistant_ui_controller_;
 

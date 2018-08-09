@@ -6,7 +6,7 @@
 #define ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_OPT_IN_VIEW_H_
 
 #include "base/macros.h"
-#include "ui/views/view.h"
+#include "ui/views/controls/button/button.h"
 
 namespace views {
 class StyledLabel;
@@ -14,19 +14,39 @@ class StyledLabel;
 
 namespace ash {
 
-class AssistantOptInView : public views::View {
+// AssistantOptInDelegate ------------------------------------------------------
+
+class AssistantOptInDelegate {
+ public:
+  // Invoked when the Assistant opt in button is pressed.
+  virtual void OnOptInButtonPressed() = 0;
+
+ protected:
+  virtual ~AssistantOptInDelegate() = default;
+};
+
+// AssistantOptInView ----------------------------------------------------------
+
+class AssistantOptInView : public views::Button, public views::ButtonListener {
  public:
   AssistantOptInView();
   ~AssistantOptInView() override;
 
-  // views::View:
+  // views::Button:
   void ChildPreferredSizeChanged(views::View* child) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  void set_delegate(AssistantOptInDelegate* delegate) { delegate_ = delegate; }
 
  private:
   void InitLayout();
 
   views::StyledLabel* label_;  // Owned by view hierarchy.
+
+  AssistantOptInDelegate* delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantOptInView);
 };

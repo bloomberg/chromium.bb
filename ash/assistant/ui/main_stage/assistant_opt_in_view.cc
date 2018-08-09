@@ -70,7 +70,7 @@ class AssistantOptInContainer : public views::View {
 
 // AssistantOptInView ----------------------------------------------------------
 
-AssistantOptInView::AssistantOptInView() {
+AssistantOptInView::AssistantOptInView() : views::Button(/*listener=*/this) {
   InitLayout();
 }
 
@@ -138,6 +138,12 @@ void AssistantOptInView::InitLayout() {
       CreateStyleInfo(gfx::Font::Weight::BOLD));
 
   container->AddChildView(label_);
+}
+
+void AssistantOptInView::ButtonPressed(views::Button* sender,
+                                       const ui::Event& event) {
+  if (delegate_)
+    delegate_->OnOptInButtonPressed();
 }
 
 }  // namespace ash

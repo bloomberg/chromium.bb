@@ -8,6 +8,7 @@
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
+#include "ash/assistant/assistant_setup_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/new_window_controller.h"
@@ -28,6 +29,8 @@ AssistantController::AssistantController()
           std::make_unique<AssistantNotificationController>(this)),
       assistant_screen_context_controller_(
           std::make_unique<AssistantScreenContextController>(this)),
+      assistant_setup_controller_(
+          std::make_unique<AssistantSetupController>(this)),
       assistant_ui_controller_(std::make_unique<AssistantUiController>(this)),
       voice_interaction_binding_(this),
       weak_factory_(this) {
@@ -81,9 +84,12 @@ void AssistantController::SetAssistantImageDownloader(
   assistant_image_downloader_ = std::move(assistant_image_downloader);
 }
 
+// TODO(dmblack): Call SetAssistantSetup directly on AssistantSetupController
+// instead of going through AssistantController.
 void AssistantController::SetAssistantSetup(
     mojom::AssistantSetupPtr assistant_setup) {
   assistant_setup_ = std::move(assistant_setup);
+  assistant_setup_controller_->SetAssistantSetup(assistant_setup_.get());
 }
 
 void AssistantController::SetWebContentsManager(
@@ -168,23 +174,9 @@ void AssistantController::OnDeepLinkReceived(
       // UI and behavior for Assistant.
       Shell::Get()->new_window_controller()->OpenFeedbackPage();
       break;
-    case DeepLinkType::kOnboarding:
-      if (GetDeepLinkParamAsBool(params, DeepLinkParam::kRelaunch)) {
-        assistant_setup_->StartAssistantOptInFlow(base::BindOnce(
-            [](AssistantUiController* ui_controller, bool completed) {
-              if (completed)
-                ui_controller->ShowUi(AssistantSource::kSetup);
-            },
-            // |assistant_setup_| and |assistant_ui_controller_| are both owned
-            // by this class, so a raw pointer is safe here.
-            assistant_ui_controller_.get()));
-      } else {
-        assistant_setup_->StartAssistantOptInFlow(base::DoNothing());
-      }
-      assistant_ui_controller_->HideUi(AssistantSource::kSetup);
-      break;
     case DeepLinkType::kUnsupported:
     case DeepLinkType::kExplore:
+    case DeepLinkType::kOnboarding:
     case DeepLinkType::kQuery:
     case DeepLinkType::kReminders:
     case DeepLinkType::kSettings:
