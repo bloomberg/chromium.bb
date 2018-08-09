@@ -28605,6 +28605,7 @@ from previous Chrome versions.
   <int value="-141516902" label="UseModernMediaControls:enabled"/>
   <int value="-138983372" label="DesktopPWAWindowing:disabled"/>
   <int value="-138773929" label="PassiveDocumentEventListeners:enabled"/>
+  <int value="-137303226" label="enable-chromevox-developer-option"/>
   <int value="-135223364" label="AutofillShowTypePredictions:disabled"/>
   <int value="-127231994" label="VrBrowsingNativeAndroidUi:disabled"/>
   <int value="-122492389" label="enable-browser-task-scheduler"/>
