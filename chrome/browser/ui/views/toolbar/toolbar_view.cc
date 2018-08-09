@@ -617,7 +617,8 @@ void ToolbarView::OnPaintBackground(gfx::Canvas* canvas) {
 
   // Toolbar/content separator.
   BrowserView::Paint1pxHorizontalLine(
-      canvas, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR),
+      canvas,
+      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR),
       GetLocalBounds(), true);
 }
 

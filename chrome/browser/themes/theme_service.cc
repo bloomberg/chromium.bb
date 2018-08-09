@@ -519,7 +519,7 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
       if (UsingDefaultTheme())
         break;
       return GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT, incognito);
-    case ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR:
+    case ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
       if (UsingDefaultTheme())
         break;
       return GetColor(ThemeProperties::COLOR_LOCATION_BAR_BORDER, incognito);
