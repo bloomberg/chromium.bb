@@ -17,8 +17,7 @@ void PartitionAllocator::FreeVectorBacking(void* address) {
   Partitions::BufferFree(address);
 }
 
-void PartitionAllocator::FreeHashTableBacking(void* address,
-                                              bool is_weak_table) {
+void PartitionAllocator::FreeHashTableBacking(void* address) {
   Partitions::BufferFree(address);
 }
 
