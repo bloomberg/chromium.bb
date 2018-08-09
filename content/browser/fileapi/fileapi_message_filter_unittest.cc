@@ -55,8 +55,6 @@ class FileAPIMessageFilterTest : public testing::Test {
 
     filter_ = new FileAPIMessageFilter(
         0 /* process_id */,
-        BrowserContext::GetDefaultStoragePartition(&browser_context_)
-            ->GetURLRequestContext(),
         file_system_context_.get(), blob_storage_context_);
 
     // Complete initialization.
@@ -74,8 +72,6 @@ class FileAPIMessageFilterTest : public testing::Test {
 TEST_F(FileAPIMessageFilterTest, CloseChannelWithInflightRequest) {
   scoped_refptr<FileAPIMessageFilter> filter(new FileAPIMessageFilter(
       0 /* process_id */,
-      BrowserContext::GetDefaultStoragePartition(&browser_context_)
-          ->GetURLRequestContext(),
       file_system_context_.get(),
       ChromeBlobStorageContext::GetFor(&browser_context_)));
   filter->OnChannelConnected(0);
@@ -98,14 +94,10 @@ TEST_F(FileAPIMessageFilterTest, CloseChannelWithInflightRequest) {
 TEST_F(FileAPIMessageFilterTest, MultipleFilters) {
   scoped_refptr<FileAPIMessageFilter> filter1(new FileAPIMessageFilter(
       0 /* process_id */,
-      BrowserContext::GetDefaultStoragePartition(&browser_context_)
-          ->GetURLRequestContext(),
       file_system_context_.get(),
       ChromeBlobStorageContext::GetFor(&browser_context_)));
   scoped_refptr<FileAPIMessageFilter> filter2(new FileAPIMessageFilter(
       1 /* process_id */,
-      BrowserContext::GetDefaultStoragePartition(&browser_context_)
-          ->GetURLRequestContext(),
       file_system_context_.get(),
       ChromeBlobStorageContext::GetFor(&browser_context_)));
   filter1->OnChannelConnected(0);

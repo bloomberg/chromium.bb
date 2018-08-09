@@ -41,11 +41,6 @@ class FileSystemOperationRunner;
 struct FileSystemInfo;
 }
 
-namespace net {
-class URLRequestContext;
-class URLRequestContextGetter;
-}  // namespace net
-
 namespace storage {
 class ShareableFileReference;
 }
@@ -58,14 +53,7 @@ class ChromeBlobStorageContext;
 // FileAPIMessageFilter into separate classes. See crbug.com/263741.
 class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
  public:
-  // Used by the renderer process host on the UI thread.
   FileAPIMessageFilter(int process_id,
-                       net::URLRequestContextGetter* request_context_getter,
-                       storage::FileSystemContext* file_system_context,
-                       ChromeBlobStorageContext* blob_storage_context);
-  // Used by the worker process host on the IO thread.
-  FileAPIMessageFilter(int process_id,
-                       net::URLRequestContext* request_context,
                        storage::FileSystemContext* file_system_context,
                        ChromeBlobStorageContext* blob_storage_context);
 
@@ -167,11 +155,6 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
   // (Primarily for Cancel operation)
   typedef std::map<int, OperationID> OperationsMap;
   OperationsMap operations_;
-
-  // The getter holds the context until OnChannelConnected() can be called from
-  // the IO thread, which will extract the net::URLRequestContext from it.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-  net::URLRequestContext* request_context_;
 
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 

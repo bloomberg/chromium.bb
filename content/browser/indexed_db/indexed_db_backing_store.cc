@@ -366,10 +366,6 @@ bool IsPathTooLong(const FilePath& leveldb_dir) {
   return false;
 }
 
-GURL GetURLFromUUID(const std::string& uuid) {
-  return GURL("blob:uuid/" + uuid);
-}
-
 Status DeleteBlobsInRange(IndexedDBBackingStore::Transaction* transaction,
                           int64_t database_id,
                           int64_t object_store_id,
@@ -390,8 +386,7 @@ Status DeleteBlobsInRange(IndexedDBBackingStore::Transaction* transaction,
       INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_IDBDATABASE_METADATA);
       return InternalInconsistencyStatus();
     }
-    transaction->PutBlobInfo(database_id, object_store_id, user_key, nullptr,
-                             nullptr);
+    transaction->PutBlobInfo(database_id, object_store_id, user_key, nullptr);
   }
   return s;
 }
@@ -1288,7 +1283,6 @@ Status IndexedDBBackingStore::PutRecord(
     int64_t object_store_id,
     const IndexedDBKey& key,
     IndexedDBValue* value,
-    std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles,
     RecordIdentifier* record_identifier) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
@@ -1312,14 +1306,10 @@ Status IndexedDBBackingStore::PutRecord(
   v.append(value->bits);
 
   leveldb_transaction->Put(object_store_data_key, &v);
-  s = transaction->PutBlobInfoIfNeeded(database_id,
-                                       object_store_id,
-                                       object_store_data_key,
-                                       &value->blob_info,
-                                       handles);
+  s = transaction->PutBlobInfoIfNeeded(
+      database_id, object_store_id, object_store_data_key, &value->blob_info);
   if (!s.ok())
     return s;
-  DCHECK(handles->empty());
 
   const std::string exists_entry_key =
       ExistsEntryKey::Encode(database_id, object_store_id, key);
@@ -1369,8 +1359,8 @@ Status IndexedDBBackingStore::DeleteRecord(
   const std::string object_store_data_key = ObjectStoreDataKey::Encode(
       database_id, object_store_id, record_identifier.primary_key());
   leveldb_transaction->Remove(object_store_data_key);
-  Status s = transaction->PutBlobInfoIfNeeded(
-      database_id, object_store_id, object_store_data_key, nullptr, nullptr);
+  Status s = transaction->PutBlobInfoIfNeeded(database_id, object_store_id,
+                                              object_store_data_key, nullptr);
   if (!s.ok())
     return s;
 
@@ -1710,11 +1700,9 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
     }
   }
 
-  void WriteBlobToFileOnIOThread(
-      const FilePath& file_path,
-      const GURL& blob_url,
-      const base::Time& last_modified,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter) {
+  void WriteBlobToFileOnIOThread(const FilePath& file_path,
+                                 std::unique_ptr<storage::BlobDataHandle> blob,
+                                 const base::Time& last_modified) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     std::unique_ptr<storage::FileStreamWriter> writer(
         storage::FileStreamWriter::CreateForLocalFile(
@@ -1724,43 +1712,11 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
         std::make_unique<FileWriterDelegate>(
             std::move(writer), storage::FlushPolicy::FLUSH_ON_COMPLETION));
 
-    DCHECK(blob_url.is_valid());
-    net::URLRequestContext* request_context =
-        request_context_getter->GetURLRequestContext();
-    net::NetworkTrafficAnnotationTag traffic_annotation =
-        net::DefineNetworkTrafficAnnotation("persist_blob_to_indexed_db", R"(
-        semantics {
-          sender: "Indexed DB"
-          description:
-            "A web page's script has created a Blob (or File) object (either "
-            "directly via constructors, or by using file upload to a form, or "
-            "via a fetch()). The script has then made a request to store data "
-            "including the Blob via the Indexed DB API. As part of committing "
-            "the database transaction, the content of the Blob is being copied "
-            "into a file in the database's directory."
-          trigger:
-            "The script has made a request to store data including a Blob via "
-            "the Indexed DB API."
-          data:
-            "A Blob or File object referenced by script, either created "
-            "directly via constructors, or by using file upload to a form, or "
-            "drag/drop, or via a fetch() or other APIs that produce Blobs."
-          destination: LOCAL
-        }
-        policy {
-          cookies_allowed: NO
-          setting: "This feature cannot be disabled by settings."
-          policy_exception_justification: "Not implemented."
-        })");
-    std::unique_ptr<net::URLRequest> blob_request(
-        request_context->CreateRequest(blob_url, net::DEFAULT_PRIORITY,
-                                       delegate.get(), traffic_annotation));
-    blob_request->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                               net::LOAD_DO_NOT_SEND_COOKIES);
+    DCHECK(blob);
     this->file_path_ = file_path;
     this->last_modified_ = last_modified;
 
-    delegate->Start(std::move(blob_request),
+    delegate->Start(blob->CreateReader(),
                     base::Bind(&LocalWriteClosure::Run, this));
     chained_blob_writer_->set_delegate(std::move(delegate));
   }
@@ -1849,14 +1805,15 @@ bool IndexedDBBackingStore::WriteBlobFile(
         base::BindOnce(&Transaction::ChainedBlobWriter::ReportWriteCompletion,
                        chained_blob_writer, true, info.size));
   } else {
-    DCHECK(descriptor.url().is_valid());
+    DCHECK(descriptor.blob());
     scoped_refptr<LocalWriteClosure> write_closure(
         new LocalWriteClosure(chained_blob_writer, task_runner_.get()));
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&LocalWriteClosure::WriteBlobToFileOnIOThread,
-                       write_closure, path, descriptor.url(),
-                       descriptor.last_modified(), request_context_getter_));
+        base::BindOnce(
+            &LocalWriteClosure::WriteBlobToFileOnIOThread, write_closure, path,
+            std::make_unique<storage::BlobDataHandle>(*descriptor.blob()),
+            descriptor.last_modified()));
   }
   return true;
 }
@@ -3139,8 +3096,8 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
                             entry.last_modified()));
       } else {
         new_files_to_write->push_back(
-            WriteDescriptor(GetURLFromUUID(entry.uuid()), next_blob_key,
-                            entry.size(), entry.last_modified()));
+            WriteDescriptor(entry.blob_handle(), next_blob_key, entry.size(),
+                            entry.last_modified()));
       }
       entry.set_key(next_blob_key);
       new_blob_keys.push_back(&entry);
@@ -3454,23 +3411,12 @@ void IndexedDBBackingStore::BlobChangeRecord::SetBlobInfo(
     blob_info_.swap(*blob_info);
 }
 
-void IndexedDBBackingStore::BlobChangeRecord::SetHandles(
-    std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles) {
-  handles_.clear();
-  if (handles)
-    handles_.swap(*handles);
-}
-
 std::unique_ptr<IndexedDBBackingStore::BlobChangeRecord>
 IndexedDBBackingStore::BlobChangeRecord::Clone() const {
   std::unique_ptr<IndexedDBBackingStore::BlobChangeRecord> record(
       new BlobChangeRecord(key_, object_store_id_));
   record->blob_info_ = blob_info_;
 
-  for (const auto& handle : handles_) {
-    record->handles_.push_back(
-        std::make_unique<storage::BlobDataHandle>(*handle));
-  }
   return record;
 }
 
@@ -3478,8 +3424,7 @@ Status IndexedDBBackingStore::Transaction::PutBlobInfoIfNeeded(
     int64_t database_id,
     int64_t object_store_id,
     const std::string& object_store_data_key,
-    std::vector<IndexedDBBlobInfo>* blob_info,
-    std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles) {
+    std::vector<IndexedDBBlobInfo>* blob_info) {
   if (!blob_info || blob_info->empty()) {
     blob_change_map_.erase(object_store_data_key);
     incognito_blob_map_.erase(object_store_data_key);
@@ -3499,8 +3444,7 @@ Status IndexedDBBackingStore::Transaction::PutBlobInfoIfNeeded(
     if (!found)
       return Status::OK();
   }
-  PutBlobInfo(
-      database_id, object_store_id, object_store_data_key, blob_info, handles);
+  PutBlobInfo(database_id, object_store_id, object_store_data_key, blob_info);
   return Status::OK();
 }
 
@@ -3512,8 +3456,7 @@ void IndexedDBBackingStore::Transaction::PutBlobInfo(
     int64_t database_id,
     int64_t object_store_id,
     const std::string& object_store_data_key,
-    std::vector<IndexedDBBlobInfo>* blob_info,
-    std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles) {
+    std::vector<IndexedDBBlobInfo>* blob_info) {
   DCHECK(!object_store_data_key.empty());
   if (database_id_ < 0)
     database_id_ = database_id;
@@ -3532,21 +3475,18 @@ void IndexedDBBackingStore::Transaction::PutBlobInfo(
   }
   DCHECK_EQ(record->object_store_id(), object_store_id);
   record->SetBlobInfo(blob_info);
-  record->SetHandles(handles);
-  DCHECK(!handles || handles->empty());
 }
 
 IndexedDBBackingStore::Transaction::WriteDescriptor::WriteDescriptor(
-    const GURL& url,
+    const storage::BlobDataHandle* blob,
     int64_t key,
     int64_t size,
     base::Time last_modified)
     : is_file_(false),
-      url_(url),
+      blob_(*blob),
       key_(key),
       size_(size),
-      last_modified_(last_modified) {
-}
+      last_modified_(last_modified) {}
 
 IndexedDBBackingStore::Transaction::WriteDescriptor::WriteDescriptor(
     const FilePath& file_path,
@@ -3565,7 +3505,7 @@ IndexedDBBackingStore::Transaction::WriteDescriptor::WriteDescriptor(
 IndexedDBBackingStore::Transaction::WriteDescriptor::~WriteDescriptor() =
     default;
 IndexedDBBackingStore::Transaction::WriteDescriptor&
-    IndexedDBBackingStore::Transaction::WriteDescriptor::
-    operator=(const WriteDescriptor& other) = default;
+IndexedDBBackingStore::Transaction::WriteDescriptor::operator=(
+    const WriteDescriptor& other) = default;
 
 }  // namespace content

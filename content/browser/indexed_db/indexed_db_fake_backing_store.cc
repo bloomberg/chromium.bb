@@ -41,7 +41,6 @@ leveldb::Status IndexedDBFakeBackingStore::PutRecord(
     int64_t object_store_id,
     const IndexedDBKey& key,
     IndexedDBValue* value,
-    std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles,
     RecordIdentifier* record) {
   return leveldb::Status::OK();
 }

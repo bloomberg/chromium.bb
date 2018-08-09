@@ -1847,8 +1847,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new PepperRendererConnection(GetID()));
 #endif
   AddFilter(new FileAPIMessageFilter(
-      GetID(), storage_partition_impl_->GetURLRequestContext(),
-      storage_partition_impl_->GetFileSystemContext(),
+      GetID(), storage_partition_impl_->GetFileSystemContext(),
       blob_storage_context.get()));
   AddFilter(new BlobDispatcherHost(GetID(), blob_storage_context));
 #if defined(OS_MACOSX)

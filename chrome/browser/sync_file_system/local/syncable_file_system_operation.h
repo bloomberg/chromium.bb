@@ -63,7 +63,7 @@ class SyncableFileSystemOperation : public storage::FileSystemOperation {
               const StatusCallback& callback) override;
   void Write(const storage::FileSystemURL& url,
              std::unique_ptr<storage::FileWriterDelegate> writer_delegate,
-             std::unique_ptr<net::URLRequest> blob_request,
+             std::unique_ptr<storage::BlobReader> blob_reader,
              const WriteCallback& callback) override;
   void Truncate(const storage::FileSystemURL& url,
                 int64_t length,

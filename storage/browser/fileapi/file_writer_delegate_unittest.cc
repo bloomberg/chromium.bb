@@ -14,9 +14,9 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/request_priority.h"
@@ -27,6 +27,8 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_status.h"
+#include "storage/browser/blob/blob_data_builder.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_quota_util.h"
 #include "storage/browser/fileapi/file_writer_delegate.h"
@@ -92,7 +94,9 @@ class BlobURLRequestJobFactory;
 
 class FileWriterDelegateTest : public PlatformTest {
  public:
-  FileWriterDelegateTest() = default;
+  FileWriterDelegateTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
 
  protected:
   void SetUp() override;
@@ -146,130 +150,32 @@ class FileWriterDelegateTest : public PlatformTest {
     return base::BindRepeating(&Result::DidWrite, base::Unretained(result));
   }
 
-  // Creates and sets up a FileWriterDelegate for writing the given |blob_url|,
-  // and creates a new FileWriterDelegate for the file.
+  // Creates and sets up a FileWriterDelegate for writing the given
+  // |blob_content|, and creates a new FileWriterDelegate for the file.
   void PrepareForWrite(const char* test_file_path,
-                       const GURL& blob_url,
                        int64_t offset,
                        int64_t allowed_growth) {
     file_writer_delegate_ =
         CreateWriterDelegate(test_file_path, offset, allowed_growth);
-    request_ = empty_context_.CreateRequest(blob_url, net::DEFAULT_PRIORITY,
-                                            file_writer_delegate_.get(),
-                                            TRAFFIC_ANNOTATION_FOR_TESTS);
+  }
+
+  std::unique_ptr<storage::BlobDataHandle> CreateBlob(
+      const std::string& contents) {
+    auto builder = std::make_unique<storage::BlobDataBuilder>("blob-uuid");
+    builder->AppendData(contents);
+    return blob_context_->AddFinishedBlob(std::move(builder));
   }
 
   // This should be alive until the very end of this instance.
-  base::MessageLoopForIO loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   scoped_refptr<storage::FileSystemContext> file_system_context_;
+  std::unique_ptr<storage::BlobStorageContext> blob_context_;
 
-  net::URLRequestContext empty_context_;
   std::unique_ptr<FileWriterDelegate> file_writer_delegate_;
-  std::unique_ptr<net::URLRequest> request_;
-  std::unique_ptr<BlobURLRequestJobFactory> job_factory_;
 
   base::ScopedTempDir dir_;
-
-  static const char* content_;
 };
-
-const char* FileWriterDelegateTest::content_ = NULL;
-
-namespace {
-
-static std::string g_content;
-
-class FileWriterDelegateTestJob : public net::URLRequestJob {
- public:
-  FileWriterDelegateTestJob(net::URLRequest* request,
-                            net::NetworkDelegate* network_delegate,
-                            const std::string& content)
-      : net::URLRequestJob(request, network_delegate),
-        content_(content),
-        remaining_bytes_(content.length()),
-        cursor_(0),
-        weak_factory_(this) {}
-
-  void Start() override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&FileWriterDelegateTestJob::NotifyHeadersComplete,
-                       weak_factory_.GetWeakPtr()));
-  }
-
-  int ReadRawData(net::IOBuffer* buf, int buf_size) override {
-    if (remaining_bytes_ < buf_size)
-      buf_size = remaining_bytes_;
-
-    for (int i = 0; i < buf_size; ++i)
-      buf->data()[i] = content_[cursor_++];
-    remaining_bytes_ -= buf_size;
-
-    return buf_size;
-  }
-
-  void GetResponseInfo(net::HttpResponseInfo* info) override {
-    const char kStatus[] = "HTTP/1.1 200 OK\0";
-    const size_t kStatusLen = arraysize(kStatus);
-
-    info->headers =
-        new net::HttpResponseHeaders(std::string(kStatus, kStatusLen));
-  }
-
- protected:
-  ~FileWriterDelegateTestJob() override = default;
-
- private:
-  std::string content_;
-  int remaining_bytes_;
-  int cursor_;
-
-  base::WeakPtrFactory<FileWriterDelegateTestJob> weak_factory_;
-};
-
-class BlobURLRequestJobFactory : public net::URLRequestJobFactory {
- public:
-  explicit BlobURLRequestJobFactory(const char** content_data)
-      : content_data_(content_data) {
-  }
-
-  net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
-      const std::string& scheme,
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    return new FileWriterDelegateTestJob(request, network_delegate,
-                                         *content_data_);
-  }
-
-  net::URLRequestJob* MaybeInterceptRedirect(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate,
-      const GURL& location) const override {
-    return nullptr;
-  }
-
-  net::URLRequestJob* MaybeInterceptResponse(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    return nullptr;
-  }
-
-  bool IsHandledProtocol(const std::string& scheme) const override {
-    return scheme == "blob";
-  }
-
-  bool IsSafeRedirectTarget(const GURL& location) const override {
-    return true;
-  }
-
- private:
-  const char** content_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(BlobURLRequestJobFactory);
-};
-
-}  // namespace (anonymous)
 
 void FileWriterDelegateTest::SetUp() {
   ASSERT_TRUE(dir_.CreateUniqueTempDir());
@@ -279,8 +185,7 @@ void FileWriterDelegateTest::SetUp() {
   ASSERT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::CreateFile(file_system_context_.get(),
                                             GetFileSystemURL("test")));
-  job_factory_ = std::make_unique<BlobURLRequestJobFactory>(&content_);
-  empty_context_.set_job_factory(job_factory_.get());
+  blob_context_ = std::make_unique<storage::BlobStorageContext>();
 }
 
 void FileWriterDelegateTest::TearDown() {
@@ -289,14 +194,13 @@ void FileWriterDelegateTest::TearDown() {
 }
 
 TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimit) {
-  const GURL kBlobURL("blob:nolimit");
-  content_ = kData;
+  auto blob = CreateBlob(kData);
 
-  PrepareForWrite("test", kBlobURL, 0, std::numeric_limits<int64_t>::max());
+  PrepareForWrite("test", 0, std::numeric_limits<int64_t>::max());
 
   Result result;
   ASSERT_EQ(0, usage());
-  file_writer_delegate_->Start(std::move(request_), GetWriteCallback(&result));
+  file_writer_delegate_->Start(blob->CreateReader(), GetWriteCallback(&result));
   base::RunLoop().Run();
 
   ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
@@ -309,14 +213,13 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimit) {
 }
 
 TEST_F(FileWriterDelegateTest, WriteSuccessWithJustQuota) {
-  const GURL kBlobURL("blob:just");
-  content_ = kData;
+  auto blob = CreateBlob(kData);
   const int64_t kAllowedGrowth = kDataSize;
-  PrepareForWrite("test", kBlobURL, 0, kAllowedGrowth);
+  PrepareForWrite("test", 0, kAllowedGrowth);
 
   Result result;
   ASSERT_EQ(0, usage());
-  file_writer_delegate_->Start(std::move(request_), GetWriteCallback(&result));
+  file_writer_delegate_->Start(blob->CreateReader(), GetWriteCallback(&result));
   base::RunLoop().Run();
   ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
   file_writer_delegate_.reset();
@@ -329,14 +232,13 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithJustQuota) {
 }
 
 TEST_F(FileWriterDelegateTest, DISABLED_WriteFailureByQuota) {
-  const GURL kBlobURL("blob:failure");
-  content_ = kData;
+  auto blob = CreateBlob(kData);
   const int64_t kAllowedGrowth = kDataSize - 1;
-  PrepareForWrite("test", kBlobURL, 0, kAllowedGrowth);
+  PrepareForWrite("test", 0, kAllowedGrowth);
 
   Result result;
   ASSERT_EQ(0, usage());
-  file_writer_delegate_->Start(std::move(request_), GetWriteCallback(&result));
+  file_writer_delegate_->Start(blob->CreateReader(), GetWriteCallback(&result));
   base::RunLoop().Run();
   ASSERT_EQ(FileWriterDelegate::ERROR_WRITE_STARTED, result.write_status());
   file_writer_delegate_.reset();
@@ -350,14 +252,13 @@ TEST_F(FileWriterDelegateTest, DISABLED_WriteFailureByQuota) {
 }
 
 TEST_F(FileWriterDelegateTest, WriteZeroBytesSuccessfullyWithZeroQuota) {
-  const GURL kBlobURL("blob:zero");
-  content_ = "";
+  auto blob = CreateBlob("");
   int64_t kAllowedGrowth = 0;
-  PrepareForWrite("test", kBlobURL, 0, kAllowedGrowth);
+  PrepareForWrite("test", 0, kAllowedGrowth);
 
   Result result;
   ASSERT_EQ(0, usage());
-  file_writer_delegate_->Start(std::move(request_), GetWriteCallback(&result));
+  file_writer_delegate_->Start(blob->CreateReader(), GetWriteCallback(&result));
   base::RunLoop().Run();
   ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
   file_writer_delegate_.reset();
@@ -372,29 +273,24 @@ TEST_F(FileWriterDelegateTest, WriteZeroBytesSuccessfullyWithZeroQuota) {
 
 TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
   std::unique_ptr<FileWriterDelegate> file_writer_delegate2;
-  std::unique_ptr<net::URLRequest> request2;
 
   ASSERT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::CreateFile(file_system_context_.get(),
                                             GetFileSystemURL("test2")));
 
-  const GURL kBlobURL("blob:nolimitconcurrent");
-  const GURL kBlobURL2("blob:nolimitconcurrent2");
-  content_ = kData;
+  auto blob = CreateBlob(kData);
 
-  PrepareForWrite("test", kBlobURL, 0, std::numeric_limits<int64_t>::max());
+  PrepareForWrite("test", 0, std::numeric_limits<int64_t>::max());
 
   // Create another FileWriterDelegate for concurrent write.
   file_writer_delegate2 =
       CreateWriterDelegate("test2", 0, std::numeric_limits<int64_t>::max());
-  request2 = empty_context_.CreateRequest(kBlobURL2, net::DEFAULT_PRIORITY,
-                                          file_writer_delegate2.get(),
-                                          TRAFFIC_ANNOTATION_FOR_TESTS);
 
   Result result, result2;
   ASSERT_EQ(0, usage());
-  file_writer_delegate_->Start(std::move(request_), GetWriteCallback(&result));
-  file_writer_delegate2->Start(std::move(request2), GetWriteCallback(&result2));
+  file_writer_delegate_->Start(blob->CreateReader(), GetWriteCallback(&result));
+  file_writer_delegate2->Start(blob->CreateReader(),
+                               GetWriteCallback(&result2));
   base::RunLoop().Run();
   if (result.write_status() == FileWriterDelegate::SUCCESS_IO_PENDING ||
       result2.write_status() == FileWriterDelegate::SUCCESS_IO_PENDING)
@@ -415,19 +311,18 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
 }
 
 TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
-  const GURL kBlobURL("blob:failure-with-updated-quota");
-  content_ = kData;
+  auto blob = CreateBlob(kData);
 
   // Writing kDataSize (=45) bytes data while allowed_growth is 100.
   int64_t offset = 0;
   int64_t allowed_growth = 100;
   ASSERT_LT(kDataSize, allowed_growth);
-  PrepareForWrite("test", kBlobURL, offset, allowed_growth);
+  PrepareForWrite("test", offset, allowed_growth);
 
   {
     Result result;
     ASSERT_EQ(0, usage());
-    file_writer_delegate_->Start(std::move(request_),
+    file_writer_delegate_->Start(blob->CreateReader(),
                                  GetWriteCallback(&result));
     base::RunLoop().Run();
     ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
@@ -442,11 +337,11 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   // Trying to overwrite kDataSize bytes data while allowed_growth is 20.
   offset = 0;
   allowed_growth = 20;
-  PrepareForWrite("test", kBlobURL, offset, allowed_growth);
+  PrepareForWrite("test", offset, allowed_growth);
 
   {
     Result result;
-    file_writer_delegate_->Start(std::move(request_),
+    file_writer_delegate_->Start(blob->CreateReader(),
                                  GetWriteCallback(&result));
     base::RunLoop().Run();
     EXPECT_EQ(kDataSize, usage());
@@ -460,11 +355,11 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   // allowed_growth is 55.
   offset = 25;
   allowed_growth = 55;
-  PrepareForWrite("test", kBlobURL, offset, allowed_growth);
+  PrepareForWrite("test", offset, allowed_growth);
 
   {
     Result result;
-    file_writer_delegate_->Start(std::move(request_),
+    file_writer_delegate_->Start(blob->CreateReader(),
                                  GetWriteCallback(&result));
     base::RunLoop().Run();
     ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
@@ -479,12 +374,12 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   // Trying to overwrite 45 bytes data while allowed_growth is -20.
   offset = 0;
   allowed_growth = -20;
-  PrepareForWrite("test", kBlobURL, offset, allowed_growth);
+  PrepareForWrite("test", offset, allowed_growth);
   int64_t pre_write_usage = GetFileSizeOnDisk("test");
 
   {
     Result result;
-    file_writer_delegate_->Start(std::move(request_),
+    file_writer_delegate_->Start(blob->CreateReader(),
                                  GetWriteCallback(&result));
     base::RunLoop().Run();
     ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
@@ -501,11 +396,11 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   const int kOverlap = 20;
   offset = pre_write_usage - kOverlap;
   allowed_growth = 10;
-  PrepareForWrite("test", kBlobURL, offset, allowed_growth);
+  PrepareForWrite("test", offset, allowed_growth);
 
   {
     Result result;
-    file_writer_delegate_->Start(std::move(request_),
+    file_writer_delegate_->Start(blob->CreateReader(),
                                  GetWriteCallback(&result));
     base::RunLoop().Run();
     ASSERT_EQ(FileWriterDelegate::ERROR_WRITE_STARTED, result.write_status());
@@ -516,55 +411,6 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
     EXPECT_EQ(kOverlap + allowed_growth, result.bytes_written());
     EXPECT_EQ(base::File::FILE_ERROR_NO_SPACE, result.status());
   }
-}
-
-class InterruptedFileWriterDelegate : public FileWriterDelegate {
- public:
-  InterruptedFileWriterDelegate(
-      std::unique_ptr<storage::FileStreamWriter> file_writer,
-      storage::FlushPolicy flush_policy)
-      : FileWriterDelegate(std::move(file_writer), flush_policy) {}
-  ~InterruptedFileWriterDelegate() override = default;
-
-  void OnDataReceived(int bytes_read) override {
-    // The base class will respond to OnDataReceived by performing an
-    // asynchronous write. Schedule a task now that will execute before the
-    // write completes which terminates the URLRequestJob.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(IgnoreResult(&net::URLRequest::Cancel),
-                                  base::Unretained(request_)));
-    FileWriterDelegate::OnDataReceived(bytes_read);
-  }
-
-  void set_request(net::URLRequest* request) { request_ = request; }
-
- private:
-  // The request is owned by the base class as a private member.
-  net::URLRequest* request_ = nullptr;
-};
-
-TEST_F(FileWriterDelegateTest, ReadFailureDuringAsyncWrite) {
-  const GURL kBlobURL("blob:async-fail");
-  content_ = kData;
-
-  auto writer = CreateWriter("test", 0, std::numeric_limits<int64_t>::max());
-  auto file_writer_delegate = std::make_unique<InterruptedFileWriterDelegate>(
-      std::move(writer), storage::FlushPolicy::FLUSH_ON_COMPLETION);
-  auto request = empty_context_.CreateRequest(kBlobURL, net::DEFAULT_PRIORITY,
-                                              file_writer_delegate.get(),
-                                              TRAFFIC_ANNOTATION_FOR_TESTS);
-  file_writer_delegate->set_request(request.get());
-
-  Result result;
-  file_writer_delegate->Start(std::move(request), GetWriteCallback(&result));
-  base::RunLoop().Run();
-
-  ASSERT_EQ(FileWriterDelegate::ERROR_WRITE_STARTED, result.write_status());
-  file_writer_delegate_.reset();
-
-  // The write should still have flushed.
-  ASSERT_EQ(kDataSize, usage());
-  EXPECT_EQ(GetFileSizeOnDisk("test"), usage());
 }
 
 }  // namespace content

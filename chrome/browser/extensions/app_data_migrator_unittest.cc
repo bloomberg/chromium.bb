@@ -170,13 +170,12 @@ void GenerateTestFiles(content::MockBlobURLRequestContext* url_request_context,
                                              base::Bind(&DidCreate));
   content::RunAllTasksUntilIdle();
 
-  fs_context->operation_runner()->Write(url_request_context, fs_temp_url,
-                                        blob1.GetBlobDataHandle(), 0,
-                                        base::Bind(&DidWrite));
+  fs_context->operation_runner()->Write(fs_temp_url, blob1.GetBlobDataHandle(),
+                                        0, base::BindRepeating(&DidWrite));
   content::RunAllTasksUntilIdle();
-  fs_context->operation_runner()->Write(url_request_context, fs_persistent_url,
+  fs_context->operation_runner()->Write(fs_persistent_url,
                                         blob1.GetBlobDataHandle(), 0,
-                                        base::Bind(&DidWrite));
+                                        base::BindRepeating(&DidWrite));
   content::RunAllTasksUntilIdle();
 }
 

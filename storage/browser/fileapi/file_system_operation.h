@@ -15,15 +15,12 @@
 #include "base/files/file_path.h"
 #include "base/process/process.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
+#include "storage/browser/blob/blob_reader.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/storage_browser_export.h"
 
 namespace base {
 class Time;
-}
-
-namespace net {
-class URLRequest;
 }
 
 namespace storage {
@@ -321,10 +318,10 @@ class FileSystemOperation {
   virtual void Remove(const FileSystemURL& path, bool recursive,
                       const StatusCallback& callback) = 0;
 
-  // Writes the data read from |blob_request| using |writer_delegate|.
+  // Writes the data read from |blob_reader| using |writer_delegate|.
   virtual void Write(const FileSystemURL& url,
                      std::unique_ptr<FileWriterDelegate> writer_delegate,
-                     std::unique_ptr<net::URLRequest> blob_request,
+                     std::unique_ptr<BlobReader> blob_reader,
                      const WriteCallback& callback) = 0;
 
   // Truncates a file at |path| to |length|. If |length| is larger than

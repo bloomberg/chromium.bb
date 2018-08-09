@@ -29,8 +29,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_platform_file.h"
 #include "net/base/mime_util.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/shareable_file_reference.h"
@@ -66,7 +64,6 @@ void RevokeFilePermission(int child_id, const base::FilePath& path) {
 
 FileAPIMessageFilter::FileAPIMessageFilter(
     int process_id,
-    net::URLRequestContextGetter* request_context_getter,
     storage::FileSystemContext* file_system_context,
     ChromeBlobStorageContext* blob_storage_context)
     : BrowserMessageFilter(kFileApiFilteredMessageClasses,
@@ -74,40 +71,13 @@ FileAPIMessageFilter::FileAPIMessageFilter(
       process_id_(process_id),
       context_(file_system_context),
       security_policy_(ChildProcessSecurityPolicyImpl::GetInstance()),
-      request_context_getter_(request_context_getter),
-      request_context_(nullptr),
       blob_storage_context_(blob_storage_context) {
   DCHECK(context_);
-  DCHECK(request_context_getter_.get());
-  DCHECK(blob_storage_context);
-}
-
-FileAPIMessageFilter::FileAPIMessageFilter(
-    int process_id,
-    net::URLRequestContext* request_context,
-    storage::FileSystemContext* file_system_context,
-    ChromeBlobStorageContext* blob_storage_context)
-    : BrowserMessageFilter(kFileApiFilteredMessageClasses,
-                           arraysize(kFileApiFilteredMessageClasses)),
-      process_id_(process_id),
-      context_(file_system_context),
-      security_policy_(ChildProcessSecurityPolicyImpl::GetInstance()),
-      request_context_(request_context),
-      blob_storage_context_(blob_storage_context) {
-  DCHECK(context_);
-  DCHECK(request_context_);
   DCHECK(blob_storage_context);
 }
 
 void FileAPIMessageFilter::OnChannelConnected(int32_t peer_pid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (request_context_getter_.get()) {
-    DCHECK(!request_context_);
-    request_context_ = request_context_getter_->GetURLRequestContext();
-    request_context_getter_ = nullptr;
-    DCHECK(request_context_);
-  }
 
   operation_runner_ = context_->CreateFileSystemOperationRunner();
 }
@@ -343,11 +313,6 @@ void FileAPIMessageFilter::OnWrite(int request_id,
                                    const std::string& blob_uuid,
                                    int64_t offset) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!request_context_) {
-    // We can't write w/o a request context, trying to do so will crash.
-    NOTREACHED();
-    return;
-  }
 
   FileSystemURL url(context_->CrackURL(path));
   if (!ValidateFileSystemURL(request_id, url))
@@ -362,7 +327,7 @@ void FileAPIMessageFilter::OnWrite(int request_id,
       blob_storage_context_->context()->GetBlobDataFromUUID(blob_uuid);
 
   operations_[request_id] = operation_runner()->Write(
-      request_context_, url, std::move(blob), offset,
+      url, std::move(blob), offset,
       base::Bind(&FileAPIMessageFilter::DidWrite, this, request_id));
 }
 

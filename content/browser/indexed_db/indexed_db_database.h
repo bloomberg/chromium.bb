@@ -167,7 +167,6 @@ class CONTENT_EXPORT IndexedDBDatabase
   void Put(IndexedDBTransaction* transaction,
            int64_t object_store_id,
            IndexedDBValue* value,
-           std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles,
            std::unique_ptr<IndexedDBKey> key,
            blink::WebIDBPutMode mode,
            scoped_refptr<IndexedDBCallbacks> callbacks,

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
@@ -28,7 +29,9 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/url_request/url_request_test_util.h"
+#include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
@@ -330,18 +333,25 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
   void SetUp() override {
     IndexedDBBackingStoreTest::SetUp();
 
+    blob_context_ = std::make_unique<storage::BlobStorageContext>();
+
     // useful keys and values during tests
     blob_info_.push_back(
-        IndexedDBBlobInfo("uuid 3", base::UTF8ToUTF16("blob type"), 1));
+        IndexedDBBlobInfo(CreateBlob(), base::UTF8ToUTF16("blob type"), 1));
     blob_info_.push_back(IndexedDBBlobInfo(
-        "uuid 4", base::FilePath(FILE_PATH_LITERAL("path/to/file")),
+        CreateBlob(), base::FilePath(FILE_PATH_LITERAL("path/to/file")),
         base::UTF8ToUTF16("file name"), base::UTF8ToUTF16("file type")));
-    blob_info_.push_back(IndexedDBBlobInfo("uuid 5", base::FilePath(),
+    blob_info_.push_back(IndexedDBBlobInfo(CreateBlob(), base::FilePath(),
                                            base::UTF8ToUTF16("file name"),
                                            base::UTF8ToUTF16("file type")));
     value3_ = IndexedDBValue("value3", blob_info_);
 
     key3_ = IndexedDBKey(ASCIIToUTF16("key3"));
+  }
+
+  std::unique_ptr<storage::BlobDataHandle> CreateBlob() {
+    return blob_context_->AddFinishedBlob(
+        std::make_unique<storage::BlobDataBuilder>(base::GenerateGUID()));
   }
 
   // This just checks the data that survive getting stored and recalled, e.g.
@@ -403,7 +413,7 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
         if (desc.file_path() != info.file_path())
           return false;
       } else {
-        if (desc.url() != GURL("blob:uuid/" + info.uuid()))
+        if (desc.blob()->uuid() != info.blob_handle()->uuid())
           return false;
       }
     }
@@ -428,6 +438,8 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
   IndexedDBValue value3_;
 
  private:
+  std::unique_ptr<storage::BlobStorageContext> blob_context_;
+
   // Blob details referenced by |value3_|. The various CheckBlob*() methods
   // can be used to verify the state as a test progresses.
   std::vector<IndexedDBBlobInfo> blob_info_;
@@ -470,10 +482,9 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
             {
               IndexedDBBackingStore::Transaction transaction1(backing_store);
               transaction1.Begin();
-              std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
               IndexedDBBackingStore::RecordIdentifier record;
               leveldb::Status s = backing_store->PutRecord(
-                  &transaction1, 1, 1, key, &value, &handles, &record);
+                  &transaction1, 1, 1, key, &value, &record);
               EXPECT_TRUE(s.ok());
               scoped_refptr<TestCallback> callback(
                   base::MakeRefCounted<TestCallback>());
@@ -521,12 +532,10 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
                 std::make_unique<IndexedDBBackingStore::Transaction>(
                     test->backing_store());
             state->transaction1->Begin();
-            std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
             IndexedDBBackingStore::RecordIdentifier record;
             EXPECT_TRUE(test->backing_store()
                             ->PutRecord(state->transaction1.get(), 1, 1,
-                                        test->key3_, &test->value3_, &handles,
-                                        &record)
+                                        test->key3_, &test->value3_, &record)
                             .ok());
             state->callback1 = base::MakeRefCounted<TestCallback>();
             EXPECT_TRUE(
@@ -599,7 +608,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
   RunAllTasksUntilIdle();
 }
 
-TEST_F(IndexedDBBackingStoreTest, DeleteRange) {
+TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRange) {
   const std::vector<IndexedDBKey> keys = {
       IndexedDBKey(ASCIIToUTF16("key0")), IndexedDBKey(ASCIIToUTF16("key1")),
       IndexedDBKey(ASCIIToUTF16("key2")), IndexedDBKey(ASCIIToUTF16("key3"))};
@@ -620,7 +629,11 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRange) {
       scoped_refptr<TestCallback> callback1;
       std::unique_ptr<IndexedDBBackingStore::Transaction> transaction2;
       scoped_refptr<TestCallback> callback2;
+      std::vector<std::unique_ptr<storage::BlobDataHandle>> blobs;
     } state;
+
+    for (size_t j = 0; j < 4; ++j)
+      state.blobs.push_back(CreateBlob());
 
     idb_context_->TaskRunner()->PostTask(
         FROM_HERE,
@@ -633,19 +646,26 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRange) {
               backing_store->ClearRemovals();
 
               std::vector<IndexedDBValue> values = {
-                  IndexedDBValue(
-                      "value0", {IndexedDBBlobInfo(
-                                    "uuid 0", base::UTF8ToUTF16("type 0"), 1)}),
-                  IndexedDBValue(
-                      "value1", {IndexedDBBlobInfo(
-                                    "uuid 1", base::UTF8ToUTF16("type 1"), 1)}),
-                  IndexedDBValue(
-                      "value2", {IndexedDBBlobInfo(
-                                    "uuid 2", base::UTF8ToUTF16("type 2"), 1)}),
-                  IndexedDBValue(
-                      "value3",
-                      {IndexedDBBlobInfo("uuid 3", base::UTF8ToUTF16("type 3"),
-                                         1)})};
+                  IndexedDBValue("value0",
+                                 {IndexedDBBlobInfo(
+                                     std::make_unique<storage::BlobDataHandle>(
+                                         *state->blobs[0]),
+                                     base::UTF8ToUTF16("type 0"), 1)}),
+                  IndexedDBValue("value1",
+                                 {IndexedDBBlobInfo(
+                                     std::make_unique<storage::BlobDataHandle>(
+                                         *state->blobs[1]),
+                                     base::UTF8ToUTF16("type 1"), 1)}),
+                  IndexedDBValue("value2",
+                                 {IndexedDBBlobInfo(
+                                     std::make_unique<storage::BlobDataHandle>(
+                                         *state->blobs[2]),
+                                     base::UTF8ToUTF16("type 2"), 1)}),
+                  IndexedDBValue("value3",
+                                 {IndexedDBBlobInfo(
+                                     std::make_unique<storage::BlobDataHandle>(
+                                         *state->blobs[3]),
+                                     base::UTF8ToUTF16("type 3"), 1)})};
               ASSERT_GE(keys.size(), values.size());
 
               // Initiate transaction1 - write records.
@@ -653,14 +673,12 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRange) {
                   std::make_unique<IndexedDBBackingStore::Transaction>(
                       backing_store);
               state->transaction1->Begin();
-              std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
               IndexedDBBackingStore::RecordIdentifier record;
               for (size_t i = 0; i < values.size(); ++i) {
                 EXPECT_TRUE(backing_store
                                 ->PutRecord(state->transaction1.get(),
                                             database_id, object_store_id,
-                                            keys[i], &values[i], &handles,
-                                            &record)
+                                            keys[i], &values[i], &record)
                                 .ok());
               }
 
@@ -728,7 +746,7 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRange) {
   }
 }
 
-TEST_F(IndexedDBBackingStoreTest, DeleteRangeEmptyRange) {
+TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRangeEmptyRange) {
   const std::vector<IndexedDBKey> keys = {
       IndexedDBKey(ASCIIToUTF16("key0")), IndexedDBKey(ASCIIToUTF16("key1")),
       IndexedDBKey(ASCIIToUTF16("key2")), IndexedDBKey(ASCIIToUTF16("key3")),
@@ -748,7 +766,11 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRangeEmptyRange) {
       scoped_refptr<TestCallback> callback1;
       std::unique_ptr<IndexedDBBackingStore::Transaction> transaction2;
       scoped_refptr<TestCallback> callback2;
+      std::vector<std::unique_ptr<storage::BlobDataHandle>> blobs;
     } state;
+
+    for (size_t j = 0; j < 4; ++j)
+      state.blobs.push_back(CreateBlob());
 
     idb_context_->TaskRunner()->PostTask(
         FROM_HERE,
@@ -761,19 +783,26 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRangeEmptyRange) {
               backing_store->ClearRemovals();
 
               std::vector<IndexedDBValue> values = {
-                  IndexedDBValue(
-                      "value0", {IndexedDBBlobInfo(
-                                    "uuid 0", base::UTF8ToUTF16("type 0"), 1)}),
-                  IndexedDBValue(
-                      "value1", {IndexedDBBlobInfo(
-                                    "uuid 1", base::UTF8ToUTF16("type 1"), 1)}),
-                  IndexedDBValue(
-                      "value2", {IndexedDBBlobInfo(
-                                    "uuid 2", base::UTF8ToUTF16("type 2"), 1)}),
-                  IndexedDBValue(
-                      "value3",
-                      {IndexedDBBlobInfo("uuid 3", base::UTF8ToUTF16("type 3"),
-                                         1)})};
+                  IndexedDBValue("value0",
+                                 {IndexedDBBlobInfo(
+                                     std::make_unique<storage::BlobDataHandle>(
+                                         *state->blobs[0]),
+                                     base::UTF8ToUTF16("type 0"), 1)}),
+                  IndexedDBValue("value1",
+                                 {IndexedDBBlobInfo(
+                                     std::make_unique<storage::BlobDataHandle>(
+                                         *state->blobs[1]),
+                                     base::UTF8ToUTF16("type 1"), 1)}),
+                  IndexedDBValue("value2",
+                                 {IndexedDBBlobInfo(
+                                     std::make_unique<storage::BlobDataHandle>(
+                                         *state->blobs[2]),
+                                     base::UTF8ToUTF16("type 2"), 1)}),
+                  IndexedDBValue("value3",
+                                 {IndexedDBBlobInfo(
+                                     std::make_unique<storage::BlobDataHandle>(
+                                         *state->blobs[3]),
+                                     base::UTF8ToUTF16("type 3"), 1)})};
               ASSERT_GE(keys.size(), values.size());
 
               // Initiate transaction1 - write records.
@@ -782,14 +811,12 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRangeEmptyRange) {
                       backing_store);
               state->transaction1->Begin();
 
-              std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
               IndexedDBBackingStore::RecordIdentifier record;
               for (size_t i = 0; i < values.size(); ++i) {
                 EXPECT_TRUE(backing_store
                                 ->PutRecord(state->transaction1.get(),
                                             database_id, object_store_id,
-                                            keys[i], &values[i], &handles,
-                                            &record)
+                                            keys[i], &values[i], &record)
                                 .ok());
               }
               // Start committing transaction1.
@@ -869,12 +896,10 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, BlobJournalInterleavedTransactions) {
                 std::make_unique<IndexedDBBackingStore::Transaction>(
                     test->backing_store());
             state->transaction1->Begin();
-            std::vector<std::unique_ptr<storage::BlobDataHandle>> handles1;
             IndexedDBBackingStore::RecordIdentifier record1;
             EXPECT_TRUE(test->backing_store()
                             ->PutRecord(state->transaction1.get(), 1, 1,
-                                        test->key3_, &test->value3_, &handles1,
-                                        &record1)
+                                        test->key3_, &test->value3_, &record1)
                             .ok());
             state->callback1 = base::MakeRefCounted<TestCallback>();
             EXPECT_TRUE(
@@ -898,12 +923,10 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, BlobJournalInterleavedTransactions) {
                 std::make_unique<IndexedDBBackingStore::Transaction>(
                     test->backing_store());
             state->transaction2->Begin();
-            std::vector<std::unique_ptr<storage::BlobDataHandle>> handles2;
             IndexedDBBackingStore::RecordIdentifier record2;
             EXPECT_TRUE(test->backing_store()
                             ->PutRecord(state->transaction2.get(), 1, 1,
-                                        test->key1_, &test->value1_, &handles2,
-                                        &record2)
+                                        test->key1_, &test->value1_, &record2)
                             .ok());
             state->callback2 = base::MakeRefCounted<TestCallback>();
             EXPECT_TRUE(
@@ -953,12 +976,10 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, LiveBlobJournal) {
                 std::make_unique<IndexedDBBackingStore::Transaction>(
                     test->backing_store());
             state->transaction1->Begin();
-            std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
             IndexedDBBackingStore::RecordIdentifier record;
             EXPECT_TRUE(test->backing_store()
                             ->PutRecord(state->transaction1.get(), 1, 1,
-                                        test->key3_, &test->value3_, &handles,
-                                        &record)
+                                        test->key3_, &test->value3_, &record)
                             .ok());
             state->callback1 = base::MakeRefCounted<TestCallback>();
             EXPECT_TRUE(
@@ -1081,11 +1102,10 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
             {
               IndexedDBBackingStore::Transaction transaction1(backing_store);
               transaction1.Begin();
-              std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
               IndexedDBBackingStore::RecordIdentifier record;
               leveldb::Status s = backing_store->PutRecord(
                   &transaction1, high_database_id, high_object_store_id, key1,
-                  &value1, &handles, &record);
+                  &value1, &record);
               EXPECT_TRUE(s.ok());
 
               s = backing_store->PutIndexDataForRecord(
@@ -1158,21 +1178,19 @@ TEST_F(IndexedDBBackingStoreTest, InvalidIds) {
             IndexedDBBackingStore::Transaction transaction1(backing_store);
             transaction1.Begin();
 
-            std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
             IndexedDBBackingStore::RecordIdentifier record;
             leveldb::Status s = backing_store->PutRecord(
                 &transaction1, database_id, KeyPrefix::kInvalidId, key, &value,
-                &handles, &record);
+                &record);
             EXPECT_FALSE(s.ok());
             s = backing_store->PutRecord(&transaction1, database_id, 0, key,
-                                         &value, &handles, &record);
+                                         &value, &record);
             EXPECT_FALSE(s.ok());
             s = backing_store->PutRecord(&transaction1, KeyPrefix::kInvalidId,
-                                         object_store_id, key, &value, &handles,
-                                         &record);
+                                         object_store_id, key, &value, &record);
             EXPECT_FALSE(s.ok());
             s = backing_store->PutRecord(&transaction1, 0, object_store_id, key,
-                                         &value, &handles, &record);
+                                         &value, &record);
             EXPECT_FALSE(s.ok());
 
             s = backing_store->GetRecord(&transaction1, database_id,
@@ -1503,11 +1521,10 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
             // Save a value.
             IndexedDBBackingStore::Transaction transaction1(backing_store);
             transaction1.Begin();
-            std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
             IndexedDBBackingStore::RecordIdentifier record;
             leveldb::Status s = backing_store->PutRecord(
                 &transaction1, state->database_id, state->object_store_id, key,
-                &value, &handles, &record);
+                &value, &record);
             EXPECT_TRUE(s.ok());
             scoped_refptr<TestCallback> callback(
                 base::MakeRefCounted<TestCallback>());
@@ -1648,13 +1665,12 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
                 std::make_unique<IndexedDBBackingStore::Transaction>(
                     test->backing_store());
             state->transaction1->Begin();
-            std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
             IndexedDBBackingStore::RecordIdentifier record;
             EXPECT_TRUE(test->backing_store()
                             ->PutRecord(state->transaction1.get(),
                                         state->database_id,
                                         state->object_store_id, test->key3_,
-                                        &test->value3_, &handles, &record)
+                                        &test->value3_, &record)
                             .ok());
             state->callback1 = base::MakeRefCounted<TestCallback>();
             EXPECT_TRUE(

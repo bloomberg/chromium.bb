@@ -191,12 +191,12 @@ void FileSystemOperationImpl::Remove(const FileSystemURL& url,
 void FileSystemOperationImpl::Write(
     const FileSystemURL& url,
     std::unique_ptr<FileWriterDelegate> writer_delegate,
-    std::unique_ptr<net::URLRequest> blob_request,
+    std::unique_ptr<BlobReader> blob_reader,
     const WriteCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationWrite));
   file_writer_delegate_ = std::move(writer_delegate);
   file_writer_delegate_->Start(
-      std::move(blob_request),
+      std::move(blob_reader),
       base::Bind(&FileSystemOperationImpl::DidWrite, weak_factory_.GetWeakPtr(),
                  url, callback));
 }

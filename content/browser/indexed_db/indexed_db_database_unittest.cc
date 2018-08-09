@@ -451,12 +451,11 @@ TEST_F(IndexedDBDatabaseOperationTest, CreatePutDelete) {
 
   // Put is asynchronous
   IndexedDBValue value("value1", std::vector<IndexedDBBlobInfo>());
-  std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
   std::unique_ptr<IndexedDBKey> key(std::make_unique<IndexedDBKey>("key"));
   std::vector<IndexedDBIndexKeys> index_keys;
   scoped_refptr<MockIndexedDBCallbacks> request(
       new MockIndexedDBCallbacks(false));
-  db_->Put(transaction_, store_id, &value, &handles, std::move(key),
+  db_->Put(transaction_, store_id, &value, std::move(key),
            blink::kWebIDBPutModeAddOnly, request, index_keys);
 
   // Deletion is asynchronous.
