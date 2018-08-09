@@ -19,8 +19,6 @@ source_set("components") {
     # those might be similar enough to merge.
     "web_app_icon_downloader.cc",
     "web_app_icon_downloader.h",
-    "web_app_icon_generator.cc",
-    "web_app_icon_generator.h",
     "web_app_shortcut.cc",
     "web_app_shortcut.h",
     "web_app_shortcut_chromeos.cc",
@@ -51,7 +49,6 @@ source_set("unit_tests") {
   sources = [
     "web_app_helpers_unittest.cc",
     "web_app_icon_downloader_unittest.cc",
-    "web_app_icon_generator_unittest.cc",
     "web_app_shortcut_mac_unittest.mm",
     "web_app_shortcut_unittest.cc",
   ]
