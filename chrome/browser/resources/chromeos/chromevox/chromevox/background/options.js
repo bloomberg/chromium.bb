@@ -88,6 +88,14 @@ cvox.OptionsPage.init = function() {
     }
   });
 
+  chrome.commandLinePrivate.hasSwitch(
+      'enable-chromevox-developer-option', function(enable) {
+        if (!enable) {
+          $('developerDescription').hidden = true;
+          $('developerOption').hidden = true;
+        }
+      });
+
   Msgs.addTranslatedMessagesToDom(document);
   cvox.OptionsPage.hidePlatformSpecifics();
 

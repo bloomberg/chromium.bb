@@ -307,6 +307,10 @@ const char kEnableCaptivePortalRandomUrl[] = "enable-captive-portal-random-url";
 // Enables the Cast Receiver.
 const char kEnableCastReceiver[] = "enable-cast-receiver";
 
+// Enables the experimental chromevox developer option.
+const char kEnableChromevoxDeveloperOption[] =
+    "enable-chromevox-developer-option";
+
 // Enables consumer kiosk mode for Chrome OS.
 const char kEnableConsumerKiosk[] = "enable-consumer-kiosk";
 

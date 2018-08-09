@@ -443,6 +443,11 @@ const char kEnableCaptivePortalRandomUrl[] = "Captive Portal url Randomization";
 const char kEnableCaptivePortalRandomUrlDescription[] =
     "Enable Captive Portal URL randomization.";
 
+const char kEnableChromevoxDeveloperOptionName[] =
+    "Enable Chromevox developer option";
+const char kEnableChromevoxDeveloperOptionDescription[] =
+    "This option provides tools for developing in chromevox.";
+
 const char kEnableClientLoFiName[] = "Client-side Lo-Fi previews";
 
 const char kEnableClientLoFiDescription[] =

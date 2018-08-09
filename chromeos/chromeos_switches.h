@@ -91,6 +91,7 @@ CHROMEOS_EXPORT extern const char kEnableArc[];
 CHROMEOS_EXPORT extern const char kEnableArcOobeOptinNoSkip[];
 CHROMEOS_EXPORT extern const char kEnableCaptivePortalRandomUrl[];
 CHROMEOS_EXPORT extern const char kEnableCastReceiver[];
+CHROMEOS_EXPORT extern const char kEnableChromevoxDeveloperOption[];
 CHROMEOS_EXPORT extern const char kEnableConsumerKiosk[];
 CHROMEOS_EXPORT extern const char kEnableDataSaverPrompt[];
 CHROMEOS_EXPORT extern const char kEnableDemoMode[];
