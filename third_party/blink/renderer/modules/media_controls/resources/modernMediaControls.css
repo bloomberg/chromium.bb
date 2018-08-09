@@ -383,6 +383,15 @@ video::-webkit-media-controls-overlay-play-button {
   transition: opacity 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
+/**
+ * The overlay-play-button is disabled if the video element is loaded via
+ * MHTML, and a ruleset for input[type=button]:disabled in themeWin.css has
+ * higher priority than the above ruleset.
+ */
+video::-webkit-media-controls-overlay-play-button:disabled {
+  background: transparent;
+}
+
 video::-webkit-media-controls-overlay-play-button.hidden {
   opacity: 0;
   transition: opacity 0.75s cubic-bezier(0.25, 0.1, 0.25, 1);
