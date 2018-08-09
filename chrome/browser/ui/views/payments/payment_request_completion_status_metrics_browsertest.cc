@@ -43,6 +43,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest, Completed) {
   // Payment Request is shown.
   ResetEventWaiterForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
                                DialogEvent::CAN_MAKE_PAYMENT_RETURNED,
+                               DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN,
                                DialogEvent::DIALOG_OPENED});
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "queryShow();"));
   WaitForObservedEvent();
@@ -80,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
   base::HistogramTester histogram_tester;
 
   // Start the Payment Request.
-  ResetEventWaiter(DialogEvent::DIALOG_OPENED);
+  ResetEventWaiterForDialogOpened();
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "noQueryShow();"));
   WaitForObservedEvent();
 
@@ -125,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
   base::HistogramTester histogram_tester;
 
   // Start the Payment Request.
-  ResetEventWaiter(DialogEvent::DIALOG_OPENED);
+  ResetEventWaiterForDialogOpened();
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "noQueryShow();"));
   WaitForObservedEvent();
 
@@ -172,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
   base::HistogramTester histogram_tester;
 
   // Start the Payment Request.
-  ResetEventWaiter(DialogEvent::DIALOG_OPENED);
+  ResetEventWaiterForDialogOpened();
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "noQueryShow();"));
   WaitForObservedEvent();
 
@@ -220,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
   base::HistogramTester histogram_tester;
 
   // Start the Payment Request.
-  ResetEventWaiter(DialogEvent::DIALOG_OPENED);
+  ResetEventWaiterForDialogOpened();
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "noQueryShow();"));
   WaitForObservedEvent();
 
@@ -262,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
   base::HistogramTester histogram_tester;
 
   // Start the Payment Request.
-  ResetEventWaiter(DialogEvent::DIALOG_OPENED);
+  ResetEventWaiterForDialogOpened();
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "noQueryShow();"));
   WaitForObservedEvent();
 
@@ -304,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
   base::HistogramTester histogram_tester;
 
   // Start the Payment Request.
-  ResetEventWaiter(DialogEvent::DIALOG_OPENED);
+  ResetEventWaiterForDialogOpened();
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "noQueryShow();"));
   WaitForObservedEvent();
 
@@ -348,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
   base::HistogramTester histogram_tester;
 
   // Start the Payment Request.
-  ResetEventWaiter(DialogEvent::DIALOG_OPENED);
+  ResetEventWaiterForDialogOpened();
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "noQueryShow();"));
   WaitForObservedEvent();
 

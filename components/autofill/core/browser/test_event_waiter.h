@@ -31,7 +31,7 @@ template <typename Event>
 class EventWaiter {
  public:
   explicit EventWaiter(
-      std::list<Event> event_sequence,
+      std::list<Event> expected_event_sequence,
       base::TimeDelta timeout = base::TimeDelta::FromSeconds(0));
   ~EventWaiter();
 
@@ -44,16 +44,16 @@ class EventWaiter {
   void OnEvent(Event event);
 
  private:
-  std::list<Event> events_;
+  std::list<Event> expected_events_;
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(EventWaiter);
 };
 
 template <typename Event>
-EventWaiter<Event>::EventWaiter(std::list<Event> event_sequence,
+EventWaiter<Event>::EventWaiter(std::list<Event> expected_event_sequence,
                                 base::TimeDelta timeout)
-    : events_(std::move(event_sequence)) {
+    : expected_events_(std::move(expected_event_sequence)) {
   if (!timeout.is_zero()) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop_.QuitClosure(), timeout);
@@ -65,23 +65,23 @@ EventWaiter<Event>::~EventWaiter() {}
 
 template <typename Event>
 bool EventWaiter<Event>::Wait() {
-  if (events_.empty())
+  if (expected_events_.empty())
     return true;
 
   DCHECK(!run_loop_.running());
   run_loop_.Run();
-  return events_.empty();
+  return expected_events_.empty();
 }
 
 template <typename Event>
-void EventWaiter<Event>::OnEvent(Event event) {
-  if (events_.empty())
+void EventWaiter<Event>::OnEvent(Event actual_event) {
+  if (expected_events_.empty())
     return;
 
-  ASSERT_EQ(events_.front(), event);
-  events_.pop_front();
+  ASSERT_EQ(expected_events_.front(), actual_event);
+  expected_events_.pop_front();
   // Only quit the loop if no other events are expected.
-  if (events_.empty() && run_loop_.running())
+  if (expected_events_.empty() && run_loop_.running())
     run_loop_.Quit();
 }
 

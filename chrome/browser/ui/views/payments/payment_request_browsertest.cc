@@ -234,7 +234,7 @@ class PaymentRequestPaymentMethodIdentifierTest
   PaymentRequestPaymentMethodIdentifierTest() {}
 
   void InvokePaymentRequestWithJs(const std::string& js) {
-    ResetEventWaiter(DialogEvent::DIALOG_OPENED);
+    ResetEventWaiterForDialogOpened();
 
     ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), js));
 

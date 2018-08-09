@@ -253,6 +253,8 @@ class PaymentRequestBrowserTestBase
   // Resets the event waiter for a given |event| or |event_sequence|.
   void ResetEventWaiter(DialogEvent event);
   void ResetEventWaiterForSequence(std::list<DialogEvent> event_sequence);
+  // Resets the event waiter for the events that trigger when opening a dialog.
+  void ResetEventWaiterForDialogOpened();
   // Wait for the event(s) passed to ResetEventWaiter*() to occur.
   void WaitForObservedEvent();
 

@@ -18,7 +18,7 @@ class PaymentRequestNoUpdateWithTest : public PaymentRequestBrowserTestBase {
 
   void RunJavaScriptFunctionToOpenPaymentRequestUI(
       const std::string& function_name) {
-    ResetEventWaiter(DialogEvent::DIALOG_OPENED);
+    ResetEventWaiterForDialogOpened();
 
     content::WebContents* web_contents = GetActiveWebContents();
     ASSERT_TRUE(content::ExecuteScript(web_contents, function_name + "();"));
