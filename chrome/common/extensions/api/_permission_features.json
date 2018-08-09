@@ -51,8 +51,8 @@
     "channel": "trunk",
     "extension_types": ["platform_app"],
     "whitelist": [
-      "D8524F339305807AB2439035774F746F739D0983"  // Test platform app
-      // TODO(crbug.com/819404): Whitelist the Highlights app.
+      "46578A13607D38F1DC8E280C4F499FB0A2F9565C", // http://crbug.com/819404
+      "898FB5A39687D210766B8998BA4530B99C9E6586"  // http://crbug.com/819404
     ]
   },
   "autofillPrivate": {
