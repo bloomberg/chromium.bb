@@ -43,10 +43,9 @@ class GlobalConfirmInfoBar : public TabStripModelObserver,
   class DelegateProxy;
 
   // TabStripModelObserver:
-  void TabInsertedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* web_contents,
-                     int index,
-                     bool foreground) override;
+  void OnTabStripModelChanged(
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
   void TabChangedAt(content::WebContents* web_contents,
                     int index,
                     TabChangeType change_type) override;

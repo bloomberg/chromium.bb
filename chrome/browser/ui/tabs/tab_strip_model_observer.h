@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_change_type.h"
 #include "ui/base/models/list_selection_model.h"
 
@@ -33,12 +32,7 @@ class WebContents;
 ////////////////////////////////////////////////////////////////////////////////
 class TabStripModelChange {
  public:
-  enum Type {
-    kInserted,
-    kRemoved,
-    kMoved,
-    kReplaced,
-  };
+  enum Type { kSelectionOnly, kInserted, kRemoved, kMoved, kReplaced };
 
   // A WebContents was inserted at |index|. This implicitly changes the existing
   // selection model by calling IncrementFrom(index).
@@ -97,6 +91,7 @@ class TabStripModelChange {
                                   content::WebContents* new_contents,
                                   int index);
 
+  TabStripModelChange();
   TabStripModelChange(Type type, const Delta& delta);
   TabStripModelChange(Type type, const std::vector<Delta>& deltas);
   ~TabStripModelChange();
@@ -107,7 +102,7 @@ class TabStripModelChange {
   const std::vector<Delta>& deltas() const { return deltas_; }
 
  private:
-  const Type type_;
+  const Type type_ = kSelectionOnly;
   const std::vector<Delta> deltas_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStripModelChange);
@@ -116,6 +111,12 @@ class TabStripModelChange {
 // Struct to carry changes on selection/activation.
 struct TabStripSelectionChange {
   TabStripSelectionChange();
+
+  // Fill TabStripSelectionChange with given |contents| and |selection_model|.
+  // note that |new_contents| and |new_model| will be filled too so that
+  // selection_changed() and active_tab_changed() won't return true.
+  TabStripSelectionChange(content::WebContents* contents,
+                          const ui::ListSelectionModel& model);
 
   bool active_tab_changed() const { return old_contents != new_contents; }
 
@@ -172,9 +173,8 @@ class TabStripModelObserver {
   // TabStripModel before the |change| and after the |change| are applied.
   // When only selection/activation was changed without any change about
   // WebContents, |change| can be empty.
-  virtual void OnTabStripModelChanged(
-      const base::Optional<TabStripModelChange>& change,
-      const TabStripSelectionChange& selection);
+  virtual void OnTabStripModelChanged(const TabStripModelChange& change,
+                                      const TabStripSelectionChange& selection);
 
   // A new WebContents was inserted into the TabStripModel at the
   // specified index. |foreground| is whether or not it was opened in the

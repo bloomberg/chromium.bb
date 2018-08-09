@@ -377,48 +377,46 @@ class NewTabStripModelObserver : public MockTabStripModelObserver {
 
   // TabStripModelObserver implementation:
   void OnTabStripModelChanged(
-      const base::Optional<TabStripModelChange>& change,
+      const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override {
-    if (change) {
-      switch (change->type()) {
-        case TabStripModelChange::kInserted: {
-          for (const auto& delta : change->deltas()) {
-            PushInsertState(delta.insert.contents, delta.insert.index,
-                            selection.new_contents == delta.insert.contents);
-          }
-          break;
+    switch (change.type()) {
+      case TabStripModelChange::kInserted: {
+        for (const auto& delta : change.deltas()) {
+          PushInsertState(delta.insert.contents, delta.insert.index,
+                          selection.new_contents == delta.insert.contents);
         }
-        case TabStripModelChange::kRemoved: {
-          for (const auto& delta : change->deltas()) {
-            if (delta.remove.will_be_deleted)
-              PushCloseState(delta.remove.contents, delta.remove.index);
-
-            PushDetachState(delta.remove.contents, delta.remove.index,
-                            selection.old_contents == delta.remove.contents);
-          }
-          break;
-        }
-        case TabStripModelChange::kReplaced: {
-          for (const auto& delta : change->deltas()) {
-            PushReplaceState(delta.replace.old_contents,
-                             delta.replace.new_contents, delta.replace.index);
-          }
-          break;
-        }
-        case TabStripModelChange::kMoved: {
-          for (const auto& delta : change->deltas()) {
-            PushMoveState(delta.move.contents, delta.move.from_index,
-                          delta.move.to_index);
-          }
-          // Selection change triggered by move shouldn't be counted as
-          // exsiting tests don't expect selection change in this case.
-          // TODO(sangwoo.ko): Update the tests in this class to not use the
-          // deprecated callbacks. https://crbug.com/842194
-          return;
-        }
-        default:
-          NOTREACHED();
+        break;
       }
+      case TabStripModelChange::kRemoved: {
+        for (const auto& delta : change.deltas()) {
+          if (delta.remove.will_be_deleted)
+            PushCloseState(delta.remove.contents, delta.remove.index);
+
+          PushDetachState(delta.remove.contents, delta.remove.index,
+                          selection.old_contents == delta.remove.contents);
+        }
+        break;
+      }
+      case TabStripModelChange::kReplaced: {
+        for (const auto& delta : change.deltas()) {
+          PushReplaceState(delta.replace.old_contents,
+                           delta.replace.new_contents, delta.replace.index);
+        }
+        break;
+      }
+      case TabStripModelChange::kMoved: {
+        for (const auto& delta : change.deltas()) {
+          PushMoveState(delta.move.contents, delta.move.from_index,
+                        delta.move.to_index);
+        }
+        // Selection change triggered by move shouldn't be counted as
+        // exsiting tests don't expect selection change in this case.
+        // TODO(sangwoo.ko): Update the tests in this class to not use the
+        // deprecated callbacks. https://crbug.com/842194
+        return;
+      }
+      default:
+        break;
     }
 
     if (selection.active_tab_changed()) {
