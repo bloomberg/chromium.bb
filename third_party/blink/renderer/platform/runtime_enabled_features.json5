@@ -935,10 +935,6 @@
       status: "experimental",
     },
     {
-      name: "PaymentRequestBasicCard",
-      status: "stable",
-    },
-    {
       name: "PaymentRetry",
       status: "experimental",
     },
