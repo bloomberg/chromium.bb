@@ -127,6 +127,31 @@ public class ManualFillingIntegrationTest {
 
     @Test
     @SmallTest
+    public void testAccessorySheetHiddenWhenRefocusingField()
+            throws InterruptedException, TimeoutException {
+        mHelper.loadTestPage(false);
+        mHelper.createTestTab();
+
+        // Focus the field to bring up the accessory.
+        mHelper.clickPasswordField();
+        mHelper.waitForKeyboard();
+
+        // Check that ONLY the accessory is there but the sheet is still hidden.
+        whenDisplayed(withId(R.id.keyboard_accessory));
+        onView(withId(R.id.keyboard_accessory_sheet)).check(doesNotExist());
+
+        // Trigger the sheet and wait for it to open and the keyboard to disappear.
+        onView(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+        mHelper.waitForKeyboardToDisappear();
+        whenDisplayed(withId(R.id.keyboard_accessory_sheet));
+
+        mHelper.clickPasswordField();
+        mHelper.waitForKeyboard();
+        mHelper.waitToBeHidden(withId(R.id.keyboard_accessory_sheet));
+    }
+
+    @Test
+    @SmallTest
     public void testHidingSheetBringsBackKeyboard() throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
         mHelper.createTestTab();
