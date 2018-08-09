@@ -99,7 +99,8 @@ class AsyncFileTestHelper {
   static bool DirectoryExists(storage::FileSystemContext* context,
                               const storage::FileSystemURL& url);
 
-  // Returns usage and quota. It's valid to pass NULL to |usage| and/or |quota|.
+  // Returns usage and quota. It's valid to pass nullptr to |usage| and/or
+  // |quota|.
   static blink::mojom::QuotaStatusCode GetUsageAndQuota(
       storage::QuotaManager* quota_manager,
       const GURL& origin,

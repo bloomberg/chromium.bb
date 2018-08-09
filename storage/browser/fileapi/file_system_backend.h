@@ -83,7 +83,7 @@ class STORAGE_EXPORT FileSystemBackend {
   virtual WatcherManager* GetWatcherManager(FileSystemType type) = 0;
 
   // Returns the specialized CopyOrMoveFileValidatorFactory for this backend
-  // and |type|.  If |error_code| is File::FILE_OK and the result is NULL,
+  // and |type|.  If |error_code| is File::FILE_OK and the result is nullptr,
   // then no validator is required.
   virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
       FileSystemType type, base::File::Error* error_code) = 0;
@@ -135,20 +135,20 @@ class STORAGE_EXPORT FileSystemBackend {
       FileSystemContext* context) const = 0;
 
   // Returns the specialized FileSystemQuotaUtil for this backend.
-  // This could return NULL if this backend does not support quota.
+  // This could return nullptr if this backend does not support quota.
   virtual FileSystemQuotaUtil* GetQuotaUtil() = 0;
 
-  // Returns the update observer list for |type|. It may return NULL when no
+  // Returns the update observer list for |type|. It may return nullptr when no
   // observers are added.
   virtual const UpdateObserverList* GetUpdateObservers(
       FileSystemType type) const = 0;
 
-  // Returns the change observer list for |type|. It may return NULL when no
+  // Returns the change observer list for |type|. It may return nullptr when no
   // observers are added.
   virtual const ChangeObserverList* GetChangeObservers(
       FileSystemType type) const = 0;
 
-  // Returns the access observer list for |type|. It may return NULL when no
+  // Returns the access observer list for |type|. It may return nullptr when no
   // observers are added.
   virtual const AccessObserverList* GetAccessObservers(
       FileSystemType type) const = 0;

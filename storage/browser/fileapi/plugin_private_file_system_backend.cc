@@ -106,7 +106,7 @@ PluginPrivateFileSystemBackend::PluginPrivateFileSystemBackend(
       special_storage_policy, base_path_, env_override,
       base::Bind(&FileSystemIDToPluginMap::GetPluginIDForURL,
                  base::Owned(plugin_map_)),
-      std::set<std::string>(), NULL)));
+      std::set<std::string>(), nullptr)));
 }
 
 PluginPrivateFileSystemBackend::~PluginPrivateFileSystemBackend() {
@@ -163,7 +163,7 @@ PluginPrivateFileSystemBackend::GetAsyncFileUtil(FileSystemType type) {
 
 WatcherManager* PluginPrivateFileSystemBackend::GetWatcherManager(
     FileSystemType type) {
-  return NULL;
+  return nullptr;
 }
 
 CopyOrMoveFileValidatorFactory*
@@ -172,7 +172,7 @@ PluginPrivateFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
     base::File::Error* error_code) {
   DCHECK(error_code);
   *error_code = base::File::FILE_OK;
-  return NULL;
+  return nullptr;
 }
 
 FileSystemOperation* PluginPrivateFileSystemBackend::CreateFileSystemOperation(
@@ -345,17 +345,17 @@ PluginPrivateFileSystemBackend::CreateQuotaReservationOnFileTaskRunner(
 
 const UpdateObserverList* PluginPrivateFileSystemBackend::GetUpdateObservers(
     FileSystemType type) const {
-  return NULL;
+  return nullptr;
 }
 
 const ChangeObserverList* PluginPrivateFileSystemBackend::GetChangeObservers(
     FileSystemType type) const {
-  return NULL;
+  return nullptr;
 }
 
 const AccessObserverList* PluginPrivateFileSystemBackend::GetAccessObservers(
     FileSystemType type) const {
-  return NULL;
+  return nullptr;
 }
 
 ObfuscatedFileUtil* PluginPrivateFileSystemBackend::obfuscated_file_util() {

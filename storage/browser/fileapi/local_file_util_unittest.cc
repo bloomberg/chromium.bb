@@ -51,11 +51,11 @@ class LocalFileUtilTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     file_system_context_ =
-        CreateFileSystemContextForTesting(NULL, data_dir_.GetPath());
+        CreateFileSystemContextForTesting(nullptr, data_dir_.GetPath());
   }
 
   void TearDown() override {
-    file_system_context_ = NULL;
+    file_system_context_ = nullptr;
     base::RunLoop().RunUntilIdle();
   }
 

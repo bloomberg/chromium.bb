@@ -127,7 +127,7 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
 
   std::string id2 = isolated_context()->RegisterFileSystemForPath(
       kFileSystemTypeNativeLocal, std::string(),
-      base::FilePath(DRIVE FPL("/foo")), NULL);
+      base::FilePath(DRIVE FPL("/foo")), nullptr);
 
   // Make sure the GetDraggedFileInfo returns false for both ones.
   ASSERT_FALSE(isolated_context()->GetDraggedFileInfo(id2, &toplevels));
@@ -139,11 +139,11 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
 
   // Try registering three more file systems for the same path as id2.
   std::string id3 = isolated_context()->RegisterFileSystemForPath(
-      kFileSystemTypeNativeLocal, std::string(), path, NULL);
+      kFileSystemTypeNativeLocal, std::string(), path, nullptr);
   std::string id4 = isolated_context()->RegisterFileSystemForPath(
-      kFileSystemTypeNativeLocal, std::string(), path, NULL);
+      kFileSystemTypeNativeLocal, std::string(), path, nullptr);
   std::string id5 = isolated_context()->RegisterFileSystemForPath(
-      kFileSystemTypeNativeLocal, std::string(), path, NULL);
+      kFileSystemTypeNativeLocal, std::string(), path, nullptr);
 
   // Remove file system for id4.
   isolated_context()->AddReference(id4);
@@ -283,7 +283,8 @@ TEST_F(IsolatedContextTest, TestWithVirtualRoot) {
   // that has no corresponding platform directory.
   base::FilePath virtual_path = isolated_context()->CreateVirtualRootPath(id_);
   ASSERT_TRUE(isolated_context()->CrackVirtualPath(
-      virtual_path, &cracked_id, NULL, NULL, &cracked_path, &cracked_option));
+      virtual_path, &cracked_id, nullptr, nullptr, &cracked_path,
+      &cracked_option));
   ASSERT_EQ(FPL(""), cracked_path.value());
   ASSERT_EQ(id_, cracked_id);
 
@@ -292,7 +293,8 @@ TEST_F(IsolatedContextTest, TestWithVirtualRoot) {
   virtual_path = isolated_context()->CreateVirtualRootPath(
       id_).AppendASCII("foo");
   ASSERT_FALSE(isolated_context()->CrackVirtualPath(
-      virtual_path, &cracked_id, NULL, NULL, &cracked_path, &cracked_option));
+      virtual_path, &cracked_id, nullptr, nullptr, &cracked_path,
+      &cracked_option));
 }
 
 TEST_F(IsolatedContextTest, CanHandleURL) {
@@ -353,7 +355,7 @@ TEST_F(IsolatedContextTest, VirtualFileSystemTests) {
   std::string cracked_inner_id;
   FileSystemMountOption cracked_option;
   ASSERT_TRUE(isolated_context()->CrackVirtualPath(
-      whole_virtual_path, &cracked_id, NULL, &cracked_inner_id,
+      whole_virtual_path, &cracked_id, nullptr, &cracked_inner_id,
       &cracked_path, &cracked_option));
   ASSERT_EQ(database_fsid, cracked_id);
   ASSERT_EQ(test_virtual_path, cracked_path);

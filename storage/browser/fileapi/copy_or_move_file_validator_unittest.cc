@@ -56,7 +56,7 @@ class CopyOrMoveFileValidatorTestHelper {
       : origin_(origin), src_type_(src_type), dest_type_(dest_type) {}
 
   ~CopyOrMoveFileValidatorTestHelper() {
-    file_system_context_ = NULL;
+    file_system_context_ = nullptr;
     base::RunLoop().RunUntilIdle();
   }
 
@@ -64,7 +64,7 @@ class CopyOrMoveFileValidatorTestHelper {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
     base::FilePath base_dir = base_.GetPath();
 
-    file_system_context_ = CreateFileSystemContextForTesting(NULL, base_dir);
+    file_system_context_ = CreateFileSystemContextForTesting(nullptr, base_dir);
 
     // Set up TestFileSystemBackend to require CopyOrMoveFileValidator.
     storage::FileSystemBackend* test_file_system_backend =

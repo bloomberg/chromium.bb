@@ -101,12 +101,12 @@ class FileSystemContextTest : public testing::Test {
   scoped_refptr<MockQuotaManager> mock_quota_manager_;
 };
 
-// It is not valid to pass NULL ExternalMountPoints to FileSystemContext on
+// It is not valid to pass nullptr ExternalMountPoints to FileSystemContext on
 // ChromeOS.
 #if !defined(OS_CHROMEOS)
 TEST_F(FileSystemContextTest, NullExternalMountPoints) {
   scoped_refptr<FileSystemContext> file_system_context(
-      CreateFileSystemContextForTest(NULL));
+      CreateFileSystemContextForTest(nullptr));
 
   // Cracking system external mount and isolated mount points should work.
   std::string isolated_name = "root";
@@ -171,7 +171,7 @@ TEST_F(FileSystemContextTest, FileSystemContextKeepsMountPointsAlive) {
       CreateFileSystemContextForTest(mount_points.get()));
 
   // Release a MountPoints reference created in the test.
-  mount_points = NULL;
+  mount_points = nullptr;
 
   // FileSystemContext should keep a reference to the |mount_points|, so it
   // should be able to resolve the URL.

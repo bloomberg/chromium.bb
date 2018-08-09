@@ -154,7 +154,7 @@ class QuotaDatabaseTest : public testing::Test {
 
     std::set<GURL> exceptions;
     GURL origin;
-    EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, NULL, &origin));
+    EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, nullptr, &origin));
     EXPECT_TRUE(origin.is_empty());
 
     const GURL kOrigin1("http://a/");
@@ -174,7 +174,7 @@ class QuotaDatabaseTest : public testing::Test {
     EXPECT_TRUE(db.SetOriginLastAccessTime(kOrigin4, kPersistent,
                                            base::Time::FromInternalValue(40)));
 
-    EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, NULL, &origin));
+    EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, nullptr, &origin));
     EXPECT_EQ(kOrigin1.spec(), origin.spec());
 
     // Test that unlimited origins are exluded from eviction, but
@@ -192,15 +192,15 @@ class QuotaDatabaseTest : public testing::Test {
     EXPECT_EQ(kOrigin3.spec(), origin.spec());
 
     exceptions.insert(kOrigin1);
-    EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, NULL, &origin));
+    EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, nullptr, &origin));
     EXPECT_EQ(kOrigin2.spec(), origin.spec());
 
     exceptions.insert(kOrigin2);
-    EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, NULL, &origin));
+    EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, nullptr, &origin));
     EXPECT_EQ(kOrigin3.spec(), origin.spec());
 
     exceptions.insert(kOrigin3);
-    EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, NULL, &origin));
+    EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, nullptr, &origin));
     EXPECT_TRUE(origin.is_empty());
 
     EXPECT_TRUE(
@@ -211,12 +211,12 @@ class QuotaDatabaseTest : public testing::Test {
 
     // Querying again to see if the deletion has worked.
     exceptions.clear();
-    EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, NULL, &origin));
+    EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, nullptr, &origin));
     EXPECT_EQ(kOrigin2.spec(), origin.spec());
 
     exceptions.insert(kOrigin1);
     exceptions.insert(kOrigin2);
-    EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, NULL, &origin));
+    EXPECT_TRUE(db.GetLRUOrigin(kTemporary, exceptions, nullptr, &origin));
     EXPECT_TRUE(origin.is_empty());
   }
 
@@ -466,7 +466,7 @@ class QuotaDatabaseTest : public testing::Test {
  private:
   template <typename Iterator>
   void AssignQuotaTable(sql::Database* db, Iterator itr, Iterator end) {
-    ASSERT_NE(db, (sql::Database*)NULL);
+    ASSERT_NE(db, (sql::Database*)nullptr);
     for (; itr != end; ++itr) {
       const char* kSql =
           "INSERT INTO HostQuotaTable"
@@ -485,7 +485,7 @@ class QuotaDatabaseTest : public testing::Test {
 
   template <typename Iterator>
   void AssignOriginInfoTable(sql::Database* db, Iterator itr, Iterator end) {
-    ASSERT_NE(db, (sql::Database*)NULL);
+    ASSERT_NE(db, (sql::Database*)nullptr);
     for (; itr != end; ++itr) {
       const char* kSql =
           "INSERT INTO OriginInfoTable"

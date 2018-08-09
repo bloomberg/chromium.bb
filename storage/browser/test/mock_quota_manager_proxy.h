@@ -22,7 +22,7 @@ class MockQuotaManager;
 
 class MockQuotaManagerProxy : public QuotaManagerProxy {
  public:
-  // It is ok to give NULL to |quota_manager|.
+  // It is ok to give nullptr to |quota_manager|.
   MockQuotaManagerProxy(MockQuotaManager* quota_manager,
                         base::SingleThreadTaskRunner* task_runner);
 

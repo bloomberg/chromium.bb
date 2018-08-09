@@ -103,7 +103,7 @@ class FileSystemOperation {
   // snapshot file.  It can be set to let the chromium backend take
   // care of the life time of the snapshot file.  Otherwise (if the returned
   // file does not require any handling) the implementation can just
-  // return NULL.  In a more complex case, the implementaiton can manage
+  // return nullptr.  In a more complex case, the implementation can manage
   // the lifetime of the snapshot file on its own (e.g. by its cache system)
   // but also can be notified via the reference when the file becomes no
   // longer necessary in the javascript world.

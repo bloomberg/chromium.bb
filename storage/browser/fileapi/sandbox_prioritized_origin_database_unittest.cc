@@ -22,7 +22,7 @@ TEST(SandboxPrioritizedOriginDatabaseTest, BasicTest) {
   const std::string kOrigin1("origin1");
   const std::string kOrigin2("origin2");
 
-  SandboxPrioritizedOriginDatabase database(dir.GetPath(), NULL);
+  SandboxPrioritizedOriginDatabase database(dir.GetPath(), nullptr);
 
   // Set the kOrigin1 as a parimary origin.
   EXPECT_TRUE(database.InitializePrimaryOrigin(kOrigin1));
@@ -76,7 +76,7 @@ TEST(SandboxPrioritizedOriginDatabaseTest, SetPrimaryLaterTest) {
   const std::string kOrigin1("origin1");
   const std::string kOrigin2("origin2");
 
-  SandboxPrioritizedOriginDatabase database(dir.GetPath(), NULL);
+  SandboxPrioritizedOriginDatabase database(dir.GetPath(), nullptr);
 
   EXPECT_TRUE(database.GetPrimaryOrigin().empty());
 
@@ -105,7 +105,7 @@ TEST(SandboxPrioritizedOriginDatabaseTest, LostPrimaryOriginFileTest) {
   const std::string kOrigin1("origin1");
   const std::string kData("foo");
 
-  SandboxPrioritizedOriginDatabase database(dir.GetPath(), NULL);
+  SandboxPrioritizedOriginDatabase database(dir.GetPath(), nullptr);
 
   EXPECT_TRUE(database.GetPrimaryOrigin().empty());
 
@@ -149,7 +149,7 @@ TEST(SandboxPrioritizedOriginDatabaseTest, MigrationTest) {
   // Initialize the directory with two origins using the regular
   // SandboxOriginDatabase.
   {
-    SandboxOriginDatabase database_old(dir.GetPath(), NULL);
+    SandboxOriginDatabase database_old(dir.GetPath(), nullptr);
     base::FilePath old_db_path = database_old.GetDatabasePath();
     EXPECT_FALSE(base::PathExists(old_db_path));
 
@@ -177,7 +177,7 @@ TEST(SandboxPrioritizedOriginDatabaseTest, MigrationTest) {
   }
 
   // Re-open the directory using sandboxPrioritizedOriginDatabase.
-  SandboxPrioritizedOriginDatabase database(dir.GetPath(), NULL);
+  SandboxPrioritizedOriginDatabase database(dir.GetPath(), nullptr);
 
   // Set the kOrigin1 as a parimary origin.
   // (Trying to initialize another origin should fail).

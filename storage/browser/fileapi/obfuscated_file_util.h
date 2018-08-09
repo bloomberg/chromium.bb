@@ -282,7 +282,7 @@ class STORAGE_EXPORT ObfuscatedFileUtil : public FileSystemFileUtil {
   std::string GetDirectoryDatabaseKey(const GURL& origin,
                                       const std::string& type_string);
 
-  // This returns NULL if |create| flag is false and a filesystem does not
+  // This returns nullptr if |create| flag is false and a filesystem does not
   // exist for the given |url|.
   // For read operations |create| should be false.
   SandboxDirectoryDatabase* GetDirectoryDatabase(const FileSystemURL& url,

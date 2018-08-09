@@ -191,7 +191,7 @@ class STORAGE_EXPORT BlobReader {
   int BytesReadCompleted();
 
   // Returns a FileStreamReader for a blob item at |index|.
-  // If the item at |index| is not of file this returns NULL.
+  // If the item at |index| is not of file this returns nullptr.
   FileStreamReader* GetOrCreateFileReaderAtIndex(size_t index);
   // If the reader is null, then this basically performs a delete operation.
   void SetFileReaderAtIndex(size_t index,

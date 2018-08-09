@@ -159,7 +159,7 @@ void ClientUsageTracker::UpdateUsageCache(const GURL& origin, int64_t delta) {
                            delta);
 
     // Notify the usage monitor that usage has changed. The storage monitor may
-    // be NULL during tests.
+    // be nullptr during tests.
     if (storage_monitor_) {
       StorageObserver::Filter filter(type_, origin);
       storage_monitor_->NotifyUsageChange(filter, delta);

@@ -26,7 +26,7 @@ class STORAGE_EXPORT ShareableFileReference : public BlobDataItem::DataHandle {
   };
 
   // Returns a ShareableFileReference for the given path, if no reference
-  // for this path exists returns NULL.
+  // for this path exists returns nullptr.
   static scoped_refptr<ShareableFileReference> Get(const base::FilePath& path);
 
   // Returns a ShareableFileReference for the given path, creating a new
@@ -43,7 +43,7 @@ class STORAGE_EXPORT ShareableFileReference : public BlobDataItem::DataHandle {
   // If there's a pre-existing reference for the path, the scope out policy
   // and scope-out-callbacks of the given |scoped_file| is ignored.
   // If the given scoped_file has an empty path (e.g. maybe already
-  // released) this returns NULL reference.
+  // released) this returns nullptr reference.
   //
   // TODO(kinuko): Make sure if this behavior is ok, we could alternatively
   // merge callbacks to the existing one.

@@ -224,7 +224,7 @@ class SnapshotCopyOrMoveImpl
       return;
     }
 
-    // |validator_| is NULL when the destination filesystem does not do
+    // |validator_| is nullptr when the destination filesystem does not do
     // validation.
     if (!validator_) {
       // No validation is needed.
