@@ -6,8 +6,6 @@
 
 #include <stddef.h>
 
-#include <utility>
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
@@ -19,7 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache_storage.h"
-#include "net/base/completion_once_callback.h"
+#include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "storage/common/storage_histograms.h"
@@ -161,34 +159,28 @@ void AppCacheResponseIO::OpenEntryIfNeeded() {
     rv = net::ERR_FAILED;
   } else {
     entry_ptr = new AppCacheDiskCacheInterface::Entry*;
-    rv = disk_cache_->OpenEntry(
-        response_id_, entry_ptr,
-        base::BindOnce(&AppCacheResponseIO::OpenEntryCallback,
-                       weak_factory_.GetWeakPtr(), entry_ptr));
+    open_callback_ =
+        base::Bind(&AppCacheResponseIO::OpenEntryCallback,
+                   weak_factory_.GetWeakPtr(), base::Owned(entry_ptr));
+    rv = disk_cache_->OpenEntry(response_id_, entry_ptr, open_callback_);
   }
 
   if (rv != net::ERR_IO_PENDING)
-    OpenEntryCallback(weak_factory_.GetWeakPtr(), entry_ptr, rv);
+    OpenEntryCallback(entry_ptr, rv);
 }
 
-// static
 void AppCacheResponseIO::OpenEntryCallback(
-    base::WeakPtr<AppCacheResponseIO> response,
-    AppCacheDiskCacheInterface::Entry** entry,
-    int rv) {
-  if (!response) {
-    delete entry;
-    return;
-  }
+    AppCacheDiskCacheInterface::Entry** entry, int rv) {
+  DCHECK(info_buffer_.get() || buffer_.get());
 
-  DCHECK(response->info_buffer_.get() || response->buffer_.get());
-
-  if (!response->entry_ && rv == net::OK) {
-    DCHECK(entry);
-    response->entry_ = *entry;
+  if (!open_callback_.is_null()) {
+    if (rv == net::OK) {
+      DCHECK(entry);
+      entry_ = *entry;
+    }
+    open_callback_.Reset();
   }
-  delete entry;
-  response->OnOpenEntryComplete();
+  OnOpenEntryComplete();
 }
 
 
@@ -416,73 +408,55 @@ void AppCacheResponseWriter::CreateEntryIfNeededAndContinue() {
   } else {
     creation_phase_ = INITIAL_ATTEMPT;
     entry_ptr = new AppCacheDiskCacheInterface::Entry*;
-    rv = disk_cache_->CreateEntry(
-        response_id_, entry_ptr,
-        base::BindOnce(&AppCacheResponseWriter::OnCreateEntryComplete,
-                       weak_factory_.GetWeakPtr(), entry_ptr));
+    create_callback_ =
+        base::Bind(&AppCacheResponseWriter::OnCreateEntryComplete,
+                   weak_factory_.GetWeakPtr(), base::Owned(entry_ptr));
+    rv = disk_cache_->CreateEntry(response_id_, entry_ptr, create_callback_);
   }
   if (rv != net::ERR_IO_PENDING)
-    OnCreateEntryComplete(weak_factory_.GetWeakPtr(), entry_ptr, rv);
+    OnCreateEntryComplete(entry_ptr, rv);
 }
 
-// static
 void AppCacheResponseWriter::OnCreateEntryComplete(
-    base::WeakPtr<AppCacheResponseWriter> writer,
-    AppCacheDiskCacheInterface::Entry** entry,
-    int rv) {
-  if (!writer) {
-    if (entry) {
-      delete entry;
-    }
-    return;
-  }
+    AppCacheDiskCacheInterface::Entry** entry, int rv) {
+  DCHECK(info_buffer_.get() || buffer_.get());
 
-  DCHECK(writer->info_buffer_.get() || writer->buffer_.get());
-
-  if (!writer->disk_cache_) {
-    if (entry) {
-      delete entry;
-    }
-    writer->ScheduleIOCompletionCallback(net::ERR_FAILED);
+  if (!disk_cache_) {
+    ScheduleIOCompletionCallback(net::ERR_FAILED);
     return;
-  } else if (writer->creation_phase_ == INITIAL_ATTEMPT) {
+  } else if (creation_phase_ == INITIAL_ATTEMPT) {
     if (rv != net::OK) {
       // We may try to overwrite existing entries.
-      delete entry;
-      writer->creation_phase_ = DOOM_EXISTING;
-      rv = writer->disk_cache_->DoomEntry(
-          writer->response_id_,
-          base::BindOnce(&AppCacheResponseWriter::OnCreateEntryComplete, writer,
-                         nullptr));
+      creation_phase_ = DOOM_EXISTING;
+      rv = disk_cache_->DoomEntry(response_id_, create_callback_);
       if (rv != net::ERR_IO_PENDING)
-        OnCreateEntryComplete(writer, nullptr, rv);
+        OnCreateEntryComplete(nullptr, rv);
       return;
     }
-  } else if (writer->creation_phase_ == DOOM_EXISTING) {
-    DCHECK_EQ(nullptr, entry);
-    writer->creation_phase_ = SECOND_ATTEMPT;
+  } else if (creation_phase_ == DOOM_EXISTING) {
+    creation_phase_ = SECOND_ATTEMPT;
     AppCacheDiskCacheInterface::Entry** entry_ptr =
         new AppCacheDiskCacheInterface::Entry*;
-    rv = writer->disk_cache_->CreateEntry(
-        writer->response_id_, entry_ptr,
-        base::BindOnce(&AppCacheResponseWriter::OnCreateEntryComplete, writer,
-                       entry_ptr));
+    create_callback_ =
+        base::Bind(&AppCacheResponseWriter::OnCreateEntryComplete,
+                   weak_factory_.GetWeakPtr(), base::Owned(entry_ptr));
+    rv = disk_cache_->CreateEntry(response_id_, entry_ptr, create_callback_);
     if (rv != net::ERR_IO_PENDING)
-      OnCreateEntryComplete(writer, entry_ptr, rv);
+      OnCreateEntryComplete(entry_ptr, rv);
     return;
   }
 
-  if (!writer->entry_ && rv == net::OK) {
-    DCHECK(entry);
-    writer->entry_ = *entry;
+  if (!create_callback_.is_null()) {
+    if (rv == net::OK)
+      entry_ = *entry;
+
+    create_callback_.Reset();
   }
 
-  delete entry;
-
-  if (writer->info_buffer_.get())
-    writer->ContinueWriteInfo();
+  if (info_buffer_.get())
+    ContinueWriteInfo();
   else
-    writer->ContinueWriteData();
+    ContinueWriteData();
 }
 
 // AppCacheResponseMetadataWriter ----------------------------------------------
@@ -500,7 +474,7 @@ AppCacheResponseMetadataWriter::~AppCacheResponseMetadataWriter() {
 void AppCacheResponseMetadataWriter::WriteMetadata(
     net::IOBuffer* buf,
     int buf_len,
-    net::CompletionOnceCallback callback) {
+    const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   DCHECK(!IsIOPending());
   DCHECK(buf);
@@ -509,7 +483,7 @@ void AppCacheResponseMetadataWriter::WriteMetadata(
 
   buffer_ = buf;
   write_amount_ = buf_len;
-  callback_ = std::move(callback);  // cleared on completion
+  callback_ = callback;  // cleared on completion
   OpenEntryIfNeeded();
 }
 
