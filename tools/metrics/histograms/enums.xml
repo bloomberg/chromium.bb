@@ -19260,7 +19260,6 @@ Called by update_net_error_codes.py.-->
   <int value="2230" label="ReplaceCharsetInXHR"/>
   <int value="2231" label="RespondToSameOriginRequestWithCrossOriginResponse"/>
   <int value="2232" label="LinkRelModulePreload"/>
-  <int value="2235" label="HTMLFrameSetElementNonNullAnonymousNamedGetter"/>
   <int value="2236" label="CSPWithUnsafeEval"/>
   <int value="2237" label="WebAssemblyInstantiation"/>
   <int value="2238" label="V8IndexAccessor"/>
@@ -19500,7 +19499,6 @@ Called by update_net_error_codes.py.-->
   <int value="2461" label="ShapeOutsideContentBoxDifferentFromMarginBox"/>
   <int value="2462" label="ShapeOutsidePaddingBoxDifferentFromMarginBox"/>
   <int value="2463" label="CSSContainLayoutPositionedDescendants"/>
-  <int value="2464" label="HTMLFrameSetElementAnonymousNamedGetter"/>
   <int value="2465" label="CanvasConvertToBlob"/>
   <int value="2466" label="PolymerV1Detected"/>
   <int value="2467" label="PolymerV2Detected"/>

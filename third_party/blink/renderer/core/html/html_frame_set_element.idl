@@ -39,7 +39,6 @@
     attribute EventHandler onscroll;
 
     // Non-standard APIs
-    [NotEnumerable] getter Window (DOMString name);
     [RuntimeEnabled=OrientationEvent] attribute EventHandler onorientationchange;
 };
 

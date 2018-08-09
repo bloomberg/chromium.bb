@@ -51,8 +51,6 @@ class HTMLFrameSetElement final : public HTMLElement {
 
   bool HasNonInBodyInsertionMode() const override { return true; }
 
-  LocalDOMWindow* AnonymousNamedGetter(const AtomicString&);
-
   DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(blur);
   DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(error);
   DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(focus);
