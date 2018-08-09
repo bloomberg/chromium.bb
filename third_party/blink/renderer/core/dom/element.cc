@@ -2189,6 +2189,7 @@ void Element::DetachLayoutTree(const AttachContext& context) {
 
   DetachPseudoElement(kPseudoIdAfter, context);
   DetachPseudoElement(kPseudoIdBackdrop, context);
+  DetachPseudoElement(kPseudoIdFirstLetter, context);
 
   if (!context.performing_reattach && IsUserActionElement()) {
     if (IsHovered())
