@@ -544,9 +544,6 @@ class UserGroupTest(image_test_lib.ImageTestCase):
         d.update(usergroup_baseline.USER_BOARD_BASELINES[self._board])
     elif 'group' in basename:
       d = usergroup_baseline.GROUP_BASELINE.copy()
-      # TODO(jorgelo): Merge this into the main baseline once:
-      #     *Freon users are included in the main overlay.
-      d.update(usergroup_baseline.GROUP_BASELINE_FREON)
 
       # Per-board baseline.
       if (self._board and

@@ -86,6 +86,7 @@ GROUP_BASELINE = dict((e.group, e) for e in (
     GroupEntry(group='daemon', gid=2, users={'root', 'bin', 'daemon'}),
     GroupEntry(group='sys', gid=3, users={'root', 'bin', 'adm'}),
     GroupEntry(group='adm', gid=4, users={'root', 'adm', 'daemon'}),
+    GroupEntry(group='tty', gid=5, users={'power', 'brltty'}),
     GroupEntry(group='disk', gid=6, users={'root', 'adm', 'cros-disks'}),
     GroupEntry(group='lp', gid=7, users={'lp', 'lpadmin', 'cups', 'chronos'}),
     GroupEntry(group='mem', gid=8),
@@ -99,6 +100,8 @@ GROUP_BASELINE = dict((e.group, e) for e in (
                                              'midis', 'rtanalytics'}),
     GroupEntry(group='cdrom', gid=19, users={'cros-disks'}),
     GroupEntry(group='tape', gid=26, users={'root'}),
+    GroupEntry(group='video', gid=27, users={'root', 'chronos', 'arc-camera',
+                                             'dlm', 'rtanalytics', 'crosvm'}),
     GroupEntry(group='cdrw', gid=80, users={'cros-disks'}),
     GroupEntry(group='usb', gid=85, users={'mtp', 'brltty', 'dlm', 'modem'}),
     GroupEntry(group='users', gid=100),
@@ -116,6 +119,7 @@ GROUP_BASELINE = dict((e.group, e) for e in (
     GroupEntry(group='pkcs11', gid=208, users={'root', 'ipsec', 'chronos',
                                                'chaps', 'wpa', 'attestation'}),
     GroupEntry(group='wpa', gid=219, users={'root'}),
+    GroupEntry(group='input', gid=222, users={'cras', 'power', 'chronos'}),
     GroupEntry(group='cras', gid=600, users={'chronos', 'power',
                                              'rtanalytics'}),
     GroupEntry(group='wayland', gid=601, users={'chronos', 'crosvm'}),
@@ -160,33 +164,16 @@ GROUP_BASELINE = dict((e.group, e) for e in (
     GroupEntry(group='password-viewers', gid=611, users={'shill'}),
 ))
 
-GROUP_BASELINE_FREON = dict((e.group, e) for e in (
-    GroupEntry(group='tty', gid=5, users={'power', 'brltty'}),
-    GroupEntry(group='video', gid=27, users={'root', 'chronos', 'arc-camera',
-                                             'dlm', 'rtanalytics', 'crosvm'}),
-    GroupEntry(group='input', gid=222, users={'cras', 'power', 'chronos'}),
-))
-
-GROUP_BASELINE_XORG = dict((e.group, e) for e in (
-    GroupEntry(group='tty', gid=5, users={'xorg', 'power', 'brltty'}),
-    GroupEntry(group='video', gid=27, users={'root', 'chronos', 'arc-camera',
-                                             'xorg', 'dlm', 'rtanalytics',
-                                             'crosvm'}),
-    GroupEntry(group='input', gid=222, users={'cras', 'xorg', 'power'}),
-))
-
-GROUP_BASELINE_LAKITU = GROUP_BASELINE_XORG.copy()
-GROUP_BASELINE_LAKITU.update(dict((e.group, e) for e in (
+GROUP_BASELINE_LAKITU = dict((e.group, e) for e in (
     GroupEntry(group='systemd-journal', gid=270),
     GroupEntry(group='systemd-timesync', gid=271),
     GroupEntry(group='systemd-network', gid=274),
     GroupEntry(group='systemd-resolve', gid=275),
     GroupEntry(group='docker', gid=412),
     GroupEntry(group='google-sudoers', encpasswd='x', gid=1002),
-)))
+))
 
-GROUP_BASELINE_JETSTREAM = GROUP_BASELINE_XORG.copy()
-GROUP_BASELINE_JETSTREAM.update(dict((e.group, e) for e in (
+GROUP_BASELINE_JETSTREAM = dict((e.group, e) for e in (
     GroupEntry(group='leds', gid=1102, users={'ap-controller'}),
     GroupEntry(group='wpa_supplicant', gid=1114,
                users={'ap-wifi-diagnostics', 'wpa_supplicant',
@@ -194,7 +181,7 @@ GROUP_BASELINE_JETSTREAM.update(dict((e.group, e) for e in (
     GroupEntry(group='hostapd', gid=1106,
                users={'hostapd', 'ap-wireless-optimizer', 'ap-monitor',
                       'ap-wifi-manager', 'ap-wifi-diagnostics', 'ap-hal'}),
-)))
+))
 
 # rialtod:!:400:rialto
 GROUP_BASELINE_RIALTO = dict((e.group, e) for e in (
