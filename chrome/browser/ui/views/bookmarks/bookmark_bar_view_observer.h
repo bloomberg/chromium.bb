@@ -8,6 +8,7 @@
 class BookmarkBarViewObserver {
  public:
   virtual void OnBookmarkBarVisibilityChanged() = 0;
+  virtual void OnBookmarkBarAnimationEnded() = 0;
 
  protected:
   ~BookmarkBarViewObserver() {}

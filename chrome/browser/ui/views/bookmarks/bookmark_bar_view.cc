@@ -702,6 +702,8 @@ void BookmarkBarView::SetBookmarkBarState(
       size_animation_.Hide();
   } else {
     size_animation_.Reset(state == BookmarkBar::SHOW ? 1 : 0);
+    if (!animations_enabled)
+      AnimationEnded(&size_animation_);
   }
   bookmark_bar_state_ = state;
 }
@@ -1278,6 +1280,8 @@ void BookmarkBarView::AnimationEnded(const gfx::Animation* animation) {
     browser_view_->ToolbarSizeChanged(false);
     SchedulePaint();
   }
+  for (BookmarkBarViewObserver& observer : observers_)
+    observer.OnBookmarkBarAnimationEnded();
 }
 
 void BookmarkBarView::BookmarkMenuControllerDeleted(
