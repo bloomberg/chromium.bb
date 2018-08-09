@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/sys_info.h"
 #include "base/task/post_task.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
@@ -45,6 +46,11 @@ void SymlinkSetUp(const base::CommandLine& command_line,
 
 void RedirectChromeLogging(const base::CommandLine& command_line) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Only redirect when on an actual device. To do otherwise conflicts with
+  // --vmodule that developers may want to use.
+  if (!base::SysInfo::IsRunningOnChromeOS())
+    return;
 
   if (chrome_logging_redirected_) {
     // TODO: Support multiple active users. http://crbug.com/230345

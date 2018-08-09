@@ -1070,8 +1070,7 @@ void UserSessionManager::CreateUserSession(const UserContext& user_context,
 
 void UserSessionManager::PreStartSession() {
   // Switch log file as soon as possible.
-  if (base::SysInfo::IsRunningOnChromeOS())
-    logging::RedirectChromeLogging(*base::CommandLine::ForCurrentProcess());
+  logging::RedirectChromeLogging(*base::CommandLine::ForCurrentProcess());
 }
 
 void UserSessionManager::StoreUserContextDataBeforeProfileIsCreated() {
