@@ -11,6 +11,7 @@
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/extensions/browser_action_test_util.h"
 #include "chrome/browser/ui/media_router/media_router_ui_service.h"
@@ -24,6 +25,8 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -74,8 +77,6 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
         extensions::extension_action_test_util::CreateToolbarModelForProfile(
             profile());
 
-    signin_manager_ =
-        SigninManagerFactory::GetInstance()->GetForProfile(profile());
     browser_action_test_util_ = BrowserActionTestUtil::Create(browser(), false);
     action_ = std::make_unique<MediaRouterAction>(
         browser(), browser_action_test_util_->GetToolbarActionsBar());
@@ -97,13 +98,14 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
     return {{media_router::MediaRouterFactory::GetInstance(),
              &media_router::MockMediaRouter::Create},
             {media_router::MediaRouterUIServiceFactory::GetInstance(),
-             &BuildUIService}};
+             &BuildUIService},
+            {SigninManagerFactory::GetInstance(), &BuildFakeSigninManagerBase}};
   }
 
  protected:
   std::unique_ptr<BrowserActionTestUtil> browser_action_test_util_;
   std::unique_ptr<MediaRouterAction> action_;
-  SigninManagerBase* signin_manager_ = nullptr;
+
   ToolbarActionsModel* toolbar_actions_model_ = nullptr;
   MockMediaRouterContextualMenuObserver observer_;
 
@@ -146,7 +148,9 @@ TEST_F(MediaRouterContextualMenuUnitTest, Basic) {
   }
 
   // Set up an authenticated account.
-  signin_manager_->SetAuthenticatedAccountInfo("foo@bar.com", "password");
+  (void)identity::SetPrimaryAccount(
+      SigninManagerFactory::GetInstance()->GetForProfile(profile()),
+      IdentityManagerFactory::GetForProfile(profile()), "foo@bar.com");
 
   // Run the same checks as before. All existing menu items should be now
   // enabled and visible.
@@ -205,7 +209,9 @@ TEST_F(MediaRouterContextualMenuUnitTest, ToggleCloudServicesItem) {
 
   // Set up an authenticated account such that the cloud services menu item is
   // surfaced. Whether or not it is surfaced is tested in the "Basic" test.
-  signin_manager_->SetAuthenticatedAccountInfo("foo@bar.com", "password");
+  (void)identity::SetPrimaryAccount(
+      SigninManagerFactory::GetInstance()->GetForProfile(profile()),
+      IdentityManagerFactory::GetForProfile(profile()), "foo@bar.com");
 
   // Set this preference so that the cloud services can be enabled without
   // showing the opt-in dialog.
