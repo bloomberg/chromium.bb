@@ -186,7 +186,8 @@ void DownloadDBCache::RemoveEntry(const std::string& guid) {
 }
 
 void DownloadDBCache::UpdateDownloadDB() {
-  DCHECK(!updated_guids_.empty());
+  if (updated_guids_.empty())
+    return;
 
   std::vector<DownloadDBEntry> entries;
   for (auto guid : updated_guids_) {
