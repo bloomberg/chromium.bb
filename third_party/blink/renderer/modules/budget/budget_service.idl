@@ -9,7 +9,6 @@ enum OperationType {
 };
 
 [
-    RuntimeEnabled=Budget,
     SecureContext,
     Exposed=(Window,Worker)
 ] interface BudgetService {
