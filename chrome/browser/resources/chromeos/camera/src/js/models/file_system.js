@@ -108,16 +108,21 @@ camera.models.FileSystem.initialize = function(promptMigrate) {
     });
   });
   var checkMigrated = new Promise(resolve => {
-    // TODO(shenghao): Replace doneMigratePictures with cameraMediaConsolidated.
-    chrome.storage.local.get({doneMigratePictures: false}, values => {
-      resolve(values.doneMigratePictures);
-    });
+    if (chrome.chromeosInfoPrivate) {
+      chrome.chromeosInfoPrivate.get(['cameraMediaConsolidated'], values => {
+        resolve(values['cameraMediaConsolidated']);
+      });
+    } else {
+      resolve(false);
+    }
   });
   var ackMigrate = () => {
     chrome.storage.local.set({ackMigratePictures: 1});
   };
   var doneMigrate = () => {
-    chrome.storage.local.set({doneMigratePictures: true});
+    if (chrome.chromeosInfoPrivate) {
+      chrome.chromeosInfoPrivate.set('cameraMediaConsolidated', true);
+    }
   };
 
   return Promise.all([
