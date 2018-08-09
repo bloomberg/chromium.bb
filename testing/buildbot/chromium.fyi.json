@@ -850,7 +850,8 @@
       },
       {
         "args": [
-          "--jobs=1"
+          "--jobs=1",
+          "--extra-browser-args=--disable-gpu"
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
@@ -1044,6 +1045,9 @@
         }
       },
       {
+        "args": [
+          "--extra-browser-args=--disable-gpu"
+        ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
         "swarming": {
@@ -1054,7 +1058,7 @@
       },
       {
         "args": [
-          "--extra-browser-args=--enable-features=VizDisplayCompositor"
+          "--extra-browser-args=--enable-features=VizDisplayCompositor --disable-gpu"
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests_viz",
@@ -2941,7 +2945,8 @@
           "--remote=127.0.0.1",
           "--remote-ssh-port=9222",
           "--skip=telemetry.internal.app.android_app_unittest.AndroidAppTest.testWebView",
-          "--skip=telemetry.internal.backends.browser_backend_unittest.BrowserBackendIntegrationTest.testSmokeIsBrowserRunningReturnFalse"
+          "--skip=telemetry.internal.backends.browser_backend_unittest.BrowserBackendIntegrationTest.testSmokeIsBrowserRunningReturnFalse",
+          "--extra-browser-args=--disable-gpu"
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
@@ -4692,7 +4697,8 @@
       },
       {
         "args": [
-          "--jobs=1"
+          "--jobs=1",
+          "--extra-browser-args=--disable-gpu"
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
@@ -5464,7 +5470,8 @@
       },
       {
         "args": [
-          "--jobs=1"
+          "--jobs=1",
+          "--extra-browser-args=--disable-gpu"
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",

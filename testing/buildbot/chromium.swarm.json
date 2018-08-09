@@ -713,7 +713,8 @@
         "args": [
           "--browser=cros-chrome",
           "--remote=variable_chromeos_device_hostname",
-          "--jobs=1"
+          "--jobs=1",
+          "--extra-browser-args=--disable-gpu"
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",

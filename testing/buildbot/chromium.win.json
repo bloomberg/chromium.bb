@@ -689,7 +689,8 @@
       },
       {
         "args": [
-          "--jobs=1"
+          "--jobs=1",
+          "--extra-browser-args=--disable-gpu"
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
@@ -2030,7 +2031,8 @@
       },
       {
         "args": [
-          "--jobs=1"
+          "--jobs=1",
+          "--extra-browser-args=--disable-gpu"
         ],
         "experiment_percentage": 100,
         "isolate_name": "telemetry_unittests",
@@ -2736,7 +2738,8 @@
       },
       {
         "args": [
-          "--jobs=1"
+          "--jobs=1",
+          "--extra-browser-args=--disable-gpu"
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
@@ -3497,7 +3500,8 @@
       },
       {
         "args": [
-          "--jobs=1"
+          "--jobs=1",
+          "--extra-browser-args=--disable-gpu"
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
