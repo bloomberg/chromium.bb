@@ -57,7 +57,8 @@ NSArray* whiteListedMultitaskingTests = @[
   @"testErrorPage",                             // ErrorPageTestCase
   @"testFindInPage",                            // FindInPageTestCase
   @"testDismissFirstRun",                       // FirstRunTestCase
-  @"testLongPDFScroll",                         // FullscreenTestCase
+  // TODO(crbug.com/872788) Failing after move to Xcode 10.
+  // @"testLongPDFScroll",                         // FullscreenTestCase
   @"testDeleteHistory",                         // HistoryUITestCase
   @"testInfobarsDismissOnNavigate",             // InfobarTestCase
   @"testShowJavaScriptAlert",                   // JavaScriptDialogTestCase
