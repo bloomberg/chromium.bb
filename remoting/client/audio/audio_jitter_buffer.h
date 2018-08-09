@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "remoting/client/audio/async_audio_data_supplier.h"
+#include "remoting/client/audio/audio_stream_format.h"
 #include "remoting/proto/audio.pb.h"
 
 namespace remoting {
@@ -22,17 +23,8 @@ namespace remoting {
 // and feeds the requests with the data when the buffer has enough data.
 class AudioJitterBuffer : public AsyncAudioDataSupplier {
  public:
-  struct StreamFormat {
-    bool operator==(const StreamFormat& other) const;
-    bool operator!=(const StreamFormat& other) const;
-
-    int bytes_per_sample = 0;
-    int channels = 0;
-    int sample_rate = 0;
-  };
-
   using OnFormatChangedCallback =
-      base::RepeatingCallback<void(const StreamFormat& format)>;
+      base::RepeatingCallback<void(const AudioStreamFormat& format)>;
 
   // |callback| is called once the jitter buffer gets the first packet or the
   // stream format has been changed.
@@ -52,7 +44,7 @@ class AudioJitterBuffer : public AsyncAudioDataSupplier {
 
   // Clears the jitter buffer, drops all pending requests, and notify
   // |on_format_changed_| that the format has been changed.
-  void ResetBuffer(const StreamFormat& new_format);
+  void ResetBuffer(const AudioStreamFormat& new_format);
 
   // Feeds data from the jitter buffer into the pending requests. OnDataFilled()
   // will be called and request will be removed from the queue when a request
@@ -69,7 +61,7 @@ class AudioJitterBuffer : public AsyncAudioDataSupplier {
 
   // The stream format of the last audio packet. This is nullptr if the buffer
   // has never received any packet.
-  std::unique_ptr<StreamFormat> stream_format_;
+  std::unique_ptr<AudioStreamFormat> stream_format_;
 
   // AudioPackets queued up by the jitter buffer before they are consumed by
   // GetDataRequests.

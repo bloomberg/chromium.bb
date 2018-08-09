@@ -78,7 +78,8 @@ test("ios_remoting_unittests") {
   deps = [
     "//base/test:run_all_unittests",
     "//base/test:test_support",
-    "//remoting//ios/facade:unit_tests",
+    "//remoting/ios/audio:unit_tests",
+    "//remoting/ios/facade:unit_tests",
     "//remoting/ios/persistence:unit_tests",
   ]
 

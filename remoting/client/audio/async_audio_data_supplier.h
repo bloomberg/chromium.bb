@@ -12,7 +12,8 @@ namespace remoting {
 // This interface allows caller to asynchronously request for audio data.
 class AsyncAudioDataSupplier {
  public:
-  struct GetDataRequest {
+  class GetDataRequest {
+   public:
     // |data| must outlive |this|.
     GetDataRequest(void* data, size_t bytes_needed);
     virtual ~GetDataRequest();

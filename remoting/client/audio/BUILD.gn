@@ -10,6 +10,7 @@ source_set("audio") {
     "audio_frame_supplier.h",
     "audio_jitter_buffer.cc",
     "audio_jitter_buffer.h",
+    "audio_playback_sink.h",
     "audio_player.cc",
     "audio_player.h",
     "audio_player_android.cc",
@@ -18,6 +19,8 @@ source_set("audio") {
     "audio_player_buffer.h",
     "audio_stream_consumer.cc",
     "audio_stream_consumer.h",
+    "audio_stream_format.cc",
+    "audio_stream_format.h",
   ]
 
   configs += [ "//remoting/build/config:version" ]
@@ -35,6 +38,14 @@ source_set("audio") {
       "OpenSLES",
     ]
   }
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "fake_async_audio_data_supplier.cc",
+    "fake_async_audio_data_supplier.h",
+  ]
 }
 
 source_set("unit_tests") {

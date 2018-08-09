@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "remoting/client/audio/audio_jitter_buffer.h"
+#include "remoting/client/audio/audio_stream_format.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -77,15 +78,15 @@ class AudioJitterBufferTest : public ::testing::Test {
   std::list<std::unique_ptr<uint8_t[]>> consumer_buffers_;
 
  private:
-  struct SimpleGetDataRequest;
+  class SimpleGetDataRequest;
 
-  void OnFormatChanged(const AudioJitterBuffer::StreamFormat& format);
+  void OnFormatChanged(const AudioStreamFormat& format);
 
   AudioPacket::SamplingRate sample_rate_;
-  std::unique_ptr<AudioJitterBuffer::StreamFormat> stream_format_;
+  std::unique_ptr<AudioStreamFormat> stream_format_;
 };
 
-struct AudioJitterBufferTest::SimpleGetDataRequest
+class AudioJitterBufferTest::SimpleGetDataRequest
     : public AsyncAudioDataSupplier::GetDataRequest {
  public:
   SimpleGetDataRequest(AudioJitterBufferTest* test, size_t bytes_to_write);
@@ -164,9 +165,8 @@ int AudioJitterBufferTest::GetNumQueuedTime() const {
 size_t AudioJitterBufferTest::GetNumQueuedRequests() const {
   return audio_->queued_requests_.size();
 }
-void AudioJitterBufferTest::OnFormatChanged(
-    const AudioJitterBuffer::StreamFormat& format) {
-  stream_format_ = std::make_unique<AudioJitterBuffer::StreamFormat>(format);
+void AudioJitterBufferTest::OnFormatChanged(const AudioStreamFormat& format) {
+  stream_format_ = std::make_unique<AudioStreamFormat>(format);
 }
 
 // SimpleGetDataRequest definitions
