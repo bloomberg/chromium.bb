@@ -245,14 +245,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("createFolderDrive"),
                       TestCase("createFolderDrive").EnableDriveFs()));
 
-// crbug.com/871684
-#if !defined(NDEBUG)
-#define MAYBE_KeyboardOperations DISABLED_KeyboardOperations
-#else
-#define MAYBE_KeyboardOperations KeyboardOperations
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_KeyboardOperations, /* keyboard_operations.js */
+    KeyboardOperations, /* keyboard_operations.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("keyboardDeleteDownloads").InGuestMode(),
                       TestCase("keyboardDeleteDownloads"),
