@@ -14,7 +14,13 @@
 #include "ui/aura/test/test_window_delegate.h"
 
 namespace aura {
+class Env;
+
 namespace test {
+
+// Sets the Env to use for creation of new Windows. If null, Env::GetInstance()
+// is used.
+void SetEnvForTestWindows(Env* env);
 
 Window* CreateTestWindowWithId(int id, Window* parent);
 Window* CreateTestWindowWithBounds(const gfx::Rect& bounds, Window* parent);
