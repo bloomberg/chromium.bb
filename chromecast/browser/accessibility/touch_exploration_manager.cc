@@ -7,7 +7,6 @@
 
 #include "chromecast/browser/accessibility/touch_exploration_manager.h"
 
-#include "chromecast/browser/accessibility/accessibility_sound_delegate_stub.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/common/extensions_api/accessibility_private.h"
@@ -24,13 +23,13 @@ namespace shell {
 TouchExplorationManager::TouchExplorationManager(
     aura::Window* root_window,
     wm::ActivationClient* activation_client,
-    AccessibilityFocusRingController* accessibility_focus_ring_controller)
+    AccessibilityFocusRingController* accessibility_focus_ring_controller,
+    AccessibilitySoundPlayer* accessibility_sound_player)
     : touch_exploration_enabled_(false),
       root_window_(root_window),
       activation_client_(activation_client),
       accessibility_focus_ring_controller_(accessibility_focus_ring_controller),
-      accessibility_sound_delegate_(
-          std::make_unique<AccessibilitySoundDelegateStub>()) {
+      accessibility_sound_player_(accessibility_sound_player) {
   DCHECK(root_window);
   root_window->GetHost()->GetEventSource()->AddEventRewriter(this);
   UpdateTouchExplorationState();
@@ -109,7 +108,7 @@ void TouchExplorationManager::UpdateTouchExplorationState() {
     if (!touch_exploration_controller_.get()) {
       touch_exploration_controller_ =
           std::make_unique<TouchExplorationController>(root_window_, this,
-              accessibility_sound_delegate_.get());
+              accessibility_sound_player_);
     }
     if (pass_through_surface) {
       const display::Display display =
@@ -128,12 +127,6 @@ void TouchExplorationManager::UpdateTouchExplorationState() {
     touch_exploration_controller_.reset();
   }
 }
-
-void TouchExplorationManager::SetAccessibilitySoundDelegate(
-    std::unique_ptr<AccessibilitySoundDelegate> delegate) {
-  accessibility_sound_delegate_ = std::move(delegate);
-}
-
 
 }  // namespace shell
 }  // namespace chromecast

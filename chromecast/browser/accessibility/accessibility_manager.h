@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "chromecast/browser/accessibility/accessibility_sound_proxy.h"
 #include "chromecast/browser/accessibility/touch_exploration_manager.h"
 #include "chromecast/graphics/accessibility/accessibility_focus_ring_controller.h"
 #include "chromecast/graphics/gestures/triple_tap_detector.h"
@@ -55,7 +56,11 @@ class AccessibilityManager : public TripleTapDetectorDelegate {
   // Hides highlight on screen.
   void HideHighlights();
 
-  // Enable or disable touch exploration.
+  // Enable or disable screen reader support, including touch exploration.
+  void SetScreenReader(bool enable);
+
+  // TODO(kpschoedel): remove once AccessibilityServiceImpl::SetScreenReader()
+  // changes to call SetScreenReader() here.
   void EnableTouchExploration(bool enable);
 
   // Update the touch exploration controller so that synthesized
@@ -74,18 +79,28 @@ class AccessibilityManager : public TripleTapDetectorDelegate {
   // TripleTapDetectorDelegate implementation
   void OnTripleTap(const gfx::Point& tap_location) override;
 
+  // Sets the player for earcons.
+  void SetAccessibilitySoundPlayer(
+      std::unique_ptr<AccessibilitySoundPlayer> player);
+
   // Sets the delegate for earcons.
+  // TODO(kpschoedel) remove when caller has changed.
   void SetAccessibilitySoundDelegate(
-      std::unique_ptr<AccessibilitySoundDelegate> delegate);
+      std::unique_ptr<AccessibilitySoundPlayer> player) {
+    SetAccessibilitySoundPlayer(std::move(player));
+  }
 
  private:
+  aura::WindowTreeHost* window_tree_host_;
+
   std::unique_ptr<FocusRingController> focus_ring_controller_;
   std::unique_ptr<AccessibilityFocusRingController>
       accessibility_focus_ring_controller_;
-  aura::WindowTreeHost* window_tree_host_;
   std::unique_ptr<TouchExplorationManager> touch_exploration_manager_;
   std::unique_ptr<TripleTapDetector> triple_tap_detector_;
   std::unique_ptr<MagnificationController> magnification_controller_;
+
+  AccessibilitySoundProxy accessibility_sound_proxy_;
 };
 
 }  // namespace shell
