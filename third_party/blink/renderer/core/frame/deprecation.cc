@@ -540,11 +540,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                                     "self.origin (window.origin)", kM70,
                                     "5701042356355072")};
 
-    case WebFeature::kHTMLFrameSetElementAnonymousNamedGetter:
-      return {"HTMLFrameSetElementAnonymousNamedGetter", kM70,
-              WillBeRemoved("Anonymous named getter of HTMLFrameSetElement",
-                            kM70, "5235521668251648")};
-
     case WebFeature::kMediaElementSourceOnOfflineContext:
       return {"MediaElementAudioSourceNode", kM70,
               WillBeRemoved("Creating a MediaElementAudioSourceNode on an "

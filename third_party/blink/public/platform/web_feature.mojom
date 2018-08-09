@@ -1692,7 +1692,6 @@ enum WebFeature {
   kReplaceCharsetInXHR = 2230,
   kRespondToSameOriginRequestWithCrossOriginResponse = 2231,  // Obsolete.
   kLinkRelModulePreload = 2232,
-  kHTMLFrameSetElementNonNullAnonymousNamedGetter = 2235,
   kCSPWithUnsafeEval = 2236,
   kWebAssemblyInstantiation = 2237,
   kV8IndexAccessor = 2238,
@@ -1920,7 +1919,6 @@ enum WebFeature {
   kShapeOutsideContentBoxDifferentFromMarginBox = 2461,
   kShapeOutsidePaddingBoxDifferentFromMarginBox = 2462,
   kCSSContainLayoutPositionedDescendants = 2463,
-  kHTMLFrameSetElementAnonymousNamedGetter = 2464,
   kCanvasConvertToBlob = 2465,
   kPolymerV1Detected = 2466,
   kPolymerV2Detected = 2467,

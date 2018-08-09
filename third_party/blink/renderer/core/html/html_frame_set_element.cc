@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -290,25 +289,6 @@ void HTMLFrameSetElement::WillRecalcStyle(StyleRecalcChange) {
         LayoutInvalidationReason::kStyleChange);
     ClearNeedsStyleRecalc();
   }
-}
-
-LocalDOMWindow* HTMLFrameSetElement::AnonymousNamedGetter(
-    const AtomicString& name) {
-  Element* frame_element = Children()->namedItem(name);
-  if (!IsHTMLFrameElement(frame_element))
-    return nullptr;
-  Document* document = ToHTMLFrameElement(frame_element)->contentDocument();
-  if (!document || !document->GetFrame())
-    return nullptr;
-
-  LocalDOMWindow* window = document->domWindow();
-  if (window) {
-    UseCounter::Count(
-        *document, WebFeature::kHTMLFrameSetElementNonNullAnonymousNamedGetter);
-  }
-  Deprecation::CountDeprecation(
-      *document, WebFeature::kHTMLFrameSetElementAnonymousNamedGetter);
-  return window;
 }
 
 }  // namespace blink
