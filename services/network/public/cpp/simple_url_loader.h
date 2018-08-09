@@ -303,6 +303,18 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   // completion.
   virtual bool LoadedFromCache() const = 0;
 
+  // Indicates the total of decompressed bytes of the response body.
+  // May only be called once the loader has informed the caller of completion.
+  //
+  // The value might be different than the number of bytes actually
+  // received over the network. This happens, for example, in the case
+  // of gzipped bodies (Content-Encoding: gzip).
+  //
+  // When |SetAllowPartialResults| is set to true and there is an error,
+  // the method returns the total bytes decompressed bytes until the failure
+  // occurred.
+  virtual int64_t GetContentSize() const = 0;
+
  protected:
   SimpleURLLoader();
 

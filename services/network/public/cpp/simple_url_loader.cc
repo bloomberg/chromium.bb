@@ -219,6 +219,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   const ResourceResponseHead* ResponseInfo() const override;
   const GURL& GetFinalURL() const override;
   bool LoadedFromCache() const override;
+  int64_t GetContentSize() const override;
 
   // Called by BodyHandler when the BodyHandler body handler is done. If |error|
   // is not net::OK, some error occurred reading or consuming the body. If it is
@@ -1274,6 +1275,12 @@ bool SimpleURLLoaderImpl::LoadedFromCache() const {
   return request_state_->loaded_from_cache;
 }
 
+int64_t SimpleURLLoaderImpl::GetContentSize() const {
+  // Should only be called once the request is compelete.
+  DCHECK(request_state_->finished);
+  return request_state_->received_body_size;
+}
+
 const ResourceResponseHead* SimpleURLLoaderImpl::ResponseInfo() const {
   // Should only be called once the request is compelete.
   DCHECK(request_state_->finished);
@@ -1288,6 +1295,12 @@ void SimpleURLLoaderImpl::OnBodyHandlerDone(net::Error error,
 
   // If there's an error, fail request and report it immediately.
   if (error != net::OK) {
+    // When |allow_partial_results_| is true, a valid body|file_path is
+    // passed to the completion callback even in the case of failures.
+    // For consistency, it makes sense to also hold the actual decompressed
+    // body size in case GetContentSize is called.
+    if (allow_partial_results_)
+      request_state_->received_body_size = received_body_size;
     FinishWithResult(error);
     return;
   }
