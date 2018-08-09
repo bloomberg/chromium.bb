@@ -69,9 +69,6 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
     RunLoop::NestingObserver* nesting_observer = nullptr;  // Not owned.
     std::unique_ptr<ThreadTaskRunnerHandle> thread_task_runner_handle;
 
-    // Next delayed DoWork time for scheduling de-duplication purpose.
-    TimeTicks next_delayed_work;
-
     // Indicates that we should yield DoWork ASAP.
     bool quit_do_work = false;
 
