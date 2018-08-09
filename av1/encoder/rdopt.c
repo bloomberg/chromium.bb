@@ -5788,36 +5788,31 @@ static int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x,
       const int step = bh * bw;
       ENTROPY_CONTEXT ta[MAX_MIB_SIZE];
       ENTROPY_CONTEXT tl[MAX_MIB_SIZE];
-      RD_STATS pn_rd_stats;
-      av1_init_rd_stats(&pn_rd_stats);
       av1_get_entropy_contexts(bsizec, pd, ta, tl);
 
       for (idy = 0; idy < mi_height; idy += bh) {
         for (idx = 0; idx < mi_width; idx += bw) {
+          RD_STATS pn_rd_stats;
+          av1_init_rd_stats(&pn_rd_stats);
           tx_block_uvrd(cpi, x, idy, idx, plane, block, max_tx_size,
                         plane_bsize, ta, tl, &pn_rd_stats, ftxs_mode);
+          if (pn_rd_stats.rate == INT_MAX) {
+            av1_invalid_rd_stats(rd_stats);
+            return 0;
+          }
+          av1_merge_rd_stats(rd_stats, &pn_rd_stats);
+          this_rd =
+              AOMMIN(RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist),
+                     RDCOST(x->rdmult, rd_stats->zero_rate, rd_stats->sse));
+          if (this_rd > ref_best_rd) {
+            av1_invalid_rd_stats(rd_stats);
+            return 0;
+          }
           block += step;
         }
       }
-
-      if (pn_rd_stats.rate == INT_MAX) {
-        is_cost_valid = 0;
-        break;
-      }
-
-      av1_merge_rd_stats(rd_stats, &pn_rd_stats);
-
-      this_rd = AOMMIN(RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist),
-                       RDCOST(x->rdmult, rd_stats->zero_rate, rd_stats->sse));
-
-      if (this_rd > ref_best_rd) {
-        is_cost_valid = 0;
-        break;
-      }
     }
-  }
-
-  if (!is_cost_valid) {
+  } else {
     // reset cost value
     av1_invalid_rd_stats(rd_stats);
   }
