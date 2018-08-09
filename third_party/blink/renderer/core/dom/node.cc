@@ -876,10 +876,7 @@ static ContainerNode* GetReattachParent(Node& node) {
   if (node.IsPseudoElement())
     return node.ParentOrShadowHostNode();
   if (node.IsChildOfV1ShadowHost()) {
-    HTMLSlotElement* slot = RuntimeEnabledFeatures::SlotInFlatTreeEnabled()
-                                ? node.AssignedSlot()
-                                : node.FinalDestinationSlot();
-    if (slot)
+    if (HTMLSlotElement* slot = node.AssignedSlot())
       return slot;
   }
   if (node.IsInV0ShadowTree() || node.IsChildOfV0ShadowHost()) {
@@ -1181,10 +1178,7 @@ bool Node::IsStyledElement() const {
 
 bool Node::CanParticipateInFlatTree() const {
   // TODO(hayato): Return false for pseudo elements.
-  if (RuntimeEnabledFeatures::SlotInFlatTreeEnabled()) {
     return !IsShadowRoot() && !IsActiveV0InsertionPoint(*this);
-  }
-  return !IsShadowRoot() && !IsActiveSlotOrActiveV0InsertionPoint();
 }
 
 bool Node::IsActiveSlotOrActiveV0InsertionPoint() const {

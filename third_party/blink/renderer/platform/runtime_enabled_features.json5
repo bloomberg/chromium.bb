@@ -1162,10 +1162,6 @@
       name: "SlimmingPaintV2",
     },
     {
-      name: "SlotInFlatTree",
-      status: "stable",
-    },
-    {
       name: "SMIL",
       status: "stable",
     },
