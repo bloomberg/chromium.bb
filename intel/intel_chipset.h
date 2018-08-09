@@ -230,7 +230,8 @@
 #define PCI_CHIP_COFFEELAKE_S_GT2_1     0x3E91
 #define PCI_CHIP_COFFEELAKE_S_GT2_2     0x3E92
 #define PCI_CHIP_COFFEELAKE_S_GT2_3     0x3E96
-#define PCI_CHIP_COFFEELAKE_S_GT2_4     0x3E9A
+#define PCI_CHIP_COFFEELAKE_S_GT2_4     0x3E98
+#define PCI_CHIP_COFFEELAKE_S_GT2_5     0x3E9A
 #define PCI_CHIP_COFFEELAKE_H_GT2_1     0x3E9B
 #define PCI_CHIP_COFFEELAKE_H_GT2_2     0x3E94
 #define PCI_CHIP_COFFEELAKE_U_GT2_1     0x3EA9
@@ -509,7 +510,8 @@
                                  (devid) == PCI_CHIP_COFFEELAKE_S_GT2_1 || \
                                  (devid) == PCI_CHIP_COFFEELAKE_S_GT2_2 || \
                                  (devid) == PCI_CHIP_COFFEELAKE_S_GT2_3 || \
-                                 (devid) == PCI_CHIP_COFFEELAKE_S_GT2_4)
+                                 (devid) == PCI_CHIP_COFFEELAKE_S_GT2_4 || \
+                                 (devid) == PCI_CHIP_COFFEELAKE_S_GT2_5)
 
 #define IS_CFL_H(devid)         ((devid) == PCI_CHIP_COFFEELAKE_H_GT2_1 || \
                                  (devid) == PCI_CHIP_COFFEELAKE_H_GT2_2)
