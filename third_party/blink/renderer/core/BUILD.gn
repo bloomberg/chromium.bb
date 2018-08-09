@@ -1705,7 +1705,6 @@ jumbo_source_set("unit_tests") {
     "css/resolver/font_builder_test.cc",
     "css/resolver/font_style_resolver_test.cc",
     "css/resolver/match_result_test.cc",
-    "css/resolver/scoped_style_resolver_test.cc",
     "css/resolver/style_adjuster_test.cc",
     "css/rule_feature_set_test.cc",
     "css/rule_set_test.cc",

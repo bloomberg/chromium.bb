@@ -385,28 +385,6 @@ void ScopedStyleResolver::AddSlottedRules(const RuleSet& author_rules,
       RuleSubSet::Create(parent_style_sheet, sheet_index, slotted_rule_set));
 }
 
-bool ScopedStyleResolver::HaveSameStyles(const ScopedStyleResolver* first,
-                                         const ScopedStyleResolver* second) {
-  // This method will return true if the two resolvers are either both empty, or
-  // if they contain the same active stylesheets by sharing the same
-  // StyleSheetContents. It is used to check if we can share ComputedStyle
-  // between two shadow hosts. This typically works when we have multiple
-  // instantiations of the same web component where the style elements are in
-  // the same order and contain the exact same source string in which case we
-  // will get a cache hit for sharing StyleSheetContents.
-
-  size_t first_count = first ? first->author_style_sheets_.size() : 0;
-  size_t second_count = second ? second->author_style_sheets_.size() : 0;
-  if (first_count != second_count)
-    return false;
-  while (first_count--) {
-    if (first->author_style_sheets_[first_count]->Contents() !=
-        second->author_style_sheets_[first_count]->Contents())
-      return false;
-  }
-  return true;
-}
-
 void ScopedStyleResolver::RuleSubSet::Trace(blink::Visitor* visitor) {
   visitor->Trace(parent_style_sheet_);
   visitor->Trace(rule_set_);
