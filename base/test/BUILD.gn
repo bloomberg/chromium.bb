@@ -96,6 +96,8 @@ static_library("test_support") {
     "scoped_environment_variable_override.h",
     "scoped_feature_list.cc",
     "scoped_feature_list.h",
+    "scoped_mock_clock_override.cc",
+    "scoped_mock_clock_override.h",
     "scoped_mock_time_message_loop_task_runner.cc",
     "scoped_mock_time_message_loop_task_runner.h",
     "scoped_path_override.cc",
