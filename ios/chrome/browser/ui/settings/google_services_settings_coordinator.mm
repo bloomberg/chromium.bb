@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/settings/google_services_settings_local_commands.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
+#include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -50,10 +51,13 @@
       SyncSetupServiceFactory::GetForBrowserState(self.browserState);
   browser_sync::ProfileSyncService* syncService =
       ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
+  unified_consent::UnifiedConsentService* unifiedConsentService =
+      UnifiedConsentServiceFactory::GetForBrowserState(self.browserState);
   self.mediator = [[GoogleServicesSettingsMediator alloc]
-      initWithPrefService:self.browserState->GetPrefs()
-              syncService:syncService
-         syncSetupService:syncSetupService];
+        initWithPrefService:self.browserState->GetPrefs()
+                syncService:syncService
+           syncSetupService:syncSetupService
+      unifiedConsentService:unifiedConsentService];
   self.mediator.consumer = viewController;
   self.mediator.authService =
       AuthenticationServiceFactory::GetForBrowserState(self.browserState);
