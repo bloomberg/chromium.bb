@@ -53,7 +53,6 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
  public:
   static const Document* SingleOwnerDocument(const CSSStyleSheet*);
 
-  static CSSStyleSheet* Create(Document&, ExceptionState&);
   static CSSStyleSheet* Create(Document&,
                                const CSSStyleSheetInit&,
                                ExceptionState&);
@@ -196,6 +195,11 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   FRIEND_TEST_ALL_PREFIXES(
       CSSStyleSheetTest,
       CSSStyleSheetConstructionWithNonEmptyCSSStyleSheetInit);
+  FRIEND_TEST_ALL_PREFIXES(CSSStyleSheetTest,
+                           CreateEmptyCSSStyleSheetWithEmptyCSSStyleSheetInit);
+  FRIEND_TEST_ALL_PREFIXES(
+      CSSStyleSheetTest,
+      CreateEmptyCSSStyleSheetWithNonEmptyCSSStyleSheetInit);
   FRIEND_TEST_ALL_PREFIXES(
       CSSStyleSheetTest,
       CreateCSSStyleSheetWithEmptyCSSStyleSheetInitAndText);
