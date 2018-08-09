@@ -620,6 +620,9 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionWithHistory) {
       "{\"offset\":0,\"titles\":[\"Test Website 0\",\"\"],"
       "\"urls\":[\"http://www.0.com/\",\"http://www.1.com/\"]}",
       ExtractRestoredSession(pending_url));
+
+  // Check that cached visible item is returned.
+  EXPECT_EQ("http://www.1.com/", manager_->GetVisibleItem()->GetURL());
 }
 
 // Tests that restoring session replaces existing history in navigation manager.
@@ -661,8 +664,10 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionResetsHistory) {
   EXPECT_TRUE(manager_->GetPendingItem() != nullptr);
 
   // Restores a fake session.
+  auto restored_item = std::make_unique<NavigationItemImpl>();
+  restored_item->SetURL(GURL("http://restored.com"));
   std::vector<std::unique_ptr<NavigationItem>> items;
-  items.push_back(std::make_unique<NavigationItemImpl>());
+  items.push_back(std::move(restored_item));
   manager_->Restore(0 /* last_committed_item_index */, std::move(items));
 
   // Check that last_committed_index, previous_item_index and pending_item_index
@@ -680,6 +685,9 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionResetsHistory) {
   GURL pending_url = pending_item->GetURL();
   EXPECT_TRUE(pending_url.SchemeIsFile());
   EXPECT_EQ("restore_session.html", pending_url.ExtractFileName());
+
+  // Check that cached visible item is returned.
+  EXPECT_EQ("http://restored.com/", manager_->GetVisibleItem()->GetURL());
 }
 
 // Tests that Restore() accepts empty session history and performs no-op.
@@ -884,6 +892,7 @@ TEST_F(WKBasedNavigationManagerDetachedModeTest, Reload) {
       "\",\"http://www.1.com/\",\"http://www.2.com/\"]}",
       ExtractRestoredSession(manager_->GetPendingItem()->GetURL()));
   EXPECT_EQ(url0_, manager_->GetPendingItem()->GetVirtualURL());
+  EXPECT_EQ(url1_, manager_->GetVisibleItem()->GetURL());
 }
 
 // Tests that GoToIndex from detached mode restores cached history with updated
@@ -898,6 +907,7 @@ TEST_F(WKBasedNavigationManagerDetachedModeTest, GoToIndex) {
       "\",\"http://www.1.com/\",\"http://www.2.com/\"]}",
       ExtractRestoredSession(manager_->GetPendingItem()->GetURL()));
   EXPECT_EQ(url0_, manager_->GetPendingItem()->GetVirtualURL());
+  EXPECT_EQ(url0_, manager_->GetVisibleItem()->GetURL());
 }
 
 // Tests that LoadIfNecessary from detached mode restores cached history.
@@ -911,6 +921,7 @@ TEST_F(WKBasedNavigationManagerDetachedModeTest, LoadIfNecessary) {
       "\",\"http://www.1.com/\",\"http://www.2.com/\"]}",
       ExtractRestoredSession(manager_->GetPendingItem()->GetURL()));
   EXPECT_EQ(url0_, manager_->GetPendingItem()->GetVirtualURL());
+  EXPECT_EQ(url1_, manager_->GetVisibleItem()->GetURL());
 }
 
 // Tests that LoadURLWithParams from detached mode restores backward history and
@@ -919,13 +930,15 @@ TEST_F(WKBasedNavigationManagerDetachedModeTest, LoadURLWithParams) {
   manager_->DetachFromWebView();
   delegate_.RemoveWebView();
 
-  NavigationManager::WebLoadParams params(GURL("http://www.3.com"));
+  GURL url("http://www.3.com");
+  NavigationManager::WebLoadParams params(url);
   manager_->LoadURLWithParams(params);
   EXPECT_EQ(
       "{\"offset\":0,\"titles\":[\"\",\"\",\"\"],\"urls\":[\"http://www.0.com/"
       "\",\"http://www.1.com/\",\"http://www.3.com/\"]}",
       ExtractRestoredSession(manager_->GetPendingItem()->GetURL()));
   EXPECT_EQ(url0_, manager_->GetPendingItem()->GetVirtualURL());
+  EXPECT_EQ(url, manager_->GetVisibleItem()->GetURL());
 }
 
 }  // namespace web

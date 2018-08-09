@@ -377,9 +377,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // The most recently restored session history that has not yet committed in
   // the WKWebView. This is reset in OnNavigationItemCommitted().
   CRWSessionStorage* restored_session_storage_;
-  // The title of the active navigation entry in |restored_session_storage_|.
-  // It is only valid when |restore_session_storage_| is not nil.
-  base::string16 restored_title_;
 
   // Favicons URLs received in OnFaviconUrlUpdated.
   // WebStateObserver:FaviconUrlUpdated must be called for same-document

@@ -963,11 +963,13 @@ TEST_P(WebStateImplTest, UncommittedRestoreSession) {
   scoped_feature_list.InitAndEnableFeature(
       web::features::kSlimNavigationManager);
 
+  GURL url("http://test.com");
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
   session_storage.lastCommittedItemIndex = 0;
   CRWNavigationItemStorage* item_storage =
       [[CRWNavigationItemStorage alloc] init];
   item_storage.title = base::SysNSStringToUTF16(@"Title");
+  item_storage.virtualURL = url;
   session_storage.itemStorages = @[ item_storage ];
 
   web::WebState::CreateParams params(GetBrowserState());
@@ -978,6 +980,7 @@ TEST_P(WebStateImplTest, UncommittedRestoreSession) {
   EXPECT_EQ(0, extracted_session_storage.lastCommittedItemIndex);
   EXPECT_EQ(1U, extracted_session_storage.itemStorages.count);
   EXPECT_NSEQ(@"Title", base::SysUTF16ToNSString(web_state.GetTitle()));
+  EXPECT_EQ(url, web_state.GetVisibleURL());
 }
 
 TEST_P(WebStateImplTest, NoUncommittedRestoreSession) {
@@ -989,6 +992,7 @@ TEST_P(WebStateImplTest, NoUncommittedRestoreSession) {
   EXPECT_EQ(-1, session_storage.lastCommittedItemIndex);
   EXPECT_NSEQ(@[], session_storage.itemStorages);
   EXPECT_TRUE(web_state_->GetTitle().empty());
+  EXPECT_EQ(GURL::EmptyGURL(), web_state_->GetVisibleURL());
 }
 
 // Tests showing and clearing interstitial when NavigationManager is
