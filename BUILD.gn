@@ -950,7 +950,7 @@ if (!is_ios) {
       "//third_party/WebKit/LayoutTests/",
       "//third_party/blink/perf_tests/",
       "//third_party/blink/tools/",
-      "//third_party/pywebsocket/",
+      "//third_party/pywebsocket/src/mod_pywebsocket/",
     ]
 
     if (is_win) {
