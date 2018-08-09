@@ -18,7 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/appcache/appcache_working_set.h"
 #include "content/common/content_export.h"
-#include "net/base/completion_callback.h"
 #include "url/origin.h"
 
 class GURL;

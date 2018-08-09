@@ -403,8 +403,8 @@ void AppCacheRequestHandler::OnMainResponseFound(
   }
 
   if (should_reset_appcache_ && !manifest_url.is_empty()) {
-    host_->service()->DeleteAppCacheGroup(
-        manifest_url, net::CompletionCallback());
+    host_->service()->DeleteAppCacheGroup(manifest_url,
+                                          net::CompletionOnceCallback());
     DeliverNetworkResponse();
     return;
   }
