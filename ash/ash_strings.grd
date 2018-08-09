@@ -218,7 +218,7 @@ This file contains the strings for ash.
         Braille and ChromeVox are enabled
       </message>
       <message name="IDS_ASH_STATUS_TRAY_USER_INFO_ACCESSIBILITY" desc="The accessibility string used for an item in user chooser that tells the user name and the mail address.">
-        <ph name="USERNAME">$1<ex>Jane Doe</ex></ph> <ph name="MAIL">$2<ex>janedoe@example.com</ex></ph>
+        <ph name="USERNAME">$1<ex>Jane Doe</ex></ph> (<ph name="MAIL">$2<ex>janedoe@example.com</ex></ph>)
       </message>
       <message name="IDS_ASH_STATUS_TRAY_SIGN_OUT" desc="The label used for the button in the status tray to sign out of the system. Should not exceed about 20 latin characters. Overflowed text is truncated with ellipsis.">
         Sign out
