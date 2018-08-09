@@ -5,6 +5,7 @@
 #ifndef BASE_TASK_SEQUENCE_MANAGER_THREAD_CONTROLLER_H_
 #define BASE_TASK_SEQUENCE_MANAGER_THREAD_CONTROLLER_H_
 
+#include "base/message_loop/timer_slack.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/lazy_now.h"
@@ -61,6 +62,10 @@ class ThreadController {
   // a Schedule*Work() call is made.
   // Must be called before the first call to Schedule*Work().
   virtual void SetSequencedTaskSource(SequencedTaskSource*) = 0;
+
+  // Requests desired timer precision from the OS.
+  // Has no effect on some platforms.
+  virtual void SetTimerSlack(TimerSlack timer_slack) = 0;
 
   // TODO(altimin): Get rid of the methods below.
   // These methods exist due to current integration of SequenceManager

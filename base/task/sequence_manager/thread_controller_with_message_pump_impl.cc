@@ -49,6 +49,11 @@ void ThreadControllerWithMessagePumpImpl::SetWorkBatchSize(
   main_thread_only().batch_size = work_batch_size;
 }
 
+void ThreadControllerWithMessagePumpImpl::SetTimerSlack(
+    TimerSlack timer_slack) {
+  pump_->SetTimerSlack(timer_slack);
+}
+
 void ThreadControllerWithMessagePumpImpl::WillQueueTask(
     PendingTask* pending_task) {
   task_annotator_.WillQueueTask("ThreadController::Task", pending_task);

@@ -42,6 +42,7 @@ class BASE_EXPORT ThreadControllerImpl : public ThreadController,
   void ScheduleWork() override;
   void SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time) override;
   void SetSequencedTaskSource(SequencedTaskSource* sequence) override;
+  void SetTimerSlack(TimerSlack timer_slack) override;
   bool RunsTasksInCurrentSequence() override;
   const TickClock* GetClock() override;
   void SetDefaultTaskRunner(scoped_refptr<SingleThreadTaskRunner>) override;

@@ -62,6 +62,12 @@ void ThreadControllerImpl::SetSequencedTaskSource(
   sequence_ = sequence;
 }
 
+void ThreadControllerImpl::SetTimerSlack(TimerSlack timer_slack) {
+  if (!message_loop_)
+    return;
+  message_loop_->SetTimerSlack(timer_slack);
+}
+
 void ThreadControllerImpl::ScheduleWork() {
   DCHECK(sequence_);
   AutoLock lock(any_sequence_lock_);
