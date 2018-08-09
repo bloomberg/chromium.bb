@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -1448,8 +1449,7 @@ class WindowDelegateChangingWindowVisibility : public MockWindowDelegate {
 }  // namespace
 
 // Verify that if a window changes its visibility every time it is notified that
-// its occlusion state changed, the occlusion state of all IsVisible() windows
-// is set to VISIBLE and no infinite loop is entered.
+// its occlusion state changed, a DCHECK occurs.
 TEST_F(WindowOcclusionTrackerTest, OcclusionStatesDontBecomeStable) {
   test::WindowOcclusionTrackerTestApi test_api;
 
@@ -1489,13 +1489,11 @@ TEST_F(WindowOcclusionTrackerTest, OcclusionStatesDontBecomeStable) {
   // Once the maximum number of times that occlusion can be recomputed is
   // reached, the occlusion state of all IsVisible() windows should be set to
   // VISIBLE.
-  delegate_a->set_expectation(Window::OcclusionState::VISIBLE);
-  delegate_d->set_expectation(Window::OcclusionState::HIDDEN);
-  EXPECT_FALSE(test_api.WasOcclusionRecomputedTooManyTimes());
-  window_d->Hide();
-  EXPECT_TRUE(test_api.WasOcclusionRecomputedTooManyTimes());
-  EXPECT_FALSE(delegate_a->is_expecting_call());
-  EXPECT_FALSE(delegate_d->is_expecting_call());
+  EXPECT_DCHECK_DEATH({
+    delegate_a->set_expectation(Window::OcclusionState::VISIBLE);
+    delegate_d->set_expectation(Window::OcclusionState::HIDDEN);
+    window_d->Hide();
+  });
 }
 
 // Verify that the occlusion states are correctly updated when a branch of the
@@ -1606,11 +1604,9 @@ TEST_F(WindowOcclusionTrackerTest,
 
   delegate_a->set_expectation(Window::OcclusionState::HIDDEN);
   delegate_b->set_expectation(Window::OcclusionState::HIDDEN);
-  EXPECT_FALSE(test_api.WasOcclusionRecomputedTooManyTimes());
-  window_b->Hide();
   // Hiding a child to |window_a| and hiding it shouldn't cause occlusion to be
-  // recomputed too many times.
-  EXPECT_FALSE(test_api.WasOcclusionRecomputedTooManyTimes());
+  // recomputed too many times (i.e. the call below shouldn't DCHECK).
+  window_b->Hide();
   EXPECT_FALSE(delegate_a->is_expecting_call());
   EXPECT_FALSE(delegate_b->is_expecting_call());
 }
