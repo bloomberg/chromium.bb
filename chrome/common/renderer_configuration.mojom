@@ -12,10 +12,10 @@ interface RendererConfiguration {
   SetInitialConfiguration(bool is_incognito_process);
 
   // Update renderer configuration with settings that can change.
-  SetConfiguration(bool is_signed_in,
-                   bool force_safe_search,
+  SetConfiguration(bool force_safe_search,
                    int32 youtube_restrict,
-                   string allowed_domains_for_apps);
+                   string allowed_domains_for_apps,
+                   string variation_ids_header);
 
   // Set the content setting rules stored by the renderer.
   SetContentSettingRules(

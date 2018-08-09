@@ -211,6 +211,7 @@
 #include "components/translate/core/common/translate_switches.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_http_header_provider.h"
 #include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_child_process_host.h"
@@ -4239,11 +4240,14 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
         !is_off_the_record &&
         !io_data->google_services_account_id()->GetValue().empty();
 
+    std::string variation_ids_header =
+        variations::VariationsHttpHeaderProvider::GetInstance()
+            ->GetClientDataHeader(is_signed_in);
+
     result.push_back(std::make_unique<GoogleURLLoaderThrottle>(
-        is_off_the_record, is_signed_in,
-        io_data->force_google_safesearch()->GetValue(),
+        is_off_the_record, io_data->force_google_safesearch()->GetValue(),
         io_data->force_youtube_restrict()->GetValue(),
-        io_data->allowed_domains_for_apps()->GetValue()));
+        io_data->allowed_domains_for_apps()->GetValue(), variation_ids_header));
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

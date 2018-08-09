@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "components/variations/synthetic_trials.h"
 #include "components/variations/variations_associated_data.h"
@@ -30,6 +31,17 @@ namespace variations {
 class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
                                      public SyntheticTrialObserver {
  public:
+  class Observer {
+   public:
+    // Called when variation ids headers are updated.
+    virtual void VariationIdsHeaderUpdated(
+        const std::string& variation_ids_header,
+        const std::string& variation_ids_header_signed_in) {}
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   static VariationsHttpHeaderProvider* GetInstance();
 
   // Returns the value of the client data header, computing and caching it if
@@ -60,6 +72,10 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   ForceIdsResult ForceVariationIds(
       const std::vector<std::string>& variation_ids,
       const std::string& command_line_variation_ids);
+
+  // Methods to register or remove observers of variation ids header update.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Resets any cached state for tests.
   void ResetForTesting();
@@ -139,6 +155,10 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
 
   std::string cached_variation_ids_header_;
   std::string cached_variation_ids_header_signed_in_;
+
+  // List of observers to notify on variation ids header update.
+  // Makes sure list is empty on destruction.
+  base::ObserverList<Observer, true> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(VariationsHttpHeaderProvider);
 };

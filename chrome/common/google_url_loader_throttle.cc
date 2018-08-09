@@ -9,15 +9,15 @@
 
 GoogleURLLoaderThrottle::GoogleURLLoaderThrottle(
     bool is_off_the_record,
-    bool is_signed_in,
     bool force_safe_search,
     int32_t youtube_restrict,
-    const std::string& allowed_domains_for_apps)
+    const std::string& allowed_domains_for_apps,
+    const std::string& variation_ids_header)
     : is_off_the_record_(is_off_the_record),
-      is_signed_in_(is_signed_in),
       force_safe_search_(force_safe_search),
       youtube_restrict_(youtube_restrict),
-      allowed_domains_for_apps_(allowed_domains_for_apps) {}
+      allowed_domains_for_apps_(allowed_domains_for_apps),
+      variation_ids_header_(variation_ids_header) {}
 
 GoogleURLLoaderThrottle::~GoogleURLLoaderThrottle() {}
 
@@ -26,12 +26,12 @@ void GoogleURLLoaderThrottle::DetachFromCurrentSequence() {}
 void GoogleURLLoaderThrottle::WillStartRequest(
     network::ResourceRequest* request,
     bool* defer) {
-  variations::AppendVariationHeaders(
-      request->url,
-      is_off_the_record_ ? variations::InIncognito::kYes
-                         : variations::InIncognito::kNo,
-      is_signed_in_ ? variations::SignedIn::kYes : variations::SignedIn::kNo,
-      &request->headers);
+  if (!is_off_the_record_ &&
+      variations::ShouldAppendVariationHeaders(request->url) &&
+      !variation_ids_header_.empty()) {
+    request->headers.SetHeaderIfMissing(variations::kClientDataHeader,
+                                        variation_ids_header_);
+  }
 
   if (force_safe_search_) {
     GURL new_url;
@@ -61,9 +61,6 @@ void GoogleURLLoaderThrottle::WillRedirectRequest(
     const network::ResourceResponseHead& response_head,
     bool* defer,
     std::vector<std::string>* to_be_removed_headers) {
-  if (!variations::internal::ShouldAppendVariationHeaders(
-          redirect_info.new_url)) {
-    const char kClientData[] = "X-Client-Data";
-    to_be_removed_headers->push_back(kClientData);
-  }
+  if (!variations::ShouldAppendVariationHeaders(redirect_info.new_url))
+    to_be_removed_headers->push_back(variations::kClientDataHeader);
 }

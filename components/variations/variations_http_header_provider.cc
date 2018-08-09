@@ -101,6 +101,14 @@ VariationsHttpHeaderProvider::ForceVariationIds(
   return ForceIdsResult::SUCCESS;
 }
 
+void VariationsHttpHeaderProvider::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void VariationsHttpHeaderProvider::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 void VariationsHttpHeaderProvider::ResetForTesting() {
   base::AutoLock scoped_lock(lock_);
 
@@ -205,6 +213,11 @@ void VariationsHttpHeaderProvider::UpdateVariationIDsHeaderValue() {
   // with such discrepancies.
   cached_variation_ids_header_ = GenerateBase64EncodedProto(false);
   cached_variation_ids_header_signed_in_ = GenerateBase64EncodedProto(true);
+
+  for (auto& observer : observer_list_) {
+    observer.VariationIdsHeaderUpdated(cached_variation_ids_header_,
+                                       cached_variation_ids_header_signed_in_);
+  }
 }
 
 std::string VariationsHttpHeaderProvider::GenerateBase64EncodedProto(
