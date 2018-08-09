@@ -206,11 +206,6 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // recomputed occlusion states. Always 0 when not in MaybeComputeOcclusion().
   int num_times_occlusion_recomputed_in_current_step_ = 0;
 
-  // Set to true when occlusion is recomputed too many times before it becomes
-  // stable. Reset in
-  // WindowOcclusionTrackerTestApi::WasOcclusionRecomputedTooManyTimes().
-  bool was_occlusion_recomputed_too_many_times_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(WindowOcclusionTracker);
 };
 

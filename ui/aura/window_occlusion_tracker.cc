@@ -6,7 +6,6 @@
 
 #include "base/auto_reset.h"
 #include "base/containers/adapters.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/stl_util.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -356,23 +355,13 @@ void WindowOcclusionTracker::MarkRootWindowAsDirtyAndMaybeComputeOcclusionIf(
 
 void WindowOcclusionTracker::MarkRootWindowAsDirty(
     RootWindowState* root_window_state) {
-  root_window_state->dirty = true;
+  // If a root window is marked as dirty and occlusion states have already been
+  // recomputed |kMaxRecomputeOcclusion| times, it means that they are not
+  // stabilizing.
+  DCHECK_LT(num_times_occlusion_recomputed_in_current_step_,
+            kMaxRecomputeOcclusion);
 
-  // Generate a crash report when a root window is marked as dirty and occlusion
-  // states have been recomputed |kMaxRecomputeOcclusion| times, because it
-  // indicates that they are not stabilizing. Don't report it when
-  // |num_times_occlusion_recomputed_in_current_step_| is greater than
-  // |kMaxRecomputeOcclusion| to avoid generating multiple reports from the same
-  // client.
-  //
-  // TODO(fdoray): Remove this once we are confident that occlusion states are
-  // stable after |kMaxRecomputeOcclusion| iterations in production.
-  // https://crbug.com/813076
-  if (num_times_occlusion_recomputed_in_current_step_ ==
-      kMaxRecomputeOcclusion) {
-    was_occlusion_recomputed_too_many_times_ = true;
-    base::debug::DumpWithoutCrashing();
-  }
+  root_window_state->dirty = true;
 }
 
 bool WindowOcclusionTracker::WindowOrParentIsAnimated(Window* window) const {
