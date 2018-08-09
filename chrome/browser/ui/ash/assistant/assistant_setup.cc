@@ -29,7 +29,6 @@ constexpr char kAssistantDisplaySource[] = "Assistant";
 constexpr char kAssistantSubPage[] = "googleAssistant";
 constexpr char kHotwordNotificationId[] = "assistant/hotword";
 constexpr char kNotifierAssistant[] = "assistant";
-constexpr int kAssistantIconSize = 24;
 
 // Delegate for assistant hotword notification.
 class AssistantHotwordNotificationDelegate
@@ -119,17 +118,15 @@ void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
   const base::string16 display_source =
       base::UTF8ToUTF16(kAssistantDisplaySource);
 
-  message_center::Notification notification(
+  auto notification = message_center::Notification::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kHotwordNotificationId, title,
-      base::string16(), gfx::Image(), display_source, GURL(),
+      base::string16(), display_source, GURL(),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kNotifierAssistant),
-      {}, base::MakeRefCounted<AssistantHotwordNotificationDelegate>(profile));
-
-  gfx::Image image(CreateVectorIcon(ash::kNotificationAssistantIcon,
-                                    kAssistantIconSize, gfx::kGoogleBlue700));
-  notification.set_small_image(image);
+      {}, base::MakeRefCounted<AssistantHotwordNotificationDelegate>(profile),
+      ash::kNotificationAssistantIcon,
+      message_center::SystemNotificationWarningLevel::NORMAL);
 
   NotificationDisplayService::GetForProfile(profile)->Display(
-      NotificationHandler::Type::TRANSIENT, notification);
+      NotificationHandler::Type::TRANSIENT, *notification);
 }
