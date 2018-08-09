@@ -204,7 +204,9 @@ bool HasPerPlaneColorCorrectionMatrix(const int fd, drmModeCrtc* crtc) {
     if (!FindDrmProperty(fd, plane_props.get(), "PLANE_CTM"))
       return false;
   }
-  return true;
+
+  // On legacy, if no planes are exposed then the property isn't available.
+  return plane_resources->count_planes > 0;
 }
 
 bool IsDrmModuleName(const int fd, const std::string& name) {
