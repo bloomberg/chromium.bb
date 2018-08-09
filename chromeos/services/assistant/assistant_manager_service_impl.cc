@@ -37,8 +37,11 @@ namespace api = ::assistant::api;
 namespace chromeos {
 namespace assistant {
 
-const char kWiFiDeviceSettingId[] = "WIFI";
-const char kBluetoothDeviceSettingId[] = "BLUETOOTH";
+constexpr char kWiFiDeviceSettingId[] = "WIFI";
+constexpr char kBluetoothDeviceSettingId[] = "BLUETOOTH";
+constexpr char kVolumeLevelDeviceSettingId[] = "VOLUME_LEVEL";
+
+constexpr float kDefaultVolumeStep = 0.1f;
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     service_manager::Connector* connector,
@@ -409,6 +412,11 @@ void AssistantManagerServiceImpl::OnSpeechLevelUpdated(
           weak_factory_.GetWeakPtr(), speech_level));
 }
 
+void LogUnsupportedChange(api::client_op::ModifySettingArgs args) {
+  LOG(ERROR) << "Unsupported change operation: " << args.change()
+             << " for setting " << args.setting_id();
+}
+
 void HandleOnOffChange(api::client_op::ModifySettingArgs modify_setting_args,
                        std::function<void(bool)> on_off_handler) {
   switch (modify_setting_args.change()) {
@@ -419,16 +427,79 @@ void HandleOnOffChange(api::client_op::ModifySettingArgs modify_setting_args,
       on_off_handler(false);
       return;
 
+    // Currently there are no use-cases for toggling.  This could change in the
+    // future.
     case api::client_op::ModifySettingArgs_Change_TOGGLE:
+      break;
+
+    case api::client_op::ModifySettingArgs_Change_SET:
     case api::client_op::ModifySettingArgs_Change_INCREASE:
     case api::client_op::ModifySettingArgs_Change_DECREASE:
-    case api::client_op::ModifySettingArgs_Change_SET:
     case api::client_op::ModifySettingArgs_Change_UNSPECIFIED:
+      // This shouldn't happen.
       break;
   }
-  DLOG(ERROR) << "Unsupported change operation: "
-              << modify_setting_args.change() << " for setting "
-              << modify_setting_args.setting_id();
+  LogUnsupportedChange(modify_setting_args);
+}
+
+void HandleValueChange(
+    api::client_op::ModifySettingArgs modify_setting_args,
+    std::function<void(double, api::client_op::ModifySettingArgs_Unit)>
+        set_value_handler,
+    std::function<void(bool, double, api::client_op::ModifySettingArgs_Unit)>
+        incr_decr_handler) {
+  switch (modify_setting_args.change()) {
+    case api::client_op::ModifySettingArgs_Change_SET:
+      set_value_handler(modify_setting_args.numeric_value(),
+                        modify_setting_args.unit());
+      return;
+
+    case api::client_op::ModifySettingArgs_Change_INCREASE:
+      incr_decr_handler(true, modify_setting_args.numeric_value(),
+                        modify_setting_args.unit());
+      return;
+
+    case api::client_op::ModifySettingArgs_Change_DECREASE:
+      incr_decr_handler(false, modify_setting_args.numeric_value(),
+                        modify_setting_args.unit());
+      return;
+
+    case api::client_op::ModifySettingArgs_Change_ON:
+    case api::client_op::ModifySettingArgs_Change_OFF:
+    case api::client_op::ModifySettingArgs_Change_TOGGLE:
+    case api::client_op::ModifySettingArgs_Change_UNSPECIFIED:
+      // This shouldn't happen.
+      break;
+  }
+  LogUnsupportedChange(modify_setting_args);
+}
+
+// Helper function that converts a volume value sent from the server, either
+// absolute or a delta, from a given unit (e.g., STEP), to a percentage.
+double ConvertVolumeValueToPercent(double value,
+                                   api::client_op::ModifySettingArgs_Unit unit,
+                                   double default_value) {
+  switch (unit) {
+    case api::client_op::ModifySettingArgs_Unit_RANGE:
+      // "set volume to 20%".
+      return value;
+    case api::client_op::ModifySettingArgs_Unit_STEP:
+      // "set volume to 20".  Treat the step as a percentage.
+      return value / 100.0f;
+
+    // Currently, factor (e.g., 'double the volume') and decibel units aren't
+    // handled by the backend.  This could change in the future.
+    case api::client_op::ModifySettingArgs_Unit_FACTOR:
+    case api::client_op::ModifySettingArgs_Unit_DECIBEL:
+      break;
+
+    case api::client_op::ModifySettingArgs_Unit_NATIVE:
+    case api::client_op::ModifySettingArgs_Unit_UNKNOWN_UNIT:
+      // This shouldn't happen.
+      break;
+  }
+  LOG(ERROR) << "Unsupported volume unit: " << unit;
+  return default_value;
 }
 
 void AssistantManagerServiceImpl::OnModifySettingsAction(
@@ -448,6 +519,34 @@ void AssistantManagerServiceImpl::OnModifySettingsAction(
       this->service_->device_actions()->SetBluetoothEnabled(enabled);
     });
   }
+
+  if (modify_setting_args.setting_id() == kVolumeLevelDeviceSettingId) {
+    assistant_client::VolumeControl& volume_control =
+        this->platform_api_.GetAudioOutputProvider().GetVolumeControl();
+
+    HandleValueChange(
+        modify_setting_args,
+        [&volume_control](double value,
+                          api::client_op::ModifySettingArgs_Unit unit) {
+          // For unsupported units, set the volume to the current volume, for
+          // visual feedback.
+          float new_volume = ConvertVolumeValueToPercent(
+              value, unit, volume_control.GetSystemVolume());
+          volume_control.SetSystemVolume(new_volume, true);
+        },
+        [&volume_control](bool incr, double value,
+                          api::client_op::ModifySettingArgs_Unit unit) {
+          float volume = volume_control.GetSystemVolume();
+          float step = kDefaultVolumeStep;
+          if (value != 0.0f) {
+            // For unsupported units, use the default step percentage.
+            step = ConvertVolumeValueToPercent(value, unit, step);
+          }
+          float new_volume = incr ? std::min(volume + step, 1.0f)
+                                  : std::max(volume - step, 0.0f);
+          volume_control.SetSystemVolume(new_volume, true);
+        });
+  }
 }
 
 ActionModule::Result AssistantManagerServiceImpl::HandleModifySettingClientOp(
@@ -464,7 +563,8 @@ bool AssistantManagerServiceImpl::IsSettingSupported(
     const std::string& setting_id) {
   DVLOG(2) << "IsSettingSupported=" << setting_id;
   return (setting_id == kWiFiDeviceSettingId ||
-          setting_id == kBluetoothDeviceSettingId);
+          setting_id == kBluetoothDeviceSettingId ||
+          setting_id == kVolumeLevelDeviceSettingId);
 }
 
 bool AssistantManagerServiceImpl::SupportsModifySettings() {
