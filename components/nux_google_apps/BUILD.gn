@@ -22,6 +22,7 @@ if (is_win && is_chrome_branded) {
     deps = [
       "//components/bookmarks/browser",
       "//components/bookmarks/common",
+      "//components/favicon/core",
       "//components/pref_registry",
       "//components/prefs",
       "//components/resources",

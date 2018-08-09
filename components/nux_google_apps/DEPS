@@ -3,6 +3,8 @@ include_rules = [
   "+components/grit",
   "+components/prefs",
   "+components/nux",
+  "+components/favicon",
   "+components/strings/grit/components_strings.h",
   "+content/public/browser",
+  "+ui/base",
 ]
