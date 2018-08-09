@@ -89,6 +89,10 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
 
+  // Allows for search box to be notified of gestures occurring outside, without
+  // deactivating the searchbox.
+  void NotifyGestureEvent();
+
   // Overridden from views::WidgetDelegate:
   ax::mojom::Role GetAccessibleWindowRole() const override;
   bool ShouldAdvanceFocusToTopLevelWidget() const override;
