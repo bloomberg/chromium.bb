@@ -13,6 +13,7 @@
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/task/sequence_manager/thread_controller.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/sequence_local_storage_map.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace base {
@@ -27,7 +28,8 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
       public MessagePump::Delegate,
       public RunLoop::Delegate {
  public:
-  explicit ThreadControllerWithMessagePumpImpl(const TickClock* time_source);
+  ThreadControllerWithMessagePumpImpl(std::unique_ptr<MessagePump> message_pump,
+                                      const TickClock* time_source);
   ~ThreadControllerWithMessagePumpImpl() override;
 
   // ThreadController implementation:
@@ -101,6 +103,12 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   std::unique_ptr<MessagePump> pump_;
   debug::TaskAnnotator task_annotator_;
   const TickClock* time_source_;  // Not owned.
+
+  // Required to register the current thread as a sequence.
+  base::internal::SequenceLocalStorageMap sequence_local_storage_map_;
+  std::unique_ptr<
+      base::internal::ScopedSetSequenceLocalStorageMapForCurrentThread>
+      scoped_set_sequence_local_storage_map_for_current_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadControllerWithMessagePumpImpl);
 };

@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/message_loop/message_pump_default.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -177,7 +178,8 @@ class SequenceManagerTestWithMessageLoop : public SequenceManagerTestBase {
     mock_clock_.Advance(TimeDelta::FromMilliseconds(1));
     start_time_ = mock_clock_.NowTicks();
     manager_ = SequenceManagerForTest::Create(
-        std::make_unique<ThreadControllerWithMessagePumpImpl>(&mock_clock_));
+        std::make_unique<ThreadControllerWithMessagePumpImpl>(
+            std::make_unique<MessagePumpDefault>(), &mock_clock_));
     // ThreadControllerWithMessagePumpImpl doesn't provide a default tas runner.
     scoped_refptr<TaskQueue> default_task_queue =
         manager_->CreateTaskQueue<TestTaskQueue>(TaskQueue::Spec("default"));

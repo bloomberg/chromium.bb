@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_default.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -101,6 +102,7 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
   void CreateSequenceManagerWithMessagePump() {
     manager_ = SequenceManagerForTest::Create(
         std::make_unique<internal::ThreadControllerWithMessagePumpImpl>(
+            std::make_unique<MessagePumpDefault>(),
             DefaultTickClock::GetInstance()));
     // ThreadControllerWithMessagePumpImpl doesn't provide a default tas runner.
     scoped_refptr<TaskQueue> default_task_queue =
