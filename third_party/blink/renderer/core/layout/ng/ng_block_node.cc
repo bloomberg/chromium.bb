@@ -305,6 +305,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
     DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);
     NGBoxFragment fragment(
         container_writing_mode,
+        TextDirection::kLtr,  // irrelevant here
         ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()));
     sizes.min_size = sizes.max_size = fragment.Size().inline_size;
     return sizes;
@@ -326,6 +327,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   scoped_refptr<NGLayoutResult> layout_result = Layout(*zero_constraint_space);
   NGBoxFragment min_fragment(
       container_writing_mode,
+      TextDirection::kLtr,  // irrelevant here
       ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()));
   sizes.min_size = min_fragment.Size().inline_size;
 
@@ -339,6 +341,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   layout_result = Layout(*infinite_constraint_space);
   NGBoxFragment max_fragment(
       container_writing_mode,
+      TextDirection::kLtr,  // irrelevant here
       ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()));
   sizes.max_size = max_fragment.Size().inline_size;
   return sizes;
@@ -421,7 +424,8 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   const NGPhysicalBoxFragment& physical_fragment =
       ToNGPhysicalBoxFragment(*layout_result.PhysicalFragment());
 
-  NGBoxFragment fragment(constraint_space.GetWritingMode(), physical_fragment);
+  NGBoxFragment fragment(constraint_space.GetWritingMode(),
+                         constraint_space.Direction(), physical_fragment);
   NGLogicalSize fragment_logical_size = fragment.Size();
   // For each fragment we process, we'll accumulate the logical height and
   // logical intrinsic content box height. We reset it at the first fragment,
@@ -444,7 +448,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
   NGBoxStrut borders = ComputeBorders(constraint_space, Style());
   NGBoxStrut scrollbars = GetScrollbarSizes();
-  NGBoxStrut padding = ComputePadding(constraint_space, Style());
+  NGBoxStrut padding = fragment.Padding();
   NGBoxStrut border_scrollbar_padding = borders + scrollbars + padding;
 
   if (IsLastFragment(physical_fragment))

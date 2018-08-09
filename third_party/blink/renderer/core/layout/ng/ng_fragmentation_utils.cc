@@ -21,6 +21,7 @@ LayoutUnit PreviouslyUsedBlockSpace(const NGConstraintSpace& constraint_space,
   if (!break_token)
     return LayoutUnit();
   NGBoxFragment logical_fragment(constraint_space.GetWritingMode(),
+                                 constraint_space.Direction(),
                                  ToNGPhysicalBoxFragment(fragment));
   return break_token->UsedBlockSize() - logical_fragment.BlockSize();
 }

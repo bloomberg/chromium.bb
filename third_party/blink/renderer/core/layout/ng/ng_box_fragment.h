@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 
 namespace blink {
@@ -18,8 +19,9 @@ struct NGLineHeightMetrics;
 class CORE_EXPORT NGBoxFragment final : public NGFragment {
  public:
   NGBoxFragment(WritingMode writing_mode,
+                TextDirection direction,
                 const NGPhysicalBoxFragment& physical_fragment)
-      : NGFragment(writing_mode, physical_fragment) {}
+      : NGFragment(writing_mode, physical_fragment), direction_(direction) {}
 
   // Compute baseline metrics (ascent/descent) for this box.
   //
@@ -33,6 +35,11 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
       const NGBaselineRequest&) const;
   NGLineHeightMetrics BaselineMetrics(const NGBaselineRequest&,
                                       const NGConstraintSpace&) const;
+
+  NGBoxStrut Padding() const;
+
+ private:
+  TextDirection direction_;
 };
 
 DEFINE_TYPE_CASTS(NGBoxFragment,

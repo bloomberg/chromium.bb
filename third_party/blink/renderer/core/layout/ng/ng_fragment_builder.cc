@@ -308,8 +308,7 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment(
   scoped_refptr<NGPhysicalBoxFragment> fragment =
       base::AdoptRef(new NGPhysicalBoxFragment(
           layout_object_, Style(), style_variant_, physical_size, children_,
-          padding_.ConvertToPhysical(GetWritingMode(), Direction())
-              .SnapToDevicePixels(),
+          padding_.ConvertToPhysical(GetWritingMode(), Direction()),
           contents_ink_overflow, baselines_, BoxType(), is_old_layout_root_,
           border_edges_.ToPhysical(GetWritingMode()), std::move(break_token)));
 

@@ -56,7 +56,8 @@ scoped_refptr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
 
     container_builder_.AddChild(result, page_offset);
 
-    NGBoxFragment logical_fragment(writing_mode, *page);
+    NGBoxFragment logical_fragment(writing_mode, ConstraintSpace().Direction(),
+                                   *page);
     intrinsic_block_size =
         std::max(intrinsic_block_size,
                  page_offset.block_offset + logical_fragment.BlockSize());

@@ -22,7 +22,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     NGStyleVariant style_variant,
     NGPhysicalSize size,
     Vector<scoped_refptr<NGPhysicalFragment>>& children,
-    const NGPixelSnappedPhysicalBoxStrut& padding,
+    const NGPhysicalBoxStrut& padding,
     const NGPhysicalOffsetRect& contents_ink_overflow,
     Vector<NGBaseline>& baselines,
     NGBoxType box_type,
