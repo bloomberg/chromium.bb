@@ -47,7 +47,6 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_pref_names.h"
 #include "chromeos/chromeos_pref_names.h"
-#include "components/drive/drive_pref_names.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -748,12 +747,6 @@ const char* temporary_incognito_whitelist[] = {
     dom_distiller::prefs::kFont, dom_distiller::prefs::kTheme,
     dom_distiller::prefs::kFontScale,
     dom_distiller::prefs::kReaderForAccessibility,
-
-// components/drive/drive_pref_names.h
-#if defined(OS_CHROMEOS)
-    drive::prefs::kDisableDrive, drive::prefs::kDisableDriveOverCellular,
-    drive::prefs::kDisableDriveHostedFiles,
-#endif  // defined(OS_CHROMEOS)
 
 // components/feed/core/pref_names.h
 #if defined(OS_ANDROID)
