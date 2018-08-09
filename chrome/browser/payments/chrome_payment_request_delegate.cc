@@ -63,9 +63,8 @@ ChromePaymentRequestDelegate::~ChromePaymentRequestDelegate() {}
 
 void ChromePaymentRequestDelegate::ShowDialog(PaymentRequest* request) {
   DCHECK_EQ(nullptr, shown_dialog_);
-  hidden_dialog_ = std::unique_ptr<PaymentRequestDialog>(
-      chrome::CreatePaymentRequestDialog(request));
-  MaybeShowHiddenDialog(request);
+  shown_dialog_ = chrome::CreatePaymentRequestDialog(request);
+  shown_dialog_->ShowDialog();
 }
 
 void ChromePaymentRequestDelegate::CloseDialog() {
@@ -73,9 +72,6 @@ void ChromePaymentRequestDelegate::CloseDialog() {
     shown_dialog_->CloseDialog();
     shown_dialog_ = nullptr;
   }
-
-  if (hidden_dialog_)
-    hidden_dialog_.reset();
 }
 
 void ChromePaymentRequestDelegate::ShowErrorMessage() {
@@ -180,25 +176,12 @@ ChromePaymentRequestDelegate::GetDisplayManager() {
 void ChromePaymentRequestDelegate::EmbedPaymentHandlerWindow(
     const GURL& url,
     PaymentHandlerOpenWindowCallback callback) {
-  if (hidden_dialog_) {
-    shown_dialog_ = hidden_dialog_.release();
-    shown_dialog_->ShowDialogAtPaymentHandlerSheet(url, std::move(callback));
-  } else if (shown_dialog_) {
+  if (shown_dialog_) {
     shown_dialog_->ShowPaymentHandlerScreen(url, std::move(callback));
   } else {
     std::move(callback).Run(/*success=*/false,
                             /*render_process_id=*/0,
                             /*render_frame_id=*/0);
-  }
-}
-
-void ChromePaymentRequestDelegate::MaybeShowHiddenDialog(
-    PaymentRequest* request) {
-  if (request->SatisfiesSkipUIConstraints()) {
-    request->Pay();
-  } else {
-    shown_dialog_ = hidden_dialog_.release();
-    shown_dialog_->ShowDialog();
   }
 }
 

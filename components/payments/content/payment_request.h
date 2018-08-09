@@ -102,6 +102,9 @@ class PaymentRequest : public mojom::PaymentRequest,
   // Hide this Payment Request if it's already showing.
   void HideIfNecessary();
 
+  // Record the "dialog shown" event in the journey logger.
+  void RecordDialogShownEventInJourneyLogger();
+
   bool IsIncognito() const;
 
   // Returns true if this payment request supports skipping the Payment Sheet.

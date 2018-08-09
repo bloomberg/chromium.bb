@@ -93,16 +93,8 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
     LOG(ERROR) << "SSL certificate is not valid";
 
   if (!allowed_origin || invalid_ssl) {
-    // Don't show UI. Resolve .canMakepayment() with "false". Reject .show()
-    // with "NotSupportedError".
-    spec_ = std::make_unique<PaymentRequestSpec>(
-        mojom::PaymentOptions::New(), mojom::PaymentDetails::New(),
-        std::vector<mojom::PaymentMethodDataPtr>(), this,
-        delegate_->GetApplicationLocale());
-    state_ = std::make_unique<PaymentRequestState>(
-        web_contents_, top_level_origin_, frame_origin_, spec_.get(), this,
-        delegate_->GetApplicationLocale(), delegate_->GetPersonalDataManager(),
-        delegate_.get(), &journey_logger_);
+    // Intentionally don't set |spec_| and |state_|. Don't show UI. Resolve
+    // .canMakepayment() with "false". Reject .show() with "NotSupportedError".
     return;
   }
 
@@ -178,10 +170,16 @@ void PaymentRequest::Show(bool is_user_gesture) {
     return;
   }
 
+  if (!state_) {
+    // SSL is not valid.
+    AreRequestedMethodsSupportedCallback(false);
+    return;
+  }
+
   is_show_user_gesture_ = is_user_gesture;
 
-  // TODO(crbug.com/783811): Display a spinner when checking whether
-  // the methods are supported asynchronously for better user experience.
+  display_handle_->Show(this);
+
   state_->AreRequestedMethodsSupported(
       base::BindOnce(&PaymentRequest::AreRequestedMethodsSupportedCallback,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -205,10 +203,8 @@ void PaymentRequest::Retry(mojom::PaymentValidationErrorsPtr errors) {
 void PaymentRequest::AreRequestedMethodsSupportedCallback(
     bool methods_supported) {
   if (methods_supported) {
-    journey_logger_.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
-
-    DCHECK(display_handle_);
-    display_handle_->Show(this);
+    if (SatisfiesSkipUIConstraints())
+      Pay();
   } else {
     journey_logger_.SetNotShown(
         JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD);
@@ -285,10 +281,11 @@ void PaymentRequest::CanMakePayment() {
   if (observer_for_testing_)
     observer_for_testing_->OnCanMakePaymentCalled();
 
-  if (!delegate_->GetPrefService()->GetBoolean(kCanMakePaymentEnabled)) {
+  if (!delegate_->GetPrefService()->GetBoolean(kCanMakePaymentEnabled) ||
+      !state_) {
     CanMakePaymentCallback(/*can_make_payment=*/false);
   } else {
-    state()->CanMakePayment(
+    state_->CanMakePayment(
         base::BindOnce(&PaymentRequest::CanMakePaymentCallback,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -389,6 +386,10 @@ void PaymentRequest::HideIfNecessary() {
   display_handle_.reset();
 }
 
+void PaymentRequest::RecordDialogShownEventInJourneyLogger() {
+  journey_logger_.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
+}
+
 bool PaymentRequest::IsIncognito() const {
   return delegate_->IsIncognito();
 }
@@ -415,10 +416,10 @@ void PaymentRequest::RecordFirstAbortReason(
 }
 
 void PaymentRequest::CanMakePaymentCallback(bool can_make_payment) {
-  if (CanMakePaymentQueryFactory::GetInstance()
-          ->GetForContext(web_contents_->GetBrowserContext())
-          ->CanQuery(top_level_origin_, frame_origin_,
-                     spec()->stringified_method_data())) {
+  if (!spec_ || CanMakePaymentQueryFactory::GetInstance()
+                    ->GetForContext(web_contents_->GetBrowserContext())
+                    ->CanQuery(top_level_origin_, frame_origin_,
+                               spec_->stringified_method_data())) {
     RespondToCanMakePaymentQuery(can_make_payment, false);
   } else if (OriginSecurityChecker::IsOriginLocalhostOrFile(frame_origin_)) {
     RespondToCanMakePaymentQuery(can_make_payment, true);

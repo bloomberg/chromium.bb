@@ -31,8 +31,8 @@ class PaymentRequestDisplayManager : public KeyedService {
  public:
   class DisplayHandle {
    public:
-    explicit DisplayHandle(PaymentRequestDisplayManager* display_manager,
-                           ContentPaymentRequestDelegate* delegate);
+    DisplayHandle(PaymentRequestDisplayManager* display_manager,
+                  ContentPaymentRequestDelegate* delegate);
     ~DisplayHandle();
     void Show(PaymentRequest* request);
     // Attempt to display |url| inside the Payment Request dialog and run

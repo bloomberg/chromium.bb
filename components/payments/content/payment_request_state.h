@@ -182,6 +182,13 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
     return get_all_instruments_finished_;
   }
 
+  // Returns true after is_get_all_instruments_finished() is true and supported
+  // payment method are found. Should not be called before
+  // is_get_all_instruments_finished() is true.
+  bool are_requested_methods_supported() const {
+    return are_requested_methods_supported_;
+  }
+
   const std::string& GetApplicationLocale();
   autofill::PersonalDataManager* GetPersonalDataManager();
   autofill::RegionDataLoader* GetRegionDataLoader();
@@ -270,6 +277,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
 
   StatusCallback can_make_payment_callback_;
   StatusCallback are_requested_methods_supported_callback_;
+  bool are_requested_methods_supported_;
 
   autofill::AutofillProfile* selected_shipping_profile_;
   autofill::AutofillProfile* selected_shipping_option_error_profile_;

@@ -97,7 +97,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerNoSupportedPaymentMethodTest,
   NavigateTo("/payment_request_bobpay_test.html");
   base::HistogramTester histogram_tester;
 
-  ResetEventWaiter(DialogEvent::NOT_SUPPORTED_ERROR);
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN,
+                               DialogEvent::NOT_SUPPORTED_ERROR});
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string click_buy_button_js =
       "(function() { document.getElementById('buy').click(); })();";
@@ -1045,7 +1047,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestIframeTest, CrossOriginIframe) {
       browser()->tab_strip_model()->GetActiveWebContents();
   GURL iframe_url =
       https_server()->GetURL("b.com", "/payment_request_iframe.html");
-  ResetEventWaiter(DialogEvent::DIALOG_OPENED);
+  ResetEventWaiterForDialogOpened();
   EXPECT_TRUE(content::NavigateIframeToURL(tab, "test", iframe_url));
   WaitForObservedEvent();
 

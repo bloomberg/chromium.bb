@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(
   card.set_card_type(autofill::CreditCard::CardType::CARD_TYPE_CREDIT);
   AddCreditCard(card);
 
-  ResetEventWaiter(DialogEvent::DIALOG_OPENED);
+  ResetEventWaiterForDialogOpened();
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string click_buy_button_js =
       "(function() { "
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(
   card.set_card_type(autofill::CreditCard::CardType::CARD_TYPE_CREDIT);
   AddCreditCard(card);
 
-  ResetEventWaiter(DialogEvent::DIALOG_OPENED);
+  ResetEventWaiterForDialogOpened();
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string click_buy_button_js =
       "(function() { "
@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(
   card.set_card_type(autofill::CreditCard::CardType::CARD_TYPE_CREDIT);
   AddCreditCard(card);
 
-  ResetEventWaiter(DialogEvent::DIALOG_OPENED);
+  ResetEventWaiterForDialogOpened();
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string click_buy_button_js =
       "(function() { "
@@ -204,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(
   card.set_card_type(autofill::CreditCard::CardType::CARD_TYPE_CREDIT);
   AddCreditCard(card);
 
-  ResetEventWaiter(DialogEvent::DIALOG_OPENED);
+  ResetEventWaiterForDialogOpened();
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string click_buy_button_js =
       "(function() { "
@@ -263,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestModifiersTest,
   card.set_billing_address_id(profile.guid());
   AddCreditCard(card);
 
-  ResetEventWaiter(DialogEvent::DIALOG_OPENED);
+  ResetEventWaiterForDialogOpened();
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string click_buy_button_js =
       "(function() { "
@@ -300,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestModifiersTest,
   card.set_billing_address_id(profile.guid());
   AddCreditCard(card);
 
-  ResetEventWaiter(DialogEvent::DIALOG_OPENED);
+  ResetEventWaiterForDialogOpened();
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string click_buy_button_js =
       "(function() { document.getElementById('no_total').click(); })();";

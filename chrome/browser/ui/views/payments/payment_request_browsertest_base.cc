@@ -254,7 +254,7 @@ void PaymentRequestBrowserTestBase::OnInterfaceRequestFromFrame(
 }
 
 void PaymentRequestBrowserTestBase::InvokePaymentRequestUI() {
-  ResetEventWaiter(DialogEvent::DIALOG_OPENED);
+  ResetEventWaiterForDialogOpened();
 
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string click_buy_button_js =
@@ -765,6 +765,12 @@ void PaymentRequestBrowserTestBase::ResetEventWaiterForSequence(
     std::list<DialogEvent> event_sequence) {
   event_waiter_ = std::make_unique<autofill::EventWaiter<DialogEvent>>(
       std::move(event_sequence));
+}
+
+void PaymentRequestBrowserTestBase::ResetEventWaiterForDialogOpened() {
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN,
+                               DialogEvent::DIALOG_OPENED});
 }
 
 void PaymentRequestBrowserTestBase::WaitForObservedEvent() {

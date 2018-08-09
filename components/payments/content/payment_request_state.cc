@@ -46,6 +46,8 @@ PaymentRequestState::PaymentRequestState(
       delegate_(delegate),
       personal_data_manager_(personal_data_manager),
       journey_logger_(journey_logger),
+      are_requested_methods_supported_(
+          !spec_->supported_card_networks().empty()),
       selected_shipping_profile_(nullptr),
       selected_shipping_option_error_profile_(nullptr),
       selected_contact_profile_(nullptr),
@@ -140,6 +142,7 @@ void PaymentRequestState::FinishedGetAllSWPaymentInstruments() {
   SetDefaultProfileSelections();
 
   get_all_instruments_finished_ = true;
+  are_requested_methods_supported_ |= !available_instruments_.empty();
   NotifyOnGetAllPaymentInstrumentsFinished();
 
   // Fullfill the pending CanMakePayment call.
@@ -208,8 +211,7 @@ void PaymentRequestState::CheckRequestedMethodsSupported(
     StatusCallback callback) {
   DCHECK(get_all_instruments_finished_);
 
-  std::move(callback).Run(!spec_->supported_card_networks().empty() ||
-                          !available_instruments_.empty());
+  std::move(callback).Run(are_requested_methods_supported_);
 }
 
 std::string PaymentRequestState::GetAuthenticatedEmail() const {
