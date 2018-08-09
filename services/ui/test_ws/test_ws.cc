@@ -6,7 +6,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/message_loop/message_loop.h"
+#include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"
@@ -16,6 +18,8 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
+#include "services/ui/gpu_host/gpu_host.h"
+#include "services/ui/gpu_host/gpu_host_delegate.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree_host_factory.mojom.h"
 #include "services/ui/test_ws/test_drag_drop_client.h"
@@ -112,6 +116,7 @@ class WindowTreeHostFactory : public mojom::WindowTreeHostFactory {
 // Service.
 class TestWindowService : public service_manager::Service,
                           public service_manager::mojom::ServiceFactory,
+                          public ui::gpu_host::GpuHostDelegate,
                           public ws2::WindowServiceDelegate {
  public:
   TestWindowService() = default;
@@ -156,7 +161,6 @@ class TestWindowService : public service_manager::Service,
   void CancelDragLoop(aura::Window* window) override {
     drag_drop_client_.DragCancel();
   }
-
   aura::WindowTreeHost* GetWindowTreeHostForDisplayId(
       int64_t display_id) override {
     return aura_test_helper_->host();
@@ -167,23 +171,26 @@ class TestWindowService : public service_manager::Service,
     CHECK(!started_);
     started_ = true;
 
-    gl::GLSurfaceTestSupport::InitializeOneOff();
     gfx::RegisterPathProvider();
     ui::RegisterPathProvider();
 
-    ui::ContextFactory* context_factory = nullptr;
-    ui::ContextFactoryPrivate* context_factory_private = nullptr;
-    ui::InitializeContextFactoryForTests(false /* enable_pixel_output */,
-                                         &context_factory,
-                                         &context_factory_private);
-    aura_test_helper_ = std::make_unique<aura::test::AuraTestHelper>();
-    aura_test_helper_->SetUp(context_factory, context_factory_private);
-
-    aura::client::SetScreenPositionClient(aura_test_helper_->root_window(),
-                                          &screen_position_client_);
-
     registry_.AddInterface(base::BindRepeating(
         &TestWindowService::BindServiceFactory, base::Unretained(this)));
+
+#if defined(OS_CHROMEOS)
+    // Use gpu service only for ChromeOS to run content_browsertests in mash.
+    //
+    // To use this code path for all platforms, we need to fix the following
+    // flaky failure on Win7 bot:
+    //   gl_surface_egl.cc:
+    //     EGL Driver message (Critical) eglInitialize: No available renderers
+    //   gl_initializer_win.cc:
+    //     GLSurfaceEGL::InitializeOneOff failed.
+    CreateGpuHost();
+#else
+    gl::GLSurfaceTestSupport::InitializeOneOff();
+    CreateAuraTestHelper();
+#endif  // defined(OS_CHROMEOS)
   }
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
@@ -197,11 +204,24 @@ class TestWindowService : public service_manager::Service,
       const std::string& name,
       service_manager::mojom::PIDReceiverPtr pid_receiver) override {
     DCHECK_EQ(name, ui::mojom::kServiceName);
+
+    // Defer CreateService if |aura_test_helper_| is not created.
+    if (!aura_test_helper_) {
+      DCHECK(!pending_create_service_);
+
+      pending_create_service_ = base::BindOnce(
+          &TestWindowService::CreateService, base::Unretained(this),
+          std::move(request), name, std::move(pid_receiver));
+      return;
+    }
+
     DCHECK(!ui_service_created_);
     ui_service_created_ = true;
 
     auto window_service = std::make_unique<ws2::WindowService>(
-        this, std::make_unique<TestGpuInterfaceProvider>(),
+        this,
+        std::make_unique<TestGpuInterfaceProvider>(
+            gpu_host_.get(), discardable_shared_memory_manager_.get()),
         aura_test_helper_->focus_client());
     window_tree_host_factory_ = std::make_unique<WindowTreeHostFactory>(
         window_service.get(), aura_test_helper_->root_window());
@@ -213,9 +233,42 @@ class TestWindowService : public service_manager::Service,
     pid_receiver->SetPID(base::GetCurrentProcId());
   }
 
+  // ui::gpu_host::GpuHostDelegate:
+  void OnGpuServiceInitialized() override {
+    CreateAuraTestHelper();
+
+    if (pending_create_service_)
+      std::move(pending_create_service_).Run();
+  }
+
   void BindServiceFactory(
       service_manager::mojom::ServiceFactoryRequest request) {
     service_factory_bindings_.AddBinding(this, std::move(request));
+  }
+
+  void CreateGpuHost() {
+    discardable_shared_memory_manager_ =
+        std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
+
+    gpu_host_ = std::make_unique<ui::gpu_host::DefaultGpuHost>(
+        this, context()->connector(), discardable_shared_memory_manager_.get());
+
+    // |aura_test_helper_| is created later in OnGpuServiceInitialized.
+  }
+
+  void CreateAuraTestHelper() {
+    DCHECK(!aura_test_helper_);
+
+    ui::ContextFactory* context_factory = nullptr;
+    ui::ContextFactoryPrivate* context_factory_private = nullptr;
+    ui::InitializeContextFactoryForTests(false /* enable_pixel_output */,
+                                         &context_factory,
+                                         &context_factory_private);
+    aura_test_helper_ = std::make_unique<aura::test::AuraTestHelper>();
+    aura_test_helper_->SetUp(context_factory, context_factory_private);
+
+    aura::client::SetScreenPositionClient(aura_test_helper_->root_window(),
+                                          &screen_position_client_);
   }
 
   service_manager::BinderRegistry registry_;
@@ -229,6 +282,10 @@ class TestWindowService : public service_manager::Service,
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   std::unique_ptr<WindowTreeHostFactory> window_tree_host_factory_;
 
+  std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
+      discardable_shared_memory_manager_;
+  std::unique_ptr<ui::gpu_host::DefaultGpuHost> gpu_host_;
+
   // For drag and drop code to convert to/from screen coordinates.
   wm::DefaultScreenPositionClient screen_position_client_;
 
@@ -236,6 +293,8 @@ class TestWindowService : public service_manager::Service,
 
   bool started_ = false;
   bool ui_service_created_ = false;
+
+  base::OnceClosure pending_create_service_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowService);
 };

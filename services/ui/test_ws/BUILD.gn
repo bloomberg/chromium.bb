@@ -18,8 +18,10 @@ service("test_ws") {
 
   deps = [
     "//base",
+    "//components/discardable_memory/service",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
+    "//services/ui/gpu_host",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
     "//services/ui/ws2:lib",
