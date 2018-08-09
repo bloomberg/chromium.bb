@@ -39,9 +39,10 @@ RendererWebMediaPlayerDelegate::RendererWebMediaPlayerDelegate(
     : RenderFrameObserver(render_frame),
       allow_idle_cleanup_(
           content::GetContentClient()->renderer()->IsIdleMediaSuspendEnabled()),
-      background_suspend_enabled_(content::GetContentClient()
-                                      ->renderer()
-                                      ->IsBackgroundMediaSuspendEnabled()),
+      background_suspend_enabled_(
+          content::GetContentClient()
+              ->renderer()
+              ->IsBackgroundMediaSuspendEnabled(render_frame)),
       tick_clock_(base::DefaultTickClock::GetInstance()) {
   idle_cleanup_interval_ = base::TimeDelta::FromSeconds(5);
   idle_timeout_ = base::TimeDelta::FromSeconds(15);
