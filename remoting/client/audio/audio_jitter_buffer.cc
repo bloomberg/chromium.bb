@@ -36,17 +36,6 @@ constexpr base::TimeDelta kOverrunRecoveryLatency =
 
 namespace remoting {
 
-bool AudioJitterBuffer::StreamFormat::operator==(
-    const StreamFormat& other) const {
-  return bytes_per_sample == other.bytes_per_sample &&
-         channels == other.channels && sample_rate == other.sample_rate;
-}
-
-bool AudioJitterBuffer::StreamFormat::operator!=(
-    const StreamFormat& other) const {
-  return !(*this == other);
-}
-
 AudioJitterBuffer::AudioJitterBuffer(
     OnFormatChangedCallback on_format_changed) {
   DETACH_FROM_THREAD(thread_checker_);
@@ -61,7 +50,7 @@ void AudioJitterBuffer::AddAudioPacket(std::unique_ptr<AudioPacket> packet) {
   DCHECK_EQ(AudioPacket::ENCODING_RAW, packet->encoding());
   DCHECK_NE(AudioPacket::SAMPLING_RATE_INVALID, packet->sampling_rate());
 
-  StreamFormat stream_format;
+  AudioStreamFormat stream_format;
   stream_format.bytes_per_sample = packet->bytes_per_sample();
   stream_format.channels = packet->channels();
   stream_format.sample_rate = packet->sampling_rate();
@@ -103,13 +92,13 @@ void AudioJitterBuffer::ClearGetDataRequests() {
   queued_requests_.clear();
 }
 
-void AudioJitterBuffer::ResetBuffer(const StreamFormat& new_format) {
+void AudioJitterBuffer::ResetBuffer(const AudioStreamFormat& new_format) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   queued_packets_.clear();
   queued_bytes_ = 0;
   first_packet_offset_ = 0;
   ClearGetDataRequests();
-  stream_format_ = std::make_unique<StreamFormat>(new_format);
+  stream_format_ = std::make_unique<AudioStreamFormat>(new_format);
   underrun_protection_mode_ = true;
   if (on_format_changed_) {
     on_format_changed_.Run(*stream_format_);
