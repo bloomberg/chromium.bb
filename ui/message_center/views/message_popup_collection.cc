@@ -44,6 +44,8 @@ void MessagePopupCollection::Update() {
     return;
   base::AutoReset<bool> reset(&is_updating_, true);
 
+  RemoveClosedPopupItems();
+
   if (animation_->is_animating()) {
     UpdateByAnimation();
     return;
@@ -93,6 +95,7 @@ void MessagePopupCollection::ResetBounds() {
   {
     base::AutoReset<bool> reset(&is_updating_, true);
 
+    RemoveClosedPopupItems();
     ResetHotMode();
     state_ = State::IDLE;
     animation_->End();
@@ -118,6 +121,13 @@ void MessagePopupCollection::NotifyPopupResized() {
   Update();
 }
 
+void MessagePopupCollection::NotifyPopupClosed(MessagePopupView* popup) {
+  for (auto& item : popup_items_) {
+    if (item.popup == popup)
+      item.popup = nullptr;
+  }
+}
+
 void MessagePopupCollection::OnNotificationAdded(
     const std::string& notification_id) {
   Update();
@@ -131,6 +141,8 @@ void MessagePopupCollection::OnNotificationRemoved(
 
 void MessagePopupCollection::OnNotificationUpdated(
     const std::string& notification_id) {
+  RemoveClosedPopupItems();
+
   // Find Notification object with |notification_id|.
   const auto& notifications = MessageCenter::Get()->GetPopupNotifications();
   auto it = notifications.begin();
@@ -462,7 +474,6 @@ void MessagePopupCollection::CloseAnimatingPopups() {
     if (!item.is_animating)
       continue;
     item.popup->Close();
-    item.popup = nullptr;
   }
   RemoveClosedPopupItems();
 }
@@ -473,7 +484,6 @@ bool MessagePopupCollection::CloseTransparentPopups() {
     if (item.popup->GetOpacity() > 0.0)
       continue;
     item.popup->Close();
-    item.popup = nullptr;
     removed = true;
   }
   RemoveClosedPopupItems();
@@ -486,7 +496,6 @@ void MessagePopupCollection::ClosePopupsOutsideWorkArea() {
     if (work_area.Contains(item.bounds))
       continue;
     item.popup->Close();
-    item.popup = nullptr;
   }
   RemoveClosedPopupItems();
 }
