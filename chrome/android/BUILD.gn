@@ -943,6 +943,7 @@ chrome_shared_library("libchromefortest") {
     "//base/test:test_support",
     "//chrome/browser/android/metrics:ukm_utils_for_test",
     "//components/heap_profiling:test_support",
+    "//components/minidump_uploader",
     "//content/public/test/android:content_native_test_support",
   ]
 }
@@ -1307,6 +1308,7 @@ chrome_public_common_apk_or_module_tmpl("chrome_public_apk_for_test") {
            ":browser_java_test_support",
            "//chrome/browser/android/metrics:ukm_utils_java",
            "//components/heap_profiling:heap_profiling_java_test_support",
+           "//components/minidump_uploader:minidump_uploader_java",
            "//content/public/test/android:content_java_test_support",
            "//third_party/android_tools:android_test_mock_java",
          ]

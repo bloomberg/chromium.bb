@@ -115,6 +115,7 @@ shared_library("libstandalonelibwebviewchromium") {
   deps = [
     "//android_webview:common",
     "//components/heap_profiling:test_support",
+    "//components/minidump_uploader",
   ]
   configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
   configs += [ "//build/config/android:hide_all_but_jni" ]

@@ -727,6 +727,7 @@ source_set("common") {
     "//components/metrics:gpu",
     "//components/metrics:net",
     "//components/metrics:ui",
+    "//components/minidump_uploader",
     "//components/navigation_interception",
     "//components/network_session_configurator/common",
     "//components/policy:generated",
