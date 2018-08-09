@@ -18,10 +18,27 @@
 #import "chrome/browser/ui/cocoa/nsmenuitem_additions.h"
 #include "chrome/browser/ui/views_mode_controller.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/accelerators/platform_accelerator_cocoa.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_code_conversion_mac.h"
 
 namespace {
+
+// Returns a ui::Accelerator given a KeyboardShortcutData.
+ui::Accelerator AcceleratorFromShortcut(const KeyboardShortcutData& shortcut) {
+  int modifiers = 0;
+  if (shortcut.command_key)
+    modifiers |= ui::EF_COMMAND_DOWN;
+  if (shortcut.shift_key)
+    modifiers |= ui::EF_SHIFT_DOWN;
+  if (shortcut.cntrl_key)
+    modifiers |= ui::EF_CONTROL_DOWN;
+  if (shortcut.opt_key)
+    modifiers |= ui::EF_ALT_DOWN;
+
+  return ui::Accelerator(ui::KeyboardCodeFromKeyCode(shortcut.vkey_code),
+                         modifiers);
+}
 
 // Returns the menu item associated with |key| in |menu|, or nil if not found.
 NSMenuItem* FindMenuItem(NSEvent* key, NSMenu* menu) {
@@ -154,6 +171,30 @@ const std::vector<KeyboardShortcutData>& GetShortcutsNotPresentInMainMenu() {
   return *keys;
 }
 
+const std::vector<NSMenuItem*>& GetMenuItemsNotPresentInMainMenu() {
+  static base::NoDestructor<std::vector<NSMenuItem*>> menu_items;
+  if (menu_items->empty()) {
+    for (const auto& shortcut : GetShortcutsNotPresentInMainMenu()) {
+      ui::Accelerator accelerator = AcceleratorFromShortcut(shortcut);
+      NSString* key_equivalent = nil;
+      NSUInteger modifier_mask = 0;
+      ui::GetKeyEquivalentAndModifierMaskFromAccelerator(
+          accelerator, &key_equivalent, &modifier_mask);
+
+      // Intentionally leaked!
+      NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:@""
+                                                    action:NULL
+                                             keyEquivalent:key_equivalent];
+      item.keyEquivalentModifierMask = modifier_mask;
+
+      // We store the command in the tag.
+      item.tag = shortcut.chrome_command;
+      menu_items->push_back(item);
+    }
+  }
+  return *menu_items;
+}
+
 CommandForKeyEventResult CommandForKeyEvent(NSEvent* event) {
   DCHECK(event);
   if ([event type] != NSKeyDown)
@@ -163,21 +204,11 @@ CommandForKeyEventResult CommandForKeyEvent(NSEvent* event) {
   if (cmdNum != -1)
     return MainMenuCommand(cmdNum);
 
-  // Look in secondary keyboard shortcuts.
-  NSUInteger modifiers = [event modifierFlags];
-  const bool cmdKey = (modifiers & NSCommandKeyMask) != 0;
-  const bool shiftKey = (modifiers & NSShiftKeyMask) != 0;
-  const bool cntrlKey = (modifiers & NSControlKeyMask) != 0;
-  const bool optKey = (modifiers & NSAlternateKeyMask) != 0;
-  const int keyCode = [event keyCode];
-
   // Scan through keycodes and see if it corresponds to one of the non-menu
   // shortcuts.
-  for (const auto& shortcut : GetShortcutsNotPresentInMainMenu()) {
-    if (MatchesEventForKeyboardShortcut(shortcut, cmdKey, shiftKey, cntrlKey,
-                                        optKey, keyCode)) {
-      return ShortcutCommand(shortcut.chrome_command);
-    }
+  for (NSMenuItem* menu_item : GetMenuItemsNotPresentInMainMenu()) {
+    if ([menu_item cr_firesForKeyEvent:event])
+      return ShortcutCommand(menu_item.tag);
   }
 
   return NoCommand();
@@ -226,18 +257,7 @@ bool GetDefaultMacAcceleratorForCommandId(int command_id,
   // See if it corresponds to one of the non-menu shortcuts.
   for (const auto& shortcut : GetShortcutsNotPresentInMainMenu()) {
     if (shortcut.chrome_command == command_id) {
-      int modifiers = 0;
-      if (shortcut.command_key)
-        modifiers |= ui::EF_COMMAND_DOWN;
-      if (shortcut.shift_key)
-        modifiers |= ui::EF_SHIFT_DOWN;
-      if (shortcut.cntrl_key)
-        modifiers |= ui::EF_CONTROL_DOWN;
-      if (shortcut.opt_key)
-        modifiers |= ui::EF_ALT_DOWN;
-
-      *accelerator = ui::Accelerator(
-          ui::KeyboardCodeFromKeyCode(shortcut.vkey_code), modifiers);
+      *accelerator = AcceleratorFromShortcut(shortcut);
       return true;
     }
   }
