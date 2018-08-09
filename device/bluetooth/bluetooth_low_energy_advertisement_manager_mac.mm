@@ -32,8 +32,10 @@ void BluetoothLowEnergyAdvertisementManagerMac::
   //      powered on.
   //   2. Start advertising a registered advertisement if the adapter is powered
   //      on.
-  // Note that if the adapter is powered off while advertising, macOS will
-  // automatically restart advertising when the adapter is powered back on.
+  //   3. Stop the advertisement when the adapter is powered off.
+  //      Note that if the adapter is powered off while advertising, macOS will
+  //      automatically restart advertising when the adapter is powered back on,
+  //      so we need to explicitly stop advertising in this case.
 
   if (!active_advertisement_) {
     return;
@@ -61,9 +63,19 @@ void BluetoothLowEnergyAdvertisementManagerMac::
 
   if (active_advertisement_->is_advertising() &&
       adapter_state == CBPeripheralManagerStateResetting) {
-    DVLOG(1) << "Adapter resetting. Invaldating advertisement.";
+    DVLOG(1) << "Adapter resetting. Invalidating advertisement.";
     active_advertisement_->OnAdapterReset();
     active_advertisement_ = nullptr;
+    return;
+  }
+
+  if (active_advertisement_->is_advertising() &&
+      adapter_state == CBPeripheralManagerStatePoweredOff) {
+    DVLOG(1) << "Adapter powered off. Stopping advertisement.";
+    // Note: we purposefully don't unregister the active advertisement for
+    // consistency with ChromeOS. The caller must manually unregister
+    // the advertisement themselves.
+    [peripheral_manager_ stopAdvertising];
     return;
   }
 

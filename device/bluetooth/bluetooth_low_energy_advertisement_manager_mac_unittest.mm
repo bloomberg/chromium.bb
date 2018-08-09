@@ -272,23 +272,6 @@ TEST_F(BluetoothLowEnergyAdvertisementManagerMacTest, Register_Twice) {
 }
 
 TEST_F(BluetoothLowEnergyAdvertisementManagerMacTest,
-       AdapterPoweredOff_WhileAdvertising) {
-  // Register advertisement.
-  RegisterAdvertisement(CreateAdvertisementData());
-  advertisement_manager_.DidStartAdvertising(nil);
-  ui_task_runner_->RunPendingTasks();
-  EXPECT_TRUE(advertisement_);
-
-  // Power off the adapter. Advertisement should not be stopped.
-  BluetoothAdvertisementMac* advertisement_mac =
-      static_cast<BluetoothAdvertisementMac*>(advertisement_.get());
-  EXPECT_TRUE(advertisement_mac->is_advertising());
-  peripheral_manager_state_ = CBPeripheralManagerStatePoweredOff;
-  advertisement_manager_.OnPeripheralManagerStateChanged();
-  EXPECT_TRUE(advertisement_mac->is_advertising());
-}
-
-TEST_F(BluetoothLowEnergyAdvertisementManagerMacTest,
        AdapterReset_RestartAdvertising) {
   // Register advertisement.
   RegisterAdvertisement(CreateAdvertisementData());
@@ -309,6 +292,33 @@ TEST_F(BluetoothLowEnergyAdvertisementManagerMacTest,
   ui_task_runner_->RunPendingTasks();
   EXPECT_TRUE(advertisement_);
   [peripheral_manager_mock_ verifyAtLocation:nil];
+}
+
+TEST_F(BluetoothLowEnergyAdvertisementManagerMacTest,
+       Advertising_ThenAdapterPoweredOff_ThenReregister) {
+  // Register advertisement.
+  RegisterAdvertisement(CreateAdvertisementData());
+  advertisement_manager_.DidStartAdvertising(nil);
+  ui_task_runner_->RunPendingTasks();
+  EXPECT_TRUE(advertisement_);
+
+  // Power off the adapter. Advertisement should be stopped.
+  OCMExpect([peripheral_manager_ stopAdvertising]);
+  peripheral_manager_state_ = CBPeripheralManagerStatePoweredOff;
+  advertisement_manager_.OnPeripheralManagerStateChanged();
+  [peripheral_manager_mock_ verifyAtLocation:nil];
+
+  // Register a new advertisement after powering back on the adapter.
+  // This should fail as the caller needs to manually unregister the
+  // advertisement.
+  peripheral_manager_state_ = CBPeripheralManagerStatePoweredOn;
+  advertisement_ = nullptr;
+  RegisterAdvertisement(CreateAdvertisementData());
+  ui_task_runner_->RunPendingTasks();
+  EXPECT_FALSE(advertisement_);
+  ASSERT_TRUE(registration_error_);
+  EXPECT_EQ(BluetoothAdvertisement::ERROR_ADVERTISEMENT_ALREADY_EXISTS,
+            *registration_error_);
 }
 
 }  // namespace device
