@@ -351,9 +351,10 @@ cr.define('discards', function() {
         boolToString(info.canFreeze);
     row.querySelector('.can-discard-div').textContent =
         boolToString(info.canDiscard);
-    // The lifecycle state is meaningless for 'unloaded' tabs.
+    // The lifecycle state is meaningless for tabs that have never been loaded.
     row.querySelector('.state-cell').textContent =
-        (info.loadingState != mojom.LifecycleUnitLoadingState.UNLOADED) ?
+        (info.loadingState != mojom.LifecycleUnitLoadingState.UNLOADED ||
+         info.discardCount > 0) ?
         lifecycleStateToString(info.state) :
         '';
     row.querySelector('.discard-count-cell').textContent =
@@ -371,9 +372,11 @@ cr.define('discards', function() {
 
     row.querySelector('.is-auto-discardable-link').removeAttribute('disabled');
     setActionLinkEnabled(
-        row.querySelector('.can-freeze-link'), !info.canFreeze);
+        row.querySelector('.can-freeze-link'),
+        (!info.canFreeze && info.cannotFreezeReasons.length > 0));
     setActionLinkEnabled(
-        row.querySelector('.can-discard-link'), !info.canDiscard);
+        row.querySelector('.can-discard-link'),
+        (!info.canDiscard && info.cannotDiscardReasons.length > 0));
     let loadLink = row.querySelector('.load-link');
     let freezeLink = row.querySelector('.freeze-link');
     let discardLink = row.querySelector('.discard-link');
