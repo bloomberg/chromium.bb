@@ -287,12 +287,12 @@ HitTestResult EventHandler::HitTestResultAtLocation(
           HitTestLocation adjusted_location(
               (LayoutRect(main_content_point, location.BoundingBox().Size())));
           return main_frame.GetEventHandler().HitTestResultAtLocation(
-              adjusted_location, hit_type, stop_node);
+              adjusted_location, hit_type, stop_node, no_lifecycle_update);
         } else {
           HitTestLocation adjusted_location(main_view->ConvertFromRootFrame(
               frame_view->ConvertToRootFrame(location.Point())));
           return main_frame.GetEventHandler().HitTestResultAtLocation(
-              adjusted_location, hit_type, stop_node);
+              adjusted_location, hit_type, stop_node, no_lifecycle_update);
         }
       }
     }

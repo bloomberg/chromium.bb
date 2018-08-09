@@ -847,4 +847,34 @@ TEST_F(LayoutObjectSimTest, TouchActionUpdatesSubframeEventHandler) {
   EXPECT_FALSE(DocumentHasTouchActionRegion(registry));
 }
 
+TEST_F(LayoutObjectSimTest, HitTestForOcclusionInIframe) {
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest frame_resource("https://example.com/frame.html", "text/html");
+
+  LoadURL("https://example.com/test.html");
+  main_resource.Complete(R"HTML(
+    <iframe style='width:300px;height:150px;' src=frame.html></iframe>
+    <div id='occluder' style='will-change:transform;width:100px;height:100px;'>
+    </div>
+  )HTML");
+  frame_resource.Complete(R"HTML(
+    <div id='target'>target</div>
+  )HTML");
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  Element* iframe_element = GetDocument().QuerySelector("iframe");
+  HTMLFrameOwnerElement* frame_owner_element =
+      ToHTMLFrameOwnerElement(iframe_element);
+  Document* iframe_doc = frame_owner_element->contentDocument();
+  Element* target = iframe_doc->getElementById("target");
+  HitTestResult result = target->GetLayoutObject()->HitTestForOcclusion();
+  EXPECT_TRUE(result.InnerNode() == target);
+
+  Element* occluder = GetDocument().getElementById("occluder");
+  occluder->SetInlineStyleProperty(CSSPropertyMarginTop, "-150px");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  result = target->GetLayoutObject()->HitTestForOcclusion();
+  EXPECT_TRUE(result.InnerNode() == occluder);
+}
+
 }  // namespace blink

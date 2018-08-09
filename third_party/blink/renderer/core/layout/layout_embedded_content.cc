@@ -198,8 +198,10 @@ bool LayoutEmbeddedContent::NodeAtPoint(
           LayoutPoint(BorderLeft() + PaddingLeft(), BorderTop() + PaddingTop());
       HitTestLocation new_hit_test_location(
           location_in_container, -adjusted_location - content_offset);
-      HitTestRequest new_hit_test_request(result.GetHitTestRequest().GetType() |
-                                          HitTestRequest::kChildFrameHitTest);
+      HitTestRequest new_hit_test_request(
+          result.GetHitTestRequest().GetType() |
+              HitTestRequest::kChildFrameHitTest,
+          result.GetHitTestRequest().GetStopNode());
       HitTestResult child_frame_result(new_hit_test_request,
                                        new_hit_test_location);
 
