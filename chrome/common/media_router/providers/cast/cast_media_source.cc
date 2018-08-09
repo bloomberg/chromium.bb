@@ -7,7 +7,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
@@ -70,16 +69,10 @@ std::unique_ptr<CastMediaSource> CastMediaSourceForTabMirroring(
 
 std::unique_ptr<CastMediaSource> CastMediaSourceForDesktopMirroring(
     const MediaSource::Id& source_id) {
-// Desktop audio mirroring is only supported on some platforms.
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-  return std::make_unique<CastMediaSource>(
-      source_id,
-      std::vector<CastAppInfo>({CastAppInfo(kCastStreamingAppId),
-                                CastAppInfo(kCastStreamingAudioAppId)}));
-#else
+  // TODO(https://crbug.com/849335): Add back audio-only devices for desktop
+  // mirroring when proper support is implemented.
   return std::make_unique<CastMediaSource>(
       source_id, std::vector<CastAppInfo>({CastAppInfo(kCastStreamingAppId)}));
-#endif
 }
 
 std::unique_ptr<CastMediaSource> CreateFromURLParams(
