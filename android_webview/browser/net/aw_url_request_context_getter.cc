@@ -51,6 +51,7 @@
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_util.h"
 #include "net/net_buildflags.h"
+#include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/next_proto.h"
 #include "net/ssl/channel_id_service.h"
@@ -205,7 +206,7 @@ class AwSSLConfigService : public net::SSLConfigService {
 AwURLRequestContextGetter::AwURLRequestContextGetter(
     const base::FilePath& cache_path,
     const base::FilePath& channel_id_path,
-    std::unique_ptr<net::ProxyConfigService> config_service,
+    std::unique_ptr<net::ProxyConfigServiceAndroid> config_service,
     PrefService* user_pref_service,
     net::NetLog* net_log)
     : cache_path_(cache_path),
@@ -419,6 +420,17 @@ void AwURLRequestContextGetter::UpdateServerWhitelist() {
 void AwURLRequestContextGetter::UpdateAndroidAuthNegotiateAccountType() {
   http_auth_preferences_->set_auth_android_negotiate_account_type(
       auth_android_negotiate_account_type_.GetValue());
+}
+
+void AwURLRequestContextGetter::SetProxyOverride(
+    const std::string& host,
+    int port,
+    const std::vector<std::string>& exclusion_list) {
+  proxy_config_service_->SetProxyOverride(host, port, exclusion_list);
+}
+
+void AwURLRequestContextGetter::ClearProxyOverride() {
+  proxy_config_service_->ClearProxyOverride();
 }
 
 }  // namespace android_webview

@@ -117,4 +117,13 @@ public class SharedStatics {
         return ThreadUtils.runOnUiThreadBlockingNoException(
                 () -> AwContentsStatics.getSafeBrowsingPrivacyPolicyUrl());
     }
+
+    public void setProxyOverride(String host, int port, String[] exclusionList) {
+        ThreadUtils.runOnUiThread(
+                () -> AwContentsStatics.setProxyOverride(host, port, exclusionList));
+    }
+
+    public void clearProxyOverride() {
+        ThreadUtils.runOnUiThread(() -> AwContentsStatics.clearProxyOverride());
+    }
 }

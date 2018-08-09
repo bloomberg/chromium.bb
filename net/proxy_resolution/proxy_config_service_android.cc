@@ -211,7 +211,8 @@ class ProxyConfigServiceAndroid::Delegate
         network_task_runner_(network_task_runner),
         jni_task_runner_(jni_task_runner),
         get_property_callback_(get_property_callback),
-        exclude_pac_url_(false) {
+        exclude_pac_url_(false),
+        has_proxy_override_(false) {
   }
 
   void SetupJNI() {
@@ -265,6 +266,9 @@ class ProxyConfigServiceAndroid::Delegate
   // Called in the JNI sequence.
   void ProxySettingsChanged() {
     DCHECK(InJNISequence());
+    if (has_proxy_override_)
+      return;
+
     ProxyConfigWithAnnotation proxy_config;
     GetLatestProxyConfigInternal(get_property_callback_, &proxy_config);
     network_task_runner_->PostTask(
@@ -278,6 +282,9 @@ class ProxyConfigServiceAndroid::Delegate
                               const std::string& pac_url,
                               const std::vector<std::string>& exclusion_list) {
     DCHECK(InJNISequence());
+    if (has_proxy_override_)
+      return;
+
     ProxyConfigWithAnnotation proxy_config;
     if (exclude_pac_url_) {
       CreateStaticProxyConfig(host, port, "", exclusion_list, &proxy_config);
@@ -292,6 +299,33 @@ class ProxyConfigServiceAndroid::Delegate
 
   void set_exclude_pac_url(bool enabled) {
     exclude_pac_url_ = enabled;
+  }
+
+  // Called in the JNI sequence.
+  void SetProxyOverride(const std::string& host,
+                        int port,
+                        const std::vector<std::string>& exclusion_list) {
+    DCHECK(InJNISequence());
+    has_proxy_override_ = true;
+    ProxyConfigWithAnnotation proxy_config;
+    CreateStaticProxyConfig(host, port, "", exclusion_list, &proxy_config);
+    network_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&Delegate::SetNewConfigInNetworkSequence, this,
+                              proxy_config));
+  }
+
+  // Called in the JNI sequence.
+  void ClearProxyOverride() {
+    DCHECK(InJNISequence());
+    if (!has_proxy_override_)
+      return;
+
+    ProxyConfigWithAnnotation proxy_config;
+    GetLatestProxyConfigInternal(get_property_callback_, &proxy_config);
+    network_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&Delegate::SetNewConfigInNetworkSequence, this,
+                              proxy_config));
+    has_proxy_override_ = false;
   }
 
  private:
@@ -365,6 +399,8 @@ class ProxyConfigServiceAndroid::Delegate
   GetPropertyCallback get_property_callback_;
   ProxyConfigWithAnnotation proxy_config_;
   bool exclude_pac_url_;
+  // This may only be accessed or modified on the JNI thread
+  bool has_proxy_override_;
 
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
@@ -412,6 +448,17 @@ ProxyConfigServiceAndroid::ProxyConfigServiceAndroid(
 
 void ProxyConfigServiceAndroid::ProxySettingsChanged() {
   delegate_->ProxySettingsChanged();
+}
+
+void ProxyConfigServiceAndroid::SetProxyOverride(
+    const std::string& host,
+    int port,
+    const std::vector<std::string>& exclusion_list) {
+  delegate_->SetProxyOverride(host, port, exclusion_list);
+}
+
+void ProxyConfigServiceAndroid::ClearProxyOverride() {
+  delegate_->ClearProxyOverride();
 }
 
 } // namespace net

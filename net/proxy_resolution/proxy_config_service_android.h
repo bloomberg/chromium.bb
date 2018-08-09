@@ -76,6 +76,11 @@ class NET_EXPORT ProxyConfigServiceAndroid : public ProxyConfigService {
   ConfigAvailability GetLatestProxyConfig(
       ProxyConfigWithAnnotation* config) override;
 
+  void SetProxyOverride(const std::string& host,
+                        int port,
+                        const std::vector<std::string>& exclusion_list);
+  void ClearProxyOverride();
+
  private:
   friend class ProxyConfigServiceAndroidTestBase;
   class Delegate;

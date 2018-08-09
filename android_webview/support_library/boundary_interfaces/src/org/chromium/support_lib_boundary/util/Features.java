@@ -124,4 +124,8 @@ public class Features {
 
     // WebViewCompat.getWebChromeClient
     public static final String GET_WEB_CHROME_CLIENT = "GET_WEB_CHROME_CLIENT";
+
+    // WebViewCompat.setProxyOverride
+    // WebViewCompat.clearProxyOverride
+    public static final String PROXY_OVERRIDE = "PROXY_OVERRIDE";
 }

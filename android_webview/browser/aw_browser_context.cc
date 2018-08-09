@@ -75,17 +75,16 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
 
 AwBrowserContext* g_browser_context = NULL;
 
-std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService() {
-  std::unique_ptr<net::ProxyConfigService> config_service =
-      net::ProxyResolutionService::CreateSystemProxyConfigService(
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+std::unique_ptr<net::ProxyConfigServiceAndroid> CreateProxyConfigService() {
+  std::unique_ptr<net::ProxyConfigServiceAndroid> config_service_android =
+      std::make_unique<net::ProxyConfigServiceAndroid>(
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+          base::ThreadTaskRunnerHandle::Get());
 
   // TODO(csharrison) Architect the wrapper better so we don't need a cast for
   // android ProxyConfigServices.
-  net::ProxyConfigServiceAndroid* android_config_service =
-      static_cast<net::ProxyConfigServiceAndroid*>(config_service.get());
-  android_config_service->set_exclude_pac_url(true);
-  return config_service;
+  config_service_android->set_exclude_pac_url(true);
+  return config_service_android;
 }
 
 std::unique_ptr<AwSafeBrowsingWhitelistManager>

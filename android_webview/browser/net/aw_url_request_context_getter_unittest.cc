@@ -16,6 +16,7 @@
 #include "net/base/net_errors.h"
 #include "net/log/net_log.h"
 #include "net/proxy_resolution/proxy_config_service.h"
+#include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
@@ -57,12 +58,16 @@ class AwURLRequestContextGetterTest : public ::testing::Test {
     android_webview::AwURLRequestContextGetter::RegisterPrefs(
         pref_service_->registry());
 
-    getter_ = base::MakeRefCounted<android_webview::AwURLRequestContextGetter>(
-        temp_dir_.GetPath(), temp_dir_.GetPath().AppendASCII("ChannelID"),
+    std::unique_ptr<net::ProxyConfigServiceAndroid> config_service_android;
+    config_service_android.reset(static_cast<net::ProxyConfigServiceAndroid*>(
         net::ProxyResolutionService::CreateSystemProxyConfigService(
             content::BrowserThread::GetTaskRunnerForThread(
-                content::BrowserThread::IO)),
-        pref_service_.get(), &net_log_);
+                content::BrowserThread::IO))
+            .release()));
+
+    getter_ = base::MakeRefCounted<android_webview::AwURLRequestContextGetter>(
+        temp_dir_.GetPath(), temp_dir_.GetPath().AppendASCII("ChannelID"),
+        std::move(config_service_android), pref_service_.get(), &net_log_);
 
     // AwURLRequestContextGetter implicitly depends on having protocol handlers
     // provided for url::kBlobScheme, url::kFileSystemScheme, and

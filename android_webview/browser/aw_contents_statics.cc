@@ -130,4 +130,29 @@ void JNI_AwContentsStatics_SetCheckClearTextPermitted(
   AwURLRequestContextGetter::set_check_cleartext_permitted(permitted);
 }
 
+// static
+void JNI_AwContentsStatics_SetProxyOverride(
+    JNIEnv* env,
+    const JavaParamRef<jclass>&,
+    const base::android::JavaParamRef<jstring>& jhost,
+    jint port,
+    const base::android::JavaParamRef<jobjectArray>& jexclusion_list) {
+  std::string host;
+  base::android::ConvertJavaStringToUTF8(env, jhost, &host);
+  std::vector<std::string> exclusion_list;
+  base::android::AppendJavaStringArrayToStringVector(env, jexclusion_list,
+                                                     &exclusion_list);
+
+  AwBrowserContext::GetDefault()->GetAwURLRequestContext()->SetProxyOverride(
+      host, port, exclusion_list);
+}
+
+// static
+void JNI_AwContentsStatics_ClearProxyOverride(JNIEnv* env,
+                                              const JavaParamRef<jclass>&) {
+  AwBrowserContext::GetDefault()
+      ->GetAwURLRequestContext()
+      ->ClearProxyOverride();
+}
+
 }  // namespace android_webview
