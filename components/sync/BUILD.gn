@@ -929,7 +929,7 @@ source_set("unit_tests") {
     "//chrome/test/data/sync/",
     "//net/tools/testserver/",
     "//third_party/pyftpdlib/",
-    "//third_party/pywebsocket/",
+    "//third_party/pywebsocket/src/mod_pywebsocket/",
     "//third_party/tlslite/",
     "$root_out_dir/pyproto/google/",
   ]

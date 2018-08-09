@@ -274,7 +274,7 @@ source_set("tests") {
       "//net/tools/testserver/",
       "//services/test/data",
       "//third_party/pyftpdlib/",
-      "//third_party/pywebsocket/",
+      "//third_party/pywebsocket/src/mod_pywebsocket/",
       "//third_party/tlslite/",
     ]
   }
