@@ -310,9 +310,6 @@ class Tab : public gfx::AnimationDelegate,
   // state; it is the responsibility of the caller to request a paint.
   void UpdateTabIconNeedsAttentionBlocked();
 
-  // Computes and stores opacities derived from contrast ratios.
-  void UpdateOpacities();
-
   // Generate and update close button and alert icon colors for proper contrast.
   void UpdateButtonIconColors(SkColor title_color);
 
@@ -388,11 +385,6 @@ class Tab : public gfx::AnimationDelegate,
   // different from View::IsMouseHovered() which does a naive intersection with
   // the view bounds.
   bool mouse_hovered_ = false;
-
-  // These computed values are stored for fast use during mouse moves & hover.
-  float hover_opacity_min_;
-  float hover_opacity_max_;
-  float radial_highlight_opacity_;
 
   class BackgroundCache {
    public:

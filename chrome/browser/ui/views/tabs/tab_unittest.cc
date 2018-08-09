@@ -102,6 +102,10 @@ class FakeTabController : public TabController {
   base::string16 GetAccessibleTabName(const Tab* tab) const override {
     return base::string16();
   }
+  float GetHoverOpacityForTab(float range_parameter) const override {
+    return 1.0f;
+  }
+  float GetHoverOpacityForRadialHighlight() const override { return 1.0f; }
 
  private:
   ui::ListSelectionModel selection_model_;

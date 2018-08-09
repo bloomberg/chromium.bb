@@ -169,6 +169,14 @@ class TabController {
   // Returns the accessible tab name for this tab.
   virtual base::string16 GetAccessibleTabName(const Tab* tab) const = 0;
 
+  // Returns opacity for hover effect on a tab with |range_parameter| between
+  // 0 and 1, where 0 gives the minimum opacity suitable for wider tabs and 1
+  // gives maximum opacity suitable for narrower tabs.
+  virtual float GetHoverOpacityForTab(float range_parameter) const = 0;
+
+  // Returns opacity for use on tab hover radial highlight.
+  virtual float GetHoverOpacityForRadialHighlight() const = 0;
+
  protected:
   virtual ~TabController() {}
 };
