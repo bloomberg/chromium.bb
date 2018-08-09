@@ -662,14 +662,10 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
   int num_matches = kMaxMatches * 5;
   const TemplateURL* default_url = providers_.GetDefaultProviderURL();
   if (default_url) {
-    const base::TimeTicks start_time = base::TimeTicks::Now();
     url_db->GetMostRecentKeywordSearchTerms(default_url->id(),
                                             input_.text(),
                                             num_matches,
                                             &raw_default_history_results_);
-    UMA_HISTOGRAM_TIMES(
-        "Omnibox.SearchProvider.GetMostRecentKeywordTermsDefaultProviderTime",
-        base::TimeTicks::Now() - start_time);
   }
   const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
   if (keyword_url) {
@@ -969,7 +965,6 @@ std::unique_ptr<network::SimpleURLLoader> SearchProvider::CreateSuggestLoader(
 void SearchProvider::ConvertResultsToAutocompleteMatches() {
   // Convert all the results to matches and add them to a map, so we can keep
   // the most relevant match for each result.
-  base::TimeTicks start_time(base::TimeTicks::Now());
   MatchMap map;
   int did_not_accept_keyword_suggestion =
       keyword_results_.suggest_results.empty() ?
@@ -1129,8 +1124,6 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
 
     matches_.push_back(*i);
   }
-  UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.ConvertResultsTime",
-                      base::TimeTicks::Now() - start_time);
 }
 
 void SearchProvider::RemoveExtraAnswers(ACMatches* matches) {
