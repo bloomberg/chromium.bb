@@ -12,6 +12,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/native_widget.h"
+#include "ui/views/widget/widget.h"
 
 namespace gfx {
 class FontList;
@@ -49,6 +50,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   // Creates an appropriate default NativeWidgetPrivate implementation for the
   // current OS/circumstance.
   static NativeWidgetPrivate* CreateNativeWidget(
+      const Widget::InitParams& init_params,
       internal::NativeWidgetDelegate* delegate);
 
   static NativeWidgetPrivate* GetNativeWidgetForNativeView(
@@ -67,9 +69,6 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
                                  Widget::Widgets* owned);
   static void ReparentNativeView(gfx::NativeView native_view,
                                  gfx::NativeView new_parent);
-
-  // Returns true if any mouse button is currently down.
-  static bool IsMouseButtonDown();
 
   static gfx::FontList GetWindowTitleFontList();
 
@@ -216,6 +215,8 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual void SchedulePaintInRect(const gfx::Rect& rect) = 0;
   virtual void SetCursor(gfx::NativeCursor cursor) = 0;
   virtual bool IsMouseEventsEnabled() const = 0;
+  // Returns true if any mouse button is currently down.
+  virtual bool IsMouseButtonDown() const = 0;
   virtual void ClearNativeFocus() = 0;
   virtual gfx::Rect GetWorkAreaBoundsInScreen() const = 0;
   virtual Widget::MoveLoopResult RunMoveLoop(
