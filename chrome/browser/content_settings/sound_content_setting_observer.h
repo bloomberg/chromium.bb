@@ -31,6 +31,8 @@ class SoundContentSettingObserver
   ~SoundContentSettingObserver() override;
 
   // content::WebContentsObserver implementation.
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void OnAudioStateChanged(bool audible) override;

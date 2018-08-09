@@ -86,6 +86,9 @@ AutoplayPolicy::Type AutoplayPolicy::GetAutoplayPolicyForDocument(
   if (IsDocumentWhitelisted(document))
     return Type::kNoUserGestureRequired;
 
+  if (DocumentHasUserExceptionFlag(document))
+    return Type::kNoUserGestureRequired;
+
   return document.GetSettings()->GetAutoplayPolicy();
 }
 
@@ -133,6 +136,14 @@ bool AutoplayPolicy::DocumentHasForceAllowFlag(const Document& document) {
     return false;
   return document.GetPage()->AutoplayFlags() &
          mojom::blink::kAutoplayFlagForceAllow;
+}
+
+// static
+bool AutoplayPolicy::DocumentHasUserExceptionFlag(const Document& document) {
+  if (!document.GetPage())
+    return false;
+  return document.GetPage()->AutoplayFlags() &
+         mojom::blink::kAutoplayFlagUserException;
 }
 
 // static
