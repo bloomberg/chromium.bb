@@ -292,16 +292,6 @@ const CGFloat kResizeAnimationDuration = 0.2;
 }
 
 - (NSPoint)bubblePointForDecoration:(LocationBarDecoration*)decoration {
-  // Use MD-style anchoring, even if only pilot dialogs are enabled. MD dialogs
-  // have no arrow and align corners. Cocoa dialogs will always have an arrow.
-  // This causes the arrows on Cocoa dialogs to align to the omnibox corner.
-  if (!chrome::ShowPilotDialogsWithViewsToolkit()) {
-    const NSRect frame =
-        [[self cell] frameForDecoration:decoration inFrame:[self bounds]];
-    NSPoint point = decoration->GetBubblePointInFrame(frame);
-    return [self convertPoint:point toView:nil];
-  }
-
   // Under MD, dialogs have no arrow and anchor to corner of the location bar
   // frame, not a specific point within it. See http://crbug.com/566115.
 

@@ -360,9 +360,7 @@ void LocationBarView::SelectAll() {
 }
 
 views::View* LocationBarView::GetSecurityBubbleAnchorView() {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-    return this;
-  return location_icon_view()->GetImageView();
+  return this;
 }
 
 bool LocationBarView::ShowPageInfoDialog(WebContents* contents) {

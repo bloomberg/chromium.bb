@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 #include "chrome/common/chrome_features.h"
 #include "components/constrained_window/constrained_window_views.h"
-#include "ui/base/material_design/material_design_controller.h"
 
 // This file provides definitions of desktop browser dialog-creation methods for
 // Mac where a Cocoa browser is using Views dialogs. I.e. it is included in the
@@ -36,14 +35,9 @@
 
 namespace chrome {
 
-bool ShowPilotDialogsWithViewsToolkit() {
-  return ui::MaterialDesignController::IsSecondaryUiMaterial();
-}
-
 bool ShowAllDialogsWithViewsToolkit() {
-  return ShowPilotDialogsWithViewsToolkit() &&
-         base::FeatureList::IsEnabled(
-             features::kShowAllDialogsWithViewsToolkit);
+  return base::FeatureList::IsEnabled(
+      features::kShowAllDialogsWithViewsToolkit);
 }
 
 void ShowPageInfoBubbleViews(Browser* browser,

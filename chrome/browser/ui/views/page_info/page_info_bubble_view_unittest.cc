@@ -27,7 +27,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -78,16 +77,12 @@ class PageInfoBubbleViewTestApi {
   // Returns the number of cookies shown on the link or button to open the
   // collected cookies dialog. This should always be shown.
   base::string16 GetCookiesLinkText() {
-    if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
       EXPECT_TRUE(view_->cookie_button_);
       ui::AXNodeData data;
       view_->cookie_button_->GetAccessibleNodeData(&data);
       std::string name;
       data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name);
       return base::ASCIIToUTF16(name);
-    }
-    EXPECT_TRUE(view_->cookie_link_legacy_);
-    return view_->cookie_link_legacy_->text();
   }
 
   // Returns the permission label text of the |index|th permission selector row.
@@ -250,7 +245,6 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfo) {
   // "set", so there is always one option checked in the resulting MenuModel.
   // This test creates settings that are left at their defaults, leading to zero
   // checked options, and checks that the text on the MenuButtons is right.
-  const bool is_md = ui::MaterialDesignController::IsSecondaryUiMaterial();
 
   PermissionInfoList list(1);
   list.back().type = CONTENT_SETTINGS_TYPE_GEOLOCATION;
@@ -281,31 +275,14 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfo) {
 
   // Simulate a user selection via the UI. Note this will also cover logic in
   // PageInfo to update the pref.
-  if (is_md) {
-    // Under MD, the changed setting is always read from the combobox selected
-    // index when changed in the UI. PermissionSelectorRow::PermissionChanged()
-    // ignores the argument, except to detect whether it is the default.
-    api_->SimulateUserSelectingComboboxItemAt(0, 1);
-  } else {
-    list.back().setting = CONTENT_SETTING_ALLOW;
-    api_->GetPermissionSelectorAt(0)->PermissionChanged(list.back());
-  }
+  api_->SimulateUserSelectingComboboxItemAt(0, 1);
   EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
   EXPECT_EQ(base::ASCIIToUTF16("Allow"), api_->GetPermissionButtonTextAt(0));
 
   // Setting to the default via the UI should keep the button around.
-  if (is_md) {
-    api_->SimulateUserSelectingComboboxItemAt(0, 0);
-    // Under MD, PermissionMenuModel gets strings using PageInfoUI::
-    // PermissionActionToUIString(..) rather than directly from the
-    // ResourceBundle.
-    EXPECT_EQ(base::ASCIIToUTF16("Ask (default)"),
-              api_->GetPermissionButtonTextAt(0));
-  } else {
-    list.back().setting = CONTENT_SETTING_ASK;
-    api_->GetPermissionSelectorAt(0)->PermissionChanged(list.back());
-    EXPECT_EQ(base::ASCIIToUTF16("Ask"), api_->GetPermissionButtonTextAt(0));
-  }
+  api_->SimulateUserSelectingComboboxItemAt(0, 0);
+  EXPECT_EQ(base::ASCIIToUTF16("Ask (default)"),
+            api_->GetPermissionButtonTextAt(0));
   EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
 
   // However, since the setting is now default, recreating the dialog with those
@@ -364,8 +341,6 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoForUsbGuard) {
   // "set", so there is always one option checked in the resulting MenuModel.
   // This test creates settings that are left at their defaults, leading to zero
   // checked options, and checks that the text on the MenuButtons is right.
-  const bool is_md = ui::MaterialDesignController::IsSecondaryUiMaterial();
-
   PermissionInfoList list(1);
   list.back().type = CONTENT_SETTINGS_TYPE_USB_GUARD;
   list.back().source = content_settings::SETTING_SOURCE_USER;
@@ -384,31 +359,14 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoForUsbGuard) {
 
   // Simulate a user selection via the UI. Note this will also cover logic in
   // PageInfo to update the pref.
-  if (is_md) {
-    // Under MD, the changed setting is always read from the combobox selected
-    // index when changed in the UI. PermissionSelectorRow::PermissionChanged()
-    // ignores the argument, except to detect whether it is the default.
-    api_->SimulateUserSelectingComboboxItemAt(0, 2);
-  } else {
-    list.back().setting = CONTENT_SETTING_ASK;
-    api_->GetPermissionSelectorAt(0)->PermissionChanged(list.back());
-  }
+  api_->SimulateUserSelectingComboboxItemAt(0, 2);
   EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
   EXPECT_EQ(base::ASCIIToUTF16("Ask"), api_->GetPermissionButtonTextAt(0));
 
   // Setting to the default via the UI should keep the button around.
-  if (is_md) {
     api_->SimulateUserSelectingComboboxItemAt(0, 0);
-    // Under MD, PermissionMenuModel gets strings using PageInfoUI::
-    // PermissionActionToUIString(..) rather than directly from the
-    // ResourceBundle.
     EXPECT_EQ(base::ASCIIToUTF16("Ask (default)"),
               api_->GetPermissionButtonTextAt(0));
-  } else {
-    list.back().setting = CONTENT_SETTING_ASK;
-    api_->GetPermissionSelectorAt(0)->PermissionChanged(list.back());
-    EXPECT_EQ(base::ASCIIToUTF16("Ask"), api_->GetPermissionButtonTextAt(0));
-  }
   EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
 
   // However, since the setting is now default, recreating the dialog with those

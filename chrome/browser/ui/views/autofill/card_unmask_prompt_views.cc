@@ -22,7 +22,6 @@
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
@@ -280,8 +279,7 @@ views::View* CardUnmaskPromptViews::GetInitiallyFocusedView() {
 }
 
 bool CardUnmaskPromptViews::ShouldShowCloseButton() const {
-  // Material UI has no [X] in the corner of this dialog.
-  return !ui::MaterialDesignController::IsSecondaryUiMaterial();
+  return false;
 }
 
 bool CardUnmaskPromptViews::Cancel() {

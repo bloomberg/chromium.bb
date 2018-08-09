@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/color_palette.h"
@@ -181,9 +180,7 @@ bool ContentSettingImageView::ShowBubble(const ui::Event& event) {
   content::WebContents* web_contents =
       delegate_->GetContentSettingWebContents();
   if (web_contents && !bubble_view_) {
-    views::View* anchor = this;
-    if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-      anchor = parent();
+    views::View* const anchor = parent();
     bubble_view_ = new ContentSettingBubbleContents(
         content_setting_image_model_->CreateBubbleModel(
             delegate_->GetContentSettingBubbleModelDelegate(), web_contents,

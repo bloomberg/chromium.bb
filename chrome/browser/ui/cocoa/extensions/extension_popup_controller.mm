@@ -27,7 +27,6 @@
 #include "extensions/browser/notification_types.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/cocoa/window_size_constants.h"
-#include "ui/base/material_design/material_design_controller.h"
 
 using content::BrowserContext;
 using content::RenderViewHost;
@@ -181,14 +180,8 @@ class ExtensionPopupNotificationBridge :
                          anchoredAt:anchoredAt])) {
     beingInspected_ = devMode;
     ignoreWindowDidResignKey_ = NO;
-    if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-      // Under MD, bubbles never have arrows.
-      [[self bubble] setArrowLocation:info_bubble::kNoArrow];
-      [[self bubble] setAlignment:info_bubble::kAlignTrailingEdgeToAnchorEdge];
-    } else {
-      [[self bubble] setArrowLocation:info_bubble::kTopTrailing];
-      [[self bubble] setAlignment:info_bubble::kAlignArrowToAnchor];
-    }
+    [[self bubble] setArrowLocation:info_bubble::kNoArrow];
+    [[self bubble] setAlignment:info_bubble::kAlignTrailingEdgeToAnchorEdge];
     if (!gAnimationsEnabled)
       [window setAllowedAnimations:info_bubble::kAnimateNone];
   }

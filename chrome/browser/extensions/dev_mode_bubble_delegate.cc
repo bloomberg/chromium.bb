@@ -17,7 +17,6 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_features.h"
 
 namespace extensions {
@@ -76,13 +75,6 @@ base::string16 DevModeBubbleDelegate::GetActionButtonLabel() const {
 }
 
 base::string16 DevModeBubbleDelegate::GetDismissButtonLabel() const {
-// TODO(https://crbug.com/671656): Keep the cancel button on MACOSX unless
-// using views or the Cocoa version is updated.
-#if defined(OS_MACOSX)
-  if (!ui::MaterialDesignController::IsSecondaryUiMaterial())
-    return l10n_util::GetStringUTF16(IDS_CANCEL);
-#endif
-
   return base::string16();
 }
 

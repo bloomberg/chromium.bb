@@ -17,7 +17,6 @@
 #include "components/autofill/core/browser/ui/local_card_migration_bubble_controller.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
@@ -80,9 +79,7 @@ bool LocalCardMigrationBubbleViews::Close() {
 }
 
 int LocalCardMigrationBubbleViews::GetDialogButtons() const {
-  return ui::MaterialDesignController::IsSecondaryUiMaterial()
-             ? ui::DIALOG_BUTTON_OK
-             : ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
+  return ui::DIALOG_BUTTON_OK;
 }
 
 base::string16 LocalCardMigrationBubbleViews::GetDialogButtonLabel(
@@ -116,7 +113,7 @@ void LocalCardMigrationBubbleViews::AddedToWidget() {
 }
 
 bool LocalCardMigrationBubbleViews::ShouldShowCloseButton() const {
-  return ui::MaterialDesignController::IsSecondaryUiMaterial();
+  return true;
 }
 
 void LocalCardMigrationBubbleViews::WindowClosing() {
