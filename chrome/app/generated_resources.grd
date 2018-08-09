@@ -8574,8 +8574,8 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_PIP_PLAYING" desc="Extra tool tip text, when tab is playing a video in Picture-in-Picture.">
         This tab is playing a video in picture-in-picture mode.
       </message>
-      <message name="IDS_TOOLTIP_TAB_ALERT_STATE_DESKTOP_CAPTURING" desc="Extra tool tip text, when the tab is caturing desktop contents.">
-        This tab is sharing your desktop content.
+      <message name="IDS_TOOLTIP_TAB_ALERT_STATE_DESKTOP_CAPTURING" desc="Extra tool tip text, when the tab is capturing desktop contents.">
+        This tab is sharing your screen.
       </message>
 
       <!-- Tab accessibility labels -->
