@@ -744,6 +744,7 @@ extern const char kMediaGalleriesRememberedGalleries[];
 extern const char kShelfChromeIconIndex[];
 extern const char kPinnedLauncherApps[];
 extern const char kPolicyPinnedLauncherApps[];
+extern const char kAppListContinueReadingEnabled[];
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)

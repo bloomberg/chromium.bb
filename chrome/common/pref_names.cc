@@ -1925,6 +1925,10 @@ const char kRemoveUsersRemoteCommand[] = "remove_users_remote_command";
 // Whether camera-produced media files have been consolidated to one place.
 const char kCameraMediaConsolidated[] = "camera_media_consolidated";
 
+// Boolean that indicates whether users can continue reading a web page when
+// they switch from phones or tablets to Chromebook.
+const char kAppListContinueReadingEnabled[] =
+    "app_list.continue_reading_enabled";
 #endif  // defined(OS_CHROMEOS)
 
 // Whether there is a Flash version installed that supports clearing LSO data.

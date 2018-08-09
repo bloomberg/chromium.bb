@@ -303,6 +303,7 @@ void Preferences::RegisterProfilePrefs(
       prefs::kUse24HourClock,
       base::GetHourClockType() == base::k24HourClock,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kAppListContinueReadingEnabled, true);
   registry->RegisterBooleanPref(prefs::kCameraMediaConsolidated, false);
   registry->RegisterBooleanPref(
       drive::prefs::kDisableDrive, false,
