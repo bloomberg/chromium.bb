@@ -46,6 +46,7 @@
 #include "chrome/browser/ui/app_list/search/crostini_app_result.h"
 #include "chrome/browser/ui/app_list/search/extension_app_result.h"
 #include "chrome/browser/ui/app_list/search/internal_app_result.h"
+#include "chrome/common/pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
@@ -372,7 +373,9 @@ class InternalDataSource : public AppSearchProvider::DataSource,
     const base::Time time;
     for (const auto& internal_app : GetInternalAppList()) {
       if (!std::strcmp(internal_app.app_id, kInternalAppIdContinueReading) &&
-          !features::IsContinueReadingEnabled()) {
+          (!features::IsContinueReadingEnabled() ||
+           !profile()->GetPrefs()->GetBoolean(
+               prefs::kAppListContinueReadingEnabled))) {
         continue;
       }
 
