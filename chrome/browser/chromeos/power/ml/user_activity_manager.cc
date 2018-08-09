@@ -241,7 +241,9 @@ void UserActivityManager::OnIdleEventObserved(
   // Default is to enable smart dim, unless user profile specifically says
   // otherwise.
   bool smart_dim_enabled = true;
-  const Profile* const profile = ProfileManager::GetActiveUserProfile();
+  // If there are multiple users, the primary one may have more-restrictive
+  // policy-controlled settings.
+  const Profile* const profile = ProfileManager::GetPrimaryUserProfile();
   if (profile) {
     smart_dim_enabled =
         profile->GetPrefs()->GetBoolean(ash::prefs::kPowerSmartDimEnabled);
