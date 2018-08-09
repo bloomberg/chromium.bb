@@ -151,7 +151,6 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       needs_ancestor_dependent_compositing_inputs_update_(true),
       child_needs_compositing_inputs_update_(true),
       has_compositing_descendant_(false),
-      is_all_scrolling_content_composited_(false),
       should_isolate_composited_descendants_(false),
       lost_grouped_mapping_(false),
       needs_repaint_(false),
@@ -701,34 +700,6 @@ void PaintLayer::MarkAncestorChainForDescendantDependentFlagsUpdate() {
       break;
     layer->needs_descendant_dependent_flags_update_ = true;
     layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
-  }
-}
-
-// FIXME: this is quite brute-force. We could be more efficient if we were to
-// track state and update it as appropriate as changes are made in the layout
-// tree.
-void PaintLayer::UpdateScrollingStateAfterCompositingChange() {
-  TRACE_EVENT0("blink",
-               "PaintLayer::updateScrollingStateAfterCompositingChange");
-  is_all_scrolling_content_composited_ = true;
-  for (LayoutObject* r = GetLayoutObject().SlowFirstChild(); r;
-       r = r->NextSibling()) {
-    if (!r->HasLayer()) {
-      is_all_scrolling_content_composited_ = false;
-      return;
-    }
-  }
-
-  for (PaintLayer* child = FirstChild(); child; child = child->NextSibling()) {
-    if (child->GetCompositingState() == kNotComposited) {
-      is_all_scrolling_content_composited_ = false;
-      return;
-    } else if (!child->GetLayoutObject().StyleRef().IsStackingContext()) {
-      // If the child is composited, but not a stacking context, it may paint
-      // negative z-index descendants into an ancestor's GraphicsLayer.
-      is_all_scrolling_content_composited_ = false;
-      return;
-    }
   }
 }
 

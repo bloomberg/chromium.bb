@@ -18,11 +18,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
-          "rect": [312, 112, 454, 469],
-          "reason": "full"
-        },
-        {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative red'",
           "rect": [314, 114, 435, 450],
           "reason": "paint property change"
@@ -36,10 +31,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
-      "reason": "full"
-    },
     {
       "object": "HorizontalScrollbar",
       "reason": "scroll control"

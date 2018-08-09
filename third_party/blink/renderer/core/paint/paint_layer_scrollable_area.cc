@@ -509,18 +509,25 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
 
 void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange(
     bool offset_was_zero) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    // "background-attachment: local" causes the background of this element to
-    // change position due to scroll so a paint invalidation is needed.
-    // TODO(pdr): This invalidation can be removed if the local background
-    // attachment is painted into the scrolling contents.
-    if (ScrollsOverflow() &&
-        GetLayoutBox()->Style()->BackgroundLayers().Attachment() ==
-            EFillAttachment::kLocal) {
+  bool requires_paint_invalidation = false;
+
+  // "background-attachment: local" causes the background of this element to
+  // change position due to scroll so a paint invalidation is needed.
+  // TODO(pdr): This invalidation can be removed if the local background
+  // attachment is painted into the scrolling contents.
+  if (ScrollsOverflow() &&
+      GetLayoutBox()->Style()->BackgroundLayers().Attachment() ==
+          EFillAttachment::kLocal) {
+    if (!UsesCompositedScrolling())
+      requires_paint_invalidation = true;
+
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       GetLayoutBox()->SetShouldDoFullPaintInvalidation();
       return;
     }
+  }
 
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     // TODO(pdr): If this is the root frame, descendants with fixed background
     // attachments need to be invalidated.
 
@@ -537,32 +544,17 @@ void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange(
     // PaintLayer to just check for interest rect changes instead of doing a
     // full repaint.
     bool needs_repaint_for_interest_rect = true;
-    if (needs_repaint_for_overflow_hidden || needs_repaint_for_interest_rect) {
+    if (needs_repaint_for_overflow_hidden || needs_repaint_for_interest_rect)
       Layer()->SetNeedsRepaint();
-      return;
-    }
 
     return;
   }
 
-  bool requires_paint_invalidation = true;
-
   LocalFrameView* frame_view = GetLayoutBox()->GetFrameView();
   bool is_root_layer = Layer()->IsRootLayer();
-  if (GetLayoutBox()->View()->Compositor()->InCompositingMode()) {
-    bool only_scrolled_composited_layers =
-        ScrollsOverflow() && Layer()->IsAllScrollingContentComposited() &&
-        GetLayoutBox()->Style()->BackgroundLayers().Attachment() !=
-            EFillAttachment::kLocal;
+  frame_view->InvalidateBackgroundAttachmentFixedDescendants(*GetLayoutBox());
 
-    if (UsesCompositedScrolling() || only_scrolled_composited_layers)
-      requires_paint_invalidation = false;
-  }
-
-  if (requires_paint_invalidation || is_root_layer)
-    frame_view->InvalidateBackgroundAttachmentFixedDescendants(*GetLayoutBox());
-
-  if (!requires_paint_invalidation && is_root_layer) {
+  if (is_root_layer) {
     // Some special invalidations for the root layer.
     if (frame_view->HasViewportConstrainedObjects()) {
       if (!frame_view->InvalidateViewportConstrainedObjects())
@@ -574,6 +566,13 @@ void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange(
   if (requires_paint_invalidation) {
     GetLayoutBox()->SetShouldDoFullPaintInvalidation();
     GetLayoutBox()->SetMayNeedPaintInvalidationSubtree();
+  } else if (!UsesCompositedScrolling()) {
+    // If any scrolling content might have ben clipped by a cull rect, then
+    // that cull rect could be affected by scroll offset. For composited
+    // scrollers, this will be taken care of by the interest rect computation
+    // in CompositedLayerMapping.
+    // TODO(chrishtr): replace this shortcut with interest rects.
+    Layer()->SetNeedsRepaint();
   }
 }
 
@@ -1220,10 +1219,6 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
   UpdateScrollCornerStyle();
   UpdateResizerAreaSet();
   UpdateResizerStyle(old_style);
-}
-
-void PaintLayerScrollableArea::UpdateAfterCompositingChange() {
-  Layer()->UpdateScrollingStateAfterCompositingChange();
 }
 
 void PaintLayerScrollableArea::UpdateAfterOverflowRecalc() {

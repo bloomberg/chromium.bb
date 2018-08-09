@@ -32,10 +32,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV class='innerWrapper'",
-      "reason": "full"
-    },
-    {
       "object": "LayoutBlockFlow DIV class='red'",
       "reason": "geometry"
     },

@@ -353,12 +353,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // True if this layer container layoutObjects that paint.
   bool HasNonEmptyChildLayoutObjects() const;
 
-  // Will ensure that isAllScrollingContentComposited() is up to date.
-  void UpdateScrollingStateAfterCompositingChange();
-  bool IsAllScrollingContentComposited() const {
-    return is_all_scrolling_content_composited_;
-  }
-
   // Gets the ancestor layer that serves as the containing block (in the sense
   // of LayoutObject::container() instead of LayoutObject::containingBlock())
   // of this layer. Normally the parent layer is the containing layer, except
@@ -1274,11 +1268,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // Used only while determining what layers should be composited. Applies to
   // the tree of z-order lists.
   unsigned has_compositing_descendant_ : 1;
-
-  // True iff we have scrollable overflow and all children of layout_object_ are
-  // known to paint exclusively into their own composited layers.  Set by
-  // updateScrollingStateAfterCompositingChange().
-  unsigned is_all_scrolling_content_composited_ : 1;
 
   // Should be for stacking contexts having unisolated blending descendants.
   unsigned should_isolate_composited_descendants_ : 1;

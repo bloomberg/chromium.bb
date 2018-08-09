@@ -378,8 +378,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void UpdateAfterStyleChange(const ComputedStyle*);
   void UpdateAfterOverflowRecalc();
 
-  void UpdateAfterCompositingChange();
-
   bool HasScrollbar() const {
     return HasHorizontalScrollbar() || HasVerticalScrollbar();
   }

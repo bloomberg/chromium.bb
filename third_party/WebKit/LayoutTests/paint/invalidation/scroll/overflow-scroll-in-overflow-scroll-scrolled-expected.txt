@@ -32,10 +32,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV id='innerDiv'",
-      "reason": "full"
-    },
-    {
       "object": "VerticalScrollbar",
       "reason": "scroll control"
     }
