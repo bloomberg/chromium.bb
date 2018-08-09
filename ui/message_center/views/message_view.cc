@@ -74,7 +74,14 @@ MessageView::MessageView(const Notification& notification)
 
   // Create the opaque background that's above the view's shadow.
   background_view_ = new views::View();
-  UpdateCornerRadius(0, 0);
+
+  // ChromeOS rounds the corners of the message view. TODO(estade): should we do
+  // this for all platforms?
+  if (ShouldRoundMessageViewCorners())
+    UpdateCornerRadius(kNotificationCornerRadius, kNotificationCornerRadius);
+  else
+    UpdateCornerRadius(0, 0);
+
   AddChildView(background_view_);
 
   focus_painter_ = views::Painter::CreateSolidFocusPainter(
@@ -246,16 +253,6 @@ void MessageView::Layout() {
 
   // Background.
   background_view_->SetBoundsRect(content_bounds);
-
-  // ChromeOS rounds the corners of the message view. TODO(estade): should we do
-  // this for all platforms?
-  if (ShouldRoundMessageViewCorners()) {
-    gfx::Path path;
-    constexpr SkScalar kCornerRadius = SkIntToScalar(kNotificationCornerRadius);
-    path.addRoundRect(gfx::RectToSkRect(background_view_->GetLocalBounds()),
-                      kCornerRadius, kCornerRadius);
-    background_view_->set_clip_path(path);
-  }
 }
 
 const char* MessageView::GetClassName() const {
