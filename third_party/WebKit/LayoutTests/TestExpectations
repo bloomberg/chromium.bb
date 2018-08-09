@@ -4880,7 +4880,7 @@ crbug.com/869470 external/wpt/background-fetch/get-ids.https.window.html [ Pass 
 
 # Flaky middleClinkAutoscroll increased flakiness on Mac
 crbug.com/851090 [ Mac ] fast/events/middleClickAutoscroll-click-hyperlink.html [ Failure Pass ]
-crbug.com/851090 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-nested-divs.html [ Failure Pass ]
+crbug.com/851090 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-nested-divs.html [ Failure Pass Timeout ]
 crbug.com/851090 [ Mac ] fast/events/middleClickAutoscroll-nested-divs.html [ Failure Pass Timeout ]
 crbug.com/851090 [ Mac ] virtual/user-activation-v2/fast/events/autoscroll-over-scrollbar.html [ Failure Pass ]
 
@@ -4895,3 +4895,5 @@ crbug.com/871445 [ Mac ] http/tests/media/video-load-metadata-decode-error.html 
 
 # Sheriff 2018-08-09
 crbug.com/872635 [ Mac ] fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Failure Pass ]
+crbug.com/872705 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-over-scrollbar.html [ Failure Pass ]
+crbug.com/872705 [ Mac ] virtual/mouseevent_fractional/fast/events/recorded-keydown-event.html [ Timeout Pass ]
