@@ -121,19 +121,23 @@ function navigateWithDirectoryTree(windowId, path, rootLabel) {
  * Clicks context menu item of id in directory tree.
  */
 function clickDirectoryTreeContextMenuItem(windowId, path, id) {
+  const contextMenu = '#directory-tree-context-menu:not([hidden])';
+
   return remoteCall.callRemoteTestUtil('focus', windowId,
-      [`[full-path-for-testing="${path}"]`]).then(function() {
+      [`[full-path-for-testing="${path}"]`]).then(function(result) {
+    chrome.test.assertTrue(!!result, 'focus failed');
     // Right click photos directory.
     return remoteCall.callRemoteTestUtil('fakeMouseRightClick', windowId,
         [`[full-path-for-testing="${path}"]`]);
-  }).then(function() {
-    // Wait for context menu.
+  }).then(function(result) {
+    chrome.test.assertTrue(!!result, 'fakeMouseRightClick failed');
+    // Check: context menu item |id| should be shown enabled.
     return remoteCall.waitForElement(windowId,
-        `#directory-tree-context-menu > [command="#${id}"]:not([disabled])`);
+        `${contextMenu} [command="#${id}"]:not([disabled])`);
   }).then(function() {
-    // Click menu item.
+    // Click the menu item specified by |id|.
     return remoteCall.callRemoteTestUtil('fakeMouseClick', windowId,
-        [`#directory-tree-context-menu > [command="#${id}"]`]);
+        [`${contextMenu} [command="#${id}"]`]);
   });
 }
 
