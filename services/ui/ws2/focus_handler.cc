@@ -51,6 +51,26 @@ bool FocusHandler::SetFocus(aura::Window* window) {
     return true;
   }
 
+  // The client is asking to remove focus from a window. This is typically a
+  // side effect of the window becoming, or about to become, an unfocusable
+  // Window (for example, the Window is hiding). Windows becoming unfocusable is
+  // handled locally. Assume the request is for such a scenario and return
+  // true. Returning false means the client will attempt to revert to the
+  // previously focused window, which may cause unexpected activation changes.
+  //
+  // To process null requests conflicts with top-level activation changes. For
+  // example, the typical sequence when a window is hidden is to first remove
+  // focus, and then hide the window. FocusController keys off window hiding to
+  // move activation. If this code were to set focus to null, FocusController
+  // would not see the window hiding (because the active window was set to null)
+  // and not automatically activate the next window.
+  //
+  // Another possibility for this code is to handle null as a signal to move
+  // focus to the active window (if there is one). I'm going with the simpler
+  // approach for now.
+  if (!window)
+    return true;
+
   ClientChange change(window_tree_->property_change_tracker_.get(), window,
                       ClientChangeType::kFocus);
   focus_client->FocusWindow(window);

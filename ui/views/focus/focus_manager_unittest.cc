@@ -69,7 +69,7 @@ class SimpleTestView : public View {
 
 // Tests that the appropriate Focus related methods are called when a View
 // gets/loses focus.
-TEST_F(FocusManagerTest, DISABLED_ViewFocusCallbacks) {
+TEST_F(FocusManagerTest, ViewFocusCallbacks) {
   std::vector<FocusTestEvent> event_list;
   const int kView1ID = 1;
   const int kView2ID = 2;
