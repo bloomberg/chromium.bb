@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <map>
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -207,15 +208,16 @@ const AppCacheStorage::UsageMap* AppCacheQuotaClient::GetUsageMap() {
   return service_->storage()->usage_map();
 }
 
-net::CancelableCompletionCallback*
+net::CancelableCompletionRepeatingCallback*
 AppCacheQuotaClient::GetServiceDeleteCallback() {
-  // Lazily created due to CancelableCompletionCallback's threading
-  // restrictions, there is no way to detach from the thread created on.
+  // Lazily created due to base::CancelableCallback's threading restrictions,
+  // there is no way to detach from the thread created on.
   if (!service_delete_callback_) {
-    service_delete_callback_.reset(
-        new net::CancelableCompletionCallback(
-            base::Bind(&AppCacheQuotaClient::DidDeleteAppCachesForOrigin,
-                       base::Unretained(this))));
+    service_delete_callback_ =
+        std::make_unique<net::CancelableCompletionRepeatingCallback>(
+            base::BindRepeating(
+                &AppCacheQuotaClient::DidDeleteAppCachesForOrigin,
+                base::Unretained(this)));
   }
   return service_delete_callback_.get();
 }
