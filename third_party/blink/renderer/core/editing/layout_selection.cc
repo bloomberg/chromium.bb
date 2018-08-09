@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/editing/layout_selection.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -293,19 +294,30 @@ static LayoutTextFragment* FirstLetterPartFor(
   return nullptr;
 }
 
+static bool IsDisplayContentElement(const Node& node) {
+  if (!node.IsElementNode())
+    return false;
+  const ComputedStyle* const style = node.GetComputedStyle();
+  return style && style->Display() == EDisplay::kContents;
+}
+
 template <typename Visitor>
 static void VisitSelectedInclusiveDescendantsOfInternal(const Node& node,
                                                         Visitor* visitor) {
-  LayoutObject* layout_object = node.GetLayoutObject();
-  if (!layout_object)
-    return;
-  if (LayoutTextFragment* first_letter = FirstLetterPartFor(layout_object)) {
-    if (first_letter->GetSelectionState() != SelectionState::kNone)
-      visitor->Visit(first_letter);
+  // Display:content element appears in a flat tree even it doesn't have
+  // a LayoutObject but we need to visit its children.
+  if (!IsDisplayContentElement(node)) {
+    LayoutObject* layout_object = node.GetLayoutObject();
+    if (!layout_object)
+      return;
+    if (LayoutTextFragment* first_letter = FirstLetterPartFor(layout_object)) {
+      if (first_letter->GetSelectionState() != SelectionState::kNone)
+        visitor->Visit(first_letter);
+    }
+    if (layout_object->GetSelectionState() == SelectionState::kNone)
+      return;
+    visitor->Visit(layout_object);
   }
-  if (layout_object->GetSelectionState() == SelectionState::kNone)
-    return;
-  visitor->Visit(layout_object);
 
   for (Node& child : FlatTreeTraversal::ChildrenOf(node))
     VisitSelectedInclusiveDescendantsOfInternal(child, visitor);

@@ -850,6 +850,35 @@ TEST_F(LayoutSelectionTest, MoveNode) {
       DumpSelectionInfo());
 }
 
+// http://crbug.com/870734
+TEST_F(LayoutSelectionTest, InvalidateSlot) {
+  Selection().SetSelectionAndEndTyping(
+      SetSelectionTextToBody("^<div>"
+                             "<template data-mode=open>"
+                             "<slot></slot>"
+                             "</template>"
+                             "foo"
+                             "</div>|"));
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(
+      "BODY, Contain, NotInvalidate \n"
+      "  DIV, Contain, NotInvalidate \n"
+      "    #shadow-root \n"
+      "      SLOT, <null LayoutObject> \n"
+      "    'foo', StartAndEnd, NotInvalidate ",
+      DumpSelectionInfo());
+
+  Selection().Clear();
+  Selection().CommitAppearanceIfNeeded();
+  EXPECT_EQ(
+      "BODY, None, NotInvalidate \n"
+      "  DIV, None, NotInvalidate \n"
+      "    #shadow-root \n"
+      "      SLOT, <null LayoutObject> \n"
+      "    'foo', None, ShouldInvalidate ",
+      DumpSelectionInfo());
+}
+
 static const NGPaintFragment* FindNGPaintFragmentInternal(
     const NGPaintFragment* paint,
     const LayoutObject* layout_object) {
