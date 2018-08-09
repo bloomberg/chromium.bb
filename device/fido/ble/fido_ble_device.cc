@@ -16,9 +16,10 @@
 
 namespace device {
 
-FidoBleDevice::FidoBleDevice(std::string address) : weak_factory_(this) {
+FidoBleDevice::FidoBleDevice(BluetoothAdapter* adapter, std::string address)
+    : weak_factory_(this) {
   connection_ = std::make_unique<FidoBleConnection>(
-      std::move(address),
+      adapter, std::move(address),
       base::BindRepeating(&FidoBleDevice::OnConnectionStatus,
                           base::Unretained(this)),
       base::BindRepeating(&FidoBleDevice::OnStatusMessage,

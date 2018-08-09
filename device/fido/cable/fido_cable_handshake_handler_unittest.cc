@@ -19,6 +19,7 @@
 #include "crypto/hkdf.h"
 #include "crypto/hmac.h"
 #include "device/bluetooth/test/bluetooth_test.h"
+#include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/fido/ble/fido_ble_frames.h"
 #include "device/fido/ble/mock_fido_ble_connection.h"
 #include "device/fido/cable/fido_cable_device.h"
@@ -37,6 +38,7 @@ using ::testing::Invoke;
 using ::testing::Test;
 using TestDeviceCallbackReceiver =
     test::ValueCallbackReceiver<base::Optional<std::vector<uint8_t>>>;
+using NiceMockBluetoothAdapter = ::testing::NiceMock<MockBluetoothAdapter>;
 
 // Sufficiently large test control point length as we are not interested
 // in testing fragmentations of BLE messages. All Cable messages are encrypted
@@ -254,7 +256,7 @@ class FidoCableHandshakeHandlerTest : public Test {
  public:
   FidoCableHandshakeHandlerTest() {
     auto connection = std::make_unique<MockFidoBleConnection>(
-        BluetoothTestBase::kTestDeviceAddress1);
+        adapter_.get(), BluetoothTestBase::kTestDeviceAddress1);
     connection_ = connection.get();
     device_ = std::make_unique<FidoCableDevice>(std::move(connection));
 
@@ -290,6 +292,8 @@ class FidoCableHandshakeHandlerTest : public Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
+  scoped_refptr<MockBluetoothAdapter> adapter_ =
+      base::MakeRefCounted<NiceMockBluetoothAdapter>();
   FakeCableAuthenticator authenticator_;
   MockFidoBleConnection* connection_;
   std::unique_ptr<FidoCableDevice> device_;

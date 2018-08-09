@@ -15,9 +15,11 @@
 
 namespace device {
 
+class BluetoothAdapter;
+
 class MockFidoBleConnection : public FidoBleConnection {
  public:
-  explicit MockFidoBleConnection(std::string device_address);
+  MockFidoBleConnection(BluetoothAdapter* adapter, std::string device_address);
   ~MockFidoBleConnection() override;
 
   MOCK_METHOD0(Connect, void());
@@ -50,4 +52,4 @@ class MockFidoBleConnection : public FidoBleConnection {
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_MOCK_FIDO_BLE_CONNECTION_H_
+#endif  // DEVICE_FIDO_BLE_MOCK_FIDO_BLE_CONNECTION_H_

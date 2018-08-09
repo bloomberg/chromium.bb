@@ -265,7 +265,8 @@ void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
   if (!extract_success)
     return;
 
-  auto cable_device = std::make_unique<FidoCableDevice>(device->GetAddress());
+  auto cable_device =
+      std::make_unique<FidoCableDevice>(adapter, device->GetAddress());
   // At most one handshake messages should be exchanged for each Cable device.
   if (!base::ContainsKey(cable_handshake_handlers_, cable_device->GetId())) {
     ConductEncryptionHandshake(std::move(cable_device),

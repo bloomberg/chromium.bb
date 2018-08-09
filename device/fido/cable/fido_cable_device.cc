@@ -113,8 +113,8 @@ FidoCableDevice::EncryptionData::~EncryptionData() = default;
 
 // FidoCableDevice::EncryptionData ----------------------------------------
 
-FidoCableDevice::FidoCableDevice(std::string address)
-    : FidoBleDevice(std::move(address)), weak_factory_(this) {}
+FidoCableDevice::FidoCableDevice(BluetoothAdapter* adapter, std::string address)
+    : FidoBleDevice(adapter, std::move(address)), weak_factory_(this) {}
 
 FidoCableDevice::FidoCableDevice(std::unique_ptr<FidoBleConnection> connection)
     : FidoBleDevice(std::move(connection)), weak_factory_(this) {}

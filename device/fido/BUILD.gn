@@ -245,6 +245,9 @@ fuzzer_test("fido_cable_handshake_handler_fuzzer") {
   deps = [
     ":fido",
     "//base",
+    "//device/bluetooth:mocks",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
   libfuzzer_options = [ "max_len=2048" ]
 }

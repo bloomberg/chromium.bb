@@ -24,12 +24,13 @@
 
 namespace device {
 
+class BluetoothAdapter;
 class FidoBleFrame;
 
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
  public:
   using FrameCallback = FidoBleTransaction::FrameCallback;
-  explicit FidoBleDevice(std::string address);
+  FidoBleDevice(BluetoothAdapter* adapter, std::string address);
   explicit FidoBleDevice(std::unique_ptr<FidoBleConnection> connection);
   ~FidoBleDevice() override;
 

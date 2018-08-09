@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
@@ -72,32 +71,50 @@ constexpr const char* ToString(BluetoothGattService::GattErrorCode error_code) {
 
 }  // namespace
 
-FidoBleConnection::FidoBleConnection(std::string device_address)
-    : address_(std::move(device_address)), weak_factory_(this) {}
-
 FidoBleConnection::FidoBleConnection(
+    BluetoothAdapter* adapter,
     std::string device_address,
     ConnectionStatusCallback connection_status_callback,
     ReadCallback read_callback)
-    : address_(std::move(device_address)),
+    : adapter_(adapter),
+      address_(std::move(device_address)),
       connection_status_callback_(std::move(connection_status_callback)),
       read_callback_(std::move(read_callback)),
       weak_factory_(this) {
+  DCHECK(adapter_);
+  adapter_->AddObserver(this);
   DCHECK(!address_.empty());
 }
 
 FidoBleConnection::~FidoBleConnection() {
-  if (adapter_)
-    adapter_->RemoveObserver(this);
+  adapter_->RemoveObserver(this);
 }
 
 const BluetoothDevice* FidoBleConnection::GetBleDevice() const {
-  return adapter_ ? adapter_->GetDevice(address()) : nullptr;
+  return adapter_->GetDevice(address());
+}
+
+FidoBleConnection::FidoBleConnection(BluetoothAdapter* adapter,
+                                     std::string device_address)
+    : adapter_(adapter),
+      address_(std::move(device_address)),
+      weak_factory_(this) {
+  adapter_->AddObserver(this);
 }
 
 void FidoBleConnection::Connect() {
-  BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&FidoBleConnection::OnGetAdapter, weak_factory_.GetWeakPtr()));
+  BluetoothDevice* device = adapter_->GetDevice(address_);
+  if (!device) {
+    DLOG(ERROR) << "Failed to get Device.";
+    OnConnectionError();
+    return;
+  }
+
+  device->CreateGattConnection(
+      base::Bind(&FidoBleConnection::OnCreateGattConnection,
+                 weak_factory_.GetWeakPtr()),
+      base::Bind(&FidoBleConnection::OnCreateGattConnectionError,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FidoBleConnection::ReadControlPointLength(
@@ -269,34 +286,6 @@ void FidoBleConnection::WriteServiceRevision(ServiceRevision service_revision,
       base::Bind(OnWriteError, copyable_callback));
 }
 
-void FidoBleConnection::OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter) {
-  if (!adapter) {
-    DLOG(ERROR) << "Failed to get Adapter.";
-    OnConnectionError();
-    return;
-  }
-
-  DVLOG(2) << "Got Adapter: " << adapter->GetAddress();
-  adapter_ = std::move(adapter);
-  adapter_->AddObserver(this);
-  CreateGattConnection();
-}
-
-void FidoBleConnection::CreateGattConnection() {
-  BluetoothDevice* device = adapter_->GetDevice(address_);
-  if (!device) {
-    DLOG(ERROR) << "Failed to get Device.";
-    OnConnectionError();
-    return;
-  }
-
-  device->CreateGattConnection(
-      base::Bind(&FidoBleConnection::OnCreateGattConnection,
-                 weak_factory_.GetWeakPtr()),
-      base::Bind(&FidoBleConnection::OnCreateGattConnectionError,
-                 weak_factory_.GetWeakPtr()));
-}
-
 void FidoBleConnection::OnCreateGattConnection(
     std::unique_ptr<BluetoothGattConnection> connection) {
   connection_ = std::move(connection);
@@ -410,11 +399,6 @@ void FidoBleConnection::OnConnectionError() {
 }
 
 const BluetoothRemoteGattService* FidoBleConnection::GetFidoService() const {
-  if (!adapter_) {
-    DLOG(ERROR) << "No adapter present.";
-    return nullptr;
-  }
-
   const BluetoothDevice* device = adapter_->GetDevice(address_);
   if (!device) {
     DLOG(ERROR) << "No device present.";
@@ -440,7 +424,7 @@ void FidoBleConnection::DeviceAdded(BluetoothAdapter* adapter,
                                     BluetoothDevice* device) {
   if (adapter != adapter_ || device->GetAddress() != address_)
     return;
-  CreateGattConnection();
+  Connect();
 }
 
 void FidoBleConnection::DeviceAddressChanged(BluetoothAdapter* adapter,

@@ -8,8 +8,9 @@
 
 namespace device {
 
-MockFidoBleConnection::MockFidoBleConnection(std::string device_address)
-    : FidoBleConnection(std::move(device_address)) {}
+MockFidoBleConnection::MockFidoBleConnection(BluetoothAdapter* adapter,
+                                             std::string device_address)
+    : FidoBleConnection(adapter, std::move(device_address)) {}
 
 MockFidoBleConnection::~MockFidoBleConnection() = default;
 

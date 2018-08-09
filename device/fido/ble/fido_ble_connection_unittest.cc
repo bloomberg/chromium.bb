@@ -135,6 +135,8 @@ class FidoBleConnectionTest : public ::testing::Test {
     BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
   }
 
+  BluetoothAdapter* adapter() { return adapter_.get(); }
+
   void AddU2Device(const std::string& device_address) {
     auto u2f_device = std::make_unique<NiceMockBluetoothDevice>(
         adapter_.get(), /* bluetooth_class */ 0u,
@@ -359,7 +361,7 @@ TEST_F(FidoBleConnectionTest, Address) {
   auto connect_do_nothing = [](bool) {};
   auto read_do_nothing = [](std::vector<uint8_t>) {};
 
-  FidoBleConnection connection(device_address,
+  FidoBleConnection connection(adapter(), device_address,
                                base::BindRepeating(connect_do_nothing),
                                base::BindRepeating(read_do_nothing));
   connection.Connect();
@@ -375,7 +377,7 @@ TEST_F(FidoBleConnectionTest, DeviceNotPresent) {
   TestConnectionStatusCallback connection_status_callback;
   auto do_nothing = [](std::vector<uint8_t>) {};
 
-  FidoBleConnection connection(device_address,
+  FidoBleConnection connection(adapter(), device_address,
                                connection_status_callback.GetCallback(),
                                base::BindRepeating(do_nothing));
   connection.Connect();
@@ -390,7 +392,7 @@ TEST_F(FidoBleConnectionTest, PreConnected) {
   SetupConnectingU2fDevice(device_address);
 
   auto do_nothing = [](std::vector<uint8_t>) {};
-  FidoBleConnection connection(device_address,
+  FidoBleConnection connection(adapter(), device_address,
                                connection_status_callback.GetCallback(),
                                base::BindRepeating(do_nothing));
   connection.Connect();
@@ -401,7 +403,7 @@ TEST_F(FidoBleConnectionTest, PostConnected) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   TestConnectionStatusCallback connection_status_callback;
   auto do_nothing = [](std::vector<uint8_t>) {};
-  FidoBleConnection connection(device_address,
+  FidoBleConnection connection(adapter(), device_address,
                                connection_status_callback.GetCallback(),
                                base::BindRepeating(do_nothing));
   connection.Connect();
@@ -421,7 +423,7 @@ TEST_F(FidoBleConnectionTest, DeviceDisconnect) {
   AddU2Device(device_address);
   SetupConnectingU2fDevice(device_address);
   auto do_nothing = [](std::vector<uint8_t>) {};
-  FidoBleConnection connection(device_address,
+  FidoBleConnection connection(adapter(), device_address,
                                connection_status_callback.GetCallback(),
                                base::BindRepeating(do_nothing));
   connection.Connect();
@@ -440,7 +442,7 @@ TEST_F(FidoBleConnectionTest, ReadStatusNotifications) {
 
   AddU2Device(device_address);
   SetupConnectingU2fDevice(device_address);
-  FidoBleConnection connection(device_address,
+  FidoBleConnection connection(adapter(), device_address,
                                connection_status_callback.GetCallback(),
                                read_callback.GetCallback());
   connection.Connect();
@@ -462,7 +464,7 @@ TEST_F(FidoBleConnectionTest, ReadControlPointLength) {
   SetupConnectingU2fDevice(device_address);
   auto read_do_nothing = [](std::vector<uint8_t>) {};
 
-  FidoBleConnection connection(device_address,
+  FidoBleConnection connection(adapter(), device_address,
                                connection_status_callback.GetCallback(),
                                base::BindRepeating(read_do_nothing));
   connection.Connect();
@@ -499,7 +501,7 @@ TEST_F(FidoBleConnectionTest, ReadServiceRevisions) {
   SetupConnectingU2fDevice(device_address);
   auto read_do_nothing = [](std::vector<uint8_t>) {};
 
-  FidoBleConnection connection(device_address,
+  FidoBleConnection connection(adapter(), device_address,
                                connection_status_callback.GetCallback(),
                                base::BindRepeating(read_do_nothing));
   connection.Connect();
@@ -599,7 +601,7 @@ TEST_F(FidoBleConnectionTest, WriteControlPoint) {
   SetupConnectingU2fDevice(device_address);
   auto read_do_nothing = [](std::vector<uint8_t>) {};
 
-  FidoBleConnection connection(device_address,
+  FidoBleConnection connection(adapter(), device_address,
                                connection_status_callback.GetCallback(),
                                base::BindRepeating(read_do_nothing));
   connection.Connect();
@@ -625,7 +627,7 @@ TEST_F(FidoBleConnectionTest, WriteServiceRevision) {
   SetupConnectingU2fDevice(device_address);
   auto read_do_nothing = [](std::vector<uint8_t>) {};
 
-  FidoBleConnection connection(device_address,
+  FidoBleConnection connection(adapter(), device_address,
                                connection_status_callback.GetCallback(),
                                base::BindRepeating(read_do_nothing));
   connection.Connect();
@@ -672,7 +674,7 @@ TEST_F(FidoBleConnectionTest, ReadsAndWriteFailWhenDisconnected) {
   AddU2Device(device_address);
   SetupConnectingU2fDevice(device_address);
   auto do_nothing = [](std::vector<uint8_t>) {};
-  FidoBleConnection connection(device_address,
+  FidoBleConnection connection(adapter(), device_address,
                                connection_status_callback.GetCallback(),
                                base::BindRepeating(do_nothing));
   connection.Connect();
