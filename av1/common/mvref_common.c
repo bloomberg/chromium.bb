@@ -1345,7 +1345,7 @@ static int compare_ref_frame_info(const void *arg_a, const void *arg_b) {
 
 static void set_ref_frame_info(AV1_COMMON *const cm, int frame_idx,
                                REF_FRAME_INFO *ref_info) {
-  assert(frame_idx >= 0 && frame_idx <= INTER_REFS_PER_FRAME);
+  assert(frame_idx >= 0 && frame_idx < INTER_REFS_PER_FRAME);
 
   const int buf_idx = ref_info->buf_idx;
 
