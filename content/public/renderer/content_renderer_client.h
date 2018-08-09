@@ -390,8 +390,8 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual bool IsIdleMediaSuspendEnabled();
 
   // Whether the renderer should automatically suspend media playback on
-  // background tabs.
-  virtual bool IsBackgroundMediaSuspendEnabled();
+  // background tabs for given |render_frame|.
+  virtual bool IsBackgroundMediaSuspendEnabled(RenderFrame* render_frame);
 
   // Called when a resource at |url| is loaded using an otherwise-valid legacy
   // Symantec certificate that will be distrusted in future. Allows the embedder

@@ -252,7 +252,8 @@ bool ContentRendererClient::IsIdleMediaSuspendEnabled() {
   return true;
 }
 
-bool ContentRendererClient::IsBackgroundMediaSuspendEnabled() {
+bool ContentRendererClient::IsBackgroundMediaSuspendEnabled(
+    RenderFrame* render_frame) {
 #if defined(OS_ANDROID)
   return true;
 #else
