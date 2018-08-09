@@ -26,6 +26,7 @@
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/passphrase_type.h"
 #include "components/sync/base/report_unrecoverable_error.h"
@@ -1714,9 +1715,13 @@ std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
                                           dtc_iter->second->state()));
       if (dtc_iter->second->state() !=
           syncer::DataTypeController::NOT_RUNNING) {
-        dtc_iter->second->GetStatusCounters(base::BindRepeating(
-            &ProfileSyncService::OnDatatypeStatusCounterUpdated,
-            base::Unretained(this)));
+        // We use BindToCurrentSequence() to make sure observers (i.e.
+        // |type_debug_info_observers_|) are not notified synchronously, which
+        // the UI code (chrome://sync-internals) doesn't handle well.
+        dtc_iter->second->GetStatusCounters(
+            BindToCurrentSequence(base::BindRepeating(
+                &ProfileSyncService::OnDatatypeStatusCounterUpdated,
+                base::Unretained(this))));
       }
     }
 
