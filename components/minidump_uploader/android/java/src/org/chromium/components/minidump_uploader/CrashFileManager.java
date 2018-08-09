@@ -350,6 +350,16 @@ public class CrashFileManager {
     }
 
     /**
+     * Returns the most recent minidump without a logcat for a given pid, or null if no such
+     * minidump exists.
+     */
+    public File getMinidumpSansLogcatForPid(int pid) {
+        File[] foundFiles = listCrashFiles(
+            Pattern.compile("\\.dmp" + Integer.toString(pid) + "\\z"));
+        return foundFiles.length > 0 ? foundFiles[0] : null;
+    }
+
+    /**
      * Returns all minidump files that definitely do not have logcat output, sorted by modification
      * time stamp. Note: This method does not provide an "if and only if" test: it may return omit
      * some files that lack logcat output, if logcat output has been intentionally skipped for those
