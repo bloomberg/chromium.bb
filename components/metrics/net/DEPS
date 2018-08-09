@@ -5,5 +5,7 @@ include_rules = [
   "+components/encrypted_messages",
   "+components/variations",
   "+net",
+  "+services/network/public/cpp",
+  "+services/network/test",
   "+third_party/cros_system_api",
 ]

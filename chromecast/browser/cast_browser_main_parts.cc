@@ -64,6 +64,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_switches.h"
@@ -508,7 +509,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
           cast_browser_process_->pref_service(),
           content::BrowserContext::GetDefaultStoragePartition(
               cast_browser_process_->browser_context())
-              ->GetURLRequestContext()));
+              ->GetURLLoaderFactoryForBrowserProcess()));
   cast_browser_process_->SetRemoteDebuggingServer(
       std::make_unique<RemoteDebuggingServer>(
           cast_browser_process_->browser_client()

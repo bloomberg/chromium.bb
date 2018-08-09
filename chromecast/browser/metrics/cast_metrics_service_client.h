@@ -30,9 +30,9 @@ class MetricsService;
 class MetricsStateManager;
 }  // namespace metrics
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 namespace chromecast {
 namespace metrics {
@@ -42,8 +42,9 @@ class ExternalMetrics;
 class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
                                  public ::metrics::EnabledStateProvider {
  public:
-  CastMetricsServiceClient(PrefService* pref_service,
-                           net::URLRequestContextGetter* request_context);
+  CastMetricsServiceClient(
+      PrefService* pref_service,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~CastMetricsServiceClient() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -105,7 +106,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
   std::unique_ptr<::metrics::MetricsStateManager> metrics_state_manager_;
   std::unique_ptr<::metrics::MetricsService> metrics_service_;
   std::unique_ptr<::metrics::EnabledStateProvider> enabled_state_provider_;
-  net::URLRequestContextGetter* const request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMetricsServiceClient);
 };

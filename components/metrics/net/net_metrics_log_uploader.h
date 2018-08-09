@@ -11,29 +11,25 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "components/metrics/metrics_log_uploader.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/metrics_proto/reporting_info.pb.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+}  // namespace network
 
 namespace metrics {
 
 // Implementation of MetricsLogUploader using the Chrome network stack.
-class NetMetricsLogUploader : public MetricsLogUploader,
-                              public net::URLFetcherDelegate {
+class NetMetricsLogUploader : public MetricsLogUploader {
  public:
   // Constructs a NetMetricsLogUploader which uploads data to |server_url| with
   // the specified |mime_type|. The |service_type| marks which service the
   // data usage should be attributed to. The |on_upload_complete| callback will
   // be called with the HTTP response code of the upload or with -1 on an error.
-  // The caller must ensure that |request_context_getter| remains valid for the
-  // lifetime of this class.
   NetMetricsLogUploader(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       base::StringPiece server_url,
       base::StringPiece mime_type,
       MetricsLogUploader::MetricServiceType service_type,
@@ -43,7 +39,7 @@ class NetMetricsLogUploader : public MetricsLogUploader,
   // |insecure_server_url|. That URL is used as a fallback if a connection
   // to |server_url| fails, requests are encrypted when sent to an HTTP URL.
   NetMetricsLogUploader(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       base::StringPiece server_url,
       base::StringPiece insecure_server_url,
       base::StringPiece mime_type,
@@ -65,15 +61,14 @@ class NetMetricsLogUploader : public MetricsLogUploader,
                       const ReportingInfo& reporting_info,
                       const GURL& url);
 
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
 
   // Encrypts a |plaintext| string, using the encrypted_messages component,
   // returns |encrypted| which is a serialized EncryptedMessage object.
   bool EncryptString(const std::string& plaintext, std::string* encrypted);
 
-  // The request context for fetches done using the network stack.
-  net::URLRequestContextGetter* const request_context_getter_;
+  // The URLLoader factory for loads done using the network stack.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   const GURL server_url_;
   const GURL insecure_server_url_;
@@ -81,7 +76,7 @@ class NetMetricsLogUploader : public MetricsLogUploader,
   const MetricsLogUploader ::MetricServiceType service_type_;
   const MetricsLogUploader::UploadCallback on_upload_complete_;
   // The outstanding transmission appears as a URL Fetch operation.
-  std::unique_ptr<net::URLFetcher> current_fetch_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(NetMetricsLogUploader);
 };
