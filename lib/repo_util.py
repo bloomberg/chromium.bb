@@ -68,19 +68,19 @@ class Repository(object):
     # TODO(lannm): Use 'chromite/bootstrap/repo'?
     cmd = ['repo', 'init', '--manifest-url', manifest_url]
     if manifest_branch is not None:
-      cmd.extend(['--manifest-branch', manifest_branch])
+      cmd += ['--manifest-branch', manifest_branch]
     if manifest_name is not None:
-      cmd.extend(['--manifest-name', manifest_name])
+      cmd += ['--manifest-name', manifest_name]
     if mirror:
-      cmd.append('--mirror')
+      cmd += ['--mirror']
     if reference is not None:
-      cmd.extend(['--reference', reference])
+      cmd += ['--reference', reference]
     if depth is not None:
-      cmd.extend(['--depth', str(depth)])
+      cmd += ['--depth', str(depth)]
     if groups is not None:
-      cmd.extend(['--groups', groups])
+      cmd += ['--groups', groups]
     if repo_url is not None:
-      cmd.extend(['--repo-url', repo_url])
+      cmd += ['--repo-url', repo_url]
 
     try:
       cros_build_lib.RunCommand(cmd, cwd=root)
@@ -107,37 +107,94 @@ class Repository(object):
       return None
     return cls(repo_root)
 
-  def RunRepo(self, subcmd, *args, **kwargs):
-    """RunCommand wrapper for `repo` commands.
+  @classmethod
+  def MustFind(cls, path):
+    """Searches for a repo directory and returns a Repository if found.
 
     Args:
-      subcmd: `repo` subcommand to run, e.g. 'sync'.
-      args: arguments to pass to the repo subcommand.
-      kwargs: Keyword arguments to RunCommand; 'cwd' will be set to
-        the Repository root.
+      path: The path where the search starts.
+
+    Raises:
+      Error: if no Repository is found.
+    """
+    repo = cls.Find(path)
+    if repo is None:
+      raise Error('no repo found from %r', path)
+    return repo
+
+  def _Run(self, repo_cmd, cwd=None):
+    """RunCommand wrapper for `repo`.
+
+    Args:
+      repo_cmd: List of arguments to pass to `repo`.
+      cwd: The path to run the command in. Defaults to Repository root.
+        Must be within the root.
 
     Returns:
       A CommandResult object.
 
     Raises:
-      RunCommandError: The command failed.
+      Error: if cwd is not within the Repository root.
+      RunCommandError: if the command failed.
     """
     # Use the checkout's copy of repo so that it doesn't have to be in PATH.
-    cmd = [os.path.join(self._repo_dir, 'repo', 'repo'), subcmd] + list(args)
-    kwargs['cwd'] = self.root
-    return cros_build_lib.RunCommand(cmd, **kwargs)
+    cmd = [os.path.join(self._repo_dir, 'repo', 'repo')] + repo_cmd
+    if cwd is None:
+      cwd = self.root
+    elif git.FindRepoCheckoutRoot(cwd) != self.root:
+      raise Error('cannot run `repo` outside of Repository root '
+                  '(cwd=%r root=%r)' % (cwd, self.root))
+    return cros_build_lib.RunCommand(cmd, cwd=cwd)
 
-  def Sync(self, projects=(), jobs=None):
+  def Sync(self, projects=None, jobs=None, cwd=None):
     """Run `repo sync`.
 
     Args:
       projects: A list of project names to sync.
       jobs: Number of projects to sync in parallel.
+      cwd: The path to run the command in. Defaults to Repository root.
 
     Raises:
-      RunCommandError: `repo sync` failed.
+      Error: if cwd is not within the Repository root.
+      RunCommandError: if the command failed.
     """
-    args = list(projects)
+    args = _ListArg(projects)
     if jobs is not None:
-      args.extend(['--jobs', str(jobs)])
-    self.RunRepo('sync', *args)
+      args += ['--jobs', str(jobs)]
+    self._Run(['sync'] + args, cwd=cwd)
+
+  def StartBranch(self, name, projects=None, cwd=None):
+    """Run `repo start`.
+
+    Args:
+      name: The name of the branch to create.
+      projects: A list of projects to create the branch in. Defaults to
+        creating in all projects.
+      cwd: The path to run the command in. Defaults to Repository root.
+
+    Raises:
+      Error: if cwd is not within the Repository root.
+      RunCommandError: if `repo start` failed.
+    """
+    if projects is None:
+      projects = ['--all']
+    else:
+      projects = _ListArg(projects)
+    self._Run(['start', name] + projects, cwd=cwd)
+
+
+def _ListArg(arg):
+  """Return a new list from arg.
+
+  Args:
+    arg: If a non-basestring iterable, return a new list with its contents. If
+      None, return an empty list.
+
+  Raises:
+    TypeError: if arg is a basestring or non-iterable (except None).
+  """
+  if isinstance(arg, basestring):
+    raise TypeError('string not allowed')
+  if arg is None:
+    return []
+  return list(arg)

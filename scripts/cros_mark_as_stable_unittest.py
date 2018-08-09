@@ -18,6 +18,7 @@ from chromite.lib import parallel
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
 from chromite.lib import portage_util
+from chromite.lib import repo_util
 from chromite.scripts import cros_mark_as_stable
 
 
@@ -326,7 +327,8 @@ class GitBranchTest(cros_test_lib.MockTestCase):
 
   def setUp(self):
     # Always stub RunCommmand out as we use it in every method.
-    self.rc_mock = self.PatchObject(cros_build_lib, 'RunCommand')
+    self.git_mock = self.PatchObject(git, 'RunGit')
+    self.start_mock = self.PatchObject(repo_util.Repository, 'StartBranch')
 
     self._branch_name = 'test_branch'
     self._target_manifest_branch = 'cros/test'
@@ -339,17 +341,15 @@ class GitBranchTest(cros_test_lib.MockTestCase):
     """Test init with no previous branch existing."""
     self.PatchObject(self._branch, 'Exists', return_value=False)
     cros_mark_as_stable.GitBranch.Checkout(self._branch)
-    self.rc_mock.assert_called_with(
-        ['repo', 'start', self._branch_name, '.'],
-        print_cmd=False, cwd='.', capture_output=True)
+    self.start_mock.assert_called_with(self._branch_name,
+                                       projects=['.'], cwd='.')
 
   def testCheckoutNoCreate(self):
     """Test init with previous branch existing."""
     self.PatchObject(self._branch, 'Exists', return_value=True)
     cros_mark_as_stable.GitBranch.Checkout(self._branch)
-    self.rc_mock.assert_called_with(
-        ['git', 'checkout', '-f', self._branch_name],
-        print_cmd=False, cwd='.', capture_output=True)
+    self.git_mock.assert_called_with('.', ['checkout', '-f', self._branch_name],
+                                     quiet=True)
 
   def testExists(self):
     """Test if branch exists that is created."""

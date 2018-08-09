@@ -17,6 +17,7 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
+from chromite.lib import repo_util
 
 # Commit message subject for uprevving Portage packages.
 GIT_COMMIT_SUBJECT = 'Marking set of ebuilds as stable'
@@ -185,11 +186,10 @@ class GitBranch(object):
     if not branch:
       branch = self.branch_name
     if branch == self.tracking_branch or self.Exists(branch):
-      git_cmd = ['git', 'checkout', '-f', branch]
+      git.RunGit(self.cwd, ['checkout', '-f', branch], quiet=True)
     else:
-      git_cmd = ['repo', 'start', branch, '.']
-    cros_build_lib.RunCommand(git_cmd, print_cmd=False, cwd=self.cwd,
-                              capture_output=True)
+      repo = repo_util.Repository.MustFind(self.cwd)
+      repo.StartBranch(branch, projects=['.'], cwd=self.cwd)
 
   def Exists(self, branch=None):
     """Returns True if the branch exists."""

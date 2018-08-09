@@ -40,25 +40,20 @@ class RepositoryTest(cros_test_lib.RunCommandTempDirTestCase):
     self.repo_dir = os.path.join(self.repo_root, '.repo')
     os.makedirs(self.repo_dir)
 
-  def _MockedRepository(self):
-    r = repo_util.Repository(self.repo_root)
-    r.RunRepo = mock.MagicMock()
-    return r
-
   def testInit(self):
-    r = repo_util.Repository(self.repo_root)
-    self.assertTrue(os.path.samefile(r.root, self.repo_root))
+    repo = repo_util.Repository(self.repo_root)
+    self.assertTrue(os.path.samefile(repo.root, self.repo_root))
 
   def testInitNoRepoDir(self):
-    with self.assertRaises(repo_util.Error):
+    with self.assertRaisesRegexp(repo_util.Error, r'no \.repo dir'):
       repo_util.Repository(self.empty_root)
 
   def testInitializeSimple(self):
     expected_cmd = ['repo', 'init', '--manifest-url', self.MANIFEST_URL]
     self.rc.AddCmdResult(expected_cmd, side_effect=RepoInitSideEffects)
-    r = repo_util.Repository.Initialize(self.empty_root, self.MANIFEST_URL)
+    repo = repo_util.Repository.Initialize(self.empty_root, self.MANIFEST_URL)
     self.assertCommandCalled(expected_cmd, cwd=self.empty_root)
-    self.assertTrue(os.path.samefile(r.root, self.empty_root))
+    self.assertTrue(os.path.samefile(repo.root, self.empty_root))
 
   def testInitializeComplex(self):
     expected_cmd = [
@@ -73,7 +68,7 @@ class RepositoryTest(cros_test_lib.RunCommandTempDirTestCase):
         '--repo-url', 'https://repo.xyz/repo',
     ]
     self.rc.AddCmdResult(expected_cmd, side_effect=RepoInitSideEffects)
-    r = repo_util.Repository.Initialize(
+    repo = repo_util.Repository.Initialize(
         self.empty_root, 'http://manifest.xyz/manifest',
         manifest_branch='test-branch',
         manifest_name='other.xml',
@@ -84,14 +79,14 @@ class RepositoryTest(cros_test_lib.RunCommandTempDirTestCase):
         repo_url='https://repo.xyz/repo',
     )
     self.assertCommandCalled(expected_cmd, cwd=self.empty_root)
-    self.assertTrue(os.path.samefile(r.root, self.empty_root))
+    self.assertTrue(os.path.samefile(repo.root, self.empty_root))
 
   def testInitializeExistingRepoDir(self):
-    with self.assertRaises(repo_util.Error):
+    with self.assertRaisesRegexp(repo_util.Error, 'cannot init in existing'):
       repo_util.Repository.Initialize(self.repo_root, self.MANIFEST_URL)
 
   def testInitializeExistingRepoSubdir(self):
-    with self.assertRaises(repo_util.Error):
+    with self.assertRaisesRegexp(repo_util.Error, 'cannot init in existing'):
       repo_util.Repository.Initialize(self.repo_root_subdir, self.MANIFEST_URL)
 
   def testInitializeFailCleanup(self):
@@ -104,25 +99,72 @@ class RepositoryTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandCalled(['rm', '-rf', repo_dir])
 
   def testFind(self):
-    r = repo_util.Repository.Find(self.repo_root_subdir)
-    self.assertEqual(r.root, self.repo_root)
+    repo = repo_util.Repository.Find(self.repo_root_subdir)
+    self.assertEqual(repo.root, self.repo_root)
 
   def testFindNothing(self):
     self.assertIsNone(repo_util.Repository.Find(self.empty_root_subdir))
 
-  def testRunRepo(self):
-    r = repo_util.Repository(self.repo_root)
-    r.RunRepo('subcmd', '--arg', 'val', int_timeout=7, cwd='fake')
-    self.assertCommandCalled(
-        [RepoCmdPath(self.repo_root), 'subcmd', '--arg', 'val'],
-        int_timeout=7, cwd=self.repo_root)
+  def testMustFind(self):
+    repo = repo_util.Repository.MustFind(self.repo_root_subdir)
+    self.assertEqual(repo.root, self.repo_root)
+
+  def testMustFindNothing(self):
+    with self.assertRaisesRegexp(repo_util.Error, 'no repo found'):
+      repo_util.Repository.MustFind(self.empty_root_subdir)
+
+
+class RepositoryCommandMethodTest(cros_test_lib.RunCommandTempDirTestCase):
+  """Tests for repo_util.Repository command methods."""
+
+  # Testing _Run: pylint: disable=protected-access
+
+  def setUp(self):
+    self.root = os.path.join(self.tempdir, 'root')
+    self.repo_dir = os.path.join(self.root, '.repo')
+    self.subdir = os.path.join(self.root, 'sub', 'dir')
+    os.makedirs(self.repo_dir)
+    os.makedirs(self.subdir)
+    self.repo = repo_util.Repository(self.root)
+
+  def MockRun(self):
+    self.repo._Run = mock.MagicMock()
+    return self.repo._Run
+
+  def testRun(self):
+    self.repo._Run(['subcmd', 'arg'])
+    self.assertCommandCalled([RepoCmdPath(self.root), 'subcmd', 'arg'],
+                             cwd=self.root)
+
+  def testRunSubDirCwd(self):
+    self.repo._Run(['subcmd'], cwd=self.subdir)
+    self.assertCommandCalled([RepoCmdPath(self.root), 'subcmd'],
+                             cwd=self.subdir)
+
+  def testRunBadCwd(self):
+    with self.assertRaisesRegexp(repo_util.Error, 'cannot run `repo` outside'):
+      self.repo._Run(['subcmd'], cwd=self.tempdir)
 
   def testSyncSimple(self):
-    r = self._MockedRepository()
-    r.Sync()
-    r.RunRepo.assert_called_with('sync')
+    run = self.MockRun()
+    self.repo.Sync()
+    run.assert_called_with(['sync'], cwd=None)
 
   def testSyncComplex(self):
-    r = self._MockedRepository()
-    r.Sync(projects=['p1', 'p2'], jobs=9)
-    r.RunRepo.assert_called_with('sync', 'p1', 'p2', '--jobs', '9')
+    run = self.MockRun()
+    self.repo.Sync(
+        projects=['p1', 'p2'], jobs=9, cwd=self.subdir)
+    run.assert_called_with(
+        ['sync', 'p1', 'p2', '--jobs', '9'], cwd=self.subdir)
+
+  def testStartBranchSimple(self):
+    run = self.MockRun()
+    self.repo.StartBranch('my-branch')
+    run.assert_called_with(['start', 'my-branch', '--all'], cwd=None)
+
+  def testStartBranchComplex(self):
+    run = self.MockRun()
+    self.repo.StartBranch(
+        'my-branch', projects=['foo', 'bar'], cwd=self.subdir)
+    run.assert_called_with(
+        ['start', 'my-branch', 'foo', 'bar'], cwd=self.subdir)
