@@ -17,6 +17,7 @@
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/widget/widget.h"
 
 using message_center::MessageCenter;
 using message_center::MessageView;
@@ -232,6 +233,8 @@ void UnifiedMessageCenterView::NotifyHeightBelowScroll() {
 
 void UnifiedMessageCenterView::Update() {
   SetVisible(message_list_view_->GetNotificationCount() > 0);
+  if (GetWidget() && !GetWidget()->IsClosed())
+    tray_controller_->OnMessageCenterVisibilityUpdated();
 
   size_t notification_count = message_list_view_->GetNotificationCount();
   // TODO(tetsui): This is O(n^2).

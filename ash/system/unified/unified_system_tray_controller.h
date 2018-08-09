@@ -62,6 +62,9 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   // Called when notification removing animation is finished. Called from the
   // view.
   void OnClearAllAnimationEnded();
+  // Called when message center visibility is changed. Called from the
+  // view.
+  void OnMessageCenterVisibilityUpdated();
 
   // Handle finger dragging and expand/collapse the view. Called from view.
   void BeginDrag(const gfx::Point& location);
