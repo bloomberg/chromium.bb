@@ -24,12 +24,13 @@ namespace test {
 class EnvTestHelper;
 }
 
+class Env;
 class Window;
 
 class AURA_EXPORT EnvInputStateController {
  public:
-  EnvInputStateController() : touch_ids_down_(0) {}
-  ~EnvInputStateController() {}
+  explicit EnvInputStateController(Env* env);
+  ~EnvInputStateController();
 
   void UpdateStateForMouseEvent(const Window* window,
                                 const ui::MouseEvent& event);
@@ -39,8 +40,10 @@ class AURA_EXPORT EnvInputStateController {
 
  private:
   friend class test::EnvTestHelper;
+
+  Env* env_;
   // Touch ids that are currently down.
-  uint32_t touch_ids_down_;
+  uint32_t touch_ids_down_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(EnvInputStateController);
 };

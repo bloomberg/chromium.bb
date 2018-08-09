@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/window_types.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/platform_window.h"
@@ -24,14 +25,13 @@ struct PlatformWindowInitProperties;
 
 namespace aura {
 
-class WindowPort;
-
 // The unified WindowTreeHost implementation for platforms
 // that implement PlatformWindow.
 class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
                                            public ui::PlatformWindowDelegate {
  public:
-  explicit WindowTreeHostPlatform(ui::PlatformWindowInitProperties properties);
+  explicit WindowTreeHostPlatform(ui::PlatformWindowInitProperties properties,
+                                  std::unique_ptr<Window> = nullptr);
   ~WindowTreeHostPlatform() override;
 
   // WindowTreeHost:
@@ -51,10 +51,9 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
   void OnCursorVisibilityChangedNative(bool show) override;
 
  protected:
-  // NOTE: neither of these calls CreateCompositor(); subclasses must call
+  // NOTE: this does not call CreateCompositor(); subclasses must call
   // CreateCompositor() at the appropriate time.
-  WindowTreeHostPlatform();
-  explicit WindowTreeHostPlatform(std::unique_ptr<WindowPort> window_port);
+  explicit WindowTreeHostPlatform(std::unique_ptr<Window> window = nullptr);
 
   // Creates a ui::PlatformWindow appropriate for the current platform and
   // installs it at as the PlatformWindow for this WindowTreeHostPlatform.

@@ -57,6 +57,7 @@ enum class EventTargetingPolicy;
 
 namespace aura {
 
+class Env;
 class LayoutManager;
 class ScopedKeyboardHook;
 class WindowDelegate;
@@ -118,10 +119,12 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   typedef std::vector<Window*> Windows;
 
   explicit Window(WindowDelegate* delegate,
-                  client::WindowType type = client::WINDOW_TYPE_UNKNOWN);
+                  client::WindowType type = client::WINDOW_TYPE_UNKNOWN,
+                  Env* env = nullptr);
   Window(WindowDelegate* delegate,
          std::unique_ptr<WindowPort> port,
-         client::WindowType type = client::WINDOW_TYPE_UNKNOWN);
+         client::WindowType type = client::WINDOW_TYPE_UNKNOWN,
+         Env* env = nullptr);
   ~Window() override;
 
   // Initializes the window. This creates the window's layer.
@@ -422,6 +425,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Returns whether this window is embedding another client.
   bool IsEmbeddingClient() const;
 
+  Env* env() { return env_; }
+
   // ui::GestureConsumer:
   bool RequiresDoubleTapGestureEvents() const override;
 
@@ -554,6 +559,11 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   void RegisterFrameSinkId();
   void UnregisterFrameSinkId();
+
+  // Env this window was created with. Env::GetInstance() if a null Env was
+  // supplied.
+  Env* const env_;
+
   bool registered_frame_sink_id_ = false;
   bool disable_frame_sink_id_registration_ = false;
 
