@@ -14,7 +14,6 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/mus/test_window_tree.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_tracker.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/mus/remote_view/remote_view_provider_test_api.h"
 
@@ -160,15 +159,11 @@ TEST_F(RemoteViewProviderTest, EmbedAgain) {
   aura::Window* embedder = SimulateEmbed();
   ASSERT_TRUE(embedder);
 
-  aura::WindowTracker window_tracker;
-  window_tracker.Add(embedder);
   SimulateEmbedderClose(embedder);
-  // SimulateEmbedderClose() should delete |embedder|.
-  EXPECT_TRUE(window_tracker.windows().empty());
 
   aura::Window* new_embedder = SimulateEmbed();
-  // SimulateEmbed() should create a new window.
   ASSERT_TRUE(new_embedder);
+  EXPECT_NE(new_embedder, embedder);
 }
 
 }  // namespace views
