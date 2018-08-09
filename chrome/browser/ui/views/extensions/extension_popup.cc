@@ -152,7 +152,9 @@ void ExtensionPopup::AddedToWidget() {
 
 void ExtensionPopup::OnWidgetActivationChanged(views::Widget* widget,
                                                bool active) {
-  if (active && widget == anchor_widget())
+  // Don't close if we haven't shown the widget yet (the widget is shown once
+  // the WebContents finishes loading).
+  if (GetWidget()->IsVisible() && active && widget == anchor_widget())
     CloseUnlessUnderInspection();
 }
 
