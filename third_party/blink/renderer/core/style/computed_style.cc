@@ -814,6 +814,9 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
     diff.SetTextDecorationOrColorChanged();
   }
 
+  if (ComputedStyleBase::UpdatePropertySpecificDifferencesMask(*this, other))
+    diff.SetMaskChanged();
+
   bool has_clip = HasOutOfFlowPosition() && !HasAutoClip();
   bool other_has_clip = other.HasOutOfFlowPosition() && !other.HasAutoClip();
   if (has_clip != other_has_clip ||

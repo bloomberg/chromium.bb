@@ -27,6 +27,7 @@ class StyleDifference {
     // decorations or properties dependent on color (e.g., border or outline).
     kTextDecorationOrColorChanged = 1 << 6,
     kBlendModeChanged = 1 << 7,
+    kMaskChanged = 1 << 8,
     // If you add a value here, be sure to update kPropertyDifferenceCount.
   };
 
@@ -146,6 +147,11 @@ class StyleDifference {
     property_specific_differences_ |= kTextDecorationOrColorChanged;
   }
 
+  bool MaskChanged() const {
+    return property_specific_differences_ & kMaskChanged;
+  }
+  void SetMaskChanged() { property_specific_differences_ |= kMaskChanged; }
+
   bool ScrollAnchorDisablingPropertyChanged() const {
     return scroll_anchor_disabling_property_changed_;
   }
@@ -156,7 +162,7 @@ class StyleDifference {
   void SetCompositingReasonsChanged() { composited_reasons_changed_ = true; }
 
  private:
-  static constexpr int kPropertyDifferenceCount = 8;
+  static constexpr int kPropertyDifferenceCount = 9;
 
   friend CORE_EXPORT std::ostream& operator<<(std::ostream&,
                                               const StyleDifference&);
