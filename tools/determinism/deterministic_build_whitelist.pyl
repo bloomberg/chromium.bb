@@ -39,7 +39,6 @@
     'ar_sample_test_driver',
     'audio_unittests',
     'base_unittests',
-    'battor_agent_unittests',
     'blink_heap_unittests',
     'blink_platform_perftests',
     'blink_platform_unittests',

@@ -20,7 +20,6 @@ if (is_win || is_linux || is_mac) {
       ":test_support",
       "//device:device_unittests",
       "//services/device/serial",
-      "//tools/battor_agent:battor_agent_lib",
     ]
 
     output_name = "device_serial"
@@ -77,20 +76,5 @@ if (is_win || is_linux || is_mac) {
         "IOKit.framework",
       ]
     }
-  }
-
-  static_library("test_support") {
-    # TODO(leonhsl): Merge necessary parts of TestSerialIoHandler into
-    # battor_connection_impl_unittest.cc to hide serial impl completely.
-    visibility = [ "//tools/battor_agent:battor_agent_unittests" ]
-
-    sources = [
-      "test_serial_io_handler.cc",
-      "test_serial_io_handler.h",
-    ]
-
-    public_deps = [
-      ":serial",
-    ]
   }
 }
