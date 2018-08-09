@@ -102,6 +102,8 @@ login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
             var generateContents = {code: generateItemScript};
             appListView.executeScript(generateContents);
           });
+          var addScrollShadowEffectScript = 'addScrollShadowEffect();';
+          appListView.executeScript({code: addScrollShadowEffectScript});
 
           this.onGenerateContents();
         });
