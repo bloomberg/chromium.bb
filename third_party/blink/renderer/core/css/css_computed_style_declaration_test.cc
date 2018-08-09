@@ -60,8 +60,7 @@ TEST_F(CSSComputedStyleDeclarationTest, CleanShadowAncestorsNoRecalc) {
 
   EXPECT_STREQ("rgb(0, 128, 0)",
                computed->GetPropertyValue(CSSPropertyColor).Utf8().data());
-  EXPECT_EQ(RuntimeEnabledFeatures::SlotInFlatTreeEnabled(),
-            GetDocument().NeedsLayoutTreeUpdate());
+  EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
 }
 
 }  // namespace blink

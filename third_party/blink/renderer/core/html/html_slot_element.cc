@@ -231,7 +231,6 @@ void HTMLSlotElement::AppendDistributedNodesFrom(const HTMLSlotElement& other) {
   for (const auto& node : other.distributed_nodes_)
     distributed_indices_.Set(node.Get(), index++);
 }
-
 void HTMLSlotElement::ClearAssignedNodes() {
   DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
   assigned_nodes_.clear();
@@ -357,17 +356,12 @@ void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
 // of IncementalShadowDOM.
 const HeapVector<Member<Node>>&
 HTMLSlotElement::ChildrenInFlatTreeIfAssignmentIsSupported() {
-  if (RuntimeEnabledFeatures::SlotInFlatTreeEnabled())
-    return AssignedNodes();
-  DCHECK(!NeedsDistributionRecalc());
-  return distributed_nodes_;
+  return AssignedNodes();
 }
 
 void HTMLSlotElement::DetachLayoutTree(const AttachContext& context) {
   if (SupportsAssignment()) {
-    const HeapVector<Member<Node>>& flat_tree_children =
-        RuntimeEnabledFeatures::SlotInFlatTreeEnabled() ? assigned_nodes_
-                                                        : distributed_nodes_;
+    const HeapVector<Member<Node>>& flat_tree_children = assigned_nodes_;
     for (auto& node : flat_tree_children)
       node->LazyReattachIfAttached();
   }
@@ -490,24 +484,8 @@ void HTMLSlotElement::RemovedFrom(ContainerNode* insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
 }
 
-void HTMLSlotElement::WillRecalcStyle(StyleRecalcChange change) {
-  if (RuntimeEnabledFeatures::SlotInFlatTreeEnabled())
-    return;
-  if (change < kIndependentInherit &&
-      GetStyleChangeType() < kSubtreeStyleChange) {
-    return;
-  }
-  for (auto& node : distributed_nodes_) {
-    node->SetNeedsStyleRecalc(
-        kLocalStyleChange,
-        StyleChangeReasonForTracing::Create(
-            StyleChangeReason::kPropagateInheritChangeToDistributedNodes));
-  }
-}
 
 void HTMLSlotElement::DidRecalcStyle(StyleRecalcChange change) {
-  if (!RuntimeEnabledFeatures::SlotInFlatTreeEnabled())
-    return;
   if (change < kIndependentInherit)
     return;
   for (auto& node : assigned_nodes_) {
