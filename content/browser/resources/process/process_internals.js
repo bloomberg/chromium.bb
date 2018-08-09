@@ -24,9 +24,8 @@ document.addEventListener('DOMContentLoaded', function() {
   uiHandler.getIsolationMode().then((response) => {
     document.getElementById('isolation-mode').innerText = response.mode;
   });
-  uiHandler.getIsolatedOrigins().then((response) => {
-    document.getElementById('isolated-origins').innerText =
-        response.isolatedOrigins.join(', ');
+  uiHandler.getIsolatedOriginsSize().then((response) => {
+    document.getElementById('isolated-origins').innerText = response.size;
   });
 });
 

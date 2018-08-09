@@ -11,7 +11,6 @@ interface ProcessInternalsHandler {
   // Returns a string containing the currently active isolation modes.
   GetIsolationMode() => (string mode);
 
-  // Returns a list of isolated origins in their serialized to string
-  // format. This avoids duplicating serialization code to JavaScript.
-  GetIsolatedOrigins() => (array<string> isolated_origins);
+  // Returns the number of isolated origins.
+  GetIsolatedOriginsSize() => (uint32 size);
 };
