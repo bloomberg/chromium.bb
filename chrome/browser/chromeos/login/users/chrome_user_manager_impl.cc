@@ -775,7 +775,9 @@ void ChromeUserManagerImpl::RetrieveTrustedDevicePolicies() {
 
   std::string owner_email;
   cros_settings_->GetString(kDeviceOwner, &owner_email);
-  SetOwnerId(AccountId::FromUserEmail(owner_email));
+  const AccountId owner_account_id = user_manager::known_user::GetAccountId(
+      owner_email, std::string() /* id */, AccountType::UNKNOWN);
+  SetOwnerId(owner_account_id);
 
   EnsureUsersLoaded();
 
