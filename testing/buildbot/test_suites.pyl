@@ -449,6 +449,9 @@
         # Always fails.
         '--skip=telemetry.internal.app.android_app_unittest.AndroidAppTest.testWebView',
         '--skip=telemetry.internal.backends.browser_backend_unittest.BrowserBackendIntegrationTest.testSmokeIsBrowserRunningReturnFalse',
+        # Disable GPU compositing, telemetry_unittests runs on VMs.
+        # https://crbug.com/871955
+        '--extra-browser-args=--disable-gpu',
       ],
       'swarming': {
         'hard_timeout': 1200,
@@ -476,6 +479,9 @@
         '--browser=cros-chrome',
         '--remote=variable_chromeos_device_hostname',
         '--jobs=1',
+        # Disable GPU compositing, telemetry_unittests runs on VMs.
+        # https://crbug.com/871955
+        '--extra-browser-args=--disable-gpu',
       ],
       'swarming': {
         'idempotent': False,  # https://crbug.com/549140
@@ -858,6 +864,9 @@
     'telemetry_unittests': {
       'args': [
         '--jobs=1',
+        # Disable GPU compositing, telemetry_unittests runs on VMs.
+        # https://crbug.com/871955
+        '--extra-browser-args=--disable-gpu',
       ],
       'swarming': {
         'idempotent': False,  # https://crbug.com/549140
@@ -896,6 +905,9 @@
     'telemetry_unittests': {
       'args': [
         '--jobs=1',
+        # Disable GPU compositing, telemetry_unittests runs on VMs.
+        # https://crbug.com/871955
+        '--extra-browser-args=--disable-gpu',
       ],
       'swarming': {
         'idempotent': False,  # https://crbug.com/549140
@@ -1653,6 +1665,9 @@
       'isolate_name': 'telemetry_unittests',
       'args': [
         '--extra-browser-args=--enable-features=VizDisplayCompositor',
+        # Disable GPU compositing, telemetry_unittests runs on VMs.
+        # https://crbug.com/871955
+        '--extra-browser-args=--disable-gpu',
       ],
       'swarming': {
         'idempotent': False,  # https://crbug.com/549140
@@ -1660,6 +1675,11 @@
       },
      },
      'telemetry_unittests': {
+       'args': [
+        # Disable GPU compositing, telemetry_unittests runs on VMs.
+        # https://crbug.com/871955
+         '--extra-browser-args=--disable-gpu',
+       ],
        'swarming': {
          'idempotent': False,  # https://crbug.com/549140
          'shards': 4,
