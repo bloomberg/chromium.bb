@@ -65,13 +65,13 @@ class AXPlatformRelationWin : public CComObjectRootEx<CComMultiThreadModel>,
   void AddTarget(AXPlatformNodeWin* target);
 
   // IAccessibleRelation methods.
-  STDMETHODIMP get_relationType(BSTR* relation_type) override;
-  STDMETHODIMP get_nTargets(LONG* n_targets) override;
-  STDMETHODIMP get_target(LONG target_index, IUnknown** target) override;
-  STDMETHODIMP get_targets(LONG max_targets,
-                           IUnknown** targets,
-                           LONG* n_targets) override;
-  STDMETHODIMP get_localizedRelationType(BSTR* relation_type) override;
+  IFACEMETHODIMP get_relationType(BSTR* relation_type) override;
+  IFACEMETHODIMP get_nTargets(LONG* n_targets) override;
+  IFACEMETHODIMP get_target(LONG target_index, IUnknown** target) override;
+  IFACEMETHODIMP get_targets(LONG max_targets,
+                             IUnknown** targets,
+                             LONG* n_targets) override;
+  IFACEMETHODIMP get_localizedRelationType(BSTR* relation_type) override;
 
  private:
   base::string16 type_;

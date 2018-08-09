@@ -683,7 +683,7 @@ void AccessibilityWinBrowserTest::AccessibleChecker::CheckIA2Role(
   Microsoft::WRL::ComPtr<IAccessible2> accessible2;
   HRESULT hr = QueryIAccessible2(accessible, accessible2.GetAddressOf());
   ASSERT_EQ(S_OK, hr);
-  long ia2_role = 0;
+  LONG ia2_role = 0;
   hr = accessible2->role(&ia2_role);
   ASSERT_EQ(S_OK, hr);
   EXPECT_EQ(ia2_role_, ia2_role)
