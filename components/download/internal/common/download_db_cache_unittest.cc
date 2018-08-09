@@ -286,6 +286,38 @@ TEST_F(DownloadDBCacheTest, RemoveEntry) {
   ASSERT_EQ(guid2, loaded_entries[0].GetGuid());
 }
 
+// Test that removing an entry during the middle of modifying it should work.
+TEST_F(DownloadDBCacheTest, RemoveWhileModifyExistingEntry) {
+  PrepopulateSampleEntries();
+  CreateDBCache();
+  std::vector<DownloadDBEntry> loaded_entries;
+  db_cache_->Initialize(
+      std::vector<DownloadEntry>(),
+      base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
+                     &loaded_entries));
+  db_->InitCallback(true);
+  db_->LoadCallback(true);
+  ASSERT_EQ(loaded_entries.size(), 2u);
+
+  loaded_entries[0].download_info->id = 100;
+  db_cache_->AddOrReplaceEntry(loaded_entries[0]);
+
+  ASSERT_EQ(task_runner_->GetPendingTaskCount(), 1u);
+  ASSERT_GT(task_runner_->NextPendingTaskDelay(), base::TimeDelta());
+  db_cache_->RemoveEntry(loaded_entries[0].GetGuid());
+  task_runner_->FastForwardUntilNoTasksRemain();
+
+  DownloadDBEntry remaining = loaded_entries[1];
+  loaded_entries.clear();
+  DownloadDB* download_db = GetDownloadDB();
+  download_db->LoadEntries(base::BindOnce(&DownloadDBCacheTest::InitCallback,
+                                          base::Unretained(this),
+                                          &loaded_entries));
+  db_->LoadCallback(true);
+  ASSERT_EQ(loaded_entries.size(), 1u);
+  ASSERT_EQ(remaining, loaded_entries[0]);
+}
+
 // Tests that Migrating a DownloadEntry from InProgressCache should store
 // a DownloadDBEntry in the DownloadDB.
 TEST_F(DownloadDBCacheTest, MigrateFromInProgressCache) {
