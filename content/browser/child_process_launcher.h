@@ -56,13 +56,39 @@ static_assert(static_cast<int>(LAUNCH_RESULT_START) >
 #endif
 
 struct ChildProcessLauncherPriority {
-  bool background;
+  ChildProcessLauncherPriority(bool foreground,
+                               bool has_media_stream,
+                               unsigned int frame_depth,
+                               bool intersects_viewport,
+                               bool boost_for_pending_views
+#if defined(OS_ANDROID)
+                               ,
+                               ChildProcessImportance importance
+#endif
+                               )
+      : foreground(foreground),
+        has_media_stream(has_media_stream),
+        frame_depth(frame_depth),
+        intersects_viewport(intersects_viewport),
+        boost_for_pending_views(boost_for_pending_views)
+#if defined(OS_ANDROID)
+        ,
+        importance(importance)
+#endif
+  {
+  }
+
+  bool foreground;
+  bool has_media_stream;
   unsigned int frame_depth;
   bool intersects_viewport;
   bool boost_for_pending_views;
 #if defined(OS_ANDROID)
   ChildProcessImportance importance;
 #endif
+
+  // Returns true if the child process is backgrounded.
+  bool is_background() const { return !foreground && !has_media_stream; }
 
   bool operator==(const ChildProcessLauncherPriority& other) const;
   bool operator!=(const ChildProcessLauncherPriority& other) const {

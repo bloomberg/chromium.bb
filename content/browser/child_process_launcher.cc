@@ -168,7 +168,9 @@ ChildProcessLauncher::Client* ChildProcessLauncher::ReplaceClientForTest(
 
 bool ChildProcessLauncherPriority::operator==(
     const ChildProcessLauncherPriority& other) const {
-  return background == other.background && frame_depth == other.frame_depth &&
+  return foreground == other.foreground &&
+         has_media_stream == other.has_media_stream &&
+         frame_depth == other.frame_depth &&
          intersects_viewport == other.intersects_viewport &&
          boost_for_pending_views == other.boost_for_pending_views
 #if defined(OS_ANDROID)

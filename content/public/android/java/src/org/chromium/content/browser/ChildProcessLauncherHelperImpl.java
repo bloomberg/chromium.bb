@@ -435,7 +435,7 @@ public final class ChildProcessLauncherHelperImpl {
     }
 
     @CalledByNative
-    private void setPriority(int pid, boolean foreground, long frameDepth,
+    private void setPriority(int pid, boolean foreground, boolean hasMediaStream, long frameDepth,
             boolean intersectsViewport, boolean boostForPendingViews,
             @ChildProcessImportance int importance) {
         assert LauncherThread.runningOnLauncherThread();
@@ -451,12 +451,17 @@ public final class ChildProcessLauncherHelperImpl {
             boostForPendingViews = false;
         }
 
+        boolean mediaRendererHasModerate = ContentFeatureList.isEnabled(
+                ContentFeatureList.BACKGROUND_MEDIA_RENDERER_HAS_MODERATE_BINDING);
+
         @ChildProcessImportance
         int newEffectiveImportance;
-        if ((foreground && frameDepth == 0) || importance == ChildProcessImportance.IMPORTANT) {
+        if ((foreground && frameDepth == 0) || importance == ChildProcessImportance.IMPORTANT
+                || (hasMediaStream && !mediaRendererHasModerate)) {
             newEffectiveImportance = ChildProcessImportance.IMPORTANT;
         } else if ((foreground && frameDepth > 0 && intersectsViewport) || boostForPendingViews
-                || importance == ChildProcessImportance.MODERATE) {
+                || importance == ChildProcessImportance.MODERATE
+                || (hasMediaStream && mediaRendererHasModerate)) {
             newEffectiveImportance = ChildProcessImportance.MODERATE;
         } else {
             newEffectiveImportance = ChildProcessImportance.NORMAL;

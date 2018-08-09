@@ -158,7 +158,7 @@ void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
     const ChildProcessLauncherPriority& priority) {
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
   if (process.CanBackgroundProcesses())
-    process.SetProcessBackgrounded(priority.background);
+    process.SetProcessBackgrounded(priority.is_background());
 }
 
 // static

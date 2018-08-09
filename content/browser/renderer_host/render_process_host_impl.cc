@@ -1391,14 +1391,16 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       is_keep_alive_ref_count_disabled_(false),
       route_provider_binding_(this),
       visible_clients_(0),
-      priority_({
-        blink::kLaunchingProcessIsBackgrounded, frame_depth_,
-            false /* intersects_viewport */,
-            blink::kLaunchingProcessIsBoostedForPendingView,
+      priority_(!blink::kLaunchingProcessIsBackgrounded,
+                false /* has_media_stream */,
+                frame_depth_,
+                false /* intersects_viewport */,
+                blink::kLaunchingProcessIsBoostedForPendingView
 #if defined(OS_ANDROID)
-            ChildProcessImportance::NORMAL,
+                ,
+                ChildProcessImportance::NORMAL
 #endif
-      }),
+                ),
       id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
       browser_context_(browser_context),
       storage_partition_impl_(storage_partition_impl),
@@ -2197,7 +2199,7 @@ const base::TimeTicks& RenderProcessHostImpl::GetInitTimeForNavigationMetrics()
 }
 
 bool RenderProcessHostImpl::IsProcessBackgrounded() const {
-  return priority_.background;
+  return priority_.is_background();
 }
 
 void RenderProcessHostImpl::IncrementKeepAliveRefCount(
@@ -4111,36 +4113,35 @@ void RenderProcessHostImpl::UpdateProcessPriorityInputs() {
 void RenderProcessHostImpl::UpdateProcessPriority() {
   if (!run_renderer_in_process() && (!child_process_launcher_.get() ||
                                      child_process_launcher_->IsStarting())) {
-    priority_.background = blink::kLaunchingProcessIsBackgrounded;
+    priority_.foreground = !blink::kLaunchingProcessIsBackgrounded;
     priority_.boost_for_pending_views =
         blink::kLaunchingProcessIsBoostedForPendingView;
     return;
   }
 
-  const ChildProcessLauncherPriority priority = {
-    // We background a process as soon as it hosts no active audio/video streams
-    // and no visible widgets -- the callers must call this function whenever we
-    // transition in/out of those states.
-    visible_clients_ == 0 && media_stream_count_ == 0 &&
-        !base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableRendererBackgrounding),
-    frame_depth_,
-    intersects_viewport_,
-    // boost_for_pending_views
-    !!pending_views_,
+  const ChildProcessLauncherPriority priority(
+      // We consider a process in foreground if it hosts no visible widgets --
+      // the callers must call this function whenever we transition in/out of
+      // those states.
+      visible_clients_ > 0 || base::CommandLine::ForCurrentProcess()->HasSwitch(
+                                  switches::kDisableRendererBackgrounding),
+      media_stream_count_ > 0, frame_depth_, intersects_viewport_,
+      // boost_for_pending_views
+      !!pending_views_
 #if defined(OS_ANDROID)
-    GetEffectiveImportance(),
+      ,
+      GetEffectiveImportance()
 #endif
-  };
+          );
 
   const bool should_background_changed =
-      priority_.background != priority.background;
+      priority_.is_background() != priority.is_background();
   if (priority_ == priority)
     return;
 
   TRACE_EVENT2("renderer_host", "RenderProcessHostImpl::UpdateProcessPriority",
-               "should_background", priority.background, "has_pending_views",
-               priority.boost_for_pending_views);
+               "should_background", priority.is_background(),
+               "has_pending_views", priority.boost_for_pending_views);
   priority_ = priority;
 
 #if defined(OS_WIN)
@@ -4169,7 +4170,7 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
   // |priority_.boost_for_pending_views| state is not sent to renderer simply
   // due to lack of need.
   if (should_background_changed) {
-    GetRendererInterface()->SetProcessBackgrounded(priority.background);
+    GetRendererInterface()->SetProcessBackgrounded(priority.is_background());
   }
 }
 
@@ -4183,7 +4184,8 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 
   if (child_process_launcher_) {
     DCHECK(child_process_launcher_->GetProcess().IsValid());
-    DCHECK_EQ(blink::kLaunchingProcessIsBackgrounded, priority_.background);
+    DCHECK_EQ(blink::kLaunchingProcessIsBackgrounded,
+              priority_.is_background());
 
     // Unpause the channel now that the process is launched. We don't flush it
     // yet to ensure that any initialization messages sent here (e.g., things
@@ -4196,20 +4198,21 @@ void RenderProcessHostImpl::OnProcessLaunched() {
           child_process_launcher_->GetProcess().Handle());
     }
 
-    // Not all platforms launch processes in the same backgrounded state. Make
-    // sure |priority_.background| reflects this platform's initial process
-    // state.
+// Not all platforms launch processes in the same backgrounded state. Make
+// sure |priority_.foreground| reflects this platform's initial process
+// state.
 #if defined(OS_MACOSX)
-    priority_.background =
-        child_process_launcher_->GetProcess().IsProcessBackgrounded(
+    priority_.foreground =
+        !child_process_launcher_->GetProcess().IsProcessBackgrounded(
             MachBroker::GetInstance());
 #elif defined(OS_ANDROID)
     // Android child process priority works differently and cannot be queried
     // directly from base::Process.
-    DCHECK_EQ(blink::kLaunchingProcessIsBackgrounded, priority_.background);
+    DCHECK_EQ(blink::kLaunchingProcessIsBackgrounded,
+              priority_.is_background());
 #else
-    priority_.background =
-        child_process_launcher_->GetProcess().IsProcessBackgrounded();
+    priority_.foreground =
+        !child_process_launcher_->GetProcess().IsProcessBackgrounded();
 #endif  // defined(OS_MACOSX)
 
     // Disable updating process priority on startup on desktop platforms for now
