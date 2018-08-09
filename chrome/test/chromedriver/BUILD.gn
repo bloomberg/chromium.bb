@@ -198,6 +198,7 @@ action("embed_version_in_cpp") {
   inputs = [
     "cpp_source.py",
     "VERSION",
+    "//chrome/VERSION",
 
     # We don't actually use LASTCHANGE as an input file. It is updated
     # whenever a different Git revision is checked out, at which point
@@ -210,8 +211,10 @@ action("embed_version_in_cpp") {
   ]
 
   args = [
-    "--version-file",
+    "--chromedriver-version-file",
     rebase_path("VERSION", root_build_dir),
+    "--chrome-version-file",
+    rebase_path("//chrome/VERSION", root_build_dir),
     "--directory",
     rebase_path(target_gen_dir, root_build_dir),
   ]

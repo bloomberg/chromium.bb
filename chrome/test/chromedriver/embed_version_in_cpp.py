@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Embeds Chrome user data files in C++ code."""
+"""Embeds version string in C++ code for ChromeDriver."""
 
 import optparse
 import os
@@ -17,27 +17,91 @@ sys.path.insert(0, os.path.join(chrome_paths.GetSrc(), 'build', 'util'))
 import lastchange
 
 
+def get_release_version(chrome_version_file, version_info):
+  """Return version string appropriate for a release branch.
+
+  Args:
+    chrome_version_file: name of Chrome's version file, e.g., chrome/VERSION.
+    version_info: VersionInfo object returned from lastchange.FetchVersionInfo.
+  """
+
+  # Release branch revision has the format
+  # '26c10db8bff36a8b6fc073c0f38b1e9493cabb04-refs/branch-heads/3515@{#5}'.
+  match = re.match('[0-9a-fA-F]+-refs/branch-heads/\d+@{#\d+}',
+                   version_info.revision)
+  if not match:
+    # revision is not the expected format, probably not in a release branch.
+    return None
+
+  # Parse Chrome version file, which should have four lines of key=value,
+  # giving the major, minor, build, and patch number.
+  values = {}
+  for line in open(chrome_version_file, 'r').readlines():
+    key, val = line.rstrip('\r\n').split('=', 1)
+    values[key] = val
+
+  # Result is based on Chrome version number, e.g.,
+  # '70.0.3516.0 (26c10db8bff36a8b6fc073c0f38b1e9493cabb04)'.
+  return '%s.%s.%s.%s (%s)' % (
+      values['MAJOR'], values['MINOR'], values['BUILD'], values['PATCH'],
+      version_info.revision_id)
+
+
+def get_master_version(chromedriver_version, version_info):
+  """Return version string appropriate for the master branch.
+
+  Args:
+    chromedriver_version: ChromeDriver version, e.g., '2.41'.
+    version_info: VersionInfo object returned from lastchange.FetchVersionInfo.
+  """
+
+  # Master branch revision has the format
+  # 'cc009559c91323445dec7e2f545298bf10726eaf-refs/heads/master@{#581331}'.
+  # We need to grab the commit position (e.g., '581331') near the end.
+  match = re.match('[0-9a-fA-F]+-refs/heads/master@{#(\d+)}',
+                   version_info.revision)
+
+  if not match:
+    # revision is not the expected format, probably not in the master branch.
+    return None
+
+  # result is based on legacy style ChromeDriver version number, e.g.,
+  # '2.41.581331 (cc009559c91323445dec7e2f545298bf10726eaf)'.
+  commit_position = match.group(1)
+  return '%s.%s (%s)' % (
+      chromedriver_version, commit_position, version_info.revision_id)
+
+
 def main():
   parser = optparse.OptionParser()
-  parser.add_option('', '--version-file')
+  parser.add_option('', '--chromedriver-version-file')
+  parser.add_option('', '--chrome-version-file')
   parser.add_option(
       '', '--directory', type='string', default='.',
       help='Path to directory where the cc/h  file should be created')
   options, _ = parser.parse_args()
 
-  version = open(options.version_file, 'r').read().strip()
-  revision = lastchange.FetchVersionInfo(None).revision
+  chromedriver_version = open(
+      options.chromedriver_version_file, 'r').read().strip()
 
-  if revision:
-    match = re.match('([0-9a-fA-F]+)(-refs/heads/master@{#(\d+)})?', revision)
-    if match:
-      git_hash = match.group(1)
-      commit_position = match.group(3)
-      if commit_position:
-        version += '.' + commit_position
-      version += ' (%s)' % git_hash
-    else:
-      version += ' (%s)' % revision
+  # Get a VersionInfo object corresponding to the Git commit we are at.
+  # On success, version_info.revision_id is a 40-digit Git hash,
+  # and version_info.revision is a longer string with more information.
+  # On failure, version_info is None.
+  version_info = lastchange.FetchGitRevision(None, None)
+
+  if version_info:
+    version = get_release_version(options.chrome_version_file, version_info)
+
+    if not version:
+      version = get_master_version(chromedriver_version, version_info)
+
+    if not version:
+      # Not in a known branch, but has Git revision.
+      version = '%s (%s)' % (chromedriver_version, version_info.revision_id)
+  else:
+    # Git command failed for some reason. Just use ChromeDriver version string.
+    version = chromedriver_version
 
   global_string_map = {
       'kChromeDriverVersion': version
