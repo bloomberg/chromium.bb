@@ -51,6 +51,7 @@ class CORE_EXPORT ScriptStreamer final
     kStreamerNotReadyOnGetSource,
     kInlineScript,
     kDidntTryToStartStreaming,
+    kErrorOccurred,
 
     // Pseudo values that should never be seen in reported metrics
     kCount,
