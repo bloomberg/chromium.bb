@@ -45,8 +45,6 @@ const char* kHostsToSetHeadersFor[] = {
     "googleweblight.com",
 };
 
-const char kClientData[] = "X-Client-Data";
-
 // The result of checking if a URL should have variations headers appended.
 // This enum is used to record UMA histogram values, and should not be
 // reordered.
@@ -101,11 +99,13 @@ void LogUrlValidationHistogram(URLValidationResult result) {
 void RemoveVariationsHeader(const net::RedirectInfo& redirect_info,
                             const network::ResourceResponseHead& response_head,
                             std::vector<std::string>* to_be_removed_headers) {
-  if (!internal::ShouldAppendVariationHeaders(redirect_info.new_url))
-    to_be_removed_headers->push_back(kClientData);
+  if (!ShouldAppendVariationHeaders(redirect_info.new_url))
+    to_be_removed_headers->push_back(kClientDataHeader);
 }
 
 }  // namespace
+
+const char kClientDataHeader[] = "X-Client-Data";
 
 bool AppendVariationHeaders(const GURL& url,
                             InIncognito incognito,
@@ -119,17 +119,15 @@ bool AppendVariationHeaders(const GURL& url,
   //         international TLD domains *.google.<TLD> or *.youtube.<TLD>.
   // 2. Only transmit for non-Incognito profiles.
   // 3. For the X-Client-Data header, only include non-empty variation IDs.
-  if ((incognito == InIncognito::kYes) ||
-      !internal::ShouldAppendVariationHeaders(url)) {
+  if ((incognito == InIncognito::kYes) || !ShouldAppendVariationHeaders(url))
     return false;
-  }
 
   const std::string variation_ids_header =
       VariationsHttpHeaderProvider::GetInstance()->GetClientDataHeader(
           signed_in == SignedIn::kYes);
   if (!variation_ids_header.empty()) {
     // Note that prior to M33 this header was named X-Chrome-Variations.
-    headers->SetHeaderIfMissing(kClientData, variation_ids_header);
+    headers->SetHeaderIfMissing(kClientDataHeader, variation_ids_header);
     return true;
   }
   return false;
@@ -145,13 +143,13 @@ bool AppendVariationHeadersUnknownSignedIn(const GURL& url,
 
 std::set<std::string> GetVariationHeaderNames() {
   std::set<std::string> headers;
-  headers.insert(kClientData);
+  headers.insert(kClientDataHeader);
   return headers;
 }
 
 void StripVariationHeaderIfNeeded(const GURL& new_location,
                                   net::URLRequest* request) {
-  if (!internal::ShouldAppendVariationHeaders(new_location)) {
+  if (!ShouldAppendVariationHeaders(new_location)) {
     for (const std::string& header : GetVariationHeaderNames())
       request->RemoveRequestHeaderByName(header);
   }
@@ -183,9 +181,6 @@ CreateSimpleURLLoaderWithVariationsHeadersUnknownSignedIn(
       std::move(request), incognito, SignedIn::kNo, annotation_tag);
 }
 
-namespace internal {
-
-// static
 bool ShouldAppendVariationHeaders(const GURL& url) {
   if (!url.is_valid()) {
     LogUrlValidationHistogram(INVALID_URL);
@@ -208,7 +203,5 @@ bool ShouldAppendVariationHeaders(const GURL& url) {
   LogUrlValidationHistogram(SHOULD_APPEND);
   return true;
 }
-
-}  // namespace internal
 
 }  // namespace variations

@@ -216,10 +216,6 @@
 -PredictorBrowserTest.SubframeInitiatesPreconnects
 -PredictorBrowserTest.SubframeLearning
 
-# Variations appending not working when network service is enabled.
-# http://crbug.com/857165
--VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromSubresourceRequest
-
 # https://crbug.com/773295
 # Remove this test when there are no more clients left that use URLFetcher.
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromInternalRequest

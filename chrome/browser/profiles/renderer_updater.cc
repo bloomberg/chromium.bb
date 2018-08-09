@@ -53,6 +53,15 @@ void GetGuestViewDefaultContentSettingRules(
 RendererUpdater::RendererUpdater(Profile* profile) : profile_(profile) {
   signin_manager_ = SigninManagerFactory::GetForProfile(profile_);
   signin_manager_->AddObserver(this);
+  variations_http_header_provider_ =
+      variations::VariationsHttpHeaderProvider::GetInstance();
+  variations_http_header_provider_->AddObserver(this);
+  cached_variation_ids_header_ =
+      variations_http_header_provider_->GetClientDataHeader(
+          false /* is_signed_in */);
+  cached_variation_ids_header_signed_in_ =
+      variations_http_header_provider_->GetClientDataHeader(
+          true /* is_signed_in */);
 
   PrefService* pref_service = profile->GetPrefs();
   force_google_safesearch_.Init(prefs::kForceGoogleSafeSearch, pref_service);
@@ -81,6 +90,8 @@ RendererUpdater::~RendererUpdater() {
 void RendererUpdater::Shutdown() {
   signin_manager_->RemoveObserver(this);
   signin_manager_ = nullptr;
+  variations_http_header_provider_->RemoveObserver(this);
+  variations_http_header_provider_ = nullptr;
 }
 
 void RendererUpdater::InitializeRenderer(
@@ -147,6 +158,14 @@ void RendererUpdater::GoogleSignedOut(const AccountInfo& account_info) {
   UpdateAllRenderers();
 }
 
+void RendererUpdater::VariationIdsHeaderUpdated(
+    const std::string& variation_ids_header,
+    const std::string& variation_ids_header_signed_in) {
+  cached_variation_ids_header_ = variation_ids_header;
+  cached_variation_ids_header_signed_in_ = variation_ids_header_signed_in;
+  UpdateAllRenderers();
+}
+
 void RendererUpdater::UpdateAllRenderers() {
   auto renderer_configurations = GetRendererConfigurations();
   for (auto& renderer_configuration : renderer_configurations)
@@ -155,9 +174,11 @@ void RendererUpdater::UpdateAllRenderers() {
 
 void RendererUpdater::UpdateRenderer(
     chrome::mojom::RendererConfigurationAssociatedPtr* renderer_configuration) {
+  bool is_signed_in = signin_manager_->IsAuthenticated();
   (*renderer_configuration)
-      ->SetConfiguration(signin_manager_->IsAuthenticated(),
-                         force_google_safesearch_.GetValue(),
+      ->SetConfiguration(force_google_safesearch_.GetValue(),
                          force_youtube_restrict_.GetValue(),
-                         allowed_domains_for_apps_.GetValue());
+                         allowed_domains_for_apps_.GetValue(),
+                         is_signed_in ? cached_variation_ids_header_signed_in_
+                                      : cached_variation_ids_header_);
 }

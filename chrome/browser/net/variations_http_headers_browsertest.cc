@@ -6,10 +6,13 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_browser_main.h"
+#include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -36,11 +39,33 @@
 
 namespace {
 
+class VariationHeaderSetter : public ChromeBrowserMainExtraParts {
+ public:
+  VariationHeaderSetter() = default;
+  ~VariationHeaderSetter() override = default;
+
+  // ChromeBrowserMainExtraParts:
+  void PostEarlyInitialization() override {
+    // Set up some fake variations.
+    auto* variations_provider =
+        variations::VariationsHttpHeaderProvider::GetInstance();
+    variations_provider->ForceVariationIds({"12", "456", "t789"}, "");
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(VariationHeaderSetter);
+};
+
 class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
  public:
   VariationsHttpHeadersBrowserTest()
       : https_server_(net::test_server::EmbeddedTestServer::TYPE_HTTPS) {}
   ~VariationsHttpHeadersBrowserTest() override = default;
+
+  void CreatedBrowserMainParts(content::BrowserMainParts* parts) override {
+    static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
+        new VariationHeaderSetter());
+  }
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
@@ -52,11 +77,6 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
                             base::Unretained(this)));
 
     ASSERT_TRUE(server()->Start());
-
-    // Set up some fake variations.
-    auto* variations_provider =
-        variations::VariationsHttpHeaderProvider::GetInstance();
-    variations_provider->ForceVariationIds({"12", "456", "t789"}, "");
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

@@ -28,6 +28,9 @@ enum class InIncognito { kNo, kYes };
 
 enum class SignedIn { kNo, kYes };
 
+// The name string for the header for variations information.
+extern const char kClientDataHeader[];
+
 // Adds Chrome experiment and metrics state as custom headers to |headers|.
 // The content of the headers will depend on |incognito| and |signed_in|
 // parameters. It is fine to pass SignedIn::NO if the state is not known to the
@@ -75,14 +78,10 @@ CreateSimpleURLLoaderWithVariationsHeadersUnknownSignedIn(
     InIncognito incognito,
     const net::NetworkTrafficAnnotationTag& annotation_tag);
 
-namespace internal {
-
 // Checks whether variation headers should be appended to requests to the
 // specified |url|. Returns true for google.<TLD> and youtube.<TLD> URLs with
 // the https scheme.
 bool ShouldAppendVariationHeaders(const GURL& url);
-
-}  // namespace internal
 
 }  // namespace variations
 
