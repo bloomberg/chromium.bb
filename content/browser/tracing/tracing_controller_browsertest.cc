@@ -487,7 +487,8 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
 }
 
 // TODO(crbug.com/871770): Disabled for failing on ASAN.
-#if defined(ADDRESS_SANITIZER)
+// TODO(crbug.com/872631): Disabled on Android as flaky.
+#if defined(ADDRESS_SANITIZER) || defined(OS_ANDROID)
 #define MAYBE_EnableAndStopTracingWithEmptyFile \
   DISABLED_EnableAndStopTracingWithEmptyFile
 #else
@@ -515,7 +516,8 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
 }
 
 // TODO(crbug.com/871770): Disabled for failing on ASAN.
-#if defined(ADDRESS_SANITIZER)
+// TODO(crbug.com/872631): Disabled on Android as flaky.
+#if defined(ADDRESS_SANITIZER) || defined(OS_ANDROID)
 #define MAYBE_DoubleStopTracing DISABLED_DoubleStopTracing
 #else
 #define MAYBE_DoubleStopTracing DoubleStopTracing
