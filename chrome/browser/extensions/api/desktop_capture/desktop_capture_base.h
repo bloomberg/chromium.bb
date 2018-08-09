@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker.h"
+#include "chrome/browser/media/webrtc/desktop_media_picker_factory.h"
 #include "chrome/common/extensions/api/desktop_capture.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
@@ -24,26 +25,10 @@ class DesktopCaptureChooseDesktopMediaFunctionBase
     : public ChromeAsyncExtensionFunction,
       public content::WebContentsObserver {
  public:
-  // Factory creating DesktopMediaList and DesktopMediaPicker instances.
-  // Used for tests to supply fake picker.
-  class PickerFactory {
-   public:
-    virtual std::unique_ptr<DesktopMediaPicker> CreatePicker() = 0;
-    virtual std::unique_ptr<DesktopMediaList> CreateMediaList(
-        content::DesktopMediaID::Type type) = 0;
-
-   protected:
-    PickerFactory() = default;
-    virtual ~PickerFactory() {}
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(PickerFactory);
-  };
-
   // Used to set PickerFactory used to create mock DesktopMediaPicker instances
   // for tests. Calling tests keep ownership of the factory. Can be called with
   // |factory| set to NULL at the end of the test.
-  static void SetPickerFactoryForTests(PickerFactory* factory);
+  static void SetPickerFactoryForTests(DesktopMediaPickerFactory* factory);
 
   DesktopCaptureChooseDesktopMediaFunctionBase();
 
@@ -77,6 +62,7 @@ class DesktopCaptureChooseDesktopMediaFunctionBase
   // URL of page that desktop capture was requested for.
   GURL origin_;
 
+  std::unique_ptr<DesktopMediaPickerFactory> picker_factory_;
   std::unique_ptr<DesktopMediaPicker> picker_;
 };
 

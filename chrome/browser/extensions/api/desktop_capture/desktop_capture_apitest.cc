@@ -8,11 +8,10 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/desktop_capture/desktop_capture_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/media/webrtc/fake_desktop_media_list.h"
+#include "chrome/browser/media/webrtc/fake_desktop_media_picker_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -30,20 +29,6 @@ namespace extensions {
 
 namespace {
 
-struct TestFlags {
-  bool expect_screens;
-  bool expect_windows;
-  bool expect_tabs;
-  bool expect_audio;
-  DesktopMediaID selected_source;
-  bool cancelled;
-
-  // Following flags are set by FakeDesktopMediaPicker when it's created and
-  // deleted.
-  bool picker_created;
-  bool picker_deleted;
-};
-
 // TODO(crbug.com/805145): Uncomment this when test is re-enabled.
 #if 0
 DesktopMediaID MakeFakeWebContentsMediaId(bool audio_share) {
@@ -55,104 +40,6 @@ DesktopMediaID MakeFakeWebContentsMediaId(bool audio_share) {
   return media_id;
 }
 #endif
-
-class FakeDesktopMediaPicker : public DesktopMediaPicker {
- public:
-  explicit FakeDesktopMediaPicker(TestFlags* expectation)
-      : expectation_(expectation),
-        weak_factory_(this) {
-    expectation_->picker_created = true;
-  }
-  ~FakeDesktopMediaPicker() override { expectation_->picker_deleted = true; }
-
-  // DesktopMediaPicker interface.
-  void Show(const DesktopMediaPicker::Params& params,
-            std::vector<std::unique_ptr<DesktopMediaList>> source_lists,
-            const DoneCallback& done_callback) override {
-    bool show_screens = false;
-    bool show_windows = false;
-    bool show_tabs = false;
-
-    for (auto& source_list : source_lists) {
-      switch (source_list->GetMediaListType()) {
-        case DesktopMediaID::TYPE_NONE:
-          break;
-        case DesktopMediaID::TYPE_SCREEN:
-          show_screens = true;
-          break;
-        case DesktopMediaID::TYPE_WINDOW:
-          show_windows = true;
-          break;
-        case DesktopMediaID::TYPE_WEB_CONTENTS:
-          show_tabs = true;
-          break;
-      }
-    }
-    EXPECT_EQ(expectation_->expect_screens, show_screens);
-    EXPECT_EQ(expectation_->expect_windows, show_windows);
-    EXPECT_EQ(expectation_->expect_tabs, show_tabs);
-    EXPECT_EQ(expectation_->expect_audio, params.request_audio);
-    EXPECT_EQ(params.modality, ui::ModalType::MODAL_TYPE_CHILD);
-
-    if (!expectation_->cancelled) {
-      // Post a task to call the callback asynchronously.
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(&FakeDesktopMediaPicker::CallCallback,
-                                    weak_factory_.GetWeakPtr(), done_callback));
-    } else {
-      // If we expect the dialog to be cancelled then store the callback to
-      // retain reference to the callback handler.
-      done_callback_ = done_callback;
-    }
-  }
-
- private:
-  void CallCallback(DoneCallback done_callback) {
-    done_callback.Run(expectation_->selected_source);
-  }
-
-  TestFlags* expectation_;
-  DoneCallback done_callback_;
-
-  base::WeakPtrFactory<FakeDesktopMediaPicker> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeDesktopMediaPicker);
-};
-
-class FakeDesktopMediaPickerFactory :
-    public DesktopCaptureChooseDesktopMediaFunction::PickerFactory {
- public:
-  FakeDesktopMediaPickerFactory() {}
-  ~FakeDesktopMediaPickerFactory() override {}
-
-  void SetTestFlags(TestFlags* test_flags, int tests_count) {
-    test_flags_ = test_flags;
-    tests_count_ = tests_count;
-    current_test_ = 0;
-  }
-
-  std::unique_ptr<DesktopMediaPicker> CreatePicker() override {
-    EXPECT_LE(current_test_, tests_count_);
-    if (current_test_ >= tests_count_)
-      return std::unique_ptr<DesktopMediaPicker>();
-    ++current_test_;
-    return std::unique_ptr<DesktopMediaPicker>(
-        new FakeDesktopMediaPicker(test_flags_ + current_test_ - 1));
-  }
-
-  std::unique_ptr<DesktopMediaList> CreateMediaList(
-      DesktopMediaID::Type type) override {
-    EXPECT_LE(current_test_, tests_count_);
-    return std::unique_ptr<DesktopMediaList>(new FakeDesktopMediaList(type));
-  }
-
- private:
-  TestFlags* test_flags_;
-  int tests_count_;
-  int current_test_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeDesktopMediaPickerFactory);
-};
 
 class DesktopCaptureApiTest : public ExtensionApiTest {
  public:
@@ -195,7 +82,7 @@ class DesktopCaptureApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, MAYBE_ChooseDesktopMedia) {
   // Each element in the following array corresponds to one test in
   // chrome/test/data/extensions/api_test/desktop_capture/test.js .
-  TestFlags test_flags[] = {
+  FakeDesktopMediaPickerFactory::TestFlags test_flags[] = {
     // pickerUiCanceled()
     {true, true, false, false, DesktopMediaID()},
     // chooseMedia()
@@ -269,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, DISABLED_Delegation) {
   ui_test_utils::NavigateToURL(
       browser(), GetURLForPath("example.com", "/example.com.html"));
 
-  TestFlags test_flags[] = {
+  FakeDesktopMediaPickerFactory::TestFlags test_flags[] = {
       {true, true, false, false,
        DesktopMediaID(DesktopMediaID::TYPE_SCREEN, DesktopMediaID::kNullId)},
       {true, true, false, false,
