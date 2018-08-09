@@ -105,6 +105,10 @@ PropertyConverter::PropertyConverter() {
       client::kWindowCornerRadiusKey,
       ui::mojom::WindowManager::kWindowCornerRadius_Property,
       base::BindRepeating(&ValidateWindowCornerRadius));
+  RegisterPrimitiveProperty(
+      client::kAnimationsDisabledKey,
+      ui::mojom::WindowManager::kAnimationsDisabled_Property,
+      CreateAcceptAnyValueCallback());
 }
 
 PropertyConverter::~PropertyConverter() {}

@@ -68,6 +68,9 @@ interface WindowManager {
   // Type: bool.
   const string kAlwaysOnTop_Property = "prop:always_on_top";
 
+  // A boolean determining whether animations are disabled for the window.
+  const string kAnimationsDisabled_Property = "prop:animations-disabled";
+
   // The application icon; typically larger for shelf icons, etc. Type: SkBitmap
   const string kAppIcon_Property = "prop:app-icon";
 
