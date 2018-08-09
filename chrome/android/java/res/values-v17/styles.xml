@@ -616,9 +616,13 @@
         <item name="android:textAppearance">@style/BlueLink2</item>
     </style>
 
-    <!-- New tab page RecyclerView overscroll color -->
+    <!-- New Tab Page -->
     <style name="NewTabPageRecyclerView">
         <item name="android:colorEdgeEffect" tools:targetApi="21">@color/google_grey_300</item>
+    </style>
+    <style name="TextAppearance.NewTabPageSearchBoxText">
+        <item name="android:textSize">@dimen/location_bar_url_text_size</item>
+        <item name="android:textColorHint">@color/search_box_hint</item>
     </style>
 
     <!-- Modern List Item -->
@@ -771,7 +775,7 @@
         <item name="android:focusable">true</item>
         <item name="android:textAppearance">@style/BlueButtonText1</item>
         <item name="android:padding">16dp</item>
-    </style>
+      </style>
     <!-- TODO(https://crbug.com/850138): Confirm with UX whether this should be a one-off text
          appearance or a pre-defined text appearance. -->
     <style name="TextAppearance.IncognitoNewTabLearnMoreLinkModern">
@@ -780,7 +784,6 @@
     </style>
 
     <!-- Picker Dialog animations -->
-
     <style name="PickerDialogAnimation">
         <item name="android:windowEnterAnimation">@anim/design_bottom_sheet_slide_in</item>
         <item name="android:windowExitAnimation">@null</item>

@@ -58,8 +58,7 @@
             android:gravity="center_vertical"
             android:inputType="text"
             android:singleLine="true"
-            android:textSize="@dimen/location_bar_url_text_size"
-            android:textColorHint="@color/search_box_hint" />
+            android:textAppearance="@style/TextAppearance.NewTabPageSearchBoxText" />
         <org.chromium.chrome.browser.widget.TintedImageView
             android:id="@+id/voice_search_button"
             android:layout_width="wrap_content"
@@ -92,7 +91,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inflatedId="@+id/explore_sites"
-        android:layout="@layout/explore_sites_section" />
+        android:layout="@layout/experimental_explore_sites_section" />
 
     <!-- Site suggestion tile grid placeholder -->
     <ViewStub

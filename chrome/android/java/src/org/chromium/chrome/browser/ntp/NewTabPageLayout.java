@@ -30,7 +30,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
-import org.chromium.chrome.browser.explore_sites.ExploreSitesSection;
+import org.chromium.chrome.browser.explore_sites.ExperimentalExploreSitesSection;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
@@ -83,7 +83,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     @Nullable
     private View mExploreSectionView; // View is null if explore flag is disabled.
     @Nullable
-    private ExploreSitesSection mExploreSection; // Null when explore sites disabled.
+    private ExperimentalExploreSitesSection mExploreSection; // Null when explore sites disabled.
 
     private OnSearchBoxScrollListener mSearchBoxScrollListener;
 
@@ -225,7 +225,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         mSiteSectionViewHolder.bindDataSource(mTileGroup, tileRenderer);
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.EXPLORE_SITES)) {
-            mExploreSection = new ExploreSitesSection(
+            mExploreSection = new ExperimentalExploreSitesSection(
                     mExploreSectionView, profile, mManager.getNavigationDelegate());
         }
 
