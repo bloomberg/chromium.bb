@@ -8,10 +8,13 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_target.h"
 #include "ui/events/event_target_iterator.h"
 
@@ -120,8 +123,16 @@ Window* WindowTargeter::FindTargetInRootWindow(Window* root_window,
     if (consumer)
       return static_cast<Window*>(consumer);
 
-    // If the initial touch is outside the root window, target the root.
-    if (!root_window->bounds().Contains(event.root_location()))
+    // If the initial touch is outside the window's display, target the root.
+    // This is used for bezel gesture events (eg. swiping in from screen edge).
+    display::Display display =
+        display::Screen::GetScreen()->GetDisplayNearestWindow(root_window);
+    gfx::Point screen_location = event.root_location();
+    if (client::GetScreenPositionClient(root_window)) {
+      client::GetScreenPositionClient(root_window)
+          ->ConvertPointToScreen(root_window, &screen_location);
+    }
+    if (!display.bounds().Contains(screen_location))
       return root_window;
   }
 

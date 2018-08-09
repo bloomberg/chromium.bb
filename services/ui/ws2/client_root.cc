@@ -115,7 +115,8 @@ void ClientRoot::CheckForScaleFactorChange() {
     return;
   }
 
-  HandleBoundsOrScaleFactorChange(window_->bounds());
+  HandleBoundsOrScaleFactorChange(is_top_level_ ? window_->GetBoundsInScreen()
+                                                : window_->bounds());
 }
 
 void ClientRoot::HandleBoundsOrScaleFactorChange(const gfx::Rect& old_bounds) {
@@ -125,7 +126,7 @@ void ClientRoot::HandleBoundsOrScaleFactorChange(const gfx::Rect& old_bounds) {
   // why this always notifies the client.
   window_tree_->window_tree_client_->OnWindowBoundsChanged(
       window_tree_->TransportIdForWindow(window_), old_bounds,
-      window_->bounds(),
+      is_top_level_ ? window_->GetBoundsInScreen() : window_->bounds(),
       ServerWindow::GetMayBeNull(window_)->local_surface_id());
 }
 

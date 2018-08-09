@@ -204,6 +204,7 @@ source_set("tests") {
     "//ui/aura:test_support",
     "//ui/events:test_support",
     "//ui/platform_window",
+    "//ui/wm",
   ]
 
   data_deps = [

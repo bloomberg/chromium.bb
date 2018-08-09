@@ -26,6 +26,7 @@
 #include "services/ui/ws2/window_service_delegate.h"
 #include "services/ui/ws2/window_service_observer.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/os_exchange_data_provider_mus.h"
@@ -530,7 +531,8 @@ mojom::WindowDataPtr WindowTree::WindowToWindowData(aura::Window* window) {
   window_data->transient_parent_id =
       transient_parent ? TransportIdForWindow(transient_parent)
                        : kInvalidTransportId;
-  window_data->bounds = window->bounds();
+  window_data->bounds =
+      IsTopLevel(window) ? window->GetBoundsInScreen() : window->bounds();
   window_data->properties =
       window_service_->property_converter()->GetTransportProperties(window);
   window_data->visible = window->TargetVisibility();
@@ -1009,8 +1011,10 @@ bool WindowTree::SetWindowBoundsImpl(
   }
 
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
+  const gfx::Rect original_bounds =
+      IsTopLevel(window) ? window->GetBoundsInScreen() : window->bounds();
 
-  if (window->bounds() == bounds &&
+  if (original_bounds == bounds &&
       server_window->local_surface_id() == local_surface_id) {
     return true;
   }
@@ -1021,8 +1025,15 @@ bool WindowTree::SetWindowBoundsImpl(
   if (IsLocalSurfaceIdAssignedByClient(window))
     server_window->set_local_surface_id(local_surface_id);
 
-  const gfx::Rect original_bounds = window->bounds();
-  window->SetBounds(bounds);
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(window->GetRootWindow());
+  if (IsTopLevel(window) && screen_position_client) {
+    display::Display dst_display =
+        display::Screen::GetScreen()->GetDisplayMatching(bounds);
+    screen_position_client->SetBounds(window, bounds, dst_display);
+  } else {
+    window->SetBounds(bounds);
+  }
   if (!change.window())
     return true;  // Return value doesn't matter if window destroyed.
 

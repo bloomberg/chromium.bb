@@ -539,7 +539,7 @@ bool DesktopWindowTreeHostMus::IsVisible() const {
 }
 
 void DesktopWindowTreeHostMus::SetSize(const gfx::Size& size) {
-  // Use GetBounds() as the origin of window() is always at 0, 0.
+  // Use GetBoundsInPixels(), as the origin of window() is always at (0, 0).
   gfx::Rect screen_bounds =
       gfx::ConvertRectToDIP(GetScaleFactor(), GetBoundsInPixels());
   screen_bounds.set_size(size);
@@ -588,11 +588,7 @@ void DesktopWindowTreeHostMus::GetWindowPlacement(
 }
 
 gfx::Rect DesktopWindowTreeHostMus::GetWindowBoundsInScreen() const {
-  gfx::Point display_origin = GetDisplay().bounds().origin();
-  gfx::Rect bounds_in_dip =
-      gfx::ConvertRectToDIP(GetScaleFactor(), GetBoundsInPixels());
-  bounds_in_dip.Offset(display_origin.x(), display_origin.y());
-  return bounds_in_dip;
+  return gfx::ConvertRectToDIP(GetScaleFactor(), GetBoundsInPixels());
 }
 
 gfx::Rect DesktopWindowTreeHostMus::GetClientAreaBoundsInScreen() const {
@@ -622,10 +618,7 @@ std::string DesktopWindowTreeHostMus::GetWorkspace() const {
 }
 
 gfx::Rect DesktopWindowTreeHostMus::GetWorkAreaBoundsInScreen() const {
-  // TODO(sky): GetDisplayNearestWindow() should take a const aura::Window*.
-  return display::Screen::GetScreen()
-      ->GetDisplayNearestWindow(const_cast<aura::Window*>(window()))
-      .work_area();
+  return GetDisplay().work_area();
 }
 
 void DesktopWindowTreeHostMus::SetShape(
