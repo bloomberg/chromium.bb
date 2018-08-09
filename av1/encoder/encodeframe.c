@@ -2909,6 +2909,8 @@ static void ml_prune_ab_partition(BLOCK_SIZE bsize, int part_ctx, int var_ctx,
 #define FEATURES 18
 #define LABELS 4
 // Use a ML model to predict if horz4 and vert4 should be considered.
+// TODO(huisu@google.com): x->source_variance may not be the current block's
+// variance. Need to re-train the model to fix it.
 static void ml_prune_4_partition(const AV1_COMP *const cpi,
                                  const MACROBLOCK *const x, BLOCK_SIZE bsize,
                                  int part_ctx, int64_t best_rd,
@@ -3326,10 +3328,15 @@ BEGIN_PARTITION_SEARCH:
     partition_horz_allowed = has_cols && yss <= xss && bsize_at_least_8x8;
     partition_vert_allowed = has_rows && xss <= yss && bsize_at_least_8x8;
   }
+
+  // Partition block source pixel variance.
+  unsigned int pb_source_variance = UINT_MAX;
+
   // PARTITION_NONE
   if (partition_none_allowed) {
     rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc,
                      PARTITION_NONE, bsize, ctx_none, best_rdc.rdcost);
+    pb_source_variance = x->source_variance;
     if (none_rd) *none_rd = this_rdc.rdcost;
     if (this_rdc.rate != INT_MAX) {
       if (cpi->sf.prune_ref_frame_for_rect_partitions) {
@@ -3708,6 +3715,16 @@ BEGIN_PARTITION_SEARCH:
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
   }
 
+  if (pb_source_variance == UINT_MAX) {
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+      pb_source_variance = av1_high_get_sby_perpixel_variance(
+          cpi, &x->plane[0].src, bsize, xd->bd);
+    } else {
+      pb_source_variance =
+          av1_get_sby_perpixel_variance(cpi, &x->plane[0].src, bsize);
+    }
+  }
+
   const int ext_partition_allowed =
       do_rectangular_split && bsize > BLOCK_8X8 && partition_none_allowed;
 
@@ -3718,13 +3735,15 @@ BEGIN_PARTITION_SEARCH:
 
   if (cpi->sf.prune_ext_partition_types_search_level) {
     if (cpi->sf.prune_ext_partition_types_search_level == 1) {
+      // TODO(debargha,huisu@google.com): may need to tune the threshold for
+      // pb_source_variance.
       horzab_partition_allowed &= (pc_tree->partitioning == PARTITION_HORZ ||
                                    (pc_tree->partitioning == PARTITION_NONE &&
-                                    x->source_variance < 32) ||
+                                    pb_source_variance < 32) ||
                                    pc_tree->partitioning == PARTITION_SPLIT);
       vertab_partition_allowed &= (pc_tree->partitioning == PARTITION_VERT ||
                                    (pc_tree->partitioning == PARTITION_NONE &&
-                                    x->source_variance < 32) ||
+                                    pb_source_variance < 32) ||
                                    pc_tree->partitioning == PARTITION_SPLIT);
     } else {
       horzab_partition_allowed &= (pc_tree->partitioning == PARTITION_HORZ ||
@@ -3779,6 +3798,9 @@ BEGIN_PARTITION_SEARCH:
 
   if (cpi->sf.ml_prune_ab_partition && ext_partition_allowed &&
       partition_horz_allowed && partition_vert_allowed) {
+    // TODO(huisu@google.com): x->source_variance may not be the current block's
+    // variance. The correct one to use is pb_source_variance.
+    // Need to re-train the model to fix it.
     ml_prune_ab_partition(bsize, pc_tree->partitioning,
                           get_unsigned_bits(x->source_variance),
                           best_rdc.rdcost, horz_rd, vert_rd, split_rd,
