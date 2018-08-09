@@ -620,6 +620,12 @@ const base::Feature kDisplayCutoutAPI{"DisplayCutoutAPI",
 const base::Feature kHideIncorrectlySizedFullscreenFrames{
     "HideIncorrectlySizedFullscreenFrames", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Sets moderate binding to background renderers playing media, when enabled.
+// Else the renderer will have strong binding.
+const base::Feature kBackgroundMediaRendererHasModerateBinding{
+    "BackgroundMediaRendererHasModerateBinding",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the WebNFC API is enabled:
 // https://w3c.github.io/web-nfc/
 const base::Feature kWebNfc{"WebNFC", base::FEATURE_DISABLED_BY_DEFAULT};

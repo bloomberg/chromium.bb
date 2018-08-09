@@ -221,9 +221,10 @@ void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
   return Java_ChildProcessLauncherHelperImpl_setPriority(
-      env, java_peer_, process.Handle(), !priority.background,
-      priority.frame_depth, priority.intersects_viewport,
-      priority.boost_for_pending_views, static_cast<jint>(priority.importance));
+      env, java_peer_, process.Handle(), priority.foreground,
+      priority.has_media_stream, priority.frame_depth,
+      priority.intersects_viewport, priority.boost_for_pending_views,
+      static_cast<jint>(priority.importance));
 }
 
 // static

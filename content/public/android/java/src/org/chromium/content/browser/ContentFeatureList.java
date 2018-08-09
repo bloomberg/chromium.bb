@@ -33,5 +33,8 @@ public abstract class ContentFeatureList {
     public static final String ENHANCED_SELECTION_INSERTION_HANDLE =
             "EnhancedSelectionInsertionHandle";
 
+    public static final String BACKGROUND_MEDIA_RENDERER_HAS_MODERATE_BINDING =
+            "BackgroundMediaRendererHasModerateBinding";
+
     private static native boolean nativeIsEnabled(String featureName);
 }
