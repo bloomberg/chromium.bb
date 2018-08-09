@@ -119,6 +119,10 @@ class TabStripController {
   // from this tabstrip but the user is still dragging the tabs.
   virtual void OnStoppedDraggingTabs() = 0;
 
+  // Returns whether the shapes of background tabs are visible against the
+  // frame.
+  virtual bool HasVisibleBackgroundTabShapes() const = 0;
+
   // Returns the color of the browser frame, which is also the color of the
   // tabstrip background.
   virtual SkColor GetFrameColor() const = 0;

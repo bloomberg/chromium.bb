@@ -171,6 +171,23 @@ bool GlassBrowserFrameView::HasClientEdge() const {
          BrowserNonClientFrameView::HasClientEdge();
 }
 
+bool GlassBrowserFrameView::HasVisibleBackgroundTabShapes() const {
+  // Pre-Win 8, tabs never match the glass frame appearance.
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return true;
+
+  // Enabling high contrast mode disables the custom-drawn titlebar (so the
+  // system-drawn frame will respect the native frame colors) and enables the
+  // IncreasedContrastThemeSupplier (which does not respect the native frame
+  // colors).
+  // TODO(pkasting): https://crbug.com/831769  Change the architecture of the
+  // high contrast support to respect system colors, then remove this.
+  if (ui::NativeTheme::GetInstanceForNativeUi()->UsesHighContrastColors())
+    return true;
+
+  return BrowserNonClientFrameView::HasVisibleBackgroundTabShapes();
+}
+
 void GlassBrowserFrameView::UpdateThrobber(bool running) {
   if (ShowCustomIcon())
     window_icon_->Update();

@@ -102,6 +102,33 @@ bool BrowserNonClientFrameView::HasClientEdge() const {
   return !MD::IsRefreshUi();
 }
 
+bool BrowserNonClientFrameView::HasVisibleBackgroundTabShapes() const {
+  DCHECK(browser_view()->IsTabStripVisible());
+
+  // Pre-refresh, background tab shapes are always visible.
+  if (!MD::IsRefreshUi())
+    return true;
+
+  // When custom imagery is involved in drawing the tabstrip, assume tab shapes
+  // are visible if the tabs use a custom image for a background directly, or if
+  // the frame image has been tinted visibly.  If the tabs use the same image as
+  // the frame, just shifted to look as if it aligns, this will report that
+  // shapes are visible when they aren't.  To detect this, we'd need to do some
+  // sort of aligned image comparison, which seems harder than it's worth.
+  bool has_custom_image;
+  const int fill_id =
+      browser_view()->tabstrip()->GetBackgroundResourceId(&has_custom_image);
+  if (has_custom_image) {
+    return GetThemeProvider()->HasCustomImage(fill_id) ||
+           color_utils::IsHSLShiftMeaningful(GetThemeProvider()->GetTint(
+               ThemeProperties::TINT_BACKGROUND_TAB));
+  }
+
+  // Background tab shapes are visible iff the tab color differs from the frame
+  // color.
+  return GetTabBackgroundColor(TAB_INACTIVE) != GetFrameColor();
+}
+
 gfx::ImageSkia BrowserNonClientFrameView::GetIncognitoAvatarIcon() const {
   const SkColor icon_color = color_utils::PickContrastingColor(
       SK_ColorWHITE, gfx::kChromeIconGrey, GetFrameColor());
