@@ -49,7 +49,6 @@
 #include "chromeos/chromeos_pref_names.h"
 #include "components/drive/drive_pref_names.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/chromeos/events/pref_names.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace {
@@ -851,14 +850,6 @@ const char* temporary_incognito_whitelist[] = {
     // required in tests, if possible, update tests and remove.
     chromeos::extension_ime_util::kBrailleImeEngineId,
     chromeos::extension_ime_util::kArcImeLanguage,
-#endif  // defined(OS_CHROMEOS)
-
-// ui/chromeos/events/pref_names.h
-#if defined(OS_CHROMEOS)
-    prefs::kLanguageRemapCapsLockKeyTo, prefs::kLanguageRemapSearchKeyTo,
-    prefs::kLanguageRemapControlKeyTo, prefs::kLanguageRemapAltKeyTo,
-    prefs::kLanguageRemapEscapeKeyTo, prefs::kLanguageRemapBackspaceKeyTo,
-    prefs::kLanguageRemapDiamondKeyTo,
 #endif  // defined(OS_CHROMEOS)
 };
 
