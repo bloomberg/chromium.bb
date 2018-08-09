@@ -19,6 +19,7 @@ struct GpuDevice {
   string driver_vendor;
   string driver_version;
   string driver_date;
+  int32 cuda_compute_capability_major;
 };
 
 // gpu::VideoCodecProfile
