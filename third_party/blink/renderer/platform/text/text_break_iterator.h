@@ -315,7 +315,7 @@ class PLATFORM_EXPORT NonSharedCharacterBreakIterator final {
   STACK_ALLOCATED();
 
  public:
-  explicit NonSharedCharacterBreakIterator(const String&);
+  explicit NonSharedCharacterBreakIterator(const StringView&);
   NonSharedCharacterBreakIterator(const UChar*, unsigned length);
   ~NonSharedCharacterBreakIterator();
 
