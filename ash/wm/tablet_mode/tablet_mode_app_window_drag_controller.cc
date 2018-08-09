@@ -53,13 +53,17 @@ class TabletModeAppWindowDragDelegate : public TabletModeWindowDragDelegate {
 }  // namespace
 
 TabletModeAppWindowDragController::TabletModeAppWindowDragController()
-    : drag_delegate_(std::make_unique<TabletModeAppWindowDragDelegate>()) {}
+    : drag_delegate_(std::make_unique<TabletModeAppWindowDragDelegate>()) {
+  display::Screen::GetScreen()->AddObserver(this);
+}
 
-TabletModeAppWindowDragController::~TabletModeAppWindowDragController() =
-    default;
+TabletModeAppWindowDragController::~TabletModeAppWindowDragController() {
+  display::Screen::GetScreen()->RemoveObserver(this);
+}
 
 bool TabletModeAppWindowDragController::DragWindowFromTop(
     ui::GestureEvent* event) {
+  previous_location_in_screen_ = GetEventLocationInScreen(event);
   if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN)
     return StartWindowDrag(event);
 
@@ -112,6 +116,23 @@ void TabletModeAppWindowDragController::EndWindowDrag(
         /*animate=*/true);
   }
   drag_delegate_->EndWindowDrag(result, GetEventLocationInScreen(event));
+}
+
+void TabletModeAppWindowDragController::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t metrics) {
+  if (!drag_delegate_->dragged_window() || !(metrics & DISPLAY_METRIC_ROTATION))
+    return;
+
+  display::Display current_display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          drag_delegate_->dragged_window());
+  if (display.id() != current_display.id())
+    return;
+
+  drag_delegate_->EndWindowDrag(
+      wm::WmToplevelWindowEventHandler::DragResult::REVERT,
+      previous_location_in_screen_);
 }
 
 }  // namespace ash

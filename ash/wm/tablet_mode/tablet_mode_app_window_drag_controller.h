@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/wm_toplevel_window_event_handler.h"
+#include "ui/display/display_observer.h"
 
 namespace ui {
 class GestureEvent;
@@ -17,13 +18,14 @@ class TabletModeWindowDragDelegate;
 
 // Handles app windows dragging in tablet mode. App windows can be dragged into
 // splitscreen through swiping from the top of the screen in tablet mode.
-class ASH_EXPORT TabletModeAppWindowDragController {
+class ASH_EXPORT TabletModeAppWindowDragController
+    : public display::DisplayObserver {
  public:
   // Threshold of the fling velocity to drop the window into overview.
   static constexpr float kFlingToOverviewThreshold = 100.0f;
 
   TabletModeAppWindowDragController();
-  ~TabletModeAppWindowDragController();
+  ~TabletModeAppWindowDragController() override;
 
   // Processes a gesture event and updates the transform of |dragged_window_|.
   // Returns true if the gesture has been handled and it should not be processed
@@ -38,7 +40,12 @@ class ASH_EXPORT TabletModeAppWindowDragController {
   void EndWindowDrag(ui::GestureEvent* event,
                      wm::WmToplevelWindowEventHandler::DragResult result);
 
+  // display::DisplayObserver:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t metrics) override;
+
   std::unique_ptr<TabletModeWindowDragDelegate> drag_delegate_;
+  gfx::Point previous_location_in_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(TabletModeAppWindowDragController);
 };
