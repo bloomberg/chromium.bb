@@ -12,6 +12,7 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -111,6 +112,14 @@ UnifiedSliderView::UnifiedSliderView(UnifiedSliderListener* listener,
 }
 
 void UnifiedSliderView::SetSliderValue(float value, bool by_user) {
+  // SetValue() calls |listener|, so we should ignore the call when the widget
+  // is closed, because controllers are already deleted.
+  // It should allow the case GetWidget() returning null, so that initial
+  // position can be properly set by controllers before the view is attached to
+  // a widget.
+  if (GetWidget() && GetWidget()->IsClosed())
+    return;
+
   slider_->SetValue(value);
   if (by_user)
     slider_->set_enable_accessibility_events(true);
