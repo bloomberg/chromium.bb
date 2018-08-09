@@ -35,6 +35,15 @@ class PasswordAutofillAgent;
 class PasswordGenerationAgent : public content::RenderFrameObserver,
                                 public mojom::PasswordGenerationAgent {
  public:
+  // Maximum number of characters typed by user while the generation is still
+  // offered. When the (kMaximumCharsForGenerationOffer + 1)-th character is
+  // typed, the generation becomes unavailable.
+  static const size_t kMaximumCharsForGenerationOffer = 5;
+
+  // User can edit the generated password. If the length falls below this value,
+  // the password is no longer considered generated.
+  static const size_t kMinimumLengthForEditedPassword = 4;
+
   PasswordGenerationAgent(content::RenderFrame* render_frame,
                           PasswordAutofillAgent* password_agent,
                           blink::AssociatedInterfaceRegistry* registry);
@@ -64,14 +73,7 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // Called right before PasswordAutofillAgent filled |password_element|.
   void OnFieldAutofilled(const blink::WebInputElement& password_element);
 
-  // The length that a password can be before the UI is hidden.
-  size_t maximum_offer_size() const { return maximum_offer_size_; }
-
 #if defined(UNIT_TEST)
-  void set_maximum_offer_size_for_testing(size_t maximum_offer_size) {
-    maximum_offer_size_ = maximum_offer_size;
-  }
-
   // This method requests the autofill::mojom::PasswordManagerClient which binds
   // requests the binding if it wasn't bound yet.
   void RequestPasswordManagerClientForTesting() { GetPasswordManagerClient(); }
@@ -227,9 +229,6 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   mojom::PasswordManagerClientAssociatedPtr password_manager_client_;
 
   mojo::AssociatedBinding<mojom::PasswordGenerationAgent> binding_;
-
-  // The length that a password can be before the UI is hidden.
-  size_t maximum_offer_size_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationAgent);
 };
