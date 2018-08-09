@@ -373,11 +373,22 @@ void MojoVideoDecoder::Stop() {
 
   has_connection_error_ = true;
 
+  // |init_cb_| is likely to reentrantly destruct |this|, so we check for that
+  // using an on-stack WeakPtr.
+  // TODO(sandersd): Update the VideoDecoder API to be explicit about what
+  // reentrancy is allowed, and therefore which callbacks must be posted.
+  base::WeakPtr<MojoVideoDecoder> weak_this = weak_this_;
+
   if (!init_cb_.is_null())
     base::ResetAndReturn(&init_cb_).Run(false);
+  if (!weak_this)
+    return;
 
-  for (const auto& pending_decode : pending_decodes_)
+  for (const auto& pending_decode : pending_decodes_) {
     pending_decode.second.Run(DecodeStatus::DECODE_ERROR);
+    if (!weak_this)
+      return;
+  }
   pending_decodes_.clear();
 
   if (!reset_cb_.is_null())
