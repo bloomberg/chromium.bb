@@ -1358,13 +1358,6 @@ void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {
     update_golden_frame_stats(cpi);
 
   if (cm->frame_type == KEY_FRAME) rc->frames_since_key = 0;
-
-  // TODO(zoeliu): To investigate whether we should treat BWDREF_FRAME
-  //               differently here for rc->avg_frame_bandwidth.
-  if (cm->show_frame || rc->is_bwd_ref_frame) {
-    rc->frames_since_key++;
-    rc->frames_to_key--;
-  }
   // if (cm->current_video_frame == 1 && cm->show_frame)
   /*
   rc->this_frame_target =

@@ -3348,13 +3348,6 @@ void av1_twopass_postencode_update(AV1_COMP *cpi) {
   }
   twopass->kf_group_bits = AOMMAX(twopass->kf_group_bits, 0);
 
-  // Increment the gf group index ready for the next frame. If this is
-  // a show_existing_frame with a source other than altref, the index
-  // was incremented when it was originally encoded.
-  if (!cpi->common.show_existing_frame || rc->is_src_frame_alt_ref) {
-    ++twopass->gf_group.index;
-  }
-
   // If the rate control is drifting consider adjustment to min or maxq.
   if ((cpi->oxcf.rc_mode != AOM_Q) &&
       (cpi->twopass.gf_zeromotion_pct < VLOW_MOTION_THRESHOLD) &&

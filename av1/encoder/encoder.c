@@ -4903,10 +4903,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
       av1_rc_postencode_update(cpi, *size);
     }
 
-    // Decrement count down till next gf
-    if (cpi->rc.frames_till_gf_update_due > 0)
-      cpi->rc.frames_till_gf_update_due--;
-
     ++cm->current_video_frame;
 
     return AOM_CODEC_OK;
@@ -5159,15 +5155,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   // takes a space in the gf group. Therefore, even when
   // it is not shown, we still need update the count down.
 
-  // TODO(weitinglin): This is a work-around to handle the condition
-  // when a frame is drop. We should fix the cm->show_frame flag
-  // instead of checking the other condition to update the counter properly.
-  if (cm->show_frame || is_frame_droppable(cpi)) {
-    // Decrement count down till next gf
-    if (cpi->rc.frames_till_gf_update_due > 0)
-      cpi->rc.frames_till_gf_update_due--;
-  }
-
   if (cm->show_frame) {
     // TODO(zoeliu): We may only swamp mi and prev_mi for those frames that
     // are
@@ -5192,6 +5179,50 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   return AOM_CODEC_OK;
 }
 
+static INLINE void update_keyframe_counters(AV1_COMP *cpi) {
+  // TODO(zoeliu): To investigate whether we should treat BWDREF_FRAME
+  //               differently here for rc->avg_frame_bandwidth.
+  if (cpi->common.show_frame || cpi->rc.is_bwd_ref_frame) {
+    if (!cpi->common.show_existing_frame || cpi->rc.is_src_frame_alt_ref ||
+        cpi->common.frame_type == KEY_FRAME) {
+      // If this is a show_existing_frame with a source other than altref,
+      // or if it is not a displayed forward keyframe, the keyframe update
+      // counters were incremented when it was originally encoded.
+      cpi->rc.frames_since_key++;
+      cpi->rc.frames_to_key--;
+    }
+  }
+}
+
+static INLINE void update_frames_till_gf_update(AV1_COMP *cpi) {
+  // TODO(weitinglin): Updating this counter for is_frame_droppable
+  // is a work-around to handle the condition when a frame is drop.
+  // We should fix the cpi->common.show_frame flag
+  // instead of checking the other condition to update the counter properly.
+  if (cpi->common.show_frame || is_frame_droppable(cpi)) {
+    // Decrement count down till next gf
+    if (cpi->rc.frames_till_gf_update_due > 0)
+      cpi->rc.frames_till_gf_update_due--;
+  }
+}
+
+static INLINE void update_twopass_gf_group_index(AV1_COMP *cpi) {
+  // Increment the gf group index ready for the next frame. If this is
+  // a show_existing_frame with a source other than altref, or if it is not
+  // a displayed forward keyframe, the index was incremented when it was
+  // originally encoded.
+  if (!cpi->common.show_existing_frame || cpi->rc.is_src_frame_alt_ref ||
+      cpi->common.frame_type == KEY_FRAME) {
+    ++cpi->twopass.gf_group.index;
+  }
+}
+
+static void update_rc_counts(AV1_COMP *cpi) {
+  update_keyframe_counters(cpi);
+  update_frames_till_gf_update(cpi);
+  if (cpi->oxcf.pass == 2) update_twopass_gf_group_index(cpi);
+}
+
 static int Pass0Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
                        int skip_adapt, unsigned int *frame_flags) {
   if (cpi->oxcf.rc_mode == AOM_CBR) {
@@ -5203,6 +5234,7 @@ static int Pass0Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
       AOM_CODEC_OK) {
     return AOM_CODEC_ERROR;
   }
+  update_rc_counts(cpi);
   check_show_existing_frame(cpi);
   return AOM_CODEC_OK;
 }
@@ -5232,20 +5264,8 @@ static int Pass2Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
           cm->cum_txcoeff_cost_timer);
 #endif
 
-  // Do not do post-encoding update for those frames that do not have a spot
-  // in a gf group, but note that an OVERLAY frame always has a spot in a gf
-  // group, even when show_existing_frame is used.
-  // Error resilient frames cannot be true show_existing_frames, as this
-  // would require displaying a frame that was encoded in the past.
-  // In this case, any frame that would traditionally be a
-  // show_existing_frame will need to be re-encoded at display time,
-  // making it necessary to do this postencode_update. If error resilient mode
-  // is disabled, a show_existing_frame should never enter this function unless
-  // it was the source of an altref.
-  if (cpi->common.error_resilient_mode || !cpi->common.show_existing_frame ||
-      cpi->rc.is_src_frame_alt_ref) {
-    av1_twopass_postencode_update(cpi);
-  }
+  av1_twopass_postencode_update(cpi);
+  update_rc_counts(cpi);
   check_show_existing_frame(cpi);
   return AOM_CODEC_OK;
 }
