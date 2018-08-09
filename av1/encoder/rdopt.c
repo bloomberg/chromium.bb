@@ -6521,7 +6521,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
                        // odd iterations search in the second. The predictor
                        // found for the 'other' reference frame is factored in.
     const int plane = 0;
-    ConvolveParams conv_params = get_conv_params(!id, 0, plane, xd->bd);
+    ConvolveParams conv_params = get_conv_params(0, plane, xd->bd);
     conv_params.use_jnt_comp_avg = 0;
     WarpTypesAllowed warp_types;
     warp_types.global_warp_allowed = is_global[!id];
@@ -7109,7 +7109,7 @@ static void build_second_inter_pred(const AV1_COMP *cpi, MACROBLOCK *x,
   av1_setup_scale_factors_for_frame(&sf, ref_yv12.width, ref_yv12.height,
                                     cm->width, cm->height);
 
-  ConvolveParams conv_params = get_conv_params(!ref_idx, 0, plane, xd->bd);
+  ConvolveParams conv_params = get_conv_params(0, plane, xd->bd);
   WarpTypesAllowed warp_types;
   warp_types.global_warp_allowed = is_global;
   warp_types.local_warp_allowed = mbmi->motion_mode == WARPED_CAUSAL;

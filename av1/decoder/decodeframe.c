@@ -691,7 +691,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
         int tmp_dst_stride = 8;
         assert(bw < 8 || bh < 8);
         ConvolveParams conv_params = get_conv_params_no_round(
-            0, 0, plane, tmp_dst, tmp_dst_stride, is_compound, xd->bd);
+            0, plane, tmp_dst, tmp_dst_stride, is_compound, xd->bd);
         conv_params.use_jnt_comp_avg = 0;
         struct buf_2d *const dst_buf = &pd->dst;
         uint8_t *dst = dst_buf->buf + dst_buf->stride * y + x;
@@ -735,7 +735,6 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
         extend_mc_border(sf, pre_buf, scaled_mv, block, subpel_x_mv,
                          subpel_y_mv, 0, is_intrabc, highbd, xd->mc_buf[ref],
                          &pre, &src_stride);
-        conv_params.ref = ref;
         conv_params.do_average = ref;
         if (is_masked_compound_type(mi->interinter_comp.type)) {
           // masked compound type has its own average mechanism
@@ -797,7 +796,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
     }
 
     ConvolveParams conv_params = get_conv_params_no_round(
-        0, 0, plane, tmp_dst, MAX_SB_SIZE, is_compound, xd->bd);
+        0, plane, tmp_dst, MAX_SB_SIZE, is_compound, xd->bd);
     av1_jnt_comp_weight_assign(cm, mi, 0, &conv_params.fwd_offset,
                                &conv_params.bck_offset,
                                &conv_params.use_jnt_comp_avg, is_compound);
@@ -808,7 +807,6 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
       WarpTypesAllowed warp_types;
       warp_types.global_warp_allowed = is_global[ref];
       warp_types.local_warp_allowed = mi->motion_mode == WARPED_CAUSAL;
-      conv_params.ref = ref;
       conv_params.do_average = ref;
       if (is_masked_compound_type(mi->interinter_comp.type)) {
         // masked compound type has its own average mechanism

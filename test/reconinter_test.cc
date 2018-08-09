@@ -98,8 +98,7 @@ void BuildCompDiffwtdMaskD16Test::RunCheckOutput(
   DECLARE_ALIGNED(32, uint16_t, src0[MAX_SB_SQUARE]);
   DECLARE_ALIGNED(32, uint16_t, src1[MAX_SB_SQUARE]);
 
-  ConvolveParams conv_params =
-      get_conv_params_no_round(0, 0, 0, NULL, 0, 1, bd);
+  ConvolveParams conv_params = get_conv_params_no_round(0, 0, NULL, 0, 1, bd);
 
   int in_precision =
       bd + 2 * FILTER_BITS - conv_params.round_0 - conv_params.round_1 + 2;
@@ -139,8 +138,7 @@ void BuildCompDiffwtdMaskD16Test::RunSpeedTest(
   DECLARE_ALIGNED(32, uint16_t, src0[MAX_SB_SQUARE]);
   DECLARE_ALIGNED(32, uint16_t, src1[MAX_SB_SQUARE]);
 
-  ConvolveParams conv_params =
-      get_conv_params_no_round(0, 0, 0, NULL, 0, 1, bd);
+  ConvolveParams conv_params = get_conv_params_no_round(0, 0, NULL, 0, 1, bd);
 
   int in_precision =
       bd + 2 * FILTER_BITS - conv_params.round_0 - conv_params.round_1 + 2;

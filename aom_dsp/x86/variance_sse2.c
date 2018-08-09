@@ -555,7 +555,7 @@ void aom_upsampled_pred_sse2(MACROBLOCKD *xd, const struct AV1Common *const cm,
       warp_types.local_warp_allowed = mi->motion_mode == WARPED_CAUSAL;
 
       // Get convolve parameters.
-      ConvolveParams conv_params = get_conv_params(ref_num, 0, plane, xd->bd);
+      ConvolveParams conv_params = get_conv_params(0, plane, xd->bd);
       const InterpFilters filters =
           av1_broadcast_interp_filter(EIGHTTAP_REGULAR);
 
