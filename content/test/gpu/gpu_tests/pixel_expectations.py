@@ -55,6 +55,9 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_CSSFilterEffects',
         ['mac', ('nvidia', 0xfe9)], bug=690277)
 
+    # Became flaky on 10.13.6.
+    self.Flaky('Pixel_CSSFilterEffects', ['highsierra', 'amd'], bug=872423)
+
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
 
@@ -109,7 +112,8 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_WorkerRAF_OOPD', ['mac'], bug=851213)
 
     # TODO(kbr): temporary suppression for new test.
-    self.Flaky('Pixel_WebGLSadCanvas', ['linux', 'mac', 'win'], bug=575305)
+    self.Flaky('Pixel_WebGLSadCanvas', ['linux', 'win'], bug=575305)
+    self.Fail('Pixel_WebGLSadCanvas', ['mac'], bug=872423)
     self.Fail('Pixel_WebGLSadCanvas', ['android'], bug=575305)
 
     # Flaky on Android: crbug.com/860548

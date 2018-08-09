@@ -434,9 +434,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Regressions in 10.12.4.
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
-        ['sierra'], bug=705865)
+        ['sierra', 'intel'], bug=705865)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
-        ['sierra'], bug=705865)
+        ['sierra', 'intel'], bug=705865)
 
     # Regressions in 10.13
     self.Fail('deqp/functional/gles3/fbocolorbuffer/tex2d_00.html',
@@ -648,6 +648,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     #     ['mac', 'amd'], bug=735483)
     # self.Fail('conformance2/rendering/texture-switch-performance.html',
     #     ['mac', 'amd'], bug=735483)
+
+    # The following two flaky failures are regressions in 10.13.6
+    # specifically.
+    self.Flaky('conformance2/textures/misc/tex-mipmap-levels.html',
+        ['mac', 'amd'], bug=870856)
+    self.Flaky('conformance2/textures/misc/tex-base-level-bug.html',
+        ['mac', 'amd'], bug=870856)
     self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
         ['mac', 'amd'], bug=820225)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
