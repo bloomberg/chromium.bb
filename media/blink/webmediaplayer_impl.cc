@@ -1652,6 +1652,19 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
               BindToCurrentLoop(base::BindRepeating(
                   &WebMediaPlayerImpl::OnFrameSinkDestroyed, AsWeakPtr()))));
       bridge_->SetContentsOpaque(opaque_);
+
+      // If the element is already in Picture-in-Picture mode, it means that it
+      // was set in this mode prior to this load, with a different
+      // WebMediaPlayerImpl. The new player needs to send its id, size and
+      // surface id to the browser process to make sure the states are properly
+      // updated.
+      // TODO(872056): the surface should be activated but for some reasons, it
+      // does not. It is possible that this will no longer be neded after 872056
+      // is fixed.
+      if (client_->DisplayType() ==
+          WebMediaPlayer::DisplayType::kPictureInPicture) {
+        OnSurfaceIdUpdated(bridge_->GetSurfaceId());
+      }
     }
   }
 

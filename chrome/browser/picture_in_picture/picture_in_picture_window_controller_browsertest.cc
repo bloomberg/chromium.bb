@@ -1004,3 +1004,44 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 }
 
 #endif  // !defined(OS_ANDROID)
+
+// This checks that a video in Picture-in-Picture with preload none, when
+// changing source willproperly update the associated media player id. This is
+// checked by closing the window because the test it at a too high level to be
+// able to check the actual media player id being used.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       PreloadNoneSrcChangeThenLoad) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(FILE_PATH_LITERAL(
+          "media/picture-in-picture/player_preload_none.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents);
+
+  SetUpWindowController(active_web_contents);
+
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(active_web_contents,
+                                                   "play();", &result));
+  ASSERT_TRUE(result);
+
+  result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  ASSERT_TRUE(result);
+
+  result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "changeSrcAndLoad();", &result));
+  ASSERT_TRUE(result);
+
+  window_controller()->Close(true /* should_pause_video */);
+
+  result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "isInPictureInPicture();", &result));
+  EXPECT_FALSE(result);
+}
