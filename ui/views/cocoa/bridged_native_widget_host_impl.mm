@@ -4,11 +4,13 @@
 
 #include "ui/views/cocoa/bridged_native_widget_host_impl.h"
 
+#include "ui/base/hit_test.h"
 #include "ui/compositor/recyclable_compositor_mac.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/views/cocoa/bridged_native_widget.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_mac.h"
+#include "ui/views/word_lookup_client.h"
 
 namespace views {
 
@@ -24,6 +26,13 @@ BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
   // the BridgedNativeWidgetHost, this can be replaced with closing that pipe.
   bridge_.reset();
   DestroyCompositor();
+}
+
+void BridgedNativeWidgetHostImpl::SetRootView(views::View* root_view) {
+  root_view_ = root_view;
+  // TODO(ccameron): The BridgedNativeWidget should not need to know its root
+  // view.
+  bridge_->SetRootView(root_view);
 }
 
 void BridgedNativeWidgetHostImpl::CreateCompositor(
@@ -98,6 +107,92 @@ void BridgedNativeWidgetHostImpl::SetCompositorVisibility(bool window_visible) {
   } else {
     compositor_->Suspend();
   }
+}
+
+void BridgedNativeWidgetHostImpl::OnScrollEvent(
+    const ui::ScrollEvent& const_event) {
+  ui::ScrollEvent event = const_event;
+  root_view_->GetWidget()->OnScrollEvent(&event);
+}
+
+void BridgedNativeWidgetHostImpl::OnMouseEvent(
+    const ui::MouseEvent& const_event) {
+  ui::MouseEvent event = const_event;
+  root_view_->GetWidget()->OnMouseEvent(&event);
+}
+
+void BridgedNativeWidgetHostImpl::OnGestureEvent(
+    const ui::GestureEvent& const_event) {
+  ui::GestureEvent event = const_event;
+  root_view_->GetWidget()->OnGestureEvent(&event);
+}
+
+void BridgedNativeWidgetHostImpl::SetSize(const gfx::Size& new_size) {
+  root_view_->SetSize(new_size);
+}
+
+void BridgedNativeWidgetHostImpl::SetKeyboardAccessible(bool enabled) {
+  views::FocusManager* focus_manager =
+      root_view_->GetWidget()->GetFocusManager();
+  if (focus_manager)
+    focus_manager->SetKeyboardAccessible(enabled);
+}
+
+void BridgedNativeWidgetHostImpl::SetIsFirstResponder(bool is_first_responder) {
+  if (is_first_responder)
+    root_view_->GetWidget()->GetFocusManager()->RestoreFocusedView();
+  else
+    root_view_->GetWidget()->GetFocusManager()->StoreFocusedView(true);
+}
+
+void BridgedNativeWidgetHostImpl::GetIsDraggableBackgroundAt(
+    const gfx::Point& location_in_content,
+    bool* is_draggable_background) {
+  int component =
+      root_view_->GetWidget()->GetNonClientComponent(location_in_content);
+  *is_draggable_background = component == HTCAPTION;
+}
+
+void BridgedNativeWidgetHostImpl::GetTooltipTextAt(
+    const gfx::Point& location_in_content,
+    base::string16* new_tooltip_text) {
+  views::View* view =
+      root_view_->GetTooltipHandlerForPoint(location_in_content);
+  if (view) {
+    gfx::Point view_point = location_in_content;
+    views::View::ConvertPointToScreen(root_view_, &view_point);
+    views::View::ConvertPointFromScreen(view, &view_point);
+    if (!view->GetTooltipText(view_point, new_tooltip_text))
+      DCHECK(new_tooltip_text->empty());
+  }
+}
+
+void BridgedNativeWidgetHostImpl::GetWordAt(
+    const gfx::Point& location_in_content,
+    bool* found_word,
+    gfx::DecoratedText* decorated_word,
+    gfx::Point* baseline_point) {
+  *found_word = false;
+
+  views::View* target =
+      root_view_->GetEventHandlerForPoint(location_in_content);
+  if (!target)
+    return;
+
+  views::WordLookupClient* word_lookup_client = target->GetWordLookupClient();
+  if (!word_lookup_client)
+    return;
+
+  gfx::Point location_in_target = location_in_content;
+  views::View::ConvertPointToTarget(root_view_, target, &location_in_target);
+  if (!word_lookup_client->GetWordLookupDataAtPoint(
+          location_in_target, decorated_word, baseline_point)) {
+    return;
+  }
+
+  // Convert |baselinePoint| to the coordinate system of |root_view_|.
+  views::View::ConvertPointToTarget(target, root_view_, baseline_point);
+  *found_word = true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

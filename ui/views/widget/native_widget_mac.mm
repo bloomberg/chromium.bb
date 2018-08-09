@@ -141,7 +141,7 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   delegate_->OnNativeWidgetCreated(true);
 
   DCHECK(GetWidget()->GetRootView());
-  bridge()->SetRootView(GetWidget()->GetRootView());
+  bridge_host_->SetRootView(GetWidget()->GetRootView());
   if (auto* focus_manager = GetWidget()->GetFocusManager()) {
     [window makeFirstResponder:bridge()->ns_view()];
     bridge()->SetFocusManager(focus_manager);
@@ -399,7 +399,7 @@ void NativeWidgetMac::Close() {
   }
 
   // Clear the view early to suppress repaints.
-  bridge()->SetRootView(nullptr);
+  bridge_host_->SetRootView(nullptr);
 
   // Widget::Close() ensures [Non]ClientView::CanClose() returns true, so there
   // is no need to call the NSWindow or its delegate's -windowShouldClose:

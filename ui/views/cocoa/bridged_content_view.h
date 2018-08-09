@@ -16,6 +16,7 @@ class TextInputClient;
 }
 
 namespace views {
+class BridgedNativeWidgetHost;
 class View;
 }
 
@@ -26,16 +27,22 @@ class View;
                                                 NSUserInterfaceValidations,
                                                 NSDraggingSource> {
  @private
+  // Weak, reset by clearView.
+  views::BridgedNativeWidgetHost* host_;
+
   // Weak. The hosted RootView, owned by hostedView_->GetWidget().
+  // TODO(ccameron): Remove this member.
   views::View* hostedView_;
 
   // Weak. If non-null the TextInputClient of the currently focused View in the
   // hierarchy rooted at |hostedView_|. Owned by the focused View.
+  // TODO(ccameron): Remove this member.
   ui::TextInputClient* textInputClient_;
 
   // The TextInputClient about to be set. Requests for a new -inputContext will
   // use this, but while the input is changing, |self| still needs to service
   // IME requests using the old |textInputClient_|.
+  // TODO(ccameron): Remove this member.
   ui::TextInputClient* pendingTextInputClient_;
 
   // A tracking area installed to enable mouseMoved events.
@@ -56,7 +63,8 @@ class View;
 @property(assign, nonatomic) BOOL drawMenuBackgroundForBlur;
 
 // Initialize the NSView -> views::View bridge. |viewToHost| must be non-NULL.
-- (id)initWithView:(views::View*)viewToHost;
+- (id)initWithHost:(views::BridgedNativeWidgetHost*)host
+              view:(views::View*)viewToHost;
 
 // Clear the hosted view. For example, if it is about to be destroyed.
 - (void)clearView;

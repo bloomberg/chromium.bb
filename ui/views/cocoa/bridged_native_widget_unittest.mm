@@ -26,6 +26,7 @@
 #include "ui/events/test/cocoa_test_event_utils.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/views/cocoa/bridged_content_view.h"
+#import "ui/views/cocoa/bridged_native_widget_host_impl.h"
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -289,6 +290,7 @@ class MockNativeWidgetMac : public NativeWidgetMac {
   explicit MockNativeWidgetMac(internal::NativeWidgetDelegate* delegate)
       : NativeWidgetMac(delegate) {}
   using NativeWidgetMac::bridge;
+  using NativeWidgetMac::bridge_host_for_testing;
 
   // internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override {
@@ -323,6 +325,9 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
       : native_widget_mac_(nullptr) {}
 
   BridgedNativeWidget* bridge() { return native_widget_mac_->bridge(); }
+  BridgedNativeWidgetHostImpl* bridge_host() {
+    return native_widget_mac_->bridge_host_for_testing();
+  }
 
   // Overridden from testing::Test:
   void SetUp() override {
@@ -571,7 +576,7 @@ void BridgedNativeWidgetTest::SetUp() {
 
   // The delegate should exist before setting the root view.
   EXPECT_TRUE([window delegate]);
-  bridge()->SetRootView(view_.get());
+  bridge_host()->SetRootView(view_.get());
   ns_view_ = bridge()->ns_view();
 
   // Pretend it has been shown via NativeWidgetMac::Show().
@@ -583,8 +588,8 @@ void BridgedNativeWidgetTest::TearDown() {
   // Clear kill buffer so that no state persists between tests.
   TextfieldModel::ClearKillBuffer();
 
-  if (bridge())
-    bridge()->SetRootView(nullptr);
+  if (bridge_host())
+    bridge_host()->SetRootView(nullptr);
   view_.reset();
   BridgedNativeWidgetTestBase::TearDown();
 }
