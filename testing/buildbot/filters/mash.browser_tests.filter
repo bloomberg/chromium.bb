@@ -39,7 +39,6 @@
 -BrowserNonClientFrameViewAshTest.AvatarDisplayOnTeleportedWindow/*
 -BrowserNonClientFrameViewAshTest.HeaderHeightForSnappedBrowserInSplitView/*
 -BrowserNonClientFrameViewAshTest.ImmersiveModeTopViewInset/*
--BrowserNonClientFrameViewAshTest.RestoreMinimizedBrowserUpdatesCaption/*
 -BrowserNonClientFrameViewAshTest.ToggleTabletModeOnMinimizedWindow/*
 -BrowserNonClientFrameViewAshTest.ToggleTabletModeRelayout/*
 -BrowserNonClientFrameViewAshTest.TopViewInset/*
