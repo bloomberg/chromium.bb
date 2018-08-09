@@ -33,7 +33,7 @@ void* AutofillWalletSyncableServiceUserDataKey() {
   return reinterpret_cast<void*>(&user_data_key);
 }
 
-const char* CardNetworkFromWalletCardType(
+const char* CardNetworkFromAutofillWalletCardType(
     sync_pb::WalletMaskedCreditCard::WalletCardType type) {
   switch (type) {
     case sync_pb::WalletMaskedCreditCard::AMEX:
@@ -58,7 +58,7 @@ const char* CardNetworkFromWalletCardType(
   }
 }
 
-CreditCard::CardType CardTypeFromWalletCardClass(
+CreditCard::CardType CardTypeFromAutofillWalletCardClass(
     sync_pb::WalletMaskedCreditCard::WalletCardClass card_class) {
   switch (card_class) {
     case sync_pb::WalletMaskedCreditCard::CREDIT:
@@ -72,7 +72,7 @@ CreditCard::CardType CardTypeFromWalletCardClass(
   }
 }
 
-CreditCard::ServerStatus ServerToLocalStatus(
+CreditCard::ServerStatus ServerToLocalWalletCardStatus(
     sync_pb::WalletMaskedCreditCard::WalletCardStatus status) {
   switch (status) {
     case sync_pb::WalletMaskedCreditCard::VALID:
@@ -84,12 +84,14 @@ CreditCard::ServerStatus ServerToLocalStatus(
   }
 }
 
-CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
+CreditCard CardFromWalletCardSpecifics(
+    const sync_pb::WalletMaskedCreditCard& card) {
   CreditCard result(CreditCard::MASKED_SERVER_CARD, card.id());
   result.SetNumber(base::UTF8ToUTF16(card.last_four()));
-  result.SetServerStatus(ServerToLocalStatus(card.status()));
-  result.SetNetworkForMaskedCard(CardNetworkFromWalletCardType(card.type()));
-  result.set_card_type(CardTypeFromWalletCardClass(card.card_class()));
+  result.SetServerStatus(ServerToLocalWalletCardStatus(card.status()));
+  result.SetNetworkForMaskedCard(
+      CardNetworkFromAutofillWalletCardType(card.type()));
+  result.set_card_type(CardTypeFromAutofillWalletCardClass(card.card_class()));
   result.SetRawInfo(CREDIT_CARD_NAME_FULL,
                     base::UTF8ToUTF16(card.name_on_card()));
   result.SetExpirationMonth(card.exp_month());
@@ -99,7 +101,7 @@ CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
   return result;
 }
 
-AutofillProfile ProfileFromSpecifics(
+AutofillProfile ProfileFromWalletCardSpecifics(
     const sync_pb::WalletPostalAddress& address) {
   AutofillProfile profile(AutofillProfile::SERVER_PROFILE, std::string());
 
@@ -275,11 +277,11 @@ void AutofillWalletSyncableService::PopulateWalletCardsAndAddresses(
     switch (autofill_specifics.type()) {
       case sync_pb::AutofillWalletSpecifics::MASKED_CREDIT_CARD:
         wallet_cards->push_back(
-            CardFromSpecifics(autofill_specifics.masked_card()));
+            CardFromWalletCardSpecifics(autofill_specifics.masked_card()));
         break;
       case sync_pb::AutofillWalletSpecifics::POSTAL_ADDRESS:
         wallet_addresses->push_back(
-            ProfileFromSpecifics(autofill_specifics.address()));
+            ProfileFromWalletCardSpecifics(autofill_specifics.address()));
 
         // Map the sync billing address id to the profile's id.
         ids[autofill_specifics.address().id()] =
