@@ -722,6 +722,8 @@ jumbo_component("base") {
     "sampling_heap_profiler/lock_free_address_hash_set.h",
     "sampling_heap_profiler/module_cache.cc",
     "sampling_heap_profiler/module_cache.h",
+    "sampling_heap_profiler/module_cache_mac.cc",
+    "sampling_heap_profiler/module_cache_win.cc",
     "sampling_heap_profiler/sampling_heap_profiler.cc",
     "sampling_heap_profiler/sampling_heap_profiler.h",
     "scoped_clear_errno.h",
@@ -1173,6 +1175,7 @@ jumbo_component("base") {
       "process/process_posix.cc",
       "profiler/native_stack_sampler_posix.cc",
       "rand_util_posix.cc",
+      "sampling_heap_profiler/module_cache_posix.cc",
       "strings/string_util_posix.h",
       "strings/sys_string_conversions_posix.cc",
       "sync_socket_posix.cc",
@@ -1421,6 +1424,7 @@ jumbo_component("base") {
       "process/process_metrics_posix.cc",
       "profiler/native_stack_sampler_posix.cc",
       "rand_util_fuchsia.cc",
+      "sampling_heap_profiler/module_cache_posix.cc",
       "strings/string_util_posix.h",
       "strings/sys_string_conversions_posix.cc",
       "sync_socket_posix.cc",
@@ -1628,7 +1632,10 @@ jumbo_component("base") {
 
   # Desktop Mac.
   if (is_mac) {
-    sources -= [ "profiler/native_stack_sampler_posix.cc" ]
+    sources -= [
+      "profiler/native_stack_sampler_posix.cc",
+      "sampling_heap_profiler/module_cache_posix.cc",
+    ]
     sources += [
       "mac/scoped_typeref.h",
       "memory/platform_shared_memory_region_mac.cc",

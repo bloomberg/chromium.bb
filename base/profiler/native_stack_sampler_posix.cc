@@ -12,13 +12,6 @@ std::unique_ptr<NativeStackSampler> NativeStackSampler::Create(
   return std::unique_ptr<NativeStackSampler>();
 }
 
-// static
-StackSamplingProfiler::InternalModule NativeStackSampler::GetModuleForAddress(
-    uintptr_t address) {
-  // TODO(alph): Implement it.
-  return StackSamplingProfiler::InternalModule();
-}
-
 size_t NativeStackSampler::GetStackBufferSize() {
   return 0;
 }
