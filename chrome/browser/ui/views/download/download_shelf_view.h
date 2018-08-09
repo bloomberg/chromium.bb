@@ -119,9 +119,6 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // Padding between the show all link and close button.
   static constexpr int kCloseAndLinkPadding = 6;
 
-  // Border color.
-  static constexpr SkColor kBorderColor = SkColorSetRGB(214, 214, 214);
-
   // New download item animation speed in milliseconds.
   static constexpr int kNewItemAnimationDurationMs = 800;
 

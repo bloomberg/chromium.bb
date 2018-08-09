@@ -168,7 +168,9 @@ views::View* DownloadShelfView::GetDefaultFocusableChild() {
 }
 
 void DownloadShelfView::OnPaintBorder(gfx::Canvas* canvas) {
-  canvas->FillRect(gfx::Rect(0, 0, width(), 1), kBorderColor);
+  canvas->FillRect(gfx::Rect(0, 0, width(), 1),
+                   GetThemeProvider()->GetColor(
+                       ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR));
 }
 
 void DownloadShelfView::OpenedDownload() {

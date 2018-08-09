@@ -93,7 +93,7 @@ class ThemeProperties {
 
     // The color of the line separating the bottom of the toolbar from the
     // contents.
-    COLOR_TOOLBAR_BOTTOM_SEPARATOR,
+    COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR,
 
     // The color of a normal toolbar button's icon.
     COLOR_TOOLBAR_BUTTON_ICON,

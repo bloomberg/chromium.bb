@@ -105,7 +105,7 @@
       return [NSColor blackColor];
   }
   return themeProvider->GetNSColor(
-      ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR);
+      ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR);
 }
 
 - (NSColor*)backgroundImageColor {

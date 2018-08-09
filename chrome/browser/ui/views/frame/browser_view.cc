@@ -269,8 +269,9 @@ void PaintAttachedBookmarkBar(gfx::Canvas* canvas,
                               view->GetLocalBounds(), background_image_offset);
   if (view->height() >= toolbar_overlap) {
     BrowserView::Paint1pxHorizontalLine(
-        canvas, view->GetThemeProvider()->GetColor(
-                    ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR),
+        canvas,
+        view->GetThemeProvider()->GetColor(
+            ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR),
         view->GetLocalBounds(), true);
   }
 }

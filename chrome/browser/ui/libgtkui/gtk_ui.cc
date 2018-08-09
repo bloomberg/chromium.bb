@@ -1033,9 +1033,11 @@ void GtkUi::LoadGtkValues() {
   colors_[ThemeProperties::COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT] =
       tab_text_color;
   // Separates the toolbar from the bookmark bar or butter bars.
-  colors_[ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR] = tab_border;
+  colors_[ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR] = tab_border;
   // Separates entries in the downloads bar.
   colors_[ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR] = tab_border;
+  // Separates the detached bookmark bar from the NTP.
+  colors_[ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR] = tab_border;
 
   // These colors represent the border drawn around tabs and between
   // the tabstrip and toolbar.

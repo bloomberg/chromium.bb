@@ -339,7 +339,7 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
     case COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
       return incognito ? kDefaultDetachedBookmarkBarBackgroundIncognito
                        : kDefaultDetachedBookmarkBarBackground;
-    case COLOR_TOOLBAR_BOTTOM_SEPARATOR:
+    case COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
       return incognito ? kDefaultToolbarBottomSeparatorIncognito
                        : kDefaultToolbarBottomSeparator;
     case COLOR_TOOLBAR_TOP_SEPARATOR:
