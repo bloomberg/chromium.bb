@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 {
-  const LONG_TOUCH_TIME_MS = 1000;
+  var LONG_TOUCH_TIME_MS = 1000;
 
-  function TitleLongTouchDetector(element, callback) {
+  function LongTouchDetector(element, callback) {
     this.callback_ = callback;
 
     element.addEventListener('touchstart', this.onTouchStart_.bind(this));
@@ -17,7 +17,7 @@
     element.addEventListener('mouseleave', this.killTimer_.bind(this));
   }
 
-  TitleLongTouchDetector.prototype = {
+  LongTouchDetector.prototype = {
     /**
      * This is timeout ID used to kill window timeout that fires "detected"
      * callback if touch event was cancelled.
@@ -57,195 +57,6 @@
     },
   };
 
-  const VIDEO_DEVICE = {
-    LAPTOP: 'laptop',
-    TABLET: 'tablet',
-    LAPTOP_G: 'laptop_G',
-    TABLET_G: 'tablet_G',
-  };
-
-  const VIDEO_ORIENTATION = {
-    PORTRAIT: 'portrait',
-    LANDSCAPE: 'landscape',
-  };
-
-  const VIDEO_TYPE = {
-    INTRO: 'intro',
-    LOOP: 'loop',
-  };
-
-  class WelcomeVideoController {
-    /**
-     * This calculates key that is used to identify <video> node in internal
-     * mapping between possible video configurations and actual videos.
-     *
-     * @param {VIDEO_DEVICE} device Allowed device type.
-     * @param {VIDEO_ORIENTATION} orientation Allowed orientation.
-     * @param {VIDEO_TYPE} type Allowed type.
-     * @return {String} Returns <video> key to be stored in this.videos.
-     * @private
-     */
-    calcKey_(device, orientation, type) {
-      return device + '-' + orientation + '-' + type;
-    }
-
-    /**
-     * @param {VIDEO_DEVICE} device Allowed device type.
-     * @param {VIDEO_ORIENTATION} orientation Allowed orientation.
-     */
-    constructor(device, orientation) {
-      this.devices = new Set();
-      this.orientations = new Set();
-      this.types = new Set();
-      for (let key in VIDEO_DEVICE)
-        this.devices.add(VIDEO_DEVICE[key]);
-
-      for (let key in VIDEO_ORIENTATION)
-        this.orientations.add(VIDEO_ORIENTATION[key]);
-
-      for (let key in VIDEO_TYPE)
-        this.types.add(VIDEO_TYPE[key]);
-
-      assert(this.devices.has(device));
-      assert(this.orientations.has(orientation));
-
-      this.device = device;
-      this.orientation = orientation;
-      this.type = VIDEO_TYPE.INTRO;
-
-      // This is map from 'device-orientation-video_type' to video DOM object.
-      this.videos = new Map();
-    }
-
-    /**
-     * Returns currently playing video.
-     * If none are playing, falls back to currently visible one, because
-     * it might have accidentally stopped because of media error.
-     *
-     * @return {Object|null} Returns <video> DOM node.
-     * @private
-     */
-    getActiveVideo_() {
-      for (let node of this.videos.values()) {
-        if (!node.paused)
-          return node;
-      }
-      // Media decode error stops video play. Try 'hidden' instead.
-      for (let node of this.videos.values()) {
-        if (!node.hasAttribute('hidden'))
-          return node;
-      }
-      return null;
-    }
-
-    /**
-     * @param {Object} video <video> DOM node with valid |oobe_devices|,
-     *     |oobe_orientations| and |oobe_types|.
-     * |oobe_devices| is a comma-separated list of VIDEO_DEVICE values.
-     * |oobe_orientations| is a comma-separated list of VIDEO_ORIENTATION
-     *     values.
-     * |oobe_types| is a comma-separated list of VIDEO_TYPE values.
-     */
-    add(video) {
-      // Split strings by comma and trim space.
-      let devices = video.getAttribute('oobe_devices')
-                        .split(',')
-                        .map((str) => str.replace(/\s/g, ''));
-      let orientations = video.getAttribute('oobe_orientations')
-                             .split(',')
-                             .map((str) => str.replace(/\s/g, ''));
-      let types = video.getAttribute('oobe_types')
-                      .split(',')
-                      .map((str) => str.replace(/\s/g, ''));
-
-      for (let device of devices) {
-        assert(this.devices.has(device));
-
-        for (let orientation of orientations) {
-          assert(this.orientations.has(orientation));
-
-          for (let type of types) {
-            assert(this.types.has(type));
-
-            let key = this.calcKey_(device, orientation, type);
-            assert(!this.videos.has(key));
-
-            this.videos.set(key, video);
-
-            if (type == VIDEO_TYPE.INTRO)
-              video.addEventListener('ended', (event) => {
-                event.target.setAttribute('hidden', '');
-                this.type = VIDEO_TYPE.LOOP;
-                this.play();
-              });
-          }
-        }
-      }
-    }
-
-    /**
-     * Hides all videos.
-     * @private
-     */
-    hideAll_() {
-      for (let node of this.videos.values())
-        node.setAttribute('hidden', '');
-    }
-
-    /**
-     * Updates screen configuration, and switches to appropriate video to match
-     * it.
-     *
-     * @param {String} device Allowed device type.
-     * @param {String} orientation Allowed orientation.
-     */
-    updateConfiguration(device, orientation) {
-      assert(this.devices.has(device));
-      assert(this.orientations.has(orientation));
-
-      if (device === this.device && orientation === this.orientation)
-        return;
-
-      this.device = device;
-      this.orientation = orientation;
-      let previousVideo = this.getActiveVideo_();
-      let nextKey = this.calcKey_(device, orientation, this.type);
-      let nextVideo = this.videos.get(nextKey);
-
-      // Some video may match more than one key.
-      if (previousVideo === nextVideo)
-        return;
-
-      if (previousVideo)
-        previousVideo.pause();
-
-      if (previousVideo && nextVideo)
-        nextVideo.currentTime = previousVideo.currentTime;
-
-      this.hideAll_();
-      if (nextVideo) {
-        nextVideo.removeAttribute('hidden');
-        nextVideo.play();
-      }
-    }
-
-    /**
-     *  Starts active video.
-     */
-    play() {
-      if (this.getActiveVideo_())
-        return;
-
-      let key = this.calcKey_(this.device, this.orientation, this.type);
-      let video = this.videos.get(key);
-
-      if (video) {
-        video.removeAttribute('hidden');
-        video.play();
-      }
-    }
-  }
-
   Polymer({
     is: 'oobe-welcome-dialog',
 
@@ -276,43 +87,18 @@
       /**
        * True when in tablet mode.
        */
-      isInTabletMode: {
-        type: Boolean,
-        observer: 'updateVideoMode_',
-      },
+      isInTabletMode: Boolean,
 
       /**
-       * True when scree orientation is portrait.
+       * True when scree orientation is portraight.
        */
-      isInPortraitMode: {
-        type: Boolean,
-        observer: 'updateVideoMode_',
-      }
-    },
-
-    getVideoDeviceType_: function() {
-      return this.isInTabletMode ? VIDEO_DEVICE.TABLET : VIDEO_DEVICE.LAPTOP;
-    },
-
-    getVideoOrientationType_: function() {
-      return this.isInPortraitMode ? VIDEO_ORIENTATION.PORTRAIT :
-                                     VIDEO_ORIENTATION.LANDSCAPE;
-    },
-
-    updateVideoMode_: function() {
-      this.welcomeVideoController_.updateConfiguration(
-          this.getVideoDeviceType_(), this.getVideoOrientationType_());
+      isInPortraitMode: Boolean,
     },
 
     /**
-     * @private {TitleLongTouchDetector}
+     * @private {LongTouchDetector}
      */
     titleLongTouchDetector_: null,
-
-    /**
-     * @private {WelcomeVideoController}
-     */
-    welcomeVideoController_: null,
 
     /**
      * This is stored ID of currently focused element to restore id on returns
@@ -355,20 +141,14 @@
     },
 
     attached: function() {
-      this.welcomeVideoController_ = new WelcomeVideoController(
-          this.getVideoDeviceType_(), this.getVideoOrientationType_());
-      let videos = Polymer.dom(this.root).querySelectorAll('video');
-      for (let video of videos)
-        this.welcomeVideoController_.add(video);
-
-      this.titleLongTouchDetector_ = new TitleLongTouchDetector(
+      this.titleLongTouchDetector_ = new LongTouchDetector(
           this.$.title, this.onTitleLongTouch_.bind(this));
       this.focus();
     },
 
     focus: function() {
       this.onWindowResize();
-      let focusedElement = this.$[this.focusedElement_];
+      var focusedElement = this.$[this.focusedElement_];
       if (focusedElement)
         focusedElement.focus();
     },
@@ -378,7 +158,6 @@
      */
     show: function() {
       this.focus();
-      this.welcomeVideoController_.play();
     },
 
     /**
