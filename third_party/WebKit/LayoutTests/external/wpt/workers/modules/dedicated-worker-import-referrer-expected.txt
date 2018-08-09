@@ -1,0 +1,18 @@
+This is a testharness.js-based test.
+FAIL Same-origin top-level module script loading with "no-referrer" referrer policy assert_equals: expected "" but got "http://web-platform.test:8001/workers/modules/resources/new-worker-window.html"
+FAIL Same-origin top-level module script loading with "origin" referrer policy assert_equals: expected "http://web-platform.test:8001/" but got "http://web-platform.test:8001/workers/modules/resources/new-worker-window.html"
+PASS Same-origin top-level module script loading with "same-origin" referrer policy
+FAIL Same-origin static import with "no-referrer" referrer policy. assert_equals: expected "" but got "http://web-platform.test:8001/workers/modules/resources/static-import-same-origin-referrer-checker-worker.js"
+FAIL Same-origin static import with "origin" referrer policy. assert_equals: expected "http://web-platform.test:8001/" but got "http://web-platform.test:8001/workers/modules/resources/static-import-same-origin-referrer-checker-worker.js"
+PASS Same-origin static import with "same-origin" referrer policy.
+FAIL Cross-origin static import with "no-referrer" referrer policy. assert_equals: expected "" but got "http://web-platform.test:8001/workers/modules/resources/static-import-remote-origin-referrer-checker-worker.sub.js"
+FAIL Cross-origin static import with "origin" referrer policy. assert_equals: expected "http://web-platform.test:8001/" but got "http://web-platform.test:8001/workers/modules/resources/static-import-remote-origin-referrer-checker-worker.sub.js"
+FAIL Cross-origin static import with "same-origin" referrer policy. assert_equals: expected "" but got "http://web-platform.test:8001/workers/modules/resources/static-import-remote-origin-referrer-checker-worker.sub.js"
+FAIL Same-origin dynamic import with "no-referrer" referrer policy. assert_equals: expected "" but got "http://web-platform.test:8001/workers/modules/resources/dynamic-import-same-origin-referrer-checker-worker.js"
+FAIL Same-origin dynamic import with "origin" referrer policy. assert_equals: expected "http://web-platform.test:8001/" but got "http://web-platform.test:8001/workers/modules/resources/dynamic-import-same-origin-referrer-checker-worker.js"
+PASS Same-origin dynamic import with "same-origin" referrer policy.
+FAIL Cross-origin dynamic import with "no-referrer" referrer policy. assert_equals: expected "" but got "http://web-platform.test:8001/workers/modules/resources/dynamic-import-remote-origin-referrer-checker-worker.sub.js"
+FAIL Cross-origin dynamic import with "origin" referrer policy. assert_equals: expected "http://web-platform.test:8001/" but got "http://web-platform.test:8001/workers/modules/resources/dynamic-import-remote-origin-referrer-checker-worker.sub.js"
+FAIL Cross-origin dynamic import with "same-origin" referrer policy. assert_equals: expected "" but got "http://web-platform.test:8001/workers/modules/resources/dynamic-import-remote-origin-referrer-checker-worker.sub.js"
+Harness: the test ran to completion.
+

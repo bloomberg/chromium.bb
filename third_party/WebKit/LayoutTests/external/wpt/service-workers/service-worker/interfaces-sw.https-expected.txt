@@ -3,6 +3,7 @@ PASS Interfaces and attributes in ServiceWorkerGlobalScope
 PASS test setup (cache creation)
 FAIL Event constructors assert_equals: FetchEvent.isReload should not exist expected (undefined) undefined but got (boolean) false
 PASS xhr is not exposed
+PASS URL.createObjectURL is not exposed
 FAIL ServiceWorker interface: existence and properties of interface object assert_own_property: self does not have own property "ServiceWorker" expected property "ServiceWorker" missing
 FAIL ServiceWorker interface object length assert_own_property: self does not have own property "ServiceWorker" expected property "ServiceWorker" missing
 FAIL ServiceWorker interface object name assert_own_property: self does not have own property "ServiceWorker" expected property "ServiceWorker" missing
