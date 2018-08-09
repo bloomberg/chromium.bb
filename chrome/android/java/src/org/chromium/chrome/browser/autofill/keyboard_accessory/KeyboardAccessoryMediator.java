@@ -64,6 +64,7 @@ class KeyboardAccessoryMediator
 
     @Override
     public void keyboardVisibilityChanged(boolean isShowing) {
+        if (isShowing) closeActiveTab();
         mIsKeyboardVisible = isShowing;
         updateVisibility();
     }
