@@ -205,13 +205,18 @@ using unified_consent::prefs::kUnifiedConsentGiven;
         [NSString stringWithFormat:@"%@, %@", accessibilityLabel,
                                    GetNSString(detailTextID)];
   }
-  return [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityLabel(accessibilityLabel),
-                                   grey_kindOfClass(
-                                       [UICollectionViewCell class]),
-                                   grey_sufficientlyVisible(), nil)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 150)
+  id<GREYMatcher> cellMatcher =
+      grey_allOf(grey_accessibilityLabel(accessibilityLabel),
+                 grey_kindOfClass([UICollectionViewCell class]),
+                 grey_sufficientlyVisible(), nil);
+  // Needs to scroll slowly to make sure to not miss a cell if it is not
+  // currently on the screen. It should not be bigger than the visible part
+  // of the collection view.
+  const CGFloat kPixelsToScroll = 300;
+  id<GREYAction> searchAction =
+      grey_scrollInDirection(kGREYDirectionDown, kPixelsToScroll);
+  return [[EarlGrey selectElementWithMatcher:cellMatcher]
+         usingSearchAction:searchAction
       onElementWithMatcher:self.scrollViewMatcher];
 }
 
