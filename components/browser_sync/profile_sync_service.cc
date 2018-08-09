@@ -105,10 +105,9 @@ void RecordSyncInitialState(int disable_reasons, bool first_setup_complete) {
     sync_state = NOT_ALLOWED_BY_POLICY;
   } else if (disable_reasons &
              ProfileSyncService::DISABLE_REASON_PLATFORM_OVERRIDE) {
-    // This case means either a command-line flag or Android's "MasterSync"
-    // toggle. However, the latter is not plumbed into ProfileSyncService until
-    // after this method, so currently we only get here for the command-line
-    // case. See http://crbug.com/568771.
+    // This case means Android's "MasterSync" toggle. However, that is not
+    // plumbed into ProfileSyncService until after this method, so we never get
+    // here. See http://crbug.com/568771.
     sync_state = NOT_ALLOWED_BY_PLATFORM;
   } else if (disable_reasons & ProfileSyncService::DISABLE_REASON_USER_CHOICE) {
     if (first_setup_complete) {
@@ -1603,6 +1602,18 @@ void ProfileSyncService::ConfigureDataTypeManager(
         syncer::ConfigureContext::STORAGE_IN_MEMORY;
   }
   data_type_manager_->Configure(types, configure_context);
+
+  // Record in UMA whether we're configuring the full Sync feature or only the
+  // transport.
+  enum class ConfigureDataTypeManagerOption {
+    kFeature = 0,
+    kTransport = 1,
+    kMaxValue = kTransport
+  };
+  UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureDataTypeManagerOption",
+                            IsSyncFeatureEnabled()
+                                ? ConfigureDataTypeManagerOption::kFeature
+                                : ConfigureDataTypeManagerOption::kTransport);
 }
 
 syncer::UserShare* ProfileSyncService::GetUserShare() const {
