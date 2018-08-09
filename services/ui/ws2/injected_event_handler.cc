@@ -20,7 +20,7 @@ InjectedEventHandler::InjectedEventHandler(
     : window_service_(window_service), window_tree_host_(window_tree_host) {
   window_service_->AddObserver(this);
   window_tree_host_->window()->AddObserver(this);
-  aura::Env::GetInstance()->AddWindowEventDispatcherObserver(this);
+  window_tree_host_->window()->env()->AddWindowEventDispatcherObserver(this);
 }
 
 InjectedEventHandler::~InjectedEventHandler() {
@@ -56,7 +56,7 @@ void InjectedEventHandler::RemoveObservers() {
   if (!window_service_)
     return;
 
-  aura::Env::GetInstance()->RemoveWindowEventDispatcherObserver(this);
+  window_tree_host_->window()->env()->RemoveWindowEventDispatcherObserver(this);
   window_tree_host_->window()->RemoveObserver(this);
   window_service_->RemoveObserver(this);
   window_service_ = nullptr;
