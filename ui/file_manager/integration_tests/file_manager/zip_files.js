@@ -186,7 +186,8 @@ testcase.zipCreateFileDownloads = function() {
       remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [zip], this.next);
     },
     // Check: a zip file should be created.
-    function() {
+    function(result) {
+      chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
       const files = getZipSelectionFileListRowEntries();
       remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true})
           .then(this.next);
@@ -233,7 +234,8 @@ testcase.zipCreateFileDrive = function() {
       remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [zip], this.next);
     },
     // Check: a zip file should be created.
-    function() {
+    function(result) {
+      chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
       const files = getZipSelectionFileListRowEntries();
       remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true})
           .then(this.next);
@@ -305,7 +307,8 @@ testcase.zipCreateFileUsb = function() {
       remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [zip], this.next);
     },
     // Check: a zip file should be created.
-    function() {
+    function(result) {
+      chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
       const files = getZipSelectionFileListRowEntries();
       remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true})
           .then(this.next);
