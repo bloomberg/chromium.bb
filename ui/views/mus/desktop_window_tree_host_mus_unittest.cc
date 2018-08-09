@@ -423,11 +423,12 @@ TEST_F(DesktopWindowTreeHostMusTest, GetWindowBoundsInScreen) {
   Widget widget2;
   Widget::InitParams params2(Widget::InitParams::TYPE_WINDOW);
   params2.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params2.bounds = gfx::Rect(0, 0, 100, 100);
+  params2.bounds = gfx::Rect(800, 0, 100, 100);
   widget2.Init(params2);
-  aura::WindowTreeHostMus::ForWindow(widget2.GetNativeWindow())
-      ->set_display_id(kSecondDisplayId);
   EXPECT_EQ(gfx::Rect(800, 0, 100, 100), widget2.GetWindowBoundsInScreen());
+  EXPECT_EQ(kSecondDisplayId,
+            aura::WindowTreeHostMus::ForWindow(widget2.GetNativeWindow())
+                ->display_id());
 }
 
 // WidgetDelegate implementation that allows setting window-title and whether

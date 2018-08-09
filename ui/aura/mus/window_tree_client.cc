@@ -1104,13 +1104,10 @@ void WindowTreeClient::OnTopLevelCreated(
     InFlightBoundsChange bounds_change(this, window, bounds, local_surface_id);
     InFlightChange* current_change =
         GetOldestInFlightChangeMatching(bounds_change);
-    if (current_change) {
+    if (current_change)
       current_change->SetRevertValueFrom(bounds_change);
-    } else {
-      const gfx::Rect& window_bounds = window->GetWindow()->bounds();
-      if (window_bounds != bounds)
-        SetWindowBoundsFromServer(window, bounds, local_surface_id);
-    }
+    else if (window->GetWindow()->GetBoundsInScreen() != bounds)
+      SetWindowBoundsFromServer(window, bounds, local_surface_id);
   }
 
   // There is currently no API to bulk set properties, so we iterate over each

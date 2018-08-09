@@ -53,7 +53,7 @@ AURA_EXPORT void SetScreenPositionClient(Window* root_window,
 AURA_EXPORT ScreenPositionClient* GetScreenPositionClient(
     const Window* root_window);
 
-}  // namespace clients
+}  // namespace client
 }  // namespace aura
 
 #endif  // UI_AURA_SCREEN_POSITION_CLIENT_H_

@@ -61,9 +61,8 @@ WindowTreeHostMusInitParams CreateInitParamsForTopLevel(
     params.display_id =
         display::Screen::GetScreen()->GetDisplayMatching(bounds_in_screen).id();
   } else {
-    // TODO(jamescook): This should probably be the display for new windows,
-    // but that information isn't available at this level.
-    params.display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+    params.display_id =
+        display::Screen::GetScreen()->GetDisplayForNewWindows().id();
   }
 
   // Pass |properties| to CreateWindowPortForTopLevel() so that |properties|

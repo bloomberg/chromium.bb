@@ -30,6 +30,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/default_screen_position_client.h"
 #include "ui/wm/core/focus_controller.h"
 #include "ui/wm/core/window_util.h"
 
@@ -85,6 +86,38 @@ void EmbedUsingTokenCallback(bool* was_called,
   *result_value = actual_result;
 }
 
+// A screen position client with a fixed screen offset applied via SetBounds.
+class TestScreenPositionClient : public wm::DefaultScreenPositionClient {
+ public:
+  explicit TestScreenPositionClient(const gfx::Vector2d& offset)
+      : offset_(offset) {}
+  ~TestScreenPositionClient() override = default;
+
+  // wm::DefaultScreenPositionClient:
+  void ConvertPointToScreen(const aura::Window* window,
+                            gfx::PointF* point) override {
+    wm::DefaultScreenPositionClient::ConvertPointToScreen(window, point);
+    *point += offset_;
+  }
+  void ConvertPointFromScreen(const aura::Window* window,
+                              gfx::PointF* point) override {
+    *point -= offset_;
+    wm::DefaultScreenPositionClient::ConvertPointFromScreen(window, point);
+  }
+  void SetBounds(aura::Window* window,
+                 const gfx::Rect& bounds,
+                 const display::Display& display) override {
+    EXPECT_EQ(display, display::Screen::GetScreen()->GetPrimaryDisplay());
+    gfx::Rect offset_bounds = bounds;
+    offset_bounds.Offset(-offset_);
+    wm::DefaultScreenPositionClient::SetBounds(window, offset_bounds, display);
+  }
+
+ private:
+  const gfx::Vector2d offset_;
+  DISALLOW_COPY_AND_ASSIGN(TestScreenPositionClient);
+};
+
 TEST(WindowTreeTest, NewWindow) {
   WindowServiceTestSetup setup;
   EXPECT_TRUE(setup.changes()->empty());
@@ -136,15 +169,15 @@ TEST(WindowTreeTest, SetTopLevelWindowBounds) {
       setup.window_tree_test_helper()->NewTopLevelWindow();
   setup.changes()->clear();
 
-  const gfx::Rect bounds_from_client = gfx::Rect(1, 2, 300, 400);
+  const gfx::Rect bounds_from_client = gfx::Rect(100, 200, 300, 400);
   setup.window_tree_test_helper()->SetWindowBoundsWithAck(
       top_level, bounds_from_client, 2);
-  EXPECT_EQ(bounds_from_client, top_level->bounds());
+  EXPECT_EQ(bounds_from_client, top_level->GetBoundsInScreen());
   ASSERT_EQ(2u, setup.changes()->size());
   {
     const Change& change = (*setup.changes())[0];
     EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, change.type);
-    EXPECT_EQ(top_level->bounds(), change.bounds2);
+    EXPECT_EQ(top_level->GetBoundsInScreen(), change.bounds2);
     EXPECT_TRUE(change.local_surface_id);
     setup.changes()->erase(setup.changes()->begin());
   }
@@ -179,6 +212,33 @@ TEST(WindowTreeTest, SetTopLevelWindowBounds) {
   // And because the layout manager changed the bounds the result is false.
   EXPECT_EQ("ChangeCompleted id=3 success=false",
             ChangeToDescription((*setup.changes())[1]));
+  setup.changes()->clear();
+
+  // Install a screen position client with a non-zero screen bounds offset.
+  gfx::Vector2d screen_offset(10, 20);
+  TestScreenPositionClient screen_position_client(screen_offset);
+  aura::client::SetScreenPositionClient(setup.aura_test_helper()->root_window(),
+                                        &screen_position_client);
+
+  // Tests that top-level window bounds are set in screen coordinates.
+  setup.window_tree_test_helper()->SetWindowBoundsWithAck(
+      top_level, bounds_from_client, 4);
+  EXPECT_EQ(bounds_from_client, top_level->GetBoundsInScreen());
+  EXPECT_EQ(bounds_from_client - screen_offset, top_level->bounds());
+  ASSERT_EQ(2u, setup.changes()->size());
+  {
+    const Change& change = (*setup.changes())[0];
+    EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, change.type);
+    EXPECT_EQ(top_level->GetBoundsInScreen(), change.bounds2);
+    EXPECT_TRUE(change.local_surface_id);
+    setup.changes()->erase(setup.changes()->begin());
+  }
+  // See comments in WindowTree::SetBoundsImpl() for why this returns false.
+  EXPECT_EQ("ChangeCompleted id=4 success=false",
+            SingleChangeToDescription(*setup.changes()));
+
+  aura::client::SetScreenPositionClient(setup.aura_test_helper()->root_window(),
+                                        nullptr);
 }
 
 TEST(WindowTreeTest, SetTopLevelWindowBoundsFailsForSameSize) {
