@@ -707,13 +707,11 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
   resource_request.resource_type = RESOURCE_TYPE_SUB_RESOURCE;
   resource_request.skip_service_worker = true;
   resource_request.do_not_prompt_for_login = true;
+
   DCHECK(net::HttpUtil::IsValidHeaderValue(
       version_->navigation_preload_state().header));
-  // TODO(crbug/762357): Record header size UMA, but not until *all* the
-  // navigation preload metrics are recorded on the S13N path; otherwise the
-  // metrics will get unbalanced.
-  // ServiceWorkerMetrics::RecordNavigationPreloadRequestHeaderSize(
-  //     version_->navigation_preload_state().header.length());
+  ServiceWorkerMetrics::RecordNavigationPreloadRequestHeaderSize(
+      version_->navigation_preload_state().header.length());
   resource_request.headers.SetHeader(
       "Service-Worker-Navigation-Preload",
       version_->navigation_preload_state().header);
