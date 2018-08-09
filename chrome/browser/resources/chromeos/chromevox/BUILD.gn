@@ -14,7 +14,7 @@ assert(is_chromeos)
 declare_args() {
   # Whether to compress the main Chromevox javascript files or load the
   # modules individually from source files.
-  chromevox_compress_js = !is_debug
+  chromevox_compress_js = true
 }
 
 closure_library_dir =
