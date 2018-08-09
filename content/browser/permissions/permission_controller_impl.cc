@@ -101,15 +101,15 @@ void PermissionControllerImpl::ResetPermission(PermissionType permission,
 
 int PermissionControllerImpl::SubscribePermissionStatusChange(
     PermissionType permission,
+    RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    const GURL& embedding_origin,
     const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
   PermissionControllerDelegate* delegate =
       browser_context_->GetPermissionControllerDelegate();
   if (!delegate)
     return kNoPendingOperation;
   return delegate->SubscribePermissionStatusChange(
-      permission, requesting_origin, embedding_origin, callback);
+      permission, render_frame_host, requesting_origin, callback);
 }
 
 void PermissionControllerImpl::UnsubscribePermissionStatusChange(

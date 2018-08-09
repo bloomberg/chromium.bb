@@ -97,15 +97,10 @@ void PermissionServiceContext::CreateSubscription(
   auto subscription =
       std::make_unique<PermissionSubscription>(this, std::move(observer));
   GURL requesting_origin(origin.Serialize());
-  GURL embedding_origin = GetEmbeddingOrigin();
   int subscription_id =
       PermissionControllerImpl::FromBrowserContext(browser_context)
           ->SubscribePermissionStatusChange(
-              permission_type, requesting_origin,
-              // If the embedding_origin is empty, we'll use the |origin|
-              // instead.
-              embedding_origin.is_empty() ? requesting_origin
-                                          : embedding_origin,
+              permission_type, render_frame_host_, requesting_origin,
               base::Bind(&PermissionSubscription::OnPermissionStatusChanged,
                          base::Unretained(subscription.get())));
   subscription->set_id(subscription_id);

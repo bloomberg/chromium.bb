@@ -77,13 +77,13 @@ class CONTENT_EXPORT PermissionControllerDelegate {
                                const GURL& embedding_origin) = 0;
 
   // Runs the given |callback| whenever the |permission| associated with the
-  // pair { requesting_origin, embedding_origin } changes.
-  // Returns the subscription_id to be used to unsubscribe. Can be
-  // kNoPendingOperation if the subscribe was not successful.
+  // given RenderFrameHost changes. A nullptr should be passed if the request
+  // is from a worker. Returns the subscription_id to be used to unsubscribe.
+  // Can be kNoPendingOperation if the subscribe was not successful.
   virtual int SubscribePermissionStatusChange(
-      PermissionType permission,
+      content::PermissionType permission,
+      content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
-      const GURL& embedding_origin,
       const base::Callback<void(blink::mojom::PermissionStatus)>& callback) = 0;
 
   // Unregisters from permission status change notifications.

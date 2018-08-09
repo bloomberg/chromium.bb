@@ -73,8 +73,8 @@ HeadlessPermissionManager::GetPermissionStatusForFrame(
 
 int HeadlessPermissionManager::SubscribePermissionStatusChange(
     content::PermissionType permission,
+    content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    const GURL& embedding_origin,
     const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
   return content::PermissionController::kNoPendingOperation;
 }

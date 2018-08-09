@@ -103,8 +103,8 @@ ShellPermissionManager::GetPermissionStatusForFrame(
 
 int ShellPermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
+    RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    const GURL& embedding_origin,
     const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
   return PermissionController::kNoPendingOperation;
 }
