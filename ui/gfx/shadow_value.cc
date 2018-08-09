@@ -72,8 +72,8 @@ Insets ShadowValue::GetBlurRegion(const ShadowValues& shadows) {
 }
 
 // static
-ShadowValues ShadowValue::MakeRefreshShadowValues(int elevation) {
-  constexpr SkColor shadow_base_color = gfx::kGoogleGrey800;
+ShadowValues ShadowValue::MakeRefreshShadowValues(int elevation,
+                                                  SkColor color) {
   // Refresh uses hand-tweaked shadows corresponding to a small set of
   // elevations. Use the Refresh spec and designer input to add missing shadow
   // values.
@@ -85,28 +85,26 @@ ShadowValues ShadowValue::MakeRefreshShadowValues(int elevation) {
 
   switch (elevation) {
     case 3: {
-      ShadowValue key = {gfx::Vector2d(0, 1), 12,
-                         SkColorSetA(shadow_base_color, 0x66)};
-      ShadowValue ambient = {gfx::Vector2d(0, 4), 64,
-                             SkColorSetA(shadow_base_color, 0x40)};
+      ShadowValue key = {gfx::Vector2d(0, 1), 12, SkColorSetA(color, 0x66)};
+      ShadowValue ambient = {gfx::Vector2d(0, 4), 64, SkColorSetA(color, 0x40)};
       return {key, ambient};
     }
     case 16: {
       gfx::ShadowValue key = {gfx::Vector2d(0, 0), kBlurCorrection * 16,
-                              SkColorSetA(shadow_base_color, 0x1a)};
+                              SkColorSetA(color, 0x1a)};
       gfx::ShadowValue ambient = {gfx::Vector2d(0, 12), kBlurCorrection * 16,
-                                  SkColorSetA(shadow_base_color, 0x3d)};
+                                  SkColorSetA(color, 0x3d)};
       return {key, ambient};
     }
     default:
       // This surface has not been updated for Refresh. Fall back to the
       // deprecated style.
-      return MakeMdShadowValues(elevation);
+      return MakeMdShadowValues(elevation, color);
   }
 }
 
 // static
-ShadowValues ShadowValue::MakeMdShadowValues(int elevation) {
+ShadowValues ShadowValue::MakeMdShadowValues(int elevation, SkColor color) {
   ShadowValues shadow_values;
   // To match the CSS notion of blur (spread outside the bounding box) to the
   // Skia notion of blur (spread outside and inside the bounding box), we have
@@ -115,10 +113,10 @@ ShadowValues ShadowValue::MakeMdShadowValues(int elevation) {
   // "Key shadow": y offset is elevation and blur is twice the elevation.
   shadow_values.emplace_back(gfx::Vector2d(0, elevation),
                              kBlurCorrection * elevation * 2,
-                             SkColorSetA(SK_ColorBLACK, 0x3d));
+                             SkColorSetA(color, 0x3d));
   // "Ambient shadow": no offset and blur matches the elevation.
   shadow_values.emplace_back(gfx::Vector2d(), kBlurCorrection * elevation,
-                             SkColorSetA(SK_ColorBLACK, 0x1f));
+                             SkColorSetA(color, 0x1f));
   // To see what this looks like for elevation 24, try this CSS:
   //   box-shadow: 0 24px 48px rgba(0, 0, 0, .24),
   //               0 0 24px rgba(0, 0, 0, .12);

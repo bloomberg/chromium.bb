@@ -175,7 +175,8 @@ class VIEWS_EXPORT LayoutProvider {
 
   // Creates shadows for the given elevation. Use GetShadowElevationMetric for
   // the appropriate elevation.
-  virtual gfx::ShadowValues MakeShadowValues(int elevation) const;
+  virtual gfx::ShadowValues MakeShadowValues(int elevation,
+                                             SkColor color) const;
 
  private:
   DefaultTypographyProvider typography_provider_;

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/views/background.h"
@@ -187,7 +188,8 @@ class VIEWS_EXPORT BubbleBorder : public Border {
       T rect,
       void (cc::PaintCanvas::*draw)(const T&, const cc::PaintFlags&),
       gfx::Canvas* canvas,
-      base::Optional<int> shadow_elevation = base::nullopt) {
+      base::Optional<int> shadow_elevation = base::nullopt,
+      SkColor shadow_base_color = SK_ColorBLACK) {
     // Borders with custom shadow elevations do not draw the 1px border.
     if (!shadow_elevation.has_value()) {
       // Provide a 1 px border outside the bounds.
@@ -197,8 +199,8 @@ class VIEWS_EXPORT BubbleBorder : public Border {
       rect.outset(one_pixel, one_pixel);
     }
 
-    (canvas->sk_canvas()->*draw)(rect,
-                                 GetBorderAndShadowFlags(shadow_elevation));
+    (canvas->sk_canvas()->*draw)(
+        rect, GetBorderAndShadowFlags(shadow_elevation, shadow_base_color));
   }
 
   // Set the corner radius, enables Material Design.
@@ -244,6 +246,13 @@ class VIEWS_EXPORT BubbleBorder : public Border {
     md_shadow_elevation_ = shadow_elevation;
   }
 
+  // Sets the shadow color for MD shadows. Defaults to SK_ColorBLACK.
+  void set_md_shadow_color(SkColor shadow_color) {
+    DCHECK(UseMaterialDesign()) << "Setting a non-default MD shadow color "
+                                   "requires that the BubbleBorder is using MD";
+    md_shadow_color_ = shadow_color;
+  }
+
   // Get the desired widget bounds (in screen coordinates) given the anchor rect
   // and bubble content size; calculated from shadow and arrow image dimensions.
   virtual gfx::Rect GetBounds(const gfx::Rect& anchor_rect,
@@ -284,13 +293,15 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   // bubbles. A null |shadow_elevation| will yield the default BubbleBorder MD
   // ShadowValues.
   static const gfx::ShadowValues& GetShadowValues(
-      base::Optional<int> shadow_elevation = base::nullopt);
+      base::Optional<int> shadow_elevation = base::nullopt,
+      SkColor shadow_base_color = SK_ColorBLACK);
 
   // Returns the paint flags to use for painting the border and shadow based on
   // |shadow_elevation|. This is only used for MD bubbles. A null
   // |shadow_elevation| will yield the default BubbleBorder MD PaintFlags.
   static const cc::PaintFlags& GetBorderAndShadowFlags(
-      base::Optional<int> shadow_elevation = base::nullopt);
+      base::Optional<int> shadow_elevation = base::nullopt,
+      SkColor shadow_base_color = SK_ColorBLACK);
 
   // The border and arrow stroke size used in image assets, in pixels.
   static const int kStroke;
@@ -327,11 +338,13 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   // Corner radius for the bubble border. If supplied the border will use
   // material design.
   base::Optional<int> corner_radius_;
-  // Elevation for the MD shadow. Requires material design.
-  base::Optional<SkColor> md_shadow_elevation_;
   ArrowPaintType arrow_paint_type_;
   BubbleAlignment alignment_;
   Shadow shadow_;
+  // Elevation for the MD shadow. Requires material design.
+  base::Optional<int> md_shadow_elevation_;
+  // Color for the MD shadow. Requires material design.
+  SkColor md_shadow_color_ = SK_ColorBLACK;
   internal::BorderImages* images_;
   SkColor background_color_;
   bool use_theme_background_color_;

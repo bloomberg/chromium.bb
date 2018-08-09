@@ -145,6 +145,10 @@ RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(views::View* contents,
       gfx::kPlaceholderColor);
   border->SetCornerRadius(corner_radius);
   border->set_md_shadow_elevation(kElevation);
+  // Use a darker shadow that's more visible on darker tints.
+  border->set_md_shadow_color(tint == OmniboxTint::DARK ? SK_ColorBLACK
+                                                        : gfx::kGoogleGrey800);
+
   SetBorder(std::move(border));
 
   AddChildView(contents_host_);
