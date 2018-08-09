@@ -80,9 +80,9 @@ Status ExecuteSwitchToWindow(Session* session,
 
 // Configure the amount of time that a particular type of operation can execute
 // for before they are aborted and a timeout error is returned to the client.
-Status ExecuteSetTimeout(Session* session,
-                         const base::DictionaryValue& params,
-                         std::unique_ptr<base::Value>* value);
+Status ExecuteSetTimeouts(Session* session,
+                          const base::DictionaryValue& params,
+                          std::unique_ptr<base::Value>* value);
 
 // Get the implicit, script and page load timeouts in milliseconds.
 Status ExecuteGetTimeouts(Session* session,

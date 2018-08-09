@@ -101,7 +101,7 @@ class Command(object):
       _Method.POST, '/session/:sessionId/timeouts/implicit_wait')
   SET_SCRIPT_TIMEOUT = (
       _Method.POST, '/session/:sessionId/timeouts/async_script')
-  SET_TIMEOUT = (_Method.POST, '/session/:sessionId/timeouts')
+  SET_TIMEOUTS = (_Method.POST, '/session/:sessionId/timeouts')
   GET_TIMEOUTS = (_Method.GET, '/session/:sessionId/timeouts')
   EXECUTE_SQL = (_Method.POST, '/session/:sessionId/execute_sql')
   GET_LOCATION = (_Method.GET, '/session/:sessionId/location')
