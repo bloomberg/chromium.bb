@@ -7,6 +7,7 @@ import os
 import json
 
 from core import path_util
+from core import bot_platforms
 
 _VALID_SWARMING_DIMENSIONS = {
     'gpu', 'device_ids', 'os', 'pool', 'perf_tests', 'perf_tests_with_args',
@@ -124,8 +125,9 @@ def _IsTestingBuilder(builder_name, builder_data):
   return 'isolated_scripts' in builder_data
 
 
-def ValidatePerfConfigFile(file_handle):
+def ValidatePerfConfigFile(file_handle, is_main_perf_waterfall):
   perf_data = json.load(file_handle)
+  perf_testing_builder_names = set()
   for key, value in perf_data.iteritems():
     if not _IsBuilderName(key):
       continue
@@ -133,8 +135,18 @@ def ValidatePerfConfigFile(file_handle):
       pass
     elif _IsTestingBuilder(builder_name=key, builder_data=value):
       ValidateTestingBuilder(builder_name=key, builder_data=value)
+      perf_testing_builder_names.add(key)
     else:
       raise ValueError('%s has unrecognizable type: %s' % key)
+  if (is_main_perf_waterfall and
+      perf_testing_builder_names != bot_platforms.ALL_PLATFORM_NAMES):
+    raise ValueError(
+        'Found mismatches between actual perf waterfall builders and platforms '
+        'in core.bot_platforms. Please update the platforms in '
+        'bot_platforms.py.\nPlatforms should be aded to core.bot_platforms:%s'
+        '\nPlatforms should be removed from core.bot_platforms:%s' % (
+          perf_testing_builder_names - bot_platforms.ALL_PLATFORM_NAMES,
+          bot_platforms.ALL_PLATFORM_NAMES - perf_testing_builder_names))
 
 
 def main(args):
@@ -148,7 +160,7 @@ def main(args):
 
 
   with open(fyi_waterfall_file) as f:
-    ValidatePerfConfigFile(f)
+    ValidatePerfConfigFile(f, False)
 
   with open(waterfall_file) as f:
-    ValidatePerfConfigFile(f)
+    ValidatePerfConfigFile(f, True)
