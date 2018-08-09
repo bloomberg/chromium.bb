@@ -23,61 +23,37 @@ function share(path) {
     },
     // Wait for the share button.
     function(result) {
-      chrome.test.assertTrue(result);
+      chrome.test.assertTrue(!!result);
       remoteCall.waitForElement(appId, '#share-menu-button:not([disabled])')
           .then(this.next);
     },
-    // Open share options menu
+    // Click the share button to open share menu.
     function(result) {
       chrome.test.assertTrue(!!result);
       remoteCall.callRemoteTestUtil(
           'fakeMouseClick', appId, ['#share-menu-button'], this.next);
     },
-    // Wait until the "Share with others" item is shown.
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall
-          .waitForElement(
-              appId, 'cr-menu-item[command="#share"]:not([disabled]')
-          .then(this.next);
-    },
-    // Invoke the share dialog.
+    // Check: the "Share with others" menu item should be shown enabled.
     function(result) {
       chrome.test.assertTrue(!!result);
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['cr-menu-item[command="#share"]'],
-          this.next);
+      const shareMenuItem =
+          '#share-menu:not([hidden]) [command="#share"]:not([disabled])';
+      remoteCall.waitForElement(appId, shareMenuItem).then(this.next);
     },
-    // Wait until the share dialog's contents are shown.
+    // Click the "Share with others" menu item to open the share dialog.
     function(result) {
-      chrome.test.assertTrue(result);
+      chrome.test.assertTrue(!!result);
+      const item = ['#share-menu [command="#share"]'];
+      remoteCall.callRemoteTestUtil('fakeMouseClick', appId, item, this.next);
+    },
+    // Wait until the share dialog's (mocked) content is shown.
+    function(result) {
+      chrome.test.assertTrue(!!result);
       remoteCall.waitForElement(appId, '.share-dialog-webview-wrapper.loaded')
           .then(this.next);
     },
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      repeatUntil(function() {
-        return remoteCall
-            .callRemoteTestUtil(
-                'queryAllElements', appId,
-                ['.share-dialog-webview-wrapper.loaded', ['width', 'height']])
-            .then(function(elements) {
-              // TODO(mtomasz): Fix the wrong geometry of the share dialog.
-              // return elements[0] &&
-              //     elements[0].styles.width === '350px' &&
-              //     elements[0].styles.height === '250px' ?
-              //     undefined :
-              //     pending('Dialog wrapper is currently %j. ' +
-              //             'but should be: 350x250',
-              //             elements[0]);
-              return elements[0] ?
-                  undefined :
-                  pending(caller, 'The share dialog is not found.');
-            });
-      }).then(this.next);
-    },
     // Wait until the share dialog's contents are shown.
-    function(result) {
+    function() {
       remoteCall.callRemoteTestUtil(
           'executeScriptInWebView', appId,
           [
@@ -122,7 +98,7 @@ function manage(path, expected_manage_url) {
     },
     // Wait for the file to be selected.
     function(result) {
-      chrome.test.assertTrue(result);
+      chrome.test.assertTrue(!!result);
       remoteCall.waitForElement(appId, '.table-row[selected]').then(this.next);
     },
     // Right-click on the file.
@@ -133,7 +109,7 @@ function manage(path, expected_manage_url) {
     },
     // Wait for the context menu to appear.
     function(result) {
-      chrome.test.assertTrue(result);
+      chrome.test.assertTrue(!!result);
       remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])')
           .then(this.next);
     },
