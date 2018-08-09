@@ -60,15 +60,6 @@ views::View* CreateNotificationHiddenView() {
   return view;
 }
 
-std::unique_ptr<views::Background> CreateUnifiedBackground() {
-  return views::CreateBackgroundFromPainter(
-      views::Painter::CreateSolidRoundRectPainter(
-          app_list::features::IsBackgroundBlurEnabled()
-              ? kUnifiedMenuBackgroundColorWithBlur
-              : kUnifiedMenuBackgroundColor,
-          kUnifiedTrayCornerRadius));
-}
-
 // Border applied to SystemTrayContainer and DetailedViewContainer to iminate
 // notification list scrolling under SystemTray part of UnifiedSystemTray.
 // The border paints mock notification frame behind the top corners based on
@@ -120,7 +111,7 @@ class SystemTrayContainer : public views::View {
   SystemTrayContainer() {
     SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-    SetBackground(CreateUnifiedBackground());
+    SetBackground(UnifiedSystemTrayView::CreateBackground());
     SetBorder(std::make_unique<TopCornerBorder>());
   }
 
@@ -138,7 +129,7 @@ class SystemTrayContainer : public views::View {
 class DetailedViewContainer : public views::View {
  public:
   DetailedViewContainer() {
-    SetBackground(CreateUnifiedBackground());
+    SetBackground(UnifiedSystemTrayView::CreateBackground());
     SetBorder(std::make_unique<TopCornerBorder>());
   }
 
@@ -267,7 +258,7 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   auto* layout = SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
-  SetBackground(CreateUnifiedBackground());
+  SetBackground(CreateBackground());
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
@@ -408,6 +399,16 @@ void UnifiedSystemTrayView::SetNotificationHeightBelowScroll(
   static_cast<TopCornerBorder*>(detailed_view_container_->border())
       ->set_height_below_scroll(height_below_scroll);
   SchedulePaint();
+}
+
+// static
+std::unique_ptr<views::Background> UnifiedSystemTrayView::CreateBackground() {
+  return views::CreateBackgroundFromPainter(
+      views::Painter::CreateSolidRoundRectPainter(
+          app_list::features::IsBackgroundBlurEnabled()
+              ? kUnifiedMenuBackgroundColorWithBlur
+              : kUnifiedMenuBackgroundColor,
+          kUnifiedTrayCornerRadius));
 }
 
 void UnifiedSystemTrayView::OnGestureEvent(ui::GestureEvent* event) {

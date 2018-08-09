@@ -99,6 +99,10 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   // scrolling under SystemTray. |height_below_scroll| should not be negative.
   void SetNotificationHeightBelowScroll(int height_below_scroll);
 
+  // Create background of UnifiedSystemTray that is semi-transparent and has
+  // rounded corners.
+  static std::unique_ptr<views::Background> CreateBackground();
+
   // views::View:
   void OnGestureEvent(ui::GestureEvent* event) override;
   void ChildPreferredSizeChanged(views::View* child) override;
