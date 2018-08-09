@@ -33,7 +33,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped rotated'",
-      "reason": "full"
+      "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",

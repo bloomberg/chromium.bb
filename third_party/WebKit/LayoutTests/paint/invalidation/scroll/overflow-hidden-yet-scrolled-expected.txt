@@ -25,21 +25,10 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='scroller'",
-          "rect": [0, 0, 302, 302],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='scroller'",
           "rect": [1, 201, 100, 100],
           "reason": "chunk appeared"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='scroller'",
-      "reason": "full"
     }
   ]
 }

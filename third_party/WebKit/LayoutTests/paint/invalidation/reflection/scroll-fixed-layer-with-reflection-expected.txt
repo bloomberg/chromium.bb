@@ -45,10 +45,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='fixed clipped'",
-      "reason": "full"
-    },
-    {
       "object": "LayoutBlockFlow (positioned) DIV class='absolute green reflected'",
       "reason": "geometry"
     },

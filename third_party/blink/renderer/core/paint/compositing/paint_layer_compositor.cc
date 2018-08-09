@@ -464,16 +464,6 @@ void PaintLayerCompositor::UpdateIfNeeded(
     CompositingLayerAssigner layer_assigner(this);
     layer_assigner.Assign(update_root, layers_needing_paint_invalidation);
 
-    {
-      TRACE_EVENT0("blink",
-                   "PaintLayerCompositor::updateAfterCompositingChange");
-      if (const LocalFrameView::ScrollableAreaSet* scrollable_areas =
-              layout_view_.GetFrameView()->ScrollableAreas()) {
-        for (PaintLayerScrollableArea* scrollable_area : *scrollable_areas)
-          scrollable_area->UpdateAfterCompositingChange();
-      }
-    }
-
     if (layer_assigner.LayersChanged()) {
       update_type = std::max(update_type, kCompositingUpdateRebuildTree);
       if (ScrollingCoordinator* scrolling_coordinator =
