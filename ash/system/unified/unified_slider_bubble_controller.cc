@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/unified_slider_bubble_controller.h"
 
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/audio/unified_volume_slider_controller.h"
@@ -12,6 +13,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray.h"
+#include "ash/system/unified/unified_system_tray_view.h"
 
 using chromeos::CrasAudioHandler;
 
@@ -26,6 +28,12 @@ bool IsAnyMainBubbleShown() {
       return true;
   }
   return false;
+}
+
+void ConfigureSliderViewStyle(views::View* slider_view) {
+  slider_view->SetBackground(UnifiedSystemTrayView::CreateBackground());
+  slider_view->SetBorder(
+      views::CreateEmptyBorder(kUnifiedTopShortcutSpacing, 0, 0, 0));
 }
 
 }  // namespace
@@ -124,6 +132,7 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
 
       UnifiedSliderView* slider_view =
           static_cast<UnifiedSliderView*>(slider_controller_->CreateView());
+      ConfigureSliderViewStyle(slider_view);
       bubble_view_->AddChildView(slider_view);
       bubble_view_->Layout();
     }
@@ -148,14 +157,16 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
   init_params.parent_window = tray_->GetBubbleWindowContainer();
   init_params.anchor_view =
       tray_->shelf()->GetSystemTrayAnchor()->GetBubbleAnchor();
+  init_params.corner_radius = kUnifiedTrayCornerRadius;
+  init_params.has_shadow = false;
 
   bubble_view_ = new views::TrayBubbleView(init_params);
   UnifiedSliderView* slider_view =
       static_cast<UnifiedSliderView*>(slider_controller_->CreateView());
+  ConfigureSliderViewStyle(slider_view);
   bubble_view_->AddChildView(slider_view);
-  bubble_view_->SetBorder(
-      views::CreateEmptyBorder(kUnifiedTopShortcutSpacing, 0, 0, 0));
-  bubble_view_->set_color(kUnifiedMenuBackgroundColor);
+  bubble_view_->set_color(SK_ColorTRANSPARENT);
+  bubble_view_->layer()->SetFillsBoundsOpaquely(false);
   bubble_view_->set_anchor_view_insets(
       tray_->shelf()->GetSystemTrayAnchor()->GetBubbleAnchorInsets());
 
@@ -163,6 +174,11 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
 
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
   bubble_view_->InitializeAndShowBubble();
+
+  if (app_list::features::IsBackgroundBlurEnabled()) {
+    bubble_widget_->client_view()->layer()->SetBackgroundBlur(
+        kUnifiedMenuBackgroundBlur);
+  }
 
   // Notify value change accessibility event because the popup is triggered by
   // changing value using an accessor key like VolUp.
