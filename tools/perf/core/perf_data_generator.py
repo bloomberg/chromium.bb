@@ -326,7 +326,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
       'tests': [
         {
           'isolate': 'performance_test_suite',
-          'num_shards': 5,
+          'num_shards': 26,
           'extra_args': [
               '--run-ref-build',
               '--test-shard-map-filename=win10_shard_map.json',
