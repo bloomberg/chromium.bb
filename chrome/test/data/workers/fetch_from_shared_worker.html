@@ -1,0 +1,14 @@
+<script>
+const worker = new SharedWorker('fetch_from_shared_worker.js');
+worker.port.onmessage = e => {
+  document.body.innerText += e.data;
+  document.title = 'DONE';
+};
+worker.port.start();
+
+function fetch_from_shared_worker(url) {
+  document.title = 'Fetching';
+  document.body.innerText = '';
+  worker.port.postMessage({url: url});
+}
+</script>

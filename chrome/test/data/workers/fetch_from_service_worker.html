@@ -1,0 +1,32 @@
+<script>
+let registration = null;
+
+self.onload = async () => {
+  registration = await navigator.serviceWorker.register(
+      'fetch_from_service_worker.js');
+  if (!registration) {
+    document.body.innerText = 'Registration failed';
+    document.title = 'DONE';
+    return;
+  }
+  registration = await navigator.serviceWorker.ready;
+  document.body.innerText = 'ready';
+  document.title = 'DONE';
+}
+
+function fetch_from_service_worker(url) {
+  document.title = 'Fetching';
+  document.innerText = '';
+  if (!registration) {
+    document.innerText = 'Registration failed';
+    document.title = 'DONE';
+    return;
+  }
+  const channel = new MessageChannel();
+  channel.port1.onmessage = e => {
+    document.body.innerText = e.data;
+    document.title = 'DONE';
+  };
+  registration.active.postMessage({url: url}, [channel.port2]);
+}
+</script>
