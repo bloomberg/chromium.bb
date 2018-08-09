@@ -16,6 +16,10 @@ namespace blink {
 namespace {
 
 bool IsOccluded(const Element& element, const IntersectionGeometry& geometry) {
+  // TODO(layout-dev): This should hit-test the intersection rect, not the
+  // target rect; it's not helpful to know that the portion of the target that
+  // is clipped is also occluded. To do that, the intersection rect must be
+  // mapped down to the local space of the target element.
   HitTestResult result(
       element.GetLayoutObject()->HitTestForOcclusion(geometry.TargetRect()));
   return result.InnerNode() && result.InnerNode() != &element;
@@ -80,7 +84,8 @@ void IntersectionObservation::ComputeIntersectionObservations(
         Observer()->FirstThresholdGreaterThan(new_visible_ratio);
     if (RuntimeEnabledFeatures::IntersectionObserverV2Enabled() &&
         Observer()->trackVisibility()) {
-      is_visible = !Target()->GetLayoutObject()->HasDistortingVisualEffects() &&
+      is_visible = new_threshold_index > 0 &&
+                   !Target()->GetLayoutObject()->HasDistortingVisualEffects() &&
                    !IsOccluded(*Target(), geometry);
     }
   } else {
@@ -99,7 +104,7 @@ void IntersectionObservation::ComputeIntersectionObservations(
     IntersectionObserverEntry* new_entry = new IntersectionObserverEntry(
         timestamp, new_visible_ratio, FloatRect(geometry.TargetRect()),
         root_bounds_pointer, FloatRect(geometry.IntersectionRect()),
-        geometry.DoesIntersect(), is_visible, Target());
+        new_threshold_index > 0, is_visible, Target());
     Observer()->EnqueueIntersectionObserverEntry(*new_entry);
     SetLastThresholdIndex(new_threshold_index);
     SetWasVisible(is_visible);
