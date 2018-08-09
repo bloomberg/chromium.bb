@@ -61,8 +61,8 @@ class OpenItemRemovalOfflineContentProvider
       : ScopedMockOfflineContentProvider(name_space, aggregator) {}
   ~OpenItemRemovalOfflineContentProvider() override {}
 
-  void OpenItem(const ContentId& id) override {
-    ScopedMockOfflineContentProvider::OpenItem(id);
+  void OpenItem(LaunchLocation location, const ContentId& id) override {
+    ScopedMockOfflineContentProvider::OpenItem(location, id);
     Unregister();
   }
 };
@@ -175,8 +175,8 @@ TEST_F(OfflineContentAggregatorTest, ActionPropagatesToRightProvider) {
   testing::InSequence sequence;
   ContentId id1("1", "A");
   ContentId id2("2", "B");
-  EXPECT_CALL(provider1, OpenItem(id1)).Times(1);
-  EXPECT_CALL(provider2, OpenItem(id2)).Times(1);
+  EXPECT_CALL(provider1, OpenItem(LaunchLocation::DOWNLOAD_HOME, id1)).Times(1);
+  EXPECT_CALL(provider2, OpenItem(LaunchLocation::NOTIFICATION, id2)).Times(1);
   EXPECT_CALL(provider1, RemoveItem(id1)).Times(1);
   EXPECT_CALL(provider2, RemoveItem(id2)).Times(1);
   EXPECT_CALL(provider1, CancelDownload(id1)).Times(1);
@@ -189,8 +189,8 @@ TEST_F(OfflineContentAggregatorTest, ActionPropagatesToRightProvider) {
   EXPECT_CALL(provider2, GetVisualsForItem(id2, _)).Times(1);
   EXPECT_CALL(provider1, GetShareInfoForItem(id1, _)).Times(1);
   EXPECT_CALL(provider2, GetShareInfoForItem(id2, _)).Times(1);
-  aggregator_.OpenItem(id1);
-  aggregator_.OpenItem(id2);
+  aggregator_.OpenItem(LaunchLocation::DOWNLOAD_HOME, id1);
+  aggregator_.OpenItem(LaunchLocation::NOTIFICATION, id2);
   aggregator_.RemoveItem(id1);
   aggregator_.RemoveItem(id2);
   aggregator_.CancelDownload(id1);
@@ -216,14 +216,14 @@ TEST_F(OfflineContentAggregatorTest, ActionPropagatesImmediately) {
   testing::InSequence sequence;
   EXPECT_CALL(provider1, PauseDownload(id1)).Times(1);
   EXPECT_CALL(provider1, ResumeDownload(id1, true)).Times(1);
-  EXPECT_CALL(provider1, OpenItem(id1)).Times(1);
-  EXPECT_CALL(provider2, OpenItem(id2)).Times(1);
+  EXPECT_CALL(provider1, OpenItem(LaunchLocation::DOWNLOAD_HOME, id1)).Times(1);
+  EXPECT_CALL(provider2, OpenItem(LaunchLocation::NOTIFICATION, id2)).Times(1);
   EXPECT_CALL(provider2, RemoveItem(id3)).Times(1);
 
   aggregator_.PauseDownload(id1);
   aggregator_.ResumeDownload(id1, true);
-  aggregator_.OpenItem(id1);
-  aggregator_.OpenItem(id2);
+  aggregator_.OpenItem(LaunchLocation::DOWNLOAD_HOME, id1);
+  aggregator_.OpenItem(LaunchLocation::NOTIFICATION, id2);
   aggregator_.RemoveItem(id3);
 }
 
@@ -298,11 +298,11 @@ TEST_F(OfflineContentAggregatorTest, ProviderRemovedDuringCallbackFlush) {
   ContentId id1("1", "A");
   ContentId id2("1", "B");
 
-  EXPECT_CALL(provider1, OpenItem(id1)).Times(1);
+  EXPECT_CALL(provider1, OpenItem(LaunchLocation::DOWNLOAD_HOME, id1)).Times(1);
   EXPECT_CALL(provider1, RemoveItem(id2)).Times(0);
 
-  aggregator_.OpenItem(id1);
-  aggregator_.OpenItem(id2);
+  aggregator_.OpenItem(LaunchLocation::DOWNLOAD_HOME, id1);
+  aggregator_.OpenItem(LaunchLocation::NOTIFICATION, id2);
   aggregator_.RemoveItem(id2);
 }
 

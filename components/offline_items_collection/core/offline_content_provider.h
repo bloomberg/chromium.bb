@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "components/offline_items_collection/core/launch_location.h"
 #include "url/gurl.h"
 
 namespace offline_items_collection {
@@ -65,8 +66,9 @@ class OfflineContentProvider {
     virtual ~Observer() = default;
   };
 
-  // Called to trigger opening an OfflineItem represented by |id|.
-  virtual void OpenItem(const ContentId& id) = 0;
+  // Called to trigger opening an OfflineItem represented by |id|. |location|
+  // denotes where it is opened and is used for logging purpose.
+  virtual void OpenItem(LaunchLocation location, const ContentId& id) = 0;
 
   // Called to trigger removal of an OfflineItem represented by |id|.
   virtual void RemoveItem(const ContentId& id) = 0;

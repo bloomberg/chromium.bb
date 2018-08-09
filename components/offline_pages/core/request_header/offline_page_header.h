@@ -43,6 +43,15 @@ extern const char kOfflinePageHeaderReasonValueFromFileUrlIntent[];
 // The offline page may be loaded when a content URL intent to view MHTML
 // content is received by Chrome (Android only).
 extern const char kOfflinePageHeaderReasonValueFromContentUrlIntent[];
+// The offline page should be loaded because the user clicks the notification
+// about a downloaded page.
+extern const char kOfflinePageHeaderReasonValueFromNotification[];
+// The offline page should be loaded because the user clicks Open link in
+// the progress bar.
+extern const char kOfflinePageHeadeReasonValueFromProgressBar[];
+// The offline page should be loaded because the user clicks an offlined
+// suggested item.
+extern const char kOfflinePageHeadeReasonValueFromSuggestion[];
 
 // The name used in name-value pair of kOfflinePageHeader to denote the offline
 // ID of the offline page to load.
@@ -63,7 +72,9 @@ struct OfflinePageHeader {
     RELOAD,
     NOTIFICATION,
     FILE_URL_INTENT,
-    CONTENT_URL_INTENT
+    CONTENT_URL_INTENT,
+    PROGRESS_BAR,
+    SUGGESTION,
   };
 
   OfflinePageHeader();
@@ -77,6 +88,14 @@ struct OfflinePageHeader {
   // Returns the full header string, including both key and value, that could be
   // passed to set extra request header.
   std::string GetCompleteHeaderString() const;
+
+  // Returns the key string used for extra request header. Empty string is
+  // returned if this struct is empty.
+  std::string GetHeaderKeyString() const;
+
+  // Returns the valye string used for extra request header. Empty string is
+  // returned if this struct is empty.
+  std::string GetHeaderValueString() const;
 
   void Clear();
 

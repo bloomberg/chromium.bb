@@ -64,14 +64,15 @@ void OfflineContentAggregator::UnregisterProvider(
   }
 }
 
-void OfflineContentAggregator::OpenItem(const ContentId& id) {
+void OfflineContentAggregator::OpenItem(LaunchLocation location,
+                                        const ContentId& id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = providers_.find(id.name_space);
 
   if (it == providers_.end())
     return;
 
-  it->second->OpenItem(id);
+  it->second->OpenItem(location, id);
 }
 
 void OfflineContentAggregator::RemoveItem(const ContentId& id) {

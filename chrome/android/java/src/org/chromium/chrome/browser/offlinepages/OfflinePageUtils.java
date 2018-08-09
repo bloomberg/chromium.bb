@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -569,10 +570,11 @@ public class OfflinePageUtils {
      * the URL to ensure loading a specific version of offline page.
      * @param url       The url of the offline page to open.
      * @param offlineId The ID of the offline page to open.
+     * @param location  Indicates where the offline page is launched.
      * @param callback  The callback to pass back the LoadUrlParams for launching an URL.
      */
-    public static void getLoadUrlParamsForOpeningOfflineVersion(
-            final String url, long offlineId, Callback<LoadUrlParams> callback) {
+    public static void getLoadUrlParamsForOpeningOfflineVersion(final String url, long offlineId,
+            final @LaunchLocation int location, Callback<LoadUrlParams> callback) {
         OfflinePageBridge offlinePageBridge =
                 getInstance().getOfflinePageBridge(Profile.getLastUsedProfile());
         if (offlinePageBridge == null) {
@@ -580,15 +582,8 @@ public class OfflinePageUtils {
             return;
         }
 
-        offlinePageBridge.getLaunchUrlByOfflineId(offlineId, (launchUrl) -> {
-            if (launchUrl == null) callback.onResult(null);
-            LoadUrlParams params = new LoadUrlParams(launchUrl);
-            Map<String, String> headers = new HashMap<String, String>();
-            headers.put(
-                    "X-Chrome-offline", "persist=1 reason=download id=" + Long.toString(offlineId));
-            params.setExtraHeaders(headers);
-            callback.onResult(params);
-        });
+        offlinePageBridge.getLoadUrlParamsByOfflineId(
+                offlineId, location, (loadUrlParams) -> { callback.onResult(loadUrlParams); });
     }
 
     /**

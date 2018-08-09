@@ -20,6 +20,7 @@ using OfflineItem = offline_items_collection::OfflineItem;
 using OfflineContentProvider = offline_items_collection::OfflineContentProvider;
 using OfflineContentAggregator =
     offline_items_collection::OfflineContentAggregator;
+using LaunchLocation = offline_items_collection::LaunchLocation;
 
 class SkBitmap;
 
@@ -33,7 +34,7 @@ class DownloadOfflineContentProvider
   ~DownloadOfflineContentProvider() override;
 
   // OfflineContentProvider implmentation.
-  void OpenItem(const ContentId& id) override;
+  void OpenItem(LaunchLocation location, const ContentId& id) override;
   void RemoveItem(const ContentId& id) override;
   void CancelDownload(const ContentId& id) override;
   void PauseDownload(const ContentId& id) override;

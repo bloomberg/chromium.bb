@@ -16,6 +16,8 @@ const char kOfflinePageHeaderReasonValueDueToNetError[] = "error";
 const char kOfflinePageHeaderReasonValueFromDownload[] = "download";
 const char kOfflinePageHeaderReasonValueReload[] = "reload";
 const char kOfflinePageHeaderReasonValueFromNotification[] = "notification";
+const char kOfflinePageHeadeReasonValueFromProgressBar[] = "progress_bar";
+const char kOfflinePageHeadeReasonValueFromSuggestion[] = "suggestion";
 const char kOfflinePageHeaderReasonFileUrlIntent[] = "file_url_intent";
 const char kOfflinePageHeaderReasonContentUrlIntent[] = "content_url_intent";
 const char kOfflinePageHeaderPersistKey[] = "persist";
@@ -64,6 +66,10 @@ bool ParseOfflineHeaderValue(const std::string& header_value,
         *reason = OfflinePageHeader::Reason::FILE_URL_INTENT;
       else if (lower_value == kOfflinePageHeaderReasonContentUrlIntent)
         *reason = OfflinePageHeader::Reason::CONTENT_URL_INTENT;
+      else if (lower_value == kOfflinePageHeadeReasonValueFromProgressBar)
+        *reason = OfflinePageHeader::Reason::PROGRESS_BAR;
+      else if (lower_value == kOfflinePageHeadeReasonValueFromSuggestion)
+        *reason = OfflinePageHeader::Reason::SUGGESTION;
       else
         return false;
     } else if (key == kOfflinePageHeaderIDKey) {
@@ -98,6 +104,10 @@ std::string ReasonToString(OfflinePageHeader::Reason reason) {
       return kOfflinePageHeaderReasonFileUrlIntent;
     case OfflinePageHeader::Reason::CONTENT_URL_INTENT:
       return kOfflinePageHeaderReasonContentUrlIntent;
+    case OfflinePageHeader::Reason::PROGRESS_BAR:
+      return kOfflinePageHeadeReasonValueFromProgressBar;
+    case OfflinePageHeader::Reason::SUGGESTION:
+      return kOfflinePageHeadeReasonValueFromSuggestion;
     default:
       NOTREACHED();
       return "";
@@ -125,13 +135,21 @@ OfflinePageHeader::OfflinePageHeader(const std::string& header_value)
 OfflinePageHeader::~OfflinePageHeader() {}
 
 std::string OfflinePageHeader::GetCompleteHeaderString() const {
+  std::string key = GetHeaderKeyString();
+  if (key.empty())
+    return std::string();
+  return key + ": " + GetHeaderValueString();
+}
+
+std::string OfflinePageHeader::GetHeaderKeyString() const {
+  return reason == Reason::NONE ? std::string() : kOfflinePageHeader;
+}
+
+std::string OfflinePageHeader::GetHeaderValueString() const {
   if (reason == Reason::NONE)
     return std::string();
 
-  std::string value(kOfflinePageHeader);
-  value += ": ";
-
-  value += kOfflinePageHeaderPersistKey;
+  std::string value(kOfflinePageHeaderPersistKey);
   value += "=";
   value += need_to_persist ? "1" : "0";
 
