@@ -43,6 +43,7 @@ class SharedWorkerScriptLoader : public network::mojom::URLLoader,
   // non-NetworkService factories used for non-http(s) URLs, e.g., a
   // chrome-extension:// URL.
   SharedWorkerScriptLoader(
+      int process_id,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
@@ -93,6 +94,7 @@ class SharedWorkerScriptLoader : public network::mojom::URLLoader,
   std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptors_;
   size_t interceptor_index_ = 0;
 
+  const int process_id_;
   const int32_t routing_id_;
   const int32_t request_id_;
   const uint32_t options_;

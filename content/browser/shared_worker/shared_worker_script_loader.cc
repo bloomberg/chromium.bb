@@ -6,6 +6,7 @@
 
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/public/browser/resource_context.h"
 #include "net/url_request/redirect_util.h"
@@ -15,6 +16,7 @@
 namespace content {
 
 SharedWorkerScriptLoader::SharedWorkerScriptLoader(
+    int process_id,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -25,7 +27,8 @@ SharedWorkerScriptLoader::SharedWorkerScriptLoader(
     ResourceContext* resource_context,
     scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
-    : routing_id_(routing_id),
+    : process_id_(process_id),
+      routing_id_(routing_id),
       request_id_(request_id),
       options_(options),
       resource_request_(resource_request),
@@ -143,6 +146,12 @@ void SharedWorkerScriptLoader::FollowRedirect(
   interceptor_index_ = 0;
   url_loader_client_binding_.Unbind();
   redirect_info_.reset();
+
+  // Cancel the request on ResourceDispatcherHost so that we can fall back
+  // to network again.
+  DCHECK(ResourceDispatcherHostImpl::Get());
+  ResourceDispatcherHostImpl::Get()->CancelRequest(process_id_, request_id_);
+
   Start();
 }
 
