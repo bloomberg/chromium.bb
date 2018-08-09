@@ -429,6 +429,7 @@ function FileFilter(metadataModel) {
    */
   this.lastHostedFilesDisabled_ = null;
 
+  this.hideAndroidDownload();
   chrome.fileManagerPrivate.onPreferencesChanged.addListener(
       this.onPreferencesChanged_.bind(this));
   this.onPreferencesChanged_();
@@ -532,6 +533,23 @@ FileFilter.prototype.setAllAndroidFoldersVisible = function(visible) {
  */
 FileFilter.prototype.isAllAndroidFoldersVisible = function() {
   return !('android_hidden' in this.filters_);
+};
+
+/**
+ * Sets up a filter to hide /Download directory in 'Play files' volume.
+ *
+ * "Play files/Download" is an alias to Chrome OS's Downloads volume. It is
+ * convenient in Android file picker, but can be confusing in Chrome OS Files
+ * app. This function adds a filter to hide the Android's /Download.
+ */
+FileFilter.prototype.hideAndroidDownload = function() {
+  this.addFilter('android_download', entry => {
+    if (entry.filesystem && entry.filesystem.name === 'android_files' &&
+        entry.fullPath === '/Download') {
+      return false;
+    }
+    return true;
+  });
 };
 
 /**
