@@ -146,10 +146,15 @@ def _NormalizeNames(raw_symbols):
 
     # See comment in _CalculatePadding() about when this can happen. Don't
     # process names for non-native sections.
-    if (full_name.startswith('*') or
+    if symbol.IsPak():
+      # full_name: "about_ui_resources.grdp: IDR_ABOUT_UI_CREDITS_HTML".
+      space_idx = full_name.rindex(' ')
+      name = full_name[space_idx + 1:]
+      symbol.template_name = name
+      symbol.name = name
+    elif (full_name.startswith('*') or
         symbol.IsOverhead() or
-        symbol.IsOther() or
-        symbol.IsPak()):
+        symbol.IsOther()):
       symbol.template_name = full_name
       symbol.name = full_name
     elif symbol.IsDex():
@@ -685,10 +690,10 @@ def _AddNmAliases(raw_symbols, names_by_address):
   return ret
 
 
-def LoadAndPostProcessSizeInfo(path, fileobj=None):
+def LoadAndPostProcessSizeInfo(path, file_obj=None):
   """Returns a SizeInfo for the given |path|."""
   logging.debug('Loading results from: %s', path)
-  size_info = file_format.LoadSizeInfo(path, fileobj)
+  size_info = file_format.LoadSizeInfo(path, file_obj=file_obj)
   logging.info('Normalizing symbol names')
   _NormalizeNames(size_info.raw_symbols)
   logging.info('Calculating padding')
