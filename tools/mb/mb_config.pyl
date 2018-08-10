@@ -25,10 +25,15 @@
     # to have proprietary codecs enabled.
     'chromium': {
       'android-rel': 'android_without_codecs_release_bot_minimal_symbols',
+      'android-dbg': 'android_without_codecs_debug_bot_minimal_symbols',
       'linux-rel': 'release_bot',
+      'linux-dbg': 'debug_bot',
       'mac-rel': 'release_bot_mac_strip',
+      'mac-dbg': 'debug_bot',
       'win32-rel': 'release_bot_x86_minimal_symbols_enable_archive_compression',
+      'win32-dbg': 'debug_bot',
       'win-rel': 'release_bot_minimal_symbols_enable_archive_compression',
+      'win-dbg': 'debug_bot',
     },
 
     'chromium.android': {
@@ -902,6 +907,10 @@
 
     'android_shared_release_bot_x64': [
       'android_without_codecs', 'shared_release_bot', 'x64', 'dcheck_always_on',
+    ],
+
+    'android_without_codecs_debug_bot_minimal_symbols': [
+      'android_without_codecs', 'debug_bot', 'minimal_symbols',
     ],
 
     'android_without_codecs_release_bot_minimal_symbols': [

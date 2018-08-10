@@ -255,7 +255,9 @@
   },
   'checkbins': {
     'remove_from': [
+      'linux-dbg',
       'linux-rel',
+      'mac-dbg',
       'mac-rel',
     ],
   },
@@ -1006,14 +1008,26 @@
   },
   'sizes': {
     'remove_from': [
+      'win32-dbg',
       'win32-rel',
+      'win-dbg',
       'win-rel',
     ],
     'modifications': {
       # chromium
+      'mac-dbg': {
+        'args': [
+          'mac-debug/sizes',
+        ],
+      },
       'mac-rel': {
         'args': [
           'mac-release/sizes',
+        ],
+      },
+      'linux-dbg': {
+        'args': [
+          'linux-debug-64/sizes',
         ],
       },
       'linux-rel': {
