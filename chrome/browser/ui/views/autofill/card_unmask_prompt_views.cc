@@ -30,6 +30,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/image_view.h"
@@ -205,9 +206,7 @@ views::View* CardUnmaskPromptViews::CreateFootnoteView() {
 
   storage_checkbox_ = new views::Checkbox(l10n_util::GetStringUTF16(
       IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
-  storage_checkbox_->SetBorder(
-      views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
-          views::INSETS_DIALOG_SUBSECTION)));
+  storage_checkbox_->SetBorder(views::CreateEmptyBorder(gfx::Insets()));
   storage_checkbox_->SetChecked(controller_->GetStoreLocallyStartState());
   storage_checkbox_->SetEnabledTextColors(views::style::GetColor(
       *storage_checkbox_, ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
@@ -217,9 +216,18 @@ views::View* CardUnmaskPromptViews::CreateFootnoteView() {
 }
 
 gfx::Size CardUnmaskPromptViews::CalculatePreferredSize() const {
+  // If the margins width is not discounted here, the bubble border will be
+  // taken into consideration in the frame width size. Because of that, the
+  // dialog width will be snapped to a larger size when Harmony is enabled.
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
+                        DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
+                    margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
+}
+
+void CardUnmaskPromptViews::AddedToWidget() {
+  GetBubbleFrameView()->SetTitleView(
+      std::make_unique<TitleWithIconAndSeparatorView>(GetWindowTitle()));
 }
 
 void CardUnmaskPromptViews::OnNativeThemeChanged(const ui::NativeTheme* theme) {
@@ -342,8 +350,8 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   // fields).
   SetLayoutManager(std::make_unique<views::FillLayout>());
   // Inset the whole main section.
-  SetBorder(views::CreateEmptyBorder(
-      provider->GetDialogInsetsForContentType(views::TEXT, views::CONTROL)));
+  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+      views::TEXT, views::CONTROL));
 
   controls_container_ = new views::View();
   controls_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(

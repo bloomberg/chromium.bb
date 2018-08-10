@@ -6,9 +6,9 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
+#include "chrome/browser/ui/views/autofill/view_util.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
@@ -20,8 +20,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/image/image_skia_operations.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -29,7 +27,6 @@
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
@@ -37,18 +34,6 @@
 #include "ui/views/window/dialog_client_view.h"
 
 namespace autofill {
-
-namespace {
-
-// Dimensions of the Google Pay logo.
-const int kGooglePayLogoWidth = 40;
-const int kGooglePayLogoHeight = 16;
-
-const int kGooglePayLogoSeparatorHeight = 12;
-
-const SkColor kTitleSeparatorColor = SkColorSetRGB(0x9E, 0x9E, 0x9E);
-
-}  // namespace
 
 SaveCardBubbleViews::SyncPromoDelegate::SyncPromoDelegate(
     SaveCardBubbleController* controller)
@@ -135,47 +120,9 @@ void SaveCardBubbleViews::AddedToWidget() {
   // view is guaranteed to exist.
   if (!controller_->IsUploadSave())
     return;
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
-  auto title_container = std::make_unique<views::View>();
-  // TODO(ftirelo): DISTANCE_RELATED_BUTTON_HORIZONTAL isn't the right choice
-  //                here, but INSETS_DIALOG_TITLE gives too much padding.
-  //                Make a new Harmony DistanceMetric?
-  title_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
-
-  // kGooglePayLogoIcon is square, and CreateTiledImage() will clip it whereas
-  // setting the icon size would rescale it incorrectly.
-  gfx::ImageSkia image = gfx::ImageSkiaOperations::CreateTiledImage(
-      gfx::CreateVectorIcon(kGooglePayLogoIcon, gfx::kPlaceholderColor),
-      /*x=*/0, /*y=*/0, kGooglePayLogoWidth, kGooglePayLogoHeight);
-  auto icon_view = std::make_unique<views::ImageView>();
-  icon_view->SetImage(&image);
-  title_container->AddChildView(icon_view.release());
-
-  auto* separator = new views::Separator();
-  separator->SetColor(kTitleSeparatorColor);
-  title_container->AddChildView(separator);
-
-  auto title_label = std::make_unique<views::Label>(
-      GetWindowTitle(), views::style::CONTEXT_DIALOG_TITLE);
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label->SetMultiLine(true);
-  title_container->AddChildView(title_label.release());
-
-  GetBubbleFrameView()->SetTitleView(std::move(title_container));
-
-  // Add vertical padding to the separator doesn't expand to use all the
-  // available vertical space. This needs to be done after the title container
-  // is added to the bubble frame view, in order to use its preferred size.
-  const int separator_vertical_padding =
-      (GetBubbleFrameView()->title()->GetPreferredSize().height() -
-       kGooglePayLogoSeparatorHeight) /
-      2;
-  separator->SetBorder(views::CreateEmptyBorder(gfx::Insets(
-      /*vertical=*/separator_vertical_padding,
-      /*horizontal=*/0)));
+  GetBubbleFrameView()->SetTitleView(
+      std::make_unique<TitleWithIconAndSeparatorView>(GetWindowTitle()));
 }
 
 bool SaveCardBubbleViews::ShouldShowCloseButton() const {
