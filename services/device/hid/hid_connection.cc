@@ -63,6 +63,23 @@ bool HasProtectedCollection(
 
 }  // namespace
 
+struct HidConnection::PendingHidReport {
+  PendingHidReport() = default;
+  PendingHidReport(const PendingHidReport& other) = default;
+  ~PendingHidReport() = default;
+
+  scoped_refptr<base::RefCountedBytes> buffer;
+  size_t size;
+};
+
+struct HidConnection::PendingHidRead {
+  PendingHidRead() = default;
+  PendingHidRead(PendingHidRead&& other) = default;
+  ~PendingHidRead() = default;
+
+  HidConnection::ReadCallback callback;
+};
+
 HidConnection::HidConnection(scoped_refptr<HidDeviceInfo> device_info)
     : device_info_(device_info), closed_(false) {
   has_protected_collection_ =
@@ -90,7 +107,10 @@ void HidConnection::Read(ReadCallback callback) {
     return;
   }
 
-  PlatformRead(std::move(callback));
+  PendingHidRead pending_read;
+  pending_read.callback = std::move(callback);
+  pending_reads_.push(std::move(pending_read));
+  ProcessReadQueue();
 }
 
 void HidConnection::Write(scoped_refptr<base::RefCountedBytes> buffer,
@@ -180,16 +200,37 @@ bool HidConnection::IsReportIdProtected(uint8_t report_id) {
   return has_protected_collection();
 }
 
-PendingHidReport::PendingHidReport() {}
+void HidConnection::ProcessInputReport(
+    scoped_refptr<base::RefCountedBytes> buffer,
+    size_t size) {
+  DCHECK(thread_checker().CalledOnValidThread());
+  DCHECK_GE(size, 1u);
 
-PendingHidReport::PendingHidReport(const PendingHidReport& other) = default;
+  uint8_t report_id = buffer->data()[0];
+  if (IsReportIdProtected(report_id))
+    return;
 
-PendingHidReport::~PendingHidReport() {}
+  PendingHidReport report;
+  report.buffer = buffer;
+  report.size = size;
+  pending_reports_.push(report);
+  ProcessReadQueue();
+}
 
-PendingHidRead::PendingHidRead() {}
+void HidConnection::ProcessReadQueue() {
+  DCHECK(thread_checker().CalledOnValidThread());
 
-PendingHidRead::PendingHidRead(PendingHidRead&& other) = default;
+  // Hold a reference to |this| to prevent a callback from freeing this object
+  // during the loop.
+  scoped_refptr<HidConnection> self(this);
+  while (pending_reads_.size() && pending_reports_.size()) {
+    PendingHidRead read = std::move(pending_reads_.front());
+    PendingHidReport report = std::move(pending_reports_.front());
 
-PendingHidRead::~PendingHidRead() {}
+    pending_reads_.pop();
+    pending_reports_.pop();
+    std::move(read.callback).Run(true, std::move(report.buffer), report.size);
+  }
+}
 
 }  // namespace device

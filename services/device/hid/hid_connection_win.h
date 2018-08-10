@@ -21,18 +21,20 @@ class PendingHidTransfer;
 
 class HidConnectionWin : public HidConnection {
  public:
-  HidConnectionWin(scoped_refptr<HidDeviceInfo> device_info,
-                   base::win::ScopedHandle file);
+  static scoped_refptr<HidConnection> Create(
+      scoped_refptr<HidDeviceInfo> device_info,
+      base::win::ScopedHandle file);
 
  private:
   friend class HidServiceWin;
   friend class PendingHidTransfer;
 
+  HidConnectionWin(scoped_refptr<HidDeviceInfo> device_info,
+                   base::win::ScopedHandle file);
   ~HidConnectionWin() override;
 
   // HidConnection implementation.
   void PlatformClose() override;
-  void PlatformRead(ReadCallback callback) override;
   void PlatformWrite(scoped_refptr<base::RefCountedBytes> buffer,
                      WriteCallback callback) override;
   void PlatformGetFeatureReport(uint8_t report_id,
@@ -40,10 +42,10 @@ class HidConnectionWin : public HidConnection {
   void PlatformSendFeatureReport(scoped_refptr<base::RefCountedBytes> buffer,
                                  WriteCallback callback) override;
 
-  void OnReadComplete(scoped_refptr<base::RefCountedBytes> buffer,
-                      ReadCallback callback,
-                      PendingHidTransfer* transfer,
-                      bool signaled);
+  void ReadNextInputReport();
+  void OnReadInputReport(scoped_refptr<base::RefCountedBytes> buffer,
+                         PendingHidTransfer* transfer,
+                         bool signaled);
   void OnReadFeatureComplete(scoped_refptr<base::RefCountedBytes> buffer,
                              ReadCallback callback,
                              PendingHidTransfer* transfer,

@@ -194,18 +194,6 @@ void HidConnectionLinux::PlatformClose() {
   // and 2) any tasks posted to this task runner that refer to this file will
   // complete before it is closed.
   blocking_task_runner_->DeleteSoon(FROM_HERE, helper_.release());
-
-  while (!pending_reads_.empty()) {
-    std::move(pending_reads_.front().callback).Run(false, NULL, 0);
-    pending_reads_.pop();
-  }
-}
-
-void HidConnectionLinux::PlatformRead(ReadCallback callback) {
-  PendingHidRead pending_read;
-  pending_read.callback = std::move(callback);
-  pending_reads_.push(std::move(pending_read));
-  ProcessReadQueue();
 }
 
 void HidConnectionLinux::PlatformWrite(
@@ -243,39 +231,6 @@ void HidConnectionLinux::PlatformSendFeatureReport(
       FROM_HERE, base::BindOnce(&BlockingTaskHelper::SendFeatureReport,
                                 base::Unretained(helper_.get()), buffer,
                                 std::move(callback)));
-}
-
-void HidConnectionLinux::ProcessInputReport(
-    scoped_refptr<base::RefCountedBytes> buffer,
-    size_t size) {
-  DCHECK(thread_checker().CalledOnValidThread());
-  DCHECK_GE(size, 1u);
-
-  uint8_t report_id = buffer->data()[0];
-  if (IsReportIdProtected(report_id))
-    return;
-
-  PendingHidReport report;
-  report.buffer = buffer;
-  report.size = size;
-  pending_reports_.push(report);
-  ProcessReadQueue();
-}
-
-void HidConnectionLinux::ProcessReadQueue() {
-  DCHECK(thread_checker().CalledOnValidThread());
-
-  // Hold a reference to |this| to prevent a callback from freeing this object
-  // during the loop.
-  scoped_refptr<HidConnectionLinux> self(this);
-  while (pending_reads_.size() && pending_reports_.size()) {
-    PendingHidRead read = std::move(pending_reads_.front());
-    PendingHidReport report = std::move(pending_reports_.front());
-
-    pending_reads_.pop();
-    pending_reports_.pop();
-    std::move(read.callback).Run(true, std::move(report.buffer), report.size);
-  }
 }
 
 }  // namespace device

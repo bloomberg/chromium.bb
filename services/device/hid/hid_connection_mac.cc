@@ -66,19 +66,6 @@ void HidConnectionMac::PlatformClose() {
   if (result != kIOReturnSuccess) {
     HID_LOG(EVENT) << "Failed to close HID device: " << HexErrorCode(result);
   }
-
-  while (!pending_reads_.empty()) {
-    std::move(pending_reads_.front().callback).Run(false, NULL, 0);
-    pending_reads_.pop();
-  }
-}
-
-void HidConnectionMac::PlatformRead(ReadCallback callback) {
-  DCHECK(thread_checker().CalledOnValidThread());
-  PendingHidRead pending_read;
-  pending_read.callback = std::move(callback);
-  pending_reads_.push(std::move(pending_read));
-  ProcessReadQueue();
 }
 
 void HidConnectionMac::PlatformWrite(
@@ -132,39 +119,7 @@ void HidConnectionMac::InputReportCallback(void* context,
     memcpy(buffer->front() + 1, report_bytes, report_length);
   }
 
-  connection->ProcessInputReport(buffer);
-}
-
-void HidConnectionMac::ProcessInputReport(
-    scoped_refptr<base::RefCountedBytes> buffer) {
-  DCHECK(thread_checker().CalledOnValidThread());
-  DCHECK_GE(buffer->size(), 1u);
-
-  uint8_t report_id = buffer->data()[0];
-  if (IsReportIdProtected(report_id))
-    return;
-
-  PendingHidReport report;
-  report.buffer = buffer;
-  report.size = buffer->size();
-  pending_reports_.push(report);
-  ProcessReadQueue();
-}
-
-void HidConnectionMac::ProcessReadQueue() {
-  DCHECK(thread_checker().CalledOnValidThread());
-
-  // Hold a reference to |this| to prevent a callback from freeing this object
-  // during the loop.
-  scoped_refptr<HidConnectionMac> self(this);
-  while (pending_reads_.size() && pending_reports_.size()) {
-    PendingHidRead read = std::move(pending_reads_.front());
-    PendingHidReport report = pending_reports_.front();
-
-    pending_reads_.pop();
-    pending_reports_.pop();
-    std::move(read.callback).Run(true, report.buffer, report.size);
-  }
+  connection->ProcessInputReport(buffer, buffer->size());
 }
 
 void HidConnectionMac::GetFeatureReportAsync(uint8_t report_id,

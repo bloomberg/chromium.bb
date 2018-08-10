@@ -4,6 +4,7 @@
 
 #include <map>
 
+#include "base/memory/ref_counted_memory.h"
 #include "services/device/hid/mock_hid_connection.h"
 #include "services/device/hid/mock_hid_service.h"
 
@@ -38,7 +39,16 @@ void MockHidService::Connect(const std::string& device_id,
     return;
   }
 
-  callback.Run(base::MakeRefCounted<MockHidConnection>(map_entry->second));
+  auto connection = base::MakeRefCounted<MockHidConnection>(map_entry->second);
+
+  // Set up a single input report that is ready to be read from the device.
+  // The first byte is the report id.
+  const uint8_t data[] = "\1TestRead";
+  auto buffer =
+      base::MakeRefCounted<base::RefCountedBytes>(data, sizeof(data) - 1);
+  connection->MockInputReport(std::move(buffer));
+
+  callback.Run(connection);
 }
 
 const std::map<std::string, scoped_refptr<HidDeviceInfo>>&

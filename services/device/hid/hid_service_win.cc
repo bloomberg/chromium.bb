@@ -66,9 +66,8 @@ void HidServiceWin::Connect(const std::string& device_guid,
   }
 
   task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(callback, base::MakeRefCounted<HidConnectionWin>(
-                                   device_info, std::move(file))));
+      FROM_HERE, base::BindOnce(callback, HidConnectionWin::Create(
+                                              device_info, std::move(file))));
 }
 
 base::WeakPtr<HidService> HidServiceWin::GetWeakPtr() {

@@ -14,16 +14,7 @@ MockHidConnection::MockHidConnection(scoped_refptr<HidDeviceInfo> device)
 
 MockHidConnection::~MockHidConnection() {}
 
-// HidConnection implementation.
 void MockHidConnection::PlatformClose() {}
-
-void MockHidConnection::PlatformRead(ReadCallback callback) {
-  // The first byte is the report id.
-  const uint8_t data[] = "\1TestRead";
-  auto buffer =
-      base::MakeRefCounted<base::RefCountedBytes>(data, sizeof(data) - 1);
-  std::move(callback).Run(true, buffer, buffer->size());
-}
 
 void MockHidConnection::PlatformWrite(
     scoped_refptr<base::RefCountedBytes> buffer,
@@ -43,6 +34,11 @@ void MockHidConnection::PlatformSendFeatureReport(
     scoped_refptr<base::RefCountedBytes> buffer,
     WriteCallback callback) {
   std::move(callback).Run(true);
+}
+
+void MockHidConnection::MockInputReport(
+    scoped_refptr<base::RefCountedBytes> buffer) {
+  ProcessInputReport(buffer, buffer->size());
 }
 
 }  // namespace device

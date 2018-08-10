@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "base/callback_forward.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
@@ -68,7 +69,6 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
   virtual ~HidConnection();
 
   virtual void PlatformClose() = 0;
-  virtual void PlatformRead(ReadCallback callback) = 0;
   virtual void PlatformWrite(scoped_refptr<base::RefCountedBytes> buffer,
                              WriteCallback callback) = 0;
   virtual void PlatformGetFeatureReport(uint8_t report_id,
@@ -78,31 +78,23 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
       WriteCallback callback) = 0;
 
   bool IsReportIdProtected(uint8_t report_id);
+  void ProcessInputReport(scoped_refptr<base::RefCountedBytes> buffer,
+                          size_t size);
+  void ProcessReadQueue();
 
  private:
+  struct PendingHidReport;
+  struct PendingHidRead;
+
   scoped_refptr<HidDeviceInfo> device_info_;
   bool has_protected_collection_;
   base::ThreadChecker thread_checker_;
   bool closed_;
 
+  base::queue<PendingHidReport> pending_reports_;
+  base::queue<PendingHidRead> pending_reads_;
+
   DISALLOW_COPY_AND_ASSIGN(HidConnection);
-};
-
-struct PendingHidReport {
-  PendingHidReport();
-  PendingHidReport(const PendingHidReport& other);
-  ~PendingHidReport();
-
-  scoped_refptr<base::RefCountedBytes> buffer;
-  size_t size;
-};
-
-struct PendingHidRead {
-  PendingHidRead();
-  PendingHidRead(PendingHidRead&& other);
-  ~PendingHidRead();
-
-  HidConnection::ReadCallback callback;
 };
 
 }  // namespace device
