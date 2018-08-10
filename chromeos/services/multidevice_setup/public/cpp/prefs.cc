@@ -36,8 +36,8 @@ const char kInstantTetheringFeatureAllowedPrefName[] = "tether.allowed";
 const char kInstantTetheringFeatureEnabledPrefName[] = "tether.enabled";
 
 void RegisterFeaturePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(kSuiteEnabledPrefName, false);
-  registry->RegisterBooleanPref(kAndroidMessagesFeatureEnabledPrefName, false);
+  registry->RegisterBooleanPref(kSuiteEnabledPrefName, true);
+  registry->RegisterBooleanPref(kAndroidMessagesFeatureEnabledPrefName, true);
   registry->RegisterBooleanPref(kInstantTetheringFeatureAllowedPrefName, true);
   registry->RegisterBooleanPref(kInstantTetheringFeatureEnabledPrefName, true);
 }
