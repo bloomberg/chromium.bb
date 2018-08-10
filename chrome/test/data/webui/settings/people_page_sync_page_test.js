@@ -54,7 +54,24 @@ cr.define('settings_people_page_sync_page', function() {
         typedUrlsEnforced: false,
         typedUrlsRegistered: true,
         typedUrlsSynced: true,
+        userEventsEnforced: false,
+        userEventsRegistered: true,
+        userEventsSynced: true,
       };
+    }
+
+    function openDatatypeConfigurationWithUnifiedConsent(prefs) {
+      syncPage.unifiedConsentEnabled = true;
+      cr.webUIListenerCallback('sync-prefs-changed', prefs);
+
+      Polymer.dom.flush();
+
+      const syncAllDataTypesControl = syncPage.$.syncAllDataTypesControl;
+      assertFalse(syncAllDataTypesControl.disabled);
+      assertTrue(syncAllDataTypesControl.checked);
+
+      // Uncheck the Sync All control.
+      syncAllDataTypesControl.click();
     }
 
     setup(function() {
@@ -455,6 +472,66 @@ cr.define('settings_people_page_sync_page', function() {
 
       assertTrue(syncPage.$.encryptionDescription.hidden);
       assertTrue(syncPage.$.encryptionRadioGroupContainer.hidden);
+    });
+
+    test('UserEvents_UnifiedConsent_Encrypted', function() {
+      const prefs = getSyncAllPrefs();
+      prefs.encryptAllData = true;
+      openDatatypeConfigurationWithUnifiedConsent(prefs);
+
+      assertTrue(prefs.userEventsSynced);
+      // History.
+      historyToggle = syncPage.$$('#historyToggle');
+      assertFalse(historyToggle.disabled);
+      assertTrue(historyToggle.checked);
+      // User events.
+      userEventsToggle = syncPage.$$('#userEventsToggle');
+      assertTrue(userEventsToggle.disabled);
+      assertFalse(userEventsToggle.checked);
+      resetSyncMessageBox = syncPage.$$('#reset-sync-message-box-user-events');
+      assertFalse(resetSyncMessageBox.hidden);
+    });
+
+    test('UserEvents_UnifiedConsent_NotEncrypted', function() {
+      const prefs = getSyncAllPrefs();
+      openDatatypeConfigurationWithUnifiedConsent(prefs);
+
+      assertTrue(prefs.userEventsSynced);
+      // Check history toggle.
+      historyToggle = syncPage.$$('#historyToggle');
+      assertFalse(historyToggle.disabled);
+      assertTrue(historyToggle.checked);
+      // Check user events toggle.
+      userEventsToggle = syncPage.$$('#userEventsToggle');
+      assertFalse(userEventsToggle.disabled);
+      assertTrue(userEventsToggle.checked);
+      resetSyncMessageBox = syncPage.$$('#reset-sync-message-box-user-events');
+      assertTrue(resetSyncMessageBox.hidden);
+
+      // Toggling history also toggles user events.
+      // Turn history off.
+      historyToggle.click();
+      cr.webUIListenerCallback('sync-prefs-changed', prefs);
+      assertFalse(historyToggle.checked);
+      assertTrue(userEventsToggle.disabled);
+      assertFalse(userEventsToggle.checked);
+      assertTrue(resetSyncMessageBox.hidden);
+      assertTrue(prefs.userEventsSynced);
+      // Turn history on.
+      historyToggle.click();
+      cr.webUIListenerCallback('sync-prefs-changed', prefs);
+      assertTrue(historyToggle.checked);
+      assertFalse(userEventsToggle.disabled);
+      assertTrue(userEventsToggle.checked);
+      assertTrue(prefs.userEventsSynced);
+
+      // Toggling user events also toggles the sync preference.
+      userEventsToggle.click();
+      cr.webUIListenerCallback('sync-prefs-changed', prefs);
+      assertFalse(userEventsToggle.disabled);
+      assertFalse(userEventsToggle.checked);
+      assertFalse(prefs.userEventsSynced);
+      assertTrue(resetSyncMessageBox.hidden);
     });
 
     test(
