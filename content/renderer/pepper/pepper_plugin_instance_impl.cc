@@ -125,6 +125,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/web_input_event.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
@@ -1548,7 +1549,8 @@ void PepperPluginInstanceImpl::SelectAll() {
   static const ui::EventFlags kPlatformModifier = ui::EF_CONTROL_DOWN;
   // Synthesize a ctrl + a key event to send to the plugin and let it sort out
   // the event. See also https://crbug.com/739529.
-  ui::KeyEvent char_event(L'A', ui::VKEY_A, kPlatformModifier);
+  ui::KeyEvent char_event(L'A', ui::VKEY_A, ui::DomCode::NONE,
+                          kPlatformModifier);
 
   // Also synthesize a key up event to look more like a real key press.
   // Otherwise the plugin will not do all the required work to keep the renderer

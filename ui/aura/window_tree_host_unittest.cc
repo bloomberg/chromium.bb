@@ -11,6 +11,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/events/event_rewriter.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/platform_window/stub/stub_window.h"
 
 namespace {
@@ -99,7 +100,7 @@ TEST_F(WindowTreeHostTest, NoRewritesPostIME) {
   CounterEventRewriter event_rewriter;
   host()->AddEventRewriter(&event_rewriter);
 
-  ui::KeyEvent key_event('A', ui::VKEY_A, 0);
+  ui::KeyEvent key_event('A', ui::VKEY_A, ui::DomCode::NONE, 0);
   ui::EventDispatchDetails details =
       host()->GetInputMethod()->DispatchKeyEvent(&key_event);
   ASSERT_TRUE(!details.dispatcher_destroyed && !details.target_destroyed);

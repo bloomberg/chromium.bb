@@ -425,14 +425,14 @@ KeyEvent KeyEventFromMSG(const MSG& msg) {
   DCHECK(IsKeyEvent(msg));
   EventType type = EventTypeFromMSG(msg);
   KeyboardCode key_code = KeyboardCodeFromMSG(msg);
-  DomCode code = UsLayoutKeyboardCodeToDomCode(key_code);
+  DomCode code = CodeFromMSG(msg);
   int flags = EventFlagsFromMSG(msg);
   DomKey key;
   base::TimeTicks time_stamp = EventTimeFromMSG(msg);
 
   if (IsCharFromMSG(msg)) {
     flags = PlatformKeyMap::ReplaceControlAndAltWithAltGraph(flags);
-    return KeyEvent(msg.wParam, key_code, flags, time_stamp);
+    return KeyEvent(msg.wParam, key_code, code, flags, time_stamp);
   } else {
     key = PlatformKeyMap::DomKeyFromKeyboardCode(key_code, &flags);
     return KeyEvent(type, key_code, code, flags, key, time_stamp);

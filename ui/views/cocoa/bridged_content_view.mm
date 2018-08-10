@@ -583,7 +583,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   if (isFinalInsertForKeyEvent && ![self hasMarkedText]) {
     ui::KeyEvent charEvent([text characterAtIndex:0],
                            ui::KeyboardCodeFromNSEvent(keyDownEvent_),
-                           ui::EF_NONE);
+                           ui::DomCodeFromNSEvent(keyDownEvent_), ui::EF_NONE);
     [self handleKeyEvent:&charEvent];
     hasUnhandledKeyDownEvent_ = NO;
     if (charEvent.handled())
@@ -606,8 +606,9 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
     // |text|. This is because |keyDownEvent_| will correspond to the event that
     // caused the composition text to be confirmed, say, Return key press.
     if (isCharacterEvent) {
-      textInputClient_->InsertChar(ui::KeyEvent([text characterAtIndex:0],
-                                                ui::VKEY_UNKNOWN, ui::EF_NONE));
+      textInputClient_->InsertChar(
+          ui::KeyEvent([text characterAtIndex:0], ui::VKEY_UNKNOWN,
+                       ui::DomCode::NONE, ui::EF_NONE));
       // Leave character events that may have triggered IME confirmation for
       // inline IME (e.g. Korean) as "unhandled". There will be no more
       // -insertText: messages, but we are unable to handle these via

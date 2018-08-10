@@ -860,6 +860,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // Create a character event.
   KeyEvent(base::char16 character,
            KeyboardCode key_code,
+           DomCode code,
            int flags,
            base::TimeTicks time_stamp = base::TimeTicks());
 

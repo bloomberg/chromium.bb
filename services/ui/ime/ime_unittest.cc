@@ -14,6 +14,7 @@
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
 #include "ui/events/event.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 
 class TestTextInputClient : public ui::mojom::TextInputClient {
  public:
@@ -103,7 +104,7 @@ TEST_F(IMEAppTest, ProcessKeyEvent) {
   ime_driver_->StartSession(std::move(details));
 
   // Send character key event.
-  ui::KeyEvent char_event('A', ui::VKEY_A, 0);
+  ui::KeyEvent char_event('A', ui::VKEY_A, ui::DomCode::NONE, 0);
   EXPECT_TRUE(ProcessKeyEvent(&input_method, ui::Event::Clone(char_event)));
 
   std::unique_ptr<ui::Event> received_event = client.WaitUntilInsertChar();
