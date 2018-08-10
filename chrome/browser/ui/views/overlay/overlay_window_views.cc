@@ -595,6 +595,12 @@ void OverlayWindowViews::TogglePlayPause() {
   play_pause_controls_view_->SetToggled(is_active);
 }
 
+void OverlayWindowViews::SetPictureInPictureCustomControls(
+    const std::vector<blink::PictureInPictureControlInfo>& controls) {
+  // TODO(sawtelle): Add these controls to the window. https://crbug.com/863967.
+  NOTIMPLEMENTED();
+}
+
 void OverlayWindowViews::ClickCustomControl(const std::string& control_id) {
   controller_->ClickCustomControl(control_id);
 }

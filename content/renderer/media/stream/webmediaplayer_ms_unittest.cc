@@ -90,6 +90,12 @@ class FakeWebMediaPlayerDelegate
     EXPECT_EQ(delegate_id_, delegate_id);
   }
 
+  void DidSetPictureInPictureCustomControls(
+      int delegate_id,
+      const std::vector<blink::PictureInPictureControlInfo>&) override {
+    EXPECT_EQ(delegate_id_, delegate_id);
+  }
+
   void DidPictureInPictureSurfaceChange(int delegate_id,
                                         const viz::SurfaceId&,
                                         const gfx::Size&) override {

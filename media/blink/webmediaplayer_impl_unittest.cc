@@ -45,6 +45,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
@@ -229,6 +230,9 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
                     blink::WebMediaPlayer::PipWindowOpenedCallback));
   MOCK_METHOD2(DidPictureInPictureModeEnd,
                void(int, blink::WebMediaPlayer::PipWindowClosedCallback));
+  MOCK_METHOD2(DidSetPictureInPictureCustomControls,
+               void(int,
+                    const std::vector<blink::PictureInPictureControlInfo>&));
   MOCK_METHOD3(DidPictureInPictureSurfaceChange,
                void(int, const viz::SurfaceId&, const gfx::Size&));
   MOCK_METHOD2(RegisterPictureInPictureWindowResizeCallback,

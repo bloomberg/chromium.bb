@@ -7,6 +7,7 @@
 #include "cc/layers/layer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
@@ -89,6 +90,16 @@ TEST_F(HTMLVideoElementTest, PictureInPictureInterstitial_Reattach) {
   GetDocument().body()->removeChild(video());
   GetDocument().body()->appendChild(video());
   GetDocument().body()->removeChild(video());
+}
+
+TEST_F(HTMLVideoElementTest, setPictureInPictureControls) {
+  EXPECT_FALSE(video()->HasPictureInPictureCustomControls());
+
+  std::vector<PictureInPictureControlInfo> test_controls;
+  test_controls.push_back(PictureInPictureControlInfo());
+  video()->SetPictureInPictureCustomControls(test_controls);
+
+  EXPECT_TRUE(video()->HasPictureInPictureCustomControls());
 }
 
 }  // namespace blink

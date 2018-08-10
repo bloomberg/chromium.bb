@@ -14,12 +14,18 @@ namespace blink {
 class HTMLVideoElement;
 class ScriptPromise;
 class ScriptState;
+class PictureInPictureControl;
+struct PictureInPictureControlInfo;
 
-class HTMLVideoElementPictureInPicture {
+class MODULES_EXPORT HTMLVideoElementPictureInPicture {
   STATIC_ONLY(HTMLVideoElementPictureInPicture);
 
  public:
   static ScriptPromise requestPictureInPicture(ScriptState*, HTMLVideoElement&);
+
+  static void setPictureInPictureControls(
+      HTMLVideoElement&,
+      const HeapVector<PictureInPictureControl>&);
 
   static bool FastHasAttribute(const QualifiedName&, const HTMLVideoElement&);
 
@@ -30,6 +36,10 @@ class HTMLVideoElementPictureInPicture {
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(enterpictureinpicture);
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(leavepictureinpicture);
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(pictureinpicturecontrolclick);
+
+  static std::vector<PictureInPictureControlInfo>
+  ToPictureInPictureControlInfoVector(
+      const HeapVector<PictureInPictureControl>&);
 };
 
 }  // namespace blink

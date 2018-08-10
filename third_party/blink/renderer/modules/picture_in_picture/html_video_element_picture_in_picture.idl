@@ -9,6 +9,7 @@
 ]
 partial interface HTMLVideoElement {
     [CallWith=ScriptState, Measure, NewObject] Promise<PictureInPictureWindow> requestPictureInPicture();
+    [RuntimeEnabled=PictureInPictureControl] void setPictureInPictureControls(sequence<PictureInPictureControl> pipControls);
 
     attribute EventHandler onenterpictureinpicture;
     attribute EventHandler onleavepictureinpicture;

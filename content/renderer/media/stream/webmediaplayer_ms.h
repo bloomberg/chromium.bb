@@ -101,6 +101,8 @@ class CONTENT_EXPORT WebMediaPlayerMS
       blink::WebMediaPlayer::PipWindowOpenedCallback callback) override;
   void ExitPictureInPicture(
       blink::WebMediaPlayer::PipWindowClosedCallback callback) override;
+  void SetPictureInPictureCustomControls(
+      const std::vector<blink::PictureInPictureControlInfo>&) override;
   void RegisterPictureInPictureWindowResizeCallback(
       blink::WebMediaPlayer::PipWindowResizedCallback) override;
   void SetSinkId(const blink::WebString& sink_id,

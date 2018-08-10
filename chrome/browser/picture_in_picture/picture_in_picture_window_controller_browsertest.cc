@@ -21,6 +21,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/views/overlay/overlay_window_views.h"
@@ -42,6 +43,8 @@ class MockPictureInPictureWindowController
   MOCK_METHOD1(Close, void(bool));
   MOCK_METHOD0(OnWindowDestroyed, void());
   MOCK_METHOD1(ClickCustomControl, void(const std::string&));
+  MOCK_METHOD1(SetPictureInPictureCustomControls,
+               void(const std::vector<blink::PictureInPictureControlInfo>&));
   MOCK_METHOD2(EmbedSurface, void(const viz::SurfaceId&, const gfx::Size&));
   MOCK_METHOD0(GetWindowForTesting, content::OverlayWindow*());
   MOCK_METHOD0(UpdateLayerBounds, void());

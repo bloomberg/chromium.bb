@@ -615,6 +615,7 @@ modules_dictionary_idl_files =
           "permissions/midi_permission_descriptor.idl",
           "permissions/permission_descriptor.idl",
           "permissions/push_permission_descriptor.idl",
+          "picture_in_picture/picture_in_picture_control.idl",
           "presentation/presentation_connection_available_event_init.idl",
           "presentation/presentation_connection_close_event_init.idl",
           "push_messaging/push_event_init.idl",

@@ -3762,6 +3762,7 @@ interface HTMLVideoElement : HTMLMediaElement
     method constructor
     method getVideoPlaybackQuality
     method requestPictureInPicture
+    method setPictureInPictureControls
     method webkitEnterFullScreen
     method webkitEnterFullscreen
     method webkitExitFullScreen

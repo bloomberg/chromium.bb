@@ -3415,6 +3415,9 @@ class TestOverlayWindow : public OverlayWindow {
   void Close() override {}
   void Show() override {}
   void Hide() override {}
+  void SetPictureInPictureCustomControls(
+      const std::vector<blink::PictureInPictureControlInfo>& controls)
+      override {}
   bool IsVisible() const override { return false; }
   bool IsAlwaysOnTop() const override { return false; }
   ui::Layer* GetLayer() override { return nullptr; }

@@ -295,6 +295,7 @@ jumbo_source_set("unit_tests") {
     "payments/payments_validators_test.cc",
     "peerconnection/rtc_data_channel_test.cc",
     "peerconnection/rtc_peer_connection_test.cc",
+    "picture_in_picture/html_video_element_picture_in_picture_test.cc",
     "presentation/mock_presentation_service.h",
     "presentation/presentation_availability_state_test.cc",
     "presentation/presentation_availability_test.cc",

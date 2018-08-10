@@ -129,6 +129,12 @@ class WebMediaPlayerDelegate {
   virtual void DidPictureInPictureModeEnd(int delegate_id,
                                           base::OnceClosure) = 0;
 
+  // Notify that custom controls have been sent to be assigned to the
+  // Picture-in-Picture window.
+  virtual void DidSetPictureInPictureCustomControls(
+      int delegate_id,
+      const std::vector<blink::PictureInPictureControlInfo>&) = 0;
+
   // Notify that the media player in Picture-in-Picture had a change of surface.
   virtual void DidPictureInPictureSurfaceChange(int delegate_id,
                                                 const viz::SurfaceId&,
