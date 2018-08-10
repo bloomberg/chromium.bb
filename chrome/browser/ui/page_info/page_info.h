@@ -93,6 +93,7 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
     SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE,
     SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE,
     SITE_IDENTITY_STATUS_ENTERPRISE_PASSWORD_REUSE,
+    SITE_IDENTITY_STATUS_BILLING,
   };
 
   // Events for UMA. Do not reorder or change! Exposed in header so enum is

@@ -289,6 +289,9 @@ enum ThreatType {
 
   // Entities that are suspected to present a threat.
   SUSPICIOUS = 14;
+
+  // Billing threat list. The internal proto's enum name is different
+  BILLING = 15;
 }
 
 // Types of platforms.

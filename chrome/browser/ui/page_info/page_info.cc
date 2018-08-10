@@ -1052,5 +1052,11 @@ void PageInfo::GetSiteIdentityByMaliciousContentStatus(
                      : base::string16();
 #endif
       break;
+    case security_state::MALICIOUS_CONTENT_STATUS_BILLING:
+#if defined(SAFE_BROWSING_DB_LOCAL)
+      *status = PageInfo::SITE_IDENTITY_STATUS_BILLING;
+      *details = l10n_util::GetStringUTF16(IDS_PAGE_INFO_BILLING_DETAILS);
+#endif
+      break;
   }
 }

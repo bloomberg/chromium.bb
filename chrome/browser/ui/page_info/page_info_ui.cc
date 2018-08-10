@@ -295,6 +295,12 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
       return CreateSecurityDescriptionForPasswordReuse(
           /*is_enterprise_password=*/true);
 #endif
+    case PageInfo::SITE_IDENTITY_STATUS_BILLING:
+#if defined(SAFE_BROWSING_DB_LOCAL)
+      return CreateSecurityDescription(SecuritySummaryColor::RED,
+                                       IDS_PAGE_INFO_BILLING_SUMMARY,
+                                       IDS_PAGE_INFO_BILLING_DETAILS);
+#endif
     case PageInfo::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM:
     case PageInfo::SITE_IDENTITY_STATUS_UNKNOWN:
     case PageInfo::SITE_IDENTITY_STATUS_NO_CERT:

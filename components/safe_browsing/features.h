@@ -22,6 +22,9 @@ namespace safe_browsing {
 extern const base::Feature kAdSamplerTriggerFeature;
 extern const base::Feature kCheckByURLLoaderThrottle;
 
+// Controls the billing interstitial UI.
+extern const base::Feature kBillingInterstitial;
+
 // Specifies which non-resource HTML Elements to collect based on their tag and
 // attributes. It's a single param containing a comma-separated list of pairs.
 // For example: "tag1,id,tag1,height,tag2,foo" - this will collect elements with
