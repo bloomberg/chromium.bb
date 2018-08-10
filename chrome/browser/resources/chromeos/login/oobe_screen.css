@@ -5,8 +5,6 @@
  * This contains common styling for all the OOBE screens. */
 
 :root {
-  --oobe-roboto-medium: 500 12px Roboto;
-  --oobe-roboto-bold: 700 12px Roboto;
   --oobe-text-button-focused-border-color:
       rgba(66, 133, 244, 0.4); /* #4284f4 */
 }
