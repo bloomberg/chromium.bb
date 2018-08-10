@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_manager/snapshot_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/sys_info.h"
@@ -85,9 +87,9 @@ void ComputeSpaceNeedToBeFreed(
 void CreateSnapshotFileOnIOThread(
     scoped_refptr<storage::FileSystemContext> context,
     const storage::FileSystemURL& url,
-    const storage::FileSystemOperation::SnapshotFileCallback& callback) {
+    storage::FileSystemOperation::SnapshotFileCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  context->operation_runner()->CreateSnapshotFile(url, callback);
+  context->operation_runner()->CreateSnapshotFile(url, std::move(callback));
 }
 
 // Utility for destructing the bound |file_refs| on IO thread. This is meant

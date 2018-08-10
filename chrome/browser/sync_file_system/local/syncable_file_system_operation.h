@@ -77,7 +77,7 @@ class SyncableFileSystemOperation : public storage::FileSystemOperation {
                 const OpenFileCallback& callback) override;
   void Cancel(const StatusCallback& cancel_callback) override;
   void CreateSnapshotFile(const storage::FileSystemURL& path,
-                          const SnapshotFileCallback& callback) override;
+                          SnapshotFileCallback callback) override;
   void CopyInForeignFile(const base::FilePath& src_local_disk_path,
                          const storage::FileSystemURL& dest_url,
                          const StatusCallback& callback) override;

@@ -277,10 +277,10 @@ void FileSystemOperationImpl::Cancel(const StatusCallback& cancel_callback) {
 
 void FileSystemOperationImpl::CreateSnapshotFile(
     const FileSystemURL& url,
-    const SnapshotFileCallback& callback) {
+    SnapshotFileCallback callback) {
   DCHECK(SetPendingOperationType(kOperationCreateSnapshotFile));
   async_file_util_->CreateSnapshotFile(std::move(operation_context_), url,
-                                       callback);
+                                       std::move(callback));
 }
 
 void FileSystemOperationImpl::CopyInForeignFile(

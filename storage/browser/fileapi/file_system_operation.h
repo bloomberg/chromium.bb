@@ -109,7 +109,7 @@ class FileSystemOperation {
   // longer necessary in the javascript world.
   // Please see the comment for ShareableFileReference for details.
   //
-  using SnapshotFileCallback = base::Callback<void(
+  using SnapshotFileCallback = base::OnceCallback<void(
       base::File::Error result,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
@@ -383,7 +383,7 @@ class FileSystemOperation {
   // temporary file.  Or if the implementaiton already has the local cache
   // data for |path| it can simply return the path to the cache.
   virtual void CreateSnapshotFile(const FileSystemURL& path,
-                                  const SnapshotFileCallback& callback) = 0;
+                                  SnapshotFileCallback callback) = 0;
 
   // Copies in a single file from a different filesystem.
   //

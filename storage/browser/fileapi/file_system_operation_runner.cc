@@ -367,7 +367,7 @@ OperationID FileSystemOperationRunner::OpenFile(
 
 OperationID FileSystemOperationRunner::CreateSnapshotFile(
     const FileSystemURL& url,
-    const SnapshotFileCallback& callback) {
+    SnapshotFileCallback callback) {
   base::File::Error error = base::File::FILE_OK;
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(url, &error));
@@ -375,14 +375,14 @@ OperationID FileSystemOperationRunner::CreateSnapshotFile(
   OperationID id = BeginOperation(std::move(operation));
   base::AutoReset<bool> beginning(&is_beginning_operation_, true);
   if (!operation_raw) {
-    DidCreateSnapshot(id, callback, error, base::File::Info(), base::FilePath(),
-                      nullptr);
+    DidCreateSnapshot(id, std::move(callback), error, base::File::Info(),
+                      base::FilePath(), nullptr);
     return id;
   }
   PrepareForRead(id, url);
   operation_raw->CreateSnapshotFile(
-      url, base::Bind(&FileSystemOperationRunner::DidCreateSnapshot, weak_ptr_,
-                      id, callback));
+      url, base::BindOnce(&FileSystemOperationRunner::DidCreateSnapshot,
+                          weak_ptr_, id, std::move(callback)));
   return id;
 }
 
@@ -598,7 +598,7 @@ void FileSystemOperationRunner::DidOpenFile(
 
 void FileSystemOperationRunner::DidCreateSnapshot(
     const OperationID id,
-    const SnapshotFileCallback& callback,
+    SnapshotFileCallback callback,
     base::File::Error rv,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
@@ -606,12 +606,13 @@ void FileSystemOperationRunner::DidCreateSnapshot(
   if (is_beginning_operation_) {
     finished_operations_.insert(id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&FileSystemOperationRunner::DidCreateSnapshot,
-                                  weak_ptr_, id, callback, rv, file_info,
-                                  platform_path, std::move(file_ref)));
+        FROM_HERE,
+        base::BindOnce(&FileSystemOperationRunner::DidCreateSnapshot, weak_ptr_,
+                       id, std::move(callback), rv, file_info, platform_path,
+                       std::move(file_ref)));
     return;
   }
-  callback.Run(rv, file_info, platform_path, std::move(file_ref));
+  std::move(callback).Run(rv, file_info, platform_path, std::move(file_ref));
   FinishOperation(id);
 }
 

@@ -157,7 +157,7 @@ class STORAGE_EXPORT FileSystemOperationRunner {
   // temporary file.  Or if the implementaiton already has the local cache
   // data for |url| it can simply return the url to the cache.
   OperationID CreateSnapshotFile(const FileSystemURL& url,
-                                 const SnapshotFileCallback& callback);
+                                 SnapshotFileCallback callback);
 
   // Copies in a single file from a different filesystem.
   //
@@ -265,7 +265,7 @@ class STORAGE_EXPORT FileSystemOperationRunner {
                    base::OnceClosure on_close_callback);
   void DidCreateSnapshot(
       const OperationID id,
-      const SnapshotFileCallback& callback,
+      SnapshotFileCallback callback,
       base::File::Error rv,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
