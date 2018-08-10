@@ -132,7 +132,7 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
  private:
   class OverlayView;
   friend class NonClientFrameViewAshSizeLock;
-  friend class CustomFrameTestWidgetDelegate;
+  friend class NonClientFrameViewAshTestWidgetDelegate;
   friend class TestWidgetConstraintsDelegate;
 
   // views::NonClientFrameView:
