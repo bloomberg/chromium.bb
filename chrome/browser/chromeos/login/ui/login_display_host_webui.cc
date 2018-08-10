@@ -1177,10 +1177,6 @@ void LoginDisplayHostWebUI::ShowResetScreen() {
   NOTREACHED();
 }
 
-void LoginDisplayHostWebUI::ShowAccountAccessHelpApp() {
-  NOTREACHED();
-}
-
 // This is handled differently in webui.
 void LoginDisplayHostWebUI::ShowDialogForCaptivePortal() {}
 
