@@ -21,8 +21,16 @@ struct SystemLinker {
   // Wrapper for dlclose().
   static int Close(void* handle);
 
+  // Result type for Resolve() below.
+  struct SearchResult {
+    void* address = nullptr;
+    void* library = nullptr;
+
+    constexpr bool IsValid() const { return library != nullptr; }
+  };
+
   // Wrapper for dlsym().
-  static void* Resolve(void* handle, const char* symbol);
+  static SearchResult Resolve(void* handle, const char* symbol);
 
   // Wrapper for dlerror().
   static const char* Error();

@@ -51,8 +51,10 @@ class LibraryView {
   // available).
   const char* GetName() const { return name_.c_str(); }
 
+  // Returns SharedLibrary handle if valid, nullptr otherwise.
   SharedLibrary* GetCrazy() const { return IsCrazy() ? crazy_ : NULL; }
 
+  // Returns system handle if valid, nullptr otherwise.
   void* GetSystem() const { return IsSystem() ? system_ : NULL; }
 
   // Increment reference count for this LibraryView.
@@ -62,11 +64,19 @@ class LibraryView {
   // This never destroys the object.
   bool SafeDecrementRef() { return (--ref_count_ == 0); }
 
+  // Result type for LookupSymbol()
+  struct SearchResult {
+    void* address = nullptr;
+    const LibraryView* library = nullptr;
+
+    constexpr bool IsValid() const { return library != nullptr; }
+  };
+
   // Lookup a symbol from this library.
-  // If this is a crazy library, perform a breadth-first search,
-  // for system libraries, use dlsym() instead.
-  // TODO(digit): Make this const.
-  void* LookupSymbol(const char* symbol_name);
+  // If this is a crazy library, only looks directly in the library (and none
+  // of its dependencies). For system libraries, this uses dlsym() which will
+  // perform a breadth-first-search.
+  SearchResult LookupSymbol(const char* symbol_name) const;
 
   // Retrieve library information.
   bool GetInfo(size_t* load_address,

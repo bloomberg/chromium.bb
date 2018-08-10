@@ -145,26 +145,27 @@ void* WrapDlsym(void* lib_handle, const char* symbol_name) {
   if (!globals->valid_handles()->Has(lib_handle)) {
     // Note: the handle was not opened with the crazy linker, so fall back
     // to the system linker. That can happen in rare cases.
-    void* result = SystemLinker::Resolve(lib_handle, symbol_name);
-    if (!result) {
+    SystemLinker::SearchResult sym =
+        SystemLinker::Resolve(lib_handle, symbol_name);
+    if (!sym.IsValid()) {
       SaveSystemError();
       LOG("dlsym: could not find symbol '%s' from foreign library\n",
           symbol_name, GetThreadData()->GetError());
     }
-    return result;
+    return sym.address;
   }
 
   auto* wrap_lib = reinterpret_cast<LibraryView*>(lib_handle);
   if (wrap_lib->IsSystem()) {
-    void* result = SystemLinker::Resolve(wrap_lib->GetSystem(), symbol_name);
-    if (!result) {
+    LibraryView::SearchResult sym = wrap_lib->LookupSymbol(symbol_name);
+    if (!sym.IsValid()) {
       SaveSystemError();
       LOG("dlsym:%s: could not find symbol '%s' from system library\n%s",
           wrap_lib->GetName(),
           symbol_name,
           GetThreadData()->GetError());
     }
-    return result;
+    return sym.address;
   }
 
   if (wrap_lib->IsCrazy()) {

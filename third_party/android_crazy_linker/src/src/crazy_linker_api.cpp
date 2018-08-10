@@ -292,9 +292,9 @@ crazy_status_t crazy_library_find_symbol(crazy_library_t* library,
   LibraryView* wrap = reinterpret_cast<LibraryView*>(library);
 
   // TODO(digit): Handle NULL symbols properly.
-  *symbol_address = wrap->LookupSymbol(symbol_name);
-  return (*symbol_address == NULL) ? CRAZY_STATUS_FAILURE
-                                   : CRAZY_STATUS_SUCCESS;
+  LibraryView::SearchResult sym = wrap->LookupSymbol(symbol_name);
+  *symbol_address = sym.address;
+  return sym.IsValid() ? CRAZY_STATUS_SUCCESS : CRAZY_STATUS_FAILURE;
 }
 
 crazy_status_t crazy_linker_find_symbol(const char* symbol_name,

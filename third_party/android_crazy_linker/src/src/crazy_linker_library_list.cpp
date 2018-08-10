@@ -151,7 +151,8 @@ LibraryView* LibraryList::FindLibraryByName(const char* lib_name) {
   return nullptr;
 }
 
-void* LibraryList::FindSymbolFrom(const char* symbol_name, LibraryView* from) {
+void* LibraryList::FindSymbolFrom(const char* symbol_name,
+                                  const LibraryView* from) {
   SymbolLookupState lookup_state;
 
   if (!from)
@@ -159,23 +160,20 @@ void* LibraryList::FindSymbolFrom(const char* symbol_name, LibraryView* from) {
 
   // Use a work-queue and a set to ensure to perform a breadth-first
   // search.
-  Vector<LibraryView*> work_queue;
+  Vector<const LibraryView*> work_queue;
   PointerSet visited_set;
 
   work_queue.PushBack(from);
 
   while (!work_queue.IsEmpty()) {
-    LibraryView* lib = work_queue.PopFirst();
+    const LibraryView* lib = work_queue.PopFirst();
     if (lib->IsCrazy()) {
       if (lookup_state.CheckSymbol(symbol_name, lib->GetCrazy()))
         return lookup_state.found_addr;
     } else if (lib->IsSystem()) {
-      // TODO(digit): Support weak symbols in system libraries.
-      // With the current code, all symbols in system libraries
-      // are assumed to be non-weak.
-      void* addr = lib->LookupSymbol(symbol_name);
-      if (addr)
-        return addr;
+      LibraryView::SearchResult sym = lib->LookupSymbol(symbol_name);
+      if (sym.IsValid())
+        return sym.address;
     }
 
     // If this is a crazy library, add non-visited dependencies
