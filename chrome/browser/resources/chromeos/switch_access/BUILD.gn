@@ -26,9 +26,11 @@ run_jsbundler("switch_access_copied_files") {
   mode = "copy"
   dest_dir = switch_access_dir
   sources = [
+    "../chromevox/cvox2/background/constants.js",
+    "../chromevox/cvox2/background/tree_walker.js",
+    "../select_to_speak/closure_shim.js",
     "auto_scan_manager.js",
     "automation_manager.js",
-    "automation_predicate.js",
     "background.js",
     "commands.js",
     "keyboard_handler.js",
@@ -37,11 +39,13 @@ run_jsbundler("switch_access_copied_files") {
     "options.js",
     "prefs.js",
     "switch_access.js",
-    "tree_walker.js",
+    "switch_access_predicate.js",
   ]
   rewrite_rules = [
     rebase_path(".", root_build_dir) + ":",
     rebase_path(closure_library_dir, root_build_dir) + ":closure",
+    rebase_path("../chromevox/cvox2/background", root_build_dir) + ":",
+    rebase_path("../select_to_speak", root_build_dir) + ":",
   ]
 }
 
@@ -56,14 +60,12 @@ js2gtest("switch_access_webuijs_tests") {
   test_type = "webui"
   sources = [
     "auto_scan_manager_unittest.gtestjs",
-    "automation_predicate_unittest.gtestjs",
-    "tree_walker_unittest.gtestjs",
+    "switch_access_predicate_unittest.gtestjs",
   ]
   extra_js_files = [
     "auto_scan_manager.js",
-    "automation_predicate.js",
+    "switch_access_predicate.js",
     "test_support.js",
-    "tree_walker.js",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }
@@ -113,16 +115,18 @@ js_type_check("closure_compile") {
   deps = [
     ":auto_scan_manager",
     ":automation_manager",
-    ":automation_predicate",
     ":background",
     ":commands",
     ":keyboard_handler",
     ":options",
     ":prefs",
+    ":switch_access_predicate",
+    "../chromevox:constants",
+    "../chromevox:tree_walker",
+    "../select_to_speak:closure_shim",
 
     # ":switch_access",
     ":switch_access_interface",
-    ":tree_walker",
   ]
 }
 
@@ -134,8 +138,9 @@ js_library("auto_scan_manager") {
 
 js_library("automation_manager") {
   deps = [
-    ":automation_predicate",
-    ":tree_walker",
+    ":switch_access_predicate",
+    "../chromevox:constants",
+    "../chromevox:tree_walker",
   ]
   externs_list = [
     "$externs_path/accessibility_private.js",
@@ -143,7 +148,7 @@ js_library("automation_manager") {
   ]
 }
 
-js_library("automation_predicate") {
+js_library("switch_access_predicate") {
   externs_list = [ "$externs_path/automation.js" ]
 }
 
@@ -197,8 +202,4 @@ js_library("switch_access") {
 }
 
 js_library("switch_access_interface") {
-}
-
-js_library("tree_walker") {
-  externs_list = [ "$externs_path/automation.js" ]
 }

@@ -8,19 +8,75 @@
  *
  * @constructor
  */
-function AutomationPredicate() {}
+function SwitchAccessPredicate() {}
 
 /**
- * Returns true if |node| is a subtreeLeaf, meaning that |node| is either
- * interesting or a group (both defined below).
+ * Returns a Restrictions object ready to be passed to AutomationTreeWalker.
+ *
+ * @param {!chrome.automation.AutomationNode} scope
+ * @return {!AutomationTreeWalkerRestriction}
+ */
+SwitchAccessPredicate.restrictions = function(scope) {
+  return {
+    leaf: SwitchAccessPredicate.leaf(scope),
+    root: SwitchAccessPredicate.root(scope),
+    visit: SwitchAccessPredicate.visit(scope)
+  };
+};
+
+/**
+ * Creates a function that confirms if |node| is a terminal leaf node of a
+ * SwitchAccess scope tree when |scope| is the root.
+ *
+ * @param {!chrome.automation.AutomationNode} scope
+ * @return {function(!chrome.automation.AutomationNode): boolean}
+ */
+SwitchAccessPredicate.leaf = function(scope) {
+  return function(node) {
+    return (node !== scope &&
+            SwitchAccessPredicate.isSubtreeLeaf(node, scope)) ||
+        !SwitchAccessPredicate.isInterestingSubtree(node);
+  }.bind(scope);
+};
+
+/**
+ * Creates a function that confirms if |node| is the root of a SwitchAccess
+ * scope tree when |scope| is the root.
+ *
+ * @param {!chrome.automation.AutomationNode} scope
+ * @return {function(!chrome.automation.AutomationNode): boolean}
+ */
+SwitchAccessPredicate.root = function(scope) {
+  return function(node) {
+    return node === scope;
+  }.bind(scope);
+};
+
+/**
+ * Creates a function that determines whether |node| is to be visited in the
+ * SwitchAccess scope tree with |scope| as the root.
+ *
+ * @param {!chrome.automation.AutomationNode} scope
+ * @return {function(!chrome.automation.AutomationNode): boolean}
+ */
+SwitchAccessPredicate.visit = function(scope) {
+  return function(node) {
+    return node.role !== chrome.automation.RoleType.DESKTOP &&
+        SwitchAccessPredicate.isSubtreeLeaf(node, scope);
+  }.bind(scope);
+};
+
+/**
+ * Returns true if |node| is a subtreeLeaf, meaning that |node|
+ * is either interesting or a group (both defined below).
  *
  * @param {!chrome.automation.AutomationNode} node
  * @param {!chrome.automation.AutomationNode} scope
  * @return {boolean}
  */
-AutomationPredicate.isSubtreeLeaf = function(node, scope) {
-  return AutomationPredicate.isActionable(node) ||
-      AutomationPredicate.isGroup(node, scope);
+SwitchAccessPredicate.isSubtreeLeaf = function(node, scope) {
+  return SwitchAccessPredicate.isActionable(node) ||
+      SwitchAccessPredicate.isGroup(node, scope);
 };
 
 /**
@@ -35,8 +91,8 @@ AutomationPredicate.isSubtreeLeaf = function(node, scope) {
  * @param {!chrome.automation.AutomationNode} scope
  * @return {boolean}
  */
-AutomationPredicate.isGroup = function(node, scope) {
-  if (node !== scope && AutomationPredicate.hasSameLocation_(node, scope))
+SwitchAccessPredicate.isGroup = function(node, scope) {
+  if (node !== scope && SwitchAccessPredicate.hasSameLocation_(node, scope))
     return false;
 
   // Work around for client nested in client. No need to have user select both
@@ -49,7 +105,7 @@ AutomationPredicate.isGroup = function(node, scope) {
   let interestingBranches = 0;
   let children = node.children || [];
   for (let child of children) {
-    if (AutomationPredicate.isInterestingSubtree(child))
+    if (SwitchAccessPredicate.isInterestingSubtree(child))
       interestingBranches += 1;
     if (interestingBranches > 1)
       return true;
@@ -64,7 +120,7 @@ AutomationPredicate.isGroup = function(node, scope) {
  * @param {!chrome.automation.AutomationNode} node2
  * @return {boolean}
  */
-AutomationPredicate.hasSameLocation_ = function(node1, node2) {
+SwitchAccessPredicate.hasSameLocation_ = function(node1, node2) {
   let l1 = node1.location;
   let l2 = node2.location;
   return l1.left === l2.left && l1.top === l2.top && l1.width === l2.width &&
@@ -78,10 +134,10 @@ AutomationPredicate.hasSameLocation_ = function(node1, node2) {
  * @param {!chrome.automation.AutomationNode} node
  * @return {boolean}
  */
-AutomationPredicate.isInterestingSubtree = function(node) {
+SwitchAccessPredicate.isInterestingSubtree = function(node) {
   let children = node.children || [];
-  return AutomationPredicate.isActionable(node) ||
-      children.some(AutomationPredicate.isInterestingSubtree);
+  return SwitchAccessPredicate.isActionable(node) ||
+      children.some(SwitchAccessPredicate.isInterestingSubtree);
 };
 
 /**
@@ -91,7 +147,7 @@ AutomationPredicate.isInterestingSubtree = function(node) {
  * @param {!chrome.automation.AutomationNode} node
  * @return {boolean}
  */
-AutomationPredicate.isActionable = function(node) {
+SwitchAccessPredicate.isActionable = function(node) {
   let loc = node.location;
   let parent = node.parent;
   let root = node.root;

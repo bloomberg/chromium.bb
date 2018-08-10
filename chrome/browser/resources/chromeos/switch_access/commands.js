@@ -78,24 +78,6 @@ Commands.prototype = {
       'options': {
         'defaultKeyCode': 52, /* '4' key */
         'binding': this.switchAccess_.showOptionsPage.bind(this.switchAccess_)
-      },
-      'debugNext': {
-        'defaultKeyCode': -1, /* unused key */
-        'binding': this.switchAccess_.debugMoveToNext.bind(this.switchAccess_)
-      },
-      'debugPrevious': {
-        'defaultKeyCode': -1, /* unused key */
-        'binding':
-            this.switchAccess_.debugMoveToPrevious.bind(this.switchAccess_)
-      },
-      'debugChild': {
-        'defaultKeyCode': -1, /* unused key */
-        'binding':
-            this.switchAccess_.debugMoveToFirstChild.bind(this.switchAccess_)
-      },
-      'debugParent': {
-        'defaultKeyCode': -1, /* unused key */
-        'binding': this.switchAccess_.debugMoveToParent.bind(this.switchAccess_)
       }
     };
   }
