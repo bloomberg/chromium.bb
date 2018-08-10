@@ -169,9 +169,8 @@ TEST_P(WaylandWindowTest, MaximizeAndRestore) {
 TEST_P(WaylandWindowTest, Minimize) {
   ScopedWlArray states;
 
-  // Initialize to normal first.
-  EXPECT_CALL(delegate_,
-              OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
+  // Make sure the window is initialized to normal state from the beginning.
+  EXPECT_EQ(PLATFORM_WINDOW_STATE_NORMAL, window_->GetPlatformWindowState());
   SendConfigureEvent(0, 0, 1, states.get());
   Sync();
 
@@ -202,8 +201,8 @@ TEST_P(WaylandWindowTest, Minimize) {
 }
 
 TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
-  // Ensure the initial state is unknown.
-  EXPECT_EQ(window_->GetPlatformWindowState(), PLATFORM_WINDOW_STATE_UNKNOWN);
+  // Make sure the window is initialized to normal state from the beginning.
+  EXPECT_EQ(PLATFORM_WINDOW_STATE_NORMAL, window_->GetPlatformWindowState());
 
   ScopedWlArray states = InitializeWlArrayWithActivatedState();
 
@@ -266,6 +265,10 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximize) {
 
   ScopedWlArray states = InitializeWlArrayWithActivatedState();
 
+  gfx::Rect restored_bounds = window_->GetRestoredBoundsInPixels();
+  EXPECT_TRUE(restored_bounds.IsEmpty());
+  gfx::Rect bounds = window_->GetBounds();
+
   const gfx::Rect maximized_bounds = gfx::Rect(0, 0, 1024, 768);
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(maximized_bounds)));
   window_->Maximize();
@@ -273,6 +276,8 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximize) {
   SendConfigureEvent(maximized_bounds.width(), maximized_bounds.height(), 1,
                      states.get());
   Sync();
+  restored_bounds = window_->GetRestoredBoundsInPixels();
+  EXPECT_EQ(bounds, restored_bounds);
 
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(current_bounds)));
   // Both in XdgV5 and XdgV6, surfaces implement SetWindowGeometry method.
@@ -285,12 +290,20 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximize) {
   states = InitializeWlArrayWithActivatedState();
   SendConfigureEvent(0, 0, 2, states.get());
   Sync();
+  bounds = window_->GetBounds();
+  EXPECT_EQ(bounds, restored_bounds);
+  restored_bounds = window_->GetRestoredBoundsInPixels();
+  EXPECT_EQ(restored_bounds, gfx::Rect());
 }
 
 TEST_P(WaylandWindowTest, RestoreBoundsAfterFullscreen) {
   const gfx::Rect current_bounds = window_->GetBounds();
 
   ScopedWlArray states = InitializeWlArrayWithActivatedState();
+
+  gfx::Rect restored_bounds = window_->GetRestoredBoundsInPixels();
+  EXPECT_EQ(restored_bounds, gfx::Rect());
+  gfx::Rect bounds = window_->GetBounds();
 
   const gfx::Rect fullscreen_bounds = gfx::Rect(0, 0, 1280, 720);
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(fullscreen_bounds)));
@@ -299,6 +312,8 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterFullscreen) {
   SendConfigureEvent(fullscreen_bounds.width(), fullscreen_bounds.height(), 1,
                      states.get());
   Sync();
+  restored_bounds = window_->GetRestoredBoundsInPixels();
+  EXPECT_EQ(bounds, restored_bounds);
 
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(current_bounds)));
   // Both in XdgV5 and XdgV6, surfaces implement SetWindowGeometry method.
@@ -311,12 +326,20 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterFullscreen) {
   states = InitializeWlArrayWithActivatedState();
   SendConfigureEvent(0, 0, 2, states.get());
   Sync();
+  bounds = window_->GetBounds();
+  EXPECT_EQ(bounds, restored_bounds);
+  restored_bounds = window_->GetRestoredBoundsInPixels();
+  EXPECT_EQ(restored_bounds, gfx::Rect());
 }
 
 TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
   const gfx::Rect current_bounds = window_->GetBounds();
 
   ScopedWlArray states = InitializeWlArrayWithActivatedState();
+
+  gfx::Rect restored_bounds = window_->GetRestoredBoundsInPixels();
+  EXPECT_EQ(restored_bounds, gfx::Rect());
+  gfx::Rect bounds = window_->GetBounds();
 
   const gfx::Rect maximized_bounds = gfx::Rect(0, 0, 1024, 768);
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(maximized_bounds)));
@@ -325,6 +348,8 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
   SendConfigureEvent(maximized_bounds.width(), maximized_bounds.height(), 1,
                      states.get());
   Sync();
+  restored_bounds = window_->GetRestoredBoundsInPixels();
+  EXPECT_EQ(bounds, restored_bounds);
 
   const gfx::Rect fullscreen_bounds = gfx::Rect(0, 0, 1280, 720);
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(fullscreen_bounds)));
@@ -333,6 +358,8 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
   SendConfigureEvent(fullscreen_bounds.width(), fullscreen_bounds.height(), 2,
                      states.get());
   Sync();
+  gfx::Rect fullscreen_restore_bounds = window_->GetRestoredBoundsInPixels();
+  EXPECT_EQ(restored_bounds, fullscreen_restore_bounds);
 
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(maximized_bounds)));
   window_->Maximize();
@@ -342,6 +369,8 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
   SendConfigureEvent(maximized_bounds.width(), maximized_bounds.height(), 3,
                      states.get());
   Sync();
+  restored_bounds = window_->GetRestoredBoundsInPixels();
+  EXPECT_EQ(restored_bounds, fullscreen_restore_bounds);
 
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(current_bounds)));
   // Both in XdgV5 and XdgV6, surfaces implement SetWindowGeometry method.
@@ -354,6 +383,10 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
   states = InitializeWlArrayWithActivatedState();
   SendConfigureEvent(0, 0, 4, states.get());
   Sync();
+  bounds = window_->GetBounds();
+  EXPECT_EQ(bounds, restored_bounds);
+  restored_bounds = window_->GetRestoredBoundsInPixels();
+  EXPECT_EQ(restored_bounds, gfx::Rect());
 }
 
 TEST_P(WaylandWindowTest, SendsBoundsOnRequest) {
@@ -374,11 +407,19 @@ TEST_P(WaylandWindowTest, SendsBoundsOnRequest) {
   SendConfigureEvent(0, 0, 2, states.get());
   Sync();
 
+  // Restored bounds should keep empty value.
+  gfx::Rect restored_bounds = window_->GetRestoredBoundsInPixels();
+  EXPECT_EQ(restored_bounds, gfx::Rect());
+
   // Second case is when Wayland sends a configure event with 1, 1 height and
   // width. It looks more like a bug in Gnome Shell with Wayland as long as the
   // documentation says it must be set to 0, 0, when wayland requests bounds.
   SendConfigureEvent(0, 0, 3, states.get());
   Sync();
+
+  // Restored bounds should keep empty value.
+  restored_bounds = window_->GetRestoredBoundsInPixels();
+  EXPECT_EQ(restored_bounds, gfx::Rect());
 }
 
 TEST_P(WaylandWindowTest, CanDispatchMouseEventDefault) {

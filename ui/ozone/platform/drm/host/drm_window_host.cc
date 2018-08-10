@@ -137,6 +137,15 @@ PlatformImeController* DrmWindowHost::GetPlatformImeController() {
   return nullptr;
 }
 
+void DrmWindowHost::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {
+  NOTREACHED();
+}
+
+gfx::Rect DrmWindowHost::GetRestoredBoundsInPixels() const {
+  NOTREACHED();
+  return gfx::Rect();
+}
+
 bool DrmWindowHost::CanDispatchEvent(const PlatformEvent& event) {
   DCHECK(event);
 

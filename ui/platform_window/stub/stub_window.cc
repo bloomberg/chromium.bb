@@ -74,4 +74,10 @@ PlatformImeController* StubWindow::GetPlatformImeController() {
   return nullptr;
 }
 
+void StubWindow::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {}
+
+gfx::Rect StubWindow::GetRestoredBoundsInPixels() const {
+  return gfx::Rect();
+}
+
 }  // namespace ui

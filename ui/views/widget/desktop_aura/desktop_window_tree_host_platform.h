@@ -100,6 +100,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
 
   Widget* GetWidget();
 
+  gfx::Rect ToDIPRect(const gfx::Rect& rect_in_pixels) const;
+  gfx::Rect ToPixelRect(const gfx::Rect& rect_in_dip) const;
+
   internal::NativeWidgetDelegate* const native_widget_delegate_;
   DesktopNativeWidgetAura* const desktop_native_widget_aura_;
 

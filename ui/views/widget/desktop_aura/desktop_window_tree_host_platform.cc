@@ -186,7 +186,7 @@ void DesktopWindowTreeHostPlatform::ShowWindowWithState(
 
 void DesktopWindowTreeHostPlatform::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
-  // TODO: support |restored_bounds|.
+  platform_window()->SetRestoredBoundsInPixels(ToPixelRect(restored_bounds));
   ShowWindowWithState(ui::SHOW_STATE_MAXIMIZED);
 }
 
@@ -255,8 +255,12 @@ gfx::Rect DesktopWindowTreeHostPlatform::GetClientAreaBoundsInScreen() const {
 }
 
 gfx::Rect DesktopWindowTreeHostPlatform::GetRestoredBounds() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return gfx::Rect(0, 0, 640, 840);
+  gfx::Rect restored_bounds = platform_window()->GetRestoredBoundsInPixels();
+  // When window is resized, |restored bounds| is not set and empty.
+  // If |restored bounds| is empty, it returns the current window size.
+  gfx::Rect bounds =
+      !restored_bounds.IsEmpty() ? restored_bounds : GetBoundsInPixels();
+  return ToDIPRect(bounds);
 }
 
 std::string DesktopWindowTreeHostPlatform::GetWorkspace() const {
@@ -491,6 +495,20 @@ void DesktopWindowTreeHostPlatform::Relayout() {
 
 Widget* DesktopWindowTreeHostPlatform::GetWidget() {
   return native_widget_delegate_->AsWidget();
+}
+
+gfx::Rect DesktopWindowTreeHostPlatform::ToDIPRect(
+    const gfx::Rect& rect_in_pixels) const {
+  gfx::RectF rect_in_dip = gfx::RectF(rect_in_pixels);
+  GetRootTransform().TransformRectReverse(&rect_in_dip);
+  return gfx::ToEnclosingRect(rect_in_dip);
+}
+
+gfx::Rect DesktopWindowTreeHostPlatform::ToPixelRect(
+    const gfx::Rect& rect_in_dip) const {
+  gfx::RectF rect_in_pixels = gfx::RectF(rect_in_dip);
+  GetRootTransform().TransformRect(&rect_in_pixels);
+  return gfx::ToEnclosingRect(rect_in_pixels);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
