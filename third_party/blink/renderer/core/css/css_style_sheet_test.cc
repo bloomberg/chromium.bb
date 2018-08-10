@@ -49,10 +49,24 @@ class CSSStyleSheetTest : public PageTestBase {
 TEST_F(CSSStyleSheetTest, ConstructorWithoutRuntimeFlagThrowsException) {
   DummyExceptionStateForTesting exception_state;
   RuntimeEnabledFeatures::SetConstructableStylesheetsEnabled(false);
-  EXPECT_EQ(CSSStyleSheet::Create(GetDocument(), CSSStyleSheetInit(),
-                                  exception_state),
-            nullptr);
+  EXPECT_EQ(CSSStyleSheet::Create(GetDocument(), exception_state), nullptr);
   ASSERT_TRUE(exception_state.HadException());
+}
+
+TEST_F(CSSStyleSheetTest, CSSStyleSheetConstructionWithEmptyCSSStyleSheetInit) {
+  DummyExceptionStateForTesting exception_state;
+  CSSStyleSheet* sheet = CSSStyleSheet::Create(GetDocument(), exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+  EXPECT_TRUE(sheet->href().IsNull());
+  EXPECT_EQ(sheet->parentStyleSheet(), nullptr);
+  EXPECT_EQ(sheet->ownerNode(), nullptr);
+  EXPECT_EQ(sheet->ownerRule(), nullptr);
+  EXPECT_EQ(sheet->media()->length(), 0U);
+  EXPECT_EQ(sheet->title(), StringImpl::empty_);
+  EXPECT_FALSE(sheet->AlternateFromConstructor());
+  EXPECT_FALSE(sheet->disabled());
+  EXPECT_EQ(sheet->cssRules(exception_state)->length(), 0U);
+  ASSERT_FALSE(exception_state.HadException());
 }
 
 TEST_F(CSSStyleSheetTest,
@@ -76,48 +90,6 @@ TEST_F(CSSStyleSheetTest,
   EXPECT_TRUE(sheet->AlternateFromConstructor());
   EXPECT_TRUE(sheet->disabled());
   EXPECT_EQ(sheet->cssRules(exception_state)->length(), 0U);
-  ASSERT_FALSE(exception_state.HadException());
-}
-
-TEST_F(CSSStyleSheetTest, CreateEmptyCSSStyleSheetWithEmptyCSSStyleSheetInit) {
-  V8TestingScope scope;
-  DummyExceptionStateForTesting exception_state;
-  CSSStyleSheet* sheet = GetDocument().createEmptyCSSStyleSheet(
-      scope.GetScriptState(), CSSStyleSheetInit(), exception_state);
-  ASSERT_FALSE(exception_state.HadException());
-  EXPECT_TRUE(sheet->href().IsNull());
-  EXPECT_EQ(sheet->parentStyleSheet(), nullptr);
-  EXPECT_EQ(sheet->ownerNode(), nullptr);
-  EXPECT_EQ(sheet->ownerRule(), nullptr);
-  EXPECT_EQ(sheet->media()->length(), 0U);
-  EXPECT_EQ(sheet->title(), StringImpl::empty_);
-  EXPECT_FALSE(sheet->AlternateFromConstructor());
-  EXPECT_FALSE(sheet->disabled());
-  EXPECT_EQ(sheet->cssRules(exception_state)->length(), 0U);
-  ASSERT_FALSE(exception_state.HadException());
-}
-
-TEST_F(CSSStyleSheetTest,
-       CreateEmptyCSSStyleSheetWithNonEmptyCSSStyleSheetInit) {
-  CSSStyleSheetInit init;
-  init.setMedia(MediaListOrString::FromString("screen, print"));
-  init.setTitle("test");
-  init.setAlternate(true);
-  init.setDisabled(true);
-  V8TestingScope scope;
-  DummyExceptionStateForTesting exception_state;
-  CSSStyleSheet* sheet = GetDocument().createEmptyCSSStyleSheet(
-      scope.GetScriptState(), init, exception_state);
-  ASSERT_FALSE(exception_state.HadException());
-  EXPECT_TRUE(sheet->href().IsNull());
-  EXPECT_EQ(sheet->parentStyleSheet(), nullptr);
-  EXPECT_EQ(sheet->ownerNode(), nullptr);
-  EXPECT_EQ(sheet->ownerRule(), nullptr);
-  EXPECT_EQ(sheet->media()->length(), 2U);
-  EXPECT_EQ(sheet->media()->mediaText(), init.media().GetAsString());
-  EXPECT_EQ(sheet->title(), init.title());
-  EXPECT_TRUE(sheet->AlternateFromConstructor());
-  EXPECT_TRUE(sheet->disabled());
   ASSERT_FALSE(exception_state.HadException());
 }
 

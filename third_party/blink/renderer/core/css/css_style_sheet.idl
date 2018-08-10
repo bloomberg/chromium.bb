@@ -21,6 +21,9 @@
 // https://drafts.csswg.org/cssom/#the-cssstylesheet-interface
 
 [
+    ConstructorCallWith=Document,
+    RaisesException=Constructor,
+    Constructor(optional CSSStyleSheetInit options),
     Exposed=Window
 ] interface CSSStyleSheet : StyleSheet {
     readonly attribute CSSRule? ownerRule;
