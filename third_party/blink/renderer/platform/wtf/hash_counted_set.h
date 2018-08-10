@@ -110,6 +110,11 @@ class HashCountedSet {
     impl_.Trace(visitor);
   }
 
+ protected:
+  typename ImplType::ValueType** GetBufferSlot() {
+    return impl_.GetBufferSlot();
+  }
+
  private:
   ImplType impl_;
 

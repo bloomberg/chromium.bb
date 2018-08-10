@@ -829,6 +829,8 @@ class HashTable final {
   template <typename HashTranslator, typename T>
   const ValueType* Lookup(const T&) const;
 
+  ValueType** GetBufferSlot() { return &table_; }
+
   template <typename VisitorDispatcher, typename A = Allocator>
   std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher);
 

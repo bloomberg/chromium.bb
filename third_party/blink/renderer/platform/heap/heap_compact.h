@@ -49,6 +49,10 @@ class PLATFORM_EXPORT HeapCompact final {
 
   ~HeapCompact();
 
+  // Remove slot from traced_slots_ when a registered slot is destructed by
+  // mutator
+  void RemoveSlot(MovableReference* slot);
+
   // Determine if a GC for the given type and reason should also perform
   // additional heap compaction.
   //

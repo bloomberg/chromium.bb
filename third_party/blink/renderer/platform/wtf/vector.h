@@ -1295,6 +1295,8 @@ class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator> {
   using Base::CheckUnusedSlots;
   using Base::ClearUnusedSlots;
 
+  T** GetBufferSlot() { return Base::BufferSlot(); }
+
  private:
   void ExpandCapacity(wtf_size_t new_min_capacity);
   T* ExpandCapacity(wtf_size_t new_min_capacity, T*);

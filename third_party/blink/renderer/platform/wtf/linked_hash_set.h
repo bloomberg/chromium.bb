@@ -317,6 +317,11 @@ class LinkedHashSet {
     impl_.CheckModifications(mods);
   }
 
+ protected:
+  typename ImplType::ValueType** GetBufferSlot() {
+    return impl_.GetBufferSlot();
+  }
+
  private:
   Node* Anchor() { return reinterpret_cast<Node*>(&anchor_); }
   const Node* Anchor() const { return reinterpret_cast<const Node*>(&anchor_); }
