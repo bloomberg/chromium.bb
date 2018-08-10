@@ -1,5 +1,6 @@
-function clickOnElement(id) {
-  const rect = document.getElementById(id).getBoundingClientRect();
+function clickOnElement(id, callback) {
+  const element = document.getElementById(id);
+  const rect = element.getBoundingClientRect();
   const xCenter = rect.x + rect.width / 2;
   const yCenter = rect.y + rect.height / 2;
   var pointerActions = [{
@@ -9,6 +10,12 @@ function clickOnElement(id) {
       { name: "pointerUp" },
     ]
   }];
+  var clickHandler = () => {
+    if (callback)
+      callback();
+    element.removeEventListener("click", clickHandler);
+  };
+  element.addEventListener("click", clickHandler);
   if (!chrome || !chrome.gpuBenchmarking) {
     reject();
   } else {
@@ -60,8 +67,7 @@ function wait() {
 
 function clickAndBlockMain(id) {
   return new Promise((resolve, reject) => {
-    clickOnElement(id);
+    clickOnElement(id, resolve);
     mainThreadBusy(300);
-    resolve();
   });
 }
