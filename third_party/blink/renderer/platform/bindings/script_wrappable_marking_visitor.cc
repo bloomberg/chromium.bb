@@ -276,6 +276,8 @@ void ScriptWrappableMarkingVisitor::VisitBackingStoreStrongly(
     void* object,
     void** object_slot,
     TraceDescriptor desc) {
+  if (!object)
+    return;
   desc.callback(this, desc.base_object_payload);
 }
 

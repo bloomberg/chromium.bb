@@ -25,6 +25,8 @@ class VerifyingScriptWrappableVisitor : public ScriptWrappableVisitor {
   void VisitBackingStoreStrongly(void* object,
                                  void** object_slot,
                                  TraceDescriptor desc) override {
+    if (!object)
+      return;
     desc.callback(this, desc.base_object_payload);
   }
 

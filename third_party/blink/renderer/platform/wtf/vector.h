@@ -1962,11 +1962,16 @@ std::enable_if_t<A::kIsGarbageCollected>
 Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) {
   static_assert(Allocator::kIsGarbageCollected,
                 "Garbage collector must be enabled.");
-  if (!Buffer())
-    return;
+
   if (this->HasOutOfLineBuffer()) {
     Allocator::TraceVectorBacking(visitor, Buffer(), Base::BufferSlot());
   } else {
+    // We should not visit inline buffers, but we still need to register the
+    // slot for heap compaction. So, we pass nullptr to this method.
+    Allocator::TraceVectorBacking(visitor, static_cast<T*>(nullptr),
+                                  Base::BufferSlot());
+    if (!Buffer())
+      return;
     // Inline buffer requires tracing immediately.
     const T* buffer_begin = Buffer();
     const T* buffer_end = Buffer() + size();

@@ -28,8 +28,8 @@ bool HeapCompact::force_compaction_gc_ = false;
 // heap compaction-enhanced GC.
 class HeapCompact::MovableObjectFixups final {
  public:
-  static std::unique_ptr<MovableObjectFixups> Create() {
-    return base::WrapUnique(new MovableObjectFixups);
+  static std::unique_ptr<MovableObjectFixups> Create(ThreadHeap* heap) {
+    return base::WrapUnique(new MovableObjectFixups(heap));
   }
 
   ~MovableObjectFixups() = default;
@@ -62,13 +62,21 @@ class HeapCompact::MovableObjectFixups final {
   void Add(MovableReference* slot) {
     DCHECK(*slot);
     MovableReference reference = *slot;
-    BasePage* ref_page = PageFromObject(reference);
+    BasePage* ref_page =
+        heap_->LookupPageForAddress(reinterpret_cast<Address>(reference));
+
+    // ref_page is null if *slot is pointing to an off-heap region. This may
+    // happy if *slot is pointing to an inline buffer of HeapVector with inline
+    // capacity.
+    if (!ref_page)
+      return;
     // Nothing to compact on a large object's page.
     if (ref_page->IsLargeObjectPage())
       return;
 
+    if (!HeapCompact::IsCompactableArena(ref_page->Arena()->ArenaIndex()))
+      return;
 #if DCHECK_IS_ON()
-    DCHECK(HeapCompact::IsCompactableArena(ref_page->Arena()->ArenaIndex()));
     auto it = fixups_.find(reference);
     DCHECK(it == fixups_.end() || it->value == slot);
 #endif
@@ -201,7 +209,13 @@ class HeapCompact::MovableObjectFixups final {
       //    compacted.)
       if (!*slot)
         return;
-      BasePage* slot_page = PageFromObject(*slot);
+      BasePage* slot_page =
+          heap_->LookupPageForAddress(reinterpret_cast<Address>(*slot));
+      // ref_page is null if *slot is pointing to an off-heap region. This may
+      // happy if *slot is pointing to an inline buffer of HeapVector with
+      // inline capacity.
+      if (!slot_page)
+        return;
       DCHECK(
           slot_page->IsLargeObjectPage() ||
           (HeapCompact::IsCompactableArena(slot_page->Arena()->ArenaIndex()) &&
@@ -238,7 +252,8 @@ class HeapCompact::MovableObjectFixups final {
 #endif
 
  private:
-  MovableObjectFixups() = default;
+  MovableObjectFixups(ThreadHeap* heap) : heap_(heap) {}
+  ThreadHeap* heap_;
 
   // Tracking movable and updatable references. For now, we keep a
   // map which for each movable object, recording the slot that
@@ -290,7 +305,7 @@ HeapCompact::~HeapCompact() = default;
 
 HeapCompact::MovableObjectFixups& HeapCompact::Fixups() {
   if (!fixups_)
-    fixups_ = MovableObjectFixups::Create();
+    fixups_ = MovableObjectFixups::Create(heap_);
   return *fixups_;
 }
 
