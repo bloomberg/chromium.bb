@@ -107,6 +107,10 @@ void RegisterAutofillPrefs(user_prefs::PrefRegistrySyncable* registry) {
       autofill::prefs::kAutofillJapanCityFieldMigrated, true);
   registry->RegisterBooleanPref(autofill::prefs::kAutofillOrphanRowsRemoved,
                                 true);
+  registry->RegisterIntegerPref(
+      autofill::prefs::kAutofillLastVersionDisusedAddressesDeleted, 0);
+  registry->RegisterIntegerPref(
+      autofill::prefs::kAutofillLastVersionDisusedCreditCardsDeleted, 0);
 }
 
 void RunAndSignal(base::OnceClosure cb, WaitableEvent* event) {

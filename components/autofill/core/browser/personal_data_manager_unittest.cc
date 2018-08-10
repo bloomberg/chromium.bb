@@ -4525,8 +4525,8 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_OncePerVersion) {
 
 // Tests that DeleteDisusedAddresses is not run if the feature is disabled.
 TEST_F(PersonalDataManagerTest, DeleteDisusedAddresses_DoNothingWhenDisabled) {
-  // Make sure feature is disabled by default.
-  EXPECT_FALSE(base::FeatureList::IsEnabled(kAutofillDeleteDisusedAddresses));
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndDisableFeature(kAutofillDeleteDisusedAddresses);
 
   CreateDeletableDisusedProfile();
 
@@ -4652,8 +4652,8 @@ TEST_F(PersonalDataManagerTest,
 // Tests that DeleteDisusedCreditCards is not run if the feature is disabled.
 TEST_F(PersonalDataManagerTest,
        DeleteDisusedCreditCards_DoNothingWhenDisabled) {
-  // Make sure feature is disabled by default.
-  EXPECT_FALSE(base::FeatureList::IsEnabled(kAutofillDeleteDisusedCreditCards));
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndDisableFeature(kAutofillDeleteDisusedCreditCards);
 
   CreateDeletableExpiredAndDisusedCreditCard();
 
