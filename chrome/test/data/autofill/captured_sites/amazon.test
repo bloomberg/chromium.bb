@@ -5,66 +5,86 @@
     {
       "selectorType": "xpath",
       "selector": "//*[@id=\"add-to-cart-button\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "type": "click"
     },
     {
       "selectorType": "xpath",
       "selector": "//*[@id=\"hlb-ptc-btn-native\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "type": "click"
     },
     {
       "selectorType": "xpath",
       "selector": "//*[@id=\"enterAddressFullName\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "type": "autofill"
     },
     {
       "selector": "//*[@id=\"enterAddressFullName\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "NAME_FULL",
       "expectedValue": "Milton C. Waddams",
       "type": "validateField"
     },
     {
       "selector": "//*[@id=\"enterAddressAddressLine1\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "ADDRESS_HOME_LINE1",
       "expectedValue": "4120 Freidrich Lane",
       "type": "validateField"
     },
     {
       "selector": "//*[@id=\"enterAddressAddressLine2\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "ADDRESS_HOME_LINE2",
       "expectedValue": "Apt 8",
       "type": "validateField"
     },
     {
       "selector": "//*[@id=\"enterAddressCity\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "ADDRESS_HOME_CITY",
       "expectedValue": "Austin",
       "type": "validateField"
     },
     {
       "selector": "//*[@id=\"enterAddressStateOrRegion\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "ADDRESS_HOME_STATE",
       "expectedValue": "Texas",
       "type": "validateField"
     },
     {
       "selector": "//*[@id=\"enterAddressPostalCode\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "ADDRESS_HOME_ZIP",
       "expectedValue": "78744",
       "type": "validateField"
     },
     {
       "selector": "//*[@id=\"enterAddressPhoneNumber\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "PHONE_HOME_WHOLE_NUMBER",
       "expectedValue": "5125551234",
       "type": "validateField"
@@ -72,45 +92,59 @@
     {
       "selectorType": "xpath",
       "selector": "//input[@type='submit' and @value='Deliver to this address']",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "type": "click"
     },
     {
       "selectorType": "xpath",
       "selector": "//*[@id=\"shippingOptionFormId\"]/div[1]/div[2]/div/span[contains(., '')]/span[contains(., '')]/input[@type='submit' and @value='Continue']",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "type": "click"
     },
     {
       "selectorType": "xpath",
       "selector": "//*[@id=\"ccName\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "type": "autofill"
     },
     {
       "selector": "//*[@id=\"addCreditCardNumber\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "CREDIT_CARD_NUMBER",
       "expectedValue": "9621327911759602",
       "type": "validateField"
     },
     {
       "selector": "//*[@id=\"ccName\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "CREDIT_CARD_NAME_FULL",
       "expectedValue": "Milton Waddams",
       "type": "validateField"
     },
     {
       "selector": "//*[@id=\"ccMonth\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "CREDIT_CARD_EXP_MONTH",
       "expectedValue": "5",
       "type": "validateField"
     },
     {
       "selector": "//*[@id=\"ccYear\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "CREDIT_CARD_EXP_4_DIGIT_YEAR",
       "expectedValue": "2027",
       "type": "validateField"

@@ -5,11 +5,15 @@
     {
       "selectorType": "xpath",
       "selector": "//button[@data-automation-id='new-guest-continue-button']",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "type": "click"
     },
     {
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "type": "waitFor",
       "assertions": [
         "return automation_helper.isElementWithXpathReady(`//div[@aria-label='Select your shipping option']`);",
@@ -21,19 +25,25 @@
     {
       "selectorType": "xpath",
       "selector": "//button[@aria-label='Continue to Shipping Address']",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "type": "click"
     },
     {
       "selectorType": "xpath",
       "selector": "//input[@type='text' and @name='firstName']",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "type": "autofill"
     },
     {
       "selectorType": "xpath",
       "selector": "//input[@type='text' and @name='firstName']",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "NAME_FIRST",
       "expectedValue": "Milton",
       "type": "validateField"
@@ -41,7 +51,9 @@
     {
       "selectorType": "xpath",
       "selector": "//input[@type='text' and @name='lastName']",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "NAME_LAST",
       "expectedValue": "Waddams",
       "type": "validateField"
@@ -49,7 +61,9 @@
     {
       "selectorType": "xpath",
       "selector": "//input[@type='text' and @name='phone']",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "PHONE_HOME_WHOLE_NUMBER",
       "expectedValue": "5125551234",
       "type": "validateField"
@@ -57,7 +71,9 @@
     {
       "selectorType": "xpath",
       "selector": "//input[@type='text' and @name='email']",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "EMAIL_ADDRESS",
       "expectedValue": "red.swingline@initech.com",
       "type": "validateField"
@@ -65,7 +81,9 @@
     {
       "selectorType": "xpath",
       "selector": "//input[@type='text' and @name='addressLineOne']",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "ADDRESS_HOME_LINE1",
       "expectedValue": "4120 Freidrich Lane",
       "type": "validateField"
@@ -73,7 +91,9 @@
     {
       "selectorType": "xpath",
       "selector": "//input[@type='text' and @name='addressLineTwo']",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "ADDRESS_HOME_LINE2",
       "expectedValue": "Apt 8",
       "type": "validateField"
@@ -81,7 +101,9 @@
     {
       "selectorType": "xpath",
       "selector": "//input[@type='text' and @name='city']",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "ADDRESS_HOME_CITY",
       "expectedValue": "Austin",
       "type": "validateField"
@@ -89,7 +111,9 @@
     {
       "selectorType": "xpath",
       "selector": "//*[@name='state']",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "ADDRESS_HOME_STATE",
       "expectedValue": "TX",
       "type": "validateField"
@@ -97,7 +121,9 @@
     {
       "selectorType": "xpath",
       "selector": "//input[@type='text' and @name='postalCode']",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "ADDRESS_HOME_ZIP",
       "expectedValue": "78744",
       "type": "validateField"
@@ -105,25 +131,33 @@
     {
       "selectorType": "xpath",
       "selector": "//button[contains(., 'Continue')]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "type": "click"
     },
     {
       "selectorType": "xpath",
       "selector": "//button[contains(., 'Use Address Provided')]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "type": "click"
     },
     {
       "selectorType": "xpath",
       "selector": "//*[@id=\"creditCard\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "type": "autofill"
     },
     {
       "selectorType": "xpath",
       "selector": "//*[@id=\"creditCard\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "HTML_TYPE_CREDIT_CARD_NUMBER",
       "expectedValue": "9621327911759602",
       "type": "validateField"
@@ -131,7 +165,9 @@
     {
       "selectorType": "xpath",
       "selector": "//*[@id=\"month-chooser\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "HTML_TYPE_CREDIT_CARD_EXP_MONTH",
       "expectedValue": "05",
       "type": "validateField"
@@ -139,7 +175,9 @@
     {
       "selectorType": "xpath",
       "selector": "//*[@id=\"year-chooser\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "HTML_TYPE_CREDIT_CARD_EXP_YEAR",
       "expectedValue": "2027",
       "type": "validateField"

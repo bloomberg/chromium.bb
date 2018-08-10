@@ -5,87 +5,113 @@
     {
       "selectorType": "xpath",
       "selector": "//*[@id=\"binBtn_btn\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "type": "click"
     },
     {
       "selectorType": "xpath",
       "selector": "//*[@id=\"gtChk\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "type": "click"
     },
     {
       "selectorType": "xpath",
       "selector": "//*[@id=\"af-first-name\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "type": "autofill"
     },
     {
       "selector": "//*[@id=\"af-first-name\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "HTML_TYPE_GIVEN_NAME",
       "expectedValue": "Milton",
       "type": "validateField"
     },
     {
       "selector": "//*[@id=\"af-last-name\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "HTML_TYPE_FAMILY_NAME",
       "expectedValue": "Waddams",
       "type": "validateField"
     },
     {
       "selector": "//*[@id=\"af-address1\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "ADDRESS_HOME_LINE1",
       "expectedValue": "4120 Freidrich Lane",
       "type": "validateField"
     },
     {
       "selector": "//*[@id=\"af-address2\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "HTML_TYPE_ADDRESS_LINE2",
       "expectedValue": "Apt 8",
       "type": "validateField"
     },
     {
       "selector": "//*[@id=\"af-city\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "HTML_TYPE_ADDRESS_LEVEL2",
       "expectedValue": "Austin",
       "type": "validateField"
     },
     {
       "selector": "//*[@id=\"af-state\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "HTML_TYPE_ADDRESS_LEVEL1",
       "expectedValue": "TX",
       "type": "validateField"
     },
     {
       "selector": "//*[@id=\"af-zip\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "HTML_TYPE_POSTAL_CODE",
       "expectedValue": "78744",
       "type": "validateField"
     },
     {
       "selector": "//*[@id=\"af-email\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "HTML_TYPE_EMAIL",
       "expectedValue": "red.swingline@initech.com",
       "type": "validateField"
     },
     {
       "selector": "//*[@id=\"af-email-confirm\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "HTML_TYPE_EMAIL",
       "expectedValue": "red.swingline@initech.com",
       "type": "validateField"
     },
     {
       "selector": "//span[contains(., 'Phone number')]/input[@type='tel']",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "HTML_TYPE_TEL",
       "expectedValue": "(512) 555-1234",
       "type": "validateField"
@@ -93,31 +119,41 @@
     {
       "selectorType": "xpath",
       "selector": "//*[@id=\"address-fields-ctr\"]/div[2]/div/button[contains(., 'Done')]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "type": "click"
     },
     {
       "selectorType": "xpath",
       "selector": "//*[@id=\"CC\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "type": "click"
     },
     {
       "selectorType": "xpath",
       "selector": "//*[@id=\"cardNumber\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "type": "autofill"
     },
     {
       "selector": "//*[@id=\"cardNumber\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "HTML_TYPE_CREDIT_CARD_NUMBER",
       "expectedValue": "9621327911759602",
       "type": "validateField"
     },
     {
       "selector": "//*[@id=\"cardExp\"]",
-      "context": [],
+      "context": {
+        "isIframe": false
+      },
       "expectedAutofillType": "HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR",
       "expectedValue": "05 / 27",
       "type": "validateField"

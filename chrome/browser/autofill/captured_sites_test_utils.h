@@ -84,6 +84,44 @@ class PageActivityObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(PageActivityObserver);
 };
 
+// IFrameWaiter
+//
+// IFrameWaiter is an waiter object that waits for an iframe befitting a
+// criteria to appear. The criteria can be the iframe's 'name' attribute,
+// the iframe's origin, or the iframe's full url.
+class IFrameWaiter : public content::WebContentsObserver {
+ public:
+  explicit IFrameWaiter(content::WebContents* webcontents);
+  ~IFrameWaiter() override;
+  content::RenderFrameHost* WaitForFrameMatchingName(
+      const std::string& name,
+      const base::TimeDelta timeout = default_action_timeout);
+  content::RenderFrameHost* WaitForFrameMatchingOrigin(
+      const GURL origin,
+      const base::TimeDelta timeout = default_action_timeout);
+  content::RenderFrameHost* WaitForFrameMatchingUrl(
+      const GURL url,
+      const base::TimeDelta timeout = default_action_timeout);
+
+ private:
+  enum QueryType { NAME, ORIGIN, URL };
+
+  static bool FrameHasOrigin(const GURL& origin,
+                             content::RenderFrameHost* frame);
+
+  // content::WebContentsObserver
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+
+  QueryType query_type_;
+  base::RunLoop run_loop_;
+  content::RenderFrameHost* target_frame_;
+  std::string frame_name_;
+  GURL origin_;
+  GURL url_;
+
+  DISALLOW_COPY_AND_ASSIGN(IFrameWaiter);
+};
+
 // TestRecipeReplayChromeFeatureActionExecutor
 //
 // TestRecipeReplayChromeFeatureActionExecutor is a helper interface. A
@@ -100,9 +138,9 @@ class TestRecipeReplayChromeFeatureActionExecutor {
   // Chrome Autofill feature methods.
   // Triggers Chrome Autofill in the specified input element on the specified
   // document.
-  virtual bool AutofillForm(content::WebContents* web_contents,
+  virtual bool AutofillForm(content::RenderFrameHost* frame,
                             const std::string& focus_element_css_selector,
-                            int attempts = 1);
+                            const int attempts = 1);
 
  protected:
   TestRecipeReplayChromeFeatureActionExecutor();
@@ -145,6 +183,11 @@ class TestRecipeReplayer {
                   const base::FilePath recipe_file_path);
 
   static void SetUpCommandLine(base::CommandLine* command_line);
+  static bool PlaceFocusOnElement(content::RenderFrameHost* frame,
+                                  const std::string& element_xpath);
+  static bool SimulateLeftMouseClickAt(
+      content::RenderFrameHost* render_frame_host,
+      const gfx::Point& point);
 
  private:
   TestRecipeReplayChromeFeatureActionExecutor* feature_action_executor();
@@ -161,31 +204,38 @@ class TestRecipeReplayer {
   bool RunWebPageReplayCmd(const std::string& cmd,
                            const std::vector<std::string>& args,
                            base::Process* process);
-  bool ReplayRecordedActions(const base::FilePath recipe_file_path);
-  void InitializeBrowserToExecuteRecipe(
+  bool ReplayRecordedActions(const base::FilePath& recipe_file_path);
+  bool InitializeBrowserToExecuteRecipe(
       std::unique_ptr<base::DictionaryValue>& recipe);
-  void ExecuteAutofillAction(base::DictionaryValue* action);
-  void ExecuteClickAction(base::DictionaryValue* action);
-  void ExecuteSelectDropdownAction(base::DictionaryValue* action);
-  void ExecuteTypeAction(base::DictionaryValue* action);
-  void ExecuteValidateFieldValueAction(base::DictionaryValue* action);
-  void ExecuteWaitForStateAction(base::DictionaryValue* action);
-  bool GetTargetHTMLElementXpathFromAction(base::DictionaryValue* action,
+  bool ExecuteAutofillAction(const base::DictionaryValue& action);
+  bool ExecuteClickAction(const base::DictionaryValue& action);
+  bool ExecuteSelectDropdownAction(const base::DictionaryValue& action);
+  bool ExecuteTypeAction(const base::DictionaryValue& action);
+  bool ExecuteValidateFieldValueAction(const base::DictionaryValue& action);
+  bool ExecuteWaitForStateAction(const base::DictionaryValue& action);
+  bool GetTargetHTMLElementXpathFromAction(const base::DictionaryValue& action,
                                            std::string* xpath);
-  void WaitForElemementToBeReady(std::string xpath);
+  bool GetTargetFrameFromAction(const base::DictionaryValue& action,
+                                content::RenderFrameHost** frame);
+  bool WaitForElementToBeReady(content::RenderFrameHost* frame,
+                               const std::string& xpath);
   bool WaitForStateChange(
+      content::RenderFrameHost* frame,
       const std::vector<std::string>& state_assertions,
       const base::TimeDelta& timeout = default_action_timeout);
-  bool AllAssertionsPassed(const std::vector<std::string>& assertions);
+  bool AllAssertionsPassed(const content::ToRenderFrameHost& frame,
+                           const std::vector<std::string>& assertions);
   bool ExecuteJavaScriptOnElementByXpath(
+      const content::ToRenderFrameHost& frame,
       const std::string& element_xpath,
       const std::string& execute_function_body,
       const base::TimeDelta& time_to_wait_for_element = default_action_timeout);
   bool ExpectElementPropertyEquals(
+      const content::ToRenderFrameHost& frame,
       const std::string& element_xpath,
       const std::string& get_property_function_body,
       const std::string& expected_value,
-      bool ignoreCase = false);
+      const bool ignoreCase = false);
 
   Browser* browser_;
   TestRecipeReplayChromeFeatureActionExecutor* feature_action_executor_;
