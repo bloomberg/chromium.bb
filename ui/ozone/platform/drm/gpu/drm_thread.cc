@@ -202,9 +202,9 @@ void DrmThread::CreateBufferFromFds(
 
   scoped_refptr<DrmFramebuffer> framebuffer;
   if (buffer->GetFlags() & GBM_BO_USE_SCANOUT) {
+    // NB: This is not required to succeed; framebuffers are added for
+    // imported buffers on a best effort basis.
     framebuffer = DrmFramebuffer::AddFramebuffer(drm, buffer.get());
-    if (!framebuffer)
-      return;
   }
 
   *out_buffer = std::move(buffer);

@@ -26,7 +26,7 @@ scoped_refptr<DrmFramebuffer> DrmFramebuffer::AddFramebuffer(
                                    params.handles, params.strides,
                                    params.offsets, modifiers, &framebuffer_id,
                                    params.flags)) {
-    PLOG(ERROR) << "AddFramebuffer2";
+    DPLOG(WARNING) << "AddFramebuffer2";
     return nullptr;
   }
 
@@ -38,7 +38,7 @@ scoped_refptr<DrmFramebuffer> DrmFramebuffer::AddFramebuffer(
                                    params.handles, params.strides,
                                    params.offsets, modifiers,
                                    &opaque_framebuffer_id, params.flags)) {
-    PLOG(ERROR) << "AddFramebuffer2";
+    DPLOG(WARNING) << "AddFramebuffer2";
     drm_device->RemoveFramebuffer(framebuffer_id);
     return nullptr;
   }
