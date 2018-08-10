@@ -615,11 +615,8 @@ void DispatchInputEventEditableContentChanged(
 SelectionInDOMTree CorrectedSelectionAfterCommand(
     const SelectionForUndoStep& passed_selection,
     const Document* document) {
-  if (!passed_selection.Base().IsConnected() ||
-      !passed_selection.Extent().IsConnected() ||
-      passed_selection.Base().GetDocument() != document ||
-      passed_selection.Base().GetDocument() !=
-          passed_selection.Extent().GetDocument())
+  if (!passed_selection.Base().IsValidFor(*document) ||
+      !passed_selection.Extent().IsValidFor(*document))
     return SelectionInDOMTree();
   return passed_selection.AsSelection();
 }

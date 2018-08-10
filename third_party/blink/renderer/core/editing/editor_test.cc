@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/editing/editor.h"
 
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
+#include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/commands/editor_command.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
@@ -104,6 +105,21 @@ TEST_F(EditorTest, ReplaceSelection) {
   editor.ReplaceSelection("NEW");
 
   EXPECT_EQ("HENEWLLO", text_control.value());
+}
+
+// http://crbug.com/873037
+TEST_F(EditorTest, UndoWithInvalidSelection) {
+  const SelectionInDOMTree selection = SetSelectionTextToBody(
+      "<div contenteditable><div></div><b>^abc|</b></div>");
+  Selection().SetSelection(selection, SetSelectionOptions());
+  Text& abc = ToText(*selection.Base().ComputeContainerNode());
+  // Push Text node "abc" into undo stack
+  GetDocument().execCommand("italic", false, "", ASSERT_NO_EXCEPTION);
+  // Change Text node "abc" in undo stack
+  abc.setData("");
+  GetDocument().GetFrame()->GetEditor().Undo();
+  EXPECT_EQ("<div contenteditable><div></div><b>|</b></div>",
+            GetSelectionTextFromBody());
 }
 
 }  // namespace blink
