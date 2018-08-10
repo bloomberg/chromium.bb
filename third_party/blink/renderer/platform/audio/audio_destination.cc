@@ -150,22 +150,6 @@ void AudioDestination::Render(const WebVector<float*>& destination_data,
                    delay_timestamp, "delay (s)", delay);
 }
 
-// Determine if the rendered data is audible.
-static bool IsAudible(const AudioBus* rendered_data) {
-  // Compute the energy in each channel and sum up the energy in each channel
-  // for the total energy.
-  float energy = 0;
-
-  unsigned data_size = rendered_data->length();
-  for (unsigned k = 0; k < rendered_data->NumberOfChannels(); ++k) {
-    const float* data = rendered_data->Channel(k)->Data();
-    float channel_energy;
-    VectorMath::Vsvesq(data, 1, &channel_energy, data_size);
-    energy += channel_energy;
-  }
-
-  return energy > 0;
-}
 
 void AudioDestination::RequestRender(size_t frames_requested,
                                      size_t frames_to_render,
@@ -203,23 +187,6 @@ void AudioDestination::RequestRender(size_t frames_requested,
     // Process WebAudio graph and push the rendered output to FIFO.
     callback_.Render(render_bus_.get(),
                      AudioUtilities::kRenderQuantumFrames, output_position);
-
-    // Detect silence (or not) for MEI
-    bool is_audible = IsAudible(render_bus_.get());
-
-    if (is_audible) {
-      ++total_audible_renders_;
-    }
-
-    if (was_audible_) {
-      if (!is_audible) {
-        was_audible_ = false;
-      }
-    } else {
-      if (is_audible) {
-        was_audible_ = true;
-      }
-    }
 
     fifo_->Push(render_bus_.get());
   }

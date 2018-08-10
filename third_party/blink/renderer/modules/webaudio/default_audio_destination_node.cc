@@ -197,7 +197,7 @@ void DefaultAudioDestinationHandler::Render(
   Context()->GetDeferredTaskHandler().ProcessAutomaticPullNodes(
       number_of_frames);
 
-  Context()->HandlePostRenderTasks();
+  Context()->HandlePostRenderTasks(destination_bus);
 
   // Advances the current sample-frame.
   size_t new_sample_frame = current_sample_frame_ + number_of_frames;

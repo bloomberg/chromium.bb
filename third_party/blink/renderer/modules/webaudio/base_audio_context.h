@@ -245,7 +245,7 @@ class MODULES_EXPORT BaseAudioContext
   void HandlePreRenderTasks(const AudioIOPosition& output_position);
 
   // Called at the end of each render quantum.
-  void HandlePostRenderTasks();
+  void HandlePostRenderTasks(const AudioBus* destination_bus);
 
   DeferredTaskHandler& GetDeferredTaskHandler() const {
     return *deferred_task_handler_;
@@ -452,6 +452,19 @@ class MODULES_EXPORT BaseAudioContext
   // This cannot be nullptr once it is assigned from AudioWorkletThread until
   // the BaseAudioContext goes away.
   WorkerThread* audio_worklet_thread_ = nullptr;
+
+  // Notifies browser when audible audio started or stopped.
+  void NotifyAudibleAudioStarted();
+  void NotifyAudibleAudioStopped();
+
+  // Keeps track if the output of this destination was audible, before the
+  // current rendering quantum.  Used for recording "playback" time.
+  bool was_audible_ = false;
+
+  // Counts the number of render quanta where audible sound was played.  We
+  // determine audibility on render quantum boundaries, so counting quanta is
+  // all that's needed.
+  size_t total_audible_renders_ = 0;
 };
 
 }  // namespace blink
