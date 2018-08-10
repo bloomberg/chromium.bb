@@ -191,14 +191,18 @@ NSString* const kMenuControllerMenuDidCloseNotification =
     [item setTarget:self];
     NSValue* modelObject = [NSValue valueWithPointer:model];
     [item setRepresentedObject:modelObject];  // Retains |modelObject|.
-    ui::Accelerator accelerator;
-    if (model->GetAcceleratorAt(index, &accelerator)) {
-      NSString* key_equivalent;
-      NSUInteger modifier_mask;
-      GetKeyEquivalentAndModifierMaskFromAccelerator(
-          accelerator, &key_equivalent, &modifier_mask);
-      [item setKeyEquivalent:key_equivalent];
-      [item setKeyEquivalentModifierMask:modifier_mask];
+    // On the Mac, context menus never have accelerators. Menus constructed
+    // for context use have useWithPopUpButtonCell_ set to NO.
+    if (useWithPopUpButtonCell_) {
+      ui::Accelerator accelerator;
+      if (model->GetAcceleratorAt(index, &accelerator)) {
+        NSString* key_equivalent;
+        NSUInteger modifier_mask;
+        GetKeyEquivalentAndModifierMaskFromAccelerator(
+            accelerator, &key_equivalent, &modifier_mask);
+        [item setKeyEquivalent:key_equivalent];
+        [item setKeyEquivalentModifierMask:modifier_mask];
+      }
     }
   }
   [menu insertItem:item atIndex:index];
