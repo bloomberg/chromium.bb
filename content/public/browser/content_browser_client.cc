@@ -725,9 +725,9 @@ bool ContentBrowserClient::ShouldForceDownloadResource(
   return false;
 }
 
-void ContentBrowserClient::CreateUsbDeviceManager(
+void ContentBrowserClient::CreateWebUsbService(
     RenderFrameHost* render_frame_host,
-    device::mojom::UsbDeviceManagerRequest request) {}
+    mojo::InterfaceRequest<blink::mojom::WebUsbService> request) {}
 
 void ContentBrowserClient::CreateUsbChooserService(
     RenderFrameHost* render_frame_host,

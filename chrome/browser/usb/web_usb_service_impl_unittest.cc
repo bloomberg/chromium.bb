@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/usb/web_usb_device_manager.h"
+#include "chrome/browser/usb/web_usb_service_impl.h"
 
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/barrier_closure.h"
@@ -24,11 +25,11 @@
 using ::testing::_;
 using ::testing::AtMost;
 
+using blink::mojom::WebUsbServicePtr;
 using device::mojom::UsbDeviceInfo;
 using device::mojom::UsbDeviceInfoPtr;
 using device::mojom::UsbDeviceManagerClient;
 using device::mojom::UsbDeviceManagerClientPtr;
-using device::mojom::UsbDeviceManagerPtr;
 using device::MockUsbDevice;
 using device::usb::MockPermissionProvider;
 
@@ -41,17 +42,17 @@ ACTION_P2(ExpectGuidAndThen, expected_guid, callback) {
     callback.Run();
 };
 
-class WebUsbDeviceManagerTest : public testing::Test {
+class WebUsbServiceImplTest : public testing::Test {
  public:
-  WebUsbDeviceManagerTest() = default;
-  ~WebUsbDeviceManagerTest() override = default;
+  WebUsbServiceImplTest() = default;
+  ~WebUsbServiceImplTest() override = default;
 
  protected:
-  UsbDeviceManagerPtr ConnectToDeviceManager() {
-    UsbDeviceManagerPtr manager;
-    WebUsbDeviceManager::Create(permission_provider_.GetWeakPtr(),
-                                mojo::MakeRequest(&manager));
-    return manager;
+  WebUsbServicePtr ConnectToService() {
+    WebUsbServicePtr service;
+    WebUsbServiceImpl::Create(permission_provider_.GetWeakPtr(),
+                              mojo::MakeRequest(&service));
+    return service;
   }
 
   device::MockDeviceClient device_client_;
@@ -100,7 +101,7 @@ void ExpectDevicesAndThen(const std::set<std::string>& expected_guids,
 }  // namespace
 
 // Test requesting device enumeration updates with GetDeviceChanges.
-TEST_F(WebUsbDeviceManagerTest, NoPermissionDevice) {
+TEST_F(WebUsbServiceImplTest, NoPermissionDevice) {
   scoped_refptr<MockUsbDevice> device0 =
       new MockUsbDevice(0x1234, 0x5678, "ACME", "Frobinator", "ABCDEF");
   scoped_refptr<MockUsbDevice> device1 =
@@ -115,12 +116,12 @@ TEST_F(WebUsbDeviceManagerTest, NoPermissionDevice) {
   device_client_.usb_service()->AddDevice(device0);
   device_client_.usb_service()->AddDevice(no_permission_device1);
 
-  UsbDeviceManagerPtr device_manager = ConnectToDeviceManager();
+  WebUsbServicePtr web_usb_service = ConnectToService();
   MockDeviceManagerClient mock_client;
-  device_manager->SetClient(mock_client.CreateInterfacePtrAndBind());
+  web_usb_service->SetClient(mock_client.CreateInterfacePtrAndBind());
 
   {
-    // Call GetDevices once to make sure the device manager is up and running
+    // Call GetDevices once to make sure the WebUsbService is up and running
     // and the client is set or else we could block forever waiting for calls.
     // The site has no permission to access |no_permission_device1| and
     // |no_permission_device2|, so result of GetDevices() should only contain
@@ -128,8 +129,7 @@ TEST_F(WebUsbDeviceManagerTest, NoPermissionDevice) {
     std::set<std::string> guids;
     guids.insert(device0->guid());
     base::RunLoop loop;
-    device_manager->GetDevices(
-        nullptr,
+    web_usb_service->GetDevices(
         base::BindOnce(&ExpectDevicesAndThen, guids, loop.QuitClosure()));
     loop.Run();
   }

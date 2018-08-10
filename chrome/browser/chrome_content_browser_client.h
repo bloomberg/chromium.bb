@@ -38,6 +38,7 @@ class CommandLine;
 namespace blink {
 namespace mojom {
 class WindowFeatures;
+class WebUsbService;
 }
 }
 
@@ -449,9 +450,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::NavigationUIData* navigation_ui_data) override;
   bool ShouldForceDownloadResource(const GURL& url,
                                    const std::string& mime_type) override;
-  void CreateUsbDeviceManager(
+  void CreateWebUsbService(
       content::RenderFrameHost* render_frame_host,
-      device::mojom::UsbDeviceManagerRequest request) override;
+      mojo::InterfaceRequest<blink::mojom::WebUsbService> request) override;
   void CreateUsbChooserService(
       content::RenderFrameHost* render_frame_host,
       device::mojom::UsbChooserServiceRequest request) override;

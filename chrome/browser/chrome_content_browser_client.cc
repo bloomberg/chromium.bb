@@ -250,7 +250,6 @@
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
 #include "device/usb/public/mojom/chooser_service.mojom.h"
-#include "device/usb/public/mojom/device_manager.mojom.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -4516,9 +4515,9 @@ bool ChromeContentBrowserClient::ShouldForceDownloadResource(
 #endif
 }
 
-void ChromeContentBrowserClient::CreateUsbDeviceManager(
+void ChromeContentBrowserClient::CreateWebUsbService(
     content::RenderFrameHost* render_frame_host,
-    device::mojom::UsbDeviceManagerRequest request) {
+    mojo::InterfaceRequest<blink::mojom::WebUsbService> request) {
   if (!base::FeatureList::IsEnabled(features::kWebUsb))
     return;
 
@@ -4539,7 +4538,7 @@ void ChromeContentBrowserClient::CreateUsbDeviceManager(
 
   UsbTabHelper* tab_helper =
       UsbTabHelper::GetOrCreateForWebContents(web_contents);
-  tab_helper->CreateDeviceManager(render_frame_host, std::move(request));
+  tab_helper->CreateWebUsbService(render_frame_host, std::move(request));
 }
 
 void ChromeContentBrowserClient::CreateUsbChooserService(

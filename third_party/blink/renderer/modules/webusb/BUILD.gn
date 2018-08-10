@@ -31,8 +31,4 @@ blink_modules_sources("webusb") {
     "worker_navigator_usb.cc",
     "worker_navigator_usb.h",
   ]
-
-  deps = [
-    "//device/usb/public/mojom:mojom_blink",
-  ]
 }

@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
+#include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -57,16 +58,16 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     registry_.AddInterface(base::BindRepeating(
         &DedicatedWorkerHost::CreateWebSocket, base::Unretained(this)));
     registry_.AddInterface(base::BindRepeating(
-        &DedicatedWorkerHost::CreateUsbDeviceManager, base::Unretained(this)));
+        &DedicatedWorkerHost::CreateWebUsbService, base::Unretained(this)));
     registry_.AddInterface(base::BindRepeating(
         &DedicatedWorkerHost::CreateDedicatedWorker, base::Unretained(this)));
   }
 
-  void CreateUsbDeviceManager(device::mojom::UsbDeviceManagerRequest request) {
+  void CreateWebUsbService(blink::mojom::WebUsbServiceRequest request) {
     auto* host =
         RenderFrameHostImpl::FromID(process_id_, ancestor_render_frame_id_);
-    GetContentClient()->browser()->CreateUsbDeviceManager(host,
-                                                          std::move(request));
+    GetContentClient()->browser()->CreateWebUsbService(host,
+                                                       std::move(request));
   }
 
   void CreateWebSocket(network::mojom::WebSocketRequest request) {
