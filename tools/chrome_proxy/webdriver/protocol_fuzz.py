@@ -130,7 +130,7 @@ STATIC_RESPONSE_HEADERS = {
 }
 
 # This string will be used as the response body in every test and will be
-# checked for existance on the final loaded page.
+# checked for existence on the final loaded page.
 STATIC_RESPONSE_BODY = 'ok'
 
 rand_str_re = re.compile(r'{{RAND_STR\((\d+)\)}}')

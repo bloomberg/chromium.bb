@@ -259,7 +259,7 @@ check_targets = [
 # additions, we keep the build fast and clean. If you think you need to add a
 # new call, please consider:
 #
-# - Do not use a script to check for the existance of a file or directory to
+# - Do not use a script to check for the existence of a file or directory to
 #   enable a different mode. Instead, use GN build args to enable or disable
 #   functionality and set options. An example is checking for a file in the
 #   src-internal repo to see if the corresponding src-internal feature should

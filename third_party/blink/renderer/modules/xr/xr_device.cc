@@ -76,7 +76,7 @@ ScriptPromise XRDevice::supportsSession(
   // Check to see if the device is capable of supporting the requested session
   // options. Note that reporting support here does not guarantee that creating
   // a session with those options will succeed, as other external and
-  // time-sensitve factors (focus state, existance of another immersive session,
+  // time-sensitve factors (focus state, existence of another immersive session,
   // etc.) may prevent the creation of a session as well.
   const char* reject_reason = checkSessionSupport(options);
   if (reject_reason) {
