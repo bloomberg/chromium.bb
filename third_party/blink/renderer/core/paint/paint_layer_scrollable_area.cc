@@ -694,6 +694,7 @@ void PaintLayerScrollableArea::ContentsResized() {
   ScrollableArea::ContentsResized();
   // Need to update the bounds of the scroll property.
   GetLayoutBox()->SetNeedsPaintPropertyUpdate();
+  Layer()->SetNeedsCompositingInputsUpdate();
 }
 
 IntPoint PaintLayerScrollableArea::LastKnownMousePosition() const {

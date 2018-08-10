@@ -309,11 +309,6 @@ void PaintLayerCompositor::DidLayout() {
   // isScrollable method would return a different value.
   root_should_always_composite_dirty_ = true;
   EnableCompositingModeIfNeeded();
-
-  // FIXME: Rather than marking the entire LayoutView as dirty, we should
-  // track which Layers moved during layout and only dirty those
-  // specific Layers.
-  RootLayer()->SetNeedsCompositingInputsUpdate();
 }
 
 #if DCHECK_IS_ON()
