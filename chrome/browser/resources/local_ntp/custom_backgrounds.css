@@ -467,6 +467,7 @@ html[dir=rtl] .selected-check {
   padding: 8px 16px 0 16px;
   position: absolute;
   text-overflow: ellipsis;
+  user-select: none;
   vertical-align: middle;
   white-space: nowrap;
   width: 124px;
