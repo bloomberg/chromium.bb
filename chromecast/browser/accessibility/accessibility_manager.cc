@@ -5,7 +5,7 @@
 #include "chromecast/browser/accessibility/accessibility_manager.h"
 
 #include "chromecast/graphics/accessibility/focus_ring_controller.h"
-#include "chromecast/graphics/accessibility/partial_magnification_controller.h"
+#include "chromecast/graphics/accessibility/fullscreen_magnification_controller.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/wm/public/activation_client.h"
@@ -31,7 +31,7 @@ AccessibilityManager::AccessibilityManager(
       &accessibility_sound_proxy_);
   triple_tap_detector_ = std::make_unique<TripleTapDetector>(root_window, this);
   magnification_controller_ =
-      std::make_unique<PartialMagnificationController>(root_window);
+      std::make_unique<FullscreenMagnificationController>(root_window);
 }
 
 AccessibilityManager::~AccessibilityManager() {}

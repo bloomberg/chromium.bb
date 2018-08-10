@@ -38,6 +38,8 @@ cast_source_set("graphics") {
       "accessibility/focus_ring_controller.h",
       "accessibility/focus_ring_layer.cc",
       "accessibility/focus_ring_layer.h",
+      "accessibility/fullscreen_magnification_controller.cc",
+      "accessibility/fullscreen_magnification_controller.h",
       "accessibility/magnification_controller.h",
       "accessibility/partial_magnification_controller.cc",
       "accessibility/partial_magnification_controller.h",
