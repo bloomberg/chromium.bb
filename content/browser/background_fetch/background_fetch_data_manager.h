@@ -160,11 +160,10 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   // BackgroundFetchScheduler::RequestProvider implementation:
   void PopNextRequest(const BackgroundFetchRegistrationId& registration_id,
                       NextRequestCallback callback) override;
-
   void MarkRequestAsComplete(
       const BackgroundFetchRegistrationId& registration_id,
-      BackgroundFetchRequestInfo* request,
-      BackgroundFetchScheduler::MarkedCompleteCallback callback) override;
+      scoped_refptr<BackgroundFetchRequestInfo> request_info,
+      base::OnceClosure closure) override;
 
   void ShutdownOnIO();
 

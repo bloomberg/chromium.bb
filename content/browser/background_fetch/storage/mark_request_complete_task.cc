@@ -39,11 +39,11 @@ MarkRequestCompleteTask::MarkRequestCompleteTask(
     DatabaseTaskHost* host,
     BackgroundFetchRegistrationId registration_id,
     scoped_refptr<BackgroundFetchRequestInfo> request_info,
-    MarkedCompleteCallback callback)
+    base::OnceClosure closure)
     : DatabaseTask(host),
       registration_id_(registration_id),
       request_info_(std::move(request_info)),
-      callback_(std::move(callback)),
+      closure_(std::move(closure)),
       weak_factory_(this) {}
 
 MarkRequestCompleteTask::~MarkRequestCompleteTask() = default;
@@ -262,7 +262,8 @@ void MarkRequestCompleteTask::DidStoreMetadata(
 void MarkRequestCompleteTask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
   ReportStorageError();
-  std::move(callback_).Run();
+
+  std::move(closure_).Run();
   Finished();
 }
 
