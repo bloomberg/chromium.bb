@@ -1046,7 +1046,7 @@ TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithoutEventInBetween) {
   const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(2U, events.size());
 
-  // The first event logged is the current one.
+  // The current event logged is after the earlier idle event.
   UserActivityEvent::Event expected_event1;
   expected_event1.set_type(UserActivityEvent::Event::TIMEOUT);
   expected_event1.set_reason(UserActivityEvent::Event::IDLE_SLEEP);
@@ -1054,7 +1054,7 @@ TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithoutEventInBetween) {
   expected_event1.set_screen_dim_occurred(false);
   expected_event1.set_screen_off_occurred(false);
   expected_event1.set_screen_lock_occurred(false);
-  EqualEvent(expected_event1, events[0].event());
+  EqualEvent(expected_event1, events[1].event());
 
   UserActivityEvent::ModelPrediction expected_prediction1;
   expected_prediction1.set_decision_threshold(50);
@@ -1062,12 +1062,11 @@ TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithoutEventInBetween) {
   expected_prediction1.set_model_applied(false);
   expected_prediction1.set_response(UserActivityEvent::ModelPrediction::NO_DIM);
 
-  EqualModelPrediction(expected_prediction1, events[0].model_prediction());
+  EqualModelPrediction(expected_prediction1, events[1].model_prediction());
 
-  // The earlier idle event is logged afterwards.
   UserActivityEvent::Event expected_event2 = expected_event1;
   expected_event2.set_log_duration_sec(30);
-  EqualEvent(expected_event2, events[1].event());
+  EqualEvent(expected_event2, events[0].event());
 
   UserActivityEvent::ModelPrediction expected_prediction2;
   expected_prediction2.set_decision_threshold(50);
@@ -1075,7 +1074,7 @@ TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithoutEventInBetween) {
   expected_prediction2.set_model_applied(true);
   expected_prediction2.set_response(UserActivityEvent::ModelPrediction::NO_DIM);
 
-  EqualModelPrediction(expected_prediction2, events[1].model_prediction());
+  EqualModelPrediction(expected_prediction2, events[0].model_prediction());
 }
 
 TEST_F(UserActivityManagerTest, ModelError) {

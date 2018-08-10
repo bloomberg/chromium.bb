@@ -484,25 +484,29 @@ void UserActivityManager::MaybeLogEvent(
     *activity_event.mutable_model_prediction() = model_prediction_.value();
   }
 
-  // Log to metrics.
-  ukm_logger_->LogActivity(activity_event);
-  LogMetricsToUMA(activity_event);
-
   // If there's an earlier idle event that has not received its own event, log
-  // it here too.
+  // it here too. Note, we log the earlier event before the current event.
   if (previous_idle_event_data_) {
-    if (event->has_log_duration_sec()) {
-      event->set_log_duration_sec(
-          event->log_duration_sec() +
+    UserActivityEvent previous_activity_event = activity_event;
+    UserActivityEvent::Event* previous_event =
+        previous_activity_event.mutable_event();
+    if (previous_event->has_log_duration_sec()) {
+      previous_event->set_log_duration_sec(
+          previous_event->log_duration_sec() +
           previous_idle_event_data_->dim_imminent_signal_interval.InSeconds());
     }
 
-    *activity_event.mutable_features() = previous_idle_event_data_->features;
-    *activity_event.mutable_model_prediction() =
+    *previous_activity_event.mutable_features() =
+        previous_idle_event_data_->features;
+    *previous_activity_event.mutable_model_prediction() =
         previous_idle_event_data_->model_prediction;
-    ukm_logger_->LogActivity(activity_event);
-    LogMetricsToUMA(activity_event);
+    ukm_logger_->LogActivity(previous_activity_event);
+    LogMetricsToUMA(previous_activity_event);
   }
+
+  // Log to metrics.
+  ukm_logger_->LogActivity(activity_event);
+  LogMetricsToUMA(activity_event);
 
   // Update the counters for next event logging.
   if (type == UserActivityEvent::Event::REACTIVATE) {
