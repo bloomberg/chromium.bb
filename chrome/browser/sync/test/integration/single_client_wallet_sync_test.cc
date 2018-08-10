@@ -13,6 +13,7 @@
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/web_data_service_factory.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -28,10 +29,13 @@
 #include "content/public/browser/notification_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using autofill::AutofillProfile;
 using autofill::CreditCard;
+using autofill::data_util::TruncateUTF8;
 using autofill_helper::GetPersonalDataManager;
 using autofill_helper::GetProfileWebDataService;
 using autofill_helper::GetAccountWebDataService;
+using base::ASCIIToUTF16;
 
 namespace {
 
@@ -39,14 +43,30 @@ ACTION_P(QuitMessageLoop, loop) {
   loop->Quit();
 }
 
-const char kDefaultCardID[] = "wallet entity ID";
+// Constands for the credit card.
+const char kDefaultCardID[] = "wallet card ID";
 const int kDefaultCardExpMonth = 8;
 const int kDefaultCardExpYear = 2087;
 const char kDefaultCardLastFour[] = "1234";
 const char kDefaultCardName[] = "Patrick Valenzuela";
-const char kDefaultBillingAddressId[] = "address entity ID";
+const char kDefaultBillingAddressId[] = "billing address entity ID";
 const sync_pb::WalletMaskedCreditCard_WalletCardType kDefaultCardType =
     sync_pb::WalletMaskedCreditCard::AMEX;
+
+// Constants for the address.
+const char kDefaultAddressID[] = "wallet address ID";
+const char kDefaultAddressName[] = "John S. Doe";
+const char kDefaultCompanyName[] = "The Company";
+const char kDefaultStreetAddress[] = "1234 Fake Street\nApp 2";
+const char kDefaultCity[] = "Cityville";
+const char kDefaultState[] = "Stateful";
+const char kDefaultCountry[] = "US";
+const char kDefaultZip[] = "90011";
+const char kDefaultPhone[] = "1.800.555.1234";
+const char kDefaultSortingCode[] = "CEDEX";
+const char kDefaultDependentLocality[] = "DepLoc";
+const char kDefaultLanguageCode[] = "en";
+
 const char kLocalGuidA[] = "EDC609ED-7EEE-4F27-B00C-423242A9C44A";
 const char kDifferentBillingAddressId[] = "another address entity ID";
 
@@ -92,6 +112,15 @@ std::vector<std::unique_ptr<CreditCard>> GetServerCards(
   return std::move(consumer.result());
 }
 
+std::vector<std::unique_ptr<AutofillProfile>> GetServerProfiles(
+    scoped_refptr<autofill::AutofillWebDataService> service) {
+  AutofillWebDataServiceConsumer<std::vector<std::unique_ptr<AutofillProfile>>>
+      consumer;
+  service->GetServerProfiles(&consumer);
+  consumer.Wait();
+  return std::move(consumer.result());
+}
+
 void AddDefaultCard(fake_server::FakeServer* server) {
   sync_pb::EntitySpecifics specifics;
   sync_pb::AutofillWalletSpecifics* wallet_specifics =
@@ -127,6 +156,77 @@ CreditCard GetDefaultCreditCard() {
   card.set_card_type(CreditCard::CARD_TYPE_CREDIT);
   card.set_billing_address_id(kDefaultBillingAddressId);
   return card;
+}
+
+void AddDefaultProfile(fake_server::FakeServer* server) {
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::AutofillWalletSpecifics* wallet_specifics =
+      specifics.mutable_autofill_wallet();
+  wallet_specifics->set_type(sync_pb::AutofillWalletSpecifics::POSTAL_ADDRESS);
+
+  sync_pb::WalletPostalAddress* wallet_address =
+      wallet_specifics->mutable_address();
+  wallet_address->set_id(kDefaultAddressID);
+  wallet_address->set_recipient_name(kDefaultAddressName);
+  wallet_address->set_company_name(kDefaultCompanyName);
+  wallet_address->add_street_address(kDefaultStreetAddress);
+  wallet_address->set_address_1(kDefaultState);
+  wallet_address->set_address_2(kDefaultCity);
+  wallet_address->set_address_3(kDefaultDependentLocality);
+  wallet_address->set_postal_code(kDefaultZip);
+  wallet_address->set_country_code(kDefaultCountry);
+  wallet_address->set_phone_number(kDefaultPhone);
+  wallet_address->set_sorting_code(kDefaultSortingCode);
+  wallet_address->set_language_code(kDefaultLanguageCode);
+
+  server->InjectEntity(
+      syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
+          kDefaultAddressID, specifics, 12345, 12345));
+}
+
+// TODO(sebsg): Instead add a function to create a card, and one to inject in
+// the server. Then compare the cards directly.
+void ExpectDefaultCreditCardValues(const CreditCard& card) {
+  EXPECT_EQ(CreditCard::MASKED_SERVER_CARD, card.record_type());
+  EXPECT_EQ(kDefaultCardID, card.server_id());
+  EXPECT_EQ(base::UTF8ToUTF16(kDefaultCardLastFour), card.LastFourDigits());
+  EXPECT_EQ(autofill::kAmericanExpressCard, card.network());
+  EXPECT_EQ(kDefaultCardExpMonth, card.expiration_month());
+  EXPECT_EQ(kDefaultCardExpYear, card.expiration_year());
+  EXPECT_EQ(base::UTF8ToUTF16(kDefaultCardName),
+            card.GetRawInfo(autofill::ServerFieldType::CREDIT_CARD_NAME_FULL));
+  EXPECT_EQ(kDefaultBillingAddressId, card.billing_address_id());
+}
+
+// TODO(sebsg): Instead add a function to create a profile, and one to inject in
+// the server. Then compare the profiles directly.
+void ExpectDefaultProfileValues(const AutofillProfile& profile) {
+  EXPECT_EQ(kDefaultLanguageCode, profile.language_code());
+  EXPECT_EQ(
+      kDefaultAddressName,
+      TruncateUTF8(base::UTF16ToUTF8(profile.GetRawInfo(autofill::NAME_FULL))));
+  EXPECT_EQ(kDefaultCompanyName,
+            TruncateUTF8(
+                base::UTF16ToUTF8(profile.GetRawInfo(autofill::COMPANY_NAME))));
+  EXPECT_EQ(kDefaultStreetAddress,
+            TruncateUTF8(base::UTF16ToUTF8(
+                profile.GetRawInfo(autofill::ADDRESS_HOME_STREET_ADDRESS))));
+  EXPECT_EQ(kDefaultCity, TruncateUTF8(base::UTF16ToUTF8(profile.GetRawInfo(
+                              autofill::ADDRESS_HOME_CITY))));
+  EXPECT_EQ(kDefaultState, TruncateUTF8(base::UTF16ToUTF8(profile.GetRawInfo(
+                               autofill::ADDRESS_HOME_STATE))));
+  EXPECT_EQ(kDefaultZip, TruncateUTF8(base::UTF16ToUTF8(
+                             profile.GetRawInfo(autofill::ADDRESS_HOME_ZIP))));
+  EXPECT_EQ(kDefaultCountry, TruncateUTF8(base::UTF16ToUTF8(profile.GetRawInfo(
+                                 autofill::ADDRESS_HOME_COUNTRY))));
+  EXPECT_EQ(kDefaultPhone, TruncateUTF8(base::UTF16ToUTF8(profile.GetRawInfo(
+                               autofill::PHONE_HOME_WHOLE_NUMBER))));
+  EXPECT_EQ(kDefaultSortingCode,
+            TruncateUTF8(base::UTF16ToUTF8(
+                profile.GetRawInfo(autofill::ADDRESS_HOME_SORTING_CODE))));
+  EXPECT_EQ(kDefaultDependentLocality,
+            TruncateUTF8(base::UTF16ToUTF8(profile.GetRawInfo(
+                autofill::ADDRESS_HOME_DEPENDENT_LOCALITY))));
 }
 
 }  // namespace
@@ -207,6 +307,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, DownloadProfileStorage) {
       {},
       // Disabled.
       {autofill::features::kAutofillEnableAccountWalletStorage});
+  AddDefaultProfile(GetFakeServer());
   AddDefaultCard(GetFakeServer());
   ASSERT_TRUE(SetupSync());
 
@@ -219,20 +320,16 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, DownloadProfileStorage) {
   ASSERT_NE(nullptr, pdm);
   std::vector<CreditCard*> cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
+  std::vector<AutofillProfile*> profiles = pdm->GetServerProfiles();
+  ASSERT_EQ(1uL, profiles.size());
 
-  CreditCard* card = cards[0];
-  EXPECT_EQ(CreditCard::MASKED_SERVER_CARD, card->record_type());
-  EXPECT_EQ(kDefaultCardID, card->server_id());
-  EXPECT_EQ(base::UTF8ToUTF16(kDefaultCardLastFour), card->LastFourDigits());
-  EXPECT_EQ(autofill::kAmericanExpressCard, card->network());
-  EXPECT_EQ(kDefaultCardExpMonth, card->expiration_month());
-  EXPECT_EQ(kDefaultCardExpYear, card->expiration_year());
-  EXPECT_EQ(base::UTF8ToUTF16(kDefaultCardName),
-            card->GetRawInfo(autofill::ServerFieldType::CREDIT_CARD_NAME_FULL));
-  EXPECT_EQ(kDefaultBillingAddressId, card->billing_address_id());
+  // Check that the data was set correctly.
+  ExpectDefaultCreditCardValues(*cards[0]);
+  ExpectDefaultProfileValues(*profiles[0]);
 
-  // Check that the card is stored in the profile storage.
+  // Check that the data is stored in the profile storage.
   EXPECT_EQ(1U, GetServerCards(GetProfileWebDataService(0)).size());
+  EXPECT_EQ(1U, GetServerProfiles(GetProfileWebDataService(0)).size());
 }
 
 // ChromeOS does not support late signin after profile creation, so the test
@@ -241,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, DownloadProfileStorage) {
 // TODO(crbug.com/853688): Reenable once the USS implementation of
 // AUTOFILL_WALLET_DATA (AutofillWalletSyncBridge) has sufficient functionality.
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
-                       DISABLED_DownloadAccountStorage) {
+                       DISABLED_DownloadAccountStorage_Card) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       // Enabled.
@@ -252,6 +349,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
   ASSERT_TRUE(SetupClients());
   AddDefaultCard(GetFakeServer());
+  AddDefaultProfile(GetFakeServer());
 
   ASSERT_TRUE(GetClient(0)->SignIn());
   ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization(
@@ -267,33 +365,30 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   auto account_data = GetAccountWebDataService(0);
   ASSERT_NE(nullptr, account_data);
 
-  // Check that no card is stored in the profile storage.
+  // Check that no data is stored in the profile storage.
   EXPECT_EQ(0U, GetServerCards(profile_data).size());
+  EXPECT_EQ(0U, GetServerProfiles(profile_data).size());
 
-  // Check that one card is stored in the account storage.
+  // Check that one card and one profile are stored in the account storage.
   EXPECT_EQ(1U, GetServerCards(account_data).size());
+  EXPECT_EQ(1U, GetServerProfiles(account_data).size());
 
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
   std::vector<CreditCard*> cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
+  std::vector<AutofillProfile*> profiles = pdm->GetServerProfiles();
+  ASSERT_EQ(1uL, profiles.size());
 
-  CreditCard* card = cards[0];
-  EXPECT_EQ(CreditCard::MASKED_SERVER_CARD, card->record_type());
-  EXPECT_EQ(kDefaultCardID, card->server_id());
-  EXPECT_EQ(base::UTF8ToUTF16(kDefaultCardLastFour), card->LastFourDigits());
-  EXPECT_EQ(autofill::kAmericanExpressCard, card->network());
-  EXPECT_EQ(kDefaultCardExpMonth, card->expiration_month());
-  EXPECT_EQ(kDefaultCardExpYear, card->expiration_year());
-  EXPECT_EQ(base::UTF8ToUTF16(kDefaultCardName),
-            card->GetRawInfo(autofill::ServerFieldType::CREDIT_CARD_NAME_FULL));
-  EXPECT_EQ(kDefaultBillingAddressId, card->billing_address_id());
+  ExpectDefaultCreditCardValues(*cards[0]);
+  ExpectDefaultProfileValues(*profiles[0]);
 }
 #endif  // !defined(OS_CHROMEOS)
 
 // Wallet data should get cleared from the database when sync is disabled.
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableSync) {
   AddDefaultCard(GetFakeServer());
+  AddDefaultProfile(GetFakeServer());
   ASSERT_TRUE(SetupSync());
 
   // Make sure the card is in the DB.
@@ -312,6 +407,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableSync) {
 // flag is disabled.
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableWalletSync) {
   AddDefaultCard(GetFakeServer());
+  AddDefaultProfile(GetFakeServer());
   ASSERT_TRUE(SetupSync());
 
   // Make sure the card is in the DB.
@@ -331,6 +427,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableWalletSync) {
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
                        ClearOnDisableWalletAutofill) {
   AddDefaultCard(GetFakeServer());
+  AddDefaultProfile(GetFakeServer());
   ASSERT_TRUE(SetupSync());
 
   // Make sure the card is in the DB.
@@ -350,7 +447,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 // Wallet data present on the client should be cleared in favor of the new data
 // synced down form the server.
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
-                       NewWalletCardRemovesExistingCard) {
+                       NewWalletCardRemovesExistingCardAndProfile) {
   ASSERT_TRUE(SetupClients());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
@@ -360,6 +457,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   std::vector<CreditCard> credit_cards = {credit_card};
   autofill_helper::SetServerCreditCards(0, credit_cards);
 
+  // Add a server profile on the client.
+  AutofillProfile profile(AutofillProfile::SERVER_PROFILE, "a123");
+  profile.SetRawInfo(autofill::COMPANY_NAME, ASCIIToUTF16("JustATest"));
+  std::vector<AutofillProfile> client_profiles = {profile};
+  autofill_helper::SetServerProfiles(0, client_profiles);
+
   // Refresh the pdm so that it gets cards from autofill table.
   RefreshAndWaitForOnPersonalDataChanged(pdm);
 
@@ -367,6 +470,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   std::vector<CreditCard*> cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
   EXPECT_EQ("a123", cards[0]->server_id());
+
+  // Make sure the profile was added correctly.
+  std::vector<AutofillProfile*> profiles = pdm->GetServerProfiles();
+  ASSERT_EQ(1uL, profiles.size());
+  EXPECT_EQ("JustATest", TruncateUTF8(base::UTF16ToUTF8(
+                             profiles[0]->GetRawInfo(autofill::COMPANY_NAME))));
 
   // Add a new card from the server and sync it down.
   AddDefaultCard(GetFakeServer());
@@ -376,6 +485,59 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
   EXPECT_EQ(kDefaultCardID, cards[0]->server_id());
+
+  // There should be no profile present.
+  profiles = pdm->GetServerProfiles();
+  ASSERT_EQ(0uL, profiles.size());
+}
+
+// Wallet data present on the client should be cleared in favor of the new data
+// synced down form the server.
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
+                       NewWalletProfileRemovesExistingProfileAndCard) {
+  ASSERT_TRUE(SetupClients());
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_NE(nullptr, pdm);
+
+  // Add a server profile on the client.
+  AutofillProfile profile(AutofillProfile::SERVER_PROFILE, "a123");
+  profile.SetRawInfo(autofill::COMPANY_NAME, ASCIIToUTF16("JustATest"));
+  std::vector<AutofillProfile> client_profiles = {profile};
+  autofill_helper::SetServerProfiles(0, client_profiles);
+
+  // Add a server credit card on the client.
+  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  std::vector<CreditCard> credit_cards = {credit_card};
+  autofill_helper::SetServerCreditCards(0, credit_cards);
+
+  // Refresh the pdm so that it gets cards from autofill table.
+  RefreshAndWaitForOnPersonalDataChanged(pdm);
+
+  // Make sure the profile was added correctly.
+  std::vector<AutofillProfile*> profiles = pdm->GetServerProfiles();
+  ASSERT_EQ(1uL, profiles.size());
+  EXPECT_EQ("JustATest", TruncateUTF8(base::UTF16ToUTF8(
+                             profiles[0]->GetRawInfo(autofill::COMPANY_NAME))));
+
+  // Make sure the card was added correctly.
+  std::vector<CreditCard*> cards = pdm->GetCreditCards();
+  ASSERT_EQ(1uL, cards.size());
+  EXPECT_EQ("a123", cards[0]->server_id());
+
+  // Add a new profile from the server and sync it down.
+  AddDefaultProfile(GetFakeServer());
+  ASSERT_TRUE(SetupSync());
+
+  // The only profile present on the client should be the one from the server.
+  profiles = pdm->GetServerProfiles();
+  ASSERT_EQ(1uL, profiles.size());
+  EXPECT_EQ(kDefaultCompanyName,
+            TruncateUTF8(base::UTF16ToUTF8(
+                profiles[0]->GetRawInfo(autofill::COMPANY_NAME))));
+
+  // There should be not card present.
+  cards = pdm->GetCreditCards();
+  ASSERT_EQ(0uL, cards.size());
 }
 
 // Tests that a local billing address id set on a card on the client should not

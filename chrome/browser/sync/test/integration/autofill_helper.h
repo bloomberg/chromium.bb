@@ -79,6 +79,9 @@ void SetServerCreditCards(
     int profile,
     const std::vector<autofill::CreditCard>& credit_cards);
 
+void SetServerProfiles(int profile,
+                       const std::vector<autofill::AutofillProfile>& profiles);
+
 // Adds the autofill profile |autofill_profile| to sync profile |profile|.
 void AddProfile(int profile, const autofill::AutofillProfile& autofill_profile);
 
