@@ -164,15 +164,16 @@ class CrOSComponentManager {
   // Installs a component with a dedicated ComponentUpdateService instance.
   void Install(ComponentUpdateService* cus,
                const std::string& name,
-               OnDemandUpdater::Priority priority,
+               UpdatePolicy update_policy,
                MountPolicy mount_policy,
                LoadCallback load_callback);
 
   // Calls OnDemandUpdate to install the component right after being registered.
   // |id| is the component id generated from its sha2 hash.
   void StartInstall(ComponentUpdateService* cus,
+                    const std::string& name,
                     const std::string& id,
-                    OnDemandUpdater::Priority priority,
+                    UpdatePolicy update_policy,
                     update_client::Callback install_callback);
 
   // Calls LoadInternal to load the installed component.

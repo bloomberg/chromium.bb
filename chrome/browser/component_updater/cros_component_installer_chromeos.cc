@@ -217,18 +217,11 @@ void CrOSComponentManager::Load(const std::string& name,
                                 MountPolicy mount_policy,
                                 UpdatePolicy update_policy,
                                 LoadCallback load_callback) {
-  if (!IsCompatible(name)) {
-    // A compatible component is not installed.
-    // Start installation process.
+  if (!IsCompatible(name) || update_policy == UpdatePolicy::kForce) {
+    // A compatible component is not installed, or forced update is requested.
+    // Start registration and installation/update process.
     auto* const cus = g_browser_process->component_updater();
-    Install(cus, name, OnDemandUpdater::Priority::FOREGROUND, mount_policy,
-            std::move(load_callback));
-  } else if (update_policy == UpdatePolicy::kForce) {
-    // Caller forces update check.
-    // Start update process.
-    auto* const cus = g_browser_process->component_updater();
-    Install(cus, name, OnDemandUpdater::Priority::BACKGROUND, mount_policy,
-            std::move(load_callback));
+    Install(cus, name, update_policy, mount_policy, std::move(load_callback));
   } else if (mount_policy == MountPolicy::kMount) {
     // A compatible component is installed, load it.
     LoadInternal(name, std::move(load_callback));
@@ -297,7 +290,7 @@ void CrOSComponentManager::Register(ComponentUpdateService* cus,
 
 void CrOSComponentManager::Install(ComponentUpdateService* cus,
                                    const std::string& name,
-                                   OnDemandUpdater::Priority priority,
+                                   UpdatePolicy update_policy,
                                    MountPolicy mount_policy,
                                    LoadCallback load_callback) {
   const ComponentConfig* config = FindConfig(name);
@@ -308,10 +301,11 @@ void CrOSComponentManager::Install(ComponentUpdateService* cus,
                                   base::FilePath()));
     return;
   }
+
   Register(cus, *config,
            base::BindOnce(
                &CrOSComponentManager::StartInstall, base::Unretained(this), cus,
-               GenerateId(config->sha2hash), priority,
+               name, GenerateId(config->sha2hash), update_policy,
                base::BindOnce(&CrOSComponentManager::FinishInstall,
                               base::Unretained(this), name, mount_policy,
                               std::move(load_callback))));
@@ -319,9 +313,23 @@ void CrOSComponentManager::Install(ComponentUpdateService* cus,
 
 void CrOSComponentManager::StartInstall(
     ComponentUpdateService* cus,
+    const std::string& name,
     const std::string& id,
-    OnDemandUpdater::Priority priority,
+    UpdatePolicy update_policy,
     update_client::Callback install_callback) {
+  // Check whether an installed component was found during registration, and
+  // determine whether OnDemandUpdater should be started accordingly.
+  const bool is_compatible = IsCompatible(name);
+  if (is_compatible && update_policy != UpdatePolicy::kForce) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(install_callback),
+                                  update_client::Error::NONE));
+    return;
+  }
+
+  const component_updater::OnDemandUpdater::Priority priority =
+      is_compatible ? component_updater::OnDemandUpdater::Priority::BACKGROUND
+                    : component_updater::OnDemandUpdater::Priority::FOREGROUND;
   cus->GetOnDemandUpdater().OnDemandUpdate(id, priority,
                                            std::move(install_callback));
 }
@@ -346,7 +354,6 @@ void CrOSComponentManager::FinishInstall(const std::string& name,
 
 void CrOSComponentManager::LoadInternal(const std::string& name,
                                         LoadCallback load_callback) {
-  DCHECK(IsCompatible(name));
   const base::FilePath path = GetCompatiblePath(name);
   // path is empty if no compatible component is available to load.
   if (!path.empty()) {
