@@ -251,7 +251,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ExecuteMediaPlayerActionAtLocation(
       const gfx::Point&,
       const blink::WebMediaPlayerAction& action) override;
-  void CreateNetworkServiceDefaultFactory(
+  bool CreateNetworkServiceDefaultFactory(
       network::mojom::URLLoaderFactoryRequest default_factory_request) override;
 
   // IPC::Sender
@@ -1044,8 +1044,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Creates a Network Service-backed factory from appropriate |NetworkContext|
   // and sets a connection error handler to trigger
-  // |OnNetworkServiceConnectionError()| if the factory is out-of-process.
-  void CreateNetworkServiceDefaultFactoryAndObserve(
+  // |OnNetworkServiceConnectionError()| if the factory is out-of-process.  If
+  // this returns true, any redirect safety checks should be bypassed in
+  // downstream loaders.
+  bool CreateNetworkServiceDefaultFactoryAndObserve(
       network::mojom::URLLoaderFactoryRequest default_factory_request);
 
   // Returns true if the ExecuteJavaScript() API can be used on this host.

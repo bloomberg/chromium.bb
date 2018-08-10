@@ -43,6 +43,9 @@ class COMPONENT_EXPORT(NETWORK_CPP) SharedURLLoaderFactory
   // a single thread hop on any different-thread fetch.
   virtual std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() = 0;
 
+  // If this returns true, any redirect safety checks should be bypassed.
+  virtual bool BypassRedirectChecks() const;
+
  protected:
   friend class base::RefCounted<SharedURLLoaderFactory>;
   ~SharedURLLoaderFactory() override;

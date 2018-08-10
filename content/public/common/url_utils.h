@@ -39,6 +39,9 @@ CONTENT_EXPORT bool IsRendererDebugURL(const GURL& url);
 // is disabled.
 bool CONTENT_EXPORT IsURLHandledByNetworkService(const GURL& url);
 
+// Determines whether it is safe to redirect to |url|.
+CONTENT_EXPORT bool IsSafeRedirectTarget(const GURL& url);
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_URL_UTILS_H_

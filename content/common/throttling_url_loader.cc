@@ -196,10 +196,9 @@ void ThrottlingURLLoader::FollowRedirect(
     DCHECK(!modified_request_headers.has_value())
         << "ThrottlingURLLoader doesn't support modified_request_headers for "
            "synthesized requests.";
-    auto start_info = std::move(start_info_);
-    StartNow(start_info->url_loader_factory.get(), start_info->routing_id,
-             start_info->request_id, start_info->options,
-             &start_info->url_request, std::move(start_info->task_runner));
+    StartNow(start_info_->url_loader_factory.get(), start_info_->routing_id,
+             start_info_->request_id, start_info_->options,
+             &start_info_->url_request, start_info_->task_runner);
     return;
   }
 
@@ -212,6 +211,19 @@ void ThrottlingURLLoader::FollowRedirect(
     }
     to_be_removed_request_headers_.clear();
   }
+}
+
+void ThrottlingURLLoader::FollowRedirectForcingRestart() {
+  url_loader_.reset();
+  client_binding_.Close();
+
+  for (const std::string& key : to_be_removed_request_headers_)
+    start_info_->url_request.headers.RemoveHeader(key);
+  to_be_removed_request_headers_.clear();
+
+  StartNow(start_info_->url_loader_factory.get(), start_info_->routing_id,
+           start_info_->request_id, start_info_->options,
+           &start_info_->url_request, start_info_->task_runner);
 }
 
 void ThrottlingURLLoader::SetPriority(net::RequestPriority priority,
@@ -259,6 +271,10 @@ void ThrottlingURLLoader::Start(
   if (options & network::mojom::kURLLoadOptionSynchronous)
     is_synchronous_ = true;
 
+  start_info_ =
+      std::make_unique<StartInfo>(factory, routing_id, request_id, options,
+                                  url_request, std::move(task_runner));
+
   DCHECK(deferring_throttles_.empty());
   if (!throttles_.empty()) {
     bool deferred = false;
@@ -290,9 +306,6 @@ void ThrottlingURLLoader::Start(
 
     if (deferred) {
       deferred_stage_ = DEFERRED_START;
-      start_info_ = std::make_unique<StartInfo>(
-          std::move(factory), routing_id, request_id, options, url_request,
-          std::move(task_runner));
       return;
     }
   }
@@ -441,6 +454,15 @@ void ThrottlingURLLoader::OnReceiveRedirect(
     }
   }
 
+  // Update the request in case |FollowRedirectForcingRestart()| is called, and
+  // needs to use the request updated for the redirect.
+  network::ResourceRequest& request = start_info_->url_request;
+  request.url = redirect_info.new_url;
+  request.method = redirect_info.new_method;
+  request.site_for_cookies = redirect_info.new_site_for_cookies;
+  request.referrer = GURL(redirect_info.new_referrer);
+  request.referrer_policy = redirect_info.new_referrer_policy;
+
   // TODO(dhausknecht) at this point we do not actually know if we commit to the
   // redirect or if it will be cancelled. FollowRedirect would be a more
   // suitable place to set this URL but there we do not have the data.
@@ -526,10 +548,9 @@ void ThrottlingURLLoader::Resume() {
   deferred_stage_ = DEFERRED_NONE;
   switch (prev_deferred_stage) {
     case DEFERRED_START: {
-      auto start_info = std::move(start_info_);
-      StartNow(start_info->url_loader_factory.get(), start_info->routing_id,
-               start_info->request_id, start_info->options,
-               &start_info->url_request, std::move(start_info->task_runner));
+      StartNow(start_info_->url_loader_factory.get(), start_info_->routing_id,
+               start_info_->request_id, start_info_->options,
+               &start_info_->url_request, start_info_->task_runner);
       break;
     }
     case DEFERRED_REDIRECT: {

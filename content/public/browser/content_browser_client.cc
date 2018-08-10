@@ -661,8 +661,7 @@ bool ContentBrowserClient::WillCreateURLLoaderFactory(
     BrowserContext* browser_context,
     RenderFrameHost* frame,
     bool is_navigation,
-    network::mojom::URLLoaderFactoryRequest* factory_request,
-    scoped_refptr<RedirectChecker>* redirect_checker) {
+    network::mojom::URLLoaderFactoryRequest* factory_request) {
   return false;
 }
 

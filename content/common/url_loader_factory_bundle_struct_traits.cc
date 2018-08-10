@@ -23,6 +23,11 @@ Traits::factories(BundleInfoType& bundle) {
 }
 
 // static
+bool Traits::bypass_redirect_checks(BundleInfoType& bundle) {
+  return bundle->bypass_redirect_checks();
+}
+
+// static
 bool Traits::Read(content::mojom::URLLoaderFactoryBundleDataView data,
                   BundleInfoType* out_bundle) {
   *out_bundle = std::make_unique<content::URLLoaderFactoryBundleInfo>();
@@ -31,6 +36,8 @@ bool Traits::Read(content::mojom::URLLoaderFactoryBundleDataView data,
       data.TakeDefaultFactory<network::mojom::URLLoaderFactoryPtrInfo>();
   if (!data.ReadFactories(&(*out_bundle)->factories_info()))
     return false;
+
+  (*out_bundle)->set_bypass_redirect_checks(data.bypass_redirect_checks());
 
   return true;
 }

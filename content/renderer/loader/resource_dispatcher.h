@@ -215,6 +215,7 @@ class CONTENT_EXPORT ResourceDispatcher {
         navigation_response_override;
     bool should_follow_redirect = true;
     bool always_access_network = false;
+    bool redirect_requires_loader_restart = false;
     // Network error code the request completed with, or net::ERR_IO_PENDING if
     // it's not completed. Used both to distinguish completion from
     // cancellation, and to log histograms.

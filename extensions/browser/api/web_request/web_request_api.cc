@@ -573,8 +573,7 @@ void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
 bool WebRequestAPI::MaybeProxyURLLoaderFactory(
     content::RenderFrameHost* frame,
     bool is_navigation,
-    network::mojom::URLLoaderFactoryRequest* factory_request,
-    scoped_refptr<content::RedirectChecker>* redirect_checker) {
+    network::mojom::URLLoaderFactoryRequest* factory_request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!MayHaveProxies())
     return false;
@@ -604,10 +603,6 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
           ExtensionsBrowserClient::Get()->GetOriginalContext(browser_context) ==
               browser_context_));
   const bool is_for_browser_initiated_requests = is_navigation || !frame;
-  auto allow_unsafe_redirect_checker = base::MakeRefCounted<
-      WebRequestProxyingURLLoaderFactory::AllowUnsafeRedirectChecker>();
-  if (redirect_checker)
-    *redirect_checker = allow_unsafe_redirect_checker;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(
@@ -618,8 +613,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
           is_for_browser_initiated_requests ? -1 : frame->GetProcess()->GetID(),
           request_id_generator_, std::move(navigation_ui_data),
           base::Unretained(info_map_), std::move(proxied_request),
-          std::move(target_factory_info), proxies_,
-          std::move(allow_unsafe_redirect_checker)));
+          std::move(target_factory_info), proxies_));
   return true;
 }
 

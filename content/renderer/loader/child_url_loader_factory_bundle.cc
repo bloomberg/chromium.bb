@@ -96,15 +96,18 @@ ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo() = default;
 ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo(
     std::unique_ptr<URLLoaderFactoryBundleInfo> base_info)
     : URLLoaderFactoryBundleInfo(std::move(base_info->default_factory_info()),
-                                 std::move(base_info->factories_info())) {}
+                                 std::move(base_info->factories_info()),
+                                 base_info->bypass_redirect_checks()) {}
 
 ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo(
     network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
     std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo>
         factories_info,
-    PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info)
+    PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
+    bool bypass_redirect_checks)
     : URLLoaderFactoryBundleInfo(std::move(default_factory_info),
-                                 std::move(factories_info)),
+                                 std::move(factories_info),
+                                 bypass_redirect_checks),
       direct_network_factory_info_(std::move(direct_network_factory_info)) {}
 
 ChildURLLoaderFactoryBundleInfo::~ChildURLLoaderFactoryBundleInfo() = default;
@@ -115,6 +118,7 @@ ChildURLLoaderFactoryBundleInfo::CreateFactory() {
   other->default_factory_info_ = std::move(default_factory_info_);
   other->factories_info_ = std::move(factories_info_);
   other->direct_network_factory_info_ = std::move(direct_network_factory_info_);
+  other->bypass_redirect_checks_ = bypass_redirect_checks_;
 
   return base::MakeRefCounted<ChildURLLoaderFactoryBundle>(std::move(other));
 }
@@ -250,7 +254,7 @@ ChildURLLoaderFactoryBundle::CloneInternal(bool include_default) {
 
   return std::make_unique<ChildURLLoaderFactoryBundleInfo>(
       std::move(default_factory_info), std::move(factories_info),
-      std::move(direct_network_factory_info));
+      std::move(direct_network_factory_info), bypass_redirect_checks_);
 }
 
 std::unique_ptr<ChildURLLoaderFactoryBundleInfo>
@@ -274,7 +278,7 @@ ChildURLLoaderFactoryBundle::PassInterface() {
 
   return std::make_unique<ChildURLLoaderFactoryBundleInfo>(
       std::move(default_factory_info), std::move(factories_info),
-      std::move(direct_network_factory_info));
+      std::move(direct_network_factory_info), bypass_redirect_checks_);
 }
 
 }  // namespace content

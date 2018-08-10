@@ -161,6 +161,7 @@
 #include "chrome/renderer/extensions/chrome_extensions_renderer_client.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/switches.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/renderer_extension_registry.h"
@@ -1737,4 +1738,18 @@ blink::WebFrame* ChromeContentRendererClient::FindFrame(
 #else
   return nullptr;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+}
+
+bool ChromeContentRendererClient::IsSafeRedirectTarget(const GURL& url) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (url.SchemeIs(extensions::kExtensionScheme)) {
+    const extensions::Extension* extension =
+        extensions::RendererExtensionRegistry::Get()->GetByID(url.host());
+    if (!extension)
+      return false;
+    return extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
+        extension, url.path());
+  }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+  return true;
 }

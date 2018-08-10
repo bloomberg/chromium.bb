@@ -416,6 +416,9 @@ class CONTENT_EXPORT ContentRendererClient {
   // from outside of the browsing instance.
   virtual blink::WebFrame* FindFrame(blink::WebLocalFrame* relative_to_frame,
                                      const std::string& name);
+
+  // Returns true if it is safe to redirect to |url|, otherwise returns false.
+  virtual bool IsSafeRedirectTarget(const GURL& url);
 };
 
 }  // namespace content

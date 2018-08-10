@@ -19,4 +19,8 @@ SharedURLLoaderFactoryInfo::SharedURLLoaderFactoryInfo() = default;
 
 SharedURLLoaderFactoryInfo::~SharedURLLoaderFactoryInfo() = default;
 
+bool SharedURLLoaderFactory::BypassRedirectChecks() const {
+  return false;
+}
+
 }  // namespace network

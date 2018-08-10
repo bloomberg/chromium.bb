@@ -279,4 +279,8 @@ blink::WebFrame* ContentRendererClient::FindFrame(
   return nullptr;
 }
 
+bool ContentRendererClient::IsSafeRedirectTarget(const GURL& url) {
+  return true;
+}
+
 }  // namespace content

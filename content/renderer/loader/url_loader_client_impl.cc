@@ -7,12 +7,25 @@
 #include <iterator>
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/single_thread_task_runner.h"
+#include "content/public/common/url_utils.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/url_response_body_consumer.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/features.h"
 
 namespace content {
+namespace {
+
+// Determines whether it is safe to redirect to |url|.
+bool IsRedirectSafe(const GURL& url) {
+  return IsSafeRedirectTarget(url) &&
+         GetContentClient()->renderer()->IsSafeRedirectTarget(url);
+}
+
+}  // namespace
 
 class URLLoaderClientImpl::DeferredMessage {
  public:
@@ -113,10 +126,12 @@ class URLLoaderClientImpl::DeferredOnComplete final : public DeferredMessage {
 URLLoaderClientImpl::URLLoaderClientImpl(
     int request_id,
     ResourceDispatcher* resource_dispatcher,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    bool bypass_redirect_checks)
     : request_id_(request_id),
       resource_dispatcher_(resource_dispatcher),
       task_runner_(std::move(task_runner)),
+      bypass_redirect_checks_(bypass_redirect_checks),
       url_loader_client_binding_(this),
       weak_factory_(this) {}
 
@@ -231,6 +246,12 @@ void URLLoaderClientImpl::OnReceiveRedirect(
     const network::ResourceResponseHead& response_head) {
   DCHECK(!has_received_response_);
   DCHECK(!body_consumer_);
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      !bypass_redirect_checks_ && !IsRedirectSafe(redirect_info.new_url)) {
+    OnComplete(network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT));
+    return;
+  }
+
   if (NeedsStoringMessage()) {
     StoreAndDispatch(std::make_unique<DeferredOnReceiveRedirect>(
         redirect_info, response_head, task_runner_));

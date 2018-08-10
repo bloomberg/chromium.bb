@@ -316,7 +316,9 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
       const blink::WebMediaPlayerAction& action) = 0;
 
   // Creates a Network Service-backed factory from appropriate |NetworkContext|.
-  virtual void CreateNetworkServiceDefaultFactory(
+  // If this returns true, any redirect safety checks should be bypassed in
+  // downstream loaders.
+  virtual bool CreateNetworkServiceDefaultFactory(
       network::mojom::URLLoaderFactoryRequest default_factory_request) = 0;
 
  private:

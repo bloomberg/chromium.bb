@@ -50,7 +50,6 @@ class DictionaryValue;
 
 namespace content {
 class BrowserContext;
-class RedirectChecker;
 class RenderFrameHost;
 }
 
@@ -210,8 +209,7 @@ class WebRequestAPI
   bool MaybeProxyURLLoaderFactory(
       content::RenderFrameHost* frame,
       bool is_navigation,
-      network::mojom::URLLoaderFactoryRequest* factory_request,
-      scoped_refptr<content::RedirectChecker>* redirect_checker);
+      network::mojom::URLLoaderFactoryRequest* factory_request);
 
   // Any request which requires authentication to complete will be bounced
   // through this method iff Network Service is enabled.

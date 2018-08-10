@@ -26,6 +26,8 @@ struct StructTraits<content::mojom::URLLoaderFactoryBundleDataView,
   static std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo>
   factories(BundleInfoType& bundle);
 
+  static bool bypass_redirect_checks(BundleInfoType& bundle);
+
   static bool Read(content::mojom::URLLoaderFactoryBundleDataView data,
                    BundleInfoType* out_bundle);
 };
