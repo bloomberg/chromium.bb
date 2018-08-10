@@ -201,7 +201,7 @@
 #include "components/feed/core/refresh_throttler.h"
 #include "components/feed/core/user_classifier.h"
 #endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
-#else
+#else   // defined(OS_ANDROID)
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/browser/metrics/tab_stats_tracker.h"
 #include "chrome/browser/search/instant_service.h"
@@ -210,8 +210,8 @@
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/md_history_ui.h"
 #include "chrome/browser/ui/webui/settings/md_settings_ui.h"
-#include "chrome/browser/upgrade_detector.h"
-#endif
+#include "chrome/browser/upgrade_detector/upgrade_detector.h"
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"

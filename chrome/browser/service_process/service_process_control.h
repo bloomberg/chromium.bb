@@ -20,7 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
-#include "chrome/browser/upgrade_observer.h"
+#include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "chrome/common/service_process.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 

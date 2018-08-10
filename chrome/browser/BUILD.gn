@@ -2942,9 +2942,9 @@ jumbo_split_static_library("browser") {
       "themes/theme_service_mac.mm",
       "themes/theme_syncable_service.cc",
       "themes/theme_syncable_service.h",
-      "upgrade_detector.cc",
-      "upgrade_detector.h",
-      "upgrade_observer.h",
+      "upgrade_detector/upgrade_detector.cc",
+      "upgrade_detector/upgrade_detector.h",
+      "upgrade_detector/upgrade_observer.h",
       "usb/web_usb_chooser_service_desktop.cc",
       "usb/web_usb_chooser_service_desktop.h",
       "usb/web_usb_detector.cc",
@@ -3041,6 +3041,8 @@ jumbo_split_static_library("browser") {
       "task_manager/providers/arc/arc_process_task.h",
       "task_manager/providers/arc/arc_process_task_provider.cc",
       "task_manager/providers/arc/arc_process_task_provider.h",
+      "upgrade_detector/upgrade_detector_chromeos.cc",
+      "upgrade_detector/upgrade_detector_chromeos.h",
     ]
     deps += [
       "//ash",
@@ -3361,8 +3363,8 @@ jumbo_split_static_library("browser") {
       "signin/signin_global_error.h",
       "signin/signin_global_error_factory.cc",
       "signin/signin_global_error_factory.h",
-      "upgrade_detector_impl.cc",
-      "upgrade_detector_impl.h",
+      "upgrade_detector/upgrade_detector_impl.cc",
+      "upgrade_detector/upgrade_detector_impl.h",
     ]
   } else {
     sources += [

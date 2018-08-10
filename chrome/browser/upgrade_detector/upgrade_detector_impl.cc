@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/upgrade_detector_impl.h"
+#include "chrome/browser/upgrade_detector/upgrade_detector_impl.h"
 
 #include <stdint.h>
 
@@ -81,16 +81,16 @@ std::string CmdLineInterval() {
 bool SimulatingOutdated() {
   const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
   return cmd_line.HasSwitch(switches::kSimulateOutdated) ||
-      cmd_line.HasSwitch(switches::kSimulateOutdatedNoAU);
+         cmd_line.HasSwitch(switches::kSimulateOutdatedNoAU);
 }
 
 // Check if any of the testing switches was present on the command line.
 bool IsTesting() {
   const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
   return cmd_line.HasSwitch(switches::kSimulateUpgrade) ||
-      cmd_line.HasSwitch(switches::kCheckForUpdateIntervalSec) ||
-      cmd_line.HasSwitch(switches::kSimulateCriticalUpdate) ||
-      SimulatingOutdated();
+         cmd_line.HasSwitch(switches::kCheckForUpdateIntervalSec) ||
+         cmd_line.HasSwitch(switches::kSimulateCriticalUpdate) ||
+         SimulatingOutdated();
 }
 
 // How often to check for an upgrade.
@@ -201,9 +201,9 @@ UpgradeDetectorImpl::UpgradeDetectorImpl(const base::TickClock* tick_clock)
       StartTimerForUpgradeCheck();
     } else {
       // Without a valid date, we simulate that we are already outdated...
-      UpgradeDetected(
-          is_auto_update_enabled_ ? UPGRADE_NEEDED_OUTDATED_INSTALL
-                                  : UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU);
+      UpgradeDetected(is_auto_update_enabled_
+                          ? UPGRADE_NEEDED_OUTDATED_INSTALL
+                          : UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU);
     }
     return;
   }
@@ -244,7 +244,7 @@ UpgradeDetectorImpl::UpgradeDetectorImpl(const base::TickClock* tick_clock)
     return;
   }
 #elif defined(OS_POSIX)
-  // Always enable upgrade notifications regardless of branding.
+// Always enable upgrade notifications regardless of branding.
 #else
   return;
 #endif
@@ -422,9 +422,9 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
   }
 
   if (network_time - build_date_ > kOutdatedBuildAge) {
-    UpgradeDetected(is_auto_update_enabled_ ?
-        UPGRADE_NEEDED_OUTDATED_INSTALL :
-        UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU);
+    UpgradeDetected(is_auto_update_enabled_
+                        ? UPGRADE_NEEDED_OUTDATED_INSTALL
+                        : UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU);
     return true;
   }
   // If we simlated an outdated install with a date, we don't want to keep

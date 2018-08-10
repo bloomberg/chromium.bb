@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/upgrade_detector_chromeos.h"
+#include "chrome/browser/upgrade_detector/upgrade_detector_chromeos.h"
 
 #include <stdint.h>
 
@@ -98,8 +98,7 @@ UpgradeDetectorChromeos::UpgradeDetectorChromeos(
       initialized_(false),
       weak_factory_(this) {}
 
-UpgradeDetectorChromeos::~UpgradeDetectorChromeos() {
-}
+UpgradeDetectorChromeos::~UpgradeDetectorChromeos() {}
 
 void UpgradeDetectorChromeos::Init() {
   DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(this);
@@ -151,8 +150,8 @@ void UpgradeDetectorChromeos::UpdateStatusChanged(
     } else {
       // Determine whether powerwash is required based on the channel.
       ChannelsRequester::Begin(
-          base::Bind(&UpgradeDetectorChromeos::OnChannelsReceived,
-                     weak_factory_.GetWeakPtr()));
+          base::BindOnce(&UpgradeDetectorChromeos::OnChannelsReceived,
+                         weak_factory_.GetWeakPtr()));
     }
   } else if (status.status ==
              UpdateEngineClient::UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE) {

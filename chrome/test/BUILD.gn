@@ -4377,7 +4377,7 @@ test("unit_tests") {
       "../browser/ui/webui/signin/signin_create_profile_handler_unittest.cc",
       "../browser/ui/webui/signin/signin_error_handler_unittest.cc",
       "../browser/ui/webui/signin/sync_confirmation_handler_unittest.cc",
-      "../browser/upgrade_detector_impl_unittest.cc",
+      "../browser/upgrade_detector/upgrade_detector_impl_unittest.cc",
     ]
   }
   if (toolkit_views) {

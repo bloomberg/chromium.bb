@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/upgrade_detector_impl.h"
+#include "chrome/browser/upgrade_detector/upgrade_detector_impl.h"
 
 #include <initializer_list>
 #include <utility>
@@ -13,7 +13,7 @@
 #include "base/time/tick_clock.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/upgrade_observer.h"
+#include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"

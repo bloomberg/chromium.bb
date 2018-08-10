@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/upgrade_detector.h"
+#include "chrome/browser/upgrade_detector/upgrade_detector.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -30,8 +30,8 @@ bool UseTestingIntervals() {
   // be, we assume it is for testing and switch to using seconds instead of
   // hours.
   const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
-  return !cmd_line.GetSwitchValueASCII(
-      switches::kCheckForUpdateIntervalSec).empty();
+  return !cmd_line.GetSwitchValueASCII(switches::kCheckForUpdateIntervalSec)
+              .empty();
 }
 
 // static
@@ -85,8 +85,7 @@ UpgradeDetector::UpgradeDetector(const base::TickClock* tick_clock)
   }
 }
 
-UpgradeDetector::~UpgradeDetector() {
-}
+UpgradeDetector::~UpgradeDetector() {}
 
 void UpgradeDetector::NotifyOutdatedInstall() {
   for (auto& observer : observer_list_)
@@ -156,21 +155,22 @@ void UpgradeDetector::NotifyUpdateOverCellularOneTimePermissionGranted() {
 }
 
 void UpgradeDetector::TriggerCriticalUpdate() {
-  const base::TimeDelta idle_timer = UseTestingIntervals() ?
-      base::TimeDelta::FromSeconds(kIdleRepeatingTimerWait) :
-      base::TimeDelta::FromMinutes(kIdleRepeatingTimerWait);
+  const base::TimeDelta idle_timer =
+      UseTestingIntervals()
+          ? base::TimeDelta::FromSeconds(kIdleRepeatingTimerWait)
+          : base::TimeDelta::FromMinutes(kIdleRepeatingTimerWait);
   idle_check_timer_.Start(FROM_HERE, idle_timer, this,
                           &UpgradeDetector::CheckIdle);
 }
 
 void UpgradeDetector::CheckIdle() {
   // CalculateIdleState expects an interval in seconds.
-  int idle_time_allowed = UseTestingIntervals() ? kIdleAmount :
-                                                  kIdleAmount * 60 * 60;
+  int idle_time_allowed =
+      UseTestingIntervals() ? kIdleAmount : kIdleAmount * 60 * 60;
 
   CalculateIdleState(
-      idle_time_allowed, base::Bind(&UpgradeDetector::IdleCallback,
-                                    base::Unretained(this)));
+      idle_time_allowed,
+      base::Bind(&UpgradeDetector::IdleCallback, base::Unretained(this)));
 }
 
 void UpgradeDetector::IdleCallback(ui::IdleState state) {
