@@ -31,14 +31,14 @@
 #include "mojo/public/cpp/base/big_buffer_mojom_traits.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
-#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message_struct_traits.h"
+#include "third_party/blink/renderer/core/messaging/post_message_options.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -63,20 +63,30 @@ MessagePort::~MessagePort() {
 }
 
 void MessagePort::postMessage(ScriptState* script_state,
-                              scoped_refptr<SerializedScriptValue> message,
-                              const MessagePortArray& ports,
+                              const ScriptValue& message,
+                              Vector<ScriptValue>& transfer,
                               ExceptionState& exception_state) {
   if (!IsEntangled())
     return;
   DCHECK(GetExecutionContext());
   DCHECK(!IsNeutered());
 
+  PostMessageOptions options;
   BlinkTransferableMessage msg;
-  msg.message = message;
+  Transferables transferables;
+  if (!transfer.IsEmpty())
+    options.setTransfer(transfer);
+
+  msg.message = PostMessageHelper::SerializeMessageByMove(
+      script_state->GetIsolate(), message, options, transferables,
+      exception_state);
+  if (exception_state.HadException())
+    return;
+  DCHECK(msg.message);
 
   // Make sure we aren't connected to any of the passed-in ports.
-  for (unsigned i = 0; i < ports.size(); ++i) {
-    if (ports[i] == this) {
+  for (unsigned i = 0; i < transferables.message_ports.size(); ++i) {
+    if (transferables.message_ports[i] == this) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kDataCloneError,
           "Port at index " + String::Number(i) + " contains the source port.");
@@ -84,7 +94,8 @@ void MessagePort::postMessage(ScriptState* script_state,
     }
   }
   msg.ports = MessagePort::DisentanglePorts(
-      ExecutionContext::From(script_state), ports, exception_state);
+      ExecutionContext::From(script_state), transferables.message_ports,
+      exception_state);
   if (exception_state.HadException())
     return;
 
@@ -92,7 +103,7 @@ void MessagePort::postMessage(ScriptState* script_state,
   if (debugger)
     msg.sender_stack_trace_id = debugger->StoreCurrentStackTrace("postMessage");
 
-  if (message->IsLockedToAgentCluster()) {
+  if (msg.message->IsLockedToAgentCluster()) {
     msg.locked_agent_cluster_id = GetExecutionContext()->GetAgentClusterID();
   } else {
     msg.locked_agent_cluster_id = base::nullopt;

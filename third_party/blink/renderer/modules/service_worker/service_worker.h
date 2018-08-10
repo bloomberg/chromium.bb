@@ -63,10 +63,9 @@ class MODULES_EXPORT ServiceWorker final
   EAGERLY_FINALIZE();
 
   void postMessage(ScriptState*,
-                   scoped_refptr<SerializedScriptValue> message,
-                   const MessagePortArray&,
+                   const ScriptValue& message,
+                   Vector<ScriptValue>& transfer,
                    ExceptionState&);
-  static bool CanTransferArrayBuffersAndImageBitmaps() { return false; }
 
   String scriptURL() const;
   String state() const;

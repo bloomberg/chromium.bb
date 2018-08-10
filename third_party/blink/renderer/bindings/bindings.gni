@@ -156,6 +156,8 @@ bindings_core_v8_files =
                     "core/v8/window_proxy_manager.h",
                     "core/v8/worker_or_worklet_script_controller.cc",
                     "core/v8/worker_or_worklet_script_controller.h",
+                    "core/v8/serialization/post_message_helper.cc",
+                    "core/v8/serialization/post_message_helper.h",
                     "core/v8/serialization/serialized_color_params.cc",
                     "core/v8/serialization/serialized_color_params.h",
                     "core/v8/serialization/serialization_tag.h",

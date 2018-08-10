@@ -65,11 +65,9 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
       network::mojom::FetchCredentialsMode) override;
 
   void postMessage(ScriptState*,
-                   scoped_refptr<SerializedScriptValue>,
-                   const MessagePortArray&,
+                   const ScriptValue& message,
+                   Vector<ScriptValue>& transfer,
                    ExceptionState&);
-
-  static bool CanTransferArrayBuffersAndImageBitmaps() { return true; }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(messageerror);

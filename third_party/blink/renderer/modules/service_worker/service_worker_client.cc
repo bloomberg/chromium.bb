@@ -11,10 +11,11 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom-blink.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
-#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
+#include "third_party/blink/renderer/core/messaging/post_message_options.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -86,15 +87,28 @@ String ServiceWorkerClient::frameType(ScriptState* script_state) const {
   return String();
 }
 
-void ServiceWorkerClient::postMessage(
-    ScriptState* script_state,
-    scoped_refptr<SerializedScriptValue> message,
-    const MessagePortArray& ports,
-    ExceptionState& exception_state) {
+void ServiceWorkerClient::postMessage(ScriptState* script_state,
+                                      const ScriptValue& message,
+                                      Vector<ScriptValue>& transfer,
+                                      ExceptionState& exception_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
+  PostMessageOptions options;
+  Transferables transferables;
+  if (!transfer.IsEmpty())
+    options.setTransfer(transfer);
+
+  scoped_refptr<SerializedScriptValue> serialized_message =
+      PostMessageHelper::SerializeMessageByCopy(script_state->GetIsolate(),
+                                                message, options, transferables,
+                                                exception_state);
+  if (exception_state.HadException())
+    return;
+  DCHECK(serialized_message);
+
   BlinkTransferableMessage msg;
-  msg.message = message;
-  msg.ports = MessagePort::DisentanglePorts(context, ports, exception_state);
+  msg.message = serialized_message;
+  msg.ports = MessagePort::DisentanglePorts(
+      context, transferables.message_ports, exception_state);
   if (exception_state.HadException())
     return;
 

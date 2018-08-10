@@ -8,7 +8,6 @@
 #include <memory>
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_clients_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -38,11 +37,9 @@ class MODULES_EXPORT ServiceWorkerClient : public ScriptWrappable {
   String frameType(ScriptState*) const;
   String id() const { return uuid_; }
   void postMessage(ScriptState*,
-                   scoped_refptr<SerializedScriptValue> message,
-                   const MessagePortArray&,
+                   const ScriptValue& message,
+                   Vector<ScriptValue>& transfer,
                    ExceptionState&);
-
-  static bool CanTransferArrayBuffersAndImageBitmaps() { return false; }
 
  protected:
   explicit ServiceWorkerClient(const WebServiceWorkerClientInfo&);
