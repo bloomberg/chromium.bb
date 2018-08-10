@@ -16,7 +16,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "media/base/bitstream_buffer.h"
-#include "media/base/unaligned_shared_memory.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"

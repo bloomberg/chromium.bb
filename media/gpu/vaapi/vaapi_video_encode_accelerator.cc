@@ -126,13 +126,12 @@ struct VaapiVideoEncodeAccelerator::InputFrameRef {
 struct VaapiVideoEncodeAccelerator::BitstreamBufferRef {
   BitstreamBufferRef(int32_t id, const BitstreamBuffer& buffer)
       : id(id),
-        shm(std::make_unique<UnalignedSharedMemory>(buffer.handle(),
-                                                    buffer.size(),
-                                                    false)),
-        offset(buffer.offset()) {}
+        shm(std::make_unique<WritableUnalignedMapping>(buffer.handle(),
+                                                       buffer.size(),
+                                                       buffer.offset())) {}
+
   const int32_t id;
-  const std::unique_ptr<UnalignedSharedMemory> shm;
-  const off_t offset;
+  const std::unique_ptr<WritableUnalignedMapping> shm;
 };
 
 VideoEncodeAccelerator::SupportedProfiles
@@ -413,6 +412,7 @@ void VaapiVideoEncodeAccelerator::ReturnBitstreamBuffer(
     scoped_refptr<VaapiEncodeJob> encode_job,
     std::unique_ptr<BitstreamBufferRef> buffer) {
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
+  DCHECK(buffer->shm->IsValid());
 
   uint8_t* target_data = reinterpret_cast<uint8_t*>(buffer->shm->memory());
   size_t data_size = 0;
@@ -550,7 +550,7 @@ void VaapiVideoEncodeAccelerator::UseOutputBitstreamBufferTask(
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(state_, kUninitialized);
 
-  if (!buffer_ref->shm->MapAt(buffer_ref->offset, buffer_ref->shm->size())) {
+  if (!buffer_ref->shm->IsValid()) {
     NOTIFY_ERROR(kPlatformFailureError, "Failed mapping shared memory.");
     return;
   }
