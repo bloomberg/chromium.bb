@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -90,6 +91,13 @@ class URLLoaderInterceptor {
   // For SSL info, if |ssl_info| is specified, then it is added to the response.
   static void WriteResponse(
       const std::string& relative_path,
+      network::mojom::URLLoaderClient* client,
+      const std::string* headers = nullptr,
+      base::Optional<net::SSLInfo> ssl_info = base::nullopt);
+
+  // Like above, but uses an absolute file path.
+  static void WriteResponse(
+      const base::FilePath& file_path,
       network::mojom::URLLoaderClient* client,
       const std::string* headers = nullptr,
       base::Optional<net::SSLInfo> ssl_info = base::nullopt);

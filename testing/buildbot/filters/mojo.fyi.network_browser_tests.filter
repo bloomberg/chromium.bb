@@ -29,14 +29,6 @@
 # https://crbug.com/853251
 -DomainReliabilityBrowserTest.Upload
 
-# extensions/browser/updater/extension_downloader.cc still uses URLFetcher.
-# https://crbug.com/844928
--ExtensionManagementTest.AutoUpdate
--ExtensionManagementTest.AutoUpdateDisabledExtensions
--ExtensionManagementTest.ExternalPolicyRefresh
--ExtensionManagementTest.ExternalUrlUpdate
--ExtensionManagementTest.PolicyOverridesUserInstall
-
 # This test fails flakily. Only enable it once
 # SocketExtensionWithDnsLookupFunction::StartDnsLookup uses the Mojo
 # HostResolver API.
