@@ -80,6 +80,8 @@ ListInfos GetListInfos() {
       ListInfo(kSyncOnlyOnChromeBuilds, "ChromeUrlClientIncident.store",
                GetChromeUrlClientIncidentId(),
                SB_THREAT_TYPE_BLACKLISTED_RESOURCE),
+      ListInfo(kSyncAlways, "UrlBilling.store", GetUrlBillingId(),
+               SB_THREAT_TYPE_BILLING),
       ListInfo(kSyncOnlyOnChromeBuilds, "UrlCsdDownloadWhitelist.store",
                GetUrlCsdDownloadWhitelistId(), SB_THREAT_TYPE_UNUSED),
       ListInfo(kSyncOnlyOnChromeBuilds, "UrlCsdWhitelist.store",
@@ -113,6 +115,8 @@ ThreatSeverity GetThreatSeverity(const ListIdentifier& list_id) {
       return 3;
     case SUSPICIOUS:
       return 4;
+    case BILLING:
+      return 15;
     default:
       NOTREACHED() << "Unexpected ThreatType encountered: "
                    << list_id.threat_type();
@@ -134,6 +138,9 @@ ListIdentifier GetUrlIdFromSBThreatType(SBThreatType sb_threat_type) {
 
     case SB_THREAT_TYPE_SUSPICIOUS_SITE:
       return GetUrlSuspiciousSiteId();
+
+    case SB_THREAT_TYPE_BILLING:
+      return GetUrlBillingId();
 
     default:
       NOTREACHED();

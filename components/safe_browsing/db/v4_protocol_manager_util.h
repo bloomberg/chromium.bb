@@ -196,6 +196,7 @@ ListIdentifier GetChromeExtMalwareId();
 ListIdentifier GetChromeUrlApiId();
 ListIdentifier GetChromeUrlClientIncidentId();
 ListIdentifier GetIpMalwareId();
+ListIdentifier GetUrlBillingId();
 ListIdentifier GetUrlCsdDownloadWhitelistId();
 ListIdentifier GetUrlCsdWhitelistId();
 ListIdentifier GetUrlMalBinId();

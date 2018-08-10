@@ -115,6 +115,10 @@ ListIdentifier GetIpMalwareId() {
   return ListIdentifier(GetCurrentPlatformType(), IP_RANGE, MALWARE_THREAT);
 }
 
+ListIdentifier GetUrlBillingId() {
+  return ListIdentifier(GetCurrentPlatformType(), URL, BILLING);
+}
+
 ListIdentifier GetUrlCsdDownloadWhitelistId() {
   return ListIdentifier(GetCurrentPlatformType(), URL, CSD_DOWNLOAD_WHITELIST);
 }
@@ -181,6 +185,7 @@ bool SBThreatTypeSetIsValidForCheckBrowseUrl(const SBThreatTypeSet& set) {
       case SB_THREAT_TYPE_URL_MALWARE:
       case SB_THREAT_TYPE_URL_UNWANTED:
       case SB_THREAT_TYPE_SUSPICIOUS_SITE:
+      case SB_THREAT_TYPE_BILLING:
         break;
 
       default:

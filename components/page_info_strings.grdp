@@ -420,4 +420,12 @@
       </message>
     </if>
   </if>
+
+     <!-- Billing -->
+    <message name="IDS_PAGE_INFO_BILLING_SUMMARY" desc="A one-line summary at the top of the Page Info bubble (which shows when you click the security indicator) if the website has been flagged for a billing interstitial">
+      The page ahead may try to charge you money
+    </message>
+    <message name="IDS_PAGE_INFO_BILLING_DETAILS" desc="A one-line summary at the top of the Page Info bubble (which shows when you click the security indicator) if the website has been flagged for a billing interstitial.">
+      These charges could be one-time or recurring and may not be obvious.
+    </message>
 </grit-part>
