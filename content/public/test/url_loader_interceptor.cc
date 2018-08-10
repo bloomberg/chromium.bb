@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/resource_message_filter.h"
@@ -32,11 +33,9 @@ base::FilePath GetDataFilePath(const std::string& relative_path) {
   return root_path.AppendASCII(relative_path);
 }
 
-// Returns the contents of the given filename relative to the root source
-// directory.
-static std::string ReadFile(const std::string& relative_path) {
+static std::string ReadFile(const base::FilePath& path) {
   std::string contents;
-  CHECK(base::ReadFileToString(GetDataFilePath(relative_path), &contents));
+  CHECK(base::ReadFileToString(path, &contents));
   return contents;
 }
 
@@ -295,24 +294,38 @@ void URLLoaderInterceptor::WriteResponse(
     network::mojom::URLLoaderClient* client,
     const std::string* headers,
     base::Optional<net::SSLInfo> ssl_info) {
+  return WriteResponse(GetDataFilePath(relative_path), client, headers,
+                       std::move(ssl_info));
+}
+
+void URLLoaderInterceptor::WriteResponse(
+    const base::FilePath& file_path,
+    network::mojom::URLLoaderClient* client,
+    const std::string* headers,
+    base::Optional<net::SSLInfo> ssl_info) {
   base::ScopedAllowBlockingForTesting allow_io;
   std::string headers_str;
   if (headers) {
     headers_str = *headers;
   } else {
-    std::string headers_path =
-        relative_path + "." + net::test_server::kMockHttpHeadersExtension;
-    if (base::PathExists(GetDataFilePath(headers_path))) {
+    base::FilePath::StringPieceType mock_headers_extension;
+#if defined(OS_WIN)
+    base::string16 temp =
+        base::ASCIIToUTF16(net::test_server::kMockHttpHeadersExtension);
+    mock_headers_extension = temp;
+#else
+    mock_headers_extension = net::test_server::kMockHttpHeadersExtension;
+#endif
+
+    base::FilePath headers_path(file_path.AddExtension(mock_headers_extension));
+    if (base::PathExists(headers_path)) {
       headers_str = ReadFile(headers_path);
     } else {
       headers_str = "HTTP/1.0 200 OK\nContent-type: " +
-                    net::test_server::GetContentType(
-                        base::FilePath().AppendASCII(relative_path)) +
-                    "\n\n";
+                    net::test_server::GetContentType(file_path) + "\n\n";
     }
   }
-  WriteResponse(headers_str, ReadFile(relative_path), client,
-                std::move(ssl_info));
+  WriteResponse(headers_str, ReadFile(file_path), client, std::move(ssl_info));
 }
 
 void URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources(
