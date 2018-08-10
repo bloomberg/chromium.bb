@@ -12,6 +12,7 @@
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
@@ -19,6 +20,7 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
+#include "third_party/blink/renderer/core/messaging/post_message_options.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -110,19 +112,34 @@ DedicatedWorker::~DedicatedWorker() {
 }
 
 void DedicatedWorker::postMessage(ScriptState* script_state,
-                                  scoped_refptr<SerializedScriptValue> message,
-                                  const MessagePortArray& ports,
+                                  const ScriptValue& message,
+                                  Vector<ScriptValue>& transfer,
                                   ExceptionState& exception_state) {
   DCHECK(GetExecutionContext()->IsContextThread());
+
+  PostMessageOptions options;
+  if (!transfer.IsEmpty())
+    options.setTransfer(transfer);
+
+  Transferables transferables;
+  scoped_refptr<SerializedScriptValue> serialized_message =
+      PostMessageHelper::SerializeMessageByMove(script_state->GetIsolate(),
+                                                message, options, transferables,
+                                                exception_state);
+  if (exception_state.HadException())
+    return;
+  DCHECK(serialized_message);
+
   // Disentangle the port in preparation for sending it to the remote context.
   auto channels = MessagePort::DisentanglePorts(
-      ExecutionContext::From(script_state), ports, exception_state);
+      ExecutionContext::From(script_state), transferables.message_ports,
+      exception_state);
   if (exception_state.HadException())
     return;
   v8_inspector::V8StackTraceId stack_id =
       ThreadDebugger::From(script_state->GetIsolate())
           ->StoreCurrentStackTrace("Worker.postMessage");
-  context_proxy_->PostMessageToWorkerGlobalScope(std::move(message),
+  context_proxy_->PostMessageToWorkerGlobalScope(std::move(serialized_message),
                                                  std::move(channels), stack_id);
 }
 

@@ -47,7 +47,6 @@ namespace blink {
 class ExceptionState;
 class ExecutionContext;
 class ScriptState;
-class SerializedScriptValue;
 
 class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
                                 public mojo::MessageReceiver,
@@ -61,10 +60,9 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   ~MessagePort() override;
 
   void postMessage(ScriptState*,
-                   scoped_refptr<SerializedScriptValue> message,
-                   const MessagePortArray&,
+                   const ScriptValue& message,
+                   Vector<ScriptValue>& transfer,
                    ExceptionState&);
-  static bool CanTransferArrayBuffersAndImageBitmaps() { return true; }
 
   void start();
   void close();

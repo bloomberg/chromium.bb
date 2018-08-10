@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
@@ -135,22 +136,12 @@ void DOMWindow::postMessage(LocalDOMWindow* incumbent_window,
   v8::Isolate* isolate = window_proxy_manager_->GetIsolate();
 
   Transferables transferables;
-  if (options.hasTransfer() && !options.transfer().IsEmpty()) {
-    if (!SerializedScriptValue::ExtractTransferables(
-            isolate, options.transfer(), transferables, exception_state)) {
-      return;
-    }
-  }
-
-  SerializedScriptValue::SerializeOptions serialize_options;
-  serialize_options.transferables = &transferables;
   scoped_refptr<SerializedScriptValue> serialized_message =
-      SerializedScriptValue::Serialize(isolate, message.V8Value(),
-                                       serialize_options, exception_state);
+      PostMessageHelper::SerializeMessageByMove(isolate, message, options,
+                                                transferables, exception_state);
   if (exception_state.HadException())
     return;
-
-  serialized_message->UnregisterMemoryAllocatedWithCurrentScriptContext();
+  DCHECK(serialized_message);
   DoPostMessage(std::move(serialized_message), transferables.message_ports,
                 options, incumbent_window, exception_state);
 }

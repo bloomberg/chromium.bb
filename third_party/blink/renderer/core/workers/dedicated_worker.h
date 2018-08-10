@@ -55,10 +55,9 @@ class CORE_EXPORT DedicatedWorker final
   ~DedicatedWorker() override;
 
   void postMessage(ScriptState*,
-                   scoped_refptr<SerializedScriptValue> message,
-                   const MessagePortArray&,
+                   const ScriptValue& message,
+                   Vector<ScriptValue>& transfer,
                    ExceptionState&);
-  static bool CanTransferArrayBuffersAndImageBitmaps() { return true; }
   void terminate();
   BeginFrameProviderParams CreateBeginFrameProviderParams();
 
