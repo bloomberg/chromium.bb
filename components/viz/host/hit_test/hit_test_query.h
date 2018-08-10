@@ -13,6 +13,10 @@
 #include "components/viz/host/viz_host_export.h"
 #include "ui/gfx/geometry/point_f.h"
 
+namespace content {
+class HitTestRegionObserver;
+}
+
 namespace viz {
 
 struct Target {
@@ -96,6 +100,7 @@ class VIZ_HOST_EXPORT HitTestQuery {
   bool ContainsFrameSinkId(const FrameSinkId& frame_sink_id) const;
 
  private:
+  friend class content::HitTestRegionObserver;
   // Helper function to find |target| for |location_in_parent| in the
   // |region_index|, returns true if a target is found and false otherwise.
   // |location_in_parent| is in the coordinate space of |region_index|'s parent.
