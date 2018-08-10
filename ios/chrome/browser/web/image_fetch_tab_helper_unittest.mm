@@ -59,6 +59,7 @@ TEST_F(ImageFetchTabHelperTest, GetImageDataJsSucceed) {
 
   image_fetch_tab_helper()->GetImageData(
       GURL("http://a.com/"),
+      base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout),
       base::BindOnce(&ImageFetchTabHelperTest::OnImageData,
                      base::Unretained(this)));
 
@@ -82,6 +83,7 @@ TEST_F(ImageFetchTabHelperTest, GetImageDataJsFail) {
 
   image_fetch_tab_helper()->GetImageData(
       GURL("http://a.com/"),
+      base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout),
       base::BindOnce(&ImageFetchTabHelperTest::OnImageData,
                      base::Unretained(this)));
 
@@ -93,10 +95,34 @@ TEST_F(ImageFetchTabHelperTest, GetImageDataJsFail) {
 }
 
 // Tests that ImageFetchTabHelper::GetImageData returns nullptr in callback when
+// JavaScript does not send a message back.
+TEST_F(ImageFetchTabHelperTest, GetImageDataJsTimeout) {
+  // Replaces __gCrWeb.imageFetch.getImageData with empty function to trigger a
+  // timeout.
+  id script_result = ExecuteJavaScript(
+      @"__gCrWeb.imageFetch = {}; __gCrWeb.imageFetch.getImageData = "
+      @"function(id, url){}; true;");
+  ASSERT_NSEQ(@YES, script_result);
+
+  image_fetch_tab_helper()->GetImageData(
+      GURL("http://a.com/"), base::TimeDelta::FromMilliseconds(100),
+      base::BindOnce(&ImageFetchTabHelperTest::OnImageData,
+                     base::Unretained(this)));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return on_image_data_called_;
+  }));
+
+  EXPECT_FALSE(image_data_);
+}
+
+// Tests that ImageFetchTabHelper::GetImageData returns nullptr in callback when
 // WebState is destroyed.
 TEST_F(ImageFetchTabHelperTest, GetImageDataWebStateDestroy) {
   image_fetch_tab_helper()->GetImageData(
       GURL("http://a.com/"),
+      base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout),
       base::BindOnce(&ImageFetchTabHelperTest::OnImageData,
                      base::Unretained(this)));
 
@@ -114,6 +140,7 @@ TEST_F(ImageFetchTabHelperTest, GetImageDataWebStateDestroy) {
 TEST_F(ImageFetchTabHelperTest, GetImageDataWebStateNavigate) {
   image_fetch_tab_helper()->GetImageData(
       GURL("http://a.com/"),
+      base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout),
       base::BindOnce(&ImageFetchTabHelperTest::OnImageData,
                      base::Unretained(this)));
 
