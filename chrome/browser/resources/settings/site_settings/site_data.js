@@ -158,17 +158,25 @@ Polymer({
             lastSelectedIndex :
             this.sites.length - 1;
         const index = indexFromId > -1 ? indexFromId : indexFallback;
-        const ironList =
-            /** @type {!IronListElement} */ (this.$$('iron-list'));
-        ironList.focusItem(index);
-        const siteToSelect = this.sites[index].site.replace(/[.]/g, '\\.');
-        const button =
-            this.$$(`#siteItem_${siteToSelect}`).$$('.subpage-arrow button');
-        cr.ui.focusWithoutInk(assert(button));
+        this.focusOnSiteSelectButton_(index);
       });
       this.focusConfig.set(
           settings.routes.SITE_SETTINGS_DATA_DETAILS.path, onNavigatedTo);
     }
+  },
+
+  /**
+   * @param {number} index
+   * @private
+   */
+  focusOnSiteSelectButton_: function(index) {
+    const ironList =
+        /** @type {!IronListElement} */ (this.$$('iron-list'));
+    ironList.focusItem(index);
+    const siteToSelect = this.sites[index].site.replace(/[.]/g, '\\.');
+    const button =
+        this.$$(`#siteItem_${siteToSelect}`).$$('.subpage-arrow button');
+    cr.ui.focusWithoutInk(assert(button));
   },
 
   /**
@@ -239,6 +247,10 @@ Polymer({
    * @private
    */
   onSiteClick_: function(event) {
+    // If any delete button is selected, the focus will be in a bad state when
+    // returning to this page. To avoid this, the site select button is given
+    // focus. See https://crbug.com/872197.
+    this.focusOnSiteSelectButton_(event.model.index);
     settings.navigateTo(
         settings.routes.SITE_SETTINGS_DATA_DETAILS,
         new URLSearchParams('site=' + event.model.item.site));
