@@ -100,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_ForceDiscovery) {
   EXPECT_CALL(*dns_sd_registry_, RegisterDnsSdListener(service_type)).Times(1);
   EXPECT_CALL(*dns_sd_registry_, UnregisterDnsSdListener(service_type))
       .Times(1);
-  EXPECT_CALL(*dns_sd_registry_, ForceDiscovery()).Times(1);
+  EXPECT_CALL(*dns_sd_registry_, ResetAndDiscover()).Times(1);
   EXPECT_CALL(*dns_sd_registry_,
               RemoveObserver(A<DnsSdRegistry::DnsSdObserver*>()))
       .Times(1);

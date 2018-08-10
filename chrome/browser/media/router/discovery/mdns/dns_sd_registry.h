@@ -46,9 +46,9 @@ class DnsSdRegistry : public DnsSdDelegate {
   // whose event filter matches the service type.
   virtual void Publish(const std::string& service_type);
 
-  // Immediately issues a multicast DNS query for all service types of the
-  // calling extension.
-  virtual void ForceDiscovery();
+  // Immediately issues a multicast DNS query for all registered service types.
+  // Also resets the local cache from previous rounds of discovery.
+  virtual void ResetAndDiscover();
 
   // Observer registration for parties interested in discovery events.
   virtual void AddObserver(DnsSdObserver* observer);
@@ -73,14 +73,15 @@ class DnsSdRegistry : public DnsSdDelegate {
     int GetListenerCount();
 
     // Immediately issues a multicast DNS query for the service type owned by
-    // |this|.
-    void ForceDiscovery();
+    // |this|. Also resets the cache from previous rounds of discovery.
+    void ResetAndDiscover();
 
     // Methods for adding, updating or removing services for this service type.
     bool UpdateService(bool added, const DnsSdService& service);
     bool RemoveService(const std::string& service_name);
-    // Called when the discovery service was restarted.
-    // Clear the local cache and initiate rediscovery.
+
+    // Called when services are flushed. Clears |service_list_| and requests
+    // |lister_| to discover and return new services.
     bool ClearServices();
 
     const DnsSdRegistry::DnsSdServiceList& GetServiceList();

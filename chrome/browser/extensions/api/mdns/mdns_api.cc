@@ -74,7 +74,7 @@ void MDnsAPI::SetDnsSdRegistryForTesting(DnsSdRegistry* dns_sd_registry) {
 void MDnsAPI::ForceDiscovery() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DnsSdRegistry* registry = dns_sd_registry();
-  return registry->ForceDiscovery();
+  return registry->ResetAndDiscover();
 }
 
 DnsSdRegistry* MDnsAPI::dns_sd_registry() {

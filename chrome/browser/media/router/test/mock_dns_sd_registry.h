@@ -20,7 +20,7 @@ class MockDnsSdRegistry : public DnsSdRegistry {
   MOCK_METHOD1(RegisterDnsSdListener, void(const std::string& service_type));
   MOCK_METHOD1(UnregisterDnsSdListener, void(const std::string& service_type));
   MOCK_METHOD1(Publish, void(const std::string&));
-  MOCK_METHOD0(ForceDiscovery, void(void));
+  MOCK_METHOD0(ResetAndDiscover, void(void));
 
   void DispatchMDnsEvent(const std::string& service_type,
                          const DnsSdServiceList& services);

@@ -31,6 +31,9 @@ class DnsSdDeviceLister
 
   virtual void Discover();
 
+  // Resets |device_lister_|.
+  void Reset();
+
  protected:
   void OnDeviceChanged(
       const std::string& service_type,
@@ -43,8 +46,13 @@ class DnsSdDeviceLister
  private:
   // The delegate to notify of changes to services.
   DnsSdDelegate* const delegate_;
+
+  // Created when |Discover()| is called.
   std::unique_ptr<local_discovery::ServiceDiscoveryDeviceLister> device_lister_;
-  bool started_;
+
+  // The client and service type used to create |device_lister_|.
+  local_discovery::ServiceDiscoveryClient* const service_discovery_client_;
+  std::string service_type_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsSdDeviceLister);
 };
