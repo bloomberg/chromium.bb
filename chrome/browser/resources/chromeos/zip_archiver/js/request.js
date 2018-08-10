@@ -6,13 +6,13 @@
 
 /**
  * Defines the protocol used to communicate between JS and NaCL.
- * This should be consistent with cpp/request.h.
+ * This must be consistent with NaCL C++ side cpp/request.h.
  * @namespace
  */
 unpacker.request = {
   /**
-   * Defines request ids. Every key should be unique and the same as the keys
-   * on the NaCL side.
+   * Defines request ids. The keys should be unique and must be the same as the
+   * keys defined on the NaCL C++ side.
    * @enum {string}
    */
   Key: {
@@ -59,14 +59,17 @@ unpacker.request = {
   },
 
   /**
-   * Defines request operations. These operation should be the same as the
-   * operations on the NaCL side. FILE_SYSTEM_ID and REQUEST_ID are mandatory
-   * for all unpack requests, while COMPRESSOR_ID is required for all pack
-   * requests. All the values of unpacking operations must be smaller than any
-   * packing operation (except errors).
+   * Defines request |operation|. The operation values must be the same as the
+   * operation values defined on the NaCL C++ side (cpp/request.h).
+   *
+   * Also, the unpack operation values must be smaller than the pack operation
+   * values (see the isPackRequest() helper below).
+   *
    * @enum {number}
    */
   Operation: {
+    // Unpack operations.
+    READ_METADATA: 0,
     READ_METADATA_DONE: 1,
     READ_CHUNK: 2,
     READ_CHUNK_DONE: 3,
@@ -83,6 +86,8 @@ unpacker.request = {
     READ_FILE_DONE: 14,
     CONSOLE_LOG: 15,
     CONSOLE_DEBUG: 16,
+
+    // Pack operations.
     CREATE_ARCHIVE: 17,
     CREATE_ARCHIVE_DONE: 18,
     ADD_TO_ARCHIVE: 19,
@@ -96,8 +101,10 @@ unpacker.request = {
     CANCEL_ARCHIVE: 27,
     CANCEL_ARCHIVE_DONE: 28,
     RELEASE_COMPRESSOR: 29,
-    FILE_SYSTEM_ERROR: -1,
-    COMPRESSOR_ERROR: -2
+
+    // Errors.
+    FILE_SYSTEM_ERROR: -1,  // Errors specific to a file system.
+    COMPRESSOR_ERROR: -2    // Errors specific to a compressor.
   },
 
   /**
@@ -126,6 +133,18 @@ unpacker.request = {
    * @return {!Object} A new request with mandatory fields.
    */
   createBasic_: function(operation, fileSystemId, requestId) {
+    // Protect from ill-defined or invalid |operation|, crbug.com/867842
+    if (Object.values(unpacker.request.Operation).indexOf(operation) === -1)
+      throwInvalidOperation(operation);
+    if (operation < unpacker.request.Operation.READ_METADATA)
+      throwInvalidOperation(operation);
+    if (operation > unpacker.request.Operation.CONSOLE_DEBUG)
+      throwInvalidOperation(operation);
+
+    function throwInvalidOperation(operation) {
+      throw new Error('invalid operation: [' + operation + ']');
+    }
+
     var basicRequest = {};
     basicRequest[unpacker.request.Key.OPERATION] = operation;
     basicRequest[unpacker.request.Key.FILE_SYSTEM_ID] = fileSystemId;

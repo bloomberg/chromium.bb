@@ -236,7 +236,9 @@ unpacker.Decompressor.prototype.processMessage = function(
     default:
       console.error('Invalid NaCl operation: ' + operation + '.');
       requestInProgress.onError('FAILED');
+      break;
   }
+
   delete this.requestsInProgress[requestId];
 };
 
