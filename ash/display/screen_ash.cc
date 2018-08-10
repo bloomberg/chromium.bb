@@ -10,7 +10,6 @@
 #include "ash/root_window_settings.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_state.h"
 #include "ash/wm/root_window_finder.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -39,7 +38,9 @@ class ScreenForShutdown : public display::Screen {
  public:
   explicit ScreenForShutdown(display::Screen* screen_ash)
       : display_list_(screen_ash->GetAllDisplays()),
-        primary_display_(screen_ash->GetPrimaryDisplay()) {}
+        primary_display_(screen_ash->GetPrimaryDisplay()) {
+    SetDisplayForNewWindows(primary_display_.id());
+  }
 
   // display::Screen overrides:
   gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
@@ -67,9 +68,6 @@ class ScreenForShutdown : public display::Screen {
     return matching ? *matching : GetPrimaryDisplay();
   }
   display::Display GetPrimaryDisplay() const override {
-    return primary_display_;
-  }
-  display::Display GetDisplayForNewWindows() const override {
     return primary_display_;
   }
   void AddObserver(display::DisplayObserver* observer) override {
@@ -181,11 +179,6 @@ display::Display ScreenAsh::GetPrimaryDisplay() const {
 
   return GetDisplayManager()->GetDisplayForId(
       WindowTreeHostManager::GetPrimaryDisplayId());
-}
-
-display::Display ScreenAsh::GetDisplayForNewWindows() const {
-  return GetDisplayNearestWindow(
-      Shell::Get()->shell_state()->GetRootWindowForNewWindows());
 }
 
 void ScreenAsh::AddObserver(display::DisplayObserver* observer) {

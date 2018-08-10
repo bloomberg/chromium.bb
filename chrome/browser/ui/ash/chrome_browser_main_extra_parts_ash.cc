@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/ash/network/network_connect_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/network/network_portal_notification_controller.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
-#include "chrome/browser/ui/ash/shell_state_client.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/ash/tab_scrubber.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
@@ -197,9 +196,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   session_controller_client_ = std::make_unique<SessionControllerClient>();
   session_controller_client_->Init();
 
-  shell_state_client_ = std::make_unique<ShellStateClient>();
-  shell_state_client_->Init();
-
   system_tray_client_ = std::make_unique<SystemTrayClient>();
 
   // Makes mojo request to TabletModeController in ash.
@@ -276,7 +272,6 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   volume_controller_.reset();
 
   system_tray_client_.reset();
-  shell_state_client_.reset();
   session_controller_client_.reset();
   chrome_new_window_client_.reset();
   network_portal_notification_controller_.reset();

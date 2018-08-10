@@ -7,13 +7,8 @@
 
 #include <stdint.h>
 
-#include <memory>
-
 #include "ash/ash_export.h"
-#include "ash/public/interfaces/shell_state.mojom.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 namespace aura {
 class Window;
@@ -21,17 +16,12 @@ class Window;
 
 namespace ash {
 
-// Provides access via mojo to ash::Shell state.
-// TODO(jamescook): Move |root_window_for_new_windows_| to Shell, convert
-// browser code to use display::Screen::GetDisplayForNewWindows() and delete
+// TODO(jamescook): Move |root_window_for_new_windows_| to Shell and delete
 // this class.
-class ASH_EXPORT ShellState : public mojom::ShellState {
+class ASH_EXPORT ShellState {
  public:
   ShellState();
-  ~ShellState() override;
-
-  // Binds the mojom::ShellState interface to this object.
-  void BindRequest(mojom::ShellStateRequest request);
+  ~ShellState();
 
   // Returns the root window that newly created windows should be added to.
   // Value can be temporarily overridden using ScopedRootWindowForNewWindows.
@@ -43,11 +33,6 @@ class ASH_EXPORT ShellState : public mojom::ShellState {
   // NOTE: Prefer ScopedRootWindowForNewWindows.
   void SetRootWindowForNewWindows(aura::Window* root);
 
-  // mojom::ShellState:
-  void AddClient(mojom::ShellStateClientPtr client) override;
-
-  void FlushMojoForTest();
-
  private:
   friend class ScopedRootWindowForNewWindows;
 
@@ -58,12 +43,6 @@ class ASH_EXPORT ShellState : public mojom::ShellState {
 
   // Sets the value and updates clients.
   void SetScopedRootWindowForNewWindows(aura::Window* root);
-
-  // Binding for mojom::ShellState interface.
-  mojo::BindingSet<mojom::ShellState> bindings_;
-
-  // Clients (e.g. chrome browser, other mojo apps).
-  mojo::InterfacePtrSet<mojom::ShellStateClient> clients_;
 
   aura::Window* root_window_for_new_windows_ = nullptr;
 

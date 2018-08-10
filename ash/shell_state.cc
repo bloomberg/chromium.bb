@@ -19,10 +19,6 @@ ShellState::ShellState() = default;
 
 ShellState::~ShellState() = default;
 
-void ShellState::BindRequest(mojom::ShellStateRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
-
 aura::Window* ShellState::GetRootWindowForNewWindows() const {
   if (scoped_root_window_for_new_windows_)
     return scoped_root_window_for_new_windows_;
@@ -36,21 +32,9 @@ void ShellState::SetRootWindowForNewWindows(aura::Window* root) {
   NotifyAllClients();
 }
 
-void ShellState::AddClient(mojom::ShellStateClientPtr client) {
-  mojom::ShellStateClient* client_impl = client.get();
-  clients_.AddPtr(std::move(client));
-  client_impl->SetDisplayIdForNewWindows(GetDisplayIdForNewWindows());
-}
-
-void ShellState::FlushMojoForTest() {
-  clients_.FlushForTesting();
-}
-
 void ShellState::NotifyAllClients() {
   const int64_t display_id = GetDisplayIdForNewWindows();
-  clients_.ForAllPtrs([display_id](mojom::ShellStateClient* client) {
-    client->SetDisplayIdForNewWindows(display_id);
-  });
+  display::Screen::GetScreen()->SetDisplayForNewWindows(display_id);
 
   // WindowService broadcasts the display id over mojo to all remote apps.
   // TODO(jamescook): Move this into Shell when ShellState is removed.

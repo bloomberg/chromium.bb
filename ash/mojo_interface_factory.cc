@@ -32,7 +32,6 @@
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/shell_state.h"
 #include "ash/shutdown_controller.h"
 #include "ash/system/locale/locale_notification_controller.h"
 #include "ash/system/model/system_tray_model.h"
@@ -178,10 +177,6 @@ void BindShelfRequestOnMainThread(mojom::ShelfControllerRequest request) {
   Shell::Get()->shelf_controller()->BindRequest(std::move(request));
 }
 
-void BindShellStateOnMainThread(mojom::ShellStateRequest request) {
-  Shell::Get()->shell_state()->BindRequest(std::move(request));
-}
-
 void BindShutdownControllerRequestOnMainThread(
     mojom::ShutdownControllerRequest request) {
   Shell::Get()->shutdown_controller()->BindRequest(std::move(request));
@@ -302,8 +297,6 @@ void RegisterInterfaces(
   registry->AddInterface(
       base::BindRepeating(&BindSessionControllerRequestOnMainThread),
       main_thread_task_runner);
-  registry->AddInterface(base::BindRepeating(&BindShellStateOnMainThread),
-                         main_thread_task_runner);
   registry->AddInterface(base::BindRepeating(&BindShelfRequestOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(

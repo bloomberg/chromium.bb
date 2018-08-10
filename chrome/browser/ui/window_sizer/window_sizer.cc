@@ -366,10 +366,12 @@ ui::WindowShowState WindowSizer::GetWindowDefaultShowState() const {
   return browser_->initial_show_state();
 }
 
-#if !defined(OS_CHROMEOS)
-// Chrome OS has an implementation in //chrome/browser/ui/ash.
 // static
 display::Display WindowSizer::GetDisplayForNewWindow(const gfx::Rect& bounds) {
+#if defined(OS_CHROMEOS)
+  // Prefer the display where the user last activated a window.
+  return display::Screen::GetScreen()->GetDisplayForNewWindows();
+#else
   return display::Screen::GetScreen()->GetDisplayMatching(bounds);
-}
 #endif  // defined(OS_CHROMEOS)
+}
