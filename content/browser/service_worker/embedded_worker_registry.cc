@@ -68,7 +68,7 @@ void EmbeddedWorkerRegistry::OnWorkerStopped(int process_id,
   lifetime_tracker_.StopTiming(embedded_worker_id);
 }
 
-void EmbeddedWorkerRegistry::OnDevToolsAttached(int embedded_worker_id) {
+void EmbeddedWorkerRegistry::AbortLifetimeTracking(int embedded_worker_id) {
   lifetime_tracker_.AbortTiming(embedded_worker_id);
 }
 

@@ -303,6 +303,10 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void DispatchExtendableMessageEvent(
       mojom::ExtendableMessageEventPtr event,
       DispatchExtendableMessageEventCallback callback) override;
+  void DispatchExtendableMessageEventWithCustomTimeout(
+      mojom::ExtendableMessageEventPtr event,
+      base::TimeDelta timeout,
+      DispatchExtendableMessageEventCallback callback) override;
   void DispatchFetchEvent(
       blink::mojom::DispatchFetchEventParamsPtr params,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,

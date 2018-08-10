@@ -173,6 +173,21 @@ class ServiceWorkerContext {
                                      StartWorkerCallback info_callback,
                                      base::OnceClosure failure_callback) = 0;
 
+  // Deprecated: DO NOT USE
+  // This is a temporary addition only to be used for the Android Messages
+  // integration with ChromeOS (http://crbug.com/823256).  The removal is
+  // tracked at http://crbug.com/869714.  Please ask Service Worker OWNERS
+  // (content/browser/service_worker/OWNERS) if you have questions.
+  //
+  // This method MUST be called on the IO thread.  It starts the active worker
+  // of the registration whose scope is |pattern|, sets its timeout to 999 days,
+  // and passes in the given |message|.  The |result_callback| will be executed
+  // upon success or failure and pass back the boolean result.
+  virtual void StartServiceWorkerAndDispatchLongRunningMessage(
+      const GURL& pattern,
+      blink::TransferableMessage message,
+      ResultCallback result_callback) = 0;
+
   // Starts the service worker for |document_url|. Called when a navigation to
   // that URL is predicted to occur soon. Must be called from the UI thread. The
   // |callback| will always be called on the UI thread.

@@ -352,6 +352,17 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
                                           std::move(callback));
   }
 
+  void DispatchExtendableMessageEventWithCustomTimeout(
+      mojom::ExtendableMessageEventPtr event,
+      base::TimeDelta timeout,
+      DispatchExtendableMessageEventWithCustomTimeoutCallback callback)
+      override {
+    if (!helper_)
+      return;
+    helper_->OnExtendableMessageEventStub(std::move(event),
+                                          std::move(callback));
+  }
+
   void Ping(PingCallback callback) override { std::move(callback).Run(); }
 
   void SetIdleTimerDelayToZero() override {

@@ -109,6 +109,8 @@ std::string EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_ABORT_PAYMENT";
     case ServiceWorkerMetrics::EventType::COOKIE_CHANGE:
       return "_COOKIE_CHANGE";
+    case ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE:
+      return "_LONG_RUNNING_MESSAGE";
     case ServiceWorkerMetrics::EventType::NUM_TYPES:
       NOTREACHED() << static_cast<int>(event_type);
   }
@@ -287,6 +289,8 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Abort Payment";
     case EventType::COOKIE_CHANGE:
       return "Cookie Change";
+    case EventType::LONG_RUNNING_MESSAGE:
+      return "Long Running Message";
     case EventType::NUM_TYPES:
       break;
   }
@@ -666,6 +670,10 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
       break;
     case EventType::COOKIE_CHANGE:
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.CookieChangeEvent.Time", time);
+      break;
+    case EventType::LONG_RUNNING_MESSAGE:
+      // Since this event is expected to last indefinitely we don't need to log
+      // how long they actually last.
       break;
 
     case EventType::NAVIGATION_HINT:

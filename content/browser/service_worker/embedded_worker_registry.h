@@ -55,9 +55,8 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   bool OnWorkerStarted(int process_id, int embedded_worker_id);
   void OnWorkerStopped(int process_id, int embedded_worker_id);
 
-  // Called by EmbeddedWorkerInstance when it learns DevTools has attached to
-  // it.
-  void OnDevToolsAttached(int embedded_worker_id);
+  // Aborts the timer which tracks the lifetime of the worker for UMA logging.
+  void AbortLifetimeTracking(int embedded_worker_id);
 
   // Returns an embedded worker instance for given |embedded_worker_id|.
   EmbeddedWorkerInstance* GetWorker(int embedded_worker_id);

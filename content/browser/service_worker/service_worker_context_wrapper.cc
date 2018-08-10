@@ -13,6 +13,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -33,6 +34,7 @@
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -41,6 +43,10 @@ namespace {
 typedef std::set<std::string> HeaderNameSet;
 base::LazyInstance<HeaderNameSet>::DestructorAtExit g_excluded_header_name_set =
     LAZY_INSTANCE_INITIALIZER;
+
+// Value used to set the timeout when starting a long running ServiceWorker. See
+// ServiceWorkerContextWrapper::StartServiceWorkerAndDispatchLongRunningMessage.
+const int kActiveWorkerTimeoutDays = 999;
 
 void WorkerStarted(ServiceWorkerContextWrapper::StatusCallback callback,
                    blink::ServiceWorkerStatusCode status) {
@@ -150,6 +156,12 @@ void FinishUnregistrationOnIO(ServiceWorkerContext::ResultCallback callback,
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(std::move(callback),
                      status == blink::ServiceWorkerStatusCode::kOk));
+}
+
+void MessageFinishedSending(ServiceWorkerContext::ResultCallback callback,
+                            blink::ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  std::move(callback).Run(status == blink::ServiceWorkerStatusCode::kOk);
 }
 
 }  // namespace
@@ -451,6 +463,78 @@ void ServiceWorkerContextWrapper::StartWorkerForPattern(
       pattern,
       base::BindOnce(&FoundRegistrationForStartWorker, std::move(info_callback),
                      std::move(failure_callback)));
+}
+
+void ServiceWorkerContextWrapper::
+    StartServiceWorkerAndDispatchLongRunningMessage(
+        const GURL& pattern,
+        blink::TransferableMessage message,
+        ResultCallback result_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (!context_core_) {
+    std::move(result_callback).Run(false);
+    return;
+  }
+
+  context_core_->storage()->FindRegistrationForPattern(
+      net::SimplifyUrlForRequest(pattern),
+      base::BindOnce(&ServiceWorkerContextWrapper::
+                         DidFindRegistrationForLongRunningMessage,
+                     this, std::move(message), pattern,
+                     std::move(result_callback)));
+}
+
+void ServiceWorkerContextWrapper::DidFindRegistrationForLongRunningMessage(
+    blink::TransferableMessage message,
+    const GURL& source_origin,
+    ResultCallback result_callback,
+    blink::ServiceWorkerStatusCode service_worker_status,
+    scoped_refptr<ServiceWorkerRegistration> registration) {
+  if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
+    LOG(WARNING) << "No registration available, status: "
+                 << static_cast<int>(service_worker_status);
+    std::move(result_callback).Run(false);
+    return;
+  }
+  registration->active_version()->StartWorker(
+      ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE,
+      base::BindOnce(&ServiceWorkerContextWrapper::
+                         DidStartServiceWorkerForLongRunningMessage,
+                     this, std::move(message), source_origin, registration,
+                     std::move(result_callback)));
+}
+
+void ServiceWorkerContextWrapper::DidStartServiceWorkerForLongRunningMessage(
+    blink::TransferableMessage message,
+    const GURL& source_origin,
+    scoped_refptr<ServiceWorkerRegistration> registration,
+    ResultCallback result_callback,
+    blink::ServiceWorkerStatusCode status) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
+    std::move(result_callback).Run(false);
+    return;
+  }
+
+  scoped_refptr<ServiceWorkerVersion> version = registration->active_version();
+
+  int request_id = version->StartRequestWithCustomTimeout(
+      ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE,
+      base::BindOnce(&MessageFinishedSending, std::move(result_callback)),
+      base::TimeDelta::FromDays(kActiveWorkerTimeoutDays),
+      ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
+
+  mojom::ExtendableMessageEventPtr event = mojom::ExtendableMessageEvent::New();
+  event->message = std::move(message);
+  event->source_origin = url::Origin::Create(source_origin);
+  event->source_info_for_service_worker =
+      version->provider_host()
+          ->GetOrCreateServiceWorkerObjectHost(version)
+          ->CreateCompleteObjectInfoToSend();
+
+  version->endpoint()->DispatchExtendableMessageEventWithCustomTimeout(
+      std::move(event), base::TimeDelta::FromDays(kActiveWorkerTimeoutDays),
+      version->CreateSimpleEventCallback(request_id));
 }
 
 void ServiceWorkerContextWrapper::StartServiceWorkerForNavigationHint(

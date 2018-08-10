@@ -1746,6 +1746,38 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
       WebServiceWorkerImpl::CreateHandle(worker));
 }
 
+void ServiceWorkerContextClient::
+    DispatchExtendableMessageEventWithCustomTimeout(
+        mojom::ExtendableMessageEventPtr event,
+        base::TimeDelta timeout,
+        DispatchExtendableMessageEventCallback callback) {
+  int request_id = context_->timeout_timer->StartEventWithCustomTimeout(
+      CreateAbortCallback(&context_->message_event_callbacks), timeout);
+
+  context_->message_event_callbacks.emplace(request_id, std::move(callback));
+  TRACE_EVENT1("ServiceWorker",
+               "ServiceWorkerContextClient::"
+               "DispatchExtendableMessageEventWithCustomTimeout",
+               "request_id", request_id);
+
+  if (event->source_info_for_client) {
+    blink::WebServiceWorkerClientInfo web_client =
+        ToWebServiceWorkerClientInfo(std::move(event->source_info_for_client));
+    proxy_->DispatchExtendableMessageEvent(request_id,
+                                           std::move(event->message),
+                                           event->source_origin, web_client);
+    return;
+  }
+
+  DCHECK_NE(event->source_info_for_service_worker->version_id,
+            blink::mojom::kInvalidServiceWorkerVersionId);
+  scoped_refptr<WebServiceWorkerImpl> worker = GetOrCreateServiceWorkerObject(
+      std::move(event->source_info_for_service_worker));
+  proxy_->DispatchExtendableMessageEvent(
+      request_id, std::move(event->message), event->source_origin,
+      WebServiceWorkerImpl::CreateHandle(worker));
+}
+
 // S13nServiceWorker
 void ServiceWorkerContextClient::DispatchFetchEvent(
     blink::mojom::DispatchFetchEventParamsPtr params,
