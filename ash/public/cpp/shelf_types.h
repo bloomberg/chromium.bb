@@ -65,7 +65,14 @@ enum ShelfBackgroundType {
   // The background when split view mode is active.
   SHELF_BACKGROUND_SPLIT_VIEW,
 
-  // The background when login/lock is active and the wallpaper is not blurred.
+  // The background when OOBE is active.
+  SHELF_BACKGROUND_OOBE,
+
+  // The background when login/lock/user-add is active.
+  SHELF_BACKGROUND_LOGIN,
+
+  // The background when login/lock/user-add is active and the wallpaper is not
+  // blurred.
   SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER,
 };
 
