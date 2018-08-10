@@ -529,10 +529,10 @@ bool ScrollingCoordinator::UpdateCompositedScrollOffset(
   return true;
 }
 
-bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
+void ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
     ScrollableArea* scrollable_area) {
   if (!page_ || !page_->MainFrame())
-    return false;
+    return;
 
   UpdateUserInputScrollable(scrollable_area);
 
@@ -615,7 +615,7 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
   }
   scrollable_area->LayerForScrollingDidChange(timeline);
 
-  return !!cc_layer;
+  return;
 }
 
 using GraphicsLayerHitTestRects =

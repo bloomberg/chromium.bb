@@ -1675,17 +1675,9 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
   if (scrolling_contents_offset != scrolling_contents_offset_ ||
       scroll_size != scrolling_contents_layer_->Size() ||
       scroll_container_size_changed) {
-    bool coordinator_handles_offset = false;
     auto* scrolling_coordinator = owning_layer_.GetScrollingCoordinator();
-    auto* scrollable_area = owning_layer_.GetScrollableArea();
-    if (scrolling_coordinator && scrollable_area) {
-      coordinator_handles_offset =
-          scrolling_coordinator->ScrollableAreaScrollLayerDidChange(
-              scrollable_area);
-    }
-    scrolling_contents_layer_->SetPosition(
-        coordinator_handles_offset ? FloatPoint()
-                                   : FloatPoint(-ToFloatSize(scroll_position)));
+    scrolling_coordinator->ScrollableAreaScrollLayerDidChange(scrollable_area);
+    scrolling_contents_layer_->SetPosition(FloatPoint());
   }
   scrolling_contents_offset_ = scrolling_contents_offset;
 
