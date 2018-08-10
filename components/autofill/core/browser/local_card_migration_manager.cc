@@ -116,7 +116,8 @@ bool LocalCardMigrationManager::IsCreditCardMigrationEnabled() {
   // Confirm that the user is signed in, syncing, and the proper experiment
   // flags are enabled.
   bool migration_experiment_enabled =
-      IsAutofillCreditCardLocalCardMigrationExperimentEnabled();
+      GetLocalCardMigrationExperimentalFlag() !=
+      LocalCardMigrationExperimentalFlag::kMigrationDisabled;
   bool credit_card_upload_enabled = ::autofill::IsCreditCardUploadEnabled(
       client_->GetPrefs(), client_->GetSyncService(),
       client_->GetIdentityManager()->GetPrimaryAccountInfo().email);

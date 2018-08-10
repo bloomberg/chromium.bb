@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -38,6 +39,9 @@ const base::Feature kAutofillCreditCardAblationExperiment{
     "AutofillCreditCardAblationExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillCreditCardLocalCardMigration{
     "AutofillCreditCardLocalCardMigration", base::FEATURE_DISABLED_BY_DEFAULT};
+const char kAutofillCreditCardLocalCardMigrationParameterName[] = "variant";
+const char kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage[] =
+    "without-settings-page";
 const base::Feature kAutofillDeleteDisusedAddresses{
     "AutofillDeleteDisusedAddresses", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillDeleteDisusedCreditCards{
@@ -100,8 +104,19 @@ bool IsAutofillCreditCardAssistEnabled() {
 #endif
 }
 
-bool IsAutofillCreditCardLocalCardMigrationExperimentEnabled() {
-  return base::FeatureList::IsEnabled(kAutofillCreditCardLocalCardMigration);
+LocalCardMigrationExperimentalFlag GetLocalCardMigrationExperimentalFlag() {
+  if (!base::FeatureList::IsEnabled(kAutofillCreditCardLocalCardMigration))
+    return LocalCardMigrationExperimentalFlag::kMigrationDisabled;
+
+  std::string param = base::GetFieldTrialParamValueByFeature(
+      kAutofillCreditCardLocalCardMigration,
+      kAutofillCreditCardLocalCardMigrationParameterName);
+
+  if (param ==
+      kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage) {
+    return LocalCardMigrationExperimentalFlag::kMigrationWithoutSettingsPage;
+  }
+  return LocalCardMigrationExperimentalFlag::kMigrationIncludeSettingsPage;
 }
 
 bool OfferStoreUnmaskedCards() {

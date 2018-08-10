@@ -1215,6 +1215,19 @@ const FeatureEntry::FeatureVariation kExploreSitesVariations[] = {
     {"Experimental", &kExploreSitesExperimental, 1, nullptr}};
 #endif  // defined(OS_ANDROID)
 
+const FeatureEntry::FeatureParam
+    kAutofillCreditCardLocalCardMigrationWithoutSettingsPage[] = {
+        {autofill::kAutofillCreditCardLocalCardMigrationParameterName,
+         autofill::
+             kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage}};
+
+const FeatureEntry::FeatureVariation
+    kAutofillCreditCardLocalCardMigrationVariations[] = {
+        {"(without settings page)",
+         kAutofillCreditCardLocalCardMigrationWithoutSettingsPage,
+         base::size(kAutofillCreditCardLocalCardMigrationWithoutSettingsPage),
+         nullptr}};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -2981,7 +2994,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillCreditCardLocalCardMigrationName,
      flag_descriptions::kEnableAutofillCreditCardLocalCardMigrationDescription,
      kOsDesktop,
-     FEATURE_VALUE_TYPE(autofill::kAutofillCreditCardLocalCardMigration)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         autofill::kAutofillCreditCardLocalCardMigration,
+         kAutofillCreditCardLocalCardMigrationVariations,
+         "AutofillLocalCardMigration")},
     {"enable-autofill-credit-card-upload-editable-cardholder-name",
      flag_descriptions::
          kEnableAutofillCreditCardUploadEditableCardholderNameName,
