@@ -116,10 +116,6 @@ class BackgroundAnimation : public gfx::SlideAnimation,
   }
 
   void AnimationEnded(const gfx::Animation* animation) override {
-    if (!show_) {
-      folder_view_->background_view()->SetBackground(nullptr);
-      folder_view_->background_view()->SchedulePaint();
-    }
     folder_view_->RecordAnimationSmoothness();
   }
 
@@ -206,12 +202,8 @@ class FolderItemTitleAnimation : public gfx::SlideAnimation,
 class TopIconAnimation : public AppListFolderView::Animation,
                          public TopIconAnimationObserver {
  public:
-  TopIconAnimation(bool show,
-                   bool hide_for_reparent,
-                   AppListFolderView* folder_view)
-      : show_(show),
-        hide_for_reparent_(hide_for_reparent),
-        folder_view_(folder_view) {}
+  TopIconAnimation(bool show, AppListFolderView* folder_view)
+      : show_(show), folder_view_(folder_view) {}
 
   ~TopIconAnimation() override {
     for (auto* view : top_icon_views_)
@@ -287,10 +279,8 @@ class TopIconAnimation : public AppListFolderView::Animation,
       SetFirstPageItemViewsVisible(true);
 
     // Show the folder icon when closing the folder.
-    if ((!show_ || hide_for_reparent_) &&
-        folder_view_->GetActivatedFolderItemView()) {
+    if (!show_ && folder_view_->GetActivatedFolderItemView())
       folder_view_->GetActivatedFolderItemView()->SetIconVisible(true);
-    }
   }
 
  private:
@@ -344,9 +334,6 @@ class TopIconAnimation : public AppListFolderView::Animation,
 
   // True if opening the folder.
   const bool show_;
-
-  // True if an item in the folder is being reparented to root grid view.
-  const bool hide_for_reparent_;
 
   AppListFolderView* const folder_view_;  // Not owned.
 
@@ -527,8 +514,7 @@ void AppListFolderView::ScheduleShowHideAnimation(bool show,
 
   // Animate the bounds and opacity of items in the first page of the opened
   // folder.
-  top_icon_animation_ =
-      std::make_unique<TopIconAnimation>(show, hide_for_reparent, this);
+  top_icon_animation_ = std::make_unique<TopIconAnimation>(show, this);
   top_icon_animation_->ScheduleAnimation();
 
   // Animate the bounds and opacity of the contents container.
