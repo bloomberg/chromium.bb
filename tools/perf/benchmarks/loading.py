@@ -18,6 +18,11 @@ class _LoadingBase(perf_benchmark.PerfBenchmark):
 
   options = {'pageset_repeat': 2}
 
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs([
+        '--enable-features=TracingPerfettoBackend',
+    ])
+
   def CreateCoreTimelineBasedMeasurementOptions(self):
     tbm_options = timeline_based_measurement.Options()
     loading_metrics_category.AugmentOptionsForLoadingMetrics(tbm_options)
