@@ -7,7 +7,6 @@
 #import <AppKit/AppKit.h>
 
 #include "base/mac/mac_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 
 namespace {
 
@@ -46,8 +45,7 @@ void MenuConfig::Init() {
   arrow_key_selection_wraps = false;
   use_mnemonics = false;
   show_context_menu_accelerators = false;
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-    InitMaterialMenuConfig(this);
+  InitMaterialMenuConfig(this);
 }
 
 }  // namespace views

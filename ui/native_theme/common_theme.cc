@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -45,36 +44,33 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   }
 
   // Second wave of MD colors (colors that only appear in secondary UI).
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    static const SkColor kPrimaryTextColor = SK_ColorBLACK;
+  static const SkColor kPrimaryTextColor = SK_ColorBLACK;
 
-    switch (color_id) {
-      // Labels
-      case NativeTheme::kColorId_LabelEnabledColor:
-        return kPrimaryTextColor;
-      case NativeTheme::kColorId_LabelDisabledColor:
-        return SkColorSetA(
-            base_theme->GetSystemColor(NativeTheme::kColorId_LabelEnabledColor),
-            gfx::kDisabledControlAlpha);
+  switch (color_id) {
+    // Labels
+    case NativeTheme::kColorId_LabelEnabledColor:
+      return kPrimaryTextColor;
+    case NativeTheme::kColorId_LabelDisabledColor:
+      return SkColorSetA(
+          base_theme->GetSystemColor(NativeTheme::kColorId_LabelEnabledColor),
+          gfx::kDisabledControlAlpha);
 
-      // FocusableBorder
-      case NativeTheme::kColorId_UnfocusedBorderColor:
-        return SkColorSetA(SK_ColorBLACK, 0x4e);
+    // FocusableBorder
+    case NativeTheme::kColorId_UnfocusedBorderColor:
+      return SkColorSetA(SK_ColorBLACK, 0x4e);
 
-      // Textfields
-      case NativeTheme::kColorId_TextfieldDefaultColor:
-        return kPrimaryTextColor;
-      case NativeTheme::kColorId_TextfieldDefaultBackground:
-        return base_theme->GetSystemColor(
-            NativeTheme::kColorId_DialogBackground);
-      case NativeTheme::kColorId_TextfieldReadOnlyColor:
-        return SkColorSetA(base_theme->GetSystemColor(
-                               NativeTheme::kColorId_TextfieldDefaultColor),
-                           gfx::kDisabledControlAlpha);
+    // Textfields
+    case NativeTheme::kColorId_TextfieldDefaultColor:
+      return kPrimaryTextColor;
+    case NativeTheme::kColorId_TextfieldDefaultBackground:
+      return base_theme->GetSystemColor(NativeTheme::kColorId_DialogBackground);
+    case NativeTheme::kColorId_TextfieldReadOnlyColor:
+      return SkColorSetA(base_theme->GetSystemColor(
+                             NativeTheme::kColorId_TextfieldDefaultColor),
+                         gfx::kDisabledControlAlpha);
 
-      default:
-        break;
-    }
+    default:
+      break;
   }
 
   // Shared constant for disabled text.

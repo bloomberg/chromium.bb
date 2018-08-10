@@ -28,7 +28,6 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/color_palette.h"
@@ -418,11 +417,6 @@ void NativeThemeWin::PaintDirect(SkCanvas* destination_canvas,
 
 SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   // TODO: Obtain the correct colors using GetSysColor.
-  // Dialogs:
-  const SkColor kDialogBackgroundColor = SkColorSetRGB(251, 251, 251);
-  // FocusableBorder:
-  const SkColor kFocusedBorderColor = SkColorSetRGB(0x4d, 0x90, 0xfe);
-  const SkColor kUnfocusedBorderColor = SkColorSetRGB(0xd9, 0xd9, 0xd9);
   // Button:
   const SkColor kButtonHoverColor = SkColorSetRGB(6, 45, 117);
   const SkColor kProminentButtonColorInvert = gfx::kGoogleBlue300;
@@ -446,21 +440,13 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
     // Dialogs
     case kColorId_DialogBackground:
     case kColorId_BubbleBackground:
-      if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-        break;
-      return color_utils::IsInvertedColorScheme() ?
-          color_utils::InvertColor(kDialogBackgroundColor) :
-          kDialogBackgroundColor;
+      break;
 
     // FocusableBorder
     case kColorId_FocusedBorderColor:
-      if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-        break;
-      return kFocusedBorderColor;
+      break;
     case kColorId_UnfocusedBorderColor:
-      if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-        break;
-      return kUnfocusedBorderColor;
+      break;
 
     // Button
     case kColorId_ButtonEnabledColor:

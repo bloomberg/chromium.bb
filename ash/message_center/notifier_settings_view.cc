@@ -300,9 +300,7 @@ NotifierSettingsView::NotifierButton::NotifierButton(
       notifier_id_(notifier_ui_data.notifier_id),
       icon_view_(new views::ImageView()),
       name_view_(new views::Label(notifier_ui_data.name)),
-      checkbox_(new views::Checkbox(base::string16(),
-                                    this /* listener */,
-                                    true /* force_md */)) {
+      checkbox_(new views::Checkbox(base::string16(), this /* listener */)) {
   name_view_->SetAutoColorReadabilityEnabled(false);
   name_view_->SetEnabledColor(features::IsSystemTrayUnifiedEnabled()
                                   ? kUnifiedMenuTextColor

@@ -12,7 +12,6 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/default_style.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -667,9 +666,7 @@ TabbedPane::TabbedPane(TabbedPane::Orientation orientation,
     : listener_(NULL), contents_(new View()) {
   DCHECK(orientation != TabbedPane::Orientation::kHorizontal ||
          style != TabbedPane::TabStripStyle::kHighlight);
-  tab_strip_ = ui::MaterialDesignController::IsSecondaryUiMaterial()
-                   ? new MdTabStrip(orientation, style)
-                   : new TabStrip(orientation, style);
+  tab_strip_ = new MdTabStrip(orientation, style);
   AddChildView(tab_strip_);
   AddChildView(contents_);
 }
@@ -695,11 +692,7 @@ void TabbedPane::AddTabAtIndex(int index,
   DCHECK(index >= 0 && index <= GetTabCount());
   contents->SetVisible(false);
 
-  tab_strip_->AddChildViewAt(
-      ui::MaterialDesignController::IsSecondaryUiMaterial()
-          ? new MdTab(this, title, contents)
-          : new Tab(this, title, contents),
-      index);
+  tab_strip_->AddChildViewAt(new MdTab(this, title, contents), index);
   contents_->AddChildViewAt(contents, index);
   if (!GetSelectedTab())
     SelectTabAt(index);

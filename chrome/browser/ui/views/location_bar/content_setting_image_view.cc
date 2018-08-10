@@ -197,7 +197,6 @@ bool ContentSettingImageView::ShowBubble(const ui::Event& event) {
     if (!pause_animation_) {
       AnimateInkDrop(views::InkDropState::ACTIVATED,
                      ui::LocatedEvent::FromIfValid(&event));
-      bubble_view_->SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
     }
     bubble_widget->Show();
     delegate_->OnContentSettingImageBubbleShown(

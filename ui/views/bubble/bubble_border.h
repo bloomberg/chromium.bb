@@ -18,53 +18,13 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 
-class SkPath;
 class SkRRect;
 
 namespace gfx {
-class Path;
 class Rect;
 }
 
 namespace views {
-class Painter;
-
-namespace internal {
-
-// A helper that combines each border image-set painter with arrows and metrics.
-struct BorderImages {
-  BorderImages(const int border_image_ids[],
-               const int arrow_image_ids[],
-               int border_interior_thickness,
-               int arrow_interior_thickness,
-               int corner_radius);
-  virtual ~BorderImages();
-
-  std::unique_ptr<Painter> border_painter;
-  gfx::ImageSkia left_arrow;
-  gfx::ImageSkia top_arrow;
-  gfx::ImageSkia right_arrow;
-  gfx::ImageSkia bottom_arrow;
-
-  // The thickness of border and arrow images and their interior areas.
-  // Thickness is the width of left/right and the height of top/bottom images.
-  // The interior is measured without including stroke or shadow pixels. The tip
-  // of the arrow is |arrow_interior_thickness| from the border and the base is
-  // always twice that; drawn in the background color.
-  int border_thickness;
-  int border_interior_thickness;
-  int arrow_thickness;
-  int arrow_interior_thickness;
-
-  // Width of an arrow (on the horizontal), including any shadows. Defaults to
-  // the width of the |top_arrow| asset.
-  int arrow_width;
-
-  // The corner radius of the bubble's rounded-rect interior area.
-  int corner_radius;
-};
-
-}  // namespace internal
 
 // Renders a border, with optional arrow, and a custom dropshadow.
 // This can be used to produce floating "bubble" objects with rounded corners.
@@ -116,26 +76,6 @@ class VIEWS_EXPORT BubbleBorder : public Border {
 #else
     DIALOG_SHADOW = SMALL_SHADOW,
 #endif
-
-  };
-
-  // The position of the bubble in relation to the anchor.
-  enum BubbleAlignment {
-    // The tip of the arrow points to the middle of the anchor.
-    ALIGN_ARROW_TO_MID_ANCHOR,
-    // The edge nearest to the arrow is lined up with the edge of the anchor.
-    ALIGN_EDGE_TO_ANCHOR_EDGE,
-  };
-
-  // The way the arrow should be painted.
-  // TODO(estade): Harmony doesn't use this enum; remove it.
-  enum ArrowPaintType {
-    // Fully render the arrow.
-    PAINT_NORMAL,
-    // Leave space for the arrow, but do not paint it.
-    PAINT_TRANSPARENT,
-    // Neither paint nor leave space for the arrow.
-    PAINT_NONE,
   };
 
   // Specific to MD bubbles: size of shadow blur (outside the bubble) and
@@ -210,10 +150,6 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   void set_arrow(Arrow arrow) { arrow_ = arrow; }
   Arrow arrow() const { return arrow_; }
 
-  // Get or set the bubble alignment.
-  void set_alignment(BubbleAlignment alignment) { alignment_ = alignment; }
-  BubbleAlignment alignment() const { return alignment_; }
-
   // Get the shadow type.
   Shadow shadow() const { return shadow_; }
 
@@ -235,21 +171,14 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   // location to place the arrow |offset| pixels from the perpendicular edge.
   void set_arrow_offset(int offset) { arrow_offset_ = offset; }
 
-  // Sets the way the arrow is actually painted. Default is PAINT_NORMAL.
-  void set_paint_arrow(ArrowPaintType value);
-
   // Sets the shadow elevation for MD shadows. A null |shadow_elevation| will
   // yield the default BubbleBorder MD shadow.
   void set_md_shadow_elevation(int shadow_elevation) {
-    DCHECK(UseMaterialDesign()) << "Setting a non-default MD shadow elevation "
-                                   "requires that the BubbleBorder is using MD";
     md_shadow_elevation_ = shadow_elevation;
   }
 
   // Sets the shadow color for MD shadows. Defaults to SK_ColorBLACK.
   void set_md_shadow_color(SkColor shadow_color) {
-    DCHECK(UseMaterialDesign()) << "Setting a non-default MD shadow color "
-                                   "requires that the BubbleBorder is using MD";
     md_shadow_color_ = shadow_color;
   }
 
@@ -258,25 +187,8 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   virtual gfx::Rect GetBounds(const gfx::Rect& anchor_rect,
                               const gfx::Size& contents_size) const;
 
-  // Get the border exterior thickness, including stroke and shadow, in pixels.
-  int GetBorderThickness() const;
-
   // Returns the corner radius of the current image set.
   int GetBorderCornerRadius() const;
-
-  // Gets the arrow offset to use.
-  int GetArrowOffset(const gfx::Size& border_size) const;
-
-  // Retreives the arrow path given |view_bounds|. |view_bounds| should be local
-  // bounds of the view.
-  // Returns false if |path| is unchanged, which is the case when there is no
-  // painted arrow.
-  // The returned path does not account for arrow stroke and shadow.
-  bool GetArrowPath(const gfx::Rect& view_bounds, gfx::Path* path) const;
-
-  // Sets border thickness overriding the thickness set on |images_| creation.
-  // May only be invoked after |arrow_paint_type_| has been set.
-  void SetBorderInteriorThickness(int border_interior_thickness);
 
   // Overridden from Border:
   void Paint(const View& view, gfx::Canvas* canvas) override;
@@ -306,46 +218,28 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   // The border and arrow stroke size used in image assets, in pixels.
   static const int kStroke;
 
-  // Initializes the MD or non-MD BubbleBorder.
-  void Init();
-
   gfx::Size GetSizeForContentsSize(const gfx::Size& contents_size) const;
-  gfx::ImageSkia* GetArrowImage() const;
-  gfx::Rect GetArrowRect(const gfx::Rect& bounds) const;
-  void GetArrowPathFromArrowBounds(const gfx::Rect& arrow_bounds,
-                                   SkPath* path) const;
-  void DrawArrow(gfx::Canvas* canvas, const gfx::Rect& arrow_bounds) const;
 
   // Returns the region within |view| representing the client area. This can be
   // set as a canvas clip to ensure any fill or shadow from the border does not
   // draw over the contents of the bubble.
   SkRRect GetClientRect(const View& view) const;
 
-  // Paints an MD border. Ignores |shadow_|.
-  void PaintMd(const View& view, gfx::Canvas* canvas);
-
   // Paint for the NO_ASSETS shadow type. This just paints transparent pixels
   // to make the window shape based on insets and GetBorderCornerRadius().
   void PaintNoAssets(const View& view, gfx::Canvas* canvas);
-
-  internal::BorderImages* GetImagesForTest() const;
-
-  // Whether to use material design.
-  bool UseMaterialDesign() const;
 
   Arrow arrow_;
   int arrow_offset_;
   // Corner radius for the bubble border. If supplied the border will use
   // material design.
   base::Optional<int> corner_radius_;
-  ArrowPaintType arrow_paint_type_;
-  BubbleAlignment alignment_;
+
   Shadow shadow_;
-  // Elevation for the MD shadow. Requires material design.
+  // Elevation for the MD shadow.
   base::Optional<int> md_shadow_elevation_;
-  // Color for the MD shadow. Requires material design.
+  // Color for the MD shadow.
   SkColor md_shadow_color_ = SK_ColorBLACK;
-  internal::BorderImages* images_;
   SkColor background_color_;
   bool use_theme_background_color_;
 

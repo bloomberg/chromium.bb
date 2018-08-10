@@ -74,8 +74,6 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
     set_shadow(views::BubbleBorder::NO_SHADOW);
   }
   views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(this);
-  if (activation_action == ActivationAction::DO_NOT_ACTIVATE)
-    SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
 
   widget->Show();
   if (activation_action == ActivationAction::ACTIVATE)

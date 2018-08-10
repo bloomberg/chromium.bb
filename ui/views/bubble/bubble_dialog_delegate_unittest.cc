@@ -285,19 +285,18 @@ TEST_F(BubbleDialogDelegateTest, NonClientHitTest) {
       new TestBubbleDialogDelegateView(anchor_widget->GetContentsView());
   BubbleDialogDelegateView::CreateBubble(bubble_delegate);
   BubbleFrameView* frame = bubble_delegate->GetBubbleFrameView();
-  const int border = frame->bubble_border()->GetBorderThickness();
 
   struct {
     const int point;
     const int hit;
   } cases[] = {
-      {border, HTNOWHERE}, {border + 60, HTCLIENT}, {1000, HTNOWHERE},
+      {0, HTNOWHERE}, {60, HTCLIENT}, {1000, HTNOWHERE},
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
     gfx::Point point(cases[i].point, cases[i].point);
     EXPECT_EQ(cases[i].hit, frame->NonClientHitTest(point))
-        << " with border: " << border << ", at point " << cases[i].point;
+        << " at point " << cases[i].point;
   }
 }
 

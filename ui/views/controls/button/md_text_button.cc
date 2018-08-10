@@ -27,47 +27,20 @@
 
 namespace views {
 
-namespace {
-
-bool UseMaterialSecondaryButtons() {
-#if defined(OS_MACOSX)
-  return true;
-#else
-  return ui::MaterialDesignController::IsSecondaryUiMaterial();
-#endif  // defined(OS_MACOSX)
-}
-
-LabelButton* CreateButton(ButtonListener* listener,
-                          const base::string16& text,
-                          bool md) {
-  if (md)
-    return MdTextButton::Create(listener, text, style::CONTEXT_BUTTON_MD);
-
-  LabelButton* button = new LabelButton(listener, text, style::CONTEXT_BUTTON);
-  button->SetStyleDeprecated(Button::STYLE_BUTTON);
-  return button;
-}
-
-}  // namespace
-
 // static
 LabelButton* MdTextButton::CreateSecondaryUiButton(ButtonListener* listener,
                                                    const base::string16& text) {
-  return CreateButton(listener, text, UseMaterialSecondaryButtons());
+  return MdTextButton::Create(listener, text, style::CONTEXT_BUTTON_MD);
 }
 
 // static
 LabelButton* MdTextButton::CreateSecondaryUiBlueButton(
     ButtonListener* listener,
     const base::string16& text) {
-  if (UseMaterialSecondaryButtons()) {
-    MdTextButton* md_button =
-        MdTextButton::Create(listener, text, style::CONTEXT_BUTTON_MD);
-    md_button->SetProminent(true);
-    return md_button;
-  }
-
-  return new BlueButton(listener, text);
+  MdTextButton* md_button =
+      MdTextButton::Create(listener, text, style::CONTEXT_BUTTON_MD);
+  md_button->SetProminent(true);
+  return md_button;
 }
 
 // static
@@ -307,25 +280,10 @@ void MdTextButton::UpdateColors() {
       // Harmony and non-Harmony colors.
       stroke_alpha = 0x43;
     } else {
-      // These alpha values will take the enabled button colors, 5a5a5a @ 1.0
-      // alpha for non-Harmony, 757575 @ 1.0 alpha for Harmony and turn it into
-      // an effective b2b2b2 @ 1.0 alpha or 000000 @ 0.3 for the stroke_color.
-      stroke_alpha = UseMaterialSecondaryButtons() ? 0x8f : 0x77;
-#if defined(OS_MACOSX)
-      // Without full secondary UI MD support, the text color is solid black,
-      // and so the border is too dark on Mac. On Retina it looks OK, so
-      // heuristically determine the scale factor as well.
-      if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-        // The Compositor may only be set when attached to a Widget. But, since
-        // that also determines the theme, UpdateColors() will always be called
-        // after attaching to a Widget.
-        // TODO(tapted): Move this into SolidRoundRectPainter if we like this
-        // logic for Harmony.
-        auto* compositor = layer()->GetCompositor();
-        if (compositor && compositor->device_scale_factor() == 1)
-          stroke_alpha = 0x4d;  // Chosen to match full secondary UI MD (0.3).
-      }
-#endif
+      // These alpha values will take the enabled button colors, 757575 @ 1.0
+      // alpha turn it into an effective b2b2b2 @ 1.0 alpha or 000000 @ 0.3 for
+      // the stroke_color.
+      stroke_alpha = 0x8f;
     }
     stroke_color = SkColorSetA(text_color, stroke_alpha);
   }

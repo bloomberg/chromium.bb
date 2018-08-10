@@ -15,7 +15,6 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/default_style.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/combobox_model_observer.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
@@ -93,10 +92,6 @@ const int kFocusedPressedMenuButtonImages[] =
 
 #undef MENU_IMAGE_GRID
 
-bool UseMd() {
-  return ui::MaterialDesignController::IsSecondaryUiMaterial();
-}
-
 SkColor GetTextColorForEnableState(const Combobox& combobox, bool enabled) {
   return style::GetColor(
       combobox, style::CONTEXT_TEXTFIELD,
@@ -130,10 +125,8 @@ class TransparentButton : public Button {
     SetFocusBehavior(FocusBehavior::NEVER);
     set_notify_action(PlatformStyle::kMenuNotifyActivationAction);
 
-    if (UseMd()) {
-      SetInkDropMode(InkDropMode::ON);
-      set_has_ink_drop_action_on_click(true);
-    }
+    SetInkDropMode(InkDropMode::ON);
+    set_has_ink_drop_action_on_click(true);
   }
   ~TransparentButton() override {}
 
@@ -455,16 +448,10 @@ Combobox::Combobox(ui::ComboboxModel* model, Style style)
 
   // A layer is applied to make sure that canvas bounds are snapped to pixel
   // boundaries (for the sake of drawing the arrow).
-  if (UseMd()) {
-    SetPaintToLayer();
-    layer()->SetFillsBoundsOpaquely(false);
-  } else {
-    arrow_image_ = *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IDR_MENU_DROPARROW);
-  }
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
 
-  if (UseMd())
-    focus_ring_ = FocusRing::Install(this);
+  focus_ring_ = FocusRing::Install(this);
 }
 
 Combobox::~Combobox() {
@@ -567,9 +554,6 @@ void Combobox::Layout() {
 }
 
 void Combobox::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  if (!UseMd())
-    return;
-
   SetBackground(
       CreateBackgroundFromPainter(Painter::CreateSolidRoundRectPainter(
           theme->GetSystemColor(
@@ -795,9 +779,6 @@ void Combobox::ButtonPressed(Button* sender, const ui::Event& event) {
   if (!enabled())
     return;
 
-  if (!UseMd())
-    RequestFocus();
-
   if (sender == text_button_) {
     OnPerformAction();
   } else {
@@ -865,7 +846,7 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
       PositionArrowWithinContainer(arrow_bounds, ArrowSize(), style_);
   AdjustBoundsForRTLUI(&arrow_bounds);
 
-  if (UseMd()) {
+  {
     // Since this is a core piece of UI and vector icons don't handle fractional
     // scale factors particularly well, manually draw an arrow and make sure it
     // looks good at all scale factors.
@@ -890,8 +871,6 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
     flags.setColor(arrow_color);
     flags.setAntiAlias(true);
     canvas->DrawPath(path, flags);
-  } else {
-    canvas->DrawImageInt(arrow_image_, arrow_bounds.x(), arrow_bounds.y());
   }
 }
 
@@ -1005,7 +984,7 @@ void Combobox::OnPerformAction() {
 }
 
 gfx::Size Combobox::ArrowSize() const {
-  return UseMd() ? gfx::Size(8, 4) : arrow_image_.size();
+  return gfx::Size(8, 4);
 }
 
 gfx::Size Combobox::GetContentSize() const {
@@ -1031,11 +1010,9 @@ PrefixSelector* Combobox::GetPrefixSelector() {
 }
 
 int Combobox::GetArrowContainerWidth() const {
-  constexpr int kMdPaddingWidth = 8;
-  constexpr int kNormalPaddingWidth = 7;
-  int arrow_pad = UseMd() ? kMdPaddingWidth : kNormalPaddingWidth;
+  constexpr int kPaddingWidth = 8;
   int padding = style_ == STYLE_NORMAL
-                    ? arrow_pad * 2
+                    ? kPaddingWidth * 2
                     : kActionLeftPadding + kActionRightPadding;
   return ArrowSize().width() + padding;
 }

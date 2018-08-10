@@ -154,8 +154,6 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
   }
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(intent_picker_bubble_);
-  intent_picker_bubble_->SetArrowPaintType(
-      views::BubbleBorder::PAINT_TRANSPARENT);
   intent_picker_bubble_->GetDialogClientView()->Layout();
   // TODO(aleventhal) Should not need to be focusable as only descendant widgets
   // are interactive; however, it does call RequestFocus(). If it is going to be

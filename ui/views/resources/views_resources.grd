@@ -15,18 +15,6 @@
       <structure type="chrome_scaled_image" name="IDR_APP_TOP_CENTER" file="app_top_center.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_TOP_LEFT" file="app_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_TOP_RIGHT" file="app_top_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_B" file="bubble_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_BL" file="bubble_bottom_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_BR" file="bubble_bottom_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_B_ARROW" file="bubble_pointer_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_L" file="bubble_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_L_ARROW" file="bubble_pointer_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_R" file="bubble_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_R_ARROW" file="bubble_pointer_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_T" file="bubble_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_TL" file="bubble_top_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_TR" file="bubble_top_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_T_ARROW" file="bubble_pointer_top.png" />
       <structure type="chrome_scaled_image" name="IDR_BUTTON_DISABLED" file="common/button_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_HOVER" file="common/button_focused_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_NORMAL" file="common/button_focused.png" />
@@ -216,30 +204,6 @@
       <structure type="chrome_scaled_image" name="IDR_WINDOW_TOP_CENTER" file="common/window_top_center.png" />
       <structure type="chrome_scaled_image" name="IDR_WINDOW_TOP_LEFT_CORNER" file="common/window_top_left_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_WINDOW_TOP_RIGHT_CORNER" file="common/window_top_right_corner.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_BIG_BOTTOM" file="common/window_bubble_shadow_big_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_BIG_BOTTOM_LEFT" file="common/window_bubble_shadow_big_bottom_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_BIG_BOTTOM_RIGHT" file="common/window_bubble_shadow_big_bottom_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_BIG_LEFT" file="common/window_bubble_shadow_big_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_BIG_RIGHT" file="common/window_bubble_shadow_big_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_BIG_TOP" file="common/window_bubble_shadow_big_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_BIG_TOP_LEFT" file="common/window_bubble_shadow_big_top_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_BIG_TOP_RIGHT" file="common/window_bubble_shadow_big_top_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SPIKE_BIG_BOTTOM" file="common/window_bubble_shadow_spike_big_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SPIKE_BIG_LEFT" file="common/window_bubble_shadow_spike_big_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SPIKE_BIG_RIGHT" file="common/window_bubble_shadow_spike_big_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SPIKE_BIG_TOP" file="common/window_bubble_shadow_spike_big_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SMALL_BOTTOM" file="common/window_bubble_shadow_small_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SMALL_BOTTOM_LEFT" file="common/window_bubble_shadow_small_bottom_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SMALL_BOTTOM_RIGHT" file="common/window_bubble_shadow_small_bottom_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SMALL_LEFT" file="common/window_bubble_shadow_small_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SMALL_RIGHT" file="common/window_bubble_shadow_small_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SMALL_TOP" file="common/window_bubble_shadow_small_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SMALL_TOP_LEFT" file="common/window_bubble_shadow_small_top_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SMALL_TOP_RIGHT" file="common/window_bubble_shadow_small_top_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SPIKE_SMALL_BOTTOM" file="common/window_bubble_shadow_spike_small_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SPIKE_SMALL_LEFT" file="common/window_bubble_shadow_spike_small_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SPIKE_SMALL_RIGHT" file="common/window_bubble_shadow_spike_small_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SPIKE_SMALL_TOP" file="common/window_bubble_shadow_spike_small_top.png" />
     </structures>
   </release>
 </grit>

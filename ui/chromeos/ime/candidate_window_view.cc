@@ -43,7 +43,6 @@ class CandidateWindowBorder : public views::BubbleBorder {
                             gfx::kPlaceholderColor),
         parent_(parent),
         offset_(0) {
-    set_paint_arrow(views::BubbleBorder::PAINT_NONE);
     set_use_theme_background_color(true);
   }
   ~CandidateWindowBorder() override {}

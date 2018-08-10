@@ -467,7 +467,7 @@ void NotificationInputContainerMD::ButtonPressed(views::Button* sender,
 class InlineSettingsRadioButton : public views::RadioButton {
  public:
   InlineSettingsRadioButton(const base::string16& label_text)
-      : views::RadioButton(label_text, 1 /* group */, true /* force_md */) {
+      : views::RadioButton(label_text, 1 /* group */) {
     label()->SetFontList(GetTextFontList());
     label()->SetEnabledColor(kRegularTextColorMD);
     label()->SetSubpixelRenderingEnabled(false);

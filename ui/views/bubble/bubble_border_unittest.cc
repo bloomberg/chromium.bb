@@ -16,13 +16,6 @@
 #include "ui/views/test/views_test_base.h"
 
 namespace views {
-namespace {
-
-bool UseMd() {
-  return ui::MaterialDesignController::IsSecondaryUiMaterial();
-}
-
-}  // namespace
 
 typedef views::ViewsTestBase BubbleBorderTest;
 
@@ -223,7 +216,6 @@ TEST_F(BubbleBorderTest, GetSizeForContentsSizeTest) {
                              BubbleBorder::NO_SHADOW,
                              SK_ColorWHITE);
 
-  const views::internal::BorderImages* kImages = border.GetImagesForTest();
   const gfx::Insets kInsets = border.GetInsets();
 
   // kSmallSize is smaller than the minimum allowable size and does not
@@ -233,106 +225,68 @@ TEST_F(BubbleBorderTest, GetSizeForContentsSizeTest) {
   // the resulting size.
   const gfx::Size kMediumSize = gfx::Size(50, 60);
 
-  const gfx::Size kSmallHorizArrow(
-      UseMd() ? kSmallSize.width() + kInsets.width()
-              : 2 * kImages->border_thickness + kImages->arrow_width,
-      UseMd() ? kSmallSize.height() + kInsets.height()
-              : kImages->border_thickness + kImages->arrow_thickness +
-                    kImages->border_interior_thickness);
+  const gfx::Size kSmallHorizArrow(kSmallSize.width() + kInsets.width(),
+                                   kSmallSize.height() + kInsets.height());
 
-  const gfx::Size kSmallVertArrow(
-      UseMd() ? kSmallHorizArrow.width() : kSmallHorizArrow.height(),
-      UseMd() ? kSmallHorizArrow.height() : kSmallHorizArrow.width());
+  const gfx::Size kSmallVertArrow(kSmallHorizArrow.width(),
+                                  kSmallHorizArrow.height());
 
-  const gfx::Size kSmallNoArrow(
-      UseMd() ? kSmallHorizArrow.width() : 2 * kImages->border_thickness,
-      UseMd() ? kSmallHorizArrow.height() : 2 * kImages->border_thickness);
+  const gfx::Size kSmallNoArrow(kSmallHorizArrow.width(),
+                                kSmallHorizArrow.height());
 
-  const gfx::Size kMediumHorizArrow(
-      UseMd() ? kMediumSize.width() + kInsets.width()
-              : kMediumSize.width() + 2 * border.GetBorderThickness(),
-      UseMd() ? kMediumSize.height() + kInsets.height()
-              : kMediumSize.height() + border.GetBorderThickness() +
-                    kImages->arrow_thickness);
+  const gfx::Size kMediumHorizArrow(kMediumSize.width() + kInsets.width(),
+                                    kMediumSize.height() + kInsets.height());
 
-  const gfx::Size kMediumVertArrow(
-      UseMd() ? kMediumHorizArrow.width()
-              : kMediumSize.width() + border.GetBorderThickness() +
-                    kImages->arrow_thickness,
-      UseMd() ? kMediumHorizArrow.height()
-              : kMediumSize.height() + 2 * border.GetBorderThickness());
+  const gfx::Size kMediumVertArrow(kMediumHorizArrow.width(),
+                                   kMediumHorizArrow.height());
 
-  const gfx::Size kMediumNoArrow(
-      UseMd() ? kMediumHorizArrow.width()
-              : kMediumSize.width() + 2 * border.GetBorderThickness(),
-      UseMd() ? kMediumHorizArrow.height()
-              : kMediumSize.height() + 2 * border.GetBorderThickness());
+  const gfx::Size kMediumNoArrow(kMediumHorizArrow.width(),
+                                 kMediumHorizArrow.height());
 
   struct TestCase {
     BubbleBorder::Arrow arrow;
     gfx::Size content;
-    gfx::Size expected_with_arrow;
     gfx::Size expected_without_arrow;
   };
 
   TestCase cases[] = {
-    // Content size: kSmallSize
-    { BubbleBorder::TOP_LEFT, kSmallSize, kSmallHorizArrow, kSmallNoArrow },
-    { BubbleBorder::TOP_CENTER, kSmallSize, kSmallHorizArrow, kSmallNoArrow },
-    { BubbleBorder::TOP_RIGHT, kSmallSize, kSmallHorizArrow, kSmallNoArrow },
-    { BubbleBorder::BOTTOM_LEFT, kSmallSize, kSmallHorizArrow, kSmallNoArrow },
-    { BubbleBorder::BOTTOM_CENTER, kSmallSize, kSmallHorizArrow,
-      kSmallNoArrow },
-    { BubbleBorder::BOTTOM_RIGHT, kSmallSize, kSmallHorizArrow, kSmallNoArrow },
-    { BubbleBorder::LEFT_TOP, kSmallSize, kSmallVertArrow, kSmallNoArrow },
-    { BubbleBorder::LEFT_CENTER, kSmallSize, kSmallVertArrow, kSmallNoArrow },
-    { BubbleBorder::LEFT_BOTTOM, kSmallSize, kSmallVertArrow, kSmallNoArrow },
-    { BubbleBorder::RIGHT_TOP, kSmallSize, kSmallVertArrow, kSmallNoArrow },
-    { BubbleBorder::RIGHT_CENTER, kSmallSize, kSmallVertArrow, kSmallNoArrow },
-    { BubbleBorder::RIGHT_BOTTOM, kSmallSize, kSmallVertArrow, kSmallNoArrow },
-    { BubbleBorder::NONE, kSmallSize, kSmallNoArrow, kSmallNoArrow },
-    { BubbleBorder::FLOAT, kSmallSize, kSmallNoArrow, kSmallNoArrow },
+      // Content size: kSmallSize
+      {BubbleBorder::TOP_LEFT, kSmallSize, kSmallNoArrow},
+      {BubbleBorder::TOP_CENTER, kSmallSize, kSmallNoArrow},
+      {BubbleBorder::TOP_RIGHT, kSmallSize, kSmallNoArrow},
+      {BubbleBorder::BOTTOM_LEFT, kSmallSize, kSmallNoArrow},
+      {BubbleBorder::BOTTOM_CENTER, kSmallSize, kSmallNoArrow},
+      {BubbleBorder::BOTTOM_RIGHT, kSmallSize, kSmallNoArrow},
+      {BubbleBorder::LEFT_TOP, kSmallSize, kSmallNoArrow},
+      {BubbleBorder::LEFT_CENTER, kSmallSize, kSmallNoArrow},
+      {BubbleBorder::LEFT_BOTTOM, kSmallSize, kSmallNoArrow},
+      {BubbleBorder::RIGHT_TOP, kSmallSize, kSmallNoArrow},
+      {BubbleBorder::RIGHT_CENTER, kSmallSize, kSmallNoArrow},
+      {BubbleBorder::RIGHT_BOTTOM, kSmallSize, kSmallNoArrow},
+      {BubbleBorder::NONE, kSmallSize, kSmallNoArrow},
+      {BubbleBorder::FLOAT, kSmallSize, kSmallNoArrow},
 
-    // Content size: kMediumSize
-    { BubbleBorder::TOP_LEFT, kMediumSize, kMediumHorizArrow, kMediumNoArrow },
-    { BubbleBorder::TOP_CENTER, kMediumSize, kMediumHorizArrow,
-      kMediumNoArrow },
-    { BubbleBorder::TOP_RIGHT, kMediumSize, kMediumHorizArrow, kMediumNoArrow },
-    { BubbleBorder::BOTTOM_LEFT, kMediumSize, kMediumHorizArrow,
-      kMediumNoArrow },
-    { BubbleBorder::BOTTOM_CENTER, kMediumSize, kMediumHorizArrow,
-      kMediumNoArrow },
-    { BubbleBorder::BOTTOM_RIGHT, kMediumSize, kMediumHorizArrow,
-      kMediumNoArrow },
-    { BubbleBorder::LEFT_TOP, kMediumSize, kMediumVertArrow, kMediumNoArrow },
-    { BubbleBorder::LEFT_CENTER, kMediumSize, kMediumVertArrow,
-      kMediumNoArrow },
-    { BubbleBorder::LEFT_BOTTOM, kMediumSize, kMediumVertArrow,
-      kMediumNoArrow },
-    { BubbleBorder::RIGHT_TOP, kMediumSize, kMediumVertArrow, kMediumNoArrow },
-    { BubbleBorder::RIGHT_CENTER, kMediumSize, kMediumVertArrow,
-      kMediumNoArrow },
-    { BubbleBorder::RIGHT_BOTTOM, kMediumSize, kMediumVertArrow,
-      kMediumNoArrow },
-    { BubbleBorder::NONE, kMediumSize, kMediumNoArrow, kMediumNoArrow },
-    { BubbleBorder::FLOAT, kMediumSize, kMediumNoArrow, kMediumNoArrow }
-  };
+      // Content size: kMediumSize
+      {BubbleBorder::TOP_LEFT, kMediumSize, kMediumNoArrow},
+      {BubbleBorder::TOP_CENTER, kMediumSize, kMediumNoArrow},
+      {BubbleBorder::TOP_RIGHT, kMediumSize, kMediumNoArrow},
+      {BubbleBorder::BOTTOM_LEFT, kMediumSize, kMediumNoArrow},
+      {BubbleBorder::BOTTOM_CENTER, kMediumSize, kMediumNoArrow},
+      {BubbleBorder::BOTTOM_RIGHT, kMediumSize, kMediumNoArrow},
+      {BubbleBorder::LEFT_TOP, kMediumSize, kMediumNoArrow},
+      {BubbleBorder::LEFT_CENTER, kMediumSize, kMediumNoArrow},
+      {BubbleBorder::LEFT_BOTTOM, kMediumSize, kMediumNoArrow},
+      {BubbleBorder::RIGHT_TOP, kMediumSize, kMediumNoArrow},
+      {BubbleBorder::RIGHT_CENTER, kMediumSize, kMediumNoArrow},
+      {BubbleBorder::RIGHT_BOTTOM, kMediumSize, kMediumNoArrow},
+      {BubbleBorder::NONE, kMediumSize, kMediumNoArrow},
+      {BubbleBorder::FLOAT, kMediumSize, kMediumNoArrow}};
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf("i=%d arrow=%d",
         static_cast<int>(i), cases[i].arrow));
 
     border.set_arrow(cases[i].arrow);
-
-    border.set_paint_arrow(BubbleBorder::PAINT_NORMAL);
-    EXPECT_EQ(cases[i].expected_with_arrow,
-              border.GetSizeForContentsSize(cases[i].content));
-
-    border.set_paint_arrow(BubbleBorder::PAINT_TRANSPARENT);
-    EXPECT_EQ(cases[i].expected_without_arrow,
-              border.GetSizeForContentsSize(cases[i].content));
-
-    border.set_paint_arrow(BubbleBorder::PAINT_NONE);
     EXPECT_EQ(cases[i].expected_without_arrow,
               border.GetSizeForContentsSize(cases[i].content));
   }
@@ -348,8 +302,6 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
     const gfx::Size kContentSize(500, 600);
     const gfx::Insets kInsets = border.GetInsets();
 
-    const views::internal::BorderImages* kImages = border.GetImagesForTest();
-
     border.set_arrow(BubbleBorder::TOP_LEFT);
     const gfx::Size kTotalSizeWithHorizArrow =
         border.GetSizeForContentsSize(kContentSize);
@@ -362,19 +314,13 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
     const gfx::Size kTotalSizeWithNoArrow =
         border.GetSizeForContentsSize(kContentSize);
 
-    const int kBorderThickness = border.GetBorderThickness();
-
     const int kArrowOffsetForHorizCenter = kTotalSizeWithHorizArrow.width() / 2;
     const int kArrowOffsetForVertCenter = kTotalSizeWithVertArrow.height() / 2;
-    const int kArrowOffsetForNotCenter =
-        UseMd() ? 0 : kImages->border_thickness + (kImages->arrow_width / 2);
 
     const int kStrokeWidth =
         shadow == BubbleBorder::NO_ASSETS ? 0 : BubbleBorder::kStroke;
 
-    const int kArrowThickness = UseMd() ? 0 : kImages->arrow_interior_thickness;
-    const int kArrowShift =
-        UseMd() ? 0 : kArrowThickness + kStrokeWidth - kImages->arrow_thickness;
+    const int kArrowShift = 0;
     const int kHeightDifference =
         kTotalSizeWithHorizArrow.height() - kTotalSizeWithNoArrow.height();
     const int kWidthDifference =
@@ -383,118 +329,62 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
 
     // The arrow only makes a difference in height if it is longer than the
     // shadow.
-    const int kExpectedHeightDifference =
-        UseMd() ? 0
-                : std::max(kImages->arrow_thickness +
-                               kImages->border_interior_thickness,
-                           kImages->border_thickness) -
-                      std::max(kImages->border_interior_thickness,
-                               kImages->border_thickness);
+    const int kExpectedHeightDifference = 0;
     EXPECT_EQ(kExpectedHeightDifference, kHeightDifference)
         << "Size with arrow: " << kTotalSizeWithHorizArrow.ToString()
         << " vs. size without arrow: " << kTotalSizeWithNoArrow.ToString();
 
-    const int kTopHorizArrowY =
-        UseMd() ? kAnchor.bottom() + kStrokeWidth - kInsets.top()
-                : kAnchor.bottom() + kArrowShift;
+    const int kTopHorizArrowY = kAnchor.bottom() + kStrokeWidth - kInsets.top();
     const int kBottomHorizArrowY =
-        UseMd() ? kAnchor.y() - kTotalSizeWithHorizArrow.height()
-                : kAnchor.y() - kArrowShift - kTotalSizeWithHorizArrow.height();
+        kAnchor.y() - kTotalSizeWithHorizArrow.height();
     const int kLeftVertArrowX = kAnchor.x() + kAnchor.width() + kArrowShift;
-    const int kRightVertArrowX =
-        UseMd() ? kAnchor.x() - kTotalSizeWithHorizArrow.width()
-                : kAnchor.x() - kArrowShift - kTotalSizeWithVertArrow.width();
+    const int kRightVertArrowX = kAnchor.x() - kTotalSizeWithHorizArrow.width();
 
     struct TestCase {
       BubbleBorder::Arrow arrow;
-      BubbleBorder::BubbleAlignment alignment;
       int expected_x;
       int expected_y;
     };
 
     TestCase cases[] = {
         // Horizontal arrow tests.
-        {BubbleBorder::TOP_LEFT, BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
-         UseMd() ? kAnchor.x() + kStrokeWidth - kInsets.left()
-                 : kAnchor.CenterPoint().x() - kArrowOffsetForNotCenter,
+        {BubbleBorder::TOP_LEFT, kAnchor.x() + kStrokeWidth - kInsets.left(),
          kTopHorizArrowY},
-        {BubbleBorder::TOP_LEFT, BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE,
-         UseMd() ? kAnchor.x() + kStrokeWidth - kInsets.left()
-                 : kAnchor.x() + kStrokeWidth - kBorderThickness,
-         kTopHorizArrowY},
-        {BubbleBorder::TOP_CENTER, BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
+        {BubbleBorder::TOP_CENTER,
          kAnchor.CenterPoint().x() - kArrowOffsetForHorizCenter,
          kTopHorizArrowY},
-        {BubbleBorder::BOTTOM_RIGHT, BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
-         UseMd() ? kAnchor.CenterPoint().x() - kTotalSizeWithHorizArrow.width()
-                 : kAnchor.CenterPoint().x() + kArrowOffsetForNotCenter -
-                       kTotalSizeWithHorizArrow.width(),
-         kBottomHorizArrowY},
-        {BubbleBorder::BOTTOM_RIGHT, BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE,
-         kAnchor.x() + kAnchor.width() - kTotalSizeWithHorizArrow.width() +
-             kBorderThickness - kStrokeWidth,
+        {BubbleBorder::BOTTOM_RIGHT,
+         kAnchor.x() + kAnchor.width() - kTotalSizeWithHorizArrow.width() -
+             kStrokeWidth,
          kBottomHorizArrowY},
 
         // Vertical arrow tests.
-        {BubbleBorder::LEFT_TOP, BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
-         kLeftVertArrowX, kAnchor.CenterPoint().y() - kArrowOffsetForNotCenter},
-        {BubbleBorder::LEFT_TOP, BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE,
-         kLeftVertArrowX, kAnchor.y() + kStrokeWidth - kBorderThickness},
-        {BubbleBorder::LEFT_CENTER, BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
-         kLeftVertArrowX - (UseMd() ? kInsets.right() - kStrokeWidth : 0),
+        {BubbleBorder::LEFT_TOP, kLeftVertArrowX, kAnchor.y() + kStrokeWidth},
+        {BubbleBorder::LEFT_CENTER,
+         kLeftVertArrowX - (kInsets.right() - kStrokeWidth),
          kAnchor.CenterPoint().y() - kArrowOffsetForVertCenter +
-             (UseMd() ? 2 * kStrokeWidth : 0)},
-        {BubbleBorder::RIGHT_BOTTOM, BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
-         kRightVertArrowX,
-         kAnchor.CenterPoint().y() + kArrowOffsetForNotCenter -
-             kTotalSizeWithVertArrow.height()},
-        {BubbleBorder::RIGHT_BOTTOM, BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE,
-         kRightVertArrowX,
-         kAnchor.y() + kAnchor.height() - kTotalSizeWithVertArrow.height() +
-             kBorderThickness - kStrokeWidth},
+             (2 * kStrokeWidth)},
+        {BubbleBorder::RIGHT_BOTTOM, kRightVertArrowX,
+         kAnchor.y() + kAnchor.height() - kTotalSizeWithVertArrow.height() -
+             kStrokeWidth},
 
         // No arrow tests.
-        {BubbleBorder::NONE, BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
+        {BubbleBorder::NONE,
          kAnchor.x() + (kAnchor.width() - kTotalSizeWithNoArrow.width()) / 2,
          kAnchor.y() + kAnchor.height()},
-        {BubbleBorder::FLOAT, BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
+        {BubbleBorder::FLOAT,
          kAnchor.x() + (kAnchor.width() - kTotalSizeWithNoArrow.width()) / 2,
          kAnchor.y() + (kAnchor.height() - kTotalSizeWithNoArrow.height()) / 2},
     };
 
     for (size_t i = 0; i < arraysize(cases); ++i) {
-      SCOPED_TRACE(base::StringPrintf("i=%d arrow=%d alignment=%d",
-                                      static_cast<int>(i), cases[i].arrow,
-                                      cases[i].alignment));
+      SCOPED_TRACE(base::StringPrintf("i=%d arrow=%d", static_cast<int>(i),
+                                      cases[i].arrow));
       const BubbleBorder::Arrow arrow = cases[i].arrow;
       border.set_arrow(arrow);
-      border.set_alignment(cases[i].alignment);
-
-      border.set_paint_arrow(BubbleBorder::PAINT_NORMAL);
       gfx::Point origin = border.GetBounds(kAnchor, kContentSize).origin();
       int expected_x = cases[i].expected_x;
       int expected_y = cases[i].expected_y;
-      EXPECT_EQ(expected_x, origin.x());
-      EXPECT_EQ(expected_y, origin.y());
-
-      border.set_paint_arrow(BubbleBorder::PAINT_TRANSPARENT);
-      origin = border.GetBounds(kAnchor, kContentSize).origin();
-      if (border.is_arrow_on_horizontal(arrow)) {
-        expected_y += BubbleBorder::is_arrow_on_top(arrow)
-                          ? kArrowThickness
-                          : (-kArrowThickness + kHeightDifference);
-      } else if (BubbleBorder::has_arrow(arrow)) {
-        expected_x += BubbleBorder::is_arrow_on_left(arrow)
-                          ? kArrowThickness
-                          : (-kArrowThickness + kWidthDifference);
-      }
-      EXPECT_EQ(expected_x, origin.x());
-      EXPECT_EQ(expected_y, origin.y());
-
-      border.set_paint_arrow(BubbleBorder::PAINT_NONE);
-      origin = border.GetBounds(kAnchor, kContentSize).origin();
-      expected_x = cases[i].expected_x;
-      expected_y = cases[i].expected_y;
       if (border.is_arrow_on_horizontal(arrow) &&
           !BubbleBorder::is_arrow_on_top(arrow)) {
         expected_y += kHeightDifference;
@@ -506,37 +396,6 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
       EXPECT_EQ(expected_x, origin.x());
       EXPECT_EQ(expected_y, origin.y());
     }
-}
-}
-
-// Ensure all the shadow types pass some size validation and paint sanely.
-TEST_F(BubbleBorderTest, ShadowTypes) {
-  if (UseMd())
-    return;  // This test doesn't mean anything in MD mode.
-  const gfx::Rect rect(0, 0, 320, 200);
-  View paint_view;
-  paint_view.SetBoundsRect(rect);
-
-  for (int i = 0; i < BubbleBorder::SHADOW_COUNT; ++i) {
-    BubbleBorder::Shadow shadow = static_cast<BubbleBorder::Shadow>(i);
-    SCOPED_TRACE(testing::Message() << "BubbleBorder::Shadow: " << shadow);
-    gfx::Canvas canvas(gfx::Size(640, 480), 1.0f, false);
-    BubbleBorder border(BubbleBorder::TOP_LEFT, shadow, SK_ColorWHITE);
-    internal::BorderImages* border_images = border.GetImagesForTest();
-
-    // Arrow assets should always be at least as big as the drawn arrow.
-    EXPECT_GE(border_images->arrow_thickness,
-              border_images->arrow_interior_thickness);
-    EXPECT_GE(border_images->arrow_width,
-              2 * border_images->arrow_interior_thickness);
-
-    // Border assets should always be at least as thick as the hittable border.
-    EXPECT_GE(border_images->border_thickness,
-              border_images->border_interior_thickness);
-
-    // For a TOP_LEFT arrow, the x-offset always matches the border thickness.
-    EXPECT_EQ(border.GetArrowRect(rect).x(), border_images->border_thickness);
-    border.Paint(paint_view, &canvas);
   }
 }
 

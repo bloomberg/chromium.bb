@@ -558,7 +558,6 @@ void LoginBubble::Show() {
   widget->AddObserver(this);
   widget->StackAtTop();
   aura::client::GetFocusClient(widget->GetNativeView())->AddObserver(this);
-  bubble_view_->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
 
   ScheduleAnimation(true /*visible*/);
 
