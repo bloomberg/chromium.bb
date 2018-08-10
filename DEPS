@@ -585,6 +585,11 @@ deps = {
   'src/third_party/dom_distiller_js/dist':
     Var('chromium_git') + '/chromium/dom-distiller/dist.git' + '@' + '60b46718e28f553ab57e3d2bbda5b3b41456f417',
 
+  'src/third_party/dynamicmodule': {
+      'url': Var('chromium_git') + '/dynamicmodule' + '@' + 'c6d37ea1003931dd44b78f936ca0882956aa3107',
+      'condition': 'checkout_android',
+  },
+
   'src/third_party/elfutils/src': {
       'url': Var('chromium_git') + '/external/elfutils.git' + '@' + '249673729a7e5dbd5de4f3760bdcaa3d23d154d7',
       'condition': 'checkout_android_native_support',
