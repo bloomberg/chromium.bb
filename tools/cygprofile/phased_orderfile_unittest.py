@@ -101,7 +101,7 @@ class PhasedOrderfileTestCase(unittest.TestCase):
   def testGetOffsetVariations(self):
     mgr = TestProfileManager({
         ProfileFile(40, 0, ''): [1, 2, 3],
-        ProfileFile(50, 1, ''): [3, 4, 5],
+        ProfileFile(50, 1, ''): [3, 4, -10, 5],
         ProfileFile(51, 0, 'renderer'): [2, 3, 6],
         ProfileFile(51, 1, 'gpu-process'): [6, 7],
         ProfileFile(70, 0, ''): [2, 6, 8, 9],

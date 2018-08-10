@@ -197,7 +197,8 @@ class PhasedAnalyzer(object):
       process in question. The offsets are sorted arbitrarily.
     """
     (startup, common, interaction) = ([], [], [])
-    assert self._profiles.GetPhases() == set([0,1]), 'Unexpected phases'
+    assert self._profiles.GetPhases() == set([0,1]), (
+        'Unexpected phases {}'.format(self._profiles.GetPhases()))
     for o in self._GetAnnotatedOffsets():
       startup_count = o.Count(0, process)
       interaction_count = o.Count(1, process)
@@ -216,6 +217,11 @@ class PhasedAnalyzer(object):
     if self._annotated_offsets is None:
       self._annotated_offsets = self._profiles.GetAnnotatedOffsets()
       self._processor.TranslateAnnotatedSymbolOffsets(self._annotated_offsets)
+      # A warning for missing offsets has already been emitted in
+      # TranslateAnnotatedSymbolOffsets.
+      self._annotated_offsets = filter(
+          lambda offset: offset.Offset() is not None,
+          self._annotated_offsets)
     return self._annotated_offsets
 
   def _GetProcessList(self):

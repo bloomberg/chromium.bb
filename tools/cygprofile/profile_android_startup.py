@@ -265,6 +265,44 @@ class AndroidProfileTool(object):
     self._DeleteDeviceData()
     return data
 
+  def CollectSystemHealthProfile(self, apk):
+    """Run the orderfile system health benchmarks and collect log files.
+
+    Args:
+      apk: The location of the chrome apk file to profile.
+
+    Returns:
+      A list of cygprofile data files.
+
+    Raises:
+      NoProfileDataError: No data was found on the device.
+    """
+    self._SetUpDeviceFolders()
+    self._RunCommand(['tools/perf/run_benchmark',
+                      '--device={}'.format(self._device.serial),
+                      '--browser=exact',
+                      '--browser-executable={}'.format(apk),
+                      'orderfile_generation.training'])
+    data = self._PullProfileData()
+    self._DeleteDeviceData()
+    return data
+
+  @classmethod
+  def _RunCommand(cls, command):
+    """Run a command from current build directory root.
+
+    Args:
+      command: A list of command strings.
+
+    Returns:
+      The process's return code.
+    """
+    root = constants.DIR_SOURCE_ROOT
+    print 'Executing {} in {}'.format(' '.join(command), root)
+    process = subprocess.Popen(command, cwd=root, env=os.environ)
+    process.wait()
+    return process.returncode
+
   def _RunProfileCollection(self, package_info, simulate_user):
     """Runs the profile collection tasks.
 
