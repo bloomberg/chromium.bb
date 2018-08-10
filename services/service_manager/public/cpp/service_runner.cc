@@ -69,7 +69,7 @@ MojoResult ServiceRunner::Run(MojoHandle service_request_handle) {
 }
 
 void ServiceRunner::Quit() {
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  context_->QuitNow();
 }
 
 }  // namespace service_manager

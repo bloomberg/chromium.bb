@@ -87,10 +87,12 @@ int main(int argc, char** argv) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
   service_manager::Context service_manager_context(nullptr,
                                                    std::move(manifest_value));
+  base::RunLoop loop;
   scoped_task_environment.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&service_manager::Context::RunCommandLineApplication,
-                 base::Unretained(&service_manager_context)));
-  base::RunLoop().Run();
+                 base::Unretained(&service_manager_context),
+                 loop.QuitClosure()));
+  loop.Run();
   return 0;
 }

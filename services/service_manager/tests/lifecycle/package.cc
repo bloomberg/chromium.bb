@@ -147,7 +147,7 @@ class Package : public service_manager::ForwardingService,
     contexts_.erase(it);
     id_to_context_.erase(id_it);
     if (contexts_.empty() && base::RunLoop::IsRunningOnCurrentThread())
-      base::RunLoop::QuitCurrentWhenIdleDeprecated();
+      context()->QuitNow();
   }
 
   service_manager::test::AppClient app_client_;
