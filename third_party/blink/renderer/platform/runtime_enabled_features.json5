@@ -931,10 +931,6 @@
       status: "stable",
     },
     {
-      name: "PerformancePaintTiming",
-      status: "stable",
-    },
-    {
       name: "PermissionDelegation",
       status: "test",
     },

@@ -4,7 +4,5 @@
 
 // https://w3c.github.io/paint-timing/#sec-PerformancePaintTiming
 
-[
-    RuntimeEnabled=PerformancePaintTiming
-] interface PerformancePaintTiming : PerformanceEntry {
+interface PerformancePaintTiming : PerformanceEntry {
 };
