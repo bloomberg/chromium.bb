@@ -1145,6 +1145,7 @@ html element video
     property seekable
     property seeking
     property setMediaKeys
+    property setPictureInPictureControls
     property setSinkId
     property sinkId
     property src

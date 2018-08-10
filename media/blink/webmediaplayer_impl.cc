@@ -54,6 +54,7 @@
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/media_buildflags.h"
+#include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
 #include "third_party/blink/public/platform/web_encrypted_media_types.h"
 #include "third_party/blink/public/platform/web_localized_string.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
@@ -809,6 +810,11 @@ void WebMediaPlayerImpl::ExitPictureInPicture(
 
   // Internal cleanups.
   OnPictureInPictureModeEnded();
+}
+
+void WebMediaPlayerImpl::SetPictureInPictureCustomControls(
+    const std::vector<blink::PictureInPictureControlInfo>& controls) {
+  delegate_->DidSetPictureInPictureCustomControls(delegate_id_, controls);
 }
 
 void WebMediaPlayerImpl::RegisterPictureInPictureWindowResizeCallback(

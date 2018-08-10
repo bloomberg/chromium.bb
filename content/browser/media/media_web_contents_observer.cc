@@ -147,6 +147,9 @@ bool MediaWebContentsObserver::OnMessageReceived(
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnPictureInPictureModeEnded,
                         OnPictureInPictureModeEnded)
     IPC_MESSAGE_HANDLER(
+        MediaPlayerDelegateHostMsg_OnSetPictureInPictureCustomControls,
+        OnSetPictureInPictureCustomControls)
+    IPC_MESSAGE_HANDLER(
         MediaPlayerDelegateHostMsg_OnPictureInPictureSurfaceChanged,
         OnPictureInPictureSurfaceChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -351,6 +354,17 @@ void MediaWebContentsObserver::OnPictureInPictureModeEnded(
   render_frame_host->Send(
       new MediaPlayerDelegateMsg_OnPictureInPictureModeEnded_ACK(
           render_frame_host->GetRoutingID(), delegate_id, request_id));
+}
+
+void MediaWebContentsObserver::OnSetPictureInPictureCustomControls(
+    RenderFrameHost* render_frame_host,
+    int delegate_id,
+    const std::vector<blink::PictureInPictureControlInfo>& controls) {
+  PictureInPictureWindowControllerImpl* pip_controller =
+      PictureInPictureWindowControllerImpl::FromWebContents(
+          web_contents_impl());
+  if (pip_controller)
+    pip_controller->SetPictureInPictureCustomControls(controls);
 }
 
 void MediaWebContentsObserver::OnPictureInPictureSurfaceChanged(

@@ -4,11 +4,14 @@
 
 #include "third_party/blink/renderer/modules/picture_in_picture/html_video_element_picture_in_picture.h"
 
+#include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
+#include "third_party/blink/public/platform/web_icon_sizes_parser.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_control.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_controller_impl.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
 #include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
@@ -107,6 +110,18 @@ ScriptPromise HTMLVideoElementPictureInPicture::requestPictureInPicture(
   return promise;
 }
 
+void HTMLVideoElementPictureInPicture::setPictureInPictureControls(
+    HTMLVideoElement& element,
+    const HeapVector<PictureInPictureControl>& controls) {
+  Document& document = element.GetDocument();
+
+  PictureInPictureControllerImpl& controller =
+      PictureInPictureControllerImpl::From(document);
+
+  controller.SetPictureInPictureCustomControls(
+      &element, ToPictureInPictureControlInfoVector(controls));
+}
+
 // static
 bool HTMLVideoElementPictureInPicture::FastHasAttribute(
     const QualifiedName& name,
@@ -133,6 +148,39 @@ void HTMLVideoElementPictureInPicture::SetBooleanAttribute(
   if (controller.PictureInPictureElement(scope) == &element) {
     controller.ExitPictureInPicture(&element, nullptr);
   }
+}
+
+// static
+std::vector<PictureInPictureControlInfo>
+HTMLVideoElementPictureInPicture::ToPictureInPictureControlInfoVector(
+    const HeapVector<PictureInPictureControl>& controls) {
+  std::vector<PictureInPictureControlInfo> converted_controls;
+  for (size_t i = 0; i < controls.size(); ++i) {
+    PictureInPictureControlInfo current_converted_control;
+    HeapVector<MediaImage> current_icons = controls[i].icons();
+
+    // Only two icons are supported, so cap the loop at running that many times
+    // to avoid potential problems.
+    for (size_t j = 0; j < current_icons.size() && j < 2; ++j) {
+      PictureInPictureControlInfo::Icon current_icon;
+      current_icon.src = KURL(WebString(current_icons[j].src()));
+
+      WebVector<WebSize> sizes = WebIconSizesParser::ParseIconSizes(
+          WebString(current_icons[j].sizes()));
+      std::vector<gfx::Size> converted_sizes;
+      for (size_t i = 0; i < sizes.size(); ++i)
+        converted_sizes.push_back(static_cast<gfx::Size>(sizes[i]));
+
+      current_icon.sizes = converted_sizes;
+      current_icon.type = WebString(current_icons[j].type()).Utf8();
+      current_converted_control.icons.push_back(current_icon);
+    }
+
+    current_converted_control.id = WebString(controls[i].id()).Utf8();
+    current_converted_control.label = WebString(controls[i].label()).Utf8();
+    converted_controls.push_back(current_converted_control);
+  }
+  return converted_controls;
 }
 
 }  // namespace blink

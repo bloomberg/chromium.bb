@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_HTML_VIDEO_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_HTML_VIDEO_ELEMENT_H_
 
+#include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
 #include "third_party/blink/renderer/core/html/html_image_loader.h"
@@ -152,6 +153,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   bool SupportsPictureInPicture() const final;
   void enterPictureInPicture(WebMediaPlayer::PipWindowOpenedCallback callback);
   void exitPictureInPicture(WebMediaPlayer::PipWindowClosedCallback callback);
+  void SendCustomControlsToPipWindow();
   void PictureInPictureStopped() final;
   void PictureInPictureControlClicked(const WebString& control_id) final;
   void MediaRemotingStopped(WebLocalizedString::Name error_msg) final;
@@ -162,6 +164,12 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   // enters or exits Picture-in-Picture state.
   void OnEnteredPictureInPicture();
   void OnExitedPictureInPicture();
+
+  void SetPictureInPictureCustomControls(
+      const std::vector<PictureInPictureControlInfo>& pip_custom_controls);
+  const std::vector<PictureInPictureControlInfo>&
+  GetPictureInPictureCustomControls() const;
+  bool HasPictureInPictureCustomControls() const;
 
  protected:
   // EventTarget overrides.
@@ -214,6 +222,10 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
   // Whether this element is in overlay fullscreen mode.
   bool in_overlay_fullscreen_video_;
+
+  // Holds the most recently set custom controls. These will be persistent
+  // across active/inactive windows until new controls are passed in.
+  std::vector<PictureInPictureControlInfo> pip_custom_controls_;
 };
 
 }  // namespace blink

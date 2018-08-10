@@ -80,6 +80,12 @@ void PictureInPictureWindowControllerImpl::ClickCustomControl(
           media_player_id_->delegate_id, control_id));
 }
 
+void PictureInPictureWindowControllerImpl::SetPictureInPictureCustomControls(
+    const std::vector<blink::PictureInPictureControlInfo>& controls) {
+  DCHECK(window_);
+  window_->SetPictureInPictureCustomControls(controls);
+}
+
 void PictureInPictureWindowControllerImpl::Close(bool should_pause_video) {
   if (!window_ || !window_->IsVisible())
     return;

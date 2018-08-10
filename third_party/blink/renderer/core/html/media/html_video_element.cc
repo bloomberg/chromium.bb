@@ -603,6 +603,15 @@ void HTMLVideoElement::exitPictureInPicture(
     GetWebMediaPlayer()->ExitPictureInPicture(std::move(callback));
 }
 
+void HTMLVideoElement::SendCustomControlsToPipWindow() {
+  // TODO(sawtelle): Allow setting controls multiple times for a video, even
+  // when not active, https://crbug.com/869133
+  if (!GetWebMediaPlayer() || !HasPictureInPictureCustomControls())
+    return;
+  GetWebMediaPlayer()->SetPictureInPictureCustomControls(
+      GetPictureInPictureCustomControls());
+}
+
 void HTMLVideoElement::PictureInPictureStopped() {
   PictureInPictureController::From(GetDocument())
       .OnExitedPictureInPicture(nullptr);
@@ -647,6 +656,20 @@ void HTMLVideoElement::OnExitedPictureInPicture() {
 
   if (GetWebMediaPlayer())
     GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
+}
+
+void HTMLVideoElement::SetPictureInPictureCustomControls(
+    const std::vector<PictureInPictureControlInfo>& pip_custom_controls) {
+  pip_custom_controls_ = pip_custom_controls;
+}
+
+const std::vector<PictureInPictureControlInfo>&
+HTMLVideoElement::GetPictureInPictureCustomControls() const {
+  return pip_custom_controls_;
+}
+
+bool HTMLVideoElement::HasPictureInPictureCustomControls() const {
+  return !pip_custom_controls_.empty();
 }
 
 void HTMLVideoElement::AddedEventListener(

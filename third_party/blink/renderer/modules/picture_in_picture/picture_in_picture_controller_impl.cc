@@ -93,6 +93,9 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
         WTF::Bind(&PictureInPictureControllerImpl::OnEnteredPictureInPicture,
                   WrapPersistent(this), WrapPersistent(element),
                   WrapPersistent(resolver)));
+    // If the media element has already been given custom controls, this will
+    // ensure that they get set. Otherwise, this will do nothing.
+    element->SendCustomControlsToPipWindow();
     return;
   }
 
@@ -141,6 +144,14 @@ void PictureInPictureControllerImpl::ExitPictureInPicture(
   element->exitPictureInPicture(
       WTF::Bind(&PictureInPictureControllerImpl::OnExitedPictureInPicture,
                 WrapPersistent(this), WrapPersistent(resolver)));
+}
+
+void PictureInPictureControllerImpl::SetPictureInPictureCustomControls(
+    HTMLVideoElement* element,
+    const std::vector<PictureInPictureControlInfo>& controls) {
+  element->SetPictureInPictureCustomControls(controls);
+  if (IsPictureInPictureElement(element))
+    element->SendCustomControlsToPipWindow();
 }
 
 void PictureInPictureControllerImpl::OnExitedPictureInPicture(

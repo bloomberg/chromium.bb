@@ -23,6 +23,7 @@
 
 namespace blink {
 enum class WebFullscreenVideoStatus;
+struct PictureInPictureControlInfo;
 }  // namespace blink
 
 namespace media {
@@ -135,6 +136,10 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void OnPictureInPictureModeEnded(RenderFrameHost* render_frame_host,
                                    int delegate_id,
                                    int request_id);
+  void OnSetPictureInPictureCustomControls(
+      RenderFrameHost* render_frame_host,
+      int delegate_id,
+      const std::vector<blink::PictureInPictureControlInfo>& controls);
   void OnPictureInPictureSurfaceChanged(RenderFrameHost*,
                                         int delegate_id,
                                         const viz::SurfaceId&,

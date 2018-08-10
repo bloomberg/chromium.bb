@@ -645,6 +645,13 @@ void WebMediaPlayerMS::ExitPictureInPicture(
   // WebMediaPlayerMS. See http://crbug/746182.
 }
 
+void WebMediaPlayerMS::SetPictureInPictureCustomControls(
+    const std::vector<blink::PictureInPictureControlInfo>& controls) {
+  NOTIMPLEMENTED();
+  // TODO(apacible): Implement after video in surfaces is supported for
+  // WebMediaPlayerMS. See http://crbug/746182.
+}
+
 void WebMediaPlayerMS::RegisterPictureInPictureWindowResizeCallback(
     blink::WebMediaPlayer::PipWindowResizedCallback) {
   NOTIMPLEMENTED();

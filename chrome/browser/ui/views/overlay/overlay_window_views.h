@@ -40,6 +40,8 @@ class OverlayWindowViews : public content::OverlayWindow,
   ui::Layer* GetWindowBackgroundLayer() override;
   ui::Layer* GetVideoLayer() override;
   gfx::Rect GetVideoBounds() override;
+  void SetPictureInPictureCustomControls(
+      const std::vector<blink::PictureInPictureControlInfo>& controls) override;
 
   // views::Widget:
   gfx::Size GetMinimumSize() const override;

@@ -13,6 +13,7 @@ namespace blink {
 
 class HTMLVideoElement;
 class ScriptPromiseResolver;
+struct PictureInPictureControlInfo;
 
 // PictureInPictureController allows to know if Picture-in-Picture is allowed
 // for a video element in Blink outside of modules/ module. It
@@ -64,6 +65,11 @@ class CORE_EXPORT PictureInPictureController
   // custom control. This is defined by the site that calls the web API.
   virtual void OnPictureInPictureControlClicked(
       const WebString& control_id) = 0;
+
+  // Assign custom controls to be added to the Picture-in-Picture window.
+  virtual void SetPictureInPictureCustomControls(
+      HTMLVideoElement*,
+      const std::vector<PictureInPictureControlInfo>&) = 0;
 
   // Returns whether the given element is currently in Picture-in-Picture.
   virtual bool IsPictureInPictureElement(const Element*) const = 0;

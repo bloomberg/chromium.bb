@@ -39,6 +39,8 @@ class PictureInPictureWindowControllerImpl
   CONTENT_EXPORT void OnWindowDestroyed() override;
   CONTENT_EXPORT void ClickCustomControl(
       const std::string& control_id) override;
+  CONTENT_EXPORT void SetPictureInPictureCustomControls(
+      const std::vector<blink::PictureInPictureControlInfo>& controls) override;
   CONTENT_EXPORT void EmbedSurface(const viz::SurfaceId& surface_id,
                                    const gfx::Size& natural_size) override;
   CONTENT_EXPORT OverlayWindow* GetWindowForTesting() override;

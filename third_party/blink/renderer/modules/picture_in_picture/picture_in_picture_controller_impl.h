@@ -45,12 +45,6 @@ class PictureInPictureControllerImpl : public PictureInPictureController {
   // request Picture-in-Picture.
   Status IsDocumentAllowed() const;
 
-  // Meant to be called internally when an element has entered successfully
-  // Picture-in-Picture.
-  void OnEnteredPictureInPicture(HTMLVideoElement*,
-                                 ScriptPromiseResolver*,
-                                 const WebSize& picture_in_picture_window_size);
-
   // Returns element currently in Picture-in-Picture if any. Null otherwise.
   Element* PictureInPictureElement(TreeScope&) const;
 
@@ -58,14 +52,21 @@ class PictureInPictureControllerImpl : public PictureInPictureController {
   void EnterPictureInPicture(HTMLVideoElement*,
                              ScriptPromiseResolver*) override;
   void ExitPictureInPicture(HTMLVideoElement*, ScriptPromiseResolver*) override;
-  void OnExitedPictureInPicture(ScriptPromiseResolver*) override;
-  void OnPictureInPictureControlClicked(const WebString& control_id) override;
+  void SetPictureInPictureCustomControls(
+      HTMLVideoElement*,
+      const std::vector<PictureInPictureControlInfo>&) override;
   Status IsElementAllowed(const HTMLVideoElement&) const override;
   bool IsPictureInPictureElement(const Element*) const override;
 
   void Trace(blink::Visitor*) override;
 
  private:
+  void OnEnteredPictureInPicture(HTMLVideoElement*,
+                                 ScriptPromiseResolver*,
+                                 const WebSize& picture_in_picture_window_size);
+  void OnExitedPictureInPicture(ScriptPromiseResolver*) override;
+  void OnPictureInPictureControlClicked(const WebString& control_id) override;
+
   explicit PictureInPictureControllerImpl(Document&);
 
   // The Picture-in-Picture element for the associated document.

@@ -60,6 +60,7 @@ class WebURL;
 enum class WebFullscreenVideoStatus;
 struct WebRect;
 struct WebSize;
+struct PictureInPictureControlInfo;
 
 class WebMediaPlayer {
  public:
@@ -148,6 +149,9 @@ class WebMediaPlayer {
   virtual void EnterPictureInPicture(PipWindowOpenedCallback) = 0;
   // Exit Picture-in-Picture and notifies Blink when it's done.
   virtual void ExitPictureInPicture(PipWindowClosedCallback) = 0;
+  // Assign custom controls to the Picture-in-Picture window.
+  virtual void SetPictureInPictureCustomControls(
+      const std::vector<PictureInPictureControlInfo>&) = 0;
   // Register a callback that will be run when the Picture-in-Picture window
   // is resized.
   virtual void RegisterPictureInPictureWindowResizeCallback(
