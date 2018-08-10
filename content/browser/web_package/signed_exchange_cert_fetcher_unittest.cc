@@ -49,7 +49,7 @@ class DeferringURLLoaderThrottle final : public URLLoaderThrottle {
   }
 
   void WillProcessResponse(const GURL& response_url_,
-                           const network::ResourceResponseHead& response_head,
+                           network::ResourceResponseHead* response_head,
                            bool* defer) override {
     will_process_response_called_ = true;
     *defer = true;

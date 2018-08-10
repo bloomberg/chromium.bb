@@ -20,7 +20,7 @@ class CONTENT_EXPORT MimeSniffingThrottle : public URLLoaderThrottle {
 
   // Implements URLLoaderThrottle.
   void WillProcessResponse(const GURL& response_url,
-                           const network::ResourceResponseHead& response_head,
+                           network::ResourceResponseHead* response_head,
                            bool* defer) override;
 
   // Called from MimeSniffingURLLoader once mime type is ready.

@@ -43,9 +43,9 @@ void ExtensionURLLoaderThrottle::WillRedirectRequest(
 
 void ExtensionURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
-    const network::ResourceResponseHead& response_head,
+    network::ResourceResponseHead* response_head,
     bool* defer) {
-  manager_->WillProcessResponse(response_url, response_head);
+  manager_->WillProcessResponse(response_url, *response_head);
 }
 
 void ExtensionURLLoaderThrottle::DetachFromCurrentSequence() {}

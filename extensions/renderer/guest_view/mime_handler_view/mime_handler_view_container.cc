@@ -138,7 +138,7 @@ class MimeHandlerViewContainer::PluginResourceThrottle
  private:
   // content::URLLoaderThrottle overrides;
   void WillProcessResponse(const GURL& response_url,
-                           const network::ResourceResponseHead& response_head,
+                           network::ResourceResponseHead* response_head,
                            bool* defer) override {
     network::mojom::URLLoaderPtr dummy_new_loader;
     mojo::MakeRequest(&dummy_new_loader);
@@ -158,7 +158,7 @@ class MimeHandlerViewContainer::PluginResourceThrottle
 
     // Make a deep copy of ResourceResponseHead before passing it cross-thread.
     auto resource_response = base::MakeRefCounted<network::ResourceResponse>();
-    resource_response->head = response_head;
+    resource_response->head = *response_head;
     auto deep_copied_response = resource_response->DeepCopy();
     transferrable_loader->head = std::move(deep_copied_response->head);
     container_->SetEmbeddedLoader(std::move(transferrable_loader));

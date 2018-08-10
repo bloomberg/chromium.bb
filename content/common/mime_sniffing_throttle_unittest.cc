@@ -196,7 +196,7 @@ TEST_F(MimeSniffingThrottleTest, NoMimeTypeWithSniffableScheme) {
 
   network::ResourceResponseHead response_head;
   bool defer = false;
-  throttle->WillProcessResponse(GURL("https://example.com"), response_head,
+  throttle->WillProcessResponse(GURL("https://example.com"), &response_head,
                                 &defer);
   EXPECT_TRUE(defer);
   EXPECT_TRUE(delegate->is_intercepted());
@@ -210,7 +210,7 @@ TEST_F(MimeSniffingThrottleTest, SniffableMimeTypeWithSniffableScheme) {
   network::ResourceResponseHead response_head;
   response_head.mime_type = "text/plain";
   bool defer = false;
-  throttle->WillProcessResponse(GURL("https://example.com"), response_head,
+  throttle->WillProcessResponse(GURL("https://example.com"), &response_head,
                                 &defer);
   EXPECT_TRUE(defer);
   EXPECT_TRUE(delegate->is_intercepted());
@@ -224,7 +224,7 @@ TEST_F(MimeSniffingThrottleTest, NotSniffableMimeTypeWithSniffableScheme) {
   network::ResourceResponseHead response_head;
   response_head.mime_type = "text/javascript";
   bool defer = false;
-  throttle->WillProcessResponse(GURL("https://example.com"), response_head,
+  throttle->WillProcessResponse(GURL("https://example.com"), &response_head,
                                 &defer);
   EXPECT_FALSE(defer);
   EXPECT_FALSE(delegate->is_intercepted());
@@ -237,7 +237,7 @@ TEST_F(MimeSniffingThrottleTest, NoMimeTypeWithNotSniffableScheme) {
 
   network::ResourceResponseHead response_head;
   bool defer = false;
-  throttle->WillProcessResponse(GURL("wss://example.com"), response_head,
+  throttle->WillProcessResponse(GURL("wss://example.com"), &response_head,
                                 &defer);
   EXPECT_FALSE(defer);
   EXPECT_FALSE(delegate->is_intercepted());
@@ -251,7 +251,7 @@ TEST_F(MimeSniffingThrottleTest, SniffableMimeTypeWithNotSniffableScheme) {
   network::ResourceResponseHead response_head;
   response_head.mime_type = "text/plain";
   bool defer = false;
-  throttle->WillProcessResponse(GURL("wss://example.com"), response_head,
+  throttle->WillProcessResponse(GURL("wss://example.com"), &response_head,
                                 &defer);
   EXPECT_FALSE(defer);
   EXPECT_FALSE(delegate->is_intercepted());
@@ -265,7 +265,7 @@ TEST_F(MimeSniffingThrottleTest, NotSniffableMimeTypeWithNotSniffableScheme) {
   network::ResourceResponseHead response_head;
   response_head.mime_type = "text/javascript";
   bool defer = false;
-  throttle->WillProcessResponse(GURL("wss://example.com"), response_head,
+  throttle->WillProcessResponse(GURL("wss://example.com"), &response_head,
                                 &defer);
   EXPECT_FALSE(defer);
   EXPECT_FALSE(delegate->is_intercepted());
@@ -280,7 +280,7 @@ TEST_F(MimeSniffingThrottleTest, SniffableButAlreadySniffed) {
   response_head.mime_type = "text/plain";
   response_head.did_mime_sniff = true;
   bool defer = false;
-  throttle->WillProcessResponse(GURL("https://example.com"), response_head,
+  throttle->WillProcessResponse(GURL("https://example.com"), &response_head,
                                 &defer);
   EXPECT_FALSE(defer);
   EXPECT_FALSE(delegate->is_intercepted());
@@ -294,7 +294,7 @@ TEST_F(MimeSniffingThrottleTest, NoBody) {
   GURL response_url("https://example.com");
   network::ResourceResponseHead response_head;
   bool defer = false;
-  throttle->WillProcessResponse(response_url, response_head, &defer);
+  throttle->WillProcessResponse(response_url, &response_head, &defer);
   EXPECT_TRUE(defer);
   EXPECT_TRUE(delegate->is_intercepted());
 
@@ -317,7 +317,7 @@ TEST_F(MimeSniffingThrottleTest, Body_PlainText) {
   GURL response_url("https://example.com");
   network::ResourceResponseHead response_head;
   bool defer = false;
-  throttle->WillProcessResponse(response_url, response_head, &defer);
+  throttle->WillProcessResponse(response_url, &response_head, &defer);
   EXPECT_TRUE(defer);
   EXPECT_TRUE(delegate->is_intercepted());
 
@@ -340,7 +340,7 @@ TEST_F(MimeSniffingThrottleTest, Body_Docx) {
   GURL response_url("https://example.com/hogehoge.docx");
   network::ResourceResponseHead response_head;
   bool defer = false;
-  throttle->WillProcessResponse(response_url, response_head, &defer);
+  throttle->WillProcessResponse(response_url, &response_head, &defer);
   EXPECT_TRUE(defer);
   EXPECT_TRUE(delegate->is_intercepted());
 
@@ -363,7 +363,7 @@ TEST_F(MimeSniffingThrottleTest, Body_PNG) {
   GURL response_url("https://example.com/hogehoge.docx");
   network::ResourceResponseHead response_head;
   bool defer = false;
-  throttle->WillProcessResponse(response_url, response_head, &defer);
+  throttle->WillProcessResponse(response_url, &response_head, &defer);
   EXPECT_TRUE(defer);
   EXPECT_TRUE(delegate->is_intercepted());
 
@@ -386,7 +386,7 @@ TEST_F(MimeSniffingThrottleTest, Body_LongPlainText) {
   GURL response_url("https://example.com");
   network::ResourceResponseHead response_head;
   bool defer = false;
-  throttle->WillProcessResponse(response_url, response_head, &defer);
+  throttle->WillProcessResponse(response_url, &response_head, &defer);
   EXPECT_TRUE(defer);
   EXPECT_TRUE(delegate->is_intercepted());
 
@@ -434,7 +434,7 @@ TEST_F(MimeSniffingThrottleTest, Abort_NoBodyPipe) {
   GURL response_url("https://example.com");
   network::ResourceResponseHead response_head;
   bool defer = false;
-  throttle->WillProcessResponse(response_url, response_head, &defer);
+  throttle->WillProcessResponse(response_url, &response_head, &defer);
   EXPECT_TRUE(defer);
   EXPECT_TRUE(delegate->is_intercepted());
 

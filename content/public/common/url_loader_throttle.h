@@ -109,10 +109,9 @@ class CONTENT_EXPORT URLLoaderThrottle {
 
   // Called when the response headers and meta data are available.
   // TODO(776312): Migrate this URL to ResourceResponseHead.
-  virtual void WillProcessResponse(
-      const GURL& response_url,
-      const network::ResourceResponseHead& response_head,
-      bool* defer);
+  virtual void WillProcessResponse(const GURL& response_url,
+                                   network::ResourceResponseHead* response_head,
+                                   bool* defer);
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 

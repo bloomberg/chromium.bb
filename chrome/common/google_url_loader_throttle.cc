@@ -7,6 +7,10 @@
 #include "chrome/common/net/safe_search_util.h"
 #include "components/variations/net/variations_http_headers.h"
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/common/extension_urls.h"
+#endif
+
 GoogleURLLoaderThrottle::GoogleURLLoaderThrottle(
     bool is_off_the_record,
     bool force_safe_search,
@@ -64,3 +68,23 @@ void GoogleURLLoaderThrottle::WillRedirectRequest(
   if (!variations::ShouldAppendVariationHeaders(redirect_info.new_url))
     to_be_removed_headers->push_back(variations::kClientDataHeader);
 }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+void GoogleURLLoaderThrottle::WillProcessResponse(
+    const GURL& response_url,
+    network::ResourceResponseHead* response_head,
+    bool* defer) {
+  // Built-in additional protection for the chrome web store origin.
+  GURL webstore_url(extension_urls::GetWebstoreLaunchURL());
+  if (response_url.SchemeIsHTTPOrHTTPS() &&
+      response_url.DomainIs(webstore_url.host_piece())) {
+    if (response_head && response_head->headers &&
+        !response_head->headers->HasHeaderValue("x-frame-options", "deny") &&
+        !response_head->headers->HasHeaderValue("x-frame-options",
+                                                "sameorigin")) {
+      response_head->headers->RemoveHeader("x-frame-options");
+      response_head->headers->AddHeader("x-frame-options: sameorigin");
+    }
+  }
+}
+#endif

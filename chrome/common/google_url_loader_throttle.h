@@ -6,6 +6,7 @@
 #define CHROME_COMMON_GOOGLE_URL_LOADER_THROTTLE_H_
 
 #include "content/public/common/url_loader_throttle.h"
+#include "extensions/buildflags/buildflags.h"
 
 // This class changes requests for Google-specific features (e.g. adding &
 // removing Varitaions headers, Safe Search & Restricted YouTube & restricting
@@ -31,6 +32,11 @@ class GoogleURLLoaderThrottle
       const network::ResourceResponseHead& response_head,
       bool* defer,
       std::vector<std::string>* to_be_removed_headers) override;
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  void WillProcessResponse(const GURL& response_url,
+                           network::ResourceResponseHead* response_head,
+                           bool* defer) override;
+#endif
 
   bool is_off_the_record_;
   bool force_safe_search_;

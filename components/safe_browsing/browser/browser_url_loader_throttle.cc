@@ -88,7 +88,7 @@ void BrowserURLLoaderThrottle::WillRedirectRequest(
 
 void BrowserURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
-    const network::ResourceResponseHead& response_head,
+    network::ResourceResponseHead* response_head,
     bool* defer) {
   if (blocked_) {
     // OnCheckUrlResult() has set |blocked_| to true and called

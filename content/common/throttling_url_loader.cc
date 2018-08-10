@@ -384,12 +384,13 @@ void ThrottlingURLLoader::OnReceiveResponse(
   DCHECK(!loader_completed_);
   DCHECK(deferring_throttles_.empty());
 
+  network::ResourceResponseHead response_head_copy = response_head;
   if (!throttles_.empty()) {
     bool deferred = false;
     for (auto& entry : throttles_) {
       auto* throttle = entry.throttle.get();
       bool throttle_deferred = false;
-      throttle->WillProcessResponse(response_url_, response_head,
+      throttle->WillProcessResponse(response_url_, &response_head_copy,
                                     &throttle_deferred);
       if (!HandleThrottleResult(throttle, throttle_deferred, &deferred))
         return;
@@ -397,13 +398,13 @@ void ThrottlingURLLoader::OnReceiveResponse(
 
     if (deferred) {
       deferred_stage_ = DEFERRED_RESPONSE;
-      response_info_ = std::make_unique<ResponseInfo>(response_head);
+      response_info_ = std::make_unique<ResponseInfo>(response_head_copy);
       client_binding_.PauseIncomingMethodCallProcessing();
       return;
     }
   }
 
-  forwarding_client_->OnReceiveResponse(response_head);
+  forwarding_client_->OnReceiveResponse(response_head_copy);
 }
 
 void ThrottlingURLLoader::OnReceiveRedirect(
