@@ -596,7 +596,7 @@ TEST_F(ClientControlledShellSurfaceTest, NoSynthesizedEventOnFrameChange) {
   base::RunLoop().RunUntilIdle();
   auto* env = aura::Env::GetInstance();
   gfx::Rect cropped_fullscreen_bounds(0, 0, 800, 400);
-  env->SetLastMouseLocation(gfx::Point(100, 100));
+  env->SetLastMouseLocation(gfx::Point(100, 30));
   TestEventHandler handler;
   env->AddPreTargetHandler(&handler);
   surface->SetFrame(SurfaceFrameType::AUTOHIDE);
