@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
@@ -96,6 +97,15 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
   const ContentToProxyIdMap& GetSubframeContentInfo() const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(PdfMetafileSkiaTest, TestFrameContent);
+
+  // The following three functions are used for tests only.
+  void AppendPage(const SkSize& page_size, sk_sp<cc::PaintRecord> record);
+  void AppendSubframeInfo(uint32_t content_id,
+                          int proxy_id,
+                          sk_sp<SkPicture> subframe_pic_holder);
+  SkStreamAsset* GetPdfData() const;
+
   // Callback function used during page content drawing to replace a custom
   // data holder with corresponding place holder SkPicture.
   void CustomDataToSkPictureCallback(SkCanvas* canvas, uint32_t content_id);
