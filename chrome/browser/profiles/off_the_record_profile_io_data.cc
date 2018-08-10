@@ -145,7 +145,7 @@ OffTheRecordProfileIOData::Handle::CreateIsolatedAppRequestContextGetter(
       protocol_handler_interceptor(
           ProtocolHandlerRegistryFactory::GetForBrowserContext(profile_)
               ->CreateJobInterceptorFactory());
-  ChromeURLRequestContextGetter* context =
+  scoped_refptr<ChromeURLRequestContextGetter> context =
       ChromeURLRequestContextGetter::CreateForIsolatedApp(
           profile_, io_data_, descriptor,
           std::move(protocol_handler_interceptor), protocol_handlers,

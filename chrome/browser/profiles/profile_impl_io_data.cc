@@ -324,14 +324,14 @@ ProfileImplIOData::Handle::CreateIsolatedAppRequestContextGetter(
       protocol_handler_interceptor(
           ProtocolHandlerRegistryFactory::GetForBrowserContext(profile_)
               ->CreateJobInterceptorFactory());
-  ChromeURLRequestContextGetter* context =
+  scoped_refptr<ChromeURLRequestContextGetter> context =
       ChromeURLRequestContextGetter::CreateForIsolatedApp(
           profile_, io_data_, descriptor,
           std::move(protocol_handler_interceptor), protocol_handlers,
           std::move(request_interceptors));
   app_request_context_getter_map_[descriptor] = context;
 
-  return context;
+  return context.get();
 }
 
 scoped_refptr<ChromeURLRequestContextGetter>
@@ -357,7 +357,7 @@ ProfileImplIOData::Handle::GetIsolatedMediaRequestContextGetter(
       app_request_context_getter_map_.find(descriptor);
   DCHECK(app_iter != app_request_context_getter_map_.end());
   ChromeURLRequestContextGetter* app_context = app_iter->second.get();
-  ChromeURLRequestContextGetter* context =
+  scoped_refptr<ChromeURLRequestContextGetter> context =
       ChromeURLRequestContextGetter::CreateForIsolatedMedia(
           profile_, app_context, io_data_, descriptor);
   isolated_media_request_context_getter_map_[descriptor] = context;

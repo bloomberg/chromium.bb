@@ -167,17 +167,37 @@ class FactoryForMedia : public ChromeURLRequestContextFactory {
 // ChromeURLRequestContextGetter
 // ----------------------------------------------------------------------------
 
-ChromeURLRequestContextGetter::ChromeURLRequestContextGetter(
-    ChromeURLRequestContextFactory* factory)
-    : factory_(factory),
-      url_request_context_(nullptr) {
-  DCHECK(factory);
-}
+ChromeURLRequestContextGetter::ChromeURLRequestContextGetter()
+    : url_request_context_(nullptr) {}
 
 ChromeURLRequestContextGetter::~ChromeURLRequestContextGetter() {
   // NotifyContextShuttingDown() must have been called.
-  DCHECK(!factory_.get());
   DCHECK(!url_request_context_);
+}
+
+scoped_refptr<ChromeURLRequestContextGetter>
+ChromeURLRequestContextGetter::CreateAndInit(
+    std::unique_ptr<ChromeURLRequestContextFactory> factory) {
+  scoped_refptr<ChromeURLRequestContextGetter> url_request_context_getter(
+      new ChromeURLRequestContextGetter());
+  // This can't be done in the constructor because it's possible for the task to
+  // run and complete before the constructor returns, which would reduce the
+  // reference count from 1 to 0 on completion, and delete the object
+  // immediately.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&ChromeURLRequestContextGetter::Init,
+                     url_request_context_getter,
+                     base::Passed(std::move(factory))));
+  return url_request_context_getter;
+}
+
+void ChromeURLRequestContextGetter::Init(
+    std::unique_ptr<ChromeURLRequestContextFactory> factory) {
+  DCHECK(factory);
+  DCHECK(!url_request_context_);
+
+  url_request_context_ = factory->Create();
 }
 
 // Lazily create a URLRequestContext using our factory.
@@ -185,19 +205,12 @@ net::URLRequestContext*
 ChromeURLRequestContextGetter::GetURLRequestContext() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (factory_.get()) {
-    DCHECK(!url_request_context_);
-    url_request_context_ = factory_->Create();
-    factory_.reset();
-  }
-
   return url_request_context_;
 }
 
 void ChromeURLRequestContextGetter::NotifyContextShuttingDown() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  factory_.reset();
   url_request_context_ = nullptr;
   URLRequestContextGetter::NotifyContextShuttingDown();
 }
@@ -208,33 +221,37 @@ ChromeURLRequestContextGetter::GetNetworkTaskRunner() const {
 }
 
 // static
-ChromeURLRequestContextGetter* ChromeURLRequestContextGetter::Create(
+scoped_refptr<ChromeURLRequestContextGetter>
+ChromeURLRequestContextGetter::Create(
     Profile* profile,
     const ProfileIOData* profile_io_data,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
-  return new ChromeURLRequestContextGetter(new FactoryForMain(
-      profile_io_data, protocol_handlers, std::move(request_interceptors)));
+  return ChromeURLRequestContextGetter::CreateAndInit(
+      std::make_unique<FactoryForMain>(profile_io_data, protocol_handlers,
+                                       std::move(request_interceptors)));
 }
 
 // static
-ChromeURLRequestContextGetter*
+scoped_refptr<ChromeURLRequestContextGetter>
 ChromeURLRequestContextGetter::CreateForMedia(
-    Profile* profile, const ProfileIOData* profile_io_data) {
-  return new ChromeURLRequestContextGetter(
-      new FactoryForMedia(profile_io_data));
+    Profile* profile,
+    const ProfileIOData* profile_io_data) {
+  return ChromeURLRequestContextGetter::CreateAndInit(
+      std::make_unique<FactoryForMedia>(profile_io_data));
 }
 
 // static
-ChromeURLRequestContextGetter*
+scoped_refptr<ChromeURLRequestContextGetter>
 ChromeURLRequestContextGetter::CreateForExtensions(
-    Profile* profile, const ProfileIOData* profile_io_data) {
-  return new ChromeURLRequestContextGetter(
-      new FactoryForExtensions(profile_io_data));
+    Profile* profile,
+    const ProfileIOData* profile_io_data) {
+  return ChromeURLRequestContextGetter::CreateAndInit(
+      std::make_unique<FactoryForExtensions>(profile_io_data));
 }
 
 // static
-ChromeURLRequestContextGetter*
+scoped_refptr<ChromeURLRequestContextGetter>
 ChromeURLRequestContextGetter::CreateForIsolatedApp(
     Profile* profile,
     const ProfileIOData* profile_io_data,
@@ -245,20 +262,21 @@ ChromeURLRequestContextGetter::CreateForIsolatedApp(
     content::URLRequestInterceptorScopedVector request_interceptors) {
   ChromeURLRequestContextGetter* main_context =
       static_cast<ChromeURLRequestContextGetter*>(profile->GetRequestContext());
-  return new ChromeURLRequestContextGetter(new FactoryForIsolatedApp(
-      profile_io_data, partition_descriptor, main_context,
-      std::move(protocol_handler_interceptor), protocol_handlers,
-      std::move(request_interceptors)));
+  return ChromeURLRequestContextGetter::CreateAndInit(
+      std::make_unique<FactoryForIsolatedApp>(
+          profile_io_data, partition_descriptor, main_context,
+          std::move(protocol_handler_interceptor), protocol_handlers,
+          std::move(request_interceptors)));
 }
 
 // static
-ChromeURLRequestContextGetter*
+scoped_refptr<ChromeURLRequestContextGetter>
 ChromeURLRequestContextGetter::CreateForIsolatedMedia(
     Profile* profile,
     ChromeURLRequestContextGetter* app_context,
     const ProfileIOData* profile_io_data,
     const StoragePartitionDescriptor& partition_descriptor) {
-  return new ChromeURLRequestContextGetter(
-      new FactoryForIsolatedMedia(
+  return ChromeURLRequestContextGetter::CreateAndInit(
+      std::make_unique<FactoryForIsolatedMedia>(
           profile_io_data, partition_descriptor, app_context));
 }
