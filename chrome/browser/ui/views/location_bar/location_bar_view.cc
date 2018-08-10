@@ -979,8 +979,7 @@ base::string16 LocationBarView::GetLocationIconText() const {
 }
 
 bool LocationBarView::ShouldShowKeywordBubble() const {
-  return !omnibox_view_->model()->keyword().empty() &&
-         !omnibox_view_->model()->is_keyword_hint();
+  return omnibox_view_->model()->is_keyword_selected();
 }
 
 bool LocationBarView::ShouldShowLocationIconText() const {
