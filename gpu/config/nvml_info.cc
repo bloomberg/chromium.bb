@@ -13,7 +13,8 @@
 
 namespace {
 
-const unsigned int kDriverVersionCapacity = 80u;
+// TODO(crbug.com/873095): diagnose crashes inside nvml.dll
+// const unsigned int kDriverVersionCapacity = 80u;
 
 }  // anonymous namespace
 
@@ -35,6 +36,9 @@ bool GetNvmlDeviceInfo(uint32_t pci_device_id,
   *major_cuda_compute_capability = 0;
   *minor_cuda_compute_capability = 0;
 
+  // TODO(crbug.com/873095): diagnose crashes inside nvml.dll
+  return false;
+#if 0
   base::FilePath dll_path;
   if (!base::PathService::Get(base::DIR_PROGRAM_FILES6432, &dll_path)) {
     return false;
@@ -123,4 +127,5 @@ bool GetNvmlDeviceInfo(uint32_t pci_device_id,
     return false;
   }
   return true;
+#endif
 }
