@@ -79,7 +79,6 @@ blink_platform_sources("heap") {
     "thread_state.h",
     "threading_traits.h",
     "trace_traits.h",
-    "v8_heap_controller.h",
     "visitor.h",
     "worklist.h",
   ]
