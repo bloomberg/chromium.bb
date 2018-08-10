@@ -52,6 +52,10 @@ base::TimeTicks g_browser_exe_main_entry_point_ticks;
 
 base::TimeTicks g_message_loop_start_ticks;
 
+base::TimeTicks g_browser_window_display_ticks;
+
+base::TimeDelta g_browser_open_tabs_duration = base::TimeDelta::Max();
+
 // An enumeration of startup temperatures. This must be kept in sync with the
 // UMA StartupType enumeration defined in histograms.xml.
 enum StartupTemperature {
@@ -602,6 +606,21 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
   RecordSystemUptimeHistogram();
   RecordTimeOfDayGMTHistogram();
 
+  // Record values stored prior to startup temperature evaluation.
+  if (ShouldLogStartupHistogram()) {
+    if (!g_browser_open_tabs_duration.is_max()) {
+      UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
+          UMA_HISTOGRAM_LONG_TIMES_100, "Startup.BrowserOpenTabs",
+          g_browser_open_tabs_duration);
+    }
+
+    if (!g_browser_window_display_ticks.is_null()) {
+      UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
+          UMA_HISTOGRAM_LONG_TIMES, "Startup.BrowserWindowDisplay",
+          g_process_creation_ticks, g_browser_window_display_ticks);
+    }
+  }
+
   // Record timings between process creation, the main() in the executable being
   // reached and the main() in the shared library being reached.
   if (!g_process_creation_ticks.is_null() &&
@@ -625,26 +644,27 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
 }
 
 void RecordBrowserWindowDisplay(base::TimeTicks ticks) {
-  static bool is_first_call = true;
-  if (!is_first_call || ticks.is_null())
-    return;
-  is_first_call = false;
-  if (!ShouldLogStartupHistogram())
+  DCHECK(!ticks.is_null());
+
+  if (!g_browser_window_display_ticks.is_null())
     return;
 
-  UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
-      UMA_HISTOGRAM_LONG_TIMES, "Startup.BrowserWindowDisplay",
-      g_process_creation_ticks, ticks);
+  // The value will be recorded in appropriate histograms after the startup
+  // temperature is evaluated.
+  //
+  // Note: In some cases (e.g. launching with --silent-launch), the first
+  // browser window is displayed after the startup temperature is evaluated. In
+  // these cases, the value will not be recorded, which is the desired behavior
+  // for a non-conventional launch.
+  g_browser_window_display_ticks = ticks;
 }
 
 void RecordBrowserOpenTabsDelta(base::TimeDelta delta) {
-  static bool is_first_call = true;
-  if (!is_first_call)
-    return;
-  is_first_call = false;
-
-  UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
-      UMA_HISTOGRAM_LONG_TIMES_100, "Startup.BrowserOpenTabs", delta);
+  DCHECK(g_browser_open_tabs_duration.is_max());
+  DCHECK_EQ(g_startup_temperature, UNDETERMINED_STARTUP_TEMPERATURE);
+  // The value will be recorded in appropriate histograms after the startup
+  // temperature is evaluated.
+  g_browser_open_tabs_duration = delta;
 }
 
 void RecordRendererMainEntryTime(base::TimeTicks ticks) {
