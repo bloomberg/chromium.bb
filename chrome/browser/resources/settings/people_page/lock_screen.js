@@ -164,6 +164,32 @@ Polymer({
       readOnly: true,
     },
 
+    /**
+     * Whether notifications on the lock screen are enable by the feature flag.
+     * @private
+     */
+    lockScreenNotificationsEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('lockScreenNotificationsEnabled');
+      },
+      readOnly: true,
+    },
+
+    /**
+     * Whether the "hide sensitive notification" option on the lock screen can
+     * be enable by the feature flag.
+     * @private
+     */
+    lockScreenHideSensitiveNotificationSupported_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean(
+            'lockScreenHideSensitiveNotificationsSupported');
+      },
+      readOnly: true,
+    },
+
     /** @private */
     showEasyUnlockTurnOffDialog_: {
       type: Boolean,

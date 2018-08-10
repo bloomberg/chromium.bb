@@ -119,9 +119,13 @@ void WhitelistLateRegistrationPrefsForSync(
   // perhaps after sync system initialization. Whitelist these prefs so that any
   // values obtained via sync before the prefs are registered will be stored.
   const char* const kAshForeignSyncablePrefs[] = {
-      ash::prefs::kEnableAutoScreenLock,      ash::prefs::kEnableStylusTools,
-      ash::prefs::kLaunchPaletteOnEjectEvent, ash::prefs::kShelfAlignment,
-      ash::prefs::kShelfAutoHideBehavior,     ash::prefs::kTapDraggingEnabled,
+      ash::prefs::kEnableAutoScreenLock,
+      ash::prefs::kEnableStylusTools,
+      ash::prefs::kLaunchPaletteOnEjectEvent,
+      ash::prefs::kMessageCenterLockScreenMode,
+      ash::prefs::kShelfAlignment,
+      ash::prefs::kShelfAutoHideBehavior,
+      ash::prefs::kTapDraggingEnabled,
   };
   for (const auto* pref : kAshForeignSyncablePrefs)
     registry->WhitelistLateRegistrationPrefForSync(pref);

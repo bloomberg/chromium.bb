@@ -39,6 +39,11 @@ ASH_PUBLIC_EXPORT extern const base::Feature kKeyboardShortcutViewerApp;
 // Enables notifications on the lock screen.
 ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenNotifications;
 
+// Supports the feature to hide sensitive content in notifications on the lock
+// screen. This option is effective when |kLockScreenNotification| is enabled.
+ASH_PUBLIC_EXPORT extern const base::Feature
+    kLockScreenHideSensitiveNotificationsSupport;
+
 // Enables the new wallpaper picker.
 // TODO(wzang): Remove this after the feature is fully launched.
 // https://crbug.com/777293.
@@ -71,6 +76,8 @@ ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerEnabled();
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
 
 ASH_PUBLIC_EXPORT bool IsLockScreenNotificationsEnabled();
+
+ASH_PUBLIC_EXPORT bool IsLockScreenHideSensitiveNotificationsSupported();
 
 ASH_PUBLIC_EXPORT bool IsNewWallpaperPickerEnabled();
 

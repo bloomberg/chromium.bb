@@ -126,6 +126,33 @@
         </div>
       </template>
 
+      <template is="dom-if" if="[[lockScreenNotificationsEnabled_]]">
+        <h2 class="settings-box">
+          $i18n{lockScreenNotificationTitle}
+        </h2>
+        <div class="list-frame">
+          <settings-radio-group
+              pref="{{prefs.ash.message_center.lock_screen_mode}}"
+              selectable="cr-radio-button">
+            <template is="dom-if"
+                if="[[lockScreenHideSensitiveNotificationSupported_]]">
+              <cr-radio-button name="hideSensitive" class="list-item underbar"
+                   pref="[[prefs.ash.message_center.lock_screen_mode]]"
+                   label="$i18n{lockScreenNotificationHideSensitive}">
+              </cr-radio-button>
+            </template>
+            <cr-radio-button name="show" class="list-item underbar"
+                 pref="[[prefs.ash.message_center.lock_screen_mode]]"
+                 label="$i18n{lockScreenNotificationShow}">
+            </cr-radio-button>
+            <cr-radio-button name="hide" class="list-item"
+                 pref="[[prefs.ash.message_center.lock_screen_mode]]"
+                 label="$i18n{lockScreenNotificationHide}">
+            </cr-radio-button>
+          </settings-radio-group>
+        </div>
+      </template>
+
       <template is="dom-if" if="[[fingerprintUnlockEnabled_]]">
         <div id="fingerprintDiv">
           <settings-toggle-button class="continuation"

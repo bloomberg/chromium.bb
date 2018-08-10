@@ -28,6 +28,10 @@ const base::Feature kKeyboardShortcutViewerApp{
 const base::Feature kLockScreenNotifications{"LockScreenNotifications",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kLockScreenHideSensitiveNotificationsSupport{
+    "LockScreenHideSensitiveNotificationsSupport",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kNewWallpaperPicker{"NewWallpaperPicker",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -63,6 +67,11 @@ bool IsLockScreenNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kLockScreenNotifications);
 }
 
+bool IsLockScreenHideSensitiveNotificationsSupported() {
+  return base::FeatureList::IsEnabled(
+      kLockScreenHideSensitiveNotificationsSupport);
+}
+
 bool IsNewWallpaperPickerEnabled() {
   static bool use_new_wallpaper_picker =
       base::FeatureList::IsEnabled(kNewWallpaperPicker);
@@ -89,8 +98,8 @@ bool IsTrilinearFilteringEnabled() {
 
 bool IsViewsLoginEnabled() {
   // Always show webui login if --show-webui-login is present, which is passed
-  // by session manager for automatic recovery. Otherwise, only show views login
-  // if the feature is enabled.
+  // by session manager for automatic recovery. Otherwise, only show views
+  // login if the feature is enabled.
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
              ash::switches::kShowWebUiLogin) &&
          base::FeatureList::IsEnabled(kViewsLogin);

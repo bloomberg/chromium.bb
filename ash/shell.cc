@@ -250,6 +250,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   DockedMagnifierController::RegisterProfilePrefs(registry, for_test);
   LoginScreenController::RegisterProfilePrefs(registry, for_test);
   LogoutButtonTray::RegisterProfilePrefs(registry);
+  MessageCenterController::RegisterProfilePrefs(registry);
   NightLightController::RegisterProfilePrefs(registry);
   PaletteTray::RegisterProfilePrefs(registry);
   PaletteWelcomeBubble::RegisterProfilePrefs(registry);

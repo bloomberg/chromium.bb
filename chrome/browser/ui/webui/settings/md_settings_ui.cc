@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/ash_features.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
@@ -308,6 +309,11 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
       chromeos::quick_unlock::IsPinDisabledByPolicy(profile->GetPrefs()));
   html_source->AddBoolean("fingerprintUnlockEnabled",
                           chromeos::quick_unlock::IsFingerprintEnabled());
+  html_source->AddBoolean("lockScreenNotificationsEnabled",
+                          ash::features::IsLockScreenNotificationsEnabled());
+  html_source->AddBoolean(
+      "lockScreenHideSensitiveNotificationsSupported",
+      ash::features::IsLockScreenHideSensitiveNotificationsSupported());
   html_source->AddBoolean("hasInternalStylus",
                           ash::stylus_utils::HasInternalStylus());
 

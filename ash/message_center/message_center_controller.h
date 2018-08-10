@@ -16,6 +16,8 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
+class PrefRegistrySimple;
+
 namespace message_center {
 struct NotifierId;
 }
@@ -27,6 +29,8 @@ namespace ash {
 class ASH_EXPORT MessageCenterController
     : public mojom::AshMessageCenterController {
  public:
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
   MessageCenterController();
   ~MessageCenterController() override;
 
