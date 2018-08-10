@@ -2510,10 +2510,6 @@ crbug.com/543369 [ Win Mac Linux ] fast/forms/select-popup/popup-menu-appearance
 
 crbug.com/548765 http/tests/devtools/console-fetch-logging.js [ Failure Pass ]
 
-# When BigInts are on by default, these should pass and be removed along with their FlagExpectations.
-crbug.com/v8/7486 http/tests/devtools/startup/console/console-format-startup-bigint.js [ Skip ]
-crbug.com/v8/7486 http/tests/devtools/console/console-format-bigint.js [ Skip ]
-
 crbug.com/564109 [ Win ]  http/tests/webfont/font-display-intervention.html [ Pass Failure Timeout ]
 
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
