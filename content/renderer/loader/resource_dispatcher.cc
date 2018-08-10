@@ -722,7 +722,8 @@ int ResourceDispatcher::StartAsync(
   uint32_t options = network::mojom::kURLLoadOptionNone;
   // TODO(jam): use this flag for ResourceDispatcherHost code path once
   // MojoLoading is the only IPC code path.
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled() &&
+  if ((blink::ServiceWorkerUtils::IsServicificationEnabled() ||
+       base::FeatureList::IsEnabled(network::features::kNetworkService)) &&
       request->fetch_request_context_type != REQUEST_CONTEXT_TYPE_FETCH) {
     // MIME sniffing should be disabled for a request initiated by fetch().
     options |= network::mojom::kURLLoadOptionSniffMimeType;
