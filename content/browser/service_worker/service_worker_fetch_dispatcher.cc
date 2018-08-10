@@ -611,16 +611,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   ResourceRequestInfoImpl* original_info =
       ResourceRequestInfoImpl::ForRequest(original_request);
   ResourceRequesterInfo* requester_info = original_info->requester_info();
-  if (IsBrowserSideNavigationEnabled()) {
-    DCHECK(requester_info->IsBrowserSideNavigation());
-  } else {
-    DCHECK(requester_info->IsRenderer());
-    if (!requester_info->filter())
-      return false;
-  }
-
-  DCHECK(!url_loader_assets_);
-
+  DCHECK(requester_info->IsBrowserSideNavigation());
   auto url_loader_factory = std::make_unique<URLLoaderFactoryImpl>(
       ResourceRequesterInfo::CreateForNavigationPreload(requester_info));
 
@@ -681,6 +672,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
 
   preload_handle_->url_loader = url_loader.PassInterface();
 
+  DCHECK(!url_loader_assets_);
   url_loader_assets_ = base::MakeRefCounted<URLLoaderAssets>(
       std::move(url_loader_factory), std::move(url_loader_client));
   return true;
