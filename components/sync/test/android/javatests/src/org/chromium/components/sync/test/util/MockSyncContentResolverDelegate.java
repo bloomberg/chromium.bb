@@ -212,7 +212,7 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
                         pendingObserverCount.release();
                     }
                 }
-                        .execute();
+                        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             } else {
                 mSyncStatusObserver.onStatusChanged(ContentResolver.SYNC_OBSERVER_TYPE_SETTINGS);
                 pendingObserverCount.release();
