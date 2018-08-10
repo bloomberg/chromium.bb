@@ -425,6 +425,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // that the caller shall not close them, or use them after the VideoFrame is
   // destroyed.
   std::vector<int> DmabufFds() const;
+
+  // Returns true if |frame| has DmaBufs.
+  bool HasDmaBufs() const;
 #endif
 
   void AddReadOnlySharedMemoryRegion(base::ReadOnlySharedMemoryRegion* region);
