@@ -49,43 +49,51 @@ constexpr char kAndroidCameraAppId[] = "goamfaniemdfcajgcmmflhchgkmbngka";
 constexpr char kAndroidLegacyCameraAppId[] = "obfofkigjfamlldmipdegnjlcpincibc";
 }  // namespace
 
-const std::vector<InternalApp>& GetInternalAppList() {
-  static const base::NoDestructor<std::vector<InternalApp>> internal_app_list(
-      {{kInternalAppIdKeyboardShortcutViewer,
-        IDS_INTERNAL_APP_KEYBOARD_SHORTCUT_VIEWER, IDR_SHORTCUT_VIEWER_LOGO_192,
-        /*recommendable=*/false,
-        /*searchable=*/true,
-        /*show_in_launcher=*/false,
-        InternalAppName::kKeyboardShortcutViewer,
-        IDS_LAUNCHER_SEARCHABLE_KEYBOARD_SHORTCUT_VIEWER},
+const std::vector<InternalApp>& GetInternalAppList(bool is_guest_mode) {
+  static const base::NoDestructor<std::vector<InternalApp>>
+      internal_app_list_static(
+          {{kInternalAppIdKeyboardShortcutViewer,
+            IDS_INTERNAL_APP_KEYBOARD_SHORTCUT_VIEWER,
+            IDR_SHORTCUT_VIEWER_LOGO_192,
+            /*recommendable=*/false,
+            /*searchable=*/true,
+            /*show_in_launcher=*/false,
+            InternalAppName::kKeyboardShortcutViewer,
+            IDS_LAUNCHER_SEARCHABLE_KEYBOARD_SHORTCUT_VIEWER},
 
-       {kInternalAppIdSettings, IDS_INTERNAL_APP_SETTINGS,
-        IDR_SETTINGS_LOGO_192,
-        /*recommendable=*/true,
-        /*searchable=*/true,
-        /*show_in_launcher=*/true,
-        InternalAppName::kSettings,
-        /*searchable_string_resource_id=*/0},
+           {kInternalAppIdSettings, IDS_INTERNAL_APP_SETTINGS,
+            IDR_SETTINGS_LOGO_192,
+            /*recommendable=*/true,
+            /*searchable=*/true,
+            /*show_in_launcher=*/true, InternalAppName::kSettings,
+            /*searchable_string_resource_id=*/0},
 
-       {kInternalAppIdContinueReading, IDS_INTERNAL_APP_CONTINUOUS_READING,
-        IDR_PRODUCT_LOGO_256,
-        /*recommendable=*/true,
-        /*searchable=*/false,
-        /*show_in_launcher=*/false,
-        InternalAppName::kContinueReading,
-        /*searchable_string_resource_id=*/0},
+           {kInternalAppIdContinueReading, IDS_INTERNAL_APP_CONTINUOUS_READING,
+            IDR_PRODUCT_LOGO_256,
+            /*recommendable=*/true,
+            /*searchable=*/false,
+            /*show_in_launcher=*/false, InternalAppName::kContinueReading,
+            /*searchable_string_resource_id=*/0}});
 
-       {kInternalAppIdCamera, IDS_INTERNAL_APP_CAMERA, IDR_CAMERA_LOGO_192,
-        /*recommendable=*/true,
-        /*searchable=*/true,
-        /*show_in_launcher=*/true,
-        InternalAppName::kCamera,
-        /*searchable_string_resource_id=*/0}});
+  static base::NoDestructor<std::vector<InternalApp>> internal_app_list;
+  internal_app_list->clear();
+  internal_app_list->insert(internal_app_list->begin(),
+                            internal_app_list_static->begin(),
+                            internal_app_list_static->end());
+
+  if (!is_guest_mode) {
+    internal_app_list->push_back(
+        {kInternalAppIdCamera, IDS_INTERNAL_APP_CAMERA, IDR_CAMERA_LOGO_192,
+         /*recommendable=*/true,
+         /*searchable=*/true,
+         /*show_in_launcher=*/true, InternalAppName::kCamera,
+         /*searchable_string_resource_id=*/0});
+  }
   return *internal_app_list;
 }
 
 const InternalApp* FindInternalApp(const std::string& app_id) {
-  for (const auto& app : GetInternalAppList()) {
+  for (const auto& app : GetInternalAppList(false)) {
     if (app_id == app.app_id)
       return &app;
   }
@@ -235,10 +243,11 @@ InternalAppName GetInternalAppNameByAppId(
   return app->internal_app_name;
 }
 
-size_t GetNumberOfInternalAppsShowInLauncherForTest(std::string* apps_name) {
+size_t GetNumberOfInternalAppsShowInLauncherForTest(std::string* apps_name,
+                                                    bool is_guest_mode) {
   size_t num_of_internal_apps_show_in_launcher = 0u;
   std::vector<std::string> internal_apps_name;
-  for (const auto& app : GetInternalAppList()) {
+  for (const auto& app : GetInternalAppList(is_guest_mode)) {
     if (app.show_in_launcher) {
       ++num_of_internal_apps_show_in_launcher;
       if (apps_name) {
