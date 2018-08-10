@@ -19,7 +19,6 @@
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -638,28 +637,6 @@ bool RenderThreadImpl::HistogramCustomizer::IsAlexaTop10NonGoogleSite(
 }
 
 // static
-RenderThreadImpl* RenderThreadImpl::Create(
-    const InProcessChildThreadParams& params,
-    base::MessageLoop* unowned_message_loop) {
-  TRACE_EVENT0("startup", "RenderThreadImpl::Create");
-  std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler =
-      blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler();
-  scoped_refptr<base::SingleThreadTaskRunner> test_task_counter;
-  return new RenderThreadImpl(params, std::move(main_thread_scheduler),
-                              test_task_counter, unowned_message_loop);
-}
-
-// static
-RenderThreadImpl* RenderThreadImpl::Create(
-    std::unique_ptr<base::MessageLoop> main_message_loop,
-    std::unique_ptr<blink::scheduler::WebThreadScheduler>
-        main_thread_scheduler) {
-  TRACE_EVENT0("startup", "RenderThreadImpl::Create");
-  return new RenderThreadImpl(std::move(main_message_loop),
-                              std::move(main_thread_scheduler));
-}
-
-// static
 RenderThreadImpl* RenderThreadImpl::current() {
   return lazy_tls.Pointer()->Get();
 }
@@ -703,61 +680,48 @@ RenderThreadImpl::DeprecatedGetMainTaskRunner() {
 // the browser
 RenderThreadImpl::RenderThreadImpl(
     const InProcessChildThreadParams& params,
-    std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler,
-    const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue,
-    base::MessageLoop* unowned_message_loop)
-    : ChildThreadImpl(
-          Options::Builder()
-              .InBrowserProcess(params)
-              .AutoStartServiceManagerConnection(false)
-              .ConnectToBrowser(true)
-              .IPCTaskRunner(scheduler ? scheduler->IPCTaskRunner() : nullptr)
-              .Build()),
+    std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler)
+    : ChildThreadImpl(Options::Builder()
+                          .InBrowserProcess(params)
+                          .AutoStartServiceManagerConnection(false)
+                          .ConnectToBrowser(true)
+                          .IPCTaskRunner(scheduler->IPCTaskRunner())
+                          .Build()),
       main_thread_scheduler_(std::move(scheduler)),
-      main_message_loop_(unowned_message_loop),
       categorized_worker_pool_(new CategorizedWorkerPool()),
       renderer_binding_(this),
       client_id_(1),
       compositing_mode_watcher_binding_(this),
       weak_factory_(this) {
-  Init(resource_task_queue);
+  TRACE_EVENT0("startup", "RenderThreadImpl::Create");
+  Init();
 }
 
-// When we run plugins in process, we actually run them on the render thread,
-// which means that we need to make the render thread pump UI events.
+// Multi-process mode.
 RenderThreadImpl::RenderThreadImpl(
-    std::unique_ptr<base::MessageLoop> owned_message_loop,
     std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler)
-    : ChildThreadImpl(
-          Options::Builder()
-              .AutoStartServiceManagerConnection(false)
-              .ConnectToBrowser(true)
-              .IPCTaskRunner(scheduler ? scheduler->IPCTaskRunner() : nullptr)
-              .Build()),
+    : ChildThreadImpl(Options::Builder()
+                          .AutoStartServiceManagerConnection(false)
+                          .ConnectToBrowser(true)
+                          .IPCTaskRunner(scheduler->IPCTaskRunner())
+                          .Build()),
       main_thread_scheduler_(std::move(scheduler)),
-      owned_message_loop_(std::move(owned_message_loop)),
-      main_message_loop_(owned_message_loop_.get()),
       categorized_worker_pool_(new CategorizedWorkerPool()),
       is_scroll_animator_enabled_(false),
       renderer_binding_(this),
       compositing_mode_watcher_binding_(this),
       weak_factory_(this) {
-  scoped_refptr<base::SingleThreadTaskRunner> test_task_counter;
+  TRACE_EVENT0("startup", "RenderThreadImpl::Create");
   DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kRendererClientId));
   base::StringToInt(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
                         switches::kRendererClientId),
                     &client_id_);
-  Init(test_task_counter);
+  Init();
 }
 
-void RenderThreadImpl::Init(
-    const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue) {
+void RenderThreadImpl::Init() {
   TRACE_EVENT0("startup", "RenderThreadImpl::Init");
-
-  // Whether owned or unowned, |main_message_loop_| needs to be initialized in
-  // all constructors.
-  DCHECK(main_message_loop_);
 
   GetContentClient()->renderer()->PostIOThreadCreated(GetIOTaskRunner().get());
 
@@ -771,7 +735,7 @@ void RenderThreadImpl::Init(
 #endif
 
   lazy_tls.Pointer()->Set(this);
-  g_main_task_runner.Get() = main_message_loop_->task_runner();
+  g_main_task_runner.Get() = base::ThreadTaskRunnerHandle::Get();
 
   // Register this object as the main thread.
   ChildProcess::current()->set_main_thread(this);
@@ -792,7 +756,7 @@ void RenderThreadImpl::Init(
           URLLoaderThrottleProviderType::kFrame);
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
-  InitializeWebKit(resource_task_queue, registry.get());
+  InitializeWebKit(registry.get());
 
   // In single process the single process is all there is.
   webkit_shared_timer_suspended_ = false;
@@ -1230,7 +1194,6 @@ void RenderThreadImpl::InitializeCompositorThread() {
 }
 
 void RenderThreadImpl::InitializeWebKit(
-    const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue,
     service_manager::BinderRegistry* registry) {
   DCHECK(!blink_platform_impl_);
 
