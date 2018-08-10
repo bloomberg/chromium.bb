@@ -5,6 +5,8 @@
 #ifndef BASE_TEST_SCOPED_MOCK_CLOCK_OVERRIDE_H_
 #define BASE_TEST_SCOPED_MOCK_CLOCK_OVERRIDE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
