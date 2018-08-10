@@ -42,6 +42,7 @@ void TestURLLoaderFactory::AddResponse(const GURL& url,
   response.head = head;
   response.content = content;
   response.status = status;
+  response.status.decoded_body_length = content.size();
   response.flags = flags;
   responses_[url] = response;
 
@@ -60,7 +61,6 @@ void TestURLLoaderFactory::AddResponse(const std::string& url,
   ResourceResponseHead head = CreateResourceResponseHead(http_status);
   head.mime_type = "text/html";
   URLLoaderCompletionStatus status;
-  status.decoded_body_length = content.size();
   AddResponse(GURL(url), head, content, status);
 }
 
