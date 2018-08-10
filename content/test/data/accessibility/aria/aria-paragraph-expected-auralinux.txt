@@ -1,0 +1,3 @@
+[document web] enabled focusable focused sensitive showing visible<newline>
+++[paragraph] enabled sensitive showing visible<newline>
+++++[text] name='Paragraph' enabled sensitive showing visible<newline>

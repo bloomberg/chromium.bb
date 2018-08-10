@@ -1,0 +1,3 @@
+[document web] enabled focusable focused sensitive showing visible<newline>
+++[caption] enabled sensitive showing visible<newline>
+++++[text] name='Caption' enabled sensitive showing visible<newline>

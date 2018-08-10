@@ -1,0 +1,19 @@
+[document web] enabled focusable focused sensitive showing visible<newline>
+++[table] name='Browser and Engine' enabled sensitive showing visible<newline>
+++++[caption] enabled sensitive showing visible<newline>
+++++++[text] name='Browser and Engine' enabled sensitive showing visible<newline>
+++++[table row] enabled sensitive showing visible<newline>
+++++++[column header] name='Browser' enabled sensitive showing visible<newline>
+++++++++[text] name='Browser' enabled sensitive showing visible<newline>
+++++++[column header] name='Engine' enabled sensitive showing visible<newline>
+++++++++[text] name='Engine' enabled sensitive showing visible<newline>
+++++[table row] enabled sensitive showing visible<newline>
+++++++[table cell] name='Chrome' enabled sensitive showing visible<newline>
+++++++++[text] name='Chrome' enabled sensitive showing visible<newline>
+++++++[table cell] name='Blink' enabled sensitive showing visible<newline>
+++++++++[text] name='Blink' enabled sensitive showing visible<newline>
+++++[table row] enabled sensitive showing visible<newline>
+++++++[table cell] name='Safari' enabled sensitive showing visible<newline>
+++++++++[text] name='Safari' enabled sensitive showing visible<newline>
+++++++[table cell] name='WebKit' enabled sensitive showing visible<newline>
+++++++++[text] name='WebKit' enabled sensitive showing visible<newline>
