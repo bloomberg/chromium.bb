@@ -102,9 +102,6 @@ Clients and ports
 
  - Investigate DirectFB on Wayland (or is that Wayland on DirectFB?)
 
- - SDL port, bnf has work in progress here:
-   http://cgit.freedesktop.org/~bnf/sdl-wayland/
-
 
 Ideas
 
