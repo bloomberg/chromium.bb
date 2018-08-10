@@ -185,10 +185,9 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   base::flat_set<SurfaceId> GetSurfacesThatReferenceChildForTesting(
       const SurfaceId& surface_id) const;
 
-  // Returns the most recent surface associated with the |fallback_surface_id|'s
-  // FrameSinkId that was created prior to the current primary surface and
-  // verified by the viz host to be owned by the fallback surface's parent. If
-  // |fallback_surface_id| doesn't exist then this method will return nullptr.
+  // Returns the primary surface if it exists. Otherwise, this will return the
+  // most recent surface in |surface_range|. If no surface exists, this will
+  // return nullptr.
   Surface* GetLatestInFlightSurface(const SurfaceRange& surface_range);
 
   // Called by SurfaceAggregator notifying us that it will use |surface| in the
@@ -224,6 +223,11 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
     bool marked_as_old = false;
   };
 
+  // Returns the latest surface in a FrameSinkId that satisfies |is_valid|.
+  Surface* GetLatestInFlightSurfaceForFrameSinkId(
+      const SurfaceRange& surface_range,
+      const FrameSinkId& sink_id);
+
   // Returns set of live surfaces for |lifetime_manager_| is REFERENCES.
   SurfaceIdSet GetLiveSurfacesForReferences();
 
@@ -237,7 +241,11 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // Removes a reference from a |parent_id| to |child_id|.
   void RemoveSurfaceReferenceImpl(const SurfaceReference& reference);
 
+  // Returns whether |surface_id| has a temporary reference or not.
   bool HasTemporaryReference(const SurfaceId& surface_id) const;
+
+  // Returns whether |surface_id| has a Persistent reference or not.
+  bool HasPersistentReference(const SurfaceId& surface_id) const;
 
   // Adds a temporary reference to |surface_id|. The reference will not have an
   // owner initially.
@@ -310,6 +318,11 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // the embedding client can use them.
   std::unordered_map<FrameSinkId, std::vector<LocalSurfaceId>, FrameSinkIdHash>
       temporary_reference_ranges_;
+
+  // A list of surfaces with a given FrameSinkId that have a persistent
+  // reference.
+  base::flat_map<FrameSinkId, base::flat_set<LocalSurfaceId>>
+      persistent_references_by_frame_sink_id_;
 
   // Timer to remove old temporary references that aren't removed after an
   // interval of time. The timer will started/stopped so it only runs if there
