@@ -92,34 +92,30 @@ TEST_F(PdfCompositorImplTest, IsReadyToComposite) {
   // Frame 1 should be ready as frame 2 is ready.
   ContentToFrameMap subframe_content_map = {{3u, 2u}};
   base::flat_set<uint64_t> pending_subframes;
-  bool is_ready =
-      impl.IsReadyToComposite(1u, subframe_content_map, &pending_subframes);
-  EXPECT_TRUE(is_ready);
+  EXPECT_TRUE(
+      impl.IsReadyToComposite(1u, subframe_content_map, &pending_subframes));
   EXPECT_TRUE(pending_subframes.empty());
 
   // If another page of frame 1 needs content 2 which corresponds to frame 3.
   // This page is ready since frame 3 was painted also.
   subframe_content_map = {{2u, 3u}};
-  is_ready =
-      impl.IsReadyToComposite(1u, subframe_content_map, &pending_subframes);
-  EXPECT_TRUE(is_ready);
+  EXPECT_TRUE(
+      impl.IsReadyToComposite(1u, subframe_content_map, &pending_subframes));
   EXPECT_TRUE(pending_subframes.empty());
 
   // Frame 1 with content 1, 2 and 3 should not be ready since content 1's
   // content in frame 4 is not painted yet.
   subframe_content_map = {{1u, 4u}, {2u, 3u}, {3u, 2u}};
-  is_ready =
-      impl.IsReadyToComposite(1u, subframe_content_map, &pending_subframes);
-  EXPECT_FALSE(is_ready);
+  EXPECT_FALSE(
+      impl.IsReadyToComposite(1u, subframe_content_map, &pending_subframes));
   ASSERT_EQ(pending_subframes.size(), 1u);
   EXPECT_EQ(*pending_subframes.begin(), 4u);
 
   // Add content of frame 4. Now it is ready for composition.
   impl.AddSubframeContent(4u, mojo::SharedBufferHandle::Create(10),
                           ContentToFrameMap());
-  is_ready =
-      impl.IsReadyToComposite(1u, subframe_content_map, &pending_subframes);
-  EXPECT_TRUE(is_ready);
+  EXPECT_TRUE(
+      impl.IsReadyToComposite(1u, subframe_content_map, &pending_subframes));
   EXPECT_TRUE(pending_subframes.empty());
 }
 
@@ -135,17 +131,15 @@ TEST_F(PdfCompositorImplTest, MultiLayerDependency) {
   // So frame 5 is not ready.
   subframe_content_map = {{3u, 3u}};
   base::flat_set<uint64_t> pending_subframes;
-  bool is_ready =
-      impl.IsReadyToComposite(5u, subframe_content_map, &pending_subframes);
-  EXPECT_FALSE(is_ready);
+  EXPECT_FALSE(
+      impl.IsReadyToComposite(5u, subframe_content_map, &pending_subframes));
   ASSERT_EQ(pending_subframes.size(), 1u);
   EXPECT_EQ(*pending_subframes.begin(), 1u);
 
   // Frame 6 is not ready either since it needs frame 5 to be ready.
   subframe_content_map = {{1u, 5u}};
-  is_ready =
-      impl.IsReadyToComposite(6u, subframe_content_map, &pending_subframes);
-  EXPECT_FALSE(is_ready);
+  EXPECT_FALSE(
+      impl.IsReadyToComposite(6u, subframe_content_map, &pending_subframes));
   ASSERT_EQ(pending_subframes.size(), 1u);
   EXPECT_EQ(*pending_subframes.begin(), 5u);
 
@@ -153,9 +147,8 @@ TEST_F(PdfCompositorImplTest, MultiLayerDependency) {
   impl.AddSubframeContent(1u, mojo::SharedBufferHandle::Create(10),
                           ContentToFrameMap());
   subframe_content_map = {{3u, 3u}};
-  is_ready =
-      impl.IsReadyToComposite(5u, subframe_content_map, &pending_subframes);
-  EXPECT_TRUE(is_ready);
+  EXPECT_TRUE(
+      impl.IsReadyToComposite(5u, subframe_content_map, &pending_subframes));
   EXPECT_TRUE(pending_subframes.empty());
 
   // Add frame 5's content.
@@ -164,9 +157,8 @@ TEST_F(PdfCompositorImplTest, MultiLayerDependency) {
 
   // Frame 6 is ready too.
   subframe_content_map = {{1u, 5u}};
-  is_ready =
-      impl.IsReadyToComposite(6u, subframe_content_map, &pending_subframes);
-  EXPECT_TRUE(is_ready);
+  EXPECT_TRUE(
+      impl.IsReadyToComposite(6u, subframe_content_map, &pending_subframes));
   EXPECT_TRUE(pending_subframes.empty());
 }
 
@@ -185,9 +177,8 @@ TEST_F(PdfCompositorImplTest, DependencyLoop) {
   // Both frame 1 and 3 are painted, frame 5 should be ready.
   base::flat_set<uint64_t> pending_subframes;
   subframe_content_map = {{1u, 3u}};
-  bool is_ready =
-      impl.IsReadyToComposite(5u, subframe_content_map, &pending_subframes);
-  EXPECT_TRUE(is_ready);
+  EXPECT_TRUE(
+      impl.IsReadyToComposite(5u, subframe_content_map, &pending_subframes));
   EXPECT_TRUE(pending_subframes.empty());
 
   // Frame 6 has content 7, which refers to frame 7.
@@ -197,9 +188,8 @@ TEST_F(PdfCompositorImplTest, DependencyLoop) {
   // Frame 7 should be ready since frame 6's own content is added and it only
   // depends on frame 7.
   subframe_content_map = {{6u, 6u}};
-  is_ready =
-      impl.IsReadyToComposite(7u, subframe_content_map, &pending_subframes);
-  EXPECT_TRUE(is_ready);
+  EXPECT_TRUE(
+      impl.IsReadyToComposite(7u, subframe_content_map, &pending_subframes));
   EXPECT_TRUE(pending_subframes.empty());
 }
 
