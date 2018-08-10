@@ -1881,7 +1881,7 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   }
   space_builder.SetClearanceOffset(clearance_offset);
   if (child_data.force_clearance)
-    space_builder.SetShouldForceClearance();
+    space_builder.SetShouldForceClearance(true);
 
   LayoutUnit space_available;
   if (ConstraintSpace().HasBlockFragmentation()) {
