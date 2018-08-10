@@ -264,6 +264,8 @@ source_set("chromeos") {
     "accessibility/spoken_feedback_event_rewriter_delegate.h",
     "accessibility/switch_access_event_handler.cc",
     "accessibility/switch_access_event_handler.h",
+    "account_mapper_util.cc",
+    "account_mapper_util.h",
     "app_mode/app_launch_utils.cc",
     "app_mode/app_launch_utils.h",
     "app_mode/app_session.cc",

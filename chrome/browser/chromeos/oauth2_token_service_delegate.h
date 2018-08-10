@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -19,6 +20,8 @@
 class AccountTrackerService;
 
 namespace chromeos {
+
+class AccountMapperUtil;
 
 class ChromeOSOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate,
                                            public AccountManager::Observer {
@@ -61,23 +64,10 @@ class ChromeOSOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate,
   void GetAccountsCallback(
       std::vector<AccountManager::AccountKey> account_keys);
 
-  // A utility method to map an |account_key| to the account id used by the
-  // OAuth2TokenService chain (see |AccountInfo|). Returns an empty string for
-  // non-Gaia accounts.
-  std::string MapAccountKeyToAccountId(
-      const AccountManager::AccountKey& account_key) const;
-
-  // A utility method to map the |account_id| used by the OAuth2TokenService
-  // chain (see |AccountInfo|) to an |AccountManager::AccountKey|.
-  AccountManager::AccountKey MapAccountIdToAccountKey(
-      const std::string& account_id) const;
-
   LoadCredentialsState load_credentials_state_ =
       LoadCredentialsState::LOAD_CREDENTIALS_NOT_STARTED;
 
-  // A non-owning pointer to |AccountTrackerService|, which itself is a
-  // |KeyedService|.
-  AccountTrackerService* account_tracker_service_;
+  std::unique_ptr<AccountMapperUtil> account_mapper_util_;
 
   // A non-owning pointer to |AccountManager|. |AccountManager| is available
   // throughout the lifetime of a user session.

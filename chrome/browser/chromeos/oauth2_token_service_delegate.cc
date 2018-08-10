@@ -5,12 +5,13 @@
 #include "chrome/browser/chromeos/oauth2_token_service_delegate.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "chrome/browser/chromeos/account_mapper_util.h"
 #include "chromeos/account_manager/account_manager.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
@@ -18,10 +19,10 @@ namespace chromeos {
 ChromeOSOAuth2TokenServiceDelegate::ChromeOSOAuth2TokenServiceDelegate(
     AccountTrackerService* account_tracker_service,
     chromeos::AccountManager* account_manager)
-    : account_tracker_service_(account_tracker_service),
+    : account_mapper_util_(
+          std::make_unique<AccountMapperUtil>(account_tracker_service)),
       account_manager_(account_manager),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 ChromeOSOAuth2TokenServiceDelegate::~ChromeOSOAuth2TokenServiceDelegate() {
   account_manager_->RemoveObserver(this);
@@ -38,7 +39,7 @@ ChromeOSOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
   ValidateAccountId(account_id);
 
   const AccountManager::AccountKey& account_key =
-      MapAccountIdToAccountKey(account_id);
+      account_mapper_util_->OAuthAccountIdToAccountKey(account_id);
 
   // |OAuth2TokenService| will manage the lifetime of the released pointer.
   return account_manager_
@@ -53,7 +54,7 @@ bool ChromeOSOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
   }
 
   return account_manager_->IsTokenAvailable(
-      MapAccountIdToAccountKey(account_id));
+      account_mapper_util_->OAuthAccountIdToAccountKey(account_id));
 }
 
 void ChromeOSOAuth2TokenServiceDelegate::UpdateAuthError(
@@ -94,7 +95,8 @@ std::vector<std::string> ChromeOSOAuth2TokenServiceDelegate::GetAccounts() {
 
   std::vector<std::string> accounts;
   for (auto& account_key : account_keys_) {
-    std::string account_id = MapAccountKeyToAccountId(account_key);
+    std::string account_id =
+        account_mapper_util_->AccountKeyToOAuthAccountId(account_key);
     if (!account_id.empty()) {
       accounts.emplace_back(account_id);
     }
@@ -131,7 +133,7 @@ void ChromeOSOAuth2TokenServiceDelegate::UpdateCredentials(
   ValidateAccountId(account_id);
 
   const AccountManager::AccountKey& account_key =
-      MapAccountIdToAccountKey(account_id);
+      account_mapper_util_->OAuthAccountIdToAccountKey(account_id);
 
   // Will result in AccountManager calling
   // |ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted|.
@@ -173,41 +175,13 @@ void ChromeOSOAuth2TokenServiceDelegate::GetAccountsCallback(
   FireRefreshTokensLoaded();
 }
 
-std::string ChromeOSOAuth2TokenServiceDelegate::MapAccountKeyToAccountId(
-    const AccountManager::AccountKey& account_key) const {
-  DCHECK(account_key.IsValid());
-
-  if (account_key.account_type !=
-      account_manager::AccountType::ACCOUNT_TYPE_GAIA) {
-    return std::string();
-  }
-
-  const std::string& account_id =
-      account_tracker_service_->FindAccountInfoByGaiaId(account_key.id)
-          .account_id;
-  DCHECK(!account_id.empty()) << "Can't find account id";
-  return account_id;
-}
-
-AccountManager::AccountKey
-ChromeOSOAuth2TokenServiceDelegate::MapAccountIdToAccountKey(
-    const std::string& account_id) const {
-  DCHECK(!account_id.empty());
-
-  const AccountInfo& account_info =
-      account_tracker_service_->GetAccountInfo(account_id);
-
-  DCHECK(!account_info.gaia.empty()) << "Can't find account info";
-  return AccountManager::AccountKey{
-      account_info.gaia, account_manager::AccountType::ACCOUNT_TYPE_GAIA};
-}
-
 void ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted(
     const AccountManager::AccountKey& account_key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   account_keys_.insert(account_key);
 
-  std::string account_id = MapAccountKeyToAccountId(account_key);
+  std::string account_id =
+      account_mapper_util_->AccountKeyToOAuthAccountId(account_key);
   if (account_id.empty()) {
     return;
   }
@@ -237,7 +211,8 @@ void ChromeOSOAuth2TokenServiceDelegate::OnAccountRemoved(
   }
 
   account_keys_.erase(it);
-  std::string account_id = MapAccountKeyToAccountId(account_key);
+  std::string account_id =
+      account_mapper_util_->AccountKeyToOAuthAccountId(account_key);
   if (account_id.empty()) {
     return;
   }
