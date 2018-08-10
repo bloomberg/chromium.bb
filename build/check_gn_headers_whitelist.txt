@@ -344,7 +344,6 @@ third_party/woff2/src/port.h
 third_party/yasm/source/config/linux/config.h
 third_party/yasm/source/config/linux/libyasm-stdint.h
 third_party/zlib/contrib/minizip/crypt.h
-tools/battor_agent/battor_protocol_types.h
 tools/gn/ordered_set.h
 tools/ipc_fuzzer/message_lib/all_message_null_macros.h
 ui/app_list/app_list_export.h
