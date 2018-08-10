@@ -28,6 +28,9 @@ const base::Feature kKeyboardShortcutViewerApp{
 const base::Feature kLockScreenNotifications{"LockScreenNotifications",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kLockScreenInlineReply{"LockScreenInlineReply",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kLockScreenHideSensitiveNotificationsSupport{
     "LockScreenHideSensitiveNotificationsSupport",
     base::FEATURE_ENABLED_BY_DEFAULT};
@@ -65,6 +68,10 @@ bool IsKeyboardShortcutViewerAppEnabled() {
 
 bool IsLockScreenNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kLockScreenNotifications);
+}
+
+bool IsLockScreenInlineReplyEnabled() {
+  return base::FeatureList::IsEnabled(kLockScreenInlineReply);
 }
 
 bool IsLockScreenHideSensitiveNotificationsSupported() {
