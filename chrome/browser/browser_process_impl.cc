@@ -522,6 +522,23 @@ void RundownTaskCounter::TimedWait(base::TimeDelta timeout) {
   waitable_event_.TimedWait(timeout);
 }
 
+#if !defined(OS_ANDROID)
+void RequestProxyResolvingSocketFactoryOnUIThread(
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  network::mojom::NetworkContext* network_context =
+      g_browser_process->system_network_context_manager()->GetContext();
+  network_context->CreateProxyResolvingSocketFactory(std::move(request));
+}
+
+void RequestProxyResolvingSocketFactory(
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
+                     std::move(request)));
+}
+#endif
+
 }  // namespace
 
 void BrowserProcessImpl::FlushLocalStateAndReply(base::OnceClosure reply) {
@@ -1338,7 +1355,7 @@ void BrowserProcessImpl::CreateGCMDriver() {
 
   gcm_driver_ = gcm::CreateGCMDriverDesktop(
       base::WrapUnique(new gcm::GCMClientFactory), local_state(), store_path,
-      system_request_context(),
+      base::BindRepeating(&RequestProxyResolvingSocketFactory),
       system_network_context_manager()->GetSharedURLLoaderFactory(),
       chrome::GetChannel(), gcm::GetProductCategoryForSubtypes(local_state()),
       content::BrowserThread::GetTaskRunnerForThread(

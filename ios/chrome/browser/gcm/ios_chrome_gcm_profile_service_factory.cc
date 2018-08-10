@@ -18,6 +18,35 @@
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
+
+namespace {
+
+// Requests a ProxyResolvingSocketFactoryPtr on the UI thread. Note that a
+// WeakPtr of GCMProfileService is needed to detect when the KeyedService shuts
+// down, and avoid calling into |profile| which might have also been destroyed.
+void RequestProxyResolvingSocketFactoryOnUIThread(
+    web::BrowserState* context,
+    base::WeakPtr<gcm::GCMProfileService> service,
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  if (!service)
+    return;
+  context->GetProxyResolvingSocketFactory(std::move(request));
+}
+
+// A thread-safe wrapper to request a ProxyResolvingSocketFactoryPtr.
+void RequestProxyResolvingSocketFactory(
+    web::BrowserState* context,
+    base::WeakPtr<gcm::GCMProfileService> service,
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  web::WebThread::GetTaskRunnerForThread(web::WebThread::UI)
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread, context,
+                         std::move(service), std::move(request)));
+}
+
+}  // namespace
 
 // static
 gcm::GCMProfileService* IOSChromeGCMProfileServiceFactory::GetForBrowserState(
@@ -64,6 +93,7 @@ IOSChromeGCMProfileServiceFactory::BuildServiceInstanceFor(
   return std::make_unique<gcm::GCMProfileService>(
       browser_state->GetPrefs(), browser_state->GetStatePath(),
       browser_state->GetRequestContext(),
+      base::BindRepeating(&RequestProxyResolvingSocketFactory, context),
       browser_state->GetSharedURLLoaderFactory(), ::GetChannel(),
       GetProductCategoryForSubtypes(),
       IdentityManagerFactory::GetForBrowserState(browser_state),

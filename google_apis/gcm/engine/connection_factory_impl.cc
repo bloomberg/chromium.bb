@@ -23,8 +23,7 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/ssl/ssl_config_service.h"
-#include "services/network/proxy_resolving_client_socket.h"
-#include "services/network/proxy_resolving_client_socket_factory.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace gcm {
 
@@ -52,15 +51,13 @@ bool ShouldRestorePreviousBackoff(const base::TimeTicks& login_time,
 ConnectionFactoryImpl::ConnectionFactoryImpl(
     const std::vector<GURL>& mcs_endpoints,
     const net::BackoffEntry::Policy& backoff_policy,
-    net::URLRequestContext* url_request_context,
+    GetProxyResolvingFactoryCallback get_socket_factory_callback,
     GCMStatsRecorder* recorder)
     : mcs_endpoints_(mcs_endpoints),
       next_endpoint_(0),
       last_successful_endpoint_(0),
       backoff_policy_(backoff_policy),
-      socket_factory_(
-          std::make_unique<network::ProxyResolvingClientSocketFactory>(
-              url_request_context)),
+      get_socket_factory_callback_(get_socket_factory_callback),
       connecting_(false),
       waiting_for_backoff_(false),
       waiting_for_network_online_(false),
@@ -288,18 +285,6 @@ GURL ConnectionFactoryImpl::GetCurrentEndpoint() const {
   return mcs_endpoints_[next_endpoint_];
 }
 
-net::IPEndPoint ConnectionFactoryImpl::GetPeerIP() {
-  if (!socket_)
-    return net::IPEndPoint();
-
-  net::IPEndPoint ip_endpoint;
-  int result = socket_->GetPeerAddress(&ip_endpoint);
-  if (result != net::OK)
-    return net::IPEndPoint();
-
-  return ip_endpoint;
-}
-
 void ConnectionFactoryImpl::ConnectImpl() {
   event_tracker_.StartConnectionAttempt();
   StartConnection();
@@ -316,21 +301,8 @@ void ConnectionFactoryImpl::StartConnection() {
   connecting_ = true;
   GURL current_endpoint = GetCurrentEndpoint();
   recorder_->RecordConnectionInitiated(current_endpoint.host());
-  socket_ = socket_factory_->CreateSocket(current_endpoint, true /*use_tls*/);
-  int status = socket_->Connect(base::BindRepeating(
-      &ConnectionFactoryImpl::OnConnectDone, weak_ptr_factory_.GetWeakPtr()));
-  if (status != net::ERR_IO_PENDING)
-    OnConnectDone(status);
-}
 
-void ConnectionFactoryImpl::InitHandler() {
-  // May be null in tests.
-  mcs_proto::LoginRequest login_request;
-  if (!request_builder_.is_null()) {
-    request_builder_.Run(&login_request);
-    DCHECK(login_request.IsInitialized());
-    event_tracker_.WriteToLoginRequest(&login_request);
-  }
+  get_socket_factory_callback_.Run(mojo::MakeRequest(&socket_factory_));
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("gcm_connection_factory", R"(
@@ -368,7 +340,27 @@ void ConnectionFactoryImpl::InitHandler() {
           "but does not have any effect on other Google Cloud messages."
         )");
 
-  connection_handler_->Init(login_request, traffic_annotation, socket_.get());
+  socket_factory_->CreateProxyResolvingSocket(
+      current_endpoint, true /* use_tls */,
+      net::MutableNetworkTrafficAnnotationTag(traffic_annotation),
+      mojo::MakeRequest(&socket_),
+      base::BindOnce(&ConnectionFactoryImpl::OnConnectDone,
+                     base::Unretained(this)));
+}
+
+void ConnectionFactoryImpl::InitHandler(
+    mojo::ScopedDataPipeConsumerHandle receive_stream,
+    mojo::ScopedDataPipeProducerHandle send_stream) {
+  mcs_proto::LoginRequest login_request;
+  // May be null in tests.
+  if (!request_builder_.is_null()) {
+    request_builder_.Run(&login_request);
+    DCHECK(login_request.IsInitialized());
+    event_tracker_.WriteToLoginRequest(&login_request);
+  }
+
+  connection_handler_->Init(login_request, std::move(receive_stream),
+                            std::move(send_stream));
 }
 
 std::unique_ptr<net::BackoffEntry> ConnectionFactoryImpl::CreateBackoffEntry(
@@ -390,8 +382,20 @@ base::TimeTicks ConnectionFactoryImpl::NowTicks() {
   return base::TimeTicks::Now();
 }
 
-void ConnectionFactoryImpl::OnConnectDone(int result) {
+void ConnectionFactoryImpl::OnConnectDone(
+    int result,
+    const base::Optional<net::IPEndPoint>& local_addr,
+    const base::Optional<net::IPEndPoint>& peer_addr,
+    mojo::ScopedDataPipeConsumerHandle receive_stream,
+    mojo::ScopedDataPipeProducerHandle send_stream) {
   DCHECK_NE(net::ERR_IO_PENDING, result);
+  if (!connection_handler_) {
+    // If CloseSocket() is called while a connect is pending, this callback will
+    // be called with net::ERR_ABORTED. Checking |connection_handler_| serves as
+    // a proxy to checking whether CloseSocket() is called.
+    DCHECK_EQ(net::ERR_ABORTED, result);
+    return;
+  }
   if (result != net::OK) {
     LOG(ERROR) << "Failed to connect to MCS endpoint with error " << result;
     UMA_HISTOGRAM_BOOLEAN("GCM.ConnectionSuccessRate", false);
@@ -426,7 +430,11 @@ void ConnectionFactoryImpl::OnConnectDone(int result) {
   connecting_ = false;
   handshake_in_progress_ = true;
   DVLOG(1) << "MCS endpoint socket connection success, starting login.";
-  InitHandler();
+  // |peer_addr| is only non-null if result == net::OK and the connection is not
+  // through a proxy.
+  if (peer_addr)
+    peer_addr_ = peer_addr.value();
+  InitHandler(std::move(receive_stream), std::move(send_stream));
 }
 
 void ConnectionFactoryImpl::ConnectionHandlerCallback(int result) {
@@ -451,7 +459,7 @@ void ConnectionFactoryImpl::ConnectionHandlerCallback(int result) {
   event_tracker_.ConnectionAttemptSucceeded();
 
   if (listener_)
-    listener_->OnConnected(GetCurrentEndpoint(), GetPeerIP());
+    listener_->OnConnected(GetCurrentEndpoint(), peer_addr_);
 }
 
 void ConnectionFactoryImpl::CloseSocket() {
@@ -460,9 +468,8 @@ void ConnectionFactoryImpl::CloseSocket() {
   if (connection_handler_)
     connection_handler_->Reset();
 
-  if (socket_)
-    socket_->Disconnect();
-  socket_ = nullptr;
+  socket_.reset();
+  peer_addr_ = net::IPEndPoint();
 }
 
 }  // namespace gcm

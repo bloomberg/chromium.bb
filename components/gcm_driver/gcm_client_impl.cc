@@ -41,7 +41,6 @@
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
-#include "net/url_request/url_request_context.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
@@ -279,10 +278,13 @@ std::unique_ptr<MCSClient> GCMInternalsBuilder::BuildMCSClient(
 std::unique_ptr<ConnectionFactory> GCMInternalsBuilder::BuildConnectionFactory(
     const std::vector<GURL>& endpoints,
     const net::BackoffEntry::Policy& backoff_policy,
-    net::URLRequestContext* url_request_context,
+    base::RepeatingCallback<
+        void(network::mojom::ProxyResolvingSocketFactoryRequest)>
+        get_socket_factory_callback,
     GCMStatsRecorder* recorder) {
-  return base::WrapUnique<ConnectionFactory>(new ConnectionFactoryImpl(
-      endpoints, backoff_policy, url_request_context, recorder));
+  return std::make_unique<ConnectionFactoryImpl>(
+      endpoints, backoff_policy, std::move(get_socket_factory_callback),
+      recorder);
 }
 
 GCMClientImpl::CheckinInfo::CheckinInfo()
@@ -318,7 +320,6 @@ GCMClientImpl::GCMClientImpl(
       start_mode_(DELAYED_START),
       clock_(internals_builder_->GetClock()),
       gcm_store_reset_(false),
-      url_request_context_getter_(nullptr),
       periodic_checkin_ptr_factory_(this),
       destroying_gcm_store_ptr_factory_(this),
       weak_ptr_factory_(this) {}
@@ -330,16 +331,16 @@ void GCMClientImpl::Initialize(
     const ChromeBuildInfo& chrome_build_info,
     const base::FilePath& path,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
-    const scoped_refptr<net::URLRequestContextGetter>&
-        url_request_context_getter,
+    base::RepeatingCallback<
+        void(network::mojom::ProxyResolvingSocketFactoryRequest)>
+        get_socket_factory_callback,
     const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory,
     std::unique_ptr<Encryptor> encryptor,
     GCMClient::Delegate* delegate) {
   DCHECK_EQ(UNINITIALIZED, state_);
-  DCHECK(url_request_context_getter);
   DCHECK(delegate);
 
-  url_request_context_getter_ = url_request_context_getter;
+  get_socket_factory_callback_ = std::move(get_socket_factory_callback);
   url_loader_factory_ = url_loader_factory;
   chrome_build_info_ = chrome_build_info;
 
@@ -498,8 +499,8 @@ void GCMClientImpl::InitializeMCSClient() {
   if (fallback_endpoint.is_valid())
     endpoints.push_back(fallback_endpoint);
   connection_factory_ = internals_builder_->BuildConnectionFactory(
-      endpoints, GetGCMBackoffPolicy(),
-      url_request_context_getter_->GetURLRequestContext(), &recorder_);
+      endpoints, GetGCMBackoffPolicy(), get_socket_factory_callback_,
+      &recorder_);
   connection_factory_->SetConnectionListener(this);
   mcs_client_ = internals_builder_->BuildMCSClient(
       chrome_build_info_.version, clock_, connection_factory_.get(),

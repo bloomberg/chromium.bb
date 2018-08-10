@@ -9,25 +9,19 @@
 
 #include <stddef.h>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "google_apis/gcm/engine/connection_event_tracker.h"
 #include "google_apis/gcm/engine/connection_handler.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/network_change_notifier.h"
 #include "net/log/net_log_with_source.h"
+#include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "url/gurl.h"
-
-namespace network {
-class ProxyResolvingClientSocket;
-class ProxyResolvingClientSocketFactory;
-}
-
-namespace net {
-class URLRequestContext;
-}
 
 namespace gcm {
 
@@ -37,12 +31,12 @@ class GCM_EXPORT ConnectionFactoryImpl :
     public ConnectionFactory,
     public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
-  // The caller is responsible for making sure the ConnectionFactoryImpl is
-  // destroyed before the |url_request_context|.
-  ConnectionFactoryImpl(const std::vector<GURL>& mcs_endpoints,
-                        const net::BackoffEntry::Policy& backoff_policy,
-                        net::URLRequestContext* url_request_context,
-                        GCMStatsRecorder* recorder);
+  ConnectionFactoryImpl(
+      const std::vector<GURL>& mcs_endpoints,
+      const net::BackoffEntry::Policy& backoff_policy,
+      GetProxyResolvingFactoryCallback get_socket_factory_callback,
+      // need task runner here.
+      GCMStatsRecorder* recorder);
   ~ConnectionFactoryImpl() override;
 
   // ConnectionFactory implementation.
@@ -67,10 +61,6 @@ class GCM_EXPORT ConnectionFactoryImpl :
   // attempt will be made.
   GURL GetCurrentEndpoint() const;
 
-  // Returns the IPEndpoint to which the factory is currently connected. If no
-  // connection is active, returns an empty IPEndpoint.
-  net::IPEndPoint GetPeerIP();
-
  protected:
   // Initiate the connection to the GCM server.
   // Virtual for testing.
@@ -78,7 +68,8 @@ class GCM_EXPORT ConnectionFactoryImpl :
 
   // Helper method for initalizing the connection hander.
   // Virtual for testing.
-  virtual void InitHandler();
+  virtual void InitHandler(mojo::ScopedDataPipeConsumerHandle receive_stream,
+                           mojo::ScopedDataPipeProducerHandle send_stream);
 
   // Helper method for creating a backoff entry.
   // Virtual for testing.
@@ -97,8 +88,12 @@ class GCM_EXPORT ConnectionFactoryImpl :
   // Virtual for testing.
   virtual base::TimeTicks NowTicks();
 
-  // Callback for Socket connection completion.
-  void OnConnectDone(int result);
+  // Callback for Socket connection completion. This is public for testing.
+  void OnConnectDone(int result,
+                     const base::Optional<net::IPEndPoint>& local_addr,
+                     const base::Optional<net::IPEndPoint>& peer_addr,
+                     mojo::ScopedDataPipeConsumerHandle receive_stream,
+                     mojo::ScopedDataPipeProducerHandle send_stream);
 
   // ConnectionHandler callback for connection issues.
   void ConnectionHandlerCallback(int result);
@@ -138,11 +133,15 @@ class GCM_EXPORT ConnectionFactoryImpl :
   // The backoff policy to use.
   const net::BackoffEntry::Policy backoff_policy_;
 
-  // ---- net:: components for establishing connections. ----
+  // ---- network:: components for establishing connections. ----
   // Socket factory for creating new GCM connections.
-  std::unique_ptr<network::ProxyResolvingClientSocketFactory> socket_factory_;
+  GetProxyResolvingFactoryCallback get_socket_factory_callback_;
+  network::mojom::ProxyResolvingSocketFactoryPtr socket_factory_;
   // The handle to the socket for the current connection, if one exists.
-  std::unique_ptr<network::ProxyResolvingClientSocket> socket_;
+  network::mojom::ProxyResolvingSocketPtr socket_;
+  // Peer address of |socket_|.
+  net::IPEndPoint peer_addr_;
+
   // Current backoff entry.
   std::unique_ptr<net::BackoffEntry> backoff_entry_;
   // Backoff entry from previous connection attempt. Updated on each login

@@ -29,7 +29,7 @@
 #include "google_apis/gcm/protocol/android_checkin.pb.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 
 class GURL;
 
@@ -41,10 +41,6 @@ class Time;
 namespace mcs_proto {
 class DataMessageStanza;
 }  // namespace mcs_proto
-
-namespace net {
-class URLRequestContext;
-}  // namespace net
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -73,7 +69,9 @@ class GCMInternalsBuilder {
   virtual std::unique_ptr<ConnectionFactory> BuildConnectionFactory(
       const std::vector<GURL>& endpoints,
       const net::BackoffEntry::Policy& backoff_policy,
-      net::URLRequestContext* url_request_context,
+      base::RepeatingCallback<
+          void(network::mojom::ProxyResolvingSocketFactoryRequest)>
+          get_socket_factory_callback,
       GCMStatsRecorder* recorder);
 };
 
@@ -112,8 +110,9 @@ class GCMClientImpl
       const ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
-      const scoped_refptr<net::URLRequestContextGetter>&
-          url_request_context_getter,
+      base::RepeatingCallback<
+          void(network::mojom::ProxyResolvingSocketFactoryRequest)>
+          get_socket_factory_callback,
       const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory,
       std::unique_ptr<Encryptor> encryptor,
       GCMClient::Delegate* delegate) override;
@@ -369,7 +368,10 @@ class GCMClientImpl
   bool gcm_store_reset_;
 
   std::unique_ptr<ConnectionFactory> connection_factory_;
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  base::RepeatingCallback<void(
+      network::mojom::ProxyResolvingSocketFactoryRequest)>
+      get_socket_factory_callback_;
+
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Controls receiving and sending of packets and reliable message queueing.

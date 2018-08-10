@@ -93,7 +93,9 @@ std::unique_ptr<GCMDriver> CreateGCMDriverDesktop(
     std::unique_ptr<GCMClientFactory> gcm_client_factory,
     PrefService* prefs,
     const base::FilePath& store_path,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context,
+    base::RepeatingCallback<
+        void(network::mojom::ProxyResolvingSocketFactoryRequest)>
+        get_socket_factory_callback,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     version_info::Channel channel,
     const std::string& product_category_for_subtypes,
@@ -104,8 +106,8 @@ std::unique_ptr<GCMDriver> CreateGCMDriverDesktop(
       std::move(gcm_client_factory),
       GetChromeBuildInfo(channel, product_category_for_subtypes),
       GetChannelStatusRequestUrl(channel), GetUserAgent(channel), prefs,
-      store_path, request_context, url_loader_factory, ui_task_runner,
-      io_task_runner, blocking_task_runner));
+      store_path, get_socket_factory_callback, url_loader_factory,
+      ui_task_runner, io_task_runner, blocking_task_runner));
 }
 
 }  // namespace gcm

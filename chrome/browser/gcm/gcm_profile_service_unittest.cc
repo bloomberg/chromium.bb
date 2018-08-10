@@ -43,6 +43,27 @@ namespace {
 const char kTestAppID[] = "TestApp";
 const char kUserID[] = "user";
 
+void RequestProxyResolvingSocketFactoryOnUIThread(
+    Profile* profile,
+    base::WeakPtr<gcm::GCMProfileService> service,
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  if (!service)
+    return;
+  return content::BrowserContext::GetDefaultStoragePartition(profile)
+      ->GetNetworkContext()
+      ->CreateProxyResolvingSocketFactory(std::move(request));
+}
+
+void RequestProxyResolvingSocketFactory(
+    Profile* profile,
+    base::WeakPtr<gcm::GCMProfileService> service,
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread, profile,
+                     service, std::move(request)));
+}
+
 std::unique_ptr<KeyedService> BuildGCMProfileService(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
@@ -51,6 +72,7 @@ std::unique_ptr<KeyedService> BuildGCMProfileService(
           {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
   return std::make_unique<gcm::GCMProfileService>(
       profile->GetPrefs(), profile->GetPath(), profile->GetRequestContext(),
+      base::BindRepeating(&RequestProxyResolvingSocketFactory, profile),
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess(),
       chrome::GetChannel(),

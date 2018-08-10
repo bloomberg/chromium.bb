@@ -22,6 +22,7 @@ static_library("instance_id") {
     "//components/keyed_service/core:core",
     "//components/prefs:prefs",
     "//crypto",
+    "//services/network/public/mojom",
   ]
 
   if (use_gcm_from_platform) {

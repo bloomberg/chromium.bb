@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/optional.h"
 #include "net/base/net_errors.h"
 #include "services/network/socket_data_pump.h"
 
@@ -17,7 +18,16 @@ ProxyResolvingSocketMojo::ProxyResolvingSocketMojo(
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : socket_(std::move(socket)), traffic_annotation_(traffic_annotation) {}
 
-ProxyResolvingSocketMojo::~ProxyResolvingSocketMojo() {}
+ProxyResolvingSocketMojo::~ProxyResolvingSocketMojo() {
+  if (connect_callback_) {
+    // If |this| is destroyed when connect hasn't completed, tell the consumer
+    // that request has been aborted.
+    std::move(connect_callback_)
+        .Run(net::ERR_ABORTED, base::nullopt, base::nullopt,
+             mojo::ScopedDataPipeConsumerHandle(),
+             mojo::ScopedDataPipeProducerHandle());
+  }
+}
 
 void ProxyResolvingSocketMojo::Connect(
     mojom::ProxyResolvingSocketFactory::CreateProxyResolvingSocketCallback
@@ -34,18 +44,6 @@ void ProxyResolvingSocketMojo::Connect(
   OnConnectCompleted(result);
 }
 
-void ProxyResolvingSocketMojo::GetPeerAddress(GetPeerAddressCallback callback) {
-  DCHECK(socket_);
-
-  net::IPEndPoint peer_addr;
-  int result = socket_->GetPeerAddress(&peer_addr);
-  if (result != net::OK) {
-    std::move(callback).Run(result, base::nullopt);
-    return;
-  }
-  std::move(callback).Run(result, peer_addr);
-}
-
 void ProxyResolvingSocketMojo::OnConnectCompleted(int result) {
   DCHECK(!connect_callback_.is_null());
   DCHECK(!socket_data_pump_);
@@ -54,9 +52,16 @@ void ProxyResolvingSocketMojo::OnConnectCompleted(int result) {
   if (result == net::OK)
     result = socket_->GetLocalAddress(&local_addr);
 
+  net::IPEndPoint peer_addr;
+  // If |socket_| is connected through a proxy, GetPeerAddress returns
+  // net::ERR_NAME_NOT_RESOLVED.
+  bool get_peer_address_success =
+      result == net::OK && (socket_->GetPeerAddress(&peer_addr) == net::OK);
+
   if (result != net::OK) {
     std::move(connect_callback_)
-        .Run(result, base::nullopt, mojo::ScopedDataPipeConsumerHandle(),
+        .Run(result, base::nullopt, base::nullopt,
+             mojo::ScopedDataPipeConsumerHandle(),
              mojo::ScopedDataPipeProducerHandle());
     return;
   }
@@ -67,7 +72,11 @@ void ProxyResolvingSocketMojo::OnConnectCompleted(int result) {
       std::move(receive_pipe.producer_handle),
       std::move(send_pipe.consumer_handle), traffic_annotation_);
   std::move(connect_callback_)
-      .Run(net::OK, local_addr, std::move(receive_pipe.consumer_handle),
+      .Run(net::OK, local_addr,
+           get_peer_address_success
+               ? base::make_optional<net::IPEndPoint>(peer_addr)
+               : base::nullopt,
+           std::move(receive_pipe.consumer_handle),
            std::move(send_pipe.producer_handle));
 }
 

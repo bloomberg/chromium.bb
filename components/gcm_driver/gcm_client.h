@@ -16,6 +16,7 @@
 #include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/gcm_activity.h"
 #include "components/gcm_driver/registration_info.h"
+#include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 
 template <class T> class scoped_refptr;
 
@@ -27,7 +28,6 @@ class SequencedTaskRunner;
 
 namespace net {
 class IPEndPoint;
-class URLRequestContextGetter;
 }
 
 namespace network {
@@ -235,16 +235,18 @@ class GCMClient {
   // |chrome_build_info|: chrome info, i.e., version, channel and etc.
   // |store_path|: path to the GCM store.
   // |blocking_task_runner|: for running blocking file tasks.
-  // |url_request_context_getter|: for url requests. The GCMClient must be
-  //     deleted before the Getter's underlying URLRequestContext.
+  // |get_socket_factory_callback|: a callback that can accept a request for a
+  //     network::mojom::ProxyResolvingSocketFactoryPtr. It needs to be safe to
+  //     run on any thread.
   // |delegate|: the delegate whose methods will be called asynchronously in
   //     response to events and messages.
   virtual void Initialize(
       const ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
-      const scoped_refptr<net::URLRequestContextGetter>&
-          url_request_context_getter,
+      base::RepeatingCallback<
+          void(network::mojom::ProxyResolvingSocketFactoryRequest)>
+          get_socket_factory_callback,
       const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory,
       std::unique_ptr<Encryptor> encryptor,
       Delegate* delegate) = 0;

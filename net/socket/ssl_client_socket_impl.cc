@@ -814,6 +814,14 @@ int SSLClientSocketImpl::ReadIfReady(IOBuffer* buf,
   return rv;
 }
 
+int SSLClientSocketImpl::CancelReadIfReady() {
+  int result = transport_->socket()->CancelReadIfReady();
+  // Cancel |user_read_callback_|, because caller does not expect the callback
+  // to be invoked after they have canceled the ReadIfReady.
+  user_read_callback_.Reset();
+  return result;
+}
+
 int SSLClientSocketImpl::Write(
     IOBuffer* buf,
     int buf_len,
