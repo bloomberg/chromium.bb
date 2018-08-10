@@ -9,5 +9,6 @@ specific_include_rules = {
     "+ash/wm/window_properties.h",
     "+ash/wm/window_state.h",
     "+ash/wm/window_state_delegate.h",
+    "+ash/wm/window_state_observer.h",
   ],
 }

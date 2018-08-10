@@ -334,7 +334,9 @@ void HeaderView::OnImmersiveFullscreenExited() {
   in_immersive_mode_ = false;
   fullscreen_visible_fraction_ = 0;
   DestroyLayer();
-  parent()->Layout();
+  parent()->InvalidateLayout();
+  if (target_widget_)
+    target_widget_->non_client_view()->Layout();
 }
 
 void HeaderView::SetVisibleFraction(double visible_fraction) {

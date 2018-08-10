@@ -127,6 +127,8 @@ class ChromeNativeAppWindowViewsAuraAsh
                            NoImmersiveModeWhenForcedFullscreen);
   FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshBrowserTest,
                            PublicSessionImmersiveMode);
+  FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshBrowserTest,
+                           RestoreImmersiveMode);
   FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshInteractiveTest,
                            NoImmersiveOrBubbleOutsidePublicSessionWindow);
   FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshInteractiveTest,

@@ -168,3 +168,23 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
 
   EXPECT_TRUE(window->immersive_fullscreen_controller_->IsEnabled());
 }
+
+// Verifies that apps in immersive fullscreen will correctly exit
+// immersive mode when Restore is called.
+IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
+                       RestoreImmersiveMode) {
+  extensions::AppWindow* app_window = CreateTestAppWindow("{}");
+  auto* window = static_cast<ChromeNativeAppWindowViewsAuraAsh*>(
+      GetNativeAppWindowForAppWindow(app_window));
+  ASSERT_TRUE(window != nullptr);
+  ASSERT_TRUE(window->immersive_fullscreen_controller_.get());
+
+  app_window->OSFullscreen();
+  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, window->GetRestoredState());
+  EXPECT_TRUE(window->IsFullscreen());
+
+  window->Restore();
+  ASSERT_FALSE(window->immersive_fullscreen_controller_->IsEnabled());
+
+  CloseAppWindow(app_window);
+}
