@@ -180,7 +180,7 @@ bool ReplacedPainter::ShouldPaint(
   // But if it's an SVG root, there can be children, so we'll check visibility
   // later.
   if (!layout_replaced_.IsSVGRoot() &&
-      layout_replaced_.Style()->Visibility() != EVisibility::kVisible)
+      layout_replaced_.StyleRef().Visibility() != EVisibility::kVisible)
     return false;
 
   LayoutRect local_rect(layout_replaced_.VisualOverflowRect());

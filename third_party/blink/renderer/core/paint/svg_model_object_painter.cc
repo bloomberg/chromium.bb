@@ -31,9 +31,9 @@ bool SVGModelObjectPainter::CullRectSkipsPainting(const PaintInfo& paint_info) {
 void SVGModelObjectPainter::PaintOutline(const PaintInfo& paint_info) {
   if (paint_info.phase != PaintPhase::kForeground)
     return;
-  if (layout_svg_model_object_.Style()->Visibility() != EVisibility::kVisible)
+  if (layout_svg_model_object_.StyleRef().Visibility() != EVisibility::kVisible)
     return;
-  if (!layout_svg_model_object_.Style()->OutlineWidth())
+  if (!layout_svg_model_object_.StyleRef().OutlineWidth())
     return;
 
   PaintInfo outline_paint_info(paint_info);

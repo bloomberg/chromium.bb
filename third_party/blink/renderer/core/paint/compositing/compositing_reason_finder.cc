@@ -263,8 +263,8 @@ bool CompositingReasonFinder::RequiresCompositingForRootScroller(
 bool CompositingReasonFinder::RequiresCompositingForScrollDependentPosition(
     const PaintLayer* layer,
     bool ignore_lcd_text) const {
-  if (!layer->GetLayoutObject().Style()->HasViewportConstrainedPosition() &&
-      !layer->GetLayoutObject().Style()->HasStickyConstrainedPosition())
+  if (!layer->GetLayoutObject().StyleRef().HasViewportConstrainedPosition() &&
+      !layer->GetLayoutObject().StyleRef().HasStickyConstrainedPosition())
     return false;
 
   if (!(ignore_lcd_text ||
@@ -278,7 +278,7 @@ bool CompositingReasonFinder::RequiresCompositingForScrollDependentPosition(
   // Don't promote fixed position elements that are descendants of a non-view
   // container, e.g. transformed elements.  They will stay fixed wrt the
   // container rather than the enclosing frame.
-  EPosition position = layer->GetLayoutObject().Style()->GetPosition();
+  EPosition position = layer->GetLayoutObject().StyleRef().GetPosition();
   if (position == EPosition::kFixed) {
     return layer->FixedToViewport() &&
            layout_view_.GetFrameView()->LayoutViewport()->ScrollsOverflow();

@@ -270,7 +270,8 @@ LinkHighlightImpl::PaintContentsToDisplayList(
   PaintFlags flags;
   flags.setStyle(PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
-  flags.setColor(node_->GetLayoutObject()->Style()->TapHighlightColor().Rgb());
+  flags.setColor(
+      node_->GetLayoutObject()->StyleRef().TapHighlightColor().Rgb());
   canvas->drawPath(path_.GetSkPath(), flags);
 
   display_list->StartPaint();

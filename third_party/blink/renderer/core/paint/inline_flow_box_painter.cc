@@ -165,9 +165,9 @@ InlineFlowBoxPainter::GetBorderPaintType(const LayoutRect& adjusted_frame_rect,
                                          IntRect& adjusted_clip_rect) const {
   adjusted_clip_rect = PixelSnappedIntRect(adjusted_frame_rect);
   if (inline_flow_box_.Parent() &&
-      inline_flow_box_.GetLineLayoutItem().Style()->HasBorderDecoration()) {
+      inline_flow_box_.GetLineLayoutItem().StyleRef().HasBorderDecoration()) {
     const NinePieceImage& border_image =
-        inline_flow_box_.GetLineLayoutItem().Style()->BorderImage();
+        inline_flow_box_.GetLineLayoutItem().StyleRef().BorderImage();
     StyleImage* border_image_source = border_image.GetImage();
     bool has_border_image =
         border_image_source && border_image_source->CanRender();
@@ -197,7 +197,7 @@ void InlineFlowBoxPainter::PaintBackgroundBorderShadow(
   if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
     RecordHitTestData(paint_info, paint_offset);
 
-  if (inline_flow_box_.GetLineLayoutItem().Style()->Visibility() !=
+  if (inline_flow_box_.GetLineLayoutItem().StyleRef().Visibility() !=
       EVisibility::kVisible)
     return;
 

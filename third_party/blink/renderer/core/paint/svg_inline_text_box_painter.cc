@@ -77,7 +77,7 @@ void SVGInlineTextBoxPainter::Paint(const PaintInfo& paint_info,
          paint_info.phase == PaintPhase::kSelection);
   DCHECK(svg_inline_text_box_.Truncation() == kCNoTruncation);
 
-  if (svg_inline_text_box_.GetLineLayoutItem().Style()->Visibility() !=
+  if (svg_inline_text_box_.GetLineLayoutItem().StyleRef().Visibility() !=
           EVisibility::kVisible ||
       !svg_inline_text_box_.Len())
     return;
@@ -209,7 +209,7 @@ void SVGInlineTextBoxPainter::PaintTextFragments(
 
 void SVGInlineTextBoxPainter::PaintSelectionBackground(
     const PaintInfo& paint_info) {
-  if (svg_inline_text_box_.GetLineLayoutItem().Style()->Visibility() !=
+  if (svg_inline_text_box_.GetLineLayoutItem().StyleRef().Visibility() !=
       EVisibility::kVisible)
     return;
 
@@ -263,7 +263,7 @@ static inline LayoutObject* FindLayoutObjectDefininingTextDecoration(
         LineLayoutAPIShim::LayoutObjectFrom(parent_box->GetLineLayoutItem());
 
     if (layout_object->Style() &&
-        layout_object->Style()->GetTextDecoration() != TextDecoration::kNone)
+        layout_object->StyleRef().GetTextDecoration() != TextDecoration::kNone)
       break;
 
     parent_box = parent_box->Parent();

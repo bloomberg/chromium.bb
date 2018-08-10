@@ -158,8 +158,8 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
   if (SquashingWouldExceedSparsityTolerance(layer, squashing_state))
     return SquashingDisallowedReason::kSquashingSparsityExceeded;
 
-  if (layer->GetLayoutObject().Style()->HasBlendMode() ||
-      squashing_layer.GetLayoutObject().Style()->HasBlendMode())
+  if (layer->GetLayoutObject().StyleRef().HasBlendMode() ||
+      squashing_layer.GetLayoutObject().StyleRef().HasBlendMode())
     return SquashingDisallowedReason::kSquashingBlendingIsDisallowed;
 
   if (layer->ClippingContainer() != squashing_layer.ClippingContainer() &&
@@ -196,9 +196,12 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
   if (layer->NearestFixedPositionLayer() !=
       squashing_layer.NearestFixedPositionLayer())
     return SquashingDisallowedReason::kNearestFixedPositionMismatch;
-  DCHECK_NE(layer->GetLayoutObject().Style()->GetPosition(), EPosition::kFixed);
+  DCHECK_NE(layer->GetLayoutObject().StyleRef().GetPosition(),
+            EPosition::kFixed);
 
-  if ((squashing_layer.GetLayoutObject().Style()->SubtreeWillChangeContents() &&
+  if ((squashing_layer.GetLayoutObject()
+           .StyleRef()
+           .SubtreeWillChangeContents() &&
        squashing_layer.GetLayoutObject()
            .Style()
            ->IsRunningAnimationOnCompositor()) ||

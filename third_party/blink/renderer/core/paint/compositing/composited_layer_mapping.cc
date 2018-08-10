@@ -148,7 +148,7 @@ static bool ContentLayerSupportsDirectBackgroundComposition(
     return false;
 
   // If there is no background, there is nothing to support.
-  if (!layout_object.Style()->HasBackground())
+  if (!layout_object.StyleRef().HasBackground())
     return true;
 
   // Simple background that is contained within the contents rect.
@@ -172,7 +172,7 @@ static inline bool IsAcceleratedContents(LayoutObject& layout_object) {
 // Returns true if the compositor will be responsible for applying the sticky
 // position offset for this composited layer.
 static bool UsesCompositedStickyPosition(PaintLayer& layer) {
-  return layer.GetLayoutObject().Style()->HasStickyConstrainedPosition() &&
+  return layer.GetLayoutObject().StyleRef().HasStickyConstrainedPosition() &&
          layer.AncestorOverflowLayer()->NeedsCompositedScrolling();
 }
 
@@ -605,7 +605,7 @@ bool CompositedLayerMapping::AncestorRoundedCornersWillClip(
     // decorations.
     if ((layer->GetLayoutObject().HasOverflowClip() ||
          layer->GetLayoutObject().IsLayoutEmbeddedContent()) &&
-        layer->GetLayoutObject().Style()->HasBorderRadius() &&
+        layer->GetLayoutObject().StyleRef().HasBorderRadius() &&
         InContainingBlockChain(&owning_layer_, layer)) {
       LayoutPoint delta;
       layer->ConvertToLayerCoords(clip_inheritance_ancestor_, delta);
@@ -772,16 +772,16 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
 
   // If the outline needs to draw over the composited scrolling contents layer
   // or scrollbar layers it needs to be drawn into a separate layer.
-  int min_border_width =
-      std::min(layout_object.Style()->BorderTopWidth(),
-               std::min(layout_object.Style()->BorderLeftWidth(),
-                        std::min(layout_object.Style()->BorderRightWidth(),
-                                 layout_object.Style()->BorderBottomWidth())));
+  int min_border_width = std::min(
+      layout_object.StyleRef().BorderTopWidth(),
+      std::min(layout_object.StyleRef().BorderLeftWidth(),
+               std::min(layout_object.StyleRef().BorderRightWidth(),
+                        layout_object.StyleRef().BorderBottomWidth())));
   bool needs_decoration_outline_layer =
       owning_layer_.GetScrollableArea() &&
       owning_layer_.GetScrollableArea()->UsesCompositedScrolling() &&
-      layout_object.Style()->HasOutline() &&
-      layout_object.Style()->OutlineOffset() < -min_border_width;
+      layout_object.StyleRef().HasOutline() &&
+      layout_object.StyleRef().OutlineOffset() < -min_border_width;
 
   if (UpdateDecorationOutlineLayer(needs_decoration_outline_layer))
     layer_config_changed = true;
@@ -1173,14 +1173,14 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
 
   // Set transform property, if it is not animating. We have to do this here
   // because the transform is affected by the layer dimensions.
-  if (!GetLayoutObject().Style()->IsRunningTransformAnimationOnCompositor())
+  if (!GetLayoutObject().StyleRef().IsRunningTransformAnimationOnCompositor())
     UpdateTransform(GetLayoutObject().StyleRef());
 
   // Set opacity, if it is not animating.
-  if (!GetLayoutObject().Style()->IsRunningOpacityAnimationOnCompositor())
+  if (!GetLayoutObject().StyleRef().IsRunningOpacityAnimationOnCompositor())
     UpdateOpacity(GetLayoutObject().StyleRef());
 
-  if (!GetLayoutObject().Style()->IsRunningFilterAnimationOnCompositor())
+  if (!GetLayoutObject().StyleRef().IsRunningFilterAnimationOnCompositor())
     UpdateFilters();
 
   if (!GetLayoutObject()
@@ -1329,7 +1329,7 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
   graphics_layer_->SetContentsVisible(contents_visible);
 
   graphics_layer_->SetBackfaceVisibility(
-      GetLayoutObject().Style()->BackfaceVisibility() ==
+      GetLayoutObject().StyleRef().BackfaceVisibility() ==
       EBackfaceVisibility::kVisible);
 }
 
@@ -1524,7 +1524,7 @@ void CompositedLayerMapping::UpdateOverflowControlsHostLayerGeometry(
   overflow_controls_host_layer_->SetSize(border_box.Size());
   overflow_controls_host_layer_->SetMasksToBounds(true);
   overflow_controls_host_layer_->SetBackfaceVisibility(
-      owning_layer_.GetLayoutObject().Style()->BackfaceVisibility() ==
+      owning_layer_.GetLayoutObject().StyleRef().BackfaceVisibility() ==
       EBackfaceVisibility::kVisible);
 }
 
@@ -1559,7 +1559,7 @@ void CompositedLayerMapping::UpdateChildContainmentLayerGeometry() {
   }
 
   if (child_clipping_mask_layer_ && !scrolling_layer_ &&
-      !GetLayoutObject().Style()->ClipPath()) {
+      !GetLayoutObject().StyleRef().ClipPath()) {
     if (child_clipping_mask_layer_->Size() !=
         child_containment_layer_->Size()) {
       child_clipping_mask_layer_->SetSize(child_containment_layer_->Size());
@@ -1658,7 +1658,7 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
   scrolling_layer_->SetOffsetFromLayoutObject(
       ToIntSize(overflow_clip_rect.Location()));
 
-  if (child_clipping_mask_layer_ && !GetLayoutObject().Style()->ClipPath()) {
+  if (child_clipping_mask_layer_ && !GetLayoutObject().StyleRef().ClipPath()) {
     child_clipping_mask_layer_->SetPosition(scrolling_layer_->GetPosition());
     if (child_clipping_mask_layer_->Size() != scrolling_layer_->Size()) {
       child_clipping_mask_layer_->SetSize(scrolling_layer_->Size());
@@ -1698,7 +1698,7 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
 }
 
 void CompositedLayerMapping::UpdateChildClippingMaskLayerGeometry() {
-  if (!child_clipping_mask_layer_ || !GetLayoutObject().Style()->ClipPath() ||
+  if (!child_clipping_mask_layer_ || !GetLayoutObject().StyleRef().ClipPath() ||
       !GetLayoutObject().IsBox())
     return;
   LayoutBox& layout_box = ToLayoutBox(GetLayoutObject());
@@ -2888,7 +2888,8 @@ void CompositedLayerMapping::UpdateImageContents() {
       LayoutObject::ShouldRespectImageOrientation(&image_layout_object));
 
   graphics_layer_->SetFilterQuality(
-      GetLayoutObject().Style()->ImageRendering() == EImageRendering::kPixelated
+      GetLayoutObject().StyleRef().ImageRendering() ==
+              EImageRendering::kPixelated
           ? kNone_SkFilterQuality
           : kLow_SkFilterQuality);
 

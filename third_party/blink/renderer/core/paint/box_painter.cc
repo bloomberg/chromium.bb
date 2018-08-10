@@ -218,7 +218,7 @@ void BoxPainter::PaintBackground(const PaintInfo& paint_info,
   BackgroundImageGeometry geometry(layout_box_);
   BoxModelObjectPainter box_model_painter(layout_box_);
   box_model_painter.PaintFillLayers(paint_info, background_color,
-                                    layout_box_.Style()->BackgroundLayers(),
+                                    layout_box_.StyleRef().BackgroundLayers(),
                                     paint_rect, geometry, bleed_avoidance);
 }
 
@@ -227,7 +227,7 @@ void BoxPainter::PaintMask(const PaintInfo& paint_info,
   DCHECK_EQ(PaintPhase::kMask, paint_info.phase);
 
   if (!layout_box_.HasMask() ||
-      layout_box_.Style()->Visibility() != EVisibility::kVisible)
+      layout_box_.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(

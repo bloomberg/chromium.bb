@@ -16,7 +16,7 @@ namespace blink {
 
 void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
                                            const LayoutPoint& paint_offset) {
-  if (layout_file_upload_control_.Style()->Visibility() !=
+  if (layout_file_upload_control_.StyleRef().Visibility() !=
       EVisibility::kVisible)
     return;
 
@@ -25,7 +25,7 @@ void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
           paint_info.context, layout_file_upload_control_, paint_info.phase)) {
     const String& displayed_filename =
         layout_file_upload_control_.FileTextValue();
-    const Font& font = layout_file_upload_control_.Style()->GetFont();
+    const Font& font = layout_file_upload_control_.StyleRef().GetFont();
     TextRun text_run = ConstructTextRun(
         font, displayed_filename, layout_file_upload_control_.StyleRef(),
         kRespectDirection | kRespectDirectionOverride);
@@ -46,7 +46,7 @@ void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
         button_width + LayoutFileUploadControl::kAfterButtonSpacing);
     float text_width = font.Width(text_run);
     LayoutUnit text_x;
-    if (layout_file_upload_control_.Style()->IsLeftToRightDirection())
+    if (layout_file_upload_control_.StyleRef().IsLeftToRightDirection())
       text_x = content_left + button_and_spacing_width;
     else
       text_x =
@@ -70,7 +70,7 @@ void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
     TextRunPaintInfo text_run_paint_info(text_run);
 
     const SimpleFontData* font_data =
-        layout_file_upload_control_.Style()->GetFont().PrimaryFont();
+        layout_file_upload_control_.StyleRef().GetFont().PrimaryFont();
     if (!font_data)
       return;
     // FIXME: Shouldn't these offsets be rounded? crbug.com/350474

@@ -16,7 +16,7 @@ namespace blink {
 
 void MultiColumnSetPainter::PaintObject(const PaintInfo& paint_info,
                                         const LayoutPoint& paint_offset) {
-  if (layout_multi_column_set_.Style()->Visibility() != EVisibility::kVisible)
+  if (layout_multi_column_set_.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
   BlockPainter(layout_multi_column_set_).PaintObject(paint_info, paint_offset);
@@ -54,7 +54,7 @@ void MultiColumnSetPainter::PaintColumnRules(const PaintInfo& paint_info,
       layout_multi_column_set_.MultiColumnBlockFlow()->StyleRef();
   EBorderStyle rule_style = block_style.ColumnRuleStyle();
   bool left_to_right =
-      layout_multi_column_set_.Style()->IsLeftToRightDirection();
+      layout_multi_column_set_.StyleRef().IsLeftToRightDirection();
   BoxSide box_side = layout_multi_column_set_.IsHorizontalWritingMode()
                          ? left_to_right ? BoxSide::kLeft : BoxSide::kRight
                          : left_to_right ? BoxSide::kTop : BoxSide::kBottom;

@@ -261,7 +261,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   bool IsTransparent() const {
     return GetLayoutObject().IsTransparent() ||
-           GetLayoutObject().Style()->HasBlendMode() ||
+           GetLayoutObject().StyleRef().HasBlendMode() ||
            GetLayoutObject().HasMask();
   }
 
@@ -484,7 +484,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // Note that this transform does not have the perspective-origin baked in.
   TransformationMatrix PerspectiveTransform() const;
   FloatPoint PerspectiveOrigin() const;
-  bool Preserves3D() const { return GetLayoutObject().Style()->Preserves3D(); }
+  bool Preserves3D() const {
+    return GetLayoutObject().StyleRef().Preserves3D();
+  }
   bool Has3DTransform() const {
     return rare_data_ && rare_data_->transform &&
            !rare_data_->transform->IsAffine();
@@ -494,7 +496,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // https://bugs.webkit.org/show_bug.cgi?id=106959
   bool ShouldPreserve3D() const {
     return !GetLayoutObject().HasReflection() &&
-           GetLayoutObject().Style()->Preserves3D();
+           GetLayoutObject().StyleRef().Preserves3D();
   }
 
   // Returns |true| if any property that renders using filter operations is

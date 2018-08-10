@@ -74,7 +74,7 @@ void BlockPainter::PaintOverflowControlsIfNeeded(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
   if (layout_block_.HasOverflowClip() &&
-      layout_block_.Style()->Visibility() == EVisibility::kVisible &&
+      layout_block_.StyleRef().Visibility() == EVisibility::kVisible &&
       ShouldPaintSelfBlockBackground(paint_info.phase)) {
     ScrollableAreaPainter(*layout_block_.Layer()->GetScrollableArea())
         .PaintOverflowControls(paint_info, RoundedIntPoint(paint_offset),
@@ -189,7 +189,7 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
   const PaintPhase paint_phase = paint_info.phase;
 
   if (ShouldPaintSelfBlockBackground(paint_phase)) {
-    if (layout_block_.Style()->Visibility() == EVisibility::kVisible &&
+    if (layout_block_.StyleRef().Visibility() == EVisibility::kVisible &&
         layout_block_.HasBoxDecorationBackground())
       layout_block_.PaintBoxDecorationBackground(paint_info, paint_offset);
     if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
@@ -205,7 +205,7 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
   }
 
   if (paint_phase == PaintPhase::kMask &&
-      layout_block_.Style()->Visibility() == EVisibility::kVisible) {
+      layout_block_.StyleRef().Visibility() == EVisibility::kVisible) {
     layout_block_.PaintMask(paint_info, paint_offset);
     return;
   }

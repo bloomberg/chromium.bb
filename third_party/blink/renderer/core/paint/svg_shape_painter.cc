@@ -57,7 +57,7 @@ void SVGShapePainter::RecordHitTestData(const PaintInfo& paint_info) {
 
 void SVGShapePainter::Paint(const PaintInfo& paint_info) {
   if (paint_info.phase != PaintPhase::kForeground ||
-      layout_svg_shape_.Style()->Visibility() != EVisibility::kVisible ||
+      layout_svg_shape_.StyleRef().Visibility() != EVisibility::kVisible ||
       layout_svg_shape_.IsShapeEmpty())
     return;
 
@@ -84,7 +84,8 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
       DrawingRecorder recorder(paint_context.GetPaintInfo().context,
                                layout_svg_shape_,
                                paint_context.GetPaintInfo().phase);
-      const SVGComputedStyle& svg_style = layout_svg_shape_.Style()->SvgStyle();
+      const SVGComputedStyle& svg_style =
+          layout_svg_shape_.StyleRef().SvgStyle();
 
       bool should_anti_alias = svg_style.ShapeRendering() != SR_CRISPEDGES &&
                                svg_style.ShapeRendering() != SR_OPTIMIZESPEED;
@@ -193,7 +194,7 @@ void SVGShapePainter::FillShape(GraphicsContext& context,
 
 void SVGShapePainter::StrokeShape(GraphicsContext& context,
                                   const PaintFlags& flags) {
-  if (!layout_svg_shape_.Style()->SvgStyle().HasVisibleStroke())
+  if (!layout_svg_shape_.StyleRef().SvgStyle().HasVisibleStroke())
     return;
 
   switch (layout_svg_shape_.GeometryCodePath()) {
