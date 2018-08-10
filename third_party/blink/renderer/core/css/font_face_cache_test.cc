@@ -223,7 +223,7 @@ FontSelectionRange ExpectedRangeForChoice(
 }
 
 // Flaky; https://crbug.com/871812
-TEST_F(FontFaceCacheTest, FLAKY_MatchCombinations) {
+TEST_F(FontFaceCacheTest, DISABLED_MatchCombinations) {
   CSSValue* widths[] = {CSSIdentifierValue::Create(CSSValueCondensed),
                         CSSIdentifierValue::Create(CSSValueExpanded)};
   CSSValue* slopes[] = {CSSIdentifierValue::Create(CSSValueNormal),
