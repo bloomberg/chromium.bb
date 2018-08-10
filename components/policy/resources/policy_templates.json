@@ -11445,15 +11445,37 @@
         'dynamic_refresh': False,
         'per_profile': True,
       },
-      'example_value': ['http://testserver.example.com/'],
+      'example_value': ['http://testserver.example.com/','*.example.org'],
       'id': 400,
-      'caption': '''Origins to be treated as secure context.''',
+      'caption': '''Origins or hostname patterns for which restrictions on
+      insecure origins should not apply''',
       'tags': ['system-security'],
-      'desc': '''Deprecated in M69. Use OverrideSecurityRestrictionsOnInsecureOrigin instead.
+      'desc': '''Deprecated in M69. Use
+      OverrideSecurityRestrictionsOnInsecureOrigin instead.
 
-      The policy specifies a list of origins (URLs) to be treated as secure context. The intent is to allow organizations to set up a staging server for internal web development, so that their developers can test out features requiring secure contexts without having to deploy TLS on the staging server.
-      Setting a list of URLs in this policy has the same effect as setting the command-line flag '--unsafely-treat-insecure-origin-as-secure' to a comma-separated list of the same URLs. If the policy is set, it will override the command-line flag.
-      For more information on secure contexts, see https://www.w3.org/TR/secure-contexts/
+      The policy specifies a list of origins (URLs) or hostname patterns (such
+      as "*.example.com") for which security restrictions on insecure origins
+      will not apply.
+
+      The intent is to allow organizations to whitelist origins for legacy
+      applications that cannot deploy TLS, or to set up a staging server for
+      internal web development so that their developers can test out features
+      requiring secure contexts without having to deploy TLS on the staging
+      server. This policy will also prevent the origin from being labeled
+      "Not Secure" in the omnibox.
+
+      Setting a list of URLs in this policy has the same effect as setting the
+      command-line flag '--unsafely-treat-insecure-origin-as-secure' to a
+      comma-separated list of the same URLs. If the policy is set, it will
+      override the command-line flag.
+
+      This policy is deprecated in M69 in favor of
+      OverrideSecurityRestrictionsOnInsecureOrigin. If both policies are
+      present, OverrideSecurityRestrictionsOnInsecureOrigin will override this
+      policy.
+
+      For more information on secure contexts, see
+      https://www.w3.org/TR/secure-contexts/
       '''
     },
     {
@@ -12518,14 +12540,32 @@
         'dynamic_refresh': False,
         'per_profile': True,
       },
-      'example_value': ['http://testserver.example.com/'],
+      'example_value': ['http://testserver.example.com/','*.example.org'],
       'id': 457,
-      'caption': '''Origins or hostname patterns to be treated as secure context.''',
+      'caption': '''Origins or hostname patterns for which restrictions on
+      insecure origins should not apply''',
       'tags': ['system-security'],
       'desc': '''
-      The policy specifies a list of origins (URLs) or hostname patterns (such as "*.example.com") to be treated as secure contexts. The intent is to allow organizations to set up a staging server for internal web development, so that their developers can test out features requiring secure contexts without having to deploy TLS on the staging server.
-      Setting a list of URLs in this policy has the same effect as setting the command-line flag '--unsafely-treat-insecure-origin-as-secure' to a comma-separated list of the same URLs. If the policy is set, it will override the command-line flag.
-      For more information on secure contexts, see https://www.w3.org/TR/secure-contexts/
+      The policy specifies a list of origins (URLs) or hostname patterns (such
+      as "*.example.com") for which security restrictions on insecure origins
+      will not apply.
+
+      The intent is to allow organizations to set whitelist origins for legacy
+      applications that cannot deploy TLS, or to set up a staging server for
+      internal web development so that their developers can test out features
+      requiring secure contexts without having to deploy TLS on the staging
+      server. This policy will also prevent the origin from being labeled
+      "Not Secure" in the omnibox.
+
+      Setting a list of URLs in this policy has the same effect as setting the
+      command-line flag '--unsafely-treat-insecure-origin-as-secure' to a
+      comma-separated list of the same URLs. If the policy is set, it will
+      override the command-line flag.
+
+      This policy will override UnsafelyTreatInsecureOriginAsSecure, if present.
+
+      For more information on secure contexts, see
+      https://www.w3.org/TR/secure-contexts/.
       '''
     },
     {

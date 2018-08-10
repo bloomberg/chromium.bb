@@ -43,15 +43,15 @@
   },
 
   "OverrideSecurityRestrictionsOnInsecureOrigin": {
-    "os": ["win", "linux", "mac"],
-    "test_policy": { "OverrideSecurityRestrictionsOnInsecureOrigin": ["http://example.com/"] },
+    "os": ["win", "linux", "mac", "android", "chromeos"],
+    "test_policy": { "OverrideSecurityRestrictionsOnInsecureOrigin": ["http://example.com/","*.example.com"] },
     "pref_mappings": [ { "pref": "unsafely_treat_insecure_origin_as_secure" } ]
   },
 
   "UnsafelyTreatInsecureOriginAsSecure": {
     "note": "This policy is deprecated.",
     "os": ["win", "linux", "mac"],
-    "test_policy": { "UnsafelyTreatInsecureOriginAsSecure": ["http://example.com/"] },
+    "test_policy": { "UnsafelyTreatInsecureOriginAsSecure": ["http://example.com/","*.example.com"] },
     "pref_mappings": [ { "pref": "unsafely_treat_insecure_origin_as_secure" } ]
   },
 
