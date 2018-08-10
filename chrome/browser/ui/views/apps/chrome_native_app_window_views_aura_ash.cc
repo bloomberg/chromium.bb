@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "apps/ui/views/app_window_frame_view.h"
-#include "ash/frame/custom_frame_view_ash.h"
+#include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -321,7 +321,7 @@ void ChromeNativeAppWindowViewsAuraAsh::ShowContextMenuForView(
 views::NonClientFrameView*
 ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
     views::Widget* widget) {
-  // Set the delegate now because CustomFrameViewAsh sets the
+  // Set the delegate now because NonClientFrameViewAsh sets the
   // WindowStateDelegate if one is not already set.
   auto delegate =
       std::make_unique<NativeAppWindowStateDelegate>(app_window(), this);
@@ -334,8 +334,8 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
   if (!features::IsAshInBrowserProcess())
     return nullptr;
 
-  ash::CustomFrameViewAsh* custom_frame_view =
-      new ash::CustomFrameViewAsh(widget);
+  ash::NonClientFrameViewAsh* custom_frame_view =
+      new ash::NonClientFrameViewAsh(widget);
   // Non-frameless app windows can be put into immersive fullscreen.
   immersive_fullscreen_controller_.reset(
       new ash::ImmersiveFullscreenController());

@@ -4,7 +4,7 @@
 
 #include "ash/wm/workspace/multi_window_resize_controller.h"
 
-#include "ash/frame/custom_frame_view_ash.h"
+#include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
@@ -43,7 +43,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
-    return new CustomFrameViewAsh(widget);
+    return new NonClientFrameViewAsh(widget);
   }
 
  private:

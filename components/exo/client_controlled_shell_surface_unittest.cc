@@ -7,8 +7,8 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/frame/caption_buttons/caption_button_model.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/frame/custom_frame_view_ash.h"
 #include "ash/frame/header_view.h"
+#include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/frame/wide_frame_view.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/window_properties.h"
@@ -495,8 +495,9 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   surface->Commit();
 
   views::Widget* widget = shell_surface->GetWidget();
-  ash::CustomFrameViewAsh* frame_view = static_cast<ash::CustomFrameViewAsh*>(
-      widget->non_client_view()->frame_view());
+  ash::NonClientFrameViewAsh* frame_view =
+      static_cast<ash::NonClientFrameViewAsh*>(
+          widget->non_client_view()->frame_view());
 
   // Normal state.
   EXPECT_TRUE(frame_view->visible());
@@ -1381,8 +1382,9 @@ TEST_F(ClientControlledShellSurfaceTest, CaptionButtonModel) {
       1 << ash::CAPTION_BUTTON_ICON_CLOSE | 1 << ash::CAPTION_BUTTON_ICON_BACK |
       1 << ash::CAPTION_BUTTON_ICON_MENU;
 
-  ash::CustomFrameViewAsh* frame_view = static_cast<ash::CustomFrameViewAsh*>(
-      shell_surface->GetWidget()->non_client_view()->frame_view());
+  ash::NonClientFrameViewAsh* frame_view =
+      static_cast<ash::NonClientFrameViewAsh*>(
+          shell_surface->GetWidget()->non_client_view()->frame_view());
   ash::FrameCaptionButtonContainerView* container =
       static_cast<ash::HeaderView*>(frame_view->GetHeaderView())
           ->caption_button_container();
@@ -1446,8 +1448,9 @@ TEST_F(ClientControlledShellSurfaceTest, SetExtraTitle) {
   auto paint_does_draw_text = [&shell_surface]() {
     TestCanvas canvas;
     shell_surface->OnSetFrame(SurfaceFrameType::NORMAL);
-    ash::CustomFrameViewAsh* frame_view = static_cast<ash::CustomFrameViewAsh*>(
-        shell_surface->GetWidget()->non_client_view()->frame_view());
+    ash::NonClientFrameViewAsh* frame_view =
+        static_cast<ash::NonClientFrameViewAsh*>(
+            shell_surface->GetWidget()->non_client_view()->frame_view());
     frame_view->SetVisible(true);
     // Paint to a layer so we can pass a root PaintInfo.
     frame_view->GetHeaderView()->SetPaintToLayer();
@@ -1646,8 +1649,9 @@ TEST_F(ClientControlledShellSurfaceTest, SnappedInTabletMode) {
   EXPECT_EQ(window_state->GetStateType(),
             ash::mojom::WindowStateType::LEFT_SNAPPED);
 
-  ash::CustomFrameViewAsh* frame_view = static_cast<ash::CustomFrameViewAsh*>(
-      shell_surface->GetWidget()->non_client_view()->frame_view());
+  ash::NonClientFrameViewAsh* frame_view =
+      static_cast<ash::NonClientFrameViewAsh*>(
+          shell_surface->GetWidget()->non_client_view()->frame_view());
   // Snapped window can also use auto hide.
   surface->SetFrame(SurfaceFrameType::AUTOHIDE);
   EXPECT_TRUE(frame_view->visible());

@@ -5,8 +5,8 @@
 #include "ash/frame/wide_frame_view.h"
 
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/frame/custom_frame_view_ash.h"
 #include "ash/frame/header_view.h"
+#include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/window_properties.h"
@@ -195,7 +195,7 @@ void WideFrameView::OnOverviewModeEnded() {
 }
 
 HeaderView* WideFrameView::GetTargetHeaderView() {
-  auto* frame_view = static_cast<CustomFrameViewAsh*>(
+  auto* frame_view = static_cast<NonClientFrameViewAsh*>(
       target_->non_client_view()->frame_view());
   return static_cast<HeaderView*>(frame_view->GetHeaderView());
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/frame/custom_frame_view_ash.h"
+#include "ash/frame/non_client_frame_view_ash.h"
 
 #include <algorithm>
 #include <memory>
@@ -43,19 +43,20 @@ namespace ash {
 namespace {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CustomFrameViewAshWindowStateDelegate
+// NonClientFrameViewAshWindowStateDelegate
 
 // Handles a user's fullscreen request (Shift+F4/F4). Puts the window into
 // immersive fullscreen if immersive fullscreen is enabled for non-browser
 // windows.
-class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
-                                              public wm::WindowStateObserver,
-                                              public aura::WindowObserver,
-                                              public TabletModeObserver {
+class NonClientFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
+                                                 public wm::WindowStateObserver,
+                                                 public aura::WindowObserver,
+                                                 public TabletModeObserver {
  public:
-  CustomFrameViewAshWindowStateDelegate(wm::WindowState* window_state,
-                                        CustomFrameViewAsh* custom_frame_view,
-                                        bool enable_immersive)
+  NonClientFrameViewAshWindowStateDelegate(
+      wm::WindowState* window_state,
+      NonClientFrameViewAsh* custom_frame_view,
+      bool enable_immersive)
       : window_state_(nullptr) {
     // Add a window state observer to exit fullscreen properly in case
     // fullscreen is exited without going through
@@ -78,7 +79,7 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
         immersive_fullscreen_controller_.get());
   }
 
-  ~CustomFrameViewAshWindowStateDelegate() override {
+  ~NonClientFrameViewAshWindowStateDelegate() override {
     if (Shell::Get()->tablet_mode_controller())
       Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
 
@@ -162,10 +163,10 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
     }
   }
 
-  CustomFrameViewAsh* GetFrameView() {
+  NonClientFrameViewAsh* GetFrameView() {
     views::Widget* widget =
         views::Widget::GetWidgetForNativeWindow(window_state_->window());
-    return static_cast<CustomFrameViewAsh*>(
+    return static_cast<NonClientFrameViewAsh*>(
         widget->non_client_view()->frame_view());
   }
 
@@ -173,22 +174,22 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
   std::unique_ptr<ImmersiveFullscreenController>
       immersive_fullscreen_controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(CustomFrameViewAshWindowStateDelegate);
+  DISALLOW_COPY_AND_ASSIGN(NonClientFrameViewAshWindowStateDelegate);
 };
 
 }  // namespace
 
 // static
-bool CustomFrameViewAsh::use_empty_minimum_size_for_test_ = false;
+bool NonClientFrameViewAsh::use_empty_minimum_size_for_test_ = false;
 
 ///////////////////////////////////////////////////////////////////////////////
-// CustomFrameViewAsh::OverlayView
+// NonClientFrameViewAsh::OverlayView
 
 // View which takes up the entire widget and contains the HeaderView. HeaderView
 // is a child of OverlayView to avoid creating a larger texture than necessary
 // when painting the HeaderView to its own layer.
-class CustomFrameViewAsh::OverlayView : public views::View,
-                                        public views::ViewTargeterDelegate {
+class NonClientFrameViewAsh::OverlayView : public views::View,
+                                           public views::ViewTargeterDelegate {
  public:
   explicit OverlayView(HeaderView* header_view);
   ~OverlayView() override;
@@ -211,16 +212,15 @@ class CustomFrameViewAsh::OverlayView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(OverlayView);
 };
 
-CustomFrameViewAsh::OverlayView::OverlayView(HeaderView* header_view)
+NonClientFrameViewAsh::OverlayView::OverlayView(HeaderView* header_view)
     : header_view_(header_view) {
   AddChildView(header_view);
-  SetEventTargeter(
-      std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+  SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
 
-CustomFrameViewAsh::OverlayView::~OverlayView() = default;
+NonClientFrameViewAsh::OverlayView::~OverlayView() = default;
 
-void CustomFrameViewAsh::OverlayView::SetHeaderHeight(
+void NonClientFrameViewAsh::OverlayView::SetHeaderHeight(
     base::Optional<int> height) {
   if (header_height_ == height)
     return;
@@ -230,9 +230,9 @@ void CustomFrameViewAsh::OverlayView::SetHeaderHeight(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CustomFrameViewAsh::OverlayView, views::View overrides:
+// NonClientFrameViewAsh::OverlayView, views::View overrides:
 
-void CustomFrameViewAsh::OverlayView::Layout() {
+void NonClientFrameViewAsh::OverlayView::Layout() {
   // Layout |header_view_| because layout affects the result of
   // GetPreferredOnScreenHeight().
   header_view_->Layout();
@@ -251,9 +251,9 @@ void CustomFrameViewAsh::OverlayView::Layout() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CustomFrameViewAsh::OverlayView, views::ViewTargeterDelegate overrides:
+// NonClientFrameViewAsh::OverlayView, views::ViewTargeterDelegate overrides:
 
-bool CustomFrameViewAsh::OverlayView::DoesIntersectRect(
+bool NonClientFrameViewAsh::OverlayView::DoesIntersectRect(
     const views::View* target,
     const gfx::Rect& rect) const {
   CHECK_EQ(target, this);
@@ -263,12 +263,12 @@ bool CustomFrameViewAsh::OverlayView::DoesIntersectRect(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// CustomFrameViewAsh, public:
+// NonClientFrameViewAsh, public:
 
 // static
-const char CustomFrameViewAsh::kViewClassName[] = "CustomFrameViewAsh";
+const char NonClientFrameViewAsh::kViewClassName[] = "NonClientFrameViewAsh";
 
-CustomFrameViewAsh::CustomFrameViewAsh(
+NonClientFrameViewAsh::NonClientFrameViewAsh(
     views::Widget* frame,
     ImmersiveFullscreenControllerDelegate* immersive_delegate,
     bool enable_immersive,
@@ -290,47 +290,47 @@ CustomFrameViewAsh::CustomFrameViewAsh(
   wm::WindowState* window_state = wm::GetWindowState(frame_window);
   if (!window_state->HasDelegate()) {
     window_state->SetDelegate(std::unique_ptr<wm::WindowStateDelegate>(
-        new CustomFrameViewAshWindowStateDelegate(window_state, this,
-                                                  enable_immersive)));
+        new NonClientFrameViewAshWindowStateDelegate(window_state, this,
+                                                     enable_immersive)));
   }
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->split_view_controller()->AddObserver(this);
 }
 
-CustomFrameViewAsh::~CustomFrameViewAsh() {
+NonClientFrameViewAsh::~NonClientFrameViewAsh() {
   Shell::Get()->RemoveShellObserver(this);
   if (Shell::Get()->split_view_controller())
     Shell::Get()->split_view_controller()->RemoveObserver(this);
 }
 
-void CustomFrameViewAsh::InitImmersiveFullscreenControllerForView(
+void NonClientFrameViewAsh::InitImmersiveFullscreenControllerForView(
     ImmersiveFullscreenController* immersive_fullscreen_controller) {
   immersive_fullscreen_controller->Init(immersive_delegate_, frame_,
                                         header_view_);
 }
 
-void CustomFrameViewAsh::SetFrameColors(SkColor active_frame_color,
-                                        SkColor inactive_frame_color) {
+void NonClientFrameViewAsh::SetFrameColors(SkColor active_frame_color,
+                                           SkColor inactive_frame_color) {
   aura::Window* frame_window = frame_->GetNativeWindow();
   frame_window->SetProperty(ash::kFrameActiveColorKey, active_frame_color);
   frame_window->SetProperty(ash::kFrameInactiveColorKey, inactive_frame_color);
 }
 
-void CustomFrameViewAsh::SetCaptionButtonModel(
+void NonClientFrameViewAsh::SetCaptionButtonModel(
     std::unique_ptr<CaptionButtonModel> model) {
   header_view_->caption_button_container()->SetModel(std::move(model));
   header_view_->UpdateCaptionButtons();
 }
 
-void CustomFrameViewAsh::SetHeaderHeight(base::Optional<int> height) {
+void NonClientFrameViewAsh::SetHeaderHeight(base::Optional<int> height) {
   overlay_view_->SetHeaderHeight(height);
 }
 
-HeaderView* CustomFrameViewAsh::GetHeaderView() {
+HeaderView* NonClientFrameViewAsh::GetHeaderView() {
   return header_view_;
 }
 
-gfx::Rect CustomFrameViewAsh::GetClientBoundsForWindowBounds(
+gfx::Rect NonClientFrameViewAsh::GetClientBoundsForWindowBounds(
     const gfx::Rect& window_bounds) const {
   gfx::Rect client_bounds(window_bounds);
   client_bounds.Inset(0, NonClientTopBorderHeight(), 0, 0);
@@ -338,54 +338,54 @@ gfx::Rect CustomFrameViewAsh::GetClientBoundsForWindowBounds(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// CustomFrameViewAsh, views::NonClientFrameView overrides:
+// NonClientFrameViewAsh, views::NonClientFrameView overrides:
 
-gfx::Rect CustomFrameViewAsh::GetBoundsForClientView() const {
+gfx::Rect NonClientFrameViewAsh::GetBoundsForClientView() const {
   gfx::Rect client_bounds = bounds();
   client_bounds.Inset(0, NonClientTopBorderHeight(), 0, 0);
   return client_bounds;
 }
 
-gfx::Rect CustomFrameViewAsh::GetWindowBoundsForClientBounds(
+gfx::Rect NonClientFrameViewAsh::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
   gfx::Rect window_bounds = client_bounds;
   window_bounds.Inset(0, -NonClientTopBorderHeight(), 0, 0);
   return window_bounds;
 }
 
-int CustomFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
+int NonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
   return FrameBorderNonClientHitTest(this, point);
 }
 
-void CustomFrameViewAsh::GetWindowMask(const gfx::Size& size,
-                                       gfx::Path* window_mask) {
+void NonClientFrameViewAsh::GetWindowMask(const gfx::Size& size,
+                                          gfx::Path* window_mask) {
   // No window masks in Aura.
 }
 
-void CustomFrameViewAsh::ResetWindowControls() {
+void NonClientFrameViewAsh::ResetWindowControls() {
   header_view_->ResetWindowControls();
 }
 
-void CustomFrameViewAsh::UpdateWindowIcon() {}
+void NonClientFrameViewAsh::UpdateWindowIcon() {}
 
-void CustomFrameViewAsh::UpdateWindowTitle() {
+void NonClientFrameViewAsh::UpdateWindowTitle() {
   header_view_->SchedulePaintForTitle();
 }
 
-void CustomFrameViewAsh::SizeConstraintsChanged() {
+void NonClientFrameViewAsh::SizeConstraintsChanged() {
   header_view_->UpdateCaptionButtons();
 }
 
-void CustomFrameViewAsh::ActivationChanged(bool active) {
+void NonClientFrameViewAsh::ActivationChanged(bool active) {
   // The icons differ between active and inactive.
   header_view_->SchedulePaint();
   frame_->non_client_view()->Layout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// CustomFrameViewAsh, views::View overrides:
+// NonClientFrameViewAsh, views::View overrides:
 
-gfx::Size CustomFrameViewAsh::CalculatePreferredSize() const {
+gfx::Size NonClientFrameViewAsh::CalculatePreferredSize() const {
   gfx::Size pref = frame_->client_view()->GetPreferredSize();
   gfx::Rect bounds(0, 0, pref.width(), pref.height());
   return frame_->non_client_view()
@@ -393,7 +393,7 @@ gfx::Size CustomFrameViewAsh::CalculatePreferredSize() const {
       .size();
 }
 
-void CustomFrameViewAsh::Layout() {
+void NonClientFrameViewAsh::Layout() {
   if (!enabled())
     return;
   views::NonClientFrameView::Layout();
@@ -402,11 +402,11 @@ void CustomFrameViewAsh::Layout() {
                             NonClientTopBorderHeight());
 }
 
-const char* CustomFrameViewAsh::GetClassName() const {
+const char* NonClientFrameViewAsh::GetClassName() const {
   return kViewClassName;
 }
 
-gfx::Size CustomFrameViewAsh::GetMinimumSize() const {
+gfx::Size NonClientFrameViewAsh::GetMinimumSize() const {
   if (use_empty_minimum_size_for_test_ || !enabled())
     return gfx::Size();
 
@@ -423,7 +423,7 @@ gfx::Size CustomFrameViewAsh::GetMinimumSize() const {
   return min_size;
 }
 
-gfx::Size CustomFrameViewAsh::GetMaximumSize() const {
+gfx::Size NonClientFrameViewAsh::GetMaximumSize() const {
   gfx::Size max_client_size(frame_->client_view()->GetMaximumSize());
   int width = 0;
   int height = 0;
@@ -436,11 +436,11 @@ gfx::Size CustomFrameViewAsh::GetMaximumSize() const {
   return gfx::Size(width, height);
 }
 
-void CustomFrameViewAsh::SchedulePaintInRect(const gfx::Rect& r) {
+void NonClientFrameViewAsh::SchedulePaintInRect(const gfx::Rect& r) {
   // We may end up here before |header_view_| has been added to the Widget.
   if (header_view_->GetWidget()) {
-    // The HeaderView is not a child of CustomFrameViewAsh. Redirect the paint
-    // to HeaderView instead.
+    // The HeaderView is not a child of NonClientFrameViewAsh. Redirect the
+    // paint to HeaderView instead.
     gfx::RectF to_paint(r);
     views::View::ConvertRectToTarget(this, header_view_, &to_paint);
     header_view_->SchedulePaintInRect(gfx::ToEnclosingRect(to_paint));
@@ -449,26 +449,26 @@ void CustomFrameViewAsh::SchedulePaintInRect(const gfx::Rect& r) {
   }
 }
 
-void CustomFrameViewAsh::SetVisible(bool visible) {
+void NonClientFrameViewAsh::SetVisible(bool visible) {
   overlay_view_->SetVisible(visible);
   views::View::SetVisible(visible);
   // We need to re-layout so that client view will occupy entire window.
   InvalidateLayout();
 }
 
-const views::View* CustomFrameViewAsh::GetAvatarIconViewForTest() const {
+const views::View* NonClientFrameViewAsh::GetAvatarIconViewForTest() const {
   return header_view_->avatar_icon();
 }
 
-SkColor CustomFrameViewAsh::GetActiveFrameColorForTest() const {
+SkColor NonClientFrameViewAsh::GetActiveFrameColorForTest() const {
   return frame_->GetNativeWindow()->GetProperty(ash::kFrameActiveColorKey);
 }
 
-SkColor CustomFrameViewAsh::GetInactiveFrameColorForTest() const {
+SkColor NonClientFrameViewAsh::GetInactiveFrameColorForTest() const {
   return frame_->GetNativeWindow()->GetProperty(ash::kFrameInactiveColorKey);
 }
 
-void CustomFrameViewAsh::UpdateHeaderView() {
+void NonClientFrameViewAsh::UpdateHeaderView() {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   if (in_overview_mode_ && split_view_controller->IsSplitViewModeActive() &&
@@ -482,32 +482,32 @@ void CustomFrameViewAsh::UpdateHeaderView() {
   }
 }
 
-void CustomFrameViewAsh::SetShouldPaintHeader(bool paint) {
+void NonClientFrameViewAsh::SetShouldPaintHeader(bool paint) {
   header_view_->SetShouldPaintHeader(paint);
 }
 
-void CustomFrameViewAsh::OnOverviewModeStarting() {
+void NonClientFrameViewAsh::OnOverviewModeStarting() {
   in_overview_mode_ = true;
   UpdateHeaderView();
 }
 
-void CustomFrameViewAsh::OnOverviewModeEnded() {
+void NonClientFrameViewAsh::OnOverviewModeEnded() {
   in_overview_mode_ = false;
   UpdateHeaderView();
 }
 
-void CustomFrameViewAsh::OnSplitViewStateChanged(
+void NonClientFrameViewAsh::OnSplitViewStateChanged(
     SplitViewController::State /* previous_state */,
     SplitViewController::State /* current_state */) {
   UpdateHeaderView();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// CustomFrameViewAsh, private:
+// NonClientFrameViewAsh, private:
 
 // views::NonClientFrameView:
-bool CustomFrameViewAsh::DoesIntersectRect(const views::View* target,
-                                           const gfx::Rect& rect) const {
+bool NonClientFrameViewAsh::DoesIntersectRect(const views::View* target,
+                                              const gfx::Rect& rect) const {
   CHECK_EQ(target, this);
   // NonClientView hit tests the NonClientFrameView first instead of going in
   // z-order. Return false so that events get to the OverlayView.
@@ -515,11 +515,11 @@ bool CustomFrameViewAsh::DoesIntersectRect(const views::View* target,
 }
 
 FrameCaptionButtonContainerView*
-CustomFrameViewAsh::GetFrameCaptionButtonContainerViewForTest() {
+NonClientFrameViewAsh::GetFrameCaptionButtonContainerViewForTest() {
   return header_view_->caption_button_container();
 }
 
-int CustomFrameViewAsh::NonClientTopBorderHeight() const {
+int NonClientFrameViewAsh::NonClientTopBorderHeight() const {
   // The frame should not occupy the window area when it's in fullscreen,
   // not visible or disabled.
   if (frame_->IsFullscreen() || !visible() || !enabled() ||

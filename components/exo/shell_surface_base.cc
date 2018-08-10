@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "ash/frame/custom_frame_view_ash.h"
+#include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -96,7 +96,7 @@ class ShellSurfaceWidget : public views::Widget {
   DISALLOW_COPY_AND_ASSIGN(ShellSurfaceWidget);
 };
 
-class CustomFrameView : public ash::CustomFrameViewAsh,
+class CustomFrameView : public ash::NonClientFrameViewAsh,
                         public aura::WindowObserver {
  public:
   using ShapeRects = std::vector<gfx::Rect>;
@@ -105,13 +105,13 @@ class CustomFrameView : public ash::CustomFrameViewAsh,
                   ShellSurfaceBase* shell_surface,
                   bool enabled,
                   bool client_controlled_move_resize)
-      : CustomFrameViewAsh(widget),
+      : NonClientFrameViewAsh(widget),
         shell_surface_(shell_surface),
         client_controlled_move_resize_(client_controlled_move_resize) {
     SetEnabled(enabled);
     SetVisible(enabled);
     if (!enabled)
-      CustomFrameViewAsh::SetShouldPaintHeader(false);
+      NonClientFrameViewAsh::SetShouldPaintHeader(false);
 
     frame()->GetNativeWindow()->AddObserver(this);
   }
@@ -123,10 +123,10 @@ class CustomFrameView : public ash::CustomFrameViewAsh,
     }
   }
 
-  // Overridden from ash::CustomFrameViewAsh:
+  // Overridden from ash::NonClientFrameViewAsh:
   void SetShouldPaintHeader(bool paint) override {
     if (visible()) {
-      CustomFrameViewAsh::SetShouldPaintHeader(paint);
+      NonClientFrameViewAsh::SetShouldPaintHeader(paint);
       return;
     }
     // TODO(oshima): The caption area will be unknown
@@ -164,7 +164,7 @@ class CustomFrameView : public ash::CustomFrameViewAsh,
     // SetShouldPaintHeader(). Note: this can be removed if the layer mask in
     // CustomFrameView becomes unnecessary.
     // TODO(oshima): Investigate if we can eliminate this.
-    CustomFrameViewAsh::UpdateHeaderView();
+    NonClientFrameViewAsh::UpdateHeaderView();
   }
 
   void OnWindowDestroying(aura::Window* window) override {
@@ -175,46 +175,46 @@ class CustomFrameView : public ash::CustomFrameViewAsh,
   // Overridden from views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override {
     if (visible())
-      return ash::CustomFrameViewAsh::GetBoundsForClientView();
+      return ash::NonClientFrameViewAsh::GetBoundsForClientView();
     return bounds();
   }
   gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override {
     if (visible()) {
-      return ash::CustomFrameViewAsh::GetWindowBoundsForClientBounds(
+      return ash::NonClientFrameViewAsh::GetWindowBoundsForClientBounds(
           client_bounds);
     }
     return client_bounds;
   }
   int NonClientHitTest(const gfx::Point& point) override {
     if (visible() || !client_controlled_move_resize_)
-      return ash::CustomFrameViewAsh::NonClientHitTest(point);
+      return ash::NonClientFrameViewAsh::NonClientHitTest(point);
     return GetWidget()->client_view()->NonClientHitTest(point);
   }
   void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {
     if (visible())
-      return ash::CustomFrameViewAsh::GetWindowMask(size, window_mask);
+      return ash::NonClientFrameViewAsh::GetWindowMask(size, window_mask);
   }
   void ResetWindowControls() override {
     if (visible())
-      return ash::CustomFrameViewAsh::ResetWindowControls();
+      return ash::NonClientFrameViewAsh::ResetWindowControls();
   }
   void UpdateWindowIcon() override {
     if (visible())
-      return ash::CustomFrameViewAsh::ResetWindowControls();
+      return ash::NonClientFrameViewAsh::ResetWindowControls();
   }
   void UpdateWindowTitle() override {
     if (visible())
-      return ash::CustomFrameViewAsh::UpdateWindowTitle();
+      return ash::NonClientFrameViewAsh::UpdateWindowTitle();
   }
   void SizeConstraintsChanged() override {
     if (visible())
-      return ash::CustomFrameViewAsh::SizeConstraintsChanged();
+      return ash::NonClientFrameViewAsh::SizeConstraintsChanged();
   }
   gfx::Size GetMinimumSize() const override {
     gfx::Size minimum_size = shell_surface_->GetMinimumSize();
     if (visible()) {
-      return ash::CustomFrameViewAsh::GetWindowBoundsForClientBounds(
+      return ash::NonClientFrameViewAsh::GetWindowBoundsForClientBounds(
                  gfx::Rect(minimum_size))
           .size();
     }
@@ -320,7 +320,7 @@ class CustomWindowTargeter : public aura::WindowTargeter {
 };
 
 // A place holder to disable default implementation created by
-// ash::CustomFrameViewAsh, which triggers immersive fullscreen etc, which
+// ash::NonClientFrameViewAsh, which triggers immersive fullscreen etc, which
 // we don't need.
 class CustomWindowStateDelegate : public ash::wm::WindowStateDelegate {
  public:

@@ -49,7 +49,7 @@
 #include "ash/events/event_rewriter_controller.h"
 #include "ash/first_run/first_run_helper.h"
 #include "ash/focus_cycler.h"
-#include "ash/frame/custom_frame_view_ash.h"
+#include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
@@ -441,7 +441,7 @@ void Shell::DestroyWaylandServer() {
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
     views::Widget* widget) {
   // Use translucent-style window frames for dialogs.
-  return new CustomFrameViewAsh(widget);
+  return new NonClientFrameViewAsh(widget);
 }
 
 void Shell::SetDisplayWorkAreaInsets(Window* contains,

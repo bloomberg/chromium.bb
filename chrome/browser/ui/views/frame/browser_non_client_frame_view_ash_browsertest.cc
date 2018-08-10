@@ -1032,7 +1032,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, BrowserActions) {
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
                        ActiveStateOfButtonMatchesWidget) {
   // The caption button part of this test is covered for OopAsh by
-  // CustomFrameViewAshTest::ActiveStateOfButtonMatchesWidget.
+  // NonClientFrameViewAshTest::ActiveStateOfButtonMatchesWidget.
   if (features::IsAshInBrowserProcess()) {
     ash::FrameCaptionButtonContainerView::TestApi test(
         GetFrameViewAsh(browser_view_)->caption_button_container_);

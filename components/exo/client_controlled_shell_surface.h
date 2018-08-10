@@ -18,7 +18,7 @@
 #include "ui/display/display_observer.h"
 
 namespace ash {
-class CustomFrameViewAsh;
+class NonClientFrameViewAsh;
 class ImmersiveFullscreenController;
 class WideFrameView;
 
@@ -258,8 +258,8 @@ class ClientControlledShellSurface
   void EnsureCompositorIsLockedForOrientationChange();
 
   ash::wm::WindowState* GetWindowState();
-  ash::CustomFrameViewAsh* GetFrameView();
-  const ash::CustomFrameViewAsh* GetFrameView() const;
+  ash::NonClientFrameViewAsh* GetFrameView();
+  const ash::NonClientFrameViewAsh* GetFrameView() const;
 
   GeometryChangedCallback geometry_changed_callback_;
 

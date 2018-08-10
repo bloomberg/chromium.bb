@@ -30,8 +30,8 @@ class ImmersiveFullscreenController;
 //
 // TODO(oshima): Currently client is responsible for hooking this up to
 // the target widget because ImmersiveFullscreenController is not owned by
-// CustomFrameViewAsh. Investigate if we integrate this into
-// CustomFrameViewAsh.
+// NonClientFrameViewAsh. Investigate if we integrate this into
+// NonClientFrameViewAsh.
 class ASH_EXPORT WideFrameView
     : public views::WidgetDelegateView,
       public aura::WindowObserver,
