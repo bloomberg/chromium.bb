@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/accessibility/mojom/ax_host.mojom.h"
+#include "ui/display/display_observer.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/widget/widget_observer.h"
@@ -37,6 +38,7 @@ class Widget;
 // (e.g. the keyboard shortcut viewer app).
 class VIEWS_MUS_EXPORT AXRemoteHost : public ax::mojom::AXRemoteHost,
                                       public WidgetObserver,
+                                      public display::DisplayObserver,
                                       public AXAuraObjCache::Delegate {
  public:
   // Well-known tree ID for the remote client.
@@ -68,6 +70,10 @@ class VIEWS_MUS_EXPORT AXRemoteHost : public ax::mojom::AXRemoteHost,
   void OnWidgetClosing(Widget* widget) override;
   void OnWidgetDestroying(Widget* widget) override;
 
+  // display::DisplayObserver:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
+
   // AXAuraObjCache::Delegate:
   void OnChildWindowRemoved(AXAuraObjWrapper* parent) override;
   void OnEvent(AXAuraObjWrapper* aura_obj,
@@ -87,6 +93,9 @@ class VIEWS_MUS_EXPORT AXRemoteHost : public ax::mojom::AXRemoteHost,
   void SendEvent(AXAuraObjWrapper* aura_obj, ax::mojom::Event event_type);
 
   void PerformHitTest(const ui::AXActionData& action);
+
+  // Updates the display device scale factor used when serializing nodes.
+  void UpdateDeviceScaleFactor();
 
   // Accessibility host service in the browser.
   ax::mojom::AXHostPtr ax_host_ptr_;
