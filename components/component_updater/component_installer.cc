@@ -419,15 +419,14 @@ void ComponentInstaller::FinishRegistration(
     return;
   }
 
-  if (!callback.is_null())
-    std::move(callback).Run();
-
-  if (!registration_info->manifest) {
+  if (registration_info->manifest) {
+    ComponentReady(std::move(registration_info->manifest));
+  } else {
     DVLOG(1) << "No component found for " << installer_policy_->GetName();
-    return;
   }
 
-  ComponentReady(std::move(registration_info->manifest));
+  if (!callback.is_null())
+    std::move(callback).Run();
 }
 
 void ComponentInstaller::ComponentReady(
