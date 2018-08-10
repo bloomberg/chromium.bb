@@ -413,6 +413,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
          sizeof(frame->mailbox_holders_));
   frame->mailbox_holders_release_cb_ = ReleaseMailboxCB();
   frame->dmabuf_fds_ = std::move(dmabuf_fds);
+  DCHECK(frame->HasDmaBufs());
 
   return frame;
 }
@@ -862,6 +863,10 @@ std::vector<int> VideoFrame::DmabufFds() const {
     ret.emplace_back(fd.get());
 
   return ret;
+}
+
+bool VideoFrame::HasDmaBufs() const {
+  return !dmabuf_fds_.empty();
 }
 #endif
 

@@ -27,6 +27,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/base/bind_to_current_loop.h"
@@ -561,6 +562,11 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
         gpu_factories_->VideoFrameOutputFormat(video_frame->BitDepth());
   }
 
+  bool is_software_backed_video_frame = !video_frame->HasTextures();
+#if defined(OS_LINUX)
+  is_software_backed_video_frame &= !video_frame->HasDmaBufs();
+#endif
+
   bool passthrough = false;
   if (output_format_ == GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED)
     passthrough = true;
@@ -594,7 +600,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     case PIXEL_FORMAT_YUV444P12:
     case PIXEL_FORMAT_Y16:
     case PIXEL_FORMAT_UNKNOWN:
-      if (!video_frame->HasTextures()) {
+      if (is_software_backed_video_frame) {
         UMA_HISTOGRAM_ENUMERATION(
             "Media.GpuMemoryBufferVideoFramePool.UnsupportedFormat",
             video_frame->format(), PIXEL_FORMAT_MAX + 1);
