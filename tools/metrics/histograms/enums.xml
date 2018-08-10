@@ -36148,6 +36148,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Internal error"/>
 </enum>
 
+<enum name="OverlayFormat">
+  <int value="0" label="BGRA"/>
+  <int value="1" label="YUY2"/>
+  <int value="2" label="NV12"/>
+</enum>
+
 <enum name="OverlayStrategies">
   <int value="0" label="Unknown"/>
   <int value="1" label="No overlay"/>

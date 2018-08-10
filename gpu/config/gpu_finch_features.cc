@@ -45,4 +45,8 @@ const base::Feature kAImageReaderMediaPlayer{"AImageReaderMediaPlayer",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// Overrides preferred overlay format to NV12 instead of YUY2.
+const base::Feature kDirectCompositionPreferNV12Overlays{
+    "DirectCompositionPreferNV12Overlays", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features

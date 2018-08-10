@@ -104,26 +104,33 @@ class ScopedReleaseKeyedMutex {
 };
 
 struct OverlaySupportInfo {
-  DXGI_FORMAT dxgi_format;
   OverlayFormat overlay_format;
+  DXGI_FORMAT dxgi_format;
   UINT flags;
 };
 
 bool g_overlay_support_initialized = false;
 
-// These are for YUY2 overlays.
+// These indicate support for either NV12 or YUY2 overlays.
 bool g_supports_overlays = false;
 bool g_supports_scaled_overlays = true;
 gfx::Size g_overlay_monitor_size;
 
-OverlaySupportInfo g_overlay_support_info[] = {
-    {DXGI_FORMAT_B8G8R8A8_UNORM, OverlayFormat::BGRA, 0},
-    {DXGI_FORMAT_YUY2, OverlayFormat::YUY2, 0},
-    {DXGI_FORMAT_NV12, OverlayFormat::NV12, 0},
-};
+// Overridden when NV12 is supported, and kDirectCompositionPreferNV12Overlays
+// finch feature is enabled. Default value is set to YUY2 so that we use a valid
+// format for swap chains when forced to enable overlay code path but hardware
+// overlays are not supported.
+OverlayFormat g_overlay_format_used = OverlayFormat::kYUY2;
+DXGI_FORMAT g_overlay_dxgi_format_used = DXGI_FORMAT_YUY2;
 
 // This is the raw support info, which shouldn't depend on field trial state, or
-// command line flags.
+// command line flags. Ordered by most preferred to least preferred format.
+OverlaySupportInfo g_overlay_support_info[] = {
+    {OverlayFormat::kNV12, DXGI_FORMAT_NV12, 0},
+    {OverlayFormat::kYUY2, DXGI_FORMAT_YUY2, 0},
+    {OverlayFormat::kBGRA, DXGI_FORMAT_B8G8R8A8_UNORM, 0},
+};
+
 void InitializeHardwareOverlaySupport() {
   if (g_overlay_support_initialized)
     return;
@@ -178,13 +185,29 @@ void InitializeHardwareOverlaySupport() {
               info.dxgi_format, d3d11_device.Get(), &info.flags))) {
         continue;
       }
+      // Formats are ordered by most preferred to least preferred. Don't choose
+      // a less preferred format, but keep going so that we can record overlay
+      // support for all formats in UMA.
+      if (g_supports_overlays)
+        continue;
+      // Don't use BGRA overlays in any case, but record support in UMA.
+      if (info.overlay_format == OverlayFormat::kBGRA)
+        continue;
+      // Overlays are supported for NV12 only if the feature flag to prefer NV12
+      // over YUY2 is enabled.
+      bool prefer_nv12 = base::FeatureList::IsEnabled(
+          features::kDirectCompositionPreferNV12Overlays);
+      if (info.overlay_format == OverlayFormat::kNV12 && !prefer_nv12)
+        continue;
       // Some new Intel drivers only claim to support unscaled overlays, but
       // scaled overlays still work. Even when scaled overlays aren't actually
       // supported, presentation using the overlay path should be relatively
       // efficient.
-      if (info.dxgi_format == DXGI_FORMAT_YUY2 &&
-          (info.flags & (DXGI_OVERLAY_SUPPORT_FLAG_DIRECT |
-                         DXGI_OVERLAY_SUPPORT_FLAG_SCALING))) {
+      if (info.flags & (DXGI_OVERLAY_SUPPORT_FLAG_DIRECT |
+                        DXGI_OVERLAY_SUPPORT_FLAG_SCALING)) {
+        g_overlay_format_used = info.overlay_format;
+        g_overlay_dxgi_format_used = info.dxgi_format;
+
         g_supports_overlays = true;
         g_supports_scaled_overlays =
             !!(info.flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING);
@@ -196,17 +219,24 @@ void InitializeHardwareOverlaySupport() {
         }
       }
     }
+    // Early out after the first output that reports overlay support. All
+    // outputs are expected to report the same overlay support according to
+    // Microsoft's WDDM documentation:
+    // https://docs.microsoft.com/en-us/windows-hardware/drivers/display/multiplane-overlay-hardware-requirements
+    // TODO(sunnyps): If the above is true, then we can only look at first
+    // output instead of iterating over all outputs.
     if (g_supports_overlays)
       break;
   }
-
   for (const auto& info : g_overlay_support_info) {
     const std::string kOverlaySupportFlagsUmaPrefix =
-        "GPU.DirectComposition.OverlaySupportFlags.";
+        "GPU.DirectComposition.OverlaySupportFlags2.";
     base::UmaHistogramSparse(kOverlaySupportFlagsUmaPrefix +
                                  OverlayFormatToString(info.overlay_format),
                              info.flags);
   }
+  UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.OverlayFormatUsed",
+                            g_overlay_format_used);
   UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.OverlaysSupported",
                         g_supports_overlays);
 }
@@ -358,19 +388,19 @@ class DCLayerTree::SwapChainPresenter {
   // Returns true if the video processor changed.
   bool InitializeVideoProcessor(const gfx::Size& in_size,
                                 const gfx::Size& out_size);
-  bool ReallocateSwapChain(bool yuy2, bool protected_video);
-  bool ShouldBeYUY2();
+  bool ReallocateSwapChain(bool yuv, bool protected_video);
+  bool ShouldUseYUVSwapChain();
 
   DCLayerTree* surface_;
 
   gfx::Size swap_chain_size_;
   gfx::Size processor_input_size_;
   gfx::Size processor_output_size_;
-  bool is_yuy2_swapchain_ = false;
+  bool is_yuv_swapchain_ = false;
   bool is_protected_video_ = false;
 
   PresentationHistory presentation_history_;
-  bool failed_to_create_yuy2_swapchain_ = false;
+  bool failed_to_create_yuv_swapchain_ = false;
   int frames_since_color_space_change_ = 0;
 
   // These are the GLImages that were presented in the last frame.
@@ -486,27 +516,27 @@ DCLayerTree::SwapChainPresenter::SwapChainPresenter(
 
 DCLayerTree::SwapChainPresenter::~SwapChainPresenter() {}
 
-bool DCLayerTree::SwapChainPresenter::ShouldBeYUY2() {
-  // Always prefer YUY2 for protected video for now.
+bool DCLayerTree::SwapChainPresenter::ShouldUseYUVSwapChain() {
+  // Always prefer YUV swap chain for protected video for now.
   // TODO(crbug.com/850799): Assess power/perf impact when protected video
   // swap chain is composited by DWM.
   if (is_protected_video_)
     return true;
 
-  // Start out as YUY2.
+  // Start out as YUV.
   if (!presentation_history_.valid())
     return true;
   int composition_count = presentation_history_.composed_count();
 
-  // It's more efficient to use a BGRA backbuffer instead of YUY2 if overlays
+  // It's more efficient to use a BGRA backbuffer instead of YUV if overlays
   // aren't being used, as otherwise DWM will use the video processor a second
   // time to convert it to BGRA before displaying it on screen.
 
-  if (is_yuy2_swapchain_) {
+  if (is_yuv_swapchain_) {
     // Switch to BGRA once 3/4 of presents are composed.
     return composition_count < (PresentationHistory::kPresentsToStore * 3 / 4);
   } else {
-    // Switch to YUY2 once 3/4 are using overlays (or unknown).
+    // Switch to YUV once 3/4 are using overlays (or unknown).
     return composition_count < (PresentationHistory::kPresentsToStore / 4);
   }
 }
@@ -608,15 +638,15 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   if (!InitializeVideoProcessor(video_input_size, swap_chain_size))
     return false;
 
-  bool yuy2_swapchain = ShouldBeYUY2();
+  bool use_yuv_swapchain = ShouldUseYUVSwapChain();
   bool first_present = false;
   if (!swap_chain_ || swap_chain_size_ != swap_chain_size ||
       is_protected_video_ != params.is_protected_video ||
-      ((yuy2_swapchain != is_yuy2_swapchain_) &&
-       !failed_to_create_yuy2_swapchain_)) {
+      ((use_yuv_swapchain != is_yuv_swapchain_) &&
+       !failed_to_create_yuv_swapchain_)) {
     first_present = true;
     swap_chain_size_ = swap_chain_size;
-    ReallocateSwapChain(yuy2_swapchain, params.is_protected_video);
+    ReallocateSwapChain(use_yuv_swapchain, params.is_protected_video);
   } else if (last_gl_images_ == params.image) {
     // The swap chain is presenting the same images as last swap, which means
     // that the images were never returned to the video decoder and should
@@ -686,7 +716,7 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   }
 
   gfx::ColorSpace output_color_space =
-      is_yuy2_swapchain_ ? src_color_space : gfx::ColorSpace::CreateSRGB();
+      is_yuv_swapchain_ ? src_color_space : gfx::ColorSpace::CreateSRGB();
   if (base::FeatureList::IsEnabled(kFallbackBT709VideoToBT601) &&
       (output_color_space == gfx::ColorSpace::CreateREC709())) {
     output_color_space = gfx::ColorSpace::CreateREC601();
@@ -697,8 +727,8 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     DCHECK(swap_chain3);
     DXGI_COLOR_SPACE_TYPE color_space =
         gfx::ColorSpaceWin::GetDXGIColorSpace(output_color_space);
-    if (is_yuy2_swapchain_) {
-      // Swapchains with YUY2 textures can't have RGB color spaces.
+    if (is_yuv_swapchain_) {
+      // Swapchains with YUV textures can't have RGB color spaces.
       switch (color_space) {
         case DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709:
         case DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709:
@@ -839,7 +869,7 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   }
 
   UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.SwapchainFormat",
-                        is_yuy2_swapchain_);
+                        is_yuv_swapchain_);
   frames_since_color_space_change_++;
 
   Microsoft::WRL::ComPtr<IDXGISwapChainMedia> swap_chain_media;
@@ -876,7 +906,7 @@ bool DCLayerTree::SwapChainPresenter::InitializeVideoProcessor(
 }
 
 bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
-    bool yuy2,
+    bool use_yuv,
     bool protected_video) {
   TRACE_EVENT0("gpu", "DCLayerTree::SwapChainPresenter::ReallocateSwapChain");
   swap_chain_.Reset();
@@ -896,7 +926,7 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
   DCHECK(!swap_chain_size_.IsEmpty());
   desc.Width = swap_chain_size_.width();
   desc.Height = swap_chain_size_.height();
-  desc.Format = DXGI_FORMAT_YUY2;
+  desc.Format = g_overlay_dxgi_format_used;
   desc.Stereo = FALSE;
   desc.SampleDesc.Count = 1;
   desc.BufferCount = 2;
@@ -917,7 +947,7 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
 
   swap_chain_handle_.Set(handle);
 
-  if (is_yuy2_swapchain_ != yuy2) {
+  if (is_yuv_swapchain_ != use_yuv) {
     UMA_HISTOGRAM_COUNTS_1000(
         "GPU.DirectComposition.FramesSinceColorSpaceChange",
         frames_since_color_space_change_);
@@ -925,22 +955,24 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
 
   frames_since_color_space_change_ = 0;
 
-  is_yuy2_swapchain_ = false;
+  is_yuv_swapchain_ = false;
   // The composition surface handle isn't actually used, but
-  // CreateSwapChainForComposition can't create YUY2 swapchains.
-  if (yuy2) {
+  // CreateSwapChainForComposition can't create YUV swapchains.
+  if (use_yuv) {
     HRESULT hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
         d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,
         swap_chain_.GetAddressOf());
-    is_yuy2_swapchain_ = SUCCEEDED(hr);
-    failed_to_create_yuy2_swapchain_ = !is_yuy2_swapchain_;
+    is_yuv_swapchain_ = SUCCEEDED(hr);
+    failed_to_create_yuv_swapchain_ = !is_yuv_swapchain_;
     if (FAILED(hr)) {
-      DLOG(ERROR) << "Failed to create YUY2 swap chain with error " << std::hex
-                  << hr << ". Falling back to BGRA";
+      DLOG(ERROR) << "Failed to create "
+                  << OverlayFormatToString(g_overlay_format_used)
+                  << " swap chain with error " << std::hex << hr
+                  << ". Falling back to BGRA";
     }
   }
 
-  if (!is_yuy2_swapchain_) {
+  if (!is_yuv_swapchain_) {
     desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     desc.Flags = 0;
     if (protected_video) {
@@ -1118,7 +1150,7 @@ void DCLayerTree::CalculateVideoSwapChainParameters(
   if (g_supports_scaled_overlays)
     swap_chain_size.SetToMin(ceiled_input_size);
 
-  // YUY2 surfaces must have an even width.
+  // YUV surfaces must have an even width.
   if (swap_chain_size.width() % 2 == 1)
     swap_chain_size.set_width(swap_chain_size.width() + 1);
 

@@ -224,38 +224,30 @@ gpu::mojom::OverlayFormat
 EnumTraits<gpu::mojom::OverlayFormat, gpu::OverlayFormat>::ToMojom(
     gpu::OverlayFormat format) {
   switch (format) {
-    case gpu::OverlayFormat::UNKNOWN:
-      return gpu::mojom::OverlayFormat::UNKNOWN;
-    case gpu::OverlayFormat::BGRA:
+    case gpu::OverlayFormat::kBGRA:
       return gpu::mojom::OverlayFormat::BGRA;
-    case gpu::OverlayFormat::YUY2:
+    case gpu::OverlayFormat::kYUY2:
       return gpu::mojom::OverlayFormat::YUY2;
-    case gpu::OverlayFormat::NV12:
+    case gpu::OverlayFormat::kNV12:
       return gpu::mojom::OverlayFormat::NV12;
   }
-  NOTREACHED() << "Unknown overlay format: " << static_cast<int>(format);
-  return gpu::mojom::OverlayFormat::UNKNOWN;
 }
 
 bool EnumTraits<gpu::mojom::OverlayFormat, gpu::OverlayFormat>::FromMojom(
     gpu::mojom::OverlayFormat input,
     gpu::OverlayFormat* out) {
   switch (input) {
-    case gpu::mojom::OverlayFormat::UNKNOWN:
-      *out = gpu::OverlayFormat::UNKNOWN;
-      return true;
     case gpu::mojom::OverlayFormat::BGRA:
-      *out = gpu::OverlayFormat::BGRA;
-      return true;
+      *out = gpu::OverlayFormat::kBGRA;
+      break;
     case gpu::mojom::OverlayFormat::YUY2:
-      *out = gpu::OverlayFormat::YUY2;
-      return true;
+      *out = gpu::OverlayFormat::kYUY2;
+      break;
     case gpu::mojom::OverlayFormat::NV12:
-      *out = gpu::OverlayFormat::NV12;
-      return true;
+      *out = gpu::OverlayFormat::kNV12;
+      break;
   }
-  NOTREACHED() << "Unknown overlay format: " << input;
-  return false;
+  return true;
 }
 
 // static
