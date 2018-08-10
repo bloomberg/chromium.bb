@@ -4,33 +4,31 @@
 
 #include "third_party/blink/renderer/platform/graphics/offscreen_canvas_resource_provider.h"
 
+#include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/single_release_callback.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 
 namespace blink {
 
-OffscreenCanvasResourceProvider::OffscreenCanvasResourceProvider(
-    int width,
-    int height,
-    CanvasResourceDispatcher* frame_dispatcher)
-    : frame_dispatcher_(frame_dispatcher), width_(width), height_(height) {}
+OffscreenCanvasResourceProvider::OffscreenCanvasResourceProvider() = default;
 
 OffscreenCanvasResourceProvider::~OffscreenCanvasResourceProvider() = default;
 
 std::unique_ptr<OffscreenCanvasResourceProvider::FrameResource>
 OffscreenCanvasResourceProvider::CreateOrRecycleFrameResource() {
-  if (recyclable_resource_) {
-    recyclable_resource_->spare_lock = true;
-    return std::move(recyclable_resource_);
-  }
-  return std::make_unique<FrameResource>();
+  if (!recyclable_resource_)
+    return std::make_unique<FrameResource>();
+
+  recyclable_resource_->spare_lock = true;
+  return std::move(recyclable_resource_);
 }
 
 void OffscreenCanvasResourceProvider::SetTransferableResource(
     viz::TransferableResource* out_resource,
-    scoped_refptr<CanvasResource> image) {
-  DCHECK(image->IsValid());
+    scoped_refptr<CanvasResource> canvas_resource) {
+  DCHECK(canvas_resource->IsValid());
 
   std::unique_ptr<FrameResource> frame_resource =
       CreateOrRecycleFrameResource();
@@ -38,7 +36,7 @@ void OffscreenCanvasResourceProvider::SetTransferableResource(
   // TODO(junov): Using verified sync tokens for each offscreencanvas is
   // suboptimal in the case where there are multiple offscreen canvases
   // commiting frames.  Would be more efficient to batch the verifications.
-  image->PrepareTransferableResource(
+  canvas_resource->PrepareTransferableResource(
       out_resource, &frame_resource->release_callback, kVerifiedSyncToken);
   out_resource->id = next_resource_id_;
 
@@ -62,27 +60,26 @@ void OffscreenCanvasResourceProvider::ReclaimResources(
 
 void OffscreenCanvasResourceProvider::ReclaimResource(unsigned resource_id) {
   auto it = resources_.find(resource_id);
-  if (it != resources_.end()) {
+  if (it != resources_.end())
     ReclaimResourceInternal(it);
-  }
 }
 
 void OffscreenCanvasResourceProvider::ReclaimResourceInternal(
     const ResourceMap::iterator& it) {
   if (it->value->spare_lock) {
     it->value->spare_lock = false;
-  } else {
-    if (it->value->release_callback) {
-      it->value->release_callback->Run(it->value->sync_token,
-                                       it->value->is_lost);
-    }
-    // Recycle resource.
-    recyclable_resource_ = std::move(it->value);
-    recyclable_resource_->release_callback = nullptr;
-    recyclable_resource_->sync_token.Clear();
-    recyclable_resource_->is_lost = false;
-    resources_.erase(it);
+    return;
   }
+
+  if (it->value->release_callback)
+    it->value->release_callback->Run(it->value->sync_token, it->value->is_lost);
+
+  // Recycle resource.
+  recyclable_resource_ = std::move(it->value);
+  recyclable_resource_->release_callback = nullptr;
+  recyclable_resource_->sync_token.Clear();
+  recyclable_resource_->is_lost = false;
+  resources_.erase(it);
 }
 
 OffscreenCanvasResourceProvider::FrameResource::~FrameResource() {
