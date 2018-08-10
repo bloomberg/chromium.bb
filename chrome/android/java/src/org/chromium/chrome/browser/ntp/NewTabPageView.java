@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.suggestions.TileGroup;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
@@ -280,6 +281,11 @@ public class NewTabPageView extends FrameLayout {
         // immediately attached to the window if the RecyclerView is scrolled when the NTP
         // is refocused.
         if (mManager.isLocationBarShownInNTP()) mNewTabPageLayout.updateSearchBoxOnScroll();
+
+        if (FeatureUtilities.isBottomToolbarEnabled()) {
+            ((MarginLayoutParams) getLayoutParams()).bottomMargin =
+                    getResources().getDimensionPixelSize(R.dimen.bottom_toolbar_height);
+        }
     }
 
     /**
