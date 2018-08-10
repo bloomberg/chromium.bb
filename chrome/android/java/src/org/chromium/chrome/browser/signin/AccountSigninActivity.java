@@ -216,7 +216,7 @@ public class AccountSigninActivity extends SynchronousInitializationActivity
         final String histogram;
         switch (mSigninFlowType) {
             case AccountSigninView.SigninFlowType.ADD_NEW_ACCOUNT:
-                histogram = "Signin.SigninCompletedAccessPoint.NewAccount";
+                histogram = "Signin.SigninCompletedAccessPoint.NewAccountNoExistingAccount";
                 break;
             case AccountSigninView.SigninFlowType.CONFIRMATION_ONLY:
                 histogram = "Signin.SigninCompletedAccessPoint.WithDefault";
@@ -240,7 +240,7 @@ public class AccountSigninActivity extends SynchronousInitializationActivity
         final String histogram;
         switch (mSigninFlowType) {
             case AccountSigninView.SigninFlowType.ADD_NEW_ACCOUNT:
-                histogram = "Signin.SigninStartedAccessPoint.NewAccount";
+                histogram = "Signin.SigninStartedAccessPoint.NewAccountNoExistingAccount";
                 break;
             case AccountSigninView.SigninFlowType.CONFIRMATION_ONLY:
                 histogram = "Signin.SigninStartedAccessPoint.WithDefault";

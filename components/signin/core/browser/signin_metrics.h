@@ -150,12 +150,22 @@ enum class AccessPoint : int {
   ACCESS_POINT_MAX,  // This must be last.
 };
 
-// Enum values which enumerates all user actions on the mobile sign-in promo.
+// Enum values which enumerates all user actions on the sign-in promo.
 enum class PromoAction : int {
   PROMO_ACTION_NO_SIGNIN_PROMO = 0,
+  // The user selected the default account.
   PROMO_ACTION_WITH_DEFAULT,
+  // On desktop, the user selected an account that is not the default. On
+  // mobile, the user selected the generic "Use another account" button.
   PROMO_ACTION_NOT_DEFAULT,
-  PROMO_ACTION_NEW_ACCOUNT,
+  // Non-personalized promo, pre-dice on desktop.
+  PROMO_ACTION_NEW_ACCOUNT_PRE_DICE,
+  // Non personalized promo, when there is no account on the device.
+  PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT,
+  // The user clicked on the "Add account" button, when there are already
+  // accounts on the device. (desktop only, the button does not exist on
+  // mobile).
+  PROMO_ACTION_NEW_ACCOUNT_EXISTING_ACCOUNT
 };
 
 // Enum values which enumerates all reasons to start sign in process.

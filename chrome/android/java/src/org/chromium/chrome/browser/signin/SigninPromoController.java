@@ -113,7 +113,10 @@ public class SigninPromoController {
                         "Signin_ImpressionWithNoAccount_FromBookmarkManager";
                 mSigninWithDefaultUserActionName = "Signin_SigninWithDefault_FromBookmarkManager";
                 mSigninNotDefaultUserActionName = "Signin_SigninNotDefault_FromBookmarkManager";
-                mSigninNewAccountUserActionName = "Signin_SigninNewAccount_FromBookmarkManager";
+                // On Android, the promo does not have a button to add and account when there is
+                // already an account on the device. Always use the NoExistingAccount variant.
+                mSigninNewAccountUserActionName =
+                        "Signin_SigninNewAccountNoExistingAccount_FromBookmarkManager";
                 mImpressionsTilDismissHistogramName =
                         "MobileSignInPromo.BookmarkManager.ImpressionsTilDismiss";
                 mImpressionsTilSigninButtonsHistogramName =
@@ -137,8 +140,10 @@ public class SigninPromoController {
                         "Signin_SigninWithDefault_FromNTPContentSuggestions";
                 mSigninNotDefaultUserActionName =
                         "Signin_SigninNotDefault_FromNTPContentSuggestions";
+                // On Android, the promo does not have a button to add and account when there is
+                // already an account on the device. Always use the NoExistingAccount variant.
                 mSigninNewAccountUserActionName =
-                        "Signin_SigninNewAccount_FromNTPContentSuggestions";
+                        "Signin_SigninNewAccountNoExistingAccount_FromNTPContentSuggestions";
                 mImpressionsTilDismissHistogramName = null;
                 mImpressionsTilSigninButtonsHistogramName = null;
                 mImpressionsTilXButtonHistogramName = null;
@@ -158,7 +163,10 @@ public class SigninPromoController {
                         "Signin_ImpressionWithNoAccount_FromRecentTabs";
                 mSigninWithDefaultUserActionName = "Signin_SigninWithDefault_FromRecentTabs";
                 mSigninNotDefaultUserActionName = "Signin_SigninNotDefault_FromRecentTabs";
-                mSigninNewAccountUserActionName = "Signin_SigninNewAccount_FromRecentTabs";
+                // On Android, the promo does not have a button to add and account when there is
+                // already an account on the device. Always use the NoExistingAccount variant.
+                mSigninNewAccountUserActionName =
+                        "Signin_SigninNewAccountNoExistingAccount_FromRecentTabs";
                 mImpressionsTilDismissHistogramName = null;
                 mImpressionsTilSigninButtonsHistogramName = null;
                 mImpressionsTilXButtonHistogramName = null;
@@ -173,7 +181,10 @@ public class SigninPromoController {
                 mImpressionWithAccountUserActionName = "Signin_ImpressionWithAccount_FromSettings";
                 mSigninWithDefaultUserActionName = "Signin_SigninWithDefault_FromSettings";
                 mSigninNotDefaultUserActionName = "Signin_SigninNotDefault_FromSettings";
-                mSigninNewAccountUserActionName = "Signin_SigninNewAccount_FromSettings";
+                // On Android, the promo does not have a button to add and account when there is
+                // already an account on the device. Always use the NoExistingAccount variant.
+                mSigninNewAccountUserActionName =
+                        "Signin_SigninNewAccountNoExistingAccount_FromSettings";
                 mImpressionWithNoAccountUserActionName =
                         "Signin_ImpressionWithNoAccount_FromSettings";
                 mImpressionsTilDismissHistogramName =
