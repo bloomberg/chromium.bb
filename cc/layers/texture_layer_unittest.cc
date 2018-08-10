@@ -1611,6 +1611,86 @@ class SoftwareTextureLayerSwitchTreesTest : public SoftwareTextureLayerTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(SoftwareTextureLayerSwitchTreesTest);
 
+// Verify that duplicate SharedBitmapIds aren't registered if resources are
+// purged due to memory pressure.
+class SoftwareTextureLayerPurgeMemoryTest : public SoftwareTextureLayerTest {
+ protected:
+  void BeginTest() override {
+    PostSetNeedsCommitToMainThread();
+
+    const gfx::Size size(1, 1);
+    const viz::ResourceFormat format = viz::RGBA_8888;
+
+    id_ = viz::SharedBitmap::GenerateId();
+    bitmap_ = base::MakeRefCounted<CrossThreadSharedBitmap>(
+        id_, viz::bitmap_allocation::AllocateMappedBitmap(size, format), size,
+        format);
+  }
+
+  void DidCommitAndDrawFrame() override {
+    step_ = layer_tree_host()->SourceFrameNumber();
+    switch (step_) {
+      case 1:
+        // The test starts by inserting the TextureLayer to the tree.
+        root_->AddChild(texture_layer_);
+        // And registers a SharedBitmapId, which should be given to the
+        // LayerTreeFrameSink.
+        registration_ = texture_layer_->RegisterSharedBitmapId(id_, bitmap_);
+        // Give the TextureLayer a resource so it contributes to the frame. It
+        // doesn't need to register the SharedBitmapId otherwise.
+        texture_layer_->SetTransferableResource(
+            viz::TransferableResource::MakeSoftware(id_, gfx::Size(1, 1),
+                                                    viz::RGBA_8888),
+            viz::SingleReleaseCallback::Create(
+                base::BindOnce([](const gpu::SyncToken&, bool) {})));
+        break;
+      case 2:
+        // Draw again after OnPurgeMemory() was called on the impl thread so we
+        // can verify that duplicate SharedBitmapIds aren't registered by
+        // TextureLayerImpl.
+        texture_layer_->SetNeedsDisplay();
+        break;
+      case 3:
+        // Release the TransferableResource before shutdown.
+        texture_layer_->ClearClient();
+        break;
+      case 4:
+        EndTest();
+    }
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    // TextureLayerImpl will have registered the SharedBitmapId at this point.
+    // Call OnPurgeMemory() to ensure that the same SharedBitmapId doesn't get
+    // registered again on the next draw.
+    if (step_ == 1)
+      static_cast<base::MemoryCoordinatorClient*>(host_impl)->OnPurgeMemory();
+  }
+
+  void DisplayReceivedCompositorFrameOnThread(
+      const viz::CompositorFrame& frame) override {
+    if (step_ == 0) {
+      // Before commit 1, the |texture_layer_| has no SharedBitmapId yet.
+      EXPECT_THAT(frame_sink_->owned_bitmaps(), testing::IsEmpty());
+      verified_frames_++;
+    } else {
+      // After commit 1, we added a SharedBitmapId to |texture_layer_|.
+      EXPECT_THAT(frame_sink_->owned_bitmaps(), testing::ElementsAre(id_));
+      verified_frames_++;
+    }
+  }
+
+  void AfterTest() override { EXPECT_EQ(4, verified_frames_); }
+
+  int step_ = 0;
+  int verified_frames_ = 0;
+  viz::SharedBitmapId id_;
+  SharedBitmapIdRegistration registration_;
+  scoped_refptr<CrossThreadSharedBitmap> bitmap_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(SoftwareTextureLayerPurgeMemoryTest);
+
 class SoftwareTextureLayerMultipleRegisterTest
     : public SoftwareTextureLayerTest {
  protected:

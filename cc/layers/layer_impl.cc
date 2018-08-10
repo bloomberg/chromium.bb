@@ -680,6 +680,10 @@ void LayerImpl::DidBeginTracing() {}
 
 void LayerImpl::ReleaseResources() {}
 
+void LayerImpl::OnPurgeMemory() {
+  ReleaseResources();
+}
+
 void LayerImpl::ReleaseTileResources() {}
 
 void LayerImpl::RecreateTileResources() {}

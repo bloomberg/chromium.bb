@@ -372,8 +372,13 @@ class CC_EXPORT LayerImpl {
   // that rendered this layer was lost.
   virtual void ReleaseResources();
 
+  // Releases resources in response to memory pressure. The default
+  // implementation just calls ReleaseResources() and subclasses will override
+  // if that's not appropriate.
+  virtual void OnPurgeMemory();
+
   // Release tile resources held by this layer. Called when a rendering mode
-  // switch has occured and tiles are no longer valid.
+  // switch has occurred and tiles are no longer valid.
   virtual void ReleaseTileResources();
 
   // Recreate tile resources held by this layer after they were released by a
