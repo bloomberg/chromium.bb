@@ -31,6 +31,7 @@ struct AccountInfo {
   std::string locale;
   std::string picture_url;
   bool is_child_account = false;
+  bool is_under_advanced_protection = false;
 
   // Returns true if all fields in the account info are empty.
   bool IsEmpty() const;

@@ -147,7 +147,8 @@ class DiceResponseHandler : public KeyedService {
   // Called after exchanging an OAuth 2.0 authorization code for a refresh token
   // after DiceAction::SIGNIN.
   void OnTokenExchangeSuccess(DiceTokenFetcher* token_fetcher,
-                              const std::string& refresh_token);
+                              const std::string& refresh_token,
+                              bool is_under_advanced_protection);
   void OnTokenExchangeFailure(DiceTokenFetcher* token_fetcher,
                               const GoogleServiceAuthError& error);
 

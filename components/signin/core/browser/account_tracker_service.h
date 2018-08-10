@@ -131,6 +131,10 @@ class AccountTrackerService : public KeyedService {
   void SetIsChildAccount(const std::string& account_id,
                          const bool& is_child_account);
 
+  // Sets whether the account is under advanced protection.
+  void SetIsAdvancedProtectionAccount(const std::string& account_id,
+                                      const bool& is_under_advanced_protection);
+
   void RemoveAccount(const std::string& account_id);
 
   AccountIdMigrationState GetMigrationState() const;

@@ -721,6 +721,10 @@ TEST_F(AccountTrackerServiceTest, Persistence) {
     tracker.SetIsChildAccount("beta", true);
 #endif
 
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+    tracker.SetIsAdvancedProtectionAccount("beta", true);
+#endif
+
     fetcher.Shutdown();
     tracker.Shutdown();
   }
@@ -735,6 +739,11 @@ TEST_F(AccountTrackerServiceTest, Persistence) {
     ASSERT_EQ(1u, infos.size());
     CheckAccountDetails("beta", infos[0]);
     ASSERT_TRUE(infos[0].is_child_account);
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+    ASSERT_TRUE(infos[0].is_under_advanced_protection);
+#else
+    ASSERT_FALSE(infos[0].is_under_advanced_protection);
+#endif
     tracker.Shutdown();
   }
 }
@@ -1360,3 +1369,30 @@ TEST_F(AccountTrackerServiceTest, RemoveAccountBeforeImageFetchDone) {
 
   account_tracker()->RemoveObserver(&observer);
 }
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_IOS)
+TEST_F(AccountTrackerServiceTest, AdvancedProtectionAccountBasic) {
+  AccountTrackerService tracker;
+  tracker.Initialize(signin_client());
+  FakeAccountFetcherService fetcher;
+  fetcher.Initialize(signin_client(), token_service(), &tracker,
+                     std::make_unique<TestImageDecoder>());
+  fetcher.EnableNetworkFetchesForTest();
+  std::string account_id("advanced_protection");
+  SimulateTokenAvailable(account_id);
+  IssueAccessToken(account_id);
+
+  tracker.SetIsAdvancedProtectionAccount(account_id, true);
+  AccountInfo info = tracker.GetAccountInfo(account_id);
+  EXPECT_TRUE(info.is_under_advanced_protection);
+
+  tracker.SetIsAdvancedProtectionAccount(account_id, false);
+  info = tracker.GetAccountInfo(account_id);
+  EXPECT_FALSE(info.is_under_advanced_protection);
+
+  SimulateTokenRevoked(account_id);
+  fetcher.Shutdown();
+  tracker.Shutdown();
+}
+
+#endif
