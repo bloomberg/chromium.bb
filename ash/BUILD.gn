@@ -1913,6 +1913,7 @@ test("ash_unittests") {
     "wm/ash_focus_rules_unittest.cc",
     "wm/client_controlled_state_unittest.cc",
     "wm/container_finder_unittest.cc",
+    "wm/default_window_resizer_unittest.cc",
     "wm/drag_window_resizer_unittest.cc",
     "wm/fullscreen_window_finder_unittest.cc",
     "wm/gestures/overview_gesture_handler_unittest.cc",

@@ -95,6 +95,10 @@ class ASH_EXPORT WindowResizer {
   // Returns the height of the drag.
   int GetHeightForDrag(int min_height, int* delta_y);
 
+  // Updates |new_bounds| to adhere to the aspect ratio.
+  void CalculateBoundsWithAspectRatio(float aspect_ratio,
+                                      gfx::Rect* new_bounds);
+
   DISALLOW_COPY_AND_ASSIGN(WindowResizer);
 };
 

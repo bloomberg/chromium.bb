@@ -7,6 +7,7 @@
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -14,6 +15,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/window/window_resize_utils.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
@@ -25,6 +27,31 @@ namespace {
 bool IsRightEdge(int window_component) {
   return window_component == HTTOPRIGHT || window_component == HTRIGHT ||
          window_component == HTBOTTOMRIGHT || window_component == HTGROWBOX;
+}
+
+// Convert |window_component| to the HitTest used in views::WindowResizeUtils.
+views::HitTest GetWindowResizeHitTest(int window_component) {
+  switch (window_component) {
+    case HTBOTTOM:
+      return views::HitTest::kBottom;
+    case HTTOP:
+      return views::HitTest::kTop;
+    case HTLEFT:
+      return views::HitTest::kLeft;
+    case HTRIGHT:
+      return views::HitTest::kRight;
+    case HTTOPLEFT:
+      return views::HitTest::kTopLeft;
+    case HTTOPRIGHT:
+      return views::HitTest::kTopRight;
+    case HTBOTTOMLEFT:
+      return views::HitTest::kBottomLeft;
+    case HTBOTTOMRIGHT:
+      return views::HitTest::kBottomRight;
+    default:
+      NOTREACHED();
+      return views::HitTest::kBottomRight;
+  }
 }
 
 }  // namespace
@@ -126,6 +153,16 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
   gfx::Size size = GetSizeForDrag(&delta_x, &delta_y);
   gfx::Point origin = GetOriginForDrag(delta_x, delta_y);
   gfx::Rect new_bounds(origin, size);
+
+  gfx::SizeF* aspect_ratio_size =
+      GetTarget()->GetProperty(aura::client::kAspectRatio);
+  float aspect_ratio = aspect_ratio_size ? aspect_ratio_size->width() /
+                                               aspect_ratio_size->height()
+                                         : 0.0;
+  if (aspect_ratio > 0.0) {
+    CalculateBoundsWithAspectRatio(aspect_ratio, &new_bounds);
+    return new_bounds;
+  }
 
   // Sizing has to keep the result on the screen. Note that this correction
   // has to come first since it might have an impact on the origin as well as
@@ -337,6 +374,24 @@ int WindowResizer::GetHeightForDrag(int min_height, int* delta_y) {
     }
   }
   return height;
+}
+
+void WindowResizer::CalculateBoundsWithAspectRatio(float aspect_ratio,
+                                                   gfx::Rect* new_bounds) {
+  gfx::Size min_size = GetTarget()->delegate()
+                           ? GetTarget()->delegate()->GetMinimumSize()
+                           : gfx::Size();
+  gfx::Size max_size = GetTarget()->delegate()
+                           ? GetTarget()->delegate()->GetMaximumSize()
+                           : gfx::Size();
+  DCHECK(!min_size.IsEmpty());
+  DCHECK(!max_size.IsEmpty());
+
+  views::WindowResizeUtils::SizeMinMaxToAspectRatio(aspect_ratio, &min_size,
+                                                    &max_size);
+  views::WindowResizeUtils::SizeRectToAspectRatio(
+      GetWindowResizeHitTest(details().window_component), aspect_ratio,
+      min_size, max_size, new_bounds);
 }
 
 }  // namespace ash
