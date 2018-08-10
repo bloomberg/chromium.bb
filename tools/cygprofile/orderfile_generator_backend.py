@@ -236,12 +236,11 @@ class ClankCompiler(object):
     self._max_load = max_load
     self._use_goma = use_goma
     self._goma_dir = goma_dir
-    lib_chrome_so_dir = 'lib.unstripped'
     self._system_health_profiling = system_health_profiling
 
     self.obj_dir = os.path.join(self._out_dir, 'Release', 'obj')
     self.lib_chrome_so = os.path.join(
-        self._out_dir, 'Release', lib_chrome_so_dir, 'libchrome.so')
+        self._out_dir, 'Release', 'lib.unstripped', 'libchrome.so')
     self.chrome_apk = os.path.join(
         self._out_dir, 'Release', 'apks', 'Chrome.apk')
 
@@ -401,9 +400,6 @@ class OrderfileGenerator(object):
   generates an updated orderfile.
   """
   _CLANK_REPO = os.path.join(constants.DIR_SOURCE_ROOT, 'clank')
-  _CYGLOG_TO_ORDERFILE_SCRIPT = os.path.join(
-      constants.DIR_SOURCE_ROOT, 'tools', 'cygprofile',
-      'cyglog_to_orderfile.py')
   _CHECK_ORDERFILE_SCRIPT = os.path.join(
       constants.DIR_SOURCE_ROOT, 'tools', 'cygprofile', 'check_orderfile.py')
   _BUILD_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(
@@ -411,8 +407,6 @@ class OrderfileGenerator(object):
 
   _UNPATCHED_ORDERFILE_FILENAME = os.path.join(
       _CLANK_REPO, 'orderfiles', 'unpatched_orderfile.%s')
-  _MERGED_CYGLOG_FILENAME = os.path.join(
-      constants.GetOutDirectory(), 'merged_cyglog')
 
   _PATH_TO_ORDERFILE = os.path.join(_CLANK_REPO, 'orderfiles',
                                     'orderfile.%s.out')
@@ -506,6 +500,7 @@ class OrderfileGenerator(object):
       except Exception:
         for f in files:
           self._SaveForDebugging(f)
+        self._SaveForDebugging(self._compiler.lib_chrome_so)
         raise
       finally:
         self._profiler.Cleanup()
@@ -541,14 +536,11 @@ class OrderfileGenerator(object):
     offsets_list = (profile_offsets.startup +
                     profile_offsets.common +
                     profile_offsets.interaction)
-    generator = cyglog_to_orderfile.OffsetOrderfileGenerator(
-        processor, cyglog_to_orderfile.ObjectFileProcessor(
-            self._compiler.obj_dir))
-    ordered_sections = generator.GetOrderedSections(offsets_list)
-    if not ordered_sections:
-      raise Exception('Failed to get ordered sections')
+    ordered_symbols = processor.GetOrderedSymbols(offsets_list)
+    if not ordered_symbols:
+      raise Exception('Failed to get ordered symbols')
     with open(self._GetUnpatchedOrderfileFilename(), 'w') as orderfile:
-      orderfile.write('\n'.join(ordered_sections))
+      orderfile.write('\n'.join(ordered_symbols))
 
   def _CollectLegacyProfile(self):
     try:
@@ -563,8 +555,14 @@ class OrderfileGenerator(object):
       if not offsets:
         raise Exception('No profiler offsets found in {}'.format(
             '\n'.join(files)))
-      with open(self._MERGED_CYGLOG_FILENAME, 'w') as f:
-        f.write('\n'.join(map(str, offsets)))
+      processor = process_profiles.SymbolOffsetProcessor(
+          self._compiler.lib_chrome_so)
+      ordered_symbols = processor.GetOrderedSymbols(offsets)
+      if not ordered_symbols:
+        raise Exception('No symbol names from  offsets found in {}'.format(
+            '\n'.join(files)))
+      with open(self._GetUnpatchedOrderfileFilename(), 'w') as orderfile:
+        orderfile.write('\n'.join(ordered_symbols))
     except Exception:
       for f in files:
         self._SaveForDebugging(f)
@@ -572,32 +570,12 @@ class OrderfileGenerator(object):
     finally:
       self._profiler.Cleanup()
 
-    try:
-      command_args = [
-          '--target-arch=' + self._options.arch,
-          '--native-library=' + self._compiler.lib_chrome_so,
-          '--output=' + self._GetUnpatchedOrderfileFilename()]
-      command_args.append('--reached-offsets=' + self._MERGED_CYGLOG_FILENAME)
-      self._step_recorder.RunCommand(
-          [self._CYGLOG_TO_ORDERFILE_SCRIPT] + command_args)
-    except CommandError:
-      self._SaveForDebugging(self._MERGED_CYGLOG_FILENAME)
-      self._SaveForDebuggingWithOverwrite(self._compiler.lib_chrome_so)
-      raise
-
   def _MaybeSaveProfile(self, files):
     if self._options.profile_save_dir:
       logging.info('Saving profiles to %s', self._options.profile_save_dir)
       for f in files:
         shutil.copy(f, self._options.profile_save_dir)
         logging.info('Saved profile %s', f)
-
-  def _DeleteTempFiles(self):
-    """Deletes intermediate step output files."""
-    print 'Delete %s' % (
-        self._MERGED_CYGLOG_FILENAME)
-    if os.path.isfile(self._MERGED_CYGLOG_FILENAME):
-      os.unlink(self._MERGED_CYGLOG_FILENAME)
 
   def _PatchOrderfile(self):
     """Patches the orderfile using clean version of libchrome.so."""
@@ -721,7 +699,6 @@ class OrderfileGenerator(object):
         self._MaybeArchiveOrderfile(self._GetUnpatchedOrderfileFilename())
         profile_uploaded = True
       finally:
-        self._DeleteTempFiles()
         _StashOutputDirectory(self._instrumented_out_dir)
     elif self._options.manual_symbol_offsets:
       assert self._options.manual_libname
