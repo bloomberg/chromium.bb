@@ -90,6 +90,10 @@ cr.addSingletonGetter(PaymentsManagerImpl);
 Polymer({
   is: 'settings-payments-section',
 
+  behaviors: [
+    WebUIListenerBehavior,
+  ],
+
   properties: {
     /**
      * An array of saved credit cards.
@@ -105,6 +109,14 @@ Polymer({
 
     /** @private */
     showCreditCardDialog_: Boolean,
+
+    /**
+     * The current sync status, supplied by SyncBrowserProxy.
+     * TODO(sujiezhu): Use this to check migration requirements when all
+     * information is ready. (https://crbug.com/852904).
+     * @type {?settings.SyncStatus}
+     */
+    syncStatus: Object,
   },
 
   listeners: {
@@ -130,6 +142,9 @@ Polymer({
    */
   setCreditCardsListener_: null,
 
+  /** @private {?settings.SyncBrowserProxy} */
+  syncBrowserProxy_: null,
+
   /** @override */
   attached: function() {
     // Create listener function.
@@ -150,6 +165,12 @@ Polymer({
     // Listen for changes.
     this.paymentsManager_.addCreditCardListChangedListener(
         setCreditCardsListener);
+
+    this.syncBrowserProxy_ = settings.SyncBrowserProxyImpl.getInstance();
+    this.syncBrowserProxy_.getSyncStatus().then(
+        this.handleSyncStatus_.bind(this));
+    this.addWebUIListener(
+        'sync-status-changed', this.handleSyncStatus_.bind(this));
   },
 
   /** @override */
@@ -301,6 +322,15 @@ Polymer({
    */
   saveCreditCard_: function(event) {
     this.paymentsManager_.saveCreditCard(event.detail);
+  },
+
+  /**
+   * Handler for when the sync state is pushed from the browser.
+   * @param {?settings.SyncStatus} syncStatus
+   * @private
+   */
+  handleSyncStatus_: function(syncStatus) {
+    this.syncStatus = syncStatus;
   },
 });
 })();
