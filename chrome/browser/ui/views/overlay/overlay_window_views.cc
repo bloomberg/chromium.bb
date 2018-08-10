@@ -216,8 +216,8 @@ void OverlayWindowViews::SetUpViews() {
   // background. --------------------------------------------------------------
   controls_background_view_->SetSize(GetBounds().size());
   controls_background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-  GetControlsBackgroundLayer()->SetColor(SK_ColorBLACK);
-  GetControlsBackgroundLayer()->SetOpacity(0.4f);
+  GetControlsBackgroundLayer()->SetColor(gfx::kGoogleGrey900);
+  GetControlsBackgroundLayer()->SetOpacity(0.43f);
 
   // views::View that closes the window. --------------------------------------
   close_controls_view_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
