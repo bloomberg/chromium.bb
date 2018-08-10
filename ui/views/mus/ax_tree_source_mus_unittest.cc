@@ -12,6 +12,8 @@
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/gfx/transform.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/controls/label.h"
@@ -84,6 +86,24 @@ TEST_F(AXTreeSourceMusTest, Serialize) {
   // Child has relative position with the root as the container.
   EXPECT_EQ(gfx::RectF(1, 1, 111, 111), node_data.location);
   EXPECT_EQ(root->GetUniqueId().Get(), node_data.offset_container_id);
+}
+
+TEST_F(AXTreeSourceMusTest, ScaleFactor) {
+  AXAuraObjCache* cache = AXAuraObjCache::GetInstance();
+  AXAuraObjWrapper* root = cache->GetOrCreate(widget_->GetContentsView());
+
+  // Simulate serializing a widget on a high-dpi display.
+  AXTreeSourceMus tree(root);
+  tree.set_device_scale_factor(2.f);
+
+  // Serialize the root.
+  ui::AXNodeData node_data;
+  tree.SerializeNode(root, &node_data);
+
+  // Transform is scaled.
+  ASSERT_TRUE(node_data.transform);
+  EXPECT_TRUE(node_data.transform->IsScale2d());
+  EXPECT_EQ(gfx::Vector2dF(2.f, 2.f), node_data.transform->Scale2d());
 }
 
 }  // namespace

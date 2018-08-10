@@ -23,6 +23,8 @@ class VIEWS_MUS_EXPORT AXTreeSourceMus : public AXTreeSourceViews {
   explicit AXTreeSourceMus(AXAuraObjWrapper* root);
   ~AXTreeSourceMus() override;
 
+  void set_device_scale_factor(float scale) { device_scale_factor_ = scale; }
+
   // AXTreeSource:
   bool GetTreeData(ui::AXTreeData* data) const override;
   AXAuraObjWrapper* GetRoot() const override;
@@ -32,6 +34,9 @@ class VIEWS_MUS_EXPORT AXTreeSourceMus : public AXTreeSourceViews {
  private:
   // The top-level object to use for the AX tree.
   AXAuraObjWrapper* root_;
+
+  // The display device scale factor to use while serializing this update.
+  float device_scale_factor_ = 1.f;
 
   DISALLOW_COPY_AND_ASSIGN(AXTreeSourceMus);
 };
