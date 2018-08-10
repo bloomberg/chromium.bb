@@ -899,7 +899,7 @@ android_library("android_webview_java") {
     "//base:base_java",
     "//components/autofill/android:autofill_java",
     "//components/autofill/android:provider_java",
-    "//components/background_task_scheduler:background_task_scheduler_java",
+    "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/crash/android:java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/minidump_uploader:minidump_uploader_java",
@@ -1048,7 +1048,7 @@ android_library("android_webview_services_java") {
     ":android_webview_variations_utils_java",
     ":system_webview_manifest",
     "//base:base_java",
-    "//components/background_task_scheduler:background_task_scheduler_java",
+    "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/version_info/android:version_constants_java",
   ]
