@@ -2216,7 +2216,8 @@ TEST_F(SplitViewTabDraggingTest, ShowNewWindowItemWhenDragStarts) {
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::RIGHT_SNAPPED);
 
-  // Test that the new window item widget shows up.
+  // Test that the new window item widget shows up as the first one of the
+  // windows in the grid.
   WindowSelector* window_selector =
       Shell::Get()->window_selector_controller()->window_selector();
   WindowGrid* current_grid =
@@ -2230,6 +2231,7 @@ TEST_F(SplitViewTabDraggingTest, ShowNewWindowItemWhenDragStarts) {
       current_grid->GetWindowSelectorItemContaining(
           new_selector_widget->GetNativeWindow());
   ASSERT_TRUE(new_selector_item);
+  EXPECT_EQ(new_selector_item, current_grid->window_list().front().get());
   const gfx::Rect new_selector_bounds = new_selector_item->target_bounds();
   DragWindowTo(resizer.get(), new_selector_bounds.CenterPoint());
   CompleteDrag(std::move(resizer));
@@ -2237,8 +2239,12 @@ TEST_F(SplitViewTabDraggingTest, ShowNewWindowItemWhenDragStarts) {
   EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::RIGHT_SNAPPED);
-  // Test that the dragged window has been added to the overview mode.
+  // Test that the dragged window has been added to the overview mode, and it is
+  // added at the front of the grid.
   EXPECT_EQ(current_grid->window_list().size(), 2u);
+  WindowSelectorItem* first_selector_item =
+      current_grid->GetWindowSelectorItemContaining(window1.get());
+  EXPECT_EQ(first_selector_item, current_grid->window_list().front().get());
   EXPECT_TRUE(window_selector->IsWindowInOverview(window1.get()));
   EXPECT_TRUE(window_selector->IsWindowInOverview(window3.get()));
   // Test that the new window item widget has been destroyed.
