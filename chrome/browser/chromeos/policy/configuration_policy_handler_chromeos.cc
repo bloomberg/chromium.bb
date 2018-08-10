@@ -223,10 +223,22 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
     root_dict = validator.ValidateAndRepairObject(
         &chromeos::onc::kToplevelConfigurationSignature, *root_dict,
         &validation_result);
+
+    // Pass error/warning message and non-localized debug_info to
+    // PolicyErrorMap.
+    std::vector<base::StringPiece> messages;
+    for (const chromeos::onc::Validator::ValidationIssue& issue :
+         validator.validation_issues()) {
+      messages.push_back(issue.message);
+    }
+    std::string debug_info = base::JoinString(messages, "\n");
+
     if (validation_result == chromeos::onc::Validator::VALID_WITH_WARNINGS)
-      errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_IMPORT_PARTIAL);
+      errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_IMPORT_PARTIAL,
+                       debug_info);
     else if (validation_result == chromeos::onc::Validator::INVALID)
-      errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_IMPORT_FAILED);
+      errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_IMPORT_FAILED,
+                       debug_info);
 
     if (!validator.validation_issues().empty()) {
       std::vector<std::string> messages;
