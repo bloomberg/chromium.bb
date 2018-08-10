@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_GPU_BROWSER_GPU_CLIENT_DELEGATE_H_
 
 #include "content/browser/gpu/gpu_client_delegate.h"
-#include "content/browser/gpu/gpu_process_host.h"
 
 namespace content {
 
@@ -22,13 +21,6 @@ class BrowserGpuClientDelegate : public GpuClientDelegate {
                            EstablishGpuChannelCallback callback) override;
 
  private:
-  void OnEstablishGpuChannel(
-      GpuClientDelegate::EstablishGpuChannelCallback callback,
-      mojo::ScopedMessagePipeHandle channel_handle,
-      const gpu::GPUInfo& gpu_info,
-      const gpu::GpuFeatureInfo& gpu_feature_info,
-      GpuProcessHost::EstablishChannelStatus status);
-
   DISALLOW_COPY_AND_ASSIGN(BrowserGpuClientDelegate);
 };
 
