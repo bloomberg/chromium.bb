@@ -2775,6 +2775,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Selected popup entry"/>
 </enum>
 
+<enum name="AutofillManageCardsPrompt">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Done button pressed"/>
+  <int value="2" label="Manage cards button pressed"/>
+</enum>
+
 <enum name="AutofillProfileAction">
   <int value="0" label="Existing profile used"/>
   <int value="1" label="Existing profile updated"/>
