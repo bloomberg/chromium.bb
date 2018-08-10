@@ -101,7 +101,7 @@ static void ComputeOriginAndWidthForBox(const InlineTextBox& box,
   if (box.Truncation() != kCNoTruncation) {
     bool ltr = box.IsLeftToRightDirection();
     bool flow_is_ltr =
-        box.GetLineLayoutItem().Style()->IsLeftToRightDirection();
+        box.GetLineLayoutItem().StyleRef().IsLeftToRightDirection();
     width = LayoutUnit(box.GetLineLayoutItem().Width(
         ltr == flow_is_ltr ? box.Start() : box.Start() + box.Truncation(),
         ltr == flow_is_ltr ? box.Truncation() : box.Len() - box.Truncation(),
@@ -430,7 +430,7 @@ bool InlineTextBoxPainter::ShouldPaintTextBox(const PaintInfo& paint_info) {
   // This code path is only called in PaintPhaseForeground whereas we would
   // expect PaintPhaseSelection. The existing haveSelection logic in paint()
   // tests for != PaintPhaseTextClip.
-  if (inline_text_box_.GetLineLayoutItem().Style()->Visibility() !=
+  if (inline_text_box_.GetLineLayoutItem().StyleRef().Visibility() !=
           EVisibility::kVisible ||
       inline_text_box_.Truncation() == kCFullTruncation ||
       !inline_text_box_.Len())
@@ -513,13 +513,14 @@ void InlineTextBoxPainter::PaintSingleMarkerBackgroundRun(
   if (background_color == Color::kTransparent)
     return;
 
-  int delta_y =
-      (inline_text_box_.GetLineLayoutItem().Style()->IsFlippedLinesWritingMode()
-           ? inline_text_box_.Root().SelectionBottom() -
-                 inline_text_box_.LogicalBottom()
-           : inline_text_box_.LogicalTop() -
-                 inline_text_box_.Root().SelectionTop())
-          .ToInt();
+  int delta_y = (inline_text_box_.GetLineLayoutItem()
+                         .StyleRef()
+                         .IsFlippedLinesWritingMode()
+                     ? inline_text_box_.Root().SelectionBottom() -
+                           inline_text_box_.LogicalBottom()
+                     : inline_text_box_.LogicalTop() -
+                           inline_text_box_.Root().SelectionTop())
+                    .ToInt();
   int sel_height = inline_text_box_.Root().SelectionHeight().ToInt();
   FloatPoint local_origin(box_origin.X().ToFloat(),
                           box_origin.Y().ToFloat() - delta_y);
@@ -723,10 +724,12 @@ LayoutRect InlineTextBoxPainter::GetSelectionRect(
   LayoutUnit selection_bottom = inline_text_box_.Root().SelectionBottom();
   LayoutUnit selection_top = inline_text_box_.Root().SelectionTop();
 
-  int delta_y = RoundToInt(
-      inline_text_box_.GetLineLayoutItem().Style()->IsFlippedLinesWritingMode()
-          ? selection_bottom - inline_text_box_.LogicalBottom()
-          : inline_text_box_.LogicalTop() - selection_top);
+  int delta_y =
+      RoundToInt(inline_text_box_.GetLineLayoutItem()
+                         .StyleRef()
+                         .IsFlippedLinesWritingMode()
+                     ? selection_bottom - inline_text_box_.LogicalBottom()
+                     : inline_text_box_.LogicalTop() - selection_top);
   int sel_height = std::max(0, RoundToInt(selection_bottom - selection_top));
 
   FloatPoint local_origin(box_rect.X().ToFloat(),

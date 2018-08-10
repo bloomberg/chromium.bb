@@ -64,7 +64,7 @@ ColorFilter CSSMaskPainter::MaskColorFilter(const LayoutObject& object) {
   LayoutSVGResourceMasker* masker = resources ? resources->Masker() : nullptr;
   if (!masker)
     return kColorFilterNone;
-  return masker->Style()->SvgStyle().MaskType() == MT_LUMINANCE
+  return masker->StyleRef().SvgStyle().MaskType() == MT_LUMINANCE
              ? kColorFilterLuminanceToAlpha
              : kColorFilterNone;
 }

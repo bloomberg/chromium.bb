@@ -44,7 +44,7 @@ void TablePainter::PaintObject(const PaintInfo& paint_info,
 
     if (layout_table_.HasCollapsedBorders() &&
         ShouldPaintDescendantBlockBackgrounds(paint_phase) &&
-        layout_table_.Style()->Visibility() == EVisibility::kVisible) {
+        layout_table_.StyleRef().Visibility() == EVisibility::kVisible) {
       PaintCollapsedBorders(paint_info_for_descendants);
     }
   }
@@ -57,7 +57,7 @@ void TablePainter::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
   if (!layout_table_.HasBoxDecorationBackground() ||
-      layout_table_.Style()->Visibility() != EVisibility::kVisible)
+      layout_table_.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
   LayoutRect rect(paint_offset, layout_table_.Size());
@@ -68,7 +68,7 @@ void TablePainter::PaintBoxDecorationBackground(
 
 void TablePainter::PaintMask(const PaintInfo& paint_info,
                              const LayoutPoint& paint_offset) {
-  if (layout_table_.Style()->Visibility() != EVisibility::kVisible ||
+  if (layout_table_.StyleRef().Visibility() != EVisibility::kVisible ||
       paint_info.phase != PaintPhase::kMask)
     return;
 

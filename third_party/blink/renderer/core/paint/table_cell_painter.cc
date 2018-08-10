@@ -23,12 +23,12 @@ void TableCellPainter::PaintContainerBackgroundBehindCell(
     const LayoutObject& background_object) {
   DCHECK(background_object != layout_table_cell_);
 
-  if (layout_table_cell_.Style()->Visibility() != EVisibility::kVisible)
+  if (layout_table_cell_.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
   LayoutTable* table = layout_table_cell_.Table();
   if (!table->ShouldCollapseBorders() &&
-      layout_table_cell_.Style()->EmptyCells() == EEmptyCells::kHide &&
+      layout_table_cell_.StyleRef().EmptyCells() == EEmptyCells::kHide &&
       !layout_table_cell_.FirstChild())
     return;
 
@@ -124,13 +124,13 @@ void TableCellPainter::PaintBoxDecorationBackground(
 
 void TableCellPainter::PaintMask(const PaintInfo& paint_info,
                                  const LayoutPoint& paint_offset) {
-  if (layout_table_cell_.Style()->Visibility() != EVisibility::kVisible ||
+  if (layout_table_cell_.StyleRef().Visibility() != EVisibility::kVisible ||
       paint_info.phase != PaintPhase::kMask)
     return;
 
   LayoutTable* table_elt = layout_table_cell_.Table();
   if (!table_elt->ShouldCollapseBorders() &&
-      layout_table_cell_.Style()->EmptyCells() == EEmptyCells::kHide &&
+      layout_table_cell_.StyleRef().EmptyCells() == EEmptyCells::kHide &&
       !layout_table_cell_.FirstChild())
     return;
 

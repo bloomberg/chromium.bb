@@ -31,7 +31,7 @@ void FieldsetPainter::PaintBoxDecorationBackground(
   // FIXME: We need to work with "rl" and "bt" block flow directions.  In those
   // cases the legend is embedded in the right and bottom borders respectively.
   // https://bugs.webkit.org/show_bug.cgi?id=47236
-  if (layout_fieldset_.Style()->IsHorizontalWritingMode()) {
+  if (layout_fieldset_.StyleRef().IsHorizontalWritingMode()) {
     LayoutUnit y_off =
         (legend->Location().Y() > 0)
             ? LayoutUnit()
@@ -56,8 +56,8 @@ void FieldsetPainter::PaintBoxDecorationBackground(
   BackgroundImageGeometry geometry(layout_fieldset_);
   BoxModelObjectPainter(layout_fieldset_)
       .PaintFillLayers(paint_info, box_decoration_data.background_color,
-                       layout_fieldset_.Style()->BackgroundLayers(), paint_rect,
-                       geometry);
+                       layout_fieldset_.StyleRef().BackgroundLayers(),
+                       paint_rect, geometry);
   BoxPainterBase::PaintInsetBoxShadowWithBorderRect(
       paint_info, paint_rect, layout_fieldset_.StyleRef());
 
@@ -71,19 +71,19 @@ void FieldsetPainter::PaintBoxDecorationBackground(
   // FIXME: We need to work with "rl" and "bt" block flow directions.  In those
   // cases the legend is embedded in the right and bottom borders respectively.
   // https://bugs.webkit.org/show_bug.cgi?id=47236
-  if (layout_fieldset_.Style()->IsHorizontalWritingMode()) {
+  if (layout_fieldset_.StyleRef().IsHorizontalWritingMode()) {
     LayoutUnit clip_top = paint_rect.Y();
-    LayoutUnit clip_height =
-        max(static_cast<LayoutUnit>(layout_fieldset_.Style()->BorderTopWidth()),
-            legend->Size().Height() -
-                ((legend->Size().Height() - layout_fieldset_.BorderTop()) / 2));
+    LayoutUnit clip_height = max(
+        static_cast<LayoutUnit>(layout_fieldset_.StyleRef().BorderTopWidth()),
+        legend->Size().Height() -
+            ((legend->Size().Height() - layout_fieldset_.BorderTop()) / 2));
     graphics_context.ClipOut(
         PixelSnappedIntRect(paint_rect.X() + legend->Location().X(), clip_top,
                             legend->Size().Width(), clip_height));
   } else {
     LayoutUnit clip_left = paint_rect.X();
     LayoutUnit clip_width = max(
-        static_cast<LayoutUnit>(layout_fieldset_.Style()->BorderLeftWidth()),
+        static_cast<LayoutUnit>(layout_fieldset_.StyleRef().BorderLeftWidth()),
         legend->Size().Width());
     graphics_context.ClipOut(
         PixelSnappedIntRect(clip_left, paint_rect.Y() + legend->Location().Y(),
@@ -101,7 +101,7 @@ void FieldsetPainter::PaintBoxDecorationBackground(
 
 void FieldsetPainter::PaintMask(const PaintInfo& paint_info,
                                 const LayoutPoint& paint_offset) {
-  if (layout_fieldset_.Style()->Visibility() != EVisibility::kVisible ||
+  if (layout_fieldset_.StyleRef().Visibility() != EVisibility::kVisible ||
       paint_info.phase != PaintPhase::kMask)
     return;
 
@@ -117,7 +117,7 @@ void FieldsetPainter::PaintMask(const PaintInfo& paint_info,
   // FIXME: We need to work with "rl" and "bt" block flow directions.  In those
   // cases the legend is embedded in the right and bottom borders respectively.
   // https://bugs.webkit.org/show_bug.cgi?id=47236
-  if (layout_fieldset_.Style()->IsHorizontalWritingMode()) {
+  if (layout_fieldset_.StyleRef().IsHorizontalWritingMode()) {
     LayoutUnit y_off =
         (legend->Location().Y() > LayoutUnit())
             ? LayoutUnit()

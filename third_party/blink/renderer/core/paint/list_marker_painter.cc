@@ -54,7 +54,7 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
   if (paint_info.phase != PaintPhase::kForeground)
     return;
 
-  if (layout_list_marker_.Style()->Visibility() != EVisibility::kVisible)
+  if (layout_list_marker_.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(
@@ -115,12 +115,12 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
   // Apply the color to the list marker text.
   context.SetFillColor(color);
 
-  const Font& font = layout_list_marker_.Style()->GetFont();
+  const Font& font = layout_list_marker_.StyleRef().GetFont();
   TextRun text_run = ConstructTextRun(font, layout_list_marker_.GetText(),
                                       layout_list_marker_.StyleRef());
 
   GraphicsContextStateSaver state_saver(context, false);
-  if (!layout_list_marker_.Style()->IsHorizontalWritingMode()) {
+  if (!layout_list_marker_.StyleRef().IsHorizontalWritingMode()) {
     marker.MoveBy(-box_origin);
     marker = marker.TransposedRect();
     marker.MoveBy(
@@ -135,7 +135,7 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
   TextRunPaintInfo text_run_paint_info(text_run);
   text_run_paint_info.bounds = FloatRect(EnclosingIntRect(marker));
   const SimpleFontData* font_data =
-      layout_list_marker_.Style()->GetFont().PrimaryFont();
+      layout_list_marker_.StyleRef().GetFont().PrimaryFont();
   FloatPoint text_origin =
       FloatPoint(marker.X().Round(),
                  marker.Y().Round() +
@@ -157,16 +157,16 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
   }
 
   const UChar suffix =
-      ListMarkerText::Suffix(layout_list_marker_.Style()->ListStyleType(),
+      ListMarkerText::Suffix(layout_list_marker_.StyleRef().ListStyleType(),
                              layout_list_marker_.ListItem()->Value());
   UChar suffix_str[2] = {suffix, static_cast<UChar>(' ')};
   TextRun suffix_run =
       ConstructTextRun(font, suffix_str, 2, layout_list_marker_.StyleRef(),
-                       layout_list_marker_.Style()->Direction());
+                       layout_list_marker_.StyleRef().Direction());
   TextRunPaintInfo suffix_run_info(suffix_run);
   suffix_run_info.bounds = FloatRect(EnclosingIntRect(marker));
 
-  if (layout_list_marker_.Style()->IsLeftToRightDirection()) {
+  if (layout_list_marker_.StyleRef().IsLeftToRightDirection()) {
     context.DrawText(font, text_run_paint_info, text_origin);
     context.DrawText(font, suffix_run_info,
                      text_origin + FloatSize(IntSize(font.Width(text_run), 0)));

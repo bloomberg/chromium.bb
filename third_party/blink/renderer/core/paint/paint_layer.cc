@@ -331,7 +331,7 @@ void PaintLayer::UpdateLayerPositionRecursive(
       UpdateLayerPosition();
       break;
     case OnlyStickyLayers:
-      if (GetLayoutObject().Style()->HasStickyConstrainedPosition())
+      if (GetLayoutObject().StyleRef().HasStickyConstrainedPosition())
         UpdateLayerPosition();
       if (PaintLayerScrollableArea* scroller = GetScrollableArea()) {
         if (!scroller->HasStickyDescendants())
@@ -350,7 +350,7 @@ void PaintLayer::UpdateLayerPositionRecursive(
 }
 
 bool PaintLayer::SticksToScroller() const {
-  if (GetLayoutObject().Style()->GetPosition() != EPosition::kSticky)
+  if (GetLayoutObject().StyleRef().GetPosition() != EPosition::kSticky)
     return false;
   if (auto* ancestor_scrollable_area =
           AncestorOverflowLayer()->GetScrollableArea()) {
@@ -362,7 +362,7 @@ bool PaintLayer::SticksToScroller() const {
 }
 
 bool PaintLayer::FixedToViewport() const {
-  if (GetLayoutObject().Style()->GetPosition() != EPosition::kFixed)
+  if (GetLayoutObject().StyleRef().GetPosition() != EPosition::kFixed)
     return false;
 
   // TODO(pdr): This approach of calculating the nearest scroll node is O(n).
@@ -437,7 +437,7 @@ void PaintLayer::UpdateTransformationMatrix() {
     LayoutBox* box = GetLayoutBox();
     DCHECK(box);
     transform->MakeIdentity();
-    box->Style()->ApplyTransform(
+    box->StyleRef().ApplyTransform(
         *transform, box->Size(), ComputedStyle::kIncludeTransformOrigin,
         ComputedStyle::kIncludeMotionPath,
         ComputedStyle::kIncludeIndependentTransformProperties);
@@ -779,14 +779,14 @@ void PaintLayer::UpdateDescendantDependentFlags() {
   }
 
   bool previously_has_visible_content = has_visible_content_;
-  if (GetLayoutObject().Style()->Visibility() == EVisibility::kVisible) {
+  if (GetLayoutObject().StyleRef().Visibility() == EVisibility::kVisible) {
     has_visible_content_ = true;
   } else {
     // layer may be hidden but still have some visible content, check for this
     has_visible_content_ = false;
     LayoutObject* r = GetLayoutObject().SlowFirstChild();
     while (r) {
-      if (r->Style()->Visibility() == EVisibility::kVisible &&
+      if (r->StyleRef().Visibility() == EVisibility::kVisible &&
           (!r->HasLayer() || !r->EnclosingLayer()->IsSelfPaintingLayer())) {
         has_visible_content_ = true;
         break;
@@ -891,7 +891,7 @@ void PaintLayer::UpdateLayerPosition() {
       if (GetLayoutObject().IsOutOfFlowPositioned() &&
           container.IsLayoutInline() &&
           container.CanContainOutOfFlowPositionedElement(
-              GetLayoutObject().Style()->GetPosition())) {
+              GetLayoutObject().StyleRef().GetPosition())) {
         // Adjust offset for absolute under in-flow positioned inline.
         LayoutSize offset =
             ToLayoutInline(container).OffsetForInFlowPositionedInline(
@@ -1403,7 +1403,7 @@ PaintLayer* PaintLayer::RemoveChild(PaintLayer* old_child) {
     MarkAncestorChainForDescendantDependentFlagsUpdate();
   }
 
-  if (GetLayoutObject().Style()->Visibility() != EVisibility::kVisible)
+  if (GetLayoutObject().StyleRef().Visibility() != EVisibility::kVisible)
     DirtyVisibleContentStatus();
 
   old_child->SetPreviousSibling(nullptr);
@@ -1668,7 +1668,7 @@ bool PaintLayer::HasOverflowControls() const {
   return scrollable_area_ &&
          (scrollable_area_->HasScrollbar() ||
           scrollable_area_->ScrollCorner() ||
-          GetLayoutObject().Style()->Resize() != EResize::kNone);
+          GetLayoutObject().StyleRef().Resize() != EResize::kNone);
 }
 
 void PaintLayer::AppendSingleFragmentIgnoringPagination(
@@ -2464,7 +2464,7 @@ bool PaintLayer::HitTestClippedOutByClipPath(
   FloatRect float_reference_box(reference_box);
 
   ClipPathOperation* clip_path_operation =
-      GetLayoutObject().Style()->ClipPath();
+      GetLayoutObject().StyleRef().ClipPath();
   DCHECK(clip_path_operation);
   if (clip_path_operation->GetType() == ClipPathOperation::SHAPE) {
     ShapeClipPathOperation* clip_path =
@@ -2857,7 +2857,7 @@ bool PaintLayer::CompositesWithTransform() const {
 }
 
 bool PaintLayer::CompositesWithOpacity() const {
-  return OpacityAncestor() || GetLayoutObject().Style()->HasOpacity();
+  return OpacityAncestor() || GetLayoutObject().StyleRef().HasOpacity();
 }
 
 bool PaintLayer::BackgroundIsKnownToBeOpaqueInRect(
@@ -2868,14 +2868,14 @@ bool PaintLayer::BackgroundIsKnownToBeOpaqueInRect(
   // We can't use hasVisibleContent(), because that will be true if our
   // layoutObject is hidden, but some child is visible and that child doesn't
   // cover the entire rect.
-  if (GetLayoutObject().Style()->Visibility() != EVisibility::kVisible)
+  if (GetLayoutObject().StyleRef().Visibility() != EVisibility::kVisible)
     return false;
 
   if (GetLayoutObject().HasMask() || GetLayoutObject().HasClipPath())
     return false;
 
   if (PaintsWithFilters() &&
-      GetLayoutObject().Style()->Filter().HasFilterThatAffectsOpacity())
+      GetLayoutObject().StyleRef().Filter().HasFilterThatAffectsOpacity())
     return false;
 
   // FIXME: Handle simple transforms.
@@ -2883,7 +2883,7 @@ bool PaintLayer::BackgroundIsKnownToBeOpaqueInRect(
     return false;
 
   if (!RuntimeEnabledFeatures::CompositeOpaqueFixedPositionEnabled() &&
-      GetLayoutObject().Style()->GetPosition() == EPosition::kFixed &&
+      GetLayoutObject().StyleRef().GetPosition() == EPosition::kFixed &&
       GetCompositingState() != kPaintsIntoOwnBacking)
     return false;
 
@@ -2994,8 +2994,8 @@ bool PaintLayer::HasNonEmptyChildLayoutObjects() const {
 }
 
 bool PaintLayer::HasBoxDecorationsOrBackground() const {
-  return GetLayoutObject().Style()->HasBoxDecorations() ||
-         GetLayoutObject().Style()->HasBackground();
+  return GetLayoutObject().StyleRef().HasBoxDecorations() ||
+         GetLayoutObject().StyleRef().HasBackground();
 }
 
 bool PaintLayer::HasVisibleBoxDecorations() const {
@@ -3086,14 +3086,14 @@ bool PaintLayer::AttemptDirectCompositingUpdate(
   // Layers even when the non-transparent Layers are already a
   // stacking context.
   if (diff.OpacityChanged() &&
-      layout_object_.Style()->HasOpacity() != old_style->HasOpacity())
+      layout_object_.StyleRef().HasOpacity() != old_style->HasOpacity())
     return false;
 
   // Changes in pointer-events affect hit test visibility of the scrollable
   // area and its |m_scrollsOverflow| value which determines if the layer
   // requires composited scrolling or not.
   if (scrollable_area_ &&
-      layout_object_.Style()->PointerEvents() != old_style->PointerEvents())
+      layout_object_.StyleRef().PointerEvents() != old_style->PointerEvents())
     return false;
 
   UpdateTransform(old_style, GetLayoutObject().StyleRef());
@@ -3265,7 +3265,7 @@ void PaintLayer::RemoveAncestorOverflowLayer(const PaintLayer* removed_layer) {
     // sticky viewport constrained object, it is no longer known to be
     // constrained by the root.
     if (AncestorOverflowLayer()->IsRootLayer() &&
-        GetLayoutObject().Style()->HasStickyConstrainedPosition()) {
+        GetLayoutObject().StyleRef().HasStickyConstrainedPosition()) {
       if (LocalFrameView* frame_view = GetLayoutObject().GetFrameView())
         frame_view->RemoveViewportConstrainedObject(GetLayoutObject());
     }
@@ -3346,7 +3346,7 @@ void PaintLayer::ComputeSelfHitTestRects(
   if (!Size().IsEmpty()) {
     Vector<TouchActionRect> rect;
     TouchAction whitelisted_touch_action =
-        GetLayoutObject().Style()->GetEffectiveTouchAction() &
+        GetLayoutObject().StyleRef().GetEffectiveTouchAction() &
         supported_fast_actions;
 
     if (GetLayoutBox() && GetLayoutBox()->ScrollsOverflow()) {

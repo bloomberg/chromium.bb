@@ -335,7 +335,7 @@ static EBorderStyle CollapsedBorderStyle(EBorderStyle style) {
 
 void CollapsedBorderPainter::PaintCollapsedBorders(
     const PaintInfo& paint_info) {
-  if (cell_.Style()->Visibility() != EVisibility::kVisible)
+  if (cell_.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
   if (!cell_.GetCollapsedBorderValues())

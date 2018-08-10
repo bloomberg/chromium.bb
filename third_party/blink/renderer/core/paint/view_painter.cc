@@ -87,7 +87,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
        document.GetSettings()->GetShouldClearDocumentBackground());
   Color base_background_color =
       paints_base_background ? frame_view.BaseBackgroundColor() : Color();
-  Color root_background_color = layout_view_.Style()->VisitedDependentColor(
+  Color root_background_color = layout_view_.StyleRef().VisitedDependentColor(
       GetCSSPropertyBackgroundColor());
   const LayoutObject* root_object =
       document.documentElement() ? document.documentElement()->GetLayoutObject()
@@ -104,7 +104,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
     // If for any reason the view background is not transparent, paint white
     // instead, otherwise keep transparent as is.
     if (paints_base_background || root_background_color.Alpha() ||
-        layout_view_.Style()->BackgroundLayers().GetImage())
+        layout_view_.StyleRef().BackgroundLayers().GetImage())
       context.FillRect(background_rect, Color::kWhite, SkBlendMode::kSrc);
     return;
   }
@@ -165,7 +165,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   bool should_draw_background_in_separate_buffer =
       BoxModelObjectPainter(layout_view_)
           .CalculateFillLayerOcclusionCulling(
-              reversed_paint_list, layout_view_.Style()->BackgroundLayers());
+              reversed_paint_list, layout_view_.StyleRef().BackgroundLayers());
   DCHECK(reversed_paint_list.size());
 
   // If the root background color is opaque, isolation group can be skipped
