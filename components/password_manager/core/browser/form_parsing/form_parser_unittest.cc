@@ -896,13 +896,34 @@ TEST(FormParserTest, ReadonlyFields) {
       },
       {
           .description_for_logging = "And passwords already filled by user or "
-                                     "Chrome are accepted even if "
+                                     "Chrome on pageload are accepted even if "
                                      "readonly",
           .fields =
               {
                   {.role = ElementRole::USERNAME, .form_control_type = "text"},
                   {.role = ElementRole::CURRENT_PASSWORD,
-                   .properties_mask = FieldPropertiesFlags::AUTOFILLED,
+                   .properties_mask =
+                       FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD,
+                   .form_control_type = "password",
+                   .is_readonly = true},
+                  {.role = ElementRole::NEW_PASSWORD,
+                   .properties_mask = FieldPropertiesFlags::USER_TYPED,
+                   .form_control_type = "password",
+                   .is_readonly = true},
+                  {.form_control_type = "password", .is_readonly = true},
+              },
+          .number_of_all_possible_passwords = 3,
+      },
+      {
+          .description_for_logging = "And passwords already filled by user or "
+                                     "Chrome with FOAS are accepted even if "
+                                     "readonly",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME, .form_control_type = "text"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .properties_mask =
+                       FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER,
                    .form_control_type = "password",
                    .is_readonly = true},
                   {.role = ElementRole::NEW_PASSWORD,

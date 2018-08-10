@@ -28,13 +28,19 @@ enum FieldPropertiesFlags {
   // being autofilled. This is different from
   // WebFormControlElement::IsAutofilled(). It is meant to be used for password
   // fields, to determine whether viewing the value needs user reauthentication.
-  AUTOFILLED = 1u << 1,
+  AUTOFILLED_ON_USER_TRIGGER = 1u << 1,
+  // The field received focus at any moment.
   HAD_FOCUS = 1u << 2,
   // Use this flag, if some error occurred in flags processing.
   ERROR_OCCURRED = 1u << 3,
   // On submission, the value of the field was recognised as a value which is
   // already stored.
-  KNOWN_VALUE = 1u << 4
+  KNOWN_VALUE = 1u << 4,
+  // A value was autofilled on pageload. This means that at least one character
+  // of the field value comes from being autofilled.
+  AUTOFILLED_ON_PAGELOAD = 1u << 5,
+  // A value was autofilled on any of the triggers.
+  AUTOFILLED = AUTOFILLED_ON_USER_TRIGGER | AUTOFILLED_ON_PAGELOAD,
 };
 
 // FieldPropertiesMask is used to contain combinations of FieldPropertiesFlags

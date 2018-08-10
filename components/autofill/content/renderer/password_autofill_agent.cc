@@ -897,9 +897,9 @@ void PasswordAutofillAgent::FillField(WebInputElement* input,
   DCHECK(!input->IsNull());
   input->SetAutofillValue(WebString::FromUTF16(credential));
   input->SetAutofillState(WebAutofillState::kAutofilled);
-  UpdateFieldValueAndPropertiesMaskMap(*input, &credential,
-                                       FieldPropertiesFlags::AUTOFILLED,
-                                       &field_value_and_properties_map_);
+  UpdateFieldValueAndPropertiesMaskMap(
+      *input, &credential, FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER,
+      &field_value_and_properties_map_);
 }
 
 void PasswordAutofillAgent::FillPasswordFieldAndSave(
@@ -1876,9 +1876,10 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
       }
     }
 
-    UpdateFieldValueAndPropertiesMaskMap(*username_element, &username,
-                                         FieldPropertiesFlags::AUTOFILLED,
-                                         field_value_and_properties_map);
+    UpdateFieldValueAndPropertiesMaskMap(
+        *username_element, &username,
+        FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD,
+        field_value_and_properties_map);
     username_element->SetAutofillState(WebAutofillState::kAutofilled);
     if (logger)
       logger->LogElementName(Logger::STRING_USERNAME_FILLED, *username_element);
@@ -1889,9 +1890,10 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   // user is intentionally interacting with the page.
   if (password_element->Value().Utf16() != password)
     password_element->SetSuggestedValue(WebString::FromUTF16(password));
-  UpdateFieldValueAndPropertiesMaskMap(*password_element, &password,
-                                       FieldPropertiesFlags::AUTOFILLED,
-                                       field_value_and_properties_map);
+  UpdateFieldValueAndPropertiesMaskMap(
+      *password_element, &password,
+      FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD,
+      field_value_and_properties_map);
   ProvisionallySavePassword(password_element->Form(), *password_element,
                             RESTRICTION_NONE);
   gatekeeper_.RegisterElement(password_element);
