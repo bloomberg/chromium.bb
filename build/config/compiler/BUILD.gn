@@ -168,7 +168,7 @@ if (gold_path == false) {
 }
 
 if (use_debug_fission == "default") {
-  use_debug_fission = is_debug && !is_android && !is_win &&
+  use_debug_fission = is_debug && !is_android && !is_fuchsia && !is_win &&
                       (use_gold || use_lld) && cc_wrapper == ""
 }
 
