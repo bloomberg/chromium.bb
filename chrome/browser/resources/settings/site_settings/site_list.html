@@ -57,7 +57,7 @@
         <div class="list-item secondary">$i18n{noSitesAdded}</div>
       </div>
       <div class="list-frame menu-content vertical-list" id="listContainer">
-        <iron-list items="[[sites]]" preserve-focus risk-selection>
+        <iron-list id="list" items="[[sites]]" preserve-focus risk-selection>
           <template>
             <site-list-entry model="[[item]]" read-only-list="[[readOnlyList]]"
                 on-show-action-menu="onShowActionMenu_" tabindex$="[[tabIndex]]"

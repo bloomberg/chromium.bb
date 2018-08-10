@@ -224,7 +224,14 @@ Polymer({
                 site => site.setting != settings.ContentSetting.DEFAULT &&
                     site.setting == this.categorySubtype)
             .map(site => this.expandSiteException(site));
+    // iron-list needs to have display set to 'block' in order to render
+    // correctly. However, display also needs to be set to 'contents' so that
+    // the paper-tooltip in cr-policy-pref-indicator is not cutoff.
+    this.$.list.style.display = 'block';
     this.updateList('sites', x => x.origin, sites);
+    this.async(() => {
+      this.$.list.style.display = 'contents';
+    });
   },
 
   /**
