@@ -15,7 +15,7 @@
 
 // This is a helper utility to wrap a base::OnceCallback such that if the
 // callback is destructed before it has a chance to run (e.g. the callback is
-// bound into a task and the task is dropped), it will be run the with
+// bound into a task and the task is dropped), it will be run with the
 // default arguments passed into WrapCallbackWithDefaultInvokeIfNotRun.
 // Alternatively, it will run the delete closure passed to
 // WrapCallbackWithDropHandler.
