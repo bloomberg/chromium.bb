@@ -18,9 +18,24 @@ namespace blink {
 NavigatorServiceWorker::NavigatorServiceWorker(Navigator& navigator) {}
 
 NavigatorServiceWorker* NavigatorServiceWorker::From(Document& document) {
-  if (!document.GetFrame() || !document.GetFrame()->DomWindow())
+  LocalFrame* frame = document.GetFrame();
+  if (!frame)
     return nullptr;
-  Navigator& navigator = *document.GetFrame()->DomWindow()->navigator();
+
+  // Bail-out if we are about to be navigated away.
+  // We check that DocumentLoader is attached since:
+  // - This serves as the signal since the DocumentLoader is detached in
+  //   FrameLoader::PrepareForCommit().
+  // - Creating ServiceWorkerProvider in
+  //   RenderFrameImpl::CreateServiceWorkerProvider() assumes that there is a
+  //   DocumentLoader attached to the frame.
+  if (!frame->Loader().GetDocumentLoader())
+    return nullptr;
+
+  LocalDOMWindow* dom_window = frame->DomWindow();
+  if (!dom_window)
+    return nullptr;
+  Navigator& navigator = *dom_window->navigator();
   return &From(navigator);
 }
 
