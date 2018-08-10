@@ -126,6 +126,30 @@ class SymbolOffsetProcessor(object):
           self.SymbolInfos())
     return self._offset_to_symbols
 
+  def GetOrderedSymbols(self, offsets):
+    """Maps a list of offsets to symbol names, retaining ordering.
+
+    The symbol name is the primary symbol. This also deals with thumb
+    instruction (which have odd offsets).
+
+    Args::
+      offsets (int iterable) a set of offsets.
+
+    Returns
+      [str] list of symbol names.
+    """
+    symbols = []
+    not_found = 0
+    for o in offsets:
+      if o in self.OffsetToPrimaryMap():
+        symbols.append(self.OffsetToPrimaryMap()[o].name)
+      elif o % 2 and (o - 1) in self.OffsetToPrimaryMap():
+        symbols.append(self.OffsetToPrimaryMap()[o - 1].name)
+      else:
+        not_found += 1
+    logging.warning('%d offsets do not have matching symbol', not_found)
+    return symbols
+
   def OffsetsPrimarySize(self, offsets):
     """Computes the total primary size of a set of offsets.
 

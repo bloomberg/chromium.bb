@@ -58,6 +58,11 @@ class ProcessProfilesTestCase(unittest.TestCase):
     self.assertDictEqual({8: symbol_infos[0],
                           40: symbol_infos[2]}, processor.OffsetToPrimaryMap())
 
+  def testGetOrderedSymbols(self):
+    processor = TestSymbolOffsetProcessor(self.symbol_infos)
+    self.assertListEqual(['1', '3', '0'],
+                         processor.GetOrderedSymbols([8, 41, 6, 0]))
+
   def testOffsetToSymbolsMap(self):
     symbol_infos = [SimpleTestSymbol('1', 8, 16),
                     SimpleTestSymbol('AnAlias', 8, 16),

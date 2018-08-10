@@ -15,32 +15,6 @@ class TestCheckOrderFile(unittest.TestCase):
                    symbol_extractor.SymbolInfo('notProfiled', 0x4, 0, ''),
                    symbol_extractor.SymbolInfo('third', 0x3, 0, ''),]
 
-  def testMatchesSymbols(self):
-    symbols = ['first', 'second', 'third']
-    (misordered_pairs_count, matched_count, missing_count) = (
-        check_orderfile._CountMisorderedSymbols(symbols, self._SYMBOL_INFOS))
-    self.assertEquals(
-        (misordered_pairs_count, matched_count, missing_count), (0, 3, 0))
-
-  def testMissingMatches(self):
-    symbols = ['second', 'third', 'other', 'first']
-    (_, matched_count, unmatched_count) = (
-        check_orderfile._CountMisorderedSymbols(symbols, self._SYMBOL_INFOS))
-    self.assertEquals(matched_count, 3)
-    self.assertEquals(unmatched_count, 1)
-
-  def testNoUnorderedSymbols(self):
-    symbols = ['first', 'other', 'second', 'third', 'noMatchEither']
-    (misordered_pairs_count, _, _) = (
-        check_orderfile._CountMisorderedSymbols(symbols, self._SYMBOL_INFOS))
-    self.assertEquals(misordered_pairs_count, 0)
-
-  def testUnorderedSymbols(self):
-    symbols = ['first', 'other', 'third', 'second', 'noMatchEither']
-    (misordered_pairs_count, _, _) = (
-        check_orderfile._CountMisorderedSymbols(symbols, self._SYMBOL_INFOS))
-    self.assertEquals(misordered_pairs_count, 1)
-
   def testVerifySymbolOrder(self):
     self.assertTrue(check_orderfile._VerifySymbolOrder(
         ['.second', 'first', 'eighth', 'third'],

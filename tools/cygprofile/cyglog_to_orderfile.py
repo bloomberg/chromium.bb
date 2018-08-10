@@ -256,18 +256,13 @@ def main():
     args.arch = cygprofile_utils.DetectArchitecture()
   symbol_extractor.SetArchitecture(args.target_arch)
 
-  obj_dir = cygprofile_utils.GetObjDir(args.native_library)
-
   offsets = _ReadReachedOffsets(args.reached_offsets)
   assert offsets
   _WarnAboutDuplicates(offsets)
 
-  generator = OffsetOrderfileGenerator(
-      process_profiles.SymbolOffsetProcessor(args.native_library),
-      ObjectFileProcessor(obj_dir))
-
-  ordered_sections = generator.GetOrderedSections(offsets)
-  if ordered_sections is None:
+  processor = process_profiles.SymbolOffsetProcessor(args.native_library)
+  ordered_symbols = processor.GetOrderedSymbols(offsets)
+  if ordered_symbols is None:
     return 1
 
   success = False
@@ -276,7 +271,7 @@ def main():
   try:
     (fd, temp_filename) = tempfile.mkstemp(dir=os.path.dirname(args.output))
     output_file = os.fdopen(fd, 'w')
-    output_file.write('\n'.join(ordered_sections))
+    output_file.write('\n'.join(ordered_symbols))
     output_file.close()
     os.rename(temp_filename, args.output)
     temp_filename = None
