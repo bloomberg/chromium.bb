@@ -1,3 +1,5 @@
+per-file *shelf*=file://ash/shelf/OWNERS
+
 per-file *.mojom=set noparent
 per-file *.mojom=file://ipc/SECURITY_OWNERS
 
