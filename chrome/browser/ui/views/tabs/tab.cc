@@ -1379,17 +1379,23 @@ void Tab::PaintTabBackgroundFill(gfx::Canvas* canvas,
   const float scale = canvas->UndoDeviceScaleFactor();
 
   canvas->ClipPath(fill_path, true);
+
+  // In the active case, always fill the tab with its bg color first in case the
+  // image is transparent. In the inactive case, the image is guaranteed to be
+  // opaque, so it's only necessary to fill the color when there's no image.
+  if (active || !fill_id) {
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(active ? active_color : inactive_color);
+    canvas->DrawRect(gfx::ScaleToEnclosingRect(GetLocalBounds(), scale), flags);
+  }
+
   if (fill_id) {
     gfx::ScopedCanvas scale_scoper(canvas);
     canvas->sk_canvas()->scale(scale, scale);
     canvas->TileImageInt(*GetThemeProvider()->GetImageSkiaNamed(fill_id),
                          GetMirroredX() + background_offset_, 0, 0, y_inset,
                          width(), height());
-  } else {
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    flags.setColor(active ? active_color : inactive_color);
-    canvas->DrawRect(gfx::ScaleToEnclosingRect(GetLocalBounds(), scale), flags);
   }
 
   if (paint_hover_effect) {
