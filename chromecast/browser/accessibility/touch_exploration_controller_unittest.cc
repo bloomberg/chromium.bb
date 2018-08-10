@@ -137,12 +137,6 @@ class TouchExplorationControllerTestApi {
     touch_exploration_controller_->OnTapTimerFired();
   }
 
-  void CallPassthroughTimerNowForTesting() {
-    DCHECK(touch_exploration_controller_->passthrough_timer_.IsRunning());
-    touch_exploration_controller_->passthrough_timer_.Stop();
-    touch_exploration_controller_->OnPassthroughTimerFired();
-  }
-
   void CallTapTimerNowIfRunningForTesting() {
     if (touch_exploration_controller_->tap_timer_.IsRunning()) {
       touch_exploration_controller_->tap_timer_.Stop();
@@ -163,10 +157,6 @@ class TouchExplorationControllerTestApi {
   bool IsInTwoFingerTapStateForTesting() const {
     return touch_exploration_controller_->state_ ==
            touch_exploration_controller_->TWO_FINGER_TAP;
-  }
-  bool IsInCornerPassthroughStateForTesting() const {
-    return touch_exploration_controller_->state_ ==
-           touch_exploration_controller_->CORNER_PASSTHROUGH;
   }
 
   gfx::Rect BoundsOfRootWindowInDIPForTesting() const {
@@ -297,11 +287,6 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     touch_exploration_controller_->CallTapTimerNowForTesting();
   }
 
-  void AdvanceSimulatedTimePastPassthroughDelay() {
-    simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(1000));
-    touch_exploration_controller_->CallPassthroughTimerNowForTesting();
-  }
-
   void AdvanceSimulatedTimePastPotentialTapDelay() {
     simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(1000));
     touch_exploration_controller_->CallTapTimerNowIfRunningForTesting();
@@ -334,50 +319,6 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     EXPECT_TRUE(IsInTouchToMouseMode());
   }
 
-  // Checks that Corner Passthrough is working. Assumes that corner is the
-  // bottom left corner or the bottom right corner.
-  void AssertCornerPassthroughWorking(gfx::Point corner) {
-    ASSERT_EQ(0U, accessibility_sound_player_.NumPassthroughSounds());
-
-    ui::TouchEvent first_press(
-        ui::ET_TOUCH_PRESSED, corner, Now(),
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-    generator_->Dispatch(&first_press);
-
-    AdvanceSimulatedTimePastPassthroughDelay();
-    EXPECT_FALSE(IsInGestureInProgressState());
-    EXPECT_FALSE(IsInTouchToMouseMode());
-    EXPECT_TRUE(IsInCornerPassthroughState());
-
-    gfx::Rect window = BoundsOfRootWindowInDIP();
-    // The following events should be passed through.
-    gfx::Point passthrough(window.right() / 2, window.bottom() / 2);
-    ui::TouchEvent passthrough_press(
-        ui::ET_TOUCH_PRESSED, passthrough, Now(),
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
-    ASSERT_EQ(1U, accessibility_sound_player_.NumPassthroughSounds());
-    generator_->Dispatch(&passthrough_press);
-    generator_->ReleaseTouchId(1);
-    generator_->PressTouchId(1);
-    EXPECT_FALSE(IsInGestureInProgressState());
-    EXPECT_TRUE(IsInCornerPassthroughState());
-
-    std::vector<ui::LocatedEvent*> captured_events = GetCapturedLocatedEvents();
-    ASSERT_EQ(3U, captured_events.size());
-    EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[0]->type());
-    EXPECT_EQ(ui::ET_TOUCH_RELEASED, captured_events[1]->type());
-    EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[2]->type());
-    generator_->ReleaseTouchId(1);
-    ClearCapturedEvents();
-
-    generator_->ReleaseTouchId(0);
-    captured_events = GetCapturedLocatedEvents();
-    ASSERT_EQ(0U, captured_events.size());
-    EXPECT_FALSE(IsInTouchToMouseMode());
-    EXPECT_FALSE(IsInCornerPassthroughState());
-    ClearCapturedEvents();
-  }
-
   bool IsInTouchToMouseMode() {
     aura::client::CursorClient* cursor_client =
         aura::client::GetCursorClient(root_window());
@@ -396,11 +337,6 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
 
   bool IsInTwoFingerTapState() {
     return touch_exploration_controller_->IsInTwoFingerTapStateForTesting();
-  }
-
-  bool IsInCornerPassthroughState() {
-    return touch_exploration_controller_
-        ->IsInCornerPassthroughStateForTesting();
   }
 
   gfx::Rect BoundsOfRootWindowInDIP() {
@@ -1731,32 +1667,6 @@ TEST_F(TouchExplorationTest, TwoFingerTapAndMoveSecondFinger) {
 
   generator_->Dispatch(&out_slop_id_2);
   EXPECT_FALSE(IsInTwoFingerTapState());
-}
-
-// Corner passthrough should turn on if the user first holds down on either the
-// right or left corner past a delay and then places a finger anywhere else on
-// the screen.
-TEST_F(TouchExplorationTest, ActivateLeftCornerPassthrough) {
-  SwitchTouchExplorationMode(true);
-
-  gfx::Rect window = BoundsOfRootWindowInDIP();
-  gfx::Point left_corner(
-      (GetLeavingDistanceFromEdge() + GetMaxDistanceFromEdge()) / 2,
-      window.bottom() -
-          (GetLeavingDistanceFromEdge() + GetMaxDistanceFromEdge()) / 2);
-  AssertCornerPassthroughWorking(left_corner);
-}
-
-TEST_F(TouchExplorationTest, ActivateRightCornerPassthrough) {
-  SwitchTouchExplorationMode(true);
-
-  gfx::Rect window = BoundsOfRootWindowInDIP();
-  gfx::Point right_corner(
-      window.right() -
-          (GetLeavingDistanceFromEdge() + GetMaxDistanceFromEdge()) / 2,
-      window.bottom() -
-          (GetLeavingDistanceFromEdge() + GetMaxDistanceFromEdge()) / 2);
-  AssertCornerPassthroughWorking(right_corner);
 }
 
 // Earcons should play if the user slides off the screen or enters the screen
