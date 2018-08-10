@@ -24,13 +24,24 @@ struct InstallWarning;
 // properties of the manifest using ManifestFeatureProvider.
 class Manifest {
  public:
-  // What an extension was loaded from.
+  // Historically, where an extension was loaded from, and whether an
+  // extension's files were inside or outside of the profile's directory. In
+  // modern usage, a Location can be thought of as the installation source:
+  // whether an extension was explicitly installed by the user (through the
+  // UI), or implicitly installed by other means. For example, enterprise
+  // policy, being part of Chrome per se (but implemented as an extension), or
+  // installed as a side effect of installing third party software.
+  //
   // NOTE: These values are stored as integers in the preferences and used
   // in histograms so don't remove or reorder existing items.  Just append
   // to the end.
   enum Location {
     INVALID_LOCATION,
-    INTERNAL,           // A crx file from the internal Extensions directory.
+    INTERNAL,  // A crx file from the internal Extensions directory. This
+               // includes extensions explicitly installed by the user. It also
+               // includes installed-by-default extensions that are not part of
+               // Chrome itself (and thus not a COMPONENT), but are part of a
+               // larger system (such as Chrome OS).
     EXTERNAL_PREF,      // A crx file from an external directory (via prefs).
     EXTERNAL_REGISTRY,  // A crx file from an external directory (via eg the
                         // registry on Windows).
