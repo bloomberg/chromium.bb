@@ -545,8 +545,8 @@ static void setup_ref_mv_list(
                   ref_mv_stack[ref_frame], &row_match_count, &newmv_count,
                   gm_mv_candidates, &refmv_count[ref_frame]);
 
-  uint8_t nearest_match = (row_match_count > 0) + (col_match_count > 0);
-  uint8_t nearest_refmv_count = refmv_count[ref_frame];
+  const uint8_t nearest_match = (row_match_count > 0) + (col_match_count > 0);
+  const uint8_t nearest_refmv_count = refmv_count[ref_frame];
 
   // TODO(yunqing): for comp_search, do it for all 3 cases.
   for (int idx = 0; idx < nearest_refmv_count; ++idx)
@@ -569,12 +569,12 @@ static void setup_ref_mv_list(
                                 (xd->n4_w >= mi_size_wide[BLOCK_8X8]) &&
                                 (xd->n4_w < mi_size_wide[BLOCK_64X64]);
 
-    int step_h = (xd->n4_h >= mi_size_high[BLOCK_64X64])
-                     ? mi_size_high[BLOCK_16X16]
-                     : mi_size_high[BLOCK_8X8];
-    int step_w = (xd->n4_w >= mi_size_wide[BLOCK_64X64])
-                     ? mi_size_wide[BLOCK_16X16]
-                     : mi_size_wide[BLOCK_8X8];
+    const int step_h = (xd->n4_h >= mi_size_high[BLOCK_64X64])
+                           ? mi_size_high[BLOCK_16X16]
+                           : mi_size_high[BLOCK_8X8];
+    const int step_w = (xd->n4_w >= mi_size_wide[BLOCK_64X64])
+                           ? mi_size_wide[BLOCK_16X16]
+                           : mi_size_wide[BLOCK_8X8];
 
     for (int blk_row = 0; blk_row < blk_row_end; blk_row += step_h) {
       for (int blk_col = 0; blk_col < blk_col_end; blk_col += step_w) {
@@ -623,7 +623,7 @@ static void setup_ref_mv_list(
                     max_col_offset, &processed_cols);
   }
 
-  uint8_t ref_match_count = (row_match_count > 0) + (col_match_count > 0);
+  const uint8_t ref_match_count = (row_match_count > 0) + (col_match_count > 0);
 
   switch (nearest_match) {
     case 0:
