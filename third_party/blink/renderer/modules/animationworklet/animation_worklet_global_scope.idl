@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// https://wicg.github.io/animation-worklet/#animationworkletglobalscope
+
 [
     Exposed=AnimationWorklet,
     Global=(Worklet,AnimationWorklet),
     OriginTrialEnabled=AnimationWorklet
 ] interface AnimationWorkletGlobalScope : WorkletGlobalScope {
-    [MeasureAs=AnimationWorkletRegisterAnimator, RaisesException] void registerAnimator(DOMString name, Function animatorConstructor);
+    // TODO(yukishiino): |animatorConstructor| should be of callback function
+    // type (should be: callback T = any ()).
+    [MeasureAs=AnimationWorkletRegisterAnimator, RaisesException] void registerAnimator(DOMString name, CallbackFunctionTreatedAsScriptValue animatorConstructor);
 };

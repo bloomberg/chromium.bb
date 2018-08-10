@@ -10,8 +10,7 @@ typedef unsigned long long DOMTimeStamp;
 
 // https://heycam.github.io/webidl/#Function
 
-// TODO(yukishiino): Use the generated V8Function instead of ScriptValue.
-// callback Function = any (any... arguments);
+callback Function = any (any... arguments);
 
 
 // typedefs used in multiple files.

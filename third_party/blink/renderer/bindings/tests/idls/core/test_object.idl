@@ -419,7 +419,7 @@ interface TestObject {
     void overloadedMethodI(double doubleArg);
     void overloadedMethodJ(DOMString stringArg);
     void overloadedMethodJ(TestDictionary testDictionaryArg);
-    void overloadedMethodK(Function functionArg);
+    void overloadedMethodK(CallbackFunctionTreatedAsScriptValue functionArg);
     void overloadedMethodK(DOMString stringArg);
     void overloadedMethodL(long longArg, any... restArgs);
     void overloadedMethodL(DOMString stringArg, any... restArgs);
