@@ -206,9 +206,6 @@ class TouchExplorationController : public ui::EventRewriter,
   ui::EventRewriteStatus InTouchExploration(
       const ui::TouchEvent& event,
       std::unique_ptr<ui::Event>* rewritten_event);
-  ui::EventRewriteStatus InCornerPassthrough(
-      const ui::TouchEvent& event,
-      std::unique_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InOneFingerPassthrough(
       const ui::TouchEvent& event,
       std::unique_ptr<ui::Event>* rewritten_event);
@@ -234,13 +231,6 @@ class TouchExplorationController : public ui::EventRewriter,
   // we treat that as a single mouse move (touch exploration) event.
   void StartTapTimer();
   void OnTapTimerFired();
-
-  // This timer is started every timer we get the first press event and the
-  // finger is in the corner of the screen.
-  // It fires after the corner passthrough delay elapses. If the
-  // user is still in the corner by the time this timer fires, all subsequent
-  // fingers added on the screen will be passed through.
-  void OnPassthroughTimerFired();
 
   // Dispatch a new event outside of the event rewriting flow.
   void DispatchEvent(ui::Event* event);
@@ -369,11 +359,6 @@ class TouchExplorationController : public ui::EventRewriter,
     // all fingers.
     ONE_FINGER_PASSTHROUGH,
 
-    // If the user has pressed and held down the left corner past long press,
-    // then as long as they are holding the corner, all subsequent fingers
-    // registered will be in passthrough.
-    CORNER_PASSTHROUGH,
-
     // If the user added another finger in SINGLE_TAP_PRESSED, or if the user
     // has multiple fingers fingers down in any other state between
     // passthrough, touch exploration, and gestures, they must release
@@ -400,8 +385,6 @@ class TouchExplorationController : public ui::EventRewriter,
     TOP_EDGE = 1 << 1,
     LEFT_EDGE = 1 << 2,
     BOTTOM_EDGE = 1 << 3,
-    BOTTOM_LEFT_CORNER = LEFT_EDGE | BOTTOM_EDGE,
-    BOTTOM_RIGHT_CORNER = RIGHT_EDGE | BOTTOM_EDGE,
   };
 
   // Given a point, if it is within the given inset of an edge, returns the
@@ -475,9 +458,6 @@ class TouchExplorationController : public ui::EventRewriter,
 
   // A timer that fires after the double-tap delay.
   base::OneShotTimer tap_timer_;
-
-  // A timer that fires to enter passthrough.
-  base::OneShotTimer passthrough_timer_;
 
   // A timer to fire an indicating sound when sliding to change volume.
   base::RepeatingTimer sound_timer_;
