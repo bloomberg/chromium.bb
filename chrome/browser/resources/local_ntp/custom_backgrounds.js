@@ -144,8 +144,8 @@ customBackgrounds.SOURCES = {
 customBackgrounds.MENU_ENTRIES = {
   CHROME_BACKGROUNDS: 0,
   UPLOAD_IMAGE: 1,
-  RESTORE_DEFAULT: 2,
-  CUSTOM_LINKS_RESTORE_DEFAULT: 3,
+  CUSTOM_LINKS_RESTORE_DEFAULT: 2,
+  RESTORE_DEFAULT: 3,
 };
 
 customBackgrounds.CUSTOM_BACKGROUND_OVERLAY =
@@ -730,8 +730,8 @@ customBackgrounds.getNextOption = function(current_index, deltaY) {
   var entries = [];
   entries.push($(customBackgrounds.IDS.DEFAULT_WALLPAPERS));
   entries.push($(customBackgrounds.IDS.UPLOAD_IMAGE));
-  entries.push($(customBackgrounds.IDS.RESTORE_DEFAULT));
   entries.push($(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT));
+  entries.push($(customBackgrounds.IDS.RESTORE_DEFAULT));
 
   var idx = current_index;
   do {
