@@ -879,10 +879,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Whether the use of a surface layer instead of a video layer is enabled.
   bool surface_layer_for_video_enabled_ = false;
 
-  base::OnceCallback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
-      blink::WebSurfaceLayerBridgeObserver*,
-      cc::UpdateSubmissionStateCB)>
-      create_bridge_callback_;
+  CreateSurfaceLayerBridgeCB create_bridge_callback_;
 
   base::CancelableOnceCallback<void(base::TimeTicks)> frame_time_report_cb_;
 

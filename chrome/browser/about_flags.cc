@@ -2874,6 +2874,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseSurfaceLayerForVideoName,
      flag_descriptions::kUseSurfaceLayerForVideoDescription, kOsAll,
      FEATURE_VALUE_TYPE(media::kUseSurfaceLayerForVideo)},
+    {"enable-surfaces-for-videos-ms",
+     flag_descriptions::kUseSurfaceLayerForVideoMSName,
+     flag_descriptions::kUseSurfaceLayerForVideoMSDescription, kOsAll,
+     FEATURE_VALUE_TYPE(media::kUseSurfaceLayerForVideoMS)},
 #if defined(OS_CHROMEOS)
     {"quick-unlock-pin", flag_descriptions::kQuickUnlockPinName,
      flag_descriptions::kQuickUnlockPinDescription, kOsCrOS,

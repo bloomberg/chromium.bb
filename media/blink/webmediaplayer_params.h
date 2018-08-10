@@ -37,6 +37,11 @@ class WebSurfaceLayerBridgeObserver;
 
 namespace media {
 
+using CreateSurfaceLayerBridgeCB =
+    base::OnceCallback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
+        blink::WebSurfaceLayerBridgeObserver*,
+        cc::UpdateSubmissionStateCB)>;
+
 class SwitchableAudioRendererSink;
 
 // Holds parameters for constructing WebMediaPlayerImpl without having
@@ -81,9 +86,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       bool enable_instant_source_buffer_gc,
       bool embedded_media_experience_enabled,
       mojom::MediaMetricsProviderPtr metrics_provider,
-      base::OnceCallback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
-          blink::WebSurfaceLayerBridgeObserver*,
-          cc::UpdateSubmissionStateCB)> bridge_callback,
+      CreateSurfaceLayerBridgeCB bridge_callback,
       scoped_refptr<viz::ContextProvider> context_provider,
       bool use_surface_layer_for_video);
 
@@ -153,10 +156,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return request_routing_token_cb_;
   }
 
-  base::OnceCallback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
-      blink::WebSurfaceLayerBridgeObserver*,
-      cc::UpdateSubmissionStateCB)>
-  create_bridge_callback() {
+  CreateSurfaceLayerBridgeCB create_bridge_callback() {
     return std::move(create_bridge_callback_);
   }
 
@@ -187,10 +187,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   bool enable_instant_source_buffer_gc_;
   const bool embedded_media_experience_enabled_;
   mojom::MediaMetricsProviderPtr metrics_provider_;
-  base::OnceCallback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
-      blink::WebSurfaceLayerBridgeObserver*,
-      cc::UpdateSubmissionStateCB)>
-      create_bridge_callback_;
+  CreateSurfaceLayerBridgeCB create_bridge_callback_;
   scoped_refptr<viz::ContextProvider> context_provider_;
   bool use_surface_layer_for_video_;
 

@@ -153,6 +153,20 @@ bool MediaFactory::VideoSurfaceLayerEnabled() {
          features::IsAshInBrowserProcess();
 }
 
+bool MediaFactory::VideoSurfaceLayerEnabledForMS() {
+  // LayoutTests do not support SurfaceLayer by default at the moment.
+  // See https://crbug.com/838128
+  content::RenderThreadImpl* render_thread =
+      content::RenderThreadImpl::current();
+  if (render_thread && render_thread->layout_test_mode() &&
+      !render_thread->LayoutTestModeUsesDisplayCompositorPixelDump()) {
+    return false;
+  }
+
+  return base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideoMS) &&
+         features::IsAshInBrowserProcess();
+}
+
 MediaFactory::MediaFactory(
     RenderFrameImpl* render_frame,
     media::RequestRoutingTokenCallback request_routing_token_cb)
@@ -214,7 +228,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
       GetWebMediaStreamFromWebMediaPlayerSource(source);
   if (!web_stream.IsNull())
     return CreateWebMediaPlayerForMediaStream(client, sink_id, security_origin,
-                                              web_frame);
+                                              web_frame, layer_tree_view);
 
   // If |source| was not a MediaStream, it must be a URL.
   // TODO(guidou): Fix this when support for other srcObject types is added.
@@ -507,7 +521,8 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
     blink::WebMediaPlayerClient* client,
     const blink::WebString& sink_id,
     const blink::WebSecurityOrigin& security_origin,
-    blink::WebLocalFrame* frame) {
+    blink::WebLocalFrame* frame,
+    blink::WebLayerTreeView* layer_tree_view) {
   RenderThreadImpl* const render_thread = RenderThreadImpl::current();
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner =
@@ -516,6 +531,7 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
     compositor_task_runner =
         render_frame_->GetTaskRunner(blink::TaskType::kInternalMediaRealTime);
 
+  DCHECK(layer_tree_view);
   return new WebMediaPlayerMS(
       frame, client, GetWebMediaPlayerDelegate(),
       std::make_unique<RenderMediaLog>(
@@ -524,7 +540,9 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
       CreateMediaStreamRendererFactory(), render_thread->GetIOTaskRunner(),
       compositor_task_runner, render_thread->GetMediaThreadTaskRunner(),
       render_thread->GetWorkerTaskRunner(), render_thread->GetGpuFactories(),
-      sink_id);
+      sink_id,
+      base::BindOnce(&blink::WebSurfaceLayerBridge::Create, layer_tree_view),
+      VideoSurfaceLayerEnabledForMS());
 }
 
 media::RendererWebMediaPlayerDelegate*
