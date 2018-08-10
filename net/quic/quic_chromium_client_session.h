@@ -577,10 +577,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
                           bool close_session_on_error,
                           const NetLogWithSource& migration_net_log);
 
-  // Migrates session onto new socket, i.e., starts reading from
-  // |socket| in addition to any previous sockets, and sets |writer|
-  // to be the new default writer. Returns true if socket was
-  // successfully added to the session and the session was
+  // Migrates session onto new socket, i.e., sets |writer| to be the new
+  // default writer and post a task to write to |socket|. |reader| *must*
+  // has been started reading from the socket. Returns true if
+  // socket was successfully added to the session and the session was
   // successfully migrated to using the new socket. Returns true on
   // successful migration, or false if number of migrations exceeds
   // kMaxReadersPerQuicSession. Takes ownership of |socket|, |reader|,
