@@ -78,8 +78,7 @@ struct V4L2VideoDecodeAccelerator::BitstreamBufferRef {
   ~BitstreamBufferRef();
   const base::WeakPtr<Client> client;
   const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner;
-  const std::unique_ptr<UnalignedSharedMemory> shm;
-  off_t offset;
+  const std::unique_ptr<WritableUnalignedMapping> shm;
   size_t bytes_used;
   const int32_t input_id;
 };
@@ -98,11 +97,10 @@ V4L2VideoDecodeAccelerator::BitstreamBufferRef::BitstreamBufferRef(
     int32_t input_id)
     : client(client),
       client_task_runner(client_task_runner),
-      shm(buffer ? std::make_unique<UnalignedSharedMemory>(buffer->handle(),
-                                                           buffer->size(),
-                                                           true)
+      shm(buffer ? std::make_unique<WritableUnalignedMapping>(buffer->handle(),
+                                                              buffer->size(),
+                                                              buffer->offset())
                  : nullptr),
-      offset(buffer ? buffer->offset() : 0),
       bytes_used(0),
       input_id(input_id) {}
 
@@ -779,12 +777,12 @@ void V4L2VideoDecodeAccelerator::DecodeTask(
       new BitstreamBufferRef(decode_client_, decode_task_runner_,
                              &bitstream_buffer, bitstream_buffer.id()));
 
-  // Skip empty buffer.
+  // Skip empty buffer. This must be done after creating bitstream_record as the
+  // handle in the bitstream_buffer needs to be consumed.
   if (bitstream_buffer.size() == 0)
     return;
 
-  if (!bitstream_record->shm->MapAt(bitstream_record->offset,
-                                    bitstream_record->shm->size())) {
+  if (!bitstream_record->shm->IsValid()) {
     VLOGF(1) << "could not map bitstream_buffer";
     NOTIFY_ERROR(UNREADABLE_INPUT);
     return;
