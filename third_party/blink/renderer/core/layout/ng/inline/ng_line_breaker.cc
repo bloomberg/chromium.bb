@@ -80,6 +80,7 @@ NGLineBreaker::NGLineBreaker(
     current_style_ = break_token->Style();
     item_index_ = break_token->ItemIndex();
     offset_ = break_token->TextOffset();
+    break_iterator_.SetStartOffset(offset_);
     previous_line_had_forced_break_ = break_token->IsForcedBreak();
     items_data_.AssertOffset(item_index_, offset_);
     ignore_floats_ = break_token->IgnoreFloats();
