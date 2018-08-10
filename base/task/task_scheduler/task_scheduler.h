@@ -222,7 +222,7 @@ class BASE_EXPORT TaskScheduler {
   //   }
   // instead make sure to SetInstance() early in one determinstic place in the
   // process' initialization phase.
-  // In doubt, consult with //base/task_scheduler/OWNERS.
+  // In doubt, consult with //base/task/task_scheduler/OWNERS.
   static TaskScheduler* GetInstance();
 
  private:
