@@ -79,6 +79,11 @@ class DISPLAY_EXPORT Display final {
   Display(const Display& other);
   ~Display();
 
+  // Returns a valid display with default parameters and ID set to
+  // |kDefaultDisplayId| which is used when there's no actual display connected
+  // to the device.
+  static Display GetDefaultDisplay();
+
   // Returns the forced device scale factor, which is given by
   // "--force-device-scale-factor".
   static float GetForcedDeviceScaleFactor();

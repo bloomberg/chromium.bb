@@ -265,6 +265,11 @@ int64_t WindowTreeHostManager::GetPrimaryDisplayId() {
   return primary_display_id;
 }
 
+// static
+bool WindowTreeHostManager::HasValidPrimaryDisplayId() {
+  return primary_display_id != display::kInvalidDisplayId;
+}
+
 aura::Window* WindowTreeHostManager::GetPrimaryRootWindow() {
   // If |primary_tree_host_for_replace_| is set, it means |primary_display_id|
   // is kInvalidDisplayId.

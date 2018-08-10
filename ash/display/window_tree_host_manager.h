@@ -100,6 +100,9 @@ class ASH_EXPORT WindowTreeHostManager
   // TODO(oshima): Move this out from WindowTreeHostManager;
   static int64_t GetPrimaryDisplayId();
 
+  // Returns true if the current primary display ID is valid.
+  static bool HasValidPrimaryDisplayId();
+
   CursorWindowController* cursor_window_controller() {
     return cursor_window_controller_.get();
   }

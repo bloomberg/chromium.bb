@@ -168,6 +168,17 @@ display::Display ScreenAsh::GetDisplayMatching(
 }
 
 display::Display ScreenAsh::GetPrimaryDisplay() const {
+  if (!WindowTreeHostManager::HasValidPrimaryDisplayId()) {
+    // This should only be allowed temporarily when there are no displays
+    // available and hence no primary display. In this case we return a default
+    // display to avoid crashes for display observers trying to get the primary
+    // display when notified with the removal of the last display.
+    // https://crbug.com/866714.
+    DCHECK(
+        Shell::Get()->window_tree_host_manager()->GetAllRootWindows().empty());
+    return display::Display::GetDefaultDisplay();
+  }
+
   return GetDisplayManager()->GetDisplayForId(
       WindowTreeHostManager::GetPrimaryDisplayId());
 }

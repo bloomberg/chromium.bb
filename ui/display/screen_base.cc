@@ -30,7 +30,7 @@ gfx::NativeWindow ScreenBase::GetWindowAtScreenPoint(const gfx::Point& point) {
 Display ScreenBase::GetPrimaryDisplay() const {
   auto iter = display_list_.GetPrimaryDisplayIterator();
   if (iter == display_list_.displays().end())
-    return Display();  // Invalid display since we have no primary display.
+    return Display::GetDefaultDisplay();
   return *iter;
 }
 
