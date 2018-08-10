@@ -15,6 +15,7 @@ import android.print.PrintDocumentInfo;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.printing.PrintDocumentAdapterWrapper.PdfGenerator;
 
 import java.io.IOException;
@@ -43,7 +44,8 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
     private static final int PRINTING_STATE_FINISHED = 2;
 
     /** The singleton instance for this class. */
-    private static PrintingController sInstance;
+    @VisibleForTesting
+    protected static PrintingController sInstance;
 
     private final String mErrorMessage;
 
@@ -92,7 +94,8 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
 
     private PrintManagerDelegate mPrintManager;
 
-    private PrintingControllerImpl(
+    @VisibleForTesting
+    protected PrintingControllerImpl(
             PrintDocumentAdapterWrapper printDocumentAdapterWrapper, String errorText) {
         mErrorMessage = errorText;
         mPrintDocumentAdapterWrapper = printDocumentAdapterWrapper;
@@ -306,15 +309,6 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
     public void onFinish() {
         mPages = null;
         if (mPrintingContext != null) {
-            if (mPrintingState != PRINTING_STATE_READY) {
-                // Note that we are never making an extraneous askUserForSettingsReply call.
-                // If we are in the middle of a PDF generation from onLayout or onWrite, it means
-                // the state isn't PRINTING_STATE_READY, so we enter here and make this call (no
-                // extra). If we complete the PDF generation successfully from onLayout or onWrite,
-                // we already make the state PRINTING_STATE_READY and call askUserForSettingsReply
-                // inside pdfWritingDone, thus not entering here.
-                mPrintingContext.askUserForSettingsReply(false);
-            }
             mPrintingContext.updatePrintingContextMap(mFileDescriptor, true);
             mPrintingContext = null;
         }
