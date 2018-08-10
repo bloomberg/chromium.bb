@@ -168,11 +168,17 @@ CORE_EXPORT NGBoxStrut ComputeMarginsForSelf(const NGConstraintSpace&,
 CORE_EXPORT NGBoxStrut ComputeMinMaxMargins(const ComputedStyle& parent_style,
                                             NGLayoutInputNode child);
 
-CORE_EXPORT NGBoxStrut ComputeBorders(const NGConstraintSpace& constraint_space,
+CORE_EXPORT NGBoxStrut ComputeBorders(const NGConstraintSpace&,
                                       const ComputedStyle&);
+
+CORE_EXPORT NGBoxStrut ComputeBorders(const NGConstraintSpace&,
+                                      const NGLayoutInputNode);
 
 CORE_EXPORT NGBoxStrut ComputePadding(const NGConstraintSpace&,
                                       const ComputedStyle&);
+
+CORE_EXPORT NGBoxStrut ComputePadding(const NGConstraintSpace&,
+                                      const NGLayoutInputNode);
 
 // Convert inline margins from computed to used values. This will resolve 'auto'
 // values and over-constrainedness. This uses the available size from the
