@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("renderer") {
+import("//build/config/jumbo.gni")
+
+jumbo_static_library("renderer") {
   sources = [
     "autofill_agent.cc",
     "autofill_agent.h",
@@ -63,7 +65,7 @@ static_library("renderer") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
-static_library("test_support") {
+jumbo_static_library("test_support") {
   testonly = true
   sources = [
     "test_password_autofill_agent.cc",
