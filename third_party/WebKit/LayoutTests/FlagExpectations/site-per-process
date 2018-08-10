@@ -1,10 +1,6 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
-# https://crbug.com/794631: OOPIFs VS feature policy VS opaque origins?
-crbug.com/794631 virtual/unified-autoplay/external/wpt/feature-policy/autoplay-allowed-by-feature-policy-attribute.https.sub.html [ Failure ]
-crbug.com/794631 virtual/unified-autoplay/external/wpt/feature-policy/autoplay-allowed-by-feature-policy.https.sub.html [ Failure ]
-
 # https://crbug.com/793127: NOTREACHED() from clamy@ tickled by frame consolidation CL?
 crbug.com/793127 http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
 crbug.com/793127 external/wpt/content-security-policy/securitypolicyviolation/upgrade-insecure-requests-reporting.https.html [ Crash ]
@@ -339,16 +335,5 @@ crbug.com/859988 http/tests/fetch/serviceworker-proxied/thorough/scheme-data-bas
 crbug.com/859988 virtual/outofblink-cors/http/tests/fetch/serviceworker-proxied/thorough/scheme-data-base-https-other-https.html [ Failure Pass Timeout ]
 crbug.com/859988 virtual/outofblink-cors-ns/http/tests/fetch/serviceworker-proxied/thorough/scheme-data-base-https-other-https.html [ Failure Pass Timeout ]
 
-# These tests have issues with —site-per-process. https://crbug.com/794631
-crbug.com/794631 http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-delegation.html [ Failure Pass Timeout ]
-crbug.com/794631 http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Failure Pass Timeout ]
-crbug.com/794631 http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-gesture.html [ Failure Pass Timeout ]
-crbug.com/794631 http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Failure Pass Timeout ]
-crbug.com/794631 http/tests/media/autoplay/document-user-activation-feature-policy-alternating.html [ Failure Pass Timeout ]
-crbug.com/794631 http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
-crbug.com/794631 http/tests/media/autoplay/document-user-activation-feature-policy-same-origin.html [ Failure Pass Timeout ]
-crbug.com/794631 http/tests/media/autoplay/document-user-activation-iframe-delegation.html [ Failure Pass Timeout ]
-crbug.com/794631 virtual/user-activation-v2/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-delegation.html [ Failure Pass Timeout ]
-crbug.com/794631 virtual/user-activation-v2/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Failure Pass Timeout ]
-crbug.com/794631 virtual/user-activation-v2/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-gesture.html [ Failure Pass Timeout ]
-crbug.com/794631 virtual/user-activation-v2/http/tests/media/autoplay/document-user-activation-iframe-delegation.html [ Failure Pass Timeout ]
+# https://crbug.com/872952: Autoplay is still disabled if there is no gesture.
+crbug.com/872952 http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
