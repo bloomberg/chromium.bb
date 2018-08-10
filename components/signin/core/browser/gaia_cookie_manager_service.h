@@ -47,16 +47,19 @@ class GaiaCookieManagerService : public KeyedService,
   enum GaiaCookieRequestType {
     ADD_ACCOUNT,
     LOG_OUT,
-    LIST_ACCOUNTS
+    LIST_ACCOUNTS,
+    SET_ACCOUNTS
   };
 
   // Contains the information and parameters for any request.
   class GaiaCookieRequest {
    public:
+    GaiaCookieRequest(const GaiaCookieRequest& other);
     ~GaiaCookieRequest();
 
     GaiaCookieRequestType request_type() const { return request_type_; }
-    const std::string& account_id() const {return account_id_; }
+    const std::vector<std::string>& account_ids() const { return account_ids_; }
+    const std::string GetAccountID();
     const std::string& source() const {return source_; }
 
     static GaiaCookieRequest CreateAddAccountRequest(
@@ -65,15 +68,17 @@ class GaiaCookieManagerService : public KeyedService,
     static GaiaCookieRequest CreateLogOutRequest(const std::string& source);
     static GaiaCookieRequest CreateListAccountsRequest(
         const std::string& source);
-
-   private:
-    GaiaCookieRequest(
-        GaiaCookieRequestType request_type,
-        const std::string& account_id,
+    static GaiaCookieRequest CreateSetAccountsRequest(
+        const std::vector<std::string>& account_ids,
         const std::string& source);
 
+   private:
+    GaiaCookieRequest(GaiaCookieRequestType request_type,
+                      const std::vector<std::string>& account_ids,
+                      const std::string& source);
+
     GaiaCookieRequestType request_type_;
-    std::string account_id_;
+    std::vector<std::string> account_ids_;
     std::string source_;
   };
 
