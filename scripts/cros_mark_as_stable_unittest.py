@@ -279,8 +279,18 @@ class MainTests(cros_test_lib.RunCommandTestCase,
       self._overlay_tracking_branch[overlay] = remote_ref.ref
       self._git_project_overlays[remote_ref.project_name] = [overlay]
 
+    self.PatchObject(portage_util, 'FindOverlays',
+                     return_value=self._overlays)
     self.PatchObject(git, 'GetTrackingBranchViaManifest',
                      side_effect=remote_refs)
+
+  def testMainWithOverlayTypeCommit(self):
+    """Test Main with Commit options."""
+    cros_mark_as_stable.main(
+        ['commit', '--all', '--overlay-type', 'both'])
+    self.mock_work_on_commit.assert_called_once_with(
+        mock.ANY, self._overlays, self._overlay_tracking_branch,
+        self._git_project_overlays, 'manifest', None)
 
   def testMainWithCommit(self):
     """Test Main with Commit options."""

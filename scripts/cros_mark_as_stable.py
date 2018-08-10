@@ -215,6 +215,9 @@ def GetParser():
                       '(only compatible with -p)')
   parser.add_argument('-o', '--overlays',
                       help='Colon-separated list of overlays to modify.')
+  parser.add_argument('--overlay-type',
+                      help='Populates --overlays based on "public", "private"'
+                           ', or "both".')
   parser.add_argument('-p', '--packages',
                       help='Colon separated list of packages to rev.')
   parser.add_argument('-r', '--srcroot', type='path',
@@ -244,6 +247,9 @@ def main(argv):
   if not os.path.isdir(options.srcroot):
     parser.error('srcroot is not a valid path: %s' % options.srcroot)
 
+  if options.overlay_type and options.overlays:
+    parser.error('Cannot use --overlay-type with --overlays.')
+
   portage_util.EBuild.VERBOSE = options.verbose
 
   package_list = None
@@ -256,6 +262,9 @@ def main(argv):
       if not os.path.isdir(path):
         cros_build_lib.Die('Cannot find overlay: %s' % path)
       overlays.append(os.path.realpath(path))
+  elif options.overlay_type:
+    overlays = portage_util.FindOverlays(
+        options.overlay_type, buildroot=os.path.dirname(options.srcroot))
   else:
     logging.warning('Missing --overlays argument')
     overlays.extend([
