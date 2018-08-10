@@ -20,16 +20,6 @@ crbug.com/393285 http/tests/text-autosizing/wide-iframe.html [ Failure Crash ]
 # https://crbug.com/669083: console messages mismatch (origin-only VS full-URI)
 crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
 
-# https://crbug.com/582245 - no exception, b/c BindingSecurity::shouldAllowAccessTo exits early when |!target|.
-crbug.com/582245 external/wpt/x-frame-options/deny.sub.html [ Failure ]
-crbug.com/582245 external/wpt/x-frame-options/multiple.sub.html [ Failure ]
-crbug.com/582245 external/wpt/x-frame-options/sameorigin.sub.html [ Failure ]
-crbug.com/582245 http/tests/security/xss-DENIED-getSVGDocument-iframe.html [ Failure ]
-crbug.com/582245 http/tests/security/xss-DENIED-getSVGDocument-object.html [ Failure ]
-crbug.com/582245 http/tests/security/xssAuditor/block-does-not-leak-location.html [ Failure ]
-crbug.com/582245 http/tests/security/xssAuditor/block-does-not-leak-referrer.html [ Failure ]
-crbug.com/582245 http/tests/security/xssAuditor/full-block-script-tag-cross-domain.html [ Failure ]
-
 # https://crbug.com/608015 - node.contentDocument is undefined.
 crbug.com/608015 http/tests/inspector-protocol/access-inspected-object.js [ Failure Timeout ]
 
