@@ -63,8 +63,8 @@ class SharedLibrary {
   // loaded in |lib_list|. On failure, return false and set |error|
   // message.
   bool Relocate(LibraryList* lib_list,
-                Vector<LibraryView*>* preloads,
-                Vector<LibraryView*>* dependencies,
+                const Vector<LibraryView*>* preloads,
+                const Vector<LibraryView*>* dependencies,
                 Error* error);
 
   void GetInfo(size_t* load_address,

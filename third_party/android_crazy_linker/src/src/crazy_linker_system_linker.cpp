@@ -27,11 +27,17 @@ int SystemLinker::Close(void* handle) {
 }
 
 // static
-void* SystemLinker::Resolve(void* handle, const char* symbol) {
+SystemLinker::SearchResult SystemLinker::Resolve(void* handle,
+                                                 const char* symbol) {
   // Just in case the system linker performs lazy symbol resolution
   // that would modify the global link map.
   ScopedLinkMapLocker locker;
-  return ::dlsym(handle, symbol);
+  void* address = ::dlsym(handle, symbol);
+  if (!address) {
+    // TODO(digit): Distinguish between missing symbols and weak symbols.
+    return {};
+  }
+  return {address, handle};
 }
 
 // static

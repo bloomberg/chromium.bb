@@ -34,7 +34,7 @@ class LibraryList {
   // Lookup for a given |symbol_name|, starting from |from_lib|
   // then through its dependencies in breadth-first search order.
   // On failure, returns NULL.
-  void* FindSymbolFrom(const char* symbol_name, LibraryView* from_lib);
+  void* FindSymbolFrom(const char* symbol_name, const LibraryView* from_lib);
 
   // Return the address of a visible given symbol. Used to implement
   // the dlsym() wrapper. Returns NULL on failure.

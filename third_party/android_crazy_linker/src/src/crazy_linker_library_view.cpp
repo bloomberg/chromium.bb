@@ -19,25 +19,29 @@ LibraryView::~LibraryView() {
   if (type_ == TYPE_SYSTEM) {
     SystemLinker::Close(system_);
     system_ = NULL;
-  }
-  if (type_ == TYPE_CRAZY) {
+  } else if (type_ == TYPE_CRAZY) {
     delete crazy_;
     crazy_ = NULL;
   }
   type_ = TYPE_NONE;
 }
 
-void* LibraryView::LookupSymbol(const char* symbol_name) {
+LibraryView::SearchResult LibraryView::LookupSymbol(
+    const char* symbol_name) const {
   if (type_ == TYPE_SYSTEM) {
-    return SystemLinker::Resolve(system_, symbol_name);
-  }
-
-  if (type_ == TYPE_CRAZY) {
+    SystemLinker::SearchResult result =
+        SystemLinker::Resolve(system_, symbol_name);
+    if (result.IsValid()) {
+      return {result.address, this};
+    }
+  } else if (type_ == TYPE_CRAZY) {
     LibraryList* lib_list = Globals::Get()->libraries();
-    return lib_list->FindSymbolFrom(symbol_name, this);
+    void* address = lib_list->FindSymbolFrom(symbol_name, this);
+    if (address) {
+      return {address, this};
+    }
   }
-
-  return NULL;
+  return {};
 }
 
 bool LibraryView::GetInfo(size_t* load_address,
@@ -49,7 +53,6 @@ bool LibraryView::GetInfo(size_t* load_address,
     *error = "No RELRO sharing with system libraries";
     return false;
   }
-
   crazy_->GetInfo(load_address, load_size, relro_start, relro_size);
   return true;
 }
