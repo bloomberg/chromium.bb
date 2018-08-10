@@ -297,6 +297,17 @@ PlatformImeController* X11WindowBase::GetPlatformImeController() {
   return nullptr;
 }
 
+void X11WindowBase::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {
+  // TODO: https://crbug.com/848131
+  NOTIMPLEMENTED();
+}
+
+gfx::Rect X11WindowBase::GetRestoredBoundsInPixels() const {
+  // TODO: https://crbug.com/848131
+  NOTIMPLEMENTED();
+  return gfx::Rect();
+}
+
 void X11WindowBase::UnConfineCursor() {
   if (!has_pointer_barriers_)
     return;

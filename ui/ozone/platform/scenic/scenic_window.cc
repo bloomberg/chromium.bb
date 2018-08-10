@@ -180,6 +180,15 @@ PlatformImeController* ScenicWindow::GetPlatformImeController() {
   return nullptr;
 }
 
+void ScenicWindow::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {
+  NOTIMPLEMENTED();
+}
+
+gfx::Rect ScenicWindow::GetRestoredBoundsInPixels() const {
+  NOTIMPLEMENTED();
+  return gfx::Rect();
+}
+
 void ScenicWindow::UpdateSize() {
   gfx::SizeF scaled = ScaleSize(size_dips_, device_pixel_ratio_);
   size_pixels_ = gfx::Size(ceilf(scaled.width()), ceilf(scaled.height()));

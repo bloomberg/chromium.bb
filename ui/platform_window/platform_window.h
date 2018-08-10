@@ -66,6 +66,10 @@ class PlatformWindow {
   // The PlatformImeController is owned by the PlatformWindow, the ownership is
   // not transferred.
   virtual PlatformImeController* GetPlatformImeController() = 0;
+
+  // Sets and gets the restored bounds of the platform-window.
+  virtual void SetRestoredBoundsInPixels(const gfx::Rect& bounds) = 0;
+  virtual gfx::Rect GetRestoredBoundsInPixels() const = 0;
 };
 
 }  // namespace ui

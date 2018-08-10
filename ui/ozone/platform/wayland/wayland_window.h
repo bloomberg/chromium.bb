@@ -86,6 +86,8 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
   PlatformImeController* GetPlatformImeController() override;
+  void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override;
+  gfx::Rect GetRestoredBoundsInPixels() const override;
 
   // PlatformEventDispatcher
   bool CanDispatchEvent(const PlatformEvent& event) override;
@@ -103,8 +105,6 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   bool IsMinimized() const;
   bool IsMaximized() const;
   bool IsFullscreen() const;
-
-  void SetPendingBounds(int32_t width, int32_t height);
 
   // Creates a popup window, which is visible as a menu window.
   void CreateXdgPopup();
