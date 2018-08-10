@@ -224,7 +224,7 @@ class ClientControlledShellSurface
   static void SetClientControlledStateDelegateFactoryForTest(
       const DelegateFactoryCallback& callback);
 
-  ash::WideFrameView* wide_frame_for_test() { return wide_frame_; }
+  ash::WideFrameView* wide_frame_for_test() { return wide_frame_.get(); }
 
  private:
   class ScopedSetBoundsLocally;
@@ -292,7 +292,7 @@ class ClientControlledShellSurface
   std::unique_ptr<ash::ImmersiveFullscreenController>
       immersive_fullscreen_controller_;
 
-  ash::WideFrameView* wide_frame_ = nullptr;
+  std::unique_ptr<ash::WideFrameView> wide_frame_;
 
   std::unique_ptr<ui::CompositorLock> orientation_compositor_lock_;
 

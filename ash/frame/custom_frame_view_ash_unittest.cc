@@ -646,7 +646,8 @@ TEST_F(CustomFrameViewAshTest, WideFrame) {
       static_cast<HeaderView*>(custom_frame_view->GetHeaderView());
   widget->Maximize();
 
-  WideFrameView* wide_frame_view = WideFrameView::Create(widget.get());
+  std::unique_ptr<WideFrameView> wide_frame_view =
+      std::make_unique<WideFrameView>(widget.get());
   wide_frame_view->GetWidget()->Show();
 
   HeaderView* wide_header_view = wide_frame_view->header_view();
@@ -722,7 +723,8 @@ TEST_F(CustomFrameViewAshTest, WideFrameButton) {
   std::unique_ptr<views::Widget> widget = CreateTestWidget(
       delegate, kShellWindowId_DefaultContainer, gfx::Rect(100, 0, 400, 500));
 
-  WideFrameView* wide_frame_view = WideFrameView::Create(widget.get());
+  std::unique_ptr<WideFrameView> wide_frame_view =
+      std::make_unique<WideFrameView>(widget.get());
   wide_frame_view->GetWidget()->Show();
   HeaderView* header_view = wide_frame_view->header_view();
   FrameCaptionButtonContainerView::TestApi test_api(
@@ -842,7 +844,8 @@ TEST_P(CustomFrameViewAshFrameColorTest, WideFrameInitialColor) {
   window->SetProperty(ash::kFrameActiveColorKey, new_active_color);
   window->SetProperty(ash::kFrameInactiveColorKey, new_inactive_color);
 
-  WideFrameView* wide_frame_view = WideFrameView::Create(widget.get());
+  std::unique_ptr<WideFrameView> wide_frame_view =
+      std::make_unique<WideFrameView>(widget.get());
   HeaderView* wide_header_view = wide_frame_view->header_view();
   DefaultFrameHeader* header =
       static_cast<DefaultFrameHeader*>(wide_header_view->GetFrameHeader());

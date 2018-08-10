@@ -22,10 +22,12 @@ namespace ash {
 class HeaderView;
 class ImmersiveFullscreenController;
 
-// WideFrameView is used for the case where the widget's
-// maximzed/fullscreen doesn't cover the entire workarea/display area
-// but the caption frame should occupy the full width and placed at the top
-// of the display.
+// WideFrameView is used for the case where the widget's maximzed/fullscreen
+// doesn't cover the entire workarea/display area but the caption frame should
+// occupy the full width and placed at the top of the display. Its widget is
+// created as WIDGET_OWNS_NATIVE_WIDGET and caller is supposed to own and manage
+// its lifetime.
+//
 // TODO(oshima): Currently client is responsible for hooking this up to
 // the target widget because ImmersiveFullscreenController is not owned by
 // CustomFrameViewAsh. Investigate if we integrate this into
@@ -37,17 +39,12 @@ class ASH_EXPORT WideFrameView
       public ash::ImmersiveFullscreenControllerDelegate,
       public ash::ShellObserver {
  public:
-  // Creates wide frame for |target| widget. It's caller's responsibility
-  // to Close when the wide frame is no longer necessary.
-  static WideFrameView* Create(views::Widget* target);
+  explicit WideFrameView(views::Widget* target);
+  ~WideFrameView() override;
 
   // Initialize |immersive_fullscreen_controller| so that the controller reveals
   // and |hides_header_| in immersive mode.
   void Init(ash::ImmersiveFullscreenController* controller);
-
-  // Show/Closes the frame.
-  void Show();
-  void Close();
 
   // Set the caption model for caption buttions on this frame.
   void SetCaptionButtonModel(std::unique_ptr<ash::CaptionButtonModel> mode);
@@ -57,8 +54,8 @@ class ASH_EXPORT WideFrameView
  private:
   static gfx::Rect GetFrameBounds(views::Widget* target);
 
-  WideFrameView(views::Widget* target, views::Widget* frame_widget);
-  ~WideFrameView() override;
+  // views::WidgetDelegateView:
+  void DeleteDelegate() override;
 
   // views::View:
   void Layout() override;
@@ -88,8 +85,7 @@ class ASH_EXPORT WideFrameView
   // The target widget this frame will control.
   views::Widget* target_;
 
-  // The widget that hosts the wide frame.
-  views::Widget* widget_;
+  std::unique_ptr<views::Widget> widget_;
 
   ash::HeaderView* header_view_ = nullptr;
 
