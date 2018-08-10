@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "crypto/sha2.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/fido_constants.h"
@@ -168,12 +169,11 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   blink::mojom::AttestationConveyancePreference attestation_preference_;
   std::string relying_party_id_;
   std::unique_ptr<base::OneShotTimer> timer_;
-
-  // Whether or not a GetAssertion call should return a PublicKeyCredential
-  // instance whose getClientExtensionResults() method yields a
-  // AuthenticationExtensions dictionary that contains the `appid: true`
-  // extension output.
-  bool echo_appid_extension_ = false;
+  // If the "appid" extension is in use then this is the SHA-256 hash of a U2F
+  // AppID. This is used to detect when an assertion request was successfully
+  // retried with this value.
+  base::Optional<std::array<uint8_t, crypto::kSHA256Length>>
+      alternative_application_parameter_;
 
   // Owns pipes to this Authenticator from |render_frame_host_|.
   mojo::Binding<blink::mojom::Authenticator> binding_;

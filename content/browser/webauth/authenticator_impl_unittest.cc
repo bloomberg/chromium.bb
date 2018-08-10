@@ -714,26 +714,71 @@ TEST_F(AuthenticatorImplTest, AppIdExtensionValues) {
 // Verify that a credential registered with U2F can be used via webauthn.
 TEST_F(AuthenticatorImplTest, AppIdExtension) {
   SimulateNavigation(GURL(kTestOrigin1));
-  PublicKeyCredentialRequestOptionsPtr options =
-      GetTestPublicKeyCredentialRequestOptions();
-  TestGetAssertionCallback callback_receiver;
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
-  device::test::ScopedVirtualFidoDevice virtual_device;
 
-  // Inject a registration for the URL (which is a U2F AppID).
-  ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
-      options->allow_credentials[0]->id, kTestOrigin1));
+  {
+    // First, test that the appid extension isn't echoed at all when not
+    // requested.
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+        options->allow_credentials[0]->id, kTestRelyingPartyId));
 
-  // Set the same URL as the appid parameter.
-  options->appid = kTestOrigin1;
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    ASSERT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
 
-  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+    EXPECT_EQ(false, callback_receiver.value()->echo_appid_extension);
+  }
 
-  // Trigger timer.
-  callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  {
+    // Second, test that the appid extension is echoed, but is false, when appid
+    // is requested but not used.
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+        options->allow_credentials[0]->id, kTestRelyingPartyId));
+
+    // This AppID won't be used because the RP ID will be tried (successfully)
+    // first.
+    options->appid = kTestOrigin1;
+
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    ASSERT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+
+    EXPECT_EQ(true, callback_receiver.value()->echo_appid_extension);
+    EXPECT_EQ(false, callback_receiver.value()->appid_extension);
+  }
+
+  {
+    // Lastly, when used, the appid extension result should be "true".
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    // Inject a registration for the URL (which is a U2F AppID).
+    ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+        options->allow_credentials[0]->id, kTestOrigin1));
+
+    options->appid = kTestOrigin1;
+
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    ASSERT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+
+    EXPECT_EQ(true, callback_receiver.value()->echo_appid_extension);
+    EXPECT_EQ(true, callback_receiver.value()->appid_extension);
+  }
 }
 
 TEST_F(AuthenticatorImplTest, TestGetAssertionTimeout) {

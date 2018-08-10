@@ -378,7 +378,9 @@ void OnGetAssertionComplete(
                                                authenticator_buffer,
                                                signature_buffer, user_handle);
     AuthenticationExtensionsClientOutputs extension_outputs;
-    extension_outputs.setAppid(credential->echo_appid_extension);
+    if (credential->echo_appid_extension) {
+      extension_outputs.setAppid(credential->appid_extension);
+    }
     resolver->Resolve(PublicKeyCredential::Create(credential->info->id, raw_id,
                                                   authenticator_response,
                                                   extension_outputs));

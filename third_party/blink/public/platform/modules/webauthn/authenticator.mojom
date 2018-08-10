@@ -65,11 +65,10 @@ struct GetAssertionAuthenticatorResponse {
   array<uint8>? user_handle;
 
   // True if getClientExtensionResults() called on the returned
-  // PublicKeyCredential instance should yield an
-  // AuthenticationExtensionsClientOutputs dictionary that contains the `appid:
-  // true` extension output, which indicates to the relying party that the
-  // `appid` extension was acted upon.
+  // PublicKeyCredential instance should contain an `appid` extension output.
+  // If so, |appid_extension| contains the actual value.
   bool echo_appid_extension;
+  bool appid_extension;
 };
 
 // Information about the relying party. These fields take arbitrary input.
