@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+#include <string>
+
 #include "base/command_line.h"
+#include "base/metrics/field_trial_param_associator.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -61,6 +66,7 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     noscript_css_requested_ = false;
     noscript_js_requested_ = false;
+    https_url_count_ = 0;
 
     // Set up https server with resource monitor.
     https_server_.reset(
@@ -80,18 +86,26 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
     // Set up http server with resource monitor and redirect handler.
     http_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTP));
-    http_server_->ServeFilesFromSourceDirectory("chrome/test/data/previews");
+    http_server_->ServeFilesFromSourceDirectory("chrome/test/data");
     http_server_->RegisterRequestMonitor(base::BindRepeating(
         &PreviewsBrowserTest::MonitorResourceRequest, base::Unretained(this)));
     http_server_->RegisterRequestHandler(base::BindRepeating(
         &PreviewsBrowserTest::HandleRedirectRequest, base::Unretained(this)));
     ASSERT_TRUE(http_server_->Start());
 
-    http_url_ = http_server_->GetURL("/noscript_test.html");
+    http_url_ = http_server_->GetURL("/previews/noscript_test.html");
     ASSERT_TRUE(http_url_.SchemeIs(url::kHttpScheme));
 
-    redirect_url_ = http_server_->GetURL("/redirect.html");
+    subframe_url_ = http_server_->GetURL("/iframe_blank.html");
+    ASSERT_TRUE(subframe_url_.SchemeIs(url::kHttpScheme));
+
+    redirect_url_ = http_server_->GetURL("/previews/redirect.html");
     ASSERT_TRUE(redirect_url_.SchemeIs(url::kHttpScheme));
+  }
+
+  void ExecuteScript(const std::string& script) {
+    EXPECT_TRUE(content::ExecuteScript(
+        browser()->tab_strip_model()->GetActiveWebContents(), script));
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
@@ -103,12 +117,15 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
   const GURL& https_no_transform_url() const { return https_no_transform_url_; }
   const GURL& http_url() const { return http_url_; }
   const GURL& redirect_url() const { return redirect_url_; }
+  const GURL& subframe_url() const { return subframe_url_; }
   bool noscript_css_requested() const { return noscript_css_requested_; }
   bool noscript_js_requested() const { return noscript_js_requested_; }
+  int https_url_count() const { return https_url_count_; }
 
  private:
   // Called by |https_server_|.
   void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
+    https_url_count_++;
     if (request.GetURL().spec().find("noscript_test.css") !=
         std::string::npos) {
       noscript_css_requested_ = true;
@@ -135,8 +152,10 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
   GURL https_no_transform_url_;
   GURL http_url_;
   GURL redirect_url_;
+  GURL subframe_url_;
   bool noscript_css_requested_;
   bool noscript_js_requested_;
+  int https_url_count_;
 };
 
 // Loads a webpage that has both script and noscript tags and also requests
@@ -329,6 +348,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsOptimizationGuideBrowserTest,
   EXPECT_FALSE(noscript_css_requested());
 }
 
+static const std::string kTestPreviewsServer = "https://litepages.test.com/";
+
 // This test class enables LitePageServerPreviews.
 class PreviewsLitePageServerBrowserTest : public PreviewsBrowserTest {
  public:
@@ -337,28 +358,113 @@ class PreviewsLitePageServerBrowserTest : public PreviewsBrowserTest {
   ~PreviewsLitePageServerBrowserTest() override {}
 
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {previews::features::kPreviews,
-         previews::features::kLitePageServerPreviews},
-        {});
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    {
+      // The trial and group names are dummy values.
+      scoped_refptr<base::FieldTrial> trial =
+          base::FieldTrialList::CreateFieldTrial("TrialName1", "GroupName1");
+      std::map<std::string, std::string> feature_parameters = {
+          {"previews_host", kTestPreviewsServer}};
+      ASSERT_TRUE(base::FieldTrialParamAssociator::GetInstance()
+                      ->AssociateFieldTrialParams("TrialName1", "GroupName1",
+                                                  feature_parameters));
+
+      feature_list->RegisterFieldTrialOverride(
+          previews::features::kLitePageServerPreviews.name,
+          base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
+    }
+    {
+      // The trial and group names are dummy values.
+      scoped_refptr<base::FieldTrial> trial =
+          base::FieldTrialList::CreateFieldTrial("TrialName3", "GroupName3");
+      feature_list->RegisterFieldTrialOverride(
+          previews::features::kPreviews.name,
+          base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
+    }
+    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+
     PreviewsBrowserTest::SetUp();
+  }
+
+  GURL NavigatedURL() {
+    return browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
+  }
+
+  void VerifyPreviewLoaded() {
+    EXPECT_TRUE(NavigatedURL().DomainIs(GURL(kTestPreviewsServer).host()));
+  }
+
+  void VerifyPreviewNotLoaded() {
+    EXPECT_FALSE(NavigatedURL().DomainIs(GURL(kTestPreviewsServer).host()));
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// Previews InfoBar (which these tests triggers) does not work on Mac.
+// Previews InfoBar (which these tests trigger) does not work on Mac.
 // See crbug.com/782322 for detail.
 // Also occasional flakes on win7 (crbug.com/789542).
 #if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_LitePagePreviewsEnabled LitePagePreviewsEnabled
+#define MAYBE_LitePagePreviewsTriggering LitePagePreviewsTriggering
 #else
-#define MAYBE_LitePagePreviewsEnabled DISABLED_LitePagePreviewsEnabled
+#define MAYBE_LitePagePreviewsTriggering DISABLED_LitePagePreviewsTriggering
 #endif
 
-// Makes sure that nothing crashes.
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       MAYBE_LitePagePreviewsEnabled) {
+                       MAYBE_LitePagePreviewsTriggering) {
+  // Verify the preview is not triggered on HTTP pageloads.
+  ui_test_utils::NavigateToURL(browser(), http_url());
+  VerifyPreviewNotLoaded();
+
+  // Verify the preview is triggered on HTTPS pageloads.
   ui_test_utils::NavigateToURL(browser(), https_url());
+  VerifyPreviewLoaded();
+
+  // Verify the preview is triggered when an HTTP page redirects to HTTPS.
+  ui_test_utils::NavigateToURL(browser(), redirect_url());
+  VerifyPreviewLoaded();
+
+  // Verify the preview is not triggered for POST navigations.
+  std::string post_data = "helloworld";
+  NavigateParams params(browser(), https_url(), ui::PAGE_TRANSITION_LINK);
+  params.window_action = NavigateParams::SHOW_WINDOW;
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  params.is_renderer_initiated = false;
+  params.uses_post = true;
+  params.post_data = network::ResourceRequestBody::CreateFromBytes(
+      post_data.data(), post_data.size());
+  ui_test_utils::NavigateToURL(&params);
+  VerifyPreviewNotLoaded();
+
+  // Verify the preview is not triggered when navigating to the previews server.
+  ui_test_utils::NavigateToURL(browser(), GURL(kTestPreviewsServer));
+  EXPECT_EQ(NavigatedURL(), GURL(kTestPreviewsServer));
+
+  // Verify a subframe navigation does not trigger a preview.
+  const int starting_https_url_count = https_url_count();
+  ui_test_utils::NavigateToURL(browser(), subframe_url());
+  ExecuteScript("window.open(\"" + https_url().spec() + "\", \"subframe\")");
+  EXPECT_EQ(https_url_count(), starting_https_url_count + 1);
+}
+
+class PreviewsLitePageServerDataSaverBrowserTest
+    : public PreviewsLitePageServerBrowserTest {
+ public:
+  PreviewsLitePageServerDataSaverBrowserTest() = default;
+
+  ~PreviewsLitePageServerDataSaverBrowserTest() override = default;
+
+  // Overrides the cmd line in PreviewsBrowserTest and leave out the flag to
+  // enable DataSaver.
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerDataSaverBrowserTest,
+                       MAYBE_LitePagePreviewsTriggering) {
+  // Verify the preview is not triggered on HTTPS pageloads without DataSaver.
+  ui_test_utils::NavigateToURL(browser(), https_url());
+  VerifyPreviewNotLoaded();
 }

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_DECIDER_H_
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_DECIDER_H_
 
+#include <map>
 #include <memory>
 
 #include "base/gtest_prod_util.h"
@@ -12,17 +13,18 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
 
 namespace content {
 class NavigationHandle;
 class NavigationThrottle;
 }  // namespace content
 
-// This class manages the state for triggering the Lite Page Server Preview.
 // This class ensures that the feature is enabled and the
 // current Profile is not incognito before handing off the real legwork of the
 // triggering decision to |PreviewsLitePageNavigationThrottle|.
-class PreviewsLitePageDecider {
+class PreviewsLitePageDecider
+    : public PreviewsLitePageNavigationThrottleManager {
  public:
   PreviewsLitePageDecider();
   virtual ~PreviewsLitePageDecider();
@@ -33,10 +35,6 @@ class PreviewsLitePageDecider {
   static std::unique_ptr<content::NavigationThrottle> MaybeCreateThrottleFor(
       content::NavigationHandle* handle);
 
-  // Used to notify that the Previews Server should not be sent anymore requests
-  // until after the given time.
-  void SetRetryAt(base::TimeTicks retry_at);
-
  protected:
   // Virtual for testing.
   virtual bool IsDataSaverEnabled(content::NavigationHandle* handle) const;
@@ -44,9 +42,9 @@ class PreviewsLitePageDecider {
  private:
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageDeciderTest, TestServerUnavailable);
 
-  // Returns true if a Preview should not be triggered because the server is
-  // unavailable.
-  bool IsServerUnavailable(base::TimeTicks now);
+  // PreviewsLitePageNavigationThrottleManager:
+  void SetServerUnavailableUntil(base::TimeTicks retry_at) override;
+  bool IsServerUnavailable(base::TimeTicks now) override;
 
   // The time after which it is ok to send the server more preview requests.
   base::Optional<base::TimeTicks> retry_at_;

@@ -1201,6 +1201,7 @@ jumbo_split_static_library("browser") {
     "previews/previews_lite_page_decider.h",
     "previews/previews_lite_page_navigation_throttle.cc",
     "previews/previews_lite_page_navigation_throttle.h",
+    "previews/previews_lite_page_navigation_throttle_manager.h",
     "previews/previews_service.cc",
     "previews/previews_service.h",
     "previews/previews_service_factory.cc",

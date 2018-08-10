@@ -48,15 +48,10 @@ PreviewsLitePageDecider::MaybeCreateThrottleFor(
                          previews::params::IsLitePageServerPreviewsEnabled();
 
   if (drp_enabled && preview_enabled) {
-    return PreviewsLitePageNavigationThrottle::MaybeCreateThrottleFor(handle);
+    return std::make_unique<PreviewsLitePageNavigationThrottle>(handle,
+                                                                decider);
   }
   return nullptr;
-}
-
-void PreviewsLitePageDecider::SetRetryAt(base::TimeTicks retry_at) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (retry_at > retry_at_)
-    retry_at_ = retry_at;
 }
 
 bool PreviewsLitePageDecider::IsDataSaverEnabled(
@@ -71,6 +66,13 @@ bool PreviewsLitePageDecider::IsDataSaverEnabled(
           handle->GetWebContents()->GetBrowserContext());
   DCHECK(drp_settings);
   return drp_settings->IsDataReductionProxyEnabled();
+}
+
+void PreviewsLitePageDecider::SetServerUnavailableUntil(
+    base::TimeTicks retry_at) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!retry_at_.has_value() || retry_at > retry_at_)
+    retry_at_ = retry_at;
 }
 
 bool PreviewsLitePageDecider::IsServerUnavailable(base::TimeTicks now) {
