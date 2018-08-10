@@ -259,9 +259,6 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
     case TWO_FINGER_TAP:
       status = InTwoFingerTap(touch_event_dip, rewritten_event);
       break;
-    case EDGE_PASSTHROUGH:
-      status = InEdgePassthrough(touch_event_dip, rewritten_event);
-      break;
   }
   if (status == ui::EVENT_REWRITE_REWRITTEN) {
     DCHECK(rewritten_event->get());
@@ -302,8 +299,6 @@ ui::EventRewriteStatus TouchExplorationController::InNoFingersDown(
     int edge = FindEdgesWithinInset(event.location(), kLeavingScreenEdge);
     if (edge != NO_EDGE) {
       accessibility_sound_player_->PlayEnterScreenEarcon();
-      SET_STATE(EDGE_PASSTHROUGH);
-      return ui::EVENT_REWRITE_CONTINUE;
     }
   }
 
@@ -744,24 +739,6 @@ ui::EventRewriteStatus TouchExplorationController::InTwoFingerTap(
   return ui::EVENT_REWRITE_DISCARD;
 }
 
-ui::EventRewriteStatus TouchExplorationController::InEdgePassthrough(
-    const ui::TouchEvent& event,
-    std::unique_ptr<ui::Event>* rewritten_event) {
-  if (current_touch_ids_.size() == 0) {
-    SET_STATE(NO_FINGERS_DOWN);
-  }
-  // |event| locations are in DIP; see |RewriteEvent|. We need to dispatch
-  // screen coordinates.
-  gfx::PointF location_f(ConvertDIPToScreenInPixels(event.location_f()));
-  std::unique_ptr<ui::TouchEvent> new_event(new ui::TouchEvent(
-      event.type(), gfx::Point(), event.time_stamp(), event.pointer_details()));
-  new_event->set_location_f(location_f);
-  new_event->set_root_location_f(location_f);
-  new_event->set_flags(event.flags());
-  *rewritten_event = std::move(new_event);
-  return ui::EVENT_REWRITE_REWRITTEN;
-}
-
 base::TimeTicks TouchExplorationController::Now() {
   return ui::EventTimeForNow();
 }
@@ -1086,7 +1063,6 @@ void TouchExplorationController::SetState(State new_state,
     case ONE_FINGER_PASSTHROUGH:
     case CORNER_PASSTHROUGH:
     case WAIT_FOR_NO_FINGERS:
-    case EDGE_PASSTHROUGH:
       if (gesture_provider_.get())
         gesture_provider_.reset(NULL);
       max_gesture_touch_points_ = 0;
@@ -1170,8 +1146,6 @@ const char* TouchExplorationController::EnumStateToString(State state) {
       return "WAIT_FOR_NO_FINGERS";
     case TWO_FINGER_TAP:
       return "TWO_FINGER_TAP";
-    case EDGE_PASSTHROUGH:
-      return "EDGE_PASSTHROUGH";
   }
   return "Not a state";
 }

@@ -224,9 +224,6 @@ class TouchExplorationController : public ui::EventRewriter,
   ui::EventRewriteStatus InTwoFingerTap(
       const ui::TouchEvent& event,
       std::unique_ptr<ui::Event>* rewritten_event);
-  ui::EventRewriteStatus InEdgePassthrough(
-      const ui::TouchEvent& event,
-      std::unique_ptr<ui::Event>* rewritten_event);
 
   // Returns the current time of the tick clock.
   base::TimeTicks Now();
@@ -388,10 +385,6 @@ class TouchExplorationController : public ui::EventRewriter,
     // If the user taps the screen with two fingers and releases both fingers
     // before the grace period has passed, spoken feedback will be silenced.
     TWO_FINGER_TAP,
-
-    // If the user enters the screen from the edge, pass events through,
-    // so that they are available to the system gesture handler.
-    EDGE_PASSTHROUGH,
   };
 
   enum AnchorPointState {
