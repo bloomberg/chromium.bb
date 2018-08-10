@@ -545,10 +545,12 @@
             "experiments": [
                 {
                     "name": "Enabled",
-                    "disable_features": [
+                    "enable_features": [
                         "AutofillEnforceMinRequiredFieldsForHeuristics",
+                        "AutofillEnforceMinRequiredFieldsForUpload"
+                    ],
+                    "disable_features": [
                         "AutofillEnforceMinRequiredFieldsForQuery",
-                        "AutofillEnforceMinRequiredFieldsForUpload",
                         "AutofillRestrictUnownedFieldsToFormlessCheckout"
                     ]
                 }
