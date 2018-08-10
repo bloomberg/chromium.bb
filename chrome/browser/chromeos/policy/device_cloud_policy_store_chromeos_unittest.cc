@@ -19,7 +19,9 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/util/tpm_util.h"
+#include "chromeos/network/onc/onc_test_utils.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -58,6 +60,8 @@ class DeviceCloudPolicyStoreChromeOSTest
   void SetUp() override {
     DeviceSettingsTestBase::SetUp();
 
+    store_->AddObserver(&observer_);
+
     dbus_setter_->SetCryptohomeClient(
         std::unique_ptr<chromeos::CryptohomeClient>(fake_cryptohome_client_));
 
@@ -71,6 +75,11 @@ class DeviceCloudPolicyStoreChromeOSTest
         base::Bind(&CopyLockResult, &loop, &result));
     loop.Run();
     ASSERT_EQ(chromeos::InstallAttributes::LOCK_SUCCESS, result);
+  }
+
+  void TearDown() override {
+    store_->RemoveObserver(&observer_);
+    DeviceSettingsTestBase::TearDown();
   }
 
   void ExpectFailure(CloudPolicyStore::Status expected_status) {
@@ -110,6 +119,7 @@ class DeviceCloudPolicyStoreChromeOSTest
   }
 
   void ResetToNonEnterprise() {
+    store_->RemoveObserver(&observer_);
     store_.reset();
     chromeos::tpm_util::InstallAttributesSet("enterprise.owned", std::string());
     install_attributes_.reset(
@@ -117,6 +127,7 @@ class DeviceCloudPolicyStoreChromeOSTest
     store_.reset(new DeviceCloudPolicyStoreChromeOS(
         &device_settings_service_, install_attributes_.get(),
         base::ThreadTaskRunnerHandle::Get()));
+    store_->AddObserver(&observer_);
   }
 
   ScopedTestingLocalState local_state_;
@@ -124,6 +135,7 @@ class DeviceCloudPolicyStoreChromeOSTest
   std::unique_ptr<chromeos::InstallAttributes> install_attributes_;
 
   std::unique_ptr<DeviceCloudPolicyStoreChromeOS> store_;
+  MockCloudPolicyStoreObserver observer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyStoreChromeOSTest);
@@ -235,6 +247,31 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest,
             store_->validation_status());
   EXPECT_EQ(device_policy_.GetPublicSigningKeyAsString(),
             store_->policy_signature_public_key());
+}
+
+TEST_F(DeviceCloudPolicyStoreChromeOSTest, StoreValueValidationError) {
+  PrepareExistingPolicy();
+
+  std::string onc_policy = chromeos::onc::test_utils::ReadTestData(
+      "toplevel_with_unknown_fields.onc");
+  device_policy_.payload()
+      .mutable_open_network_configuration()
+      ->set_open_network_configuration(onc_policy);
+  device_policy_.Build();
+
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
+
+  store_->Store(device_policy_.policy());
+  FlushDeviceSettings();
+  const CloudPolicyValidatorBase::ValidationResult* validation_result =
+      store_->validation_result();
+  EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
+  EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_OK, validation_result->status);
+  EXPECT_EQ(3u, validation_result->value_validation_issues.size());
+  EXPECT_EQ(device_policy_.policy_data().policy_token(),
+            validation_result->policy_token);
+  EXPECT_EQ(device_policy_.policy().policy_data_signature(),
+            validation_result->policy_data_signature);
 }
 
 TEST_F(DeviceCloudPolicyStoreChromeOSTest, InstallInitialPolicySuccess) {

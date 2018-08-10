@@ -74,7 +74,7 @@ class POLICY_EXPORT DesktopCloudPolicyStore : public UserCloudPolicyStoreBase {
                                           UserCloudPolicyValidator* validator);
 
   // Callback invoked to store the policy after validation has finished.
-  void StorePolicyAfterValidation(UserCloudPolicyValidator* validator);
+  void OnPolicyToStoreValidated(UserCloudPolicyValidator* validator);
 
   // The current key used to verify signatures of policy. This value is
   // eventually consistent with the one persisted in the key cache file. This

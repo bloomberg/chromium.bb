@@ -48,6 +48,12 @@ class DeviceLocalAccountPolicyStore : public UserCloudPolicyStoreBase {
   // Loads the policy synchronously on the current thread.
   void LoadImmediately();
 
+ protected:
+  // UserCloudPolicyStoreBase:
+  std::unique_ptr<UserCloudPolicyValidator> CreateValidator(
+      std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
+      CloudPolicyValidatorBase::ValidateTimestampOption option) override;
+
  private:
   // The callback invoked once policy validation is complete. Passed are the
   // used public key and the validator.
@@ -66,7 +72,7 @@ class DeviceLocalAccountPolicyStore : public UserCloudPolicyStoreBase {
                     UserCloudPolicyValidator* validator);
 
   // Sends the policy blob to session_manager for storing after validation.
-  void StoreValidatedPolicy(
+  void OnPolicyToStoreValidated(
       const std::string& signature_validation_public_key_unused,
       UserCloudPolicyValidator* validator);
 

@@ -82,7 +82,11 @@ class POLICY_EXPORT CloudPolicyStore {
   }
   Status status() const { return status_; }
   CloudPolicyValidatorBase::Status validation_status() const {
-    return validation_status_;
+    return validation_result_.get() ? validation_result_->status
+                                    : CloudPolicyValidatorBase::VALIDATION_OK;
+  }
+  const CloudPolicyValidatorBase::ValidationResult* validation_result() const {
+    return validation_result_.get();
   }
   const std::string& policy_signature_public_key() const {
     return policy_signature_public_key_;
@@ -148,8 +152,9 @@ class POLICY_EXPORT CloudPolicyStore {
   // Latest status code.
   Status status_;
 
-  // Latest validation status.
-  CloudPolicyValidatorBase::Status validation_status_;
+  // Latest validation result.
+  std::unique_ptr<CloudPolicyValidatorBase::ValidationResult>
+      validation_result_;
 
   // The invalidation version of the last policy stored.
   int64_t invalidation_version_;

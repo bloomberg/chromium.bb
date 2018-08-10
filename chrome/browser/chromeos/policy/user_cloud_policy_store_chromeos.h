@@ -58,6 +58,12 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
   // Loads the policy synchronously on the current thread.
   void LoadImmediately();
 
+ protected:
+  // UserCloudPolicyStoreBase:
+  std::unique_ptr<UserCloudPolicyValidator> CreateValidator(
+      std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
+      CloudPolicyValidatorBase::ValidateTimestampOption option) override;
+
  private:
   // Starts validation of |policy| before storing it.
   void ValidatePolicyForStore(

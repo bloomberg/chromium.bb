@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/sequenced_task_runner.h"
+#include "chrome/browser/chromeos/policy/value_validation/onc_user_policy_value_validator.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/external_data_fetcher.h"
@@ -39,11 +40,23 @@ DeviceLocalAccountPolicyStore::DeviceLocalAccountPolicyStore(
 DeviceLocalAccountPolicyStore::~DeviceLocalAccountPolicyStore() {}
 
 void DeviceLocalAccountPolicyStore::Load() {
+  // Cancel all pending requests.
   weak_factory_.InvalidateWeakPtrs();
+
   session_manager_client_->RetrieveDeviceLocalAccountPolicy(
       account_id_,
       base::Bind(&DeviceLocalAccountPolicyStore::ValidateLoadedPolicyBlob,
                  weak_factory_.GetWeakPtr(), true /*validate_in_background*/));
+}
+
+std::unique_ptr<UserCloudPolicyValidator>
+DeviceLocalAccountPolicyStore::CreateValidator(
+    std::unique_ptr<em::PolicyFetchResponse> policy,
+    CloudPolicyValidatorBase::ValidateTimestampOption option) {
+  auto validator =
+      UserCloudPolicyStoreBase::CreateValidator(std::move(policy), option);
+  validator->ValidateValues(std::make_unique<ONCUserPolicyValueValidator>());
+  return validator;
 }
 
 void DeviceLocalAccountPolicyStore::LoadImmediately() {
@@ -69,11 +82,13 @@ void DeviceLocalAccountPolicyStore::LoadImmediately() {
 
 void DeviceLocalAccountPolicyStore::Store(
     const em::PolicyFetchResponse& policy) {
+  // Cancel all pending requests.
   weak_factory_.InvalidateWeakPtrs();
+
   CheckKeyAndValidate(
       true, std::make_unique<em::PolicyFetchResponse>(policy),
       true /*validate_in_background*/,
-      base::Bind(&DeviceLocalAccountPolicyStore::StoreValidatedPolicy,
+      base::Bind(&DeviceLocalAccountPolicyStore::OnPolicyToStoreValidated,
                  weak_factory_.GetWeakPtr()));
 }
 
@@ -105,7 +120,7 @@ void DeviceLocalAccountPolicyStore::UpdatePolicy(
     UserCloudPolicyValidator* validator) {
   DCHECK(!signature_validation_public_key.empty());
 
-  validation_status_ = validator->status();
+  validation_result_ = validator->GetValidationResult();
   if (!validator->success()) {
     status_ = STATUS_VALIDATION_ERROR;
     NotifyStoreError();
@@ -119,12 +134,12 @@ void DeviceLocalAccountPolicyStore::UpdatePolicy(
   NotifyStoreLoaded();
 }
 
-void DeviceLocalAccountPolicyStore::StoreValidatedPolicy(
+void DeviceLocalAccountPolicyStore::OnPolicyToStoreValidated(
     const std::string& signature_validation_public_key_unused,
     UserCloudPolicyValidator* validator) {
+  validation_result_ = validator->GetValidationResult();
   if (!validator->success()) {
-    status_ = CloudPolicyStore::STATUS_VALIDATION_ERROR;
-    validation_status_ = validator->status();
+    status_ = STATUS_VALIDATION_ERROR;
     NotifyStoreError();
     return;
   }

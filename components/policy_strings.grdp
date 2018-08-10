@@ -95,6 +95,12 @@
   <message name="IDS_POLICY_VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE" desc="Message indicating a policy key had an invalid verification signature.">
     Bad verification signature
   </message>
+  <message name="IDS_POLICY_VALIDATION_VALUE_WARNING" desc="Message indicating the policy value validation succeeded with non-fatal warnings.">
+    Validation of policy values has raised warnings
+  </message>
+  <message name="IDS_POLICY_VALIDATION_VALUE_ERROR" desc="Message indicating the policy value validation failed with fatal errors.">
+    Validation of policy values has failed with errors
+  </message>
   <message name="IDS_POLICY_VALIDATION_UNKNOWN_ERROR" desc="Message indicating unknown error in policy validation.">
     Unknown error
   </message>

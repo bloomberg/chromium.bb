@@ -204,6 +204,7 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
         chromeos::onc::ReadDictionaryFromJson(onc_blob);
     if (!root_dict) {
       errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_PARSE_FAILED);
+      errors->SetDebugInfo(policy_name(), "ERROR: JSON parse error");
       return false;
     }
 
@@ -226,6 +227,15 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
       errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_IMPORT_PARTIAL);
     else if (validation_result == chromeos::onc::Validator::INVALID)
       errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_IMPORT_FAILED);
+
+    if (!validator.validation_issues().empty()) {
+      std::vector<std::string> messages;
+      for (const chromeos::onc::Validator::ValidationIssue& issue :
+           validator.validation_issues()) {
+        messages.push_back(issue.message);
+      }
+      errors->SetDebugInfo(policy_name(), base::JoinString(messages, "\n"));
+    }
 
     // In any case, don't reject the policy as some networks or certificates
     // could still be applied.

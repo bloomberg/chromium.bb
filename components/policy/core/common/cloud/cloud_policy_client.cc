@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
+#include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/signing_service.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -85,6 +86,61 @@ void ExtractLicenseMap(const em::CheckDeviceLicenseResponse& license_response,
                    << static_cast<int>(license_type);
     }
   }
+}
+
+em::PolicyValidationReportRequest::ValidationResultType
+TranslatePolicyValidationResult(CloudPolicyValidatorBase::Status status) {
+  using report = em::PolicyValidationReportRequest;
+  using policyValidationStatus = CloudPolicyValidatorBase::Status;
+  switch (status) {
+    case policyValidationStatus::VALIDATION_OK:
+      return report::VALIDATION_RESULT_TYPE_SUCCESS;
+    case policyValidationStatus::VALIDATION_BAD_INITIAL_SIGNATURE:
+      return report::VALIDATION_RESULT_TYPE_BAD_INITIAL_SIGNATURE;
+    case policyValidationStatus::VALIDATION_BAD_SIGNATURE:
+      return report::VALIDATION_RESULT_TYPE_BAD_SIGNATURE;
+    case policyValidationStatus::VALIDATION_ERROR_CODE_PRESENT:
+      return report::VALIDATION_RESULT_TYPE_ERROR_CODE_PRESENT;
+    case policyValidationStatus::VALIDATION_PAYLOAD_PARSE_ERROR:
+      return report::VALIDATION_RESULT_TYPE_PAYLOAD_PARSE_ERROR;
+    case policyValidationStatus::VALIDATION_WRONG_POLICY_TYPE:
+      return report::VALIDATION_RESULT_TYPE_WRONG_POLICY_TYPE;
+    case policyValidationStatus::VALIDATION_WRONG_SETTINGS_ENTITY_ID:
+      return report::VALIDATION_RESULT_TYPE_WRONG_SETTINGS_ENTITY_ID;
+    case policyValidationStatus::VALIDATION_BAD_TIMESTAMP:
+      return report::VALIDATION_RESULT_TYPE_BAD_TIMESTAMP;
+    case policyValidationStatus::VALIDATION_BAD_DM_TOKEN:
+      return report::VALIDATION_RESULT_TYPE_BAD_DM_TOKEN;
+    case policyValidationStatus::VALIDATION_BAD_DEVICE_ID:
+      return report::VALIDATION_RESULT_TYPE_BAD_DEVICE_ID;
+    case policyValidationStatus::VALIDATION_BAD_USER:
+      return report::VALIDATION_RESULT_TYPE_BAD_USER;
+    case policyValidationStatus::VALIDATION_POLICY_PARSE_ERROR:
+      return report::VALIDATION_RESULT_TYPE_POLICY_PARSE_ERROR;
+    case policyValidationStatus::VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE:
+      return report::VALIDATION_RESULT_TYPE_BAD_KEY_VERIFICATION_SIGNATURE;
+    case policyValidationStatus::VALIDATION_VALUE_WARNING:
+      return report::VALIDATION_RESULT_TYPE_VALUE_WARNING;
+    case policyValidationStatus::VALIDATION_VALUE_ERROR:
+      return report::VALIDATION_RESULT_TYPE_VALUE_ERROR;
+    case policyValidationStatus::VALIDATION_STATUS_SIZE:
+      return report::VALIDATION_RESULT_TYPE_ERROR_UNSPECIFIED;
+  }
+  return report::VALIDATION_RESULT_TYPE_ERROR_UNSPECIFIED;
+}
+
+em::PolicyValueValidationIssue::ValueValidationIssueSeverity
+TranslatePolicyValidationResultSeverity(
+    ValueValidationIssue::Severity severity) {
+  using issue = em::PolicyValueValidationIssue;
+  switch (severity) {
+    case ValueValidationIssue::Severity::kWarning:
+      return issue::VALUE_VALIDATION_ISSUE_SEVERITY_WARNING;
+    case ValueValidationIssue::Severity::kError:
+      return issue::VALUE_VALIDATION_ISSUE_SEVERITY_ERROR;
+  }
+  NOTREACHED();
+  return issue::VALUE_VALIDATION_ISSUE_SEVERITY_UNSPECIFIED;
 }
 
 }  // namespace
@@ -358,6 +414,47 @@ void CloudPolicyClient::FetchPolicy() {
   policy_fetch_request_job_->Start(
       base::Bind(&CloudPolicyClient::OnPolicyFetchCompleted,
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CloudPolicyClient::UploadPolicyValidationReport(
+    CloudPolicyValidatorBase::Status status,
+    const std::vector<ValueValidationIssue>& value_validation_issues,
+    const std::string& policy_type,
+    const std::string& policy_token) {
+  CHECK(is_registered());
+
+  std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
+      DeviceManagementRequestJob::TYPE_UPLOAD_POLICY_VALIDATION_REPORT,
+      GetURLLoaderFactory()));
+  request_job->SetDMToken(dm_token_);
+  request_job->SetClientID(client_id_);
+
+  em::DeviceManagementRequest* request = request_job->GetRequest();
+  em::PolicyValidationReportRequest* policy_validation_report_request =
+      request->mutable_policy_validation_report_request();
+
+  policy_validation_report_request->set_policy_type(policy_type);
+  policy_validation_report_request->set_policy_token(policy_token);
+  policy_validation_report_request->set_validation_result_type(
+      TranslatePolicyValidationResult(status));
+
+  for (const ValueValidationIssue& issue : value_validation_issues) {
+    em::PolicyValueValidationIssue* proto_result =
+        policy_validation_report_request->add_policy_value_validation_issues();
+    proto_result->set_policy_name(issue.policy_name);
+    proto_result->set_severity(
+        TranslatePolicyValidationResultSeverity(issue.severity));
+    proto_result->set_debug_message(issue.message);
+  }
+
+  const DeviceManagementRequestJob::Callback job_callback =
+      base::AdaptCallbackForRepeating(
+          base::BindOnce(&CloudPolicyClient::OnReportUploadCompleted,
+                         weak_ptr_factory_.GetWeakPtr(), request_job.get(),
+                         base::DoNothing()));
+
+  request_jobs_.push_back(std::move(request_job));
+  request_jobs_.back()->Start(job_callback);
 }
 
 void CloudPolicyClient::FetchRobotAuthCodes(const std::string& auth_token) {

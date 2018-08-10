@@ -12,6 +12,7 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/device_policy_decoder_chromeos.h"
+#include "chrome/browser/chromeos/policy/value_validation/onc_device_policy_value_validator.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -78,6 +79,9 @@ void DeviceCloudPolicyStoreChromeOS::Store(
 }
 
 void DeviceCloudPolicyStoreChromeOS::Load() {
+  // Cancel all pending requests.
+  weak_factory_.InvalidateWeakPtrs();
+
   device_settings_service_->Load();
 }
 
@@ -120,14 +124,15 @@ DeviceCloudPolicyStoreChromeOS::CreateValidator(
   validator->ValidateDomain(install_attributes_->GetDomain());
   validator->ValidatePolicyType(dm_protocol::kChromeDevicePolicyType);
   validator->ValidatePayload();
+  validator->ValidateValues(std::make_unique<ONCDevicePolicyValueValidator>());
   return validator;
 }
 
 void DeviceCloudPolicyStoreChromeOS::OnPolicyToStoreValidated(
     DeviceCloudPolicyValidator* validator) {
+  validation_result_ = validator->GetValidationResult();
   if (!validator->success()) {
     status_ = STATUS_VALIDATION_ERROR;
-    validation_status_ = validator->status();
     NotifyStoreError();
     return;
   }

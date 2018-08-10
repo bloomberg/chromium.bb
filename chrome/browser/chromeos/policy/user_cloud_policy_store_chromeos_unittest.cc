@@ -23,6 +23,7 @@
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/util/account_identifier_operators.h"
+#include "chromeos/network/onc/onc_test_utils.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
@@ -349,6 +350,28 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreValidationError) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(CloudPolicyStore::STATUS_VALIDATION_ERROR, store_->status());
   EXPECT_EQ(std::string(), store_->policy_signature_public_key());
+}
+
+TEST_F(UserCloudPolicyStoreChromeOSTest, StoreValueValidationError) {
+  std::string onc_policy = chromeos::onc::test_utils::ReadTestData(
+      "toplevel_with_unknown_fields.onc");
+  policy_.payload().mutable_opennetworkconfiguration()->set_value(onc_policy);
+  policy_.Build();
+
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
+
+  store_->Store(policy_.policy());
+  base::RunLoop().RunUntilIdle();
+  const CloudPolicyValidatorBase::ValidationResult* validation_result =
+      store_->validation_result();
+  EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
+  ASSERT_TRUE(validation_result);
+  EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_OK, validation_result->status);
+  EXPECT_EQ(3u, validation_result->value_validation_issues.size());
+  EXPECT_EQ(policy_.policy_data().policy_token(),
+            validation_result->policy_token);
+  EXPECT_EQ(policy_.policy().policy_data_signature(),
+            validation_result->policy_data_signature);
 }
 
 TEST_F(UserCloudPolicyStoreChromeOSTest, StoreWithoutPolicyKey) {

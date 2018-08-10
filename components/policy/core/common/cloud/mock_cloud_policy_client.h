@@ -57,6 +57,11 @@ class MockCloudPolicyClient : public CloudPolicyClient {
                     const StatusCallback& callback));
   MOCK_METHOD0(CancelAppInstallReportUpload, void(void));
   MOCK_METHOD2(UpdateGcmId, void(const std::string&, const StatusCallback&));
+  MOCK_METHOD4(UploadPolicyValidationReport,
+               void(CloudPolicyValidatorBase::Status,
+                    const std::vector<ValueValidationIssue>&,
+                    const std::string&,
+                    const std::string&));
 
   // Sets the DMToken.
   void SetDMToken(const std::string& token);

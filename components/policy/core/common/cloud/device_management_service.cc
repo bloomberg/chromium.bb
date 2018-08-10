@@ -161,6 +161,8 @@ const char* JobTypeToRequestType(DeviceManagementRequestJob::JobType type) {
       return dm_protocol::kValueRequestChromeDesktopReport;
     case DeviceManagementRequestJob::TYPE_INITIAL_ENROLLMENT_STATE_RETRIEVAL:
       return dm_protocol::kValueRequestInitialEnrollmentStateRetrieval;
+    case DeviceManagementRequestJob::TYPE_UPLOAD_POLICY_VALIDATION_REPORT:
+      return dm_protocol::kValueRequestUploadPolicyValidationReport;
   }
   NOTREACHED() << "Invalid job type " << type;
   return "";
