@@ -24,7 +24,7 @@ const uint32 kURLLoadOptionSendSSLInfoForCertificateError = 8;
 const uint32 kURLLoadOptionPauseOnResponseStarted = 16;
 
 interface URLLoaderFactory {
-  // Creats a URLLoader and starts loading with the given |request|. |client|'s
+  // Creates a URLLoader and starts loading with the given |request|. |client|'s
   // method will be called when certain events related to that loading
   // (e.g., response arrival) happen.
   // |routing_id| is the routing_id for subframe requests, and is the
