@@ -103,7 +103,7 @@ VolumeManagerCommon.RootType = {
   // 'Add new services' menu item.
   ADD_NEW_SERVICES_MENU: 'add_new_services_menu',
 
-  // Root for crostini 'Linux Files'.
+  // Root for crostini 'Linux files'.
   CROSTINI: 'crostini',
 
   // Root for android files.

@@ -459,7 +459,7 @@ class DownloadsTestVolume : public LocalTestVolume {
   DISALLOW_COPY_AND_ASSIGN(DownloadsTestVolume);
 };
 
-// CrostiniTestVolume: local test volume for the "Linux Files" directory.
+// CrostiniTestVolume: local test volume for the "Linux files" directory.
 class CrostiniTestVolume : public LocalTestVolume {
  public:
   CrostiniTestVolume() : LocalTestVolume("Crostini") {}

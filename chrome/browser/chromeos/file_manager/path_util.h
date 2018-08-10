@@ -46,13 +46,13 @@ bool MigratePathFromOldFormat(Profile* profile,
 // The canonical mount point name for "Downloads" folder.
 std::string GetDownloadsMountPointName(Profile* profile);
 
-// The canonical mount point name for crostini "Linux Files" folder.
+// The canonical mount point name for crostini "Linux files" folder.
 std::string GetCrostiniMountPointName(Profile* profile);
 
-// The actual directory the crostini "Linux Files" folder is mounted.
+// The actual directory the crostini "Linux files" folder is mounted.
 base::FilePath GetCrostiniMountDirectory(Profile* profile);
 
-// The sshfs mount options for crostini "Linux Files" mount.
+// The sshfs mount options for crostini "Linux files" mount.
 std::vector<std::string> GetCrostiniMountOptions(
     const std::string& hostname,
     const std::string& host_private_key,
