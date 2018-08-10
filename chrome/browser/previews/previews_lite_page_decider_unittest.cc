@@ -38,7 +38,7 @@ TEST_F(PreviewsLitePageDeciderTest, TestServerUnavailable) {
   for (const TestCase& test_case : kTestCases) {
     std::unique_ptr<PreviewsLitePageDecider> decider =
         std::make_unique<PreviewsLitePageDecider>();
-    decider->SetRetryAt(test_case.retry_at);
+    decider->SetServerUnavailableUntil(test_case.retry_at);
     EXPECT_EQ(decider->IsServerUnavailable(test_case.now),
               test_case.want_is_unavailable);
   }

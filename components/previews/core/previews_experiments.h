@@ -11,6 +11,7 @@
 
 #include "base/time/time.h"
 #include "net/nqe/effective_connection_type.h"
+#include "url/gurl.h"
 
 namespace previews {
 
@@ -87,6 +88,9 @@ base::TimeDelta SingleOptOutDuration();
 // The amount of time that an offline page is considered fresh enough to be
 // shown as a preview.
 base::TimeDelta OfflinePreviewFreshnessDuration();
+
+// The host for Lite Page server previews.
+GURL GetLitePagePreviewsDomainURL();
 
 // The threshold of EffectiveConnectionType above which preview |type| will be
 // triggered.

@@ -129,6 +129,18 @@ base::TimeDelta OfflinePreviewFreshnessDuration() {
                          "offline_preview_freshness_duration_in_days", 7));
 }
 
+GURL GetLitePagePreviewsDomainURL() {
+  std::string variable_host_str = GetFieldTrialParamValueByFeature(
+      features::kLitePageServerPreviews, "previews_host");
+  if (!variable_host_str.empty()) {
+    GURL variable_host(variable_host_str);
+    DCHECK(variable_host.is_valid());
+    DCHECK(variable_host.has_scheme());
+    return variable_host;
+  }
+  return GURL("https://litepages.googlezip.net/");
+}
+
 net::EffectiveConnectionType GetECTThresholdForPreview(
     previews::PreviewsType type) {
   switch (type) {
