@@ -20,7 +20,8 @@
 namespace {
 
 size_t CountSQLItemsOfType(sql::Database* db, const char* type) {
-  const char kTypeSQL[] = "SELECT COUNT(*) FROM sqlite_master WHERE type = ?";
+  static const char kTypeSQL[] =
+      "SELECT COUNT(*) FROM sqlite_master WHERE type = ?";
   sql::Statement s(db->GetUniqueStatement(kTypeSQL));
   s.BindCString(0, type);
   EXPECT_TRUE(s.Step());
@@ -38,7 +39,8 @@ bool GetPageSize(sql::Database* db, int* page_size) {
 
 // Get |name|'s root page number in the database.
 bool GetRootPage(sql::Database* db, const char* name, int* page_number) {
-  const char kPageSql[] = "SELECT rootpage FROM sqlite_master WHERE name = ?";
+  static const char kPageSql[] =
+      "SELECT rootpage FROM sqlite_master WHERE name = ?";
   sql::Statement s(db->GetUniqueStatement(kPageSql));
   s.BindString(0, name);
   if (!s.Step())
@@ -210,7 +212,7 @@ size_t CountTableColumns(sql::Database* db, const char* table) {
   // TODO(shess): sql::Database::QuoteForSQL() would make sense.
   std::string quoted_table;
   {
-    const char kQuoteSQL[] = "SELECT quote(?)";
+    static const char kQuoteSQL[] = "SELECT quote(?)";
     sql::Statement s(db->GetUniqueStatement(kQuoteSQL));
     s.BindCString(0, table);
     EXPECT_TRUE(s.Step());
