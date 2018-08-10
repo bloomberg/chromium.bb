@@ -279,7 +279,7 @@
               "top": {"type": "integer", "optional": true, "description": "The offset from the top edge of the screen to move the window to in pixels. This value is ignored for panels."},
               "width": {"type": "integer", "minimum": 0, "optional": true, "description": "The width to resize the window to in pixels. This value is ignored for panels."},
               "height": {"type": "integer", "minimum": 0, "optional": true, "description": "The height to resize the window to in pixels. This value is ignored for panels."},
-              "focused": {"type": "boolean", "optional": true, "description": "If true, brings the window to the front. If false, brings the next window in the z-order to the front."},
+              "focused": {"type": "boolean", "optional": true, "description": "If true, brings the window to the front and cannot be combined with the state 'minimized'. If false, brings the next window in the z-order to the front and cannot be combined with the state 'fullscreen' or 'maximized'."},
               "drawAttention": {"type": "boolean", "optional": true, "description": "If true, causes the window to be displayed in a manner that draws the user's attention to the window, without changing the focused window. The effect lasts until the user changes focus to the window. This option has no effect if the window already has focus. Set to false to cancel a previous draw attention request."},
               "state": {
                 "$ref": "WindowState",
