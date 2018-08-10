@@ -2600,7 +2600,7 @@ if (enable_java_templates) {
                        ":$_merge_manifest_target",
                        ":$_build_config_target",
                        ":$_compile_resources_target",
-                     ] + _all_native_libs_deps
+                     ] + _all_native_libs_deps + _secondary_abi_native_libs_deps
     }
 
     _write_installer_json_rule_name = "${_template_name}__incremental_json"
