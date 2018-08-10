@@ -39,6 +39,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature kKeyboardShortcutViewerApp;
 // Enables notifications on the lock screen.
 ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenNotifications;
 
+// Enables inline reply on notifications on the lock screen.
+// This option is effective when |kLockScreenNotification| is enabled.
+ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenInlineReply;
+
 // Supports the feature to hide sensitive content in notifications on the lock
 // screen. This option is effective when |kLockScreenNotification| is enabled.
 ASH_PUBLIC_EXPORT extern const base::Feature
@@ -76,6 +80,8 @@ ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerEnabled();
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
 
 ASH_PUBLIC_EXPORT bool IsLockScreenNotificationsEnabled();
+
+ASH_PUBLIC_EXPORT bool IsLockScreenInlineReplyEnabled();
 
 ASH_PUBLIC_EXPORT bool IsLockScreenHideSensitiveNotificationsSupported();
 
