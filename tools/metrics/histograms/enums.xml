@@ -36275,13 +36275,13 @@ Called by update_net_trust_anchors.py.-->
 <enum name="PageLifecycleStateTransition">
   <int value="0" label="Active to hidden and foregrounded"/>
   <int value="1" label="Active to hidden and backgrounded"/>
-  <int value="2" label="Hidden and foregrounded to visible"/>
+  <int value="2" label="Hidden and foregrounded to active"/>
   <int value="3" label="Hidden and foregrounded to hidden and backgrounded"/>
   <int value="4" label="Hidden and foregrounded to frozen"/>
-  <int value="5" label="Hidden and backgrounded to visible"/>
+  <int value="5" label="Hidden and backgrounded to active"/>
   <int value="6" label="Hidden and backgrounded to hidden and foregrounded"/>
   <int value="7" label="Hidden and backgrounded to frozen"/>
-  <int value="8" label="Frozen to visible"/>
+  <int value="8" label="Frozen to active"/>
   <int value="9" label="Frozen to hidden and foregrounded"/>
   <int value="10" label="Frozen to hidden and backgrounded"/>
 </enum>
