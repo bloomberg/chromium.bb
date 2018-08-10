@@ -1,0 +1,6 @@
+[document web] enabled focusable focused sensitive showing visible<newline>
+++[block quote] enabled sensitive showing visible<newline>
+++++[paragraph] enabled sensitive showing visible<newline>
+++++++[text] name='First blockquote has a child element.' enabled sensitive showing visible<newline>
+++[block quote] enabled sensitive showing visible<newline>
+++++[text] name='Second blockquote has no child.' enabled sensitive showing visible<newline>

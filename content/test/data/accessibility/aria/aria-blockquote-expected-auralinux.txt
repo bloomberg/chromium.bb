@@ -1,0 +1,3 @@
+[document web] enabled focusable focused sensitive showing visible<newline>
+++[block quote] enabled sensitive showing visible<newline>
+++++[text] name='Blockquote' enabled sensitive showing visible<newline>

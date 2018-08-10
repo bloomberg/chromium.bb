@@ -1720,8 +1720,11 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     std::string role_attribute;
     if (owner_->GetHtmlAttribute("role", &role_attribute)) {
       ax::mojom::Role internalRole = [self internalRole];
-      if ((internalRole != ax::mojom::Role::kGroup &&
-           internalRole != ax::mojom::Role::kListItem) ||
+      if ((internalRole != ax::mojom::Role::kBlockquote &&
+           internalRole != ax::mojom::Role::kCaption &&
+           internalRole != ax::mojom::Role::kGroup &&
+           internalRole != ax::mojom::Role::kListItem &&
+           internalRole != ax::mojom::Role::kParagraph) ||
           internalRole == ax::mojom::Role::kTab) {
         // TODO(dtseng): This is not localized; see crbug/84814.
         return base::SysUTF8ToNSString(role_attribute);
