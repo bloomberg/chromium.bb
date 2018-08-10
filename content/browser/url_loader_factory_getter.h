@@ -99,6 +99,10 @@ class URLLoaderFactoryGetter
   void InitializeOnIOThread(
       network::mojom::URLLoaderFactoryPtrInfo network_factory);
 
+  // Moves |network_factory| to |network_factory_| and sets up an error handler.
+  void ReinitializeOnIOThread(
+      network::mojom::URLLoaderFactoryPtr network_factory);
+
   // Send |network_factory_request| to cached |StoragePartitionImpl|.
   void HandleNetworkFactoryRequestOnUIThread(
       network::mojom::URLLoaderFactoryRequest network_factory_request);
@@ -106,12 +110,6 @@ class URLLoaderFactoryGetter
   // Called on the IO thread to get the URLLoaderFactory to the network service.
   // The pointer shouldn't be cached.
   network::mojom::URLLoaderFactory* GetURLLoaderFactory();
-
-  // Called when there is a connection error on |network_factory_|.
-  void HandleURLLoaderFactoryConnectionError();
-
-  // Called either during initialization or when an error occurs.
-  void Reinitialize();
 
   // Call |network_factory_.FlushForTesting()|. For test use only. When the
   // flush is complete, |callback| will be called.
@@ -128,8 +126,6 @@ class URLLoaderFactoryGetter
   // only be accessed on UI thread. Must be cleared by |StoragePartitionImpl|
   // when it's going away.
   StoragePartitionImpl* partition_ = nullptr;
-
-  base::WeakPtrFactory<URLLoaderFactoryGetter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryGetter);
 };
