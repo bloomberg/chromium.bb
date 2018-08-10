@@ -1386,9 +1386,6 @@
       'filepath': 'chrome/(browser|common|renderer)/safe_browsing/|'\
                   'components/safe_browsing/',
     },
-    'safe_browsing_db': {
-      'filepath': 'components/safe_browsing_db/',
-    },
     'screen_orientation': {
       'filepath': 'screen_orientation',
     },
@@ -2298,8 +2295,6 @@
     'runtime_enabled_features': ['jmedley+watch@chromium.org'],
     'safe_browsing': ['timvolodine@chromium.org',
                       'vakh+watch@chromium.org'],
-    'safe_browsing_db': ['timvolodine@chromium.org',
-                         'vakh+watch@chromium.org'],
     'screen_orientation': ['mlamouri+watch-screen-orientation@chromium.org'],
     'service_worker': ['horo+watch@chromium.org',
                        'jsbell+serviceworker@chromium.org',
