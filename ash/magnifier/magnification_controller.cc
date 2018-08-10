@@ -50,9 +50,6 @@ constexpr float kNonMagnifiedScale = 1.0f;
 constexpr float kInitialMagnifiedScale = 2.0f;
 constexpr float kScrollScaleChangeFactor = 0.00125f;
 
-constexpr float kZoomGestureLockThreshold = 0.2f;
-constexpr float kScrollGestureLockThreshold = 20000.0f;
-
 // Default animation parameters for redrawing the magnification window.
 constexpr gfx::Tween::Type kDefaultAnimationTweenType = gfx::Tween::EASE_OUT;
 constexpr int kDefaultAnimationDurationInMs = 100;
@@ -537,7 +534,6 @@ ui::EventRewriteStatus MagnificationController::RewriteEvent(
   // Reset state once no point is touched on the screen.
   if (touch_points_ == 0) {
     consume_touch_event_ = false;
-    locked_gesture_ = NO_GESTURE;
 
     // Jump back to exactly 1.0 if we are just a tiny bit zoomed in.
     if (scale_ < kMinMagnifiedScaleThreshold) {
@@ -775,40 +771,33 @@ bool MagnificationController::ProcessGestures() {
       if (!consume_touch_event_)
         cancel_pressed_touches = true;
     } else if (gesture->type() == ui::ET_GESTURE_PINCH_UPDATE) {
-      if (locked_gesture_ == NO_GESTURE || locked_gesture_ == ZOOM) {
-        float scale = GetScale() * details.scale();
-        ValidateScale(&scale);
+      float scale = GetScale() * details.scale();
+      ValidateScale(&scale);
 
-        if (locked_gesture_ == NO_GESTURE &&
-            std::abs(scale - original_scale_) > kZoomGestureLockThreshold) {
-          locked_gesture_ = MagnificationController::ZOOM;
-        }
+      // |details.bounding_box().CenterPoint()| return center of touch points
+      // of gesture in non-dip screen coordinate.
+      gfx::PointF gesture_center =
+          gfx::PointF(details.bounding_box().CenterPoint());
 
-        // |details.bounding_box().CenterPoint()| return center of touch points
-        // of gesture in non-dip screen coordinate.
-        gfx::PointF gesture_center =
-            gfx::PointF(details.bounding_box().CenterPoint());
+      // Root transform does dip scaling, screen magnification scaling and
+      // translation. Apply inverse transform to convert non-dip screen
+      // coordinate to dip logical coordinate.
+      root_window_->GetHost()->GetInverseRootTransform().TransformPoint(
+          &gesture_center);
 
-        // Root transform does dip scaling, screen magnification scaling and
-        // translation. Apply inverse transform to convert non-dip screen
-        // coordinate to dip logical coordinate.
-        root_window_->GetHost()->GetInverseRootTransform().TransformPoint(
-            &gesture_center);
+      // Calcualte new origin to keep the distance between |gesture_center|
+      // and |origin| same in screen coordinate. This means the following
+      // equation.
+      // (gesture_center.x - origin_.x) * scale_ =
+      //   (gesture_center.x - new_origin.x) * scale
+      // If you solve it for |new_origin|, you will get the following formula.
+      const gfx::PointF origin = gfx::PointF(
+          gesture_center.x() -
+              (scale_ / scale) * (gesture_center.x() - origin_.x()),
+          gesture_center.y() -
+              (scale_ / scale) * (gesture_center.y() - origin_.y()));
 
-        // Calcualte new origin to keep the distance between |gesture_center|
-        // and |origin| same in screen coordinate. This means the following
-        // equation.
-        // (gesture_center.x - origin_.x) * scale_ =
-        //   (gesture_center.x - new_origin.x) * scale
-        // If you solve it for |new_origin|, you will get the following formula.
-        const gfx::PointF origin = gfx::PointF(
-            gesture_center.x() -
-                (scale_ / scale) * (gesture_center.x() - origin_.x()),
-            gesture_center.y() -
-                (scale_ / scale) * (gesture_center.y() - origin_.y()));
-
-        RedrawDIP(origin, scale, 0, kDefaultAnimationTweenType);
-      }
+      RedrawDIP(origin, scale, 0, kDefaultAnimationTweenType);
     } else if (gesture->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
       original_origin_ = origin_;
 
@@ -816,23 +805,12 @@ bool MagnificationController::ProcessGestures() {
       if (!consume_touch_event_)
         cancel_pressed_touches = true;
     } else if (gesture->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
-      if (locked_gesture_ == NO_GESTURE || locked_gesture_ == SCROLL) {
-        // Divide by scale to keep scroll speed same at any scale.
-        float new_x = origin_.x() + (-1.0f * details.scroll_x() / scale_);
-        float new_y = origin_.y() + (-1.0f * details.scroll_y() / scale_);
+      // Divide by scale to keep scroll speed same at any scale.
+      float new_x = origin_.x() + (-1.0f * details.scroll_x() / scale_);
+      float new_y = origin_.y() + (-1.0f * details.scroll_y() / scale_);
 
-        if (locked_gesture_ == NO_GESTURE) {
-          float diff_x = (new_x - original_origin_.x()) * scale_;
-          float diff_y = (new_y - original_origin_.y()) * scale_;
-          float squared_distance = (diff_x * diff_x) + (diff_y * diff_y);
-          if (squared_distance > kScrollGestureLockThreshold) {
-            locked_gesture_ = SCROLL;
-          }
-        }
-
-        RedrawDIP(gfx::PointF(new_x, new_y), scale_, 0,
-                  kDefaultAnimationTweenType);
-      }
+      RedrawDIP(gfx::PointF(new_x, new_y), scale_, 0,
+                kDefaultAnimationTweenType);
     }
   }
 
