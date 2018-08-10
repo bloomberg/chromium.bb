@@ -27,15 +27,19 @@
         SPEED_INSTANT);
 
     // 40px per tick.
-    await waitFor( () => {return document.scrollingElement.scrollTop == 40 &&
-        document.scrollingElement.scrollLeft == 40;});
+    await waitFor( () => {
+        return approx_equals(document.scrollingElement.scrollTop, 40, 2) &&
+            approx_equals(document.scrollingElement.scrollLeft, 40, 2);
+    });
 
     // Undo the last tick in each direction to reset the scroll state before
     // starting the second test.
     await smoothScroll(1 * px_per_tick, x, y, source, 'upleft',
         SPEED_INSTANT);
-    await waitFor( () => {return document.scrollingElement.scrollTop == 0 &&
-        document.scrollingElement.scrollLeft == 0;});
+    await waitFor( () => {
+        return approx_equals(document.scrollingElement.scrollTop, 0, 2) &&
+            approx_equals(document.scrollingElement.scrollLeft, 0, 2);
+    });
 
   }, "This test ensures that consecutive mouse wheel ticks diagonally " +
       "scroll to the right offset. The main purpose of this test is to " +
@@ -60,8 +64,10 @@
         SPEED_INSTANT);
 
     // 40px per tick.
-    await waitFor( () => {return document.scrollingElement.scrollTop == 80 &&
-        document.scrollingElement.scrollLeft == 80;});
+    await waitFor( () => {
+        return approx_equals(document.scrollingElement.scrollTop, 80, 4) &&
+            approx_equals(document.scrollingElement.scrollLeft, 80, 4);
+    });
   }, "This test ensures that consecutive mouse wheel ticks vertically or " +
       "horizontally scroll to the right offset. The main purpose of this " +
       "test is to ensure that smooth scrolling on the compositor works as " +
