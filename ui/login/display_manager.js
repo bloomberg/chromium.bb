@@ -824,11 +824,9 @@ cr.define('cr.ui.login', function() {
       screen.style.height = height + 'px';
       screen.style.margin = 'auto';
 
-      if (height < $('outer-container').offsetHeight)
-        $('scroll-container').classList.toggle('disable-scroll', true);
-
       if (this.showingViewsLogin) {
         chrome.send('updateOobeDialogSize', [width, height]);
+        $('scroll-container').classList.toggle('disable-scroll', true);
         $('inner-container').classList.toggle('disable-scroll', true);
         $('inner-container').style.top =
             cr.ui.toCssPx($('scroll-container').scrollTop);
