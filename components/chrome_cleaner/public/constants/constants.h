@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CHROME_CLEANER_PUBLIC_CONSTANTS_CONSTANTS_H_
 #define COMPONENTS_CHROME_CLEANER_PUBLIC_CONSTANTS_CONSTANTS_H_
 
+#include <ostream>
+
 #include "components/chrome_cleaner/public/constants/result_codes.h"
 
 // Constants shared by the Chromium and the Chrome Cleanaup tool repos.
@@ -148,6 +150,15 @@ enum class ExecutionMode {
   // Auxiliary enumerator for range checking.
   kNumValues,
 };
+
+// Pretty printers for gtest. Declared here to avoid ODR violations, but only
+// defined in constants_test_support.cc to prevent their use outside tests. (See
+// https://groups.google.com/a/chromium.org/d/msg/chromium-dev/i_wOTsE5Z6g/jhtqTY6fCwAJ
+// for explanation.)
+
+std::ostream& operator<<(std::ostream& stream, ChromePromptValue mode);
+
+std::ostream& operator<<(std::ostream& stream, ExecutionMode mode);
 
 }  // namespace chrome_cleaner
 

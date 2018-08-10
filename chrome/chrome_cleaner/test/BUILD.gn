@@ -62,7 +62,6 @@ source_set("test_util") {
     "test_file_util.h",
     "test_layered_service_provider.cc",
     "test_layered_service_provider.h",
-    "test_name_helper.cc",
     "test_name_helper.h",
     "test_registry_util.cc",
     "test_registry_util.h",
@@ -86,6 +85,7 @@ source_set("test_util") {
     "//chrome/chrome_cleaner/settings:settings",
     "//chrome/chrome_cleaner/strings",
     "//components/chrome_cleaner/public/constants:constants",
+    "//components/chrome_cleaner/public/constants:test_support",
     "//sandbox/win:sandbox",
   ]
 

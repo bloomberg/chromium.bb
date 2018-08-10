@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/strings/string_util.h"
-#include "components/chrome_cleaner/public/constants/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_cleaner {
@@ -45,8 +44,6 @@ struct GetParamNameForTest {
     return param_name;
   }
 };
-
-std::ostream& operator<<(std::ostream& stream, ExecutionMode mode);
 
 }  // namespace chrome_cleaner
 
