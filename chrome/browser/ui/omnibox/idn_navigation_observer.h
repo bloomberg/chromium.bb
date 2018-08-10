@@ -19,10 +19,12 @@ class IdnNavigationObserver
     kNone = 0,
     kInfobarShown = 1,
     kLinkClicked = 2,
+    kMatchTopSite = 3,
+    kMatchSiteEngagement = 4,
 
     // Append new items to the end of the list above; do not modify or
     // replace existing values. Comment out obsolete items.
-    kMaxValue = kLinkClicked,
+    kMaxValue = kMatchSiteEngagement,
   };
 
   static const char kHistogramName[];
@@ -35,6 +37,11 @@ class IdnNavigationObserver
   // content::WebContentsObserver:
   void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) override;
+
+ private:
+  // Returns a site that the user has used before that |url| may be attempting
+  // to spoof, based on skeleton comparison.
+  std::string GetMatchingSiteEngagementDomain(const GURL& url);
 };
 
 #endif  // CHROME_BROWSER_UI_OMNIBOX_IDN_NAVIGATION_OBSERVER_H_

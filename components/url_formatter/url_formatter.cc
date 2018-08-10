@@ -700,4 +700,8 @@ base::string16 StripWWWFromHost(const GURL& url) {
   return StripWWW(base::ASCIIToUTF16(url.host_piece()));
 }
 
+Skeletons GetSkeletons(const base::string16& host) {
+  return g_idn_spoof_checker.Get().GetSkeletons(host);
+}
+
 }  // namespace url_formatter
