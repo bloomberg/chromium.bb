@@ -24,7 +24,6 @@ function GuestViewContainer(element, viewType) {
   this.setupAttributes();
 
   privates(this).internalElement = this.createInternalElement$();
-  this.setupFocusPropagation();
   var shadowRoot = this.element.createShadowRoot();
   shadowRoot.appendChild(privates(this).internalElement);
 
@@ -101,16 +100,6 @@ GuestViewContainer.prototype.createInternalElement$ = function() {
 };
 
 GuestViewContainer.prototype.prepareForReattach_ = function() {};
-
-GuestViewContainer.prototype.setupFocusPropagation = function() {
-  if (!this.element.hasAttribute('tabIndex')) {
-    // GuestViewContainer needs a tabIndex in order to be focusable.
-    // TODO(fsamuel): It would be nice to avoid exposing a tabIndex attribute
-    // to allow GuestViewContainer to be focusable.
-    // See http://crbug.com/231664.
-    this.element.setAttribute('tabIndex', -1);
-  }
-};
 
 GuestViewContainer.prototype.focus = function() {
   // Focus the internal element when focus() is called on the GuestView element.
