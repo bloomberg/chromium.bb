@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
@@ -29,8 +30,11 @@ class ImageFetchTabHelper : public web::WebStateObserver,
   //   cache.
   // This method should only be called from UI thread, and |url| should be equal
   // to the resolved "src" attribute of <img>, otherwise the method 1 would
-  // fail. |callback| will be called on UI thread.
-  void GetImageData(const GURL& url, ImageDataCallback&& callback);
+  // fail. |callback| will be called on UI thread. If the JavaScript does not
+  // response after |timeout|, the |callback| will be invoked with nullptr.
+  void GetImageData(const GURL& url,
+                    base::TimeDelta timeout,
+                    ImageDataCallback&& callback);
 
  private:
   friend class web::WebStateUserData<ImageFetchTabHelper>;
@@ -43,10 +47,10 @@ class ImageFetchTabHelper : public web::WebStateObserver,
   void WebStateDestroyed(web::WebState* web_state) override;
 
   // Handler for messages sent back from injected JavaScript.
-  bool OnImageDataReceived(const base::DictionaryValue& message,
-                           const GURL& page_url,
-                           bool has_user_gesture,
-                           bool form_in_main_frame);
+  bool OnImageDataReceived(const base::DictionaryValue& message);
+
+  // Handler for timeout on GetImageData.
+  void OnImageDataTimeout(int call_id);
 
   // WebState this tab helper is attached to.
   web::WebState* web_state_ = nullptr;
@@ -59,6 +63,8 @@ class ImageFetchTabHelper : public web::WebStateObserver,
   // when calling JavaScript. The ID will be regained in the message received in
   // |OnImageDataReceived| and used to invoke the corresponding callback.
   int call_id_ = 0;
+
+  base::WeakPtrFactory<ImageFetchTabHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageFetchTabHelper);
 };
