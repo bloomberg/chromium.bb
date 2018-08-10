@@ -34,7 +34,7 @@ class PluginResponseInterceptorURLLoaderThrottle
  private:
   // content::URLLoaderThrottle overrides;
   void WillProcessResponse(const GURL& response_url,
-                           const network::ResourceResponseHead& response_head,
+                           network::ResourceResponseHead* response_head,
                            bool* defer) override;
 
   content::ResourceContext* const resource_context_;

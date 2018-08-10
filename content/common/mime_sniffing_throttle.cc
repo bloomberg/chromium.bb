@@ -15,23 +15,23 @@ MimeSniffingThrottle::~MimeSniffingThrottle() = default;
 
 void MimeSniffingThrottle::WillProcessResponse(
     const GURL& response_url,
-    const network::ResourceResponseHead& response_head,
+    network::ResourceResponseHead* response_head,
     bool* defer) {
   // No need to do mime sniffing again.
-  if (response_head.did_mime_sniff)
+  if (response_head->did_mime_sniff)
     return;
 
   bool blocked_sniffing_mime = false;
   std::string content_type_options;
-  if (response_head.headers &&
-      response_head.headers->GetNormalizedHeader("x-content-type-options",
-                                                 &content_type_options)) {
+  if (response_head->headers &&
+      response_head->headers->GetNormalizedHeader("x-content-type-options",
+                                                  &content_type_options)) {
     blocked_sniffing_mime =
         base::LowerCaseEqualsASCII(content_type_options, "nosniff");
   }
 
   if (!blocked_sniffing_mime &&
-      net::ShouldSniffMimeType(response_url, response_head.mime_type)) {
+      net::ShouldSniffMimeType(response_url, response_head->mime_type)) {
     // Pause the response until the mime type becomes ready.
     *defer = true;
 
@@ -42,7 +42,7 @@ void MimeSniffingThrottle::WillProcessResponse(
     MimeSniffingURLLoader* mime_sniffing_loader;
     std::tie(new_loader, new_loader_request, mime_sniffing_loader) =
         MimeSniffingURLLoader::CreateLoader(weak_factory_.GetWeakPtr(),
-                                            response_url, response_head);
+                                            response_url, *response_head);
     delegate_->InterceptResponse(std::move(new_loader),
                                  std::move(new_loader_request), &source_loader,
                                  &source_client_request);

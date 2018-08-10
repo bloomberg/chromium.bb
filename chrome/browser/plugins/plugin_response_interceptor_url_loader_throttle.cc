@@ -28,15 +28,16 @@ PluginResponseInterceptorURLLoaderThrottle::
 
 void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
-    const network::ResourceResponseHead& response_head,
+    network::ResourceResponseHead* response_head,
     bool* defer) {
-  if (content::download_utils::MustDownload(
-          response_url, response_head.headers.get(), response_head.mime_type)) {
+  if (content::download_utils::MustDownload(response_url,
+                                            response_head->headers.get(),
+                                            response_head->mime_type)) {
     return;
   }
 
   std::string extension_id = PluginUtils::GetExtensionIdForMimeType(
-      resource_context_, response_head.mime_type);
+      resource_context_, response_head->mime_type);
   if (extension_id.empty())
     return;
 
@@ -68,7 +69,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
 
   // Make a deep copy of ResourceResponseHead before passing it cross-thread.
   auto resource_response = base::MakeRefCounted<network::ResourceResponse>();
-  resource_response->head = response_head;
+  resource_response->head = *response_head;
   auto deep_copied_response = resource_response->DeepCopy();
 
   auto transferrable_loader = content::mojom::TransferrableURLLoader::New();
@@ -79,7 +80,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
   transferrable_loader->url_loader_client = std::move(original_client);
   transferrable_loader->head = std::move(deep_copied_response->head);
 
-  int64_t expected_content_size = response_head.content_length;
+  int64_t expected_content_size = response_head->content_length;
   bool embedded = resource_type_ != content::RESOURCE_TYPE_MAIN_FRAME;
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,

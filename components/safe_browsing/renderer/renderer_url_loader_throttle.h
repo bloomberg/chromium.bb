@@ -40,7 +40,7 @@ class RendererURLLoaderThrottle : public content::URLLoaderThrottle,
       bool* defer,
       std::vector<std::string>* to_be_removed_headers) override;
   void WillProcessResponse(const GURL& response_url,
-                           const network::ResourceResponseHead& response_head,
+                           network::ResourceResponseHead* response_head,
                            bool* defer) override;
 
   // mojom::UrlCheckNotifier implementation.

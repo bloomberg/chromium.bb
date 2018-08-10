@@ -41,7 +41,7 @@ void URLLoaderThrottle::WillRedirectRequest(
 
 void URLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
-    const network::ResourceResponseHead& response_head,
+    network::ResourceResponseHead* response_head,
     bool* defer) {}
 
 URLLoaderThrottle::URLLoaderThrottle() {}
