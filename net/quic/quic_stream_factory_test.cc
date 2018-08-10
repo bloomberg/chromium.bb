@@ -259,6 +259,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
             quic::kInitialIdleTimeoutSecs),
         migrate_sessions_on_network_change_v2_(false),
         migrate_sessions_early_v2_(false),
+        go_away_on_path_degrading_(false),
         allow_server_migration_(false),
         race_cert_verification_(false),
         estimate_initial_rtt_(false) {
@@ -282,6 +283,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
         max_time_before_crypto_handshake_seconds_,
         max_idle_time_before_crypto_handshake_seconds_,
         migrate_sessions_on_network_change_v2_, migrate_sessions_early_v2_,
+        go_away_on_path_degrading_,
         base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
         kMaxMigrationsToNonDefaultNetworkOnWriteError,
         kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
@@ -853,6 +855,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   int max_idle_time_before_crypto_handshake_seconds_;
   bool migrate_sessions_on_network_change_v2_;
   bool migrate_sessions_early_v2_;
+  bool go_away_on_path_degrading_;
   bool allow_server_migration_;
   bool race_cert_verification_;
   bool estimate_initial_rtt_;
@@ -3325,6 +3328,109 @@ void QuicStreamFactoryTestBase::TestMigrationOnPathDegrading(
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
 
   stream.reset();
+  EXPECT_TRUE(quic_data1.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data1.AllWriteDataConsumed());
+  EXPECT_TRUE(quic_data2.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data2.AllWriteDataConsumed());
+}
+
+// This test verifies that the session marks itself GOAWAY on path degrading
+// and it does not receive any new request
+TEST_P(QuicStreamFactoryTest, GoawayOnPathDegrading) {
+  go_away_on_path_degrading_ = true;
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockQuicData quic_data1;
+  quic::QuicStreamOffset header_stream_offset = 0;
+  quic_data1.AddWrite(SYNCHRONOUS,
+                      ConstructInitialSettingsPacket(1, &header_stream_offset));
+  quic_data1.AddWrite(SYNCHRONOUS, ConstructGetRequestPacket(
+                                       2, GetNthClientInitiatedStreamId(0),
+                                       true, true, &header_stream_offset));
+  quic_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
+  quic_data1.AddRead(
+      ASYNC, ConstructOkResponsePacket(1, GetNthClientInitiatedStreamId(0),
+                                       false, true));
+  quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
+  quic_data1.AddSocketDataToFactory(socket_factory_.get());
+
+  MockQuicData quic_data2;
+  quic::QuicStreamOffset header_stream_offset2 = 0;
+  quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
+  quic_data2.AddWrite(
+      SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset2));
+  quic_data2.AddSocketDataToFactory(socket_factory_.get());
+
+  // Creat request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, version_, privacy_mode_,
+                            DEFAULT_PRIORITY, SocketTag(),
+                            /*cerf_verify_flags=*/0, url_, net_log_,
+                            &net_error_details_, callback_.callback()));
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  std::unique_ptr<HttpStream> stream = CreateStream(&request);
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = url_;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
+                                         net_log_, CompletionOnceCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Send GET request on stream.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
+                                    callback_.callback()));
+
+  // Trigger the connection to report path degrading to the session.
+  // Session will mark itself GOAWAY.
+  session->connection()->OnPathDegradingTimeout();
+
+  // The connection should still be alive, but marked as going away.
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  // Second request should be sent on a new connection.
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request2.Request(host_port_pair_, version_, privacy_mode_,
+                             DEFAULT_PRIORITY, SocketTag(),
+                             /*cert_verify_flags=*/0, url_, net_log_,
+                             &net_error_details_, callback_.callback()));
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
+  EXPECT_TRUE(stream2.get());
+
+  // Resume the data, verify old request can read response on the old session
+  // successfully.
+  quic_data1.Resume();
+  EXPECT_EQ(OK, stream->ReadResponseHeaders(callback_.callback()));
+  EXPECT_EQ(200, response.headers->response_code());
+  EXPECT_EQ(0U, session->GetNumActiveStreams());
+
+  // Check an active session exists for the destination.
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  QuicChromiumClientSession* session2 = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session2));
+  EXPECT_NE(session, session2);
+
+  stream.reset();
+  stream2.reset();
   EXPECT_TRUE(quic_data1.AllReadDataConsumed());
   EXPECT_TRUE(quic_data1.AllWriteDataConsumed());
   EXPECT_TRUE(quic_data2.AllReadDataConsumed());

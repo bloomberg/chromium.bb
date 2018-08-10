@@ -242,6 +242,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       int max_idle_time_before_crypto_handshake_seconds,
       bool migrate_sessions_on_network_change_v2,
       bool migrate_sessions_early_v2,
+      bool go_away_on_path_degrading,
       base::TimeDelta max_time_on_non_default_network,
       int max_migrations_to_non_default_network_on_write_error,
       int max_migrations_to_non_default_network_on_path_degrading,
@@ -541,6 +542,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Set if early migration should be attempted after probing when the
   // connection experiences poor connectivity.
   const bool migrate_sessions_early_v2_;
+
+  // Set if client should mark the session as GOAWAY when the connection
+  // experiences poor connectivity
+  const bool go_away_on_path_degrading_;
 
   // If |migrate_sessions_early_v2_| is true, tracks the current default
   // network, and is updated OnNetworkMadeDefault.

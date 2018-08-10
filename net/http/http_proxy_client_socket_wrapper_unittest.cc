@@ -136,6 +136,7 @@ class HttpProxyClientSocketWrapperTest
         quic::kInitialIdleTimeoutSecs,
         /*migrate_sessions_on_network_change_v2=*/false,
         /*migrate_sessions_early_v2=*/false,
+        /*go_away_on_path_degrading*/ false,
         base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
         kMaxMigrationsToNonDefaultNetworkOnWriteError,
         kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
