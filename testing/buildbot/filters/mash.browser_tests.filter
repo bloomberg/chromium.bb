@@ -39,8 +39,6 @@
 -BrowserNonClientFrameViewAshTest.AvatarDisplayOnTeleportedWindow/*
 -BrowserNonClientFrameViewAshTest.HeaderHeightForSnappedBrowserInSplitView/*
 -BrowserNonClientFrameViewAshTest.ImmersiveModeTopViewInset/*
--BrowserNonClientFrameViewAshTest.ToggleTabletModeOnMinimizedWindow/*
--BrowserNonClientFrameViewAshTest.ToggleTabletModeRelayout/*
 -BrowserNonClientFrameViewAshTest.TopViewInset/*
 
 # Direct access to ash window frames, tablet mode, overview mode, etc.

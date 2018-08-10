@@ -87,7 +87,6 @@
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/window_util.h"
 
 namespace {
 
@@ -388,10 +387,13 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
 
 // Tests that FrameCaptionButtonContainer has been relaid out in response to
 // tablet mode being toggled.
-// TODO(estade): Implement this behavior in OopAsh (test by checking the
-// window's caption button bounds).
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
                        ToggleTabletModeRelayout) {
+  // For OopAsh, this test is covered by
+  // CustomFrameViewAshTest.ToggleTabletModeRelayout.
+  if (!features::IsAshInBrowserProcess())
+    return;
+
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
 
@@ -438,45 +440,6 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   ASSERT_NE(nullptr, min_window_size);
   EXPECT_GT(min_window_size->height(), min_height_no_bookmarks);
   EXPECT_EQ(*min_window_size, frame_view->GetMinimumSize());
-}
-
-// Tests that when browser frame is minimized, toggling tablet mode doesn't
-// trigger caption button update (https://crbug.com/822890).
-IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
-                       ToggleTabletModeOnMinimizedWindow) {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-  Widget* widget = browser_view->GetWidget();
-  BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
-
-  ash::FrameCaptionButtonContainerView::TestApi test(
-      frame_view->caption_button_container_);
-  widget->Maximize();
-
-  // Restore icon for size button in maximized window state. Compare by name
-  // because the address may not be the same for different build targets in the
-  // component build.
-  EXPECT_STREQ(ash::kWindowControlRestoreIcon.name,
-               test.size_button()->icon_definition_for_test()->name);
-  widget->Minimize();
-
-  // When entering tablet mode in minimized window state, size button should not
-  // get updated.
-  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-      true);
-  EXPECT_STREQ(ash::kWindowControlRestoreIcon.name,
-               test.size_button()->icon_definition_for_test()->name);
-  // When leaving tablet mode in minimized window state, size button should not
-  // get updated.
-  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-      false);
-  EXPECT_STREQ(ash::kWindowControlRestoreIcon.name,
-               test.size_button()->icon_definition_for_test()->name);
-
-  // When unminimizing in non-tablet mode, size button should match with
-  // maximized window state, which is restore icon.
-  ::wm::Unminimize(widget->GetNativeWindow());
-  EXPECT_STREQ(ash::kWindowControlRestoreIcon.name,
-               test.size_button()->icon_definition_for_test()->name);
 }
 
 // This is a regression test that session restore minimized browser should
