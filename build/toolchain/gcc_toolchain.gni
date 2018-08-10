@@ -151,9 +151,11 @@ template("gcc_toolchain") {
     # toolchain args, use those values, otherwise default to the global one.
     # This works because the only reasonable override that toolchains might
     # supply for these values are to force-disable them.
-    # But if has_gomacc_path is set, we assumes that compiler wrapper find
-    # gomacc from GOMACC_PATH envvar.
-    if (toolchain_uses_goma && !has_gomacc_path) {
+    # But if has_gomacc_path is set in simple chrome build, we assumes that
+    # *chromeos* compiler wrapper find gomacc from GOMACC_PATH envvar.
+    # Note: In this case, we use gomacc for host toolchain compiling.
+    if (toolchain_uses_goma &&
+        (!has_gomacc_path || invoker_toolchain_args.current_os != "chromeos")) {
       goma_path = "$goma_dir/gomacc"
 
       # Use the static analysis script if static analysis is turned on
