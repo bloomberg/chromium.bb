@@ -52,6 +52,67 @@ bool WorldConfigurationApplies(
   return true;
 }
 
+void DoInstallAttribute(
+    v8::Local<v8::ObjectTemplate> object_template,
+    v8::Local<v8::Name> name,
+    const V8DOMConfiguration::AttributeConfiguration& attribute) {
+  v8::SideEffectType getter_side_effect_type =
+      attribute.getter_side_effect_type == V8DOMConfiguration::kHasNoSideEffect
+          ? v8::SideEffectType::kHasNoSideEffect
+          : v8::SideEffectType::kHasSideEffect;
+  switch (static_cast<V8DOMConfiguration::AttributeGetterBehavior>(
+      attribute.getter_behavior)) {
+    case V8DOMConfiguration::kAlwaysCallGetter:
+      object_template->SetNativeDataProperty(
+          name, attribute.getter, attribute.setter, v8::Local<v8::Value>(),
+          static_cast<v8::PropertyAttribute>(attribute.attribute),
+          v8::Local<v8::AccessorSignature>(), v8::AccessControl::DEFAULT,
+          getter_side_effect_type);
+      break;
+    case V8DOMConfiguration::kReplaceWithDataProperty:
+      DCHECK(!attribute.setter);
+      DCHECK_EQ(attribute.world_configuration, V8DOMConfiguration::kAllWorlds);
+      object_template->SetLazyDataProperty(
+          name, attribute.getter, v8::Local<v8::Value>(),
+          static_cast<v8::PropertyAttribute>(attribute.attribute),
+          getter_side_effect_type);
+      break;
+  }
+}
+
+void DoInstallAttribute(
+    v8::Local<v8::Context> context,
+    v8::Local<v8::Object> object,
+    v8::Local<v8::Name> name,
+    const V8DOMConfiguration::AttributeConfiguration& attribute) {
+  v8::SideEffectType getter_side_effect_type =
+      attribute.getter_side_effect_type == V8DOMConfiguration::kHasNoSideEffect
+          ? v8::SideEffectType::kHasNoSideEffect
+          : v8::SideEffectType::kHasSideEffect;
+  switch (static_cast<V8DOMConfiguration::AttributeGetterBehavior>(
+      attribute.getter_behavior)) {
+    case V8DOMConfiguration::kAlwaysCallGetter:
+      object
+          ->SetNativeDataProperty(
+              context, name, attribute.getter, attribute.setter,
+              v8::Local<v8::Value>(),
+              static_cast<v8::PropertyAttribute>(attribute.attribute),
+              getter_side_effect_type)
+          .ToChecked();
+      break;
+    case V8DOMConfiguration::kReplaceWithDataProperty:
+      DCHECK(!attribute.setter);
+      DCHECK_EQ(attribute.world_configuration, V8DOMConfiguration::kAllWorlds);
+      object
+          ->SetLazyDataProperty(
+              context, name, attribute.getter, v8::Local<v8::Value>(),
+              static_cast<v8::PropertyAttribute>(attribute.attribute),
+              getter_side_effect_type)
+          .ToChecked();
+      break;
+  }
+}
+
 void InstallAttributeInternal(
     v8::Isolate* isolate,
     v8::Local<v8::ObjectTemplate> instance_template,
@@ -62,32 +123,13 @@ void InstallAttributeInternal(
     return;
 
   v8::Local<v8::Name> name = V8AtomicString(isolate, attribute.name);
-  v8::AccessorNameGetterCallback getter = attribute.getter;
-  v8::AccessorNameSetterCallback setter = attribute.setter;
-
-  v8::SideEffectType getter_side_effect_type =
-      attribute.getter_side_effect_type == V8DOMConfiguration::kHasNoSideEffect
-          ? v8::SideEffectType::kHasNoSideEffect
-          : v8::SideEffectType::kHasSideEffect;
-  DCHECK(attribute.property_location_configuration);
-  if (attribute.property_location_configuration &
-      V8DOMConfiguration::kOnInstance) {
-    instance_template->SetNativeDataProperty(
-        name, getter, setter, v8::Local<v8::Value>(),
-        static_cast<v8::PropertyAttribute>(attribute.attribute),
-        v8::Local<v8::AccessorSignature>(), v8::AccessControl::DEFAULT,
-        getter_side_effect_type);
-  }
-  if (attribute.property_location_configuration &
-      V8DOMConfiguration::kOnPrototype) {
-    prototype_template->SetNativeDataProperty(
-        name, getter, setter, v8::Local<v8::Value>(),
-        static_cast<v8::PropertyAttribute>(attribute.attribute),
-        v8::Local<v8::AccessorSignature>(), v8::AccessControl::DEFAULT,
-        getter_side_effect_type);
-  }
-  if (attribute.property_location_configuration &
-      V8DOMConfiguration::kOnInterface)
+  const unsigned location = attribute.property_location_configuration;
+  DCHECK(location);
+  if (location & V8DOMConfiguration::kOnInstance)
+    DoInstallAttribute(instance_template, name, attribute);
+  if (location & V8DOMConfiguration::kOnPrototype)
+    DoInstallAttribute(prototype_template, name, attribute);
+  if (location & V8DOMConfiguration::kOnInterface)
     NOTREACHED();
 }
 
@@ -102,68 +144,14 @@ void InstallAttributeInternal(
     return;
 
   v8::Local<v8::Name> name = V8AtomicString(isolate, config.name);
-  v8::AccessorNameGetterCallback getter = config.getter;
-  v8::AccessorNameSetterCallback setter = config.setter;
-  v8::PropertyAttribute attribute =
-      static_cast<v8::PropertyAttribute>(config.attribute);
   const unsigned location = config.property_location_configuration;
   DCHECK(location);
-
-  v8::SideEffectType getter_side_effect_type =
-      config.getter_side_effect_type == V8DOMConfiguration::kHasNoSideEffect
-          ? v8::SideEffectType::kHasNoSideEffect
-          : v8::SideEffectType::kHasSideEffect;
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
-  if (location & V8DOMConfiguration::kOnInstance && !instance.IsEmpty()) {
-    instance
-        ->SetNativeDataProperty(context, name, getter, setter,
-                                v8::Local<v8::Value>(), attribute,
-                                getter_side_effect_type)
-        .ToChecked();
-  }
-  if (location & V8DOMConfiguration::kOnPrototype && !prototype.IsEmpty()) {
-    prototype
-        ->SetNativeDataProperty(context, name, getter, setter,
-                                v8::Local<v8::Value>(), attribute,
-                                getter_side_effect_type)
-        .ToChecked();
-  }
+  if (location & V8DOMConfiguration::kOnInstance && !instance.IsEmpty())
+    DoInstallAttribute(context, instance, name, config);
+  if (location & V8DOMConfiguration::kOnPrototype && !prototype.IsEmpty())
+    DoInstallAttribute(context, prototype, name, config);
   if (location & V8DOMConfiguration::kOnInterface)
-    NOTREACHED();
-}
-
-void InstallLazyDataAttributeInternal(
-    v8::Isolate* isolate,
-    v8::Local<v8::ObjectTemplate> instance_template,
-    v8::Local<v8::ObjectTemplate> prototype_template,
-    const V8DOMConfiguration::AttributeConfiguration& attribute,
-    const DOMWrapperWorld& world) {
-  v8::Local<v8::Name> name = V8AtomicString(isolate, attribute.name);
-  v8::AccessorNameGetterCallback getter = attribute.getter;
-  DCHECK(!attribute.setter);
-  DCHECK_EQ(attribute.world_configuration, V8DOMConfiguration::kAllWorlds);
-
-  v8::SideEffectType getter_side_effect_type =
-      attribute.getter_side_effect_type == V8DOMConfiguration::kHasNoSideEffect
-          ? v8::SideEffectType::kHasNoSideEffect
-          : v8::SideEffectType::kHasSideEffect;
-  DCHECK(attribute.property_location_configuration);
-  if (attribute.property_location_configuration &
-      V8DOMConfiguration::kOnInstance) {
-    instance_template->SetLazyDataProperty(
-        name, getter, v8::Local<v8::Value>(),
-        static_cast<v8::PropertyAttribute>(attribute.attribute),
-        getter_side_effect_type);
-  }
-  if (attribute.property_location_configuration &
-      V8DOMConfiguration::kOnPrototype) {
-    prototype_template->SetLazyDataProperty(
-        name, getter, v8::Local<v8::Value>(),
-        static_cast<v8::PropertyAttribute>(attribute.attribute),
-        getter_side_effect_type);
-  }
-  if (attribute.property_location_configuration &
-      V8DOMConfiguration::kOnInterface)
     NOTREACHED();
 }
 
@@ -265,6 +253,7 @@ void InstallAccessorInternal(
   DCHECK(!IsObjectAndEmpty(instance_or_template) ||
          !IsObjectAndEmpty(prototype_or_template) ||
          !IsObjectAndEmpty(interface_or_template));
+  DCHECK_EQ(config.getter_behavior, V8DOMConfiguration::kAlwaysCallGetter);
   if (!WorldConfigurationApplies(config, world))
     return;
 
@@ -596,19 +585,6 @@ void V8DOMConfiguration::InstallAttribute(
     v8::Local<v8::Object> prototype,
     const AttributeConfiguration& attribute) {
   InstallAttributeInternal(isolate, instance, prototype, attribute, world);
-}
-
-void V8DOMConfiguration::InstallLazyDataAttributes(
-    v8::Isolate* isolate,
-    const DOMWrapperWorld& world,
-    v8::Local<v8::ObjectTemplate> instance_template,
-    v8::Local<v8::ObjectTemplate> prototype_template,
-    const AttributeConfiguration* attributes,
-    size_t attribute_count) {
-  for (size_t i = 0; i < attribute_count; ++i) {
-    InstallLazyDataAttributeInternal(isolate, instance_template,
-                                     prototype_template, attributes[i], world);
-  }
 }
 
 void V8DOMConfiguration::InstallAccessors(

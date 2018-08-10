@@ -81,8 +81,8 @@ void V8TestInterfaceNamedConstructor::testNamedConstructorConstructorAttributeCo
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceNamedConstructorLazyDataAttributes[] = {
-    { "testNamedConstructorConstructorAttribute", V8TestInterfaceNamedConstructor::testNamedConstructorConstructorAttributeConstructorGetterCallback, nullptr, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
+static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceNamedConstructorAttributes[] = {
+    { "testNamedConstructorConstructorAttribute", V8TestInterfaceNamedConstructor::testNamedConstructorConstructorAttributeConstructorGetterCallback, nullptr, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kReplaceWithDataProperty, V8DOMConfiguration::kAllWorlds },
 };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
 #pragma clang diagnostic pop
@@ -250,9 +250,9 @@ static void installV8TestInterfaceNamedConstructorTemplate(
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
 
   // Register IDL constants, attributes and operations.
-  V8DOMConfiguration::InstallLazyDataAttributes(
+  V8DOMConfiguration::InstallAttributes(
       isolate, world, instanceTemplate, prototypeTemplate,
-      V8TestInterfaceNamedConstructorLazyDataAttributes, base::size(V8TestInterfaceNamedConstructorLazyDataAttributes));
+      V8TestInterfaceNamedConstructorAttributes, base::size(V8TestInterfaceNamedConstructorAttributes));
 
   // Custom signature
 
