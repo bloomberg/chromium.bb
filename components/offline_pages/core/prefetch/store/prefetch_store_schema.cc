@@ -119,7 +119,7 @@ bool CreateLatestSchema(sql::Database* db) {
 int MigrateFromVersion1To2(sql::Database* db, sql::MetaTable* meta_table) {
   const int target_version = 2;
   const int target_compatible_version = 1;
-  const char kVersion1ToVersion2MigrationSql[] =
+  static const char kVersion1ToVersion2MigrationSql[] =
       // Rename the existing items table.
       "ALTER TABLE prefetch_items RENAME TO prefetch_items_old; "
       // Creates the new items table.
