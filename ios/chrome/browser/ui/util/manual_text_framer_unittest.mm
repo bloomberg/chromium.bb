@@ -108,6 +108,20 @@ TEST_F(ManualTextFramerTest, NoSpacesText) {
   CheckForLineCountAndFramedRange(0, NSMakeRange(0, 0));
 }
 
+// Tests that unbreakable spaces are accounted for.
+TEST_F(ManualTextFramerTest, UnbreakableSpace) {
+  SetText(@"This is a long text with\u00A0unbreakable\u00A0spaces");
+  attributes()[NSFontAttributeName] = TypographyFontWithSize(16.0);
+  attributes()[NSParagraphStyleAttributeName] = CreateParagraphStyle(
+      20.0, NSTextAlignmentNatural, NSLineBreakByWordWrapping);
+  ApplyAttributesForRange(text_range());
+  CGRect bounds = CGRectMake(0, 0, 200, 60);
+  FrameTextInBounds(bounds);
+  ASSERT_EQ(2UL, text_frame().lines.count);
+  FramedLine* line = text_frame().lines[1];
+  EXPECT_TRUE(NSEqualRanges(NSMakeRange(20, 23), line.stringRange));
+}
+
 // Tests that multiple newlines are accounted for.  Only the first three
 // newlines should be added to |lines_|.
 TEST_F(ManualTextFramerTest, MultipleNewlineTest) {
