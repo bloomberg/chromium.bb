@@ -2818,8 +2818,13 @@ void LayerTreeHostImpl::ActivateStateForImages() {
 
 void LayerTreeHostImpl::OnPurgeMemory() {
   ReleaseTileResources();
-  ReleaseTreeResources();
-  ClearUIResources();
+  active_tree_->OnPurgeMemory();
+  if (pending_tree_)
+    pending_tree_->OnPurgeMemory();
+  if (recycle_tree_)
+    recycle_tree_->OnPurgeMemory();
+
+  EvictAllUIResources();
   if (image_decode_cache_) {
     image_decode_cache_->SetShouldAggressivelyFreeResources(true);
     image_decode_cache_->SetShouldAggressivelyFreeResources(false);

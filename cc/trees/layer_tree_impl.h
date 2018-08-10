@@ -101,6 +101,7 @@ class CC_EXPORT LayerTreeImpl {
 
   void Shutdown();
   void ReleaseResources();
+  void OnPurgeMemory();
   void ReleaseTileResources();
   void RecreateTileResources();
 

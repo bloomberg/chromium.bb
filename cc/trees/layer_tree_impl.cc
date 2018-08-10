@@ -134,6 +134,13 @@ void LayerTreeImpl::ReleaseResources() {
   }
 }
 
+void LayerTreeImpl::OnPurgeMemory() {
+  if (!LayerListIsEmpty()) {
+    LayerTreeHostCommon::CallFunctionForEveryLayer(
+        this, [](LayerImpl* layer) { layer->OnPurgeMemory(); });
+  }
+}
+
 void LayerTreeImpl::ReleaseTileResources() {
   if (!LayerListIsEmpty()) {
     LayerTreeHostCommon::CallFunctionForEveryLayer(
