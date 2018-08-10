@@ -197,8 +197,9 @@ void AssistantUiController::OnDeepLinkReceived(
 }
 
 void AssistantUiController::OnUrlOpened(const GURL& url) {
-  // We close Assistant UI when opening a URL in a new tab.
-  HideUi(AssistantSource::kUnspecified);
+  // We go into mini UI mode when opening a URL in a new tab.
+  if (assistant_ui_model_.visible())
+    UpdateUiMode(AssistantUiMode::kMiniUi);
 }
 
 void AssistantUiController::OnUiVisibilityChanged(bool visible,

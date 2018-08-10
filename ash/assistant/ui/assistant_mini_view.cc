@@ -8,6 +8,8 @@
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
+#include "ash/assistant/assistant_ui_controller.h"
+#include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -41,9 +43,11 @@ AssistantMiniView::AssistantMiniView(AssistantController* assistant_controller)
   // AssistantController indirectly owns the view hierarchy to which
   // AssistantMiniView belongs so is guaranteed to outlive it.
   assistant_controller_->interaction_controller()->AddModelObserver(this);
+  assistant_controller_->ui_controller()->AddModelObserver(this);
 }
 
 AssistantMiniView::~AssistantMiniView() {
+  assistant_controller_->ui_controller()->RemoveModelObserver(this);
   assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 }
 
@@ -87,10 +91,8 @@ void AssistantMiniView::InitLayout() {
   label_->SetLineHeight(kLineHeightDip);
   AddChildView(label_);
 
-  // Trigger input modality changed event to initialize view state.
-  OnInputModalityChanged(assistant_controller_->interaction_controller()
-                             ->model()
-                             ->input_modality());
+  // Initialize the prompt.
+  UpdatePrompt();
 }
 
 void AssistantMiniView::ButtonPressed(views::Button* sender,
@@ -100,6 +102,55 @@ void AssistantMiniView::ButtonPressed(views::Button* sender,
 }
 
 void AssistantMiniView::OnInputModalityChanged(InputModality input_modality) {
+  UpdatePrompt();
+}
+
+void AssistantMiniView::OnResponseChanged(const AssistantResponse& response) {
+  // When a response changes, the committed query becomes active. We'll cache
+  // the text for that query to use as our prompt when not using the stylus.
+  const AssistantQuery& committed_query =
+      assistant_controller_->interaction_controller()
+          ->model()
+          ->committed_query();
+
+  switch (committed_query.type()) {
+    case AssistantQueryType::kText: {
+      const AssistantTextQuery& text_query =
+          static_cast<const AssistantTextQuery&>(committed_query);
+      last_active_query_ = text_query.text();
+      break;
+    }
+    case AssistantQueryType::kVoice: {
+      const AssistantVoiceQuery& voice_query =
+          static_cast<const AssistantVoiceQuery&>(committed_query);
+      last_active_query_ = voice_query.high_confidence_speech() +
+                           voice_query.low_confidence_speech();
+      break;
+    }
+    case AssistantQueryType::kEmpty:
+      // It shouldn't be possible to commit a query of type kEmpty.
+      NOTREACHED();
+      break;
+  }
+
+  UpdatePrompt();
+}
+
+void AssistantMiniView::OnUiVisibilityChanged(bool visible,
+                                              AssistantSource source) {
+  if (visible)
+    return;
+
+  // Reset state for the next Assistant UI session.
+  last_active_query_.reset();
+  UpdatePrompt();
+}
+
+void AssistantMiniView::UpdatePrompt() {
+  InputModality input_modality = assistant_controller_->interaction_controller()
+                                     ->model()
+                                     ->input_modality();
+
   switch (input_modality) {
     case InputModality::kStylus:
       label_->SetText(
@@ -107,8 +158,12 @@ void AssistantMiniView::OnInputModalityChanged(InputModality input_modality) {
       break;
     case InputModality::kKeyboard:
     case InputModality::kVoice:
+      // If we've cached an active query, we'll use that as our prompt. If not,
+      // we fall back to our default prompt string.
       label_->SetText(
-          l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_PROMPT_DEFAULT));
+          last_active_query_.has_value()
+              ? base::UTF8ToUTF16(last_active_query_.value())
+              : l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_PROMPT_DEFAULT));
       break;
   }
 }

@@ -65,11 +65,15 @@ AssistantMainView::~AssistantMainView() {
 }
 
 gfx::Size AssistantMainView::CalculatePreferredSize() const {
-  // |min_height_dip_| <= |preferred_height| <= |kMaxHeightDip|.
-  int preferred_height = GetHeightForWidth(kPreferredWidthDip);
-  preferred_height = std::min(preferred_height, kMaxHeightDip);
-  preferred_height = std::max(preferred_height, min_height_dip_);
-  return gfx::Size(kPreferredWidthDip, preferred_height);
+  return gfx::Size(kPreferredWidthDip, GetHeightForWidth(kPreferredWidthDip));
+}
+
+int AssistantMainView::GetHeightForWidth(int width) const {
+  // |min_height_dip_| <= |height| <= |kMaxHeightDip|.
+  int height = views::View::GetHeightForWidth(width);
+  height = std::min(height, kMaxHeightDip);
+  height = std::max(height, min_height_dip_);
+  return height;
 }
 
 void AssistantMainView::OnBoundsChanged(const gfx::Rect& prev_bounds) {

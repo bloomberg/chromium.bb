@@ -5,8 +5,6 @@
 #ifndef ASH_ASSISTANT_UI_ASSISTANT_CONTAINER_VIEW_H_
 #define ASH_ASSISTANT_UI_ASSISTANT_CONTAINER_VIEW_H_
 
-#include <memory>
-
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "base/macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
@@ -42,9 +40,9 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
-  std::unique_ptr<AssistantMainView> assistant_main_view_;
-  std::unique_ptr<AssistantMiniView> assistant_mini_view_;
-  std::unique_ptr<AssistantWebView> assistant_web_view_;
+  AssistantMainView* assistant_main_view_;  // Owned by view hierarchy.
+  AssistantMiniView* assistant_mini_view_;  // Owned by view hierarchy.
+  AssistantWebView* assistant_web_view_;    // Owned by view hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(AssistantContainerView);
 };
