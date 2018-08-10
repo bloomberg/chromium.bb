@@ -91,7 +91,6 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/upload_data_stream.h"
 #include "net/base/url_util.h"
-#include "net/cert/cert_status_flags.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -167,11 +166,6 @@ void AbortRequestBeforeItStarts(
   status.encoded_data_length = 0;
   status.encoded_body_length = 0;
   url_loader_client->OnComplete(status);
-}
-
-bool IsValidatedSCT(
-    const net::SignedCertificateTimestampAndStatus& sct_status) {
-  return sct_status.status == net::ct::SCT_STATUS_OK;
 }
 
 // Returns the PreviewsState for enabled previews after requesting it from
@@ -604,18 +598,6 @@ void ResourceDispatcherHostImpl::DidReceiveResponse(
 
 void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
   ResourceRequestInfoImpl* info = loader->GetRequestInfo();
-
-  // Record final result of all resource loads.
-  if (info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME) {
-    if (loader->request()->url().SchemeIsCryptographic()) {
-      int num_valid_scts = std::count_if(
-          loader->request()->ssl_info().signed_certificate_timestamps.begin(),
-          loader->request()->ssl_info().signed_certificate_timestamps.end(),
-          IsValidatedSCT);
-      UMA_HISTOGRAM_COUNTS_100(
-          "Net.CertificateTransparency.MainFrameValidSCTCount", num_valid_scts);
-    }
-  }
 
   if (delegate_)
     delegate_->RequestComplete(loader->request());
