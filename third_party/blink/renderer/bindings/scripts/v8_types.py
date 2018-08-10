@@ -525,7 +525,8 @@ def impl_includes_for_type(idl_type, interfaces_info):
         includes_for_type.add('platform/wtf/text/wtf_string.h')
     if idl_type.is_callback_function:
         component = IdlType.callback_functions[base_idl_type]['component_dir']
-        return set(['bindings/%s/v8/%s' % (component, binding_header_filename(base_idl_type))])
+        return set(['bindings/%s/v8/%s' % (component, binding_header_filename(base_idl_type)),
+                    'platform/bindings/trace_wrapper_member.h'])
     if base_idl_type in interfaces_info:
         interface_info = interfaces_info[base_idl_type]
         includes_for_type.add(interface_info['include_path'])
