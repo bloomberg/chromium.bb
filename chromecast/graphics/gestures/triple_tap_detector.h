@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_GRAPHICS_GESTURES_TRIPLE_TAP_DETECTOR_H_
 #define CHROMECAST_GRAPHICS_GESTURES_TRIPLE_TAP_DETECTOR_H_
 
+#include <deque>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -60,10 +62,6 @@ class TripleTapDetector : public ui::EventRewriter {
  private:
   friend class TripleTapDetectorTest;
 
-  void DispatchEvent(ui::TouchEvent* event);
-  ui::EventRewriteStatus HandleTripleTapState(const ui::TouchEvent& event,
-                                              TripleTapState state);
-
   // Expiration event for maximum time between taps in a triple tap.
   void OnTripleTapIntervalTimerFired();
   // Expiration event for a finger that is pressed too long during a triple tap.
@@ -84,7 +82,7 @@ class TripleTapDetector : public ui::EventRewriter {
   int tap_count_;
   gfx::Point last_tap_location_;
   base::OneShotTimer triple_tap_timer_;
-  std::vector<ui::TouchEvent> stashed_events_;
+  std::deque<ui::TouchEvent> stashed_events_;
 
   DISALLOW_COPY_AND_ASSIGN(TripleTapDetector);
 };
