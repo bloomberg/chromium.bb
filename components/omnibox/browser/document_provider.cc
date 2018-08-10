@@ -318,8 +318,12 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
     }
     AutocompleteMatch match(this, relevance, false,
                             AutocompleteMatchType::DOCUMENT_SUGGESTION);
-    match.destination_url = GURL(url);
-    match.contents = title;
+    base::string16 original_url;
+    result->GetString("originalUrl", &original_url);  // optional.
+    match.destination_url = GURL(!original_url.empty() ? original_url : url);
+    match.contents = AutocompleteMatch::SanitizeString(title);
+    AutocompleteMatch::AddLastClassificationIfNecessary(
+        &match.contents_class, 0, ACMatchClassification::NONE);
     match.transition = ui::PAGE_TRANSITION_GENERATED;
     matches->push_back(match);
   }
