@@ -342,6 +342,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
   // error message. We can probably make DevToolsProxy derive some context from
   // StoragePartition so that we can record and extract the detailed error
   // status for testing via that.
+  console_observer.Wait();
   EXPECT_TRUE(base::StartsWith(console_observer.message(), "OCSP check failed.",
                                base::CompareCase::SENSITIVE));
 }

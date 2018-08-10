@@ -1102,10 +1102,14 @@ class IsolatedOriginFieldTrialTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(IsolatedOriginFieldTrialTest, Test) {
+  bool expected_to_isolate = !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableSiteIsolationTrials);
+
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  EXPECT_TRUE(policy->IsIsolatedOrigin(
-      url::Origin::Create(GURL("https://field.trial.com/"))));
-  EXPECT_TRUE(
+  EXPECT_EQ(expected_to_isolate, policy->IsIsolatedOrigin(url::Origin::Create(
+                                     GURL("https://field.trial.com/"))));
+  EXPECT_EQ(
+      expected_to_isolate,
       policy->IsIsolatedOrigin(url::Origin::Create(GURL("https://bar.com/"))));
 }
 
