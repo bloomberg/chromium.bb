@@ -894,63 +894,6 @@ TEST_F(MagnificationControllerTest, TwoFingersScroll) {
   EXPECT_EQ(delta, delta_zoomed * 2);
 }
 
-TEST_F(MagnificationControllerTest, GestureLock) {
-  GetMagnificationController()->SetEnabled(true);
-  ASSERT_EQ(2.0f, GetMagnificationController()->GetScale());
-
-  // Perform pinch zoom gesture.
-  base::TimeTicks time = base::TimeTicks::Now();
-  ui::PointerDetails pointer_details1(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                                      0);
-  ui::PointerDetails pointer_details2(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                                      1);
-
-  DispatchTouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(900, 10), time,
-                     pointer_details1);
-  DispatchTouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(1100, 10), time,
-                     pointer_details2);
-
-  DispatchTouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(800, 10), time,
-                     pointer_details1);
-  DispatchTouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(1200, 10), time,
-                     pointer_details2);
-
-  // Confirm that zoom level has changed.
-  float zoomed_scale = GetMagnificationController()->GetScale();
-  EXPECT_LT(2.0f, zoomed_scale);
-
-  // Confirms that zoom level has changed more than threshold to lock gesture
-  // type.
-  ASSERT_LT(0.2f, zoomed_scale - 2.0f);
-
-  gfx::Point initial_position =
-      GetMagnificationController()->GetWindowPosition();
-
-  // Perform scroll gesture.
-  DispatchTouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(800, 100), time,
-                     pointer_details1);
-  DispatchTouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(1200, 100), time,
-                     pointer_details2);
-
-  DispatchTouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(800, 100), time,
-                     pointer_details1);
-  DispatchTouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(1200, 100), time,
-                     pointer_details2);
-
-  // Confirm that scale is the same.
-  EXPECT_EQ(zoomed_scale, GetMagnificationController()->GetScale());
-
-  // The above touch events for simulating scroll gesture cause two pinch
-  // gesture events. Those events cancel each other and set scale back to the
-  // original value. Viewport origin moves with them as well and it can move a
-  // little after those calculation. Accept 1 pixel difference for those
-  // calculation.
-  gfx::Rect accept_position =
-      gfx::Rect(initial_position.x() - 1, initial_position.y() - 1, 2, 2);
-  EXPECT_TRUE(accept_position.Contains(
-      GetMagnificationController()->GetWindowPosition()));
-}
-
 TEST_F(MagnificationControllerTest, ZoomsIntoCenter) {
   UpdateDisplay("0+0-500x500");
 

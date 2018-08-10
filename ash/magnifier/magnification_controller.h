@@ -142,8 +142,6 @@ class ASH_EXPORT MagnificationController : public ui::EventHandler,
  private:
   class GestureProviderClient;
 
-  enum LockedGestureType { NO_GESTURE, ZOOM, SCROLL };
-
   // ui::ImplicitAnimationObserver overrides:
   void OnImplicitAnimationsCompleted() override;
 
@@ -278,10 +276,6 @@ class ASH_EXPORT MagnificationController : public ui::EventHandler,
   gfx::PointF original_origin_;
 
   ScrollDirection scroll_direction_ = SCROLL_NONE;
-
-  // MagnificationController locks gesture once user performs either scroll or
-  // pinch gesture above those thresholds.
-  LockedGestureType locked_gesture_ = NO_GESTURE;
 
   // If true, MagnificationController consumes all touch events.
   bool consume_touch_event_ = false;
