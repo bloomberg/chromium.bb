@@ -3070,6 +3070,69 @@ static void ml_prune_4_partition(const AV1_COMP *const cpi,
 #undef FEATURES
 #undef LABELS
 
+#define FEATURES 4
+// ML-based partition search breakout.
+static int ml_predict_breakout(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
+                               const MACROBLOCK *const x,
+                               const RD_STATS *const rd_stats,
+                               unsigned int pb_source_variance) {
+  const NN_CONFIG *nn_config = NULL;
+  int thresh = 0;
+  switch (bsize) {
+    case BLOCK_8X8:
+      nn_config = &av1_partition_breakout_nnconfig_8;
+      thresh = cpi->sf.ml_partition_search_breakout_thresh[0];
+      break;
+    case BLOCK_16X16:
+      nn_config = &av1_partition_breakout_nnconfig_16;
+      thresh = cpi->sf.ml_partition_search_breakout_thresh[1];
+      break;
+    case BLOCK_32X32:
+      nn_config = &av1_partition_breakout_nnconfig_32;
+      thresh = cpi->sf.ml_partition_search_breakout_thresh[2];
+      break;
+    case BLOCK_64X64:
+      nn_config = &av1_partition_breakout_nnconfig_64;
+      thresh = cpi->sf.ml_partition_search_breakout_thresh[3];
+      break;
+    case BLOCK_128X128:
+      nn_config = &av1_partition_breakout_nnconfig_128;
+      thresh = cpi->sf.ml_partition_search_breakout_thresh[4];
+      break;
+    default: assert(0 && "Unexpected bsize.");
+  }
+  if (!nn_config || thresh < 0) return 0;
+
+  // Generate feature values.
+  float features[FEATURES];
+  int feature_index = 0;
+  aom_clear_system_state();
+
+  const int num_pels_log2 = num_pels_log2_lookup[bsize];
+  float rate_f = (float)AOMMIN(rd_stats->rate, INT_MAX);
+  rate_f = ((float)x->rdmult / 128.0f / 512.0f / (float)(1 << num_pels_log2)) *
+           rate_f;
+  features[feature_index++] = rate_f;
+
+  const float dist_f =
+      (float)(AOMMIN(rd_stats->dist, INT_MAX) >> num_pels_log2);
+  features[feature_index++] = dist_f;
+
+  features[feature_index++] = (float)pb_source_variance;
+
+  const int dc_q = (int)x->plane[0].dequant_QTX[0];
+  features[feature_index++] = (float)(dc_q * dc_q) / 256.0f;
+  assert(feature_index == FEATURES);
+
+  // Calculate score using the NN model.
+  float score = 0.0f;
+  av1_nn_predict(features, nn_config, &score);
+
+  // Make decision.
+  return (int)(score * 100) >= thresh;
+}
+#undef FEATURES
+
 // TODO(jingning,jimbankoski,rbultje): properly skip partition types that are
 // unlikely to be selected depending on previous rate-distortion optimization
 // results, for encoding speed-up.
@@ -3368,16 +3431,29 @@ BEGIN_PARTITION_SEARCH:
         best_rdc = this_rdc;
         if (bsize_at_least_8x8) pc_tree->partitioning = PARTITION_NONE;
 
-        // If all y, u, v transform blocks in this partition are skippable, and
-        // the dist & rate are within the thresholds, the partition search is
-        // terminated for current branch of the partition search tree.
-        // The dist & rate thresholds are set to 0 at speed 0 to disable the
-        // early termination at that speed.
-        if (!x->e_mbd.lossless[xd->mi[0]->segment_id] &&
-            (ctx_none->skippable && best_rdc.dist < dist_breakout_thr &&
-             best_rdc.rate < rate_breakout_thr)) {
-          do_square_split = 0;
-          do_rectangular_split = 0;
+        if ((do_square_split || do_rectangular_split) &&
+            !x->e_mbd.lossless[xd->mi[0]->segment_id] && ctx_none->skippable) {
+          const int use_ml_based_breakout =
+              bsize <= cpi->sf.use_square_partition_only_threshold &&
+              bsize > BLOCK_4X4 && xd->bd == 8;
+          if (use_ml_based_breakout) {
+            if (ml_predict_breakout(cpi, bsize, x, &this_rdc,
+                                    pb_source_variance)) {
+              do_square_split = 0;
+              do_rectangular_split = 0;
+            }
+          }
+
+          // If all y, u, v transform blocks in this partition are skippable,
+          // and the dist & rate are within the thresholds, the partition
+          // search is terminated for current branch of the partition search
+          // tree. The dist & rate thresholds are set to 0 at speed 0 to
+          // disable the early termination at that speed.
+          if (best_rdc.dist < dist_breakout_thr &&
+              best_rdc.rate < rate_breakout_thr) {
+            do_square_split = 0;
+            do_rectangular_split = 0;
+          }
         }
 
 #if CONFIG_FP_MB_STATS

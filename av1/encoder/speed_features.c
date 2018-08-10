@@ -98,6 +98,15 @@ static void set_good_speed_feature_framesize_dependent(AV1_COMP *cpi,
     sf->use_square_partition_only_threshold = BLOCK_64X64;
   }
 
+  // TODO(huisu@google.com): train models for 720P and above.
+  if (!is_720p_or_larger) {
+    sf->ml_partition_search_breakout_thresh[0] = 200;  // BLOCK_8X8
+    sf->ml_partition_search_breakout_thresh[1] = 250;  // BLOCK_16X16
+    sf->ml_partition_search_breakout_thresh[2] = 300;  // BLOCK_32X32
+    sf->ml_partition_search_breakout_thresh[3] = 500;  // BLOCK_64X64
+    sf->ml_partition_search_breakout_thresh[4] = -1;   // BLOCK_128X128
+  }
+
   if (speed >= 1) {
     if (is_720p_or_larger) {
       sf->use_square_partition_only_threshold = BLOCK_128X128;
@@ -105,6 +114,14 @@ static void set_good_speed_feature_framesize_dependent(AV1_COMP *cpi,
       sf->use_square_partition_only_threshold = BLOCK_64X64;
     } else {
       sf->use_square_partition_only_threshold = BLOCK_32X32;
+    }
+
+    if (!is_720p_or_larger) {
+      sf->ml_partition_search_breakout_thresh[0] = 200;  // BLOCK_8X8
+      sf->ml_partition_search_breakout_thresh[1] = 250;  // BLOCK_16X16
+      sf->ml_partition_search_breakout_thresh[2] = 300;  // BLOCK_32X32
+      sf->ml_partition_search_breakout_thresh[3] = 300;  // BLOCK_64X64
+      sf->ml_partition_search_breakout_thresh[4] = -1;   // BLOCK_128X128
     }
   }
 
@@ -476,6 +493,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->ml_prune_ab_partition = 0;
   sf->ml_prune_4_partition = 0;
   sf->fast_cdef_search = 0;
+  for (i = 0; i < PARTITION_BLOCK_SIZES; ++i)
+    sf->ml_partition_search_breakout_thresh[i] = -1;  // -1 means not enabled.
 
   // Set this at the appropriate speed levels
   sf->use_transform_domain_distortion = 0;
