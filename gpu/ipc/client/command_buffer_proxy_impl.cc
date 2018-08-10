@@ -26,6 +26,7 @@
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/gpu_param_traits.h"
 #include "mojo/public/cpp/system/buffer.h"
@@ -35,19 +36,6 @@
 #include "ui/gl/gl_bindings.h"
 
 namespace gpu {
-
-namespace {
-
-gpu::CommandBufferId CommandBufferProxyID(int channel_id, int32_t route_id) {
-  return gpu::CommandBufferId::FromUnsafeValue(
-      (static_cast<uint64_t>(channel_id) << 32) | route_id);
-}
-
-int GetChannelID(gpu::CommandBufferId command_buffer_id) {
-  return static_cast<int>(command_buffer_id.GetUnsafeValue() >> 32);
-}
-
-}  // namespace
 
 CommandBufferProxyImpl::CommandBufferProxyImpl(
     scoped_refptr<GpuChannelHost> channel,
@@ -59,7 +47,8 @@ CommandBufferProxyImpl::CommandBufferProxyImpl(
       channel_id_(channel_->channel_id()),
       route_id_(channel_->GenerateRouteID()),
       stream_id_(stream_id),
-      command_buffer_id_(CommandBufferProxyID(channel_id_, route_id_)),
+      command_buffer_id_(
+          CommandBufferIdFromChannelAndRoute(channel_id_, route_id_)),
       callback_thread_(std::move(task_runner)),
       weak_ptr_factory_(this) {
   DCHECK(route_id_);
@@ -570,7 +559,8 @@ void CommandBufferProxyImpl::WaitSyncTokenHint(
 bool CommandBufferProxyImpl::CanWaitUnverifiedSyncToken(
     const gpu::SyncToken& sync_token) {
   // Can only wait on an unverified sync token if it is from the same channel.
-  int sync_token_channel_id = GetChannelID(sync_token.command_buffer_id());
+  int sync_token_channel_id =
+      ChannelIdFromCommandBufferId(sync_token.command_buffer_id());
   if (sync_token.namespace_id() != gpu::CommandBufferNamespace::GPU_IO ||
       sync_token_channel_id != channel_id_) {
     return false;

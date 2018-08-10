@@ -16,6 +16,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
+#include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -32,6 +33,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/native_widget_types.h"
@@ -72,6 +74,15 @@ IPC_STRUCT_BEGIN(GpuCommandBufferMsg_CreateImage_Params)
   IPC_STRUCT_MEMBER(uint64_t, image_release_count)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(GpuChannelMsg_CreateSharedImage_Params)
+  IPC_STRUCT_MEMBER(gpu::Mailbox, mailbox)
+  IPC_STRUCT_MEMBER(viz::ResourceFormat, format)
+  IPC_STRUCT_MEMBER(gfx::Size, size)
+  IPC_STRUCT_MEMBER(gfx::ColorSpace, color_space)
+  IPC_STRUCT_MEMBER(uint32_t, usage)
+  IPC_STRUCT_MEMBER(uint32_t, release_id)
+IPC_STRUCT_END()
+
 //------------------------------------------------------------------------------
 // GPU Channel Messages
 // These are messages from a renderer process to the GPU process.
@@ -96,6 +107,12 @@ IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,
 
 IPC_MESSAGE_CONTROL1(GpuChannelMsg_FlushCommandBuffers,
                      std::vector<gpu::FlushParams> /* flush_list */)
+
+IPC_MESSAGE_ROUTED1(GpuChannelMsg_CreateSharedImage,
+                    GpuChannelMsg_CreateSharedImage_Params /* params */)
+IPC_MESSAGE_ROUTED2(GpuChannelMsg_DestroySharedImage,
+                    gpu::SyncToken /* sync_token */,
+                    gpu::Mailbox /* id */)
 
 // Crash the GPU process in similar way to how chrome://gpucrash does.
 // This is only supported in testing environments, and is otherwise ignored.

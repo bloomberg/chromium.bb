@@ -253,6 +253,7 @@ target(link_target_type, "gles2_sources") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//cc/paint",
+    "//components/viz/common:resource_format_utils",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/config",

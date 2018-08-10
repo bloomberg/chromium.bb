@@ -14,6 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/gpu_param_traits_macros.h"
 #include "ipc/ipc_channel_mojo.h"
@@ -41,7 +42,9 @@ GpuChannelHost::GpuChannelHost(int channel_id,
       listener_(new Listener(std::move(handle), io_thread_),
                 base::OnTaskRunnerDeleter(io_thread_)) {
   next_image_id_.GetNext();
-  next_route_id_.GetNext();
+  for (int32_t i = 0;
+       i <= static_cast<int32_t>(GpuChannelReservedRoutes::kMaxValue); ++i)
+    next_route_id_.GetNext();
 }
 
 bool GpuChannelHost::Send(IPC::Message* msg) {

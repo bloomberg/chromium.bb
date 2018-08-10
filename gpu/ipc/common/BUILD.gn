@@ -65,6 +65,7 @@ source_set("ipc_common_sources") {
   visibility = [ "//gpu/*" ]
 
   sources = [
+    "command_buffer_id.h",
     "flush_params.cc",
     "flush_params.h",
     "gpu_client_ids.h",
@@ -125,11 +126,13 @@ source_set("ipc_common_sources") {
 
   deps = [
     "//base",
+    "//components/viz/common:resource_format",
     "//gpu/command_buffer/common:common_sources",
     "//gpu/config:config_sources",
     "//ui/base",
     "//ui/gfx/ipc",
     "//ui/gfx/ipc/buffer_types",
+    "//ui/gfx/ipc/color",
     "//ui/gfx/ipc/geometry",
     "//ui/gl",
   ]

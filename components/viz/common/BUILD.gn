@@ -6,19 +6,28 @@ import("//components/viz/viz.gni")
 import("//testing/test.gni")
 import("//gpu/vulkan/features.gni")
 
-viz_component("resource_format") {
-  output_name = "viz_resource_format"
+source_set("resource_format") {
+  sources = [
+    "resources/resource_format.h",
+  ]
+}
+
+viz_component("resource_format_utils") {
+  output_name = "viz_resource_format_utils"
 
   defines = [ "VIZ_RESOURCE_FORMAT_IMPLEMENTATION" ]
 
   sources = [
-    "resources/resource_format.h",
     "resources/resource_format_utils.cc",
     "resources/resource_format_utils.h",
     "viz_resource_format_export.h",
   ]
 
   configs = [ "//third_party/khronos:khronos_headers" ]
+
+  public_deps = [
+    ":resource_format",
+  ]
 
   deps = [
     "//base",
@@ -188,7 +197,7 @@ viz_component("common") {
   }
 
   public_deps = [
-    ":resource_format",
+    ":resource_format_utils",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/common",
     "//mojo/public/cpp/bindings",

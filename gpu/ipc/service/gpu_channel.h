@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -23,6 +24,7 @@
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
+#include "gpu/ipc/service/shared_image_stub.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/message_router.h"
@@ -39,10 +41,11 @@ class WaitableEvent;
 
 namespace gpu {
 
-class Scheduler;
-class SyncPointManager;
 class GpuChannelManager;
 class GpuChannelMessageFilter;
+class Scheduler;
+class SharedImageStub;
+class SyncPointManager;
 
 class GPU_IPC_SERVICE_EXPORT FilteredSender : public IPC::Sender {
  public:
@@ -237,6 +240,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannel : public IPC::Listener,
   scoped_refptr<gl::GLShareGroup> share_group_;
 
   std::unique_ptr<gles2::ImageManager> image_manager_;
+  std::unique_ptr<SharedImageStub> shared_image_stub_;
 
   const bool is_gpu_host_;
 
