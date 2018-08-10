@@ -16,6 +16,7 @@
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
+#import "ios/chrome/browser/autofill/form_input_accessory_view_delegate.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
@@ -350,7 +351,6 @@ AutofillSuggestionState::AutofillSuggestionState(
         completionHandler:^{
           [[weakSelf accessoryViewDelegate] closeKeyboardWithoutButtonPress];
         }];
-  _provider = nil;
 }
 
 - (id<FormInputAccessoryViewProvider>)accessoryViewProvider {
@@ -379,14 +379,9 @@ AutofillSuggestionState::AutofillSuggestionState(
   [self retrieveSuggestionsForForm:params webState:webState];
 }
 
-- (void)inputAccessoryViewControllerDidReset:
-    (FormInputAccessoryViewController*)controller {
+- (void)inputAccessoryViewControllerDidReset {
   accessoryViewUpdateBlock_ = nil;
   [self resetSuggestionState];
-}
-
-- (void)resizeAccessoryView {
-  [self updateKeyboard:_suggestionState.get()];
 }
 
 @end

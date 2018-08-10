@@ -27,10 +27,10 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/security_state/ios/ssl_status_input_event_data.h"
-#import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
+#import "ios/chrome/browser/ui/autofill/form_input_accessory_mediator.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #import "ios/web/public/navigation_item.h"
@@ -207,9 +207,12 @@ class PasswordControllerTest : public ChromeWebTest {
       suggestionController_ = [[PasswordsTestSuggestionController alloc]
           initWithWebState:web_state()
                  providers:@[ [passwordController_ suggestionProvider] ]];
-      accessoryViewController_ = [[FormInputAccessoryViewController alloc]
-          initWithWebState:web_state()
-                 providers:@[ [suggestionController_ accessoryViewProvider] ]];
+      accessoryMediator_ =
+          [[FormInputAccessoryMediator alloc] initWithConsumer:nil
+                                                  webStateList:NULL];
+      [accessoryMediator_ injectWebState:web_state()];
+      [accessoryMediator_
+          injectProviders:@[ [suggestionController_ accessoryViewProvider] ]];
     }
   }
 
@@ -275,8 +278,8 @@ class PasswordControllerTest : public ChromeWebTest {
   // SuggestionController for testing.
   PasswordsTestSuggestionController* suggestionController_;
 
-  // FormInputAccessoryViewController for testing.
-  FormInputAccessoryViewController* accessoryViewController_;
+  // FormInputAccessoryMediatorfor testing.
+  FormInputAccessoryMediator* accessoryMediator_;
 
   // PasswordController for testing.
   PasswordController* passwordController_;

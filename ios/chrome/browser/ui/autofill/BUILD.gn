@@ -13,6 +13,8 @@ source_set("autofill") {
     "chrome_autofill_client_ios.mm",
     "form_input_accessory_coordinator.h",
     "form_input_accessory_coordinator.mm",
+    "form_input_accessory_mediator.h",
+    "form_input_accessory_mediator.mm",
   ]
   deps = [
     ":autofill_ui",
@@ -20,6 +22,7 @@ source_set("autofill") {
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/autofill/ios/browser",
+    "//components/autofill/ios/form_util",
     "//components/browser_sync",
     "//components/infobars/core",
     "//components/keyed_service/core",
@@ -32,6 +35,7 @@ source_set("autofill") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/metrics",
+    "//ios/chrome/browser/passwords:passwords_generation_utils",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/sync",
