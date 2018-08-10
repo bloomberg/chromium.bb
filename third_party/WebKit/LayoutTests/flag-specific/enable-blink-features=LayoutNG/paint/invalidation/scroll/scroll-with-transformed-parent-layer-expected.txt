@@ -29,12 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV id='moveMe' class='absolute clipped'",
-      "reason": "full"
-    }
   ]
 }
 

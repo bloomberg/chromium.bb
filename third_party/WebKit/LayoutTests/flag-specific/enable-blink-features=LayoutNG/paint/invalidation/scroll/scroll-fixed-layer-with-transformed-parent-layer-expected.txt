@@ -45,10 +45,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV id='moveMe' class='fixed clipped'",
-      "reason": "full"
-    },
-    {
       "object": "LayoutNGBlockFlow (positioned) DIV class='absolute green'",
       "reason": "geometry"
     },
