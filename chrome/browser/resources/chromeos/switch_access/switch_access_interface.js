@@ -99,25 +99,5 @@ SwitchAccessInterface.prototype = {
    * @param {number} keyCode
    * @return {boolean}
    */
-  keyCodeIsUsed: function(keyCode) {},
-
-  /**
-   * Move to the next sibling of the current node if it has one.
-   */
-  debugMoveToNext: function() {},
-
-  /**
-   * Move to the previous sibling of the current node if it has one.
-   */
-  debugMoveToPrevious: function() {},
-
-  /**
-   * Move to the first child of the current node if it has one.
-   */
-  debugMoveToFirstChild: function() {},
-
-  /**
-   * Move to the parent of the current node if it has one.
-   */
-  debugMoveToParent: function() {}
+  keyCodeIsUsed: function(keyCode) {}
 };

@@ -7,6 +7,7 @@ import("//chrome/common/features.gni")
 import("//components/nacl/features.gni")
 import("//testing/test.gni")
 import("//chrome/test/base/js2gtest.gni")
+import("//third_party/closure_compiler/compile_js.gni")
 import("run_jsbundler.gni")
 
 assert(is_chromeos)
@@ -642,4 +643,37 @@ js2gtest("chromevox_extjs_tests") {
     "testing/mock_feedback.js",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+}
+
+js_library("tree_walker") {
+  sources = [
+    "cvox2/background/tree_walker.js",
+  ]
+  deps = [
+    ":automation_predicate",
+    ":constants",
+  ]
+  externs_list = [
+    "$externs_path/automation.js",
+    "$externs_path/chrome_extensions.js",
+  ]
+}
+
+js_library("automation_predicate") {
+  sources = [
+    "cvox2/background/automation_predicate.js",
+  ]
+  deps = [
+    ":constants",
+  ]
+  externs_list = [
+    "$externs_path/automation.js",
+    "$externs_path/chrome_extensions.js",
+  ]
+}
+
+js_library("constants") {
+  sources = [
+    "cvox2/background/constants.js",
+  ]
 }

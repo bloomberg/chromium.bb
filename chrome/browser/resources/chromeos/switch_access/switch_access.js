@@ -224,45 +224,5 @@ SwitchAccess.prototype = {
    */
   keyCodeIsUsed: function(keyCode) {
     return this.switchAccessPrefs_.keyCodeIsUsed(keyCode);
-  },
-
-  /**
-   * Move to the next sibling of the current node if it has one.
-   *
-   * @override
-   */
-  debugMoveToNext: function() {
-    if (this.automationManager_)
-      this.automationManager_.debugMoveToNext();
-  },
-
-  /**
-   * Move to the previous sibling of the current node if it has one.
-   *
-   * @override
-   */
-  debugMoveToPrevious: function() {
-    if (this.automationManager_)
-      this.automationManager_.debugMoveToPrevious();
-  },
-
-  /**
-   * Move to the first child of the current node if it has one.
-   *
-   * @override
-   */
-  debugMoveToFirstChild: function() {
-    if (this.automationManager_)
-      this.automationManager_.debugMoveToFirstChild();
-  },
-
-  /**
-   * Move to the parent of the current node if it has one.
-   *
-   * @override
-   */
-  debugMoveToParent: function() {
-    if (this.automationManager_)
-      this.automationManager_.debugMoveToParent();
   }
 };
