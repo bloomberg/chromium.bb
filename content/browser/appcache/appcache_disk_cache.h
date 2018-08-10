@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/common/content_export.h"
+#include "net/base/completion_once_callback.h"
 #include "net/disk_cache/disk_cache.h"
 
 namespace content {
@@ -32,23 +33,23 @@ class CONTENT_EXPORT AppCacheDiskCache
                           int disk_cache_size,
                           bool force,
                           base::OnceClosure post_cleanup_callback,
-                          const net::CompletionCallback& callback);
+                          net::CompletionOnceCallback callback);
 
   // Initializes the object to use memory only storage.
   // This is used for Chrome's incognito browsing.
   int InitWithMemBackend(int disk_cache_size,
-                         const net::CompletionCallback& callback);
+                         net::CompletionOnceCallback callback);
 
   void Disable();
   bool is_disabled() const { return is_disabled_; }
 
   int CreateEntry(int64_t key,
                   Entry** entry,
-                  const net::CompletionCallback& callback) override;
+                  net::CompletionOnceCallback callback) override;
   int OpenEntry(int64_t key,
                 Entry** entry,
-                const net::CompletionCallback& callback) override;
-  int DoomEntry(int64_t key, const net::CompletionCallback& callback) override;
+                net::CompletionOnceCallback callback) override;
+  int DoomEntry(int64_t key, net::CompletionOnceCallback callback) override;
 
   void set_is_waiting_to_initialize(bool is_waiting_to_initialize) {
     is_waiting_to_initialize_ = is_waiting_to_initialize;
@@ -73,21 +74,19 @@ class CONTENT_EXPORT AppCacheDiskCache
     DOOM
   };
   struct PendingCall {
-    PendingCallType call_type;
-    int64_t key;
-    Entry** entry;
-    net::CompletionCallback callback;
-
     PendingCall();
-
     PendingCall(PendingCallType call_type,
                 int64_t key,
                 Entry** entry,
-                const net::CompletionCallback& callback);
-
-    PendingCall(const PendingCall& other);
+                net::CompletionOnceCallback callback);
+    PendingCall(PendingCall&& other);
 
     ~PendingCall();
+
+    PendingCallType call_type;
+    int64_t key;
+    Entry** entry;
+    net::CompletionOnceCallback callback;
   };
   using PendingCalls = std::vector<PendingCall>;
 
@@ -104,7 +103,7 @@ class CONTENT_EXPORT AppCacheDiskCache
            int cache_size,
            bool force,
            base::OnceClosure post_cleanup_callback,
-           const net::CompletionCallback& callback);
+           net::CompletionOnceCallback callback);
   void OnCreateBackendComplete(int rv);
   void AddOpenEntry(EntryImpl* entry) { open_entries_.insert(entry); }
   void RemoveOpenEntry(EntryImpl* entry) { open_entries_.erase(entry); }
@@ -112,7 +111,7 @@ class CONTENT_EXPORT AppCacheDiskCache
   bool use_simple_cache_;
   bool is_disabled_;
   bool is_waiting_to_initialize_;
-  net::CompletionCallback init_callback_;
+  net::CompletionOnceCallback init_callback_;
   scoped_refptr<CreateBackendCallbackShim> create_backend_callback_;
   PendingCalls pending_calls_;
   OpenEntries open_entries_;

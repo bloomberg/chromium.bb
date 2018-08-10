@@ -24,9 +24,8 @@ class MockAppCacheService : public AppCacheServiceImpl {
 
   // Just returns a canned completion code without actually
   // removing groups and caches in our mock storage instance.
-  void DeleteAppCachesForOrigin(
-      const url::Origin& origin,
-      const net::CompletionCallback& callback) override;
+  void DeleteAppCachesForOrigin(const url::Origin& origin,
+                                net::CompletionOnceCallback callback) override;
 
   void set_quota_manager_proxy(storage::QuotaManagerProxy* proxy) {
     quota_manager_proxy_ = proxy;

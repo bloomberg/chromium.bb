@@ -4,6 +4,8 @@
 
 #include "content/browser/appcache/mock_appcache_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -11,17 +13,16 @@
 
 namespace content {
 
-static void DeferredCallCallback(
-    const net::CompletionCallback& callback, int rv) {
-  callback.Run(rv);
+static void DeferredCallCallback(net::CompletionOnceCallback callback, int rv) {
+  std::move(callback).Run(rv);
 }
 
 void MockAppCacheService::DeleteAppCachesForOrigin(
     const url::Origin& origin,
-    const net::CompletionCallback& callback) {
+    net::CompletionOnceCallback callback) {
   ++delete_called_count_;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&DeferredCallCallback, callback,
+      FROM_HERE, base::BindOnce(&DeferredCallCallback, std::move(callback),
                                 mock_delete_appcaches_for_origin_result_));
 }
 
