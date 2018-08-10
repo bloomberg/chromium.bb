@@ -60,6 +60,11 @@ class FakeServiceWorkerContext : public ServiceWorkerContext {
     return start_service_worker_for_navigation_hint_called_;
   }
 
+  void StartServiceWorkerAndDispatchLongRunningMessage(
+      const GURL& pattern,
+      blink::TransferableMessage message,
+      FakeServiceWorkerContext::ResultCallback result_callback) override;
+
  private:
   bool start_service_worker_for_navigation_hint_called_ = false;
 

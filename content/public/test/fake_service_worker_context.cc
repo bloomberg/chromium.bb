@@ -77,6 +77,14 @@ void FakeServiceWorkerContext::StartServiceWorkerForNavigationHint(
     StartServiceWorkerForNavigationHintCallback callback) {
   start_service_worker_for_navigation_hint_called_ = true;
 }
+
+void FakeServiceWorkerContext::StartServiceWorkerAndDispatchLongRunningMessage(
+    const GURL& pattern,
+    blink::TransferableMessage message,
+    ResultCallback result_callback) {
+  NOTREACHED();
+}
+
 void FakeServiceWorkerContext::StopAllServiceWorkersForOrigin(
     const GURL& origin) {
   NOTREACHED();

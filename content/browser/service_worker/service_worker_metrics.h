@@ -213,6 +213,7 @@ class ServiceWorkerMetrics {
     CAN_MAKE_PAYMENT = 28,
     ABORT_PAYMENT = 29,
     COOKIE_CHANGE = 30,
+    LONG_RUNNING_MESSAGE = 31,
     // Add new events to record here.
     NUM_TYPES
   };

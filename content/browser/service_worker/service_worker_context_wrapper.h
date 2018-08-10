@@ -131,6 +131,10 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void StartWorkerForPattern(const GURL& pattern,
                              StartWorkerCallback info_callback,
                              base::OnceClosure failure_callback) override;
+  void StartServiceWorkerAndDispatchLongRunningMessage(
+      const GURL& pattern,
+      blink::TransferableMessage message,
+      ResultCallback result_callback) override;
   void StartServiceWorkerForNavigationHint(
       const GURL& document_url,
       StartServiceWorkerForNavigationHintCallback callback) override;
@@ -357,6 +361,27 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void StopAllServiceWorkersOnIO(
       base::OnceClosure callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback);
+
+  void DidFindRegistrationForLongRunningMessage(
+      blink::TransferableMessage message,
+      const GURL& source_origin,
+      ResultCallback result_callback,
+      blink::ServiceWorkerStatusCode service_worker_status,
+      scoped_refptr<ServiceWorkerRegistration> registration);
+
+  void DidStartServiceWorkerForLongRunningMessage(
+      blink::TransferableMessage message,
+      const GURL& source_origin,
+      scoped_refptr<ServiceWorkerRegistration> registration,
+      ServiceWorkerContext::ResultCallback result_callback,
+      blink::ServiceWorkerStatusCode service_worker_status);
+
+  void SendActiveWorkerMessage(
+      blink::TransferableMessage message,
+      const GURL& source_origin,
+      ServiceWorkerContext::ResultCallback result_callback,
+      blink::ServiceWorkerStatusCode status,
+      scoped_refptr<ServiceWorkerRegistration> registration);
 
   // The core context is only for use on the IO thread.
   // Can be null before/during init, during/after shutdown, and after

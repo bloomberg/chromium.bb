@@ -916,7 +916,7 @@ void EmbeddedWorkerInstance::SetDevToolsAttached(bool attached) {
     return;
   if (inflight_start_task_)
     inflight_start_task_->set_skip_recording_startup_time();
-  registry_->OnDevToolsAttached(embedded_worker_id_);
+  registry_->AbortLifetimeTracking(embedded_worker_id_);
 }
 
 void EmbeddedWorkerInstance::OnNetworkAccessedForScriptLoad() {
