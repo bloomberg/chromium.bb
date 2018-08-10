@@ -24,8 +24,7 @@ namespace {
 constexpr CallStackProfileParams kProfileParams = {
     CallStackProfileParams::BROWSER_PROCESS,
     CallStackProfileParams::MAIN_THREAD,
-    CallStackProfileParams::PROCESS_STARTUP,
-    CallStackProfileParams::MAY_SHUFFLE};
+    CallStackProfileParams::PROCESS_STARTUP};
 
 // Called on the profiler thread when complete, to collect profile.
 void SaveProfile(SampledProfile* proto, SampledProfile pending_proto) {

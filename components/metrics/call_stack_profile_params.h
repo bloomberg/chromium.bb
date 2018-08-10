@@ -47,16 +47,6 @@ struct CallStackProfileParams {
     TRIGGER_LAST = PERIODIC_COLLECTION
   };
 
-  // Allows the caller to specify whether sample ordering is
-  // important. MAY_SHUFFLE should always be used to enable better compression,
-  // unless the use case needs order to be preserved for a specific reason.
-  enum SampleOrderingSpec {
-    // The provider may shuffle the sample order to improve compression.
-    MAY_SHUFFLE,
-    // The provider will not change the sample order.
-    PRESERVE_ORDER
-  };
-
   // The default constructor is required for mojo and should not be used
   // otherwise. A valid trigger should always be specified.
   constexpr CallStackProfileParams()
@@ -64,15 +54,7 @@ struct CallStackProfileParams {
   constexpr CallStackProfileParams(Process process,
                                    Thread thread,
                                    Trigger trigger)
-      : CallStackProfileParams(process, thread, trigger, MAY_SHUFFLE) {}
-  constexpr CallStackProfileParams(Process process,
-                                   Thread thread,
-                                   Trigger trigger,
-                                   SampleOrderingSpec ordering_spec)
-      : process(process),
-        thread(thread),
-        trigger(trigger),
-        ordering_spec(ordering_spec) {}
+      : process(process), thread(thread), trigger(trigger) {}
 
   // The collection process.
   Process process;
@@ -82,9 +64,6 @@ struct CallStackProfileParams {
 
   // The triggering event.
   Trigger trigger;
-
-  // Whether to preserve sample ordering.
-  SampleOrderingSpec ordering_spec;
 };
 
 }  // namespace metrics
