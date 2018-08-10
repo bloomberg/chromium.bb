@@ -11,6 +11,7 @@
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/test/aura_test_context_factory.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -112,15 +113,11 @@ void AuraTestBase::TearDown() {
 
 Window* AuraTestBase::CreateNormalWindow(int id, Window* parent,
                                          WindowDelegate* delegate) {
-  Window* window = new Window(
-      delegate ? delegate :
-      test::TestWindowDelegate::CreateSelfDestroyingDelegate());
-  window->set_id(id);
-  window->Init(ui::LAYER_TEXTURED);
-  parent->AddChild(window);
-  window->SetBounds(gfx::Rect(0, 0, 100, 100));
-  window->Show();
-  return window;
+  return CreateTestWindowWithDelegateAndType(
+      delegate ? delegate
+               : test::TestWindowDelegate::CreateSelfDestroyingDelegate(),
+      client::WINDOW_TYPE_UNKNOWN, id, gfx::Rect(0, 0, 100, 100), parent,
+      /* show_on_creation */ true);
 }
 
 void AuraTestBase::EnableMusWithTestWindowTree() {
