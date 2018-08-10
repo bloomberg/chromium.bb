@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -34,7 +35,7 @@ class CardUnmaskPromptController;
 
 class CardUnmaskPromptViews : public CardUnmaskPromptView,
                               public views::ComboboxListener,
-                              public views::DialogDelegateView,
+                              public views::BubbleDialogDelegateView,
                               public views::TextfieldController,
                               public views::LinkListener {
  public:
@@ -55,6 +56,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
 
   // views::View
   gfx::Size CalculatePreferredSize() const override;
+  void AddedToWidget() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
