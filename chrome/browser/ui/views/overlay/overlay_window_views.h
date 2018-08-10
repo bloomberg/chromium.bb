@@ -82,9 +82,9 @@ class OverlayWindowViews : public content::OverlayWindow,
   // Set up the views::Views that will be shown on the window.
   void SetUpViews();
 
-  // Update |video_bounds_| to fit within |window_bounds_| while adhering to
-  // the aspect ratio of the video, which is retrieved from |natural_size_|.
-  void UpdateVideoLayerSizeWithAspectRatio(gfx::Size window_size);
+  // Update the bounds of the layers on the window. This may introduce
+  // letterboxing.
+  void UpdateLayerBoundsWithLetterboxing(gfx::Size window_size);
 
   // Updates the controls view::Views to reflect |is_visible|.
   void UpdateControlsVisibility(bool is_visible);
@@ -112,6 +112,11 @@ class OverlayWindowViews : public content::OverlayWindow,
   // Whether or not the controls of the window should be shown. This is used in
   // some event handlers (e.g. focus).
   bool should_show_controls_ = false;
+
+  // Whether or not the window has been shown before. This is used to determine
+  // sizing and placement. This is different from checking whether the window
+  // components has been initialized.
+  bool has_been_shown_ = false;
 
   // The upper and lower bounds of |current_size_|. These are determined by the
   // size of the primary display work area when Picture-in-Picture is initiated.

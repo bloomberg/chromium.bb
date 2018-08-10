@@ -23,6 +23,7 @@
 #include "ui/views/vector_icons.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/non_client_view.h"
+#include "ui/views/window/window_resize_utils.h"
 
 // static
 std::unique_ptr<content::OverlayWindow> content::OverlayWindow::Create(
@@ -169,37 +170,43 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
   // on UI affordances, such as buttons.
   min_size_ = kMinWindowSize;
 
-  gfx::Size window_size;
-  gfx::Point origin;
-
-  if (is_initialized_) {
-    window_size = window_bounds_.size();
-    origin = window_bounds_.origin();
-  } else {
-    // Determine the initial window bounds:
-    // The initial window size is 20% of the |work_area| screen.
+  gfx::Size window_size = window_bounds_.size();
+  if (!has_been_shown_) {
     window_size = gfx::Size(work_area.width() / 5, work_area.height() / 5);
     window_size.set_width(std::min(
         max_size_.width(), std::max(min_size_.width(), window_size.width())));
     window_size.set_height(
         std::min(max_size_.height(),
                  std::max(min_size_.height(), window_size.height())));
+  }
 
-    // Determine the initial origin point:
-    // The window is positioned on the bottom right of the |work_area| screen.
+  // Determine the window size by fitting |natural_size_| within
+  // |window_size|, keeping to |natural_size_|'s aspect ratio.
+  if (!window_size.IsEmpty() && !natural_size_.IsEmpty()) {
+    float aspect_ratio = (float)natural_size_.width() / natural_size_.height();
+
+    // Update the window size to adhere to the aspect ratio.
+    gfx::Rect window_rect(GetBounds().origin(), window_size);
+    views::WindowResizeUtils::SizeRectToAspectRatio(
+        views::HitTest::kBottomRight, aspect_ratio, min_size_, max_size_,
+        &window_rect);
+    window_size.SetSize(window_rect.width(), window_rect.height());
+
+    UpdateLayerBoundsWithLetterboxing(window_size);
+  }
+
+  // Use the previous window origin location, if exists.
+  gfx::Point origin = window_bounds_.origin();
+  if (!has_been_shown_) {
     int window_diff_width = work_area.right() - window_size.width();
     int window_diff_height = work_area.bottom() - window_size.height();
 
-    // There will be a margin between the edges of the Picture-in-Picture
-    // window and the |work_area| screen by taking 2% of the average of the
-    // window dimensions.
-    int margin = (window_diff_width + window_diff_height) / 2 * 0.02;
-
+    // Keep a margin distance of 2% the average of the two window size
+    // differences, keeping the margins consistent.
+    int buffer = (window_diff_width + window_diff_height) / 2 * 0.02;
     origin =
-        gfx::Point(window_diff_width - margin, window_diff_height - margin);
+        gfx::Point(window_diff_width - buffer, window_diff_height - buffer);
   }
-
-  UpdateVideoLayerSizeWithAspectRatio(window_size);
 
   window_bounds_ = gfx::Rect(origin, window_size);
   return window_bounds_;
@@ -283,7 +290,7 @@ void OverlayWindowViews::SetUpViews() {
   UpdateControlsVisibility(false);
 }
 
-void OverlayWindowViews::UpdateVideoLayerSizeWithAspectRatio(
+void OverlayWindowViews::UpdateLayerBoundsWithLetterboxing(
     gfx::Size window_size) {
   // This is the case when the window is initially created or the video surface
   // id has not been embedded.
@@ -373,6 +380,9 @@ void OverlayWindowViews::Show() {
 
   // Don't show the controls until the mouse hovers over the window.
   should_show_controls_ = false;
+
+  // If this is not the first time the window is shown, this will be a no-op.
+  has_been_shown_ = true;
 }
 
 void OverlayWindowViews::Hide() {
@@ -403,11 +413,9 @@ void OverlayWindowViews::UpdateVideoSize(const gfx::Size& natural_size) {
   if (IsVisible())
     return;
 
-  // Update the views::Widget bounds to adhere to sizing spec.
+  // Update the views::Widget bounds to adhere to sizing spec. This will also
+  // update the layout of the controls.
   SetBounds(CalculateAndUpdateWindowBounds());
-
-  // Update the layout of the controls.
-  UpdateControlsBounds();
 }
 
 void OverlayWindowViews::SetPlaybackState(PlaybackState playback_state) {
@@ -570,7 +578,7 @@ void OverlayWindowViews::OnNativeWidgetMove() {
 void OverlayWindowViews::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
   // Update the view layers to scale to |new_size|.
   UpdatePlayPauseControlsSize();
-  UpdateVideoLayerSizeWithAspectRatio(new_size);
+  UpdateLayerBoundsWithLetterboxing(new_size);
 
   views::Widget::OnNativeWidgetSizeChanged(new_size);
 }
