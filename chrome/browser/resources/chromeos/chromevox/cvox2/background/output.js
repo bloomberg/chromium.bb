@@ -468,9 +468,12 @@ Output.RULES = {
     },
     listMarker: {speak: `$name`},
     menu: {
-      enter: `$name $role`,
+      enter:
+          `$name $role
+          @@list_with_items($countChildren(menuItem, menuItemCheckBox, menuItemRadio))`,
       speak: `$name $node(activeDescendant)
-          $role @@list_with_items($countChildren(menuItem))
+          $role @@list_with_items(
+              $countChildren(menuItem, menuItemCheckBox, menuItemRadio))
           $description $state $restriction`
     },
     menuItem: {
@@ -1476,10 +1479,14 @@ Output.prototype = {
                 tree.firstChild.value, node.location || undefined));
             this.append_(buff, '', options);
           } else if (token == 'countChildren') {
-            var role = tree.firstChild.value;
+            var roles = [];
+            var currentNode = tree.firstChild;
+            for (; currentNode; currentNode = currentNode.nextSibling)
+              roles.push(currentNode.value);
+
             var count = node.children
                             .filter(function(e) {
-                              return e.role == role;
+                              return roles.includes(e.role);
                             })
                             .length;
             this.append_(buff, String(count));
