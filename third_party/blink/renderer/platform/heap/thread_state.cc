@@ -1453,7 +1453,7 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
   CompleteSweep();
   Heap().stats_collector()->NotifyMarkingStarted(reason);
   {
-    ThreadHeapStatsCollector::Scope stats_scope(
+    ThreadHeapStatsCollector::EnabledScope stats_scope(
         Heap().stats_collector(),
         ThreadHeapStatsCollector::kIncrementalMarkingStartMarking, "reason",
         GcReasonString(reason));
@@ -1471,7 +1471,7 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
 }
 
 void ThreadState::IncrementalMarkingStep() {
-  ThreadHeapStatsCollector::Scope stats_scope(
+  ThreadHeapStatsCollector::EnabledScope stats_scope(
       Heap().stats_collector(),
       ThreadHeapStatsCollector::kIncrementalMarkingStep);
   VLOG(2) << "[state:" << this << "] "
@@ -1488,7 +1488,7 @@ void ThreadState::IncrementalMarkingStep() {
 }
 
 void ThreadState::IncrementalMarkingFinalize() {
-  ThreadHeapStatsCollector::Scope stats_scope(
+  ThreadHeapStatsCollector::EnabledScope stats_scope(
       Heap().stats_collector(),
       ThreadHeapStatsCollector::kIncrementalMarkingFinalize);
   VLOG(2) << "[state:" << this << "] "
@@ -1577,7 +1577,7 @@ void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
                                  BlinkGC::SweepingType sweeping_type,
                                  BlinkGC::GCReason reason) {
   {
-    ThreadHeapStatsCollector::EnabledScope stats1(
+    ThreadHeapStatsCollector::DevToolsScope stats1(
         Heap().stats_collector(), ThreadHeapStatsCollector::kAtomicPhase);
     AtomicPauseScope atomic_pause_scope(this);
     {
