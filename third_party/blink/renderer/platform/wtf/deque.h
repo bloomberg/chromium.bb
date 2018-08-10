@@ -678,6 +678,8 @@ Deque<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) {
     Allocator::TraceVectorBacking(visitor, buffer_.Buffer(),
                                   buffer_.BufferSlot());
   } else {
+    Allocator::TraceVectorBacking(visitor, static_cast<T*>(nullptr),
+                                  buffer_.BufferSlot());
     const T* buffer_begin = buffer_.Buffer();
     const T* end = buffer_begin + end_;
     if (IsTraceableInCollectionTrait<VectorTraits<T>>::value) {

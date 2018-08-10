@@ -156,6 +156,8 @@ void V8EmbedderGraphBuilder::VisitWithWrappers(
 void V8EmbedderGraphBuilder::VisitBackingStoreStrongly(void* object,
                                                        void** object_slot,
                                                        TraceDescriptor desc) {
+  if (!object)
+    return;
   desc.callback(this, desc.base_object_payload);
 }
 

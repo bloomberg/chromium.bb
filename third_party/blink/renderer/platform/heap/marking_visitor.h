@@ -142,8 +142,10 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
   // processing. In this case, the contents are processed separately using
   // the corresponding traits but the backing store requires marking.
   void VisitBackingStoreOnly(void* object, void** object_slot) final {
-    MarkHeaderNoTracing(HeapObjectHeader::FromPayload(object));
     RegisterBackingStoreReference(object_slot);
+    if (!object)
+      return;
+    MarkHeaderNoTracing(HeapObjectHeader::FromPayload(object));
   }
 
   void RegisterBackingStoreCallback(void* backing_store,
