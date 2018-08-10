@@ -416,6 +416,13 @@ PermissionResult PermissionManager::GetPermissionStatus(
     ContentSettingsType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
+  // With permission delegation enabled, this function should only ever be
+  // called for the top level origin (or a service worker origin).
+  // GetPermissionStatusForFrame should be called when to determine the status
+  // for an embedded frame.
+  DCHECK(!base::FeatureList::IsEnabled(features::kPermissionDelegation) ||
+         requesting_origin == embedding_origin);
+
   return GetPermissionStatusHelper(permission, nullptr /* render_frame_host */,
                                    requesting_origin, embedding_origin);
 }
