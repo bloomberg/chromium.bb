@@ -80,6 +80,29 @@ var I18nBehavior = {
   },
 
   /**
+   * Similar to 'i18nDynamic', but var_args valus are interpreted as keys in
+   * loadTimeData. This allows generation of strings that take other localized
+   * strings as parameters.
+   * @param {string} locale The UI language used.
+   * @param {string} id The ID of the string to translate.
+   * @param {...string} var_args Values to replace the placeholders $1 to $9
+   *     in the string. Values are interpreted as strings IDs if found in the
+   *     list of localized strings.
+   * @return {string} A translated, sanitized, substituted string.
+   */
+  i18nRecursive: function(locale, id, var_args) {
+    var args = Array.prototype.slice.call(arguments, 2);
+    if (args.length > 0) {
+      // Try to replace IDs with localized values.
+      var self = this;
+      args = args.map(function(str) {
+        return self.i18nExists(str) ? loadTimeData.getString(str) : str;
+      });
+    }
+    return this.i18nDynamic.apply(this, [locale, id].concat(args));
+  },
+
+  /**
    * Returns true if a translation exists for |id|.
    * @param {string} id
    * @return {boolean}

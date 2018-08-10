@@ -45,10 +45,12 @@
           <div class="overview-list-item-text flex layout vertical
               center-justified">
             <div class="overview-list-item-title" consent-description>
-              [[i18nDynamic(locale, 'syncConsentScreenPersonalizeGoogleServicesName')]]
+              [[i18nDynamic(locale,
+                'syncConsentScreenPersonalizeGoogleServicesName')]]
             </div>
             <div class="overview-list-item-description" consent-description>
-              [[i18nDynamic(locale, 'syncConsentScreenPersonalizeGoogleServicesDescription')]]
+              [[i18nDynamic(locale,
+                'syncConsentScreenPersonalizeGoogleServicesDescription')]]
             </div>
           </div>
         </div>
@@ -66,14 +68,15 @@
       </div>
     </oobe-dialog>
     <oobe-dialog id="syncConsentNewDialog" role="dialog"
-        aria-label$="[[i18nDynamic(locale, 'syncConsentNewScreenTitle')]]"
+        aria-label$="[[i18nRecursive(locale, 'syncConsentNewScreenTitle',
+                                     'productName')]]"
         has-buttons no-footer-padding hidden>
       <img srcset="chrome://oobe/logo_24px-1x.svg 1x,
                    chrome://oobe/logo_24px-2x.svg 2x"
           slot="oobe-icon">
       </img>
       <h1 slot="title" consent-description>
-        [[i18nDynamic(locale, 'syncConsentNewScreenTitle')]]
+        [[i18nRecursive(locale, 'syncConsentNewScreenTitle', 'productName')]]
       </h1>
       <div slot="footer" class="layout vertical">
         <div class="sync-feature-item flex layout horizontal center">
@@ -102,7 +105,8 @@
           </hd-iron-icon>
           <div class="sync-feature-item-text flex layout vertical
               center-justified" consent-description>
-            [[i18nDynamic(locale, 'syncConsentNewImproveChrome')]]
+            [[i18nRecursive(locale, 'syncConsentNewImproveChrome',
+                            'productName')]]
           </div>
         </div>
         <div id="syncFeaturesDesc"
@@ -113,7 +117,8 @@
           </hd-iron-icon>
           <div class="sync-feature-item-text flex layout vertical
               center-justified" consent-description>
-            [[i18nDynamic(locale, 'syncConsentNewGoogleMayUse')]]
+            [[i18nRecursive(locale, 'syncConsentNewGoogleMayUse',
+                            'productName')]]
           </div>
         </div>
 
@@ -121,7 +126,8 @@
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-welcome-secondary-button id="moreOptionsButton"
             on-tap="onMoreOptionsButton_"
-            label-for-aria$="[[i18nDynamic(locale, 'syncConsentNewMoreOptions')]]">
+            label-for-aria$="[[i18nDynamic(locale,
+                'syncConsentNewMoreOptions')]]">
           <div consent-description>
             [[i18nDynamic(locale, 'syncConsentNewMoreOptions')]]
           </div>
@@ -146,7 +152,8 @@
       </h1>
       <div slot="subtitle">
         <div consent-description>
-          [[i18nDynamic(locale, 'syncConsentNewSyncOptionsSubtitle')]]
+          [[i18nRecursive(locale, 'syncConsentNewSyncOptionsSubtitle',
+                          'productName')]]
         </div>
         <div consent-description>
           [[i18nDynamic(locale, 'syncConsentNewChooseOption')]]
@@ -177,7 +184,8 @@
                   [[i18nDynamic(locale, 'syncConsentNewOptionJustSync')]]
                 </div>
                 <div class="sync-option-subtitle" consent-description>
-                  [[i18nDynamic(locale, 'syncConsentNewOptionJustSyncDsc')]]
+                  [[i18nRecursive(locale, 'syncConsentNewOptionJustSyncDsc',
+                                  'productName')]]
                 </div>
             </div>
           </paper-radio-button>
@@ -187,10 +195,12 @@
             <div class="options-list-item-text flex layout vertical
                 center-justified">
                 <div class="sync-option-title" consent-description>
-                  [[i18nDynamic(locale, 'syncConsentNewOptionSyncAndPersonalization')]]
+                  [[i18nDynamic(locale,
+                                'syncConsentNewOptionSyncAndPersonalization')]]
                 </div>
                 <div class="sync-option-subtitle" consent-description>
-                  [[i18nDynamic(locale, 'syncConsentNewOptionSyncAndPersonalizationDsc')]]
+                  [[i18nDynamic(locale,
+                      'syncConsentNewOptionSyncAndPersonalizationDsc')]]
                 </div>
             </div>
           </paper-radio-button>
