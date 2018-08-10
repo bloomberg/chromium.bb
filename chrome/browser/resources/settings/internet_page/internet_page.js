@@ -12,7 +12,7 @@ Polymer({
 
   behaviors: [
     I18nBehavior, settings.RouteObserverBehavior, WebUIListenerBehavior,
-    NetworkListenerBehavior
+    CrNetworkListenerBehavior
   ],
 
   properties: {

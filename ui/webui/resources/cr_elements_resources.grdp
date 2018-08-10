@@ -199,6 +199,14 @@
                file="cr_elements/chromeos/network/cr_network_list_types.js"
                type="chrome_html"
                compress="gzip" />
+    <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_NETWORK_LISTENER_BEHAVIOR_HTML"
+               file="cr_elements/chromeos/network/cr_network_listener_behavior.html"
+               type="chrome_html"
+               compress="gzip" />
+    <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_NETWORK_LISTENER_BEHAVIOR_JS"
+               file="cr_elements/chromeos/network/cr_network_listener_behavior.js"
+               type="chrome_html"
+               compress="gzip" />
     <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_NETWORK_SELECT_HTML"
                file="cr_elements/chromeos/network/cr_network_select.html"
                type="chrome_html"

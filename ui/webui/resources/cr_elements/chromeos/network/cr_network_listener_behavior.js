@@ -8,7 +8,7 @@
  */
 
 /** @polymerBehavior */
-const NetworkListenerBehavior = {
+var CrNetworkListenerBehavior = {
   properties: {
     /**
      * Array of selectors specifying all children to alert of changes to the
@@ -63,9 +63,12 @@ const NetworkListenerBehavior = {
    * @private
    */
   onNetworkListChanged_: function(networkIds) {
-    const event = new CustomEvent('network-list-changed', {detail: networkIds});
-    this.networkListChangeSubscriberSelectors_.forEach(
-        selector => this.maybeDispatchEvent_(selector, event));
+    var event = new CustomEvent('network-list-changed', {detail: networkIds});
+    for (var i = 0; i < this.networkListChangeSubscriberSelectors_.length;
+         i++) {
+      this.maybeDispatchEvent_(
+          this.networkListChangeSubscriberSelectors_[i], event);
+    }
   },
 
   /**
@@ -76,9 +79,11 @@ const NetworkListenerBehavior = {
    * @private
    */
   onNetworksChanged_: function(networkIds) {
-    const event = new CustomEvent('networks-changed', {detail: networkIds});
-    this.networksChangeSubscriberSelectors_.forEach(
-        selector => this.maybeDispatchEvent_(selector, event));
+    var event = new CustomEvent('networks-changed', {detail: networkIds});
+    for (var i = 0; i < this.networksChangeSubscriberSelectors_.length; i++) {
+      this.maybeDispatchEvent_(
+          this.networksChangeSubscriberSelectors_[i], event);
+    }
   },
 
   /**
@@ -86,7 +91,7 @@ const NetworkListenerBehavior = {
    * @private
    */
   maybeDispatchEvent_: function(selectors, event) {
-    const element = this.$$(selectors);
+    var element = this.$$(selectors);
     if (!element)
       return;
     element.dispatchEvent(event);
