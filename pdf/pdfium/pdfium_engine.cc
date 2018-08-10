@@ -2858,7 +2858,7 @@ bool PDFiumEngine::ContinuePaint(int progressive_index,
   int rv;
   FPDF_PAGE page = pages_[page_index]->GetPage();
   if (progressive_paints_[progressive_index].bitmap()) {
-    rv = FPDF_RenderPage_Continue(page, static_cast<IFSDK_PAUSE*>(this));
+    rv = FPDF_RenderPage_Continue(page, this);
   } else {
     int start_x;
     int start_y;
@@ -2872,12 +2872,11 @@ bool PDFiumEngine::ContinuePaint(int progressive_index,
                         0xFFFFFFFF);
     rv = FPDF_RenderPageBitmap_Start(new_bitmap.get(), page, start_x, start_y,
                                      size_x, size_y, current_rotation_,
-                                     GetRenderingFlags(),
-                                     static_cast<IFSDK_PAUSE*>(this));
+                                     GetRenderingFlags(), this);
     progressive_paints_[progressive_index].SetBitmapAndImageData(
         std::move(new_bitmap), *image_data);
   }
-  return rv != FPDF_RENDER_TOBECOUNTINUED;
+  return rv != FPDF_RENDER_TOBECONTINUED;
 }
 
 void PDFiumEngine::FinishPaint(int progressive_index,
