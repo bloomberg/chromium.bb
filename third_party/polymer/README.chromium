@@ -44,9 +44,6 @@ the Crisper tool (https://github.com/PolymerLabs/crisper).
   handler code which was hiding ripples for pointer interactions.
 - Bundled and minified Polymer 2 with minify_polymer.py, since Polymer 2 repo
   does not distribute minified files (unlike Polymer 1).
-- For iron-list, call event.preventDefault() when up/down arrow is pressed and
-  the focused item changes. This is to prevent outer vertical scroll from
-  scrolling when the iron-list vertical scroll has reached the top or bottom.
 
 To restore a content of the 'components-chromium' directory from scratch, run
 ./v1_0/reproduce.sh on a Linux machine.
