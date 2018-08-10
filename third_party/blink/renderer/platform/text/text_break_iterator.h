@@ -121,8 +121,6 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
  public:
   LazyLineBreakIterator()
       : iterator_(nullptr),
-        cached_prior_context_(nullptr),
-        cached_prior_context_length_(0),
         break_type_(LineBreakType::kNormal) {
     ResetPriorContext();
   }
@@ -133,8 +131,6 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
       : string_(string),
         locale_(locale),
         iterator_(nullptr),
-        cached_prior_context_(nullptr),
-        cached_prior_context_length_(0),
         break_type_(break_type) {
     ResetPriorContext();
   }
@@ -179,52 +175,39 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
     prior_context_[1] = 0;
   }
 
-  unsigned PriorContextLength() const {
-    unsigned prior_context_length = 0;
+  struct PriorContext {
+    const UChar* text = nullptr;
+    unsigned length = 0;
+  };
+
+  PriorContext GetPriorContext() const {
     static_assert(arraysize(prior_context_) == 2,
                   "TextBreakIterator has unexpected prior context length");
     if (prior_context_[1]) {
-      ++prior_context_length;
       if (prior_context_[0])
-        ++prior_context_length;
+        return PriorContext{&prior_context_[0], 2};
+      return PriorContext{&prior_context_[1], 1};
     }
-    return prior_context_length;
+    return PriorContext{nullptr, 0};
   }
 
-  // Obtain text break iterator, possibly previously cached, where this iterator
-  // is (or has been) initialized to use the previously stored string as the
-  // primary breaking context and using previously stored prior context if
-  // non-empty.
-  TextBreakIterator* Get(unsigned prior_context_length) const {
-    DCHECK(prior_context_length <= kPriorContextCapacity);
-    const UChar* prior_context =
-        prior_context_length
-            ? &prior_context_[kPriorContextCapacity - prior_context_length]
-            : nullptr;
-    if (!iterator_) {
-      if (string_.Is8Bit())
-        iterator_ = AcquireLineBreakIterator(
-            string_.Characters8(), string_.length(), locale_, prior_context,
-            prior_context_length);
-      else
-        iterator_ = AcquireLineBreakIterator(
-            string_.Characters16(), string_.length(), locale_, prior_context,
-            prior_context_length);
-      cached_prior_context_ = prior_context;
-      cached_prior_context_length_ = prior_context_length;
-    } else if (prior_context != cached_prior_context_ ||
-               prior_context_length != cached_prior_context_length_) {
-      ReleaseIterator();
-      return Get(prior_context_length);
-    }
-    return iterator_;
-  }
+  unsigned PriorContextLength() const { return GetPriorContext().length; }
 
   void ResetStringAndReleaseIterator(String string,
                                      const AtomicString& locale) {
     string_ = string;
+    start_offset_ = 0;
     locale_ = locale;
 
+    ReleaseIterator();
+  }
+
+  // Set the start offset. Text before this offset is disregarded. Properly
+  // setting the start offset improves the performance significantly, because
+  // ICU break iterator computes all the text from the beginning.
+  void SetStartOffset(unsigned offset) {
+    CHECK_LE(offset, string_.length());
+    start_offset_ = offset;
     ReleaseIterator();
   }
 
@@ -281,8 +264,45 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
     if (iterator_)
       ReleaseLineBreakIterator(iterator_);
     iterator_ = nullptr;
-    cached_prior_context_ = nullptr;
-    cached_prior_context_length_ = 0;
+    cached_prior_context_.text = nullptr;
+    cached_prior_context_.length = 0;
+  }
+
+  // Obtain text break iterator, possibly previously cached, where this iterator
+  // is (or has been) initialized to use the previously stored string as the
+  // primary breaking context and using previously stored prior context if
+  // non-empty.
+  TextBreakIterator* GetIterator(const PriorContext& prior_context) const {
+    DCHECK(prior_context.length <= kPriorContextCapacity);
+    if (iterator_) {
+      if (prior_context.length == cached_prior_context_.length) {
+        DCHECK_EQ(prior_context.text, cached_prior_context_.text);
+        return iterator_;
+      }
+      ReleaseIterator();
+    }
+
+    // Create the iterator, or get one from the cache, for the text after
+    // |start_offset_|. Because ICU TextBreakIterator computes all characters
+    // from the beginning of the given text, using |start_offset_| improves the
+    // performance significantly.
+    //
+    // For this reason, the offset for the TextBreakIterator must be adjusted by
+    // |start_offset_|.
+    cached_prior_context_ = prior_context;
+    CHECK_LE(start_offset_, string_.length());
+    if (string_.Is8Bit()) {
+      iterator_ =
+          AcquireLineBreakIterator(string_.Characters8() + start_offset_,
+                                   string_.length() - start_offset_, locale_,
+                                   prior_context.text, prior_context.length);
+    } else {
+      iterator_ =
+          AcquireLineBreakIterator(string_.Characters16() + start_offset_,
+                                   string_.length() - start_offset_, locale_,
+                                   prior_context.text, prior_context.length);
+    }
+    return iterator_;
   }
 
   template <typename CharacterType, LineBreakType, BreakSpaceType>
@@ -300,8 +320,8 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
   AtomicString locale_;
   mutable TextBreakIterator* iterator_;
   UChar prior_context_[kPriorContextCapacity];
-  mutable const UChar* cached_prior_context_;
-  mutable unsigned cached_prior_context_length_;
+  mutable PriorContext cached_prior_context_;
+  unsigned start_offset_ = 0;
   LineBreakType break_type_;
   BreakSpaceType break_space_ = BreakSpaceType::kBeforeEverySpace;
 };
