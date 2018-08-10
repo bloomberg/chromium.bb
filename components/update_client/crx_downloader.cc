@@ -21,7 +21,7 @@
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/url_fetcher_downloader.h"
 #include "components/update_client/utils.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace update_client {
 
@@ -41,9 +41,10 @@ CrxDownloader::DownloadMetrics::DownloadMetrics()
 // which uses the BITS service.
 std::unique_ptr<CrxDownloader> CrxDownloader::Create(
     bool is_background_download,
-    scoped_refptr<net::URLRequestContextGetter> context_getter) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   std::unique_ptr<CrxDownloader> url_fetcher_downloader =
-      std::make_unique<UrlFetcherDownloader>(nullptr, context_getter);
+      std::make_unique<UrlFetcherDownloader>(nullptr,
+                                             std::move(url_loader_factory));
 
 #if defined(OS_WIN)
   if (is_background_download) {

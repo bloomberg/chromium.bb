@@ -18,8 +18,9 @@
 #include "components/update_client/utils.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace {
@@ -32,32 +33,11 @@ constexpr base::TaskTraits kTaskTraits = {
 
 namespace update_client {
 
-UrlFetcherDownloader::URLFetcherDelegate::URLFetcherDelegate(
-    UrlFetcherDownloader* downloader)
-    : downloader_(downloader) {}
-
-UrlFetcherDownloader::URLFetcherDelegate::~URLFetcherDelegate() = default;
-
-void UrlFetcherDownloader::URLFetcherDelegate::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  downloader_->OnURLFetchComplete(source);
-}
-
-void UrlFetcherDownloader::URLFetcherDelegate::OnURLFetchDownloadProgress(
-    const net::URLFetcher* source,
-    int64_t current,
-    int64_t total,
-    int64_t current_network_bytes) {
-  downloader_->OnURLFetchDownloadProgress(source, current, total,
-                                          current_network_bytes);
-}
-
 UrlFetcherDownloader::UrlFetcherDownloader(
     std::unique_ptr<CrxDownloader> successor,
-    scoped_refptr<net::URLRequestContextGetter> context_getter)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : CrxDownloader(std::move(successor)),
-      delegate_(std::make_unique<URLFetcherDelegate>(this)),
-      context_getter_(context_getter) {}
+      url_loader_factory_(std::move(url_loader_factory)) {}
 
 UrlFetcherDownloader::~UrlFetcherDownloader() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -114,15 +94,13 @@ void UrlFetcherDownloader::StartURLFetch(const GURL& url) {
   if (download_dir_.empty()) {
     Result result;
     result.error = -1;
-    result.downloaded_bytes = downloaded_bytes_;
-    result.total_bytes = total_bytes_;
 
     DownloadMetrics download_metrics;
     download_metrics.url = url;
     download_metrics.downloader = DownloadMetrics::kUrlFetcher;
     download_metrics.error = -1;
-    download_metrics.downloaded_bytes = downloaded_bytes_;
-    download_metrics.total_bytes = total_bytes_;
+    download_metrics.downloaded_bytes = -1;
+    download_metrics.total_bytes = -1;
     download_metrics.download_time_ms = 0;
 
     main_task_runner()->PostTask(
@@ -134,27 +112,37 @@ void UrlFetcherDownloader::StartURLFetch(const GURL& url) {
 
   const base::FilePath response =
       download_dir_.AppendASCII(url.ExtractFileName());
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url;
+  resource_request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
+                                 net::LOAD_DO_NOT_SAVE_COOKIES |
+                                 net::LOAD_DISABLE_CACHE;
+  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                 traffic_annotation);
+  const int kMaxRetries = 3;
+  url_loader_->SetRetryOptions(
+      kMaxRetries,
+      network::SimpleURLLoader::RetryMode::RETRY_ON_NETWORK_CHANGE);
 
-  url_fetcher_ = net::URLFetcher::Create(0, url, net::URLFetcher::GET,
-                                         delegate_.get(), traffic_annotation);
-  url_fetcher_->SetRequestContext(context_getter_.get());
-  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                             net::LOAD_DO_NOT_SAVE_COOKIES |
-                             net::LOAD_DISABLE_CACHE);
-  url_fetcher_->SetAutomaticallyRetryOn5xx(false);
-  url_fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
-  url_fetcher_->SaveResponseToFileAtPath(
-      response, base::CreateSequencedTaskRunnerWithTraits(kTaskTraits));
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      url_fetcher_.get(), data_use_measurement::DataUseUserData::UPDATE_CLIENT);
+  url_loader_->SetOnResponseStartedCallback(base::BindOnce(
+      &UrlFetcherDownloader::OnResponseStarted, base::Unretained(this)));
+
+  // For the end-to-end system it is important that the client reports the
+  // number of bytes it loaded from the server even in the case that the
+  // overall network transaction failed.
+  url_loader_->SetAllowPartialResults(true);
 
   VLOG(1) << "Starting background download: " << url.spec();
-  url_fetcher_->Start();
+  url_loader_->DownloadToFile(
+      url_loader_factory_.get(),
+      base::BindOnce(&UrlFetcherDownloader::OnURLLoadComplete,
+                     base::Unretained(this)),
+      response);
 
   download_start_time_ = base::TimeTicks::Now();
 }
 
-void UrlFetcherDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
+void UrlFetcherDownloader::OnURLLoadComplete(base::FilePath file_path) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   const base::TimeTicks download_end_time(base::TimeTicks::Now());
@@ -166,28 +154,44 @@ void UrlFetcherDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   // Consider a 5xx response from the server as an indication to terminate
   // the request and avoid overloading the server in this case.
   // is not accepting requests for the moment.
-  const int fetch_error(GetFetchError(*url_fetcher_));
+  int response_code = -1;
+  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers) {
+    response_code = url_loader_->ResponseInfo()->headers->response_code();
+  }
+
+  int fetch_error = -1;
+  if (!file_path.empty() && response_code == 200) {
+    fetch_error = 0;
+  } else if (response_code != -1) {
+    fetch_error = response_code;
+  } else {
+    fetch_error = url_loader_->NetError();
+  }
+
   const bool is_handled = fetch_error == 0 || IsHttpServerError(fetch_error);
 
   Result result;
   result.error = fetch_error;
   if (!fetch_error) {
-    source->GetResponseAsFilePath(true, &result.response);
+    result.response = file_path;
   }
-  result.downloaded_bytes = downloaded_bytes_;
-  result.total_bytes = total_bytes_;
 
   DownloadMetrics download_metrics;
   download_metrics.url = url();
   download_metrics.downloader = DownloadMetrics::kUrlFetcher;
   download_metrics.error = fetch_error;
-  download_metrics.downloaded_bytes = downloaded_bytes_;
+  // Tests expected -1, in case of failures and no content is available.
+  download_metrics.downloaded_bytes =
+      fetch_error && !url_loader_->GetContentSize()
+          ? -1
+          : url_loader_->GetContentSize();
   download_metrics.total_bytes = total_bytes_;
   download_metrics.download_time_ms = download_time.InMilliseconds();
 
-  VLOG(1) << "Downloaded " << downloaded_bytes_ << " bytes in "
+  VLOG(1) << "Downloaded " << url_loader_->GetContentSize() << " bytes in "
           << download_time.InMilliseconds() << "ms from "
-          << source->GetURL().spec() << " to " << result.response.value();
+          << url_loader_->GetFinalURL().spec() << " to "
+          << result.response.value();
 
   // Delete the download directory in the error cases.
   if (fetch_error && !download_dir_.empty())
@@ -201,21 +205,18 @@ void UrlFetcherDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
                                 download_metrics));
 }
 
-void UrlFetcherDownloader::OnURLFetchDownloadProgress(
-    const net::URLFetcher* source,
-    int64_t current,
-    int64_t total,
-    int64_t current_network_bytes) {
+// This callback is used to indicate that a download has been started.
+void UrlFetcherDownloader::OnResponseStarted(
+    const GURL& final_url,
+    const network::ResourceResponseHead& response_head) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  downloaded_bytes_ = current;
-  total_bytes_ = total;
+  if (response_head.content_length != -1)
+    total_bytes_ = response_head.content_length;
 
-  Result result;
-  result.downloaded_bytes = downloaded_bytes_;
-  result.total_bytes = total_bytes_;
-
-  OnDownloadProgress(result);
+  // TODO(crbug.com/871211): |Result| is not being used on production.
+  // Clean it up.
+  OnDownloadProgress(Result());
 }
 
 }  // namespace update_client
