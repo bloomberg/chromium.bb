@@ -43,6 +43,9 @@ class BackgroundFetchDelegateImpl
 
   ~BackgroundFetchDelegateImpl() override;
 
+  // Lazily initializes and returns the DownloadService.
+  download::DownloadService* GetDownloadService();
+
   // KeyedService implementation:
   void Shutdown() override;
 
@@ -139,9 +142,12 @@ class BackgroundFetchDelegateImpl
   void OnDownloadReceived(const std::string& guid,
                           download::DownloadParams::StartResult result);
 
+  // The profile this service is being created for.
+  Profile* profile_;
+
   // The BackgroundFetchDelegateImplFactory depends on the
   // DownloadServiceFactory, so |download_service_| should outlive |this|.
-  download::DownloadService* download_service_;
+  download::DownloadService* download_service_ = nullptr;
 
   // Map from individual download GUIDs to job unique ids.
   std::map<std::string, std::string> download_job_unique_id_map_;
