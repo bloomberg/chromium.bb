@@ -645,10 +645,10 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
       let clickCount = event.detail;
       if (clickCount == 1) {
         tileInteraction(event);
-      } else if (clickCount == 2) {
-        customBackgrounds.setBackground(
-            this.dataset.url, this.dataset.attributionLine1,
-            this.dataset.attributionLine2, this.dataset.attributionActionUrl);
+      } else if (clickCount == 2 && customBackgrounds.selectedTile == this) {
+        customBackgrounds.setBackground(this.dataset.url,
+            this.dataset.attributionLine1, this.dataset.attributionLine2,
+            this.dataset.attributionActionUrl);
       }
     };
     tile.onkeyup = function(event) {
