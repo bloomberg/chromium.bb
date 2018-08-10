@@ -12,7 +12,7 @@
 #include "ui/views/widget/widget.h"
 
 namespace views {
-class ImageButton;
+class CloseImageButton;
 class ToggleImageButton;
 }  // namespace views
 
@@ -144,7 +144,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   std::unique_ptr<views::View> window_background_view_;
   std::unique_ptr<views::View> video_view_;
   std::unique_ptr<views::View> controls_background_view_;
-  std::unique_ptr<views::ImageButton> close_controls_view_;
+  std::unique_ptr<views::CloseImageButton> close_controls_view_;
   std::unique_ptr<views::ToggleImageButton> play_pause_controls_view_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayWindowViews);
