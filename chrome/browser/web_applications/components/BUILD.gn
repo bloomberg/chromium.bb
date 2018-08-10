@@ -8,6 +8,13 @@ source_set("components") {
     "pending_app_manager.h",
     "web_app_helpers.cc",
     "web_app_helpers.h",
+    "web_app_shortcut.cc",
+    "web_app_shortcut.h",
+    "web_app_shortcut_chromeos.cc",
+    "web_app_shortcut_mac.h",
+    "web_app_shortcut_mac.mm",
+    "web_app_shortcut_win.cc",
+    "web_app_shortcut_win.h",
 
     # TODO(nigeltao): move these two files from
     # //chrome/browser/web_applications/components to a stand-alone
@@ -19,13 +26,6 @@ source_set("components") {
     # those might be similar enough to merge.
     "web_app_icon_downloader.cc",
     "web_app_icon_downloader.h",
-    "web_app_shortcut.cc",
-    "web_app_shortcut.h",
-    "web_app_shortcut_chromeos.cc",
-    "web_app_shortcut_mac.h",
-    "web_app_shortcut_mac.mm",
-    "web_app_shortcut_win.cc",
-    "web_app_shortcut_win.h",
   ]
 
   if (is_desktop_linux) {
