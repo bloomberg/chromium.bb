@@ -10,7 +10,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/app_list/test/app_list_test_helper.h"
-#include "ash/frame/custom_frame_view_ash.h"
+#include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/config.h"
@@ -145,21 +145,21 @@ class ScopedStickyKeyboardEnabler {
 
 }  // namespace
 
-// NOTE: many of these tests use CustomFrameViewAshSizeLock. This is needed as
-// the tests assume a minimum size of 0x0. In mash the minimum size, for
+// NOTE: many of these tests use NonClientFrameViewAshSizeLock. This is needed
+// as the tests assume a minimum size of 0x0. In mash the minimum size, for
 // top-level windows, is not 0x0, so without this the tests fails.
 // TODO(sky): update the tests so that this isn't necessary.
-class CustomFrameViewAshSizeLock {
+class NonClientFrameViewAshSizeLock {
  public:
-  CustomFrameViewAshSizeLock() {
-    CustomFrameViewAsh::use_empty_minimum_size_for_test_ = true;
+  NonClientFrameViewAshSizeLock() {
+    NonClientFrameViewAsh::use_empty_minimum_size_for_test_ = true;
   }
-  ~CustomFrameViewAshSizeLock() {
-    CustomFrameViewAsh::use_empty_minimum_size_for_test_ = false;
+  ~NonClientFrameViewAshSizeLock() {
+    NonClientFrameViewAsh::use_empty_minimum_size_for_test_ = false;
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CustomFrameViewAshSizeLock);
+  DISALLOW_COPY_AND_ASSIGN(NonClientFrameViewAshSizeLock);
 };
 
 using WorkspaceLayoutManagerTest = AshTestBase;
@@ -169,7 +169,7 @@ using WorkspaceLayoutManagerTest = AshTestBase;
 // there is one).
 TEST_F(WorkspaceLayoutManagerTest, RestoreFromMinimizeKeepsRestore) {
   // See comment at top of file for why this is needed.
-  CustomFrameViewAshSizeLock min_size_lock;
+  NonClientFrameViewAshSizeLock min_size_lock;
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
   gfx::Rect bounds(10, 15, 25, 35);
   window->SetBounds(bounds);
@@ -234,7 +234,7 @@ TEST_F(WorkspaceLayoutManagerTest, NoMinimumVisibilityForPopupWindows) {
 
 TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
   // See comment at top of file for why this is needed.
-  CustomFrameViewAshSizeLock min_size_lock;
+  NonClientFrameViewAshSizeLock min_size_lock;
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(1, 2, 30, 40)));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
@@ -275,7 +275,7 @@ TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
 
 TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
   // See comment at top of file for why this is needed.
-  CustomFrameViewAshSizeLock min_size_lock;
+  NonClientFrameViewAshSizeLock min_size_lock;
   UpdateDisplay("300x400,400x500");
 
   aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
@@ -328,7 +328,7 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
 
 TEST_F(WorkspaceLayoutManagerTest, FullscreenInDisplayToBeRestored) {
   // See comment at top of file for why this is needed.
-  CustomFrameViewAshSizeLock min_size_lock;
+  NonClientFrameViewAshSizeLock min_size_lock;
   UpdateDisplay("300x400,400x500");
 
   aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
@@ -1687,7 +1687,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
   ScopedStickyKeyboardEnabler sticky_enabler;
 
   // See comment at top of file for why this is needed.
-  CustomFrameViewAshSizeLock min_size_lock;
+  NonClientFrameViewAshSizeLock min_size_lock;
 
   InitKeyboardBounds();
 
@@ -1719,7 +1719,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
   ScopedStickyKeyboardEnabler sticky_enabler;
 
   // See comment at top of file for why this is needed.
-  CustomFrameViewAshSizeLock min_size_lock;
+  NonClientFrameViewAshSizeLock min_size_lock;
   InitKeyboardBounds();
   gfx::Rect work_area(GetPrimaryDisplay().work_area());
 

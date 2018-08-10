@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "ash/frame/caption_buttons/caption_button_model.h"
-#include "ash/frame/custom_frame_view_ash.h"
 #include "ash/frame/header_view.h"
+#include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/frame/wide_frame_view.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -551,7 +551,7 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
       bounds_changed_callback_) {
     // Sends the client bounds, which matches the geometry
     // when frame is enabled.
-    ash::CustomFrameViewAsh* frame_view = GetFrameView();
+    ash::NonClientFrameViewAsh* frame_view = GetFrameView();
 
     // The client's geometry uses fullscreen in client controlled,
     // (but the surface is placed under the frame), so just use
@@ -721,8 +721,9 @@ ClientControlledShellSurface::CreateNonClientFrameView(views::Widget* widget) {
   client_controlled_state_ = state.get();
   window_state->SetStateObject(std::move(state));
   window_state->SetDelegate(std::move(window_delegate));
-  ash::CustomFrameViewAsh* frame_view = static_cast<ash::CustomFrameViewAsh*>(
-      ShellSurfaceBase::CreateNonClientFrameView(widget));
+  ash::NonClientFrameViewAsh* frame_view =
+      static_cast<ash::NonClientFrameViewAsh*>(
+          ShellSurfaceBase::CreateNonClientFrameView(widget));
   immersive_fullscreen_controller_ =
       std::make_unique<ash::ImmersiveFullscreenController>();
   frame_view->InitImmersiveFullscreenControllerForView(
@@ -856,7 +857,7 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
 
 gfx::Rect ClientControlledShellSurface::GetShadowBounds() const {
   gfx::Rect shadow_bounds = ShellSurfaceBase::GetShadowBounds();
-  const ash::CustomFrameViewAsh* frame_view = GetFrameView();
+  const ash::NonClientFrameViewAsh* frame_view = GetFrameView();
   if (frame_view->visible()) {
     // The client controlled geometry is only for the client
     // area. When the chrome side frame is enabled, the shadow height
@@ -878,7 +879,7 @@ void ClientControlledShellSurface::InitializeWindowState(
   window_state->set_ignore_keyboard_bounds_change(true);
   if (container_ == ash::kShellWindowId_SystemModalContainer)
     DisableMovement();
-  ash::CustomFrameViewAsh* frame_view = GetFrameView();
+  ash::NonClientFrameViewAsh* frame_view = GetFrameView();
   frame_view->SetCaptionButtonModel(std::make_unique<CaptionButtonModel>(
       frame_visible_button_mask_, frame_enabled_button_mask_));
   UpdateAutoHideFrame();
@@ -892,7 +893,7 @@ float ClientControlledShellSurface::GetScale() const {
 }
 
 gfx::Rect ClientControlledShellSurface::GetWidgetBounds() const {
-  const ash::CustomFrameViewAsh* frame_view = GetFrameView();
+  const ash::NonClientFrameViewAsh* frame_view = GetFrameView();
   if (frame_view->visible()) {
     // The client's geometry uses entire display area in client
     // controlled in maximized, and the surface is placed under the
@@ -1000,14 +1001,14 @@ ash::wm::WindowState* ClientControlledShellSurface::GetWindowState() {
   return ash::wm::GetWindowState(widget_->GetNativeWindow());
 }
 
-ash::CustomFrameViewAsh* ClientControlledShellSurface::GetFrameView() {
-  return static_cast<ash::CustomFrameViewAsh*>(
+ash::NonClientFrameViewAsh* ClientControlledShellSurface::GetFrameView() {
+  return static_cast<ash::NonClientFrameViewAsh*>(
       widget_->non_client_view()->frame_view());
 }
 
-const ash::CustomFrameViewAsh* ClientControlledShellSurface::GetFrameView()
+const ash::NonClientFrameViewAsh* ClientControlledShellSurface::GetFrameView()
     const {
-  return static_cast<const ash::CustomFrameViewAsh*>(
+  return static_cast<const ash::NonClientFrameViewAsh*>(
       widget_->non_client_view()->frame_view());
 }
 

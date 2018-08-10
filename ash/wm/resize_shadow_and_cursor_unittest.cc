@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/frame/custom_frame_view_ash.h"
+#include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -22,7 +22,7 @@ namespace ash {
 
 namespace {
 
-// views::WidgetDelegate which uses ash::CustomFrameViewAsh.
+// views::WidgetDelegate which uses ash::NonClientFrameViewAsh.
 class TestWidgetDelegate : public views::WidgetDelegateView {
  public:
   TestWidgetDelegate() = default;
@@ -34,7 +34,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   bool CanMinimize() const override { return true; }
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
-    return new CustomFrameViewAsh(widget);
+    return new NonClientFrameViewAsh(widget);
   }
 
  private:

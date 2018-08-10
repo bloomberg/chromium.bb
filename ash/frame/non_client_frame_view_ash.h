@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_FRAME_CUSTOM_FRAME_VIEW_ASH_H_
-#define ASH_FRAME_CUSTOM_FRAME_VIEW_ASH_H_
+#ifndef ASH_FRAME_NON_CLIENT_FRAME_VIEW_ASH_H_
+#define ASH_FRAME_NON_CLIENT_FRAME_VIEW_ASH_H_
 
 #include <memory>
 
@@ -35,33 +35,33 @@ class ImmersiveFullscreenControllerDelegate;
 // The window header overlay slides onscreen when the user hovers the mouse at
 // the top of the screen. See also views::CustomFrameView and
 // BrowserNonClientFrameViewAsh.
-class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
-                                      public ShellObserver,
-                                      public SplitViewController::Observer {
+class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
+                                         public ShellObserver,
+                                         public SplitViewController::Observer {
  public:
   // Internal class name.
   static const char kViewClassName[];
 
   // |enable_immersive| controls whether ImmersiveFullscreenController is
-  // created for the CustomFrameViewAsh; if true and a WindowStateDelegate has
-  // not been set on the WindowState associated with |frame|, then an
+  // created for the NonClientFrameViewAsh; if true and a WindowStateDelegate
+  // has not been set on the WindowState associated with |frame|, then an
   // ImmersiveFullscreenController is created.
   // If ImmersiveFullscreenControllerDelegate is not supplied, HeaderView is
   // used as the ImmersiveFullscreenControllerDelegate.
-  explicit CustomFrameViewAsh(
+  explicit NonClientFrameViewAsh(
       views::Widget* frame,
       ImmersiveFullscreenControllerDelegate* immersive_delegate = nullptr,
       bool enable_immersive = true,
       mojom::WindowStyle window_style = mojom::WindowStyle::DEFAULT,
       std::unique_ptr<CaptionButtonModel> model = nullptr);
-  ~CustomFrameViewAsh() override;
+  ~NonClientFrameViewAsh() override;
 
   // Sets the caption button modeland updates the caption buttons.
   void SetCaptionButtonModel(std::unique_ptr<CaptionButtonModel> model);
 
   // Inits |immersive_fullscreen_controller| so that the controller reveals
   // and hides |header_view_| in immersive fullscreen.
-  // CustomFrameViewAsh does not take ownership of
+  // NonClientFrameViewAsh does not take ownership of
   // |immersive_fullscreen_controller|.
   void InitImmersiveFullscreenControllerForView(
       ImmersiveFullscreenController* immersive_fullscreen_controller);
@@ -131,7 +131,7 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
 
  private:
   class OverlayView;
-  friend class CustomFrameViewAshSizeLock;
+  friend class NonClientFrameViewAshSizeLock;
   friend class CustomFrameTestWidgetDelegate;
   friend class TestWidgetConstraintsDelegate;
 
@@ -165,9 +165,9 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
   // actually may be still be false after overview mode has started.
   bool in_overview_mode_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(CustomFrameViewAsh);
+  DISALLOW_COPY_AND_ASSIGN(NonClientFrameViewAsh);
 };
 
 }  // namespace ash
 
-#endif  // ASH_FRAME_CUSTOM_FRAME_VIEW_ASH_H_
+#endif  // ASH_FRAME_NON_CLIENT_FRAME_VIEW_ASH_H_

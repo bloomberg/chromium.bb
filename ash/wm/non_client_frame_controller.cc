@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "ash/frame/custom_frame_view_ash.h"
 #include "ash/frame/detached_title_area_renderer.h"
+#include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
@@ -204,8 +204,8 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
                                                                    window);
     // See description for details on ownership.
     custom_frame_view_ =
-        new CustomFrameViewAsh(GetWidget(), immersive_delegate_.get(),
-                               enable_immersive_, window_style_);
+        new NonClientFrameViewAsh(GetWidget(), immersive_delegate_.get(),
+                                  enable_immersive_, window_style_);
 
     // Only the header actually paints any content. So the rest of the region is
     // marked as transparent content (see below in NonClientFrameController()
@@ -231,7 +231,7 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
 
   // Not used for panels or if |remove_standard_frame_| is true. This is owned
   // by the Widget's view hierarchy (e.g. it's a child of Widget's root View).
-  CustomFrameViewAsh* custom_frame_view_ = nullptr;
+  NonClientFrameViewAsh* custom_frame_view_ = nullptr;
 
   // The cursor for this widget. CompoundEventFilter will retrieve this cursor
   // via GetCursor and update the CursorManager's active cursor as appropriate
