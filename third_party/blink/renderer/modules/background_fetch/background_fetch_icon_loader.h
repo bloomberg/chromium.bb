@@ -17,6 +17,7 @@
 namespace blink {
 
 class BackgroundFetchBridge;
+class SegmentReader;
 struct WebSize;
 
 class MODULES_EXPORT BackgroundFetchIconLoader final
@@ -30,16 +31,12 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
   BackgroundFetchIconLoader();
   ~BackgroundFetchIconLoader() override;
 
-  // Scales down |icon| and returns result. If it is already small enough,
-  // |icon| is returned unchanged.
-  static SkBitmap ScaleDownIfNeeded(const SkBitmap& icon);
-
   // Asynchronously download an icon from the given url, decodes the loaded
   // data, and passes the bitmap to the given callback.
   void Start(BackgroundFetchBridge* bridge,
              ExecutionContext* execution_context,
              HeapVector<ManifestImageResource> icons,
-             IconCallback callback);
+             IconCallback icon_callback);
 
   // Cancels the pending load, if there is one. The |icon_callback_| will not
   // be run.
@@ -58,6 +55,8 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
 
  private:
   friend class BackgroundFetchIconLoaderTest;
+
+  void RunCallback();
   void RunCallbackWithEmptyBitmap();
 
   // Callback for BackgroundFetchBridge::GetIconDisplaySize()
@@ -67,16 +66,37 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
       const WebSize& icon_display_size_pixels);
 
   // Picks the best icon from the list of developer provided icons, for current
-  // display, given the ideal |icon_display_size_pixels|, and returns its KURL.
+  // display, given the ideal |icon_display_size_pixels_|, and returns its KURL.
   // If none of the icons is appropriate, this returns an empty URL.
-  KURL PickBestIconForDisplay(ExecutionContext* execution_context,
-                              const WebSize& icon_display_size_pixels);
+  KURL PickBestIconForDisplay(ExecutionContext* execution_context);
 
-  bool stopped_ = false;
-  scoped_refptr<SharedBuffer> data_;
-  IconCallback icon_callback_;
+  // Decodes the |data| to a SkBitmap using the image decoders and resizes it to
+  // be no larger than |icon_display_size_pixels_|.
+  void DecodeAndResizeImageOnBackgroundThread(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<SegmentReader> data);
+
+  // Called when the image has been decoded and resized on a background thread.
+  void DidFinishDecoding();
+
   HeapVector<ManifestImageResource> icons_;
+  IconCallback icon_callback_;
+
   Member<ThreadableLoader> threadable_loader_;
+
+  // Size at which the icon will be presented to the user.
+  WebSize icon_display_size_pixels_;
+
+  // Data received from the ThreadableLoader. Will be invalidated when decoding
+  // of the image data starts.
+  scoped_refptr<SharedBuffer> data_;
+
+  // Result of decoding the icon on the background thread.
+  SkBitmap decoded_icon_;
+
+  // Whether the icon loading operation has been stopped. The process should
+  // be aborted then, and |icon_callback_| must not be invoked anymore.
+  bool stopped_ = false;
 };
 
 }  // namespace blink
