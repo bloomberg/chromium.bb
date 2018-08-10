@@ -138,6 +138,11 @@ class CC_EXPORT ImageDecodeCache {
   // locked budget before creating a task.
   virtual size_t GetMaximumMemoryLimitBytes() const = 0;
 
+  // Returns true if the cache should be used for |image|. In certain cases the
+  // image can directly be used for raster (for instance bitmaps in a software
+  // draw).
+  virtual bool UseCacheForDrawImage(const DrawImage& image) const = 0;
+
  protected:
   void RecordImageMipLevelUMA(int mip_level);
 };

@@ -27,4 +27,8 @@ size_t StubDecodeCache::GetMaximumMemoryLimitBytes() const {
   return 0u;
 }
 
+bool StubDecodeCache::UseCacheForDrawImage(const DrawImage& image) const {
+  return true;
+}
+
 }  // namespace cc

@@ -818,6 +818,14 @@ void GpuImageDecodeCache::UnrefImage(const DrawImage& draw_image) {
   UnrefImageInternal(draw_image, InUseCacheKey::FromDrawImage(draw_image));
 }
 
+bool GpuImageDecodeCache::UseCacheForDrawImage(
+    const DrawImage& draw_image) const {
+  if (draw_image.paint_image().GetSkImage()->isTextureBacked())
+    return false;
+
+  return true;
+}
+
 DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
     const DrawImage& draw_image) {
   TRACE_EVENT0("cc", "GpuImageDecodeCache::GetDecodedImageForDraw");
@@ -1840,7 +1848,7 @@ GpuImageDecodeCache::ImageData* GpuImageDecodeCache::GetImageDataForDrawImage(
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::GetImageDataForDrawImage");
   lock_.AssertAcquired();
-  DCHECK(!draw_image.paint_image().GetSkImage()->isTextureBacked());
+  DCHECK(UseCacheForDrawImage(draw_image));
 
   auto found_in_use = in_use_cache_.find(key);
   if (found_in_use != in_use_cache_.end())

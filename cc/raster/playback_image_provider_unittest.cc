@@ -46,6 +46,13 @@ class MockDecodeCache : public StubDecodeCache {
     EXPECT_GE(refed_image_count_, 0);
   }
 
+  bool UseCacheForDrawImage(const DrawImage& image) const override {
+    return use_cache_for_draw_image_;
+  }
+
+  void set_use_cache_for_draw_image(bool use) {
+    use_cache_for_draw_image_ = use;
+  }
   int refed_image_count() const { return refed_image_count_; }
   int images_decoded() const { return images_decoded_; }
   const DrawImage& last_image() { return last_image_; }
@@ -53,6 +60,7 @@ class MockDecodeCache : public StubDecodeCache {
  private:
   int refed_image_count_ = 0;
   int images_decoded_ = 0;
+  bool use_cache_for_draw_image_ = true;
   DrawImage last_image_;
 };
 
@@ -163,19 +171,9 @@ TEST(PlaybackImageProviderTest, BitmapImages) {
   EXPECT_EQ(cache.refed_image_count(), 0);
 }
 
-TEST(PlaybackImageProviderTest, TextureImages) {
-  // Texture images should never hit the ImageDecodeCache.
-  sk_sp<const GrGLInterface> gl_interface(GrGLCreateNullInterface());
-  auto context = GrContext::MakeGL(std::move(gl_interface));
-  auto sk_texture_image = CreateBitmapImage(gfx::Size(10, 10))
-                              .GetSkImage()
-                              ->makeTextureImage(context.get(), nullptr);
-  auto image = PaintImageBuilder::WithDefault()
-                   .set_id(PaintImage::GetNextId())
-                   .set_image(sk_texture_image, PaintImage::GetNextContentId())
-                   .TakePaintImage();
-
+TEST(PlaybackImageProviderTest, IgnoresImagesNotSupportedByCache) {
   MockDecodeCache cache;
+  cache.set_use_cache_for_draw_image(false);
   base::Optional<PlaybackImageProvider::Settings> settings;
   settings.emplace();
   PlaybackImageProvider provider(&cache, gfx::ColorSpace(),
@@ -183,7 +181,8 @@ TEST(PlaybackImageProviderTest, TextureImages) {
   {
     SkIRect rect = SkIRect::MakeWH(10, 10);
     SkMatrix matrix = SkMatrix::I();
-    auto draw_image = DrawImage(image, rect, kMedium_SkFilterQuality, matrix);
+    auto draw_image = DrawImage(CreateBitmapImage(gfx::Size(10, 10)), rect,
+                                kMedium_SkFilterQuality, matrix);
     auto decode = provider.GetDecodedDrawImage(draw_image);
     EXPECT_TRUE(decode);
     EXPECT_EQ(cache.refed_image_count(), 0);

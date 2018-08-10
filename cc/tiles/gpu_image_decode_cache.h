@@ -127,6 +127,7 @@ class CC_EXPORT GpuImageDecodeCache
       bool aggressively_free_resources) override;
   void ClearCache() override;
   size_t GetMaximumMemoryLimitBytes() const override;
+  bool UseCacheForDrawImage(const DrawImage& image) const override;
 
   // MemoryDumpProvider overrides.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,

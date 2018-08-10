@@ -1733,12 +1733,8 @@ TEST(SoftwareImageDecodeCacheTest, BitmapImageNotColorConverted) {
       quality, CreateMatrix(SkSize::Make(1.f, 1.f), is_decomposable),
       PaintImage::kDefaultFrameIndex, DefaultColorSpace());
 
-  DecodedDrawImage decoded_draw_image =
-      cache.GetDecodedImageForDraw(draw_image);
-  // Expect that we did not allocate a new image.
-  EXPECT_EQ(decoded_draw_image.image().get(), paint_image.GetSkImage().get());
-
-  cache.DrawWithImageFinished(draw_image, decoded_draw_image);
+  // The cache should not support this image.
+  EXPECT_FALSE(cache.UseCacheForDrawImage(draw_image));
 }
 
 // TODO(ccameron): Re-enable this when the root cause of crashes is discovered.
