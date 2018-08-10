@@ -458,66 +458,6 @@ if ({{test}}) {
 {% endmacro %}
 
 
-{##############################################################################}
-{% macro generate_post_message_impl(method) %}
-static void postMessageImpl(const char* interfaceName, {{cpp_class}}* instance, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, interfaceName, "postMessage");
-  if (UNLIKELY(info.Length() < {{method.number_of_required_arguments}})) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments({{method.number_of_required_arguments}}, info.Length()));
-    return;
-  }
-
-  Transferables transferables;
-  if (info.Length() > 1) {
-    const int transferablesArgIndex = 1;
-    if (!SerializedScriptValue::ExtractTransferables(info.GetIsolate(), info[transferablesArgIndex], transferablesArgIndex, transferables, exceptionState)) {
-      return;
-    }
-  }
-
-  scoped_refptr<SerializedScriptValue> message;
-  if (instance->CanTransferArrayBuffersAndImageBitmaps()) {
-    // This instance supports sending array buffers by move semantics.
-    SerializedScriptValue::SerializeOptions options;
-    options.transferables = &transferables;
-    message = SerializedScriptValue::Serialize(info.GetIsolate(), info[0], options, exceptionState);
-    if (exceptionState.HadException())
-      return;
-  } else {
-    // This instance doesn't support sending array buffers and image bitmaps
-    // by move semantics. Emulate it by copy-and-neuter semantics that sends
-    // array buffers and image bitmaps via structured clone and then neuters
-    // the original objects
-
-    // Clear references to array buffers and image bitmaps from transferables
-    // so that the serializer can consider the array buffers as
-    // non-transferable and serialize them into the message.
-    ArrayBufferArray transferableArrayBuffers = SerializedScriptValue::ExtractNonSharedArrayBuffers(transferables);
-    ImageBitmapArray transferableImageBitmaps = transferables.image_bitmaps;
-    transferables.image_bitmaps.clear();
-    SerializedScriptValue::SerializeOptions options;
-    options.transferables = &transferables;
-    message = SerializedScriptValue::Serialize(info.GetIsolate(), info[0], options, exceptionState);
-    if (exceptionState.HadException())
-      return;
-
-    // Neuter the original array buffers on the sender context.
-    SerializedScriptValue::TransferArrayBufferContents(info.GetIsolate(), transferableArrayBuffers, exceptionState);
-    if (exceptionState.HadException())
-      return;
-    // Neuter the original image bitmaps on the sender context.
-    SerializedScriptValue::TransferImageBitmapContents(info.GetIsolate(), transferableImageBitmaps, exceptionState);
-    if (exceptionState.HadException())
-      return;
-  }
-
-  // FIXME: Only pass scriptState/exceptionState if instance really requires it.
-  ScriptState* scriptState = ScriptState::Current(info.GetIsolate());
-  message->UnregisterMemoryAllocatedWithCurrentScriptContext();
-  instance->postMessage(scriptState, std::move(message), transferables.message_ports, exceptionState);
-}
-{% endmacro %}
-
 
 {##############################################################################}
 {% macro method_callback(method, world_suffix) %}
@@ -548,8 +488,6 @@ void {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}(cons
   {% endif %}
   {% if method.is_custom %}
   {{v8_class}}::{{method.name}}MethodCustom(info);
-  {% elif method.is_post_message %}
-  {{cpp_class_or_partial}}V8Internal::postMessageImpl("{{interface_name}}", {{v8_class}}::ToImpl(info.Holder()), info);
   {% else %}
   {{cpp_class_or_partial}}V8Internal::{{method.name}}Method{{world_suffix}}(info);
   {% endif %}

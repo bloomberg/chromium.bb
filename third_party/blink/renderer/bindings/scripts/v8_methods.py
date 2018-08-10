@@ -163,12 +163,6 @@ def method_context(interface, method, is_visible=True):
     is_raises_exception = 'RaisesException' in extended_attributes
     is_custom_call_prologue = has_extended_attribute_value(method, 'Custom', 'CallPrologue')
     is_custom_call_epilogue = has_extended_attribute_value(method, 'Custom', 'CallEpilogue')
-    is_post_message = 'PostMessage' in extended_attributes
-    if is_post_message:
-        includes.add('bindings/core/v8/serialization/serialized_script_value_factory.h')
-        includes.add('bindings/core/v8/serialization/transferables.h')
-        includes.add('core/typed_arrays/dom_array_buffer_base.h')
-        includes.add('core/imagebitmap/image_bitmap.h')
 
     if 'LenientThis' in extended_attributes:
         raise Exception('[LenientThis] is not supported for operations.')
@@ -224,7 +218,6 @@ def method_context(interface, method, is_visible=True):
         'is_partial_interface_member':
             'PartialInterfaceImplementedAs' in extended_attributes,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
-        'is_post_message': is_post_message,
         'is_raises_exception': is_raises_exception,
         'is_static': is_static,
         'is_unforgeable': is_unforgeable(interface, method),

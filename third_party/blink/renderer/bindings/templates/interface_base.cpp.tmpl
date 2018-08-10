@@ -101,16 +101,12 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {# Methods #}
 {% from 'methods.cpp.tmpl' import generate_method, overload_resolution_method,
       origin_safe_method_getter, generate_constructor,
-      generate_post_message_impl, runtime_determined_length_method,
-      runtime_determined_maxarg_method
+      runtime_determined_length_method, runtime_determined_maxarg_method
       with context %}
 {% for method in methods %}
 {% for world_suffix in method.world_suffixes %}
-{% if not method.is_custom and not method.is_post_message and method.visible %}
+{% if not method.is_custom and method.visible %}
 {{generate_method(method, world_suffix)}}
-{% endif %}
-{% if method.is_post_message and not is_partial %}
-{{generate_post_message_impl(method)}}
 {% endif %}
 {% if method.overloads and method.overloads.visible %}
 {% if method.overloads.runtime_determined_lengths %}
