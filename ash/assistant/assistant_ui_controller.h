@@ -100,6 +100,8 @@ class ASH_EXPORT AssistantUiController
   void HideUi(AssistantSource source);
   void ToggleUi(AssistantSource source);
 
+  AssistantContainerView* GetViewForTest();
+
  private:
   // Updates UI mode to |ui_mode| if specified. Otherwise UI mode is updated on
   // the basis of interaction/widget visibility state.

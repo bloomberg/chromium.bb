@@ -45,7 +45,17 @@ class MockAssistant : public mojom::Assistant {
   MOCK_METHOD1(DismissNotification,
                void(chromeos::assistant::mojom::AssistantNotificationPtr));
 
-  MOCK_METHOD2(RequestScreenContext, void(const gfx::Rect&, base::OnceClosure));
+  // Mock DoRequestScreenContext in lieu of RequestScreenContext.
+  MOCK_METHOD2(DoRequestScreenContext,
+               void(const gfx::Rect&, base::OnceClosure*));
+
+  // Note: We can't mock RequestScreenContext directly because of the move
+  // semantics required around base::OnceClosure. Instead, we route calls to a
+  // mockable delegate method, DoRequestScreenContext.
+  void RequestScreenContext(const gfx::Rect& region,
+                            base::OnceClosure callback) override {
+    DoRequestScreenContext(region, &callback);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAssistant);

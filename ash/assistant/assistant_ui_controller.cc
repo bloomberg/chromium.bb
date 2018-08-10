@@ -283,4 +283,8 @@ void AssistantUiController::UpdateUiMode(
                                     : AssistantUiMode::kMainUi);
 }
 
+AssistantContainerView* AssistantUiController::GetViewForTest() {
+  return container_view_;
+}
+
 }  // namespace ash
