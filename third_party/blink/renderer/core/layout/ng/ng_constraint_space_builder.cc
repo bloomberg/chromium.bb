@@ -13,13 +13,18 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(
     : NGConstraintSpaceBuilder(parent_space.GetWritingMode(),
                                parent_space.InitialContainingBlockSize()) {
   parent_percentage_resolution_size_ = parent_space.PercentageResolutionSize();
-  is_intermediate_layout_ = parent_space.IsIntermediateLayout();
+
+  flags_ = NGConstraintSpace::kFixedSizeBlockIsDefinite;
+  if (parent_space.IsIntermediateLayout())
+    flags_ |= NGConstraintSpace::kIntermediateLayout;
 }
 
 NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(WritingMode writing_mode,
                                                    NGPhysicalSize icb_size)
     : initial_containing_block_size_(icb_size),
-      parent_writing_mode_(writing_mode) {}
+      parent_writing_mode_(writing_mode) {
+  flags_ = NGConstraintSpace::kFixedSizeBlockIsDefinite;
+}
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetAvailableSize(
     NGLogicalSize available_size) {
@@ -69,57 +74,9 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetExclusionSpace(
   return *this;
 }
 
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsFixedSizeInline(
-    bool is_fixed_size_inline) {
-  is_fixed_size_inline_ = is_fixed_size_inline;
-  return *this;
-}
-
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsFixedSizeBlock(
-    bool is_fixed_size_block) {
-  is_fixed_size_block_ = is_fixed_size_block;
-  return *this;
-}
-
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetFixedSizeBlockIsDefinite(
-    bool fixed_size_block_is_definite) {
-  fixed_size_block_is_definite_ = fixed_size_block_is_definite;
-  return *this;
-}
-
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsShrinkToFit(
-    bool shrink_to_fit) {
-  is_shrink_to_fit_ = shrink_to_fit;
-  return *this;
-}
-
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsIntermediateLayout(
-    bool is_intermediate_layout) {
-  is_intermediate_layout_ = is_intermediate_layout;
-  return *this;
-}
-
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetFragmentationType(
     NGFragmentationType fragmentation_type) {
   fragmentation_type_ = fragmentation_type;
-  return *this;
-}
-
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsNewFormattingContext(
-    bool is_new_fc) {
-  is_new_fc_ = is_new_fc;
-  return *this;
-}
-
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsAnonymous(
-    bool is_anonymous) {
-  is_anonymous_ = is_anonymous;
-  return *this;
-}
-
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetUseFirstLineStyle(
-    bool use_first_line_style) {
-  use_first_line_style_ = use_first_line_style;
   return *this;
 }
 
@@ -150,17 +107,25 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
   NGLogicalSize percentage_resolution_size = percentage_resolution_size_;
   NGLogicalSize parent_percentage_resolution_size =
       parent_percentage_resolution_size_.value_or(percentage_resolution_size);
-  bool is_fixed_size_inline = is_fixed_size_inline_;
-  bool is_fixed_size_block = is_fixed_size_block_;
-  bool fixed_size_block_is_definite = fixed_size_block_is_definite_;
+
+  unsigned resolved_flags = flags_;
+  auto SetResolvedFlag = [&resolved_flags](unsigned mask, bool value) {
+    resolved_flags = (resolved_flags & ~static_cast<unsigned>(mask)) |
+                     (-(int32_t)value & static_cast<unsigned>(mask));
+  };
   if (!is_in_parallel_flow) {
     available_size.Flip();
     percentage_resolution_size.Flip();
     parent_percentage_resolution_size.Flip();
-    is_fixed_size_inline = is_fixed_size_block_;
-    is_fixed_size_block = is_fixed_size_inline_;
-    fixed_size_block_is_definite = true;
+    SetResolvedFlag(NGConstraintSpace::kFixedSizeInline,
+                    flags_ & NGConstraintSpace::kFixedSizeBlock);
+    SetResolvedFlag(NGConstraintSpace::kFixedSizeBlock,
+                    flags_ & NGConstraintSpace::kFixedSizeInline);
+    SetResolvedFlag(NGConstraintSpace::kFixedSizeBlockIsDefinite, true);
+    SetResolvedFlag(NGConstraintSpace::kOrthogonalWritingModeRoot, true);
   }
+  DCHECK_EQ(resolved_flags & NGConstraintSpace::kOrthogonalWritingModeRoot,
+            !is_in_parallel_flow);
 
   // If inline size is indefinite, use size of initial containing block.
   // https://www.w3.org/TR/css-writing-modes-3/#orthogonal-auto
@@ -183,10 +148,10 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
     }
   }
 
-  DEFINE_STATIC_LOCAL(NGExclusionSpace, empty_exclusion_space, ());
-
+  bool is_new_fc_ = flags_ & NGConstraintSpace::kNewFormattingContext;
   DCHECK(!is_new_fc_ || !adjoining_floats_);
 
+  DEFINE_STATIC_LOCAL(NGExclusionSpace, empty_exclusion_space, ());
   const NGExclusionSpace& exclusion_space = (is_new_fc_ || !exclusion_space_)
                                                 ? empty_exclusion_space
                                                 : *exclusion_space_;
@@ -198,16 +163,12 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
       is_new_fc_ ? base::nullopt : floats_bfc_block_offset_;
 
   return base::AdoptRef(new NGConstraintSpace(
-      out_writing_mode, !is_in_parallel_flow, text_direction_, available_size,
+      out_writing_mode, text_direction_, available_size,
       percentage_resolution_size, parent_percentage_resolution_size.inline_size,
       initial_containing_block_size_, fragmentainer_block_size_,
-      fragmentainer_space_at_bfc_start_, is_fixed_size_inline,
-      is_fixed_size_block, fixed_size_block_is_definite, is_shrink_to_fit_,
-      is_intermediate_layout_, fragmentation_type_,
-      separate_leading_fragmentainer_margins_, is_new_fc_, is_anonymous_,
-      use_first_line_style_, should_force_clearance_, adjoining_floats_,
+      fragmentainer_space_at_bfc_start_, fragmentation_type_, adjoining_floats_,
       margin_strut, bfc_offset, floats_bfc_block_offset, exclusion_space,
-      clearance_offset, baseline_requests_));
+      clearance_offset, baseline_requests_, resolved_flags));
 }
 
 }  // namespace blink

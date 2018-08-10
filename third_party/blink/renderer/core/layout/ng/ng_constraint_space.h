@@ -35,6 +35,23 @@ enum NGFragmentationType {
 class CORE_EXPORT NGConstraintSpace final
     : public RefCounted<NGConstraintSpace> {
  public:
+  enum ConstraintSpaceFlags {
+    kOrthogonalWritingModeRoot = 1 << 0,
+    kFixedSizeInline = 1 << 1,
+    kFixedSizeBlock = 1 << 2,
+    kFixedSizeBlockIsDefinite = 1 << 3,
+    kShrinkToFit = 1 << 4,
+    kIntermediateLayout = 1 << 5,
+    kSeparateLeadingFragmentainerMargins = 1 << 6,
+    kNewFormattingContext = 1 << 7,
+    kAnonymous = 1 << 8,
+    kUseFirstLineStyle = 1 << 9,
+    kForceClearance = 1 << 10,
+
+    // Size of bitfield used to store the flags.
+    kNumberOfConstraintSpaceFlags = 11
+  };
+
   // Creates NGConstraintSpace representing LayoutObject's containing block.
   // This should live on NGBlockNode or another layout bridge and probably take
   // a root NGConstraintSpace.
@@ -52,7 +69,7 @@ class CORE_EXPORT NGConstraintSpace final
   }
 
   bool IsOrthogonalWritingModeRoot() const {
-    return is_orthogonal_writing_mode_root_;
+    return HasFlag(kOrthogonalWritingModeRoot);
   }
 
   // The size to use for percentage resolution.
@@ -93,7 +110,7 @@ class CORE_EXPORT NGConstraintSpace final
 
   // Whether the current constraint space is for the newly established
   // Formatting Context.
-  bool IsNewFormattingContext() const { return is_new_fc_; }
+  bool IsNewFormattingContext() const { return HasFlag(kNewFormattingContext); }
 
   // Return true if we are to separate (i.e. honor, rather than collapse)
   // block-start margins at the beginning of fragmentainers. This only makes a
@@ -101,20 +118,20 @@ class CORE_EXPORT NGConstraintSpace final
   // block-start margins at the beginning of a fragmentainers are to be
   // truncated to 0 if they occur after a soft (unforced) break.
   bool HasSeparateLeadingFragmentainerMargins() const {
-    return separate_leading_fragmentainer_margins_;
+    return HasFlag(kSeparateLeadingFragmentainerMargins);
   }
 
   // Whether the fragment produced from layout should be anonymous, (e.g. it
   // may be a column in a multi-column layout). In such cases it shouldn't have
   // any borders or padding.
-  bool IsAnonymous() const { return is_anonymous_; }
+  bool IsAnonymous() const { return HasFlag(kAnonymous); }
 
   // Whether to use the ':first-line' style or not.
   // Note, this is not about the first line of the content to layout, but
   // whether the constraint space itself is on the first line, such as when it's
   // an inline block.
   // Also note this is true only when the document has ':first-line' rules.
-  bool UseFirstLineStyle() const { return use_first_line_style_; }
+  bool UseFirstLineStyle() const { return HasFlag(kUseFirstLineStyle); }
 
   // Some layout modes “stretch” their children to a fixed size (e.g. flex,
   // grid). These flags represented whether a layout needs to produce a
@@ -123,23 +140,23 @@ class CORE_EXPORT NGConstraintSpace final
   //
   // If these flags are true, the AvailableSize() is interpreted as the fixed
   // border-box size of this box in the respective dimension.
-  bool IsFixedSizeInline() const { return is_fixed_size_inline_; }
+  bool IsFixedSizeInline() const { return HasFlag(kFixedSizeInline); }
 
-  bool IsFixedSizeBlock() const { return is_fixed_size_block_; }
+  bool IsFixedSizeBlock() const { return HasFlag(kFixedSizeBlock); }
 
   // Whether a fixed block size should be considered definite.
   bool FixedSizeBlockIsDefinite() const {
-    return fixed_size_block_is_definite_;
+    return HasFlag(kFixedSizeBlockIsDefinite);
   }
 
   // Whether an auto inline-size should be interpreted as shrink-to-fit
   // (ie. fit-content). This is used for inline-block, floats, etc.
-  bool IsShrinkToFit() const { return is_shrink_to_fit_; }
+  bool IsShrinkToFit() const { return HasFlag(kShrinkToFit); }
 
   // Whether this constraint space is used for an intermediate layout in a
   // multi-pass layout. In such a case, we should not copy back the resulting
   // layout data to the legacy tree or create a paint fragment from it.
-  bool IsIntermediateLayout() const { return is_intermediate_layout_; }
+  bool IsIntermediateLayout() const { return HasFlag(kIntermediateLayout); }
 
   // If specified a layout should produce a Fragment which fragments at the
   // blockSize if possible.
@@ -223,7 +240,7 @@ class CORE_EXPORT NGConstraintSpace final
   // float). So it would just be wrong to check for clearance when we position
   // #clearee. Nothing can prevent clearance here. A large margin on the cleared
   // child will be canceled out with negative clearance.
-  bool ShouldForceClearance() const { return should_force_clearance_; }
+  bool ShouldForceClearance() const { return HasFlag(kForceClearance); }
 
   const Vector<NGBaselineRequest>& BaselineRequests() const {
     return baseline_requests_;
@@ -238,7 +255,6 @@ class CORE_EXPORT NGConstraintSpace final
   friend class NGConstraintSpaceBuilder;
   // Default constructor.
   NGConstraintSpace(WritingMode,
-                    bool is_orthogonal_writing_mode_root,
                     TextDirection,
                     NGLogicalSize available_size,
                     NGLogicalSize percentage_resolution_size,
@@ -246,24 +262,19 @@ class CORE_EXPORT NGConstraintSpace final
                     NGPhysicalSize initial_containing_block_size,
                     LayoutUnit fragmentainer_block_size,
                     LayoutUnit fragmentainer_space_at_bfc_start,
-                    bool is_fixed_size_inline,
-                    bool is_fixed_size_block,
-                    bool fixed_size_block_is_definite,
-                    bool is_shrink_to_fit,
-                    bool is_intermediate_layout,
                     NGFragmentationType block_direction_fragmentation_type,
-                    bool separate_leading_fragmentainer_margins_,
-                    bool is_new_fc,
-                    bool is_anonymous,
-                    bool use_first_line_style,
-                    bool should_force_clearance,
                     NGFloatTypes adjoining_floats,
                     const NGMarginStrut& margin_strut,
                     const NGBfcOffset& bfc_offset,
                     const base::Optional<LayoutUnit>& floats_bfc_block_offset,
                     const NGExclusionSpace& exclusion_space,
                     LayoutUnit clearance_offset,
-                    Vector<NGBaselineRequest>& baseline_requests);
+                    Vector<NGBaselineRequest>& baseline_requests,
+                    unsigned flags);
+
+  bool HasFlag(ConstraintSpaceFlags mask) const {
+    return flags_ & static_cast<unsigned>(mask);
+  }
 
   NGLogicalSize available_size_;
   NGLogicalSize percentage_resolution_size_;
@@ -273,28 +284,11 @@ class CORE_EXPORT NGConstraintSpace final
   LayoutUnit fragmentainer_block_size_;
   LayoutUnit fragmentainer_space_at_bfc_start_;
 
-  unsigned is_fixed_size_inline_ : 1;
-  unsigned is_fixed_size_block_ : 1;
-  unsigned fixed_size_block_is_definite_ : 1;
-
-  unsigned is_shrink_to_fit_ : 1;
-  unsigned is_intermediate_layout_ : 1;
-
   unsigned block_direction_fragmentation_type_ : 2;
-  unsigned separate_leading_fragmentainer_margins_ : 1;
-
-  // Whether the current constraint space is for the newly established
-  // formatting Context
-  unsigned is_new_fc_ : 1;
-
-  unsigned is_anonymous_ : 1;
-  unsigned use_first_line_style_ : 1;
-  unsigned should_force_clearance_ : 1;
   unsigned adjoining_floats_ : 2;  //  NGFloatTypes
-
   unsigned writing_mode_ : 3;
-  unsigned is_orthogonal_writing_mode_root_ : 1;
   unsigned direction_ : 1;
+  unsigned flags_ : kNumberOfConstraintSpaceFlags;  // ConstraintSpaceFlags
 
   NGMarginStrut margin_strut_;
   NGBfcOffset bfc_offset_;

@@ -46,26 +46,51 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetTextDirection(TextDirection);
 
-  NGConstraintSpaceBuilder& SetIsFixedSizeInline(bool is_fixed_size_inline);
-  NGConstraintSpaceBuilder& SetIsFixedSizeBlock(bool is_fixed_size_block);
-  NGConstraintSpaceBuilder& SetFixedSizeBlockIsDefinite(
-      bool fixed_size_block_is_definite);
-
-  NGConstraintSpaceBuilder& SetIsShrinkToFit(bool shrink_to_fit);
-
-  NGConstraintSpaceBuilder& SetIsIntermediateLayout(
-      bool is_intermediate_layout);
-
-  NGConstraintSpaceBuilder& SetFragmentationType(NGFragmentationType);
-
-  NGConstraintSpaceBuilder& SetSeparateLeadingFragmentainerMargins(bool val) {
-    separate_leading_fragmentainer_margins_ = val;
+  NGConstraintSpaceBuilder& SetIsFixedSizeInline(bool b) {
+    SetFlag(NGConstraintSpace::kFixedSizeInline, b);
     return *this;
   }
 
-  NGConstraintSpaceBuilder& SetIsNewFormattingContext(bool is_new_fc);
-  NGConstraintSpaceBuilder& SetIsAnonymous(bool is_anonymous);
-  NGConstraintSpaceBuilder& SetUseFirstLineStyle(bool use_first_line_style);
+  NGConstraintSpaceBuilder& SetIsFixedSizeBlock(bool b) {
+    SetFlag(NGConstraintSpace::kFixedSizeBlock, b);
+    return *this;
+  }
+
+  NGConstraintSpaceBuilder& SetFixedSizeBlockIsDefinite(bool b) {
+    SetFlag(NGConstraintSpace::kFixedSizeBlockIsDefinite, b);
+    return *this;
+  }
+
+  NGConstraintSpaceBuilder& SetIsShrinkToFit(bool b) {
+    SetFlag(NGConstraintSpace::kShrinkToFit, b);
+    return *this;
+  }
+
+  NGConstraintSpaceBuilder& SetIsIntermediateLayout(bool b) {
+    SetFlag(NGConstraintSpace::kIntermediateLayout, b);
+    return *this;
+  }
+
+  NGConstraintSpaceBuilder& SetFragmentationType(NGFragmentationType);
+
+  NGConstraintSpaceBuilder& SetSeparateLeadingFragmentainerMargins(bool b) {
+    SetFlag(NGConstraintSpace::kSeparateLeadingFragmentainerMargins, b);
+    return *this;
+  }
+
+  NGConstraintSpaceBuilder& SetIsNewFormattingContext(bool b) {
+    SetFlag(NGConstraintSpace::kNewFormattingContext, b);
+    return *this;
+  }
+  NGConstraintSpaceBuilder& SetIsAnonymous(bool b) {
+    SetFlag(NGConstraintSpace::kAnonymous, b);
+    return *this;
+  }
+
+  NGConstraintSpaceBuilder& SetUseFirstLineStyle(bool b) {
+    SetFlag(NGConstraintSpace::kUseFirstLineStyle, b);
+    return *this;
+  }
 
   NGConstraintSpaceBuilder& SetAdjoiningFloatTypes(NGFloatTypes floats) {
     adjoining_floats_ = floats;
@@ -80,8 +105,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetClearanceOffset(LayoutUnit clearance_offset);
 
-  NGConstraintSpaceBuilder& SetShouldForceClearance() {
-    should_force_clearance_ = true;
+  NGConstraintSpaceBuilder& SetShouldForceClearance(bool b) {
+    SetFlag(NGConstraintSpace::kForceClearance, b);
     return *this;
   }
 
@@ -102,6 +127,11 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   scoped_refptr<NGConstraintSpace> ToConstraintSpace(WritingMode);
 
  private:
+  void SetFlag(NGConstraintSpace::ConstraintSpaceFlags mask, bool value) {
+    flags_ = (flags_ & ~static_cast<unsigned>(mask)) |
+             (-(int32_t)value & static_cast<unsigned>(mask));
+  }
+
   // Relative to parent_writing_mode_.
   NGLogicalSize available_size_;
   // Relative to parent_writing_mode_.
@@ -115,16 +145,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   NGFragmentationType fragmentation_type_ = kFragmentNone;
   NGFloatTypes adjoining_floats_ = kFloatTypeNone;
   TextDirection text_direction_ = TextDirection::kLtr;
-  bool is_fixed_size_inline_ = false;
-  bool is_fixed_size_block_ = false;
-  bool fixed_size_block_is_definite_ = true;
-  bool is_shrink_to_fit_ = false;
-  bool is_intermediate_layout_ = false;
-  bool separate_leading_fragmentainer_margins_ = false;
-  bool is_new_fc_ = false;
-  bool is_anonymous_ = false;
-  bool use_first_line_style_ = false;
-  bool should_force_clearance_ = false;
+
+  unsigned flags_;
 
   NGMarginStrut margin_strut_;
   NGBfcOffset bfc_offset_;
