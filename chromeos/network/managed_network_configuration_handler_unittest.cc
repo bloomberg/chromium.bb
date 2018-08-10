@@ -156,10 +156,11 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
                               base::Value::Type::LIST);
     if (found_network_configs) {
       for (const auto& network_config : found_network_configs->GetList()) {
-        onc::Validator validator(true,   // error_on_unknown_field
-                                 true,   // error_on_wrong_recommended
-                                 false,  // error_on_missing_field
-                                 true);  // managed_onc
+        onc::Validator validator(true,    // error_on_unknown_field
+                                 true,    // error_on_wrong_recommended
+                                 false,   // error_on_missing_field
+                                 true,    // managed_onc
+                                 false);  // log_warnings
         validator.SetOncSource(onc_source);
         onc::Validator::Result validation_result;
         std::unique_ptr<base::DictionaryValue> validated_network_config =
