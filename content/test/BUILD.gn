@@ -829,6 +829,7 @@ test("content_browsertests") {
     "../browser/renderer_host/render_widget_host_view_mac_browsertest.mm",
     "../browser/resource_loading_browsertest.cc",
     "../browser/scheduler/responsiveness/native_event_observer_browsertest.mm",
+    "../browser/scheduler/responsiveness/native_event_observer_browsertest_win.cc",
     "../browser/screen_orientation/screen_orientation_browsertest.cc",
     "../browser/security_exploit_browsertest.cc",
     "../browser/service_manager/service_manager_context_browsertest.cc",
