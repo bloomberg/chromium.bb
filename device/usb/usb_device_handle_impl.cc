@@ -311,7 +311,7 @@ UsbDeviceHandleImpl::Transfer::CreateControlTransfer(
   libusb_fill_control_setup(buffer->front(), type, request, value, index,
                             length);
   libusb_fill_control_transfer(transfer->platform_transfer_,
-                               device_handle->handle_, buffer->front(),
+                               device_handle->handle(), buffer->front(),
                                &UsbDeviceHandleImpl::Transfer::PlatformCallback,
                                transfer.get(), timeout);
 
@@ -341,7 +341,7 @@ UsbDeviceHandleImpl::Transfer::CreateBulkTransfer(
   }
 
   libusb_fill_bulk_transfer(
-      transfer->platform_transfer_, device_handle->handle_, endpoint,
+      transfer->platform_transfer_, device_handle->handle(), endpoint,
       buffer->front(), length, &UsbDeviceHandleImpl::Transfer::PlatformCallback,
       transfer.get(), timeout);
 
@@ -371,7 +371,7 @@ UsbDeviceHandleImpl::Transfer::CreateInterruptTransfer(
   }
 
   libusb_fill_interrupt_transfer(
-      transfer->platform_transfer_, device_handle->handle_, endpoint,
+      transfer->platform_transfer_, device_handle->handle(), endpoint,
       buffer->front(), length, &UsbDeviceHandleImpl::Transfer::PlatformCallback,
       transfer.get(), timeout);
 
@@ -401,10 +401,10 @@ UsbDeviceHandleImpl::Transfer::CreateIsochronousTransfer(
     return nullptr;
   }
 
-  libusb_fill_iso_transfer(transfer->platform_transfer_, device_handle->handle_,
-                           endpoint, buffer->front(), static_cast<int>(length),
-                           num_packets, &Transfer::PlatformCallback,
-                           transfer.get(), timeout);
+  libusb_fill_iso_transfer(
+      transfer->platform_transfer_, device_handle->handle(), endpoint,
+      buffer->front(), static_cast<int>(length), num_packets,
+      &Transfer::PlatformCallback, transfer.get(), timeout);
 
   for (size_t i = 0; i < packet_lengths.size(); ++i)
     transfer->platform_transfer_->iso_packet_desc[i].length = packet_lengths[i];
@@ -798,16 +798,14 @@ const UsbInterfaceDescriptor* UsbDeviceHandleImpl::FindInterfaceByEndpoint(
 }
 
 UsbDeviceHandleImpl::UsbDeviceHandleImpl(
-    scoped_refptr<UsbContext> context,
     scoped_refptr<UsbDeviceImpl> device,
-    PlatformUsbDeviceHandle handle,
+    ScopedLibusbDeviceHandle handle,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-    : device_(device),
-      handle_(handle),
-      context_(context),
+    : device_(std::move(device)),
+      handle_(std::move(handle)),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       blocking_task_runner_(blocking_task_runner) {
-  DCHECK(handle) << "Cannot create device with NULL handle.";
+  DCHECK(handle_.IsValid()) << "Cannot create device with an invalid handle.";
 }
 
 UsbDeviceHandleImpl::~UsbDeviceHandleImpl() {
@@ -817,17 +815,19 @@ UsbDeviceHandleImpl::~UsbDeviceHandleImpl() {
   // any thread. libusb is not safe to reentrancy so be sure not to try to close
   // the device from inside a transfer completion callback.
   if (blocking_task_runner_->RunsTasksInCurrentSequence()) {
-    libusb_close(handle_);
+    handle_.Reset();
   } else {
-    blocking_task_runner_->PostTask(FROM_HERE,
-                                    base::BindOnce(&libusb_close, handle_));
+    blocking_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(base::DoNothing::Once<ScopedLibusbDeviceHandle>(),
+                       std::move(handle_)));
   }
 }
 
 void UsbDeviceHandleImpl::SetConfigurationOnBlockingThread(
     int configuration_value,
     ResultCallback callback) {
-  int rv = libusb_set_configuration(handle_, configuration_value);
+  int rv = libusb_set_configuration(handle(), configuration_value);
   if (rv != LIBUSB_SUCCESS) {
     USB_LOG(EVENT) << "Failed to set configuration " << configuration_value
                    << ": " << ConvertPlatformUsbErrorToString(rv);
@@ -855,7 +855,7 @@ void UsbDeviceHandleImpl::SetConfigurationComplete(bool success,
 void UsbDeviceHandleImpl::ClaimInterfaceOnBlockingThread(
     int interface_number,
     ResultCallback callback) {
-  int rv = libusb_claim_interface(handle_, interface_number);
+  int rv = libusb_claim_interface(handle(), interface_number);
   scoped_refptr<InterfaceClaimer> interface_claimer;
   if (rv == LIBUSB_SUCCESS) {
     interface_claimer =
@@ -897,7 +897,7 @@ void UsbDeviceHandleImpl::SetInterfaceAlternateSettingOnBlockingThread(
     int interface_number,
     int alternate_setting,
     ResultCallback callback) {
-  int rv = libusb_set_interface_alt_setting(handle_, interface_number,
+  int rv = libusb_set_interface_alt_setting(handle(), interface_number,
                                             alternate_setting);
   if (rv != LIBUSB_SUCCESS) {
     USB_LOG(EVENT) << "Failed to set interface " << interface_number
@@ -930,7 +930,7 @@ void UsbDeviceHandleImpl::SetInterfaceAlternateSettingComplete(
 }
 
 void UsbDeviceHandleImpl::ResetDeviceOnBlockingThread(ResultCallback callback) {
-  int rv = libusb_reset_device(handle_);
+  int rv = libusb_reset_device(handle());
   if (rv != LIBUSB_SUCCESS) {
     USB_LOG(EVENT) << "Failed to reset device: "
                    << ConvertPlatformUsbErrorToString(rv);
@@ -941,7 +941,7 @@ void UsbDeviceHandleImpl::ResetDeviceOnBlockingThread(ResultCallback callback) {
 
 void UsbDeviceHandleImpl::ClearHaltOnBlockingThread(uint8_t endpoint,
                                                     ResultCallback callback) {
-  int rv = libusb_clear_halt(handle_, endpoint);
+  int rv = libusb_clear_halt(handle(), endpoint);
   if (rv != LIBUSB_SUCCESS) {
     USB_LOG(EVENT) << "Failed to clear halt: "
                    << ConvertPlatformUsbErrorToString(rv);
