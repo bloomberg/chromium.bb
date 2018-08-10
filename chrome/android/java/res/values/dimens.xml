@@ -194,7 +194,6 @@
     <dimen name="signin_margin_end">16dp</dimen>
     <dimen name="signin_divider_margin_start">48dp</dimen>
     <dimen name="signin_drawable_padding">16dp</dimen>
-    <dimen name="signin_description_blocks_margin">16dp</dimen>
 
     <!-- Signin promo dimensions -->
     <dimen name="signin_promo_account_image_size">48dp</dimen>
