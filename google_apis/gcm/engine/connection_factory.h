@@ -7,9 +7,11 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/time/time.h"
 #include "google_apis/gcm/base/gcm_export.h"
 #include "google_apis/gcm/engine/connection_handler.h"
+#include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 
 class GURL;
 
@@ -22,6 +24,9 @@ class LoginRequest;
 }
 
 namespace gcm {
+
+using GetProxyResolvingFactoryCallback = base::RepeatingCallback<void(
+    network::mojom::ProxyResolvingSocketFactoryRequest)>;
 
 // Factory for creating a ConnectionHandler and maintaining its connection.
 // The factory retains ownership of the ConnectionHandler and will enforce

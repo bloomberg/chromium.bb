@@ -47,7 +47,9 @@ static_library("gcm_driver") {
     "//components/gcm_driver/common",
     "//components/gcm_driver/crypto",
     "//components/gcm_driver/instance_id",
+    "//crypto",
   ]
+
   deps = [
     ":gcm_buildflags",
     "//base:i18n",
@@ -64,6 +66,7 @@ static_library("gcm_driver") {
     "//net",
     "//services/identity/public/cpp",
     "//services/network/public/cpp",
+    "//services/network/public/mojom",
     "//url:url",
   ]
 
@@ -140,6 +143,7 @@ static_library("test_support") {
     "//net",
     "//services/network:test_support",
     "//services/network/public/cpp",
+    "//services/network/public/mojom",
     "//testing/gtest",
   ]
 

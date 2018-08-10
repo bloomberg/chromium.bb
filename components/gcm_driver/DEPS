@@ -21,6 +21,7 @@ include_rules = [
   "+net",
   "+services/identity/public",
   "+services/network/public/cpp",
+  "+services/network/public/mojom",
   "+services/network/test",
   "+third_party/leveldatabase",  # Only used for tests.
 ]

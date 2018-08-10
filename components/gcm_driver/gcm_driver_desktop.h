@@ -22,16 +22,13 @@
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_connection_observer.h"
 #include "components/gcm_driver/gcm_driver.h"
+#include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 
 class PrefService;
 
 namespace base {
 class FilePath;
 class SequencedTaskRunner;
-}
-
-namespace net {
-class URLRequestContextGetter;
 }
 
 namespace network {
@@ -57,7 +54,9 @@ class GCMDriverDesktop : public GCMDriver,
       const std::string& user_agent,
       PrefService* prefs,
       const base::FilePath& store_path,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context,
+      base::RepeatingCallback<
+          void(network::mojom::ProxyResolvingSocketFactoryRequest)>
+          get_socket_factory_callback,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_for_ui,
       const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
       const scoped_refptr<base::SequencedTaskRunner>& io_thread,

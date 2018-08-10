@@ -35,6 +35,38 @@
 
 namespace gcm {
 
+namespace {
+
+#if !defined(OS_ANDROID)
+// Requests a ProxyResolvingSocketFactoryPtr on the UI thread. Note that a
+// WeakPtr of GCMProfileService is needed to detect when the KeyedService shuts
+// down, and avoid calling into |profile| which might have also been destroyed.
+void RequestProxyResolvingSocketFactoryOnUIThread(
+    Profile* profile,
+    base::WeakPtr<GCMProfileService> service,
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  if (!service)
+    return;
+  network::mojom::NetworkContext* network_context =
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetNetworkContext();
+  network_context->CreateProxyResolvingSocketFactory(std::move(request));
+}
+
+// A thread-safe wrapper to request a ProxyResolvingSocketFactoryPtr.
+void RequestProxyResolvingSocketFactory(
+    Profile* profile,
+    base::WeakPtr<GCMProfileService> service,
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread, profile,
+                     std::move(service), std::move(request)));
+}
+#endif
+
+}  // namespace
+
 // static
 GCMProfileService* GCMProfileServiceFactory::GetForProfile(
     content::BrowserContext* profile) {
@@ -78,8 +110,9 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
   service = base::WrapUnique(
       new GCMProfileService(profile->GetPath(), blocking_task_runner));
 #else
-  service = base::WrapUnique(new GCMProfileService(
+  service = std::make_unique<GCMProfileService>(
       profile->GetPrefs(), profile->GetPath(), profile->GetRequestContext(),
+      base::BindRepeating(&RequestProxyResolvingSocketFactory, profile),
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess(),
       chrome::GetChannel(),
@@ -90,7 +123,7 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
           content::BrowserThread::UI),
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO),
-      blocking_task_runner));
+      blocking_task_runner);
 #endif
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::PrefetchService* prefetch_service =

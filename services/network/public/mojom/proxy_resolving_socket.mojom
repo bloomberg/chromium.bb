@@ -12,13 +12,6 @@ import "url/mojom/url.mojom";
 // and Reads are through the data pipes supplied upon construction. Consumer
 // can close the socket by destroying the interface pointer.
 interface ProxyResolvingSocket{
-  // Gets the peer address. On success, |net_error| is
-  // net::OK and |peer_addr| contains the peer address. On failure,
-  // |peer_addr| is null and |net_error| is a net error code. If socket is
-  // connected to a proxy, |net_error| will be net::ERR_NAME_NOT_RESOLVED, and
-  // |peer_addr| will be empty.
-  GetPeerAddress() => (int32 net_error, net.interfaces.IPEndPoint? peer_addr);
-
   // TODO(xunjieli): Add methods to configure the socket connection and allow
   // consumers to specify whether they want to disconnect or return the socket
   // to socket pools.
@@ -33,7 +26,12 @@ interface ProxyResolvingSocketFactory {
   // connection will be established on top of a TCP connection. On success,
   // |result| is net::OK. Caller is to use |send_stream| to send data and
   // |receive_stream| to receive data over the connection. On failure, |result|
-  // is a network error code.
+  // is a network error code. |local_addr| contains the local address of the
+  // socket. |peer_addr| contains the peer address. If socket is connected to a
+  // proxy, |peer_addr| will be null.
+  //
+  // If socket is closed before the callback can be completed, the callback will
+  // be invoked with net::ERR_ABORTED.
   //
   // Any sockets that are created but are yet to be destroyed will be destroyed
   // when the implementation of this factory goes away.
@@ -42,6 +40,7 @@ interface ProxyResolvingSocketFactory {
       ProxyResolvingSocket& socket)
      => (int32 result,
          net.interfaces.IPEndPoint? local_addr,
+         net.interfaces.IPEndPoint? peer_addr,
          handle<data_pipe_consumer>? receive_stream,
          handle<data_pipe_producer>? send_stream);
 };

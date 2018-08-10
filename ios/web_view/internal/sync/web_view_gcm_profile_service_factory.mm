@@ -16,12 +16,41 @@
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 namespace ios_web_view {
+
+namespace {
+
+// Requests a ProxyResolvingSocketFactoryPtr on the UI thread. Note that a
+// WeakPtr of GCMProfileService is needed to detect when the KeyedService shuts
+// down, and avoid calling into |profile| which might have also been destroyed.
+void RequestProxyResolvingSocketFactoryOnUIThread(
+    web::BrowserState* context,
+    base::WeakPtr<gcm::GCMProfileService> service,
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  if (!service)
+    return;
+  context->GetProxyResolvingSocketFactory(std::move(request));
+}
+
+// A thread-safe wrapper to request a ProxyResolvingSocketFactoryPtr.
+void RequestProxyResolvingSocketFactory(
+    web::BrowserState* context,
+    base::WeakPtr<gcm::GCMProfileService> service,
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  web::WebThread::GetTaskRunnerForThread(web::WebThread::UI)
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread, context,
+                         std::move(service), std::move(request)));
+}
+
+}  // namespace
 
 // static
 gcm::GCMProfileService* WebViewGCMProfileServiceFactory::GetForBrowserState(
@@ -64,6 +93,7 @@ WebViewGCMProfileServiceFactory::BuildServiceInstanceFor(
   return std::make_unique<gcm::GCMProfileService>(
       browser_state->GetPrefs(), browser_state->GetStatePath(),
       browser_state->GetRequestContext(),
+      base::BindRepeating(&RequestProxyResolvingSocketFactory, context),
       browser_state->GetSharedURLLoaderFactory(),
       version_info::Channel::UNKNOWN, GetProductCategoryForSubtypes(),
       WebViewIdentityManagerFactory::GetForBrowserState(browser_state),

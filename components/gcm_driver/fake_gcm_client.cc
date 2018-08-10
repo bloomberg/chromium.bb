@@ -75,8 +75,9 @@ void FakeGCMClient::Initialize(
     const ChromeBuildInfo& chrome_build_info,
     const base::FilePath& store_path,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
-    const scoped_refptr<net::URLRequestContextGetter>&
-        url_request_context_getter,
+    base::RepeatingCallback<
+        void(network::mojom::ProxyResolvingSocketFactoryRequest)>
+        get_socket_factory_callback,
     const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory,
     std::unique_ptr<Encryptor> encryptor,
     Delegate* delegate) {

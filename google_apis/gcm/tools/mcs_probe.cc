@@ -59,7 +59,7 @@
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 #if defined(OS_MACOSX)
@@ -220,6 +220,8 @@ class MCSProbe {
   uint64_t secret() const { return secret_; }
 
  private:
+  void RequestProxyResolvingSocketFactory(
+      network::mojom::ProxyResolvingSocketFactoryRequest request);
   void CheckIn();
   void InitializeNetworkState();
 
@@ -321,7 +323,9 @@ void MCSProbe::Start() {
 
   connection_factory_ = std::make_unique<ConnectionFactoryImpl>(
       endpoints, kDefaultBackoffPolicy,
-      url_request_context_getter_->GetURLRequestContext(), &recorder_);
+      base::BindRepeating(&MCSProbe::RequestProxyResolvingSocketFactory,
+                          base::Unretained(this)),
+      &recorder_);
   gcm_store_ = std::make_unique<GCMStoreImpl>(
       gcm_store_path_, file_thread_.task_runner(),
       std::make_unique<FakeEncryptor>());
@@ -415,6 +419,12 @@ void MCSProbe::InitializeNetworkState() {
 
 void MCSProbe::ErrorCallback() {
   LOG(INFO) << "MCS error happened";
+}
+
+void MCSProbe::RequestProxyResolvingSocketFactory(
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  return network_context_->CreateProxyResolvingSocketFactory(
+      std::move(request));
 }
 
 void MCSProbe::CheckIn() {
