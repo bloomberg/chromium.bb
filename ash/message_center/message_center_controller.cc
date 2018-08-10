@@ -6,6 +6,7 @@
 
 #include "ash/message_center/arc_notification_manager_delegate_impl.h"
 #include "ash/message_center/ash_message_center_lock_screen_controller.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
@@ -15,6 +16,8 @@
 #include "base/command_line.h"
 #include "base/unguessable_token.h"
 #include "components/account_id/account_id.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -25,6 +28,15 @@ using message_center::MessageCenter;
 using message_center::NotifierId;
 
 namespace ash {
+
+// static
+void MessageCenterController::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(
+      prefs::kMessageCenterLockScreenMode,
+      prefs::kMessageCenterLockScreenModeHide,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+}
 
 namespace {
 

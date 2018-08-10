@@ -56,6 +56,12 @@ ASH_PUBLIC_EXPORT extern const char kShownPaletteWelcomeBubble[];
 ASH_PUBLIC_EXPORT extern const char kEnableStylusTools[];
 ASH_PUBLIC_EXPORT extern const char kLaunchPaletteOnEjectEvent[];
 
+// Lock screen notification settings.
+ASH_PUBLIC_EXPORT extern const char kMessageCenterLockScreenMode[];
+ASH_PUBLIC_EXPORT extern const char kMessageCenterLockScreenModeShow[];
+ASH_PUBLIC_EXPORT extern const char kMessageCenterLockScreenModeHide[];
+ASH_PUBLIC_EXPORT extern const char kMessageCenterLockScreenModeHideSensitive[];
+
 ASH_PUBLIC_EXPORT extern const char kNightLightEnabled[];
 ASH_PUBLIC_EXPORT extern const char kNightLightTemperature[];
 ASH_PUBLIC_EXPORT extern const char kNightLightScheduleType[];

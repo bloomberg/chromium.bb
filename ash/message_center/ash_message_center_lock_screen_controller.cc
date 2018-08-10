@@ -7,6 +7,7 @@
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/lock_window.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -16,6 +17,7 @@
 #include "ash/system/toast/toast_manager.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -31,7 +33,17 @@ AshMessageCenterLockScreenController::GetMode() {
   if (!features::IsLockScreenNotificationsEnabled())
     return Mode::HIDE;
 
-  return Mode::SHOW;
+  PrefService* user_prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  const std::string& mode =
+      user_prefs->GetString(prefs::kMessageCenterLockScreenMode);
+  if (mode == prefs::kMessageCenterLockScreenModeShow)
+    return Mode::SHOW;
+  if (mode == prefs::kMessageCenterLockScreenModeHideSensitive &&
+      features::IsLockScreenHideSensitiveNotificationsSupported())
+    return Mode::HIDE_SENSITIVE;
+
+  return Mode::HIDE;
 }
 
 namespace {

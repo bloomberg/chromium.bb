@@ -127,6 +127,20 @@ const char kEnableStylusTools[] = "settings.enable_stylus_tools";
 const char kLaunchPaletteOnEjectEvent[] =
     "settings.launch_palette_on_eject_event";
 
+// A string pref storing the type of lock screen notification mode.
+// "show" -> show notifications on the lock screen
+// "hide" -> hide notifications at all on the lock screen (default)
+// "hideSensitive" -> hide sensitive content on the lock screen
+// (other values are treated as "hide")
+const char kMessageCenterLockScreenMode[] =
+    "ash.message_center.lock_screen_mode";
+
+// Value of each options of the lock screen notification settings. They are
+// used the pref of ash::prefs::kMessageCenterLockScreenMode.
+const char kMessageCenterLockScreenModeShow[] = "show";
+const char kMessageCenterLockScreenModeHide[] = "hide";
+const char kMessageCenterLockScreenModeHideSensitive[] = "hideSensitive";
+
 // A boolean pref storing the enabled status of the NightLight feature.
 const char kNightLightEnabled[] = "ash.night_light.enabled";
 
