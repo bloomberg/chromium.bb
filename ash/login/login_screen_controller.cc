@@ -128,9 +128,6 @@ void LoginScreenController::AttemptUnlock(const AccountId& account_id) {
   if (!login_screen_client_)
     return;
   login_screen_client_->AttemptUnlock(account_id);
-
-  Shell::Get()->metrics()->login_metrics_recorder()->SetAuthMethod(
-      LoginMetricsRecorder::AuthMethod::kSmartlock);
 }
 
 void LoginScreenController::HardlockPod(const AccountId& account_id) {
@@ -462,11 +459,6 @@ void LoginScreenController::DoAuthenticateUser(const AccountId& account_id,
   int dummy_value;
   bool is_pin =
       authenticated_by_pin && base::StringToInt(password, &dummy_value);
-
-  Shell::Get()->metrics()->login_metrics_recorder()->SetAuthMethod(
-      is_pin ? LoginMetricsRecorder::AuthMethod::kPin
-             : LoginMetricsRecorder::AuthMethod::kPassword);
-
   login_screen_client_->AuthenticateUser(
       account_id, password, is_pin,
       base::BindOnce(&LoginScreenController::OnAuthenticateComplete,

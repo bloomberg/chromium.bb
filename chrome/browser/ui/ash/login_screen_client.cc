@@ -8,6 +8,7 @@
 
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/login_auth_recorder.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
@@ -26,7 +27,9 @@ LoginScreenClient::Delegate::Delegate() = default;
 LoginScreenClient::Delegate::~Delegate() = default;
 
 LoginScreenClient::LoginScreenClient()
-    : binding_(this), weak_ptr_factory_(this) {
+    : binding_(this),
+      auth_recorder_(std::make_unique<chromeos::LoginAuthRecorder>()),
+      weak_ptr_factory_(this) {
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
       ->BindInterface(ash::mojom::kServiceName, &login_screen_);
@@ -63,6 +66,10 @@ ash::mojom::LoginScreenPtr& LoginScreenClient::login_screen() {
   return login_screen_;
 }
 
+chromeos::LoginAuthRecorder* LoginScreenClient::auth_recorder() {
+  return auth_recorder_.get();
+}
+
 void LoginScreenClient::AuthenticateUser(const AccountId& account_id,
                                          const std::string& password,
                                          bool authenticated_by_pin,
@@ -70,6 +77,10 @@ void LoginScreenClient::AuthenticateUser(const AccountId& account_id,
   if (delegate_) {
     delegate_->HandleAuthenticateUser(
         account_id, password, authenticated_by_pin, std::move(callback));
+    auth_recorder_->RecordAuthMethod(
+        authenticated_by_pin
+            ? chromeos::LoginAuthRecorder::AuthMethod::kPin
+            : chromeos::LoginAuthRecorder::AuthMethod::kPassword);
   } else {
     LOG(ERROR) << "Returning failed authentication attempt; no delegate";
     std::move(callback).Run(false);
@@ -77,8 +88,11 @@ void LoginScreenClient::AuthenticateUser(const AccountId& account_id,
 }
 
 void LoginScreenClient::AttemptUnlock(const AccountId& account_id) {
-  if (delegate_)
+  if (delegate_) {
     delegate_->HandleAttemptUnlock(account_id);
+    auth_recorder_->RecordAuthMethod(
+        chromeos::LoginAuthRecorder::AuthMethod::kSmartlock);
+  }
 }
 
 void LoginScreenClient::HardlockPod(const AccountId& account_id) {

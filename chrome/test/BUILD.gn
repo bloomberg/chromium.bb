@@ -5013,6 +5013,7 @@ if (!is_android) {
         "../browser/chromeos/login/lock/screen_locker_browsertest.cc",
         "../browser/chromeos/login/lock/screen_locker_tester.cc",
         "../browser/chromeos/login/lock/screen_locker_tester.h",
+        "../browser/chromeos/login/login_auth_recorder_browsertest.cc",
         "../browser/chromeos/login/login_browsertest.cc",
         "../browser/chromeos/login/login_manager_test.cc",
         "../browser/chromeos/login/login_manager_test.h",

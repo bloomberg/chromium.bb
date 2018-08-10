@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/views_screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
+#include "chrome/browser/chromeos/login/login_auth_recorder.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
@@ -688,6 +689,9 @@ void ScreenLocker::OnAuthScanDone(
     return;
   }
 
+  LoginScreenClient::Get()->auth_recorder()->RecordAuthMethod(
+      LoginAuthRecorder::AuthMethod::kFingerprint);
+
   if (scan_result != biod::ScanResult::SCAN_RESULT_SUCCESS) {
     OnFingerprintAuthFailure(*active_user);
     return;
@@ -701,6 +705,9 @@ void ScreenLocker::OnAuthScanDone(
   delegate_->SetFingerprintState(active_user->GetAccountId(),
                                  FingerprintState::kSignin);
   OnAuthSuccess(user_context);
+  LoginScreenClient::Get()->auth_recorder()->RecordFingerprintAuthSuccess(
+      true /*success*/,
+      quick_unlock_storage->fingerprint_storage()->unlock_attempt_count());
 }
 
 void ScreenLocker::OnSessionFailed() {
@@ -710,7 +717,8 @@ void ScreenLocker::OnSessionFailed() {
 void ScreenLocker::OnFingerprintAuthFailure(const user_manager::User& user) {
   UMA_HISTOGRAM_ENUMERATION("ScreenLocker.AuthenticationFailure",
                             unlock_attempt_type_, UnlockType::AUTH_COUNT);
-
+  LoginScreenClient::Get()->auth_recorder()->RecordFingerprintAuthSuccess(
+      false /*success*/, base::nullopt /*num_attempts*/);
   delegate_->SetFingerprintState(user.GetAccountId(),
                                  FingerprintState::kFailed);
 
