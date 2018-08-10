@@ -47,6 +47,10 @@ class APP_LIST_EXPORT AppListItemView
   AppListItemView(AppsGridView* apps_grid_view,
                   AppListItem* item,
                   AppListViewDelegate* delegate);
+  AppListItemView(AppsGridView* apps_grid_view,
+                  AppListItem* item,
+                  AppListViewDelegate* delegate,
+                  bool is_in_folder);
   ~AppListItemView() override;
 
   // Set the icon of this image, adding a drop shadow if |has_shadow|.
@@ -213,11 +217,12 @@ class APP_LIST_EXPORT AppListItemView
 
   AppListItem* item_weak_;  // Owned by AppListModel. Can be NULL.
 
-  AppListViewDelegate* delegate_;     // Unowned.
-  AppsGridView* apps_grid_view_;      // Parent view, owns this.
-  views::ImageView* icon_;            // Strongly typed child view.
-  views::Label* title_;               // Strongly typed child view.
-  views::ProgressBar* progress_bar_;  // Strongly typed child view.
+  AppListViewDelegate* delegate_;            // Unowned.
+  AppsGridView* apps_grid_view_;             // Parent view, owns this.
+  views::ImageView* icon_;                   // Strongly typed child view.
+  views::Label* title_;                      // Strongly typed child view.
+  views::ProgressBar* progress_bar_;         // Strongly typed child view.
+  views::ImageView* icon_shadow_ = nullptr;  // Strongly typed child view.
 
   std::unique_ptr<AppListMenuModelAdapter> context_menu_;
 

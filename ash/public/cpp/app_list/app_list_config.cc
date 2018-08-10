@@ -16,7 +16,7 @@ AppListConfig::AppListConfig()
       grid_tile_spacing_(24),
       grid_icon_dimension_(48),
       grid_icon_bottom_padding_(3),
-      grid_title_bottom_padding_(0),
+      grid_title_top_padding_(86),
       grid_title_width_(80),
       grid_title_color_(SK_ColorWHITE),
       grid_focus_dimension_(64),
@@ -46,6 +46,7 @@ AppListConfig::AppListConfig()
       folder_unclipped_icon_dimension_(48),
       folder_icon_radius_(24),
       folder_background_radius_(4),
+      folder_bubble_color_(SkColorSetARGB(0x1F, 0xFF, 0xFF, 0xFF)),
       item_icon_in_folder_icon_dimension_(16),
       folder_dropping_circle_radius_(39),
       folder_dropping_delay_(150),
@@ -59,7 +60,7 @@ AppListConfig::AppListConfig()
     grid_tile_spacing_ = 0;
     grid_icon_dimension_ = 64;
     grid_icon_bottom_padding_ = 24;
-    grid_title_bottom_padding_ = 8;
+    grid_title_top_padding_ = 82;
     grid_title_width_ = 96;
     grid_focus_dimension_ = 80;
     grid_focus_corner_radius_ = 12;
@@ -80,6 +81,7 @@ AppListConfig::AppListConfig()
     folder_unclipped_icon_dimension_ = 88;
     folder_icon_radius_ = 36;
     folder_background_radius_ = 12;
+    folder_bubble_color_ = SkColorSetARGB(0x7A, 0xF1, 0xF3, 0xF4);
     item_icon_in_folder_icon_dimension_ = 32;
     folder_dropping_circle_radius_ = 44;
     folder_dropping_delay_ = 0;

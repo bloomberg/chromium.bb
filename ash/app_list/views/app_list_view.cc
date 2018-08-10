@@ -93,7 +93,7 @@ constexpr float kAppListAnimationDurationMs = 200;
 constexpr float kAppListAnimationDurationFromFullscreenMs = 250;
 
 // The app list opacity when the tablet mode is enabled.
-constexpr float kAppListOpacityInTabletMode = 0.1;
+constexpr float kAppListOpacityInTabletMode = 0.2;
 
 // The background corner radius in peeking and fullscreen state.
 constexpr int kAppListPeekingBackgroundRadius = 28;

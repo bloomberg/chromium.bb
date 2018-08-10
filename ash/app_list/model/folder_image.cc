@@ -31,12 +31,20 @@ namespace {
 // The margin of item icon in folder icon.
 constexpr int kItemIconMargin = 2;
 
+// The shadow blur of icon.
+constexpr int kIconShadowBlur = 5;
+
+// The shadow color of icon.
+constexpr SkColor kIconShadowColor = SkColorSetA(SK_ColorBLACK, 31);
+
 // Generates the folder icon with the top 4 child item icons laid in 2x2 tile.
 class FolderImageSource : public gfx::CanvasImageSource {
  public:
   typedef std::vector<gfx::ImageSkia> Icons;
 
-  FolderImageSource(const Icons& icons, const gfx::Size& size);
+  FolderImageSource(const Icons& icons,
+                    const gfx::Size& size,
+                    bool draw_shadow);
   ~FolderImageSource() override;
 
  private:
@@ -51,12 +59,18 @@ class FolderImageSource : public gfx::CanvasImageSource {
 
   Icons icons_;
   gfx::Size size_;
+  bool draw_shadow_;  // True if |icons| have shadows.
 
   DISALLOW_COPY_AND_ASSIGN(FolderImageSource);
 };
 
-FolderImageSource::FolderImageSource(const Icons& icons, const gfx::Size& size)
-    : gfx::CanvasImageSource(size, false), icons_(icons), size_(size) {
+FolderImageSource::FolderImageSource(const Icons& icons,
+                                     const gfx::Size& size,
+                                     bool draw_shadow)
+    : gfx::CanvasImageSource(size, false),
+      icons_(icons),
+      size_(size),
+      draw_shadow_(draw_shadow) {
   DCHECK(icons.size() <= FolderImage::kNumFolderTopItems);
 }
 
@@ -70,10 +84,26 @@ void FolderImageSource::DrawIcon(gfx::Canvas* canvas,
   if (icon.isNull())
     return;
 
-  gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(
+  const gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(
       icon, skia::ImageOperations::RESIZE_BEST, icon_size));
-  canvas->DrawImageInt(resized, 0, 0, resized.width(), resized.height(), x, y,
-                       resized.width(), resized.height(), true);
+  if (!draw_shadow_) {
+    canvas->DrawImageInt(resized, 0, 0, resized.width(), resized.height(), x, y,
+                         resized.width(), resized.height(), true);
+    return;
+  }
+
+  // Draw a shadowed icon on the specified location.
+  const gfx::ImageSkia shadowed(
+      gfx::ImageSkiaOperations::CreateImageWithDropShadow(
+          resized, gfx::ShadowValues(
+                       1, gfx::ShadowValue(gfx::Vector2d(), kIconShadowBlur,
+                                           kIconShadowColor))));
+  const gfx::Size shadow_size = shadowed.size();
+  x -= (shadow_size.width() - icon_size.width()) / 2;
+  y -= (shadow_size.height() - icon_size.height()) / 2;
+  canvas->DrawImageInt(shadowed, 0, 0, shadow_size.width(),
+                       shadow_size.height(), x, y, shadow_size.width(),
+                       shadow_size.height(), true);
 }
 
 void FolderImageSource::Draw(gfx::Canvas* canvas) {
@@ -84,7 +114,7 @@ void FolderImageSource::Draw(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
-  flags.setColor(FolderImage::kFolderBubbleColor);
+  flags.setColor(AppListConfig::instance().folder_bubble_color());
   canvas->DrawCircle(bubble_center,
                      AppListConfig::instance().folder_bubble_radius(), flags);
 
@@ -145,10 +175,10 @@ std::vector<gfx::Rect> GetTopIconsBoundsLegacy(
 
 // static
 const size_t FolderImage::kNumFolderTopItems = 4;
-const SkColor FolderImage::kFolderBubbleColor =
-    SkColorSetARGB(0x1F, 0xFF, 0xFF, 0xFF);
 
-FolderImage::FolderImage(AppListItemList* item_list) : item_list_(item_list) {
+FolderImage::FolderImage(AppListItemList* item_list)
+    : item_list_(item_list),
+      is_new_style_launcher_enabled_(features::IsNewStyleLauncherEnabled()) {
   item_list_->AddObserver(this);
 }
 
@@ -308,8 +338,10 @@ void FolderImage::RedrawIconAndNotify() {
     top_icons.push_back(item->icon());
   const gfx::Size icon_size =
       AppListConfig::instance().folder_unclipped_icon_size();
-  icon_ = gfx::ImageSkia(
-      std::make_unique<FolderImageSource>(top_icons, icon_size), icon_size);
+  icon_ = gfx::ImageSkia(std::make_unique<FolderImageSource>(
+                             top_icons, icon_size,
+                             is_new_style_launcher_enabled_ /* draw_shadow */),
+                         icon_size);
 
   for (auto& observer : observers_)
     observer.OnFolderImageUpdated();
