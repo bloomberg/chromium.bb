@@ -31,6 +31,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/arc/net/always_on_vpn_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "net/base/network_change_notifier.h"
@@ -612,6 +613,8 @@ class UserSessionManager
 
   // Mapped to |chrome::AttemptRestart|, except in tests.
   base::RepeatingClosure attempt_restart_closure_;
+
+  std::unique_ptr<arc::AlwaysOnVpnManager> always_on_vpn_manager_;
 
   base::WeakPtrFactory<UserSessionManager> weak_factory_;
 

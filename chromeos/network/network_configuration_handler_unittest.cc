@@ -182,6 +182,14 @@ class NetworkConfigurationHandlerTest : public testing::Test {
     get_properties_ = dictionary.CreateDeepCopy();
   }
 
+  void ManagerGetPropertiesCallback(const std::string& success_callback_name,
+                                    DBusMethodCallStatus call_status,
+                                    const base::DictionaryValue& result) {
+    if (call_status == chromeos::DBUS_METHOD_CALL_SUCCESS)
+      success_callback_name_ = success_callback_name;
+    manager_get_properties_ = result.CreateDeepCopy();
+  }
+
   void CreateConfigurationCallback(const std::string& service_path,
                                    const std::string& guid) {
     create_service_path_ = service_path;
@@ -276,6 +284,18 @@ class NetworkConfigurationHandlerTest : public testing::Test {
     return true;
   }
 
+  bool GetReceivedStringManagerProperty(const std::string& key,
+                                        std::string* result) {
+    if (!manager_get_properties_)
+      return false;
+    const base::Value* value =
+        manager_get_properties_->FindKeyOfType(key, base::Value::Type::STRING);
+    if (!value)
+      return false;
+    *result = value->GetString();
+    return true;
+  }
+
   FakeShillServiceClient* GetShillServiceClient() {
     return static_cast<FakeShillServiceClient*>(
         DBusThreadManager::Get()->GetShillServiceClient());
@@ -294,6 +314,7 @@ class NetworkConfigurationHandlerTest : public testing::Test {
   std::string success_callback_name_;
   std::string get_properties_path_;
   std::unique_ptr<base::DictionaryValue> get_properties_;
+  std::unique_ptr<base::DictionaryValue> manager_get_properties_;
   std::string create_service_path_;
 };
 
@@ -646,6 +667,24 @@ TEST_F(NetworkConfigurationHandlerTest, NetworkConfigurationObserver) {
 
   network_configuration_handler_->RemoveObserver(
       network_configuration_observer.get());
+}
+
+TEST_F(NetworkConfigurationHandlerTest, AlwaysOnVpn) {
+  const std::string vpn_package = "com.android.vpn";
+
+  network_configuration_handler_->SetManagerProperty(
+      shill::kAlwaysOnVpnPackageProperty, base::Value(vpn_package),
+      base::DoNothing(), base::Bind(&ErrorCallback));
+
+  DBusThreadManager::Get()->GetShillManagerClient()->GetProperties(
+      Bind(&NetworkConfigurationHandlerTest::ManagerGetPropertiesCallback,
+           base::Unretained(this), "ManagerGetProperties"));
+  base::RunLoop().RunUntilIdle();
+  std::string package_result;
+  EXPECT_EQ("ManagerGetProperties", success_callback_name_);
+  EXPECT_TRUE(GetReceivedStringManagerProperty(
+      shill::kAlwaysOnVpnPackageProperty, &package_result));
+  EXPECT_EQ(vpn_package, package_result);
 }
 
 }  // namespace chromeos

@@ -62,6 +62,15 @@ void SetNetworkProfileErrorCallback(
       error_callback, dbus_error_name, dbus_error_message);
 }
 
+void ManagerSetPropertiesErrorCallback(
+    const network_handler::ErrorCallback& error_callback,
+    const std::string& dbus_error_name,
+    const std::string& dbus_error_message) {
+  network_handler::ShillErrorCallbackFunction(
+      "ShillManagerClient.SetProperties Failed", std::string(), error_callback,
+      dbus_error_name, dbus_error_message);
+}
+
 void LogConfigProperties(const std::string& desc,
                          const std::string& path,
                          const base::DictionaryValue& properties) {
@@ -442,6 +451,17 @@ void NetworkConfigurationHandler::SetNetworkProfile(
                  callback),
       base::Bind(&SetNetworkProfileErrorCallback, service_path, profile_path,
                  error_callback));
+}
+
+void NetworkConfigurationHandler::SetManagerProperty(
+    const std::string& property_name,
+    const base::Value& value,
+    const base::Closure& callback,
+    const network_handler::ErrorCallback& error_callback) {
+  NET_LOG(USER) << "SetManagerProperty: " << property_name << ": " << value;
+  DBusThreadManager::Get()->GetShillManagerClient()->SetProperty(
+      property_name, value, callback,
+      base::Bind(&ManagerSetPropertiesErrorCallback, error_callback));
 }
 
 // NetworkStateHandlerObserver methods

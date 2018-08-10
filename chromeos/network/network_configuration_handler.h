@@ -25,6 +25,7 @@
 namespace base {
 class DictionaryValue;
 class ListValue;
+class Value;
 }
 
 namespace dbus {
@@ -118,6 +119,12 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
                          const std::string& profile_path,
                          const base::Closure& callback,
                          const network_handler::ErrorCallback& error_callback);
+
+  // Changes the value of a shill manager property.
+  void SetManagerProperty(const std::string& property_name,
+                          const base::Value& value,
+                          const base::Closure& callback,
+                          const network_handler::ErrorCallback& error_callback);
 
   // NetworkStateHandlerObserver
   void NetworkListChanged() override;
