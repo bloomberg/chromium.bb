@@ -54,7 +54,7 @@ HttpCache::Writers::~Writers() = default;
 
 int HttpCache::Writers::Read(scoped_refptr<IOBuffer> buf,
                              int buf_len,
-                             const CompletionCallback& callback,
+                             CompletionOnceCallback callback,
                              Transaction* transaction) {
   DCHECK(buf);
   DCHECK_GT(buf_len, 0);
@@ -65,7 +65,7 @@ int HttpCache::Writers::Read(scoped_refptr<IOBuffer> buf,
   // this transaction waits for the read to complete and gets its buffer filled
   // with the data returned from that read.
   if (next_state_ != State::NONE) {
-    WaitingForRead read_info(buf, buf_len, callback);
+    WaitingForRead read_info(buf, buf_len, std::move(callback));
     waiting_for_read_.insert(std::make_pair(transaction, std::move(read_info)));
     return ERR_IO_PENDING;
   }
@@ -82,7 +82,7 @@ int HttpCache::Writers::Read(scoped_refptr<IOBuffer> buf,
 
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
-    callback_ = callback;
+    callback_ = std::move(callback);
 
   return rv;
 }
@@ -254,9 +254,8 @@ void HttpCache::Writers::TruncateEntry() {
                                     true /* response_truncated */);
   data->Done();
   io_buf_len_ = data->pickle()->size();
-  CompletionCallback noop_callback = base::BindRepeating([](int result) {});
   entry_->disk_entry->WriteData(kResponseInfoIndex, 0, data.get(), io_buf_len_,
-                                noop_callback, true);
+                                base::DoNothing(), true);
 }
 
 bool HttpCache::Writers::ShouldTruncate() {
@@ -350,31 +349,33 @@ int HttpCache::Writers::DoLoop(int result) {
     }
   } while (next_state_ != State::NONE && rv != ERR_IO_PENDING);
 
-  // Save the callback as this object may be destroyed when the cache callback
-  // is run.
-  CompletionCallback callback = callback_;
-
-  if (next_state_ == State::NONE) {
-    read_buf_ = NULL;
-    callback_.Reset();
-    DCHECK(!all_writers_.empty() || cache_callback_);
-    if (cache_callback_)
-      std::move(cache_callback_).Run();
-    // |this| may have been destroyed in the cache_callback_.
+  if (next_state_ != State::NONE) {
+    if (rv != ERR_IO_PENDING && !callback_.is_null()) {
+      std::move(callback_).Run(rv);
+    }
+    return rv;
   }
 
-  if (rv != ERR_IO_PENDING && !callback.is_null()) {
-    base::ResetAndReturn(&callback).Run(rv);
-  }
+  // Save the callback as |this| may be destroyed when |cache_callback_| is run.
+  // Note that |callback_| is intentionally reset even if it is not run.
+  CompletionOnceCallback callback = std::move(callback_);
+  read_buf_ = NULL;
+  DCHECK(!all_writers_.empty() || cache_callback_);
+  if (cache_callback_)
+    std::move(cache_callback_).Run();
+  // |this| may have been destroyed in the |cache_callback_|.
+  if (rv != ERR_IO_PENDING && !callback.is_null())
+    std::move(callback).Run(rv);
   return rv;
 }
 
 int HttpCache::Writers::DoNetworkRead() {
   DCHECK(network_transaction_);
   next_state_ = State::NETWORK_READ_COMPLETE;
-  CompletionCallback io_callback =
-      base::Bind(&HttpCache::Writers::OnIOComplete, weak_factory_.GetWeakPtr());
-  return network_transaction_->Read(read_buf_.get(), io_buf_len_, io_callback);
+  CompletionOnceCallback io_callback = base::BindOnce(
+      &HttpCache::Writers::OnIOComplete, weak_factory_.GetWeakPtr());
+  return network_transaction_->Read(read_buf_.get(), io_buf_len_,
+                                    std::move(io_callback));
 }
 
 int HttpCache::Writers::DoNetworkReadComplete(int result) {
@@ -408,8 +409,8 @@ int HttpCache::Writers::DoCacheWriteData(int num_bytes) {
     return num_bytes;
 
   int current_size = entry_->disk_entry->GetDataSize(kResponseContentIndex);
-  CompletionCallback io_callback =
-      base::Bind(&HttpCache::Writers::OnIOComplete, weak_factory_.GetWeakPtr());
+  CompletionOnceCallback io_callback = base::BindOnce(
+      &HttpCache::Writers::OnIOComplete, weak_factory_.GetWeakPtr());
 
   int rv = 0;
 
@@ -424,11 +425,11 @@ int HttpCache::Writers::DoCacheWriteData(int num_bytes) {
 
   if (!partial) {
     rv = entry_->disk_entry->WriteData(kResponseContentIndex, current_size,
-                                       read_buf_.get(), num_bytes, io_callback,
-                                       true);
+                                       read_buf_.get(), num_bytes,
+                                       std::move(io_callback), true);
   } else {
     rv = partial->CacheWrite(entry_->disk_entry, read_buf_.get(), num_bytes,
-                             io_callback);
+                             std::move(io_callback));
   }
   return rv;
 }

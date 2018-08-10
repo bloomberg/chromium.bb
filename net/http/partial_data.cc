@@ -15,7 +15,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_response_headers.h"
@@ -94,7 +93,7 @@ void PartialData::RestoreHeaders(HttpRequestHeaders* headers) const {
 }
 
 int PartialData::ShouldValidateCache(disk_cache::Entry* entry,
-                                     const CompletionCallback& callback) {
+                                     CompletionOnceCallback callback) {
   DCHECK_GE(current_range_start_, 0);
 
   // Scan the disk cache for the first cached portion within this range.
@@ -117,7 +116,7 @@ int PartialData::ShouldValidateCache(disk_cache::Entry* entry,
                                                std::move(cb));
 
     if (cached_min_len_ == ERR_IO_PENDING) {
-      callback_ = callback;
+      callback_ = std::move(callback);
       return ERR_IO_PENDING;
     } else {
       cached_start_ = *start;
@@ -398,7 +397,7 @@ void PartialData::FixContentLength(HttpResponseHeaders* headers) {
 int PartialData::CacheRead(disk_cache::Entry* entry,
                            IOBuffer* data,
                            int data_len,
-                           const CompletionCallback& callback) {
+                           CompletionOnceCallback callback) {
   int read_len = std::min(data_len, cached_min_len_);
   if (!read_len)
     return 0;
@@ -406,13 +405,13 @@ int PartialData::CacheRead(disk_cache::Entry* entry,
   int rv = 0;
   if (sparse_entry_) {
     rv = entry->ReadSparseData(current_range_start_, data, read_len,
-                               callback);
+                               std::move(callback));
   } else {
     if (current_range_start_ > std::numeric_limits<int32_t>::max())
       return ERR_INVALID_ARGUMENT;
 
     rv = entry->ReadData(kDataStream, static_cast<int>(current_range_start_),
-                         data, read_len, callback);
+                         data, read_len, std::move(callback));
   }
   return rv;
 }
@@ -420,17 +419,17 @@ int PartialData::CacheRead(disk_cache::Entry* entry,
 int PartialData::CacheWrite(disk_cache::Entry* entry,
                             IOBuffer* data,
                             int data_len,
-                            const CompletionCallback& callback) {
+                            CompletionOnceCallback callback) {
   DVLOG(3) << "To write: " << data_len;
   if (sparse_entry_) {
-    return entry->WriteSparseData(
-        current_range_start_, data, data_len, callback);
+    return entry->WriteSparseData(current_range_start_, data, data_len,
+                                  std::move(callback));
   } else  {
     if (current_range_start_ > std::numeric_limits<int32_t>::max())
       return ERR_INVALID_ARGUMENT;
 
     return entry->WriteData(kDataStream, static_cast<int>(current_range_start_),
-                            data, data_len, callback, true);
+                            data, data_len, std::move(callback), true);
   }
 }
 

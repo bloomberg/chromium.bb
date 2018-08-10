@@ -18,7 +18,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "net/base/completion_callback.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/io_buffer.h"
@@ -104,7 +103,7 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   // method.
   int WriteMetadata(IOBuffer* buf,
                     int buf_len,
-                    const CompletionCallback& callback);
+                    CompletionOnceCallback callback);
 
   HttpCache::ActiveEntry* entry() { return entry_; }
 
@@ -114,7 +113,7 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   // to the cache entry.
   LoadState GetWriterLoadState() const;
 
-  const CompletionCallback& io_callback() { return io_callback_; }
+  const CompletionRepeatingCallback& io_callback() { return io_callback_; }
 
   const NetLogWithSource& net_log() const;
 
@@ -454,8 +453,11 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   // Called to write data to the cache entry.  If the write fails, then the
   // cache entry is destroyed.  Future calls to this function will just do
   // nothing without side-effect.  Returns a network error code.
-  int WriteToEntry(int index, int offset, IOBuffer* data, int data_len,
-                   const CompletionCallback& callback);
+  int WriteToEntry(int index,
+                   int offset,
+                   IOBuffer* data,
+                   int data_len,
+                   CompletionOnceCallback callback);
 
   // Called to write response_ to the cache entry. |truncated| indicates if the
   // entry should be marked as incomplete.

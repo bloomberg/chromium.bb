@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -41,7 +41,7 @@ class ExampleEmployer {
 
   // Posts to the current thread a task which itself posts |callback| to the
   // current thread. Returns true on success
-  bool DoSomething(const CompletionCallback& callback);
+  bool DoSomething(CompletionOnceCallback callback);
 
  private:
   class ExampleWorker;
@@ -54,8 +54,8 @@ class ExampleEmployer {
 class ExampleEmployer::ExampleWorker
     : public base::RefCountedThreadSafe<ExampleWorker> {
  public:
-  ExampleWorker(ExampleEmployer* employer, const CompletionCallback& callback)
-      : employer_(employer), callback_(callback) {}
+  ExampleWorker(ExampleEmployer* employer, CompletionOnceCallback callback)
+      : employer_(employer), callback_(std::move(callback)) {}
   void DoWork();
   void DoCallback();
  private:
@@ -65,7 +65,7 @@ class ExampleEmployer::ExampleWorker
 
   // Only used on the origin thread (where DoSomething was called).
   ExampleEmployer* employer_;
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
   // Used to post ourselves onto the origin thread.
   const scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_ =
       base::ThreadTaskRunnerHandle::Get();
@@ -86,17 +86,17 @@ void ExampleEmployer::ExampleWorker::DoCallback() {
   // destroyed.
   employer_->request_ = NULL;
 
-  callback_.Run(kMagicResult);
+  std::move(callback_).Run(kMagicResult);
 }
 
 ExampleEmployer::ExampleEmployer() = default;
 
 ExampleEmployer::~ExampleEmployer() = default;
 
-bool ExampleEmployer::DoSomething(const CompletionCallback& callback) {
+bool ExampleEmployer::DoSomething(CompletionOnceCallback callback) {
   DCHECK(!request_.get()) << "already in use";
 
-  request_ = new ExampleWorker(this, callback);
+  request_ = new ExampleWorker(this, std::move(callback));
 
   if (!base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&ExampleWorker::DoWork, request_))) {
@@ -126,10 +126,10 @@ TEST_F(TestCompletionCallbackTest, Closure) {
   ExampleEmployer boss;
   TestClosure closure;
   bool did_check_result = false;
-  CompletionCallback completion_callback =
-      base::Bind(&CallClosureAfterCheckingResult, closure.closure(),
-                 base::Unretained(&did_check_result));
-  bool queued = boss.DoSomething(completion_callback);
+  CompletionOnceCallback completion_callback =
+      base::BindOnce(&CallClosureAfterCheckingResult, closure.closure(),
+                     base::Unretained(&did_check_result));
+  bool queued = boss.DoSomething(std::move(completion_callback));
   EXPECT_TRUE(queued);
 
   EXPECT_FALSE(did_check_result);

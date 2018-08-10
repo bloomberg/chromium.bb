@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
 #include "build/build_config.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
@@ -121,7 +122,7 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
     EXPECT_TRUE(request_headers_sent);
     if (callback_.is_null())
       return;
-    callback_.Run(OK);
+    std::move(callback_).Run(OK);
   }
 
   void OnHeadersReceived(
@@ -178,8 +179,8 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
 
   void Start(std::unique_ptr<BidirectionalStreamRequestInfo> request_info,
              HttpNetworkSession* session,
-             const CompletionCallback& cb) {
-    callback_ = cb;
+             CompletionOnceCallback cb) {
+    callback_ = std::move(cb);
     stream_.reset(new BidirectionalStream(std::move(request_info), session,
                                           true, this, std::move(timer_)));
     if (run_until_completion_)
@@ -304,7 +305,7 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
   // calling into |stream_|.
   bool not_expect_callback_;
 
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
   DISALLOW_COPY_AND_ASSIGN(TestDelegateBase);
 };
 

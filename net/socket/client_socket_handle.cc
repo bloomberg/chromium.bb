@@ -23,8 +23,6 @@ ClientSocketHandle::ClientSocketHandle()
       pool_(NULL),
       higher_pool_(NULL),
       reuse_type_(ClientSocketHandle::UNUSED),
-      callback_(base::Bind(&ClientSocketHandle::OnIOComplete,
-                           base::Unretained(this))),
       is_ssl_error_(false) {}
 
 ClientSocketHandle::~ClientSocketHandle() {
@@ -73,7 +71,7 @@ void ClientSocketHandle::ResetInternal(bool cancel) {
   socket_.reset();
   group_name_.clear();
   reuse_type_ = ClientSocketHandle::UNUSED;
-  user_callback_.Reset();
+  callback_.Reset();
   if (higher_pool_)
     RemoveHigherLayeredPool(higher_pool_);
   pool_ = NULL;
@@ -162,8 +160,8 @@ void ClientSocketHandle::SetSocket(std::unique_ptr<StreamSocket> s) {
 
 void ClientSocketHandle::OnIOComplete(int result) {
   TRACE_EVENT0(kNetTracingCategory, "ClientSocketHandle::OnIOComplete");
-  CompletionOnceCallback callback = std::move(user_callback_);
-  user_callback_.Reset();
+  CompletionOnceCallback callback = std::move(callback_);
+  callback_.Reset();
   HandleInitCompletion(result);
   std::move(callback).Run(result);
 }

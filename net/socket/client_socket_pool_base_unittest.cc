@@ -1540,7 +1540,7 @@ void RequestSocketOnComplete(ClientSocketHandle* handle,
                              TestClientSocketPool* pool,
                              TestConnectJobFactory* test_connect_job_factory,
                              TestConnectJob::JobType next_job_type,
-                             const CompletionCallback& nested_callback,
+                             TestCompletionCallback* nested_callback,
                              int first_request_result) {
   EXPECT_THAT(first_request_result, IsOk());
 
@@ -1555,10 +1555,10 @@ void RequestSocketOnComplete(ClientSocketHandle* handle,
   TestCompletionCallback callback;
   int rv = handle->Init("a", params, LOWEST, SocketTag(),
                         ClientSocketPool::RespectLimits::ENABLED,
-                        nested_callback, pool, NetLogWithSource());
+                        nested_callback->callback(), pool, NetLogWithSource());
   if (rv != ERR_IO_PENDING) {
     DCHECK_EQ(TestConnectJob::kMockJob, next_job_type);
-    nested_callback.Run(rv);
+    nested_callback->callback().Run(rv);
   } else {
     DCHECK_EQ(TestConnectJob::kMockPendingJob, next_job_type);
   }
@@ -1578,7 +1578,7 @@ TEST_F(ClientSocketPoolBaseTest, RequestPendingJobTwice) {
       ClientSocketPool::RespectLimits::ENABLED,
       base::Bind(&RequestSocketOnComplete, &handle, pool_.get(),
                  connect_job_factory_, TestConnectJob::kMockPendingJob,
-                 second_result_callback.callback()),
+                 &second_result_callback),
       pool_.get(), NetLogWithSource());
   ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
 
@@ -1599,7 +1599,7 @@ TEST_F(ClientSocketPoolBaseTest, RequestPendingJobThenSynchronous) {
       ClientSocketPool::RespectLimits::ENABLED,
       base::Bind(&RequestSocketOnComplete, &handle, pool_.get(),
                  connect_job_factory_, TestConnectJob::kMockPendingJob,
-                 second_result_callback.callback()),
+                 &second_result_callback),
       pool_.get(), NetLogWithSource());
   ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
 

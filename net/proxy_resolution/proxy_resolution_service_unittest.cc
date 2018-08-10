@@ -530,24 +530,25 @@ class DeletingCallback : public TestCompletionCallbackBase {
   explicit DeletingCallback(std::unique_ptr<T>* deletee);
   ~DeletingCallback() override;
 
-  const CompletionCallback& callback() const { return callback_; }
+  CompletionOnceCallback callback() {
+    return base::BindOnce(&DeletingCallback::DeleteItem,
+                          base::Unretained(this));
+  }
 
  private:
-  void DeleteItem(std::unique_ptr<T>* deletee, int result) {
-    deletee->reset();
+  void DeleteItem(int result) {
+    deletee_->reset();
     SetResult(result);
   }
 
-  const CompletionCallback callback_;
+  std::unique_ptr<T>* deletee_;
 
   DISALLOW_COPY_AND_ASSIGN(DeletingCallback);
 };
 
 template <typename T>
 DeletingCallback<T>::DeletingCallback(std::unique_ptr<T>* deletee)
-    : callback_(base::BindRepeating(&DeletingCallback::DeleteItem,
-                                    base::Unretained(this),
-                                    deletee)) {}
+    : deletee_(deletee) {}
 
 template <typename T>
 DeletingCallback<T>::~DeletingCallback() = default;

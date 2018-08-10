@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/completion_repeating_callback.h"
 #include "net/base/net_export.h"
 #include "net/base/privacy_mode.h"
 #include "net/http/http_response_info.h"
@@ -159,7 +160,7 @@ class SSLConnectJob : public ConnectJob {
   const SSLClientSocketContext context_;
 
   State next_state_;
-  CompletionCallback callback_;
+  CompletionRepeatingCallback callback_;
   std::unique_ptr<ClientSocketHandle> transport_socket_handle_;
   std::unique_ptr<SSLClientSocket> ssl_socket_;
 

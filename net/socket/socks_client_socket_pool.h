@@ -108,7 +108,6 @@ class SOCKSConnectJob : public ConnectJob {
   HostResolver* const resolver_;
 
   State next_state_;
-  CompletionCallback callback_;
   std::unique_ptr<ClientSocketHandle> transport_socket_handle_;
   std::unique_ptr<StreamSocket> socket_;
 

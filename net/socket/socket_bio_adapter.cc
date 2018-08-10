@@ -73,10 +73,10 @@ SocketBIOAdapter::SocketBIOAdapter(StreamSocket* socket,
   bio_->ptr = this;
   bio_->init = 1;
 
-  read_callback_ = base::Bind(&SocketBIOAdapter::OnSocketReadComplete,
-                              weak_factory_.GetWeakPtr());
-  write_callback_ = base::Bind(&SocketBIOAdapter::OnSocketWriteComplete,
-                               weak_factory_.GetWeakPtr());
+  read_callback_ = base::BindRepeating(&SocketBIOAdapter::OnSocketReadComplete,
+                                       weak_factory_.GetWeakPtr());
+  write_callback_ = base::BindRepeating(
+      &SocketBIOAdapter::OnSocketWriteComplete, weak_factory_.GetWeakPtr());
 }
 
 SocketBIOAdapter::~SocketBIOAdapter() {

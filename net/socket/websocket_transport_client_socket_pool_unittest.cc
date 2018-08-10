@@ -366,7 +366,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, CancelRequest) {
 // |nested_callback| is called with the result of the second socket request.
 void RequestSocketOnComplete(ClientSocketHandle* handle,
                              WebSocketTransportClientSocketPool* pool,
-                             const CompletionCallback& nested_callback,
+                             TestCompletionCallback* nested_callback,
                              int first_request_result) {
   EXPECT_THAT(first_request_result, IsOk());
 
@@ -379,10 +379,10 @@ void RequestSocketOnComplete(ClientSocketHandle* handle,
       TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
   int rv = handle->Init("a", dest, LOWEST, SocketTag(),
                         ClientSocketPool::RespectLimits::ENABLED,
-                        nested_callback, pool, NetLogWithSource());
+                        nested_callback->callback(), pool, NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   if (ERR_IO_PENDING != rv)
-    nested_callback.Run(rv);
+    nested_callback->callback().Run(rv);
 }
 
 // Tests the case where a second socket is requested in a completion callback,
@@ -397,7 +397,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, RequestTwice) {
   int rv = handle.Init("a", dest, LOWEST, SocketTag(),
                        ClientSocketPool::RespectLimits::ENABLED,
                        base::Bind(&RequestSocketOnComplete, &handle, &pool_,
-                                  second_result_callback.callback()),
+                                  &second_result_callback),
                        &pool_, NetLogWithSource());
   ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_THAT(second_result_callback.WaitForResult(), IsOk());

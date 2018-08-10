@@ -748,10 +748,10 @@ int HttpStreamFactory::JobController::DoResolveProxy() {
   HostPortPair destination(HostPortPair::FromURL(request_info_.url));
   GURL origin_url = ApplyHostMappingRules(request_info_.url, &destination);
 
-  CompletionCallback io_callback =
+  CompletionOnceCallback io_callback =
       base::Bind(&JobController::OnIOComplete, base::Unretained(this));
   return session_->proxy_resolution_service()->ResolveProxy(
-      origin_url, request_info_.method, &proxy_info_, io_callback,
+      origin_url, request_info_.method, &proxy_info_, std::move(io_callback),
       &proxy_resolve_request_, session_->context().proxy_delegate, net_log_);
 }
 

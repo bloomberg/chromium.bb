@@ -12,7 +12,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
