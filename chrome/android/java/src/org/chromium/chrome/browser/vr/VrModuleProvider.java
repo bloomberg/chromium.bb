@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.vr;
 
+import org.chromium.base.annotations.JNINamespace;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +13,7 @@ import java.util.List;
  * Instantiates the VR delegates. If the VR module is not available this provider will
  * instantiate a fallback implementation.
  */
+@JNINamespace("vr")
 public class VrModuleProvider {
     private static VrDelegateProvider sDelegateProvider;
     private static final List<VrModeObserver> sVrModeObservers = new ArrayList<>();
@@ -49,6 +52,12 @@ public class VrModuleProvider {
         for (VrModeObserver observer : sVrModeObservers) observer.onExitVr();
     }
 
+    // TODO(crbug.com/870055): JNI should be registered in the shared VR library's JNI_OnLoad
+    // function. Do this once we have a shared VR library.
+    /* package */ static void registerJni() {
+        nativeRegisterJni();
+    }
+
     private static VrDelegateProvider getDelegateProvider() {
         if (sDelegateProvider == null) {
             try {
@@ -65,4 +74,6 @@ public class VrModuleProvider {
     }
 
     private VrModuleProvider() {}
+
+    private static native void nativeRegisterJni();
 }

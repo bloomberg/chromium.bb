@@ -92,7 +92,10 @@ def main(args):
   proguard.config_exclusions(options.proguard_config_exclusions)
   proguard.outjar(options.output_path)
 
-  classpath = list(set(options.classpath))
+  # If a jar is part of input no need to include it as library jar.
+  classpath = [
+      p for p in set(options.classpath) if p not in options.input_paths
+  ]
   proguard.libraryjars(classpath)
   proguard.verbose(options.verbose)
   if not options.enable_dangerous_optimizations:

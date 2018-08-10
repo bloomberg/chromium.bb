@@ -12,6 +12,7 @@ to register all native methods that exist within an application."""
 import argparse
 import jni_generator
 import multiprocessing
+import os
 import string
 import sys
 from util import build_utils
@@ -54,6 +55,10 @@ def GenerateJNIHeader(java_file_paths, output_file, args):
   for key in MERGEABLE_KEYS:
     combined_dict[key] = ''.join(d.get(key, '') for d in results)
 
+  combined_dict['HEADER_GUARD'] = \
+      os.path.splitext(output_file)[0].replace('/', '_').upper() + '_'
+  combined_dict['NAMESPACE'] = args.namespace
+
   header_content = CreateFromDict(combined_dict)
   if output_file:
     jni_generator.WriteOutput(output_file, header_content)
@@ -91,8 +96,8 @@ def CreateFromDict(registration_dict):
 //     base/android/jni_generator/jni_registration_generator.py
 // Please do not change its content.
 
-#ifndef HEADER_GUARD
-#define HEADER_GUARD
+#ifndef ${HEADER_GUARD}
+#define ${HEADER_GUARD}
 
 #include <jni.h>
 
@@ -113,6 +118,8 @@ ${JNI_NATIVE_METHOD_ARRAY}
 ${JNI_NATIVE_METHOD}
 // Step 4: Main dex and non-main dex registration functions.
 
+namespace ${NAMESPACE} {
+
 bool RegisterMainDexNatives(JNIEnv* env) {
 ${REGISTER_MAIN_DEX_NATIVES}
   return true;
@@ -123,7 +130,9 @@ ${REGISTER_NON_MAIN_DEX_NATIVES}
   return true;
 }
 
-#endif  // HEADER_GUARD
+}  // namespace ${NAMESPACE}
+
+#endif  // ${HEADER_GUARD}
 """)
   if len(registration_dict['FORWARD_DECLARATIONS']) == 0:
     return ''
@@ -315,8 +324,13 @@ def main(argv):
   arg_parser.add_argument('--output',
                           help='The output file path.')
   arg_parser.add_argument('--no_register_java',
+                          default=[],
                           help='A list of Java files which should be ignored '
                           'by the parser.')
+  arg_parser.add_argument('--namespace',
+                          default='',
+                          help='Namespace to wrap the registration functions '
+                          'into.')
   args = arg_parser.parse_args(build_utils.ExpandFileArgs(argv[1:]))
   args.sources_files = build_utils.ParseGnList(args.sources_files)
 

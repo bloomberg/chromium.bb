@@ -94,6 +94,8 @@ JNI_REGISTRATION_EXPORT bool RegisterNative_org_chromium_TestJni(JNIEnv* env) {
 
 // Step 4: Main dex and non-main dex registration functions.
 
+namespace test {
+
 bool RegisterMainDexNatives(JNIEnv* env) {
   if (!RegisterNative_org_chromium_TestJni(env))
     return false;
@@ -105,5 +107,7 @@ bool RegisterNonMainDexNatives(JNIEnv* env) {
 
   return true;
 }
+
+}  // namespace test
 
 #endif  // HEADER_GUARD
