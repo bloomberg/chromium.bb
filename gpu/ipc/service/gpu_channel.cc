@@ -37,6 +37,7 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/scheduler.h"
+#include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gles2_command_buffer_stub.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
@@ -51,14 +52,6 @@
 #include "ui/gl/gl_utils.h"
 
 namespace gpu {
-namespace {
-
-CommandBufferId GenerateCommandBufferId(int channel_id, int32_t route_id) {
-  return CommandBufferId::FromUnsafeValue(
-      (static_cast<uint64_t>(channel_id) << 32) | route_id);
-}
-
-}  // anonymous namespace
 
 struct GpuChannelMessage {
   IPC::Message message;
@@ -296,12 +289,21 @@ bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
     auto it = route_sequences_.find(message.routing_id());
     if (it == route_sequences_.end())
       return MessageErrorHandler(message, "Invalid route id");
+    std::vector<SyncToken> tokens;
+    if (message.type() == GpuChannelMsg_DestroySharedImage::ID) {
+      GpuChannelMsg_DestroySharedImage::Param params;
+      if (!GpuChannelMsg_DestroySharedImage::Read(&message, &params)) {
+        return MessageErrorHandler(message,
+                                   "Invalid DestroySharedImage message");
+      }
+      tokens.push_back(std::get<0>(params));
+    }
 
     scheduler_->ScheduleTask(
         Scheduler::Task(it->second /* sequence_id */,
                         base::BindOnce(&GpuChannel::HandleMessage,
                                        gpu_channel_->AsWeakPtr(), message),
-                        std::vector<SyncToken>()));
+                        std::move(tokens)));
   }
 
   return true;
@@ -391,6 +393,13 @@ GpuChannel::~GpuChannel() {
 void GpuChannel::Init(std::unique_ptr<FilteredSender> channel) {
   channel_ = std::move(channel);
   channel_->AddFilter(filter_.get());
+  // SharedImageInterfaceProxy/Stub is a singleton per channel, using a reserved
+  // route.
+  const int32_t route_id =
+      static_cast<int32_t>(GpuChannelReservedRoutes::kSharedImageInterface);
+  shared_image_stub_ = std::make_unique<SharedImageStub>(this, route_id);
+  filter_->AddRoute(route_id, shared_image_stub_->sequence());
+  router_.AddRoute(route_id, shared_image_stub_.get());
 }
 
 void GpuChannel::SetUnhandledMessageListener(IPC::Listener* listener) {
@@ -618,7 +627,7 @@ void GpuChannel::OnCreateCommandBuffer(
   }
 
   CommandBufferId command_buffer_id =
-      GenerateCommandBufferId(client_id_, route_id);
+      CommandBufferIdFromChannelAndRoute(client_id_, route_id);
 
   SequenceId sequence_id = stream_sequences_[stream_id];
   if (sequence_id.is_null()) {
@@ -722,6 +731,7 @@ uint64_t GpuChannel::GetMemoryUsage() const {
     }
     size += tracker->GetSize();
   }
+  size += shared_image_stub_->GetSize();
 
   return size;
 }

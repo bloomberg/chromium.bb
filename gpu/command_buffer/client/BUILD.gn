@@ -62,6 +62,7 @@ source_set("client_sources") {
     "mapped_memory.h",
     "ring_buffer.cc",
     "ring_buffer.h",
+    "shared_image_interface.h",
     "transfer_buffer.cc",
     "transfer_buffer.h",
   ]
@@ -72,6 +73,7 @@ source_set("client_sources") {
 
   public_deps = [
     "//base",
+    "//components/viz/common:resource_format",
   ]
   deps = [
     "//gpu/command_buffer/common:common_sources",
@@ -209,7 +211,7 @@ source_set("raster_sources") {
     ":raster_interface",
     "//base",
     "//cc/paint",
-    "//components/viz/common:resource_format",
+    "//components/viz/common:resource_format_utils",
     "//gpu/command_buffer/common",
     "//gpu/command_buffer/common:gles2",
     "//gpu/command_buffer/common:gles2_utils",
