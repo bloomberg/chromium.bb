@@ -1327,6 +1327,7 @@ enum HistogramValue {
   VIRTUALKEYBOARDPRIVATE_SETHITTESTBOUNDS = 1264,
   ARCAPPSPRIVATE_GETLAUNCHABLEAPPS = 1265,
   ARCAPPSPRIVATE_LAUNCHAPP = 1266,
+  AUTOTESTPRIVATE_RUNCROSTINIINSTALLER = 1267,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

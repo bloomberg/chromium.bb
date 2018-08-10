@@ -21,6 +21,12 @@ namespace message_center {
 class Notification;
 }
 
+#if defined(OS_CHROMEOS)
+namespace crostini {
+enum class ConciergeClientResult;
+}
+#endif
+
 namespace extensions {
 
 class AutotestPrivateLogoutFunction : public UIThreadExtensionFunction {
@@ -223,6 +229,23 @@ class AutotestPrivateSetPlayStoreEnabledFunction
  private:
   ~AutotestPrivateSetPlayStoreEnabledFunction() override {}
   ResponseAction Run() override;
+};
+
+class AutotestPrivateRunCrostiniInstallerFunction
+    : public UIThreadExtensionFunction {
+ public:
+  AutotestPrivateRunCrostiniInstallerFunction() = default;
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.runCrostiniInstaller",
+                             AUTOTESTPRIVATE_RUNCROSTINIINSTALLER)
+
+ private:
+  ~AutotestPrivateRunCrostiniInstallerFunction() override = default;
+  ResponseAction Run() override;
+#if defined(OS_CHROMEOS)
+  void CrostiniRestarted(crostini::ConciergeClientResult);
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(AutotestPrivateRunCrostiniInstallerFunction);
 };
 
 class AutotestPrivateGetPrinterListFunction : public UIThreadExtensionFunction {

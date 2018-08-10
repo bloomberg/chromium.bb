@@ -162,5 +162,12 @@ namespace autotestPrivate {
     // |enabled|: if set, enable the Play Store.
     // |callback|: Called when the operation has completed.
     static void setPlayStoreEnabled(boolean enabled, VoidCallback callback);
+
+    // Run the crostini installer GUI to install the default crostini
+    // vm / container and create sshfs mount.  The installer launches the
+    // crostini terminal app on completion.  The installer expects that
+    // crostini is not already installed.
+    // |callback|: Called when the operation has completed.
+    static void runCrostiniInstaller(VoidCallback callback);
   };
 };
