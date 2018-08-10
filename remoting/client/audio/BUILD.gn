@@ -11,6 +11,8 @@ source_set("audio") {
     "audio_jitter_buffer.cc",
     "audio_jitter_buffer.h",
     "audio_playback_sink.h",
+    "audio_playback_stream.cc",
+    "audio_playback_stream.h",
     "audio_player.cc",
     "audio_player.h",
     "audio_player_android.cc",
