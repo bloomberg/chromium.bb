@@ -1603,61 +1603,6 @@ TEST_F(PasswordFormManagerTest, TestAllPossiblePasswords) {
               UnorderedElementsAre(pair1, pair2, pair3));
 }
 
-// Test that if metadata stored with a form in PasswordStore are incomplete,
-// they are updated upon the next encounter.
-TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
-  PasswordForm encountered_form;
-  encountered_form.origin = GURL("http://accounts.google.com/LoginAuth");
-  encountered_form.signon_realm = "http://accounts.google.com/";
-  encountered_form.action = GURL("http://accounts.google.com/Login");
-  encountered_form.username_element = ASCIIToUTF16("Email");
-  encountered_form.password_element = ASCIIToUTF16("Passwd");
-  encountered_form.submit_element = ASCIIToUTF16("signIn");
-
-  EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
-
-  FakeFormFetcher fetcher;
-  fetcher.Fetch();
-  PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), encountered_form,
-                                   std::make_unique<MockFormSaver>(), &fetcher);
-  form_manager.Init(nullptr);
-
-  PasswordForm incomplete_form;
-  incomplete_form.origin = GURL("http://accounts.google.com/LoginAuth");
-  incomplete_form.signon_realm = "http://accounts.google.com/";
-  incomplete_form.password_value = ASCIIToUTF16("my_password");
-  incomplete_form.username_value = ASCIIToUTF16("my_username");
-  incomplete_form.preferred = true;
-  incomplete_form.scheme = PasswordForm::SCHEME_HTML;
-
-  // We expect to see this form eventually sent to the Password store. It
-  // has password/username values from the store and 'username_element',
-  // 'password_element', 'submit_element' and 'action' fields copied from
-  // the encountered form.
-  PasswordForm complete_form(incomplete_form);
-  complete_form.action = encountered_form.action;
-  complete_form.password_element = encountered_form.password_element;
-  complete_form.username_element = encountered_form.username_element;
-  complete_form.submit_element = encountered_form.submit_element;
-
-  PasswordForm obsolete_form(incomplete_form);
-  obsolete_form.action = encountered_form.action;
-
-  // Feed the incomplete credentials to the manager.
-  fetcher.SetNonFederated({&incomplete_form}, 0u);
-
-  form_manager.ProvisionallySave(complete_form);
-  // By now that form has been used once.
-  complete_form.times_used = 1;
-  obsolete_form.times_used = 1;
-
-  // Check that PasswordStore receives an update request with the complete form.
-  EXPECT_CALL(MockFormSaver::Get(&form_manager),
-              Update(complete_form, _, _, Pointee(obsolete_form)));
-  form_manager.Save();
-}
-
 // Test that public-suffix-matched credentials score lower than same-origin
 // ones.
 TEST_F(PasswordFormManagerTest, TestScoringPublicSuffixMatch) {

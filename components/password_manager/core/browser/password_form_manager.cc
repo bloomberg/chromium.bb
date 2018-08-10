@@ -316,12 +316,10 @@ void PasswordFormManager::Save() {
     form_saver_->Save(pending_credentials_, best_matches_);
   } else {
     ProcessUpdate();
-    std::vector<PasswordForm> credentials_to_update;
-    base::Optional<PasswordForm> old_primary_key =
-        UpdatePendingAndGetOldKey(&credentials_to_update);
+    std::vector<PasswordForm> credentials_to_update =
+        FindOtherCredentialsToUpdate();
     form_saver_->Update(pending_credentials_, best_matches_,
-                        &credentials_to_update,
-                        old_primary_key ? &old_primary_key.value() : nullptr);
+                        &credentials_to_update, nullptr);
   }
 
   // This is not in ProcessUpdate() to catch PSL matched credentials.
@@ -354,12 +352,10 @@ void PasswordFormManager::Update(
   pending_credentials_.preferred = true;
   is_new_login_ = false;
   ProcessUpdate();
-  std::vector<PasswordForm> more_credentials_to_update;
-  base::Optional<PasswordForm> old_primary_key =
-      UpdatePendingAndGetOldKey(&more_credentials_to_update);
+  std::vector<PasswordForm> more_credentials_to_update =
+      FindOtherCredentialsToUpdate();
   form_saver_->Update(pending_credentials_, best_matches_,
-                      &more_credentials_to_update,
-                      old_primary_key ? &old_primary_key.value() : nullptr);
+                      &more_credentials_to_update, nullptr);
 
   password_manager_->UpdateFormManagers();
 }
@@ -1018,56 +1014,26 @@ void PasswordFormManager::SetUserAction(UserAction user_action) {
   metrics_recorder_->SetUserAction(user_action);
 }
 
-base::Optional<PasswordForm> PasswordFormManager::UpdatePendingAndGetOldKey(
-    std::vector<PasswordForm>* credentials_to_update) {
-  base::Optional<PasswordForm> old_primary_key;
-  bool update_related_credentials = false;
+std::vector<PasswordForm> PasswordFormManager::FindOtherCredentialsToUpdate() {
+  std::vector<autofill::PasswordForm> credentials_to_update;
+  if (!pending_credentials_.federation_origin.unique())
+    return credentials_to_update;
 
-  if (pending_credentials_.federation_origin.unique() &&
-      !IsValidAndroidFacetURI(pending_credentials_.signon_realm) &&
-      (pending_credentials_.password_element.empty() ||
-       pending_credentials_.username_element.empty() ||
-       pending_credentials_.submit_element.empty())) {
-    // Given that |password_element| and |username_element| are part of Sync and
-    // PasswordStore primary key, the old primary key must be used in order to
-    // match and update the existing entry.
-    old_primary_key = pending_credentials_;
-    // TODO(crbug.com/833171) It is possible for best_matches to not contain the
-    // username being updated. Add comments and a test, when we realise why.
-    auto best_match = best_matches_.find(pending_credentials_.username_value);
-    if (best_match != best_matches_.end()) {
-      old_primary_key->username_element = best_match->second->username_element;
-      old_primary_key->password_element = best_match->second->password_element;
-    }
-    pending_credentials_.password_element = observed_form_.password_element;
-    pending_credentials_.username_element = observed_form_.username_element;
-    pending_credentials_.submit_element = observed_form_.submit_element;
-    update_related_credentials = true;
-  } else {
-    update_related_credentials =
-        pending_credentials_.federation_origin.unique();
-  }
-
-  // If this was a password update, then update all non-best matches entries
-  // with the same username and the same old password.
-  if (update_related_credentials) {
-    auto updated_password_it =
-        best_matches_.find(pending_credentials_.username_value);
-    DCHECK(best_matches_.end() != updated_password_it);
-    const base::string16& old_password =
-        updated_password_it->second->password_value;
-    for (auto* not_best_match : not_best_matches_) {
-      if (not_best_match->username_value ==
-              pending_credentials_.username_value &&
-          not_best_match->password_value == old_password) {
-        credentials_to_update->push_back(*not_best_match);
-        credentials_to_update->back().password_value =
-            pending_credentials_.password_value;
-      }
+  auto updated_password_it =
+      best_matches_.find(pending_credentials_.username_value);
+  DCHECK(best_matches_.end() != updated_password_it);
+  const base::string16& old_password =
+      updated_password_it->second->password_value;
+  for (auto* not_best_match : not_best_matches_) {
+    if (not_best_match->username_value == pending_credentials_.username_value &&
+        not_best_match->password_value == old_password) {
+      credentials_to_update.push_back(*not_best_match);
+      credentials_to_update.back().password_value =
+          pending_credentials_.password_value;
     }
   }
 
-  return old_primary_key;
+  return credentials_to_update;
 }
 
 }  // namespace password_manager

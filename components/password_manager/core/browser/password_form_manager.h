@@ -320,15 +320,11 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   // Sets |user_action_| and records some metrics.
   void SetUserAction(UserAction user_action);
 
-  // Edits some fields in |pending_credentials_| before it can be used to
-  // update the password store. It also goes through |not_best_matches|,
-  // updates the password of those which share the old password and username
-  // with |pending_credentials_| to the new password of |pending_credentials_|,
-  // and adds copies of all such modified credentials to
-  // |credentials_to_update|. If needed, this also returns a PasswordForm to be
-  // used as the old primary key during the store update.
-  base::Optional<autofill::PasswordForm> UpdatePendingAndGetOldKey(
-      std::vector<autofill::PasswordForm>* credentials_to_update);
+  // Goes through |not_best_matches_|, updates the password of those which share
+  // the old password and username with |pending_credentials_| to the new
+  // password of |pending_credentials_|, and returns copies of all such modified
+  // credentials.
+  std::vector<autofill::PasswordForm> FindOtherCredentialsToUpdate();
 
   void SetPasswordOverridden(bool password_overridden) {
     password_overridden_ = password_overridden;
