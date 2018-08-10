@@ -126,6 +126,9 @@ class UI_ANDROID_EXPORT ViewAndroid {
   // Moves the give child ViewAndroid to the front of the list so that it can be
   // the first responder of events.
   void MoveToFront(ViewAndroid* child);
+  // Moves the given child ViewAndroid to the back of the list so that any other
+  // view may respond to events first.
+  void MoveToBack(ViewAndroid* child);
 
   // Detaches this view from its parent.
   void RemoveFromParent();
@@ -177,6 +180,10 @@ class UI_ANDROID_EXPORT ViewAndroid {
   }
 
   ViewAndroid* parent() const { return parent_; }
+
+  bool OnTouchEventForTesting(const MotionEventAndroid& event) {
+    return OnTouchEvent(event);
+  }
 
  protected:
   void RemoveAllChildren(bool attached_to_window);

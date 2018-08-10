@@ -136,8 +136,12 @@
 #include "content/browser/android/ime_adapter_android.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_manager_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
+#include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/public/browser/android/child_process_importance.h"
 #include "content/test/mock_overscroll_refresh_handler_android.h"
+#include "ui/android/view_android.h"
+#include "ui/android/window_android.h"
+#include "ui/events/android/event_handler_android.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/gfx/geometry/point_f.h"
 #endif
@@ -10132,6 +10136,76 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 
 #if defined(OS_ANDROID)
+
+namespace {
+
+class MockEventHandlerAndroid : public ui::EventHandlerAndroid {
+ public:
+  bool OnTouchEvent(const ui::MotionEventAndroid& event) override {
+    did_receive_event_ = true;
+    return true;
+  }
+
+  bool did_receive_event() { return did_receive_event_; }
+
+ private:
+  bool did_receive_event_ = false;
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       SpeculativeRenderFrameHostDoesNotReceiveInput) {
+  GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+
+  RenderWidgetHostViewAndroid* rwhva =
+      static_cast<RenderWidgetHostViewAndroid*>(
+          shell()->web_contents()->GetRenderWidgetHostView());
+  ui::ViewAndroid* rwhva_native_view = rwhva->GetNativeView();
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Start a cross-site navigation.
+  GURL url2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  TestNavigationManager nav_manager(web_contents(), url2);
+  shell()->LoadURL(url2);
+
+  // Wait for the request, but don't commit it yet. This should create a
+  // speculative RenderFrameHost.
+  ASSERT_TRUE(nav_manager.WaitForRequestStart());
+  RenderFrameHostImpl* root_speculative_rfh =
+      root->render_manager()->speculative_frame_host();
+  EXPECT_TRUE(root_speculative_rfh);
+  RenderWidgetHostViewAndroid* rwhv_speculative =
+      static_cast<RenderWidgetHostViewAndroid*>(
+          root_speculative_rfh->GetView());
+  ui::ViewAndroid* rwhv_speculative_native_view =
+      rwhv_speculative->GetNativeView();
+
+  ui::ViewAndroid* root_view = web_contents()->GetView()->GetNativeView();
+  EXPECT_TRUE(root_view);
+
+  MockEventHandlerAndroid mock_handler;
+  rwhva_native_view->set_event_handler(&mock_handler);
+  MockEventHandlerAndroid mock_handler_speculative;
+  rwhv_speculative_native_view->set_event_handler(&mock_handler_speculative);
+  // Avoid having the root try to handle the following event.
+  root_view->set_event_handler(nullptr);
+
+  auto size = root_view->GetSize();
+  float x = size.width() / 2;
+  float y = size.height() / 2;
+  ui::MotionEventAndroid::Pointer pointer0(0, x, y, 0, 0, 0, 0, 0);
+  ui::MotionEventAndroid::Pointer pointer1(0, 0, 0, 0, 0, 0, 0, 0);
+  ui::MotionEventAndroid event(nullptr, nullptr, 1.f / root_view->GetDipScale(),
+                               0.f, 0.f, 0.f, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+                               false, &pointer0, &pointer1);
+  root_view->OnTouchEventForTesting(event);
+
+  EXPECT_TRUE(mock_handler.did_receive_event());
+  EXPECT_FALSE(mock_handler_speculative.did_receive_event());
+}
+
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TestChildProcessImportance) {
   web_contents()->SetMainFrameImportance(ChildProcessImportance::MODERATE);
 

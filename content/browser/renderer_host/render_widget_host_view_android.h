@@ -160,6 +160,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool IsInVR() const override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
   void DidStopFlinging() override;
+  void OnInterstitialPageAttached() override;
   void OnInterstitialPageGoingAway() override;
   std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       override;
