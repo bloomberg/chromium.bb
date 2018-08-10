@@ -22,7 +22,7 @@ void ExtensionTabUtilDelegateChromeOS::ScrubTabForExtension(
     const Extension* extension,
     content::WebContents* contents,
     api::tabs::Tab* tab) {
-  if (!profiles::IsPublicSession() || !tab->url ||
+  if (!profiles::ArePublicSessionRestrictionsEnabled() || !tab->url ||
       chromeos::DeviceLocalAccountManagementPolicyProvider::IsWhitelisted(
           extension->id())) {
     return;

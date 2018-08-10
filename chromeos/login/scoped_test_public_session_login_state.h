@@ -6,6 +6,7 @@
 #define CHROMEOS_LOGIN_SCOPED_TEST_PUBLIC_SESSION_LOGIN_STATE_H_
 
 #include "base/macros.h"
+#include "chromeos/login/login_state.h"
 
 namespace chromeos {
 
@@ -14,7 +15,9 @@ namespace chromeos {
 // (so it nicely cleans up after going out of scope).
 class ScopedTestPublicSessionLoginState {
  public:
-  ScopedTestPublicSessionLoginState();
+  ScopedTestPublicSessionLoginState(
+      LoginState::LoggedInUserType user_type =
+          LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT);
   ~ScopedTestPublicSessionLoginState();
 
  private:

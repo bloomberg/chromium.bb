@@ -8,11 +8,11 @@
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura_ash.h"
+#include "chromeos/login/login_state.h"
+#include "chromeos/login/scoped_test_public_session_login_state.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/wm/core/window_util.h"
-
-#include "chromeos/login/login_state.h"
 
 class ChromeNativeAppWindowViewsAuraAshBrowserTest
     : public extensions::PlatformAppBrowserTest {
@@ -152,9 +152,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
 // immersive in fullscreen.
 IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
                        PublicSessionImmersiveMode) {
-  chromeos::LoginState::Get()->SetLoggedInState(
-      chromeos::LoginState::LOGGED_IN_ACTIVE,
-      chromeos::LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT);
+  chromeos::ScopedTestPublicSessionLoginState login_state;
 
   extensions::AppWindow* app_window = CreateTestAppWindow("{}");
   auto* window = static_cast<ChromeNativeAppWindowViewsAuraAsh*>(

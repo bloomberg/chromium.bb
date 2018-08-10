@@ -121,6 +121,9 @@ bool AreAllNonChildNonSupervisedProfilesLocked();
 
 // Returns whether a public session is being run currently.
 bool IsPublicSession();
+
+// Returns whether public session restrictions are enabled.
+bool ArePublicSessionRestrictionsEnabled();
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace profiles

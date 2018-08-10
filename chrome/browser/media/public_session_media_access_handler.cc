@@ -46,7 +46,8 @@ void PublicSessionMediaAccessHandler::HandleRequest(
     const extensions::Extension* extension) {
   // This class handles requests for Public Sessions only, outside of them just
   // pass the request through to the original class.
-  if (!profiles::IsPublicSession() || !extension->is_platform_app()) {
+  if (!profiles::ArePublicSessionRestrictionsEnabled() ||
+      !extension->is_platform_app()) {
     return extension_media_access_handler_.HandleRequest(
         web_contents, request, std::move(callback), extension);
   }

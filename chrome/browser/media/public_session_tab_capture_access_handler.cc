@@ -45,7 +45,7 @@ void PublicSessionTabCaptureAccessHandler::HandleRequest(
     const extensions::Extension* extension) {
   // This class handles requests for Public Sessions only, outside of them just
   // pass the request through to the original class.
-  if (!profiles::IsPublicSession() || !extension ||
+  if (!profiles::ArePublicSessionRestrictionsEnabled() || !extension ||
       (request.audio_type != content::MEDIA_GUM_TAB_AUDIO_CAPTURE &&
        request.video_type != content::MEDIA_GUM_TAB_VIDEO_CAPTURE)) {
     return tab_capture_access_handler_.HandleRequest(

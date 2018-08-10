@@ -26,6 +26,7 @@ class CHROMEOS_EXPORT LoginState {
     LOGGED_IN_USER_OWNER,           // The owner of the device is logged in
     LOGGED_IN_USER_GUEST,           // A guest is logged in (i.e. incognito)
     LOGGED_IN_USER_PUBLIC_ACCOUNT,  // A user is logged in to a public session.
+    LOGGED_IN_USER_PUBLIC_ACCOUNT_MANAGED,  // Public session v2.
     LOGGED_IN_USER_SUPERVISED,      // A supervised user is logged in
     LOGGED_IN_USER_KIOSK_APP,       // Is in kiosk app mode
     LOGGED_IN_USER_ARC_KIOSK_APP    // Is in ARC kiosk mode
@@ -77,6 +78,9 @@ class CHROMEOS_EXPORT LoginState {
 
   // Returns true if logged in to a public session.
   bool IsPublicSessionUser() const;
+
+  // Returns true if restrictions should be enabled for public session.
+  bool ArePublicSessionRestrictionsEnabled() const;
 
   // Returns true if logged in as a kiosk app.
   bool IsKioskApp() const;

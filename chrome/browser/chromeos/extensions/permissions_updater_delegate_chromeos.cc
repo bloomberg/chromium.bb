@@ -21,7 +21,7 @@ PermissionsUpdaterDelegateChromeOS::~PermissionsUpdaterDelegateChromeOS() {}
 void PermissionsUpdaterDelegateChromeOS::InitializePermissions(
     const Extension* extension,
     std::unique_ptr<const PermissionSet>* granted_permissions) {
-  if (!profiles::IsPublicSession() ||
+  if (!profiles::ArePublicSessionRestrictionsEnabled() ||
       chromeos::DeviceLocalAccountManagementPolicyProvider::IsWhitelisted(
           extension->id()) ||
       !(*granted_permissions)

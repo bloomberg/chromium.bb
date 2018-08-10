@@ -6,11 +6,17 @@
 
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/policy/core/common/cloud/cloud_policy_core.h"
+#include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_value_map.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
@@ -43,6 +49,26 @@ bool IsUserAllowedInner(const user_manager::User& user,
     return false;
   return true;
 }
+
+bool IsManagedSessionEnabled(const user_manager::User* active_user) {
+  policy::DeviceLocalAccountPolicyService* service =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetDeviceLocalAccountPolicyService();
+
+  if (!service)
+    return false;
+
+  const policy::PolicyMap::Entry* entry =
+      service->GetBrokerForUser(active_user->GetAccountId().GetUserEmail())
+          ->core()
+          ->store()
+          ->policy_map()
+          .Get(policy::key::kDeviceLocalAccountManagedSessionEnabled);
+
+  return entry && entry->value && entry->value->GetBool();
+}
+
 }  // namespace
 
 bool GetPlatformKnownUserId(const std::string& user_email,
@@ -77,22 +103,26 @@ void UpdateLoginState(const user_manager::User* active_user,
                                 : chromeos::LoginState::LOGGED_IN_NONE;
 
   chromeos::LoginState::LoggedInUserType login_user_type;
-  if (logged_in_state == chromeos::LoginState::LOGGED_IN_NONE)
+  if (logged_in_state == chromeos::LoginState::LOGGED_IN_NONE) {
     login_user_type = chromeos::LoginState::LOGGED_IN_USER_NONE;
-  else if (is_current_user_owner)
+  } else if (is_current_user_owner) {
     login_user_type = chromeos::LoginState::LOGGED_IN_USER_OWNER;
-  else if (active_user->GetType() == user_manager::USER_TYPE_GUEST)
+  } else if (active_user->GetType() == user_manager::USER_TYPE_GUEST) {
     login_user_type = chromeos::LoginState::LOGGED_IN_USER_GUEST;
-  else if (active_user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT)
-    login_user_type = chromeos::LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT;
-  else if (active_user->GetType() == user_manager::USER_TYPE_SUPERVISED)
+  } else if (active_user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
+    login_user_type =
+        IsManagedSessionEnabled(active_user)
+            ? chromeos::LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT_MANAGED
+            : chromeos::LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT;
+  } else if (active_user->GetType() == user_manager::USER_TYPE_SUPERVISED) {
     login_user_type = chromeos::LoginState::LOGGED_IN_USER_SUPERVISED;
-  else if (active_user->GetType() == user_manager::USER_TYPE_KIOSK_APP)
+  } else if (active_user->GetType() == user_manager::USER_TYPE_KIOSK_APP) {
     login_user_type = chromeos::LoginState::LOGGED_IN_USER_KIOSK_APP;
-  else if (active_user->GetType() == user_manager::USER_TYPE_ARC_KIOSK_APP)
+  } else if (active_user->GetType() == user_manager::USER_TYPE_ARC_KIOSK_APP) {
     login_user_type = chromeos::LoginState::LOGGED_IN_USER_ARC_KIOSK_APP;
-  else
+  } else {
     login_user_type = chromeos::LoginState::LOGGED_IN_USER_REGULAR;
+  }
 
   if (primary_user) {
     chromeos::LoginState::Get()->SetLoggedInStateAndPrimaryUser(

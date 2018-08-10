@@ -288,6 +288,15 @@ bool IsPublicSession() {
 #endif
   return false;
 }
+
+bool ArePublicSessionRestrictionsEnabled() {
+#if defined(OS_CHROMEOS)
+  if (chromeos::LoginState::IsInitialized()) {
+    return chromeos::LoginState::Get()->ArePublicSessionRestrictionsEnabled();
+  }
+#endif
+  return false;
+}
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace profiles
