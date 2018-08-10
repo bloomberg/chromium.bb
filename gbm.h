@@ -399,8 +399,12 @@ gbm_bo_get_num_planes(struct gbm_bo *bo);
 size_t
 gbm_bo_get_plane_count(struct gbm_bo *bo);
 
+/* Deprecated */
 union gbm_bo_handle
 gbm_bo_get_plane_handle(struct gbm_bo *bo, size_t plane);
+
+union gbm_bo_handle
+gbm_bo_get_handle_for_plane(struct gbm_bo* bo, size_t plane);
 
 int
 gbm_bo_get_plane_fd(struct gbm_bo *bo, size_t plane);

@@ -295,7 +295,7 @@ PUBLIC struct gbm_device *gbm_bo_get_device(struct gbm_bo *bo)
 
 PUBLIC union gbm_bo_handle gbm_bo_get_handle(struct gbm_bo *bo)
 {
-	return gbm_bo_get_plane_handle(bo, 0);
+	return gbm_bo_get_handle_for_plane(bo, 0);
 }
 
 PUBLIC int gbm_bo_get_fd(struct gbm_bo *bo)
@@ -315,7 +315,12 @@ PUBLIC size_t gbm_bo_get_plane_count(struct gbm_bo *bo)
 
 PUBLIC union gbm_bo_handle gbm_bo_get_plane_handle(struct gbm_bo *bo, size_t plane)
 {
-	return (union gbm_bo_handle)drv_bo_get_plane_handle(bo->bo, plane).u64;
+	return gbm_bo_get_handle_for_plane(bo, plane);
+}
+
+PUBLIC union gbm_bo_handle gbm_bo_get_handle_for_plane(struct gbm_bo* bo, size_t plane)
+{
+  return (union gbm_bo_handle)drv_bo_get_plane_handle(bo->bo, plane).u64;
 }
 
 PUBLIC int gbm_bo_get_plane_fd(struct gbm_bo *bo, size_t plane)
