@@ -6,9 +6,14 @@
 
 #include <utility>
 
+#include "chromeos/chromeos_switches.h"
+
 namespace ash {
 
-VoiceInteractionController::VoiceInteractionController() = default;
+VoiceInteractionController::VoiceInteractionController() {
+  if (chromeos::switches::IsAssistantEnabled())
+    voice_interaction_state_ = mojom::VoiceInteractionState::NOT_READY;
+}
 
 VoiceInteractionController::~VoiceInteractionController() = default;
 
