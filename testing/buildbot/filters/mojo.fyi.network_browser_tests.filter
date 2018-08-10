@@ -8,9 +8,7 @@
 # Uncategorized timeouts or test failures.
 -ExtensionDisabledGlobalErrorTest.HigherPermissionsFromSync
 -ExtensionDisabledGlobalErrorTest.RemoteInstall
--ExtensionStorageMonitorTest.HostedAppTemporaryFilesystem
 -ExtensionUnloadBrowserTest.UnloadWithContentScripts
--ProcessManagerBrowserTest.NestedURLNavigationsToExtensionAllowed
 -ProxySettingsApiTest.ProxyEventsInvalidProxy
 -RegisterProtocolHandlerBrowserTest.CustomHandler
 -SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
@@ -113,9 +111,6 @@
 -DnsProbeBrowserTest.CorrectionsLoadStopped
 -DnsProbeBrowserTest.NoInternetProbeResultWithSlowBrokenCorrections
 
-# crbug.com/859594 Migrate storage::FileWriterDelegate to use SimpleURLLoader
--SBNavigationObserverBrowserTest.DownloadViaHTML5FileApi
-
 # https://bugs.chromium.org/p/chromium/issues/detail?id=789670
 -DiceBrowserTest.Reauth
 -DiceBrowserTest.Signin
@@ -183,10 +178,6 @@
 # https://crbug.com/773295
 # Remove this test when there are no more clients left that use URLFetcher.
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromInternalRequest
-
-# Fails because of missing support to navigate to filesystem: URLs.
-# https://crbug.com/797292
--ProcessManagerBrowserTest.NestedURLDownloadsToExtensionAllowed
 
 # Tests check state of NQE in the browser process, but need to be updated to
 # watch NQE in the renderer process.
