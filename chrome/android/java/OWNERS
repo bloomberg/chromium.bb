@@ -1,2 +1,3 @@
 per-file *.flags=agrieve@chromium.org
+per-file *.flags=smaier@chromium.org
 per-file *.grd*=twellington@chromium.org
