@@ -99,14 +99,11 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
 
   static constexpr int kNumScopeIds = kLastScopeId + 1;
 
-  enum TraceDefaultBehavior {
-    kEnabled,
-    kDisabled,
-  };
+  enum TraceCategory { kEnabled, kDisabled, kDevTools };
 
   // Trace a particular scope. Will emit a trace event and record the time in
   // the corresponding ThreadHeapStatsCollector.
-  template <TraceDefaultBehavior default_behavior = kDisabled>
+  template <TraceCategory trace_category = kDisabled>
   class PLATFORM_EXPORT InternalScope {
     DISALLOW_NEW();
     DISALLOW_COPY_AND_ASSIGN(InternalScope);
@@ -125,9 +122,14 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
 
    private:
     constexpr static const char* TraceCategory() {
-      return default_behavior == kEnabled
-                 ? "blink_gc"
-                 : TRACE_DISABLED_BY_DEFAULT("blink_gc");
+      switch (trace_category) {
+        case kEnabled:
+          return "blink_gc";
+        case kDisabled:
+          return TRACE_DISABLED_BY_DEFAULT("blink_gc");
+        case kDevTools:
+          return "blink_gc,devtools.timeline";
+      }
     }
 
     void StartTrace() { TRACE_EVENT_BEGIN0(TraceCategory(), ToString(id_)); }
@@ -149,6 +151,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
 
   using Scope = InternalScope<kDisabled>;
   using EnabledScope = InternalScope<kEnabled>;
+  using DevToolsScope = InternalScope<kDevTools>;
 
   // POD to hold interesting data accumulated during a garbage collection cycle.
   // The event is always fully polulated when looking at previous events but
