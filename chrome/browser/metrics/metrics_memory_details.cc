@@ -14,24 +14,27 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/browser/site_details.h"
 #include "components/nacl/common/nacl_process_type.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_iterator.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/process_type.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
-MetricsMemoryDetails::MetricsMemoryDetails(
-    const base::Closure& callback)
-    : callback_(callback),
-      generate_histograms_(true) {}
+MetricsMemoryDetails::MetricsMemoryDetails(const base::Closure& callback)
+    : callback_(callback) {}
 
 MetricsMemoryDetails::~MetricsMemoryDetails() {
 }
 
 void MetricsMemoryDetails::OnDetailsAvailable() {
-  if (generate_histograms_)
-    UpdateHistograms();
+  UpdateHistograms();
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback_);
 }
 
@@ -154,8 +157,7 @@ void MetricsMemoryDetails::UpdateHistograms() {
   int all_renderer_count = renderer_count + chrome_count + extension_count;
   int non_renderer_count = browser.processes.size() - all_renderer_count;
   DCHECK_GE(non_renderer_count, 1);
-  SiteDetails::UpdateHistograms(browser.site_data, all_renderer_count,
-                                non_renderer_count);
+  UpdateSiteIsolationMetrics(all_renderer_count, non_renderer_count);
 
   UMA_HISTOGRAM_COUNTS_100("Memory.ProcessCount",
                            static_cast<int>(browser.processes.size()));
@@ -163,4 +165,43 @@ void MetricsMemoryDetails::UpdateHistograms() {
   UMA_HISTOGRAM_COUNTS_100("Memory.RendererProcessCount", renderer_count);
 
   leveldb_chrome::UpdateHistograms();
+}
+
+void MetricsMemoryDetails::UpdateSiteIsolationMetrics(int all_renderer_count,
+                                                      int non_renderer_count) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // Track site data for predicting process counts with out-of-process iframes.
+  // See site_details.h.
+  BrowserContextSiteDataMap site_data_map;
+
+  // First pass, collate the widgets by process ID.
+  std::unique_ptr<content::RenderWidgetHostIterator> widget_it(
+      content::RenderWidgetHost::GetRenderWidgetHosts());
+  while (content::RenderWidgetHost* widget = widget_it->GetNextHost()) {
+    // Ignore processes that don't have a connection, such as crashed tabs,
+    // or processes that are still launching.
+    if (!widget->GetProcess()->IsReady())
+      continue;
+
+    content::RenderViewHost* rvh = content::RenderViewHost::From(widget);
+    if (!rvh)
+      continue;
+
+    content::WebContents* contents =
+        content::WebContents::FromRenderViewHost(rvh);
+    if (!contents)
+      continue;
+
+    // If this is a RVH for a subframe; skip it to avoid double-counting the
+    // WebContents.
+    if (rvh != contents->GetRenderViewHost())
+      continue;
+
+    // The rest of this block will happen only once per WebContents.
+    SiteData& site_data = site_data_map[contents->GetBrowserContext()];
+    SiteDetails::CollectSiteInfo(contents, &site_data);
+  }
+  SiteDetails::UpdateHistograms(site_data_map, all_renderer_count,
+                                non_renderer_count);
 }
