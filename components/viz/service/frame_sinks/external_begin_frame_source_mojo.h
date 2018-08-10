@@ -27,7 +27,8 @@ class VIZ_SERVICE_EXPORT ExternalBeginFrameSourceMojo
  public:
   ExternalBeginFrameSourceMojo(
       mojom::ExternalBeginFrameControllerAssociatedRequest controller_request,
-      mojom::ExternalBeginFrameControllerClientPtr client);
+      mojom::ExternalBeginFrameControllerClientPtr client,
+      uint32_t restart_id);
   ~ExternalBeginFrameSourceMojo() override;
 
   // mojom::ExternalBeginFrameController implementation.
