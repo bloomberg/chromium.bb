@@ -25,7 +25,11 @@ SettingsA11yManagePasswords.prototype = {
   ]),
 };
 
-AccessibilityTest.define('SettingsA11yManagePasswords', {
+// Disabled for flake. https://crbug.com/872575. The only way I could find to
+// disable the test was to *not* call AccessibilityTest.define(), so this is
+// commented out.
+// AccessibilityTest.define('SettingsA11yManagePasswords', {
+DISABLED_SettingsA11yManagePasswords = {
   /** @override */
   name: 'MANAGE_PASSWORDS',
   /** @type {PasswordManager} */
@@ -104,4 +108,4 @@ AccessibilityTest.define('SettingsA11yManagePasswords', {
 
   /** @override */
   violationFilter: SettingsAccessibilityTest.violationFilter,
-});
+} /*)*/;
