@@ -523,7 +523,7 @@
       Nếu cài đặt này không được đặt, người dùng có thể quyết định sử dụng chức năng này hay không.
 
       Cài đặt này đã bị xóa khỏi phiên bản <ph name="PRODUCT_NAME" /> 29 và các phiên bản cao hơn.</translation>
-<translation id="2433412232489478893">Chính sách này kiểm soát có cho phép người dùng sử dụng tính năng Chia sẻ tệp trong mạng cho <ph name="PRODUCT_NAME" /> hay không.
+<translation id="2433412232489478893">Chính sách này kiểm soát việc có cho phép người dùng sử dụng tính năng Chia sẻ tệp trong mạng cho <ph name="PRODUCT_NAME" /> hay không.
 
       Khi chưa định cấu hình chính sách này hoặc khi đặt chính sách thành True, người dùng sẽ có thể sử dụng tính năng Chia sẻ tệp trong mạng.
 
@@ -1620,13 +1620,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Giá trị của chính sách này sẽ được chỉ định theo mili giây.</translation>
 <translation id="5511702823008968136">Bật Thanh dấu trang</translation>
 <translation id="5512418063782665071">URL trang chủ</translation>
-<translation id="551639594034811656">Chính sách này xác định danh sách tỷ lệ phần trăm để xác định tỷ lệ thiết bị <ph name="PRODUCT_OS_NAME" /> trong đơn vị tổ chức sẽ cập nhật mỗi ngày, bắt đầu từ ngày phát hiện bản cập nhật đầu tiên. Thời điểm phát hiện muộn hơn thời điểm phát hành bản cập nhật vì có thể mất một khoảng thời gian từ khi phát hành bản cập nhật cho tới khi thiết bị kiểm tra các bản cập nhật.
+<translation id="551639594034811656">Chính sách này xác định danh sách tỷ lệ phần trăm cho biết số lượng thiết bị <ph name="PRODUCT_OS_NAME" /> trong đơn vị tổ chức sẽ được cập nhật mỗi ngày, bắt đầu từ ngày bản cập nhật được phát hiện lần đầu tiên. Vì thiết bị có thể kiểm tra các bản cập nhật sau một khoảng thời gian sau khi bản cập nhật được phát hành, nên thời điểm phát hiện sẽ muộn hơn thời điểm phát hành bản cập nhật.
 
-      Mỗi cặp (ngày, tỷ lệ phần trăm) chứa tỷ lệ phần trăm của nhóm phải được cập nhật trong một số ngày nhất định kể từ khi phát hiện thấy bản cập nhật. Ví dụ: nếu chúng ta có các cặp [(4, 40), (10, 70), (15, 100)], thì 40% của nhóm đã được cập nhật sau 4 ngày phát hiện thấy bản cập nhật. 70% sẽ được cập nhật sau 10 ngày, v.v.
+      Mỗi cặp (ngày, tỷ lệ phần trăm) chứa tỷ lệ phần trăm của nhóm phải được cập nhật trong một số ngày nhất định kể từ khi phát hiện thấy bản cập nhật. Ví dụ: nếu chúng ta có các cặp [(4, 40), (10, 70), (15, 100)], thì 40% của nhóm này sẽ phải được cập nhật trong vòng 4 ngày sau khi phát hiện bản cập nhật, 70% sẽ phải cập nhật sau 10 ngày, v.v.
 
       Nếu có một giá trị xác định cho chính sách này, thì bản cập nhật sẽ bỏ qua chính sách <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> và tuân thủ chính sách này.
 
-      Nếu danh sách này trống, thì sẽ không có giai đoạn và bản cập nhật nào được áp dụng theo các chính sách khác của thiết bị.
+      Nếu danh sách này trống, thì sẽ không có giai đoạn và các bản cập nhật sẽ được áp dụng theo các chính sách khác của thiết bị.
 
       Chính sách này không áp dụng cho quá trình chuyển đổi giữa các kênh.</translation>
 <translation id="5523812257194833591">Tự động đăng nhập vào phiên công khai sau thời gian chờ.
@@ -2547,11 +2547,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn tắt chính sách này, sẽ không có sự Cô lập trang web rõ ràng nào xảy ra và các phiên bản dùng thử tại chỗ của IsolateOrigins và SitePerProcess sẽ bị tắt. Người dùng sẽ vẫn có thể bật SitePerProcess theo cách thủ công.
       Nếu bạn không định cấu hình chính sách này, thì người dùng sẽ có thể thay đổi tùy chọn cài đặt này.
       </translation>
-<translation id="7902255855035461275">Các mẫu trong danh sách này sẽ được đối sánh dựa trên nguồn gốc bảo mật
+<translation id="7902255855035461275">Các mẫu trong danh sách này sẽ được so khớp dựa trên nguồn gốc bảo mật
       của URL yêu cầu. Nếu tìm thấy mẫu phù hợp, quyền truy cập
       vào thiết bị quay video sẽ được cấp mà không có lời nhắc.
 
-      LƯU Ý: Cho tới phiên bản 45 thì chính sách này chỉ được hỗ trợ ở chế độ Kiosk.</translation>
+      LƯU Ý: Trước phiên bản 45, chính sách này chỉ được hỗ trợ ở chế độ Kiosk.</translation>
 <translation id="7912255076272890813">Định cấu hình loại ứng dụng/tiện ích được cho phép</translation>
 <translation id="7915236031252389808">Bạn có thể chỉ định URL cho tệp .pac proxy tại đây.
 

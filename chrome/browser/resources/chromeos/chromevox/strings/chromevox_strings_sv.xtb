@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
 <translation id="100812568230599391">Ändra visningsformatet till omlott.</translation>
+<translation id="1011903154582639569">Leta upp en tangent och lyft sedan fingret för att skriva tecknet</translation>
 <translation id="1012173283529841972">Post i lista</translation>
 <translation id="1013742170491673792">sökfält</translation>
 <translation id="1022586497894531524">Är det första gången du använder talad feedback med ChromeVox? I dessa korta självstudier förklaras de grundläggande stegen för att komma igång med ChromeVox.</translation>
@@ -163,6 +164,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="2553108862507765288">grammatiskt fel</translation>
 <translation id="257674075312929031">Grupp</translation>
 <translation id="2582407057977008361">Sidopanel</translation>
+<translation id="2592212930811759050">Börja redigera genom att trycka snabbt två gånger</translation>
 <translation id="2606210917827248971">med {COUNT,plural, =1{# objekt}other{# objekt}}</translation>
 <translation id="2614981083756825552">Math ML-layout</translation>
 <translation id="2624431853467395961">Öppna inlärningsläge</translation>

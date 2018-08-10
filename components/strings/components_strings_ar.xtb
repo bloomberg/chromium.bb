@@ -207,6 +207,7 @@
 <translation id="2359808026110333948">المتابعة</translation>
 <translation id="2365563543831475020">لم يتم تحميل تقرير الأعطال الذي تم الحصول عليه في <ph name="CRASH_TIME" /></translation>
 <translation id="2367567093518048410">المستوى</translation>
+<translation id="2378238891085281592">الانتقال إلى الوضع الخاص</translation>
 <translation id="2384307209577226199">السياسة تلقائية في المؤسسة ويمكن إلغاؤها</translation>
 <translation id="2386255080630008482">تم إبطال شهادة الخادم.</translation>
 <translation id="2392959068659972793">عرض السياسات التي لم يتم تعيين قيم لها</translation>
@@ -355,6 +356,7 @@
 <translation id="3391030046425686457">عنوان التسليم</translation>
 <translation id="3395827396354264108">طريقة الاستلام</translation>
 <translation id="3399952811970034796">عنوان التسليم</translation>
+<translation id="3409072600744224192">للحصول على البطاقات على جميع أجهزتك، <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3422248202833853650">جرّب الخروج من البرامج الأخرى لتفريغ مساحة من الذاكرة.</translation>
 <translation id="3422472998109090673">يتعذر الوصول إلى <ph name="HOST_NAME" /> حاليًا.</translation>
 <translation id="3427092606871434483">السماح (تلقائي)</translation>
@@ -514,6 +516,7 @@
 <translation id="450710068430902550">المشاركة مع المشرف</translation>
 <translation id="4515275063822566619">‏تأتي البطاقات والعناوين من Chrome وحسابك في Google (<ph name="ACCOUNT_EMAIL" />). ويمكنك إدارتها في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="4522570452068850558">التفاصيل</translation>
+<translation id="4524805452350978254">إدارة البطاقات</translation>
 <translation id="4552089082226364758">الفلاش</translation>
 <translation id="4558551763791394412">جرّب إيقاف الإضافات.</translation>
 <translation id="457875822857220463">التسليم</translation>
@@ -579,6 +582,7 @@
 <translation id="5045550434625856497">كلمة مرور غير صحيحة</translation>
 <translation id="5056549851600133418">مقالات من أجلك</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />التحقق من عنوان الخادم الوكيل<ph name="END_LINK" /></translation>
+<translation id="5072538239104292703">للحصول على البطاقات على جميع الأجهزة، يُرجى تسجيل الدخول وتفعيل المزامنة.</translation>
 <translation id="5086888986931078152">قد تفقد إمكانية الوصول إلى محتوى محمي من بعض المواقع.</translation>
 <translation id="5087286274860437796">شهادة الخادم ليست صالحة حاليًا.</translation>
 <translation id="5087580092889165836">إضافة بطاقة</translation>
@@ -624,6 +628,7 @@
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />، <ph name="MATCH_POSITION" /> من <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">اختيار معلومات الاتصال</translation>
 <translation id="5327248766486351172">الاسم</translation>
+<translation id="5327567770033251652">تفعيل المزامنة</translation>
 <translation id="5332219387342487447">طريقة الشحن</translation>
 <translation id="5355557959165512791">لا يمكنك زيارة <ph name="SITE" /> الآن لأنه تم إبطال شهادته. أخطاء الشبكة والهجمات عليها عادةً ما تكون مؤقتة، لذا ستعمل هذه الصفحة في وقت على الأرجح.</translation>
 <translation id="536296301121032821">تعذّر تخزين إعدادات السياسة</translation>
@@ -688,6 +693,7 @@
 <translation id="5765072501007116331">لعرض طرق التسليم ومتطلباته، حدِّد عنوانًا</translation>
 <translation id="5770114862687765385">يبدو أن الملف تالف. انقر على الزر "إعادة تعيين" لإعادة تعيين الجلسة.</translation>
 <translation id="5778550464785688721">‏التحكم الكامل في MIDI</translation>
+<translation id="57838592816432529">كتم الصوت</translation>
 <translation id="5784606427469807560">حدثت مشكلة أثناء التأكد من بطاقتك. تحقق من اتصالك بالإنترنت وأعد المحاولة.</translation>
 <translation id="5785756445106461925">إضافة إلى ذلك، تتضمن هذه الصفحة موارد أخرى غير آمنة. ويستطيع الآخرون مشاهدة هذه الموارد أثناء نقلها، كما يستطيع أي مهاجم تعديلها لتغيير مظهر الصفحة.</translation>
 <translation id="5786044859038896871">هل تريد ملء معلومات بطاقتك؟</translation>
@@ -699,6 +705,7 @@
 <translation id="5866257070973731571">إضافة رقم الهاتف</translation>
 <translation id="5869405914158311789">لا يمكن الوصول إلى موقع الويب هذا</translation>
 <translation id="5869522115854928033">كلمات المرور المحفوظة</translation>
+<translation id="5887400589839399685">تم حفظ البطاقة</translation>
 <translation id="5893752035575986141">يتم قبول بطاقات الائتمان.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (تمت المزامنة)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 قيد الاستخدام}zero{# قيد الاستخدام}two{# قيد الاستخدام}few{# قيد الاستخدام}many{# قيد الاستخدام}other{# قيد الاستخدام}}</translation>
@@ -816,18 +823,22 @@
 <translation id="6915804003454593391">المستخدم:</translation>
 <translation id="6944692733090228304">لقد أدخلتَ كلمة المرور في موقع ويب لا تديره <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. ويُرجى عدم إعادة استخدام كلمة المرور في التطبيقات ومواقع الويب الأخرى لحماية حسابك.</translation>
 <translation id="6945221475159498467">تحديد</translation>
+<translation id="6948540501704460596">للحصول على البطاقات على جميع أجهزتك، <ph name="SYNC_LINK" />.</translation>
 <translation id="6948701128805548767">لعرض طرق الاستلام ومتطلباته، حدِّد عنوانًا</translation>
 <translation id="6949872517221025916">إعادة تحديد كلمة المرور</translation>
 <translation id="6950684638814147129">‏حدث خطأ أثناء تحليل قيمة JSON: <ph name="ERROR" /></translation>
+<translation id="6957624206566198865">فتح الصفحة في علامة تبويب جديدة "للوضع الخاص"</translation>
 <translation id="6957887021205513506">يبدو أن شهادة الخادم مزيفة.</translation>
 <translation id="6965382102122355670">موافق</translation>
 <translation id="6965978654500191972">جهاز</translation>
 <translation id="6970216967273061347">المنطقة</translation>
 <translation id="6973656660372572881">‏تم تحديد كل من الخوادم الوكيلة الثابتة وعنوان URL للنص البرمجي pac.</translation>
+<translation id="6984479912851154518">ستتم مغادرة الوضع الخاص للدفع عبر تطبيق خارجي. هل تريد المتابعة؟</translation>
 <translation id="6989763994942163495">عرض الإعدادات المتقدمة...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7016992613359344582">قد تُمثل هذه الرسوم رسومًا لمرة واحدة أو رسومًا متكررة وقد تكون غير واضحة.</translation>
+<translation id="7016992613359344582">قد يتمّ تحصيل هذه الرسوم لمرة واحدة أو بشكل متكرر، وقد تكون غير واضحة.</translation>
 <translation id="7029809446516969842">كلمات المرور</translation>
+<translation id="7042837854211185817">للحصول على البطاقات على جميع الأجهزة، يُرجى تفعيل المزامنة.</translation>
 <translation id="7050187094878475250">لقد حاولت الوصول إلى <ph name="DOMAIN" />، ولكن الخادم قدم شهادة مدة صلاحيتها طويلة جدًا مما يجعلها غير جديرة بالثقة.</translation>
 <translation id="7053983685419859001">منع</translation>
 <translation id="7064851114919012435">معلومات الاتصال</translation>
@@ -1075,6 +1086,7 @@
 <translation id="8820817407110198400">الإشارات المرجعية</translation>
 <translation id="883848425547221593">إشارات أخرى</translation>
 <translation id="884264119367021077">عنوان الشحن</translation>
+<translation id="8846319957959474018">فتح التطبيقات بسهولة باستخدام الإشارات المرجعية</translation>
 <translation id="884923133447025588">لم يتمّ العثور على أي آلبة إبطال.</translation>
 <translation id="885730110891505394">‏مشاركة مع Google</translation>
 <translation id="8858065207712248076">‏يُوصي Chrome بإعادة تحديد كلمة المرور <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> في حال إعادة استخدامها في مواقع ويب أخرى.</translation>

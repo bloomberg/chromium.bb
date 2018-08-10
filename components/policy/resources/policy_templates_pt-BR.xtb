@@ -263,6 +263,7 @@
       Se configurada como falsa, os relatórios de métricas e dados de diagnóstico serão desativados.
 
       Se não for configurada, os relatórios de métricas e dados de diagnóstico serão desativados em dispositivos não gerenciados e ativados em dispositivos gerenciados.</translation>
+<translation id="1920046221095339924">Permite sessão gerenciada no dispositivo</translation>
 <translation id="1929709556673267855">Fornece configurações para impressoras corporativas associadas a dispositivos.
 
       Esta política permite fornecer configurações de impressora para dispositivos <ph name="PRODUCT_OS_NAME" />. O formato é igual ao do dicionário NativePrinters, com um campo obrigatório "id" ou "guid" adicional por impressora para colocar ou remover da lista de permissões.
@@ -296,6 +297,7 @@
 
       Se essa configuração estiver ativada ou não tiver um valor definido, o usuário poderá controlar o recurso Preenchimento automático para endereços na IU.</translation>
 <translation id="1960840544413786116">Se os certificados emitidos pelas âncoras de confiança locais que estão sem a extensão subjectAlternativeName devem ser permitidos</translation>
+<translation id="1962273523772270623">Permite a coleta de logs de eventos WebRTC dos serviços do Google</translation>
 <translation id="1964634611280150550">Modo de navegação anônima desativado</translation>
 <translation id="1964802606569741174">Esta política não tem nenhum efeito sobre o app do YouTube para Android. Se o modo de segurança do YouTube precisar ser aplicado, a instalação desse app será bloqueada.</translation>
 <translation id="1969212217917526199">Modifica as políticas sobre versões de depuração do host de acesso remoto.
@@ -1907,6 +1909,11 @@
       Se esta política não for definida ou se a lista estiver vazia, todos os esquemas serão acessíveis no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Configurações de usuários gerenciados localmente</translation>
 <translation id="6658245400435704251">Especifica o número de segundos que um dispositivo pode chegar a atrasar aleatoriamente o download de uma atualização a partir do momento em que a atualização foi lançada no servidor. O dispositivo pode esperar uma parte desse intervalo de tempo em tempo cronológico e o restante contado em número de verificações de atualizações. Em todo caso, a dispersão tem como limite máximo uma quantidade constante de tempo para que o dispositivo nunca fique parado indefinidamente esperando para fazer o download de uma atualização.</translation>
+<translation id="6665599130599311250">Se esta política for definida como falsa ou não for definida, a sessão de visitante gerenciada terá o comportamento documentado em https://support.google.com/chrome/a/answer/3017014, a "Sessão pública" padrão.
+
+      Se esta política for definida como verdadeira, a sessão de visitante gerenciada terá o comportamento de "Sessão gerenciada", o que elimina muitas das restrições estabelecidas para "Sessões públicas" normais.
+
+      Se esta política for definida, o usuário não poderá alterá-la ou modificá-la.</translation>
 <translation id="6665670272107384733">Definir com que frequência o usuário precisa digitar a senha para usar o desbloqueio rápido</translation>
 <translation id="6681229465468164801">Permite definir uma lista de padrões de URL que especificam quais sites não podem pedir que o usuário conceda acesso a um dispositivo USB.
 
@@ -2070,6 +2077,17 @@
 <translation id="6943577887654905793">Nome de preferência Mac/Linux:</translation>
 <translation id="69525503251220566">Parâmetro que fornece recursos de pesquisa por imagem para o provedor de pesquisa padrão</translation>
 <translation id="6956272732789158625">Não permitir que nenhum site use a geração de chaves</translation>
+<translation id="6982028490425791294">
+      Se a política for definida como verdadeira, o <ph name="PRODUCT_NAME" /> poderá coletar logs de eventos WebRTC dos serviços do Google (por exemplo, do Google Meet) e enviá-los para o Google.
+
+      Se a política for definida como falsa ou não for definida, o <ph name="PRODUCT_NAME" /> não poderá coletar nem enviar esses logs.
+
+      Esses logs contêm informações como tempo e tamanho dos pacotes RTP enviados e recebidos, feedback sobre congestionamento na rede e metadados sobre o tempo e a qualidade de frames de vídeo e áudio. Essas informações são úteis na depuração de problemas com chamadas de áudio ou videochamadas no Chrome, como problemas de estimativa de largura de banda etc. Os logs não apresentam conteúdo de áudio ou vídeo da chamada.
+
+      Essa coleta de dados só pode ser acionada pelos serviços da Web do Google, como o Google Hangouts ou o Google Meet.
+
+      Esses logs podem ser associados, por meio de um código de sessão, a outros logs coletados pelo próprio serviço do Google para facilitar a depuração.
+      </translation>
 <translation id="6994082778848658360">Especifica como o hardware de elemento seguro integrado pode ser usado para fornecer uma autenticação de segundo fator, se ele for compatível com esse recurso. O botão liga/desliga da máquina é usado para detectar a presença física do usuário.
 
       Se a opção Desativado for selecionada, nenhum segundo fator será fornecido.

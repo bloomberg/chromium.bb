@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">Kulia</translation>
 <translation id="1351937230027495976">Kunja menyu</translation>
 <translation id="1383876407941801731">Tafuta</translation>
+<translation id="1419738280318246476">Fungua kifaa ili utekeleza kitendo cha arifa</translation>
 <translation id="1467432559032391204">Kushoto</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Kizindua</translation>
@@ -68,7 +69,6 @@
 <translation id="2049639323467105390">Kifaa hiki kinadhibitiwa na <ph name="DOMAIN" /> .</translation>
 <translation id="2050339315714019657">Wima</translation>
 <translation id="2067602449040652523">Ung'avu wa kibodi</translation>
-<translation id="2075212959500165896">Umejaribu mara nyingi mno. Jaribu tena baadaye.</translation>
 <translation id="2081529251031312395">Bado $1 anaweza kuingia katika akaunti baadaye.</translation>
 <translation id="2127372758936585790">Chaja ya nguvu ya chini</translation>
 <translation id="2135456203358955318">Kikuzaji kilichofungwa</translation>
@@ -140,7 +140,6 @@
 <translation id="3153444934357957346">Unaweza kuingia katika akaunti <ph name="MULTI_PROFILE_USER_LIMIT" /> pekee ukitumia kipengele cha uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Imeunganishwa kwenye kifaa kimoja}other{Imeunganishwa kwenye vifaa #}}</translation>
 <translation id="3236488194889173876">Mtandao wa simu haupatikani</translation>
-<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Mgeni</translation>
 <translation id="332587331255250389">Tafadhali badilisha betri</translation>
 <translation id="3351879221545518001">Kwa sasa unatuma skrini.</translation>
@@ -226,6 +225,7 @@
 <translation id="4924411785043111640">Zima kisha uwashe na uweke upya</translation>
 <translation id="4961318399572185831">Tuma skrini</translation>
 <translation id="5069971504769299223">Msimamizi wa kifaa hiki anaweza kufuatilia shughuli zako.</translation>
+<translation id="5083553833479578423">Fungua vipengele zaidi vya programu yako ya Mratibu.</translation>
 <translation id="5136175204352732067">Kibodi tofauti imeunganishwa</translation>
 <translation id="5168181903108465623">Vifaa vinavyorusha maudhui vinapatikana</translation>
 <translation id="5207949376430453814">Angazia kareti ya maandishi</translation>
@@ -297,6 +297,7 @@
 <translation id="6376931439017688372">Bluetooth imewashwa</translation>
 <translation id="639644700271529076">CAPS LOCK imezimwa</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">Futa arifa zote</translation>
 <translation id="643147933154517414">Hakuna arifa</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> kwenye <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Kataa</translation>
@@ -399,9 +400,11 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8152119955266188852">Umebofya njia ya mkato ya kikuzaji cha skrini nzima. Ungependa kukiwasha?</translation>
 <translation id="8190698733819146287">Geuza lugha na uingizaji kukufaa...</translation>
 <translation id="8191230140820435481">Kudhibiti programu, viendelezi na mandhari yako</translation>
+<translation id="8192202700944119416">Arifa zimefichwa.</translation>
 <translation id="8261506727792406068">Futa</translation>
 <translation id="8297006494302853456">Dhaifu</translation>
 <translation id="8308637677604853869">Menyu ya awali</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Unda kidokezo</translation>
 <translation id="8392451568018454956">Menyu ya chaguo za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Kikuzaji cha Skrini Nzima</translation>
@@ -443,6 +446,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8938800817013097409">Kifaa cha USB-C (mlango wa kulia nyuma)</translation>
 <translation id="8940956008527784070">Betri inaisha (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">Kufungua kwa kasi</translation>
+<translation id="899350903320462459">Fungua kifaa kwa kuingia katika akaunti ukitumia <ph name="LOGIN_ID" /> ili utekeleze kitendo cha arifa</translation>
 <translation id="8995603266996330174">Inadhibitiwa na <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Sasisho la Adobe Flash Player linapatikana</translation>
 <translation id="9056839673611986238">Mipangilio ya awali itarejeshwa kwenye kifaa</translation>

@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">Синхронізація й персоналізація</translation>
 <translation id="1398853756734560583">Збільшити</translation>
 <translation id="1399511500114202393">Без сертифіката користувача</translation>
+<translation id="1401165786814632797">Відкривайте Асистент командою "Ok Google", коли пристрій активовано й розблоковано.</translation>
 <translation id="140250605646987970">Ваш телефон знайдено. Однак Smart Lock працює лише на пристроях з ОС Android 5.0 або новішої версії. &lt;a&gt;Докладніше&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (контрольований користувач)</translation>
 <translation id="1405476660552109915">Зберегти обліковий запис для цього сайту в <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
@@ -1370,6 +1371,7 @@
 <translation id="3031557471081358569">Виберіть елементи для імпорту:</translation>
 <translation id="3031601332414921114">Відновити друк</translation>
 <translation id="303198083543495566">Координати</translation>
+<translation id="3033999583152214331">Користуйтесь інструментами, редакторами й ІСР Linux на Chromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;Докладніше&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Увімкнути Flash</translation>
 <translation id="3037754279345160234">Неможливо виконати синтаксичний аналіз конфігурації приєднання домену. Зв’яжіться з адміністратором.</translation>
 <translation id="3038612606416062604">Додати принтер вручну</translation>
@@ -1510,6 +1512,7 @@
 <translation id="3271648667212143903">Сайт <ph name="ORIGIN" /> хоче підключитися</translation>
 <translation id="3274763671541996799">Ви перейшли в повноекранний режим.</translation>
 <translation id="3275778913554317645">Відкрити вікно</translation>
+<translation id="3278877214895457897">Налаштувавши Chromebook, натисніть кнопку Асистента або скажіть "Ok Google", щоб отримати допомогу від Асистента.</translation>
 <translation id="3279230909244266691">Це може тривати кілька хвилин. Запускається віртуальна машина.</translation>
 <translation id="3279741024917655738">Показувати відео на весь екран на</translation>
 <translation id="3280237271814976245">Зберегти &amp;як...</translation>
@@ -2166,7 +2169,6 @@
 <translation id="4275830172053184480">Перезапустіть пристрій</translation>
 <translation id="4278101229438943600">Ваш Асистент готовий</translation>
 <translation id="4278390842282768270">Дозволено</translation>
-<translation id="4280864916190672950">Зупинити завантаження</translation>
 <translation id="4281844954008187215">Умови використання</translation>
 <translation id="4282196459431406533">Smart Lock увімкнено</translation>
 <translation id="4284105660453474798">Дійсно видалити "$1"?</translation>
@@ -2604,6 +2606,7 @@
 <translation id="4992066212339426712">Увімкнути звук</translation>
 <translation id="4992458225095111526">Підтвердити Powerwash</translation>
 <translation id="4992473555164495036">Адміністратор обмежив доступні методи введення.</translation>
+<translation id="4992926179187649719">Увімкнути команду "Ok Google"</translation>
 <translation id="4994474651455208930">Дозволити сайтам запитувати встановлення обробників протоколів за умовчанням.</translation>
 <translation id="4994754230098574403">Налаштування</translation>
 <translation id="4996978546172906250">Надіслати через</translation>
@@ -3436,7 +3439,6 @@
 <translation id="6231881193380278751">Додайте в URL-адресу параметр запиту для автоматичного оновлення сторінки: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Акумулятор</translation>
 <translation id="6232116551750539448">З’єднання з мережею "<ph name="NAME" />" утрачено</translation>
-<translation id="6235700927623181151">Ця вкладка має доступ до вмісту на робочому столі.</translation>
 <translation id="6237816943013845465">Дає змогу налаштувати роздільну здатність екрана</translation>
 <translation id="6238923052227198598">Показувати останню нотатку на заблокованому екрані</translation>
 <translation id="6239558157302047471">Перезавантажити фрейм</translation>
@@ -4533,6 +4535,7 @@
 <translation id="7908378463497120834">На жаль, підключити принаймні один розділ пристрою зовнішньої пам’яті неможливо.</translation>
 <translation id="7909969815743704077">Завантажено в режимі анонімного перегляду</translation>
 <translation id="7910768399700579500">&amp;Нова папка</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Ваш пароль змінено на сервері. Вийдіть і знову ввійдіть в обліковий запис.</translation>
 <translation id="7915471803647590281">Перед тим як надіслати відгук, повідомте нас, що відбувається.</translation>
 <translation id="7916556741383518510">Після натискання</translation>
@@ -4817,7 +4820,6 @@
 <translation id="8366396658833131068">З’єднання з мережею відновлено. Виберіть іншу мережу або натисніть кнопку "Продовжити" нижче, щоб запустити додаток для терміналів.</translation>
 <translation id="8366947248864804596">Коли ваш телефон розблокований і розташований поблизу, просто виберіть "Розблокувати". В іншому випадку введіть пароль або PIN-код.</translation>
 <translation id="8368859634510605990">&amp;Відкрити всі закладки</translation>
-<translation id="8369547389711988632">Завантаження зупинено</translation>
 <translation id="8371695176452482769">Диктуйте</translation>
 <translation id="8372369524088641025">Поганий WEP-ключ</translation>
 <translation id="8373553483208508744">Вимкнути звук на вкладках</translation>
@@ -5023,7 +5025,6 @@
 <translation id="8677212948402625567">Згорнути все...</translation>
 <translation id="8678648549315280022">Керувати налаштуваннями завантаження…</translation>
 <translation id="8678933587484842200">Як запускати цей додаток?</translation>
-<translation id="8679788109894721265">Ця сторінка використовує понад <ph name="MEGABYTES" /> МБ</translation>
 <translation id="8680251145628383637">Увійдіть в обліковий запис, щоб мати доступ до закладок, історії, паролів та інших налаштувань на всіх своїх пристроях. Крім того, ви автоматично входитимете в служби Google.</translation>
 <translation id="8686213429977032554">Доступ до цього файлу Диска ще не надано</translation>
 <translation id="8687485617085920635">Наступне вікно</translation>

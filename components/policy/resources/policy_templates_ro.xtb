@@ -268,6 +268,7 @@
       Dacă politica este dezactivată, raportarea valorilor și a datelor de diagnosticare va fi dezactivată.
 
       Dacă politica nu este configurată, raportarea valorilor și a datelor de diagnosticare va fi dezactivată pe dispozitivele negestionate și activată pe dispozitivele gestionate.</translation>
+<translation id="1920046221095339924">Permite sesiunea gestionată pe dispozitiv</translation>
 <translation id="1929709556673267855">Specifică configurațiile pentru imprimantele companiei asociate dispozitivelor.
 
       Această politică îți permite să specifici configurațiile imprimantelor pentru dispozitivele <ph name="PRODUCT_OS_NAME" />. Formatul este același cu cel al dicționarului NativePrinters, având în plus un câmp „id” sau „guid” obligatoriu pentru fiecare imprimantă, pentru trecerea pe lista albă sau pe lista neagră.
@@ -301,6 +302,7 @@
 
       Dacă setarea este activată sau nu are nicio valoare, utilizatorul va putea controla funcția de completare automată pentru adrese în interfața de utilizare.</translation>
 <translation id="1960840544413786116">Dacă sunt permise certificatele din care lipsește extensia subjectAlternativeName, emise de ancorele de încredere de pe dispozitiv</translation>
+<translation id="1962273523772270623">Permite colectarea jurnalelor de evenimente WebRTC din serviciile Google</translation>
 <translation id="1964634611280150550">Modul incognito a fost dezactivat</translation>
 <translation id="1964802606569741174">Această politică nu afectează aplicația Android YouTube. Dacă trebuie impus Modul sigur pe YouTube, nu trebuie permisă instalarea aplicației Android YouTube.</translation>
 <translation id="1969212217917526199">Suprascrie politicile în versiunile de depanare ale gazdei de acces de la distanță.
@@ -1933,6 +1935,11 @@
       Dacă această politică este neconfigurată sau dacă lista este goală, toate schemele vor putea fi accesate în <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Setări pentru utilizatorii gestionați local</translation>
 <translation id="6658245400435704251">Specifică numărul de secunde până la care un dispozitiv poate întârzia în mod aleatoriu descărcarea unei actualizări, din momentul în care respectiva actualizare a fost publicată pe server. O parte din perioada în care dispozitivul așteaptă efectuarea actualizării poate fi exprimată în termeni temporali, iar partea rămasă printr-un număr de verificări ale existenței unei actualizări. În orice caz, difuzarea are ca limită superioară o valoare constantă de timp, astfel încât un dispozitiv nu poate rămâne niciodată blocat definitiv în așteptarea descărcării unei actualizări.</translation>
+<translation id="6665599130599311250">Dacă această politică este dezactivată sau nu este configurată, sesiunea pentru invitați gestionată se va comporta așa cum este descris la https://support.google.com/chrome/a/answer/3017014 – „Sesiunea publică” standard.
+
+      Dacă această politică este activată, sesiunea pentru invitați gestionată se va comporta ca o „Sesiune gestionată” care ridică multe dintre restricțiile aplicate „Sesiunilor publice” obișnuite.
+
+      Dacă această politică este configurată, utilizatorul nu o poate modifica sau ignora.</translation>
 <translation id="6665670272107384733">Setează frecvența cu care un utilizator trebuie să introducă parola pentru a folosi deblocarea rapidă</translation>
 <translation id="6681229465468164801">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile împiedicate să ceară utilizatorului să le acorde acces la un dispozitiv USB.
 
@@ -2096,6 +2103,17 @@
 <translation id="6943577887654905793">Nume preferință Mac/Linux:</translation>
 <translation id="69525503251220566">Parametru care pune la dispoziție funcția Căutare după imagine pentru furnizorul de căutare prestabilit</translation>
 <translation id="6956272732789158625">Nu permite niciunui site să folosească generarea cheilor</translation>
+<translation id="6982028490425791294">
+      Dacă politica este activată, <ph name="PRODUCT_NAME" /> poate să colecteze jurnale de evenimente WebRTC din serviciile Google (de exemplu, Google Meet) și să le încarce pe Google.
+
+      Dacă politica este dezactivată sau nu este configurată, <ph name="PRODUCT_NAME" /> nu poate colecta sau încărca astfel de jurnale.
+
+      Jurnalele conțin informații precum ora și dimensiunea pachetelor RTP trimise și primite, feedback privind congestionarea rețelei și metadate despre ora și calitatea cadrelor audio și video. Aceste informații sunt utile pentru remedierea problemelor privind apelurile audio sau video în Chrome, cum ar fi problemele de estimare a lățimii de bandă etc. Jurnalele nu conțin înregistrări audio sau video din apel.
+
+      Această colectare a datelor poate fi declanșată numai de serviciile web Google, precum Google Hangouts sau Google Meet.
+
+      Jurnalele pot fi asociate, prin intermediul unui ID de sesiune, cu alte jurnale colectate chiar de serviciile Google. Astfel, se poate simplifica remedierea erorilor.
+      </translation>
 <translation id="6994082778848658360">Specifică modul în care poate fi folosit hardware-ul elementului de securitate încorporat pentru a oferi o autentificare cu doi factori, dacă se acceptă de această funcție. Butonul de pornire al dispozitivului este folosit ca să detecteze prezența fizică a utilizatorului.
 
       Dacă selectezi „Dezactivat”, al doilea factor nu mai este oferit.

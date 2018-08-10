@@ -207,6 +207,7 @@
 <translation id="2359808026110333948">Fortsätt</translation>
 <translation id="2365563543831475020">Felrapport som skapades <ph name="CRASH_TIME" /> laddades inte upp</translation>
 <translation id="2367567093518048410">Nivå</translation>
+<translation id="2378238891085281592">Du surfar privat</translation>
 <translation id="2384307209577226199">Standardinställning i företaget</translation>
 <translation id="2386255080630008482">Servercertifikatet har återkallats.</translation>
 <translation id="2392959068659972793">Visa policyer utan inställt värde</translation>
@@ -355,6 +356,7 @@
 <translation id="3391030046425686457">Leveransadress</translation>
 <translation id="3395827396354264108">Alternativ för utlämning</translation>
 <translation id="3399952811970034796">Leveransadress</translation>
+<translation id="3409072600744224192"><ph name="SIGN_IN_LINK" /> om du vill få tillgång till dina kort på alla enheter.</translation>
 <translation id="3422248202833853650">Testa att stänga andra program för att frigöra minne.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> kan inte nås för tillfället.</translation>
 <translation id="3427092606871434483">Tillåt (standard)</translation>
@@ -514,6 +516,7 @@
 <translation id="450710068430902550">Delad med en administratör</translation>
 <translation id="4515275063822566619">Kort och adresser har hämtats från Chrome och ditt Google-konto (<ph name="ACCOUNT_EMAIL" />). Du hanterar dessa under <ph name="BEGIN_LINK" />Inställningar<ph name="END_LINK" />.</translation>
 <translation id="4522570452068850558">Info</translation>
+<translation id="4524805452350978254">Hantera kort</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Testa att inaktivera tilläggen.</translation>
 <translation id="457875822857220463">Leverans</translation>
@@ -579,6 +582,7 @@
 <translation id="5045550434625856497">Felaktigt lösenord</translation>
 <translation id="5056549851600133418">Artiklar för dig</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />kontrollera proxyadressen<ph name="END_LINK" /></translation>
+<translation id="5072538239104292703">Logga in och aktivera synkronisering om du vill få tillgång till dina kort på alla enheter.</translation>
 <translation id="5086888986931078152">Du kan förlora tillgången till skyddat innehåll från några webbplatser.</translation>
 <translation id="5087286274860437796">Servercertifikatet är inte giltigt för närvarande.</translation>
 <translation id="5087580092889165836">Lägg till kort</translation>
@@ -624,6 +628,7 @@
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> av <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Välj kontaktuppgifter</translation>
 <translation id="5327248766486351172">Namn</translation>
+<translation id="5327567770033251652">aktivera synkronisering</translation>
 <translation id="5332219387342487447">Fraktmetod</translation>
 <translation id="5355557959165512791">Det går inte att besöka <ph name="SITE" /> just nu eftersom dess certifikat har återkallats. Nätverksfel och attacker är ofta tillfälliga, så sidan kommer förmodligen att fungera senare.</translation>
 <translation id="536296301121032821">Det gick inte att spara policyinställningarna</translation>
@@ -688,6 +693,7 @@
 <translation id="5765072501007116331">Välj en adress för att visa leveranssätt och krav</translation>
 <translation id="5770114862687765385">Den här filen verkar vara skadad. Återställ sessionen genom att klicka på återställningsknappen.</translation>
 <translation id="5778550464785688721">MIDI-enheter – fullständig kontroll</translation>
+<translation id="57838592816432529">Stäng av ljudet</translation>
 <translation id="5784606427469807560">Det gick inte att bekräfta kortet. Kontrollera internetanslutningen och försök igen.</translation>
 <translation id="5785756445106461925">Den här sidan innehåller emellertid andra resurser som inte är säkra. Andra kan se resurserna när de överförs och hackare kan ändra resurserna så att sidan får ett annat utseende.</translation>
 <translation id="5786044859038896871">Vill du att kortuppgifterna ska fyllas i?</translation>
@@ -699,6 +705,7 @@
 <translation id="5866257070973731571">Ange telefonnummer</translation>
 <translation id="5869405914158311789">Webbplatsen kan inte nås</translation>
 <translation id="5869522115854928033">Sparade lösenord</translation>
+<translation id="5887400589839399685">Kortet har sparats</translation>
 <translation id="5893752035575986141">Kreditkort får användas.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synkroniserade)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 används}other{# används}}</translation>
@@ -816,18 +823,22 @@
 <translation id="6915804003454593391">Användare:</translation>
 <translation id="6944692733090228304">Du har angett ditt lösenord på en webbplats som inte hanteras av <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Skydda kontot genom att inte återanvända lösenordet i andra appar och webbplatser.</translation>
 <translation id="6945221475159498467">Välj</translation>
+<translation id="6948540501704460596"><ph name="SYNC_LINK" /> om du vill få tillgång till dina kort på alla enheter.</translation>
 <translation id="6948701128805548767">Välj en adress för att visa alternativ för utlämning och krav</translation>
 <translation id="6949872517221025916">Återställ lösenord</translation>
 <translation id="6950684638814147129">Analysen av JSON-värdet misslyckades: <ph name="ERROR" /></translation>
+<translation id="6957624206566198865">Öppna sidan på en ny privat flik</translation>
 <translation id="6957887021205513506">Serverns certifikat verkar vara falskt.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Enhet</translation>
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="6973656660372572881">Både fasta proxyservrar och en webbadress för PAC-skript anges.</translation>
+<translation id="6984479912851154518">Om du betalar i en extern app sker inte det i privat läge. Vill du fortsätta?</translation>
 <translation id="6989763994942163495">Visa avancerade inställningar ...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Debiteringen kan göras en gång eller återkommande och det behöver inte framgå tydligt att detta händer.</translation>
 <translation id="7029809446516969842">Lösenord</translation>
+<translation id="7042837854211185817">Aktivera synkronisering om du vill få tillgång till dina kort på alla enheter.</translation>
 <translation id="7050187094878475250">Du försökte nå <ph name="DOMAIN" />, men servern svarade med ett certifikat vars giltighetstid är för lång för att det ska vara trovärdigt.</translation>
 <translation id="7053983685419859001">Blockera</translation>
 <translation id="7064851114919012435">Kontaktuppgifter</translation>
@@ -1075,6 +1086,7 @@
 <translation id="8820817407110198400">Bokmärken</translation>
 <translation id="883848425547221593">Övriga bokmärken</translation>
 <translation id="884264119367021077">Leveransadress</translation>
+<translation id="8846319957959474018">Öppna appar enkelt med bokmärken</translation>
 <translation id="884923133447025588">Ingen återkallningsmekanism har hittats.</translation>
 <translation id="885730110891505394">Delar med Google</translation>
 <translation id="8858065207712248076">Du rekommenderas att återställa lösenordet för <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> om du har återanvänt det på andra webbplatser.</translation>

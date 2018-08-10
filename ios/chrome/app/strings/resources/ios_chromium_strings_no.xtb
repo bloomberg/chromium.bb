@@ -23,7 +23,7 @@
 <translation id="3605252743693911722">Logg på Chromium for å hente blant annet bokmerkene og passordene dine på alle enhetene du bruker.</translation>
 <translation id="3805899903892079518">Chromium har ikke tilgang til bildene eller videoene dine. Slå på tilgangen i iOS-innstillingene &gt; Personvern &gt; Bilder.</translation>
 <translation id="4024541897090868497">For å få fanene dine på alle enhetene du bruker, logg på Chromium.</translation>
-<translation id="4157467675761413638">Chromium tips. For flere fanealternativer, trykk og hold ned Vis fane-knappen i verktøylinjen, som du finner nederst eller øverst på skjermen.</translation>
+<translation id="4157467675761413638">Chromium-tips. For flere fanealternativer, trykk og hold Vis fane-knappen i verktøylinjen, som du finner nederst eller øverst på skjermen.</translation>
 <translation id="4241912885070669028">Du logger av en konto som administreres av <ph name="SIGNOUT_MANAGED_DOMAIN" />. Dette fører til at Chromium-dataene dine slettes fra denne enheten, men de blir værende i Google-kontoen din.</translation>
 <translation id="4272892696084633551">Bidra til å gjøre Chromium bedre og raskere</translation>
 <translation id="4555020257205549924">Når denne funksjonen er slått på, tilbyr Chromium å oversette sider som er skrevet på andre språk, ved hjelp av Google Oversetter. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
@@ -46,7 +46,7 @@
 <translation id="7357211569052832586">De valgte dataene er fjernet fra Chromium og alle synkroniserte enheter. Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel for søk og aktivitet fra andre Google-tjenester, på history.google.com.</translation>
 <translation id="7400689562045506105">Bruk Chromium overalt</translation>
 <translation id="7674213385180944843">Åpne Innstillinger &gt; Personvern &gt; Kamera &gt; Chromium, og slå på kameraet.</translation>
-<translation id="7746854981345936341">Chromium tips. Noen knapper, slik som Nedover, Forover og Søke, er nå nederst på skjermen.</translation>
+<translation id="7746854981345936341">Chromium-tips. Noen knapper, slik som Tilbake, Frem og Søk, er nå nederst på skjermen.</translation>
 <translation id="786327964234957808">Du bytter synkroniseringskonto fra <ph name="USER_EMAIL1" /> til <ph name="USER_EMAIL2" />. De eksisterende Chromium-dataene dine administreres av <ph name="DOMAIN" />. Dette fører til at dataene dine slettes fra denne enheten, men de blir værende i <ph name="USER_EMAIL1" />.</translation>
 <translation id="8175055321229419309">Tips: <ph name="BEGIN_LINK" />Flytt Chromium til dokken<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Få en bedre Google-opplevelse i Chromium basert på hvor du er.</translation>

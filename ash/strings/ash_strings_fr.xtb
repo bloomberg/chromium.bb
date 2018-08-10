@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">Vers la droite</translation>
 <translation id="1351937230027495976">Réduire le menu</translation>
 <translation id="1383876407941801731">Rechercher</translation>
+<translation id="1419738280318246476">Déverrouiller l'appareil pour effectuer l'action de notification</translation>
 <translation id="1467432559032391204">Vers la gauche</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Lanceur d'applications</translation>
@@ -68,7 +69,6 @@
 <translation id="2049639323467105390">Cet appareil est géré par <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="2067602449040652523">Luminosité du clavier</translation>
-<translation id="2075212959500165896">Trop de tentatives. Réessayez plus tard.</translation>
 <translation id="2081529251031312395">$1 pourra toujours se connecter plus tard.</translation>
 <translation id="2127372758936585790">Chargeur de faible puissance</translation>
 <translation id="2135456203358955318">Loupe ancrée</translation>
@@ -140,7 +140,6 @@
 <translation id="3153444934357957346">Vous ne pouvez vous connecter qu'à <ph name="MULTI_PROFILE_USER_LIMIT" /> comptes au maximum dans le cadre de la connexion multicompte.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connecté à un appareil}one{Connecté à # appareil}other{Connecté à # appareils}}</translation>
 <translation id="3236488194889173876">Aucun réseau mobile disponible</translation>
-<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Invité</translation>
 <translation id="332587331255250389">Veuillez remplacer la batterie</translation>
 <translation id="3351879221545518001">Vous êtes actuellement en train de caster l'écran.</translation>
@@ -227,6 +226,7 @@
 <translation id="4924411785043111640">Redémarrer et réinitialiser</translation>
 <translation id="4961318399572185831">Diffuser l'écran</translation>
 <translation id="5069971504769299223">Il est possible que le gestionnaire de l'appareil puisse surveiller votre activité.</translation>
+<translation id="5083553833479578423">Déverrouiller plus de fonctionnalités de l'Assistant.</translation>
 <translation id="5136175204352732067">Clavier différent branché</translation>
 <translation id="5168181903108465623">Appareils Cast disponibles</translation>
 <translation id="5207949376430453814">Mettre le curseur de texte en surbrillance</translation>
@@ -298,6 +298,7 @@
 <translation id="6376931439017688372">Bluetooth activé</translation>
 <translation id="639644700271529076">La touche de verrouillage des majuscules est désactivée.</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">Effacer toutes les notifications</translation>
 <translation id="643147933154517414">Terminé</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> vers <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Refuser</translation>
@@ -399,9 +400,11 @@
 <translation id="8152119955266188852">Vous avez utilisé le raccourci de la loupe plein écran. Voulez-vous l'activer ?</translation>
 <translation id="8190698733819146287">Personnaliser les langues et la saisie...</translation>
 <translation id="8191230140820435481">Gérer vos applications, vos extensions et vos thèmes</translation>
+<translation id="8192202700944119416">Les notifications sont masquées.</translation>
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8297006494302853456">Faible</translation>
 <translation id="8308637677604853869">Menu précédent</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Créer une note</translation>
 <translation id="8392451568018454956">Menu "Options" de l'adresse e-mail <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Loupe plein écran</translation>
@@ -443,6 +446,7 @@
 <translation id="8938800817013097409">Appareil USB de type C (port situé sur l'arrière de l'appareil, à droite)</translation>
 <translation id="8940956008527784070">Batterie faible (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="8984179138335769204">Lancement rapide</translation>
+<translation id="899350903320462459">Déverrouiller l'appareil en tant que <ph name="LOGIN_ID" /> pour effectuer l'action de notification</translation>
 <translation id="8995603266996330174">Géré par <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Mise à jour Adobe Flash Player disponible</translation>
 <translation id="9056839673611986238">L'appareil va être rétabli</translation>

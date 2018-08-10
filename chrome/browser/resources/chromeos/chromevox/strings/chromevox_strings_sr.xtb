@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
 <translation id="100812568230599391">Промени стил приказа у „преклапање“.</translation>
+<translation id="1011903154582639569">Нађите тастер, па подигните прст да бисте унели</translation>
 <translation id="1012173283529841972">Ставка листе</translation>
 <translation id="1013742170491673792">претрага</translation>
 <translation id="1022586497894531524">Да ли први пут користите ChromeVox говорне повратне информације? Овај кратки водич објашњава основне ствари потребне за почетне кораке са услугом ChromeVox.</translation>
@@ -163,6 +164,7 @@
 <translation id="2553108862507765288">граматичка грешка</translation>
 <translation id="257674075312929031">Група</translation>
 <translation id="2582407057977008361">Додатно</translation>
+<translation id="2592212930811759050">Двапут додирните да бисте почели да мењате</translation>
 <translation id="2606210917827248971">са {COUNT,plural, =1{# ставком}one{# ставком}few{# ставке}other{# ставки}}</translation>
 <translation id="2614981083756825552">Math ML распоред</translation>
 <translation id="2624431853467395961">Отвара режим за учење</translation>

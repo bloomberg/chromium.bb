@@ -257,6 +257,7 @@ Pokud tuto zásadu ponecháte nenastavenou, bude předvídání akcí sítě akt
       Pokud je tato zásada nastavena na hodnotu false, bude hlášení metrik a diagnostických dat zakázáno.
 
       Pokud tato zásada není nakonfigurována, bude hlášení metrik a diagnostických dat na nespravovaných zařízeních zakázáno a na spravovaných zařízeních bude povoleno.</translation>
+<translation id="1920046221095339924">Povolit v zařízení spravovanou relaci</translation>
 <translation id="1929709556673267855">Poskytuje konfigurace pro podnikové tiskárny svázané se zařízeními.
 
 Tato zásada umožňuje poskytnout zařízením <ph name="PRODUCT_OS_NAME" /> konfigurace tiskáren. Má stejný formát jako slovník NativePrinters, ale obsahuje navíc povinné pole „id“ nebo „guid“ pro každou tiskárnu, která má být zařazena na seznam povolených nebo zakázaných.
@@ -290,6 +291,7 @@ Pokud tato zásada není nastavena, nebude mít zařízení žádné tiskárny a
 
       Pokud je toto nastavení zapnuto nebo nemá žádnou hodnotu, uživatel bude moci automatické vyplňování adres ovládat v uživatelském rozhraní.</translation>
 <translation id="1960840544413786116">Udává, zda mají být povoleny certifikáty vydané místními kotvami vztahu důvěryhodnosti bez rozšíření subjectAlternativeName.</translation>
+<translation id="1962273523772270623">Povolit shromažďování protokolů událostí WebRTC ze služeb Google</translation>
 <translation id="1964634611280150550">Anonymní režim zakázán</translation>
 <translation id="1964802606569741174">Tato zásada nemá vliv na aplikaci YouTube pro Android. Chcete-li na YouTube vynutit bezpečný režim, měli byste instalaci aplikace YouTube pro Android zakázat.</translation>
 <translation id="1969212217917526199">Přepíše zásady u ladicích sestavení hostitele vzdáleného připojení.
@@ -1959,6 +1961,11 @@ Adresy URL, které používají schémata uvedená v tomto seznamu, se nebudou n
 Pokud bude tato zásada ponechána nenastavená nebo bude seznam prázdný, bude v prohlížeči <ph name="PRODUCT_NAME" /> možné používat všechna schémata.</translation>
 <translation id="6652197835259177259">Nastavení místně spravovaných uživatelů</translation>
 <translation id="6658245400435704251">Určí počet sekund, o který může zařízení náhodně zdržet stahování aktualizace od doby, kdy byla poprvé zveřejněna na serveru. Zařízení může čekat určitý čas a pokusit se o určitý počet kontrol aktualizací. Zpoždění je však v každém případě omezeno neměnným maximálním časovým limitem tak, aby zařízení nečekalo na stažení aktualizace donekonečna.</translation>
+<translation id="6665599130599311250">Pokud je tato zásada nastavena na hodnotu false nebo není nastavena, spravovaná relace hosta se bude chovat podle dokumentace na stránce https://support.google.com/chrome/a/answer/3017014 (jako standardní veřejná relace).
+
+      Pokud je tato zásada nastavena na hodnotu true, bude se spravovaná relace hosta chovat jako spravovaná relace, což znamená, že se na ni nebudou vztahovat některá omezení, která se vztahují na běžné veřejné relace.
+
+      Pokud je tato zásada nastavena, uživatel ji nemůže změnit ani přepsat.</translation>
 <translation id="6665670272107384733">Nastavit, jak často musí uživatel zadat heslo, pokud chce používat rychlé odemknutí</translation>
 <translation id="6681229465468164801">Umožňuje nastavit seznam vzorů adres URL webů, které uživatele nesmějí žádat o přístup k zařízení USB.
 
@@ -2114,6 +2121,17 @@ Pokud ji ponecháte nenastavenou, bude hlasová odezva ve výchozím nastavení 
 <translation id="6943577887654905793">Název nastavení v systémech Mac/Linux:</translation>
 <translation id="69525503251220566">Parametr poskytující funkci vyhledávání podle obrázku pro výchozího poskytovatele vyhledávání</translation>
 <translation id="6956272732789158625">Nepovolit žádnému webu generovat klíče</translation>
+<translation id="6982028490425791294">
+      Je-li tato zásada nastavena na hodnotu true, má <ph name="PRODUCT_NAME" /> povoleno shromažďovat protokoly událostí WebRTC ze služeb Google (např. Google Meet) a nahrávat je do Googlu.
+
+      Pokud je tato zásada nastavená na hodnotu false nebo je ponechána nenastavená, prohlížeč <ph name="PRODUCT_NAME" /> takové protokoly shromažďovat ani nahrávat nesmí.
+
+      Tyto protokoly obsahují informace, jako je čas, velikost odeslaných a přijatých paketů RTP, zpětná vazba ohledně zahlcení sítě a metadata ohledně času a kvality snímků zvuku a videa. Tyto informace jsou užitečné k ladění problémů se zvukovými hovory a videohovory v Chromu, jako jsou problémy s odhadem rychlosti připojení apod. Protokoly neobsahují zvukový ani obrazový obsah z hovoru.
+
+      Toto shromažďování dat mohou spustit pouze webové služby Googlu, například Google Hangouts nebo Google Meet.
+
+      Kvůli snazšímu ladění tyto protokoly mohou být prostřednictvím ID relace přidruženy k jiným protokolům shromažďovaným samotnou službou Google.
+      </translation>
 <translation id="6994082778848658360">Udává, jak lze integrovaný bezpečnostní hardwarový prvek používat k dvoufaktorovému ověření, pokud je s touto funkcí kompatibilní. Ke zjištění fyzické přítomnosti uživatele se používá vypínač počítače.
 
       Pokud je vybrána možnost Deaktivováno, druhý faktor není k dispozici.

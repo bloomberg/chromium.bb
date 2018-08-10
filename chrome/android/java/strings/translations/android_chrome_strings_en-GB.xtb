@@ -61,6 +61,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="1404122904123200417">Embedded in <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Do Not Track”</translation>
 <translation id="1407135791313364759">Open all</translation>
+<translation id="1409426117486808224">Simplified view for open tabs</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> download prevented because file already exists.</translation>
 <translation id="1414981605391750300">Contacting Google. This may take a minute…</translation>
 <translation id="1416550906796893042">Application version</translation>
@@ -80,6 +81,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="1566400915470565838">To use <ph name="APP_NAME" />, please connect to the Internet.</translation>
 <translation id="1569387923882100876">Connected device</translation>
 <translation id="1571304935088121812">Copy username</translation>
+<translation id="1576370611341449972">Download occurs only on Wi-Fi</translation>
 <translation id="1612196535745283361">Chrome needs location access to scan for devices. Location access is <ph name="BEGIN_LINK" />turned off for this device<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">Turn on sync, personalisation and other Google services</translation>
 <translation id="1620510694547887537">Camera</translation>
@@ -344,6 +346,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Manage</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads deleted</translation>
+<translation id="3819562311292413223">Download articles for you</translation>
 <translation id="3822502789641063741">Clear site storage?</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3859306556332390985">Seek forward</translation>
@@ -383,6 +386,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4113030288477039509">Managed by your administrator</translation>
 <translation id="4116038641877404294">Download pages to use them offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d bookmark}other{%1$d bookmarks}}</translation>
+<translation id="4149994727733219643">Simplified view for web pages</translation>
 <translation id="4159800535322890630">Block sites from accessing your sensors</translation>
 <translation id="4165986682804962316">Site settings</translation>
 <translation id="4170011742729630528">The service is not available; try again later.</translation>
@@ -553,6 +557,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="5512137114520586844">This account is managed by <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Disabled by the administrator of this device</translation>
 <translation id="5515439363601853141">Unlock to view your password</translation>
+<translation id="5515716148775388141">Your icons have moved to the bottom of the screen</translation>
 <translation id="5517095782334947753">You have bookmarks, history, passwords and other settings from <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Redirect blocked.</translation>
 <translation id="5527082711130173040">Chrome needs location access to scan for devices. <ph name="BEGIN_LINK1" />Update permissions<ph name="END_LINK1" />. Location access is also <ph name="BEGIN_LINK2" />turned off for this device<ph name="END_LINK2" />.</translation>
@@ -756,6 +761,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7016516562562142042">Allowed for current search engine</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> downloaded</translation>
 <translation id="7022756207310403729">Open in browser</translation>
+<translation id="702463548815491781">Recommended when TalkBack or Switch Access are on</translation>
 <translation id="7029809446516969842">Passwords</translation>
 <translation id="7031882061095297553">Sync to</translation>
 <translation id="7032663816368481562">When you tap More like this <ph name="ICON" /> in the address bar, show quick links to related pages. The URLs of pages that you visit are sent to Google.</translation>
@@ -784,6 +790,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7251326866581677552">Blocked from some sites</translation>
 <translation id="7253272406652746122">Add a Google account from the Accounts page in your device’s Settings app.</translation>
 <translation id="7274013316676448362">Blocked site</translation>
+<translation id="72867290065237936">Tap to toggle between password suggestions and keyboard</translation>
 <translation id="729975465115245577">Your device doesn’t have an app to store the passwords file.</translation>
 <translation id="7302081693174882195">Details: Sorted by amount of data saved</translation>
 <translation id="7333031090786104871">Still adding previous site</translation>

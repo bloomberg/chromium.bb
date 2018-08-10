@@ -61,6 +61,7 @@
 <translation id="1404122904123200417">Iegults vietnē <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Nesekot”</translation>
 <translation id="1407135791313364759">Atvērt visas</translation>
+<translation id="1409426117486808224">Vienkāršots atvērtu ciļņu skatījums</translation>
 <translation id="1409879593029778104">Fails <ph name="FILE_NAME" /> netika lejupielādēts, jo tas jau pastāv.</translation>
 <translation id="1414981605391750300">Notiek sazināšanās ar Google. Tas var ilgt kādu minūti...</translation>
 <translation id="1416550906796893042">Lietojumprogrammas versija</translation>
@@ -80,6 +81,7 @@
 <translation id="1566400915470565838">Lai izmantotu lietotni <ph name="APP_NAME" />, izveidojiet savienojumu ar internetu.</translation>
 <translation id="1569387923882100876">Pievienota ierīce</translation>
 <translation id="1571304935088121812">Kopēt lietotājvārdu</translation>
+<translation id="1576370611341449972">Lejupielāde notiek tikai Wi-Fi tīklā</translation>
 <translation id="1612196535745283361">Lai meklētu ierīces, pārlūkam Chrome ir nepieciešama piekļuve atrašanās vietas datiem. <ph name="BEGIN_LINK" />Šajā ierīcē ir izslēgta piekļuve atrašanās vietas datiem<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">Sinhronizācijas, personalizācijas un citu Google pakalpojumu ieslēgšana</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -344,6 +346,7 @@
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Pārvaldīt</translation>
 <translation id="3819178904835489326">Izdzēsti <ph name="NUMBER_OF_DOWNLOADS" /> lejupielādētie vienumi</translation>
+<translation id="3819562311292413223">Ieteikto rakstu lejupielāde</translation>
 <translation id="3822502789641063741">Vai notīrīt vietnes krātuvi?</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
 <translation id="3859306556332390985">Pārtīt uz priekšu</translation>
@@ -383,6 +386,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4113030288477039509">Pārvalda jūsu administrators</translation>
 <translation id="4116038641877404294">Lejupielādējiet lapas, lai izmantotu tās bezsaistē</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d grāmatzīme}zero{%1$d grāmatzīmes}one{%1$d grāmatzīme}other{%1$d grāmatzīmes}}</translation>
+<translation id="4149994727733219643">Vienkāršots tīmekļa lapu skatījums</translation>
 <translation id="4159800535322890630">Neļaut vietnēm piekļūt jūsu ierīces sensoriem</translation>
 <translation id="4165986682804962316">Vietnes iestatījumi</translation>
 <translation id="4170011742729630528">Pakalpojums nav pieejams. Vēlāk mēģiniet vēlreiz.</translation>
@@ -517,7 +521,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="5224771365102442243">Ar video</translation>
 <translation id="5233638681132016545">Jauna cilne</translation>
 <translation id="5240817131241497236">Ir mainīti sinhronizācijas, personalizācijas un citu Google pakalpojumu pārvaldības iestatījumi pārlūkā Chrome. Tas var ietekmēt jūsu pašreizējos iestatījumus.</translation>
-<translation id="5264003212305142034"><ph name="BEGIN_LINK1" /> Iestatījumus <ph name="END_LINK1" /> var pielāgot jebkurā laikā. Google var izmantot jūsu apmeklēto vietņu saturu, kā arī pārlūkā veiktās darbības un mijiedarbības, lai personalizētu pārlūku Chrome un citus Google pakalpojumus, piemēram, Tulkotājs, Meklēšana un reklāmas.</translation>
+<translation id="5264003212305142034"><ph name="BEGIN_LINK1" /> Iestatījumus <ph name="END_LINK1" /> var pielāgot jebkurā laikā. Google var izmantot jūsu apmeklēto vietņu saturu, kā arī pārlūkā veiktās darbības un mijiedarbības, lai personalizētu pārlūku Chrome un citus Google pakalpojumus, piemēram, Tulkotāju, Meklēšanu un reklāmas.</translation>
 <translation id="5271967389191913893">Ierīcē nevar atvērt lejupielādējamo saturu.</translation>
 <translation id="528192093759286357">Lai izietu no pilnekrāna režīma, velciet no augšas un pieskarieties pogai Atpakaļ.</translation>
 <translation id="5284584623296338184">Grāmatzīmju, vēstures, paroļu un citu iestatījumu izmaiņas vairs netiks sinhronizētas ar jūsu Google kontu. Tomēr esošie dati joprojām tiks glabāti jūsu Google kontā.</translation>
@@ -553,6 +557,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="5512137114520586844">Šo kontu pārvalda <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Atspējoja šīs ierīces administrators</translation>
 <translation id="5515439363601853141">Atbloķējiet, lai skatītu paroli</translation>
+<translation id="5515716148775388141">Jūsu ikonas ir pārvietotas uz ekrāna apakšdaļu</translation>
 <translation id="5517095782334947753">Ir pieejamas grāmatzīmes, vēsture, paroles un citi iestatījumi no konta <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Novirzīšana ir bloķēta.</translation>
 <translation id="5527082711130173040">Lai meklētu ierīces, pārlūkam Chrome ir nepieciešama piekļuve atrašanās vietas datiem. <ph name="BEGIN_LINK1" />Atjauniniet atļaujas<ph name="END_LINK1" />. Piekļuve atrašanās vietas datiem ir arī <ph name="BEGIN_LINK2" />izslēgta šai ierīcei<ph name="END_LINK2" />.</translation>
@@ -756,6 +761,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7016516562562142042">Atļauta pašreizējai meklētājprogrammai</translation>
 <translation id="7021515813996758557">Fails <ph name="FILE_NAME" /> ir lejupielādēts.</translation>
 <translation id="7022756207310403729">Atvērt pārlūkā</translation>
+<translation id="702463548815491781">Ieteicams, ja ir ieslēgta lietotne TalkBack vai slēdžu piekļuves funkcija.</translation>
 <translation id="7029809446516969842">Paroles</translation>
 <translation id="7031882061095297553">Sinhronizēt ar:</translation>
 <translation id="7032663816368481562">Adreses joslā pieskaroties vienumam Citi līdzīgi vienumi <ph name="ICON" />, tiek rādītas ātrās saites uz saistītām lapām. Apmeklēto lapu vietrāži URL tiek nosūtīti Google serveriem.</translation>
@@ -784,6 +790,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7251326866581677552">Bloķētas dažās vietnēs.</translation>
 <translation id="7253272406652746122">Pievienojiet Google kontu no lapas Konti savas ierīces lietotnē Iestatījumi.</translation>
 <translation id="7274013316676448362">Bloķēta vietne</translation>
+<translation id="72867290065237936">Pieskarieties, lai pārslēgtu starp paroles ieteikumiem un tastatūru</translation>
 <translation id="729975465115245577">Ierīcē nav lietotnes, kurā uzglabāt paroļu failu.</translation>
 <translation id="7302081693174882195">Detalizēta informācija: kārtota pēc ietaupīto datu apjoma</translation>
 <translation id="7333031090786104871">Joprojām notiek iepriekšējās vietnes pievienošana</translation>

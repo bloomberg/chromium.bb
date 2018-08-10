@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">Synkronisering och anpassning</translation>
 <translation id="1398853756734560583">Maximera</translation>
 <translation id="1399511500114202393">Inget användarcertifikat</translation>
+<translation id="1401165786814632797">Få tillgång till assistenten när du säger ”Ok Google” och enheten är aktiv och olåst.</translation>
 <translation id="140250605646987970">Din mobil hittades, men Smart Lock fungerar bara för enheter med Android 5.0 och senare. &lt;a&gt;Läs mer&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (kontrollerad)</translation>
 <translation id="1405476660552109915">Vill du spara kontot för den här webbplatsen med <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
@@ -1369,6 +1370,7 @@
 <translation id="3031557471081358569">Välj objekt att importera:</translation>
 <translation id="3031601332414921114">Återuppta utskriften</translation>
 <translation id="303198083543495566">Geografi</translation>
+<translation id="3033999583152214331">Kör verktyg, redigerare och IDE:er för Linux på Chromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;Läs mer&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Aktivera blixt</translation>
 <translation id="3037754279345160234">Det gick inte att analysera konfigurationen för domänanslutning. Kontakta administratören.</translation>
 <translation id="3038612606416062604">Lägg till en skrivare manuellt</translation>
@@ -1509,6 +1511,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> vill ansluta</translation>
 <translation id="3274763671541996799">Du har aktiverat helskärmsläget.</translation>
 <translation id="3275778913554317645">Öppna som fönster</translation>
+<translation id="3278877214895457897">När konfigureringen av Chromebook är klar kan du trycka på assistentknappen eller säga ”Ok Google” när som helst när du vill få hjälp av assistenten.</translation>
 <translation id="3279230909244266691">Detta kan ta några minuter. Den virtuella maskinen startas.</translation>
 <translation id="3279741024917655738">Visa videor i helskärmsläge på</translation>
 <translation id="3280237271814976245">Spara so&amp;m...</translation>
@@ -2165,7 +2168,6 @@
 <translation id="4275830172053184480">Starta om enheten</translation>
 <translation id="4278101229438943600">Assistenten är redo</translation>
 <translation id="4278390842282768270">Tillåtet</translation>
-<translation id="4280864916190672950">Avbryt inläsningen</translation>
 <translation id="4281844954008187215">Användarvillkor</translation>
 <translation id="4282196459431406533">Smart Lock är aktiverat</translation>
 <translation id="4284105660453474798">Vill du ta bort $1?</translation>
@@ -2603,6 +2605,7 @@
 <translation id="4992066212339426712">Slå på ljudet</translation>
 <translation id="4992458225095111526">Bekräfta återställning med Powerwash</translation>
 <translation id="4992473555164495036">Administratören har begränsat vilka inmatningsmetoder som är tillgängliga.</translation>
+<translation id="4992926179187649719">Aktivera ”Ok Google”</translation>
 <translation id="4994474651455208930">Tillåt att webbplatser begär att bli standardhanterare för protokoll</translation>
 <translation id="4994754230098574403">Konfigurerar</translation>
 <translation id="4996978546172906250">Dela via</translation>
@@ -3435,7 +3438,6 @@
 <translation id="6231881193380278751">Lägg till en frågeparameter i webbadressen för att automatiskt uppdatera sidan: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Batteri</translation>
 <translation id="6232116551750539448">Anslutningen till <ph name="NAME" /> har brutits</translation>
-<translation id="6235700927623181151">Ditt skrivbord delas på den här fliken.</translation>
 <translation id="6237816943013845465">Ger möjlighet att ändra skärmupplösningen</translation>
 <translation id="6238923052227198598">Behåll den senaste anteckningen på låsskärmen</translation>
 <translation id="6239558157302047471">Läs in &amp;ram igen</translation>
@@ -4532,6 +4534,7 @@
 <translation id="7908378463497120834">Minst en partition på den externa lagringsenheten kunde inte monteras.</translation>
 <translation id="7909969815743704077">Laddades ned i inkognitoläge</translation>
 <translation id="7910768399700579500">&amp;Ny mapp</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Lösenordet har ändrats på servern. Logga ut och logga sedan in igen.</translation>
 <translation id="7915471803647590281">Berätta för oss vad som händer innan du skickar feedback.</translation>
 <translation id="7916556741383518510">Vid klick</translation>
@@ -4816,7 +4819,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8366396658833131068">Nätverksanslutningen har återställts. Välj ett annat nätverk eller tryck på knappen Fortsätt om du vill starta kioskappen.</translation>
 <translation id="8366947248864804596">När mobilen är olåst och finns i närheten väljer du bara detta för att låsa upp enheten. I annat fall anger du lösenordet eller pinkoden.</translation>
 <translation id="8368859634510605990">&amp;Öppna alla bokmärken</translation>
-<translation id="8369547389711988632">Inläsningen har pausats</translation>
 <translation id="8371695176452482769">Prata nu</translation>
 <translation id="8372369524088641025">Felaktig WEP-nyckel</translation>
 <translation id="8373553483208508744">Stäng av ljud från flikar</translation>
@@ -5022,7 +5024,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8677212948402625567">Dölj alla...</translation>
 <translation id="8678648549315280022">Hantera inställningar för nedladdning ...</translation>
 <translation id="8678933587484842200">Hur vill du att det här programmet ska startas?</translation>
-<translation id="8679788109894721265">Den här sidan använder mer än <ph name="MEGABYTES" /> MB</translation>
 <translation id="8680251145628383637">Logga in om du vill få tillgång till samma bokmärken, historik, lösenord och andra inställningar på alla dina enheter. Dessutom blir du automatiskt inloggad på Googles tjänster.</translation>
 <translation id="8686213429977032554">Den här filen i Drive delas inte ännu</translation>
 <translation id="8687485617085920635">Nästa fönster</translation>

@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">Sincronização e personalização</translation>
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="1399511500114202393">Nenhum certificado do usuário</translation>
+<translation id="1401165786814632797">Acesse seu Assistente sempre que disser "Ok Google" quando seu dispositivo estiver ativado e desbloqueado.</translation>
 <translation id="140250605646987970">Seu smartphone foi localizado. No entanto, o Smart Lock funciona apenas em dispositivos com Android 5.0 e posterior. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisionado)</translation>
 <translation id="1405476660552109915">Quer que <ph name="PASSWORD_MANAGER_BRAND" /> salve sua conta para este site?</translation>
@@ -1370,6 +1371,7 @@
 <translation id="3031557471081358569">Selecione os itens que serão importados:</translation>
 <translation id="3031601332414921114">Retomar impressão</translation>
 <translation id="303198083543495566">Região geográfica</translation>
+<translation id="3033999583152214331">Execute ferramentas, editores e ambientes de desenvolvimento integrado do Linux no seu Chromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;Saiba mais&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Ativar Flash</translation>
 <translation id="3037754279345160234">Não é possível analisar a configuração de vínculo de domínios. Entre em contato com seu administrador.</translation>
 <translation id="3038612606416062604">Adicionar uma impressora manualmente</translation>
@@ -1510,6 +1512,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> deseja se conectar</translation>
 <translation id="3274763671541996799">Você está no modo de tela inteira.</translation>
 <translation id="3275778913554317645">Abrir como janela</translation>
+<translation id="3278877214895457897">Quando o Chromebook estiver configurado, pressione o botão do Assistente ou diga "Ok Google" para receber ajuda do Assistente a qualquer momento.</translation>
 <translation id="3279230909244266691">O processo pode levar alguns minutos. Iniciando a máquina virtual.</translation>
 <translation id="3279741024917655738">Mostrar vídeos em tela cheia em</translation>
 <translation id="3280237271814976245">Salvar &amp;como...</translation>
@@ -2166,7 +2169,6 @@
 <translation id="4275830172053184480">Reiniciar seu dispositivo</translation>
 <translation id="4278101229438943600">O Assistente está pronto</translation>
 <translation id="4278390842282768270">Permitido</translation>
-<translation id="4280864916190672950">Interromper carregamento</translation>
 <translation id="4281844954008187215">Termos de Serviço</translation>
 <translation id="4282196459431406533">O Smart Lock está ativado</translation>
 <translation id="4284105660453474798">Tem certeza que quer apagar "$1"?</translation>
@@ -2604,6 +2606,7 @@
 <translation id="4992066212339426712">Ativar som</translation>
 <translation id="4992458225095111526">Confirmar powerwash</translation>
 <translation id="4992473555164495036">O administrador limitou os métodos de entrada disponíveis.</translation>
+<translation id="4992926179187649719">Ativar "Ok Google"</translation>
 <translation id="4994474651455208930">Permitir que os sites peçam para se tornarem manipuladores padrão de protocolos</translation>
 <translation id="4994754230098574403">Configurando</translation>
 <translation id="4996978546172906250">Compartilhar via</translation>
@@ -3438,7 +3441,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6231881193380278751">Adicionar um parâmetro de consulta no URL para atualizar automaticamente a página: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Bateria</translation>
 <translation id="6232116551750539448">A conexão com <ph name="NAME" /> foi perdida</translation>
-<translation id="6235700927623181151">Esta guia está compartilhando o conteúdo da sua área de trabalho</translation>
 <translation id="6237816943013845465">Permite ajustar a resolução da tela</translation>
 <translation id="6238923052227198598">Manter a anotação mais recente na tela de bloqueio</translation>
 <translation id="6239558157302047471">Atualizar &amp;frame</translation>
@@ -4535,6 +4537,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7908378463497120834">Ao menos uma partição no seu dispositivo de armazenamento externo não pôde ser montada.</translation>
 <translation id="7909969815743704077">Download feito no modo anônimo</translation>
 <translation id="7910768399700579500">&amp;Nova pasta</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Sua senha foi alterada no servidor. Saia e faça login novamente.</translation>
 <translation id="7915471803647590281">Conte-nos o que está acontecendo antes de enviar comentários.</translation>
 <translation id="7916556741383518510">Ao Clicar</translation>
@@ -4820,7 +4823,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8366396658833131068">Sua conectividade de rede foi restaurada. Selecione outra rede ou pressione o botão "Continuar" abaixo para iniciar seu aplicativo de quiosque.</translation>
 <translation id="8366947248864804596">Quando o smartphone está desbloqueado e nas proximidades, basta selecionar para desbloquear. Caso contrário, digite sua senha ou PIN.</translation>
 <translation id="8368859634510605990">&amp;Abrir todos os favoritos</translation>
-<translation id="8369547389711988632">Carregamento interrompido</translation>
 <translation id="8371695176452482769">Fale agora</translation>
 <translation id="8372369524088641025">Chave WEP incorreta</translation>
 <translation id="8373553483208508744">Desativar som das guias</translation>
@@ -5026,7 +5028,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8677212948402625567">Recolher tudo...</translation>
 <translation id="8678648549315280022">Gerenciar configurações de download...</translation>
 <translation id="8678933587484842200">Como você gostaria que este app fosse iniciado?</translation>
-<translation id="8679788109894721265">Esta página usa mais de <ph name="MEGABYTES" /> MB</translation>
 <translation id="8680251145628383637">Faça login para ter acesso aos seus favoritos, histórico, senhas e outras configurações em todos os seus dispositivos. Você será conectado automaticamente aos seus serviços do Google.</translation>
 <translation id="8686213429977032554">Este arquivo do Google Drive ainda não foi compartilhado.</translation>
 <translation id="8687485617085920635">Próxima janela</translation>

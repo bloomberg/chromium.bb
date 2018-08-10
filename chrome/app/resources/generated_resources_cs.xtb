@@ -271,6 +271,7 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1397854323885047133">Synchronizace a personalizace</translation>
 <translation id="1398853756734560583">Maximalizovat</translation>
 <translation id="1399511500114202393">Žádný certifikát uživatele</translation>
+<translation id="1401165786814632797">Když je zařízení aktivní a odemknuté, můžete Asistenta kdykoliv aktivovat vyslovením fráze „Ok Google“.</translation>
 <translation id="140250605646987970">Váš telefon byl nalezen. Smart Lock však funguje pouze na zařízeních se systémem Android 5.0 nebo novějším. &lt;a&gt;Další informace&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (dozorovaný)</translation>
 <translation id="1405476660552109915">Chcete, aby aplikace <ph name="PASSWORD_MANAGER_BRAND" /> uložila váš účet pro tyto stránky?</translation>
@@ -1370,6 +1371,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3031557471081358569">Vyberte položky k importu:</translation>
 <translation id="3031601332414921114">Obnovit tisk</translation>
 <translation id="303198083543495566">Geografická poloha</translation>
+<translation id="3033999583152214331">Spouštějte v Chromebooku nástroje, editory a prostředí IDE pro Linux. &lt;a target="_blank" href="<ph name="URL" />"&gt;Další informace&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Povolit Flash</translation>
 <translation id="3037754279345160234">Konfiguraci přidání do domény nelze analyzovat. Obraťte se na svého administrátora.</translation>
 <translation id="3038612606416062604">Přidat tiskárnu ručně</translation>
@@ -1510,6 +1512,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3271648667212143903">Web <ph name="ORIGIN" /> žádá o připojení</translation>
 <translation id="3274763671541996799">Přepnuli jste do režimu celé obrazovky.</translation>
 <translation id="3275778913554317645">Otevřít jako okno</translation>
+<translation id="3278877214895457897">Po nastavení Chromebooku získáte pomoc od Asistenta kdykoliv tak, že stisknete tlačítko Asistent nebo řeknete „OK Google“.</translation>
 <translation id="3279230909244266691">Tento proces může trvat několik minut. Probíhá spouštění virtuálního počítače.</translation>
 <translation id="3279741024917655738">Videa na celou stránku zobrazovat na</translation>
 <translation id="3280237271814976245">Uložit &amp;jako...</translation>
@@ -2163,7 +2166,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4275830172053184480">Restartovat zařízení</translation>
 <translation id="4278101229438943600">Asistent je připraven</translation>
 <translation id="4278390842282768270">Povoleno</translation>
-<translation id="4280864916190672950">Zastavit načítání</translation>
 <translation id="4281844954008187215">Smluvní podmínky</translation>
 <translation id="4282196459431406533">Funkce Smart Lock je zapnutá</translation>
 <translation id="4284105660453474798">Opravdu chcete odstranit soubor $1?</translation>
@@ -2601,6 +2603,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4992066212339426712">Zapnout zvuk</translation>
 <translation id="4992458225095111526">Potvrdit obnovení pomocí funkce Powerwash</translation>
 <translation id="4992473555164495036">Administrátor omezil dostupné metody zadávání.</translation>
+<translation id="4992926179187649719">Zapnout příkaz „Ok Google“</translation>
 <translation id="4994474651455208930">Povolit dotazy stránek, zda je chcete použít jako výchozí obslužný nástroj protokolů</translation>
 <translation id="4994754230098574403">Nastavování</translation>
 <translation id="4996978546172906250">Sdílet prostřednictvím</translation>
@@ -3432,7 +3435,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6231881193380278751">Přidejte do adresy URL parametr dotazu pro automatickou aktualizaci stránky: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Baterie</translation>
 <translation id="6232116551750539448">Připojení k síti <ph name="NAME" /> bylo ztraceno</translation>
-<translation id="6235700927623181151">Tato karta sdílí obsah vaší plochy.</translation>
 <translation id="6237816943013845465">Umožňuje upravit rozlišení obrazovky</translation>
 <translation id="6238923052227198598">Zobrazovat poslední poznámku na obrazovce uzamčení</translation>
 <translation id="6239558157302047471">Znovu načíst &amp;rámec</translation>
@@ -4527,6 +4529,7 @@ V zařízení se systémem Chrome OS můžete aktivovat funkce ladění, abyste
 <translation id="7908378463497120834">Je nám líto, minimálně jeden oddíl externího paměťového zařízení nelze připojit.</translation>
 <translation id="7909969815743704077">Staženo v anonymním režimu</translation>
 <translation id="7910768399700579500">Nová složka</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Vaše heslo bylo na serveru změněno. Odhlaste se a poté se znovu přihlaste.</translation>
 <translation id="7915471803647590281">Než nám odešlete zpětnou vazbu, sdělte nám prosím, co se děje.</translation>
 <translation id="7916556741383518510">Při kliknutí</translation>
@@ -4811,7 +4814,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8366396658833131068">Připojení k síti je obnoveno. Vyberte jinou síť nebo stisknutím tlačítka Pokračovat níže spusťte aplikaci kiosku.</translation>
 <translation id="8366947248864804596">Když je telefon odemknut a je poblíž, stačí vybrat možnost odemknutí. Jinak je třeba zadat heslo nebo PIN.</translation>
 <translation id="8368859634510605990">&amp;Otevřít všechny záložky</translation>
-<translation id="8369547389711988632">Načítání bylo zastaveno</translation>
 <translation id="8371695176452482769">Mluvte</translation>
 <translation id="8372369524088641025">Chybný klíč WEP</translation>
 <translation id="8373553483208508744">Vypnout zvuk karet</translation>
@@ -5017,7 +5019,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8677212948402625567">Sbalit vše...</translation>
 <translation id="8678648549315280022">Spravovat nastavení stahování...</translation>
 <translation id="8678933587484842200">Jak tuto aplikaci chcete spouštět?</translation>
-<translation id="8679788109894721265">Tato stránka používá více než <ph name="MEGABYTES" /> MB</translation>
 <translation id="8680251145628383637">Přihlaste se a synchronizujte záložky, historii, hesla a další nastavení do všech svých zařízení. Budete také automaticky přihlášeni do svých služeb Google.</translation>
 <translation id="8686213429977032554">Tento soubor na Disku dosud není sdílen</translation>
 <translation id="8687485617085920635">Další okno</translation>

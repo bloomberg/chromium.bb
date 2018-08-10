@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">W prawo</translation>
 <translation id="1351937230027495976">Zwiń menu</translation>
 <translation id="1383876407941801731">Szukaj</translation>
+<translation id="1419738280318246476">Odblokuj urządzenie, by zareagować na powiadomienie</translation>
 <translation id="1467432559032391204">W lewo</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Program uruchamiający</translation>
@@ -68,7 +69,6 @@
 <translation id="2049639323467105390">To urządzenie jest zarządzane przez: <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Pionowo</translation>
 <translation id="2067602449040652523">Jasność klawiatury</translation>
-<translation id="2075212959500165896">Zbyt wiele prób. Spróbuj ponownie później.</translation>
 <translation id="2081529251031312395">$1 może się wciąż zalogować później.</translation>
 <translation id="2127372758936585790">Ładowarka o małej mocy</translation>
 <translation id="2135456203358955318">Lupa zadokowana</translation>
@@ -140,7 +140,6 @@
 <translation id="3153444934357957346">W wielokrotnym logowaniu nie możesz mieć więcej kont niż <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Połączono z urządzeniem}few{Połączono z # urządzeniami}many{Połączono z # urządzeniami}other{Połączono z # urządzenia}}</translation>
 <translation id="3236488194889173876">Brak dostępnych sieci komórkowych</translation>
-<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Gość</translation>
 <translation id="332587331255250389">Wymień baterię</translation>
 <translation id="3351879221545518001">Obecnie przesyłasz ekran.</translation>
@@ -227,6 +226,7 @@
 <translation id="4924411785043111640">Uruchom ponownie i zresetuj</translation>
 <translation id="4961318399572185831">Przesyłanie ekranu</translation>
 <translation id="5069971504769299223">Zarządzający urządzeniem może monitorować Twoją aktywność.</translation>
+<translation id="5083553833479578423">Odblokuj więcej funkcji Asystenta.</translation>
 <translation id="5136175204352732067">Podłączono inną klawiaturę</translation>
 <translation id="5168181903108465623">Dostępne są urządzenia przesyłające</translation>
 <translation id="5207949376430453814">Podświetlaj kursor tekstu</translation>
@@ -298,6 +298,7 @@
 <translation id="6376931439017688372">Bluetooth jest włączony</translation>
 <translation id="639644700271529076">CAPS LOCK jest wyłączony</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">Wyczyść wszystkie powiadomienia</translation>
 <translation id="643147933154517414">Wszystko gotowe</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> na urządzeniu <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Odrzuć</translation>
@@ -399,9 +400,11 @@
 <translation id="8152119955266188852">Naciśnięto skrót lupy pełnoekranowej. Czy chcesz ją włączyć?</translation>
 <translation id="8190698733819146287">Dostosuj języki i metody wprowadzania...</translation>
 <translation id="8191230140820435481">Zarządzanie Twoimi aplikacjami, rozszerzeniami i motywami</translation>
+<translation id="8192202700944119416">Powiadomienia są ukryte.</translation>
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="8297006494302853456">Słaby</translation>
 <translation id="8308637677604853869">Poprzednie menu</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Utwórz notatkę</translation>
 <translation id="8392451568018454956">Menu opcji dla <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Lupa pełnego ekranu</translation>
@@ -443,6 +446,7 @@
 <translation id="8938800817013097409">Urządzenie USB-C (prawy port z tyłu)</translation>
 <translation id="8940956008527784070">Niski stan baterii (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">Szybkie uruchamianie</translation>
+<translation id="899350903320462459">Odblokuj urządzenie jako <ph name="LOGIN_ID" />, by zareagować na powiadomienie</translation>
 <translation id="8995603266996330174">Zarządzane przez <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Dostępna jest aktualizacja Adobe Flash Playera</translation>
 <translation id="9056839673611986238">Na urządzeniu zostanie przywrócona wcześniejsza wersja oprogramowania</translation>

@@ -267,6 +267,7 @@
       Jika disetel ke false, pelaporan metrik dan data diagnostik akan dinonaktifkan.
 
       Jika tidak dikonfigurasi, pelaporan metrik dan data diagnostik akan dinonaktifkan di perangkat yang tidak dikelola dan diaktifkan di perangkat yang dikelola.</translation>
+<translation id="1920046221095339924">Mengizinkan sesi yang dikelola di perangkat</translation>
 <translation id="1929709556673267855">Memberikan konfigurasi untuk printer perusahaan yang terkait dengan perangkat.
 
       Kebijakan ini memungkinkan Anda memberikan konfigurasi printer untuk perangkat <ph name="PRODUCT_OS_NAME" />. Formatnya sama dengan kamus NativePrinters, dengan kolom "id" atau "guid" tambahan yang dibutuhkan per printer untuk pemberian izin atau pemblokiran izin.
@@ -300,6 +301,7 @@
 
       Jika setelan ini diaktifkan atau tidak memiliki nilai, pengguna dapat mengontrol fitur IsiOtomatis untuk alamat di UI.</translation>
 <translation id="1960840544413786116">Apakah sertifikat yang dikeluarkan oleh sumber tepercaya setempat yang tidak menyertakan ekstensi subjectAlternativeName diizinkan atau tidak</translation>
+<translation id="1962273523772270623">Mengizinkan pengumpulan log peristiwa WebRTC dari layanan Google</translation>
 <translation id="1964634611280150550">Mode penyamaran dinonaktifkan</translation>
 <translation id="1964802606569741174">Kebijakan ini tidak memengaruhi aplikasi YouTube Android. Jika Mode Perlindungan di YouTube harus diterapkan, pemasangan aplikasi YouTube Android harus dilarang.</translation>
 <translation id="1969212217917526199">Menggantikan kebijakan pada versi Debug untuk host akses jarak jauh.
@@ -1552,7 +1554,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Nilai kebijakan sebaiknya ditentukan dalam milidetik.</translation>
 <translation id="5511702823008968136">Aktifkan Bilah Bookmark</translation>
 <translation id="5512418063782665071">URL beranda</translation>
-<translation id="551639594034811656">Kebijakan ini menentukan daftar persentase yang akan menentukan jumlah perangkat <ph name="PRODUCT_OS_NAME" /> di OU untuk diupdate per hari sejak hari pertama update ditemukan. Waktu penemuan lebih lama daripada waktu publikasi update, karena publikasi update mungkin agak lama hingga perangkat memeriksa apakah ada update.
+<translation id="551639594034811656">Kebijakan ini menentukan daftar persentase yang akan menentukan jumlah perangkat <ph name="PRODUCT_OS_NAME" /> di OU untuk diupdate per hari sejak hari pertama update ditemukan. Waktu penemuan lebih lama daripada waktu publikasi update, karena mungkin perlu waktu agak lama hingga perangkat memeriksa apakah ada update.
 
       Tiap pasangan (hari, persentase) berisi persentase fleet mana yang harus diupdate menurut jumlah hari tertentu sejak update ditemukan. Misalnya, jika ada pasangan [(4, 40), (10, 70), (15, 100)], maka 40% fleet harus diupdate 4 hari setelah update ditemukan. 70% harus diupdate setelah 10 hari, dan seterusnya.
 
@@ -1915,6 +1917,11 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika kebijakan ini tidak disetel atau daftar kosong, semua skema akan dapat diakses di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Setelan pengguna yang dikelola secara lokal</translation>
 <translation id="6658245400435704251">Menentukan jumlah waktu (dalam detik) sebuah perangkat dapat menunda download pembaruannya secara acak dari saat pembaruan tersebut pertama kali didorong ke server. Perangkat dapat menunggu dengan sebagian dari waktu ini dari segi prediksi waktu penyelesaian tugas dan sisa waktunya dari segi jumlah pemeriksaan pembaruan. Dalam keadaan apa pun, penyebaran dibatasi dengan jumlah waktu yang konstan sehingga perangkat tidak akan terus menunggu download pembaruan selamanya.</translation>
+<translation id="6665599130599311250">Jika kebijakan ini disetel ke false atau tidak disetel, sesi tamu yang dikelola akan berperilaku seperti didokumentasikan di https://support.google.com/chrome/a/answer/3017014 - "Sesi Publik" standar.
+
+      Jika kebijakan ini disetel ke true, sesi tamu yang dikelola akan melakukan perilaku "Sesi Terkelola" yang menghapus banyak batasan yang berlaku untuk "Sesi Publik" reguler.
+
+      Jika kebijakan ini disetel, pengguna tidak dapat mengubah atau menggantinya.</translation>
 <translation id="6665670272107384733">Setel seberapa sering pengguna harus memasukkan sandi untuk menggunakan buka kunci cepat.</translation>
 <translation id="6681229465468164801">Memungkinkan Anda menyetel daftar pola URL yang menentukan situs mana yang dicegah agar tidak meminta pengguna memberikan akses ke perangkat USB.
 
@@ -2079,6 +2086,17 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
 <translation id="6943577887654905793">Nama preferensi Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter menyediakan fitur telusuri pakai gambar untuk penyedia penelusuran default</translation>
 <translation id="6956272732789158625">Jangan izinkan situs apa pun menggunakan pembuatan kunci</translation>
+<translation id="6982028490425791294">
+      Jika kebijakan disetel ke true, <ph name="PRODUCT_NAME" /> diizinkan untuk mengumpulkan log peristiwa WebRTCdari layanan Google (mis., Google Meet), dan mengupload log tersebut ke Google.
+
+      Jika kebijakan disetel ke false, atau tidak disetel, <ph name="PRODUCT_NAME" /> tidak boleh mengumpulkan atau mengupload log tersebut.
+
+      Log ini berisi informasi seperti waktu dan ukuran paket RTP yang dikirim dan diterima, masukan tentang kemacetan di jaringan, dan metadata tentang waktu dan kualitas frame audio dan video. Informasi ini bermanfaat saat melakukan debug masalah pada panggilan audio atau video di Chrome, misalnya masalah perkiraan bandwidth, dll. Log tidak berisi konten audio atau video dari panggilan.
+
+      Pengumpulan data ini hanya dapat dipicu oleh layanan web Google, seperti Google Hangouts atau Google Meet.
+
+      Log ini dapat dikaitkan, melalui ID sesi, dengan log lain yang dikumpulkan oleh layanan Google itu sendiri. Ini dimaksudkan agar debug lebih mudah.
+      </translation>
 <translation id="6994082778848658360">Menentukan bagaimana hardware elemen pengaman on-board digunakan untuk memberikan autentikasi faktor kedua jika kompatibel dengan fitur ini. Tombol power mesin digunakan untuk mendeteksi keberadaan pengguna.
 
       Jika 'Dinonaktifkan' dipilih, tidak ada faktor kedua yang diberikan.
@@ -2455,7 +2473,7 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
       Jika kebijakan dinonaktifkan, Isolasi Situs eksplisit tidak akan terjadi dan uji coba kolom IsolateOrigins dan SitePerProcess akan dinonaktifkan. Pengguna tetap dapat mengaktifkan SitePerProcess secara manual.
       Jika kebijakan tidak dikonfigurasi, pengguna dapat mengubah setelan ini.
       </translation>
-<translation id="7902255855035461275">Pola dalam daftar ini akan dicocokan dengan asal
+<translation id="7902255855035461275">Pola dalam daftar ini akan dicocokkan dengan asal
       keamanan URL yang meminta.  Jika ditemukan kecocokan, akses ke perangkat
       yang merekam audio akan diberikan tanpa permintaan.
 

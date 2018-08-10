@@ -38,7 +38,7 @@
 <translation id="1258753120186372309">‏رسم الشعار المبتكر من Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1259100630977430756">لن تظهر الصفحات التي تشاهدها في علامات التبويب الخاصة في سِجل متصفّحك أو في وحدة تخزين ملفات تعريف الارتباط أو في سِجل البحث بعد إغلاق جميع علامات التبويب الخاصة. وسيتم حفظ أي ملفات تنزّلها أو إشارات مرجعية تنشئها.
 
-لكنك لن تكون غير مرئي. فاستخدام الوضع الخاص لا يخفي تصفُّحك عن صاحب العمل أو مزود خدمة الإنترنت أو مواقع الويب التي تزورها.</translation>
+لكنك ستبقى مرئيًا، فاستخدام الوضع الخاص لا يخفي تصفُّحك عن صاحب العمل أو مزود خدمة الإنترنت أو مواقع الويب التي تزورها.</translation>
 <translation id="127138278192656016">استخدام المزامنة وجميع الخدمات</translation>
 <translation id="1272079795634619415">إيقاف</translation>
 <translation id="1283039547216852943">النقر للتوسيع</translation>
@@ -61,6 +61,7 @@
 <translation id="1404122904123200417">تم التضمين في <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"عدم التعقب"</translation>
 <translation id="1407135791313364759">فتح الكل</translation>
+<translation id="1409426117486808224">عرض مبسَّط لعلامات التبويب المفتوحة</translation>
 <translation id="1409879593029778104">مُنع تنزيل الملف <ph name="FILE_NAME" /> لأنه موجود بالفعل.</translation>
 <translation id="1414981605391750300">‏جارٍ الاتصال بـ Google. قد يستغرق ذلك دقيقة واحدة...</translation>
 <translation id="1416550906796893042">إصدار التطبيق</translation>
@@ -80,6 +81,7 @@
 <translation id="1566400915470565838">لاستخدام <ph name="APP_NAME" />، يُرجى الاتصال بالإنترنت.</translation>
 <translation id="1569387923882100876">جهاز متصل</translation>
 <translation id="1571304935088121812">نسخ اسم المستخدم</translation>
+<translation id="1576370611341449972">‏لا يتم التنزيل إلا عند الاتصال بشبكة Wi-Fi</translation>
 <translation id="1612196535745283361">‏يحتاج Chrome للوصول إلى الموقع للبحث عن الأجهزة. الوصول إلى الموقع <ph name="BEGIN_LINK" />غير مفعّل لهذا الجهاز<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">‏تفعيل المزامنة والتخصيص وخدمات Google الأخرى</translation>
 <translation id="1620510694547887537">الكاميرا</translation>
@@ -344,6 +346,7 @@
 <translation id="3810838688059735925">فيديو</translation>
 <translation id="3810973564298564668">إدارة محرّكات البحث</translation>
 <translation id="3819178904835489326">تم إلغاء <ph name="NUMBER_OF_DOWNLOADS" /> من التنزيلات</translation>
+<translation id="3819562311292413223">تنزيل مقالات تهمّك</translation>
 <translation id="3822502789641063741">أتمحو سعة تخزين الموقع؟</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
 <translation id="3859306556332390985">الانتقال للأمام</translation>
@@ -383,6 +386,7 @@
 <translation id="4113030288477039509">يديره المسؤول</translation>
 <translation id="4116038641877404294">تنزيل الصفحات لاستخدامها بلا اتصال بالإنترنت</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{‏إشارة مرجعية (%1$d)}zero{‏%1$d إشارة مرجعية}two{‏إشارتان مرجعيتان (%1$d)}few{‏%1$d إشارات مرجعية}many{‏%1$d إشارةً مرجعيةً}other{‏%1$d إشارة مرجعية}}</translation>
+<translation id="4149994727733219643">عرض مبسَّط لصفحات الويب</translation>
 <translation id="4159800535322890630">حظر المواقع من الوصول إلى أجهزة الاستشعار</translation>
 <translation id="4165986682804962316">إعدادات الموقع</translation>
 <translation id="4170011742729630528">الخدمة غير متاحة، أعد المحاولة لاحقًا.</translation>
@@ -554,6 +558,7 @@
 <translation id="5512137114520586844">تتم إدارة هذا الحساب بواسطة <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">تم الإيقاف من قبل مشرف هذا الجهاز</translation>
 <translation id="5515439363601853141">إلغاء القفل لعرض كلمة المرور</translation>
+<translation id="5515716148775388141">انتقلت الرموز إلى أسفل الشاشة.</translation>
 <translation id="5517095782334947753">تتوفر لديك الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى من <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">تم حظر إعادة التوجيه.</translation>
 <translation id="5527082711130173040">‏يحتاج Chrome للوصول إلى الموقع للبحث عن الأجهزة. <ph name="BEGIN_LINK1" />تحديث الأذونات<ph name="END_LINK1" />. الوصول إلى الموقع <ph name="BEGIN_LINK2" />غير مفعّل لهذا الجهاز<ph name="END_LINK2" /> أيضًا.</translation>
@@ -757,6 +762,7 @@
 <translation id="7016516562562142042">تم السماح به لمحرك البحث الحالي</translation>
 <translation id="7021515813996758557">تم تنزيل <ph name="FILE_NAME" /></translation>
 <translation id="7022756207310403729">فتح في المتصفح</translation>
+<translation id="702463548815491781">‏تمت التوصية به عند تفعيل TalkBack أو الوصول عبر مفتاح التحويل</translation>
 <translation id="7029809446516969842">كلمات المرور</translation>
 <translation id="7031882061095297553">مزامنة لـ</translation>
 <translation id="7032663816368481562">‏عند النقر على "المزيد من النتائج المشابهة" <ph name="ICON" /> في شريط العناوين، تظهر روابط سريعة للصفحات ذات الصلة. ويُرسِل المتصفّح عناوين URL للصفحات التي تزورها إلى Google.</translation>
@@ -785,6 +791,7 @@
 <translation id="7251326866581677552">تم الحظر من بعض المواقع</translation>
 <translation id="7253272406652746122">‏أضف حساب Google من صفحة "الحسابات" في تطبيق إعدادات جهازك.</translation>
 <translation id="7274013316676448362">الموقع المحظور</translation>
+<translation id="72867290065237936">انقر للتبديل بين اقتراحات كلمة المرور ولوحة المفاتيح</translation>
 <translation id="729975465115245577">لا يتضمن جهازك تطبيقًا لتخزين ملف كلمات المرور.</translation>
 <translation id="7302081693174882195">التفاصيل: تم الترتيب بحسب مقدار البيانات المحفوظة</translation>
 <translation id="7333031090786104871">لا تزال عملية إضافة موقع الويب السابق جارية</translation>

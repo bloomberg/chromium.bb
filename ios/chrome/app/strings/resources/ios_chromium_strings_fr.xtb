@@ -17,6 +17,7 @@
 <translation id="2647554856022461007">Chromium peut utiliser des services Web pour améliorer votre confort de navigation. Vous pouvez choisir de désactiver ces services. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">Bénéficiez des fonctionnalités intelligentes de Google dans Chromium</translation>
 <translation id="2730884209570016437">Chromium ne peut pas utiliser l'appareil photo, car celui-ci est utilisé par une autre application</translation>
+<translation id="2797210818057553964">Vous pouvez personnaliser cette option à tout moment dans les paramètres Chromium</translation>
 <translation id="3256316712990552818">Copié dans Chromium</translation>
 <translation id="3413120535237193088">Connectez-vous à Chromium pour synchroniser vos favoris sur tous vos appareils.</translation>
 <translation id="3473048256428424907">Activer le lecteur de code QR Chromium</translation>
@@ -45,6 +46,7 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Les données sélectionnées ont été supprimées de Chromium et des appareils synchronisés. Votre compte Google conserve peut-être d'autres formes d'historique de navigation sur la page history.google.com concernant, par exemple, vos recherches ou vos activités via d'autres services Google.</translation>
 <translation id="7400689562045506105">Utilisez Chromium où que vous soyez</translation>
+<translation id="7499048969477415415">Les paramètres relatifs à la synchronisation, à la personnalisation et à d'autres services Google dans Chromium ont été modifiés, ce qui peut avoir une incidence sur votre configuration actuelle.</translation>
 <translation id="7674213385180944843">Ouvrez Paramètres &gt; Confidentialité &gt; Appareil photo &gt; Chromium, puis activez l'appareil photo.</translation>
 <translation id="7746854981345936341">Astuce Chromium. Certains boutons sont désormais affichés au bas de l'écran tels que "Arrière", "Avant" et "Rechercher".</translation>
 <translation id="786327964234957808">Vous changez de compte synchronisé pour passer de <ph name="USER_EMAIL1" /> à <ph name="USER_EMAIL2" />. Vos données Chromium actuelles sont gérées par <ph name="DOMAIN" />. Cette opération entraînera la suppression de vos données de cet appareil, mais celles-ci seront conservées dans le compte <ph name="USER_EMAIL1" />.</translation>

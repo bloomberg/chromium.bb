@@ -207,6 +207,7 @@
 <translation id="2359808026110333948">Doorgaan</translation>
 <translation id="2365563543831475020">Het crashrapport dat is vastgelegd op <ph name="CRASH_TIME" />, is niet geüpload</translation>
 <translation id="2367567093518048410">Niveau</translation>
+<translation id="2378238891085281592">Je gebruikt de privémodus</translation>
 <translation id="2384307209577226199">Zakelijk standaard</translation>
 <translation id="2386255080630008482">Het servercertificaat is ingetrokken.</translation>
 <translation id="2392959068659972793">Beleid weergeven zonder waarde ingesteld</translation>
@@ -352,6 +353,7 @@
 <translation id="3391030046425686457">Afleveradres</translation>
 <translation id="3395827396354264108">Ophaalmethode</translation>
 <translation id="3399952811970034796">Bezorgadres</translation>
+<translation id="3409072600744224192">Als je je kaarten op alle apparaten wilt bekijken, moet je <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3422248202833853650">Probeer andere programma's af te sluiten om geheugen vrij te maken.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> is momenteel niet bereikbaar.</translation>
 <translation id="3427092606871434483">Toestaan (standaard)</translation>
@@ -510,6 +512,7 @@
 <translation id="450710068430902550">Delen met beheerder</translation>
 <translation id="4515275063822566619">Kaarten en adressen zijn afkomstig uit Chrome en je Google-account (<ph name="ACCOUNT_EMAIL" />). Je kunt ze beheren in <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" />.</translation>
 <translation id="4522570452068850558">Details</translation>
+<translation id="4524805452350978254">Kaarten beheren</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Probeer je extensies uit te schakelen.</translation>
 <translation id="457875822857220463">Bezorging</translation>
@@ -575,6 +578,7 @@
 <translation id="5045550434625856497">Onjuist wachtwoord</translation>
 <translation id="5056549851600133418">Artikelen voor jou</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Het proxy-adres controleren<ph name="END_LINK" /></translation>
+<translation id="5072538239104292703">Als je je kaarten op alle apparaten wilt bekijken, moet je inloggen en synchronisatie inschakelen.</translation>
 <translation id="5086888986931078152">Mogelijk heb je geen toegang meer tot beveiligde content van bepaalde sites.</translation>
 <translation id="5087286274860437796">Het servercertificaat is momenteel niet geldig.</translation>
 <translation id="5087580092889165836">Kaart toevoegen</translation>
@@ -620,6 +624,7 @@
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> van <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Contactgegevens kiezen</translation>
 <translation id="5327248766486351172">Naam</translation>
+<translation id="5327567770033251652">synchronisatie inschakelen</translation>
 <translation id="5332219387342487447">Verzendmethode</translation>
 <translation id="5355557959165512791">Je kunt <ph name="SITE" /> momenteel niet bezoeken, omdat het bijbehorende certificaat is ingetrokken. Netwerkfouten en aanvallen zijn doorgaans tijdelijk, dus deze pagina werkt later waarschijnlijk correct.</translation>
 <translation id="536296301121032821">Opslaan van beleidsinstellingen is mislukt</translation>
@@ -684,6 +689,7 @@
 <translation id="5765072501007116331">Selecteer een adres om bezorgingsmethoden en vereisten te bekijken</translation>
 <translation id="5770114862687765385">Het bestand lijkt beschadigd. Klik op de knop Resetten om de sessie te resetten.</translation>
 <translation id="5778550464785688721">Volledige controle voor MIDI-apparaten</translation>
+<translation id="57838592816432529">Dempen</translation>
 <translation id="5784606427469807560">Er is een probleem opgetreden bij het bevestigen van je creditcard. Controleer je internetverbinding en probeer het opnieuw.</translation>
 <translation id="5785756445106461925">Bovendien bevat deze pagina bronnen die niet beveiligd zijn. Deze bronnen kunnen tijdens verzending door anderen worden bekeken en kunnen door een aanvaller worden gewijzigd om het uiterlijk van de pagina aan te passen.</translation>
 <translation id="5786044859038896871">Wil je de gegevens van je creditcard laten invullen?</translation>
@@ -695,6 +701,7 @@
 <translation id="5866257070973731571">Telefoonnummer toevoegen</translation>
 <translation id="5869405914158311789">Deze site is niet bereikbaar</translation>
 <translation id="5869522115854928033">Opgeslagen wachtwoorden</translation>
+<translation id="5887400589839399685">Kaart opgeslagen</translation>
 <translation id="5893752035575986141">Creditcards worden geaccepteerd.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (gesynchroniseerd)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 in gebruik}other{# in gebruik}}</translation>
@@ -811,18 +818,22 @@
 <translation id="6915804003454593391">Gebruiker:</translation>
 <translation id="6944692733090228304">Je hebt je wachtwoord ingevoerd op een site die niet door <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> wordt beheerd. Ter bescherming van je account kun je je wachtwoord beter niet hergebruiken voor andere apps en sites.</translation>
 <translation id="6945221475159498467">Selecteren</translation>
+<translation id="6948540501704460596">Als je je kaarten op alle apparaten wilt bekijken, moet je <ph name="SYNC_LINK" />.</translation>
 <translation id="6948701128805548767">Selecteer een adres om ophaalmethoden en vereisten te bekijken</translation>
 <translation id="6949872517221025916">Wachtwoord opnieuw instellen</translation>
 <translation id="6950684638814147129">Fout bij het parseren van de JSON-waarde: <ph name="ERROR" /></translation>
+<translation id="6957624206566198865">Pagina openen op een nieuw privétabblad</translation>
 <translation id="6957887021205513506">Het certificaat van de server lijkt vals te zijn.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Apparaat</translation>
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">Zowel vaste proxyservers als een pac-script-URL worden gespecificeerd.</translation>
+<translation id="6984479912851154518">Je verlaat de privémodus om te betalen via een externe app. Doorgaan?</translation>
 <translation id="6989763994942163495">Geavanceerde instellingen weergeven...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Deze kosten kunnen eenmalig of terugkerend zijn en zijn mogelijk niet duidelijk.</translation>
 <translation id="7029809446516969842">Wachtwoorden</translation>
+<translation id="7042837854211185817">Als je je kaarten op alle apparaten wilt bekijken, moet je synchronisatie inschakelen.</translation>
 <translation id="7050187094878475250">Je hebt geprobeerd <ph name="DOMAIN" /> te bereiken, maar de server heeft een certificaat gepresenteerd waarvan de geldigheidsperiode te lang is om betrouwbaar te zijn.</translation>
 <translation id="7053983685419859001">Blokkeren</translation>
 <translation id="7064851114919012435">Contactgegevens</translation>
@@ -1069,6 +1080,7 @@
 <translation id="8820817407110198400">Bladwijzers</translation>
 <translation id="883848425547221593">Andere bladwijzers</translation>
 <translation id="884264119367021077">Verzendadres</translation>
+<translation id="8846319957959474018">Apps gemakkelijk openen met bladwijzers</translation>
 <translation id="884923133447025588">Geen intrekkingsmechanisme gevonden.</translation>
 <translation id="885730110891505394">Delen met Google</translation>
 <translation id="8858065207712248076">Chrome raadt je aan het wachtwoord voor <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> opnieuw in te stellen als je het voor andere sites hebt hergebruikt.</translation>

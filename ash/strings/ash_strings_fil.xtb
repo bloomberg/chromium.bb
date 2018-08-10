@@ -68,7 +68,6 @@
 <translation id="2049639323467105390">Pinamamahalaan ng <ph name="DOMAIN" /> ang device na ito.</translation>
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="2067602449040652523">Liwanag ng keyboard</translation>
-<translation id="2075212959500165896">Masyadong maraming beses sumubok. Subukang muli sa ibang pagkakataon.</translation>
 <translation id="2081529251031312395">Maaari pa ring mag-sign in si $1 sa ibang pagkakataon.</translation>
 <translation id="2127372758936585790">Low-power charger</translation>
 <translation id="2135456203358955318">Naka-dock na magnifier</translation>
@@ -140,7 +139,6 @@
 <translation id="3153444934357957346">Maaari ka lang magkaroon ng hanggang <ph name="MULTI_PROFILE_USER_LIMIT" /> (na) account sa maraming pag-sign in.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Nakakonekta sa isang device}one{Nakakonekta sa # device}other{Nakakonekta sa # na device}}</translation>
 <translation id="3236488194889173876">Walang available na mobile network</translation>
-<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Bisita</translation>
 <translation id="332587331255250389">Pakipalitan ang baterya</translation>
 <translation id="3351879221545518001">Kasalukuyan kang nagka-cast ng screen.</translation>

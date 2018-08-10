@@ -268,6 +268,7 @@
       Se a política estiver definida como falsa, o relatório de métricas e de dados de diagnóstico é desativado.
 
       Se a política não estiver configurada, o relatório de métricas e de dados de diagnóstico é desativado em dispositivos não geridos e é ativado em dispositivos geridos.</translation>
+<translation id="1920046221095339924">Permitir sessões geridas no dispositivo</translation>
 <translation id="1929709556673267855">Fornece configurações para impressoras empresariais associadas a dispositivos.
 
       Esta política permite-lhe fornecer configurações de impressora para dispositivos <ph name="PRODUCT_OS_NAME" />. O formato é igual ao formato do dicionário NativePrinters, com um campo "id" ou "guid" obrigatório adicional por impressora para adição à lista de autorizações ou à lista negra.
@@ -301,6 +302,7 @@
 
       Se esta definição estiver ativada ou não tiver qualquer valor, o utilizador pode controlar o Preenchimento automático para os endereços na IU.</translation>
 <translation id="1960840544413786116">Se deve ou não autorizar os certificados emitidos por âncoras fidedignas locais que têm a extensão subjectAlternativeName em falta</translation>
+<translation id="1962273523772270623">Permitir a recolha de registos de eventos WebRTC dos serviços Google</translation>
 <translation id="1964634611280150550">Modo de navegação anónima desativado</translation>
 <translation id="1964802606569741174">Esta política não tem qualquer efeito na aplicação YouTube para Android. Se for necessário aplicar o modo de segurança no YouTube, a autorização para instalar a aplicação YouTube para Android deve ser removida.</translation>
 <translation id="1969212217917526199">Substitui políticas em compilações de Depuração do anfitrião de acesso remoto.
@@ -519,7 +521,7 @@
       Se esta definição não for definida, o utilizador poderá decidir utilizar esta função ou não.
 
       Esta definição foi removida do <ph name="PRODUCT_NAME" /> 29 e versões superiores.</translation>
-<translation id="2433412232489478893">Esta política controla se a funcionalidade Partilhas de ficheiros na rede para o <ph name="PRODUCT_NAME" /> é permitida para um utilizador.
+<translation id="2433412232489478893">Esta política controla se a funcionalidade Partilhas de ficheiros na rede do <ph name="PRODUCT_NAME" /> é permitida para um utilizador.
 
       Se esta política não estiver configurada ou estiver definida como verdadeira, os utilizadores podem utilizar as Partilhas de ficheiros na rede.
 
@@ -1566,7 +1568,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5512418063782665071">URL da página inicial</translation>
 <translation id="551639594034811656">Esta política define uma lista de percentagens que definem a fração de dispositivos <ph name="PRODUCT_OS_NAME" /> na UO a atualizar por dia, com início a partir do dia em que a atualização é detetada pela primeira vez. A hora da deteção é posterior à hora da publicação da atualização, uma vez que pode demorar algum tempo após a publicação da atualização até que o dispositivo verifique a existência de atualizações.
 
-      Cada par (dia, percentagem) contém a percentagem da frota que tem de ser atualizada até ao dia de números indicado após a deteção da atualização. Por exemplo, se tivermos os pares [(4, 40), (10, 70), (15, 100)], significa que 40% da frota deveria ter sido atualizada 4 dias após a deteção da atualização, 70% deveria ter sido atualizada 10 dias depois e assim sucessivamente.
+      Cada par (dia, percentagem) contém a percentagem da frota que tem de ser atualizada até ao número de dias indicado após a deteção da atualização. Por exemplo, se tivermos os pares [(4, 40), (10, 70), (15, 100)], significa que 40% da frota deveria ter sido atualizada 4 dias após a deteção da atualização, 70% deveria ter sido atualizada 10 dias depois e assim sucessivamente.
 
       Se existir algum valor definido para esta política, as atualizações ignoram a política <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> e seguem esta política.
 
@@ -1927,6 +1929,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política não for definida ou a lista estiver vazia, todos os esquemas estarão acessíveis em <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Definições de utilizadores geridos localmente</translation>
 <translation id="6658245400435704251">Especifica o número de segundos até que um dispositivo possa aleatoriamente atrasar a sua transferência de uma atualização a partir do momento em que a atualização foi retirada pela primeira vez do servidor. O dispositivo pode esperar uma parte deste tempo em termos de tempo total de processamento e a restante parte em termos do número de verificações de atualização. Em qualquer caso, a dispersão está associada de forma superior a uma quantidade constante de tempo para que um dispositivo nunca fique preso indefinidamente à espera de transferir uma atualização.</translation>
+<translation id="6665599130599311250">Se definir esta política como falsa, ou não a definir, a sessão de convidado gerida irá comportar-se conforme documentado em https://support.google.com/chrome/a/answer/3017014 – a "Sessão pública" padrão.
+
+      Se definir esta política como verdadeira, a sessão de convidado gerida assume o comportamento "Sessão gerida" que levanta muitas das restrições em vigor aplicadas às "Sessões públicas" padrão.
+
+      Se esta política estiver definida, o utilizador não a pode alterar nem substituir.</translation>
 <translation id="6665670272107384733">Definir com que frequência o utilizador tem de introduzir a palavra-passe para utilizar o desbloqueio rápido</translation>
 <translation id="6681229465468164801">Permite definir uma lista de padrões de URL que especificam sites impedidos de pedir ao utilizador que lhes conceda acesso a um dispositivo USB.
 
@@ -2091,6 +2098,17 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6943577887654905793">Nome de preferência do Mac/Linux</translation>
 <translation id="69525503251220566">Parâmetro que fornece a funcionalidade de pesquisa por imagem ao fornecedor de pesquisas predefinido</translation>
 <translation id="6956272732789158625">Não permitir que os sites utilizem a geração de chaves</translation>
+<translation id="6982028490425791294">
+      Se definir esta política como verdadeira, o <ph name="PRODUCT_NAME" /> obtém permissão para recolher registos de eventos WebRTC dos serviços Google (por exemplo, o Google Meet) e carregar os mesmos para a Google.
+
+       Se definir esta política como falsa, ou não a definir, o <ph name="PRODUCT_NAME" /> não pode recolher nem carregar os referidos registos.
+
+      Estes registos contêm informações, como o tempo e o tamanho dos pacotes RTP enviados e recebidos, comentários acerca do congestionamento na rede e metadados acerca do tempo e da qualidade dos frames de áudio e vídeo. Estas informações são úteis durante a depuração de problemas com chamadas de áudio ou de vídeo no Chrome, como problemas de estimativa da largura de banda, etc. Os registos não possuem quaisquer conteúdos de áudio ou de vídeo resultantes da chamada.
+
+      Esta recolha de dados só pode ser acionada pelos serviços Web da Google, como o Google Hangouts ou o Google Meet.
+
+      Estes registos podem ser associados, através de um ID de sessão, a outros registos recolhidos pelo próprio serviço Google. Este processo pretende tornar a depuração mais fácil.
+      </translation>
 <translation id="6994082778848658360">Especifica de que forma o hardware de elemento seguro integrado pode ser utilizado para fornecer uma autenticação de fator duplo, se for compatível com esta funcionalidade. O botão ligar/desligar do computador é utilizado para detetar a presença física do utilizador.
 
       Se estiver selecionado "Desativado", o fator duplo não é fornecido.

@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">Synchronisatie en personalisatie</translation>
 <translation id="1398853756734560583">Maximaliseren</translation>
 <translation id="1399511500114202393">Geen gebruikerscertificaat</translation>
+<translation id="1401165786814632797">Wanneer je apparaat is ingeschakeld en ontgrendeld, kun je de Assistent openen door 'Oké Google' te zeggen.</translation>
 <translation id="140250605646987970">Je telefoon is gevonden. Smart Lock werkt echter alleen op apparaten met Android 5.0 en hoger. &lt;a&gt;Meer informatie&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (met beperkte rechten)</translation>
 <translation id="1405476660552109915">Wil je dat <ph name="PASSWORD_MANAGER_BRAND" /> je account voor deze site opslaat?</translation>
@@ -1370,6 +1371,7 @@
 <translation id="3031557471081358569">Selecteer items die je wilt importeren:</translation>
 <translation id="3031601332414921114">Afdrukken hervatten</translation>
 <translation id="303198083543495566">Geografie</translation>
+<translation id="3033999583152214331">Gebruik Linux-tools, editors en IDE's op je Chromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;Meer informatie&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Flitser inschakelen</translation>
 <translation id="3037754279345160234">Kan de configuratie voor domeinkoppeling niet parseren. Neem contact op met je beheerder.</translation>
 <translation id="3038612606416062604">Handmatig een printer toevoegen</translation>
@@ -1510,6 +1512,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> wil verbinding maken</translation>
 <translation id="3274763671541996799">Je hebt de modus voor volledig scherm ingeschakeld.</translation>
 <translation id="3275778913554317645">Openen als venster</translation>
+<translation id="3278877214895457897">Wanneer je Chromebook is ingesteld, kun je op elk gewenst moment op de Assistent-knop drukken of 'Oké Google' zeggen om hulp van de Assistent te krijgen.</translation>
 <translation id="3279230909244266691">Dit proces kan enkele minuten duren. De virtuele machine wordt gestart.</translation>
 <translation id="3279741024917655738">Video's op volledig scherm weergeven op</translation>
 <translation id="3280237271814976245">Opslaan &amp;als...</translation>
@@ -2166,7 +2169,6 @@
 <translation id="4275830172053184480">Je apparaat opnieuw opstarten</translation>
 <translation id="4278101229438943600">De Assistent staat klaar</translation>
 <translation id="4278390842282768270">Toegestaan</translation>
-<translation id="4280864916190672950">Stoppen met laden</translation>
 <translation id="4281844954008187215">Servicevoorwaarden</translation>
 <translation id="4282196459431406533">Smart Lock is ingeschakeld</translation>
 <translation id="4284105660453474798">Weet je zeker dat je '$1' wilt verwijderen?</translation>
@@ -2604,6 +2606,7 @@
 <translation id="4992066212339426712">Dempen opheffen</translation>
 <translation id="4992458225095111526">Powerwash bevestigen</translation>
 <translation id="4992473555164495036">Je beheerder heeft de beschikbare invoermethoden beperkt.</translation>
+<translation id="4992926179187649719">'Oké Google' uitschakelen</translation>
 <translation id="4994474651455208930">Websites laten vragen of je ze als de standaardhandler voor protocollen wilt instellen.</translation>
 <translation id="4994754230098574403">Instellen</translation>
 <translation id="4996978546172906250">Delen via</translation>
@@ -3437,7 +3440,6 @@
 <translation id="6231881193380278751">Voeg een queryparameter aan de URL toe om de pagina automatisch te laten vernieuwen: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Batterij</translation>
 <translation id="6232116551750539448">Verbinding met <ph name="NAME" /> is verbroken</translation>
-<translation id="6235700927623181151">Dit tabblad deelt de content van je bureaublad.</translation>
 <translation id="6237816943013845465">Hiermee kun je de schermresolutie aanpassen</translation>
 <translation id="6238923052227198598">Laatste notitie op vergrendelingsscherm laten staan</translation>
 <translation id="6239558157302047471">&amp;Frame opnieuw laden</translation>
@@ -4533,6 +4535,7 @@
 <translation id="7908378463497120834">Ten minste één partitie op je externe opslagapparaat kan niet worden gekoppeld.</translation>
 <translation id="7909969815743704077">Gedownload in incognitomodus</translation>
 <translation id="7910768399700579500">&amp;Nieuwe map</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Je wachtwoord is gewijzigd op de server. Log uit en weer in.</translation>
 <translation id="7915471803647590281">Vertel ons wat er aan de hand is voordat je de feedback verzendt.</translation>
 <translation id="7916556741383518510">Bij klik</translation>
@@ -4817,7 +4820,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8366396658833131068">Je netwerkverbinding is hersteld. Selecteer een ander netwerk of druk hieronder op de knop 'Doorgaan' om je kiosk-app te starten.</translation>
 <translation id="8366947248864804596">Wanneer je telefoon is ontgrendeld en zich in de buurt bevindt, kun je deze selecteren om te ontgrendelen. Anders moet je je wachtwoord of pincode opgeven.</translation>
 <translation id="8368859634510605990">Alle bladwijzers &amp;openen</translation>
-<translation id="8369547389711988632">Gestopt met laden</translation>
 <translation id="8371695176452482769">Begin nu te spreken</translation>
 <translation id="8372369524088641025">Slechte WEP-sleutel</translation>
 <translation id="8373553483208508744">Tabbladen dempen</translation>
@@ -5023,7 +5025,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8677212948402625567">Alles samenvouwen...</translation>
 <translation id="8678648549315280022">Downloadinstellingen beheren...</translation>
 <translation id="8678933587484842200">Hoe moet deze app worden gestart?</translation>
-<translation id="8679788109894721265">Deze pagina gebruikt meer dan <ph name="MEGABYTES" /> MB</translation>
 <translation id="8680251145628383637">Log in om je bladwijzers, geschiedenis, wachtwoorden en andere instellingen op te halen op al je apparaten. Je wordt ook automatisch ingelogd bij je Google-services.</translation>
 <translation id="8686213429977032554">Dit Drive-bestand is nog niet gedeeld</translation>
 <translation id="8687485617085920635">Volgende venster</translation>

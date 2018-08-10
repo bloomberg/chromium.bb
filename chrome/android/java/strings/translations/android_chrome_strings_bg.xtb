@@ -61,6 +61,7 @@
 <translation id="1404122904123200417">Вградено в/ъв <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Заявка „Do Not Track“</translation>
 <translation id="1407135791313364759">Отваряне на всички</translation>
+<translation id="1409426117486808224">Опростен изглед на отворените раздели</translation>
 <translation id="1409879593029778104">Изтеглянето на „<ph name="FILE_NAME" />“ е предотвратено, защото файлът вече съществува.</translation>
 <translation id="1414981605391750300">Установява се връзка с Google. Това може да отнеме известно време…</translation>
 <translation id="1416550906796893042">Версия на приложението</translation>
@@ -80,6 +81,7 @@
 <translation id="1566400915470565838">За да използвате <ph name="APP_NAME" />, моля, свържете се с интернет.</translation>
 <translation id="1569387923882100876">Свързано устройство</translation>
 <translation id="1571304935088121812">Копиране на потребителското име</translation>
+<translation id="1576370611341449972">Изтеглянето се извършва само през Wi-Fi</translation>
 <translation id="1612196535745283361">Chrome се нуждае от достъп до местоположението, за да сканира за устройства, но съответните услуги са <ph name="BEGIN_LINK" />изключени за това устройство<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">Включване на синхронизирането, персонализирането и други услуги на Google</translation>
 <translation id="1620510694547887537">Камера</translation>
@@ -344,6 +346,7 @@
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3810973564298564668">Управление</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> изтегляния бяха изтрити</translation>
+<translation id="3819562311292413223">Изтегляне на статии за вас</translation>
 <translation id="3822502789641063741">Изчистване на данните?</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3859306556332390985">Придвижване напред</translation>
@@ -383,6 +386,7 @@
 <translation id="4113030288477039509">Управлява се от администратора ви</translation>
 <translation id="4116038641877404294">Изтеглете страниците, за да ги използвате офлайн</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d отметка}other{%1$d отметки}}</translation>
+<translation id="4149994727733219643">Опростен изглед на уеб страниците</translation>
 <translation id="4159800535322890630">Блокиране на сайтовете, така че да нямат достъп до сензорите</translation>
 <translation id="4165986682804962316">Настройки за сайта</translation>
 <translation id="4170011742729630528">Няма достъп до услугата. Опитайте отново по-късно.</translation>
@@ -553,6 +557,7 @@
 <translation id="5512137114520586844">Този профил се управлява от <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Деактивирано от администратора на това устройство</translation>
 <translation id="5515439363601853141">Отключете, за да видите паролата си</translation>
+<translation id="5515716148775388141">Иконите са преместени в долната част на екрана</translation>
 <translation id="5517095782334947753">Имате отметки, история, пароли и други настройки от <ph name="FROM_ACCOUNT" /></translation>
 <translation id="5524843473235508879">Блокирано бе пренасочване.</translation>
 <translation id="5527082711130173040">Chrome се нуждае от достъп до местоположението, за да сканира за устройства. <ph name="BEGIN_LINK1" />Актуализирайте разрешенията<ph name="END_LINK1" />. Също така услугите за местоположение са <ph name="BEGIN_LINK2" />изключени за това устройство<ph name="END_LINK2" />.</translation>
@@ -757,6 +762,7 @@
 <translation id="7016516562562142042">Разрешено за текущата търсеща машина</translation>
 <translation id="7021515813996758557">„<ph name="FILE_NAME" />“ се изтегли</translation>
 <translation id="7022756207310403729">Отваряне в браузъра</translation>
+<translation id="702463548815491781">Препоръчва се, когато TalkBack или достъпът с превключване са задействани</translation>
 <translation id="7029809446516969842">Пароли</translation>
 <translation id="7031882061095297553">Синхронизиране със</translation>
 <translation id="7032663816368481562">Когато докоснете „Още подобни на това“ <ph name="ICON" /> в адресната лента, показва връзки за бърз достъп до сродни страници. URL адресите на страниците, които посещавате, се изпращат до Google.</translation>
@@ -785,6 +791,7 @@
 <translation id="7251326866581677552">Блокиране за някои сайтове</translation>
 <translation id="7253272406652746122">Добавете профил в Google от страницата „Профили“ в приложението Настройки на устройството ви.</translation>
 <translation id="7274013316676448362">Блокиран сайт</translation>
+<translation id="72867290065237936">Докоснете, за да превключите между предложенията за парола и клавиатурата</translation>
 <translation id="729975465115245577">На устройството ви няма приложение за съхраняване на файла с паролите.</translation>
 <translation id="7302081693174882195">Подробности: сортирани по количество спестени данни</translation>
 <translation id="7333031090786104871">Още се добавя предишният сайт</translation>

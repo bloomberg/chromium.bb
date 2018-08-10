@@ -270,6 +270,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
       Si se le asigna el valor "False", se inhabilitará el envío de informes sobre métricas y datos de diagnóstico.
 
       Si no se configura, se inhabilitarán los informes sobre métricas y datos de diagnóstico en los dispositivos no administrados y se habilitará en los dispositivos administrados.</translation>
+<translation id="1920046221095339924">Permitir sesión gestionada en el dispositivo</translation>
 <translation id="1929709556673267855">Proporciona opciones de configuración de impresoras de empresa vinculadas con los dispositivos.
 
       Esta política permite proporcionar opciones de configuración de impresoras a los dispositivos <ph name="PRODUCT_OS_NAME" />. El formato es el mismo que el del diccionario NativePrinters, con un campo "id" o "guid" obligatorio por impresora para crear una lista blanca o negra.
@@ -303,6 +304,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 
       Si habilitas esta opción o no estableces ningún valor, el usuario podrá controlar la función Autocompletar para datos de la dirección en la UI.</translation>
 <translation id="1960840544413786116">Si se permiten los certificados emitidos por los anclajes de confianza locales que no tienen la extensión subjectAlternativeName</translation>
+<translation id="1962273523772270623">Permitir la recogida de registros de eventos WebRTC de servicios de Google</translation>
 <translation id="1964634611280150550">Modo de incógnito inhabilitado</translation>
 <translation id="1964802606569741174">Esta política no influye en la aplicación YouTube para Android. Si se debe aplicar el modo seguro en YouTube, deberás inhabilitar la descarga de la aplicación YouTube para Android.</translation>
 <translation id="1969212217917526199">Anula las políticas de compilaciones de depuración del host de acceso remoto.
@@ -2007,6 +2009,11 @@ Si no se establece esta política, el teclado en pantalla se inhabilitará la pr
       Si no se establece esta política o la lista está vacía, se podrá acceder a todos los esquemas en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Configuración de usuarios administrados de forma local</translation>
 <translation id="6658245400435704251">Especifica el número de segundos hasta los que un dispositivo puede retrasar aleatoriamente la descarga de una actualización desde el momento en el que esta se envío al servidor por primera vez. El dispositivo puede dedicar una parte de este tiempo al propio proceso de actualización y el resto a realizar las comprobaciones necesarias. En cualquier caso, el límite superior de la dispersión es un periodo de tiempo constante, para que el dispositivo no se quede bloqueado mientras descarga una actualización.</translation>
+<translation id="6665599130599311250">Si se le asigna el valor "False" a esta política o no se le asigna ningún valor, la sesión de invitado gestionada funcionará como se describe en la página https://support.google.com/chrome/a/answer/3017014, es decir, como una "sesión pública" estándar.
+
+      Si se le asigna el valor "True" a esta política, la sesión de invitado gestionada funcionará como una "sesión gestionada" y se eliminarán muchas de las restricciones de las "sesiones públicas" normales.
+
+      Si se le asigna un valor a esta política, el usuario no puede cambiarlo ni anularlo.</translation>
 <translation id="6665670272107384733">Definir la frecuencia con la que el usuario debe introducir la contraseña para utilizar el desbloqueo rápido</translation>
 <translation id="6681229465468164801">Permite configurar una lista de patrones de URL que especifican los sitios web que no pueden solicitar al usuario acceso a un dispositivo USB.
 
@@ -2173,6 +2180,17 @@ Al habilitar esta política, se inhabilita la sincronización en la nube.
 <translation id="6943577887654905793">Nombre de preferencia en Mac/Linux:</translation>
 <translation id="69525503251220566">Parámetro que proporciona una función de búsqueda por imagen para el proveedor de búsquedas predeterminado</translation>
 <translation id="6956272732789158625">No permitir que los sitios web utilicen la generación de claves</translation>
+<translation id="6982028490425791294">
+      Si se le asigna el valor "True" a esta política", <ph name="PRODUCT_NAME" /> puede recoger registros de eventos WebRTC de los servicios de Google (p. ej., Google Meet) y subirlos a Google.
+
+      Si se le asigna el valor "False" a esta política o no se le asigna ningún valor, <ph name="PRODUCT_NAME" /> no podrá recoger ni subir estos registros.
+
+      Estos registros contienen información como la hora y el tamaño de los paquetes RTP recibidos, comentarios sobre la congestión de la red y metadatos sobre la hora y la calidad de los marcos de vídeo y audio. Esta información resulta útil para depurar problemas de las llamadas de audio o videollamadas de Chrome, como problemas de estimación del ancho de banda. Los registros no incluyen contenido de audio ni vídeo de las llamadas.
+
+      Esta recogida de datos solo la pueden activar los servicios web de Google, como Hangouts o Google Meet.
+
+      Estos registros se pueden asociar, mediante un ID de sesión, a otros registros recogidos por el servicio de Google para facilitar la depuración.
+      </translation>
 <translation id="6994082778848658360">Especifica cómo se puede utilizar el hardware del elemento seguro integrado para proporcionar una autenticación de dos factores si es compatible con esta función. El botón de encendido del ordenador se utiliza para detectar la presencia física del usuario.
 
       Si se inhabilita esta opción, no se proporciona ninguna autenticación de dos factores.

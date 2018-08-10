@@ -167,6 +167,7 @@ Näiteks võivad mõned veebisaidid päringule reageerida nii, et näitavad teil
 <translation id="3588820906588687999">Ava kujutis uuel vahelehel</translation>
 <translation id="3603009562372709545">Kopeeri lingi URL</translation>
 <translation id="3607167657931203000">Automaattäite andmed</translation>
+<translation id="360930808415985584">Sünkroonimise, isikupärastamise jms juhtimine</translation>
 <translation id="3609785682760573515">Sünkroonimine ...</translation>
 <translation id="3628119975092896051">Teie lugemisloend on võrguühenduseta saadaval. Lugemisloendisse lehe lisamiseks puudutage ikooni <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Lehtede eellaadimine</translation>
@@ -213,6 +214,7 @@ Näiteks võivad mõned veebisaidid päringule reageerida nii, et näitavad teil
 <translation id="4508750114462689118">Sule sisselogimisviip</translation>
 <translation id="4526249700380860531">Vaadake ja hallake salvestatud paroole saidil <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Proovige uuesti sisse logida.</translation>
+<translation id="4541241553780729349">Google'iga sünkroonitavad andmed ja teie kasutatavad funktsioonid ei muutu</translation>
 <translation id="457386861538956877">Rohkem ...</translation>
 <translation id="461440297010471931">Otsimine Google'iga</translation>
 <translation id="4619615317237390068">Muudest seadmetest pärinevad vahelehed</translation>

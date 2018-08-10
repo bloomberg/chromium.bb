@@ -267,6 +267,7 @@
       Als dit beleid is ingesteld op false (onwaar), wordt de rapportage van statistieken en diagnostische gegevens uitgeschakeld.
 
       Als dit beleid niet is ingesteld, wordt de rapportage van statistieken en diagnostische gegevens op niet-beheerde apparaten uitgeschakeld en op beheerde apparaten ingeschakeld.</translation>
+<translation id="1920046221095339924">Beheerde sessie op apparaat toestaan</translation>
 <translation id="1929709556673267855">Hiermee worden configuraties geleverd voor zakelijke printers die aan apparaten zijn gekoppeld.
 
       Met dit beleid kun je printerconfiguraties leveren aan <ph name="PRODUCT_OS_NAME" />-apparaten. De indeling is gelijk aan het NativePrinters-woordenboek, aangevuld met een vereist ID- of GUID-veld per printer voor het op de witte of zwarte lijst zetten.
@@ -300,6 +301,7 @@
 
       Als deze instelling is ingeschakeld of er geen waarde is ingesteld, kan de gebruiker 'Automatisch aanvullen' voor adressen beheren in de UI.</translation>
 <translation id="1960840544413786116">Of door lokale vertrouwensankers uitgegeven certificaten zonder de extensie subjectAlternativeName zijn toegestaan</translation>
+<translation id="1962273523772270623">Verzameling van WebRTC-gebeurtenislogboeken van Google-services toestaan</translation>
 <translation id="1964634611280150550">Incognitomodus uitgeschakeld</translation>
 <translation id="1964802606569741174">Dit beleid is niet van invloed op de YouTube-app voor Android. Als de veiligheidsmodus voor YouTube moet worden afgedwongen, moet je installatie van de YouTube-app voor Android niet toestaan.</translation>
 <translation id="1969212217917526199">Hiermee worden beleidsregels overgeschreven op Debug-builds van de host voor externe toegang.
@@ -1988,6 +1990,11 @@
       Als je dit beleid niet instelt of als de lijst leeg is, zijn alle schema's toegankelijk in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Instellingen voor lokaal beheerde gebruikers</translation>
 <translation id="6658245400435704251">Bepaalt het maximaal aantal seconden dat een apparaat willekeurig de download van een update mag uitstellen vanaf het moment dat de update voor het eerst naar de server werd gepusht. Het apparaat kan een deel van deze tijd wachten in termen van kloktijd en het resterende deel in termen van het aantal updatecontroles. De maximale spreiding is in elk geval begrensd door een constante periode zodat een apparaat nooit vastloopt tijdens het wachten tot een update kan worden gedownload.</translation>
+<translation id="6665599130599311250">Als dit beleid is ingesteld op 'false' (onwaar) of niet is ingesteld, vertoont de beheerde gastsessie het gedrag dat is gedocumenteerd op https://support.google.com/chrome/a/answer/3017014 (de standaard 'openbare sessie').
+
+      Als dit beleid is ingesteld op 'true' (waar), vertoont de beheerde gastsessie het gedrag van een 'beheerde sessie', waardoor veel van de beperkingen die gelden voor gewone 'openbare sessies' worden opgeheven.
+
+      Als dit beleid is ingesteld, kan de gebruiker het niet wijzigen of overschrijven.</translation>
 <translation id="6665670272107384733">Instellen hoe vaak een gebruiker het wachtwoord moet opgeven om de functie voor snel ontgrendelen te kunnen gebruiken</translation>
 <translation id="6681229465468164801">Hiermee kun je een lijst met URL-patronen opgeven voor sites die de gebruiker geen toestemming mogen vragen om ze toegang te verlenen tot een USB-apparaat.
 
@@ -2144,6 +2151,17 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="6943577887654905793">Voorkeursnaam voor Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter die een functie voor zoeken op afbeelding levert voor de standaardzoekprovider</translation>
 <translation id="6956272732789158625">Sites niet toestaan sleutels te genereren</translation>
+<translation id="6982028490425791294">
+      Als het beleid is ingesteld op 'true' (waar), mag <ph name="PRODUCT_NAME" /> WebRTC-gebeurtenislogboeken van Google-services (zoals Google Meet) verzamelen en die logboeken uploaden naar Google.
+
+      Als het beleid is ingesteld op 'false' (onwaar) of niet is ingesteld, mag <ph name="PRODUCT_NAME" /> dergelijke logboeken niet verzamelen of uploaden.
+
+      Deze logboeken bevatten informatie zoals de tijd en grootte van verzonden en ontvangen RTP-pakketten, feedback over overbelasting van het netwerk en metadata met betrekking tot de tijd en kwaliteit van audio- en videoframes. Deze informatie is nuttig voor het opsporen van fouten met audio- of videogesprekken in Chrome, zoals problemen met bandbreedteschattingen, enzovoort. De logboeken bevatten geen audio- of videocontent uit het gesprek.
+
+      Deze gegevensverzameling kan alleen worden geactiveerd door webservices van Google, zoals Google Hangouts of Google Meet.
+
+      Deze logboeken kunnen door middel van een sessie-ID worden gekoppeld aan andere logboeken die worden verzameld door de Google-service zelf. Dit wordt gedaan om fouten gemakkelijker te kunnen opsporen.
+      </translation>
 <translation id="6994082778848658360">Geeft aan hoe de ingebouwde Secure Element-hardware kan worden gebruikt voor authenticatie met meerdere factoren, indien de hardware geschikt is voor deze functie. De aan/uit-knop van de machine wordt gebruikt om de fysieke aanwezigheid van de gebruiker te detecteren.
 
       Als Uitgeschakeld is geselecteerd, wordt er geen tweede factor verstrekt.

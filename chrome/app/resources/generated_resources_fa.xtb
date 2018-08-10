@@ -70,7 +70,7 @@
 <translation id="1110155001042129815">انتظار</translation>
 <translation id="1112420131909513020">برگه پس‌زمینه درحال استفاده از بلوتوث است</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
-<translation id="1114202307280046356">الماس</translation>
+<translation id="1114202307280046356">الماسی</translation>
 <translation id="1114335938027186412">‏رایانه شما حاوی یک دستگاه امنیتی با مدول پلتفورم مورداعتماد (TPM) است که برای اجرای بسیاری از ویژگی‌های امنیتی مهم در سیستم عامل Chrome استفاده می‌شود. برای کسب اطلاعات بیشتر به مرکز راهنمایی Chromebook بروید: https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="1114525161406758033">رفتن به حالت خواب، وقتی دستگاه بسته می‌شود</translation>
 <translation id="1116694919640316211">درباره</translation>
@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">همگام‌سازی و شخصی‌سازی</translation>
 <translation id="1398853756734560583">بزرگ کردن</translation>
 <translation id="1399511500114202393">بدون گواهینامه کاربر</translation>
+<translation id="1401165786814632797">‏اگر دستگاه بیدار باشد و قفلش باز باشد، هرزمان بگویید «OK Google»، به «دستیار» دسترسی خواهید داشت.</translation>
 <translation id="140250605646987970">‏تلفنتان پیدا شد. اما Smart Lock فقط روی دستگاه‌های دارای Android نسخه ۵٫۰ و بالاتر کار می‌کند. &lt;a&gt;بیشتر بدانید&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (تحت نظارت)</translation>
 <translation id="1405476660552109915">آیا می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> حساب شما را برای این سایت ذخیره کند؟</translation>
@@ -1506,6 +1507,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> می‌خواهد مرتبط شود</translation>
 <translation id="3274763671541996799">شما به حالت تمام صفحه رفته‌اید.</translation>
 <translation id="3275778913554317645">باز کردن به‌عنوان پنجره</translation>
+<translation id="3278877214895457897">‏وقتی Chromebook راه‌اندازی شد، دکمه «دستیار» را فشار دهید یا بگویید «OK Google» تا در هرزمانی از «دستیار» کمک بگیرید.</translation>
 <translation id="3279230909244266691">این فرایند ممکن است چند دقیقه طول بکشد. درحال شروع دستگاه مجازی.</translation>
 <translation id="3279741024917655738">نمایش ویدیوهای تمام‌صفحه در</translation>
 <translation id="3280237271814976245">ذخیره &amp;بعنوان</translation>
@@ -2162,7 +2164,6 @@
 <translation id="4275830172053184480">راه‌اندازی دستگاه خود</translation>
 <translation id="4278101229438943600">«دستیار» آماده است</translation>
 <translation id="4278390842282768270">مجاز است</translation>
-<translation id="4280864916190672950">توقف بارگیری</translation>
 <translation id="4281844954008187215">شرایط استفاده از سرویس</translation>
 <translation id="4282196459431406533">‏Smart Lock روشن شده است</translation>
 <translation id="4284105660453474798">آیا مطمئنید می‌خواهید "$1" را حذف کنید؟</translation>
@@ -2600,6 +2601,7 @@
 <translation id="4992066212339426712">باصدا کردن</translation>
 <translation id="4992458225095111526">‏تأیید Powerwash</translation>
 <translation id="4992473555164495036">سرپرست سیستم روش‌های ورودی دردسترس را محدود کرده است.</translation>
+<translation id="4992926179187649719">‏روشن کردن «Ok Google»</translation>
 <translation id="4994474651455208930">سایت‌ها اجازه دارند درخواست کنند کنترل کننده پیش‌فرض برای پروتکل ها شوند</translation>
 <translation id="4994754230098574403">درحال راه‌اندازی</translation>
 <translation id="4996978546172906250">اشتراک‌گذاری از طریق</translation>
@@ -3432,7 +3434,6 @@
 <translation id="6231881193380278751">‏افزودن پارامتر جستار در نشانی وب برای بازخوانی خودکار صفحه: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">باتری</translation>
 <translation id="6232116551750539448">اتصال به <ph name="NAME" /> قطع شده است</translation>
-<translation id="6235700927623181151">این برگه درحال هم‌رسانی محتوای میز کارتان است.</translation>
 <translation id="6237816943013845465">به شما امکان می‌دهد وضوح صفحه را تنظیم کنید</translation>
 <translation id="6238923052227198598">نگه داشتن جدیدترین یادداشت در صفحه درحالت قفل</translation>
 <translation id="6239558157302047471">تازه‌سازی قاب</translation>
@@ -3752,7 +3753,7 @@
 <translation id="6710213216561001401">قبلی</translation>
 <translation id="6718273304615422081">در حال فشرده سازی ...</translation>
 <translation id="671928215901716392">قفل صفحه</translation>
-<translation id="6720847671508630642">‏بهترین‌های Android را به‌طور خودکار با Chromebook هم‌رسانی کنید. تلفنتان را مرتبط کنید تا بتوانید از رایانه پیام نوشتاری ارسال کنید، اتصال اینترنت تلفن را به اشتراک بگذارید و قفل صفحه Chromebook را باز کنید.<ph name="FOOTNOTE_POINTER" /><ph name="LINK_BEGIN" />بیشتر بدانید<ph name="LINK_END" /></translation>
+<translation id="6720847671508630642">‏بهترین‌های Android را به‌طور خودکار با Chromebook هم‌رسانی کنید. تلفنتان را مرتبط کنید تا بتوانید از رایانه پیام نوشتاری ارسال کنید، اتصال اینترنت تلفن را هم‌رسانی کنید و قفل صفحه Chromebook را باز کنید.<ph name="FOOTNOTE_POINTER" /><ph name="LINK_BEGIN" />بیشتر بدانید<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">ساخت و مدل «کلید امنیتی» خود را ببینید</translation>
 <translation id="6721972322305477112">&amp;فایل</translation>
 <translation id="672213144943476270">لطفاً قبل از مرور به‌عنوان مهمان، قفل نمایه‌تان را باز کنید.</translation>
@@ -4529,6 +4530,7 @@
 <translation id="7908378463497120834">متأسفیم، حداقل یک بخش از دستگاه ذخیره‌سازی خارجی نصب نمی‌شود.</translation>
 <translation id="7909969815743704077">دانلود‌شده در ناشناس</translation>
 <translation id="7910768399700579500">پوشه &amp;جدید</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">گذرواژه‌تان در سرور تغییر کرده است. لطفاً از سیستم خارج شوید و سپس دوباره به سیستم وارد شوید.</translation>
 <translation id="7915471803647590281">لطفاً قبل از ارسال بازخورد، به ما بگویید چه اتفاقی در حال وقوع است.</translation>
 <translation id="7916556741383518510">با کلیک</translation>
@@ -4813,7 +4815,6 @@
 <translation id="8366396658833131068">اتصالتان به شبکه بازیابی شد. لطفاً شبکه دیگری را انتخاب کنید یا دکمه «ادامه» را در زیر فشار دهید تا برنامه کیوسکتان را راه‌اندازی کنید.</translation>
 <translation id="8366947248864804596">وقتی تلفنتان قفل نیست و همین اطراف است، برای باز کردن قفل، فقط آن را انتخاب کنید. در غیراین‌صورت، گذرواژه یا پینتان را وارد کنید.</translation>
 <translation id="8368859634510605990">&amp;باز کردن همه نشانک‌ها</translation>
-<translation id="8369547389711988632">بارگیری متوقف شد</translation>
 <translation id="8371695176452482769">اکنون صحبت کنید</translation>
 <translation id="8372369524088641025">‏کلید WEP نادرست</translation>
 <translation id="8373553483208508744">بی‌صدا کردن برگه‌ها</translation>
@@ -5019,7 +5020,6 @@
 <translation id="8677212948402625567">کوچک کردن همه...</translation>
 <translation id="8678648549315280022">مدیریت تنظیمات بارگیری…</translation>
 <translation id="8678933587484842200">می‌خواهید این برنامه چگونه راه‌اندازی شود؟</translation>
-<translation id="8679788109894721265">این صفحه بیش از <ph name="MEGABYTES" /> مگابایت مصرف می‌کند</translation>
 <translation id="8680251145628383637">‏برای دریافت نشانک‌ها، سابقه، گذرواژه‌ها و تنظیمات دیگرتان را در همه دستگاه‌هایتان، به سیستم وارد شوید. همچنین به‌صورت خودکار به سیستم خدمات Google خود نیز وارد می‌شوید.</translation>
 <translation id="8686213429977032554">‏این فایل Drive هنوز به اشتراک گذاشته نشده است</translation>
 <translation id="8687485617085920635">پنجره بعدی</translation>

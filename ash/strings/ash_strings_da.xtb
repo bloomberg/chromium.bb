@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">Højre</translation>
 <translation id="1351937230027495976">Skjul menu</translation>
 <translation id="1383876407941801731">Søg</translation>
+<translation id="1419738280318246476">Lås enheden op for at udføre underretningshandlingen</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Appliste</translation>
@@ -68,7 +69,6 @@
 <translation id="2049639323467105390">Denne enhed administreres af <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Stående</translation>
 <translation id="2067602449040652523">Lysstyrke for tastatur</translation>
-<translation id="2075212959500165896">Du har prøvet for mange gange. Prøv igen senere.</translation>
 <translation id="2081529251031312395">$1 kan stadig logge ind senere.</translation>
 <translation id="2127372758936585790">Oplader ved lav kraft</translation>
 <translation id="2135456203358955318">Fastgjort lupvindue</translation>
@@ -140,7 +140,6 @@
 <translation id="3153444934357957346">Du kan kun have op til <ph name="MULTI_PROFILE_USER_LIMIT" /> konti i samlet login fra flere konti.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Forbundet til en enhed}one{Forbundet til # enhed}other{Forbundet til # enheder}}</translation>
 <translation id="3236488194889173876">Der er ingen tilgængelige mobilnetværk</translation>
-<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Gæst</translation>
 <translation id="332587331255250389">Udskift batteriet</translation>
 <translation id="3351879221545518001">Du caster i øjeblikket skærmen.</translation>
@@ -226,6 +225,7 @@
 <translation id="4924411785043111640">Genstart og nulstil</translation>
 <translation id="4961318399572185831">Cast skærm</translation>
 <translation id="5069971504769299223">Enhedsadministratoren kan muligvis overvåge din aktivitet.</translation>
+<translation id="5083553833479578423">Få adgang til endnu flere Assistent-funktioner.</translation>
 <translation id="5136175204352732067">Du har tilsluttet et andet tastatur</translation>
 <translation id="5168181903108465623">Tilgængelige Cast-enheder</translation>
 <translation id="5207949376430453814">Fremhæv tekstmarkør</translation>
@@ -298,6 +298,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6376931439017688372">Bluetooth er slået til</translation>
 <translation id="639644700271529076">CAPS LOCK er deaktiveret</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">Ryd alle underretninger</translation>
 <translation id="643147933154517414">Færdig</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> på <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Afvis</translation>
@@ -399,9 +400,11 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8152119955266188852">Du trykkede på genvejen for forstørrelse af fuld skærm. Vil du aktivere indstillingen?</translation>
 <translation id="8190698733819146287">Tilpas sprog og indtastning...</translation>
 <translation id="8191230140820435481">Administrere dine apps, udvidelser og temaer</translation>
+<translation id="8192202700944119416">Underretninger er skjult.</translation>
 <translation id="8261506727792406068">Slet</translation>
 <translation id="8297006494302853456">Svag</translation>
 <translation id="8308637677604853869">Forrige menu</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Opret note</translation>
 <translation id="8392451568018454956">Menuen Indstillinger for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Forstørrelse af fuld skærm</translation>
@@ -443,6 +446,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8938800817013097409">USB-C-enhed (porten bagpå i højre side)</translation>
 <translation id="8940956008527784070">Batteriniveauet er lavt (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="8984179138335769204">Hurtig start</translation>
+<translation id="899350903320462459">Lås enheden op som <ph name="LOGIN_ID" /> for at udføre underretningshandlingen</translation>
 <translation id="8995603266996330174">Administreres af <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Der er en tilgængelig Adobe Flash Player-opdatering</translation>
 <translation id="9056839673611986238">En tidligere version gendannes på enheden</translation>

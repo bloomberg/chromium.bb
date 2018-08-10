@@ -5,7 +5,7 @@
 <translation id="1036727731225946849">Agregando <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">De sitios web</translation>
 <translation id="1049743911850919806">Incógnito</translation>
-<translation id="1054301162707478098">Estás en modo privado.</translation>
+<translation id="1054301162707478098">Estás en modo privado</translation>
 <translation id="10614374240317010">Nunca guardado</translation>
 <translation id="1068672505746868501">No traducir nunca páginas en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
@@ -701,7 +701,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6593061639179217415">Sitio de escritorio</translation>
 <translation id="6600954340915313787">Se copió en Chrome.</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
-<translation id="6610147964972079463">Cerrar las pestañas privadas</translation>
+<translation id="6610147964972079463">Cerrar pestañas privadas</translation>
 <translation id="6612358246767739896">Contenido protegido</translation>
 <translation id="6627583120233659107">Editar la carpeta</translation>
 <translation id="6643016212128521049">Borrar</translation>

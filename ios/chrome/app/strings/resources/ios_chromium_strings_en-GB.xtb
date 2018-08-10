@@ -17,6 +17,7 @@
 <translation id="2647554856022461007">Chromium may use web services to improve your browsing experience. You may optionally disable these services. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">Get Google smarts in Chromium</translation>
 <translation id="2730884209570016437">Chromium can't use your camera because it's in use by another application</translation>
+<translation id="2797210818057553964">You can customise this at any time in Chromium Settings</translation>
 <translation id="3256316712990552818">Copied to Chromium</translation>
 <translation id="3413120535237193088">To get your bookmarks on all your devices, sign in to Chromium.</translation>
 <translation id="3473048256428424907">Turn on Chromium QR Scanner</translation>
@@ -45,6 +46,7 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">The selected data has been removed from Chromium and synced devices. Your Google account may have other forms of browsing history such as searches and activity from other Google services at history.google.com.</translation>
 <translation id="7400689562045506105">Use Chromium Everywhere</translation>
+<translation id="7499048969477415415">The settings that control sync, personalisation and other Google services in Chromium have changed. This may affect your current settings.</translation>
 <translation id="7674213385180944843">Open Settings &gt; Privacy &gt; Camera &gt; Chromium and turn on the camera.</translation>
 <translation id="7746854981345936341">Chromium tip. Some buttons are now at the bottom of your screen, such as Back, Forward and Search.</translation>
 <translation id="786327964234957808">You are switching sync accounts from <ph name="USER_EMAIL1" /> to <ph name="USER_EMAIL2" />. Your existing Chromium data is managed by <ph name="DOMAIN" />. This will delete your data from this device, but your data will remain in <ph name="USER_EMAIL1" />.</translation>

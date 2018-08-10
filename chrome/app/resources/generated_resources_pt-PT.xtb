@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">Sincronização e personalização</translation>
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="1399511500114202393">Nenhum certificado de utilizador</translation>
+<translation id="1401165786814632797">Aceda ao Assistente sempre que disser "Ok Google" quando o dispositivo estiver ativado e desbloqueado.</translation>
 <translation id="140250605646987970">Encontrámos o seu telemóvel. No entanto, o Smart Lock só funciona em dispositivos com o Android 5.0 ou superior. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisionado)</translation>
 <translation id="1405476660552109915">Pretende que o <ph name="PASSWORD_MANAGER_BRAND" /> guarde a sua conta para este site?</translation>
@@ -512,7 +513,7 @@
 <translation id="1744060673522309905">Não é possível associar o dispositivo ao domínio. Certifique-se de que não excedeu o número de dispositivos que pode adicionar.</translation>
 <translation id="1744108098763830590">página de fundo</translation>
 <translation id="1745520510852184940">Fazer sempre isto</translation>
-<translation id="1746417874336251387">Oferecer novas funcionalidades que utilizam a ligação do telemóvel ao Chromebook</translation>
+<translation id="1746417874336251387">Oferece novas funcionalidades que utilizam a ligação do telemóvel ao Chromebook</translation>
 <translation id="174937106936716857">Contagem total de ficheiros</translation>
 <translation id="175196451752279553">Voltar a abrir o s&amp;eparador fechado</translation>
 <translation id="1753905327828125965">Mais visitados</translation>
@@ -1371,6 +1372,7 @@ Pretende pará-lo?</translation>
 <translation id="3031557471081358569">Seleccione os itens a importar:</translation>
 <translation id="3031601332414921114">Retomar a impressão</translation>
 <translation id="303198083543495566">Geografia</translation>
+<translation id="3033999583152214331">Execute ferramentas, editores e IDEs de Linux no seu Chromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;Saiba mais&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Ativar Flash</translation>
 <translation id="3037754279345160234">Não é possível analisar a configuração de associação do domínio. Contacte o administrador.</translation>
 <translation id="3038612606416062604">Adicionar uma impressora manualmente</translation>
@@ -1511,6 +1513,7 @@ Pretende pará-lo?</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> pretende estabelecer ligação</translation>
 <translation id="3274763671541996799">Mudou para o ecrã inteiro.</translation>
 <translation id="3275778913554317645">Abrir como janela</translation>
+<translation id="3278877214895457897">Quando o Chromebook estiver configurado, prima o botão do Assistente ou diga "Ok Google" para obter ajuda do Assistente a qualquer momento.</translation>
 <translation id="3279230909244266691">Este processo pode demorar alguns minutos. A iniciar a máquina virtual…</translation>
 <translation id="3279741024917655738">Mostrar vídeos em ecrã inteiro em</translation>
 <translation id="3280237271814976245">Guard&amp;ar como...</translation>
@@ -2167,7 +2170,6 @@ Pretende pará-lo?</translation>
 <translation id="4275830172053184480">Reiniciar o dispositivo</translation>
 <translation id="4278101229438943600">O seu Assistente está pronto</translation>
 <translation id="4278390842282768270">Permitidos:</translation>
-<translation id="4280864916190672950">Parar carregamento</translation>
 <translation id="4281844954008187215">Termos de Utilização</translation>
 <translation id="4282196459431406533">O Smart Lock está ativado</translation>
 <translation id="4284105660453474798">Tem a certeza de que pretende eliminar "$1"?</translation>
@@ -2605,6 +2607,7 @@ Pretende pará-lo?</translation>
 <translation id="4992066212339426712">Reativar o som</translation>
 <translation id="4992458225095111526">Confirmar Powerwash</translation>
 <translation id="4992473555164495036">O administrador limitou os métodos de introdução disponíveis.</translation>
+<translation id="4992926179187649719">Ativar a opção "Ok Google"</translation>
 <translation id="4994474651455208930">Permitir que os Web sites peçam para serem os processadores predefinidos de protocolos</translation>
 <translation id="4994754230098574403">A configurar…</translation>
 <translation id="4996978546172906250">Partilhar através de</translation>
@@ -3438,7 +3441,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6231881193380278751">Adicione um parâmetro de consulta no URL para atualizar automaticamente a página: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Bateria</translation>
 <translation id="6232116551750539448">Perdeu-se a ligação a <ph name="NAME" /></translation>
-<translation id="6235700927623181151">Este separador está a partilhar o conteúdo do seu ambiente de trabalho.</translation>
 <translation id="6237816943013845465">Permite-lhe ajustar a resolução do ecrã</translation>
 <translation id="6238923052227198598">Manter a nota mais recente no ecrã de bloqueio</translation>
 <translation id="6239558157302047471">Atualizar &amp;frame</translation>
@@ -4535,6 +4537,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7908378463497120834">Lamentamos, mas não foi possível montar, pelo menos, uma partição no aparelho de armazenamento externo.</translation>
 <translation id="7909969815743704077">Transferido em modo de navegação anónima</translation>
 <translation id="7910768399700579500">&amp;Nova pasta</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">A sua palavra-passe foi alterada no servidor. Termine e inicie sessão novamente.</translation>
 <translation id="7915471803647590281">Indique-nos o que está a acontecer antes de enviar os comentários.</translation>
 <translation id="7916556741383518510">Ao clicar</translation>
@@ -4819,7 +4822,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8366396658833131068">A conetividade de rede foi restaurada. Selecione uma rede diferente ou prima "Continuar" abaixo para iniciar a aplicação de quiosque.</translation>
 <translation id="8366947248864804596">Quando o telemóvel estiver desbloqueado e próximo, basta selecionar para desbloquear. Caso contrário, introduza a palavra-passe ou o PIN.</translation>
 <translation id="8368859634510605990">&amp;Abrir todos os marcadores</translation>
-<translation id="8369547389711988632">Carregamento interrompido</translation>
 <translation id="8371695176452482769">Falar agora</translation>
 <translation id="8372369524088641025">Chave WEP incorrecta</translation>
 <translation id="8373553483208508744">Desativar som dos separadores</translation>
@@ -5025,7 +5027,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8677212948402625567">Reduzir tudo...</translation>
 <translation id="8678648549315280022">Gerir definições de transferência...</translation>
 <translation id="8678933587484842200">Como pretende que esta aplicação seja iniciada?</translation>
-<translation id="8679788109894721265">Esta página utiliza mais de <ph name="MEGABYTES" /> MB.</translation>
 <translation id="8680251145628383637">Inicie sessão para obter os seus marcadores, o histórico, as palavras-passe e outras definições em todos os seus dispositivos. Além disso, também inicia sessão automaticamente nos serviços Google.</translation>
 <translation id="8686213429977032554">Este ficheiro do Google Drive ainda não foi partilhado</translation>
 <translation id="8687485617085920635">Janela seguinte</translation>

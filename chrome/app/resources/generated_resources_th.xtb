@@ -1604,7 +1604,7 @@
 <translation id="3428419049384081277">คุณลงชื่อเข้าใช้แล้ว</translation>
 <translation id="3429275422858276529">บุ๊กมาร์กหน้านี้เพื่อให้หาเจอง่ายในภายหลัง</translation>
 <translation id="3429599832623003132">$1 รายการ</translation>
-<translation id="3430342160185525240">ให้ Assistant แสดงการแจ้งเตือน</translation>
+<translation id="3430342160185525240">เปิดให้ Assistant แสดงการแจ้งเตือน</translation>
 <translation id="3432227430032737297">นำรายการที่แสดงทั้งหมดออก</translation>
 <translation id="3432757130254800023">ส่งภาพและเสียงไปยังจอแสดงผลบนเครือข่ายเฉพาะที่</translation>
 <translation id="3432762828853624962">คนทำงานที่แชร์</translation>
@@ -2166,7 +2166,6 @@
 <translation id="4275830172053184480">รีสตาร์ทอุปกรณ์ของคุณ</translation>
 <translation id="4278101229438943600">Assistant พร้อมใช้งานแล้ว</translation>
 <translation id="4278390842282768270">อนุญาตแล้ว</translation>
-<translation id="4280864916190672950">หยุดโหลด</translation>
 <translation id="4281844954008187215">ข้อกำหนดในการให้บริการ</translation>
 <translation id="4282196459431406533">Smart Lock เปิดอยู่</translation>
 <translation id="4284105660453474798">คุณแน่ใจหรือไม่ว่าต้องการลบ "$1"</translation>
@@ -3436,7 +3435,6 @@
 <translation id="6231881193380278751">เพิ่มพารามิเตอร์ข้อความค้นหาใน URL เพื่อรีเฟรชหน้าโดยอัตโนมัติ: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">แบตเตอรี่</translation>
 <translation id="6232116551750539448">ขาดการเชื่อมต่อกับ <ph name="NAME" /></translation>
-<translation id="6235700927623181151">แท็บนี้กำลังแชร์เนื้อหาบนเดสก์ท็อป</translation>
 <translation id="6237816943013845465">ให้คุณปรับเปลี่ยนความละเอียดของหน้าจอ</translation>
 <translation id="6238923052227198598">เก็บโน้ตล่าสุดไว้ในหน้าจอล็อก</translation>
 <translation id="6239558157302047471">โหลดเ&amp;ฟรมซ้ำ</translation>
@@ -4817,7 +4815,6 @@
 <translation id="8366396658833131068">กู้คืนการเชื่อมต่อเครือข่ายของคุณแล้ว โปรดเลือกเครือข่ายอื่นหรือกดปุ่ม "ดำเนินการต่อ" ที่ด้านล่างเพื่อเปิดแอปคีออสก์</translation>
 <translation id="8366947248864804596">เมื่อโทรศัพท์ปลดล็อกและอยู่ใกล้ๆ ให้เลือกโทรศัพท์เพื่อปลดล็อก มิฉะนั้นให้ป้อนรหัสผ่านหรือ PIN</translation>
 <translation id="8368859634510605990">&amp;เปิดบุ๊กมาร์กทั้งหมด</translation>
-<translation id="8369547389711988632">หยุดโหลดแล้ว</translation>
 <translation id="8371695176452482769">เชิญพูดเลย</translation>
 <translation id="8372369524088641025">คีย์ WEP ไม่ถูกต้อง</translation>
 <translation id="8373553483208508744">ปิดเสียงแท็บ</translation>
@@ -5023,7 +5020,6 @@
 <translation id="8677212948402625567">ยุบทั้งหมด...</translation>
 <translation id="8678648549315280022">จัดการการตั้งค่าการดาวน์โหลด...</translation>
 <translation id="8678933587484842200">คุณต้องการเปิดแอปพลิเคชันนี้ด้วยวิธีใด</translation>
-<translation id="8679788109894721265">หน้านี้ใช้อินเทอร์เน็ตมากกว่า <ph name="MEGABYTES" /> MB</translation>
 <translation id="8680251145628383637">ลงชื่อเข้าใช้เพื่อดึงบุ๊กมาร์ก ประวัติ รหัสผ่าน และการตั้งค่าอื่นๆ บนอุปกรณ์ทุกเครื่องของคุณ ทั้งนี้ ระบบจะลงชื่อเข้าใช้บริการต่างๆ ของ Google ให้คุณโดยอัตโนมัติ</translation>
 <translation id="8686213429977032554">ยังไม่มีการแชร์ไฟล์ไดรฟ์นี้</translation>
 <translation id="8687485617085920635">หน้าต่างถัดไป</translation>

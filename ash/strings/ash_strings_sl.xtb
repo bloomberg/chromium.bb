@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">V desno</translation>
 <translation id="1351937230027495976">Strni meni</translation>
 <translation id="1383876407941801731">Išči</translation>
+<translation id="1419738280318246476">Odklenite napravo zaradi izvedbe dejanja v obvestilu</translation>
 <translation id="1467432559032391204">V levo</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Zaganjalnik</translation>
@@ -68,7 +69,6 @@
 <translation id="2049639323467105390">To napravo upravlja <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Pokončno</translation>
 <translation id="2067602449040652523">Svetlost tipkovnice</translation>
-<translation id="2075212959500165896">Preveč poskusov. Poskusite znova pozneje.</translation>
 <translation id="2081529251031312395">$1 se še vedno lahko prijavi pozneje.</translation>
 <translation id="2127372758936585790">Nizkoenergijski polnilnik</translation>
 <translation id="2135456203358955318">Zasidrana lupa</translation>
@@ -88,7 +88,7 @@
 <translation id="2359808026110333948">Nadaljuj</translation>
 <translation id="2365393535144473978">Če omogočite prenos podatkov v mobilnem omrežju, bo omogočen Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="239188844683466770">Preklop načina ne moti</translation>
+<translation id="239188844683466770">Preklop načina »ne moti«</translation>
 <translation id="2412593942846481727">Na voljo je posodobitev</translation>
 <translation id="2416346634399901812">Povezava z omrežjem <ph name="NETWORK_NAME" /> je vzpostavljena</translation>
 <translation id="2429753432712299108">Naprava Bluetooth »<ph name="DEVICE_NAME" />« želi dovoljenje za seznanjanje. Preden sprejmete, se prepričajte, da je na napravi prikazano to geslo: <ph name="PASSKEY" /></translation>
@@ -140,7 +140,6 @@
 <translation id="3153444934357957346">S prijavo z več računi lahko uporabljate največ toliko računov: <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Vzpostavljena je povezava z eno napravo}one{Vzpostavljena je povezava z # napravo}two{Vzpostavljena je povezava z # napravama}few{Vzpostavljena je povezava s # napravami}other{Vzpostavljena je povezava s # napravami}}</translation>
 <translation id="3236488194889173876">Mobilno omrežje ni na voljo</translation>
-<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Gost</translation>
 <translation id="332587331255250389">Zamenjajte baterijo</translation>
 <translation id="3351879221545518001">Trenutno predvajate vsebino zaslona.</translation>
@@ -226,6 +225,7 @@
 <translation id="4924411785043111640">Znova zaženi in ponastavi</translation>
 <translation id="4961318399572185831">Predvajanje zaslona</translation>
 <translation id="5069971504769299223">Upravitelj naprave lahko morda nadzira vašo dejavnost.</translation>
+<translation id="5083553833479578423">Odklenite več funkcij Pomočnika.</translation>
 <translation id="5136175204352732067">Priklopljena je druga tipkovnica</translation>
 <translation id="5168181903108465623">Naprave za predvajanje so na voljo</translation>
 <translation id="5207949376430453814">Označitev kazalke v besedilu</translation>
@@ -287,7 +287,7 @@
 <translation id="615957422585914272">Pokaži zaslonsko tipkovnico</translation>
 <translation id="6164005077879661055">Vse datoteke in lokalni podatki, povezani z zaščitenim uporabnikom, bodo trajno izbrisani, ko ga odstranite. Obiskana spletna mesta in nastavitve tega uporabnika bodo morda še vedno vidna upravitelju na <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Več o tem</translation>
-<translation id="6254629735336163724">Zaklenjeno na vodoravno</translation>
+<translation id="6254629735336163724">Zaklenjeno na ležeče</translation>
 <translation id="6259254695169772643">Uporabite pisalo za izbiranje</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Aktiviranje ...</translation>
 <translation id="6284232397434400372">Ločljivost je bila spremenjena</translation>
@@ -297,6 +297,7 @@
 <translation id="6376931439017688372">Bluetooth je vklopljen</translation>
 <translation id="639644700271529076">Tipka CAPS LOCK je izklopljena</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">Izbris vseh obvestil</translation>
 <translation id="643147933154517414">Končano</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> na <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Zavrni</translation>
@@ -398,9 +399,11 @@
 <translation id="8152119955266188852">Pritisnili ste bližnjico za celozaslonsko lupo. Ali jo želite vklopiti?</translation>
 <translation id="8190698733819146287">Prilagajanje jezikov in vnosa ...</translation>
 <translation id="8191230140820435481">Upravljajte aplikacije, razširitve in teme</translation>
+<translation id="8192202700944119416">Obvestila so skrita.</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8297006494302853456">Šibek</translation>
 <translation id="8308637677604853869">Prejšnji meni</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Ustvarjanje zapiska</translation>
 <translation id="8392451568018454956">Meni z možnostmi za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Celozaslonska lupa</translation>
@@ -442,6 +445,7 @@
 <translation id="8938800817013097409">Naprava USB-C (vrata desno zadaj)</translation>
 <translation id="8940956008527784070">Akumulator je skoraj prazen (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="8984179138335769204">Hitri zagon</translation>
+<translation id="899350903320462459">Odklenite napravo kot <ph name="LOGIN_ID" />, da izvedete dejanje v obvestilu</translation>
 <translation id="8995603266996330174">Upravljavec: <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Na voljo je posodobitev za Adobe Flash Player</translation>
 <translation id="9056839673611986238">Naprava bo povrnjena na prejšnjo različico</translation>

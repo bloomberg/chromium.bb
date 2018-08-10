@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">Synkronisering og tilpasning</translation>
 <translation id="1398853756734560583">Maksimér</translation>
 <translation id="1399511500114202393">Ikke noget brugercertifikat</translation>
+<translation id="1401165786814632797">Få adgang til Google-assistenten, hver gang du siger "Ok Google", når din enhed er tændt og oplåst.</translation>
 <translation id="140250605646987970">Telefonen er fundet. Men Smart Lock virker kun på enheder med Android 5.0 eller nyere. &lt;a&gt;Få flere oplysninger&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (administreret)</translation>
 <translation id="1405476660552109915">Skal <ph name="PASSWORD_MANAGER_BRAND" /> gemme din konto for dette website?</translation>
@@ -1508,6 +1509,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> vil gerne oprette forbindelse</translation>
 <translation id="3274763671541996799">Du er nu i fuld skærm.</translation>
 <translation id="3275778913554317645">Åbn som vindue</translation>
+<translation id="3278877214895457897">Når din Chromebook er konfigureret, kan du til enhver tid trykke på Assistent-knappen eller sige "Ok Google" for at for at få hjælp af Google-assistenten.</translation>
 <translation id="3279230909244266691">Denne proces kan tage et par minutter. Den virtuelle maskine startes.</translation>
 <translation id="3279741024917655738">Se videoer i fuld skærm på</translation>
 <translation id="3280237271814976245">Gem &amp;som...</translation>
@@ -2094,7 +2096,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4146026355784316281">Åbn altid med systemets visningsprogram</translation>
 <translation id="4146785383423576110">Nulstil, og ryd op</translation>
 <translation id="4147897805161313378">Google Fotos</translation>
-<translation id="4150201353443180367">Visning</translation>
+<translation id="4150201353443180367">Skærm</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 fane}one{# faner}other{# faner}}</translation>
 <translation id="4154664944169082762">Fingeraftryk</translation>
 <translation id="4157869833395312646">Microsoft-kryptering via server</translation>
@@ -2164,7 +2166,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4275830172053184480">Genstart din enhed</translation>
 <translation id="4278101229438943600">Din Google-assistent er klar</translation>
 <translation id="4278390842282768270">Tilladt</translation>
-<translation id="4280864916190672950">Stop indlæsning</translation>
 <translation id="4281844954008187215">Servicevilkår</translation>
 <translation id="4282196459431406533">Smart Lock er slået til</translation>
 <translation id="4284105660453474798">Er du sikker på, at du vil slette "$1"?</translation>
@@ -2602,6 +2603,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4992066212339426712">Slå lyden til</translation>
 <translation id="4992458225095111526">Bekræft Powerwash</translation>
 <translation id="4992473555164495036">Din administrator har begrænset de tilgængelige indtastningsmetoder.</translation>
+<translation id="4992926179187649719">Aktivér "Ok Google"</translation>
 <translation id="4994474651455208930">Tillad, at websites beder om at håndtere protokoller som standard</translation>
 <translation id="4994754230098574403">Konfigurerer</translation>
 <translation id="4996978546172906250">Del via</translation>
@@ -3435,7 +3437,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6231881193380278751">Tilføj en forespørgselsparameter i webadressen for at opdatere siden automatisk: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Batteri</translation>
 <translation id="6232116551750539448">Forbindelsen til <ph name="NAME" /> er afbrudt.</translation>
-<translation id="6235700927623181151">Denne fane deler indholdet fra dit skrivebord.</translation>
 <translation id="6237816943013845465">Giver dig mulighed for at justere skærmopløsningen</translation>
 <translation id="6238923052227198598">Behold den nyeste note på låseskærmen</translation>
 <translation id="6239558157302047471">Genindlæs &amp;ramme</translation>
@@ -4531,6 +4532,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7908378463497120834">Vi beklager, men der kunne ikke oprettes forbindelse til mindst én partition på enheden.</translation>
 <translation id="7909969815743704077">Downloadet i inkognitotilstand</translation>
 <translation id="7910768399700579500">&amp;Ny mappe</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Din adgangskode er blevet ændret på serveren. Log ud, og log derefter ind igen.</translation>
 <translation id="7915471803647590281">Fortæl os, hvad der sker, inden du sender feedback.</translation>
 <translation id="7916556741383518510">Ved klik</translation>
@@ -4815,7 +4817,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8366396658833131068">Netværksforbindelsen er genoprettet. Vælg et andet netværk, eller tryk på knappen "Fortsæt" nedenfor for at åbne din terminalapp.</translation>
 <translation id="8366947248864804596">Hvis din telefon er låst op og i nærheden, skal du blot vælge den for at låse op. Hvis ikke, skal du angive din adgangskode eller pinkode.</translation>
 <translation id="8368859634510605990">&amp;Åbn alle bogmærker</translation>
-<translation id="8369547389711988632">Indlæsningen er stoppet</translation>
 <translation id="8371695176452482769">Indtal nu</translation>
 <translation id="8372369524088641025">Ugyldig WEP-nøgle</translation>
 <translation id="8373553483208508744">Slå fanernes lyd fra</translation>
@@ -5021,7 +5022,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8677212948402625567">Skjul alle...</translation>
 <translation id="8678648549315280022">Administrer downloadindstillinger...</translation>
 <translation id="8678933587484842200">Hvordan vil du starte denne app?</translation>
-<translation id="8679788109894721265">Denne side bruger mere end <ph name="MEGABYTES" /> MB</translation>
 <translation id="8680251145628383637">Log ind for at få dine bogmærker, din historik, dine adgangskoder og dine øvrige indstillinger på alle dine enheder. Du bliver også automatisk logget ind på dine Google-tjenester.</translation>
 <translation id="8686213429977032554">Denne Drev-fil deles ikke endnu</translation>
 <translation id="8687485617085920635">Næste vindue</translation>

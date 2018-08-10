@@ -61,6 +61,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="1404122904123200417">Intégration sur <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Interdire le suivi</translation>
 <translation id="1407135791313364759">Tout ouvrir</translation>
+<translation id="1409426117486808224">Vue simplifiée pour les onglets ouverts</translation>
 <translation id="1409879593029778104">Le téléchargement du fichier "<ph name="FILE_NAME" />" a été bloqué, car le fichier existe déjà.</translation>
 <translation id="1414981605391750300">Mise en relation avec Google. Cette opération peut prendre une minute…</translation>
 <translation id="1416550906796893042">Version de l'application</translation>
@@ -80,6 +81,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="1566400915470565838">Pour utiliser l'application <ph name="APP_NAME" />, veuillez vous connecter à Internet.</translation>
 <translation id="1569387923882100876">Appareil connecté</translation>
 <translation id="1571304935088121812">Copier le nom d'utilisateur</translation>
+<translation id="1576370611341449972">Le téléchargement ne s'effectue que lorsque vous disposez d'une connexion Wi-Fi</translation>
 <translation id="1612196535745283361">Chrome doit avoir accès aux données de localisation pour rechercher des appareils. Cette fonctionnalité est <ph name="BEGIN_LINK" />désactivée pour cet appareil<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">Activer la synchronisation, la personnalisation et d'autres services Google</translation>
 <translation id="1620510694547887537">Appareil photo</translation>
@@ -344,6 +346,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="3810838688059735925">Vidéo</translation>
 <translation id="3810973564298564668">Gérer</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> téléchargements supprimés</translation>
+<translation id="3819562311292413223">Télécharger des articles pour vous</translation>
 <translation id="3822502789641063741">Suppr. données de site ?</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="3859306556332390985">Avance rapide</translation>
@@ -383,6 +386,7 @@ Pour modifier le terme de recherche, appuyez dessus de manière prolongée afin 
 <translation id="4113030288477039509">Géré par votre administrateur</translation>
 <translation id="4116038641877404294">Téléchargez des pages pour y accéder hors connexion</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d favori}one{%1$d favori}other{%1$d favoris}}</translation>
+<translation id="4149994727733219643">Vue simplifiée pour les pages Web</translation>
 <translation id="4159800535322890630">Bloque l'accès à vos capteurs pour certains sites</translation>
 <translation id="4165986682804962316">Paramètres du site</translation>
 <translation id="4170011742729630528">Service indisponible. Veuillez réessayer plus tard.</translation>
@@ -553,6 +557,7 @@ Votre compte Google conserve peut-être d'autres contenus d'historique de naviga
 <translation id="5512137114520586844">Ce compte est géré par <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Désactivé par l'administrateur de cet appareil</translation>
 <translation id="5515439363601853141">Déverrouillez pour afficher votre mot de passe</translation>
+<translation id="5515716148775388141">Vos icônes ont été déplacées au bas de l'écran</translation>
 <translation id="5517095782334947753">Vous disposez des favoris, de l'historique, des mots de passe et d'autres paramètres du compte <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Redirection bloquée.</translation>
 <translation id="5527082711130173040">Chrome doit avoir accès aux données de localisation pour rechercher des appareils. <ph name="BEGIN_LINK1" />Modifiez les autorisations.<ph name="END_LINK1" /> De plus, l'accès aux données de localisation est <ph name="BEGIN_LINK2" />désactivé pour cet appareil<ph name="END_LINK2" />.</translation>
@@ -756,6 +761,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7016516562562142042">Autorisé pour le moteur de recherche actuel</translation>
 <translation id="7021515813996758557">Le fichier "<ph name="FILE_NAME" />" a bien été téléchargé.</translation>
 <translation id="7022756207310403729">Ouvrir dans le navigateur</translation>
+<translation id="702463548815491781">Recommandé quand TalkBack ou Switch Access sont activés</translation>
 <translation id="7029809446516969842">Mots de passe</translation>
 <translation id="7031882061095297553">Synchroniser avec</translation>
 <translation id="7032663816368481562">Lorsque vous appuyez sur Plus de suggestions similaires <ph name="ICON" /> dans la barre d'adresse, des liens rapides s'affichent vers des pages associées. Les URL des pages que vous consultez sont envoyées à Google.</translation>
@@ -784,6 +790,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7251326866581677552">Bloqué sur certains sites</translation>
 <translation id="7253272406652746122">Ajoutez un compte Google depuis la page "Comptes" dans l'application "Paramètres" de votre appareil.</translation>
 <translation id="7274013316676448362">Site bloqué</translation>
+<translation id="72867290065237936">Appuyez pour basculer entre les suggestions de mots de passe et le clavier</translation>
 <translation id="729975465115245577">Aucune application n'est installée sur votre appareil pour stocker le fichier de mots de passe.</translation>
 <translation id="7302081693174882195">Détails : tri effectué par volume de données enregistrées</translation>
 <translation id="7333031090786104871">L'ajout du site précédent est toujours en cours</translation>

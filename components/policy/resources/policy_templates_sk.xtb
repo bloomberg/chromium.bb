@@ -262,6 +262,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak je pravidlo nastavené na hodnotu False, nahlasovanie metrík a diagnostických údajov bude zakázané.
 
       Ak pravidlo nie je nakonfigurované, nahlasovanie metrík a diagnostických údajov bude zakázané v nespravovaných zariadeniach a povolené v spravovaných zariadeniach.</translation>
+<translation id="1920046221095339924">Povoliť spravovanú reláciu v zariadení</translation>
 <translation id="1929709556673267855">Umožňuje poskytnúť konfigurácie pre podnikové tlačiarne združené so zariadeniami.
 
       Toto pravidlo umožňuje poskytnúť konfigurácie tlačiarní zariadeniam so systémom <ph name="PRODUCT_OS_NAME" />.  Formát je rovnaký ako slovník NativePrinters a obsahuje dodatočné pole pre hodnotu „id“ alebo „guid“ na tlačiareň, ktoré umožňuje pridanie na bielu listinu alebo zoznam zakázaných položiek.
@@ -295,6 +296,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Ak ho povolíte alebo preň nenastavíte žiadnu hodnotu, používateľ bude môcť ovládať funkciu Automatické dopĺňanie pre adresy v používateľskom rozhraní.</translation>
 <translation id="1960840544413786116">Či sú povolené certifikáty vydané miestnymi dôveryhodnými autoritami, v ktorých chýba rozšírenie subjectAlternativeName</translation>
+<translation id="1962273523772270623">Povoliť zhromažďovanie denníkov udalostí WebRTC zo služieb Googlu</translation>
 <translation id="1964634611280150550">Režim inkognito je zakázaný</translation>
 <translation id="1964802606569741174">Toto pravidlo nemá žiaden vplyv na aplikáciu YouTube pre Android. Ak chcete v službe YouTube vynútiť Bezpečnostný režim, inštalácia aplikácie YouTube pre Android by mala byť zakázaná.</translation>
 <translation id="1969212217917526199">Prepíše pravidlá v zostavách ladenia používaných hostiteľom vzdialeného prístupu.
@@ -1978,6 +1980,11 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Ak je toto pravidlo nenastavené alebo je zoznam prázdny, bude sa dať v prehliadači <ph name="PRODUCT_NAME" /> pristupovať ku všetkým schémam.</translation>
 <translation id="6652197835259177259">Nastavenia miestne spravovaných používateľov</translation>
 <translation id="6658245400435704251">Určí počet sekúnd, o koľko môže zariadenie náhodne zdržať sťahovanie aktualizácie odvtedy, čo bola aktualizácia odoslaná na server. Zariadenie môže čakať určitý čas a sa pokúsiť o určitý počet kontrol aktualizácií. Oneskorenie je obmedzené nemenným maximálnym časovým intervalom tak, aby zariadenie nečakalo na stiahnutie aktualizácie donekonečna.</translation>
+<translation id="6665599130599311250">Ak toto pravidlo nastavíte na hodnotu false alebo ho ponecháte nenastavené, spravovaná relácia hosťa sa bude správať tak, ako je uvedené v časti https://support.google.com/chrome/a/answer/3017014 – štandardná Verejná relácia.
+
+      Ak ho nastavíte na hodnotu true, spravovaná relácia hosťa sa bude správať tak, ako je uvedené v časti Spravovaná relácia. V tejto relácii sú zrušené mnohé obmedzenia, ktoré platia pre bežné Verejné relácie.
+
+      Ak toto pravidlo nastavíte, používateľ ho nemôže zmeniť ani prepísať.</translation>
 <translation id="6665670272107384733">Nastaviť, ako často musí používateľ zadávať heslo na používanie rýchleho odomknutia</translation>
 <translation id="6681229465468164801">Umožňuje nastaviť zoznam vzorov webových adries určujúcich weby, ktoré nemôžu používateľa požiadať o udelenie prístupu k zariadeniu USB.
 
@@ -2145,6 +2152,17 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="6943577887654905793">Názov predvoľby v systéme Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter poskytujúci funkciu vyhľadávania podľa obrázka pre predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="6956272732789158625">Nepovoliť žiadnym webovým stránkam používať generovanie kľúčov</translation>
+<translation id="6982028490425791294">
+      Ak toto pravidlo nastavíte na hodnotu true, prehliadaču <ph name="PRODUCT_NAME" /> povolíte zhromažďovať denníky udalostí WebRTC zo služieb Googlu (napr. Google Meet) a nahrávať ich do Googlu.
+
+      Ak ho nastavíte na hodnotu false alebo ho ponecháte nenastavené, <ph name="PRODUCT_NAME" /> nebude môcť tieto denníky zhromažďovať ani nahrávať.
+
+      Tieto denníky obsahujú informácie, ako napríklad čas a veľkosť odoslaných a prijatých balíkov RTP, spätnú väzbu týkajúcu sa preťaženia siete a metadáta o čase a kvalite zvuku a snímok videa. Tieto informácie sú užitočné pri ladení problémov so zvukovými alebo videohovormi v Chrome, ako napríklad problémoch s odhadom rýchlosti pripojenia atď. Do denníkov sa neukladá zvukový ani video obsah hovoru.
+
+      Zhromažďovanie týchto dát sa dá spustiť iba pomocou webových služieb Googlu, ako je napríklad Google Hangouts alebo Google Meet.
+
+      Tieto denníky môžu byť prostredníctvom identifikátora relácie priradené k iným denníkom zhromaždeným príslušnou službou Google. Ide o zamýšľané správanie, ktoré má uľahčiť ladenie.
+      </translation>
 <translation id="6994082778848658360">Umožňuje určiť, ako môže byť hardvér zabezpečeného prvku na základnej doske počítača použitý na poskytovanie druhého faktora overenia totožnosti, ak je kompatibilný s touto funkciou. Vypínač zariadenia sa používa na rozpoznanie fyzickej prítomnosti používateľa.
 
       Ak vyberiete možnosť Zakázané, druhý faktor nebude poskytovaný.

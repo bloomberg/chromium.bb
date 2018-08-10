@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">A la dreta</translation>
 <translation id="1351937230027495976">Replega el menú</translation>
 <translation id="1383876407941801731">Cerca</translation>
+<translation id="1419738280318246476">Desbloqueja el dispositiu per dur a terme l'acció que indica la notificació</translation>
 <translation id="1467432559032391204">A l'esquerra</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Menú d'aplicacions</translation>
@@ -68,7 +69,6 @@
 <translation id="2049639323467105390">Aquest dispositiu està gestionat per <ph name="DOMAIN" /></translation>
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="2067602449040652523">Brillantor del teclat</translation>
-<translation id="2075212959500165896">S'han fet massa intents. Torna-ho a provar més tard.</translation>
 <translation id="2081529251031312395">$1 pot iniciar la sessió més tard.</translation>
 <translation id="2127372758936585790">Carregador de baix consum</translation>
 <translation id="2135456203358955318">Lupa acoblada</translation>
@@ -140,7 +140,6 @@
 <translation id="3153444934357957346">Només pots tenir <ph name="MULTI_PROFILE_USER_LIMIT" /> comptes com a màxim en un inici de sessió múltiple.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connectat a un dispositiu}other{Connectat a # dispositius}}</translation>
 <translation id="3236488194889173876">No hi ha cap xarxa mòbil disponible</translation>
-<translation id="3238765806255363838"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="3294437725009624529">Convidat</translation>
 <translation id="332587331255250389">Canvia la bateria</translation>
 <translation id="3351879221545518001">Estàs emetent la pantalla.</translation>
@@ -226,6 +225,7 @@
 <translation id="4924411785043111640">Reinicia i restableix</translation>
 <translation id="4961318399572185831">Emet la pantalla</translation>
 <translation id="5069971504769299223">Pot ser que el gestor del dispositiu pugui supervisar la teva activitat.</translation>
+<translation id="5083553833479578423">Desbloqueja més funcions de l'Assistent.</translation>
 <translation id="5136175204352732067">S'ha connectat un altre teclat</translation>
 <translation id="5168181903108465623">Dispositius d'emissió disponibles</translation>
 <translation id="5207949376430453814">Ressalta la marca d'inserció de text</translation>
@@ -239,7 +239,7 @@
 <translation id="544691375626129091">Ja s'han afegit tots els usuaris disponibles a aquesta sessió.</translation>
 <translation id="5457599981699367932">Navega com a convidat</translation>
 <translation id="54609108002486618">Gestionat</translation>
-<translation id="5496819745535887422">L'administrador està revertint el dispositiu a una versió anterior. Quan es reiniciï el dispositiu, se'n suprimiran totes les dades.</translation>
+<translation id="5496819745535887422">L'administrador està canviant la versió del dispositiu a una d'anterior. Quan es reiniciï el dispositiu, se'n suprimiran totes les dades.</translation>
 <translation id="553675580533261935">S'està tancant la sessió</translation>
 <translation id="5537725057119320332">Emet</translation>
 <translation id="5548285847212963613">L'extensió "<ph name="EXTENSION_NAME" />" pot ajudar a connectar-se a aquesta xarxa.</translation>
@@ -297,6 +297,7 @@
 <translation id="6376931439017688372">Bluetooth està activat</translation>
 <translation id="639644700271529076">Bloq Maj està desactivat</translation>
 <translation id="6406704438230478924">AltGr</translation>
+<translation id="642644398083277086">Esborra totes les notificacions</translation>
 <translation id="643147933154517414">Fet</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Rebutja</translation>
@@ -398,9 +399,11 @@
 <translation id="8152119955266188852">Has premut la drecera de la lupa de pantalla completa. Vols activar-la?</translation>
 <translation id="8190698733819146287">Personalitza idiomes i introducció de text...</translation>
 <translation id="8191230140820435481">Gestionar les aplicacions, les extensions i els temes</translation>
+<translation id="8192202700944119416">S'han amagat les notificacions.</translation>
 <translation id="8261506727792406068">Suprimeix</translation>
 <translation id="8297006494302853456">Feble</translation>
 <translation id="8308637677604853869">Menú anterior</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Crea una nota</translation>
 <translation id="8392451568018454956">Menú d'opcions per a <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Lupa de pantalla completa</translation>
@@ -442,6 +445,7 @@
 <translation id="8938800817013097409">Dispositiu USB-C (port posterior dret)</translation>
 <translation id="8940956008527784070">Bateria baixa (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">Inici ràpid</translation>
+<translation id="899350903320462459">Desbloqueja el dispositiu com a <ph name="LOGIN_ID" /> per dur a terme l'acció que indica la notificació</translation>
 <translation id="8995603266996330174">Gestionat per <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Hi ha disponible una actualització d'Adobe Flash Player</translation>
 <translation id="9056839673611986238">El dispositiu es revertirà a una versió anterior</translation>

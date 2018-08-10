@@ -61,6 +61,7 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="1404122904123200417">Integreret i <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"Do Not Track"</translation>
 <translation id="1407135791313364759">Åbn alle</translation>
+<translation id="1409426117486808224">Enkel visning af åbne faner</translation>
 <translation id="1409879593029778104">Download af <ph name="FILE_NAME" /> blev forhindret, fordi filen allerede findes.</translation>
 <translation id="1414981605391750300">Kontakter Google. Dette kan tage et øjeblik…</translation>
 <translation id="1416550906796893042">Appversion</translation>
@@ -80,6 +81,7 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="1566400915470565838">Opret forbindelse til internettet for at bruge <ph name="APP_NAME" />.</translation>
 <translation id="1569387923882100876">Tilsluttet enhed</translation>
 <translation id="1571304935088121812">Kopiér brugernavnet</translation>
+<translation id="1576370611341449972">Der downloades kun via Wi-Fi</translation>
 <translation id="1612196535745283361">Chrome skal have placeringsadgang for at kunne scanne efter enheder. Placeringsadgang er <ph name="BEGIN_LINK" />slået fra på denne enhed<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">Aktivér synkronisering, tilpasning og andre Google-tjenester</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -344,6 +346,7 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Valgmuligheder</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads blev slettet</translation>
+<translation id="3819562311292413223">Download artikler til dig</translation>
 <translation id="3822502789641063741">Vil du rydde websitelagerpladsen?</translation>
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="3859306556332390985">Spol fremad</translation>
@@ -383,6 +386,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4113030288477039509">Administreres af din administrator</translation>
 <translation id="4116038641877404294">Download sider for at bruge dem, mens du er offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d bogmærke}one{%1$d bogmærke}other{%1$d bogmærker}}</translation>
+<translation id="4149994727733219643">Enkel visning af websider</translation>
 <translation id="4159800535322890630">Bloker websites fra at få adgang til dine sensorer</translation>
 <translation id="4165986682804962316">Indstillinger for website</translation>
 <translation id="4170011742729630528">Tjenesten er ikke tilgængelig. Prøv igen senere.</translation>
@@ -553,6 +557,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="5512137114520586844">Denne konto administreres af <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Deaktiveret af administratoren af denne enhed</translation>
 <translation id="5515439363601853141">Lås op for at se din adgangskode</translation>
+<translation id="5515716148775388141">Dine ikoner er flyttet til bunden af skærmen</translation>
 <translation id="5517095782334947753">Du har bogmærker, historik, adgangskoder og andre indstillinger fra <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Omdirigeringen blev blokeret.</translation>
 <translation id="5527082711130173040">Chrome skal have placeringsadgang for at kunne scanne efter enheder. <ph name="BEGIN_LINK1" />Opdater tilladelser<ph name="END_LINK1" />. Placeringsadgang er også <ph name="BEGIN_LINK2" />slået fra på denne enhed<ph name="END_LINK2" />.</translation>
@@ -756,6 +761,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7016516562562142042">Tilladt for den nuværende søgemaskine</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> blev downloadet</translation>
 <translation id="7022756207310403729">Åbn i browser</translation>
+<translation id="702463548815491781">Anbefales, når TalkBack eller Kontaktadgang er aktiveret</translation>
 <translation id="7029809446516969842">Adgangskoder</translation>
 <translation id="7031882061095297553">Synkroniser til</translation>
 <translation id="7032663816368481562">Se hurtige links til relaterede sider, når du trykker på Se lignende indhold <ph name="ICON" /> i adresselinjen. Webadresserne på de sider, du besøger, sendes til Google.</translation>
@@ -784,6 +790,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7251326866581677552">Blokeret fra nogle websites</translation>
 <translation id="7253272406652746122">Tilføj en Google-konto fra siden Konti i appen Indstillinger på din enhed.</translation>
 <translation id="7274013316676448362">Blokeret website</translation>
+<translation id="72867290065237936">Tryk for at skifte mellem adgangskodeforslag og tastatur</translation>
 <translation id="729975465115245577">Der er ikke nogen app på din enhed, hvor filen med adgangskoder kan gemmes.</translation>
 <translation id="7302081693174882195">Oplysninger: Sorteret efter mængden af sparede data</translation>
 <translation id="7333031090786104871">Det forrige website er stadig ved at blive tilføjet</translation>

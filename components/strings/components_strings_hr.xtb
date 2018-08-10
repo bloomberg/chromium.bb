@@ -207,6 +207,7 @@
 <translation id="2359808026110333948">Nastavi</translation>
 <translation id="2365563543831475020">Izvješće o rušenju programa generirano <ph name="CRASH_TIME" /> još nije preneseno</translation>
 <translation id="2367567093518048410">Razina</translation>
+<translation id="2378238891085281592">Sada ste u privatnom načinu</translation>
 <translation id="2384307209577226199">Zadano pravilo organizacije</translation>
 <translation id="2386255080630008482">Opozvan je certifikat poslužitelja.</translation>
 <translation id="2392959068659972793">Prikaži pravila bez postavljenih vrijednosti</translation>
@@ -355,6 +356,7 @@
 <translation id="3391030046425686457">Adresa za dostavu</translation>
 <translation id="3395827396354264108">Način preuzimanja</translation>
 <translation id="3399952811970034796">Adresa za dostavu</translation>
+<translation id="3409072600744224192">Da biste imali svoje kartice na svim svojim uređajima, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3422248202833853650">Pokušajte zatvoriti ostale programe da biste oslobodili memoriju.</translation>
 <translation id="3422472998109090673">Host <ph name="HOST_NAME" /> trenutačno nije dostupan.</translation>
 <translation id="3427092606871434483">Dopusti (zadano)</translation>
@@ -513,6 +515,7 @@
 <translation id="450710068430902550">Dijeljenje s administratorom</translation>
 <translation id="4515275063822566619">Kartice i adrese dolaze iz Cromea i vašeg Google računa (<ph name="ACCOUNT_EMAIL" />). Njima možete upravljati u <ph name="BEGIN_LINK" />Postavkama<ph name="END_LINK" />.</translation>
 <translation id="4522570452068850558">Detalji</translation>
+<translation id="4524805452350978254">Upravljanje karticama</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Pokušajte onemogućiti proširenja.</translation>
 <translation id="457875822857220463">Dostava</translation>
@@ -578,6 +581,7 @@
 <translation id="5045550434625856497">Pogrešna zaporka</translation>
 <translation id="5056549851600133418">Preporučeni članci</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />provjerite proxy adresu<ph name="END_LINK" /></translation>
+<translation id="5072538239104292703">Da bi se vaše kartice prikazale na svim uređajima, prijavite se i uključite sinkronizaciju.</translation>
 <translation id="5086888986931078152">Možda ćete izgubiti pristup zaštićenom sadržaju s nekih web-lokacija.</translation>
 <translation id="5087286274860437796">Certifikat poslužitelja trenutačno nije važeći.</translation>
 <translation id="5087580092889165836">Dodaj karticu</translation>
@@ -623,6 +627,7 @@
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> od <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Odaberite podatke za kontakt</translation>
 <translation id="5327248766486351172">Naziv</translation>
+<translation id="5327567770033251652">uključite sinkronizaciju</translation>
 <translation id="5332219387342487447">Način otpreme</translation>
 <translation id="5355557959165512791">Trenutačno ne možete otvoriti web-lokaciju <ph name="SITE" /> jer je njezin certifikat opozvan. Mrežne pogreške i napadi uglavnom su privremeni i ta bi stranica kasnije trebala funkcionirati.</translation>
 <translation id="536296301121032821">Pohrana postavki pravila nije uspjela</translation>
@@ -687,6 +692,7 @@
 <translation id="5765072501007116331">Odaberite adresu za prikaz načina dostave i zahtjeva za dostavu.</translation>
 <translation id="5770114862687765385">Čini se da je datoteka oštećena. Kliknite gumb "Poništi" da biste poništili sesiju.</translation>
 <translation id="5778550464785688721">Potpuni nadzor nad MIDI uređajima</translation>
+<translation id="57838592816432529">Isključi zvuk</translation>
 <translation id="5784606427469807560">Pojavio se problem prilikom potvrđivanja kartice. Provjerite internetsku vezu i pokušajte ponovo.</translation>
 <translation id="5785756445106461925">Nadalje, ova stranica sadrži druge resurse koji nisu sigurni. Te resurse mogu vidjeti drugi tijekom prijenosa i napadač ih može izmijeniti kako bi promijenio izgled stranice.</translation>
 <translation id="5786044859038896871">Želite li ispuniti podatke o kartici?</translation>
@@ -698,6 +704,7 @@
 <translation id="5866257070973731571">Dodajte telefonski broj</translation>
 <translation id="5869405914158311789">Web-lokacija ne može se dohvatiti</translation>
 <translation id="5869522115854928033">Spremljene zaporke</translation>
+<translation id="5887400589839399685">Kartica je spremljena</translation>
 <translation id="5893752035575986141">Prihvaćaju se kreditne kartice.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sinkronizirano)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 u upotrebi}one{# u upotrebi}few{# u upotrebi}other{# u upotrebi}}</translation>
@@ -815,18 +822,22 @@
 <translation id="6915804003454593391">Korisnik:</translation>
 <translation id="6944692733090228304">Unijeli ste zaporku na web-lokaciju kojom ne upravlja <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Da biste zaštitili račun, nemojte upotrebljavati tu zaporku za druge aplikacije i web-lokacije.</translation>
 <translation id="6945221475159498467">Odaberi</translation>
+<translation id="6948540501704460596">Da biste imali svoje kartice na svim svojim uređajima, <ph name="SYNC_LINK" />.</translation>
 <translation id="6948701128805548767">Odaberite adresu za prikaz načina preuzimanja i zahtjeva za preuzimanje</translation>
 <translation id="6949872517221025916">Poništite zaporku</translation>
 <translation id="6950684638814147129">Došlo je do pogreške prilikom raščlanjivanja vrijednosti JSON-a: <ph name="ERROR" /></translation>
+<translation id="6957624206566198865">Otvorite stranicu u novoj privatnoj kartici</translation>
 <translation id="6957887021205513506">Certifikat poslužitelja izgleda kao falsifikat.</translation>
 <translation id="6965382102122355670">U redu</translation>
 <translation id="6965978654500191972">Uređaj</translation>
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="6973656660372572881">Određeni su fiksni proxy poslužitelji i URL .pac skripte.</translation>
+<translation id="6984479912851154518">Napuštate privatni način rada da biste platili putem vanjske aplikacije. Želite li nastaviti?</translation>
 <translation id="6989763994942163495">Pokaži napredne postavke...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Ta terećenja mogu biti jednokratna ili ponavljajuća i možda nisu odmah vidljiva.</translation>
 <translation id="7029809446516969842">Zaporke</translation>
+<translation id="7042837854211185817">Da bi se prikazale kartice na svim uređajima, uključite sinkronizaciju.</translation>
 <translation id="7050187094878475250">Pokušali ste pristupiti domeni <ph name="DOMAIN" />, ali je poslužitelj pružio certifikat koji nije pouzdan zbog predugog razdoblja valjanosti.</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7064851114919012435">Podaci za kontakt</translation>
@@ -1074,6 +1085,7 @@
 <translation id="8820817407110198400">Knjižne oznake</translation>
 <translation id="883848425547221593">Druge oznake</translation>
 <translation id="884264119367021077">Adresa za dostavu</translation>
+<translation id="8846319957959474018">Jednostavno otvaranje aplikacija pomoću oznaka</translation>
 <translation id="884923133447025588">Nije pronađen mehanizam za opoziv.</translation>
 <translation id="885730110891505394">Dijeljenje s Googleom</translation>
 <translation id="8858065207712248076">Chrome preporučuje poništavanje zaporke za organizaciju <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> ako ste je upotrebljavali za druge web-lokacije.</translation>

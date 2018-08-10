@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">Dreapta</translation>
 <translation id="1351937230027495976">Restrânge meniul</translation>
 <translation id="1383876407941801731">Caută</translation>
+<translation id="1419738280318246476">Deblochează dispozitivul pentru efectuarea acțiunii de notificare</translation>
 <translation id="1467432559032391204">Stânga</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Lansator</translation>
@@ -68,7 +69,6 @@
 <translation id="2049639323467105390">Acest dispozitiv este gestionat de <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Portret</translation>
 <translation id="2067602449040652523">Luminozitatea tastaturii</translation>
-<translation id="2075212959500165896">Prea multe încercări. Încearcă din nou mai târziu.</translation>
 <translation id="2081529251031312395">$1 se poate conecta și mai târziu.</translation>
 <translation id="2127372758936585790">Încărcător de putere joasă</translation>
 <translation id="2135456203358955318">Lupă andocată</translation>
@@ -140,7 +140,6 @@
 <translation id="3153444934357957346">Conectarea multiplă acceptă maximum <ph name="MULTI_PROFILE_USER_LIMIT" /> conturi.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Conectat la un dispozitiv}few{Conectat la # dispozitive}other{Conectat la # de dispozitive}}</translation>
 <translation id="3236488194889173876">Nicio rețea mobilă disponibilă</translation>
-<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Invitat</translation>
 <translation id="332587331255250389">Înlocuiește bateria</translation>
 <translation id="3351879221545518001">În prezent proiectezi ecranul.</translation>
@@ -226,6 +225,7 @@
 <translation id="4924411785043111640">Repornește și resetează</translation>
 <translation id="4961318399572185831">Proiectează ecranul</translation>
 <translation id="5069971504769299223">Managerul de dispozitiv poate să îți monitorizeze activitatea.</translation>
+<translation id="5083553833479578423">Deblochează mai multe funcții ale Asistentului.</translation>
 <translation id="5136175204352732067">Altă tastatură conectată</translation>
 <translation id="5168181903108465623">Dispozitive de proiecție disponibile</translation>
 <translation id="5207949376430453814">Evidențiază cursorul pentru text</translation>
@@ -297,6 +297,7 @@
 <translation id="6376931439017688372">Bluetooth este activat</translation>
 <translation id="639644700271529076">Tasta CAPS LOCK este dezactivată</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">Șterge toate notificările</translation>
 <translation id="643147933154517414">Gata</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> pe <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Respingeți</translation>
@@ -398,9 +399,11 @@
 <translation id="8152119955266188852">Ai accesat comanda rapidă pentru lupa de ecran complet. Vrei să o activezi?</translation>
 <translation id="8190698733819146287">Personalizează limbile și modul de introducere...</translation>
 <translation id="8191230140820435481">Gestionează aplicațiile, extensiile și temele dvs.</translation>
+<translation id="8192202700944119416">Notificările sunt ascunse.</translation>
 <translation id="8261506727792406068">Șterge</translation>
 <translation id="8297006494302853456">Slab</translation>
 <translation id="8308637677604853869">Meniul anterior</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Creează o notă</translation>
 <translation id="8392451568018454956">Meniu cu opțiuni pentru <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Lupă de ecran complet</translation>
@@ -426,7 +429,7 @@
 <translation id="8676770494376880701">A fost conectat un încărcător de putere joasă</translation>
 <translation id="8683506306463609433">Urmărirea performanțelor este activă</translation>
 <translation id="8734991477317290293">Aceasta ar putea încerca să înregistreze ce taste apeși</translation>
-<translation id="8735953464173050365">Afișează setările pentru tastatură. Este selectată tastatura <ph name="KEYBOARD_NAME" /></translation>
+<translation id="8735953464173050365">Afișează setările pentru tastatură. Este selectată <ph name="KEYBOARD_NAME" /></translation>
 <translation id="875593634123171288">Afișează setările VPN</translation>
 <translation id="8809737090443522491">Introdu numele unei aplicații sau al unui document</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
@@ -442,6 +445,7 @@
 <translation id="8938800817013097409">Dispozitiv USB-C (portul din dreapta în spate)</translation>
 <translation id="8940956008527784070">Baterie slabă (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="8984179138335769204">Lansare rapidă</translation>
+<translation id="899350903320462459">Deblochează dispozitivul ca <ph name="LOGIN_ID" /> pentru efectuarea acțiunii de notificare</translation>
 <translation id="8995603266996330174">Gestionat de <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Este disponibilă o actualizare Adobe Flash Player</translation>
 <translation id="9056839673611986238">SO de pe dispozitiv va fi adus la o versiune anterioară</translation>

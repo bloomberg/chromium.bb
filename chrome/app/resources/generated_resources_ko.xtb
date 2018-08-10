@@ -2164,7 +2164,6 @@
 <translation id="4275830172053184480">기기 다시 시작</translation>
 <translation id="4278101229438943600">어시스턴트 이용 가능</translation>
 <translation id="4278390842282768270">허용됨</translation>
-<translation id="4280864916190672950">로드 중지</translation>
 <translation id="4281844954008187215">서비스 약관</translation>
 <translation id="4282196459431406533">Smart Lock이 사용 설정됨</translation>
 <translation id="4284105660453474798">'$1'을(를) 삭제하시겠습니까?</translation>
@@ -3434,7 +3433,6 @@
 <translation id="6231881193380278751">검색어 매개변수를 URL에 추가하여 다음 페이지를 자동으로 새로고침하세요. chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">배터리</translation>
 <translation id="6232116551750539448"><ph name="NAME" /> 연결이 끊어졌습니다.</translation>
-<translation id="6235700927623181151">탭에서 데스크톱 콘텐츠를 공유하는 중입니다.</translation>
 <translation id="6237816943013845465">화면 해상도를 조정할 수 있습니다.</translation>
 <translation id="6238923052227198598">잠금 화면에 최근 메모 보관</translation>
 <translation id="6239558157302047471">프레임 새로고침(&amp;F)</translation>
@@ -4815,7 +4813,6 @@
 <translation id="8366396658833131068">네트워크 연결이 복원되었습니다. 키오스크 앱을 실행하려면 다른 네트워크를 선택하거나 아래에서 '계속' 버튼을 누르세요.</translation>
 <translation id="8366947248864804596">휴대전화가 잠금 해제된 상태로 근처에 있는 경우 선택하여 잠금 해제하세요. 그렇지 않은 경우 비밀번호나 PIN을 입력해야 합니다.</translation>
 <translation id="8368859634510605990">모든 북마크 열기(&amp;O)</translation>
-<translation id="8369547389711988632">로드가 중지됨</translation>
 <translation id="8371695176452482769">말하세요</translation>
 <translation id="8372369524088641025">잘못된 WEP 키</translation>
 <translation id="8373553483208508744">탭 음소거</translation>
@@ -5021,7 +5018,6 @@
 <translation id="8677212948402625567">모두 접기...</translation>
 <translation id="8678648549315280022">다운로드 설정 관리...</translation>
 <translation id="8678933587484842200">이 애플리케이션을 실행할 방법을 선택하세요.</translation>
-<translation id="8679788109894721265">이 페이지는 <ph name="MEGABYTES" />MB 이상을 사용합니다.</translation>
 <translation id="8680251145628383637">로그인하면 모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정이 동기화되며 Google 서비스에 자동으로 로그인됩니다.</translation>
 <translation id="8686213429977032554">드라이브 파일이 아직 공유되지 않음</translation>
 <translation id="8687485617085920635">다음 창</translation>

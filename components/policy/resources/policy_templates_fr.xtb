@@ -277,6 +277,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Si elle est définie sur "false", les rapports sur les statistiques et les données de diagnostic ne sont pas envoyés.
 
       Si cette règle n'est pas configurée, les rapports sur les statistiques et les données de diagnostic ne sont pas envoyés sur les appareils non gérés, mais sont transmis sur les appareils gérés.</translation>
+<translation id="1920046221095339924">Autoriser une session gérée sur l'appareil</translation>
 <translation id="1929709556673267855">Fournit les configurations des imprimantes d'entreprise associées à des appareils.
 
       Cette règle vous permet de communiquer les configurations des imprimantes aux appareils <ph name="PRODUCT_OS_NAME" />. Le format est le même que celui du dictionnaire NativePrinters, à l'exception d'un champ supplémentaire obligatoire "id" ou "guid" pour chaque imprimante permettant de l'ajouter sur liste blanche ou liste noire.
@@ -310,6 +311,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 
       Si ce paramètre est activé ou vide, l'utilisateur peut contrôler la saisie automatique pour les adresses dans l'interface utilisateur.</translation>
 <translation id="1960840544413786116">Autoriser ou non les certificats émis par les ancres d'approbation locales qui ne comportent pas l'extension subjectAlternativeName</translation>
+<translation id="1962273523772270623">Autoriser la collecte des journaux d'événements WebRTC à partir des services Google</translation>
 <translation id="1964634611280150550">Mode navigation privée désactivé</translation>
 <translation id="1964802606569741174">Cette règle n'a aucun effet sur l'application YouTube pour Android. Vous ne devez pas autoriser son installation si le mode sécurisé de YouTube doit être appliqué.</translation>
 <translation id="1969212217917526199">Remplace des règles sur les versions de débogage de l'hôte d'accès à distance.
@@ -2018,6 +2020,11 @@ Si vous activez ce paramètre ou ne définissez pas de valeur, la fonction de sa
       Si vous ne définissez pas cette règle ou si la liste est vide, tous les schémas sont accessibles dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Paramètres des utilisateurs gérés en local</translation>
 <translation id="6658245400435704251">Indique le nombre maximal de secondes pendant lesquelles un appareil peut retarder de façon aléatoire le téléchargement d'une mise à jour à partir du moment où celle-ci est disponible sur le serveur. L'appareil peut attendre pendant une certaine partie de ce temps en termes de temps de l'horloge et pendant la partie restante en termes de nombre de recherches de mise à jour. Dans tous les cas, le facteur de dispersion est limité à une quantité de temps constante, de sorte qu'un appareil ne reste jamais bloqué dans l'attente d'une mise à jour.</translation>
+<translation id="6665599130599311250">Si cette règle est définie sur "False" ou n'est pas définie, la session en mode Invité gérée se comportera comme une session publique standard, tel que cela est expliqué dans l'article https://support.google.com/chrome/a/answer/3017014.
+
+      Si cette règle est définie sur "True", la session en mode Invité gérée se comportera comme une session gérée, et de nombreuses restrictions appliquées aux sessions publiques normales seront ainsi levées.
+
+      Si cette règle est configurée, l'utilisateur ne pourra pas la modifier ni l'ignorer.</translation>
 <translation id="6665670272107384733">Définir la fréquence à laquelle l'utilisateur doit saisir le mot de passe pour utiliser le déverrouillage rapide</translation>
 <translation id="6681229465468164801">Cette règle permet de définir une liste de formats d'URL spécifiant les sites non autorisés à demander à l'utilisateur l'accès à un périphérique USB.
 
@@ -2185,6 +2192,17 @@ Cette règle n'est prise en compte que si la règle "DefaultSearchProviderEnable
 <translation id="6943577887654905793">Nom de préférence Mac/Linux :</translation>
 <translation id="69525503251220566">Paramètre qui active la fonctionnalité de recherche par image pour le moteur de recherche par défaut</translation>
 <translation id="6956272732789158625">Interdire à tous les sites d'utiliser la génération de clé</translation>
+<translation id="6982028490425791294">
+      Si la règle est définie sur "True", <ph name="PRODUCT_NAME" /> est autorisé à collecter les journaux d'événements WebRTC à partir des services Google (Google Meet, par exemple) et à les transférer vers Google.
+
+      Si la règle est définie sur "False" ou n'est pas définie, <ph name="PRODUCT_NAME" /> ne peut pas collecter ces journaux ni les transférer.
+
+      Ces journaux contiennent des informations telles que l'horodatage et la taille des paquets RTP envoyés et reçus, des commentaires sur la congestion du réseau, et des métadonnées relatives à l'horodatage et à la qualité des trames vidéo et audio. Ces informations sont utiles lors du débogage de problèmes d'appels audio ou vidéo dans Chrome, comme des problèmes d'estimation de la bande passante, etc. Les journaux n'incluent aucun contenu audio ou vidéo des appels.
+
+      Cette collecte de données ne peut être déclenchée que par des services Web de Google, tels que Google Hangouts ou Google Meet.
+
+      Ces journaux peuvent être associés à d'autres journaux collectés par le service Google proprement dit à l'aide d'un ID de session dans le but de faciliter le débogage.
+      </translation>
 <translation id="6994082778848658360">Indique comment le matériel sécurisé intégré peut être utilisé pour l'authentification à deux facteurs, s'il est compatible avec cette fonctionnalité. Le bouton Marche/Arrêt de l'appareil est utilisé pour détecter la présence de l'utilisateur.
 
       Si vous sélectionnez "Désactivé" ou si vous ne définissez pas cette règle, aucun deuxième facteur n'est fourni.

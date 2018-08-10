@@ -61,6 +61,7 @@
 <translation id="1404122904123200417">በ<ph name="WEBSITE_URL" /> ውስጥ ተካትቷል</translation>
 <translation id="1406000523432664303">«አትከታተል»</translation>
 <translation id="1407135791313364759">ሁሉንም ክፈት</translation>
+<translation id="1409426117486808224">ለክፍት ትሮች የተቃለለ እይታ</translation>
 <translation id="1409879593029778104">ፋይሉ አስቀድሞ ስላለ <ph name="FILE_NAME" />ን ማውረድ ታግዷል።</translation>
 <translation id="1414981605391750300">Googleን በማነጋገር ላይ።  ወደ አንድ ደቂቃ ሊወስድ ይችላል…</translation>
 <translation id="1416550906796893042">የመተግበሪያ ስሪት</translation>
@@ -80,6 +81,7 @@
 <translation id="1566400915470565838"><ph name="APP_NAME" />ን ለመጠቀም እባክዎ ከበይነመረብ ጋር ይገናኙ።</translation>
 <translation id="1569387923882100876">የተገናኘ መሣሪያ</translation>
 <translation id="1571304935088121812">የተጠቃሚ ስምን ቅዳ</translation>
+<translation id="1576370611341449972">ማውረድ በWi-Fi ላይ ብቻ ነው የሚከሰተው</translation>
 <translation id="1612196535745283361">Chrome መሣሪያዎችን መቃኘት እንዲችል የአካባቢ መዳረሻ ያስፈልገዋል። የአካባቢ መዳረሻ <ph name="BEGIN_LINK" />ለዚህ መሣሪያ ጠፍቷል<ph name="END_LINK" />።</translation>
 <translation id="162035744160882748">ስምረትን፣ ግላዊነት ማላበስን እና ሌሎች የGoogle አገልግሎቶችን ያብሩ</translation>
 <translation id="1620510694547887537">ካሜራ</translation>
@@ -344,6 +346,7 @@
 <translation id="3810838688059735925">ቪዲዮ</translation>
 <translation id="3810973564298564668">አቀናብር</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> የሚወርዱ ተሰርዘዋል</translation>
+<translation id="3819562311292413223">ለእርስዎ የሚሆኑ ጽሑፎችን አይውርዱ</translation>
 <translation id="3822502789641063741">የጣቢያ ማከማቻ ይጽዳ?</translation>
 <translation id="385051799172605136">ተመለስ</translation>
 <translation id="3859306556332390985">ወደፊት ፈልግ</translation>
@@ -383,6 +386,7 @@
 <translation id="4113030288477039509">በእርስዎ አስተዳዳሪ የሚቀናበር</translation>
 <translation id="4116038641877404294">ገጾችን ከመስመር ውጭ ለመጠቀም ያውርዷቸው</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d ዕልባት}one{%1$d ዕልባቶች}other{%1$d ዕልባቶች}}</translation>
+<translation id="4149994727733219643">ለድረ-ገጾች የተቃለለ እይታ</translation>
 <translation id="4159800535322890630">ጣቢያዎች ዳሳሾችዎን እንዳይደርሱ ያግዱ</translation>
 <translation id="4165986682804962316">የጣቢያ ቅንብሮች</translation>
 <translation id="4170011742729630528">አገልግሎቱ አይገኝም፤ ቆይተው እንደገና ይሞክሩ።</translation>
@@ -553,6 +557,7 @@
 <translation id="5512137114520586844">ይህ መለያ የሚቀናበረው በ<ph name="PARENT_NAME" /> ነው።</translation>
 <translation id="5514904542973294328">በዚህ መሣሪያ አስተዳዳሪ ተሰናክሏል</translation>
 <translation id="5515439363601853141">የይለፍ ቃልዎን ለመመልከት ይክፈቱ</translation>
+<translation id="5515716148775388141">የእርስዎ አዶዎች ወደ የማያው ታችኛው ክፍል ተወስደዋል</translation>
 <translation id="5517095782334947753">ከ<ph name="FROM_ACCOUNT" /> የመጡ ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት  እና ሌሎች ቅንብሮች አለዎት።</translation>
 <translation id="5524843473235508879">አቅጣጫ ማዞር ታግዷል።</translation>
 <translation id="5527082711130173040">Chrome መሣሪያዎችን መቃኘት እንዲችል የአካባቢ መዳረሻ ያስፈልገዋል። <ph name="BEGIN_LINK1" />ፈቃዶችን ያዘምኑ<ph name="END_LINK1" />። የአካባቢ መዳረሻ እንዲሁም <ph name="BEGIN_LINK2" />ለዚህ መዳረሻ ጠፍቷል<ph name="END_LINK2" />።</translation>
@@ -756,6 +761,7 @@
 <translation id="7016516562562142042">ለአሁኑ የፍለጋ ፕሮግራም ተፈቅዷል</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> ወርዷል</translation>
 <translation id="7022756207310403729">በአሳሽ ውስጥ ክፈት</translation>
+<translation id="702463548815491781">TalkBack ወይም መዳረሻ ቀይር ሲበሩ የሚመከር</translation>
 <translation id="7029809446516969842">የይለፍ ቃላት</translation>
 <translation id="7031882061095297553">አሥምር ወደ</translation>
 <translation id="7032663816368481562">እንደዚህ <ph name="ICON" /> ያለ ተጨማሪ በአድራሻ አሞሌ ውስጥ መታ በሚያደርጉበት ጊዜ፣ ለተዛማጅ ገጾች ፈጣን አገናኞችን ያሳዩ። የሚጎበኟቸው ገጾች ዩአርኤሎች ወደ Google ይላካሉ።</translation>
@@ -784,6 +790,7 @@
 <translation id="7251326866581677552">ከአንዳንድ ጣቢያዎች ታግደዋል</translation>
 <translation id="7253272406652746122">በመሣሪያዎ ቅንብሮች መተግበሪያ ውስጥ ካለው የመለያዎች ገጽ ሆነው የGoogle መለያ ያክሉ።</translation>
 <translation id="7274013316676448362">የታገደ ጣቢያ</translation>
+<translation id="72867290065237936">በይለፍ ቃል ጥቆማዎች እና ቁልፍ ሰሌዳ መካከል ለመቀያየር መታ ያድርጉ</translation>
 <translation id="729975465115245577">የእርስዎ መሣሪያ የይለፍ ቃላት ፋይሉን የሚያከማችበት መተግበሪያ የለውም።</translation>
 <translation id="7302081693174882195">ዝርዝሮች፦ በተቀመጠው የውሂብ መጠን ተደርድረዋል</translation>
 <translation id="7333031090786104871">አሁንም ቀዳሚ ጣቢያን በማከል ላይ</translation>

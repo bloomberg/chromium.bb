@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">Синхронизација и персонализација</translation>
 <translation id="1398853756734560583">Увећај</translation>
 <translation id="1399511500114202393">Нема корисничког сертификата</translation>
+<translation id="1401165786814632797">Приступајте Помоћнику сваки пут када изговорите „Ок Google“ док је уређај ван стања спавања и откључан.</translation>
 <translation id="140250605646987970">Телефон је пронађен. Али Smart Lock функционише само на уређајима који имају Android 5.0 и новије верзије. &lt;a&gt;Сазнајте више&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (контролисано)</translation>
 <translation id="1405476660552109915">Желите ли да <ph name="PASSWORD_MANAGER_BRAND" /> сачува налог за овај сајт?</translation>
@@ -640,7 +641,7 @@
 <translation id="1932098463447129402">Не пре</translation>
 <translation id="1933809209549026293">Повежите миша или тастатуру. Ако користите Bluetooth уређај, проверите да ли је спреман за упаривање.</translation>
 <translation id="1936157145127842922">Прикажи у директоријуму</translation>
-<translation id="1938351510777341717">External Command (Спољна команда)</translation>
+<translation id="1938351510777341717">Спољна команда</translation>
 <translation id="1940546824932169984">Повезани уређаји</translation>
 <translation id="1942765061641586207">Резолуција слике</translation>
 <translation id="1943097386230153518">Инсталирајте нову услугу</translation>
@@ -1506,6 +1507,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> жели да се повеже</translation>
 <translation id="3274763671541996799">Прешли сте на режим целог екрана.</translation>
 <translation id="3275778913554317645">Отвори као прозор</translation>
+<translation id="3278877214895457897">Када подесите Chromebook, притисните дугме Помоћник или изговорите „Ок Google“ да бисте затражили помоћ од Помоћника у било ком тренутку.</translation>
 <translation id="3279230909244266691">Ово може да потраје неколико минута. Покреће се виртуелна машина.</translation>
 <translation id="3279741024917655738">Приказуј видео снимке преко целог екрана на:</translation>
 <translation id="3280237271814976245">Сачувај &amp;као...</translation>
@@ -2162,7 +2164,6 @@
 <translation id="4275830172053184480">Поновно покретање уређаја</translation>
 <translation id="4278101229438943600">Помоћник је спреман</translation>
 <translation id="4278390842282768270">Дозвољено</translation>
-<translation id="4280864916190672950">Заустављање учитавања</translation>
 <translation id="4281844954008187215">Услови коришћења услуге</translation>
 <translation id="4282196459431406533">Smart Lock је укључен</translation>
 <translation id="4284105660453474798">Да ли стварно желите да избришете „$1“?</translation>
@@ -2600,6 +2601,7 @@
 <translation id="4992066212339426712">Укључи звук</translation>
 <translation id="4992458225095111526">Потврђивање Powerwash-а</translation>
 <translation id="4992473555164495036">Администратор је ограничио доступне методе уноса.</translation>
+<translation id="4992926179187649719">Укључите „Ок Google“</translation>
 <translation id="4994474651455208930">Дозволи сајтовима да захтевају да постану подразумевани обрађивачи протокола</translation>
 <translation id="4994754230098574403">Подешава се</translation>
 <translation id="4996978546172906250">Дељење преко</translation>
@@ -3434,7 +3436,6 @@
 <translation id="6231881193380278751">Додајте параметар упита у URL да бисте аутоматски освежили страницу: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Батерија</translation>
 <translation id="6232116551750539448">Веза са мрежом <ph name="NAME" /> је прекинута</translation>
-<translation id="6235700927623181151">Ова картица дели садржај екрана.</translation>
 <translation id="6237816943013845465">Омогућавају вам да прилагодите резолуцију екрана</translation>
 <translation id="6238923052227198598">Задржи најновију белешку на закључаном екрану</translation>
 <translation id="6239558157302047471">Поново учитај &amp;оквир</translation>
@@ -4530,6 +4531,7 @@
 <translation id="7908378463497120834">Жао нам је, најмање једну партицију спољног меморијског уређаја није било могуће укључити.</translation>
 <translation id="7909969815743704077">Преузето је у режиму без архивирања</translation>
 <translation id="7910768399700579500">&amp;Нови директоријум</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Лозинка је промењена на серверу. Одјавите се, па се поново пријавите.</translation>
 <translation id="7915471803647590281">Реците нам шта се дешава пре него што пошаљете повратне информације.</translation>
 <translation id="7916556741383518510">При клику</translation>
@@ -4814,7 +4816,6 @@
 <translation id="8366396658833131068">Веза са мрежом је поново успостављена. Изаберите другу мрежу или притисните дугме „Настави“ у наставку да бисте покренули киоск апликацију.</translation>
 <translation id="8366947248864804596">Када је телефон откључан и у близини, само га изаберите да бисте откључали. У супротном, унесите лозинку или PIN.</translation>
 <translation id="8368859634510605990">&amp;Отвори све обележиваче</translation>
-<translation id="8369547389711988632">Учитавање је заустављено</translation>
 <translation id="8371695176452482769">Почните да говорите</translation>
 <translation id="8372369524088641025">Неисправна WEP шифра</translation>
 <translation id="8373553483208508744">Искључи звук картица</translation>
@@ -5010,7 +5011,7 @@
 <translation id="8666584013686199826">Питај када сајт жели да приступи USB уређајима</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> је сада у режиму целог екрана и онемогућио је курсор.</translation>
 <translation id="8669284339312441707">Топлије</translation>
-<translation id="8669919703154928649">Омогућите да вам Помоћник приказује обавештења</translation>
+<translation id="8669919703154928649">Дозволите Помоћнику да вам приказује обавештења</translation>
 <translation id="8669949407341943408">Премештање...</translation>
 <translation id="8671210955687109937">Може да коментарише</translation>
 <translation id="8673026256276578048">Претражи Веб...</translation>
@@ -5020,7 +5021,6 @@
 <translation id="8677212948402625567">Скупи све...</translation>
 <translation id="8678648549315280022">Управљај подешавањима преузимања...</translation>
 <translation id="8678933587484842200">Како желите да се ова апликација покреће?</translation>
-<translation id="8679788109894721265">Ова страница користи више од <ph name="MEGABYTES" /> MB</translation>
 <translation id="8680251145628383637">Пријавите се да би вам обележивачи, историја, лозинке и друга подешавања били доступни на свим уређајима. Аутоматски ћете бити пријављени и на Google услуге.</translation>
 <translation id="8686213429977032554">Ова датотека са Диска се још увек не дели</translation>
 <translation id="8687485617085920635">Следећи прозор</translation>

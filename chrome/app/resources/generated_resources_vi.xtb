@@ -2166,7 +2166,6 @@
 <translation id="4275830172053184480">Khởi động lại thiết bị của bạn</translation>
 <translation id="4278101229438943600">Trợ lý của bạn đã sẵn sàng</translation>
 <translation id="4278390842282768270">Được cho phép</translation>
-<translation id="4280864916190672950">Dừng tải</translation>
 <translation id="4281844954008187215">Điều khoản dịch vụ</translation>
 <translation id="4282196459431406533">Đã bật Smart Lock</translation>
 <translation id="4284105660453474798">Bạn có chắc bạn muốn xóa "$1" không?</translation>
@@ -3436,7 +3435,6 @@
 <translation id="6231881193380278751">Thêm thông số truy vấn trong URL để tự động làm mới trang: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Pin</translation>
 <translation id="6232116551750539448">Đã mất kết nối với <ph name="NAME" /></translation>
-<translation id="6235700927623181151">Tab này đang chia sẻ nội dung trên màn hình.</translation>
 <translation id="6237816943013845465">Cho phép bạn điều chỉnh độ phân giải màn hình</translation>
 <translation id="6238923052227198598">Giữ ghi chú mới nhất trên màn hình khóa</translation>
 <translation id="6239558157302047471">Tải lại &amp;khung</translation>
@@ -4817,7 +4815,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8366396658833131068">Kết nối mạng của bạn đã được khôi phục. Hãy chọn mạng khác hoặc nhấn nút 'Tiếp tục' bên dưới để khởi chạy ứng dụng kiosk của bạn.</translation>
 <translation id="8366947248864804596">Khi điện thoại của bạn được mở khóa và ở gần, chỉ cần chọn để mở khóa. Nếu không, hãy nhập mật khẩu hoặc mã PIN.</translation>
 <translation id="8368859634510605990">&amp;Mở tất cả dấu trang</translation>
-<translation id="8369547389711988632">Đã dừng tải</translation>
 <translation id="8371695176452482769">Nói ngay bây giờ</translation>
 <translation id="8372369524088641025">Khóa WEP sai</translation>
 <translation id="8373553483208508744">Tắt tiếng tab</translation>
@@ -5023,7 +5020,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8677212948402625567">Thu gọn tất cả...</translation>
 <translation id="8678648549315280022">Quản lý cài đặt tải xuống...</translation>
 <translation id="8678933587484842200">Bạn muốn ứng dụng này khởi động như thế nào?</translation>
-<translation id="8679788109894721265">Trang này sử dụng trên <ph name="MEGABYTES" /> MB</translation>
 <translation id="8680251145628383637">Đăng nhập để nhận dấu trang, lịch sử, mật khẩu và cài đặt khác trên tất cả thiết bị của bạn. Bạn cũng sẽ tự động được đăng nhập vào các dịch vụ Google của mình.</translation>
 <translation id="8686213429977032554">Tệp Drive này chưa được chia sẻ</translation>
 <translation id="8687485617085920635">Cửa sổ tiếp theo</translation>

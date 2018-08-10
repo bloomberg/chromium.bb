@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
 <translation id="100812568230599391">Cambia stile display su interfoliazione.</translation>
+<translation id="1011903154582639569">Trova un tasto, poi solleva il dito per digitarlo</translation>
 <translation id="1012173283529841972">Voce elenco</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">È la prima volta che utilizzi la funzione di lettura vocale di ChromeVox? Questo breve tutorial spiega le nozioni di base per iniziare a utilizzare ChromeVox.</translation>
@@ -162,6 +163,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">Gruppo</translation>
 <translation id="2582407057977008361">Di lato</translation>
+<translation id="2592212930811759050">Tocca due volte per iniziare la modifica</translation>
 <translation id="2606210917827248971">con {COUNT,plural, =1{# voce}other{# voci}}</translation>
 <translation id="2614981083756825552">Layout MathML</translation>
 <translation id="2624431853467395961">Apri la modalità di apprendimento</translation>

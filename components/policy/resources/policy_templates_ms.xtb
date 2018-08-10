@@ -275,6 +275,7 @@
       Jika ditetapkan kepada palsu, pelaporan metrik dan data diagnostik akan dilumpuhkan.
 
       Jika tidak dikonfigurasikan, pelaporan metrik dan data diagnostik akan dilumpuhkan pada peranti tidak diurus dan didayakan pada peranti yang diurus.</translation>
+<translation id="1920046221095339924">Benarkan sesi yang diurus pada peranti</translation>
 <translation id="1929709556673267855">Menyediakan konfigurasi untuk pencetak perusahaan yang dihubungkan pada peranti.
 
        Dasar ini membenarkan anda menyediakan konfigurasi pencetak kepada peranti <ph name="PRODUCT_OS_NAME" />. Format adalah sama dengan format kamus NativePrinters, dengan medan tambahan "id" atau "guid" yang diperlukan bagi setiap pencetak untuk penyenaraian putih atau hitam.
@@ -308,6 +309,7 @@
 
       Jika tetapan ini didayakan atau tiada nilai, pengguna akan dapat mengawal ciri Autolengkap untuk alamat dalam UI.</translation>
 <translation id="1960840544413786116">Sama ada hendak membenarkan sijil yang dikeluarkan oleh pengukuhan kepercayaan setempat yang tiasa sambungan subjectAlternativeName</translation>
+<translation id="1962273523772270623">Benarkan pengumpulan log peristiwa WebRTC daripada perkhidmatan Google</translation>
 <translation id="1964634611280150550">Mod Inkognito dilumpuhkan</translation>
 <translation id="1964802606569741174">Dasar ini tidak berkesan terhadap apl YouTube Android. Jika Mod Keselamatan pada YouTube harus dikuatkuasakan, pemasangan apl YouTube Android tidak boleh dibenarkan.</translation>
 <translation id="1969212217917526199">Mengatasi dasar pada binaan Nyahpepijat bagi hos akses jauh.
@@ -1622,7 +1624,7 @@
       Nilai dasar ini harus ditetapkan dalam milisaat.</translation>
 <translation id="5511702823008968136">Dayakan Bar Penanda Halaman</translation>
 <translation id="5512418063782665071">URL halaman utama</translation>
-<translation id="551639594034811656">Dasar ini mentakrifkan senarai peratusan yang akan menentukan pecahan peranti <ph name="PRODUCT_OS_NAME" /> dalam OU yang akan dikemas kini setiap minggu bermula dari hari kemas kini itu mula-mula ditemui. Masa penemuan adalah lebih kemudian daripada masa kemas kini diterbitkan memandangkan peranti menyemak kemas kini beberapa ketika selepas kemas kini itu diterbitkan.
+<translation id="551639594034811656">Dasar ini mentakrifkan senarai peratusan yang akan menentukan pecahan peranti <ph name="PRODUCT_OS_NAME" /> dalam OU yang akan dikemas kini setiap hari bermula dari hari kemas kini itu mula-mula ditemui. Masa penemuan adalah lebih kemudian daripada masa kemas kini diterbitkan memandangkan peranti menyemak kemas kini beberapa ketika selepas kemas kini itu diterbitkan.
 
       Setiap pasangan (hari, peratusan) mengandungi peratusan himpunan yang perlu dikemas kini mengikut bilangan hari yang dinyatakan sejak kemas kini ditemui. Contohnya, jika kami mempunyai pasangan [(4, 40), (10, 70), (15, 100)], maka 40% daripada himpunan seharusnya telah dikemas kini 4 hari selepas kemas kini ditemui. 70% harus dikemas kini selepas 10 hari dan begitulah seterusnya.
 
@@ -2001,6 +2003,11 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini dibiarkan tanpa ditetapkan atau senarai tersebut kosong, semua skim akan boleh diakses dalam <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Tetapan pengguna terurus setempat</translation>
 <translation id="6658245400435704251">Menyatakan bilangan saat sehingga peranti boleh melambatkan muat turun kemas kini secara rawak dari masa kemas kini mula ditolak keluar ke pelayan. Peranti mungkin menunggu sebahagian masa ini dari segi masa jam dinding dan bahagian yang selebihnya dari segi bilangan semakan kemas kini. Dalam apa jua keadaan, serakan atas disempadani oleh jumlah masa yang tetap supaya peranti tidak sekali-kali akan tersekat menunggu selama-lamanya untuk memuat turun kemas kini.</translation>
+<translation id="6665599130599311250">Jika dasar ini ditetapkan kepada palsu atau dibiarkan tidak ditetapkan, sesi tetamu yang diurus akan bergelagat seperti yang didokumenkan dalam https://support.google.com/chrome/a/answer/3017014 - "Sesi Umum" standard.
+
+      Jika dasar ini ditetapkan kepada benar, sesi tetamu yang diurus akan mengguna pakai gelagat "Sesi yang Diurus" yang memansuhkan banyak sekatan yang dikenakan pada "Sesi Umum" biasa.
+
+      Jika dasar ini ditetapkan, pengguna tidak dapat mengubah atau mengatasinya.</translation>
 <translation id="6665670272107384733">Tetapkan kekerapan pengguna perlu memasukkan kata laluan untuk menggunakan buka kunci pantas</translation>
 <translation id="6681229465468164801">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang dihalang daripada meminta pengguna memberi tapak tersebut akses kepada peranti USB.
 
@@ -2166,6 +2173,17 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="6943577887654905793">Nama keutamaan Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter yang menyediakan ciri cari melalui imej untuk penyedia carian lalai</translation>
 <translation id="6956272732789158625">Jangan benarkan mana-mana tapak untuk menggunakan penghasilan kunci</translation>
+<translation id="6982028490425791294">
+      Jika dasar ditetapkan kepada benar, <ph name="PRODUCT_NAME" /> dibenarkan mengumpulkan log peristiwa WebRTC daripada perkhidmatan Google (mis. Google Meet) dan memuat naik log tersebut ke Google.
+
+      Jika dasar ini ditetapkan kepada palsu atau tidak ditetapkan, <ph name="PRODUCT_NAME" /> tidak boleh mengumpul mahupun memuat naik log tersebut.
+
+      Log ini mengandungi maklumat seperti masa dan saiz paket RTP yang dihantar dan diterima, maklum balas tentang kesesakan pada rangkaian serta metadata tentang masa dan kualiti bingkai audio dan video. Maklumat ini berguna apabila menyahpepijat isu berkaitan panggilan audio atau video dalam Chrome, seperti isu anggaran lebar jalur, dll. Log tidak mengandungi kandungan audio atau video daripada panggilan.
+
+      Pengumpulan data ini hanya boleh dicetuskan oleh perkhidmatan web Google, seperti Google Hangouts atau Google Meet.
+
+      Log ini mungkin dikaitkan, melalui ID sesi, dengan log lain yang dikumpulkan oleh perkhidmatan Google itu sendiri; ini bertujuan untuk memudahkan penyahpepijatan.
+      </translation>
 <translation id="6994082778848658360">Menyatakan cara perkakasan unsur selamat atas papan boleh digunakan untuk menyediakan pengesahan faktor kedua jika serasi dengan ciri ini. Butang kuasa mesin digunakan untuk mengesan kehadiran fizikal pengguna.
 
       Jika 'Dilumpuhkan' dipilih, faktor kedua tidak disediakan.

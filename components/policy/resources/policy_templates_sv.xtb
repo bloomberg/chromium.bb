@@ -275,6 +275,7 @@
       Om värdet är falskt inaktiveras rapportering av statistik och diagnostisk data.
 
       Om principen inte har konfigurerats inaktiveras rapporteringen av statistik och diagnostisk data på enheter som inte hanteras men aktiveras på hanterade enheter.</translation>
+<translation id="1920046221095339924">Tillåt hanterad session på enheten</translation>
 <translation id="1929709556673267855">Tillhandahåller skrivarkonfigurationer för företagsskrivare som kopplats till enheter.
 
       Med den här principen kan du tillhandahålla skrivarkonfigurationer för <ph name="PRODUCT_OS_NAME" />-enheter. Formatet är samma som för ordlistan NativePrinters, plus ett obligatoriskt id- eller guid-fält per skrivare som används för vitlistan/svarta listan.
@@ -308,6 +309,7 @@
 
       Om inställningen aktiveras eller lämnas utan värde kan användarna själva styra Autofyll för adresser i användargränssnittet.</translation>
 <translation id="1960840544413786116">Om certifikat som utfärdats av lokala tillitsankare och saknar tillägget subjectAlternativeName tillåts eller inte</translation>
+<translation id="1962273523772270623">Tillåt insamling av WebRTC-händelseloggar från Googles tjänster</translation>
 <translation id="1964634611280150550">Inkognitoläget är inaktiverat</translation>
 <translation id="1964802606569741174">Den här principen gäller inte YouTube-appen för Android. Om Säkert läge på YouTube ska vara obligatoriskt bör du blockera möjligheten att installera YouTube-appen för Android.</translation>
 <translation id="1969212217917526199">Åsidosätter policyer på felsökningsversioner av fjärråtkomstvärden.
@@ -2008,6 +2010,11 @@
       Om den här principen inte ställs in eller om listan är tom är alla scheman tillgängliga i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Inställningar för lokalt hanterade användare</translation>
 <translation id="6658245400435704251">Anger hur många sekunder en nedladdning av en uppdatering via en enhet får försenas slumpmässigt från den tidpunkt då uppdateringen först skickades till servern. Enheten kan hållas i vänteläge dels under en vanlig tidsperiod, dels beroende på antalet uppdateringskontroller. Spridningen är alltid bunden till en övre tidsgräns så att en enhet aldrig fastnar för gott medan en uppdatering håller på att laddas ned.</translation>
+<translation id="6665599130599311250">Om principen är inställd på falskt eller lämnas utan inställning fungerar en hanterad gästsession på det sätt som dokumenteras på https://support.google.com/chrome/a/answer/3017014 – en vanlig ”offentlig session”.
+
+      Om principen är inställd på sant fungerar en hanterad gästsession som en ”hanterad session”, vilket häver många av de begränsningar som gäller för vanliga ”offentliga sessioner”.
+
+      Om principen har ställts in kan användaren inte ändra eller åsidosätta den.</translation>
 <translation id="6665670272107384733">Ställ in hur ofta användaren måste ange lösenord för att kunna använda snabb upplåsning</translation>
 <translation id="6681229465468164801">Låter dig ange med hjälp av en lista med webbadressmönster vilka webbplatser som inte får begära åtkomstbehörighet till en USB-enhet.
 
@@ -2174,6 +2181,17 @@
 <translation id="6943577887654905793">Namn för Mac/Linux-inställning:</translation>
 <translation id="69525503251220566">Parameter som anger bildsökningsfunktionen för sökleverantören som är standard</translation>
 <translation id="6956272732789158625">Tillåt inte att någon webbplats använder nyckelgenerering</translation>
+<translation id="6982028490425791294">
+      Om principen är inställd på sant får <ph name="PRODUCT_NAME" /> samla in WebRTC-händelseloggar från Googles tjänster (t.ex. Google Meet) och ladda upp dem till Google.
+
+      Om principen är inställd på falskt eller lämnas utan inställning får <ph name="PRODUCT_NAME" /> inte samla in eller ladda upp sådana loggar.
+
+      Loggarna innehåller information som när RTP-paket skickades och togs emot och hur stora de var, feedback om överbelastning i nätverket och metadata om ljud och bildramars längd och kvalitet. Informationen är praktisk vid felsökning av problem med ljud- eller videosamtal i Chrome, t.ex. vid uppskattning av bandbredd med mera. Loggarna innehåller inte ljud eller video från själva samtalet.
+
+      Datainsamlingen kan bara aktiveras av Googles webbtjänster som Google Hangouts eller Google Meet.
+
+      Loggarna kan gå att koppla via ett sessions-id till andra loggar som samlats in av Google-tjänsten. Detta är avsiktligt för att underlätta felsökningen.
+      </translation>
 <translation id="6994082778848658360">Anger hur den integrerade maskinvaran för säkra element kan användas för tvåfaktorsautentisering om den är kompatibel med den här funktionen. Strömbrytaren på datorn används för att identifiera användarens fysiska närvaro.
 
       Om Inaktiverad har valts tillhandahålls ingen tvåfaktorsautentisering.

@@ -2162,7 +2162,6 @@
 <translation id="4275830172053184480">તમારું ઉપકરણ પુનઃપ્રારંભ કરો</translation>
 <translation id="4278101229438943600">તમારું આસિસ્ટંટ તૈયાર છે</translation>
 <translation id="4278390842282768270">મંજૂર</translation>
-<translation id="4280864916190672950">લોડ કરવાનું રોકો</translation>
 <translation id="4281844954008187215">સેવાની શરતો</translation>
 <translation id="4282196459431406533">Smart Lock ચાલુ કરેલું છે</translation>
 <translation id="4284105660453474798">શું આપ ખરેખર  "$1" ને કાઢી નાખવા માંગો છો?</translation>
@@ -3434,7 +3433,6 @@
 <translation id="6231881193380278751">પૃષ્ઠને સ્વતઃ-તાજુ કરવા માટે URL માં એક ક્વેરી પરમ ઉમેરો: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">બૅટરી</translation>
 <translation id="6232116551750539448"><ph name="NAME" /> થી કનેક્શન જતું રહ્યું છે</translation>
-<translation id="6235700927623181151">આ ટૅબ તમારા ડેસ્કટૉપ કન્ટેન્ટને શેર કરી રહ્યું છે.</translation>
 <translation id="6237816943013845465">તમને તમારું સ્ક્રીન રિઝોલ્યૂશન સમાયોજિત કરવાની મંજૂરી આપે છે</translation>
 <translation id="6238923052227198598">લૉક સ્ક્રીન પર એક એકદમ નવી નોંધ રાખો</translation>
 <translation id="6239558157302047471">&amp;ફ્રેમ ફરીથી લોડ કરો</translation>
@@ -4809,7 +4807,6 @@
 <translation id="8366396658833131068">તમારી નેટવર્ક કનેક્ટિવિટી પુનઃસ્થાપિત થઈ છે. કૃપા કરીને બીજું નેટવર્ક પસંદ કરો અથવા તમારી કિઓસ્ક એપ્લિકેશનને લોંચ કરવા માટે નીચે 'ચાલુ રાખો' બટનને દબાવો.</translation>
 <translation id="8366947248864804596">તમારો ફોન અનલૉક કરેલો અને નજીકમાં હોય, ત્યારે માત્ર અનલૉક કરવાનું પસંદ કરો. અન્યથા, તમારો પાસવર્ડ અથવા પિન દાખલ કરો.</translation>
 <translation id="8368859634510605990">બધાં બુકમાર્ક્સ &amp;ખોલો</translation>
-<translation id="8369547389711988632">લોડ કરવાનું રોક્યું</translation>
 <translation id="8371695176452482769">હવે બોલો</translation>
 <translation id="8372369524088641025">ખરાબ WEP કી</translation>
 <translation id="8373553483208508744">ટૅબ્સને મ્યૂટ કરો</translation>
@@ -5015,7 +5012,6 @@
 <translation id="8677212948402625567">બધાને સંકુચિત કરો...</translation>
 <translation id="8678648549315280022">ડાઉનલોડ સેટિંગ્સ સંચાલિત કરો ...</translation>
 <translation id="8678933587484842200">તમે આ ઍપ્લિકેશનને કેવી રીતે લૉન્ચ કરવાનું પસંદ કરશો?</translation>
-<translation id="8679788109894721265">આ પેજમાં <ph name="MEGABYTES" /> MB કરતાં વધુ ડેટા વપરાય છે</translation>
 <translation id="8680251145628383637">તમારા તમામ ઉપકરણો પર તમારા બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને અન્ય સેટિંગ્સ મેળવવા માટે સાઇન ઇન કરો. તમે તમારી Google સેવાઓ પર આપમેળે સાઇન ઇન પણ થશો.</translation>
 <translation id="8686213429977032554">આ ડ્રાઇવ ફાઇલ હજી સુધી શેર કરી નથી</translation>
 <translation id="8687485617085920635">આગામી વિંડો</translation>

@@ -269,6 +269,7 @@
       Ako se postavi na False, izvješća s mjernim podacima o upotrebi i dijagnostičkim podacima bit će onemogućena.
 
       Ako se ne konfigurira, izvješća s mjernim podacima o upotrebi i dijagnostičkim podacima na neupravljanim će uređajima biti onemogućena, a na upravljanim omogućena.</translation>
+<translation id="1920046221095339924">Dopusti upravljanu sesiju na uređaju</translation>
 <translation id="1929709556673267855">Pruža konfiguracije za pisače tvrtke koji su povezani s uređajima.
 
       To vam pravilo omogućuje da pružite konfiguracije pisača za <ph name="PRODUCT_OS_NAME" /> uređaje. Format je jednak kao za rječnik NativePrinters, osim što je potrebno dodatno polje "id" ili "guid" po pisaču za dopuštanje ili ograničavanje pisača.
@@ -302,6 +303,7 @@
 
       Ako se ta postavka omogući ili nema vrijednost, korisnik će moći kontrolirati Automatsko popunjavanje za adrese na korisničkom sučelju.</translation>
 <translation id="1960840544413786116">Jesu li dopušteni certifikati koje izdaju lokalna pouzdana sidra, a kojima nedostaje proširenje subjectAlternativeName</translation>
+<translation id="1962273523772270623">Dopusti zbirku zapisnika događaja WebRTC s Googleovih usluga</translation>
 <translation id="1964634611280150550">Onemogućen je anoniman način rada</translation>
 <translation id="1964802606569741174">To pravilo nema utjecaja na Android aplikaciju YouTube. Ako se treba primijeniti sigurnosni način na YouTubeu, instaliranje Android aplikacije YouTube ne može biti dopušteno.</translation>
 <translation id="1969212217917526199">Nadjačava pravila na međuverzijama za otklanjanje pogrešaka hosta daljinskog pristupa.
@@ -1925,6 +1927,11 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       Ako se to pravilo ne postavi ili ako je popis prazan, sve će sheme biti dostupne na usluzi <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Postavke lokalno upravljanih korisnika</translation>
 <translation id="6658245400435704251">Određuje do koliko sekundi uređaj može nasumično odgađati preuzimanje ažuriranja od trenutka kad je ažuriranje prvi put poslano na poslužitelj. Uređaj može dio tog vremena čekati u smislu stvarnog proteka vremena, a preostalo vrijeme u smislu broja provjera ažuriranja. U bilo kojem slučaju, gornja granica raspršivanja konstantan je iznos vremena tako da uređaj nikad ne može zauvijek zapeti čekajući ažuriranje.</translation>
+<translation id="6665599130599311250">Ako se to pravilo postavi na False ili se ne postavi, upravljana gostujuća sesija ponašat će se kako je dokumentirano na https://support.google.com/chrome/a/answer/3017014 – standardna "Javna sesija".
+
+      Ako se to pravilo postavi na True ili se ne postavi, upravljana gostujuća sesija poprimit će ponašanje "Upravljane sesije" koja uklanja mnoga ograničenja uspostavljena za regularne "Javne sesije".
+
+      Ako je postavljeno ovo pravilo, korisnik ga ne može ni promijeniti niti nadjačati.</translation>
 <translation id="6665670272107384733">Odredi koliko često korisnik mora unijeti zaporku za upotrebu brzog otključavanja</translation>
 <translation id="6681229465468164801">Omogućuje vam postavljanje popisa uzoraka URL-ova koji navode web-lokacije kojima se sprječava da od korisnika traže dopuštenje za pristup USB uređaju.
 
@@ -2081,6 +2088,17 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="6943577887654905793">Naziv Mac/Linux preferencije:</translation>
 <translation id="69525503251220566">Značajka pretraživanja po slici koja pruža parametre za zadanog davatelja usluge pretraživanja</translation>
 <translation id="6956272732789158625">Nemoj dopustiti nijednoj web-lokaciji da upotrebljava generiranje ključeva</translation>
+<translation id="6982028490425791294">
+      Ako se pravilo postavi na True, <ph name="PRODUCT_NAME" /> ima dopuštenje prikupljati zapisnike događaja WebRTC s Googleovih usluga (npr. Google Meet) i prenijeti te zapisnike na Google.
+
+      Ako se pravilo postavi na False ili se ne postavi, <ph name="PRODUCT_NAME" /> ne smije prikupljati niti prenositi takve zapisnike.
+
+      Ti zapisnici sadrže podatke kao što su vrijeme i veličina poslanih i primljenih RTP paketa, povratne informacije o zagušenju na mreži i medapodatke o vremenu i kvaliteti zvučnih i videozapisa. Ti podaci pomažu pri otklanjanju pogrešaka kod audio i videopoziva na Chromeu, kao što su poteškoće s procjenom propusnosti itd. Zapisnici ne sadrže audio ili videosadržaje poziva.
+
+      Ta kolekcija podataka može se pokrenuti samo pomoću Googleovih web-usluga, kao što su Hangouts ili Google Meet.
+
+      Ti zapisnici mogu se putem ID-ja sesija povezati s drugim zapisnicima koje je prikupila sama Googleova usluga; to je namijenjeno lakšem otklanjanju pogrešaka.
+      </translation>
 <translation id="6994082778848658360">Određuje način na koji se hardver s ugrađenim sigurnosnim elementom može upotrebljavati za pružanje dvostruke autentifikacije ako je kompatibilan s ovom značajkom. Tipka za uključivanje/isključivanje uređaja upotrebljava se za otkrivanje korisnikove fizičke prisutnosti.
 
       Ako se odabere "Onemogućeno", dvostruka se autentifikacija ne upotrebljava.

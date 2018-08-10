@@ -61,6 +61,7 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 <translation id="1404122904123200417">Incorporado em <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"Não rastrear"</translation>
 <translation id="1407135791313364759">Abrir todas</translation>
+<translation id="1409426117486808224">Visualização simplificada para guias abertas</translation>
 <translation id="1409879593029778104">O download de <ph name="FILE_NAME" /> foi impedido porque o arquivo já existe.</translation>
 <translation id="1414981605391750300">Entrando em contato com o Google. Isso pode levar um minuto…</translation>
 <translation id="1416550906796893042">Versão do aplicativo</translation>
@@ -80,6 +81,7 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 <translation id="1566400915470565838">Para usar o app <ph name="APP_NAME" />, conecte-se à Internet.</translation>
 <translation id="1569387923882100876">Dispositivo conectado</translation>
 <translation id="1571304935088121812">Copiar nome de usuário</translation>
+<translation id="1576370611341449972">Download apenas por Wi-Fi</translation>
 <translation id="1612196535745283361">O Chrome precisa ter acesso ao local para verificar dispositivos. O acesso ao local está <ph name="BEGIN_LINK" />desativado neste dispositivo<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">Ativar sincronização, personalização e outros serviços do Google</translation>
 <translation id="1620510694547887537">Câmera</translation>
@@ -344,6 +346,7 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 <translation id="3810838688059735925">Vídeo</translation>
 <translation id="3810973564298564668">Gerenciar</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads excluídos</translation>
+<translation id="3819562311292413223">Fazer o download de artigos para você</translation>
 <translation id="3822502789641063741">Limpar armaz. de sites?</translation>
 <translation id="385051799172605136">Voltar</translation>
 <translation id="3859306556332390985">Avançar</translation>
@@ -383,6 +386,7 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="4113030288477039509">Gerenciado pelo seu administrador</translation>
 <translation id="4116038641877404294">Faça o download de páginas para usá-las off-line</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d favorito}one{%1$d favorito}other{%1$d favoritos}}</translation>
+<translation id="4149994727733219643">Visualização simplificada para páginas da Web</translation>
 <translation id="4159800535322890630">Impeça o acesso de sites aos seus sensores</translation>
 <translation id="4165986682804962316">Configurações do site</translation>
 <translation id="4170011742729630528">O serviço não está disponível. Tente novamente mais tarde.</translation>
@@ -554,6 +558,7 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="5512137114520586844">Esta conta é gerenciada por <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Opção desativada pelo administrador deste dispositivo</translation>
 <translation id="5515439363601853141">Desbloqueie para ver sua senha</translation>
+<translation id="5515716148775388141">Seus ícones foram movidos para a parte inferior da tela</translation>
 <translation id="5517095782334947753">Você tem favoritos, histórico, senhas e outras configurações da conta <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Redirecionamento bloqueado.</translation>
 <translation id="5527082711130173040">O Chrome precisa ter acesso ao local para procurar dispositivos. <ph name="BEGIN_LINK1" />Atualize as permissões<ph name="END_LINK1" />. O acesso ao local também está <ph name="BEGIN_LINK2" />desativado neste dispositivo<ph name="END_LINK2" />.</translation>
@@ -756,6 +761,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7016516562562142042">Permitido para o mecanismo de pesquisa atual</translation>
 <translation id="7021515813996758557">O download de <ph name="FILE_NAME" /> foi concluído</translation>
 <translation id="7022756207310403729">Abrir no navegador</translation>
+<translation id="702463548815491781">Recomendado quando o TalkBack ou o acesso com interruptor estão ativados</translation>
 <translation id="7029809446516969842">Senhas</translation>
 <translation id="7031882061095297553">Sincronizar com</translation>
 <translation id="7032663816368481562">Quando você toca em Mais opções semelhantes <ph name="ICON" />, na barra de endereço, são exibidos links rápidos de páginas relacionadas. Os URLs das páginas visitadas são enviados ao Google.</translation>
@@ -784,6 +790,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7251326866581677552">Bloqueados em alguns sites</translation>
 <translation id="7253272406652746122">Adicione uma Conta do Google na página de "Contas" do app "Config." do seu dispositivo.</translation>
 <translation id="7274013316676448362">Site bloqueado</translation>
+<translation id="72867290065237936">Toque para alternar entre sugestões de senha e teclado</translation>
 <translation id="729975465115245577">Seu dispositivo não tem um app para armazenar o arquivo de senhas.</translation>
 <translation id="7302081693174882195">Detalhes: classificados pela quantidade de dados economizados</translation>
 <translation id="7333031090786104871">Ainda adicionando o site anterior</translation>

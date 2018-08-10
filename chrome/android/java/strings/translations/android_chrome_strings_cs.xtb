@@ -61,6 +61,7 @@ Nejste však neviditelní. Soukromý režim neskryje vaši aktivitu před zaměs
 <translation id="1404122904123200417">Vloženo do <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Do Not Track (Nesledovat)</translation>
 <translation id="1407135791313364759">Otevřít vše</translation>
+<translation id="1409426117486808224">Zjednodušené zobrazení otevřených karet</translation>
 <translation id="1409879593029778104">Stažení souboru <ph name="FILE_NAME" /> bylo zabráněno, protože soubor již existuje.</translation>
 <translation id="1414981605391750300">Kontaktování Googlu. Může to chvíli trvat…</translation>
 <translation id="1416550906796893042">Verze aplikace</translation>
@@ -80,6 +81,7 @@ Nejste však neviditelní. Soukromý režim neskryje vaši aktivitu před zaměs
 <translation id="1566400915470565838">Chcete-li použít aplikaci <ph name="APP_NAME" />, připojte se k internetu.</translation>
 <translation id="1569387923882100876">Připojené zařízení</translation>
 <translation id="1571304935088121812">Kopírovat uživatelské jméno</translation>
+<translation id="1576370611341449972">Stahování se provádí pouze přes Wi-Fi</translation>
 <translation id="1612196535745283361">K vyhledání zařízení potřebuje Chrome přístup k informacím o poloze. Přístup k poloze je v tomto zařízení <ph name="BEGIN_LINK" />vypnut<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">Zapnout synchronizaci, personalizaci a další služby Google</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -344,6 +346,7 @@ Nejste však neviditelní. Soukromý režim neskryje vaši aktivitu před zaměs
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Spravovat</translation>
 <translation id="3819178904835489326">Počet smazaných stažených souborů: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
+<translation id="3819562311292413223">Stahovat články pro vás</translation>
 <translation id="3822502789641063741">Vymazat úložiště webů?</translation>
 <translation id="385051799172605136">Zpět</translation>
 <translation id="3859306556332390985">Přetočit dopředu</translation>
@@ -383,6 +386,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4113030288477039509">Spravováno vaším administrátorem</translation>
 <translation id="4116038641877404294">Stáhněte si stránky k použití offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d záložka}few{%1$d záložky}many{%1$d záložky}other{%1$d záložek}}</translation>
+<translation id="4149994727733219643">Zjednodušené zobrazení webových stránek</translation>
 <translation id="4159800535322890630">Blokovat webům přístup k senzorům</translation>
 <translation id="4165986682804962316">Nastavení webu</translation>
 <translation id="4170011742729630528">Služba není k dispozici, zkuste to později.</translation>
@@ -553,6 +557,7 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="5512137114520586844">Tento účet je spravován uživatelem <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Zakázáno administrátorem tohoto zařízení</translation>
 <translation id="5515439363601853141">Chcete-li zobrazit heslo, odemkněte zařízení</translation>
+<translation id="5515716148775388141">Vaše ikony byly přesunuty do dolní části obrazovky</translation>
 <translation id="5517095782334947753">Máte záložky, historii, hesla a další nastavení z účtu <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Bylo zablokováno přesměrování.</translation>
 <translation id="5527082711130173040">K vyhledání zařízení potřebuje Chrome přístup k informacím o poloze. <ph name="BEGIN_LINK1" />Aktualizujte oprávnění<ph name="END_LINK1" />. V tomto zařízení je také <ph name="BEGIN_LINK2" />vypnut přístup k poloze<ph name="END_LINK2" />.</translation>
@@ -756,6 +761,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7016516562562142042">Pro aktuální vyhledávač povoleno</translation>
 <translation id="7021515813996758557">Soubor <ph name="FILE_NAME" /> byl stažen</translation>
 <translation id="7022756207310403729">Otevřít v prohlížeči</translation>
+<translation id="702463548815491781">Doporučeno, když je zapnuta funkce TalkBack nebo přístup pomocí přepínačů</translation>
 <translation id="7029809446516969842">Hesla</translation>
 <translation id="7031882061095297553">Synchronizace s účty</translation>
 <translation id="7032663816368481562">Když v adresním řádku klepnete na Další podobné návrhy <ph name="ICON" />, zobrazí se rychlé odkazy na související stránky. Adresy URL navštívených stránek se odesílají do Googlu.</translation>
@@ -784,6 +790,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7251326866581677552">Blokováno na všech webech</translation>
 <translation id="7253272406652746122">Přidejte účet Google ze stránky Účty v aplikaci Nastavení svého zařízení.</translation>
 <translation id="7274013316676448362">Blokovaný web</translation>
+<translation id="72867290065237936">Klepnutím můžete přepínat mezi návrhy hesel a klávesnicí</translation>
 <translation id="729975465115245577">V zařízení není žádná aplikace, pomocí které by soubor s hesly bylo možné uložit.</translation>
 <translation id="7302081693174882195">Podrobnosti: Seřazeno podle množství uspořených dat</translation>
 <translation id="7333031090786104871">Předchozí web se stále přidává</translation>

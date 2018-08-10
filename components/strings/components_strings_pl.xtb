@@ -207,6 +207,7 @@
 <translation id="2359808026110333948">Dalej</translation>
 <translation id="2365563543831475020">Raport o awarii utworzony w dniu: <ph name="CRASH_TIME" /> nie został przesłany</translation>
 <translation id="2367567093518048410">Poziom</translation>
+<translation id="2378238891085281592">Jesteś w trybie prywatnym</translation>
 <translation id="2384307209577226199">Domyślne zasady przedsiębiorstwa</translation>
 <translation id="2386255080630008482">Certyfikat serwera został unieważniony.</translation>
 <translation id="2392959068659972793">Pokaż zasady bez ustawionej wartości</translation>
@@ -355,6 +356,7 @@
 <translation id="3391030046425686457">Adres dostawy</translation>
 <translation id="3395827396354264108">Metoda odbioru</translation>
 <translation id="3399952811970034796">Adres dostawy</translation>
+<translation id="3409072600744224192">Aby korzystać ze swoich zakładek na wszystkich urządzeniach, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3422248202833853650">Zamknij inne programy, by zwolnić pamięć.</translation>
 <translation id="3422472998109090673">Strona <ph name="HOST_NAME" /> jest obecnie nieosiągalna.</translation>
 <translation id="3427092606871434483">Zezwalaj (domyślnie)</translation>
@@ -514,6 +516,7 @@
 <translation id="450710068430902550">Udostępnianie administratorowi</translation>
 <translation id="4515275063822566619">Karty i adresy pochodzą z Chrome i Twojego konta Google (<ph name="ACCOUNT_EMAIL" />). Możesz nimi zarządzać w <ph name="BEGIN_LINK" />Ustawieniach<ph name="END_LINK" />.</translation>
 <translation id="4522570452068850558">Szczegóły</translation>
+<translation id="4524805452350978254">Zarządzaj kartami</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Spróbuj wyłączyć rozszerzenia.</translation>
 <translation id="457875822857220463">Dostawa</translation>
@@ -579,6 +582,7 @@
 <translation id="5045550434625856497">Nieprawidłowe hasło</translation>
 <translation id="5056549851600133418">Artykuły dla Ciebie</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Sprawdź adres serwera proxy<ph name="END_LINK" /></translation>
+<translation id="5072538239104292703">Aby korzystać ze swoich kart na wszystkich urządzeniach, zaloguj się i włącz synchronizację.</translation>
 <translation id="5086888986931078152">Możesz stracić dostęp do treści chronionych na niektórych stronach.</translation>
 <translation id="5087286274860437796">Certyfikat serwera nie jest obecnie ważny.</translation>
 <translation id="5087580092889165836">Dodaj kartę</translation>
@@ -624,6 +628,7 @@
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> z <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Wybierz dane kontaktowe</translation>
 <translation id="5327248766486351172">Nazwa</translation>
+<translation id="5327567770033251652">włącz synchronizację</translation>
 <translation id="5332219387342487447">Metoda wysyłki</translation>
 <translation id="5355557959165512791">Nie możesz teraz otworzyć strony <ph name="SITE" />, bo jej certyfikat został unieważniony. Błędy sieci i ataki są zazwyczaj przejściowe, więc prawdopodobnie strona będzie wkrótce działać.</translation>
 <translation id="536296301121032821">Zapisanie ustawień zasady nie powiodło się</translation>
@@ -688,6 +693,7 @@
 <translation id="5765072501007116331">Aby zobaczyć metody dostawy oraz wymagania, wybierz adres</translation>
 <translation id="5770114862687765385">Plik wygląda na uszkodzony. Kliknij przycisk „Zresetuj”, by zresetować sesję.</translation>
 <translation id="5778550464785688721">Pełne sterowanie urządzeniami MIDI</translation>
+<translation id="57838592816432529">Wycisz</translation>
 <translation id="5784606427469807560">Podczas potwierdzania karty wystąpił problem. Sprawdź połączenie internetowe i spróbuj ponownie.</translation>
 <translation id="5785756445106461925">Ta strona zawiera także niezabezpieczone zasoby. Podczas przesyłania mogą je wyświetlić inni użytkownicy, a osoby atakujące mogą je zmodyfikować, by zmienić wygląd strony.</translation>
 <translation id="5786044859038896871">Chcesz wpisać dane swojej karty?</translation>
@@ -699,6 +705,7 @@
 <translation id="5866257070973731571">Dodaj numer telefonu</translation>
 <translation id="5869405914158311789">Ta witryna jest nieosiągalna</translation>
 <translation id="5869522115854928033">Zapisane hasła</translation>
+<translation id="5887400589839399685">Zapisano kartę</translation>
 <translation id="5893752035575986141">Karty kredytowe są akceptowane.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (zsynchronizowane)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{W użyciu: 1}few{W użyciu: #}many{W użyciu: #}other{W użyciu: #}}</translation>
@@ -816,18 +823,22 @@
 <translation id="6915804003454593391">Użytkownik:</translation>
 <translation id="6944692733090228304">Wpisałeś swoje hasło na stronie, którą nie zarządza <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Aby chronić konto, nie używaj swojego hasła w innych aplikacjach ani witrynach.</translation>
 <translation id="6945221475159498467">Wybierz</translation>
+<translation id="6948540501704460596">Aby korzystać ze swoich zakładek na wszystkich urządzeniach, <ph name="SYNC_LINK" />.</translation>
 <translation id="6948701128805548767">Aby zobaczyć metody odbioru oraz wymagania, wybierz adres</translation>
 <translation id="6949872517221025916">Resetuj hasło</translation>
 <translation id="6950684638814147129">Błąd podczas przetwarzania wartości JSON: <ph name="ERROR" /></translation>
+<translation id="6957624206566198865">Otwórz stronę na nowej karcie prywatnej</translation>
 <translation id="6957887021205513506">Certyfikat serwera wydaje się sfałszowany.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Urządzenie</translation>
 <translation id="6970216967273061347">Okręg</translation>
 <translation id="6973656660372572881">Określono zarówno stałe serwery proxy, jak i URL skryptu PAC.</translation>
+<translation id="6984479912851154518">Opuszczasz tryb prywatny, by zapłacić w zewnętrznej aplikacji. Kontynuować?</translation>
 <translation id="6989763994942163495">Pokaż ustawienia zaawansowane...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Może to być opłata jednorazowa lub cykliczna, a informacje o niej mogą nie być wyraźnie podane.</translation>
 <translation id="7029809446516969842">Hasła</translation>
+<translation id="7042837854211185817">Aby korzystać ze swoich kart na wszystkich urządzeniach, włącz synchronizację.</translation>
 <translation id="7050187094878475250">Próbujesz połączyć się z domeną <ph name="DOMAIN" />, ale serwer przedstawił certyfikat, którego okres ważności jest za długi, by był wiarygodny.</translation>
 <translation id="7053983685419859001">Blokuj</translation>
 <translation id="7064851114919012435">Dane kontaktowe</translation>
@@ -1074,6 +1085,7 @@
 <translation id="8820817407110198400">Zakładki</translation>
 <translation id="883848425547221593">Inne zakładki</translation>
 <translation id="884264119367021077">Adres wysyłki</translation>
+<translation id="8846319957959474018">Łatwo otwieraj aplikacje dzięki zakładkom</translation>
 <translation id="884923133447025588">Nie znaleziono mechanizmu unieważniania.</translation>
 <translation id="885730110891505394">Udostępnianie Google</translation>
 <translation id="8858065207712248076">Chrome zaleca zresetowanie hasła, którego używasz w: <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, jeśli zostało użyte na innej stronie.</translation>

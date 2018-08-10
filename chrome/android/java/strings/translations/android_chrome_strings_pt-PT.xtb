@@ -61,6 +61,7 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="1404122904123200417">Incorporado em <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"Não Monitorizar"</translation>
 <translation id="1407135791313364759">Abrir tudo</translation>
+<translation id="1409426117486808224">Vista simplificada dos separadores abertos</translation>
 <translation id="1409879593029778104">A transferência de <ph name="FILE_NAME" /> foi impedida porque o ficheiro já existe.</translation>
 <translation id="1414981605391750300">A contactar a Google… Isto pode demorar um pouco…</translation>
 <translation id="1416550906796893042">Versão da aplicação</translation>
@@ -80,6 +81,7 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="1566400915470565838">Para utilizar a aplicação <ph name="APP_NAME" />, ligue-se à Internet.</translation>
 <translation id="1569387923882100876">Dispositivo ligado</translation>
 <translation id="1571304935088121812">Copiar nome de utilizador</translation>
+<translation id="1576370611341449972">A transferência ocorre apenas através de Wi-Fi.</translation>
 <translation id="1612196535745283361">O Chrome precisa de acesso à localização para procurar dispositivos. O acesso à localização está <ph name="BEGIN_LINK" />desativado para este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">Ativar a sincronização, a personalização e outros serviços Google</translation>
 <translation id="1620510694547887537">Câmara</translation>
@@ -344,6 +346,7 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="3810838688059735925">Vídeo</translation>
 <translation id="3810973564298564668">Gerir</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> transferências eliminadas</translation>
+<translation id="3819562311292413223">Transferir artigos para si</translation>
 <translation id="3822502789641063741">Limpar armazenamento do site?</translation>
 <translation id="385051799172605136">Anterior</translation>
 <translation id="3859306556332390985">Procurar para a frente</translation>
@@ -383,6 +386,7 @@ Para ajustar o termo de pesquisa, mantenha-o premido para selecionar. Para refin
 <translation id="4113030288477039509">Gerido pelo gestor</translation>
 <translation id="4116038641877404294">Transfira páginas para as utilizar offline.</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d marcador}other{%1$d marcadores}}</translation>
+<translation id="4149994727733219643">Vista simplificada de páginas Web</translation>
 <translation id="4159800535322890630">Impedir os sites de aceder aos sensores</translation>
 <translation id="4165986682804962316">Definições de sites</translation>
 <translation id="4170011742729630528">O serviço não está disponível. Tente novamente mais tarde.</translation>
@@ -553,6 +557,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="5512137114520586844">Esta conta é gerida por <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Desativada pelo gestor do dispositivo</translation>
 <translation id="5515439363601853141">Desbloqueie para ver a palavra-passe.</translation>
+<translation id="5515716148775388141">Os ícones foram movidos para a parte inferior do ecrã.</translation>
 <translation id="5517095782334947753">Tem marcadores, histórico, palavras-passe e outras definições de <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Redirecionamento bloqueado.</translation>
 <translation id="5527082711130173040">O Chrome precisa de acesso à localização para procurar dispositivos. <ph name="BEGIN_LINK1" />Atualize as autorizações<ph name="END_LINK1" />. O acesso à localização também está <ph name="BEGIN_LINK2" />desativado para este dispositivo<ph name="END_LINK2" />.</translation>
@@ -633,7 +638,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="6075798973483050474">Editar página inicial</translation>
 <translation id="60923314841986378">Faltam <ph name="HOURS" /> horas</translation>
 <translation id="60924377787140961">Serão apresentados mais artigos em breve. Desfrute da sua tarde!</translation>
-<translation id="6099151465289169210">Mudado para separadores privados</translation>
+<translation id="6099151465289169210">Alterado para separadores privados</translation>
 <translation id="6108923351542677676">Configuração em curso…</translation>
 <translation id="6111020039983847643">dados utilizados</translation>
 <translation id="6112702117600201073">A atualizar a página</translation>
@@ -756,6 +761,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7016516562562142042">Permitido para o motor de pesquisa atual</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> transferido</translation>
 <translation id="7022756207310403729">Abrir no navegador</translation>
+<translation id="702463548815491781">Recomendado quando o TalkBack ou o Acesso por comutador estão ativados.</translation>
 <translation id="7029809446516969842">Palavras-passe</translation>
 <translation id="7031882061095297553">Sincronizar com</translation>
 <translation id="7032663816368481562">Quando toca em Mais deste género <ph name="ICON" /> na barra de endereço, são apresentados links rápidos para páginas relacionadas. Os URLs das páginas que visita são enviados para a Google.</translation>
@@ -784,6 +790,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7251326866581677552">Bloqueados em alguns sites</translation>
 <translation id="7253272406652746122">Adicione uma Conta Google na página Contas na aplicação Definições do dispositivo.</translation>
 <translation id="7274013316676448362">Site bloqueado</translation>
+<translation id="72867290065237936">Toque para alternar entre as sugestões de palavras-passe e o teclado.</translation>
 <translation id="729975465115245577">O dispositivo não tem uma aplicação para armazenar o ficheiro de palavras-passe.</translation>
 <translation id="7302081693174882195">Detalhes: ordenado por quantidade de dados guardados</translation>
 <translation id="7333031090786104871">Ainda a adicionar o site anterior…</translation>

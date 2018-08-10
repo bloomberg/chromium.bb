@@ -2163,7 +2163,6 @@
 <translation id="4275830172053184480">Reiniciar tu dispositivo</translation>
 <translation id="4278101229438943600">Tu Asistente está listo</translation>
 <translation id="4278390842282768270">Permitido</translation>
-<translation id="4280864916190672950">Detener la carga</translation>
 <translation id="4281844954008187215">Condiciones del servicio</translation>
 <translation id="4282196459431406533">Smart Lock está activado</translation>
 <translation id="4284105660453474798">¿Estás seguro de que deseas eliminar "$1"?</translation>
@@ -3433,7 +3432,6 @@
 <translation id="6231881193380278751">Agregar un parámetro de consulta en la URL para actualizar automáticamente la página: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Batería</translation>
 <translation id="6232116551750539448">Se perdió la conexión a <ph name="NAME" />.</translation>
-<translation id="6235700927623181151">Esta pestaña está compartiendo el contenido de tu escritorio.</translation>
 <translation id="6237816943013845465">Permite ajustar la resolución de pantalla</translation>
 <translation id="6238923052227198598">Mantener la nota más reciente en la pantalla bloqueada</translation>
 <translation id="6239558157302047471">Volver a cargar &amp;marco</translation>
@@ -3682,7 +3680,7 @@
 <translation id="6606070663386660533">Pestaña 8</translation>
 <translation id="6607272825297743757">Información del archivo</translation>
 <translation id="6607831829715835317">Más herramientas</translation>
-<translation id="6610147964972079463">Cerrar las pestañas privadas</translation>
+<translation id="6610147964972079463">Cerrar pestañas privadas</translation>
 <translation id="6612358246767739896">Contenido protegido</translation>
 <translation id="6613452264606394692">Para regresar aquí rápidamente, agrega esta página a favoritos</translation>
 <translation id="6614893213975402384">Instala actualizaciones y apps. Al continuar, aceptas que este dispositivo también descargue e instale automáticamente actualizaciones y apps de Google, tu administrador y el fabricante del dispositivo, posiblemente a través de datos móviles. Es posible que algunas de estas apps ofrezcan compras directas desde la aplicación. Puedes quitar las apps en cualquier momento. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
@@ -4815,7 +4813,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8366396658833131068">Se restauró la conexión de red. Selecciona una red distinta o presiona el botón "Continuar" para iniciar la aplicación de kiosco.</translation>
 <translation id="8366947248864804596">Cuando tu teléfono está desbloqueado y cerca, selecciona el dispositivo que quieras desbloquear. De lo contrario, ingresa tu contraseña o PIN.</translation>
 <translation id="8368859634510605990">&amp;Abrir todos los favoritos</translation>
-<translation id="8369547389711988632">Detuviste la carga</translation>
 <translation id="8371695176452482769">Hablar ahora</translation>
 <translation id="8372369524088641025">Clave de WEP no válida</translation>
 <translation id="8373553483208508744">Silenciar pestañas</translation>
@@ -5021,7 +5018,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8677212948402625567">Contraer todo...</translation>
 <translation id="8678648549315280022">Administrar configuración de descarga…</translation>
 <translation id="8678933587484842200">¿Cómo deseas que se ejecute esta app?</translation>
-<translation id="8679788109894721265">Esta página usa más de <ph name="MEGABYTES" /> MB</translation>
 <translation id="8680251145628383637">Accede para obtener tus favoritos, el historial, las contraseñas y otras opciones de configuración en todos tus dispositivos. Además, accederás de forma automática a los servicios de Google.</translation>
 <translation id="8686213429977032554">Este archivo de Drive aún no está compartido</translation>
 <translation id="8687485617085920635">Siguiente ventana</translation>

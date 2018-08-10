@@ -68,7 +68,6 @@
 <translation id="2049639323467105390">এই ডিভাইস <ph name="DOMAIN" /> দ্বারা পরিচালিত হয়৷</translation>
 <translation id="2050339315714019657">প্রতিকৃতি</translation>
 <translation id="2067602449040652523">কীবোর্ডের উজ্জ্বলতা</translation>
-<translation id="2075212959500165896">অনেকবার চেষ্টা করা হয়েছে। পরে আবার চেষ্টা করুন।</translation>
 <translation id="2081529251031312395">এখনও $1 পরে সাইন-ইন করতে পারেন।</translation>
 <translation id="2127372758936585790">নিম্ন শক্তির চার্জার</translation>
 <translation id="2135456203358955318">ডক করা ম্যাগনিফায়ার</translation>
@@ -140,7 +139,6 @@
 <translation id="3153444934357957346">একধিক সাইন-ইনে আপনার কেবলমাত্র <ph name="MULTI_PROFILE_USER_LIMIT" />টি পর্যন্ত অ্যাকাউন্ট থাকতে পারে।</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{একটি ডিভাইসে কানেক্ট রয়েছে}one{#টি ডিভাইসে কানেক্ট রয়েছে}other{#টি ডিভাইসে কানেক্ট রয়েছে}}</translation>
 <translation id="3236488194889173876">কোনো মোবাইল নেটওয়ার্ক উপলব্ধ নেই</translation>
-<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">অতিথি</translation>
 <translation id="332587331255250389">অনুগ্রহ করে ব্যাটারি পাল্টান</translation>
 <translation id="3351879221545518001">আপনি বর্তমানে স্ক্রিন কাস্ট করছেন।</translation>
@@ -255,7 +253,7 @@
 <translation id="5744083938413354016">ট্যাপ করে টেনে আনা</translation>
 <translation id="5750765938512549687">ব্লুটুথ বন্ধ আছে</translation>
 <translation id="5777841717266010279">স্ক্রিন শেয়ার করা থামাবেন?</translation>
-<translation id="57838592816432529">নিঃশব্দ করুন</translation>
+<translation id="57838592816432529">মিউট করুন</translation>
 <translation id="5805697420284793859">উইন্ডো ম্যানেজার</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">একজন ব্যক্তিকে যোগ করুন</translation>

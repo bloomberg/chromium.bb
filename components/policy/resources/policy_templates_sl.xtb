@@ -275,6 +275,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Če je onemogočen, je pošiljanje podatkov meritev in diagnostičnih podatkov onemogočeno.
 
       Če ni nastavljen, je pošiljanje podatkov meritev in diagnostičnih podatkov onemogočeno v neupravljanih napravah in omogočeno v upravljanih.</translation>
+<translation id="1920046221095339924">Omogočanje upravljane seje v napravi</translation>
 <translation id="1929709556673267855">Posreduje konfiguracije za tiskalnike v podjetjih, vezane na naprave.
 
       Ta pravilnik vam omogoča, da posredujete konfiguracije tiskalnikov napravam z operacijskim sistemom <ph name="PRODUCT_OS_NAME" />. Oblika je enaka obliki imenika NativePrinters, z dodatnim obveznim poljem »id« ali »guid« na tiskalnik zaradi dodajanja na seznam dovoljenih ali nedovoljenih.
@@ -308,6 +309,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
       Če je ta nastavitev omogočena ali nima nastavljene vrednosti, bo uporabnik lahko nadziral samodejno izpolnjevanje za naslove v uporabniškem vmesniku.</translation>
 <translation id="1960840544413786116">Ali naj se dovoli potrdila, ki jih izdajo lokalna sidra zaupanja in jim manjka razširitev subjectAlternativeName</translation>
+<translation id="1962273523772270623">Omogočanje zbiranja dnevnikov dogodkov tehnologije WebRTC iz Googlovih storitev</translation>
 <translation id="1964634611280150550">Način brez beleženja zgodovine je onemogočen</translation>
 <translation id="1964802606569741174">Ta pravilnik ne vpliva na aplikacijo YouTube za Android. Če naj bo varni način v YouTubu uveljavljen, mora biti namestitev aplikacije YouTube za Android onemogočena.</translation>
 <translation id="1969212217917526199">Preglasi pravilnike za delovne različice gostitelja za oddaljeni dostop, namenjene odpravljanju napak.
@@ -1638,7 +1640,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če je za ta pravilnik določena vrednost, posodobitve prezrejo pravilnik <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> in upoštevajo ta pravilnik.
 
-      Če je seznam prazen, ni priprav in posodobitve bodo uveljavljene glede na druge pravilnike naprave.
+      Če je seznam prazen, ni postopnega nameščanja posodobitev in bodo posodobitve uveljavljene glede na druge pravilnike naprave.
 
       Ta pravilnik se ne uporablja pri preklapljanju med kanali.</translation>
 <translation id="5523812257194833591">Samodejna prijava javne seje po časovnem zamiku.
@@ -2011,6 +2013,11 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 Če ta pravilnik ni nastavljen ali je seznam prazen, bodo v brskalniku <ph name="PRODUCT_NAME" /> dostopne vse sheme.</translation>
 <translation id="6652197835259177259">Nastavitve lokalno upravljanih uporabnikov</translation>
 <translation id="6658245400435704251">Določa število sekund, do katerega lahko naprava naključno odloži prenos posodobitve od trenutka, ko je bila posodobitev prvič na voljo v strežniku. Naprava lahko del tega časa čaka v smislu dejansko pretečenega časa, preostali del pa v smislu števila preverjanj za posodobitve. Razpršitev je v vsakem primeru omejena navzgor na nespremenljiv čas, tako da se ne more zgoditi, da bi naprava neomejen čas čakala na prenos posodobitve.</translation>
+<translation id="6665599130599311250">Če je ta pravilnik onemogočen ali ni nastavljen, bo upravljana seja gosta delovala, kot je opisano na https://support.google.com/chrome/a/answer/3017014 – standardna »seja gosta«.
+
+      Če je ta pravilnik omogočen, bo upravljana seja gosta prevzela delovanje »upravljane seja«, ki odpravlja številne omejitve, ki veljajo za običajne »javne seje«.
+
+      Če ta pravilnik ni nastavljen, ga uporabniki ne morejo spremeniti ali preglasiti.</translation>
 <translation id="6665670272107384733">Nastavi, kako pogosto mora uporabnik vnesti geslo, če želi uporabljati hitro odklepanje</translation>
 <translation id="6681229465468164801">Omogoča nastavitev seznama vzorcev URL-jev, ki določa, katerim spletnim mestom je preprečeno pozivanje uporabnikov k odobritvi dostopa do naprave USB.
 
@@ -2177,6 +2184,17 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="6943577887654905793">Ime nastavitve za Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter, ki omogoča funkcijo iskanja po sliki za privzetega ponudnika iskanja</translation>
 <translation id="6956272732789158625">Spletnim mestom ne dovoli uporabe ustvarjanja ključev</translation>
+<translation id="6982028490425791294">
+      Če je pravilnik omogočen, <ph name="PRODUCT_NAME" /> sme zbirati dnevnike dogodkov tehnologije WebRTC iz Googlovih storitev (npr. iz Googla Meet) in te dnevnike nalagati v Google.
+
+      Če je pravilnik onemogočen ali ni nastavljen, <ph name="PRODUCT_NAME" /> tovrstnih dnevnikov ne sme ne zbirati ne nalagati.
+
+      Ti dnevniki vsebujejo podatke, kot so čas in velikost poslanih ter prejetih paketov RT, povratne informacije o preobremenjenosti omrežja ter metapodatki o času in kakovosti zvočnih ter slikovnih okvirov. Ti podatki so v pomoč pri odpravljanju napak z zvočnimi klici ali videoklici v Chromu, na primer pri težavah z ocenjevanjem pasovne širine ipd. Dnevniki ne vsebujejo zvočne in slikovne vsebine klica.
+
+      To zbiranje podatkov lahko sprožijo samo Googlove spletne storitve, na primer Google Hangouts ali Google Meet.
+
+      Ti dnevniki so lahko prek ID-ja seje povezani z drugimi dnevniki, ki jih zbira sama Googlova storitev, in sicer zaradi lažjega odpravljanja napak.
+      </translation>
 <translation id="6994082778848658360">Določa, kako lahko vgrajena strojna oprema za varnostni element zagotovi dvojno preverjanje pristnosti, če je združljiva s to funkcijo. Gumb za vklop na računalniku zazna fizično prisotnost uporabnika.
 
       Če je izbrana možnost »Onemogočeno«, dvojno preverjanje ni zagotovljeno.

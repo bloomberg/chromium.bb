@@ -2166,7 +2166,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4275830172053184480">Indítsa újra az eszközt</translation>
 <translation id="4278101229438943600">Segédje készen áll</translation>
 <translation id="4278390842282768270">Engedélyezve</translation>
-<translation id="4280864916190672950">Betöltés leállítása</translation>
 <translation id="4281844954008187215">Általános Szerződési Feltételek</translation>
 <translation id="4282196459431406533">A Smart Lock be van kapcsolva</translation>
 <translation id="4284105660453474798">Biztos, hogy törölni szeretné ezt: "$1"?</translation>
@@ -3438,7 +3437,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6231881193380278751">Adjon meg egy lekérdezési paramétert az URL-ben az oldal automatikus frissítéséhez: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Akkumulátor</translation>
 <translation id="6232116551750539448">Megszűnt a kapcsolat a következővel: <ph name="NAME" /></translation>
-<translation id="6235700927623181151">Ez a lap megosztja az asztal tartalmát.</translation>
 <translation id="6237816943013845465">Lehetővé teszi a képernyő felbontásának módosítását</translation>
 <translation id="6238923052227198598">Legutóbbi jegyzet megtartása a lezárási képernyőn</translation>
 <translation id="6239558157302047471">&amp;Keret újratöltése</translation>
@@ -4819,7 +4817,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8366396658833131068">A hálózati kapcsolat helyreállt. Kérjük, válasszon másik hálózatot, vagy nyomja le az alábbi „Folytatás” gombot a kioszkalkalmazás elindításához.</translation>
 <translation id="8366947248864804596">Ha telefonja feloldott állapotban és a közelben van, válassza ki a lezárás feloldásához. Ellenkező esetben adja meg jelszavát vagy PIN-kódját.</translation>
 <translation id="8368859634510605990">&amp;Az összes könyvjelző megnyitása</translation>
-<translation id="8369547389711988632">Leállította a betöltést</translation>
 <translation id="8371695176452482769">Most beszéljen</translation>
 <translation id="8372369524088641025">Hibás WEP kulcs</translation>
 <translation id="8373553483208508744">Lapok némítása</translation>
@@ -5025,7 +5022,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8677212948402625567">Összes listanézete...</translation>
 <translation id="8678648549315280022">Letöltési beállítások kezelése...</translation>
 <translation id="8678933587484842200">Hogyan szeretné elindítani ezt az alkalmazást?</translation>
-<translation id="8679788109894721265">Ez az oldal több mint <ph name="MEGABYTES" /> MB memóriát használ</translation>
 <translation id="8680251145628383637">Ha bejelentkezik, könyvjelzőit, előzményeit és egyéb beállításait bármilyen eszközről elérheti. Ráadásul automatikusan bejelentkezik a Google-szolgáltatásokba.</translation>
 <translation id="8686213429977032554">Ez a Drive-fájl még nincs megosztva</translation>
 <translation id="8687485617085920635">Következő ablak</translation>

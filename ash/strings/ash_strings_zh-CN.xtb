@@ -68,7 +68,6 @@
 <translation id="2049639323467105390">此设备由 <ph name="DOMAIN" /> 管理。</translation>
 <translation id="2050339315714019657">纵向</translation>
 <translation id="2067602449040652523">键盘亮度</translation>
-<translation id="2075212959500165896">尝试次数过多，请稍后重试。</translation>
 <translation id="2081529251031312395">日后“$1”仍能登录。</translation>
 <translation id="2127372758936585790">低功率充电器</translation>
 <translation id="2135456203358955318">停靠的放大镜</translation>
@@ -140,7 +139,6 @@
 <translation id="3153444934357957346">使用多帐号登录时，一次最多只能登入 <ph name="MULTI_PROFILE_USER_LIMIT" /> 个帐号。</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{已连接到 1 台设备}other{已连接到 # 台设备}}</translation>
 <translation id="3236488194889173876">没有可用的移动网络</translation>
-<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">访客</translation>
 <translation id="332587331255250389">请更换电池</translation>
 <translation id="3351879221545518001">您目前正在投射屏幕。</translation>

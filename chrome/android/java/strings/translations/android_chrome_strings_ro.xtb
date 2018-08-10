@@ -61,6 +61,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitate
 <translation id="1404122904123200417">Încorporat în <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">„Nu urmări”</translation>
 <translation id="1407135791313364759">Deschideți-le pe toate</translation>
+<translation id="1409426117486808224">Afișare simplificată pentru filele deschise</translation>
 <translation id="1409879593029778104">Descărcarea fișierului <ph name="FILE_NAME" /> a fost împiedicată, deoarece fișierul există deja.</translation>
 <translation id="1414981605391750300">Se contactează Google. Poate dura un minut...</translation>
 <translation id="1416550906796893042">Versiunea aplicației</translation>
@@ -80,6 +81,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitate
 <translation id="1566400915470565838">Ca să folosești <ph name="APP_NAME" />, conectează-te la internet.</translation>
 <translation id="1569387923882100876">Dispozitiv conectat</translation>
 <translation id="1571304935088121812">Copiază numele de utilizator</translation>
+<translation id="1576370611341449972">Descărcarea se face numai prin Wi-Fi</translation>
 <translation id="1612196535745283361">Chrome necesită accesul la locație pentru a căuta dispozitive. Accesul la locație este <ph name="BEGIN_LINK" />dezactivat pentru acest dispozitiv<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">Activează sincronizarea, personalizarea și alte servicii Google</translation>
 <translation id="1620510694547887537">Camera</translation>
@@ -344,6 +346,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitate
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Gestionează</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> descărcări șterse</translation>
+<translation id="3819562311292413223">Descarcă articole pentru tine</translation>
 <translation id="3822502789641063741">Ștergi stocarea site-urilor?</translation>
 <translation id="385051799172605136">Înapoi</translation>
 <translation id="3859306556332390985">Derulează înainte</translation>
@@ -383,6 +386,7 @@ Pentru a ajusta termenul de căutare, apasă lung pentru a selecta. Pentru a raf
 <translation id="4113030288477039509">Gestionat de administratorul tău</translation>
 <translation id="4116038641877404294">Descarcă paginile pentru a le folosi offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d marcaj}few{%1$d marcaje}other{%1$d de marcaje}}</translation>
+<translation id="4149994727733219643">Afișare simplificată pentru paginile web</translation>
 <translation id="4159800535322890630">Nu permite accesul site-urilor la senzori</translation>
 <translation id="4165986682804962316">Setări pentru site-uri</translation>
 <translation id="4170011742729630528">Serviciul nu este disponibil. Încercați din nou mai târziu.</translation>
@@ -553,6 +557,7 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="5512137114520586844">Acest cont este gestionat de <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Dezactivată de administratorul dispozitivului</translation>
 <translation id="5515439363601853141">Deblochează pentru a vedea parola</translation>
+<translation id="5515716148775388141">Pictogramele tale s-au mutat în partea de jos a ecranului</translation>
 <translation id="5517095782334947753">Ai marcajele, istoricul, parolele și alte setări din <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Redirecționarea a fost blocată.</translation>
 <translation id="5527082711130173040">Chrome necesită accesul la locație pentru a căuta dispozitive. <ph name="BEGIN_LINK1" />Actualizează permisiunile<ph name="END_LINK1" />. Accesul la locație este <ph name="BEGIN_LINK2" />dezactivat pentru acest dispozitiv<ph name="END_LINK2" />.</translation>
@@ -603,7 +608,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="583281660410589416">Necunoscut</translation>
 <translation id="5833397272224757657">Folosește conținutul de pe site-urile pe care le accesezi, activitatea browserului și interacțiunile pentru personalizare</translation>
 <translation id="5833984609253377421">Trimite linkul</translation>
-<translation id="584427517463557805">Fișă privată selectată</translation>
+<translation id="584427517463557805">Filă privată selectată</translation>
 <translation id="5854790677617711513">Mai vechi de 30 de zile</translation>
 <translation id="5858741533101922242">Chrome nu poate activa adaptorul Bluetooth</translation>
 <translation id="5860033963881614850">Dezactivat</translation>
@@ -756,6 +761,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7016516562562142042">Permisă pentru motorul de căutare actual</translation>
 <translation id="7021515813996758557">Fișierul <ph name="FILE_NAME" /> a fost descărcat</translation>
 <translation id="7022756207310403729">Deschide în browser</translation>
+<translation id="702463548815491781">Recomandat atunci când este activată opțiunea TalkBack sau Acces prin comutare</translation>
 <translation id="7029809446516969842">Parole</translation>
 <translation id="7031882061095297553">Sincronizează cu</translation>
 <translation id="7032663816368481562">Când atingi Mai multe similare <ph name="ICON" /> în bara de adrese, afișezi linkuri rapide către pagini similare. Adresele URL ale paginilor pe care le accesezi sunt trimise la Google.</translation>
@@ -784,6 +790,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7251326866581677552">Blocate pe anumite site-uri</translation>
 <translation id="7253272406652746122">Adaugă un Cont Google din pagina Conturi din aplicația Setări a dispozitivului.</translation>
 <translation id="7274013316676448362">Site blocat</translation>
+<translation id="72867290065237936">Atinge pentru a comuta între sugestiile de parole și tastatură</translation>
 <translation id="729975465115245577">Dispozitivul nu are o aplicație pentru stocarea fișierului parolelor.</translation>
 <translation id="7302081693174882195">Detalii: sortate după volumul de date salvate</translation>
 <translation id="7333031090786104871">Încă se adaugă site-ul anterior</translation>

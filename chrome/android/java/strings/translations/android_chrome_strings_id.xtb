@@ -38,7 +38,7 @@
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1259100630977430756">Halaman yang Anda lihat dalam tab rahasia tidak akan disimpan di histori, penyimpanan cookie, atau histori penelusuran browser setelah semua tab rahasia ditutup. File apa pun yang didownload atau bookmark yang dibuat akan tetap tersimpan.
 
-Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode rahasia tidak akan menyembunyikan penjelajahan yang Anda lakukan dari atasan di kantor, dari internet service provider, maupun situs yang Anda buka.</translation>
+Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode rahasia tidak akan menyembunyikan aktivitas browsing yang Anda lakukan dari atasan di kantor, dari internet service provider, maupun situs yang Anda buka.</translation>
 <translation id="127138278192656016">Gunakan sinkronisasi dan semua layanan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1283039547216852943">Tap untuk meluaskan</translation>
@@ -61,6 +61,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="1404122904123200417">Tersemat dalam <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Jangan Lacak”</translation>
 <translation id="1407135791313364759">Buka semua</translation>
+<translation id="1409426117486808224">Tampilan sederhana untuk tab yang terbuka</translation>
 <translation id="1409879593029778104">Download <ph name="FILE_NAME" /> dicegah karena file sudah ada.</translation>
 <translation id="1414981605391750300">Menghubungi Google. Tindakan ini memerlukan waktu beberapa saat…</translation>
 <translation id="1416550906796893042">Versi aplikasi</translation>
@@ -80,6 +81,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="1566400915470565838">Untuk menggunakan <ph name="APP_NAME" />, hubungkan ke internet.</translation>
 <translation id="1569387923882100876">Perangkat yang Terhubung</translation>
 <translation id="1571304935088121812">Salin nama pengguna</translation>
+<translation id="1576370611341449972">Download hanya dapat dilakukan di Wi-Fi</translation>
 <translation id="1612196535745283361">Chrome memerlukan akses lokasi untuk memindai perangkat. Akses lokasi <ph name="BEGIN_LINK" />dinonaktifkan untuk perangkat ini<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">Aktifkan sinkronisasi, personalisasi, dan layanan Google lainnya</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -344,6 +346,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Kelola</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> download dihapus</translation>
+<translation id="3819562311292413223">Mendownload artikel untuk Anda</translation>
 <translation id="3822502789641063741">Kosongkan penyimpanan situs?</translation>
 <translation id="385051799172605136">Mundur</translation>
 <translation id="3859306556332390985">Cari maju</translation>
@@ -383,6 +386,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk memperse
 <translation id="4113030288477039509">Dikelola oleh administrator</translation>
 <translation id="4116038641877404294">Download halaman untuk melihat secara offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d bookmark}other{%1$d bookmark}}</translation>
+<translation id="4149994727733219643">Tampilan sederhana untuk halaman web</translation>
 <translation id="4159800535322890630">Blokir situs agar tidak mengakses sensor</translation>
 <translation id="4165986682804962316">Setelan situs</translation>
 <translation id="4170011742729630528">Layanan tidak tersedia; coba lagi nanti.</translation>
@@ -553,6 +557,7 @@ Akun Google Anda mungkin memiliki bentuk histori browsing lain seperti penelusur
 <translation id="5512137114520586844">Akun ini dikelola oleh <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Dinonaktifkan oleh administrator perangkat</translation>
 <translation id="5515439363601853141">Buka kunci untuk melihat sandi Anda</translation>
+<translation id="5515716148775388141">Ikon telah dipindahkan ke bagian bawah layar</translation>
 <translation id="5517095782334947753">Anda memiliki bookmark, histori, sandi, dan setelan lain dari <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Pengalihan diblokir.</translation>
 <translation id="5527082711130173040">Chrome memerlukan akses lokasi untuk memindai perangkat. <ph name="BEGIN_LINK1" />Perbarui izin<ph name="END_LINK1" />. Akses lokasi juga <ph name="BEGIN_LINK2" />dinonaktifkan untuk perangkat ini<ph name="END_LINK2" />.</translation>
@@ -603,7 +608,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="583281660410589416">Tidak dikenal</translation>
 <translation id="5833397272224757657">Menggunakan konten di situs yang Anda buka serta aktivitas browser dan interaksi untuk personalisasi</translation>
 <translation id="5833984609253377421">Bagikan link</translation>
-<translation id="584427517463557805">Memilih Tab Rahasia</translation>
+<translation id="584427517463557805">Tab Rahasia yang Dipilih</translation>
 <translation id="5854790677617711513">Lebih dari 30 hari</translation>
 <translation id="5858741533101922242">Chrome tidak dapat mengaktifkan adaptor Bluetooth</translation>
 <translation id="5860033963881614850">Nonaktif</translation>
@@ -756,6 +761,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7016516562562142042">Diizinkan untuk mesin telusur yang sedang digunakan</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> didownload</translation>
 <translation id="7022756207310403729">Buka di browser</translation>
+<translation id="702463548815491781">Disarankan saat TalkBack atau Tombol Akses aktif</translation>
 <translation id="7029809446516969842">Sandi</translation>
 <translation id="7031882061095297553">Sinkronkan ke</translation>
 <translation id="7032663816368481562">Saat Anda menge-tap Lainnya seperti ini <ph name="ICON" /> di kolom URL, link cepat ke halaman terkait akan ditampilkan. URL halaman yang Anda buka dikirimkan ke Google.</translation>
@@ -784,6 +790,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7251326866581677552">Diblokir dari beberapa situs</translation>
 <translation id="7253272406652746122">Tambahkan Akun Google dari halaman Akun di aplikasi Setelan pada perangkat.</translation>
 <translation id="7274013316676448362">Situs yang diblokir</translation>
+<translation id="72867290065237936">Tap untuk beralih antara saran sandi dan keyboard</translation>
 <translation id="729975465115245577">Perangkat Anda tidak memiliki aplikasi untuk menyimpan file sandi.</translation>
 <translation id="7302081693174882195">Detail: Diurutkan menurut jumlah kuota yang dihemat</translation>
 <translation id="7333031090786104871">Masih menambahkan situs sebelumnya</translation>

@@ -17,6 +17,7 @@
 <translation id="2647554856022461007">O Chromium poderá utilizar serviços Web para melhorar a sua experiência de navegação. Poderá optar por desativar estes serviços. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">A inteligência da Google no Chromium</translation>
 <translation id="2730884209570016437">O Chromium não pode utilizar a câmara porque está a ser utilizada por outra aplicação</translation>
+<translation id="2797210818057553964">Pode personalizar esta opção em qualquer altura nas Definições do Chromium.</translation>
 <translation id="3256316712990552818">Copiado para o Chromium</translation>
 <translation id="3413120535237193088">Para obter os seus marcadores em todos os dispositivos, inicie sessão no Chromium.</translation>
 <translation id="3473048256428424907">Ativar o leitor de QR do Chromium</translation>
@@ -45,6 +46,7 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Os dados selecionados foram removidos do Chromium e dos dispositivos sincronizados. A sua Conta Google pode ter outras formas do histórico de navegação, como pesquisas e atividade de outros serviços Google, em history.google.com.</translation>
 <translation id="7400689562045506105">Utilizar o Chromium em todas as plataformas</translation>
+<translation id="7499048969477415415">As definições que controlam a sincronização, a personalização e outros serviços Google no Chromium foram alteradas. Isto pode afetar as suas definições atuais.</translation>
 <translation id="7674213385180944843">Abra Definições &gt; Privacidade &gt; Câmara &gt; Chromium e ative a câmara.</translation>
 <translation id="7746854981345936341">Sugestão para o Chromium: alguns botões encontram-se agora na parte inferior do ecrã, como Retroceder, Avançar e Pesquisar.</translation>
 <translation id="786327964234957808">Está a mudar a sincronização de contas de <ph name="USER_EMAIL1" /> para <ph name="USER_EMAIL2" />. Os seus dados do Chromium existentes são geridos por <ph name="DOMAIN" />. Esta ação eliminará os dados deste dispositivo, mas os dados permanecerão em <ph name="USER_EMAIL1" />.</translation>

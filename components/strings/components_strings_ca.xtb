@@ -207,6 +207,7 @@
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2365563543831475020">L'informe d'error capturat (<ph name="CRASH_TIME" />) no s'ha penjat</translation>
 <translation id="2367567093518048410">Nivell</translation>
+<translation id="2378238891085281592">Has passat al mode privat</translation>
 <translation id="2384307209577226199">Predeterminada de l'empresa</translation>
 <translation id="2386255080630008482">El certificat del servidor s'ha revocat.</translation>
 <translation id="2392959068659972793">Mostra les polítiques sense valors definits</translation>
@@ -355,6 +356,7 @@
 <translation id="3391030046425686457">Adreça d'entrega</translation>
 <translation id="3395827396354264108">Mètode de recollida</translation>
 <translation id="3399952811970034796">Adreça d'entrega</translation>
+<translation id="3409072600744224192">Per accedir a les targetes des de tots els dispositius, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3422248202833853650">Prova de sortir d'altres programes per alliberar memòria.</translation>
 <translation id="3422472998109090673">Actualment no es pot accedir a <ph name="HOST_NAME" />.</translation>
 <translation id="3427092606871434483">Permet (opció predeterminada)</translation>
@@ -514,6 +516,7 @@
 <translation id="450710068430902550">Comparteix informació amb l'administrador</translation>
 <translation id="4515275063822566619">Les targetes i les adreces s'obtenen de Chrome i del teu compte de Google (<ph name="ACCOUNT_EMAIL" />). Pots gestionar-les des de <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>
 <translation id="4522570452068850558">Detalls</translation>
+<translation id="4524805452350978254">Gestiona les targetes</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Desactiveu les extensions</translation>
 <translation id="457875822857220463">Entrega</translation>
@@ -579,6 +582,7 @@
 <translation id="5045550434625856497">Contrasenya incorrecta</translation>
 <translation id="5056549851600133418">Articles que us poden interessar</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Comproveu l'adreça del servidor intermediari<ph name="END_LINK" /></translation>
+<translation id="5072538239104292703">Per accedir a les targetes des de tots els dispositius, inicia la sessió i activa la sincronització.</translation>
 <translation id="5086888986931078152">Pot ser que perdis l'accés al contingut protegit d'alguns llocs web.</translation>
 <translation id="5087286274860437796">En aquest moment el certificat del servidor no és vàlid.</translation>
 <translation id="5087580092889165836">Afegiu una targeta</translation>
@@ -624,6 +628,7 @@
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> de <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Tria la informació de contacte</translation>
 <translation id="5327248766486351172">Nom</translation>
+<translation id="5327567770033251652">activa la sincronització</translation>
 <translation id="5332219387342487447">Mètode d'enviament</translation>
 <translation id="5355557959165512791">En aquest moment no pots visitar <ph name="SITE" /> perquè se li ha revocat el certificat. Els atacs i els errors de xarxa acostumen a ser temporals, o sigui que probablement la pàgina funcionarà més endavant.</translation>
 <translation id="536296301121032821">No s'ha pogut emmagatzemar la configuració de la política</translation>
@@ -688,6 +693,7 @@
 <translation id="5765072501007116331">Per veure els mètodes i els requisits d'entrega, selecciona una adreça</translation>
 <translation id="5770114862687765385">Sembla que el fitxer està malmès. Fes clic al botó Restableix per restablir la sessió.</translation>
 <translation id="5778550464785688721">Control total dels dispositius MIDI</translation>
+<translation id="57838592816432529">Silencia</translation>
 <translation id="5784606427469807560">S'ha produït un problema en confirmar la targeta. Comprova la connexió a Internet i torna-ho a provar.</translation>
 <translation id="5785756445106461925">A més, aquesta pàgina conté altres recursos que no són segurs. La resta d'usuaris poden visualitzar-los mentre estan en trànsit, i algun atacant podria modificar-los per canviar l'aparença de la pàgina.</translation>
 <translation id="5786044859038896871">Vols emplenar la informació de la teva targeta?</translation>
@@ -699,6 +705,7 @@
 <translation id="5866257070973731571">Afegeix un número de telèfon</translation>
 <translation id="5869405914158311789">No es pot accedir a aquest lloc</translation>
 <translation id="5869522115854928033">Contrasenyes desades</translation>
+<translation id="5887400589839399685">S'ha desat la targeta</translation>
 <translation id="5893752035575986141">S'accepten targetes de crèdit.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (informació sincronitzada)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 en ús}other{# en ús}}</translation>
@@ -816,18 +823,22 @@
 <translation id="6915804003454593391">Usuari:</translation>
 <translation id="6944692733090228304">Has introduït la contrasenya en un lloc web que no està gestionat per <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Per protegir el teu compte, no facis servir la mateixa contrasenya en altres aplicacions ni llocs web.</translation>
 <translation id="6945221475159498467">Selecciona</translation>
+<translation id="6948540501704460596">Per accedir a les targetes des de tots els dispositius, <ph name="SYNC_LINK" />.</translation>
 <translation id="6948701128805548767">Per veure els mètodes i els requisits de recollida, selecciona una adreça</translation>
 <translation id="6949872517221025916">Restableix la contrasenya</translation>
 <translation id="6950684638814147129">S'ha produït un error en analitzar el valor JSON: <ph name="ERROR" /></translation>
+<translation id="6957624206566198865">Obre la pàgina en una pestanya privada nova</translation>
 <translation id="6957887021205513506">Sembla que el certificat del servidor és una falsificació.</translation>
 <translation id="6965382102122355670">D'acord</translation>
 <translation id="6965978654500191972">Dispositiu</translation>
 <translation id="6970216967273061347">Districte</translation>
 <translation id="6973656660372572881">S'especifiquen tant els servidors intermediaris fixos com un URL d'script .pac.</translation>
+<translation id="6984479912851154518">Per pagar amb una aplicació externa sortiràs del mode privat. Vols continuar?</translation>
 <translation id="6989763994942163495">Mostra la configuració avançada...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Aquests càrrecs poden ser únics o periòdics i és possible que no s'indiquin d'una manera evident.</translation>
 <translation id="7029809446516969842">Contrasenyes</translation>
+<translation id="7042837854211185817">Per accedir a les targetes des de tots els dispositius, activa la sincronització.</translation>
 <translation id="7050187094878475250">Heu provat de connectar-vos a <ph name="DOMAIN" />, però el servidor ha presentat un certificat amb un període de validesa massa gran per poder confiar-hi.</translation>
 <translation id="7053983685419859001">Bloqueja</translation>
 <translation id="7064851114919012435">Informació de contacte</translation>
@@ -1074,6 +1085,7 @@
 <translation id="8820817407110198400">Adreces d'interès</translation>
 <translation id="883848425547221593">Altres adreces d'interès</translation>
 <translation id="884264119367021077">Adreça d’enviament</translation>
+<translation id="8846319957959474018">Obre aplicacions fàcilment amb les adreces d'interès</translation>
 <translation id="884923133447025588">No s'ha trobat cap mecanisme de revocació.</translation>
 <translation id="885730110891505394">Comparteix informació amb Google</translation>
 <translation id="8858065207712248076">Chrome et recomana que restableixis la contrasenya per a <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> si l'has fet servir en altres llocs web.</translation>

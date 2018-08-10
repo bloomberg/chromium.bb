@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="100812568230599391">Zmeniť štýl zobrazenia na prekladaný</translation>
+<translation id="1011903154582639569">Nájdite kláves, potom napíšte písmeno zdvihnutím prsta</translation>
 <translation id="1012173283529841972">Položka zoznamu</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">Používate hovorenú spätnú väzbu čítačky ChromeVox prvýkrát? Tento stručný návod vám vysvetlí základy potrebné na začatie používania čítačky ChromeVox.</translation>
@@ -162,6 +163,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="2553108862507765288">gramatická chyba</translation>
 <translation id="257674075312929031">Skupina</translation>
 <translation id="2582407057977008361">Vedľa</translation>
+<translation id="2592212930811759050">Začnite upravovať dvojitým klepnutím</translation>
 <translation id="2606210917827248971">s {COUNT,plural, =1{# položkou}few{# položkami}many{# položkami}other{# položkami}}</translation>
 <translation id="2614981083756825552">Rozloženie jazyka Math ML</translation>
 <translation id="2624431853467395961">Otvoriť režim učenia</translation>

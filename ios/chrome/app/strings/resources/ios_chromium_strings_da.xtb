@@ -17,6 +17,7 @@
 <translation id="2647554856022461007">Chromium bruger muligvis webtjenester for at forbedre din browseroplevelse. Du kan vælge at deaktivere disse tjenester. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">Få Googles smarte funktioner i Chromium</translation>
 <translation id="2730884209570016437">Chromium kan ikke bruge dit kamera, da det bruges af en anden app</translation>
+<translation id="2797210818057553964">Du kan til enhver tid tilpasse dette i Chromium-indstillingerne</translation>
 <translation id="3256316712990552818">Kopieret til Chromium</translation>
 <translation id="3413120535237193088">Log ind på Chromium for at se dine bogmærker på alle dine enheder.</translation>
 <translation id="3473048256428424907">Aktivér QR-scanneren fra Chromium</translation>
@@ -45,6 +46,7 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">De valgte data er fjernet fra Chromium og synkroniserede enheder. Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og aktivitet fra andre Google-tjenester, på history.google.com.</translation>
 <translation id="7400689562045506105">Brug Chromium, uanset hvor du er</translation>
+<translation id="7499048969477415415">De indstillinger, der styrer synkronisering, tilpasning og andre Google-tjenester i Chromium, er blevet ændret. Dette kan påvirke dine aktuelle indstillinger.</translation>
 <translation id="7674213385180944843">Åbn Indstillinger &gt; Privatliv &gt; Kamera &gt; Chromium, og slå kameraet til.</translation>
 <translation id="7746854981345936341">Chromium-tip. Nogle knapper som f.eks. Tilbage, Frem og Søg findes nu nederst på skærmen.</translation>
 <translation id="786327964234957808">Du er ved at skifte synkroniseringskonto fra <ph name="USER_EMAIL1" /> til <ph name="USER_EMAIL2" />. Dine eksisterende Chromium-data administreres af <ph name="DOMAIN" />. Denne handling sletter dine data fra denne enhed, men dine data forbliver gemt på <ph name="USER_EMAIL1" />.</translation>

@@ -21,14 +21,14 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">Svakt signal</translation>
 <translation id="1293264513303784526">USB-C-enhet (porten på venstre side)</translation>
-<translation id="1302880136325416935">Vis Bluetooth-innstillinger <ph name="STATE_TEXT" /></translation>
+<translation id="1302880136325416935">Vis Bluetooth-innstillinger. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">Høyre</translation>
 <translation id="1351937230027495976">Skjul menyen</translation>
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Appvelger</translation>
-<translation id="1520303207432623762">{NUM_APPS,plural, =1{Vis innstillinger for varsler Varsler er slått av for en app}other{Vis innstillinger for varsler Varsler er slått av for # apper}}</translation>
+<translation id="1520303207432623762">{NUM_APPS,plural, =1{Vis innstillinger for varsler. Varsler er slått av for en app}other{Vis innstillinger for varsler. Varsler er slått av for # apper}}</translation>
 <translation id="1525508553941733066">AVVIS</translation>
 <translation id="1537254971476575106">Lupe for hele skjermen</translation>
 <translation id="15373452373711364">Stor markør</translation>
@@ -68,7 +68,6 @@
 <translation id="2049639323467105390">Denne enheten administreres av <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Stående</translation>
 <translation id="2067602449040652523">Lysstyrke på tastaturet</translation>
-<translation id="2075212959500165896">For mange forsøk. Prøv igjen senere.</translation>
 <translation id="2081529251031312395">$1 kan likevel logge på senere.</translation>
 <translation id="2127372758936585790">Lading med lav effekt</translation>
 <translation id="2135456203358955318">Dokket lupe</translation>
@@ -88,7 +87,7 @@
 <translation id="2359808026110333948">Fortsett</translation>
 <translation id="2365393535144473978">Hvis du slår på mobildata, blir Bluetooth også slått på.</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="239188844683466770">Slå «ikke forstyrr» på eller av</translation>
+<translation id="239188844683466770">Slå av/på «ikke forstyrr»</translation>
 <translation id="2412593942846481727">En oppdatering er tilgjengelig</translation>
 <translation id="2416346634399901812">Koblet til <ph name="NETWORK_NAME" /></translation>
 <translation id="2429753432712299108">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Før du godtar dette, må du bekrefte at denne tilgangskoden vises på den aktuelle enheten: <ph name="PASSKEY" /></translation>
@@ -138,9 +137,8 @@
 <translation id="315116470104423982">Mobildata</translation>
 <translation id="3151786313568798007">Retning</translation>
 <translation id="3153444934357957346">Du kan bare ha opptil <ph name="MULTI_PROFILE_USER_LIMIT" /> kontoer i multipålogging.</translation>
-<translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Koble til en enhet}other{Koble til # enheter}}</translation>
+<translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Koblet til en enhet}other{Koblet til # enheter}}</translation>
 <translation id="3236488194889173876">Ingen mobilnettverk er tilgjengelige</translation>
-<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Gjest</translation>
 <translation id="332587331255250389">Bytt ut batteriet</translation>
 <translation id="3351879221545518001">Du caster for øyeblikket skjermen.</translation>
@@ -186,7 +184,7 @@
 <translation id="4072264167173457037">Middels sterkt signal</translation>
 <translation id="4200057768455216496">Du trykket på snarveien for den dokkede lupen. Vil du slå den på?</translation>
 <translation id="4217571870635786043">Diktering</translation>
-<translation id="4261870227682513959">Vis innstillinger for varsler. Varsler er av.</translation>
+<translation id="4261870227682513959">Vis innstillinger for varsler. Varsler er av</translation>
 <translation id="4274921305979314545">Koble Chromebook til telefonen</translation>
 <translation id="4279490309300973883">Speiling</translation>
 <translation id="4292681942966152062">Aktiverer <ph name="NETWORK_NAME" /></translation>
@@ -239,7 +237,7 @@
 <translation id="544691375626129091">Alle tilgjengelige brukere er allerede lagt til i denne økten.</translation>
 <translation id="5457599981699367932">Surf som gjest</translation>
 <translation id="54609108002486618">Administrert</translation>
-<translation id="5496819745535887422">Administratoren din kaller tilbake enheten din. Alle data blir slettet når enheten starter på nytt.</translation>
+<translation id="5496819745535887422">Administratoren din tilbakestiller enheten din til forrige versjon. Alle data blir slettet når enheten starter på nytt.</translation>
 <translation id="553675580533261935">Avslutning av økten</translation>
 <translation id="5537725057119320332">Cast</translation>
 <translation id="5548285847212963613">Utvidelsen «<ph name="EXTENSION_NAME" />» kan hjelpe deg med å koble deg til dette nettverket.</translation>
@@ -294,7 +292,7 @@
 <translation id="6297287540776456956">Bruk pekepennen til å velge et område</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ble rotert til <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Tastaturoverlegg</translation>
-<translation id="6376931439017688372">Bluetooth er aktivert</translation>
+<translation id="6376931439017688372">Bluetooth er på</translation>
 <translation id="639644700271529076">CAPS LOCK er av</translation>
 <translation id="6406704438230478924">alt gr</translation>
 <translation id="643147933154517414">Ingen varsler</translation>
@@ -444,7 +442,7 @@
 <translation id="8984179138335769204">Hurtigtaster</translation>
 <translation id="8995603266996330174">Drevet av <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">En oppdatering av Adobe Flash Player er tilgjengelig</translation>
-<translation id="9056839673611986238">Enheten blir hentet tilbake</translation>
+<translation id="9056839673611986238">Enheten blir tilbakestilt til forrige versjon</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofonen er i bruk.</translation>

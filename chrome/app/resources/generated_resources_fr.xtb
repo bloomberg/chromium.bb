@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">Synchronisation et personnalisation</translation>
 <translation id="1398853756734560583">Agrandir</translation>
 <translation id="1399511500114202393">Aucun certificat utilisateur</translation>
+<translation id="1401165786814632797">Permet d'accéder à l'Assistant chaque fois que vous dites "Ok Google" quand votre appareil est allumé et déverrouillé.</translation>
 <translation id="140250605646987970">Votre téléphone a été trouvé, mais Smart Lock est compatible uniquement avec les appareils Android 5.0 ou version ultérieure. &lt;a&gt;En savoir plus&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisé)</translation>
 <translation id="1405476660552109915">Voulez-vous que <ph name="PASSWORD_MANAGER_BRAND" /> enregistre votre compte pour ce site ?</translation>
@@ -1510,6 +1511,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> tente de se connecter</translation>
 <translation id="3274763671541996799">Le mode plein écran a été activé.</translation>
 <translation id="3275778913554317645">Ouvrir dans une fenêtre</translation>
+<translation id="3278877214895457897">Lorsque votre Chromebook est configuré, appuyez sur le bouton de l'Assistant ou dites "Ok Google" pour obtenir son aide à tout moment.</translation>
 <translation id="3279230909244266691">Cette opération peut prendre quelques minutes. Démarrage de la machine virtuelle…</translation>
 <translation id="3279741024917655738">Affichage des vidéos en plein écran sur</translation>
 <translation id="3280237271814976245">Enregistrer &amp;sous...</translation>
@@ -2166,7 +2168,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4275830172053184480">Redémarrer l'appareil</translation>
 <translation id="4278101229438943600">L'Assistant est prêt</translation>
 <translation id="4278390842282768270">Autorisé</translation>
-<translation id="4280864916190672950">Arrêter le chargement</translation>
 <translation id="4281844954008187215">Conditions d'utilisation</translation>
 <translation id="4282196459431406533">Smart Lock est activé</translation>
 <translation id="4284105660453474798">Voulez-vous vraiment supprimer "$1" ?</translation>
@@ -2604,6 +2605,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4992066212339426712">Réactiver le son</translation>
 <translation id="4992458225095111526">Confirmer la réinitialisation Powerwash</translation>
 <translation id="4992473555164495036">Votre administrateur a limité les modes de saisie disponibles.</translation>
+<translation id="4992926179187649719">Activer la commande "Ok Google"</translation>
 <translation id="4994474651455208930">Permettre aux sites de demander l'autorisation de devenir gestionnaires par défaut des protocoles</translation>
 <translation id="4994754230098574403">Configuration</translation>
 <translation id="4996978546172906250">Partager via</translation>
@@ -3437,7 +3439,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6231881193380278751">Ajoutez un paramètre de requête dans l'URL pour une actualisation automatique de la page : chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Batterie</translation>
 <translation id="6232116551750539448">La connexion à "<ph name="NAME" />" a été interrompue.</translation>
-<translation id="6235700927623181151">Cet onglet partage le contenu de votre bureau.</translation>
 <translation id="6237816943013845465">Permet d'ajuster la résolution de l'écran</translation>
 <translation id="6238923052227198598">Conserver la dernière note sur l'écran de verrouillage</translation>
 <translation id="6239558157302047471">Actualiser le &amp;cadre</translation>
@@ -4534,6 +4535,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7908378463497120834">Désolé, impossible d'installer au moins une partition de votre périphérique de stockage externe.</translation>
 <translation id="7909969815743704077">Téléchargé en mode navigation privée</translation>
 <translation id="7910768399700579500">&amp;Nouveau dossier</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Votre mot de passe a été modifié sur le serveur. Veuillez vous déconnecter, puis vous reconnecter.</translation>
 <translation id="7915471803647590281">Veuillez nous indiquer ce qu'il se passe avant d'envoyer votre rapport.</translation>
 <translation id="7916556741383518510">En cas de clic</translation>
@@ -4818,7 +4820,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8366396658833131068">Votre connexion réseau est rétablie. Veuillez sélectionner un autre réseau ou appuyer sur "Continuer" ci-dessous pour lancer votre application kiosque.</translation>
 <translation id="8366947248864804596">Lorsque votre téléphone est déverrouillé et situé à proximité, il suffit de le sélectionner pour déverrouiller l'appareil. Dans le cas contraire, saisissez votre mot de passe ou votre code.</translation>
 <translation id="8368859634510605990">&amp;Ouvrir tous les favoris</translation>
-<translation id="8369547389711988632">Chargement arrêté</translation>
 <translation id="8371695176452482769">Parlez maintenant.</translation>
 <translation id="8372369524088641025">Clé WEP incorrecte</translation>
 <translation id="8373553483208508744">Couper le son des onglets</translation>
@@ -5024,7 +5025,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8677212948402625567">Tout réduire...</translation>
 <translation id="8678648549315280022">Gérer les paramètres de téléchargement…</translation>
 <translation id="8678933587484842200">Comment souhaitez-vous que cette application soit lancée ?</translation>
-<translation id="8679788109894721265">Cette page utilise plus de <ph name="MEGABYTES" /> Mo</translation>
 <translation id="8680251145628383637">Connectez-vous pour retrouver vos favoris, votre historique, vos mots de passe et d'autres paramètres sur tous vos appareils. De plus, vous serez automatiquement connecté à vos services Google.</translation>
 <translation id="8686213429977032554">Ce fichier Drive n'a pas encore été partagé</translation>
 <translation id="8687485617085920635">Fenêtre suivante</translation>

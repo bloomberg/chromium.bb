@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">Sincronització i personalització</translation>
 <translation id="1398853756734560583">Maximitza</translation>
 <translation id="1399511500114202393">Sense certificat d'usuari</translation>
+<translation id="1401165786814632797">Accedeix a l'Assistent en qualsevol moment dient "Ok Google" amb el dispositiu actiu i desbloquejat.</translation>
 <translation id="140250605646987970">Hem trobat el telèfon, però Smart Lock només funciona en dispositius amb Android 5.0 o una versió posterior. &lt;a&gt;Més informació&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisat)</translation>
 <translation id="1405476660552109915">Voleu que <ph name="PASSWORD_MANAGER_BRAND" /> desi el vostre compte per a aquest lloc?</translation>
@@ -1509,6 +1510,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> es vol connectar</translation>
 <translation id="3274763671541996799">Heu activat el mode de pantalla completa.</translation>
 <translation id="3275778913554317645">Obre com a finestra</translation>
+<translation id="3278877214895457897">Quan el dispositiu Chromebook estigui configurat, prem el botó de l'Assistent o digues "Ok Google" per obtenir ajuda de l'Assistent en qualsevol moment.</translation>
 <translation id="3279230909244266691">Aquest procés pot tardar uns quants minuts. S'està iniciant la màquina virtual.</translation>
 <translation id="3279741024917655738">Mostra els vídeos en pantalla completa a</translation>
 <translation id="3280237271814976245">Desa &amp;com a...</translation>
@@ -2163,7 +2165,6 @@
 <translation id="4275830172053184480">Reinici del dispositiu</translation>
 <translation id="4278101229438943600">L'Assistent està a punt</translation>
 <translation id="4278390842282768270">Permès</translation>
-<translation id="4280864916190672950">Atura la càrrega</translation>
 <translation id="4281844954008187215">Termes i condicions</translation>
 <translation id="4282196459431406533">Smart Lock està activat</translation>
 <translation id="4284105660453474798">Confirmes que vols suprimir  "$1"?</translation>
@@ -2602,6 +2603,7 @@
 <translation id="4992066212339426712">Activa el so</translation>
 <translation id="4992458225095111526">Confirmació de Powerwash</translation>
 <translation id="4992473555164495036">L'administrador ha limitat els mètodes d'entrada disponibles.</translation>
+<translation id="4992926179187649719">Activa "Ok Google"</translation>
 <translation id="4994474651455208930">Permet que els llocs sol·licitin convertir-se en gestors predeterminats de protocols</translation>
 <translation id="4994754230098574403">S'està configurant</translation>
 <translation id="4996978546172906250">Compartir mitjançant</translation>
@@ -3169,7 +3171,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5832805196449965646">Afegeix una persona</translation>
 <translation id="583281660410589416">Desconegut</translation>
 <translation id="5832976493438355584">Bloquejat</translation>
-<translation id="5833397272224757657">Utilitza el contingut dels llocs web que visites, així com l'activitat i les interaccions del navegador per oferir una experiència personalitzada.</translation>
+<translation id="5833397272224757657">Utilitza el contingut dels llocs web que visites, així com l'activitat i les interaccions del navegador per oferir una experiència personalitzada</translation>
 <translation id="5833610766403489739">Aquest fitxer s'ha extraviat en algun lloc. Comproveu el paràmetre d'ubicació de les baixades i torneu-ho a provar.</translation>
 <translation id="5833726373896279253">Només el propietari d'aquesta configuració la pot modificar:</translation>
 <translation id="5834581999798853053">Queda cosa de <ph name="TIME" /> minuts</translation>
@@ -3436,7 +3438,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6231881193380278751">Afegiu un paràmetre de consulta a l'URL per actualitzar la pàgina de manera automàtica: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Bateria</translation>
 <translation id="6232116551750539448">S'ha perdut la connexió amb <ph name="NAME" /></translation>
-<translation id="6235700927623181151">Aquesta pestanya està compartint el contingut del teu escriptori.</translation>
 <translation id="6237816943013845465">Permet ajustar la resolució de pantalla</translation>
 <translation id="6238923052227198598">Mantén la darrera nota a la pantalla de bloqueig</translation>
 <translation id="6239558157302047471">Torna a carregar el &amp;marc</translation>
@@ -4016,7 +4017,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7127980134843952133">Historial de baixades</translation>
 <translation id="7131040479572660648">Llegir les dades dels llocs <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Afegeix la pà&amp;gina...</translation>
-<translation id="7133578150266914903">L'administrador està revertint el dispositiu a una versió anterior (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133578150266914903">L'administrador està canviant la versió del dispositiu a una d'anterior (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Fa el text més petit</translation>
 <translation id="7136694880210472378">Estableix com a predeterminat</translation>
 <translation id="7136984461011502314">Benvingut a <ph name="PRODUCT_NAME" /></translation>
@@ -4530,6 +4531,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7908378463497120834">Com a mínim una partició del dispositiu d'emmagatzematge extern no s'ha pogut muntar.</translation>
 <translation id="7909969815743704077">S'ha baixat en mode d'incògnit</translation>
 <translation id="7910768399700579500">Carpeta &amp;nova</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">La contrasenya s'ha canviat al servidor. Tanca la sessió i torna-la a iniciar.</translation>
 <translation id="7915471803647590281">Indica'ns el problema abans d'enviar els comentaris.</translation>
 <translation id="7916556741383518510">En fer clic</translation>
@@ -4814,7 +4816,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8366396658833131068">S'ha restablert la vostra connectivitat de xarxa. Seleccioneu una altra xarxa o bé premeu el botó Continua per iniciar l'aplicació de quiosc.</translation>
 <translation id="8366947248864804596">Si el telèfon està desbloquejat i és a prop, selecciona l'opció per desbloquejar. En cas contrari, introdueix la contrasenya o el PIN.</translation>
 <translation id="8368859634510605990">&amp;Obre totes les adreces d'interès</translation>
-<translation id="8369547389711988632">S'ha aturat la càrrega</translation>
 <translation id="8371695176452482769">Parla ara</translation>
 <translation id="8372369524088641025">Clau WEP no vàlida</translation>
 <translation id="8373553483208508744">Silencia les pestanyes</translation>
@@ -5020,7 +5021,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8677212948402625567">Redueix-ho tot...</translation>
 <translation id="8678648549315280022">Gestiona la configuració de la baixada...</translation>
 <translation id="8678933587484842200">Com voldries que s'iniciés aquesta aplicació?</translation>
-<translation id="8679788109894721265">Aquesta pàgina fa servir més de <ph name="MEGABYTES" /> MB</translation>
 <translation id="8680251145628383637">Inicieu la sessió per tenir les adreces d'interès, l'historial, les contrasenyes i altres opcions en tots els dispositius. A més, iniciareu la sessió automàticament als serveis de Google.</translation>
 <translation id="8686213429977032554">Aquest fitxer de Drive encara no s'ha compartit</translation>
 <translation id="8687485617085920635">Finestra següent</translation>
@@ -5228,7 +5228,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9009369504041480176">S'està carregant (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">Mostra sempre la icona</translation>
 <translation id="9011178328451474963">Darrera pestanya</translation>
-<translation id="9013707997379828817">L'administrador ha revertit el dispositiu a una versió anterior. Desa els fitxers importants i, després, reinicia el dispositiu. Se'n suprimiran totes les dades.</translation>
+<translation id="9013707997379828817">L'administrador ha canviat la versió del dispositiu a una d'anterior. Desa els fitxers importants i, després, reinicia el dispositiu. Se'n suprimiran totes les dades.</translation>
 <translation id="9014987600015527693">Mostra un altre telèfon</translation>
 <translation id="9018218886431812662">La instal·lació s'ha completat</translation>
 <translation id="901834265349196618">correu electrònic</translation>

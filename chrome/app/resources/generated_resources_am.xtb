@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">ስምረት እና ግላዊነት ማላበስ</translation>
 <translation id="1398853756734560583">አስፋ</translation>
 <translation id="1399511500114202393">ምንም የተጠቃሚ እውቅና ማረጋገጫ የለም</translation>
+<translation id="1401165786814632797">የእርስዎ መሣሪያ ንቁ በሚህንበት እና ክፍት ሲሆን እርስዎ «Ok Google» በሚሉበት ማናቸውም ጊዜ ረዳትዎን ይድረሱበት።</translation>
 <translation id="140250605646987970">የእርስዎ ስልክ ተገኝቷል። ነገር ግን Smart Lock Android 5.0 እና ከዚያ በላይ ካላቸው መሣሪያዎች ጋር ብቻ ይሰራል። &lt;a&gt;የበለጠ ለመረዳት&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (ክትትል የሚደረግበት)</translation>
 <translation id="1405476660552109915"><ph name="PASSWORD_MANAGER_BRAND" /> ለዚህ ጣቢያ ይለፍ ቃልዎን እንዲያስቀምጥልዎ ይፈልጋሉ?</translation>
@@ -1370,6 +1371,7 @@
 <translation id="3031557471081358569">ከውጪ ለማስመጣት ንጥሎችን ምረጥ፦</translation>
 <translation id="3031601332414921114">ማተምን ካቆምክበት ቀጥል</translation>
 <translation id="303198083543495566">ጂኦግራፊ</translation>
+<translation id="3033999583152214331">የLinux መሣሪያዎች፣ አርታዒዎች፣ እና IDEዎች በእርስዎ Chromebook ላይ ያሂዱ። &lt;a target="_blank" href="<ph name="URL" />"&gt;የበለጠ ለመረዳት&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Flashን አንቃ</translation>
 <translation id="3037754279345160234">ጎራውን ለመቀላቀል ውቅረቱን መተንተን አልተቻለም። እባክዎ የእርስዎን አስተዳዳሪ ያነጋግሩ።</translation>
 <translation id="3038612606416062604">አታሚን ራስዎ ያክሉ</translation>
@@ -1510,6 +1512,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> መገናኘት ይፈልጋል</translation>
 <translation id="3274763671541996799">አሁን ወደ ሙሉ ማያ ገጽ ሄደዋል።</translation>
 <translation id="3275778913554317645">እንደ መስኮት ክፈት</translation>
+<translation id="3278877214895457897">የእርስዎ Chromebook ሲዋቀር በማንኛውም ጊዜ ከረዳትዎ እገዛን ለማግኘት የረዳት አዝራሩን ይጫኑ ወይም «Ok Google» ይበሉ።</translation>
 <translation id="3279230909244266691">ይህ ሂደት ጥቂት ደቂቃዎች ሊወስድ ይችላል። ምናባዊ ማሽኑን በመጀመር ላይ።</translation>
 <translation id="3279741024917655738">የሙሉ ገጽ ዕይታ ቪዲዮዎችን አሳይ በርቷል</translation>
 <translation id="3280237271814976245">አስቀምጥ &amp;እንደ…</translation>
@@ -2164,7 +2167,6 @@
 <translation id="4275830172053184480">መሣሪያዎን ዳግም ያስጀምሩ</translation>
 <translation id="4278101229438943600">የእርስዎ ረዳት ዝግጁ ነው</translation>
 <translation id="4278390842282768270">ተፈቅዷል</translation>
-<translation id="4280864916190672950">መጫን አቁም</translation>
 <translation id="4281844954008187215">የአግልግሎት ውል</translation>
 <translation id="4282196459431406533">Smart Lock በርቷል</translation>
 <translation id="4284105660453474798">እርግጠኛ ነዎት «$1»ን መሰረዝ ይፈልጋሉ?</translation>
@@ -2602,6 +2604,7 @@
 <translation id="4992066212339426712">ድምጸ-ከል አንሳ</translation>
 <translation id="4992458225095111526">Powerwashን ያረጋግጡ</translation>
 <translation id="4992473555164495036">የእርስዎ አስተዳዳሪ ሊገኙ የሚችሉትን የግቤት ዘዴዎች ገድቧቸዋል።</translation>
+<translation id="4992926179187649719">«Ok Google»ን ያብሩ</translation>
 <translation id="4994474651455208930">ጣቢያዎች ለፕሮቶኮሎች ነባሪ ከዋኞች እንዲሆኑ እንዲጠይቁ ፍቀድ</translation>
 <translation id="4994754230098574403">በማዋቀር ላይ</translation>
 <translation id="4996978546172906250">ያጋሩ በ</translation>
@@ -3433,7 +3436,6 @@
 <translation id="6231881193380278751">ገጹን በራስ-ለማደስ በዩአርኤል ውስጥ የመጠይቅ ልኬት ያክሉ፦ chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">ባትሪ</translation>
 <translation id="6232116551750539448">ወደ <ph name="NAME" /> ግንኙነት ጠፍቷል</translation>
-<translation id="6235700927623181151">ይህ ትር የእርስዎን የዴስክቶፕ ይዘት በማጋራት ላይ ነው።</translation>
 <translation id="6237816943013845465">የእርስዎን ማያ ገጽ ምስል ጥራት እንዲቀይሩ ያስችልዎታል</translation>
 <translation id="6238923052227198598">በማያ ገጽ መቆለፊያ ላይ የቅርብ ጊዜውን ማስታወሻ አቆይ</translation>
 <translation id="6239558157302047471">&amp;ክፈፍን ዳግም ጫን</translation>
@@ -4530,6 +4532,7 @@
 <translation id="7908378463497120834">ይቅርታ፣ ቢያንስ አንድ በውጫዊ ማከማቻዎ ላይ ያለ ክፍልፍል ሊፈናጠጥ አልቻለም።</translation>
 <translation id="7909969815743704077">በIncognito ውስጥ የወረደ</translation>
 <translation id="7910768399700579500">&amp;አዲስ አቃፊ</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">የእርስዎ የይለፍ ቃል በአገልጋዩ ላይ ተቀይሯል። እባክዎ ዘግተው ይውጡና እንደገና ይግቡ።</translation>
 <translation id="7915471803647590281">ግብረ መልሱን ከመላክዎ በፊት እባክዎ ምን እየተከሰተ እንደሆነ ይንገሩን።</translation>
 <translation id="7916556741383518510">ጠቅ ሲደረግ</translation>
@@ -4819,7 +4822,6 @@ nil</translation>
 <translation id="8366396658833131068">የአውታረ መረብ ግንኙነትዎ ወደነበረበት ተመልሷል። እባክዎ የተለየ አውታረ መረብ ይምረጡ ወይም የኪዮስክ መተግበሪያዎን ለማስጀመር «ቀጥል»ን ይጫኑ።</translation>
 <translation id="8366947248864804596">የእርስዎ ስልክ ሲከፈት እና በአቅራቢያ ሲሆን ለመክፈት ይምረጡ ብቻ። አለበለዚያ የእርስዎን የይለፍ ቃል ወይም ፒን ያስገቡ።</translation>
 <translation id="8368859634510605990">&amp;ሁሉንም እልባቶች ክፈት</translation>
-<translation id="8369547389711988632">መጫን አቁሟል</translation>
 <translation id="8371695176452482769">አሁን ይናገሩ</translation>
 <translation id="8372369524088641025">መጥፎ የWEP ቁልፍ</translation>
 <translation id="8373553483208508744">ትሮች ላይ ድምጸ-ከል ያድርጉ</translation>
@@ -5025,7 +5027,6 @@ nil</translation>
 <translation id="8677212948402625567">ሁሉንም ሰብስብ...</translation>
 <translation id="8678648549315280022">የአውርድ ቅንብሮችን ያስተዳድሩ...</translation>
 <translation id="8678933587484842200">ይህ መተግበሪያ እንዴት እንዲጀምር ይፈልጋሉ?</translation>
-<translation id="8679788109894721265">ይህ ገጽ ከ<ph name="MEGABYTES" /> ሜባ በላይ ይጠቀማል</translation>
 <translation id="8680251145628383637">የእርስዎን ዕልባቶች፣ ታሪክ፣ የይለፍ ቃሎች እና ሌሎች ቅንብሮች በሁሉም መሣሪያዎችዎ ላይ ለማግኘት በመለያ ይግቡ። እንዲሁም በራስ-ሰር ወደ የእርስዎ Google አገልግሎቶች እንዲገቡ ይደረጋሉ።</translation>
 <translation id="8686213429977032554">ይህ የDrive ፋይል ገና አልተጋራም</translation>
 <translation id="8687485617085920635">ቀጣይ መስኮት</translation>

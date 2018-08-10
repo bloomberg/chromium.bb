@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="100812568230599391">Schimbă stilul de afișare la intercalat.</translation>
+<translation id="1011903154582639569">Găsește o tastă, apoi ridică degetul ca să o selectezi</translation>
 <translation id="1012173283529841972">Element din listă</translation>
 <translation id="1013742170491673792">căutare</translation>
 <translation id="1022586497894531524">Folosești feedbackul rostit ChromeVox pentru prima dată? Acest tutorial rapid explică noțiunile de bază pentru a începe să folosești ChromeVox.</translation>
@@ -163,6 +164,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="2553108862507765288">greșeală gramaticală</translation>
 <translation id="257674075312929031">Grup</translation>
 <translation id="2582407057977008361">Separat</translation>
+<translation id="2592212930811759050">Atinge de două ori pentru a începe editarea</translation>
 <translation id="2606210917827248971">cu {COUNT,plural, =1{# element}few{# elemente}other{# de elemente}}</translation>
 <translation id="2614981083756825552">Aspect Math ML</translation>
 <translation id="2624431853467395961">Deschide modul de învățare</translation>

@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">Synchronisieren und personalisieren</translation>
 <translation id="1398853756734560583">Vergrößern</translation>
 <translation id="1399511500114202393">Kein Nutzerzertifikat</translation>
+<translation id="1401165786814632797">Bei aktivem Bildschirm und entsperrtem Gerät steht Ihnen Google Assistant jederzeit zur Verfügung, wenn Sie "Ok Google" sagen.</translation>
 <translation id="140250605646987970">Ihr Smartphone wurde gefunden, aber Smart Lock funktioniert nur auf Geräten mit Android 5.0 und höher. &lt;a&gt;Weitere Informationen&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (betreut)</translation>
 <translation id="1405476660552109915">Soll <ph name="PASSWORD_MANAGER_BRAND" /> Ihr Password für diese Website speichern?</translation>
@@ -1506,6 +1507,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> möchte eine Verbindung herstellen</translation>
 <translation id="3274763671541996799">Sie befinden sich im Vollbildmodus.</translation>
 <translation id="3275778913554317645">In neuem Fenster öffnen</translation>
+<translation id="3278877214895457897">Wenn Ihr Chromebook eingerichtet ist, können Sie die Assistant-Taste drücken oder "Ok Google" sagen, um sich jederzeit von Assistant helfen zu lassen.</translation>
 <translation id="3279230909244266691">Der Vorgang kann einige Minuten dauern. Virtuelle Maschine wird gestartet.</translation>
 <translation id="3279741024917655738">Zeigen von Vollbildvideos ist aktiviert</translation>
 <translation id="3280237271814976245">Speichern &amp;unter...</translation>
@@ -2162,7 +2164,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4275830172053184480">Gerät neu starten</translation>
 <translation id="4278101229438943600">Google Assistant ist bereit</translation>
 <translation id="4278390842282768270">Zugelassen</translation>
-<translation id="4280864916190672950">Laden abbrechen</translation>
 <translation id="4281844954008187215">Nutzungsbedingungen</translation>
 <translation id="4282196459431406533">Smart Lock ist aktiviert</translation>
 <translation id="4284105660453474798">Möchten Sie "$1" wirklich löschen?</translation>
@@ -2600,6 +2601,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4992066212339426712">Stummschaltung aufheben</translation>
 <translation id="4992458225095111526">Powerwash bestätigen</translation>
 <translation id="4992473555164495036">Ihr Administrator hat die verfügbaren Eingabemethoden eingeschränkt.</translation>
+<translation id="4992926179187649719">"Ok Google" aktivieren</translation>
 <translation id="4994474651455208930">Registrierung von Websites als Standard-Handler für Protokolle zulassen</translation>
 <translation id="4994754230098574403">Wird eingerichtet</translation>
 <translation id="4996978546172906250">Teilen über</translation>
@@ -3432,7 +3434,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6231881193380278751">Abfrageparameter in URL zum automatischen Aktualisieren der Seite hinzufügen: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Akku</translation>
 <translation id="6232116551750539448">Verbindung mit <ph name="NAME" /> wurde unterbrochen.</translation>
-<translation id="6235700927623181151">Über diesen Tab werden Ihre Desktopinhalte geteilt.</translation>
 <translation id="6237816943013845465">Ermöglicht die Anpassung der Bildschirmauflösung</translation>
 <translation id="6238923052227198598">Neueste Notiz auf Sperrbildschirm anzeigen</translation>
 <translation id="6239558157302047471">&amp;Frame neu laden</translation>
@@ -3752,7 +3753,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6710213216561001401">Zurück</translation>
 <translation id="6718273304615422081">Wird gezippt...</translation>
 <translation id="671928215901716392">Bildschirm sperren</translation>
-<translation id="6720847671508630642">Die Vorteile von Android automatisch auf Ihrem Chromebook genießen. Wenn Sie Ihr Smartphone verbinden, können Sie damit Textnachrichten von Ihrem Computer senden, seine Internetverbindung teilen und den Chromebook-Bildschirm entsperren.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
+<translation id="6720847671508630642">Genießen Sie die Vorteile von Android automatisch auf Ihrem Chromebook. Wenn Sie Ihr Smartphone verbinden, können Sie damit Textnachrichten von Ihrem Computer senden, seine Internetverbindung teilen und den Chromebook-Bildschirm entsperren.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">Den Hersteller und das Modell Ihres Sicherheitsschlüssels anzeigen</translation>
 <translation id="6721972322305477112">&amp;Ablage</translation>
 <translation id="672213144943476270">Bitte entsperren Sie Ihr Profil, bevor Sie als Gast surfen.</translation>
@@ -4529,6 +4530,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7908378463497120834">Mindestens eine Partition auf Ihrem externen Speichergerät konnte nicht bereitgestellt werden.</translation>
 <translation id="7909969815743704077">Im Inkognitomodus heruntergeladen</translation>
 <translation id="7910768399700579500">&amp;Neuer Ordner</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Ihr Passwort wurde auf dem Server geändert. Bitte melden Sie sich ab und dann wieder an.</translation>
 <translation id="7915471803647590281">Bitte beschreiben Sie das Problem, bevor Sie das Feedback abschicken.</translation>
 <translation id="7916556741383518510">Bei Klick</translation>
@@ -4814,7 +4816,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8366396658833131068">Ihre Netzwerkverbindung wurde wiederhergestellt. Wählen Sie ein anderes Netzwerk aus oder klicken Sie unten auf "Weiter", um Ihre Kiosk-App zu starten.</translation>
 <translation id="8366947248864804596">Wenn Ihr Smartphone entsperrt und in der Nähe ist, können Sie Ihr Gerät mit nur einem Klick entsperren. Andernfalls müssen Sie Ihr Passwort oder Ihre PIN eingeben.</translation>
 <translation id="8368859634510605990">&amp;Alle Lesezeichen öffnen</translation>
-<translation id="8369547389711988632">Laden abgebrochen</translation>
 <translation id="8371695176452482769">Jetzt sprechen</translation>
 <translation id="8372369524088641025">Ungültiger WEP-Schlüssel</translation>
 <translation id="8373553483208508744">Tabs stummschalten</translation>
@@ -5020,7 +5021,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8677212948402625567">Alle minimieren...</translation>
 <translation id="8678648549315280022">Download-Einstellungen verwalten...</translation>
 <translation id="8678933587484842200">Wie soll diese Anwendung gestartet werden?</translation>
-<translation id="8679788109894721265">Diese Seite benötigt mehr als <ph name="MEGABYTES" /> MB</translation>
 <translation id="8680251145628383637">Melden Sie sich an, um Ihre Lesezeichen, Ihren Verlauf und Ihre anderen Einstellungen auf allen Ihren Geräten zu sehen. Sie werden auch automatisch in Ihren Google-Diensten angemeldet.</translation>
 <translation id="8686213429977032554">Die Drive-Datei wurde noch nicht geteilt.</translation>
 <translation id="8687485617085920635">Nächstes Fenster</translation>

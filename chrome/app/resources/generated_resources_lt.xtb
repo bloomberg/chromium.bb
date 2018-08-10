@@ -2166,7 +2166,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4275830172053184480">Iš naujo paleisti įrenginį</translation>
 <translation id="4278101229438943600">Padėjėjas pasiruošęs</translation>
 <translation id="4278390842282768270">Leidžiama</translation>
-<translation id="4280864916190672950">Sustabdyti įkėlimą</translation>
 <translation id="4281844954008187215">Paslaugų teikimo sąlygos</translation>
 <translation id="4282196459431406533">„Smart Lock“ įjungta</translation>
 <translation id="4284105660453474798">Ar iš tikrųjų norite ištrinti „$1“?</translation>
@@ -3437,7 +3436,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6231881193380278751">Kad puslapis būtų atnaujintas automatiškai, pridėkite šį užklausos parametrą prie URL: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Akumuliatorius</translation>
 <translation id="6232116551750539448">Ryšys su „<ph name="NAME" />“ nutrūko</translation>
-<translation id="6235700927623181151">Šis skirtukas bendrina jūsų darbalaukio turinį.</translation>
 <translation id="6237816943013845465">Leidžiama koreguoti ekrano skyrą</translation>
 <translation id="6238923052227198598">Palikti naujausią pastabą užrakinimo ekrane</translation>
 <translation id="6239558157302047471">Įkelti &amp;rėmelį iš naujo</translation>
@@ -4818,7 +4816,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8366396658833131068">Tinklo ryšys atkurtas. Pasirinkite kitą tinklą arba paspauskite toliau pateiktą mygtuką „Tęsti“, kad paleistumėte viešojo terminalo programą.</translation>
 <translation id="8366947248864804596">Jei jūsų telefonas yra netoliese ir atrakintas, tiesiog pasirinkite jį, kad atrakintumėte. Kitu atveju įveskite slaptažodį arba PIN kodą.</translation>
 <translation id="8368859634510605990">&amp;Atidaryti visas žymes</translation>
-<translation id="8369547389711988632">Įkėlimas sustabdytas</translation>
 <translation id="8371695176452482769">Kalbėti dabar</translation>
 <translation id="8372369524088641025">Netinkamas WEP raktas</translation>
 <translation id="8373553483208508744">Nutildyti skirtukų garsą</translation>
@@ -5024,7 +5021,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8677212948402625567">Sutraukti viską...</translation>
 <translation id="8678648549315280022">Valdyti atsisiuntimo nustatymus...</translation>
 <translation id="8678933587484842200">Kaip norite paleisti šią programą?</translation>
-<translation id="8679788109894721265">Šis puslapis naudoja daugiau nei <ph name="MEGABYTES" /> MB</translation>
 <translation id="8680251145628383637">Prisijunkite, kad žymes, istoriją, slaptažodžius ir kitus nustatymus galėtumėte naudoti visuose įrenginiuose. Be to, būsite automatiškai prijungti prie „Google“ paslaugų.</translation>
 <translation id="8686213429977032554">Šis Disko failas dar nebendrinamas</translation>
 <translation id="8687485617085920635">Kitas langas</translation>

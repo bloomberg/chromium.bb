@@ -2166,7 +2166,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4275830172053184480">Cihazınızı yeniden başlatın</translation>
 <translation id="4278101229438943600">Asistanınız hazır</translation>
 <translation id="4278390842282768270">İzin verildi</translation>
-<translation id="4280864916190672950">Yüklemeyi durdur</translation>
 <translation id="4281844954008187215">Hizmet Şartları</translation>
 <translation id="4282196459431406533">Smart Lock açık</translation>
 <translation id="4284105660453474798">"$1" öğesini silmek istediğiniz emin misiniz?</translation>
@@ -3437,7 +3436,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6231881193380278751">Sayfayı otomatik yenilemek için URL'ye bir sorgu parametresi ekleyin: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Pil</translation>
 <translation id="6232116551750539448"><ph name="NAME" /> bağlantısı kaybedildi</translation>
-<translation id="6235700927623181151">Bu sekme masaüstü içeriğinizi paylaşıyor.</translation>
 <translation id="6237816943013845465">Ekran çözünürlüğünü ayarlamanıza olanak tanır</translation>
 <translation id="6238923052227198598">En son notu kilit ekranında tut</translation>
 <translation id="6239558157302047471">Ç&amp;erçeveyi yeniden yükle</translation>
@@ -4817,7 +4815,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8366396658833131068">Ağ bağlantınız geri yüklendi. Lütfen farklı bir ağ seçin veya kiosk uygulamanızı başlatmak için "Devam Et" düğmesine basın.</translation>
 <translation id="8366947248864804596">Telefonunuzun kilidi açık ve yakınınızdaysa kilidini açmak için seçmeniz yeterlidir. Aksi halde şifrenizi veya PIN'inizi girin.</translation>
 <translation id="8368859634510605990">&amp;Tüm yer işaretlerini aç</translation>
-<translation id="8369547389711988632">Yükleme durduruldu</translation>
 <translation id="8371695176452482769">Şimdi konuşun</translation>
 <translation id="8372369524088641025">Hatalı WEP anahtarı</translation>
 <translation id="8373553483208508744">Sekmelerin sesini kapat</translation>
@@ -5013,7 +5010,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8666584013686199826">Bir site USB cihazlarına erişmek istediğinde sor</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> artık tam ekran görüntüleniyor ve fare imlecinizi devre dışı bıraktı.</translation>
 <translation id="8669284339312441707">Daha Sıcak</translation>
-<translation id="8669919703154928649">Asistan'ın size bildirimleri göstermesine izin verin</translation>
+<translation id="8669919703154928649">Asistan'ın bildirim göstermesine izin verin</translation>
 <translation id="8669949407341943408">Taşınıyor...</translation>
 <translation id="8671210955687109937">Yorum yapabilir</translation>
 <translation id="8673026256276578048">Web’de ara...</translation>
@@ -5023,7 +5020,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8677212948402625567">Tümünü daralt...</translation>
 <translation id="8678648549315280022">İndirme ayarlarını yönet...</translation>
 <translation id="8678933587484842200">Bu uygulamanın nasıl başlatılmasını istersiniz?</translation>
-<translation id="8679788109894721265">Bu sayfa <ph name="MEGABYTES" /> MB'tan fazla veri kullanıyor</translation>
 <translation id="8680251145628383637">Tüm cihazlarınızdaki sekmeleri, geçmişi ve diğer ayarları almak için oturum açın. Google hizmetlerinizde de otomatik olarak oturum açarsınız.</translation>
 <translation id="8686213429977032554">Bu Drive dosyası henüz paylaşılmamış</translation>
 <translation id="8687485617085920635">Sonraki pencere</translation>

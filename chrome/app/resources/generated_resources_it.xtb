@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">Sincronizzazione e personalizzazione</translation>
 <translation id="1398853756734560583">Ingrandisci</translation>
 <translation id="1399511500114202393">Nessun certificato utente</translation>
+<translation id="1401165786814632797">Accedi all'assistente ogni volta che pronunci "Ok Google" quando il tuo dispositivo è attivo e sbloccato.</translation>
 <translation id="140250605646987970">Il telefono è stato rilevato, ma la funzione Smart Lock è supportata soltanto su dispositivi con Android 5.0 e versioni successive. &lt;a&gt;Ulteriori informazioni&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisionato)</translation>
 <translation id="1405476660552109915">Vuoi che <ph name="PASSWORD_MANAGER_BRAND" /> salvi l'account per questo sito?</translation>
@@ -1509,6 +1510,7 @@
 <translation id="3271648667212143903">Il sito <ph name="ORIGIN" /> desidera collegarsi</translation>
 <translation id="3274763671541996799">Sei passato a schermo intero.</translation>
 <translation id="3275778913554317645">Apri come finestra</translation>
+<translation id="3278877214895457897">Dopo aver configurato il Chromebook, premi il pulsante Assistente o dì "Ok Google" per farti aiutare dall'assistente in qualsiasi momento.</translation>
 <translation id="3279230909244266691">Questa procedura potrebbe richiedere alcuni minuti. Avvio della macchina virtuale in corso.</translation>
 <translation id="3279741024917655738">Mostra video a schermo intero su</translation>
 <translation id="3280237271814976245">Salva con &amp;nome...</translation>
@@ -2163,7 +2165,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4275830172053184480">Riavvia il dispositivo</translation>
 <translation id="4278101229438943600">Il tuo assistente è pronto</translation>
 <translation id="4278390842282768270">Consentiti</translation>
-<translation id="4280864916190672950">Interrompi il caricamento</translation>
 <translation id="4281844954008187215">Termini di servizio</translation>
 <translation id="4282196459431406533">Funzione Smart Lock attiva</translation>
 <translation id="4284105660453474798">Eliminare "$1"?</translation>
@@ -2601,6 +2602,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4992066212339426712">Riattiva audio</translation>
 <translation id="4992458225095111526">Conferma Powerwash</translation>
 <translation id="4992473555164495036">L'amministratore ha limitato i metodi di immissione disponibili.</translation>
+<translation id="4992926179187649719">Attiva "Ok Google"</translation>
 <translation id="4994474651455208930">Consenti ai siti di chiedere di diventare gestori predefiniti dei protocolli</translation>
 <translation id="4994754230098574403">Configurazione in corso</translation>
 <translation id="4996978546172906250">Condividi tramite</translation>
@@ -3432,7 +3434,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6231881193380278751">Aggiungi un parametro query nell'URL per aggiornare automaticamente la pagina: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Batteria</translation>
 <translation id="6232116551750539448">Connection a <ph name="NAME" /> interrotta</translation>
-<translation id="6235700927623181151">Questa scheda sta condividendo i contenuti del tuo desktop.</translation>
 <translation id="6237816943013845465">Consente di regolare la risoluzione dello schermo</translation>
 <translation id="6238923052227198598">Tieni le note più recenti sulla schermata di blocco</translation>
 <translation id="6239558157302047471">Ricarica &amp;frame</translation>
@@ -4527,6 +4528,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7908378463497120834">Spiacenti, impossibile montare almeno una partizione del dispositivo di archiviazione esterno.</translation>
 <translation id="7909969815743704077">Scaricato in modalità in incognito</translation>
 <translation id="7910768399700579500">&amp;Nuova cartella</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">La password è stata modificata sul server. Esci e accedi nuovamente.</translation>
 <translation id="7915471803647590281">Comunicaci cosa sta accadendo prima di inviare il feedback.</translation>
 <translation id="7916556741383518510">Al clic</translation>
@@ -4811,7 +4813,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8366396658833131068">La connettività di rete è stata ripristinata. Seleziona un'altra rete o premi il pulsante "Continua" sotto per avviare l'app kiosk.</translation>
 <translation id="8366947248864804596">Quando il telefono è sbloccato e nelle vicinanze, è sufficiente selezionare per sbloccare. In caso contrario, inserisci la password o il PIN.</translation>
 <translation id="8368859634510605990">&amp;Apri tutti i Preferiti</translation>
-<translation id="8369547389711988632">Caricamento interrotto</translation>
 <translation id="8371695176452482769">Parla adesso</translation>
 <translation id="8372369524088641025">Chiave WEP non valida</translation>
 <translation id="8373553483208508744">Disattiva audio schede</translation>
@@ -5017,7 +5018,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8677212948402625567">Comprimi tutto...</translation>
 <translation id="8678648549315280022">Gestisci impostazioni download...</translation>
 <translation id="8678933587484842200">Come vuoi che venga lanciata questa applicazione?</translation>
-<translation id="8679788109894721265">Questa pagina usa più di <ph name="MEGABYTES" /> MB</translation>
 <translation id="8680251145628383637">Accedi per trovare i tuoi segnalibri, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi. Verrà inoltre eseguito l'accesso automatico ai tuoi servizi Google.</translation>
 <translation id="8686213429977032554">Questo file di Drive non è stato ancora condiviso</translation>
 <translation id="8687485617085920635">Finestra successiva</translation>

@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">Penyegerakan dan pemeribadian</translation>
 <translation id="1398853756734560583">Maksimumkan</translation>
 <translation id="1399511500114202393">Tiada sijil pengguna</translation>
+<translation id="1401165786814632797">Akses Assistant anda pada bila-bila masa anda menyebut "Ok Google" semasa skrin anda hidup dan tidak berkunci.</translation>
 <translation id="140250605646987970">Telefon anda telah dijumpai. Tetapi Smart Lock hanya berfungsi pada peranti dengan OS Android 5.0 dan ke atas. &lt;a&gt;Ketahui lebih lanjut&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (Diselia)</translation>
 <translation id="1405476660552109915">Adakah anda mahu <ph name="PASSWORD_MANAGER_BRAND" /> menyimpan akaun anda untuk tapak ini?</translation>
@@ -1371,6 +1372,7 @@
 <translation id="3031557471081358569">Pilih item untuk mengimport:</translation>
 <translation id="3031601332414921114">Sambung semula pencetakan</translation>
 <translation id="303198083543495566">Geografi</translation>
+<translation id="3033999583152214331">Jalankan alatan, editor dan IDE Linux pada Chromebook anda. &lt;a target="_blank" href="<ph name="URL" />"&gt;Ketahui lebih lanjut&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Dayakan Flash</translation>
 <translation id="3037754279345160234">Tidak dapat menghurai konfigurasi penyertaan domain. Sila hubungi pentadbir anda.</translation>
 <translation id="3038612606416062604">Tambahkan pencetak secara manual</translation>
@@ -1511,6 +1513,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> ingin menyambung</translation>
 <translation id="3274763671541996799">Anda telah menggunakan skrin penuh.</translation>
 <translation id="3275778913554317645">Buka sebagai tetingkap</translation>
+<translation id="3278877214895457897">Apabila Chromebook anda selesai disediakan, tekan butang Assistant atau sebut "Ok Google" untuk mendapatkan bantuan daripada Assistant anda pada bila-bila masa.</translation>
 <translation id="3279230909244266691">Proses ini mungkin mengambil masa beberapa minit. Memulakan mesin maya.</translation>
 <translation id="3279741024917655738">Tunjukkan video skrin penuh pada</translation>
 <translation id="3280237271814976245">Simpan &amp;sebagai...</translation>
@@ -2167,7 +2170,6 @@
 <translation id="4275830172053184480">Mulakan semula peranti anda</translation>
 <translation id="4278101229438943600">Assistant anda bersedia</translation>
 <translation id="4278390842282768270">Dibenarkan</translation>
-<translation id="4280864916190672950">Hentikan pemuatan</translation>
 <translation id="4281844954008187215">Syarat Perkhidmatan</translation>
 <translation id="4282196459431406533">Smart Lock dihidupkan</translation>
 <translation id="4284105660453474798">Adakah anda pasti anda mahu memadamkan "$1"?</translation>
@@ -2605,6 +2607,7 @@
 <translation id="4992066212339426712">Nyahredam</translation>
 <translation id="4992458225095111526">Sahkan Powerwash</translation>
 <translation id="4992473555164495036">Pentadbir anda telah mengehadkan kaedah input yang tersedia.</translation>
+<translation id="4992926179187649719">Hidupkan 'Ok Google'</translation>
 <translation id="4994474651455208930">Membenarkan tapak untuk meminta menjadi pengendali lalai untuk protokol</translation>
 <translation id="4994754230098574403">Menyediakan</translation>
 <translation id="4996978546172906250">Kongsi melalui</translation>
@@ -3437,7 +3440,6 @@
 <translation id="6231881193380278751">Tambahkan param pertanyaan dalam URL untuk automuat semula halaman: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Bateri</translation>
 <translation id="6232116551750539448">Sambungan ke <ph name="NAME" /> telah hilang</translation>
-<translation id="6235700927623181151">Tab ini berkongsi kandungan desktop anda.</translation>
 <translation id="6237816943013845465">Membolehkan anda melaraskan peleraian skrin anda</translation>
 <translation id="6238923052227198598">Simpan nota terkini pada skrin kunci</translation>
 <translation id="6239558157302047471">Muat semula &amp;bingkai</translation>
@@ -4534,6 +4536,7 @@
 <translation id="7908378463497120834">Maaf, sekurang-kurangnya satu pemetakan pada peranti storan luaran anda tidak boleh dilekapkan.</translation>
 <translation id="7909969815743704077">Dimuat turun dalam Inkognito</translation>
 <translation id="7910768399700579500">&amp;Folder baharu</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Kata laluan anda telah ditukar pada pelayan. Sila log keluar, kemudian log masuk semula.</translation>
 <translation id="7915471803647590281">Sila beritahu kami kejadian yang berlaku sebelum menghantar maklum balas.</translation>
 <translation id="7916556741383518510">Apabila Diklik</translation>
@@ -4819,7 +4822,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8366396658833131068">Sambungan rangkaian anda sudah dipulihkan. Sila pilih rangkaian lain atau tekan butang 'Teruskan' di bawah untuk melancarkan apl kios anda.</translation>
 <translation id="8366947248864804596">Apabila telefon anda dibuka kunci dan berada berdekatan, pilih sahaja untuk membuka kunci. Jika tidak, masukkan kata laluan atau PIN anda.</translation>
 <translation id="8368859634510605990">&amp;Buka semua penanda halaman</translation>
-<translation id="8369547389711988632">Pemuatan dihentikan</translation>
 <translation id="8371695176452482769">Cakap sekarang</translation>
 <translation id="8372369524088641025">Kekunci WEP teruk</translation>
 <translation id="8373553483208508744">Redam beberapa tab</translation>
@@ -5025,7 +5027,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8677212948402625567">Runtuhkan semua...</translation>
 <translation id="8678648549315280022">Urus tetapan muat turun...</translation>
 <translation id="8678933587484842200">Bagaimanakah anda mahu apl ini dilancarkan?</translation>
-<translation id="8679788109894721265">Halaman ini menggunakan lebih <ph name="MEGABYTES" />MB</translation>
 <translation id="8680251145628383637">Log masuk untuk mendapatkan penanda halaman, sejarah, kata laluan dan tetapan anda yang lain pada semua peranti anda. Anda turut akan dilog masuk secara automatik ke perkhidmatan Google anda.</translation>
 <translation id="8686213429977032554">Fail Drive ini belum dikongsi lagi</translation>
 <translation id="8687485617085920635">Tetingkap seterusnya</translation>

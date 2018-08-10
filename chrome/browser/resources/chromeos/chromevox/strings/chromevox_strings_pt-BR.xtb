@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
 <translation id="100812568230599391">Alterar o estilo de exibição para intercalado.</translation>
+<translation id="1011903154582639569">Encontre uma tecla e levante o dedo para digitá-la</translation>
 <translation id="1012173283529841972">Item da lista</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">Está usando o feedback falado do ChromeVox pela primeira vez? Este tutorial rápido explica os fundamentos para começar a usar o ChromeVox.</translation>
@@ -163,6 +164,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">Grupo</translation>
 <translation id="2582407057977008361">Lateral</translation>
+<translation id="2592212930811759050">Toque duas vezes para começar a editar</translation>
 <translation id="2606210917827248971">com {COUNT,plural, =1{# item}one{# itens}other{# itens}}</translation>
 <translation id="2614981083756825552">Layout Math ML</translation>
 <translation id="2624431853467395961">Abre o modo de aprendizado</translation>

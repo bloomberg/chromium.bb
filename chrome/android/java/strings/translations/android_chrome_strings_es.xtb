@@ -61,6 +61,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="1404122904123200417">Insertado en <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">No realizar seguimiento</translation>
 <translation id="1407135791313364759">Abrir todas</translation>
+<translation id="1409426117486808224">Vista simplificada de las pestañas abiertas</translation>
 <translation id="1409879593029778104">No se ha descargado <ph name="FILE_NAME" /> porque este archivo ya existe.</translation>
 <translation id="1414981605391750300">Contactando con Google. Esto puede tardar un minuto…</translation>
 <translation id="1416550906796893042">Versión de la aplicación</translation>
@@ -80,6 +81,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="1566400915470565838">Para utilizar <ph name="APP_NAME" />, conéctate a Internet.</translation>
 <translation id="1569387923882100876">Dispositivo conectado</translation>
 <translation id="1571304935088121812">Copiar nombre de usuario</translation>
+<translation id="1576370611341449972">Solo se descarga contenido a través de Wi‑Fi</translation>
 <translation id="1612196535745283361">Chrome necesita acceder a la ubicación para buscar dispositivos. El acceso a la ubicación está <ph name="BEGIN_LINK" />desactivado en este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">Activar la sincronización, la personalización y otros servicios de Google</translation>
 <translation id="1620510694547887537">Cámara</translation>
@@ -344,6 +346,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="3810838688059735925">Vídeo</translation>
 <translation id="3810973564298564668">Administrar</translation>
 <translation id="3819178904835489326">Descargas eliminadas: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
+<translation id="3819562311292413223">Descargar artículos recomendados para ti</translation>
 <translation id="3822502789641063741">¿Borrar almacenamiento web?</translation>
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3859306556332390985">Buscar hacia delante</translation>
@@ -383,6 +386,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4113030288477039509">Administrado por tu administrador</translation>
 <translation id="4116038641877404294">Descarga páginas para usarlas sin conexión</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d marcador}other{%1$d marcadores}}</translation>
+<translation id="4149994727733219643">Vista simplificada de páginas web</translation>
 <translation id="4159800535322890630">No permitir que los sitios web accedan a tus sensores</translation>
 <translation id="4165986682804962316">Configuración de sitios web</translation>
 <translation id="4170011742729630528">El servicio no está disponible. Vuelve a intentarlo más tarde.</translation>
@@ -553,6 +557,7 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="5512137114520586844">Esta cuenta está administrada por <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Inhabilitada por el administrador de este dispositivo</translation>
 <translation id="5515439363601853141">Desbloquea la pantalla para ver tu contraseña</translation>
+<translation id="5515716148775388141">Los iconos ahora aparecen en la parte inferior de la pantalla</translation>
 <translation id="5517095782334947753">Tienes los marcadores, el historial, las contraseñas y otras opciones de configuración de <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Redirección bloqueada</translation>
 <translation id="5527082711130173040">Chrome necesita acceder a la ubicación para buscar dispositivos. <ph name="BEGIN_LINK1" />Actualizar permisos<ph name="END_LINK1" />. El acceso a la ubicación también está <ph name="BEGIN_LINK2" />desactivado en este dispositivo<ph name="END_LINK2" />.</translation>
@@ -756,6 +761,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7016516562562142042">Permitido en el motor de búsqueda actual</translation>
 <translation id="7021515813996758557">Se ha descargado <ph name="FILE_NAME" /></translation>
 <translation id="7022756207310403729">Abrir en el navegador</translation>
+<translation id="702463548815491781">Se recomienda cuando TalkBack o la accesibilidad mediante interruptores están activados</translation>
 <translation id="7029809446516969842">Contraseñas</translation>
 <translation id="7031882061095297553">Sincronizar con</translation>
 <translation id="7032663816368481562">Si tocas el icono Similares <ph name="ICON" />, situado en la barra de direcciones, se muestran enlaces rápidos a páginas relacionadas. Las URL de las páginas que visitas se envían a Google.</translation>
@@ -784,6 +790,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7251326866581677552">Bloqueados en algunos sitios web</translation>
 <translation id="7253272406652746122">Añade una cuenta de Google desde la sección Cuentas de la aplicación de ajustes de tu dispositivo.</translation>
 <translation id="7274013316676448362">Sitio web bloqueado</translation>
+<translation id="72867290065237936">Toca para alternar entre las sugerencias de contraseña y el teclado</translation>
 <translation id="729975465115245577">Tu dispositivo no tiene ninguna aplicación para almacenar el archivo de contraseñas.</translation>
 <translation id="7302081693174882195">Detalles: ordenados por cantidad de datos ahorrados</translation>
 <translation id="7333031090786104871">Aún se está añadiendo el sitio web anterior</translation>

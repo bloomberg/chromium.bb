@@ -207,6 +207,7 @@
 <translation id="2359808026110333948">Продовжити</translation>
 <translation id="2365563543831475020">Звіт про аварійне завершення роботи о <ph name="CRASH_TIME" /> не завантажено</translation>
 <translation id="2367567093518048410">Рівень</translation>
+<translation id="2378238891085281592">Ви перейшли в приватний режим</translation>
 <translation id="2384307209577226199">Стандартне корпоративне правило</translation>
 <translation id="2386255080630008482">Сертифікат сервера відкликано.</translation>
 <translation id="2392959068659972793">Показувати правила, для яких не встановлено значення</translation>
@@ -355,6 +356,7 @@
 <translation id="3391030046425686457">Адреса доставки</translation>
 <translation id="3395827396354264108">Спосіб отримання</translation>
 <translation id="3399952811970034796">Адреса доставки</translation>
+<translation id="3409072600744224192">Щоб мати доступ до карток на всіх своїх пристроях, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3422248202833853650">Щоб звільнити пам’ять, закрийте інші програми.</translation>
 <translation id="3422472998109090673">Хост <ph name="HOST_NAME" /> зараз недоступний.</translation>
 <translation id="3427092606871434483">Дозволяти (за умовчанням)</translation>
@@ -514,6 +516,7 @@
 <translation id="450710068430902550">Надання інформації адміністратору</translation>
 <translation id="4515275063822566619">Дані картки та список адрес містяться в Chrome і вашому обліковому записі Google (<ph name="ACCOUNT_EMAIL" />). Ними можна керувати в <ph name="BEGIN_LINK" />Налаштуваннях<ph name="END_LINK" />.</translation>
 <translation id="4522570452068850558">Деталі</translation>
+<translation id="4524805452350978254">Керувати картками</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Спробуйте вимкнути розширення.</translation>
 <translation id="457875822857220463">Доставка</translation>
@@ -579,6 +582,7 @@
 <translation id="5045550434625856497">Неправильний пароль</translation>
 <translation id="5056549851600133418">Статті для вас</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />перевірити адресу проксі-сервера<ph name="END_LINK" /></translation>
+<translation id="5072538239104292703">Щоб мати доступ до карток на всіх своїх пристроях, увійдіть в обліковий запис і ввімкніть синхронізацію.</translation>
 <translation id="5086888986931078152">Ви можете втратити доступ до захищеного вмісту на деяких сайтах.</translation>
 <translation id="5087286274860437796">Сертифікат сервера зараз недійсний.</translation>
 <translation id="5087580092889165836">Додати картку</translation>
@@ -624,6 +628,7 @@
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> з <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Вибрати контактну інформацію</translation>
 <translation id="5327248766486351172">Назва</translation>
+<translation id="5327567770033251652">увімкніть синхронізацію</translation>
 <translation id="5332219387342487447">Спосіб доставки</translation>
 <translation id="5355557959165512791">Зараз не можна перейти на сторінку <ph name="SITE" />, оскільки цей сертифікат відкликано. Помилки мережі й атаки зазвичай тимчасові, тому ця сторінка, скоріш за все, запрацює пізніше.</translation>
 <translation id="536296301121032821">Помилка збереження налаштувань правила</translation>
@@ -688,6 +693,7 @@
 <translation id="5765072501007116331">Укажіть адресу, щоб переглянути способи доставки та вимоги.</translation>
 <translation id="5770114862687765385">Схоже, файл пошкоджено. Натисніть кнопку "Скинути", щоб завершити сеанс.</translation>
 <translation id="5778550464785688721">Повний контроль пристроїв MIDI</translation>
+<translation id="57838592816432529">Вимкнути звук</translation>
 <translation id="5784606427469807560">Не вдалося підтвердити дані картки. Перевірте з’єднання з Інтернетом і повторіть спробу.</translation>
 <translation id="5785756445106461925">Окрім цього, сторінка містить незахищені ресурси. Інші особи можуть переглядати їх під час передавання даних, а зловмисники можуть змінювати вигляд сторінки.</translation>
 <translation id="5786044859038896871">Ввести дані кредитної картки?</translation>
@@ -699,6 +705,7 @@
 <translation id="5866257070973731571">Додайте номер телефону</translation>
 <translation id="5869405914158311789">Немає зв’язку із сайтом</translation>
 <translation id="5869522115854928033">Збережені паролі</translation>
+<translation id="5887400589839399685">Картку збережено</translation>
 <translation id="5893752035575986141">Кредитні картки, які приймаються.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (синхронізовано)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Використовується 1 файл}one{Використовується # файл}few{Використовуються # файли}many{Використовуються # файлів}other{Використовуються # файлу}}</translation>
@@ -816,18 +823,22 @@
 <translation id="6915804003454593391">Користувач:</translation>
 <translation id="6944692733090228304">Ви ввели пароль на сайті, яким не керує <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Щоб захистити свій обліковий запис, не використовуйте цей пароль для інших додатків і сайтів.</translation>
 <translation id="6945221475159498467">Вибрати</translation>
+<translation id="6948540501704460596">Щоб мати доступ до карток на всіх своїх пристроях, <ph name="SYNC_LINK" />.</translation>
 <translation id="6948701128805548767">Укажіть адресу, щоб переглянути способи отримання та вимоги.</translation>
 <translation id="6949872517221025916">Скидання пароля</translation>
 <translation id="6950684638814147129">Сталася помилка під час синтаксичного аналізу значення JSON: <ph name="ERROR" /></translation>
+<translation id="6957624206566198865">Відкрийте сторінку в новій приватній вкладці</translation>
 <translation id="6957887021205513506">Схоже, що сертифікат сервера підроблено.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Пристрій</translation>
 <translation id="6970216967273061347">Район або округ</translation>
 <translation id="6973656660372572881">Указано фіксовані проксі-сервери та URL-адреса сценарію .pac.</translation>
+<translation id="6984479912851154518">Щоб оплатити в зовнішньому додатку, ви вийдете з приватного режиму. Продовжити?</translation>
 <translation id="6989763994942163495">Показати розширені налаштування...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Такі стягнення можуть бути одноразовими чи регулярними й неочевидними.</translation>
 <translation id="7029809446516969842">Паролі</translation>
+<translation id="7042837854211185817">Щоб мати доступ до карток на всіх своїх пристроях, увімкніть синхронізацію.</translation>
 <translation id="7050187094878475250">Ви намагалися зв’язатися з доменом <ph name="DOMAIN" />, але сервер надав сертифікат із задовгим терміном дії.</translation>
 <translation id="7053983685419859001">Блокувати</translation>
 <translation id="7064851114919012435">Контактна інформація</translation>
@@ -1075,6 +1086,7 @@
 <translation id="8820817407110198400">Закладки</translation>
 <translation id="883848425547221593">Інші закладки</translation>
 <translation id="884264119367021077">Адреса доставки</translation>
+<translation id="8846319957959474018">Легко відкривайте додатки за допомогою закладок</translation>
 <translation id="884923133447025588">Не знайдено механізм відкликання.</translation>
 <translation id="885730110891505394">Надання інформації службам Google</translation>
 <translation id="8858065207712248076">Chrome радить скинути пароль <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, якщо ви застосовували його на інших сайтах.</translation>

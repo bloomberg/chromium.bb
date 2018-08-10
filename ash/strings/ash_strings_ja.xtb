@@ -68,7 +68,6 @@
 <translation id="2049639323467105390">この端末は <ph name="DOMAIN" /> によって管理されています。</translation>
 <translation id="2050339315714019657">縦</translation>
 <translation id="2067602449040652523">キーボードの明るさ</translation>
-<translation id="2075212959500165896">試行回数が上限を超えました。しばらくしてからもう一度お試しください。</translation>
 <translation id="2081529251031312395">$1 が後でログインすることは引き続き可能です。</translation>
 <translation id="2127372758936585790">低電力の充電器</translation>
 <translation id="2135456203358955318">拡大鏡（ドッキング）</translation>
@@ -138,9 +137,8 @@
 <translation id="315116470104423982">モバイル データ</translation>
 <translation id="3151786313568798007">向き</translation>
 <translation id="3153444934357957346">マルチログインに使用できるのは <ph name="MULTI_PROFILE_USER_LIMIT" /> アカウントまでです。</translation>
-<translation id="3202010236269062730">{NUM_DEVICES,plural, =1{1 個のデバイスと接続されています}other{# 個のデバイスと接続されています}}</translation>
+<translation id="3202010236269062730">{NUM_DEVICES,plural, =1{1 台のデバイスと接続されています}other{# 台のデバイスと接続されています}}</translation>
 <translation id="3236488194889173876">利用できるモバイル ネットワークがありません</translation>
-<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">ゲスト</translation>
 <translation id="332587331255250389">バッテリーを交換してください</translation>
 <translation id="3351879221545518001">現在、画面をキャストしています。</translation>
