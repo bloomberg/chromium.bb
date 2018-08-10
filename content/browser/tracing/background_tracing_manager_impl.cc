@@ -653,7 +653,8 @@ BackgroundTracingManagerImpl::GetCategoryFilterStringForCategoryPreset(
         BENCHMARK_EXECUTION_METRIC:
       return "blink.console,v8";
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_NAVIGATION:
-      return "benchmark,toplevel,ipc,base,browser,navigation,omnibox";
+      return "benchmark,toplevel,ipc,base,browser,navigation,omnibox,"
+             "disabled-by-default-system_stats";
     case BackgroundTracingConfigImpl::CategoryPreset::BLINK_STYLE:
       return "blink_style";
     case BackgroundTracingConfigImpl::CategoryPreset::CATEGORY_PRESET_UNSET:
