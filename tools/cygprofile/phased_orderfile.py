@@ -300,14 +300,15 @@ def main():
   processor = process_profiles.SymbolOffsetProcessor(os.path.join(
       args.instrumented_build_dir, 'lib.unstripped', args.library_name))
   phaser = PhasedAnalyzer(profiles, processor)
-  stability = phaser.ComputeStability()
-  print 'Stability: {:.2} {:.2} {:.2}'.format(*[s[0] for s in stability])
-  print 'Sizes: {} {} {}'.format(*[s[1] for s in stability])
-  if args.offset_output_base is not None:
-    for name, offsets in zip(
-        ['_for_memory', '_for_startup'],
-        [phaser.GetOffsetsForMemoryFootprint(),
-         phaser.GetOffsetsForStartup()]):
+  for name, offsets in (
+      ('_for_memory', phaser.GetOffsetsForMemoryFootprint()),
+      ('_for_startup', phaser.GetOffsetsForStartup())):
+    logging.info('%s Offset sizes (KiB):\n'
+                 '%s startup\n%s common\n%s interaction',
+                 name, processor.OffsetsPrimarySize(offsets.startup) / 1024,
+                 processor.OffsetsPrimarySize(offsets.common) / 1024,
+                 processor.OffsetsPrimarySize(offsets.interaction) / 1024)
+    if args.offset_output_base is not None:
       with file(args.offset_output_base + name, 'w') as output:
         output.write('\n'.join(
             str(i) for i in (offsets.startup + offsets.common +
