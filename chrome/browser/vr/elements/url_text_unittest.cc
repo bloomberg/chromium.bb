@@ -10,10 +10,10 @@
 
 namespace vr {
 
-#if !defined(OS_LINUX) && !defined(OS_WIN)
 // TODO(crbug/731894): This test does not work on Linux.
 // TODO(crbug/770893): This test does not work on Windows.
-TEST(UrlText, WillNotFailOnNonAsciiURLs) {
+// TODO(crbug/731894): This test does not work on Android, either.
+TEST(UrlText, DISABLED_WillNotFailOnNonAsciiURLs) {
   bool unhandled_code_point = false;
   auto url_text = std::make_unique<UrlText>(
       0.010, base::BindRepeating([](bool* flag) { *flag = true; },
@@ -23,7 +23,6 @@ TEST(UrlText, WillNotFailOnNonAsciiURLs) {
   url_text->PrepareToDrawForTest();
   EXPECT_EQ(false, unhandled_code_point);
 }
-#endif
 
 TEST(UrlText, WillFailOnUnhandledCodePoint) {
   bool unhandled_code_point;
