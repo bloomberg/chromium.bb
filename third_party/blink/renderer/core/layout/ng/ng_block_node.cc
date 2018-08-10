@@ -446,7 +446,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   logical_height += fragment_logical_size.block_size;
   intrinsic_content_logical_height += layout_result.IntrinsicBlockSize();
 
-  NGBoxStrut borders = ComputeBorders(constraint_space, Style());
+  NGBoxStrut borders = fragment.Borders();
   NGBoxStrut scrollbars = GetScrollbarSizes();
   NGBoxStrut padding = fragment.Padding();
   NGBoxStrut border_scrollbar_padding = borders + scrollbars + padding;
@@ -724,7 +724,12 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
   builder.SetIsOldLayoutRoot();
   builder.SetInlineSize(box_size.inline_size);
   builder.SetBlockSize(box_size.block_size);
-  builder.SetPadding(ComputePadding(constraint_space, box_->StyleRef()));
+  NGBoxStrut borders(box_->BorderStart(), box_->BorderEnd(),
+                     box_->BorderBefore(), box_->BorderAfter());
+  builder.SetBorders(borders);
+  NGBoxStrut padding(box_->PaddingStart(), box_->PaddingEnd(),
+                     box_->PaddingBefore(), box_->PaddingAfter());
+  builder.SetPadding(padding);
 
   CopyBaselinesFromOldLayout(constraint_space, &builder);
   UpdateShapeOutsideInfoIfNeeded(

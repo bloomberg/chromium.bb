@@ -40,6 +40,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   ~NGFragmentBuilder() override;
 
   NGFragmentBuilder& SetIntrinsicBlockSize(LayoutUnit);
+  NGFragmentBuilder& SetBorders(const NGBoxStrut&);
   NGFragmentBuilder& SetPadding(const NGBoxStrut&);
   NGFragmentBuilder& SetPadding(const NGLineBoxStrut&);
 
@@ -186,6 +187,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   LayoutObject* layout_object_;
 
   LayoutUnit intrinsic_block_size_;
+  NGBoxStrut borders_;
   NGBoxStrut padding_;
 
   NGPhysicalFragment::NGBoxType box_type_;

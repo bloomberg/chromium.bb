@@ -22,6 +22,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
                         NGStyleVariant style_variant,
                         NGPhysicalSize size,
                         Vector<scoped_refptr<NGPhysicalFragment>>& children,
+                        const NGPhysicalBoxStrut& border,
                         const NGPhysicalBoxStrut& padding,
                         const NGPhysicalOffsetRect& contents_ink_overflow,
                         Vector<NGBaseline>& baselines,
@@ -32,7 +33,10 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 
   const NGBaseline* Baseline(const NGBaselineRequest&) const;
 
-  const NGPhysicalBoxStrut& Padding() const { return padding_; }
+  const NGPhysicalBoxStrut Borders() const { return borders_; }
+
+  const NGPhysicalBoxStrut Padding() const { return padding_; }
+
   NGPixelSnappedPhysicalBoxStrut PixelSnappedPadding() const {
     return padding_.SnapToDevicePixels();
   }
@@ -72,6 +76,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 
  private:
   Vector<NGBaseline> baselines_;
+  NGPhysicalBoxStrut borders_;
   NGPhysicalBoxStrut padding_;
   NGPhysicalOffsetRect descendant_outlines_;
 };

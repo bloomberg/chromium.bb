@@ -158,6 +158,8 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       ConstraintSpace(), Style(), intrinsic_block_size);
   container_builder_.SetBlockSize(block_size);
   container_builder_.SetInlineSize(flex_container_border_box_inline_size);
+  container_builder_.SetBorders(ComputeBorders(ConstraintSpace(), Style()));
+  container_builder_.SetPadding(ComputePadding(ConstraintSpace(), Style()));
   return container_builder_.ToBoxFragment();
 }
 
