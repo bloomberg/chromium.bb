@@ -4,7 +4,7 @@
 
 #include "net/socket/udp_socket_posix.h"
 
-#include "net/base/completion_callback.h"
+#include "net/base/completion_repeating_callback.h"
 #include "net/base/net_errors.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
@@ -109,7 +109,7 @@ class MockUDPSocketPosix : public UDPSocketPosix {
     datagram_buffer_pool_->Enqueue(msg.data(), msg.length(), buffers);
   }
 
-  void SetWriteCallback(CompletionCallback callback) {
+  void SetWriteCallback(CompletionOnceCallback callback) {
     UDPSocketPosix::SetWriteCallback(std::move(callback));
   }
 
@@ -230,7 +230,7 @@ class UDPSocketPosixTest : public TestWithScopedTaskEnvironment {
   int total_lengths_ =
       kHelloMsg.length() + kSecondMsg.length() + kThirdMsg.length();
   DatagramBuffer* buffer_ptrs_[kNumMsgs];
-  CompletionCallback write_callback_;
+  CompletionRepeatingCallback write_callback_;
 #if HAVE_SENDMMSG
   struct iovec msg_iov_[kNumMsgs];
   struct mmsghdr msgvec_[kNumMsgs];

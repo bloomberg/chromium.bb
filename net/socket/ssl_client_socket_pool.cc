@@ -132,8 +132,8 @@ SSLConnectJob::SSLConnectJob(const std::string& group_name,
                     : (params->privacy_mode() == PRIVACY_MODE_ENABLED
                            ? "pm/" + context.ssl_session_cache_shard
                            : context.ssl_session_cache_shard))),
-      callback_(
-          base::Bind(&SSLConnectJob::OnIOComplete, base::Unretained(this))) {}
+      callback_(base::BindRepeating(&SSLConnectJob::OnIOComplete,
+                                    base::Unretained(this))) {}
 
 SSLConnectJob::~SSLConnectJob() = default;
 

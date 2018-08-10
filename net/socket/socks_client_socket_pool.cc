@@ -61,9 +61,7 @@ SOCKSConnectJob::SOCKSConnectJob(
           NetLogWithSource::Make(net_log, NetLogSourceType::SOCKS_CONNECT_JOB)),
       socks_params_(socks_params),
       transport_pool_(transport_pool),
-      resolver_(host_resolver),
-      callback_(
-          base::Bind(&SOCKSConnectJob::OnIOComplete, base::Unretained(this))) {}
+      resolver_(host_resolver) {}
 
 SOCKSConnectJob::~SOCKSConnectJob() {
   // We don't worry about cancelling the tcp socket since the destructor in
@@ -127,9 +125,11 @@ int SOCKSConnectJob::DoLoop(int result) {
 int SOCKSConnectJob::DoTransportConnect() {
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
   transport_socket_handle_.reset(new ClientSocketHandle());
+  CompletionOnceCallback callback =
+      base::BindOnce(&SOCKSConnectJob::OnIOComplete, base::Unretained(this));
   return transport_socket_handle_->Init(
       group_name(), socks_params_->transport_params(), priority(), socket_tag(),
-      respect_limits(), callback_, transport_pool_, net_log());
+      respect_limits(), std::move(callback), transport_pool_, net_log());
 }
 
 int SOCKSConnectJob::DoTransportConnectComplete(int result) {

@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_request_headers.h"
 
@@ -57,7 +57,7 @@ class PartialData {
   // error code. If this method returns ERR_IO_PENDING, the |callback| will be
   // notified when the result is ready.
   int ShouldValidateCache(disk_cache::Entry* entry,
-                          const CompletionCallback& callback);
+                          CompletionOnceCallback callback);
 
   // Builds the required |headers| to perform the proper cache validation for
   // the next range to be fetched.
@@ -106,14 +106,14 @@ class PartialData {
   int CacheRead(disk_cache::Entry* entry,
                 IOBuffer* data,
                 int data_len,
-                const CompletionCallback& callback);
+                CompletionOnceCallback callback);
 
   // Writes |data_len| bytes to cache. This is basically a wrapper around the
   // API of the cache that provides the right arguments for the current range.
   int CacheWrite(disk_cache::Entry* entry,
                  IOBuffer* data,
                  int data_len,
-                 const CompletionCallback& callback);
+                 CompletionOnceCallback callback);
 
   // This method should be called when CacheRead() finishes the read, to update
   // the internal state about the current range.
@@ -155,7 +155,7 @@ class PartialData {
   bool sparse_entry_;
   bool truncated_;  // We have an incomplete 200 stored.
   bool initial_validation_;  // Only used for truncated entries.
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
   base::WeakPtrFactory<PartialData> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PartialData);

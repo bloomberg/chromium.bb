@@ -2257,10 +2257,10 @@ TEST_F(DiskCacheEntryTest, MemoryOnlyDoomSparseEntry) {
   DoomSparseEntry();
 }
 
-// A CompletionCallback wrapper that deletes the cache from within the callback.
-// The way a CompletionCallback works means that all tasks (even new ones)
-// are executed by the message loop before returning to the caller so the only
-// way to simulate a race is to execute what we want on the callback.
+// A TestCompletionCallback wrapper that deletes the cache from within the
+// callback.  The way TestCompletionCallback works means that all tasks (even
+// new ones) are executed by the message loop before returning to the caller so
+// the only way to simulate a race is to execute what we want on the callback.
 class SparseTestCompletionCallback: public net::TestCompletionCallback {
  public:
   explicit SparseTestCompletionCallback(

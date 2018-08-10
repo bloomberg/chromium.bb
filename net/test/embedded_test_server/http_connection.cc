@@ -36,8 +36,8 @@ void HttpConnection::SendResponseBytes(const std::string& response_string,
   }
 }
 
-int HttpConnection::ReadData(const CompletionCallback& callback) {
-  return socket_->Read(read_buf_.get(), read_buf_->size(), callback);
+int HttpConnection::ReadData(CompletionOnceCallback callback) {
+  return socket_->Read(read_buf_.get(), read_buf_->size(), std::move(callback));
 }
 
 bool HttpConnection::ConsumeData(int size) {

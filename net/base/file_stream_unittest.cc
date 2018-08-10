@@ -499,8 +499,6 @@ class TestWriteReadCompletionCallback {
         total_bytes_written_(total_bytes_written),
         total_bytes_read_(total_bytes_read),
         data_read_(data_read),
-        callback_(base::Bind(&TestWriteReadCompletionCallback::OnComplete,
-                             base::Unretained(this))),
         test_data_(CreateTestDataBuffer()),
         drainable_(new DrainableIOBuffer(test_data_.get(), kTestDataSize)) {}
 
@@ -515,7 +513,10 @@ class TestWriteReadCompletionCallback {
     return result_;
   }
 
-  const CompletionCallback& callback() const { return callback_; }
+  CompletionOnceCallback callback() {
+    return base::BindOnce(&TestWriteReadCompletionCallback::OnComplete,
+                          base::Unretained(this));
+  }
 
   void ValidateWrittenData() {
     TestCompletionCallback callback;
@@ -579,7 +580,6 @@ class TestWriteReadCompletionCallback {
   int* total_bytes_written_;
   int* total_bytes_read_;
   std::string* data_read_;
-  const CompletionCallback callback_;
   scoped_refptr<IOBufferWithSize> test_data_;
   scoped_refptr<DrainableIOBuffer> drainable_;
 
@@ -638,8 +638,6 @@ class TestWriteCloseCompletionCallback {
         waiting_for_result_(false),
         stream_(stream),
         total_bytes_written_(total_bytes_written),
-        callback_(base::Bind(&TestWriteCloseCompletionCallback::OnComplete,
-                             base::Unretained(this))),
         test_data_(CreateTestDataBuffer()),
         drainable_(new DrainableIOBuffer(test_data_.get(), kTestDataSize)) {}
 
@@ -654,7 +652,10 @@ class TestWriteCloseCompletionCallback {
     return result_;
   }
 
-  const CompletionCallback& callback() const { return callback_; }
+  CompletionOnceCallback callback() {
+    return base::BindOnce(&TestWriteCloseCompletionCallback::OnComplete,
+                          base::Unretained(this));
+  }
 
  private:
   void OnComplete(int result) {
@@ -686,7 +687,6 @@ class TestWriteCloseCompletionCallback {
   bool waiting_for_result_;
   FileStream* stream_;
   int* total_bytes_written_;
-  const CompletionCallback callback_;
   scoped_refptr<IOBufferWithSize> test_data_;
   scoped_refptr<DrainableIOBuffer> drainable_;
 

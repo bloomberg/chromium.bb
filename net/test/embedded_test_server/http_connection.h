@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -46,7 +46,7 @@ class HttpConnection {
   // Accepts raw chunk of data from the client. Internally, passes it to the
   // HttpRequestParser class. If a request is parsed, then |callback_| is
   // called.
-  int ReadData(const CompletionCallback& callback);
+  int ReadData(CompletionOnceCallback callback);
 
   bool ConsumeData(int size);
 

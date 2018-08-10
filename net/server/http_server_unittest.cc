@@ -85,7 +85,7 @@ class TestHttpClient {
     message->clear();
     while (total_bytes_received < expected_bytes) {
       TestCompletionCallback callback;
-      ReadInternal(callback.callback());
+      ReadInternal(&callback);
       int bytes_received = callback.WaitForResult();
       if (bytes_received <= 0)
         return false;
@@ -138,12 +138,12 @@ class TestHttpClient {
       Write();
   }
 
-  void ReadInternal(const CompletionCallback& callback) {
+  void ReadInternal(TestCompletionCallback* callback) {
     read_buffer_ = new IOBufferWithSize(kMaxExpectedResponseLength);
-    int result =
-        socket_->Read(read_buffer_.get(), kMaxExpectedResponseLength, callback);
+    int result = socket_->Read(read_buffer_.get(), kMaxExpectedResponseLength,
+                               callback->callback());
     if (result != ERR_IO_PENDING)
-      callback.Run(result);
+      callback->callback().Run(result);
   }
 
   bool IsCompleteResponse(const std::string& response) {

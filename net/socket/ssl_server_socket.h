@@ -18,7 +18,7 @@
 
 #include <memory>
 
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/socket/ssl_socket.h"
 #include "net/socket/stream_socket.h"
@@ -42,7 +42,7 @@ class SSLServerSocket : public SSLSocket {
   // if the process completes asynchronously.  If Disconnect is called before
   // completion then the callback will be silently, as for other StreamSocket
   // calls.
-  virtual int Handshake(const CompletionCallback& callback) = 0;
+  virtual int Handshake(CompletionOnceCallback callback) = 0;
 };
 
 class SSLServerContext {

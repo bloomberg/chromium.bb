@@ -42,7 +42,7 @@ class NET_EXPORT_PRIVATE HttpCacheLookupManager : public ServerPushDelegate {
     // Issues an HttpCache::Transaction to lookup whether the response is cached
     // without header validation.
     int StartLookup(HttpCache* cache,
-                    const CompletionCallback& callback,
+                    CompletionOnceCallback callback,
                     const NetLogWithSource& session_net_log);
 
     void OnLookupComplete(int result);

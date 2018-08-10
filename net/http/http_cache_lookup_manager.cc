@@ -37,7 +37,7 @@ HttpCacheLookupManager::LookupTransaction::~LookupTransaction() = default;
 
 int HttpCacheLookupManager::LookupTransaction::StartLookup(
     HttpCache* cache,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetLogWithSource& session_net_log) {
   net_log_.BeginEvent(NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION,
                       base::Bind(&NetLogPushLookupTransactionCallback,
@@ -47,7 +47,7 @@ int HttpCacheLookupManager::LookupTransaction::StartLookup(
   request_->method = "GET";
   request_->load_flags = LOAD_ONLY_FROM_CACHE | LOAD_SKIP_CACHE_VALIDATION;
   cache->CreateTransaction(DEFAULT_PRIORITY, &transaction_);
-  return transaction_->Start(request_.get(), callback, net_log_);
+  return transaction_->Start(request_.get(), std::move(callback), net_log_);
 }
 
 void HttpCacheLookupManager::LookupTransaction::OnLookupComplete(int result) {

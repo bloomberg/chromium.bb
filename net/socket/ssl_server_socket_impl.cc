@@ -69,7 +69,7 @@ class SSLServerContextImpl::SocketImpl : public SSLServerSocket,
   ~SocketImpl() override;
 
   // SSLServerSocket interface.
-  int Handshake(const CompletionCallback& callback) override;
+  int Handshake(CompletionOnceCallback callback) override;
 
   // SSLSocket interface.
   int ExportKeyingMaterial(const base::StringPiece& label,
@@ -334,7 +334,7 @@ void SSLServerContextImpl::SocketImpl::OnPrivateKeyComplete(
 }
 
 int SSLServerContextImpl::SocketImpl::Handshake(
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   net_log_.BeginEvent(NetLogEventType::SSL_SERVER_HANDSHAKE);
 
   // Set up new ssl object.
@@ -352,7 +352,7 @@ int SSLServerContextImpl::SocketImpl::Handshake(
   GotoState(STATE_HANDSHAKE);
   rv = DoHandshakeLoop(OK);
   if (rv == ERR_IO_PENDING) {
-    user_handshake_callback_ = callback;
+    user_handshake_callback_ = std::move(callback);
   } else {
     net_log_.EndEventWithNetErrorCode(NetLogEventType::SSL_SERVER_HANDSHAKE,
                                       rv);

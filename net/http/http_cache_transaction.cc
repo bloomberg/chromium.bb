@@ -227,8 +227,9 @@ HttpCache::Transaction::Mode HttpCache::Transaction::mode() const {
   return mode_;
 }
 
-int HttpCache::Transaction::WriteMetadata(IOBuffer* buf, int buf_len,
-                                          const CompletionCallback& callback) {
+int HttpCache::Transaction::WriteMetadata(IOBuffer* buf,
+                                          int buf_len,
+                                          CompletionOnceCallback callback) {
   DCHECK(buf);
   DCHECK_GT(buf_len, 0);
   DCHECK(!callback.is_null());
@@ -240,7 +241,7 @@ int HttpCache::Transaction::WriteMetadata(IOBuffer* buf, int buf_len,
   // avoid writing again (it should be the same, right?), but let's allow the
   // caller to "update" the contents with something new.
   return entry_->disk_entry->WriteData(kMetadataIndex, 0, buf, buf_len,
-                                       callback, true);
+                                       std::move(callback), true);
 }
 
 LoadState HttpCache::Transaction::GetWriterLoadState() const {
@@ -3025,18 +3026,21 @@ int HttpCache::Transaction::DoSetupEntryForRead() {
   return OK;
 }
 
-int HttpCache::Transaction::WriteToEntry(int index, int offset,
-                                         IOBuffer* data, int data_len,
-                                         const CompletionCallback& callback) {
+int HttpCache::Transaction::WriteToEntry(int index,
+                                         int offset,
+                                         IOBuffer* data,
+                                         int data_len,
+                                         CompletionOnceCallback callback) {
   if (!entry_)
     return data_len;
 
   int rv = 0;
   if (!partial_ || !data_len) {
-    rv = entry_->disk_entry->WriteData(index, offset, data, data_len, callback,
-                                       true);
+    rv = entry_->disk_entry->WriteData(index, offset, data, data_len,
+                                       std::move(callback), true);
   } else {
-    rv = partial_->CacheWrite(entry_->disk_entry, data, data_len, callback);
+    rv = partial_->CacheWrite(entry_->disk_entry, data, data_len,
+                              std::move(callback));
   }
   return rv;
 }

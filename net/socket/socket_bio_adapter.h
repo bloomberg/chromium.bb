@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_repeating_callback.h"
 #include "net/base/net_export.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 
@@ -106,8 +106,8 @@ class NET_EXPORT_PRIVATE SocketBIOAdapter {
   // ClientSocketHandles and raw StreamSockets.
   StreamSocket* socket_;
 
-  CompletionCallback read_callback_;
-  CompletionCallback write_callback_;
+  CompletionRepeatingCallback read_callback_;
+  CompletionRepeatingCallback write_callback_;
 
   // The capacity of the read buffer.
   int read_buffer_capacity_;

@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
-#include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/http/http_network_session.h"
 
@@ -56,7 +55,6 @@ class NET_EXPORT_PRIVATE HttpResponseBodyDrainer {
   const std::unique_ptr<HttpStream> stream_;
   State next_state_;
   int total_read_;
-  CompletionCallback user_callback_;
   base::OneShotTimer timer_;
   HttpNetworkSession* session_;
 
