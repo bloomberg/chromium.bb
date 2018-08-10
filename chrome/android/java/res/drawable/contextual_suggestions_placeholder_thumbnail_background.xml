@@ -5,7 +5,7 @@
 
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <solid
-        android:color="@color/contextual_suggestions_thumbnail_bg_color" />
+        android:color="@color/placeholder_thumbnail_bg_color" />
     <corners
         android:radius="@dimen/snippets_thumbnail_small_corner_radius" />
 </shape>

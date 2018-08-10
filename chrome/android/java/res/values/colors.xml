@@ -186,6 +186,9 @@
     <!-- Bookmark UI colors -->
     <color name="bookmark_detail_section">#7C7B79</color>
 
+    <!-- Download home colors -->
+    <color name="download_image_loading_color">#BDC1C6</color>
+
     <!-- Favicon colors -->
     <color name="default_favicon_background_color">#787878</color>
 
@@ -214,7 +217,7 @@
     <color name="bottom_system_nav_color">@android:color/white</color>
     <color name="bottom_system_nav_divider_color">@color/black_alpha_12</color>
     <color name="search_box_hint">@color/black_alpha_54</color>
-    <color name="contextual_suggestions_thumbnail_bg_color">#DADCE0</color>
+    <color name="placeholder_thumbnail_bg_color">#DADCE0</color>
     <color name="clear_browsing_data_selected_tab_color">@color/modern_blue_600</color>
 
 </resources>

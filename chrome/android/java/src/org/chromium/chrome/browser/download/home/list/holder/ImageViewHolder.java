@@ -11,12 +11,14 @@ import android.widget.ImageView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.list.ListItem;
+import org.chromium.chrome.browser.download.home.view.LoadingBackground;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
 
 /** A {@link RecyclerView.ViewHolder} specifically meant to display an image {@code OfflineItem}. */
 public class ImageViewHolder extends ThumbnailAwareViewHolder {
     private final int mImageHeightPx;
+    private LoadingBackground mLoadingBackground;
 
     public static ImageViewHolder create(ViewGroup parent) {
         View view = LayoutInflater.from(parent.getContext())
@@ -29,6 +31,7 @@ public class ImageViewHolder extends ThumbnailAwareViewHolder {
     public ImageViewHolder(View view, int thumbnailSizePx) {
         super(view, thumbnailSizePx, thumbnailSizePx);
         mImageHeightPx = thumbnailSizePx;
+        mLoadingBackground = new LoadingBackground(view.getContext());
     }
 
     // ThumbnailAwareViewHolder implementation.
@@ -46,5 +49,15 @@ public class ImageViewHolder extends ThumbnailAwareViewHolder {
     @Override
     void onVisualsChanged(ImageView view, OfflineItemVisuals visuals) {
         view.setImageBitmap(visuals == null ? null : visuals.icon);
+    }
+
+    @Override
+    protected void showLoadingView(ImageView view) {
+        mLoadingBackground.show(view);
+    }
+
+    @Override
+    protected void hideLoadingView() {
+        mLoadingBackground.hide();
     }
 }
