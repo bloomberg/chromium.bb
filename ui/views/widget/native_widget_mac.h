@@ -19,6 +19,7 @@ namespace views {
 namespace test {
 class HitTestNativeWidgetMac;
 class MockNativeWidgetMac;
+class WidgetTest;
 }
 
 class BridgedNativeWidget;
@@ -162,6 +163,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
  private:
   friend class test::MockNativeWidgetMac;
   friend class test::HitTestNativeWidgetMac;
+  friend class views::test::WidgetTest;
 
   internal::NativeWidgetDelegate* delegate_;
   std::unique_ptr<BridgedNativeWidgetHostImpl> bridge_host_;

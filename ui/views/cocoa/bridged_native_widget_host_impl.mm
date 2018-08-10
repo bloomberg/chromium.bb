@@ -5,6 +5,8 @@
 #include "ui/views/cocoa/bridged_native_widget_host_impl.h"
 
 #include "ui/base/hit_test.h"
+#include "ui/base/ime/input_method.h"
+#include "ui/base/ime/input_method_factory.h"
 #include "ui/compositor/recyclable_compositor_mac.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/views/cocoa/bridged_native_widget.h"
@@ -25,6 +27,7 @@ BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
   // TODO(ccameron): When all communication from |bridge_| to this goes through
   // the BridgedNativeWidgetHost, this can be replaced with closing that pipe.
   bridge_.reset();
+  SetFocusManager(nullptr);
   DestroyCompositor();
 }
 
@@ -86,6 +89,36 @@ void BridgedNativeWidgetHostImpl::DestroyCompositor() {
   compositor_->compositor()->SetRootLayer(nullptr);
   ui::RecyclableCompositorMacFactory::Get()->RecycleCompositor(
       std::move(compositor_));
+}
+
+void BridgedNativeWidgetHostImpl::SetFocusManager(FocusManager* focus_manager) {
+  if (focus_manager_ == focus_manager)
+    return;
+
+  if (focus_manager_) {
+    // Only the destructor can replace the focus manager (and it passes null).
+    DCHECK(!focus_manager);
+    if (View* old_focus = focus_manager_->GetFocusedView())
+      OnDidChangeFocus(old_focus, nullptr);
+    focus_manager_->RemoveFocusChangeListener(this);
+    focus_manager_ = nullptr;
+    return;
+  }
+
+  focus_manager_ = focus_manager;
+  focus_manager_->AddFocusChangeListener(this);
+  if (View* new_focus = focus_manager_->GetFocusedView())
+    OnDidChangeFocus(nullptr, new_focus);
+}
+
+ui::InputMethod* BridgedNativeWidgetHostImpl::GetInputMethod() {
+  if (!input_method_) {
+    input_method_ = ui::CreateInputMethod(this, gfx::kNullAcceleratedWidget);
+    // For now, use always-focused mode on Mac for the input method.
+    // TODO(tapted): Move this to OnWindowKeyStatusChangedTo() and balance.
+    input_method_->OnFocus();
+  }
+  return input_method_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -193,6 +226,38 @@ void BridgedNativeWidgetHostImpl::GetWordAt(
   // Convert |baselinePoint| to the coordinate system of |root_view_|.
   views::View::ConvertPointToTarget(target, root_view_, baseline_point);
   *found_word = true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BridgedNativeWidget, FocusChangeListener:
+
+void BridgedNativeWidgetHostImpl::OnWillChangeFocus(View* focused_before,
+                                                    View* focused_now) {}
+
+void BridgedNativeWidgetHostImpl::OnDidChangeFocus(View* focused_before,
+                                                   View* focused_now) {
+  ui::InputMethod* input_method =
+      native_widget_mac_->GetWidget()->GetInputMethod();
+  if (input_method) {
+    ui::TextInputClient* input_client = input_method->GetTextInputClient();
+    // Sanity check: When focus moves away from the widget (i.e. |focused_now|
+    // is nil), then the textInputClient will be cleared.
+    DCHECK(!!focused_now || !input_client);
+    bridge_->SetTextInputClient(input_client);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BridgedNativeWidget, internal::InputMethodDelegate:
+
+ui::EventDispatchDetails BridgedNativeWidgetHostImpl::DispatchKeyEventPostIME(
+    ui::KeyEvent* key) {
+  DCHECK(focus_manager_);
+  if (!focus_manager_->OnKeyEvent(*key))
+    key->StopPropagation();
+  else
+    native_widget_mac_->GetWidget()->OnKeyEvent(key);
+  return ui::EventDispatchDetails();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

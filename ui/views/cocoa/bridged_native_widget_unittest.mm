@@ -301,7 +301,7 @@ class MockNativeWidgetMac : public NativeWidgetMac {
     delegate()->OnNativeWidgetCreated(true);
 
     // To allow events to dispatch to a view, it needs a way to get focus.
-    bridge()->SetFocusManager(GetWidget()->GetFocusManager());
+    bridge_host_for_testing()->SetFocusManager(GetWidget()->GetFocusManager());
   }
 
   void ReorderNativeViews() override {
@@ -788,7 +788,7 @@ TEST_F(BridgedNativeWidgetTest, ViewSizeTracksWindow) {
 }
 
 TEST_F(BridgedNativeWidgetTest, GetInputMethodShouldNotReturnNull) {
-  EXPECT_TRUE(bridge()->GetInputMethod());
+  EXPECT_TRUE(bridge_host()->GetInputMethod());
 }
 
 // A simpler test harness for testing initialization flows.

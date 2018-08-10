@@ -144,7 +144,7 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   bridge_host_->SetRootView(GetWidget()->GetRootView());
   if (auto* focus_manager = GetWidget()->GetFocusManager()) {
     [window makeFirstResponder:bridge()->ns_view()];
-    bridge()->SetFocusManager(focus_manager);
+    bridge_host_->SetFocusManager(focus_manager);
   }
 
   bridge_host_->CreateCompositor(params);
@@ -253,7 +253,7 @@ bool NativeWidgetMac::HasCapture() const {
 }
 
 ui::InputMethod* NativeWidgetMac::GetInputMethod() {
-  return bridge() ? bridge()->GetInputMethod() : nullptr;
+  return bridge_host_ ? bridge_host_->GetInputMethod() : nullptr;
 }
 
 void NativeWidgetMac::CenterWindow(const gfx::Size& size) {
