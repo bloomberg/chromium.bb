@@ -2936,6 +2936,8 @@ jumbo_split_static_library("ui") {
       "views/login_handler_views.cc",
       "views/login_view.cc",
       "views/login_view.h",
+      "views/overlay/close_image_button.cc",
+      "views/overlay/close_image_button.h",
       "views/overlay/overlay_window_views.cc",
       "views/overlay/overlay_window_views.h",
       "views/page_info/chosen_object_view.cc",
