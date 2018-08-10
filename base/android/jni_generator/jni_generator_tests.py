@@ -294,6 +294,8 @@ class TestGenerator(unittest.TestCase):
     content = h2.Generate()
     for k in jni_registration_generator.MERGEABLE_KEYS:
       content[k] = content.get(k, '')
+    content['HEADER_GUARD'] = 'HEADER_GUARD'
+    content['NAMESPACE'] = 'test'
 
     self.assertGoldenTextEquals(
         jni_registration_generator.CreateFromDict(content),
@@ -383,6 +385,8 @@ class TestGenerator(unittest.TestCase):
     content = h2.Generate()
     for k in jni_registration_generator.MERGEABLE_KEYS:
       content[k] = content.get(k, '')
+    content['HEADER_GUARD'] = 'HEADER_GUARD'
+    content['NAMESPACE'] = 'test'
 
     self.assertGoldenTextEquals(
         jni_registration_generator.CreateFromDict(content),
