@@ -10,6 +10,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.os.Build;
 import android.util.SparseIntArray;
@@ -36,14 +37,26 @@ import java.util.List;
 @Config(manifest = Config.NONE)
 public class CastAudioManagerTest {
     @Test
+    @Config(sdk = Build.VERSION_CODES.N_MR1)
     public void testAudioFocusScopeActivatedWhenRequestGranted() {
         CastAudioManager audioManager =
                 CastAudioManager.getAudioManager(RuntimeEnvironment.application);
         ShadowAudioManager shadowAudioManager = Shadows.shadowOf(audioManager.getInternal());
         Controller<Unit> requestAudioFocusState = new Controller<>();
         List<String> result = new ArrayList<>();
-        Observable<Unit> gotAudioFocusState = audioManager.requestAudioFocusWhen(
-                requestAudioFocusState, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+
+        AudioAttributes audioAttributes =
+                new AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build();
+        CastAudioFocusRequest castAudioFocusRequest =
+                new CastAudioFocusRequest.Builder()
+                        .setFocusGain(AudioManager.AUDIOFOCUS_GAIN)
+                        .setAudioAttributes(audioAttributes)
+                        .build();
+        Observable<Unit> gotAudioFocusState =
+                audioManager.requestAudioFocusWhen(requestAudioFocusState, castAudioFocusRequest);
         gotAudioFocusState.watch(x -> {
             result.add("Got audio focus");
             return () -> result.add("Lost audio focus");
@@ -55,14 +68,25 @@ public class CastAudioManagerTest {
     }
 
     @Test
+    @Config(sdk = Build.VERSION_CODES.N_MR1)
     public void testAudioFocusScopeDeactivatedWhenFocusRequestStateIsReset() {
         CastAudioManager audioManager =
                 CastAudioManager.getAudioManager(RuntimeEnvironment.application);
         ShadowAudioManager shadowAudioManager = Shadows.shadowOf(audioManager.getInternal());
         Controller<Unit> requestAudioFocusState = new Controller<>();
         List<String> result = new ArrayList<>();
-        Observable<Unit> gotAudioFocusState = audioManager.requestAudioFocusWhen(
-                requestAudioFocusState, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+        AudioAttributes audioAttributes =
+                new AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build();
+        CastAudioFocusRequest castAudioFocusRequest =
+                new CastAudioFocusRequest.Builder()
+                        .setFocusGain(AudioManager.AUDIOFOCUS_GAIN)
+                        .setAudioAttributes(audioAttributes)
+                        .build();
+        Observable<Unit> gotAudioFocusState =
+                audioManager.requestAudioFocusWhen(requestAudioFocusState, castAudioFocusRequest);
         gotAudioFocusState.watch(x -> {
             result.add("Got audio focus");
             return () -> result.add("Lost audio focus");
@@ -75,14 +99,25 @@ public class CastAudioManagerTest {
     }
 
     @Test
+    @Config(sdk = Build.VERSION_CODES.N_MR1)
     public void testAudioFocusScopeDeactivatedWhenAudioFocusIsLostButRequestStillActive() {
         CastAudioManager audioManager =
                 CastAudioManager.getAudioManager(RuntimeEnvironment.application);
         ShadowAudioManager shadowAudioManager = Shadows.shadowOf(audioManager.getInternal());
         Controller<Unit> requestAudioFocusState = new Controller<>();
         List<String> result = new ArrayList<>();
-        Observable<Unit> gotAudioFocusState = audioManager.requestAudioFocusWhen(
-                requestAudioFocusState, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+        AudioAttributes audioAttributes =
+                new AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build();
+        CastAudioFocusRequest castAudioFocusRequest =
+                new CastAudioFocusRequest.Builder()
+                        .setFocusGain(AudioManager.AUDIOFOCUS_GAIN)
+                        .setAudioAttributes(audioAttributes)
+                        .build();
+        Observable<Unit> gotAudioFocusState =
+                audioManager.requestAudioFocusWhen(requestAudioFocusState, castAudioFocusRequest);
         gotAudioFocusState.watch(x -> {
             result.add("Got audio focus");
             return () -> result.add("Lost audio focus");
@@ -96,14 +131,25 @@ public class CastAudioManagerTest {
     }
 
     @Test
+    @Config(sdk = Build.VERSION_CODES.N_MR1)
     public void testAudioFocusScopeReactivatedWhenAudioFocusIsLostAndRegained() {
         CastAudioManager audioManager =
                 CastAudioManager.getAudioManager(RuntimeEnvironment.application);
         ShadowAudioManager shadowAudioManager = Shadows.shadowOf(audioManager.getInternal());
         Controller<Unit> requestAudioFocusState = new Controller<>();
         List<String> result = new ArrayList<>();
-        Observable<Unit> gotAudioFocusState = audioManager.requestAudioFocusWhen(
-                requestAudioFocusState, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+        AudioAttributes audioAttributes =
+                new AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build();
+        CastAudioFocusRequest castAudioFocusRequest =
+                new CastAudioFocusRequest.Builder()
+                        .setFocusGain(AudioManager.AUDIOFOCUS_GAIN)
+                        .setAudioAttributes(audioAttributes)
+                        .build();
+        Observable<Unit> gotAudioFocusState =
+                audioManager.requestAudioFocusWhen(requestAudioFocusState, castAudioFocusRequest);
         gotAudioFocusState.watch(x -> {
             result.add("Got audio focus");
             return () -> result.add("Lost audio focus");
@@ -124,8 +170,18 @@ public class CastAudioManagerTest {
         ShadowAudioManager shadowAudioManager = Shadows.shadowOf(audioManager.getInternal());
         Controller<Unit> requestAudioFocusState = new Controller<>();
         List<String> result = new ArrayList<>();
-        Observable<Unit> gotAudioFocusState = audioManager.requestAudioFocusWhen(
-                requestAudioFocusState, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+        AudioAttributes audioAttributes =
+                new AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build();
+        CastAudioFocusRequest castAudioFocusRequest =
+                new CastAudioFocusRequest.Builder()
+                        .setFocusGain(AudioManager.AUDIOFOCUS_GAIN)
+                        .setAudioAttributes(audioAttributes)
+                        .build();
+        Observable<Unit> gotAudioFocusState =
+                audioManager.requestAudioFocusWhen(requestAudioFocusState, castAudioFocusRequest);
         gotAudioFocusState.watch(x -> {
             result.add("Got audio focus");
             return () -> result.add("Lost audio focus");
