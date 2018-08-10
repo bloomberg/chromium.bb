@@ -562,6 +562,9 @@
       <message desc="List of chromevox developer options." name="IDS_CHROMEVOX_OPTIONS_DEVELOPER_OPTIONS">
         Developer Options
       </message>
+      <message desc="Enable chromevox speech logging." name="IDS_CHROMEVOX_OPTIONS_DEVELOPER_SPEECH_LOGGING">
+        Enable speech logging
+      </message>
       <message desc="The title of ChromeVox Learn Mode page.  The keyboard explorer voices the name of each key when the user presses it." name="IDS_CHROMEVOX_KBEXPLORER_TITLE">
         ChromeVox Learn Mode
       </message>

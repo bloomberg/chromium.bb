@@ -130,7 +130,7 @@ cvox.ChromeVoxBackground.prototype.init = function() {
   cvox.ChromeVoxBackground.readPrefs();
 
   var consoleTts = cvox.ConsoleTts.getInstance();
-  consoleTts.setEnabled(true);
+  consoleTts.setEnabled(this.prefs.getPrefs()['enableSpeechLogging'] == 'true');
 
   /**
    * Chrome's actual TTS which knows and cares about pitch, volume, etc.
