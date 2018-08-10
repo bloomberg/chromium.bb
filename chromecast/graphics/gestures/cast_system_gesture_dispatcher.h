@@ -35,6 +35,15 @@ class CastSystemGestureDispatcher : public CastGestureHandler {
                           const gfx::Point& touch_location) override;
   void HandleTapDownGesture(const gfx::Point& touch_location) override;
   void HandleTapGesture(const gfx::Point& touch_location) override;
+  void HandleScreenExit(CastSideSwipeOrigin side,
+                        const gfx::Point& touch_location) override;
+  void HandleScreenEnter(CastSideSwipeOrigin side,
+                         const gfx::Point& touch_location) override;
+  Corner HandledCornerHolds() const override;
+  void HandleCornerHold(Corner corner_origin,
+                        const ui::TouchEvent& touch_event) override;
+  void HandleCornerHoldEnd(Corner corner_origin,
+                           const ui::TouchEvent& touch_event) override;
 
  private:
   base::flat_set<CastGestureHandler*> gesture_handlers_;

@@ -15,6 +15,7 @@ cast_source_set("graphics") {
 
   deps = [
     "//base",
+    "//ui/events:events",
     "//ui/gfx",
   ]
 

@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_GRAPHICS_CAST_GESTURE_HANDLER_H_
 #define CHROMECAST_GRAPHICS_CAST_GESTURE_HANDLER_H_
 
+#include "ui/events/event.h"
+
 // TODO(rdaum): Move into chromecast/graphics/gestures, which will require some
 // cross-repo maneuvers.
 #include "base/macros.h"
@@ -46,6 +48,37 @@ class CastGestureHandler {
   // Triggered on the completion of a tap event, fire after a press
   // followed by a release, within the tap timeout window
   virtual void HandleTapGesture(const gfx::Point& touch_location) {}
+
+  // Triggered when the finger enters a side margin from inside the screen.
+  // That is, the finger is leaving the screen.
+  virtual void HandleScreenExit(CastSideSwipeOrigin side,
+                                const gfx::Point& touch_location) {}
+
+  // Triggered when the finger enters a side margin from outside the screen.
+  // That is, the finger is entering the screen.
+  virtual void HandleScreenEnter(CastSideSwipeOrigin side,
+                                 const gfx::Point& touch_location) {}
+
+  enum Corner {
+    NO_CORNERS = 0,
+    TOP_LEFT_CORNER = 1 << 0,
+    BOTTOM_LEFT_CORNER = 1 << 1,
+    TOP_RIGHT_CORNER = 1 << 2,
+    BOTTOM_RIGHT_CORNER = 1 << 3,
+  };
+
+  // Return a bitmask of the corners that this handler is interested in, if any.
+  virtual Corner HandledCornerHolds() const;
+
+  // Triggered when the finger has been held inside the corner for longer
+  // than the corner hold threshold time.
+  virtual void HandleCornerHold(Corner corner_origin,
+                                const ui::TouchEvent& touch_event) {}
+
+  // Triggered when a corner hold is ended because the finger has left the
+  // corner or has been released.
+  virtual void HandleCornerHoldEnd(Corner corner_origin,
+                                   const ui::TouchEvent& touch_event) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastGestureHandler);
