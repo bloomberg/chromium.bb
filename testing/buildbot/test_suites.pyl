@@ -1651,7 +1651,7 @@
         '--xvfb',
       ],
       'swarming': {
-        'hard_timeout': 960,
+        'hard_timeout': 1200,
         'idempotent': False,  # https://crbug.com/549140
         'shards': 12,
       },
@@ -1663,7 +1663,7 @@
         '--extra-browser-args=--enable-features=VizDisplayCompositor',
       ],
       'swarming': {
-        'hard_timeout': 960,
+        'hard_timeout': 1200,
         'idempotent': False,  # https://crbug.com/549140
         'shards': 12,
       },
