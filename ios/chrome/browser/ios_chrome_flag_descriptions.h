@@ -185,11 +185,6 @@ extern const char kInfobarsUIRebootDescription[];
 extern const char kSlimNavigationManagerName[];
 extern const char kSlimNavigationManagerDescription[];
 
-// Title and description for the flag to enable new Download Manager UI and
-// backend.
-extern const char kNewFileDownloadName[];
-extern const char kNewFileDownloadDescription[];
-
 // Title and description for the flag to enable web based error pages.
 extern const char kWebErrorPagesName[];
 extern const char kWebErrorPagesDescription[];

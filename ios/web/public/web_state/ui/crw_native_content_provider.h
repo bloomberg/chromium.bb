@@ -40,15 +40,6 @@ class WebState;
                                withError:(NSError*)error
                                   isPost:(BOOL)isPost;
 
-// Returns an autoreleased controller for driving a native view contained
-// within the web content area for unhandled content at |URL|. |webState|
-// triggered the navigation to |URL|.
-// TODO(crbug.com/791806) DEPRECATED! Clients must use web::DownloadController
-// for renderer initiated downloads.
-- (id<CRWNativeContent>)controllerForUnhandledContentAtURL:(const GURL&)URL
-                                                  webState:
-                                                      (web::WebState*)webState;
-
 // Called to retrieve the height of any header that is overlaying on top of the
 // native content. This can be used to implement, for e.g. a toolbar that
 // changes height dynamically. Returning a non-zero height affects the visible

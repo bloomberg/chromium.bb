@@ -19,9 +19,6 @@ extern const base::Feature kWebFrameMessaging;
 // Used to enable the WKBackForwardList based navigation manager.
 extern const base::Feature kSlimNavigationManager;
 
-// Used to enable new Download Manager UI and backend.
-extern const base::Feature kNewFileDownload;
-
 // Used to enable displaying error pages in WebState by loading HTML string.
 extern const base::Feature kWebErrorPages;
 
