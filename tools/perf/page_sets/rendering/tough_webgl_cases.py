@@ -25,8 +25,7 @@ class ToughWebglPage(rendering_story.RenderingStory):
   @property
   def skipped_gpus(self):
     # crbug.com/462729
-    return ['arm', 'broadcom', 'hisilicon', 'imagination', 'qualcomm',
-            'vivante']
+    return ['arm', 'broadcom', 'hisilicon', 'imagination', 'vivante']
 
   def RunNavigateSteps(self, action_runner):
     super(ToughWebglPage, self).RunNavigateSteps(action_runner)
