@@ -376,9 +376,13 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   }
 
   static uint32_t GetURLLoaderOptions(bool is_main_frame) {
-    uint32_t options = network::mojom::kURLLoadOptionSendSSLInfoWithResponse;
-    if (is_main_frame)
+    uint32_t options = network::mojom::kURLLoadOptionNone;
+    if (is_main_frame) {
+      // SSLInfo is not needed on subframe responses because users can inspect
+      // only the certificate for the main frame when using the info bubble.
+      options |= network::mojom::kURLLoadOptionSendSSLInfoWithResponse;
       options |= network::mojom::kURLLoadOptionSendSSLInfoForCertificateError;
+    }
 
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       options |= network::mojom::kURLLoadOptionSniffMimeType;

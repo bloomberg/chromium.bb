@@ -4088,9 +4088,13 @@ void WebContentsImpl::ReadyToCommitNavigation(
   if (navigation_handle->IsSameDocument())
     return;
 
-  controller_.ssl_manager()->DidStartResourceResponse(
-      navigation_handle->GetURL(),
-      net::IsCertStatusError(navigation_handle->GetSSLInfo().cert_status));
+  // SSLInfo is not needed on subframe navigations since the main-frame
+  // certificate is the only one that can be inspected (using the info
+  // bubble) without refreshing the page with DevTools open.
+  if (navigation_handle->IsInMainFrame())
+    controller_.ssl_manager()->DidStartResourceResponse(
+        navigation_handle->GetURL(),
+        net::IsCertStatusError(navigation_handle->GetSSLInfo().cert_status));
 
   SetNotWaitingForResponse();
 }
