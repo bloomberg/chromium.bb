@@ -60,6 +60,8 @@ class BASE_EXPORT ModuleCache {
   ModuleCache();
   ~ModuleCache();
 
+  void Clear() { modules_cache_map_.clear(); }
+
   const Module& GetModuleForAddress(uintptr_t address);
   std::vector<const Module*> GetModules() const;
 

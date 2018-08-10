@@ -40,26 +40,6 @@ using ProfileBuilder = StackSamplingProfiler::ProfileBuilder;
 
 namespace {
 
-// ModuleCacheEntry records a module's address range (half-open) in memory and
-// the module itself.
-struct ModuleCacheEntry {
-  ModuleCacheEntry(uintptr_t start,
-                   uintptr_t end,
-                   ModuleCache::Module internal_module)
-      : base_address(start),
-        end_address(end),
-        internal_module(std::move(internal_module)){};
-
-  // Base address of the represented module.
-  uintptr_t base_address;
-
-  // First address off the end of the represented module.
-  uintptr_t end_address;
-
-  // Module information.
-  ModuleCache::Module internal_module;
-};
-
 // Stack walking --------------------------------------------------------------
 
 // Fills |state| with |target_thread|'s context.
@@ -295,10 +275,6 @@ class NativeStackSamplerMac : public NativeStackSampler {
       ProfileBuilder* profile_builder) override;
 
  private:
-  // Returns the ModuleCache::Module containing |instruction_pointer|, adding it
-  // to module_cache_entry_ if it's not already present.
-  ModuleCache::Module GetInternalModule(uintptr_t instruction_pointer);
-
   // Walks the stack represented by |unwind_context|, calling back to the
   // provided lambda for each frame. Returns false if an error occurred,
   // otherwise returns true.
@@ -324,7 +300,7 @@ class NativeStackSamplerMac : public NativeStackSampler {
   const void* const thread_stack_base_address_;
 
   // Maps a module's address range to the module.
-  std::vector<ModuleCacheEntry> module_cache_entry_;
+  ModuleCache module_cache_;
 
   // The address range of |_sigtramp|, the signal trampoline function.
   uintptr_t sigtramp_start_;
@@ -352,7 +328,7 @@ NativeStackSamplerMac::NativeStackSamplerMac(
 NativeStackSamplerMac::~NativeStackSamplerMac() {}
 
 void NativeStackSamplerMac::ProfileRecordingStarting() {
-  module_cache_entry_.clear();
+  module_cache_.Clear();
 }
 
 std::vector<InternalFrame> NativeStackSamplerMac::RecordStackFrames(
@@ -412,7 +388,7 @@ std::vector<InternalFrame> NativeStackSamplerMac::RecordStackFrames(
   // and bail. See MayTriggerUnwInitLocalCrash for details.
   uintptr_t rip = thread_state.__rip;
   if (MayTriggerUnwInitLocalCrash(rip)) {
-    internal_frames.emplace_back(rip, GetInternalModule(rip));
+    internal_frames.emplace_back(rip, module_cache_.GetModuleForAddress(rip));
     return internal_frames;
   }
 
@@ -443,28 +419,6 @@ std::vector<InternalFrame> NativeStackSamplerMac::RecordStackFrames(
   return internal_frames;
 }
 
-ModuleCache::Module NativeStackSamplerMac::GetInternalModule(
-    uintptr_t instruction_pointer) {
-  // Check if |instruction_pointer| is in the address range of a module we've
-  // already seen.
-  auto loc =
-      std::find_if(module_cache_entry_.begin(), module_cache_entry_.end(),
-                   [instruction_pointer](const ModuleCacheEntry& entry) {
-                     return instruction_pointer >= entry.base_address &&
-                            instruction_pointer < entry.end_address;
-                   });
-  if (loc != module_cache_entry_.end())
-    return loc->internal_module;
-
-  ModuleCache::Module module =
-      ModuleCache::CreateModuleForAddress(instruction_pointer);
-  // TODO(chengx): refactor to use the ModuleCache public interface and remove
-  // NativeStackSamplerMac module caching.
-  module_cache_entry_.emplace_back(module.base_address,
-                                   module.base_address + module.size, module);
-  return module;
-}
-
 template <typename StackFrameCallback, typename ContinueUnwindPredicate>
 bool NativeStackSamplerMac::WalkStackFromContext(
     unw_context_t* unwind_context,
@@ -491,11 +445,11 @@ bool NativeStackSamplerMac::WalkStackFromContext(
     // libunwind adds the expected stack size, it will look for the return
     // address in the wrong place. This check should ensure that we bail before
     // trying to deref a bad IP obtained this way in the previous frame.
-    ModuleCache::Module internal_module = GetInternalModule(rip);
-    if (!internal_module.is_valid)
+    const ModuleCache::Module& module = module_cache_.GetModuleForAddress(rip);
+    if (!module.is_valid)
       return false;
 
-    callback(static_cast<uintptr_t>(rip), internal_module);
+    callback(static_cast<uintptr_t>(rip), module);
 
     if (!continue_unwind(&unwind_cursor))
       return false;

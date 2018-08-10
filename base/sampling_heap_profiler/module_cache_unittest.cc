@@ -44,6 +44,8 @@ TEST_F(ModuleCacheTest, MAYBE_ModulesList) {
   EXPECT_TRUE(module.is_valid);
   EXPECT_EQ(1u, cache.GetModules().size());
   EXPECT_EQ(&module, cache.GetModules().front());
+  cache.Clear();
+  EXPECT_EQ(0u, cache.GetModules().size());
 }
 
 TEST_F(ModuleCacheTest, InvalidModule) {
