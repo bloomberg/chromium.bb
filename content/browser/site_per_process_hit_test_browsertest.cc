@@ -4603,7 +4603,7 @@ class SitePerProcessHitTestDataGenerationBrowserTest
 
  protected:
   // Load the page |host_name| and retrieve the hit test data from HitTestQuery.
-  std::vector<viz::AggregatedHitTestRegion> SetupAndGettHitTestData(
+  std::vector<viz::AggregatedHitTestRegion> SetupAndGetHitTestData(
       const std::string& host_name) {
     GURL main_url(embedded_test_server()->GetURL(host_name));
     EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -4616,12 +4616,13 @@ class SitePerProcessHitTestDataGenerationBrowserTest
         static_cast<RenderWidgetHostViewBase*>(
             root->current_frame_host()->GetRenderWidgetHost()->GetView());
 
-    HitTestRegionObserver observer(rwhv_root->GetFrameSinkId());
-
     for (unsigned i = 0; i < root->child_count(); i++) {
       WaitForHitTestDataOrChildSurfaceReady(
           root->child_at(i)->current_frame_host());
     }
+
+    HitTestRegionObserver observer(rwhv_root->GetRootFrameSinkId());
+    observer.WaitForHitTestData();
 
     device_scale_factor_ = rwhv_root->GetDeviceScaleFactor();
     DCHECK_GT(device_scale_factor_, 0);
@@ -4698,7 +4699,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   if (!features::IsVizHitTestingEnabled())
     return;
   auto hit_test_data =
-      SetupAndGettHitTestData("/frame_tree/page_with_transformed_iframe.html");
+      SetupAndGetHitTestData("/frame_tree/page_with_transformed_iframe.html");
   float device_scale_factor = current_device_scale_factor();
 
   // Compute screen space transform for iframe element.
@@ -4724,7 +4725,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   if (!features::IsVizHitTestingEnabled())
     return;
   auto hit_test_data =
-      SetupAndGettHitTestData("/frame_tree/page_with_clipped_iframe.html");
+      SetupAndGetHitTestData("/frame_tree/page_with_clipped_iframe.html");
   float device_scale_factor = current_device_scale_factor();
   gfx::Transform expected_transform;
   // In V1 hit testing or V2 hit testing slow path, we expected unclipped iframe
@@ -4764,7 +4765,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
                        RotatedClippedOOPIF) {
   if (!features::IsVizHitTestingEnabled())
     return;
-  auto hit_test_data = SetupAndGettHitTestData(
+  auto hit_test_data = SetupAndGetHitTestData(
       "/frame_tree/page_with_rotated_clipped_iframe.html");
   float device_scale_factor = current_device_scale_factor();
   // +-Root
@@ -4805,7 +4806,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
                        ClippedRotatedOOPIF) {
   if (!features::IsVizHitTestingEnabled())
     return;
-  auto hit_test_data = SetupAndGettHitTestData(
+  auto hit_test_data = SetupAndGetHitTestData(
       "/frame_tree/page_with_clipped_rotated_iframe.html");
   float device_scale_factor = current_device_scale_factor();
   // +-Root
@@ -4855,7 +4856,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   if (!features::IsVizHitTestingEnabled())
     return;
   auto hit_test_data =
-      SetupAndGettHitTestData("/frame_tree/page_with_clip_path_iframe.html");
+      SetupAndGetHitTestData("/frame_tree/page_with_clip_path_iframe.html");
   float device_scale_factor = current_device_scale_factor();
   gfx::Transform expected_transform;
   gfx::Rect expected_region = gfx::ScaleToEnclosingRect(
@@ -4880,7 +4881,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   if (!features::IsVizHitTestingEnabled())
     return;
   auto hit_test_data =
-      SetupAndGettHitTestData("/frame_tree/page_with_overlapped_iframes.html");
+      SetupAndGetHitTestData("/frame_tree/page_with_overlapped_iframes.html");
   float device_scale_factor = current_device_scale_factor();
   gfx::Transform expected_transform1;
   gfx::Transform expected_transform2;
@@ -4910,7 +4911,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   if (!features::IsVizHitTestingEnabled())
     return;
   auto hit_test_data =
-      SetupAndGettHitTestData("/frame_tree/page_with_masked_iframe.html");
+      SetupAndGetHitTestData("/frame_tree/page_with_masked_iframe.html");
   float device_scale_factor = current_device_scale_factor();
   gfx::Transform expected_transform;
   gfx::Rect expected_region = gfx::ScaleToEnclosingRect(
