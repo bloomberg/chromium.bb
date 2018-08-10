@@ -146,7 +146,6 @@
 #import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_presenter_impl.h"
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
-#import "ios/chrome/browser/ui/download/legacy_download_manager_controller.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/external_file_controller.h"
@@ -4003,17 +4002,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     _temporaryNativeController = nativeController;
   }
   return nativeController;
-}
-
-- (id<CRWNativeContent>)controllerForUnhandledContentAtURL:(const GURL&)URL
-                                                  webState:
-                                                      (web::WebState*)webState {
-  LegacyDownloadManagerController* downloadController =
-      [[LegacyDownloadManagerController alloc] initWithWebState:webState
-                                              downloadURL:URL
-                                       baseViewController:self];
-  [downloadController start];
-  return downloadController;
 }
 
 - (CGFloat)nativeContentHeaderHeightForWebState:(web::WebState*)webState {

@@ -5,7 +5,6 @@
 #import <EarlGrey/EarlGrey.h>
 
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/tab_test_util.h"
@@ -15,7 +14,6 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #include "ios/testing/embedded_test_server_handlers.h"
-#include "ios/web/public/features.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
@@ -64,17 +62,13 @@ bool WaitForOpenInButton() {
 }  // namespace
 
 // Tests critical user journeys for Download Manager.
-@interface DownloadManagerTestCase : ChromeTestCase {
-  base::test::ScopedFeatureList _featureList;
-}
+@interface DownloadManagerTestCase : ChromeTestCase
 @end
 
 @implementation DownloadManagerTestCase
 
 - (void)setUp {
   [super setUp];
-
-  _featureList.InitAndEnableFeature(web::features::kNewFileDownload);
 
   self.testServer->RegisterRequestHandler(
       base::BindRepeating(&net::test_server::HandlePrefixedRequest, "/",

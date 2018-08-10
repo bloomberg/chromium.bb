@@ -8,14 +8,12 @@
 
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #include "ios/chrome/browser/download/pass_kit_mime_type.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
 #import "ios/web/public/download/download_controller.h"
 #import "ios/web/public/download/download_task.h"
-#include "ios/web/public/features.h"
 #import "ios/web/public/test/fakes/fake_download_task.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -63,8 +61,6 @@ class BrowserDownloadServiceTest : public PlatformTest {
  protected:
   BrowserDownloadServiceTest()
       : browser_state_(browser_state_builder_.Build()) {
-    feature_list_.InitAndEnableFeature(web::features::kNewFileDownload);
-
     StubTabHelper<PassKitTabHelper>::CreateForWebState(&web_state_);
     StubTabHelper<DownloadManagerTabHelper>::CreateForWebState(&web_state_);
 
@@ -104,7 +100,6 @@ class BrowserDownloadServiceTest : public PlatformTest {
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<BrowserDownloadService> service_;
   web::TestWebState web_state_;
-  base::test::ScopedFeatureList feature_list_;
   base::HistogramTester histogram_tester_;
 };
 

@@ -2985,36 +2985,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
       // executed when web controller rejected the load inside
       // decidePolicyForNavigationResponse: to handle download or WKWebView
       // opened a Universal Link.
-      NSString* errorURLSpec =
-          error.userInfo[NSURLErrorFailingURLStringErrorKey];
-      NSURL* errorURL = [NSURL URLWithString:errorURLSpec];
-      NSString* MIMEType = [_pendingNavigationInfo MIMEType];
-      if (!base::FeatureList::IsEnabled(web::features::kNewFileDownload) &&
-          ![MIMEType isEqualToString:@"application/vnd.apple.pkpass"]) {
-        // This block is executed to handle legacy download navigation.
-        const GURL errorGURL = net::GURLWithNSURL(errorURL);
-        if (errorGURL.is_valid()) {
-          id<CRWNativeContent> controller = [_nativeProvider
-              controllerForUnhandledContentAtURL:errorGURL
-                                        webState:self.webState];
-          if (controller) {
-            [self loadCompleteWithSuccess:NO forNavigation:navigation];
-            [self removeWebView];
-            [self setNativeController:controller];
-            [self loadNativeViewWithSuccess:YES
-                          navigationContext:navigationContext];
-            _loadPhase = web::PAGE_LOADED;
-            return;
-          }
-        }
-      }
-
       if (!navigationContext->IsDownload()) {
         // Non-download navigation was cancelled because WKWebView has opened a
         // Universal Link and called webView:didFailProvisionalNavigation:.
         self.navigationManagerImpl->DiscardNonCommittedItems();
       }
-
       _webStateImpl->SetIsLoading(false);
       return;
     }
@@ -4419,13 +4394,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
                                responseURL, contentDisposition, contentLength,
                                base::SysNSStringToUTF8(MIMEType), transition);
     }
-    BOOL isPassKit = [MIMEType isEqualToString:@"application/vnd.apple.pkpass"];
-    if (isPassKit ||
-        base::FeatureList::IsEnabled(web::features::kNewFileDownload)) {
-      // Discard the pending item to ensure that the current URL is not
-      // different from what is displayed on the view.
-      [self discardNonCommittedItemsIfLastCommittedWasNotNativeView];
-    }
+    // Discard the pending item to ensure that the current URL is not different
+    // from what is displayed on the view.
+    [self discardNonCommittedItemsIfLastCommittedWasNotNativeView];
     _webStateImpl->SetIsLoading(false);
   }
 

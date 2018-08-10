@@ -220,11 +220,6 @@ const char kSlimNavigationManagerDescription[] =
     "When enabled, uses the experimental slim navigation manager that provides "
     "better compatibility with HTML navigation spec.";
 
-const char kNewFileDownloadName[] = "Use new Download Manager UI and backend";
-const char kNewFileDownloadDescription[] =
-    "When enabled, uses new Download Manager UI and ios/web Download API as "
-    "backend.";
-
 const char kWebErrorPagesName[] =
     "Present load errors in web contents area, instead of using "
     "CRWNativeContent";
