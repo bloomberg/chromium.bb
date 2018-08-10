@@ -85,8 +85,9 @@ bool DnsSdRegistry::ServiceTypeData::RemoveService(
   return false;
 }
 
-void DnsSdRegistry::ServiceTypeData::ForceDiscovery() {
-  lister_->Discover();
+void DnsSdRegistry::ServiceTypeData::ResetAndDiscover() {
+  lister_->Reset();
+  ClearServices();
 }
 
 bool DnsSdRegistry::ServiceTypeData::ClearServices() {
@@ -146,10 +147,10 @@ void DnsSdRegistry::Publish(const std::string& service_type) {
   DispatchApiEvent(service_type);
 }
 
-void DnsSdRegistry::ForceDiscovery() {
+void DnsSdRegistry::ResetAndDiscover() {
   DCHECK(thread_checker_.CalledOnValidThread());
   for (const auto& next_service : service_data_map_) {
-    next_service.second->ForceDiscovery();
+    next_service.second->ResetAndDiscover();
   }
 }
 

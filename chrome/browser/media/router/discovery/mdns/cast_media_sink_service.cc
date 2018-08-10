@@ -104,7 +104,7 @@ void CastMediaSinkService::StartMdnsDiscovery() {
 void CastMediaSinkService::OnUserGesture() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (dns_sd_registry_)
-    dns_sd_registry_->ForceDiscovery();
+    dns_sd_registry_->ResetAndDiscover();
 
   DVLOG(2) << "OnUserGesture: open channel now for " << cast_sinks_.size()
            << " devices discovered in latest round of mDNS";

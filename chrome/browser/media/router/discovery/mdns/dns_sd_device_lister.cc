@@ -31,24 +31,26 @@ DnsSdDeviceLister::DnsSdDeviceLister(
     DnsSdDelegate* delegate,
     const std::string& service_type)
     : delegate_(delegate),
-      device_lister_(local_discovery::ServiceDiscoveryDeviceLister::Create(
-          this,
-          service_discovery_client,
-          service_type)),
-      started_(false) {}
+      service_discovery_client_(service_discovery_client),
+      service_type_(service_type) {}
 
 DnsSdDeviceLister::~DnsSdDeviceLister() {}
 
 void DnsSdDeviceLister::Discover() {
-  if (!started_) {
+  if (!device_lister_) {
+    device_lister_ = local_discovery::ServiceDiscoveryDeviceLister::Create(
+        this, service_discovery_client_, service_type_);
     device_lister_->Start();
-    started_ = true;
     VLOG(1) << "Started device lister for service type "
             << device_lister_->service_type();
   }
   device_lister_->DiscoverNewDevices();
   VLOG(1) << "Discovery new devices for service type "
           << device_lister_->service_type();
+}
+
+void DnsSdDeviceLister::Reset() {
+  device_lister_.reset();
 }
 
 void DnsSdDeviceLister::OnDeviceChanged(

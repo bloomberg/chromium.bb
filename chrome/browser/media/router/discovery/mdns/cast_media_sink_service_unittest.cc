@@ -166,7 +166,7 @@ class CastMediaSinkServiceTest : public ::testing::Test {
 };
 
 TEST_F(CastMediaSinkServiceTest, OnUserGesture) {
-  EXPECT_CALL(test_dns_sd_registry_, ForceDiscovery());
+  EXPECT_CALL(test_dns_sd_registry_, ResetAndDiscover());
   media_sink_service_->OnUserGesture();
 }
 

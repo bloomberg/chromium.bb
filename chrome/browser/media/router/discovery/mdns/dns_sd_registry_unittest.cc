@@ -120,7 +120,7 @@ TEST_F(DnsSdRegistryTest, ForceDiscovery) {
 
   EXPECT_CALL(*registry_->GetLister(service_type1), Discover());
   EXPECT_CALL(*registry_->GetLister(service_type2), Discover());
-  registry_->ForceDiscovery();
+  registry_->ResetAndDiscover();
 }
 
 // Tests registering a listener and receiving an added and updated event.
