@@ -182,6 +182,7 @@ bool ReplacedPainter::ShouldPaint(
 
   LayoutRect local_rect(layout_replaced_.VisualOverflowRect());
   local_rect.Unite(layout_replaced_.LocalSelectionRect());
+  layout_replaced_.FlipForWritingMode(local_rect);
   if (!paint_info_with_offset.LocalRectIntersectsCullRect(local_rect))
     return false;
 

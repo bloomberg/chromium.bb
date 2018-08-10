@@ -27,9 +27,8 @@ void DetailsMarkerPainter::Paint(const PaintInfo& paint_info) {
 
   PaintInfoWithOffset paint_info_with_offset(layout_details_marker_,
                                              paint_info);
-  // TODO(wangxianzhu): Flip VisualOverflowRect into physical coordinates.
   if (!paint_info_with_offset.LocalRectIntersectsCullRect(
-          layout_details_marker_.VisualOverflowRect()))
+          layout_details_marker_.PhysicalVisualOverflowRect()))
     return;
 
   const auto& local_paint_info = paint_info_with_offset.GetPaintInfo();

@@ -62,9 +62,8 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
     return;
 
   PaintInfoWithOffset paint_info_with_offset(layout_list_marker_, paint_info);
-  // TODO(wangxianzhu): Flip VisualOverflowRect into physical coordinates.
   if (!paint_info_with_offset.LocalRectIntersectsCullRect(
-          layout_list_marker_.VisualOverflowRect()))
+          layout_list_marker_.PhysicalVisualOverflowRect()))
     return;
 
   const auto& local_paint_info = paint_info_with_offset.GetPaintInfo();
