@@ -57,7 +57,8 @@ void CleanupTask::DidGetActiveUniqueIds(
     case DatabaseStatus::kNotFound:
       break;
     case DatabaseStatus::kFailed:
-      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+      SetStorageErrorAndFinish(
+          BackgroundFetchStorageError::kServiceWorkerStorageError);
       return;
   }
 
@@ -93,7 +94,12 @@ void CleanupTask::DidGetActiveUniqueIds(
 }
 
 void CleanupTask::FinishWithError(blink::mojom::BackgroundFetchError error) {
+  ReportStorageError();
   Finished();  // Destroys |this|.
+}
+
+std::string CleanupTask::HistogramName() const {
+  return "CleanupTask";
 }
 
 }  // namespace background_fetch

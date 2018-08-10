@@ -46,6 +46,8 @@ class GetRegistrationTask : public DatabaseTask {
 
   void FinishWithError(blink::mojom::BackgroundFetchError error) override;
 
+  std::string HistogramName() const override;
+
   int64_t service_worker_registration_id_;
   url::Origin origin_;
   std::string developer_id_;

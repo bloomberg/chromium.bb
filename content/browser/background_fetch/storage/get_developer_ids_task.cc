@@ -48,15 +48,21 @@ void GetDeveloperIdsTask::DidGetUniqueIds(
       break;
     }
     case DatabaseStatus::kFailed:
-      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+      SetStorageErrorAndFinish(
+          BackgroundFetchStorageError::kServiceWorkerStorageError);
       break;
   }
 }
 
 void GetDeveloperIdsTask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
+  ReportStorageError();
   std::move(callback_).Run(error, std::move(developer_ids_));
   Finished();  // Destroys |this|.
+}
+
+std::string GetDeveloperIdsTask::HistogramName() const {
+  return "GetDeveloperIdsTask";
 }
 
 }  // namespace background_fetch

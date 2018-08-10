@@ -57,7 +57,8 @@ void CreateMetadataTask::DidGetUniqueId(const std::vector<std::string>& data,
           blink::mojom::BackgroundFetchError::DUPLICATED_DEVELOPER_ID);
       return;
     case DatabaseStatus::kFailed:
-      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+      SetStorageErrorAndFinish(
+          BackgroundFetchStorageError::kServiceWorkerStorageError);
       return;
   }
 
@@ -137,7 +138,8 @@ void CreateMetadataTask::StoreMetadata() {
   std::string serialized_metadata_proto;
 
   if (!metadata_proto_->SerializeToString(&serialized_metadata_proto)) {
-    FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+    SetStorageErrorAndFinish(
+        BackgroundFetchStorageError::kServiceWorkerStorageError);
     return;
   }
 
@@ -148,7 +150,8 @@ void CreateMetadataTask::StoreMetadata() {
     ui_options.set_icon(std::move(serialized_icon_));
 
   if (!ui_options.SerializeToString(&serialized_ui_options_proto)) {
-    FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+    SetStorageErrorAndFinish(
+        BackgroundFetchStorageError::kServiceWorkerStorageError);
     return;
   }
 
@@ -184,7 +187,8 @@ void CreateMetadataTask::DidStoreMetadata(
       break;
     case DatabaseStatus::kFailed:
     case DatabaseStatus::kNotFound:
-      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+      SetStorageErrorAndFinish(
+          BackgroundFetchStorageError::kServiceWorkerStorageError);
       return;
   }
 
@@ -206,8 +210,14 @@ void CreateMetadataTask::FinishWithError(
     }
   }
 
+  ReportStorageError();
+
   std::move(callback_).Run(error, registration);
   Finished();  // Destroys |this|.
+}
+
+std::string CreateMetadataTask::HistogramName() const {
+  return "CreateMetadataTask";
 }
 
 }  // namespace background_fetch

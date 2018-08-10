@@ -67,6 +67,8 @@ class MarkRequestCompleteTask : public DatabaseTask {
 
   void FinishWithError(blink::mojom::BackgroundFetchError error) override;
 
+  std::string HistogramName() const override;
+
   BackgroundFetchRegistrationId registration_id_;
   scoped_refptr<BackgroundFetchRequestInfo> request_info_;
   MarkedCompleteCallback callback_;
