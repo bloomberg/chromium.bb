@@ -17,13 +17,14 @@ class MockHidConnection : public HidConnection {
 
   // HidConnection implementation.
   void PlatformClose() override;
-  void PlatformRead(ReadCallback callback) override;
   void PlatformWrite(scoped_refptr<base::RefCountedBytes> buffer,
                      WriteCallback callback) override;
   void PlatformGetFeatureReport(uint8_t report_id,
                                 ReadCallback callback) override;
   void PlatformSendFeatureReport(scoped_refptr<base::RefCountedBytes> buffer,
                                  WriteCallback callback) override;
+
+  void MockInputReport(scoped_refptr<base::RefCountedBytes> buffer);
 
  private:
   ~MockHidConnection() override;
