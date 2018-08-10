@@ -142,6 +142,7 @@ TEST_F(ShelfWidgetTest, DontReferenceShelfAfterDeletion) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.context = CurrentContext();
   // Widget is now owned by the parent window.
   widget->Init(params);
   widget->SetFullscreen(true);
@@ -207,6 +208,7 @@ TEST_F(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
   params.bounds = gfx::Rect(shelf_bounds.height() - kOverlapSize,
                             shelf_bounds.y() - kWindowHeight + kOverlapSize,
                             kWindowWidth, kWindowHeight);
+  params.context = CurrentContext();
   // Widget is now owned by the parent window.
   widget->Init(params);
   // Explicitly set the bounds which will allow the widget to overlap the shelf.
@@ -287,6 +289,7 @@ TEST_F(ShelfWidgetTest, HiddenShelfHitTestTouch) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.context = CurrentContext();
   // Widget is now owned by the parent window.
   widget->Init(params);
   widget->Show();

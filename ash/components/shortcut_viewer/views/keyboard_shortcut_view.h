@@ -15,6 +15,10 @@
 #include "ui/chromeos/search_box/search_box_view_delegate.h"
 #include "ui/views/widget/widget_delegate.h"
 
+namespace aura {
+class Window;
+}
+
 namespace base {
 class TimeTicks;
 }
@@ -42,7 +46,12 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   // 3. Close the window if it is open and active.
   // |start_time| is the time of the user gesture that caused the window to
   // show. Used for metrics.
-  static views::Widget* Toggle(base::TimeTicks start_time);
+  // |context| is used to determine which display to place the Window on.
+  // |context| is only necessary when called from within Chrome.
+  // TODO: remove |context|, it's not needed once KeyboardShortcutView is only
+  // launched as an app.
+  static views::Widget* Toggle(base::TimeTicks start_time,
+                               aura::Window* context);
 
   // views::View:
   const char* GetClassName() const override;

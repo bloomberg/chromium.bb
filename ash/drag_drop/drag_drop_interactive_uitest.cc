@@ -67,12 +67,14 @@ class TargetView : public views::View {
 };
 
 views::Widget* CreateWidget(views::View* contents_view,
-                            const gfx::Rect& bounds) {
+                            const gfx::Rect& bounds,
+                            aura::Window* context) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.accept_events = true;
   params.bounds = bounds;
+  params.context = context;
   widget->Init(params);
 
   widget->SetContentsView(contents_view);
@@ -120,12 +122,12 @@ TEST_F(DragDropTest, DragDropAcrossMultiDisplay) {
   draggable_view->set_drag_controller(NULL);
   draggable_view->SetBounds(0, 0, 100, 100);
   views::Widget* source =
-      CreateWidget(draggable_view, gfx::Rect(0, 0, 100, 100));
+      CreateWidget(draggable_view, gfx::Rect(0, 0, 100, 100), CurrentContext());
 
   TargetView* target_view = new TargetView();
   target_view->SetBounds(0, 0, 100, 100);
   views::Widget* target =
-      CreateWidget(target_view, gfx::Rect(400, 0, 100, 100));
+      CreateWidget(target_view, gfx::Rect(400, 0, 100, 100), CurrentContext());
 
   // Make sure they're on the different root windows.
   EXPECT_EQ(root_windows[0], source->GetNativeView()->GetRootWindow());

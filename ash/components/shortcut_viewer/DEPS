@@ -9,6 +9,7 @@ include_rules = [
 
 specific_include_rules = {
   "keyboard_shortcut_view_unittest\.cc": [
+    "+ash/shell.h",
     "+ash/test/ash_test_base.h",
     "+services/ui/public/cpp/input_devices",
   ],

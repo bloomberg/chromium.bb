@@ -28,7 +28,7 @@ class TestChildModalParent : public views::WidgetDelegateView,
  public:
   // Create and show a top-level window that hosts a modal parent. Returns the
   // widget delegate, which is owned by the widget and deleted on window close.
-  static TestChildModalParent* Show(aura::Window* context = nullptr);
+  static TestChildModalParent* Show(aura::Window* context);
 
   explicit TestChildModalParent(aura::Window* context);
   ~TestChildModalParent() override;

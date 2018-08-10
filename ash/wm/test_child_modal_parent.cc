@@ -76,10 +76,14 @@ class ChildModalWindow : public views::WidgetDelegateView {
 // static
 TestChildModalParent* TestChildModalParent::Show(aura::Window* context) {
   auto* test_child_modal_parent = new TestChildModalParent(context);
-  Widget::CreateWindowWithContextAndBounds(
-      test_child_modal_parent, context,
-      gfx::Rect(kWindowLeft, kWindowTop, kWindowWidth, kWindowHeight))
-      ->Show();
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params;
+  params.delegate = test_child_modal_parent;
+  params.context = context;
+  params.bounds =
+      gfx::Rect(kWindowLeft, kWindowTop, kWindowWidth, kWindowHeight);
+  widget->Init(params);
+  widget->Show();
   return test_child_modal_parent;
 }
 

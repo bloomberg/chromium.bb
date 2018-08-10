@@ -102,7 +102,8 @@ KeyboardShortcutView::~KeyboardShortcutView() {
 }
 
 // static
-views::Widget* KeyboardShortcutView::Toggle(base::TimeTicks start_time) {
+views::Widget* KeyboardShortcutView::Toggle(base::TimeTicks start_time,
+                                            aura::Window* context) {
   if (g_ksv_view) {
     if (g_ksv_view->GetWidget()->IsActive())
       g_ksv_view->GetWidget()->Close();
@@ -119,6 +120,7 @@ views::Widget* KeyboardShortcutView::Toggle(base::TimeTicks start_time) {
     // Intentionally don't set bounds. The window will be sized and centered
     // based on CalculatePreferredSize().
     views::Widget* widget = new views::Widget;
+    params.context = context;
     widget->Init(params);
 
     // Set frame view Active and Inactive colors, both are SK_ColorWHITE.

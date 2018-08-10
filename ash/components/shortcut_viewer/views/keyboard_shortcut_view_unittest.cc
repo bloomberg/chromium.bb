@@ -27,6 +27,10 @@ class KeyboardShortcutViewTest : public ash::AshTestBase {
   KeyboardShortcutViewTest() = default;
   ~KeyboardShortcutViewTest() override = default;
 
+  views::Widget* Toggle() {
+    return KeyboardShortcutView::Toggle(base::TimeTicks(), CurrentContext());
+  }
+
   // ash::AshTestBase:
   void SetUp() override {
     ash::AshTestBase::SetUp();
@@ -78,7 +82,7 @@ class KeyboardShortcutViewTest : public ash::AshTestBase {
 // Shows and closes the widget for KeyboardShortcutViewer.
 TEST_F(KeyboardShortcutViewTest, ShowAndClose) {
   // Show the widget.
-  views::Widget* widget = KeyboardShortcutView::Toggle(base::TimeTicks());
+  views::Widget* widget = Toggle();
   EXPECT_TRUE(widget);
 
   // Cleaning up.
@@ -86,7 +90,7 @@ TEST_F(KeyboardShortcutViewTest, ShowAndClose) {
 }
 
 TEST_F(KeyboardShortcutViewTest, StartupTimeHistogram) {
-  views::Widget* widget = KeyboardShortcutView::Toggle(base::TimeTicks());
+  views::Widget* widget = Toggle();
   base::RunLoop runloop;
   widget->GetCompositor()->RequestPresentationTimeForNextFrame(base::BindOnce(
       [](base::RepeatingClosure closure,
@@ -100,7 +104,7 @@ TEST_F(KeyboardShortcutViewTest, StartupTimeHistogram) {
 // KeyboardShortcutViewer window should be centered in screen.
 TEST_F(KeyboardShortcutViewTest, CenterWindowInScreen) {
   // Show the widget.
-  views::Widget* widget = KeyboardShortcutView::Toggle(base::TimeTicks());
+  views::Widget* widget = Toggle();
   EXPECT_TRUE(widget);
 
   gfx::Rect root_window_bounds =
@@ -121,7 +125,7 @@ TEST_F(KeyboardShortcutViewTest, CenterWindowInScreen) {
 // Test that the number of side tabs equals to the number of categories.
 TEST_F(KeyboardShortcutViewTest, SideTabsCount) {
   // Show the widget.
-  views::Widget* widget = KeyboardShortcutView::Toggle(base::TimeTicks());
+  views::Widget* widget = Toggle();
 
   int category_number = 0;
   ShortcutCategory current_category = ShortcutCategory::kUnknown;
@@ -142,7 +146,7 @@ TEST_F(KeyboardShortcutViewTest, SideTabsCount) {
 // Test that the top line in two views should be center aligned.
 TEST_F(KeyboardShortcutViewTest, TopLineCenterAlignedInItemView) {
   // Show the widget.
-  views::Widget* widget = KeyboardShortcutView::Toggle(base::TimeTicks());
+  views::Widget* widget = Toggle();
 
   for (const auto& item_view : GetShortcutViews()) {
     // We only initialize the first visible category and other non-visible panes
@@ -172,7 +176,7 @@ TEST_F(KeyboardShortcutViewTest, TopLineCenterAlignedInItemView) {
 // Test that the focus is on search box when window inits and exits search mode.
 TEST_F(KeyboardShortcutViewTest, FocusOnSearchBox) {
   // Show the widget.
-  views::Widget* widget = KeyboardShortcutView::Toggle(base::TimeTicks());
+  views::Widget* widget = Toggle();
 
   // Case 1: when window creates. The focus should be on search box.
   EXPECT_TRUE(GetSearchBoxView()->search_box()->HasFocus());
@@ -209,7 +213,7 @@ TEST_F(KeyboardShortcutViewTest, FocusOnSearchBox) {
 // Test that the window can be closed by accelerator.
 TEST_F(KeyboardShortcutViewTest, CloseWindowByAccelerator) {
   // Show the widget.
-  views::Widget* widget = KeyboardShortcutView::Toggle(base::TimeTicks());
+  views::Widget* widget = Toggle();
   EXPECT_FALSE(widget->IsClosed());
 
   ui::test::EventGenerator* event_generator = GetEventGenerator();
@@ -220,18 +224,18 @@ TEST_F(KeyboardShortcutViewTest, CloseWindowByAccelerator) {
 // Test that the window can be activated or closed by toggling.
 TEST_F(KeyboardShortcutViewTest, ToggleWindow) {
   // Show the widget.
-  views::Widget* widget = KeyboardShortcutView::Toggle(base::TimeTicks());
+  views::Widget* widget = Toggle();
   EXPECT_FALSE(widget->IsClosed());
 
   // Call |Toggle()| to activate the inactive widget.
   EXPECT_TRUE(widget->IsActive());
   widget->Deactivate();
   EXPECT_FALSE(widget->IsActive());
-  KeyboardShortcutView::Toggle(base::TimeTicks());
+  Toggle();
   EXPECT_TRUE(widget->IsActive());
 
   // Call |Toggle()| to close the active widget.
-  KeyboardShortcutView::Toggle(base::TimeTicks());
+  Toggle();
   EXPECT_TRUE(widget->IsClosed());
 }
 

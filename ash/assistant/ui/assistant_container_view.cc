@@ -150,6 +150,7 @@ int AssistantContainerView::GetDialogButtons() const {
 void AssistantContainerView::OnBeforeBubbleWidgetInit(
     views::Widget::InitParams* params,
     views::Widget* widget) const {
+  params->context = Shell::Get()->GetRootWindowForNewWindows();
   params->corner_radius = kCornerRadiusDip;
   params->keep_on_top = true;
   params->shadow_type = views::Widget::InitParams::SHADOW_TYPE_DROP;

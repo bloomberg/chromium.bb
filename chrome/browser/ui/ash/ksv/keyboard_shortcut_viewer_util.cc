@@ -7,6 +7,7 @@
 #include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
 #include "ash/components/shortcut_viewer/views/keyboard_shortcut_view.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/shell.h"
 #include "base/time/time.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -23,7 +24,8 @@ void ToggleKeyboardShortcutViewer() {
                              &shortcut_viewer_ptr);
     shortcut_viewer_ptr->Toggle(user_gesture_time);
   } else {
-    keyboard_shortcut_viewer::KeyboardShortcutView::Toggle(user_gesture_time);
+    keyboard_shortcut_viewer::KeyboardShortcutView::Toggle(
+        user_gesture_time, ash::Shell::Get()->GetRootWindowForNewWindows());
   }
 }
 

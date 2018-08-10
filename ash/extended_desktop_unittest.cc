@@ -155,6 +155,7 @@ class ExtendedDesktopTest : public AshTestBase {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     params.bounds = bounds;
     views::Widget* widget = new views::Widget;
+    params.context = CurrentContext();
     widget->Init(params);
     widget->Show();
     return widget;

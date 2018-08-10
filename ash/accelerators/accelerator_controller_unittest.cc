@@ -587,6 +587,7 @@ TEST_F(AcceleratorControllerTest, DontRepeatToggleFullscreen) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(5, 5, 20, 20);
   views::Widget* widget = new views::Widget;
+  params.context = CurrentContext();
   widget->Init(params);
   widget->Show();
   widget->Activate();

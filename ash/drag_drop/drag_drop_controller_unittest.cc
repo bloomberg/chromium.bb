@@ -15,7 +15,6 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/drag_drop_client_observer.h"
 #include "ui/aura/client/drag_drop_delegate.h"
-#include "ui/aura/env.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
@@ -229,7 +228,7 @@ class EventTargetTestDelegate : public aura::client::DragDropDelegate {
     kPerformDropInvoked
   };
 
-  EventTargetTestDelegate(aura::Window* window) : window_(window) {}
+  explicit EventTargetTestDelegate(aura::Window* window) : window_(window) {}
   State state() const { return state_; }
 
   // aura::client::DragDropDelegate:
@@ -259,16 +258,6 @@ class EventTargetTestDelegate : public aura::client::DragDropDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(EventTargetTestDelegate);
 };
-
-std::unique_ptr<views::Widget> CreateFramelessWidget() {
-  std::unique_ptr<views::Widget> widget = std::make_unique<views::Widget>();
-  views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget->Init(params);
-  widget->Show();
-  return widget;
-}
 
 void AddViewToWidgetAndResize(views::Widget* widget, views::View* view) {
   if (!widget->GetContentsView()) {
@@ -352,6 +341,17 @@ class DragDropControllerTest : public AshTestBase {
   }
 
  protected:
+  std::unique_ptr<views::Widget> CreateFramelessWidget() {
+    std::unique_ptr<views::Widget> widget = std::make_unique<views::Widget>();
+    views::Widget::InitParams params;
+    params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.context = CurrentContext();
+    widget->Init(params);
+    widget->Show();
+    return widget;
+  }
+
   std::unique_ptr<TestDragDropController> drag_drop_controller_;
 
  private:

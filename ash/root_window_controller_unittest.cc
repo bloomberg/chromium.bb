@@ -178,6 +178,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   Widget::InitParams params;
   params.bounds = gfx::Rect(650, 10, 100, 100);
   params.type = Widget::InitParams::TYPE_CONTROL;
+  params.context = CurrentContext();
   unparented_control->Init(params);
   EXPECT_EQ(root_windows[1],
             unparented_control->GetNativeView()->GetRootWindow());

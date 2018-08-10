@@ -68,7 +68,7 @@ void ShortcutViewerApplication::OnBindInterface(
 
 void ShortcutViewerApplication::OnDeviceListsComplete() {
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
-  KeyboardShortcutView::Toggle(user_gesture_time_);
+  KeyboardShortcutView::Toggle(user_gesture_time_, nullptr);
 }
 
 void ShortcutViewerApplication::Toggle(base::TimeTicks user_gesture_time) {
@@ -77,11 +77,10 @@ void ShortcutViewerApplication::Toggle(base::TimeTicks user_gesture_time) {
   // This app needs InputDeviceManager information that loads asynchronously via
   // InputDeviceClient. If the device list is incomplete, wait for it to load.
   DCHECK(ui::InputDeviceManager::HasInstance());
-  if (ui::InputDeviceManager::GetInstance()->AreDeviceListsComplete()) {
-    KeyboardShortcutView::Toggle(user_gesture_time_);
-  } else {
+  if (ui::InputDeviceManager::GetInstance()->AreDeviceListsComplete())
+    KeyboardShortcutView::Toggle(user_gesture_time_, nullptr);
+  else
     ui::InputDeviceManager::GetInstance()->AddObserver(this);
-  }
 }
 
 void ShortcutViewerApplication::AddBinding(
