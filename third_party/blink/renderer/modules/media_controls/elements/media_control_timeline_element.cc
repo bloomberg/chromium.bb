@@ -146,7 +146,8 @@ void MediaControlTimelineElement::DefaultEventHandler(Event* event) {
       return;
 
     const Touch* touch = touch_event->touches()->item(0);
-    double position = max(0.0, fmin(1.0, touch->clientX() / TrackWidth()));
+    double position =
+        max(0.0, fmin(1.0, touch->clientX() / TrackWidth() * ZoomFactor()));
     SetPosition(position * MediaElement().duration());
   } else if (event->type() != EventTypeNames::input) {
     return;
