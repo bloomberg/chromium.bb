@@ -46,9 +46,9 @@ class MODULES_EXPORT MediaControlSliderElement
 
   Element& GetTrackElement();
 
- private:
   float ZoomFactor() const;
 
+ private:
   Position before_segment_position_;
   Position after_segment_position_;
 
