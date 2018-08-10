@@ -518,9 +518,6 @@ void Performance::AddFirstContentfulPaintTiming(TimeTicks start_time) {
 
 void Performance::AddPaintTiming(PerformancePaintTiming::PaintType type,
                                  TimeTicks start_time) {
-  if (!RuntimeEnabledFeatures::PerformancePaintTimingEnabled())
-    return;
-
   PerformanceEntry* entry = new PerformancePaintTiming(
       type, MonotonicTimeToDOMHighResTimeStamp(start_time));
   // Always buffer First Paint & First Contentful Paint.
