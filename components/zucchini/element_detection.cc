@@ -19,6 +19,10 @@
 #include "components/zucchini/disassembler_win32.h"
 #endif  // BUILDFLAG(ENABLE_WIN)
 
+#if BUILDFLAG(ENABLE_ELF)
+#include "components/zucchini/disassembler_elf.h"
+#endif  // BUILDFLAG(ENABLE_ELF)
+
 #if BUILDFLAG(ENABLE_ZTF)
 #include "components/zucchini/disassembler_ztf.h"
 #endif  // BUILDFLAG(ENABLE_ZTF)
@@ -50,6 +54,20 @@ std::unique_ptr<Disassembler> MakeDisassemblerWithoutFallback(
   }
 #endif  // BUILDFLAG(ENABLE_WIN)
 
+#if BUILDFLAG(ENABLE_ELF)
+  if (DisassemblerElfX86::QuickDetect(image)) {
+    auto disasm = Disassembler::Make<DisassemblerElfX86>(image);
+    if (disasm && disasm->size() >= kMinProgramSize)
+      return disasm;
+  }
+
+  if (DisassemblerElfX64::QuickDetect(image)) {
+    auto disasm = Disassembler::Make<DisassemblerElfX64>(image);
+    if (disasm && disasm->size() >= kMinProgramSize)
+      return disasm;
+  }
+#endif  // BUILDFLAG(ENABLE_ELF)
+
 #if BUILDFLAG(ENABLE_DEX)
   if (DisassemblerDex::QuickDetect(image)) {
     auto disasm = Disassembler::Make<DisassemblerDex>(image);
@@ -79,6 +97,12 @@ std::unique_ptr<Disassembler> MakeDisassemblerOfType(ConstBufferView image,
     case kExeTypeWin32X64:
       return Disassembler::Make<DisassemblerWin32X64>(image);
 #endif  // BUILDFLAG(ENABLE_WIN)
+#if BUILDFLAG(ENABLE_ELF)
+    case kExeTypeElfX86:
+      return Disassembler::Make<DisassemblerElfX86>(image);
+    case kExeTypeElfX64:
+      return Disassembler::Make<DisassemblerElfX64>(image);
+#endif  // BUILDFLAG(ENABLE_ELF)
 #if BUILDFLAG(ENABLE_DEX)
     case kExeTypeDex:
       return Disassembler::Make<DisassemblerDex>(image);

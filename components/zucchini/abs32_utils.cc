@@ -136,10 +136,12 @@ base::Optional<Reference> Abs32ReaderWin32::GetNext() {
   for (auto unit = abs32_rva_extractor_.GetNext(); unit.has_value();
        unit = abs32_rva_extractor_.GetNext()) {
     offset_t location = unit->location;
-    offset_t target = target_rva_to_offset_.Convert(unit->target_rva);
-    if (target == kInvalidOffset)
-      continue;
-    return Reference{location, target};
+    // |target| will not be dereferenced, so we don't worry about it
+    // exceeding |image_.size()| (in fact, there are valid cases where it
+    // does).
+    offset_t unsafe_target = target_rva_to_offset_.Convert(unit->target_rva);
+    if (unsafe_target < kOffsetBound)
+      return Reference{location, unsafe_target};
   }
   return base::nullopt;
 }

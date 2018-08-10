@@ -11,12 +11,14 @@ buildflag_header("buildflags") {
 
   # Disable DEX on Windows Official Builds.
   _enable_dex = !(is_win && is_official_build)
+  _enable_elf = true
   _enable_win = true
 
   # Disable ZTF (Zucchini Text Format) on official builds it is for testing only.
   _enable_ztf = !is_official_build
   flags = [
     "ENABLE_DEX=$_enable_dex",
+    "ENABLE_ELF=$_enable_elf",
     "ENABLE_WIN=$_enable_win",
     "ENABLE_ZTF=$_enable_ztf",
   ]
@@ -42,6 +44,8 @@ static_library("zucchini_lib") {
     "disassembler.h",
     "disassembler_dex.cc",
     "disassembler_dex.h",
+    "disassembler_elf.cc",
+    "disassembler_elf.h",
     "disassembler_no_op.cc",
     "disassembler_no_op.h",
     "disassembler_win32.cc",
@@ -158,6 +162,7 @@ test("zucchini_unittests") {
     "buffer_view_unittest.cc",
     "crc32_unittest.cc",
     "disassembler_dex_unittest.cc",
+    "disassembler_elf_unittest.cc",
     "disassembler_ztf_unittest.cc",
     "element_detection_unittest.cc",
     "encoded_view_unittest.cc",

@@ -67,8 +67,30 @@ struct Elf64_Ehdr {
   Elf64_Half e_shstrndx;
 };
 
+// Identification Indexes in header->e_ident.
+enum IdentificationIndex {
+  EI_MAG0 = 0,        // File identification.
+  EI_MAG1 = 1,        // File identification.
+  EI_MAG2 = 2,        // File identification.
+  EI_MAG3 = 3,        // File identification.
+  EI_CLASS = 4,       // File class.
+  EI_DATA = 5,        // Data encoding.
+  EI_VERSION = 6,     // File version.
+  EI_OSABI = 7,       // Operating system/ABI identification.
+  EI_ABIVERSION = 8,  // ABI version.
+  EI_PAD = 9,         // Start of padding bytes.
+  EI_NIDENT = 16      // Size of e_ident[].
+};
+
+// Values for header->e_ident[EI_CLASS].
+enum FileClass {
+  ELFCLASSNONE = 0,  // Invalid class.
+  ELFCLASS32 = 1,    // 32-bit objects.
+  ELFCLASS64 = 2     // 64-bit objects.
+};
+
 // Values for header->e_type.
-enum e_type_values {
+enum FileType {
   ET_NONE = 0,         // No file type
   ET_REL = 1,          // Relocatable file
   ET_EXEC = 2,         // Executable file
@@ -79,7 +101,7 @@ enum e_type_values {
 };
 
 // Values for header->e_machine.
-enum e_machine_values {
+enum MachineArchitecture {
   EM_NONE = 0,       // No machine.
   EM_386 = 3,        // Intel Architecture.
   EM_ARM = 40,       // ARM Architecture.
