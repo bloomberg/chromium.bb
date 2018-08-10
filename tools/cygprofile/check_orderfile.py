@@ -68,6 +68,36 @@ def _CountMisorderedSymbols(symbols, symbol_infos):
   return (misordered_count, len(matched_symbol_infos), missing_count)
 
 
+def _VerifySymbolOrder(orderfile_symbols, symbol_infos):
+  """Verify symbol ordering.
+
+  Checks that the non-section symbols in |orderfile_filename| are consistent
+  with the offsets |symbol_infos|.
+
+  Args:
+    orderfile_symbols: ([str]) list of symbols from orderfile.
+    symbol_infos: ([SymbolInfo]) symbol infos from binary.
+
+  Returns:
+    True iff the ordering is consistent.
+  """
+  last_offset = 0
+  name_to_offset = {si.name: si.offset for si in symbol_infos}
+  missing_count = 0
+  for sym in orderfile_symbols:
+    if '.' in sym:
+      continue  # sym is a section name.
+    if sym not in name_to_offset:
+      missing_count += 1
+      continue
+    next_offset = name_to_offset[sym]
+    if next_offset < last_offset:
+      logging.error('Out of order at %s (%x/%x)', sym, next_offset, last_offset)
+      return False
+    last_offset = next_offset
+  logging.warning('Missing symbols in verification: %d', missing_count)
+  return True
+
 def main():
   parser = optparse.OptionParser(usage=
       'usage: %prog [options] <binary> <orderfile>')
@@ -93,6 +123,11 @@ def main():
   symbols = patch_orderfile.GetSymbolsFromOrderfile(orderfile_filename,
                                                     section_to_symbols_map)
   symbol_infos = symbol_extractor.SymbolInfosFromBinary(binary_filename)
+
+  if not _VerifySymbolOrder([sym.strip() for sym in file(orderfile_filename)],
+                            symbol_infos):
+    return 1
+
   # Missing symbols is not an error since some of them can be eliminated through
   # inlining.
   (misordered_pairs_count, matched_symbols, _) = _CountMisorderedSymbols(
