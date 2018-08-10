@@ -60,6 +60,8 @@ bool AccountInfo::UpdateWith(const AccountInfo& other) {
   modified |= UpdateField(&locale, other.locale);
   modified |= UpdateField(&picture_url, other.picture_url);
   modified |= UpdateField(&is_child_account, other.is_child_account);
+  modified |= UpdateField(&is_under_advanced_protection,
+                          other.is_under_advanced_protection);
 
   return modified;
 }

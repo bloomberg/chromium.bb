@@ -284,7 +284,7 @@ TEST_F(DiceResponseHandlerTest, Signin) {
   signin_client_.consumer_->OnClientOAuthSuccess(
       GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10,
                                           false /* is_child_account */,
-                                          false /* is_advanced_protection*/));
+                                          true /* is_advanced_protection*/));
   // Check that the token has been inserted in the token service.
   EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(account_id));
   EXPECT_TRUE(auth_error_email_.empty());
@@ -292,6 +292,9 @@ TEST_F(DiceResponseHandlerTest, Signin) {
   // Check that the reconcilor was blocked and unblocked exactly once.
   EXPECT_EQ(1, reconcilor_blocked_count_);
   EXPECT_EQ(1, reconcilor_unblocked_count_);
+  // Check that the AccountInfo::is_under_advanced_protection is set.
+  EXPECT_TRUE(account_tracker_service_.GetAccountInfo(account_id)
+                  .is_under_advanced_protection);
 }
 
 // Checks that a GaiaAuthFetcher failure is handled correctly.
@@ -347,6 +350,8 @@ TEST_F(DiceResponseHandlerTest, SigninRepeatedWithSameAccount) {
       false /* is_advanced_protection*/));
   // Check that the token has been inserted in the token service.
   EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(account_id));
+  EXPECT_FALSE(account_tracker_service_.GetAccountInfo(account_id)
+                   .is_under_advanced_protection);
 }
 
 // Checks that two SIGNIN requests can happen concurrently.
@@ -381,15 +386,19 @@ TEST_F(DiceResponseHandlerTest, SigninWithTwoAccounts) {
   // Simulate GaiaAuthFetcher success for the first request.
   consumer_1->OnClientOAuthSuccess(GaiaAuthConsumer::ClientOAuthResult(
       "refresh_token", "access_token", 10, false /* is_child_account */,
-      false /* is_advanced_protection*/));
+      true /* is_advanced_protection*/));
   // Check that the token has been inserted in the token service.
   EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(account_id_1));
+  EXPECT_TRUE(account_tracker_service_.GetAccountInfo(account_id_1)
+                  .is_under_advanced_protection);
   // Simulate GaiaAuthFetcher success for the second request.
   consumer_2->OnClientOAuthSuccess(GaiaAuthConsumer::ClientOAuthResult(
       "refresh_token", "access_token", 10, false /* is_child_account */,
       false /* is_advanced_protection*/));
   // Check that the token has been inserted in the token service.
   EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(account_id_2));
+  EXPECT_FALSE(account_tracker_service_.GetAccountInfo(account_id_2)
+                   .is_under_advanced_protection);
   // Check that the reconcilor was blocked and unblocked exactly once.
   EXPECT_EQ(1, reconcilor_blocked_count_);
   EXPECT_EQ(1, reconcilor_unblocked_count_);

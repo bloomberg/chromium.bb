@@ -35,6 +35,8 @@ const char kAccountGivenNamePath[] = "given_name";
 const char kAccountLocalePath[] = "locale";
 const char kAccountPictureURLPath[] = "picture_url";
 const char kAccountChildAccountStatusPath[] = "is_child_account";
+const char kAdvancedProtectionAccountStatusPath[] =
+    "is_under_advanced_protection";
 
 // TODO(M48): Remove deprecated preference migration.
 const char kAccountServiceFlagsPath[] = "service_flags";
@@ -334,6 +336,19 @@ void AccountTrackerService::SetIsChildAccount(const std::string& account_id,
   SaveToPrefs(state);
 }
 
+void AccountTrackerService::SetIsAdvancedProtectionAccount(
+    const std::string& account_id,
+    const bool& is_under_advanced_protection) {
+  DCHECK(base::ContainsKey(accounts_, account_id));
+  AccountState& state = accounts_[account_id];
+  if (state.info.is_under_advanced_protection == is_under_advanced_protection)
+    return;
+  state.info.is_under_advanced_protection = is_under_advanced_protection;
+  if (!state.info.gaia.empty())
+    NotifyAccountUpdated(state);
+  SaveToPrefs(state);
+}
+
 bool AccountTrackerService::IsMigratable() const {
 #if !defined(OS_CHROMEOS)
   for (std::map<std::string, AccountState>::const_iterator it =
@@ -488,6 +503,13 @@ void AccountTrackerService::LoadFromPrefs() {
         if (dict->GetBoolean(kAccountChildAccountStatusPath, &is_child_account))
           state.info.is_child_account = is_child_account;
 
+        bool is_under_advanced_protection = false;
+        if (dict->GetBoolean(kAdvancedProtectionAccountStatusPath,
+                             &is_under_advanced_protection)) {
+          state.info.is_under_advanced_protection =
+              is_under_advanced_protection;
+        }
+
         if (!state.info.gaia.empty())
           NotifyAccountUpdated(state);
       }
@@ -548,6 +570,8 @@ void AccountTrackerService::SaveToPrefs(const AccountState& state) {
   dict->SetString(kAccountLocalePath, state.info.locale);
   dict->SetString(kAccountPictureURLPath, state.info.picture_url);
   dict->SetBoolean(kAccountChildAccountStatusPath, state.info.is_child_account);
+  dict->SetBoolean(kAdvancedProtectionAccountStatusPath,
+                   state.info.is_under_advanced_protection);
 }
 
 void AccountTrackerService::RemoveFromPrefs(const AccountState& state) {
