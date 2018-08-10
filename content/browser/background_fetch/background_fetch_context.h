@@ -249,7 +249,7 @@ class CONTENT_EXPORT BackgroundFetchContext
   std::unique_ptr<BackgroundFetchScheduler> scheduler_;
 
   // Map from background fetch registration |unique_id|s to active job
-  // controllers. Must be destroyed before |data_manager_| and
+  // controllers. Must be destroyed before |data_manager_|, |scheduler_| and
   // |registration_notifier_|.
   std::map<std::string, std::unique_ptr<BackgroundFetchJobController>>
       job_controllers_;

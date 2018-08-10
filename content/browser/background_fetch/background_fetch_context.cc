@@ -220,11 +220,6 @@ void BackgroundFetchContext::AbandonFetches(
             service_worker_registration_id) {
       DCHECK(saved_iter->second);
 
-      // TODO(crbug.com/850512): Temporary work-around for a crash where fetches
-      // for a given Service Worker registration are abandoned twice.
-      if (saved_iter->second->aborted())
-        continue;
-
       saved_iter->second->Abort(
           BackgroundFetchReasonToAbort::SERVICE_WORKER_UNAVAILABLE);
     }
@@ -305,8 +300,8 @@ void BackgroundFetchContext::CreateController(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto controller = std::make_unique<BackgroundFetchJobController>(
-      &delegate_proxy_, registration_id, options, icon, registration.downloaded,
-      scheduler_.get(),
+      &delegate_proxy_, scheduler_.get(), registration_id, options, icon,
+      registration.downloaded,
       // Safe because JobControllers are destroyed before RegistrationNotifier.
       base::BindRepeating(&BackgroundFetchRegistrationNotifier::Notify,
                           base::Unretained(registration_notifier_.get())),
@@ -443,7 +438,6 @@ void BackgroundFetchContext::CleanupRegistration(
   // after the waitUntil promise of the backgroundfetched/backgroundfetchfail
   // event has been resolved. Store the information we want to persist after
   // the controller is gone, in completed_fetches_.
-  scheduler_->RemoveJobController(registration_id);
   if (preserve_info_to_dispatch_click_event) {
     completed_fetches_[registration_id.unique_id()] = {registration_id,
                                                        background_fetch_state};

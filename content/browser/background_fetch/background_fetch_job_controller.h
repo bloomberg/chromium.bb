@@ -26,8 +26,6 @@
 
 namespace content {
 
-class BackgroundFetchRequestManager;
-
 // The JobController will be responsible for coordinating communication with the
 // DownloadManager. It will get requests from the RequestManager and dispatch
 // them to the DownloadService. It lives entirely on the IO thread.
@@ -51,11 +49,11 @@ class CONTENT_EXPORT BackgroundFetchJobController final
 
   BackgroundFetchJobController(
       BackgroundFetchDelegateProxy* delegate_proxy,
+      BackgroundFetchScheduler* scheduler,
       const BackgroundFetchRegistrationId& registration_id,
       const BackgroundFetchOptions& options,
       const SkBitmap& icon,
       uint64_t bytes_downloaded,
-      BackgroundFetchRequestManager* request_manager,
       ProgressCallback progress_callback,
       BackgroundFetchScheduler::FinishedCallback finished_callback);
   ~BackgroundFetchJobController() override;
@@ -96,7 +94,8 @@ class CONTENT_EXPORT BackgroundFetchJobController final
 
   // BackgroundFetchScheduler::Controller implementation:
   bool HasMoreRequests() override;
-  void StartRequest(scoped_refptr<BackgroundFetchRequestInfo> request) override;
+  void StartRequest(scoped_refptr<BackgroundFetchRequestInfo> request,
+                    RequestFinishedCallback request_finished_callback) override;
   void Abort(BackgroundFetchReasonToAbort reason_to_abort) override;
 
  private:
@@ -107,16 +106,15 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   // Icon for the represented background fetch registration.
   SkBitmap icon_;
 
-  // Map from in-progress |download_guid|s to number of bytes downloaded.
-  base::flat_map<std::string, uint64_t> active_request_download_bytes_;
+  // Number of bytes downloaded for the active request.
+  uint64_t active_request_downloaded_bytes_ = 0;
+
+  // Finished callback to invoke when the active request has finished.
+  RequestFinishedCallback active_request_finished_callback_;
 
   // Cache of downloaded byte count stored by the DataManager, to enable
   // delivering progress events without having to read from the database.
   uint64_t complete_requests_downloaded_bytes_cache_;
-
-  // The RequestManager's lifetime is controlled by the BackgroundFetchContext
-  // and will be kept alive until after the JobController is destroyed.
-  BackgroundFetchRequestManager* request_manager_;
 
   // Proxy for interacting with the BackgroundFetchDelegate across thread
   // boundaries. It is owned by the BackgroundFetchContext.

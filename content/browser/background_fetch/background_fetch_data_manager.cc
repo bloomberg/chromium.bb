@@ -159,12 +159,12 @@ void BackgroundFetchDataManager::AddStartNextPendingRequestTask(
 
 void BackgroundFetchDataManager::MarkRequestAsComplete(
     const BackgroundFetchRegistrationId& registration_id,
-    BackgroundFetchRequestInfo* request,
-    BackgroundFetchScheduler::MarkedCompleteCallback callback) {
+    scoped_refptr<BackgroundFetchRequestInfo> request_info,
+    base::OnceClosure closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AddDatabaseTask(std::make_unique<background_fetch::MarkRequestCompleteTask>(
-      this, registration_id, request, std::move(callback)));
+      this, registration_id, std::move(request_info), std::move(closure)));
 }
 
 void BackgroundFetchDataManager::GetSettledFetchesForRegistration(

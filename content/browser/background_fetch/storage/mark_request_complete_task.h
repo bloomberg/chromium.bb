@@ -21,13 +21,11 @@ namespace background_fetch {
 // download response in cache storage.
 class MarkRequestCompleteTask : public DatabaseTask {
  public:
-  using MarkedCompleteCallback = base::OnceCallback<void()>;
-
   MarkRequestCompleteTask(
       DatabaseTaskHost* host,
       BackgroundFetchRegistrationId registration_id,
       scoped_refptr<BackgroundFetchRequestInfo> request_info,
-      MarkedCompleteCallback callback);
+      base::OnceClosure closure);
 
   ~MarkRequestCompleteTask() override;
 
@@ -71,7 +69,7 @@ class MarkRequestCompleteTask : public DatabaseTask {
 
   BackgroundFetchRegistrationId registration_id_;
   scoped_refptr<BackgroundFetchRequestInfo> request_info_;
-  MarkedCompleteCallback callback_;
+  base::OnceClosure closure_;
 
   proto::BackgroundFetchCompletedRequest completed_request_;
   bool is_response_successful_ = true;
