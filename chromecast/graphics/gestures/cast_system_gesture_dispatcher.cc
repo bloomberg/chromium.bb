@@ -76,4 +76,47 @@ void CastSystemGestureDispatcher::HandleTapGesture(
   }
 }
 
+void CastSystemGestureDispatcher::HandleScreenExit(
+    CastSideSwipeOrigin side,
+    const gfx::Point& touch_location) {
+  for (auto* gesture_handler : gesture_handlers_) {
+    gesture_handler->HandleScreenExit(side, touch_location);
+  }
+}
+
+void CastSystemGestureDispatcher::HandleScreenEnter(
+    CastSideSwipeOrigin side,
+    const gfx::Point& touch_location) {
+  for (auto* gesture_handler : gesture_handlers_) {
+    gesture_handler->HandleScreenEnter(side, touch_location);
+  }
+}
+
+CastGestureHandler::Corner CastSystemGestureDispatcher::HandledCornerHolds()
+    const {
+  int corner_hold_bitmask = CastGestureHandler::NO_CORNERS;
+  for (auto* gesture_handler : gesture_handlers_) {
+    corner_hold_bitmask |= gesture_handler->HandledCornerHolds();
+  }
+  return static_cast<CastGestureHandler::Corner>(corner_hold_bitmask);
+}
+
+void CastSystemGestureDispatcher::HandleCornerHold(
+    CastGestureHandler::Corner corner_origin,
+    const ui::TouchEvent& touch_event) {
+  for (auto* gesture_handler : gesture_handlers_) {
+    if (gesture_handler->HandledCornerHolds() & corner_origin) {
+      gesture_handler->HandleCornerHold(corner_origin, touch_event);
+    }
+  }
+}
+void CastSystemGestureDispatcher::HandleCornerHoldEnd(
+    CastGestureHandler::Corner corner_origin,
+    const ui::TouchEvent& touch_event) {
+  for (auto* gesture_handler : gesture_handlers_) {
+    if (gesture_handler->HandledCornerHolds() & corner_origin) {
+      gesture_handler->HandleCornerHoldEnd(corner_origin, touch_event);
+    }
+  }
+}
 }  // namespace chromecast
