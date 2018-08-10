@@ -399,6 +399,8 @@ public class OfflinePageUtils {
         if (webContents == null) return false;
 
         OfflinePageItem offlinePage = offlinePageBridge.getOfflinePage(webContents);
+        if (offlinePage == null) return false;
+
         String offlinePath = offlinePage.getFilePath();
 
         final String pageUrl = tab.getUrl();
@@ -407,9 +409,16 @@ public class OfflinePageUtils {
         Uri uri;
         boolean isPageUserRequested = offlinePageBridge.isUserRequestedDownloadNamespace(
                 offlinePage.getClientId().getNamespace());
-        if (!isPageUserRequested) {
-            File file = new File(offlinePage.getFilePath());
-            uri = (new FileProviderHelper()).getContentUriFromFile(file);
+        // Ensure that we have a file path that is longer than just "/".
+        if (!isPageUserRequested && offlinePath.length() > 1) {
+            File file = new File(offlinePath);
+            // We might get an exception if chrome does not have sharing roots configured.  If so,
+            // just share by URL of the original page instead of sharing the offline page.
+            try {
+                uri = (new FileProviderHelper()).getContentUriFromFile(file);
+            } catch (Exception e) {
+                uri = Uri.parse(pageUrl);
+            }
         } else {
             uri = Uri.parse(pageUrl);
         }
