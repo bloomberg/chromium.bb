@@ -92,8 +92,11 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
         PropertyTreeState new_properties =
             local_paint_info.context.GetPaintController()
                 .CurrentPaintChunkProperties();
+        bool painter_implements_object_fit_and_clip =
+            layout_replaced_.IsLayoutImage();
         bool property_changed = false;
-        if (paint_properties->ReplacedContentTransform()) {
+        if (paint_properties->ReplacedContentTransform() &&
+            !painter_implements_object_fit_and_clip) {
           new_properties.SetTransform(
               paint_properties->ReplacedContentTransform());
           DCHECK(paint_properties->ReplacedContentTransform()
@@ -106,7 +109,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
           property_changed = true;
         }
         if (paint_properties->OverflowClip() &&
-            (!layout_replaced_.IsLayoutImage() ||
+            (!painter_implements_object_fit_and_clip ||
              layout_replaced_.StyleRef().HasBorderRadius())) {
           new_properties.SetClip(paint_properties->OverflowClip());
           property_changed = true;

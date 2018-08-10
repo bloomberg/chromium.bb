@@ -186,6 +186,9 @@ void LayoutImage::ImageChanged(WrappedImagePtr new_image,
     did_increment_visually_non_empty_pixel_count_ = true;
   }
 
+  // The replaced content transform depends on the intrinsic size (see:
+  // FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform).
+  SetNeedsPaintPropertyUpdate();
   InvalidatePaintAndMarkForLayoutIfNeeded(defer);
 }
 

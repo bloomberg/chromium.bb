@@ -366,7 +366,7 @@ bool BitmapImage::CurrentFrameIsLazyDecoded() {
   return true;
 }
 
-ImageOrientation BitmapImage::CurrentFrameOrientation() {
+ImageOrientation BitmapImage::CurrentFrameOrientation() const {
   return decoder_ ? decoder_->OrientationAtIndex(PaintImage::kDefaultFrameIndex)
                   : kDefaultImageOrientation;
 }

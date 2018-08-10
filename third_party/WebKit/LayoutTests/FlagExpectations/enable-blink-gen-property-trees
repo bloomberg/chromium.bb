@@ -288,7 +288,6 @@ crbug.com/767318 compositing/reflections/nested-reflection-mask-change.html [ Fa
 # Rounding differences.
 # Maybe due to different render surface generation? (Needs investigation.)
 Bug(none) compositing/backface-visibility-transformed.html [ Failure ]
-Bug(none) compositing/color-matching/image-color-matching.html [ Failure ]
 Bug(none) compositing/iframes/invisible-nested-iframe-show.html [ Failure ]
 Bug(none) compositing/lots-of-img-layers-with-opacity.html [ Failure ]
 Bug(none) compositing/lots-of-img-layers.html [ Failure ]
@@ -307,16 +306,12 @@ Bug(none) compositing/overflow/tiled-mask.html [ Failure ]
 # Subpixel differences on text. Likely benign.
 Bug(none) css3/blending/background-blend-mode-overlapping-accelerated-elements.html [ Failure ]
 
-# Incorrect clipping.
-crbug.com/844429 compositing/culling/tile-occlusion-boundaries.html [ Failure ]
-
 # Failures that don't belong to any of above categories. Investigation needed.
 Bug(none) compositing/overflow/nested-render-surfaces-with-rotation.html [ Failure ]
 Bug(none) compositing/overflow/non-composited-sticky-element-in-main-thread-scrolled-composited-ancestor.html [ Failure ]
 Bug(none) compositing/overflow-trumps-transform-style.html [ Failure ]
 Bug(none) compositing/backface-visibility/backface-visibility-hierarchical-transform.html [ Failure ]
 Bug(none) compositing/geometry/clipping-foreground.html [ Failure Pass ]
-Bug(none) compositing/masks/mask-with-removed-filters.html [ Failure ]
 Bug(none) compositing/video/video-controls-layer-creation.html [ Failure Pass ]
 
 # Rounded borders have slightly different antialiasing
@@ -351,12 +346,6 @@ crbug.com/853945 fast/block/positioning/vertical-rl/002.html [ Failure ]
 crbug.com/854192 fast/multicol/composited-layer-nested.html [ Failure ]
 crbug.com/854192 fast/multicol/vertical-rl/composited-relpos-overlapping-will-change.html [ Failure ]
 crbug.com/854192 paint/pagination/composited-paginated-outlined-box.html [ Failure ]
-
-# Image layers are not scaled.
-crbug.com/854195 images/color-profile-layer.html [ Failure ]
-crbug.com/854195 images/pixelated-composited.html [ Failure ]
-crbug.com/854195 compositing/visibility/visibility-image-layers.html [ Failure ]
-crbug.com/854195 virtual/threaded/compositing/visibility/visibility-image-layers.html [ Failure ]
 
 # Paint invalidation test failures. Needs investigation.
 crbug.com/857322 paint/invalidation/background/obscured-background-no-repaint.html [ Failure Crash ]
