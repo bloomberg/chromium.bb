@@ -15,6 +15,7 @@
 
 namespace blink {
 
+class LayoutObject;
 class NGInlineItem;
 struct NGInlineItemResult;
 class ShapeResult;
@@ -36,6 +37,7 @@ struct NGInlineBoxState {
   unsigned fragment_start = 0;
   const NGInlineItem* item = nullptr;
   const ComputedStyle* style = nullptr;
+  const LayoutObject* inline_container = nullptr;
 
   // The united metrics for the current box. This includes all objects in this
   // box, including descendants, and adjusted by placement properties such as
@@ -83,7 +85,7 @@ struct NGInlineBoxState {
   void AccumulateUsedFonts(const ShapeResult*, FontBaseline);
 
   // Create a box fragment for this box.
-  void SetNeedsBoxFragment();
+  void SetNeedsBoxFragment(const LayoutObject* inline_container);
 
   // In certain circumstances, the parent's rects is not a simple union of its
   // children fragments' rects, e.g., when children have margin. In such cases,
@@ -178,6 +180,7 @@ class CORE_EXPORT NGInlineLayoutStateStack {
     const NGInlineItem* item;
     NGLogicalSize size;
 
+    const LayoutObject* inline_container = nullptr;
     bool has_line_left_edge = false;
     bool has_line_right_edge = false;
     NGLineBoxStrut padding;

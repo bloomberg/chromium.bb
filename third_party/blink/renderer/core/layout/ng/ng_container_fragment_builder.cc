@@ -197,10 +197,16 @@ void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
   oof_positioned_candidates_.clear();
 }
 
-void NGContainerFragmentBuilder::
-    MoveOutOfFlowDescendantCandidatesToDescendants() {
+void NGContainerFragmentBuilder::MoveOutOfFlowDescendantCandidatesToDescendants(
+    const LayoutObject* inline_container) {
   GetAndClearOutOfFlowDescendantCandidates(&oof_positioned_descendants_,
                                            nullptr);
+  if (inline_container) {
+    for (auto& descendant : oof_positioned_descendants_) {
+      if (!descendant.inline_container)
+        descendant.inline_container = inline_container;
+    }
+  }
 }
 
 #ifndef NDEBUG

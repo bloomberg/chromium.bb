@@ -119,8 +119,10 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::HandleOpenTag(
   // https://drafts.csswg.org/css2/visudet.html#line-height
   if (!quirks_mode_ || !item.IsEmptyItem())
     box->ComputeTextMetrics(*item.Style(), baseline_type_);
-  if (item.ShouldCreateBoxFragment())
-    box->SetNeedsBoxFragment();
+  if (item.ShouldCreateBoxFragment()) {
+    box->SetNeedsBoxFragment(
+        box_states_->ContainingLayoutObjectForAbsolutePositionObjects());
+  }
   return box;
 }
 
@@ -234,8 +236,10 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
     } else if (item.Type() == NGInlineItem::kOpenTag) {
       box = HandleOpenTag(item, item_result);
     } else if (item.Type() == NGInlineItem::kCloseTag) {
-      if (!box->needs_box_fragment && item_result.inline_size)
-        box->SetNeedsBoxFragment();
+      if (!box->needs_box_fragment && item_result.inline_size) {
+        box->SetNeedsBoxFragment(
+            box_states_->ContainingLayoutObjectForAbsolutePositionObjects());
+      }
       if (quirks_mode_ && box->needs_box_fragment)
         box->EnsureTextMetrics(*item.Style(), baseline_type_);
       box = box_states_->OnCloseTag(&line_box_, box, baseline_type_,
@@ -798,7 +802,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   container_builder_.SetExclusionSpace(
       exclusion_space ? std::move(exclusion_space)
                       : std::move(initial_exclusion_space));
-  container_builder_.MoveOutOfFlowDescendantCandidatesToDescendants();
+  container_builder_.MoveOutOfFlowDescendantCandidatesToDescendants(nullptr);
   return container_builder_.ToLineBoxFragment();
 }
 
