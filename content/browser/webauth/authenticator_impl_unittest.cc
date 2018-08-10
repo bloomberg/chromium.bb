@@ -37,6 +37,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_MACOSX)
+#include "device/fido/mac/scoped_touch_id_test_environment.h"
+#endif
+
 namespace content {
 
 using ::testing::_;
@@ -385,11 +389,17 @@ class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
     return base::ContainsKey(authenticator_impl_->protocols_, protocol);
   }
 
+  void EnableFeature(const base::Feature& feature) {
+    scoped_feature_list_.emplace();
+    scoped_feature_list_->InitAndEnableFeature(feature);
+  }
+
  protected:
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
   service_manager::mojom::ConnectorRequest request_;
   std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<device::FakeHidManager> fake_hid_manager_;
+  base::Optional<base::test::ScopedFeatureList> scoped_feature_list_;
 };
 
 // Verify behavior for various combinations of origins and RP IDs.
@@ -842,10 +852,7 @@ TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
 
 TEST_F(AuthenticatorImplTest, TestCableDiscoveryEnabledWithSwitch) {
   TestServiceManagerContext service_manager_context;
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      std::vector<base::Feature>{features::kWebAuthCable},
-      std::vector<base::Feature>{});
+  EnableFeature(features::kWebAuthCable);
 
   SimulateNavigation(GURL(kTestOrigin1));
   PublicKeyCredentialRequestOptionsPtr options =
@@ -868,8 +875,7 @@ TEST_F(AuthenticatorImplTest, TestCableDiscoveryEnabledWithSwitch) {
 }
 
 TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledForMakeCredential) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kWebAuthCable);
+  EnableFeature(features::kWebAuthCable);
 
   SimulateNavigation(GURL(kTestOrigin1));
   PublicKeyCredentialCreationOptionsPtr options =
@@ -1577,9 +1583,65 @@ TEST_F(AuthenticatorContentBrowserClientTest,
 }
 
 #if defined(OS_MACOSX)
-TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAAFalseWithoutTouchId) {
-  test_client_.supports_touch_id = false;
+TEST_F(AuthenticatorContentBrowserClientTest,
+       IsUVPAAFalseIfEmbedderDoesNotSupportTouchId) {
+  if (__builtin_available(macOS 10.12.2, *)) {
+    // Touch ID is hardware-supported, and flag-enabled, but not enabled by the
+    // embedder.
+    EnableFeature(device::kWebAuthTouchId);
+    device::fido::mac::ScopedTouchIdTestEnvironment touch_id_test_environment;
+    touch_id_test_environment.SetTouchIdAvailable(true);
+    test_client_.supports_touch_id = false;
 
+    NavigateAndCommit(GURL(kTestOrigin1));
+    AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+    TestIsUvpaaCallback cb;
+    authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
+    cb.WaitForCallback();
+    EXPECT_FALSE(cb.value());
+  }
+}
+
+TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAAFalseIfFeatureFlagOff) {
+  if (__builtin_available(macOS 10.12.2, *)) {
+    // Touch ID is hardware-supported and embedder-enabled, but the flag is off.
+    device::fido::mac::ScopedTouchIdTestEnvironment touch_id_test_environment;
+    touch_id_test_environment.SetTouchIdAvailable(true);
+    test_client_.supports_touch_id = true;
+
+    NavigateAndCommit(GURL(kTestOrigin1));
+    AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+    TestIsUvpaaCallback cb;
+    authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
+    cb.WaitForCallback();
+    EXPECT_FALSE(cb.value());
+  }
+}
+
+TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAATrueIfTouchIdAvailable) {
+  if (__builtin_available(macOS 10.12.2, *)) {
+    // Touch ID is available.
+    EnableFeature(device::kWebAuthTouchId);
+    device::fido::mac::ScopedTouchIdTestEnvironment touch_id_test_environment;
+    touch_id_test_environment.SetTouchIdAvailable(true);
+    test_client_.supports_touch_id = true;
+
+    NavigateAndCommit(GURL(kTestOrigin1));
+    AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+    TestIsUvpaaCallback cb;
+    authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
+    cb.WaitForCallback();
+    EXPECT_TRUE(cb.value());
+  }
+}
+#endif  // defined(OS_MACOSX)
+
+#if !defined(OS_MACOSX)
+TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAAFalse) {
+  // No platform authenticator on non-macOS platforms.
   NavigateAndCommit(GURL(kTestOrigin1));
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
 
@@ -1588,7 +1650,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAAFalseWithoutTouchId) {
   cb.WaitForCallback();
   EXPECT_FALSE(cb.value());
 }
-#endif
+#endif  // !defined(OS_MACOSX)
 
 class MockAuthenticatorRequestDelegateObserver
     : public TestAuthenticatorRequestDelegate {

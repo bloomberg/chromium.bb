@@ -9,6 +9,7 @@
 #import <Security/Security.h>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
@@ -19,21 +20,36 @@ namespace fido {
 namespace mac {
 
 // TouchIdContext wraps a macOS Touch ID consent prompt for signing with a
-// secure enclave key.
-class API_AVAILABLE(macosx(10.12.2)) TouchIdContext {
+// secure enclave key. It is a essentially a simpler facade for the LAContext
+// class from the macOS LocalAuthentication framework (c.f.
+// https://developer.apple.com/documentation/localauthentication/lacontext?language=objc).
+//
+// Use |Create| to instantiate a new context. Multiple instances can be created
+// at the same time. However, calling |PromptTouchId| on one instance will
+// cancel any other pending evaluations with an error. Deleting an instance
+// will invalidate any pending evaluation prompts (i.e. the dialog will
+// disappear and evaluation will fail with an error).
+class COMPONENT_EXPORT(DEVICE_FIDO)
+    API_AVAILABLE(macosx(10.12.2)) TouchIdContext {
  public:
   // The callback is invoked when the Touch ID prompt completes. It receives a
   // boolean indicating whether obtaining the fingerprint was successful.
   using Callback = base::OnceCallback<void(bool)>;
 
-  TouchIdContext();
-  ~TouchIdContext();
+  // Factory method for instantiating a TouchIdContext.
+  static std::unique_ptr<TouchIdContext> Create();
+
+  // Returns whether Touch ID is supported on the current hardware and set up to
+  // be used.
+  static bool TouchIdAvailable();
+
+  virtual ~TouchIdContext();
 
   // PromptTouchId displays a Touch ID consent prompt with the provided reason
   // string to the user. On completion or error, the provided callback is
   // invoked, unless the TouchIdContext instance has been destroyed in the
   // meantime (in which case nothing happens).
-  void PromptTouchId(std::string reason, Callback callback);
+  virtual void PromptTouchId(std::string reason, Callback callback);
 
   // authentication_context returns the LAContext used for the Touch ID prompt.
   LAContext* authentication_context() const { return context_; }
@@ -42,7 +58,19 @@ class API_AVAILABLE(macosx(10.12.2)) TouchIdContext {
   // evaluated/authorized in the Touch ID prompt.
   SecAccessControlRef access_control() const { return access_control_; }
 
+ protected:
+  TouchIdContext();
+
  private:
+  using CreateFuncPtr = decltype(&Create);
+  using TouchIdAvailableFuncPtr = decltype(&TouchIdAvailable);
+
+  static CreateFuncPtr g_create_;
+  static TouchIdAvailableFuncPtr g_touch_id_available_;
+
+  static std::unique_ptr<TouchIdContext> CreateImpl();
+  static bool TouchIdAvailableImpl();
+
   void RunCallback(bool success);
 
   base::scoped_nsobject<LAContext> context_;
@@ -50,6 +78,7 @@ class API_AVAILABLE(macosx(10.12.2)) TouchIdContext {
   Callback callback_;
   base::WeakPtrFactory<TouchIdContext> weak_ptr_factory_;
 
+  friend class ScopedTouchIdTestEnvironment;
   DISALLOW_COPY_AND_ASSIGN(TouchIdContext);
 };
 

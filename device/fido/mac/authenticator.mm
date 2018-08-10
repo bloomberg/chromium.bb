@@ -28,10 +28,7 @@ namespace mac {
 bool TouchIdAuthenticator::IsAvailable() {
   if (base::FeatureList::IsEnabled(device::kWebAuthTouchId)) {
     if (__builtin_available(macOS 10.12.2, *)) {
-      base::scoped_nsobject<LAContext> context([[LAContext alloc] init]);
-      return [context
-          canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
-                      error:nil];
+      return TouchIdContext::TouchIdAvailable();
     }
   }
   return false;

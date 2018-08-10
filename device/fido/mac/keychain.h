@@ -25,33 +25,41 @@ namespace mac {
 // keychain-access-group entitlements, and therefore requires code signing with
 // a real Apple developer ID. We therefore group these function here, so they
 // can be mocked out in testing.
-class COMPONENT_EXPORT(DEVICE_FIDO) API_AVAILABLE(macosx(10.12.2)) Keychain {
+class COMPONENT_EXPORT(DEVICE_FIDO) API_AVAILABLE(macos(10.12.2)) Keychain {
  public:
-  static const Keychain& GetInstance();
+  static Keychain& GetInstance();
 
   // KeyCreateRandomKey wraps the |SecKeyCreateRandomKey| function.
   virtual base::ScopedCFTypeRef<SecKeyRef> KeyCreateRandomKey(
       CFDictionaryRef params,
-      CFErrorRef* error) const;
+      CFErrorRef* error);
   // KeyCreateSignature wraps the |SecKeyCreateSignature| function.
   virtual base::ScopedCFTypeRef<CFDataRef> KeyCreateSignature(
       SecKeyRef key,
       SecKeyAlgorithm algorithm,
       CFDataRef data,
-      CFErrorRef* error) const;
+      CFErrorRef* error);
   // KeyCopyPublicKey wraps the |SecKeyCopyPublicKey| function.
-  virtual base::ScopedCFTypeRef<SecKeyRef> KeyCopyPublicKey(
-      SecKeyRef key) const;
+  virtual base::ScopedCFTypeRef<SecKeyRef> KeyCopyPublicKey(SecKeyRef key);
 
   // ItemCopyMatching wraps the |SecItemCopyMatching| function.
-  virtual OSStatus ItemCopyMatching(CFDictionaryRef query,
-                                    CFTypeRef* result) const;
+  virtual OSStatus ItemCopyMatching(CFDictionaryRef query, CFTypeRef* result);
   // ItemDelete wraps the |SecItemDelete| function.
-  virtual OSStatus ItemDelete(CFDictionaryRef query) const;
+  virtual OSStatus ItemDelete(CFDictionaryRef query);
+
+ protected:
+  Keychain();
+  virtual ~Keychain();
 
  private:
   friend class base::NoDestructor<Keychain>;
-  Keychain();
+  friend class ScopedTouchIdTestEnvironment;
+
+  // Set an override to the singleton instance returned by |GetInstance|. The
+  // caller keeps ownership of the injected keychain and must remove the
+  // override by calling |ClearInstanceOverride| before deleting it.
+  static void SetInstanceOverride(Keychain* keychain);
+  static void ClearInstanceOverride();
 
   DISALLOW_COPY_AND_ASSIGN(Keychain);
 };

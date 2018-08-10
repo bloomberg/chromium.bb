@@ -37,7 +37,7 @@ class API_AVAILABLE(macosx(10.12.2)) OperationBase : public Operation {
         metadata_secret_(std::move(metadata_secret)),
         keychain_access_group_(std::move(keychain_access_group)),
         callback_(std::move(callback)),
-        touch_id_context_(std::make_unique<TouchIdContext>()) {}
+        touch_id_context_(TouchIdContext::Create()) {}
 
   ~OperationBase() override = default;
 
