@@ -41,6 +41,14 @@ class TestCheckOrderFile(unittest.TestCase):
         check_orderfile._CountMisorderedSymbols(symbols, self._SYMBOL_INFOS))
     self.assertEquals(misordered_pairs_count, 1)
 
+  def testVerifySymbolOrder(self):
+    self.assertTrue(check_orderfile._VerifySymbolOrder(
+        ['.second', 'first', 'eighth', 'third'],
+        self._SYMBOL_INFOS))
+    self.assertFalse(check_orderfile._VerifySymbolOrder(
+        ['second', 'first', 'eighth', 'third'],
+        self._SYMBOL_INFOS))
+
 
 if __name__ == '__main__':
   unittest.main()
