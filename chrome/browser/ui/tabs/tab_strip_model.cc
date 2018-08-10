@@ -303,12 +303,6 @@ void TabStripModel::InsertWebContentsAt(int index,
   bool pin = (add_types & ADD_PINNED) != 0;
   index = ConstrainInsertionIndex(index, pin);
 
-  // In tab dragging situations, if the last tab in the window was detached
-  // then the user aborted the drag, we will have the |closing_all_| member
-  // set (see DetachWebContentsAt) which will mess with our mojo here. We need
-  // to clear this bit.
-  closing_all_ = false;
-
   // Have to get the active contents before we monkey with the contents
   // otherwise we run into problems when we try to change the active contents
   // since the old contents and the new contents will be the same...
@@ -451,7 +445,6 @@ std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsImpl(
   contents_data_.erase(contents_data_.begin() + index);
 
   if (empty()) {
-    closing_all_ = true;
     selection_model_.Clear();
   } else {
     int old_active = active_index();
