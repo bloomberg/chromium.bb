@@ -116,6 +116,9 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   // Internal implementation detail. Do not expose outside of tests.
   ShelfView* shelf_view_for_testing() const { return shelf_view_; }
+  ShelfBackgroundAnimator* background_animator_for_testing() {
+    return &background_animator_;
+  }
 
   void set_activated_from_overflow_bubble(bool val) {
     activated_from_overflow_bubble_ = val;

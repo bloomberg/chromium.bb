@@ -518,11 +518,13 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   if (state_.pre_lock_screen_animation_active)
     return SHELF_BACKGROUND_DEFAULT;
 
-  // Handle all non active screen states, including OOBE and pre-login.
+  // Handle all other non active screen states, including OOBE and pre-login.
+  if (state_.session_state == session_manager::SessionState::OOBE)
+    return SHELF_BACKGROUND_OOBE;
   if (state_.session_state != session_manager::SessionState::ACTIVE) {
     if (!Shell::Get()->wallpaper_controller()->IsWallpaperBlurred())
       return SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER;
-    return SHELF_BACKGROUND_OVERLAP;
+    return SHELF_BACKGROUND_LOGIN;
   }
 
   // If the app list is active, hide the shelf background to prevent overlap.
