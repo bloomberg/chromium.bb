@@ -236,6 +236,9 @@ void ShortcutsBackend::InitCompleted() {
   temp_shortcuts_map_->swap(shortcuts_map_);
   temp_shortcuts_map_.reset(nullptr);
   temp_guid_map_.reset(nullptr);
+  // This histogram is expired but the code was intentionally left behind so
+  // it can be easily re-enabled when launching Shortcuts provider on Android
+  // or iOS.
   UMA_HISTOGRAM_COUNTS_10000("ShortcutsProvider.DatabaseSize",
                              shortcuts_map_.size());
   current_state_ = INITIALIZED;
