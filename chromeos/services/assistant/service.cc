@@ -98,11 +98,7 @@ void Service::OnBindInterface(
 }
 
 void Service::BindAssistantConnection(mojom::AssistantRequest request) {
-  // Assistant interface is supposed to be used when UI is actually in
-  // use, which should be way later than assistant is created.
   DCHECK(assistant_manager_service_);
-  DCHECK(assistant_manager_service_->GetState() ==
-         AssistantManagerService::State::RUNNING);
   bindings_.AddBinding(assistant_manager_service_.get(), std::move(request));
 }
 
