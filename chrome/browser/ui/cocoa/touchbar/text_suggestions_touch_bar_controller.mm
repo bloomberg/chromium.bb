@@ -32,13 +32,14 @@ class WebContentsTextObserver : public content::WebContentsObserver {
   }
 
   void DidChangeTextSelection(const base::string16& text,
-                              const gfx::Range& range) override {
-    [owner_ updateTextSelection:text range:range];
+                              const gfx::Range& range,
+                              size_t offset) override {
+    [owner_ updateTextSelection:text range:range offset:offset];
   }
 
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override {
-    [owner_ updateTextSelection:base::string16() range:gfx::Range()];
+    [owner_ updateTextSelection:base::string16() range:gfx::Range() offset:0];
   }
 
  private:
@@ -72,6 +73,11 @@ class WebContentsTextObserver : public content::WebContentsObserver {
   // is no word currently being edited and the suggestion will be placed at the
   // cursor.
   NSRange editingWordRange_;
+
+  // The location of |editingWordRange_| within the total text, which may be
+  // longer than the text received on text selection update. Used for checking
+  // when to ignore replacement text selections.
+  NSRange offsetEditingWordRange_;
 
   // When YES, -updateTextSelection:range: should ignore a text selection that
   // is equal to the editing word range. Set to YES when
@@ -153,10 +159,11 @@ class WebContentsTextObserver : public content::WebContentsObserver {
 }
 
 - (void)updateTextSelection:(const base::string16&)text
-                      range:(const gfx::Range&)range {
+                      range:(const gfx::Range&)range
+                     offset:(size_t)offset {
   if (@available(macOS 10.12.2, *)) {
     if (shouldIgnoreReplacementSelection_ &&
-        range == gfx::Range(editingWordRange_)) {
+        range == gfx::Range(offsetEditingWordRange_)) {
       shouldIgnoreReplacementSelection_ = NO;
       return;
     }
@@ -167,9 +174,13 @@ class WebContentsTextObserver : public content::WebContentsObserver {
     }
 
     text_.reset([base::SysUTF16ToNSString(text) retain]);
-    selectionRange_ = range.ToNSRange();
+    selectionRange_ =
+        NSMakeRange(range.start() - offset, range.end() - range.start());
     editingWordRange_ =
-        [self editingWordRangeFromText:text cursorPosition:range.start()];
+        [self editingWordRangeFromText:text
+                        cursorPosition:selectionRange_.location];
+    offsetEditingWordRange_ = NSMakeRange(editingWordRange_.location + offset,
+                                          editingWordRange_.length);
     [self requestSuggestions];
   }
 }
@@ -255,10 +266,12 @@ class WebContentsTextObserver : public content::WebContentsObserver {
       webContents_->GetTopLevelRenderWidgetHostView()->GetSurroundingText();
   const gfx::Range range =
       webContents_->GetTopLevelRenderWidgetHostView()->GetSelectedRange();
+  const size_t offset = webContents_->GetTopLevelRenderWidgetHostView()
+                            ->GetOffsetForSurroundingText();
   if (range.IsValid())
-    [self updateTextSelection:text range:range];
+    [self updateTextSelection:text range:range offset:offset];
   else
-    [self updateTextSelection:base::string16() range:gfx::Range()];
+    [self updateTextSelection:base::string16() range:gfx::Range() offset:0];
 }
 
 - (content::WebContents*)webContents {
@@ -297,8 +310,10 @@ class WebContentsTextObserver : public content::WebContentsObserver {
   shouldIgnoreReplacementSelection_ = shouldIgnore;
 }
 
-- (void)setEditingWordRange:(const gfx::Range&)range {
+- (void)setEditingWordRange:(const gfx::Range&)range offset:(size_t)offset {
   editingWordRange_ = range.ToNSRange();
+  offsetEditingWordRange_ = NSMakeRange(editingWordRange_.location + offset,
+                                        editingWordRange_.length);
 }
 
 @end

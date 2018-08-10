@@ -354,6 +354,10 @@ gfx::Range RenderWidgetHostViewGuest::GetSelectedRange() {
   return platform_view_->GetSelectedRange();
 }
 
+size_t RenderWidgetHostViewGuest::GetOffsetForSurroundingText() {
+  return platform_view_->GetOffsetForSurroundingText();
+}
+
 void RenderWidgetHostViewGuest::SetNeedsBeginFrames(bool needs_begin_frames) {
   if (platform_view_)
     platform_view_->SetNeedsBeginFrames(needs_begin_frames);

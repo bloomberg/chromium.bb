@@ -82,6 +82,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   base::string16 GetSelectedText() override;
   base::string16 GetSurroundingText() override;
   gfx::Range GetSelectedRange() override;
+  size_t GetOffsetForSurroundingText() override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
