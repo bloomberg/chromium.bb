@@ -116,7 +116,7 @@ if (is_android) {
           "src/src/crazy_linker_system_mock.h",
         ]
         defines = [
-          "UNIT_TESTS",
+          "UNIT_TEST",
           "CRAZY_DEBUG=1",
         ]
       } else {

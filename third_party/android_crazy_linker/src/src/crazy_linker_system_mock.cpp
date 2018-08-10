@@ -341,7 +341,7 @@ MockSystem s_mock_fs;
 
 namespace crazy {
 
-#ifdef UNIT_TESTS
+#ifdef UNIT_TEST
 
 bool PathExists(const char* path) {
   s_mock_fs.Check();
@@ -464,6 +464,6 @@ void SystemMock::SetCurrentDir(const char* path) {
   s_mock_fs.SetCurrentDir(path);
 }
 
-#endif  // UNIT_TESTS
+#endif  // UNIT_TEST
 
 }  // namespace crazy

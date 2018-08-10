@@ -38,7 +38,7 @@ namespace crazy {
 
 namespace {
 
-#ifndef UNIT_TESTS
+#ifndef UNIT_TEST
 // LLVM's demangler is large, and we have no need of it.  Overriding it with
 // our own stub version here stops a lot of code being pulled in from libc++.
 // This reduces the on-disk footprint of the crazy linker library by more than
@@ -56,7 +56,7 @@ extern "C" char* __cxa_demangle(const char* mangled_name,
     *status = kMemoryAllocFailure;
   return NULL;
 }
-#endif  // UNIT_TESTS
+#endif  // UNIT_TEST
 
 #ifdef __arm__
 extern "C" int __cxa_atexit(void (*)(void*), void*, void*);
@@ -281,16 +281,16 @@ void* GetDlCloseWrapperAddressForTesting() {
 // the address of a heap-allocated array of pointers, which must be explicitly
 // free()-ed by the caller. This returns nullptr is the array is empty.
 // On exit, sets |*p_count| to the number of items in the array.
-void** GetValidDlopenHandlesForTesting(size_t* p_count) {
+const void** GetValidDlopenHandlesForTesting(size_t* p_count) {
   ScopedLockedGlobals globals;
-  const Vector<void*>& handles =
+  const Vector<const void*>& handles =
       globals->valid_handles()->GetValuesForTesting();
   *p_count = handles.GetCount();
   if (handles.IsEmpty())
     return nullptr;
 
-  auto* ptr =
-      reinterpret_cast<void**>(malloc(handles.GetCount() * sizeof(void*)));
+  auto* ptr = reinterpret_cast<const void**>(
+      malloc(handles.GetCount() * sizeof(void*)));
   for (size_t n = 0; n < handles.GetCount(); ++n) {
     ptr[n] = handles[n];
   }

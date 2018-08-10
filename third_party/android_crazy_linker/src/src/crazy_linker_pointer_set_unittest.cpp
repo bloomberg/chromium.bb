@@ -12,7 +12,7 @@ TEST(PointerSet, DefaultIsEmpty) {
   PointerSet set;
   EXPECT_FALSE(set.Has(nullptr));
 
-  const Vector<void*>& values = set.GetValuesForTesting();
+  const Vector<const void*>& values = set.GetValuesForTesting();
   EXPECT_TRUE(values.IsEmpty());
 }
 
@@ -24,7 +24,7 @@ TEST(PointerSet, Has) {
   EXPECT_FALSE(set.Add(nullptr));
   EXPECT_TRUE(set.Has(nullptr));
 
-  const Vector<void*>& values = set.GetValuesForTesting();
+  const Vector<const void*>& values = set.GetValuesForTesting();
   EXPECT_FALSE(values.IsEmpty());
   EXPECT_EQ(1U, values.GetCount());
   EXPECT_EQ(nullptr, values[0]);
@@ -45,7 +45,7 @@ TEST(PointerSet, Add) {
   EXPECT_FALSE(set.Has(kTwo));
   EXPECT_TRUE(set.Has(kTen));
 
-  const Vector<void*>& values = set.GetValuesForTesting();
+  const Vector<const void*>& values = set.GetValuesForTesting();
   EXPECT_FALSE(values.IsEmpty());
   EXPECT_EQ(2U, values.GetCount());
   EXPECT_EQ(kOne, values[0]);
@@ -67,7 +67,7 @@ TEST(PointerSet, Remove) {
   EXPECT_TRUE(set.Has(kTwo));
   EXPECT_TRUE(set.Has(kTen));
 
-  const Vector<void*>& values = set.GetValuesForTesting();
+  const Vector<const void*>& values = set.GetValuesForTesting();
   EXPECT_FALSE(values.IsEmpty());
   EXPECT_EQ(3U, values.GetCount());
 
