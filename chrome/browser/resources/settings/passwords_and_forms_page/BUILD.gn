@@ -50,9 +50,11 @@ js_library("autofill_section") {
 js_library("payments_section") {
   deps = [
     ":credit_card_edit_dialog",
+    "../people_page:sync_browser_proxy",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
   externs_list = [ "$externs_path/autofill_private.js" ]
