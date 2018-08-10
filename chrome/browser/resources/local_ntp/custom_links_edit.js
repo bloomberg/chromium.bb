@@ -342,17 +342,17 @@ function init() {
     event.preventDefault();
     finishEditLink();
   });
-  $(IDS.FORM).onkeyup = (event) => {
+  let finishEditOrClose = (event) => {
     if (event.keyCode === KEYCODES.ENTER) {
       event.preventDefault();
       if ($(IDS.DONE).disabled)
         closeDialog();
       else
         finishEditLink();
-    } else if (event.keyCode === KEYCODES.ESC) {
-      closeDialog();
     }
   };
+  $(IDS.TITLE_FIELD).onkeydown = finishEditOrClose;
+  $(IDS.URL_FIELD).onkeydown = finishEditOrClose;
   disableOutlineOnMouseClick($(IDS.DELETE));
   disableOutlineOnMouseClick($(IDS.CANCEL));
   disableOutlineOnMouseClick($(IDS.DONE));
