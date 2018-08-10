@@ -82,7 +82,6 @@ js_library("closure_compile_externs") {
     "../../../externs/background/media_import_handler.js",
     "../../../externs/background/media_scanner.js",
     "../../../externs/background/progress_center.js",
-    "../../../externs/background/volume_manager_factory.js",
     "../../../externs/background_window.js",
     "../../../externs/chrome_echo_private.js",
     "../../../externs/chrome_webstore_widget_private.js",
@@ -91,16 +90,11 @@ js_library("closure_compile_externs") {
     "../../../externs/directory_change_event.js",
     "../../../externs/drag_target.js",
     "../../../externs/entries_changed_event.js",
-    "../../../externs/entry_location.js",
     "../../../externs/gallery_foreground.js",
     "../../../externs/menu_item_update_event.js",
     "../../../externs/paper_elements.js",
     "../../../externs/platform.js",
     "../../../externs/search_item.js",
-    "../../../externs/volume_info.js",
-    "../../../externs/volume_info_list.js",
-    "../../../externs/volume_manager.js",
-    "//third_party/analytics/externs.js",
   ]
 }
 
@@ -549,6 +543,7 @@ js_library("selection_menu_controller") {
 
 js_library("share_client") {
   deps = [
+    "../../../externs:webview_tag",
     "../../common/js:volume_manager_common",
     "//ui/webui/resources/js/cr:event_target",
   ]
@@ -614,6 +609,11 @@ js_library("volume_manager_wrapper") {
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js/cr:event_target",
     "//ui/webui/resources/js/cr/ui:array_data_model",
+  ]
+  externs_list = [
+    "../../../externs/background/volume_manager_factory.js",
+    "../../../externs/volume_info_list.js",
+    "../../../externs/volume_manager.js",
   ]
 }
 

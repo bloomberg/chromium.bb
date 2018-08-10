@@ -27,18 +27,8 @@ js_type_check("closure_compile") {
 js_library("closure_compile_externs") {
   sources = []
   externs_list = [
-    "$externs_path/chrome_extensions.js",
-    "$externs_path/command_line_private.js",
-    "$externs_path/file_manager_private.js",
-    "$externs_path/file_system_provider.js",
-    "$externs_path/metrics_private.js",
-    "../../../externs/app_window_common.js",
     "../../../externs/background/file_browser_background.js",
     "../../../externs/background_window.js",
-    "../../../externs/entry_location.js",
-    "../../../externs/platform.js",
-    "../../../externs/volume_info.js",
-    "//third_party/analytics/externs.js",
   ]
 }
 
@@ -49,6 +39,7 @@ js_library("error_util") {
 }
 
 js_library("files_app_entry_types") {
+  externs_list = [ "../../../externs/volume_info.js" ]
 }
 
 js_library("file_type") {
@@ -68,6 +59,12 @@ js_library("metrics") {
   deps = [
     ":metrics_base",
     "//ui/webui/resources/js:assert",
+  ]
+  externs_list = [
+    "$externs_path/file_manager_private.js",
+    "$externs_path/file_system_provider.js",
+    "$externs_path/metrics_private.js",
+    "//third_party/analytics/externs.js",
   ]
 }
 
@@ -104,6 +101,14 @@ js_library("util") {
     "//ui/webui/resources/js:util",
     "//ui/webui/resources/js/cr:event_target",
     "//ui/webui/resources/js/cr:ui",
+  ]
+  externs_list = [
+    "$externs_path/chrome.js",
+    "$externs_path/chrome_extensions.js",
+    "$externs_path/command_line_private.js",
+    "../../../externs/app_window_common.js",
+    "../../../externs/entry_location.js",
+    "../../../externs/platform.js",
   ]
 }
 

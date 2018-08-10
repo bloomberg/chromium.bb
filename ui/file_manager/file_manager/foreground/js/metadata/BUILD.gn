@@ -35,14 +35,11 @@ js_type_check("closure_compile") {
 js_library("closure_compile_externs") {
   sources = []
   externs_list = [
-    "$externs_path/chrome_extensions.js",
     "$externs_path/command_line_private.js",
     "$externs_path/file_manager_private.js",
     "$externs_path/file_system_provider.js",
     "../../../../externs/app_window_common.js",
     "../../../../externs/entry_location.js",
-    "../../../../externs/exif_entry.js",
-    "../../../../externs/metadata_worker_window.js",
     "../../../../externs/platform.js",
     "../../../../externs/volume_info.js",
   ]
@@ -68,6 +65,7 @@ js_library("exif_parser") {
     ":image_parsers",
     ":metadata_parser",
   ]
+  externs_list = [ "../../../../externs/exif_entry.js" ]
 }
 
 js_library("external_metadata_provider") {
@@ -110,6 +108,7 @@ js_library("image_parsers") {
   deps = [
     ":metadata_parser",
   ]
+  externs_list = [ "../../../../externs/metadata_worker_window.js" ]
 }
 
 js_library("metadata_cache_item") {

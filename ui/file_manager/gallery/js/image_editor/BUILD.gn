@@ -5,12 +5,10 @@
 import("//third_party/closure_compiler/compile_js.gni")
 import("//ui/file_manager/js_unit_tests.gni")
 
-js_type_check("closure_compile") {
+js_type_check("closure_compile_module") {
   deps = [
-    ":closure_compile_externs",
     ":commands",
     ":exif_encoder",
-    ":exif_encoder_unittest",
     ":filter",
     ":image_adjust",
     ":image_buffer",
@@ -19,38 +17,13 @@ js_type_check("closure_compile") {
     ":image_editor_prompt",
     ":image_editor_toolbar",
     ":image_encoder",
-    ":image_encoder_unittest",
     ":image_loader",
     ":image_resize",
     ":image_transform",
     ":image_util",
     ":image_view",
-    ":image_view_unittest",
     ":test_util",
     ":viewport",
-  ]
-}
-
-js_library("closure_compile_externs") {
-  sources = []
-  externs_list = [
-    "$externs_path/chrome_extensions.js",
-    "$externs_path/command_line_private.js",
-    "$externs_path/file_manager_private.js",
-    "$externs_path/file_system_provider.js",
-    "$externs_path/metrics_private.js",
-    "$externs_path/web_animations.js",
-    "../../../externs/app_window_common.js",
-    "../../../externs/background/volume_manager_factory.js",
-    "../../../externs/entry_location.js",
-    "../../../externs/exif_entry.js",
-    "../../../externs/metadata_worker_window.js",
-    "../../../externs/paper_elements.js",
-    "../../../externs/platform.js",
-    "../../../externs/volume_info.js",
-    "../../../externs/volume_info_list.js",
-    "../../../externs/volume_manager.js",
-    "//third_party/analytics/externs.js",
   ]
 }
 
@@ -71,6 +44,7 @@ js_library("exif_encoder") {
     "../../../file_manager/foreground/js/metadata:exif_constants",
     "../../../file_manager/foreground/js/metadata:metadata_item",
   ]
+  externs_list = [ "../../../externs/exif_entry.js" ]
 }
 
 js_library("exif_encoder_unittest") {
@@ -78,6 +52,7 @@ js_library("exif_encoder_unittest") {
     ":exif_encoder",
     ":test_util",
     "../../../file_manager/foreground/js/metadata:exif_parser",
+    "//ui/webui/resources/js:webui_resource_test",
   ]
 }
 
@@ -134,6 +109,7 @@ js_library("image_editor_toolbar") {
     "../../../file_manager/common/js:util",
     "../../../file_manager/foreground/elements:files_tooltip",
   ]
+  externs_list = [ "../../../externs/paper_elements.js" ]
 }
 
 js_library("image_encoder") {
@@ -151,6 +127,7 @@ js_library("image_encoder_unittest") {
     "../../../file_manager/common/js:unittest_util",
     "../../../file_manager/foreground/js/metadata:metadata_parser",
   ]
+  externs_list = [ "../../../externs/metadata_worker_window.js" ]
 }
 
 js_library("image_loader") {
@@ -227,4 +204,11 @@ js_unit_tests("unit_tests") {
     ":image_view_unittest",
   ]
   mocks = [ "../../../file_manager/foreground/js/metadata/metadata_dispatcher_mock_deps.js" ]
+}
+
+group("closure_compile") {
+  deps = [
+    ":closure_compile_module",
+    ":unit_tests",
+  ]
 }
