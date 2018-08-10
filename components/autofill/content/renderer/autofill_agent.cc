@@ -194,6 +194,9 @@ void AutofillAgent::DidFinishDocumentLoad() {
 }
 
 void AutofillAgent::DidChangeScrollOffset() {
+  if (element_.IsNull())
+    return;
+
   if (!focus_requires_scroll_) {
     // Post a task here since scroll offset may change during layout.
     // (https://crbug.com/804886)
@@ -210,7 +213,7 @@ void AutofillAgent::DidChangeScrollOffset() {
 
 void AutofillAgent::DidChangeScrollOffsetImpl(
     const WebFormControlElement& element) {
-  if (element != element_ || focus_requires_scroll_ ||
+  if (element != element_ || element_.IsNull() || focus_requires_scroll_ ||
       !is_popup_possibly_visible_ || !element_.Focused())
     return;
 
