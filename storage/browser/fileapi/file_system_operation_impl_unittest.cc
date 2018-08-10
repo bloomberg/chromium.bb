@@ -203,10 +203,8 @@ class FileSystemOperationImplTest
   FileSystemOperation::SnapshotFileCallback RecordSnapshotFileCallback(
       const base::Closure& closure,
       base::File::Error* status) {
-    return base::Bind(&FileSystemOperationImplTest::DidCreateSnapshotFile,
-                      weak_factory_.GetWeakPtr(),
-                      closure,
-                      status);
+    return base::BindOnce(&FileSystemOperationImplTest::DidCreateSnapshotFile,
+                          weak_factory_.GetWeakPtr(), closure, status);
   }
 
   void DidFinish(const base::Closure& closure,

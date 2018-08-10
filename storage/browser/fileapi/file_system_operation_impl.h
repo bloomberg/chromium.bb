@@ -78,7 +78,7 @@ class STORAGE_EXPORT FileSystemOperationImpl : public FileSystemOperation {
                 const OpenFileCallback& callback) override;
   void Cancel(const StatusCallback& cancel_callback) override;
   void CreateSnapshotFile(const FileSystemURL& path,
-                          const SnapshotFileCallback& callback) override;
+                          SnapshotFileCallback callback) override;
   void CopyInForeignFile(const base::FilePath& src_local_disk_path,
                          const FileSystemURL& dest_url,
                          const StatusCallback& callback) override;

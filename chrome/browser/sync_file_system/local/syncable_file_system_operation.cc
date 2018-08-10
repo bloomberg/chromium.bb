@@ -277,9 +277,9 @@ void SyncableFileSystemOperation::Cancel(
 
 void SyncableFileSystemOperation::CreateSnapshotFile(
     const FileSystemURL& path,
-    const SnapshotFileCallback& callback) {
+    SnapshotFileCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  impl_->CreateSnapshotFile(path, callback);
+  impl_->CreateSnapshotFile(path, std::move(callback));
 }
 
 void SyncableFileSystemOperation::CopyInForeignFile(
