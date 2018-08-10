@@ -1692,6 +1692,7 @@ test("ash_unittests") {
     "ash_service_unittest.cc",
     "assistant/assistant_controller_unittest.cc",
     "assistant/assistant_screen_context_controller_unittest.cc",
+    "assistant/ui/assistant_container_view_unittest.cc",
     "assistant/util/deep_link_util_unittest.cc",
     "autoclick/autoclick_unittest.cc",
     "cursor_unittest.cc",

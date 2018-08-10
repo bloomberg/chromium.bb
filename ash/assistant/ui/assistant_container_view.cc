@@ -12,6 +12,7 @@
 #include "ash/assistant/ui/assistant_main_view.h"
 #include "ash/assistant/ui/assistant_mini_view.h"
 #include "ash/assistant/ui/assistant_web_view.h"
+#include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -190,14 +191,14 @@ void AssistantContainerView::RequestFocus() {
     assistant_main_view_->RequestFocus();
 }
 
+// TODO(dmblack): Handle dynamic re-anchoring due to shelf repositioning, etc.
 void AssistantContainerView::SetAnchor() {
-  // TODO(dmblack): Handle multiple displays, dynamic shelf repositioning, and
-  // any other corner cases.
-  // Anchors to bottom center of primary display's work area.
-  display::Display primary_display =
-      display::Screen::GetScreen()->GetPrimaryDisplay();
+  // Anchor to the display matching where new windows will be opened.
+  display::Display display = display::Screen::GetScreen()->GetDisplayMatching(
+      Shell::Get()->GetRootWindowForNewWindows()->GetBoundsInScreen());
 
-  gfx::Rect work_area = primary_display.work_area();
+  // Anchor to the bottom center of the work area.
+  gfx::Rect work_area = display.work_area();
   gfx::Rect anchor = gfx::Rect(work_area.x(), work_area.bottom() - kMarginDip,
                                work_area.width(), 0);
 
