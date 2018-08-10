@@ -78,7 +78,10 @@ class DISPLAY_EXPORT Screen {
 
   // Returns a suggested display to use when creating a new window. On most
   // platforms just returns the primary display.
-  virtual Display GetDisplayForNewWindows() const;
+  Display GetDisplayForNewWindows() const;
+
+  // Sets the suggested display to use when creating a new window.
+  void SetDisplayForNewWindows(int64_t display_id);
 
   // Adds/Removes display observers.
   virtual void AddObserver(DisplayObserver* observer) = 0;
@@ -103,6 +106,8 @@ class DISPLAY_EXPORT Screen {
 
  private:
   static gfx::NativeWindow GetWindowForView(gfx::NativeView view);
+
+  int64_t display_id_for_new_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(Screen);
 };

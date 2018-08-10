@@ -6,7 +6,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/ui/ash/shell_state_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/window_sizer/window_sizer_common_unittest.h"
 #include "chrome/common/chrome_switches.h"
@@ -44,7 +43,7 @@ class WindowSizerAshTest : public ash::AshTestBase {
     auto state_provider = std::make_unique<TestStateProvider>();
     state_provider->SetPersistentState(gfx::Rect(), gfx::Rect(),
                                        ui::SHOW_STATE_DEFAULT);
-    shell_state_client_.SetDisplayIdForNewWindows(display_id);
+    display::Screen::GetScreen()->SetDisplayForNewWindows(display_id);
 
     ui::WindowShowState ignored;
     WindowSizer sizer(std::move(state_provider), browser);
@@ -94,7 +93,6 @@ class WindowSizerAshTest : public ash::AshTestBase {
 
  protected:
   TestingProfile profile_;
-  ShellStateClient shell_state_client_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowSizerAshTest);
@@ -733,7 +731,7 @@ TEST_F(WindowSizerAshTest, DefaultBoundsInTargetDisplay) {
     // When the second display is active new windows are placed there.
     aura::Window* second_root = ash::Shell::GetAllRootWindows()[1];
     int64_t second_display_id = display_manager()->GetSecondaryDisplay().id();
-    shell_state_client_.SetDisplayIdForNewWindows(second_display_id);
+    display::Screen::GetScreen()->SetDisplayForNewWindows(second_display_id);
     gfx::Rect bounds;
     ui::WindowShowState show_state;
     WindowSizer::GetBrowserWindowBoundsAndShowState(

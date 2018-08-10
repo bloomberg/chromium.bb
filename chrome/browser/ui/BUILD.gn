@@ -1882,8 +1882,6 @@ jumbo_split_static_library("ui") {
       "ash/session_controller_client.h",
       "ash/session_util.cc",
       "ash/session_util.h",
-      "ash/shell_state_client.cc",
-      "ash/shell_state_client.h",
       "ash/system_tray_client.cc",
       "ash/system_tray_client.h",
       "ash/tab_scrubber.cc",

@@ -5,6 +5,7 @@
 #include "ui/display/screen.h"
 
 #include "ui/display/display.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace display {
@@ -15,9 +16,9 @@ Screen* g_screen;
 
 }  // namespace
 
-Screen::Screen() {}
+Screen::Screen() : display_id_for_new_windows_(kInvalidDisplayId) {}
 
-Screen::~Screen() {}
+Screen::~Screen() = default;
 
 // static
 Screen* Screen::GetScreen() {
@@ -38,8 +39,18 @@ Display Screen::GetDisplayNearestView(gfx::NativeView view) const {
   return GetDisplayNearestWindow(GetWindowForView(view));
 }
 
-Display Screen::GetDisplayForNewWindows() const {
+display::Display Screen::GetDisplayForNewWindows() const {
+  display::Display display;
+  if (GetDisplayWithDisplayId(display_id_for_new_windows_, &display))
+    return display;
+
+  // Fallback to primary display.
   return GetPrimaryDisplay();
+}
+
+void Screen::SetDisplayForNewWindows(int64_t display_id) {
+  // GetDisplayForNewWindows() handles invalid display ids.
+  display_id_for_new_windows_ = display_id;
 }
 
 gfx::Rect Screen::ScreenToDIPRectInWindow(gfx::NativeView view,

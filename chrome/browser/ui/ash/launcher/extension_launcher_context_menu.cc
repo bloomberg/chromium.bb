@@ -16,13 +16,13 @@
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
-#include "chrome/browser/ui/ash/shell_state_client.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/context_menu_params.h"
 #include "extensions/browser/extension_prefs.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/menu/menu_config.h"
 
@@ -41,11 +41,11 @@ class ScopedDisplayIdForNewWindows {
  public:
   explicit ScopedDisplayIdForNewWindows(int64_t display_id)
       : old_display_id_(display_id) {
-    ShellStateClient::Get()->SetDisplayIdForNewWindows(display_id);
+    display::Screen::GetScreen()->SetDisplayForNewWindows(display_id);
   }
 
   ~ScopedDisplayIdForNewWindows() {
-    ShellStateClient::Get()->SetDisplayIdForNewWindows(old_display_id_);
+    display::Screen::GetScreen()->SetDisplayForNewWindows(old_display_id_);
   }
 
  private:
