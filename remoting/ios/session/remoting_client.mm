@@ -11,7 +11,7 @@
 #include <memory>
 
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
-#import "remoting/ios/audio/audio_player_ios.h"
+#import "remoting/ios/audio/audio_playback_sink_ios.h"
 #import "remoting/ios/display/gl_display_handler.h"
 #import "remoting/ios/domain/client_session_details.h"
 #import "remoting/ios/domain/host_info.h"
@@ -19,6 +19,7 @@
 #import "remoting/ios/persistence/remoting_preferences.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "remoting/client/audio/audio_playback_stream.h"
 #include "remoting/client/chromoting_client_runtime.h"
 #include "remoting/client/chromoting_session.h"
 #include "remoting/client/connect_to_host_info.h"
@@ -67,7 +68,7 @@ static void ResolveFeedbackDataCallback(
   remoting::GestureInterpreter _gestureInterpreter;
   remoting::KeyboardInterpreter _keyboardInterpreter;
   std::unique_ptr<remoting::RendererProxy> _renderer;
-  std::unique_ptr<remoting::AudioPlayerIos> _audioPlayer;
+  std::unique_ptr<remoting::AudioPlaybackStream> _audioStream;
 
   // _session is valid only when the session is connected.
   std::unique_ptr<remoting::ChromotingSession> _session;
@@ -134,7 +135,8 @@ static void ResolveFeedbackDataCallback(
         showMessage:[MDCSnackbarMessage messageWithText:@"Using WebRTC"]];
   }
 
-  _audioPlayer = remoting::AudioPlayerIos::CreateAudioPlayer(
+  _audioStream = std::make_unique<remoting::AudioPlaybackStream>(
+      std::make_unique<remoting::AudioPlaybackSinkIos>(),
       _runtime->audio_task_runner());
 
   _displayHandler = [[GlDisplayHandler alloc] init];
@@ -142,14 +144,12 @@ static void ResolveFeedbackDataCallback(
 
   _session.reset(new remoting::ChromotingSession(
       _sessonDelegate->GetWeakPtr(), [_displayHandler CreateCursorShapeStub],
-      [_displayHandler CreateVideoRenderer],
-      _audioPlayer->GetAudioStreamConsumer(), info));
+      [_displayHandler CreateVideoRenderer], _audioStream->GetWeakPtr(), info));
   _renderer = [_displayHandler CreateRendererProxy];
   _gestureInterpreter.SetContext(_renderer.get(), _session.get());
   _keyboardInterpreter.SetContext(_session.get());
 
   _session->Connect();
-  _audioPlayer->Start();
 }
 
 - (void)disconnectFromHost {
@@ -157,10 +157,9 @@ static void ResolveFeedbackDataCallback(
 
   _displayHandler = nil;
 
-  if (_audioPlayer) {
-    _audioPlayer->Invalidate();
-    _runtime->audio_task_runner()->DeleteSoon(FROM_HERE,
-                                              _audioPlayer.release());
+  if (_audioStream) {
+    _runtime->network_task_runner()->DeleteSoon(FROM_HERE,
+                                                _audioStream.release());
   }
   // This needs to be deleted on the display thread since GlDisplayHandler binds
   // its WeakPtrFactory to the display thread.
