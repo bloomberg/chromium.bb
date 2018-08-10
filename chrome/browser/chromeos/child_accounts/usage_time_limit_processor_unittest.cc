@@ -228,6 +228,9 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOnlyTimeWindowLimitSet) {
   base::Value monday_time_limit =
       CreateTimeWindow(base::Value("MONDAY"), CreateTime(21, 0),
                        CreateTime(7, 30), base::Value(last_updated_millis));
+  base::Value tuesday_time_limit =
+      CreateTimeWindow(base::Value("TUESDAY"), CreateTime(7, 30),
+                       CreateTime(9, 0), base::Value(last_updated_millis));
   base::Value friday_time_limit =
       CreateTimeWindow(base::Value("FRIDAY"), CreateTime(21, 0),
                        CreateTime(7, 30), base::Value(last_updated_millis));
@@ -235,6 +238,7 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOnlyTimeWindowLimitSet) {
   base::Value window_limit_entries(base::Value::Type::LIST);
   window_limit_entries.GetList().push_back(std::move(sunday_time_limit));
   window_limit_entries.GetList().push_back(std::move(monday_time_limit));
+  window_limit_entries.GetList().push_back(std::move(tuesday_time_limit));
   window_limit_entries.GetList().push_back(std::move(friday_time_limit));
 
   base::Value time_window_limit(base::Value::Type::DICTIONARY);
@@ -251,6 +255,8 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOnlyTimeWindowLimitSet) {
       TimeFromString("Mon, 1 Jan 2018 21:00 GMT+0300");
   base::Time monday_time_window_limit_end =
       TimeFromString("Tue, 2 Jan 2018 7:30 GMT+0300");
+  base::Time tuesday_time_window_limit_end =
+      TimeFromString("Tue, 2 Jan 2018 9:00 GMT+0300");
   base::Time friday_time_window_limit_start =
       TimeFromString("Fri, 5 Jan 2018 21:00 GMT+0300");
 
@@ -281,8 +287,8 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOnlyTimeWindowLimitSet) {
   expected_state_two.active_policy = ActivePolicies::kFixedLimit;
   expected_state_two.is_time_usage_limit_enabled = false;
   expected_state_two.next_state_change_time = monday_time_window_limit_end;
-  expected_state_two.next_state_active_policy = ActivePolicies::kNoActivePolicy;
-  expected_state_two.next_unlock_time = monday_time_window_limit_end;
+  expected_state_two.next_state_active_policy = ActivePolicies::kFixedLimit;
+  expected_state_two.next_unlock_time = tuesday_time_window_limit_end;
   expected_state_two.last_state_changed = time_two;
 
   AssertEqState(expected_state_two, state_two);

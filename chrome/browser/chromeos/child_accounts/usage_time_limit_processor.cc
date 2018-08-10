@@ -604,9 +604,16 @@ base::Time UsageTimeLimitProcessor::GetNextStateChangeTime(
 
   // Check when next time window limit starts.
   if (time_window_limit) {
-    internal::Weekday start_day = current_weekday;
-    if (IsTodayTimeWindowLimitActive())
-      start_day = internal::WeekdayShift(start_day, 1);
+    internal::Weekday start_day = internal::WeekdayShift(current_weekday, 1);
+    base::TimeDelta delta_from_midnight =
+        current_time - LocalMidnight(current_time);
+    bool todays_time_limit_not_started =
+        time_window_limit->entries[current_weekday] &&
+        time_window_limit->entries[current_weekday]->starts_at >
+            delta_from_midnight;
+    // If today's time limit has not started yet, start search today.
+    if (todays_time_limit_not_started)
+      start_day = current_weekday;
 
     // Search a time window limit in the next following days.
     for (int i = 0; i < static_cast<int>(internal::Weekday::kCount); i++) {
