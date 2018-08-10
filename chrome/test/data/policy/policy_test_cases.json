@@ -3216,6 +3216,12 @@
     ]
   },
 
+  "CoalesceH2ConnectionsWithClientCertificatesForHosts": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "CoalesceH2ConnectionsWithClientCertificatesForHosts": ["example.com"] },
+    "pref_mappings": [ { "pref": "ssl.client_certs.h2_coalescing_hosts", "local_state": true } ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

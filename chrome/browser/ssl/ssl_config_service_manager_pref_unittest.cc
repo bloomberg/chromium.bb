@@ -427,3 +427,39 @@ TEST_F(SSLConfigServiceManagerPrefTest, SymantecLegacyInfrastructure) {
   ASSERT_NO_FATAL_FAILURE(WaitForUpdate());
   EXPECT_FALSE(observed_configs_[1]->symantec_enforcement_disabled);
 }
+
+TEST_F(SSLConfigServiceManagerPrefTest, H2ClientCertCoalescingPref) {
+  scoped_refptr<TestingPrefStore> local_state_store(new TestingPrefStore());
+
+  TestingPrefServiceSimple local_state;
+  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
+
+  std::unique_ptr<SSLConfigServiceManager> config_manager =
+      SetUpConfigServiceManager(&local_state);
+
+  auto patterns = std::make_unique<base::ListValue>();
+  // Patterns expected to be canonicalized.
+  patterns->GetList().emplace_back(base::Value("canon.example"));
+  patterns->GetList().emplace_back(base::Value(".NonCanon.example"));
+  patterns->GetList().emplace_back(base::Value("Non-Canon.example"));
+  patterns->GetList().emplace_back(base::Value("127.0.0.1"));
+  patterns->GetList().emplace_back(base::Value("2147614986"));
+  // Patterns expected to be skipped.
+  patterns->GetList().emplace_back(base::Value("???"));
+  patterns->GetList().emplace_back(base::Value("example.com/"));
+  patterns->GetList().emplace_back(base::Value("xn--hellö.com"));
+  local_state.SetUserPref(prefs::kH2ClientCertCoalescingHosts,
+                          std::move(patterns));
+
+  // Wait for the SSLConfigServiceManagerPref to be notified of the preferences
+  // being changed, and for it to notify the test fixture of the change.
+  ASSERT_NO_FATAL_FAILURE(WaitForUpdate());
+
+  auto observed_patterns = observed_configs_[0]->client_cert_pooling_policy;
+  ASSERT_EQ(5u, observed_patterns.size());
+  EXPECT_EQ("canon.example", observed_patterns[0]);
+  EXPECT_EQ(".noncanon.example", observed_patterns[1]);
+  EXPECT_EQ("non-canon.example", observed_patterns[2]);
+  EXPECT_EQ("127.0.0.1", observed_patterns[3]);
+  EXPECT_EQ("128.2.1.10", observed_patterns[4]);
+}

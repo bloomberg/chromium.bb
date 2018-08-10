@@ -13997,6 +13997,7 @@ Called by update_net_error_codes.py.-->
   <int value="463" label="DeviceLocalAccountManagedSessionEnabled"/>
   <int value="464" label="WebRtcEventLogCollectionAllowed"/>
   <int value="465" label="PowerSmartDimEnabled"/>
+  <int value="466" label="CoalesceH2ConnectionsWithClientCertificatesForHosts"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

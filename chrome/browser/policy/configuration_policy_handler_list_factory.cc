@@ -840,6 +840,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kTabLifecyclesEnabled,
     prefs::kTabLifecyclesEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kCoalesceH2ConnectionsWithClientCertificatesForHosts,
+    prefs::kH2ClientCertCoalescingHosts,
+    base::Value::Type::LIST },
 };
 // clang-format on
 
