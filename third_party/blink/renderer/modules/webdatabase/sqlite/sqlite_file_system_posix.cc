@@ -249,7 +249,7 @@ int ChromiumDelete(sqlite3_vfs*, const char* file_name, int sync_dir) {
                                                  sync_dir);
 }
 
-// Check the existance and status of the given file.
+// Check the existence and status of the given file.
 //
 // vfs - pointer to the sqlite3_vfs object.
 // fileName - the name of the file.

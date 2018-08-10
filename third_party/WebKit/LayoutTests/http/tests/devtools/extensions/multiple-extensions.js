@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 (async function() {
-  TestRunner.addResult(`Tests co-existance of multiple DevTools extensions\n`);
+  TestRunner.addResult(`Tests co-existence of multiple DevTools extensions\n`);
   await TestRunner.loadModule('extensions_test_runner');
 
   const tests = [

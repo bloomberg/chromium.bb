@@ -2313,7 +2313,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 
   // Only add leading and trailing constraints once as they are never updated.
-  // This uses the existance of |primaryToolbarOffsetConstraint| as a proxy for
+  // This uses the existence of |primaryToolbarOffsetConstraint| as a proxy for
   // whether we've already added the leading and trailing constraints.
   if (!self.primaryToolbarOffsetConstraint) {
     [NSLayoutConstraint activateConstraints:@[

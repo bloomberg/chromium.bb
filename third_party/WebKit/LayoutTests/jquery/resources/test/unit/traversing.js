@@ -366,9 +366,9 @@ test("prevUntil([String])", function() {
 test("contents()", function() {
 	expect(12);
 	equals( jQuery("#ap").contents().length, 9, "Check element contents" );
-	ok( jQuery("#iframe").contents()[0], "Check existance of IFrame document" );
+	ok( jQuery("#iframe").contents()[0], "Check existence of IFrame document" );
 	var ibody = jQuery("#loadediframe").contents()[0].body;
-	ok( ibody, "Check existance of IFrame body" );
+	ok( ibody, "Check existence of IFrame body" );
 
 	equals( jQuery("span", ibody).text(), "span text", "Find span in IFrame and check its text" );
 

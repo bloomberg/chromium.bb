@@ -64,7 +64,7 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
       std::unique_ptr<viz::SingleReleaseCallback> release_callback);
 
   // These methods notify the display compositor, through the
-  // CompositorFrameSink, of the existance of a SharedBitmapId and its
+  // CompositorFrameSink, of the existence of a SharedBitmapId and its
   // mapping to a SharedMemory in |bitmap|. Then this SharedBitmapId can be used
   // in TransferableResources inserted on the layer while it is registered. If
   // the layer is destroyed, the SharedBitmapId will be unregistered
