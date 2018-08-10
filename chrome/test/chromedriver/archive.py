@@ -70,29 +70,15 @@ def DownloadChrome(revision, dest_dir, site=Site.CHROMIUM_SNAPSHOT):
 
   zip_path = os.path.join(dest_dir, 'chrome-%s.zip' % revision)
   if not os.path.exists(zip_path):
-    legacy = int(revision) < 579575
-    url = site + '/%s/%s' % (_GetDownloadPlatform(legacy), GetZipName(revision))
+    url = site + '/%s/%s' % (_GetDownloadPlatform(), GetZipName(revision))
     print 'Downloading', url, '...'
     urllib.urlretrieve(url, zip_path)
   util.Unzip(zip_path, dest_dir)
   return os.path.join(dest_dir, GetDirName(), GetChromePathFromPackage())
 
 
-def _GetDownloadPlatform(legacy=False):
-  """Returns the name for this platform on the archive site.
-
-  Args:
-    legacy: When True, return name used for builds before revision 579575.
-            TODO(johnchen@chromium.org): Remove when we stop supporting m69.
-  """
-  if legacy:
-    if util.IsWindows():
-      return 'Win'
-    elif util.IsMac():
-      return 'Mac'
-    elif util.IsLinux():
-      return 'Linux_x64'
-
+def _GetDownloadPlatform():
+  """Returns the name for this platform on the archive site."""
   if util.IsWindows():
     return 'win32_rel'
   elif util.IsMac():
