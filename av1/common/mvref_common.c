@@ -250,7 +250,7 @@ static void scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   mi_pos.row = row_offset;
   mi_pos.col = col_offset;
 
-  if (is_inside(tile, mi_col, mi_row, cm->mi_rows, &mi_pos)) {
+  if (is_inside(tile, mi_col, mi_row, &mi_pos)) {
     const MB_MODE_INFO *const candidate =
         xd->mi[mi_pos.row * xd->mi_stride + mi_pos.col];
     const int len = mi_size_wide[BLOCK_8X8];
@@ -337,7 +337,7 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   mi_pos.row = (mi_row & 0x01) ? blk_row : blk_row + 1;
   mi_pos.col = (mi_col & 0x01) ? blk_col : blk_col + 1;
 
-  if (!is_inside(&xd->tile, mi_col, mi_row, cm->mi_rows, &mi_pos)) return 0;
+  if (!is_inside(&xd->tile, mi_col, mi_row, &mi_pos)) return 0;
 
   const TPL_MV_REF *prev_frame_mvs =
       cm->tpl_mvs + ((mi_row + mi_pos.row) >> 1) * (cm->mi_stride >> 1) +
@@ -515,8 +515,7 @@ static void setup_ref_mv_list(
     if (xd->n4_h < mi_size_high[BLOCK_8X8])
       max_row_offset = -(2 << 1) + row_adj;
 
-    max_row_offset =
-        find_valid_row_offset(tile, mi_row, cm->mi_rows, max_row_offset);
+    max_row_offset = find_valid_row_offset(tile, mi_row, max_row_offset);
   }
 
   if (xd->left_available) {
@@ -1240,7 +1239,7 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
       has_top_right(cm, xd, mi_row, mi_col, AOMMAX(xd->n4_w, xd->n4_h))) {
     POSITION trb_pos = { -1, xd->n4_w };
 
-    if (is_inside(tile, mi_col, mi_row, cm->mi_rows, &trb_pos)) {
+    if (is_inside(tile, mi_col, mi_row, &trb_pos)) {
       int mi_row_offset = -1;
       int mi_col_offset = xd->n4_w;
 
