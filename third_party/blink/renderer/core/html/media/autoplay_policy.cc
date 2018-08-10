@@ -113,8 +113,7 @@ bool AutoplayPolicy::IsDocumentAllowedToPlay(const Document& document) {
       return true;
     }
 
-    if (!RuntimeEnabledFeatures::FeaturePolicyAutoplayFeatureEnabled() ||
-        !frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kAutoplay)) {
+    if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kAutoplay)) {
       return false;
     }
   }
