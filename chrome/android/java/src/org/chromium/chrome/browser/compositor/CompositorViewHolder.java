@@ -104,7 +104,7 @@ public class CompositorViewHolder extends FrameLayout
     private ControlContainer mControlContainer;
 
     private InsetObserverView mInsetObserverView;
-    private boolean mShowingFullscreenNonVideoContent;
+    private boolean mShowingFullscreen;
     private Runnable mSystemUiFullscreenResizeRunnable;
 
     /** The currently visible Tab. */
@@ -258,7 +258,7 @@ public class CompositorViewHolder extends FrameLayout
         // contents.
         //
         // [1] - https://developer.android.com/reference/android/view/WindowManager.LayoutParams.html#FLAG_FULLSCREEN
-        if (mShowingFullscreenNonVideoContent && UiUtils.isKeyboardShowing(getContext(), this)) {
+        if (mShowingFullscreen && UiUtils.isKeyboardShowing(getContext(), this)) {
             getWindowVisibleDisplayFrame(mCacheRect);
 
             // On certain devices, getWindowVisibleDisplayFrame is larger than the screen size, so
@@ -273,36 +273,26 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     private void handleSystemUiVisibilityChange() {
-        boolean isInFullscreen = false;
-        boolean layoutFullscreen = false;
-
         View view = getContentView();
         if (view == null || !ViewCompat.isAttachedToWindow(view)) view = this;
 
+        int uiVisibility = 0;
         while (view != null) {
-            int uiVisibility = view.getSystemUiVisibility();
-            layoutFullscreen |= (uiVisibility & View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) != 0;
-            isInFullscreen |= (uiVisibility & View.SYSTEM_UI_FLAG_FULLSCREEN) != 0;
-            if (layoutFullscreen && isInFullscreen) break;
+            uiVisibility |= view.getSystemUiVisibility();
             if (!(view.getParent() instanceof View)) break;
             view = (View) view.getParent();
         }
 
-        if (!isInFullscreen && !mShowingFullscreenNonVideoContent) return;
+        // SYSTEM_UI_FLAG_FULLSCREEN is cleared when showing the soft keyboard in older version of
+        // Android (prior to P).  The immersive mode flags are not cleared, so use those in
+        // combination to detect this state.
+        boolean isInFullscreen = (uiVisibility & View.SYSTEM_UI_FLAG_FULLSCREEN) != 0
+                || (uiVisibility & View.SYSTEM_UI_FLAG_IMMERSIVE) != 0
+                || (uiVisibility & View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY) != 0;
+        boolean layoutFullscreen = (uiVisibility & View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) != 0;
 
-        if (isInFullscreen && mFullscreenManager != null
-                && mFullscreenManager.getPersistentFullscreenMode()) {
-            Tab tab = getCurrentTab();
-            WebContents webContents = tab != null ? tab.getWebContents() : null;
-            // When playing fullscreen video, the inset size adjustments are always temporary and
-            // should be ignored to avoid relayout janks.
-            if (webContents != null && webContents.hasActiveEffectivelyFullscreenVideo()) {
-                isInFullscreen = false;
-            }
-        }
-
-        if (mShowingFullscreenNonVideoContent == isInFullscreen) return;
-        mShowingFullscreenNonVideoContent = isInFullscreen;
+        if (mShowingFullscreen == isInFullscreen) return;
+        mShowingFullscreen = isInFullscreen;
 
         if (mSystemUiFullscreenResizeRunnable == null) {
             mSystemUiFullscreenResizeRunnable = () -> {
@@ -376,8 +366,8 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     @Override
-    public void onInsetChanged(int top, int left, int bottom, int right) {
-        if (mShowingFullscreenNonVideoContent) onViewportChanged();
+    public void onInsetChanged(int left, int top, int right, int bottom) {
+        if (mShowingFullscreen) onViewportChanged();
     }
 
     @Override
