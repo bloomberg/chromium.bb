@@ -1096,6 +1096,13 @@ bool FrameSelection::SelectWordAroundCaret() {
     // for avoiding unnecessary canonicalization.
     VisiblePosition start = StartOfWord(position, word_side);
     VisiblePosition end = EndOfWord(position, word_side);
+
+    // TODO(editing-dev): |StartOfWord()| and |EndOfWord()| should not make null
+    // for non-null parameter.
+    // See http://crbug.com/872443
+    if (start.DeepEquivalent().IsNull() || end.DeepEquivalent().IsNull())
+      continue;
+
     String text =
         PlainText(EphemeralRange(start.DeepEquivalent(), end.DeepEquivalent()));
     if (!text.IsEmpty() && !IsSeparator(text.CharacterStartingAt(0))) {
