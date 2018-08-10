@@ -215,6 +215,8 @@ void AssistantContainerView::OnUiModeChanged(AssistantUiMode ui_mode) {
       break;
     case AssistantUiMode::kMainUi:
       assistant_main_view_->SetVisible(true);
+      if (GetWidget() && GetWidget()->IsActive())
+        RequestFocus();
       break;
     case AssistantUiMode::kWebUi:
       assistant_web_view_->SetVisible(true);
