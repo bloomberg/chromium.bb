@@ -160,6 +160,9 @@ class Deque {
                 "Cannot put raw pointers to garbage-collected classes into a "
                 "Deque. Use HeapDeque<Member<T>> instead.");
 
+ protected:
+  T** GetBufferSlot() { return buffer_.BufferSlot(); }
+
  private:
   friend class DequeIteratorBase<T, inlineCapacity, Allocator>;
 

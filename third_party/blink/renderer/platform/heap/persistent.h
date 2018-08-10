@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_compact.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/heap/persistent_node.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
@@ -686,6 +687,11 @@ class PersistentHeapCollectionBase : public Collection {
 #if DCHECK_IS_ON()
     DCHECK_EQ(state_, state);
 #endif
+    HeapCompact* compactor = state->Heap().Compaction();
+    if (compactor->IsCompacting()) {
+      compactor->RemoveSlot(
+          reinterpret_cast<MovableReference*>(this->GetBufferSlot()));
+    }
     state->FreePersistentNode(state->GetPersistentRegion(), persistent_node_);
     persistent_node_ = nullptr;
   }

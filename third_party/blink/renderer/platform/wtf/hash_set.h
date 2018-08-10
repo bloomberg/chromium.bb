@@ -138,6 +138,9 @@ class HashSet {
     impl_.Trace(visitor);
   }
 
+ protected:
+  ValueType** GetBufferSlot() { return impl_.GetBufferSlot(); }
+
  private:
   HashTableType impl_;
 };
