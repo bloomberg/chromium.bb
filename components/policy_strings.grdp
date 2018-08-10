@@ -213,11 +213,15 @@
     <message name="IDS_POLICY_NETWORK_CONFIG_PARSE_FAILED" desc="The text displayed in the status column when the corresponding network configuration policy failed to parse.">
       Network configuration failed to be parsed.
     </message>
-    <message name="IDS_POLICY_NETWORK_CONFIG_IMPORT_PARTIAL" desc="The text displayed in the status column when the corresponding network configuration policy is not standard conform and was imported partially.">
+    <message name="IDS_POLICY_NETWORK_CONFIG_IMPORT_PARTIAL" desc="The text displayed in the status column when the corresponding network configuration policy is not standard conform and was imported partially. DEBUG_INFO contains non-localized detailed information about existing warnings.">
       The network configuration doesn't comply to the ONC standard. Parts of the configuration may not be imported.
+Additional details:
+<ph name="DEBUG_INFO">$1<ex>WARNING: Field name 'SomeRandomField' is unknown. (at toplevel)</ex></ph>
     </message>
-    <message name="IDS_POLICY_NETWORK_CONFIG_IMPORT_FAILED" desc="The text displayed in the status column when the corresponding network configuration policy is invalid.">
+    <message name="IDS_POLICY_NETWORK_CONFIG_IMPORT_FAILED" desc="The text displayed in the status column when the corresponding network configuration policy is invalid. DEBUG_INFO contains non-localized detailed information about existing errors/warnings.">
       The network configuration is invalid and couldn't be imported.
+Additional details:
+<ph name="DEBUG_INFO">$1<ex>ERROR: Field name 'SomeRandomField' is unknown. (at toplevel)</ex></ph>
     </message>
     <message name="IDS_POLICY_SCOPE_ERROR" desc="Text displayed in the status column when a policy is set in an unsupported scope.">
       Policy scope is not supported.
