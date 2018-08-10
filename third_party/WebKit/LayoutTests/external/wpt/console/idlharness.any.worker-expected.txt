@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-PASS console interfaces
+PASS idl_test setup
 FAIL console namespace: operation assert(boolean, any...) assert_equals: operation has wrong .length expected 0 but got 1
 FAIL console namespace: operation clear() assert_equals: operation has wrong .length expected 0 but got 1
 FAIL console namespace: operation debug(any...) assert_equals: operation has wrong .length expected 0 but got 1
