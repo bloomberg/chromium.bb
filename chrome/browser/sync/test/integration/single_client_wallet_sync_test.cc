@@ -229,6 +229,26 @@ void ExpectDefaultProfileValues(const AutofillProfile& profile) {
                 autofill::ADDRESS_HOME_DEPENDENT_LOCALITY))));
 }
 
+// Class that enables or disables USS based on test parameter. Must be the first
+// base class of the test fixture.
+// TODO(jkrcal): When the new implementation fully launches, remove this class,
+// convert all tests from *_P back to *_F and remove the instance at the end.
+class UssSwitchToggler : public testing::WithParamInterface<bool> {
+ public:
+  UssSwitchToggler() {
+    if (GetParam()) {
+      override_features_.InitAndEnableFeature(
+          switches::kSyncUSSAutofillWalletData);
+    } else {
+      override_features_.InitAndDisableFeature(
+          switches::kSyncUSSAutofillWalletData);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList override_features_;
+};
+
 }  // namespace
 
 class SingleClientWalletSyncTest : public SyncTest {
@@ -254,43 +274,20 @@ class SingleClientWalletSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientWalletSyncTest);
 };
 
-// Checker that will wait until an asynchronous Wallet datatype enable event
-// happens, or times out.
-class WalletEnabledChecker : public SingleClientStatusChangeChecker {
+// TODO: Merge the two fixtures into one when all tests are passing for USS.
+class SingleClientWalletSyncTestIncludingUssTests
+    : public UssSwitchToggler,
+      public SingleClientWalletSyncTest {
  public:
-  WalletEnabledChecker()
-      : SingleClientStatusChangeChecker(
-            sync_datatype_helper::test()->GetSyncService(0)) {}
-  ~WalletEnabledChecker() override {}
+  SingleClientWalletSyncTestIncludingUssTests(){};
+  ~SingleClientWalletSyncTestIncludingUssTests() override {}
 
-  // SingleClientStatusChangeChecker overrides.
-  bool IsExitConditionSatisfied() override {
-    return service()->GetActiveDataTypes().Has(syncer::AUTOFILL_WALLET_DATA);
-  }
-  std::string GetDebugMessage() const override {
-    return "Waiting for wallet enable event.";
-  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SingleClientWalletSyncTestIncludingUssTests);
 };
 
-// Checker that will wait until an asynchronous Wallet datatype disable event
-// happens, or times out
-class WalletDisabledChecker : public SingleClientStatusChangeChecker {
- public:
-  WalletDisabledChecker()
-      : SingleClientStatusChangeChecker(
-            sync_datatype_helper::test()->GetSyncService(0)) {}
-  ~WalletDisabledChecker() override {}
-
-  // SingleClientStatusChangeChecker overrides.
-  bool IsExitConditionSatisfied() override {
-    return !service()->GetActiveDataTypes().Has(syncer::AUTOFILL_WALLET_DATA);
-  }
-  std::string GetDebugMessage() const override {
-    return "Waiting for wallet disable event.";
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, EnabledByDefault) {
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestIncludingUssTests,
+                       EnabledByDefault) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(GetClient(0)->service()->GetActiveDataTypes().Has(
       syncer::AUTOFILL_WALLET_DATA));
@@ -609,3 +606,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   EXPECT_EQ(kDefaultCardID, cards[0]->server_id());
   EXPECT_EQ(kDefaultBillingAddressId, cards[0]->billing_address_id());
 }
+
+INSTANTIATE_TEST_CASE_P(USS,
+                        SingleClientWalletSyncTestIncludingUssTests,
+                        ::testing::Values(false, true));
