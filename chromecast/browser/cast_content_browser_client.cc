@@ -741,6 +741,10 @@ CastContentBrowserClient::GetNavigationUIData(
   return std::make_unique<CastNavigationUIData>(session_id);
 }
 
+bool CastContentBrowserClient::ShouldEnableStrictSiteIsolation() {
+  return false;
+}
+
 scoped_refptr<net::X509Certificate> CastContentBrowserClient::DeviceCert() {
   return nullptr;
 }

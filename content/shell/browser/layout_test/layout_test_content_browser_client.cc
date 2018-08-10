@@ -286,6 +286,14 @@ bool LayoutTestContentBrowserClient::CanCreateWindow(
   return !block_popups_ || user_gesture;
 }
 
+bool LayoutTestContentBrowserClient::ShouldEnableStrictSiteIsolation() {
+  // TODO(lukasza, alexmos): Layout tests should have the same default state of
+  // site-per-process as everything else, but because of a backlog of layout
+  // test failures (see https://crbug.com/477150), layout tests still use no
+  // isolation by default.
+  return false;
+}
+
 void LayoutTestContentBrowserClient::ExposeInterfacesToFrame(
     service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
         registry) {

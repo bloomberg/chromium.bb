@@ -214,10 +214,11 @@ ContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
 }
 
 bool ContentBrowserClient::ShouldEnableStrictSiteIsolation() {
-  // By default --site-per-process is turned off for //content embedders.
-  // This ensures that embedders like ChromeCast and/or Opera are not forced
-  // into --site-per-process.
+#if defined(OS_ANDROID)
   return false;
+#else
+  return true;
+#endif
 }
 
 bool ContentBrowserClient::IsFileAccessAllowed(
