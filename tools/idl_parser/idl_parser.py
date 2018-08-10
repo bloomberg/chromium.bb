@@ -464,9 +464,9 @@ class IDLParser(object):
     p[0] = self.BuildError(p, 'Enum')
 
   def p_EnumValueList(self, p):
-    """EnumValueList : ExtendedAttributeList string EnumValueListComma"""
-    enum = self.BuildNamed('EnumItem', p, 2, p[1])
-    p[0] = ListFromConcat(enum, p[3])
+    """EnumValueList : string EnumValueListComma"""
+    enum = self.BuildNamed('EnumItem', p, 1)
+    p[0] = ListFromConcat(enum, p[2])
 
   def p_EnumValueListComma(self, p):
     """EnumValueListComma : ',' EnumValueListString
@@ -475,11 +475,11 @@ class IDLParser(object):
       p[0] = p[2]
 
   def p_EnumValueListString(self, p):
-    """EnumValueListString : ExtendedAttributeList string EnumValueListComma
+    """EnumValueListString : string EnumValueListComma
                            |"""
     if len(p) > 1:
-      enum = self.BuildNamed('EnumItem', p, 2, p[1])
-      p[0] = ListFromConcat(enum, p[3])
+      enum = self.BuildNamed('EnumItem', p, 1)
+      p[0] = ListFromConcat(enum, p[2])
 
   def p_CallbackRest(self, p):
     """CallbackRest : identifier '=' ReturnType '(' ArgumentList ')' ';'"""
