@@ -8,8 +8,9 @@ namespace viz {
 
 ExternalBeginFrameSourceMojo::ExternalBeginFrameSourceMojo(
     mojom::ExternalBeginFrameControllerAssociatedRequest controller_request,
-    mojom::ExternalBeginFrameControllerClientPtr client)
-    : ExternalBeginFrameSource(this),
+    mojom::ExternalBeginFrameControllerClientPtr client,
+    uint32_t restart_id)
+    : ExternalBeginFrameSource(this, restart_id),
       binding_(this, std::move(controller_request)),
       client_(std::move(client)) {}
 

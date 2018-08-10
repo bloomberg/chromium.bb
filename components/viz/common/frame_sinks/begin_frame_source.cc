@@ -279,8 +279,9 @@ void DelayBasedBeginFrameSource::OnTimerTick() {
 
 // ExternalBeginFrameSource -----------------------------------------------
 ExternalBeginFrameSource::ExternalBeginFrameSource(
-    ExternalBeginFrameSourceClient* client)
-    : BeginFrameSource(kNotRestartableId), client_(client) {
+    ExternalBeginFrameSourceClient* client,
+    uint32_t restart_id)
+    : BeginFrameSource(restart_id), client_(client) {
   DCHECK(client_);
 }
 

@@ -20,7 +20,7 @@ class VIZ_SERVICE_EXPORT ExternalBeginFrameSourceAndroid
     : public ExternalBeginFrameSource,
       public ExternalBeginFrameSourceClient {
  public:
-  ExternalBeginFrameSourceAndroid();
+  explicit ExternalBeginFrameSourceAndroid(uint32_t restart_id);
   ~ExternalBeginFrameSourceAndroid() override;
 
   void OnVSync(JNIEnv* env,

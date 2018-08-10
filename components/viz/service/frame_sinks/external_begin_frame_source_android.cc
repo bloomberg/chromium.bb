@@ -9,8 +9,9 @@
 
 namespace viz {
 
-ExternalBeginFrameSourceAndroid::ExternalBeginFrameSourceAndroid()
-    : ExternalBeginFrameSource(this),
+ExternalBeginFrameSourceAndroid::ExternalBeginFrameSourceAndroid(
+    uint32_t restart_id)
+    : ExternalBeginFrameSource(this, restart_id),
       j_object_(Java_ExternalBeginFrameSourceAndroid_Constructor(
           base::android::AttachCurrentThread(),
           reinterpret_cast<jlong>(this))) {}
