@@ -638,10 +638,6 @@
       status: "experimental",
     },
     {
-      name: "LongTaskObserver",
-      status: "stable",
-    },
-    {
       name: "LongTaskV2",
     },
     {
