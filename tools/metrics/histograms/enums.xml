@@ -32362,6 +32362,9 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="None"/>
   <int value="1" label="Infobar shown"/>
   <int value="2" label="Link clicked on the infobar"/>
+  <int value="3" label="A navigation suggestion is found using top sites list"/>
+  <int value="4"
+      label="A navigation suggestion is found using site engagement"/>
 </enum>
 
 <enum name="NavigationWasServedFromCache">

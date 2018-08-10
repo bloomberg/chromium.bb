@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
@@ -29,6 +30,8 @@ struct USpoofChecker;
 
 namespace url_formatter {
 FORWARD_DECLARE_TEST(UrlFormatterTest, IDNToUnicode);
+
+using Skeletons = base::flat_set<std::string>;
 
 // A helper class for IDN Spoof checking, used to ensure that no IDN input is
 // spoofable per Chromium's standard of spoofability. For a more thorough
@@ -63,6 +66,10 @@ class IDNSpoofChecker {
   //   2. Look up the diacritic-free version of |hostname| in the list of
   //   top domains. Note that non-IDN hostnames will not get here.
   std::string GetSimilarTopDomain(base::StringPiece16 hostname);
+
+  // Returns skeleton strings computed from |hostname|. This function can apply
+  // extra mappings to some characters to produce multiple skeletons.
+  Skeletons GetSkeletons(base::StringPiece16 hostname);
 
  private:
   // Sets allowed characters in IDN labels and turns on USPOOF_CHAR_LIMIT.

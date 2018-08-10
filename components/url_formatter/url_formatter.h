@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_offset_string_conversions.h"
@@ -33,6 +34,8 @@ struct Parsed;
 }
 
 namespace url_formatter {
+
+using Skeletons = base::flat_set<std::string>;
 
 // Used by FormatUrl to specify handling of certain parts of the url.
 typedef uint32_t FormatUrlType;
@@ -178,6 +181,9 @@ base::string16 StripWWW(const base::string16& text);
 
 // Runs |url|'s host through StripWWW().  |url| must be valid.
 base::string16 StripWWWFromHost(const GURL& url);
+
+// Returns skeleton strings computed from |host| for spoof checking.
+Skeletons GetSkeletons(const base::string16& host);
 
 }  // namespace url_formatter
 

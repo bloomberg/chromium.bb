@@ -6,18 +6,33 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/url_formatter/idn_spoof_checker.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace {
 
 void RecordEvent(IdnNavigationObserver::NavigationSuggestionEvent event) {
   UMA_HISTOGRAM_ENUMERATION(IdnNavigationObserver::kHistogramName, event);
+}
+
+bool SkeletonsMatch(const url_formatter::Skeletons& skeletons1,
+                    const url_formatter::Skeletons& skeletons2) {
+  DCHECK(!skeletons1.empty());
+  DCHECK(!skeletons2.empty());
+  for (const std::string& skeleton1 : skeletons1) {
+    if (base::ContainsKey(skeletons2, skeleton1))
+      return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -35,22 +50,34 @@ void IdnNavigationObserver::NavigationEntryCommitted(
     const content::LoadCommittedDetails& load_details) {
   const GURL url = load_details.entry->GetVirtualURL();
   const base::StringPiece host = url.host_piece();
-  std::string matched_domain;
 
   url_formatter::IDNConversionResult result =
       url_formatter::IDNToUnicodeWithDetails(host);
-  if (!result.has_idn_component || result.matching_top_domain.empty())
+  if (!result.has_idn_component)
     return;
 
+  std::string matched_domain;
+  if (result.matching_top_domain.empty()) {
+    matched_domain = GetMatchingSiteEngagementDomain(url);
+    if (matched_domain.empty())
+      return;
+    RecordEvent(NavigationSuggestionEvent::kMatchSiteEngagement);
+  } else {
+    matched_domain = result.matching_top_domain;
+    RecordEvent(NavigationSuggestionEvent::kMatchTopSite);
+  }
+
+  DCHECK(!matched_domain.empty());
+
   GURL::Replacements replace_host;
-  replace_host.SetHostStr(result.matching_top_domain);
+  replace_host.SetHostStr(matched_domain);
   const GURL suggested_url = url.ReplaceComponents(replace_host);
 
   RecordEvent(NavigationSuggestionEvent::kInfobarShown);
 
   AlternateNavInfoBarDelegate::CreateForIDNNavigation(
-      web_contents(), base::UTF8ToUTF16(result.matching_top_domain),
-      suggested_url, load_details.entry->GetVirtualURL(),
+      web_contents(), base::UTF8ToUTF16(matched_domain), suggested_url,
+      load_details.entry->GetVirtualURL(),
       base::BindOnce(RecordEvent, NavigationSuggestionEvent::kLinkClicked));
 }
 
@@ -62,4 +89,66 @@ void IdnNavigationObserver::CreateForWebContents(
     web_contents->SetUserData(
         UserDataKey(), std::make_unique<IdnNavigationObserver>(web_contents));
   }
+}
+
+std::string IdnNavigationObserver::GetMatchingSiteEngagementDomain(
+    const GURL& url) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  SiteEngagementService* service = SiteEngagementService::Get(profile);
+  if (service->IsEngagementAtLeast(url, blink::mojom::EngagementLevel::LOW))
+    return std::string();
+
+  // Compute skeletons using eTLD+1.
+  const std::string domain_and_registry =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+
+  url_formatter::IDNConversionResult result =
+      url_formatter::IDNToUnicodeWithDetails(domain_and_registry);
+  DCHECK(result.has_idn_component);
+  const url_formatter::Skeletons navigated_skeletons =
+      url_formatter::GetSkeletons(result.result);
+
+  std::map<std::string, url_formatter::Skeletons>
+      domain_and_registry_to_skeleton;
+  std::vector<mojom::SiteEngagementDetails> engagement_details =
+      service->GetAllDetails();
+  for (const auto& detail : engagement_details) {
+    // Ignore sites with an engagement score lower than LOW.
+    if (!service->IsEngagementAtLeast(detail.origin,
+                                      blink::mojom::EngagementLevel::LOW))
+      continue;
+
+    // If this is already an engaged site, don't suggest any alternatives.
+    const std::string engaged_domain_and_registry =
+        net::registry_controlled_domains::GetDomainAndRegistry(
+            detail.origin,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    if (domain_and_registry == engaged_domain_and_registry)
+      return std::string();
+
+    // Multiple domains can map to the same eTLD+1, avoid skeleton generation
+    // when possible.
+    auto it = domain_and_registry_to_skeleton.find(engaged_domain_and_registry);
+    url_formatter::Skeletons skeletons;
+    if (it == domain_and_registry_to_skeleton.end()) {
+      // Engaged site can be IDN. Decode as unicode and compute the skeleton
+      // from that. At this point, top domain checks have already been done, so
+      // if the site is IDN, it'll always be decoded as unicode (i.e. IDN spoof
+      // checker will not find a matching top domain and fall back to punycode
+      // for it).
+      url_formatter::IDNConversionResult conversion_result =
+          url_formatter::IDNToUnicodeWithDetails(engaged_domain_and_registry);
+
+      skeletons = url_formatter::GetSkeletons(conversion_result.result);
+      domain_and_registry_to_skeleton[engaged_domain_and_registry] = skeletons;
+    } else {
+      skeletons = it->second;
+    }
+
+    if (SkeletonsMatch(navigated_skeletons, skeletons))
+      return detail.origin.host();
+  }
+  return std::string();
 }
