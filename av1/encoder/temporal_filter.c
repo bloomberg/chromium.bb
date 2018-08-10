@@ -39,7 +39,6 @@ static void temporal_filter_predictors_mb_c(
     int stride, int uv_block_width, int uv_block_height, int mv_row, int mv_col,
     uint8_t *pred, struct scale_factors *scale, int x, int y,
     int can_use_previous, int num_planes) {
-  const int which_mv = 0;
   const MV mv = { mv_row, mv_col };
   enum mv_precision mv_precision_uv;
   int uv_stride;
@@ -55,25 +54,6 @@ static void temporal_filter_predictors_mb_c(
   } else {
     uv_stride = stride;
     mv_precision_uv = MV_PRECISION_Q3;
-  }
-
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    av1_highbd_build_inter_predictor(y_mb_ptr, stride, &pred[0], 16, &mv, scale,
-                                     16, 16, which_mv, interp_filters,
-                                     &warp_types, x, y, 0, MV_PRECISION_Q3, x,
-                                     y, xd, can_use_previous);
-    if (num_planes > 1) {
-      av1_highbd_build_inter_predictor(
-          u_mb_ptr, uv_stride, &pred[256], uv_block_width, &mv, scale,
-          uv_block_width, uv_block_height, which_mv, interp_filters,
-          &warp_types, x, y, 1, mv_precision_uv, x, y, xd, can_use_previous);
-
-      av1_highbd_build_inter_predictor(
-          v_mb_ptr, uv_stride, &pred[512], uv_block_width, &mv, scale,
-          uv_block_width, uv_block_height, which_mv, interp_filters,
-          &warp_types, x, y, 2, mv_precision_uv, x, y, xd, can_use_previous);
-    }
-    return;
   }
   av1_build_inter_predictor(y_mb_ptr, stride, &pred[0], 16, &mv, scale, 16, 16,
                             &conv_params, interp_filters, &warp_types, x, y, 0,

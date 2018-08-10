@@ -300,35 +300,9 @@ void av1_build_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
     av1_build_inter_predictors_sbuv(cm, xd, mi_row, mi_col, ctx, bsize);
 }
 
-// TODO(sarahparker) av1_highbd_build_inter_predictor and
+// TODO(sarahparker):
 // av1_build_inter_predictor should be combined with
 // av1_make_inter_predictor
-void av1_highbd_build_inter_predictor(
-    const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
-    const MV *src_mv, const struct scale_factors *sf, int w, int h, int ref,
-    InterpFilters interp_filters, const WarpTypesAllowed *warp_types, int p_col,
-    int p_row, int plane, enum mv_precision precision, int x, int y,
-    const MACROBLOCKD *xd, int can_use_previous) {
-  const int is_q4 = precision == MV_PRECISION_Q4;
-  const MV mv_q4 = { is_q4 ? src_mv->row : src_mv->row * 2,
-                     is_q4 ? src_mv->col : src_mv->col * 2 };
-  MV32 mv = av1_scale_mv(&mv_q4, x, y, sf);
-  mv.col += SCALE_EXTRA_OFF;
-  mv.row += SCALE_EXTRA_OFF;
-  const SubpelParams subpel_params = { sf->x_step_q4, sf->y_step_q4,
-                                       mv.col & SCALE_SUBPEL_MASK,
-                                       mv.row & SCALE_SUBPEL_MASK };
-  ConvolveParams conv_params = get_conv_params(0, plane, xd->bd);
-
-  src += (mv.row >> SCALE_SUBPEL_BITS) * src_stride +
-         (mv.col >> SCALE_SUBPEL_BITS);
-
-  av1_make_inter_predictor(src, src_stride, dst, dst_stride, &subpel_params, sf,
-                           w, h, &conv_params, interp_filters, warp_types,
-                           p_col, p_row, plane, ref, xd->mi[0], 0, xd,
-                           can_use_previous);
-}
-
 void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                                int dst_stride, const MV *src_mv,
                                const struct scale_factors *sf, int w, int h,

@@ -6562,20 +6562,12 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 
     // Since we have scaled the reference frames to match the size of the
     // current frame we must use a unit scaling factor during mode selection.
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-      av1_highbd_build_inter_predictor(
-          ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
-          &cur_mv[!id].as_mv, &cm->sf_identity, pw, ph, 0, interp_filters,
-          &warp_types[!id], p_col, p_row, plane, MV_PRECISION_Q3,
-          mi_col * MI_SIZE, mi_row * MI_SIZE, xd, cm->allow_warped_motion);
-    } else {
-      av1_build_inter_predictor(ref_yv12[!id].buf, ref_yv12[!id].stride,
-                                second_pred, pw, &cur_mv[!id].as_mv,
-                                &cm->sf_identity, pw, ph, &conv_params,
-                                interp_filters, &warp_types[!id], p_col, p_row,
-                                plane, !id, MV_PRECISION_Q3, mi_col * MI_SIZE,
-                                mi_row * MI_SIZE, xd, cm->allow_warped_motion);
-    }
+    av1_build_inter_predictor(ref_yv12[!id].buf, ref_yv12[!id].stride,
+                              second_pred, pw, &cur_mv[!id].as_mv,
+                              &cm->sf_identity, pw, ph, &conv_params,
+                              interp_filters, &warp_types[!id], p_col, p_row,
+                              plane, !id, MV_PRECISION_Q3, mi_col * MI_SIZE,
+                              mi_row * MI_SIZE, xd, cm->allow_warped_motion);
 
     const int order_idx = id != 0;
     av1_jnt_comp_weight_assign(cm, mbmi, order_idx, &xd->jcp_param.fwd_offset,
@@ -6655,10 +6647,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   *rate_mv = 0;
 
   for (ref = 0; ref < 2; ++ref) {
-    av1_set_mvcost(
-        x, ref,
-        mbmi->ref_mv_idx + (have_nearmv_in_inter_mode(mbmi->mode) ? 1 : 0));
-
+    av1_set_mvcost(x, ref, ref_mv_idx);
     const int_mv curr_ref_mv = av1_get_ref_mv(x, ref);
     *rate_mv += av1_mv_bit_cost(&cur_mv[ref].as_mv, &curr_ref_mv.as_mv,
                                 x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
@@ -7114,19 +7103,11 @@ static void build_second_inter_pred(const AV1_COMP *cpi, MACROBLOCK *x,
   warp_types.local_warp_allowed = mbmi->motion_mode == WARPED_CAUSAL;
 
   // Get the prediction block from the 'other' reference frame.
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    av1_highbd_build_inter_predictor(
-        ref_yv12.buf, ref_yv12.stride, second_pred, pw, other_mv, &sf, pw, ph,
-        0, mbmi->interp_filters, &warp_types, p_col, p_row, plane,
-        MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd,
-        cm->allow_warped_motion);
-  } else {
-    av1_build_inter_predictor(
-        ref_yv12.buf, ref_yv12.stride, second_pred, pw, other_mv, &sf, pw, ph,
-        &conv_params, mbmi->interp_filters, &warp_types, p_col, p_row, plane,
-        !ref_idx, MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd,
-        cm->allow_warped_motion);
-  }
+  av1_build_inter_predictor(ref_yv12.buf, ref_yv12.stride, second_pred, pw,
+                            other_mv, &sf, pw, ph, &conv_params,
+                            mbmi->interp_filters, &warp_types, p_col, p_row,
+                            plane, !ref_idx, MV_PRECISION_Q3, mi_col * MI_SIZE,
+                            mi_row * MI_SIZE, xd, cm->allow_warped_motion);
 
   av1_jnt_comp_weight_assign(cm, mbmi, 0, &xd->jcp_param.fwd_offset,
                              &xd->jcp_param.bck_offset,
