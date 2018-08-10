@@ -248,11 +248,13 @@ TEST_F(SigninPromoViewMediatorTest, SigninPromoViewStateSignedin) {
         completion = value;
         return YES;
       }];
-  OCMExpect([consumer_ signinPromoViewMediator:mediator_
-                  shouldOpenSigninWithIdentity:nil
-                                   promoAction:signin_metrics::PromoAction::
-                                                   PROMO_ACTION_NEW_ACCOUNT
-                                    completion:completion_arg]);
+  OCMExpect([consumer_
+           signinPromoViewMediator:mediator_
+      shouldOpenSigninWithIdentity:nil
+                       promoAction:
+                           signin_metrics::PromoAction::
+                               PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT
+                        completion:completion_arg]);
   [mediator_ signinPromoViewDidTapSigninWithNewAccount:signin_promo_view_];
   EXPECT_TRUE(mediator_.isSigninInProgress);
   EXPECT_EQ(ios::SigninPromoViewState::UsedAtLeastOnce,

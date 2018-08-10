@@ -127,7 +127,8 @@ TEST_F(DiceTabHelperTest, Metrics) {
   dice_tab_helper->InitializeSigninFlow(
       signin_url_, signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS,
       signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
-      signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT);
+      signin_metrics::PromoAction::
+          PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT);
   EXPECT_EQ(1, ua_tester.GetActionCount("Signin_Signin_FromSettings"));
   EXPECT_EQ(1, ua_tester.GetActionCount("Signin_SigninPage_Loading"));
   EXPECT_EQ(0, ua_tester.GetActionCount("Signin_SigninPage_Shown"));
@@ -135,7 +136,7 @@ TEST_F(DiceTabHelperTest, Metrics) {
       "Signin.SigninStartedAccessPoint",
       signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS, 1);
   h_tester.ExpectUniqueSample(
-      "Signin.SigninStartedAccessPoint.NewAccount",
+      "Signin.SigninStartedAccessPoint.NewAccountNoExistingAccount",
       signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS, 1);
 
   // First call to did finish load does logs any Signin_SigninPage_Shown user

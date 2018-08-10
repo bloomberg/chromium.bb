@@ -429,11 +429,14 @@ const char* AlreadySeenSigninViewPreferenceKey(
   DCHECK(_isSigninPromoViewVisible);
   DCHECK(![self isInvalidClosedOrNeverVisible]);
   [self sendImpressionsTillSigninButtonsHistogram];
-  signin_metrics::RecordSigninUserActionForAccessPoint(
-      _accessPoint, signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT);
-  [self showSigninWithIdentity:nil
-                   promoAction:signin_metrics::PromoAction::
-                                   PROMO_ACTION_NEW_ACCOUNT];
+  // On iOS, the promo does not have a button to add and account when there is
+  // already an account on the device. That flow goes through the NOT_DEFAULT
+  // promo instead. Always use the NO_EXISTING_ACCOUNT variant.
+  signin_metrics::PromoAction promo_action =
+      signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT;
+  signin_metrics::RecordSigninUserActionForAccessPoint(_accessPoint,
+                                                       promo_action);
+  [self showSigninWithIdentity:nil promoAction:promo_action];
 }
 
 - (void)signinPromoViewDidTapSigninWithDefaultAccount:
@@ -442,11 +445,11 @@ const char* AlreadySeenSigninViewPreferenceKey(
   DCHECK(_isSigninPromoViewVisible);
   DCHECK(![self isInvalidClosedOrNeverVisible]);
   [self sendImpressionsTillSigninButtonsHistogram];
-  signin_metrics::RecordSigninUserActionForAccessPoint(
-      _accessPoint, signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT);
-  [self showSigninWithIdentity:_defaultIdentity
-                   promoAction:signin_metrics::PromoAction::
-                                   PROMO_ACTION_WITH_DEFAULT];
+  signin_metrics::PromoAction promo_action =
+      signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT;
+  signin_metrics::RecordSigninUserActionForAccessPoint(_accessPoint,
+                                                       promo_action);
+  [self showSigninWithIdentity:_defaultIdentity promoAction:promo_action];
 }
 
 - (void)signinPromoViewDidTapSigninWithOtherAccount:
@@ -455,11 +458,11 @@ const char* AlreadySeenSigninViewPreferenceKey(
   DCHECK(_isSigninPromoViewVisible);
   DCHECK(![self isInvalidClosedOrNeverVisible]);
   [self sendImpressionsTillSigninButtonsHistogram];
-  signin_metrics::RecordSigninUserActionForAccessPoint(
-      _accessPoint, signin_metrics::PromoAction::PROMO_ACTION_NOT_DEFAULT);
-  [self showSigninWithIdentity:nil
-                   promoAction:signin_metrics::PromoAction::
-                                   PROMO_ACTION_NOT_DEFAULT];
+  signin_metrics::PromoAction promo_action =
+      signin_metrics::PromoAction::PROMO_ACTION_NOT_DEFAULT;
+  signin_metrics::RecordSigninUserActionForAccessPoint(_accessPoint,
+                                                       promo_action);
+  [self showSigninWithIdentity:nil promoAction:promo_action];
 }
 
 - (void)signinPromoViewCloseButtonWasTapped:(SigninPromoView*)view {
