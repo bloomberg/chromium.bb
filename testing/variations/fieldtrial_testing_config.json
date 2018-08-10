@@ -2282,6 +2282,19 @@
             ],
             "experiments": [
                 {
+                    "//0": "This experiment is used for M69 release rollouts.",
+                    "//1": "The name change is required to update Canary, Dev",
+                    "//2": "and Beta Finch studies that previously used ",
+                    "//3": "NewTabPageAllBirthday_Enabled.",
+                    "name": "NewTabPageM69AllBirthday_Enabled",
+                    "enable_features": [
+                        "NewTabPageBackgrounds",
+                        "NewTabPageCustomLinks",
+                        "NewTabPageIcons",
+                        "NewTabPageUIMd"
+                    ]
+                },
+                {
                     "name": "NewTabPageM68AllBirthday_Enabled",
                     "enable_features": [
                         "NewTabPageBackgrounds",
@@ -2289,6 +2302,7 @@
                     ]
                 },
                 {
+                    "//0": "Deprecated.",
                     "name": "NewTabPageAllBirthday_Enabled",
                     "enable_features": [
                         "NewTabPageBackgrounds",
