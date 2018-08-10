@@ -14,8 +14,9 @@
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/test_form_activity_tab_helper.h"
-#import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
+#import "ios/chrome/browser/autofill/form_input_accessory_consumer.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
+#import "ios/chrome/browser/ui/autofill/form_input_accessory_mediator.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -30,12 +31,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-@interface FormInputAccessoryViewController (Testing)
-- (instancetype)initWithWebState:(web::WebState*)webState
-             JSSuggestionManager:(JsSuggestionManager*)JSSuggestionManager
-                       providers:(NSArray*)providers;
-@end
 
 // Test provider that records invocations of its interface methods.
 @interface TestSuggestionProvider : NSObject<FormSuggestionProvider>
@@ -181,51 +176,37 @@ class FormSuggestionControllerTest : public PlatformTest {
                   providers:providers
         JsSuggestionManager:mock_js_suggestion_manager_];
     [suggestion_controller_ setWebViewProxy:mock_web_view_proxy_];
-    @autoreleasepool {
-      accessory_controller_ = [[FormInputAccessoryViewController alloc]
-             initWithWebState:&test_web_state_
-          JSSuggestionManager:mock_js_suggestion_manager_
-                    providers:@[
-                      [suggestion_controller_ accessoryViewProvider]
-                    ]];
-    }
-    // Mock out the FormInputAccessoryViewController so it can use the fake
-    // CRWWebViewProxy
-    id mock_accessory_controller =
-        [OCMockObject partialMockForObject:accessory_controller_];
-    [[[mock_accessory_controller stub] andReturn:mock_web_view_proxy_]
-        webViewProxy];
 
-    // On iPad devices, the suggestion view is added directly to the
-    // keyboard view instead of to the input accessory view which is no longer
-    // available on iPad devices. The following code mocks out the methods on
-    // FormInputAccessoryViewController that add and remove the suggestion view.
-    // The mocks now just add and remove it directly to and from
-    // input_accessory_view_ so that the tests can locate it with
-    // GetSuggestionView (defined above).
-    // TODO(crbug.com/661622): Revisit this to see if there's a better way to
-    // test the iPad case. At a minimum, the name 'input_accessory_view_' should
-    // be made more generic.
-    if (IsIPadIdiom()) {
-      void (^mockShow)(NSInvocation*) = ^(NSInvocation* invocation) {
-        __unsafe_unretained UIView* view;
-        [invocation getArgument:&view atIndex:2];
-        for (UIView* view in [input_accessory_view_ subviews]) {
-          [view removeFromSuperview];
-        }
-        [input_accessory_view_ addSubview:view];
-      };
-      [[[mock_accessory_controller stub] andDo:mockShow]
-          showCustomInputAccessoryView:[OCMArg any]];
+    id mock_consumer_ = [OCMockObject
+        niceMockForProtocol:@protocol(FormInputAccessoryConsumer)];
+    accessory_mediator_ =
+        [[FormInputAccessoryMediator alloc] initWithConsumer:mock_consumer_
+                                                webStateList:NULL];
+    [accessory_mediator_ injectWebState:&test_web_state_];
+    [accessory_mediator_
+        injectProviders:@[ [suggestion_controller_ accessoryViewProvider] ]];
+    [accessory_mediator_ injectSuggestionManager:mock_js_suggestion_manager_];
 
-      void (^mockRestore)(NSInvocation*) = ^(NSInvocation* invocation) {
-        for (UIView* view in [input_accessory_view_ subviews]) {
-          [view removeFromSuperview];
-        }
-      };
-      [[[mock_accessory_controller stub] andDo:mockRestore]
-          restoreDefaultInputAccessoryView];
-    }
+    // Mock the mediator consumer used to verify the suggestion views.
+    void (^mockShow)(NSInvocation*) = ^(NSInvocation* invocation) {
+      for (UIView* view in [input_accessory_view_ subviews]) {
+        [view removeFromSuperview];
+      }
+      __unsafe_unretained UIView* view;
+      [invocation getArgument:&view atIndex:2];
+      [input_accessory_view_ addSubview:view];
+    };
+    [[[mock_consumer_ stub] andDo:mockShow]
+        showCustomInputAccessoryView:[OCMArg any]
+                  navigationDelegate:[OCMArg any]];
+
+    void (^mockRestore)(NSInvocation*) = ^(NSInvocation* invocation) {
+      for (UIView* view in [input_accessory_view_ subviews]) {
+        [view removeFromSuperview];
+      }
+    };
+    [[[mock_consumer_ stub] andDo:mockRestore]
+        restoreDefaultInputAccessoryView];
   }
 
   // The FormSuggestionController under test.
@@ -241,7 +222,7 @@ class FormSuggestionControllerTest : public PlatformTest {
   id mock_web_view_proxy_;
 
   // Accessory view controller.
-  FormInputAccessoryViewController* accessory_controller_;
+  FormInputAccessoryMediator* accessory_mediator_;
 
   // The fake WebState to simulate navigation and JavaScript events.
   web::TestWebState test_web_state_;

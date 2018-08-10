@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_ACCESSORY_VIEW_PROVIDER_H_
 #define IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_ACCESSORY_VIEW_PROVIDER_H_
 
+#import <UIKit/UIKit.h>
+
 namespace web {
 struct FormActivityParams;
 class WebState;
@@ -12,9 +14,6 @@ class WebState;
 
 @protocol FormInputAccessoryViewDelegate;
 @protocol FormInputAccessoryViewProvider;
-@class FormInputAccessoryViewController;
-
-#import <UIKit/UIKit.h>
 
 // Block type to provide an accessory view asynchronously.
 typedef void (^AccessoryViewReadyCompletion)(
@@ -37,13 +36,7 @@ typedef void (^AccessoryViewReadyCompletion)(
                 (AccessoryViewReadyCompletion)accessoryViewUpdateBlock;
 
 // Notifies this provider that the accessory view is going away.
-- (void)inputAccessoryViewControllerDidReset:
-    (FormInputAccessoryViewController*)controller;
-
-// Notifies this provider that the accessory view frame is changing. If the
-// view provided by this provider needs to change, the updated view should be
-// set using |accessoryViewUpdateBlock|.
-- (void)resizeAccessoryView;
+- (void)inputAccessoryViewControllerDidReset;
 
 @end
 

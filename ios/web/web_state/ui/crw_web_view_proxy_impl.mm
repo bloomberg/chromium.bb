@@ -175,13 +175,6 @@ UIView* GetFirstResponderSubview(UIView* view) {
   return firstResponder.inputAccessoryView;
 }
 
-- (UITextInputAssistantItem*)inputAssistantItem {
-  if (!_contentView)
-    return nil;
-  UIView* firstResponder = GetFirstResponderSubview(_contentView);
-  return firstResponder.inputAssistantItem;
-}
-
 - (BOOL)becomeFirstResponder {
   return [_contentView becomeFirstResponder];
 }

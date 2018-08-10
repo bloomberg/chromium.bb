@@ -65,9 +65,6 @@
 // Returns the currently visible keyboard accessory, or nil.
 - (UIView*)keyboardAccessory;
 
-// Returns the currently visible keyboard input assistant item, or nil.
-- (UITextInputAssistantItem*)inputAssistantItem;
-
 // Wrapper around the becomeFirstResponder method of the webview.
 - (BOOL)becomeFirstResponder;
 

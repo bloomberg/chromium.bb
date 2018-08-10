@@ -4,9 +4,11 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
+#import "components/autofill/ios/browser/js_suggestion_manager.h"
+#import "ios/chrome/browser/autofill/form_input_accessory_view_handler.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -19,6 +21,7 @@
 #include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
+#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -154,14 +157,17 @@ void AssertElementIsFocused(const std::string& element_id) {
 // Tests that trying to programmatically dismiss the keyboard when it isn't
 // visible doesn't crash the browser.
 - (void)testCloseKeyboardWhenNotVisible {
-  FormInputAccessoryViewController* viewController =
-      [[FormInputAccessoryViewController alloc] init];
-  GREYAssertNotNil(
-      viewController,
-      @"The input accessory view controller should not be non nil.");
-  [viewController closeKeyboardWithoutButtonPress];
-  viewController.webState = chrome_test_util::GetCurrentWebState();
-  [viewController closeKeyboardWithoutButtonPress];
+  FormInputAccessoryViewHandler* accessoryViewDelegate =
+      [[FormInputAccessoryViewHandler alloc] init];
+  GREYAssertNotNil(accessoryViewDelegate,
+                   @"The Accessory View Delegate should not be non nil.");
+  [accessoryViewDelegate closeKeyboardWithoutButtonPress];
+  CRWJSInjectionReceiver* injectionReceiver =
+      chrome_test_util::GetCurrentWebState()->GetJSInjectionReceiver();
+  accessoryViewDelegate.JSSuggestionManager =
+      base::mac::ObjCCastStrict<JsSuggestionManager>(
+          [injectionReceiver instanceOfClass:[JsSuggestionManager class]]);
+  [accessoryViewDelegate closeKeyboardWithoutButtonPress];
 }
 
 @end
