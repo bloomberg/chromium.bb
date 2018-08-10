@@ -340,6 +340,16 @@ MinMaxSize ComputeMinAndMaxContentContribution(
     const MinMaxSizeInput& input,
     const NGConstraintSpace* constraint_space) {
   LayoutBox* box = node.GetLayoutBox();
+
+  if (box->NeedsPreferredWidthsRecalculation()) {
+    // Some objects (when there's an intrinsic ratio) have their min/max inline
+    // size affected by the block size of their container. We don't really know
+    // whether the containing block of this child did change or is going to
+    // change size. However, this is our only opportunity to make sure that it
+    // gets its min/max widths calculated.
+    box->SetPreferredLogicalWidthsDirty();
+  }
+
   if (IsParallelWritingMode(writing_mode, node.Style().GetWritingMode())) {
     if (!box->PreferredLogicalWidthsDirty()) {
       return {box->MinPreferredLogicalWidth(), box->MaxPreferredLogicalWidth()};

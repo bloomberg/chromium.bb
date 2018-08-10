@@ -710,6 +710,12 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
     } else {
       box_->ForceLayout();
     }
+
+    // Reset the containing block size override size, now that we're done with
+    // subtree layout. Min/max calculation that depends on the block size of the
+    // container (e.g. objects with intrinsic ratio and percentage block size)
+    // in a subsequent layout pass might otherwise become wrong.
+    box_->ClearOverrideContainingBlockContentSize();
   }
   NGLogicalSize box_size(box_->LogicalWidth(), box_->LogicalHeight());
   // TODO(kojii): Implement use_first_line_style.
