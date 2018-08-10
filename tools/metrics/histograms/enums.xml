@@ -28152,6 +28152,7 @@ from previous Chrome versions.
   <int value="-1126217973" label="IdleTimeSpellChecking:disabled"/>
   <int value="-1125840399" label="ViewsBrowserWindows:enabled"/>
   <int value="-1125133283" label="disable-threaded-scrolling"/>
+  <int value="-1122853453" label="LazyImageLoading:enabled"/>
   <int value="-1121931029" label="DownloadsForeground:enabled"/>
   <int value="-1119700637" label="ui-disable-partial-swap"/>
   <int value="-1112782121" label="AndroidSigninPromos:disabled"/>
@@ -28428,6 +28429,7 @@ from previous Chrome versions.
   <int value="-536230323" label="SingleClickAutofill:disabled"/>
   <int value="-535662704" label="BundledConnectionHelp:enabled"/>
   <int value="-535208779" label="enable-native-cups"/>
+  <int value="-534221085" label="LazyImageLoading:disabled"/>
   <int value="-533552313"
       label="AutofillUpstreamEditableCardholderName:enabled"/>
   <int value="-531810064" label="saveas-menu-label"/>

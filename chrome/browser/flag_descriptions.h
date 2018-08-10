@@ -372,6 +372,9 @@ extern const char kEnableLayoutNGDescription[];
 extern const char kEnableLazyFrameLoadingName[];
 extern const char kEnableLazyFrameLoadingDescription[];
 
+extern const char kEnableLazyImageLoadingName[];
+extern const char kEnableLazyImageLoadingDescription[];
+
 extern const char kEnableMacMaterialDesignDownloadShelfName[];
 extern const char kEnableMacMaterialDesignDownloadShelfDescription[];
 
