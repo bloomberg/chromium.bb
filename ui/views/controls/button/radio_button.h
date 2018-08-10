@@ -19,8 +19,7 @@ class VIEWS_EXPORT RadioButton : public Checkbox {
   // The button's class name.
   static const char kViewClassName[];
 
-  // |force_md| forces MD even when --secondary-ui-md flag is not set.
-  RadioButton(const base::string16& label, int group_id, bool force_md = false);
+  RadioButton(const base::string16& label, int group_id);
   ~RadioButton() override;
 
   // Overridden from View:

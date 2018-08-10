@@ -121,8 +121,6 @@ AssistantContainerView::AssistantContainerView(
 
   // These attributes can only be set after bubble creation:
   GetBubbleFrameView()->bubble_border()->SetCornerRadius(kCornerRadiusDip);
-  SetAlignment(views::BubbleBorder::BubbleAlignment::ALIGN_EDGE_TO_ANCHOR_EDGE);
-  SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
 
   // The AssistantController owns the view hierarchy to which
   // AssistantContainerView belongs so is guaranteed to outlive it.

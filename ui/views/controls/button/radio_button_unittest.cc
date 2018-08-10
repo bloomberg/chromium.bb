@@ -6,7 +6,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/views/test/views_test_base.h"
 
@@ -113,26 +112,18 @@ TEST_F(RadioButtonTest, FocusOnClick) {
 
   EXPECT_TRUE(button2->checked());
   auto* focus_manager = button_container().GetFocusManager();
-  // Focus behavior is different pre/post-Harmony.
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    // No focus on click.
-    EXPECT_EQ(nullptr, focus_manager->GetFocusedView());
+  // No focus on click.
+  EXPECT_EQ(nullptr, focus_manager->GetFocusedView());
 
-    ui::KeyEvent pressed_tab(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_NONE);
-    focus_manager->OnKeyEvent(pressed_tab);
-    EXPECT_EQ(button2, focus_manager->GetFocusedView());
+  ui::KeyEvent pressed_tab(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_NONE);
+  focus_manager->OnKeyEvent(pressed_tab);
+  EXPECT_EQ(button2, focus_manager->GetFocusedView());
 
-    button1->OnMousePressed(event);
-    button1->OnMouseReleased(event);
-    // Button 1 gets focus on click because button 2 already had it.
-    EXPECT_TRUE(button1->checked());
-    EXPECT_EQ(button1, focus_manager->GetFocusedView());
-  } else if (button2->request_focus_on_press()) {
-    EXPECT_EQ(button2, focus_manager->GetFocusedView());
-  } else {
-    // On Mac, buttons never (and can not be made to) request focus on clicks.
-    EXPECT_EQ(nullptr, focus_manager->GetFocusedView());
-  }
+  button1->OnMousePressed(event);
+  button1->OnMouseReleased(event);
+  // Button 1 gets focus on click because button 2 already had it.
+  EXPECT_TRUE(button1->checked());
+  EXPECT_EQ(button1, focus_manager->GetFocusedView());
 }
 
 }  // namespace views

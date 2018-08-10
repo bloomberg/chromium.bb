@@ -12,7 +12,6 @@
 #include "ui/base/default_style.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/display/display.h"
@@ -127,21 +126,8 @@ std::unique_ptr<Label> BubbleFrameView::CreateDefaultTitleLabel(
 // static
 Button* BubbleFrameView::CreateCloseButton(ButtonListener* listener) {
   ImageButton* close_button = nullptr;
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    close_button = CreateVectorImageButton(listener);
-    SetImageFromVectorIcon(close_button, vector_icons::kCloseRoundedIcon);
-  } else {
-    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-    close_button = new ImageButton(listener);
-    close_button->SetImage(Button::STATE_NORMAL,
-                           *rb->GetImageNamed(IDR_CLOSE_DIALOG).ToImageSkia());
-    close_button->SetImage(
-        Button::STATE_HOVERED,
-        *rb->GetImageNamed(IDR_CLOSE_DIALOG_H).ToImageSkia());
-    close_button->SetImage(
-        Button::STATE_PRESSED,
-        *rb->GetImageNamed(IDR_CLOSE_DIALOG_P).ToImageSkia());
-  }
+  close_button = CreateVectorImageButton(listener);
+  SetImageFromVectorIcon(close_button, vector_icons::kCloseRoundedIcon);
   close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
   close_button->SizeToPreferredSize();
 
@@ -249,9 +235,6 @@ void BubbleFrameView::GetWindowMask(const gfx::Size& size,
     rect.fBottom += SkIntToScalar(kBottomBorderShadowSize);
     window_mask->addRect(rect);
   }
-  gfx::Path arrow_path;
-  if (bubble_border_->GetArrowPath(gfx::Rect(size), &arrow_path))
-    window_mask->addPath(arrow_path, 0, 0);
 }
 
 void BubbleFrameView::ResetWindowControls() {
@@ -575,8 +558,7 @@ void BubbleFrameView::OffsetArrowIfOffScreen(const gfx::Rect& anchor_rect,
   // |offscreen_adjust|, e.g. positive |offscreen_adjust| means bubble
   // window needs to be moved to the right and that means we need to move arrow
   // to the left, and that means negative offset.
-  bubble_border_->set_arrow_offset(
-      bubble_border_->GetArrowOffset(window_bounds.size()) - offscreen_adjust);
+  bubble_border_->set_arrow_offset(-offscreen_adjust);
   if (offscreen_adjust)
     SchedulePaint();
 }

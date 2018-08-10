@@ -346,8 +346,6 @@ void ProfileChooserView::ShowBubble(
 
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(profile_bubble_);
-  profile_bubble_->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
-  profile_bubble_->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
   widget->Show();
   base::RecordAction(base::UserMetricsAction("ProfileChooser_Show"));
   if (is_source_keyboard)

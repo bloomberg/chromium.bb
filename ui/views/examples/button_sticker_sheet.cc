@@ -5,7 +5,6 @@
 #include "ui/views/examples/button_sticker_sheet.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/grid_layout.h"
@@ -90,13 +89,6 @@ ButtonStickerSheet::~ButtonStickerSheet() {}
 
 void ButtonStickerSheet::CreateExampleView(View* container) {
   GridLayout* layout = MakeStretchyGridLayout(container, 3);
-
-  if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    const char* kNeedsMdWarning =
-        "This will look wrong without --secondary-ui-md.";
-    layout->StartRow(0, 0);
-    layout->AddView(MakePlainLabel(kNeedsMdWarning), 3, 1);
-  }
 
   // The title row has an empty row label.
   AddLabelledRowToGridLayout(

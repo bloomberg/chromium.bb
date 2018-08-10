@@ -33,9 +33,6 @@ ShelfTooltipPreviewBubble::ShelfTooltipPreviewBubble(
   set_margins(gfx::Insets(kTooltipPaddingTop, kTooltipPaddingLeftRight,
                           kTooltipPaddingBottom, kTooltipPaddingLeftRight));
   views::BubbleDialogDelegateView::CreateBubble(this);
-  // This must be done after creating the bubble (a segmentation fault happens
-  // otherwise).
-  SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
 }
 
 ShelfTooltipPreviewBubble::~ShelfTooltipPreviewBubble() = default;

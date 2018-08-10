@@ -220,23 +220,6 @@ void BubbleDialogDelegateView::UseCompactMargins() {
   set_margins(gfx::Insets(kCompactMargin));
 }
 
-void BubbleDialogDelegateView::SetAlignment(
-    BubbleBorder::BubbleAlignment alignment) {
-  GetBubbleFrameView()->bubble_border()->set_alignment(alignment);
-  SizeToContents();
-}
-
-void BubbleDialogDelegateView::SetArrowPaintType(
-    BubbleBorder::ArrowPaintType paint_type) {
-  GetBubbleFrameView()->bubble_border()->set_paint_arrow(paint_type);
-  SizeToContents();
-}
-
-void BubbleDialogDelegateView::SetBorderInteriorThickness(int thickness) {
-  GetBubbleFrameView()->bubble_border()->SetBorderInteriorThickness(thickness);
-  SizeToContents();
-}
-
 void BubbleDialogDelegateView::OnAnchorBoundsChanged() {
   SizeToContents();
 }

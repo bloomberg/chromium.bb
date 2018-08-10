@@ -7,7 +7,6 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/overscroll/scroll_input_handler.h"
 #include "ui/events/event.h"
@@ -215,13 +214,11 @@ ScrollView::ScrollView()
   }
   UpdateBackground();
 
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    focus_ring_ = FocusRing::Install(this);
-    focus_ring_->SetHasFocusPredicate([](View* view) -> bool {
-      auto* v = static_cast<ScrollView*>(view);
-      return v->draw_focus_indicator_;
-    });
-  }
+  focus_ring_ = FocusRing::Install(this);
+  focus_ring_->SetHasFocusPredicate([](View* view) -> bool {
+    auto* v = static_cast<ScrollView*>(view);
+    return v->draw_focus_indicator_;
+  });
 }
 
 ScrollView::~ScrollView() {
@@ -335,10 +332,7 @@ void ScrollView::SetHasFocusIndicator(bool has_focus_indicator) {
     return;
   draw_focus_indicator_ = has_focus_indicator;
 
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
     focus_ring_->SchedulePaint();
-  else
-    UpdateBorder();
   SchedulePaint();
 }
 

@@ -21,7 +21,6 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_edit_commands.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
@@ -92,9 +91,6 @@ const gfx::SelectionBehavior kWordSelectionBehavior = gfx::SELECTION_RETAIN;
 const gfx::SelectionBehavior kMoveParagraphSelectionBehavior =
     gfx::SELECTION_RETAIN;
 #endif
-
-// Default placeholder text color.
-const SkColor kDefaultPlaceholderTextColor = SK_ColorLTGRAY;
 
 // Get the default command for a given key |event|.
 ui::TextEditCommand GetCommandForKeyEvent(const ui::KeyEvent& event) {
@@ -279,7 +275,7 @@ Textfield::Textfield()
       selection_controller_(this),
       drag_start_display_offset_(0),
       touch_handles_hidden_due_to_scroll_(false),
-      use_focus_ring_(ui::MaterialDesignController::IsSecondaryUiMaterial()),
+      use_focus_ring_(true),
       weak_ptr_factory_(this) {
   set_context_menu_controller(this);
   set_drag_controller(this);
@@ -2083,13 +2079,9 @@ void Textfield::UpdateSelectionClipboard() {
 
 void Textfield::UpdateBackgroundColor() {
   const SkColor color = GetBackgroundColor();
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     SetBackground(
         CreateBackgroundFromPainter(Painter::CreateSolidRoundRectPainter(
             color, FocusableBorder::kCornerRadiusDp)));
-  } else {
-    SetBackground(CreateSolidBackground(color));
-  }
   // Disable subpixel rendering when the background color is not opaque because
   // it draws incorrect colors around the glyphs in that case.
   // See crbug.com/115198
@@ -2165,10 +2157,7 @@ void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {
         GetPlaceholderText(),
         placeholder_font_list_.has_value() ? placeholder_font_list_.value()
                                            : GetFontList(),
-        placeholder_text_color_.value_or(
-            ui::MaterialDesignController::IsSecondaryUiMaterial()
-                ? SkColorSetA(GetTextColor(), 0x83)
-                : kDefaultPlaceholderTextColor),
+        placeholder_text_color_.value_or(SkColorSetA(GetTextColor(), 0x83)),
         render_text->display_rect(), placeholder_text_draw_flags);
   }
 

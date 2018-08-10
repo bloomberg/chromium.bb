@@ -113,16 +113,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // Sets the content margins to a default picked for smaller bubbles.
   void UseCompactMargins();
 
-  // Sets the bubble alignment relative to the anchor. This may only be called
-  // after calling CreateBubble.
-  void SetAlignment(BubbleBorder::BubbleAlignment alignment);
-
-  // Sets the bubble arrow paint type.
-  void SetArrowPaintType(BubbleBorder::ArrowPaintType paint_type);
-
-  // Sets the bubble border interior thickness.
-  void SetBorderInteriorThickness(int thickness);
-
   // Call this method when the anchor bounds have changed to reposition the
   // bubble. The bubble is automatically repositioned when the anchor view
   // bounds change as a result of the widget's bounds changing.

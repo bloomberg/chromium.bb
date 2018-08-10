@@ -28,8 +28,7 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
 
   // |force_md| forces MD even when --secondary-ui-md flag is not set.
   explicit Checkbox(const base::string16& label,
-                    ButtonListener* listener = nullptr,
-                    bool force_md = false);
+                    ButtonListener* listener = nullptr);
   ~Checkbox() override;
 
   // Sets/Gets whether or not the checkbox is checked.
@@ -48,14 +47,8 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  protected:
-  // Returns whether MD is enabled. Returns true if |force_md| in the
-  // constructor or --secondary-ui-md flag is set.
-  bool UseMd() const;
-
   // LabelButton:
   const char* GetClassName() const override;
-  void OnFocus() override;
-  void OnBlur() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   std::unique_ptr<InkDrop> CreateInkDrop() override;
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
@@ -63,13 +56,6 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   gfx::ImageSkia GetImage(ButtonState for_state) const override;
   std::unique_ptr<LabelButtonBorder> CreateDefaultBorder() const override;
   void Layout() override;
-
-  // Set the image shown for each button state depending on whether it is
-  // [checked] or [focused].
-  void SetCustomImage(bool checked,
-                      bool focused,
-                      ButtonState for_state,
-                      const gfx::ImageSkia& image);
 
   // Gets the vector icon to use based on the current state of |checked_|.
   virtual const gfx::VectorIcon& GetVectorIcon() const;
@@ -95,16 +81,11 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   // True if the checkbox is checked.
   bool checked_;
 
-  // The images for each button node_data.
-  gfx::ImageSkia images_[2][2][STATE_COUNT];
-
   // The unique id for the associated label's accessible object.
   int32_t label_ax_id_;
 
   // The focus ring to use for this Checkbox.
   std::unique_ptr<FocusRing> focus_ring_;
-
-  bool use_md_;
 
   DISALLOW_COPY_AND_ASSIGN(Checkbox);
 };

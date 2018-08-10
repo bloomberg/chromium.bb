@@ -19,51 +19,9 @@ namespace views {
 // static
 const char RadioButton::kViewClassName[] = "RadioButton";
 
-RadioButton::RadioButton(const base::string16& label,
-                         int group_id,
-                         bool force_md)
-    : Checkbox(label, nullptr, force_md) {
+RadioButton::RadioButton(const base::string16& label, int group_id)
+    : Checkbox(label, nullptr) {
   SetGroup(group_id);
-
-  if (!UseMd()) {
-    set_request_focus_on_press(true);
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    // Unchecked/Unfocused images.
-    SetCustomImage(false, false, STATE_NORMAL,
-                   *rb.GetImageSkiaNamed(IDR_RADIO));
-    SetCustomImage(false, false, STATE_HOVERED,
-                   *rb.GetImageSkiaNamed(IDR_RADIO_HOVER));
-    SetCustomImage(false, false, STATE_PRESSED,
-                   *rb.GetImageSkiaNamed(IDR_RADIO_PRESSED));
-    SetCustomImage(false, false, STATE_DISABLED,
-                   *rb.GetImageSkiaNamed(IDR_RADIO_DISABLED));
-
-    // Checked/Unfocused images.
-    SetCustomImage(true, false, STATE_NORMAL,
-                   *rb.GetImageSkiaNamed(IDR_RADIO_CHECKED));
-    SetCustomImage(true, false, STATE_HOVERED,
-                   *rb.GetImageSkiaNamed(IDR_RADIO_CHECKED_HOVER));
-    SetCustomImage(true, false, STATE_PRESSED,
-                   *rb.GetImageSkiaNamed(IDR_RADIO_CHECKED_PRESSED));
-    SetCustomImage(true, false, STATE_DISABLED,
-                   *rb.GetImageSkiaNamed(IDR_RADIO_CHECKED_DISABLED));
-
-    // Unchecked/Focused images.
-    SetCustomImage(false, true, STATE_NORMAL,
-                   *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED));
-    SetCustomImage(false, true, STATE_HOVERED,
-                   *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_HOVER));
-    SetCustomImage(false, true, STATE_PRESSED,
-                   *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_PRESSED));
-
-    // Checked/Focused images.
-    SetCustomImage(true, true, STATE_NORMAL,
-                   *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_CHECKED));
-    SetCustomImage(true, true, STATE_HOVERED,
-                   *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_CHECKED_HOVER));
-    SetCustomImage(true, true, STATE_PRESSED,
-                   *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_CHECKED_PRESSED));
-  }
 }
 
 RadioButton::~RadioButton() {

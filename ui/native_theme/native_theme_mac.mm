@@ -11,7 +11,6 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #import "skia/ext/skia_utils_mac.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
@@ -26,14 +25,6 @@
 namespace {
 
 const SkColor kMenuPopupBackgroundColor = SK_ColorWHITE;
-
-// Hardcoded color used for some existing dialogs in Chrome's Cocoa UI.
-const SkColor kDialogBackgroundColor = SkColorSetRGB(251, 251, 251);
-
-// Color for the highlighted text in a control when that control doesn't have
-// keyboard focus.
-const SkColor kUnfocusedSelectedTextBackgroundColor =
-    SkColorSetRGB(220, 220, 220);
 
 // Helper to make indexing an array by an enum class easier.
 template <class KEY, class VALUE>
@@ -160,87 +151,7 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
       break;
   }
 
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-    return ApplySystemControlTint(GetAuraColor(color_id, this));
-
-  // TODO(tapted): Add caching for these, and listen for
-  // NSSystemColorsDidChangeNotification.
-  switch (color_id) {
-    case kColorId_WindowBackground:
-      return NSSystemColorToSkColor([NSColor windowBackgroundColor]);
-    case kColorId_DialogBackground:
-      return kDialogBackgroundColor;
-    case kColorId_BubbleBackground:
-      return SK_ColorWHITE;
-
-    case kColorId_FocusedBorderColor:
-      return NSSystemColorToSkColor([NSColor keyboardFocusIndicatorColor]);
-    case kColorId_UnfocusedBorderColor:
-      return NSSystemColorToSkColor([NSColor controlColor]);
-
-    // Buttons and labels.
-    case kColorId_ButtonEnabledColor:
-    case kColorId_LabelEnabledColor:
-      return NSSystemColorToSkColor([NSColor controlTextColor]);
-    // NSColor doesn't offer a color for prominent buttons. Use the Aura color,
-    // but apply the system tint. This is a good match for the blue Cocoa uses
-    // to draw buttons that are given a \n key equivalent.
-    case kColorId_ProminentButtonColor:
-      return ApplySystemControlTint(GetAuraColor(color_id, this));
-    case kColorId_ButtonDisabledColor:
-    case kColorId_LabelDisabledColor:
-      return NSSystemColorToSkColor([NSColor disabledControlTextColor]);
-    case kColorId_ButtonHoverColor:
-      return NSSystemColorToSkColor([NSColor selectedControlTextColor]);
-    case kColorId_LabelTextSelectionColor:
-      return NSSystemColorToSkColor([NSColor selectedTextColor]);
-
-    // Link.
-    case kColorId_LinkDisabled:
-      return SK_ColorBLACK;
-    case kColorId_LinkEnabled:
-      return SK_ColorBLUE;
-    case kColorId_LinkPressed:
-      return SK_ColorRED;
-
-    // Text fields.
-    case kColorId_TextfieldDefaultColor:
-    case kColorId_TextfieldReadOnlyColor:
-      return NSSystemColorToSkColor([NSColor textColor]);
-    case kColorId_TextfieldDefaultBackground:
-    case kColorId_TextfieldReadOnlyBackground:
-      return NSSystemColorToSkColor([NSColor textBackgroundColor]);
-    case kColorId_TextfieldSelectionColor:
-      return NSSystemColorToSkColor([NSColor selectedTextColor]);
-
-    // Trees/Tables. For focused text, use the alternate* versions, which
-    // NSColor documents as "the table and list view equivalent to the
-    // selectedControlTextColor".
-    case kColorId_TreeBackground:
-    case kColorId_TableBackground:
-      return NSSystemColorToSkColor([NSColor controlBackgroundColor]);
-    case kColorId_TreeText:
-    case kColorId_TableText:
-    case kColorId_TableSelectedTextUnfocused:
-    case kColorId_TreeSelectedTextUnfocused:
-      return NSSystemColorToSkColor([NSColor textColor]);
-    case kColorId_TreeSelectedText:
-    case kColorId_TableSelectedText:
-      return NSSystemColorToSkColor(
-          [NSColor alternateSelectedControlTextColor]);
-    case kColorId_TreeSelectionBackgroundFocused:
-    case kColorId_TableSelectionBackgroundFocused:
-      return NSSystemColorToSkColor([NSColor alternateSelectedControlColor]);
-    case kColorId_TreeSelectionBackgroundUnfocused:
-    case kColorId_TableSelectionBackgroundUnfocused:
-      return kUnfocusedSelectedTextBackgroundColor;
-    case kColorId_TableGroupingIndicatorColor:
-      return SkColorSetRGB(140, 140, 140);
-
-    default:
-      // TODO(tapted): Handle all values and remove the default case.
-      return GetAuraColor(color_id, this);
-  }
+  return ApplySystemControlTint(GetAuraColor(color_id, this));
 }
 
 void NativeThemeMac::PaintMenuPopupBackground(

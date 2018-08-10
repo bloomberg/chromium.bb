@@ -89,8 +89,6 @@ void BubbleExample::CreateExampleView(View* container) {
   container->AddChildView(small_shadow_);
   no_assets_ = new LabelButton(this, ASCIIToUTF16("No Assets"));
   container->AddChildView(no_assets_);
-  align_to_edge_ = new LabelButton(this, ASCIIToUTF16("Align To Edge"));
-  container->AddChildView(align_to_edge_);
   persistent_ = new LabelButton(this, ASCIIToUTF16("Persistent"));
   container->AddChildView(persistent_);
 }
@@ -123,8 +121,6 @@ void BubbleExample::ButtonPressed(Button* sender, const ui::Event& event) {
     bubble->set_close_on_deactivate(false);
 
   BubbleDialogDelegateView::CreateBubble(bubble);
-  if (sender == align_to_edge_)
-    bubble->SetAlignment(BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
 
   bubble->GetWidget()->Show();
 }
