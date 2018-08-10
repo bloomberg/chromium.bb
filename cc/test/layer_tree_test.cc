@@ -4,6 +4,7 @@
 
 #include "cc/test/layer_tree_test.h"
 
+#include "base/cfi_buildflags.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -626,12 +627,16 @@ LayerTreeTest::LayerTreeTest()
 #elif defined(MEMORY_SANITIZER)
     // MSAN is slower than uninstrumented code
     timeout_seconds_ = 20;
+#elif BUILDFLAG(CFI_CAST_CHECK) || BUILDFLAG(CFI_ICALL_CHECK) || \
+    BUILDFLAG(CFI_ENFORCEMENT_DIAGNOSTIC) || BUILDFLAG(CFI_ENFORCEMENT_TRAP)
+    // CFI is slow as well.
+    timeout_seconds_ = 20;
 #elif defined(ADDRESS_SANITIZER) || defined(_DEBUG) || defined(USE_OZONE)
     // ASAN and Debug builds are slower than release builds, as expected
     // Ozone builds also go through a slower path than regular Linux builds
-    timeout_seconds_ = 12;
+    timeout_seconds_ = 15;
 #else
-    timeout_seconds_ = 6;
+    timeout_seconds_ = 10;
 #endif
   if (command_line->HasSwitch(switches::kCCLayerTreeTestLongTimeout))
     timeout_seconds_ = 5 * 60;
