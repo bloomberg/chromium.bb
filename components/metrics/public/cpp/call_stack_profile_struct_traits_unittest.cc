@@ -4,31 +4,14 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "components/metrics/public/interfaces/call_stack_profile_collector_test.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/sampled_profile.pb.h"
 
 namespace metrics {
-
-namespace {
-
-base::StackSamplingProfiler::CallStackProfile CreateProfile(
-    const std::vector<base::StackSamplingProfiler::Module>& modules,
-    const std::vector<base::StackSamplingProfiler::Sample>& samples,
-    base::TimeDelta profile_duration,
-    base::TimeDelta sampling_period) {
-  base::StackSamplingProfiler::CallStackProfile profile;
-  profile.modules = modules;
-  profile.samples = samples;
-  profile.profile_duration = profile_duration;
-  profile.sampling_period = sampling_period;
-  return profile;
-}
-
-}
 
 class CallStackProfileCollectorTestImpl
     : public mojom::CallStackProfileCollectorTest {
@@ -39,45 +22,8 @@ class CallStackProfileCollectorTestImpl
   }
 
   // CallStackProfileCollectorTest:
-  void BounceFrame(const base::StackSamplingProfiler::Frame& in,
-                   BounceFrameCallback callback) override {
-    std::move(callback).Run(in);
-  }
-
-  void BounceModule(const base::StackSamplingProfiler::Module& in,
-                    BounceModuleCallback callback) override {
-    std::move(callback).Run(in);
-  }
-
-  void BounceProfile(base::StackSamplingProfiler::CallStackProfile in,
-                     BounceProfileCallback callback) override {
-    std::move(callback).Run(std::move(in));
-  }
-
-  void BounceTrigger(CallStackProfileParams::Trigger in,
-                     BounceTriggerCallback callback) override {
-    std::move(callback).Run(in);
-  }
-
-  void BounceProcess(CallStackProfileParams::Process in,
-                     BounceProcessCallback callback) override {
-    std::move(callback).Run(in);
-  }
-
-  void BounceThread(CallStackProfileParams::Thread in,
-                    BounceThreadCallback callback) override {
-    std::move(callback).Run(in);
-  }
-
-  void BounceSampleOrderingSpec(
-      CallStackProfileParams::SampleOrderingSpec in,
-      BounceSampleOrderingSpecCallback callback) override {
-    std::move(callback).Run(in);
-  }
-
-  void BounceCallStackProfileParams(
-      const CallStackProfileParams& in,
-      BounceCallStackProfileParamsCallback callback) override {
+  void BounceSampledProfile(SampledProfile in,
+                            BounceSampledProfileCallback callback) override {
     std::move(callback).Run(in);
   }
 
@@ -99,261 +45,56 @@ class CallStackProfileStructTraitsTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CallStackProfileStructTraitsTest);
 };
 
-// Checks serialization/deserialization of Module fields.
-TEST_F(CallStackProfileStructTraitsTest, Module) {
-  using Module = base::StackSamplingProfiler::Module;
+// Checks serialization/deserialization of SampledProfile.
+TEST_F(CallStackProfileStructTraitsTest, SampledProfile) {
+  // Construct a SampledProfile protocol buffer message.
+  SampledProfile input_proto;
 
-  struct SerializeCase {
-    Module module;
-    bool expect_success;
-  };
+  CallStackProfile* proto_profile = input_proto.mutable_call_stack_profile();
 
-  const SerializeCase serialize_cases[] = {
-    // Null base address.
-    {
-      Module(0x0, "abcd", base::FilePath(base::FilePath::kCurrentDirectory)),
-      true
-    },
-    // Non-null base address.
-    {
-      Module(0x10, "abcd", base::FilePath(base::FilePath::kCurrentDirectory)),
-      true
-    },
-    // Base address with a bit set beyond 32 bits, when built for x64.
-    {
-      Module(1ULL << (sizeof(uintptr_t) * 8) * 3 / 4, "abcd",
-             base::FilePath(base::FilePath::kCurrentDirectory)),
-      true
-    },
-    // Empty module id.
-    {
-      Module(0x10, "", base::FilePath(base::FilePath::kCurrentDirectory)),
-      true
-    },
-  };
+  CallStackProfile::Sample* proto_sample = proto_profile->add_sample();
+  proto_sample->set_count(1);
+  CallStackProfile::Entry* entry = proto_sample->add_entry();
+  entry->set_address(0x10ULL);
+  entry->set_module_id_index(0);
 
-  for (const SerializeCase& input : serialize_cases) {
-    Module output;
-    EXPECT_EQ(input.expect_success,
-              proxy_->BounceModule(input.module, &output));
+  CallStackProfile::ModuleIdentifier* module_id =
+      proto_profile->add_module_id();
+  module_id->set_build_id("a");
+  module_id->set_name_md5_prefix(111U);
 
-    if (!input.expect_success)
-      continue;
+  proto_profile->set_profile_duration_ms(1000);
+  proto_profile->set_sampling_period_ms(2000);
 
-    EXPECT_EQ(input.module.base_address, output.base_address);
-    EXPECT_EQ(input.module.id, output.id);
-    EXPECT_EQ(input.module.filename, output.filename);
-  }
-}
+  // Send the message round trip, and verify those values.
+  SampledProfile output_proto;
+  EXPECT_TRUE(
+      proxy_->BounceSampledProfile(std::move(input_proto), &output_proto));
 
-// Checks serialization/deserialization of Frame fields.
-TEST_F(CallStackProfileStructTraitsTest, Frame) {
-  using Frame = base::StackSamplingProfiler::Frame;
+  const CallStackProfile& out_profile = output_proto.call_stack_profile();
 
-  const Frame serialize_cases[] = {
-      // Null instruction pointer.
-      Frame(0x0, 10),
-      // Non-null instruction pointer.
-      Frame(0x10, 10),
-      // Instruction pointer with a bit set beyond 32 bits, when built for x64.
-      Frame(1ULL << (sizeof(uintptr_t) * 8) * 3 / 4, 10),
-      // Zero module index.
-      Frame(0xabcd, 0),
-      // Non-zero module index.
-      Frame(0xabcd, 1),
-      // Non-zero module index.
-      Frame(0xabcd, 10),
-      // Unknown module index.
-      Frame(0xabcd, base::kUnknownModuleIndex),
-  };
+  ASSERT_EQ(1, out_profile.sample_size());
+  ASSERT_EQ(1, out_profile.sample(0).entry_size());
 
-  for (const Frame& input : serialize_cases) {
-    Frame output;
-    EXPECT_TRUE(proxy_->BounceFrame(input, &output));
+  ASSERT_TRUE(out_profile.sample(0).entry(0).has_address());
+  EXPECT_EQ(0x10ULL, out_profile.sample(0).entry(0).address());
 
-    EXPECT_EQ(input.instruction_pointer, output.instruction_pointer);
-    EXPECT_EQ(input.module_index, output.module_index);
-  }
-}
+  ASSERT_TRUE(out_profile.sample(0).entry(0).has_module_id_index());
+  EXPECT_EQ(0, out_profile.sample(0).entry(0).module_id_index());
 
-// Checks serialization/deserialization of Profile fields, including validation
-// of the Frame module_index field.
-TEST_F(CallStackProfileStructTraitsTest, Profile) {
-  using base::StackSamplingProfiler;
-  using Module = StackSamplingProfiler::Module;
-  using Frame = StackSamplingProfiler::Frame;
-  using Sample = StackSamplingProfiler::Sample;
-  using Profile = StackSamplingProfiler::CallStackProfile;
+  ASSERT_EQ(1, out_profile.module_id().size());
 
-  struct SerializeCase {
-    Profile profile;
-    bool expect_success;
-  };
+  ASSERT_TRUE(out_profile.module_id(0).has_build_id());
+  ASSERT_EQ("a", out_profile.module_id(0).build_id());
 
-  const SerializeCase serialize_cases[] = {
-      // Empty modules and samples.
-      {CreateProfile(std::vector<Module>(), std::vector<Sample>(),
-                     base::TimeDelta::FromSeconds(1),
-                     base::TimeDelta::FromSeconds(2)),
-       true},
-      // Non-empty modules and empty samples.
-      {CreateProfile({Module(0x4000, "a", base::FilePath())},
-                     std::vector<Sample>(), base::TimeDelta::FromSeconds(1),
-                     base::TimeDelta::FromSeconds(2)),
-       true},
-      // Valid values for modules and samples.
-      {CreateProfile(
-           {
-               Module(0x4000, "a", base::FilePath()),
-               Module(0x4100, "b", base::FilePath()),
-           },
-           {
-               Sample({
-                   Frame(0x4010, 0), Frame(0x4110, 1),
-                   Frame(0x4110, base::kUnknownModuleIndex),
-               }),
-           },
-           base::TimeDelta::FromSeconds(1), base::TimeDelta::FromSeconds(2)),
-       true},
-      // Valid values for modules, but an out of range module index in the
-      // second
-      // sample.
-      {CreateProfile(
-           {
-               Module(0x4000, "a", base::FilePath()),
-               Module(0x4100, "b", base::FilePath()),
-           },
-           {
-               Sample({
-                   Frame(0x4010, 0), Frame(0x4110, 1),
-                   Frame(0x4110, base::kUnknownModuleIndex),
-               }),
-               Sample({
-                   Frame(0x4010, 0), Frame(0x4110, 2),
-               }),
-           },
-           base::TimeDelta::FromSeconds(1), base::TimeDelta::FromSeconds(2)),
-       false},
-  };
+  ASSERT_TRUE(out_profile.module_id(0).has_name_md5_prefix());
+  ASSERT_EQ(111U, out_profile.module_id(0).name_md5_prefix());
 
-  for (const SerializeCase& input : serialize_cases) {
-    SCOPED_TRACE(&input - &serialize_cases[0]);
+  ASSERT_TRUE(out_profile.has_profile_duration_ms());
+  EXPECT_EQ(1000, out_profile.profile_duration_ms());
 
-    Profile output;
-    EXPECT_EQ(input.expect_success,
-              proxy_->BounceProfile(input.profile.CopyForTesting(), &output));
-
-    if (!input.expect_success)
-      continue;
-
-    EXPECT_EQ(input.profile.modules, output.modules);
-    EXPECT_EQ(input.profile.samples, output.samples);
-    EXPECT_EQ(input.profile.profile_duration, output.profile_duration);
-    EXPECT_EQ(input.profile.sampling_period, output.sampling_period);
-  }
-}
-
-// Checks serialization/deserialization of the process, including validation.
-TEST_F(CallStackProfileStructTraitsTest, Process) {
-  using Process = CallStackProfileParams::Process;
-
-  Process out;
-
-  EXPECT_TRUE(proxy_->BounceProcess(Process::UNKNOWN_PROCESS, &out));
-  EXPECT_EQ(Process::UNKNOWN_PROCESS, out);
-
-  EXPECT_TRUE(proxy_->BounceProcess(Process::BROWSER_PROCESS, &out));
-  EXPECT_EQ(Process::BROWSER_PROCESS, out);
-
-  EXPECT_TRUE(proxy_->BounceProcess(Process::RENDERER_PROCESS, &out));
-  EXPECT_EQ(Process::RENDERER_PROCESS, out);
-
-  EXPECT_TRUE(proxy_->BounceProcess(Process::GPU_PROCESS, &out));
-  EXPECT_EQ(Process::GPU_PROCESS, out);
-
-  EXPECT_TRUE(proxy_->BounceProcess(Process::UTILITY_PROCESS, &out));
-  EXPECT_EQ(Process::UTILITY_PROCESS, out);
-
-  EXPECT_TRUE(proxy_->BounceProcess(Process::ZYGOTE_PROCESS, &out));
-  EXPECT_EQ(Process::ZYGOTE_PROCESS, out);
-
-  EXPECT_TRUE(proxy_->BounceProcess(Process::SANDBOX_HELPER_PROCESS, &out));
-  EXPECT_EQ(Process::SANDBOX_HELPER_PROCESS, out);
-
-  EXPECT_TRUE(proxy_->BounceProcess(Process::PPAPI_PLUGIN_PROCESS, &out));
-  EXPECT_EQ(Process::PPAPI_PLUGIN_PROCESS, out);
-
-  EXPECT_TRUE(proxy_->BounceProcess(Process::PPAPI_BROKER_PROCESS, &out));
-  EXPECT_EQ(Process::PPAPI_BROKER_PROCESS, out);
-}
-
-// Checks serialization/deserialization of the thread, including validation.
-TEST_F(CallStackProfileStructTraitsTest, Thread) {
-  using Thread = CallStackProfileParams::Thread;
-
-  Thread out;
-
-  EXPECT_TRUE(proxy_->BounceThread(Thread::MAIN_THREAD, &out));
-  EXPECT_EQ(Thread::MAIN_THREAD, out);
-
-  EXPECT_TRUE(proxy_->BounceThread(Thread::IO_THREAD, &out));
-  EXPECT_EQ(Thread::IO_THREAD, out);
-
-  EXPECT_TRUE(proxy_->BounceThread(Thread::COMPOSITOR_THREAD, &out));
-  EXPECT_EQ(Thread::COMPOSITOR_THREAD, out);
-}
-
-// Checks serialization/deserialization of the trigger, including validation.
-TEST_F(CallStackProfileStructTraitsTest, Trigger) {
-  using Trigger = CallStackProfileParams::Trigger;
-
-  Trigger out;
-
-  EXPECT_TRUE(proxy_->BounceTrigger(Trigger::UNKNOWN, &out));
-  EXPECT_EQ(Trigger::UNKNOWN, out);
-
-  EXPECT_TRUE(proxy_->BounceTrigger(Trigger::PROCESS_STARTUP, &out));
-  EXPECT_EQ(Trigger::PROCESS_STARTUP, out);
-
-  EXPECT_TRUE(proxy_->BounceTrigger(Trigger::JANKY_TASK, &out));
-  EXPECT_EQ(Trigger::JANKY_TASK, out);
-
-  EXPECT_TRUE(proxy_->BounceTrigger(Trigger::THREAD_HUNG, &out));
-  EXPECT_EQ(Trigger::THREAD_HUNG, out);
-}
-
-// Checks serialization/deserialization of the SampleOrderingSpec, including
-// validation.
-TEST_F(CallStackProfileStructTraitsTest, SampleOrderingSpec) {
-  using SampleOrderingSpec = CallStackProfileParams::SampleOrderingSpec;
-
-  SampleOrderingSpec out;
-
-  EXPECT_TRUE(proxy_->BounceSampleOrderingSpec(SampleOrderingSpec::MAY_SHUFFLE,
-                                               &out));
-  EXPECT_EQ(SampleOrderingSpec::MAY_SHUFFLE, out);
-
-  EXPECT_TRUE(proxy_->BounceSampleOrderingSpec(
-      SampleOrderingSpec::PRESERVE_ORDER,
-      &out));
-  EXPECT_EQ(SampleOrderingSpec::PRESERVE_ORDER, out);
-}
-
-// Checks serialization/deserialization of the CallStackProfileParams.
-TEST_F(CallStackProfileStructTraitsTest, CallStackProfileParams) {
-  CallStackProfileParams out;
-
-  EXPECT_TRUE(proxy_->BounceCallStackProfileParams(
-      CallStackProfileParams(CallStackProfileParams::BROWSER_PROCESS,
-                             CallStackProfileParams::MAIN_THREAD,
-                             CallStackProfileParams::PROCESS_STARTUP,
-                             CallStackProfileParams::PRESERVE_ORDER),
-      &out));
-
-  EXPECT_EQ(CallStackProfileParams::BROWSER_PROCESS, out.process);
-  EXPECT_EQ(CallStackProfileParams::MAIN_THREAD, out.thread);
-  EXPECT_EQ(CallStackProfileParams::PROCESS_STARTUP, out.trigger);
-  EXPECT_EQ(CallStackProfileParams::PRESERVE_ORDER, out.ordering_spec);
+  ASSERT_TRUE(out_profile.has_sampling_period_ms());
+  EXPECT_EQ(2000, out_profile.sampling_period_ms());
 }
 
 }  // namespace metrics

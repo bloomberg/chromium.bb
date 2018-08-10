@@ -196,12 +196,12 @@ ThreadProfiler::ThreadProfiler(
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 
-  auto profile_builder =
-      std::make_unique<CallStackProfileBuilder>(BindRepeating(
-          &ThreadProfiler::ReceiveStartupProfile,
-          GetReceiverCallback(CallStackProfileParams(
-              GetProcess(), thread, CallStackProfileParams::PROCESS_STARTUP,
-              CallStackProfileParams::MAY_SHUFFLE))));
+  auto profile_builder = std::make_unique<CallStackProfileBuilder>(
+      BindRepeating(&ThreadProfiler::ReceiveStartupProfile,
+                    GetReceiverCallback()),
+      CallStackProfileParams(GetProcess(), thread,
+                             CallStackProfileParams::PROCESS_STARTUP,
+                             CallStackProfileParams::MAY_SHUFFLE));
 
   startup_profiler_ = std::make_unique<StackSamplingProfiler>(
       base::PlatformThread::CurrentId(), kSamplingParams,
@@ -225,8 +225,8 @@ ThreadProfiler::ThreadProfiler(
     ScheduleNextPeriodicCollection();
 }
 
-CallStackProfileBuilder::CompletedCallback ThreadProfiler::GetReceiverCallback(
-    const CallStackProfileParams& profile_params) {
+CallStackProfileBuilder::CompletedCallback
+ThreadProfiler::GetReceiverCallback() {
   // TODO(wittman): Simplify the approach to getting the profiler callback
   // across CallStackProfileMetricsProvider and
   // ChildCallStackProfileCollector. Ultimately both should expose functions
@@ -242,17 +242,16 @@ CallStackProfileBuilder::CompletedCallback ThreadProfiler::GetReceiverCallback(
   base::TimeTicks profile_start_time = base::TimeTicks::Now();
   if (GetProcess() == CallStackProfileParams::BROWSER_PROCESS) {
     return metrics::CallStackProfileMetricsProvider::
-        GetProfilerCallbackForBrowserProcess(profile_params);
+        GetProfilerCallbackForBrowserProcess();
   }
   return g_child_call_stack_profile_collector.Get()
-      .ChildCallStackProfileCollector::GetProfilerCallback(profile_params,
-                                                           profile_start_time);
+      .ChildCallStackProfileCollector::GetProfilerCallback(profile_start_time);
 }
 
 // static
 void ThreadProfiler::ReceiveStartupProfile(
     const CallStackProfileBuilder::CompletedCallback& receiver_callback,
-    StackSamplingProfiler::CallStackProfile profile) {
+    metrics::SampledProfile profile) {
   receiver_callback.Run(std::move(profile));
 }
 
@@ -261,7 +260,7 @@ void ThreadProfiler::ReceivePeriodicProfile(
     const CallStackProfileBuilder::CompletedCallback& receiver_callback,
     scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner,
     base::WeakPtr<ThreadProfiler> thread_profiler,
-    StackSamplingProfiler::CallStackProfile profile) {
+    metrics::SampledProfile profile) {
   receiver_callback.Run(std::move(profile));
   owning_thread_task_runner->PostTask(
       FROM_HERE, base::BindOnce(&ThreadProfiler::ScheduleNextPeriodicCollection,
@@ -282,8 +281,9 @@ void ThreadProfiler::StartPeriodicSamplingCollection() {
   // NB: Destroys the previous profiler as side effect.
   auto profile_builder = std::make_unique<CallStackProfileBuilder>(
       BindRepeating(&ThreadProfiler::ReceivePeriodicProfile,
-                    GetReceiverCallback(periodic_profile_params_),
-                    owning_thread_task_runner_, weak_factory_.GetWeakPtr()));
+                    GetReceiverCallback(), owning_thread_task_runner_,
+                    weak_factory_.GetWeakPtr()),
+      periodic_profile_params_);
 
   periodic_profiler_ = std::make_unique<StackSamplingProfiler>(
       base::PlatformThread::CurrentId(), kSamplingParams,

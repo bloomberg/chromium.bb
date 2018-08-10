@@ -6,14 +6,14 @@
 #define COMPONENTS_METRICS_CALL_STACK_PROFILE_COLLECTOR_H_
 
 #include "base/macros.h"
+#include "components/metrics/call_stack_profile_params.h"
 #include "components/metrics/public/interfaces/call_stack_profile_collector.mojom.h"
+#include "third_party/metrics_proto/sampled_profile.pb.h"
 
 namespace metrics {
 
 class CallStackProfileCollector : public mojom::CallStackProfileCollector {
  public:
-  using CallStackProfile = base::StackSamplingProfiler::CallStackProfile;
-
   explicit CallStackProfileCollector(
       CallStackProfileParams::Process expected_process);
   ~CallStackProfileCollector() override;
@@ -23,9 +23,8 @@ class CallStackProfileCollector : public mojom::CallStackProfileCollector {
                      mojom::CallStackProfileCollectorRequest request);
 
   // mojom::CallStackProfileCollector:
-  void Collect(const CallStackProfileParams& params,
-               base::TimeTicks start_timestamp,
-               CallStackProfile profile) override;
+  void Collect(base::TimeTicks start_timestamp,
+               SampledProfile profile) override;
 
  private:
   // Profile params are validated to come from this process. Profiles with a

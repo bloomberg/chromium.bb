@@ -15,5 +15,6 @@ source_set("call_stack_unit_tests") {
     "//components/metrics/public/interfaces:call_stack_mojo_test_bindings",
     "//mojo/public/cpp/bindings",
     "//testing/gtest",
+    "//third_party/metrics_proto",
   ]
 }

@@ -5,9 +5,10 @@
 #include "components/metrics/call_stack_profile_builder.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/atomicops.h"
-#include "base/logging.h"
+#include "components/metrics/call_stack_profile_proto_encoder.h"
 
 using StackSamplingProfiler = base::StackSamplingProfiler;
 
@@ -41,8 +42,9 @@ void ChangeAtomicFlags(base::subtle::Atomic32* flags,
 }  // namespace
 
 CallStackProfileBuilder::CallStackProfileBuilder(
-    const CompletedCallback& callback)
-    : callback_(callback) {}
+    const CompletedCallback& callback,
+    const CallStackProfileParams& profile_params)
+    : callback_(callback), profile_params_(profile_params) {}
 
 CallStackProfileBuilder::~CallStackProfileBuilder() = default;
 
@@ -89,8 +91,20 @@ void CallStackProfileBuilder::OnProfileCompleted(
   profile_.profile_duration = profile_duration;
   profile_.sampling_period = sampling_period;
 
-  // Run the associated callback, passing the collected profile.
-  callback_.Run(std::move(profile_));
+  // TODO(chengx): build the metrics.SampledProfile protocol message
+  // incrementally.
+  SampledProfile sampled_profile;
+  sampled_profile.set_process(
+      ToExecutionContextProcess(profile_params_.process));
+  sampled_profile.set_thread(ToExecutionContextThread(profile_params_.thread));
+  sampled_profile.set_trigger_event(
+      ToSampledProfileTriggerEvent(profile_params_.trigger));
+  CopyProfileToProto(profile_, profile_params_.ordering_spec,
+                     sampled_profile.mutable_call_stack_profile());
+
+  // Run the associated callback, passing the protocol message which encodes the
+  // collected profile.
+  callback_.Run(sampled_profile);
 }
 
 // static

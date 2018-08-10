@@ -23,7 +23,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/metrics/call_stack_profile_builder.h"
-#include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/startup_metric_utils/browser/pref_names.h"
@@ -577,7 +576,7 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
 
   // Record timing of the browser message-loop start time.
   metrics::CallStackProfileBuilder::SetProcessMilestone(
-      metrics::CallStackProfileMetricsProvider::MAIN_LOOP_START);
+      metrics::CallStackProfileBuilder::MAIN_LOOP_START);
   if (!is_first_run && !g_process_creation_ticks.is_null()) {
     UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
         UMA_HISTOGRAM_LONG_TIMES_100, "Startup.BrowserMessageLoopStartTime",
@@ -684,7 +683,7 @@ void RecordFirstWebContentsNonEmptyPaint(
     return;
 
   metrics::CallStackProfileBuilder::SetProcessMilestone(
-      metrics::CallStackProfileMetricsProvider::FIRST_NONEMPTY_PAINT);
+      metrics::CallStackProfileBuilder::FIRST_NONEMPTY_PAINT);
   UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES_100, "Startup.FirstWebContents.NonEmptyPaint2",
       g_process_creation_ticks, now);
@@ -709,7 +708,7 @@ void RecordFirstWebContentsMainNavigationStart(base::TimeTicks ticks,
     return;
 
   metrics::CallStackProfileBuilder::SetProcessMilestone(
-      metrics::CallStackProfileMetricsProvider::MAIN_NAVIGATION_START);
+      metrics::CallStackProfileBuilder::MAIN_NAVIGATION_START);
   UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES_100,
       "Startup.FirstWebContents.MainNavigationStart", g_process_creation_ticks,
@@ -740,7 +739,7 @@ void RecordFirstWebContentsMainNavigationFinished(base::TimeTicks ticks) {
     return;
 
   metrics::CallStackProfileBuilder::SetProcessMilestone(
-      metrics::CallStackProfileMetricsProvider::MAIN_NAVIGATION_FINISHED);
+      metrics::CallStackProfileBuilder::MAIN_NAVIGATION_FINISHED);
   UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES_100,
       "Startup.FirstWebContents.MainNavigationFinished",

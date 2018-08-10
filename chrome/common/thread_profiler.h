@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_params.h"
+#include "third_party/metrics_proto/sampled_profile.pb.h"
 
 namespace service_manager {
 class Connector;
@@ -93,8 +94,7 @@ class ThreadProfiler {
           scoped_refptr<base::SingleThreadTaskRunner>());
 
   // Gets the completed callback for the ultimate receiver of the profile.
-  metrics::CallStackProfileBuilder::CompletedCallback GetReceiverCallback(
-      const metrics::CallStackProfileParams& profile_params);
+  metrics::CallStackProfileBuilder::CompletedCallback GetReceiverCallback();
 
   // Receives |profile| from the metrics::CallStackProfileBuilder and forwards
   // it on to the original |receiver_callback|.  Note that we must obtain and
@@ -105,13 +105,13 @@ class ThreadProfiler {
   static void ReceiveStartupProfile(
       const metrics::CallStackProfileBuilder::CompletedCallback&
           receiver_callback,
-      base::StackSamplingProfiler::CallStackProfile profile);
+      metrics::SampledProfile profile);
   static void ReceivePeriodicProfile(
       const metrics::CallStackProfileBuilder::CompletedCallback&
           receiver_callback,
       scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner,
       base::WeakPtr<ThreadProfiler> thread_profiler,
-      base::StackSamplingProfiler::CallStackProfile profile);
+      metrics::SampledProfile profile);
 
   // Posts a delayed task to start the next periodic sampling collection.
   void ScheduleNextPeriodicCollection();

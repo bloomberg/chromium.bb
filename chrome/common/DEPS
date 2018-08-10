@@ -57,6 +57,9 @@ include_rules = [
   "+third_party/blink/public/platform/web_client_hints_types.mojom.h",
   "+third_party/blink/public/platform/web_feature.mojom.h",
 
+  # Temporary dependency for thread_profiler.h. TODO(chengx): remove this dependency.
+  "+third_party/metrics_proto/sampled_profile.pb.h",
+
   # FIXME - refactor code and remove these dependencies
   "+chrome/installer/util",
 ]
