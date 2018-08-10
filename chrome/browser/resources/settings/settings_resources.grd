@@ -1360,12 +1360,6 @@
         <structure name="IDR_SETTINGS_NETWORK_PROXY_SECTION_JS"
                    file="internet_page/network_proxy_section.js"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_NETWORK_LISTENER_BEHAVIOR_HTML"
-                   file="internet_page/network_listener_behavior.html"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_NETWORK_LISTENER_BEHAVIOR_JS"
-                   file="internet_page/network_listener_behavior.js"
-                   type="chrome_html" />
         <structure name="IDR_SETTINGS_NETWORK_SUMMARY_HTML"
                    file="internet_page/network_summary.html"
                    type="chrome_html" />

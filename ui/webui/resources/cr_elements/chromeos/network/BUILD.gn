@@ -10,6 +10,7 @@ js_type_check("closure_compile") {
     ":cr_network_list",
     ":cr_network_list_item",
     ":cr_network_list_types",
+    ":cr_network_listener_behavior",
     ":cr_network_select",
     ":cr_onc_types",
   ]
@@ -43,6 +44,14 @@ js_library("cr_network_list_types") {
   deps = [
     ":cr_onc_types",
   ]
+}
+
+js_library("cr_network_listener_behavior") {
+  deps = [
+    "//ui/webui/resources/js:assert",
+  ]
+  externs_list = [ "$externs_path/networking_private.js" ]
+  extra_sources = [ "$interfaces_path/networking_private_interface.js" ]
 }
 
 js_library("cr_network_select") {
