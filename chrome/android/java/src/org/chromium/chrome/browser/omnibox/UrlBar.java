@@ -95,6 +95,7 @@ public class UrlBar extends AutocompleteEditText {
     private int mPreviousScrollViewWidth;
     private int mPreviousScrollResultXPosition;
     private float mPreviousScrollFontSize;
+    private boolean mPreviousScrollWasRtl;
 
     // Used as a hint to indicate the text may contain an ellipsize span.  This will be true if an
     // ellispize span was applied the last time the text changed.  A true value here does not
@@ -629,12 +630,16 @@ public class UrlBar extends AutocompleteEditText {
         // Ensure any selection from the focus state is cleared.
         setSelection(0);
 
+        float currentTextSize = getTextSize();
+        boolean currentIsRtl = ApiCompatibilityUtils.isLayoutRtl(this);
+
         int measuredWidth = getMeasuredWidth() - (getPaddingLeft() + getPaddingRight());
         if (scrollType == mPreviousScrollType && TextUtils.equals(text, mPreviousScrollText)
                 && measuredWidth == mPreviousScrollViewWidth
                 // Font size is float but it changes in discrete range (eg small font, big font),
                 // therefore false negative using regular equality is unlikely.
-                && getTextSize() == mPreviousScrollFontSize) {
+                && currentTextSize == mPreviousScrollFontSize
+                && currentIsRtl == mPreviousScrollWasRtl) {
             scrollTo(mPreviousScrollResultXPosition, getScrollY());
             return;
         }
@@ -654,8 +659,9 @@ public class UrlBar extends AutocompleteEditText {
         mPreviousScrollType = scrollType;
         mPreviousScrollText = text.toString();
         mPreviousScrollViewWidth = measuredWidth;
-        mPreviousScrollFontSize = getTextSize();
+        mPreviousScrollFontSize = currentTextSize;
         mPreviousScrollResultXPosition = getScrollX();
+        mPreviousScrollWasRtl = currentIsRtl;
     }
 
     /**
