@@ -86,7 +86,7 @@ class VaapiVideoDecodeAccelerator::InputBuffer {
  public:
   InputBuffer() = default;
   InputBuffer(uint32_t id,
-              std::unique_ptr<UnalignedSharedMemory> shm,
+              std::unique_ptr<WritableUnalignedMapping> shm,
               base::OnceCallback<void(int32_t id)> release_cb)
       : id_(id), shm_(std::move(shm)), release_cb_(std::move(release_cb)) {}
   ~InputBuffer() {
@@ -98,11 +98,11 @@ class VaapiVideoDecodeAccelerator::InputBuffer {
   // Indicates this is a dummy buffer for flush request.
   bool IsFlushRequest() const { return shm_ == nullptr; }
   int32_t id() const { return id_; }
-  UnalignedSharedMemory* shm() const { return shm_.get(); }
+  WritableUnalignedMapping* shm() const { return shm_.get(); }
 
  private:
   const int32_t id_ = -1;
-  const std::unique_ptr<UnalignedSharedMemory> shm_;
+  const std::unique_ptr<WritableUnalignedMapping> shm_;
   base::OnceCallback<void(int32_t id)> release_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(InputBuffer);
@@ -287,11 +287,11 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
     DCHECK(flush_buffer->IsFlushRequest());
     input_buffers_.push(std::move(flush_buffer));
   } else {
-    auto shm = std::make_unique<UnalignedSharedMemory>(
-        bitstream_buffer.handle(), bitstream_buffer.size(), true);
-    RETURN_AND_NOTIFY_ON_FAILURE(
-        shm->MapAt(bitstream_buffer.offset(), bitstream_buffer.size()),
-        "Failed to map input buffer", UNREADABLE_INPUT, );
+    auto shm = std::make_unique<WritableUnalignedMapping>(
+        bitstream_buffer.handle(), bitstream_buffer.size(),
+        bitstream_buffer.offset());
+    RETURN_AND_NOTIFY_ON_FAILURE(shm->IsValid(), "Failed to map input buffer",
+                                 UNREADABLE_INPUT, );
 
     auto input_buffer = std::make_unique<InputBuffer>(
         bitstream_buffer.id(), std::move(shm),

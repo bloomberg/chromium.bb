@@ -84,7 +84,7 @@ static unsigned int VaSurfaceFormatForJpeg(
 // consumption, provided by the client.
 struct VaapiJpegDecodeAccelerator::DecodeRequest {
   DecodeRequest(int32_t bitstream_buffer_id,
-                std::unique_ptr<UnalignedSharedMemory> shm,
+                std::unique_ptr<WritableUnalignedMapping> shm,
                 const scoped_refptr<VideoFrame>& video_frame)
       : bitstream_buffer_id(bitstream_buffer_id),
         shm(std::move(shm)),
@@ -92,7 +92,7 @@ struct VaapiJpegDecodeAccelerator::DecodeRequest {
   ~DecodeRequest() = default;
 
   int32_t bitstream_buffer_id;
-  std::unique_ptr<UnalignedSharedMemory> shm;
+  std::unique_ptr<WritableUnalignedMapping> shm;
   scoped_refptr<VideoFrame> video_frame;
 };
 
@@ -310,17 +310,17 @@ void VaapiJpegDecodeAccelerator::Decode(
   DVLOGF(4) << "Mapping new input buffer id: " << bitstream_buffer.id()
             << " size: " << bitstream_buffer.size();
 
-  // UnalignedSharedMemory will take over the |bitstream_buffer.handle()|.
-  auto shm = std::make_unique<UnalignedSharedMemory>(
-      bitstream_buffer.handle(), bitstream_buffer.size(), true);
-
   if (bitstream_buffer.id() < 0) {
     VLOGF(1) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();
     NotifyErrorFromDecoderThread(bitstream_buffer.id(), INVALID_ARGUMENT);
     return;
   }
 
-  if (!shm->MapAt(bitstream_buffer.offset(), bitstream_buffer.size())) {
+  auto shm = std::make_unique<WritableUnalignedMapping>(
+      bitstream_buffer.handle(), bitstream_buffer.size(),
+      bitstream_buffer.offset());
+
+  if (!shm->IsValid()) {
     VLOGF(1) << "Failed to map input buffer";
     NotifyErrorFromDecoderThread(bitstream_buffer.id(), UNREADABLE_INPUT);
     return;
