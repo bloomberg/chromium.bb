@@ -317,12 +317,6 @@ void LoginDisplayHostMojo::ShowResetScreen() {
   GetOobeUI()->ForwardAccelerator(kAccelReset);
 }
 
-void LoginDisplayHostMojo::ShowAccountAccessHelpApp() {
-  scoped_refptr<HelpAppLauncher>(new HelpAppLauncher(GetNativeWindow()))
-      ->ShowHelpTopic(HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
-  dialog_->Show();
-}
-
 void LoginDisplayHostMojo::UpdateAddUserButtonStatus() {
   DCHECK(GetOobeUI());
   LoginScreenClient::Get()->login_screen()->SetAddUserButtonEnabled(

@@ -197,9 +197,6 @@ class LoginDisplayHost {
   // Shows the powerwash dialog.
   virtual void ShowResetScreen() = 0;
 
-  // Start up the help application for trouble signin in.
-  virtual void ShowAccountAccessHelpApp() = 0;
-
   // In the views case, make the OobeUIDialogDelegate visible so that Captive
   // Portal web modal can be seen. In webui login, this should be a no-op.
   virtual void ShowDialogForCaptivePortal() = 0;

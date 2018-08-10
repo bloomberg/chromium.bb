@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/login_auth_recorder.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
@@ -181,7 +182,9 @@ void LoginScreenClient::ShowResetScreen() {
 }
 
 void LoginScreenClient::ShowAccountAccessHelpApp() {
-  chromeos::LoginDisplayHost::default_host()->ShowAccountAccessHelpApp();
+  scoped_refptr<chromeos::HelpAppLauncher>(
+      new chromeos::HelpAppLauncher(nullptr))
+      ->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
 }
 
 void LoginScreenClient::LoadWallpaper(const AccountId& account_id) {
