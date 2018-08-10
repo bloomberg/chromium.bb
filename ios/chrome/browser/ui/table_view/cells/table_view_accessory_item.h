@@ -16,6 +16,8 @@
 @property(nonatomic, readwrite, strong) UIImage* image;
 // The title label in the cell.
 @property(nonatomic, readwrite, copy) NSString* title;
+// The accessibility identifier for the cell.
+@property(nonatomic, readwrite, copy) NSString* cellAccessibilityIdentifier;
 
 @end
 

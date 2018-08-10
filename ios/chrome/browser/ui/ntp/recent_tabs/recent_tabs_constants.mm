@@ -11,3 +11,5 @@
 NSString* const kCollapsedSectionsKey = @"ChromeRecentTabsCollapsedSections";
 NSString* const kRecentTabsTableViewControllerAccessibilityIdentifier =
     @"recent_tabs_view_controller";
+NSString* const kRecentTabsShowFullHistoryCellAccessibilityIdentifier =
+    @"kRecentTabsShowFullHistoryCellAccessibilityIdentifier";

@@ -11,5 +11,7 @@
 extern NSString* const kCollapsedSectionsKey;
 // Accessibility identifier for the main view.
 extern NSString* const kRecentTabsTableViewControllerAccessibilityIdentifier;
+// Accessibility identifier for the "Show History" cell.
+extern NSString* const kRecentTabsShowFullHistoryCellAccessibilityIdentifier;
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_RECENT_TABS_RECENT_TABS_CONSTANTS_H_
