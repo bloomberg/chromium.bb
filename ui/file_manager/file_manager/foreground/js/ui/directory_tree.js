@@ -1360,7 +1360,7 @@ MenuItem.prototype.activate = function() {
 // FakeItem
 
 /**
- * FakeItem is used by Recent and Linux Files.
+ * FakeItem is used by Recent and Linux files.
  * @param {!VolumeManagerCommon.RootType} rootType root type.
  * @param {!NavigationModelFakeItem} modelItem
  * @param {!DirectoryTree} tree Current tree, which contains this item.

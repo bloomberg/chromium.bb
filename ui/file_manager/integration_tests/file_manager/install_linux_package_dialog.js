@@ -23,7 +23,7 @@ testcase.installLinuxPackageDialog = function() {
       appId = results.windowId;
       addEntries(['crostini'], [ENTRIES.debPackage], this.next);
     },
-    // Linux Files fake root is shown.
+    // Linux files fake root is shown.
     function() {
       remoteCall.waitForElement(appId, fake).then(this.next);
     },

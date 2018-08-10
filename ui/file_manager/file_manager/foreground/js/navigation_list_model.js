@@ -159,7 +159,7 @@ NavigationModelMenuItem.prototype = /** @struct */ {
 };
 
 /**
- * Item of NavigationListModel for a fake item such as Recent or Linux Files.
+ * Item of NavigationListModel for a fake item such as Recent or Linux files.
  *
  * @param {string} label Label on the menu button.
  * @param {NavigationModelItemType} type
@@ -217,7 +217,7 @@ function NavigationListModel(
   this.recentModelItem_ = recentModelItem;
 
   /**
-   * Root folder for crostini Linux Files.
+   * Root folder for crostini Linux files.
    * This field will be set asynchronously after calling
    * chrome.fileManagerPrivate.isCrostiniEnabled.
    * @private {NavigationModelFakeItem}
@@ -419,10 +419,10 @@ NavigationListModel.prototype = {
     return this.shortcutList_;
   },
   /**
-   * Set the crostini Linux Files root and reorder items.
+   * Set the crostini Linux files root and reorder items.
    * This setter is provided separate to the constructor since
    * this field is set async after calling fileManagerPrivate.isCrostiniEnabled.
-   * @param {NavigationModelFakeItem} item Linux Files root.
+   * @param {NavigationModelFakeItem} item Linux files root.
    */
   set linuxFilesItem(item) {
     this.linuxFilesItem_ = item;
@@ -437,7 +437,7 @@ NavigationListModel.prototype = {
 /**
  * Reorder navigation items when command line flag new-files-app-navigation is
  * enabled it nests Downloads, Linux and Android files under "My Files"; when
- * it's disabled it has a flat structure with Linux Files after Recent menu.
+ * it's disabled it has a flat structure with Linux files after Recent menu.
  */
 NavigationListModel.prototype.reorderNavigationItems_ = function() {
   if (!this.disableMyFilesNavigation_) {
@@ -452,7 +452,7 @@ NavigationListModel.prototype.reorderNavigationItems_ = function() {
  *  1. Volumes.
  *  2. If Downloads exists, then immediately after Downloads should be:
  *  2a. Recent if it exists.
- *  2b. Linux Files if it exists and is not mounted.
+ *  2b. Linux files if it exists and is not mounted.
  *      When mounted, it will be located in Volumes at this position.
  *  3. Shortcuts.
  *  4. Add new services if it exists.

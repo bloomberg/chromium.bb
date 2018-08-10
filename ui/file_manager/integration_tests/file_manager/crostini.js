@@ -20,7 +20,7 @@ testcase.mountCrostiniContainer = function() {
       addEntries(['crostini'], BASIC_CROSTINI_ENTRY_SET, this.next);
     },
     function() {
-      // Linux Files fake root is shown.
+      // Linux files fake root is shown.
       remoteCall.waitForElement(appId, fake).then(this.next);
     },
     function() {

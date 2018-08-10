@@ -27,12 +27,12 @@ crostini.testCrostiniSuccess = (done) => {
   };
   test.setupAndWaitUntilReady()
       .then(() => {
-        // Linux Files fake root is shown.
+        // Linux files fake root is shown.
         return test.waitForElement(
             '#directory-tree .tree-item [root-type-icon="crostini"]');
       })
       .then(() => {
-        // Click on Linux Files.
+        // Click on Linux files.
         assertTrue(
             test.fakeMouseClick(
                 '#directory-tree .tree-item [root-type-icon="crostini"]'),

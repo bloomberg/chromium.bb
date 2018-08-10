@@ -373,8 +373,8 @@
   <message name="IDS_FILE_BROWSER_ERROR_EXTERNAL_DRIVE_LONG_NAME" desc="Error message displayed when user tries to enter too long name for an external drive.">
     Use a name that's <ph name="MAX_LENGTH">$1<ex>11</ex></ph> characters or less
   </message>
-  <message name="IDS_FILE_BROWSER_ERROR_LINUX_FILES_CONNECTION" desc="Text to show user when there is an error starting or mounting crostini container to show Linux Files.">
-    Unable to view Linux Files
+  <message name="IDS_FILE_BROWSER_ERROR_LINUX_FILES_CONNECTION" desc="Text to show user when there is an error starting or mounting crostini container to show Linux files.">
+    Unable to view Linux files
   </message>
 
   <message name="IDS_FILE_BROWSER_EMPTY_FOLDER" desc="Label shown in an empty folder.">
@@ -974,8 +974,8 @@
   <message name="IDS_FILE_BROWSER_DROP_TARGET_FOLDER_NO_MOVE_PERMISSION" desc="Tooltip label displayed besides mouse pointer while dragging files or folders over a Team Drive or folder in Drive that does not have write access.">
     You don't have permission to move files into '<ph name="FOLDER_NAME">$1<ex>Trip Photos</ex></ph>'.
   </message>
-  <message name="IDS_FILE_BROWSER_DROP_TARGET_OPENING_LINUX_FILES" desc="Tooltip label displayed besides mouse pointer when dragging files or folders over Linux Files root before the container has been started and mounted.">
-    Opening Linux Files...
+  <message name="IDS_FILE_BROWSER_DROP_TARGET_OPENING_LINUX_FILES" desc="Tooltip label displayed besides mouse pointer when dragging files or folders over Linux files root before the container has been started and mounted.">
+    Opening Linux files...
   </message>
 
   <message name="IDS_FILE_BROWSER_SELECT_FOLDER_TITLE" desc="Select folder title.">
@@ -1231,7 +1231,7 @@
     Unable to open with $1
   </message>
   <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_CROSTINI" desc="Message shown when a user tries to use a crostini app to open a file outside the crostini container (e.g. in Downloads).  This message will be removed once we support this action.">
-    To open files with $1, first copy to Linux Files folder.
+    To open files with $1, first copy to Linux files folder.
   </message>
 
   <message name="IDS_FILE_BROWSER_FOLDER" desc="Folder entry type">
@@ -5112,7 +5112,7 @@
     Delete Linux (Beta)
   </message>
   <message name="IDS_CROSTINI_UNINSTALLER_BODY" desc="Description for the Crostini uninstaller, a dialog for uninstalling Linux, the associated VM and Linux files.">
-    Delete all Linux applications and data in your Linux Files folder from this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>?
+    Delete all Linux applications and data in your Linux files folder from this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>?
   </message>
   <message name="IDS_CROSTINI_UNINSTALLER_UNINSTALL_BUTTON" desc="Label for the button in the Crostini uninstaller dialog to uninstall Linux">
     Delete
