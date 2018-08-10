@@ -86,7 +86,15 @@ class OZONE_EXPORT OzonePlatform {
     // Fuchsia only: set to true when the platforms requires
     // |view_owner_request| field in PlatformWindowInitProperties when creating
     // a window.
-    bool needs_view_owner_request;
+    bool needs_view_owner_request = false;
+
+    // Determine whether we should default to native decorations or the custom
+    // frame based on the currently-running window manager.
+    bool custom_frame_pref_default = false;
+
+    // Determine whether switching between system and custom frames is
+    // supported.
+    bool use_system_title_bar = false;
   };
 
   // Ensures the OzonePlatform instance without doing any initialization.

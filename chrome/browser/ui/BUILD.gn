@@ -1742,6 +1742,10 @@ jumbo_split_static_library("ui") {
       "//ui/events",
     ]
 
+    if (use_ozone && !is_chromeos) {
+      deps += [ "//ui/ozone" ]
+    }
+
     if (!toolkit_views) {
       sources += [ "media_router/cloud_services_dialog.cc" ]
     }
