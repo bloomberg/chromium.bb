@@ -241,7 +241,8 @@ void HeaderView::ChildPreferredSizeChanged(views::View* child) {
 void HeaderView::OnTabletModeStarted() {
   caption_button_container_->UpdateCaptionButtonState(true /*=animate*/);
   parent()->Layout();
-  if (Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars(
+  if (target_widget_ &&
+      Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars(
           target_widget_)) {
     target_widget_->non_client_view()->Layout();
   }
@@ -250,12 +251,16 @@ void HeaderView::OnTabletModeStarted() {
 void HeaderView::OnTabletModeEnded() {
   caption_button_container_->UpdateCaptionButtonState(true /*=animate*/);
   parent()->Layout();
-  target_widget_->non_client_view()->Layout();
+  if (target_widget_)
+    target_widget_->non_client_view()->Layout();
 }
 
 void HeaderView::OnWindowPropertyChanged(aura::Window* window,
                                          const void* key,
                                          intptr_t old) {
+  if (!target_widget_)
+    return;
+
   DCHECK_EQ(target_widget_->GetNativeWindow(), window);
   if (key == kFrameImageActiveKey || key == kFrameImageInactiveKey ||
       key == kFrameImageOverlayActiveKey ||
@@ -278,6 +283,8 @@ void HeaderView::OnWindowPropertyChanged(aura::Window* window,
 
 void HeaderView::OnWindowDestroying(aura::Window* window) {
   window_observer_.Remove(window);
+  // A HeaderView may outlive the target widget.
+  target_widget_ = nullptr;
 }
 
 views::View* HeaderView::avatar_icon() const {
@@ -349,7 +356,7 @@ std::vector<gfx::Rect> HeaderView::GetVisibleBoundsInScreen() const {
 }
 
 void HeaderView::PaintHeaderContent(gfx::Canvas* canvas) {
-  if (!should_paint_)
+  if (!should_paint_ || !target_widget_)
     return;
 
   bool paint_as_active =

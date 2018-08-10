@@ -550,6 +550,18 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   EXPECT_EQ(client_bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(client_bounds,
             frame_view->GetClientBoundsForWindowBounds(client_bounds));
+
+  // Test NONE -> AUTOHIDE -> NONE
+  shell_surface->SetMaximized();
+  shell_surface->SetGeometry(fullscreen_bounds);
+  surface->SetFrame(SurfaceFrameType::AUTOHIDE);
+  surface->Commit();
+  EXPECT_TRUE(frame_view->visible());
+  EXPECT_TRUE(frame_view->GetHeaderView()->in_immersive_mode());
+  surface->SetFrame(SurfaceFrameType::NONE);
+  surface->Commit();
+  EXPECT_FALSE(frame_view->visible());
+  EXPECT_FALSE(frame_view->GetHeaderView()->in_immersive_mode());
 }
 
 namespace {
@@ -1478,12 +1490,22 @@ TEST_F(ClientControlledShellSurfaceTest, WideFrame) {
   ASSERT_TRUE(wide_frame);
   EXPECT_FALSE(wide_frame->header_view()->in_immersive_mode());
 
-  // Set AutoHide mode.
+  // Test AUTOHIDE -> NORMAL
   surface->SetFrame(SurfaceFrameType::AUTOHIDE);
+  surface->Commit();
   EXPECT_TRUE(wide_frame->header_view()->in_immersive_mode());
 
-  // Exit AutoHide mode.
   surface->SetFrame(SurfaceFrameType::NORMAL);
+  surface->Commit();
+  EXPECT_FALSE(wide_frame->header_view()->in_immersive_mode());
+
+  // Test AUTOHIDE -> NONE
+  surface->SetFrame(SurfaceFrameType::AUTOHIDE);
+  surface->Commit();
+  EXPECT_TRUE(wide_frame->header_view()->in_immersive_mode());
+
+  surface->SetFrame(SurfaceFrameType::NONE);
+  surface->Commit();
   EXPECT_FALSE(wide_frame->header_view()->in_immersive_mode());
 
   // Unmaximize it and the frame should be normal.
