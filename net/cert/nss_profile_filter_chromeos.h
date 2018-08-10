@@ -42,17 +42,7 @@ class NET_EXPORT NSSProfileFilterChromeOS {
   bool IsModuleAllowed(PK11SlotInfo* slot) const;
   bool IsCertAllowed(CERTCertificate* cert) const;
 
-  // TODO(mattm): remove these predicates and use labmdas instead.
-  class CertNotAllowedForProfilePredicate {
-   public:
-    explicit CertNotAllowedForProfilePredicate(
-        const NSSProfileFilterChromeOS& filter);
-    bool operator()(const ScopedCERTCertificate& cert) const;
-
-   private:
-    const NSSProfileFilterChromeOS& filter_;
-  };
-
+  // TODO(mattm): remove this predicate and use labmda instead.
   class ModuleNotAllowedForProfilePredicate {
    public:
     explicit ModuleNotAllowedForProfilePredicate(
