@@ -32,6 +32,12 @@ namespace autofill {
 
 namespace payments {
 
+// Billable service number is defined in Payments server to distinguish
+// different requests.
+const int kUnmaskCardBillableServiceNumber = 70154;
+const int kUploadCardBillableServiceNumber = 70073;
+const int kMigrateCardBillableServiceNumber = 70264;
+
 class PaymentsRequest;
 
 // PaymentsClient issues Payments RPCs and manages responses and failure
@@ -112,9 +118,11 @@ class PaymentsClient {
   // CreditCardSaveManager::DetectedValue values that relays what data is
   // actually available for upload in order to make more informed upload
   // decisions. |callback| is the callback function when get response from
-  // server. If the conditions are met, the legal message will be returned via
-  // |callback|. |active_experiments| is used by Payments server to track
-  // requests that were triggered by enabled features.
+  // server. |billable_service_number| is used to set the billable service
+  // number in the GetUploadDetails request. If the conditions are met, the
+  // legal message will be returned via |callback|. |active_experiments| is used
+  // by Payments server to track requests that were triggered by enabled
+  // features.
   virtual void GetUploadDetails(
       const std::vector<AutofillProfile>& addresses,
       const int detected_values,
@@ -123,8 +131,8 @@ class PaymentsClient {
       const std::string& app_locale,
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                               const base::string16&,
-                              std::unique_ptr<base::DictionaryValue>)>
-          callback);
+                              std::unique_ptr<base::DictionaryValue>)> callback,
+      const int billable_service_number);
 
   // The user has indicated that they would like to upload a card with the given
   // cvc. This request will fail server-side if a successful call to

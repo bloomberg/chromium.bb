@@ -100,7 +100,8 @@ void LocalCardMigrationManager::AttemptToOfferLocalCardMigration() {
       /*pan_first_six=*/std::string(), upload_request_.active_experiments,
       app_locale_,
       base::BindOnce(&LocalCardMigrationManager::OnDidGetUploadDetails,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      payments::kMigrateCardBillableServiceNumber);
 }
 
 // TODO(crbug.com/852904): Pops up a larger, modal dialog showing the local
