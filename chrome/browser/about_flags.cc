@@ -4248,6 +4248,11 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableChromevoxDeveloperOption)},
 #endif
 
+    {"sync-USS-autofill-wallet-data",
+     flag_descriptions::kSyncUSSAutofillWalletDataName,
+     flag_descriptions::kSyncUSSAutofillWalletDataDescription, kOsAll,
+     FEATURE_VALUE_TYPE(switches::kSyncUSSAutofillWalletData)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
