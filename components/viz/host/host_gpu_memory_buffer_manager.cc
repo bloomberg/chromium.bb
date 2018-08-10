@@ -56,27 +56,6 @@ HostGpuMemoryBufferManager::~HostGpuMemoryBufferManager() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 }
 
-void HostGpuMemoryBufferManager::GpuServiceShutDown() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  gpu_service_version_++;
-
-  // Drop allocated buffers.
-  allocated_buffers_.clear();
-
-  // Retry requesting pending buffer allocations.
-  auto pending_buffers = std::move(pending_buffers_);
-  pending_buffers_.clear();
-  for (auto& client_pair : pending_buffers) {
-    for (auto& buffer_pair : client_pair.second) {
-      auto& buffer = buffer_pair.second;
-      AllocateGpuMemoryBuffer(
-          buffer_pair.first, client_pair.first, buffer.size, buffer.format,
-          buffer.usage, buffer.surface_handle, std::move(buffer.callback));
-    }
-  }
-}
-
 void HostGpuMemoryBufferManager::DestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id,
@@ -91,7 +70,7 @@ void HostGpuMemoryBufferManager::DestroyGpuMemoryBuffer(
     return;
   DCHECK_NE(gfx::EMPTY_BUFFER, buffer_iter->second.type);
   if (buffer_iter->second.type != gfx::SHARED_MEMORY_BUFFER) {
-    auto* gpu_service = gpu_service_provider_.Run();
+    auto* gpu_service = GetGpuService();
     DCHECK(gpu_service);
     gpu_service->DestroyGpuMemoryBuffer(id, client_id, sync_token);
   }
@@ -107,7 +86,7 @@ void HostGpuMemoryBufferManager::DestroyAllGpuMemoryBufferForClient(
     for (const auto& pair : buffers) {
       DCHECK_NE(gfx::EMPTY_BUFFER, pair.second.type);
       if (pair.second.type != gfx::SHARED_MEMORY_BUFFER) {
-        auto* gpu_service = gpu_service_provider_.Run();
+        auto* gpu_service = GetGpuService();
         DCHECK(gpu_service);
         gpu_service->DestroyGpuMemoryBuffer(pair.first, client_id,
                                             gpu::SyncToken());
@@ -140,7 +119,7 @@ void HostGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
     const bool is_native = native_configurations_.find(std::make_pair(
                                format, usage)) != native_configurations_.end();
     if (is_native) {
-      if (auto* gpu_service = gpu_service_provider_.Run()) {
+      if (auto* gpu_service = GetGpuService()) {
         PendingBufferInfo buffer_info;
         buffer_info.size = size;
         buffer_info.format = format;
@@ -271,6 +250,39 @@ bool HostGpuMemoryBufferManager::OnMemoryDump(
   return true;
 }
 
+mojom::GpuService* HostGpuMemoryBufferManager::GetGpuService() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (gpu_service_)
+    return gpu_service_;
+
+  gpu_service_ = gpu_service_provider_.Run(base::BindOnce(
+      &HostGpuMemoryBufferManager::OnConnectionError, weak_ptr_));
+  return gpu_service_;
+}
+
+void HostGpuMemoryBufferManager::OnConnectionError() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  gpu_service_ = nullptr;
+  gpu_service_version_++;
+
+  // Drop allocated buffers.
+  allocated_buffers_.clear();
+
+  // Retry requesting pending buffer allocations.
+  auto pending_buffers = std::move(pending_buffers_);
+  pending_buffers_.clear();
+  for (auto& client_pair : pending_buffers) {
+    for (auto& buffer_pair : client_pair.second) {
+      auto& buffer = buffer_pair.second;
+      AllocateGpuMemoryBuffer(
+          buffer_pair.first, client_pair.first, buffer.size, buffer.format,
+          buffer.usage, buffer.surface_handle, std::move(buffer.callback));
+    }
+  }
+}
+
 uint64_t HostGpuMemoryBufferManager::ClientIdToTracingId(int client_id) const {
   if (client_id == client_id_) {
     return base::trace_event::MemoryDumpManager::GetInstance()
@@ -298,7 +310,7 @@ void HostGpuMemoryBufferManager::OnGpuMemoryBufferAllocated(
     // The client has been destroyed since the allocation request was made. The
     // callback is already called with null handle.
     if (!handle.is_null() && !stale) {
-      auto* gpu_service = gpu_service_provider_.Run();
+      auto* gpu_service = GetGpuService();
       DCHECK(gpu_service);
       gpu_service->DestroyGpuMemoryBuffer(handle.id, client_id,
                                           gpu::SyncToken());

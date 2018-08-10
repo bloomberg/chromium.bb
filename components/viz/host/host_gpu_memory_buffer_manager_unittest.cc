@@ -26,7 +26,8 @@ class TestGpuService : public mojom::GpuService {
 
   HostGpuMemoryBufferManager::GpuServiceProvider CreateProvider() {
     return base::BindRepeating(
-        [](mojom::GpuService* gpu_service) { return gpu_service; },
+        [](mojom::GpuService* gpu_service,
+           base::OnceClosure connection_error_handler) { return gpu_service; },
         base::Unretained(this));
   }
 
