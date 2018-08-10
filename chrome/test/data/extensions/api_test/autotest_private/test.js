@@ -130,6 +130,10 @@ chrome.test.runTests([
       chrome.test.succeed();
     });
   },
+  function runCrostiniInstaller() {
+    chrome.autotestPrivate.runCrostiniInstaller(chrome.test.callbackFail(
+        'Crostini is not available for the current user'));
+  },
   function getPrinterList() {
     chrome.autotestPrivate.getPrinterList(function(){
       chrome.test.succeed();

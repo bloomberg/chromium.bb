@@ -16246,6 +16246,7 @@ Called by update_net_error_codes.py.-->
   <int value="1264" label="VIRTUALKEYBOARDPRIVATE_SETHITTESTBOUNDS"/>
   <int value="1265" label="ARCAPPSPRIVATE_GETLAUNCHABLEAPPS"/>
   <int value="1266" label="ARCAPPSPRIVATE_LAUNCHAPP"/>
+  <int value="1267" label="AUTOTESTPRIVATE_RUNCROSTINIINSTALLER"/>
 </enum>
 
 <enum name="ExtensionIconState">
