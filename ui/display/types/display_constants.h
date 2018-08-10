@@ -13,6 +13,10 @@ namespace display {
 // before display IDs are known.
 constexpr int64_t kInvalidDisplayId = -1;
 
+// Display ID that represents a valid display to be used when there's no actual
+// display connected.
+constexpr int64_t kDefaultDisplayId = 0xFF;
+
 // Display ID for a virtual display assigned to a unified desktop.
 constexpr int64_t kUnifiedDisplayId = -10;
 

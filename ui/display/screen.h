@@ -71,7 +71,9 @@ class DISPLAY_EXPORT Screen {
   // Returns the display that most closely intersects the provided bounds.
   virtual Display GetDisplayMatching(const gfx::Rect& match_rect) const = 0;
 
-  // Returns the primary display.
+  // Returns the primary display. It is guaranteed that this will return a
+  // display with a valid display ID even if there is no display connected.
+  // A real display will be reported via DisplayObserver when it is connected.
   virtual Display GetPrimaryDisplay() const = 0;
 
   // Returns a suggested display to use when creating a new window. On most

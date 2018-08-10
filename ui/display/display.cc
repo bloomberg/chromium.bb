@@ -207,6 +207,11 @@ Display::Display(const Display& other) = default;
 
 Display::~Display() {}
 
+// static
+Display Display::GetDefaultDisplay() {
+  return Display(kDefaultDisplayId, gfx::Rect(0, 0, 1920, 1080));
+}
+
 int Display::RotationAsDegree() const {
   switch (rotation_) {
     case ROTATE_0:
