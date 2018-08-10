@@ -404,8 +404,10 @@ def _handle_perf_results(
           build_properties, output_json_file, service_account_file))
 
     # Kick off the uploads in mutliple processes
-    cpus = mp.cpu_count()
-    pool = mp.Pool(cpus)
+    # Maximimze the parallelization by setting the number of parallel processes
+    # to the number of invocations. This is because a significant part of
+    # uploading are I/Os bounds.
+    pool = mp.Pool(len(invocations))
     try:
       async_result = pool.map_async(
           _upload_individual_benchmark, invocations)
