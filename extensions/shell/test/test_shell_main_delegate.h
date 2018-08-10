@@ -25,9 +25,6 @@ class TestShellMainDelegate : public extensions::ShellMainDelegate {
  protected:
   // content::ContentMainDelegate implementation:
   content::ContentUtilityClient* CreateContentUtilityClient() override;
-#if defined(OS_MACOSX)
-  void PreContentInitialization() override;
-#endif
 
  private:
   std::unique_ptr<content::ContentUtilityClient> utility_client_;

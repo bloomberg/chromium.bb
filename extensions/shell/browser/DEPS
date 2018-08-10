@@ -15,7 +15,6 @@ include_rules = [
 
   # Pieces of content_shell reused in app_shell.
   # TODO(jamescook): Eliminate these. http://crbug.com/438283
-  "+content/shell/browser/shell_application_mac.h",
   "+content/shell/browser/shell_browser_context.h",
   "+content/shell/browser/shell_devtools_manager_delegate.h",
   "+content/shell/browser/shell_url_request_context_getter.h",

@@ -9,4 +9,8 @@ include_rules = [
   "+content/public/utility",
   "+sandbox",
   "+services/service_manager/embedder",
+
+  # Pieces of content_shell reused in app_shell.
+  # TODO(jamescook): Eliminate these. http://crbug.com/438283
+  "+content/shell/browser/shell_application_mac.h",
 ]

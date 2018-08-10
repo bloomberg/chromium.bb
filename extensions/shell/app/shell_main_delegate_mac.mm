@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/shell/test/test_shell_main_delegate.h"
+#include "extensions/shell/app/shell_main_delegate.h"
 
 #include "content/shell/browser/shell_application_mac.h"
 
 namespace extensions {
 
-void TestShellMainDelegate::PreContentInitialization() {
+void ShellMainDelegate::PreContentInitialization() {
   // Force the NSApplication subclass to be used.
   [ShellCrApplication sharedApplication];
 }

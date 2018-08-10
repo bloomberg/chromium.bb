@@ -40,6 +40,9 @@ class ShellMainDelegate : public content::ContentMainDelegate {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   void ZygoteForked() override;
 #endif
+#if defined(OS_MACOSX)
+  void PreContentInitialization() override;
+#endif
 
  private:
   // |process_type| is zygote, renderer, utility, etc. Returns true if the

@@ -66,10 +66,6 @@
 #include "device/bluetooth/dbus/dbus_thread_manager_linux.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "extensions/shell/browser/shell_browser_main_parts_mac.h"
-#endif
-
 #if BUILDFLAG(ENABLE_NACL)
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/nacl_process_host.h"
@@ -115,9 +111,6 @@ ShellBrowserMainParts::~ShellBrowserMainParts() {
 void ShellBrowserMainParts::PreMainMessageLoopStart() {
 #if defined(USE_AURA) && defined(USE_X11)
   ui::TouchFactory::SetTouchDeviceListFromCommandLine();
-#endif
-#if defined(OS_MACOSX)
-  MainPartsPreMainMessageLoopStartMac();
 #endif
 }
 
