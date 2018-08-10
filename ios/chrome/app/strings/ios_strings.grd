@@ -514,7 +514,7 @@ locale.  The strings in this file are specific to iOS.
         Clear Browsing Data
       </message>
       <message name="IDS_IOS_CONFIRM_CLEAR_BUTTON_TITLE" desc="Title for the UIAlertController indicating browsing data selected will be removed. [Length: 20em] [iOS only]">
-        The items you selected will be removed
+        The items you selected will be removed.
       </message>
       <message name="IDS_IOS_CONFIRM_CLEAR_BUTTON" desc="Accessibility label for the button used to confirm clearing data. [iOS only]">
         Confirm Clear Browsing Data
