@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
@@ -490,7 +491,9 @@ void EnrollmentHandlerChromeOS::OnOfflinePolicyValidated(
     return;
   }
 
-  device_id_ = validator->policy_data()->device_id();
+  // Don't use the device ID within the validated policy -- it's common among
+  // all of the offline-enrolled devices.
+  device_id_ = base::GenerateGUID();
   policy_ = std::move(validator->policy());
 
   // The steps for OAuth2 token fetching is skipped for the OFFLINE_DEMO_MODE.
