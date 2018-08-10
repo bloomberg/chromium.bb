@@ -27,15 +27,24 @@
 #include "ui/gfx/image/image_skia.h"
 
 BackgroundFetchDelegateImpl::BackgroundFetchDelegateImpl(Profile* profile)
-    : download_service_(
-          DownloadServiceFactory::GetInstance()->GetForBrowserContext(profile)),
+    : profile_(profile),
       offline_content_aggregator_(
           OfflineContentAggregatorFactory::GetForBrowserContext(profile)),
       weak_ptr_factory_(this) {
+  DCHECK(profile_);
   offline_content_aggregator_->RegisterProvider("background_fetch", this);
 }
 
-BackgroundFetchDelegateImpl::~BackgroundFetchDelegateImpl() {}
+BackgroundFetchDelegateImpl::~BackgroundFetchDelegateImpl() = default;
+
+download::DownloadService* BackgroundFetchDelegateImpl::GetDownloadService() {
+  if (download_service_)
+    return download_service_;
+
+  download_service_ =
+      DownloadServiceFactory::GetInstance()->GetForBrowserContext(profile_);
+  return download_service_;
+}
 
 void BackgroundFetchDelegateImpl::Shutdown() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -150,9 +159,9 @@ void BackgroundFetchDelegateImpl::CreateDownloadJob(
   for (const auto& download_guid : details.fetch_description->current_guids) {
     DCHECK(!download_job_unique_id_map_.count(download_guid));
     download_job_unique_id_map_.emplace(download_guid, job_unique_id);
-    if (download_service_->GetStatus() ==
+    if (GetDownloadService()->GetStatus() ==
         download::DownloadService::ServiceStatus::READY) {
-      download_service_->ResumeDownload(download_guid);
+      GetDownloadService()->ResumeDownload(download_guid);
     }
   }
 
@@ -189,7 +198,7 @@ void BackgroundFetchDelegateImpl::DownloadUrl(
   params.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(traffic_annotation);
 
-  download_service_->StartDownload(params);
+  GetDownloadService()->StartDownload(params);
 }
 
 void BackgroundFetchDelegateImpl::Abort(const std::string& job_unique_id) {
@@ -203,7 +212,7 @@ void BackgroundFetchDelegateImpl::Abort(const std::string& job_unique_id) {
   job_details.cancelled = true;
 
   for (const auto& download_guid : job_details.current_download_guids) {
-    download_service_->CancelDownload(download_guid);
+    GetDownloadService()->CancelDownload(download_guid);
     download_job_unique_id_map_.erase(download_guid);
   }
   UpdateOfflineItemAndUpdateObservers(&job_details);
@@ -481,18 +490,18 @@ void BackgroundFetchDelegateImpl::ResumeDownload(
 
   JobDetails& job_details = job_details_iter->second;
   for (auto& download_guid : job_details.current_download_guids)
-    download_service_->ResumeDownload(download_guid);
+    GetDownloadService()->ResumeDownload(download_guid);
 
   // TODO(delphick): Start new downloads that weren't started because of pause.
 }
 
 void BackgroundFetchDelegateImpl::ResumeActiveJobs() {
-  DCHECK_EQ(download_service_->GetStatus(),
+  DCHECK_EQ(GetDownloadService()->GetStatus(),
             download::DownloadService::ServiceStatus::READY);
 
   for (const auto& job_details : job_details_map_) {
     for (const auto& download_guid : job_details.second.current_download_guids)
-      download_service_->ResumeDownload(download_guid);
+      GetDownloadService()->ResumeDownload(download_guid);
   }
 }
 
