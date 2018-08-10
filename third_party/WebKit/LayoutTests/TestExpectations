@@ -4701,8 +4701,6 @@ crbug.com/864994 [ Mac ] external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-dec
 
 crbug.com/865432 [ Linux ] external/wpt/workers/modules/dedicated-worker-import-blob-url.any.worker.html [ Timeout Pass ]
 
-crbug.com/865755 [ Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Failure Pass ]
-
 skbug.com/8155 virtual/gpu-rasterization/images/jpeg-yuv-progressive-image.html [ Pass Failure ]
 skbug.com/8155 virtual/gpu-rasterization/images/rgb-png-with-cmyk-color-profile.html [ Pass Failure ]
 
