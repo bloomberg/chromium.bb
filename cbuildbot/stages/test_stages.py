@@ -289,11 +289,6 @@ class SkylabHWTestStage(HWTestStage):
   def PerformStage(self):
     build = '/'.join([self._bot_id, self.version])
 
-    # TODO (xixuan): Only allow to run provision & bvt-inline suite.
-    if self.suite_config.suite not in [constants.HWTEST_PROVISION_SUITE,
-                                       constants.HWTEST_BVT_SUITE]:
-      return
-
     cmd_result = commands.RunSkylabHWTestSuite(
         build, self.suite_config.suite, self._board_name,
         model=self._model,
