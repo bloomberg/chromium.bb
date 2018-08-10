@@ -47,6 +47,10 @@ void TestDictionary::setAnyMember(ScriptValue value) {
   any_member_ = value;
 }
 
+void TestDictionary::setCallbackFunctionMember(V8VoidCallbackFunction* value) {
+  callback_function_member_ = value;
+}
+
 void TestDictionary::setDictionaryMember(Dictionary value) {
   dictionary_member_ = value;
 }
@@ -120,6 +124,10 @@ void TestDictionary::setRecordMember(const Vector<std::pair<String, int8_t>>& va
   has_record_member_ = true;
 }
 
+void TestDictionary::setRequiredCallbackFunctionMember(V8VoidCallbackFunction* value) {
+  required_callback_function_member_ = value;
+}
+
 void TestDictionary::setStringOrNullRecordMember(const Vector<std::pair<String, String>>& value) {
   string_or_null_record_member_ = value;
   has_string_or_null_record_member_ = true;
@@ -190,6 +198,7 @@ void TestDictionary::setUnionWithTypedefs(const FloatOrBoolean& value) {
 }
 
 void TestDictionary::Trace(blink::Visitor* visitor) {
+  visitor->Trace(callback_function_member_);
   visitor->Trace(double_or_null_or_double_or_null_sequence_member_);
   visitor->Trace(double_or_string_member_);
   visitor->Trace(double_or_string_sequence_member_);
@@ -200,6 +209,7 @@ void TestDictionary::Trace(blink::Visitor* visitor) {
   visitor->Trace(garbage_collected_record_member_);
   visitor->Trace(internal_dictionary_sequence_member_);
   visitor->Trace(other_double_or_string_member_);
+  visitor->Trace(required_callback_function_member_);
   visitor->Trace(test_enum_or_null_or_test_enum_sequence_member_);
   visitor->Trace(test_enum_or_test_enum_or_null_sequence_member_);
   visitor->Trace(test_enum_or_test_enum_sequence_member_);
