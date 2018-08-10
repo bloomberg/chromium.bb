@@ -57,16 +57,6 @@ public class PrintingContext implements PrintingContextInterface {
         }
     }
 
-    /**
-     * Notifies the native side that the user just chose a new set of printing settings.
-     * @param success True if the user has chosen printing settings necessary for the
-     *                generation of PDF, false if there has been a problem.
-     */
-    @Override
-    public void askUserForSettingsReply(boolean success) {
-        nativeAskUserForSettingsReply(mNativeObject, success);
-    }
-
     @CalledByNative
     public static PrintingContext create(long nativeObjectPointer) {
         ThreadUtils.assertOnUiThread();
@@ -135,8 +125,7 @@ public class PrintingContext implements PrintingContextInterface {
         // If the printing dialog has already finished, tell Chromium that operation is cancelled.
         if (mController.hasPrintingFinished()) {
             // NOTE: We don't call nativeAskUserForSettingsReply (hence Chromium callback in
-            // AskUserForSettings callback) twice.  See {@link PrintingControllerImpl#onFinish}
-            // for more explanation.
+            // AskUserForSettings callback) twice.
             askUserForSettingsReply(false);
         } else {
             mController.setPrintingContext(this);
@@ -145,14 +134,18 @@ public class PrintingContext implements PrintingContextInterface {
         }
     }
 
+    private void askUserForSettingsReply(boolean success) {
+        assert mNativeObject != 0;
+        nativeAskUserForSettingsReply(mNativeObject, success);
+    }
+
     @Override
     public void showSystemDialogDone() {
         nativeShowSystemDialogDone(mNativeObject);
     }
 
     private native void nativeAskUserForSettingsReply(
-            long nativePrintingContextAndroid,
-            boolean success);
+            long nativePrintingContextAndroid, boolean success);
 
     private native void nativeShowSystemDialogDone(long nativePrintingContextAndroid);
 }
