@@ -13,28 +13,50 @@
 
 namespace content {
 
-CATransactionGPUCoordinator::CATransactionGPUCoordinator(GpuProcessHost* host)
-    : host_(host) {
+// static
+scoped_refptr<CATransactionGPUCoordinator> CATransactionGPUCoordinator::Create(
+    GpuProcessHost* host) {
+  scoped_refptr<CATransactionGPUCoordinator> result(
+      new CATransactionGPUCoordinator(host));
+  // Avoid modifying result's refcount in the constructor by performing this
+  // PostTask afterward.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ui::WindowResizeHelperMac::Get()->task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&ui::CATransactionCoordinator::AddPostCommitObserver,
-                     base::Unretained(&ui::CATransactionCoordinator::Get()),
-                     base::RetainedRef(this)));
+      base::BindOnce(
+          &CATransactionGPUCoordinator::AddPostCommitObserverOnUIThread,
+          result));
+  return result;
 }
+
+CATransactionGPUCoordinator::CATransactionGPUCoordinator(GpuProcessHost* host)
+    : host_(host) {}
 
 CATransactionGPUCoordinator::~CATransactionGPUCoordinator() {
   DCHECK(!host_);
+  DCHECK(!registered_as_observer_);
 }
 
 void CATransactionGPUCoordinator::HostWillBeDestroyed() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ui::WindowResizeHelperMac::Get()->task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&ui::CATransactionCoordinator::RemovePostCommitObserver,
-                     base::Unretained(&ui::CATransactionCoordinator::Get()),
-                     base::RetainedRef(this)));
+      base::BindOnce(
+          &CATransactionGPUCoordinator::RemovePostCommitObserverOnUIThread,
+          this));
   host_ = nullptr;
+}
+
+void CATransactionGPUCoordinator::AddPostCommitObserverOnUIThread() {
+  DCHECK(!registered_as_observer_);
+  ui::CATransactionCoordinator::Get().AddPostCommitObserver(this);
+  registered_as_observer_ = true;
+}
+
+void CATransactionGPUCoordinator::RemovePostCommitObserverOnUIThread() {
+  DCHECK(registered_as_observer_);
+  ui::CATransactionCoordinator::Get().RemovePostCommitObserver(this);
+  registered_as_observer_ = false;
 }
 
 void CATransactionGPUCoordinator::OnActivateForTransaction() {

@@ -17,29 +17,40 @@ class GpuProcessHost;
 
 // Synchronizes CATransaction commits between the browser and GPU processes.
 class CATransactionGPUCoordinator
-    : public base::RefCountedThreadSafe<CATransactionGPUCoordinator>,
-      public ui::CATransactionCoordinator::PostCommitObserver {
+    : public ui::CATransactionCoordinator::PostCommitObserver {
  public:
-  CATransactionGPUCoordinator(GpuProcessHost* host);
-
+  static scoped_refptr<CATransactionGPUCoordinator> Create(
+      GpuProcessHost* host);
   void HostWillBeDestroyed();
 
  private:
   friend class base::RefCountedThreadSafe<CATransactionGPUCoordinator>;
-  virtual ~CATransactionGPUCoordinator();
+  CATransactionGPUCoordinator(GpuProcessHost* host);
+  ~CATransactionGPUCoordinator() override;
 
   // ui::CATransactionObserver implementation
   void OnActivateForTransaction() override;
   void OnEnterPostCommit() override;
   bool ShouldWaitInPostCommit() override;
 
+  void AddPostCommitObserverOnUIThread();
+  void RemovePostCommitObserverOnUIThread();
+
   void OnActivateForTransactionOnIO();
   void OnEnterPostCommitOnIO();
   void OnCommitCompletedOnIO();
   void OnCommitCompletedOnUI();
 
-  GpuProcessHost* host_;  // weak
+  // The GpuProcessHost to use to initiate GPU-side CATransactions. This is only
+  // to be accessed on the IO thread.
+  GpuProcessHost* host_ = nullptr;
+
+  // The number CATransactions that have not yet completed. This is only to be
+  // accessed on the UI thread.
   int pending_commit_count_ = 0;
+
+  // Egregious state tracking to debug https://crbug.com/871430
+  bool registered_as_observer_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CATransactionGPUCoordinator);
 };

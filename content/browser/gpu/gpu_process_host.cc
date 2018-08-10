@@ -702,11 +702,6 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       kind_(kind),
       process_launched_(false),
       status_(UNKNOWN),
-#if defined(OS_MACOSX)
-      // TODO(ccameron): This is temporarily disabled to see if it is the cause
-      // of https://crbug.com/871430
-      ca_transaction_gpu_coordinator_(nullptr),
-#endif
       gpu_host_binding_(this),
       weak_ptr_factory_(this) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -937,6 +932,10 @@ bool GpuProcessHost::Init() {
 #if defined(USE_OZONE)
   InitOzone();
 #endif  // defined(USE_OZONE)
+
+#if defined(OS_MACOSX)
+  ca_transaction_gpu_coordinator_ = CATransactionGPUCoordinator::Create(this);
+#endif
 
   return true;
 }

@@ -51,11 +51,21 @@ class ACCELERATED_WIDGET_MAC_EXPORT CATransactionCoordinator {
     virtual base::TimeDelta PreCommitTimeout() = 0;
   };
 
-  class PostCommitObserver {
+  // PostCommitObserver sub-classes must communicate with the IO thread. The
+  // CATransactionCoordinator will retain registered observers to ensure that
+  // they are not deleted while registered.
+  class PostCommitObserver
+      : public base::RefCountedThreadSafe<PostCommitObserver> {
    public:
     virtual void OnActivateForTransaction() = 0;
     virtual void OnEnterPostCommit() = 0;
     virtual bool ShouldWaitInPostCommit() = 0;
+
+   protected:
+    virtual ~PostCommitObserver() {}
+
+   private:
+    friend class base::RefCountedThreadSafe<PostCommitObserver>;
   };
 
   static CATransactionCoordinator& Get();
@@ -66,8 +76,8 @@ class ACCELERATED_WIDGET_MAC_EXPORT CATransactionCoordinator {
   void AddPreCommitObserver(PreCommitObserver*);
   void RemovePreCommitObserver(PreCommitObserver*);
 
-  void AddPostCommitObserver(PostCommitObserver*);
-  void RemovePostCommitObserver(PostCommitObserver*);
+  void AddPostCommitObserver(scoped_refptr<PostCommitObserver>);
+  void RemovePostCommitObserver(scoped_refptr<PostCommitObserver>);
 
  private:
   friend class base::NoDestructor<CATransactionCoordinator>;
@@ -82,7 +92,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CATransactionCoordinator {
   bool active_ = false;
   bool disabled_for_testing_ = false;
   base::ObserverList<PreCommitObserver> pre_commit_observers_;
-  base::ObserverList<PostCommitObserver> post_commit_observers_;
+  std::set<scoped_refptr<PostCommitObserver>> post_commit_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CATransactionCoordinator);
 };
