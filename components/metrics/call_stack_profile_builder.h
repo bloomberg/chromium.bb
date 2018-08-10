@@ -9,23 +9,42 @@
 
 #include "base/callback.h"
 #include "base/profiler/stack_sampling_profiler.h"
+#include "components/metrics/call_stack_profile_params.h"
+#include "third_party/metrics_proto/sampled_profile.pb.h"
 
 namespace metrics {
 
 // CallStackProfileBuilder builds a CallStackProfile from the collected sampling
 // data.
 //
-// The results of the profile building -- a CallStackProfile, is passed to the
-// completed callback. A CallStackProfile contains a set of Samples and
-// Modules, and other sampling information. One Sample corresponds to a single
-// recorded stack, and the Modules record those modules associated with the
-// recorded stack frames.
+// The results of the profile building -- a CallStackProfile, is encoded to
+// metrics.SampledProfile protocol message. The message is then passed to the
+// completed callback. A CallStackProfile contains a set of Samples and Modules,
+// and other sampling information. One Sample corresponds to a single recorded
+// stack, and the Modules record those modules associated with the recorded
+// stack frames.
 class CallStackProfileBuilder
     : public base::StackSamplingProfiler::ProfileBuilder {
  public:
-  // The callback type used to collect a completed profile. The passed
-  // CallStackProfile is move-only. Other threads, including the UI thread, may
-  // block on callback completion so this should run as quickly as possible.
+  // These milestones of a process lifetime can be passed as process "mile-
+  // stones" to CallStackProfileBuilder::SetProcessMilestone(). Be sure to
+  // update the translation constants at the top of the .cc file when this is
+  // changed.
+  enum Milestones : int {
+    MAIN_LOOP_START,
+    MAIN_NAVIGATION_START,
+    MAIN_NAVIGATION_FINISHED,
+    FIRST_NONEMPTY_PAINT,
+
+    SHUTDOWN_START,
+
+    MILESTONES_MAX_VALUE
+  };
+
+  // The callback type used to collect a metrics.SampledProfile protocol
+  // message. The passed SampledProfile is move-only. Other threads, including
+  // the UI thread, may block on callback completion so this should run as
+  // quickly as possible.
   //
   // IMPORTANT NOTE: The callback is invoked on a thread the profiler
   // constructs, rather than on the thread used to construct the profiler, and
@@ -33,10 +52,10 @@ class CallStackProfileBuilder
   // loops that create CallStackProfileBuilders, posting a task to the message
   // loop with the moved (i.e. std::move) profile is the thread-safe callback
   // implementation.
-  using CompletedCallback =
-      base::Callback<void(base::StackSamplingProfiler::CallStackProfile)>;
+  using CompletedCallback = base::RepeatingCallback<void(SampledProfile)>;
 
-  CallStackProfileBuilder(const CompletedCallback& callback);
+  CallStackProfileBuilder(const CompletedCallback& callback,
+                          const CallStackProfileParams& profile_params);
 
   ~CallStackProfileBuilder() override;
 
@@ -67,6 +86,9 @@ class CallStackProfileBuilder
 
   // Callback made when sampling a profile completes.
   const CompletedCallback callback_;
+
+  // The parameters associated with the sampled profile.
+  const CallStackProfileParams profile_params_;
 
   DISALLOW_COPY_AND_ASSIGN(CallStackProfileBuilder);
 };
