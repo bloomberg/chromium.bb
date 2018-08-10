@@ -726,9 +726,16 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual void SetNeedsTransformUpdate() {}
   virtual void SetNeedsBoundariesUpdate();
 
+  // Per the spec, mix-blend-mode applies to all non-SVG elements, and SVG
+  // elements that are container elements, graphics elements or graphics
+  // referencing elements.
+  // https://www.w3.org/TR/compositing-1/#propdef-mix-blend-mode
   bool IsBlendingAllowed() const {
-    return !IsSVG() || (IsSVGContainer() && !IsSVGHiddenContainer()) ||
-           IsSVGShape() || IsSVGImage() || IsSVGText();
+    return !IsSVG() || IsSVGShape() || IsSVGImage() || IsSVGText() ||
+           IsSVGInline() || IsSVGRoot() || IsSVGForeignObject() ||
+           // TODO(pdr): According to the current spec, blending should apply to
+           // hidden containers (e.g. pattern).
+           (IsSVGContainer() && !IsSVGHiddenContainer());
   }
   virtual bool HasNonIsolatedBlendingDescendants() const {
     // This is only implemented for layout objects that containt SVG flow.
