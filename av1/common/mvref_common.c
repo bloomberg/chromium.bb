@@ -149,7 +149,6 @@ static void scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const int n8_w_16 = mi_size_wide[BLOCK_16X16];
   int i;
   int col_offset = 0;
-  const int shift = 0;
   // TODO(jingning): Revisit this part after cb4x4 is stable.
   if (abs(row_offset) > 1) {
     col_offset = 1;
@@ -174,7 +173,7 @@ static void scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       int inc = AOMMIN(-max_row_offset + row_offset + 1,
                        mi_size_high[candidate_bsize]);
       // Obtain range used in weight calculation.
-      weight = AOMMAX(weight, (inc << shift));
+      weight = AOMMAX(weight, inc);
       // Update processed rows.
       *processed_rows = inc - row_offset - 1;
     }
@@ -200,7 +199,6 @@ static void scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const int n8_h_16 = mi_size_high[BLOCK_16X16];
   int i;
   int row_offset = 0;
-  const int shift = 0;
   if (abs(col_offset) > 1) {
     row_offset = 1;
     if ((mi_row & 0x01) && xd->n4_h < n8_h_8) --row_offset;
@@ -224,7 +222,7 @@ static void scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       int inc = AOMMIN(-max_col_offset + col_offset + 1,
                        mi_size_wide[candidate_bsize]);
       // Obtain range used in weight calculation.
-      weight = AOMMAX(weight, (inc << shift));
+      weight = AOMMAX(weight, inc);
       // Update processed cols.
       *processed_cols = inc - col_offset - 1;
     }
