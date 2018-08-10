@@ -5,7 +5,7 @@
 -->
 <gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
   <app appid='ldnnhddmnhbkjipkidpdiheffobcpfmf'>
-    <updatecheck codebase='http://mock.http/extensions/good_v1.crx'
+    <updatecheck codebase='http://update.extension/extensions/good_v1.crx'
                  version='1.0.0.0' />
    </app>
 </gupdate>

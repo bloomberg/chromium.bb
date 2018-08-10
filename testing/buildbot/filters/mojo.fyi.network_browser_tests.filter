@@ -16,16 +16,6 @@
 -SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
 -WebViewTest.WebViewInBackgroundPage
 
-# These tests uses net::URLRequestFilter (through TestRequestInterceptor) to
-# mock out network responses, and use ExtensionDownloader to issue requests,
-# which has yet to be switched from URLFetcher.
-# https://crbug.com/844928
--PolicyTest.ExtensionInstallForcelist
--PolicyTest.ExtensionInstallForcelist_DefaultedUpdateUrl
--PolicyTest.ExtensionMinimumVersionForceInstalled
--PolicyTest.ExtensionMinimumVersionRequired
--PolicyTest.ExtensionMinimumVersionRequiredAlt
--PolicyTest.ExtensionRecommendedInstallationMode
 
 # These tests uses net::URLRequestFilter (through TestRequestInterceptor) to
 # mock out network responses, and use URLFetcherDownloader to issue requests,

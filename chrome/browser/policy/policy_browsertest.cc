@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/atomic_ref_count.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -334,10 +335,6 @@ const char kGoodCrxId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char kSimpleWithIconCrxId[] = "dehdlahnlebladnfleagmjdapdjdcnlp";
 const char kHostedAppCrxId[] = "kbmnembihfiondgfjekmnmcbddelicoi";
 
-const base::FilePath::CharType kGood2CrxManifestName[] =
-    FILE_PATH_LITERAL("good2_update_manifest.xml");
-const base::FilePath::CharType kGoodV1CrxManifestName[] =
-    FILE_PATH_LITERAL("good_v1_update_manifest.xml");
 const base::FilePath::CharType kGoodV1CrxName[] =
     FILE_PATH_LITERAL("good_v1.crx");
 const base::FilePath::CharType kSimpleWithPopupExt[] =
@@ -2364,19 +2361,76 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallWhitelist) {
   UninstallExtension(kGoodCrxId, true);
 }
 
+namespace {
+
+class ExtensionRequestInterceptor {
+ public:
+  ExtensionRequestInterceptor()
+      : interceptor_(
+            base::BindRepeating(&ExtensionRequestInterceptor::OnRequest,
+                                base::Unretained(this))) {}
+
+  void set_interceptor_hook(
+      content::URLLoaderInterceptor::InterceptCallback callback) {
+    callback_ = std::move(callback);
+  }
+
+ private:
+  bool OnRequest(content::URLLoaderInterceptor::RequestParams* params) {
+    if (callback_ && callback_.Run(params))
+      return true;
+    // Mock out requests to the Web Store.
+    if (params->url_request.url.host() == "clients2.google.com" &&
+        params->url_request.url.path() == "/service/update2/crx") {
+      content::URLLoaderInterceptor::WriteResponse(
+          "chrome/test/data/extensions/good2_update_manifest.xml",
+          params->client.get());
+      return true;
+    }
+
+    if (params->url_request.url.path() == "/good_update_manifest.xml") {
+      content::URLLoaderInterceptor::WriteResponse(
+          "chrome/test/data/extensions/good2_update_manifest.xml",
+          params->client.get());
+      return true;
+    }
+    if (params->url_request.url.path() == "/extensions/good_v1.crx") {
+      content::URLLoaderInterceptor::WriteResponse(
+          "chrome/test/data/extensions/good_v1.crx", params->client.get());
+      return true;
+    }
+    if (params->url_request.url.path() == "/extensions/good2.crx") {
+      content::URLLoaderInterceptor::WriteResponse(
+          "chrome/test/data/extensions/good2.crx", params->client.get());
+      return true;
+    }
+
+    return false;
+  }
+
+  content::URLLoaderInterceptor::InterceptCallback callback_;
+  content::URLLoaderInterceptor interceptor_;
+};
+
+}  // namespace
+
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   // Verifies that extensions that are force-installed by policies are
   // installed and can't be uninstalled.
+
+  ExtensionRequestInterceptor interceptor;
 
   extensions::ExtensionService* service = extension_service();
   ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
 
   // Extensions that are force-installed come from an update URL, which defaults
-  // to the webstore. Use a mock URL for this test with an update manifest
+  // to the webstore. Use a test URL for this test with an update manifest
   // that includes "good_v1.crx".
-  base::FilePath path =
-      base::FilePath(kTestExtensionsDir).Append(kGoodV1CrxManifestName);
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(path.MaybeAsASCII()));
+  embedded_test_server()->AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url =
+      embedded_test_server()->GetURL("/extensions/good_v1_update_manifest.xml");
 
   // Setting the forcelist extension should install "good_v1.crx".
   base::ListValue forcelist;
@@ -2420,15 +2474,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   const std::string old_version_number =
       service->GetExtensionById(kGoodCrxId, true)->version().GetString();
 
-  base::FilePath test_path;
-  GetTestDataDirectory(&test_path);
-
-  TestRequestInterceptor interceptor(
-      "update.extension",
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
-  interceptor.PushJobCallback(
-      TestRequestInterceptor::FileJob(
-          test_path.Append(kTestExtensionsDir).Append(kGood2CrxManifestName)));
+  content::WindowedNotificationObserver new_process_observer(
+      content::NOTIFICATION_RENDERER_PROCESS_CREATED,
+      content::NotificationService::AllSources());
 
   // Updating the force-installed extension.
   extensions::ExtensionUpdater* updater = service->updater();
@@ -2447,7 +2495,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
 
   EXPECT_EQ(1, new_version.CompareTo(old_version));
 
-  EXPECT_EQ(0u, interceptor.GetPendingSize());
+  // Wait for the new extension process to launch.
+  new_process_observer.Wait();
 
   // Wait until any background pages belonging to force-installed extensions
   // have been loaded.
@@ -2494,22 +2543,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
   // Verifies the ExtensionInstallForcelist policy with an empty (defaulted)
   // "update" URL.
 
+  ExtensionRequestInterceptor interceptor;
+
   extensions::ExtensionService* service = extension_service();
   ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
-
-  base::FilePath test_path;
-  GetTestDataDirectory(&test_path);
-
-  // Mock out requests to the Web Store.
-  net::TestURLRequestInterceptor interceptor(
-      "https", "clients2.google.com",
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-      base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
-  interceptor.SetResponseIgnoreQuery(
-      GURL("https://clients2.google.com/service/update2/crx"),
-      test_path.Append(kTestExtensionsDir).Append(kGood2CrxManifestName));
 
   // Setting the forcelist extension should install "good_v1.crx".
   base::ListValue forcelist;
@@ -2523,14 +2560,23 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
   UpdateProviderPolicy(policies);
   observer.WaitForExtensionWillBeInstalled();
 
-  EXPECT_LT(0, interceptor.GetHitCount());
-
   EXPECT_TRUE(service->GetExtensionById(kGoodCrxId, true));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionRecommendedInstallationMode) {
   // Verifies that extensions that are recommended-installed by policies are
   // installed, can be disabled but not uninstalled.
+
+  ExtensionRequestInterceptor interceptor;
+
+  // Extensions that are force-installed come from an update URL, which defaults
+  // to the webstore. Use a test URL for this test with an update manifest
+  // that includes "good_v1.crx".
+  embedded_test_server()->AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url =
+      embedded_test_server()->GetURL("/extensions/good_v1_update_manifest.xml");
 
 // Mark as enterprise managed.
 #if defined(OS_WIN)
@@ -2539,10 +2585,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionRecommendedInstallationMode) {
 
   extensions::ExtensionService* service = extension_service();
   ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
-
-  base::FilePath path =
-      base::FilePath(kTestExtensionsDir).Append(kGoodV1CrxManifestName);
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(path.MaybeAsASCII()));
 
   // Setting the forcelist extension should install "good_v1.crx".
   base::DictionaryValue dict_value;
@@ -2665,6 +2707,32 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallSources) {
 // by policy will get disabled, and will be auto-updated and/or re-enabled upon
 // policy changes as well as regular auto-updater scheduled updates.
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequired) {
+  ExtensionRequestInterceptor interceptor;
+
+  base::AtomicRefCount update_extension_count;
+  base::RunLoop first_update_extension_runloop;
+  interceptor.set_interceptor_hook(base::BindLambdaForTesting(
+      [&](content::URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url.host() != "update.extension")
+          return false;
+
+        if (!update_extension_count.IsZero() && !update_extension_count.IsOne())
+          return false;
+
+        if (update_extension_count.IsZero()) {
+          content::URLLoaderInterceptor::WriteResponse(
+              "400 Bad request", std::string(), params->client.get());
+        } else {
+          content::URLLoaderInterceptor::WriteResponse(
+              "chrome/test/data/extensions/good2_update_manifest.xml",
+              params->client.get());
+        }
+        if (update_extension_count.IsZero())
+          first_update_extension_runloop.Quit();
+        update_extension_count.Increment();
+        return true;
+      }));
+
   extensions::ExtensionService* service = extension_service();
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(browser()->profile());
@@ -2673,16 +2741,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequired) {
 
   // Explicitly stop the timer to avoid all scheduled extension auto-updates.
   service->updater()->StopTimerForTesting();
-
-  // Setup interceptor for extension updates.
-  base::FilePath test_path;
-  GetTestDataDirectory(&test_path);
-  TestRequestInterceptor interceptor(
-      "update.extension",
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
-  interceptor.PushJobCallback(TestRequestInterceptor::BadRequestJob());
-  interceptor.PushJobCallback(TestRequestInterceptor::FileJob(
-      test_path.Append(kTestExtensionsDir).Append(kGood2CrxManifestName)));
 
   // Install the extension.
   EXPECT_TRUE(InstallExtension(kGoodV1CrxName));
@@ -2700,16 +2758,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequired) {
 
   // Update policy to set a minimum version of 1.0.0.1, the extension (with
   // version 1.0.0.0) should now be disabled.
-  EXPECT_EQ(2u, interceptor.GetPendingSize());
-  base::RunLoop service_request_run_loop;
-  interceptor.AddRequestServicedCallback(
-      service_request_run_loop.QuitClosure());
+  EXPECT_TRUE(update_extension_count.IsZero());
   {
     extensions::ExtensionManagementPolicyUpdater management_policy(&provider_);
     management_policy.SetMinimumVersionRequired(kGoodCrxId, "1.0.0.1");
   }
-  service_request_run_loop.Run();
-  EXPECT_EQ(1u, interceptor.GetPendingSize());
+  first_update_extension_runloop.Run();
+  EXPECT_TRUE(update_extension_count.IsOne());
 
   EXPECT_TRUE(registry->disabled_extensions().Contains(kGoodCrxId));
   EXPECT_EQ(extensions::disable_reason::DISABLE_UPDATE_REQUIRED_BY_POLICY,
@@ -2717,14 +2772,14 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequired) {
 
   // Provide a new version (1.0.0.1) which is expected to be auto updated to
   // via the update URL in the manifest of the older version.
-  EXPECT_EQ(1u, interceptor.GetPendingSize());
+  EXPECT_TRUE(update_extension_count.IsOne());
   {
     extensions::TestExtensionRegistryObserver update_observer(
         extensions::ExtensionRegistry::Get(browser()->profile()));
     service->updater()->CheckSoon();
     update_observer.WaitForExtensionWillBeInstalled();
   }
-  EXPECT_EQ(0u, interceptor.GetPendingSize());
+  EXPECT_EQ(2, update_extension_count.SubtleRefCountForDebug());
 
   // The extension should be auto-updated to newer version and re-enabled.
   EXPECT_EQ("1.0.0.1",
@@ -2735,6 +2790,22 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequired) {
 // Similar to ExtensionMinimumVersionRequired test, but with different settings
 // and orders.
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequiredAlt) {
+  ExtensionRequestInterceptor interceptor;
+
+  base::AtomicRefCount update_extension_count;
+  interceptor.set_interceptor_hook(base::BindLambdaForTesting(
+      [&](content::URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url.host() == "update.extension" &&
+            update_extension_count.IsZero()) {
+          content::URLLoaderInterceptor::WriteResponse(
+              "chrome/test/data/extensions/good2_update_manifest.xml",
+              params->client.get());
+          update_extension_count.Increment();
+          return true;
+        }
+        return false;
+      }));
+
   extensions::ExtensionService* service = extension_service();
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(browser()->profile());
@@ -2743,15 +2814,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequiredAlt) {
 
   // Explicitly stop the timer to avoid all scheduled extension auto-updates.
   service->updater()->StopTimerForTesting();
-
-  // Setup interceptor for extension updates.
-  base::FilePath test_path;
-  GetTestDataDirectory(&test_path);
-  TestRequestInterceptor interceptor(
-      "update.extension",
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
-  interceptor.PushJobCallback(TestRequestInterceptor::FileJob(
-      test_path.Append(kTestExtensionsDir).Append(kGood2CrxManifestName)));
 
   // Set the policy to require an even higher minimum version this time.
   {
@@ -2769,7 +2831,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequiredAlt) {
             service->GetInstalledExtension(kGoodCrxId)->version().GetString());
 
   // An extension management policy update should trigger an update as well.
-  EXPECT_EQ(1u, interceptor.GetPendingSize());
+  EXPECT_TRUE(update_extension_count.IsZero());
   {
     extensions::TestExtensionRegistryObserver update_observer(
         extensions::ExtensionRegistry::Get(browser()->profile()));
@@ -2782,7 +2844,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequiredAlt) {
     base::RunLoop().RunUntilIdle();
     update_observer.WaitForExtensionWillBeInstalled();
   }
-  EXPECT_EQ(0u, interceptor.GetPendingSize());
+  EXPECT_TRUE(update_extension_count.IsOne());
 
   // It should be updated to 1.0.0.1 but remain disabled.
   EXPECT_EQ("1.0.0.1",
@@ -2807,6 +2869,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequiredAlt) {
 // Verifies that a force-installed extension which does not meet a subsequently
 // set minimum version requirement is handled well.
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionForceInstalled) {
+  ExtensionRequestInterceptor interceptor;
+
 // Mark as enterprise managed.
 #if defined(OS_WIN)
   base::win::SetDomainStateForTesting(true);
@@ -2817,9 +2881,11 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionForceInstalled) {
       extensions::ExtensionPrefs::Get(browser()->profile());
 
   // Prepare the update URL for force installing.
-  const base::FilePath path =
-      base::FilePath(kTestExtensionsDir).Append(kGoodV1CrxManifestName);
-  const GURL url(URLRequestMockHTTPJob::GetMockUrl(path.MaybeAsASCII()));
+  embedded_test_server()->AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url =
+      embedded_test_server()->GetURL("/extensions/good_v1_update_manifest.xml");
 
   // Set policy to force-install the extension, it should be installed and
   // enabled.
