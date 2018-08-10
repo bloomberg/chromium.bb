@@ -49,7 +49,8 @@ std::string BuildDocumentSuggestionRequest(const base::string16& query) {
   source_definition.SetPath({"source", "predefinedSource"},
                             base::Value("GOOGLE_DRIVE"));
   storage_options_list.emplace_back(std::move(source_definition));
-  root.SetKey("sourceOptions", base::Value(std::move(storage_options_list)));
+  root.SetKey("dataSourceRestrictions",
+              base::Value(std::move(storage_options_list)));
 
   std::string result;
   base::JSONWriter::Write(root, &result);
