@@ -10,7 +10,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.crash.MinidumpUploadService.ProcessType;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -183,8 +182,6 @@ public class ChromePreferenceManager {
 
     private static final String VERIFIED_DIGITAL_ASSET_LINKS =
             "verified_digital_asset_links";
-    private static final String TRUSTED_WEB_ACTIVITY_LAST_DISCLOSURE_TIME =
-            "trusted_web_activity_last_disclosure_time:";
 
     /**
      * Whether VR assets component should be registered on startup.
@@ -461,43 +458,6 @@ public class ChromePreferenceManager {
      */
     public void setVerifiedDigitalAssetLinks(Set<String> links) {
         mSharedPreferences.edit().putStringSet(VERIFIED_DIGITAL_ASSET_LINKS, links).apply();
-    }
-
-    /**
-     * Private convenience method to create a Preferences Key to hold the last time the given
-     * package displayed a "Running in Chrome" disclosure while opening a Trusted Web Activity.
-     */
-    private static String getTrustedWebActivityDisclosureTimeKey(String packageName) {
-        return TRUSTED_WEB_ACTIVITY_LAST_DISCLOSURE_TIME + packageName;
-    }
-
-    /**
-     * Gets the last time a disclosure was shown while opening a Trusted Web Activity for the given
-     * package. Returns a Date object representing the Unix epoch if no data was found.
-     */
-    public Date getTrustedWebActivityLastDisclosureTime(String packageName) {
-        return new Date(readLong(getTrustedWebActivityDisclosureTimeKey(packageName), 0));
-    }
-
-    /**
-     * Sets the last time a disclosure was shown while opening a Trusted Web Activity for the given
-     * package.
-     */
-    public void setTrustedWebActivityLastDisclosureTime(String packageName, Date time) {
-        writeLong(getTrustedWebActivityDisclosureTimeKey(packageName), time.getTime());
-    }
-
-    /**
-     * Wipes all recordings of the last disclosure times for packages opening TWAs.
-     */
-    public void clearAllTrustedWebActivityLastDisclosureTimes() {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
-        for (String key : mSharedPreferences.getAll().keySet()) {
-            if (!key.startsWith(TRUSTED_WEB_ACTIVITY_LAST_DISCLOSURE_TIME)) continue;
-
-            ed.remove(key);
-        }
-        ed.apply();
     }
 
     /**

@@ -3427,7 +3427,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       </message>
 
       <!-- WebAPK/TWA related strings -->
-      <message name="IDS_WEBAPK_RUNNING_IN_CHROME_DISCLOSURE" desc="Message on the notification that indicates a WebApk may use Chrome data.">
+      <message name="IDS_APP_RUNNING_IN_CHROME_DISCLOSURE" desc="Message on the snackbar that indicates an app may use Chrome data.">
         This app is running in Chrome.
       </message>
       <message name="IDS_WEBAPP_TAP_TO_COPY_URL" desc="Message on the notification that indicates that taping it will copy a Web App's URL into the clipboard.">
@@ -3447,9 +3447,6 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       </message>
       <message name="IDS_WEBAPP_NETWORK_ERROR_MESSAGE_TUNNEL_CONNECTION_FAILED" desc="The error message for ERROR_TUNNEL_CONNECTION_FAILED.">
         Establishing a tunnel via proxy server failed
-      </message>
-      <message name="IDS_TWA_RUNNING_IN_CHROME" desc="Disclosure on opening a TWA that it may use Chrome data. Shown on a Toast." translateable="false">
-        Running in Chrome
       </message>
 
       <!-- Keyboard shortcuts in Android N-->

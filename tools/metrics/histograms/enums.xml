@@ -44136,6 +44136,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="24" label="MISSING_FILES_NO_SD_CARD"/>
   <int value="25" label="OFFLINE_INDICATOR"/>
   <int value="26" label="FEED_NTP_STREAM"/>
+  <int value="27" label="WEBAPK_TWA_PRIVACY_DISCLOSURE"/>
 </enum>
 
 <enum name="SnippetOpenMethod">
