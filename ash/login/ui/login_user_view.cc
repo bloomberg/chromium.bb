@@ -153,9 +153,10 @@ class LoginUserView::UserImage : public NonAccessibleView {
       return;
     }
 
+    // Don't change the playback style which was set in SetAnimationEnabled.
     image_->SetAnimationDecoder(
         std::make_unique<PassthroughAnimationDecoder>(animation),
-        AnimatedRoundedImageView::Playback::kRepeat);
+        image_->playback());
   }
 
   AnimatedRoundedImageView* image_ = nullptr;
