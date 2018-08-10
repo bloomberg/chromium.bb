@@ -124,6 +124,14 @@ def attribute_context(interface, attribute, interfaces):
     if 'LogActivity' in extended_attributes:
         includes.add('platform/bindings/v8_per_context_data.h')
 
+    # [DeprecateAs], [MeasureAs]
+    deprecate_as = v8_utilities.deprecate_as(attribute)
+    measure_as = v8_utilities.measure_as(attribute, interface)
+
+    is_lazy_data_attribute = \
+        (constructor_type and not (measure_as or deprecate_as)) or \
+        (str(idl_type) == 'Window' and attribute.name in ('frames', 'self', 'window'))
+
     context = {
         'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, 'Getter'),  # [ActivityLogging]
         'activity_logging_world_list_for_setter': v8_utilities.activity_logging_world_list(attribute, 'Setter'),  # [ActivityLogging]
@@ -134,7 +142,7 @@ def attribute_context(interface, attribute, interfaces):
         'cpp_name': cpp_name(attribute),
         'cpp_type': idl_type.cpp_type,
         'cpp_type_initializer': idl_type.cpp_type_initializer,
-        'deprecate_as': v8_utilities.deprecate_as(attribute),  # [DeprecateAs]
+        'deprecate_as': deprecate_as,
         'enum_type': idl_type.enum_type,
         'enum_values': idl_type.enum_values,
         'exposed_test': v8_utilities.exposed(attribute, interface),  # [Exposed]
@@ -161,6 +169,7 @@ def attribute_context(interface, attribute, interfaces):
             'RaisesException' in extended_attributes and
             extended_attributes['RaisesException'] in (None, 'Getter'),
         'is_keep_alive_for_gc': keep_alive_for_gc,
+        'is_lazy_data_attribute': is_lazy_data_attribute,
         'is_lenient_setter': 'LenientSetter' in extended_attributes,
         'is_lenient_this': 'LenientThis' in extended_attributes,
         'is_nullable': idl_type.is_nullable,
@@ -182,7 +191,7 @@ def attribute_context(interface, attribute, interfaces):
         'on_prototype': v8_utilities.on_prototype(interface, attribute),
         'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(attribute),  # [OriginTrialEnabled]
         'use_output_parameter_for_result': idl_type.use_output_parameter_for_result,
-        'measure_as': v8_utilities.measure_as(attribute, interface),  # [MeasureAs]
+        'measure_as': measure_as,
         'name': attribute.name,
         'property_attributes': property_attributes(interface, attribute),
         'reflect_empty': extended_attributes.get('ReflectEmpty'),
@@ -261,20 +270,8 @@ def is_data_attribute(attribute):
             attribute['is_data_type_property'])
 
 
-def is_lazy_data_attribute(attribute):
-    return ((attribute['constructor_type'] and not
-             (attribute['measure_as'] or attribute['deprecate_as'])) or
-            (attribute['idl_type'] == 'Window' and attribute['name'] == 'frames') or
-            (attribute['idl_type'] == 'Window' and attribute['name'] == 'self') or
-            (attribute['idl_type'] == 'Window' and attribute['name'] == 'window'))
-
-
 def filter_data_attributes(attributes):
-    return [attribute for attribute in attributes if is_data_attribute(attribute) and not is_lazy_data_attribute(attribute)]
-
-
-def filter_lazy_data_attributes(attributes):
-    return [attribute for attribute in attributes if is_data_attribute(attribute) and is_lazy_data_attribute(attribute)]
+    return [attribute for attribute in attributes if is_data_attribute(attribute)]
 
 
 def filter_runtime_enabled(attributes):

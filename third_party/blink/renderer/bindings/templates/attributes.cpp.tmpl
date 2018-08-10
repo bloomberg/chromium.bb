@@ -533,6 +533,8 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     else 'V8DOMConfiguration::kCheckHolder' %}
 {% set getter_side_effect_type = 'V8DOMConfiguration::kHasNoSideEffect'
     if attribute.getter_has_no_side_effect else 'V8DOMConfiguration::kHasSideEffect' %}
+{% set getter_behavior = 'V8DOMConfiguration::kAlwaysCallGetter'
+    if not attribute.is_lazy_data_attribute else 'V8DOMConfiguration::kReplaceWithDataProperty' %}
 {% if attribute.is_per_world_bindings %}
   {% set getter_callback_for_main_world = '%sForMainWorld' % getter_callback %}
   {% set setter_callback_for_main_world =
@@ -556,6 +558,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     property_location(attribute),
     holder_check,
     getter_side_effect_type,
+    getter_behavior,
 ] %}
 
 {% if attribute.is_per_world_bindings %}

@@ -527,17 +527,17 @@ void V8TestTypedefs::voidMethodUnionWithTypedefMethodCallback(const v8::Function
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-static const V8DOMConfiguration::AttributeConfiguration V8TestTypedefsLazyDataAttributes[] = {
-    { "tAttribute", V8TestTypedefs::tAttributeConstructorGetterCallback, nullptr, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
+static const V8DOMConfiguration::AttributeConfiguration V8TestTypedefsAttributes[] = {
+    { "tAttribute", V8TestTypedefs::tAttributeConstructorGetterCallback, nullptr, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kReplaceWithDataProperty, V8DOMConfiguration::kAllWorlds },
 };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
 #pragma clang diagnostic pop
 #endif
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestTypedefsAccessors[] = {
-    { "uLongLongAttribute", V8TestTypedefs::uLongLongAttributeAttributeGetterCallback, V8TestTypedefs::uLongLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-    { "longWithClampAttribute", V8TestTypedefs::longWithClampAttributeAttributeGetterCallback, V8TestTypedefs::longWithClampAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-    { "domStringOrDoubleOrNullAttribute", V8TestTypedefs::domStringOrDoubleOrNullAttributeAttributeGetterCallback, V8TestTypedefs::domStringOrDoubleOrNullAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
+    { "uLongLongAttribute", V8TestTypedefs::uLongLongAttributeAttributeGetterCallback, V8TestTypedefs::uLongLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "longWithClampAttribute", V8TestTypedefs::longWithClampAttributeAttributeGetterCallback, V8TestTypedefs::longWithClampAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "domStringOrDoubleOrNullAttribute", V8TestTypedefs::domStringOrDoubleOrNullAttributeAttributeGetterCallback, V8TestTypedefs::domStringOrDoubleOrNullAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestTypedefsMethods[] = {
@@ -589,9 +589,9 @@ static void installV8TestTypedefsTemplate(
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
 
   // Register IDL constants, attributes and operations.
-  V8DOMConfiguration::InstallLazyDataAttributes(
+  V8DOMConfiguration::InstallAttributes(
       isolate, world, instanceTemplate, prototypeTemplate,
-      V8TestTypedefsLazyDataAttributes, base::size(V8TestTypedefsLazyDataAttributes));
+      V8TestTypedefsAttributes, base::size(V8TestTypedefsAttributes));
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
       signature, V8TestTypedefsAccessors, base::size(V8TestTypedefsAccessors));

@@ -71,6 +71,14 @@ class CORE_EXPORT V8DOMConfiguration final {
     kHasNoSideEffect,
   };
 
+  enum AttributeGetterBehavior : unsigned {
+    // The getter will be called each time the property is gotten.
+    kAlwaysCallGetter,
+    // After the first access, the property will be turned into a plain data
+    // property, taking the value returned by the getter.
+    kReplaceWithDataProperty,
+  };
+
   // Bit field to select which worlds the member will be defined in.
   enum WorldConfiguration : unsigned {
     kMainWorld = 1 << 0,
@@ -95,6 +103,8 @@ class CORE_EXPORT V8DOMConfiguration final {
     unsigned holder_check_configuration : 1;
     // SideEffectConfiguration
     unsigned getter_side_effect_type : 1;
+    // AttributeGetterBehavior
+    unsigned getter_behavior : 1;
     // WorldConfiguration
     unsigned world_configuration : 2;
   };
@@ -126,20 +136,6 @@ class CORE_EXPORT V8DOMConfiguration final {
                                v8::Local<v8::Object> prototype,
                                const AttributeConfiguration&);
 
-  // A lazy data attribute is like one of the attributes added via
-  // installAttributes(), however, V8 will attempt to replace it with the value
-  // returned by the getter callback, turning it into a real data value.
-  //
-  // This also means that the AttributeConfiguration must not specify a setter,
-  // nor any non-default attributes.
-  static void InstallLazyDataAttributes(
-      v8::Isolate*,
-      const DOMWrapperWorld&,
-      v8::Local<v8::ObjectTemplate> instance_template,
-      v8::Local<v8::ObjectTemplate> prototype_template,
-      const AttributeConfiguration*,
-      size_t attribute_count);
-
   // AccessorConfiguration translates into calls to SetAccessorProperty() on
   // either of instance, prototype, or interface object (or their object
   // template).
@@ -159,6 +155,8 @@ class CORE_EXPORT V8DOMConfiguration final {
     unsigned holder_check_configuration : 1;
     // SideEffectConfiguration
     unsigned getter_side_effect_type : 1;
+    // AttributeGetterBehavior (should always be kReplaceWithDataProperty)
+    unsigned getter_behavior : 1;
     // WorldConfiguration
     unsigned world_configuration : 2;
   };
