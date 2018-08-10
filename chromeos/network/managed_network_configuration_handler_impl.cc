@@ -329,10 +329,11 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
 
   // Validate the ONC dictionary. We are liberal and ignore unknown field
   // names. User settings are only partial ONC, thus we ignore missing fields.
-  onc::Validator validator(false,  // Ignore unknown fields.
-                           false,  // Ignore invalid recommended field names.
-                           false,  // Ignore missing fields.
-                           false);  // This ONC does not come from policy.
+  onc::Validator validator(false,   // Ignore unknown fields.
+                           false,   // Ignore invalid recommended field names.
+                           false,   // Ignore missing fields.
+                           false,   // This ONC does not come from policy.
+                           false);  // Don't log warnings.
 
   onc::Validator::Result validation_result;
   std::unique_ptr<base::DictionaryValue> validated_user_settings =
@@ -405,7 +406,8 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
   onc::Validator validator(false,   // Ignore unknown fields.
                            false,   // Ignore invalid recommended field names.
                            false,   // Ignore missing fields.
-                           false);  // This ONC does not come from policy.
+                           false,   // This ONC does not come from policy.
+                           false);  // Don't log warnings.
 
   onc::Validator::Result validation_result;
   std::unique_ptr<base::DictionaryValue> validated_properties =

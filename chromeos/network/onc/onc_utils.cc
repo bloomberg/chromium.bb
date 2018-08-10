@@ -936,7 +936,8 @@ bool ParseAndValidateOncForImport(const std::string& onc_blob,
   Validator validator(false,  // Ignore unknown fields.
                       false,  // Ignore invalid recommended field names.
                       true,   // Fail on missing fields.
-                      from_policy);
+                      from_policy,
+                      true);  // Log warnings.
   validator.SetOncSource(onc_source);
 
   Validator::Result validation_result;

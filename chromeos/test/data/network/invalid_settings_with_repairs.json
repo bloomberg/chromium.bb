@@ -426,7 +426,7 @@
       "Tether": {
         "BatteryPercentage": 85,
         "Carrier": "Project Fi",
-        "SignalStrength": 101
+        "SignalStrength": 75
       }
     },
     "tether-missing-signal-strength": {

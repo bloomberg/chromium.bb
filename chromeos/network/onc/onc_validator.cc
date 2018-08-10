@@ -49,11 +49,13 @@ std::string GetStringFromDict(const base::Value& dict, const char* key) {
 Validator::Validator(bool error_on_unknown_field,
                      bool error_on_wrong_recommended,
                      bool error_on_missing_field,
-                     bool managed_onc)
+                     bool managed_onc,
+                     bool log_warnings)
     : error_on_unknown_field_(error_on_unknown_field),
       error_on_wrong_recommended_(error_on_wrong_recommended),
       error_on_missing_field_(error_on_missing_field),
       managed_onc_(managed_onc),
+      log_warnings_(log_warnings),
       onc_source_(::onc::ONC_SOURCE_NONE) {}
 
 Validator::~Validator() = default;
@@ -64,14 +66,13 @@ std::unique_ptr<base::DictionaryValue> Validator::ValidateAndRepairObject(
     Result* result) {
   CHECK(object_signature);
   *result = VALID;
-  error_or_warning_found_ = false;
   bool error = false;
   std::unique_ptr<base::Value> result_value =
       MapValue(*object_signature, onc_object, &error);
   if (error) {
     *result = INVALID;
     result_value.reset();
-  } else if (error_or_warning_found_) {
+  } else if (!validation_issues_.empty()) {
     *result = VALID_WITH_WARNINGS;
   }
   // The return value should be NULL if, and only if, |result| equals INVALID.
@@ -84,12 +85,12 @@ std::unique_ptr<base::Value> Validator::MapValue(
     const base::Value& onc_value,
     bool* error) {
   if (onc_value.type() != signature.onc_type) {
-    LOG(ERROR) << MessageHeader() << "Found value '" << onc_value
-               << "' of type '" << base::Value::GetTypeName(onc_value.type())
-               << "', but type '"
-               << base::Value::GetTypeName(signature.onc_type)
-               << "' is required.";
-    error_or_warning_found_ = *error = true;
+    *error = true;
+    std::ostringstream msg;
+    msg << "Found value of type '" << base::Value::GetTypeName(onc_value.type())
+        << "', but type '" << base::Value::GetTypeName(signature.onc_type)
+        << "' is required.";
+    AddValidationIssue(true /* is_error */, msg.str());
     return std::unique_ptr<base::Value>();
   }
 
@@ -152,8 +153,8 @@ std::unique_ptr<base::DictionaryValue> Validator::MapObject(
   if (valid)
     return repaired;
 
-  DCHECK(error_or_warning_found_);
-  error_or_warning_found_ = *error = true;
+  DCHECK(!validation_issues_.empty());
+  *error = true;
   return std::unique_ptr<base::DictionaryValue>();
 }
 
@@ -172,13 +173,10 @@ std::unique_ptr<base::Value> Validator::MapField(
   path_.pop_back();
 
   if (current_field_unknown) {
-    error_or_warning_found_ = *found_unknown_field = true;
-    std::string message = MessageHeader() + "Field name '" + field_name +
-        "' is unknown.";
-    if (error_on_unknown_field_)
-      LOG(ERROR) << message;
-    else
-      LOG(WARNING) << message;
+    *found_unknown_field = true;
+    std::ostringstream msg;
+    msg << "Field name '" << field_name << "' is unknown.";
+    AddValidationIssue(error_on_unknown_field_, msg.str());
   }
 
   return result;
@@ -207,12 +205,19 @@ std::unique_ptr<base::Value> Validator::MapEntry(
     const OncValueSignature& signature,
     const base::Value& onc_value,
     bool* error) {
-  std::string str = base::IntToString(index);
-  path_.push_back(str);
+  std::string index_as_string = base::IntToString(index);
+  path_.push_back(index_as_string);
   std::unique_ptr<base::Value> result =
       Mapper::MapEntry(index, signature, onc_value, error);
-  DCHECK_EQ(str, path_.back());
+  DCHECK_EQ(index_as_string, path_.back());
   path_.pop_back();
+  if (!result.get() && (&signature == &kNetworkConfigurationSignature ||
+                        &signature == &kCertificateSignature)) {
+    std::ostringstream msg;
+    msg << "Entry at index '" << index_as_string
+        << "' has been removed because it contained errors.";
+    AddValidationIssue(false /* is_error */, msg.str());
+  }
   return result;
 }
 
@@ -252,10 +257,10 @@ bool Validator::ValidateRecommendedField(
   DCHECK(recommended_list);  // The types of field values are already verified.
 
   if (!managed_onc_) {
-    error_or_warning_found_ = true;
-    LOG(WARNING) << MessageHeader() << "Found the field '"
-                 << ::onc::kRecommended
-                 << "' in an unmanaged ONC. Removing it.";
+    std::ostringstream msg;
+    msg << "Found the field '" << ::onc::kRecommended
+        << "' in an unmanaged ONC";
+    AddValidationIssue(false /* is_error */, msg.str());
     return true;
   }
 
@@ -282,17 +287,14 @@ bool Validator::ValidateRecommendedField(
     }
 
     if (found_error) {
-      error_or_warning_found_ = true;
       path_.push_back(::onc::kRecommended);
-      std::string message = MessageHeader() + "The " + error_cause +
-          " field '" + field_name + "' cannot be recommended.";
+      std::ostringstream msg;
+      msg << "The " << error_cause << " field '" << field_name
+          << "' cannot be recommended.";
+      AddValidationIssue(error_on_wrong_recommended_, msg.str());
       path_.pop_back();
-      if (error_on_wrong_recommended_) {
-        LOG(ERROR) << message;
+      if (error_on_wrong_recommended_)
         return false;
-      }
-
-      LOG(WARNING) << message;
       continue;
     }
 
@@ -340,8 +342,9 @@ bool Validator::IsInDevicePolicy(base::DictionaryValue* result,
                                  const std::string& field_name) {
   if (result->HasKey(field_name)) {
     if (onc_source_ != ::onc::ONC_SOURCE_DEVICE_POLICY) {
-      error_or_warning_found_ = true;
-      LOG(ERROR) << field_name << " only allowed in device policy.";
+      std::ostringstream msg;
+      msg << "Field '" << field_name << "' is only allowed in a device policy.";
+      AddValidationIssue(true /* is_error */, msg.str());
       return false;
     }
   }
@@ -354,11 +357,11 @@ bool Validator::IsValidValue(const std::string& field_value,
     if (field_value == it)
       return true;
   }
-  error_or_warning_found_ = true;
-  const std::string valid_values_str =
-      "[" + JoinStringRange(valid_values, ", ") + "]";
-  LOG(ERROR) << MessageHeader() << "Found value '" << field_value
-             << "', but expected one of the values " << valid_values_str;
+
+  std::ostringstream msg;
+  msg << "Found value '" << field_value << "', but expected one of the values ["
+      << JoinStringRange(valid_values, ", ") << "]";
+  AddValidationIssue(true /* is_error */, msg.str());
   return false;
 }
 
@@ -385,12 +388,14 @@ bool Validator::FieldExistsAndIsNotInRange(const base::DictionaryValue& object,
       (lower_bound <= actual_value && actual_value <= upper_bound)) {
     return false;
   }
-  error_or_warning_found_ = true;
+
   path_.push_back(field_name);
-  LOG(ERROR) << MessageHeader() << "Found value '" << actual_value
-             << "', but expected a value in the range [" << lower_bound
-             << ", " << upper_bound << "] (boundaries inclusive)";
+  std::ostringstream msg;
+  msg << "Found value '" << actual_value
+      << "', but expected a value in the range [" << lower_bound << ", "
+      << upper_bound << "] (boundaries inclusive)";
   path_.pop_back();
+  AddValidationIssue(true /* is_error */, msg.str());
   return true;
 }
 
@@ -413,11 +418,24 @@ bool Validator::FieldExistsAndIsEmpty(const base::DictionaryValue& object,
     return false;
   }
 
-  error_or_warning_found_ = true;
   path_.push_back(field_name);
-  LOG(ERROR) << MessageHeader() << "Found an empty string, but expected a "
-             << "non-empty string.";
+  std::ostringstream msg;
+  msg << "Found an empty string, but expected a non-empty string.";
   path_.pop_back();
+  AddValidationIssue(true /* is_error */, msg.str());
+  return true;
+}
+
+bool Validator::OnlyOneFieldSet(const base::DictionaryValue& object,
+                                const std::string& field_name1,
+                                const std::string& field_name2) {
+  if (object.HasKey(field_name1) && object.HasKey(field_name2)) {
+    std::ostringstream msg;
+    msg << "At most one of '" << field_name1 << "' and '" << field_name2
+        << "' can be set.";
+    AddValidationIssue(true /* is_error */, msg.str());
+    return false;
+  }
   return true;
 }
 
@@ -445,22 +463,25 @@ bool Validator::ListFieldContainsValidValues(
 }
 
 bool Validator::ValidateSSIDAndHexSSID(base::DictionaryValue* object) {
+  const std::string kInvalidLength = "Invalid length";
+
   // Check SSID validity.
   std::string ssid_string;
   if (object->GetStringWithoutPathExpansion(::onc::wifi::kSSID, &ssid_string) &&
       (ssid_string.size() <= 0 ||
        ssid_string.size() > kMaximumSSIDLengthInBytes)) {
-    error_or_warning_found_ = true;
-    const std::string msg =
-        MessageHeader() + ::onc::wifi::kSSID + " has an invalid length.";
+    path_.push_back(::onc::wifi::kSSID);
+    std::ostringstream msg;
+    msg << kInvalidLength;
+    path_.pop_back();
     // If the HexSSID field is present, ignore errors in SSID because these
     // might be caused by the usage of a non-UTF-8 encoding when the SSID
     // field was automatically added (see FillInHexSSIDField).
     if (!object->HasKey(::onc::wifi::kHexSSID)) {
-      LOG(ERROR) << msg;
+      AddValidationIssue(true /* is_error */, msg.str());
       return false;
     }
-    LOG(WARNING) << msg;
+    AddValidationIssue(false /* is_error */, msg.str());
   }
 
   // Check HexSSID validity.
@@ -469,17 +490,20 @@ bool Validator::ValidateSSIDAndHexSSID(base::DictionaryValue* object) {
                                             &hex_ssid_string)) {
     std::vector<uint8_t> decoded_ssid;
     if (!base::HexStringToBytes(hex_ssid_string, &decoded_ssid)) {
-      LOG(ERROR) << MessageHeader() << "Field " << ::onc::wifi::kHexSSID
-                 << " is not a valid hex representation: \"" << hex_ssid_string
-                 << "\"";
-      error_or_warning_found_ = true;
+      path_.push_back(::onc::wifi::kHexSSID);
+      std::ostringstream msg;
+      msg << "Not a valid hex representation: '" << hex_ssid_string << "'";
+      path_.pop_back();
+      AddValidationIssue(true /* is_error */, msg.str());
       return false;
     }
     if (decoded_ssid.size() <= 0 ||
         decoded_ssid.size() > kMaximumSSIDLengthInBytes) {
-      LOG(ERROR) << MessageHeader() << ::onc::wifi::kHexSSID
-                 << " has an invalid length.";
-      error_or_warning_found_ = true;
+      path_.push_back(::onc::wifi::kHexSSID);
+      std::ostringstream msg;
+      msg << kInvalidLength;
+      path_.pop_back();
+      AddValidationIssue(true /* is_error */, msg.str());
       return false;
     }
 
@@ -490,11 +514,12 @@ bool Validator::ValidateSSIDAndHexSSID(base::DictionaryValue* object) {
       std::string decoded_ssid_string(
           reinterpret_cast<const char*>(&decoded_ssid[0]), decoded_ssid.size());
       if (ssid_string != decoded_ssid_string) {
-        LOG(WARNING) << MessageHeader() << "Fields " << ::onc::wifi::kSSID
-                     << " and " << ::onc::wifi::kHexSSID
-                     << " contain inconsistent values. Removing "
-                     << ::onc::wifi::kSSID << ".";
-        error_or_warning_found_ = true;
+        path_.push_back(::onc::wifi::kSSID);
+        std::ostringstream msg;
+        msg << "Fields '" << ::onc::wifi::kSSID << "' and '"
+            << ::onc::wifi::kHexSSID << "' contain inconsistent values.";
+        path_.pop_back();
+        AddValidationIssue(false /* is_error */, msg.str());
         object->RemoveWithoutPathExpansion(::onc::wifi::kSSID, nullptr);
       }
     }
@@ -506,25 +531,24 @@ bool Validator::RequireField(const base::DictionaryValue& dict,
                              const std::string& field_name) {
   if (dict.HasKey(field_name))
     return true;
-  std::string message = MessageHeader() + "The required field '" + field_name +
-      "' is missing.";
-  if (error_on_missing_field_) {
-    error_or_warning_found_ = true;
-    LOG(ERROR) << message;
-  } else {
-    VLOG(1) << message;
-  }
+
+  std::ostringstream msg;
+  msg << "The required field '" << field_name << "' is missing.";
+  AddValidationIssue(error_on_missing_field_, msg.str());
   return false;
 }
 
 bool Validator::CheckGuidIsUniqueAndAddToSet(const base::DictionaryValue& dict,
                                              const std::string& key_guid,
-                                             std::set<std::string> *guids) {
+                                             std::set<std::string>* guids) {
   std::string guid;
   if (dict.GetStringWithoutPathExpansion(key_guid, &guid)) {
     if (guids->count(guid) != 0) {
-      error_or_warning_found_ = true;
-      LOG(ERROR) << MessageHeader() << "Found a duplicate GUID " << guid << ".";
+      path_.push_back(key_guid);
+      std::ostringstream msg;
+      msg << "Found a duplicate GUID '" << guid << "'.";
+      path_.pop_back();
+      AddValidationIssue(true /* is_error */, msg.str());
       return false;
     }
     guids->insert(guid);
@@ -536,9 +560,10 @@ bool Validator::IsGlobalNetworkConfigInUserImport(
     const base::DictionaryValue& onc_object) {
   if (onc_source_ == ::onc::ONC_SOURCE_USER_IMPORT &&
       onc_object.HasKey(::onc::toplevel_config::kGlobalNetworkConfiguration)) {
-    error_or_warning_found_ = true;
-    LOG(ERROR) << MessageHeader() << "GlobalNetworkConfiguration is prohibited "
-               << "in ONC user imports";
+    std::ostringstream msg;
+    msg << "Field '" << ::onc::toplevel_config::kGlobalNetworkConfiguration
+        << "' is prohibited in ONC user imports";
+    AddValidationIssue(true /* is_error */, msg.str());
     return true;
   }
   return false;
@@ -609,9 +634,10 @@ bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
     if (onc_source_ == ::onc::ONC_SOURCE_DEVICE_POLICY && !type.empty() &&
         type != ::onc::network_type::kWiFi &&
         type != ::onc::network_type::kEthernet) {
-      error_or_warning_found_ = true;
-      LOG(ERROR) << MessageHeader() << "Networks of type '"
-                 << type << "' are prohibited in ONC device policies.";
+      std::ostringstream msg;
+      msg << "Networks of type '" << type
+          << "' are prohibited in ONC device policies.";
+      AddValidationIssue(true /* is_error */, msg.str());
       return false;
     }
 
@@ -751,12 +777,8 @@ bool Validator::ValidateIPsec(base::DictionaryValue* result) {
     return false;
   }
 
-  if (result->HasKey(kServerCARefs) && result->HasKey(kServerCARef)) {
-    error_or_warning_found_ = true;
-    LOG(ERROR) << MessageHeader() << "At most one of " << kServerCARefs
-               << " and " << kServerCARef << " can be set.";
+  if (!OnlyOneFieldSet(*result, kServerCARefs, kServerCARef))
     return false;
-  }
 
   if (!ValidateClientCertFields(false,  // don't allow ClientCertType None
                                 result)) {
@@ -773,19 +795,16 @@ bool Validator::ValidateIPsec(base::DictionaryValue* result) {
         RequireField(*result, ::onc::client_cert::kClientCertType);
     if (!has_server_ca_cert) {
       all_required_exist = false;
-      error_or_warning_found_ = true;
-      std::string message = MessageHeader() + "The required field '" +
-                            kServerCARefs + "' is missing.";
-      if (error_on_missing_field_)
-        LOG(ERROR) << message;
-      else
-        LOG(WARNING) << message;
+      std::ostringstream msg;
+      msg << "The required field '" << kServerCARefs << "' is missing.";
+      AddValidationIssue(error_on_missing_field_, msg.str());
     }
   } else if (has_server_ca_cert) {
-    error_or_warning_found_ = true;
-    LOG(ERROR) << MessageHeader() << kServerCARefs << " (or " << kServerCARef
-               << ") can only be set if " << kAuthenticationType
-               << " is set to " << kCert << ".";
+    std::ostringstream msg;
+    msg << "Field '" << kServerCARefs << "' (or '" << kServerCARef
+        << "') can only be set if '" << kAuthenticationType << "' is set to '"
+        << kCert << "'.";
+    AddValidationIssue(true /* is_error */, msg.str());
     return false;
   }
 
@@ -852,12 +871,8 @@ bool Validator::ValidateOpenVPN(base::DictionaryValue* result) {
     }
   }
 
-  if (result->HasKey(kServerCARefs) && result->HasKey(kServerCARef)) {
-    error_or_warning_found_ = true;
-    LOG(ERROR) << MessageHeader() << "At most one of " << kServerCARefs
-               << " and " << kServerCARef << " can be set.";
+  if (!OnlyOneFieldSet(*result, kServerCARefs, kServerCARef))
     return false;
-  }
 
   if (!ValidateClientCertFields(true /* allow ClientCertType None */, result))
     return false;
@@ -903,15 +918,11 @@ bool Validator::ValidateCertificatePattern(base::DictionaryValue* result) {
   bool all_required_exist = true;
   if (!result->HasKey(kSubject) && !result->HasKey(kIssuer) &&
       !result->HasKey(kIssuerCARef)) {
-    error_or_warning_found_ = true;
     all_required_exist = false;
-    std::string message = MessageHeader() + "None of the fields '" + kSubject +
-        "', '" + kIssuer + "', and '" + kIssuerCARef +
-        "' is present, but at least one is required.";
-    if (error_on_missing_field_)
-      LOG(ERROR) << message;
-    else
-      LOG(WARNING) << message;
+    std::ostringstream msg;
+    msg << "None of the fields '" << kSubject << "', '" << kIssuer << "', and '"
+        << kIssuerCARef << "' is present, but at least one is required.";
+    AddValidationIssue(error_on_missing_field_, msg.str());
   }
 
   return !error_on_missing_field_ || all_required_exist;
@@ -988,12 +999,8 @@ bool Validator::ValidateEAP(base::DictionaryValue* result) {
     return false;
   }
 
-  if (result->HasKey(kServerCARefs) && result->HasKey(kServerCARef)) {
-    error_or_warning_found_ = true;
-    LOG(ERROR) << MessageHeader() << "At most one of " << kServerCARefs
-               << " and " << kServerCARef << " can be set.";
+  if (!OnlyOneFieldSet(*result, kServerCARefs, kServerCARef))
     return false;
-  }
 
   if (!ValidateClientCertFields(true /* allow ClientCertType None */, result))
     return false;
@@ -1023,9 +1030,11 @@ bool Validator::ValidateCertificate(base::DictionaryValue* result) {
   bool remove = false;
   result->GetBooleanWithoutPathExpansion(::onc::kRemove, &remove);
   if (remove) {
-    error_or_warning_found_ = true;
-    LOG(ERROR) << MessageHeader()
-               << "Removal of certificates is not supported.";
+    path_.push_back(::onc::kRemove);
+    std::ostringstream msg;
+    msg << "Removal of certificates is not supported.";
+    path_.pop_back();
+    AddValidationIssue(true /* is_error */, msg.str());
     return false;
   }
 
@@ -1042,43 +1051,33 @@ bool Validator::ValidateCertificate(base::DictionaryValue* result) {
 bool Validator::ValidateTether(base::DictionaryValue* result) {
   using namespace ::onc::tether;
 
-  int battery_percentage;
-  if (!result->GetIntegerWithoutPathExpansion(kBatteryPercentage,
-                                              &battery_percentage) ||
-      battery_percentage < 0 || battery_percentage > 100) {
-    // Battery percentage must be present and within [0, 100].
-    error_or_warning_found_ = true;
-    return false;
-  }
-
-  int signal_strength;
-  if (!result->GetIntegerWithoutPathExpansion(kSignalStrength,
-                                              &signal_strength) ||
-      signal_strength < 0 || signal_strength > 100) {
-    // Signal strength must be present and within [0, 100].
-    error_or_warning_found_ = true;
-    return false;
-  }
-
-  std::string carrier = GetStringFromDict(*result, kCarrier);
-  if (carrier.empty()) {
-    // Carrier must be a non-empty string.
-    error_or_warning_found_ = true;
+  if (FieldExistsAndIsNotInRange(*result, kBatteryPercentage, 0, 100) ||
+      FieldExistsAndIsNotInRange(*result, kSignalStrength, 0, 100) ||
+      FieldExistsAndIsEmpty(*result, kCarrier)) {
     return false;
   }
 
   bool all_required_exist = RequireField(*result, kHasConnectedToHost);
-  if (!all_required_exist) {
-    error_or_warning_found_ = true;
-  }
+  all_required_exist &= RequireField(*result, kBatteryPercentage);
+  all_required_exist &= RequireField(*result, kSignalStrength);
+  all_required_exist &= RequireField(*result, kCarrier);
 
   return !error_on_missing_field_ || all_required_exist;
 }
 
-std::string Validator::MessageHeader() {
-  std::string path = path_.empty() ? "toplevel" : base::JoinString(path_, ".");
-  std::string message = "At " + path + ": ";
-  return message;
+void Validator::AddValidationIssue(bool is_error,
+                                   const std::string& debug_info) {
+  std::ostringstream msg;
+  msg << (is_error ? "ERROR: " : "WARNING: ") << debug_info << " (at "
+      << (path_.empty() ? "toplevel" : base::JoinString(path_, ".")) << ")";
+  std::string message = msg.str();
+
+  if (is_error)
+    LOG(ERROR) << message;
+  else if (log_warnings_)
+    LOG(WARNING) << message;
+
+  validation_issues_.push_back({is_error, message});
 }
 
 }  // namespace onc

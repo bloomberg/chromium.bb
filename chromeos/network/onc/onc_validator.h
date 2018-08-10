@@ -64,11 +64,22 @@ class CHROMEOS_EXPORT Validator : public Mapper {
     INVALID
   };
 
+  struct ValidationIssue {
+    // If true, the ONC value does not adhere to the specification and may be
+    // rejected.
+    bool is_error;
+
+    // Detailed description containing the error/warning type and specific
+    // location (path).
+    std::string message;
+  };
+
   // See the class comment.
   Validator(bool error_on_unknown_field,
             bool error_on_wrong_recommended,
             bool error_on_missing_field,
-            bool managed_onc);
+            bool managed_onc,
+            bool log_warnings);
 
   ~Validator() override;
 
@@ -98,6 +109,12 @@ class CHROMEOS_EXPORT Validator : public Mapper {
       const OncValueSignature* object_signature,
       const base::Value& onc_object,
       Result* result);
+
+  // Returns the list of validation results that occured within validation
+  // initiated by the last call to |ValidateAndRepairObject|.
+  const std::vector<ValidationIssue>& validation_issues() const {
+    return validation_issues_;
+  }
 
  private:
   // Overridden from Mapper:
@@ -193,6 +210,10 @@ class CHROMEOS_EXPORT Validator : public Mapper {
   bool FieldExistsAndIsEmpty(const base::DictionaryValue& object,
                              const std::string& field_name);
 
+  bool OnlyOneFieldSet(const base::DictionaryValue& object,
+                       const std::string& field_name1,
+                       const std::string& field_name2);
+
   bool ListFieldContainsValidValues(
       const base::DictionaryValue& object,
       const std::string& field_name,
@@ -201,8 +222,7 @@ class CHROMEOS_EXPORT Validator : public Mapper {
   bool ValidateSSIDAndHexSSID(base::DictionaryValue* object);
 
   // Returns true if |key| is a key of |dict|. Otherwise, returns false and,
-  // depending on |error_on_missing_field_|, logs a message and sets
-  // |error_or_warning_found_|.
+  // depending on |error_on_missing_field_| raises an error or a warning.
   bool RequireField(const base::DictionaryValue& dict, const std::string& key);
 
   // Returns true if the GUID is unique or if the GUID is not a string
@@ -216,12 +236,13 @@ class CHROMEOS_EXPORT Validator : public Mapper {
   bool IsGlobalNetworkConfigInUserImport(
       const base::DictionaryValue& onc_object);
 
-  std::string MessageHeader();
+  void AddValidationIssue(bool is_error, const std::string& debug_info);
 
   const bool error_on_unknown_field_;
   const bool error_on_wrong_recommended_;
   const bool error_on_missing_field_;
   const bool managed_onc_;
+  const bool log_warnings_;
 
   ::onc::ONCSource onc_source_;
 
@@ -237,9 +258,9 @@ class CHROMEOS_EXPORT Validator : public Mapper {
   // duplicate GUIDs.
   std::set<std::string> certificate_guids_;
 
-  // Tracks if an error or warning occurred within validation initiated by
+  // List of all validation issues that occured within validation initiated by
   // function ValidateAndRepairObject.
-  bool error_or_warning_found_;
+  std::vector<ValidationIssue> validation_issues_;
 
   DISALLOW_COPY_AND_ASSIGN(Validator);
 };
