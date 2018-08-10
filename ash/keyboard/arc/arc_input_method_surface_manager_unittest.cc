@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/keyboard/arc/arc_input_method_surface_manager.h"
+
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "components/exo/input_method_surface.h"

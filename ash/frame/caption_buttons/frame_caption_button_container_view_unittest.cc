@@ -59,6 +59,7 @@ class FrameCaptionButtonContainerViewTest : public AshTestBase {
         new TestWidgetDelegate(maximize_allowed == MAXIMIZE_ALLOWED,
                                minimize_allowed == MINIMIZE_ALLOWED);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.context = CurrentContext();
     widget->Init(params);
     return widget;
   }

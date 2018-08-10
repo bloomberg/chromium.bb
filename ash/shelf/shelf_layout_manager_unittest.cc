@@ -286,19 +286,15 @@ class ShelfLayoutManagerTest : public AshTestBase {
     return window;
   }
 
-  views::Widget* CreateTestWidgetWithParams(
-      const views::Widget::InitParams& params) {
-    views::Widget* out = new views::Widget;
-    out->Init(params);
-    out->Show();
-    return out;
-  }
-
   // Create a simple widget in the current context (will delete on TearDown).
   views::Widget* CreateTestWidget() {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     params.bounds = gfx::Rect(0, 0, 200, 200);
-    return CreateTestWidgetWithParams(params);
+    params.context = CurrentContext();
+    views::Widget* widget = new views::Widget;
+    widget->Init(params);
+    widget->Show();
+    return widget;
   }
 
   void RunGestureDragTests(gfx::Vector2d);

@@ -314,6 +314,7 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
   views::Widget::InitParams params;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.delegate = new MaximizeDelegateView(gfx::Rect(400, 0, 30, 40));
+  params.context = CurrentContext();
   w1->Init(params);
   EXPECT_EQ(root_windows[0], w1->GetNativeWindow()->GetRootWindow());
   w1->Show();

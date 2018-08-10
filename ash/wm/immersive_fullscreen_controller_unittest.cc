@@ -163,6 +163,7 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
     widget_ = new views::Widget();
     views::Widget::InitParams params;
     params.delegate = new TestWidgetDelegate();
+    params.context = CurrentContext();
     widget_->Init(params);
     widget_->Show();
 
@@ -937,6 +938,7 @@ TEST_F(ImmersiveFullscreenControllerTest, Transient) {
       views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   non_transient_params.bounds = gfx::Rect(0, 100, 100, 100);
   std::unique_ptr<views::Widget> non_transient_widget(new views::Widget());
+  non_transient_params.context = CurrentContext();
   non_transient_widget->Init(non_transient_params);
 
   EXPECT_FALSE(controller()->IsRevealed());

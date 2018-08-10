@@ -463,7 +463,7 @@ TEST_F(WindowModalityControllerTest, TouchEvent) {
 //   the |modal_child| window.
 // - Focus should follow the active window.
 TEST_F(WindowModalityControllerTest, ChildModal) {
-  TestChildModalParent* delegate = TestChildModalParent::Show();
+  TestChildModalParent* delegate = TestChildModalParent::Show(CurrentContext());
   aura::Window* top_level = delegate->GetWidget()->GetNativeView();
   EXPECT_TRUE(wm::IsActiveWindow(top_level));
 
@@ -516,7 +516,7 @@ TEST_F(WindowModalityControllerTest, ChildModal) {
 // Same as |ChildModal| test, but using |EventGenerator| rather than bypassing
 // it by calling |ActivateWindow|.
 TEST_F(WindowModalityControllerTest, ChildModalEventGenerator) {
-  TestChildModalParent* delegate = TestChildModalParent::Show();
+  TestChildModalParent* delegate = TestChildModalParent::Show(CurrentContext());
   aura::Window* top_level = delegate->GetWidget()->GetNativeView();
   EXPECT_TRUE(wm::IsActiveWindow(top_level));
 

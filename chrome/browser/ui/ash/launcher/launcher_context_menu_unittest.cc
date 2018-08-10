@@ -93,6 +93,7 @@ class LauncherContextMenuTest : public ash::AshTestBase {
   views::Widget* CreateArcWindow(std::string& window_app_id) {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     views::Widget* widget = new views::Widget();
+    params.context = CurrentContext();
     widget->Init(params);
     widget->Show();
     widget->Activate();

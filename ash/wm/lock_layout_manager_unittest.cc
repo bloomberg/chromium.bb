@@ -76,6 +76,7 @@ class LockLayoutManagerTest : public AshTestBase {
     views::Widget* widget = new views::Widget;
     if (use_delegate)
       params.delegate = new LoginTestWidgetDelegate(widget);
+    params.context = CurrentContext();
     widget->Init(params);
     widget->Show();
     aura::Window* window = widget->GetNativeView();

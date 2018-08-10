@@ -107,9 +107,10 @@ class TabletModeWindowManagerTest : public AshTestBase {
 
   // Creates a window which also has a widget.
   aura::Window* CreateWindowWithWidget(const gfx::Rect& bounds) {
+    // Note: The widget will get deleted with the window.
     views::Widget* widget = new views::Widget();
     views::Widget::InitParams params;
-    // Note: The widget will get deleted with the window.
+    params.context = CurrentContext();
     widget->Init(params);
     widget->Show();
     aura::Window* window = widget->GetNativeWindow();

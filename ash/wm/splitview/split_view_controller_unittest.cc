@@ -2350,6 +2350,7 @@ class SplitViewAppDraggingTest : public SplitViewControllerTest {
         std::make_unique<TestWindowDelegateWithWidget>(can_activate);
     widget_delegate->set_widget(widget);
     params.delegate = widget_delegate.release();
+    params.context = CurrentContext();
     widget->Init(params);
     widget->Show();
     return base::WrapUnique<aura::Window>(widget->GetNativeView());

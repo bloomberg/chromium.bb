@@ -177,6 +177,7 @@ class ShellTest : public AshTestBase {
   // TODO(jamescook): Convert to AshTestBase::CreateTestWidget().
   views::Widget* CreateTestWindow(views::Widget::InitParams params) {
     views::Widget* widget = new views::Widget;
+    params.context = CurrentContext();
     widget->Init(params);
     return widget;
   }
@@ -261,6 +262,7 @@ TEST_F(ShellTest, CreateWindowWithPreferredSize) {
   // Don't specify bounds, parent or context.
   params.delegate = new WindowWithPreferredSize;
   views::Widget widget;
+  params.context = CurrentContext();
   widget.Init(params);
 
   // Widget is centered on secondary display.
