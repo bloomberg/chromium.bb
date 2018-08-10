@@ -144,8 +144,12 @@ require you to set `CHROMIUM_OUTPUT_DIR=out/Default`.
 Build Chromium with Ninja using the command:
 
 ```shell
-ninja -C out/Default chrome_public_apk
+autoninja -C out/Default chrome_public_apk
 ```
+
+`autoninja` is a wrapper that automatically provides optimal values for the
+arguments passed to `ninja`.
+
 
 You can get a list of all of the other build targets from GN by running `gn ls
 out/Default` from the command line. To compile one, pass the GN label to Ninja
@@ -244,7 +248,7 @@ third_party/android_tools/sdk/platform-tools/adb shell settings put global verif
 ### Build the full browser
 
 ```shell
-ninja -C out/Default chrome_public_apk
+autoninja -C out/Default chrome_public_apk
 ```
 
 And deploy it to your Android device:
@@ -262,7 +266,7 @@ Wraps the content module (but not the /chrome embedder). See
 for details on the content module and content shell.
 
 ```shell
-ninja -C out/Default content_shell_apk
+autoninja -C out/Default content_shell_apk
 out/Default/bin/content_shell_apk install
 ```
 
@@ -333,7 +337,7 @@ a little slower since updated dex files are installed manually.
 Here's an example:
 
 ```shell
-ninja -C out/Default chrome_public_apk_incremental
+autoninja -C out/Default chrome_public_apk_incremental
 out/Default/bin/chrome_public_apk install --incremental --verbose
 ```
 
@@ -341,14 +345,14 @@ For gunit tests (note that run_*_incremental automatically add
 `--fast-local-dev` when calling `test_runner.py`):
 
 ```shell
-ninja -C out/Default base_unittests_incremental
+autoninja -C out/Default base_unittests_incremental
 out/Default/bin/run_base_unittests_incremental
 ```
 
 For instrumentation tests:
 
 ```shell
-ninja -C out/Default chrome_public_test_apk_incremental
+autoninja -C out/Default chrome_public_test_apk_incremental
 out/Default/bin/run_chrome_public_test_apk_incremental
 ```
 

@@ -104,8 +104,11 @@ Currently, not all targets build on Fuchsia. You can build base\_unittests, for
 example:
 
 ```shell
-$ ninja -C out/fuchsia base_unittests
+$ autoninja -C out/fuchsia base_unittests
 ```
+
+`autoninja` is a wrapper that automatically provides optimal values for the
+arguments passed to `ninja`.
 
 ## Run
 

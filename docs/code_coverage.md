@@ -94,7 +94,7 @@ compiler.
 $ gn gen out/coverage \
     --args='use_clang_coverage=true is_component_build=false'
 $ gclient runhooks
-$ ninja -C out/coverage crypto_unittests url_unittests
+$ autoninja -C out/coverage crypto_unittests url_unittests
 ```
 
 ### Step 2 Create Raw Profiles
