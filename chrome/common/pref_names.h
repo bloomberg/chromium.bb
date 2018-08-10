@@ -688,6 +688,7 @@ extern const char kSSLVersionMin[];
 extern const char kSSLVersionMax[];
 extern const char kTLS13Variant[];
 extern const char kCipherSuiteBlacklist[];
+extern const char kH2ClientCertCoalescingHosts[];
 
 extern const char kBuiltInDnsClientEnabled[];
 extern const char kDnsOverHttpsServers[];

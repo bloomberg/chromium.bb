@@ -12718,6 +12718,29 @@
       When the screen is about to be dimmed, the smart dim model evaluates if dimming the screen should be deferred. If the smart dim model defers dimming the screen, it effectively extends the time until the screen is dimmed. In this case, the screen off, screen lock and idle delays get adjusted to maintain the same distances from the screen dim delay as originally configured.
       If this policy is set to True or left not set, the smart dim model will be enabled and allowed to extend the time until the screen is dimmed. If this policy is set to False, the smart dim model will not influence screen dimming.''',
     },
+    {
+      'name': 'CoalesceH2ConnectionsWithClientCertificatesForHosts',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:70-','android:70-','chrome_os:70-'],
+      'future': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['example.com'],
+      'id': 466,
+      'caption': '''Allow coalescing of HTTP/2 connections for these hosts even when client certificates are used''',
+      'tags': [],
+      'desc': '''This policy allows HTTP/2 connection coalescing when client certificates are in use. In order to coalesce, both the hostname of the potential new connection and the hostname of an existing connection must match one or more patterns described by this policy. The policy is a list of hosts using the URLBlacklist filter format: "example.com" matches "example.com" and all subdomains (e.g. "sub.example.com"), while ".example.net" matches exactly "example.net".
+
+      Coalescing requests to different hosts over connections that use client certificates can create security and privacy issues, as the ambient authority will be conveyed to all requests, even if the user did not explicitly authorize this. This policy is temporary and will be removed in a future release. See https://crbug.com/855690.
+
+      If this policy is left unset, then the default behavior of not allowing any HTTP/2 connection coalescing on connections using client certificates will be used.''',
+    },
   ],
 
   'messages': {
@@ -12859,5 +12882,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 465
+  'highest_id_currently_used': 466
 }
