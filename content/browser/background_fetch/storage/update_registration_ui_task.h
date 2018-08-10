@@ -46,6 +46,8 @@ class UpdateRegistrationUITask : public DatabaseTask {
 
   void FinishWithError(blink::mojom::BackgroundFetchError error) override;
 
+  std::string HistogramName() const override;
+
   BackgroundFetchRegistrationId registration_id_;
   base::Optional<std::string> title_;
   base::Optional<SkBitmap> icon_;

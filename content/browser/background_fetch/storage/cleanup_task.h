@@ -38,6 +38,8 @@ class CleanupTask : public background_fetch::DatabaseTask {
 
   void FinishWithError(blink::mojom::BackgroundFetchError error) override;
 
+  std::string HistogramName() const override;
+
   base::WeakPtrFactory<CleanupTask> weak_factory_;  // Keep as last.
 
   DISALLOW_COPY_AND_ASSIGN(CleanupTask);

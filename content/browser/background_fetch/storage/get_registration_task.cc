@@ -37,6 +37,8 @@ void GetRegistrationTask::DidGetMetadata(
     blink::mojom::BackgroundFetchError error,
     std::unique_ptr<proto::BackgroundFetchMetadata> metadata_proto) {
   metadata_proto_ = std::move(metadata_proto);
+  if (error == blink::mojom::BackgroundFetchError::STORAGE_ERROR)
+    SetStorageError(BackgroundFetchStorageError::kServiceWorkerStorageError);
   FinishWithError(error);
 }
 
@@ -50,8 +52,14 @@ void GetRegistrationTask::FinishWithError(
     registration = ToBackgroundFetchRegistration(*metadata_proto_);
   }
 
+  ReportStorageError();
+
   std::move(callback_).Run(error, registration);
   Finished();  // Destroys |this|.
+}
+
+std::string GetRegistrationTask::HistogramName() const {
+  return "GetRegistrationTask";
 }
 
 }  // namespace background_fetch

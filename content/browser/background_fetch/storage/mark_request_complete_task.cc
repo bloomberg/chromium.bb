@@ -140,10 +140,11 @@ void MarkRequestCompleteTask::DidOpenCache(
     CacheStorageCacheHandle handle,
     blink::mojom::CacheStorageError error) {
   if (error != blink::mojom::CacheStorageError::kSuccess) {
-    // TODO(crbug.com/780025): Log failures to UMA.
+    SetStorageError(BackgroundFetchStorageError::kCacheStorageError);
     CreateAndStoreCompletedRequest(std::move(done_closure));
     return;
   }
+
   DCHECK(handle.value());
 
   auto request = std::make_unique<ServiceWorkerFetchRequest>(
@@ -162,7 +163,8 @@ void MarkRequestCompleteTask::DidWriteToCache(
     CacheStorageCacheHandle handle,
     base::OnceClosure done_closure,
     blink::mojom::CacheStorageError error) {
-  // TODO(crbug.com/780025): Log failures to UMA.
+  if (error != blink::mojom::CacheStorageError::kSuccess)
+    SetStorageError(BackgroundFetchStorageError::kCacheStorageError);
   CreateAndStoreCompletedRequest(std::move(done_closure));
 }
 
@@ -193,7 +195,7 @@ void MarkRequestCompleteTask::DidStoreCompletedRequest(
       break;
     case DatabaseStatus::kFailed:
     case DatabaseStatus::kNotFound:
-      // TODO(crbug.com/780025): Log failures to UMA.
+      SetStorageError(BackgroundFetchStorageError::kServiceWorkerStorageError);
       std::move(done_closure).Run();
       return;
   }
@@ -210,7 +212,8 @@ void MarkRequestCompleteTask::DidStoreCompletedRequest(
 void MarkRequestCompleteTask::DidDeleteActiveRequest(
     base::OnceClosure done_closure,
     blink::ServiceWorkerStatusCode status) {
-  // TODO(crbug.com/780025): Log failures to UMA.
+  if (ToDatabaseStatus(status) != DatabaseStatus::kOk)
+    SetStorageError(BackgroundFetchStorageError::kServiceWorkerStorageError);
   std::move(done_closure).Run();
 }
 
@@ -232,7 +235,7 @@ void MarkRequestCompleteTask::DidGetMetadata(
     blink::mojom::BackgroundFetchError error,
     std::unique_ptr<proto::BackgroundFetchMetadata> metadata) {
   if (!metadata || error != blink::mojom::BackgroundFetchError::NONE) {
-    // TODO(crbug.com/780025): Log failures to UMA.
+    SetStorageError(BackgroundFetchStorageError::kServiceWorkerStorageError);
     std::move(done_closure).Run();
     return;
   }
@@ -252,14 +255,19 @@ void MarkRequestCompleteTask::DidGetMetadata(
 void MarkRequestCompleteTask::DidStoreMetadata(
     base::OnceClosure done_closure,
     blink::ServiceWorkerStatusCode status) {
-  // TODO(crbug.com/780025): Log failures to UMA.
+  SetStorageError(BackgroundFetchStorageError::kServiceWorkerStorageError);
   std::move(done_closure).Run();
 }
 
 void MarkRequestCompleteTask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
+  ReportStorageError();
   std::move(callback_).Run();
   Finished();
+}
+
+std::string MarkRequestCompleteTask::HistogramName() const {
+  return "MarkRequestCompleteTask";
 }
 
 }  // namespace background_fetch

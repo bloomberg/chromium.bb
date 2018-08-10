@@ -16,6 +16,7 @@
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
@@ -1656,6 +1657,39 @@ TEST_F(BackgroundFetchDataManagerTest, CreateInParallel) {
   // and all the others should have failed with DUPLICATED_DEVELOPER_ID.
   EXPECT_EQ(1, success_count);
   EXPECT_EQ(num_parallel_creates - 1, duplicated_developer_id_count);
+}
+
+TEST_F(BackgroundFetchDataManagerTest, StorageErrorsReported) {
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+
+  auto requests = CreateValidRequests(origin(), 3u /* num_requests */);
+  BackgroundFetchOptions options;
+  blink::mojom::BackgroundFetchError error;
+  BackgroundFetchRegistrationId registration_id(
+      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+
+  {
+    base::HistogramTester histogram_tester;
+    CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+    histogram_tester.ExpectBucketCount(
+        "BackgroundFetch.Storage.CreateMetadataTask", 0 /* kNone */, 1);
+  }
+
+  BackgroundFetchRegistrationId registration_id2(
+      sw_id, url::Origin::Create(GURL("https://examplebad.com")),
+      kAlternativeDeveloperId, kAlternativeUniqueId);
+
+  {
+    base::HistogramTester histogram_tester;
+    // This should fail because the Service Worker doesn't exist.
+    CreateRegistration(registration_id2, requests, options, SkBitmap(), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+    histogram_tester.ExpectBucketCount(
+        "BackgroundFetch.Storage.CreateMetadataTask",
+        1 /* kServiceWorkerStorageError */, 1);
+  }
 }
 
 }  // namespace content

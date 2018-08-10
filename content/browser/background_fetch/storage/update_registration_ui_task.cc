@@ -53,7 +53,8 @@ void UpdateRegistrationUITask::DidGetUIOptions(
     blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kFailed:
-      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+      SetStorageErrorAndFinish(
+          BackgroundFetchStorageError::kServiceWorkerStorageError);
       return;
     case DatabaseStatus::kNotFound:
     case DatabaseStatus::kOk:
@@ -61,7 +62,8 @@ void UpdateRegistrationUITask::DidGetUIOptions(
   }
 
   if (data.empty() || !ui_options_.ParseFromString(data[0])) {
-    FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+    SetStorageErrorAndFinish(
+        BackgroundFetchStorageError::kServiceWorkerStorageError);
     return;
   }
 
@@ -100,7 +102,8 @@ void UpdateRegistrationUITask::DidUpdateUIOptions(
       break;
     case DatabaseStatus::kFailed:
     case DatabaseStatus::kNotFound:
-      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+      SetStorageErrorAndFinish(
+          BackgroundFetchStorageError::kServiceWorkerStorageError);
       return;
   }
 
@@ -112,8 +115,14 @@ void UpdateRegistrationUITask::FinishWithError(
   for (auto& observer : data_manager()->observers())
     observer.OnUpdatedUI(registration_id_, title_, icon_);
 
+  ReportStorageError();
+
   std::move(callback_).Run(error);
   Finished();  // Destroys |this|.
+}
+
+std::string UpdateRegistrationUITask::HistogramName() const {
+  return "UpdateRegistrationUITask";
 }
 
 }  // namespace background_fetch

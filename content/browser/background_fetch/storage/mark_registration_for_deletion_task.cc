@@ -47,7 +47,8 @@ void MarkRegistrationForDeletionTask::DidGetActiveUniqueId(
       FinishWithError(blink::mojom::BackgroundFetchError::INVALID_ID);
       return;
     case DatabaseStatus::kFailed:
-      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+      SetStorageErrorAndFinish(
+          BackgroundFetchStorageError::kServiceWorkerStorageError);
       return;
   }
 
@@ -75,7 +76,8 @@ void MarkRegistrationForDeletionTask::DidGetActiveUniqueId(
   } else {
     // Service worker database has been corrupted. Abandon fetches.
     AbandonFetches(registration_id_.service_worker_registration_id());
-    FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+    SetStorageErrorAndFinish(
+        BackgroundFetchStorageError::kServiceWorkerStorageError);
     return;
   }
 }
@@ -87,7 +89,8 @@ void MarkRegistrationForDeletionTask::DidDeactivate(
     case DatabaseStatus::kNotFound:
       break;
     case DatabaseStatus::kFailed:
-      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+      SetStorageErrorAndFinish(
+          BackgroundFetchStorageError::kServiceWorkerStorageError);
       return;
   }
 
@@ -100,8 +103,13 @@ void MarkRegistrationForDeletionTask::DidDeactivate(
 
 void MarkRegistrationForDeletionTask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
+  ReportStorageError();
   std::move(callback_).Run(error);
   Finished();  // Destroys |this|.
+}
+
+std::string MarkRegistrationForDeletionTask::HistogramName() const {
+  return "MarkRegistrationForDeletionTask";
 }
 
 }  // namespace background_fetch

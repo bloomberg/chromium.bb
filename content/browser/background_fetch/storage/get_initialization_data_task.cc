@@ -507,10 +507,23 @@ void GetInitializationDataTask::FinishWithError(
       AddDatabaseTask(std::make_unique<MarkRegistrationForDeletionTask>(
           data_manager(), data.second.registration_id, base::DoNothing()));
     }
+
+    if (data.second.error ==
+        blink::mojom::BackgroundFetchError::STORAGE_ERROR) {
+      // The subtasks only access the Service Worker storage, so if there is
+      // a storage error, that would be the cause.
+      SetStorageError(BackgroundFetchStorageError::kServiceWorkerStorageError);
+    }
   }
+
+  ReportStorageError();
 
   std::move(callback_).Run(error, std::move(results));
   Finished();  // Destroys |this|.
+}
+
+std::string GetInitializationDataTask::HistogramName() const {
+  return "GetInitializationDataTask";
 }
 
 }  // namespace background_fetch

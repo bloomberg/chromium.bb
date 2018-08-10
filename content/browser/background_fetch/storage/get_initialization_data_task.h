@@ -85,6 +85,8 @@ class GetInitializationDataTask : public DatabaseTask {
 
   void FinishWithError(blink::mojom::BackgroundFetchError error) override;
 
+  std::string HistogramName() const override;
+
   GetInitializationDataCallback callback_;
 
   // Map from the unique_id to the initialization data.
