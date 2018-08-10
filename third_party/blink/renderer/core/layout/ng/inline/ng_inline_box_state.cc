@@ -223,12 +223,19 @@ void NGInlineLayoutStateStack::EndBoxState(
   // Create box fragments for parent if the current box has properties (e.g.,
   // margin) that make it tricky to compute the parent's rects.
   if (box->ParentNeedsBoxFragment(parent_box))
-    parent_box.SetNeedsBoxFragment();
+    parent_box.SetNeedsBoxFragment(nullptr);
 }
 
-void NGInlineBoxState::SetNeedsBoxFragment() {
+void NGInlineBoxState::SetNeedsBoxFragment(
+    const LayoutObject* inline_container) {
+  // Note: inline_container can also be incorrectly passed as null.
+  // when being set for parent_box. This is ok, because inline_container
+  // is already set correctly inside inline_layout_algorithm.
   DCHECK(item);
   needs_box_fragment = true;
+  // Assign inline_container only if it has not been set.
+  if (!this->inline_container)
+    this->inline_container = inline_container;
 }
 
 bool NGInlineBoxState::ParentNeedsBoxFragment(
@@ -281,6 +288,7 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
       BoxData{box->fragment_start, fragment_end, box->item, size});
   BoxData& box_data = box_data_list_.back();
   box_data.padding = box->padding;
+  box_data.inline_container = box->inline_container;
   if (box->has_start_edge) {
     box_data.has_line_left_edge = true;
     box_data.margin_line_left = box->margin_inline_start;
@@ -525,7 +533,7 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
     // NGInlineLayoutAlgorithm can handle them later.
     DCHECK(!child.HasInFlowFragment());
   }
-  box.MoveOutOfFlowDescendantCandidatesToDescendants();
+  box.MoveOutOfFlowDescendantCandidatesToDescendants(inline_container);
   return box.ToInlineBoxFragment();
 }
 
