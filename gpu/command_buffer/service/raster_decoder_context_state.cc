@@ -78,6 +78,7 @@ void RasterDecoderContextState::InitializeGrContext(
       &max_resource_cache_bytes, &glyph_cache_max_texture_bytes);
   options.fGlyphCacheTextureMaximumBytes = glyph_cache_max_texture_bytes;
   options.fPersistentCache = cache;
+  options.fAvoidStencilBuffers = workarounds.avoid_stencil_buffers;
   gr_context = GrContext::MakeGL(std::move(interface), options);
   if (!gr_context) {
     LOG(ERROR) << "OOP raster support disabled: GrContext creation "
