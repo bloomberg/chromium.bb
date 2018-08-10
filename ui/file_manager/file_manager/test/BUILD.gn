@@ -49,7 +49,6 @@ js_library("closure_compile_externs") {
   sources = []
   externs_list = [
     "js/externs.js",
-    "$externs_path/chrome_extensions.js",
     "$externs_path/command_line_private.js",
     "$externs_path/file_manager_private.js",
     "$externs_path/file_system_provider.js",
