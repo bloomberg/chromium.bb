@@ -286,9 +286,7 @@ void LocalFrameView::Reset() {
   // The compositor throttles the main frame using deferred commits, we can't
   // throttle it here or it seems the root compositor doesn't get setup
   // properly.
-  if (RuntimeEnabledFeatures::
-          RenderingPipelineThrottlingLoadingIframesEnabled())
-    lifecycle_updates_throttled_ = !GetFrame().IsMainFrame();
+  lifecycle_updates_throttled_ = !GetFrame().IsMainFrame();
   has_pending_layout_ = false;
   layout_scheduling_enabled_ = true;
   in_synchronous_post_layout_ = false;

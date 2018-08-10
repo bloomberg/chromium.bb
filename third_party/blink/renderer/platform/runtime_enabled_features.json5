@@ -1021,10 +1021,6 @@
       status: "stable",
     },
     {
-      name: "RenderingPipelineThrottlingLoadingIframes",
-      status: "stable",
-    },
-    {
       name: "ReportingObserver",
       implied_by: ["DeprecationReporting", "InterventionReporting"],
       status: "stable",
