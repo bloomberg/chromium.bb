@@ -9,6 +9,7 @@ include_rules = [
   "+components/grit/components_resources.h",
   "+components/url_formatter",
   "+net/base",
+  "+net/cert",
   "+net/ssl",
   "+ui/base"
 ]
