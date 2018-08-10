@@ -6,22 +6,28 @@
 #define CHROME_BROWSER_USB_USB_TAB_HELPER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
+namespace blink {
+namespace mojom {
+class WebUsbService;
+}
+}  // namespace blink
+
 namespace device {
 namespace mojom {
 class UsbChooserService;
-class UsbDeviceManager;
 }
 
 namespace usb {
 class PermissionProvider;
 }
-}
+}  // namespace device
 
 struct FrameUsbServices;
 
@@ -37,9 +43,9 @@ class UsbTabHelper : public content::WebContentsObserver,
 
   ~UsbTabHelper() override;
 
-  void CreateDeviceManager(
+  void CreateWebUsbService(
       content::RenderFrameHost* render_frame_host,
-      mojo::InterfaceRequest<device::mojom::UsbDeviceManager> request);
+      mojo::InterfaceRequest<blink::mojom::WebUsbService> request);
 
   void CreateChooserService(
       content::RenderFrameHost* render_frame_host,

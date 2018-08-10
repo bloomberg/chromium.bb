@@ -108,6 +108,10 @@ class AssociatedInterfaceRegistry;
 struct FramePolicy;
 struct WebFullscreenOptions;
 struct WebScrollIntoViewParams;
+
+namespace mojom {
+class WebUsbService;
+}
 }
 
 namespace gfx {
@@ -1087,7 +1091,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       WebBluetoothServiceImpl* web_bluetooth_service);
 
   // Creates connections to WebUSB interfaces bound to this frame.
-  void CreateUsbDeviceManager(device::mojom::UsbDeviceManagerRequest request);
+  void CreateWebUsbService(
+      mojo::InterfaceRequest<blink::mojom::WebUsbService> request);
   void CreateUsbChooserService(device::mojom::UsbChooserServiceRequest request);
 
   void CreateAudioInputStreamFactory(

@@ -9,8 +9,8 @@
 
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/usb/web_usb_device_manager.h"
 #include "chrome/browser/usb/web_usb_permission_provider.h"
+#include "chrome/browser/usb/web_usb_service_impl.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_features.h"
@@ -58,15 +58,15 @@ UsbTabHelper* UsbTabHelper::GetOrCreateForWebContents(
 
 UsbTabHelper::~UsbTabHelper() {}
 
-void UsbTabHelper::CreateDeviceManager(
+void UsbTabHelper::CreateWebUsbService(
     RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<device::mojom::UsbDeviceManager> request) {
+    mojo::InterfaceRequest<blink::mojom::WebUsbService> request) {
   if (!AllowedByFeaturePolicy(render_frame_host)) {
     mojo::ReportBadMessage(kFeaturePolicyViolation);
     return;
   }
-  WebUsbDeviceManager::Create(GetPermissionProvider(render_frame_host),
-                              std::move(request));
+  WebUsbServiceImpl::Create(GetPermissionProvider(render_frame_host),
+                            std::move(request));
 }
 
 void UsbTabHelper::CreateChooserService(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/usb/web_usb_device_manager.h"
+#include "chrome/browser/usb/web_usb_service_impl.h"
 
 #include <utility>
 
@@ -13,17 +13,16 @@
 #include "device/usb/usb_device.h"
 
 // static
-void WebUsbDeviceManager::Create(
+void WebUsbServiceImpl::Create(
     base::WeakPtr<device::usb::PermissionProvider> permission_provider,
-    device::mojom::UsbDeviceManagerRequest request) {
-  // Bind the Blink request with WebUsbDeviceManager.
-  auto* web_usb_device_manager =
-      new WebUsbDeviceManager(std::move(permission_provider));
-  web_usb_device_manager->binding_ = mojo::MakeStrongBinding(
-      base::WrapUnique(web_usb_device_manager), std::move(request));
+    blink::mojom::WebUsbServiceRequest request) {
+  // Bind the Blink request with WebUsbServiceImpl.
+  auto* web_usb_service = new WebUsbServiceImpl(std::move(permission_provider));
+  web_usb_service->binding_ = mojo::MakeStrongBinding(
+      base::WrapUnique(web_usb_service), std::move(request));
 }
 
-WebUsbDeviceManager::WebUsbDeviceManager(
+WebUsbServiceImpl::WebUsbServiceImpl(
     base::WeakPtr<device::usb::PermissionProvider> permission_provider)
     : permission_provider_(std::move(permission_provider)),
       observer_(this),
@@ -34,10 +33,10 @@ WebUsbDeviceManager::WebUsbDeviceManager(
   device::usb::DeviceManagerImpl::Create(permission_provider_,
                                          mojo::MakeRequest(&device_manager_));
   device_manager_.set_connection_error_handler(base::BindOnce(
-      &WebUsbDeviceManager::OnConnectionError, base::Unretained(this)));
+      &WebUsbServiceImpl::OnConnectionError, base::Unretained(this)));
   // Listen for add/remove device events from UsbService.
   // TODO(donna.wu@intel.com): Listen to |device_manager_| in the future.
-  // We can't set WebUsbDeviceManager as a UsbDeviceManagerClient because
+  // We can't set WebUsbServiceImpl as a UsbDeviceManagerClient because
   // the OnDeviceRemoved event will be delivered here after it is delivered
   // to UsbChooserContext, meaning that all ephemeral permission checks in
   // OnDeviceRemoved() will fail.
@@ -46,34 +45,31 @@ WebUsbDeviceManager::WebUsbDeviceManager(
     observer_.Add(usb_service);
 }
 
-WebUsbDeviceManager::~WebUsbDeviceManager() = default;
+WebUsbServiceImpl::~WebUsbServiceImpl() = default;
 
-void WebUsbDeviceManager::GetDevices(
-    device::mojom::UsbEnumerationOptionsPtr options,
-    GetDevicesCallback callback) {
-  device_manager_->GetDevices(std::move(options), std::move(callback));
+void WebUsbServiceImpl::GetDevices(GetDevicesCallback callback) {
+  device_manager_->GetDevices(nullptr, std::move(callback));
 }
 
-void WebUsbDeviceManager::GetDevice(
+void WebUsbServiceImpl::GetDevice(
     const std::string& guid,
     device::mojom::UsbDeviceRequest device_request) {
   device_manager_->GetDevice(guid, std::move(device_request));
 }
 
-void WebUsbDeviceManager::SetClient(
+void WebUsbServiceImpl::SetClient(
     device::mojom::UsbDeviceManagerClientPtr client) {
   client_ = std::move(client);
 }
 
-void WebUsbDeviceManager::OnDeviceAdded(
-    scoped_refptr<device::UsbDevice> device) {
+void WebUsbServiceImpl::OnDeviceAdded(scoped_refptr<device::UsbDevice> device) {
   if (client_ && permission_provider_ &&
       permission_provider_->HasDevicePermission(device)) {
     client_->OnDeviceAdded(device::mojom::UsbDeviceInfo::From(*device));
   }
 }
 
-void WebUsbDeviceManager::OnDeviceRemoved(
+void WebUsbServiceImpl::OnDeviceRemoved(
     scoped_refptr<device::UsbDevice> device) {
   if (client_ && permission_provider_ &&
       permission_provider_->HasDevicePermission(device)) {
@@ -81,7 +77,7 @@ void WebUsbDeviceManager::OnDeviceRemoved(
   }
 }
 
-void WebUsbDeviceManager::OnConnectionError() {
+void WebUsbServiceImpl::OnConnectionError() {
   device_manager_.reset();
 
   // Close the connection with blink.
@@ -89,6 +85,6 @@ void WebUsbDeviceManager::OnConnectionError() {
   binding_->Close();
 }
 
-void WebUsbDeviceManager::WillDestroyUsbService() {
+void WebUsbServiceImpl::WillDestroyUsbService() {
   OnConnectionError();
 }

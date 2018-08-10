@@ -168,6 +168,7 @@
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
+#include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "third_party/blink/public/platform/modules/webauthn/virtual_authenticator.mojom.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
@@ -3489,7 +3490,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(
-      &RenderFrameHostImpl::CreateUsbDeviceManager, base::Unretained(this)));
+      &RenderFrameHostImpl::CreateWebUsbService, base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(
       &RenderFrameHostImpl::CreateUsbChooserService, base::Unretained(this)));
@@ -4944,10 +4945,9 @@ void RenderFrameHostImpl::DeleteWebBluetoothService(
   web_bluetooth_services_.erase(it);
 }
 
-void RenderFrameHostImpl::CreateUsbDeviceManager(
-    device::mojom::UsbDeviceManagerRequest request) {
-  GetContentClient()->browser()->CreateUsbDeviceManager(this,
-                                                        std::move(request));
+void RenderFrameHostImpl::CreateWebUsbService(
+    blink::mojom::WebUsbServiceRequest request) {
+  GetContentClient()->browser()->CreateWebUsbService(this, std::move(request));
 }
 
 void RenderFrameHostImpl::CreateUsbChooserService(

@@ -31,7 +31,6 @@
 #include "content/public/common/socket_permission_request.h"
 #include "content/public/common/window_container_type.mojom.h"
 #include "device/usb/public/mojom/chooser_service.mojom.h"
-#include "device/usb/public/mojom/device_manager.mojom.h"
 #include "media/base/video_codecs.h"
 #include "media/cdm/cdm_proxy.h"
 #include "media/media_buildflags.h"
@@ -69,6 +68,12 @@ namespace base {
 class CommandLine;
 class FilePath;
 }
+
+namespace blink {
+namespace mojom {
+class WebUsbService;
+}
+}  // namespace blink
 
 namespace device {
 class LocationProvider;
@@ -1212,9 +1217,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool ShouldForceDownloadResource(const GURL& url,
                                            const std::string& mime_type);
 
-  virtual void CreateUsbDeviceManager(
+  virtual void CreateWebUsbService(
       RenderFrameHost* render_frame_host,
-      device::mojom::UsbDeviceManagerRequest request);
+      mojo::InterfaceRequest<blink::mojom::WebUsbService> request);
 
   virtual void CreateUsbChooserService(
       RenderFrameHost* render_frame_host,

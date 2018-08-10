@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_USB_WEB_USB_DEVICE_MANAGER_H_
-#define CHROME_BROWSER_USB_WEB_USB_DEVICE_MANAGER_H_
+#ifndef CHROME_BROWSER_USB_WEB_USB_SERVICE_IMPL_H_
+#define CHROME_BROWSER_USB_WEB_USB_SERVICE_IMPL_H_
 
 #include <string>
 
@@ -15,6 +15,7 @@
 #include "device/usb/public/mojom/device_manager.mojom.h"
 #include "device/usb/usb_service.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 
 namespace device {
 class UsbDevice;
@@ -23,22 +24,21 @@ class UsbDevice;
 // Implements a restricted device::mojom::UsbDeviceManager interface by wrapping
 // another UsbDeviceManager instance and checking requests with the provided
 // device::usb::PermissionProvider.
-class WebUsbDeviceManager : public device::mojom::UsbDeviceManager,
-                            public device::UsbService::Observer {
+class WebUsbServiceImpl : public blink::mojom::WebUsbService,
+                          public device::UsbService::Observer {
  public:
   static void Create(
       base::WeakPtr<device::usb::PermissionProvider> permission_provider,
-      device::mojom::UsbDeviceManagerRequest request);
+      blink::mojom::WebUsbServiceRequest request);
 
-  ~WebUsbDeviceManager() override;
+  ~WebUsbServiceImpl() override;
 
  private:
-  WebUsbDeviceManager(
+  WebUsbServiceImpl(
       base::WeakPtr<device::usb::PermissionProvider> permission_provider);
 
-  // DeviceManager implementation:
-  void GetDevices(device::mojom::UsbEnumerationOptionsPtr options,
-                  GetDevicesCallback callback) override;
+  // blink::mojom::WebUsbService implementation:
+  void GetDevices(GetDevicesCallback callback) override;
   void GetDevice(const std::string& guid,
                  device::mojom::UsbDeviceRequest device_request) override;
   void SetClient(device::mojom::UsbDeviceManagerClientPtr client) override;
@@ -53,15 +53,15 @@ class WebUsbDeviceManager : public device::mojom::UsbDeviceManager,
   base::WeakPtr<device::usb::PermissionProvider> permission_provider_;
 
   // Used to bind with Blink.
-  mojo::StrongBindingPtr<device::mojom::UsbDeviceManager> binding_;
+  mojo::StrongBindingPtr<blink::mojom::WebUsbService> binding_;
   device::mojom::UsbDeviceManagerClientPtr client_;
 
   device::mojom::UsbDeviceManagerPtr device_manager_;
   ScopedObserver<device::UsbService, device::UsbService::Observer> observer_;
 
-  base::WeakPtrFactory<WebUsbDeviceManager> weak_factory_;
+  base::WeakPtrFactory<WebUsbServiceImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebUsbDeviceManager);
+  DISALLOW_COPY_AND_ASSIGN(WebUsbServiceImpl);
 };
 
-#endif  // CHROME_BROWSER_USB_WEB_USB_DEVICE_MANAGER_H_
+#endif  // CHROME_BROWSER_USB_WEB_USB_SERVICE_IMPL_H_

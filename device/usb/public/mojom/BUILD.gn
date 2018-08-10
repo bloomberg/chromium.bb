@@ -19,4 +19,18 @@ mojom("mojom") {
   # prepackaged redistributable JS bindings. It is therefore not desirable to
   # scramble these messages.
   scramble_message_ids = false
+
+  # The blink variant of the usb mojom is depended on by the blink platform
+  # target. All blink variant mojoms use WTF types, which are part of the
+  # blink platform component. In order to avoid a dependency cycle, these
+  # targets must be part of that component.
+  export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
+  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+  export_header_blink = "third_party/blink/public/platform/web_common.h"
+
+  visibility_blink = [
+    "//components/arc/common:common_blink",
+    "//third_party/blink/public/mojom/usb:usb_blink",
+    "//third_party/blink/renderer/modules/webusb",
+  ]
 }
