@@ -195,7 +195,7 @@
   [self.consumer
       updateLocationIcon:[self currentLocationIcon]
       securityStatusText:base::SysUTF16ToNSString(
-                             self.toolbarModel->GetSecureVerboseText())];
+                             self.toolbarModel->GetSecureAccessibilityText())];
 }
 
 #pragma mark Location helpers

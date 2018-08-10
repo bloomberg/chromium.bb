@@ -35,11 +35,14 @@ class ToolbarModelImpl : public ToolbarModel {
       bool ignore_editing) const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetSecureVerboseText() const override;
+  base::string16 GetSecureAccessibilityText() const override;
   base::string16 GetEVCertName() const override;
   bool ShouldDisplayURL() const override;
   bool IsOfflinePage() const override;
 
  private:
+  // Get the security text describing the current security state.
+  base::string16 GetSecureText() const;
   base::string16 GetFormattedURL(
       url_formatter::FormatUrlTypes format_types) const;
 

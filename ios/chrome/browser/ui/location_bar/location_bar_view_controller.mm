@@ -212,7 +212,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
 #pragma mark - LocationBarConsumer
 
 - (void)updateLocationText:(NSString*)text {
-  self.locationBarSteadyView.locationLabel.text = text;
+  [self.locationBarSteadyView setLocationLabelText:text];
 }
 
 - (void)updateLocationIcon:(UIImage*)icon
