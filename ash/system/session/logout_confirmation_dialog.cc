@@ -98,8 +98,7 @@ base::string16 LogoutConfirmationDialog::GetWindowTitle() const {
 }
 
 bool LogoutConfirmationDialog::ShouldShowCloseButton() const {
-  // Material UI has no [X] in the corner of this dialog.
-  return !ui::MaterialDesignController::IsSecondaryUiMaterial();
+  return false;
 }
 
 void LogoutConfirmationDialog::WindowClosing() {

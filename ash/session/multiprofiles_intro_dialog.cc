@@ -57,8 +57,7 @@ base::string16 MultiprofilesIntroDialog::GetWindowTitle() const {
 }
 
 bool MultiprofilesIntroDialog::ShouldShowCloseButton() const {
-  // Material UI has no [X] in the corner of this dialog.
-  return !ui::MaterialDesignController::IsSecondaryUiMaterial();
+  return false;
 }
 
 gfx::Size MultiprofilesIntroDialog::CalculatePreferredSize() const {
