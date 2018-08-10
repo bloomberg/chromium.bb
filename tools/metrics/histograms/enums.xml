@@ -13996,6 +13996,7 @@ Called by update_net_error_codes.py.-->
   <int value="462" label="NetworkFileSharesAllowed"/>
   <int value="463" label="DeviceLocalAccountManagedSessionEnabled"/>
   <int value="464" label="WebRtcEventLogCollectionAllowed"/>
+  <int value="465" label="PowerSmartDimEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
