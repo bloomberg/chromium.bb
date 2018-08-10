@@ -281,7 +281,7 @@ CreateMakeCredentialResponse(
 blink::mojom::GetAssertionAuthenticatorResponsePtr CreateGetAssertionResponse(
     const std::string& client_data_json,
     device::AuthenticatorGetAssertionResponse response_data,
-    bool echo_appid_extension) {
+    base::Optional<bool> echo_appid_extension) {
   auto response = blink::mojom::GetAssertionAuthenticatorResponse::New();
   auto common_info = blink::mojom::CommonCredentialInfo::New();
   common_info->client_data_json.assign(client_data_json.begin(),
@@ -292,7 +292,10 @@ blink::mojom::GetAssertionAuthenticatorResponsePtr CreateGetAssertionResponse(
   response->authenticator_data =
       response_data.auth_data().SerializeToByteArray();
   response->signature = response_data.signature();
-  response->echo_appid_extension = echo_appid_extension;
+  if (echo_appid_extension) {
+    response->echo_appid_extension = true;
+    response->appid_extension = *echo_appid_extension;
+  }
   response_data.user_entity()
       ? response->user_handle.emplace(response_data.user_entity()->user_id())
       : response->user_handle.emplace();
@@ -554,19 +557,14 @@ void AuthenticatorImpl::GetAssertion(
     return;
   }
 
-  base::Optional<std::array<uint8_t, crypto::kSHA256Length>>
-      alternative_application_parameter;
   if (options->appid) {
-    auto appid_hash = ProcessAppIdExtension(*options->appid, caller_origin);
-    if (!appid_hash) {
+    alternative_application_parameter_ =
+        ProcessAppIdExtension(*options->appid, caller_origin);
+    if (!alternative_application_parameter_) {
       std::move(callback).Run(blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
                               nullptr);
       return;
     }
-
-    alternative_application_parameter = std::move(appid_hash);
-    // TODO(agl): needs a test once a suitable, mock U2F device exists.
-    echo_appid_extension_ = true;
   }
 
   DCHECK(get_assertion_response_callback_.is_null());
@@ -589,9 +587,9 @@ void AuthenticatorImpl::GetAssertion(
 
   request_ = std::make_unique<device::GetAssertionRequestHandler>(
       connector_, protocols_,
-      CreateCtapGetAssertionRequest(
-          ConstructClientDataHash(client_data_json_), std::move(options),
-          std::move(alternative_application_parameter)),
+      CreateCtapGetAssertionRequest(ConstructClientDataHash(client_data_json_),
+                                    std::move(options),
+                                    alternative_application_parameter_),
       base::BindOnce(&AuthenticatorImpl::OnSignResponse,
                      weak_factory_.GetWeakPtr()),
       base::BindOnce(&AuthenticatorImpl::CreatePlatformAuthenticatorIfAvailable,
@@ -774,12 +772,17 @@ void AuthenticatorImpl::OnSignResponse(
       return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
+      base::Optional<bool> echo_appid_extension;
+      if (alternative_application_parameter_) {
+        echo_appid_extension = (response_data->GetRpIdHash() ==
+                                *alternative_application_parameter_);
+      }
       InvokeCallbackAndCleanup(
           std::move(get_assertion_response_callback_),
           blink::mojom::AuthenticatorStatus::SUCCESS,
           CreateGetAssertionResponse(std::move(client_data_json_),
                                      std::move(*response_data),
-                                     echo_appid_extension_));
+                                     echo_appid_extension));
       return;
   }
   NOTREACHED();
@@ -832,7 +835,7 @@ void AuthenticatorImpl::Cleanup() {
   make_credential_response_callback_.Reset();
   get_assertion_response_callback_.Reset();
   client_data_json_.clear();
-  echo_appid_extension_ = false;
+  alternative_application_parameter_.reset();
 }
 
 BrowserContext* AuthenticatorImpl::browser_context() const {
