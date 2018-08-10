@@ -101,6 +101,9 @@ class SaveCardBubbleControllerImpl
  protected:
   explicit SaveCardBubbleControllerImpl(content::WebContents* web_contents);
 
+  // Opens the Payments settings page.
+  virtual void ShowPaymentsSettingsPage();
+
   // Returns the time elapsed since |timer_| was initialized.
   // Exists for testing.
   virtual base::TimeDelta Elapsed() const;

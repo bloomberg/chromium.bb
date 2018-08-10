@@ -123,7 +123,6 @@ void SaveCardBubbleControllerImpl::ShowBubbleForUpload(
 }
 
 void SaveCardBubbleControllerImpl::ShowBubbleForSignInPromo() {
-  // TODO(crbug/855186): Implement metrics for sign-in promo.
   if (!ShouldShowSignInPromo())
     return;
 
@@ -158,7 +157,6 @@ void SaveCardBubbleControllerImpl::ReshowBubble() {
 
   is_reshow_ = true;
 
-  // TODO(crbug/855186): Implement metrics for sign-in promo.
   if (current_bubble_type_ == BubbleType::LOCAL_SAVE ||
       current_bubble_type_ == BubbleType::UPLOAD_SAVE) {
     AutofillMetrics::LogSaveCardPromptMetric(
@@ -292,7 +290,8 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
       local_save_card_callback_.Reset();
       break;
     case BubbleType::MANAGE_CARDS:
-      // TODO(crbug/855186): Implement metrics for [Done] button.
+      AutofillMetrics::LogManageCardsPromptMetric(
+          AutofillMetrics::MANAGE_CARDS_DONE, is_upload_save_);
       return;
     case BubbleType::SIGN_IN_PROMO:
     case BubbleType::INACTIVE:
@@ -361,7 +360,15 @@ void SaveCardBubbleControllerImpl::OnLegalMessageLinkClicked(const GURL& url) {
 }
 
 void SaveCardBubbleControllerImpl::OnManageCardsClicked() {
-  // TODO(crbug/855186): Implement metrics for sign-in promo.
+  DCHECK(current_bubble_type_ == BubbleType::MANAGE_CARDS);
+
+  AutofillMetrics::LogManageCardsPromptMetric(
+      AutofillMetrics::MANAGE_CARDS_MANAGE_CARDS, is_upload_save_);
+
+  ShowPaymentsSettingsPage();
+}
+
+void SaveCardBubbleControllerImpl::ShowPaymentsSettingsPage() {
   chrome::ShowSettingsSubPage(
       chrome::FindBrowserWithWebContents(web_contents()),
       chrome::kPaymentsSubPage);
@@ -487,14 +494,24 @@ void SaveCardBubbleControllerImpl::ShowBubble() {
 
   timer_.reset(new base::ElapsedTimer());
 
-  if (current_bubble_type_ == BubbleType::LOCAL_SAVE ||
-      current_bubble_type_ == BubbleType::UPLOAD_SAVE) {
-    AutofillMetrics::LogSaveCardPromptMetric(
-        AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, is_upload_save_, is_reshow_,
-        should_request_name_from_user_,
-        pref_service_->GetInteger(
-            prefs::kAutofillAcceptSaveCreditCardPromptState),
-        GetSecurityLevel());
+  switch (current_bubble_type_) {
+    case BubbleType::UPLOAD_SAVE:
+    case BubbleType::LOCAL_SAVE:
+      AutofillMetrics::LogSaveCardPromptMetric(
+          AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, is_upload_save_, is_reshow_,
+          should_request_name_from_user_,
+          pref_service_->GetInteger(
+              prefs::kAutofillAcceptSaveCreditCardPromptState),
+          GetSecurityLevel());
+      break;
+    case BubbleType::MANAGE_CARDS:
+      AutofillMetrics::LogManageCardsPromptMetric(
+          AutofillMetrics::MANAGE_CARDS_SHOWN, is_upload_save_);
+      break;
+    case BubbleType::SIGN_IN_PROMO:
+      break;
+    case BubbleType::INACTIVE:
+      NOTREACHED();
   }
 }
 

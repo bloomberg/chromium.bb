@@ -242,6 +242,20 @@ class AutofillMetrics {
     NUM_SAVE_CARD_PROMPT_METRICS,
   };
 
+  // Metrics to measure user interaction with the Manage Cards view
+  // shown when user clicks on the save card icon after accepting
+  // to save a card.
+  enum ManageCardsPromptMetric {
+    // The manage cards promo was shown.
+    MANAGE_CARDS_SHOWN,
+    // The user clicked on [Done].
+    MANAGE_CARDS_DONE,
+    // The user clicked on [Manage cards].
+    MANAGE_CARDS_MANAGE_CARDS,
+
+    NUM_MANAGE_CARDS_PROMPT_METRICS
+  };
+
   // Metrics measuring how well we predict field types.  These metric values are
   // logged for each field in a submitted form for:
   //     - the heuristic prediction
@@ -829,6 +843,8 @@ class AutofillMetrics {
       SaveCardPromptMetric metric,
       bool is_uploading,
       security_state::SecurityLevel security_level);
+  static void LogManageCardsPromptMetric(ManageCardsPromptMetric metric,
+                                         bool is_uploading);
   static void LogScanCreditCardPromptMetric(ScanCreditCardPromptMetric metric);
   static void LogLocalCardMigrationBubbleOfferMetric(
       LocalCardMigrationBubbleOfferMetric metric,
