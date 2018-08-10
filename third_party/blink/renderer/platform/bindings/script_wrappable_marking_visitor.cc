@@ -67,7 +67,6 @@ void ScriptWrappableMarkingVisitor::TraceEpilogue() {
 }
 
 void ScriptWrappableMarkingVisitor::AbortTracing() {
-  CHECK(tracing_in_progress_);
   CHECK(ThreadState::Current());
   should_cleanup_ = true;
   tracing_in_progress_ = false;
@@ -219,12 +218,10 @@ void ScriptWrappableMarkingVisitor::MarkWrapperHeader(
 void ScriptWrappableMarkingVisitor::WriteBarrier(
     v8::Isolate* isolate,
     const TraceWrapperV8Reference<v8::Value>& dst_object) {
-  if (!ThreadState::IsAnyWrapperTracing() || dst_object.IsEmpty())
+  ScriptWrappableMarkingVisitor* visitor = CurrentVisitor(isolate);
+  if (dst_object.IsEmpty() || !visitor->WrapperTracingInProgress())
     return;
 
-  ScriptWrappableMarkingVisitor* visitor = CurrentVisitor(isolate);
-  if (!visitor->WrapperTracingInProgress())
-    return;
   // Conservatively assume that the source object containing |dst_object| is
   // marked.
   visitor->Trace(dst_object);
@@ -234,9 +231,6 @@ void ScriptWrappableMarkingVisitor::WriteBarrier(
     v8::Isolate* isolate,
     DOMWrapperMap<ScriptWrappable>* wrapper_map,
     ScriptWrappable* key) {
-  if (!ThreadState::IsAnyWrapperTracing())
-    return;
-
   ScriptWrappableMarkingVisitor* visitor = CurrentVisitor(isolate);
   if (!visitor->WrapperTracingInProgress())
     return;
@@ -309,32 +303,24 @@ void ScriptWrappableMarkingVisitor::InvalidateDeadObjectsInMarkingDeque() {
   }
 }
 
-void ScriptWrappableMarkingVisitor::FinalizeAndCleanup() {
-  FinalizeTracing();
-  PerformCleanup();
-}
-
 void ScriptWrappableMarkingVisitor::InvalidateDeadObjectsInMarkingDeque(
     v8::Isolate* isolate) {
   ScriptWrappableMarkingVisitor* script_wrappable_visitor =
-      static_cast<ScriptWrappableMarkingVisitor*>(
-          V8PerIsolateData::From(isolate)->GetV8HeapController());
+      V8PerIsolateData::From(isolate)->GetScriptWrappableMarkingVisitor();
   if (script_wrappable_visitor)
     script_wrappable_visitor->InvalidateDeadObjectsInMarkingDeque();
 }
 
 void ScriptWrappableMarkingVisitor::PerformCleanup(v8::Isolate* isolate) {
   ScriptWrappableMarkingVisitor* script_wrappable_visitor =
-      static_cast<ScriptWrappableMarkingVisitor*>(
-          V8PerIsolateData::From(isolate)->GetV8HeapController());
+      V8PerIsolateData::From(isolate)->GetScriptWrappableMarkingVisitor();
   if (script_wrappable_visitor)
     script_wrappable_visitor->PerformCleanup();
 }
 
 ScriptWrappableMarkingVisitor* ScriptWrappableMarkingVisitor::CurrentVisitor(
     v8::Isolate* isolate) {
-  return static_cast<ScriptWrappableMarkingVisitor*>(
-      V8PerIsolateData::From(isolate)->GetV8HeapController());
+  return V8PerIsolateData::From(isolate)->GetScriptWrappableMarkingVisitor();
 }
 
 bool ScriptWrappableMarkingVisitor::MarkingDequeContains(void* needle) {
