@@ -103,6 +103,9 @@ abstract class ThumbnailAwareViewHolder extends MoreButtonViewHolder implements 
         // Clear any associated bitmap from the thumbnail.
         if (mId != null) onVisualsChanged(mThumbnail, null);
 
+        // Show the loading animation if we are in loading state.
+        showLoadingView(mThumbnail);
+
         // Clear out any outstanding thumbnail request.
         if (mCancellable != null) mCancellable.run();
 
@@ -133,9 +136,21 @@ abstract class ThumbnailAwareViewHolder extends MoreButtonViewHolder implements 
         mCancellable = null;
         mIsRequesting = false;
 
+        // Hide the loading view.
+        hideLoadingView();
+
         // Notify of the new visuals (if any).
         onVisualsChanged(mThumbnail, visuals);
     }
+
+    /**
+     * Show UI to indicate that thumbnail loading in progress.
+     * @param view The view that should show the loading image.
+     */
+    protected void showLoadingView(ImageView view) {}
+
+    /** Hide the loading view. */
+    protected void hideLoadingView() {}
 
     /**
      * Called when the contents of the thumbnail should be changed to due an event (either this
