@@ -12,6 +12,7 @@
 
 #include "base/base_export.h"
 #include "base/message_loop/message_pump.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/win/message_window.h"
 #include "base/win/scoped_handle.h"
@@ -122,6 +123,17 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
   // Make the MessagePumpForUI respond to WM_QUIT messages.
   void EnableWmQuit();
 
+  // An observer interface to give the scheduler an opportunity to log
+  // information about MSGs before and after they are dispatched.
+  class BASE_EXPORT Observer {
+   public:
+    virtual void WillDispatchMSG(const MSG& msg) = 0;
+    virtual void DidDispatchMSG(const MSG& msg) = 0;
+  };
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* obseerver);
+
  private:
   bool MessageCallback(
       UINT message, WPARAM wparam, LPARAM lparam, LRESULT* result);
@@ -139,6 +151,8 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
   // Whether MessagePumpForUI responds to WM_QUIT messages or not.
   // TODO(thestig): Remove when the Cloud Print Service goes away.
   bool enable_wm_quit_ = false;
+
+  ObserverList<Observer> observers_;
 };
 
 //-----------------------------------------------------------------------------

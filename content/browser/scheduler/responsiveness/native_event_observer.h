@@ -18,6 +18,10 @@
 #include "ui/events/platform/platform_event_observer.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/message_loop/message_pump_win.h"
+#endif
+
 namespace content {
 namespace responsiveness {
 
@@ -37,6 +41,8 @@ class CONTENT_EXPORT NativeEventObserver
     : public NativeEventProcessorObserver
 #elif defined(OS_LINUX)
     : public ui::PlatformEventObserver
+#elif defined(OS_WIN)
+    : public base::MessagePumpForUI::Observer
 #endif
 {
  public:
@@ -71,6 +77,10 @@ class CONTENT_EXPORT NativeEventObserver
   // Exposed for tests.
   void WillProcessEvent(const ui::PlatformEvent& event) override;
   void DidProcessEvent(const ui::PlatformEvent& event) override;
+#elif defined(OS_WIN)
+  // base::MessagePumpForUI::Observer overrides:
+  void WillDispatchMSG(const MSG& msg) override;
+  void DidDispatchMSG(const MSG& msg) override;
 #endif
 
  private:

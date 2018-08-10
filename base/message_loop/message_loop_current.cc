@@ -178,6 +178,18 @@ void MessageLoopCurrentForUI::Abort() {
 }
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_WIN)
+void MessageLoopCurrentForUI::AddMessagePumpObserver(
+    MessagePumpForUI::Observer* observer) {
+  pump_->AddObserver(observer);
+}
+
+void MessageLoopCurrentForUI::RemoveMessagePumpObserver(
+    MessagePumpForUI::Observer* observer) {
+  pump_->RemoveObserver(observer);
+}
+#endif  // defined(OS_WIN)
+
 #endif  // !defined(OS_NACL)
 
 //------------------------------------------------------------------------------

@@ -236,6 +236,11 @@ class BASE_EXPORT MessageLoopCurrentForUI : public MessageLoopCurrent {
   void Abort();
 #endif
 
+#if defined(OS_WIN)
+  void AddMessagePumpObserver(MessagePumpForUI::Observer* observer);
+  void RemoveMessagePumpObserver(MessagePumpForUI::Observer* observer);
+#endif
+
  private:
   MessageLoopCurrentForUI(MessageLoop* current, MessagePumpForUI* pump)
       : MessageLoopCurrent(current), pump_(pump) {

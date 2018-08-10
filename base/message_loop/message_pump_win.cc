@@ -125,6 +125,14 @@ void MessagePumpForUI::EnableWmQuit() {
   enable_wm_quit_ = true;
 }
 
+void MessagePumpForUI::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MessagePumpForUI::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 //-----------------------------------------------------------------------------
 // MessagePumpForUI private:
 
@@ -368,8 +376,12 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
   if (msg.message == kMsgHaveWork && msg.hwnd == message_window_.hwnd())
     return ProcessPumpReplacementMessage();
 
+  for (Observer& observer : observers_)
+    observer.WillDispatchMSG(msg);
   TranslateMessage(&msg);
   DispatchMessage(&msg);
+  for (Observer& observer : observers_)
+    observer.DidDispatchMSG(msg);
 
   return true;
 }
