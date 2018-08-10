@@ -181,8 +181,10 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
     return base::nullopt;
 
   it = response_map.find(CBOR(3));
-  if (it == response_map.end() || !it->second.is_bytestring())
+  if (it == response_map.end() || !it->second.is_bytestring() ||
+      it->second.GetBytestring().size() != kAaguidLength) {
     return base::nullopt;
+  }
 
   AuthenticatorGetInfoResponse response(std::move(protocol_versions),
                                         it->second.GetBytestring());
