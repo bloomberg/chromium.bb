@@ -24,7 +24,7 @@ class AnimatedRoundedImageView : public views::View {
   enum class Playback {
     kFirstFrameOnly,  // Only the first frame in the animation will be shown.
     kSingle,          // Play the animation only once.
-    kRepeat,          // Play the animation repeatly.
+    kRepeat,          // Play the animation repeatedly.
   };
 
   // Provides animation frames.
@@ -48,6 +48,9 @@ class AnimatedRoundedImageView : public views::View {
 
   // Set playback type of the animation.
   void SetAnimationPlayback(Playback playback);
+
+  // Get the current type of animation playback.
+  Playback playback() const { return playback_; }
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
