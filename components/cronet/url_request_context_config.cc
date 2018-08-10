@@ -583,17 +583,8 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
   ParseAndSetExperimentalOptions(context_builder, &session_params, net_log);
   context_builder->set_http_network_session_params(session_params);
 
-  std::unique_ptr<net::CertVerifier> cert_verifier;
-  if (mock_cert_verifier) {
-    // Because |context_builder| expects CachingCertVerifier, wrap
-    // |mock_cert_verifier| into a CachingCertVerifier.
-    cert_verifier = std::make_unique<net::CachingCertVerifier>(
-        std::move(mock_cert_verifier));
-  } else {
-    // net::CertVerifier::CreateDefault() returns a CachingCertVerifier.
-    cert_verifier = net::CertVerifier::CreateDefault();
-  }
-  context_builder->SetCertVerifier(std::move(cert_verifier));
+  if (mock_cert_verifier)
+    context_builder->SetCertVerifier(std::move(mock_cert_verifier));
   // Certificate Transparency is intentionally ignored in Cronet.
   // See //net/docs/certificate-transparency.md for more details.
   context_builder->set_ct_verifier(
