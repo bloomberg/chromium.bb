@@ -7,7 +7,6 @@
 #include "ash/login/ui/lock_screen.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 
@@ -56,39 +55,6 @@ bool ShouldRecordMetrics() {
 
 LoginMetricsRecorder::LoginMetricsRecorder() = default;
 LoginMetricsRecorder::~LoginMetricsRecorder() = default;
-
-void LoginMetricsRecorder::SetAuthMethod(AuthMethod method) {
-  DCHECK_NE(method, AuthMethod::kMethodCount);
-  if (Shell::Get()->session_controller()->GetSessionState() !=
-      session_manager::SessionState::LOCKED)
-    return;
-
-  // Record usage of PIN / Password / Smartlock in lock screen.
-  const bool is_tablet_mode = Shell::Get()
-                                  ->tablet_mode_controller()
-                                  ->IsTabletModeWindowManagerEnabled();
-  if (is_tablet_mode) {
-    UMA_HISTOGRAM_ENUMERATION("Ash.Login.Lock.AuthMethod.Used.TabletMode",
-                              method, AuthMethod::kMethodCount);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("Ash.Login.Lock.AuthMethod.Used.ClamShellMode",
-                              method, AuthMethod::kMethodCount);
-  }
-
-  if (last_auth_method_ != method) {
-    // Record switching between unlock methods.
-    UMA_HISTOGRAM_ENUMERATION("Ash.Login.Lock.AuthMethod.Switched",
-                              FindSwitchType(last_auth_method_, method),
-                              AuthMethodSwitchType::kSwitchTypeCount);
-
-    last_auth_method_ = method;
-  }
-}
-
-void LoginMetricsRecorder::Reset() {
-  // Reset local state.
-  last_auth_method_ = AuthMethod::kPassword;
-}
 
 void LoginMetricsRecorder::RecordNumLoginAttempts(int num_attempt,
                                                   bool success) {
@@ -180,30 +146,6 @@ void LoginMetricsRecorder::RecordUserShelfButtonClick(
     case ShelfButtonClickTarget::kTargetCount:
       NOTREACHED();
       break;
-  }
-}
-
-// static
-LoginMetricsRecorder::AuthMethodSwitchType LoginMetricsRecorder::FindSwitchType(
-    AuthMethod previous,
-    AuthMethod current) {
-  DCHECK_NE(previous, current);
-  switch (previous) {
-    case AuthMethod::kPassword:
-      return current == AuthMethod::kPin
-                 ? AuthMethodSwitchType::kPasswordToPin
-                 : AuthMethodSwitchType::kPasswordToSmartlock;
-    case AuthMethod::kPin:
-      return current == AuthMethod::kPassword
-                 ? AuthMethodSwitchType::kPinToPassword
-                 : AuthMethodSwitchType::kPinToSmartlock;
-    case AuthMethod::kSmartlock:
-      return current == AuthMethod::kPassword
-                 ? AuthMethodSwitchType::kSmartlockToPassword
-                 : AuthMethodSwitchType::kSmartlockToPin;
-    case AuthMethod::kMethodCount:
-      NOTREACHED();
-      return AuthMethodSwitchType::kSwitchTypeCount;
   }
 }
 

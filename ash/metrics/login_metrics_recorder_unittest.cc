@@ -28,18 +28,12 @@
 namespace ash {
 namespace {
 
-constexpr char kAuthMethodUsageAsTabletHistogramName[] =
-    "Ash.Login.Lock.AuthMethod.Used.TabletMode";
-constexpr char kAuthMethodUsageAsClamShellHistogramName[] =
-    "Ash.Login.Lock.AuthMethod.Used.ClamShellMode";
 constexpr char kNumAttemptTilSuccessHistogramName[] =
     "Ash.Login.Lock.NumPasswordAttempts.UntilSuccess";
 constexpr char kNumAttemptTilFailureHistogramName[] =
     "Ash.Login.Lock.NumPasswordAttempts.UntilFailure";
 constexpr char kUserClicksOnLockHistogramName[] = "Ash.Login.Lock.UserClicks";
 constexpr char kUserClicksOnLoginHistogramName[] = "Ash.Login.Login.UserClicks";
-constexpr char kAuthMethodSwitchHistogramName[] =
-    "Ash.Login.Lock.AuthMethod.Switched";
 
 // Test fixture for the LoginMetricsRecorder class.
 class LoginMetricsRecorderTest : public LoginTestBase {
@@ -65,23 +59,6 @@ class LoginMetricsRecorderTest : public LoginTestBase {
     return Shell::Get()->metrics()->login_metrics_recorder();
   }
 
-  void SetAuthMethod(LoginMetricsRecorder::AuthMethod auth_method) {
-    metrics_recorder()->SetAuthMethod(auth_method);
-  }
-
-  void ExpectBucketCount(const std::string& name,
-                         LoginMetricsRecorder::AuthMethod method,
-                         int count) {
-    histogram_tester_->ExpectBucketCount(name, static_cast<int>(method), count);
-  }
-
-  void ExpectBucketCount(const std::string& name,
-                         LoginMetricsRecorder::AuthMethodSwitchType switch_type,
-                         int count) {
-    histogram_tester_->ExpectBucketCount(name, static_cast<int>(switch_type),
-                                         count);
-  }
-
   void ExpectBucketCount(const std::string& name,
                          LoginMetricsRecorder::LockScreenUserClickTarget target,
                          int count) {
@@ -103,92 +80,6 @@ class LoginMetricsRecorderTest : public LoginTestBase {
 };
 
 }  // namespace
-
-// Verifies that different unlock attempts get recorded in UMA.
-TEST_F(LoginMetricsRecorderTest, UnlockAttempts) {
-  GetSessionControllerClient()->SetSessionState(
-      session_manager::SessionState::LOCKED);
-
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
-  client->set_authenticate_user_callback_result(false);
-  auto* contents = new LockContentsView(
-      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
-      data_dispatcher(),
-      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
-  LockContentsView::TestApi test_api(contents);
-  SetUserCount(1);
-  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
-  LoginAuthUserView::AuthMethods auth_method = LoginAuthUserView::AUTH_PASSWORD;
-  AccountId primary_user = test_api.primary_big_view()
-                               ->GetCurrentUser()
-                               ->basic_user_info->account_id;
-
-  EXPECT_NE(nullptr, test_api.primary_big_view()->auth_user());
-  EXPECT_EQ(test_api.primary_big_view()->auth_user()->auth_methods(),
-            auth_method);
-  EXPECT_CALL(*client,
-              AuthenticateUser_(primary_user, testing::_, false, testing::_));
-  EXPECT_CALL(*client, OnFocusPod(primary_user));
-
-  // Authentication attempt with password "abc1";
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->PressKey(ui::KeyboardCode::VKEY_A, 0);
-  generator->PressKey(ui::KeyboardCode::VKEY_B, 0);
-  generator->PressKey(ui::KeyboardCode::VKEY_C, 0);
-  generator->PressKey(ui::KeyboardCode::VKEY_1, 0);
-  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
-
-  // Run the loop to get the system salt and flush
-  // LoginScreenClient::AuthenticateUser mojo call.
-  base::RunLoop().RunUntilIdle();
-  histogram_tester_->ExpectTotalCount(kAuthMethodUsageAsClamShellHistogramName,
-                                      1);
-  histogram_tester_->ExpectBucketCount(
-      kAuthMethodUsageAsClamShellHistogramName,
-      static_cast<int>(LoginMetricsRecorder::AuthMethod::kPassword), 1);
-
-  // Authentication attempt with pin "1111"
-  test_api.primary_big_view()->auth_user()->SetAuthMethods(
-      auth_method | LoginAuthUserView::AUTH_PIN);
-  EXPECT_EQ(test_api.primary_big_view()->auth_user()->auth_methods(),
-            (auth_method | LoginAuthUserView::AUTH_PIN));
-  EXPECT_CALL(*client,
-              AuthenticateUser_(primary_user, testing::_, true, testing::_));
-  generator->PressKey(ui::KeyboardCode::VKEY_1, 0);
-  generator->PressKey(ui::KeyboardCode::VKEY_1, 0);
-  generator->PressKey(ui::KeyboardCode::VKEY_1, 0);
-  generator->PressKey(ui::KeyboardCode::VKEY_1, 0);
-  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
-
-  // Run the loop to get the system salt and flush
-  // LoginScreenClient::AuthenticateUser mojo call.
-  base::RunLoop().RunUntilIdle();
-  histogram_tester_->ExpectTotalCount(kAuthMethodUsageAsClamShellHistogramName,
-                                      2);
-  histogram_tester_->ExpectBucketCount(
-      kAuthMethodUsageAsClamShellHistogramName,
-      static_cast<int>(LoginMetricsRecorder::AuthMethod::kPin), 1);
-
-  // Authentication attempt with easy unlock tap.
-  test_api.primary_big_view()->auth_user()->SetAuthMethods(
-      auth_method | LoginAuthUserView::AUTH_TAP);
-  EXPECT_EQ(test_api.primary_big_view()->auth_user()->auth_methods(),
-            (auth_method | LoginAuthUserView::AUTH_TAP));
-  EXPECT_CALL(*client, AttemptUnlock(primary_user));
-  generator->MoveMouseTo(MakeLoginAuthTestApi(contents, AuthTarget::kPrimary)
-                             .user_view()
-                             ->GetBoundsInScreen()
-                             .CenterPoint());
-  generator->ClickLeftButton();
-
-  // Flush LoginScreenClient::AttemptUnlock mojo call.
-  Shell::Get()->login_screen_controller()->FlushForTesting();
-  histogram_tester_->ExpectTotalCount(kAuthMethodUsageAsClamShellHistogramName,
-                                      3);
-  histogram_tester_->ExpectBucketCount(
-      kAuthMethodUsageAsClamShellHistogramName,
-      static_cast<int>(LoginMetricsRecorder::AuthMethod::kSmartlock), 1);
-}
 
 // Verifies that click on the note action button is recorded correctly.
 TEST_F(LoginMetricsRecorderTest, NoteActionButtonClick) {
@@ -216,94 +107,6 @@ TEST_F(LoginMetricsRecorderTest, NoteActionButtonClick) {
       static_cast<int>(LoginMetricsRecorder::LockScreenUserClickTarget::
                            kLockScreenNoteActionButton),
       1);
-}
-
-// Verifies that auth method usage is recorded correctly.
-TEST_F(LoginMetricsRecorderTest, AuthMethodUsage) {
-  GetSessionControllerClient()->SetSessionState(
-      session_manager::SessionState::LOCKED);
-
-  EnableTabletMode(false);
-  SetAuthMethod(LoginMetricsRecorder::AuthMethod::kPassword);
-  ExpectBucketCount(kAuthMethodUsageAsClamShellHistogramName,
-                    LoginMetricsRecorder::AuthMethod::kPassword, 1);
-  histogram_tester_->ExpectTotalCount(kAuthMethodUsageAsTabletHistogramName, 0);
-
-  SetAuthMethod(LoginMetricsRecorder::AuthMethod::kPin);
-  ExpectBucketCount(kAuthMethodUsageAsClamShellHistogramName,
-                    LoginMetricsRecorder::AuthMethod::kPin, 1);
-  histogram_tester_->ExpectTotalCount(kAuthMethodUsageAsTabletHistogramName, 0);
-
-  SetAuthMethod(LoginMetricsRecorder::AuthMethod::kSmartlock);
-  ExpectBucketCount(kAuthMethodUsageAsClamShellHistogramName,
-                    LoginMetricsRecorder::AuthMethod::kSmartlock, 1);
-  histogram_tester_->ExpectTotalCount(kAuthMethodUsageAsTabletHistogramName, 0);
-  histogram_tester_->ExpectTotalCount(kAuthMethodUsageAsClamShellHistogramName,
-                                      3);
-
-  EnableTabletMode(true);
-  SetAuthMethod(LoginMetricsRecorder::AuthMethod::kPassword);
-  histogram_tester_->ExpectTotalCount(kAuthMethodUsageAsClamShellHistogramName,
-                                      3);
-  ExpectBucketCount(kAuthMethodUsageAsTabletHistogramName,
-                    LoginMetricsRecorder::AuthMethod::kPassword, 1);
-
-  SetAuthMethod(LoginMetricsRecorder::AuthMethod::kPin);
-  histogram_tester_->ExpectTotalCount(kAuthMethodUsageAsClamShellHistogramName,
-                                      3);
-  ExpectBucketCount(kAuthMethodUsageAsTabletHistogramName,
-                    LoginMetricsRecorder::AuthMethod::kPin, 1);
-
-  SetAuthMethod(LoginMetricsRecorder::AuthMethod::kSmartlock);
-  histogram_tester_->ExpectTotalCount(kAuthMethodUsageAsClamShellHistogramName,
-                                      3);
-  ExpectBucketCount(kAuthMethodUsageAsTabletHistogramName,
-                    LoginMetricsRecorder::AuthMethod::kSmartlock, 1);
-}
-
-// Verifies that auth method switching is recorded correctly.
-TEST_F(LoginMetricsRecorderTest, AuthMethodSwitch) {
-  GetSessionControllerClient()->SetSessionState(
-      session_manager::SessionState::LOCKED);
-
-  SetAuthMethod(LoginMetricsRecorder::AuthMethod::kPassword);
-  histogram_tester_->ExpectTotalCount(kAuthMethodSwitchHistogramName, 0);
-
-  // Switch from password to pin.
-  SetAuthMethod(LoginMetricsRecorder::AuthMethod::kPin);
-  ExpectBucketCount(kAuthMethodSwitchHistogramName,
-                    LoginMetricsRecorder::AuthMethodSwitchType::kPasswordToPin,
-                    1);
-
-  // Switch from pin to smart lock.
-  SetAuthMethod(LoginMetricsRecorder::AuthMethod::kSmartlock);
-  ExpectBucketCount(kAuthMethodSwitchHistogramName,
-                    LoginMetricsRecorder::AuthMethodSwitchType::kPinToSmartlock,
-                    1);
-
-  // Switch from smart lock to password.
-  SetAuthMethod(LoginMetricsRecorder::AuthMethod::kPassword);
-  ExpectBucketCount(
-      kAuthMethodSwitchHistogramName,
-      LoginMetricsRecorder::AuthMethodSwitchType::kSmartlockToPassword, 1);
-
-  // Switch from password to smart lock.
-  SetAuthMethod(LoginMetricsRecorder::AuthMethod::kSmartlock);
-  ExpectBucketCount(
-      kAuthMethodSwitchHistogramName,
-      LoginMetricsRecorder::AuthMethodSwitchType::kPasswordToSmartlock, 1);
-
-  // Switch from smart lock to pin.
-  SetAuthMethod(LoginMetricsRecorder::AuthMethod::kPin);
-  ExpectBucketCount(kAuthMethodSwitchHistogramName,
-                    LoginMetricsRecorder::AuthMethodSwitchType::kSmartlockToPin,
-                    1);
-
-  // Switch from pin to password.
-  SetAuthMethod(LoginMetricsRecorder::AuthMethod::kPassword);
-  ExpectBucketCount(kAuthMethodSwitchHistogramName,
-                    LoginMetricsRecorder::AuthMethodSwitchType::kPinToPassword,
-                    1);
 }
 
 // Verifies that number of auth attempts are recorded correctly.

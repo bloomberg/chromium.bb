@@ -1013,6 +1013,8 @@ source_set("chromeos") {
     "login/lock/webui_screen_locker.h",
     "login/lock_screen_utils.cc",
     "login/lock_screen_utils.h",
+    "login/login_auth_recorder.cc",
+    "login/login_auth_recorder.h",
     "login/login_wizard.h",
     "login/mojo_version_info_dispatcher.cc",
     "login/mojo_version_info_dispatcher.h",
