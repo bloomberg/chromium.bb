@@ -178,6 +178,8 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     // If true, connection migration v2 may be used to migrate active QUIC
     // sessions to alternative network if current network connectivity is poor.
     bool quic_migrate_sessions_early_v2;
+    // If true, the quic session may mark itself as GOAWAY on path degrading.
+    bool quic_go_away_on_path_degrading;
     // Maximum time the session could be on the non-default network before
     // migrates back to default network. Defaults to
     // kMaxTimeOnNonDefaultNetwork.

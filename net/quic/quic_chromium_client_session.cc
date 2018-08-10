@@ -685,6 +685,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     bool require_confirmation,
     bool migrate_session_early_v2,
     bool migrate_sessions_on_network_change_v2,
+    bool go_away_on_path_degrading,
     NetworkChangeNotifier::NetworkHandle default_network,
     base::TimeDelta max_time_on_non_default_network,
     int max_migrations_to_non_default_network_on_write_error,
@@ -709,6 +710,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       migrate_session_early_v2_(migrate_session_early_v2),
       migrate_session_on_network_change_v2_(
           migrate_sessions_on_network_change_v2),
+      go_away_on_path_degrading_(go_away_on_path_degrading),
       max_time_on_non_default_network_(max_time_on_non_default_network),
       max_migrations_to_non_default_network_on_write_error_(
           max_migrations_to_non_default_network_on_write_error),
@@ -754,6 +756,9 @@ QuicChromiumClientSession::QuicChromiumClientSession(
           headers_include_h2_stream_dependency &&
           this->connection()->transport_version() > quic::QUIC_VERSION_42),
       weak_factory_(this) {
+  // Make sure connection migration and goaway on path degrading are not turned
+  // on at the same time.
+  DCHECK(!(migrate_session_early_v2_ && go_away_on_path_degrading_));
   default_network_ = default_network;
   sockets_.push_back(std::move(socket));
   packet_readers_.push_back(std::make_unique<QuicChromiumPacketReader>(
@@ -2053,6 +2058,13 @@ void QuicChromiumClientSession::OnWriteUnblocked() {
 }
 
 void QuicChromiumClientSession::OnPathDegrading() {
+  if (go_away_on_path_degrading_) {
+    net_log_.AddEvent(
+        NetLogEventType::QUIC_SESSION_CLIENT_GOAWAY_ON_PATH_DEGRADING);
+    NotifyFactoryOfSessionGoingAway();
+    return;
+  }
+
   net_log_.AddEvent(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_PATH_DEGRADING);
   if (most_recent_path_degrading_timestamp_ == base::TimeTicks())
