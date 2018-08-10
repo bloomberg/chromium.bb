@@ -407,6 +407,8 @@ target(link_target_type, "renderer") {
     "media/webrtc/rtc_stats.h",
     "media/webrtc/rtc_video_decoder.cc",
     "media/webrtc/rtc_video_decoder.h",
+    "media/webrtc/rtc_video_decoder_adapter.cc",
+    "media/webrtc/rtc_video_decoder_adapter.h",
     "media/webrtc/rtc_video_decoder_factory.cc",
     "media/webrtc/rtc_video_decoder_factory.h",
     "media/webrtc/rtc_video_encoder.cc",
