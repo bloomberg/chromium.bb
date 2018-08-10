@@ -845,8 +845,16 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
 
+// Flaky on chromeos: http://crbug.com/870372
+#if defined(OS_CHROMEOS)
+#define MAYBE_PromptForFetchSubmitWithoutNavigation_SignupForm \
+  DISABLED_PromptForFetchSubmitWithoutNavigation_SignupForm
+#else
+#define MAYBE_PromptForFetchSubmitWithoutNavigation_SignupForm \
+  PromptForFetchSubmitWithoutNavigation_SignupForm
+#endif
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
-                       PromptForFetchSubmitWithoutNavigation_SignupForm) {
+                       MAYBE_PromptForFetchSubmitWithoutNavigation_SignupForm) {
   NavigateToFile("/password/password_fetch_submit.html");
 
   // Need to pay attention for a message that Fetch has finished since there
