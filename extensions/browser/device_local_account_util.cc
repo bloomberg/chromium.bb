@@ -98,6 +98,10 @@ const char* const kPublicSessionWhitelist[] = {
     "pjckdjlmdcofkkkocnmhcbehkiapalho",  // Wunderlist demo
     "pbdihpaifchmclcmkfdgffnnpfbobefh",  // YouTube demo
 
+    // New demo mode:
+    "lpmakjfjcconjeehbidjclhdlpjmfjjj",  // Highlights app
+    "iggildboghmjpbjcpmobahnkmoefkike",  // Highlights app
+
     // Testing extensions:
     "ongnjlefhnoajpbodoldndkbkdgfomlp",  // Show Managed Storage
     "ilnpadgckeacioehlommkaafedibdeob",  // Enterprise DeviceAttributes
