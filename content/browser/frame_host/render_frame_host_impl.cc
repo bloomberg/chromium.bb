@@ -5165,6 +5165,9 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
       navigation_request_ ? navigation_request_->navigation_handle() : nullptr;
 
   // Determine if the current NavigationHandle can be used.
+  //
+  // TODO(lukasza, clamy): https://crbug.com/784904: Match commit IPC to proper
+  // NavigationHandle without requiring URLs to match.
   if (navigation_handle && navigation_handle->GetURL() == params.url) {
     std::unique_ptr<NavigationHandleImpl> result_navigation_handle =
         navigation_request()->TakeNavigationHandle();
@@ -5173,15 +5176,29 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
     return result_navigation_handle;
   }
 
-  // If the URL does not match what the NavigationHandle expects, treat the
-  // commit as a new navigation. This can happen when loading a Data
-  // navigation with LoadDataWithBaseURL.
+  // At this point we know that the right/matching |navigation_request_| has
+  // already been found based on navigation id look-up performed by
+  // RFHI::OnCrossDocumentCommitProcessed.  OTOH, we cannot use
+  // |navigation_handle|, because it has a mismatched URL (which would cause
+  // DCHECKs - for example in NavigationHandleImpl::DidCommitNavigation).
   //
+  // Because of the above, if the URL does not match what the NavigationHandle
+  // expects, we want to treat the commit as a new navigation.
+  // This mostly works, but there are some remaining issues here tracked
+  // by https://crbug.com/872803.
+  //
+  // The URL mismatch can happen when loading a Data navigation with
+  // LoadDataWithBaseURL.
   // TODO(csharrison): Data navigations loaded with LoadDataWithBaseURL get
   // reset here, because the NavigationHandle tracks the URL but the params.url
   // tracks the data. The trick of saving the old entry ids for these
   // navigations should go away when this is properly handled.
-  // See crbug.com/588317.
+  // See https://crbug.com/588317.
+  //
+  // Other cases are where URL mismatch can happen is when committing an error
+  // page - for example this can happen during CSP/frame-ancestors checks (see
+  // https://crbug.com/759184).
+
   int entry_id_for_data_nav = 0;
   bool is_renderer_initiated = true;
 
@@ -5205,6 +5222,11 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
       entry_id_for_data_nav = navigation_handle->pending_nav_entry_id();
       is_renderer_initiated = pending_entry->is_renderer_initiated();
     }
+
+    // Going forward we'll use the NavigationHandle created below.  Therefore we
+    // should destroy the old |navigation_request_| and the NavigationHandle it
+    // owns.  This avoids the leak reported in https://crbug.com/872803.
+    navigation_request_.reset();
   }
 
   // There is no pending NavigationEntry in these cases, so pass 0 as the
