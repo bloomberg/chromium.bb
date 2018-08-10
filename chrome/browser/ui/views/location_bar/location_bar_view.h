@@ -317,6 +317,7 @@ class LocationBarView : public LocationBar,
   // - For chrome:// URLs, returns the short product name (e.g. Chrome).
   base::string16 GetLocationIconText() const;
 
+  // Returns true if a keyword is selected in the model.
   bool ShouldShowKeywordBubble() const;
 
   // Returns true if any of the following is true:
