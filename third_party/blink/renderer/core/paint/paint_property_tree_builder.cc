@@ -1805,6 +1805,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
     object_.GetMutableForPainting().SetMayNeedPaintInvalidation();
     fragment_data_.SetPaintOffset(context_.current.paint_offset);
     fragment_data_.InvalidateClipPathCache();
+
+    object_.GetFrameView()->SetNeedsIntersectionObservation(
+        LocalFrameView::kDesired);
   }
 
   if (paint_offset_translation)
