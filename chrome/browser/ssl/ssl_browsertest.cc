@@ -5801,7 +5801,13 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, DISABLED_RestoreThenNavigateHasSSLState) {
 // could happen when the user's login is expired and the server redirects them
 // to a login page. This will be considered a same document navigation but we
 // do want to update the SSL state.
-IN_PROC_BROWSER_TEST_P(SSLUITest, SameDocumentHasSSLState) {
+#if defined(OS_WIN)
+// flaky http://crbug.com/872332
+#define MAYBE_SameDocumentHasSSLState DISABLED_SameDocumentHasSSLState
+#else
+#define MAYBE_SameDocumentHasSSLState SameDocumentHasSSLState
+#endif
+IN_PROC_BROWSER_TEST_P(SSLUITest, MAYBE_SameDocumentHasSSLState) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
