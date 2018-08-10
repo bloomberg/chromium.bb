@@ -41,6 +41,9 @@ class TestURLLoaderFactoryTest : public testing::Test {
     EXPECT_TRUE(client->response_body().is_valid());
     EXPECT_TRUE(
         mojo::BlockingCopyToString(client->response_body_release(), &response));
+    EXPECT_EQ(
+        static_cast<size_t>(client->completion_status().decoded_body_length),
+        response.length());
     return response;
   }
 
@@ -70,6 +73,20 @@ TEST_F(TestURLLoaderFactoryTest, Simple) {
   StartRequest(url, &client2);
   client2.RunUntilComplete();
   EXPECT_EQ(GetData(&client2), data);
+}
+
+TEST_F(TestURLLoaderFactoryTest, AddResponseAdvanced) {
+  std::string url = "http://example.com";
+  std::string body = "Happy robot";
+
+  // Test the full-featured version of AddResponse.
+  factory()->AddResponse(GURL(url), CreateResourceResponseHead(net::HTTP_OK),
+                         body, URLLoaderCompletionStatus(net::OK));
+  StartRequest(url);
+  client()->RunUntilComplete();
+  ASSERT_TRUE(client()->response_head().headers != nullptr);
+  EXPECT_EQ(net::HTTP_OK, client()->response_head().headers->response_code());
+  EXPECT_EQ(body, GetData(client()));
 }
 
 TEST_F(TestURLLoaderFactoryTest, AddResponse404) {
@@ -125,7 +142,6 @@ TEST_F(TestURLLoaderFactoryTest, Redirects) {
       {redirect_info, ResourceResponseHead()}};
   URLLoaderCompletionStatus status;
   std::string content = "foo";
-  status.decoded_body_length = content.size();
   factory()->AddResponse(url, ResourceResponseHead(), content, status,
                          redirects);
   StartRequest(url.spec());
