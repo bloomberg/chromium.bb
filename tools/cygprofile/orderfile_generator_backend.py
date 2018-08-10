@@ -29,6 +29,7 @@ import time
 import cyglog_to_orderfile
 import cygprofile_utils
 import patch_orderfile
+import phased_orderfile
 import process_profiles
 import profile_android_startup
 import symbol_extractor
@@ -201,8 +202,8 @@ class StepRecorder(object):
 
     Args:
       cmd: A list of command strings.
-      cwd: Directory in which the command should be executed, defaults to script
-          location if not specified.
+      cwd: Directory in which the command should be executed, defaults to build
+           root of script's location if not specified.
       raise_on_error: If true will raise a CommandError if the call doesn't
           succeed and mark the step as failed.
       stdout: A file to redirect stdout for the command to.
@@ -226,7 +227,7 @@ class ClankCompiler(object):
   """Handles compilation of clank."""
 
   def __init__(self, out_dir, step_recorder, arch, jobs, max_load, use_goma,
-               goma_dir):
+               goma_dir, system_health_profiling):
     self._out_dir = out_dir
     self._step_recorder = step_recorder
     self._arch = arch
@@ -235,6 +236,9 @@ class ClankCompiler(object):
     self._use_goma = use_goma
     self._goma_dir = goma_dir
     lib_chrome_so_dir = 'lib.unstripped'
+    self._system_health_profiling = system_health_profiling
+
+    self.obj_dir = os.path.join(self._out_dir, 'Release', 'obj')
     self.lib_chrome_so = os.path.join(
         self._out_dir, 'Release', lib_chrome_so_dir, 'libchrome.so')
     self.chrome_apk = os.path.join(
@@ -265,6 +269,9 @@ class ClankCompiler(object):
     ]
     if self._goma_dir:
       args += ['goma_dir="%s"' % self._goma_dir]
+    if self._system_health_profiling:
+      args += ['devtools_instrumentation_dumping = ' +
+               str(instrumented).lower()]
 
     self._step_recorder.RunCommand(
         ['gn', 'gen', os.path.join(self._out_dir, 'Release'),
@@ -473,11 +480,68 @@ class OrderfileGenerator(object):
       dest.close()
 
   def _GenerateAndProcessProfile(self):
-    """Invokes a script to merge the per-thread traces into one file."""
+    """Invokes a script to merge the per-thread traces into one file.
+
+    The produced list of offsets is saved in
+    self._GetUnpatchedOrderfileFilename().
+    """
     self._step_recorder.BeginStep('Generate Profile Data')
     files = []
+    logging.getLogger().setLevel(logging.DEBUG)
+    if self._options.system_health_orderfile:
+      files = self._profiler.CollectSystemHealthProfile(
+          self._compiler.chrome_apk)
+      try:
+        self._ProcessPhasedOrderfile(files)
+      except Exception:
+        for f in files:
+          self._SaveForDebugging(f)
+        raise
+      finally:
+        self._profiler.Cleanup()
+    else:
+      self._CollectLegacyProfile()
+    logging.getLogger().setLevel(logging.INFO)
+
+  def _ProcessPhasedOrderfile(self, files):
+    """Process the phased orderfiles produced by system health benchmarks.
+
+    The offsets will be placed in _GetUnpatchedOrderfileFilename().
+
+    Args:
+      file: Profile files pulled locally.
+    """
+    self._step_recorder.BeginStep('Process Phased Orderfile')
+    profiles = process_profiles.ProfileManager(files)
+    processor = process_profiles.SymbolOffsetProcessor(
+        self._compiler.lib_chrome_so)
+    phaser = phased_orderfile.PhasedAnalyzer(profiles, processor)
+    if self._options.offsets_for_memory:
+      profile_offsets = phaser.GetOffsetsForMemoryFootprint()
+    else:
+      profile_offsets = phaser.GetOffsetsForStartup()
+    self._output_data['orderfile_size'] = {
+        'startup_kib': processor.OffsetsPrimarySize(
+            profile_offsets.startup) / 1024,
+        'common_kib': processor.OffsetsPrimarySize(
+            profile_offsets.common) / 1024,
+        'interaction_kib': processor.OffsetsPrimarySize(
+            profile_offsets.interaction) / 1024}
+
+    offsets_list = (profile_offsets.startup +
+                    profile_offsets.common +
+                    profile_offsets.interaction)
+    generator = cyglog_to_orderfile.OffsetOrderfileGenerator(
+        processor, cyglog_to_orderfile.ObjectFileProcessor(
+            self._compiler.obj_dir))
+    ordered_sections = generator.GetOrderedSections(offsets_list)
+    if not ordered_sections:
+      raise Exception('Failed to get ordered sections')
+    with open(self._GetUnpatchedOrderfileFilename(), 'w') as orderfile:
+      orderfile.write('\n'.join(ordered_sections))
+
+  def _CollectLegacyProfile(self):
     try:
-      logging.getLogger().setLevel(logging.DEBUG)
       files = self._profiler.CollectProfile(
           self._compiler.chrome_apk,
           constants.PACKAGE_INFO['chrome'])
@@ -496,7 +560,6 @@ class OrderfileGenerator(object):
       raise
     finally:
       self._profiler.Cleanup()
-      logging.getLogger().setLevel(logging.INFO)
 
     try:
       command_args = [
@@ -619,6 +682,13 @@ class OrderfileGenerator(object):
 
     assert (bool(self._options.profile) ^
             bool(self._options.manual_symbol_offsets))
+    if self._options.system_health_orderfile and not self._options.profile:
+      raise AssertionError('--system_health_orderfile must be not be used '
+                           'with --skip-profile')
+    if (self._options.manual_symbol_offsets and
+        not self._options.system_health_orderfile):
+      raise AssertionError('--manual-symbol-offsets must be used with '
+                           '--system_health_orderfile.')
 
     if self._options.profile:
       try:
@@ -627,7 +697,7 @@ class OrderfileGenerator(object):
             self._instrumented_out_dir,
             self._step_recorder, self._options.arch, self._options.jobs,
             self._options.max_load, self._options.use_goma,
-            self._options.goma_dir)
+            self._options.goma_dir, self._options.system_health_orderfile)
         self._compiler.CompileChromeApk(True)
         self._GenerateAndProcessProfile()
         self._MaybeArchiveOrderfile(self._GetUnpatchedOrderfileFilename())
@@ -660,7 +730,8 @@ class OrderfileGenerator(object):
         self._compiler = ClankCompiler(
             self._uninstrumented_out_dir, self._step_recorder,
             self._options.arch, self._options.jobs, self._options.max_load,
-            self._options.use_goma, self._options.goma_dir)
+            self._options.use_goma, self._options.goma_dir,
+            self._options.system_health_orderfile)
         self._compiler.CompileLibchrome(False)
         self._PatchOrderfile()
         # Because identical code folding is a bit different with and without
@@ -735,6 +806,15 @@ def CreateArgumentParser():
   parser.add_argument(
       '--use-goma', action='store_true', help='Enable GOMA.', default=False)
   parser.add_argument('--adb-path', help='Path to the adb binary.')
+
+  parser.add_argument('--system-health-orderfile', action='store_true',
+                      help=('Create an orderfile based on system health '
+                            'benchmarks.'),
+                      default=False)
+  parser.add_argument('--offsets-for-memory', action='store_true',
+                      help=('Favor memory savings in the orderfile. Used '
+                            'with --system-health-orderfile.'),
+                      default=False)
 
   parser.add_argument('--manual-symbol-offsets', default=None, type=str,
                       help=('File of list of ordered symbol offsets generated '
