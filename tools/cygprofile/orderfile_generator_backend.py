@@ -17,6 +17,7 @@ Example usage:
 import argparse
 import hashlib
 import json
+import glob
 import logging
 import os
 import re
@@ -447,6 +448,14 @@ class OrderfileGenerator(object):
       self._profiler = profile_android_startup.AndroidProfileTool(
           output_directory, host_profile_dir, use_wpr, urls, simulate_user,
           device=options.device)
+      if options.pregenerated_profiles:
+        self._profiler.SetPregeneratedProfiles(
+            glob.glob(options.pregenerated_profiles))
+    else:
+      assert not options.pregenerated_profiles, (
+          '--pregenerated-profiles cannot be used with --skip-profile')
+      assert not options.profile_save_dir, (
+          '--profile-save-dir cannot be used with --skip-profile')
 
     self._output_data = {}
     self._step_recorder = StepRecorder(options.buildbot)
@@ -491,6 +500,7 @@ class OrderfileGenerator(object):
     if self._options.system_health_orderfile:
       files = self._profiler.CollectSystemHealthProfile(
           self._compiler.chrome_apk)
+      self._MaybeSaveProfile(files)
       try:
         self._ProcessPhasedOrderfile(files)
       except Exception:
@@ -545,6 +555,7 @@ class OrderfileGenerator(object):
       files = self._profiler.CollectProfile(
           self._compiler.chrome_apk,
           constants.PACKAGE_INFO['chrome'])
+      self._MaybeSaveProfile(files)
       self._step_recorder.BeginStep('Process profile')
       assert os.path.exists(self._compiler.lib_chrome_so)
       offsets = process_profiles.GetReachedOffsetsFromDumpFiles(
@@ -573,6 +584,13 @@ class OrderfileGenerator(object):
       self._SaveForDebugging(self._MERGED_CYGLOG_FILENAME)
       self._SaveForDebuggingWithOverwrite(self._compiler.lib_chrome_so)
       raise
+
+  def _MaybeSaveProfile(self, files):
+    if self._options.profile_save_dir:
+      logging.info('Saving profiles to %s', self._options.profile_save_dir)
+      for f in files:
+        shutil.copy(f, self._options.profile_save_dir)
+        logging.info('Saved profile %s', f)
 
   def _DeleteTempFiles(self):
     """Deletes intermediate step output files."""
@@ -826,6 +844,14 @@ def CreateArgumentParser():
   parser.add_argument('--manual-objdir', default=None, type=str,
                       help=('Root of object file directory corresponding to '
                             '--manual-symbol-offsets.'))
+  parser.add_argument('--pregenerated-profiles', default=None, type=str,
+                      help=('Pregenerated profiles to use instead of running '
+                            'profile step. Cannot be used with '
+                            '--skip-profiles.'))
+  parser.add_argument('--profile-save-dir', default=None, type=str,
+                      help=('Directory to save any profiles created. These can '
+                            'be used with --pregenerated-profiles.  Cannot be '
+                            'used with --skip-profiles.'))
 
   profile_android_startup.AddProfileCollectionArguments(parser)
   return parser

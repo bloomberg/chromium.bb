@@ -215,6 +215,18 @@ class AndroidProfileTool(object):
     self._urls = urls
     self._simulate_user = simulate_user
     self._SetUpDevice()
+    self._pregenerated_profiles = None
+
+  def SetPregeneratedProfiles(self, files):
+    """Set pregenerated profiles.
+
+    The pregenerated files will be returned as profile data instead of running
+    an actual profiling step.
+
+    Args:
+      files: ([str]) List of pregenerated files.
+    """
+    self._pregenerated_profiles = files
 
   def RunCygprofileTests(self):
     """Run the cygprofile unit tests suite on the device.
@@ -248,6 +260,10 @@ class AndroidProfileTool(object):
     Raises:
       NoProfileDataError: No data was found on the device.
     """
+    if self._pregenerated_profiles:
+      logging.info('Using pregenerated profiles instead of running profile')
+      logging.info('Profile files: %s', '\n'.join(self._pregenerated_profiles))
+      return self._pregenerated_profiles
     self._Install(apk)
     try:
       changer = self._SetChromeFlags(package_info)
