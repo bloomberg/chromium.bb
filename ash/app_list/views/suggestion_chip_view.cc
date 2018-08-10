@@ -37,6 +37,7 @@ constexpr SkColor kAppListBackgroundColor =
 constexpr SkColor kAppListTextColor = gfx::kGoogleGrey100;
 constexpr SkColor kAppListRippleColor = SkColorSetA(gfx::kGoogleGrey100, 0x0F);
 constexpr SkColor kAppListFocusColor = SkColorSetA(gfx::kGoogleGrey100, 0x14);
+constexpr int kAppListMaxTextWidth = 192;
 
 // Shared style:
 constexpr int kIconMarginDip = 8;
@@ -119,7 +120,7 @@ void SuggestionChipView::InitLayout(const Params& params) {
       assistant_style_
           ? ash::assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(2)
           : AppListConfig::instance().app_title_font());
-  text_view_->SetText(params.text);
+  SetText(params.text);
   AddChildView(text_view_);
 }
 
@@ -199,6 +200,11 @@ void SuggestionChipView::SetIcon(const gfx::ImageSkia& icon) {
 
 void SuggestionChipView::SetText(const base::string16& text) {
   text_view_->SetText(text);
+  if (!assistant_style_) {
+    gfx::Size size = text_view_->GetPreferredSize();
+    size.set_width(std::min(kAppListMaxTextWidth, size.width()));
+    text_view_->SetPreferredSize(size);
+  }
 }
 
 const base::string16& SuggestionChipView::GetText() const {
