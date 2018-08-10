@@ -24,6 +24,7 @@ import com.google.android.gms.cast.CastMediaControlIntent;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.AsyncTask;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.base.annotations.UsedByReflection;
@@ -810,7 +811,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
             public void deliverResult(Uri uri, boolean playable) {
                 callback.onResult(playable, uri.toString(), frameUrl);
             }
-        }, userAgent).execute();
+        }, userAgent).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Override
