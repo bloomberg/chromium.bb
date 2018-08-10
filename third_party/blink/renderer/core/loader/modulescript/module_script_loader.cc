@@ -147,6 +147,9 @@ void ModuleScriptLoader::FetchInternal(
 
   // [SMSR] "... its referrer policy to options's referrer policy." [spec text]
   // Note: For now this is done below with SetHTTPReferrer()
+  ReferrerPolicy referrer_policy = module_request.Options().GetReferrerPolicy();
+  if (referrer_policy == kReferrerPolicyDefault)
+    referrer_policy = fetch_client_settings_object->GetReferrerPolicy();
 
   // Step 5. "... mode is "cors", ..."
   // [SMSR] "... and its credentials mode to options's credentials mode."
@@ -164,9 +167,9 @@ void ModuleScriptLoader::FetchInternal(
   // TODO(domfarolino): Stop storing ResourceRequest's referrer as a
   // blink::Referrer (https://crbug.com/850813).
   fetch_params.MutableResourceRequest().SetHTTPReferrer(
-      SecurityPolicy::GenerateReferrer(
-          module_request.Options().GetReferrerPolicy(),
-          fetch_params.GetResourceRequest().Url(), referrer_string));
+      SecurityPolicy::GenerateReferrer(referrer_policy,
+                                       fetch_params.GetResourceRequest().Url(),
+                                       referrer_string));
 
   // Step 5. "... and client is fetch client settings object." [spec text]
   // -> set by ResourceFetcher
