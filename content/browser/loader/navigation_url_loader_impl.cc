@@ -52,7 +52,6 @@
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/plugin_service.h"
-#include "content/public/browser/redirect_checker.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
@@ -312,14 +311,8 @@ bool IsURLHandledByDefaultLoader(const GURL& url) {
 }
 
 // Determines whether it is safe to redirect to |url|.
-bool IsSafeRedirectTarget(const GURL& url, ResourceContext* resource_context) {
-  static base::NoDestructor<std::set<std::string>> kUnsafeSchemes(
-      std::set<std::string>({
-          url::kAboutScheme, url::kDataScheme, url::kFileScheme,
-          url::kFileSystemScheme,
-      }));
-  return !HasWebUIScheme(url) &&
-         kUnsafeSchemes->find(url.scheme()) == kUnsafeSchemes->end() &&
+bool IsRedirectSafe(const GURL& url, ResourceContext* resource_context) {
+  return IsSafeRedirectTarget(url) &&
          GetContentClient()->browser()->IsSafeRedirectTarget(url,
                                                              resource_context);
 }
@@ -345,7 +338,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       network::mojom::URLLoaderFactoryRequest proxied_factory_request,
       network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info,
       std::set<std::string> known_schemes,
-      scoped_refptr<RedirectChecker> redirect_checker,
+      bool bypass_redirect_checks,
       const base::WeakPtr<NavigationURLLoaderImpl>& owner)
       : interceptors_(std::move(initial_interceptors)),
         resource_request_(std::move(resource_request)),
@@ -356,7 +349,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         proxied_factory_request_(std::move(proxied_factory_request)),
         proxied_factory_info_(std::move(proxied_factory_info)),
         known_schemes_(std::move(known_schemes)),
-        redirect_checker_(std::move(redirect_checker)),
+        bypass_redirect_checks_(bypass_redirect_checks),
         weak_factory_(this) {}
 
   ~URLLoaderRequestController() override {
@@ -1121,17 +1114,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const network::ResourceResponseHead& head) override {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      bool bypass_safety_checks =
-          redirect_checker_ &&
-          redirect_checker_->ShouldAllowRedirect(global_request_id_.request_id,
-                                                 redirect_info);
-      if (!bypass_safety_checks &&
-          !IsSafeRedirectTarget(redirect_info.new_url, resource_context_)) {
-        OnComplete(
-            network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT));
-        return;
-      }
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+        !bypass_redirect_checks_ &&
+        !IsRedirectSafe(redirect_info.new_url, resource_context_)) {
+      OnComplete(network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT));
+      return;
     }
 
     if (--redirect_limit_ == 0) {
@@ -1340,7 +1327,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // protocol handlers.
   std::set<std::string> known_schemes_;
 
-  scoped_refptr<RedirectChecker> redirect_checker_;
+  // If true, redirect checks will be handled in a proxy, and not here.
+  bool bypass_redirect_checks_;
 
   mutable base::WeakPtrFactory<URLLoaderRequestController> weak_factory_;
 
@@ -1391,7 +1379,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
         request_info->common_params.url,
         /* proxied_url_loader_factory_request */ nullptr,
         /* proxied_url_loader_factory_info */ nullptr, std::set<std::string>(),
-        /* redirect_checker */ nullptr, weak_factory_.GetWeakPtr());
+        /* bypass_redirect_checks */ false, weak_factory_.GetWeakPtr());
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -1420,7 +1408,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 
   network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info;
   network::mojom::URLLoaderFactoryRequest proxied_factory_request;
-  scoped_refptr<RedirectChecker> redirect_checker;
+  bool bypass_redirect_checks = false;
   auto* partition = static_cast<StoragePartitionImpl*>(storage_partition);
   if (frame_tree_node) {
     // |frame_tree_node| may be null in some unit test environments.
@@ -1437,7 +1425,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     auto factory_request = mojo::MakeRequest(&factory_info);
     bool use_proxy = GetContentClient()->browser()->WillCreateURLLoaderFactory(
         partition->browser_context(), frame_tree_node->current_frame_host(),
-        true /* is_navigation */, &factory_request, &redirect_checker);
+        true /* is_navigation */, &factory_request);
+    bypass_redirect_checks = use_proxy;
     if (RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
             frame_tree_node->current_frame_host(), true, false,
             &factory_request)) {
@@ -1471,7 +1460,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       std::move(initial_interceptors), std::move(new_request), resource_context,
       request_info->common_params.url, std::move(proxied_factory_request),
       std::move(proxied_factory_info), std::move(known_schemes),
-      std::move(redirect_checker), weak_factory_.GetWeakPtr());
+      bypass_redirect_checks, weak_factory_.GetWeakPtr());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(
@@ -1569,7 +1558,7 @@ void NavigationURLLoaderImpl::BindNonNetworkURLLoaderFactoryRequest(
   auto* frame = frame_tree_node->current_frame_host();
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       frame->GetSiteInstance()->GetBrowserContext(), frame,
-      true /* is_navigation */, &factory, nullptr /* redirect_checker */);
+      true /* is_navigation */, &factory);
   it->second->Clone(std::move(factory));
 }
 

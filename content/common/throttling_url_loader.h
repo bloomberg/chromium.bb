@@ -52,6 +52,9 @@ class CONTENT_EXPORT ThrottlingURLLoader
 
   void FollowRedirect(
       const base::Optional<net::HttpRequestHeaders>& modified_request_headers);
+  // Follows a redirect, calling CreateLoaderAndStart() on the factory. This
+  // is useful if the factory uses different loaders for different URLs.
+  void FollowRedirectForcingRestart();
   void SetPriority(net::RequestPriority priority, int32_t intra_priority_value);
 
   // Disconnect the forwarding URLLoaderClient and the URLLoader. Returns the

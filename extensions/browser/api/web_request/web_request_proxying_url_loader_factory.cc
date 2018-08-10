@@ -9,35 +9,13 @@
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/common/url_utils.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
+#include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "net/http/http_util.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 
 namespace extensions {
-
-WebRequestProxyingURLLoaderFactory::AllowUnsafeRedirectChecker::
-    AllowUnsafeRedirectChecker() {}
-
-WebRequestProxyingURLLoaderFactory::AllowUnsafeRedirectChecker::
-    ~AllowUnsafeRedirectChecker() {}
-
-bool WebRequestProxyingURLLoaderFactory::AllowUnsafeRedirectChecker::
-    ShouldAllowRedirect(int32_t request_id,
-                        const net::RedirectInfo& redirect_info) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (!proxy_.get())
-    return false;
-
-  auto it = proxy_->network_request_id_to_web_request_id_.find(request_id);
-  if (it == proxy_->network_request_id_to_web_request_id_.end())
-    return false;
-
-  auto request_it = proxy_->requests_.find(it->second);
-  if (request_it == proxy_->requests_.end())
-    return false;
-
-  return request_it->second->redirect_url() == redirect_info.new_url;
-}
 
 WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
     WebRequestProxyingURLLoaderFactory* factory,
@@ -188,6 +166,13 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveResponse(
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& head) {
+  if (redirect_url_ != redirect_info.new_url &&
+      !IsRedirectSafe(redirect_info.new_url)) {
+    OnRequestError(
+        network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT));
+    return;
+  }
+
   current_response_ = head;
   HandleResponseOrRedirectHeaders(
       base::BindRepeating(&InProgressRequest::ContinueToBeforeRedirect,
@@ -544,6 +529,20 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError(
   factory_->RemoveRequest(network_service_request_id_, request_id_);
 }
 
+// Determines whether it is safe to redirect to |url|.
+bool WebRequestProxyingURLLoaderFactory::InProgressRequest::IsRedirectSafe(
+    const GURL& url) {
+  if (url.SchemeIs(extensions::kExtensionScheme)) {
+    const Extension* extension =
+        factory_->info_map_->extensions().GetByID(url.host());
+    if (!extension)
+      return false;
+    return WebAccessibleResourcesInfo::IsResourceWebAccessible(extension,
+                                                               url.path());
+  }
+  return content::IsSafeRedirectTarget(url);
+}
+
 WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
     void* browser_context,
     content::ResourceContext* resource_context,
@@ -553,8 +552,7 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
     InfoMap* info_map,
     network::mojom::URLLoaderFactoryRequest loader_request,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-    WebRequestAPI::ProxySet* proxies,
-    scoped_refptr<AllowUnsafeRedirectChecker> redirect_checker)
+    WebRequestAPI::ProxySet* proxies)
     : browser_context_(browser_context),
       resource_context_(resource_context),
       render_process_id_(render_process_id),
@@ -562,7 +560,6 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
       navigation_ui_data_(std::move(navigation_ui_data)),
       info_map_(info_map),
       proxies_(proxies),
-      redirect_checker_(std::move(redirect_checker)),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   target_factory_.Bind(std::move(target_factory_info));
@@ -573,7 +570,6 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
   proxy_bindings_.set_connection_error_handler(base::BindRepeating(
       &WebRequestProxyingURLLoaderFactory::OnProxyBindingError,
       base::Unretained(this)));
-  redirect_checker_->set_proxy(weak_factory_.GetWeakPtr());
 }
 
 void WebRequestProxyingURLLoaderFactory::StartProxying(
@@ -585,8 +581,7 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
     InfoMap* info_map,
     network::mojom::URLLoaderFactoryRequest loader_request,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-    scoped_refptr<WebRequestAPI::ProxySet> proxies,
-    scoped_refptr<AllowUnsafeRedirectChecker> redirect_checker) {
+    scoped_refptr<WebRequestAPI::ProxySet> proxies) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (proxies->is_shutdown())
     return;
@@ -594,8 +589,7 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
   auto proxy = std::make_unique<WebRequestProxyingURLLoaderFactory>(
       browser_context, resource_context, render_process_id,
       std::move(request_id_generator), std::move(navigation_ui_data), info_map,
-      std::move(loader_request), std::move(target_factory_info), proxies.get(),
-      std::move(redirect_checker));
+      std::move(loader_request), std::move(target_factory_info), proxies.get());
 
   proxies->AddProxy(std::move(proxy));
 }

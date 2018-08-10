@@ -1305,8 +1305,7 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal() {
   if (g_url_loader_factory_callback_for_test.Get().is_null()) {
     auto request = mojo::MakeRequest(&url_loader_factory_for_browser_process_);
     GetContentClient()->browser()->WillCreateURLLoaderFactory(
-        browser_context(), nullptr, false /* is_navigation */, &request,
-        nullptr /* redirect_checker */);
+        browser_context(), nullptr, false /* is_navigation */, &request);
     GetNetworkContext()->CreateURLLoaderFactory(std::move(request),
                                                 std::move(params));
     is_test_url_loader_factory_for_browser_process_ = false;

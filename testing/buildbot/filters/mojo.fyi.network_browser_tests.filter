@@ -159,11 +159,6 @@
 # the network service.
 -ExtensionWebRequestApiTest.WebRequestBlockingSetCookieHeader
 
-# http://crbug.com/868545
-# Network service does not support redirecting subresource requests to schemes
-# besides http/https/data.
--ExtensionWebRequestApiTest.WebRequestSubresourceRedirects
-
 # http://crbug.com/870588
 # Flaky on Win with network service.
 -ExtensionWebRequestApiTest.WebRequestTestOSDD

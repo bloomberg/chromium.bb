@@ -4,7 +4,11 @@
 
 #include "content/public/common/url_utils.h"
 
+#include <set>
+#include <string>
+
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "content/common/url_schemes.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -108,6 +112,16 @@ bool IsRendererDebugURL(const GURL& url) {
 #endif
 
   return false;
+}
+
+bool IsSafeRedirectTarget(const GURL& url) {
+  static base::NoDestructor<std::set<std::string>> kUnsafeSchemes(
+      std::set<std::string>({
+          url::kAboutScheme, url::kDataScheme, url::kFileScheme,
+          url::kFileSystemScheme,
+      }));
+  return !HasWebUIScheme(url) &&
+         kUnsafeSchemes->find(url.scheme()) == kUnsafeSchemes->end();
 }
 
 }  // namespace content

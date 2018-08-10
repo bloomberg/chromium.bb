@@ -846,7 +846,7 @@ void RenderFrameHostImpl::ExecuteMediaPlayerActionAtLocation(
   Send(new FrameMsg_MediaPlayerActionAt(routing_id_, point_in_view, action));
 }
 
-void RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
+bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
     network::mojom::URLLoaderFactoryRequest default_factory_request) {
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();
@@ -857,9 +857,9 @@ void RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
   SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(params.get());
 
   auto* context = GetSiteInstance()->GetBrowserContext();
-  GetContentClient()->browser()->WillCreateURLLoaderFactory(
-      context, this, false /* is_navigation */, &default_factory_request,
-      nullptr /* redirect_checker */);
+  bool bypass_redirect_checks =
+      GetContentClient()->browser()->WillCreateURLLoaderFactory(
+          context, this, false /* is_navigation */, &default_factory_request);
   // Keep DevTools proxy lasy, i.e. closest to the network.
   RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
       this, false /* is_navigation */, false /* is_download */,
@@ -877,6 +877,7 @@ void RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
         std::move(default_factory_request), GetProcess()->GetID(),
         original_factory.PassInterface());
   }
+  return bypass_redirect_checks;
 }
 
 gfx::NativeView RenderFrameHostImpl::GetNativeView() {
@@ -4034,8 +4035,11 @@ void RenderFrameHostImpl::CommitNavigation(
     if (!default_factory_info) {
       // Otherwise default to a Network Service-backed loader from the
       // appropriate NetworkContext.
-      CreateNetworkServiceDefaultFactoryAndObserve(
-          mojo::MakeRequest(&default_factory_info));
+      bool bypass_redirect_checks =
+          CreateNetworkServiceDefaultFactoryAndObserve(
+              mojo::MakeRequest(&default_factory_info));
+      subresource_loader_factories->set_bypass_redirect_checks(
+          bypass_redirect_checks);
     }
 
     DCHECK(default_factory_info);
@@ -4080,8 +4084,7 @@ void RenderFrameHostImpl::CommitNavigation(
       network::mojom::URLLoaderFactoryPtrInfo factory_proxy_info;
       auto factory_request = mojo::MakeRequest(&factory_proxy_info);
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
-          browser_context, this, false /* is_navigation */, &factory_request,
-          nullptr /* redirect_checker */);
+          browser_context, this, false /* is_navigation */, &factory_request);
       // Keep DevTools proxy lasy, i.e. closest to the network.
       RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
           this, false /* is_navigation */, false /* is_download */,
@@ -4210,11 +4213,12 @@ void RenderFrameHostImpl::FailedNavigation(
   std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories;
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
-    CreateNetworkServiceDefaultFactoryAndObserve(
+    bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
         mojo::MakeRequest(&default_factory_info));
     subresource_loader_factories = std::make_unique<URLLoaderFactoryBundleInfo>(
         std::move(default_factory_info),
-        std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo>());
+        std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo>(),
+        bypass_redirect_checks);
   }
   SaveSubresourceFactories(std::move(subresource_loader_factories));
 
@@ -4748,13 +4752,14 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
   DCHECK(network_service_connection_error_handler_holder_.is_bound());
 
   network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
-  CreateNetworkServiceDefaultFactoryAndObserve(
+  bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
       mojo::MakeRequest(&default_factory_info));
 
   std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories =
-      std::make_unique<URLLoaderFactoryBundleInfo>();
-  subresource_loader_factories->default_factory_info() =
-      std::move(default_factory_info);
+      std::make_unique<URLLoaderFactoryBundleInfo>(
+          std::move(default_factory_info),
+          std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo>(),
+          bypass_redirect_checks);
   SaveSubresourceFactories(std::move(subresource_loader_factories));
   GetNavigationControl()->UpdateSubresourceLoaderFactories(
       CloneSubresourceFactories());
@@ -4769,9 +4774,10 @@ std::set<int> RenderFrameHostImpl::GetNavigationEntryIdsPendingCommit() {
   return result;
 }
 
-void RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
+bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
     network::mojom::URLLoaderFactoryRequest default_factory_request) {
-  CreateNetworkServiceDefaultFactory(std::move(default_factory_request));
+  bool bypass_redirect_checks =
+      CreateNetworkServiceDefaultFactory(std::move(default_factory_request));
 
   // Add connection error observer when Network Service is running
   // out-of-process.
@@ -4791,6 +4797,7 @@ void RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
             &RenderFrameHostImpl::UpdateSubresourceLoaderFactories,
             weak_ptr_factory_.GetWeakPtr()));
   }
+  return bypass_redirect_checks;
 }
 
 bool RenderFrameHostImpl::CanExecuteJavaScript() {

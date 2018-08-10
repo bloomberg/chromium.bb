@@ -16,10 +16,12 @@ TrackedChildURLLoaderFactoryBundleInfo::TrackedChildURLLoaderFactoryBundleInfo(
     std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo>
         factories_info,
     PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
-    std::unique_ptr<HostPtrAndTaskRunner> main_thread_host_bundle)
+    std::unique_ptr<HostPtrAndTaskRunner> main_thread_host_bundle,
+    bool bypass_redirect_checks)
     : ChildURLLoaderFactoryBundleInfo(std::move(default_factory_info),
                                       std::move(factories_info),
-                                      std::move(direct_network_factory_info)),
+                                      std::move(direct_network_factory_info),
+                                      bypass_redirect_checks),
       main_thread_host_bundle_(std::move(main_thread_host_bundle)) {}
 
 TrackedChildURLLoaderFactoryBundleInfo::
@@ -32,6 +34,7 @@ TrackedChildURLLoaderFactoryBundleInfo::CreateFactory() {
   other->factories_info_ = std::move(factories_info_);
   other->direct_network_factory_info_ = std::move(direct_network_factory_info_);
   other->main_thread_host_bundle_ = std::move(main_thread_host_bundle_);
+  other->bypass_redirect_checks_ = bypass_redirect_checks_;
 
   return base::MakeRefCounted<TrackedChildURLLoaderFactoryBundle>(
       std::move(other));
@@ -65,7 +68,7 @@ TrackedChildURLLoaderFactoryBundle::Clone() {
       std::move(info->default_factory_info()),
       std::move(info->factories_info()),
       std::move(info->direct_network_factory_info()),
-      std::move(main_thread_host_bundle_clone));
+      std::move(main_thread_host_bundle_clone), info->bypass_redirect_checks());
 }
 
 void TrackedChildURLLoaderFactoryBundle::AddObserverOnMainThread() {
@@ -128,7 +131,7 @@ HostChildURLLoaderFactoryBundle::Clone() {
       std::move(info->default_factory_info()),
       std::move(info->factories_info()),
       std::move(info->direct_network_factory_info()),
-      std::move(main_thread_host_bundle_clone));
+      std::move(main_thread_host_bundle_clone), info->bypass_redirect_checks());
 }
 
 void HostChildURLLoaderFactoryBundle::UpdateThisAndAllClones(

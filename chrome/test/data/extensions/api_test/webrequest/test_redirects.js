@@ -14,7 +14,7 @@ function getURLWebAccessible() {
 
 function assertRedirectSucceeds(url, redirectURL, callback) {
   navigateAndWait(url, function(tab) {
-    callback && callback();
+    if (callback) callback();
     chrome.test.assertEq(redirectURL, tab.url);
   });
 }
@@ -67,6 +67,23 @@ runTests([
     });
   },
 
+  function redirectToUnallowedServerRedirectOnHeadersReceived() {
+    var url = getServerURL('echo');
+    var redirectURL = getServerURL('server-redirect?' +
+        getURLNonWebAccessible());
+    var listener = function(details) {
+      return {redirectUrl: redirectURL};
+    };
+    chrome.webRequest.onHeadersReceived.addListener(listener,
+        {urls: [url]}, ['blocking']);
+
+    // The page should be redirected to redirectURL, but not to the non web
+    // accessible URL.
+    assertRedirectSucceeds(url, redirectURL, function() {
+      chrome.webRequest.onHeadersReceived.removeListener(listener);
+    });
+  },
+
   function redirectToDataUrlOnBeforeRequest() {
     var url = getServerURL('echo');
     var listener = function(details) {
@@ -103,6 +120,23 @@ runTests([
         {urls: [url]}, ['blocking']);
 
     assertRedirectSucceeds(url, getURLWebAccessible(), function() {
+      chrome.webRequest.onBeforeRequest.removeListener(listener);
+    });
+  },
+
+  function redirectToUnallowedServerRedirectOnBeforeRequest() {
+    var url = getServerURL('echo');
+    var redirectURL = getServerURL('server-redirect?' +
+        getURLNonWebAccessible());
+    var listener = function(details) {
+      return {redirectUrl: redirectURL};
+    };
+    chrome.webRequest.onBeforeRequest.addListener(listener,
+        {urls: [url]}, ['blocking']);
+
+    // The page should be redirected to redirectURL, but not to the non web
+    // accessible URL.
+    assertRedirectSucceeds(url, redirectURL, function() {
       chrome.webRequest.onBeforeRequest.removeListener(listener);
     });
   },

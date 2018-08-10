@@ -29,7 +29,8 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
       network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
       std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo>
           factories_info,
-      PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info);
+      PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
+      bool bypass_redirect_checks);
   ~ChildURLLoaderFactoryBundleInfo() override;
 
   PossiblyAssociatedURLLoaderFactoryPtrInfo& direct_network_factory_info() {

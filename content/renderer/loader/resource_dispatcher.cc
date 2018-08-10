@@ -29,6 +29,7 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/common/url_utils.h"
 #include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/public/renderer/resource_dispatcher_delegate.h"
@@ -224,6 +225,22 @@ int GetInitialRequestID() {
   return base::RandInt(kMin, kMax);
 }
 
+// Determines if the loader should be restarted on a redirect using
+// ThrottlingURLLoader::FollowRedirectForcingRestart.
+bool RedirectRequiresLoaderRestart(const GURL& original_url,
+                                   const GURL& redirect_url) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return false;
+
+  // Restart is needed if the URL is no longer handled by network service.
+  if (IsURLHandledByNetworkService(original_url))
+    return !IsURLHandledByNetworkService(redirect_url);
+
+  // If URL wasn't originally handled by network service, restart is needed if
+  // schemes are different.
+  return original_url.scheme_piece() != redirect_url.scheme_piece();
+}
+
 }  // namespace
 
 // static
@@ -376,6 +393,9 @@ void ResourceDispatcher::OnReceivedRedirect(
 
   request_info->local_response_start = base::TimeTicks::Now();
   request_info->remote_request_start = response_head.load_timing.request_start;
+  request_info->redirect_requires_loader_restart =
+      RedirectRequiresLoaderRestart(request_info->response_url,
+                                    redirect_info.new_url);
 
   network::ResourceResponseInfo renderer_response_info;
   ToResourceResponseInfo(*request_info, response_head, &renderer_response_info);
@@ -416,7 +436,13 @@ void ResourceDispatcher::FollowPendingRedirect(
     request_info->has_pending_redirect = false;
     // net::URLRequest clears its request_start on redirect, so should we.
     request_info->local_request_start = base::TimeTicks::Now();
-    request_info->url_loader->FollowRedirect(base::nullopt);
+    // Redirect URL may not be handled by the network service, so force a
+    // restart in case another URLLoaderFactory should handle the URL.
+    if (request_info->redirect_requires_loader_restart) {
+      request_info->url_loader->FollowRedirectForcingRestart();
+    } else {
+      request_info->url_loader->FollowRedirect(base::nullopt);
+    }
   }
 }
 
@@ -702,9 +728,12 @@ int ResourceDispatcher::StartAsync(
       request->referrer, std::move(response_override_params));
 
   if (override_url_loader) {
+    // Redirect checks are handled by NavigationURLLoaderImpl, so it's safe to
+    // pass true for |bypass_redirect_checks|.
     pending_requests_[request_id]->url_loader_client =
-        std::make_unique<URLLoaderClientImpl>(request_id, this,
-                                              loading_task_runner);
+        std::make_unique<URLLoaderClientImpl>(
+            request_id, this, loading_task_runner,
+            true /* bypass_redirect_checks */);
 
     DCHECK(continue_navigation_function);
     *continue_navigation_function =
@@ -714,7 +743,8 @@ int ResourceDispatcher::StartAsync(
   }
 
   std::unique_ptr<URLLoaderClientImpl> client(
-      new URLLoaderClientImpl(request_id, this, loading_task_runner));
+      new URLLoaderClientImpl(request_id, this, loading_task_runner,
+                              url_loader_factory->BypassRedirectChecks()));
 
   if (pass_response_pipe_to_peer)
     client->SetPassResponsePipeToDispatcher(true);
