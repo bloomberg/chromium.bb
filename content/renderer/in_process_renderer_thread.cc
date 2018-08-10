@@ -8,6 +8,7 @@
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
+#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -46,8 +47,14 @@ void InProcessRendererThread::Init() {
   // Android. Temporary CHECK() to debug http://crbug.com/514141
   CHECK(!render_process_);
 #endif
+  std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler =
+      blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler();
+
   render_process_ = RenderProcessImpl::Create();
-  RenderThreadImpl::Create(params_, message_loop());
+  // RenderThreadImpl doesn't currently support a proper shutdown sequence
+  // and it's okay when we're running in multi-process mode because renderers
+  // get killed by the OS. In-process mode is used for test and debug only.
+  new RenderThreadImpl(params_, std::move(main_thread_scheduler));
 }
 
 void InProcessRendererThread::CleanUp() {

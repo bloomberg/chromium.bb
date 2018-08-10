@@ -182,9 +182,10 @@ int RendererMain(const MainFunctionParams& parameters) {
     }
 #endif
 
-    auto render_process = RenderProcessImpl::Create();
-    RenderThreadImpl::Create(std::move(main_message_loop),
-                             std::move(main_thread_scheduler));
+    std::unique_ptr<RenderProcess> render_process = RenderProcessImpl::Create();
+    // It's not a memory leak since RenderThread has the same lifetime
+    // as a renderer process.
+    new RenderThreadImpl(std::move(main_thread_scheduler));
 
     if (need_sandbox)
       run_loop = platform.EnableSandbox();

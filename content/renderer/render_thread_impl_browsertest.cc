@@ -122,31 +122,6 @@ class TestTaskCounter : public base::SingleThreadTaskRunner {
   int count_;
 };
 
-#if defined(COMPILER_MSVC)
-// See explanation for other RenderViewHostImpl which is the same issue.
-#pragma warning(push)
-#pragma warning(disable: 4250)
-#endif
-
-class RenderThreadImplForTest : public RenderThreadImpl {
- public:
-  RenderThreadImplForTest(
-      const InProcessChildThreadParams& params,
-      std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler,
-      scoped_refptr<base::SingleThreadTaskRunner>& test_task_counter,
-      base::MessageLoop* unowned_message_loop)
-      : RenderThreadImpl(params,
-                         std::move(scheduler),
-                         test_task_counter,
-                         unowned_message_loop) {}
-
-  ~RenderThreadImplForTest() override {}
-};
-
-#if defined(COMPILER_MSVC)
-#pragma warning(pop)
-#endif
-
 class QuitOnTestMsgFilter : public IPC::MessageFilter {
  public:
   explicit QuitOnTestMsgFilter(base::OnceClosure quit_closure)
@@ -256,11 +231,10 @@ class RenderThreadImplBrowserTest : public testing::Test {
 
     base::FieldTrialList::CreateTrialsFromCommandLine(
         *cmd, switches::kFieldTrialHandle, -1);
-    thread_ = new RenderThreadImplForTest(
+    thread_ = new RenderThreadImpl(
         InProcessChildThreadParams(io_task_runner, &invitation,
                                    child_connection_->service_token()),
-        std::move(main_thread_scheduler), test_task_counter,
-        main_message_loop_.get());
+        std::move(main_thread_scheduler));
     cmd->InitFromArgv(old_argv);
 
     run_loop_ = std::make_unique<base::RunLoop>();
@@ -297,7 +271,11 @@ class RenderThreadImplBrowserTest : public testing::Test {
 
   std::unique_ptr<MockRenderProcess> mock_process_;
   scoped_refptr<QuitOnTestMsgFilter> test_msg_filter_;
-  RenderThreadImplForTest* thread_;  // Owned by mock_process_.
+
+  // RenderThreadImpl doesn't currently support a proper shutdown sequence
+  // and it's okay when we're running in multi-process mode because renderers
+  // get killed by the OS. Memory leaks aren't nice but it's test-only.
+  RenderThreadImpl* thread_;
 
   base::FieldTrialList field_trial_list_;
 

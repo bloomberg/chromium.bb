@@ -170,12 +170,6 @@ class CONTENT_EXPORT RenderThreadImpl
       public viz::mojom::CompositingModeWatcher,
       public CompositorDependencies {
  public:
-  static RenderThreadImpl* Create(const InProcessChildThreadParams& params,
-                                  base::MessageLoop* unowned_message_loop);
-  static RenderThreadImpl* Create(
-      std::unique_ptr<base::MessageLoop> main_message_loop,
-      std::unique_ptr<blink::scheduler::WebThreadScheduler>
-          main_thread_scheduler);
   static RenderThreadImpl* current();
   static mojom::RenderMessageFilter* current_render_message_filter();
   static RendererBlinkPlatformImpl* current_blink_platform_impl();
@@ -189,6 +183,11 @@ class CONTENT_EXPORT RenderThreadImpl
   static scoped_refptr<base::SingleThreadTaskRunner>
   DeprecatedGetMainTaskRunner();
 
+  explicit RenderThreadImpl(
+      std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler);
+  RenderThreadImpl(
+      const InProcessChildThreadParams& params,
+      std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler);
   ~RenderThreadImpl() override;
   void Shutdown() override;
   bool ShouldBeDestroyed() override;
@@ -515,16 +514,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // Sets the current pipeline rendering color space.
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space);
 
- protected:
-  RenderThreadImpl(
-      const InProcessChildThreadParams& params,
-      std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler,
-      const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue,
-      base::MessageLoop* unowned_message_loop);
-  RenderThreadImpl(
-      std::unique_ptr<base::MessageLoop> main_message_loop,
-      std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler);
-
  private:
   void OnProcessFinalRelease() override;
   // IPC::Listener
@@ -543,14 +532,9 @@ class CONTENT_EXPORT RenderThreadImpl
 
   void RecordPurgeMemory(RendererMemoryMetrics before);
 
-  void Init(
-      const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue);
-
+  void Init();
   void InitializeCompositorThread();
-
-  void InitializeWebKit(
-      const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue,
-      service_manager::BinderRegistry* registry);
+  void InitializeWebKit(service_manager::BinderRegistry* registry);
 
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
   void OnGetAccessibilityTree();
@@ -682,15 +666,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // resources given to the compositor or to the viz service should be
   // software-based.
   bool is_gpu_compositing_disabled_ = false;
-
-  // The message loop of the renderer main thread.
-  // This message loop should be destructed before the RenderThreadImpl
-  // shuts down Blink.
-  // Some test users (e.g. InProcessRenderThread) own the MessageLoop used by
-  // their RenderThreadImpls. |main_message_loop_| is always non-nulll,
-  // |owned_message_loop_| is non-null if handed in at creation.
-  const std::unique_ptr<base::MessageLoop> owned_message_loop_;
-  base::MessageLoop* const main_message_loop_;
 
   // May be null if overridden by ContentRendererClient.
   std::unique_ptr<blink::scheduler::WebThreadBase> compositor_thread_;
