@@ -2727,6 +2727,7 @@ MigrationResult QuicChromiumClientSession::Migrate(
       new QuicChromiumPacketReader(socket.get(), clock_, this,
                                    yield_after_packets_, yield_after_duration_,
                                    net_log_));
+  new_reader->StartReading();
   std::unique_ptr<QuicChromiumPacketWriter> new_writer(
       new QuicChromiumPacketWriter(socket.get(), task_runner_));
 
@@ -2772,7 +2773,6 @@ bool QuicChromiumClientSession::MigrateToSocket(
 
   packet_readers_.push_back(std::move(reader));
   sockets_.push_back(std::move(socket));
-  StartReading();
   // Froce the writer to be blocked to prevent it being used until
   // WriteToNewSocket completes.
   DVLOG(1) << "Force blocking the packet writer";

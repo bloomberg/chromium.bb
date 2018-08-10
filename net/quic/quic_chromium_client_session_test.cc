@@ -1289,6 +1289,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
                                    quic::QuicTime::Delta::FromMilliseconds(
                                        kQuicYieldAfterDurationMilliseconds),
                                    bound_test_net_log_.bound()));
+  new_reader->StartReading();
   std::unique_ptr<QuicChromiumPacketWriter> new_writer(
       CreateQuicChromiumPacketWriter(new_socket.get(), session_.get()));
 
@@ -1345,6 +1346,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketMaxReaders) {
                                      quic::QuicTime::Delta::FromMilliseconds(
                                          kQuicYieldAfterDurationMilliseconds),
                                      bound_test_net_log_.bound()));
+    new_reader->StartReading();
     std::unique_ptr<QuicChromiumPacketWriter> new_writer(
         CreateQuicChromiumPacketWriter(new_socket.get(), session_.get()));
 
@@ -1360,7 +1362,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketMaxReaders) {
       // Max readers exceeded.
       EXPECT_FALSE(session_->MigrateToSocket(
           std::move(new_socket), std::move(new_reader), std::move(new_writer)));
-      EXPECT_FALSE(socket_data.AllReadDataConsumed());
+      EXPECT_TRUE(socket_data.AllReadDataConsumed());
       EXPECT_FALSE(socket_data.AllWriteDataConsumed());
     }
   }
@@ -1405,6 +1407,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
                                    quic::QuicTime::Delta::FromMilliseconds(
                                        kQuicYieldAfterDurationMilliseconds),
                                    bound_test_net_log_.bound()));
+  new_reader->StartReading();
   std::unique_ptr<QuicChromiumPacketWriter> new_writer(
       CreateQuicChromiumPacketWriter(new_socket.get(), session_.get()));
 
