@@ -181,7 +181,8 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
           .substr(0, 6),
       upload_request_.active_experiments, app_locale_,
       base::BindOnce(&CreditCardSaveManager::OnDidGetUploadDetails,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      payments::kUploadCardBillableServiceNumber);
 }
 
 bool CreditCardSaveManager::IsCreditCardUploadEnabled() {

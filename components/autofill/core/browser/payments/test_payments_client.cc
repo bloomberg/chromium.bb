@@ -26,7 +26,8 @@ void TestPaymentsClient::GetUploadDetails(
     const std::string& app_locale,
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                             const base::string16&,
-                            std::unique_ptr<base::DictionaryValue>)> callback) {
+                            std::unique_ptr<base::DictionaryValue>)> callback,
+    const int billable_service_number) {
   upload_details_addresses_ = addresses;
   detected_values_ = detected_values;
   pan_first_six_ = pan_first_six;

@@ -64,9 +64,6 @@ const char kTokenFetchId[] = "wallet_client";
 const char kPaymentsOAuth2Scope[] =
     "https://www.googleapis.com/auth/wallet.chrome";
 
-const int kUnmaskCardBillableServiceNumber = 70154;
-const int kUploadCardBillableServiceNumber = 70073;
-
 GURL GetRequestUrl(const std::string& path) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch("sync-url")) {
     if (IsPaymentsProductionEnabled()) {
@@ -274,13 +271,15 @@ class GetUploadDetailsRequest : public PaymentsRequest {
       const std::string& app_locale,
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                               const base::string16&,
-                              std::unique_ptr<base::DictionaryValue>)> callback)
+                              std::unique_ptr<base::DictionaryValue>)> callback,
+      const int billable_service_number)
       : addresses_(addresses),
         detected_values_(detected_values),
         pan_first_six_(pan_first_six),
         active_experiments_(active_experiments),
         app_locale_(app_locale),
-        callback_(std::move(callback)) {}
+        callback_(std::move(callback)),
+        billable_service_number_(billable_service_number) {}
   ~GetUploadDetailsRequest() override {}
 
   std::string GetRequestUrlPath() override {
@@ -293,6 +292,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
     base::DictionaryValue request_dict;
     std::unique_ptr<base::DictionaryValue> context(new base::DictionaryValue());
     context->SetString("language_code", app_locale_);
+    context->SetInteger("billable_service", billable_service_number_);
     request_dict.Set("context", std::move(context));
 
     std::unique_ptr<base::ListValue> addresses(new base::ListValue());
@@ -352,6 +352,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
       callback_;
   base::string16 context_token_;
   std::unique_ptr<base::DictionaryValue> legal_message_;
+  const int billable_service_number_;
 };
 
 class UploadCardRequest : public PaymentsRequest {
@@ -506,11 +507,13 @@ void PaymentsClient::GetUploadDetails(
     const std::string& app_locale,
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                             const base::string16&,
-                            std::unique_ptr<base::DictionaryValue>)> callback) {
-  IssueRequest(std::make_unique<GetUploadDetailsRequest>(
-                   addresses, detected_values, pan_first_six,
-                   active_experiments, app_locale, std::move(callback)),
-               false);
+                            std::unique_ptr<base::DictionaryValue>)> callback,
+    const int billable_service_number) {
+  IssueRequest(
+      std::make_unique<GetUploadDetailsRequest>(
+          addresses, detected_values, pan_first_six, active_experiments,
+          app_locale, std::move(callback), billable_service_number),
+      false);
 }
 
 void PaymentsClient::UploadCard(

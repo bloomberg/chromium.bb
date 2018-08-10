@@ -34,8 +34,8 @@ class TestPaymentsClient : public payments::PaymentsClient {
       const std::string& app_locale,
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                               const base::string16&,
-                              std::unique_ptr<base::DictionaryValue>)> callback)
-      override;
+                              std::unique_ptr<base::DictionaryValue>)> callback,
+      const int billable_service_number) override;
 
   void UploadCard(
       const payments::PaymentsClient::UploadRequestDetails& request_details,

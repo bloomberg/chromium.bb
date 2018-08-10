@@ -145,7 +145,8 @@ class PaymentsClientTest : public testing::Test {
         /*pan_first_six=*/"411111", std::vector<const char*>(),
         "language-LOCALE",
         base::BindOnce(&PaymentsClientTest::OnDidGetUploadDetails,
-                       weak_ptr_factory_.GetWeakPtr()));
+                       weak_ptr_factory_.GetWeakPtr()),
+        /*billable_service_number=*/12345);
   }
 
   void StartUploading(bool include_cvc) {
@@ -432,6 +433,14 @@ TEST_F(PaymentsClientTest,
 
   // Verify that the value of pan_first_six was left out of the request.
   EXPECT_TRUE(GetUploadData().find("\"pan_first6\":\"411111\"") ==
+              std::string::npos);
+}
+
+TEST_F(PaymentsClientTest, GetDetailsIncludeBillableServiceNumber) {
+  StartGettingUploadDetails();
+
+  // Verify that billable service number was included in the request.
+  EXPECT_TRUE(GetUploadData().find("\"billable_service\":12345") !=
               std::string::npos);
 }
 
