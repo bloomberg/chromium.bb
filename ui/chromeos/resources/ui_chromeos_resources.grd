@@ -93,6 +93,11 @@
       <structure type="chrome_scaled_image" name="IDR_PRINT_NOTIFICATION_PLAY" file="print_notification/play.png" />
       <structure type="chrome_scaled_image" name="IDR_PRINT_NOTIFICATION_HELP" file="print_notification/help.png" />
 
+      <!-- Fingerprint images. -->
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_FINGERPRINT_ICON_ANIMATION" file="fingerprint/fingerprint.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_FINGERPRINT_ENROLLMENT_COMPLETE_ANIMATION" file="fingerprint/tick.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_FINGERPRINT_SCANNER_ANIMATION" file="fingerprint/fingerprint_scanner.png" />
+
     </structures>
   </release>
 </grit>
