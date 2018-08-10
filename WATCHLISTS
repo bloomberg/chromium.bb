@@ -718,7 +718,8 @@
       'filepath': 'chromeos/CHROMEOS_LKGM',
     },
     'chromeos_login': {
-      'filepath': 'chrome/browser/chromeos/login/|'\
+      'filepath': 'ash/login/|'\
+                  'chrome/browser/chromeos/login/|'\
                   'chrome/browser/ui/webui/chromeos/login/|'\
                   'chrome/browser/resources/chromeos/login/|'\
                   'ui/login/',
@@ -2020,7 +2021,8 @@
                       'bpastene+watch@chromium.org',
                       'stevenjb+watch@chromium.org'],
     'chromeos_login': ['achuith+watch@chromium.org',
-                       'alemate+watch@chromium.org'],
+                       'alemate+watch@chromium.org',
+                       'jdufault+watch@chromium.org'],
     'chromeos_net': ['stevenjb+watch@chromium.org'],
     'chromeos_power': ['derat+watch@chromium.org'],
     'chromeos_timezone': ['alemate+watch@chromium.org'],
