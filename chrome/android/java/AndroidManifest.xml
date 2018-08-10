@@ -999,9 +999,6 @@ by a child template that "extends" this file.
             android:exported="false"/>
         <service android:name="org.chromium.chrome.browser.incognito.IncognitoNotificationService"
             android:exported="false"/>
-        <service android:name="org.chromium.chrome.browser.webapps.WebApkDisclosureNotificationService"
-            android:exported="false"/>
-
 
         <!-- The following service entries exist in order to allow us to
              start more than one sandboxed process. -->

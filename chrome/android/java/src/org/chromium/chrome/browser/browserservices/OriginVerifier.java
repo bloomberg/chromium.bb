@@ -395,7 +395,6 @@ public class OriginVerifier {
         ThreadUtils.assertOnUiThread();
         if (sPackageToCachedOrigins != null) sPackageToCachedOrigins.clear();
         ChromePreferenceManager.getInstance().setVerifiedDigitalAssetLinks(Collections.emptySet());
-        ChromePreferenceManager.getInstance().clearAllTrustedWebActivityLastDisclosureTimes();
     }
 
     private native long nativeInit(Profile profile);

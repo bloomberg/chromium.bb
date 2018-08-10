@@ -69,8 +69,8 @@ public class WebappDataStorage {
     // The shell Apk version requested in the last update.
     static final String KEY_LAST_REQUESTED_SHELL_APK_VERSION = "last_requested_shell_apk_version";
 
-    // Whether the user has dismissed the disclosure UI.
-    static final String KEY_DISMISSED_DISCLOSURE = "dismissed_dislosure";
+    // Whether to show the user the Snackbar disclosure UI.
+    static final String KEY_SHOW_DISCLOSURE = "show_disclosure";
 
     // The path where serialized update data is written before uploading to the WebAPK server.
     static final String KEY_PENDING_UPDATE_FILE_PATH = "pending_update_file_path";
@@ -335,7 +335,7 @@ public class WebappDataStorage {
         editor.remove(KEY_LAST_UPDATE_REQUEST_COMPLETE_TIME);
         editor.remove(KEY_DID_LAST_UPDATE_REQUEST_SUCCEED);
         editor.remove(KEY_RELAX_UPDATES);
-        editor.remove(KEY_DISMISSED_DISCLOSURE);
+        editor.remove(KEY_SHOW_DISCLOSURE);
         editor.apply();
     }
 
@@ -458,12 +458,30 @@ public class WebappDataStorage {
         return mPreferences.getBoolean(KEY_DID_LAST_UPDATE_REQUEST_SUCCEED, false);
     }
 
-    void setDismissedDisclosure() {
-        mPreferences.edit().putBoolean(KEY_DISMISSED_DISCLOSURE, true).apply();
+    /**
+     * Returns whether to show the user a privacy disclosure (used for TWAs and unbound WebAPKs).
+     * This is not cleared until the user explicitly acknowledges it.
+     */
+    boolean shouldShowDisclosure() {
+        return mPreferences.getBoolean(KEY_SHOW_DISCLOSURE, false);
     }
 
-    boolean hasDismissedDisclosure() {
-        return mPreferences.getBoolean(KEY_DISMISSED_DISCLOSURE, false);
+    /**
+     * Clears the show disclosure bit, this stops TWAs and unbound WebAPKs from showing a privacy
+     * disclosure on every resume of the Webapp. This should be called when the user has
+     * acknowledged the disclosure.
+     */
+    void clearShowDisclosure() {
+        mPreferences.edit().putBoolean(KEY_SHOW_DISCLOSURE, false).apply();
+    }
+
+    /**
+     * Sets the disclosure bit which causes TWAs and unbound WebAPKs to show a privacy disclosure.
+     * This is set the first time an app is opened without storage (either right after install or
+     * after Chrome's storage is cleared).
+     */
+    void setShowDisclosure() {
+        mPreferences.edit().putBoolean(KEY_SHOW_DISCLOSURE, true).apply();
     }
 
     /** Updates the shell Apk version requested in the last update. */

@@ -46,7 +46,6 @@ import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.browserservices.BrowserSessionDataProvider;
 import org.chromium.chrome.browser.browserservices.Origin;
-import org.chromium.chrome.browser.browserservices.TrustedWebActivityDisclosure;
 import org.chromium.chrome.browser.browserservices.UkmRecorder;
 import org.chromium.chrome.browser.browserservices.VerificationState;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -116,6 +115,8 @@ public class WebappActivity extends SingleTabActivity {
     private WebappInfo mWebappInfo;
 
     private WebappSplashScreenController mSplashController;
+
+    private WebappDisclosureSnackbarController mDisclosureSnackbarController;
 
     private boolean mIsInitialized;
     private long mOnResumeTimestampMs;
@@ -189,6 +190,7 @@ public class WebappActivity extends SingleTabActivity {
         mWebappInfo = createWebappInfo(null);
         mDirectoryManager = new WebappDirectoryManager();
         mSplashController = new WebappSplashScreenController();
+        mDisclosureSnackbarController = new WebappDisclosureSnackbarController();
         mNotificationManager = new WebappActionsNotificationManager(this);
     }
 
@@ -392,12 +394,6 @@ public class WebappActivity extends SingleTabActivity {
         super.onStartWithNative();
         BrowserSessionContentUtils.setActiveContentHandler(mTrustedWebContentProvider);
         mDirectoryManager.cleanUpDirectories(this, getActivityId());
-        // If WebappStorage is available, check whether to show a disclosure notification. If it's
-        // not available, this check will happen once deferred startup returns with the storage
-        // instance.
-        WebappDataStorage storage =
-                WebappRegistry.getInstance().getWebappDataStorage(mWebappInfo.id());
-        if (storage != null) WebApkDisclosureNotificationManager.maybeShowDisclosure(this, storage);
     }
 
     @Override
@@ -409,7 +405,6 @@ public class WebappActivity extends SingleTabActivity {
         if (getFullscreenManager() != null) {
             getFullscreenManager().exitPersistentFullscreenMode();
         }
-        WebApkDisclosureNotificationManager.dismissNotification(this);
     }
 
     /**
@@ -507,6 +502,11 @@ public class WebappActivity extends SingleTabActivity {
     public void onResumeWithNative() {
         super.onResumeWithNative();
         mNotificationManager.maybeShowNotification();
+        WebappDataStorage storage =
+                WebappRegistry.getInstance().getWebappDataStorage(mWebappInfo.id());
+        if (storage != null) {
+            mDisclosureSnackbarController.maybeShowDisclosure(this, storage, false /* force */);
+        }
     }
 
     @Override
@@ -543,7 +543,6 @@ public class WebappActivity extends SingleTabActivity {
 
     protected void onDeferredStartupWithStorage(WebappDataStorage storage) {
         updateStorage(storage);
-        WebApkDisclosureNotificationManager.maybeShowDisclosure(this, storage);
     }
 
     protected void onDeferredStartupWithNullStorage() {
@@ -556,6 +555,13 @@ public class WebappActivity extends SingleTabActivity {
                         @Override
                         public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
                             onDeferredStartupWithStorage(storage);
+                            // Set force == true to indicate that we need to show a privacy
+                            // disclosure for the newly installed TWAs and unbound WebAPKs which
+                            // have no storage yet. We can't simply default to a showing if the
+                            // storage has a default value as we don't want to show this disclosure
+                            // for pre-existing unbound WebAPKs.
+                            mDisclosureSnackbarController.maybeShowDisclosure(
+                                    WebappActivity.this, storage, true /* force */);
                         }
                     });
         }
@@ -598,7 +604,6 @@ public class WebappActivity extends SingleTabActivity {
                 }
 
                 BrowserServicesMetrics.recordTwaOpened();
-                TrustedWebActivityDisclosure.showIfNeeded(this, packageName);
 
                 // When verification occurs instantly (eg the result is cached) then it returns
                 // before there is an active tab.
