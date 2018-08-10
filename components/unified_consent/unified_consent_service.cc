@@ -5,6 +5,8 @@
 #include "components/unified_consent/unified_consent_service.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/scoped_observer.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -15,6 +17,61 @@
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/unified_consent_service_client.h"
+
+namespace {
+
+// Used for observing the sync service and finishing the rollback once the sync
+// engine is initialized.
+// Note: This object is suicidal - it will kill itself after it finishes the
+// rollback.
+class RollbackHelper : public syncer::SyncServiceObserver {
+ public:
+  explicit RollbackHelper(syncer::SyncService* sync_service);
+  ~RollbackHelper() override = default;
+
+ private:
+  // syncer::SyncServiceObserver:
+  void OnStateChanged(syncer::SyncService* sync_service) override;
+
+  void DoRollbackIfPossibleAndDie(syncer::SyncService* sync_service);
+
+  ScopedObserver<syncer::SyncService, RollbackHelper> scoped_sync_observer_;
+};
+
+RollbackHelper::RollbackHelper(syncer::SyncService* sync_service)
+    : scoped_sync_observer_(this) {
+  if (sync_service->IsEngineInitialized())
+    DoRollbackIfPossibleAndDie(sync_service);
+  else
+    scoped_sync_observer_.Add(sync_service);
+}
+
+void RollbackHelper::OnStateChanged(syncer::SyncService* sync_service) {
+  if (!sync_service->IsEngineInitialized())
+    return;
+
+  scoped_sync_observer_.RemoveAll();
+  DoRollbackIfPossibleAndDie(sync_service);
+}
+
+void RollbackHelper::DoRollbackIfPossibleAndDie(
+    syncer::SyncService* sync_service) {
+  DCHECK(!scoped_sync_observer_.IsObservingSources());
+
+  if (sync_service->GetPreferredDataTypes().HasAll(
+          syncer::UserSelectableTypes())) {
+    // As part of the migration of a profile to Unified Consent, sync everything
+    // is disabled but sync continues to be enabled for all data types.
+    // Therefore it is desired to restore sync everything when rolling back
+    // unified consent to leave sync in the same state as the one before
+    // migration.
+    sync_service->OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  }
+
+  base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+}
+
+}  // namespace
 
 namespace unified_consent {
 
@@ -65,6 +122,35 @@ void UnifiedConsentService::RegisterPrefs(
   registry->RegisterIntegerPref(
       prefs::kUnifiedConsentMigrationState,
       static_cast<int>(MigrationState::NOT_INITIALIZED));
+}
+
+// static
+void UnifiedConsentService::RollbackIfNeeded(
+    PrefService* user_pref_service,
+    syncer::SyncService* sync_service) {
+  DCHECK(user_pref_service);
+
+  if (user_pref_service->GetInteger(prefs::kUnifiedConsentMigrationState) ==
+      static_cast<int>(MigrationState::NOT_INITIALIZED)) {
+    // If there was no migration yet, nothing has to be rolled back.
+    return;
+  }
+
+  if (user_pref_service->GetInteger(prefs::kUnifiedConsentMigrationState) ==
+          static_cast<int>(
+              MigrationState::IN_PROGRESS_SHOULD_SHOW_CONSENT_BUMP) &&
+      sync_service &&
+      sync_service->GetDisableReasons() ==
+          syncer::SyncService::DISABLE_REASON_NONE) {
+    // This will wait until the sync engine is initialized and then enables the
+    // sync-everything pref in case the user is syncing all data types.
+    new RollbackHelper(sync_service);
+  }
+
+  // Clear all unified consent prefs.
+  user_pref_service->ClearPref(prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
+  user_pref_service->ClearPref(prefs::kUnifiedConsentGiven);
+  user_pref_service->ClearPref(prefs::kUnifiedConsentMigrationState);
 }
 
 void UnifiedConsentService::SetUnifiedConsentGiven(bool unified_consent_given) {
