@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">Destra</translation>
 <translation id="1351937230027495976">Comprimi il menu</translation>
 <translation id="1383876407941801731">Cerca</translation>
+<translation id="1419738280318246476">Sblocca il dispositivo per eseguire l'azione di notifica</translation>
 <translation id="1467432559032391204">Sinistra</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Avvio applicazioni</translation>
@@ -68,7 +69,6 @@
 <translation id="2049639323467105390">Questo dispositivo è gestito da <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Verticale</translation>
 <translation id="2067602449040652523">Luminosità della tastiera</translation>
-<translation id="2075212959500165896">Troppi tentativi. Riprova più tardi.</translation>
 <translation id="2081529251031312395">$1 può accedere in seguito.</translation>
 <translation id="2127372758936585790">Caricabatterie a basso consumo</translation>
 <translation id="2135456203358955318">Lente d'ingrandimento ancorata</translation>
@@ -140,7 +140,6 @@
 <translation id="3153444934357957346">Puoi avere massimo <ph name="MULTI_PROFILE_USER_LIMIT" /> account per l'accesso simultaneo.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connesso a un dispositivo}other{Connesso a # dispositivi}}</translation>
 <translation id="3236488194889173876">Nessuna rete mobile disponibile</translation>
-<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Ospite</translation>
 <translation id="332587331255250389">Sostituisci la batteria</translation>
 <translation id="3351879221545518001">Al momento stai trasmettendo lo schermo.</translation>
@@ -227,6 +226,7 @@
 <translation id="4924411785043111640">Riavvia e reimposta</translation>
 <translation id="4961318399572185831">Trasmetti schermo</translation>
 <translation id="5069971504769299223">L'amministratore del dispositivo potrebbe essere in grado di monitorare le tue attività.</translation>
+<translation id="5083553833479578423">Sblocca altre funzioni dell'assistente.</translation>
 <translation id="5136175204352732067">Tastiera diversa collegata</translation>
 <translation id="5168181903108465623">Dispositivi di trasmissione disponibili</translation>
 <translation id="5207949376430453814">Evidenzia il cursore di testo</translation>
@@ -298,6 +298,7 @@
 <translation id="6376931439017688372">Bluetooth attivo</translation>
 <translation id="639644700271529076">Funzione BLOC MAIUSC non attiva</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">Cancella tutte le notifiche</translation>
 <translation id="643147933154517414">Operazioni completate</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> su <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Rifiuto</translation>
@@ -399,9 +400,11 @@
 <translation id="8152119955266188852">Hai premuto la scorciatoia per la lente d'ingrandimento a schermo intero. Vuoi attivarla?</translation>
 <translation id="8190698733819146287">Personalizza lingue e immissione...</translation>
 <translation id="8191230140820435481">Gestire applicazioni, estensioni e temi</translation>
+<translation id="8192202700944119416">Le notifiche sono nascoste.</translation>
 <translation id="8261506727792406068">Elimina</translation>
 <translation id="8297006494302853456">Debole</translation>
 <translation id="8308637677604853869">Menu precedente</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Crea nota</translation>
 <translation id="8392451568018454956">Menu Opzioni per <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Lente d'ingrandimento a schermo intero</translation>
@@ -443,6 +446,7 @@
 <translation id="8938800817013097409">Dispositivo USB-C (porta posteriore destra)</translation>
 <translation id="8940956008527784070">Batteria in esaurimento (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">Avvio rapido</translation>
+<translation id="899350903320462459">Sblocca il dispositivo con l'account <ph name="LOGIN_ID" /> per eseguire l'azione di notifica</translation>
 <translation id="8995603266996330174">Gestito da <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Aggiornamento di Adobe Flash Player disponibile</translation>
 <translation id="9056839673611986238">Verrà eseguito il rollback del dispositivo</translation>

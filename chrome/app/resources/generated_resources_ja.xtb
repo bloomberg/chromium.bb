@@ -2166,7 +2166,6 @@
 <translation id="4275830172053184480">デバイスの再起動</translation>
 <translation id="4278101229438943600">アシスタントの設定完了</translation>
 <translation id="4278390842282768270">許可</translation>
-<translation id="4280864916190672950">読み込みを停止する</translation>
 <translation id="4281844954008187215">利用規約</translation>
 <translation id="4282196459431406533">Smart Lock が有効です</translation>
 <translation id="4284105660453474798">「$1」を削除してもよろしいですか？</translation>
@@ -3436,7 +3435,6 @@
 <translation id="6231881193380278751">ページを自動更新するには URL にクエリ パラメータを追加します: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">バッテリー</translation>
 <translation id="6232116551750539448"><ph name="NAME" /> への接続が切断されました</translation>
-<translation id="6235700927623181151">このタブはパソコンのコンテンツを共有しています。</translation>
 <translation id="6237816943013845465">画面の解像度を調整できます</translation>
 <translation id="6238923052227198598">ロック画面に最新のメモを表示する</translation>
 <translation id="6239558157302047471">フレームを再読み込み(&amp;F)</translation>
@@ -4818,7 +4816,6 @@
 <translation id="8366396658833131068">ネットワーク接続が復元されました。キオスク アプリを起動するには、別のネットワークを選択するか、下の [続行] ボタンを押してください。</translation>
 <translation id="8366947248864804596">スマートフォンがロック解除された状態で近くにある場合は、選択するとデバイスのロックを解除できます。そうでない場合は、パスワードまたは PIN を入力します。</translation>
 <translation id="8368859634510605990">すべてのブックマークを開く(&amp;O)</translation>
-<translation id="8369547389711988632">読み込みを停止しました</translation>
 <translation id="8371695176452482769">お話しください</translation>
 <translation id="8372369524088641025">WEP キーが正しくありません</translation>
 <translation id="8373553483208508744">タブをミュート</translation>
@@ -5024,7 +5021,6 @@
 <translation id="8677212948402625567">すべてを折りたたむ...</translation>
 <translation id="8678648549315280022">ダウンロード設定を管理...</translation>
 <translation id="8678933587484842200">このアプリケーションの起動方法を選択してください。</translation>
-<translation id="8679788109894721265">このページは <ph name="MEGABYTES" /> MB を超えるデータを使用しています</translation>
 <translation id="8680251145628383637">ブックマーク、履歴、パスワードなどの設定をすべてのデバイスで使用するにはログインしてください。ログインすると、利用している Google サービスにも自動的にログインすることになります。</translation>
 <translation id="8686213429977032554">未共有のドライブ ファイル</translation>
 <translation id="8687485617085920635">次のウィンドウ</translation>

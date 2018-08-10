@@ -256,6 +256,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se viene impostata su false, i rapporti sulle metriche e sui dati diagnostici verranno disattivati.
 
       Se non viene configurata, i rapporti sulle metriche e sui dati diagnostici verranno disattivati sui dispositivi non gestiti e attivati sui dispositivi gestiti.</translation>
+<translation id="1920046221095339924">Consenti la sessione gestita sul dispositivo</translation>
 <translation id="1929709556673267855">Consente di specificare le configurazioni delle stampanti aziendali associate ai dispositivi.
 
       Questa norma ti consente di specificare le configurazioni delle stampanti per i dispositivi <ph name="PRODUCT_OS_NAME" />. Il formato corrisponde a quello del dizionario NativePrinters, con un campo "id" o "guid" aggiuntivo obbligatorio per ciascuna stampante ai fini dell'autorizzazione o della negazione della stessa.
@@ -289,6 +290,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Se questa impostazione è attivata o non è impostata su alcun valore, l'utente potrà gestire la funzione Compilazione automatica per gli indirizzi nell'interfaccia utente.</translation>
 <translation id="1960840544413786116">Consente di stabilire se consentire i certificati privi dell'estensione subjectAlternativeName emessi dai trust anchor locali</translation>
+<translation id="1962273523772270623">Consenti la raccolta di log eventi WebRTC dai servizi Google</translation>
 <translation id="1964634611280150550">Modalità di navigazione in incognito non attiva</translation>
 <translation id="1964802606569741174">Questa norma non ha effetto sull'app YouTube per Android. Se è necessario applicare la modalità di protezione di YouTube, l'installazione dell'app YouTube per Android non deve essere consentita.</translation>
 <translation id="1969212217917526199">Sostituisce le build di debug dell'host di accesso remoto.
@@ -1881,6 +1883,11 @@ Gli URL che utilizzano uno schema di questo elenco non verranno caricati e non p
 Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile accedere a tutti gli schemi in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Impostazioni degli utenti gestiti localmente</translation>
 <translation id="6658245400435704251">Consente di specificare il numero di secondi massimo per cui un dispositivo può ritardare in modo casuale il download di un suo aggiornamento dal momento della pubblicazione dell'aggiornamento sul server. Il dispositivo può attendere una parte di questo tempo in termini di tempo reale e la parte rimanente in termini di numero di controlli della disponibilità di aggiornamenti. In ogni caso, la dispersione ha un limite massimo pari a un periodo di tempo costante in modo che un dispositivo non si blocchi mai in attesa di scaricare un aggiornamento.</translation>
+<translation id="6665599130599311250">Se questa norma viene impostata su false o non viene impostata, la sessione ospite gestita avrà il comportamento descritto all'indirizzo https://support.google.com/chrome/a/answer/3017014 ("Sessione pubblica" standard).
+
+      Se questa norma viene impostata su true, la sessione ospite gestita avrà il comportamento "Sessione gestita", a cui non vengono applicate tante limitazioni che sono invece valide per le normali "Sessioni pubbliche".
+
+      Se questa norma viene impostata, l'utente non potrà modificarla o eseguirne l'override.</translation>
 <translation id="6665670272107384733">Imposta la frequenza di inserimento della password per poter usare lo sblocco rapido</translation>
 <translation id="6681229465468164801">Consente di impostare un elenco di pattern URL che specificano i siti che non possono richiedere all'utente l'accesso al dispositivo USB.
 
@@ -2038,6 +2045,17 @@ Se la norma non viene configurata, la lettura vocale viene inizialmente disattiv
 <translation id="6943577887654905793">Nome di preferenza per Mac/Linux:</translation>
 <translation id="69525503251220566">Parametro che fornisce la funzione di ricerca tramite immagine per il provider di ricerca predefinito</translation>
 <translation id="6956272732789158625">Non consentire a nessun sito di utilizzare la generazione di chiavi</translation>
+<translation id="6982028490425791294">
+      Se questa norma viene impostata su true, <ph name="PRODUCT_NAME" /> è autorizzato a raccogliere log eventi WebRTC dai servizi Google (ad esempio Google Meet) e a caricarli su Google.
+
+      Se la norma viene impostata su false o non viene impostata, <ph name="PRODUCT_NAME" /> non può raccogliere e caricare tali log.
+
+      Questi log contengono informazioni quali data/ora e dimensioni dei pacchetti RTP inviati e ricevuti, feedback sulla congestione della rete, nonché metadati su tempo e qualità dei frame audio e video. Queste informazioni sono utili per il debug di problemi con le chiamate audio o le videochiamate in Chrome, ad esempio i problemi relativi alla stima della larghezza di banda. I log non contengono l'audio o i video delle chiamate.
+
+      La raccolta dei dati può essere attivata soltanto dai servizi web di Google, ad esempio Google Hangouts o Google Meet.
+
+      I log potrebbero essere associati tramite un ID sessione ad altri log raccolti dal servizio Google stesso al fine di facilitare il debug.
+      </translation>
 <translation id="6994082778848658360">Consente di specificare in che modo è possibile usare l'hardware degli elementi di sicurezza su scheda per fornire l'autenticazione a due fattori, se compatibile con questa funzione. Il tasto di accensione del computer viene usato per rilevare la presenza fisica dell'utente.
 
        Se selezioni l'opzione "Disabilitata", non viene fornita l'autenticazione a due fattori.

@@ -17,13 +17,14 @@
 <translation id="2647554856022461007">Chromium može upotrebljavati web-usluge za poboljšanje vašeg doživljaja pregledavanja. Ako želite, možete onemogućiti te usluge. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">Iskoristite pametne Googleove značajke u Chromiumu</translation>
 <translation id="2730884209570016437">Chromium ne može upotrebljavati vaš fotoaparat jer ga upotrebljava neka druga aplikacija</translation>
+<translation id="2797210818057553964">To možete prilagoditi u bilo kojem trenutku u postavkama Chromiuma</translation>
 <translation id="3256316712990552818">Kopirano na Chromium</translation>
 <translation id="3413120535237193088">Da biste imali svoje oznake na svim svojim uređajima, prijavite se na Chromium.</translation>
 <translation id="3473048256428424907">Uključite Chromiumov QR skener</translation>
 <translation id="3605252743693911722">Prijavite se na Chromium kako bi ste mogli pristupati oznakama, zaporkama i ostalom na svim svojim uređajima.</translation>
 <translation id="3805899903892079518">Chromium nema pristup fotografijama ni videozapisima. Omogućite pristup u Postavkama iOS-a &gt; Privatnost &gt; Fotografije.</translation>
 <translation id="4024541897090868497">Da biste imali svoje kartice na svim svojim uređajima, prijavite se na Chromium.</translation>
-<translation id="4157467675761413638">Savjet za Chromium. Za više opcija kartice pritisnite i zadržite gumb Prikaži kartice na alatnoj traci pri dnu ili vrhu zaslona.</translation>
+<translation id="4157467675761413638">Savjet za Chromium. Za više opcija kartice pritisnite i držite gumb Prikaži kartice na alatnoj traci pri dnu ili vrhu zaslona.</translation>
 <translation id="4241912885070669028">Odjavljujete se s računa kojim upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />. Vaši podaci na Chromiumu izbrisat će se s ovog uređaja, no ostat će na vašem Google računu.</translation>
 <translation id="4272892696084633551">Pomozite poboljšati Chromiumove značajke i izvedbu</translation>
 <translation id="4555020257205549924">Kada je ta značajka uključena, Chromium će ponuditi prijevod stranica napisanih na drugim jezicima pomoću Google prevoditelja. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
@@ -45,6 +46,7 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Odabrani podaci uklonjeni su iz Chromiuma i sa sinkroniziranih uređaja. Na Google računu možda postoje drugi oblici povijesti pregledavanja, primjerice pretraživanja i aktivnosti s drugih Googleovih usluga, na stranici history.google.com.</translation>
 <translation id="7400689562045506105">Upotrebljavajte Chromium svugdje</translation>
+<translation id="7499048969477415415">Promijenjene su postavke koje upravljaju sinkronizacijom, prilagodbom i drugim Googleovim uslugama u Chromiumu. To može utjecati na vaše trenutačne postavke.</translation>
 <translation id="7674213385180944843">Otvorite Postavke &gt; Privatnost &gt; Fotoaparat &gt; Chromium i uključite fotoaparat.</translation>
 <translation id="7746854981345936341">Savjet za Chromium. Neki se gumbi sada nalaze pri dnu zaslona, primjerice za natrag, naprijed i pretraživanje.</translation>
 <translation id="786327964234957808">Prebacujete sinkronizirane račune s korisnika <ph name="USER_EMAIL1" /> na korisnika <ph name="USER_EMAIL2" />. Vašim postojećim podacima na Chromiumu upravlja <ph name="DOMAIN" />. Ovime će se izbrisati vaši podaci s vašeg uređaja, no oni će ostati na računu <ph name="USER_EMAIL1" />.</translation>

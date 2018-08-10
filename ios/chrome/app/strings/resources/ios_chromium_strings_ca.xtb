@@ -17,6 +17,7 @@
 <translation id="2647554856022461007">Chromium pot utilitzar serveis web per millorar la navegació, però si vols els pots desactivar. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">Gaudeix de les eines intel·ligents de Google a Chromium</translation>
 <translation id="2730884209570016437">Chromium no pot utilitzar la càmera perquè l'està utilitzant una altra aplicació</translation>
+<translation id="2797210818057553964">Pots personalitzar aquesta opció en qualsevol moment des de la configuració de Chronium</translation>
 <translation id="3256316712990552818">Copiada a Chromium</translation>
 <translation id="3413120535237193088">Inicia la sessió a Chromium per accedir a les adreces d'interès des de tots els dispositius.</translation>
 <translation id="3473048256428424907">Activa l'escàner QR de Chromium</translation>
@@ -45,6 +46,7 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Les dades seleccionades s'han suprimit de Chromium i dels dispositius sincronitzats. És possible que el teu compte de Google tingui altres formes de l'historial de navegació a history.google.com, com ara les cerques i l'activitat d'altres serveis de Google.</translation>
 <translation id="7400689562045506105">Utilitza Chromium a tot arreu</translation>
+<translation id="7499048969477415415">La configuració que controla la sincronització, la personalització i altres serveis de Google a Chronium ha canviat. Això pot afectar la teva configuració actual.</translation>
 <translation id="7674213385180944843">Obre Configuració &gt; Privacitat &gt; Càmera &gt; Chromium i activa la càmera.</translation>
 <translation id="7746854981345936341">Consell de Chromium. Ara alguns botons són a la part inferior de la pantalla, per exemple, Enrere, Endavant i Cerca.</translation>
 <translation id="786327964234957808">Estàs canviant el compte de sincronització de <ph name="USER_EMAIL1" /> a <ph name="USER_EMAIL2" />. <ph name="DOMAIN" /> gestiona les teves dades de Chromium. Se suprimiran les teves dades d'aquest dispositiu, però continuaran estant disponibles a <ph name="USER_EMAIL1" />.</translation>

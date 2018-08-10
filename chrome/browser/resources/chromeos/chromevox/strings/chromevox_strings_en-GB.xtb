@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="100812568230599391">Change display style to interleave.</translation>
+<translation id="1011903154582639569">Find a key, then lift to type</translation>
 <translation id="1012173283529841972">List item</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">Are you using ChromeVox spoken feedback for the first time? This quick tutorial explains the essentials for getting started with ChromeVox.</translation>
@@ -163,6 +164,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">Group</translation>
 <translation id="2582407057977008361">Aside</translation>
+<translation id="2592212930811759050">Double-tap to start editing</translation>
 <translation id="2606210917827248971">with {COUNT,plural, =1{# item}other{# items}}</translation>
 <translation id="2614981083756825552">Math ML Layout</translation>
 <translation id="2624431853467395961">Open learn mode</translation>

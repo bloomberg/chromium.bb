@@ -17,6 +17,7 @@
 <translation id="2647554856022461007">Chromium kan använda webbtjänster för att förbättra din upplevelse på webben. Du kan inaktivera dessa tjänster om du vill. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">Få Google-teknik i Chromium</translation>
 <translation id="2730884209570016437">Chromium kan inte använda kameran eftersom den används av en annan app</translation>
+<translation id="2797210818057553964">Du kan när som helst ändra detta i Chromium-inställningarna</translation>
 <translation id="3256316712990552818">Kopierat till Chromium</translation>
 <translation id="3413120535237193088">Logga in i Chromium om du vill få tillgång till samma bokmärken på alla enheter.</translation>
 <translation id="3473048256428424907">Aktivera Chromium som QR-skanner</translation>
@@ -45,6 +46,7 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Den data som markerades har tagits bort från Chromium och från synkroniserade enheter. Det kan finnas andra former av webbhistorik i Google-kontot på history.google.com, t.ex. sökningar och aktivitet på andra tjänster från Google.</translation>
 <translation id="7400689562045506105">Använd Chromium överallt</translation>
+<translation id="7499048969477415415">Inställningarna som styr synkronisering, anpassning och andra tjänster från Google i Chromium har ändrats. Detta kan påverka dina nuvarande inställningar.</translation>
 <translation id="7674213385180944843">Öppna Inställningar &gt; Sekretess &gt; Kamera &gt; Chromium och aktivera kameran.</translation>
 <translation id="7746854981345936341">Tips för Chromium. Vissa knappar finns nu längst ned på skärmen, till exempel bakåtknappen, framåtknappen och Sök.</translation>
 <translation id="786327964234957808">Du håller på att byta synkroniseringskonto från <ph name="USER_EMAIL1" /> till <ph name="USER_EMAIL2" />. Befintlig data i Chromium hanteras av <ph name="DOMAIN" />. Åtgärden raderar din data från den här enheten men den finns kvar på <ph name="USER_EMAIL1" />.</translation>

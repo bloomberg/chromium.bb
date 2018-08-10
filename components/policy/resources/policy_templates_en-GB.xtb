@@ -275,6 +275,7 @@
       If set to false, metrics and diagnostic data reporting will be disabled.
 
       If not configured, metrics and diagnostic data reporting will be disabled on unmanaged devices, and enabled on managed devices.</translation>
+<translation id="1920046221095339924">Allow managed session on device</translation>
 <translation id="1929709556673267855">Provides configurations for enterprise printers bound to devices.
 
       This policy allows you to provide printer configurations to <ph name="PRODUCT_OS_NAME" /> devices.  The format is the same as the NativePrinters dictionary, with an additional required 'id' or 'guid' field per printer for whitelisting or blacklisting.
@@ -308,6 +309,7 @@
 
       If this setting is enabled or has no value, the user will be able to control AutoFill for addresses in the UI.</translation>
 <translation id="1960840544413786116">Whether to allow certificates issued by local trust anchors that are missing the subjectAlternativeName extension</translation>
+<translation id="1962273523772270623">Allow collection of WebRTC event logs from Google services</translation>
 <translation id="1964634611280150550">Incognito mode disabled.</translation>
 <translation id="1964802606569741174">This policy has no effect on the Android YouTube app. If Safety Mode on YouTube should be enforced, installation of the Android YouTube app should be disallowed.</translation>
 <translation id="1969212217917526199">Overrides policies on Debug builds of the remote access host.
@@ -2005,6 +2007,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is left not set or the list is empty all schemes will be accessible in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Locally managed users settings</translation>
 <translation id="6658245400435704251">Specifies the number of seconds up to which a device may randomly delay its download of an update from the time the update was first pushed out to the server. The device may wait a portion of this time in terms of wall-clock-time and the remaining portion in terms of the number of update checks. In any case, the scatter is upper bounded to a constant amount of time so that a device does not ever get stuck waiting to download an update forever.</translation>
+<translation id="6665599130599311250">If this policy is set to false or left unset, managed guest session will behave as documented in https://support.google.com/chrome/a/answer/3017014 - the standard 'Public Session'.
+
+      If this policy is set to true, managed guest session will take on 'Managed Session' behaviour, which lifts many of the restrictions that are in place for regular 'Public Sessions'.
+
+      If this policy is set, the user cannot change or override it.</translation>
 <translation id="6665670272107384733">Set how often user has to enter password to use quick unlock</translation>
 <translation id="6681229465468164801">Allows you to set a list of url patterns that specify sites which are prevented from asking the user to grant them access to a USB device.
 
@@ -2171,6 +2178,17 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6943577887654905793">Mac/Linux preference name:</translation>
 <translation id="69525503251220566">Parameter providing search-by-image feature for the default search provider</translation>
 <translation id="6956272732789158625">Do not allow any site to use key generation</translation>
+<translation id="6982028490425791294">
+      If the policy is set to true, <ph name="PRODUCT_NAME" /> is allowed to collect WebRTC event logs from Google services (e.g. Google Meet), and upload those logs to Google.
+
+      If the policy is set to false, or is unset, <ph name="PRODUCT_NAME" /> may not collect nor upload such logs.
+
+      These logs contain information, such as the time and size of sent and received RTP packets, feedback about congestion on the network and metadata about time and quality of audio and video frames. This information is helpful when debugging issues with audio or video calls in Chrome, such as bandwidth estimation issues, etc. The logs do not contain audio or video contents from the call.
+
+      This data collection can only be triggered by Google's web services, such as Google Hangouts or Google Meet.
+
+      These logs may be associated, by means of a session ID, with other logs collected by the Google service itself; this is intended to make debugging easier.
+      </translation>
 <translation id="6994082778848658360">Specifies how the on-board secure element hardware can be used to provide a second-factor authentication if it is compatible with this feature. The machine power button is used to detect the user physical presence.
 
       If 'Disabled' is selected, no second factor is provided.

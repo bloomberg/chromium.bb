@@ -17,6 +17,7 @@
 <translation id="2647554856022461007">Chromium може да користи веб-услуге да би побољшао доживљај прегледања. Можете опционално да онемогућите те услуге. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">Набавите паметне Google функције у Chromium-у</translation>
 <translation id="2730884209570016437">Chromium не може да користи камеру зато што је већ користи друга апликација</translation>
+<translation id="2797210818057553964">Ово увек можете да прилагодите у подешавањима Chromium-а</translation>
 <translation id="3256316712990552818">Копирана у Chromium</translation>
 <translation id="3413120535237193088">Да би вам обележивачи били доступни на свим уређајима, пријавите се у Chromium.</translation>
 <translation id="3473048256428424907">Укључите Chromium QR скенер</translation>
@@ -45,6 +46,7 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Изабрани подаци су уклоњени из Chromium-а и са синхронизованих уређаја. Google налог можда има друге облике историје прегледања, попут претрага и активности у другим Google услугама на history.google.com.</translation>
 <translation id="7400689562045506105">Користите Chromium свуда</translation>
+<translation id="7499048969477415415">Променила су се подешавања која контролишу синхронизацију, персонализацију и друге Google услуге у Chromium-у. То може да утиче на тренутна подешавања.</translation>
 <translation id="7674213385180944843">Отворите Подешавања &gt; Приватност &gt; Камера &gt; Chromium и укључите камеру.</translation>
 <translation id="7746854981345936341">Савет за Chromium. Нека дугмад се сада налазе у дну екрана, попут дугмади Назад, Напред и Претражи.</translation>
 <translation id="786327964234957808">Мењате налог за синхронизацију из <ph name="USER_EMAIL1" /> у <ph name="USER_EMAIL2" />. Постојећим Chromium подацима управља <ph name="DOMAIN" />. На овај начин бришете податке са овог уређаја, али подаци остају на <ph name="USER_EMAIL1" />.</translation>

@@ -275,6 +275,7 @@
       Ja politikai ir iestatīta vērtība “False”, lietojuma un diagnostikas datu nosūtīšana tiks atspējota.
 
       Ja politika nav konfigurēta, lietojuma un diagnostikas datu nosūtīšana tiks atspējota nepārvaldītās ierīcēs un iespējota pārvaldītās ierīcēs.</translation>
+<translation id="1920046221095339924">Atļaut pārvaldīto sesiju ierīcē</translation>
 <translation id="1929709556673267855">Nodrošina konfigurāciju ar ierīcēm saistītajiem uzņēmuma printeriem.
 
       Šī politika ļauj nodrošināt printeru konfigurāciju <ph name="PRODUCT_OS_NAME" /> ierīcēm. Formāts ir tāds pats kā NativePrinters vārdnīcā, taču baltā vai melnā saraksta izveidei papildus katram printerim ir jānorāda lauks “id” vai “guid”.
@@ -307,6 +308,7 @@
 
       Ja šis iestatījums ir iespējots vai tā vērtība nav norādīta, lietotājs varēs kontrolēt adrešu informācijas automātisko aizpildi lietotāja saskarnē.</translation>
 <translation id="1960840544413786116">Nosaka, vai atļaut sertifikātus, kurus izsnieguši lokāli uzticamības enkuri un kuriem trūkst paplašinājuma subjectAlternativeName.</translation>
+<translation id="1962273523772270623">Atļaut WebRTC notikumu žurnālu apkopošanu no Google pakalpojumiem</translation>
 <translation id="1964634611280150550">Inkognito režīms atspējots</translation>
 <translation id="1964802606569741174">Šī politika neietekmē Android lietotni YouTube. Ja lietotnē YouTube tiks aktivizēts drošais režīms, nedrīkst atļaut instalēt Android lietotni YouTube.</translation>
 <translation id="1969212217917526199">Šī politika tiek izmantota, lai ignorētu attālās piekļuves saimniekdatora atkļūdošanas versiju politiku.
@@ -526,7 +528,7 @@
       Ja šis iestatījums nav iestatīts, lietotāji var izlemt, vai izmantot šo funkciju.
 
       Šis iestatījums ir noņemts pārlūkā <ph name="PRODUCT_NAME" /> 29 un jaunākās versijās.</translation>
-<translation id="2433412232489478893">Šī politika nosaka, vai lietotājam ir atļauta tīkla failu kopīgošanas funkcija lietošanai ar <ph name="PRODUCT_NAME" />.
+<translation id="2433412232489478893">Šī politika nosaka, vai lietotājs var lietot tīkla failu kopīgošanas funkciju ar <ph name="PRODUCT_NAME" />.
 
       Ja šī politika nav konfigurēta vai tai nav iestatīta vērtība “True”, lietotāji varēs izmantot tīkla failu kopīgošanas ierīces.
 
@@ -1631,7 +1633,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja šai politikai ir noteikta vērtība, atjauninājumi ignorē <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> politiku un ievēro šo politiku.
 
-      Ja šis saraksts ir tukšs, izstādīšana netiks veikta, un jauninājumi tiks piemēroti saskaņā ar citu ierīču politiku.
+      Ja šis saraksts ir tukšs, izstādīšana netiks veikta, un atjauninājumi tiks piemēroti saskaņā ar citu ierīču politiku.
 
       Šī politika neattiecas uz kanālu slēdžiem.</translation>
 <translation id="5523812257194833591">Publiska sesija, kurā pēc aizkaves veikt automātisku pieteikšanos.
@@ -2000,6 +2002,11 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šī politika nav iestatīta vai saraksts ir tukšs, pārlūkā <ph name="PRODUCT_NAME" /> varēs piekļūt visām shēmām.</translation>
 <translation id="6652197835259177259">Lokāli pārvaldītu lietotāju iestatījumi</translation>
 <translation id="6658245400435704251">Norāda sekunžu skaitu, kuru laikā ierīce var nejaušā secībā atlikt atjauninājuma lejupielādi, sākot ar laiku, kad serveris pirmo reizi nosūtīja atjauninājumu. Daļa no šī ierīces gaidīšanas laika var būt pulksteņa laiks, un daļa — atjauninājuma pārbaužu skaits. Jebkurā gadījumā izkliede ir saistīta ar noteiktu laika periodu, lai ierīces nebūtu bezgalīgi jāgaida atjauninājuma lejupielāde.</translation>
+<translation id="6665599130599311250">Ja politikai ir iestatīta vērtība “False” vai tā nav iestatīta, pārvaldītā viesa sesija rīkosies kā dokumentēts https://support.google.com/chrome/a/answer/3017014 — standarta “Publiskā sesija”.
+
+      Ja šai politikai ir iestatīta vērtība “True”, pārvaldītā viesa sesija pieņems “Pārvaldītās sesijas” rīcību, kas atceļ daudzus ierobežojumus, kuri ir spēkā parastai “Publiskajai sesijai”.
+ 
+      Ja šī politika ir iestatīta, lietotājs to nevar mainīt vai ignorēt.</translation>
 <translation id="6665670272107384733">Paroles ievadīšanas biežuma iestatīšana, lai varētu izmantot ātro atbloķēšanu</translation>
 <translation id="6681229465468164801">Ļauj iestatīt vietrāžu URL modeļu sarakstu ar vietnēm, kurām nav atļauts lūgt lietotājam piešķirt piekļuvi USB ierīcei.
 
@@ -2165,6 +2172,18 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6943577887654905793">Mac/Linux preferences nosaukums:</translation>
 <translation id="69525503251220566">Parametrs, kas noklusējuma meklēšanas pakalpojumu sniedzējam nodrošina funkciju Meklēšana pēc attēla</translation>
 <translation id="6956272732789158625">Neatļaut izmantot atslēgu ģenerēšanu nevienā vietnē</translation>
+<translation id="6982028490425791294">
+      Ja šai politikai ir iestatīta vērtība “True”, <ph name="PRODUCT_NAME" /> ir atļauts apkopot WebRTC notikumu žurnālus no Google pakalpojumiem (piem., Google Meet) un augšupielādēt šos žurnālus uzņēmumam Google.
+
+      Ja šai politikai ir iestatīta vērtība “False” vai vērtība nav iestatīta, <ph name="PRODUCT_NAME" /> nedrīkst apkopot vai augšupielādēt tādus žurnālus.
+
+      Šie žurnāli satur informāciju, piemēram, nosūtīto un saņemto RTP paku laiku un izmēru, atsauksmes par pārslodzi tīklā un metadatus par audio un video ietvaru laiku un kvalitāti. Šī informācija ir noderīga, atkļūdojot problēmas ar audio vai video zvaniem pārlūkā Chrome, piemēram, joslas platuma novērtējuma problēmas utt. Žurnāli nesatur audio vai video saturu no zvana.
+
+
+      Šo datu apkopošanu var aktivizēt tikai Google tīmekļa pakalpojumi, piemēram, Google Hangouts vai Google Meet.
+
+      Šos žurnālus, izmantojot sesijas ID, var saistīt ar citiem žurnāliem, kurus apkopo pats Google pakalpojums; tas ir paredzēts, lai atvieglotu atkļūdošanu
+      </translation>
 <translation id="6994082778848658360">Norāda, kā var izmantot pievienoto drošības elementa aparatūru divfaktoru autentificēšanai, ja tā ir saderīga ar šo funkciju.
 Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošanas poga.
 

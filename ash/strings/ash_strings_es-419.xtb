@@ -68,7 +68,6 @@
 <translation id="2049639323467105390"><ph name="DOMAIN" /> administra esta cuenta.</translation>
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="2067602449040652523">Brillo del teclado</translation>
-<translation id="2075212959500165896">Realizaste demasiados intentos. Pruébalo de nuevo más tarde.</translation>
 <translation id="2081529251031312395">$1 podrá acceder más tarde.</translation>
 <translation id="2127372758936585790">Carga lenta</translation>
 <translation id="2135456203358955318">Lupa con vista acoplada</translation>
@@ -140,7 +139,6 @@
 <translation id="3153444934357957346">Puedes acceder a un máximo de <ph name="MULTI_PROFILE_USER_LIMIT" /> cuentas con acceso múltiple.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Conectado a un dispositivo}other{Conectado a # dispositivos}}</translation>
 <translation id="3236488194889173876">No hay redes móviles disponibles</translation>
-<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Invitado</translation>
 <translation id="332587331255250389">Reemplaza la batería</translation>
 <translation id="3351879221545518001">Estás transmitiendo la pantalla.</translation>

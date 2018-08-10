@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
 <translation id="100812568230599391">Změnit styl zobrazení na prokládání.</translation>
+<translation id="1011903154582639569">Najděte klávesu a zvednutím prstu pište</translation>
 <translation id="1012173283529841972">Položka seznamu</translation>
 <translation id="1013742170491673792">upr vyhl</translation>
 <translation id="1022586497894531524">Používáte hlasovou odezvu ChromeVox poprvé? Tento stručný výukový program vysvětluje základy, které vám pomohou začít ChromeVox používat.</translation>
@@ -162,6 +163,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="2553108862507765288">pravopisná chyba</translation>
 <translation id="257674075312929031">Skupina</translation>
 <translation id="2582407057977008361">Stranou</translation>
+<translation id="2592212930811759050">Úpravu spustíte dvojitým klepnutím</translation>
 <translation id="2606210917827248971">s {COUNT,plural, =1{# položkou}few{# položkami}many{# položky}other{# položkami}}</translation>
 <translation id="2614981083756825552">Rozvržení MathML</translation>
 <translation id="2624431853467395961">Otevřít režim výuky</translation>

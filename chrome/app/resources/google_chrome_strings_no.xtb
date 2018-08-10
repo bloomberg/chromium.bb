@@ -154,7 +154,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome kunne ikke synkronisere dataene dine. Oppdater passordfrasen for synkronisering.</translation>
 <translation id="5062123544085870375">Start Chrome OS på nytt</translation>
-<translation id="5090044601776247154">Overvåkede brukerprofiler vil ikke lengre være tilgjengelig fra og med Google Chrome 70.</translation>
+<translation id="5090044601776247154">Administrerte brukerprofiler kommer ikke lenger til å være tilgjengelige fra og med Google Chrome 70.</translation>
 <translation id="5132929315877954718">Oppdag flotte apper, spill, utvidelser og temaer for Google Chrome.</translation>
 <translation id="5166975452760862670">Google Chrome vises på dette språket</translation>
 <translation id="5170938038195470297">Profilen din kan ikke brukes fordi den er fra en nyere versjon av Google Chrome. Enkelte funksjoner kan være utilgjengelige. Angi en annen profilkatalog, eller bruk en nyere versjon av Chrome.</translation>
@@ -165,7 +165,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="5386244825306882791">Den styrer også hvilken side som vises når du starter Chrome eller søker fra multifunksjonsfeltet.</translation>
 <translation id="5430073640787465221">Innstillingsfilen er skadet eller ugyldig. Google Chrome kan ikke gjenopprette innstillingene dine.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome starter på nytt nå}=1{Chrome starter på nytt om 1 sekund}other{Chrome starter på nytt om # sekunder}}</translation>
-<translation id="5514308096618405748">Chrome OS muliggjøres av <ph name="BEGIN_LINK_CROS_OSS" />tilleggsprogramvare med åpen kildekode<ph name="END_LINK_CROS_OSS" />, som Linux(Beta).</translation>
+<translation id="5514308096618405748">Chrome OS er basert på <ph name="BEGIN_LINK_CROS_OSS" />tilleggsprogramvare med åpen kildekode<ph name="END_LINK_CROS_OSS" />, i likhet med Linux (beta).</translation>
 <translation id="556024056938947818">Google Chrome prøver å vise passord.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-Inn)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan være farlig, så Chrome har blokkert den.</translation>
@@ -221,7 +221,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="7419046106786626209">Chrome OS kunne ikke synkronisere dataene dine fordi synkronisering ikke er tilgjengelig for domenet ditt.</translation>
 <translation id="7459554271817304652">Konfigurer Synkronisering til å lagre de personlig tilpassede nettleserfunksjonene dine på nettet slik at du kan bruke dem fra Google Chrome på enhver datamaskin.</translation>
 <translation id="7473136999113284234">Chrome oppdateres automatisk, sånn at du alltid har den nyeste versjonen.</translation>
-<translation id="7486227612705979895">Chrome får tilgang til disken din for å kunne gi deg forslag i adressefeltet</translation>
+<translation id="7486227612705979895">Chrome får tilgang til Disk-lagringen din for å kunne gi deg forslag i adressefeltet</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Vis Chrome OS på dette språket</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome starter på nytt om 1 minutt}other{Chrome starter på nytt om # minutter}}</translation>
@@ -246,12 +246,12 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="8008534537613507642">Installer Chrome på nytt</translation>
 <translation id="8030318113982266900">Oppdaterer enheten din til <ph name="CHANNEL_NAME" />-kanalen ...</translation>
 <translation id="8032142183999901390">Når du har fjernet kontoen din fra Chrome, kan det hende at du må laste inn de åpne fanene på nytt før endringene trer i kraft.</translation>
-<translation id="8077352834923175128">Administratoren din ber deg om å starte Chrome OS på nytt for at denne oppdateringen skal tas i bruk</translation>
+<translation id="8077352834923175128">Administratoren din ber deg om å starte Chrome OS på nytt for å ta i bruk denne oppdateringen</translation>
 <translation id="8129812357326543296">Om &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Installer Chrome på telefonen din. Vi sender deg en SMS.</translation>
 <translation id="8183957050892517584">Chrome lagrer personopplysningene dine sikkert, slik at du slipper å skrive dem inn på nytt.</translation>
-<translation id="8226081633851087288">{0,plural, =0{Chrome OS starter nå på nytt}=1{Chrome OS starter på nytt om 1 sekund}other{Chrome OS starter på nytt om # sekunder}}</translation>
-<translation id="825412236959742607">Denne siden bruker for mye minne, så har Chrome fjernet noe av innholdet.</translation>
+<translation id="8226081633851087288">{0,plural, =0{Chrome OS starter på nytt nå}=1{Chrome OS starter på nytt om 1 sekund}other{Chrome OS starter på nytt om # sekunder}}</translation>
+<translation id="825412236959742607">Denne siden bruker for mye minne, så Chrome har fjernet noe av innholdet.</translation>
 <translation id="8255190535488645436">Google Chrome bruker kameraet og mikrofonen din.</translation>
 <translation id="8286862437124483331">Google Chrome forsøker å vise passord. Skriv inn Windows-passordet ditt for å tillate dette.</translation>
 <translation id="8290100596633877290">Google Chrome har fått et programstopp. Vil du starte på nytt nå?</translation>
@@ -274,7 +274,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="870251953148363156">Oppdater &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome kan ikke fastslå eller angi standardnettleseren</translation>
 <translation id="8736674169840206667">Administratoren din krever at du starter Chrome på nytt for at en oppdatering skal tas i bruk</translation>
-<translation id="8791470158600044404">{0,plural, =1{Chrome OS startr på nytt om 1 minutt}other{Chrome OS starter på nytt om # minutter}}</translation>
+<translation id="8791470158600044404">{0,plural, =1{Chrome OS starter på nytt om 1 minutt}other{Chrome OS starter på nytt om # minutter}}</translation>
 <translation id="8796108026289707191">Du bør starte Google Chrome på nytt nå.</translation>
 <translation id="8823341990149967727">Chrome er utdatert</translation>
 <translation id="884296878221830158">Den styrer også hvilken side som vises når du starter Chrome eller klikker på Startside-knappen.</translation>

@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
 <translation id="1018939186200882850">মেনু আইটেম</translation>
-<translation id="1020833440720551630">অডিও ট্র্যাক নিঃশব্দ করুন</translation>
+<translation id="1020833440720551630">অডিও ট্র্যাক মিউট করুন</translation>
 <translation id="10623998915015855">টগল বোতাম</translation>
 <translation id="1088086359088493902">সেকেন্ড</translation>
 <translation id="1171774979989969504">দয়া করে কোন ইমেল ঠিকানা প্রবেশ করান:</translation>
@@ -133,7 +133,7 @@
 <translation id="5643186887447432888">বোতাম</translation>
 <translation id="5677946354068040947">আরও বিকল্প</translation>
 <translation id="576709008726043716">পরিচয়</translation>
-<translation id="57838592816432529">নিঃশব্দ করুন</translation>
+<translation id="57838592816432529">মিউট করুন</translation>
 <translation id="5860033963881614850">বন্ধ করুন</translation>
 <translation id="588258955323874662">সম্পূর্নস্ক্রীণ</translation>
 <translation id="5888666972993069672"><ph name="DEVICE_FRIENDLY_NAME" /> এ কাস্ট করা হচ্ছে</translation>
@@ -163,7 +163,7 @@
 <translation id="6790428901817661496">চালু করুন</translation>
 <translation id="6820355525329141109">প্লাগ ইন লোড করা যায়নি।</translation>
 <translation id="6820615603175220800">বিবলিওগ্রাফি রেফারেন্স</translation>
-<translation id="6843725295806269523">নিঃশব্দ</translation>
+<translation id="6843725295806269523">মিউট</translation>
 <translation id="6853785296079745596">বন্ধ করা পরিচয়লিপিগুলি লুকান</translation>
 <translation id="6885760532393684712">ডিরেক্টরি</translation>
 <translation id="689129560213475294">বইটির সম্পর্কে</translation>

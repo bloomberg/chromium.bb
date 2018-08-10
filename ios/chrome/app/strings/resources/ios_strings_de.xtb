@@ -167,6 +167,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="3588820906588687999">Bild in neuem Tab öffnen</translation>
 <translation id="3603009562372709545">Link-URL kopieren</translation>
 <translation id="3607167657931203000">AutoFill-Daten</translation>
+<translation id="360930808415985584">Funktionen wie Synchronisierung und Personalisierung verwalten</translation>
 <translation id="3609785682760573515">Synchronisieren...</translation>
 <translation id="3628119975092896051">Ihre Leseliste ist offline verfügbar. Um Ihrer Leseliste eine Seite hinzuzufügen, tippen Sie auf <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Webseiten vorabladen</translation>
@@ -213,6 +214,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="4508750114462689118">Anmeldeangebot schließen</translation>
 <translation id="4526249700380860531">Unter <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> gespeicherte Passwörter aufrufen und verwalten</translation>
 <translation id="4536418791685807335">Melden Sie sich noch einmal an.</translation>
+<translation id="4541241553780729349">Die mit Google synchronisierten Daten und die verwendeten Funktionen werden nicht geändert</translation>
 <translation id="457386861538956877">Mehr...</translation>
 <translation id="461440297010471931">Mit Google suchen</translation>
 <translation id="4619615317237390068">Tabs von anderen Geräten</translation>

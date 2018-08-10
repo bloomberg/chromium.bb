@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
 <translation id="100812568230599391">Mainiet displeja stilu uz mijas attēlojumu.</translation>
+<translation id="1011903154582639569">Atrodiet taustiņu, pēc tam atlaidiet pirkstu, lai ierakstītu</translation>
 <translation id="1012173283529841972">Saraksta vienums</translation>
 <translation id="1013742170491673792">meklēšana</translation>
 <translation id="1022586497894531524">Vai izmantojat ChromeVox balss funkciju pirmo reizi? Šajā ātrajā pamācībā ir izskaidroti darba sākšanas ar ChromeVox pamati.</translation>
@@ -163,6 +164,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="2553108862507765288">gramatikas kļūda</translation>
 <translation id="257674075312929031">Grupa</translation>
 <translation id="2582407057977008361">malā novietots saturs</translation>
+<translation id="2592212930811759050">Veiciet dubultskārienu, lai sāktu rediģēšanu</translation>
 <translation id="2606210917827248971">ar {COUNT,plural, =1{# vienumu}zero{# vienumiem}one{# vienumu}other{# vienumiem}}</translation>
 <translation id="2614981083756825552">MathML izkārtojums</translation>
 <translation id="2624431853467395961">Atvērt mācību režīmu</translation>

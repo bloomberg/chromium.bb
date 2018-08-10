@@ -68,7 +68,6 @@
 <translation id="2049639323467105390">기기는 <ph name="DOMAIN" />에서 관리합니다.</translation>
 <translation id="2050339315714019657">세로 방향</translation>
 <translation id="2067602449040652523">키보드 밝기</translation>
-<translation id="2075212959500165896">시도 횟수가 너무 많습니다. 나중에 다시 시도하세요.</translation>
 <translation id="2081529251031312395">$1님이 나중에 로그인할 수 있습니다.</translation>
 <translation id="2127372758936585790">저출력 충전기</translation>
 <translation id="2135456203358955318">고정 돋보기</translation>
@@ -140,7 +139,6 @@
 <translation id="3153444934357957346">멀티 로그인에는 계정을 <ph name="MULTI_PROFILE_USER_LIMIT" />개까지만 사용할 수 있습니다.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{기기 1개에 연결됨}other{기기 #개에 연결됨}}</translation>
 <translation id="3236488194889173876">사용할 수 있는 모바일 네트워크 없음</translation>
-<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">손님</translation>
 <translation id="332587331255250389">배터리를 교체해 주세요</translation>
 <translation id="3351879221545518001">현재 화면을 전송하고 있습니다.</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
 <translation id="100812568230599391">Αλλάξτε το στυλ προβολής σε παρεμβολή.</translation>
+<translation id="1011903154582639569">Εντοπίστε ένα πλήκτρο και έπειτα σηκώστε το δάκτυλό σας για να πληκτρολογήσετε</translation>
 <translation id="1012173283529841972">Στοιχείο λίστας</translation>
 <translation id="1013742170491673792">αναζήτηση ρόλου</translation>
 <translation id="1022586497894531524">Χρησιμοποιείτε τα εκφωνημένα σχόλια του ChromeVox για πρώτη φορά; Αυτός ο γρήγορος οδηγός εξηγεί τα βασικά για να ξεκινήσετε τη χρήση του ChromeVox.</translation>
@@ -163,6 +164,7 @@
 <translation id="2553108862507765288">γραμματικό λάθος</translation>
 <translation id="257674075312929031">Ομάδα</translation>
 <translation id="2582407057977008361">Ετικέτα "εκτός" (aside)</translation>
+<translation id="2592212930811759050">Πατήστε δύο φορές για να ξεκινήσετε την επεξεργασία</translation>
 <translation id="2606210917827248971">με {COUNT,plural, =1{# στοιχείο}other{# στοιχεία}}</translation>
 <translation id="2614981083756825552">Διάταξη Math ML</translation>
 <translation id="2624431853467395961">Άνοιγμα λειτουργίας εκμάθησης</translation>

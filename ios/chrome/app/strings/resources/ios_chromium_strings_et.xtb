@@ -17,6 +17,7 @@
 <translation id="2647554856022461007">Chromium võib sirvimiskogemuse parandamiseks kasutada veebiteenuseid. Võite need teenused valikuliselt keelata. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">Tooge Google'i nutikad funktsioonid Chromiumi</translation>
 <translation id="2730884209570016437">Chromium ei saa kaamerat kasutada, kuna seda kasutab muu rakendus</translation>
+<translation id="2797210818057553964">Seda saate Chromiumi seadetes igal ajal kohandada</translation>
 <translation id="3256316712990552818">Kopeeritud Chromiumi</translation>
 <translation id="3413120535237193088">Kõikidesse seadmetesse järjehoidjate hankimiseks logige Chromiumisse sisse.</translation>
 <translation id="3473048256428424907">Chromiumi QR-skanneri sisselülitamine</translation>
@@ -45,6 +46,7 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Valitud andmed eemaldati Chromiumist ja sünkroonitud seadmetest. Aadressil history.google.com võib teie Google'i kontol olla muus vormis sirvimisajalugu, nagu otsingud ja tegevused muudes Google'i teenustes.</translation>
 <translation id="7400689562045506105">Kasutage Chromiumit kõikjal</translation>
+<translation id="7499048969477415415">Sünkroonimist, isikupärastamist ja muid Chromiumis saadaolevaid Google'i teenuseid juhtivad seaded on muutunud. See võib teie praegusi seadeid mõjutada.</translation>
 <translation id="7674213385180944843">Avage menüü Seaded &gt; Privaatsus &gt; Kaamera &gt; Chromium ja lülitage kaamera sisse.</translation>
 <translation id="7746854981345936341">Chromiumi nõuanne. Mõned nupud, näiteks Tagasi, Edasi ja Otsing, asuvad nüüd ekraani alaosas.</translation>
 <translation id="786327964234957808">Vahetate sünkroonitavad kontod aadressilt <ph name="USER_EMAIL1" /> aadressile <ph name="USER_EMAIL2" />. Teie olemasolevaid Chromiumi andmeid haldab domeen <ph name="DOMAIN" />. Teie andmed kustutatakse sellest seadmest, kuid need jäävad alles kontole <ph name="USER_EMAIL1" />.</translation>

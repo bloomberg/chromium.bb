@@ -68,7 +68,6 @@
 <translation id="2049639323467105390">Ezt az eszközt a(z) <ph name="DOMAIN" /> domain kezeli.</translation>
 <translation id="2050339315714019657">Álló</translation>
 <translation id="2067602449040652523">Billentyűzet világossága</translation>
-<translation id="2075212959500165896">Túl sok próbálkozás. Próbálja újra később.</translation>
 <translation id="2081529251031312395">$1 később be tud jelentkezni.</translation>
 <translation id="2127372758936585790">Kis teljesítményű töltő</translation>
 <translation id="2135456203358955318">Dokkolt nagyító</translation>
@@ -140,7 +139,6 @@
 <translation id="3153444934357957346">Legfeljebb <ph name="MULTI_PROFILE_USER_LIMIT" /> fiókot használhat a többfiókos bejelentkezés során.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Egy eszközhöz csatlakoztatva}other{# eszközhöz csatlakoztatva}}</translation>
 <translation id="3236488194889173876">Nem áll rendelkezésre mobilhálózat</translation>
-<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Vendég</translation>
 <translation id="332587331255250389">Cserélje ki az akkumulátort</translation>
 <translation id="3351879221545518001">Folyamatban van a képernyő átküldése.</translation>

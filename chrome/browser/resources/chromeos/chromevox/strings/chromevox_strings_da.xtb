@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="100812568230599391">Skift visningsformat for at sammenflette.</translation>
+<translation id="1011903154582639569">Find en tast, og løft fingeren for at skrive</translation>
 <translation id="1012173283529841972">Punkt på listen</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">Er det første gang, du bruger oplæsning i ChromeVox? Dette hurtige selvstudie giver dig de grundlæggende oplysninger, du skal bruge for at komme godt i gang med ChromeVox.</translation>
@@ -163,6 +164,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="2553108862507765288">grammatisk fejl</translation>
 <translation id="257674075312929031">Gruppe</translation>
 <translation id="2582407057977008361">Uden for</translation>
+<translation id="2592212930811759050">Tryk to gange for at redigere</translation>
 <translation id="2606210917827248971">med {COUNT,plural, =1{# element}one{# element}other{# elementer}}</translation>
 <translation id="2614981083756825552">Math ML-layout</translation>
 <translation id="2624431853467395961">Åbn indlæringstilstanden</translation>

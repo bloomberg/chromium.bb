@@ -2163,7 +2163,6 @@
 <translation id="4275830172053184480">הפעלת המכשיר מחדש</translation>
 <translation id="4278101229438943600">‏ה-Assistant מוכן</translation>
 <translation id="4278390842282768270">מותר</translation>
-<translation id="4280864916190672950">עצירת הטעינה</translation>
 <translation id="4281844954008187215">תנאי שירות</translation>
 <translation id="4282196459431406533">‏Smart Lock מופעל</translation>
 <translation id="4284105660453474798">האם אתה בטוח שברצונך למחוק את "$1"?</translation>
@@ -3434,7 +3433,6 @@
 <translation id="6231881193380278751">‏הוסף פרמטר שאילתה בכתובת האתר כדי לרענן את הדף באופן אוטומטי: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">סוללה</translation>
 <translation id="6232116551750539448">החיבור אל <ph name="NAME" /> נותק</translation>
-<translation id="6235700927623181151">הכרטיסייה הזו משתפת את תוכן שולחן העבודה שלך.</translation>
 <translation id="6237816943013845465">הגדרה זו מאפשרת לך לקבוע את רזולוציית המסך</translation>
 <translation id="6238923052227198598">המשך הצגת ההודעה האחרונה במסך הנעילה</translation>
 <translation id="6239558157302047471">טען מחדש את ה&amp;מסגרת</translation>
@@ -3501,7 +3499,7 @@
 <translation id="6327785803543103246">‏גילוי אוטומטי של שרת proxy באינטרנט</translation>
 <translation id="6333064448949140209">‏הקובץ יישלח אל Google לניפוי באגים</translation>
 <translation id="6333834492048057036">מיקוד בסרגל כתובות לחיפוש</translation>
-<translation id="6336451774241870485">כרטיסיית פרטיות חדשה</translation>
+<translation id="6336451774241870485">כרטיסייה פרטית חדשה</translation>
 <translation id="6339668969738228384">צור פרופיל חדש בשביל <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">‏לא ניתן היה להתחבר אל השרת. יש לבדוק את חיבור הרשת ולנסות שוב. אם הבעיה ממשיכה, יש להפעיל מחדש את ה-Chromebook.</translation>
 <translation id="6340071272923955280">‏פרוטוקול הדפסה באינטרנט (IPPS)</translation>
@@ -3683,7 +3681,7 @@
 <translation id="6606070663386660533">כרטיסייה 8</translation>
 <translation id="6607272825297743757">פרטי הקובץ</translation>
 <translation id="6607831829715835317">כלים &amp;נוספים</translation>
-<translation id="6610147964972079463">סגירת כרטיסיות הפרטיות</translation>
+<translation id="6610147964972079463">סגירת הכרטיסיות הפרטיות</translation>
 <translation id="6612358246767739896">תוכן מוגן</translation>
 <translation id="6613452264606394692">הוספת הדף לסימניות תאפשר גישה מהירה אליו</translation>
 <translation id="6614893213975402384">‏התקנת עדכונים ואפליקציות. הבחירה להמשיך תבטא הסכמה מצידך לכך שהמכשיר גם יוריד ויתקין באופן אוטומטי עדכונים ואפליקציות מ-Google, מספק השירות ומיצרן המכשיר. ייתכן שההורדה תיעשה באמצעות חבילת הגלישה. חלק מהאפליקציות האלה עשויות לכלול אפשרות לרכישות מהאפליקציה. תמיד אפשר להסיר את האפליקציות האלה. <ph name="BEGIN_LINK1" />מידע נוסף<ph name="END_LINK1" /></translation>
@@ -3754,7 +3752,7 @@
 <translation id="6710213216561001401">הקודם</translation>
 <translation id="6718273304615422081">דוחס...</translation>
 <translation id="671928215901716392">מסך נעילה</translation>
-<translation id="6720847671508630642">‏אפשר לשתף באופן אוטומטי את מיטב היכולות של Android עם ה-Chromebook. חיבור הטלפון מאפשר לך לשלוח הודעות טקסט מהמחשב, לשתף את חיבור האינטרנט של הטלפון ולבטל את נעילת מסך ה-Chromebook.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />מידע נוסף<ph name="LINK_END" /></translation>
+<translation id="6720847671508630642">‏אפשר לשתף באופן אוטומטי את מיטב היכולות של Android עם ה-Chromebook. חיבור הטלפון מאפשר לך לשלוח הודעות טקסט מהמחשב, לשתף את חיבור האינטרנט של הטלפון ולבטל את הנעילה של מסך ה-Chromebook.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />מידע נוסף<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">לראות את היצרן והדגם של מפתח האבטחה</translation>
 <translation id="6721972322305477112">&amp;קובץ</translation>
 <translation id="672213144943476270">בטל את נעילת הפרופיל שלך לפני גלישה כאורח.</translation>
@@ -4812,7 +4810,6 @@
 <translation id="8366396658833131068">קישוריות הרשת שלך התחדשה. בחר רשת אחרת או לחץ על הלחצן 'המשך' שלמטה כדי להפעיל את יישום הקיוסק.</translation>
 <translation id="8366947248864804596">‏כשהטלפון שלך בקרבת מקום ואינו נעול, עליך לבחור באפשרות של ביטול נעילה. אחרת, עליך להזין סיסמה או קוד PIN.</translation>
 <translation id="8368859634510605990">&amp;פתח את כל הסימניות</translation>
-<translation id="8369547389711988632">הטעינה נפסקה</translation>
 <translation id="8371695176452482769">דבר עכשיו</translation>
 <translation id="8372369524088641025">‏מקש WEP גרוע</translation>
 <translation id="8373553483208508744">השתק כרטיסיות</translation>
@@ -5018,7 +5015,6 @@
 <translation id="8677212948402625567">כווץ הכל...</translation>
 <translation id="8678648549315280022">נהל הגדרות הורדה...</translation>
 <translation id="8678933587484842200">איך להפעיל את האפליקציה הזו?</translation>
-<translation id="8679788109894721265">‏הדף הזה משתמש ביותר מ-‎<ph name="MEGABYTES" />MB</translation>
 <translation id="8680251145628383637">‏היכנס כדי לקבל גישה אל הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בכל המכשירים שברשותך. בנוסף, תחובר אוטומטית אל שירותי Google.</translation>
 <translation id="8686213429977032554">‏קובץ זה של Drive עדיין לא משותף</translation>
 <translation id="8687485617085920635">החלון הבא</translation>

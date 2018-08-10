@@ -275,6 +275,7 @@
       Kui reegli väärtuseks on määratud Väär, siis on mõõdikute teabe ja diagnostikaandmete edastamine keelatud.
 
       Kui reegel on seadistamata, siis on mõõdikute teabe ja diagnostikaandmete edastamine haldamata seadmetes keelatud ja hallatud seadmetes lubatud.</translation>
+<translation id="1920046221095339924">Seadmes hallatud seansi lubamine</translation>
 <translation id="1929709556673267855">Määrab seadistused seadmetega seotud ettevõtte printeritele.
 
       See reegel võimaldab teil määrata printeri seadistused operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> seadmetele. Vorming on sama, mis sõnastikul NativePrinters, kus lubatute või keelatute loendisse lisamiseks on printeri puhul vajalik lisaväli „id” või „guid”.
@@ -308,6 +309,7 @@
 
       Selle seade lubamisel või määramata jätmisel saab kasutaja kasutajaliideses aadresside automaattäite funktsiooni juhtida.</translation>
 <translation id="1960840544413786116">Kas lubada kohalike usaldusvõtmete väljastatud sertifikaadid, millel puudub laiend subjectAlternativeName?</translation>
+<translation id="1962273523772270623">Google'i teenustest WebRTC sündmuselogide kogumise lubamine</translation>
 <translation id="1964634611280150550">Inkognito režiim on keelatud</translation>
 <translation id="1964802606569741174">See reegel ei mõjuta Androidi YouTube'i rakendust. Kui ohutusrežiim on sisse lülitatud, tuleks YouTube jõustada ja Androidi YouTube'i rakenduse installimine keelata.</translation>
 <translation id="1969212217917526199">Alistab kaugjuurdepääsu hosti silumisjärkude reeglid.
@@ -1994,6 +1996,11 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Kui jätate reegli määramata või loendi tühjaks, on kõik skeemid teenuses <ph name="PRODUCT_NAME" /> juurdepääsetavad.</translation>
 <translation id="6652197835259177259">Kohalikult hallatud kasutajaseaded</translation>
 <translation id="6658245400435704251">Määrab sekundite arvu pärast värskenduse serverist väljalaskmist, mille jooksul võib seade värskenduse allalaadimist juhuslikult viivitada. Seade võib oodata osa ajast reaalajas ja ülejäänud aja sõltuvalt värskenduste otsimiste arvust. Igal juhul on hajutatuse ülempiir seotud ajalise konstandiga, et seade ei jääks värskenduse allalaadimist igaveseks ootama.</translation>
+<translation id="6665599130599311250">Kui reegli väärtuseks määratakse Väär või jäetakse see määramata, käitub hallatud külastajaseanss aadressil https://support.google.com/chrome/a/answer/3017014 kirjeldatud moel – standardse avaliku seansina.
+
+      Kui reegli väärtuseks määratakse Tõene, käituvad hallatud külastajaseansid hallatud seanssidena, mille puhul puuduvad paljud piirangud, mis kehtivad tavapäraste avalike seansside puhul.
+
+      Kui reegel määratakse, ei saa kasutaja seda muuta ega alistada.</translation>
 <translation id="6665670272107384733">Kiire avamise puhul parooli sisestamise sageduse määramine</translation>
 <translation id="6681229465468164801">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel ei ole lubatud küsida kasutajalt luba USB-seadmele juurdepääsemiseks.
 
@@ -2161,6 +2168,17 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="6943577887654905793">Maci/Linuxi eelistuse nimi:</translation>
 <translation id="69525503251220566">Parameeter otsingu vaikepakkujale pildi järgi otsimise funktsiooni pakkumiseks</translation>
 <translation id="6956272732789158625">Ära luba ühelgi saidil võtmeid luua</translation>
+<translation id="6982028490425791294">
+      Kui reegel on seatud väärtusele Tõene, võib <ph name="PRODUCT_NAME" /> koguda Google'i teenustest (nt Google Meet) WebRTC sündmuselogisid ja need Google'i serveritesse üles laadida.
+
+      Kui reegel on seatud väärtusele Väär või seadistamata, ei tohi <ph name="PRODUCT_NAME" /> logisid koguda ega üles laadida.
+
+      Need logid sisaldavad näiteks saadetud ja vastuvõetud RTP-pakettide kellaaja ja suuruse teavet, tagasisidet võrgu ummistuste kohta ja metaandmeid heli- ja videokaardite aja ja kvaliteedi kohta. See teave on kasulik Chrome'i hääl- või videokõnedega seotud probleemide, nt ribalaiuse prognoosimise probleemide jms silumisel. Logid ei sisalda kõne hääl- ega videosisu.
+
+      Andmete kogumise saavad käivitada ainult Google'i veebiteenused, nt as Google Hangouts või Google Meet.
+
+      Logid võidakse seansi ID alusel seostada muude logidega, mida Google'i teenus kogub. Selle eesmärk on hõlbustada silumist.
+      </translation>
 <translation id="6994082778848658360">Määrab, kuidas kasutada sisseehitatud turvalist elementi kahe teguriga autentimise funktsiooni pakkumiseks, kui element ühildub selle funktsiooniga. Kasutaja füüsilise kohaloleku tuvastamiseks kasutatakse seadme toitenuppu.
 
       Kui valite väärtuse „Keelatud”, ei pakuta kahe teguriga autentimist.

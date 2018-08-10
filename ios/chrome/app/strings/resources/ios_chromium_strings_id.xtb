@@ -17,6 +17,7 @@
 <translation id="2647554856022461007">Chromium dapat mengunakan layanan web agar pengalaman mengakses internet lebih menyenangkan. Anda dapat memilih untuk menonaktifkan layanan ini. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">Dapatkan kecanggihan Google di Chromium</translation>
 <translation id="2730884209570016437">Chromium tidak dapat menggunakan kamera karena sedang digunakan aplikasi lain</translation>
+<translation id="2797210818057553964">Anda dapat menyesuaikan ini kapan saja di Setelan Chromium</translation>
 <translation id="3256316712990552818">Disalin ke Chromium</translation>
 <translation id="3413120535237193088">Agar bookmark tersedia di semua perangkat Anda, masuk ke Chromium.</translation>
 <translation id="3473048256428424907">Aktifkan pemindai QR Chromium</translation>
@@ -45,6 +46,7 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Data yang dipilih telah dihapus dari Chromium dan perangkat yang disinkronkan. Akun Google Anda mungkin memiliki bentuk histori pencarian lain seperti penelusuran dan aktivitas dari layanan Google lainnya di history.google.com.</translation>
 <translation id="7400689562045506105">Gunakan Chromium di Mana Saja</translation>
+<translation id="7499048969477415415">Setelan yang mengontrol sinkronisasi, personalisasi, dan layanan Google lainnya di Chromium telah berubah. Ini dapat memengaruhi setelan saat ini.</translation>
 <translation id="7674213385180944843">Buka Setelan &gt; Privasi &gt; Kamera &gt; Chromium, lalu aktifkan kamera.</translation>
 <translation id="7746854981345936341">Tips Chromium. Beberapa tombol sekarang terdapat di bagian bawah layar, seperti Kembali, Teruskan, dan Telusuri.</translation>
 <translation id="786327964234957808">Anda beralih akun sinkronisasi dari <ph name="USER_EMAIL1" /> ke <ph name="USER_EMAIL2" />. Data Chromium Anda yang sudah ada dikelola oleh <ph name="DOMAIN" />. Tindakan ini akan menghapus data dari perangkat, namun data Anda akan tetap tersedia di <ph name="USER_EMAIL1" />.</translation>

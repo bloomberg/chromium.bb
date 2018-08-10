@@ -2165,7 +2165,6 @@
 <translation id="4275830172053184480">आपला डिव्हाइस रीस्टार्ट करा</translation>
 <translation id="4278101229438943600">तुमचा असिस्टंट तयार आहे</translation>
 <translation id="4278390842282768270">अनुमत</translation>
-<translation id="4280864916190672950">लोड करणे थांबवा</translation>
 <translation id="4281844954008187215">सेवा अटी</translation>
 <translation id="4282196459431406533">Smart Lock चालू आहे</translation>
 <translation id="4284105660453474798">तुमची खात्री आहे की आपण "$1" हटवू इच्छिता?</translation>
@@ -3437,7 +3436,6 @@
 <translation id="6231881193380278751">पृष्ठ स्वयं-रिफ्रेश करण्यासाठी एक क्वेरी परम जोडा: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">बॅटरी</translation>
 <translation id="6232116551750539448"><ph name="NAME" /> वरील कनेक्शन गमावले गेले आहे</translation>
-<translation id="6235700927623181151">हा टॅब तुमचा डेस्कटॉप आशय शेअर करत आहे.</translation>
 <translation id="6237816943013845465">आपले स्क्रीन रिझोल्यूशन समायोजित करण्याची आपल्याला अनुमती देते</translation>
 <translation id="6238923052227198598">लॉक स्क्रीनवर नवीनतम टीप ठेवा</translation>
 <translation id="6239558157302047471">रीलोड आणि फ्रेम करा</translation>
@@ -4817,7 +4815,6 @@
 <translation id="8366396658833131068">तुमची नेटवर्क कनेक्टिव्हिटी पुनर्संचयित झाली आहे. कृपया एक भिन्न नेटवर्क निवडा किंवा आपला कियोस्क अॅप लाँच करण्यासाठी खालील 'सुरु ठेवा' बटण दाबा.</translation>
 <translation id="8366947248864804596">तुमचा फोन अनलॉक आणि जवळपास असताना फक्त अनलॉक निवडा. अन्यथा तुमचा पासवर्ड किंवा पिन टाका.</translation>
 <translation id="8368859634510605990">सर्व बुकमार्क &amp;उघडा</translation>
-<translation id="8369547389711988632">लोड करणे थांबवा</translation>
 <translation id="8371695176452482769">आता बोला</translation>
 <translation id="8372369524088641025">खराब WEP की</translation>
 <translation id="8373553483208508744">टॅब निःशब्द करा</translation>
@@ -5023,7 +5020,6 @@
 <translation id="8677212948402625567">सर्व संकुचित करा...</translation>
 <translation id="8678648549315280022">डाउनलोड सेटिंग्ज व्यवस्थापित करा...</translation>
 <translation id="8678933587484842200">हे अॅप्लिकेशन कसे लॉंच व्हावे असे तुम्हाला वाटते?</translation>
-<translation id="8679788109894721265">हे पेज <ph name="MEGABYTES" />MB पेक्षा जास्त वापरते</translation>
 <translation id="8680251145628383637">आपल्या सर्व डिव्हाइसेसवर आपले बुकमार्क, इतिहास, पासवर्ड आणि इतर सेटिंग्ज मिळविण्‍यासाठी साइन इन करा. आपण स्वयंचलितपणे आपल्‍या Google सेवांवर देखील साइन इन कराल.</translation>
 <translation id="8686213429977032554">ही ड्राइव्ह फाईल अद्याप सामायिक केलेली नाही</translation>
 <translation id="8687485617085920635">पुढील विंडो</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="100812568230599391">De weergavestijl wijzigen in interleave.</translation>
+<translation id="1011903154582639569">Zoek een toets en til je vinger op om te typen</translation>
 <translation id="1012173283529841972">Lijstitem</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">Gebruik je de gesproken feedback van ChromeVox voor de eerste keer? In deze korte handleiding worden de basisprincipes uitgelegd, zodat je aan de slag kunt met ChromeVox.</translation>
@@ -162,6 +163,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="2553108862507765288">grammaticafout</translation>
 <translation id="257674075312929031">Groep</translation>
 <translation id="2582407057977008361">Terzijde</translation>
+<translation id="2592212930811759050">Dubbeltik om te beginnen met bewerken</translation>
 <translation id="2606210917827248971">met {COUNT,plural, =1{# item}other{# items}}</translation>
 <translation id="2614981083756825552">MathML-indeling</translation>
 <translation id="2624431853467395961">Leermodus openen</translation>

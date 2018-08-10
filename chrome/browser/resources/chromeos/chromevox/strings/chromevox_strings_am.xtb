@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
 <translation id="100812568230599391">የማሳያ ቅጡን ወደ ማትሪያ ቀይር።</translation>
+<translation id="1011903154582639569">አንድ ቁልፍ ያግኙ፣ ከዚያ ለመተየ ያንሱት</translation>
 <translation id="1012173283529841972">የዝርዝር ንጥል</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">የChromeVox የሚነገር ግብረመልስን ለመጀመሪያ ጊዜ እየተጠቀሙ ነው? ይህ ፈጣን አጋዥ ሥልጠና በChromeVox ለመጀመር የሚያስፈልጉትን ነገሮች ያብራራል።</translation>
@@ -162,6 +163,7 @@
 <translation id="2553108862507765288">የስዋስው ስህተት</translation>
 <translation id="257674075312929031">ቡድን</translation>
 <translation id="2582407057977008361">ከጎን</translation>
+<translation id="2592212930811759050">ማርትዕ ለመጀመር ሁለቴ መታ ያድርጉ</translation>
 <translation id="2606210917827248971">ከ {COUNT,plural, =1{# ንጥል}one{# ንጥሎች}other{# ንጥሎች}}</translation>
 <translation id="2614981083756825552">የMath ML አቀማመጥ</translation>
 <translation id="2624431853467395961">የመማር ሁነታን ይክፈቱ</translation>

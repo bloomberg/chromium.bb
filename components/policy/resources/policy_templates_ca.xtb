@@ -259,6 +259,7 @@
       Si s'estableix en "false", es desactivaran els informes de mètriques i de dades de diagnòstic.
 
       Si no es configura, els informes de mètriques i de dades de diagnòstic es desactivaran als dispositius no gestionats i s'activaran als dispositius gestionats.</translation>
+<translation id="1920046221095339924">Permet sessions gestionades al dispositiu</translation>
 <translation id="1929709556673267855">Proporciona configuracions per a les impressores d'empresa vinculades a dispositius.
 
       Aquesta política et permet proporcionar configuracions d'impressores als dispositius <ph name="PRODUCT_OS_NAME" />. El format és el mateix que el del diccionari NativePrinters, amb un camp addicional "id" o "guid" obligatori a cada impressora per afegir-les a la llista blanca o negra.
@@ -292,6 +293,7 @@
 
       Si s'activa aquesta opció de configuració o no s'hi estableix cap valor, l'usuari podrà controlar el funcionament d'Emplenament automàtic per a les adreces a la IU.</translation>
 <translation id="1960840544413786116">Si es permeten certificats emesos per ancoratges de confiança locals que no tinguin l'extensió subjectAlternativeName</translation>
+<translation id="1962273523772270623">Permet la col·lecció de registres d'esdeveniments WebRTC dels serveis de Google</translation>
 <translation id="1964634611280150550">Mode d'incògnit desactivat</translation>
 <translation id="1964802606569741174">Aquesta política no té cap efecte a l'aplicació YouTube per a Android. Per forçar l'ús del mode de seguretat de YouTube, s'ha de denegar la instal·lació d'aquesta aplicació.</translation>
 <translation id="1969212217917526199">Substitueix les polítiques de compilacions de depuració de l'amfitrió d'accés remot.
@@ -1904,6 +1906,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si no s'estableix aquesta política o la llista és buida, es podrà accedir a tots els esquemes a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Configuració dels usuaris gestionats localment</translation>
 <translation id="6658245400435704251">Especifica el nombre de segons fins a què un dispositiu pot retardar aleatòriament la baixada d'una actualització des del moment en què l'actualització es transmet per primera vegada des del servidor. El dispositiu pot esperar una part d'aquest temps en termes de rellotge i la part restant en termes de nombre de comprovacions d'actualitzacions. En qualsevol cas, la dispersió tendeix cap amunt a una quantitat constant de temps, de manera que un dispositiu mai no es quedi encallat mentre espera que es baixi una actualització.</translation>
+<translation id="6665599130599311250">Si aquesta política s'estableix en "false" o es deixa sense establir, la sessió de convidat gestionada funcionarà com es descriu a la pàgina https://support.google.com/chrome/a/answer/3017014, és a dir, com una sessió pública estàndard.
+
+      Si aquesta política s'estableix en "true" o es deixa sense establir, la sessió de convidat gestionada funcionarà com una sessió gestionada i se suprimiran moltes de les restriccions de les sessions públiques normals.
+
+      Si aquesta política s'estableix, l'usuari no la podrà canviar ni substituir.</translation>
 <translation id="6665670272107384733">Defineix amb quina freqüència l'usuari ha d'introduir la contrasenya per utilitzar el desbloqueig ràpid</translation>
 <translation id="6681229465468164801">Permet definir una llista de patrons d'URL que especifiquin llocs web que no poden demanar a l'usuari que els concedeixi accés a un dispositiu USB.
 
@@ -2060,6 +2067,17 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6943577887654905793">Nom de la preferència de Mac/Linux:</translation>
 <translation id="69525503251220566">Paràmetre que proporciona la funció de cerca per imatge per al proveïdor de cerca predeterminat</translation>
 <translation id="6956272732789158625">No permetis que cap lloc utilitzi la generació de claus</translation>
+<translation id="6982028490425791294">
+      Si aquesta política s'estableix en "true", <ph name="PRODUCT_NAME" /> pot col·leccionar registres d'esdeveniments WebRTC dels serveis de Google (p. ex. Google Meet) i pujar-los a Google.
+
+      Si aquesta política s'estableix en "false" o es deixa sense establir, és possible que <ph name="PRODUCT_NAME" /> no col·leccioni ni pengi aquests registres.
+
+      Aquests registres contenen informació com ara l'hora i la mida dels paquets RTP rebuts i enviats, comentaris sobre la congestió de la xarxa, i metadades sobre l'hora i la qualitat dels marcs d'àudio i de vídeo. Aquesta informació resulta útil per depurar problemes de les trucades d'àudio o videotrucades de Chrome, com ara els problemes d'estimació de l'amplada de banda. Aquests registres no inclouen contingut d'àudio ni vídeo de les trucades.
+
+      Aquesta col·lecció de dades només la poden activar els serveis web de Google, com ara Google Hangouts i Google Meet.
+
+      Aquests registres es poden associar, mitjançant un ID de sessió, a altres registres col·leccionats pel servei de Google per tal de facilitar la depuració.
+      </translation>
 <translation id="6994082778848658360">Especifica de quina manera es pot utilitzar el maquinari de l'element de seguretat integrat per proporcionar una autenticació de dos factors si és compatible amb aquesta funció. El botó d'engegada de l'ordinador s'utilitza per detectar la presència física de l'usuari.
 
       Si se selecciona Desactivat, no es proporciona un segon factor.

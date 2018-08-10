@@ -167,6 +167,7 @@
 <translation id="3588820906588687999">Отваряне на изображението в нов раздел</translation>
 <translation id="3603009562372709545">Копиране на URL адреса на връзката</translation>
 <translation id="3607167657931203000">Автоматично попълване на данни</translation>
+<translation id="360930808415985584">Контрол върху синхронизирането, персонализирането и др.</translation>
 <translation id="3609785682760573515">Синхронизира се...</translation>
 <translation id="3628119975092896051">Списъкът ви за четене е налице офлайн. За да добавите страница към него, докоснете „<ph name="SHARE_OPENING_ICON" />“.</translation>
 <translation id="3638472932233958418">Предв. зареждане на уеб стр.</translation>
@@ -213,6 +214,7 @@
 <translation id="4508750114462689118">Затваряне на подканата за вход</translation>
 <translation id="4526249700380860531">Преглед и управление на запазените пароли на адрес <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Опитайте да влезете отново.</translation>
+<translation id="4541241553780729349">Данните, които синхронизирате с Google, и използваните от вас функции няма да се променят</translation>
 <translation id="457386861538956877">Още...</translation>
 <translation id="461440297010471931">Търсене с Google</translation>
 <translation id="4619615317237390068">Раздели от други устройства</translation>

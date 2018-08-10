@@ -262,6 +262,7 @@ itabadilishwa na data ya hoja za utafutaji za kweli.
       Ukiweka kuwa sivyo, kipengele cha kuripoti data ya vipimo na uchunguzi kitazimwa.
 
       Kama hujaweka mipangilio ya sera hii, kipengele cha kuripoti vipimo na data ya uchunguzi kitazimwa kwenye vifaa visivyodhibitiwa na kuwashwa kwenye vifaa vinavyodhibitiwa.</translation>
+<translation id="1920046221095339924">Ruhusu vipindi vinavyodhibitiwa kwenye kifaa</translation>
 <translation id="1929709556673267855">Hutoa mipangilio ya printa za biashara zilizooanishwa kwenye vifaa.
 
       Sera hii hukuruhusu kuweka mipangilio ya printa kwenye vifaa vya <ph name="PRODUCT_OS_NAME" />.  Muundo huu ni sawa na ule wa kamusi ya NativePrinters, unaohitaji sehemu ya ziada ya "kitambulisho" au "mwongozo" kwa kila printa kwa ajili ya kutoa idhini au kunyima idhini.
@@ -294,6 +295,7 @@ Sera hii ikiondolewa, chaguomsingi zitatumika kwa mipangilio yote.</translation>
 
       Iwapo mipangilio hii imewashwa au haina thamani yoyote, mtumiaji ataweza kudhibiti kipengele cha Kujaza Kiotomatiki kwa anwani kwenye kiolesura.</translation>
 <translation id="1960840544413786116">Ikiwa utaruhusu vyeti vilivyotolewa na nanga za ndani zinazoaminika visivyo na kiendelezi cha subjectAlternativeName</translation>
+<translation id="1962273523772270623">Ruhusu ukusanyaji wa kumbukumbu za matukio ya WebRTC kutoka huduma za Google</translation>
 <translation id="1964634611280150550">Hali fiche imezimwa</translation>
 <translation id="1964802606569741174">Sera hii haiathiri progamu ya Android YouTube. Ikiwa Hali ya Usalama kwenye YouTube inapaswa kutekelezwa, kusakinishwa kwa programu ya Android YouTube haipaswi kuruhusiwa.</translation>
 <translation id="1969212217917526199">Hubatilisha sera kwenye miundo ya Kutatua ya seva pangishi ya uwezo wa kufikia kwa mbali.
@@ -1971,6 +1973,11 @@ URL zinazotumia miradi kutoka orodha hii hazitapakia na haziwezi kutembelewa.
 Iwapo sera hii haitawekwa au orodha ni tupu miradi yote itapatikana katika <ph name="PRODUCT_NAME" /> .</translation>
 <translation id="6652197835259177259">Mipangilio ya watumiaji inayodhibitiwa kwa ndani</translation>
 <translation id="6658245400435704251">Inabainisha idadi ya sekunde ambazo kifaa kinaweza kuamua kuchelewesha upakuaji wake wa sasisho kutoka wakati ambapo usasishaji ulisukumwa kwanza nje katika seva. Kifaa kinaweza kusubiri kijisehemu cha muda huu kwa hali ya muda wa saa na kijisehemu kinachosalia katika hali ya idadi ya ukaguzi wa visasisho. Katika hali yoyote, utawanyishaji umekitwa katika kiwango cha kudumu cha muda ili kifaa kisikwame tena kikisubiri kupakua sasisho kwa muda mrefu.</translation>
+<translation id="6665599130599311250">Ukiweka sera hii kuwa 'sivyo' au usipoiweka, kipindi cha mgeni kinachodhibitiwa kitatumika kama ilivyowekwa katika https://support.google.com/chrome/a/answer/3017014 -  "Kipindi cha Umma" cha kawaida.
+
+Ukiweka sera hii kuwa 'ndivyo', kipindi cha mgeni kinachodhibitiwa kitachukua sifa ya "Kipindi Kinachodhibitiwa" ambayo huondoa masharti kadhaa yanayowekwa kwa ajili ya"Vipindi vya Umma" vya kawaida.
+
+      Ukiweka sera hii, mtumiaji hawezi kuibadilisha wala kuibatilisha.</translation>
 <translation id="6665670272107384733">Weka mara ambazo mtumiaji anatakiwa kuweka nenosiri ili atumie kipengele cha kufungua haraka.</translation>
 <translation id="6681229465468164801">Hukuruhusu uweke orodha ya ruwaza za url ambayo inabainisha tovuti zinazozuiliwa ili zisimuulize mtumiaji atoe ruhusa ya kufikia kifaa cha USB.
 
@@ -2139,6 +2146,17 @@ Sera hii haipatikani kwenye Windows ambazo hazijaunganishwa kwenye kikoa cha <ph
 <translation id="6943577887654905793">Jina la Mac/Linux inayopendelewa:</translation>
 <translation id="69525503251220566">Kigezo kinachotoa kipengele cha kutafuta kwa picha kwa mtoa huduma wa utafutaji chaguomsingi</translation>
 <translation id="6956272732789158625">Usiruhusu tovuti yoyote itumie uundaji ufunguo</translation>
+<translation id="6982028490425791294">
+      Ukiweka sera hii kuwa 'ndivyo', <ph name="PRODUCT_NAME" /> itaruhusiwa kukusanya kumbukumbu za matukio ya WebRTC kutoka huduma za Google (k.m., Google Meet) na kupakia kumbukumbu hizo kwenye Google.
+
+      Ukiweka sera hii kuwa 'sivyo', au usipoiweka, huenda <ph name="PRODUCT_NAME" /> isikusanye wala kupakia kumbukumbu kama hizo.
+
+      Kumbukumbu hizi zinajumuisha maelezo kama vile wakati na ukubwa wa vifurushi vya RTP vilivyotumwa na kupokelewa, maoni kuhusu msongamano kwenye mtandao na metadata kuhusu wakati na ubora wa fremu za sauti na video. Maelezo haya husaidia wakati wa kutatua matatizo ya simu za sauti na za video katika Chrome, kama vile matatizo ya kukadiria kipimo data n.k. Kumbukumbu hizi hazijumuishi maudhui ya simu ya sauti wala ya video.
+
+      Ukusanyaji wa data hii unaweza kuanzishwa tu na huduma za wavuti za Google, kama vile Google Hangouts au Google Meet.
+
+      Kumbukumbu hizi zinaweza kuhusishwa na kumbukumbu zingine ambazo hukusanywa na huduma ya Google yenyewe kupitia Kitambulisho cha kipindi; hali hii inanuia kurahisisha hatua ya utatuzi.
+      </translation>
 <translation id="6994082778848658360">Hubainisha jinsi maunzi salama unayotumia yanaweza kutoa uthibitishaji wa hatua mbili ikiwa yanaweza kukitumia kipengele hiki. Kitufe cha kuwasha/kuzima mashine kinatumika kutambua kuwepo kwa mtumiaji mwenyewe.
 
       Ukichagua 'Imezimwa', hamna uthibitishaji wa hatua mbili utakaotolewa.
@@ -2534,7 +2552,7 @@ KUMBUKA: Sera hii haitumiki kwenye Android. Ili uwashe SitePerProcess kwenye And
     Ikiwa sera imezimwa, hakuna Utengaji kwa kila Tovuti uliobainishwa wazi utakaotokea na majaribio ya sehemu za IsolateOrigins na SitePerProcess yatazimwa. Watumaji bado wataweza kuwasha SitePerProcess wenyewe.
      Ikiwa mipangilio ya sera haijawekwa, mtumiaji ataweza kubadilisha mipangilio hii.
       </translation>
-<translation id="7902255855035461275">Michoro katika orodha hii italinganishwa dhidi ya asili ya usalama wa ombi la URL.  Ikilingana, idhini ya kufikia vifaa vya kurekodi video itatolewa bila ombi. KUMBUKA: Kabla ya toleo la 45, sera hii ilitumika katika hali ya Skrini nzima pekee.</translation>
+<translation id="7902255855035461275">Michoro katika orodha hii italinganishwa na ya asili ya usalama wa ombi la URL.  Ikilingana, idhini ya kufikia vifaa vya kurekodi video itatolewa bila ombi. KUMBUKA: Kabla ya toleo la 45, sera hii ilitumika katika hali ya Skrini nzima pekee.</translation>
 <translation id="7912255076272890813">Sanidi aina za programu/viendelezi zinazoruhusiwa</translation>
 <translation id="7915236031252389808">Unaweza kubainisha URL ya seva mbadala ya faili ya .pac hapa.
 

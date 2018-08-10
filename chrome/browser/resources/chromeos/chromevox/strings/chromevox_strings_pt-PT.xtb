@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
 <translation id="100812568230599391">Alterar o estilo do ecrã para intercalado.</translation>
+<translation id="1011903154582639569">Encontre uma tecla e, em seguida, levante o dedo para escrever.</translation>
 <translation id="1012173283529841972">Item de lista</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">Está a utilizar os comentários de voz do ChromeVox pela primeira vez? Este tutorial rápido explica as noções básicas para começar a utilizar o ChromeVox.</translation>
@@ -163,6 +164,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="2553108862507765288">erro gramatical</translation>
 <translation id="257674075312929031">Grupo</translation>
 <translation id="2582407057977008361">À parte</translation>
+<translation id="2592212930811759050">Toque duas vezes para começar a editar.</translation>
 <translation id="2606210917827248971">com {COUNT,plural, =1{# item}other{# itens}}</translation>
 <translation id="2614981083756825552">Esquema de Matemática ML</translation>
 <translation id="2624431853467395961">Abrir modo de aprendizagem</translation>

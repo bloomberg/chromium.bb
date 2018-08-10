@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">Para a direita</translation>
 <translation id="1351937230027495976">Recolher menu</translation>
 <translation id="1383876407941801731">Pesquisar</translation>
+<translation id="1419738280318246476">Desbloqueie o dispositivo para executar a ação de notificação</translation>
 <translation id="1467432559032391204">Para a esquerda</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Iniciador</translation>
@@ -68,7 +69,6 @@
 <translation id="2049639323467105390">Este dispositivo é gerenciado por <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Retrato</translation>
 <translation id="2067602449040652523">Brilho do teclado</translation>
-<translation id="2075212959500165896">Excesso de tentativas. Tente novamente mais tarde.</translation>
 <translation id="2081529251031312395">$1 ainda pode fazer login mais tarde.</translation>
 <translation id="2127372758936585790">Carregador de baixa potência</translation>
 <translation id="2135456203358955318">Lupa ancorada</translation>
@@ -140,7 +140,6 @@
 <translation id="3153444934357957346">Só é possível ter até <ph name="MULTI_PROFILE_USER_LIMIT" /> contas em login múltiplo.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Conectado a um dispositivo}one{Conectado a # dispositivo}other{Conectado a # dispositivos}}</translation>
 <translation id="3236488194889173876">Nenhuma rede móvel disponível</translation>
-<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Visitante</translation>
 <translation id="332587331255250389">Substitua a bateria</translation>
 <translation id="3351879221545518001">Você está transmitindo a tela.</translation>
@@ -227,6 +226,7 @@
 <translation id="4924411785043111640">Reiniciar e redefinir</translation>
 <translation id="4961318399572185831">Transmitir tela</translation>
 <translation id="5069971504769299223">O administrador do dispositivo pode conseguir monitorar sua atividade.</translation>
+<translation id="5083553833479578423">Desbloqueie mais recursos do Assistente.</translation>
 <translation id="5136175204352732067">Teclado diferente conectado</translation>
 <translation id="5168181903108465623">Dispositivos de transmissão disponíveis</translation>
 <translation id="5207949376430453814">Destacar cursor de texto</translation>
@@ -299,6 +299,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6376931439017688372">Bluetooth ativado</translation>
 <translation id="639644700271529076">CAPS LOCK está desativado</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">Limpar todas as notificações</translation>
 <translation id="643147933154517414">Pronto</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> para <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Rejeitar</translation>
@@ -400,9 +401,11 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8152119955266188852">Você pressionou o atalho para a lupa de tela cheia. Gostaria de ativá-la?</translation>
 <translation id="8190698733819146287">Personalizar idiomas e entrada...</translation>
 <translation id="8191230140820435481">Gerenciar seus aplicativos, extensões e temas</translation>
+<translation id="8192202700944119416">As notificações estão ocultas.</translation>
 <translation id="8261506727792406068">Excluir</translation>
 <translation id="8297006494302853456">Fraco</translation>
 <translation id="8308637677604853869">Menu anterior</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Criar nota</translation>
 <translation id="8392451568018454956">Menu de opções para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Lupa de tela cheia</translation>
@@ -444,6 +447,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8938800817013097409">Dispositivo USB-C (porta traseira da direita)</translation>
 <translation id="8940956008527784070">Nível de bateria baixo (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">Início rápido</translation>
+<translation id="899350903320462459">Desbloqueie o dispositivo com a conta <ph name="LOGIN_ID" /> para executar a ação de notificação</translation>
 <translation id="8995603266996330174">Gerenciado por <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Atualização do Adobe Flash Player disponível</translation>
 <translation id="9056839673611986238">O dispositivo será revertido</translation>

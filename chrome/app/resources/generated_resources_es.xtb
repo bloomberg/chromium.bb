@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">Sincronización y personalización</translation>
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="1399511500114202393">Sin certificado de usuario</translation>
+<translation id="1401165786814632797">Accede al Asistente cuando digas "Ok Google" y tu dispositivo esté activo y desbloqueado.</translation>
 <translation id="140250605646987970">Se ha encontrado tu teléfono, pero Smart Lock solo funciona en dispositivos con Android 5.0 y versiones posteriores. &lt;a&gt;Más información&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisado)</translation>
 <translation id="1405476660552109915">¿Quieres que <ph name="PASSWORD_MANAGER_BRAND" /> guarde tu cuenta en este sitio web?</translation>
@@ -1370,6 +1371,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="3031557471081358569">Selecciona los elementos que quieres importar:</translation>
 <translation id="3031601332414921114">Reanudar la impresión</translation>
 <translation id="303198083543495566">Geografía</translation>
+<translation id="3033999583152214331">Utiliza IDEs, editores y herramientas de Linux en tu Chromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;Más información&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Habilitar Flash</translation>
 <translation id="3037754279345160234">No se puede analizar la configuración para unirse al dominio. Ponte en contacto con el administrador.</translation>
 <translation id="3038612606416062604">Añadir una impresora manualmente</translation>
@@ -1510,6 +1512,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="3271648667212143903"><ph name="ORIGIN" /> quiere conectarse</translation>
 <translation id="3274763671541996799">Has activado el modo de pantalla completa.</translation>
 <translation id="3275778913554317645">Abrir como ventana</translation>
+<translation id="3278877214895457897">Cuando hayas configurado el Chromebook, pulsa el botón del Asistente o di "Ok Google" para recibir ayuda del Asistente en cualquier momento.</translation>
 <translation id="3279230909244266691">Iniciando la máquina virtual. Este proceso puede tardar unos minutos.</translation>
 <translation id="3279741024917655738">Ver vídeos en pantalla completa</translation>
 <translation id="3280237271814976245">Gu&amp;ardar como...</translation>
@@ -2163,7 +2166,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4275830172053184480">Reiniciar tu dispositivo</translation>
 <translation id="4278101229438943600">El Asistente está listo</translation>
 <translation id="4278390842282768270">Permitido</translation>
-<translation id="4280864916190672950">Detener carga</translation>
 <translation id="4281844954008187215">Condiciones del servicio</translation>
 <translation id="4282196459431406533">Smart Lock está activado</translation>
 <translation id="4284105660453474798">¿Seguro que quieres eliminar "$1"?</translation>
@@ -2601,6 +2603,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4992066212339426712">Activar sonido</translation>
 <translation id="4992458225095111526">Confirmar Powerwash</translation>
 <translation id="4992473555164495036">Tu administrador ha limitado los métodos de introducción disponibles.</translation>
+<translation id="4992926179187649719">Activar "Ok Google"</translation>
 <translation id="4994474651455208930">Permitir que los sitios web se conviertan en controladores de protocolos predeterminados</translation>
 <translation id="4994754230098574403">Se está configurando</translation>
 <translation id="4996978546172906250">Compartir a través de</translation>
@@ -3432,7 +3435,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6231881193380278751">Añade un parámetro de consulta en la URL para actualizar la página automáticamente: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Batería</translation>
 <translation id="6232116551750539448">Se ha perdido la conexión a <ph name="NAME" /></translation>
-<translation id="6235700927623181151">En esta pestaña se está compartiendo el contenido de tu ordenador.</translation>
 <translation id="6237816943013845465">Te permite ajustar la resolución de pantalla</translation>
 <translation id="6238923052227198598">Mantener la última nota en la pantalla de bloqueo</translation>
 <translation id="6239558157302047471">Volver a cargar &amp;marco</translation>
@@ -4528,6 +4530,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7908378463497120834">Lo sentimos, pero al menos una partición del dispositivo de almacenamiento externo no se ha podido montar.</translation>
 <translation id="7909969815743704077">Se ha descargado en modo de incógnito</translation>
 <translation id="7910768399700579500">&amp;Nueva carpeta</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Tu contraseña se ha cambiado en el servidor. Cierra la sesión y vuelve a iniciarla.</translation>
 <translation id="7915471803647590281">Debes describir el error.</translation>
 <translation id="7916556741383518510">Al hacer clic</translation>
@@ -4812,7 +4815,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8366396658833131068">Tu conexión de red se ha restaurado. Selecciona una red diferente o pulsa el botón "Continuar" para ejecutar tu aplicación de kiosco.</translation>
 <translation id="8366947248864804596">Si el teléfono está desbloqueado y está cerca, solo tienes que seleccionarlo para desbloquearlo. De lo contrario, introduce tu contraseña o PIN.</translation>
 <translation id="8368859634510605990">&amp;Abrir todos los marcadores</translation>
-<translation id="8369547389711988632">Se ha dejado de cargar</translation>
 <translation id="8371695176452482769">Habla ahora</translation>
 <translation id="8372369524088641025">Clave WEP incorrecta</translation>
 <translation id="8373553483208508744">Silenciar pestañas</translation>
@@ -5018,7 +5020,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8677212948402625567">Ocultar todos...</translation>
 <translation id="8678648549315280022">Administrar configuración de descargas...</translation>
 <translation id="8678933587484842200">¿Cómo te gustaría que se iniciara esta aplicación?</translation>
-<translation id="8679788109894721265">Esta página utiliza más de <ph name="MEGABYTES" /> MB</translation>
 <translation id="8680251145628383637">Inicia sesión para acceder a tus marcadores, tu historial, tus contraseñas y tu configuración en todos tus dispositivos. Además, iniciarás sesión automáticamente en tus servicios de Google.</translation>
 <translation id="8686213429977032554">Este archivo de Drive aún no se ha compartido</translation>
 <translation id="8687485617085920635">Siguiente ventana</translation>

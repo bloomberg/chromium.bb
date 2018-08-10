@@ -264,6 +264,7 @@
 
       Jeśli jej nie włączysz, przesyłanie statystyk i danych diagnostycznych będzie wyłączone.
       Jeśli jej nie skonfigurujesz, przesyłanie statystyk użytkowania i danych diagnostycznych będzie wyłączone na urządzeniach niezarządzanych, ale włączone na zarządzanych.</translation>
+<translation id="1920046221095339924">Zezwalaj na sesję zarządzaną na urządzeniu</translation>
 <translation id="1929709556673267855">Udostępnia konfiguracje drukarek firmowych powiązanych z urządzeniami.
 
       Ta zasada umożliwia udostępnianie konfiguracji drukarek urządzeniom z systemem <ph name="PRODUCT_OS_NAME" />. 
@@ -298,6 +299,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 
       Jeśli to ustawienie jest włączone lub nie jest skonfigurowane, użytkownik może samodzielnie skonfigurować Autouzupełnianie adresów w interfejsie.</translation>
 <translation id="1960840544413786116">Określa, czy zezwolić na certyfikaty wydane przez lokalne kotwice zaufania, którym brakuje rozszerzenia subjectAlternativeName</translation>
+<translation id="1962273523772270623">Zezwalaj na zbieranie dzienników zdarzeń WebRTC z usług Google</translation>
 <translation id="1964634611280150550">Tryb incognito wyłączony</translation>
 <translation id="1964802606569741174">Ta zasada nie ma wpływu na aplikację YouTube na Androida. Aby wymusić Tryb bezpieczny w YouTube, trzeba uniemożliwić zainstalowanie tej aplikacji.</translation>
 <translation id="1969212217917526199">Zastępuje zasady w kompilacjach hosta dostępu zdalnego w trybie debugowania.
@@ -1908,6 +1910,11 @@ Ta zasada określa listę źródeł (adresów URL), które będą traktowane jak
       Jeśli ta zasada pozostanie nieustawiona lub lista jest pusta, wszystkie schematy są dostępne w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Ustawienia użytkowników zarządzanych lokalnie</translation>
 <translation id="6658245400435704251">Określa, o ile sekund urządzenie może losowo opóźnić pobranie aktualizacji w stosunku do czasu jej opublikowania na serwerze. Urządzenie może odczekać część tego okresu, licząc w sekundach zegara, a pozostałą część, licząc w testach dostępności aktualizacji. Tak czy inaczej okres opóźnienia jest ograniczony z góry, by urządzenie nigdy nie utknęło w stanie oczekiwania na pobranie aktualizacji.</translation>
+<translation id="6665599130599311250">Jeśli ta zasada ma wartość Fałsz lub nie jest ustawiona, zarządzana sesja gościa będzie działać tak, jak opisano na https://support.google.com/chrome/a/answer/3017014, czyli jako standardowa „sesja publiczna”.
+
+      Jeśli ta zasada ma wartość Prawda, sesja będzie „sesją zarządzaną” i nie będzie objęta wieloma ograniczeniami dotyczącymi „sesji publicznych”.
+
+      Jeśli ta zasada jest ustawiona, użytkownik nie może jej zmienić ani zastąpić.</translation>
 <translation id="6665670272107384733">Określ, jak często użytkownik musi podawać hasło, by używać szybkiego odblokowania</translation>
 <translation id="6681229465468164801">Pozwala utworzyć listę wzorców adresów URL określających witryny, które nie mogą prosić użytkownika o przyznanie dostępu do urządzeń USB.
 
@@ -2062,6 +2069,17 @@ Ta zasada określa listę źródeł (adresów URL), które będą traktowane jak
 <translation id="6943577887654905793">Nazwa ustawienia w systemie macOS/Linux:</translation>
 <translation id="69525503251220566">Parametr udostępniający funkcję wyszukiwania obrazem dla domyślnego dostawcy wyszukiwania</translation>
 <translation id="6956272732789158625">Nie zezwalaj na generowanie kluczy w żadnej witrynie</translation>
+<translation id="6982028490425791294">
+      Jeśli ta zasada ma wartość Fałsz, <ph name="PRODUCT_NAME" /> może zbierać dzienniki zdarzeń WebRTC z naszych usług (np. Google Meet) i przesyłać te dane do Google.
+
+      Jeśli ta zasada ma wartość Fałsz lub nie jest ustawiona, <ph name="PRODUCT_NAME" /> nie może zbierać ani przesyłać takich dzienników.
+
+      Dzienniki zawierają takie informacje jak daty i godziny wysłania i odebrania pakietów RTP, dane dotyczące obciążenia sieci oraz metadane związane z jakością ramek audio i wideo. Te informacje są przydatne podczas debugowania problemów z połączeniami audio lub wideo w Chrome, takich jak kłopoty z szacowaniem przepustowości. Dzienniki nie zawierają treści połączeń audio ani wideo.
+
+      Zbieranie danych mogą inicjować tylko usługi internetowe Google, takie jak Google Hangouts czy Google Meet.
+
+      Aby ułatwić debugowanie, możemy za pomocą identyfikatora sesji łączyć te dzienniki z innymi dziennikami zbieranymi przez usługi Google.
+      </translation>
 <translation id="6994082778848658360">Określa, jak można użyć zainstalowanego sprzętowego elementu zabezpieczeń w celu stosowania uwierzytelniania dwuskładnikowego, jeśli jest on zgodny z tą funkcją. Przycisk zasilania komputera wykrywa fizyczną obecność użytkownika.
 
       Jeśli wybierzesz „Wyłączone”, uwierzytelnianie dwuskładnikowe nie będzie dostępne.

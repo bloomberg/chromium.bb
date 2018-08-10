@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
 <translation id="100812568230599391">Définir le style d'affichage sur "entrelacé".</translation>
+<translation id="1011903154582639569">Trouver une touche, puis relever le doigt pour taper</translation>
 <translation id="1012173283529841972">Élément de liste</translation>
 <translation id="1013742170491673792">recherche</translation>
 <translation id="1022586497894531524">Est-ce la première fois que vous utilisez les commentaires audio de ChromeVox ? Ce didacticiel rapide explique les bases pour commencer à utiliser ChromeVox.</translation>
@@ -163,6 +164,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="2553108862507765288">erreur grammaticale</translation>
 <translation id="257674075312929031">Groupe</translation>
 <translation id="2582407057977008361">Contenu relatif</translation>
+<translation id="2592212930811759050">Appuyer deux fois pour commencer la modification</translation>
 <translation id="2606210917827248971">avec {COUNT,plural, =1{1 élément}one{# élément}other{# éléments}}</translation>
 <translation id="2614981083756825552">Mise en page MathML</translation>
 <translation id="2624431853467395961">Ouvrir le mode d'apprentissage</translation>

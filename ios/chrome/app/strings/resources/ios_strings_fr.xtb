@@ -167,6 +167,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="3588820906588687999">Ouvrir l'image dans un nouvel onglet</translation>
 <translation id="3603009562372709545">Copier l'URL du lien</translation>
 <translation id="3607167657931203000">Saisie automatique</translation>
+<translation id="360930808415985584">Contrôler les paramètres de synchronisation et de personnalisation, et bien plus</translation>
 <translation id="3609785682760573515">Synchronisation en cours…</translation>
 <translation id="3628119975092896051">Votre liste de lecture est disponible hors connexion. Pour ajouter une page à cette liste, appuyez sur <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Précharger pages Web</translation>
@@ -213,6 +214,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="4508750114462689118">Fermer la promo de connexion</translation>
 <translation id="4526249700380860531">Afficher et gérer les mots de passe enregistrés sur <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Veuillez essayer de vous reconnecter.</translation>
+<translation id="4541241553780729349">Les données que vous synchronisez avec Google et les fonctionnalités que vous utilisez ne changeront pas</translation>
 <translation id="457386861538956877">Autres...</translation>
 <translation id="461440297010471931">Recherche sur Google</translation>
 <translation id="4619615317237390068">Onglets d'autres appareils</translation>

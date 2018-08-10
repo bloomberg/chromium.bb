@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
 <translation id="100812568230599391">Canvia l'estil de pantalla a entrellaçat.</translation>
+<translation id="1011903154582639569">Cerca una tecla i, a continuació, aixeca el dit per escriure</translation>
 <translation id="1012173283529841972">Element de la llista</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">És el primer cop que fas servir els comentaris de veu de l'extensió ChromeVox? En aquest tutorial ràpid s'expliquen els aspectes bàsics per començar a utilitzar-la.</translation>
@@ -162,6 +163,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="2553108862507765288">error gramatical</translation>
 <translation id="257674075312929031">Grup</translation>
 <translation id="2582407057977008361">A part</translation>
+<translation id="2592212930811759050">Fes doble toc per començar a editar</translation>
 <translation id="2606210917827248971">amb {COUNT,plural, =1{# element}other{# elements}}</translation>
 <translation id="2614981083756825552">Disseny de MathML</translation>
 <translation id="2624431853467395961">Obre el mode d'aprenentatge</translation>

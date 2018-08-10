@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
 <translation id="100812568230599391">Преминаване към изгледа с наслагване.</translation>
+<translation id="1011903154582639569">Намерете клавиш, след което вдигнете пръст, за да въведете</translation>
 <translation id="1012173283529841972">Списъчен елемент</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">За първи път ли използвате обратната връзка с говор на ChromeVox? В този кратък урок са обяснени основните положения за започване на работа с екранния четец.</translation>
@@ -162,6 +163,7 @@
 <translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">Група</translation>
 <translation id="2582407057977008361">Странично съдържание</translation>
+<translation id="2592212930811759050">Докоснете двукратно, за да започнете да редактирате</translation>
 <translation id="2606210917827248971">с/ъс {COUNT,plural, =1{# елемент}other{# елемента}}</translation>
 <translation id="2614981083756825552">Оформление в Math ML</translation>
 <translation id="2624431853467395961">Включване на режима за изговаряне на клавишите</translation>

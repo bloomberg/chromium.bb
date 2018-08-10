@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="1351937230027495976">Runtuhkan menu</translation>
 <translation id="1383876407941801731">Carian</translation>
+<translation id="1419738280318246476">Buka kunci peranti untuk melaksanakan tindakan pemberitahuan</translation>
 <translation id="1467432559032391204">Kiri</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Pelancar</translation>
@@ -68,7 +69,6 @@
 <translation id="2049639323467105390">Peranti ini diuruskan oleh <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Potret</translation>
 <translation id="2067602449040652523">Kecerahan papan kekunci</translation>
-<translation id="2075212959500165896">Terlalu banyak percubaan. Cuba lagi nanti.</translation>
 <translation id="2081529251031312395">$1 masih dapat log masuk nanti.</translation>
 <translation id="2127372758936585790">Pengecas berkuasa rendah</translation>
 <translation id="2135456203358955318">Penggadang didok</translation>
@@ -140,7 +140,6 @@
 <translation id="3153444934357957346">Anda hanya boleh memiliki sehingga <ph name="MULTI_PROFILE_USER_LIMIT" /> akaun dalam log masuk berbilang.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Disambungkan ke peranti}other{Disambungkan ke # peranti}}</translation>
 <translation id="3236488194889173876">Tiada rangkaian mudah alih tersedia</translation>
-<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Tetamu</translation>
 <translation id="332587331255250389">Sila gantikan bateri</translation>
 <translation id="3351879221545518001">Anda sedang menghantar skrin.</translation>
@@ -227,6 +226,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4924411785043111640">Mulakan semula dan tetapkan semula</translation>
 <translation id="4961318399572185831">Hantar skrin</translation>
 <translation id="5069971504769299223">Pengurus peranti mungkin dapat memantau aktiviti anda.</translation>
+<translation id="5083553833479578423">Buka kunci pelbagai lagi ciri Assistant.</translation>
 <translation id="5136175204352732067">Papan kekunci lain disambungkan</translation>
 <translation id="5168181903108465623">Peranti Cast tersedia</translation>
 <translation id="5207949376430453814">Serlahkan karet teks</translation>
@@ -298,6 +298,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6376931439017688372">Bluetooth dihidupkan</translation>
 <translation id="639644700271529076">Kekunci CAPS LOCK dimatikan</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">Kosongkan semua pemberitahuan</translation>
 <translation id="643147933154517414">Selesai</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> pada <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Tolak</translation>
@@ -399,9 +400,11 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8152119955266188852">Anda menekan pintasan untuk penggadang skrin penuh. Adakah anda ingin menghidupkannya?</translation>
 <translation id="8190698733819146287">Sesuaikan bahasa dan input...</translation>
 <translation id="8191230140820435481">Uruskan apl, sambungan dan tema anda</translation>
+<translation id="8192202700944119416">Pemberitahuan disembunyikan.</translation>
 <translation id="8261506727792406068">Padam</translation>
 <translation id="8297006494302853456">Lemah</translation>
 <translation id="8308637677604853869">Menu sebelumnya</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Buat nota</translation>
 <translation id="8392451568018454956">Menu pilihan untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Penggadang Skrin Penuh</translation>
@@ -443,6 +446,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8938800817013097409">Peranti USB-C (port kanan di belakang)</translation>
 <translation id="8940956008527784070">Bateri lemah (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">Lancar pantas</translation>
+<translation id="899350903320462459">Buka kunci peranti sebagai <ph name="LOGIN_ID" /> untuk melaksanakan tindakan pemberitahuan</translation>
 <translation id="8995603266996330174">Diuruskan oleh <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Kemas kini Adobe Flash Player tersedia</translation>
 <translation id="9056839673611986238">Peranti akan dibalikkan</translation>

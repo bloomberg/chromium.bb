@@ -2165,7 +2165,6 @@
 <translation id="4275830172053184480">重新啟動裝置</translation>
 <translation id="4278101229438943600">你的 Google 助理已準備就緒</translation>
 <translation id="4278390842282768270">允許</translation>
-<translation id="4280864916190672950">停止載入</translation>
 <translation id="4281844954008187215">服務條款</translation>
 <translation id="4282196459431406533">Smart Lock 已啟用</translation>
 <translation id="4284105660453474798">你確定要刪除「$1」嗎？</translation>
@@ -3434,7 +3433,6 @@
 <translation id="6231881193380278751">在網址中加入查詢間距的參數，設定自動重新整理網頁的時間：chrome://device-log/?refresh=&lt;秒數&gt;</translation>
 <translation id="6232017090690406397">電池</translation>
 <translation id="6232116551750539448">「<ph name="NAME" />」的連線已中斷</translation>
-<translation id="6235700927623181151">這個分頁正在分享你的桌面內容。</translation>
 <translation id="6237816943013845465">讓你調整螢幕解析度</translation>
 <translation id="6238923052227198598">在鎖定畫面上顯示最新記事</translation>
 <translation id="6239558157302047471">重新載入頁框(&amp;F)</translation>
@@ -4813,7 +4811,6 @@
 <translation id="8366396658833131068">你的網路連線已恢復。請選取其他網路，或按底下的 [繼續] 按鈕啟動 Kiosk 應用程式。</translation>
 <translation id="8366947248864804596">當你的手機在適當距離範圍內並已解鎖時，直接選取即可為裝置解鎖。否則，請輸入你的密碼或 PIN 碼。</translation>
 <translation id="8368859634510605990">開啟所有書籤(&amp;O)</translation>
-<translation id="8369547389711988632">已停止載入</translation>
 <translation id="8371695176452482769">請說話</translation>
 <translation id="8372369524088641025">WEP 金鑰有誤</translation>
 <translation id="8373553483208508744">關閉多個分頁音訊</translation>
@@ -5019,7 +5016,6 @@
 <translation id="8677212948402625567">全部收合...</translation>
 <translation id="8678648549315280022">管理下載設定...</translation>
 <translation id="8678933587484842200">你希望如何啟動這個應用程式？</translation>
-<translation id="8679788109894721265">這個網頁的數據用量超過 <ph name="MEGABYTES" />MB</translation>
 <translation id="8680251145628383637">只要登入帳戶，您在任何裝置上都能取得自己的書籤、歷史記錄和密碼，並套用相同的設定。此外，系統還會自動讓您登入各項 Google 服務。</translation>
 <translation id="8686213429977032554">這個雲端硬碟檔案尚未與你共用</translation>
 <translation id="8687485617085920635">下一個視窗</translation>

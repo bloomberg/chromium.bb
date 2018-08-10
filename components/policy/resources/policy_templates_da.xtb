@@ -267,6 +267,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis den er angivet som falsk, deaktiveres rapportering af metrics og diagnosticeringsdata.
 
       Hvis den ikke konfigureres, deaktiveres rapportering af metrics og diagnosticeringsdata på ikke-administrerede enheder, mens det aktiveres på administrerede enheder.</translation>
+<translation id="1920046221095339924">Tillad administreret session på enheden</translation>
 <translation id="1929709556673267855">Angiver konfigurationer af virksomhedsprintere, der er knyttet til enheder.
 
       Denne politik giver dig mulighed for at angive printerkonfigurationer for <ph name="PRODUCT_OS_NAME" />-enheder.  Formatet er det samme som for NativePrinters-ordbogen, men for hver printer er der et yderligere påkrævet felt for "id" eller "guid" til hvidlister og sortlister.
@@ -300,6 +301,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
       Hvis denne indstilling er aktiveret eller ikke har nogen værdi, kan brugeren administrere den overordnede AutoFyld-funktion for adresser i brugerfladen.</translation>
 <translation id="1960840544413786116">Hvorvidt der skal gives tilladelse til certifikater, som er udstedt af lokale tillidsankre og mangler udvidelsen subjectAlternativeName</translation>
+<translation id="1962273523772270623">Tillad indsamling af WebRTC-hændelseslogfiler fra Google-tjenester</translation>
 <translation id="1964634611280150550">Inkognitotilstand er deaktiveret</translation>
 <translation id="1964802606569741174">Denne politik påvirker ikke YouTube-appen til Android. Hvis Beskyttet tilstand på YouTube skal håndhæves, skal installation af YouTube-appen til Android ikke tillades.</translation>
 <translation id="1969212217917526199">Tilsidesætter politikker i fejlfindingsbuilds for hosten for fjernadgang.
@@ -1925,6 +1927,11 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis denne politik ikke indstilles, eller hvis listen er tom, vil alle skemaer være tilgængelige i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Indstillinger for lokalt administrerede brugere</translation>
 <translation id="6658245400435704251">Angiver det antal sekunder, som en enhed på en tilfældig måde maksimalt kan forsinke en download af en opdatering fra det tidspunkt, hvor opdateringen først blev sendt ud til serveren. Enheden kan afsætte en del af denne tid i form af faktisk ventetid og den igangværende tid i form af det antal af opdateringer, der skal kontrolleres. Uanset hvad, er spredningen bundet af en øvre grænse til en konstant mængde af tid, således at en enhed aldrig kommer til at sidde fast og til evig tid vente på, at en opdatering downloades.</translation>
+<translation id="6665599130599311250">Hvis politikken er angivet som falsk eller ikke er angivet, reagerer administrerede gæstesessioner som beskrevet på https://support.google.com/chrome/a/answer/3017014 – standarden for "Offentlig session".
+
+      Hvis politikken er angivet som sand, har administrerede gæstesessioner samme adfærd som "Administreret session", hvilket fjerner mange af de begrænsninger, der gælder for "Offentlige sessioner".
+
+      Hvis politikken er konfigureret, kan den ikke ændres eller tilsidesættes af brugeren.</translation>
 <translation id="6665670272107384733">Konfigurer, hvor ofte brugeren skal indtaste adgangskoden for at bruge hurtig oplåsning.</translation>
 <translation id="6681229465468164801">Giver dig mulighed for at angive en liste med webadressemønstre, der angiver websites, som ikke må anmode brugeren om adgang til en USB-enhed.
 
@@ -2082,6 +2089,17 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6943577887654905793">Præferencenavn for Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter, der leverer funktion til billedsøgning i standardsøgemaskinen</translation>
 <translation id="6956272732789158625">Tillad ikke, at websites anvender nøglegenerering</translation>
+<translation id="6982028490425791294">
+      Hvis politikken er angivet som sand, har <ph name="PRODUCT_NAME" /> tilladelse til at indsamle WebRTC-hændelseslogfiler fra Google-tjenester (f.eks. Google Meet) og uploade de pågældende logfiler til Google.
+
+      Hvis politikken er angivet som falsk eller ikke er angivet, må <ph name="PRODUCT_NAME" /> ikke indsamle eller uploade sådanne logfiler.
+
+      Disse logfiler indeholder visse oplysninger, bl.a. tidspunkt for og størrelsen på sendte og modtagne RTP-pakker, feedback om belastning af netværket samt metadata om varigheden og kvaliteten af lyd- og videorammer. Disse oplysninger er nyttige i forbindelse med fejretning af problemer med lyd- og videoopkald i Chrome, f.eks. problemer med vurdering af båndbredde. Logfilerne omfatter ikke lyd- eller videoindhold fra opkald.
+
+      Denne dataindsamling kan kun aktiveres af Google-webtjenester såsom Google Hangouts eller Google Meet.
+
+      Disse logfiler kan ved hjælp af et sessions-id knyttes til andre logfiler, der er indsamlet af selve Google-tjenesten. Dette kan gøre fejlretningen nemmere.
+      </translation>
 <translation id="6994082778848658360">Angiver, hvordan det sikre element, der er indbygget i hardwaren, kan bruges til at levere godkendelse med sekundær faktor, hvis det er kompatibelt med denne funktion. Maskinens afbryderknap bruges til at fastslå brugerens fysiske tilstedeværelse.
 
       Hvis "Deaktiveret" er valgt, leveres der ingen sekundær faktor.
