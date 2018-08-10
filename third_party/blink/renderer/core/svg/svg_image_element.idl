@@ -35,7 +35,7 @@
     [MeasureAs=SVG1DOMImageElement] readonly attribute SVGAnimatedPreserveAspectRatio preserveAspectRatio;
     [CEReactions, Reflect, ReflectOnly=("async", "sync", "auto"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString decoding;
 
-    [RuntimeEnabled=JSImageDecode, CallWith=ScriptState, RaisesException] Promise decode();
+    [CallWith=ScriptState, RaisesException] Promise decode();
 };
 
 SVGImageElement implements SVGURIReference;

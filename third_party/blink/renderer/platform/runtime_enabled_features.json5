@@ -599,10 +599,6 @@
       status: "experimental",
     },
     {
-      name: "JSImageDecode",
-      status: "stable",
-    },
-    {
       name: "KeyboardMap",
       status: "stable",
     },
