@@ -45,6 +45,7 @@ fast/css3-text/css3-text-indent
 fast/scrolling
 fast/sub-pixel
 fast/lists
+paint/markers
 scrollbars
 external/wpt/html/rendering/replaced-elements/embedded-content-rendering-rules
 external/wpt/html/rendering/replaced-elements/attributes-for-embedded-content-and-images
