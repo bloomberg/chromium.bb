@@ -10,6 +10,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/net_errors.h"
+#include "net/cert/ct_sct_to_string.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace security_interstitials {
@@ -48,6 +49,15 @@ void PopulateSSLDebuggingStrings(const net::SSLInfo ssl_info,
       base::TimeFormatShortDate(ssl_info.cert->valid_expiry()));
   load_time_data->SetString("currentDate",
                             base::TimeFormatShortDate(time_triggered));
+  std::vector<std::string> sct_list;
+  for (const auto& sct_status : ssl_info.signed_certificate_timestamps) {
+    std::string sct_info = "\n\nSCT " + sct_status.sct->log_description + " (" +
+                           net::ct::OriginToString(sct_status.sct->origin) +
+                           ", " + net::ct::StatusToString(sct_status.status) +
+                           ")";
+    sct_list.push_back(sct_info);
+  }
+  load_time_data->SetString("ct", base::StrCat(sct_list));
   std::vector<std::string> encoded_chain;
   ssl_info.cert->GetPEMEncodedChain(&encoded_chain);
   load_time_data->SetString("pem", base::StrCat(encoded_chain));

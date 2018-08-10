@@ -14,6 +14,10 @@ function setupSSLDebuggingInfo() {
   appendDebuggingField('Current date', loadTimeData.getString('currentDate'));
   appendDebuggingField('PEM encoded chain', loadTimeData.getString('pem'),
                        true);
+  var ctInfo = loadTimeData.getString('ct');
+  if (ctInfo) {
+    appendDebuggingField('Certificate Transparency', ctInfo);
+  }
 
   $('error-code').addEventListener('click', toggleDebuggingInfo);
 }
