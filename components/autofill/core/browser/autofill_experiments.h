@@ -48,6 +48,10 @@ extern const base::Feature kAutofillVoteUsingInvalidProfileData;
 extern const char kCreditCardSigninPromoImpressionLimitParamKey[];
 extern const char kAutofillCreditCardLastUsedDateShowExpirationDateKey[];
 extern const char kAutofillUpstreamMaxMinutesSinceAutofillProfileUseKey[];
+extern const base::Feature kAutofillCreditCardLocalCardMigration;
+extern const char kAutofillCreditCardLocalCardMigrationParameterName[];
+extern const char
+    kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage[];
 
 #if defined(OS_MACOSX)
 extern const base::Feature kMacViewsAutofillPopup;
@@ -74,9 +78,22 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const syncer::SyncService* sync_service,
                                const std::string& user_email);
 
-// Returns whether Autofill credit card local card migration experiment is
-// enabled.
-bool IsAutofillCreditCardLocalCardMigrationExperimentEnabled();
+// Enum for local card migration experimental flag states.
+enum class LocalCardMigrationExperimentalFlag {
+  // Local card migration disabled.
+  kMigrationDisabled,
+  // Only migrate local cards when user submits form.
+  kMigrationWithoutSettingsPage,
+  // Migrate both on submitted form and from settings page.
+  kMigrationIncludeSettingsPage,
+};
+
+// Returns kMigrationDisabled if no experimental behavior is enabled for
+// kAutofillCreditCardLocalCardMigration; Return kMigrationIncludeSettingsPage
+// if user enables the local card migration and does not exclude the settings
+// page. Return kMigrationWithoutSettingsPage if user chooses to exclude the
+// settings page migration.
+LocalCardMigrationExperimentalFlag GetLocalCardMigrationExperimentalFlag();
 
 // For testing purposes; not to be launched.  When enabled, Chrome Upstream
 // always requests that the user enters/confirms cardholder name in the

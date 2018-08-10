@@ -26,7 +26,8 @@ TestLocalCardMigrationManager::~TestLocalCardMigrationManager() {}
 
 bool TestLocalCardMigrationManager::IsCreditCardMigrationEnabled() {
   bool migration_experiment_enabled =
-      IsAutofillCreditCardLocalCardMigrationExperimentEnabled();
+      GetLocalCardMigrationExperimentalFlag() !=
+      LocalCardMigrationExperimentalFlag::kMigrationDisabled;
   bool has_google_payments_account =
       (static_cast<int64_t>(payments_client_->GetPrefService()->GetDouble(
            prefs::kAutofillBillingCustomerNumber)) != 0);
