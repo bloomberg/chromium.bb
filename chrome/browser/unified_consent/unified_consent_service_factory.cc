@@ -46,14 +46,19 @@ void UnifiedConsentServiceFactory::RegisterProfilePrefs(
 KeyedService* UnifiedConsentServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
 
-  if (!IsUnifiedConsentEnabled(profile))
+  if (!IsUnifiedConsentEnabled(profile)) {
+    unified_consent::UnifiedConsentService::RollbackIfNeeded(
+        profile->GetPrefs(), sync_service);
     return nullptr;
+  }
 
   return new unified_consent::UnifiedConsentService(
       std::make_unique<ChromeUnifiedConsentServiceClient>(profile->GetPrefs()),
       profile->GetPrefs(), IdentityManagerFactory::GetForProfile(profile),
-      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile));
+      sync_service);
 }
 
 bool UnifiedConsentServiceFactory::ServiceIsNULLWhileTesting() const {
