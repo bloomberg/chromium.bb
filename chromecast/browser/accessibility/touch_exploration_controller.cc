@@ -179,9 +179,6 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
     if (VLOG_on_)
       VLOG(1) << "Leaving screen";
 
-    // Indicates to the user that they are leaving the screen.
-    accessibility_sound_player_->PlayExitScreenEarcon();
-
     if (current_touch_ids_.size() == 0) {
       SET_STATE(NO_FINGERS_DOWN);
       if (VLOG_on_) {
@@ -272,10 +269,6 @@ ui::EventRewriteStatus TouchExplorationController::InNoFingersDown(
     NOTREACHED() << "Unexpected event type received: " << event.GetName();
     return ui::EVENT_REWRITE_CONTINUE;
   }
-
-  int edge = FindEdgesWithinInset(event.location(), kLeavingScreenEdge);
-  if (edge != NO_EDGE)
-    accessibility_sound_player_->PlayEnterScreenEarcon();
 
   initial_press_ = std::make_unique<ui::TouchEvent>(event);
   most_recent_press_timestamp_ = initial_press_->time_stamp();
