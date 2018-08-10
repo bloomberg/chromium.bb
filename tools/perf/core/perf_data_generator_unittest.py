@@ -123,7 +123,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
         'swarming': {
           'ignore_task_failure': False,
           'can_use_on_swarming_builders': True,
-          'expiration': 21600,
+          'expiration': 7200,
           'io_timeout': 1800,
           'hard_timeout': 25200,
           'upload_test_results': True,
@@ -177,7 +177,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
         'swarming': {
           'ignore_task_failure': False,
           'can_use_on_swarming_builders': True,
-          'expiration': 21600,
+          'expiration': 7200,
           'io_timeout': 1800,
           'hard_timeout': 25200,
           'upload_test_results': True,
@@ -230,7 +230,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
         'swarming': {
           'ignore_task_failure': False,
           'can_use_on_swarming_builders': True,
-          'expiration': 21600,
+          'expiration': 7200,
           'io_timeout': 1800,
           'hard_timeout': 25200,
           'upload_test_results': True,
