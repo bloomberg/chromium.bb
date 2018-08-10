@@ -199,16 +199,13 @@ HeapCompact* ThreadHeap::Compaction() {
 }
 
 void ThreadHeap::RegisterMovingObjectReference(MovableReference* slot) {
-  DCHECK(slot);
   Compaction()->RegisterMovingObjectReference(slot);
 }
 
-void ThreadHeap::RegisterMovingObjectCallback(MovableReference reference,
+void ThreadHeap::RegisterMovingObjectCallback(MovableReference* slot,
                                               MovingObjectCallback callback,
                                               void* callback_data) {
-  DCHECK(reference);
-  Compaction()->RegisterMovingObjectCallback(reference, callback,
-                                             callback_data);
+  Compaction()->RegisterMovingObjectCallback(slot, callback, callback_data);
 }
 
 void ThreadHeap::MarkNotFullyConstructedObjects(MarkingVisitor* visitor) {

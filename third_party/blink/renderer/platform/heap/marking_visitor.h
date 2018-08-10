@@ -148,7 +148,7 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
     MarkHeaderNoTracing(HeapObjectHeader::FromPayload(object));
   }
 
-  void RegisterBackingStoreCallback(void* backing_store,
+  void RegisterBackingStoreCallback(void** slot,
                                     MovingObjectCallback,
                                     void* callback_data) final;
   bool RegisterWeakTable(const void* closure,
@@ -165,7 +165,7 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
   static void WriteBarrierSlow(void*);
   static void TraceMarkedBackingStoreSlow(void*);
 
-  void RegisterBackingStoreReference(void* slot);
+  void RegisterBackingStoreReference(void** slot);
 
   void ConservativelyMarkHeader(HeapObjectHeader*);
 

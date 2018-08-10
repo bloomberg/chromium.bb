@@ -266,7 +266,7 @@ class PLATFORM_EXPORT Visitor {
 
   // Registers backing store pointers so that they can be moved and properly
   // updated.
-  virtual void RegisterBackingStoreCallback(void* backing_store,
+  virtual void RegisterBackingStoreCallback(void** slot,
                                             MovingObjectCallback,
                                             void* callback_data) = 0;
 

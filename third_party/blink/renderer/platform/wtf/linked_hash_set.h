@@ -307,11 +307,9 @@ class LinkedHashSet {
     impl_.Trace(visitor);
     // Should the underlying table be moved by GC, register a callback
     // that fixes up the interior pointers that the (Heap)LinkedHashSet keeps.
-    if (impl_.table_) {
-      Allocator::RegisterBackingStoreCallback(
-          visitor, impl_.table_, MoveBackingCallback,
-          reinterpret_cast<void*>(&anchor_));
-    }
+    Allocator::RegisterBackingStoreCallback(visitor, &impl_.table_,
+                                            MoveBackingCallback,
+                                            reinterpret_cast<void*>(&anchor_));
   }
 
   int64_t Modifications() const { return impl_.Modifications(); }

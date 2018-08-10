@@ -117,21 +117,20 @@ void MarkingVisitor::RegisterWeakCallback(void* object, WeakCallback callback) {
   weak_callback_worklist_.Push({object, callback});
 }
 
-void MarkingVisitor::RegisterBackingStoreReference(void* slot) {
+void MarkingVisitor::RegisterBackingStoreReference(void** slot) {
   if (marking_mode_ != kGlobalMarkingWithCompaction)
     return;
   Heap().RegisterMovingObjectReference(
       reinterpret_cast<MovableReference*>(slot));
 }
 
-void MarkingVisitor::RegisterBackingStoreCallback(void* backing_store,
+void MarkingVisitor::RegisterBackingStoreCallback(void** slot,
                                                   MovingObjectCallback callback,
                                                   void* callback_data) {
   if (marking_mode_ != kGlobalMarkingWithCompaction)
     return;
-  Heap().RegisterMovingObjectCallback(
-      reinterpret_cast<MovableReference>(backing_store), callback,
-      callback_data);
+  Heap().RegisterMovingObjectCallback(reinterpret_cast<MovableReference*>(slot),
+                                      callback, callback_data);
 }
 
 bool MarkingVisitor::RegisterWeakTable(const void* closure,

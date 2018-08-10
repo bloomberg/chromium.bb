@@ -262,7 +262,7 @@ class PLATFORM_EXPORT ThreadHeap {
   //
   // For Blink, |HeapLinkedHashSet<>| is currently the only abstraction which
   // relies on this feature.
-  void RegisterMovingObjectCallback(MovableReference,
+  void RegisterMovingObjectCallback(MovableReference*,
                                     MovingObjectCallback,
                                     void* callback_data);
 
