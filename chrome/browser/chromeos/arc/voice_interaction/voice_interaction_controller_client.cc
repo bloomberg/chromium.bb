@@ -45,6 +45,10 @@ VoiceInteractionControllerClient::VoiceInteractionControllerClient() {
                               content::NotificationService::AllSources());
 
   g_voice_interaction_controller_client_instance = this;
+
+  if (chromeos::switches::IsAssistantEnabled()) {
+    voice_interaction_state_ = ash::mojom::VoiceInteractionState::NOT_READY;
+  }
 }
 
 VoiceInteractionControllerClient::~VoiceInteractionControllerClient() {
