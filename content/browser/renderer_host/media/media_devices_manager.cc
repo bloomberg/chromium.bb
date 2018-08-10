@@ -829,7 +829,10 @@ void MediaDevicesManager::UpdateSnapshot(
   if (old_snapshot.size() != new_snapshot.size() ||
       !std::equal(new_snapshot.begin(), new_snapshot.end(),
                   old_snapshot.begin(),
-                  ignore_group_id ? operator== : EqualDeviceAndGroupID)) {
+                  ignore_group_id
+                      ? [](const MediaDeviceInfo& lhs,
+                           const MediaDeviceInfo& rhs) { return lhs == rhs; }
+                      : EqualDeviceAndGroupID)) {
     // Prevent sending notifications until group IDs are updated using
     // a heuristic in ProcessRequests().
     // TODO(crbug.com/627793): Remove |is_video_with_group_ids| and the
