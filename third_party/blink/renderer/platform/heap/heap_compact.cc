@@ -331,12 +331,6 @@ bool HeapCompact::ShouldCompact(ThreadHeap* heap,
                         << " count=" << gc_count_since_last_compaction_
                         << " free=" << free_list_size_;
   gc_count_since_last_compaction_++;
-  // It is only safe to compact during non-conservative GCs.
-  // TODO: for the main thread, limit this further to only idle GCs.
-  if (reason != BlinkGC::GCReason::kIdleGC &&
-      reason != BlinkGC::GCReason::kPreciseGC &&
-      reason != BlinkGC::GCReason::kForcedGC)
-    return false;
 
   // If the GCing thread requires a stack scan, do not compact.
   // Why? Should the stack contain an iterator pointing into its
@@ -345,8 +339,20 @@ bool HeapCompact::ShouldCompact(ThreadHeap* heap,
   if (stack_state == BlinkGC::kHeapPointersOnStack)
     return false;
 
+  if (reason == BlinkGC::GCReason::kTesting) {
+    UpdateHeapResidency();
+    return force_compaction_gc_;
+  }
+
   // TODO(keishi): Should be enable after fixing the crashes.
   if (marking_type == BlinkGC::kIncrementalMarking)
+    return false;
+
+  // TODO(harukamt): Add kIncrementalIdleGC and kIncrementalV8FollowupGC when we
+  // enable heap compaction for incremental marking.
+  if (reason != BlinkGC::GCReason::kIdleGC &&
+      reason != BlinkGC::GCReason::kPreciseGC &&
+      reason != BlinkGC::GCReason::kForcedGC)
     return false;
 
   // Compaction enable rules:

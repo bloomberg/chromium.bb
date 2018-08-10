@@ -36,12 +36,18 @@
 
 namespace blink {
 
+namespace incremental_marking_test {
+class IncrementalMarkingTestDriver;
+}
+
 class NormalPageArena;
 class BasePage;
 class ThreadState;
 class ThreadHeap;
 
 class PLATFORM_EXPORT HeapCompact final {
+  friend class incremental_marking_test::IncrementalMarkingTestDriver;
+
  public:
   static std::unique_ptr<HeapCompact> Create(ThreadHeap* heap) {
     return base::WrapUnique(new HeapCompact(heap));
