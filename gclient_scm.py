@@ -92,7 +92,6 @@ class SCMWrapper(object):
 
   This is the abstraction layer to bind to different SCM.
   """
-
   def __init__(self, url=None, root_dir=None, relpath=None, out_fh=None,
                out_cb=None, print_outbuf=False):
     self.url = url
@@ -345,15 +344,22 @@ class GitWrapper(SCMWrapper):
               self.Print('FAILED to break lock: %s: %s' % (to_break, ex))
               raise
 
-  def _GetBranchForCommit(self, commit):
+  # TODO(ehmaldonado): Remove after bot_update is modified to pass the patch's
+  # branch.
+  def _GetTargetBranchForCommit(self, commit):
     """Get the remote branch a commit is part of."""
-    if scm.GIT.IsAncestor(self.checkout_path, commit,
-                          'refs/remotes/origin/master'):
-      return 'refs/remotes/origin/master'
+    _WELL_KNOWN_BRANCHES = [
+        'refs/remotes/origin/master',
+        'refs/remotes/origin/infra/config',
+        'refs/remotes/origin/lkgr',
+    ]
+    for branch in _WELL_KNOWN_BRANCHES:
+      if scm.GIT.IsAncestor(self.checkout_path, commit, branch):
+        return branch
     remote_refs = self._Capture(
-        ['for-each-ref', 'refs/remotes/%s/*' % self.remote,
+        ['for-each-ref', 'refs/remotes/%s' % self.remote,
          '--format=%(refname)']).splitlines()
-    for ref in remote_refs:
+    for ref in sorted(remote_refs, reverse=True):
       if scm.GIT.IsAncestor(self.checkout_path, commit, ref):
         return ref
     self.Print('Failed to find a remote ref that contains %s. '
@@ -364,7 +370,42 @@ class GitWrapper(SCMWrapper):
     # everything in between.
     return commit
 
-  def apply_patch_ref(self, patch_repo, patch_ref, options, file_list):
+  def apply_patch_ref(self, patch_repo, patch_ref, target_branch, options,
+                      file_list):
+    """Apply a patch on top of the revision we're synced at.
+
+    The patch ref is given by |patch_repo|@|patch_ref|, and the current revision
+    is |base_rev|.
+    We also need the |target_branch| that the patch was uploaded against. We use
+    it to find a merge base between |patch_rev| and |base_rev|, so we can find
+    what commits constitute the patch:
+
+    Graphically, it looks like this:
+
+     ... -> merge_base -> [possibly already landed commits] -> target_branch
+                       \
+                        -> [possibly not yet landed dependent CLs] -> patch_rev
+
+    Next, we apply the commits |merge_base..patch_rev| on top of whatever is
+    currently checked out, denoted |base_rev|. Typically, it'd be a revision
+    from |target_branch|, but this is not required.
+
+    Graphically, we cherry pick |merge_base..patch_rev| on top of |base_rev|:
+
+     ... -> base_rev -> [possibly not yet landed dependent CLs] -> patch_rev
+
+    After application, if |options.reset_patch_ref| is specified, we soft reset
+    the just cherry-picked changes, keeping them in git index only.
+
+    Args:
+      patch_repo: The patch origin. e.g. 'https://foo.googlesource.com/bar'
+      patch_ref: The ref to the patch. e.g. 'refs/changes/1234/34/1'.
+      target_branch: The branch the patch was uploaded against.
+          e.g. 'refs/heads/master' or 'refs/heads/infra/config'.
+      options: The options passed to gclient.
+      file_list: A list where modified files will be appended.
+    """
+
     # Abort any cherry-picks in progress.
     try:
       self._Capture(['cherry-pick', '--abort'])
@@ -372,10 +413,12 @@ class GitWrapper(SCMWrapper):
       pass
 
     base_rev = self._Capture(['rev-parse', 'HEAD'])
-    branch_rev = self._GetBranchForCommit(base_rev)
+    target_branch = target_branch or self._GetTargetBranchForCommit(base_rev)
     self.Print('===Applying patch ref===')
-    self.Print('Repo is %r @ %r, ref is %r (%r), root is %r' % (
-        patch_repo, patch_ref, base_rev, branch_rev, self.checkout_path))
+    self.Print('Patch ref is %r @ %r. Target branch for patch is %r. '
+               'Current HEAD is %r. Current dir is %r' % (
+                   patch_repo, patch_ref, target_branch, base_rev,
+                   self.checkout_path))
     self._Capture(['reset', '--hard'])
     self._Capture(['fetch', patch_repo, patch_ref])
     patch_rev = self._Capture(['rev-parse', 'FETCH_HEAD'])
@@ -386,9 +429,9 @@ class GitWrapper(SCMWrapper):
       else:
         # Find the merge-base between the branch_rev and patch_rev to find out
         # the changes we need to cherry-pick on top of base_rev.
-        merge_base = self._Capture(['merge-base', branch_rev, patch_rev])
+        merge_base = self._Capture(['merge-base', target_branch, patch_rev])
         self.Print('Merge base of %s and %s is %s' % (
-            branch_rev, patch_rev, merge_base))
+            target_branch, patch_rev, merge_base))
         if merge_base == patch_rev:
           # If the merge-base is patch_rev, it means patch_rev is already part
           # of the history, so just check it out.
@@ -406,8 +449,11 @@ class GitWrapper(SCMWrapper):
         file_list.extend(self._GetDiffFilenames(base_rev))
 
     except subprocess2.CalledProcessError as e:
-      self.Print('Failed to apply %r @ %r to %r at %r' % (
-              patch_repo, patch_ref, base_rev, self.checkout_path))
+      self.Print('Failed to apply patch.')
+      self.Print('Patch ref is %r @ %r. Target branch for patch is %r. '
+                 'Current HEAD is %r. Current dir is %r' % (
+                     patch_repo, patch_ref, target_branch, base_rev,
+                     self.checkout_path))
       self.Print('git returned non-zero exit status %s:\n%s' % (
           e.returncode, e.stderr))
       # Print the current status so that developers know what changes caused the

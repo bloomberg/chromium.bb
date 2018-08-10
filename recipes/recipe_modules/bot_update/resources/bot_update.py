@@ -55,9 +55,6 @@ COMMIT_ORIGINAL_POSITION_FOOTER_KEY = 'Cr-Original-Commit-Position'
 # Regular expression to parse gclient's revinfo entries.
 REVINFO_RE = re.compile(r'^([^:]+):\s+([^@]+)@(.+)$')
 
-# Regular expression to match gclient's patch error message.
-PATCH_ERROR_RE = re.compile('Failed to apply .* @ .* to .* at .*')
-
 # Copied from scripts/recipes/chromium.py.
 GOT_REVISION_MAPPINGS = {
     CHROMIUM_SRC_URL: {
@@ -385,7 +382,7 @@ def gclient_sync(
   except SubprocessFailed as e:
     # If gclient sync is handling patching, parse the output for a patch error
     # message.
-    if apply_patch_on_gclient and PATCH_ERROR_RE.search(e.output):
+    if apply_patch_on_gclient and 'Failed to apply patch.' in e.output:
       raise PatchFailed(e.message, e.code, e.output)
     # Throw a GclientSyncFailed exception so we can catch this independently.
     raise GclientSyncFailed(e.message, e.code, e.output)
