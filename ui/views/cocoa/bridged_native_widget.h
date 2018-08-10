@@ -15,7 +15,7 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
 #include "ui/accelerated_widget_mac/display_ca_layer_tree.h"
-#include "ui/base/ime/input_method_delegate.h"
+#include "ui/base/ime/text_input_client.h"
 #import "ui/views/cocoa/bridged_native_widget_owner.h"
 #import "ui/views/cocoa/cocoa_mouse_capture_delegate.h"
 #import "ui/views/focus/focus_manager.h"
@@ -26,10 +26,6 @@
 @class BridgedContentView;
 @class ModalShowAnimationWithLayer;
 @class ViewsNSWindowDelegate;
-
-namespace ui {
-class InputMethod;
-}
 
 namespace views {
 namespace test {
@@ -48,9 +44,7 @@ class View;
 // NativeWidgetMac to the Cocoa window. Behaves a bit like an aura::Window.
 class VIEWS_EXPORT BridgedNativeWidget
     : public ui::CATransactionCoordinator::PreCommitObserver,
-      public ui::internal::InputMethodDelegate,
       public CocoaMouseCaptureDelegate,
-      public FocusChangeListener,
       public BridgedNativeWidgetOwner,
       public DialogObserver {
  public:
@@ -80,10 +74,6 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   // Invoked at the end of Widget::Init().
   void OnWidgetInitDone();
-
-  // Sets or clears the focus manager to use for tracking focused views.
-  // This does NOT take ownership of |focus_manager|.
-  void SetFocusManager(FocusManager* focus_manager);
 
   // Changes the bounds of the window and the hosted layer if present. The
   // origin is a location in screen coordinates except for "child" windows,
@@ -164,9 +154,6 @@ class VIEWS_EXPORT BridgedNativeWidget
   // itself.
   void OnShowAnimationComplete();
 
-  // See widget.h for documentation.
-  ui::InputMethod* GetInputMethod();
-
   // The restored bounds will be derived from the current NSWindow frame unless
   // fullscreen or transitioning between fullscreen states.
   gfx::Rect GetRestoredBounds() const;
@@ -224,9 +211,6 @@ class VIEWS_EXPORT BridgedNativeWidget
   bool ShouldWaitInPreCommit() override;
   base::TimeDelta PreCommitTimeout() override;
 
-  // ui::internal::InputMethodDelegate:
-  ui::EventDispatchDetails DispatchKeyEventPostIME(ui::KeyEvent* key) override;
-
   // views::BridgedNativeWidget:
   // TODO(ccameron): Rename BridgedNativeWidget to BridgedNativeWidgetImpl, and
   // make these methods be exposed via the BridgedNativeWidget interface.
@@ -237,6 +221,10 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   // Specify the content to draw in the NSView.
   void SetCALayerParams(const gfx::CALayerParams& ca_layer_params);
+
+  // TODO(ccameron): This method exists temporarily as we move all direct access
+  // of TextInputClient out of BridgedContentView.
+  void SetTextInputClient(ui::TextInputClient* text_input_client);
 
  private:
   friend class test::BridgedNativeWidgetTestApi;
@@ -270,12 +258,6 @@ class VIEWS_EXPORT BridgedNativeWidget
   // Creates and attaches a new instance if not found.
   NSMutableDictionary* GetWindowProperties() const;
 
-  // FocusChangeListener:
-  void OnWillChangeFocus(View* focused_before,
-                         View* focused_now) override;
-  void OnDidChangeFocus(View* focused_before,
-                        View* focused_now) override;
-
   // BridgedNativeWidgetOwner:
   NSWindow* GetNSWindow() override;
   gfx::Vector2d GetChildWindowOffset() const override;
@@ -296,12 +278,10 @@ class VIEWS_EXPORT BridgedNativeWidget
   base::scoped_nsobject<ViewsNSWindowDelegate> window_delegate_;
   base::scoped_nsobject<BridgedContentView> bridged_view_;
   base::scoped_nsobject<ModalShowAnimationWithLayer> show_animation_;
-  std::unique_ptr<ui::InputMethod> input_method_;
   std::unique_ptr<CocoaMouseCapture> mouse_capture_;
   std::unique_ptr<CocoaWindowMoveLoop> window_move_loop_;
   std::unique_ptr<TooltipManager> tooltip_manager_;
   std::unique_ptr<DragDropClientMac> drag_drop_client_;
-  FocusManager* focus_manager_;  // Weak. Owned by our Widget.
   Widget::InitParams::Type widget_type_;
   bool is_translucent_window_ = false;
 

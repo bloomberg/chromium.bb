@@ -9,14 +9,16 @@
 
 #include "base/macros.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
+#include "ui/base/ime/input_method_delegate.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/views/cocoa/bridged_native_widget_host.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
 
 namespace ui {
 class RecyclableCompositorMac;
-}
+}  // namespace ui
 
 namespace views {
 
@@ -28,6 +30,8 @@ class NativeWidgetMac;
 // APIs, and which may live in an app shim process.
 class VIEWS_EXPORT BridgedNativeWidgetHostImpl
     : public BridgedNativeWidgetHost,
+      public FocusChangeListener,
+      public ui::internal::InputMethodDelegate,
       public ui::LayerDelegate,
       public ui::LayerOwner,
       public ui::AcceleratedWidgetMacNSView {
@@ -46,6 +50,13 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   // Initialize the ui::Compositor and ui::Layer.
   void CreateCompositor(const Widget::InitParams& params);
+
+  // Sets or clears the focus manager to use for tracking focused views.
+  // This does NOT take ownership of |focus_manager|.
+  void SetFocusManager(FocusManager* focus_manager);
+
+  // See widget.h for documentation.
+  ui::InputMethod* GetInputMethod();
 
  private:
   void DestroyCompositor();
@@ -69,6 +80,13 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                  gfx::DecoratedText* decorated_word,
                  gfx::Point* baseline_point) override;
 
+  // FocusChangeListener:
+  void OnWillChangeFocus(View* focused_before, View* focused_now) override;
+  void OnDidChangeFocus(View* focused_before, View* focused_now) override;
+
+  // ui::internal::InputMethodDelegate:
+  ui::EventDispatchDetails DispatchKeyEventPostIME(ui::KeyEvent* key) override;
+
   // ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
@@ -85,6 +103,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // we will instantiate a mojo BridgedNativeWidget interface to a Cocoa
   // instance that may be in another process.
   std::unique_ptr<BridgedNativeWidget> bridge_;
+
+  std::unique_ptr<ui::InputMethod> input_method_;
+  FocusManager* focus_manager_ = nullptr;  // Weak. Owned by our Widget.
 
   std::unique_ptr<ui::RecyclableCompositorMac> compositor_;
 

@@ -19,8 +19,6 @@
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/ime/input_method.h"
-#include "ui/base/ime/input_method_factory.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -225,7 +223,6 @@ BridgedNativeWidget::BridgedNativeWidget(BridgedNativeWidgetHost* host,
                                          NativeWidgetMac* parent)
     : host_(host),
       native_widget_mac_(parent),
-      focus_manager_(nullptr),
       widget_type_(Widget::InitParams::TYPE_WINDOW),  // Updated in Init().
       parent_(nullptr),
       target_fullscreen_state_(false),
@@ -247,7 +244,6 @@ BridgedNativeWidget::~BridgedNativeWidget() {
   ui::CATransactionCoordinator::Get().RemovePreCommitObserver(this);
   RemoveOrDestroyChildren();
   DCHECK(child_windows_.empty());
-  SetFocusManager(nullptr);
   SetRootView(nullptr);
 }
 
@@ -369,27 +365,6 @@ void BridgedNativeWidget::OnWidgetInitDone() {
       native_widget_mac_->GetWidget()->widget_delegate()->AsDialogDelegate();
   if (dialog)
     dialog->AddObserver(this);
-}
-
-void BridgedNativeWidget::SetFocusManager(FocusManager* focus_manager) {
-  if (focus_manager_ == focus_manager)
-    return;
-
-  if (focus_manager_) {
-    // Only the destructor can replace the focus manager (and it passes null).
-    DCHECK(![window_ delegate]);
-    DCHECK(!focus_manager);
-    if (View* old_focus = focus_manager_->GetFocusedView())
-      OnDidChangeFocus(old_focus, nullptr);
-    focus_manager_->RemoveFocusChangeListener(this);
-    focus_manager_ = nullptr;
-    return;
-  }
-
-  focus_manager_ = focus_manager;
-  focus_manager_->AddFocusChangeListener(this);
-  if (View* new_focus = focus_manager_->GetFocusedView())
-    OnDidChangeFocus(nullptr, new_focus);
 }
 
 void BridgedNativeWidget::SetBounds(const gfx::Rect& new_bounds) {
@@ -857,16 +832,6 @@ void BridgedNativeWidget::OnShowAnimationComplete() {
   show_animation_.reset();
 }
 
-ui::InputMethod* BridgedNativeWidget::GetInputMethod() {
-  if (!input_method_) {
-    input_method_ = ui::CreateInputMethod(this, gfx::kNullAcceleratedWidget);
-    // For now, use always-focused mode on Mac for the input method.
-    // TODO(tapted): Move this to OnWindowKeyStatusChangedTo() and balance.
-    input_method_->OnFocus();
-  }
-  return input_method_.get();
-}
-
 gfx::Rect BridgedNativeWidget::GetRestoredBounds() const {
   if (target_fullscreen_state_ || in_fullscreen_transition_)
     return bounds_before_fullscreen_;
@@ -1012,19 +977,6 @@ base::TimeDelta BridgedNativeWidget::PreCommitTimeout() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BridgedNativeWidget, internal::InputMethodDelegate:
-
-ui::EventDispatchDetails BridgedNativeWidget::DispatchKeyEventPostIME(
-    ui::KeyEvent* key) {
-  DCHECK(focus_manager_);
-  if (!focus_manager_->OnKeyEvent(*key))
-    key->StopPropagation();
-  else
-    native_widget_mac_->GetWidget()->OnKeyEvent(key);
-  return ui::EventDispatchDetails();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidget, CocoaMouseCaptureDelegate:
 
 void BridgedNativeWidget::PostCapturedEvent(NSEvent* event) {
@@ -1037,26 +989,6 @@ void BridgedNativeWidget::OnMouseCaptureLost() {
 
 NSWindow* BridgedNativeWidget::GetWindow() const {
   return window_;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BridgedNativeWidget, FocusChangeListener:
-
-void BridgedNativeWidget::OnWillChangeFocus(View* focused_before,
-                                            View* focused_now) {
-}
-
-void BridgedNativeWidget::OnDidChangeFocus(View* focused_before,
-                                           View* focused_now) {
-  ui::InputMethod* input_method =
-      native_widget_mac_->GetWidget()->GetInputMethod();
-  if (input_method) {
-    ui::TextInputClient* input_client = input_method->GetTextInputClient();
-    // Sanity check: When focus moves away from the widget (i.e. |focused_now|
-    // is nil), then the textInputClient will be cleared.
-    DCHECK(!!focused_now || !input_client);
-    [bridged_view_ setTextInputClient:input_client];
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1084,6 +1016,11 @@ void BridgedNativeWidget::SetCALayerParams(
     invalidate_shadow_on_frame_swap_ = false;
     [window_ invalidateShadow];
   }
+}
+
+void BridgedNativeWidget::SetTextInputClient(
+    ui::TextInputClient* text_input_client) {
+  [bridged_view_ setTextInputClient:text_input_client];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
