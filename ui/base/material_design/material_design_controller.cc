@@ -176,11 +176,6 @@ MaterialDesignController::Mode MaterialDesignController::GetMode() {
 }
 
 // static
-bool MaterialDesignController::IsSecondaryUiMaterial() {
-  return true;
-}
-
-// static
 bool MaterialDesignController::IsTouchOptimizedUiEnabled() {
   return GetMode() == MATERIAL_TOUCH_OPTIMIZED ||
          GetMode() == MATERIAL_TOUCH_REFRESH;
