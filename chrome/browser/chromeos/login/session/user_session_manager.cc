@@ -1426,6 +1426,10 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
       ScreenTimeControllerFactory::GetForBrowserContext(profile);
       ConsumerStatusReportingServiceFactory::GetForBrowserContext(profile);
     }
+
+    // PrefService is ready, check whether we need to force a VPN connection.
+    always_on_vpn_manager_ =
+        std::make_unique<arc::AlwaysOnVpnManager>(profile->GetPrefs());
   }
 
   UpdateEasyUnlockKeys(user_context_);
@@ -2131,6 +2135,7 @@ void UserSessionManager::Shutdown() {
   token_handle_fetcher_.reset();
   token_handle_util_.reset();
   first_run::GoodiesDisplayer::Delete();
+  always_on_vpn_manager_.reset();
 }
 
 void UserSessionManager::SetSwitchesForUser(
