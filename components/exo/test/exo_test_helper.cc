@@ -65,7 +65,8 @@ ExoTestHelper::~ExoTestHelper() {}
 std::unique_ptr<gfx::GpuMemoryBuffer> ExoTestHelper::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format) {
-  return aura::Env::GetInstance()
+  return WMHelper::GetInstance()
+      ->env()
       ->context_factory()
       ->GetGpuMemoryBufferManager()
       ->CreateGpuMemoryBuffer(size, format, gfx::BufferUsage::GPU_READ,

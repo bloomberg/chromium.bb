@@ -21,6 +21,7 @@
 #include "components/exo/wm_helper.h"
 #include "components/viz/common/features.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -44,7 +45,7 @@ class ArcAccessibilityHelperBridgeBrowserTest : public InProcessBrowserTest {
     chromeos::AccessibilityManager::Get()->SetProfileForTest(
         browser()->profile());
 
-    wm_helper_ = std::make_unique<exo::WMHelper>();
+    wm_helper_ = std::make_unique<exo::WMHelper>(aura::Env::GetInstance());
     exo::WMHelper::SetInstance(wm_helper_.get());
   }
 

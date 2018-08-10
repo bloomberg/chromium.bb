@@ -36,6 +36,7 @@
 #include "components/exo/test/exo_test_helper.h"
 #include "components/exo/wm_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/aura/env.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -116,7 +117,7 @@ class ArcNotificationContentViewTest : public AshTestBase {
 
     MessageCenterView::disable_animation_for_testing = true;
 
-    wm_helper_ = std::make_unique<exo::WMHelper>();
+    wm_helper_ = std::make_unique<exo::WMHelper>(aura::Env::GetInstance());
     exo::WMHelper::SetInstance(wm_helper_.get());
     DCHECK(exo::WMHelper::HasInstance());
 

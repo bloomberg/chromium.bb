@@ -27,9 +27,10 @@ aura::Window* GetPrimaryRoot() {
 ////////////////////////////////////////////////////////////////////////////////
 // WMHelper, public:
 
-WMHelper::WMHelper()
+WMHelper::WMHelper(aura::Env* env)
     : vsync_manager_(
-          GetPrimaryRoot()->layer()->GetCompositor()->vsync_manager()) {}
+          GetPrimaryRoot()->layer()->GetCompositor()->vsync_manager()),
+      env_(env) {}
 
 WMHelper::~WMHelper() {}
 

@@ -17,6 +17,7 @@ class TabletModeObserver;
 }
 
 namespace aura {
+class env;
 class Window;
 namespace client {
 class CursorClient;
@@ -58,12 +59,14 @@ class WMHelper : public aura::client::DragDropDelegate {
     virtual ~DragDropObserver() {}
   };
 
-  WMHelper();
+  explicit WMHelper(aura::Env* env);
   ~WMHelper() override;
 
   static void SetInstance(WMHelper* helper);
   static WMHelper* GetInstance();
   static bool HasInstance();
+
+  aura::Env* env() { return env_; }
 
   void AddActivationObserver(wm::ActivationChangeObserver* observer);
   void RemoveActivationObserver(wm::ActivationChangeObserver* observer);
@@ -111,6 +114,7 @@ class WMHelper : public aura::client::DragDropDelegate {
   base::TimeTicks vsync_timebase_;
   base::TimeDelta vsync_interval_;
   scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
+  aura::Env* const env_;
 
   DISALLOW_COPY_AND_ASSIGN(WMHelper);
 };
