@@ -38,6 +38,16 @@ interface StorageAreaGetAllCallback {
 
 // The mojo interface representing the connection to a single DOMStorage Area.
 interface StorageArea {
+  // The quota for each storage area.
+  // This value is enforced in renderer processes and the browser process.
+  const uint32 kPerStorageAreaQuota = 10485760; // 10 MiB
+
+  // In the browser process we allow some overage to
+  // accommodate concurrent writes from different renderers
+  // that were allowed because the limit imposed in the renderer
+  // wasn't exceeded.
+  const uint32 kPerStorageAreaOverQuotaAllowance = 102400; // 100 KiB
+
   AddObserver(associated StorageAreaObserver observer);
 
   // Set the database entry for |key| to |value|.
