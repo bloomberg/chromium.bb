@@ -28,7 +28,7 @@ class AssistantProgressIndicator : public views::View {
 
   // Caches the last call to VisibilityChanged. Because we trigger this event
   // artificially, we want to make sure that we don't over trigger.
-  bool is_visible_;
+  bool is_visible_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantProgressIndicator);
 };
