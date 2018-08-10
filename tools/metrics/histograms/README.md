@@ -84,7 +84,7 @@ histogram](#When-To-Use-Sparse-Histograms).
 You may append to your enum if the possible states/actions grows.  However, you
 should not reorder, renumber, or otherwise reuse existing values. Definitions
 for enums recorded in histograms should be prefixed by the following warning:
-```
+```c++
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 ```
@@ -94,9 +94,9 @@ The enums themselves should have explicit enumerator values set (`= 0`, `= 1`,
 easy to match the values between the C++ definition and
 [histograms.xml](./histograms.xml).
 
-There are two common patterns for defining enums. If an enum is used in a
-`switch` statement, it should be defined like this:
-```
+For new enums used in histograms, prefer using an enum class with a kMaxValue
+element, like this:
+```c++ {.good}
 enum class NewTabPageAction {
   kUseOmnibox = 0,
   kClickTitle = 1,
@@ -106,8 +106,10 @@ enum class NewTabPageAction {
 ```
 `kMaxValue` is a special enumerator value that shares the value of the highest
 enumerator: this should be done by assigning it the name of the enumerator with
-the highest explicit integral value. `switch` statements will not need to handle
-an otherwise unused sentinel value.
+the highest explicit integral value. There is a presubmit check which will
+enforce this semantic. Enums defined this way have better type checking support
+from the compiler, allow inferring kMaxValue from the type, and allow `switch`
+statements over them will not need to handle an otherwise unused sentinel value.
 
 Enumerators defined in this way should be recorded using the two argument
 version of `UMA_HISTOGRAM_ENUMERATION`:
@@ -116,19 +118,23 @@ UMA_HISTOGRAM_ENUMERATION("NewTabPageAction", action);
 ```
 which automatically deduces the range of the enum from `kMaxValue`.
 
-Alternatively, enums can be defined with a sentinel enumerator value at the end:
+If you need to record a histogram based on an enum without kMaxValue, you can
+use the three argument version, which takes the number of buckets as the argument, e.g:
+```c++
+UMA_HISTOGRAM_ENUMERATION("NewTabPageAction", action,
+                          NewTabPageAction_MaxValue + 1);
 ```
+
+This is often seen with enums defined with a sentinal enumerator value at the
+end, relying on the compiler to keep the value up to date:
+```c++
 enum class NewTabPageAction {
   kUseOmnibox = 0,
   kClickTitle = 1,
   kOpenBookmark = 2,
   kCount,
 };
-```
-The `kCount` enumerator should not include an explicit value--this lets the
-compiler keep `kCount` up-to-date. Enumerators defined in this way should be
-recoded using the three argument version of `UMA_HISTOGRAM_ENUMERATION`:
-```
+
 UMA_HISTOGRAM_ENUMERATION("NewTabPageAction", action, NewTabPageAction::kCount);
 ```
 
