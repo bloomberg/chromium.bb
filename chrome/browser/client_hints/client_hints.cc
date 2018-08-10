@@ -12,9 +12,8 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
-#include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/client_hints/client_hints.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -27,6 +26,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
 #include "third_party/blink/public/platform/web_client_hints_type.h"
@@ -278,16 +278,15 @@ GetAdditionalNavigationRequestClientHintsHeaders(
     }
   }
 
-  UINetworkQualityEstimatorService* estimator =
-      UINetworkQualityEstimatorServiceFactory::GetForProfile(
-          Profile::FromBrowserContext(context));
+  network::NetworkQualityTracker* network_quality_tracker =
+      g_browser_process->network_quality_tracker();
 
   if (web_client_hints.IsEnabled(blink::mojom::WebClientHintsType::kRtt)) {
     additional_headers->SetHeader(
         blink::kClientHintsHeaderMapping[static_cast<int>(
             blink::mojom::WebClientHintsType::kRtt)],
-        base::NumberToString(
-            internal::RoundRtt(url.host(), estimator->GetHttpRTT())));
+        base::NumberToString(internal::RoundRtt(
+            url.host(), network_quality_tracker->GetHttpRTT())));
   }
 
   if (web_client_hints.IsEnabled(blink::mojom::WebClientHintsType::kDownlink)) {
@@ -295,7 +294,8 @@ GetAdditionalNavigationRequestClientHintsHeaders(
         blink::kClientHintsHeaderMapping[static_cast<int>(
             blink::mojom::WebClientHintsType::kDownlink)],
         DoubleToSpecCompliantString(internal::RoundKbpsToMbps(
-            url.host(), estimator->GetDownstreamThroughputKbps())));
+            url.host(),
+            network_quality_tracker->GetDownstreamThroughputKbps())));
   }
 
   if (web_client_hints.IsEnabled(blink::mojom::WebClientHintsType::kEct)) {
@@ -305,7 +305,7 @@ GetAdditionalNavigationRequestClientHintsHeaders(
               static_cast<size_t>(net::EFFECTIVE_CONNECTION_TYPE_LAST));
 
     int effective_connection_type =
-        static_cast<int>(estimator->GetEffectiveConnectionType());
+        static_cast<int>(network_quality_tracker->GetEffectiveConnectionType());
 
     additional_headers->SetHeader(
         blink::kClientHintsHeaderMapping[static_cast<int>(
