@@ -18,6 +18,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.DiscardableReferencePool.DiscardableReference;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -362,7 +363,7 @@ public class PickerCategoryView extends RelativeLayout
         mEnumStartTime = SystemClock.elapsedRealtime();
         mWorkerTask = new FileEnumWorkerTask(
                 mActivity.getWindowAndroid(), this, new MimeTypeFileFilter(mMimeTypes));
-        mWorkerTask.execute();
+        mWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
