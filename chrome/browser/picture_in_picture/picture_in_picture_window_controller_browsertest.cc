@@ -4,14 +4,18 @@
 
 #include "content/public/browser/picture_in_picture_window_controller.h"
 
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/overlay/overlay_window_views.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/viz/common/frame_sinks/copy_output_request.h"
+#include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/render_frame_host.h"
@@ -20,8 +24,11 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
+#include "skia/ext/image_operations.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
+#include "ui/aura/window.h"
+#include "ui/gfx/codec/png_codec.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/views/overlay/overlay_window_views.h"
@@ -174,6 +181,138 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 }
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+class PictureInPicturePixelComparisonBrowserTest
+    : public PictureInPictureWindowControllerBrowserTest {
+ public:
+  base::FilePath GetFilePath(base::FilePath::StringPieceType relative_path) {
+    base::FilePath base_dir;
+    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &base_dir));
+    // The path relative to <chromium src> for pixel test data.
+    const base::FilePath::StringPieceType kTestDataPath =
+        FILE_PATH_LITERAL("chrome/test/data/media/picture-in-picture/");
+    base::FilePath full_path =
+        base_dir.Append(kTestDataPath).Append(relative_path);
+    return full_path;
+  }
+
+  void ReadbackResult(base::RepeatingClosure quit_run_loop,
+                      std::unique_ptr<viz::CopyOutputResult> result) {
+    ASSERT_FALSE(result->IsEmpty());
+    EXPECT_EQ(viz::CopyOutputResult::Format::RGBA_BITMAP, result->format());
+    result_bitmap_ = std::make_unique<SkBitmap>(result->AsSkBitmap());
+    EXPECT_TRUE(result_bitmap_->readyToDraw());
+    quit_run_loop.Run();
+  }
+
+  bool SaveBitmap(base::FilePath& file_path, SkBitmap& bitmap) {
+    base::File file(file_path,
+                    base::File::FLAG_OPEN | base::File::FLAG_OPEN_ALWAYS);
+    CHECK(file.IsValid());
+    std::vector<unsigned char> png_data;
+    CHECK(gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &png_data));
+    char* data = reinterpret_cast<char*>(&png_data[0]);
+    int size = static_cast<int>(png_data.size());
+    return base::WriteFile(file_path, data, size) == size;
+  }
+
+  void TakeOverlayWindowScreenshot(OverlayWindowViews* overlay_window_views) {
+    base::RunLoop run_loop;
+    std::unique_ptr<viz::CopyOutputRequest> request =
+        std::make_unique<viz::CopyOutputRequest>(
+            viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+            base::BindOnce(
+                &PictureInPicturePixelComparisonBrowserTest::ReadbackResult,
+                base::Unretained(this), run_loop.QuitClosure()));
+    overlay_window_views->GetNativeWindow()->layer()->RequestCopyOfOutput(
+        std::move(request));
+    run_loop.Run();
+  }
+
+  bool CompareImages(const SkBitmap& actual_bmp) {
+    // Number of pixels with an error
+    int error_pixels_count = 0;
+    gfx::Rect error_bounding_rect;
+
+    for (int x = 0; x < actual_bmp.width(); ++x) {
+      for (int y = 0; y < actual_bmp.height(); ++y) {
+        SkColor actual_color = actual_bmp.getColor(x, y);
+        // Check color is Yellow. The difference is caused by video conversion.
+        // TODO(cliffordcheng): Compare with an expected image instead of just
+        // checking pixel RGB color.
+        if (SkColorGetR(actual_color) != 254 &&
+            SkColorGetG(actual_color) != 253 &&
+            SkColorGetB(actual_color) != 0) {
+          ++error_pixels_count;
+          error_bounding_rect.Union(gfx::Rect(x, y, 1, 1));
+        }
+      }
+    }
+    if (error_pixels_count != 0) {
+      LOG(ERROR) << "Number of pixel with an error: " << error_pixels_count;
+      LOG(ERROR) << "Error Bounding Box : " << error_bounding_rect.ToString();
+      return false;
+    }
+    return true;
+  }
+
+  SkBitmap& GetResultBitmap() { return *result_bitmap_; }
+
+ private:
+  std::unique_ptr<SkBitmap> result_bitmap_;
+};
+
+// TODO(cliffordcheng): enable this tests on other platforms when
+// Windows and Mac capture screen problem is solved.
+// Plays a video and then trigger Picture-in-Picture. Grabs a screenshot of
+// Picture-in-Picture window and verifies it's as expected.
+IN_PROC_BROWSER_TEST_F(PictureInPicturePixelComparisonBrowserTest, VideoPlay) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/pixel_test.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NE(nullptr, active_web_contents);
+
+  EXPECT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+  SetUpWindowController(active_web_contents);
+  ASSERT_NE(nullptr, window_controller());
+
+  ASSERT_NE(nullptr, window_controller()->GetWindowForTesting());
+  ASSERT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
+
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
+
+  bool in_picture_in_picture = false;
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(
+      active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
+  EXPECT_TRUE(in_picture_in_picture);
+
+  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+
+  OverlayWindowViews* overlay_window_views = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+  overlay_window_views->SetSize(gfx::Size(600, 400));
+  base::string16 expected_title = base::ASCIIToUTF16("resized");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+  TakeOverlayWindowScreenshot(overlay_window_views);
+
+  std::string test_image = "pixel_test_actual_0.png";
+  base::FilePath test_image_path = GetFilePath(test_image);
+  ASSERT_TRUE(SaveBitmap(test_image_path, GetResultBitmap()));
+  EXPECT_TRUE(CompareImages(GetResultBitmap()));
+}
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 // Tests that when an active WebContents accurately tracks whether a video
 // is in Picture-in-Picture.
