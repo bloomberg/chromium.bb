@@ -39,8 +39,6 @@ const char kProduct[] = "Chrome_ChromeOS";
 #error Platform not supported.
 #endif
 
-// TODO(crbug.com/775415): Update comment to reflect new policy when discarding
-// the command line flag.
 constexpr net::NetworkTrafficAnnotationTag
     kWebrtcEventLogUploaderTrafficAnnotation =
         net::DefineNetworkTrafficAnnotation("webrtc_event_log_uploader", R"(
@@ -51,10 +49,10 @@ constexpr net::NetworkTrafficAnnotationTag
           "will not contain private information. They will be used to "
           "improve WebRTC (fix bugs, tune performance, etc.)."
         trigger:
-          "A privileged JS application (Hangouts/Meet) has requested a peer "
-          "connection to be logged, and the resulting event log to be "
-          "uploaded at a time deemed to cause the least interference to the "
-          "user (i.e., when the user is not busy making other VoIP calls)."
+          "A Google service (e.g. Hangouts/Meet) has requested a peer "
+          "connection to be logged, and the resulting event log to be uploaded "
+          "at a time deemed to cause the least interference to the user (i.e., "
+          "when the user is not busy making other VoIP calls)."
         data:
           "WebRTC events such as the timing of audio playout (but not the "
           "content), timing and size of RTP packets sent/received, etc."
@@ -62,11 +60,13 @@ constexpr net::NetworkTrafficAnnotationTag
       }
       policy {
         cookies_allowed: NO
-        setting: "This feature is only enabled if the user launches Chrome "
-                 "with a specific command line flag: "
-                 "--enable-features=WebRtcRemoteEventLog"
-        policy_exception_justification:
-          "Not applicable."
+        setting: "Feature controlled only through Chrome policy; "
+                 "no user-facing control surface."
+        chrome_policy {
+          WebRtcEventLogCollectionAllowed {
+            WebRtcEventLogCollectionAllowed: false
+          }
+        }
       })");
 
 void AddFileContents(const char* filename,
