@@ -11,9 +11,9 @@ import("//ui/ozone/ozone.gni")
 import("//testing/test.gni")
 
 declare_args() {
-  enable_swiftshader =
-      (is_win || is_linux || (is_mac && use_egl) || is_chromeos) &&
-      (target_cpu == "x86" || target_cpu == "x64")
+  enable_swiftshader = (is_win || is_linux || (is_mac && use_egl) ||
+                        is_chromeos || is_fuchsia) &&
+                       (target_cpu == "x86" || target_cpu == "x64")
 }
 
 use_glx = use_x11 || ozone_platform_x11
