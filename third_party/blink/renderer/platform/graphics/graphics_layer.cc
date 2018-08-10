@@ -1005,6 +1005,9 @@ void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
   }
   layer_state_->state = layer_state;
   layer_state_->offset = layer_offset;
+
+  CHECK(layer_state_->state.Transform() && layer_state_->state.Clip() &&
+        layer_state_->state.Effect());
 }
 
 void GraphicsLayer::SetContentsLayerState(const PropertyTreeState& layer_state,
