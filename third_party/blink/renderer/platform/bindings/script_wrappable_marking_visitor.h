@@ -69,7 +69,6 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   bool WrapperTracingInProgress() const { return tracing_in_progress_; }
 
   // v8::EmbedderHeapTracer interface.
-
   void TracePrologue() override;
   void RegisterV8References(const std::vector<std::pair<void*, void*>>&
                                 internal_fields_of_potential_wrappers) override;
@@ -82,7 +81,6 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   size_t NumberOfWrappersToTrace() override;
 
   // ScriptWrappableVisitor interface.
-
   void Visit(const TraceWrapperV8Reference<v8::Value>&) override;
   void VisitWithWrappers(void*, TraceDescriptor) override;
   void Visit(DOMWrapperMap<ScriptWrappable>*,
