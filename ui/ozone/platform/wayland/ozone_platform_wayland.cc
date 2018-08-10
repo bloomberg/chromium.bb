@@ -32,7 +32,15 @@ namespace {
 
 class OzonePlatformWayland : public OzonePlatform {
  public:
-  OzonePlatformWayland() {}
+  OzonePlatformWayland() {
+    // Supporting server-side decorations requires a support of xdg-decorations.
+    // But this protocol has been accepted into the upstream recently, and it
+    // will take time before it is taken by compositors. For now, always use
+    // custom frames and disallow switching to server-side frames.
+    // https://github.com/wayland-project/wayland-protocols/commit/76d1ae8c65739eff3434ef219c58a913ad34e988
+    properties_.custom_frame_pref_default = true;
+    properties_.use_system_title_bar = false;
+  }
   ~OzonePlatformWayland() override {}
 
   // OzonePlatform
@@ -110,6 +118,10 @@ class OzonePlatformWayland : public OzonePlatform {
     }
   }
 
+  const PlatformProperties& GetPlatformProperties() override {
+    return properties_;
+  }
+
  private:
   std::unique_ptr<WaylandConnection> connection_;
   std::unique_ptr<WaylandSurfaceFactory> surface_factory_;
@@ -121,6 +133,8 @@ class OzonePlatformWayland : public OzonePlatform {
 #if BUILDFLAG(USE_XKBCOMMON)
   XkbEvdevCodes xkb_evdev_code_converter_;
 #endif
+
+  PlatformProperties properties_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformWayland);
 };

@@ -10,6 +10,10 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"  // nogncheck
 #endif
@@ -30,10 +34,18 @@ void RegisterBrowserViewLocalPrefs(PrefRegistrySimple* registry) {
 
 void RegisterBrowserViewProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  bool custom_frame_pref_default = false;
 #if defined(USE_X11)
-  registry->RegisterBooleanPref(prefs::kUseCustomChromeFrame,
-                                ui::GetCustomFramePrefDefault());
+  custom_frame_pref_default = ui::GetCustomFramePrefDefault();
+#elif defined(USE_OZONE)
+  custom_frame_pref_default = ui::OzonePlatform::GetInstance()
+                                  ->GetPlatformProperties()
+                                  .custom_frame_pref_default;
 #endif
+  registry->RegisterBooleanPref(prefs::kUseCustomChromeFrame,
+                                custom_frame_pref_default);
+#endif  // OS_LINUX && !OS_CHROMEOS
 }
 
 void MigrateBrowserTabStripPrefs(PrefService* prefs) {
