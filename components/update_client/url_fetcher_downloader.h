@@ -15,65 +15,42 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/update_client/crx_downloader.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+struct ResourceResponseHead;
+}  // namespace network
 
 namespace update_client {
 
-// Implements a CRX downloader in top of the URLFetcher.
+// Implements a CRX downloader in top of the SimpleURLLoader.
 class UrlFetcherDownloader : public CrxDownloader {
  public:
   UrlFetcherDownloader(
       std::unique_ptr<CrxDownloader> successor,
-      scoped_refptr<net::URLRequestContextGetter> context_getter);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~UrlFetcherDownloader() override;
 
  private:
-  class URLFetcherDelegate : public net::URLFetcherDelegate {
-   public:
-    explicit URLFetcherDelegate(UrlFetcherDownloader* downloader);
-    ~URLFetcherDelegate() override;
-
-   private:
-    // Overrides for URLFetcherDelegate.
-    void OnURLFetchComplete(const net::URLFetcher* source) override;
-    void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                    int64_t current,
-                                    int64_t total,
-                                    int64_t current_network_bytes) override;
-    // Not owned by this class.
-    UrlFetcherDownloader* downloader_ = nullptr;
-    DISALLOW_COPY_AND_ASSIGN(URLFetcherDelegate);
-  };
-
   // Overrides for CrxDownloader.
   void DoStartDownload(const GURL& url) override;
 
   void CreateDownloadDir();
   void StartURLFetch(const GURL& url);
-  void OnURLFetchComplete(const net::URLFetcher* source);
-  void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                  int64_t current,
-                                  int64_t total,
-                                  int64_t current_network_bytes);
-
+  void OnURLLoadComplete(base::FilePath file_path);
+  void OnResponseStarted(const GURL& final_url,
+                         const network::ResourceResponseHead& response_head);
   THREAD_CHECKER(thread_checker_);
 
-  std::unique_ptr<URLFetcherDelegate> delegate_;
-
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
-  scoped_refptr<net::URLRequestContextGetter> context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   // Contains a temporary download directory for the downloaded file.
   base::FilePath download_dir_;
 
   base::TimeTicks download_start_time_;
 
-  int64_t downloaded_bytes_ = -1;
   int64_t total_bytes_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(UrlFetcherDownloader);
