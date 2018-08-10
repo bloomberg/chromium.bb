@@ -347,7 +347,7 @@ class RunIsolatedTest(unittest.TestCase):
     self.assertEqual('', out)
     self.assertIn(
         '<No command was specified!>\n'
-				'<Please secify a command when triggering your Swarming task>\n',
+        '<Please secify a command when triggering your Swarming task>\n',
         err)
     self.assertEqual(1, returncode)
     actual = list_files_tree(self._isolated_cache_dir)
@@ -455,7 +455,9 @@ class RunIsolatedTest(unittest.TestCase):
   def test_named_cache(self):
     # Runs a task that drops a file in the named cache, and assert that it's
     # correctly saved.
-    now = time.time()
+    # Remove two seconds, because lru.py time resolution is one second, which
+    # means that it could get rounded *down* and match the value of now.
+    now = time.time() - 2
     cmd = [
         '--named-cache-root', self._named_cache_dir,
         '--named-cache', 'cache1', 'a',
