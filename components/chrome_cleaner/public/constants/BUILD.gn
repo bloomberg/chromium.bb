@@ -9,3 +9,15 @@ source_set("constants") {
     "result_codes.h",
   ]
 }
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "constants_test_support.cc",
+  ]
+
+  deps = [
+    ":constants",
+  ]
+}

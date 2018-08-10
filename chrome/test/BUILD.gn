@@ -999,6 +999,7 @@ test("browser_tests") {
       "//components/autofill/content/common:mojo_interfaces",
       "//components/autofill/content/renderer:test_support",
       "//components/captive_portal:test_support",
+      "//components/chrome_cleaner/public/constants:test_support",
       "//components/dom_distiller/content/browser",
       "//components/dom_distiller/content/renderer",
       "//components/dom_distiller/core:test_support",
@@ -3229,6 +3230,7 @@ test("unit_tests") {
     deps += [
       "//chrome/browser/apps/foundation/app_service:unit_tests",
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
+      "//components/chrome_cleaner/public/constants:test_support",
       "//components/signin/core/browser:signin_buildflags",
       "//services/metrics/public/cpp:ukm_builders",
       "//third_party/libaddressinput",
