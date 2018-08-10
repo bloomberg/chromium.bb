@@ -125,6 +125,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, ConflictResolution) {
   // Wait for a non-zero period (200ms).
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(200));
 
+  // Run all tasks so the first description change is applied.
+  // TODO(crbug.com/810408): This is a temporary fix to prevent flakiness. Tasks
+  // shouldn't run between description changes, because it prevents a real
+  // conflict from happening.
+  content::RunAllTasksUntilIdle();
+
   ASSERT_TRUE(
       EditPrinterDescription(GetPrinterStore(0), 0, kLatestDescription));
 
