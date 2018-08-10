@@ -87,6 +87,7 @@ source_set("app_shell_lib") {
   sources = [
     "app/shell_main_delegate.cc",
     "app/shell_main_delegate.h",
+    "app/shell_main_delegate_mac.mm",
     "browser/api/feedback_private/shell_feedback_private_delegate.cc",
     "browser/api/feedback_private/shell_feedback_private_delegate.h",
     "browser/api/identity/identity_api.cc",
@@ -115,8 +116,6 @@ source_set("app_shell_lib") {
     "browser/shell_browser_main_delegate.h",
     "browser/shell_browser_main_parts.cc",
     "browser/shell_browser_main_parts.h",
-    "browser/shell_browser_main_parts_mac.h",
-    "browser/shell_browser_main_parts_mac.mm",
     "browser/shell_content_browser_client.cc",
     "browser/shell_content_browser_client.h",
     "browser/shell_desktop_controller_mac.h",
@@ -402,10 +401,6 @@ source_set("browser_tests") {
   if (use_aura) {
     sources += [ "browser/shell_desktop_controller_aura_browsertest.cc" ]
     deps += [ "//ui/aura" ]
-  }
-
-  if (is_mac) {
-    sources += [ "test/test_shell_main_delegate_mac.mm" ]
   }
 }
 
