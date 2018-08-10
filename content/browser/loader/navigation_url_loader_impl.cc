@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
@@ -61,8 +62,11 @@
 #include "content/public/common/url_utils.h"
 #include "content/public/common/webplugininfo.h"
 #include "net/base/load_flags.h"
+#include "net/cert/sct_status_flags.h"
+#include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_request_headers.h"
+#include "net/ssl/ssl_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request.h"
@@ -335,6 +339,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       std::unique_ptr<network::ResourceRequest> resource_request,
       ResourceContext* resource_context,
       const GURL& url,
+      bool is_main_frame,
       network::mojom::URLLoaderFactoryRequest proxied_factory_request,
       network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info,
       std::set<std::string> known_schemes,
@@ -344,6 +349,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         resource_request_(std::move(resource_request)),
         resource_context_(resource_context),
         url_(url),
+        is_main_frame_(is_main_frame),
         owner_(owner),
         response_loader_binding_(this),
         proxied_factory_request_(std::move(proxied_factory_request)),
@@ -931,6 +937,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
  private:
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(const network::ResourceResponseHead& head) override {
+    // Record the SCT histogram before checking if anything wants to intercept
+    // the response, so interceptors like AppCache and extensions can't hide
+    // values from the histograms.
+    RecordSCTHistogramIfNeeded(head.ssl_info);
+
     received_response_ = true;
 
     // If the default loader (network) was used to handle the URL load request
@@ -1161,6 +1172,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   }
 
   void OnComplete(const network::URLLoaderCompletionStatus& status) override {
+    RecordSCTHistogramIfNeeded(status.ssl_info);
+
     UMA_HISTOGRAM_BOOLEAN(
         "Navigation.URLLoaderNetworkService.OnCompleteHasSSLInfo",
         status.ssl_info.has_value());
@@ -1237,6 +1250,21 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         web_contents_getter_);
   }
 
+  void RecordSCTHistogramIfNeeded(
+      const base::Optional<net::SSLInfo>& ssl_info) {
+    if (is_main_frame_ && url_.SchemeIsCryptographic() &&
+        ssl_info.has_value()) {
+      int num_valid_scts = 0;
+      for (const auto& signed_certificate_timestamps :
+           ssl_info->signed_certificate_timestamps) {
+        if (signed_certificate_timestamps.status == net::ct::SCT_STATUS_OK)
+          ++num_valid_scts;
+      }
+      UMA_HISTOGRAM_COUNTS_100(
+          "Net.CertificateTransparency.MainFrameValidSCTCount", num_valid_scts);
+    }
+  }
+
   std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptors_;
   size_t interceptor_index_ = 0;
 
@@ -1264,6 +1292,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   // Current URL that is being navigated, updated after redirection.
   GURL url_;
+
+  const bool is_main_frame_;
 
   // Currently used by the AppCache loader to pass its factory to the
   // renderer which enables it to handle subresources.
@@ -1376,7 +1406,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
         /* initial_interceptors = */
         std::vector<std::unique_ptr<NavigationLoaderInterceptor>>(),
         std::move(new_request), resource_context,
-        request_info->common_params.url,
+        request_info->common_params.url, request_info->is_main_frame,
         /* proxied_url_loader_factory_request */ nullptr,
         /* proxied_url_loader_factory_info */ nullptr, std::set<std::string>(),
         /* bypass_redirect_checks */ false, weak_factory_.GetWeakPtr());
@@ -1458,9 +1488,10 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   DCHECK(!request_controller_);
   request_controller_ = std::make_unique<URLLoaderRequestController>(
       std::move(initial_interceptors), std::move(new_request), resource_context,
-      request_info->common_params.url, std::move(proxied_factory_request),
-      std::move(proxied_factory_info), std::move(known_schemes),
-      bypass_redirect_checks, weak_factory_.GetWeakPtr());
+      request_info->common_params.url, request_info->is_main_frame,
+      std::move(proxied_factory_request), std::move(proxied_factory_info),
+      std::move(known_schemes), bypass_redirect_checks,
+      weak_factory_.GetWeakPtr());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(
