@@ -4,6 +4,8 @@
 
 #include "ash/assistant/ui/assistant_container_view.h"
 
+#include <memory>
+
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_ui_model.h"
@@ -15,7 +17,7 @@
 #include "ui/display/screen.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/layout_manager.h"
 #include "ui/views/view.h"
 #include "ui/wm/core/shadow_types.h"
 
@@ -28,7 +30,80 @@ constexpr SkColor kBackgroundColor = SK_ColorWHITE;
 constexpr int kCornerRadiusDip = 20;
 constexpr int kMarginDip = 8;
 
+// AssistantContainerLayout ----------------------------------------------------
+
+// The AssistantContainerLayout calculates preferred size to fit the largest
+// visible child. Children that are not visible are not factored in. During
+// layout, children are horizontally centered and bottom aligned.
+class AssistantContainerLayout : public views::LayoutManager {
+ public:
+  AssistantContainerLayout() = default;
+  ~AssistantContainerLayout() override = default;
+
+  // views::LayoutManager:
+  gfx::Size GetPreferredSize(const views::View* host) const override {
+    int preferred_width = 0;
+
+    for (int i = 0; i < host->child_count(); ++i) {
+      const views::View* child = host->child_at(i);
+
+      // We do not include invisible children in our size calculation.
+      if (!child->visible())
+        continue;
+
+      // Our preferred width is the width of our largest visible child.
+      preferred_width =
+          std::max(child->GetPreferredSize().width(), preferred_width);
+    }
+
+    return gfx::Size(preferred_width,
+                     GetPreferredHeightForWidth(host, preferred_width));
+  }
+
+  int GetPreferredHeightForWidth(const views::View* host,
+                                 int width) const override {
+    int preferred_height = 0;
+
+    for (int i = 0; i < host->child_count(); ++i) {
+      const views::View* child = host->child_at(i);
+
+      // We do not include invisible children in our size calculation.
+      if (!child->visible())
+        continue;
+
+      // Our preferred height is the height of our largest visible child.
+      preferred_height =
+          std::max(child->GetHeightForWidth(width), preferred_height);
+    }
+
+    return preferred_height;
+  }
+
+  void Layout(views::View* host) override {
+    const int host_width = host->width();
+    const int host_height = host->height();
+
+    for (int i = 0; i < host->child_count(); ++i) {
+      views::View* child = host->child_at(i);
+
+      const gfx::Size child_size = child->GetPreferredSize();
+
+      // Children are horizontally centered and bottom aligned.
+      int child_left = (host_width - child_size.width()) / 2;
+      int child_top = host_height - child_size.height();
+
+      child->SetBounds(child_left, child_top, child_size.width(),
+                       child_size.height());
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AssistantContainerLayout);
+};
+
 }  // namespace
+
+// AssistantContainerView ------------------------------------------------------
 
 AssistantContainerView::AssistantContainerView(
     AssistantController* assistant_controller)
@@ -93,23 +168,20 @@ void AssistantContainerView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 void AssistantContainerView::Init() {
-  SetLayoutManager(std::make_unique<views::FillLayout>());
+  SetLayoutManager(std::make_unique<AssistantContainerLayout>());
 
   // Main view.
-  assistant_main_view_ =
-      std::make_unique<AssistantMainView>(assistant_controller_);
-  assistant_main_view_->set_owned_by_client();
+  assistant_main_view_ = new AssistantMainView(assistant_controller_);
+  AddChildView(assistant_main_view_);
 
   // Mini view.
-  assistant_mini_view_ =
-      std::make_unique<AssistantMiniView>(assistant_controller_);
+  assistant_mini_view_ = new AssistantMiniView(assistant_controller_);
   assistant_mini_view_->set_delegate(assistant_controller_->ui_controller());
-  assistant_mini_view_->set_owned_by_client();
+  AddChildView(assistant_mini_view_);
 
   // Web view.
-  assistant_web_view_ =
-      std::make_unique<AssistantWebView>(assistant_controller_);
-  assistant_web_view_->set_owned_by_client();
+  assistant_web_view_ = new AssistantWebView(assistant_controller_);
+  AddChildView(assistant_web_view_);
 
   // Update the view state based on the current UI mode.
   OnUiModeChanged(assistant_controller_->ui_controller()->model()->ui_mode());
@@ -135,17 +207,19 @@ void AssistantContainerView::SetAnchor() {
 }
 
 void AssistantContainerView::OnUiModeChanged(AssistantUiMode ui_mode) {
-  RemoveAllChildViews(/*delete_children=*/false);
+  for (int i = 0; i < child_count(); ++i) {
+    child_at(i)->SetVisible(false);
+  }
 
   switch (ui_mode) {
     case AssistantUiMode::kMiniUi:
-      AddChildView(assistant_mini_view_.get());
+      assistant_mini_view_->SetVisible(true);
       break;
     case AssistantUiMode::kMainUi:
-      AddChildView(assistant_main_view_.get());
+      assistant_main_view_->SetVisible(true);
       break;
     case AssistantUiMode::kWebUi:
-      AddChildView(assistant_web_view_.get());
+      assistant_web_view_->SetVisible(true);
       break;
   }
 
