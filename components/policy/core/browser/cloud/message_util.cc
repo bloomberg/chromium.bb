@@ -84,6 +84,10 @@ int GetIDSForValidationStatus(CloudPolicyValidatorBase::Status status) {
       return IDS_POLICY_VALIDATION_POLICY_PARSE_ERROR;
     case CloudPolicyValidatorBase::VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE:
       return IDS_POLICY_VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE;
+    case CloudPolicyValidatorBase::VALIDATION_VALUE_WARNING:
+      return IDS_POLICY_VALIDATION_VALUE_WARNING;
+    case CloudPolicyValidatorBase::VALIDATION_VALUE_ERROR:
+      return IDS_POLICY_VALIDATION_VALUE_ERROR;
     case CloudPolicyValidatorBase::VALIDATION_STATUS_SIZE:
       NOTREACHED();
   }

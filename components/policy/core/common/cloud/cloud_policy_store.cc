@@ -13,7 +13,6 @@ CloudPolicyStore::Observer::~Observer() {}
 
 CloudPolicyStore::CloudPolicyStore()
     : status_(STATUS_OK),
-      validation_status_(CloudPolicyValidatorBase::VALIDATION_OK),
       invalidation_version_(0),
       is_initialized_(false) {}
 

@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/policy/cached_policy_key_loader_chromeos.h"
+#include "chrome/browser/chromeos/policy/value_validation/onc_user_policy_value_validator.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -60,6 +61,7 @@ void UserCloudPolicyStoreChromeOS::Store(
 
   // Cancel all pending requests.
   weak_factory_.InvalidateWeakPtrs();
+
   std::unique_ptr<em::PolicyFetchResponse> response(
       new em::PolicyFetchResponse(policy));
   cached_policy_key_loader_->EnsurePolicyKeyLoaded(
@@ -70,10 +72,21 @@ void UserCloudPolicyStoreChromeOS::Store(
 void UserCloudPolicyStoreChromeOS::Load() {
   // Cancel all pending requests.
   weak_factory_.InvalidateWeakPtrs();
+
   session_manager_client_->RetrievePolicyForUser(
       cryptohome::CreateAccountIdentifierFromAccountId(account_id_),
       base::BindOnce(&UserCloudPolicyStoreChromeOS::OnPolicyRetrieved,
                      weak_factory_.GetWeakPtr()));
+}
+
+std::unique_ptr<UserCloudPolicyValidator>
+UserCloudPolicyStoreChromeOS::CreateValidator(
+    std::unique_ptr<em::PolicyFetchResponse> policy,
+    CloudPolicyValidatorBase::ValidateTimestampOption option) {
+  auto validator =
+      UserCloudPolicyStoreBase::CreateValidator(std::move(policy), option);
+  validator->ValidateValues(std::make_unique<ONCUserPolicyValueValidator>());
+  return validator;
 }
 
 void UserCloudPolicyStoreChromeOS::LoadImmediately() {
@@ -153,13 +166,11 @@ void UserCloudPolicyStoreChromeOS::OnPolicyToStoreValidated(
     UserCloudPolicyValidator* validator) {
   DCHECK(!is_active_directory_);
 
-  validation_status_ = validator->status();
+  UMA_HISTOGRAM_ENUMERATION("Enterprise.UserPolicyValidationStoreStatus",
+                            validator->status(),
+                            UserCloudPolicyValidator::VALIDATION_STATUS_SIZE);
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "Enterprise.UserPolicyValidationStoreStatus",
-      validation_status_,
-      UserCloudPolicyValidator::VALIDATION_STATUS_SIZE);
-
+  validation_result_ = validator->GetValidationResult();
   if (!validator->success()) {
     status_ = STATUS_VALIDATION_ERROR;
     NotifyStoreError();
@@ -248,13 +259,11 @@ void UserCloudPolicyStoreChromeOS::ValidateRetrievedPolicy(
 
 void UserCloudPolicyStoreChromeOS::OnRetrievedPolicyValidated(
     UserCloudPolicyValidator* validator) {
-  validation_status_ = validator->status();
+  UMA_HISTOGRAM_ENUMERATION("Enterprise.UserPolicyValidationLoadStatus",
+                            validator->status(),
+                            UserCloudPolicyValidator::VALIDATION_STATUS_SIZE);
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "Enterprise.UserPolicyValidationLoadStatus",
-      validation_status_,
-      UserCloudPolicyValidator::VALIDATION_STATUS_SIZE);
-
+  validation_result_ = validator->GetValidationResult();
   if (!validator->success()) {
     status_ = STATUS_VALIDATION_ERROR;
     NotifyStoreError();

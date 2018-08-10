@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/account_id/account_id.h"
+#include "components/policy/core/common/cloud/policy_value_validator.h"
 #include "components/policy/policy_export.h"
 #include "components/policy/proto/cloud_policy.pb.h"
 
@@ -84,6 +85,10 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
     // Policy key signature could not be verified using the hard-coded
     // verification key.
     VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE,
+    // Policy value validation raised warning(s).
+    VALIDATION_VALUE_WARNING,
+    // Policy value validation failed with error(s).
+    VALIDATION_VALUE_ERROR,
     VALIDATION_STATUS_SIZE  // MUST BE LAST
   };
 
@@ -118,6 +123,21 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
     TIMESTAMP_NOT_VALIDATED,
   };
 
+  struct POLICY_EXPORT ValidationResult {
+    // Validation status.
+    Status status = VALIDATION_OK;
+
+    // Value validation issues.
+    std::vector<ValueValidationIssue> value_validation_issues;
+
+    // Policy identifiers.
+    std::string policy_token;
+    std::string policy_data_signature;
+
+    ValidationResult();
+    ~ValidationResult();
+  };
+
   virtual ~CloudPolicyValidatorBase();
 
   // Validation status which can be read after completion has been signaled.
@@ -132,6 +152,9 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   std::unique_ptr<enterprise_management::PolicyData>& policy_data() {
     return policy_data_;
   }
+
+  // ToDo
+  std::unique_ptr<ValidationResult> GetValidationResult() const;
 
   // Instruct the validator to check that the policy timestamp is present and is
   // not before |not_before| if |timestamp_option| is TIMESTAMP_VALIDATED, or to
@@ -225,6 +248,22 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   void RunValidation();
 
  protected:
+  // Internal flags indicating what to check.
+  enum ValidationFlags {
+    VALIDATE_TIMESTAMP = 1 << 0,
+    VALIDATE_USER = 1 << 1,
+    VALIDATE_DOMAIN = 1 << 2,
+    VALIDATE_DM_TOKEN = 1 << 3,
+    VALIDATE_POLICY_TYPE = 1 << 4,
+    VALIDATE_ENTITY_ID = 1 << 5,
+    VALIDATE_PAYLOAD = 1 << 6,
+    VALIDATE_SIGNATURE = 1 << 7,
+    VALIDATE_INITIAL_KEY = 1 << 8,
+    VALIDATE_CACHED_KEY = 1 << 9,
+    VALIDATE_DEVICE_ID = 1 << 10,
+    VALIDATE_VALUES = 1 << 11,
+  };
+
   // Create a new validator that checks |policy_response|.
   CloudPolicyValidatorBase(
       std::unique_ptr<enterprise_management::PolicyFetchResponse>
@@ -242,22 +281,11 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   // templated).
   Status CheckProtoPayload(google::protobuf::MessageLite* payload);
 
- private:
-  // Internal flags indicating what to check.
-  enum ValidationFlags {
-    VALIDATE_TIMESTAMP = 1 << 0,
-    VALIDATE_USER = 1 << 1,
-    VALIDATE_DOMAIN = 1 << 2,
-    VALIDATE_DM_TOKEN = 1 << 3,
-    VALIDATE_POLICY_TYPE = 1 << 4,
-    VALIDATE_ENTITY_ID = 1 << 5,
-    VALIDATE_PAYLOAD = 1 << 6,
-    VALIDATE_SIGNATURE = 1 << 7,
-    VALIDATE_INITIAL_KEY = 1 << 8,
-    VALIDATE_CACHED_KEY = 1 << 9,
-    VALIDATE_DEVICE_ID = 1 << 10,
-  };
+  std::vector<ValueValidationIssue> value_validation_issues_;
 
+  int validation_flags_;
+
+ private:
   enum SignatureType { SHA1, SHA256 };
 
   // Performs validation, called on a background thread.
@@ -304,8 +332,10 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   Status CheckInitialKey();
   Status CheckCachedKey();
 
-  // Payload type depends on the validator, checking is part of derived classes.
+  // Payload type and value validation depends on the validator, checking is
+  // part of derived classes.
   virtual Status CheckPayload() = 0;
+  virtual Status CheckValues() = 0;
 
   // Verifies the SHA1/ or SHA256/RSA |signature| on |data| against |key|.
   // |signature_type| specifies the type of signature (SHA1 or SHA256).
@@ -318,7 +348,6 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   std::unique_ptr<enterprise_management::PolicyFetchResponse> policy_;
   std::unique_ptr<enterprise_management::PolicyData> policy_data_;
 
-  int validation_flags_;
   int64_t timestamp_not_before_;
   ValidateTimestampOption timestamp_option_;
   ValidateDMTokenOption dm_token_option_;
@@ -359,6 +388,12 @@ class POLICY_EXPORT CloudPolicyValidator final
       : CloudPolicyValidatorBase(std::move(policy_response),
                                  background_task_runner) {}
 
+  void ValidateValues(
+      std::unique_ptr<PolicyValueValidator<PayloadProto>> value_validator) {
+    validation_flags_ |= VALIDATE_VALUES;
+    value_validators_.push_back(std::move(value_validator));
+  }
+
   std::unique_ptr<PayloadProto>& payload() { return payload_; }
 
   // Kicks off asynchronous validation through |validator|.
@@ -374,8 +409,22 @@ class POLICY_EXPORT CloudPolicyValidator final
  private:
   // CloudPolicyValidatorBase:
   Status CheckPayload() override { return CheckProtoPayload(payload_.get()); }
+  Status CheckValues() override {
+    for (const std::unique_ptr<PolicyValueValidator<PayloadProto>>&
+             value_validator : value_validators_) {
+      value_validator->ValidateValues(*payload_, &value_validation_issues_);
+    }
+    // TODO(hendrich,pmarko): https://crbug.com/794848
+    // Always return OK independent of value validation results for now. We only
+    // want to reject policy blobs on failed value validation sometime in the
+    // future.
+    return VALIDATION_OK;
+  }
 
   std::unique_ptr<PayloadProto> payload_ = std::make_unique<PayloadProto>();
+
+  std::vector<std::unique_ptr<PolicyValueValidator<PayloadProto>>>
+      value_validators_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyValidator);
 };

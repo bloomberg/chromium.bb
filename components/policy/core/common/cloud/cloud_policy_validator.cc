@@ -64,7 +64,21 @@ enum class MetricPolicyUserVerification {
 
 }  // namespace
 
+CloudPolicyValidatorBase::ValidationResult::ValidationResult() = default;
+CloudPolicyValidatorBase::ValidationResult::~ValidationResult() = default;
+
 CloudPolicyValidatorBase::~CloudPolicyValidatorBase() {}
+
+std::unique_ptr<CloudPolicyValidatorBase::ValidationResult>
+CloudPolicyValidatorBase::GetValidationResult() const {
+  std::unique_ptr<ValidationResult> result =
+      std::make_unique<ValidationResult>();
+  result->status = status_;
+  result->value_validation_issues = value_validation_issues_;
+  result->policy_token = policy_data_->policy_token();
+  result->policy_data_signature = policy_->policy_data_signature();
+  return result;
+}
 
 void CloudPolicyValidatorBase::ValidateTimestamp(
     base::Time not_before,
@@ -181,9 +195,9 @@ void CloudPolicyValidatorBase::ValidateAgainstCurrentPolicy(
 CloudPolicyValidatorBase::CloudPolicyValidatorBase(
     std::unique_ptr<em::PolicyFetchResponse> policy_response,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
-    : status_(VALIDATION_OK),
+    : validation_flags_(0),
+      status_(VALIDATION_OK),
       policy_(std::move(policy_response)),
-      validation_flags_(0),
       timestamp_not_before_(0),
       timestamp_option_(TIMESTAMP_VALIDATED),
       dm_token_option_(DM_TOKEN_REQUIRED),
@@ -281,6 +295,7 @@ void CloudPolicyValidatorBase::RunChecks() {
       {VALIDATE_DOMAIN, &CloudPolicyValidatorBase::CheckDomain},
       {VALIDATE_TIMESTAMP, &CloudPolicyValidatorBase::CheckTimestamp},
       {VALIDATE_PAYLOAD, &CloudPolicyValidatorBase::CheckPayload},
+      {VALIDATE_VALUES, &CloudPolicyValidatorBase::CheckValues},
   };
 
   for (size_t i = 0; i < arraysize(kCheckFunctions); ++i) {

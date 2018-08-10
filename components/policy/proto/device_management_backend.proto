@@ -928,90 +928,31 @@ message ChromeDesktopReportRequest {
   optional BrowserReport browser_report = 4;
 }
 
-// A validation result from validating a policy value that was contained in
+// A validation issue from validating a policy value that was contained in
 // the payload of the policy fetch response.
-message PolicyValueValidationResult {
-  // Policy proto tag of the policy which caused this validation message.
-  // For device policy (i.e. when |policy_type| in
-  // PolicyValidationReportRequest is google/chromeos/device), this is a
-  // proto tag from ChromeDeviceSettingsProto. Example: proto tag = 1 would mean
-  // the device_policy_refresh_rate policy in this case.
-  // For user policy (i.e. when |policy_type| in
-  // PolicyValidationReportRequest is google/chromeos/user), this is a
-  // proto tag from ChromeSettingsProto. Example: proto tag = 3 would mean the
-  // HomepageLocation policy in this case.
-  // Proto tags are used because they are consistent identifiers shared across
-  // the server and the client implementation.
-  optional int32 policy_proto_tag = 1;
+message PolicyValueValidationIssue {
+  // Policy name of the faulty value.
+  optional string policy_name = 1;
 
-  enum ValidationResultSeverity {
+  enum ValueValidationIssueSeverity {
     // Default value for when a severity is not specified.
-    VALIDATION_RESULT_SEVERITY_UNSPECIFIED = 0;
+    VALUE_VALIDATION_ISSUE_SEVERITY_UNSPECIFIED = 0;
 
     // This result is a warning. The policy blob has not been rejected.
-    VALIDATION_RESULT_SEVERITY_WARNING = 1;
+    VALUE_VALIDATION_ISSUE_SEVERITY_WARNING = 1;
 
     // This result is an error. The policy blob was rejected completely and not
     // updated on the device.
-    VALIDATION_RESULT_SEVERITY_ERROR = 2;
+    VALUE_VALIDATION_ISSUE_SEVERITY_ERROR = 2;
   }
 
   // Severity of this policy value validation result.
-  optional ValidationResultSeverity severity = 2;
+  optional ValueValidationIssueSeverity severity = 2;
 
-  // If the error occurred in a policy which is a JSON value, this
-  // is the JSON path to the element where the error was raised.
-  // For example, if a validation message was raised in an ONC policy and the
-  // error is that the Security field of the WiFi NetworkConfiguration with guid
-  // ABC has an invalid value, ErrorType would be ERROR_TYPE_UNKNOWN_ENUM_VALUE
-  // and detailed_error_path would be:
-  // "$.NetworkConfigurations[?(@.GUID=='ABC')].WiFi.Security".
-  // If the error was that a NetworkConfigurations element is missing a GUID,
-  // ErrorType would be ERROR_TYPE_MISSING_FIELD and the path would be:
-  // "$.NetworkConfigurations[1].GUID".
-  optional string detailed_error_path = 3;
-
-  enum ErrorType {
-    // An enum value was received which is not known in this version of the
-    // proto.
-    ERROR_TYPE_UNSPECIFIED = 0;
-
-    // For JSON (e.g. ONC) policies: The JSON blob could not be
-    // parsed. |detailed_error_path| will be empty.
-    ERROR_TYPE_PARSE_ERROR = 1;
-
-    // For JSON (e.g. ONC) policies: A field had an invalid type.
-    // |detailed_error_path| will be set to the path of the field.
-    ERROR_TYPE_INVALID_TYPE = 3;
-
-    // For JSON (e.g. ONC) policies: A required field was not found.
-    // |detailed_error_path| will be set to the path of the missing
-    // field.
-    ERROR_TYPE_MISSING_FIELD = 4;
-
-    // For ONC policy: An enum field had a value not known by the
-    // client. |detailed_error_path| will be set to the path of the
-    // field.
-    ERROR_TYPE_UNKNOWN_ENUM_VALUE = 5;
-
-    // For ONC policy: The value of a field was out of bounds.
-    // |detailed_error_path| will be set to the path of the
-    // field.
-    ERROR_TYPE_OUT_OF_BOUNDS = 6;
-
-    // For ONC policy: A GUID-referenced element could not be
-    // resolved. |detailed_error_path| will be set to the reference
-    // field.
-    ERROR_TYPE_INVALID_REFERENCE = 7;
-  }
-
-  // The type of the error message.
-  optional ErrorType error_type = 4;
-
-  // Debug info about the error message. This will not be presented to the
-  // administrator. It can give additional clues about what went wrong so the
-  // developers can diagnose the issue.
-  optional string error_debug_info = 5;
+  // Message containing detailed information about the value validation warning
+  // or error (e.g. type and specific location). This message is intended as
+  // debug information for developers (not localized).
+  optional string debug_message = 3;
 }
 
 // This message is used to upload the result of cloud policy validation after a
@@ -1074,7 +1015,7 @@ message PolicyValidationReportRequest {
     VALIDATION_RESULT_TYPE_BAD_DEVICE_ID = 10;
     // Username doesn't match.
     // Client behavior: Policy blob rejected.
-    VALIDATION_RESULT_TYPE_USER_MISMATCH = 11;
+    VALIDATION_RESULT_TYPE_BAD_USER = 11;
     // Policy payload protobuf parse error.
     // Client behavior: Policy blob rejected.
     VALIDATION_RESULT_TYPE_POLICY_PARSE_ERROR = 12;
@@ -1085,22 +1026,22 @@ message PolicyValidationReportRequest {
     // There were validation warnings during validation of policy values in the
     // payload. See |policy_value_validation_results|.
     // Client behavior: Policy blob accepted.
-    VALIDATION_RESULT_TYPE_POLICY_VALUE_WARNINGS = 14;
+    VALIDATION_RESULT_TYPE_VALUE_WARNING = 14;
     // There were validation errors during validation of policy values in the
     // payload. There may also have been warnings. See
     // |policy_value_validation_results| - that list will contain at least one
     // payload validation errors, and zero or more payload validation warnings.
     // Client behavior: Policy blob rejected.
-    VALIDATION_RESULT_TYPE_POLICY_VALUE_ERRORS = 15;
+    VALIDATION_RESULT_TYPE_VALUE_ERROR = 15;
   }
 
   // The validation result.
   optional ValidationResultType validation_result_type = 3;
 
-  // Value validation results in the policy payload. Will be filled if
-  // |validation_result_type| is VALIDATION_RESULT_TYPE_POLICY_VALUE_WARNINGS
-  // or VALIDATION_RESULT_TYPE_POLICY_VALUE_ERRORS.
-  repeated PolicyValueValidationResult policy_value_validation_results = 4;
+  // Value validation issues in the policy payload. Will be filled if
+  // |validation_result_type| is VALIDATION_RESULT_TYPE_VALUE_WARNING
+  // or VALIDATION_RESULT_TYPE_VALUE_ERROR.
+  repeated PolicyValueValidationIssue policy_value_validation_issues = 4;
 }
 
 // Response from DMServer to a policy validation report.

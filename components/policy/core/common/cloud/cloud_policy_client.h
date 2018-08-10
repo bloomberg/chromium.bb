@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
 #include "components/policy/policy_export.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -167,6 +168,16 @@ class POLICY_EXPORT CloudPolicyClient {
   // multiple requests to fetch policy, new requests will cancel any pending
   // requests and the latest request will eventually trigger notifications.
   virtual void FetchPolicy();
+
+  // Upload a policy validation report to the server. Like FetchPolicy, this
+  // method requires that the client is in a registered state. This method
+  // should only be called if the policy was rejected (e.g. validation or
+  // serialization error).
+  virtual void UploadPolicyValidationReport(
+      CloudPolicyValidatorBase::Status status,
+      const std::vector<ValueValidationIssue>& value_validation_issues,
+      const std::string& policy_type,
+      const std::string& policy_token);
 
   // Requests OAuth2 auth codes for the device robot account. The client being
   // registered is a prerequisite to this operation and this call will CHECK if

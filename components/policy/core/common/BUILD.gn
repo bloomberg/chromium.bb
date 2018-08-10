@@ -71,6 +71,7 @@ source_set("internal") {
     "cloud/machine_level_user_cloud_policy_store.h",
     "cloud/policy_header_service.cc",
     "cloud/policy_header_service.h",
+    "cloud/policy_value_validator.h",
     "cloud/resource_cache.cc",
     "cloud/resource_cache.h",
     "cloud/signing_service.h",

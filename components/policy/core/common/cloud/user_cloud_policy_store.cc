@@ -329,9 +329,9 @@ void DesktopCloudPolicyStore::InstallLoadedPolicyAfterValidation(
   UMA_HISTOGRAM_ENUMERATION(
       "Enterprise.UserCloudPolicyStore.LoadValidationStatus",
       validator->status(), CloudPolicyValidatorBase::VALIDATION_STATUS_SIZE);
-  validation_status_ = validator->status();
+  validation_result_ = validator->GetValidationResult();
   if (!validator->success()) {
-    DVLOG(1) << "Validation failed: status=" << validation_status_;
+    DVLOG(1) << "Validation failed: status=" << validator->status();
     status_ = STATUS_VALIDATION_ERROR;
     NotifyStoreError();
     return;
@@ -358,24 +358,24 @@ void DesktopCloudPolicyStore::InstallLoadedPolicyAfterValidation(
 }
 
 void DesktopCloudPolicyStore::Store(const em::PolicyFetchResponse& policy) {
-  // Stop any pending requests to store policy, then validate the new policy
-  // before storing it.
+  // Cancel all pending requests.
   weak_factory_.InvalidateWeakPtrs();
+
   std::unique_ptr<em::PolicyFetchResponse> policy_copy(
       new em::PolicyFetchResponse(policy));
   Validate(
       std::move(policy_copy), std::unique_ptr<em::PolicySigningKey>(), true,
-      base::BindRepeating(&DesktopCloudPolicyStore::StorePolicyAfterValidation,
+      base::BindRepeating(&DesktopCloudPolicyStore::OnPolicyToStoreValidated,
                           weak_factory_.GetWeakPtr()));
 }
 
-void DesktopCloudPolicyStore::StorePolicyAfterValidation(
+void DesktopCloudPolicyStore::OnPolicyToStoreValidated(
     UserCloudPolicyValidator* validator) {
   UMA_HISTOGRAM_ENUMERATION(
       "Enterprise.UserCloudPolicyStore.StoreValidationStatus",
       validator->status(), CloudPolicyValidatorBase::VALIDATION_STATUS_SIZE);
-  validation_status_ = validator->status();
-  DVLOG(1) << "Policy validation complete: status = " << validation_status_;
+  validation_result_ = validator->GetValidationResult();
+  DVLOG(1) << "Policy validation complete: status = " << validator->status();
   if (!validator->success()) {
     status_ = STATUS_VALIDATION_ERROR;
     NotifyStoreError();

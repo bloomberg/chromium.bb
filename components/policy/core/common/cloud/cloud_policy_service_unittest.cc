@@ -72,6 +72,7 @@ TEST_F(CloudPolicyServiceTest, PolicyUpdateSuccess) {
                                          store_.policy_->device_id(),
                                          user_affiliation_ids))
       .Times(1);
+  EXPECT_CALL(client_, UploadPolicyValidationReport(_, _, _, _)).Times(0);
   store_.NotifyStoreLoaded();
   EXPECT_EQ(base::Time::FromJavaTime(32), client_.last_policy_timestamp_);
   EXPECT_TRUE(client_.public_key_version_valid_);
@@ -269,6 +270,69 @@ TEST_F(CloudPolicyServiceTest, StoreLoadAfterCreation) {
   EXPECT_CALL(observer, OnInitializationCompleted(&service_)).Times(0);
   store_.NotifyStoreLoaded();
   service_.RemoveObserver(&observer);
+}
+
+TEST_F(CloudPolicyServiceTest, ReportValidationResult) {
+  // Sync |policy_data_signature| between store and service by fetching a
+  // policy.
+  em::PolicyFetchResponse policy;
+  policy.set_policy_data_signature("fake-policy-data-signature");
+  client_.SetPolicy(policy_type_, std::string(), policy);
+  EXPECT_CALL(store_, Store(ProtoMatches(policy))).Times(1);
+  EXPECT_CALL(client_, UploadPolicyValidationReport(_, _, _, _)).Times(0);
+  client_.NotifyPolicyFetched();
+
+  // Simulate a value validation error from the store and expect a validation
+  // report to be uploaded.
+  store_.validation_result_ =
+      std::make_unique<CloudPolicyValidatorBase::ValidationResult>();
+  store_.validation_result_->status =
+      CloudPolicyValidatorBase::VALIDATION_VALUE_ERROR;
+  store_.validation_result_->value_validation_issues.push_back(
+      {"fake-policy-name", ValueValidationIssue::kError, "message"});
+  store_.validation_result_->policy_token = "fake-policy-token";
+  store_.validation_result_->policy_data_signature =
+      "fake-policy-data-signature";
+  EXPECT_CALL(client_,
+              UploadPolicyValidationReport(
+                  store_.validation_result_->status,
+                  store_.validation_result_->value_validation_issues,
+                  policy_type_, store_.validation_result_->policy_token))
+      .Times(1);
+  store_.NotifyStoreError();
+
+  // A second validation of the same policy should not trigger another upload.
+  EXPECT_CALL(client_, UploadPolicyValidationReport(_, _, _, _)).Times(0);
+  store_.NotifyStoreError();
+
+  testing::Mock::VerifyAndClearExpectations(&client_);
+}
+
+TEST_F(CloudPolicyServiceTest, ReportValidationResultWrongSignature) {
+  // Sync |policy_data_signature| between store and service by fetching a
+  // policy.
+  em::PolicyFetchResponse policy;
+  policy.set_policy_data_signature("fake-policy-data-signature-1");
+  client_.SetPolicy(policy_type_, std::string(), policy);
+  EXPECT_CALL(store_, Store(ProtoMatches(policy))).Times(1);
+  EXPECT_CALL(client_, UploadPolicyValidationReport(_, _, _, _)).Times(0);
+  client_.NotifyPolicyFetched();
+
+  // Simulate a value validation error from the store with a different policy
+  // data signature. No Validation report should be uploaded in that case.
+  store_.validation_result_ =
+      std::make_unique<CloudPolicyValidatorBase::ValidationResult>();
+  store_.validation_result_->status =
+      CloudPolicyValidatorBase::VALIDATION_VALUE_ERROR;
+  store_.validation_result_->value_validation_issues.push_back(
+      {"fake-policy-name", ValueValidationIssue::kError, "message"});
+  store_.validation_result_->policy_token = "fake-policy-token";
+  store_.validation_result_->policy_data_signature =
+      "fake-policy-data-signature-2";
+  EXPECT_CALL(client_, UploadPolicyValidationReport(_, _, _, _)).Times(0);
+  store_.NotifyStoreError();
+
+  testing::Mock::VerifyAndClearExpectations(&client_);
 }
 
 }  // namespace policy

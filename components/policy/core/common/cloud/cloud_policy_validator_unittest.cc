@@ -39,6 +39,21 @@ ACTION_P(CheckStatus, expected_status) {
   EXPECT_EQ(expected_status, arg0->status());
 };
 
+const char kPolicyName[] = "fake-policy-name";
+const ValueValidationIssue::Severity kSeverity = ValueValidationIssue::kError;
+const char kMessage[] = "fake-message";
+
+class FakeUserPolicyValueValidator
+    : public PolicyValueValidator<em::CloudPolicySettings> {
+ public:
+  bool ValidateValues(
+      const enterprise_management::CloudPolicySettings& policy_payload,
+      std::vector<ValueValidationIssue>* validation_issues) const override {
+    validation_issues->push_back({kPolicyName, kSeverity, kMessage});
+    return false;
+  }
+};
+
 class CloudPolicyValidatorTest : public testing::Test {
  public:
   CloudPolicyValidatorTest()
@@ -53,7 +68,8 @@ class CloudPolicyValidatorTest : public testing::Test {
         existing_device_id_(PolicyBuilder::kFakeDeviceId),
         owning_domain_(PolicyBuilder::kFakeDomain),
         cached_key_signature_(PolicyBuilder::GetTestSigningKeySignature()),
-        validate_by_gaia_id_(true) {
+        validate_by_gaia_id_(true),
+        validate_values_(false) {
     policy_.SetDefaultNewSigningKey();
   }
 
@@ -108,6 +124,12 @@ class CloudPolicyValidatorTest : public testing::Test {
     } else {
       validator->ValidateSignature(public_key);
     }
+
+    if (validate_values_) {
+      validator->ValidateValues(
+          std::make_unique<FakeUserPolicyValueValidator>());
+    }
+
     return validator;
   }
 
@@ -119,6 +141,17 @@ class CloudPolicyValidatorTest : public testing::Test {
               validator->policy_data()->SerializeAsString());
     EXPECT_EQ(policy_.payload().SerializeAsString(),
               validator->payload()->SerializeAsString());
+  }
+
+  void CheckValueValidation(UserCloudPolicyValidator* validator) {
+    std::unique_ptr<CloudPolicyValidatorBase::ValidationResult>
+        validation_result = validator->GetValidationResult();
+    ASSERT_EQ(1u, validation_result->value_validation_issues.size());
+    const ValueValidationIssue& result =
+        validation_result->value_validation_issues[0];
+    EXPECT_EQ(kPolicyName, result.policy_name);
+    EXPECT_EQ(kSeverity, result.severity);
+    EXPECT_EQ(kMessage, result.message);
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -133,6 +166,7 @@ class CloudPolicyValidatorTest : public testing::Test {
   std::string owning_domain_;
   std::string cached_key_signature_;
   bool validate_by_gaia_id_;
+  bool validate_values_;
 
   UserPolicyBuilder policy_;
 
@@ -440,6 +474,11 @@ TEST_F(CloudPolicyValidatorTest, NoRotation) {
   allow_key_rotation_ = false;
   policy_.UnsetNewSigningKey();
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_OK));
+}
+
+TEST_F(CloudPolicyValidatorTest, ValueValidation) {
+  validate_values_ = true;
+  Validate(Invoke(this, &CloudPolicyValidatorTest::CheckValueValidation));
 }
 
 }  // namespace
