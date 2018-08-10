@@ -4733,21 +4733,49 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGHiddenResource) {
             transform_outside_use_properties->Transform()->Parent());
 }
 
-TEST_P(PaintPropertyTreeBuilderTest, SVGRootBlending) {
+TEST_P(PaintPropertyTreeBuilderTest, SVGBlending) {
   SetBodyInnerHTML(R"HTML(
-    <svg id='svgroot' 'width=100' height='100'
+    <svg id='svgroot' width='100' height='100'
         style='position: relative; z-index: 0'>
-     <rect width='100' height='100' fill='#00FF00'
-         style='mix-blend-mode: difference'/>
+      <rect id='rect' width='100' height='100' fill='#00FF00'
+          style='mix-blend-mode: difference'/>
     </svg>
   )HTML");
 
-  LayoutObject& svg_root = *GetLayoutObjectByElementId("svgroot");
-  const ObjectPaintProperties* svg_root_properties =
-      svg_root.FirstFragment().PaintProperties();
-  EXPECT_TRUE(svg_root_properties->Effect());
+  const auto* rect_properties = PaintPropertiesForElement("rect");
+  ASSERT_TRUE(rect_properties->Effect());
+  EXPECT_EQ(SkBlendMode::kDifference, rect_properties->Effect()->BlendMode());
+
+  const auto* svg_root_properties = PaintPropertiesForElement("svgroot");
+  ASSERT_TRUE(svg_root_properties->Effect());
+  EXPECT_EQ(SkBlendMode::kSrcOver, svg_root_properties->Effect()->BlendMode());
+
   EXPECT_EQ(&EffectPaintPropertyNode::Root(),
             svg_root_properties->Effect()->Parent());
+  EXPECT_EQ(svg_root_properties->Effect(), rect_properties->Effect()->Parent());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, SVGRootBlending) {
+  SetBodyInnerHTML(R"HTML(
+    <svg id='svgroot' 'width=100' height='100' style='mix-blend-mode: multiply'>
+    </svg>
+  )HTML");
+
+  const auto* html_properties = GetDocument()
+                                    .documentElement()
+                                    ->GetLayoutObject()
+                                    ->FirstFragment()
+                                    .PaintProperties();
+  ASSERT_TRUE(html_properties->Effect());
+  EXPECT_EQ(SkBlendMode::kSrcOver, html_properties->Effect()->BlendMode());
+
+  const auto* svg_root_properties = PaintPropertiesForElement("svgroot");
+  ASSERT_TRUE(svg_root_properties->Effect());
+  EXPECT_EQ(SkBlendMode::kMultiply, svg_root_properties->Effect()->BlendMode());
+
+  EXPECT_EQ(&EffectPaintPropertyNode::Root(),
+            html_properties->Effect()->Parent());
+  EXPECT_EQ(html_properties->Effect(), svg_root_properties->Effect()->Parent());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ScrollBoundsOffset) {
