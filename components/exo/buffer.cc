@@ -21,6 +21,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
+#include "components/exo/wm_helper.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_format_utils.h"
@@ -423,7 +424,7 @@ bool Buffer::ProduceTransferableResource(
     texture_.reset();
 
   ui::ContextFactory* context_factory =
-      aura::Env::GetInstance()->context_factory();
+      WMHelper::GetInstance()->env()->context_factory();
   // Note: This can fail if GPU acceleration has been disabled.
   scoped_refptr<viz::ContextProvider> context_provider =
       context_factory->SharedMainThreadContextProvider();

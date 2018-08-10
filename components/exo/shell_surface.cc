@@ -270,7 +270,7 @@ void ShellSurface::AttemptToStartDrag(int component) {
         target, location, component,
         base::BindOnce(end_drag, base::Unretained(this)));
   } else {
-    gfx::Point location = aura::Env::GetInstance()->last_mouse_location();
+    gfx::Point location = WMHelper::GetInstance()->env()->last_mouse_location();
     ::wm::ConvertPointFromScreen(widget_->GetNativeWindow()->GetRootWindow(),
                                  &location);
     toplevel_handler->AttemptToStartDrag(

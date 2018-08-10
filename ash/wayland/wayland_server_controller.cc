@@ -17,6 +17,7 @@
 #include "components/exo/file_helper.h"
 #include "components/exo/wayland/server.h"
 #include "components/exo/wm_helper.h"
+#include "ui/aura/env.h"
 
 namespace ash {
 
@@ -71,7 +72,7 @@ WaylandServerController::WaylandServerController(
       std::make_unique<ArcNotificationSurfaceManagerImpl>();
   arc_input_method_surface_manager_ =
       std::make_unique<ArcInputMethodSurfaceManager>();
-  wm_helper_ = std::make_unique<exo::WMHelper>();
+  wm_helper_ = std::make_unique<exo::WMHelper>(aura::Env::GetInstance());
   exo::WMHelper::SetInstance(wm_helper_.get());
   display_ = std::make_unique<exo::Display>(
       arc_notification_surface_manager_.get(),

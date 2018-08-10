@@ -8,6 +8,7 @@
 #include "components/exo/input_method_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
+#include "ui/aura/env.h"
 
 namespace ash {
 
@@ -18,7 +19,7 @@ class ArcInputMethodSurfaceManagerTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    wm_helper_ = std::make_unique<exo::WMHelper>();
+    wm_helper_ = std::make_unique<exo::WMHelper>(aura::Env::GetInstance());
     exo::WMHelper::SetInstance(wm_helper_.get());
   }
 
