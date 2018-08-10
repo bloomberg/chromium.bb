@@ -202,6 +202,7 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
   for (const auto& update : event_bundle.updates) {
     set_event_from(update.event_from);
     deleted_node_ids_.clear();
+    did_send_tree_change_during_unserialization_ = false;
 
     if (!tree_.Unserialize(update))
       return false;
@@ -209,7 +210,7 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
     if (is_active_profile) {
       owner_->SendNodesRemovedEvent(&tree_, deleted_node_ids_);
 
-      if (update.nodes.size()) {
+      if (update.nodes.size() && did_send_tree_change_during_unserialization_) {
         ui::AXNode* target = tree_.GetFromId(update.nodes[0].id);
         if (target) {
           owner_->SendTreeChangeEvent(
@@ -268,8 +269,8 @@ void AutomationAXTreeWrapper::OnNodeDataWillChange(
 void AutomationAXTreeWrapper::OnNodeWillBeDeleted(ui::AXTree* tree,
                                                   ui::AXNode* node) {
   AXEventGenerator::OnNodeWillBeDeleted(tree, node);
-  owner_->SendTreeChangeEvent(api::automation::TREE_CHANGE_TYPE_NODEREMOVED,
-                              tree, node);
+  did_send_tree_change_during_unserialization_ |= owner_->SendTreeChangeEvent(
+      api::automation::TREE_CHANGE_TYPE_NODEREMOVED, tree, node);
   deleted_node_ids_.push_back(node->id());
 }
 
@@ -283,16 +284,19 @@ void AutomationAXTreeWrapper::OnAtomicUpdateFinished(
     ui::AXNode* node = change.node;
     switch (change.type) {
       case NODE_CREATED:
-        owner_->SendTreeChangeEvent(
-            api::automation::TREE_CHANGE_TYPE_NODECREATED, tree, node);
+        did_send_tree_change_during_unserialization_ |=
+            owner_->SendTreeChangeEvent(
+                api::automation::TREE_CHANGE_TYPE_NODECREATED, tree, node);
         break;
       case SUBTREE_CREATED:
-        owner_->SendTreeChangeEvent(
-            api::automation::TREE_CHANGE_TYPE_SUBTREECREATED, tree, node);
+        did_send_tree_change_during_unserialization_ |=
+            owner_->SendTreeChangeEvent(
+                api::automation::TREE_CHANGE_TYPE_SUBTREECREATED, tree, node);
         break;
       case NODE_CHANGED:
-        owner_->SendTreeChangeEvent(
-            api::automation::TREE_CHANGE_TYPE_NODECHANGED, tree, node);
+        did_send_tree_change_during_unserialization_ |=
+            owner_->SendTreeChangeEvent(
+                api::automation::TREE_CHANGE_TYPE_NODECHANGED, tree, node);
         break;
       // Unhandled.
       case NODE_REPARENTED:
@@ -302,8 +306,9 @@ void AutomationAXTreeWrapper::OnAtomicUpdateFinished(
   }
 
   for (int id : text_changed_node_ids_) {
-    owner_->SendTreeChangeEvent(api::automation::TREE_CHANGE_TYPE_TEXTCHANGED,
-                                tree, tree->GetFromId(id));
+    did_send_tree_change_during_unserialization_ |= owner_->SendTreeChangeEvent(
+        api::automation::TREE_CHANGE_TYPE_TEXTCHANGED, tree,
+        tree->GetFromId(id));
   }
   text_changed_node_ids_.clear();
 }

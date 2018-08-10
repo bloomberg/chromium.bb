@@ -85,8 +85,9 @@ LiveRegions.prototype = {
    * @param {TreeChange} treeChange
    */
   onTreeChange: function(treeChange) {
+    var type = treeChange.type;
     var node = treeChange.target;
-    if (!node.containerLiveStatus)
+    if (!node.containerLiveStatus && type != TreeChangeType.SUBTREE_UPDATE_END)
       return;
 
     var currentRange = this.chromeVoxState_.currentRange;
@@ -105,8 +106,7 @@ LiveRegions.prototype = {
       return;
     }
 
-    var type = treeChange.type;
-    var relevant = node.containerLiveRelevant;
+    var relevant = node.containerLiveRelevant || '';
     var additions = relevant.indexOf('additions') >= 0;
     var text = relevant.indexOf('text') >= 0;
     var removals = relevant.indexOf('removals') >= 0;
@@ -117,12 +117,11 @@ LiveRegions.prototype = {
          (type == TreeChangeType.NODE_CREATED ||
           type == TreeChangeType.SUBTREE_CREATED))) {
       this.queueLiveRegionChange_(node);
+    } else if (all || (text && type == TreeChangeType.TEXT_CHANGED)) {
+      this.queueLiveRegionChange_(node);
     }
 
-    if (all || (text && type == TreeChangeType.TEXT_CHANGED))
-      this.queueLiveRegionChange_(node);
-
-    if (all || (removals && type == TreeChangeType.NODE_REMOVED))
+    if ((all || removals) && type == TreeChangeType.NODE_REMOVED)
       this.outputLiveRegionChange_(node, '@live_regions_removed');
 
     if (type == TreeChangeType.SUBTREE_UPDATE_END)

@@ -61,6 +61,10 @@ class AutomationAXTreeWrapper : public ui::AXEventGenerator {
   std::vector<int> deleted_node_ids_;
   std::vector<int> text_changed_node_ids_;
 
+  // Tracks whether a tree change event was sent during unserialization. Tree
+  // changes outside of unserialization do not get reflected here. The value is
+  // reset after unserialization.
+  bool did_send_tree_change_during_unserialization_ = false;
   DISALLOW_COPY_AND_ASSIGN(AutomationAXTreeWrapper);
 };
 

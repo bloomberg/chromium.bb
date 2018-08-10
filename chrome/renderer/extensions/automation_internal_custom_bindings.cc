@@ -1668,13 +1668,13 @@ void AutomationInternalCustomBindings::OnAccessibilityLocationChange(
                     params.new_location.transform.get());
 }
 
-void AutomationInternalCustomBindings::SendTreeChangeEvent(
+bool AutomationInternalCustomBindings::SendTreeChangeEvent(
     api::automation::TreeChangeType change_type,
     ui::AXTree* tree,
     ui::AXNode* node) {
   // Don't send tree change events when it's not the active profile.
   if (!is_active_profile_)
-    return;
+    return false;
 
   // Notify custom bindings when there's an unloaded tree; js will enable the
   // renderer and wait for it to load.
@@ -1692,7 +1692,8 @@ void AutomationInternalCustomBindings::SendTreeChangeEvent(
        api::automation::TREE_CHANGE_OBSERVER_FILTER_LIVEREGIONTREECHANGES)) {
     if (node->data().HasStringAttribute(
             ax::mojom::StringAttribute::kContainerLiveStatus) ||
-        node->data().role == ax::mojom::Role::kAlert) {
+        node->data().role == ax::mojom::Role::kAlert ||
+        change_type == api::automation::TREE_CHANGE_TYPE_SUBTREEUPDATEEND) {
       has_filter = true;
     }
   }
@@ -1709,14 +1710,14 @@ void AutomationInternalCustomBindings::SendTreeChangeEvent(
     has_filter = true;
 
   if (!has_filter)
-    return;
+    return false;
 
   auto iter = axtree_to_tree_wrapper_map_.find(tree);
   if (iter == axtree_to_tree_wrapper_map_.end())
-    return;
+    return false;
 
   int tree_id = iter->second->tree_id();
-
+  bool did_send_event = false;
   for (const auto& observer : tree_change_observers_) {
     switch (observer.filter) {
       case api::automation::TREE_CHANGE_OBSERVER_FILTER_NOTREECHANGES:
@@ -1725,7 +1726,8 @@ void AutomationInternalCustomBindings::SendTreeChangeEvent(
       case api::automation::TREE_CHANGE_OBSERVER_FILTER_LIVEREGIONTREECHANGES:
         if (!node->data().HasStringAttribute(
                 ax::mojom::StringAttribute::kContainerLiveStatus) &&
-            node->data().role != ax::mojom::Role::kAlert) {
+            node->data().role != ax::mojom::Role::kAlert &&
+            change_type != api::automation::TREE_CHANGE_TYPE_SUBTREEUPDATEEND) {
           continue;
         }
         break;
@@ -1738,6 +1740,7 @@ void AutomationInternalCustomBindings::SendTreeChangeEvent(
         break;
     }
 
+    did_send_event = true;
     base::ListValue args;
     args.AppendInteger(observer.id);
     args.AppendInteger(tree_id);
@@ -1746,6 +1749,8 @@ void AutomationInternalCustomBindings::SendTreeChangeEvent(
     bindings_system_->DispatchEventInContext("automationInternal.onTreeChange",
                                              &args, nullptr, context());
   }
+
+  return did_send_event;
 }
 
 void AutomationInternalCustomBindings::SendAutomationEvent(

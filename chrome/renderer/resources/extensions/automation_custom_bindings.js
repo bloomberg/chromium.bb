@@ -238,7 +238,7 @@ automationInternal.onTreeChange.addListener(function(observerID,
     observer({target: node, type: changeType});
   } catch (e) {
     exceptionHandler.handle('Error in tree change observer for ' +
-        treeChange.type, e);
+        changeType, e);
   }
 });
 
