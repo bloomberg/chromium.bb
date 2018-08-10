@@ -138,15 +138,6 @@ class PLATFORM_EXPORT AudioDestination
   // graph into the FIFO.
   scoped_refptr<AudioBus> render_bus_;
 
-  // Keeps track if the output of this destination was audible, before the
-  // current rendering quantum.  Used for recording "playback" time.
-  bool was_audible_ = false;
-
-  // Counts the number of render quanta where audible sound was played.  We
-  // determine audibility on render quantum boundaries, so counting quanta is
-  // all that's needed.
-  size_t total_audible_renders_ = 0;
-
   // Accessed by rendering thread: the render callback function of WebAudio
   // engine. (i.e. DestinationNode)
   AudioIOCallback& callback_;

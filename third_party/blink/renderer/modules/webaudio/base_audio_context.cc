@@ -69,15 +69,20 @@
 #include "third_party/blink/renderer/modules/webaudio/script_processor_node.h"
 #include "third_party/blink/renderer/modules/webaudio/stereo_panner_node.h"
 #include "third_party/blink/renderer/modules/webaudio/wave_shaper_node.h"
-#include "third_party/blink/renderer/platform/uuid.h"
 #include "third_party/blink/renderer/platform/audio/iir_filter.h"
+#include "third_party/blink/renderer/platform/audio/vector_math.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/uuid.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
+
+// Recording of audio audibility stops after the context has been running for
+// this long.  We don't need this information for the lifetime of the context.
+const double kStopRecordingAudibilityTime = 10;
 
 BaseAudioContext* BaseAudioContext::Create(
     Document& document,
@@ -695,7 +700,24 @@ void BaseAudioContext::HandlePreRenderTasks(
   }
 }
 
-void BaseAudioContext::HandlePostRenderTasks() {
+// Determine if the rendered data is audible.
+static bool IsAudible(const AudioBus* rendered_data) {
+  // Compute the energy in each channel and sum up the energy in each channel
+  // for the total energy.
+  float energy = 0;
+
+  unsigned data_size = rendered_data->length();
+  for (unsigned k = 0; k < rendered_data->NumberOfChannels(); ++k) {
+    const float* data = rendered_data->Channel(k)->Data();
+    float channel_energy;
+    VectorMath::Vsvesq(data, 1, &channel_energy, data_size);
+    energy += channel_energy;
+  }
+
+  return energy > 0;
+}
+
+void BaseAudioContext::HandlePostRenderTasks(const AudioBus* destination_bus) {
   DCHECK(IsAudioThread());
 
   // Must use a tryLock() here too.  Don't worry, the lock will very rarely be
@@ -711,6 +733,37 @@ void BaseAudioContext::HandlePostRenderTasks() {
     GetDeferredTaskHandler().RequestToDeleteHandlersOnMainThread();
 
     unlock();
+  }
+
+  // Notify browser if audible audio has started or stopped.
+  if (HasRealtimeConstraint()) {
+    // Detect silence (or not) for MEI
+    bool is_audible = IsAudible(destination_bus);
+
+    // We want to keep track of the total audible audio, but we don't need to
+    // record the start and stop of audible audio after
+    // |kStopRecordingAudibilityTime|.
+    if (is_audible) {
+      ++total_audible_renders_;
+    }
+
+    if (currentTime() <= kStopRecordingAudibilityTime) {
+      if (was_audible_ != is_audible) {
+        // Audibility changed in this render, so report the change.
+        was_audible_ = is_audible;
+        if (is_audible) {
+          PostCrossThreadTask(
+              *Platform::Current()->MainThread()->GetTaskRunner(), FROM_HERE,
+              CrossThreadBind(&BaseAudioContext::NotifyAudibleAudioStarted,
+                              WrapCrossThreadPersistent(this)));
+        } else {
+          PostCrossThreadTask(
+              *Platform::Current()->MainThread()->GetTaskRunner(), FROM_HERE,
+              CrossThreadBind(&BaseAudioContext::NotifyAudibleAudioStopped,
+                              WrapCrossThreadPersistent(this)));
+        }
+      }
+    }
   }
 }
 
@@ -939,6 +992,20 @@ bool BaseAudioContext::WouldTaintOrigin(const KURL& url) const {
   // Be conservative and assume it's tainted if it's not a data url and if we
   // can't get the security origin of the document.
   return true;
+}
+
+void BaseAudioContext::NotifyAudibleAudioStarted() {
+  DCHECK(IsMainThread());
+  // TODO(crbug.com/855069): Actually notify the browser that audible audio has
+  // started.
+  VLOG(1) << this << ": Audible audio started @" << currentTime();
+}
+
+void BaseAudioContext::NotifyAudibleAudioStopped() {
+  DCHECK(IsMainThread());
+  // TODO(crbug.com/855069): Actually notify the browser that audible audio has
+  // started.
+  VLOG(1) << this << ": Audible audio stopped @" << currentTime();
 }
 
 }  // namespace blink
