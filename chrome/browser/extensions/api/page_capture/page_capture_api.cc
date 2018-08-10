@@ -95,7 +95,7 @@ bool PageCaptureSaveAsMHTMLFunction::RunAsync() {
   // time, we show the user a dialog where they can choose whether to allow the
   // extension access to the API.
 #if defined(OS_CHROMEOS)
-  if (profiles::IsPublicSession()) {
+  if (profiles::ArePublicSessionRestrictionsEnabled()) {
     WebContents* web_contents = GetWebContents();
     if (!web_contents) {
       ReturnFailure(kTabClosedError);

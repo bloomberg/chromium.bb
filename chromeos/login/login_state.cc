@@ -98,6 +98,11 @@ bool LoginState::IsGuestSessionUser() const {
 }
 
 bool LoginState::IsPublicSessionUser() const {
+  return logged_in_user_type_ == LOGGED_IN_USER_PUBLIC_ACCOUNT ||
+         logged_in_user_type_ == LOGGED_IN_USER_PUBLIC_ACCOUNT_MANAGED;
+}
+
+bool LoginState::ArePublicSessionRestrictionsEnabled() const {
   return logged_in_user_type_ == LOGGED_IN_USER_PUBLIC_ACCOUNT;
 }
 
@@ -108,7 +113,7 @@ bool LoginState::IsKioskApp() const {
 bool LoginState::UserHasNetworkProfile() const {
   if (!IsUserLoggedIn())
     return false;
-  return logged_in_user_type_ != LOGGED_IN_USER_PUBLIC_ACCOUNT;
+  return !IsPublicSessionUser();
 }
 
 bool LoginState::IsUserAuthenticated() const {

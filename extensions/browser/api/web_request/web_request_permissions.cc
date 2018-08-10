@@ -8,7 +8,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chromeos/login/login_state.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -114,11 +113,12 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
       extension->permissions_data()->IsPolicyBlockedHost(initiator->GetURL()))
     return PermissionsData::PageAccess::kDenied;
 
-// When we are in a Public Session, allow all URLs for webRequests initiated
-// by a regular extension (but don't allow chrome:// URLs).
+// When restrictions are enabled in Public Session, allow all URLs for
+// webRequests initiated by a regular extension (but don't allow chrome://
+// URLs).
 #if defined(OS_CHROMEOS)
   if (chromeos::LoginState::IsInitialized() &&
-      chromeos::LoginState::Get()->IsPublicSessionUser() &&
+      chromeos::LoginState::Get()->ArePublicSessionRestrictionsEnabled() &&
       extension->is_extension() && !url.SchemeIs("chrome")) {
     // Make sure that the extension is truly installed by policy (the assumption
     // in Public Session is that all extensions are installed by policy).

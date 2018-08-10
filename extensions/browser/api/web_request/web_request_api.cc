@@ -370,11 +370,11 @@ bool ShouldHideEvent(void* browser_context,
           WebRequestPermissions::HideRequest(extension_info_map, request));
 }
 
-// Returns true if we're in a Public Session.
-bool IsPublicSession() {
+// Returns true if we're in a Public Session and restrictions are enabled.
+bool ArePublicSessionRestrictionsEnabled() {
 #if defined(OS_CHROMEOS)
   if (chromeos::LoginState::IsInitialized()) {
-    return chromeos::LoginState::Get()->IsPublicSessionUser();
+    return chromeos::LoginState::Get()->ArePublicSessionRestrictionsEnabled();
   }
 #endif
   return false;
@@ -1400,7 +1400,7 @@ void ExtensionWebRequestEventRouter::DispatchEventToListeners(
     // which are force-installed by policy. Whitelisted extensions are exempt
     // from this filtering.
     WebRequestEventDetails* custom_event_details = event_details.get();
-    if (IsPublicSession() &&
+    if (ArePublicSessionRestrictionsEnabled() &&
         !extensions::IsWhitelistedForPublicSession(listener->id.extension_id)) {
       if (!event_details_filtered_copy) {
         event_details_filtered_copy =
@@ -2346,9 +2346,9 @@ WebRequestInternalAddEventListenerFunction::Run() {
     // http://www.example.com/bar/*.
     // For this reason we do only a coarse check here to warn the extension
     // developer if they do something obviously wrong.
-    // When we are in a Public Session, allow all URLs for webRequests initiated
-    // by a regular extension.
-    if (!(IsPublicSession() && extension->is_extension()) &&
+    // When restrictions are enabled in Public Session, allow all URLs for
+    // webRequests initiated by a regular extension.
+    if (!(ArePublicSessionRestrictionsEnabled() && extension->is_extension()) &&
         extension->permissions_data()
             ->GetEffectiveHostPermissions()
             .is_empty() &&
@@ -2413,9 +2413,9 @@ WebRequestInternalEventHandledFunction::Run() {
           extension_id_safe(), install_time));
     }
 
-    // In Public Session we only want to allow "cancel" (except for whitelisted
-    // extensions which have no such restrictions).
-    if (IsPublicSession() &&
+    // In Public Session we restrict everything but "cancel" (except for
+    // whitelisted extensions which have no such restrictions).
+    if (ArePublicSessionRestrictionsEnabled() &&
         !extensions::IsWhitelistedForPublicSession(extension_id_safe()) &&
         (value->HasKey("redirectUrl") ||
          value->HasKey(keys::kAuthCredentialsKey) ||
