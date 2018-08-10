@@ -5,13 +5,20 @@
 #ifndef DEVICE_FIDO_MAC_KEYCHAIN_H_
 #define DEVICE_FIDO_MAC_KEYCHAIN_H_
 
+#include <stdint.h>
+#include <set>
+#include <string>
+#include <vector>
+
 #import <Foundation/Foundation.h>
+#import <LocalAuthentication/LocalAuthentication.h>
 #import <Security/Security.h>
 
 #include "base/component_export.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
+#include "base/optional.h"
 
 namespace device {
 namespace fido {
@@ -63,6 +70,47 @@ class COMPONENT_EXPORT(DEVICE_FIDO) API_AVAILABLE(macos(10.12.2)) Keychain {
 
   DISALLOW_COPY_AND_ASSIGN(Keychain);
 };
+
+// Credential represents a WebAuthn credential from the keychain.
+struct COMPONENT_EXPORT(FIDO) Credential {
+  Credential(base::ScopedCFTypeRef<SecKeyRef> private_key,
+             std::vector<uint8_t> credential_id);
+  ~Credential();
+  Credential(Credential&& other);
+  Credential& operator=(Credential&& other);
+
+  // An opaque reference to the private key that can be used for signing.
+  base::ScopedCFTypeRef<SecKeyRef> private_key;
+
+  // The credential ID is a handle to the key that gets passed to the RP. This
+  // ID is opaque to the RP, but is obtained by encrypting the credential
+  // metadata with a profile-specific metadata secret. See |CredentialMetadata|
+  // for more information.
+  std::vector<uint8_t> credential_id;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Credential);
+};
+
+// Tries to find a credential for the given |rp_id| in the keychain.
+// |credential_id_filter| may be used to select credentials by ID. If it is
+// empty, any credential for the RP matches. If multiple credentials are found,
+// only one is returned.
+//
+// An LAContext that has been successfully evaluated using |TouchIdContext| may
+// be passed in |authenticaton_context|, in order to authorize the credential's
+// private key for signing. The authentication may also be null if the caller
+// only wants to check for existence of a key, but does not intend to create a
+// signature from it. (I.e., the credential's SecKeyRef should not be passed to
+// |KeyCreateSignature| if no authentication context was provided, since that
+// would trigger a Touch ID prompt dialog).
+COMPONENT_EXPORT(FIDO)
+base::Optional<Credential> FindCredentialInKeychain(
+    const std::string& keychain_access_group,
+    const std::string& metadata_secret,
+    const std::string& rp_id,
+    const std::set<std::vector<uint8_t>>& credential_id_filter,
+    LAContext* authentication_context) API_AVAILABLE(macosx(10.12.2));
 
 }  // namespace mac
 }  // namespace fido

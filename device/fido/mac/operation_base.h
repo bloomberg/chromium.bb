@@ -96,7 +96,9 @@ class API_AVAILABLE(macosx(10.12.2)) OperationBase : public Operation {
   }
 
   const std::string& metadata_secret() const { return metadata_secret_; }
-
+  const std::string& keychain_access_group() const {
+    return keychain_access_group_;
+  }
   const Request& request() const { return request_; }
   Callback& callback() { return callback_; }
 

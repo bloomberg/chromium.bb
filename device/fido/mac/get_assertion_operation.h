@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/ctap_get_assertion_request.h"
+#include "device/fido/mac/keychain.h"
 #include "device/fido/mac/operation_base.h"
 
 namespace device {
@@ -41,6 +42,8 @@ class API_AVAILABLE(macosx(10.12.2))
  private:
   const std::string& RpId() const override;
   void PromptTouchIdDone(bool success) override;
+
+  base::Optional<Credential> credential_;
 
   DISALLOW_COPY_AND_ASSIGN(GetAssertionOperation);
 };
