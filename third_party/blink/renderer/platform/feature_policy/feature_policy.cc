@@ -210,6 +210,8 @@ void AllowFeatureEverywhere(mojom::FeaturePolicyFeature feature,
 const FeatureNameMap& GetDefaultFeatureNameMap() {
   DEFINE_STATIC_LOCAL(FeatureNameMap, default_feature_name_map, ());
   if (default_feature_name_map.IsEmpty()) {
+    default_feature_name_map.Set("autoplay",
+                                 mojom::FeaturePolicyFeature::kAutoplay);
     default_feature_name_map.Set("camera",
                                  mojom::FeaturePolicyFeature::kCamera);
     default_feature_name_map.Set("encrypted-media",
@@ -248,10 +250,6 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
           "vertical-scroll", mojom::FeaturePolicyFeature::kVerticalScroll);
       default_feature_name_map.Set("sync-script",
                                    mojom::FeaturePolicyFeature::kSyncScript);
-    }
-    if (RuntimeEnabledFeatures::FeaturePolicyAutoplayFeatureEnabled()) {
-      default_feature_name_map.Set("autoplay",
-                                   mojom::FeaturePolicyFeature::kAutoplay);
     }
     if (RuntimeEnabledFeatures::PaymentRequestEnabled()) {
       default_feature_name_map.Set("payment",

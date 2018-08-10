@@ -456,10 +456,6 @@
       name: "FastMobileScrolling",
     },
     {
-      name: "FeaturePolicyAutoplayFeature",
-      status: "stable"
-    },
-    {
       name: "FeaturePolicyJavaScriptInterface",
       origin_trial_feature_name: "FeaturePolicyJSAPI",
       status: "experimental"
