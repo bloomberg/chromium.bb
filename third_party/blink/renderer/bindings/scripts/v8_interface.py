@@ -682,7 +682,8 @@ def methods_context(interface):
 
                     # void forEach(Function callback, [Default=Undefined] optional any thisArg)
                     generated_method(IdlType('void'), 'forEach',
-                                     arguments=[generated_argument(IdlType('Function'), 'callback'),
+                                     # TODO(yukishiino): |callback| should be type of Function.
+                                     arguments=[generated_argument(IdlType('CallbackFunctionTreatedAsScriptValue'), 'callback'),
                                                 generated_argument(IdlType('any'), 'thisArg',
                                                                    is_optional=True,
                                                                    extended_attributes={'Default': 'Undefined'})],

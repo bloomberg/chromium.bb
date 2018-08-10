@@ -9,5 +9,7 @@
     Global=(Worklet,PaintWorklet)
 ] interface PaintWorkletGlobalScope : WorkletGlobalScope {
     [Measure] readonly attribute unrestricted double devicePixelRatio;
-    [Measure, RaisesException] void registerPaint(DOMString name, Function paintCtor);
+    // TODO(yukishiino): |paintCtor| should be of callback function type
+    // (should be: callback T = any ()).
+    [Measure, RaisesException] void registerPaint(DOMString name, CallbackFunctionTreatedAsScriptValue paintCtor);
 };

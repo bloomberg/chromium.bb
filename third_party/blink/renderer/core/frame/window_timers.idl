@@ -25,7 +25,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#timers
+// https://html.spec.whatwg.org/C/webappapis.html#windoworworkerglobalscope-mixin
+// https://html.spec.whatwg.org/C/timers-and-user-prompts.html#timers
 
 [
     ImplementedAs=DOMWindowTimers,
@@ -33,13 +34,13 @@
     NoInterfaceObject, // Always used on target of 'implements'
     Exposed=(Window,Worker)
 ] interface WindowTimers {
-    // FIXME: would be clearer as a union type, like:
-    // typedef (Function or DOMString) Handler
-    // Needs spec update and better union support: http://crbug.com/240176
-    [CallWith=ScriptState, RuntimeCallStatsCounter=WindowSetTimeout] long setTimeout(Function handler, optional long timeout = 0, any... arguments);
+    // TODO(yukishiino): Use TimerHandler (or Function at least) to implement
+    // setTimeout and setInterval.
+    // https://html.spec.whatwg.org/C/webappapis.html#windoworworkerglobalscope-mixin
+    [CallWith=ScriptState, RuntimeCallStatsCounter=WindowSetTimeout] long setTimeout(CallbackFunctionTreatedAsScriptValue handler, optional long timeout = 0, any... arguments);
     [CallWith=ScriptState] long setTimeout(DOMString handler, optional long timeout = 0, any... arguments);
     void clearTimeout(optional long handle = 0);
-    [CallWith=ScriptState] long setInterval(Function handler, optional long timeout = 0, any... arguments);
+    [CallWith=ScriptState] long setInterval(CallbackFunctionTreatedAsScriptValue handler, optional long timeout = 0, any... arguments);
     [CallWith=ScriptState] long setInterval(DOMString handler, optional long timeout = 0, any... arguments);
     void clearInterval(optional long handle = 0);
 };

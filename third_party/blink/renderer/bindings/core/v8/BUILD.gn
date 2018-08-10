@@ -128,6 +128,8 @@ generated_core_callback_function_files = [
   "$bindings_core_v8_output_dir/v8_blob_callback.h",
   "$bindings_core_v8_output_dir/v8_frame_request_callback.cc",
   "$bindings_core_v8_output_dir/v8_frame_request_callback.h",
+  "$bindings_core_v8_output_dir/v8_function.cc",
+  "$bindings_core_v8_output_dir/v8_function.h",
   "$bindings_core_v8_output_dir/v8_function_string_callback.cc",
   "$bindings_core_v8_output_dir/v8_function_string_callback.h",
   "$bindings_core_v8_output_dir/v8_idle_request_callback.cc",

@@ -8,7 +8,9 @@
     Exposed=AudioWorklet,
     Global=(Worklet,AudioWorklet)
 ] interface AudioWorkletGlobalScope : WorkletGlobalScope {
-    [RaisesException, MeasureAs=AudioWorkletGlobalScopeRegisterProcessor] void registerProcessor(DOMString name, Function processorConstructor);
+    // TODO(yukishiino): |processorConstructor| should be of callback function
+    // type (should be: callback T = any ()).
+    [RaisesException, MeasureAs=AudioWorkletGlobalScopeRegisterProcessor] void registerProcessor(DOMString name, CallbackFunctionTreatedAsScriptValue processorConstructor);
     readonly attribute unsigned long long currentFrame;
     readonly attribute double currentTime;
     readonly attribute float sampleRate;

@@ -84,9 +84,11 @@ STRING_TYPES = frozenset([
     'USVString',
 ])
 
-STANDARD_CALLBACK_FUNCTIONS = frozenset([
-    # http://heycam.github.io/webidl/#common-Function
-    'Function',
+NON_STANDARD_CALLBACK_FUNCTIONS = frozenset([
+    # |CallbackFunctionTreatedAsScriptValue| is interpreted as a callback
+    # function type, but converted to |ScriptValue| instead of a subclass of
+    # |CallbackFunctionBase|.
+    'CallbackFunctionTreatedAsScriptValue',
 ])
 
 
@@ -171,12 +173,13 @@ class IdlType(IdlTypeBase):
 
     @property
     def is_callback_function(self):  # pylint: disable=C0103
-        return self.base_type in IdlType.callback_functions or self.base_type in STANDARD_CALLBACK_FUNCTIONS
+        return self.base_type in IdlType.callback_functions or self.base_type in NON_STANDARD_CALLBACK_FUNCTIONS
 
     @property
     def is_custom_callback_function(self):
-        # Treat standard callback functions as custom as they aren't generated.
-        if self.base_type in STANDARD_CALLBACK_FUNCTIONS:
+        # Treat non standard callback functions as custom as they have different
+        # cpp_type, etc.
+        if self.base_type in NON_STANDARD_CALLBACK_FUNCTIONS:
             return True
         entry = IdlType.callback_functions.get(self.base_type)
         callback_function = entry.get('callback_function')

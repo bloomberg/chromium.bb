@@ -9,5 +9,7 @@
     Global=(Worklet,LayoutWorklet),
     RuntimeEnabled=CSSLayoutAPI
 ] interface LayoutWorkletGlobalScope : WorkletGlobalScope {
-    [RaisesException] void registerLayout(DOMString name, Function layoutCtor);
+    // TODO(yukishiino): |layoutCtor| should be of callback function type
+    // (should be: callback T = any ()).
+    [RaisesException] void registerLayout(DOMString name, CallbackFunctionTreatedAsScriptValue layoutCtor);
 };
