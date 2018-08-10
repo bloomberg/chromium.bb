@@ -1230,7 +1230,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
               OmniboxPopupModel::TAB_SWITCH) {
         popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB);
       } else {
-        if (alt) {
+        if (alt || (shift && command)) {
           model()->AcceptInput(WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                false);
         } else if (command) {
