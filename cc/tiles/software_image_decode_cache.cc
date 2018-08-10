@@ -24,23 +24,6 @@ using base::trace_event::MemoryDumpLevelOfDetail;
 namespace cc {
 namespace {
 
-bool UseCacheForDrawImage(const DrawImage& draw_image) {
-  // Lazy generated images are have their decode cached.
-  sk_sp<SkImage> sk_image = draw_image.paint_image().GetSkImage();
-  if (sk_image->isLazyGenerated())
-    return true;
-
-  // Cache images that need to be converted to a non-sRGB color space.
-  // TODO(ccameron): Consider caching when any color conversion is required.
-  // https://crbug.com/791828
-  const gfx::ColorSpace& dst_color_space = draw_image.target_color_space();
-  if (dst_color_space.IsValid() &&
-      dst_color_space != gfx::ColorSpace::CreateSRGB()) {
-    return true;
-  }
-
-  return false;
-}
 
 // The number of entries to keep around in the cache. This limit can be breached
 // if more items are locked. That is, locked items ignore this limit.
@@ -524,15 +507,33 @@ SoftwareImageDecodeCache::FindCachedCandidate(const CacheKey& key) {
   return base::nullopt;
 }
 
+bool SoftwareImageDecodeCache::UseCacheForDrawImage(
+    const DrawImage& draw_image) const {
+  sk_sp<SkImage> sk_image = draw_image.paint_image().GetSkImage();
+
+  // Software cache doesn't support using texture backed images.
+  if (sk_image->isTextureBacked())
+    return false;
+
+  // Lazy generated images need to have their decode cached.
+  if (sk_image->isLazyGenerated())
+    return true;
+
+  // Cache images that need to be converted to a non-sRGB color space.
+  // TODO(ccameron): Consider caching when any color conversion is required.
+  // https://crbug.com/791828
+  const gfx::ColorSpace& dst_color_space = draw_image.target_color_space();
+  if (dst_color_space.IsValid() &&
+      dst_color_space != gfx::ColorSpace::CreateSRGB()) {
+    return true;
+  }
+
+  return false;
+}
+
 DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDraw(
     const DrawImage& draw_image) {
-  // Non-cached images are be used for raster directly.
-  if (!UseCacheForDrawImage(draw_image)) {
-    return DecodedDrawImage(draw_image.paint_image().GetSkImage(),
-                            SkSize::Make(0, 0), SkSize::Make(1.f, 1.f),
-                            draw_image.filter_quality(),
-                            true /* is_budgeted */);
-  }
+  DCHECK(UseCacheForDrawImage(draw_image));
 
   base::AutoLock hold(lock_);
   return GetDecodedImageForDrawInternal(
@@ -574,9 +575,7 @@ DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDrawInternal(
 void SoftwareImageDecodeCache::DrawWithImageFinished(
     const DrawImage& image,
     const DecodedDrawImage& decoded_image) {
-  if (!UseCacheForDrawImage(image))
-    return;
-
+  DCHECK(UseCacheForDrawImage(image));
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeCache::DrawWithImageFinished", "key",
                CacheKey::FromDrawImage(image, color_type_).ToString());

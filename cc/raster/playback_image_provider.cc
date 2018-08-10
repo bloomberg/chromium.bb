@@ -47,12 +47,6 @@ PlaybackImageProvider::GetDecodedDrawImage(const DrawImage& draw_image) {
     return ScopedDecodedDrawImage();
   }
 
-  if (paint_image.GetSkImage()->isTextureBacked()) {
-    return ScopedDecodedDrawImage(DecodedDrawImage(
-        paint_image.GetSkImage(), SkSize::Make(0, 0), SkSize::Make(1.f, 1.f),
-        draw_image.filter_quality(), true /* is_budgeted */));
-  }
-
   const auto& it =
       settings_->image_to_current_frame_index.find(paint_image.stable_id());
   size_t frame_index = it == settings_->image_to_current_frame_index.end()
@@ -60,8 +54,13 @@ PlaybackImageProvider::GetDecodedDrawImage(const DrawImage& draw_image) {
                            : it->second;
 
   DrawImage adjusted_image(draw_image, 1.f, frame_index, target_color_space_);
-  auto decoded_draw_image = cache_->GetDecodedImageForDraw(adjusted_image);
+  if (!cache_->UseCacheForDrawImage(adjusted_image)) {
+    return ScopedDecodedDrawImage(DecodedDrawImage(
+        paint_image.GetSkImage(), SkSize::Make(0, 0), SkSize::Make(1.f, 1.f),
+        draw_image.filter_quality(), true /* is_budgeted */));
+  }
 
+  auto decoded_draw_image = cache_->GetDecodedImageForDraw(adjusted_image);
   return ScopedDecodedDrawImage(
       decoded_draw_image,
       base::BindOnce(&UnrefImageFromCache, std::move(adjusted_image), cache_,
