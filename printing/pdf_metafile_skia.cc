@@ -369,6 +369,22 @@ const ContentToProxyIdMap& PdfMetafileSkia::GetSubframeContentInfo() const {
   return data_->subframe_content_info_;
 }
 
+void PdfMetafileSkia::AppendPage(const SkSize& page_size,
+                                 sk_sp<cc::PaintRecord> record) {
+  data_->pages_.emplace_back(page_size, std::move(record));
+}
+
+void PdfMetafileSkia::AppendSubframeInfo(uint32_t content_id,
+                                         int proxy_id,
+                                         sk_sp<SkPicture> pic_holder) {
+  data_->subframe_content_info_[content_id] = proxy_id;
+  data_->subframe_pics_[content_id] = pic_holder;
+}
+
+SkStreamAsset* PdfMetafileSkia::GetPdfData() const {
+  return data_->pdf_data_.get();
+}
+
 void PdfMetafileSkia::CustomDataToSkPictureCallback(SkCanvas* canvas,
                                                     uint32_t content_id) {
   // Check whether this is the one we need to handle.
