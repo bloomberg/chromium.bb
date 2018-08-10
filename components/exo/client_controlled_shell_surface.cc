@@ -4,6 +4,7 @@
 
 #include "components/exo/client_controlled_shell_surface.h"
 
+#include <map>
 #include <utility>
 
 #include "ash/frame/caption_buttons/caption_button_model.h"
@@ -33,9 +34,11 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/class_property.h"
 #include "ui/compositor/compositor_lock.h"
@@ -230,6 +233,53 @@ class CaptionButtonModel : public ash::CaptionButtonModel {
   uint32_t enabled_button_mask_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptionButtonModel);
+};
+
+// EventTargetingBlocker blocks the event targeting by settnig NONE targeting
+// policy to the window subtrees. It resets to the origial policy upon deletion.
+class EventTargetingBlocker : aura::WindowObserver {
+ public:
+  EventTargetingBlocker() = default;
+
+  ~EventTargetingBlocker() override {
+    if (window_)
+      Unregister(window_);
+  }
+
+  void Block(aura::Window* window) {
+    window_ = window;
+    Register(window);
+  }
+
+ private:
+  void Register(aura::Window* window) {
+    window->AddObserver(this);
+    auto policy = window->event_targeting_policy();
+    window->SetEventTargetingPolicy(ui::mojom::EventTargetingPolicy::NONE);
+    policy_map_.emplace(window, policy);
+    for (auto* child : window->children())
+      Register(child);
+  }
+
+  void Unregister(aura::Window* window) {
+    window->RemoveObserver(this);
+    DCHECK(policy_map_.find(window) != policy_map_.end());
+    window->SetEventTargetingPolicy(policy_map_[window]);
+    for (auto* child : window->children())
+      Unregister(child);
+  }
+
+  void OnWindowDestroying(aura::Window* window) override {
+    auto it = policy_map_.find(window);
+    DCHECK(it != policy_map_.end());
+    policy_map_.erase(it);
+    window->RemoveObserver(this);
+  }
+
+  std::map<aura::Window*, ui::mojom::EventTargetingPolicy> policy_map_;
+  aura::Window* window_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(EventTargetingBlocker);
 };
 
 }  // namespace
@@ -610,8 +660,20 @@ bool ClientControlledShellSurface::IsInputEnabled(Surface* surface) const {
 }
 
 void ClientControlledShellSurface::OnSetFrame(SurfaceFrameType type) {
+  // TODO(oshima): We shouldn't send the synthesized motion event when just
+  // changing the frame type. The better solution would be to keep the window
+  // position regardless of the frame state, but that won't be available until
+  // next arc version.
+  // This is a stopgap solution not to generate the event until it is resolved.
+  EventTargetingBlocker blocker;
+  bool suppress_mouse_event = frame_type_ != type && widget_;
+  if (suppress_mouse_event)
+    blocker.Block(widget_->GetNativeWindow());
   ShellSurfaceBase::OnSetFrame(type);
   UpdateAutoHideFrame();
+
+  if (suppress_mouse_event)
+    UpdateSurfaceBounds();
 }
 
 void ClientControlledShellSurface::OnSetFrameColors(SkColor active_color,
