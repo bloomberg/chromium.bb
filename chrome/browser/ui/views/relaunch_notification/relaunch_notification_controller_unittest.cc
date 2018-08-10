@@ -12,7 +12,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/upgrade_detector.h"
+#include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"

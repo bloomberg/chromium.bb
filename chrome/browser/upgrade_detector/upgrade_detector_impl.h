@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UPGRADE_DETECTOR_IMPL_H_
-#define CHROME_BROWSER_UPGRADE_DETECTOR_IMPL_H_
+#ifndef CHROME_BROWSER_UPGRADE_DETECTOR_UPGRADE_DETECTOR_IMPL_H_
+#define CHROME_BROWSER_UPGRADE_DETECTOR_UPGRADE_DETECTOR_IMPL_H_
 
 #include <array>
 
@@ -15,7 +15,7 @@
 #include "base/timer/timer.h"
 #include "base/version.h"
 #include "build/build_config.h"
-#include "chrome/browser/upgrade_detector.h"
+#include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "components/variations/service/variations_service.h"
 
 namespace base {
@@ -24,7 +24,7 @@ class NoDestructor;
 class SequencedTaskRunner;
 class TaskRunner;
 class TickClock;
-}
+}  // namespace base
 
 // This class contains the non-CrOS desktop implementation of the detector.
 class UpgradeDetectorImpl : public UpgradeDetector,
@@ -158,5 +158,4 @@ class UpgradeDetectorImpl : public UpgradeDetector,
   DISALLOW_COPY_AND_ASSIGN(UpgradeDetectorImpl);
 };
 
-
-#endif  // CHROME_BROWSER_UPGRADE_DETECTOR_IMPL_H_
+#endif  // CHROME_BROWSER_UPGRADE_DETECTOR_UPGRADE_DETECTOR_IMPL_H_

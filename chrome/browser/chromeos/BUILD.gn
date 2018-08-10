@@ -1755,8 +1755,6 @@ source_set("chromeos") {
     "ui/request_pin_view.h",
     "ui/screen_capture_notification_ui_chromeos.cc",
     "ui/screen_capture_notification_ui_chromeos.h",
-    "upgrade_detector_chromeos.cc",
-    "upgrade_detector_chromeos.h",
     "virtual_machines/virtual_machines_util.cc",
     "virtual_machines/virtual_machines_util.h",
 

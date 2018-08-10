@@ -5,7 +5,7 @@
 #include "chrome/browser/metrics/upgrade_metrics_provider.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/upgrade_detector.h"
+#include "chrome/browser/upgrade_detector/upgrade_detector.h"
 
 UpgradeMetricsProvider::UpgradeMetricsProvider() {}
 

@@ -13,7 +13,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-#include "chrome/browser/upgrade_detector_impl.h"
+#include "chrome/browser/upgrade_detector/upgrade_detector_impl.h"
 #endif
 
 #if defined(OS_CHROMEOS)

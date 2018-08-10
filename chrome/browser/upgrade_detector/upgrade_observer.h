@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UPGRADE_OBSERVER_H_
-#define CHROME_BROWSER_UPGRADE_OBSERVER_H_
+#ifndef CHROME_BROWSER_UPGRADE_DETECTOR_UPGRADE_OBSERVER_H_
+#define CHROME_BROWSER_UPGRADE_DETECTOR_UPGRADE_OBSERVER_H_
 
 #include "base/macros.h"
 
@@ -38,4 +38,4 @@ class UpgradeObserver {
   virtual ~UpgradeObserver() {}
 };
 
-#endif  // CHROME_BROWSER_UPGRADE_OBSERVER_H_
+#endif  // CHROME_BROWSER_UPGRADE_DETECTOR_UPGRADE_OBSERVER_H_

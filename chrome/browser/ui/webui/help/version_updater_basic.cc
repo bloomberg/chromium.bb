@@ -5,16 +5,15 @@
 #include "chrome/browser/ui/webui/help/version_updater_basic.h"
 
 #include "base/strings/string16.h"
-#include "chrome/browser/upgrade_detector.h"
+#include "chrome/browser/upgrade_detector/upgrade_detector.h"
 
 void VersionUpdaterBasic::CheckForUpdate(
     const StatusCallback& status_callback,
     const PromoteCallback&) {
-  if (UpgradeDetector::GetInstance()->notify_upgrade())
-    status_callback.Run(NEARLY_UPDATED, 0, false, std::string(), 0,
-                        base::string16());
-  else
-    status_callback.Run(DISABLED, 0, false, std::string(), 0, base::string16());
+  const Status status = UpgradeDetector::GetInstance()->notify_upgrade()
+                            ? NEARLY_UPDATED
+                            : DISABLED;
+  status_callback.Run(status, 0, false, std::string(), 0, base::string16());
 }
 
 VersionUpdater* VersionUpdater::Create(content::WebContents* web_contents) {

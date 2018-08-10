@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UPGRADE_DETECTOR_H_
-#define CHROME_BROWSER_UPGRADE_DETECTOR_H_
+#ifndef CHROME_BROWSER_UPGRADE_DETECTOR_UPGRADE_DETECTOR_H_
+#define CHROME_BROWSER_UPGRADE_DETECTOR_UPGRADE_DETECTOR_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/upgrade_observer.h"
+#include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "ui/base/idle/idle.h"
 #include "ui/gfx/image/image.h"
@@ -79,9 +79,7 @@ class UpgradeDetector {
 
   // Notify this object that the user has acknowledged the critical update so we
   // don't need to complain about it for now.
-  void acknowledge_critical_update() {
-    critical_update_acknowledged_ = true;
-  }
+  void acknowledge_critical_update() { critical_update_acknowledged_ = true; }
 
   // Whether the user has acknowledged the critical update.
   bool critical_update_acknowledged() const {
@@ -274,4 +272,4 @@ class UpgradeDetector {
   DISALLOW_COPY_AND_ASSIGN(UpgradeDetector);
 };
 
-#endif  // CHROME_BROWSER_UPGRADE_DETECTOR_H_
+#endif  // CHROME_BROWSER_UPGRADE_DETECTOR_UPGRADE_DETECTOR_H_

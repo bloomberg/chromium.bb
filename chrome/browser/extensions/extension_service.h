@@ -24,7 +24,7 @@
 #include "chrome/browser/extensions/forced_extensions/installation_tracker.h"
 #include "chrome/browser/extensions/install_gate.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
-#include "chrome/browser/upgrade_observer.h"
+#include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "components/sync/model/string_ordinal.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
