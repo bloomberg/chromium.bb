@@ -696,6 +696,7 @@ interface NotificationEvent : ExtendableEvent
     attribute @@toStringTag
     getter action
     getter notification
+    getter reply
     method constructor
 interface OffscreenCanvas : EventTarget
     attribute @@toStringTag

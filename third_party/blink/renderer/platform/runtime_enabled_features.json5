@@ -815,7 +815,7 @@
     },
     {
       name: "NotificationInlineReplies",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "Notifications",
