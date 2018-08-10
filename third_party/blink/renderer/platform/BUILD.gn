@@ -987,8 +987,6 @@ jumbo_component("platform") {
     "graphics/mailbox_texture_holder.h",
     "graphics/offscreen_canvas_placeholder.cc",
     "graphics/offscreen_canvas_placeholder.h",
-    "graphics/offscreen_canvas_resource_provider.cc",
-    "graphics/offscreen_canvas_resource_provider.h",
     "graphics/paint/clip_paint_property_node.cc",
     "graphics/paint/clip_paint_property_node.h",
     "graphics/paint/cull_rect.cc",
