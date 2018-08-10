@@ -5,6 +5,7 @@ console-format-bigint.js:16 BigInt {2n}
 console-format-bigint.js:17 [1n]
 console-format-bigint.js:18 [BigInt]
 console-format-bigint.js:19 null 1n BigInt {2n}
+console-format-bigint.js:20 123n 123n 123n 123n
 Expanded all messages
 console-format-bigint.js:15 1n
 console-format-bigint.js:16 BigInt {2n}
@@ -21,4 +22,5 @@ console-format-bigint.js:18 [BigInt]
 console-format-bigint.js:19 null 1n BigInt {2n}
     __proto__: BigInt
     [[PrimitiveValue]]: 2n
+console-format-bigint.js:20 123n 123n 123n 123n
 

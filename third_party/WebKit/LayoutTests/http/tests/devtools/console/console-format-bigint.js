@@ -17,6 +17,7 @@
     console.log([1n]);
     console.log([wrappedBigInt]);
     console.log(null, 1n, wrappedBigInt);
+    console.log('%d %i %d %i', 123n, 123n, BigInt(123), BigInt(123));
   `);
 
   ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
