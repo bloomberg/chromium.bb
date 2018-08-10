@@ -194,25 +194,6 @@ source_set("eg_tests") {
   libs = [ "XCTest.framework" ]
 }
 
-# TODO(crbug.com/694662): These tests depend on loading errors, which are
-# behaving differently when the network is not available. When the underlying
-# issue is resolved, these tests can move back to |eg_tests|.
-source_set("external_url_eg_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "external_url_tab_usage_recorder_egtest.mm",
-  ]
-  deps = [
-    ":metrics_internal",
-    ":test_support",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/web/public/test/http_server",
-  ]
-  libs = [ "XCTest.framework" ]
-}
-
 source_set("test_support") {
   testonly = true
   sources = [
