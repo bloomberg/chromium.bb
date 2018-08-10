@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "ui/events/base_event_utils.h"
@@ -89,10 +90,11 @@ void AutofillUiTest::TearDownOnMainThread() {
   test::ReenableSystemServices();
 }
 
-void AutofillUiTest::SendKeyToPage(ui::DomKey key) {
+void AutofillUiTest::SendKeyToPage(content::WebContents* web_contents,
+                                   const ui::DomKey key) {
   ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
   ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
-  content::SimulateKeyPress(GetWebContents(), key, code, key_code, false, false,
+  content::SimulateKeyPress(web_contents, key, code, key_code, false, false,
                             false, false);
 }
 
@@ -115,10 +117,12 @@ void AutofillUiTest::SendKeyToPageAndWait(
   test_delegate()->Wait(std::move(expected_events));
 }
 
-void AutofillUiTest::SendKeyToPopup(ui::DomKey key) {
+void AutofillUiTest::SendKeyToPopup(content::RenderFrameHost* render_frame_host,
+                                    const ui::DomKey key) {
   ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
   ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
-  content::RenderWidgetHost* widget = GetRenderViewHost()->GetWidget();
+  content::RenderWidgetHost* widget =
+      render_frame_host->GetView()->GetRenderWidgetHost();
 
   // Route popup-targeted key presses via the render view host.
   content::NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown,

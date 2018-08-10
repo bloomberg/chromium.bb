@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/navigation_handle.h"
@@ -43,6 +44,7 @@ const base::TimeDelta kAutofillActionWaitForVisualUpdateTimeout =
 // Automation Framework will retry an autofill action a couple times before
 // concluding that Chrome Autofill does not work.
 const int kAutofillActionNumRetries = 5;
+
 }  // namespace
 
 namespace captured_sites_test_utils {
@@ -93,6 +95,93 @@ void PageActivityObserver::WaitTillPageIsIdle(
 
 void PageActivityObserver::DidCommitAndDrawCompositorFrame() {
   paint_occurred_during_last_loop_ = true;
+}
+
+// FrameObserver --------------------------------------------------------------
+IFrameWaiter::IFrameWaiter(content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
+      query_type_(URL),
+      target_frame_(nullptr) {}
+
+IFrameWaiter::~IFrameWaiter() {}
+
+content::RenderFrameHost* IFrameWaiter::WaitForFrameMatchingName(
+    const std::string& name,
+    const base::TimeDelta timeout) {
+  content::RenderFrameHost* frame = FrameMatchingPredicate(
+      web_contents(), base::BindRepeating(&content::FrameMatchesName, name));
+  if (frame) {
+    return frame;
+  } else {
+    query_type_ = NAME;
+    frame_name_ = name;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop_.QuitClosure(), timeout);
+    run_loop_.Run();
+    return target_frame_;
+  }
+}
+
+content::RenderFrameHost* IFrameWaiter::WaitForFrameMatchingOrigin(
+    const GURL origin,
+    const base::TimeDelta timeout) {
+  content::RenderFrameHost* frame = FrameMatchingPredicate(
+      web_contents(), base::BindRepeating(&FrameHasOrigin, origin));
+  if (frame) {
+    return frame;
+  } else {
+    query_type_ = ORIGIN;
+    origin_ = origin;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop_.QuitClosure(), timeout);
+    run_loop_.Run();
+    return target_frame_;
+  }
+}
+
+content::RenderFrameHost* IFrameWaiter::WaitForFrameMatchingUrl(
+    const GURL url,
+    const base::TimeDelta timeout) {
+  content::RenderFrameHost* frame = FrameMatchingPredicate(
+      web_contents(), base::BindRepeating(&content::FrameHasSourceUrl, url));
+  if (frame) {
+    return frame;
+  } else {
+    query_type_ = URL;
+    url_ = url;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop_.QuitClosure(), timeout);
+    run_loop_.Run();
+    return target_frame_;
+  }
+}
+
+void IFrameWaiter::RenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
+  if (!run_loop_.running())
+    return;
+  switch (query_type_) {
+    case NAME:
+      if (FrameMatchesName(frame_name_, render_frame_host))
+        run_loop_.Quit();
+      break;
+    case ORIGIN:
+      if (render_frame_host->GetLastCommittedURL().GetOrigin() == origin_)
+        run_loop_.Quit();
+      break;
+    case URL:
+      if (FrameHasSourceUrl(url_, render_frame_host))
+        run_loop_.Quit();
+      break;
+    default:
+      break;
+  }
+}
+
+bool IFrameWaiter::FrameHasOrigin(const GURL& origin,
+                                  content::RenderFrameHost* frame) {
+  GURL url = frame->GetLastCommittedURL();
+  return (url.GetOrigin() == origin.GetOrigin());
 }
 
 // TestRecipeReplayer ---------------------------------------------------------
@@ -298,7 +387,7 @@ bool TestRecipeReplayer::RunWebPageReplayCmd(
 }
 
 bool TestRecipeReplayer::ReplayRecordedActions(
-    const base::FilePath recipe_file_path) {
+    const base::FilePath& recipe_file_path) {
   // Read the text of the recipe file.
   base::ThreadRestrictions::SetIOAllowed(true);
   std::string json_text;
@@ -313,7 +402,8 @@ bool TestRecipeReplayer::ReplayRecordedActions(
     return false;
   }
 
-  InitializeBrowserToExecuteRecipe(recipe);
+  if (!InitializeBrowserToExecuteRecipe(recipe))
+    return false;
 
   // Iterate through and execute each action in the recipe.
   base::Value* action_list_container = recipe->FindKey("actions");
@@ -337,17 +427,23 @@ bool TestRecipeReplayer::ReplayRecordedActions(
     std::string type = type_container->GetString();
 
     if (base::CompareCaseInsensitiveASCII(type, "autofill") == 0) {
-      ExecuteAutofillAction(action);
+      if (!ExecuteAutofillAction(*action))
+        return false;
     } else if (base::CompareCaseInsensitiveASCII(type, "click") == 0) {
-      ExecuteClickAction(action);
+      if (!ExecuteClickAction(*action))
+        return false;
     } else if (base::CompareCaseInsensitiveASCII(type, "select") == 0) {
-      ExecuteSelectDropdownAction(action);
+      if (!ExecuteSelectDropdownAction(*action))
+        return false;
     } else if (base::CompareCaseInsensitiveASCII(type, "type") == 0) {
-      ExecuteTypeAction(action);
+      if (!ExecuteTypeAction(*action))
+        return false;
     } else if (base::CompareCaseInsensitiveASCII(type, "validateField") == 0) {
-      ExecuteValidateFieldValueAction(action);
+      if (!ExecuteValidateFieldValueAction(*action))
+        return false;
     } else if (base::CompareCaseInsensitiveASCII(type, "waitFor") == 0) {
-      ExecuteWaitForStateAction(action);
+      if (!ExecuteWaitForStateAction(*action))
+        return false;
     } else {
       ADD_FAILURE() << "Unrecognized action type: " << type;
     }
@@ -357,149 +453,206 @@ bool TestRecipeReplayer::ReplayRecordedActions(
 
 // Functions for deserializing and executing actions from the test recipe
 // JSON object.
-void TestRecipeReplayer::InitializeBrowserToExecuteRecipe(
+bool TestRecipeReplayer::InitializeBrowserToExecuteRecipe(
     std::unique_ptr<base::DictionaryValue>& recipe) {
   // Extract the starting URL from the test recipe.
   base::Value* starting_url_container = recipe->FindKey("startingURL");
-  ASSERT_TRUE(starting_url_container);
-  ASSERT_EQ(base::Value::Type::STRING, starting_url_container->type());
+  if (!starting_url_container)
+    return false;
+  if (base::Value::Type::STRING != starting_url_container->type())
+    return false;
 
   // Navigate to the starting URL, wait for the page to complete loading.
   PageActivityObserver page_activity_observer(GetWebContents());
-  ASSERT_TRUE(content::ExecuteScript(
-      GetWebContents(),
-      base::StringPrintf("window.location.href = '%s';",
-                         starting_url_container->GetString().c_str())));
+  if (!content::ExecuteScript(
+          GetWebContents(),
+          base::StringPrintf("window.location.href = '%s';",
+                             starting_url_container->GetString().c_str())))
+    return false;
   page_activity_observer.WaitTillPageIsIdle();
+  return true;
 }
 
-void TestRecipeReplayer::ExecuteAutofillAction(base::DictionaryValue* action) {
+bool TestRecipeReplayer::ExecuteAutofillAction(
+    const base::DictionaryValue& action) {
   std::string xpath;
-  ASSERT_TRUE(GetTargetHTMLElementXpathFromAction(action, &xpath));
-  WaitForElemementToBeReady(xpath);
+  if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
+    return false;
+  content::RenderFrameHost* frame;
+  if (!GetTargetFrameFromAction(action, &frame))
+    return false;
+  if (!WaitForElementToBeReady(frame, xpath))
+    return false;
 
   VLOG(1) << "Invoking Chrome Autofill on `" << xpath << "`.";
-  PageActivityObserver page_activity_observer(GetWebContents());
+  PageActivityObserver page_activity_observer(frame);
   // Clear the input box first, in case a previous value is there.
   // If the text input box is not clear, pressing the down key will not
   // bring up the autofill suggestion box.
   // This can happen on sites that requires the user to sign in. After
   // signing in, the site fills the form with the user's profile
   // information.
-  ASSERT_TRUE(ExecuteJavaScriptOnElementByXpath(
-      xpath, "automation_helper.setInputElementValue(target, ``);"));
-  ASSERT_TRUE(feature_action_executor()->AutofillForm(
-      GetWebContents(), xpath, kAutofillActionNumRetries));
+  if (!ExecuteJavaScriptOnElementByXpath(
+          frame, xpath, "automation_helper.setInputElementValue(target, ``);"))
+    return false;
+  if (!feature_action_executor()->AutofillForm(frame, xpath,
+                                               kAutofillActionNumRetries))
+    return false;
   page_activity_observer.WaitTillPageIsIdle(
       kAutofillActionWaitForVisualUpdateTimeout);
+  return true;
 }
 
-void TestRecipeReplayer::ExecuteClickAction(base::DictionaryValue* action) {
+bool TestRecipeReplayer::ExecuteClickAction(
+    const base::DictionaryValue& action) {
   std::string xpath;
-  ASSERT_TRUE(GetTargetHTMLElementXpathFromAction(action, &xpath));
-  WaitForElemementToBeReady(xpath);
+  if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
+    return false;
+  content::RenderFrameHost* frame;
+  if (!GetTargetFrameFromAction(action, &frame))
+    return false;
+  if (!WaitForElementToBeReady(frame, xpath))
+    return false;
 
   VLOG(1) << "Left mouse clicking `" << xpath << "`.";
-  PageActivityObserver page_activity_observer(GetWebContents());
-  ASSERT_TRUE(ExecuteJavaScriptOnElementByXpath(xpath, "target.click();"));
+  PageActivityObserver page_activity_observer(frame);
+  if (!ExecuteJavaScriptOnElementByXpath(frame, xpath, "target.click();"))
+    return false;
   page_activity_observer.WaitTillPageIsIdle();
+  return true;
 }
 
-void TestRecipeReplayer::ExecuteSelectDropdownAction(
-    base::DictionaryValue* action) {
-  base::Value* index_container = action->FindKey("index");
-  ASSERT_TRUE(index_container);
-  ASSERT_EQ(base::Value::Type::INTEGER, index_container->type());
+bool TestRecipeReplayer::ExecuteSelectDropdownAction(
+    const base::DictionaryValue& action) {
+  const base::Value* index_container = action.FindKey("index");
+  if (!index_container)
+    return false;
+  if (base::Value::Type::INTEGER != index_container->type())
+    return false;
   int index = index_container->GetInt();
 
   std::string xpath;
-  ASSERT_TRUE(GetTargetHTMLElementXpathFromAction(action, &xpath));
-  WaitForElemementToBeReady(xpath);
+  if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
+    return false;
+  content::RenderFrameHost* frame;
+  if (!GetTargetFrameFromAction(action, &frame))
+    return false;
+  if (!WaitForElementToBeReady(frame, xpath))
+    return false;
 
   VLOG(1) << "Select option '" << index << "' from `" << xpath << "`.";
-  PageActivityObserver page_activity_observer(GetWebContents());
-  ASSERT_TRUE(ExecuteJavaScriptOnElementByXpath(
-      xpath, base::StringPrintf(
-                 "automation_helper"
-                 "  .selectOptionFromDropDownElementByIndex(target, %d);",
-                 index_container->GetInt())));
+  PageActivityObserver page_activity_observer(frame);
+  if (!ExecuteJavaScriptOnElementByXpath(
+          frame, xpath,
+          base::StringPrintf(
+              "automation_helper"
+              "  .selectOptionFromDropDownElementByIndex(target, %d);",
+              index_container->GetInt())))
+    return false;
   page_activity_observer.WaitTillPageIsIdle();
+  return true;
 }
 
-void TestRecipeReplayer::ExecuteTypeAction(base::DictionaryValue* action) {
-  base::Value* value_container = action->FindKey("value");
-  ASSERT_TRUE(value_container);
-  ASSERT_EQ(base::Value::Type::STRING, value_container->type());
+bool TestRecipeReplayer::ExecuteTypeAction(
+    const base::DictionaryValue& action) {
+  const base::Value* value_container = action.FindKey("value");
+  if (!value_container)
+    return false;
+  if (base::Value::Type::STRING != value_container->type())
+    return false;
   std::string value = value_container->GetString();
 
   std::string xpath;
-  ASSERT_TRUE(GetTargetHTMLElementXpathFromAction(action, &xpath));
-  WaitForElemementToBeReady(xpath);
+  if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
+    return false;
+  content::RenderFrameHost* frame;
+  if (!GetTargetFrameFromAction(action, &frame))
+    return false;
+  if (!WaitForElementToBeReady(frame, xpath))
+    return false;
 
   VLOG(1) << "Typing '" << value << "' inside `" << xpath << "`.";
-  PageActivityObserver page_activity_observer(GetWebContents());
-  ASSERT_TRUE(ExecuteJavaScriptOnElementByXpath(
-      xpath, base::StringPrintf(
-                 "automation_helper.setInputElementValue(target, `%s`);",
-                 value.c_str())));
+  PageActivityObserver page_activity_observer(frame);
+  if (!ExecuteJavaScriptOnElementByXpath(
+          frame, xpath,
+          base::StringPrintf(
+              "automation_helper.setInputElementValue(target, `%s`);",
+              value.c_str())))
+    return false;
   page_activity_observer.WaitTillPageIsIdle();
+  return true;
 }
 
-void TestRecipeReplayer::ExecuteValidateFieldValueAction(
-    base::DictionaryValue* action) {
+bool TestRecipeReplayer::ExecuteValidateFieldValueAction(
+    const base::DictionaryValue& action) {
   std::string xpath;
-  ASSERT_TRUE(GetTargetHTMLElementXpathFromAction(action, &xpath));
-  WaitForElemementToBeReady(xpath);
+  if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
+    return false;
+  content::RenderFrameHost* frame;
+  if (!GetTargetFrameFromAction(action, &frame))
+    return false;
+  if (!WaitForElementToBeReady(frame, xpath))
+    return false;
 
-  base::Value* autofill_prediction_container =
-      action->FindKey("expectedAutofillType");
+  const base::Value* autofill_prediction_container =
+      action.FindKey("expectedAutofillType");
   if (autofill_prediction_container) {
-    ASSERT_EQ(base::Value::Type::STRING, autofill_prediction_container->type());
+    if (base::Value::Type::STRING != autofill_prediction_container->type())
+      return false;
     std::string expected_autofill_prediction_type =
         autofill_prediction_container->GetString();
     VLOG(1) << "Checking the field `" << xpath << "` has the autofill type '"
             << expected_autofill_prediction_type << "'";
     ExpectElementPropertyEquals(
-        xpath.c_str(), "return target.getAttribute('autofill-prediction');",
+        frame, xpath.c_str(),
+        "return target.getAttribute('autofill-prediction');",
         expected_autofill_prediction_type, true);
   }
 
-  base::Value* expected_value_container = action->FindKey("expectedValue");
-  ASSERT_TRUE(expected_value_container);
-  ASSERT_EQ(base::Value::Type::STRING, expected_value_container->type());
+  const base::Value* expected_value_container = action.FindKey("expectedValue");
+  if (!expected_value_container)
+    return false;
+  if (base::Value::Type::STRING != expected_value_container->type())
+    return false;
   std::string expected_value = expected_value_container->GetString();
 
   VLOG(1) << "Checking the field `" << xpath << "`.";
-  ExpectElementPropertyEquals(xpath.c_str(), "return target.value;",
+  ExpectElementPropertyEquals(frame, xpath.c_str(), "return target.value;",
                               expected_value);
+  return true;
 }
 
-void TestRecipeReplayer::ExecuteWaitForStateAction(
-    base::DictionaryValue* action) {
+bool TestRecipeReplayer::ExecuteWaitForStateAction(
+    const base::DictionaryValue& action) {
   // Extract the list of JavaScript assertions into a vector.
   std::vector<std::string> state_assertions;
-  base::Value* assertions_list_container = action->FindKey("assertions");
-  ASSERT_TRUE(assertions_list_container);
-  ASSERT_EQ(base::Value::Type::LIST, assertions_list_container->type());
-  base::Value::ListStorage& assertions_list =
+  const base::Value* assertions_list_container = action.FindKey("assertions");
+  if (!assertions_list_container)
+    return false;
+  if (base::Value::Type::LIST != assertions_list_container->type())
+    return false;
+  const base::Value::ListStorage& assertions_list =
       assertions_list_container->GetList();
-  for (base::ListValue::iterator it_assertion = assertions_list.begin();
-       it_assertion != assertions_list.end(); ++it_assertion) {
-    ASSERT_EQ(base::Value::Type::STRING, it_assertion->type());
-    state_assertions.push_back(it_assertion->GetString());
+  for (const base::Value& assertion : assertions_list) {
+    if (base::Value::Type::STRING != assertion.type())
+      return false;
+    state_assertions.push_back(assertion.GetString());
   }
 
+  content::RenderFrameHost* frame;
+  if (!GetTargetFrameFromAction(action, &frame))
+    return false;
   VLOG(1) << "Waiting for page to reach a state.";
 
   // Wait for all of the assertions to become true on the current page.
-  ASSERT_TRUE(WaitForStateChange(state_assertions, default_action_timeout));
+  return WaitForStateChange(frame, state_assertions, default_action_timeout);
 }
 
 bool TestRecipeReplayer::GetTargetHTMLElementXpathFromAction(
-    base::DictionaryValue* action,
+    const base::DictionaryValue& action,
     std::string* xpath) {
   xpath->clear();
-  base::Value* xpath_container = action->FindKey("selector");
+  const base::Value* xpath_container = action.FindKey("selector");
   if (!xpath_container)
     return false;
   if (base::Value::Type::STRING != xpath_container->type())
@@ -508,20 +661,78 @@ bool TestRecipeReplayer::GetTargetHTMLElementXpathFromAction(
   return true;
 }
 
-void TestRecipeReplayer::WaitForElemementToBeReady(std::string xpath) {
+bool TestRecipeReplayer::GetTargetFrameFromAction(
+    const base::DictionaryValue& action,
+    content::RenderFrameHost** frame) {
+  const base::Value* iframe_container = action.FindKey("context");
+  if (!iframe_container)
+    return false;
+  const base::DictionaryValue* iframe;
+  if (!iframe_container->GetAsDictionary(&iframe))
+    return false;
+
+  const base::Value* is_iframe_container = iframe->FindKey("isIframe");
+  if (!is_iframe_container)
+    return false;
+  if (base::Value::Type::BOOLEAN != is_iframe_container->type())
+    return false;
+
+  if (!is_iframe_container->GetBool()) {
+    *frame = GetWebContents()->GetMainFrame();
+    return true;
+  }
+
+  const base::Value* frame_name_container =
+      iframe->FindPath({"browserTest", "name"});
+  const base::Value* frame_scheme_host_container =
+      iframe->FindPath({"browserTest", "origin"});
+  const base::Value* frame_url_container =
+      iframe->FindPath({"browserTest", "url"});
+  IFrameWaiter iframe_waiter(GetWebContents());
+
+  if (frame_name_container != nullptr) {
+    if (base::Value::Type::STRING != frame_name_container->type())
+      return false;
+    *frame = iframe_waiter.WaitForFrameMatchingName(
+        frame_name_container->GetString());
+    return frame != nullptr;
+  } else if (frame_scheme_host_container != nullptr) {
+    if (base::Value::Type::STRING != frame_scheme_host_container->type())
+      return false;
+    *frame = iframe_waiter.WaitForFrameMatchingOrigin(
+        GURL(frame_scheme_host_container->GetString()));
+    return frame != nullptr;
+  } else if (frame_url_container != nullptr) {
+    if (base::Value::Type::STRING != frame_url_container->type())
+      return false;
+    *frame = iframe_waiter.WaitForFrameMatchingUrl(
+        GURL(frame_url_container->GetString()));
+    return frame != nullptr;
+  } else {
+    ADD_FAILURE() << "The recipe does not specify a way to find the iframe!";
+  }
+
+  return false;
+}
+
+bool TestRecipeReplayer::WaitForElementToBeReady(
+    content::RenderFrameHost* frame,
+    const std::string& xpath) {
   std::vector<std::string> state_assertions;
   state_assertions.push_back(base::StringPrintf(
       "return automation_helper.isElementWithXpathReady(`%s`);",
       xpath.c_str()));
-  ASSERT_TRUE(WaitForStateChange(state_assertions, default_action_timeout));
+  return WaitForStateChange(frame, state_assertions, default_action_timeout);
 }
 
 bool TestRecipeReplayer::WaitForStateChange(
+    content::RenderFrameHost* frame,
     const std::vector<std::string>& state_assertions,
     const base::TimeDelta& timeout) {
   const base::TimeTicks start_time = base::TimeTicks::Now();
-  PageActivityObserver page_activity_observer(GetWebContents());
-  while (!AllAssertionsPassed(state_assertions)) {
+  PageActivityObserver page_activity_observer(
+      content::WebContents::FromRenderFrameHost(frame));
+  while (!AllAssertionsPassed(frame, state_assertions)) {
     if (base::TimeTicks::Now() - start_time > timeout) {
       ADD_FAILURE() << "State change hasn't completed within timeout.";
       return false;
@@ -532,11 +743,12 @@ bool TestRecipeReplayer::WaitForStateChange(
 }
 
 bool TestRecipeReplayer::AllAssertionsPassed(
+    const content::ToRenderFrameHost& frame,
     const std::vector<std::string>& assertions) {
   for (const std::string& assertion : assertions) {
     bool assertion_passed = false;
     EXPECT_TRUE(ExecuteScriptAndExtractBool(
-        GetWebContents(),
+        frame,
         base::StringPrintf("window.domAutomationController.send("
                            "    (function() {"
                            "      try {"
@@ -555,6 +767,7 @@ bool TestRecipeReplayer::AllAssertionsPassed(
 }
 
 bool TestRecipeReplayer::ExecuteJavaScriptOnElementByXpath(
+    const content::ToRenderFrameHost& frame,
     const std::string& element_xpath,
     const std::string& execute_function_body,
     const base::TimeDelta& time_to_wait_for_element) {
@@ -564,17 +777,18 @@ bool TestRecipeReplayer::ExecuteJavaScriptOnElementByXpath(
       "  (function(target) { %s })(element);"
       "} catch(ex) {}",
       element_xpath.c_str(), execute_function_body.c_str()));
-  return ExecuteScript(GetWebContents(), js);
+  return ExecuteScript(frame, js);
 }
 
 bool TestRecipeReplayer::ExpectElementPropertyEquals(
+    const content::ToRenderFrameHost& frame,
     const std::string& element_xpath,
     const std::string& get_property_function_body,
     const std::string& expected_value,
     bool ignoreCase) {
   std::string value;
   if (ExecuteScriptAndExtractString(
-          GetWebContents(),
+          frame,
           base::StringPrintf(
               "window.domAutomationController.send("
               "    (function() {"
@@ -602,6 +816,68 @@ bool TestRecipeReplayer::ExpectElementPropertyEquals(
   return false;
 }
 
+bool TestRecipeReplayer::PlaceFocusOnElement(content::RenderFrameHost* frame,
+                                             const std::string& element_xpath) {
+  const std::string focus_on_target_field_js(base::StringPrintf(
+      "try {"
+      "  function onFocusHandler(event) {"
+      "    event.target.removeEventListener(event.type, arguments.callee);"
+      "    window.domAutomationController.send(true);"
+      "  }"
+      "  const element = automation_helper.getElementByXpath(`%s`);"
+      "  element.scrollIntoView();"
+      "  if (document.activeElement === element) {"
+      "    window.domAutomationController.send(true);"
+      "  } else {"
+      "    element.addEventListener('focus', onFocusHandler);"
+      "    element.focus();"
+      "  }"
+      "  setTimeout(() => {"
+      "    element.removeEventListener('focus', onFocusHandler);"
+      "    window.domAutomationController.send(false);"
+      "  }, 1000);"
+      "} catch(ex) {"
+      "  window.domAutomationController.send(false);"
+      "}",
+      element_xpath.c_str()));
+
+  bool focused = false;
+  if (!ExecuteScriptAndExtractBool(frame, focus_on_target_field_js, &focused))
+    return false;
+  return focused;
+}
+
+bool TestRecipeReplayer::SimulateLeftMouseClickAt(
+    content::RenderFrameHost* render_frame_host,
+    const gfx::Point& point) {
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  mouse_event.button = blink::WebMouseEvent::Button::kLeft;
+  mouse_event.SetPositionInWidget(point.x(), point.y());
+
+  // Mac needs positionInScreen for events to plugins.
+  gfx::Rect offset =
+      content::WebContents::FromRenderFrameHost(render_frame_host)
+          ->GetContainerBounds();
+  mouse_event.SetPositionInScreen(point.x() + offset.x(),
+                                  point.y() + offset.y());
+  mouse_event.click_count = 1;
+  content::RenderWidgetHost* widget =
+      render_frame_host->GetView()->GetRenderWidgetHost();
+
+  gfx::Point reset_mouse(offset.origin());
+  reset_mouse =
+      gfx::Point(reset_mouse.x() + point.x(), reset_mouse.y() + point.y());
+  if (!ui_test_utils::SendMouseMoveSync(reset_mouse))
+    return false;
+
+  widget->ForwardMouseEvent(mouse_event);
+  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+  widget->ForwardMouseEvent(mouse_event);
+  return true;
+}
+
 // TestRecipeReplayChromeFeatureActionExecutor --------------------------------
 TestRecipeReplayChromeFeatureActionExecutor::
     TestRecipeReplayChromeFeatureActionExecutor() {}
@@ -609,7 +885,7 @@ TestRecipeReplayChromeFeatureActionExecutor::
     ~TestRecipeReplayChromeFeatureActionExecutor() {}
 
 bool TestRecipeReplayChromeFeatureActionExecutor::AutofillForm(
-    content::WebContents* web_contents,
+    content::RenderFrameHost* frame,
     const std::string& focus_element_css_selector,
     const int attempts) {
   return false;

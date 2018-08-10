@@ -64,14 +64,15 @@ class AutofillUiTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
 
-  void SendKeyToPage(ui::DomKey key);
+  void SendKeyToPage(content::WebContents* web_contents, const ui::DomKey key);
   void SendKeyToPageAndWait(ui::DomKey key,
                             std::list<ObservedUiEvents> expected_events);
   void SendKeyToPageAndWait(ui::DomKey key,
                             ui::DomCode code,
                             ui::KeyboardCode key_code,
                             std::list<ObservedUiEvents> expected_events);
-  void SendKeyToPopup(ui::DomKey key);
+  void SendKeyToPopup(content::RenderFrameHost* render_frame_host,
+                      const ui::DomKey key);
   // Send key to the render host view's widget if |widget| is null.
   void SendKeyToPopupAndWait(ui::DomKey key,
                              std::list<ObservedUiEvents> expected_events,
