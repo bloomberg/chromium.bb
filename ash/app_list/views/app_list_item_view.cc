@@ -225,6 +225,8 @@ void AppListItemView::SetIcon(const gfx::ImageSkia& icon) {
                                                kIconShadowColor)));
     icon_shadow_->SetImage(shadowed);
   }
+
+  Layout();
 }
 
 void AppListItemView::SetUIState(UIState ui_state) {
