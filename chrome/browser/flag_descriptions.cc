@@ -570,6 +570,10 @@ const char kEnableLazyFrameLoadingDescription[] =
     "Defers the loading of certain cross-origin frames until the page is "
     "scrolled down near them.";
 
+const char kEnableLazyImageLoadingName[] = "Enable lazy image loading";
+const char kEnableLazyImageLoadingDescription[] =
+    "Defers the loading of images until the page is scrolled down near them.";
+
 const char kEnableMacMaterialDesignDownloadShelfName[] =
     "Enable Material Design download shelf";
 

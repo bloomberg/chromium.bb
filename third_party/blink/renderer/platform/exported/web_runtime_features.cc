@@ -200,6 +200,14 @@ void WebRuntimeFeatures::EnableLazyFrameVisibleLoadTimeMetrics(bool enable) {
   RuntimeEnabledFeatures::SetLazyFrameVisibleLoadTimeMetricsEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableLazyImageLoading(bool enable) {
+  RuntimeEnabledFeatures::SetLazyImageLoadingEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableLazyImageVisibleLoadTimeMetrics(bool enable) {
+  RuntimeEnabledFeatures::SetLazyImageVisibleLoadTimeMetricsEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableLazyParseCSS(bool enable) {
   RuntimeEnabledFeatures::SetLazyParseCSSEnabled(enable);
 }

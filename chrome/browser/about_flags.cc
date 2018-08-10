@@ -3937,6 +3937,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableLayoutNGDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kLayoutNG)},
 
+    {"enable-lazy-image-loading",
+     flag_descriptions::kEnableLazyImageLoadingName,
+     flag_descriptions::kEnableLazyImageLoadingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kLazyImageLoading)},
+
     {"enable-lazy-frame-loading",
      flag_descriptions::kEnableLazyFrameLoadingName,
      flag_descriptions::kEnableLazyFrameLoadingDescription, kOsAll,

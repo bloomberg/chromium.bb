@@ -208,6 +208,10 @@ const base::Feature kLazyFrameLoading{"LazyFrameLoading",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kLazyFrameVisibleLoadTimeMetrics{
     "LazyFrameVisibleLoadTimeMetrics", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kLazyImageLoading{"LazyImageLoading",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kLazyImageVisibleLoadTimeMetrics{
+    "LazyImageVisibleLoadTimeMetrics", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable lazy initialization of the media controls.
 const base::Feature kLazyInitializeMediaControls{
