@@ -95,6 +95,12 @@ class ResourceFetcherTest : public testing::Test {
   ResourceFetcherTest() = default;
   ~ResourceFetcherTest() override { GetMemoryCache()->EvictResources(); }
 
+  void RunUntilIdle() {
+    base::SingleThreadTaskRunner* runner =
+        Context()->GetLoadingTaskRunner().get();
+    static_cast<scheduler::FakeTaskRunner*>(runner)->RunUntilIdle();
+  }
+
  protected:
   MockFetchContext* Context() { return platform_->Context(); }
   void AddResourceToMemoryCache(
@@ -905,7 +911,7 @@ TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
   new_resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
   EXPECT_EQ(resource, new_resource);
   EXPECT_TRUE(GetMemoryCache()->Contains(resource));
-  platform_->RunUntilIdle();
+  RunUntilIdle();
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   EXPECT_FALSE(GetMemoryCache()->Contains(resource));
 }
