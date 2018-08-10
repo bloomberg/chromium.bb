@@ -1184,7 +1184,8 @@ void OmniboxViewViews::ExecuteTextEditCommand(ui::TextEditCommand command) {
 }
 
 bool OmniboxViewViews::ShouldShowPlaceholderText() const {
-  return Textfield::ShouldShowPlaceholderText() && !model()->is_caret_visible();
+  return Textfield::ShouldShowPlaceholderText() &&
+         !model()->is_caret_visible() && !model()->is_keyword_selected();
 }
 
 #if defined(OS_CHROMEOS)
