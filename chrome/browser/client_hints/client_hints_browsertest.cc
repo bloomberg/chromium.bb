@@ -539,9 +539,13 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     EXPECT_FALSE(request.headers.find("ect")->second.empty());
 
     // TODO(tbansal): https://crbug.com/819244: When network servicification is
-    // enabled, the UI thread NQE observers do not receive notifications on
-    // change in the network quality.
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // enabled, the renderer processes do not receive notifications on
+    // change in the network quality. Hence, the network quality client hints
+    // are not set to the correct value on subresources.
+    bool is_main_frame_navigation =
+        request.GetURL().spec().find(".html") != std::string::npos;
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+        is_main_frame_navigation) {
       // Effective connection type is forced to 2G using command line in these
       // tests. RTT is expected to be 1800 msec but leave some gap to account
       // for added noise and randomization.
