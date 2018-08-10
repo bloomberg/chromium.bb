@@ -20,6 +20,13 @@ group("background_task_scheduler") {
 }
 
 if (is_android) {
+  # This is shared between WebView and Chrome. We do not want to add GCM
+  # related permissions for WebView while still wanting to avoid collision
+  # between WebView and Chrome.
+  android_library("background_task_scheduler_task_ids_java") {
+    java_files = [ "android/java/src/org/chromium/components/background_task_scheduler/TaskIds.java" ]
+  }
+
   android_library("background_task_scheduler_java") {
     java_files = [
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTask.java",
@@ -36,12 +43,12 @@ if (is_android) {
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerPrefs.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerUma.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BundleToPersistableBundleConverter.java",
-      "android/java/src/org/chromium/components/background_task_scheduler/TaskIds.java",
       "android/java/src/org/chromium/components/background_task_scheduler/TaskInfo.java",
       "android/java/src/org/chromium/components/background_task_scheduler/TaskParameters.java",
     ]
 
     deps = [
+      ":background_task_scheduler_task_ids_java",
       "$google_play_services_package:google_play_services_base_java",
       "$google_play_services_package:google_play_services_basement_java",
       "$google_play_services_package:google_play_services_gcm_java",
