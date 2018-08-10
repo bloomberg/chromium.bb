@@ -58,8 +58,8 @@ const char kCard1SpecificsId[] = "Y2FyZDHvv74=";
 //const char kCard2SpecificsId[] = "Y2FyZDLvv74=";
 
 // Unique sync tags for the server IDs.
-const char kAddr1SyncTag[] = "address-YWRkcjHvv74=";
-const char kCard1SyncTag[] = "card-Y2FyZDHvv74=";
+const char kAddr1SyncTag[] = "YWRkcjHvv74=";
+const char kCard1SyncTag[] = "Y2FyZDHvv74=";
 
 const char kLocaleString[] = "en-US";
 const base::Time kJune2017 = base::Time::FromDoubleT(1497552271);
@@ -270,16 +270,16 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
 // The following 2 tests make sure client tags stay stable.
 TEST_F(AutofillWalletSyncBridgeTest, GetClientTagForAddress) {
   AutofillWalletSpecifics specifics =
-      CreateAutofillWalletSpecificsForAddress(kAddr1SyncTag);
+      CreateAutofillWalletSpecificsForAddress(kAddr1SpecificsId);
   EXPECT_EQ(bridge()->GetClientTag(SpecificsToEntity(specifics)),
-            "address-" + std::string(kAddr1SyncTag));
+            kAddr1SyncTag);
 }
 
 TEST_F(AutofillWalletSyncBridgeTest, GetClientTagForCard) {
   AutofillWalletSpecifics specifics =
-      CreateAutofillWalletSpecificsForCard(kCard1SyncTag);
+      CreateAutofillWalletSpecificsForCard(kCard1SpecificsId);
   EXPECT_EQ(bridge()->GetClientTag(SpecificsToEntity(specifics)),
-            "card-" + std::string(kCard1SyncTag));
+            kCard1SyncTag);
 }
 
 // The following 2 tests make sure storage keys stay stable.
