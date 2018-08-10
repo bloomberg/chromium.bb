@@ -79,7 +79,7 @@ class Embedder : public service_manager::Service,
   }
 
   bool OnServiceManagerConnectionLost() override {
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    context()->QuitNow();
     return true;
   }
 

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -27,14 +28,15 @@ class Context {
           std::unique_ptr<base::Value> catalog_content);
   ~Context();
 
-  // Run the application specified on the command line.
-  void RunCommandLineApplication();
+  // Run the application specified on the command line, and run |on_quit| when
+  // the application instance quits.
+  void RunCommandLineApplication(base::RepeatingClosure on_quit);
 
   ServiceManager* service_manager() { return service_manager_.get(); }
 
  private:
   // Runs the app specified by |name|.
-  void Run(const std::string& name);
+  void Run(const std::string& name, base::RepeatingClosure on_quit);
 
   std::unique_ptr<ServiceManager> service_manager_;
   base::Time main_entry_time_;

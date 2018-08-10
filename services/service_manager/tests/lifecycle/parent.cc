@@ -17,10 +17,6 @@
 
 namespace {
 
-void QuitLoop(base::RunLoop* loop) {
-  loop->Quit();
-}
-
 class Parent : public service_manager::Service,
                public service_manager::test::mojom::Parent {
  public:
@@ -50,12 +46,12 @@ class Parent : public service_manager::Service,
     context()->connector()->BindInterface("lifecycle_unittest_app", &lifecycle);
     {
       base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
-      lifecycle->Ping(base::Bind(&QuitLoop, &loop));
+      lifecycle->Ping(loop.QuitClosure());
       loop.Run();
     }
     std::move(callback).Run();
   }
-  void Quit() override { base::RunLoop::QuitCurrentWhenIdleDeprecated(); }
+  void Quit() override { context()->QuitNow(); }
 
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<service_manager::test::mojom::Parent> parent_bindings_;

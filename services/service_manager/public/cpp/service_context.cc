@@ -113,9 +113,9 @@ void ServiceContext::DisconnectFromServiceManager() {
 void ServiceContext::QuitNow() {
   if (binding_.is_bound())
     binding_.Close();
-  if (!quit_closure_.is_null()) {
+  if (quit_closure_) {
     // CAUTION: May delete |this|.
-    base::ResetAndReturn(&quit_closure_).Run();
+    std::move(quit_closure_).Run();
   }
 }
 
