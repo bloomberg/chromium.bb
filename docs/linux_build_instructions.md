@@ -239,12 +239,15 @@ hyperthreaded, 12 GB RAM)
 Build Chromium (the "chrome" target) with Ninja using the command:
 
 ```shell
-$ ninja -C out/Default chrome
+$ autoninja -C out/Default chrome
 ```
+
+`autoninja` is a wrapper that automatically provides optimal values for the
+arguments passed to `ninja`.
 
 You can get a list of all of the other build targets from GN by running `gn ls
 out/Default` from the command line. To compile one, pass the GN label to Ninja
-with no preceding "//" (so, for `//chrome/test:unit_tests` use `ninja -C
+with no preceding "//" (so, for `//chrome/test:unit_tests` use `autoninja -C
 out/Default chrome/test:unit_tests`).
 
 ## Run Chromium

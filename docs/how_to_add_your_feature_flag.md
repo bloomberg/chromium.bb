@@ -44,7 +44,7 @@ __flag_descriptions.cc__ and __flag_descriptions.h__. After that, try running th
 
 ```bash
 # Build unit_tests
-ninja -C out/Default unit_tests
+autoninja -C out/Default unit_tests
 # Run AboutFlagsHistogramTest.CheckHistograms
 ./out/Default/unit_tests --gtest_filter=AboutFlagsHistogramTest.CheckHistograms
 ```

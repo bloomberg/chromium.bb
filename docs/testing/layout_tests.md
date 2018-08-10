@@ -23,7 +23,7 @@ Before you can run the layout tests, you need to build the `blink_tests` target
 to get `content_shell` and all of the other needed binaries.
 
 ```bash
-ninja -C out/Release blink_tests
+autoninja -C out/Release blink_tests
 ```
 
 On **Android** (layout test support
@@ -32,7 +32,7 @@ build and install `content_shell_apk` instead. See also:
 [Android Build Instructions](../android_build_instructions.md).
 
 ```bash
-ninja -C out/Default content_shell_apk
+autoninja -C out/Default content_shell_apk
 adb install -r out/Default/apks/ContentShell.apk
 ```
 
@@ -408,7 +408,7 @@ machine?
 
 ### Debugging DevTools Tests
 
-* Add `debug_devtools=true` to args.gn and compile: `ninja -C out/Default devtools_frontend_resources`
+* Add `debug_devtools=true` to args.gn and compile: `autoninja -C out/Default devtools_frontend_resources`
   > Debug DevTools lets you avoid having to recompile after every change to the DevTools front-end.
 * Do one of the following:
     * Option A) Run from the chromium/src folder:
@@ -454,7 +454,7 @@ this:
 
 # Exit code 125 tells git bisect to skip the revision.
 gclient sync || exit 125
-ninja -C out/Debug -j100 blink_tests || exit 125
+autoninja -C out/Debug -j100 blink_tests || exit 125
 
 third_party/blink/tools/run_web_tests.py -t Debug \
   --no-show-results --no-retry-failures \

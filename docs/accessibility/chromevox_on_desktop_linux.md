@@ -43,7 +43,7 @@ your file anywhere!
 Now build Chrome as usual, e.g.:
 
 ```
-ninja -C out/cros chrome
+autoninja -C out/cros chrome
 ```
 
 And run it as usual to see a mostly-complete Chrome OS desktop inside

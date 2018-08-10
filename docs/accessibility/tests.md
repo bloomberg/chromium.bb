@@ -32,13 +32,13 @@ content/shell/test_runner
 
 To run all accessibility LayoutTests:
 ```
-ninja -C out/release blink_tests
+autoninja -C out/release blink_tests
 third_party/blink/tools/run_web_tests.py --build-directory=out --target=release accessibility/
 ```
 
 To run just one test by itself without the script:
 ```
-ninja -C out/release blink_tests
+autoninja -C out/release blink_tests
 out/release/content_shell --run-web-tests third_party/WebKit/LayoutTests/accessibility/name-calc-inputs.html
 ```
 
@@ -64,7 +64,7 @@ content/browser/accessibility/dump_accessibility_tree_browsertest.cc
 
 To run all tests:
 ```
-ninja -C out/release content_browsertests
+autoninja -C out/release content_browsertests
 out/release/content_browsertests --gtest_filter="DumpAccessibilityTree*"
 ```
 
@@ -77,7 +77,7 @@ tree from the browser process, and running some test from there.
 
 To run all tests:
 ```
-ninja -C out/release content_browsertests
+autoninja -C out/release content_browsertests
 out/release/content_browsertests --gtest_filter="*ccessib*"
 ```
 
@@ -93,7 +93,7 @@ ui/accessibility
 
 To run all tests:
 ```
-ninja -C out/release accessibility_unittests
+autoninja -C out/release accessibility_unittests
 out/release/accessibility_unittests
 ```
 
@@ -103,14 +103,14 @@ You must build with ```target_os = "chromeos"``` in your GN args.
 
 To run all tests:
 ```
-ninja -C out/release chromevox_tests
+autoninja -C out/release chromevox_tests
 out/release/chromevox_tests --test-launcher-jobs=10
 ```
 
 ### Select-To-Speak tests
 
 ```
-ninja -C out/release unit_tests
+autoninja -C out/release unit_tests
 out/release/unit_tests --gtest_filter="*SelectToSpeak*"
 ```
 
