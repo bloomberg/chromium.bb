@@ -30,7 +30,8 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public Visitor {
                                WeakCallback,
                                void*) final {}
   void VisitBackingStoreOnly(void*, void**) final {}
-  void RegisterBackingStoreCallback(void*, MovingObjectCallback, void*) final {}
+  void RegisterBackingStoreCallback(void**, MovingObjectCallback, void*) final {
+  }
   void RegisterWeakCallback(void*, WeakCallback) final {}
 
  protected:

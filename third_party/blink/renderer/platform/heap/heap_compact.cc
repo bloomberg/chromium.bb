@@ -115,12 +115,12 @@ class HeapCompact::MovableObjectFixups final {
     AddInteriorFixup(slot);
   }
 
-  void AddFixupCallback(MovableReference reference,
+  void AddFixupCallback(MovableReference* slot,
                         MovingObjectCallback callback,
                         void* callback_data) {
-    DCHECK(!fixup_callbacks_.Contains(reference));
-    fixup_callbacks_.insert(reference, std::pair<void*, MovingObjectCallback>(
-                                           callback_data, callback));
+    DCHECK(!fixup_callbacks_.Contains(slot));
+    fixup_callbacks_.insert(
+        slot, std::pair<void*, MovingObjectCallback>(callback_data, callback));
   }
 
   void RelocateInteriorFixups(Address from, Address to, size_t size) {
@@ -226,7 +226,9 @@ class HeapCompact::MovableObjectFixups final {
     *slot = to;
 
     size_t size = 0;
-    auto callback = fixup_callbacks_.find(from);
+    MovableReference* callback_slot =
+        reinterpret_cast<MovableReference*>(it->value);
+    auto callback = fixup_callbacks_.find(callback_slot);
     if (UNLIKELY(callback != fixup_callbacks_.end())) {
       size = HeapObjectHeader::FromPayload(to)->PayloadSize();
       callback->value.second(callback->value.first, from, to, size);
@@ -265,7 +267,7 @@ class HeapCompact::MovableObjectFixups final {
 
   // Map from movable reference to callbacks that need to be invoked
   // when the object moves.
-  HashMap<MovableReference, std::pair<void*, MovingObjectCallback>>
+  HashMap<MovableReference*, std::pair<void*, MovingObjectCallback>>
       fixup_callbacks_;
 
   // Slot => relocated slot/final location.
@@ -382,13 +384,13 @@ void HeapCompact::RegisterMovingObjectReference(MovableReference* slot) {
   traced_slots_.insert(slot);
 }
 
-void HeapCompact::RegisterMovingObjectCallback(MovableReference reference,
+void HeapCompact::RegisterMovingObjectCallback(MovableReference* slot,
                                                MovingObjectCallback callback,
                                                void* callback_data) {
   if (!do_compact_)
     return;
 
-  Fixups().AddFixupCallback(reference, callback, callback_data);
+  Fixups().AddFixupCallback(slot, callback, callback_data);
 }
 
 void HeapCompact::UpdateHeapResidency() {

@@ -192,11 +192,11 @@ class PLATFORM_EXPORT HeapAllocator {
 
   template <typename T, typename VisitorDispatcher>
   static void RegisterBackingStoreCallback(VisitorDispatcher visitor,
-                                           T* backing_store,
+                                           T** backing_store_slot,
                                            MovingObjectCallback callback,
                                            void* callback_data) {
-    visitor->RegisterBackingStoreCallback(backing_store, callback,
-                                          callback_data);
+    visitor->RegisterBackingStoreCallback(
+        reinterpret_cast<void**>(backing_store_slot), callback, callback_data);
   }
 
   static void EnterGCForbiddenScope() {

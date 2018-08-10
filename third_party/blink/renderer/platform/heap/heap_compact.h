@@ -81,7 +81,7 @@ class PLATFORM_EXPORT HeapCompact final {
   void RegisterMovingObjectReference(MovableReference* slot);
 
   // See |Heap::registerMovingObjectCallback()| documentation.
-  void RegisterMovingObjectCallback(MovableReference,
+  void RegisterMovingObjectCallback(MovableReference*,
                                     MovingObjectCallback,
                                     void* callback_data);
 
@@ -165,7 +165,7 @@ class PLATFORM_EXPORT HeapCompact final {
   // the range of BlinkGC::ArenaIndices.
   unsigned compactable_arenas_;
 
-  // The set is to remember slots traced during the incremental and atomic
+  // The set is to remember slots that traced during
   // marking phases. The mapping between the slots and the backing stores are
   // created at the atomic pause phase.
   HashSet<MovableReference*> traced_slots_;
