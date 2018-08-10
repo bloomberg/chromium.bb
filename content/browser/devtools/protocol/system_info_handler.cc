@@ -33,7 +33,8 @@ using GetInfoCallback = SystemInfo::Backend::GetInfoCallback;
 
 // Give the GPU process a few seconds to provide GPU info.
 // Linux Debug builds need more time -- see Issue 796437.
-#if defined(OS_LINUX) && !defined(NDEBUG)
+// Windows builds need more time -- see Issue 873112.
+#if (defined(OS_LINUX) && !defined(NDEBUG)) || defined(OS_WIN)
 const int kGPUInfoWatchdogTimeoutMs = 20000;
 #else
 const int kGPUInfoWatchdogTimeoutMs = 5000;
