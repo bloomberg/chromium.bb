@@ -4306,7 +4306,8 @@ TEST_F(ChromeLauncherControllerTest, InternalAppWindowRecreation) {
   InitLauncherController();
 
   // Only test the first internal app. The others should be the same.
-  const auto& internal_app = app_list::GetInternalAppList().front();
+  const auto& internal_app =
+      app_list::GetInternalAppList(profile()->IsGuestSession()).front();
   const std::string app_id = internal_app.app_id;
   const ash::ShelfID shelf_id(app_id);
   EXPECT_FALSE(launcher_controller_->GetItem(shelf_id));
@@ -4337,7 +4338,8 @@ TEST_F(ChromeLauncherControllerTest, InternalAppWindowPropertyChanged) {
   InitLauncherController();
 
   // Only test the first internal app. The others should be the same.
-  const auto& internal_app = app_list::GetInternalAppList().front();
+  const auto& internal_app =
+      app_list::GetInternalAppList(profile()->IsGuestSession()).front();
   std::string app_id;
   ash::ShelfID shelf_id;
   EXPECT_FALSE(launcher_controller_->GetItem(shelf_id));
