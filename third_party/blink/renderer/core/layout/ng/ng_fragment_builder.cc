@@ -68,6 +68,12 @@ NGFragmentBuilder& NGFragmentBuilder::SetIntrinsicBlockSize(
   return *this;
 }
 
+NGFragmentBuilder& NGFragmentBuilder::SetBorders(const NGBoxStrut& border) {
+  DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
+  borders_ = border;
+  return *this;
+}
+
 NGFragmentBuilder& NGFragmentBuilder::SetPadding(const NGBoxStrut& padding) {
   DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
   padding_ = padding;
@@ -308,6 +314,7 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment(
   scoped_refptr<NGPhysicalBoxFragment> fragment =
       base::AdoptRef(new NGPhysicalBoxFragment(
           layout_object_, Style(), style_variant_, physical_size, children_,
+          borders_.ConvertToPhysical(GetWritingMode(), Direction()),
           padding_.ConvertToPhysical(GetWritingMode(), Direction()),
           contents_ink_overflow, baselines_, BoxType(), is_old_layout_root_,
           border_edges_.ToPhysical(GetWritingMode()), std::move(break_token)));

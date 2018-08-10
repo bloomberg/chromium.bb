@@ -36,9 +36,10 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
   NGLineHeightMetrics BaselineMetrics(const NGBaselineRequest&,
                                       const NGConstraintSpace&) const;
 
+  NGBoxStrut Borders() const;
   NGBoxStrut Padding() const;
 
- private:
+ protected:
   TextDirection direction_;
 };
 

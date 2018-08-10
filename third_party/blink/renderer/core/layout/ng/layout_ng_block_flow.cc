@@ -149,6 +149,8 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
 
   container_builder.SetInlineSize(container_border_box_logical_width);
   container_builder.SetBlockSize(container_border_box_logical_height);
+  container_builder.SetBorders(
+      ComputeBorders(*constraint_space, *container_style));
   container_builder.SetPadding(
       ComputePadding(*constraint_space, *container_style));
 

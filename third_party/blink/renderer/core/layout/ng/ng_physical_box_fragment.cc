@@ -22,6 +22,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     NGStyleVariant style_variant,
     NGPhysicalSize size,
     Vector<scoped_refptr<NGPhysicalFragment>>& children,
+    const NGPhysicalBoxStrut& borders,
     const NGPhysicalBoxStrut& padding,
     const NGPhysicalOffsetRect& contents_ink_overflow,
     Vector<NGBaseline>& baselines,
@@ -39,6 +40,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
                                   contents_ink_overflow,
                                   std::move(break_token)),
       baselines_(std::move(baselines)),
+      borders_(borders),
       padding_(padding) {
   DCHECK(baselines.IsEmpty());  // Ensure move semantics is used.
   is_old_layout_root_ = is_old_layout_root;
@@ -248,7 +250,7 @@ scoped_refptr<NGPhysicalFragment> NGPhysicalBoxFragment::CloneWithoutOffset()
   scoped_refptr<NGPhysicalFragment> physical_fragment =
       base::AdoptRef(new NGPhysicalBoxFragment(
           layout_object_, Style(), StyleVariant(), size_, children_copy,
-          padding_, contents_ink_overflow_, baselines_copy, BoxType(),
+          borders_, padding_, contents_ink_overflow_, baselines_copy, BoxType(),
           is_old_layout_root_, border_edge_, break_token_));
   return physical_fragment;
 }
