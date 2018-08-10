@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -20,6 +21,8 @@ namespace mac {
 namespace {
 API_AVAILABLE(macosx(10.12.2))
 base::ScopedCFTypeRef<SecAccessControlRef> DefaultAccessControl() {
+  // The default access control policy used for WebAuthn credentials stored by
+  // the Touch ID platform authenticator.
   return base::ScopedCFTypeRef<SecAccessControlRef>(
       SecAccessControlCreateWithFlags(
           kCFAllocatorDefault, kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
@@ -27,6 +30,39 @@ base::ScopedCFTypeRef<SecAccessControlRef> DefaultAccessControl() {
           nullptr));
 }
 }  // namespace
+
+// static
+std::unique_ptr<TouchIdContext> TouchIdContext::CreateImpl() {
+  return base::WrapUnique(new TouchIdContext());
+}
+
+// static
+TouchIdContext::CreateFuncPtr TouchIdContext::g_create_ =
+    &TouchIdContext::CreateImpl;
+
+// static
+std::unique_ptr<TouchIdContext> TouchIdContext::Create() {
+  // Testing seam to allow faking Touch ID in tests.
+  return (*g_create_)();
+}
+
+// static
+bool TouchIdContext::TouchIdAvailableImpl() {
+  base::scoped_nsobject<LAContext> context([[LAContext alloc] init]);
+  return
+      [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
+                           error:nil];
+}
+
+// static
+TouchIdContext::TouchIdAvailableFuncPtr TouchIdContext::g_touch_id_available_ =
+    &TouchIdContext::TouchIdAvailableImpl;
+
+// static
+bool TouchIdContext::TouchIdAvailable() {
+  // Testing seam to allow faking Touch ID in tests.
+  return (*g_touch_id_available_)();
+}
 
 TouchIdContext::TouchIdContext()
     : context_([[LAContext alloc] init]),
