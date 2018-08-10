@@ -3208,6 +3208,14 @@
     ]
   },
 
+  "PowerSmartDimEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "PowerSmartDimEnabled": false },
+    "pref_mappings": [
+      { "pref": "power.smart_dim_enabled" }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

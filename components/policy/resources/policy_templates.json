@@ -545,6 +545,7 @@
         'WaitForInitialUserActivity',
         'PowerManagementIdleSettings',
         'ScreenLockDelays',
+        'PowerSmartDimEnabled',
       ],
     },
     {
@@ -12646,6 +12647,24 @@
       These logs may be associated, by means of a session ID, with other logs collected by the Google service itself; this is intended to make debugging easier.
       ''',
     },
+    {
+      'name': 'PowerSmartDimEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:70-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 465,
+      'caption': '''Enable smart dim model to extend the time until the screen is dimmed''',
+      'tags': [],
+      'desc': '''Specifies whether a smart dim model is allowed to extend the time until the screen is dimmed.
+
+      When the screen is about to be dimmed, the smart dim model evaluates if dimming the screen should be deferred. If the smart dim model defers dimming the screen, it effectively extends the time until the screen is dimmed. In this case, the screen off, screen lock and idle delays get adjusted to maintain the same distances from the screen dim delay as originally configured.
+      If this policy is set to True or left not set, the smart dim model will be enabled and allowed to extend the time until the screen is dimmed. If this policy is set to False, the smart dim model will not influence screen dimming.''',
+    },
   ],
 
   'messages': {
@@ -12787,5 +12806,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 464
+  'highest_id_currently_used': 465
 }
