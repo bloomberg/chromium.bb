@@ -66,17 +66,13 @@ namespace gpu {
 
 const char* OverlayFormatToString(OverlayFormat format) {
   switch (format) {
-    case OverlayFormat::UNKNOWN:
-      return "UNKNOWN";
-    case OverlayFormat::BGRA:
+    case OverlayFormat::kBGRA:
       return "BGRA";
-    case OverlayFormat::YUY2:
+    case OverlayFormat::kYUY2:
       return "YUY2";
-    case OverlayFormat::NV12:
+    case OverlayFormat::kNV12:
       return "NV12";
   }
-  NOTREACHED() << "Unknown overlay format: " << static_cast<int>(format);
-  return "UNKNOWN";
 }
 
 bool OverlayCapability::operator==(const OverlayCapability& other) const {

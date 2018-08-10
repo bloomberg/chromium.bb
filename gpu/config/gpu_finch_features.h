@@ -28,6 +28,8 @@ GPU_EXPORT extern const base::Feature kDirectCompositionOverlays;
 GPU_EXPORT extern const base::Feature kAImageReaderMediaPlayer;
 #endif  // defined(OS_ANDROID)
 
+GPU_EXPORT extern const base::Feature kDirectCompositionPreferNV12Overlays;
+
 }  // namespace features
 
 #endif  // GPU_CONFIG_GPU_FEATURES_H_

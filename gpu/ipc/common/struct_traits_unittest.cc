@@ -157,7 +157,7 @@ TEST_F(StructTraitsTest, GpuInfo) {
   const bool direct_composition = true;
   const bool supports_overlays = true;
   const gpu::OverlayCapabilities overlay_capabilities = {
-      {OverlayFormat::BGRA, false}, {OverlayFormat::NV12, true}};
+      {OverlayFormat::kBGRA, false}, {OverlayFormat::kNV12, true}};
   const DxDiagNode dx_diagnostics;
 #endif
   const gpu::VideoDecodeAcceleratorCapabilities

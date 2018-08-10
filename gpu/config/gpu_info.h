@@ -90,13 +90,10 @@ struct GPU_EXPORT VideoEncodeAcceleratorSupportedProfile {
 using VideoEncodeAcceleratorSupportedProfiles =
     std::vector<VideoEncodeAcceleratorSupportedProfile>;
 
-// Subset of DXGI_FORMAT that we're interested in.
-enum class OverlayFormat {
-  UNKNOWN,
-  BGRA,  // DXGI_FORMAT_B8G8R8A8_UNORM
-  YUY2,  // DXGI_FORMAT_YUY2
-  NV12,  // DXGI_FORMAT_NV12
-};
+// Common overlay formats that we're interested in. Must match the OverlayFormat
+// enum in //tools/metrics/histograms/enums.xml. Mapped to corresponding DXGI
+// formats in DirectCompositionSurfaceWin.
+enum class OverlayFormat { kBGRA = 0, kYUY2 = 1, kNV12 = 2, kMaxValue = kNV12 };
 
 GPU_EXPORT const char* OverlayFormatToString(OverlayFormat format);
 
