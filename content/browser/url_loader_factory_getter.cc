@@ -111,17 +111,17 @@ URLLoaderFactoryGetter::URLLoaderFactoryForIOThreadInfo::CreateFactory() {
 
 // -----------------------------------------------------------------------------
 
-URLLoaderFactoryGetter::URLLoaderFactoryGetter() : weak_factory_(this) {}
+URLLoaderFactoryGetter::URLLoaderFactoryGetter() = default;
 
 void URLLoaderFactoryGetter::Initialize(StoragePartitionImpl* partition) {
   DCHECK(partition);
   partition_ = partition;
-  Reinitialize();
-}
 
-void URLLoaderFactoryGetter::Reinitialize() {
-  if (!partition_)
-    return;
+  // Create a URLLoaderFactoryPtr synchronously and push it to the IO thread. If
+  // the pipe errors out later due to a network service crash, the pipe is
+  // created on the IO thread, and the request send back to the UI thread.
+  // TODO(mmenke):  Is one less thread hop on startup worth the extra complexity
+  // of two different pipe creation paths?
   DCHECK(!pending_network_factory_request_.is_pending());
   network::mojom::URLLoaderFactoryPtr network_factory;
   pending_network_factory_request_ = MakeRequest(&network_factory);
@@ -133,8 +133,7 @@ void URLLoaderFactoryGetter::Reinitialize() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&URLLoaderFactoryGetter::InitializeOnIOThread,
-                     weak_factory_.GetWeakPtr(),
+      base::BindOnce(&URLLoaderFactoryGetter::InitializeOnIOThread, this,
                      network_factory.PassInterface()));
 }
 
@@ -166,22 +165,27 @@ URLLoaderFactoryGetter::GetNetworkFactoryInfo() {
 network::mojom::URLLoaderFactory*
 URLLoaderFactoryGetter::GetURLLoaderFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // This needs to be done before returning |test_factory_|, as the
+  // |test_factory_| may fall back to |network_factory_|. The |is_bound()| check
+  // is only needed by unit tests.
+  if (network_factory_.encountered_error() || !network_factory_.is_bound()) {
+    network::mojom::URLLoaderFactoryPtr network_factory;
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(
+            &URLLoaderFactoryGetter::HandleNetworkFactoryRequestOnUIThread,
+            this, mojo::MakeRequest(&network_factory)));
+    ReinitializeOnIOThread(std::move(network_factory));
+  }
+
   if (g_get_network_factory_callback.Get() && !test_factory_)
     g_get_network_factory_callback.Get().Run(this);
 
   if (test_factory_)
     return test_factory_;
 
-  if (!network_factory_.is_bound())
-    HandleURLLoaderFactoryConnectionError();
   return network_factory_.get();
-}
-
-void URLLoaderFactoryGetter::HandleURLLoaderFactoryConnectionError() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&URLLoaderFactoryGetter::Reinitialize, this));
 }
 
 void URLLoaderFactoryGetter::CloneNetworkFactory(
@@ -227,10 +231,22 @@ URLLoaderFactoryGetter::~URLLoaderFactoryGetter() {}
 
 void URLLoaderFactoryGetter::InitializeOnIOThread(
     network::mojom::URLLoaderFactoryPtrInfo network_factory) {
-  network_factory_.Bind(std::move(network_factory));
-  network_factory_.set_connection_error_handler(base::BindOnce(
-      &URLLoaderFactoryGetter::HandleURLLoaderFactoryConnectionError,
-      weak_factory_.GetWeakPtr()));
+  ReinitializeOnIOThread(
+      network::mojom::URLLoaderFactoryPtr(std::move(network_factory)));
+}
+
+void URLLoaderFactoryGetter::ReinitializeOnIOThread(
+    network::mojom::URLLoaderFactoryPtr network_factory) {
+  DCHECK(network_factory.is_bound());
+  network_factory_ = std::move(network_factory);
+  // Set a connection error handle so that connection errors on the pipes are
+  // noticed, but the class doesn't actually do anything when the error is
+  // observed - instead, a new pipe is created in GetURLLoaderFactory() as
+  // needed. This is to avoid incrementing the reference count of |this| in the
+  // callback, as that could result in increasing the reference count from 0 to
+  // 1 while there's a pending task to delete |this|. See
+  // https://crbug.com/870942 for more details.
+  network_factory_.set_connection_error_handler(base::DoNothing());
 }
 
 void URLLoaderFactoryGetter::HandleNetworkFactoryRequestOnUIThread(
