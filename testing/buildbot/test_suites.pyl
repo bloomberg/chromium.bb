@@ -262,7 +262,11 @@
         'shards': 20,
       },
     },
-    'chrome_public_test_vr_apk': {},
+    'chrome_public_test_vr_apk': {
+      'swarming': {
+        'shards': 2,
+      },
+    },
     'chrome_sync_shell_test_apk': {},
     'gl_tests': {
       # TODO(kbr): these are actually run on many of the GPU bots, which have
@@ -538,7 +542,7 @@
     'components_browsertests': {},
     'components_unittests': {
       'android_swarming': {
-        'shards': 2,
+        'shards': 4,
       },
     },
     'content_browsertests': {
@@ -586,7 +590,11 @@
     'ui_base_unittests': {},
     'ui_touch_selection_unittests': {},
     'url_unittests': {},
-    'webkit_unit_tests': {},
+    'webkit_unit_tests': {
+      'android_swarming': {
+        'shards': 2,
+      },
+    },
     'wtf_unittests': {},
   },
 
@@ -597,7 +605,7 @@
     'gfx_unittests': {},
     'unit_tests': {
       'android_swarming': {
-        'shards': 5,
+        'shards': 10,
       },
     },
     'viz_content_browsertests': {
