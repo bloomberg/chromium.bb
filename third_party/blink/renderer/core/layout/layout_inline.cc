@@ -1177,7 +1177,10 @@ LayoutRect LayoutInline::LinesVisualOverflowBoundingBox() const {
       child_rect.offset += child.offset_to_container_box;
       result.Unite(child_rect);
     }
-    return result.ToLayoutRect();
+    LayoutRect rect = result.ToLayoutRect();
+    if (HasFlippedBlocksWritingMode())
+      ContainingBlock()->FlipForWritingMode(rect);
+    return rect;
   }
 
   if (!AlwaysCreateLineBoxes())
