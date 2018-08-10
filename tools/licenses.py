@@ -193,6 +193,13 @@ SPECIAL_CASES = {
         "URL": "http://code.google.com/p/v8-i18n/",
         "License": "Apache 2.0",
     },
+    os.path.join('third_party', 'blink'): {
+        "Name": "Blink",
+        "URL": "https://wwww.chromium.org/",
+        "License": "BSD and LGPL v2 and LGPL v2.1",
+        # Absolute path here is resolved as relative to the source root.
+        "License File": "/LICENSE",
+    },
     os.path.join('third_party', 'WebKit'): {
         "Name": "WebKit",
         "URL": "http://webkit.org/",
