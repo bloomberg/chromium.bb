@@ -46,6 +46,16 @@ void BackgroundFetchUpdateEvent::Trace(blink::Visitor* visitor) {
 ScriptPromise BackgroundFetchUpdateEvent::updateUI(
     ScriptState* script_state,
     const BackgroundFetchUIOptions& ui_options) {
+  if (update_ui_called_) {
+    // Return a rejected promise as this method should only be called once.
+    return ScriptPromise::Reject(
+        script_state,
+        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
+                                          "updateUI may only be called once."));
+  }
+
+  update_ui_called_ = true;
+
   if (!registration_) {
     // Return a Promise that will never settle when a developer calls this
     // method on a BackgroundFetchedEvent instance they created themselves.

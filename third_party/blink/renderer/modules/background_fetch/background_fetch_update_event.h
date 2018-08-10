@@ -64,6 +64,8 @@ class MODULES_EXPORT BackgroundFetchUpdateEvent final
   void DidUpdateUI(ScriptPromiseResolver* resolver,
                    mojom::blink::BackgroundFetchError error);
 
+  bool update_ui_called_ = false;
+
   Member<ServiceWorkerRegistration> registration_;
   Member<BackgroundFetchIconLoader> loader_;
 };
