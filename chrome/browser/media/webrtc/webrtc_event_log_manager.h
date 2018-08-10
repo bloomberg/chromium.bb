@@ -19,7 +19,6 @@
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_local.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_remote.h"
-#include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/webrtc_event_logger.h"
 
@@ -74,7 +73,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   void EnableForBrowserContext(content::BrowserContext* browser_context,
                                base::OnceClosure reply) override;
 
-  void DisableForBrowserContext(content::BrowserContext* browser_context,
+  void DisableForBrowserContext(const content::BrowserContext* browser_context,
                                 base::OnceClosure reply) override;
 
   void PeerConnectionAdded(int render_process_id,
@@ -199,13 +198,6 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   void OnLoggingTargetStarted(LoggingTarget target, PeerConnectionKey key);
   void OnLoggingTargetStopped(LoggingTarget target, PeerConnectionKey key);
 
-  void StartListeningForPrefChangeForBrowserContext(
-      content::BrowserContext* browser_context);
-  void StopListeningForPrefChangeForBrowserContext(
-      content::BrowserContext* browser_context);
-
-  void OnPrefChange(content::BrowserContext* browser_context);
-
   // network_connection_tracker() and system_request_context() are not available
   // during instantiation; we get them when the first profile is loaded, which
   // is also the earliest time when they could be needed.
@@ -219,14 +211,17 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
       net::URLRequestContextGetter* url_request_context_getter,
       std::unique_ptr<LogFileWriter::Factory> log_file_writer_factory);
 
-  void EnableRemoteBoundLoggingForBrowserContext(
+  // The BrowserContext is always enabled for local-bound logs.
+  // |enable_for_remote_logging| indicates whether it should also be enabled
+  // for remote-bound logs. This depends on a Chrome policy.
+  void EnableForBrowserContextInternal(
       BrowserContextId browser_context_id,
       const base::FilePath& browser_context_dir,
+      bool enable_for_remote_logging,
       base::OnceClosure reply);
 
-  void DisableRemoteBoundLoggingForBrowserContext(
-      BrowserContextId browser_context_id,
-      base::OnceClosure reply);
+  void DisableForBrowserContextInternal(BrowserContextId browser_context_id,
+                                        base::OnceClosure reply);
 
   void PeerConnectionAddedInternal(PeerConnectionKey key,
                                    const std::string& peer_connection_id,
@@ -333,15 +328,10 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   // This is only possible when the appropriate Chrome policy is configured.
   WebRtcRemoteEventLogManager remote_logs_manager_;
 
-  // Each loaded BrowserContext is mapped to a PrefChangeRegistrar, which keeps
-  // us informed about preference changes, thereby allowing as to support
-  // dynamic refresh.
-  std::map<BrowserContextId, PrefChangeRegistrar> pref_change_registrars_;
-
   // This keeps track of which peer connections have event logging turned on
   // in WebRTC, and for which client(s).
   std::map<PeerConnectionKey, LoggingTargetBitmap>
-      peer_connections_with_event_logging_enabled_in_webrtc_;
+      peer_connections_with_event_logging_enabled_;
 
   // The set of RenderProcessHosts with which the manager is registered for
   // observation. Allows us to register for each RPH only once, and get notified
