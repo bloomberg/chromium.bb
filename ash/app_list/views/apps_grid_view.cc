@@ -720,9 +720,10 @@ void AppsGridView::InitiateDragFromReparentItemInRootLevelGridView(
 
   // Create a new AppListItemView to duplicate the original_drag_view in the
   // folder's grid view.
-  AppListItemView* view = new AppListItemView(
-      this, original_drag_view->item(),
-      contents_view_->GetAppListMainView()->view_delegate());
+  AppListItemView* view =
+      new AppListItemView(this, original_drag_view->item(),
+                          contents_view_->GetAppListMainView()->view_delegate(),
+                          false /* is_in_folder */);
   AddChildView(view);
   drag_view_ = view;
   drag_view_->SetPaintToLayer();

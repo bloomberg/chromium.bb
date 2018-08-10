@@ -81,8 +81,10 @@ class BackgroundAnimation : public gfx::SlideAnimation,
                     : folder_view_->folder_item_icon_bounds();
     const SkColor background_color =
         AppListConfig::instance().folder_background_color();
-    from_color_ = show_ ? FolderImage::kFolderBubbleColor : background_color;
-    to_color_ = show_ ? background_color : FolderImage::kFolderBubbleColor;
+    from_color_ = show_ ? AppListConfig::instance().folder_bubble_color()
+                        : background_color;
+    to_color_ = show_ ? background_color
+                      : AppListConfig::instance().folder_bubble_color();
 
     SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     SetSlideDuration(kFolderTransitionInDurationMs);

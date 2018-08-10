@@ -1154,7 +1154,7 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, BackgroundOpacity) {
 
   // Turn on tablet mode. The background sheild opacity should be 10%.
   EnableTabletMode(true);
-  EXPECT_EQ(0.1f, background_layer->opacity());
+  EXPECT_EQ(0.2f, background_layer->opacity());
 }
 
 // Tests that the background blur is disabled for the app list.
