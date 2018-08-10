@@ -175,6 +175,9 @@ void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
   if (marker.HasThicknessThick() && logical_height.ToInt() - baseline >= 2)
     line_thickness = 2;
 
+  // Line thickness should change with zoom.
+  line_thickness *= style.EffectiveZoom();
+
   Color marker_color =
       marker.UseTextColor()
           ? style.VisitedDependentColor(GetCSSPropertyWebkitTextFillColor())
