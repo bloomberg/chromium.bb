@@ -364,10 +364,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   // <spec step="20">Let referrer policy be the current state of the element's
   // referrerpolicy content attribute.</spec>
-  // TODO(domfarolino): We should be able to set this to kReferrerPolicyDefault
-  // and have later logic use the right referrer policy.
   String referrerpolicy_attr = element_->ReferrerPolicyAttributeValue();
-  ReferrerPolicy referrer_policy = element_document.GetReferrerPolicy();
+  ReferrerPolicy referrer_policy = kReferrerPolicyDefault;
   if (!referrerpolicy_attr.IsEmpty()) {
     SecurityPolicy::ReferrerPolicyFromString(
         referrerpolicy_attr, kDoNotSupportReferrerPolicyLegacyKeywords,
