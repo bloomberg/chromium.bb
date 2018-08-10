@@ -151,10 +151,9 @@ enum class ExecutionMode {
   kNumValues,
 };
 
-// Pretty printers for gtest. Declared here to avoid ODR violations, but only
-// defined in constants_test_support.cc to prevent their use outside tests. (See
-// https://groups.google.com/a/chromium.org/d/msg/chromium-dev/i_wOTsE5Z6g/jhtqTY6fCwAJ
-// for explanation.)
+// Pretty printers for gtest and CHECK. Declared here to avoid ODR violations.
+// See explanation at
+// https://groups.google.com/a/chromium.org/d/msg/chromium-dev/i_wOTsE5Z6g/jhtqTY6fCwAJ.
 
 std::ostream& operator<<(std::ostream& stream, ChromePromptValue mode);
 

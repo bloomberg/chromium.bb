@@ -85,7 +85,6 @@ source_set("test_util") {
     "//chrome/chrome_cleaner/settings:settings",
     "//chrome/chrome_cleaner/strings",
     "//components/chrome_cleaner/public/constants:constants",
-    "//components/chrome_cleaner/public/constants:test_support",
     "//sandbox/win:sandbox",
   ]
 

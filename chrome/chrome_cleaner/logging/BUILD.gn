@@ -241,7 +241,6 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/test:test_util",
     "//chrome/chrome_cleaner/test/resources:test_resources",
     "//components/chrome_cleaner/public/constants:constants",
-    "//components/chrome_cleaner/public/constants:test_support",
     "//net/traffic_annotation:test_support",
     "//testing/gmock",
     "//testing/gtest",
