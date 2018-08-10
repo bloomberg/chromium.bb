@@ -347,8 +347,12 @@ NGLogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
 }
 
 scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
+  NGBoxStrut borders = ComputeBorders(ConstraintSpace(), Node());
+  NGBoxStrut padding = ComputePadding(ConstraintSpace(), Node());
   border_scrollbar_padding_ =
-      CalculateBorderScrollbarPadding(ConstraintSpace(), Node());
+      ConstraintSpace().IsAnonymous()
+          ? NGBoxStrut()
+          : borders + padding + Node().GetScrollbarSizes();
 
   NGLogicalSize border_box_size = CalculateBorderBoxSize(
       ConstraintSpace(), Node(), CalculateDefaultBlockSize());
@@ -630,7 +634,7 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 
   container_builder_.SetEndMarginStrut(end_margin_strut);
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size_);
-  container_builder_.SetPadding(ComputePadding(ConstraintSpace(), Style()));
+  container_builder_.SetPadding(padding);
 
   // We only finalize for fragmentation if the fragment has a BFC block offset.
   // This may occur with a zero block size fragment. We need to know the BFC
