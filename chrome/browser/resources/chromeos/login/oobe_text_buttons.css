@@ -11,5 +11,6 @@
  */
 :host ::slotted(*),
 #text {
+  font-family: var(--oobe-button-font-family);
   font-size: 12px;
 }
