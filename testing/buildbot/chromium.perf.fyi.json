@@ -167,7 +167,7 @@
               "pool": "chrome.tests.perf-fyi"
             }
           ],
-          "expiration": 21600,
+          "expiration": 7200,
           "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
@@ -211,7 +211,7 @@
               "pool": "chrome.tests.perf-fyi"
             }
           ],
-          "expiration": 21600,
+          "expiration": 7200,
           "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
@@ -254,7 +254,7 @@
               "pool": "chrome.tests.perf-fyi"
             }
           ],
-          "expiration": 21600,
+          "expiration": 7200,
           "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
@@ -301,7 +301,7 @@
               "pool": "chrome.tests.perf-fyi"
             }
           ],
-          "expiration": 21600,
+          "expiration": 7200,
           "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
@@ -346,7 +346,7 @@
               "pool": "chrome.tests.perf-fyi"
             }
           ],
-          "expiration": 21600,
+          "expiration": 7200,
           "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
@@ -396,7 +396,7 @@
               "pool": "chrome.tests.perf-fyi"
             }
           ],
-          "expiration": 21600,
+          "expiration": 7200,
           "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
@@ -446,7 +446,7 @@
               "pool": "chrome.tests.perf-webview-fyi"
             }
           ],
-          "expiration": 21600,
+          "expiration": 7200,
           "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
