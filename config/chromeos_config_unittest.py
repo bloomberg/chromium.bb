@@ -480,7 +480,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
       overlays = config['overlays']
       push_overlays = config['push_overlays']
       if (overlays and push_overlays and config['uprev'] and config['master']
-          and not config['branch']):
+          and not config['branch'] and not config['debug']):
         other_master = masters.get(push_overlays)
         err_msg = 'Found two masters for push_overlays=%s: %s and %s'
         self.assertFalse(

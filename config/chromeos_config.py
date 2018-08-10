@@ -4170,7 +4170,6 @@ def TryjobMirrors(site_config):
         debug=True,
         paygen=False,
         push_image=False,
-        push_overlays=None,
         # Force uprev. This is so patched in changes are always built.
         uprev=True,
         active_waterfall=waterfall.WATERFALL_SWARMING,
