@@ -19,6 +19,7 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
+#include "ash/wm/window_state_observer.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -54,6 +55,7 @@ namespace {
 
 // This class handles a user's fullscreen request (Shift+F4/F4).
 class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
+                                     public ash::wm::WindowStateObserver,
                                      public aura::WindowObserver {
  public:
   NativeAppWindowStateDelegate(AppWindow* app_window,
@@ -67,10 +69,15 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
     // control.
     // TODO(pkotwicz): This is a hack. Remove ASAP. http://crbug.com/319048
     window_state_->window()->AddObserver(this);
+
+    window_state_->AddObserver(this);
   }
-  ~NativeAppWindowStateDelegate() override {
-    if (window_state_)
-      window_state_->window()->RemoveObserver(this);
+
+  ~NativeAppWindowStateDelegate() override { ClearWindowState(); }
+
+  void set_immersive_fullscreen_controller(
+      ash::ImmersiveFullscreenController* controller) {
+    immersive_fullscreen_controller_ = controller;
   }
 
  private:
@@ -113,14 +120,34 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
     }
   }
 
-  void OnWindowDestroying(aura::Window* window) override {
-    window_state_->window()->RemoveObserver(this);
-    window_state_ = nullptr;
+  // wm::WindowStateObserver:
+  void OnPostWindowStateTypeChange(
+      ash::wm::WindowState* window_state,
+      ash::mojom::WindowStateType old_type) override {
+    DCHECK_EQ(window_state, window_state_);
+    if (!window_state_->IsFullscreen() && !window_state->IsMinimized() &&
+        immersive_fullscreen_controller_ &&
+        immersive_fullscreen_controller_->IsEnabled()) {
+      immersive_fullscreen_controller_->SetEnabled(
+          ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER, false);
+    }
+  }
+
+  void OnWindowDestroying(aura::Window* window) override { ClearWindowState(); }
+
+  void ClearWindowState() {
+    if (window_state_) {
+      window_state_->RemoveObserver(this);
+      window_state_->window()->RemoveObserver(this);
+      window_state_ = nullptr;
+    }
   }
 
   // Not owned.
   AppWindow* app_window_;
   ash::wm::WindowState* window_state_;
+  ash::ImmersiveFullscreenController* immersive_fullscreen_controller_ =
+      nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(NativeAppWindowStateDelegate);
 };
@@ -296,9 +323,10 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
     views::Widget* widget) {
   // Set the delegate now because CustomFrameViewAsh sets the
   // WindowStateDelegate if one is not already set.
-  ash::wm::GetWindowState(GetNativeWindow())
-      ->SetDelegate(std::unique_ptr<ash::wm::WindowStateDelegate>(
-          new NativeAppWindowStateDelegate(app_window(), this)));
+  auto delegate =
+      std::make_unique<NativeAppWindowStateDelegate>(app_window(), this);
+  auto* delegate_ptr = delegate.get();
+  ash::wm::GetWindowState(GetNativeWindow())->SetDelegate(std::move(delegate));
 
   if (IsFrameless())
     return CreateNonStandardAppFrame();
@@ -311,6 +339,9 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
   // Non-frameless app windows can be put into immersive fullscreen.
   immersive_fullscreen_controller_.reset(
       new ash::ImmersiveFullscreenController());
+  delegate_ptr->set_immersive_fullscreen_controller(
+      immersive_fullscreen_controller_.get());
+
   custom_frame_view->InitImmersiveFullscreenControllerForView(
       immersive_fullscreen_controller_.get());
   custom_frame_view->GetHeaderView()->set_context_menu_controller(this);
