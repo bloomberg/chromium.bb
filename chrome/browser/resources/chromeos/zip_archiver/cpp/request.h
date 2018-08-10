@@ -9,11 +9,11 @@
 #include "ppapi/cpp/var_dictionary.h"
 
 // Defines the protocol messsage used to communicate between JS and NaCL.
-// This should be consistent with js/request.h.
+// This must be consistent with the JS side js/request.js.
 namespace request {
 
-// Defines requests keys. Every key should be unique and the same as the keys
-// on the JS side.
+// Defines request keys. The keys should be unique and must be the same as the
+// keys defined on the JS side.
 namespace key {
 
 // Mandatory keys for all unpacking requests.
@@ -60,9 +60,10 @@ const char kSrcFunc[] = "src_func";  // Should be a string.
 const char kMessage[] = "message";   // Should be a string.
 }  // namespace key
 
-// Defines request operations. These operations should be the same as the
-// operations on the JavaScript side.
+// Defines request operations. These operations must be the same as the
+// operations defined on the JS side (js/request.js).
 enum Operation {
+  // Unpack operations.
   READ_METADATA = 0,
   READ_METADATA_DONE = 1,
   READ_CHUNK = 2,
@@ -80,6 +81,8 @@ enum Operation {
   READ_FILE_DONE = 14,
   CONSOLE_LOG = 15,
   CONSOLE_DEBUG = 16,
+
+  // Pack operations.
   CREATE_ARCHIVE = 17,
   CREATE_ARCHIVE_DONE = 18,
   ADD_TO_ARCHIVE = 19,
@@ -93,6 +96,8 @@ enum Operation {
   CANCEL_ARCHIVE = 27,
   CANCEL_ARCHIVE_DONE = 28,
   RELEASE_COMPRESSOR = 29,
+
+  // Errors.
   FILE_SYSTEM_ERROR = -1,  // Errors specific to a file system.
   COMPRESSOR_ERROR = -2    // Errors specific to a compressor.
 };
