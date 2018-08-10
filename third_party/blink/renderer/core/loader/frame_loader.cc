@@ -1613,8 +1613,7 @@ SandboxFlags FrameLoader::EffectiveSandboxFlags() const {
 
 void FrameLoader::ModifyRequestForCSP(ResourceRequest& resource_request,
                                       Document* origin_document) const {
-  if (RuntimeEnabledFeatures::EmbedderCSPEnforcementEnabled() &&
-      !RequiredCSP().IsEmpty()) {
+  if (!RequiredCSP().IsEmpty()) {
     DCHECK(
         ContentSecurityPolicy::IsValidCSPAttr(RequiredCSP().GetString(), ""));
     resource_request.SetHTTPHeaderField(HTTPNames::Sec_Required_CSP,

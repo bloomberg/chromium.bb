@@ -386,10 +386,6 @@
       name: "EditingNG",
     },
     {
-      name: "EmbedderCSPEnforcement",
-      status: "stable",
-    },
-    {
       name: "EncryptedMediaEncryptionSchemeQuery",
       status: "test",
     },

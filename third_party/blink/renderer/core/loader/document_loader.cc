@@ -635,7 +635,6 @@ void DocumentLoader::ResponseReceived(
   }
 
   if (!frame_->GetSettings()->BypassCSP() &&
-      RuntimeEnabledFeatures::EmbedderCSPEnforcementEnabled() &&
       !GetFrameLoader().RequiredCSP().IsEmpty()) {
     const SecurityOrigin* parent_security_origin =
         frame_->Tree().Parent()->GetSecurityContext()->GetSecurityOrigin();

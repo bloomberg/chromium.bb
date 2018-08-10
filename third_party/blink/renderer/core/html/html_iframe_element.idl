@@ -39,7 +39,7 @@ interface HTMLIFrameElement : HTMLElement {
     [CheckSecurity=ReturnValue, RaisesException] Document? getSVGDocument();
     [CEReactions, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerPolicy;
     // https://w3c.github.io/webappsec-csp/embedded/#dom-htmliframeelement-csp
-    [RuntimeEnabled=EmbedderCSPEnforcement, CEReactions, Reflect] attribute DOMString csp;
+    [CEReactions, Reflect] attribute DOMString csp;
 
     // Feature Policy
     // https://wicg.github.io/feature-policy/
