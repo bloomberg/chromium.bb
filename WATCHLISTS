@@ -1254,7 +1254,7 @@
                   'optimization_hints',
     },
     'origin_trials': {
-      'filepath': 'origin_trials'\
+      'filepath': 'origin_trial'\
                   '|OriginTrial'\
                   '|ConditionalFeature',
     },
@@ -1774,8 +1774,7 @@
     'background_fetch': ['peter@chromium.org',
                          'rayankans+watch@chromium.org',
                          'nator@chromium.org'],
-    'background_sync': ['chasej+watch@chromium.org',
-                        'iclelland+watch@chromium.org',
+    'background_sync': ['iclelland+watch@chromium.org',
                         'peter@chromium.org'],
     'banners': ['dominickn+watch-banners@chromium.org',
                 'hanxi+watch@chromium.org',
