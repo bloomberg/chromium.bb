@@ -83,9 +83,9 @@ ScopedCERTCertificateList NSSCertDatabaseChromeOS::ListCertsImpl(
       NSSCertDatabase::ListCertsImpl(crypto::ScopedPK11Slot()));
 
   size_t pre_size = certs.size();
-  base::EraseIf(certs,
-                NSSProfileFilterChromeOS::CertNotAllowedForProfilePredicate(
-                    profile_filter));
+  base::EraseIf(certs, [&profile_filter](ScopedCERTCertificate& cert) {
+    return !profile_filter.IsCertAllowed(cert.get());
+  });
   DVLOG(1) << "filtered " << pre_size - certs.size() << " of " << pre_size
            << " certs";
   return certs;

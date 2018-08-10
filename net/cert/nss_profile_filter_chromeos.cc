@@ -139,15 +139,6 @@ bool NSSProfileFilterChromeOS::IsCertAllowed(CERTCertificate* cert) const {
   return false;
 }
 
-NSSProfileFilterChromeOS::CertNotAllowedForProfilePredicate::
-    CertNotAllowedForProfilePredicate(const NSSProfileFilterChromeOS& filter)
-    : filter_(filter) {}
-
-bool NSSProfileFilterChromeOS::CertNotAllowedForProfilePredicate::operator()(
-    const ScopedCERTCertificate& cert) const {
-  return !filter_.IsCertAllowed(cert.get());
-}
-
 NSSProfileFilterChromeOS::ModuleNotAllowedForProfilePredicate::
     ModuleNotAllowedForProfilePredicate(const NSSProfileFilterChromeOS& filter)
     : filter_(filter) {}
