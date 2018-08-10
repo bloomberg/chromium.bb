@@ -9,6 +9,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/resource_format.h"
+#include "components/viz/common/resources/single_release_callback.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -28,6 +29,21 @@ enum {
   kMaxUnreclaimedPlaceholderFrames = 3,
 };
 
+struct CanvasResourceDispatcher::FrameResource {
+  FrameResource() = default;
+  ~FrameResource() {
+    if (release_callback)
+      release_callback->Run(sync_token, is_lost);
+  }
+
+  // TODO(junov):  What does this do?
+  bool spare_lock = true;
+
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
+  gpu::SyncToken sync_token;
+  bool is_lost = false;
+};
+
 CanvasResourceDispatcher::CanvasResourceDispatcher(
     CanvasResourceDispatcherClient* client,
     uint32_t client_id,
@@ -43,21 +59,20 @@ CanvasResourceDispatcher::CanvasResourceDispatcher(
       num_unreclaimed_frames_posted_(0),
       client_(client),
       weak_ptr_factory_(this) {
-  if (frame_sink_id_.is_valid()) {
-    // Only frameless canvas pass an invalid frame sink id; we don't create
-    // mojo channel for this special case.
-    DCHECK(!sink_.is_bound());
-    mojom::blink::EmbeddedFrameSinkProviderPtr provider;
-    Platform::Current()->GetInterfaceProvider()->GetInterface(
-        mojo::MakeRequest(&provider));
-    DCHECK(provider);
+  // Frameless canvas pass an invalid |frame_sink_id_|; don't create mojo
+  // channel for this special case.
+  if (!frame_sink_id_.is_valid())
+    return;
 
-    binding_.Bind(mojo::MakeRequest(&client_ptr_));
-    provider->CreateCompositorFrameSink(frame_sink_id_, std::move(client_ptr_),
-                                        mojo::MakeRequest(&sink_));
-  }
-  offscreen_canvas_resource_provider_ =
-      std::make_unique<OffscreenCanvasResourceProvider>();
+  DCHECK(!sink_.is_bound());
+  mojom::blink::EmbeddedFrameSinkProviderPtr provider;
+  Platform::Current()->GetInterfaceProvider()->GetInterface(
+      mojo::MakeRequest(&provider));
+  DCHECK(provider);
+
+  binding_.Bind(mojo::MakeRequest(&client_ptr_));
+  provider->CreateCompositorFrameSink(frame_sink_id_, std::move(client_ptr_),
+                                      mojo::MakeRequest(&sink_));
 }
 
 CanvasResourceDispatcher::~CanvasResourceDispatcher() = default;
@@ -86,7 +101,7 @@ void CanvasResourceDispatcher::PostImageToPlaceholderIfNotBlocked(
     scoped_refptr<CanvasResource> image,
     viz::ResourceId resource_id) {
   if (placeholder_canvas_id_ == kInvalidPlaceholderCanvasId) {
-    offscreen_canvas_resource_provider_->ReclaimResource(resource_id);
+    ReclaimResourceInternal(resource_id);
     return;
   }
   // Determines whether the main thread may be blocked. If unblocked, post the
@@ -98,8 +113,7 @@ void CanvasResourceDispatcher::PostImageToPlaceholderIfNotBlocked(
     DCHECK(num_unreclaimed_frames_posted_ == kMaxUnreclaimedPlaceholderFrames);
     if (latest_unposted_image_) {
       // The previous unposted image becomes obsolete now.
-      offscreen_canvas_resource_provider_->ReclaimResource(
-          latest_unposted_resource_id_);
+      ReclaimResourceInternal(latest_unposted_resource_id_);
     }
 
     latest_unposted_image_ = std::move(image);
@@ -173,13 +187,12 @@ bool CanvasResourceDispatcher::PrepareFrame(
   if (!canvas_resource || !VerifyImageSize(canvas_resource->Size()))
     return false;
 
-  offscreen_canvas_resource_provider_->IncNextResourceId();
+  next_resource_id_++;
 
   // For frameless canvas, we don't get a valid frame_sink_id and should drop.
   if (!frame_sink_id_.is_valid()) {
-    PostImageToPlaceholderIfNotBlocked(
-        std::move(canvas_resource),
-        offscreen_canvas_resource_provider_->GetNextResourceId());
+    PostImageToPlaceholderIfNotBlocked(std::move(canvas_resource),
+                                       next_resource_id_);
     return false;
   }
 
@@ -238,16 +251,21 @@ bool CanvasResourceDispatcher::PrepareFrame(
   }
 
   viz::TransferableResource resource;
-  offscreen_canvas_resource_provider_->SetTransferableResource(&resource,
-                                                               canvas_resource);
+  auto frame_resource = std::make_unique<FrameResource>();
+
+  canvas_resource->PrepareTransferableResource(
+      &resource, &frame_resource->release_callback, kVerifiedSyncToken);
+  resource.id = next_resource_id_;
+
+  resources_.insert(next_resource_id_, std::move(frame_resource));
+
   // TODO(crbug.com/869913): add unit testing for this.
   const gfx::Size canvas_resource_size(canvas_resource->Size());
 
   commit_type_histogram.Count(commit_type);
 
-  PostImageToPlaceholderIfNotBlocked(
-      std::move(canvas_resource),
-      offscreen_canvas_resource_provider_->GetNextResourceId());
+  PostImageToPlaceholderIfNotBlocked(std::move(canvas_resource),
+                                     next_resource_id_);
 
   frame->resource_list.push_back(std::move(resource));
 
@@ -428,11 +446,22 @@ void CanvasResourceDispatcher::OnBeginFrame(
 
 void CanvasResourceDispatcher::ReclaimResources(
     const WTF::Vector<viz::ReturnedResource>& resources) {
-  offscreen_canvas_resource_provider_->ReclaimResources(resources);
+  for (const auto& resource : resources) {
+    auto it = resources_.find(resource.id);
+
+    DCHECK(it != resources_.end());
+    if (it == resources_.end())
+      continue;
+
+    it->value->sync_token = resource.sync_token;
+    it->value->is_lost = resource.lost;
+    ReclaimResourceInternal(it);
+  }
 }
 
 void CanvasResourceDispatcher::ReclaimResource(viz::ResourceId resource_id) {
-  offscreen_canvas_resource_provider_->ReclaimResource(resource_id);
+  ReclaimResourceInternal(resource_id);
+
   num_unreclaimed_frames_posted_--;
 
   // The main thread has become unblocked recently and we have an image that
@@ -468,6 +497,22 @@ void CanvasResourceDispatcher::DidDeleteSharedBitmap(
     ::gpu::mojom::blink::MailboxPtr id) {
   if (sink_)
     sink_->DidDeleteSharedBitmap(std::move(id));
+}
+
+void CanvasResourceDispatcher::ReclaimResourceInternal(
+    viz::ResourceId resource_id) {
+  auto it = resources_.find(resource_id);
+  if (it != resources_.end())
+    ReclaimResourceInternal(it);
+}
+
+void CanvasResourceDispatcher::ReclaimResourceInternal(
+    const ResourceMap::iterator& it) {
+  if (it->value->spare_lock) {
+    it->value->spare_lock = false;
+    return;
+  }
+  resources_.erase(it);
 }
 
 }  // namespace blink
