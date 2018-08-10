@@ -2471,18 +2471,18 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
   // Adjust the expected proto string.
   upload.set_form_signature(7816485729218079147U);
   upload.set_autofill_used(false);
-  // Create an additonal 8 fields (total of 13).
-  for (int i = 0; i < 8; ++i) {
+  // Create an additional 2 fields (total of 7).
+  for (int i = 0; i < 2; ++i) {
     test::FillUploadField(upload.add_field(), 509334676U, "address", "text",
                           nullptr, 30U);
   }
   // Put the appropriate autofill type on the different address fields.
-  upload.mutable_field(6)->set_autofill_type(31U);
-  upload.mutable_field(7)->set_autofill_type(37U);
-  upload.mutable_field(8)->set_autofill_type(38U);
-  upload.mutable_field(10)->set_autofill_type(31U);
-  upload.mutable_field(11)->set_autofill_type(37U);
-  upload.mutable_field(12)->set_autofill_type(38U);
+  upload.mutable_field(5)->add_autofill_type(31U);
+  upload.mutable_field(5)->add_autofill_type(37U);
+  upload.mutable_field(5)->add_autofill_type(38U);
+  upload.mutable_field(6)->add_autofill_type(31U);
+  upload.mutable_field(6)->add_autofill_type(37U);
+  upload.mutable_field(6)->add_autofill_type(38U);
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
 
   AutofillUploadContents encoded_upload3;
@@ -3553,14 +3553,9 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
   form_structure->field(2)->set_possible_types(possible_field_types[2]);
 
   // Modify the expected upload.
-  // Put the NAME_FIRST prediction on the third field.
-  upload.mutable_field(2)->set_autofill_type(3);
-  // Replace the fourth field by the old third field.
-  test::FillUploadField(upload.mutable_field(3), 2404144663U, "last", "text",
-                        nullptr, 5U);
-  // Re-add the old fourth field.
-  test::FillUploadField(upload.add_field(), 509334676U, "address", "text",
-                        nullptr, 30U);
+  // Add the NAME_FIRST prediction to the third field.
+  upload.mutable_field(2)->add_autofill_type(3);
+  upload.mutable_field(2)->mutable_autofill_type()->SwapElements(0, 1);
 
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
 
@@ -3578,8 +3573,7 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
           possible_field_types[form_structure->field_count() - 1]);
 
   // Adjust the expected upload proto.
-  test::FillUploadField(upload.add_field(), 509334676U, "address", "text",
-                        nullptr, 31U);
+  upload.mutable_field(3)->add_autofill_type(31U);
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
 
   AutofillUploadContents encoded_upload3;
@@ -3598,7 +3592,7 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
           possible_field_types[form_structure->field_count() - 1]);
 
   // Adjust the expected upload proto.
-  upload.mutable_field(5)->set_autofill_type(60);
+  upload.mutable_field(3)->set_autofill_type(1, 60);
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
 
   AutofillUploadContents encoded_upload4;

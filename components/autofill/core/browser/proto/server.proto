@@ -76,7 +76,7 @@ message AutofillUploadContents {
     // enum of types located at
     // components/autofill/core/browser/field_types.h
     // AutoFillFieldType
-    required fixed32 autofill_type = 7;
+    repeated fixed32 autofill_type = 7;
 
     // The value of the name attribute on the field, if present. Otherwise, the
     // value of the id attribute. See HTMLFormControlElement::nameForAutofill.
