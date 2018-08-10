@@ -528,6 +528,7 @@ void InterstitialPageImpl::DidNavigate(
   if (!controller_->delegate()->IsHidden())
     render_view_host_->GetWidget()->GetView()->Show();
   controller_->delegate()->AttachInterstitialPage(this);
+  render_view_host_->GetWidget()->GetView()->OnInterstitialPageAttached();
 
   RenderWidgetHostView* rwh_view =
       controller_->delegate()->GetRenderViewHost()->GetWidget()->GetView();

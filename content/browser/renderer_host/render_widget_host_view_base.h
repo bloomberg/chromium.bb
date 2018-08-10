@@ -413,6 +413,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // Returns true if this view's size have been initialized.
   virtual bool HasSize() const;
 
+  // Informs the view that the assocaited InterstitialPage was attached.
+  virtual void OnInterstitialPageAttached() {}
+
   // Tells the view that the assocaited InterstitialPage will going away (but is
   // not yet destroyed, as InterstitialPage destruction is asynchronous). The
   // view may use this notification to clean up associated resources. This

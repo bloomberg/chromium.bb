@@ -216,7 +216,14 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   host()->SetView(this);
   touch_selection_controller_client_manager_ =
       std::make_unique<TouchSelectionControllerClientManagerAndroid>(this);
+
   UpdateNativeViewTree(parent_native_view);
+  // This RWHVA may have been created speculatively. We should give any
+  // existing RWHVAs priority for receiving input events, otherwise a
+  // speculative RWHVA could be sent input events intended for the currently
+  // showing RWHVA.
+  if (parent_native_view)
+    parent_native_view->MoveToBack(&view_);
 
   CreateOverscrollControllerIfPossible();
 
@@ -818,6 +825,8 @@ void RenderWidgetHostViewAndroid::ResetGestureDetection() {
 }
 
 void RenderWidgetHostViewAndroid::OnDidNavigateMainFrameToNewPage() {
+  if (view_.parent())
+    view_.parent()->MoveToFront(&view_);
   ResetGestureDetection();
 }
 
@@ -911,6 +920,11 @@ void RenderWidgetHostViewAndroid::EnsureSurfaceSynchronizedForLayoutTest() {
 
 uint32_t RenderWidgetHostViewAndroid::GetCaptureSequenceNumber() const {
   return latest_capture_sequence_number_;
+}
+
+void RenderWidgetHostViewAndroid::OnInterstitialPageAttached() {
+  if (view_.parent())
+    view_.parent()->MoveToFront(&view_);
 }
 
 void RenderWidgetHostViewAndroid::OnInterstitialPageGoingAway() {

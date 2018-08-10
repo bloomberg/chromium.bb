@@ -182,6 +182,16 @@ void ViewAndroid::MoveToFront(ViewAndroid* child) {
     children_.splice(children_.end(), children_, it);
 }
 
+void ViewAndroid::MoveToBack(ViewAndroid* child) {
+  DCHECK(child);
+  auto it = std::find(children_.begin(), children_.end(), child);
+  DCHECK(it != children_.end());
+
+  // Bottom element is placed at the beginning of the list.
+  if (*it != children_.front())
+    children_.splice(children_.begin(), children_, it);
+}
+
 void ViewAndroid::RemoveFromParent() {
   if (parent_)
     parent_->RemoveChild(this);

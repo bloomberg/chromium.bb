@@ -118,6 +118,11 @@ TEST_F(ViewAndroidBoundsTest, MatchesViewInFront) {
   root_.MoveToFront(&view2_);
   GenerateTouchEventAt(100.f, 100.f);
   ExpectHit(handler2_);
+
+  // View 2 moves back to the bottom, and events should hit View 1 again.
+  root_.MoveToBack(&view2_);
+  GenerateTouchEventAt(100.f, 100.f);
+  ExpectHit(handler1_);
 }
 
 TEST_F(ViewAndroidBoundsTest, MatchesViewArea) {
