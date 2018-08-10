@@ -80,11 +80,11 @@ def DownloadChrome(revision, dest_dir, site=Site.CHROMIUM_SNAPSHOT):
 def _GetDownloadPlatform():
   """Returns the name for this platform on the archive site."""
   if util.IsWindows():
-    return 'win32_rel'
+    return 'Win'
   elif util.IsMac():
-    return 'mac_rel'
+    return 'Mac'
   elif util.IsLinux():
-    return 'linux_rel'
+    return 'Linux_x64'
 
 
 def GetLatestSnapshotPosition():
