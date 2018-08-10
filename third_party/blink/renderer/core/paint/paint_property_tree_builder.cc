@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
 #include "third_party/blink/renderer/core/paint/svg_root_painter.h"
+#include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/transforms/transform_state.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
@@ -220,7 +221,22 @@ static bool NeedsScrollOrScrollTranslation(const LayoutObject& object) {
 }
 
 static bool NeedsReplacedContentTransform(const LayoutObject& object) {
-  return object.IsSVGRoot();
+  // Quick reject.
+  if (!object.IsLayoutReplaced())
+    return false;
+
+  if (object.IsSVGRoot())
+    return true;
+
+  // Non-composited images have a micro-optimization to embed object-fit into
+  // the drawings instead of using a transform node.
+  bool is_spv1_composited =
+      object.HasLayer() &&
+      ToLayoutBoxModelObject(object).Layer()->GetCompositedLayerMapping();
+  if (object.IsLayoutImage() && !object.IsVideo() && is_spv1_composited)
+    return true;
+
+  return false;
 }
 
 static bool NeedsPaintOffsetTranslationForScrollbars(
@@ -960,6 +976,13 @@ static bool NeedsOverflowClipForReplacedContents(
   if (replaced.StyleRef().HasBorderRadius())
     return true;
 
+  // Non-composited images have a micro-optimization to embed clip rects into
+  // the drawings instead of using a clip node.
+  bool is_spv1_composited =
+      replaced.HasLayer() && replaced.Layer()->GetCompositedLayerMapping();
+  if (replaced.IsLayoutImage() && !replaced.IsVideo() && !is_spv1_composited)
+    return false;
+
   // Embedded objects are always sized to fit the content rect.
   if (replaced.IsLayoutEmbeddedContent())
     return false;
@@ -1215,33 +1238,72 @@ void FragmentPaintPropertyTreeBuilder::UpdatePerspective() {
   }
 }
 
+static bool ImageWasTransposed(const LayoutImage& layout_image,
+                               const Image& image) {
+  return LayoutObject::ShouldRespectImageOrientation(&layout_image) ==
+             kRespectImageOrientation &&
+         image.IsBitmapImage() &&
+         ToBitmapImage(image).CurrentFrameOrientation().UsesWidthAsHeight();
+}
+
+static AffineTransform RectToRect(const FloatRect& src_rect,
+                                  const FloatRect& dst_rect) {
+  float x_scale = dst_rect.Width() / src_rect.Width();
+  float y_scale = dst_rect.Height() / src_rect.Height();
+  float x_offset = dst_rect.X() - src_rect.X() * x_scale;
+  float y_offset = dst_rect.Y() - src_rect.Y() * y_scale;
+  return AffineTransform(x_scale, 0.f, 0.f, y_scale, x_offset, y_offset);
+}
+
 void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
   DCHECK(properties_);
-  if (!object_.IsSVGRoot())
-    return;
 
-  if (NeedsPaintPropertyUpdate()) {
-    AffineTransform transform_to_border_box =
-        SVGRootPainter(ToLayoutSVGRoot(object_))
-            .TransformToPixelSnappedBorderBox(context_.current.paint_offset);
-    if (!transform_to_border_box.IsIdentity() &&
-        NeedsReplacedContentTransform(object_)) {
+  if (NeedsPaintPropertyUpdate() && !NeedsReplacedContentTransform(object_)) {
+    OnClear(properties_->ClearReplacedContentTransform());
+  } else if (NeedsPaintPropertyUpdate()) {
+    AffineTransform content_to_parent_space;
+    if (object_.IsSVGRoot()) {
+      content_to_parent_space =
+          SVGRootPainter(ToLayoutSVGRoot(object_))
+              .TransformToPixelSnappedBorderBox(context_.current.paint_offset);
+    } else if (object_.IsLayoutImage() && !object_.IsVideo()) {
+      const LayoutImage& layout_image = ToLayoutImage(object_);
+      LayoutRect layout_replaced_rect = layout_image.ReplacedContentRect();
+      layout_replaced_rect.MoveBy(context_.current.paint_offset);
+      IntRect replaced_rect = PixelSnappedIntRect(layout_replaced_rect);
+      scoped_refptr<Image> image = layout_image.ImageResource()->GetImage(
+          LayoutSize(replaced_rect.Size()));
+      if (image && !image->IsNull()) {
+        IntRect src_rect = image->Rect();
+        if (ImageWasTransposed(layout_image, *image))
+          src_rect = src_rect.TransposedRect();
+        content_to_parent_space =
+            RectToRect(FloatRect(src_rect), FloatRect(replaced_rect));
+      }
+    }
+    if (!content_to_parent_space.IsIdentity()) {
       OnUpdate(properties_->UpdateReplacedContentTransform(
           *context_.current.transform,
-          TransformPaintPropertyNode::State{transform_to_border_box}));
+          TransformPaintPropertyNode::State{content_to_parent_space}));
     } else {
       OnClear(properties_->ClearReplacedContentTransform());
     }
   }
 
-  if (properties_->ReplacedContentTransform()) {
-    context_.current.transform = properties_->ReplacedContentTransform();
-    context_.current.should_flatten_inherited_transform = false;
-    context_.current.rendering_context_id = 0;
+  if (object_.IsSVGRoot()) {
+    // SVG painters don't use paint offset. The paint offset is baked into
+    // the transform node instead.
+    context_.current.paint_offset = LayoutPoint();
+
+    // Only <svg> paints its subtree as replaced contents. Other replaced
+    // element type may have shadow DOM that should not be affected by the
+    // replaced object fit.
+    if (properties_->ReplacedContentTransform()) {
+      context_.current.transform = properties_->ReplacedContentTransform();
+      context_.current.should_flatten_inherited_transform = false;
+      context_.current.rendering_context_id = 0;
+    }
   }
-  // The paint offset is included in |transformToBorderBox| so SVG does not need
-  // to handle paint offset internally.
-  context_.current.paint_offset = LayoutPoint();
 }
 
 static MainThreadScrollingReasons GetMainThreadScrollingReasons(

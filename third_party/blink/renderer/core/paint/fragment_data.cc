@@ -44,6 +44,8 @@ const TransformPaintPropertyNode* FragmentData::PostScrollTranslation() const {
   if (const auto* properties = PaintProperties()) {
     if (properties->ScrollTranslation())
       return properties->ScrollTranslation();
+    if (properties->ReplacedContentTransform())
+      return properties->ReplacedContentTransform();
     if (properties->Perspective())
       return properties->Perspective();
   }

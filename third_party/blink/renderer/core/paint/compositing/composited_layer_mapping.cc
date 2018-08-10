@@ -207,11 +207,21 @@ CompositedLayerMapping::CompositedLayerMapping(PaintLayer& layer)
     is_main_frame_layout_view_layer_ = true;
 
   CreatePrimaryGraphicsLayer();
+
+  // ImagePainter has a micro-optimization to embed object-fit and clip into
+  // the drawing so the property nodes were omitted if not composited.
+  if (GetLayoutObject().IsLayoutImage())
+    GetLayoutObject().SetNeedsPaintPropertyUpdate();
 }
 
 CompositedLayerMapping::~CompositedLayerMapping() {
   // Hits in compositing/squashing/squash-onto-nephew.html.
   DisableCompositingQueryAsserts disabler;
+
+  // ImagePainter has a micro-optimization to embed object-fit and clip into
+  // the drawing so the property nodes should be omitted if not composited.
+  if (GetLayoutObject().IsLayoutImage())
+    GetLayoutObject().SetNeedsPaintPropertyUpdate();
 
   // Do not leave the destroyed pointer dangling on any Layers that painted to
   // this mapping's squashing layer.

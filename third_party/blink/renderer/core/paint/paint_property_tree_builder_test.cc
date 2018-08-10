@@ -3197,24 +3197,25 @@ TEST_P(PaintPropertyTreeBuilderTest,
 
   LayoutObject& svg_with_view_box =
       *GetLayoutObjectByElementId("svgWithViewBox");
-  EXPECT_EQ(DocPreTranslation(), svg_with_view_box.FirstFragment()
-                                     .LocalBorderBoxProperties()
-                                     .Transform()
-                                     ->Parent());
-  EXPECT_EQ(FloatSize(30, 20), svg_with_view_box.FirstFragment()
-                                   .LocalBorderBoxProperties()
-                                   .Transform()
-                                   ->Matrix()
-                                   .To2DTranslation());
-
+  const auto* paint_offset_translation = svg_with_view_box.FirstFragment()
+                                             .PaintProperties()
+                                             ->PaintOffsetTranslation();
+  EXPECT_EQ(
+      paint_offset_translation,
+      svg_with_view_box.FirstFragment().LocalBorderBoxProperties().Transform());
+  EXPECT_EQ(DocPreTranslation(), paint_offset_translation->Parent());
+  EXPECT_EQ(FloatSize(30, 20),
+            paint_offset_translation->Matrix().To2DTranslation());
   EXPECT_EQ(LayoutPoint(0, 0), svg_with_view_box.FirstFragment().PaintOffset());
-  auto contents_properties =
-      svg_with_view_box.FirstFragment().ContentsProperties();
-  EXPECT_EQ(svg_with_view_box.FirstFragment()
-                .PaintProperties()
-                ->PaintOffsetTranslation(),
-            contents_properties.Transform());
-  EXPECT_EQ(DocPreTranslation(), contents_properties.Transform()->Parent());
+
+  const auto* replaced_content_transform = svg_with_view_box.FirstFragment()
+                                               .PaintProperties()
+                                               ->ReplacedContentTransform();
+  EXPECT_EQ(replaced_content_transform,
+            svg_with_view_box.FirstFragment().ContentsProperties().Transform());
+  EXPECT_EQ(paint_offset_translation, replaced_content_transform->Parent());
+  EXPECT_EQ(FloatSize(-50, -50),
+            replaced_content_transform->Matrix().To2DTranslation());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, OverflowHiddenScrollProperties) {
@@ -5542,7 +5543,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ImageWithInvertFilterUpdated) {
   ToLayoutImage(GetLayoutObjectByElementId("img"))
       ->UpdateShouldInvertColorForTest(false);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(nullptr, PaintPropertiesForElement("img")->Filter());
+  EXPECT_FALSE(PaintPropertiesForElement("img"));
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, LayeredImageWithInvertFilter) {
@@ -5575,7 +5576,7 @@ TEST_P(PaintPropertyTreeBuilderTest, LayeredImageWithInvertFilterUpdated) {
   ToLayoutImage(GetLayoutObjectByElementId("img"))
       ->UpdateShouldInvertColorForTest(false);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(nullptr, PaintPropertiesForElement("img")->Filter());
+  EXPECT_FALSE(PaintPropertiesForElement("img"));
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
@@ -5633,6 +5634,11 @@ TEST_P(PaintPropertyTreeBuilderTest,
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ClipInvalidationForReplacedElement) {
+  // Non-composited LayoutImage has a micro-optimization to embed object-fit
+  // and clip to the drawing, thus not creating nodes.
+  // SPv2 makes everything non-composited essentially.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
   // This test verifies clip nodes are correctly updated in response to
   // content box mutation.
   SetBodyInnerHTML(R"HTML(
@@ -5642,6 +5648,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ClipInvalidationForReplacedElement) {
       width: 8px;
       height: 8px;
       object-fit: none;
+      will-change: transform;
     }
     </style>
     <!-- An image of 10x10 white pixels. -->
@@ -5655,7 +5662,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ClipInvalidationForReplacedElement) {
     const auto* properties = PaintPropertiesForElement("target");
     ASSERT_TRUE(properties);
     ASSERT_TRUE(properties->OverflowClip());
-    EXPECT_EQ(FloatRect(8, 8, 8, 8),
+    EXPECT_EQ(FloatRect(0, 0, 8, 8),
               properties->OverflowClip()->ClipRect().Rect());
   }
 
@@ -5667,7 +5674,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ClipInvalidationForReplacedElement) {
     const auto* properties = PaintPropertiesForElement("target");
     ASSERT_TRUE(properties);
     ASSERT_TRUE(properties->OverflowClip());
-    EXPECT_EQ(FloatRect(12, 9, 2, 4),
+    EXPECT_EQ(FloatRect(4, 1, 2, 4),
               properties->OverflowClip()->ClipRect().Rect());
   }
 }

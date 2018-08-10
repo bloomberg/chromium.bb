@@ -91,7 +91,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   bool CurrentFrameIsLazyDecoded() override;
   size_t FrameCount() override;
   PaintImage PaintImageForCurrentFrame() override;
-  ImageOrientation CurrentFrameOrientation();
+  ImageOrientation CurrentFrameOrientation() const;
 
   PaintImage PaintImageForTesting();
   void AdvanceAnimationForTesting() override {
