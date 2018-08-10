@@ -340,6 +340,7 @@ NSArray* GetParagraphStringsForString(NSAttributedString* string) {
     NSMutableCharacterSet* lineEndSet =
         [NSMutableCharacterSet whitespaceAndNewlineCharacterSet];
     [lineEndSet addCharactersInString:@"-\u2013\u2014"];
+    [lineEndSet removeCharactersInString:@"\u00A0"];
     _lineEndSet = lineEndSet;
   }
   return _lineEndSet;
