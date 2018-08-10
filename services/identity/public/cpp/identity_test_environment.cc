@@ -222,6 +222,16 @@ void IdentityTestEnvironment::SetCallbackForNextAccessTokenRequest(
   on_access_token_requested_callback_ = std::move(callback);
 }
 
+IdentityTestEnvironment::AccessTokenRequestState::AccessTokenRequestState() =
+    default;
+IdentityTestEnvironment::AccessTokenRequestState::~AccessTokenRequestState() =
+    default;
+IdentityTestEnvironment::AccessTokenRequestState::AccessTokenRequestState(
+    AccessTokenRequestState&& other) = default;
+IdentityTestEnvironment::AccessTokenRequestState&
+IdentityTestEnvironment::AccessTokenRequestState::operator=(
+    AccessTokenRequestState&& other) = default;
+
 void IdentityTestEnvironment::OnAccessTokenRequested(
     const std::string& account_id,
     const std::string& consumer_id,
@@ -239,36 +249,56 @@ void IdentityTestEnvironment::OnAccessTokenRequested(
 
 void IdentityTestEnvironment::HandleOnAccessTokenRequested(
     std::string account_id) {
-  if (pending_access_token_requester_ &&
-      *pending_access_token_requester_ != account_id) {
-    // An access token request came in for a different account than the one for
-    // which we are waiting. Some unittests make access token requests for
-    // multiple accounts and interleave their responses in an order different
-    // from the requests. To accommodate this case, defer the handling of this
-    // access token request until the next iteration of the run loop, where it
-    // may then be being waited for.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&IdentityTestEnvironment::HandleOnAccessTokenRequested,
-                       base::Unretained(this), account_id));
+  if (on_access_token_requested_callback_) {
+    std::move(on_access_token_requested_callback_).Run();
     return;
   }
 
-  pending_access_token_requester_.reset();
+  for (auto it = requesters_.begin(); it != requesters_.end(); ++it) {
+    if (!it->account_id || (it->account_id.value() == account_id)) {
+      if (it->state == AccessTokenRequestState::kAvailable)
+        return;
+      if (it->on_available)
+        std::move(it->on_available).Run();
+      requesters_.erase(it);
+      return;
+    }
+  }
 
-  if (on_access_token_requested_callback_)
-    std::move(on_access_token_requested_callback_).Run();
+  // A requests came in for a request for which we are not waiting. Record that
+  // it's available.
+  requesters_.emplace_back();
+  requesters_.back().state = AccessTokenRequestState::kAvailable;
+  requesters_.back().account_id = account_id;
 }
 
 void IdentityTestEnvironment::WaitForAccessTokenRequestIfNecessary(
-    base::Optional<std::string> pending_access_token_requester) {
-  DCHECK(!pending_access_token_requester_);
-  pending_access_token_requester_ = std::move(pending_access_token_requester);
+    base::Optional<std::string> account_id) {
+  // Handle HandleOnAccessTokenRequested getting called before
+  // WaitForAccessTokenRequestIfNecessary.
+  if (account_id) {
+    for (auto it = requesters_.begin(); it != requesters_.end(); ++it) {
+      if (it->account_id && it->account_id.value() == account_id.value()) {
+        // Can't wait twice for same thing.
+        DCHECK_EQ(AccessTokenRequestState::kAvailable, it->state);
+        requesters_.erase(it);
+        return;
+      }
+    }
+  } else {
+    for (auto it = requesters_.begin(); it != requesters_.end(); ++it) {
+      if (it->state == AccessTokenRequestState::kAvailable) {
+        requesters_.erase(it);
+        return;
+      }
+    }
+  }
 
-  DCHECK(!on_access_token_requested_callback_);
   base::RunLoop run_loop;
-  on_access_token_requested_callback_ = run_loop.QuitClosure();
-
+  requesters_.emplace_back();
+  requesters_.back().state = AccessTokenRequestState::kPending;
+  requesters_.back().account_id = std::move(account_id);
+  requesters_.back().on_available = run_loop.QuitClosure();
   run_loop.Run();
 }
 

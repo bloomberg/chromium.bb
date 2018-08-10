@@ -85,9 +85,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   void SetAutomaticIssueOfAccessTokens(bool grant);
 
   // Issues |token| in response to any access token request that either has (a)
-  // just occurred in the current iteration of the run loop, or (b) will occur
-  // in the future via a task that was posted in the current iteration of the
-  // run loop. In the latter case, waits until the access token request occurs.
+  // already occurred and has not been matched by a previous call to this or
+  // other WaitFor... method, or (b) will occur in the future. In the latter
+  // case, waits until the access token request occurs.
   // NOTE: This method behaves this way to allow IdentityTestEnvironment to be
   // agnostic with respect to whether access token requests are handled
   // synchronously or asynchronously in the production code.
@@ -99,16 +99,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
       const base::Time& expiration);
 
   // Issues |token| in response to an access token request for |account_id| that
-  // either has (a) just occurred in the current iteration of the run loop, or
-  // (b) will occur in the future via a task that was posted in the current
-  // iteration of the run loop. In the latter case, waits until the access token
-  // request occurs.
-  // NOTE: Any access token request for a *different* account
-  // that is seen before an access token request for the given account will
-  // be deferred to be handled on the next iteration of the runloop; this
-  // behavior accommodates tests that interleave handling of production access
-  // token requests for multiple accounts in an order different from the order
-  // in which the requests are made.
+  // either already occurred and has not been matched by a previous call to this
+  // or other WaitFor... method , or (b) will occur in the future. In the latter
+  // case, waits until the access token request occurs.
   // NOTE: This method behaves this way to allow
   // IdentityTestEnvironment to be agnostic with respect to whether access token
   // requests are handled synchronously or asynchronously in the production
@@ -119,9 +112,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
       const base::Time& expiration);
 
   // Issues |error| in response to any access token request that either has (a)
-  // just occurred in the current iteration of the run loop, or (b) will occur
-  // in the future via a task that was posted in the current iteration of the
-  // run loop. In the latter case, waits until the access token request occurs.
+  // already occurred and has not been matched by a previous call to this or
+  // other WaitFor... method, or (b) will occur in the future via  In the latter
+  // case, waits until the access token request occurs.
   // NOTE: This method behaves this way to allow IdentityTestEnvironment to be
   // agnostic with respect to whether access token requests are handled
   // synchronously or asynchronously in the production code.
@@ -132,16 +125,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
       const GoogleServiceAuthError& error);
 
   // Issues |error| in response to an access token request for |account_id| that
-  // either has (a) just occurred in the current iteration of the run loop, or
-  // (b) will occur in the future via a task that was posted in the current
-  // iteration of the run loop. In the latter case, waits until the access token
-  // request occurs.
-  // NOTE: Any access token request for a *different* account
-  // that is seen before an access token request for the given account will
-  // be deferred to be handled on the next iteration of the runloop; this
-  // behavior accommodates tests that interleave handling of production access
-  // token requests for multiple accounts in an order different from the order
-  // in which the requests are made.
+  // either has (a) already occurred and has not been matched by a previous call
+  // to this or other WaitFor... method, or (b) will occur in the future. In the
+  // latter case, waits until the access token request occurs.
   // NOTE: This method behaves this way to allow
   // IdentityTestEnvironment to be agnostic with respect to whether access token
   // requests are handled synchronously or asynchronously in the production
@@ -158,6 +144,20 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   void SetCallbackForNextAccessTokenRequest(base::OnceClosure callback);
 
  private:
+  struct AccessTokenRequestState {
+    AccessTokenRequestState();
+    ~AccessTokenRequestState();
+    AccessTokenRequestState(AccessTokenRequestState&& other);
+    AccessTokenRequestState& operator=(AccessTokenRequestState&& other);
+
+    enum {
+      kPending,
+      kAvailable,
+    } state;
+    base::Optional<std::string> account_id;
+    base::OnceClosure on_available;
+  };
+
   // IdentityManager::DiagnosticsObserver:
   void OnAccessTokenRequested(
       const std::string& account_id,
@@ -170,15 +170,16 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // |account_id| or |pending_access_token_requester_| is empty.
   void HandleOnAccessTokenRequested(std::string account_id);
 
-  // Sets |pending_access_token_requester_| to
-  // |pending_access_token_requester| and runs a nested runloop until an access
-  // token request is observed.
+  // If a token request for |account_id| (or any account if nullopt) has already
+  // been made and not matched by a different call, returns immediately.
+  // Otherwise and runs a nested runloop until a matching access token request
+  // is observed.
   void WaitForAccessTokenRequestIfNecessary(
-      base::Optional<std::string> pending_access_token_requester);
+      base::Optional<std::string> account_id);
 
   std::unique_ptr<IdentityTestEnvironmentInternal> internals_;
   base::OnceClosure on_access_token_requested_callback_;
-  base::Optional<std::string> pending_access_token_requester_;
+  std::vector<AccessTokenRequestState> requesters_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityTestEnvironment);
 };
