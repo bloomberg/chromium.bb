@@ -14,7 +14,6 @@ patch applied.
   continuous integration suite.
 * The devices have the "maintenance mutex" enabled, reducing noise from
   background processes.
-* The devices are instrumented with BattOrs for power measurements.
 * Some regressions take multiple repeats to reproduce, and Pinpoint
   automatically runs multiple times and aggregates the results.
 * Some regressions reproduce on some devices but not others, and Pinpoint will
