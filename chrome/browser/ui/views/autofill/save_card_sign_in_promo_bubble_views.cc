@@ -59,14 +59,11 @@ SaveCardSignInPromoBubbleViews::CreateMainContentView() {
     NOTREACHED();
 #endif
   } else {
-    bool is_signin_promo = controller()->GetAccountInfo().IsEmpty();
     view->AddChildView(new BubbleSyncPromoView(
         sync_promo_delegate_.get(),
         signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE,
-        is_signin_promo ? IDS_AUTOFILL_SIGNIN_PROMO_LINK_DICE_DISABLED
-                        : IDS_AUTOFILL_SYNC_PROMO_LINK_DICE_DISABLED,
-        is_signin_promo ? IDS_AUTOFILL_SIGNIN_PROMO_MESSAGE_DICE_DISABLED
-                        : IDS_AUTOFILL_SYNC_PROMO_MESSAGE_DICE_DISABLED));
+        IDS_AUTOFILL_SIGNIN_PROMO_LINK_DICE_DISABLED,
+        IDS_AUTOFILL_SIGNIN_PROMO_MESSAGE_DICE_DISABLED));
   }
   return view;
 }
