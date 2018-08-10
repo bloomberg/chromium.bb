@@ -109,10 +109,9 @@ class CORE_EXPORT PointerEventManager
    public:
     void Trace(blink::Visitor* visitor) { visitor->Trace(target); }
     Member<EventTarget> target;
-    bool has_recieved_over_event;
-    EventTargetAttributes() : target(nullptr), has_recieved_over_event(false) {}
-    EventTargetAttributes(EventTarget* target, bool has_recieved_over_event)
-        : target(target), has_recieved_over_event(has_recieved_over_event) {}
+    EventTargetAttributes() : target(nullptr) {}
+    EventTargetAttributes(EventTarget* target)
+        : target(target) {}
   };
 
   class PointerEventBoundaryEventDispatcher : public BoundaryEventDispatcher {
