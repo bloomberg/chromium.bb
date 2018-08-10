@@ -1573,44 +1573,45 @@ void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
     if (IsCheckable(field->check_status))
       continue;
 
-    const ServerFieldTypeSet& types = field->possible_types();
-    for (const auto& field_type : types) {
-      // Add the same field elements as the query and a few more below.
-      if (ShouldSkipField(*field))
-        continue;
+    // Add the same field elements as the query and a few more below.
+    if (ShouldSkipField(*field))
+      continue;
 
-      AutofillUploadContents::Field* added_field = upload->add_field();
-      added_field->set_autofill_type(field_type);
-      if (field->generation_type()) {
-        added_field->set_generation_type(field->generation_type());
-        added_field->set_generated_password_changed(
-            field->generated_password_changed());
-      }
+    auto* added_field = upload->add_field();
 
-      if (field->vote_type()) {
-        added_field->set_vote_type(field->vote_type());
-      }
+    for (const auto& field_type : field->possible_types()) {
+      added_field->add_autofill_type(field_type);
+    }
 
-      added_field->set_signature(field->GetFieldSignature());
+    if (field->generation_type()) {
+      added_field->set_generation_type(field->generation_type());
+      added_field->set_generated_password_changed(
+          field->generated_password_changed());
+    }
 
-      if (field->properties_mask)
-        added_field->set_properties_mask(field->properties_mask);
+    if (field->vote_type()) {
+      added_field->set_vote_type(field->vote_type());
+    }
 
-      if (IsAutofillFieldMetadataEnabled()) {
-        added_field->set_type(field->form_control_type);
+    added_field->set_signature(field->GetFieldSignature());
 
-        if (!field->name.empty())
-          added_field->set_name(base::UTF16ToUTF8(field->name));
+    if (field->properties_mask)
+      added_field->set_properties_mask(field->properties_mask);
 
-        if (!field->id.empty())
-          added_field->set_id(base::UTF16ToUTF8(field->id));
+    if (IsAutofillFieldMetadataEnabled()) {
+      added_field->set_type(field->form_control_type);
 
-        if (!field->autocomplete_attribute.empty())
-          added_field->set_autocomplete(field->autocomplete_attribute);
+      if (!field->name.empty())
+        added_field->set_name(base::UTF16ToUTF8(field->name));
 
-        if (!field->css_classes.empty())
-          added_field->set_css_classes(base::UTF16ToUTF8(field->css_classes));
-      }
+      if (!field->id.empty())
+        added_field->set_id(base::UTF16ToUTF8(field->id));
+
+      if (!field->autocomplete_attribute.empty())
+        added_field->set_autocomplete(field->autocomplete_attribute);
+
+      if (!field->css_classes.empty())
+        added_field->set_css_classes(base::UTF16ToUTF8(field->css_classes));
     }
   }
 }

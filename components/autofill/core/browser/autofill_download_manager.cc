@@ -258,8 +258,11 @@ std::ostream& operator<<(std::ostream& out,
 
   for (const auto& field : upload.field()) {
     out << "\n Field"
-      << "\n signature: " << field.signature()
-      << "\n autofill_type: " << field.autofill_type();
+        << "\n signature: " << field.signature() << "\n autofill_type: ["
+        << field.autofill_type(0);
+    for (int i = 1; i < field.autofill_type_size(); ++i)
+      out << ", " << field.autofill_type(i);
+    out << "]";
     if (!field.name().empty())
       out << "\n name: " << field.name();
     if (!field.autocomplete().empty())

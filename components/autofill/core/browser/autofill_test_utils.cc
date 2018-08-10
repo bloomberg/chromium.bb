@@ -576,7 +576,7 @@ void FillUploadField(AutofillUploadContents::Field* field,
     field->set_type(control_type);
   if (autocomplete)
     field->set_autocomplete(autocomplete);
-  field->set_autofill_type(autofill_type);
+  field->add_autofill_type(autofill_type);
 }
 
 void FillQueryField(AutofillQueryContents::Form::Field* field,
