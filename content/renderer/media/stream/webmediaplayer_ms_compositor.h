@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "cc/layers/surface_layer.h"
 #include "cc/layers/video_frame_provider.h"
 #include "content/common/content_export.h"
 #include "media/base/media_log.h"
@@ -61,6 +62,11 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       const blink::WebMediaStream& web_stream,
       const base::WeakPtr<WebMediaPlayerMS>& player);
+
+  // Can be called from any thread.
+  cc::UpdateSubmissionStateCB GetUpdateSubmissionStateCallback() {
+    return update_submission_state_callback_;
+  }
 
   void EnqueueFrame(scoped_refptr<media::VideoFrame> frame);
 
@@ -181,6 +187,8 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   bool render_started_;
 
   std::map<base::TimeDelta, base::TimeTicks> timestamps_to_clock_times_;
+
+  cc::UpdateSubmissionStateCB update_submission_state_callback_;
 
   // |current_frame_lock_| protects |current_frame_|, |rendering_frame_buffer_|,
   // |dropped_frame_count_|, and |render_started_|.

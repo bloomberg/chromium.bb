@@ -325,6 +325,10 @@ const base::Feature kUnifiedAutoplay{"UnifiedAutoplay",
 const base::Feature kUseSurfaceLayerForVideo{"UseSurfaceLayerForVideo",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Use SurfaceLayer instead of VideoLayer for MediaStream.
+const base::Feature kUseSurfaceLayerForVideoMS{
+    "UseSurfaceLayerForVideoMS", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable VA-API hardware encode acceleration for VP8.
 const base::Feature kVaapiVP8Encoder{"VaapiVP8Encoder",
                                      base::FEATURE_DISABLED_BY_DEFAULT};

@@ -21,6 +21,7 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 
 namespace blink {
 class WebLocalFrame;
@@ -44,6 +45,11 @@ class GLES2Interface;
 }
 
 namespace content {
+using CreateSurfaceLayerBridgeCB =
+    base::OnceCallback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
+        blink::WebSurfaceLayerBridgeObserver*,
+        cc::UpdateSubmissionStateCB)>;
+
 class MediaStreamAudioRenderer;
 class MediaStreamRendererFactory;
 class MediaStreamVideoRenderer;
@@ -66,6 +72,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
     : public blink::WebMediaStreamObserver,
       public blink::WebMediaPlayer,
       public media::WebMediaPlayerDelegate::Observer,
+      public blink::WebSurfaceLayerBridgeObserver,
       public base::SupportsWeakPtr<WebMediaPlayerMS> {
  public:
   // Construct a WebMediaPlayerMS with reference to the client, and
@@ -82,7 +89,9 @@ class CONTENT_EXPORT WebMediaPlayerMS
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       scoped_refptr<base::TaskRunner> worker_task_runner,
       media::GpuVideoAcceleratorFactories* gpu_factories,
-      const blink::WebString& sink_id);
+      const blink::WebString& sink_id,
+      CreateSurfaceLayerBridgeCB create_bridge_callback,
+      bool surface_layer_for_video_enabled_);
 
   ~WebMediaPlayerMS() override;
 
@@ -90,6 +99,12 @@ class CONTENT_EXPORT WebMediaPlayerMS
       LoadType load_type,
       const blink::WebMediaPlayerSource& source,
       CORSMode cors_mode) override;
+
+  // WebSurfaceLayerBridgeObserver implementation.
+  void OnWebLayerUpdated() override;
+  void RegisterContentsLayer(cc::Layer* layer) override;
+  void UnregisterContentsLayer(cc::Layer* layer) override;
+  void OnSurfaceIdUpdated(viz::SurfaceId surface_id) override;
 
   // Playback controls.
   void Play() override;
@@ -305,6 +320,18 @@ class CONTENT_EXPORT WebMediaPlayerMS
   // IDs of the tracks currently played.
   blink::WebString current_video_track_id_;
   blink::WebString current_audio_track_id_;
+
+  CreateSurfaceLayerBridgeCB create_bridge_callback_;
+
+  // Whether the use of a surface layer instead of a video layer is enabled.
+  bool surface_layer_for_video_enabled_ = false;
+
+  // Owns the weblayer and obtains/maintains SurfaceIds for
+  // kUseSurfaceLayerForVideo feature.
+  std::unique_ptr<blink::WebSurfaceLayerBridge> bridge_;
+
+  // Whether the video is known to be opaque or not.
+  bool opaque_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMS);
 };

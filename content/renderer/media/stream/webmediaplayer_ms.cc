@@ -38,6 +38,7 @@
 #include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
 namespace {
@@ -262,7 +263,9 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
     scoped_refptr<base::TaskRunner> worker_task_runner,
     media::GpuVideoAcceleratorFactories* gpu_factories,
-    const blink::WebString& sink_id)
+    const blink::WebString& sink_id,
+    CreateSurfaceLayerBridgeCB create_bridge_callback,
+    bool surface_layer_for_video_enabled)
     : frame_(frame),
       network_state_(WebMediaPlayer::kNetworkStateEmpty),
       ready_state_(WebMediaPlayer::kReadyStateHaveNothing),
@@ -282,7 +285,9 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       initial_audio_output_device_id_(sink_id.Utf8()),
       volume_(1.0),
       volume_multiplier_(1.0),
-      should_play_upon_shown_(false) {
+      should_play_upon_shown_(false),
+      create_bridge_callback_(std::move(create_bridge_callback)),
+      surface_layer_for_video_enabled_(surface_layer_for_video_enabled) {
   DVLOG(1) << __func__;
   DCHECK(client);
   DCHECK(delegate_);
@@ -301,8 +306,10 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
 
   // Destruct compositor resources in the proper order.
   get_client()->SetCcLayer(nullptr);
-  if (video_layer_)
+  if (video_layer_) {
+    DCHECK(!surface_layer_for_video_enabled_);
     video_layer_->StopUsingProvider();
+  }
 
   if (frame_deliverer_)
     io_task_runner_->DeleteSoon(FROM_HERE, frame_deliverer_.release());
@@ -416,6 +423,27 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
   }
 
   return blink::WebMediaPlayer::LoadTiming::kImmediate;
+}
+
+void WebMediaPlayerMS::OnWebLayerUpdated() {}
+
+void WebMediaPlayerMS::RegisterContentsLayer(cc::Layer* layer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(bridge_);
+
+  bridge_->SetContentsOpaque(opaque_);
+  client_->SetCcLayer(layer);
+}
+
+void WebMediaPlayerMS::UnregisterContentsLayer(cc::Layer* layer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // |client_| will unregister its cc::Layer if given a nullptr.
+  client_->SetCcLayer(nullptr);
+}
+
+void WebMediaPlayerMS::OnSurfaceIdUpdated(viz::SurfaceId surface_id) {
+  // TODO(apacible): Add implementation. See http://crbug/746182.
+  NOTIMPLEMENTED();
 }
 
 void WebMediaPlayerMS::TrackAdded(const blink::WebMediaStreamTrack& track) {
@@ -1013,6 +1041,15 @@ void WebMediaPlayerMS::OnFirstFrameReceived(media::VideoRotation video_rotation,
                                             bool is_opaque) {
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (surface_layer_for_video_enabled_) {
+    DCHECK(!bridge_);
+
+    bridge_ = std::move(create_bridge_callback_)
+                  .Run(this, compositor_->GetUpdateSubmissionStateCallback());
+    bridge_->CreateSurfaceLayer();
+  }
+
   SetReadyState(WebMediaPlayer::kReadyStateHaveMetadata);
   SetReadyState(WebMediaPlayer::kReadyStateHaveEnoughData);
 
@@ -1023,9 +1060,17 @@ void WebMediaPlayerMS::OnOpacityChanged(bool is_opaque) {
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Opacity can be changed during the session without resetting
-  // |video_layer_|.
-  video_layer_->SetContentsOpaque(is_opaque);
+  opaque_ = is_opaque;
+
+  if (!bridge_) {
+    // Opacity can be changed during the session without resetting
+    // |video_layer_|.
+    video_layer_->SetContentsOpaque(opaque_);
+  } else {
+    DCHECK(bridge_);
+
+    bridge_->SetContentsOpaque(opaque_);
+  }
 }
 
 void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation,
@@ -1033,16 +1078,22 @@ void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation,
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   video_rotation_ = video_rotation;
+  opaque_ = is_opaque;
 
-  // Keep the old |video_layer_| alive until SetCcLayer() is called with a new
-  // pointer, as it may use the pointer from the last call.
-  auto new_video_layer =
-      cc::VideoLayer::Create(compositor_.get(), video_rotation);
-  new_video_layer->SetContentsOpaque(is_opaque);
+  if (!bridge_) {
+    // Keep the old |video_layer_| alive until SetCcLayer() is called with a new
+    // pointer, as it may use the pointer from the last call.
+    auto new_video_layer =
+        cc::VideoLayer::Create(compositor_.get(), video_rotation);
+    new_video_layer->SetContentsOpaque(is_opaque);
 
-  get_client()->SetCcLayer(new_video_layer.get());
+    get_client()->SetCcLayer(new_video_layer.get());
 
-  video_layer_ = std::move(new_video_layer);
+    video_layer_ = std::move(new_video_layer);
+  } else if (bridge_->GetCcLayer()) {
+    // TODO(lethalantidote): Handle rotation.
+    bridge_->SetContentsOpaque(opaque_);
+  }
 }
 
 void WebMediaPlayerMS::RepaintInternal() {
