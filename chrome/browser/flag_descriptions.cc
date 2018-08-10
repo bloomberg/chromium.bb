@@ -1773,6 +1773,11 @@ const char kSyncStandaloneTransportDescription[] =
     "this mode, the Sync machinery can start without user opt-in, but only a "
     "subset of data types are supported.";
 
+const char kSyncUSSAutofillWalletDataName[] =
+    "Enable USS for autofill wallet data";
+const char kSyncUSSAutofillWalletDataDescription[] =
+    "Enables the new implementation of autofill walet data sync";
+
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";
