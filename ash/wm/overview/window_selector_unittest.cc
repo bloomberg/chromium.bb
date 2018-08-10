@@ -4493,6 +4493,62 @@ TEST_F(SplitViewWindowSelectorTest,
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
 }
 
+// Verify that if the split view divider is dragged close to the edge, the grid
+// bounds will be fixed to a third of the work area width and start sliding off
+// the screen instead of continuing to shrink.
+TEST_F(SplitViewWindowSelectorTest,
+       OverviewHasMinimumBoundsWhenDividerDragged) {
+  UpdateDisplay("600x400");
+
+  const gfx::Rect bounds(400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  ToggleOverview();
+  // Snap a window to the left and test dragging the divider towards the right
+  // edge of the screen.
+  Shell::Get()->split_view_controller()->SnapWindow(window1.get(),
+                                                    SplitViewController::LEFT);
+  WindowGrid* grid = window_selector()->grid_list_for_testing()[0].get();
+  ASSERT_TRUE(grid);
+
+  // Drag the divider to the right edge.
+  gfx::Rect divider_bounds = GetSplitViewDividerBounds(/*is_dragging=*/false);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_location(divider_bounds.CenterPoint());
+  generator->PressLeftButton();
+
+  // Tests that near the right edge, the grid bounds are fixed at 200 and are
+  // partially off screen to the right.
+  generator->MoveMouseTo(580, 0);
+  EXPECT_EQ(200, grid->bounds().width());
+  EXPECT_GT(grid->bounds().right(), 600);
+  generator->ReleaseLeftButton();
+
+  // Releasing close to the edge will activate the left window and exit
+  // overview.
+  ASSERT_FALSE(IsSelecting());
+  ToggleOverview();
+  // Snap a window to the right and test dragging the divider towards the left
+  // edge of the screen.
+  Shell::Get()->split_view_controller()->SnapWindow(window1.get(),
+                                                    SplitViewController::RIGHT);
+  grid = window_selector()->grid_list_for_testing()[0].get();
+  ASSERT_TRUE(grid);
+
+  // Drag the divider to the left edge.
+  divider_bounds = GetSplitViewDividerBounds(/*is_dragging=*/false);
+  generator->set_current_location(divider_bounds.CenterPoint());
+  generator->PressLeftButton();
+
+  generator->MoveMouseTo(20, 0);
+  // Tests that near the left edge, the grid bounds are fixed at 200 and are
+  // partially off screen to the left.
+  EXPECT_EQ(200, grid->bounds().width());
+  EXPECT_LT(grid->bounds().x(), 0);
+  generator->ReleaseLeftButton();
+}
+
 // Test that when splitview mode is active, minimizing one of the snapped window
 // will insert the minimized window back to overview mode if overview mode is
 // active at the moment.

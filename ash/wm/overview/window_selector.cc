@@ -112,25 +112,71 @@ void UpdateShelfVisibility() {
 
 // Returns the bounds for the overview window grid according to the split view
 // state. If split view mode is active, the overview window should open on the
-// opposite side of the default snap window.
-gfx::Rect GetGridBoundsInScreen(aura::Window* root_window) {
+// opposite side of the default snap window. If |divider_changed| is true, maybe
+// clamp the bounds to a minimum size and shift the bounds offscreen.
+gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
+                                bool divider_changed) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
-  if (split_view_controller->IsSplitViewModeActive()) {
-    SplitViewController::SnapPosition oppsite_position =
-        (split_view_controller->default_snap_position() ==
-         SplitViewController::LEFT)
-            ? SplitViewController::RIGHT
-            : SplitViewController::LEFT;
-    return split_view_controller->GetSnappedWindowBoundsInScreen(
-        root_window, oppsite_position);
-  } else {
-    return split_view_controller->GetDisplayWorkAreaBoundsInScreen(root_window);
-  }
+  const gfx::Rect work_area =
+      split_view_controller->GetDisplayWorkAreaBoundsInScreen(root_window);
+  if (!split_view_controller->IsSplitViewModeActive())
+    return work_area;
+
+  SplitViewController::SnapPosition opposite_position =
+      (split_view_controller->default_snap_position() ==
+       SplitViewController::LEFT)
+          ? SplitViewController::RIGHT
+          : SplitViewController::LEFT;
+  gfx::Rect bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
+      root_window, opposite_position);
+  if (!divider_changed)
+    return bounds;
+
+  const bool landscape =
+      split_view_controller->IsCurrentScreenOrientationLandscape();
+  const int min_length =
+      (landscape ? work_area.width() : work_area.height()) / 3;
+  if ((landscape ? bounds.width() : bounds.height()) > min_length)
+    return bounds;
+
+  // Helper function which shifts and clamps |out_bounds|. Handles the
+  // orientation and whether |opposite_position| is physically on the left
+  // or top of the screen.
+  auto shift_bounds = [&min_length, &landscape](bool left_or_top,
+                                                gfx::Rect* out_bounds) {
+    // If we are shifting to the left or top we need to update the origin as
+    // well.
+    if (left_or_top) {
+      if (landscape) {
+        out_bounds->set_x(out_bounds->x() - (min_length - out_bounds->width()));
+      } else {
+        out_bounds->set_y(out_bounds->y() -
+                          (min_length - out_bounds->height()));
+      }
+    }
+
+    if (landscape)
+      out_bounds->set_width(min_length);
+    else
+      out_bounds->set_height(min_length);
+  };
+
+  // Shift the opposite direction when |primary| is false because the physical
+  // location will not be aligned with |opposite_position|.
+  const bool primary =
+      split_view_controller->IsCurrentScreenOrientationPrimary();
+  if (opposite_position == SplitViewController::LEFT)
+    shift_bounds(primary, &bounds);
+  else
+    shift_bounds(!primary, &bounds);
+
+  return bounds;
 }
 
 gfx::Rect GetTextFilterPosition(aura::Window* root_window) {
-  const gfx::Rect total_bounds = GetGridBoundsInScreen(root_window);
+  const gfx::Rect total_bounds =
+      GetGridBoundsInScreen(root_window, /*divider_changed=*/false);
   return gfx::Rect(
       total_bounds.x() +
           0.5 * (total_bounds.width() -
@@ -279,7 +325,8 @@ void WindowSelector::Init(const WindowList& windows,
     }
 
     std::unique_ptr<WindowGrid> grid(
-        new WindowGrid(root, windows, this, GetGridBoundsInScreen(root)));
+        new WindowGrid(root, windows, this,
+                       GetGridBoundsInScreen(root, /*divider_changed=*/false)));
     num_items_ += grid->size();
     grid_list_.push_back(std::move(grid));
   }
@@ -893,7 +940,14 @@ void WindowSelector::OnSplitViewStateChanged(
 
 void WindowSelector::OnSplitViewDividerPositionChanged() {
   DCHECK(Shell::Get()->IsSplitViewModeActive());
-  OnDisplayBoundsChanged();
+  // Re-calculate the bounds for the window grids and position all the windows.
+  for (std::unique_ptr<WindowGrid>& grid : grid_list_) {
+    grid->SetBoundsAndUpdatePositions(
+        GetGridBoundsInScreen(const_cast<aura::Window*>(grid->root_window()),
+                              /*divider_changed=*/true));
+  }
+  PositionWindows(/*animate=*/false);
+  RepositionTextFilterOnDisplayMetricsChange();
 }
 
 aura::Window* WindowSelector::GetTextFilterWidgetWindow() {
@@ -967,7 +1021,8 @@ void WindowSelector::OnDisplayBoundsChanged() {
   // Re-calculate the bounds for the window grids and position all the windows.
   for (std::unique_ptr<WindowGrid>& grid : grid_list_) {
     grid->SetBoundsAndUpdatePositions(
-        GetGridBoundsInScreen(const_cast<aura::Window*>(grid->root_window())));
+        GetGridBoundsInScreen(const_cast<aura::Window*>(grid->root_window()),
+                              /*divider_changed=*/false));
   }
   PositionWindows(/*animate=*/false);
   RepositionTextFilterOnDisplayMetricsChange();
