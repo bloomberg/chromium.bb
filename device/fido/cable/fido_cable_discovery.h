@@ -68,6 +68,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FidoCableDiscoveryTest,
+                           TestDiscoveryWithAdvertisementFailures);
+  FRIEND_TEST_ALL_PREFIXES(FidoCableDiscoveryTest,
                            TestUnregisterAdvertisementUponDestruction);
 
   // BluetoothAdapter::Observer:
@@ -79,7 +81,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
 
   // FidoBleDiscoveryBase:
   void OnSetPowered() override;
+  void OnStartDiscoverySessionWithFilter(
+      std::unique_ptr<BluetoothDiscoverySession>) override;
 
+  void StartCableDiscovery();
   void StartAdvertisement();
   void OnAdvertisementRegistered(
       const EidArray& client_eid,
@@ -91,6 +96,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   // invoke NotifyDiscoveryStarted(false). Otherwise kick off discovery session
   // once all advertisements has been processed.
   void RecordAdvertisementResult(bool is_success);
+  // Attempt to stop all on-going advertisements in best-effort basis.
+  // Once all the callbacks for Unregister() function is received, invoke
+  // |callback|.
+  void StopAdvertisements(base::OnceClosure callback);
   void CableDeviceFound(BluetoothAdapter* adapter, BluetoothDevice* device);
   void ConductEncryptionHandshake(
       std::unique_ptr<FidoCableDevice> device,
