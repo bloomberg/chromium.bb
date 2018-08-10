@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -34,8 +35,11 @@ class VIZ_HOST_EXPORT HostGpuMemoryBufferManager
  public:
   // Callback used to get the current instance of GpuService. The callback
   // should retry launching GPU service if it is not already running, or return
-  // nullptr if it is impossible.
-  using GpuServiceProvider = base::RepeatingCallback<mojom::GpuService*(void)>;
+  // nullptr if it is impossible. |connection_error_handler| will be called when
+  // the GpuService is shut down. The return value will be cached until the GPU
+  // service is shut down.
+  using GpuServiceProvider = base::RepeatingCallback<mojom::GpuService*(
+      base::OnceClosure connection_error_handler)>;
 
   // All function of HostGpuMemoryBufferManager must be called the thread
   // associated with |task_runner|, other than the constructor and the
@@ -47,11 +51,6 @@ class VIZ_HOST_EXPORT HostGpuMemoryBufferManager
       std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~HostGpuMemoryBufferManager() override;
-
-  // This is called whenever GPU service is shut down (e.g. GPU process
-  // crashes). It will invalidate any allocated memory buffer and retry
-  // allocation requests for pending memory buffers.
-  void GpuServiceShutDown();
 
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id,
@@ -111,6 +110,13 @@ class VIZ_HOST_EXPORT HostGpuMemoryBufferManager
                          AllocatedBufferInfo,
                          BASE_HASH_NAMESPACE::hash<gfx::GpuMemoryBufferId>>;
 
+  mojom::GpuService* GetGpuService();
+
+  // This is called whenever GPU service is shut down (e.g. GPU process
+  // crashes). It will invalidate any allocated memory buffer and retry
+  // allocation requests for pending memory buffers.
+  void OnConnectionError();
+
   uint64_t ClientIdToTracingId(int client_id) const;
   void OnGpuMemoryBufferAllocated(int gpu_service_version,
                                   int client_id,
@@ -118,6 +124,7 @@ class VIZ_HOST_EXPORT HostGpuMemoryBufferManager
                                   gfx::GpuMemoryBufferHandle handle);
 
   GpuServiceProvider gpu_service_provider_;
+  mojom::GpuService* gpu_service_ = nullptr;
 
   // This is incremented every time GPU service is shut down in order check
   // whether a buffer is allocated by the most current GPU service or not.

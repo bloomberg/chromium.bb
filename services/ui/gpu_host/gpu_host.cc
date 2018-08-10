@@ -86,7 +86,10 @@ DefaultGpuHost::DefaultGpuHost(
   gpu_memory_buffer_manager_ =
       std::make_unique<viz::HostGpuMemoryBufferManager>(
           base::BindRepeating(
-              [](viz::mojom::GpuService* gpu_service) { return gpu_service; },
+              [](viz::mojom::GpuService* gpu_service,
+                 base::OnceClosure connection_error_handler) {
+                return gpu_service;
+              },
               gpu_service_.get()),
           next_client_id_++, std::make_unique<gpu::GpuMemoryBufferSupport>(),
           main_thread_task_runner_);
