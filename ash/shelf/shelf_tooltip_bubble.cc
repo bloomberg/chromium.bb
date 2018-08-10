@@ -57,8 +57,7 @@ ShelfTooltipBubble::ShelfTooltipBubble(views::View* anchor,
   // Adjust the anchor location for asymmetrical borders of shelf item.
   if (anchor->border())
     insets += anchor->border()->GetInsets();
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-    insets += gfx::Insets(-kBubblePaddingHorizontalBottom);
+  insets += gfx::Insets(-kBubblePaddingHorizontalBottom);
   set_anchor_view_insets(insets);
 
   views::BubbleDialogDelegateView::CreateBubble(this);

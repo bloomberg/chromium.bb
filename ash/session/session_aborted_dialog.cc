@@ -74,8 +74,7 @@ base::string16 SessionAbortedDialog::GetWindowTitle() const {
 }
 
 bool SessionAbortedDialog::ShouldShowCloseButton() const {
-  // Material UI has no [X] in the corner of this dialog.
-  return !ui::MaterialDesignController::IsSecondaryUiMaterial();
+  return false;
 }
 
 gfx::Size SessionAbortedDialog::CalculatePreferredSize() const {
