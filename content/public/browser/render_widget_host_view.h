@@ -141,11 +141,15 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Returns the currently selected text.
   virtual base::string16 GetSelectedText() = 0;
 
-  // Returns the currently selected text with the text before and after it.
+  // Returns part of the text on the page which includes the selected text plus
+  // possibly several characters before and after it.
   virtual base::string16 GetSurroundingText() = 0;
 
   // Returns the range of the selection in the page.
   virtual gfx::Range GetSelectedRange() = 0;
+
+  // The offset of the surrounding text relative to the start of the total text.
+  virtual size_t GetOffsetForSurroundingText() = 0;
 
   // This only returns non-null on platforms that implement touch
   // selection editing (TSE), currently Aura and (soon) Android.
