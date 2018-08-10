@@ -218,8 +218,10 @@ void ScriptWrappableMarkingVisitor::MarkWrapperHeader(
 void ScriptWrappableMarkingVisitor::WriteBarrier(
     v8::Isolate* isolate,
     const TraceWrapperV8Reference<v8::Value>& dst_object) {
+  if (dst_object.IsEmpty() || !ThreadState::IsAnyWrapperTracing())
+    return;
   ScriptWrappableMarkingVisitor* visitor = CurrentVisitor(isolate);
-  if (dst_object.IsEmpty() || !visitor->WrapperTracingInProgress())
+  if (!visitor->WrapperTracingInProgress())
     return;
 
   // Conservatively assume that the source object containing |dst_object| is
@@ -231,9 +233,12 @@ void ScriptWrappableMarkingVisitor::WriteBarrier(
     v8::Isolate* isolate,
     DOMWrapperMap<ScriptWrappable>* wrapper_map,
     ScriptWrappable* key) {
+  if (!ThreadState::IsAnyWrapperTracing())
+    return;
   ScriptWrappableMarkingVisitor* visitor = CurrentVisitor(isolate);
   if (!visitor->WrapperTracingInProgress())
     return;
+
   // Conservatively assume that the source object key is marked.
   visitor->Trace(wrapper_map, key);
 }
