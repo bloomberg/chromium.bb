@@ -1145,13 +1145,14 @@ KeyEvent::KeyEvent(EventType type,
 
 KeyEvent::KeyEvent(base::char16 character,
                    KeyboardCode key_code,
+                   DomCode code,
                    int flags,
                    base::TimeTicks time_stamp)
     : Event(ET_KEY_PRESSED,
             time_stamp == base::TimeTicks() ? EventTimeForNow() : time_stamp,
             flags),
       key_code_(key_code),
-      code_(DomCode::NONE),
+      code_(code),
       is_char_(true),
       key_(DomKey::FromCharacter(character)) {}
 

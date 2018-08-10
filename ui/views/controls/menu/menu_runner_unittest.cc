@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_delegate.h"
@@ -201,7 +202,7 @@ TEST_F(MenuRunnerTest, NonLatinMnemonic) {
   EXPECT_TRUE(runner->IsRunning());
 
   ui::test::EventGenerator generator(GetContext(), owner()->GetNativeWindow());
-  ui::KeyEvent key_press(0x062f, ui::VKEY_N, 0);
+  ui::KeyEvent key_press(0x062f, ui::VKEY_N, ui::DomCode::NONE, 0);
   generator.Dispatch(&key_press);
   views::test::WaitForMenuClosureAnimation();
   EXPECT_FALSE(runner->IsRunning());

@@ -14,6 +14,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/input_method_observer.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/views/widget/widget.h"
 
 using testing::_;
@@ -267,7 +268,7 @@ TEST_F(TextInputTest, InsertChar) {
 
 TEST_F(TextInputTest, InsertCharNormalKey) {
   base::char16 ch = 'x';
-  ui::KeyEvent ev(ch, ui::VKEY_X, 0);
+  ui::KeyEvent ev(ch, ui::VKEY_X, ui::DomCode::NONE, 0);
 
   EXPECT_CALL(*delegate(), Commit(base::string16(1, ch))).Times(1);
   EXPECT_CALL(*delegate(), SendKey(_)).Times(0);

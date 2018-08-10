@@ -73,7 +73,8 @@ TEST(EventTest, GetCharacter) {
   // contains Control.
   // e.g. Control+Shift+2 produces U+200C on "Persian" keyboard.
   // http://crbug.com/582453
-  KeyEvent keyev5(0x200C, VKEY_UNKNOWN, EF_CONTROL_DOWN | EF_SHIFT_DOWN);
+  KeyEvent keyev5(0x200C, VKEY_UNKNOWN, ui::DomCode::NONE,
+                  EF_CONTROL_DOWN | EF_SHIFT_DOWN);
   EXPECT_EQ(0x200C, keyev5.GetCharacter());
 }
 
@@ -278,7 +279,7 @@ TEST(EventTest, KeyEvent) {
 }
 
 TEST(EventTest, KeyEventDirectUnicode) {
-  KeyEvent key(0x1234U, ui::VKEY_UNKNOWN, ui::EF_NONE);
+  KeyEvent key(0x1234U, ui::VKEY_UNKNOWN, ui::DomCode::NONE, ui::EF_NONE);
   EXPECT_EQ(0x1234U, key.GetCharacter());
   EXPECT_EQ(ET_KEY_PRESSED, key.type());
   EXPECT_TRUE(key.is_char());

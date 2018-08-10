@@ -8,6 +8,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_event_details.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/mojo/event_constants.mojom.h"
 #include "ui/latency/mojo/latency_info_struct_traits.h"
@@ -409,8 +410,8 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
       if (key_data->is_char) {
         *out = std::make_unique<ui::KeyEvent>(
             static_cast<base::char16>(key_data->character),
-            static_cast<ui::KeyboardCode>(key_data->key_code), event.flags(),
-            time_stamp);
+            static_cast<ui::KeyboardCode>(key_data->key_code),
+            ui::DomCode::NONE, event.flags(), time_stamp);
       } else {
         *out = std::make_unique<ui::KeyEvent>(
             event.action() == ui::mojom::EventType::KEY_PRESSED

@@ -15,6 +15,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/public/activation_client.h"
@@ -64,7 +65,7 @@ TEST_F(CompoundEventFilterTest, CursorVisibilityChange) {
   aura::test::TestCursorClient cursor_client(root_window());
 
   // Send key event to hide the cursor.
-  ui::KeyEvent key('a', ui::VKEY_A, ui::EF_NONE);
+  ui::KeyEvent key('a', ui::VKEY_A, ui::DomCode::NONE, ui::EF_NONE);
   DispatchEventUsingWindowDispatcher(&key);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 
@@ -89,13 +90,13 @@ TEST_F(CompoundEventFilterTest, CursorVisibilityChange) {
 
   // Disallow hiding the cursor on keypress.
   cursor_client.set_should_hide_cursor_on_key_event(false);
-  key = ui::KeyEvent('a', ui::VKEY_A, ui::EF_NONE);
+  key = ui::KeyEvent('a', ui::VKEY_A, ui::DomCode::NONE, ui::EF_NONE);
   DispatchEventUsingWindowDispatcher(&key);
   EXPECT_TRUE(cursor_client.IsCursorVisible());
 
   // Allow hiding the cursor on keypress.
   cursor_client.set_should_hide_cursor_on_key_event(true);
-  key = ui::KeyEvent('a', ui::VKEY_A, ui::EF_NONE);
+  key = ui::KeyEvent('a', ui::VKEY_A, ui::DomCode::NONE, ui::EF_NONE);
   DispatchEventUsingWindowDispatcher(&key);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 

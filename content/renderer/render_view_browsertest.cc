@@ -91,6 +91,7 @@
 #include "ui/accessibility/ax_modes.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/range/range.h"
@@ -388,7 +389,7 @@ class RenderViewImplTest : public RenderViewTest {
 
     ui::KeyEvent char_event(keydown_event.GetCharacter(),
                             static_cast<ui::KeyboardCode>(key_code),
-                            flags);
+                            ui::DomCode::NONE, flags);
     NativeWebKeyboardEvent char_web_event(char_event);
     SendNativeKeyEvent(char_web_event);
 

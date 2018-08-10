@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "ui/events/event_targeter.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/path.h"
 #include "ui/views/masked_targeter_delegate.h"
 #include "ui/views/test/views_test_base.h"
@@ -141,7 +142,7 @@ TEST_F(ViewTargeterTest, ViewTargeterForKeyEvents) {
       static_cast<internal::RootView*>(widget.GetRootView());
   ui::EventTargeter* targeter = root_view->targeter();
 
-  ui::KeyEvent key_event('a', ui::VKEY_A, ui::EF_NONE);
+  ui::KeyEvent key_event('a', ui::VKEY_A, ui::DomCode::NONE, ui::EF_NONE);
 
   // The focused view should be the initial target of the event.
   ui::EventTarget* current_target = targeter->FindTargetForEvent(root_view,

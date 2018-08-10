@@ -54,12 +54,12 @@ TEST_F(StructTraitsTest, KeyEvent) {
       {ET_KEY_PRESSED, VKEY_A, ui::DomCode::US_A, EF_NONE},
       {ET_KEY_PRESSED, VKEY_B, ui::DomCode::US_B,
        EF_CONTROL_DOWN | EF_ALT_DOWN},
-      {'\x12', VKEY_2, EF_CONTROL_DOWN},
-      {'Z', VKEY_Z, EF_CAPS_LOCK_ON},
-      {'z', VKEY_Z, EF_NONE},
+      {'\x12', VKEY_2, ui::DomCode::NONE, EF_CONTROL_DOWN},
+      {'Z', VKEY_Z, ui::DomCode::NONE, EF_CAPS_LOCK_ON},
+      {'z', VKEY_Z, ui::DomCode::NONE, EF_NONE},
       {ET_KEY_PRESSED, VKEY_Z, EF_NONE,
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(101)},
-      {'Z', VKEY_Z, EF_NONE,
+      {'Z', VKEY_Z, ui::DomCode::NONE, EF_NONE,
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(102)},
   };
 
