@@ -6,7 +6,8 @@
 
 namespace crazy {
 
-static SearchResult BinarySearch(const Vector<void*>& items, void* key) {
+static SearchResult BinarySearch(const Vector<const void*>& items,
+                                 const void* key) {
   auto key_val = reinterpret_cast<uintptr_t>(key);
   size_t min = 0, max = items.GetCount();
   while (min < max) {
@@ -23,7 +24,7 @@ static SearchResult BinarySearch(const Vector<void*>& items, void* key) {
   return {false, min};
 }
 
-bool PointerSet::Add(void* item) {
+bool PointerSet::Add(const void* item) {
   SearchResult ret = BinarySearch(items_, item);
   if (ret.found)
     return true;
@@ -32,7 +33,7 @@ bool PointerSet::Add(void* item) {
   return false;
 }
 
-bool PointerSet::Remove(void* item) {
+bool PointerSet::Remove(const void* item) {
   SearchResult ret = BinarySearch(items_, item);
   if (!ret.found)
     return false;
@@ -41,7 +42,7 @@ bool PointerSet::Remove(void* item) {
   return true;
 }
 
-bool PointerSet::Has(void* item) const {
+bool PointerSet::Has(const void* item) const {
   SearchResult ret = BinarySearch(items_, item);
   return ret.found;
 }

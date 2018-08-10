@@ -115,6 +115,14 @@ void String::InitFrom(const char* str, size_t len) {
   }
 }
 
+bool String::operator==(const String& other) const {
+  return size_ == other.size_ && !::memcmp(ptr_, other.ptr_, size_);
+}
+
+bool String::operator==(const char* str) const {
+  return !::strcmp(ptr_, str);
+}
+
 VectorBase::~VectorBase() {
   ::free(data_);
 }

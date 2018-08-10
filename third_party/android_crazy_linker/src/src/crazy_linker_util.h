@@ -145,6 +145,16 @@ class String {
 
   void Append(const char* str) { Append(str, strlen(str)); }
 
+  // Comparison operators.
+  bool operator==(const String& other) const;
+  bool operator==(const char* str) const;
+
+  inline bool operator!=(const String& other) const {
+    return !(*this == other);
+  }
+
+  inline bool operator!=(const char* str) const { return !(*this == str); }
+
  private:
   inline void Init() {
     ptr_ = const_cast<char*>(kEmpty);

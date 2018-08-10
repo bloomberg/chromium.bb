@@ -53,7 +53,7 @@ String MakeAbsolutePathFrom(const char* path, size_t path_len) {
 
 }  // namespace crazy
 
-#ifndef UNIT_TESTS
+#ifndef UNIT_TEST
 
 namespace crazy {
 
@@ -219,4 +219,4 @@ void operator delete[](void* ptr) {
 
 #endif  // !CRAZY_LINKER_ENABLE_FUZZING
 
-#endif  // !UNIT_TESTS
+#endif  // !UNIT_TEST

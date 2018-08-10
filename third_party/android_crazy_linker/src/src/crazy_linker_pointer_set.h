@@ -15,23 +15,23 @@ class PointerSet {
   PointerSet() = default;
 
   // Add a new value to the set.
-  bool Add(void* item);
+  bool Add(const void* item);
 
   // Remove value |item| from the set, if needed. Returns true if the value
   // was previously in the set, false otherwise.
-  bool Remove(void* item);
+  bool Remove(const void* item);
 
   // Returns true iff the set contains |item|, false otherwise.
-  bool Has(void* item) const;
+  bool Has(const void* item) const;
 
   // Return a reference to the values in the set, only for testing.
-  const Vector<void*>& GetValuesForTesting() const { return items_; }
+  const Vector<const void*>& GetValuesForTesting() const { return items_; }
 
  private:
   // TECHNICAL NOTE: The current implementation uses a simple sorted array,
   // and thus should perform well for sets of a few hundred items, when
   // insertions and removals are pretty rare, but lookups need to be fast.
-  Vector<void*> items_;
+  Vector<const void*> items_;
 };
 
 }  // namespace crazy
