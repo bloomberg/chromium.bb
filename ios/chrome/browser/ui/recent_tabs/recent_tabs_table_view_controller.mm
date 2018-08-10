@@ -215,6 +215,8 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       [[TableViewAccessoryItem alloc] initWithType:ItemTypeShowFullHistory];
   historyItem.title = l10n_util::GetNSString(IDS_HISTORY_SHOWFULLHISTORY_LINK);
   historyItem.image = [UIImage imageNamed:@"show_history"];
+  historyItem.cellAccessibilityIdentifier =
+      kRecentTabsShowFullHistoryCellAccessibilityIdentifier;
   [model addItem:historyItem
       toSectionWithIdentifier:SectionIdentifierRecentlyClosedTabs];
 }

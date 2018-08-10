@@ -15,6 +15,7 @@
 
 @implementation TableViewAccessoryItem
 
+@synthesize cellAccessibilityIdentifier = _cellAccessibilityIdentifier;
 @synthesize image = _image;
 @synthesize title = _title;
 
@@ -41,7 +42,7 @@
   }
 
   cell.titleLabel.text = self.title;
-
+  cell.accessibilityIdentifier = self.cellAccessibilityIdentifier;
   cell.imageView.backgroundColor = styler.tableViewBackgroundColor;
   cell.titleLabel.backgroundColor = styler.tableViewBackgroundColor;
   if (styler.cellTitleColor)
