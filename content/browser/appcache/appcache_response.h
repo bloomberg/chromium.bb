@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/http/http_response_info.h"
 #include "url/gurl.h"
 
@@ -84,12 +84,12 @@ class CONTENT_EXPORT AppCacheDiskCacheInterface {
                      int64_t offset,
                      net::IOBuffer* buf,
                      int buf_len,
-                     const net::CompletionCallback& callback) = 0;
+                     net::CompletionOnceCallback callback) = 0;
     virtual int Write(int index,
                       int64_t offset,
                       net::IOBuffer* buf,
                       int buf_len,
-                      const net::CompletionCallback& callback) = 0;
+                      net::CompletionOnceCallback callback) = 0;
     virtual int64_t GetSize(int index) = 0;
     virtual void Close() = 0;
    protected:
@@ -101,12 +101,11 @@ class CONTENT_EXPORT AppCacheDiskCacheInterface {
 
   virtual int CreateEntry(int64_t key,
                           Entry** entry,
-                          const net::CompletionCallback& callback) = 0;
+                          net::CompletionOnceCallback callback) = 0;
   virtual int OpenEntry(int64_t key,
                         Entry** entry,
-                        const net::CompletionCallback& callback) = 0;
-  virtual int DoomEntry(int64_t key,
-                        const net::CompletionCallback& callback) = 0;
+                        net::CompletionOnceCallback callback) = 0;
+  virtual int DoomEntry(int64_t key, net::CompletionOnceCallback callback) = 0;
 
   const char* uma_name() const { return uma_name_; }
   base::WeakPtr<AppCacheDiskCacheInterface> GetWeakPtr();
@@ -146,12 +145,14 @@ class CONTENT_EXPORT AppCacheResponseIO {
   scoped_refptr<net::IOBuffer> buffer_;
   int buffer_len_;
   OnceCompletionCallback callback_;
-  net::CompletionCallback open_callback_;
+  net::CompletionOnceCallback open_callback_;
   base::WeakPtrFactory<AppCacheResponseIO> weak_factory_;
 
  private:
   void OnRawIOComplete(int result);
-  void OpenEntryCallback(AppCacheDiskCacheInterface::Entry** entry, int rv);
+  static void OpenEntryCallback(base::WeakPtr<AppCacheResponseIO> response,
+                                AppCacheDiskCacheInterface::Entry** entry,
+                                int rv);
 };
 
 // Reads existing response data from storage. If the object is deleted
@@ -277,13 +278,15 @@ class CONTENT_EXPORT AppCacheResponseWriter
   void ContinueWriteInfo();
   void ContinueWriteData();
   void CreateEntryIfNeededAndContinue();
-  void OnCreateEntryComplete(AppCacheDiskCacheInterface::Entry** entry, int rv);
+  static void OnCreateEntryComplete(
+      base::WeakPtr<AppCacheResponseWriter> writer,
+      AppCacheDiskCacheInterface::Entry** entry,
+      int rv);
 
   int info_size_;
   int write_position_;
   int write_amount_;
   CreationPhase creation_phase_;
-  net::CompletionCallback create_callback_;
   base::WeakPtrFactory<AppCacheResponseWriter> weak_factory_;
 };
 
@@ -307,7 +310,7 @@ class CONTENT_EXPORT AppCacheResponseMetadataWriter
   // progress.
   void WriteMetadata(net::IOBuffer* buf,
                      int buf_len,
-                     const net::CompletionCallback& callback);
+                     net::CompletionOnceCallback callback);
 
   // Returns true if there is a write pending.
   bool IsWritePending() { return IsIOPending(); }
