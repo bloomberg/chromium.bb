@@ -275,6 +275,14 @@ const CGFloat kButtonTrailingSpacing = 10;
   }
 }
 
+- (void)setLocationLabelText:(NSString*)string {
+  if ([self.locationLabel.text isEqualToString:string]) {
+    return;
+  }
+  self.locationLabel.text = string;
+  [self updateAccessibility];
+}
+
 - (void)setSecurityLevelAccessibilityString:(NSString*)string {
   if ([_securityLevelAccessibilityString isEqualToString:string]) {
     return;

@@ -137,6 +137,23 @@ base::string16 ToolbarModelImpl::GetEVCertName() const {
       base::UTF8ToUTF16(cert->subject().country_name));
 }
 
+base::string16 ToolbarModelImpl::GetSecureText() const {
+  switch (GetSecurityLevel(false)) {
+    case security_state::HTTP_SHOW_WARNING:
+      return l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE);
+    case security_state::EV_SECURE:
+      return GetEVCertName();
+    case security_state::SECURE:
+      return l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE);
+    case security_state::DANGEROUS:
+      return l10n_util::GetStringUTF16(delegate_->FailsMalwareCheck()
+                                           ? IDS_DANGEROUS_VERBOSE_STATE
+                                           : IDS_NOT_SECURE_VERBOSE_STATE);
+    default:
+      return base::string16();
+  }
+}
+
 base::string16 ToolbarModelImpl::GetSecureVerboseText() const {
   if (IsOfflinePage())
     return l10n_util::GetStringUTF16(IDS_OFFLINE_VERBOSE_STATE);
@@ -148,32 +165,32 @@ base::string16 ToolbarModelImpl::GetSecureVerboseText() const {
                 toolbar::features::kSimplifyHttpsIndicator,
                 toolbar::features::kSimplifyHttpsIndicatorParameterName)
           : std::string();
-  switch (GetSecurityLevel(false)) {
-    case security_state::HTTP_SHOW_WARNING:
-      return l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE);
-    case security_state::EV_SECURE:
-      if (parameter ==
-          toolbar::features::kSimplifyHttpsIndicatorParameterEvToSecure) {
-        return l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE);
-      }
-      if (parameter ==
-          toolbar::features::kSimplifyHttpsIndicatorParameterBothToLock) {
-        return base::string16();
-      }
-      return GetEVCertName();
-    case security_state::SECURE:
-      if (parameter ==
-          toolbar::features::kSimplifyHttpsIndicatorParameterKeepSecureChip) {
-        return l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE);
-      }
+
+  auto security_level = GetSecurityLevel(false);
+  if (security_level == security_state::EV_SECURE) {
+    if (parameter ==
+        toolbar::features::kSimplifyHttpsIndicatorParameterEvToSecure) {
+      return l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE);
+    }
+    if (parameter ==
+        toolbar::features::kSimplifyHttpsIndicatorParameterBothToLock) {
       return base::string16();
-    case security_state::DANGEROUS:
-      return l10n_util::GetStringUTF16(delegate_->FailsMalwareCheck()
-                                           ? IDS_DANGEROUS_VERBOSE_STATE
-                                           : IDS_NOT_SECURE_VERBOSE_STATE);
-    default:
-      return base::string16();
+    }
   }
+  if (security_level == security_state::SECURE) {
+    if (parameter !=
+        toolbar::features::kSimplifyHttpsIndicatorParameterKeepSecureChip) {
+      return base::string16();
+    }
+  }
+  return GetSecureText();
+}
+
+base::string16 ToolbarModelImpl::GetSecureAccessibilityText() const {
+  if (IsOfflinePage())
+    return l10n_util::GetStringUTF16(IDS_OFFLINE_VERBOSE_STATE);
+
+  return GetSecureText();
 }
 
 bool ToolbarModelImpl::ShouldDisplayURL() const {

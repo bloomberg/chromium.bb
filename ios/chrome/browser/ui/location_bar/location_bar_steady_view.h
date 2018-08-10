@@ -34,6 +34,9 @@
 // Sets the location image. If |locationImage| is nil, hides the image view.
 - (void)setLocationImage:(UIImage*)locationImage;
 
+// Sets the location label's text.
+- (void)setLocationLabelText:(NSString*)string;
+
 // The tappable button representing the location bar.
 @property(nonatomic, strong) UIButton* locationButton;
 // The label displaying the current location URL.
