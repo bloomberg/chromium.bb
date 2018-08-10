@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
@@ -189,8 +190,29 @@ void FidoCableDiscovery::OnSetPowered() {
   DCHECK(adapter());
 
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&FidoCableDiscovery::StartAdvertisement,
+      FROM_HERE, base::BindOnce(&FidoCableDiscovery::StartCableDiscovery,
                                 weak_factory_.GetWeakPtr()));
+}
+
+void FidoCableDiscovery::StartCableDiscovery() {
+  // Error callback OnStartDiscoverySessionError() is defined in the base class
+  // FidoBleDiscoveryBase.
+  adapter()->StartDiscoverySessionWithFilter(
+      std::make_unique<BluetoothDiscoveryFilter>(
+          BluetoothTransport::BLUETOOTH_TRANSPORT_LE),
+      base::AdaptCallbackForRepeating(
+          base::BindOnce(&FidoCableDiscovery::OnStartDiscoverySessionWithFilter,
+                         weak_factory_.GetWeakPtr())),
+      base::AdaptCallbackForRepeating(
+          base::BindOnce(&FidoCableDiscovery::OnStartDiscoverySessionError,
+                         weak_factory_.GetWeakPtr())));
+}
+
+void FidoCableDiscovery::OnStartDiscoverySessionWithFilter(
+    std::unique_ptr<BluetoothDiscoverySession> session) {
+  SetDiscoverySession(std::move(session));
+  DVLOG(2) << "Discovery session started.";
+  StartAdvertisement();
 }
 
 void FidoCableDiscovery::StartAdvertisement() {
@@ -208,6 +230,13 @@ void FidoCableDiscovery::StartAdvertisement() {
   }
 }
 
+void FidoCableDiscovery::StopAdvertisements(base::OnceClosure callback) {
+  auto barrier_closure =
+      base::BarrierClosure(advertisement_success_counter_, std::move(callback));
+  for (auto advertisement : advertisements_)
+    advertisement.second->Unregister(barrier_closure, base::DoNothing());
+}
+
 void FidoCableDiscovery::OnAdvertisementRegistered(
     const EidArray& client_eid,
     scoped_refptr<BluetoothAdvertisement> advertisement) {
@@ -223,32 +252,16 @@ void FidoCableDiscovery::OnAdvertisementRegisterError(
 }
 
 void FidoCableDiscovery::RecordAdvertisementResult(bool is_success) {
-  is_success ? ++advertisement_success_counter_
-             : ++advertisement_failure_counter_;
-
-  // Wait until all advertisements are sent out.
-  if (advertisement_success_counter_ + advertisement_failure_counter_ !=
-      discovery_data_.size()) {
+  // If at least one advertisement succeeds, then notify discovery start.
+  if (is_success) {
+    if (!advertisement_success_counter_++)
+      NotifyDiscoveryStarted(true);
     return;
   }
 
-  // No advertisements succeeded, no point in starting scanning.
-  if (!advertisement_success_counter_) {
+  // No advertisements succeeded, no point in continuing with Cable discovery.
+  if (++advertisement_failure_counter_ == discovery_data_.size())
     NotifyDiscoveryStarted(false);
-    return;
-  }
-
-  // At least one advertisement succeeded and all advertisement has been
-  // processed. Start scanning.
-  adapter()->StartDiscoverySessionWithFilter(
-      std::make_unique<BluetoothDiscoveryFilter>(
-          BluetoothTransport::BLUETOOTH_TRANSPORT_LE),
-      base::AdaptCallbackForRepeating(
-          base::BindOnce(&FidoCableDiscovery::OnStartDiscoverySessionWithFilter,
-                         weak_factory_.GetWeakPtr())),
-      base::AdaptCallbackForRepeating(
-          base::BindOnce(&FidoCableDiscovery::OnStartDiscoverySessionError,
-                         weak_factory_.GetWeakPtr())));
 }
 
 void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
@@ -267,17 +280,20 @@ void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
 
   auto cable_device =
       std::make_unique<FidoCableDevice>(adapter, device->GetAddress());
-  // At most one handshake messages should be exchanged for each Cable device.
-  if (!base::ContainsKey(cable_handshake_handlers_, cable_device->GetId())) {
-    ConductEncryptionHandshake(std::move(cable_device),
-                               found_cable_device_data->session_pre_key, nonce);
-  }
+  StopAdvertisements(
+      base::BindOnce(&FidoCableDiscovery::ConductEncryptionHandshake,
+                     weak_factory_.GetWeakPtr(), std::move(cable_device),
+                     found_cable_device_data->session_pre_key, nonce));
 }
 
 void FidoCableDiscovery::ConductEncryptionHandshake(
     std::unique_ptr<FidoCableDevice> cable_device,
     base::span<const uint8_t, kSessionPreKeySize> session_pre_key,
     base::span<const uint8_t, 8> nonce) {
+  // At most one handshake messages should be exchanged for each Cable device.
+  if (base::ContainsKey(cable_handshake_handlers_, cable_device->GetId()))
+    return;
+
   auto handshake_handler =
       CreateHandshakeHandler(cable_device.get(), session_pre_key, nonce);
   auto* const handshake_handler_ptr = handshake_handler.get();
