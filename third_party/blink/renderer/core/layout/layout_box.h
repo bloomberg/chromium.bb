@@ -488,6 +488,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
 
   LayoutRect VisualOverflowRect() const override;
+  LayoutRect PhysicalVisualOverflowRect() const {
+    LayoutRect overflow_rect = VisualOverflowRect();
+    FlipForWritingMode(overflow_rect);
+    return overflow_rect;
+  }
   LayoutUnit LogicalLeftVisualOverflow() const {
     return Style()->IsHorizontalWritingMode() ? VisualOverflowRect().X()
                                               : VisualOverflowRect().Y();
