@@ -31,7 +31,12 @@ var allTests = [
         "liveRegionTreeChanges",
         function(change) {
       if (change.target.name == 'Dead') {
-        chrome.test.fail();
+        // The internal bindings will notify us of a subtreeUpdateEnd if there
+        // was a live region within the updates sent during unserialization. The
+        // target in this case is picked by simply choosing the first target in
+        // all tree changes, which could have been anything.
+        if (change.type != 'subtreeUpdateEnd')
+          chrome.test.fail();
       }
       if (change.target.name == 'Live') {
         chrome.test.succeed();

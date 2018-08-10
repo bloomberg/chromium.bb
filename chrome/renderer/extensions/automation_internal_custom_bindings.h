@@ -77,7 +77,7 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
   float GetDeviceScaleFactor() const;
 
   void SendNodesRemovedEvent(ui::AXTree* tree, const std::vector<int>& ids);
-  void SendTreeChangeEvent(api::automation::TreeChangeType change_type,
+  bool SendTreeChangeEvent(api::automation::TreeChangeType change_type,
                            ui::AXTree* tree,
                            ui::AXNode* node);
   void SendAutomationEvent(int tree_id,
