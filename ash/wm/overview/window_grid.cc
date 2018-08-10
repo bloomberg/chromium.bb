@@ -478,9 +478,10 @@ void WindowGrid::AddItem(aura::Window* window, bool reposition, bool animate) {
 
   window_observer_.Add(window);
   window_state_observer_.Add(wm::GetWindowState(window));
-  window_list_.push_back(
+  window_list_.insert(
+      window_list_.begin(),
       std::make_unique<WindowSelectorItem>(window, window_selector_, this));
-  window_list_.back()->PrepareForOverview();
+  window_list_.front()->PrepareForOverview();
 
   if (reposition)
     PositionWindows(animate);

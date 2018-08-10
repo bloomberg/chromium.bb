@@ -50,11 +50,12 @@ gfx::Rect GetNewSelectorItemBounds(aura::Window* dragged_window) {
   if (!window_grid || window_grid->empty())
     return gfx::Rect();
 
-  WindowSelectorItem* last_item = window_grid->window_list().back().get();
-  if (!window_grid->IsNewSelectorItemWindow(last_item->GetWindow()))
+  WindowSelectorItem* new_selector_item =
+      window_grid->window_list().front().get();
+  if (!window_grid->IsNewSelectorItemWindow(new_selector_item->GetWindow()))
     return gfx::Rect();
 
-  return last_item->target_bounds();
+  return new_selector_item->target_bounds();
 }
 
 // Set |transform| to |window| and its transient child windows. |transform| is
