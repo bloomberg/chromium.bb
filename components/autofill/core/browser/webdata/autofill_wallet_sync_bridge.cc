@@ -34,7 +34,7 @@ namespace {
 // Address to this variable used as the user data key.
 static int kAutofillWalletSyncBridgeUserDataKey = 0;
 
-std::string GetStorageKeyFromAutofillWalletSpecifics(
+std::string GetSpecificsIdFromAutofillWalletSpecifics(
     const AutofillWalletSpecifics& specifics) {
   switch (specifics.type()) {
     case AutofillWalletSpecifics::MASKED_CREDIT_CARD:
@@ -48,6 +48,13 @@ std::string GetStorageKeyFromAutofillWalletSpecifics(
       return std::string();
   }
   return std::string();
+}
+
+std::string GetClientTagForWalletDataSpecificsId(
+    const std::string& specifics_id) {
+  // Unlike for the wallet_metadata model type, the wallet_data expects
+  // specifics id directly as client tags.
+  return specifics_id;
 }
 
 }  // namespace
@@ -144,16 +151,16 @@ std::string AutofillWalletSyncBridge::GetClientTag(
     const syncer::EntityData& entity_data) {
   DCHECK(entity_data.specifics.has_autofill_wallet());
 
-  return GetClientTagForSpecificsId(
-      entity_data.specifics.autofill_wallet().type(),
-      GetStorageKey(entity_data));
+  return GetClientTagForWalletDataSpecificsId(
+      GetSpecificsIdFromAutofillWalletSpecifics(
+          entity_data.specifics.autofill_wallet()));
 }
 
 std::string AutofillWalletSyncBridge::GetStorageKey(
     const syncer::EntityData& entity_data) {
   DCHECK(entity_data.specifics.has_autofill_wallet());
-  return GetStorageKeyFromAutofillWalletSpecifics(
-      entity_data.specifics.autofill_wallet());
+  return GetStorageKeyForSpecificsId(GetSpecificsIdFromAutofillWalletSpecifics(
+      entity_data.specifics.autofill_wallet()));
 }
 
 void AutofillWalletSyncBridge::SetSyncData(
