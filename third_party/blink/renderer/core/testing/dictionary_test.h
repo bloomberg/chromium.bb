@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/double_or_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/internal_enum_or_internal_enum_sequence.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_test_callback.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -92,6 +93,7 @@ class DictionaryTest : public ScriptWrappable {
   base::Optional<HashMap<String, String>> dictionary_member_properties_;
   InternalEnumOrInternalEnumSequence internal_enum_or_internal_enum_sequence_;
   ScriptValue any_member_;
+  TraceWrapperMember<V8TestCallback> callback_function_member_;
 };
 
 }  // namespace blink

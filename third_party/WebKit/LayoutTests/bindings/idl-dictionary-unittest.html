@@ -37,6 +37,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeUndefined('dict.doubleOrStringSequenceMember');
     shouldBeNull('dict.eventTargetOrNullMember');
     shouldBeUndefined('dict.anyMember');
+    shouldBeUndefined('dict.callbackFunctionMember');
     debug('');
 
     debug('Test for setting undefined');
@@ -62,6 +63,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeNull('dict.objectOrNullMemberWithDefault');
     shouldBeNull('dict.eventTargetOrNullMember');
     shouldBeUndefined('dict.anyMember');
+    shouldBeUndefined('dict.callbackFunctionMember');
     debug('');
 
     var element1 = document.createElement('div');
@@ -93,7 +95,8 @@ if (window.internals && internals.dictionaryTest) {
         doubleOrStringSequenceMember: [3.14, 'Hello'],
         eventTargetOrNullMember: element1,
         internalEnumOrInternalEnumSequenceMember: 'foo',
-        anyMember: 42
+        anyMember: 42,
+        callbackFunctionMember: (arg1, arg2) => { return 'Hi ' + arg1 + ' and ' + arg2; },
     });
     dict = dictionaryTest.get();
     shouldBe('dict.longMember', '1');
@@ -122,6 +125,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBe('dict.eventTargetOrNullMember', 'element1');
     shouldBeEqualToString('dict.internalEnumOrInternalEnumSequenceMember', 'foo');
     shouldBe('dict.anyMember', '42');
+    shouldBeEqualToString('dict.callbackFunctionMember("A", "B")', 'Hi A and B');
     debug('');
 
     debug('Additional test for union type members');

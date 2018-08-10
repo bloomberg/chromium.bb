@@ -36,4 +36,5 @@ dictionary InternalDictionary {
     Dictionary dictionaryMember;
     (InternalEnum or sequence<InternalEnum>) internalEnumOrInternalEnumSequenceMember;
     any anyMember;
+    TestCallback callbackFunctionMember;
 };

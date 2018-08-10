@@ -61,4 +61,6 @@ dictionary TestDictionary {
     record<DOMString, DOMString?> stringOrNullRecordMember;
     record<DOMString, Element?> elementOrNullRecordMember;
     record<DOMString, (double or DOMString)?> unionOrNullRecordMember;
+    VoidCallbackFunction callbackFunctionMember;
+    required VoidCallbackFunction requiredCallbackFunctionMember;
 };

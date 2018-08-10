@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/test_enum_or_test_enum_or_null_sequence.h"
 #include "third_party/blink/renderer/bindings/core/v8/test_enum_or_test_enum_sequence.h"
 #include "third_party/blink/renderer/bindings/core/v8/test_interface_2_or_uint8_array.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_void_callback_function.h"
 #include "third_party/blink/renderer/bindings/tests/idls/core/test_interface_2.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/testing/internal_dictionary.h"
@@ -84,6 +85,12 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
     return byte_string_member_;
   }
   inline void setByteStringMember(const String&);
+
+  bool hasCallbackFunctionMember() const { return callback_function_member_; }
+  V8VoidCallbackFunction* callbackFunctionMember() const {
+    return callback_function_member_;
+  }
+  void setCallbackFunctionMember(V8VoidCallbackFunction*);
 
   bool hasCreateMember() const { return has_create_member_; }
   bool createMember() const {
@@ -253,6 +260,12 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
     return record_member_;
   }
   void setRecordMember(const Vector<std::pair<String, int8_t>>&);
+
+  bool hasRequiredCallbackFunctionMember() const { return required_callback_function_member_; }
+  V8VoidCallbackFunction* requiredCallbackFunctionMember() const {
+    return required_callback_function_member_;
+  }
+  void setRequiredCallbackFunctionMember(V8VoidCallbackFunction*);
 
   bool hasRestrictedDoubleMember() const { return has_restricted_double_member_; }
   double restrictedDoubleMember() const {
@@ -464,6 +477,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   String applicable_to_type_string_member_;
   bool boolean_member_;
   String byte_string_member_;
+  TraceWrapperMember<V8VoidCallbackFunction> callback_function_member_;
   bool create_member_;
   Dictionary dictionary_member_;
   double double_or_null_member_;
@@ -489,6 +503,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool origin_trial_second_member_;
   DoubleOrString other_double_or_string_member_;
   Vector<std::pair<String, int8_t>> record_member_;
+  TraceWrapperMember<V8VoidCallbackFunction> required_callback_function_member_;
   double restricted_double_member_;
   bool runtime_member_;
   bool runtime_second_member_;
