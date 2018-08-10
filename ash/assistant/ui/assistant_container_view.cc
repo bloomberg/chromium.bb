@@ -187,8 +187,23 @@ void AssistantContainerView::Init() {
 }
 
 void AssistantContainerView::RequestFocus() {
-  if (assistant_main_view_)
-    assistant_main_view_->RequestFocus();
+  if (!GetWidget() || !GetWidget()->IsActive())
+    return;
+
+  switch (assistant_controller_->ui_controller()->model()->ui_mode()) {
+    case AssistantUiMode::kMiniUi:
+      if (assistant_mini_view_)
+        assistant_mini_view_->RequestFocus();
+      break;
+    case AssistantUiMode::kMainUi:
+      if (assistant_main_view_)
+        assistant_main_view_->RequestFocus();
+      break;
+    case AssistantUiMode::kWebUi:
+      if (assistant_web_view_)
+        assistant_web_view_->RequestFocus();
+      break;
+  }
 }
 
 // TODO(dmblack): Handle dynamic re-anchoring due to shelf repositioning, etc.
@@ -216,8 +231,6 @@ void AssistantContainerView::OnUiModeChanged(AssistantUiMode ui_mode) {
       break;
     case AssistantUiMode::kMainUi:
       assistant_main_view_->SetVisible(true);
-      if (GetWidget() && GetWidget()->IsActive())
-        RequestFocus();
       break;
     case AssistantUiMode::kWebUi:
       assistant_web_view_->SetVisible(true);
@@ -225,6 +238,7 @@ void AssistantContainerView::OnUiModeChanged(AssistantUiMode ui_mode) {
   }
 
   PreferredSizeChanged();
+  RequestFocus();
 }
 
 }  // namespace ash
