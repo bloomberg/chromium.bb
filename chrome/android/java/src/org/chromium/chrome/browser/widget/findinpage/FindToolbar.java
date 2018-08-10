@@ -549,7 +549,8 @@ public class FindToolbar extends LinearLayout
      */
     protected boolean isWebContentAvailable() {
         Tab currentTab = mTabModelSelector.getCurrentTab();
-        return currentTab != null && currentTab.getWebContents() != null;
+        return currentTab != null && currentTab.getWebContents() != null
+                && !currentTab.isNativePage();
     }
 
     /**
