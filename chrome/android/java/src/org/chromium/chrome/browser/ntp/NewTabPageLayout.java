@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.suggestions.TileGroup;
 import org.chromium.chrome.browser.suggestions.TileRenderer;
 import org.chromium.chrome.browser.suggestions.TileView;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.vr.VrModeObserver;
@@ -186,6 +187,14 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.EXPLORE_SITES)) {
             ViewStub exploreStub = findViewById(R.id.explore_sites_stub);
             mExploreSectionView = exploreStub.inflate();
+        }
+
+        // Strip the padding from the top of the view (which would otherwise be the height of the
+        // top toolbar) when Duet is enabled to remove some of the empty space.
+        if (FeatureUtilities.isBottomToolbarEnabled()) {
+            setPadding(getPaddingLeft(),
+                    getResources().getDimensionPixelSize(R.dimen.duet_ntp_logo_top_padding),
+                    getPaddingRight(), getPaddingBottom());
         }
     }
 
