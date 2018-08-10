@@ -64,11 +64,15 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
 
   // Callback for BackgroundFetchIconLoader. This will set up the state of the
   // load as either success or failed based on whether the bitmap is empty.
-  void IconLoaded(const SkBitmap& bitmap) {
-    if (!bitmap.empty())
+  void IconLoaded(base::OnceClosure quit_closure, const SkBitmap& bitmap) {
+    bitmap_ = bitmap;
+
+    if (!bitmap_.isNull())
       loaded_ = BackgroundFetchLoadState::kLoadSuccessful;
     else
       loaded_ = BackgroundFetchLoadState::kLoadFailed;
+
+    std::move(quit_closure).Run();
   }
 
   ManifestImageResource CreateTestIcon(const String& url_str,
@@ -84,10 +88,14 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
   KURL PickRightIcon(HeapVector<ManifestImageResource> icons,
                      const WebSize& ideal_display_size) {
     loader_->icons_ = std::move(icons);
-    return loader_->PickBestIconForDisplay(GetContext(), ideal_display_size);
+    loader_->icon_display_size_pixels_ = ideal_display_size;
+
+    return loader_->PickBestIconForDisplay(GetContext());
   }
 
-  void LoadIcon(const KURL& url) {
+  void LoadIcon(const KURL& url,
+                const WebSize& maximum_size,
+                base::OnceClosure quit_closure) {
     ManifestImageResource icon;
     icon.setSrc(url.GetString());
     icon.setType("image/png");
@@ -97,8 +105,9 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
     loader_->icons_ = std::move(icons);
     loader_->DidGetIconDisplaySizeIfSoLoadIcon(
         GetContext(),
-        Bind(&BackgroundFetchIconLoaderTest::IconLoaded, WTF::Unretained(this)),
-        WebSize(192, 192));
+        WTF::Bind(&BackgroundFetchIconLoaderTest::IconLoaded,
+                  WTF::Unretained(this), WTF::Passed(std::move(quit_closure))),
+        maximum_size);
   }
 
   ExecutionContext* GetContext() const { return &GetDocument(); }
@@ -106,15 +115,30 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
  protected:
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
   BackgroundFetchLoadState loaded_ = BackgroundFetchLoadState::kNotLoaded;
+  SkBitmap bitmap_;
 
  private:
   Persistent<BackgroundFetchIconLoader> loader_;
 };
 
 TEST_F(BackgroundFetchIconLoaderTest, SuccessTest) {
-  LoadIcon(KURL(kBackgroundFetchImageLoaderIcon500x500FullPath));
+  base::RunLoop run_loop;
+
+  WebSize maximum_size{192, 168};
+  LoadIcon(KURL(kBackgroundFetchImageLoaderIcon500x500FullPath), maximum_size,
+           run_loop.QuitClosure());
+
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
-  EXPECT_EQ(BackgroundFetchLoadState::kLoadSuccessful, loaded_);
+
+  run_loop.Run();
+
+  ASSERT_EQ(BackgroundFetchLoadState::kLoadSuccessful, loaded_);
+  ASSERT_FALSE(bitmap_.drawsNothing());
+
+  // Resizing a 500x500 image to fit on a canvas of 192x168 pixels should yield
+  // a decoded image size of 168x168, avoiding image data to get lost.
+  EXPECT_EQ(bitmap_.width(), 168);
+  EXPECT_EQ(bitmap_.height(), 168);
 }
 
 TEST_F(BackgroundFetchIconLoaderTest, PickIconRelativePath) {
