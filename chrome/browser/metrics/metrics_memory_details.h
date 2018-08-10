@@ -19,10 +19,6 @@ class MetricsMemoryDetails : public MemoryDetails {
  public:
   explicit MetricsMemoryDetails(const base::Closure& callback);
 
-  void set_generate_histograms(bool generate_histograms) {
-    generate_histograms_ = generate_histograms;
-  }
-
  protected:
   ~MetricsMemoryDetails() override;
 
@@ -33,11 +29,10 @@ class MetricsMemoryDetails : public MemoryDetails {
   // Updates the global histograms for tracking memory usage.
   void UpdateHistograms();
 
-  base::Closure callback_;
+  void UpdateSiteIsolationMetrics(int all_renderer_count,
+                                  int non_renderer_count);
 
-  // A flag indicating if histogram data should be generated. True on default.
-  // If false, then only MemoryGrowthTracker gets notified about memory usage.
-  bool generate_histograms_;
+  base::Closure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsMemoryDetails);
 };

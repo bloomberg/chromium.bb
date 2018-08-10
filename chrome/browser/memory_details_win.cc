@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/memory_details.h"
+// Windows headers must come first.
+#include <windows.h>
 
 #include <psapi.h>
 #include <stddef.h>
 #include <TlHelp32.h>
+
+#include "chrome/browser/memory_details.h"
 
 #include <memory>
 

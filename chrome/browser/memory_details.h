@@ -16,7 +16,6 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/site_details.h"
 #include "content/public/common/process_type.h"
 
 namespace memory_instrumentation {
@@ -85,10 +84,6 @@ struct ProcessData {
   base::string16 name;
   base::string16 process_name;
   ProcessMemoryInformationList processes;
-
-  // Track site data for predicting process counts with out-of-process iframes.
-  // See site_details.h.
-  BrowserContextSiteDataMap site_data;
 };
 
 // MemoryDetails fetches memory details about current running browsers.

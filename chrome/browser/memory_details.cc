@@ -299,10 +299,6 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
 
       // The rest of this block will happen only once per WebContents.
       GURL page_url = contents->GetLastCommittedURL();
-      SiteData& site_data =
-          chrome_browser->site_data[contents->GetBrowserContext()];
-      SiteDetails::CollectSiteInfo(contents, &site_data);
-
       bool is_webui = rvh->GetMainFrame()->GetEnabledBindings() &
                       content::BINDINGS_POLICY_WEB_UI;
 
