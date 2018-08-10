@@ -49,7 +49,7 @@ void CATransactionCoordinator::SynchronizeImpl() {
   active_ = true;
 
   for (auto& observer : post_commit_observers_)
-    observer.OnActivateForTransaction();
+    observer->OnActivateForTransaction();
 
   [CATransaction addCommitHandler:^{
     PreCommitHandler();
@@ -90,7 +90,7 @@ void CATransactionCoordinator::PostCommitHandler() {
   TRACE_EVENT0("ui", "CATransactionCoordinator: post-commit handler");
 
   for (auto& observer : post_commit_observers_)
-    observer.OnEnterPostCommit();
+    observer->OnEnterPostCommit();
 
   auto* clock = base::DefaultTickClock::GetInstance();
   const base::TimeTicks deadline = clock->NowTicks() + kPostCommitTimeout;
@@ -131,13 +131,15 @@ void CATransactionCoordinator::RemovePreCommitObserver(
 }
 
 void CATransactionCoordinator::AddPostCommitObserver(
-    PostCommitObserver* observer) {
-  post_commit_observers_.AddObserver(observer);
+    scoped_refptr<PostCommitObserver> observer) {
+  DCHECK(!post_commit_observers_.count(observer));
+  post_commit_observers_.insert(std::move(observer));
 }
 
 void CATransactionCoordinator::RemovePostCommitObserver(
-    PostCommitObserver* observer) {
-  post_commit_observers_.RemoveObserver(observer);
+    scoped_refptr<PostCommitObserver> observer) {
+  DCHECK(post_commit_observers_.count(observer));
+  post_commit_observers_.erase(std::move(observer));
 }
 
 }  // namespace ui
