@@ -29,10 +29,23 @@
 #   'string-enum-list' - the user can select a set of string values from a
 #     collection of items
 #   'main' - a boolean value
-#   'list' - a list of string values
-#   'dict' - a dictionary value, containing other values indexed by strings
+#   'list' - a list of string values. Using this for a list of JSON strings
+#     is now discouraged, because the 'dict' is better for JSON.
+#   'dict' - perhaps should be named JSON. An arbitrarily complex object or
+#     array, nested objects/arrays, etc. The user defines the value with JSON.
 #   'external' - a policy that references external data.
 #     NOTE: This type is currently supported on Chrome OS only.
+#
+# NOTE to 'dict' vs 'list' - in the past, 'list' has been used for a policy
+# that is an array of objects. The user supplied a list of strings, and each
+# of those strings was parsed as JSON, resulting in an array of objects.
+# However, there are a couple of reasons why 'dict' is better for these sorts
+# of policies. Some interfaces (eg the GPO editor) only allow each list item
+# to be a single-line string, which is not great for inputting a complex JSON
+# object. It also means any example values shown in the documentation will
+# have a hybrid syntax, with both commas and new-lines being used to delimit
+# array elements - and these examples will be harder to copy and paste.
+# To conclude, prefer 'dict' to 'list' if JSON is involved.
 #
 # Each policy is tagged with risk tags that indicate potential privacy or
 # security risks. They are defined at the beginning of this file (tag
