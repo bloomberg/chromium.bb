@@ -207,7 +207,7 @@
       'filepath': '^base/task/',
     },
     'base_task_scheduler': {
-      'filepath': '^base/task_scheduler',
+      'filepath': '^base/task/task_scheduler',
     },
     'base_win': {
       'filepath': '^base/win',
