@@ -37,7 +37,6 @@ void CopyAnnotationsToProto(uint32_t new_milestones,
 // Transcode |profile| into |proto_profile|.
 void CopyProfileToProto(
     const base::StackSamplingProfiler::CallStackProfile& profile,
-    CallStackProfileParams::SampleOrderingSpec ordering_spec,
     CallStackProfile* proto_profile);
 
 // Translates CallStackProfileParams's process to the corresponding

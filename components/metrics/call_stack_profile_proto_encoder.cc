@@ -84,30 +84,21 @@ void CopyAnnotationsToProto(uint32_t new_milestones,
   }
 }
 
+// The sample order in |profile| is not preserved in |proto_profile|.
 void CopyProfileToProto(
     const base::StackSamplingProfiler::CallStackProfile& profile,
-    CallStackProfileParams::SampleOrderingSpec ordering_spec,
     CallStackProfile* proto_profile) {
   if (profile.samples.empty())
     return;
-
-  const bool preserve_order =
-      ordering_spec == CallStackProfileParams::PRESERVE_ORDER;
 
   std::map<base::StackSamplingProfiler::Sample, int> sample_index;
   uint32_t milestones = 0;
   for (auto it = profile.samples.begin(); it != profile.samples.end(); ++it) {
     int existing_sample_index = -1;
-    if (preserve_order) {
-      // Collapse sample with the previous one if they match. Samples match
-      // if the frame and all annotations are the same.
-      if (proto_profile->sample_size() > 0 && *it == *(it - 1))
-        existing_sample_index = proto_profile->sample_size() - 1;
-    } else {
-      auto location = sample_index.find(*it);
-      if (location != sample_index.end())
-        existing_sample_index = location->second;
-    }
+
+    auto location = sample_index.find(*it);
+    if (location != sample_index.end())
+      existing_sample_index = location->second;
 
     if (existing_sample_index != -1) {
       CallStackProfile::Sample* sample_proto =
@@ -122,10 +113,8 @@ void CopyProfileToProto(
     CopyAnnotationsToProto(it->process_milestones & ~milestones, sample_proto);
     milestones = it->process_milestones;
 
-    if (!preserve_order) {
-      sample_index.insert(std::make_pair(
-          *it, static_cast<int>(proto_profile->sample_size()) - 1));
-    }
+    sample_index.insert(std::make_pair(
+        *it, static_cast<int>(proto_profile->sample_size()) - 1));
   }
 
   for (const auto& module : profile.modules) {

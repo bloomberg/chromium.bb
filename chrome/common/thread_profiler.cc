@@ -190,8 +190,7 @@ ThreadProfiler::ThreadProfiler(
     : owning_thread_task_runner_(owning_thread_task_runner),
       periodic_profile_params_(GetProcess(),
                                thread,
-                               CallStackProfileParams::PERIODIC_COLLECTION,
-                               CallStackProfileParams::MAY_SHUFFLE),
+                               CallStackProfileParams::PERIODIC_COLLECTION),
       weak_factory_(this) {
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
@@ -200,8 +199,7 @@ ThreadProfiler::ThreadProfiler(
       BindRepeating(&ThreadProfiler::ReceiveStartupProfile,
                     GetReceiverCallback()),
       CallStackProfileParams(GetProcess(), thread,
-                             CallStackProfileParams::PROCESS_STARTUP,
-                             CallStackProfileParams::MAY_SHUFFLE));
+                             CallStackProfileParams::PROCESS_STARTUP));
 
   startup_profiler_ = std::make_unique<StackSamplingProfiler>(
       base::PlatformThread::CurrentId(), kSamplingParams,

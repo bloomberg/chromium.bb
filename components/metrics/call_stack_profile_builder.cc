@@ -99,8 +99,7 @@ void CallStackProfileBuilder::OnProfileCompleted(
   sampled_profile.set_thread(ToExecutionContextThread(profile_params_.thread));
   sampled_profile.set_trigger_event(
       ToSampledProfileTriggerEvent(profile_params_.trigger));
-  CopyProfileToProto(profile_, profile_params_.ordering_spec,
-                     sampled_profile.mutable_call_stack_profile());
+  CopyProfileToProto(profile_, sampled_profile.mutable_call_stack_profile());
 
   // Run the associated callback, passing the protocol message which encodes the
   // collected profile.

@@ -221,80 +221,7 @@ TEST(CallStackProfileProtoEncoderTest, RepeatedStacksUnordered) {
   };
 
   SampledProfile proto;
-  CopyProfileToProto(profile, CallStackProfileParams::MAY_SHUFFLE,
-                     proto.mutable_call_stack_profile());
-
-  VerifyProfileProto(expected_proto_profile, proto);
-}
-
-// Checks that only contiguous duplicate samples are collapsed with
-// preserve_sample_ordering = true.
-TEST(CallStackProfileProtoEncoderTest, RepeatedStacksOrdered) {
-  const uintptr_t module_base_address = 0x1000;
-  const char* module_name = "ABCD";
-
-#if defined(OS_WIN)
-  uint64_t module_md5 = 0x46C3E4166659AC02ULL;
-  base::FilePath module_path(L"c:\\some\\path\\to\\chrome.exe");
-#else
-  uint64_t module_md5 = 0x554838A8451AC36CULL;
-  base::FilePath module_path("/some/path/to/chrome");
-#endif
-
-  Profile profile =
-      ProfileFactory(100, 10)
-          .DefineModule(module_name, module_path, module_base_address)
-
-          .AddMilestone(0)
-          .NewSample()
-          .AddFrame(0, module_base_address + 0x10)
-          .NewSample()
-          .AddFrame(0, module_base_address + 0x20)
-          .NewSample()
-          .AddFrame(0, module_base_address + 0x10)
-          .NewSample()
-          .AddFrame(0, module_base_address + 0x10)
-
-          .AddMilestone(1)
-          .NewSample()
-          .AddFrame(0, module_base_address + 0x10)
-          .NewSample()
-          .AddFrame(0, module_base_address + 0x20)
-          .NewSample()
-          .AddFrame(0, module_base_address + 0x10)
-          .NewSample()
-          .AddFrame(0, module_base_address + 0x10)
-
-          .Build();
-
-  const ExpectedProtoModule expected_proto_modules[] = {
-      {module_name, module_md5, module_base_address},
-  };
-
-  const ExpectedProtoEntry expected_proto_entries[] = {
-      {0, 0x10}, {0, 0x20},
-  };
-  const ExpectedProtoSample expected_proto_samples[] = {
-      {1, &expected_proto_entries[0], 1, 1},
-      {0, &expected_proto_entries[1], 1, 1},
-      {0, &expected_proto_entries[0], 1, 2},
-      {2, &expected_proto_entries[0], 1, 1},
-      {0, &expected_proto_entries[1], 1, 1},
-      {0, &expected_proto_entries[0], 1, 2},
-  };
-
-  const ExpectedProtoProfile expected_proto_profile = {
-      100,
-      10,
-      expected_proto_modules,
-      base::size(expected_proto_modules),
-      expected_proto_samples,
-      base::size(expected_proto_samples),
-  };
-
-  SampledProfile proto;
-  CopyProfileToProto(profile, CallStackProfileParams::PRESERVE_ORDER,
-                     proto.mutable_call_stack_profile());
+  CopyProfileToProto(profile, proto.mutable_call_stack_profile());
 
   VerifyProfileProto(expected_proto_profile, proto);
 }
@@ -323,8 +250,7 @@ TEST(CallStackProfileProtoEncoderTest, UnknownModule) {
   };
 
   SampledProfile proto;
-  CopyProfileToProto(profile, CallStackProfileParams::MAY_SHUFFLE,
-                     proto.mutable_call_stack_profile());
+  CopyProfileToProto(profile, proto.mutable_call_stack_profile());
 
   VerifyProfileProto(expected_proto_profile, proto);
 }
