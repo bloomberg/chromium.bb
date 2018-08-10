@@ -57,18 +57,12 @@ class WebRtcRemoteEventLogManager final
   // peer connections associated with this BrowserContext, in the
   // BrowserContext's user-data directory, becomes possible.
   // This method would typically be called when a BrowserContext is initialized.
-  // Enabling for the same BrowserContext twice in a row, without disabling
-  // in between, is an error.
   void EnableForBrowserContext(BrowserContextId browser_context_id,
                                const base::FilePath& browser_context_dir);
 
-  // Disables remote-bound logging for a given BrowserContext. Pending logs from
-  // earlier (while it was enabled) may no longer be uploaded, additional
-  // logs will not be created, and any active uploads associated with the
-  // BrowserContext will be cancelled.
-  // Disabling for a BrowserContext which was not enabled is not an error,
-  // because the caller is not required to know whether a previous call
-  // to EnableForBrowserContext() was successful.
+  // Enables remote-bound logging for a given BrowserContext. Pending logs from
+  // earlier (while it was enabled) may still be uploaded, but no additional
+  // logs will be created.
   void DisableForBrowserContext(BrowserContextId browser_context_id);
 
   // Called to inform |this| of peer connections being added/removed.
