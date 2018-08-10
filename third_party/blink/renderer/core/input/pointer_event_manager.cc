@@ -150,18 +150,6 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
   const int pointer_id = pointer_event->pointerId();
 
   const AtomicString& event_type = pointer_event->type();
-  if ((event_type == EventTypeNames::pointerout ||
-       event_type == EventTypeNames::pointerover) &&
-      node_under_pointer_.Contains(pointer_id)) {
-    EventTarget* target_under_pointer =
-        node_under_pointer_.at(pointer_id).target;
-    if (target_under_pointer == target) {
-      node_under_pointer_.Set(
-          pointer_id,
-          EventTargetAttributes(target_under_pointer,
-                                event_type == EventTypeNames::pointerover));
-    }
-  }
 
   if (!frame_ || !HasPointerEventListener(frame_->GetEventHandlerRegistry()))
     return WebInputEventResult::kNotHandled;
@@ -240,12 +228,12 @@ void PointerEventManager::SetNodeUnderPointer(PointerEvent* pointer_event,
     } else if (target !=
                node_under_pointer_.at(pointer_event->pointerId()).target) {
       node_under_pointer_.Set(pointer_event->pointerId(),
-                              EventTargetAttributes(target, false));
+                              EventTargetAttributes(target));
     }
     SendBoundaryEvents(node.target, target, pointer_event);
   } else if (target) {
     node_under_pointer_.insert(pointer_event->pointerId(),
-                               EventTargetAttributes(target, false));
+                               EventTargetAttributes(target));
     SendBoundaryEvents(nullptr, target, pointer_event);
   }
 }
