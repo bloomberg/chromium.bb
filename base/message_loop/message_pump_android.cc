@@ -118,7 +118,18 @@ void MessagePumpForUI::OnDelayedLooperCallback() {
   // Clear the fd.
   uint64_t value;
   int ret = read(delayed_fd_, &value, sizeof(value));
-  DCHECK_GE(ret, 0);
+
+  // TODO(mthiesse): Figure out how it's possible to hit EAGAIN here.
+  // According to http://man7.org/linux/man-pages/man2/timerfd_create.2.html
+  // EAGAIN only happens if no timer has expired. Also according to the man page
+  // poll only returns readable when a timer has expired. So this function will
+  // only be called when a timer has expired, but reading reveals no timer has
+  // expired...
+  // Quit() and ScheduleDelayedWork() are the only other functions that touch
+  // the timerfd, and they both run on the same thread as this callback, so
+  // there are no obvious timing or multi-threading related issues.
+  DPCHECK(ret >= 0 || errno == EAGAIN);
+
   delayed_scheduled_time_ = base::TimeTicks();
 
   base::TimeTicks next_delayed_work_time;
@@ -168,7 +179,7 @@ void MessagePumpForUI::OnNonDelayedLooperCallback() {
   // See http://man7.org/linux/man-pages/man2/eventfd.2.html
   uint64_t value = 0;
   int ret = read(non_delayed_fd_, &value, sizeof(value));
-  DCHECK_GE(ret, 0);
+  DPCHECK(ret >= 0);
 
   // If we read a value > 1, it means we lost the race to clear the fd before a
   // new task was posted. This is okay, we can just re-schedule work.
@@ -272,7 +283,7 @@ void MessagePumpForUI::ScheduleWork() {
   // EFD_SEMAPHORE.
   uint64_t value = 1;
   int ret = write(non_delayed_fd_, &value, sizeof(value));
-  DCHECK_GE(ret, 0);
+  DPCHECK(ret >= 0);
 }
 
 void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
@@ -294,7 +305,7 @@ void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
   ts.it_value.tv_nsec = nanos % TimeTicks::kNanosecondsPerSecond;
 
   int ret = timerfd_settime(delayed_fd_, TFD_TIMER_ABSTIME, &ts, nullptr);
-  DCHECK_GE(ret, 0);
+  DPCHECK(ret >= 0);
 }
 
 void MessagePumpForUI::QuitWhenIdle(base::OnceClosure callback) {
