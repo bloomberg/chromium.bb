@@ -2794,7 +2794,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.paladin,
           site_config.templates.no_hwtest_builder,
           board_replace=True,
-          chrome_binhost_only=True,
           chrome_sdk=False,
           compilecheck=True,
           cpe_export=False,
