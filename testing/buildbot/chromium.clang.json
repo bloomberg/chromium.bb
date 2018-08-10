@@ -5476,7 +5476,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 2
         },
         "test": "chrome_public_test_vr_apk"
       },
@@ -5606,7 +5607,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 2
+          "shards": 4
         },
         "test": "components_unittests"
       },
@@ -7254,7 +7255,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 5
+          "shards": 10
         },
         "test": "unit_tests"
       },
@@ -7469,7 +7470,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 2
         },
         "test": "webkit_unit_tests"
       },
@@ -8267,7 +8269,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 2
         },
         "test": "chrome_public_test_vr_apk"
       },
@@ -8397,7 +8400,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 2
+          "shards": 4
         },
         "test": "components_unittests"
       },
@@ -10045,7 +10048,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 5
+          "shards": 10
         },
         "test": "unit_tests"
       },
@@ -10260,7 +10263,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 2
         },
         "test": "webkit_unit_tests"
       },
