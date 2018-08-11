@@ -43,6 +43,12 @@ camera.views.camera.Options = function(router, onNewStreamNeeded) {
    * @type {HTMLInputElement}
    * @private
    */
+  this.toggleMic_ = document.querySelector('#toggle-mic');
+
+  /**
+   * @type {HTMLInputElement}
+   * @private
+   */
   this.toggleMirror_ = document.querySelector('#toggle-mirror');
 
   /**
@@ -155,9 +161,12 @@ camera.views.camera.Options = function(router, onNewStreamNeeded) {
       'click', this.onToggleGridClicked_.bind(this));
   this.toggleTimer_.addEventListener(
       'click', this.onToggleTimerClicked_.bind(this));
+  this.toggleMic_.addEventListener(
+      'click', this.onToggleMicClicked_.bind(this));
 
   // Handle key-press for checkbox-type toggles.
-  [this.toggleMirror_, this.toggleGrid_, this.toggleTimer_].forEach(element => {
+  [this.toggleMirror_, this.toggleGrid_, this.toggleTimer_, this.toggleMic_]
+      .forEach(element => {
     element.addEventListener('keypress', event => {
       if (camera.util.getShortcutIdentifier(event) == 'Enter') {
         element.click();
@@ -194,6 +203,7 @@ camera.views.camera.Options.prototype = {
     this.toggleMirror_.disabled = value;
     this.toggleGrid_.disabled = value;
     this.toggleTimer_.disabled = value;
+    this.toggleMic_.disabled = value;
   }
 };
 
@@ -209,10 +219,12 @@ camera.views.camera.Options.prototype.prepare = function() {
 
   // Select the default state of the toggle buttons.
   chrome.storage.local.get({
+    toggleMic: true,
     toggleTimer: false,
     toggleGrid: false,
     mirroringToggles: {},  // Manually mirroring states per video device.
   }, values => {
+    this.toggleMic_.checked = values.toggleMic;
     this.toggleTimer_.checked = values.toggleTimer;
     this.toggleGrid_.checked = values.toggleGrid;
     this.grid_.classList.toggle('visible', values.toggleGrid);
@@ -266,6 +278,19 @@ camera.views.camera.Options.prototype.onToggleDeviceClicked_ = function(event) {
     }
     this.onNewStreamNeeded_();
   });
+};
+
+/**
+ * Handles clicking on the microphone switch.
+ * @param {Event} event Click event.
+ * @private
+ */
+camera.views.camera.Options.prototype.onToggleMicClicked_ = function(event) {
+  var enabled = this.toggleMic_.checked;
+  chrome.storage.local.set({toggleMic: enabled});
+  if (this.toggleMic_.track) {
+    this.toggleMic_.track.enabled = enabled;
+  }
 };
 
 /**
@@ -368,12 +393,10 @@ camera.views.camera.Options.prototype.updateStreamOptions = function(
     constraints, stream) {
   this.updateVideoDeviceId_(constraints, stream);
   this.updateMirroring_(stream);
-  if (this.recordMode) {
-    // TODO(yuli): Disable capturing audio by the microphone option.
-    var track = stream && stream.getAudioTracks()[0];
-    if (track) {
-      track.enabled = true;
-    }
+  this.toggleMic_.track = this.recordMode ?
+      stream && stream.getAudioTracks()[0] : null;
+  if (this.toggleMic_.track) {
+    this.toggleMic_.track.enabled = this.toggleMic_.checked;
   }
 };
 

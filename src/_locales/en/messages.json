@@ -113,6 +113,10 @@
     "message": "Toggle grid",
     "description": "Label for the button to toggle the grid shown on preview."
   },
+  "toggleMicButton": {
+    "message": "Toggle microphone",
+    "description": "Label for the button to toggle the microphone for recording video."
+  },
   "dialogYesButton": {
     "message": "Yes",
     "description": "Label for the accepting button in the confirmation dialog."
