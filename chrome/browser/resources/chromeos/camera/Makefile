@@ -82,6 +82,8 @@ SRC_RESOURCES= \
 	src/images/camera_app_icons_favicon_32.png \
         src/images/camera_button_grid_off.svg \
         src/images/camera_button_grid_on.svg \
+        src/images/camera_button_mic_off.svg \
+        src/images/camera_button_mic_on.svg \
         src/images/camera_button_mirror_off.svg \
         src/images/camera_button_mirror_on.svg \
 	src/images/camera_button_picture.png \

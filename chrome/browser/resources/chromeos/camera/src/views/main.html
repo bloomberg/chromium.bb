@@ -40,13 +40,13 @@
             <button id="switch-takephoto" disabled tabindex="0"
                    i18n-label="switchTakePhotoButton"></button>
           </div>
-          <div class="one-button">
+          <div class="buttons">
             <button id="take-picture" disabled tabindex="0"
                     i18n-label="takePhotoButton"></button>
           </div>
         </div>
       </div>
-      <div class="buttons left-stripe">
+      <div class="left-stripe buttons">
         <input type="checkbox" id="toggle-mirror" disabled tabindex="0"
                i18n-label="toggleMirrorButton" checked hidden>
         <input type="checkbox" id="toggle-grid" disabled tabindex="0"
@@ -54,14 +54,18 @@
         <input type="checkbox" id="toggle-timer" disabled tabindex="0"
                i18n-label="toggleTimerButton">
       </div>
-      <div class="one-button circle">
+      <div class="bottom-stripe right-stripe buttons circle">
         <button id="gallery-enter" disabled tabindex="0"
                 i18n-label="galleryButton" hidden></button>
+      </div>
+      <div class="top-stripe" id="recording-timer"></div>
+      <div class="top-stripe right-stripe buttons">
+        <input type="checkbox" id="toggle-mic" disabled tabindex="0"
+               i18n-label="toggleMicButton">
       </div>
       <div id="toast">
         <div id="toast-message"></div>
       </div>
-      <div id="recording-timer"></div>
     </div>
     <div id="spinner"></div>
     <div id="browser" aria-role="listbox" i18n-aria-label="galleryImages">

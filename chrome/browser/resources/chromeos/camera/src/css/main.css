@@ -66,8 +66,7 @@ body {
   width: 8px;
 }
 
-.buttons,
-.one-button {
+.buttons {
   align-items: center;
   display: flex;
   justify-content: center;
@@ -79,45 +78,34 @@ body {
   pointer-events: auto;
   -webkit-app-region: no-drag;
   background-color: transparent;
+  background-position: center;
+  background-repeat: no-repeat;
   border: none;
-  margin: 2px;
-  padding: 0;
-  vertical-align: middle;
-  width: 32px;
-  height: 32px;
-}
-
-.one-button button,
-.one-button input {
-  pointer-events: auto;
-  background-color: transparent;
-  border: none;
+  width: 40px;
+  height: 40px;
   margin: 0;
   padding: 0;
 }
 
-.one-button.circle button {
+.buttons input {
+  -webkit-appearance: none;
+}
+
+.buttons.circle button {
   border-radius: 50%;
 }
 
-.one-button button[disabled],
-.one-button input[disabled],
 .buttons button[disabled],
 .buttons input[disabled] {
   opacity: 0.65;
   pointer-events: none;
 }
 
-
-.one-button button:not([disabled]):hover,
-.one-button input:not([disabled]):hover,
 .buttons button:not([disabled]):hover,
 .buttons input:not([disabled]):hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.one-button button:not([disabled]):active,
-.one-button input:not([disabled]):active,
 .buttons button:not([disabled]):active,
 .buttons input:not([disabled]):active {
   background-color: rgba(255, 255, 255, 0.2);
@@ -132,9 +120,6 @@ body {
   /* Start just before the take-picture button. */
   -webkit-margin-end: calc(50% + 73px/2);
   justify-content: flex-end;
-}
-
-#toolbar .buttons {
   position: absolute;
   right: 0;
   padding: 0 10px;
@@ -244,33 +229,32 @@ body.mirror #preview-video {
   height: 0;
 }
 
-.one-button.circle #gallery-enter {
-  position: absolute;
-  right: 24px;
-  bottom: 32px;
+.buttons.circle #gallery-enter {
+  position: relative;
   width: 48px;
   height: 48px;
   overflow: hidden;
 }
 
-.one-button.circle #gallery-enter img {
+.buttons.circle #gallery-enter img {
   position: absolute;
   left: 50%;
   top: 50%;
   -webkit-transform: translate(-50%, -50%);
 }
 
-#gallery-enter.no-content {
+.buttons.circle #gallery-enter.no-content {
   background-color: rgba(24, 24, 24, 1);
 }
 
-.one-button #take-picture {
+.buttons #take-picture {
   background-image: -webkit-image-set(
       url(../images/camera_button_picture.png) 1x,
       url(../images/2x/camera_button_picture.png) 2x);
   height: 37px;
   width: 73px;
   border-radius: 20px;
+  background-position: 0 0;
 }
 
 body.record-mode #take-picture {
@@ -279,19 +263,19 @@ body.record-mode #take-picture {
       url(../images/2x/camera_button_video.png) 2x);
 }
 
-.one-button #take-picture:hover {
+.buttons #take-picture:hover {
   background-position: 0 -37px;
 }
 
-.one-button #take-picture:active {
+.buttons #take-picture:active {
   background-position: 0 -74px;
 }
 
-.one-button #take-picture[disabled] {
+.buttons #take-picture[disabled] {
   background-position: 0 -111px;
 }
 
-.one-button #take-picture.flash {
+.buttons #take-picture.flash {
   -webkit-animation: flashTake 600ms linear infinite;
 }
 
@@ -333,57 +317,86 @@ body.record-mode #take-picture {
   background-position: 0 -32px;
 }
 
+body:not(.record-mode) #toggle-mic,
 body:not(.record-mode) #switch-takephoto,
 body.record-mode #switch-recordvideo {
   visibility: hidden;
 }
 
+.top-stripe {
+  position: absolute;
+  top: 40px;
+  -webkit-transform: translateY(-50%);
+}
+
+.bottom-stripe {
+  position: absolute;
+  bottom: 56px;
+  -webkit-transform: translateY(50%);
+}
+
+.left-stripe {
+  position: absolute;
+  left: 40px;
+  -webkit-transform: translateX(-50%);
+}
+
+.right-stripe {
+  position: absolute;
+  right: 40px;
+  -webkit-transform: translateX(50%);
+}
+
+.top-stripe.right-stripe {
+  -webkit-transform: translate(50%, -50%);
+}
+
+.bottom-stripe.right-stripe {
+  -webkit-transform: translate(50%, 50%);
+}
+
 .left-stripe.buttons {
   flex-direction: column;
-  position: absolute;
-  /* TODO(yuli): Align by 40px to the icons' center. */
-  left: 24px;
 }
 
 .left-stripe.buttons input {
-  -webkit-appearance: none;
-  background-color: transparent;
-  width: 40px;
-  height: 40px;
+  margin: 18px 0;
 }
 
-.left-stripe.buttons input,
-#browser .buttons button {
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-.left-stripe.buttons #toggle-timer {
+.buttons #toggle-timer {
   background-image: url(../images/camera_button_timer_on.svg);
 }
 
-.left-stripe.buttons #toggle-timer:not(:checked) {
+.buttons #toggle-timer:not(:checked) {
   background-image: url(../images/camera_button_timer_off.svg);
 }
 
-.left-stripe.buttons #toggle-timer.animate {
+.buttons #toggle-timer.animate {
   opacity: 0.25;
 }
 
-.left-stripe.buttons #toggle-grid {
+.buttons #toggle-grid {
   background-image: url(../images/camera_button_grid_on.svg);
 }
 
-.left-stripe.buttons #toggle-grid:not(:checked) {
+.buttons #toggle-grid:not(:checked) {
   background-image: url(../images/camera_button_grid_off.svg);
 }
 
-.left-stripe.buttons #toggle-mirror {
+.buttons #toggle-mirror {
   background-image: url(../images/camera_button_mirror_on.svg);
 }
 
-.left-stripe.buttons #toggle-mirror:not(:checked) {
+.buttons #toggle-mirror:not(:checked) {
   background-image: url(../images/camera_button_mirror_off.svg);
+}
+
+.buttons #toggle-mic {
+  background-image: url(../images/camera_button_mic_on.svg);
+}
+
+.buttons #toggle-mic:not(:checked) {
+  background-image: url(../images/camera_button_mic_off.svg);
 }
 
 #toolbar {
@@ -492,14 +505,11 @@ body.capturing #preview-grid.visible {
 }
 
 #recording-timer {
-  align-items: center;
   color: white;
-  display: flex;
   font-size: 16px;
-  justify-content: center;
+  width: 70px;
+  height: 32px;
   opacity: 0;
-  position: absolute;
-  top: 24px;
 }
 
 #recording-timer.visible {
@@ -513,6 +523,12 @@ body.capturing #preview-grid.visible {
   margin: 10px;
   /* Fix crbug.com/638500: button background flickers when hovered. */
   transform: translate3d(0, 0, 0);
+}
+
+#browser .buttons button {
+  width: 32px;
+  height: 32px;
+  margin: 2px;
 }
 
 #browser .buttons button[disabled] {
@@ -690,6 +706,7 @@ body.dialog #dialog #dialog-popup {
   right: 7px;
   top: 7px;
   width: 14px;
+  margin: 2px;
 }
 
 html[dir='rtl'] #dialog #dialog-close-button {
