@@ -54,6 +54,9 @@ class AXTreeSourceAuraTest : public ash::AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
+    // This code is running outside of Ash.
+    SetRunningOutsideAsh();
+
     widget_ = new Widget();
     Widget::InitParams init_params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     init_params.context = CurrentContext();

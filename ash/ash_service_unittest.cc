@@ -26,6 +26,7 @@
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/display_list.h"
 #include "ui/display/screen_base.h"
@@ -93,6 +94,11 @@ void OnEmbed(bool success) {
 }
 
 TEST_F(AshServiceTest, OpenWindow) {
+  // This test launches ash in a separate service. That doesn't make sense with
+  // SingleProcessMash.
+  if (features::IsSingleProcessMash())
+    return;
+
   display::ScreenBase screen;
   screen.display_list().AddDisplay(
       display::Display(1, gfx::Rect(0, 0, 200, 200)),

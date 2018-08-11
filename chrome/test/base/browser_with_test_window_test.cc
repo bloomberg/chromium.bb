@@ -81,7 +81,7 @@ void BrowserWithTestWindowTest::SetUp() {
   testing::Test::SetUp();
 #if defined(OS_CHROMEOS)
   ash_test_helper_->SetUp(true);
-  ash_test_helper_->test_views_delegate()->set_running_outside_ash();
+  ash_test_helper_->SetRunningOutsideAsh();
 #elif defined(TOOLKIT_VIEWS)
   views_test_helper_.reset(new views::ScopedViewsTestHelper());
 #endif

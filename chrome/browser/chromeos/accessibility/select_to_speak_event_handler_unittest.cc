@@ -94,6 +94,7 @@ class SelectToSpeakEventHandlerTest : public ash::AshTestBase {
 
   void SetUp() override {
     ash::AshTestBase::SetUp();
+    SetRunningOutsideAsh();
     // This test triggers a resize of WindowTreeHost, which will end up
     // throttling events. set_throttle_input_on_resize_for_testing() disables
     // this.

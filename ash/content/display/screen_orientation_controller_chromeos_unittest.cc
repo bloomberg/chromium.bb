@@ -186,6 +186,9 @@ void ScreenOrientationControllerTest::SetUp() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kUseFirstDisplayAsInternal);
   AshTestBase::SetUp();
+  // This test creates WebContents, which ash does not do in its window
+  // hierarchy.
+  SetRunningOutsideAsh();
 }
 
 // Tests that a content::WebContents can lock rotation.

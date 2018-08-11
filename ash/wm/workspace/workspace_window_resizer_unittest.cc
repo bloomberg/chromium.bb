@@ -10,6 +10,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/window_factory.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -111,25 +112,25 @@ class WorkspaceWindowResizerTest : public AshTestBase {
     gfx::Rect root_bounds(root->bounds());
     EXPECT_EQ(800, root_bounds.width());
     Shell::Get()->SetDisplayWorkAreaInsets(root, gfx::Insets());
-    window_.reset(new aura::Window(&delegate_));
+    window_ = window_factory::NewWindow(&delegate_);
     window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window_->Init(ui::LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(window_.get());
     window_->set_id(1);
 
-    window2_.reset(new aura::Window(&delegate2_));
+    window2_ = window_factory::NewWindow(&delegate2_);
     window2_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window2_->Init(ui::LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(window2_.get());
     window2_->set_id(2);
 
-    window3_.reset(new aura::Window(&delegate3_));
+    window3_ = window_factory::NewWindow(&delegate3_);
     window3_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window3_->Init(ui::LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(window3_.get());
     window3_->set_id(3);
 
-    window4_.reset(new aura::Window(&delegate4_));
+    window4_ = window_factory::NewWindow(&delegate4_);
     window4_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window4_->Init(ui::LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(window4_.get());
