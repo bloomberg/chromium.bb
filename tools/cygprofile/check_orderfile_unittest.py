@@ -18,10 +18,13 @@ class TestCheckOrderFile(unittest.TestCase):
   def testVerifySymbolOrder(self):
     self.assertTrue(check_orderfile._VerifySymbolOrder(
         ['.second', 'first', 'eighth', 'third'],
-        self._SYMBOL_INFOS))
+        self._SYMBOL_INFOS, 0))
     self.assertFalse(check_orderfile._VerifySymbolOrder(
         ['second', 'first', 'eighth', 'third'],
-        self._SYMBOL_INFOS))
+        self._SYMBOL_INFOS, 0))
+    self.assertTrue(check_orderfile._VerifySymbolOrder(
+        ['second', 'first', 'eighth', 'third'],
+        self._SYMBOL_INFOS, 1))
 
 
 if __name__ == '__main__':

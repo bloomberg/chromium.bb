@@ -16,7 +16,7 @@ import patch_orderfile
 import symbol_extractor
 
 
-def _VerifySymbolOrder(orderfile_symbols, symbol_infos):
+def _VerifySymbolOrder(orderfile_symbols, symbol_infos, threshold):
   """Verify symbol ordering.
 
   Checks that the non-section symbols in |orderfile_filename| are consistent
@@ -25,13 +25,16 @@ def _VerifySymbolOrder(orderfile_symbols, symbol_infos):
   Args:
     orderfile_symbols: ([str]) list of symbols from orderfile.
     symbol_infos: ([SymbolInfo]) symbol infos from binary.
+    threshold: (int) The number of misordered symbols beyond which we error.
 
   Returns:
-    True iff the ordering is consistent.
+    True iff the ordering is consistent within |threshold|.
   """
   last_offset = 0
   name_to_offset = {si.name: si.offset for si in symbol_infos}
   missing_count = 0
+  misorder_count = 0
+  misordered_syms = []
   for sym in orderfile_symbols:
     if '.' in sym:
       continue  # sym is a section name.
@@ -40,10 +43,17 @@ def _VerifySymbolOrder(orderfile_symbols, symbol_infos):
       continue
     next_offset = name_to_offset[sym]
     if next_offset < last_offset:
-      logging.error('Out of order at %s (%x/%x)', sym, next_offset, last_offset)
-      return False
+      misorder_count += 1
+      misordered_syms.append((sym, next_offset, last_offset))
     last_offset = next_offset
   logging.warning('Missing symbols in verification: %d', missing_count)
+  if misorder_count:
+    logging.warning('%d misordered symbols:\n %s', misorder_count,
+                    '\n '.join(str(x) for x in misordered_syms[:10]))
+    if misorder_count > threshold:
+      logging.error('%d misordered symbols over threshold %d, failing',
+                    misorder_count, threshold)
+      return False
   return True
 
 
@@ -53,7 +63,8 @@ def main():
   parser.add_option('--target-arch', action='store', dest='arch',
                     choices=['arm', 'arm64', 'x86', 'x86_64', 'x64', 'mips'],
                     help='The target architecture for the binary.')
-  parser.add_option('--threshold', action='store', dest='threshold', default=20,
+  parser.add_option('--threshold', action='store', dest='threshold',
+                    default=20, type=int,
                     help='The maximum allowed number of out-of-order symbols.')
   options, argv = parser.parse_args(sys.argv)
   if not options.arch:
@@ -67,7 +78,7 @@ def main():
   symbol_infos = symbol_extractor.SymbolInfosFromBinary(binary_filename)
 
   if not _VerifySymbolOrder([sym.strip() for sym in file(orderfile_filename)],
-                            symbol_infos):
+                            symbol_infos, options.threshold):
     return 1
 
 
