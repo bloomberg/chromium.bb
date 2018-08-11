@@ -18,6 +18,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/memory_pressure_monitor_chromeos.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/process/memory.h"
 #include "base/process/process_handle.h"  // kNullProcessHandle.
 #include "base/process/process_metrics.h"
 #include "base/strings/string16.h"
@@ -380,10 +381,10 @@ void TabManagerDelegate::OnFocusTabScoreAdjustmentTimeout() {
   // Sets OOM score.
   VLOG(3) << "Set OOM score " << chrome::kLowestRendererOomScore
           << " for focused tab " << pid;
-  std::map<int, int> dict;
-  dict[pid] = chrome::kLowestRendererOomScore;
-  DCHECK(GetDebugDaemonClient());
-  GetDebugDaemonClient()->SetOomScoreAdj(dict, base::Bind(&OnSetOomScoreAdj));
+  if (!base::AdjustOOMScore(pid, chrome::kLowestRendererOomScore))
+    LOG(ERROR) << "Failed to set oom_score_adj to "
+               << chrome::kLowestRendererOomScore
+               << " for focused tab, pid: " << pid;
 }
 
 void TabManagerDelegate::AdjustFocusedTabScore(base::ProcessHandle pid) {
@@ -760,7 +761,13 @@ void TabManagerDelegate::DistributeOomScoreInRange(
     // current cached score.
     if (oom_score_map_[pid] != score) {
       VLOG(3) << "Update OOM score " << score << " for " << *cur;
-      oom_scores_to_change[pid] = static_cast<int32_t>(score);
+      if (cur->app()) {
+        oom_scores_to_change[pid] = static_cast<int32_t>(score);
+      } else {
+        if (!base::AdjustOOMScore(pid, score))
+          LOG(ERROR) << "Failed to set oom_score_adj to " << score
+                     << " for process " << pid;
+      }
     }
     priority += priority_increment;
   }
