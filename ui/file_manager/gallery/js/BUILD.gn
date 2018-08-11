@@ -3,11 +3,11 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//ui/file_manager/js_unit_tests.gni")
 
-js_type_check("closure_compile") {
+js_type_check("closure_compile_module") {
   deps = [
     ":background",
-    ":closure_compile_externs",
     ":dimmable_ui_controller",
     ":entry_list_watcher",
     ":error_banner",
@@ -20,20 +20,6 @@ js_type_check("closure_compile") {
     ":ribbon",
     ":slide_mode",
     ":thumbnail_mode",
-  ]
-}
-
-js_library("closure_compile_externs") {
-  sources = []
-  externs_list = [
-    "$externs_path/file_manager_private.js",
-    "$externs_path/file_system_provider.js",
-    "$externs_path/metrics_private.js",
-    "$externs_path/web_animations.js",
-    "../../externs/entry_location.js",
-    "../../externs/platform.js",
-    "../../externs/volume_info.js",
-    "//third_party/analytics/externs.js",
   ]
 }
 
@@ -58,6 +44,7 @@ js_library("entry_list_watcher") {
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js/cr/ui:array_data_model",
   ]
+  externs_list = [ "$externs_path/file_manager_private.js" ]
 }
 
 js_library("error_banner") {
@@ -105,6 +92,7 @@ js_library("gallery_item") {
     "image_editor:image_encoder",
     "image_editor:image_util",
   ]
+  externs_list = [ "../../externs/entry_location.js" ]
 }
 
 js_library("gallery_util") {
@@ -114,6 +102,7 @@ js_library("gallery_util") {
     "../../file_manager/common/js:volume_manager_common",
     "../../file_manager/foreground/js:volume_manager_wrapper",
   ]
+  externs_list = [ "../../externs/volume_info.js" ]
 }
 
 js_library("metadata_worker") {
@@ -121,12 +110,19 @@ js_library("metadata_worker") {
 
 js_library("ribbon") {
   deps = [
+    ":gallery_data_model",
     ":gallery_item",
     "../../file_manager/foreground/js:thumbnail_loader",
     "../../file_manager/foreground/js/metadata:thumbnail_model",
     "image_editor:image_util",
     "//ui/webui/resources/js/cr/ui:array_data_model",
     "//ui/webui/resources/js/cr/ui:list_selection_model",
+  ]
+}
+
+js_library("ribbon_unittest") {
+  deps = [
+    ":ribbon",
   ]
 }
 
@@ -161,5 +157,18 @@ js_library("thumbnail_mode") {
     "../../file_manager/foreground/js/metadata:thumbnail_model",
     "image_editor:image_editor",
     "//ui/webui/resources/js/cr/ui:list_selection_model",
+  ]
+}
+
+js_unit_tests("unit_tests") {
+  deps = [
+    ":ribbon_unittest",
+  ]
+}
+
+group("closure_compile") {
+  deps = [
+    ":closure_compile_module",
+    ":unit_tests",
   ]
 }

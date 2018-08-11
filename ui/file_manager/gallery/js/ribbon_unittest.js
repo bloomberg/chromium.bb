@@ -4,16 +4,13 @@
 
 function testEmptySpliceEvent() {
   var dataModel = new cr.ui.ArrayDataModel([]);
-  var selectionModel = {
-    addEventListener: function() {},
-    selectedIndexes: []
-  };
-  var ribbon = new Ribbon(
-      document,
-      window,
-      dataModel,
-      selectionModel,
-      null);
+  var selectionModel = new cr.ui.ListSelectionModel();
+  var thumbnailModel = /** @type{!ThumbnailModel} */ ({});
+  var ribbon =
+      new Ribbon(document, window, dataModel, selectionModel, thumbnailModel);
   ribbon.enable();
-  dataModel.dispatchEvent({type: 'splice', added: [], removed: []});
+  var event = new Event('splice');
+  event.added = [];
+  event.removed = [];
+  dataModel.dispatchEvent(event);
 }
