@@ -16,6 +16,7 @@ import android.widget.FrameLayout;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
@@ -41,7 +42,9 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -543,11 +546,21 @@ public abstract class StackLayoutBase extends Layout implements Animatable {
 
     @Override
     public void attachViews(ViewGroup container) {
-        // TODO(dtrainor): This is a hack.  We're attaching to the parent of the view container
-        // which is the content container of the Activity.
-        ((ViewGroup) container.getParent())
-                .addView(mViewContainer,
-                        new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        if (FeatureUtilities.isBottomToolbarEnabled()) {
+            // In practice, the "container view" is used for animation. When Duet is enabled, the
+            // container is placed behind the bottom toolbar since it is persistent.
+            ViewGroup compositorViewHolder = container.findViewById(R.id.compositor_view_holder);
+            UiUtils.insertAfter((ViewGroup) compositorViewHolder.getParent(), mViewContainer,
+                    compositorViewHolder);
+            mViewContainer.getLayoutParams().width = LayoutParams.MATCH_PARENT;
+            mViewContainer.getLayoutParams().height = LayoutParams.MATCH_PARENT;
+        } else {
+            // TODO(dtrainor): This is a hack.  We're attaching to the parent of the view container
+            // which is the content container of the Activity.
+            ((ViewGroup) container.getParent())
+                    .addView(mViewContainer,
+                            new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        }
     }
 
     @Override
