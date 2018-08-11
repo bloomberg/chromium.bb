@@ -84,11 +84,12 @@ def main():
   chromedriver_version = open(
       options.chromedriver_version_file, 'r').read().strip()
 
-  # Get a VersionInfo object corresponding to the Git commit we are at.
+  # Get a VersionInfo object corresponding to the Git commit we are at,
+  # using the same filter used by main function of build/util/lastchange.py.
   # On success, version_info.revision_id is a 40-digit Git hash,
   # and version_info.revision is a longer string with more information.
   # On failure, version_info is None.
-  version_info = lastchange.FetchGitRevision(None, None)
+  version_info = lastchange.FetchGitRevision(None, '^Change-Id:')
 
   if version_info:
     version = get_release_version(options.chrome_version_file, version_info)
