@@ -65,11 +65,11 @@ class AssistantContainerViewTest : public AshTestBase {
     controller_->SetAssistant(std::move(assistant));
 
     // Mock any screen context requests by immediately invoking callback.
-    ON_CALL(*assistant_, DoRequestScreenContext(testing::_, testing::_))
+    ON_CALL(*assistant_,
+            DoRequestScreenContext(testing::_, testing::_, testing::_))
         .WillByDefault(testing::Invoke(
-            [](const gfx::Rect& rect, base::OnceClosure* callback) {
-              std::move(*callback).Run();
-            }));
+            [](const gfx::Rect& rect, bool from_user,
+               base::OnceClosure* callback) { std::move(*callback).Run(); }));
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;

@@ -171,14 +171,15 @@ void AssistantScreenContextController::RequestScreenshot(
 }
 
 void AssistantScreenContextController::RequestScreenContext(
-    const gfx::Rect& rect) {
+    const gfx::Rect& rect,
+    bool from_user) {
   // Abort any request in progress and update request state.
   screen_context_request_factory_.InvalidateWeakPtrs();
   assistant_screen_context_model_.SetRequestState(
       ScreenContextRequestState::kInProgress);
 
   assistant_->RequestScreenContext(
-      rect,
+      rect, from_user,
       base::BindOnce(
           &AssistantScreenContextController::OnScreenContextRequestFinished,
           screen_context_request_factory_.GetWeakPtr()));
@@ -214,13 +215,13 @@ void AssistantScreenContextController::OnUiVisibilityChanged(
     return;
 
   // Request screen context for the entire screen.
-  RequestScreenContext(gfx::Rect());
+  RequestScreenContext(gfx::Rect(), /*from_user=*/false);
 }
 
 void AssistantScreenContextController::OnHighlighterSelectionRecognized(
     const gfx::Rect& rect) {
   // Request screen context for the selected region.
-  RequestScreenContext(rect);
+  RequestScreenContext(rect, /*from_user=*/true);
 }
 
 void AssistantScreenContextController::OnScreenContextRequestFinished() {
