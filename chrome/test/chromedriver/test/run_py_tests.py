@@ -1000,8 +1000,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     handle_prefix = "CDwindow-"
     handle = self._driver.GetCurrentWindowHandle()
     target = handle[len(handle_prefix):]
-    self._driver.SetWindowPosition(100, 200)
     self._driver.SetWindowSize(640, 400)
+    self._driver.SetWindowPosition(100, 200)
     rect = self._driver.MinimizeWindow()
     expected_rect = {u'y': 200, u'width': 640, u'height': 400, u'x': 100}
 
@@ -1358,13 +1358,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testTouchScrollElement(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/touch_action_tests.html'))
-    major_version = int(self._driver.capabilities['version'].split('.')[0])
-    if major_version >= 61:
-      scroll_left = 'return document.documentElement.scrollLeft;'
-      scroll_top = 'return document.documentElement.scrollTop;'
-    else:
-      scroll_left = 'return document.body.scrollLeft;'
-      scroll_top = 'return document.body.scrollTop;'
+    scroll_left = 'return document.documentElement.scrollLeft;'
+    scroll_top = 'return document.documentElement.scrollTop;'
     self.assertEquals(0, self._driver.ExecuteScript(scroll_left))
     self.assertEquals(0, self._driver.ExecuteScript(scroll_top))
     target = self._driver.FindElement('id', 'target')
@@ -2010,12 +2005,7 @@ class ChromeDownloadDirTest(ChromeDriverBaseTest):
     original_url = driver.GetCurrentUrl()
     driver.Load(ChromeDriverTest.GetHttpUrlForFile('/abc.csv'))
     self.WaitForFileToDownload(os.path.join(download_dir, 'abc.csv'))
-    major_version = int(driver.capabilities['version'].split('.')[0])
-    if major_version > 43:
-      # For some reason, the URL in M43 changes from 'data:,' to '', so we
-      # need to avoid doing this assertion unless we're on M44+.
-      # TODO(samuong): Assert unconditionally once we stop supporting M43.
-      self.assertEqual(original_url, driver.GetCurrentUrl())
+    self.assertEqual(original_url, driver.GetCurrentUrl())
 
   def testDownloadDirectoryOverridesExistingPreferences(self):
     user_data_dir = self.CreateTempDir()
