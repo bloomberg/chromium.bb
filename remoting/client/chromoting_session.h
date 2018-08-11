@@ -90,7 +90,7 @@ class ChromotingSession : public ClientInputInjector {
   ChromotingSession(base::WeakPtr<ChromotingSession::Delegate> delegate,
                     std::unique_ptr<protocol::CursorShapeStub> cursor_stub,
                     std::unique_ptr<protocol::VideoRenderer> video_renderer,
-                    base::WeakPtr<protocol::AudioStub> audio_player,
+                    std::unique_ptr<protocol::AudioStub> audio_player,
                     const ConnectToHostInfo& info);
 
   ~ChromotingSession() override;
