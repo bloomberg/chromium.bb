@@ -45,8 +45,7 @@ class Range;
     API_AVAILABLE(macos(10.12.2));
 
 - (void)updateTextSelection:(const base::string16&)text
-                      range:(const gfx::Range&)range
-                     offset:(size_t)offset;
+                      range:(const gfx::Range&)range;
 
 // Returns a range from start to the end of the word that the cursor is
 // currently in.
@@ -73,7 +72,7 @@ class Range;
 - (NSArray*)suggestions;
 - (WebTextfieldTouchBarController*)controller;
 - (void)setShouldIgnoreReplacementSelection:(BOOL)shouldIgnore;
-- (void)setEditingWordRange:(const gfx::Range&)range offset:(size_t)offset;
+- (void)setEditingWordRange:(const gfx::Range&)range;
 
 @end
 
