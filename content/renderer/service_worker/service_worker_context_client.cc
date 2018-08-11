@@ -709,6 +709,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
     std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client,
     mojom::EmbeddedWorkerStartTimingPtr start_timing,
+    mojom::RendererPreferenceWatcherRequest preference_watcher_request,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
     : embedded_worker_id_(embedded_worker_id),
       service_worker_version_id_(service_worker_version_id),
@@ -716,6 +717,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       script_url_(script_url),
       is_starting_installed_worker_(is_starting_installed_worker),
       renderer_preferences_(std::move(renderer_preferences)),
+      preference_watcher_request_(std::move(preference_watcher_request)),
       main_thread_task_runner_(std::move(main_thread_task_runner)),
       proxy_(nullptr),
       pending_service_worker_request_(std::move(service_worker_request)),
@@ -1370,6 +1372,7 @@ std::unique_ptr<blink::WebWorkerFetchContext>
 ServiceWorkerContextClient::CreateServiceWorkerFetchContext(
     blink::WebServiceWorkerNetworkProvider* provider) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(preference_watcher_request_.is_pending());
 
   scoped_refptr<ChildURLLoaderFactoryBundle> url_loader_factory_bundle =
       RenderThreadImpl::current()
@@ -1396,7 +1399,8 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContext(
           URLLoaderThrottleProviderType::kWorker),
       GetContentClient()
           ->renderer()
-          ->CreateWebSocketHandshakeThrottleProvider());
+          ->CreateWebSocketHandshakeThrottleProvider(),
+      std::move(preference_watcher_request_));
 }
 
 std::unique_ptr<blink::WebServiceWorkerProvider>
