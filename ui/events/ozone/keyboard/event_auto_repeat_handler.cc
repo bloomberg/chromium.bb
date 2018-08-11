@@ -68,7 +68,7 @@ void EventAutoRepeatHandler::StartKeyRepeat(unsigned int key, int device_id) {
 }
 
 void EventAutoRepeatHandler::StopKeyRepeat() {
-  repeat_key_ = KEY_RESERVED;
+  repeat_key_ = kInvalidKey;
   repeat_sequence_++;
 }
 

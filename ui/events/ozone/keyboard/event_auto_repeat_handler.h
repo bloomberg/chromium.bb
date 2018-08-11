@@ -5,8 +5,6 @@
 #ifndef UI_EVENTS_OZONE_KEYBOARD_EVENT_AUTO_REPEAT_HANDLER_H
 #define UI_EVENTS_OZONE_KEYBOARD_EVENT_AUTO_REPEAT_HANDLER_H
 
-#include <linux/input.h>
-
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -46,6 +44,8 @@ class EVENTS_OZONE_EXPORT EventAutoRepeatHandler {
   void GetAutoRepeatRate(base::TimeDelta* delay, base::TimeDelta* interval);
 
  private:
+  static constexpr unsigned int kInvalidKey = 0;
+
   void StartKeyRepeat(unsigned int key, int device_id);
   void ScheduleKeyRepeat(const base::TimeDelta& delay);
   void OnRepeatTimeout(unsigned int sequence);
@@ -53,7 +53,7 @@ class EVENTS_OZONE_EXPORT EventAutoRepeatHandler {
 
   // Key repeat state.
   bool auto_repeat_enabled_ = true;
-  unsigned int repeat_key_ = KEY_RESERVED;
+  unsigned int repeat_key_ = kInvalidKey;
   unsigned int repeat_sequence_ = 0;
   int repeat_device_id_ = 0;
   base::TimeDelta repeat_delay_;
