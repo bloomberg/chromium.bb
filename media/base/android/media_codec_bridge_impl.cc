@@ -325,8 +325,8 @@ void MediaCodecBridgeImpl::SetupCallbackHandlerForTesting() {
 MediaCodecBridgeImpl::MediaCodecBridgeImpl(
     ScopedJavaGlobalRef<jobject> j_bridge,
     base::RepeatingClosure on_buffers_available_cb)
-    : j_bridge_(std::move(j_bridge)),
-      on_buffers_available_cb_(std::move(on_buffers_available_cb)) {
+    : on_buffers_available_cb_(std::move(on_buffers_available_cb)),
+      j_bridge_(std::move(j_bridge)) {
   DCHECK(!j_bridge_.is_null());
 
   if (on_buffers_available_cb_.is_null())
