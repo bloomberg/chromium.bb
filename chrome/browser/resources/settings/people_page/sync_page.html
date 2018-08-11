@@ -14,6 +14,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="sync_browser_proxy.html">
+<link rel="import" href="../icons.html">
 <link rel="import" href="../privacy_page/personalization_options.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -27,7 +28,8 @@
   <template>
     <style include="settings-shared iron-flex">
       #create-password-box,
-      #reset-sync-message-box {
+      #reset-sync-message-box-encryption,
+      #reset-sync-message-box-user-events {
         /* In order to line up with the encryption radio box text. */
         margin-inline-start: var(--settings-indent-width);
       }
@@ -263,8 +265,11 @@
             <div id="historyCheckboxLabel" class="flex">
               $i18n{historyCheckboxLabel}
             </div>
-            <cr-toggle checked="{{syncPrefs.typedUrlsSynced}}"
-                on-change="onSingleSyncDataTypeChanged_"
+            <!-- TypedUrls has a special on-change handler to deal with user
+                 events. -->
+            <cr-toggle id="historyToggle"
+                checked="{{syncPrefs.typedUrlsSynced}}"
+                on-change="onTypedUrlsDataTypeChanged_"
                 disabled="[[shouldSyncCheckboxBeDisabled_(
                     syncPrefs.syncAllDataTypes, syncPrefs.typedUrlsEnforced)]]"
                 aria-labelledby="historyCheckboxLabel">
@@ -344,6 +349,8 @@
             </cr-toggle>
           </div>
 
+          <!-- User events is disabled and unchecked if data is encrypted or
+               typed urls are disabled. -->
           <template is="dom-if" if="[[unifiedConsentEnabled]]">
             <div class="layout horizontal list-item"
                 hidden="[[!syncPrefs.userEventsRegistered]]">
@@ -352,12 +359,20 @@
                 <div class="secondary">
                   $i18n{userEventsCheckboxText}
                 </div>
+                <div id="reset-sync-message-box-user-events" class="list-item"
+                  hidden="[[!syncPrefs.encryptAllData]]">
+                  <span>
+                    <iron-icon icon="settings:info-outline"></iron-icon>
+                    $i18nRaw{passphraseResetHint}
+                  </span>
+                </div>
               </div>
-              <cr-toggle checked="{{syncPrefs.userEventsSynced}}"
-                  on-change="onSingleSyncDataTypeChanged_"
-                  disabled="[[shouldSyncCheckboxBeDisabled_(
-                      syncPrefs.syncAllDataTypes,
-                      syncPrefs.userEventsEnforced)]]"
+              <cr-toggle id="userEventsToggle"
+                  checked="{{userEventsToggleValue}}"
+                  on-change="onUserEventsSyncDataTypeChanged_"
+                  disabled="[[shouldUserEventsCheckboxBeDisabled_(
+                      syncPrefs.syncAllDataTypes, syncPrefs.typedUrlsSynced,
+                      syncPrefs.userEventsEnforced, syncPrefs.encryptAllData)]]"
                   aria-labelledby="userEventsCheckboxLabel">
               </cr-toggle>
             </div>
@@ -431,10 +446,16 @@
                 </template>
               </cr-radio-button>
             </paper-radio-group>
-            <div id="reset-sync-message-box" class="list-item"
+
+            <!-- duplicated from above -->
+            <div id="reset-sync-message-box-encryption" class="list-item"
                 hidden="[[!syncPrefs.encryptAllData]]">
-              <span>$i18nRaw{passphraseResetHint}</span>
+              <span>
+                <iron-icon icon="settings:info-outline"></iron-icon>
+                $i18nRaw{passphraseResetHint}
+              </span>
             </div>
+
           </div>
 
           <template is="dom-if" if="[[creatingNewPassphrase_]]">

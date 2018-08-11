@@ -97,6 +97,9 @@ settings.StatusAction = {
  *   typedUrlsEnforced: boolean,
  *   typedUrlsRegistered: boolean,
  *   typedUrlsSynced: boolean,
+ *   userEventsEnforced: boolean,
+ *   userEventsRegistered: boolean,
+ *   userEventsSynced: boolean,
  * }}
  */
 settings.SyncPrefs;
