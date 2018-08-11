@@ -3,35 +3,122 @@
         "accu_weather_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
         },
+        "accu_weather_pinch_2018": {
+            "DEFAULT": "rendering_desktop_007.wprgo"
+        },
         "amazon_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
+        },
+        "amazon_pinch_2018": {
+            "DEFAULT": "rendering_desktop_007.wprgo"
+        },
+        "analog_clock_svg": {
+            "DEFAULT": "rendering_desktop_002.wprgo"
+        },
+        "animometer_webgl": {
+            "DEFAULT": "rendering_desktop_006.wprgo"
+        },
+        "aquarium": {
+            "DEFAULT": "rendering_desktop_006.wprgo"
+        },
+        "aquarium_20k": {
+            "DEFAULT": "rendering_desktop_006.wprgo"
+        },
+        "blob": {
+            "DEFAULT": "rendering_desktop_006.wprgo"
         },
         "blogspot_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
         },
+        "blogspot_pinch_2018": {
+            "DEFAULT": "rendering_desktop_007.wprgo"
+        },
         "booking.com_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
+        },
+        "booking_pinch_2018": {
+            "DEFAULT": "rendering_desktop_007.wprgo"
+        },
+        "cats_unscaled": {
+            "DEFAULT": "rendering_desktop_008.wprgo"
+        },
+        "cats_viewport_width": {
+            "DEFAULT": "rendering_desktop_008.wprgo"
+        },
+        "cc_poster_circle": {
+            "DEFAULT": "rendering_desktop_009.wprgo"
+        },
+        "cc_scroll_200_layer_grid": {
+            "DEFAULT": "rendering_desktop_009.wprgo"
+        },
+        "cc_scroll_text_only": {
+            "DEFAULT": "rendering_desktop_009.wprgo"
+        },
+        "chip_tune": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
         },
         "cnn_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
         },
+        "cnn_pinch_2018": {
+            "DEFAULT": "rendering_desktop_007.wprgo"
+        },
+        "crafty_mind": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
+        },
+        "dynamic_cube_map": {
+            "DEFAULT": "rendering_desktop_006.wprgo"
+        },
+        "earth": {
+            "DEFAULT": "rendering_desktop_006.wprgo"
+        },
         "ebay_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
+        },
+        "ebay_pinch_2018": {
+            "DEFAULT": "rendering_desktop_007.wprgo"
+        },
+        "effect_games": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
         },
         "espn_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
         },
+        "espn_pinch_2018": {
+            "DEFAULT": "rendering_desktop_007.wprgo"
+        },
         "facebook_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
+        },
+        "facebook_pinch_2018": {
+            "DEFAULT": "rendering_desktop_007.wprgo"
+        },
+        "filter_terrain_svg": {
+            "DEFAULT": "rendering_desktop_002.wprgo"
+        },
+        "geo_apis": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
         },
         "gmail_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
         },
+        "gmail_move_2018": {
+            "DEFAULT": "rendering_desktop_001.wprgo"
+        },
+        "gmail_pinch_2018": {
+            "DEFAULT": "rendering_desktop_007.wprgo"
+        },
         "google_calendar_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
         },
+        "google_calendar_pinch_2018": {
+            "DEFAULT": "rendering_desktop_007.wprgo"
+        },
         "google_docs_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
+        },
+        "google_image_pinch_2018": {
+            "DEFAULT": "rendering_desktop_007.wprgo"
         },
         "google_image_search_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
@@ -39,14 +126,122 @@
         "google_plus_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
         },
+        "google_search_pinch_2018": {
+            "DEFAULT": "rendering_desktop_007.wprgo"
+        },
         "google_web_search_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
+        },
+        "guimark_vector_chart": {
+            "DEFAULT": "rendering_desktop_003.wprgo"
+        },
+        "hakim": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
+        },
+        "ie_chalkboard": {
+            "DEFAULT": "rendering_desktop_003.wprgo"
+        },
+        "ie_pirate_mark": {
+            "DEFAULT": "rendering_desktop_002.wprgo"
+        },
+        "jarro_doverson": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
+        },
+        "js_full_screen_invalidation": {
+            "DEFAULT": "rendering_desktop_009.wprgo"
+        },
+        "js_poster_circle": {
+            "DEFAULT": "rendering_desktop_009.wprgo"
+        },
+        "js_scroll_200_layer_grid": {
+            "DEFAULT": "rendering_desktop_009.wprgo"
+        },
+        "js_scroll_text_only": {
+            "DEFAULT": "rendering_desktop_009.wprgo"
+        },
+        "kevs_3d": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
         },
         "linkedin_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
         },
+        "linkedin_pinch_2018": {
+            "DEFAULT": "rendering_desktop_007.wprgo"
+        },
+        "man_in_blue": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
+        },
+        "many_planets_deep": {
+            "DEFAULT": "rendering_desktop_006.wprgo"
+        },
+        "maps_move_2018": {
+            "DEFAULT": "rendering_desktop_001.wprgo"
+        },
+        "megi_dish": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
+        },
+        "microsoft_asteroid_belt": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
+        },
+        "microsoft_fireflies": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
+        },
+        "microsoft_fish_ie_tank": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
+        },
+        "microsoft_performance": {
+            "DEFAULT": "rendering_desktop_005.wprgo"
+        },
+        "microsoft_snow": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
+        },
+        "microsoft_speed_reading": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
+        },
+        "microsoft_tweet_map": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
+        },
+        "microsoft_video_city": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
+        },
+        "microsoft_worker_fountains": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
+        },
+        "mix_10k": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
+        },
+        "motion_mark_canvas_fill_shapes": {
+            "DEFAULT": "rendering_desktop_003.wprgo"
+        },
+        "motion_mark_canvas_stroke_shapes": {
+            "DEFAULT": "rendering_desktop_003.wprgo"
+        },
+        "motion_mark_focus": {
+            "DEFAULT": "rendering_desktop_002.wprgo"
+        },
+        "new_tilings": {
+            "DEFAULT": "rendering_desktop_010.wprgo"
+        },
+        "nvidia_vertex_buffer_object": {
+            "DEFAULT": "rendering_desktop_006.wprgo"
+        },
+        "particles": {
+            "DEFAULT": "rendering_desktop_006.wprgo"
+        },
         "pinterest_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
+        },
+        "runway": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
+        },
+        "san_angeles": {
+            "DEFAULT": "rendering_desktop_006.wprgo"
+        },
+        "smash_cat": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
+        },
+        "spielzeugz": {
+            "DEFAULT": "rendering_desktop_004.wprgo"
         },
         "techcrunch_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
@@ -54,8 +249,14 @@
         "twitch_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
         },
+        "twitch_pinch_2018": {
+            "DEFAULT": "rendering_desktop_007.wprgo"
+        },
         "twitter_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
+        },
+        "twitter_pinch_2018": {
+            "DEFAULT": "rendering_desktop_007.wprgo"
         },
         "wikipedia_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
@@ -69,221 +270,20 @@
         "yahoo_news_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
         },
-        "yahoo_sports_2018": {
-            "DEFAULT": "rendering_desktop_000.wprgo"
-        },
-        "youtube_2018": {
-            "DEFAULT": "rendering_desktop_000.wprgo"
-        },
-        "gmail_move_2018": {
-            "DEFAULT": "rendering_desktop_001.wprgo"
-        },
-        "maps_move_2018": {
-            "DEFAULT": "rendering_desktop_001.wprgo"
-        },
-        "filter_terrain_svg": {
-            "DEFAULT": "rendering_desktop_002.wprgo"
-        },
-        "motion_mark_focus": {
-            "DEFAULT": "rendering_desktop_002.wprgo"
-        },
-        "analog_clock_svg": {
-            "DEFAULT": "rendering_desktop_002.wprgo"
-        },
-        "ie_pirate_mark": {
-            "DEFAULT": "rendering_desktop_002.wprgo"
-        },
-        "guimark_vector_chart": {
-            "DEFAULT": "rendering_desktop_003.wprgo"
-        },
-        "motion_mark_canvas_fill_shapes": {
-            "DEFAULT": "rendering_desktop_003.wprgo"
-        },
-        "motion_mark_canvas_stroke_shapes": {
-            "DEFAULT": "rendering_desktop_003.wprgo"
-        },
-        "ie_chalkboard": {
-            "DEFAULT": "rendering_desktop_003.wprgo"
-        },
-        "geo_apis": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "hakim": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "microsoft_tweet_map": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "microsoft_video_city": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "microsoft_worker_fountains": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "microsoft_asteroid_belt": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "microsoft_fireflies": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "microsoft_fish_ie_tank": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "microsoft_snow": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "microsoft_speed_reading": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "jarro_doverson": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "mix_10k": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "runway": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "spielzeugz": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "man_in_blue": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "chip_tune": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "crafty_mind": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "effect_games": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "kevs_3d": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "megi_dish": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "smash_cat": {
-            "DEFAULT": "rendering_desktop_004.wprgo"
-        },
-        "microsoft_performance": {
-            "DEFAULT": "rendering_desktop_005.wprgo"
-        },
-        "aquarium_20k": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
-        },
-        "animometer_webgl": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
-        },
-        "aquarium": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
-        },
-        "blob": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
-        },
-        "dynamic_cube_map": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
-        },
-        "nvidia_vertex_buffer_object": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
-        },
-        "particles": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
-        },
-        "san_angeles": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
-        },
-        "earth": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
-        },
-        "many_planets_deep": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
-        },
-        "accu_weather_pinch_2018": {
-            "DEFAULT": "rendering_desktop_007.wprgo"
-        },
-        "amazon_pinch_2018": {
-            "DEFAULT": "rendering_desktop_007.wprgo"
-        },
-        "blogspot_pinch_2018": {
-            "DEFAULT": "rendering_desktop_007.wprgo"
-        },
-        "booking_pinch_2018": {
-            "DEFAULT": "rendering_desktop_007.wprgo"
-        },
-        "cnn_pinch_2018": {
-            "DEFAULT": "rendering_desktop_007.wprgo"
-        },
-        "ebay_pinch_2018": {
-            "DEFAULT": "rendering_desktop_007.wprgo"
-        },
-        "espn_pinch_2018": {
-            "DEFAULT": "rendering_desktop_007.wprgo"
-        },
-        "facebook_pinch_2018": {
-            "DEFAULT": "rendering_desktop_007.wprgo"
-        },
-        "gmail_pinch_2018": {
-            "DEFAULT": "rendering_desktop_007.wprgo"
-        },
-        "google_calendar_pinch_2018": {
-            "DEFAULT": "rendering_desktop_007.wprgo"
-        },
-        "google_image_pinch_2018": {
-            "DEFAULT": "rendering_desktop_007.wprgo"
-        },
-        "google_search_pinch_2018": {
-            "DEFAULT": "rendering_desktop_007.wprgo"
-        },
-        "linkedin_pinch_2018": {
-            "DEFAULT": "rendering_desktop_007.wprgo"
-        },
-        "twitch_pinch_2018": {
-            "DEFAULT": "rendering_desktop_007.wprgo"
-        },
-        "twitter_pinch_2018": {
-            "DEFAULT": "rendering_desktop_007.wprgo"
-        },
         "yahoo_news_pinch_2018": {
             "DEFAULT": "rendering_desktop_007.wprgo"
+        },
+        "yahoo_sports_2018": {
+            "DEFAULT": "rendering_desktop_000.wprgo"
         },
         "yahoo_sports_pinch_2018": {
             "DEFAULT": "rendering_desktop_007.wprgo"
         },
+        "youtube_2018": {
+            "DEFAULT": "rendering_desktop_000.wprgo"
+        },
         "youtube_pinch_2018": {
             "DEFAULT": "rendering_desktop_007.wprgo"
-        },
-        "cats_unscaled": {
-            "DEFAULT": "rendering_desktop_008.wprgo"
-        },
-        "cats_viewport_width": {
-            "DEFAULT": "rendering_desktop_008.wprgo"
-        },
-        "js_full_screen_invalidation": {
-            "DEFAULT": "rendering_desktop_009.wprgo"
-        },
-        "new_tilings": {
-            "DEFAULT": "rendering_desktop_010.wprgo"
-        },
-        "cc_poster_circle": {
-            "DEFAULT": "rendering_desktop_009.wprgo"
-        },
-        "js_poster_circle": {
-            "DEFAULT": "rendering_desktop_009.wprgo"
-        },
-        "js_scroll_200_layer_grid": {
-            "DEFAULT": "rendering_desktop_009.wprgo"
-        },
-        "cc_scroll_text_only": {
-            "DEFAULT": "rendering_desktop_009.wprgo"
-        },
-        "js_scroll_text_only": {
-            "DEFAULT": "rendering_desktop_009.wprgo"
-        },
-        "cc_scroll_200_layer_grid": {
-            "DEFAULT": "rendering_desktop_009.wprgo"
         }
     },
     "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.",
