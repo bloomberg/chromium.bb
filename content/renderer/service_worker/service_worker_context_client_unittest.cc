@@ -281,6 +281,7 @@ class ServiceWorkerContextClientTest : public testing::Test {
             embedded_worker_host_ptr.PassInterface(), CreateProviderInfo(),
             nullptr /* embedded_worker_client */,
             mojom::EmbeddedWorkerStartTiming::New(),
+            nullptr /* preference_watcher_request */,
             blink::scheduler::GetSingleThreadTaskRunnerForTesting());
 
     context_client->WorkerContextStarted(proxy);

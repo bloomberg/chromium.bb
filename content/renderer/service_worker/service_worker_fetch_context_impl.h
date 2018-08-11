@@ -5,7 +5,9 @@
 #ifndef CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_FETCH_CONTEXT_IMPL_H_
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_FETCH_CONTEXT_IMPL_H_
 
+#include "content/public/common/renderer_preference_watcher.mojom.h"
 #include "content/public/common/renderer_preferences.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "url/gurl.h"
@@ -15,7 +17,8 @@ class ResourceDispatcher;
 class URLLoaderThrottleProvider;
 class WebSocketHandshakeThrottleProvider;
 
-class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
+class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext,
+                                      public mojom::RendererPreferenceWatcher {
  public:
   // |url_loader_factory_info| is used for regular loads from the service worker
   // (i.e., Fetch API). It typically goes to network, but it might internally
@@ -34,7 +37,8 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
       int service_worker_provider_id,
       std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
       std::unique_ptr<WebSocketHandshakeThrottleProvider>
-          websocket_handshake_throttle_provider);
+          websocket_handshake_throttle_provider,
+      mojom::RendererPreferenceWatcherRequest preference_watcher_request);
   ~ServiceWorkerFetchContextImpl() override;
 
   // blink::WebWorkerFetchContext implementation:
@@ -53,6 +57,9 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
   CreateWebSocketHandshakeThrottle() override;
 
  private:
+  // Implements mojom::RendererPreferenceWatcher.
+  void NotifyUpdate(const RendererPreferences& new_prefs) override;
+
   RendererPreferences renderer_preferences_;
   const GURL worker_script_url_;
   // Consumed on the worker thread to create |url_loader_factory_|.
@@ -73,6 +80,12 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
   std::unique_ptr<URLLoaderThrottleProvider> throttle_provider_;
   std::unique_ptr<WebSocketHandshakeThrottleProvider>
       websocket_handshake_throttle_provider_;
+
+  mojo::Binding<mojom::RendererPreferenceWatcher> preference_watcher_binding_;
+
+  // Kept while staring up the worker thread. Valid until
+  // InitializeOnWorkerThread().
+  mojom::RendererPreferenceWatcherRequest preference_watcher_request_;
 
   // This is owned by ThreadedMessagingProxyBase on the main thread.
   base::WaitableEvent* terminate_sync_load_event_ = nullptr;

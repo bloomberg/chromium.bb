@@ -668,6 +668,8 @@ jumbo_split_static_library("ui") {
     "passwords/password_manager_presenter.h",
     "passwords/password_ui_view.h",
     "permission_bubble/permission_prompt.h",
+    "prefs/pref_watcher.cc",
+    "prefs/pref_watcher.h",
     "prefs/prefs_tab_helper.cc",
     "prefs/prefs_tab_helper.h",
     "profile_chooser_constants.h",

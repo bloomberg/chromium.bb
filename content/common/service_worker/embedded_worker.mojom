@@ -8,6 +8,8 @@ import "content/common/native_types.mojom";
 import "content/common/service_worker/controller_service_worker.mojom";
 import "content/common/service_worker/service_worker.mojom";
 import "content/common/service_worker/service_worker_provider.mojom";
+import "content/public/common/renderer_preference_watcher.mojom";
+import "content/public/common/renderer_preferences.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
@@ -64,6 +66,8 @@ struct EmbeddedWorkerStartParams {
   ServiceWorkerProviderInfoForStartWorker provider_info;
   // Interface for the renderer to query the content settings in the browser.
   blink.mojom.WorkerContentSettingsProxy content_settings_proxy;
+  // Interface for keeping track of the renderer preferences.
+  RendererPreferenceWatcher& preference_watcher_request;
 };
 
 // Holds timing information about the start worker sequence for UMA.
