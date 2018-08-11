@@ -42,7 +42,8 @@ bool CanUseTranslucentTooltipWidget() {
 }
 
 // Creates a widget of type TYPE_TOOLTIP
-views::Widget* CreateTooltipWidget(aura::Window* tooltip_window) {
+views::Widget* CreateTooltipWidget(aura::Window* tooltip_window,
+                                   const gfx::Rect& bounds) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params;
   // For aura, since we set the type to TYPE_TOOLTIP, the widget will get
@@ -52,6 +53,7 @@ views::Widget* CreateTooltipWidget(aura::Window* tooltip_window) {
   DCHECK(params.context);
   params.keep_on_top = true;
   params.accept_events = false;
+  params.bounds = bounds;
   if (CanUseTranslucentTooltipWidget())
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
@@ -166,8 +168,8 @@ gfx::RenderText* TooltipAura::GetRenderTextForTest() {
   return tooltip_view_->render_text_for_test();
 }
 
-void TooltipAura::SetTooltipBounds(const gfx::Point& mouse_pos,
-                                   const gfx::Size& tooltip_size) {
+gfx::Rect TooltipAura::GetTooltipBounds(const gfx::Point& mouse_pos,
+                                        const gfx::Size& tooltip_size) {
   gfx::Rect tooltip_rect(mouse_pos, tooltip_size);
   tooltip_rect.Offset(kCursorOffsetX, kCursorOffsetY);
   display::Screen* screen = display::Screen::GetScreen();
@@ -186,7 +188,7 @@ void TooltipAura::SetTooltipBounds(const gfx::Point& mouse_pos,
     tooltip_rect.set_y(mouse_pos.y() - tooltip_size.height());
 
   tooltip_rect.AdjustToFit(display_bounds);
-  widget_->SetBounds(tooltip_rect);
+  return tooltip_rect;
 }
 
 void TooltipAura::DestroyWidget() {
@@ -210,13 +212,16 @@ void TooltipAura::SetText(aura::Window* window,
   tooltip_view_->SetMaxWidth(GetMaxWidth(location));
   tooltip_view_->SetText(tooltip_text);
 
+  const gfx::Rect adjusted_bounds =
+      GetTooltipBounds(location, tooltip_view_->GetPreferredSize());
+
   if (!widget_) {
-    widget_ = CreateTooltipWidget(tooltip_window_);
+    widget_ = CreateTooltipWidget(tooltip_window_, adjusted_bounds);
     widget_->SetContentsView(tooltip_view_.get());
     widget_->AddObserver(this);
+  } else {
+    widget_->SetBounds(adjusted_bounds);
   }
-
-  SetTooltipBounds(location, tooltip_view_->GetPreferredSize());
 
   ui::NativeTheme* native_theme = widget_->GetNativeTheme();
   tooltip_view_->SetBackgroundColor(native_theme->GetSystemColor(
