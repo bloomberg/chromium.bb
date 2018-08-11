@@ -239,6 +239,9 @@ class TestWindowTree : public ui::mojom::WindowTree {
                          ui::mojom::MoveLoopSource source,
                          const gfx::Point& cursor_location) override;
   void CancelWindowMove(ui::Id window_id) override;
+  void ObserveTopmostWindow(ui::mojom::MoveLoopSource source,
+                            ui::Id window_id) override;
+  void StopObservingTopmostWindow() override;
 
   struct AckedEvent {
     uint32_t event_id;

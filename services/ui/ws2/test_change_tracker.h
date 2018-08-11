@@ -54,6 +54,7 @@ enum ChangeType {
   CHANGE_TYPE_DRAG_LEAVE,
   CHANGE_TYPE_COMPLETE_DROP,
   CHANGE_TYPE_DRAG_DROP_DONE,
+  CHANGE_TYPE_TOPMOST_WINDOW_CHANGED,
   CHANGE_TYPE_ON_PERFORM_DRAG_DROP_COMPLETED,
 };
 
@@ -226,6 +227,7 @@ class TestChangeTracker {
   void OnDragLeave(Id widnow_id);
   void OnCompleteDrop(Id window_id);
   void OnDragDropDone();
+  void OnTopmostWindowChanged(const std::vector<Id>& topmost_ids);
   void OnPerformDragDropCompleted(uint32_t change_id,
                                   bool success,
                                   uint32_t action_taken);

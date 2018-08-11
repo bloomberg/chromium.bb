@@ -43,6 +43,7 @@
 #include "ui/aura/mus/mus_context_factory.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/property_utils.h"
+#include "ui/aura/mus/topmost_window_tracker.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
@@ -1468,6 +1469,38 @@ void WindowTreeClient::OnPerformDragDropCompleted(uint32_t change_id,
   OnChangeCompleted(change_id, success);
   if (drag_drop_controller_->DoesChangeIdMatchDragChangeId(change_id))
     drag_drop_controller_->OnPerformDragDropCompleted(action_taken);
+}
+
+std::unique_ptr<TopmostWindowTracker>
+WindowTreeClient::StartObservingTopmostWindow(ui::mojom::MoveLoopSource source,
+                                              aura::Window* initial_target) {
+  DCHECK(!topmost_window_tracker_);
+  WindowMus* window = WindowMus::Get(initial_target->GetRootWindow());
+  DCHECK(window);
+
+  tree_->ObserveTopmostWindow(source, window->server_id());
+  auto topmost_window_tracker = std::make_unique<TopmostWindowTracker>(this);
+  topmost_window_tracker_ = topmost_window_tracker.get();
+  return topmost_window_tracker;
+}
+
+void WindowTreeClient::StopObservingTopmostWindow() {
+  DCHECK(topmost_window_tracker_);
+  tree_->StopObservingTopmostWindow();
+  topmost_window_tracker_ = nullptr;
+}
+
+void WindowTreeClient::OnTopmostWindowChanged(
+    const std::vector<ui::Id>& topmost_ids) {
+  DCHECK_LE(topmost_ids.size(), 2u);
+  // There's a slight chance of |topmost_window_tracker_| to be nullptr at the
+  // end of a session of observing topmost window.
+  if (!topmost_window_tracker_)
+    return;
+  std::vector<WindowMus*> windows;
+  for (auto& id : topmost_ids)
+    windows.push_back(GetWindowByServerId(id));
+  topmost_window_tracker_->OnTopmostWindowChanged(windows);
 }
 
 void WindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {

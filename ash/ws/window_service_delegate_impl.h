@@ -44,6 +44,9 @@ class WindowServiceDelegateImpl : public ui::ws2::WindowServiceDelegate {
   ui::SystemInputInjector* GetSystemInputInjector() override;
   aura::WindowTreeHost* GetWindowTreeHostForDisplayId(
       int64_t display_id) override;
+  aura::Window* GetTopmostWindowAtPoint(const gfx::Point& location_in_screen,
+                                        const std::set<aura::Window*>& ignores,
+                                        aura::Window** real_topmost) override;
 
  private:
   std::unique_ptr<ui::SystemInputInjector> system_input_injector_;

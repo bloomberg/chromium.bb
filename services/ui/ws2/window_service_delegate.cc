@@ -38,5 +38,12 @@ aura::WindowTreeHost* WindowServiceDelegate::GetWindowTreeHostForDisplayId(
   return nullptr;
 }
 
+aura::Window* WindowServiceDelegate::GetTopmostWindowAtPoint(
+    const gfx::Point& location_in_screen,
+    const std::set<aura::Window*>& ignore,
+    aura::Window** real_topmost) {
+  return nullptr;
+}
+
 }  // namespace ws2
 }  // namespace ui

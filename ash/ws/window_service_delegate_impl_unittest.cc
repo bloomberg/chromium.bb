@@ -247,4 +247,57 @@ TEST_F(WindowServiceDelegateImplTest, CancelDragDropAfterDragLoopRun) {
       "OnPerformDragDropCompleted id=21 success=false action=0"));
 }
 
+TEST_F(WindowServiceDelegateImplTest, ObserveTopmostWindow) {
+  std::unique_ptr<aura::Window> window2 =
+      CreateTestWindow(gfx::Rect(150, 100, 100, 100));
+  std::unique_ptr<aura::Window> window3(
+      CreateTestWindowInShell(SK_ColorRED, kShellWindowId_DefaultContainer,
+                              gfx::Rect(100, 150, 100, 100)));
+
+  // Left button is pressed on SetUp() -- release it first.
+  GetEventGenerator()->ReleaseLeftButton();
+  GetEventGenerator()->MoveMouseTo(gfx::Point(105, 105));
+  GetEventGenerator()->PressLeftButton();
+  GetWindowTreeClientChanges()->clear();
+
+  GetWindowTreeTestHelper()->window_tree()->ObserveTopmostWindow(
+      ui::mojom::MoveLoopSource::MOUSE, GetTopLevelWindowId());
+  EXPECT_TRUE(
+      ContainsChange(*GetWindowTreeClientChanges(),
+                     "TopmostWindowChanged window_id=0,1 window_id2=null"));
+  GetWindowTreeClientChanges()->clear();
+
+  GetEventGenerator()->MoveMouseTo(gfx::Point(155, 105));
+  EXPECT_TRUE(
+      ContainsChange(*GetWindowTreeClientChanges(),
+                     "TopmostWindowChanged window_id=0,1 window_id2=0,2"));
+  GetWindowTreeClientChanges()->clear();
+
+  GetEventGenerator()->MoveMouseTo(gfx::Point(155, 115));
+  EXPECT_FALSE(
+      ContainsChange(*GetWindowTreeClientChanges(),
+                     "TopmostWindowChanged window_id=0,1 window_id2=0,2"));
+  GetWindowTreeClientChanges()->clear();
+
+  GetEventGenerator()->MoveMouseTo(gfx::Point(155, 155));
+  EXPECT_TRUE(
+      ContainsChange(*GetWindowTreeClientChanges(),
+                     "TopmostWindowChanged window_id=0,1 window_id2=null"));
+  GetWindowTreeClientChanges()->clear();
+
+  window3.reset();
+  EXPECT_TRUE(
+      ContainsChange(*GetWindowTreeClientChanges(),
+                     "TopmostWindowChanged window_id=0,1 window_id2=0,2"));
+  GetWindowTreeClientChanges()->clear();
+
+  window2->Hide();
+  EXPECT_TRUE(
+      ContainsChange(*GetWindowTreeClientChanges(),
+                     "TopmostWindowChanged window_id=0,1 window_id2=null"));
+  GetWindowTreeClientChanges()->clear();
+
+  GetWindowTreeTestHelper()->window_tree()->StopObservingTopmostWindow();
+}
+
 }  // namespace ash

@@ -352,7 +352,6 @@ TabDragController::TabDragController()
       is_mutating_(false),
       attach_x_(-1),
       attach_index_(-1),
-      window_finder_(std::make_unique<WindowFinder>()),
       weak_factory_(this) {
   g_tab_drag_controller = this;
 }
@@ -439,6 +438,8 @@ void TabDragController::Init(TabStrip* source_tabstrip,
     detach_behavior_ = NOT_DETACHABLE;
   }
 #endif
+  window_finder_ = WindowFinder::Create(
+      event_source, source_tabstrip->GetWidget()->GetNativeWindow());
 }
 
 // static

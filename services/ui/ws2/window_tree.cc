@@ -21,6 +21,7 @@
 #include "services/ui/ws2/embedding.h"
 #include "services/ui/ws2/pointer_watcher.h"
 #include "services/ui/ws2/server_window.h"
+#include "services/ui/ws2/topmost_window_observer.h"
 #include "services/ui/ws2/window_delegate_impl.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_delegate.h"
@@ -592,6 +593,17 @@ WindowTree::GetAndRemoveScheduledEmbedWindowTreeClient(
     }
   }
   return nullptr;
+}
+
+void WindowTree::SendTopmostWindows(
+    const std::vector<aura::Window*>& topmosts) {
+  DCHECK_NE(connection_type_, ConnectionType::kEmbedding);
+  std::vector<Id> topmost_ids;
+  for (auto* window : topmosts) {
+    topmost_ids.push_back(IsWindowKnown(window) ? TransportIdForWindow(window)
+                                                : kInvalidTransportId);
+  }
+  window_tree_client_->OnTopmostWindowChanged(topmost_ids);
 }
 
 bool WindowTree::NewWindowImpl(
@@ -1813,6 +1825,37 @@ void WindowTree::CancelDragDrop(Id window_id) {
   // Cancel the current drag loop if it is running.
   window_service_->delegate()->CancelDragLoop(
       GetWindowByTransportId(window_id));
+}
+
+void WindowTree::ObserveTopmostWindow(ui::mojom::MoveLoopSource source,
+                                      Id window_id) {
+  if (connection_type_ == ConnectionType::kEmbedding) {
+    DVLOG(1) << "ObserveTopmostWindow failed (access denied)";
+    return;
+  }
+  DVLOG(3) << "ObserveTopmostWindow id="
+           << MakeClientWindowId(window_id).ToString();
+  aura::Window* window = GetWindowByTransportId(window_id);
+  if (!IsClientCreatedWindow(window) || !IsTopLevel(window) ||
+      !window->IsVisible() || topmost_window_observer_) {
+    DVLOG(1) << "ObserveTopmostWindow failed (invalid window)";
+    return;
+  }
+
+  topmost_window_observer_ =
+      std::make_unique<TopmostWindowObserver>(this, source, window);
+}
+
+void WindowTree::StopObservingTopmostWindow() {
+  if (connection_type_ == ConnectionType::kEmbedding) {
+    DVLOG(1) << "StopObservingTopmostWindow failed (access denied)";
+    return;
+  }
+  if (!topmost_window_observer_) {
+    DVLOG(1) << "StopObservingTopmostWindow failed";
+    return;
+  }
+  topmost_window_observer_.reset();
 }
 
 }  // namespace ws2

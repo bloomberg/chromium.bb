@@ -12,6 +12,7 @@
 #include "ash/wm/non_client_frame_controller.h"
 #include "ash/wm/top_level_window_factory.h"
 #include "ash/wm/toplevel_window_event_handler.h"
+#include "ash/wm/window_finder.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "mojo/public/cpp/bindings/map.h"
@@ -211,6 +212,13 @@ aura::WindowTreeHost* WindowServiceDelegateImpl::GetWindowTreeHostForDisplayId(
   RootWindowController* root_window_controller =
       Shell::GetRootWindowControllerWithDisplayId(display_id);
   return root_window_controller ? root_window_controller->GetHost() : nullptr;
+}
+
+aura::Window* WindowServiceDelegateImpl::GetTopmostWindowAtPoint(
+    const gfx::Point& location_in_screen,
+    const std::set<aura::Window*>& ignore,
+    aura::Window** real_topmost) {
+  return wm::GetTopmostWindowAtPoint(location_in_screen, ignore, real_topmost);
 }
 
 }  // namespace ash

@@ -38,6 +38,7 @@ class Embedding;
 class FocusHandler;
 class PointerWatcher;
 class ServerWindow;
+class TopmostWindowObserver;
 class WindowService;
 
 // WindowTree manages a client connected to the Window Service. WindowTree
@@ -95,6 +96,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // that do not own the WindowTree (see Embedding for more details on when this
   // happens).
   void OnEmbeddingDestroyed(Embedding* embedding);
+
+  // Sends the topmost window information to the client. There can be multiple
+  // windows, as described for OnTopmostWindowChanged() in window_tree.mojom.
+  void SendTopmostWindows(const std::vector<aura::Window*>& topmosts);
 
   WindowService* window_service() { return window_service_; }
 
@@ -422,6 +427,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
       uint32_t drag_operation,
       ::ui::mojom::PointerKind source) override;
   void CancelDragDrop(Id window_id) override;
+  void ObserveTopmostWindow(ui::mojom::MoveLoopSource source,
+                            Id window_id) override;
+  void StopObservingTopmostWindow() override;
 
   WindowService* window_service_;
 
@@ -486,6 +494,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
   // Set while a window move loop is in progress.
   aura::Window* window_moving_ = nullptr;
+
+  // Set while a window move loop is in progress to track the window move
+  // information.
+  std::unique_ptr<TopmostWindowObserver> topmost_window_observer_;
 
   // Set while a drag loop is in progress.
   Id pending_drag_source_window_id_ = kInvalidTransportId;

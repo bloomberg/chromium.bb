@@ -3333,7 +3333,6 @@ jumbo_split_static_library("ui") {
         "views/tabs/tab_strip_controller.h",
         "views/tabs/tab_strip_layout.cc",
         "views/tabs/tab_strip_layout.h",
-        "views/tabs/window_finder.cc",
         "views/tabs/window_finder.h",
         "views/theme_copying_widget.cc",
         "views/theme_copying_widget.h",
@@ -3402,6 +3401,7 @@ jumbo_split_static_library("ui") {
           "views/profiles/forced_reauthentication_dialog_view.h",
           "views/sync/one_click_signin_dialog_view.cc",
           "views/sync/one_click_signin_dialog_view.h",
+          "views/tabs/window_finder.cc",
         ]
       }
 

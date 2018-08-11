@@ -116,6 +116,14 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
   virtual aura::WindowTreeHost* GetWindowTreeHostForDisplayId(
       int64_t display_id);
 
+  // Returns the topmost visible window at the location in screen coordinate,
+  // excluding |ignore|. |real_topmost| is updated to the topmost visible window
+  // at the location without excluding |ignore|.
+  virtual aura::Window* GetTopmostWindowAtPoint(
+      const gfx::Point& location_in_screen,
+      const std::set<aura::Window*>& ignore,
+      aura::Window** real_topmost);
+
  protected:
   virtual ~WindowServiceDelegate() = default;
 };
