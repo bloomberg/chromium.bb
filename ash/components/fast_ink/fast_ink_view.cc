@@ -313,8 +313,7 @@ FastInkView::FastInkView(aura::Window* container,
   // but with potential tearing. Note that we have to draw into a temporary
   // surface and copy it into GPU memory buffer to avoid flicker.
   gpu_memory_buffer_ =
-      widget_->GetNativeWindow()
-          ->env()
+      aura::Env::GetInstance()
           ->context_factory()
           ->GetGpuMemoryBufferManager()
           ->CreateGpuMemoryBuffer(buffer_size_,
@@ -396,8 +395,7 @@ void FastInkView::SubmitCompositorFrame() {
     // new instance to be created in lost context situations is acceptable and
     // keeps the code simple.
     if (!resource->context_provider) {
-      resource->context_provider = widget_->GetNativeWindow()
-                                       ->env()
+      resource->context_provider = aura::Env::GetInstance()
                                        ->context_factory()
                                        ->SharedMainThreadContextProvider();
       if (!resource->context_provider) {

@@ -25,10 +25,6 @@ void SetEnvForTestWindows(Env* env) {
   g_env = env;
 }
 
-Env* GetEnvForTestWindows() {
-  return g_env ? g_env : Env::GetInstance();
-}
-
 Window* CreateTestWindowWithId(int id, Window* parent) {
   return CreateTestWindowWithDelegate(NULL, id, gfx::Rect(), parent);
 }
@@ -59,7 +55,7 @@ Window* CreateTestWindowWithDelegateAndType(WindowDelegate* delegate,
                                             const gfx::Rect& bounds,
                                             Window* parent,
                                             bool show_on_creation) {
-  Window* window = new Window(delegate, type, GetEnvForTestWindows());
+  Window* window = new Window(delegate, type, g_env);
   window->set_id(id);
   window->Init(ui::LAYER_TEXTURED);
   window->SetProperty(aura::client::kResizeBehaviorKey,

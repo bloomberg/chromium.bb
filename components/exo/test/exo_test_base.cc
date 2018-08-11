@@ -29,7 +29,7 @@ void ExoTestBase::SetUp() {
   command_line->AppendSwitch(wm::switches::kWindowAnimationsDisabled);
   ui::SetUpInputMethodFactoryForTesting();
   AshTestBase::SetUp();
-  wm_helper_ = std::make_unique<WMHelper>(ash::Shell::Get()->aura_env());
+  wm_helper_ = std::make_unique<WMHelper>(aura::Env::GetInstance());
   WMHelper::SetInstance(wm_helper_.get());
   test::TestClientControlledStateDelegate::InstallFactory();
 }

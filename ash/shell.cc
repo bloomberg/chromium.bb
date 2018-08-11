@@ -136,7 +136,6 @@
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/native_cursor_manager_ash_classic.h"
-#include "ash/wm/non_client_frame_controller.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
@@ -209,7 +208,6 @@
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/focus/focus_manager_factory.h"
-#include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/accelerator_filter.h"
@@ -433,8 +431,8 @@ void Shell::RegisterUserProfilePrefs(PrefRegistrySimple* registry,
 }
 
 void Shell::InitWaylandServer(std::unique_ptr<exo::FileHelper> file_helper) {
-  wayland_server_controller_ = WaylandServerController::CreateIfNecessary(
-      std::move(file_helper), aura_env_);
+  wayland_server_controller_ =
+      WaylandServerController::CreateIfNecessary(std::move(file_helper));
 }
 
 void Shell::DestroyWaylandServer() {
@@ -690,12 +688,7 @@ void Shell::NotifyAppListVisibilityChanged(bool visible,
 
 Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
              service_manager::Connector* connector)
-    : owned_aura_env_(::features::IsSingleProcessMash()
-                          ? aura::Env::CreateLocalInstanceForInProcess()
-                          : nullptr),
-      aura_env_(owned_aura_env_.get() ? owned_aura_env_.get()
-                                      : aura::Env::GetInstance()),
-      ash_display_controller_(std::make_unique<AshDisplayController>()),
+    : ash_display_controller_(std::make_unique<AshDisplayController>()),
       brightness_control_delegate_(
           std::make_unique<system::BrightnessControllerChromeos>()),
       cast_config_(std::make_unique<CastConfigController>()),
@@ -973,17 +966,6 @@ void Shell::Init(
     ui::ContextFactoryPrivate* context_factory_private,
     std::unique_ptr<base::Value> initial_display_prefs,
     std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider) {
-  if (::features::IsSingleProcessMash()) {
-    // In SingleProcessMash mode ScreenMus is not created, which means Ash needs
-    // to set the WindowManagerFrameValues.
-    views::WindowManagerFrameValues frame_values;
-    frame_values.normal_insets = frame_values.maximized_insets =
-        NonClientFrameController::GetPreferredClientAreaInsets();
-    frame_values.max_title_bar_button_width =
-        NonClientFrameController::GetMaxTitleBarButtonWidth();
-    views::WindowManagerFrameValues::SetInstance(frame_values);
-  }
-
   // This creates the MessageCenter object which is used by some other objects
   // initialized here, so it needs to come early.
   message_center_controller_ = std::make_unique<MessageCenterController>();
@@ -1060,9 +1042,11 @@ void Shell::Init(
   // This will initialize aura::Env which requires |display_manager_| to
   // be initialized first.
   if (context_factory)
-    aura_env_->set_context_factory(context_factory);
-  if (context_factory_private)
-    aura_env_->set_context_factory_private(context_factory_private);
+    aura::Env::GetInstance()->set_context_factory(context_factory);
+  if (context_factory_private) {
+    aura::Env::GetInstance()->set_context_factory_private(
+        context_factory_private);
+  }
 
   // Night Light depends on the display manager, the display color manager, and
   // aura::Env, so initialize it after all have been initialized.
@@ -1072,12 +1056,11 @@ void Shell::Init(
   // The WindowModalityController needs to be at the front of the input event
   // pretarget handler list to ensure that it processes input events when modal
   // windows are active.
-  window_modality_controller_ =
-      std::make_unique<::wm::WindowModalityController>(this, aura_env_);
+  window_modality_controller_.reset(new ::wm::WindowModalityController(this));
 
   event_rewriter_controller_ = std::make_unique<EventRewriterController>();
 
-  env_filter_ = std::make_unique<::wm::CompoundEventFilter>();
+  env_filter_.reset(new ::wm::CompoundEventFilter);
   AddPreTargetHandler(env_filter_.get());
 
   // FocusController takes ownership of AshFocusRules.
@@ -1157,7 +1140,7 @@ void Shell::Init(
   power_button_controller_->OnDisplayModeChanged(
       display_configurator_->cached_displays());
 
-  if (!::features::IsAshInBrowserProcess() || ::features::IsSingleProcessMash())
+  if (!::features::IsAshInBrowserProcess())
     client_image_registry_ = std::make_unique<ClientImageRegistry>();
 
   drag_drop_controller_ = std::make_unique<DragDropController>();
@@ -1202,7 +1185,8 @@ void Shell::Init(
   viz::mojom::VideoDetectorObserverPtr observer;
   video_detector_ =
       std::make_unique<VideoDetector>(mojo::MakeRequest(&observer));
-  aura_env_->context_factory_private()
+  aura::Env::GetInstance()
+      ->context_factory_private()
       ->GetHostFrameSinkManager()
       ->AddVideoDetectorObserver(std::move(observer));
 
@@ -1220,9 +1204,8 @@ void Shell::Init(
   pointer_watcher_adapter_ = std::make_unique<PointerWatcherAdapter>();
 
   resize_shadow_controller_.reset(new ResizeShadowController());
-  shadow_controller_ = std::make_unique<::wm::ShadowController>(
-      focus_controller_.get(), std::make_unique<WmShadowControllerDelegate>(),
-      aura_env_);
+  shadow_controller_.reset(new ::wm::ShadowController(
+      focus_controller_.get(), std::make_unique<WmShadowControllerDelegate>()));
 
   logout_confirmation_controller_ =
       std::make_unique<LogoutConfirmationController>();
@@ -1411,7 +1394,7 @@ bool Shell::CanAcceptEvent(const ui::Event& event) {
 }
 
 ui::EventTarget* Shell::GetParentTarget() {
-  return aura_env_;
+  return aura::Env::GetInstance();
 }
 
 std::unique_ptr<ui::EventTargetIterator> Shell::GetChildIterator() const {

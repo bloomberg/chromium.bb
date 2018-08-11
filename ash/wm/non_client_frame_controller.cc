@@ -177,9 +177,9 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
                      mojom::WindowStyle window_style)
       // The NativeWidget is mirroring the real Widget created in client code.
       // |is_parallel_widget_in_window_manager| is used to indicate this
-      : views::NativeWidgetAura(delegate,
-                                true /* is_parallel_widget_in_window_manager */,
-                                Shell::Get()->aura_env()),
+      : views::NativeWidgetAura(
+            delegate,
+            true /* is_parallel_widget_in_window_manager */),
         remove_standard_frame_(remove_standard_frame),
         enable_immersive_(enable_immersive),
         window_style_(window_style) {}

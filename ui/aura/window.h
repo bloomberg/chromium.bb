@@ -428,13 +428,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   Env* env() { return env_; }
   const Env* env() const { return env_; }
 
-#if !defined(NDEBUG)
-  // If passed a non-null value then a non-null aura::Env must be supplied to
-  // the constructor. |error_string| is the string supplied to the DCHECK
-  // calls.
-  static void SetEnvArgRequired(const char* error_string);
-#endif
-
   // ui::GestureConsumer:
   bool RequiresDoubleTapGestureEvents() const override;
 

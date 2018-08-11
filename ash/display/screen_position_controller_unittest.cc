@@ -11,7 +11,6 @@
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/window_factory.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -40,7 +39,7 @@ class ScreenPositionControllerTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    window_ = window_factory::NewWindow(&window_delegate_);
+    window_.reset(new aura::Window(&window_delegate_));
     window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window_->Init(ui::LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(window_.get());
@@ -321,10 +320,10 @@ namespace {
 class ConvertToScreenEventHandler : public ui::EventHandler {
  public:
   ConvertToScreenEventHandler() : could_convert_to_screen_(true) {
-    Shell::Get()->aura_env()->AddPreTargetHandler(this);
+    aura::Env::GetInstance()->AddPreTargetHandler(this);
   }
   ~ConvertToScreenEventHandler() override {
-    Shell::Get()->aura_env()->RemovePreTargetHandler(this);
+    aura::Env::GetInstance()->RemovePreTargetHandler(this);
   }
 
   bool could_convert_to_screen() const { return could_convert_to_screen_; }
@@ -366,7 +365,7 @@ TEST_F(ScreenPositionControllerTest,
   // ScreenPositionClient has been detached from the root window.
   GetEventGenerator()->MoveMouseTo(800, 200);
   EXPECT_TRUE(window_->GetBoundsInScreen().Contains(
-      Shell::Get()->aura_env()->last_mouse_location()));
+      aura::Env::GetInstance()->last_mouse_location()));
 
   aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
   aura::WindowTracker tracker;

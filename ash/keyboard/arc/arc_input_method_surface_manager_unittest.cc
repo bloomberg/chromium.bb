@@ -4,7 +4,6 @@
 
 #include "ash/keyboard/arc/arc_input_method_surface_manager.h"
 
-#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "components/exo/input_method_surface.h"
@@ -21,7 +20,7 @@ class ArcInputMethodSurfaceManagerTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    wm_helper_ = std::make_unique<exo::WMHelper>(Shell::Get()->aura_env());
+    wm_helper_ = std::make_unique<exo::WMHelper>(aura::Env::GetInstance());
     exo::WMHelper::SetInstance(wm_helper_.get());
   }
 

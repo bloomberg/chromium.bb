@@ -9,7 +9,6 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/window_factory.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -81,7 +80,7 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
                         const gfx::Rect& bounds_in_screen) {
     DCHECK(!drag_window_);
     original_window_ = original_window;
-    drag_window_ = window_factory::NewWindow(this).release();
+    drag_window_ = new aura::Window(this);
     int parent_id = original_window->parent()->id();
     aura::Window* container = root_window_->GetChildById(parent_id);
 

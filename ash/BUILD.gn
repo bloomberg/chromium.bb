@@ -23,10 +23,6 @@ assert(enable_hidpi)
 assert(use_ozone)
 
 component("ash") {
-  friend = [
-    ":ash_unittests",
-    ":test_support_common",
-  ]
   public = [
     "accelerators/accelerator_commands.h",
     "accelerators/accelerator_confirmation_dialog.h",
@@ -1184,8 +1180,6 @@ component("ash") {
     "wallpaper/wallpaper_view.cc",
     "wallpaper/wallpaper_widget_controller.cc",
     "wallpaper/wallpaper_window_state_manager.cc",
-    "window_factory.cc",
-    "window_factory.h",
     "wm/always_on_top_controller.cc",
     "wm/ash_focus_rules.cc",
     "wm/base_state.cc",

@@ -10,7 +10,6 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/window_factory.h"
 #include "ash/wm/cursor_manager_test_api.h"
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/window_positioning_utils.h"
@@ -73,20 +72,20 @@ class DragWindowResizerTest : public AshTestBase {
     gfx::Rect root_bounds(root->bounds());
     EXPECT_EQ(kRootHeight, root_bounds.height());
     EXPECT_EQ(800, root_bounds.width());
-    window_ = window_factory::NewWindow(&delegate_);
+    window_.reset(new aura::Window(&delegate_));
     window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window_->Init(ui::LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(window_.get());
     window_->set_id(1);
 
-    always_on_top_window_ = window_factory::NewWindow(&delegate2_);
+    always_on_top_window_.reset(new aura::Window(&delegate2_));
     always_on_top_window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     always_on_top_window_->SetProperty(aura::client::kAlwaysOnTopKey, true);
     always_on_top_window_->Init(ui::LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(always_on_top_window_.get());
     always_on_top_window_->set_id(2);
 
-    system_modal_window_ = window_factory::NewWindow(&delegate3_);
+    system_modal_window_.reset(new aura::Window(&delegate3_));
     system_modal_window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     system_modal_window_->SetProperty(aura::client::kModalKey,
                                       ui::MODAL_TYPE_SYSTEM);
@@ -94,20 +93,20 @@ class DragWindowResizerTest : public AshTestBase {
     ParentWindowInPrimaryRootWindow(system_modal_window_.get());
     system_modal_window_->set_id(3);
 
-    transient_child_ = window_factory::NewWindow(&delegate4_).release();
+    transient_child_ = new aura::Window(&delegate4_);
     transient_child_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     transient_child_->Init(ui::LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(transient_child_);
     transient_child_->set_id(4);
 
-    transient_parent_ = window_factory::NewWindow(&delegate5_);
+    transient_parent_.reset(new aura::Window(&delegate5_));
     transient_parent_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     transient_parent_->Init(ui::LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(transient_parent_.get());
     ::wm::AddTransientChild(transient_parent_.get(), transient_child_);
     transient_parent_->set_id(5);
 
-    panel_window_ = window_factory::NewWindow(&delegate6_);
+    panel_window_.reset(new aura::Window(&delegate6_));
     panel_window_->SetType(aura::client::WINDOW_TYPE_PANEL);
     panel_window_->Init(ui::LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(panel_window_.get());
@@ -298,7 +297,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplaysActiveRoot) {
   ASSERT_EQ(2U, root_windows.size());
 
   aura::test::TestWindowDelegate delegate;
-  std::unique_ptr<aura::Window> window = window_factory::NewWindow(&delegate);
+  std::unique_ptr<aura::Window> window(new aura::Window(&delegate));
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
   ParentWindowInPrimaryRootWindow(window.get());
@@ -657,7 +656,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(399, 200)));
     EXPECT_EQ("401,200",
-              Shell::Get()->aura_env()->last_mouse_location().ToString());
+              aura::Env::GetInstance()->last_mouse_location().ToString());
     resizer->CompleteDrag();
   }
 
@@ -674,7 +673,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(399, 200)));
     EXPECT_EQ("401,200",
-              Shell::Get()->aura_env()->last_mouse_location().ToString());
+              aura::Env::GetInstance()->last_mouse_location().ToString());
     resizer->CompleteDrag();
   }
 
@@ -684,7 +683,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     window->SetBoundsInScreen(
         gfx::Rect(0, 0, 50, 60),
         display::Screen::GetScreen()->GetPrimaryDisplay());
-    Shell::Get()->aura_env()->SetLastMouseLocation(gfx::Point(0, 0));
+    aura::Env::GetInstance()->SetLastMouseLocation(gfx::Point(0, 0));
     // Grab (0, 0) of the window.
     std::unique_ptr<WindowResizer> resizer(
         CreateDragWindowResizer(window, gfx::Point(), HTCAPTION));
@@ -692,7 +691,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(399, 200)));
     EXPECT_EQ("401,200",
-              Shell::Get()->aura_env()->last_mouse_location().ToString());
+              aura::Env::GetInstance()->last_mouse_location().ToString());
     resizer->CompleteDrag();
   }
 
@@ -709,7 +708,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(399, 200)));
     EXPECT_EQ("399,200",
-              Shell::Get()->aura_env()->last_mouse_location().ToString());
+              aura::Env::GetInstance()->last_mouse_location().ToString());
     resizer->CompleteDrag();
   }
 
@@ -726,7 +725,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(399, 200)));
     EXPECT_EQ("401,200",
-              Shell::Get()->aura_env()->last_mouse_location().ToString());
+              aura::Env::GetInstance()->last_mouse_location().ToString());
     resizer->CompleteDrag();
   }
 
@@ -743,7 +742,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(399, 200)));
     EXPECT_EQ("401,200",
-              Shell::Get()->aura_env()->last_mouse_location().ToString());
+              aura::Env::GetInstance()->last_mouse_location().ToString());
     resizer->CompleteDrag();
   }
 }

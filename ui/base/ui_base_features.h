@@ -50,18 +50,9 @@ UI_BASE_EXPORT extern const base::Feature kDirectManipulationStylus;
 // TODO(jamescook): Make flag only available in Chrome OS.
 UI_BASE_EXPORT extern const base::Feature kMash;
 
-UI_BASE_EXPORT extern const base::Feature kSingleProcessMash;
-
 // Returns true if ash is in process (the default). A value of false means ash
 // is running in a separate process (and is hosting the UI Service and Viz).
 UI_BASE_EXPORT bool IsAshInBrowserProcess();
-
-// Returns true if code outside of ash is using the WindowService. In this mode
-// there are two aura::Envs. Ash uses one with Env::Mode::LOCAL. Non-ash code
-// uses an aura::Env with a mode of MUS. The non-ash code using mus targets the
-// WindowService that ash is running. This exercises the WindowService mojo APIs
-// similar to kMash, but leaves ash and browser running in the same process.
-UI_BASE_EXPORT bool IsSingleProcessMash();
 
 #if defined(OS_MACOSX)
 // Returns true if the NSWindows for apps will be created in the app's process,

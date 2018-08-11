@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/threading/thread_local.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env_input_state_controller.h"
@@ -33,9 +34,9 @@ namespace aura {
 
 namespace {
 
-// Instance created by all static functions, except
-// CreateLocalInstanceForInProcess(). See GetInstance() for details.
-Env* g_primary_instance = nullptr;
+// Env is thread local so that aura may be used on multiple threads.
+base::LazyInstance<base::ThreadLocalPointer<Env>>::Leaky lazy_tls_ptr =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -51,29 +52,14 @@ Env::~Env() {
   for (EnvObserver& observer : observers_)
     observer.OnWillDestroyEnv();
 
-  if (this == g_primary_instance)
-    g_primary_instance = nullptr;
+  DCHECK_EQ(this, lazy_tls_ptr.Pointer()->Get());
+  lazy_tls_ptr.Pointer()->Set(NULL);
 }
 
 // static
 std::unique_ptr<Env> Env::CreateInstance(Mode mode) {
-  DCHECK(!g_primary_instance);
-  // No make_unique as constructor is private.
+  DCHECK(!lazy_tls_ptr.Pointer()->Get());
   std::unique_ptr<Env> env(new Env(mode));
-  g_primary_instance = env.get();
-  env->Init(nullptr);
-  return env;
-}
-
-// static
-std::unique_ptr<Env> Env::CreateLocalInstanceForInProcess() {
-  // It is expected this constructor is called *after* an instance has been
-  // created of type MUS. The order, and DCHECKs, aren't strictly necessary but
-  // help reinforce when this should be used.
-  DCHECK(g_primary_instance);
-  DCHECK(g_primary_instance->mode() == Mode::MUS);
-  // No make_unique as constructor is private.
-  std::unique_ptr<Env> env(new Env(Mode::LOCAL));
   env->Init(nullptr);
   return env;
 }
@@ -82,10 +68,8 @@ std::unique_ptr<Env> Env::CreateLocalInstanceForInProcess() {
 // static
 std::unique_ptr<Env> Env::CreateInstanceToHostViz(
     service_manager::Connector* connector) {
-  DCHECK(!g_primary_instance);
-  // No make_unique as constructor is private.
+  DCHECK(!lazy_tls_ptr.Pointer()->Get());
   std::unique_ptr<Env> env(new Env(Mode::LOCAL));
-  g_primary_instance = env.get();
   env->Init(connector);
   return env;
 }
@@ -93,7 +77,7 @@ std::unique_ptr<Env> Env::CreateInstanceToHostViz(
 
 // static
 Env* Env::GetInstance() {
-  Env* env = g_primary_instance;
+  Env* env = lazy_tls_ptr.Pointer()->Get();
   DCHECK(env) << "Env::CreateInstance must be called before getting the "
                  "instance of Env.";
   return env;
@@ -101,7 +85,7 @@ Env* Env::GetInstance() {
 
 // static
 Env* Env::GetInstanceDontCreate() {
-  return g_primary_instance;
+  return lazy_tls_ptr.Pointer()->Get();
 }
 
 std::unique_ptr<WindowPort> Env::CreateWindowPort(Window* window) {
@@ -209,7 +193,10 @@ Env::Env(Mode mode)
       get_last_mouse_location_from_mus_(mode_ == Mode::MUS),
       input_state_lookup_(InputStateLookup::Create()),
       context_factory_(nullptr),
-      context_factory_private_(nullptr) {}
+      context_factory_private_(nullptr) {
+  DCHECK(lazy_tls_ptr.Pointer()->Get() == NULL);
+  lazy_tls_ptr.Pointer()->Set(this);
+}
 
 void Env::Init(service_manager::Connector* connector) {
   if (mode_ == Mode::MUS) {

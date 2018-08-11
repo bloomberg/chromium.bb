@@ -10,7 +10,6 @@
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/window_factory.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "base/time/time.h"
@@ -457,15 +456,15 @@ TEST_F(SystemGestureEventFilterTest,
 
   aura::test::EventCountDelegate delegate;
   delegate.set_window_component(HTCLIENT);
-  std::unique_ptr<aura::Window> child =
-      window_factory::NewWindow(&delegate, aura::client::WINDOW_TYPE_CONTROL);
+  std::unique_ptr<aura::Window> child(new aura::Window(&delegate));
+  child->SetType(aura::client::WINDOW_TYPE_CONTROL);
   child->Init(ui::LAYER_TEXTURED);
   parent->AddChild(child.get());
   child->SetBounds(gfx::Rect(100, 100));
   child->Show();
 
   ui::test::TestEventHandler event_handler;
-  Shell::Get()->aura_env()->AddPreTargetHandler(
+  aura::Env::GetInstance()->AddPreTargetHandler(
       &event_handler, ui::EventTarget::Priority::kSystem);
 
   GetEventGenerator()->MoveMouseTo(0, 0);
@@ -476,7 +475,7 @@ TEST_F(SystemGestureEventFilterTest,
   EXPECT_EQ(event_handler.num_gesture_events(),
             delegate.GetGestureCountAndReset());
 
-  Shell::Get()->aura_env()->RemovePreTargetHandler(&event_handler);
+  aura::Env::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
 }  // namespace ash

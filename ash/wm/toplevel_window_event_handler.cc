@@ -69,7 +69,7 @@ bool ToplevelWindowEventHandler::AttemptToStartDrag(
   DCHECK(root_window);
   gfx::Point drag_location;
   if (move_source == ::wm::WINDOW_MOVE_SOURCE_TOUCH &&
-      Shell::Get()->aura_env()->is_touch_down()) {
+      aura::Env::GetInstance()->is_touch_down()) {
     gfx::PointF drag_location_f;
     bool has_point = ui::GestureRecognizer::Get()->GetLastTouchPointForTarget(
         source, &drag_location_f);
