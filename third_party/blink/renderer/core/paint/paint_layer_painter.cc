@@ -350,11 +350,12 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       paint_layer_.GetCompositingState() == kPaintsIntoOwnBacking
           ? paint_layer_.SubpixelAccumulation()
           : painting_info_arg.sub_pixel_accumulation;
-  ShouldRespectOverflowClipType respect_overflow_clip =
-      ShouldRespectOverflowClip(paint_flags, paint_layer_.GetLayoutObject());
 
   PaintLayerPaintingInfo painting_info = painting_info_arg;
   AdjustForPaintProperties(painting_info, paint_flags);
+
+  ShouldRespectOverflowClipType respect_overflow_clip =
+      ShouldRespectOverflowClip(paint_flags, paint_layer_.GetLayoutObject());
 
   bool should_create_subsequence = ShouldCreateSubsequence(
       paint_layer_, context, painting_info_arg, paint_flags);
