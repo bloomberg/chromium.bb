@@ -94,6 +94,7 @@ class AssistantManagerServiceImpl
   void DismissNotification(
       mojom::AssistantNotificationPtr notification) override;
   void RequestScreenContext(const gfx::Rect& region,
+                            bool from_user,
                             RequestScreenContextCallback callback) override;
 
   // AssistantActionObserver overrides:
@@ -178,7 +179,8 @@ class AssistantManagerServiceImpl
 
   void RegisterFallbackMediaHandler();
 
-  void SendContextQueryAndRunCallback(RequestScreenContextCallback callback);
+  void CacheScreenContext(RequestScreenContextCallback callback);
+  void SendScreenContextQuery(RequestScreenContextCallback callback);
 
   void OnAssistantStructureReceived(
       base::OnceClosure on_done,

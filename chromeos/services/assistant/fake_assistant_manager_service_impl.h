@@ -53,6 +53,7 @@ class FakeAssistantManagerServiceImpl : public AssistantManagerService {
   void DismissNotification(
       mojom::AssistantNotificationPtr notification) override;
   void RequestScreenContext(const gfx::Rect& region,
+                            bool from_user,
                             RequestScreenContextCallback callback) override;
 
  private:

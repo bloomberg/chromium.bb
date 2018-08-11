@@ -48,6 +48,7 @@ void FakeAssistantManagerServiceImpl::SendUpdateSettingsUiRequest(
 
 void FakeAssistantManagerServiceImpl::RequestScreenContext(
     const gfx::Rect& region,
+    bool from_user,
     RequestScreenContextCallback callback) {}
 
 void FakeAssistantManagerServiceImpl::StartVoiceInteraction() {}

@@ -76,7 +76,7 @@ class ASH_EXPORT AssistantScreenContextController
   std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshotForTest();
 
  private:
-  void RequestScreenContext(const gfx::Rect& rect);
+  void RequestScreenContext(const gfx::Rect& rect, bool from_user);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 

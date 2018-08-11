@@ -47,8 +47,13 @@ interface Assistant {
 
   // Asks assistant to grab screen context. |region| controls the part of the
   // screen to snapshot. If |region| is empty, it takes fullscreen screenshot.
-  // After grabbing completion, the callback will be invoked.
-  RequestScreenContext(gfx.mojom.Rect region) => ();
+  // The |from_user| parameter is true if the request originated from the user,
+  // false otherwise. A user request for screen context may come as a result of
+  // a suggestion chip press or Assistant stylus selection. A request that did
+  // not originate from the user occurs on launch of Assistant to provide
+  // additional context for subsequent voice/text queries. After grab
+  // completion, the callback will be invoked.
+  RequestScreenContext(gfx.mojom.Rect region, bool from_user) => ();
 };
 
 // Subscribes to assistant's interaction event. These events are server driven
