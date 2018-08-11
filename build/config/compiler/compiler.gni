@@ -83,7 +83,7 @@ exclude_unwind_tables =
 # Linux & Mac favor speed over size.
 # TODO(brettw) it's weird that Mac and desktop Linux are different. We should
 # explore favoring size over speed in this case as well.
-optimize_for_size = is_android || is_ios
+optimize_for_size = is_android || is_ios || is_fuchsia
 
 declare_args() {
   # Whether we should consider the profile we're using to be accurate. Accurate
