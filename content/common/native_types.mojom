@@ -19,6 +19,9 @@ struct FrameOwnerProperties;
 struct FrameReplicationState;
 
 [Native]
+struct RendererPreferences;
+
+[Native]
 struct VisualProperties;
 
 // NOTE: This type is only mapped and usable on Mac.

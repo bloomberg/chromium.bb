@@ -161,13 +161,15 @@ IN_PROC_BROWSER_TEST_F(ChromeDoNotTrackTest, FetchFromServiceWorker) {
   ExpectPageTextEq("1");
 
   // Updating settings should be reflected immediately.
-  SetEnableDoNotTrack(false /* enabled */);
-  ASSERT_TRUE(ExecJs(GetWebContents(), script));
-  {
-    content::TitleWatcher watcher(GetWebContents(), title);
-    EXPECT_EQ(title, watcher.WaitAndGetTitle());
-  }
-  ExpectPageTextEq("None");
+  // Disabled due to crbug.com/853085.
+  //
+  // SetEnableDoNotTrack(false /* enabled */);
+  // ASSERT_TRUE(ExecJs(GetWebContents(), script));
+  // {
+  //   content::TitleWatcher watcher(GetWebContents(), title);
+  //   EXPECT_EQ(title, watcher.WaitAndGetTitle());
+  // }
+  // ExpectPageTextEq("None");
 }
 
 }  // namespace
