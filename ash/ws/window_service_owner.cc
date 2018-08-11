@@ -36,7 +36,8 @@ void WindowServiceOwner::BindWindowService(
   std::unique_ptr<ui::ws2::WindowService> window_service =
       std::make_unique<ui::ws2::WindowService>(
           window_service_delegate_.get(), std::move(gpu_interface_provider_),
-          Shell::Get()->focus_controller(), features::IsAshInBrowserProcess());
+          Shell::Get()->focus_controller(), features::IsAshInBrowserProcess(),
+          Shell::Get()->aura_env());
   window_service_ = window_service.get();
   window_service_->SetFrameDecorationValues(
       NonClientFrameController::GetPreferredClientAreaInsets(),

@@ -41,6 +41,28 @@ Ash used to support a "mus" mode that ran the mojo window service from
 //services/ui on a background thread in the browser process. This configuration
 was deprecated in April 2018.
 
+SingleProcessMash
+-----------------
+
+Before launching Mash we plan to launch SingleProcessMash. SingleProcessMash is
+similar to "classic ash" in that ash and the browser still live in the same
+process and on the same thread, but all non-ash UI code (such as browser
+windows) will use the WindowService over mojo. This results in exercising much
+of the same code as in mash, but everything is still in the process.
+
+In SingleProcessMash mode there are two aura::Envs. Ash (Shell) creates one and
+the browser creates one. In order to ensure the right one is used do the
+following:
+
+. When creating a Widget set the parent and/or context. If you don't need a
+  specific parent (container), more often than not using a context of
+  Shell::GetRootWindowForNewWindows() is what you want.
+. If you are creating aura::Windows directly, use the ash::window_factory.
+. If you need access to aura::Env, get it from Shell. Shell always returns the
+  right one, regardless of mode.
+
+See https://docs.google.com/document/d/11ha_KioDdXe4iZS2AML1foKnCJlNKm7Q1hFr6VW8dV4/edit for more details.
+
 Mash Tests
 -----
 ash_unittests has some tests specific to Mash, but in general Ash code should

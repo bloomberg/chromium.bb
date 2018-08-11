@@ -44,6 +44,8 @@
 #include "ui/aura/input_state_lookup.h"
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"
+#include "ui/aura/test/test_windows.h"
+#include "ui/aura/window.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/platform_window_defaults.h"
@@ -165,6 +167,13 @@ AshTestHelper::~AshTestHelper() {
 }
 
 void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
+#if !defined(NDEBUG)
+  aura::Window::SetEnvArgRequired(
+      "Within ash you must supply a non-null aura::Env when creating a Window, "
+      "use window_factory, or supply the Env obtained from "
+      "Shell::Get()->aura_env()");
+#endif
+
   // TODO(jamescook): Can we do this without changing command line?
   // Use the origin (1,1) so that it doesn't over
   // lap with the native mouse cursor.
@@ -235,8 +244,10 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
 
   CreateShell();
 
-  aura::test::EnvTestHelper().SetInputStateLookup(
-      std::unique_ptr<aura::InputStateLookup>());
+  aura::test::SetEnvForTestWindows(Shell::Get()->aura_env());
+
+  aura::test::EnvTestHelper(Shell::Get()->aura_env())
+      .SetInputStateLookup(std::unique_ptr<aura::InputStateLookup>());
 
   Shell* shell = Shell::Get();
 
@@ -278,6 +289,8 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
 void AshTestHelper::TearDown() {
   app_list_test_helper_.reset();
 
+  aura::test::SetEnvForTestWindows(nullptr);
+
   Shell::DeleteInstance();
 
   // Suspend the tear down until all resources are returned via
@@ -318,6 +331,16 @@ void AshTestHelper::TearDown() {
   env_window_tree_client_setter_.reset();
 
   CHECK(!::wm::CaptureController::Get());
+#if !defined(NDEBUG)
+  aura::Window::SetEnvArgRequired(nullptr);
+#endif
+}
+
+void AshTestHelper::SetRunningOutsideAsh() {
+  test_views_delegate_->set_running_outside_ash();
+#if DCHECK_IS_ON()
+  aura::Window::SetEnvArgRequired(nullptr);
+#endif
 }
 
 PrefService* AshTestHelper::GetLocalStatePrefService() {

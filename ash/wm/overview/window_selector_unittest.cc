@@ -3237,7 +3237,7 @@ TEST_F(SplitViewWindowSelectorTest, DragOverviewWindowToSnap) {
 }
 
 TEST_F(SplitViewWindowSelectorTest, Dragging) {
-  aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
+  Shell::Get()->aura_env()->set_throttle_input_on_resize_for_testing(false);
 
   ui::test::EventGenerator* generator = GetEventGenerator();
 
@@ -3324,7 +3324,7 @@ TEST_F(SplitViewWindowSelectorTest, Dragging) {
 
 // Verify the correct behavior when dragging windows in overview mode.
 TEST_F(SplitViewWindowSelectorTest, OverviewDragControllerBehavior) {
-  aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
+  Shell::Get()->aura_env()->set_throttle_input_on_resize_for_testing(false);
 
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kOverviewSwipeToClose);

@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/layout.h"
@@ -42,7 +43,10 @@ namespace aura {
 // static
 std::unique_ptr<WindowTreeHost> WindowTreeHost::Create(
     ui::PlatformWindowInitProperties properties) {
-  return std::make_unique<WindowTreeHostPlatform>(std::move(properties));
+  return std::make_unique<WindowTreeHostPlatform>(
+      std::move(properties),
+      std::make_unique<aura::Window>(nullptr, client::WINDOW_TYPE_UNKNOWN,
+                                     Env::GetInstance()));
 }
 
 WindowTreeHostPlatform::WindowTreeHostPlatform(

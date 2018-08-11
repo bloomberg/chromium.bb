@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/ash_constants.h"
 #include "ui/aura/env.h"
+#include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/views/view_properties.h"
 #include "ui/views/widget/widget.h"
@@ -19,7 +20,7 @@ int FrameBorderNonClientHitTest(views::NonClientFrameView* view,
   gfx::Rect expanded_bounds = view->bounds();
   int outside_bounds = kResizeOutsideBoundsSize;
 
-  if (aura::Env::GetInstance()->is_touch_down())
+  if (view->GetWidget()->GetNativeWindow()->env()->is_touch_down())
     outside_bounds *= kResizeOutsideBoundsScaleForTouch;
   expanded_bounds.Inset(-outside_bounds, -outside_bounds);
 

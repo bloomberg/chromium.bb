@@ -127,6 +127,7 @@ class ArcVoiceInteractionFrameworkServiceTest : public ash::AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
+    SetRunningOutsideAsh();
     // Setup test profile.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingProfile::Builder profile_builder;

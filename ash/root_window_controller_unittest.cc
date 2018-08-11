@@ -11,6 +11,7 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/window_factory.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_properties.h"
@@ -29,6 +30,7 @@
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
@@ -621,28 +623,28 @@ class DestroyedWindowObserver : public aura::WindowObserver {
 TEST_F(RootWindowControllerTest, DontDeleteWindowsNotOwnedByParent) {
   DestroyedWindowObserver observer1;
   aura::test::TestWindowDelegate delegate1;
-  aura::Window* window1 = new aura::Window(&delegate1);
-  window1->SetType(aura::client::WINDOW_TYPE_CONTROL);
+  std::unique_ptr<aura::Window> window1 =
+      window_factory::NewWindow(&delegate1, aura::client::WINDOW_TYPE_CONTROL);
   window1->set_owned_by_parent(false);
-  observer1.SetWindow(window1);
+  observer1.SetWindow(window1.get());
   window1->Init(ui::LAYER_NOT_DRAWN);
-  aura::client::ParentWindowWithContext(window1, Shell::GetPrimaryRootWindow(),
-                                        gfx::Rect());
+  aura::client::ParentWindowWithContext(
+      window1.get(), Shell::GetPrimaryRootWindow(), gfx::Rect());
 
   DestroyedWindowObserver observer2;
-  aura::Window* window2 = new aura::Window(NULL);
+  std::unique_ptr<aura::Window> window2 = window_factory::NewWindow();
   window2->set_owned_by_parent(false);
-  observer2.SetWindow(window2);
+  observer2.SetWindow(window2.get());
   window2->Init(ui::LAYER_NOT_DRAWN);
-  Shell::GetPrimaryRootWindow()->AddChild(window2);
+  Shell::GetPrimaryRootWindow()->AddChild(window2.get());
 
   Shell::GetPrimaryRootWindowController()->CloseChildWindows();
 
   ASSERT_FALSE(observer1.destroyed());
-  delete window1;
+  window1.reset();
 
   ASSERT_FALSE(observer2.destroyed());
-  delete window2;
+  window2.reset();
 }
 
 // Verify that the context menu gets hidden when entering or exiting tablet

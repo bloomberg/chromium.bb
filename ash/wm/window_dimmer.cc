@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/window_factory.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -23,7 +24,9 @@ const float kDefaultDimOpacity = 0.5f;
 
 WindowDimmer::WindowDimmer(aura::Window* parent)
     : parent_(parent),
-      window_(new aura::Window(nullptr, aura::client::WINDOW_TYPE_NORMAL)) {
+      window_(
+          window_factory::NewWindow(nullptr, aura::client::WINDOW_TYPE_NORMAL)
+              .release()) {
   window_->Init(ui::LAYER_SOLID_COLOR);
   ::wm::SetWindowVisibilityChangesAnimated(window_);
   ::wm::SetWindowVisibilityAnimationType(

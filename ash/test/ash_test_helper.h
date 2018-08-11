@@ -63,6 +63,12 @@ class AshTestHelper {
   // Destroys the ash::Shell and performs associated cleanup.
   void TearDown();
 
+  // Call this only if this code is being run outside of ash, for example, in
+  // browser tests that use AshTestBase. This disables CHECKs that are
+  // applicable only when used inside ash.
+  // TODO: remove this and ban usage of AshTestHelper outside of ash.
+  void SetRunningOutsideAsh();
+
   // Returns a root Window. Usually this is the active root Window, but that
   // method can return NULL sometimes, and in those cases, we fall back on the
   // primary root Window.

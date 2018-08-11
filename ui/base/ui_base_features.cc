@@ -129,8 +129,15 @@ const base::Feature kDirectManipulationStylus = {
 
 const base::Feature kMash = {"Mash", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSingleProcessMash = {"SingleProcessMash",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsAshInBrowserProcess() {
   return !base::FeatureList::IsEnabled(features::kMash);
+}
+
+bool IsSingleProcessMash() {
+  return base::FeatureList::IsEnabled(features::kSingleProcessMash);
 }
 
 #if defined(OS_MACOSX)

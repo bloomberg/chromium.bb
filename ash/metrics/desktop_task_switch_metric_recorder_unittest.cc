@@ -8,6 +8,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/window_factory.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -101,8 +102,8 @@ int DesktopTaskSwitchMetricRecorderTest::GetActionCount() const {
 
 std::unique_ptr<aura::Window>
 DesktopTaskSwitchMetricRecorderTest::CreatePositionableWindow() const {
-  std::unique_ptr<aura::Window> window(new aura::Window(
-      aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate()));
+  std::unique_ptr<aura::Window> window = window_factory::NewWindow(
+      aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate());
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_NOT_DRAWN);
   return window;
@@ -110,8 +111,8 @@ DesktopTaskSwitchMetricRecorderTest::CreatePositionableWindow() const {
 
 std::unique_ptr<aura::Window>
 DesktopTaskSwitchMetricRecorderTest::CreateNonPositionableWindow() const {
-  std::unique_ptr<aura::Window> window(new aura::Window(
-      aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate()));
+  std::unique_ptr<aura::Window> window = window_factory::NewWindow(
+      aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate());
   window->SetType(aura::client::WINDOW_TYPE_UNKNOWN);
   window->Init(ui::LAYER_NOT_DRAWN);
   return window;

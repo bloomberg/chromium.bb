@@ -79,6 +79,11 @@ class AURA_EXPORT Env : public ui::EventTarget,
   // SetWindowTreeClient() before any windows are created.
   static std::unique_ptr<Env> CreateInstance(Mode mode = Mode::LOCAL);
 
+  // Creates a new Env of type LOCAL. This factory function is intended for
+  // use when this process is providing the WindowService *and* acting as a
+  // client of the WindowService, for example, ash with SingleProcessMash.
+  static std::unique_ptr<Env> CreateLocalInstanceForInProcess();
+
 #if defined(USE_OZONE)
   // used to create a new Env that hosts the viz process. |connector| is the
   // connector used to establish outbound connections.
@@ -86,6 +91,14 @@ class AURA_EXPORT Env : public ui::EventTarget,
       service_manager::Connector* connector);
 #endif
 
+  // This returns the instance created by CreateInstance() or
+  // CreateInstanceToHostViz(). This does *not* return the instance returned
+  // by CreateLocalInstanceForInProcess(). The instance returned by
+  // CreateLocalInstanceForInProcess() is intended for use when an Env has
+  // already been created. For example, in chrome with SingleProcessMash an
+  // instance is created by way of CreateInstance() (which is the instance
+  // returned by GetInstance()) *and* an instance is created via
+  // CreateLocalInstanceForInProcess().
   static Env* GetInstance();
   static Env* GetInstanceDontCreate();
 
