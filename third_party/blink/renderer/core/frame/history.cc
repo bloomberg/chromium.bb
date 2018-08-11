@@ -148,28 +148,22 @@ bool History::ShouldThrottleStateObjectChanges() {
   if (!GetFrame()->GetSettings()->GetShouldThrottlePushState())
     return false;
 
-  if (state_flood_guard.tokens > 0) {
-    state_flood_guard.tokens--;
-    return false;
+  const int kStateUpdateLimit = 50;
+
+  if (state_flood_guard.count > kStateUpdateLimit) {
+    static constexpr auto kStateUpdateLimitResetInterval =
+        TimeDelta::FromSeconds(10);
+    const auto now = CurrentTimeTicks();
+    if (now - state_flood_guard.last_updated > kStateUpdateLimitResetInterval) {
+      state_flood_guard.count = 0;
+      state_flood_guard.last_updated = now;
+      return false;
+    }
+    return true;
   }
 
-  const auto now = TimeTicks::Now();
-  const TimeDelta elapsed = now - state_flood_guard.last_token_grant;
-  static constexpr base::TimeDelta kTimePerToken =
-      base::TimeDelta::FromMilliseconds(16);
-  static constexpr int kMaxTokens = 50;
-  // It is OK to truncate from int64_t to int here.
-  const int tokens_earned = std::min<int>(elapsed / kTimePerToken, kMaxTokens);
-
-  if (tokens_earned > 0) {
-    state_flood_guard.tokens = tokens_earned - 1;  // One consumed immediately.
-    state_flood_guard.last_token_grant = now;
-    return false;
-  }
-
-  // Drop this event (though ideally it would be delivered once there are tokens
-  // again, unless obsoleted by a subsequent state object change).
-  return true;
+  state_flood_guard.count++;
+  return false;
 }
 
 bool History::stateChanged() const {
