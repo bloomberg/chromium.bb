@@ -38,9 +38,9 @@ class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
   gfx::RenderText* GetRenderTextForTest();
 
   // Adjusts the bounds given by the arguments to fit inside the desktop
-  // and applies the adjusted bounds to the label_.
-  void SetTooltipBounds(const gfx::Point& mouse_pos,
-                        const gfx::Size& tooltip_size);
+  // and returns the adjusted bounds.
+  gfx::Rect GetTooltipBounds(const gfx::Point& mouse_pos,
+                             const gfx::Size& tooltip_size);
 
   // Destroys |widget_|.
   void DestroyWidget();
