@@ -12,11 +12,6 @@
   {
     'name': 'chromium',
     'machines': {
-      'linux-dbg': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
       'linux-rel': {
         'additional_compile_targets': [
           'all',
@@ -24,11 +19,6 @@
         'test_suites': {
           'scripts': 'public_build_scripts',
         },
-      },
-      'mac-dbg': {
-        'additional_compile_targets': [
-          'all',
-        ],
       },
       'mac-rel': {
         'additional_compile_targets': [
@@ -38,11 +28,6 @@
           'scripts': 'public_build_scripts',
         },
       },
-      'win32-dbg': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
       'win32-rel': {
         'additional_compile_targets': [
           'all',
@@ -51,11 +36,6 @@
           'scripts': 'public_build_scripts',
         },
       },
-      'win-dbg': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
       'win-rel': {
         'additional_compile_targets': [
           'all',
@@ -63,11 +43,6 @@
         'test_suites': {
           'scripts': 'public_build_scripts',
         },
-      },
-      'android-dbg': {
-        'additional_compile_targets': [
-          'all',
-        ],
       },
       'android-rel': {
         'additional_compile_targets': [
