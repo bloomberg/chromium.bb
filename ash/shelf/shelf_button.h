@@ -41,6 +41,8 @@ class ASH_EXPORT ShelfButton : public views::Button {
     STATE_DRAGGING = 1 << 4,
     // App has at least 1 notification.
     STATE_NOTIFICATION = 1 << 5,
+    // Underlying ShelfItem owns the window that is currently active.
+    STATE_ACTIVE = 1 << 6,
   };
 
   ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view);
