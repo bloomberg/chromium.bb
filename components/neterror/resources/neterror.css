@@ -349,7 +349,7 @@ html[subframe] body {
   position: relative;
 }
 
-.download-button:before {
+#download-button:before {
   background: -webkit-image-set(
       url(../../resources/default_100_percent/neterror/download.png) 1x,
       url(../../resources/default_200_percent/neterror/download.png) 2x)
