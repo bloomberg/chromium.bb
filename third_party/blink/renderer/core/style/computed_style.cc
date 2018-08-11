@@ -1754,9 +1754,9 @@ Length ComputedStyle::LineHeight() const {
   // too, though this involves messily poking into CalcExpressionLength.
   if (lh.IsFixed()) {
     float multiplier = TextAutosizingMultiplier();
-    return Length(
-        TextAutosizer::ComputeAutosizedFontSize(lh.Value(), multiplier),
-        kFixed);
+    return Length(TextAutosizer::ComputeAutosizedFontSize(
+                      lh.Value(), multiplier, EffectiveZoom()),
+                  kFixed);
   }
 
   return lh;
@@ -1822,12 +1822,12 @@ void ComputedStyle::SetTextAutosizingMultiplier(float multiplier) {
   FontSelector* current_font_selector = GetFont().GetFontSelector();
   FontDescription desc(GetFontDescription());
   desc.SetSpecifiedSize(size);
-  desc.SetComputedSize(size);
 
-  float autosized_font_size =
-      TextAutosizer::ComputeAutosizedFontSize(size, multiplier);
-  float computed_size = autosized_font_size * EffectiveZoom();
-  desc.SetComputedSize(std::min(kMaximumAllowedFontSize, computed_size));
+  float computed_size = size * EffectiveZoom();
+
+  float autosized_font_size = TextAutosizer::ComputeAutosizedFontSize(
+      computed_size, multiplier, EffectiveZoom());
+  desc.SetComputedSize(std::min(kMaximumAllowedFontSize, autosized_font_size));
 
   SetFontDescription(desc);
   GetFont().Update(current_font_selector);

@@ -1386,12 +1386,13 @@ TextAutosizer::DeferUpdatePageInfo::~DeferUpdatePageInfo() {
   }
 }
 
-float TextAutosizer::ComputeAutosizedFontSize(float specified_size,
-                                              float multiplier) {
+float TextAutosizer::ComputeAutosizedFontSize(float computed_size,
+                                              float multiplier,
+                                              float effective_zoom) {
   DCHECK_GE(multiplier, 0);
 
   // Somewhat arbitrary "pleasant" font size.
-  const float kPleasantSize = 16;
+  const float kPleasantSize = 16 * effective_zoom;
 
   // Multiply fonts that the page author has specified to be larger than
   // pleasantSize by less and less, until huge fonts are not increased at all.
@@ -1405,19 +1406,19 @@ float TextAutosizer::ComputeAutosizedFontSize(float specified_size,
   // then every 1px increase in specifiedSize increases computedSize by 1px).
   const float kGradientAfterPleasantSize = 0.5;
 
-  float computed_size;
+  float auto_sized_size;
   // Skip linear backoff for multipliers that shrink the size or when the font
   // sizes are small.
-  if (multiplier <= 1 || specified_size <= kPleasantSize) {
-    computed_size = multiplier * specified_size;
+  if (multiplier <= 1 || computed_size <= kPleasantSize) {
+    auto_sized_size = multiplier * computed_size;
   } else {
-    computed_size =
+    auto_sized_size =
         multiplier * kPleasantSize +
-        kGradientAfterPleasantSize * (specified_size - kPleasantSize);
-    if (computed_size < specified_size)
-      computed_size = specified_size;
+        kGradientAfterPleasantSize * (computed_size - kPleasantSize);
+    if (auto_sized_size < computed_size)
+      auto_sized_size = computed_size;
   }
-  return computed_size;
+  return auto_sized_size;
 }
 
 void TextAutosizer::CheckSuperclusterConsistency() {
