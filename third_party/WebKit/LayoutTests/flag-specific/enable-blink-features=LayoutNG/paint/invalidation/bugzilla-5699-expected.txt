@@ -39,28 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow P",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\u00A0'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'Hello'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    }
   ]
 }
 

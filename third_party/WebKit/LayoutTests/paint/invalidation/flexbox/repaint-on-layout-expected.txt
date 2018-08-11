@@ -24,12 +24,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (floating) DIV class='state'",
-      "reason": "style change"
-    }
   ]
 }
 

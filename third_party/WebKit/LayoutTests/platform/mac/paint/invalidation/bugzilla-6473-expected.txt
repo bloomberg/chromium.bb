@@ -29,28 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='allcontent'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) P",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'SUCCESS'",
-      "reason": "geometry"
-    }
   ]
 }
 

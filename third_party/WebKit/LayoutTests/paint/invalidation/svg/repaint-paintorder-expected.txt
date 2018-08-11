@@ -39,40 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGContainer use id='t1'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGViewportContainer svg id='poly'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGPath polygon",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGContainer use id='t2'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGViewportContainer svg id='poly'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGPath polygon",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGPath polygon id='t3'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGPath polygon",
-      "reason": "style change"
-    }
   ]
 }
 

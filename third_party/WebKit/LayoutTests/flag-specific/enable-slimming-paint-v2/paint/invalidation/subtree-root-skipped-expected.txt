@@ -23,28 +23,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'PASS'",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='div'",
-      "reason": "geometry"
-    }
   ]
 }
 

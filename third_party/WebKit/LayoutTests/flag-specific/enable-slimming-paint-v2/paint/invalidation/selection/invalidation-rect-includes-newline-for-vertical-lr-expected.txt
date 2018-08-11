@@ -18,20 +18,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'xx'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'y'",
-      "reason": "geometry"
-    }
   ]
 }
 

@@ -29,20 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutNGBlockFlow DIV id='allcontent'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) P",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'SUCCESS'",
-      "reason": "subtree"
-    }
   ]
 }
 

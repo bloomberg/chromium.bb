@@ -37,76 +37,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'AAAA'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'BBBB'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'CCCC'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'DDDD'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'EEEE'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'FFFF'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'GGGG'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'HHHH'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'IIII JJJJ'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'KKKK'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'LLLL'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'MMMM'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'NNNN'",
-      "reason": "subtree"
-    }
   ]
 }
 {
@@ -148,76 +78,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'AAAA'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'BBBB'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'CCCC'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'DDDD'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'EEEE'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'FFFF'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'GGGG'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'HHHH'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'IIII JJJJ'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'KKKK'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'LLLL'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'MMMM'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'NNNN'",
-      "reason": "subtree"
-    }
   ]
 }
 {
@@ -245,44 +105,6 @@
           "reason": "full layer"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'AAAA BBBB CCCC'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'DDDD EEEE FFFF'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'GGGG HHHH IIII JJJJ'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'KKKK LLLL MMMM'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'NNNN'",
-      "reason": "subtree"
     }
   ]
 }
@@ -361,40 +183,6 @@
           "reason": "disappeared"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'AAAA BBBB CCCC'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'DDDD EEEE FFFF'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'GGGG HHHH IIII JJJJ'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'KKKK LLLL MMMM'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'NNNN'",
-      "reason": "subtree"
     }
   ]
 }

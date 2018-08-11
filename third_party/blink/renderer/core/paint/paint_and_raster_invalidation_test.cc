@@ -854,6 +854,34 @@ TEST_P(PaintAndRasterInvalidationTest, PaintPropertyChange) {
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
+TEST_P(PaintAndRasterInvalidationTest, ResizeContainerOfFixedSizeSVG) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="target" style="width: 100px; height: 100px">
+      <svg viewBox="0 0 200 200" width="100" height="100">
+        <rect id="rect" width="100%" height="100%"/>
+      </svg>
+    </div>
+  )HTML");
+
+  Element* target = GetDocument().getElementById("target");
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+  target->setAttribute(HTMLNames::styleAttr, "width: 200px; height: 200px");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // No raster invalidations because the resized-div doesn't paint anything by
+  // itself, and the svg is fixed sized.
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre());
+  // At least we don't invalidate paint of the SVG rect.
+  for (const auto& paint_invalidation :
+       *GetDocument().View()->TrackedObjectPaintInvalidations()) {
+    EXPECT_NE(GetLayoutObjectByElementId("rect")->DebugName(),
+              paint_invalidation.name);
+  }
+
+  GetDocument().View()->SetTracksPaintInvalidations(false);
+}
+
 class PaintInvalidatorTestClient : public EmptyChromeClient {
  public:
   void InvalidateRect(const IntRect&) override {

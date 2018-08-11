@@ -24,12 +24,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTableRow TR id='row'",
-      "reason": "style change"
-    }
   ]
 }
 

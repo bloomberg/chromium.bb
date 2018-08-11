@@ -28,52 +28,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTable TABLE",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableSection TBODY id='tbody'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    }
   ]
 }
 

@@ -34,20 +34,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='inline-block-2' class='item'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    }
   ]
 }
 

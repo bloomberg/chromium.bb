@@ -24,28 +24,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGContainer g",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGText text id='t'",
-      "reason": "style change"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox 'Hello'",
-      "reason": "style change"
-    }
   ]
 }
 

@@ -24,12 +24,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGImage image id='image'",
-      "reason": "full"
-    }
   ]
 }
 

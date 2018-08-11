@@ -154,60 +154,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV id='div1' class='container'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'A A A A A AA AA'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'AA AA AAA AAA'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'AAA AAAA AAAA'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'AAAAA AAAAA'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'AAAAAA AAAAAAA'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'AAAAAA AAAAA'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'AAAAA AAAA AAAA'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'AAA AAA AAA AA'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'AA AA AA A A A'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'A A'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV id='div2' class='container'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'A A A A A'",
-      "reason": "subtree"
-    }
   ]
 }
 

@@ -44,16 +44,6 @@ CONSOLE MESSAGE: line 30: debug
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='container'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
-      "reason": "style change"
-    }
   ]
 }
 

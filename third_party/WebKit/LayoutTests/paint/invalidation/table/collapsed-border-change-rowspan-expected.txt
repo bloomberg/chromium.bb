@@ -34,32 +34,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTable TABLE",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutTableSection TBODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR id='row1'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD id='cell1'",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutTableRow TR id='row2'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableRow TR id='row3'",
-      "reason": "style change"
-    }
   ]
 }
 

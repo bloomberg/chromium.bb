@@ -39,24 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutNGBlockFlow DIV id='spacer'",
-      "reason": "appeared"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='test'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutInline (anonymous)",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'JOCULAR'",
-      "reason": "subtree"
-    }
   ]
 }
 

@@ -29,12 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll control"
-    }
   ]
 }
 

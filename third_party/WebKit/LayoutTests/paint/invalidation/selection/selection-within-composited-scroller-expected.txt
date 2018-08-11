@@ -79,16 +79,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutText #text",
-      "reason": "selection"
-    },
-    {
-      "object": "InlineTextBox 'test'",
-      "reason": "selection"
-    }
   ]
 }
 

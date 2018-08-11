@@ -74,44 +74,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) (floating) DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow (floating) DIV id='first'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) (floating) DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow (floating) DIV id='second'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) (floating) DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow (floating) DIV id='third'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) (floating) DIV id='fourth'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow (floating) DIV",
-      "reason": "subtree"
-    }
   ]
 }
 

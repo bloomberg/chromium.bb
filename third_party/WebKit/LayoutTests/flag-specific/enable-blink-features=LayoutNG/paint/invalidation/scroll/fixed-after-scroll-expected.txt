@@ -47,20 +47,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow (positioned) DIV class='red fixed'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow (positioned) DIV id='t' class='green absolute'",
-      "reason": "subtree"
-    }
   ]
 }
 

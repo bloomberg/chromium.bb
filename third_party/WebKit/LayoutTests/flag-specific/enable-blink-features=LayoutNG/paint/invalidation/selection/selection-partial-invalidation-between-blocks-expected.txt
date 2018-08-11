@@ -29,16 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPaintFragment",
-      "reason": "selection"
-    },
-    {
-      "object": "NGPaintFragment",
-      "reason": "selection"
-    }
   ]
 }
 

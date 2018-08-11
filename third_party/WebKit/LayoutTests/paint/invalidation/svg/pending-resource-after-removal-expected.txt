@@ -29,16 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRect rect id='shape'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGRect rect id='shape'",
-      "reason": "SVG resource change"
-    }
   ]
 }
 

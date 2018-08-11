@@ -29,16 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='inner-target'",
-      "reason": "appeared"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'abc'",
-      "reason": "appeared"
-    }
   ]
 }
 

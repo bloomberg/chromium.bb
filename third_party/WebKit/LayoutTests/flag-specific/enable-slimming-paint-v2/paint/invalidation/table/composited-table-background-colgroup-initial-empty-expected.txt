@@ -18,16 +18,6 @@
       "position": [96, 118],
       "bounds": [10, 19]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTableSection TBODY",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCol COLGROUP id='target'",
-      "reason": "style change"
-    }
   ]
 }
 

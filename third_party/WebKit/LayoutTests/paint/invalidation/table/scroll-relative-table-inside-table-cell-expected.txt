@@ -42,12 +42,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "HorizontalScrollbar",
-      "reason": "scroll control"
-    }
   ]
 }
 

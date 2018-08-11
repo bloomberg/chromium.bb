@@ -49,44 +49,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (anonymous)",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutTextControl INPUT id='input'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "subtree"
-    },
-    {
-      "object": "InlineTextBox 'PASS'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='selection'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'Selection is here'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow (positioned) DIV id='div'",
-      "reason": "geometry"
-    }
   ]
 }
 

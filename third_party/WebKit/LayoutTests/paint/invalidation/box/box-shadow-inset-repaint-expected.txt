@@ -29,16 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='container'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "appeared"
-    }
   ]
 }
 

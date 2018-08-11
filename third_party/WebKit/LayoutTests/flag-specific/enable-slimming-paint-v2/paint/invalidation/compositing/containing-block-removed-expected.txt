@@ -27,12 +27,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
-      "reason": "geometry"
-    }
   ]
 }
 

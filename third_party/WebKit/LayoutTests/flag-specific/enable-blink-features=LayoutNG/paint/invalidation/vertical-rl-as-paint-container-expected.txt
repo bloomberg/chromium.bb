@@ -45,24 +45,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalTextFragment 'Lorem ipsum dolor'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'sit amet,'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'consectetur'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'adipiscing elit.'",
-      "reason": "style change"
-    }
   ]
 }
 

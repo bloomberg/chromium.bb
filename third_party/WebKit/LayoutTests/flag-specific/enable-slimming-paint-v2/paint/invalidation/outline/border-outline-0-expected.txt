@@ -13,12 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='border-image'",
-      "reason": "style change"
-    }
   ]
 }
 

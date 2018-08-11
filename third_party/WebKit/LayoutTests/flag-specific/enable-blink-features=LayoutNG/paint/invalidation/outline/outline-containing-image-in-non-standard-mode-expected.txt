@@ -34,24 +34,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
-      "reason": "outline"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutInline SPAN id='target'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutImage IMG",
-      "reason": "subtree"
-    }
   ]
 }
 

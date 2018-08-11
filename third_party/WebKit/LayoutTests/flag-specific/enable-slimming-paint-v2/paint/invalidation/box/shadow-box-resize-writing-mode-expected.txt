@@ -28,24 +28,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='target1'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='target2'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='target3'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='target4'",
-      "reason": "geometry"
-    }
   ]
 }
 

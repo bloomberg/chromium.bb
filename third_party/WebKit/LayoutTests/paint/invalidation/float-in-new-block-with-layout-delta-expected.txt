@@ -24,16 +24,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutBlockFlow (floating) DIV",
-      "reason": "appeared"
-    }
   ]
 }
 

@@ -62,36 +62,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll control"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'test1'",
-      "reason": "geometry"
-    }
   ]
 }
 

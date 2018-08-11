@@ -39,40 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutText #text",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox 'Col 1'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox 'Col 1'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox 'Col 1'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox 'Col 1'",
-      "reason": "style change"
-    }
   ]
 }
 

@@ -51,12 +51,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "compositing update"
-    }
   ]
 }
 

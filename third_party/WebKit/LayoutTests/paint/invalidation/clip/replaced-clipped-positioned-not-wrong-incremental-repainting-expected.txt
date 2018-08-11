@@ -29,20 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (relative positioned) (floating) DIV class='imgContainer'",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutImage IMG",
-      "reason": "geometry"
-    }
   ]
 }
 

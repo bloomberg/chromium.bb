@@ -49,24 +49,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGContainer g",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGRect rect id='masker'",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGContainer g",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGRect rect id='clipper'",
-      "reason": "full"
-    }
   ]
 }
 

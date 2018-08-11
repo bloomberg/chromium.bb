@@ -29,20 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV id='shiftMe'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) (floating) DIV class='imgContainer'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutImage IMG",
-      "reason": "subtree"
-    }
   ]
 }
 

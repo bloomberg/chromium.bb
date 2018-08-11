@@ -23,32 +23,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) HTML class='changed'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow P",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'",
-      "reason": "geometry"
-    }
   ]
 }
 

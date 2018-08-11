@@ -13,12 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutButton BUTTON id='target'",
-      "reason": "style change"
-    }
   ]
 }
 

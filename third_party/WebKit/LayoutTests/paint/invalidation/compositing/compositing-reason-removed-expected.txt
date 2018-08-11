@@ -24,12 +24,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV id='square'",
-      "reason": "compositing update"
-    }
   ]
 }
 

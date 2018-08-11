@@ -45,12 +45,6 @@
         [27, 19, 0, 1]
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='test'",
-      "reason": "style change"
-    }
   ]
 }
 

@@ -103,12 +103,6 @@ CASE 2, change color of "inner" to red
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='inner'",
-      "reason": "style change"
-    }
   ]
 }
 

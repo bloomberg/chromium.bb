@@ -37,84 +37,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'AAAA'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'BBBB'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'CCCC'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'DDDD'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'EEEE'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'FFFF'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'GGGG'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'HHHH'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'IIII JJJJ'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'KKKK'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'LLLL'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'MMMM'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'NNNN'",
-      "reason": "geometry"
-    }
   ]
 }
 {
@@ -156,84 +78,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'AAAA'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'BBBB'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'CCCC'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'DDDD'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'EEEE'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'FFFF'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'GGGG'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'HHHH'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'IIII JJJJ'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'KKKK'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'LLLL'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'MMMM'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'NNNN'",
-      "reason": "geometry"
-    }
   ]
 }
 {
@@ -261,52 +105,6 @@
           "reason": "full layer"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'AAAA BBBB CCCC'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'DDDD EEEE FFFF'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'KKKK LLLL MMMM'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'NNNN'",
-      "reason": "geometry"
     }
   ]
 }
@@ -385,48 +183,6 @@
           "reason": "geometry"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'AAAA BBBB CCCC'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'DDDD EEEE FFFF'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'KKKK LLLL MMMM'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'NNNN'",
-      "reason": "geometry"
     }
   ]
 }

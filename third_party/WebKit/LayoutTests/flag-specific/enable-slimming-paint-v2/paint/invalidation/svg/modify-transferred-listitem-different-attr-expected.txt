@@ -43,44 +43,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGText text id='target'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'A'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox ' B C'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGText text id='source'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'X Y Z'",
-      "reason": "geometry"
-    }
   ]
 }
 

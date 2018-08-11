@@ -33,64 +33,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (anonymous)",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutInline SPAN id='outer'",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'CONTENTS'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (anonymous)",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutInline SPAN id='outer'",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'CONTENTS'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (anonymous)",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutInline SPAN id='outer'",
-      "reason": "style change"
-    }
   ]
 }
 

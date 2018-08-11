@@ -29,12 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='target' class='item'",
-      "reason": "style change"
-    }
   ]
 }
 

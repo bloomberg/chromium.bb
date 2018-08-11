@@ -30,32 +30,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutInline (relative positioned) DIV id='block'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'When this layer moves it shouldn't generate a repaint rect.'",
-      "reason": "geometry"
-    }
   ]
 }
 

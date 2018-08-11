@@ -79,56 +79,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalTextFragment 'The color of this'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'text in the reflection'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'should be green'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'The color of this'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'text in the reflection'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'should be green'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'The color of this'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'text in the reflection'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'should be green'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'The color of this'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'text in the reflection'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'should be green'",
-      "reason": "style change"
-    }
   ]
 }
 

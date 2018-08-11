@@ -13,28 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutTable TABLE",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutTableSection TBODY",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "appeared"
-    }
   ]
 }
 

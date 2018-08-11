@@ -18,16 +18,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTableRow TR id='row1'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableRow TR id='row1'",
-      "reason": "style change"
-    }
   ]
 }
 

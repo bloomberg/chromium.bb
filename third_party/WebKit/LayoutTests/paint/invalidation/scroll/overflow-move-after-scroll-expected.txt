@@ -88,12 +88,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='block'",
-      "reason": "geometry"
-    }
   ]
 }
 

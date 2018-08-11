@@ -1319,24 +1319,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='target1'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='target2'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV id='target3'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV id='target4'",
-      "reason": "style change"
-    }
   ]
 }
 

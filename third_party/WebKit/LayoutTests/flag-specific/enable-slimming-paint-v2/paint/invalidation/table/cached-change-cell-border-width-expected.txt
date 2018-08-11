@@ -13,24 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTable TABLE",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD id='foo'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    }
   ]
 }
 

@@ -24,16 +24,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='target'",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutNGBlockFlow (floating) DIV",
-      "reason": "appeared"
-    }
   ]
 }
 

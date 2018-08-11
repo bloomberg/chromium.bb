@@ -108,52 +108,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "geometry"
-    }
   ]
 }
 

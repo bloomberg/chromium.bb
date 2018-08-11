@@ -29,16 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGEllipse circle",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGEllipse circle",
-      "reason": "style change"
-    }
   ]
 }
 

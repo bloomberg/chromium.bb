@@ -29,28 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutDetailsMarker DIV id='details-marker'",
-      "reason": "full"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='details-content'",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutTextControl INPUT",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "appeared"
-    },
-    {
-      "object": "HorizontalScrollbar",
-      "reason": "scroll control"
-    }
   ]
 }
 

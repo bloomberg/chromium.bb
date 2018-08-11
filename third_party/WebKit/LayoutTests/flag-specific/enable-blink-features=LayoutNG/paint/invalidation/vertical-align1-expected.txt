@@ -44,24 +44,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV class='other'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV id='target'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV class='other'",
-      "reason": "subtree"
-    }
   ]
 }
 

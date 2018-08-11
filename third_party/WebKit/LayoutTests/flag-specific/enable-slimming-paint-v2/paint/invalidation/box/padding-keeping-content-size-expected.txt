@@ -28,20 +28,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='target1' class='outer'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='target2' class='outer'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='inner'",
-      "reason": "geometry"
-    }
   ]
 }
 

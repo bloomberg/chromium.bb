@@ -34,28 +34,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutNGBlockFlow (positioned) HTML class='changed'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow P",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'Tests that the entire viewport is painted with a floated html element.'",
-      "reason": "subtree"
-    }
   ]
 }
 

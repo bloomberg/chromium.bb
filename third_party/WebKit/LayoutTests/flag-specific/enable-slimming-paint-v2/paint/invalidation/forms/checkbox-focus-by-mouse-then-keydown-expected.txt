@@ -13,12 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow INPUT",
-      "reason": "subtree"
-    }
   ]
 }
 

@@ -39,16 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRect rect",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGRect rect",
-      "reason": "full"
-    }
   ]
 }
 

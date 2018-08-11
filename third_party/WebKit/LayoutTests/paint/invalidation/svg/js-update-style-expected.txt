@@ -39,28 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGContainer g",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGRect rect",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGRect rect",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGRect rect",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGRect rect",
-      "reason": "style change"
-    }
   ]
 }
 

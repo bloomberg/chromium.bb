@@ -13,12 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='absoluteDiv' class='absolute green'",
-      "reason": "appeared"
-    }
   ]
 }
 

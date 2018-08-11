@@ -30,12 +30,6 @@
         [2, 102, 0, 1]
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll control"
-    }
   ]
 }
 

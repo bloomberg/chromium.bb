@@ -29,56 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='t'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'Passed'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'Test'",
-      "reason": "subtree"
-    }
   ]
 }
 

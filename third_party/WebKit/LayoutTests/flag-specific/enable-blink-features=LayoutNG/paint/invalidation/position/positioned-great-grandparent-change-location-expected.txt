@@ -39,28 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV id='great-grandparent'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'Target'",
-      "reason": "subtree"
-    }
   ]
 }
 

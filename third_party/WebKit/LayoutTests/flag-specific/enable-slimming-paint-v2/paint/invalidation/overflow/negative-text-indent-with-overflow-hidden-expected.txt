@@ -13,16 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='target' class='changed'",
-      "reason": "style change"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "style change"
-    }
   ]
 }
 

@@ -29,16 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutInline SPAN id='target'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'PASS'",
-      "reason": "style change"
-    }
   ]
 }
 

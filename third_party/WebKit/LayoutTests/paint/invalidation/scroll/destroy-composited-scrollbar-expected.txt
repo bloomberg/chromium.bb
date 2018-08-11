@@ -36,16 +36,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "compositing update"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='content'",
-      "reason": "compositing update"
-    }
   ]
 }
 

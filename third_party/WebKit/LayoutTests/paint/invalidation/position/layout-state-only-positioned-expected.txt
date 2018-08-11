@@ -29,20 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll control"
-    }
   ]
 }
 

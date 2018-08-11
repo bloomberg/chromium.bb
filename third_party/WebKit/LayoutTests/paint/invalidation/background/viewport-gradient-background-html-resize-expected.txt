@@ -24,16 +24,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
-    }
   ]
 }
 

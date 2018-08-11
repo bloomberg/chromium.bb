@@ -23,24 +23,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutListItem LI",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutListMarker (anonymous)",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutImage IMG id='target'",
-      "reason": "geometry"
-    }
   ]
 }
 

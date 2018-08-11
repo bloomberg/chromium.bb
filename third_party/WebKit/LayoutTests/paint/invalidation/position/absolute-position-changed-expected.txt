@@ -42,12 +42,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='absoluteDiv' class='absolute green'",
-      "reason": "geometry"
-    }
   ]
 }
 

@@ -41,12 +41,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutNGTableCell TD id='target'",
-      "reason": "style change"
-    }
   ]
 }
 

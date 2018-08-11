@@ -39,56 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow P",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutInline SPAN id='d'",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox '\u00A0'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBR BR",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox '\n'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'Hello'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBR BR",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox '\n'",
-      "reason": "geometry"
-    }
   ]
 }
 

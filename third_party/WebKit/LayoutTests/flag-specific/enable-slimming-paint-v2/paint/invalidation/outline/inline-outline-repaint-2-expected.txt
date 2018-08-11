@@ -18,24 +18,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutInline SPAN",
-      "reason": "outline"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "outline"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox 'Test'",
-      "reason": "style change"
-    }
   ]
 }
 

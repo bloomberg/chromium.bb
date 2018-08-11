@@ -39,20 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "full"
-    },
-    {
-      "object": "HorizontalScrollbar",
-      "reason": "scroll control"
-    },
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll control"
-    }
   ]
 }
 

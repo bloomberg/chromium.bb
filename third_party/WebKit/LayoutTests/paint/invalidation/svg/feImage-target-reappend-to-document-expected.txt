@@ -29,16 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRect rect",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGRect rect",
-      "reason": "full"
-    }
   ]
 }
 

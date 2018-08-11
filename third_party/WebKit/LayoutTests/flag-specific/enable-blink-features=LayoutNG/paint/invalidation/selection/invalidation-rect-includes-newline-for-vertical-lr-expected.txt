@@ -29,16 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalTextFragment 'xx'",
-      "reason": "selection"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'y'",
-      "reason": "selection"
-    }
   ]
 }
 

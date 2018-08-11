@@ -64,12 +64,6 @@
       ],
       "origin": [150, 150]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='target'",
-      "reason": "style change"
-    }
   ]
 }
 

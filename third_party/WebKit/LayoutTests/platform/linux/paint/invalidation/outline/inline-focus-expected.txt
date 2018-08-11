@@ -44,44 +44,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (anonymous)",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutInline A id='link'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'Home'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow P",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'crbug.com/424078: ensure inline elements get their outline painted'",
-      "reason": "geometry"
-    }
   ]
 }
 

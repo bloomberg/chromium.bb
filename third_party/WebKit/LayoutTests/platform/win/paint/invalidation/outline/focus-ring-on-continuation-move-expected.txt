@@ -39,16 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutInline SPAN",
-      "reason": "outline"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV id='block'",
-      "reason": "geometry"
-    }
   ]
 }
 

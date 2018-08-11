@@ -34,28 +34,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll control"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='dynamic' class='content'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "appeared"
-    },
-    {
-      "object": "InlineTextBox 'z'",
-      "reason": "appeared"
-    }
   ]
 }
 

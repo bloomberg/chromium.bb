@@ -109,64 +109,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow CAPTION id='caption1' class='blue half'",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutTableCell TD class='red half'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableCell TD class='green half'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='top' class='blue half'",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutTableCell TD class='red half'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableCell TD class='green half'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableCell TD class='green half'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableCell TD class='red half'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTable TABLE",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableCell TD class='half'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableCell TD class='half'",
-      "reason": "geometry"
-    }
   ]
 }
 

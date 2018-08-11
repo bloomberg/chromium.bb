@@ -44,52 +44,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'a'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutRubyRun (anonymous)",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox 'c'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutRubyBase (anonymous)",
-      "reason": "style change"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox 'b'",
-      "reason": "style change"
-    }
   ]
 }
 

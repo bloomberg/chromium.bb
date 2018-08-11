@@ -29,32 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow body",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGRoot svg:svg id='svg'",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGContainer svg:use id='use'",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGViewportContainer svg id='symbol'",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutSVGEllipse svg:circle id='circle'",
-      "reason": "appeared"
-    }
   ]
 }
 

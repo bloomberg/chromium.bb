@@ -28,12 +28,6 @@
       "name": "LayoutInline (relative positioned) SPAN",
       "position": [108, 108]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (floating) DIV id='float'",
-      "reason": "style change"
-    }
   ]
 }
 

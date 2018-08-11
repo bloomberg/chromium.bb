@@ -18,12 +18,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGViewportContainer svg id='inner'",
-      "reason": "full"
-    }
   ]
 }
 

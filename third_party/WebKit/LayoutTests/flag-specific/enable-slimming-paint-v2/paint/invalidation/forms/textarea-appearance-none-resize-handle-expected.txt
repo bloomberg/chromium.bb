@@ -13,12 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTextControl (positioned) TEXTAREA id='textarea'",
-      "reason": "geometry"
-    }
   ]
 }
 

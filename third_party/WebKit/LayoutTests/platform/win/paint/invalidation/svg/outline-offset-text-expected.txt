@@ -39,24 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGText text",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'Foo'",
-      "reason": "geometry"
-    }
   ]
 }
 

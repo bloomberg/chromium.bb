@@ -90,12 +90,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='content'",
-      "reason": "style change"
-    }
   ]
 }
 

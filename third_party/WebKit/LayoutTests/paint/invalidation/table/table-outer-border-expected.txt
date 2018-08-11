@@ -59,32 +59,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTable TABLE id='table' class='green'",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutTableSection TBODY",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "appeared"
-    }
   ]
 }
 

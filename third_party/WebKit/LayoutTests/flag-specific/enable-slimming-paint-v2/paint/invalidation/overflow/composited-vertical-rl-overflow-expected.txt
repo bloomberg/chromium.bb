@@ -19,12 +19,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='div'",
-      "reason": "style change"
-    }
   ]
 }
 

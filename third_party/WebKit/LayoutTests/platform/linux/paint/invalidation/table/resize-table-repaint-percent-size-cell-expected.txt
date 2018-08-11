@@ -54,52 +54,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'ROW1'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'ROW2'",
-      "reason": "geometry"
-    }
   ]
 }
 

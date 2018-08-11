@@ -13,16 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "background"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
-    }
   ]
 }
 

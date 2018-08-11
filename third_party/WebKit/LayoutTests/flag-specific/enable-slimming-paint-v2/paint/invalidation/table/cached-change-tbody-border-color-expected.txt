@@ -23,24 +23,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTableSection TBODY id='tbody'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "style change"
-    }
   ]
 }
 

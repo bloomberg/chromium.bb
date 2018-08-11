@@ -37,20 +37,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "incremental"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='container' class='relative'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutNGBlockFlow (positioned) DIV id='absoluteDiv' class='absolute green'",
-      "reason": "style change"
-    }
   ]
 }
 

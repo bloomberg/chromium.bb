@@ -18,20 +18,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTableCol COLGROUP id='colgroup'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "style change"
-    }
   ]
 }
 

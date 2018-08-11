@@ -13,16 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'Should have green background'",
-      "reason": "geometry"
-    }
   ]
 }
 

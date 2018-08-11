@@ -29,20 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutTable TABLE",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutTableCell TD id='cell'",
-      "reason": "incremental"
-    }
   ]
 }
 

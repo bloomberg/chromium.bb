@@ -23,24 +23,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGContainer g id='g'",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGImage image",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGContainer g id='g'",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGImage image",
-      "reason": "full"
-    }
   ]
 }
 

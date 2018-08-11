@@ -29,12 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGViewportContainer svg id='mover'",
-      "reason": "full"
-    }
   ]
 }
 

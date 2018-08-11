@@ -29,12 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGEllipse circle id='bounce'",
-      "reason": "full"
-    }
   ]
 }
 

@@ -13,16 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGViewportContainer svg id='s'",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGRect rect",
-      "reason": "full"
-    }
   ]
 }
 

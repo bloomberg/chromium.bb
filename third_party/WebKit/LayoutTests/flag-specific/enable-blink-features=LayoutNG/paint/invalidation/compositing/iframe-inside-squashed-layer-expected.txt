@@ -62,28 +62,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll control"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'test1'",
-      "reason": "subtree"
-    }
   ]
 }
 

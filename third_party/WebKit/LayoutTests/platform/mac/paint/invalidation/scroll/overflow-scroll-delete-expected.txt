@@ -39,20 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutText #text",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'Passed'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'Test'",
-      "reason": "full"
-    }
   ]
 }
 

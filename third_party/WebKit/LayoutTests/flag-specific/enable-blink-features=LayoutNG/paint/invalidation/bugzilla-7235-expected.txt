@@ -34,24 +34,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (anonymous)",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutInline (relative positioned) SPAN id='p'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\u00A0'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow (positioned) DIV id='t'",
-      "reason": "subtree"
-    }
   ]
 }
 

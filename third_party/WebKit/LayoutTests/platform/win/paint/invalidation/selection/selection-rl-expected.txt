@@ -24,16 +24,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutText #text",
-      "reason": "selection"
-    },
-    {
-      "object": "InlineTextBox 'Testing both hit testing'",
-      "reason": "selection"
-    }
   ]
 }
 

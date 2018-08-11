@@ -228,12 +228,6 @@ CASE 3, scrolling y further so that "inner" no longer overlaps the fixed-pos lay
         [100, 260, 0, 1]
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='innerScrolling'",
-      "reason": "compositing update"
-    }
   ]
 }
 

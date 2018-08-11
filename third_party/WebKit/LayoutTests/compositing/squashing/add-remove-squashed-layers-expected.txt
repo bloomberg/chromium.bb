@@ -105,12 +105,6 @@ CASE 2, overlap3 gets added:
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
-      "reason": "appeared"
-    }
   ]
 }
 CASE 3, overlap2 gets removed. Since this does not resize the layer, there should only be a repaint of overlap2:
@@ -230,12 +224,6 @@ CASE 4, overlap1 gets removed:
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
-      "reason": "compositing update"
-    }
   ]
 }
 CASE 5, overlap2 gets added back:
@@ -302,16 +290,6 @@ CASE 5, overlap2 gets added back:
         [60, 60, 0, 1]
       ],
       "flattenInheritedTransform": false
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
-      "reason": "compositing update"
     }
   ]
 }
@@ -384,16 +362,6 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
         [60, 60, 0, 1]
       ],
       "flattenInheritedTransform": false
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
-      "reason": "compositing update"
     }
   ]
 }

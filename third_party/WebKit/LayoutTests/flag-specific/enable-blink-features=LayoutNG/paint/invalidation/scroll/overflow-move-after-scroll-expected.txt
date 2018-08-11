@@ -88,16 +88,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow (positioned) DIV id='block'",
-      "reason": "subtree"
-    }
   ]
 }
 

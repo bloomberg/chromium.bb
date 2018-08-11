@@ -34,16 +34,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV id='container' class='relative blue'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
-      "reason": "style change"
-    }
   ]
 }
 

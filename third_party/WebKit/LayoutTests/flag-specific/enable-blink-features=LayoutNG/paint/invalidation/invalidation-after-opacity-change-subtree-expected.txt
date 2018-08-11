@@ -37,40 +37,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='container'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutNGBlockFlow (positioned) DIV id='absolute'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow P",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'This test checks that switching opacity'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'invalidates the full subtree.'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow P",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'This text should be visible in the'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'output.'",
-      "reason": "style change"
-    }
   ]
 }
 

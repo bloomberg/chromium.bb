@@ -29,20 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='target'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "subtree"
-    }
   ]
 }
 

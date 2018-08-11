@@ -49,32 +49,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutInline \u003Cpseudo:before\u003E",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '{'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'quote 2'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutInline \u003Cpseudo:after\u003E",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '}'",
-      "reason": "subtree"
-    }
   ]
 }
 

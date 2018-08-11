@@ -17,12 +17,6 @@
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    }
   ]
 }
 {
@@ -43,12 +37,6 @@
       "bounds": [2008, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
     }
   ]
 }
@@ -71,12 +59,6 @@
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    }
   ]
 }
 {
@@ -97,12 +79,6 @@
       "bounds": [2008, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
     }
   ]
 }

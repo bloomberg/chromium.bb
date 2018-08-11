@@ -13,16 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutText #text",
-      "reason": "selection"
-    },
-    {
-      "object": "InlineTextBox 'Should have blue, not gray, highlight'",
-      "reason": "selection"
-    }
   ]
 }
 

@@ -35,12 +35,6 @@
       "position": [72, 94],
       "bounds": [59, 64]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTableSection TBODY id='target'",
-      "reason": "style change"
-    }
   ]
 }
 

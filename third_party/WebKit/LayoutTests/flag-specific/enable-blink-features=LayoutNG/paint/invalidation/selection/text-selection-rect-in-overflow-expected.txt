@@ -29,12 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalTextFragment 'Should have green background'",
-      "reason": "selection"
-    }
   ]
 }
 

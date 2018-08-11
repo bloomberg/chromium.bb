@@ -33,20 +33,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='flex-item-1' class='flex-item width'",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='flex-item'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='flex-item'",
-      "reason": "geometry"
-    }
   ]
 }
 

@@ -29,24 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) A id='link' class='updated'",
-      "reason": "subtree"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "subtree"
-    },
-    {
-      "object": "InlineTextBox 'Lorem Ipsum'",
-      "reason": "subtree"
-    }
   ]
 }
 

@@ -29,16 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGContainer g id='group'",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGRect rect",
-      "reason": "style change"
-    }
   ]
 }
 

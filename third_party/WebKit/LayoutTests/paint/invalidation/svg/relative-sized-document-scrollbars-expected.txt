@@ -34,24 +34,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGRect rect",
-      "reason": "style change"
-    }
   ]
 }
 

@@ -33,28 +33,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='div'",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='div'",
-      "reason": "geometry"
-    },
-    {
-      "object": "HorizontalScrollbar",
-      "reason": "scroll control"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='div'",
-      "reason": "geometry"
-    },
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll control"
-    }
   ]
 }
 

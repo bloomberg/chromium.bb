@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/editing/caret_display_item_client.h"
 
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
@@ -16,6 +17,8 @@
 
 namespace blink {
 
+using PaintInvalidation = LocalFrameView::ObjectPaintInvalidation;
+using ::testing::ElementsAre;
 using ::testing::UnorderedElementsAre;
 
 class CaretDisplayItemClientTest : public PaintAndRasterInvalidationTest {
@@ -94,13 +97,9 @@ TEST_P(CaretDisplayItemClientTest, CaretPaintInvalidation) {
                   RasterInvalidationInfo{&GetCaretDisplayItemClient(), "Caret",
                                          EnclosingIntRect(caret_visual_rect),
                                          PaintInvalidationReason::kAppeared}));
-
-  std::unique_ptr<JSONArray> object_invalidations =
-      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
-  ASSERT_EQ(1u, object_invalidations->size());
-  String s;
-  JSONObject::Cast(object_invalidations->at(0))->Get("object")->AsString(&s);
-  EXPECT_EQ("Caret", s);
+  EXPECT_THAT(
+      *GetDocument().View()->TrackedObjectPaintInvalidations(),
+      ElementsAre(PaintInvalidation{"Caret", PaintInvalidationReason::kCaret}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   // Move the caret to the end of the text. Should invalidate both the old and
@@ -125,12 +124,9 @@ TEST_P(CaretDisplayItemClientTest, CaretPaintInvalidation) {
           RasterInvalidationInfo{&GetCaretDisplayItemClient(), "Caret",
                                  EnclosingIntRect(new_caret_visual_rect),
                                  PaintInvalidationReason::kCaret}));
-
-  object_invalidations =
-      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
-  ASSERT_EQ(1u, object_invalidations->size());
-  JSONObject::Cast(object_invalidations->at(0))->Get("object")->AsString(&s);
-  EXPECT_EQ("Caret", s);
+  EXPECT_THAT(
+      *GetDocument().View()->TrackedObjectPaintInvalidations(),
+      ElementsAre(PaintInvalidation{"Caret", PaintInvalidationReason::kCaret}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   // Remove selection. Should invalidate the old caret.
@@ -146,12 +142,9 @@ TEST_P(CaretDisplayItemClientTest, CaretPaintInvalidation) {
                   &GetCaretDisplayItemClient(), "Caret",
                   EnclosingIntRect(old_caret_visual_rect),
                   PaintInvalidationReason::kDisappeared}));
-
-  object_invalidations =
-      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
-  ASSERT_EQ(1u, object_invalidations->size());
-  JSONObject::Cast(object_invalidations->at(0))->Get("object")->AsString(&s);
-  EXPECT_EQ("Caret", s);
+  EXPECT_THAT(
+      *GetDocument().View()->TrackedObjectPaintInvalidations(),
+      ElementsAre(PaintInvalidation{"Caret", PaintInvalidationReason::kCaret}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
@@ -198,10 +191,10 @@ TEST_P(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
                   RasterInvalidationInfo{&GetCaretDisplayItemClient(), "Caret",
                                          EnclosingIntRect(caret_visual_rect2),
                                          PaintInvalidationReason::kCaret}));
-
-  std::unique_ptr<JSONArray> object_invalidations =
-      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
-  ASSERT_EQ(2u, object_invalidations->size());
+  EXPECT_THAT(
+      *GetDocument().View()->TrackedObjectPaintInvalidations(),
+      ElementsAre(PaintInvalidation{"Caret", PaintInvalidationReason::kCaret},
+                  PaintInvalidation{"Caret", PaintInvalidationReason::kCaret}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   // Move the caret back into block1.
@@ -224,10 +217,10 @@ TEST_P(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
                   RasterInvalidationInfo{&GetCaretDisplayItemClient(), "Caret",
                                          EnclosingIntRect(caret_visual_rect2),
                                          PaintInvalidationReason::kCaret}));
-
-  object_invalidations =
-      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
-  ASSERT_EQ(2u, object_invalidations->size());
+  EXPECT_THAT(
+      *GetDocument().View()->TrackedObjectPaintInvalidations(),
+      ElementsAre(PaintInvalidation{"Caret", PaintInvalidationReason::kCaret},
+                  PaintInvalidation{"Caret", PaintInvalidationReason::kCaret}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
@@ -331,13 +324,9 @@ TEST_P(CaretDisplayItemClientTest, CaretHideMoveAndShow) {
           RasterInvalidationInfo{&GetCaretDisplayItemClient(), "Caret",
                                  EnclosingIntRect(new_caret_visual_rect),
                                  PaintInvalidationReason::kCaret}));
-
-  auto object_invalidations =
-      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
-  ASSERT_EQ(1u, object_invalidations->size());
-  String s;
-  JSONObject::Cast(object_invalidations->at(0))->Get("object")->AsString(&s);
-  EXPECT_EQ("Caret", s);
+  EXPECT_THAT(
+      *GetDocument().View()->TrackedObjectPaintInvalidations(),
+      ElementsAre(PaintInvalidation{"Caret", PaintInvalidationReason::kCaret}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 

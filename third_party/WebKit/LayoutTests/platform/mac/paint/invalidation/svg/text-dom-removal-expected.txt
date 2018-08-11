@@ -29,12 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGContainer g id='objectsToRemove'",
-      "reason": "disappeared"
-    }
   ]
 }
 

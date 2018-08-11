@@ -41,16 +41,6 @@
       "backfaceVisibility": "hidden",
       "backgroundColor": "#008000"
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='composited-box'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='child'",
-      "reason": "subtree"
-    }
   ]
 }
 

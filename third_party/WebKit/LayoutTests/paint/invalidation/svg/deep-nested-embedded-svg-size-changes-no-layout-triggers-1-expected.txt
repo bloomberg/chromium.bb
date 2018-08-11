@@ -1,44 +1,53 @@
 {
-  "objectPaintInvalidations": [
+  "layers": [
     {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
     },
     {
-      "object": "RootInlineBox",
-      "reason": "geometry"
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
     },
     {
-      "object": "LayoutEmbeddedObject OBJECT",
-      "reason": "style change"
-    },
-    {
-      "object": "HorizontalScrollbar",
-      "reason": "scroll control"
-    },
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll control"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutEmbeddedObject OBJECT",
-      "reason": "geometry"
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [1, 1, 402, 202],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [1, 1, 300, 150],
+          "reason": "chunk disappeared"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [212, 12, 180, 180],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [12, 12, 180, 180],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [11, 11, 180, 125],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [211, 11, 75, 125],
+          "reason": "paint property change"
+        }
+      ]
     }
   ]
 }

@@ -29,28 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutInline SPAN id='target'",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutImage IMG",
-      "reason": "geometry"
-    }
   ]
 }
 

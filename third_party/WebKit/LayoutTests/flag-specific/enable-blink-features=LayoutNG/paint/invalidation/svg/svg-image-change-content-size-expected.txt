@@ -34,16 +34,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow div id='contentBox'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutImage img",
-      "reason": "subtree"
-    }
   ]
 }
 

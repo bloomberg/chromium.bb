@@ -13,16 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutText #text",
-      "reason": "selection"
-    },
-    {
-      "object": "InlineTextBox 'Some text in vertical mode'",
-      "reason": "selection"
-    }
   ]
 }
 

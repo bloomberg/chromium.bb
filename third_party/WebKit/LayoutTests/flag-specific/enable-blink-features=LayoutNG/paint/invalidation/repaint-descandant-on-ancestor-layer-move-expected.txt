@@ -39,24 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) BODY",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV id='container'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'There should only be one copy of this text.'",
-      "reason": "subtree"
-    }
   ]
 }
 

@@ -13,12 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTableRow TR id='first'",
-      "reason": "style change"
-    }
   ]
 }
 

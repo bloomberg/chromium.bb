@@ -34,32 +34,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV id='wrapper'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV id='container'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow (floating) DIV id='keep_outer' class='outer'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV id='keep_inner'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow (positioned) DIV id='abs_pos'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV id='keep_child'",
-      "reason": "subtree"
-    }
   ]
 }
 

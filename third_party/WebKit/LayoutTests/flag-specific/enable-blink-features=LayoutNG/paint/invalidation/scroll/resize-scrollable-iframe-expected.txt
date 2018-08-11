@@ -44,48 +44,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (anonymous)",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutIFrame IFRAME id='iframe'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "HorizontalScrollbar",
-      "reason": "scroll control"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll control"
-    },
-    {
-      "object": "LayoutNGBlockFlow HTML",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow BODY",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV",
-      "reason": "subtree"
-    }
   ]
 }
 

@@ -54,24 +54,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGContainer g id='box'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGRect rect id='rect1'",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGRect rect id='rect2'",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGRect rect id='rect3'",
-      "reason": "full"
-    }
   ]
 }
 

@@ -29,20 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTableCell TD id='target'",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    }
   ]
 }
 

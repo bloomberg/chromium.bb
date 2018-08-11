@@ -29,20 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow A id='link'",
-      "reason": "style change"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutListMarker (anonymous)",
-      "reason": "style change"
-    }
   ]
 }
 

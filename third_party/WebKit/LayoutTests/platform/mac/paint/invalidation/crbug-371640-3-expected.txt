@@ -34,12 +34,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='keep_child'",
-      "reason": "geometry"
-    }
   ]
 }
 

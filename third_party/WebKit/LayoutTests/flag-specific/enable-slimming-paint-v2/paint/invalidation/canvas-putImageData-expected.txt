@@ -13,12 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutHTMLCanvas CANVAS id='canvas'",
-      "reason": "invalidate paint rectangle"
-    }
   ]
 }
 

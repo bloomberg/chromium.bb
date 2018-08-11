@@ -18,20 +18,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTextControl INPUT id='target'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "Caret",
-      "reason": "caret"
-    }
   ]
 }
 

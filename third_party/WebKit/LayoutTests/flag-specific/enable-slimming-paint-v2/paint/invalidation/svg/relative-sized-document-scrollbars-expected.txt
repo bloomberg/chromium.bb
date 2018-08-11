@@ -23,20 +23,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGRect rect",
-      "reason": "style change"
-    }
   ]
 }
 

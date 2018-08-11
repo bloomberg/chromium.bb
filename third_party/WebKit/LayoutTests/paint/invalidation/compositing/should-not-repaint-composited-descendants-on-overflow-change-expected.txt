@@ -60,16 +60,6 @@
       "backfaceVisibility": "hidden",
       "backgroundColor": "#008000"
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='overflow1'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='overflow2'",
-      "reason": "style change"
-    }
   ]
 }
 

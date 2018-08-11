@@ -24,20 +24,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "incremental"
-    }
   ]
 }
 {
@@ -70,20 +56,6 @@
           "reason": "incremental"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "incremental"
     }
   ]
 }
@@ -118,20 +90,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "incremental"
-    }
   ]
 }
 {
@@ -164,20 +122,6 @@
           "reason": "incremental"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "incremental"
     }
   ]
 }

@@ -24,24 +24,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGTSpan tspan",
-      "reason": "SVG resource change"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "SVG resource change"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "SVG resource change"
-    },
-    {
-      "object": "InlineTextBox 'Y'",
-      "reason": "SVG resource change"
-    }
   ]
 }
 

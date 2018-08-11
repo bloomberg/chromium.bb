@@ -29,16 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutFlexibleBox DIV class='flex'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV id='target' class='item'",
-      "reason": "style change"
-    }
   ]
 }
 

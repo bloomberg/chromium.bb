@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -15,6 +16,9 @@
 namespace blink {
 
 using ObjectPaintInvalidatorTest = RenderingTest;
+
+using PaintInvalidation = LocalFrameView::ObjectPaintInvalidation;
+using ::testing::ElementsAre;
 
 TEST_F(ObjectPaintInvalidatorTest,
        TraverseNonCompositingDescendantsInPaintOrder) {
@@ -49,23 +53,23 @@ TEST_F(ObjectPaintInvalidatorTest,
   ObjectPaintInvalidator(*GetLayoutObjectByElementId("container"))
       .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
           PaintInvalidationReason::kSubtree);
-  std::unique_ptr<JSONArray> invalidations =
-      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
+  EXPECT_THAT(*GetDocument().View()->TrackedObjectPaintInvalidations(),
+              ElementsAre(
+                  PaintInvalidation{
+                      GetLayoutObjectByElementId("container")->DebugName(),
+                      PaintInvalidationReason::kSubtree},
+                  PaintInvalidation{
+                      GetLayoutObjectByElementId("normal-child")->DebugName(),
+                      PaintInvalidationReason::kSubtree},
+                  PaintInvalidation{
+                      GetLayoutObjectByElementId("stacked-child")->DebugName(),
+                      PaintInvalidationReason::kSubtree},
+                  PaintInvalidation{
+                      GetLayoutObjectByElementId(
+                          "stacked-child-of-composited-non-stacking-context")
+                          ->DebugName(),
+                      PaintInvalidationReason::kSubtree}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
-
-  ASSERT_EQ(4u, invalidations->size());
-  String s;
-  JSONObject::Cast(invalidations->at(0))->Get("object")->AsString(&s);
-  EXPECT_EQ(GetLayoutObjectByElementId("container")->DebugName(), s);
-  JSONObject::Cast(invalidations->at(1))->Get("object")->AsString(&s);
-  EXPECT_EQ(GetLayoutObjectByElementId("normal-child")->DebugName(), s);
-  JSONObject::Cast(invalidations->at(2))->Get("object")->AsString(&s);
-  EXPECT_EQ(GetLayoutObjectByElementId("stacked-child")->DebugName(), s);
-  JSONObject::Cast(invalidations->at(3))->Get("object")->AsString(&s);
-  EXPECT_EQ(GetLayoutObjectByElementId(
-                "stacked-child-of-composited-non-stacking-context")
-                ->DebugName(),
-            s);
 }
 
 TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
@@ -137,21 +141,17 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
   EXPECT_TRUE(composited_container_layer->NeedsRepaint());
   EXPECT_FALSE(span_layer->NeedsRepaint());
 
-  std::unique_ptr<JSONArray> invalidations =
-      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
+  EXPECT_THAT(
+      *GetDocument().View()->TrackedObjectPaintInvalidations(),
+      ElementsAre(PaintInvalidation{composited_container->DebugName(),
+                                    PaintInvalidationReason::kSubtree},
+                  PaintInvalidation{containing_block->DebugName(),
+                                    PaintInvalidationReason::kSubtree},
+                  PaintInvalidation{target->DebugName(),
+                                    PaintInvalidationReason::kSubtree},
+                  PaintInvalidation{"LayoutText #text",
+                                    PaintInvalidationReason::kSubtree}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
-
-  ASSERT_EQ(4u, invalidations->size());
-  String s;
-  JSONObject::Cast(invalidations->at(0))->Get("object")->AsString(&s);
-  EXPECT_EQ(composited_container->DebugName(), s);
-  JSONObject::Cast(invalidations->at(1))->Get("object")->AsString(&s);
-  EXPECT_EQ(containing_block->DebugName(), s);
-  JSONObject::Cast(invalidations->at(2))->Get("object")->AsString(&s);
-  EXPECT_EQ(target->DebugName(), s);
-  // This is the text node after the span.
-  JSONObject::Cast(invalidations->at(3))->Get("object")->AsString(&s);
-  EXPECT_EQ("LayoutText #text", s);
 }
 
 TEST_F(ObjectPaintInvalidatorTest,
@@ -206,21 +206,17 @@ TEST_F(ObjectPaintInvalidatorTest,
   EXPECT_FALSE(span_layer->NeedsRepaint());
   EXPECT_FALSE(inner_span_layer->NeedsRepaint());
 
-  std::unique_ptr<JSONArray> invalidations =
-      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
+  EXPECT_THAT(
+      *GetDocument().View()->TrackedObjectPaintInvalidations(),
+      ElementsAre(PaintInvalidation{composited_container->DebugName(),
+                                    PaintInvalidationReason::kSubtree},
+                  PaintInvalidation{containing_block->DebugName(),
+                                    PaintInvalidationReason::kSubtree},
+                  PaintInvalidation{target->DebugName(),
+                                    PaintInvalidationReason::kSubtree},
+                  PaintInvalidation{"LayoutText #text",
+                                    PaintInvalidationReason::kSubtree}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
-
-  ASSERT_EQ(4u, invalidations->size());
-  String s;
-  JSONObject::Cast(invalidations->at(0))->Get("object")->AsString(&s);
-  EXPECT_EQ(composited_container->DebugName(), s);
-  JSONObject::Cast(invalidations->at(1))->Get("object")->AsString(&s);
-  EXPECT_EQ(containing_block->DebugName(), s);
-  JSONObject::Cast(invalidations->at(2))->Get("object")->AsString(&s);
-  EXPECT_EQ(target->DebugName(), s);
-  // This is the text node after the span.
-  JSONObject::Cast(invalidations->at(3))->Get("object")->AsString(&s);
-  EXPECT_EQ("LayoutText #text", s);
 }
 
 TEST_F(ObjectPaintInvalidatorTest, TraverseStackedFloatUnderCompositedInline) {
@@ -252,18 +248,15 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseStackedFloatUnderCompositedInline) {
           PaintInvalidationReason::kSubtree);
   EXPECT_TRUE(span_layer->NeedsRepaint());
 
-  std::unique_ptr<JSONArray> invalidations =
-      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
+  EXPECT_THAT(
+      *GetDocument().View()->TrackedObjectPaintInvalidations(),
+      ElementsAre(PaintInvalidation{span->DebugName(),
+                                    PaintInvalidationReason::kSubtree},
+                  PaintInvalidation{"LayoutText #text",
+                                    PaintInvalidationReason::kSubtree},
+                  PaintInvalidation{target->DebugName(),
+                                    PaintInvalidationReason::kSubtree}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
-
-  ASSERT_EQ(3u, invalidations->size());
-  String s;
-  JSONObject::Cast(invalidations->at(0))->Get("object")->AsString(&s);
-  EXPECT_EQ(span->DebugName(), s);
-  JSONObject::Cast(invalidations->at(1))->Get("object")->AsString(&s);
-  EXPECT_EQ("LayoutText #text", s);
-  JSONObject::Cast(invalidations->at(2))->Get("object")->AsString(&s);
-  EXPECT_EQ(target->DebugName(), s);
 }
 
 TEST_F(ObjectPaintInvalidatorTest, InvalidatePaintRectangle) {
@@ -297,19 +290,12 @@ TEST_F(ObjectPaintInvalidatorTest, InvalidatePaintRectangle) {
   EXPECT_EQ(LayoutRect(), target->PartialInvalidationLocalRect());
   EXPECT_EQ(LayoutRect(), target->PartialInvalidationVisualRect());
 
-  auto object_invalidations =
-      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
-  ASSERT_EQ(2u, object_invalidations->size());
-  for (int i = 0; i < 2; i++) {
-    String s;
-    const auto* entry = JSONObject::Cast(object_invalidations->at(i));
-    entry->Get("reason")->AsString(&s);
-    EXPECT_EQ(String(PaintInvalidationReasonToString(
-                  PaintInvalidationReason::kRectangle)),
-              s);
-    entry->Get("object")->AsString(&s);
-    EXPECT_EQ(target->DebugName(), s);
-  }
+  EXPECT_THAT(
+      *GetDocument().View()->TrackedObjectPaintInvalidations(),
+      ElementsAre(PaintInvalidation{target->DebugName(),
+                                    PaintInvalidationReason::kRectangle},
+                  PaintInvalidation{target->DebugName(),
+                                    PaintInvalidationReason::kRectangle}));
 
   const auto& raster_invalidations = GetLayoutView()
                                          .Layer()
