@@ -52,6 +52,10 @@ CommandBuffer* GLInProcessContext::GetCommandBuffer() {
   return command_buffer_.get();
 }
 
+SharedImageInterface* GLInProcessContext::GetSharedImageInterface() {
+  return command_buffer_->GetSharedImageInterface();
+}
+
 void GLInProcessContext::SetUpdateVSyncParametersCallback(
     const InProcessCommandBuffer::UpdateVSyncParametersCallback& callback) {
   command_buffer_->SetUpdateVSyncParametersCallback(callback);

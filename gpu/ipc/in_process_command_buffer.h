@@ -22,6 +22,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/context_result.h"
@@ -61,6 +62,8 @@ class GpuProcessActivityFlags;
 class CommandBufferTaskExecutor;
 class GpuMemoryBufferManager;
 class ImageFactory;
+class SharedImageFactory;
+class SharedImageInterface;
 class SyncPointClientState;
 class SyncPointOrderData;
 class TransferBufferManager;
@@ -198,7 +201,11 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
     return task_executor_.get();
   }
 
+  gpu::SharedImageInterface* GetSharedImageInterface() const;
+
  private:
+  class SharedImageInterface;
+
   struct InitializeOnGpuThreadParams {
     bool is_offscreen;
     SurfaceHandle window;
@@ -264,6 +271,14 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
       uint32_t gpu_fence_id,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback);
+  void CreateSharedImageOnGpuThread(const Mailbox& mailbox,
+                                    viz::ResourceFormat format,
+                                    const gfx::Size& size,
+                                    const gfx::ColorSpace& color_space,
+                                    uint32_t usage,
+                                    const SyncToken& sync_tokne);
+  void DestroySharedImageOnGpuThread(const SyncToken& sync_token,
+                                     const Mailbox& mailbox);
 
   // Callbacks on the gpu thread.
   void PerformDelayedWorkOnGpuThread();
@@ -287,6 +302,9 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<SyncPointOrderData> sync_point_order_data_;
   scoped_refptr<SyncPointClientState> sync_point_client_state_;
+  scoped_refptr<SyncPointClientState> shared_image_client_state_;
+  std::unique_ptr<SharedImageFactory> shared_image_factory_;
+
   // Used to throttle PerformDelayedWorkOnGpuThread.
   bool delayed_work_pending_ = false;
   ImageFactory* image_factory_ = nullptr;
@@ -309,6 +327,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   // Accessed on both threads:
   base::WaitableEvent flush_event_;
   scoped_refptr<CommandBufferTaskExecutor> task_executor_;
+  std::unique_ptr<SharedImageInterface> shared_image_interface_;
 
   // The group of contexts that share namespaces with this context.
   scoped_refptr<gles2::ContextGroup> context_group_;
