@@ -27,7 +27,7 @@ class AssistantOptInDelegate {
 
 // AssistantOptInView ----------------------------------------------------------
 
-class AssistantOptInView : public views::Button, public views::ButtonListener {
+class AssistantOptInView : public views::View, public views::ButtonListener {
  public:
   AssistantOptInView();
   ~AssistantOptInView() override;
