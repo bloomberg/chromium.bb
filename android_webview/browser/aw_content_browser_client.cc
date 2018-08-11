@@ -739,14 +739,6 @@ void AwContentBrowserClient::RegisterOutOfProcessServices(
       base::BindRepeating(&base::ASCIIToUTF16, "Heap Profiling Service");
 }
 
-bool AwContentBrowserClient::ShouldEnableStrictSiteIsolation() {
-  // TODO(lukasza): When/if we eventually add OOPIF support for AW we should
-  // consider running AW tests with and without site-per-process (and this might
-  // require returning true below).  Adding OOPIF support for AW is tracked by
-  // https://crbug.com/869494.
-  return false;
-}
-
 // static
 void AwContentBrowserClient::DisableCreatingTaskScheduler() {
   g_should_create_task_scheduler = false;

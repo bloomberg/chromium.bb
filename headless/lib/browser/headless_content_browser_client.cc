@@ -329,13 +329,4 @@ bool HeadlessContentBrowserClient::DoesSiteRequireDedicatedProcess(
       ->site_per_process();
 }
 
-bool HeadlessContentBrowserClient::ShouldEnableStrictSiteIsolation() {
-  // TODO(lukasza): https://crbug.com/869494: Instead of overriding
-  // ShouldEnableStrictSiteIsolation, //headless should inherit the default
-  // site-per-process setting from //content - this way tools (tests, but also
-  // production cases like screenshot or pdf generation) based on //headless
-  // will use a mode that is actually shipping in Chrome.
-  return false;
-}
-
 }  // namespace headless
