@@ -244,6 +244,20 @@ TEST_F(ClientPolicyControllerTest, CheckSuggestedArticlesDefined) {
   ExpectDisabledWhenPrefetchDisabled(kSuggestedArticlesNamespace, true);
 }
 
+TEST_F(ClientPolicyControllerTest, CheckLivePageSharingDefined) {
+  OfflinePageClientPolicy policy =
+      controller()->GetPolicy(kLivePageSharingNamespace);
+  EXPECT_EQ(policy.name_space, kLivePageSharingNamespace);
+  EXPECT_TRUE(isTemporary(policy));
+  EXPECT_TRUE(controller()->IsRemovedOnCacheReset(kLivePageSharingNamespace));
+  ExpectRemovedOnCacheReset(kLivePageSharingNamespace, true);
+  ExpectDownloadSupport(kLivePageSharingNamespace, false);
+  ExpectUserRequestedDownloadSupport(kLivePageSharingNamespace, false);
+  ExpectRecentTab(kLivePageSharingNamespace, false);
+  ExpectOnlyOriginalTab(kLivePageSharingNamespace, true);
+  ExpectDisabledWhenPrefetchDisabled(kLivePageSharingNamespace, false);
+}
+
 TEST_F(ClientPolicyControllerTest, GetNamespacesRemovedOnCacheReset) {
   std::vector<std::string> all_namespaces = controller()->GetAllNamespaces();
   const std::vector<std::string>& cache_reset_namespaces_list =

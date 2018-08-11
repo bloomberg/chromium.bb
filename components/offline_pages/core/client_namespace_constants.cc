@@ -16,6 +16,7 @@ const char kDownloadNamespace[] = "download";
 const char kNTPSuggestionsNamespace[] = "ntp_suggestions";
 const char kSuggestedArticlesNamespace[] = "suggested_articles";
 const char kBrowserActionsNamespace[] = "browser_actions";
+const char kLivePageSharingNamespace[] = "live_page_sharing";
 
 const char kDefaultNamespace[] = "default";
 

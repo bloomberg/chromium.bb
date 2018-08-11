@@ -41,6 +41,8 @@ OfflinePagesNamespaceEnumeration ToNamespaceEnum(
     return OfflinePagesNamespaceEnumeration::SUGGESTED_ARTICLES;
   else if (name_space == kBrowserActionsNamespace)
     return OfflinePagesNamespaceEnumeration::BROWSER_ACTIONS;
+  else if (name_space == kLivePageSharingNamespace)
+    return OfflinePagesNamespaceEnumeration::LIVE_PAGE_SHARING;
 
   NOTREACHED();
   return OfflinePagesNamespaceEnumeration::DEFAULT;

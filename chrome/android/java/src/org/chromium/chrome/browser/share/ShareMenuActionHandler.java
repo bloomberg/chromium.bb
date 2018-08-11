@@ -143,12 +143,8 @@ public class ShareMenuActionHandler {
 
     private void triggerShare(final Activity activity, final Tab currentTab,
             final boolean shareDirectly, boolean isIncognito) {
-        boolean isOfflinePage = OfflinePageUtils.isOfflinePage(currentTab);
-        RecordHistogram.recordBooleanHistogram("OfflinePages.SharedPageWasOffline", isOfflinePage);
-
-        if (isOfflinePage
-                && OfflinePageUtils.maybeShareOfflinePage(
-                           activity, currentTab, (ShareParams p) -> mDelegate.share(p))) {
+        if (OfflinePageUtils.maybeShareOfflinePage(
+                    activity, currentTab, (ShareParams p) -> mDelegate.share(p))) {
             return;
         }
 

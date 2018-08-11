@@ -44,6 +44,7 @@ public class OfflinePageBridge {
     public static final String NTP_SUGGESTIONS_NAMESPACE = "ntp_suggestions";
     public static final String SUGGESTED_ARTICLES_NAMESPACE = "suggested_articles";
     public static final String BROWSER_ACTIONS_NAMESPACE = "browser_actions";
+    public static final String LIVE_PAGE_SHARING_NAMESPACE = "live_page_sharing";
 
     /**
      * Retrieves the OfflinePageBridge for the given profile, creating it the first time
