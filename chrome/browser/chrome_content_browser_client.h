@@ -488,9 +488,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::PictureInPictureWindowController* controller) override;
   bool IsSafeRedirectTarget(const GURL& url,
                             content::ResourceContext* context) override;
-  void RegisterRendererPreferenceWatcherForWorkers(
-      content::BrowserContext* browser_context,
-      content::mojom::RendererPreferenceWatcherPtr watcher) override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

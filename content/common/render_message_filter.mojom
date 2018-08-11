@@ -7,7 +7,6 @@ module content.mojom;
 import "content/common/input/input_handler.mojom";
 import "content/common/native_types.mojom";
 import "content/common/widget.mojom";
-import "content/public/common/renderer_preferences.mojom";
 import "mojo/public/mojom/base/thread_priority.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "url/mojom/origin.mojom";

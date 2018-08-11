@@ -27,7 +27,6 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/media_stream_request.h"
-#include "content/public/common/renderer_preference_watcher.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/socket_permission_request.h"
 #include "content/public/common/window_container_type.mojom.h"
@@ -1307,12 +1306,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns true if it is safe to redirect to |url|, otherwise returns false.
   // This is called on the IO thread.
   virtual bool IsSafeRedirectTarget(const GURL& url, ResourceContext* context);
-
-  // Registers the watcher to observe updates in RendererPreferences. The
-  // watchers are for shared workers and service workers.
-  virtual void RegisterRendererPreferenceWatcherForWorkers(
-      BrowserContext* browser_context,
-      mojom::RendererPreferenceWatcherPtr watcher);
 };
 
 }  // namespace content

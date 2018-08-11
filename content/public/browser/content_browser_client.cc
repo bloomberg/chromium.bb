@@ -794,8 +794,4 @@ bool ContentBrowserClient::IsSafeRedirectTarget(const GURL& url,
   return true;
 }
 
-void ContentBrowserClient::RegisterRendererPreferenceWatcherForWorkers(
-    BrowserContext* browser_context,
-    mojom::RendererPreferenceWatcherPtr watcher) {}
-
 }  // namespace content

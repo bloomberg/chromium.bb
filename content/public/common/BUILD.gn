@@ -353,8 +353,6 @@ mojom("interfaces") {
     "fullscreen_video_element.mojom",
     "load_timing_info.mojom",
     "push_messaging_status.mojom",
-    "renderer_preference_watcher.mojom",
-    "renderer_preferences.mojom",
     "resource_load_info.mojom",
     "resource_usage_reporter.mojom",
     "transferrable_url_loader.mojom",
