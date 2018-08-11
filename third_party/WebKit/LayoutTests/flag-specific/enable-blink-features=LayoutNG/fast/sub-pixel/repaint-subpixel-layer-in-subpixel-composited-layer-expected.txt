@@ -46,16 +46,6 @@
         [11, 0, 0, 1]
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV id='container'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
-      "reason": "subtree"
-    }
   ]
 }
 10.6px,12.4px,10.4px:
@@ -105,16 +95,6 @@
         [0, 0, 1, 0],
         [11, 0, 0, 1]
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV id='container'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
-      "reason": "subtree"
     }
   ]
 }
@@ -166,16 +146,6 @@
         [10, 0, 0, 1]
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV id='container'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
-      "reason": "subtree"
-    }
   ]
 }
 10.6px,12.6px,10.6px:
@@ -226,16 +196,6 @@
         [11, 0, 0, 1]
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV id='container'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
-      "reason": "subtree"
-    }
   ]
 }
 10.4px,12.4px,10.4px:
@@ -285,16 +245,6 @@
         [0, 0, 1, 0],
         [10, 0, 0, 1]
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV id='container'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
-      "reason": "subtree"
     }
   ]
 }

@@ -59,48 +59,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGBlockFlow BODY",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow P",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'You should see both vertical and horizontal scrollbars.'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow P",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'This is the test for '",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'Bug 36461 - No vertical scrollbar after the CSS class change'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '.'",
-      "reason": "subtree"
-    }
   ]
 }
 

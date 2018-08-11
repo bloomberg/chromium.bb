@@ -35,12 +35,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='float'",
-      "reason": "style change"
-    }
   ]
 }
 

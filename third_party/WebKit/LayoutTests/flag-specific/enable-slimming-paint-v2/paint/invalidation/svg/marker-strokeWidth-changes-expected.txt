@@ -13,16 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGContainer g",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGPath path id='path'",
-      "reason": "style change"
-    }
   ]
 }
 

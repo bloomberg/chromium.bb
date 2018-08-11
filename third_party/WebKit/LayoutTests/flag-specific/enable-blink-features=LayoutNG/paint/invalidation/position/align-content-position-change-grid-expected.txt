@@ -54,24 +54,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutGrid DIV id='container'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV class='item'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV class='item'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV class='item'",
-      "reason": "geometry"
-    }
   ]
 }
 

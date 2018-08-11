@@ -23,32 +23,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutInline SPAN",
-      "reason": "outline"
-    },
-    {
-      "object": "LayoutBlockFlow (anonymous)",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutInline SPAN",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV id='block'",
-      "reason": "geometry"
-    }
   ]
 }
 

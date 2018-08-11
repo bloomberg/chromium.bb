@@ -23,28 +23,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='container'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='parent'",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
-      "reason": "geometry"
-    }
   ]
 }
 {
@@ -71,28 +49,6 @@
           "reason": "geometry"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='container'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='parent'",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
-      "reason": "geometry"
     }
   ]
 }
@@ -151,28 +107,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='container'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='parent'",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
-      "reason": "geometry"
-    }
   ]
 }
 {
@@ -209,28 +143,6 @@
           "reason": "geometry"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='container'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='parent'",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
-      "reason": "geometry"
     }
   ]
 }

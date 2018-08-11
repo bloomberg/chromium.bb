@@ -29,16 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (anonymous)",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
-      "reason": "subtree"
-    }
   ]
 }
 

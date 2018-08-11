@@ -29,16 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutGrid DIV class='grid fit-content'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='sizedToGridArea'",
-      "reason": "incremental"
-    }
   ]
 }
 

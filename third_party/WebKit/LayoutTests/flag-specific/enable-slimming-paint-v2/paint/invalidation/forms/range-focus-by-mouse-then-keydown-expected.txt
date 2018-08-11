@@ -18,24 +18,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSlider INPUT",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutFlexibleBox DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='track'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='thumb'",
-      "reason": "subtree"
-    }
   ]
 }
 

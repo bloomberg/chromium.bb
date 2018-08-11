@@ -44,40 +44,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow div id='contentBox'",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGContainer use",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGRect rect id='targetRect'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGContainer use",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGContainer g id='targetUse'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGRect rect id='targetRect1'",
-      "reason": "geometry"
-    }
   ]
 }
 

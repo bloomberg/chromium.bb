@@ -24,32 +24,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutFrameSet FRAMESET",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutFrame FRAME",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutFrame FRAME",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutFrame FRAME",
-      "reason": "geometry"
-    }
   ]
 }
 {
@@ -77,32 +51,6 @@
           "reason": "geometry"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutFrameSet FRAMESET",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutFrame FRAME",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutFrame FRAME",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutFrame FRAME",
-      "reason": "geometry"
     }
   ]
 }
@@ -137,32 +85,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutFrameSet FRAMESET",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutFrame FRAME",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutFrame FRAME",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutFrame FRAME",
-      "reason": "geometry"
-    }
   ]
 }
 {
@@ -195,32 +117,6 @@
           "reason": "incremental"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutFrameSet FRAMESET",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutFrame FRAME",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutFrame FRAME",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutFrame FRAME",
-      "reason": "geometry"
     }
   ]
 }

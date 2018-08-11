@@ -29,16 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='outline'",
-      "reason": "outline"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='child'",
-      "reason": "incremental"
-    }
   ]
 }
 

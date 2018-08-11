@@ -39,32 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutNGBlockFlow (positioned) DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGBlockFlow (positioned) DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV",
-      "reason": "appeared"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow (floating) DIV id='main-content'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV id='target3'",
-      "reason": "appeared"
-    }
   ]
 }
 

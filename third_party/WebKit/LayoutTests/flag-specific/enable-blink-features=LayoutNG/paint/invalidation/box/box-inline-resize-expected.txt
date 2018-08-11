@@ -34,40 +34,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutDeprecatedFlexibleBox DIV id='about-container'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (anonymous)",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutImage IMG id='foo'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow H2",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'Chromium'",
-      "reason": "geometry"
-    }
   ]
 }
 

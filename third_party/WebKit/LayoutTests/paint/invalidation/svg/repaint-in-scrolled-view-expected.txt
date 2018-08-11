@@ -37,12 +37,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRect rect id='rect'",
-      "reason": "style change"
-    }
   ]
 }
 

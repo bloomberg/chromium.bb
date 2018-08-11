@@ -13,12 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot (positioned) svg",
-      "reason": "style change"
-    }
   ]
 }
 

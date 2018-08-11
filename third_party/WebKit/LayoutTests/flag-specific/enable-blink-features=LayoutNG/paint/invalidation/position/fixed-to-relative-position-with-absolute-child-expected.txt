@@ -34,20 +34,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutNGBlockFlow BODY",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV id='container' class='fixed blue'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutNGBlockFlow (positioned) DIV class='absolute green'",
-      "reason": "style change"
-    }
   ]
 }
 

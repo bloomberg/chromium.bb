@@ -23,20 +23,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRect rect id='rect'",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutSVGContainer use",
-      "reason": "SVG resource change"
-    },
-    {
-      "object": "LayoutSVGRect rect id='rect'",
-      "reason": "appeared"
-    }
   ]
 }
 

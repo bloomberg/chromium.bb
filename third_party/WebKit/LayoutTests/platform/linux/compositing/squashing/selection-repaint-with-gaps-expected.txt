@@ -56,20 +56,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'lorem'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'ipsum'",
-      "reason": "geometry"
-    }
   ]
 }
 {
@@ -139,32 +125,6 @@
         [8, 8, 0, 1]
       ],
       "flattenInheritedTransform": false
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'lorem'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'ipsum'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'lorem'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'ipsum'",
-      "reason": "geometry"
     }
   ]
 }

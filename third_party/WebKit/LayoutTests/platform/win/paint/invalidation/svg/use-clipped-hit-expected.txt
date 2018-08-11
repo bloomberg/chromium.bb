@@ -29,24 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGText text id='status'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "appeared"
-    },
-    {
-      "object": "InlineTextBox 'Passed'",
-      "reason": "appeared"
-    }
   ]
 }
 

@@ -39,16 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='root' class='editing'",
-      "reason": "full"
-    },
-    {
-      "object": "Caret",
-      "reason": "caret"
-    }
   ]
 }
 

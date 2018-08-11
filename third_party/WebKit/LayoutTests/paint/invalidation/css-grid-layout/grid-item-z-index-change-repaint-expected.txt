@@ -34,12 +34,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='item2' class='sizedToGridArea green'",
-      "reason": "style change"
-    }
   ]
 }
 

@@ -121,52 +121,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-      "reason": "bounds change"
-    }
   ]
 }
 

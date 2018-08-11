@@ -17,12 +17,6 @@
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "appeared"
-    }
   ]
 }
 

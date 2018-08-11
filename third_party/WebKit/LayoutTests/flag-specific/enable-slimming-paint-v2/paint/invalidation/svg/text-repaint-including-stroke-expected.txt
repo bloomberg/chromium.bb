@@ -18,24 +18,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGText text id='bounce'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox 'Repaint me!'",
-      "reason": "style change"
-    }
   ]
 }
 

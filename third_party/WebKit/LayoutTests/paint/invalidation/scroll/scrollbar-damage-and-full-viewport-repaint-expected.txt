@@ -14,12 +14,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "HorizontalScrollbar",
-      "reason": "scroll control"
-    }
   ]
 }
 

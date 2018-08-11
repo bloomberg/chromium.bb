@@ -40,12 +40,6 @@
         [8, 408, 0, 1]
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "style change"
-    }
   ]
 }
 

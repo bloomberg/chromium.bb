@@ -59,40 +59,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalTextFragment 'Foo'",
-      "reason": "selection"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "selection"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "selection"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'Bar'",
-      "reason": "selection"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "selection"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "selection"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'Bazz'",
-      "reason": "selection"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\n'",
-      "reason": "selection"
-    }
   ]
 }
 

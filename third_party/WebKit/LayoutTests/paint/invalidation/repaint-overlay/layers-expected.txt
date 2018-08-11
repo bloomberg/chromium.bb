@@ -129,16 +129,6 @@
       ],
       "origin": [0, 0]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV id='child1'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV id='child2'",
-      "reason": "style change"
-    }
   ]
 }
 

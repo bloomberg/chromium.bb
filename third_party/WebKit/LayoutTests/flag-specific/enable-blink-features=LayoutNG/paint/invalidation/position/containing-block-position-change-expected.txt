@@ -29,16 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV id='t'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutNGBlockFlow (positioned) DIV",
-      "reason": "style change"
-    }
   ]
 }
 

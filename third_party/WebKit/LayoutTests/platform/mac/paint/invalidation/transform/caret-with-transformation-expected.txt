@@ -29,12 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Caret",
-      "reason": "caret"
-    }
   ]
 }
 

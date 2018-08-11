@@ -29,12 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='overflowParent' class='absolute green'",
-      "reason": "style change"
-    }
   ]
 }
 

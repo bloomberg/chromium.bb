@@ -24,12 +24,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGPath polygon id='polygon'",
-      "reason": "full"
-    }
   ]
 }
 

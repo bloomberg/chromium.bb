@@ -42,20 +42,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV class='relative reflected'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='green'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
-      "reason": "geometry"
-    }
   ]
 }
 

@@ -30,16 +30,6 @@
         [101, 100, 0, 1]
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='container'",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='target' class='green'",
-      "reason": "style change"
-    }
   ]
 }
 

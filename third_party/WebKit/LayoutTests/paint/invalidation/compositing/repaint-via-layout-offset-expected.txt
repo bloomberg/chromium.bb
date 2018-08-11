@@ -52,12 +52,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) SPAN class='child embiggen'",
-      "reason": "style change"
-    }
   ]
 }
 

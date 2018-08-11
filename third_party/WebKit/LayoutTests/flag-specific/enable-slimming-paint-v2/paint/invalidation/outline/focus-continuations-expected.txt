@@ -13,24 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (anonymous)",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutInline SPAN id='outer'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (anonymous)",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutInline SPAN id='outer'",
-      "reason": "style change"
-    }
   ]
 }
 

@@ -139,68 +139,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTable TABLE",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGTableCell TD id='col1'",
-      "reason": "incremental"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'Curabitur pretium, quam quis semper'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'malesuada, est libero feugiat libero,'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'vel fringilla orci nibh sed neque.'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'Quisque eu nulla non nisi molestie'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'accumsan. Etiam tellus urna, laoreet'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'ac, laoreet non, suscipit sed, sapien.'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'Phasellus vehicula, sem at posuere'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'vehicula, augue nibh molestie nisl,'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'nec ullamcorper lacus ante vulputate'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'pede.'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGTableCell TD id='target'",
-      "reason": "geometry"
-    }
   ]
 }
 

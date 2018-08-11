@@ -37,12 +37,6 @@
       "position": [8, 8],
       "bounds": [320, 240]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutVideo VIDEO id='video'",
-      "reason": "full"
-    }
   ]
 }
 

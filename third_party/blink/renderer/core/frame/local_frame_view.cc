@@ -129,7 +129,6 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
-#include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -3404,32 +3403,6 @@ void LocalFrameView::TrackObjectPaintInvalidation(
 
   ObjectPaintInvalidation invalidation = {client.DebugName(), reason};
   tracked_object_paint_invalidations_->push_back(invalidation);
-}
-
-std::unique_ptr<JSONArray>
-LocalFrameView::TrackedObjectPaintInvalidationsAsJSON() const {
-  if (!tracked_object_paint_invalidations_)
-    return nullptr;
-
-  std::unique_ptr<JSONArray> result = JSONArray::Create();
-  for (Frame* frame = &frame_->Tree().Top(); frame;
-       frame = frame->Tree().TraverseNext()) {
-    if (!frame->IsLocalFrame())
-      continue;
-    if (auto* layout_view = ToLocalFrame(frame)->ContentLayoutObject()) {
-      if (!layout_view->GetFrameView()->tracked_object_paint_invalidations_)
-        continue;
-      for (const auto& item :
-           *layout_view->GetFrameView()->tracked_object_paint_invalidations_) {
-        std::unique_ptr<JSONObject> item_json = JSONObject::Create();
-        item_json->SetString("object", item.name);
-        item_json->SetString("reason",
-                             PaintInvalidationReasonToString(item.reason));
-        result->PushObject(std::move(item_json));
-      }
-    }
-  }
-  return result;
 }
 
 void LocalFrameView::AddResizerArea(LayoutBox& resizer_box) {

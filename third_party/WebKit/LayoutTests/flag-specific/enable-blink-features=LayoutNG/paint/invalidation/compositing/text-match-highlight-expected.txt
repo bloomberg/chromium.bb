@@ -59,52 +59,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalTextFragment 'findme'",
-      "reason": "DocumentMarker change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'findme'",
-      "reason": "DocumentMarker change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'findme'",
-      "reason": "DocumentMarker change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'findme'",
-      "reason": "DocumentMarker change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'findme'",
-      "reason": "DocumentMarker change"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "DocumentMarker change"
-    },
-    {
-      "object": "InlineTextBox 'Can you findme in this boring text?'",
-      "reason": "DocumentMarker change"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "DocumentMarker change"
-    },
-    {
-      "object": "InlineTextBox 'Findme in a typewriter!'",
-      "reason": "DocumentMarker change"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "DocumentMarker change"
-    },
-    {
-      "object": "InlineTextBox 'Findme on a path! Did you findme?'",
-      "reason": "DocumentMarker change"
-    }
   ]
 }
 

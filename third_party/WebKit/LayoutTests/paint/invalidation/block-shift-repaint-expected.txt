@@ -99,44 +99,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='div1' class='blue half'",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='red half'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='green half'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='top' class='blue half'",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='red half'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='green half'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='green half'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='red half'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='half'",
-      "reason": "geometry"
-    }
   ]
 }
 

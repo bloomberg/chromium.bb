@@ -37,12 +37,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='test'",
-      "reason": "style change"
-    }
   ]
 }
 

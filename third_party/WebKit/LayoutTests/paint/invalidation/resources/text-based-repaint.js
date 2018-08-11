@@ -29,7 +29,7 @@ function runRepaintTest()
         testRunner.dumpAsText();
 
     testRunner.layoutAndPaintAsyncThen(function() {
-        internals.startTrackingRepaints(document);
+        internals.startTrackingRepaints(top.document);
         repaintTest();
         if (!window.testIsAsync)
             finishRepaintTest();
@@ -50,27 +50,6 @@ function forceStyleRecalc()
         document.documentElement.clientTop;
 }
 
-function checkObjectPaintInvalidations(layersWithInvalidationsText)
-{
-    var layersWithInvalidations = JSON.parse(layersWithInvalidationsText);
-    var objectNameSet = new Set();
-    if (layersWithInvalidations["objectPaintInvalidations"]) {
-        layersWithInvalidations["objectPaintInvalidations"].forEach(function(obj) {
-            objectNameSet.add(obj["object"]);
-        });
-    }
-
-    window.expectedObjectInvalidations.forEach(function(objectName) {
-        assert_true(objectNameSet.has(objectName),
-                    "Expected object to be invalidated, but it was not: '" + objectName + "'\n" + layersWithInvalidationsText);
-    });
-
-    window.expectedObjectNonInvalidations.forEach(function(objectName) {
-        assert_false(objectNameSet.has(objectName),
-                     "Expected object to *not* be invalidated, but it was: '" + objectName + "'\n" + layersWithInvalidationsText);
-    });
-}
-
 function finishRepaintTest()
 {
     if (!window.testRunner || !window.internals)
@@ -79,16 +58,14 @@ function finishRepaintTest()
     // Force a style recalc.
     forceStyleRecalc();
 
-    var flags = window.internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS;
+    var flags = internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS;
 
     if (window.layerTreeAsTextAdditionalFlags)
-        flags |= window.layerTreeAsTextAdditionalFlags;
+        flags |= layerTreeAsTextAdditionalFlags;
 
-    var layersWithInvalidationsText = internals.layerTreeAsText(document, flags);
+    var layersWithInvalidationsText = internals.layerTreeAsText(top.document, flags);
 
-    checkObjectPaintInvalidations(layersWithInvalidationsText);
-
-    internals.stopTrackingRepaints(document);
+    internals.stopTrackingRepaints(top.document);
 
     // Play nice with JS tests which may want to print out assert results.
     if (window.isJsTest)

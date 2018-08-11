@@ -39,28 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow div id='contentBox'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutSVGContainer use",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutSVGContainer g id='targetUse'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutSVGRect rect id='targetRect'",
-      "reason": "subtree"
-    }
   ]
 }
 

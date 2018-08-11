@@ -34,28 +34,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTable TABLE",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGTableCell TD",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutNGTableCell TD",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGTableCell TD",
-      "reason": "disappeared"
-    }
   ]
 }
 

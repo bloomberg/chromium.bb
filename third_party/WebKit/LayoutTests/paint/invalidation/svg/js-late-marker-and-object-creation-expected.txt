@@ -29,20 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGContainer g id='content'",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutSVGPath path",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutSVGPath path",
-      "reason": "full"
-    }
   ]
 }
 

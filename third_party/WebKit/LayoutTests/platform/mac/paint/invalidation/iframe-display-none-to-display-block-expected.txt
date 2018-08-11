@@ -24,24 +24,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutIFrame IFRAME id='iframe'",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "appeared"
-    }
   ]
 }
 

@@ -37,56 +37,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='container'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='absolute'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow P",
-      "reason": "style change"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox 'This test checks that switching opacity'",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox 'invalidates the full subtree.'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow P",
-      "reason": "style change"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox 'This text should be visible in the'",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox 'output.'",
-      "reason": "style change"
-    }
   ]
 }
 

@@ -29,16 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGTableCell TD",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'MIDDLE'",
-      "reason": "subtree"
-    }
   ]
 }
 

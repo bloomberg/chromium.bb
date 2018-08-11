@@ -33,16 +33,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV id='container' class='composited box'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutHTMLCanvas (positioned) CANVAS",
-      "reason": "appeared"
-    }
   ]
 }
 

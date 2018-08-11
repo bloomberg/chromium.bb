@@ -13,16 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "incremental"
-    }
   ]
 }
 {
@@ -44,16 +34,6 @@
           "reason": "incremental"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "background"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "incremental"
     }
   ]
 }
@@ -82,16 +62,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "incremental"
-    }
   ]
 }
 {
@@ -118,16 +88,6 @@
           "reason": "incremental"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "background"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "incremental"
     }
   ]
 }

@@ -29,20 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) DIV id='target'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'PASS'",
-      "reason": "subtree"
-    }
   ]
 }
 

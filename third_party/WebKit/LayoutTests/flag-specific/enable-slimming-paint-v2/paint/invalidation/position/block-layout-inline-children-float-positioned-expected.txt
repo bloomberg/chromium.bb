@@ -33,40 +33,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (floating) SPAN",
-      "reason": "appeared"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "appeared"
-    },
-    {
-      "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) SPAN",
-      "reason": "appeared"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "appeared"
-    },
-    {
-      "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
-      "reason": "appeared"
-    }
   ]
 }
 

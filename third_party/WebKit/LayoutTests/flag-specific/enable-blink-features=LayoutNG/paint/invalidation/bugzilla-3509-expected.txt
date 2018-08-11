@@ -39,20 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTable TABLE",
-      "reason": "geometry"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='im'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\u00A0'",
-      "reason": "subtree"
-    }
   ]
 }
 

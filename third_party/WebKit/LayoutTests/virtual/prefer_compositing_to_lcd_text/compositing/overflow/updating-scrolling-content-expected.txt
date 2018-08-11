@@ -68,12 +68,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='indicator'",
-      "reason": "style change"
-    }
   ]
 }
 

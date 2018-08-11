@@ -59,40 +59,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutFlexibleBox DIV id='flexbox'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV id='left'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV id='content'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutFlexibleBox DIV id='flexbox'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV id='left'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV id='content'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutNGBlockFlow DIV",
-      "reason": "geometry"
-    }
   ]
 }
 

@@ -24,12 +24,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalTextFragment 'A\u00A0\u00A0B'",
-      "reason": "style change"
-    }
   ]
 }
 

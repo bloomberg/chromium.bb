@@ -16,12 +16,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutImage IMG",
-      "reason": "style change"
-    }
   ]
 }
 

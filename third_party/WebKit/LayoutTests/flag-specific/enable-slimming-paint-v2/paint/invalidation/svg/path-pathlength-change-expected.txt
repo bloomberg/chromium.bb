@@ -13,12 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGPath path",
-      "reason": "full"
-    }
   ]
 }
 

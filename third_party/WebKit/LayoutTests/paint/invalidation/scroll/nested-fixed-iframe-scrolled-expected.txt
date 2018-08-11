@@ -37,12 +37,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='div'",
-      "reason": "style change"
-    }
   ]
 }
 

@@ -45,16 +45,6 @@
       "position": [108, 8],
       "bounds": [0, 100]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "compositing update"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='content'",
-      "reason": "compositing update"
-    }
   ]
 }
 

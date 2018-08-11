@@ -49,36 +49,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRect rect id='rect'",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGText text id='text'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'This is some text'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGImage image id='image'",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "appeared"
-    }
   ]
 }
 

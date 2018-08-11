@@ -79,12 +79,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalTextFragment 'test'",
-      "reason": "selection"
-    }
   ]
 }
 

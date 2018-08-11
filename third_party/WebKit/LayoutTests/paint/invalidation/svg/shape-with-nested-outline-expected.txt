@@ -29,16 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGContainer g",
-      "reason": "outline"
-    },
-    {
-      "object": "LayoutSVGRect rect id='r'",
-      "reason": "style change"
-    }
   ]
 }
 

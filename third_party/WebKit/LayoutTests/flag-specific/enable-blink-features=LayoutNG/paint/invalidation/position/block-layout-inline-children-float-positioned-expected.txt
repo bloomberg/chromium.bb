@@ -44,28 +44,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='target'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) SPAN",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'the quick brown fox jumped over the lazy dog'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) SPAN",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'the quick brown fox jumped over the lazy dog'",
-      "reason": "subtree"
-    }
   ]
 }
 

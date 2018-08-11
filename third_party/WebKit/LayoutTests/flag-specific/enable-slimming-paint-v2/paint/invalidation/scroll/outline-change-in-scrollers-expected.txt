@@ -120,32 +120,6 @@
         [276, 143, 0, 1]
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV class='target'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='target'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='target'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='target'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='target'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='target'",
-      "reason": "style change"
-    }
   ]
 }
 

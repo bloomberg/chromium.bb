@@ -30,12 +30,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGTableCell TD id='target'",
-      "reason": "style change"
-    }
   ]
 }
 

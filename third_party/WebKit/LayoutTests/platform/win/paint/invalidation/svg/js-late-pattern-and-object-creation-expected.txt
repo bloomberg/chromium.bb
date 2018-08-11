@@ -24,60 +24,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGContainer g id='content'",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutSVGText text",
-      "reason": "appeared"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "appeared"
-    },
-    {
-      "object": "InlineTextBox 'Pattern on fill'",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutSVGText text",
-      "reason": "appeared"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "appeared"
-    },
-    {
-      "object": "InlineTextBox 'Pattern on stroke'",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutSVGText text",
-      "reason": "appeared"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "appeared"
-    },
-    {
-      "object": "InlineTextBox 'Pattern on fill/stroke'",
-      "reason": "appeared"
-    }
   ]
 }
 

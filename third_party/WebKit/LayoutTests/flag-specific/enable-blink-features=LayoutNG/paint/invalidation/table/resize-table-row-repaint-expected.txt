@@ -29,20 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTable TABLE",
-      "reason": "geometry"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGTableCell TD",
-      "reason": "geometry"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'MIDDLE'",
-      "reason": "geometry"
-    }
   ]
 }
 

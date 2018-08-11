@@ -13,12 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow INPUT id='checkbox'",
-      "reason": "subtree"
-    }
   ]
 }
 

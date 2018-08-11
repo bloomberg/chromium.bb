@@ -35,16 +35,6 @@
       "contentsOpaque": true,
       "drawsContent": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='child'",
-      "reason": "style change"
-    }
   ]
 }
 

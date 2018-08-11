@@ -69,60 +69,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalTextFragment 'CONTENT'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'CONTENT'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'CONTENT'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'CONTENT'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'CONTENT'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'CONTENT'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'CONTENT'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'CONTENT'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'CONTENT'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'CONTENT'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'CONTENT'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'CONTENT'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'CONTENT'",
-      "reason": "style change"
-    }
   ]
 }
 

@@ -1,28 +1,43 @@
 {
-  "objectPaintInvalidations": [
+  "layers": [
     {
-      "object": "VerticalScrollbar",
-      "reason": "scroll control"
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
     },
     {
-      "object": "LayoutView #document",
-      "reason": "style change"
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
     },
     {
-      "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow BODY class='noScroll'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='container'",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='overlay'",
-      "reason": "appeared"
+      "name": "Scrolling Contents Layer",
+      "bounds": [804, 604],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='overlay'",
+          "rect": [2, 2, 800, 600],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [10, 2, 784, 592],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [10, 2, 769, 592],
+          "reason": "chunk disappeared"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [787, 2, 15, 600],
+          "reason": "chunk disappeared"
+        }
+      ]
     }
   ]
 }

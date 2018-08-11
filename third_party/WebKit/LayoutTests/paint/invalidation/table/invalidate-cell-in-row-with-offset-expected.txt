@@ -41,12 +41,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTableCell TD id='target'",
-      "reason": "style change"
-    }
   ]
 }
 

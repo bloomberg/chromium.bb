@@ -29,16 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV id='target'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'PASS'",
-      "reason": "subtree"
-    }
   ]
 }
 

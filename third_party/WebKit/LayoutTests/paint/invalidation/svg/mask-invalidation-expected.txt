@@ -39,16 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGContainer g id='root'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGRect rect",
-      "reason": "appeared"
-    }
   ]
 }
 

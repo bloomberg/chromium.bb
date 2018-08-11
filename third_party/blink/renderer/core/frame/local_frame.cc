@@ -844,18 +844,6 @@ String LocalFrame::GetLayerTreeAsTextForTesting(unsigned flags) const {
                                        static_cast<LayerTreeFlags>(flags));
     }
   }
-
-  if (flags & kLayerTreeIncludesPaintInvalidations) {
-    std::unique_ptr<JSONArray> object_paint_invalidations =
-        view_->TrackedObjectPaintInvalidationsAsJSON();
-      if (!layers)
-        layers = JSONObject::Create();
-      if (object_paint_invalidations && object_paint_invalidations->size()) {
-        layers->SetArray("objectPaintInvalidations",
-                         std::move(object_paint_invalidations));
-    }
-  }
-
   return layers ? layers->ToPrettyJSONString() : String();
 }
 

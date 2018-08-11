@@ -109,52 +109,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'Cras faucibus. Nunc'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'adipiscing, enim in scelerisque'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'convallis, augue '",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutInline SPAN id='t'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'purus'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment ' eleifend'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'lacus, at sagittis eros leo'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'pulvinar velit. Integer'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'sollicitudin nisi ut urna blandit'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'convallis.'",
-      "reason": "subtree"
-    }
   ]
 }
 

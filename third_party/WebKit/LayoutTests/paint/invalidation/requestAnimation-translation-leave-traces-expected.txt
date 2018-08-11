@@ -52,16 +52,6 @@ Tested locations: 1200,1500
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "incremental"
-    },
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "incremental"
-    }
   ]
 }
 

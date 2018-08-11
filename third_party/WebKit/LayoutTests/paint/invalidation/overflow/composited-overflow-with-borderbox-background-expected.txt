@@ -74,16 +74,6 @@
       "position": [203, 203],
       "bounds": [15, 15]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='scroller'",
-      "reason": "style change"
-    }
   ]
 }
 

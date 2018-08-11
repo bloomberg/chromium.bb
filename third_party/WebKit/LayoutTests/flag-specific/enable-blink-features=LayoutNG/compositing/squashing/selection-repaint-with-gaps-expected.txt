@@ -56,16 +56,6 @@
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalTextFragment 'lorem'",
-      "reason": "selection"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'ipsum'",
-      "reason": "selection"
-    }
   ]
 }
 {
@@ -135,24 +125,6 @@
         [8, 8, 0, 1]
       ],
       "flattenInheritedTransform": false
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalTextFragment 'lorem'",
-      "reason": "selection"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'ipsum'",
-      "reason": "selection"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'lorem'",
-      "reason": "selection"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'ipsum'",
-      "reason": "selection"
     }
   ]
 }

@@ -105,12 +105,6 @@ CASE 2, overlap1 changes color:
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
-      "reason": "style change"
-    }
   ]
 }
 CASE 3, overlap1 and overlap2 change color:
@@ -172,16 +166,6 @@ CASE 3, overlap1 and overlap2 change color:
         [60, 60, 0, 1]
       ],
       "flattenInheritedTransform": false
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
-      "reason": "style change"
     }
   ]
 }
@@ -245,16 +229,6 @@ CASE 4, overlap2 and overlap3 change color:
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
-      "reason": "style change"
-    }
   ]
 }
 CASE 5, overlap3 and overlap1 change color:
@@ -316,16 +290,6 @@ CASE 5, overlap3 and overlap1 change color:
         [60, 60, 0, 1]
       ],
       "flattenInheritedTransform": false
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
-      "reason": "style change"
     }
   ]
 }

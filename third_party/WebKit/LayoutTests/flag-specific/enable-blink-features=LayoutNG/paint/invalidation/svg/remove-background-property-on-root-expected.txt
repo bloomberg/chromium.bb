@@ -29,16 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
-      "reason": "background"
-    },
-    {
-      "object": "LayoutSVGRoot svg",
-      "reason": "style change"
-    }
   ]
 }
 

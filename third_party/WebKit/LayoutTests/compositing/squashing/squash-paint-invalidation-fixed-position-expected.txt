@@ -56,12 +56,6 @@
         [8, 8, 0, 1]
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='foo'",
-      "reason": "style change"
-    }
   ]
 }
  {
@@ -121,12 +115,6 @@
         [0, 0, 1, 0],
         [8, 8, 0, 1]
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='foo'",
-      "reason": "style change"
     }
   ]
 }

@@ -38,12 +38,6 @@
         [8, 8, 0, 1]
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='box' class='green box blurry'",
-      "reason": "geometry"
-    }
   ]
 }
 

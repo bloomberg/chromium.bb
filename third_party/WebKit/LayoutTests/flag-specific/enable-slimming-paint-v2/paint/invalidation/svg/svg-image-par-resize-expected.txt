@@ -13,12 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGImage image",
-      "reason": "full"
-    }
   ]
 }
 

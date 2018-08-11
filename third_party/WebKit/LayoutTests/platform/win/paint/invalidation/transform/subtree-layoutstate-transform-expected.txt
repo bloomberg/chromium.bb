@@ -29,16 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV class='layoutroot'",
-      "reason": "background"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "incremental"
-    }
   ]
 }
 

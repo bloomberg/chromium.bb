@@ -34,12 +34,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='test' class='stretchy'",
-      "reason": "style change"
-    }
   ]
 }
 

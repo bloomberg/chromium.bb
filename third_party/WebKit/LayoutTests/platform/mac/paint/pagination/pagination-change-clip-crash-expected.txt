@@ -41,16 +41,6 @@
         [8, 426, 0, 1]
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='background'",
-      "reason": "style change"
-    }
   ]
 }
 

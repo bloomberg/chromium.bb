@@ -29,32 +29,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV id='container'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) UL id='list'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGListItem (positioned) LI",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGListMarker (anonymous)",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\u2022 '",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutImage IMG",
-      "reason": "subtree"
-    }
   ]
 }
 

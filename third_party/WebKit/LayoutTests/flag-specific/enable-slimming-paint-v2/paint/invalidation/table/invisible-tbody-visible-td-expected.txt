@@ -13,12 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTableSection TBODY id='tbody'",
-      "reason": "style change"
-    }
   ]
 }
 

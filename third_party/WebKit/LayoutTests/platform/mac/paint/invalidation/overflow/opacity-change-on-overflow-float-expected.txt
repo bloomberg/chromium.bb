@@ -49,16 +49,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (floating) DIV class='red'",
-      "reason": "background"
-    },
-    {
-      "object": "LayoutBlockFlow (floating) DIV class='green'",
-      "reason": "style change"
-    }
   ]
 }
 

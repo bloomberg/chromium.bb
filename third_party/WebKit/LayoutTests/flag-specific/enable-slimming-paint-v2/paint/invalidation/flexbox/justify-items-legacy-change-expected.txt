@@ -28,16 +28,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV class='item1'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='item2'",
-      "reason": "geometry"
-    }
   ]
 }
 

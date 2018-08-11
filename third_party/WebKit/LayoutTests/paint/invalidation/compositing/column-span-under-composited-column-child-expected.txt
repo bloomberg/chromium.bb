@@ -30,12 +30,6 @@
       "contentsOpaque": true,
       "drawsContent": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (column spanner) DIV id='target'",
-      "reason": "style change"
-    }
   ]
 }
 

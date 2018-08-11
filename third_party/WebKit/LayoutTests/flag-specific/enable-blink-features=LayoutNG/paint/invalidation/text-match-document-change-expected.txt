@@ -39,20 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll control"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='to-be-changed'",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'After change'",
-      "reason": "subtree"
-    }
   ]
 }
 

@@ -103,12 +103,6 @@ CASE 2, hovering over the outer div
       ],
       "flattenInheritedTransform": false
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='box middle'",
-      "reason": "style change"
-    }
   ]
 }
 CASE 3, hovering over the inner div
@@ -170,16 +164,6 @@ CASE 3, hovering over the inner div
         [100, 100, 0, 1]
       ],
       "flattenInheritedTransform": false
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='box middle'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='smallbox'",
-      "reason": "style change"
     }
   ]
 }

@@ -39,12 +39,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='square'",
-      "reason": "style change"
-    }
   ]
 }
 

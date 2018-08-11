@@ -56,7 +56,6 @@ class Frame;
 class FloatSize;
 class FrameViewAutoSizeInfo;
 class IntRect;
-class JSONArray;
 class JSONObject;
 class LayoutEmbeddedContent;
 class LocalFrame;
@@ -390,7 +389,13 @@ class CORE_EXPORT LocalFrameView final
   }
   void TrackObjectPaintInvalidation(const DisplayItemClient&,
                                     PaintInvalidationReason);
-  std::unique_ptr<JSONArray> TrackedObjectPaintInvalidationsAsJSON() const;
+  struct ObjectPaintInvalidation {
+    String name;
+    PaintInvalidationReason reason;
+  };
+  Vector<ObjectPaintInvalidation>* TrackedObjectPaintInvalidations() const {
+    return tracked_object_paint_invalidations_.get();
+  }
 
   using ScrollableAreaSet = HeapHashSet<Member<PaintLayerScrollableArea>>;
   void AddScrollableArea(PaintLayerScrollableArea*);
@@ -932,10 +937,6 @@ class CORE_EXPORT LocalFrameView final
   mutable std::unique_ptr<ScrollingCoordinatorContext> scrolling_context_;
 
   // For testing.
-  struct ObjectPaintInvalidation {
-    String name;
-    PaintInvalidationReason reason;
-  };
   std::unique_ptr<Vector<ObjectPaintInvalidation>>
       tracked_object_paint_invalidations_;
 
@@ -981,6 +982,20 @@ inline void LocalFrameView::IncrementVisuallyNonEmptyPixelCount(
   static const unsigned kVisualPixelThreshold = 32 * 32;
   if (visually_non_empty_pixel_count_ > kVisualPixelThreshold)
     SetIsVisuallyNonEmpty();
+}
+
+inline bool operator==(const LocalFrameView::ObjectPaintInvalidation& a,
+                       const LocalFrameView::ObjectPaintInvalidation& b) {
+  return a.name == b.name && a.reason == b.reason;
+}
+inline bool operator!=(const LocalFrameView::ObjectPaintInvalidation& a,
+                       const LocalFrameView::ObjectPaintInvalidation& b) {
+  return !(a == b);
+}
+inline std::ostream& operator<<(
+    std::ostream& os,
+    const LocalFrameView::ObjectPaintInvalidation& info) {
+  return os << info.name << " reason=" << info.reason;
 }
 
 DEFINE_TYPE_CASTS(LocalFrameView,

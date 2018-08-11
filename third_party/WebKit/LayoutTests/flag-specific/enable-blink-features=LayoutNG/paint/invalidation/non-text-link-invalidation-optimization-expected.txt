@@ -49,32 +49,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalTextFragment 'This test '",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment ' passes if '",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment 'only'",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment ' text is invalidated and '",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment ' no '",
-      "reason": "style change"
-    },
-    {
-      "object": "NGPhysicalTextFragment ' images.'",
-      "reason": "style change"
-    }
   ]
 }
 

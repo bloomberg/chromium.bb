@@ -23,12 +23,6 @@
       "bounds": [600, 250],
       "backgroundColor": "#FFFFFF"
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "background"
-    }
   ]
 }
 {
@@ -55,12 +49,6 @@
       "name": "Scrolling Contents Layer",
       "bounds": [400, 250],
       "backgroundColor": "#FFFFFF"
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "background"
     }
   ]
 }
@@ -89,12 +77,6 @@
       "bounds": [400, 600],
       "backgroundColor": "#FFFFFF"
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "background"
-    }
   ]
 }
 {
@@ -121,12 +103,6 @@
       "name": "Scrolling Contents Layer",
       "bounds": [800, 600],
       "backgroundColor": "#FFFFFF"
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "background"
     }
   ]
 }

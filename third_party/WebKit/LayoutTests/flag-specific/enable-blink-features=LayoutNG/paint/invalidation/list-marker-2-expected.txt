@@ -34,24 +34,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGListItem LI",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalBoxFragment LayoutNGListMarker (anonymous)",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPhysicalTextFragment '\u2022 '",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutImage IMG id='target'",
-      "reason": "subtree"
-    }
   ]
 }
 

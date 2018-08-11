@@ -33,12 +33,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutHTMLCanvas (positioned) CANVAS",
-      "reason": "appeared"
-    }
   ]
 }
 

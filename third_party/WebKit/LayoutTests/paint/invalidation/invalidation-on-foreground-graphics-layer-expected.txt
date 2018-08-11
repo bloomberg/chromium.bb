@@ -78,12 +78,6 @@
       "position": [193, 193],
       "bounds": [15, 15]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "style change"
-    }
   ]
 }
 

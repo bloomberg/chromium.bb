@@ -134,68 +134,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutTableCell TD id='col1'",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'Curabitur pretium, quam quis semper'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'malesuada, est libero feugiat libero, vel'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'fringilla orci nibh sed neque. Quisque eu'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'nulla non nisi molestie accumsan. Etiam'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'tellus urna, laoreet ac, laoreet non,'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'suscipit sed, sapien. Phasellus vehicula,'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'sem at posuere vehicula, augue nibh'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'molestie nisl, nec ullamcorper lacus ante'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'vulputate pede.'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableCell TD id='target'",
-      "reason": "geometry"
-    }
   ]
 }
 

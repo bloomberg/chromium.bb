@@ -13,12 +13,6 @@
         }
       ]
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutMultiColumnSet (anonymous)",
-      "reason": "geometry"
-    }
   ]
 }
 
