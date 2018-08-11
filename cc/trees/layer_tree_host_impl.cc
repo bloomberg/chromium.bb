@@ -5204,8 +5204,11 @@ void LayerTreeHostImpl::ClearUIResources() {
 void LayerTreeHostImpl::EvictAllUIResources() {
   if (ui_resource_map_.empty())
     return;
-  ClearUIResources();
-
+  while (!ui_resource_map_.empty()) {
+    UIResourceId uid = ui_resource_map_.begin()->first;
+    DeleteUIResource(uid);
+    evicted_ui_resources_.insert(uid);
+  }
   client_->SetNeedsCommitOnImplThread();
   client_->OnCanDrawStateChanged(CanDraw());
   client_->RenewTreePriority();
