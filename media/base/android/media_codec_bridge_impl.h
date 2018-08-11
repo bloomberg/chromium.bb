@@ -150,9 +150,10 @@ class MEDIA_EXPORT MediaCodecBridgeImpl : public MediaCodecBridge {
       JNIEnv* /* env */,
       const base::android::JavaParamRef<jobject>& /* obj */) override;
 
+  base::RepeatingClosure on_buffers_available_cb_;
+
   // The Java MediaCodecBridge instance.
   base::android::ScopedJavaGlobalRef<jobject> j_bridge_;
-  base::RepeatingClosure on_buffers_available_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaCodecBridgeImpl);
 };

@@ -330,6 +330,13 @@ class MediaCodecBridge {
 
     @CalledByNative
     void release() {
+        if (mUseAsyncApi) {
+            // Disconnect from the native code to ensure we don't issue calls
+            // into it after its destruction.
+            synchronized (this) {
+                mNativeMediaCodecBridge = 0;
+            }
+        }
         try {
             String codecName = "unknown";
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
