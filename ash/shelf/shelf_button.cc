@@ -15,6 +15,7 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "chromeos/chromeos_switches.h"
 #include "skia/ext/image_operations.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ui_base_features.h"
@@ -40,6 +41,9 @@ constexpr int kStatusIndicatorAttentionThrobDurationMS = 800;
 constexpr int kStatusIndicatorMaxAnimationSeconds = 10;
 constexpr int kStatusIndicatorOffsetFromBottom = 3;
 constexpr int kStatusIndicatorRadiusDip = 2;
+constexpr int kStatusIndicatorMaxSize = 10;
+constexpr int kStatusIndicatorActiveSize = 8;
+constexpr int kStatusIndicatorActiveThickness = 2;
 constexpr int kNotificationIndicatorRadiusDip = 7;
 constexpr SkColor kIndicatorBorderColor = SkColorSetA(SK_ColorBLACK, 0x4D);
 constexpr SkColor kIndicatorColor = SK_ColorWHITE;
@@ -189,8 +193,7 @@ class ShelfButton::AppStatusIndicatorView
     : public views::View,
       public ShelfButtonAnimation::Observer {
  public:
-  AppStatusIndicatorView()
-      : show_attention_(false), animation_end_time_(base::TimeTicks()) {
+  AppStatusIndicatorView() : show_attention_(false), active_(false) {
     // Make sure the events reach the parent view for handling.
     set_can_process_events_within_subtree(false);
   }
@@ -210,25 +213,50 @@ class ShelfButton::AppStatusIndicatorView
       canvas->SaveLayerAlpha(alpha);
     }
 
-    DCHECK_EQ(width(), height());
-    DCHECK_EQ(kStatusIndicatorRadiusDip, width() / 2);
     const float dsf = canvas->UndoDeviceScaleFactor();
     const int kStrokeWidthPx = 1;
     gfx::PointF center = gfx::RectF(GetLocalBounds()).CenterPoint();
     center.Scale(dsf);
-
-    // Fill the center.
     cc::PaintFlags flags;
-    flags.setColor(kIndicatorColor);
-    flags.setAntiAlias(true);
-    canvas->DrawCircle(center, dsf * kStatusIndicatorRadiusDip - kStrokeWidthPx,
-                       flags);
+    if (active_ && chromeos::switches::ShouldUseShelfNewUi()) {
+      // In the new UI, visually distinguish the active app.
+      flags.setColor(kIndicatorColor);
+      float indicator_width;
+      float indicator_height;
+      gfx::PointF origin;
+      if (horizontal_shelf_) {
+        indicator_width = kStatusIndicatorActiveSize;
+        indicator_height = kStatusIndicatorActiveThickness;
+        origin = gfx::PointF(center.x() - kStatusIndicatorActiveSize / 2,
+                             center.y() - kStatusIndicatorActiveThickness / 2);
+      } else {
+        indicator_width = kStatusIndicatorActiveThickness;
+        indicator_height = kStatusIndicatorActiveSize;
+        origin = gfx::PointF(center.x() - kStatusIndicatorActiveThickness / 2,
+                             center.y() - kStatusIndicatorActiveSize / 2);
+      }
+      canvas->DrawRect(
+          gfx::ScaleRect(
+              gfx::RectF(origin, gfx::SizeF(indicator_width, indicator_height)),
+              dsf),
+          flags);
+    } else {
+      DCHECK_EQ(width(), height());
+      DCHECK_EQ(kStatusIndicatorMaxSize, width() / 2);
 
-    // Stroke the border.
-    flags.setColor(kIndicatorBorderColor);
-    flags.setStyle(cc::PaintFlags::kStroke_Style);
-    canvas->DrawCircle(
-        center, dsf * kStatusIndicatorRadiusDip - kStrokeWidthPx / 2.0f, flags);
+      // Fill the center.
+      flags.setColor(kIndicatorColor);
+      flags.setAntiAlias(true);
+      canvas->DrawCircle(
+          center, dsf * kStatusIndicatorRadiusDip - kStrokeWidthPx, flags);
+
+      // Stroke the border.
+      flags.setColor(kIndicatorBorderColor);
+      flags.setStyle(cc::PaintFlags::kStroke_Style);
+      canvas->DrawCircle(
+          center, dsf * kStatusIndicatorRadiusDip - kStrokeWidthPx / 2.0f,
+          flags);
+    }
   }
 
   // ShelfButtonAnimation::Observer
@@ -252,13 +280,29 @@ class ShelfButton::AppStatusIndicatorView
     }
   }
 
+  void ShowActiveStatus(bool active) {
+    if (active_ == active)
+      return;
+    active_ = active;
+    SchedulePaint();
+  }
+
+  void SetHorizontalShelf(bool horizontal_shelf) {
+    if (horizontal_shelf_ == horizontal_shelf)
+      return;
+    horizontal_shelf_ = horizontal_shelf;
+    SchedulePaint();
+  }
+
  private:
   void UpdateAnimating() {
     if (base::TimeTicks::Now() > animation_end_time_)
       ShelfButtonAnimation::GetInstance()->RemoveObserver(this);
   }
 
-  bool show_attention_;
+  bool show_attention_ = false;
+  bool active_ = false;
+  bool horizontal_shelf_ = true;
   base::TimeTicks animation_end_time_;  // For attention throbbing underline.
 
   DISALLOW_COPY_AND_ASSIGN(AppStatusIndicatorView);
@@ -363,6 +407,9 @@ void ShelfButton::AddState(State state) {
     if (state & STATE_ATTENTION)
       indicator_->ShowAttention(true);
 
+    if (state & STATE_ACTIVE)
+      indicator_->ShowActiveStatus(true);
+
     if (is_notification_indicator_enabled_ && (state & STATE_NOTIFICATION))
       notification_indicator_->SetVisible(true);
 
@@ -377,6 +424,8 @@ void ShelfButton::ClearState(State state) {
     Layout();
     if (state & STATE_ATTENTION)
       indicator_->ShowAttention(false);
+    if (state & STATE_ACTIVE)
+      indicator_->ShowActiveStatus(false);
 
     if (is_notification_indicator_enabled_ && (state & STATE_NOTIFICATION))
       notification_indicator_->SetVisible(false);
@@ -550,7 +599,7 @@ void ShelfButton::Layout() {
   }
 
   gfx::Rect indicator_bounds(indicator_midpoint, gfx::Size());
-  indicator_bounds.Inset(gfx::Insets(-kStatusIndicatorRadiusDip));
+  indicator_bounds.Inset(gfx::Insets(-kStatusIndicatorMaxSize));
   indicator_->SetBoundsRect(indicator_bounds);
 
   UpdateState();
@@ -658,11 +707,14 @@ void ShelfButton::NotifyClick(const ui::Event& event) {
 }
 
 void ShelfButton::UpdateState() {
-  indicator_->SetVisible(!(state_ & STATE_HIDDEN) &&
-                         (state_ & STATE_ATTENTION || state_ & STATE_RUNNING));
-
   const bool is_horizontal_shelf =
       shelf_view_->shelf()->IsHorizontalAlignment();
+
+  indicator_->SetVisible(!(state_ & STATE_HIDDEN) &&
+                         (state_ & STATE_ATTENTION || state_ & STATE_RUNNING ||
+                          state_ & STATE_ACTIVE));
+  indicator_->SetHorizontalShelf(is_horizontal_shelf);
+
   icon_view_->SetHorizontalAlignment(is_horizontal_shelf
                                          ? views::ImageView::CENTER
                                          : views::ImageView::LEADING);

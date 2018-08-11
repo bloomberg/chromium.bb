@@ -226,15 +226,23 @@ void ReflectItemStatus(const ShelfItem& item, ShelfButton* button) {
   switch (item.status) {
     case STATUS_CLOSED:
       button->ClearState(ShelfButton::STATE_RUNNING);
+      button->ClearState(ShelfButton::STATE_ACTIVE);
+      button->ClearState(ShelfButton::STATE_ATTENTION);
+      break;
+    case STATUS_ACTIVE:
+      button->AddState(ShelfButton::STATE_ACTIVE);
+      button->AddState(ShelfButton::STATE_RUNNING);
       button->ClearState(ShelfButton::STATE_ATTENTION);
       break;
     case STATUS_RUNNING:
       button->AddState(ShelfButton::STATE_RUNNING);
+      button->ClearState(ShelfButton::STATE_ACTIVE);
       button->ClearState(ShelfButton::STATE_ATTENTION);
       break;
     case STATUS_ATTENTION:
       button->ClearState(ShelfButton::STATE_RUNNING);
       button->AddState(ShelfButton::STATE_ATTENTION);
+      button->ClearState(ShelfButton::STATE_ACTIVE);
       break;
   }
 
