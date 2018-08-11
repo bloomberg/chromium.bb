@@ -5,7 +5,6 @@
 #include <math.h>
 #include <objbase.h>
 #include <sapi.h>
-#include <sphelper.h>
 #include <stdint.h>
 #include <wrl/client.h>
 
@@ -16,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/scoped_co_mem.h"
+#include "base/win/sphelper.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/speech/tts_platform.h"
 

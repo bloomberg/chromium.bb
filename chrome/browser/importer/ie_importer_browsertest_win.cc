@@ -7,7 +7,6 @@
 #include <unknwn.h>
 #include <intshcut.h>
 #include <objbase.h>
-#include <propvarutil.h>
 #include <shlguid.h>
 #include <shlobj.h>
 #include <stddef.h>
@@ -28,6 +27,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/win/propvarutil.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_propvariant.h"
 #include "base/win/windows_version.h"

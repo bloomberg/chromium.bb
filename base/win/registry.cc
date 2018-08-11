@@ -4,7 +4,6 @@
 
 #include "base/win/registry.h"
 
-#include <shlwapi.h>
 #include <stddef.h>
 #include <algorithm>
 
@@ -12,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/win/shlwapi.h"
 #include "base/win/windows_version.h"
 
 namespace base {

@@ -1858,6 +1858,42 @@ class CheckUniquePtrTest(unittest.TestCase):
     results = PRESUBMIT._CheckUniquePtr(mock_input_api, MockOutputApi())
     self.assertEqual(0, len(results))
 
+class CheckNoDirectIncludesHeadersWhichRedefineStrCat(unittest.TestCase):
+  def testBlocksDirectIncludes(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('dir/foo_win.cc', ['#include "shlwapi.h"']),
+      MockFile('dir/bar.h', ['#include <propvarutil.h>']),
+      MockFile('dir/baz.h', ['#include <atlbase.h>']),
+      MockFile('dir/jumbo.h', ['#include "sphelper.h"']),
+    ]
+    results = PRESUBMIT._CheckNoStrCatRedefines(mock_input_api, MockOutputApi())
+    self.assertEquals(1, len(results))
+    self.assertEquals(4, len(results[0].items))
+    self.assertTrue('StrCat' in results[0].message)
+    self.assertTrue('foo_win.cc' in results[0].items[0])
+    self.assertTrue('bar.h' in results[0].items[1])
+    self.assertTrue('baz.h' in results[0].items[2])
+    self.assertTrue('jumbo.h' in results[0].items[3])
+
+  def testAllowsToIncludeWrapper(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('dir/baz_win.cc', ['#include "base/win/shlwapi.h"']),
+      MockFile('dir/baz-win.h', ['#include "base/win/atl.h"']),
+    ]
+    results = PRESUBMIT._CheckNoStrCatRedefines(mock_input_api, MockOutputApi())
+    self.assertEquals(0, len(results))
+
+  def testAllowsToCreateWrapper(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('base/win/shlwapi.h', [
+        '#include <shlwapi.h>',
+        '#include "base/win/windows_defines.inc"']),
+    ]
+    results = PRESUBMIT._CheckNoStrCatRedefines(mock_input_api, MockOutputApi())
+    self.assertEquals(0, len(results))
 
 class TranslationScreenshotsTest(unittest.TestCase):
   # An empty grd file.

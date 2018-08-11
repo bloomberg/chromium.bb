@@ -4,8 +4,6 @@
 
 #include "components/update_client/background_downloader_win.h"
 
-#include <atlbase.h>
-#include <atlcom.h>
 #include <objbase.h>
 #include <winerror.h>
 
@@ -28,6 +26,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/win/atl.h"
 #include "base/win/scoped_co_mem.h"
 #include "components/update_client/task_traits.h"
 #include "components/update_client/update_client_errors.h"

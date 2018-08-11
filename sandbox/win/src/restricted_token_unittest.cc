@@ -6,12 +6,9 @@
 
 #include "sandbox/win/src/restricted_token.h"
 
-#define _ATL_NO_EXCEPTIONS
-#include <atlbase.h>
-#include <atlsecurity.h>
-
 #include <vector>
 
+#include "base/win/atl.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/security_capabilities.h"

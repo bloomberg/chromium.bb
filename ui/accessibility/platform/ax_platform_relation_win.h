@@ -5,8 +5,6 @@
 #ifndef UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_RELATION_WIN_H_
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_RELATION_WIN_H_
 
-#include <atlbase.h>
-#include <atlcom.h>
 #include <oleacc.h>
 #include <wrl/client.h>
 #include <vector>
@@ -14,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
+#include "base/win/atl.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_text_utils.h"

@@ -4,7 +4,6 @@
 
 #include <windows.h>
 
-#include <shlwapi.h>
 #include <stdio.h>
 #include <tchar.h>
 
@@ -12,6 +11,8 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+
+#include "base/win/shlwapi.h"
 
 #pragma warning(disable : 4996)
 

@@ -6,11 +6,9 @@
 
 #include "sandbox/win/src/sid.h"
 
-#define _ATL_NO_EXCEPTIONS
-#include <atlbase.h>
-#include <atlsecurity.h>
 #include <sddl.h>
 
+#include "base/win/atl.h"
 #include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -5,13 +5,11 @@
 #ifndef REMOTING_HOST_WIN_RDP_DESKTOP_SESSION_H_
 #define REMOTING_HOST_WIN_RDP_DESKTOP_SESSION_H_
 
-#include <atlbase.h>
-#include <atlcom.h>
-#include <atlctl.h>
 #include <wrl/client.h>
 
 #include <memory>
 
+#include "base/win/atl.h"
 // chromoting_lib.h contains MIDL-generated declarations.
 #include "remoting/host/win/chromoting_lib.h"
 #include "remoting/host/win/rdp_client.h"

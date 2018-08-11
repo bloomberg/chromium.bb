@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// ATL headers have to go first.
-#include <atlbase.h>
-#include <atlhost.h>
-
 #include <cstdint>
 #include <string>
 
@@ -16,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/win/atl.h"
 #include "base/win/scoped_com_initializer.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/screen_resolution.h"

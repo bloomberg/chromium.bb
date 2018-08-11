@@ -5,7 +5,6 @@
 #include "ui/base/clipboard/clipboard_util_win.h"
 
 #include <shellapi.h>
-#include <shlwapi.h>
 #include <wininet.h>  // For INTERNET_MAX_URL_LENGTH.
 
 #include "base/files/file_path.h"
@@ -16,6 +15,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_hglobal.h"
+#include "base/win/shlwapi.h"
 #include "net/base/filename_util.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/custom_data_helper.h"

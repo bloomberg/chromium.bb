@@ -5,7 +5,6 @@
 #include "base/test/test_file_util.h"
 
 #include <aclapi.h>
-#include <shlwapi.h>
 #include <stddef.h>
 #include <wchar.h>
 #include <windows.h>
@@ -20,6 +19,7 @@
 #include "base/strings/string_split.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/shlwapi.h"
 
 namespace base {
 

@@ -8,7 +8,6 @@
 // <security.h> needs this.
 #define SECURITY_WIN32 1
 #include <security.h>  // For GetUserNameEx()
-#include <shlwapi.h>   // For PathIsUNC()
 #include <stddef.h>
 
 #include <memory>
@@ -36,6 +35,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "base/win/shlwapi.h"  // For PathIsUNC()
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "components/json_schema/json_schema_constants.h"

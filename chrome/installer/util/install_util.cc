@@ -9,7 +9,6 @@
 
 #include <shellapi.h>
 #include <shlobj.h>
-#include <shlwapi.h>
 
 #include <algorithm>
 #include <iterator>
@@ -27,6 +26,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "base/win/registry.h"
+#include "base/win/shlwapi.h"
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"

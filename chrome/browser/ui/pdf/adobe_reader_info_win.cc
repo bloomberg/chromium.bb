@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/pdf/adobe_reader_info_win.h"
 
-#include <shlwapi.h>
 #include <stddef.h>
 
 #include <algorithm>
@@ -18,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
+#include "base/win/shlwapi.h"
 #include "chrome/browser/browser_process.h"
 
 namespace {

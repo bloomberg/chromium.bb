@@ -18,8 +18,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
-#include <shlwapi.h>
 #include "base/win/registry.h"
+#include "base/win/shlwapi.h"
 #elif defined(OS_POSIX)
 #include "base/files/file_path.h"
 #include "rlz/lib/rlz_value_store.h"

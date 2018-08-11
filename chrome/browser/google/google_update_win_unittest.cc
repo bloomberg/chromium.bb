@@ -5,8 +5,7 @@
 #include "chrome/browser/google/google_update_win.h"
 
 #include <windows.h>
-#include <atlbase.h>
-#include <atlcom.h>
+
 #include <wrl/client.h>
 
 #include <memory>
@@ -24,6 +23,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
+#include "base/win/atl.h"
 #include "base/win/registry.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/install_static/test/scoped_install_details.h"
