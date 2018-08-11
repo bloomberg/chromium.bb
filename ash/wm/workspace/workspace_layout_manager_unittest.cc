@@ -28,6 +28,7 @@
 #include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_controller_test_api.h"
+#include "ash/window_factory.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -402,8 +403,8 @@ class DontClobberRestoreBoundsWindowObserver : public aura::WindowObserver {
 // doesn't effect the restore bounds.
 TEST_F(WorkspaceLayoutManagerTest, DontClobberRestoreBounds) {
   DontClobberRestoreBoundsWindowObserver window_observer;
-  std::unique_ptr<aura::Window> window(std::make_unique<aura::Window>(
-      nullptr, aura::client::WINDOW_TYPE_NORMAL));
+  std::unique_ptr<aura::Window> window =
+      window_factory::NewWindow(nullptr, aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
   window->SetBounds(gfx::Rect(10, 20, 30, 40));
   // NOTE: for this test to exercise the failure the observer needs to be added
@@ -442,8 +443,8 @@ TEST_F(WorkspaceLayoutManagerTest, ChildBoundsResetOnMaximize) {
 // Verifies a window created with maximized state has the maximized
 // bounds.
 TEST_F(WorkspaceLayoutManagerTest, MaximizeWithEmptySize) {
-  std::unique_ptr<aura::Window> window(std::make_unique<aura::Window>(
-      nullptr, aura::client::WINDOW_TYPE_NORMAL));
+  std::unique_ptr<aura::Window> window =
+      window_factory::NewWindow(nullptr, aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
   wm::GetWindowState(window.get())->Maximize();
   aura::Window* default_container =
@@ -669,8 +670,8 @@ TEST_F(WorkspaceLayoutManagerTest, AdjustSnappedBoundsWidth) {
 TEST_F(WorkspaceLayoutManagerTest,
        DoNotAdjustTransientWindowBoundsToEnsureMinimumVisibility) {
   UpdateDisplay("300x400");
-  std::unique_ptr<aura::Window> window(std::make_unique<aura::Window>(
-      nullptr, aura::client::WINDOW_TYPE_NORMAL));
+  std::unique_ptr<aura::Window> window =
+      window_factory::NewWindow(nullptr, aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
   window->SetBounds(gfx::Rect(10, 0, 100, 200));
   ParentWindowInPrimaryRootWindow(window.get());
@@ -1063,7 +1064,7 @@ class WorkspaceLayoutManagerBackdropTest : public AshTestBase {
   }
 
   aura::Window* CreateTestWindowInParent(aura::Window* root_window) {
-    aura::Window* window = new aura::Window(nullptr);
+    aura::Window* window = window_factory::NewWindow().release();
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
     window->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);

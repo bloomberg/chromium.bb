@@ -51,6 +51,12 @@
 #include "ui/gfx/scoped_canvas.h"
 
 namespace aura {
+namespace {
+#if !defined(NDEBUG)
+const char* g_env_arg_required_string = nullptr;
+#endif
+
+}  // namespace
 
 Window::Window(WindowDelegate* delegate, client::WindowType type, Env* env)
     : Window(delegate, nullptr, type, env) {}
@@ -78,6 +84,10 @@ Window::Window(WindowDelegate* delegate,
       // notification (such as the workspace code).
       observers_(base::ObserverListPolicy::EXISTING_ONLY) {
   SetTargetHandler(delegate_);
+#if !defined(NDEBUG)
+  // NOTE: at the time of adding this this function is only called from ash.
+  DCHECK(env || !g_env_arg_required_string) << g_env_arg_required_string;
+#endif
 }
 
 Window::~Window() {
@@ -1149,6 +1159,13 @@ bool Window::IsEmbeddingClient() const {
 bool Window::RequiresDoubleTapGestureEvents() const {
   return delegate_ && delegate_->RequiresDoubleTapGestureEvents();
 }
+
+#if !defined(NDEBUG)
+// static
+void Window::SetEnvArgRequired(const char* error_string) {
+  g_env_arg_required_string = error_string;
+}
+#endif
 
 void Window::OnPaintLayer(const ui::PaintContext& context) {
   Paint(context);

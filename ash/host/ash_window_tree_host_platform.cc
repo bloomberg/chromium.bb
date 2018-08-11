@@ -10,6 +10,7 @@
 #include "ash/host/transformer_helper.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/window_factory.h"
 #include "base/feature_list.h"
 #include "base/trace_event/trace_event.h"
 #include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
@@ -35,14 +36,16 @@ namespace ash {
 
 AshWindowTreeHostPlatform::AshWindowTreeHostPlatform(
     ui::PlatformWindowInitProperties properties)
-    : aura::WindowTreeHostPlatform(std::move(properties)),
+    : aura::WindowTreeHostPlatform(std::move(properties),
+                                   window_factory::NewWindow()),
       transformer_helper_(this) {
   transformer_helper_.Init();
   InitInputMethodIfNecessary();
 }
 
 AshWindowTreeHostPlatform::AshWindowTreeHostPlatform()
-    : transformer_helper_(this) {
+    : aura::WindowTreeHostPlatform(window_factory::NewWindow()),
+      transformer_helper_(this) {
   CreateCompositor();
   transformer_helper_.Init();
   InitInputMethodIfNecessary();

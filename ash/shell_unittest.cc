@@ -24,6 +24,7 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
+#include "ash/window_factory.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -497,7 +498,7 @@ TEST_F(ShellTest, FullscreenWindowHidesShelf) {
 // Various assertions around auto-hide behavior.
 // TODO(jamescook): Move this to ShelfTest.
 TEST_F(ShellTest, ToggleAutoHide) {
-  std::unique_ptr<aura::Window> window(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> window = window_factory::NewWindow();
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
@@ -542,11 +543,11 @@ TEST_F(ShellTest, TestPreTargetHandlerOrder) {
 // Verifies an EventHandler added to Env gets notified from EventGenerator.
 TEST_F(ShellTest, EnvPreTargetHandler) {
   ui::test::TestEventHandler event_handler;
-  aura::Env::GetInstance()->AddPreTargetHandler(&event_handler);
+  Shell::Get()->aura_env()->AddPreTargetHandler(&event_handler);
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.MoveMouseBy(1, 1);
   EXPECT_NE(0, event_handler.num_mouse_events());
-  aura::Env::GetInstance()->RemovePreTargetHandler(&event_handler);
+  Shell::Get()->aura_env()->RemovePreTargetHandler(&event_handler);
 }
 
 // Verifies keyboard is re-enabled on proper timing.
@@ -585,7 +586,12 @@ class ShellTest2 : public AshTestBase {
 };
 
 TEST_F(ShellTest2, DontCrashWhenWindowDeleted) {
-  window_.reset(new aura::Window(NULL));
+  // This test explicitly uses aura::Env::GetInstance() rather than
+  // Shell->aura_env() as the Window outlives the Shell. In order for a Window
+  // to outlive Shell the Window must be created outside of Ash, which uses
+  // aura::Env::GetInstance() as the Env.
+  window_ = std::make_unique<aura::Window>(
+      nullptr, aura::client::WINDOW_TYPE_UNKNOWN, aura::Env::GetInstance());
   window_->Init(ui::LAYER_NOT_DRAWN);
 }
 
