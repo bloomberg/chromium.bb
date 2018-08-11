@@ -48,7 +48,7 @@ IN_PROC_BROWSER_TEST_F(GalleryJsTest, GalleryDataModelTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryJsTest, RibbonTest) {
-  RunTest(base::FilePath(FILE_PATH_LITERAL("ribbon_unittest.html")));
+  RunGeneratedTest("/ribbon_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryJsTest, SlideModeTest) {
