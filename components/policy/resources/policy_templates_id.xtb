@@ -647,7 +647,6 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
       Setiap entri daftar menentukan pengenal, yang digunakan secara internal untuk menunjukkan akun lokal perangkat yang berbeda secara terpisah.</translation>
 <translation id="2769952903507981510">Mengonfigurasi nama domain yang dibutuhkan untuk hosting akses jarak jauh</translation>
 <translation id="2787173078141616821">Informasi laporan tentang status Android</translation>
-<translation id="2793923553868251161">Asal yang akan diperlakukan sebagai konteks yang aman.</translation>
 <translation id="2799297758492717491">Izinkan pemutaran otomatis media pada pola URL yang diizinkan</translation>
 <translation id="2801230735743888564">Mengizinkan pengguna memainkan game dinosaur easter egg saat perangkat offline.
 
@@ -1793,12 +1792,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6155936611791017817">Setel status default kursor besar di layar masuk</translation>
 <translation id="6157537876488211233">Peraturan mengabaikan proxy yang dipisahkan koma</translation>
 <translation id="6158324314836466367">Nama toko web perusahaan (tidak digunakan)</translation>
-<translation id="6164955668342404660">Tidak digunakan lagi di M69. Menggunakan OverrideSecurityRestrictionsOnInsecureOrigin.
-
-      Kebijakan tersebut menentukan daftar asal (URL) yang akan diperlakukan sebagai konteks aman. Tujuannya untuk mengizinkan organisasi menyiapkan server persiapan untuk pengembangan web internal, agar developer dapat menguji fitur yang memerlukan konteks aman tanpa harus menerapkan TLS di server persiapan.
-      Menyetel daftar URL di kebijakan ini memiliki efek yang sama seperti menyetel tanda baris perintah '--unsafely-treat-insecure-origin-as-secure' menjadi daftar yang dipisahkan koma yang berisi URL yang sama. Jika disetel, kebijakan tersebut akan mengganti tanda baris perintah.
-      Untuk informasi selengkapnya tentang konteks aman, lihat https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6181608880636987460">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang tidak diizinkan untuk menjalankan plugin <ph name="FLASH_PLUGIN_NAME" />.
 
           Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultPluginsSetting' jika disetel, atau konfigurasi pribadi pengguna.</translation>
@@ -1971,11 +1964,6 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
 <translation id="6786967369487349613">Menyetel direktori profil roaming</translation>
 <translation id="6810445994095397827">Cekal JavaScript di situs ini</translation>
 <translation id="681446116407619279">Skema autentikasi yang didukung</translation>
-<translation id="6832455357698286434">
-      Kebijakan tersebut menentukan daftar asal (URL) atau pola hostname (misalnya "*.example.com") yang akan diperlakukan sebagai konten aman. Tujuannya untuk mengizinkan organisasi menyiapkan server persiapan untuk pengembangan web internal, agar developer dapat menguji fitur yang memerlukan konteks aman tanpa harus menerapkan TLS di server persiapan.
-      Menyetel daftar URL di kebijakan ini memiliki efek yang sama seperti menyetel tanda baris perintah '--unsafely-treat-insecure-origin-as-secure' menjadi daftar yang dipisahkan koma yang berisi URL yang sama. Jika disetel, kebijakan tersebut akan mengganti tanda baris perintah.
-      Untuk informasi selengkapnya tentang konteks aman, lihat https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6835883744948188639">Tampilkan permintaan berulang kepada pengguna yang menunjukkan bahwa peluncuran ulang direkomendasikan</translation>
 <translation id="6838056959556423778">Mengganti aturan pemilihan printer default <ph name="PRODUCT_NAME" />.
 
@@ -2327,7 +2315,6 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
 <translation id="7617319494457709698">Kebijakan ini menentukan ekstensi yang diizinkan untuk menggunakan fungsi <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> <ph name="CHALLENGE_USER_KEY_FUNCTION" /> untuk pengesahan jarak jauh. Ekstensi harus ditambahkan ke daftar ini untuk menggunakan API.
 
           Jika ekstensi tidak ada dalam daftar, atau daftar tidak disetel, panggilan ke API akan gagal yang disertai kode error.</translation>
-<translation id="7620300057302654932">Asal atau pola hostname diperlakukan sebagai konteks yang aman.</translation>
 <translation id="7625444193696794922">Menentukan saluran rilis yang harus dikunci oleh perangkat ini.</translation>
 <translation id="7632724434767231364">Nama pustaka GSSAPI</translation>
 <translation id="7635471475589566552">Mengonfigurasi lokal aplikasi di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah lokal tersebut. Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> akan menggunakan lokal yang ditentukan. Jika lokal terkonfigurasi tidak didukung, 'en-US' akan digunakan. Jika setelan ini dinonaktifkan atau tidak disetel, <ph name="PRODUCT_NAME" /> akan menggunakan lokal terpilih yang ditentukan pengguna (jika dikonfigurasi), lokal sistem, atau lokal pengganti 'en-US'.</translation>

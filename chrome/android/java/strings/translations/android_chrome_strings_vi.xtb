@@ -61,6 +61,7 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="1404122904123200417">Được nhúng trong <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Không theo dõi”</translation>
 <translation id="1407135791313364759">Mở tất cả</translation>
+<translation id="1409426117486808224">Chế độ xem đơn giản cho tab đang mở</translation>
 <translation id="1409879593029778104">Đã ngăn tải xuống <ph name="FILE_NAME" /> do tệp này đã tồn tại.</translation>
 <translation id="1414981605391750300">Đang liên hệ với Google. Quá trình này có thể mất ít phút…</translation>
 <translation id="1416550906796893042">Phiên bản ứng dụng</translation>
@@ -80,6 +81,7 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="1566400915470565838">Để sử dụng <ph name="APP_NAME" />, vui lòng kết nối Internet.</translation>
 <translation id="1569387923882100876">Thiết bị đã kết nối</translation>
 <translation id="1571304935088121812">Sao chép tên người dùng</translation>
+<translation id="1576370611341449972">Chỉ tải xuống khi có Wi-Fi</translation>
 <translation id="1612196535745283361">Chrome cần có quyền truy cập vị trí để quét tìm thiết bị. Tính năng truy cập vị trí bị <ph name="BEGIN_LINK" />tắt cho thiết bị này<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">Bật tính năng đồng bộ hóa, cá nhân hóa và các dịch vụ khác của Google</translation>
 <translation id="1620510694547887537">Máy ảnh</translation>
@@ -344,6 +346,7 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Quản lý</translation>
 <translation id="3819178904835489326">Đã xóa <ph name="NUMBER_OF_DOWNLOADS" /> bản tải xuống</translation>
+<translation id="3819562311292413223">Tải bài viết dành cho bạn xuống</translation>
 <translation id="3822502789641063741">Xóa bộ nhớ trang web?</translation>
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="3859306556332390985">Tìm kiếm tiến</translation>
@@ -383,6 +386,7 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="4113030288477039509">Do quản trị viên của bạn quản lý</translation>
 <translation id="4116038641877404294">Tải trang xuống để sử dụng ngoại tuyến</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d dấu trang}other{%1$d dấu trang}}</translation>
+<translation id="4149994727733219643">Chế độ xem đơn giản cho trang web</translation>
 <translation id="4159800535322890630">Chặn các trang web sử dụng cảm biến của thiết bị</translation>
 <translation id="4165986682804962316">Cài đặt trang web</translation>
 <translation id="4170011742729630528">Dịch vụ không khả dụng; thử lại sau.</translation>
@@ -553,6 +557,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5512137114520586844">Tài khoản này do <ph name="PARENT_NAME" /> quản lý.</translation>
 <translation id="5514904542973294328">Bị quản trị viên của thiết bị này vô hiệu hóa</translation>
 <translation id="5515439363601853141">Mở khóa để xem mật khẩu của bạn</translation>
+<translation id="5515716148775388141">Các biểu tượng đã di chuyển xuống cuối màn hình</translation>
 <translation id="5517095782334947753">Bạn có dấu trang, lịch sử, mật khẩu và các cài đặt khác từ <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Đã chặn chuyển hướng.</translation>
 <translation id="5527082711130173040">Chrome cần có quyền truy cập vị trí để quét tìm thiết bị. <ph name="BEGIN_LINK1" />Cập nhật quyền<ph name="END_LINK1" />. Tính năng truy cập vị trí cũng bị <ph name="BEGIN_LINK2" />tắt cho thiết bị này<ph name="END_LINK2" />.</translation>
@@ -756,6 +761,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7016516562562142042">Được cho phép đối với công cụ tìm kiếm hiện tại</translation>
 <translation id="7021515813996758557">Đã tải xuống <ph name="FILE_NAME" /></translation>
 <translation id="7022756207310403729">Mở trong trình duyệt</translation>
+<translation id="702463548815491781">Khuyên dùng khi dịch vụ TalkBack hoặc Tiếp cận bằng công tắc đang bật</translation>
 <translation id="7029809446516969842">Mật khẩu</translation>
 <translation id="7031882061095297553">Đồng bộ hóa với</translation>
 <translation id="7032663816368481562">Khi nhấn vào biểu tượng Đề xuất khác tương tự <ph name="ICON" /> trên thanh địa chỉ, bạn sẽ thấy các liên kết nhanh đến trang liên quan. URL của các trang bạn truy cập sẽ được gửi tới Google.</translation>
@@ -784,6 +790,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7251326866581677552">Đã chặn khỏi một số trang web</translation>
 <translation id="7253272406652746122">Thêm Tài khoản Google từ trang Tài khoản trong ứng dụng Cài đặt trên thiết bị của bạn.</translation>
 <translation id="7274013316676448362">Trang web bị chặn</translation>
+<translation id="72867290065237936">Nhấn để chuyển đổi giữa các mục đề xuất mật khẩu và bàn phím</translation>
 <translation id="729975465115245577">Thiết bị của bạn không có ứng dụng để lưu trữ tệp mật khẩu.</translation>
 <translation id="7302081693174882195">Thông tin chi tiết: Sắp xếp theo lượng dữ liệu đã tiết kiệm được</translation>
 <translation id="7333031090786104871">Vẫn đang thêm trang web trước</translation>

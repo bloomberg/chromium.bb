@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">오른쪽</translation>
 <translation id="1351937230027495976">메뉴 접기</translation>
 <translation id="1383876407941801731">검색</translation>
+<translation id="1419738280318246476">알림 작업을 실행하려면 기기의 잠금을 해제하세요.</translation>
 <translation id="1467432559032391204">왼쪽</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" />(HDMI/DP)</translation>
 <translation id="1510238584712386396">런처</translation>
@@ -224,6 +225,7 @@
 <translation id="4924411785043111640">다시 시작 및 재설정</translation>
 <translation id="4961318399572185831">화면 전송</translation>
 <translation id="5069971504769299223">기기 관리자가 내 활동을 모니터링할 수도 있습니다.</translation>
+<translation id="5083553833479578423">더 많은 어시스턴트 기능을 사용해 보세요.</translation>
 <translation id="5136175204352732067">다른 키보드 연결됨</translation>
 <translation id="5168181903108465623">전송 기기를 사용할 수 있음</translation>
 <translation id="5207949376430453814">텍스트 캐럿 강조표시</translation>
@@ -295,6 +297,7 @@
 <translation id="6376931439017688372">블루투스 사용 중</translation>
 <translation id="639644700271529076">CAPS LOCK이 꺼져 있음</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">알림 모두 지우기</translation>
 <translation id="643147933154517414">완료</translation>
 <translation id="6445835306623867477"><ph name="RECEIVER_NAME" />에 <ph name="ROUTE_TITLE" /> 전송 중</translation>
 <translation id="6452181791372256707">거부</translation>
@@ -396,9 +399,11 @@
 <translation id="8152119955266188852">전체 화면 돋보기 단축키를 누르셨습니다. 사용 설정할까요?</translation>
 <translation id="8190698733819146287">언어 및 입력 설정...</translation>
 <translation id="8191230140820435481">앱, 확장 프로그램 및 테마 관리</translation>
+<translation id="8192202700944119416">알림이 숨겨져 있음</translation>
 <translation id="8261506727792406068">삭제</translation>
 <translation id="8297006494302853456">약함</translation>
 <translation id="8308637677604853869">이전 메뉴</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">메모 만들기</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" />의 옵션 메뉴</translation>
 <translation id="8406981827175133772">전체화면 돋보기</translation>
@@ -440,6 +445,7 @@
 <translation id="8938800817013097409">USB-C 기기(우측 후면 포트)</translation>
 <translation id="8940956008527784070">배터리 부족(<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">빠른 실행</translation>
+<translation id="899350903320462459">알림 작업을 실행하려면 <ph name="LOGIN_ID" />(으)로 기기의 잠금을 해제하세요.</translation>
 <translation id="8995603266996330174">관리자: <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Adobe Flash Player 업데이트 가능</translation>
 <translation id="9056839673611986238">기기가 롤백됨</translation>

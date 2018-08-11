@@ -275,6 +275,7 @@
       Jei nustatyta kaip „false“, metrikos ir diagnostikos duomenų ataskaitų teikimas bus išjungtas.
 
       Jei nesukonfigūruota, metrikos ir diagnostikos duomenų ataskaitos bus išjungtos netvarkomuose įrenginiuose ir įgalintos tvarkomuose įrenginiuose.</translation>
+<translation id="1920046221095339924">Įrenginio valdomų seansų leidimas</translation>
 <translation id="1929709556673267855">Nurodoma su įrenginiais susietų įmonės spausdintuvų konfigūracija.
 
       Pagal šią politiką leidžiama nurodyti „<ph name="PRODUCT_OS_NAME" />“ įrenginių spausdintuvų konfigūraciją. Toks pats formatas nurodytas „NativePrinters“ žodyne su papildomu būtinu kiekvieno spausdintuvo lauku „id“ arba „guid“, kad juos būtų galima įtraukti į baltąjį arba juodąjį sąrašą.
@@ -308,6 +309,7 @@
 
       Jei šis nustatymas įgalintas arba vertė nenustatyta, naudotojas galės valdyti adreso informacijos Automatinio pildymo funkciją naudotojo sąsajoje.</translation>
 <translation id="1960840544413786116">Ar leidžiami sertifikatai, išduoti naudojant vietinius patikimus prieraišus, kuriuose nėra plėtinio „subjectAlternativeName“</translation>
+<translation id="1962273523772270623">„WebRTC“ įvykių žurnalų rinkimo iš „Google“ paslaugų leidimas</translation>
 <translation id="1964634611280150550">Inkognito režimas neleidžiamas</translation>
 <translation id="1964802606569741174">Ši politika neturi įtakos „Android“ skirtai „YouTube“ programai. Jei turėtų būti taikomi „YouTube“ saugos nustatymai, „Android“ skirtos „YouTube“ programos diegimas turėtų būti neleidžiamas.</translation>
 <translation id="1969212217917526199">Pakeičiama nuotolinės prieigos prieglobos derinimo versijų politika.
@@ -675,7 +677,6 @@
       Kiekvienas sąrašo įrašas nurodo identifikatorių, naudojamą vidiniais tikslais siekiant atskirti skirtingas vietines įrenginio paskyras.</translation>
 <translation id="2769952903507981510">Konfigūruoti reikiamą nuotolinės prieigos prieglobų domeno pavadinimą</translation>
 <translation id="2787173078141616821">Informacijos apie „Android“ būseną ataskaita</translation>
-<translation id="2793923553868251161">Šaltiniai, kurie turi būti laikomi saugiu kontekstu.</translation>
 <translation id="2799297758492717491">Leisti automatinį medijos, atitinkančios į baltąjį sąrašą įtrauktus URL šablonus, paleidimą</translation>
 <translation id="2801230735743888564">Leidžiama naudotojams žaisti dinozaurų Velykų kiaušinių žaidimą, kai įrenginys neprijungtas prie interneto.
 
@@ -1873,12 +1874,6 @@
 <translation id="6155936611791017817">Nustatyti numatytąją didelio žymeklio prisijungimo ekrane būklę</translation>
 <translation id="6157537876488211233">Kableliais atskirtų tarpinio serverio apėjimo taisyklių sąrašas</translation>
 <translation id="6158324314836466367">Įmonės internetinės parduotuvės pavadinimas (nebenaudojama)</translation>
-<translation id="6164955668342404660">Nebenaudojama M69 versijos programoje. Vietoje to naudokite „OverrideSecurityRestrictionsOnInsecureOrigin“.
-
-      Politika nurodo šaltinių (URL), kurie turi būti laikomi saugiu kontekstu, sąrašą. Siekiama leisti organizacijoms nustatyti darbinį serverį vidiniams žiniatinklio kūrimo darbams atlikti, kad kūrėjai galėtų išbandyti funkcijas, kurioms reikia saugaus konteksto, ir darbiniame serveryje nereikėtų diegti TLS.
-      Šioje politikoje nustačius URL sąrašą poveikis toks pat, kaip nustačius komandinės eilutės žymą „--unsafely-treat-insecure-origin-as-secure“ į kableliais atskirtų tų pačių URL sąrašą. Jei ši politika nustatyta, bus nepaisoma komandinės eilutės žymos.
-      Daugiau informacijos apie saugius kontekstus pateikiama adresu https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6181608880636987460">Galima nustatyti URL šablonų, kuriuose nurodomos svetainės, kurioms neleidžiama paleisti papildinio „<ph name="FLASH_PLUGIN_NAME" />“, sąrašą.
 
           Jei ši politika nenustatyta, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „DefaultPluginsSetting“ (jei ji nustatyta) arba naudotojo asmeninės konfigūracijos (kitu atveju).</translation>
@@ -2005,6 +2000,11 @@
       Jei ši politika nenustatyta ar sąrašas yra tuščias, visos schemos bus pasiekiamos „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="6652197835259177259">Vietoje tvarkomų naudotojų paskyrų nustatymai</translation>
 <translation id="6658245400435704251">Nurodoma, iki kiek sekundžių įrenginys gali atsitiktinai atidėti naujinio atsisiuntimą nuo tada, kai naujinys buvo pirmąkart išsiųstas iš serverio. Įrenginys gali laukti dalį šio laiko pagal realųjį laiką, o likusią dalį – pagal naujinio tikrinimo kartus. Bet kuriuo atveju yra nustatyta viršutinė sklaidos riba (tam tikra trukmė), kad įrenginys nelauktų atsisiuntimo be galo.</translation>
+<translation id="6665599130599311250">Jei ši politika nustatyta kaip „False“ arba palikta nenustatyta, tvarkomas svečių seansas bus dokumentuojamas https://support.google.com/chrome/a/answer/3017014 – įprastas viešas seansas.
+
+      Jei ši politika nustatyta kaip „True“, tvarkomas svečių seansas vyks kaip tvarkomas seansas, kuris padidins daugelį apribojimų, taikomų įprastiems viešiems seansams.
+
+      Jei ši politika nustatyta, naudotojas negali jos keisti ar nepaisyti.</translation>
 <translation id="6665670272107384733">Nustatyti, kaip dažnai naudotojas turi įvesti slaptažodį, kad galėtų naudoti spartųjį atrakinimą</translation>
 <translation id="6681229465468164801">Galite nustatyti URL šablonų, kuriuose nurodomos svetainės, kurioms neleidžiama prašyti naudotojo suteikti jiems galimybės pasiekti USB įrenginį, sąrašą.
 
@@ -2054,11 +2054,6 @@
 <translation id="6786967369487349613">Nustatyti tarptinklinio ryšio profilio katalogą</translation>
 <translation id="6810445994095397827">Blokuoti „JavaScript“ šiose svetainėse</translation>
 <translation id="681446116407619279">Palaikomos tapatumo nustatymo schemos</translation>
-<translation id="6832455357698286434">
-      Politika nurodo šaltinių (URL) arba prieglobos serverio pavadinimo šablonų (pvz., „*.example.com“), kurie turi būti laikomi saugiu kontekstu, sąrašą. Siekiama leisti organizacijoms nustatyti darbinį serverį vidiniams žiniatinklio kūrimo darbams atlikti, kad kūrėjai galėtų išbandyti funkcijas, kurioms reikia saugaus konteksto, ir darbiniame serveryje nereikėtų diegti TLS.
-      Šioje politikoje nustačius URL sąrašą poveikis toks pat, kaip nustačius komandinės eilutės žymą „--unsafely-treat-insecure-origin-as-secure“ į kableliais atskirtų tų pačių URL sąrašą. Jei ši politika nustatyta, bus nepaisoma komandinės eilutės žymos.
-      Daugiau informacijos apie saugius kontekstus pateikiama adresu https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6835883744948188639">Pasikartojančio raginimo, kuriame nurodoma, kad rekomenduojama paleisti iš naujo, rodymas naudotojui</translation>
 <translation id="6838056959556423778">Nepaisoma „<ph name="PRODUCT_NAME" />“ numatytojo spausdintuvo pasirinkimo taisyklių.
 
@@ -2170,6 +2165,17 @@
 <translation id="6943577887654905793">„Mac“ / „Linux“ nuostatos pavadinimas:</translation>
 <translation id="69525503251220566">Parametras, nurodantis paieškos pagal vaizdą funkciją numatytajam paieškos teikėjui</translation>
 <translation id="6956272732789158625">Neleisti jokiai svetainei naudoti rakto generavimo</translation>
+<translation id="6982028490425791294">
+      Jei ši politika nustatyta kaip „True“, „<ph name="PRODUCT_NAME" />“ leidžiama rinkti „WebRTC“ įvykių žurnalus iš „Google“ paslaugų (pvz., „Google Meet“) ir įkelti šiuos žurnalus į „Google“.
+
+      Jei ši politika nustatyta kaip „False“ arba nenustatyta, „<ph name="PRODUCT_NAME" />“ nerinks ir neįkels tokių žurnalų.
+
+      Šiuose žurnaluose yra tokios informacijos kaip išsiųstų ir gautų RTP paketų laikas ir dydis, atsiliepimai apie tinklo perpildymą ir metaduomenys apie garso ir vaizdo įrašų kadrų laiką ir kokybę. Ši informacija naudinga derinant problemas dėl garso ir vaizdo skambučių „Chrome“, pavyzdžiui, siuntimo spartos vertinimo problemas ir kt. Žurnaluose nėra skambučių garso ir vaizdo turinio.
+
+      Šį duomenų rinkimą gali suaktyvinti tik „Google“ žiniatinklio paslaugos, pvz., „Google Hangouts“ ar „Google Meet“.
+
+      Šie žurnalai naudojantis seanso ID gali būti susieti su kitais žurnalais, kuriuos surinko pačios „Google“ paslaugos; tai skirta lengvesniam derinimui.
+      </translation>
 <translation id="6994082778848658360">Nurodoma, kaip vidinė saugi elemento aparatinė įranga gali būti naudojama teikiant tapatybės nustatymą dviem veiksniais, jei ji suderinama su šia funkcija. Įrenginio maitinimo mygtukas naudojamas naudotojo buvimo vietai aptikti.
 
       Jei pasirinkta „Išjungta“, neteikiamas joks antras veiksnys.
@@ -2416,7 +2422,6 @@
 <translation id="7617319494457709698">Pagal šią politiką nustatomi plėtiniai, kuriems leidžiama naudoti „<ph name="ENTERPRISE_PLATFORM_KEYS_API" />“ funkciją „<ph name="CHALLENGE_USER_KEY_FUNCTION" />“ patvirtinant nuotoliniu būdu. Plėtiniai turi būti pridėti prie šio sąrašo, kad būtų galima naudoti API.
 
           Jei plėtinio nėra sąraše arba sąrašas nenustatytas, iškviečiant API įvyks klaida ir bus pateiktas jos kodas.</translation>
-<translation id="7620300057302654932">Šaltiniai arba prieglobos serverio pavadinimo šablonai laikomi kaip saugus kontekstas.</translation>
 <translation id="7625444193696794922">Nurodomas leidimo kanalas, su kuriuo šis įrenginys turėtų būti sujungtas.</translation>
 <translation id="7632724434767231364">GSSAPI bibliotekos pavadinimas</translation>
 <translation id="7635471475589566552">„<ph name="PRODUCT_NAME" />“ konfigūruojama programos lokalė ir naudotojams neleidžiama jos keisti.

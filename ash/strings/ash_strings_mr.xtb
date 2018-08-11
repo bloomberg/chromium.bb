@@ -25,12 +25,13 @@
 <translation id="1346748346194534595">उजवे</translation>
 <translation id="1351937230027495976">मेनू कोलॅप्स करा</translation>
 <translation id="1383876407941801731">शोधा</translation>
+<translation id="1419738280318246476">सूचनेशी संबंधित क्रिया पार पाडण्यासाठी डिव्हाइस अनलॉक करा</translation>
 <translation id="1467432559032391204">डावे</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">लाँचर</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{सूचना सेटिंग्ज दाखवा. अॅपसाठी सूचना बंद आहेत}one{सूचना सेटिंग्ज दाखवा. # अॅपसाठी सूचना बंद आहेत}other{सूचना सेटिंग्ज दाखवा. # अॅप्ससाठी सूचना बंद आहेत}}</translation>
 <translation id="1525508553941733066">डिसमिस करा</translation>
-<translation id="1537254971476575106">पूर्णस्क्रीन भिंग</translation>
+<translation id="1537254971476575106">क्षेत्रे भिंग</translation>
 <translation id="15373452373711364">मोठा माउस कर्सर</translation>
 <translation id="1550523713251050646">अधिक पर्यायांसाठी क्लिक करा</translation>
 <translation id="1567387640189251553">तुम्ही शेवटचा पासवर्ड टाकल्या नंतर वेगळा कीबोर्ड कनेक्ट करण्यात आला आहे. तो कदाचित तुमचे कीस्ट्रोक चोरण्याचा प्रयत्न करत असेल.</translation>
@@ -224,6 +225,7 @@
 <translation id="4924411785043111640">रीस्टार्ट करा आणि रीसेट करा</translation>
 <translation id="4961318399572185831">स्क्रीन कास्ट करा</translation>
 <translation id="5069971504769299223">डिव्हाइस व्यवस्थापक कदाचित तुमच्या अॅक्टिव्हिटीचे परीक्षण करू शकेल.</translation>
+<translation id="5083553833479578423">असिस्टंटची आणखी वैशिष्ट्ये अनलॉक करा.</translation>
 <translation id="5136175204352732067">वेगळा कीबोर्ड कनेक्ट केला आहे</translation>
 <translation id="5168181903108465623">कास्‍ट डिव्‍हाइसेस उपलब्‍ध</translation>
 <translation id="5207949376430453814">मजकूर कॅरेट हायलाइट करा</translation>
@@ -295,6 +297,7 @@
 <translation id="6376931439017688372">ब्लूटूथ सुरू आहे</translation>
 <translation id="639644700271529076">CAPS LOCK बंद आहे</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">सर्व सूचना साफ करा</translation>
 <translation id="643147933154517414">सर्व पूर्ण झाले</translation>
 <translation id="6445835306623867477"><ph name="RECEIVER_NAME" /> वर <ph name="ROUTE_TITLE" /></translation>
 <translation id="6452181791372256707">नाकारा</translation>
@@ -396,9 +399,11 @@
 <translation id="8152119955266188852">तुम्ही पूर्ण-स्क्रीन मॅग्निफायर शॉर्टकट दाबला. तुम्हाला ते सुरू करायचे आहे का?</translation>
 <translation id="8190698733819146287">भाषा आणि इनपुट सानुकूलित करा...</translation>
 <translation id="8191230140820435481">आपले अॅप्लिकेशन, विस्तार आणि थीम व्यवस्थापित करा</translation>
+<translation id="8192202700944119416">सूचना लपवलेल्या आहेत.</translation>
 <translation id="8261506727792406068">हटवा</translation>
 <translation id="8297006494302853456">कमकुवत</translation>
 <translation id="8308637677604853869">मागील मेनू</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">टीप तयार करा</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> साठी पर्याय मेनू</translation>
 <translation id="8406981827175133772">फुलस्क्रीन मॅग्निफायर</translation>
@@ -440,6 +445,7 @@
 <translation id="8938800817013097409">USB-C डिव्‍हाइस (मागील बाजूचे उजवे पोर्ट)</translation>
 <translation id="8940956008527784070">बॅटरी कमी झाली (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">त्वरित लाँच</translation>
+<translation id="899350903320462459">सूचनेशी संबंधित क्रिया पार पाडण्यासाठी डिव्हाइस <ph name="LOGIN_ID" /> म्हणून अनलॉक करा</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> द्वारे व्यवस्थापित</translation>
 <translation id="9029474291399787231">Adobe Flash Player अपडेट उपलब्ध आहे</translation>
 <translation id="9056839673611986238">डिव्हाइस रोल बॅक केले जाईल</translation>

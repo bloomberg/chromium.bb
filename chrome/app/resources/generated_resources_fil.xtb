@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">Pag-sync at pag-personalize</translation>
 <translation id="1398853756734560583">Maximize</translation>
 <translation id="1399511500114202393">Walang certificate ng user</translation>
+<translation id="1401165786814632797">I-access ang iyong Assistant anumang oras na sabihin mo ang "Ok Google" kapag nakailaw at naka-unlock ang iyong device.</translation>
 <translation id="140250605646987970">Nakita na ang iyong telepono. Ngunit gumagana lang ang Smart Lock sa mga device na may Android 5.0 o mas bago. &lt;a&gt;Matuto nang higit pa&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (Pinangangasiwaan)</translation>
 <translation id="1405476660552109915">Gusto mo bang i-save ng <ph name="PASSWORD_MANAGER_BRAND" /> ang iyong account para sa site na ito?</translation>
@@ -685,7 +686,6 @@
 <translation id="200544492091181894">Maaari mo itong baguhin sa mga setting sa ibang pagkakataon, anumang oras</translation>
 <translation id="2006638907958895361">Buksan ang Link sa <ph name="APP" /></translation>
 <translation id="2007404777272201486">Mag-ulat ng Isyu...</translation>
-<translation id="2016237810978710652">Binubuksan ang Mga Linux File...</translation>
 <translation id="2016430552235416146">Tradisyonal</translation>
 <translation id="2017334798163366053">I-disable ang pagkolekta ng data ng pagganap</translation>
 <translation id="2017836877785168846">Kini-clear ang history at mga awtomatikong pagkumpleto sa address bar.</translation>
@@ -1510,6 +1510,7 @@
 <translation id="3271648667212143903">Gustong kumonekta ng <ph name="ORIGIN" /></translation>
 <translation id="3274763671541996799">Nag-full screen ka.</translation>
 <translation id="3275778913554317645">Buksan bilang window</translation>
+<translation id="3278877214895457897">Kapag na-set up ang iyong Chromebook, pindutin ang button ng Assistant o sabihin ang "Ok Google" para humingi ng tulong sa Assistant mo anumang oras.</translation>
 <translation id="3279230909244266691">Maaaring abutin nang ilang minuto ang prosesong ito. Sinisimulan ang virtual machine.</translation>
 <translation id="3279741024917655738">Ipakita ang mga fullscreen video sa</translation>
 <translation id="3280237271814976245">I-save &amp;bilang...</translation>
@@ -2603,6 +2604,7 @@
 <translation id="4992066212339426712">I-unmute</translation>
 <translation id="4992458225095111526">Kumpirmahin ang Powerwash</translation>
 <translation id="4992473555164495036">Nilimitahan ng iyong administrator ang mga available na pamamaraan ng pag-input.</translation>
+<translation id="4992926179187649719">I-on ang 'Ok Google'</translation>
 <translation id="4994474651455208930">Payagan ang mga site na humiling na maging mga default na handler para sa mga protocol</translation>
 <translation id="4994754230098574403">Sine-set up</translation>
 <translation id="4996978546172906250">Ibahagi gamit ang</translation>
@@ -3780,7 +3782,6 @@
 <translation id="6748775883310276718">Kiosk na Pang-isang App</translation>
 <translation id="6751256176799620176">1 folder ang napili</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Incognito)</translation>
-<translation id="6751815812172740613">I-delete ang lahat ng Linux application at data sa iyong folder ng Mga File ng Linux sa <ph name="DEVICE_TYPE" /> na ito?</translation>
 <translation id="6757101664402245801">Nakopya ang URL</translation>
 <translation id="6758056191028427665">Ipaalam sa amin kung ano ang iyong palagay sa ginagawa namin.</translation>
 <translation id="6759193508432371551">Factory reset</translation>
@@ -4057,7 +4058,6 @@
     <ph name="BEGIN_PARAGRAPH3" />Maaari mong kontrolin ang feature na ito sa Mga Setting &gt; Google. Piliin ang Paggamit at mga diagnostic mula sa menu.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">Humingi ng Tulong</translation>
 <translation id="7200083590239651963">Pumili ng configuration</translation>
-<translation id="7201014958346994077">Hindi matingnan ang Mga Linux File</translation>
 <translation id="720110658997053098">Permanenteng panatilihin sa kiosk mode ang device na ito</translation>
 <translation id="7201118060536064622">Na-delete ang '<ph name="DELETED_ITEM_NAME" />'</translation>
 <translation id="7206693748120342859">Dina-download ang <ph name="PLUGIN_NAME" />...</translation>
@@ -4531,6 +4531,7 @@
 <translation id="7908378463497120834">Paumanhin, hindi mai-mount ang hindi bababa sa isang bahagi ng iyong device sa storage.</translation>
 <translation id="7909969815743704077">Na-download sa Incognito</translation>
 <translation id="7910768399700579500">&amp;Bagong folder</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Napalitan na ang iyong password sa server. Mag-sign out at muling mag-sign in.</translation>
 <translation id="7915471803647590281">Mangyaring sabihin sa amin kung ano ang nangyayari bago ang pagpapadala ng feedback.</translation>
 <translation id="7916556741383518510">Sa Pag-click</translation>
@@ -4672,7 +4673,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8107015733319732394">Ini-install ang Google Play Store sa iyong <ph name="DEVICE_TYPE" />. Maaaring abutin ito nang ilang minuto.</translation>
 <translation id="8111155949205007504">Ibahagi ang password na ito sa iyong iPhone</translation>
 <translation id="8113043281354018522">Pumili ng uri ng lisensya</translation>
-<translation id="8116925261070264013">Naka-mute</translation>
 <translation id="8116972784401310538">&amp;Tagapangasiwa ng bookmark</translation>
 <translation id="8117620576188476503">Pamahalaan ang mga koneksyon, update, at setting gamit ang status tray. Upang makapunta rito sa pamamagitan ng keyboard, pindutin ang Alt + Shift + S.</translation>
 <translation id="8118362518458010043">Na-disable ng Chrome. Maaaring hindi ligtas ang extension na ito.</translation>
@@ -5132,7 +5132,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8845001906332463065">Humingi ng tulong</translation>
 <translation id="8846141544112579928">Naghahanap ng keyboard...</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885217322790849332">Para buksan ang mga file gamit ang $1, kopyahin muna ang folder ng Mga File ng Linux.</translation>
 <translation id="8859057652521303089">Piliin ang iyong wika:</translation>
 <translation id="8859174528519900719">Subframe: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Spreadsheet ng Excel</translation>

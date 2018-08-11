@@ -653,7 +653,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hver post på listen angiver et id, som bruges internt til at skelne mellem de forskellige enhedslokale konti.</translation>
 <translation id="2769952903507981510">Konfigurer det påkrævede domænenavn for værter med fjernadgang</translation>
 <translation id="2787173078141616821">Rapportér oplysninger om status for Android</translation>
-<translation id="2793923553868251161">Kilder skal behandles som sikkert indhold.</translation>
 <translation id="2799297758492717491">Tillad automatisk afspilning af medier på en hvidliste over webadressemønstre</translation>
 <translation id="2801230735743888564">Giv brugerne mulighed for at spille det ekstra dinosaurspil, når enheden er offline.
 
@@ -1803,12 +1802,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="6155936611791017817">Indstil standardtilstand for den store markør på loginskærmen</translation>
 <translation id="6157537876488211233">Kommasepareret liste over regler for omgåelse af proxy</translation>
 <translation id="6158324314836466367">Navn på virksomhedens webshop (udfaset)</translation>
-<translation id="6164955668342404660">Udfaset i M69. Brug OverrideSecurityRestrictionsOnInsecureOrigin i stedet.
-
-      Denne politik angiver en liste over kilder (webadresser), der skal behandles som sikkert indhold. Formålet er, at organisationer kan konfigurere en testserver til intern webudvikling, så deres udviklere kan teste funktioner, der kræver sikre kontekster, uden at skulle anvende TLS på testserveren.
-      Angivelse af en liste over webadresser i denne politik har den samme effekt som indstilling af kommandolinjemarkeringen "--unsafely-treat-insecure-origin-as-secure" på en kommasepareret liste over de samme webadresser. Hvis politikken er angivet, tilsidesætter den kommandolinjemarkeringen.
-      Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6181608880636987460">Giver dig mulighed for at angive en liste med webadressemønstre, der angiver websites, som ikke har tilladelse til at køre <ph name="FLASH_PLUGIN_NAME" />-pluginnet.
 
           Hvis denne politik ikke angives, anvendes den globale standardværdi for alle websites enten fra politikken "DefaultPluginsSetting", hvis denne er angivet, og ellers fra brugerens personlige konfiguration.</translation>
@@ -1981,11 +1974,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6786967369487349613">Angiv placeringen af roamingprofilen</translation>
 <translation id="6810445994095397827">Bloker JavaScript på disse websites</translation>
 <translation id="681446116407619279">Understøttede godkendelsesskemaer</translation>
-<translation id="6832455357698286434">
-      Denne politik angiver en liste over kilder (webadresser) eller mønstre (f.eks. "*example.com") for hostnames, der skal behandles som sikkert indhold. Formålet er, at organisationer kan konfigurere en testserver til intern webudvikling, så deres udviklere kan teste funktioner, der kræver sikre kontekster, uden at skulle anvende TLS på testserveren.
-      Angivelse af en liste over webadresser i denne politik har den samme effekt som indstilling af kommandolinjemarkeringen "--unsafely-treat-insecure-origin-as-secure" på en kommasepareret liste over de samme webadresser. Hvis politikken er angivet, tilsidesætter den kommandolinjemarkeringen.
-      Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6835883744948188639">Vis brugeren en fast meddelelse, som indikerer, at en genstart anbefales</translation>
 <translation id="6838056959556423778">Tilsidesætter regler for valg af standardprinter i <ph name="PRODUCT_NAME" />.
 
@@ -2332,7 +2320,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7617319494457709698">Denne politik angiver de udvidelser, der har tilladelse til at bruge <ph name="ENTERPRISE_PLATFORM_KEYS_API" />-funktionen <ph name="CHALLENGE_USER_KEY_FUNCTION" /> til fjernbekræftelse. Udvidelser skal føjes til denne liste for at kunne anvende API'en.
 
           Hvis en udvidelse ikke findes på listen, eller listen ikke er angivet, vil kaldet til API'en mislykkes og returnere en fejlkode.</translation>
-<translation id="7620300057302654932">Kilder eller mønstre for hostname, der skal behandles som sikkert indhold.</translation>
 <translation id="7625444193696794922">Angiver den udgivelseskanal, som denne enhed skal være låst til.</translation>
 <translation id="7632724434767231364">Navn på GSSAPI-samling</translation>
 <translation id="7635471475589566552">Konfigurerer applikationens landestandard i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre landestandarden. Hvis du aktiverer denne indstilling, anvender <ph name="PRODUCT_NAME" /> den angivne landestandard. Hvis den konfigurerede landestandard ikke understøttes, bruges "en-US" i stedet. Hvis denne indstilling er deaktiveret eller ikke konfigureret, bruger <ph name="PRODUCT_NAME" /> enten den brugerdefinerede landestandard (hvis denne er konfigureret), systemets landestandard eller reservelandestandarden "en-US".</translation>

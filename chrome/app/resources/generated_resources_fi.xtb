@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">Synkronointi ja räätälöinti</translation>
 <translation id="1398853756734560583">Suurenna</translation>
 <translation id="1399511500114202393">Ei käyttäjävarmennetta</translation>
+<translation id="1401165786814632797">Voit käyttää Assistantia sanomalla Ok Google milloin tahansa, kun laite on päällä ja sen lukitus on avattuna.</translation>
 <translation id="140250605646987970">Puhelimesi löytyi. Smart Lock toimii kuitenkin vain laitteilla, joissa on Android 5.0 tai uudempi. &lt;a&gt;Lisätietoja&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (valvottu käyttäjä)</translation>
 <translation id="1405476660552109915">Haluatko, että <ph name="PASSWORD_MANAGER_BRAND" /> tallentaa tilisi tällä sivustolla?</translation>
@@ -685,7 +686,6 @@
 <translation id="200544492091181894">Voit muuttaa tätä myöhemmin asetuksista.</translation>
 <translation id="2006638907958895361">Avaa linkki: <ph name="APP" /></translation>
 <translation id="2007404777272201486">Ilmoita ongelmasta...</translation>
-<translation id="2016237810978710652">Avataan Linux-tiedostoja…</translation>
 <translation id="2016430552235416146">Perinteinen</translation>
 <translation id="2017334798163366053">Poista tehokkuustietojen kerääminen käytöstä</translation>
 <translation id="2017836877785168846">Tyhjentää historian ja osoitepalkin automaattiset täydennykset.</translation>
@@ -1512,6 +1512,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> haluaa muodostaa yhteyden</translation>
 <translation id="3274763671541996799">Koko näytön tila on käytössä.</translation>
 <translation id="3275778913554317645">Avaa ikkunana</translation>
+<translation id="3278877214895457897">Kun Chromebook on määritetty, voit puhua Assistantille milloin tahansa painamalla Assistant-painiketta tai sanomalla Ok Google.</translation>
 <translation id="3279230909244266691">Tämä voi kestää muutaman minuutin. Käynnistetään virtuaalikonetta.</translation>
 <translation id="3279741024917655738">Koko näytön videoiden näyttötapa:</translation>
 <translation id="3280237271814976245">Tallenna &amp;nimellä...</translation>
@@ -2602,6 +2603,7 @@
 <translation id="4992066212339426712">Poista mykistys</translation>
 <translation id="4992458225095111526">Vahvista powerwash</translation>
 <translation id="4992473555164495036">Järjestelmänvalvoja on rajoittanut syöttötapoja.</translation>
+<translation id="4992926179187649719">Ota käyttöön Ok Google</translation>
 <translation id="4994474651455208930">Anna sivustojen ehdottaa protokollien oletuskäsittelypalveluiden määrittämistä.</translation>
 <translation id="4994754230098574403">Määritetään</translation>
 <translation id="4996978546172906250">Jaa tällä palvelulla:</translation>
@@ -3781,7 +3783,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6748775883310276718">Yksittäisen sovelluksen kioskitila</translation>
 <translation id="6751256176799620176">1 kansio valittu</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Incognito)</translation>
-<translation id="6751815812172740613">Poistetaanko kaikki Linux-sovellukset ja Linux-tiedostokansion data laitteelta <ph name="DEVICE_TYPE" />?</translation>
 <translation id="6757101664402245801">URL-osoite kopioitu</translation>
 <translation id="6758056191028427665">Kerro mielipiteesi</translation>
 <translation id="6759193508432371551">Tehdasasetusten palauttaminen</translation>
@@ -4058,7 +4059,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
     <ph name="BEGIN_PARAGRAPH3" />Voit hallinnoida tätä ominaisuutta kohdassa Asetukset &gt; Google. Valitse valikosta Käyttö‑ ja diagnostiikkatiedot.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">Pyydä ohj&amp;eita</translation>
 <translation id="7200083590239651963">Valitse konfiguraatio</translation>
-<translation id="7201014958346994077">Linux-tiedostoja ei voi näyttää</translation>
 <translation id="720110658997053098">Pidä tämä laite pysyvästi kioskitilassa</translation>
 <translation id="7201118060536064622"><ph name="DELETED_ITEM_NAME" /> poistettu</translation>
 <translation id="7206693748120342859">Ladataan <ph name="PLUGIN_NAME" />...</translation>
@@ -4531,6 +4531,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7908378463497120834">Ainakaan yhtä ulkoisen tallennustilan osioista ei voitu ottaa käyttöön.</translation>
 <translation id="7909969815743704077">Ladattiin incognito-tilassa</translation>
 <translation id="7910768399700579500">&amp;Uusi kansio</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Salasana vaihdettiin palvelimella. Kirjaudu ulos ja sitten uudelleen sisään.</translation>
 <translation id="7915471803647590281">Kerro meille tapahtumista ennen kun lähetät palautteen.</translation>
 <translation id="7916556741383518510">Klikkaamalla</translation>
@@ -4672,7 +4673,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8107015733319732394"><ph name="DEVICE_TYPE" /> asentaa Google Play Kauppaa. Tämä voi kestää pari minuuttia.</translation>
 <translation id="8111155949205007504">Jaa tämä salasana iPhonellesi</translation>
 <translation id="8113043281354018522">Valitse lisenssityyppi</translation>
-<translation id="8116925261070264013">Mykistetty</translation>
 <translation id="8116972784401310538">&amp;Kirjanmerkkien hallinta</translation>
 <translation id="8117620576188476503">Tila-alueella voit hallita yhteyksiä, päivityksiä ja asetuksia. Avaa se näppäimistöllä painamalla Alt + vaihto + S.</translation>
 <translation id="8118362518458010043">Chrome on poistanut tämän laajennuksen käytöstä, sillä se ei välttämättä ole turvallinen.</translation>
@@ -5131,7 +5131,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8845001906332463065">Hae ohjeita</translation>
 <translation id="8846141544112579928">Näppäimistöä etsitään…</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885217322790849332">Jos haluat avata tiedostoja sovelluksella $1, kopioi ne ensin Linux-tiedostot-kansioon.</translation>
 <translation id="8859057652521303089">Valitse kieli:</translation>
 <translation id="8859174528519900719">Alakehys: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excel-laskentataulukko</translation>

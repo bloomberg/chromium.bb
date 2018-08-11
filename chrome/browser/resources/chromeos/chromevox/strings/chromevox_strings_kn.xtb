@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
 <translation id="100812568230599391">ಶೈಲಿ ಪ್ರದರ್ಶನವನ್ನು ನಡುಪುಟಕ್ಕೆ ಬದಲಾಯಿಸಿ.</translation>
+<translation id="1011903154582639569">ಕೀ ಅನ್ನು ಹುಡುಕಿ, ನಂತರ ಟೈಪ್ ಮಾಡಲು ಲಿಫ್ಟ್ ಮಾಡಿ</translation>
 <translation id="1012173283529841972">ಪಟ್ಟಿಯ ಐಟಂ</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">ನೀವು ಮೊದಲ ಬಾರಿಗೆ ChromeVox ಮಾತಿನ ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಬಳಸುತ್ತಿರುವಿರಾ? ChromeVox ಪ್ರಾರಂಭಿಸುವ ಮೂಲಭೂತ ಅಂಶಗಳ ಕುರಿತು ಈ ತ್ವರಿತ ಟ್ಯುಟೋರಿಯಲ್ ವಿವರಿಸುತ್ತದೆ.</translation>
@@ -163,6 +164,7 @@
 <translation id="2553108862507765288">ವ್ಯಾಕರಣ ದೋಷ</translation>
 <translation id="257674075312929031">ಗುಂಪು</translation>
 <translation id="2582407057977008361">ಹೊರತಾಗಿ</translation>
+<translation id="2592212930811759050">ಎಡಿಟಿಂಗ್ ಪ್ರಾರಂಭಿಸಲು ಡಬಲ್ ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="2606210917827248971">ಜೊತೆ {COUNT,plural, =1{# ಐಟಂ}one{# ಐಟಂಗಳು}other{# ಐಟಂಗಳು}}</translation>
 <translation id="2614981083756825552">ಗಣಿತ ML ಲೇಔಟ್</translation>
 <translation id="2624431853467395961">ಕಲಿಕೆ ಮೋಡ್‌ ತೆರೆಯಿರಿ</translation>

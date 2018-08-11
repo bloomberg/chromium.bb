@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="100812568230599391">Thay đổi kiểu hiển thị thành đan xen.</translation>
+<translation id="1011903154582639569">Tìm phím rồi nhấc tay lên để nhập</translation>
 <translation id="1012173283529841972">Mục danh sách</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">Đây là lần đầu tiên bạn sử dụng tính năng phản hồi bằng giọng nói của ChromeVox? Hướng dẫn nhanh này sẽ giải thích các thông tin cơ bản để bắt đầu với ChromeVox.</translation>
@@ -163,6 +164,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="2553108862507765288">lỗi ngữ pháp</translation>
 <translation id="257674075312929031">Nhóm</translation>
 <translation id="2582407057977008361">Loại trừ</translation>
+<translation id="2592212930811759050">Nhấn đúp để bắt đầu chỉnh sửa</translation>
 <translation id="2606210917827248971">với {COUNT,plural, =1{# mục}other{# mục}}</translation>
 <translation id="2614981083756825552">Bố cục toán học ML</translation>
 <translation id="2624431853467395961">Mở chế độ học</translation>

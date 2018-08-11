@@ -167,6 +167,7 @@
 <translation id="3588820906588687999">새 탭에서 이미지 열기</translation>
 <translation id="3603009562372709545">링크 URL 복사</translation>
 <translation id="3607167657931203000">데이터 자동 완성</translation>
+<translation id="360930808415985584">동기화, 맞춤설정 등 관리</translation>
 <translation id="3609785682760573515">동기화 중...</translation>
 <translation id="3628119975092896051">읽기 목록을 오프라인에서 사용할 수 있습니다. 읽기 목록에 페이지를 추가하려면 <ph name="SHARE_OPENING_ICON" />을(를) 탭하세요.</translation>
 <translation id="3638472932233958418">웹페이지 미리 로드하기</translation>
@@ -213,6 +214,7 @@
 <translation id="4508750114462689118">로그인 프로모션 닫기</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />에서 저장된 비밀번호 보기 및 관리</translation>
 <translation id="4536418791685807335">다시 로그인해 주세요.</translation>
+<translation id="4541241553780729349">Google에 동기화하는 데이터 및 사용하는 기능은 변경되지 않습니다.</translation>
 <translation id="457386861538956877">더보기...</translation>
 <translation id="461440297010471931">Google에서 검색하기</translation>
 <translation id="4619615317237390068">다른 기기의 탭</translation>
@@ -421,7 +423,6 @@
 <translation id="8080028325999236607">탭 모두 닫기</translation>
 <translation id="8114753159095730575">파일을 다운로드할 수 있습니다. 화면 하단에서 옵션을 선택할 수 있습니다.</translation>
 <translation id="8160722851663543621">검색주소창 및 검색창의 검색어 및 일부 쿠키를 기본 검색엔진에 전송</translation>
-<translation id="8178325540017397816">선택한 항목 삭제</translation>
 <translation id="8205564605687841303">취소</translation>
 <translation id="8225985093977202398">캐시된 이미지 및 파일</translation>
 <translation id="8261506727792406068">삭제</translation>

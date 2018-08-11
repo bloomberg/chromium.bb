@@ -167,6 +167,7 @@
 <translation id="3588820906588687999">Открыть изображение в новой вкладке</translation>
 <translation id="3603009562372709545">Копировать URL</translation>
 <translation id="3607167657931203000">Данные автозаполнения</translation>
+<translation id="360930808415985584">Настройки синхронизации, персонализации и других сервисов</translation>
 <translation id="3609785682760573515">Cинхронизация…</translation>
 <translation id="3628119975092896051">Ваш список для чтения доступен без подключения к Интернету. Чтобы добавить в него страницу, нажмите <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Предварительная загрузка</translation>
@@ -213,6 +214,7 @@
 <translation id="4508750114462689118">Закрыть сообщение о входе</translation>
 <translation id="4526249700380860531">Просматривайте сохраненные пароли и управляйте ими на странице <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Войдите в аккаунт снова.</translation>
+<translation id="4541241553780729349">Данные, которые синхронизируются с серверами Google, и функции, которыми вы пользуетесь, останутся без изменений.</translation>
 <translation id="457386861538956877">Ещё...</translation>
 <translation id="461440297010471931">Поиск с помощью Google</translation>
 <translation id="4619615317237390068">Вкладки с других устройств</translation>
@@ -421,7 +423,6 @@
 <translation id="8080028325999236607">Закрыть все вкладки</translation>
 <translation id="8114753159095730575">Файл доступен для скачивания. Параметры указаны в нижней части экрана.</translation>
 <translation id="8160722851663543621">Отправлять поисковые запросы из адресной строки и окна поиска, а также файлы cookie в поисковую систему по умолчанию</translation>
-<translation id="8178325540017397816">Удаление выбранных данных</translation>
 <translation id="8205564605687841303">Отмена</translation>
 <translation id="8225985093977202398">Файлы, сохраненные в кеше</translation>
 <translation id="8261506727792406068">Удалить</translation>

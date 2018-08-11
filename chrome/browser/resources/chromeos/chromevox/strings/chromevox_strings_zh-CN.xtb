@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="100812568230599391">将显示样式更改为交错。</translation>
+<translation id="1011903154582639569">找到需要的键后，移开手指即可输入</translation>
 <translation id="1012173283529841972">列表项</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">您是初次使用 ChromeVox 语音反馈功能吗？此教程将提供基本的操作说明，协助您开始使用 ChromeVox。</translation>
@@ -162,6 +163,7 @@
 <translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">群组</translation>
 <translation id="2582407057977008361">边栏内容</translation>
+<translation id="2592212930811759050">点按两次即可开始修改</translation>
 <translation id="2606210917827248971">包含 {COUNT,plural, =1{# 项内容}other{# 项内容}}</translation>
 <translation id="2614981083756825552">数学标记语言布局</translation>
 <translation id="2624431853467395961">打开学习模式</translation>

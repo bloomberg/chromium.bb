@@ -17,6 +17,7 @@
 <translation id="2647554856022461007">Chromium에서 사용자에게 더 나은 인터넷 사용 환경을 제공하기 위해 웹 서비스를 사용할 수 있습니다. 원하는 경우 서비스를 사용 중지하실 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">Chromium에서 더욱 스마트한 Google을 사용하세요</translation>
 <translation id="2730884209570016437">다른 애플리케이션에서 카메라를 사용하고 있으므로 Chromium에서 카메라를 사용할 수 없습니다.</translation>
+<translation id="2797210818057553964">Chromium 설정에서 언제든지 맞춤설정할 수 있습니다.</translation>
 <translation id="3256316712990552818">Chromium에 복사됨</translation>
 <translation id="3413120535237193088">어느 기기에서나 내 북마크를 사용하려면 Chromium에 로그인하세요.</translation>
 <translation id="3473048256428424907">Chromium QR 스캐너 사용 설정</translation>
@@ -45,6 +46,7 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">선택한 데이터가 Chromium 및 동기화된 기기에서 삭제되었습니다. history.google.com에서 검색이나 기타 Google 서비스에서의 활동 등 내 Google 계정에 있는 다른 형식의 탐색 기록을 확인할 수 있습니다.</translation>
 <translation id="7400689562045506105">어디서나 Chromium 사용</translation>
+<translation id="7499048969477415415">Chromium에서 동기화, 맞춤설정 및 기타 Google 서비스를 관리하는 설정이 변경되었습니다. 이로 인해 현재 설정이 영향을 받을 수 있습니다.</translation>
 <translation id="7674213385180944843">설정 &gt; 개인정보 보호 &gt; 카메라 &gt; Chromium을 열고 카메라를 사용 설정하세요.</translation>
 <translation id="7746854981345936341">Chromium 도움말. 뒤로, 앞으로, 검색과 같은 일부 버튼이 화면 하단으로 이동했습니다.</translation>
 <translation id="786327964234957808">동기화 계정을 <ph name="USER_EMAIL1" />에서 <ph name="USER_EMAIL2" />(으)로 전환합니다. 기존 Chromium 데이터는 <ph name="DOMAIN" />에서 관리됩니다. 이 기기에서는 데이터가 삭제되지만 <ph name="USER_EMAIL1" />에 계속해서 데이터가 보관됩니다.</translation>

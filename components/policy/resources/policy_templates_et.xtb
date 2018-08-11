@@ -675,7 +675,6 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
       Loendi iga kirje määrab identifikaatori, mida kasutatakse seesmiselt seadmepõhiste kontode eristamiseks.</translation>
 <translation id="2769952903507981510">Kaugjuurdepääsu hostidele nõutava domeeninime seadistamine</translation>
 <translation id="2787173078141616821">Saada teavet Androidi oleku kohta</translation>
-<translation id="2793923553868251161">Lähtekohti käsitletakse turvalise kontekstina.</translation>
 <translation id="2799297758492717491">Lubatud loendisse lisatud URL-i mustrite puhul meediasisu automaatesituse lubamine</translation>
 <translation id="2801230735743888564">Luba kasutajal mängida dinosauruse üllatusmängu, kui seade pole võrguga ühendatud.
 
@@ -1864,12 +1863,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="6155936611791017817">Sisselogimisekraanil suure kursori vaikeoleku määramine</translation>
 <translation id="6157537876488211233">Puhverserveri möödumisreeglite komadega eraldatud loend</translation>
 <translation id="6158324314836466367">Ettevõtte veebipoe nimi (tugi on katkestatud)</translation>
-<translation id="6164955668342404660">Reegli tugi on M69-s katkestatud. Kasutage selle asemel reeglit OverrideSecurityRestrictionsOnInsecureOrigin.
-
-      Reegel määrab allikate (URL-ide) loendi, mida käsitletakse turvalise kontekstina. Reegli eesmärk on võimaldada organisatsioonidel seadistada kontrollserver siseseks veebiarenduseks, et arendajad saaksid testida turvalist konteksti nõudvaid funktsioone, ilma et oleks vaja kontrollserveris TLS-i juurutada.
-      Reeglis URL-ide loendi määramisel on sama mõju mis käsureamärgistuse „--unsafely-treat-insecure-origin-as-secure” lisamine samadest URL-idest koosnevasse komaeraldusega loendisse. Kui reegel on määratud, alistab see käsureamärgistuse.
-      Turvaliste kontekstide lisateavet leiate aadressilt https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6181608880636987460">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel ei ole lubatud pistikprogrammi <ph name="FLASH_PLUGIN_NAME" /> käitada.
 
           Kui jätate selle reegli määramata, kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultPluginsSetting” (kui see on määratud) või kasutaja isiklikust seadistusest.</translation>
@@ -2050,11 +2043,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="6786967369487349613">Rändlusprofiili kataloogi määramine</translation>
 <translation id="6810445994095397827">Blokeeri JavaScript nendel saitidel</translation>
 <translation id="681446116407619279">Toetatud autentimisskeemid</translation>
-<translation id="6832455357698286434">
-      See reegel määrab loendi lähtekohtadest (URL-id) või hostinime mustritest (nt „*.example.com”), mida käsitletakse turvalise kontekstina. Selle eesmärk on lubada organisatsioonidel seadistada kontrollserver sisemiseks veebiarenduseks, mis võimaldab arendajatel testida turvalist konteksti nõudvaid funktsioone, ilma et nad peaksid kontrollserverisse TLS-i juurutama.
-        Reegliga URL-ide loendi määramine toimib samamoodi kui samade URL-ide komaeraldusega loendisse käsurealmärgistuse „--unsafely-treat-insecure-origin-as-secure” lisamine.
-        Lisateavet turvaliste kontekstide kohta leiate saidilt https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6835883744948188639">Kuva kasutajale korduv viip, mis näitab, et taaskäivitamine on soovitatav</translation>
 <translation id="6838056959556423778">Alistatakse rakenduse <ph name="PRODUCT_NAME" /> vaikeprinteri valimise reeglid.
 
@@ -2426,7 +2414,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="7617319494457709698">Reegel määrab lubatud laiendused, mis kasutavad kaugatesteerimisel API <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> funktsiooni <ph name="CHALLENGE_USER_KEY_FUNCTION" />. API kasutamiseks tuleb laiendused sellesse loendisse lisada.
 
           Kui laiendust loendis pole või loendit pole koostatud, siis kõne API-le ebaõnnestub ja saate vastuseks veakoodi.</translation>
-<translation id="7620300057302654932">Lähtekohad või hostinimede mustrid, mida käsitletakse turvalise kontekstina.</translation>
 <translation id="7625444193696794922">Määrab väljalaskekanali, millele seade tuleks lukustada.</translation>
 <translation id="7632724434767231364">GSSAPI-teegi nimi</translation>
 <translation id="7635471475589566552">Seadistab rakenduse lokaadi rakenduses <ph name="PRODUCT_NAME" /> ja takistab kasutajatel lokaadi muutmist.

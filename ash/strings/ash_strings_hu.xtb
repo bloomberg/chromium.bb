@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">Jobbra</translation>
 <translation id="1351937230027495976">Menü összecsukása</translation>
 <translation id="1383876407941801731">Keresés</translation>
+<translation id="1419738280318246476">Az eszköz zárolásának feloldása az értesítési művelet végrehajtásához</translation>
 <translation id="1467432559032391204">Balra</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Indító</translation>
@@ -225,6 +226,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4924411785043111640">Újraindítás és visszaállítás</translation>
 <translation id="4961318399572185831">Képernyő átküldése</translation>
 <translation id="5069971504769299223">Lehet, hogy tevékenységeit megfigyelheti az eszköz felügyelője.</translation>
+<translation id="5083553833479578423">Hozzáférés a Segéd további funkcióihoz</translation>
 <translation id="5136175204352732067">Új billentyűzet lett csatlakoztatva</translation>
 <translation id="5168181903108465623">Cast-eszközök állnak rendelkezésre</translation>
 <translation id="5207949376430453814">Szövegbeszúrási pont kiemelése</translation>
@@ -296,6 +298,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="6376931439017688372">A Bluetooth be van kapcsolva</translation>
 <translation id="639644700271529076">A CAPS LOCK ki van kapcsolva</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">Az összes értesítés törlése</translation>
 <translation id="643147933154517414">Elkészült</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> itt: <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Elutasítás</translation>
@@ -397,9 +400,11 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8152119955266188852">Lenyomta a teljes képernyős nagyító billentyűparancsát. Bekapcsolja a funkciót?</translation>
 <translation id="8190698733819146287">Nyelvek és beviteli módok személyre szabása...</translation>
 <translation id="8191230140820435481">Alkalmazások, bővítmények és témák kezelése</translation>
+<translation id="8192202700944119416">Az értesítések el vannak rejtve.</translation>
 <translation id="8261506727792406068">Törlés</translation>
 <translation id="8297006494302853456">Gyenge</translation>
 <translation id="8308637677604853869">Előző menü</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Jegyzet létrehozása</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> beállításainak menüje</translation>
 <translation id="8406981827175133772">Teljes képernyős nagyító</translation>
@@ -441,6 +446,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8938800817013097409">C típusú USB-vel kompatibilis eszköz (jobb hátsó port)</translation>
 <translation id="8940956008527784070">Alacsony akkumulátortöltöttség (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">Gyorsindítás</translation>
+<translation id="899350903320462459">Az eszköz zárolásának feloldása az értesítési művelet végrehajtásához a következő felhasználó által: <ph name="LOGIN_ID" />.</translation>
 <translation id="8995603266996330174">Kezelő: <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Rendelkezésre áll az Adobe Flash Player frissítése</translation>
 <translation id="9056839673611986238">Az eszköz korábbi állapotra áll vissza</translation>

@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">ஒத்திசைவு மற்றும் தனிப்பயனாக்கம்</translation>
 <translation id="1398853756734560583">பெரிதாக்கு</translation>
 <translation id="1399511500114202393">பயனர் சான்றிதழ் இல்லை</translation>
+<translation id="1401165786814632797">சாதனம் பூட்டப்படாமல் இயங்கிக் கொண்டிருக்கும்போது, "OK Google" என்று சொல்லி எந்த நேரத்திலும் அசிஸ்டண்ட்டை அணுகலாம்.</translation>
 <translation id="140250605646987970">உங்கள் ஃபோன் அறியப்பட்டது. ஆனால் Android 5.0 மற்றும் அதற்கு மேற்பட்ட பதிப்புகளைக் கொண்ட சாதனங்களில் மட்டும் Smart Lock இயங்கும். &lt;a&gt;மேலும் அறிக&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (கண்காணிக்கப்படும் பயனர்)</translation>
 <translation id="1405476660552109915">இந்தத் தளத்திற்கான உங்கள் கணக்கை <ph name="PASSWORD_MANAGER_BRAND" /> சேமிக்க வேண்டுமா?</translation>
@@ -685,7 +686,6 @@
 <translation id="200544492091181894">இதை எப்போது வேண்டுமானாலும் பின்னர் அமைப்புகளில் மாற்றிக்கொள்ளலாம்</translation>
 <translation id="2006638907958895361"><ph name="APP" /> இல் இணைப்பைத் திற</translation>
 <translation id="2007404777272201486">சிக்கலைப் புகார் செய்க...</translation>
-<translation id="2016237810978710652">Linux கோப்புகளைத் திறக்கிறது...</translation>
 <translation id="2016430552235416146">பழைய முறை</translation>
 <translation id="2017334798163366053">செயல்திறன் தரவுச் சேகரிப்பை முடக்கு</translation>
 <translation id="2017836877785168846">முகவரிப் பட்டியில் வரலாற்றையும் தானே நிரப்புதல்களையும் அழிக்கும்.</translation>
@@ -1512,6 +1512,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> இணைய விரும்புகிறது</translation>
 <translation id="3274763671541996799">முழுத் திரைக்கு வந்துவிட்டீர்கள்.</translation>
 <translation id="3275778913554317645">சாளரமாகத் திற</translation>
+<translation id="3278877214895457897">Chromebook அமைக்கப்படும்போது, அசிஸ்டண்ட்டிடமிருந்து எந்த நேரத்திலும் உதவி பெற, அசிஸ்டண்ட் பட்டனை அழுத்தவும் அல்லது "OK Google" என்று சொல்லவும்.</translation>
 <translation id="3279230909244266691">இதற்குச் சில நிமிடங்கள் ஆகலாம். விர்ச்சுவல் மெஷினைத் தொடங்குகிறது.</translation>
 <translation id="3279741024917655738">முழுத்திரை வீடியோக்களை இதில் காட்டு</translation>
 <translation id="3280237271814976245">&amp;இவ்வாறு சேமி...</translation>
@@ -2604,6 +2605,7 @@
 <translation id="4992066212339426712">ஒலி இயக்கு</translation>
 <translation id="4992458225095111526">பவர்வாஷை உறுதிப்படுத்தவும்</translation>
 <translation id="4992473555164495036">பயன்படுத்தக்கூடிய உள்ளீட்டு முறைகளை உங்கள் நிர்வாகி கட்டுப்படுத்தியுள்ளார்.</translation>
+<translation id="4992926179187649719">'Ok Google' அம்சத்தை இயக்கவும்</translation>
 <translation id="4994474651455208930">நெறிமுறைகளுக்கு இயல்புநிலை ஹேண்ட்லர்களாக இருக்கும்படி கேட்க தளங்களை அனுமதி</translation>
 <translation id="4994754230098574403">அமைக்கிறது</translation>
 <translation id="4996978546172906250">இதன்வழியாக பகிர்</translation>
@@ -3782,7 +3784,6 @@
 <translation id="6748775883310276718">ஒற்றைப் பயன்பாடு கியோஸ்க்</translation>
 <translation id="6751256176799620176">1 கோப்புறை தேர்ந்தெடுக்கப்பட்டது</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (மறைநிலை)</translation>
-<translation id="6751815812172740613">இந்த <ph name="DEVICE_TYPE" /> சாதனத்திலிருந்து உங்கள் Linux கோப்புறையிலுள்ள எல்லா Linux ஆப்ஸ் மற்றும் தரவை நீக்கவா?</translation>
 <translation id="6757101664402245801">URL நகலெடுக்கப்பட்டது</translation>
 <translation id="6758056191028427665">எவ்வாறு செயல்படுகிறோம் என்பதை எங்களுக்குத் தெரிவிக்கவும்.</translation>
 <translation id="6759193508432371551">தொழிற்சாலை மீட்டமைவு</translation>
@@ -4059,7 +4060,6 @@
     <ph name="BEGIN_PARAGRAPH3" />அமைப்புகள் &gt; Google என்பதற்குச் சென்று, இந்த அம்சத்தைக் கட்டுப்படுத்தலாம். மெனுவிலிருந்து உபயோகம் &amp; பிழை அறிக்கைகள் என்பதைத் தேர்ந்தெடுக்கவும்.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">உதவி பெறுக</translation>
 <translation id="7200083590239651963">உள்ளமைவைத் தேர்ந்தெடுக்கவும்</translation>
-<translation id="7201014958346994077">Linux கோப்புகளைப் பார்க்க முடியவில்லை</translation>
 <translation id="720110658997053098">இந்தச் சாதனத்தை, கியோஸ்க் பயன்முறையில் நிரந்தரமாக வைத்திரு</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' நீக்கப்பட்டது</translation>
 <translation id="7206693748120342859"><ph name="PLUGIN_NAME" /> ஐப் பதிவிறக்குகிறது...</translation>
@@ -4531,6 +4531,7 @@
 <translation id="7908378463497120834">உங்கள் வெளிப்புற சேகரிப்பு சாதனத்தில் குறைந்தபட்சம் ஒரு பிரிவினை இருந்தாலும் அதை ஏற்ற முடியாது. மன்னிக்கவும்.</translation>
 <translation id="7909969815743704077">மறைநிலையில் பதிவிறக்கப்பட்டது</translation>
 <translation id="7910768399700579500">&amp;புதிய கோப்புறை</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">சேவையகத்தில் உங்கள் கடவுச்சொல் மாற்றப்பட்டது. வெளியேறி, மீண்டும் உள்நுழையவும்.</translation>
 <translation id="7915471803647590281">மறுமொழி அனுப்புவதற்கு முன், என்ன நடந்துகொண்டிருக்கிறது என்பதை எங்களிடம் தெரியப்படுத்துங்கள்.</translation>
 <translation id="7916556741383518510">கிளிக் செய்யும் போது</translation>
@@ -4672,7 +4673,6 @@
 <translation id="8107015733319732394">உங்கள் <ph name="DEVICE_TYPE" /> இல் Google Play ஸ்டோரை நிறுவுகிறது. இதற்குச் சில நிமிடங்கள் ஆகலாம்.</translation>
 <translation id="8111155949205007504">இந்தக் கடவுச்சொல்லை உங்கள் iPhone உடன் பகிருங்கள்</translation>
 <translation id="8113043281354018522">உரிம வகையைத் தேர்வு செய்யவும்</translation>
-<translation id="8116925261070264013">ஒலியடக்கியவை</translation>
 <translation id="8116972784401310538">&amp;புக்மார்க் நிர்வாகி</translation>
 <translation id="8117620576188476503">இணைப்புகள், அறிவிப்புகள், அமைப்புகள் ஆகியவற்றை நிலைத் தட்டில் நிர்வகிக்கலாம். விசைப்பலகை மூலம் இங்கே வர, Alt, Shift, S ஆகிய விசைகளை ஒன்றாக அழுத்தவும்.</translation>
 <translation id="8118362518458010043">இந்த நீட்டிப்பு பாதுகாப்பற்றதாக இருக்கலாம் என்பதால் Chrome ஆல் முடக்கப்பட்டது.</translation>
@@ -5131,7 +5131,6 @@
 <translation id="8845001906332463065">உதவி பெறுக</translation>
 <translation id="8846141544112579928">விசைப்பலகையைத் தேடுகிறது...</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885217322790849332">$1 இல் கோப்புகளைத் திறப்பதற்கு, அவற்றை முதலில் “Linux கோப்புகள்” கோப்புறைக்கு நகலெடுக்கவும்.</translation>
 <translation id="8859057652521303089">உங்கள் மொழியைத் தேர்ந்தெடுங்கள்:</translation>
 <translation id="8859174528519900719">துணைச்சட்டகம்: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excel விரிதாள்</translation>

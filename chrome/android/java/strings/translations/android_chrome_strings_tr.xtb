@@ -61,6 +61,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="1404122904123200417"><ph name="WEBSITE_URL" /> sitesinde yerleşik</translation>
 <translation id="1406000523432664303">“Do Not Track”</translation>
 <translation id="1407135791313364759">Tümünü aç</translation>
+<translation id="1409426117486808224">Açık sekmeler için basitleştirilmiş görünüm</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> dosyası zaten var olduğu için indirme işlemi engellendi.</translation>
 <translation id="1414981605391750300">Google ile bağlantı kuruluyor. Bu işlem bir dakika sürebilir…</translation>
 <translation id="1416550906796893042">Uygulama sürümü</translation>
@@ -80,6 +81,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="1566400915470565838"><ph name="APP_NAME" /> uygulamasını kullanmak için lütfen internete bağlanın.</translation>
 <translation id="1569387923882100876">Bağlı Cihaz</translation>
 <translation id="1571304935088121812">Kullanıcı adını kopyala</translation>
+<translation id="1576370611341449972">İndirme işlemleri sadece kablosuz bağlantı olduğunda yapılır</translation>
 <translation id="1612196535745283361">Chrome'un cihazları taraması için konum bilgilerine erişmesi gerekiyor. Konum bilgilerine erişim <ph name="BEGIN_LINK" />bu cihaz için kapalı<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">Senkronizasyon, kişiselleştirme ve diğer Google hizmetlerini aç</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -344,6 +346,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Yönet</translation>
 <translation id="3819178904835489326">İndirilen <ph name="NUMBER_OF_DOWNLOADS" /> dosya silindi</translation>
+<translation id="3819562311292413223">Sizin için seçilmiş makaleleri indirin</translation>
 <translation id="3822502789641063741">Site depo. silinsin mi?</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="3859306556332390985">İleriye doğru git</translation>
@@ -383,6 +386,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4113030288477039509">Yöneticiniz tarafından yönetiliyor</translation>
 <translation id="4116038641877404294">Sayfaları çevrimdışı olarak kullanmak için indirin</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d yer işareti}other{%1$d yer işareti}}</translation>
+<translation id="4149994727733219643">Web sayfalarının basitleştirilmiş görünümü</translation>
 <translation id="4159800535322890630">Sitelerin sensörlerinize erişmesini engelleyin</translation>
 <translation id="4165986682804962316">Site ayarları</translation>
 <translation id="4170011742729630528">Hizmet kullanılamıyor, daha sonra tekrar deneyin.</translation>
@@ -553,6 +557,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="5512137114520586844">Bu hesap <ph name="PARENT_NAME" /> tarafından yönetiliyor.</translation>
 <translation id="5514904542973294328">Bu cihazın yöneticisi tarafından devre dışı bırakıldı</translation>
 <translation id="5515439363601853141">Şifrenizi görüntülemek için kilidi açın</translation>
+<translation id="5515716148775388141">Simgeleriniz ekranın altına taşındı</translation>
 <translation id="5517095782334947753"><ph name="FROM_ACCOUNT" /> hesabından yer işaretleri, geçmiş, şifreler ve diğer ayarlarınız var.</translation>
 <translation id="5524843473235508879">Yönlendirme engellendi.</translation>
 <translation id="5527082711130173040">Chrome'un cihazları taraması için konum bilgilerine erişmesi gerekiyor. <ph name="BEGIN_LINK1" />İzinleri güncelleyin<ph name="END_LINK1" />. Ayrıca, konum bilgilerine erişim <ph name="BEGIN_LINK2" />bu cihaz için kapalı<ph name="END_LINK2" />.</translation>
@@ -756,6 +761,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7016516562562142042">Geçerli arama motoru için izin verildi</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> dosyası indirildi</translation>
 <translation id="7022756207310403729">Tarayıcıda aç</translation>
+<translation id="702463548815491781">TalkBack veya Anahtar Erişimi açık olduğunda önerilir</translation>
 <translation id="7029809446516969842">Şifreler</translation>
 <translation id="7031882061095297553">Şununla senkronize et</translation>
 <translation id="7032663816368481562">Adres çubuğunda Buna benzer daha fazla <ph name="ICON" /> simgesine dokunduğunuzda, ilgili sayfaların hızlı bağlantılarını gösterir. Ziyaret ettiğiniz sayfaların URL'leri Google'a gönderilir.</translation>
@@ -784,6 +790,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7251326866581677552">Bazı sitelerde engellendi</translation>
 <translation id="7253272406652746122">Cihazınızın Ayarlar uygulamasındaki Hesaplar sayfasından bir Google Hesabı ekleyin.</translation>
 <translation id="7274013316676448362">Engellenmiş site</translation>
+<translation id="72867290065237936">Şifre önerileri ve klavye arasında geçiş yapmak için dokunun</translation>
 <translation id="729975465115245577">Cihazınızda şifreler dosyasını depolayacak bir uygulama yok.</translation>
 <translation id="7302081693174882195">Ayrıntılar: Tasarruf edilen veri miktarına göre sıralı</translation>
 <translation id="7333031090786104871">Önceki siteyi ekleme işlemi devam ediyor.</translation>

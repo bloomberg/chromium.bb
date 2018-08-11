@@ -167,6 +167,7 @@
 <translation id="3588820906588687999">新しいタブで画像を開く</translation>
 <translation id="3603009562372709545">リンクのURLをコピー</translation>
 <translation id="3607167657931203000">自動入力のデータ</translation>
+<translation id="360930808415985584">同期、カスタマイズ、その他の管理</translation>
 <translation id="3609785682760573515">同期しています...</translation>
 <translation id="3628119975092896051">リーディング リストをオフラインで利用できます。リーディング リストにページを追加するには、<ph name="SHARE_OPENING_ICON" /> をタップします。</translation>
 <translation id="3638472932233958418">ウェブページのプリロード</translation>
@@ -213,6 +214,7 @@
 <translation id="4508750114462689118">ログイン プロモーションを閉じる</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> での保存パスワードの表示と管理</translation>
 <translation id="4536418791685807335">もう一度ログインしてみてください。</translation>
+<translation id="4541241553780729349">Google に同期しているデータと使用している機能は変更されません</translation>
 <translation id="457386861538956877">その他...</translation>
 <translation id="461440297010471931">Google 検索エンジンを使用</translation>
 <translation id="4619615317237390068">他のデバイスからのタブ</translation>
@@ -421,7 +423,6 @@
 <translation id="8080028325999236607">すべてのタブを閉じる</translation>
 <translation id="8114753159095730575">ファイルのダウンロードが利用可能です。画面の下の方にオプションがあります。</translation>
 <translation id="8160722851663543621">アドレスバーや検索ボックスに入力した検索語句と Cookie を既定の検索エンジンに送信します</translation>
-<translation id="8178325540017397816">選択したアイテムが削除されます</translation>
 <translation id="8205564605687841303">キャンセル</translation>
 <translation id="8225985093977202398">キャッシュされた画像とファイル</translation>
 <translation id="8261506727792406068">削除</translation>

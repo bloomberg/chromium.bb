@@ -274,6 +274,7 @@
       Yanlış (false) değerine ayarlanırsa, ölçüm ve teşhis verilerini raporlama işlevi devre dışı olur.
 
       Yapılandırılmazsa, ölçüm ve teşhis verileri yönetilmeyen cihazlarda devre dışı bırakılır, yönetilen cihazlarda etkinleştirilir.</translation>
+<translation id="1920046221095339924">Cihazda yönetilen oturuma izin ver</translation>
 <translation id="1929709556673267855">Cihazlara bağlı kurumsal yazıcılar için yapılandırmalar sağlar.
 
       Bu politika, <ph name="PRODUCT_OS_NAME" /> cihazlara yazıcı yapılandırmaları sağlamanıza olanak tanır. Biçim NativePrinters sözlüğü ile aynı olmakla birlikte beyaz veya kara listeye eklenecek her yazıcı için gerekli ek "id" veya "guid" alanları içerir.
@@ -307,6 +308,7 @@
 
       Bu ayar etkinleştirilirse veya bir değer ayarlanmazsa kullanıcı, kullanıcı arayüzündeki adresler için Otomatik Doldurma özelliğini kontrol edebilir.</translation>
 <translation id="1960840544413786116">Yerel güven bağlantıları tarafından yayınlanan ve subjectAlternativeName uzantısı bulunmayan sertifikalara izin verilip verilmeyeceği</translation>
+<translation id="1962273523772270623">Google hizmetlerinden WebRTC olay günlüklerinin toplanmasına izin ver</translation>
 <translation id="1964634611280150550">Gizli mod devre dışı</translation>
 <translation id="1964802606569741174">Bu politikanın Android YouTube uygulaması üzerinde hiçbir etkisi yoktur. YouTube'da Güvenlik Modu uygulanacaksa Android YouTube uygulamasının yüklenmesine izin verilmemelidir.</translation>
 <translation id="1969212217917526199">Uzaktan erişim ana makinesinin Hata Ayıklama yapılarındaki politikaları geçersiz kılar.
@@ -670,7 +672,6 @@
       Her liste girişi, farklı cihaz-yerel hesaplarını ayırt etmek için dahili olarak kullanılan bir tanımlayıcıyı belirtir.</translation>
 <translation id="2769952903507981510">Uzaktan erişim ana makineleri için gerekli alan adını yapılandır</translation>
 <translation id="2787173078141616821">Android'in durumu hakkında rapor bilgileri</translation>
-<translation id="2793923553868251161">Başlangıç noktaları, güvenli içerik olarak değerlendirilir.</translation>
 <translation id="2799297758492717491">URL kalıpları beyaz listesinde medyanın otomatik olarak oynatılmasına izin ver</translation>
 <translation id="2801230735743888564">Cihaz çevrimdışıyken kullanıcıların dinozor paskalya yumurtası oyununu oynamasına izin ver.
 
@@ -1855,12 +1856,6 @@ politikayı geçersiz kılamaz.
 <translation id="6155936611791017817">Giriş ekranında büyük imleç modunun varsayılan durumunu ayarla</translation>
 <translation id="6157537876488211233">Proxy atlama kurallarının noktalı virgül ile ayrılmış listesi</translation>
 <translation id="6158324314836466367">Kurumsal web mağazası adı (kullanımdan kaldırıldı)</translation>
-<translation id="6164955668342404660">M69'da kullanımdan kaldırıldı. Bunun yerine OverrrideSecurityRestrictionsOnInsecureOrigin'i kullanın.
-
-      Bu politika, güvenli içerik olarak değerlendirilecek olan başlangıç noktalarının (URL'ler) bir listesini belirtir. Burada amaç, kuruluşların dahili web geliştirmeleri için hazırlık sunucusu ayarlamalarına olanak tanımaktır. Böylece kuruluşların geliştiricileri hazırlık sunucusunda TLS dağıtmak zorunda kalmadan güvenli içerik gerektiren özellikleri test edebilirler.
-      Bu politikadaki URL'lerin bir listesini ayarlamakla, aynı URL'lerin virgülle ayrılmış bir listesine "--unsafely-treat-insecure-origin-as-secure" komut satırı işaretini ayarlamak aynı sonucu verir. Bu politika ayarlanırsa, komut satırı işaretini geçersiz kılar.
-      Güvenli içerikler ile ilgili daha fazla bilgi edinmek için https://www.w3.org/TR/secure-contexts/ adresine bakın.
-      </translation>
 <translation id="6181608880636987460"><ph name="FLASH_PLUGIN_NAME" /> eklentisini çalıştırmasına izin verilmeyen siteleri belirten URL kalıplarının listesini ayarlamanıza izin verir.
 
           Bu politika ayarlanmadan bırakılırsa, tüm siteler için ya "DefaultPluginsSetting" politikasından gelen (ayarlanmışsa) ya da kullanıcının kişisel yapılandırmasından gelen global varsayılan değer kullanılır.</translation>
@@ -1987,6 +1982,11 @@ politikayı geçersiz kılamaz.
       Bu politika ayarlanmadan bırakılırsa veya liste boş olursa, <ph name="PRODUCT_NAME" /> içindeki tüm şemalara erişilebilir.</translation>
 <translation id="6652197835259177259">Yerel olarak yönetilen kullanıcıların ayarları</translation>
 <translation id="6658245400435704251">Bir güncelleme sunucuya ilk gönderildiği andan itibaren bir cihazın rastgele şekilde güncelleme yüklemesini geciktirebileceği süreyi saniye olarak belirtir. Cihaz bu sürenin bir kısmında gerçek zaman olarak, geri kalan kısmında ise güncelleme denetlemelerinin sayısınca bekleyebilir. Cihazın bir güncellemeyi sürekli bekler durumda kalmaması için, dağılım her durumda üst sınır olarak sabit bir süre ile kısıtlıdır.</translation>
+<translation id="6665599130599311250">Bu politika yanlış (false) değerine ayarlanır veya ayarlanmadan bırakılırsa, yönetilen misafir oturumu https://support.google.com/chrome/a/answer/3017014, standart "Herkese Açık Oturum"da belirtildiği şekilde davranır.
+
+      Politika doğru (true) değerine ayarlanırsa, yönetilen misafir oturumu, normal "Herkese Açık Oturumlar" için geçerli olan kısıtlamaları kaldıran "Yönetilen Oturum" davranışını devralır.
+
+      Bu politika ayarlanırsa kullanıcı değiştiremez veya geçersiz kılamaz.</translation>
 <translation id="6665670272107384733">Hızlı kilit açmayı kullanmak için kullanıcının şifreyi hangi sıklıkta girmesi gerektiğini ayarla</translation>
 <translation id="6681229465468164801">USB cihazlarına erişmek için kullanıcıdan izin istemesi engellenen sitelerin belirtildiği URL kalıpları listesini ayarlamanıza olanak sağlar.
 
@@ -2036,11 +2036,6 @@ politikayı geçersiz kılamaz.
 <translation id="6786967369487349613">Dolaşım profili dizinini ayarlayın</translation>
 <translation id="6810445994095397827">Bu sitelerde JavaScript'i engelle</translation>
 <translation id="681446116407619279">Desteklenen kimlik doğrulama şemaları</translation>
-<translation id="6832455357698286434">
-      Bu politika, güvenli içerik olarak değerlendirilecek olan başlangıç noktalarının (URL'ler) veya ana makine adı kalıplarının (örneğin, "*.example.com") bir listesini belirtir. Burada amaç, kuruluşların dahili web geliştirmeleri için hazırlık sunucusu ayarlamalarına olanak tanımaktır. Böylece kuruluşların geliştiricileri hazırlık sunucusunda TLS dağıtmak zorunda kalmadan güvenli içerik gerektiren özellikleri test edebilirler.
-      Bu politikadaki URL'lerin bir listesini ayarlamakla, aynı URL'lerin virgülle ayrılmış bir listesine "--unsafely-treat-insecure-origin-as-secure" komut satırı işaretini ayarlamak aynı sonucu verir. Bu politika ayarlanırsa, komut satırı işaretini geçersiz kılar.
-      Güvenli içerikler ile ilgili daha fazla bilgi edinmek için https://www.w3.org/TR/secure-contexts/ adresine bakın.
-      </translation>
 <translation id="6835883744948188639">Kullanıcıya yeniden başlatmanın önerildiğini belirten yinelenen bir istem gösterme</translation>
 <translation id="6838056959556423778"><ph name="PRODUCT_NAME" /> varsayılan yazıcı seçim kurallarını geçersiz kılar.
 
@@ -2154,6 +2149,17 @@ politikayı geçersiz kılamaz.
 <translation id="6943577887654905793">Mac/Linux tercih adı:</translation>
 <translation id="69525503251220566">Varsayılan arama sağlayıcısı için resme göre arama özelliği sağlayan parametre</translation>
 <translation id="6956272732789158625">Hiçbir sitenin anahtar oluşturma işlevini kullanmasına izin verme</translation>
+<translation id="6982028490425791294">
+      Bu politika doğru (true) değerine ayarlanırsa, <ph name="PRODUCT_NAME" /> ürünün Google hizmetlerinden (ör. Google Meet) WebRTC etkinlik günlüklerini toplamasına ve bu günlükleri Google'a yüklemesine izin verilir.
+
+      Bu politika yanlış (false) değerine ayarlanır veya ayarlanmadan bırakılırsa, <ph name="PRODUCT_NAME" /> ürünü bu tür günlükleri toplayamaz veya yükleyemez.
+
+      Bu günlükler gönderilen ve alınan RTP paketlerinin boyutu ve işlem zamanı, ağdaki tıkanıklıkla ilgili geri bildirim, ses ve video karelerinin süresi ve kalitesi gibi bilgileri içerir. Bu bilgiler, Chrome'da sesli ve görüntülü aramalarla ilgili sorunlar (ör. bant genişliği tahminiyle ilgili sorunlar vb) için hata ayıklaması yaparken kullanışlıdır. Günlükler aramadaki ses ve video içeriklerini barındırmaz.
+
+      Bu veri toplama işlemi yalnızca Google Hangouts veya Google Meet gibi Google'ın web hizmetleri tarafından tetiklenebilir.
+
+      Bu günlükler bir oturum kimliği kullanılarak, Google hizmetinin kendisi tarafından toplanan diğer günlüklerle ilişkilendirilebilir. Bu, hata ayıklamayı kolaylaştırmak amacıyla kasıtlı olarak yapılır.
+      </translation>
 <translation id="6994082778848658360">Yerleşik güvenli öğe donanımının bu özellikle uyumlu olması halinde iki etmenli kimlik doğrulama sunmak için nasıl kullanılabileceğini belirtir. Kullanıcının fiziksel varlığını algılamak için makinenin güç düğmesi kullanılır.
 
       "Devre dışı" seçilirse ikinci etmen sunulmaz.
@@ -2398,7 +2404,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7617319494457709698">Bu politika, uzaktan doğrulama için <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> <ph name="CHALLENGE_USER_KEY_FUNCTION" /> işlevini kullanmasına izin verilen uzantıları belirtir. API'yi kullanmak için uzantılar bu listeye eklenmelidir.
 
           Bir uzantı listede yoksa veya liste ayarlanmamışsa API'ye yapılan çağrılar başarısız olur ve hata kodu görüntülenir.</translation>
-<translation id="7620300057302654932">Başlangıç noktaları veya ana makine adı kalıpları, güvenli içerik olarak değerlendirilir.</translation>
 <translation id="7625444193696794922">Bu cihazın kilitlenmesi gereken yayın kanalını belirtir.</translation>
 <translation id="7632724434767231364">GSSAPI kitaplığı adı</translation>
 <translation id="7635471475589566552"><ph name="PRODUCT_NAME" /> içindeki uygulama yerel ayarını yapılandırır ve kullanıcıların yerel ayarı değiştirmelerini önler.

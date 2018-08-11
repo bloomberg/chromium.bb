@@ -676,7 +676,6 @@
       Alla poster i listan anger en identifierare som används internt för att skilja de olika lokala kontona på enheten från varandra.</translation>
 <translation id="2769952903507981510">Konfigurera det obligatoriska domännamnet för fjärråtkomstvärdar</translation>
 <translation id="2787173078141616821">Rapportera information om Android-status</translation>
-<translation id="2793923553868251161">Källor som behandlas som säker kontext.</translation>
 <translation id="2799297758492717491">Tillåt att media spelas upp automatiskt på en vitlista över webbadressmallar</translation>
 <translation id="2801230735743888564">Tillåt användare att spela påskäggsspelet med dinosaurier när enheten är offline.
 
@@ -1878,12 +1877,6 @@
 <translation id="6155936611791017817">Ange standardläget för den stora markören på inloggningsskärmen</translation>
 <translation id="6157537876488211233">Kommaavgränsad lista med regler för proxybypass</translation>
 <translation id="6158324314836466367">Namn på företagets webbutik (föråldrat)</translation>
-<translation id="6164955668342404660">Utfasad i M69. Använd OverrideSecurityRestrictionsOnInsecureOrigin i stället.
-
-      I den här principen anges en lista med ursprung (webbadresser) som ska behandlas som säker kontext. Syftet är att tillåta organisationer att använda en provkörningsserver för intern webbutveckling där utvecklarna kan testa funktioner som kräver säker kontext utan att behöva använda TLS på testservern.
-      Att ange en lista med webbadresser i den här principen fungerar på samma sätt som om man använder kommandoradsflaggan --unsafely-treat-insecure-origin-as-secure med webbadresserna ifråga i en kommaavgränsad lista. Om principen har ställts in åsidosätts kommandoradsflaggan.
-      Mer information om säker kontext finns på https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6181608880636987460">Låter dig ange en lista med webbadressmönster som definierar på vilka webbplatser pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> inte får köras.
 
           Om den här principen inte anges används det globala standardvärdet för alla webbplatser. Värdet hämtas antingen från principen DefaultPluginsSetting, om den har ställts in, eller från användarens egna inställningar.</translation>
@@ -2064,11 +2057,6 @@
 <translation id="6786967369487349613">Ange roamingprofilkatalogen</translation>
 <translation id="6810445994095397827">Blockera JavaScript på dessa webbplatser</translation>
 <translation id="681446116407619279">Autentiseringsscheman som stöds</translation>
-<translation id="6832455357698286434">
-      I den här principen anges en lista med ursprung (webbadresser) eller värdnamnsmönster (t.ex. *.example.com) som ska behandlas som säker kontext. Syftet är att tillåta organisationer att använda en provkörningsserver för intern webbutveckling där utvecklarna kan testa funktioner som kräver säker kontext utan att behöva använda TLS på testservern.
-      Att ange en lista med webbadresser i den här principen fungerar på samma sätt som om man använder kommandoradsflaggan --unsafely-treat-insecure-origin-as-secure med webbadresserna ifråga i en kommaavgränsad lista. Om principen har ställts in åsidosätts kommandoradsflaggan.
-      Mer information om säker kontext finns på https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6835883744948188639">Visa användaren ett återkommande meddelande om att omstart rekommenderas</translation>
 <translation id="6838056959556423778">Åsidosätter skrivarens standardurvalsregler för <ph name="PRODUCT_NAME" />.
 
@@ -2437,7 +2425,6 @@
 <translation id="7617319494457709698">Principen specificerar vilka tillägg som får använda <ph name="ENTERPRISE_PLATFORM_KEYS_API" />-funktionen <ph name="CHALLENGE_USER_KEY_FUNCTION" /> för fjärrattestering. Tillägg måste anges på den här listan om de ska kunna använda API:et.
 
           Om ett tillägg inte finns med på listan, eller om listan inte har fastställts misslyckas anslutningen till API:et och en felkod visas.</translation>
-<translation id="7620300057302654932">Ursprung eller värdnamnsmönster som behandlas som säker kontext.</translation>
 <translation id="7625444193696794922">Policyn anger vilken versionskanal som enheten ska låsas till.</translation>
 <translation id="7632724434767231364">GSSAPI-biblioteksnamn</translation>
 <translation id="7635471475589566552">Policyn konfigurerar appens språkversion i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar språk.

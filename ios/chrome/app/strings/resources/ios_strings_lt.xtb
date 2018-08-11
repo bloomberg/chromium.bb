@@ -167,6 +167,7 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 <translation id="3588820906588687999">Atidaryti vaizdą naujo skirtuko lape</translation>
 <translation id="3603009562372709545">Kopijuoti nuorodos URL</translation>
 <translation id="3607167657931203000">Autom. pild. duom.</translation>
+<translation id="360930808415985584">Sinchronizavimo, suasmeninimo ir kitų funkcijų valdymas</translation>
 <translation id="3609785682760573515">Sinchronizuojama...</translation>
 <translation id="3628119975092896051">Skaitymo sąrašas pasiekiamas neprisijungus. Kad pridėtumėte puslapį prie skaitymo sąrašo, palieskite <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Iš anksto įk. tinkl.</translation>
@@ -213,6 +214,7 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 <translation id="4508750114462689118">Uždaryti prisijungimo reklamą</translation>
 <translation id="4526249700380860531">Peržiūrėkite ir tvarkykite išsaugotus slaptažodžius apsilankę adresu <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Bandykite prisijungti dar kartą.</translation>
+<translation id="4541241553780729349">Su „Google“ sinchronizuojami duomenys ir naudojamos funkcijos nepasikeis</translation>
 <translation id="457386861538956877">Daugiau...</translation>
 <translation id="461440297010471931">Ieškoma naudojant „Google“</translation>
 <translation id="4619615317237390068">Skirtukai iš kitų įrenginių</translation>
@@ -421,7 +423,6 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="8080028325999236607">Uždaryti visus skirtukus</translation>
 <translation id="8114753159095730575">Galima atsisiųsti failą. Parinktys pasiekiamos netoli ekrano apačios.</translation>
 <translation id="8160722851663543621">Numatytajam paieškos varikliui siunčiamos į adreso juostą ir paieškos laukelį įvestos paieškos ir kai kurie slapukai</translation>
-<translation id="8178325540017397816">Pasirinkti elementai bus pašalinti</translation>
 <translation id="8205564605687841303">Atšaukti</translation>
 <translation id="8225985093977202398">Talp. vaiz. ir fail.</translation>
 <translation id="8261506727792406068">Ištrinti</translation>

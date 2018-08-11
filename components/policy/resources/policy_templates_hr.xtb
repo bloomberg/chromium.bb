@@ -655,7 +655,6 @@
       Svaki unos na popisu navodi identifikator, koji se upotrebljava interno da bi se razlikovali lokalni računi na uređaju.</translation>
 <translation id="2769952903507981510">Konfiguriraj traženi naziv domene za hostove daljinskog pristupa</translation>
 <translation id="2787173078141616821">Prijavi informacije o statusu Androida</translation>
-<translation id="2793923553868251161">Izvori se tretiraju kao siguran kontekst.</translation>
 <translation id="2799297758492717491">Dopusti automatsku reprodukciju medija na popisu dopuštenih uzoraka URL-a</translation>
 <translation id="2801230735743888564">Dopusti korisnicima igranje skrivene igre s dinosaurom kada je uređaj izvan mreže.
 
@@ -1803,12 +1802,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="6155936611791017817">Postavljanje zadanog stanja velikog pokazivača na zaslonu za prijavu</translation>
 <translation id="6157537876488211233">Popis pravila zaobilaženja proxyja odvojenih zarezima</translation>
 <translation id="6158324314836466367">Naziv web-trgovine tvrtke (obustavljeno)</translation>
-<translation id="6164955668342404660">Obustavljeno u verziji M69. Umjesto toga upotrijebite OverrideSecurityRestrictionsOnInsecureOrigin.
-
-      To pravilo određuje popis izvora (URL-ova) koji se tretiraju kao siguran kontekst. Namjera je dopustiti organizacijama postavljanje poslužitelja u pokusne svrhe za interni razvoj na webu kako bi njihovi razvojni programeri mogli testirati značajke koje zahtijevaju siguran kontekst bez primjene TLS-a na poslužitelju za pokusne svrhe.
-      Postavljanje popisa URL-ova u tom pravilu ima isti učinak kao i postavljanje oznake naredbenog retka "--unsafely-treat-insecure-origin-as-secure" na popis istih URL-ova odijeljen zarezima. Ako se to pravilo postavi, nadjačat će oznaku naredbenog retka.
-      Više informacija o sigurnim kontekstima potražite na stranici https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6181608880636987460">Omogućuje vam postavljanje popisa uzoraka URL-ova koji navode web-lokacije kojima nije dopušteno pokretanje dodatka <ph name="FLASH_PLUGIN_NAME" />.
 
           Ako se to pravilo ne postavi, za sve web-lokacije upotrebljavat će se globalna zadana vrijednost iz pravila "DefaultPluginsSetting", ako je to pravilo postavljeno, ili vrijednost iz korisnikove osobne konfiguracije.</translation>
@@ -1981,11 +1974,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="6786967369487349613">Postavljanje direktorija roaming profila</translation>
 <translation id="6810445994095397827">Blok JavaScript na ovim web-lokacijama</translation>
 <translation id="681446116407619279">Podržane sheme autentifikacije</translation>
-<translation id="6832455357698286434">
-      To pravilo određuje popis izvora (URL-ova) ili uzoraka naziva hosta (kao što je "*.example.com") koji se tretiraju kao siguran kontekst. Namjera je dopustiti organizacijama postavljanje poslužitelja u pokusne svrhe za interni razvoj na webu kako bi njihovi razvojni programeri mogli testirati značajke koje zahtijevaju siguran kontekst bez primjene TLS-a na poslužitelju za pokusne svrhe.
-      Postavljanje popisa URL-ova u tom pravilu ima isti učinak kao i postavljanje oznake naredbenog retka "--unsafely-treat-insecure-origin-as-secure" na popis istih URL-ova odijeljen zarezima. Ako se to pravilo postavi, nadjačat će oznaku naredbenog retka.
-      Više informacija o sigurnim kontekstima potražite na stranici https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6835883744948188639">Prikaži korisniku ponavljajuću obavijest o preporučenom ponovnom pokretanju</translation>
 <translation id="6838056959556423778">Nadjačava zadana pravila za odabir pisača u proizvodu <ph name="PRODUCT_NAME" />.
 
@@ -2329,7 +2317,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="7617319494457709698">To pravilo određuje dopuštena proširenja za upotrebu funkcije <ph name="CHALLENGE_USER_KEY_FUNCTION" /> API-ja <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> za daljinsko atestiranje. Proširenja se moraju dodati na taj popis da bi upotrebljavala taj API.
 
           Ako proširenje nije na popisu ili ako popis nije postavljen, poziv API-ju vratit će kôd pogreške.</translation>
-<translation id="7620300057302654932">Izvori ili uzorci naziva hosta koji se tretiraju kao siguran kontekst.</translation>
 <translation id="7625444193696794922">Određuje kanal za izdavanje na koji bi ovaj uređaj trebao biti priključen.</translation>
 <translation id="7632724434767231364">Naziv GSSAPI biblioteke</translation>
 <translation id="7635471475589566552">Konfigurira oznaku zemlje/jezika aplikacije u proizvodu <ph name="PRODUCT_NAME" /> i sprječava korisnike da promijene oznaku zemlje/jezika. Ako omogućite ovu postavku, <ph name="PRODUCT_NAME" /> upotrebljavat će navedenu oznaku zemlje/jezika. Ako konfigurirana oznaka zemlje/jezika nije podržana, upotrebljavat će se "en-US". Ako je ova postavka onemogućena ili nije postavljena, <ph name="PRODUCT_NAME" /> upotrebljavat će oznaku zemlje/jezika koju odredi korisnik (ako je konfigurirana), oznaku zemlje/jezika sustava ili standardnu oznaku zemlje/jezika "en-US".</translation>

@@ -17,6 +17,7 @@
 <translation id="2647554856022461007">Chromium voi käyttää verkkopalveluita selauskokemuksesi parantamiseen. Voit halutessasi poistaa nämä palvelut käytöstä. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">Googlen älykkäitä ratkaisuja Chromiumiin</translation>
 <translation id="2730884209570016437">Chromium ei voi käyttää kameraa, koska se on toisen sovelluksen käytössä.</translation>
+<translation id="2797210818057553964">Voit muokata tätä koska tahansa Chromiumin asetuksista</translation>
 <translation id="3256316712990552818">Kopioitiin Chromiumiin.</translation>
 <translation id="3413120535237193088">Kirjaudu sisään Chromiumiin, niin voit käyttää kirjanmerkkejäsi kaikilla laitteilla.</translation>
 <translation id="3473048256428424907">Ota käyttöön Chromiumin QR-lukija</translation>
@@ -45,6 +46,7 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Valitut tiedot on poistettu Chromiumista ja synkronoiduilta laitteilta. Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toimintaa muista Google-palveluista. Voit katsella tietoja osoitteessa history.google.com.</translation>
 <translation id="7400689562045506105">Käytä Chromiumia missä tahansa</translation>
+<translation id="7499048969477415415">Synkronointia, personointia ja muita Googlen palveluita Chromiumissa määrittävät asetukset ovat muuttuneet. Tämä voi vaikuttaa nykyisiin asetuksiisi.</translation>
 <translation id="7674213385180944843">Avaa Asetukset &gt; Tietosuoja &gt; Kamera &gt; Chromium ja ota kamera käyttöön.</translation>
 <translation id="7746854981345936341">Chromium-vinkki: Takaisin, Seuraava, Haku ja jotkin muut painikkeet löytyvät nyt näytön alareunasta.</translation>
 <translation id="786327964234957808">Muutoksen jälkeen synkronointi käyttää tilin <ph name="USER_EMAIL1" /> sijaan tiliä <ph name="USER_EMAIL2" />. <ph name="DOMAIN" /> hallitsee olemassa olevia Chromium-tietojasi. Tiedot poistetaan tältä laitteelta, mutta ne säilyvät tilillä <ph name="USER_EMAIL1" />.</translation>

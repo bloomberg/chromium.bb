@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">Oikealle</translation>
 <translation id="1351937230027495976">Tiivistä valikko</translation>
 <translation id="1383876407941801731">Haku</translation>
+<translation id="1419738280318246476">Avaa laitteen lukitus, niin voit käyttää ilmoitustoimintoa</translation>
 <translation id="1467432559032391204">Vasemmalle</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Käynnistysohjelma</translation>
@@ -225,6 +226,7 @@
 <translation id="4924411785043111640">Käynnistä uudelleen ja palauta</translation>
 <translation id="4961318399572185831">Suoratoista näyttö</translation>
 <translation id="5069971504769299223">Laitteen hallinnoija voi ehkä seurata toimintaasi.</translation>
+<translation id="5083553833479578423">Käytä lisää Assistantin ominaisuuksia.</translation>
 <translation id="5136175204352732067">Eri näppäimistö kytketty</translation>
 <translation id="5168181903108465623">Cast-laitteita käytettävissä</translation>
 <translation id="5207949376430453814">Korosta tekstikursori</translation>
@@ -298,6 +300,7 @@
 <translation id="6376931439017688372">Bluetooth on käytössä</translation>
 <translation id="639644700271529076">CAPS LOCK on pois päältä</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">Tyhjennä kaikki ilmoitukset</translation>
 <translation id="643147933154517414">Valmis</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> – <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Hylkää</translation>
@@ -399,9 +402,11 @@
 <translation id="8152119955266188852">Painoit koko näytön suurennuksen pikanäppäintä. Haluatko ottaa sen käyttöön?</translation>
 <translation id="8190698733819146287">Muokkaa kieliä ja syötettä...</translation>
 <translation id="8191230140820435481">Hallita sovelluksia, laajennuksia ja teemoja</translation>
+<translation id="8192202700944119416">Ilmoitukset on piilotettu.</translation>
 <translation id="8261506727792406068">Poista</translation>
 <translation id="8297006494302853456">Heikko</translation>
 <translation id="8308637677604853869">Edellinen valikko</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /> <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Luo muistiinpano</translation>
 <translation id="8392451568018454956">Tilin <ph name="USER_EMAIL_ADDRESS" /> vaihtoehtovalikko</translation>
 <translation id="8406981827175133772">Koko näytön suurennus</translation>
@@ -443,6 +448,7 @@
 <translation id="8938800817013097409">C-tyypin USB-laite (oikeanpuoleinen takaportti)</translation>
 <translation id="8940956008527784070">Akku vähissä (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="8984179138335769204">Pikakäynnistys</translation>
+<translation id="899350903320462459">Avaa laitteen lukitus tunnuksella <ph name="LOGIN_ID" />, niin voit käyttää ilmoitustoimintoa</translation>
 <translation id="8995603266996330174">Hallinnoija: <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Adobe Flash Playerin päivitys saatavilla</translation>
 <translation id="9056839673611986238">Laite palautetaan</translation>

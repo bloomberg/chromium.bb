@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
 <translation id="100812568230599391">Palitan ang istilo ng display upang i-interleave.</translation>
+<translation id="1011903154582639569">Maghanap ng key, pagkatapos ay iangat para mag-type</translation>
 <translation id="1012173283529841972">Item sa listahan</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">Unang beses mo bang gagamitin ang pasalitang feedback ng ChromeVox? Ipinapaliwanag sa maikling tutorial na ito ang mga kinakailangan para sa pagsisimula sa ChromeVox.</translation>
@@ -163,6 +164,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="2553108862507765288">pagkakamali sa grammar</translation>
 <translation id="257674075312929031">Pangkat</translation>
 <translation id="2582407057977008361">Kaugnay</translation>
+<translation id="2592212930811759050">I-double tap para simulan ang pag-edit</translation>
 <translation id="2606210917827248971">may {COUNT,plural, =1{# item}one{# item}other{# na item}}</translation>
 <translation id="2614981083756825552">Math ML Layout</translation>
 <translation id="2624431853467395961">Buksan ang learn mode</translation>

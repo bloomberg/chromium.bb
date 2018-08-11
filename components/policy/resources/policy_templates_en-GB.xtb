@@ -677,7 +677,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       Every list entry specifies an identifier, which is used internally to tell the different device-local accounts apart.</translation>
 <translation id="2769952903507981510">Configure the required domain name for remote access hosts</translation>
 <translation id="2787173078141616821">Report information about status of Android</translation>
-<translation id="2793923553868251161">Origins to be treated as secure context.</translation>
 <translation id="2799297758492717491">Allow media auto-play on a whitelist of URL patterns</translation>
 <translation id="2801230735743888564">Allow users to play dinosaur easter egg game when device is offline.
 
@@ -1879,12 +1878,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6155936611791017817">Set default state of the large cursor on the login screen</translation>
 <translation id="6157537876488211233">Comma-separated list of proxy bypass rules</translation>
 <translation id="6158324314836466367">Enterprise web store name (deprecated)</translation>
-<translation id="6164955668342404660">Deprecated in M69. Use OverrideSecurityRestrictionsOnInsecureOrigin instead.
-
-      The policy specifies a list of origins (URLs) to be treated as secure context. The intent is to allow organisations to set up a staging server for internal web development, so that their developers can test out features requiring secure contexts without having to deploy TLS on the staging server.
-      Setting a list of URLs in this policy has the same effect as setting the command-line flag '--unsafely-treat-insecure-origin-as-secure' to a comma-separated list of the same URLs. If the policy is set, it will override the command-line flag.
-      For more information on secure contexts, see https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6181608880636987460">Allows you to set a list of URL patterns that specify sites which are not allowed to run the <ph name="FLASH_PLUGIN_NAME" /> plug-in.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.</translation>
@@ -2061,11 +2054,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6786967369487349613">Set the roaming profile directory</translation>
 <translation id="6810445994095397827">Block JavaScript on these sites</translation>
 <translation id="681446116407619279">Supported authentication schemes</translation>
-<translation id="6832455357698286434">
-      The policy specifies a list of origins (URLs) or hostname patterns (such as '*.example.com') to be treated as secure contexts. The intent is to allow organisations to set up a staging server for internal web development, so that their developers can test out features requiring secure contexts without having to deploy TLS on the staging server.
-      Setting a list of URLs in this policy has the same effect as setting the command-line flag '--unsafely-treat-insecure-origin-as-secure' to a comma-separated list of the same URLs. If the policy is set, it will override the command-line flag.
-      For more information on secure contexts, see https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6835883744948188639">Show a recurring prompt to the user indicating that a relaunch is recommended</translation>
 <translation id="6838056959556423778">Overrides <ph name="PRODUCT_NAME" /> default printer selection rules.
 
@@ -2435,7 +2423,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7617319494457709698">This policy specifies the allowed extensions to use the <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> function <ph name="CHALLENGE_USER_KEY_FUNCTION" /> for remote attestation. Extensions must be added to this list to use the API.
 
           If an extension is not in the list, or the list is not set, the call to the API will fail with an error code.</translation>
-<translation id="7620300057302654932">Origins or hostname patterns to be treated as secure context.</translation>
 <translation id="7625444193696794922">Specifies the release channel that this device should be locked to.</translation>
 <translation id="7632724434767231364">GSSAPI library name</translation>
 <translation id="7635471475589566552">Configures the application locale in <ph name="PRODUCT_NAME" /> and prevents users from changing the locale.

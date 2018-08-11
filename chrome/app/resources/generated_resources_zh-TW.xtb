@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">同步處理和個人化</translation>
 <translation id="1398853756734560583">放到最大</translation>
 <translation id="1399511500114202393">不使用使用者憑證</translation>
+<translation id="1401165786814632797">在裝置已喚醒並解鎖的狀態下，只要說出「Ok Google」，就能隨時存取 Google 助理。</translation>
 <translation id="140250605646987970">找到您的手機，但 Smart Lock 僅適用於搭載 Android 5.0 以上版本的裝置。&lt;a&gt;瞭解詳情&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (受監管)</translation>
 <translation id="1405476660552109915">您要讓 <ph name="PASSWORD_MANAGER_BRAND" /> 儲存您在這個網站使用的帳戶嗎？</translation>
@@ -685,7 +686,6 @@
 <translation id="200544492091181894">日後你隨時可以在設定中進行變更</translation>
 <translation id="2006638907958895361">在「<ph name="APP" />」中開啟連結</translation>
 <translation id="2007404777272201486">回報問題...</translation>
-<translation id="2016237810978710652">正在開啟 Linux 檔案...</translation>
 <translation id="2016430552235416146">傳統</translation>
 <translation id="2017334798163366053">停用效能資料收集</translation>
 <translation id="2017836877785168846">將歷史記錄和自動即時查詢從網址列中清除。</translation>
@@ -1510,6 +1510,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> 要求連線</translation>
 <translation id="3274763671541996799">你已進入全螢幕模式。</translation>
 <translation id="3275778913554317645">在視窗中開啟</translation>
+<translation id="3278877214895457897">Chromebook 設定完成後，只要按下 Google 助理按鈕或說出「Ok Google」，就能隨時向你的 Google 助理下達指令。</translation>
 <translation id="3279230909244266691">正在啟動虛擬機器，過程可能需要幾分鐘。</translation>
 <translation id="3279741024917655738">在以下位置顯示全螢幕影片</translation>
 <translation id="3280237271814976245">另存新檔(&amp;A)...</translation>
@@ -2602,6 +2603,7 @@
 <translation id="4992066212339426712">取消靜音</translation>
 <translation id="4992458225095111526">確認執行 Powerwash</translation>
 <translation id="4992473555164495036">你的管理員對可用的輸入法設定了限制。</translation>
+<translation id="4992926179187649719">開啟「Ok Google」功能</translation>
 <translation id="4994474651455208930">允許網站要求成為通訊協定的預設處理常式</translation>
 <translation id="4994754230098574403">設定中</translation>
 <translation id="4996978546172906250">分享方式：</translation>
@@ -3777,7 +3779,6 @@
 <translation id="6748775883310276718">單一應用程式資訊站</translation>
 <translation id="6751256176799620176">已選取 1 個資料夾</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (無痕模式)</translation>
-<translation id="6751815812172740613">要將所有 Linux 應用程式和「Linux 檔案」資料夾中的資料從這部 <ph name="DEVICE_TYPE" /> 上刪除嗎？</translation>
 <translation id="6757101664402245801">已複製網址</translation>
 <translation id="6758056191028427665">請讓我們瞭解你的滿意度。</translation>
 <translation id="6759193508432371551">恢復原廠設定</translation>
@@ -4054,7 +4055,6 @@
     <ph name="BEGIN_PARAGRAPH3" />如要管理這項功能，請依序前往 [設定] &gt; [Google]，然後從選單中選取 [使用情形與診斷資訊]。<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">取得說明(&amp;E)</translation>
 <translation id="7200083590239651963">選取設定</translation>
-<translation id="7201014958346994077">無法查看 Linux 檔案</translation>
 <translation id="720110658997053098">讓裝置永久使用 Kiosk 模式</translation>
 <translation id="7201118060536064622">已刪除「<ph name="DELETED_ITEM_NAME" />」</translation>
 <translation id="7206693748120342859">正在下載 <ph name="PLUGIN_NAME" />...</translation>
@@ -4527,6 +4527,7 @@
 <translation id="7908378463497120834">很抱歉，你的外部儲存裝置上至少有一個分割區無法掛載。</translation>
 <translation id="7909969815743704077">已在無痕模式中下載</translation>
 <translation id="7910768399700579500">新增資料夾(&amp;N)</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">伺服器上的密碼已變更。請先登出然後重新登入。</translation>
 <translation id="7915471803647590281">請將發生的狀況告訴我們，然後再提供意見。</translation>
 <translation id="7916556741383518510">點擊時</translation>
@@ -4668,7 +4669,6 @@
 <translation id="8107015733319732394">正在為 <ph name="DEVICE_TYPE" /> 安裝 Google Play 商店。這可能需要幾分鐘時間。</translation>
 <translation id="8111155949205007504">透過 iPhone 分享這個密碼</translation>
 <translation id="8113043281354018522">選擇授權類型</translation>
-<translation id="8116925261070264013">已設為靜音</translation>
 <translation id="8116972784401310538">書籤管理員(&amp;B)</translation>
 <translation id="8117620576188476503">透過狀態匣管理連線、更新和設定。如要使用鍵盤開啟這個畫面，請按下 Alt + Shift + S 鍵。</translation>
 <translation id="8118362518458010043">這個擴充功能可能不安全，因此遭到 Chrome 停用。</translation>
@@ -5127,7 +5127,6 @@
 <translation id="8845001906332463065">尋求協助</translation>
 <translation id="8846141544112579928">正在搜尋鍵盤...</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885217322790849332">如要使用「$1」開啟檔案，請先將檔案複製到「Linux 檔案」資料夾。</translation>
 <translation id="8859057652521303089">選擇語言：</translation>
 <translation id="8859174528519900719">子頁框：<ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excel 試算表</translation>

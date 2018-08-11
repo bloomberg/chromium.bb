@@ -81,7 +81,7 @@
 <translation id="3808586225841795776">संज्ञा</translation>
 <translation id="3822383571486410024">कृपया हा मजकूर <ph name="MIN_CHARACTERS" /> वर्ण किंवा त्यापेक्षा अधिक मोठा करा (आपण सध्‍या <ph name="CURRENT_LENGTH" /> वर्ण वापरत आहात).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' मागुन येणार्‍या भागामध्ये '<ph name="INVALIDCHARACTER" />' चिन्ह नसावे.</translation>
-<translation id="3846214748874656680">पूर्णस्क्रीनमधून बाहेर पडा</translation>
+<translation id="3846214748874656680">क्षेत्रेमधून बाहेर पडा</translation>
 <translation id="3920932319529768807">निष्कर्ष</translation>
 <translation id="3924558731517983934">अॅप्लिकेशन</translation>
 <translation id="3944740393230681990">उपोद्घात</translation>
@@ -135,7 +135,7 @@
 <translation id="576709008726043716">परिचय</translation>
 <translation id="57838592816432529">निःशब्द करा</translation>
 <translation id="5860033963881614850">बंद</translation>
-<translation id="588258955323874662">पूर्णस्क्रीन</translation>
+<translation id="588258955323874662">क्षेत्रे</translation>
 <translation id="5888666972993069672">आता <ph name="DEVICE_FRIENDLY_NAME" /> वर कास्ट करत आहे</translation>
 <translation id="5939518447894949180">रीसेट करा</translation>
 <translation id="5966707198760109579">आठवडा</translation>

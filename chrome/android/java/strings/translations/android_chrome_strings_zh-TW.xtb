@@ -61,6 +61,7 @@
 <translation id="1404122904123200417">內嵌位置：<ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">「不追蹤」</translation>
 <translation id="1407135791313364759">全部開啟</translation>
+<translation id="1409426117486808224">使用簡易檢視模式查看開啟的分頁</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> 檔案已存在，因此無法下載。</translation>
 <translation id="1414981605391750300">正在連線至 Google。可能需要一分鐘…</translation>
 <translation id="1416550906796893042">應用程式版本</translation>
@@ -80,6 +81,7 @@
 <translation id="1566400915470565838">如要使用「<ph name="APP_NAME" />」，請連上網際網路。</translation>
 <translation id="1569387923882100876">連結的裝置</translation>
 <translation id="1571304935088121812">複製使用者名稱</translation>
+<translation id="1576370611341449972">只透過 Wi-Fi 下載</translation>
 <translation id="1612196535745283361">Chrome 需要位置資訊存取權才能掃描裝置。<ph name="BEGIN_LINK" />這個裝置的位置資訊存取權已關閉<ph name="END_LINK" />。</translation>
 <translation id="162035744160882748">啟用同步處理、個人化功能和其他 Google 服務</translation>
 <translation id="1620510694547887537">攝影機</translation>
@@ -344,6 +346,7 @@
 <translation id="3810838688059735925">影片</translation>
 <translation id="3810973564298564668">管理</translation>
 <translation id="3819178904835489326">已刪除 <ph name="NUMBER_OF_DOWNLOADS" /> 個下載項目</translation>
+<translation id="3819562311292413223">下載為你推薦的文章</translation>
 <translation id="3822502789641063741">要清除網站儲存的資料嗎？</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3859306556332390985">快轉到特定的播放時間點</translation>
@@ -383,6 +386,7 @@
 <translation id="4113030288477039509">您的管理員已停用這項功能</translation>
 <translation id="4116038641877404294">下載網頁以便離線存取</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d 個書籤}other{%1$d 個書籤}}</translation>
+<translation id="4149994727733219643">使用簡易檢視模式查看網頁</translation>
 <translation id="4159800535322890630">禁止網站存取你的感應器</translation>
 <translation id="4165986682804962316">網站設定</translation>
 <translation id="4170011742729630528">服務無法使用，請稍後再試。</translation>
@@ -553,6 +557,7 @@
 <translation id="5512137114520586844">這個帳戶受 <ph name="PARENT_NAME" /> 管理。</translation>
 <translation id="5514904542973294328">裝置管理員已停用</translation>
 <translation id="5515439363601853141">解鎖即可查看你的密碼</translation>
+<translation id="5515716148775388141">你的圖示已移至畫面底部</translation>
 <translation id="5517095782334947753">你有來自 <ph name="FROM_ACCOUNT" /> 的書籤、歷史記錄、密碼和其他設定。</translation>
 <translation id="5524843473235508879">已禁止重新導向。</translation>
 <translation id="5527082711130173040">Chrome 需要位置資訊存取權才能掃描裝置。<ph name="BEGIN_LINK1" />更新權限<ph name="END_LINK1" />。此外，<ph name="BEGIN_LINK2" />這個裝置的位置資訊存取權已關閉<ph name="END_LINK2" />。</translation>
@@ -756,6 +761,7 @@
 <translation id="7016516562562142042">允許目前的搜尋引擎存取位置資訊</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> 下載完成</translation>
 <translation id="7022756207310403729">在瀏覽器中開啟</translation>
+<translation id="702463548815491781">建議在 TalkBack 或開關功能開啟時使用</translation>
 <translation id="7029809446516969842">密碼</translation>
 <translation id="7031882061095297553">同步處理</translation>
 <translation id="7032663816368481562">當你輕觸網址列中的「更多類似內容」圖示 <ph name="ICON" /> 時顯示相關網頁的快速連結。系統會將你所造訪網頁的網址傳送給 Google。</translation>
@@ -784,6 +790,7 @@
 <translation id="7251326866581677552">封鎖部分網站的廣告</translation>
 <translation id="7253272406652746122">在裝置的「設定」應用程式中，透過「帳戶」頁面新增 Google 帳戶。</translation>
 <translation id="7274013316676448362">已封鎖網站</translation>
+<translation id="72867290065237936">輕觸即可在密碼建議和鍵盤之間切換</translation>
 <translation id="729975465115245577">你的裝置沒有可儲存密碼檔案的應用程式。</translation>
 <translation id="7302081693174882195">詳細資料：依儲存資料量排序</translation>
 <translation id="7333031090786104871">仍在新增先前的網站</translation>

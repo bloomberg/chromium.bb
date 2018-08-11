@@ -167,6 +167,7 @@
 <translation id="3588820906588687999">在新标签页中打开图片</translation>
 <translation id="3603009562372709545">复制链接网址</translation>
 <translation id="3607167657931203000">自动填充数据</translation>
+<translation id="360930808415985584">控制同步、个性化功能和其他设置</translation>
 <translation id="3609785682760573515">正在同步…</translation>
 <translation id="3628119975092896051">您的阅读清单可供离线访问。要将某个网页添加到该清单中，请依次点按<ph name="SHARE_OPENING_ICON" />。</translation>
 <translation id="3638472932233958418">预先加载网页</translation>
@@ -213,6 +214,7 @@
 <translation id="4508750114462689118">关闭登录推广元素</translation>
 <translation id="4526249700380860531">通过 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看和管理已保存的密码</translation>
 <translation id="4536418791685807335">请尝试重新登录。</translation>
+<translation id="4541241553780729349">您同步到 Google 的数据和您使用的功能不会有所改变</translation>
 <translation id="457386861538956877">更多...</translation>
 <translation id="461440297010471931">目前所用的搜索引擎是 Google</translation>
 <translation id="4619615317237390068">从其他设备打开的标签页</translation>
@@ -421,7 +423,6 @@
 <translation id="8080028325999236607">关闭所有标签页</translation>
 <translation id="8114753159095730575">已可下载文件。选项位于屏幕底部附近。</translation>
 <translation id="8160722851663543621">将地址栏和搜索框中的搜索字词以及一些 Cookie 发送给您的默认搜索引擎</translation>
-<translation id="8178325540017397816">系统将会移除您所选的各项内容</translation>
 <translation id="8205564605687841303">取消</translation>
 <translation id="8225985093977202398">缓存的图片和文件</translation>
 <translation id="8261506727792406068">删除</translation>

@@ -273,6 +273,7 @@
       Kung itatakda sa false, madi-disable ang pag-uulat ng mga sukatan at diagnostic na data.
 
       Kung hindi iko-configure, idi-disable ang pag-uulat ng mga sukatan at diagnostic na data sa mga hindi pinamamahalaang device at ie-enable ito sa mga pinamamahalaang device.</translation>
+<translation id="1920046221095339924">Payagan ang pinapamahalaang session sa device</translation>
 <translation id="1929709556673267855">Nagbibigay ng mga configuration para sa mga printer ng enterprise na naka-bind sa mga device.
 
       Nabibigyang-daan ka ng patakarang ito na magbigay ng mga configuration ng printer sa mga <ph name="PRODUCT_OS_NAME" /> device.  Pareho ang format sa diksyunaryo ng NativePrinters, nang may karagdagang kinakailangang field na "id" o "guid" bawat printer para sa pag-whitelist o pag-blacklist.
@@ -306,6 +307,7 @@
 
       Kung naka-enable o walang value ang setting na ito, makokontrol ng user ang AutoFill para sa mga address sa UI.</translation>
 <translation id="1960840544413786116">Kung papayagan ba ang mga certificate na naisyu ng mga lokal na trust anchor na walang subjectAlternativeName na extension</translation>
+<translation id="1962273523772270623">Payagan ang pagkolekta ng mga log ng event sa WebRTC mula sa mga serbisyo ng Google</translation>
 <translation id="1964634611280150550">Hindi pinagana ang mode na incognito</translation>
 <translation id="1964802606569741174">Walang epekto ang patakarang ito sa YouTube app sa Android. Kung dapat ipatupad ang Safety Mode sa YouTube, hindi dapat payagan ang pag-install ng YouTube app sa Android.</translation>
 <translation id="1969212217917526199">Ino-override ang mga patakaran sa Mga build para sa pag-debug ng host ng malayuang access.
@@ -671,7 +673,6 @@
       Tumutukoy ng identifier ang bawat entry sa listahan, na panloob na ginagamit upang hiwalay na tukuyin ang iba't ibang mga account na lokal sa device.</translation>
 <translation id="2769952903507981510">I-configure ang kinakailangang domain name para sa mga host ng malayuang pag-access</translation>
 <translation id="2787173078141616821">Ulat ng impormasyon tungkol sa status ng Android</translation>
-<translation id="2793923553868251161">Ituturing bilang secure na konteksto ang mga pinagmulan.</translation>
 <translation id="2799297758492717491">Payagan ang pag-autoplay ng media sa isang whitelist ng mga pattern ng URL</translation>
 <translation id="2801230735743888564">Nagbibigay-daan sa mga user na makapaglaro ng dinosaur easter egg game kapag offline ang device.
 
@@ -1862,12 +1863,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6155936611791017817">Itakda ang default na katayuan ng malaking cursor sa screen ng pag-login</translation>
 <translation id="6157537876488211233">Listahang pinaghihiwalay ng kuwit ng mga panuntunan sa pag-bypass ng proxy</translation>
 <translation id="6158324314836466367">Pangalan ng web store na enterprise (hindi na ginagamit)</translation>
-<translation id="6164955668342404660">Hindi na magagamit sa M69. Gamitin na lang ang OverrideSecurityRestrictionsOnInsecureOrigin.
-
-      Tumutukoy ang patakaran ng listahan ng mga pinagmulan (mga URL) na ituturing na secure na konteksto. Ang layunin ay payagan ang mga organisasyong mag-set up ng staging server para sa internal na pag-develop sa web, nang sa gayon ay masubukan ng mga developer ng mga ito ang mga feature na nangangailangan ng mga secure na konteksto nang hindi kinakailangang i-deploy ang TLS sa staging server.
-      Ang pagtatakda ng listahan ng mga URL sa patakarang ito ay may epektong katulad sa pagtatakda sa command-line flag na '--unsafely-treat-insecure-origin-as-secure' sa isang listahan ng mga parehong URL na pinaghihiwa-hiwalay ng kuwit. Kung nakatakda ang patakaran, io-override nito ang command-line flag.
-      Para sa higit pang impormasyon tungkol sa mga secure na konteksto, tingnan ang https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6181608880636987460">Nagbibigay-daan sa iyo na magtakda ng isang listahan ng mga pattern ng url na tumutukoy sa mga site na hindi pinapahintulutang magpatakbo sa plugin na <ph name="FLASH_PLUGIN_NAME" />.
 
           Kung hahayaang hindi nakatakda ang patakarang ito, ang pangkalahatang default na value ang gagamitin para sa lahat ng site na magmumula sa patakarang 'DefaultPluginsSetting' kung nakatakda ito, o kung hindi, sa personal na configuration ng user.</translation>
@@ -1994,6 +1989,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung iiwanang hindi nakatakda ang patakarang ito o kung walang laman ang listahan, maa-access ang lahat ng scheme sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Mga setting ng mga lokal na pinapamahalaang user</translation>
 <translation id="6658245400435704251">Tinutukoy ang bilang ng mga segundo kung kailan maaaring random na antalahin ng device ang pag-download ng isang update mula sa panahon kung kailan unang na-push out ang update sa server. Maaaring hintayin ng device ang isang bahagi ng panahong ito sa pamamagitan ng oras sa orasan at ng mga natitirang bahagi sa pamamagitan ng dami ng mga pagtingin ng update. Sa anumang sitwasyon, ang scatter ay nililimitahan sa itaas sa iisang parehong tagal ng panahon upang hindi maantala nang matagal ang isang device sa paghihintay na mag-download ng isang update.</translation>
+<translation id="6665599130599311250">Kung nakatakda ang patakarang ito sa false o hinayaang hindi nakatakda, gagana ang pinapamahalaang session ng bisita gaya ng nakasaad sa https://support.google.com/chrome/a/answer/3017014 - ang karaniwang "Pampublikong Session."
+
+      Kung nakatakda ang patakarang ito sa true, gagana ang pinapamahalaang session ng bisita ayon sa "Pinapamahalaang Session" kung saan pansamantalang inaalis ang maraming paghihigpit na ipinapatupad para sa karaniwang "Mga Pampublikong Session."
+
+      Kung nakatakda ang patakarang ito, hindi ito mababago o mao-override ng user.</translation>
 <translation id="6665670272107384733">Itakda kung gaano kadalas kailangang ilagay ng user ang password para magamit ang mabilisang pag-unlock</translation>
 <translation id="6681229465468164801">Nagbibigay-daan sa iyo na magtakda ng listahan ng mga pattern ng url na tumutukoy sa mga site na pinipigilang magtanong sa user na bigyan siya ng access sa isang USB device.
 
@@ -2043,11 +2043,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6786967369487349613">Itakda ang direktoryo ng roaming na profile</translation>
 <translation id="6810445994095397827">I-block ang JavaScript sa mga site na ito</translation>
 <translation id="681446116407619279">Mga suportadong scheme ng pagpapatotoo</translation>
-<translation id="6832455357698286434">
-      Tumutukoy ang patakaran ng listahan ng mga pinagmulan (mga URL) o mga pattern ng hostname na ituturing na mga secure na konteksto. Ang layunin ay payagan ang mga organisasyong mag-set up ng staging server para sa internal na pag-develop sa web, nang sa gayon ay masubukan ng mga developer ng mga ito ang mga feature na nangangailangan ng mga secure na konteksto nang hindi kinakailangang i-deploy ang TLS sa staging server.
-      Ang pagtatakda ng listahan ng mga URL sa patakarang ito ay may epektong katulad sa pagtatakda sa command-line flag na '--unsafely-treat-insecure-origin-as-secure' sa isang listahan ng mga parehong URL na pinaghihiwa-hiwalay ng kuwit. Kung nakatakda ang patakaran, io-override nito ang command-line flag.
-      Para sa higit pang impormasyon tungkol sa mga secure na konteksto, tingnan ang https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6835883744948188639">Magpakita sa user ng umuulit na prompt na nagsasaad na inirerekomenda ang muling paglulunsad</translation>
 <translation id="6838056959556423778">Ino-override ang mga default na panuntunan sa pagpili ng printer ng <ph name="PRODUCT_NAME" />.
 
@@ -2160,6 +2155,17 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6943577887654905793">Kagustuhang pangalan ng Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter na nagbibigay ng tampok na maghanap sa pamamagitan ng larawan para sa default na provider ng paghahanap</translation>
 <translation id="6956272732789158625">Huwag payagan ang anumang site na gumamit ng pagbuo ng key</translation>
+<translation id="6982028490425791294">
+      Kung nakatakda ang patakaran sa true, pinapayagan ang <ph name="PRODUCT_NAME" /> na kolektahin ang mga log ng event sa WebRTC mula sa mga serbisyo ng Google (hal. Google Meet), at i-upload ang mga log na iyon sa Google.
+
+      Kung nakatakda ang patakaran sa false, o hindi ito nakatakda, hindi maaaring kolektahin o i-upload ng <ph name="PRODUCT_NAME" /> ang mga nasabing log.
+
+      Makikita sa mga log na ito ang impormasyon gaya ng oras at laki ng mga naipadala at natanggap na RTP packet, feedback tungkol sa pagdami ng gumagamit sa network, at metadata tungkol sa oras at kalidad ng mga audio at video frame. Makakatulong ang impormasyong ito kapag nagde-debug ng mga isyu sa mga audio o video call sa Chrome, gaya ng mga isyu sa pagtantya ng bandwidth, atbp. Ang mga log ay hindi naglalaman ng audio o video content mula sa tawag.
+
+      Mati-trigger lang ang ganitong pagkolekta ng data sa pamamagitan ng mga serbisyo sa web ng Google, gaya ng Google Hangouts o Google Meet.
+
+      Maiuugnay ang mga log na ito, sa pamamagitan ng session ID, sa iba pang log na nakolekta mismo ng serbisyo ng Google; layunin nitong mas padaliin ang pag-debug.
+      </translation>
 <translation id="6994082778848658360">Tinutukoy kung paano magagamit ang kasamang hardware ng secure na elemento upang magbigay ng pangalawang factor ng pag-authenticate kung tugma ito sa feature na ito. Ginagamit ang power button ng machine upang tukuyin ang aktwal na presensya ng user.
 
       Kung pinili ang 'Naka-disable,' walang pangalawang factor na ibibigay.
@@ -2406,7 +2412,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7617319494457709698">Tinutukoy ng patakarang ito ang mga pinapahintulutang extension upang magamit ang <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> function <ph name="CHALLENGE_USER_KEY_FUNCTION" /> para sa malayuang pagpapatunay. Dapat magdagdag ng mga extension sa listahang ito upang magamit ang API.
 
           Kung wala sa listahan ang isang extension, o hindi nakatakda ang listahan, papalya ang call sa API na may code ng error.</translation>
-<translation id="7620300057302654932">Ituturing na secure na konteksto ang mga pinagmulan o pattern ng hostname.</translation>
 <translation id="7625444193696794922">Tinutukoy ang channel ng paglabas kung saan dapat naka-lock ang device.</translation>
 <translation id="7632724434767231364">Pangalan ng GSSAPI library</translation>
 <translation id="7635471475589566552">Kino-configure ang lokal ng application sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang lokal.

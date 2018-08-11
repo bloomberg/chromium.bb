@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">Đồng bộ hóa và cá nhân hóa</translation>
 <translation id="1398853756734560583">Phóng to</translation>
 <translation id="1399511500114202393">Không có chứng chỉ người dùng</translation>
+<translation id="1401165786814632797">Khi thiết bị đang ở chế độ bật và mở khóa, nói "Ok Google" bất cứ lúc nào để sử dụng Trợ lý.</translation>
 <translation id="140250605646987970">Đã phát hiện thấy điện thoại của bạn. Nhưng Smart Lock chỉ hoạt động trên các thiết bị chạy Android 5.0 trở lên. &lt;a&gt;Tìm hiểu thêm&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (Được giám sát)</translation>
 <translation id="1405476660552109915">Bạn có muốn <ph name="PASSWORD_MANAGER_BRAND" /> lưu tài khoản của mình cho trang web này không?</translation>
@@ -685,7 +686,6 @@
 <translation id="200544492091181894">Bạn luôn có thể thay đổi tùy chọn này trong mục cài đặt</translation>
 <translation id="2006638907958895361">Mở liên kết trong <ph name="APP" /></translation>
 <translation id="2007404777272201486">Báo cáo sự cố...</translation>
-<translation id="2016237810978710652">Đang mở tệp Linux...</translation>
 <translation id="2016430552235416146">Truyền thống</translation>
 <translation id="2017334798163366053">Tắt tính năng thu thập dữ liệu hoạt động</translation>
 <translation id="2017836877785168846">Xóa lịch sử và tự động hoàn thành trong thanh địa chỉ.</translation>
@@ -1370,6 +1370,7 @@
 <translation id="3031557471081358569">Chọn các mục cần nhập:</translation>
 <translation id="3031601332414921114">Tiếp tục in</translation>
 <translation id="303198083543495566">Địa lý</translation>
+<translation id="3033999583152214331">Chạy các công cụ, trình chỉnh sửa và môi trường phát triển được tích hợp (IDE) của Linux trên Chromebook của bạn. &lt;a target="_blank" href="<ph name="URL" />"&gt;Tìm hiểu thêm&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Bật Flash</translation>
 <translation id="3037754279345160234">Không thể phân tích cú pháp cấu hình để tham gia miền. Vui lòng liên hệ với quản trị viên của bạn.</translation>
 <translation id="3038612606416062604">Thêm máy in theo cách thủ công</translation>
@@ -1510,6 +1511,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> muốn kết nối</translation>
 <translation id="3274763671541996799">Bạn đang ở chế độ toàn màn hình.</translation>
 <translation id="3275778913554317645">Mở dưới dạng cửa sổ</translation>
+<translation id="3278877214895457897">Khi thiết lập xong Chromebook, hãy nhấn nút Trợ lý hoặc nói "Ok Google" để nhận trợ giúp từ Trợ lý bất cứ lúc nào.</translation>
 <translation id="3279230909244266691">Quá trình này có thể mất vài phút. Đang khởi động máy ảo.</translation>
 <translation id="3279741024917655738">Hiển thị video ở chế độ toàn màn hình trên</translation>
 <translation id="3280237271814976245">Lưu &amp;thành...</translation>
@@ -2603,6 +2605,7 @@
 <translation id="4992066212339426712">Bật âm thanh</translation>
 <translation id="4992458225095111526">Xác nhận Powerwash</translation>
 <translation id="4992473555164495036">Quản trị viên của bạn đã giới hạn các phương thức nhập có sẵn.</translation>
+<translation id="4992926179187649719">Bật 'Ok Google'</translation>
 <translation id="4994474651455208930">Cho phép các trang web yêu cầu trở thành trình xử lý mặc định cho giao thức</translation>
 <translation id="4994754230098574403">Đang thiết lập</translation>
 <translation id="4996978546172906250">Chia sẻ qua</translation>
@@ -3780,7 +3783,6 @@
 <translation id="6748775883310276718">Kiosk ứng dụng đơn</translation>
 <translation id="6751256176799620176">Đã chọn 1 thư mục</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Ẩn danh)</translation>
-<translation id="6751815812172740613">Bạn muốn xóa tất cả các ứng dụng Linux và dữ liệu trong thư mục Tệp Linux của mình khỏi <ph name="DEVICE_TYPE" /> này?</translation>
 <translation id="6757101664402245801">Đã sao chép URL</translation>
 <translation id="6758056191028427665">Hãy cho chúng tôi biết ý kiến của bạn về dịch vụ của chúng tôi.</translation>
 <translation id="6759193508432371551">Khôi phục cài đặt gốc</translation>
@@ -4057,7 +4059,6 @@
     <ph name="BEGIN_PARAGRAPH3" />Bạn có thể kiểm soát tính năng này trong phần Cài đặt &gt; Google. Sau đó, chọn Sử dụng và chẩn đoán từ menu này.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">Nhận &amp;trợ giúp</translation>
 <translation id="7200083590239651963">Chọn cấu hình</translation>
-<translation id="7201014958346994077">Không thể xem tệp Linux</translation>
 <translation id="720110658997053098">Vĩnh viễn giữ thiết bị này ở chế độ kiosk</translation>
 <translation id="7201118060536064622">Đã xóa '<ph name="DELETED_ITEM_NAME" />'</translation>
 <translation id="7206693748120342859">Đang tải xuống <ph name="PLUGIN_NAME" />...</translation>
@@ -4531,6 +4532,7 @@
 <translation id="7908378463497120834">Rất tiếc, ít nhất một phân vùng trên thiết bị lưu trữ bên ngoài của bạn không thể kết nối được.</translation>
 <translation id="7909969815743704077">Đã tải xuống ở chế độ Ẩn danh</translation>
 <translation id="7910768399700579500">&amp;Thư mục mới</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Đã thay đổi mật khẩu của bạn trên máy chủ. Vui lòng đăng xuất rồi đăng nhập lại.</translation>
 <translation id="7915471803647590281">Vui lòng cho chúng tôi biết điều đang xảy ra trước khi gửi phản hồi.</translation>
 <translation id="7916556741383518510">Khi nhấp chuột</translation>
@@ -4672,7 +4674,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8107015733319732394">Đang cài đặt Cửa hàng Google Play trên <ph name="DEVICE_TYPE" /> của bạn. Quá trình này có thể mất vài phút.</translation>
 <translation id="8111155949205007504">Chia sẻ mật khẩu này với iPhone của bạn</translation>
 <translation id="8113043281354018522">Chọn loại giấy phép</translation>
-<translation id="8116925261070264013">Đã ẩn</translation>
 <translation id="8116972784401310538">&amp;Trình quản lý dấu trang</translation>
 <translation id="8117620576188476503">Quản lý các kết nối, bản cập nhật và cài đặt bằng khay trạng thái. Để truy cập vào đây bằng bàn phím, hãy nhấn tổ hợp phím Alt + Shift + S.</translation>
 <translation id="8118362518458010043">Đã bị Chrome vô hiệu hóa. Tiện ích này có thể không an toàn.</translation>
@@ -5131,7 +5132,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8845001906332463065">Nhận trợ giúp</translation>
 <translation id="8846141544112579928">Đang tìm kiếm bàn phím...</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885217322790849332">Để mở tệp bằng $1, trước tiên, hãy sao chép sang thư mục Tệp Linux.</translation>
 <translation id="8859057652521303089">Chọn ngôn ngữ:</translation>
 <translation id="8859174528519900719">Khung phụ: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Bảng tính Excel</translation>

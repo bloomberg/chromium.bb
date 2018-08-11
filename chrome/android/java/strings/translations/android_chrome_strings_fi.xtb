@@ -61,6 +61,7 @@ Et ole kuitenkaan näkymätön. Yksityinen tila ei piilota selaustietojasi työn
 <translation id="1404122904123200417">Upotettu osoitteeseen <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Do Not Track</translation>
 <translation id="1407135791313364759">Avaa kaikki</translation>
+<translation id="1409426117486808224">Yksinkertaisempi avoimien välilehtien näkymä</translation>
 <translation id="1409879593029778104">Tiedoston <ph name="FILE_NAME" /> lataus estettiin, koska tiedosto on jo olemassa.</translation>
 <translation id="1414981605391750300">Otetaan yhteyttä Googleen. Tämä voi kestää hetken…</translation>
 <translation id="1416550906796893042">Sovellusversio</translation>
@@ -80,6 +81,7 @@ Et ole kuitenkaan näkymätön. Yksityinen tila ei piilota selaustietojasi työn
 <translation id="1566400915470565838"><ph name="APP_NAME" /> edellyttää internetyhteyttä.</translation>
 <translation id="1569387923882100876">Yhdistetty laite</translation>
 <translation id="1571304935088121812">Kopioi käyttäjänimi</translation>
+<translation id="1576370611341449972">Ladataan vain Wi-Fi-yhteydellä</translation>
 <translation id="1612196535745283361">Chrome tarvitsee sijaintitietoja hakeakseen laitteita. Sijaintitiedot on <ph name="BEGIN_LINK" />poistettu käytöstä tällä laitteella<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">Ota synkronointi, personointi ja muut Google-palvelut käyttöön</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -344,6 +346,7 @@ Et ole kuitenkaan näkymätön. Yksityinen tila ei piilota selaustietojasi työn
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Hallinnoi</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> latausta poistettiin.</translation>
+<translation id="3819562311292413223">Lataa sinulle valittuja artikkeleita</translation>
 <translation id="3822502789641063741">Poistetaanko tiedot?</translation>
 <translation id="385051799172605136">Edellinen</translation>
 <translation id="3859306556332390985">Kelaa eteenpäin</translation>
@@ -383,6 +386,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4113030288477039509">Järjestelmänvalvojasi hallinnoima</translation>
 <translation id="4116038641877404294">Lataa sivuja offline-käyttöä varten.</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d kirjanmerkki}other{%1$d kirjanmerkkiä}}</translation>
+<translation id="4149994727733219643">Yksinkertaisempi sivunäkymä</translation>
 <translation id="4159800535322890630">Estä sivustoja käyttämästä tunnistimiasi</translation>
 <translation id="4165986682804962316">Sivustoasetukset</translation>
 <translation id="4170011742729630528">Palvelu ei ole käytettävissä. Yritä myöhemmin uudelleen.</translation>
@@ -553,6 +557,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="5512137114520586844">Tätä tiliä hallinnoi <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Laitteen järjestelmänvalvojan estämä</translation>
 <translation id="5515439363601853141">Avaa lukitus nähdäksesi salasanan</translation>
+<translation id="5515716148775388141">Kuvakkeet siirrettiin näytön alareunaan</translation>
 <translation id="5517095782334947753">Tililläsi <ph name="FROM_ACCOUNT" /> on kirjanmerkkejä, salasanoja ja muita asetuksia.</translation>
 <translation id="5524843473235508879">Uudelleenohjaus estetty</translation>
 <translation id="5527082711130173040">Chrome tarvitsee sijaintitietoja hakeakseen laitteita. <ph name="BEGIN_LINK1" />Päivitä käyttöoikeudet<ph name="END_LINK1" />. Sijaintitiedot on lisäksi <ph name="BEGIN_LINK2" />poistettu käytöstä tällä laitteella<ph name="END_LINK2" />.</translation>
@@ -756,6 +761,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7016516562562142042">Sallittu nykyisellä hakukoneella</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> ladattiin.</translation>
 <translation id="7022756207310403729">Avaa selaimessa</translation>
+<translation id="702463548815491781">Suositellaan käytettäväksi, kun TalkBack tai Kytkimen käyttö on päällä</translation>
 <translation id="7029809446516969842">Salasanat</translation>
 <translation id="7031882061095297553">Synkronoi tilille</translation>
 <translation id="7032663816368481562">Kun valitset osoitepalkista Lisää samanlaisia <ph name="ICON" />, näet pikalinkkejä aiheeseen liittyville sivuille. Avaamiesi sivujen URL-osoitteet lähetetään Googlelle.</translation>
@@ -784,6 +790,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7251326866581677552">Joidenkin sivustojen mainokset estetty</translation>
 <translation id="7253272406652746122">Lisää Google-tili laitteen Asetukset-sovelluksen Tilit-sivulla.</translation>
 <translation id="7274013316676448362">Estetty sivusto</translation>
+<translation id="72867290065237936">Vaihtele salasanaehdotusten ja näppäimistön välillä napauttamalla</translation>
 <translation id="729975465115245577">Laitteella ei ole sovellusta, johon salasanatiedoston voisi tallentaa.</translation>
 <translation id="7302081693174882195">Lisätiedot: Lajiteltu säästetyn datan mukaan</translation>
 <translation id="7333031090786104871">Edellisen sivuston lisääminen kesken</translation>

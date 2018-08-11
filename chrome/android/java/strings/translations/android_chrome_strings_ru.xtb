@@ -61,6 +61,7 @@
 <translation id="1404122904123200417">Встроено в <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Запрет отслеживания</translation>
 <translation id="1407135791313364759">Открыть все</translation>
+<translation id="1409426117486808224">Упрощенный просмотр открытых вкладок</translation>
 <translation id="1409879593029778104">Скачивание файла <ph name="FILE_NAME" /> остановлено, так как он уже существует.</translation>
 <translation id="1414981605391750300">Подключение к Google. Подождите…</translation>
 <translation id="1416550906796893042">Версия приложения</translation>
@@ -80,6 +81,7 @@
 <translation id="1566400915470565838">Чтобы использовать приложение "<ph name="APP_NAME" />", подключитесь к Интернету.</translation>
 <translation id="1569387923882100876">Подключенное устройство</translation>
 <translation id="1571304935088121812">Копировать имя пользователя</translation>
+<translation id="1576370611341449972">Скачивание только при подключении к сети Wi-Fi</translation>
 <translation id="1612196535745283361">Чтобы выполнить поиск устройств, браузеру Chrome нужен доступ к геоданным. <ph name="BEGIN_LINK" />Включить<ph name="END_LINK" /></translation>
 <translation id="162035744160882748">Включить синхронизацию, персонализацию и другие сервисы Google</translation>
 <translation id="1620510694547887537">Камера</translation>
@@ -344,6 +346,7 @@
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3810973564298564668">Настроить</translation>
 <translation id="3819178904835489326">Удаленные скачивания: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
+<translation id="3819562311292413223">Скачивать статьи для вас</translation>
 <translation id="3822502789641063741">Удалить данные сайтов?</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3859306556332390985">Перемотать вперед</translation>
@@ -383,6 +386,7 @@
 <translation id="4113030288477039509">Управляется администратором</translation>
 <translation id="4116038641877404294">Скачивайте страницы и открывайте их без подключения к Интернету</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d закладка}one{%1$d закладка}few{%1$d закладки}many{%1$d закладок}other{%1$d закладки}}</translation>
+<translation id="4149994727733219643">Упрощенный просмотр веб-страниц</translation>
 <translation id="4159800535322890630">Запретить сайтам использовать датчики</translation>
 <translation id="4165986682804962316">Настройки сайтов</translation>
 <translation id="4170011742729630528">Сервис недоступен. Повторите попытку позже.</translation>
@@ -553,6 +557,7 @@
 <translation id="5512137114520586844">Этим аккаунтом управляет <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Отключено администратором устройства</translation>
 <translation id="5515439363601853141">Чтобы увидеть пароль, разблокируйте экран</translation>
+<translation id="5515716148775388141">Ваши значки теперь находятся внизу экрана</translation>
 <translation id="5517095782334947753">Вам доступны закладки, история, пароли и другие настройки пользователя <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Попытка переадресации заблокирована.</translation>
 <translation id="5527082711130173040">Чтобы выполнить поиск устройств, браузеру Chrome нужен доступ к геоданным. <ph name="BEGIN_LINK2" />Включите доступ<ph name="END_LINK2" /> и <ph name="BEGIN_LINK1" />обновите разрешения<ph name="END_LINK1" />.</translation>
@@ -756,6 +761,7 @@
 <translation id="7016516562562142042">Открыт доступ для текущей поисковой системы</translation>
 <translation id="7021515813996758557">Файл <ph name="FILE_NAME" /> скачан</translation>
 <translation id="7022756207310403729">Открыть в браузере</translation>
+<translation id="702463548815491781">Рекомендовано при включенных функциях TalkBack и Switch Access</translation>
 <translation id="7029809446516969842">Пароли</translation>
 <translation id="7031882061095297553">Выберите аккаунт</translation>
 <translation id="7032663816368481562">URL посещенных вами страниц отправляются в Google, поэтому после нажатия кнопки "Показать похожие страницы" <ph name="ICON" /> в адресной строке вы можете увидеть соответствующие ссылки.</translation>
@@ -784,6 +790,7 @@
 <translation id="7251326866581677552">Заблокировано на определенных сайтах</translation>
 <translation id="7253272406652746122">Добавьте аккаунт Google в настройках устройства (раздел "Аккаунты").</translation>
 <translation id="7274013316676448362">Заблокированный сайт</translation>
+<translation id="72867290065237936">Нажмите для переключения между подсказками пароля и клавиатурой</translation>
 <translation id="729975465115245577">На устройстве не установлено приложение для хранения файлов паролей.</translation>
 <translation id="7302081693174882195">Сортировка по объему сэкономленного трафика</translation>
 <translation id="7333031090786104871">Предыдущий сайт ещё не добавлен</translation>

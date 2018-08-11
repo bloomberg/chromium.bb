@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">向右</translation>
 <translation id="1351937230027495976">收合選單</translation>
 <translation id="1383876407941801731">搜尋</translation>
+<translation id="1419738280318246476">解鎖裝置即可執行通知動作</translation>
 <translation id="1467432559032391204">向左</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">啟動器</translation>
@@ -224,6 +225,7 @@
 <translation id="4924411785043111640">重新啟動並重設</translation>
 <translation id="4961318399572185831">投放螢幕</translation>
 <translation id="5069971504769299223">裝置管理員或許可監控你的活動。</translation>
+<translation id="5083553833479578423">啟用更多 Google 助理功能。</translation>
 <translation id="5136175204352732067">已連接其他鍵盤</translation>
 <translation id="5168181903108465623">可用的投放裝置</translation>
 <translation id="5207949376430453814">醒目顯示文字插入點</translation>
@@ -295,6 +297,7 @@
 <translation id="6376931439017688372">藍牙已開啟</translation>
 <translation id="639644700271529076">大寫鍵已關閉</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">清除所有通知</translation>
 <translation id="643147933154517414">沒有通知</translation>
 <translation id="6445835306623867477">正在透過<ph name="RECEIVER_NAME" />投放「<ph name="ROUTE_TITLE" />」</translation>
 <translation id="6452181791372256707">拒絕</translation>
@@ -396,9 +399,11 @@
 <translation id="8152119955266188852">你按下了全螢幕放大鏡的快速鍵。確定要啟用這項功能嗎？</translation>
 <translation id="8190698733819146287">自訂語言與輸入法...</translation>
 <translation id="8191230140820435481">管理你的應用程式、擴充功能和主題</translation>
+<translation id="8192202700944119416">已隱藏通知。</translation>
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8297006494302853456">弱</translation>
 <translation id="8308637677604853869">前一個選單</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">寫筆記</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> 的選項選單</translation>
 <translation id="8406981827175133772">全螢幕放大鏡</translation>
@@ -440,6 +445,7 @@
 <translation id="8938800817013097409">USB-C 裝置 (背面右側連接埠)</translation>
 <translation id="8940956008527784070">電池電量不足 (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">快速啓動</translation>
+<translation id="899350903320462459">使用 <ph name="LOGIN_ID" /> 帳戶解鎖裝置即可執行通知動作</translation>
 <translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>
 <translation id="9029474291399787231">有可用的 Adobe Flash Player 更新</translation>
 <translation id="9056839673611986238">裝置將復原</translation>

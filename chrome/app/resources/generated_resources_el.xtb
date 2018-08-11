@@ -686,7 +686,6 @@
 <translation id="200544492091181894">Μπορείτε να αλλάξετε αυτήν την επιλογή στις ρυθμίσεις οποιαδήποτε στιγμή</translation>
 <translation id="2006638907958895361">Άνοιγμα Συνδέσμου στην εφαρμογή <ph name="APP" /></translation>
 <translation id="2007404777272201486">Αναφορά προβλήματος...</translation>
-<translation id="2016237810978710652">Άνοιγμα Αρχείων Linux...</translation>
 <translation id="2016430552235416146">Τυπική</translation>
 <translation id="2017334798163366053">Απενεργοποίηση συλλογής δεδομένων απόδοσης</translation>
 <translation id="2017836877785168846">Διαγράφει το ιστορικό και τις αυτόματες συμπληρώσεις στη γραμμή διευθύνσεων.</translation>
@@ -3784,7 +3783,6 @@
 <translation id="6748775883310276718">Kiosk μεμονωμένης εφαρμογής</translation>
 <translation id="6751256176799620176">Επιλέχθηκε 1 φάκελος</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Ανώνυμη περιήγηση)</translation>
-<translation id="6751815812172740613">Να διαγραφούν όλες οι εφαρμογές και τα δεδομένα Linux που περιέχονται στον φάκελο "Αρχεία Linux" από αυτήν τη συσκευή <ph name="DEVICE_TYPE" />;</translation>
 <translation id="6757101664402245801">Το URL αντιγράφηκε</translation>
 <translation id="6758056191028427665">Πείτε μας πώς τα πηγαίνουμε</translation>
 <translation id="6759193508432371551">Επαναφορά εργοστασιακών ρυθμίσεων</translation>
@@ -4061,7 +4059,6 @@
     <ph name="BEGIN_PARAGRAPH3" />Μπορείτε να ελέγχετε αυτήν τη λειτουργία από το μενού Ρυθμίσεις &gt; Google. Επιλέξτε Χρήση και διαγνωστικά από το μενού.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">Λάβετε β&amp;οήθεια</translation>
 <translation id="7200083590239651963">Επιλογή διαμόρφωσης</translation>
-<translation id="7201014958346994077">Δεν είναι δυνατή η προβολή Αρχείων Linux</translation>
 <translation id="720110658997053098">Μόνιμη διατήρηση της παρούσας συσκευής σε λειτουργία Kiosk</translation>
 <translation id="7201118060536064622">Το "<ph name="DELETED_ITEM_NAME" />" διαγράφηκε</translation>
 <translation id="7206693748120342859">Γίνεται λήψη της προσθήκης <ph name="PLUGIN_NAME" />…</translation>
@@ -4677,7 +4674,6 @@
 <translation id="8107015733319732394">Εγκατάσταση του Google Play Store στη συσκευή σας <ph name="DEVICE_TYPE" />. Αυτό μπορεί να διαρκέσει μερικά λεπτά.</translation>
 <translation id="8111155949205007504">Κοινοποίηση αυτού του κωδικού πρόσβασης στο iPhone σας</translation>
 <translation id="8113043281354018522">Επιλογή τύπου άδειας</translation>
-<translation id="8116925261070264013">Σε σίγαση</translation>
 <translation id="8116972784401310538">&amp;Διαχείριση σελιδοδεικτών</translation>
 <translation id="8117620576188476503">Διαχειριστείτε συνδέσεις, ενημερώσεις και ρυθμίσεις από την περιοχή κατάστασης. Για να μεταβείτε εδώ από το πληκτρολόγιο, πατήστε Alt + Shift + S.</translation>
 <translation id="8118362518458010043">Απενεργοποιήθηκε από το Chrome. Αυτή η επέκταση μπορεί να μην είναι ασφαλής.</translation>
@@ -5134,7 +5130,6 @@
 <translation id="8845001906332463065">Λήψη βοήθειας</translation>
 <translation id="8846141544112579928">Αναζήτηση για πληκτρολόγιο…</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885217322790849332">Προκειμένου να ανοίξετε αρχεία χρησιμοποιώντας την εφαρμογή $1, πρώτα αντιγράψτε τα στον φάκελο "Αρχεία Linux".</translation>
 <translation id="8859057652521303089">Επιλέξτε τη γλώσσα σας:</translation>
 <translation id="8859174528519900719">Υποπλαίσιο: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Υπολογιστικό φύλλο Excel</translation>

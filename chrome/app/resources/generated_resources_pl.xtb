@@ -686,7 +686,6 @@
 <translation id="200544492091181894">Możesz zmienić to później w Ustawieniach</translation>
 <translation id="2006638907958895361">Otwórz link w aplikacji <ph name="APP" /></translation>
 <translation id="2007404777272201486">Zgłaszanie problemu...</translation>
-<translation id="2016237810978710652">Otwieram pliki Linuksa...</translation>
 <translation id="2016430552235416146">Tradycyjne</translation>
 <translation id="2017334798163366053">Wyłącz zbieranie danych o wydajności</translation>
 <translation id="2017836877785168846">Usuwa historię i wpisy autouzupełniania w pasku adresu.</translation>
@@ -3407,7 +3406,7 @@
 <translation id="6185132558746749656">Lokalizacja urządzenia</translation>
 <translation id="6185617499004995178">Walidator CUPS IPP</translation>
 <translation id="6185696379715117369">Strona do góry</translation>
-<translation id="6189273858858366896">Skonfiguruj sieciowe udziały plików lub nimi zarządzaj.</translation>
+<translation id="6189273858858366896">Skonfiguruj sieciowe magazyny plików lub nimi zarządzaj.</translation>
 <translation id="6189412234224385711">Otwórz w rozszerzeniu <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Blokuj pliki cookie innych firm</translation>
 <translation id="6196854373336333322">Rozszerzenie „<ph name="EXTENSION_NAME" />” przejęło kontrolę nad ustawieniami serwera proxy, co oznacza, że może zmieniać, przerywać lub podglądać wszystko, co robisz online. Jeśli nie masz pewności, skąd wzięła się ta zmiana, prawdopodobnie jej nie chcesz.</translation>
@@ -3784,7 +3783,6 @@
 <translation id="6748775883310276718">Pojedyncza aplikacja kiosku</translation>
 <translation id="6751256176799620176">Wybrano jeden folder</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Incognito)</translation>
-<translation id="6751815812172740613">Usunąć wszystkie aplikacje na Linuksa i dane z folderu Pliki Linuksa z tego urządzenia <ph name="DEVICE_TYPE" />?</translation>
 <translation id="6757101664402245801">URL został skopiowany</translation>
 <translation id="6758056191028427665">Co sądzisz o efektach naszej pracy?</translation>
 <translation id="6759193508432371551">Ustawienia fabryczne</translation>
@@ -4061,7 +4059,6 @@
     <ph name="BEGIN_PARAGRAPH3" />Działanie tej funkcji możesz skonfigurować w opcji Ustawienia &gt; Google. Wybierz w menu Użycie i diagnostyka.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">Uzyskaj p&amp;omoc</translation>
 <translation id="7200083590239651963">Wybierz konfigurację</translation>
-<translation id="7201014958346994077">Nie można wyświetlić plików Linuksa</translation>
 <translation id="720110658997053098">Trwale utrzymuj to urządzenie w trybie kiosku</translation>
 <translation id="7201118060536064622">Element „<ph name="DELETED_ITEM_NAME" />” został usunięty</translation>
 <translation id="7206693748120342859">Pobieram <ph name="PLUGIN_NAME" />...</translation>
@@ -4677,7 +4674,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8107015733319732394">Instaluję Sklep Google Play na urządzeniu <ph name="DEVICE_TYPE" />. Może to potrwać kilka minut.</translation>
 <translation id="8111155949205007504">Udostępnij to hasło za pomocą iPhone'a</translation>
 <translation id="8113043281354018522">Wybierz typ licencji</translation>
-<translation id="8116925261070264013">Wyciszone</translation>
 <translation id="8116972784401310538">&amp;Menedżer zakładek</translation>
 <translation id="8117620576188476503">Zarządzaj połączeniami, aktualizacjami i ustawieniami na pasku stanu. Aby je otworzyć za pomocą klawiatury, naciśnij Alt + Shift + S.</translation>
 <translation id="8118362518458010043">Wyłączone przez Chrome. To rozszerzenie może być niebezpieczne.</translation>
@@ -5038,7 +5034,7 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="869884720829132584">Menu aplikacji</translation>
 <translation id="869891660844655955">Data wygaśnięcia</translation>
 <translation id="8699566574894671540">Aby włączyć tę funkcję, najpierw w menu Edytuj włącz Sprawdzaj pisownię w trakcie pisania</translation>
-<translation id="870073306461175568">Sieciowe udziały plików</translation>
+<translation id="870073306461175568">Sieciowe magazyny plików</translation>
 <translation id="8701677791353449257">Nazwa urządzenia musi odpowiadać wyrażeniu regularnemu <ph name="REGEX" />.</translation>
 <translation id="8704521619148782536">To trwa o wiele dłużej niż zwykle. Możesz zaczekać albo anulować i spróbować ponownie później.</translation>
 <translation id="8705331520020532516">Numer seryjny</translation>
@@ -5137,7 +5133,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8845001906332463065">Uzyskaj pomoc</translation>
 <translation id="8846141544112579928">Szukam klawiatury...</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885217322790849332">Aby otworzyć plik w kontenerze $1, najpierw skopiuj go do folderu Pliki Linuksa.</translation>
 <translation id="8859057652521303089">Wybierz język:</translation>
 <translation id="8859174528519900719">Ramka podrzędna: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Arkusz kalkulacyjny Excela</translation>

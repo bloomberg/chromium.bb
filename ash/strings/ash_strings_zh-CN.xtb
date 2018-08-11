@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">向右</translation>
 <translation id="1351937230027495976">收起菜单</translation>
 <translation id="1383876407941801731">搜索</translation>
+<translation id="1419738280318246476">解锁设备即可执行通知操作</translation>
 <translation id="1467432559032391204">向左</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">启动器</translation>
@@ -225,6 +226,7 @@
 <translation id="4924411785043111640">重启并重置</translation>
 <translation id="4961318399572185831">投射屏幕</translation>
 <translation id="5069971504769299223">设备管理员或许能监控您的活动。</translation>
+<translation id="5083553833479578423">启用更多 Google 助理功能。</translation>
 <translation id="5136175204352732067">所连接的键盘已不是原来的那个</translation>
 <translation id="5168181903108465623">有可用的投射设备</translation>
 <translation id="5207949376430453814">突出显示文本插入符号</translation>
@@ -296,6 +298,7 @@
 <translation id="6376931439017688372">蓝牙已开启</translation>
 <translation id="639644700271529076">CAPS LOCK 已关闭</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">清除所有通知</translation>
 <translation id="643147933154517414">大功告成</translation>
 <translation id="6445835306623867477">正在将“<ph name="ROUTE_TITLE" />”投射至“<ph name="RECEIVER_NAME" />”</translation>
 <translation id="6452181791372256707">拒绝</translation>
@@ -397,9 +400,11 @@
 <translation id="8152119955266188852">您按下了全屏放大镜的快捷键。要开启这项功能吗？</translation>
 <translation id="8190698733819146287">自定义语言和输入法...</translation>
 <translation id="8191230140820435481">管理您的应用、扩展程序和主题背景</translation>
+<translation id="8192202700944119416">已隐藏通知。</translation>
 <translation id="8261506727792406068">删除</translation>
 <translation id="8297006494302853456">弱</translation>
 <translation id="8308637677604853869">上一菜单</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">创建记事</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> 的“选项”菜单</translation>
 <translation id="8406981827175133772">全屏放大镜</translation>
@@ -441,6 +446,7 @@
 <translation id="8938800817013097409">USB-C 设备（背面右侧端口）</translation>
 <translation id="8940956008527784070">电池电量不足 (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">快速启动</translation>
+<translation id="899350903320462459">以 <ph name="LOGIN_ID" /> 身份解锁设备即可执行通知操作</translation>
 <translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>
 <translation id="9029474291399787231">有可用的 Adobe Flash Player 更新</translation>
 <translation id="9056839673611986238">设备将被回滚</translation>

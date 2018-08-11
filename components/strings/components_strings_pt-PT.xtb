@@ -106,7 +106,6 @@
 <translation id="1639239467298939599">A carregar</translation>
 <translation id="1640180200866533862">Políticas do utilizador</translation>
 <translation id="1640244768702815859">Experimente <ph name="BEGIN_LINK" />aceder à página inicial do site<ph name="END_LINK" />.</translation>
-<translation id="1644184664548287040">A configuração de rede é inválida e não pode ser importada.</translation>
 <translation id="1644574205037202324">Histórico</translation>
 <translation id="1645368109819982629">Protocolo não suportado</translation>
 <translation id="1655462015569774233">{1,plural, =1{Este servidor não conseguiu provar que é <ph name="DOMAIN" />; o seu certificado de segurança expirou ontem. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação. O relógio do seu computador está atualmente configurado para <ph name="CURRENT_DATE" />. Será que isso está correto? Em caso negativo, deve corrigir o relógio do seu sistema e depois atualizar esta página.}other{Este servidor não conseguiu provar que é <ph name="DOMAIN" />; o seu certificado de segurança expirou há # dias. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação. O relógio do seu computador está atualmente configurado para <ph name="CURRENT_DATE" />. Será que isso está correto? Em caso negativo, deve corrigir o relógio do seu sistema e depois atualizar esta página.}}</translation>
@@ -284,7 +283,6 @@
 <translation id="2941952326391522266">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança é do domínio <ph name="DOMAIN2" />. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="2948083400971632585">Pode desativar qualquer proxy configurado para uma ligação a partir da página de definições.</translation>
 <translation id="2955913368246107853">Fechar barra de localização</translation>
-<translation id="2958431318199492670">A configuração de rede não cumpre a norma ONC. Partes da configuração podem não ser importadas.</translation>
 <translation id="2969319727213777354">Para estabelecer uma ligação segura, o relógio tem de ser definido corretamente. Isto deve-se ao facto de os certificados que os Sites utilizam para se identificarem serem apenas válidos para períodos de tempo específicos. Uma vez que o relógio do seu dispositivo está incorreto, o Google Chrome não consegue validar estes certificados.</translation>
 <translation id="2972581237482394796">&amp;Repetir</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" /> selecionado atualmente. <ph name="ROW_CONTENT" /></translation>
@@ -356,7 +354,6 @@
 <translation id="3391030046425686457">Endereço de entrega</translation>
 <translation id="3395827396354264108">Método de recolha</translation>
 <translation id="3399952811970034796">Endereço de entrega</translation>
-<translation id="3409072600744224192">Para obter os seus cartões em todos os dispositivos, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3422248202833853650">Experimente fechar outros programas para libertar memória.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> está inacessível de momento.</translation>
 <translation id="3427092606871434483">Permitir (predefinição)</translation>
@@ -582,7 +579,6 @@
 <translation id="5045550434625856497">Palavra-passe incorrecta</translation>
 <translation id="5056549851600133418">Artigos para si</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Verificar o endereço proxy<ph name="END_LINK" /></translation>
-<translation id="5072538239104292703">Para obter os seus cartões em todos os dispositivos, inicie sessão e ative a sincronização.</translation>
 <translation id="5086888986931078152">Pode perder o acesso ao conteúdo protegido de alguns sites.</translation>
 <translation id="5087286274860437796">De momento, o certificado do servidor não é válido.</translation>
 <translation id="5087580092889165836">Adicionar cartão</translation>
@@ -628,7 +624,6 @@
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> de <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Escolher informações de contacto</translation>
 <translation id="5327248766486351172">Nome</translation>
-<translation id="5327567770033251652">ative a sincronização</translation>
 <translation id="5332219387342487447">Método de envio</translation>
 <translation id="5355557959165512791">Não pode visitar <ph name="SITE" /> neste momento, porque o certificado foi revogado. Os erros de rede e os ataques são geralmente temporários, pelo que esta página deverá funcionar mais tarde.</translation>
 <translation id="536296301121032821">Falha ao armazenar as definições da política</translation>
@@ -807,7 +802,6 @@
 <translation id="679355240208270552">Ignorado porque a pesquisa predefinida não está ativada pela política.</translation>
 <translation id="681021252041861472">Campo obrigatório</translation>
 <translation id="6810899417690483278">ID de personalização</translation>
-<translation id="6820686453637990663">Código de segurança</translation>
 <translation id="6824266427216888781">Falha ao carregar os dados das regiões</translation>
 <translation id="6825578344716086703">Tentou aceder a <ph name="DOMAIN" />, mas o servidor apresentou um certificado assinado utilizando um algoritmo de assinatura fraco (como SHA-1). Isto significa que as credenciais de segurança apresentadas pelo servidor podem ter sido falsificadas e que o servidor pode não ser aquele que pretende (pode estar a comunicar com um utilizador mal intencionado).</translation>
 <translation id="6831043979455480757">Traduzir</translation>
@@ -823,7 +817,6 @@
 <translation id="6915804003454593391">Utilizador:</translation>
 <translation id="6944692733090228304">Introduziu a palavra-passe num site que não é gerido pela <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Para proteger a conta, não reutilize a sua palavra-passe noutras aplicações e sites.</translation>
 <translation id="6945221475159498467">Selecionar</translation>
-<translation id="6948540501704460596">Para obter os seus cartões em todos os dispositivos, <ph name="SYNC_LINK" />.</translation>
 <translation id="6948701128805548767">Para ver os métodos de recolha e os requisitos, selecione um endereço</translation>
 <translation id="6949872517221025916">Repor palavra-passe</translation>
 <translation id="6950684638814147129">Erro ao analisar o valor JSON: <ph name="ERROR" />.</translation>
@@ -838,7 +831,6 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Estas cobranças podem ser únicas ou recorrentes e podem não ser óbvias.</translation>
 <translation id="7029809446516969842">Palavras-passe</translation>
-<translation id="7042837854211185817">Para obter os seus cartões em todos os dispositivos, ative a sincronização.</translation>
 <translation id="7050187094878475250">Tentou aceder a <ph name="DOMAIN" />, mas o servidor apresentou um certificado cujo período de validade é demasiado longo para ser fidedigno.</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7064851114919012435">Informações de contacto</translation>

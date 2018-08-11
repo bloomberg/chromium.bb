@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
 <translation id="100812568230599391">เปลี่ยนรูปแบบการแสดงผลเป็นข้อความแทรก</translation>
+<translation id="1011903154582639569">หาแป้นแล้วยกขึ้นเพื่อพิมพ์</translation>
 <translation id="1012173283529841972">รายการ</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">หากคุณใช้การอธิบายและอ่านออกเสียงของ ChromeVox เป็นครั้งแรก บทแนะนำฉบับย่อนี้ที่จะอธิบายสิ่งที่ควรทราบในการเริ่มต้นใช้งาน ChromeVox</translation>
@@ -162,6 +163,7 @@
 <translation id="2553108862507765288">ข้อผิดพลาดทางไวยากรณ์</translation>
 <translation id="257674075312929031">กลุ่ม</translation>
 <translation id="2582407057977008361">ส่วนที่ไม่เกี่ยวข้อง</translation>
+<translation id="2592212930811759050">แตะสองครั้งเพื่อเริ่มแก้ไข</translation>
 <translation id="2606210917827248971">ที่มี {COUNT,plural, =1{# รายการ}other{# รายการ}}</translation>
 <translation id="2614981083756825552">รูปแบบ ML คณิตศาสตร์</translation>
 <translation id="2624431853467395961">เปิดโหมดการเรียนรู้</translation>

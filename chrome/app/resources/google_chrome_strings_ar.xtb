@@ -13,7 +13,7 @@
 <translation id="123620459398936149">‏تعذر على نظام التشغيل Chrome مزامنة البيانات. يُرجى تحديث عبارة مرور المزامنة.</translation>
 <translation id="127345590676626841">‏يجري تحديث Chrome تلقائيًا بحيث يكون لديك أحدث إصدار. عند اكتمال هذا التحميل، ستتم إعادة تشغيل Chrome وستبدأ العمل.</translation>
 <translation id="1302523850133262269">‏يُرجى الانتظار لحين تثبيت Chrome لآخر تحديثات النظام.</translation>
-<translation id="1312676208694947750">{0,plural, =0{‏هناك تحديث متاح لنظام التشغيل Chrome}=1{‏هناك تحديث واحد متاح لنظام التشغيل Chrome}two{‏هناك تحديث متاح لنظام التشغيل Chrome منذ يومين (#)}few{‏هناك تحديث متاح لنظام التشغيل Chrome منذ # أيام}many{‏هناك تحديث متاح لنظام التشغيل Chrome منذ # يومًا}other{‏هناك تحديث متاح لنظام التشغيل Chrome منذ # يوم}}</translation>
+<translation id="1312676208694947750">{0,plural, =0{‏يتوفر تحديث لنظام التشغيل Chrome}=1{‏يتوفر تحديث واحد لنظام التشغيل Chrome}two{‏يتوفر تحديث لنظام التشغيل Chrome منذ يومين (#)}few{‏يتوفر تحديث لنظام التشغيل Chrome منذ # أيام}many{‏يتوفر تحديث لنظام التشغيل Chrome منذ # يومًا}other{‏يتوفر تحديث لنظام التشغيل Chrome منذ # يوم}}</translation>
 <translation id="137466361146087520">‏الإصدار التجريبي من Google Chrome</translation>
 <translation id="1393853151966637042">‏الحصول على مساعدة بشأن استخدام Chrome</translation>
 <translation id="1399397803214730675">‏يحتوي جهاز الكمبيوتر هذا على نسخة أحدث من Google Chrome. إذا كان برنامج Google Chrome لا يعمل، فالرجاء إزالة Google Chrome وإعادة المحاولة.</translation>
@@ -32,7 +32,7 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">‏إن Google Chrome هو متصفح ويب يشغّل صفحات الويب والتطبيقات بسرعة خاطفة. فهذا المتصفح سريع ويتميز بالثبات وسهولة الاستخدام، ويمكنك من خلاله تصفح الويب بقدر أكبر من الأمان من خلال وجود حماية مضمنة داخله ضد البرامج الضارة والتصيّد.</translation>
 <translation id="1718131156967340976">‏تحديد <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
-<translation id="1734234790201236882">‏سيحفظ Chrome كلمة المرور هذه في حسابك على Google. ولن تحتاج إلى تذكُّرها.</translation>
+<translation id="1734234790201236882">‏سيحفظ Chrome كلمة المرور هذه في حسابك على Google ولن تحتاج إلى تذكُّرها.</translation>
 <translation id="174539241580958092">‏تعذر على Google Chrome مزامنة البيانات نظرًا لوجود خطأ في تسجيل الدخول.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">‏الحصول على مساعدة بشأن استخدام نظام التشغيل Chrome</translation>
@@ -207,7 +207,7 @@
 <translation id="683440813066116847">‏قاعدة الوارد إلى Google Chrome Canary للسماح بحركة مرور mDNS.</translation>
 <translation id="686561893457936865">‏إمكانية استخدام Chrome في كل مكان</translation>
 <translation id="6885412569789873916">‏تطبيقات الإصدار التجريبي من Chrome</translation>
-<translation id="6964107240822114422">{0,plural, =0{‏هناك تحديث متاح لـ Chrome}=1{‏هناك تحديث واحد متاح لـ Chrome}two{‏هناك تحديث متاح لـ Chrome منذ يومين (#)}few{‏هناك تحديث متاح لـ Chrome منذ # أيام}many{‏هناك تحديث متاح لـ Chrome منذ # يومًا}other{‏هناك تحديث متاح لـ Chrome منذ # يوم}}</translation>
+<translation id="6964107240822114422">{0,plural, =0{‏يتوفر تحديث لـ Chrome}=1{‏يتوفر تحديث واحد لـ Chrome}two{‏يتوفر تحديث لـ Chrome منذ يومين (#)}few{‏يتوفر تحديث لـ Chrome منذ # أيام}many{‏يتوفر تحديث لـ Chrome منذ # يومًا}other{‏يتوفر تحديث لـ Chrome منذ # يوم}}</translation>
 <translation id="6967962315388095737">‏قاعدة الوارد إلى الإصدار التجريبي من Google Chrome للسماح بحركة مرور mDNS.</translation>
 <translation id="6970811910055250180">جارٍ تحديث الجهاز...</translation>
 <translation id="6982337800632491844">‏<ph name="DOMAIN" /> يتطلب قراءة وقبول بنود الخدمة التالية قبل استخدام هذا الجهاز. وهذه البنود لا توسع أو تعدّل أو تقيّد بنود نظام التشغيل Google Chrome.</translation>

@@ -61,6 +61,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="1404122904123200417">Incorporado en <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"No realizar seguimiento"</translation>
 <translation id="1407135791313364759">Abrir todas</translation>
+<translation id="1409426117486808224">Vista simplificada para las pestañas abiertas</translation>
 <translation id="1409879593029778104">Se impidió la descarga de <ph name="FILE_NAME" /> porque el archivo ya existe.</translation>
 <translation id="1414981605391750300">Se está estableciendo la comunicación con Google. Esta acción puede demorar unos minutos…</translation>
 <translation id="1416550906796893042">Versión de la aplicación</translation>
@@ -80,6 +81,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="1566400915470565838">Para usar <ph name="APP_NAME" />, conéctate a Internet.</translation>
 <translation id="1569387923882100876">Dispositivo conectado</translation>
 <translation id="1571304935088121812">Copiar el nombre de usuario</translation>
+<translation id="1576370611341449972">La descarga solo se realiza a través de una red Wi-Fi</translation>
 <translation id="1612196535745283361">Chrome debe acceder a la ubicación para buscar dispositivos. El acceso a la ubicación está <ph name="BEGIN_LINK" />desactivado en este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">Activar la sincronización, la personalización y otros servicios de Google</translation>
 <translation id="1620510694547887537">Cámara</translation>
@@ -344,6 +346,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Administrar</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> descargas borradas</translation>
+<translation id="3819562311292413223">Descargar artículos para ti</translation>
 <translation id="3822502789641063741">¿Borrar el almacenamiento de sitios?</translation>
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3859306556332390985">Buscar más adelante</translation>
@@ -383,6 +386,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4113030288477039509">Administrado por tu administrador</translation>
 <translation id="4116038641877404294">Descarga las páginas para usarlas sin conexión</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d favorito}other{%1$d favoritos}}</translation>
+<translation id="4149994727733219643">Vista simplificada para páginas web</translation>
 <translation id="4159800535322890630">Impedir que los sitios accedan a los sensores</translation>
 <translation id="4165986682804962316">Configuración del sitio</translation>
 <translation id="4170011742729630528">El servicio no se encuentra disponible; vuelve a intentarlo más tarde.</translation>
@@ -553,6 +557,7 @@ Es posible que tu cuenta de Google tenga otros formularios de historial de naveg
 <translation id="5512137114520586844"><ph name="PARENT_NAME" /> administra esta cuenta.</translation>
 <translation id="5514904542973294328">El administrador de este dispositivo inhabilitó esta opción</translation>
 <translation id="5515439363601853141">Desbloquea la pantalla para ver tu contraseña</translation>
+<translation id="5515716148775388141">Tus íconos están en la parte inferior de la pantalla</translation>
 <translation id="5517095782334947753">Tienes favoritos, historial, contraseñas y otras opciones de configuración de <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Se bloqueó el redireccionamiento</translation>
 <translation id="5527082711130173040">Chrome debe acceder a la ubicación para buscar dispositivos. <ph name="BEGIN_LINK1" />Actualiza los permisos<ph name="END_LINK1" />. El acceso a la ubicación también está <ph name="BEGIN_LINK2" />desactivado en este dispositivo<ph name="END_LINK2" />.</translation>
@@ -756,6 +761,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7016516562562142042">Se habilitó para el motor de búsqueda actual</translation>
 <translation id="7021515813996758557">Se descargó <ph name="FILE_NAME" /></translation>
 <translation id="7022756207310403729">Abrir en el navegador</translation>
+<translation id="702463548815491781">Se recomienda cuando TalkBack o "Accesibilidad mejorada" están activadas</translation>
 <translation id="7029809446516969842">Contraseñas</translation>
 <translation id="7031882061095297553">Sincronizar con</translation>
 <translation id="7032663816368481562">Cuando presionas Más contenido similar <ph name="ICON" /> en la barra de direcciones, se mostrarán vínculos rápidos a páginas relacionadas. Se envían a Google las URL de las páginas que visitas.</translation>
@@ -784,6 +790,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7251326866581677552">Bloqueados de algunos sitios</translation>
 <translation id="7253272406652746122">Agrega una cuenta de Google desde la página Cuentas en la app de Configuración del dispositivo.</translation>
 <translation id="7274013316676448362">Sitio bloqueado</translation>
+<translation id="72867290065237936">Presiona este botón para cambiar entre las sugerencias de contraseña y el teclado</translation>
 <translation id="729975465115245577">Tu dispositivo no tiene una app que pueda almacenar el archivo de contraseñas.</translation>
 <translation id="7302081693174882195">Detalles: Ordenados por cantidad de datos ahorrados</translation>
 <translation id="7333031090786104871">Aún se está agregando el sitio anterior</translation>

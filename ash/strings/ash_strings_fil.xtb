@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="1351937230027495976">I-collapse ang menu</translation>
 <translation id="1383876407941801731">Hanapin</translation>
+<translation id="1419738280318246476">I-unlock ang device para maisagawa ang pagkilos sa notification</translation>
 <translation id="1467432559032391204">Kaliwa</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Launcher</translation>
@@ -224,6 +225,7 @@
 <translation id="4924411785043111640">I-restart at i-reset</translation>
 <translation id="4961318399572185831">I-cast ang screen</translation>
 <translation id="5069971504769299223">Maaaring masubaybayan ng manager ng device ang iyong aktibidad.</translation>
+<translation id="5083553833479578423">Mag-unlock ng higit pang feature ng Assistant.</translation>
 <translation id="5136175204352732067">Ibang keyboard ang nakakonekta</translation>
 <translation id="5168181903108465623">I-cast ang mga available na device</translation>
 <translation id="5207949376430453814">I-highlight ang text caret</translation>
@@ -295,6 +297,7 @@
 <translation id="6376931439017688372">Naka-on ang Bluetooth</translation>
 <translation id="639644700271529076">Naka-off ang CAPS LOCK</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">I-clear ang lahat ng notification</translation>
 <translation id="643147933154517414">Tapos na ang lahat</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> sa <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Tanggihan</translation>
@@ -396,9 +399,11 @@
 <translation id="8152119955266188852">Napindot mo ang shortcut para sa full-screen magnifier. Gusto mo ba itong i-on?</translation>
 <translation id="8190698733819146287">I-customize ang mga wika at input...</translation>
 <translation id="8191230140820435481">Pamahalaan ang iyong apps, mga extension, at tema</translation>
+<translation id="8192202700944119416">Nakatago ang mga notification.</translation>
 <translation id="8261506727792406068">I-delete</translation>
 <translation id="8297006494302853456">Mahina</translation>
 <translation id="8308637677604853869">Nakaraang menu</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Gumawa ng tala</translation>
 <translation id="8392451568018454956">Menu ng mga pagpipilian para sa <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Fullscreen Magnifier</translation>
@@ -440,6 +445,7 @@
 <translation id="8938800817013097409">USB-C device (kanang port sa likod)</translation>
 <translation id="8940956008527784070">Mahina na ang baterya (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">Mabilisang paglunsad</translation>
+<translation id="899350903320462459">I-unlock ang device bilang <ph name="LOGIN_ID" /> para maisagawa ang pagkilos sa notification</translation>
 <translation id="8995603266996330174">Pinamamahalaan ni <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Available ang update sa Adobe Flash Player</translation>
 <translation id="9056839673611986238">Iro-roll back ang device</translation>

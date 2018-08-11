@@ -106,7 +106,6 @@
 <translation id="1639239467298939599">載入中</translation>
 <translation id="1640180200866533862">使用者政策</translation>
 <translation id="1640244768702815859">請嘗試<ph name="BEGIN_LINK" />造訪網站首頁<ph name="END_LINK" />。</translation>
-<translation id="1644184664548287040">網路設定無效，無法匯入。</translation>
 <translation id="1644574205037202324">歷史記錄</translation>
 <translation id="1645368109819982629">不支援的通訊協定</translation>
 <translation id="1655462015569774233">{1,plural, =1{這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；伺服器的安全性憑證已在昨天過期。這可能是因為設定錯誤，或是有攻擊者攔截您的連線。您電腦的時鐘目前設為 <ph name="CURRENT_DATE" />，這是正確的時間嗎？如果不是的話，請更新系統時鐘，然後重新整理這個網頁。}other{這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；伺服器的安全性憑證已在 # 天前過期。這可能是因為設定錯誤，或是有攻擊者攔截您的連線。您電腦的時鐘目前設為 <ph name="CURRENT_DATE" />，這是正確的時間嗎？如果不是的話，請更新系統時鐘，然後重新整理這個網頁。}}</translation>
@@ -207,6 +206,7 @@
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2365563543831475020">當機報告擷取時間：<ph name="CRASH_TIME" /> (尚未上傳)</translation>
 <translation id="2367567093518048410">等級</translation>
+<translation id="2378238891085281592">你已啟用私密模式</translation>
 <translation id="2384307209577226199">企業預設</translation>
 <translation id="2386255080630008482">伺服器憑證已遭撤銷。</translation>
 <translation id="2392959068659972793">顯示尚未設定任何值的政策</translation>
@@ -283,7 +283,6 @@
 <translation id="2941952326391522266">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證來自 <ph name="DOMAIN2" /> 網域。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
 <translation id="2948083400971632585">你可以在設定頁面停用任何為連線設置的 Proxy。</translation>
 <translation id="2955913368246107853">關閉搜尋列</translation>
-<translation id="2958431318199492670">網路設定未遵循 ONC 標準，系統可能無法匯入部分設定。</translation>
 <translation id="2969319727213777354">您必須正確設定時鐘，才能建立安全連線。這是因為網站驗證身分時所使用的憑證僅於特定一段時間內有效。由於您裝置的時鐘不正確，因此 Google Chrome 無法驗證這些憑證。</translation>
 <translation id="2972581237482394796">重做(&amp;R)</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />，目前已選取。<ph name="ROW_CONTENT" /></translation>
@@ -514,6 +513,7 @@
 <translation id="450710068430902550">與管理員分享</translation>
 <translation id="4515275063822566619">信用卡和地址資訊皆來自 Chrome 和你的 Google 帳戶 (<ph name="ACCOUNT_EMAIL" />)。你可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />頁面管理這些資訊。</translation>
 <translation id="4522570452068850558">詳細資訊</translation>
+<translation id="4524805452350978254">管理卡片</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">試試看停用擴充功能。</translation>
 <translation id="457875822857220463">快遞</translation>
@@ -700,6 +700,7 @@
 <translation id="5866257070973731571">新增電話號碼</translation>
 <translation id="5869405914158311789">無法連上這個網站</translation>
 <translation id="5869522115854928033">已儲存的密碼</translation>
+<translation id="5887400589839399685">已儲存卡片</translation>
 <translation id="5893752035575986141">接受簽帳金融卡。</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (已同步)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{目前使用 1 個 Cookie}other{目前使用 # 個 Cookie}}</translation>
@@ -801,7 +802,6 @@
 <translation id="679355240208270552">由於政策未啟用預設搜尋設定，因此遭到忽略。</translation>
 <translation id="681021252041861472">必填欄位</translation>
 <translation id="6810899417690483278">自訂 ID</translation>
-<translation id="6820686453637990663">CVC</translation>
 <translation id="6824266427216888781">無法載入地區資料</translation>
 <translation id="6825578344716086703">你嘗試連上 <ph name="DOMAIN" />，但伺服器的憑證是以防護力薄弱的簽章演算法 (例如 SHA-1) 進行簽署。這代表伺服器提供的安全性憑證可能遭到偽造，而且這個伺服器可能並不是你的目標伺服器 (你的連線對象可能是攻擊者的電腦)。</translation>
 <translation id="6831043979455480757">翻譯</translation>
@@ -820,11 +820,13 @@
 <translation id="6948701128805548767">如要查看取件方式和相關規定，請選取一個地址</translation>
 <translation id="6949872517221025916">重設密碼</translation>
 <translation id="6950684638814147129">剖析 JSON 值時發生錯誤：<ph name="ERROR" /></translation>
+<translation id="6957624206566198865">在新的私密分頁中開啟網頁</translation>
 <translation id="6957887021205513506">伺服器憑證疑似偽造。</translation>
 <translation id="6965382102122355670">確定</translation>
 <translation id="6965978654500191972">裝置</translation>
 <translation id="6970216967273061347">區</translation>
 <translation id="6973656660372572881">已指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
+<translation id="6984479912851154518">即將退出私密模式，改為使用外部應用程式付款，要繼續嗎？</translation>
 <translation id="6989763994942163495">顯示進階設定...</translation>
 <translation id="7012363358306927923">中國銀聯</translation>
 <translation id="7016992613359344582">這些費用可能只收取一次，也可能週期性收取，而且您可能不會注意到這筆費用。</translation>
@@ -1075,6 +1077,7 @@
 <translation id="8820817407110198400">書籤</translation>
 <translation id="883848425547221593">其他書籤</translation>
 <translation id="884264119367021077">運送地址</translation>
+<translation id="8846319957959474018">輕鬆在應用程式中開啟書籤</translation>
 <translation id="884923133447025588">未發現撤銷機制。</translation>
 <translation id="885730110891505394">與 Google 分享</translation>
 <translation id="8858065207712248076">如果你在其他網站上重複使用過你的 <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> 密碼，Chrome 會建議你重設密碼。</translation>
