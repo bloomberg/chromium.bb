@@ -225,6 +225,7 @@ jumbo_static_library("browser") {
   if (!is_android) {
     sources += [
       "ui/local_card_migration_bubble_controller.h",
+      "ui/local_card_migration_dialog_controller.h",
       "ui/save_card_bubble_controller.h",
     ]
   }
