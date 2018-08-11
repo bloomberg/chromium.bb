@@ -140,14 +140,13 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
   // |pending_subframes|.
   bool IsReadyToComposite(uint64_t frame_guid,
                           const ContentToFrameMap& subframe_content_map,
-                          base::flat_set<uint64_t>* pending_subframes);
+                          base::flat_set<uint64_t>* pending_subframes) const;
 
-  // Recursive check all the frames |frame_guid| depends on and put those
+  // Recursively check all the subframes in |subframe_content_map| and put those
   // not ready in |pending_subframes|.
-  void CheckFramesForReadiness(uint64_t frame_guid,
-                               const ContentToFrameMap& subframe_content_map,
+  void CheckFramesForReadiness(const ContentToFrameMap& subframe_content_map,
                                base::flat_set<uint64_t>* pending_subframes,
-                               base::flat_set<uint64_t>* visited);
+                               base::flat_set<uint64_t>* visited) const;
 
   // The internal implementation for handling page and documentation composition
   // requests.
@@ -168,9 +167,6 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
 
   // Composite the content of a subframe.
   sk_sp<SkPicture> CompositeSubframe(uint64_t frame_guid);
-
-  bool CheckForPendingFrame(uint64_t frame_guid,
-                            base::flat_set<uint64_t> visited_frames);
 
   DeserializationContext GetDeserializationContext(
       const ContentToFrameMap& subframe_content_map);
