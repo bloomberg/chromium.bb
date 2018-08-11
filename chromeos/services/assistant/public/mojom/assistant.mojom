@@ -32,10 +32,6 @@ interface Assistant {
   AddAssistantNotificationSubscriber(
       AssistantNotificationSubscriber subscriber);
 
-  // Registers assistant screen context event subscriber.
-  AddAssistantScreenContextSubscriber(
-    AssistantScreenContextSubscriber subscriber);
-
   // Retrieves a notification. A voiceless interaction will be sent to server to
   // retrieve the notification payload, which can trigger other assistant's
   // events such as OnTextResponse to show the result in the UI. The reteived
@@ -109,14 +105,6 @@ interface AssistantNotificationSubscriber {
   // Notifies UI to remove the notification with the |grouping_key|.
   // If |grouping_key| is empty, remove all notifications.
   OnRemoveNotification(string grouping_key);
-};
-
-// Subscribes to assistant's screen context events. These events are server
-// driven and pertain to the user's screen context. Screen context includes
-// both screenshot and view hierarchy data.
-interface AssistantScreenContextSubscriber {
-  // Assistant got contextual Html response from server.
-  OnContextualHtmlResponse(string response);
 };
 
 // Interface for browser to bind and start assistant.

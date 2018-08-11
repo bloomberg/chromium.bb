@@ -112,7 +112,6 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
 AssistantScreenContextController::AssistantScreenContextController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
-      assistant_screen_context_subscriber_binding_(this),
       screen_context_request_factory_(this) {
   assistant_controller_->AddObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
@@ -126,11 +125,6 @@ AssistantScreenContextController::~AssistantScreenContextController() {
 void AssistantScreenContextController::SetAssistant(
     chromeos::assistant::mojom::Assistant* assistant) {
   assistant_ = assistant;
-
-  // Subscribe to Assistant screen context events.
-  chromeos::assistant::mojom::AssistantScreenContextSubscriberPtr ptr;
-  assistant_screen_context_subscriber_binding_.Bind(mojo::MakeRequest(&ptr));
-  assistant_->AddAssistantScreenContextSubscriber(std::move(ptr));
 }
 
 void AssistantScreenContextController::AddModelObserver(
@@ -227,14 +221,6 @@ void AssistantScreenContextController::OnHighlighterSelectionRecognized(
 void AssistantScreenContextController::OnScreenContextRequestFinished() {
   assistant_screen_context_model_.SetRequestState(
       ScreenContextRequestState::kIdle);
-}
-
-void AssistantScreenContextController::OnContextualHtmlResponse(
-    const std::string& html) {
-  // TODO(dmblack): Cache |html| in the |assistant_screen_context_model_| and
-  // notify a pool of observers. This HTML string is from a trusted source and
-  // will be rendered in a WebContents as is.
-  NOTIMPLEMENTED();
 }
 
 std::unique_ptr<ui::LayerTreeOwner>

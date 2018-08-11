@@ -87,8 +87,6 @@ class AssistantManagerServiceImpl
       mojom::AssistantInteractionSubscriberPtr subscriber) override;
   void AddAssistantNotificationSubscriber(
       mojom::AssistantNotificationSubscriberPtr subscriber) override;
-  void AddAssistantScreenContextSubscriber(
-      mojom::AssistantScreenContextSubscriberPtr subscriber) override;
   void RetrieveNotification(mojom::AssistantNotificationPtr notification,
                             int action_index) override;
   void DismissNotification(
@@ -98,7 +96,6 @@ class AssistantManagerServiceImpl
                             RequestScreenContextCallback callback) override;
 
   // AssistantActionObserver overrides:
-  void OnShowContextualHtml(const std::string& html) override;
   void OnShowHtml(const std::string& html) override;
   void OnShowSuggestions(
       const std::vector<action::Suggestion>& suggestions) override;
@@ -160,7 +157,6 @@ class AssistantManagerServiceImpl
   void OnConversationTurnStartedOnMainThread(bool is_mic_open);
   void OnConversationTurnFinishedOnMainThread(
       assistant_client::ConversationStateListener::Resolution resolution);
-  void OnShowContextualHtmlOnMainThread(const std::string& html);
   void OnShowHtmlOnMainThread(const std::string& html);
   void OnShowSuggestionsOnMainThread(
       const std::vector<mojom::AssistantSuggestionPtr>& suggestions);
@@ -203,8 +199,6 @@ class AssistantManagerServiceImpl
       interaction_subscribers_;
   mojo::InterfacePtrSet<mojom::AssistantNotificationSubscriber>
       notification_subscribers_;
-  mojo::InterfacePtrSet<mojom::AssistantScreenContextSubscriber>
-      screen_context_subscribers_;
   ash::mojom::VoiceInteractionControllerPtr voice_interaction_controller_;
   mojo::Binding<ash::mojom::VoiceInteractionObserver>
       voice_interaction_observer_binding_;

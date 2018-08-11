@@ -46,8 +46,6 @@ class FakeAssistantManagerServiceImpl : public AssistantManagerService {
       mojom::AssistantInteractionSubscriberPtr subscriber) override;
   void AddAssistantNotificationSubscriber(
       mojom::AssistantNotificationSubscriberPtr subscriber) override;
-  void AddAssistantScreenContextSubscriber(
-      mojom::AssistantScreenContextSubscriberPtr subscriber) override;
   void RetrieveNotification(mojom::AssistantNotificationPtr notification,
                             int action_index) override;
   void DismissNotification(
