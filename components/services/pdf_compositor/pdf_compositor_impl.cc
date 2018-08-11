@@ -137,32 +137,29 @@ void PdfCompositorImpl::UpdateRequestsWithSubframeInfo(
 bool PdfCompositorImpl::IsReadyToComposite(
     uint64_t frame_guid,
     const ContentToFrameMap& subframe_content_map,
-    base::flat_set<uint64_t>* pending_subframes) {
+    base::flat_set<uint64_t>* pending_subframes) const {
   pending_subframes->clear();
-  base::flat_set<uint64_t> visited_frames;
-  visited_frames.insert(frame_guid);
-  CheckFramesForReadiness(frame_guid, subframe_content_map, pending_subframes,
+  base::flat_set<uint64_t> visited_frames = {frame_guid};
+  CheckFramesForReadiness(subframe_content_map, pending_subframes,
                           &visited_frames);
   return pending_subframes->empty();
 }
 
 void PdfCompositorImpl::CheckFramesForReadiness(
-    uint64_t frame_guid,
     const ContentToFrameMap& subframe_content_map,
     base::flat_set<uint64_t>* pending_subframes,
-    base::flat_set<uint64_t>* visited) {
+    base::flat_set<uint64_t>* visited) const {
   for (auto& subframe_content : subframe_content_map) {
     auto subframe_guid = subframe_content.second;
     // If this frame has been checked, skip it.
-    auto result = visited->insert(subframe_guid);
-    if (!result.second)
+    if (!visited->insert(subframe_guid).second)
       continue;
 
     auto iter = frame_info_map_.find(subframe_guid);
     if (iter == frame_info_map_.end()) {
       pending_subframes->insert(subframe_guid);
     } else {
-      CheckFramesForReadiness(subframe_guid, iter->second->subframe_content_map,
+      CheckFramesForReadiness(iter->second->subframe_content_map,
                               pending_subframes, visited);
     }
   }
@@ -267,14 +264,13 @@ PdfCompositorImpl::GetDeserializationContext(
   for (auto& content_info : subframe_content_map) {
     uint32_t content_id = content_info.first;
     uint64_t frame_guid = content_info.second;
-    auto frame_iter = frame_info_map_.find(frame_guid);
-    if (frame_iter == frame_info_map_.end())
+    auto iter = frame_info_map_.find(frame_guid);
+    if (iter == frame_info_map_.end())
       continue;
 
-    if (frame_iter->second->composited)
-      subframes[content_id] = frame_iter->second->content;
-    else
-      subframes[content_id] = CompositeSubframe(frame_iter->first);
+    subframes[content_id] = iter->second->composited
+                                ? iter->second->content
+                                : CompositeSubframe(iter->first);
   }
   return subframes;
 }
