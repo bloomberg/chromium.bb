@@ -55,7 +55,7 @@ if (use_ozone) {
       ]
     }
 
-    if (use_ozone && use_udev) {
+    if (use_udev) {
       deps += [ "//device/udev_linux" ]
     }
   }
@@ -68,114 +68,116 @@ if (use_ozone) {
     defines = [ "USE_EVDEV_GESTURES" ]
   }
 
-  component("events_ozone_evdev") {
-    sources = [
-      "evdev/device_event_dispatcher_evdev.cc",
-      "evdev/device_event_dispatcher_evdev.h",
-      "evdev/event_converter_evdev.cc",
-      "evdev/event_converter_evdev.h",
-      "evdev/event_converter_evdev_impl.cc",
-      "evdev/event_converter_evdev_impl.h",
-      "evdev/event_device_info.cc",
-      "evdev/event_device_info.h",
-      "evdev/event_factory_evdev.cc",
-      "evdev/event_factory_evdev.h",
-      "evdev/event_thread_evdev.cc",
-      "evdev/event_thread_evdev.h",
-      "evdev/events_ozone_evdev_export.h",
-      "evdev/gamepad_event_converter_evdev.cc",
-      "evdev/gamepad_event_converter_evdev.h",
-      "evdev/input_controller_evdev.cc",
-      "evdev/input_controller_evdev.h",
-      "evdev/input_device_factory_evdev.cc",
-      "evdev/input_device_factory_evdev.h",
-      "evdev/input_device_factory_evdev_proxy.cc",
-      "evdev/input_device_factory_evdev_proxy.h",
-      "evdev/input_device_settings_evdev.cc",
-      "evdev/input_device_settings_evdev.h",
-      "evdev/input_injector_evdev.cc",
-      "evdev/input_injector_evdev.h",
-      "evdev/keyboard_evdev.cc",
-      "evdev/keyboard_evdev.h",
-      "evdev/keyboard_util_evdev.cc",
-      "evdev/keyboard_util_evdev.h",
-      "evdev/mouse_button_map_evdev.cc",
-      "evdev/mouse_button_map_evdev.h",
-      "evdev/tablet_event_converter_evdev.cc",
-      "evdev/tablet_event_converter_evdev.h",
-      "evdev/touch_evdev_debug_buffer.cc",
-      "evdev/touch_evdev_debug_buffer.h",
-      "evdev/touch_evdev_types.cc",
-      "evdev/touch_evdev_types.h",
-      "evdev/touch_event_converter_evdev.cc",
-      "evdev/touch_event_converter_evdev.h",
-      "evdev/touch_filter/edge_touch_filter.cc",
-      "evdev/touch_filter/edge_touch_filter.h",
-      "evdev/touch_filter/false_touch_finder.cc",
-      "evdev/touch_filter/false_touch_finder.h",
-      "evdev/touch_filter/far_apart_taps_touch_noise_filter.cc",
-      "evdev/touch_filter/far_apart_taps_touch_noise_filter.h",
-      "evdev/touch_filter/horizontally_aligned_touch_noise_filter.cc",
-      "evdev/touch_filter/horizontally_aligned_touch_noise_filter.h",
-      "evdev/touch_filter/low_pressure_filter.cc",
-      "evdev/touch_filter/low_pressure_filter.h",
-      "evdev/touch_filter/single_position_touch_noise_filter.cc",
-      "evdev/touch_filter/single_position_touch_noise_filter.h",
-      "evdev/touch_filter/touch_filter.h",
-      "gamepad/gamepad_event.cc",
-      "gamepad/gamepad_event.h",
-      "gamepad/gamepad_mapping.cc",
-      "gamepad/gamepad_mapping.h",
-      "gamepad/gamepad_observer.h",
-      "gamepad/gamepad_provider_ozone.cc",
-      "gamepad/gamepad_provider_ozone.h",
-      "gamepad/generic_gamepad_mapping.cc",
-      "gamepad/generic_gamepad_mapping.h",
-      "gamepad/static_gamepad_mapping.cc",
-      "gamepad/static_gamepad_mapping.h",
-      "gamepad/webgamepad_constants.h",
-    ]
-
-    defines = [ "EVENTS_OZONE_EVDEV_IMPLEMENTATION" ]
-
-    deps = [
-      ":events_ozone",
-      ":events_ozone_layout",
-      "//base",
-      "//ui/display",
-      "//ui/events",
-      "//ui/events:dom_keycode_converter",
-      "//ui/events:events_base",
-      "//ui/events/devices",
-      "//ui/events/platform",
-      "//ui/gfx",
-      "//ui/ozone:ozone_base",
-    ]
-
-    public_configs = [ ":evdev" ]
-
-    if (use_ozone && use_evdev_gestures) {
-      sources += [
-        "evdev/libgestures_glue/event_reader_libevdev_cros.cc",
-        "evdev/libgestures_glue/event_reader_libevdev_cros.h",
-        "evdev/libgestures_glue/gesture_feedback.cc",
-        "evdev/libgestures_glue/gesture_feedback.h",
-        "evdev/libgestures_glue/gesture_interpreter_libevdev_cros.cc",
-        "evdev/libgestures_glue/gesture_interpreter_libevdev_cros.h",
-        "evdev/libgestures_glue/gesture_logging.cc",
-        "evdev/libgestures_glue/gesture_logging.h",
-        "evdev/libgestures_glue/gesture_property_provider.cc",
-        "evdev/libgestures_glue/gesture_property_provider.h",
-        "evdev/libgestures_glue/gesture_timer_provider.cc",
-        "evdev/libgestures_glue/gesture_timer_provider.h",
+  if (is_linux || is_chromeos) {
+    component("events_ozone_evdev") {
+      sources = [
+        "evdev/device_event_dispatcher_evdev.cc",
+        "evdev/device_event_dispatcher_evdev.h",
+        "evdev/event_converter_evdev.cc",
+        "evdev/event_converter_evdev.h",
+        "evdev/event_converter_evdev_impl.cc",
+        "evdev/event_converter_evdev_impl.h",
+        "evdev/event_device_info.cc",
+        "evdev/event_device_info.h",
+        "evdev/event_factory_evdev.cc",
+        "evdev/event_factory_evdev.h",
+        "evdev/event_thread_evdev.cc",
+        "evdev/event_thread_evdev.h",
+        "evdev/events_ozone_evdev_export.h",
+        "evdev/gamepad_event_converter_evdev.cc",
+        "evdev/gamepad_event_converter_evdev.h",
+        "evdev/input_controller_evdev.cc",
+        "evdev/input_controller_evdev.h",
+        "evdev/input_device_factory_evdev.cc",
+        "evdev/input_device_factory_evdev.h",
+        "evdev/input_device_factory_evdev_proxy.cc",
+        "evdev/input_device_factory_evdev_proxy.h",
+        "evdev/input_device_settings_evdev.cc",
+        "evdev/input_device_settings_evdev.h",
+        "evdev/input_injector_evdev.cc",
+        "evdev/input_injector_evdev.h",
+        "evdev/keyboard_evdev.cc",
+        "evdev/keyboard_evdev.h",
+        "evdev/keyboard_util_evdev.cc",
+        "evdev/keyboard_util_evdev.h",
+        "evdev/mouse_button_map_evdev.cc",
+        "evdev/mouse_button_map_evdev.h",
+        "evdev/tablet_event_converter_evdev.cc",
+        "evdev/tablet_event_converter_evdev.h",
+        "evdev/touch_evdev_debug_buffer.cc",
+        "evdev/touch_evdev_debug_buffer.h",
+        "evdev/touch_evdev_types.cc",
+        "evdev/touch_evdev_types.h",
+        "evdev/touch_event_converter_evdev.cc",
+        "evdev/touch_event_converter_evdev.h",
+        "evdev/touch_filter/edge_touch_filter.cc",
+        "evdev/touch_filter/edge_touch_filter.h",
+        "evdev/touch_filter/false_touch_finder.cc",
+        "evdev/touch_filter/false_touch_finder.h",
+        "evdev/touch_filter/far_apart_taps_touch_noise_filter.cc",
+        "evdev/touch_filter/far_apart_taps_touch_noise_filter.h",
+        "evdev/touch_filter/horizontally_aligned_touch_noise_filter.cc",
+        "evdev/touch_filter/horizontally_aligned_touch_noise_filter.h",
+        "evdev/touch_filter/low_pressure_filter.cc",
+        "evdev/touch_filter/low_pressure_filter.h",
+        "evdev/touch_filter/single_position_touch_noise_filter.cc",
+        "evdev/touch_filter/single_position_touch_noise_filter.h",
+        "evdev/touch_filter/touch_filter.h",
+        "gamepad/gamepad_event.cc",
+        "gamepad/gamepad_event.h",
+        "gamepad/gamepad_mapping.cc",
+        "gamepad/gamepad_mapping.h",
+        "gamepad/gamepad_observer.h",
+        "gamepad/gamepad_provider_ozone.cc",
+        "gamepad/gamepad_provider_ozone.h",
+        "gamepad/generic_gamepad_mapping.cc",
+        "gamepad/generic_gamepad_mapping.h",
+        "gamepad/static_gamepad_mapping.cc",
+        "gamepad/static_gamepad_mapping.h",
+        "gamepad/webgamepad_constants.h",
       ]
 
-      deps += [
-        "//third_party/gestures",
-        "//third_party/libevdev",
+      defines = [ "EVENTS_OZONE_EVDEV_IMPLEMENTATION" ]
+
+      deps = [
+        ":events_ozone",
+        ":events_ozone_layout",
+        "//base",
+        "//ui/display",
+        "//ui/events",
+        "//ui/events:dom_keycode_converter",
+        "//ui/events:events_base",
+        "//ui/events/devices",
+        "//ui/events/platform",
+        "//ui/gfx",
+        "//ui/ozone:ozone_base",
       ]
 
-      public_configs += [ ":evdev_gestures" ]
+      public_configs = [ ":evdev" ]
+
+      if (use_evdev_gestures) {
+        sources += [
+          "evdev/libgestures_glue/event_reader_libevdev_cros.cc",
+          "evdev/libgestures_glue/event_reader_libevdev_cros.h",
+          "evdev/libgestures_glue/gesture_feedback.cc",
+          "evdev/libgestures_glue/gesture_feedback.h",
+          "evdev/libgestures_glue/gesture_interpreter_libevdev_cros.cc",
+          "evdev/libgestures_glue/gesture_interpreter_libevdev_cros.h",
+          "evdev/libgestures_glue/gesture_logging.cc",
+          "evdev/libgestures_glue/gesture_logging.h",
+          "evdev/libgestures_glue/gesture_property_provider.cc",
+          "evdev/libgestures_glue/gesture_property_provider.h",
+          "evdev/libgestures_glue/gesture_timer_provider.cc",
+          "evdev/libgestures_glue/gesture_timer_provider.h",
+        ]
+
+        deps += [
+          "//third_party/gestures",
+          "//third_party/libevdev",
+        ]
+
+        public_configs += [ ":evdev_gestures" ]
+      }
     }
   }
 }

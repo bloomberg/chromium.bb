@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/wayland/wayland_window.h"
 
+#include <linux/input.h>
 #include <wayland-server-core.h>
 #include <xdg-shell-unstable-v5-server-protocol.h>
 #include <xdg-shell-unstable-v6-server-protocol.h>

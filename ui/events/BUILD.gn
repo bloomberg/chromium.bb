@@ -530,7 +530,7 @@ if (!is_ios) {
       sources += [ "devices/device_data_manager_unittest.cc" ]
     }
 
-    if (use_ozone) {
+    if (use_ozone && (is_linux || is_chromeos)) {
       sources += [
         "ozone/chromeos/cursor_controller_unittest.cc",
         "ozone/evdev/event_converter_evdev_impl_unittest.cc",
