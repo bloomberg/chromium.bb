@@ -101,7 +101,9 @@ def _ValidateBrowserType(builder_name, test_config):
 
 def ValidateTestingBuilder(builder_name, builder_data):
   isolated_scripts = builder_data['isolated_scripts']
+  test_names = []
   for test_config in isolated_scripts:
+    test_names.append(test_config['name'])
     _ValidateSwarmingDimension(
         builder_name,
         swarming_dimensions=test_config['swarming'].get('dimension_sets', {}))
@@ -109,6 +111,17 @@ def ValidateTestingBuilder(builder_name, builder_data):
         ('performance_test_suite', 'performance_webview_test_suite')):
       _ValidateShardingData(builder_name, test_config)
       _ValidateBrowserType(builder_name, test_config)
+
+  if ('performance_test_suite' in test_names or
+      'performance_webview_test_suite' in test_names):
+    if test_names[-1] not in ('performance_test_suite',
+                              'performance_webview_test_suite'):
+      raise ValueError(
+          'performance_test_suite or performance_webview_test_suite must run '
+          'at the end of builder %s to avoid starving other test step '
+          '(see crbug.com/873389). Instead found %s' % (
+            repr(builder_name), test_names[-1]))
+
 
 
 def _IsBuilderName(name):

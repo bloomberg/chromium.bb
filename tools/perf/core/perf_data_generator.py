@@ -71,14 +71,6 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
     'OBBS Mac 10.12 Perf': {
       'tests': [
         {
-          'isolate': 'performance_test_suite',
-          'extra_args': [
-            '--run-ref-build',
-            '--test-shard-map-filename=mac1012_5_shard_map.json',
-          ],
-          'num_shards': 5
-        },
-        {
           'isolate': 'net_perftests',
           'num_shards': 1,
           'telemetry': False,
@@ -87,6 +79,14 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
           'isolate': 'views_perftests',
           'num_shards': 1,
           'telemetry': False,
+        },
+        {
+          'isolate': 'performance_test_suite',
+          'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=mac1012_5_shard_map.json',
+          ],
+          'num_shards': 5
         }
       ],
       'platform': 'mac',
@@ -949,11 +949,20 @@ def load_and_update_fyi_json(fyi_waterfall_file):
 
 def generate_telemetry_tests(testers, tests):
   for tester, tester_config in testers['testers'].iteritems():
-    isolated_scripts = []
+    telemetry_tests = []
+    gtest_tests = []
     for test in tester_config['tests']:
-      isolated_scripts.append(generate_performance_test(tester_config, test))
+      generated_script = generate_performance_test(tester_config, test)
+      if test.get('telemetry', True):
+        telemetry_tests.append(generated_script)
+      else:
+        gtest_tests.append(generated_script)
+    telemetry_tests.sort(key=lambda x: x['name'])
+    gtest_tests.sort(key=lambda x: x['name'])
     tests[tester] = {
-      'isolated_scripts': sorted(isolated_scripts, key=lambda x: x['name'])
+      # Put Telemetry tests as the end since they tend to run longer to avoid
+      # starving gtests (see crbug.com/873389).
+      'isolated_scripts': gtest_tests + telemetry_tests
     }
 
 
