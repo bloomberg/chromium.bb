@@ -14,6 +14,29 @@
 namespace mojo {
 
 template <typename T>
+struct ArrayTraits<std::unordered_set<T>> {
+  using Element = T;
+  using ConstIterator = typename std::unordered_set<T>::const_iterator;
+
+  static bool IsNull(const std::unordered_set<T>& input) {
+    // std::unordered_set<> is always converted to non-null mojom array.
+    return false;
+  }
+
+  static size_t GetSize(const std::unordered_set<T>& input) {
+    return input.size();
+  }
+
+  static ConstIterator GetBegin(const std::unordered_set<T>& input) {
+    return input.begin();
+  }
+
+  static void AdvanceIterator(ConstIterator& iterator) { ++iterator; }
+
+  static const T& GetValue(ConstIterator& iterator) { return *iterator; }
+};
+
+template <typename T>
 struct ArrayTraits<std::vector<T>> {
   using Element = T;
 
