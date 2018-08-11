@@ -26,10 +26,6 @@ class WeeklyTimeInterval {
 
   WeeklyTimeInterval& operator=(const WeeklyTimeInterval& rhs);
 
-  bool operator==(const WeeklyTimeInterval& rhs) const {
-    return start_ == rhs.start() && end_ == rhs.end();
-  }
-
   // Return DictionaryValue in format:
   // { "start" : WeeklyTime,
   //   "end" : WeeklyTime }
