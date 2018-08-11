@@ -2920,6 +2920,28 @@
             ]
         }
     ],
+    "PageAlmostIdleAndLocalDB": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "mainThreadTaskLoadLowThreshold": "25"
+                    },
+                    "enable_features": [
+                        "PageAlmostIdle",
+                        "SiteCharacteristicsDatabase"
+                    ]
+                }
+            ]
+        }
+    ],
     "ParallelDownloading": [
         {
             "platforms": [
@@ -3313,14 +3335,11 @@
                     "name": "FreezeAndDiscardWithUnfreeze",
                     "params": {
                         "ShouldPeriodicallyUnfreeze": "true",
-                        "ShouldProactivelyDiscard": "true",
-                        "mainThreadTaskLoadLowThreshold": "25"
+                        "ShouldProactivelyDiscard": "true"
                     },
                     "enable_features": [
-                        "PageAlmostIdle",
                         "PageLifecycle",
-                        "ProactiveTabFreezeAndDiscard",
-                        "SiteCharacteristicsDatabase"
+                        "ProactiveTabFreezeAndDiscard"
                     ]
                 }
             ]
