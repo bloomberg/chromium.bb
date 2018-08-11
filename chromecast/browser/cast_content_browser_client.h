@@ -192,7 +192,6 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
   std::unique_ptr<content::NavigationUIData> GetNavigationUIData(
       content::NavigationHandle* navigation_handle) override;
-  bool ShouldEnableStrictSiteIsolation() override;
 
   RendererConfigManager* renderer_config_manager() const {
     return renderer_config_manager_.get();

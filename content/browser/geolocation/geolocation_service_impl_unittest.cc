@@ -5,14 +5,11 @@
 #include "content/browser/geolocation/geolocation_service_impl.h"
 
 #include "base/bind_helpers.h"
-#include "base/feature_list.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/viz/common/features.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
-#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/mock_permission_manager.h"
@@ -157,14 +154,6 @@ class GeolocationServiceTest : public RenderViewHostImplTestHarness {
 }  // namespace
 
 TEST_F(GeolocationServiceTest, PermissionGrantedPolicyViolation) {
-  // TODO(lukasza): https://crbug.com/869613: Fix how the unit test sets up the
-  // browser, so that the test passes when both VizDisplayCompositor and
-  // site-per-process are enabled.
-  if (base::FeatureList::IsEnabled(::features::kVizDisplayCompositor) &&
-      SiteIsolationPolicy::UseDedicatedProcessesForAllSites()) {
-    return;
-  }
-
   // The embedded frame is not whitelisted.
   ScopedFeatureList feature_list;
   feature_list.InitFromCommandLine(
@@ -188,14 +177,6 @@ TEST_F(GeolocationServiceTest, PermissionGrantedPolicyViolation) {
 }
 
 TEST_F(GeolocationServiceTest, PermissionGrantedNoPolicyViolation) {
-  // TODO(lukasza): https://crbug.com/869613: Fix how the unit test sets up the
-  // browser, so that the test passes when both VizDisplayCompositor and
-  // site-per-process are enabled.
-  if (base::FeatureList::IsEnabled(::features::kVizDisplayCompositor) &&
-      SiteIsolationPolicy::UseDedicatedProcessesForAllSites()) {
-    return;
-  }
-
   // Whitelist the embedded frame.
   ScopedFeatureList feature_list;
   feature_list.InitFromCommandLine(

@@ -191,7 +191,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       ui::PageTransition page_transition,
       bool has_user_gesture) override;
   void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
-  bool ShouldEnableStrictSiteIsolation() override;
 
   static void DisableCreatingTaskScheduler();
 
