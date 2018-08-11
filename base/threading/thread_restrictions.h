@@ -149,6 +149,7 @@ namespace internal {
 class TaskTracker;
 }
 
+class AdjustOOMScoreHelper;
 class GetAppOutputScopedAllowBaseSyncPrimitives;
 class SimpleThread;
 class StackSamplingProfiler;
@@ -250,6 +251,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   // This can only be instantiated by friends. Use ScopedAllowBlockingForTesting
   // in unit tests to avoid the friend requirement.
   FRIEND_TEST_ALL_PREFIXES(ThreadRestrictionsTest, ScopedAllowBlocking);
+  friend class AdjustOOMScoreHelper;
   friend class android_webview::ScopedAllowInitGLBindings;
   friend class audio::OutputDevice;
   friend class content::BrowserProcessSubThread;
