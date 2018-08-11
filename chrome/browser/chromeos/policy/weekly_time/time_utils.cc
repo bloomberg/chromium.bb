@@ -120,5 +120,17 @@ base::TimeDelta GetDeltaTillNextTimeInterval(
   return till_next_interval;
 }
 
+base::Optional<WeeklyTimeInterval> GetIntervalForCurrentTime(
+    const std::vector<WeeklyTimeInterval>& intervals,
+    base::Clock* clock) {
+  WeeklyTime weekly_time_now = WeeklyTime::GetCurrentGmtWeeklyTime(clock);
+  for (const auto& interval : intervals) {
+    if (interval.Contains(weekly_time_now)) {
+      return interval;
+    }
+  }
+  return base::nullopt;
+}
+
 }  // namespace weekly_time_utils
 }  // namespace policy
