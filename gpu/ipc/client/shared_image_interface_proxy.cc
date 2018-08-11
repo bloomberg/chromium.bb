@@ -30,31 +30,27 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
   {
     base::AutoLock lock(lock_);
     params.release_id = ++next_release_id_;
-    // Note: we send the IPC under the lock to guarantee monotonicity of the
+    // Note: we enqueue the IPC under the lock to guarantee monotonicity of the
     // release ids as seen by the service.
-    // TODO(piman): send this via GpuChannelMsg_FlushCommandBuffers
-    host_->Send(new GpuChannelMsg_CreateSharedImage(route_id_, params));
+    host_->EnqueueDeferredMessage(
+        GpuChannelMsg_CreateSharedImage(route_id_, params));
   }
   return params.mailbox;
 }
 
 void SharedImageInterfaceProxy::DestroySharedImage(const SyncToken& sync_token,
                                                    const Mailbox& mailbox) {
-  if (sync_token.verified_flush()) {
-    // TODO(piman): send this via GpuChannelMsg_FlushCommandBuffers
-    host_->Send(new GpuChannelMsg_DestroySharedImage(0, sync_token, mailbox));
-    return;
-  }
-  // Only allow unverified sync tokens for the same channel.
-  DCHECK_EQ(sync_token.namespace_id(), gpu::CommandBufferNamespace::GPU_IO);
-  int sync_token_channel_id =
-      ChannelIdFromCommandBufferId(sync_token.command_buffer_id());
-  DCHECK_EQ(sync_token_channel_id, host_->channel_id());
-  host_->EnsureFlush(UINT32_MAX);
   SyncToken new_token = sync_token;
-  new_token.SetVerifyFlush();
-  host_->Send(
-      new GpuChannelMsg_DestroySharedImage(route_id_, new_token, mailbox));
+  if (!new_token.verified_flush()) {
+    // Only allow unverified sync tokens for the same channel.
+    DCHECK_EQ(sync_token.namespace_id(), gpu::CommandBufferNamespace::GPU_IO);
+    int sync_token_channel_id =
+        ChannelIdFromCommandBufferId(sync_token.command_buffer_id());
+    DCHECK_EQ(sync_token_channel_id, host_->channel_id());
+    new_token.SetVerifyFlush();
+  }
+  host_->EnqueueDeferredMessage(
+      GpuChannelMsg_DestroySharedImage(route_id_, mailbox), {new_token});
 }
 
 SyncToken SharedImageInterfaceProxy::GenUnverifiedSyncToken() {

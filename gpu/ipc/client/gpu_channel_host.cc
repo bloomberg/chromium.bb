@@ -94,61 +94,84 @@ uint32_t GpuChannelHost::OrderingBarrier(
     std::vector<SyncToken> sync_token_fences) {
   AutoLock lock(context_lock_);
 
-  if (flush_list_.empty() || flush_list_.back().route_id != route_id ||
-      flush_list_.back().transfer_buffer_id_to_destroy)
-    flush_list_.push_back(FlushParams());
+  if (pending_ordering_barrier_ &&
+      pending_ordering_barrier_->route_id != route_id)
+    EnqueuePendingOrderingBarrier();
+  if (!pending_ordering_barrier_)
+    pending_ordering_barrier_.emplace();
 
-  FlushParams& flush_params = flush_list_.back();
-  flush_params.flush_id = next_flush_id_++;
-  flush_params.route_id = route_id;
-  flush_params.put_offset = put_offset;
-  flush_params.sync_token_fences.insert(
-      flush_params.sync_token_fences.end(),
+  pending_ordering_barrier_->deferred_message_id = next_deferred_message_id_++;
+  pending_ordering_barrier_->route_id = route_id;
+  pending_ordering_barrier_->put_offset = put_offset;
+  pending_ordering_barrier_->sync_token_fences.insert(
+      pending_ordering_barrier_->sync_token_fences.end(),
       std::make_move_iterator(sync_token_fences.begin()),
       std::make_move_iterator(sync_token_fences.end()));
-  flush_params.transfer_buffer_id_to_destroy = 0;
-  return flush_params.flush_id;
+  return pending_ordering_barrier_->deferred_message_id;
 }
 
-uint32_t GpuChannelHost::DestroyTransferBuffer(int32_t route_id,
-                                               int32_t id_to_destroy) {
+uint32_t GpuChannelHost::EnqueueDeferredMessage(
+    const IPC::Message& message,
+    std::vector<SyncToken> sync_token_fences) {
   AutoLock lock(context_lock_);
 
-  flush_list_.push_back(FlushParams());
-  FlushParams& flush_params = flush_list_.back();
-  flush_params.flush_id = next_flush_id_++;
-  flush_params.route_id = route_id;
-  flush_params.put_offset = -1;
-  flush_params.transfer_buffer_id_to_destroy = id_to_destroy;
-  return flush_params.flush_id;
+  EnqueuePendingOrderingBarrier();
+  enqueued_deferred_message_id_ = next_deferred_message_id_++;
+  GpuDeferredMessage deferred_message;
+  deferred_message.message = message;
+  deferred_message.sync_token_fences = std::move(sync_token_fences);
+  deferred_messages_.push_back(std::move(deferred_message));
+  return enqueued_deferred_message_id_;
 }
 
-void GpuChannelHost::EnsureFlush(uint32_t flush_id) {
+void GpuChannelHost::EnsureFlush(uint32_t deferred_message_id) {
   AutoLock lock(context_lock_);
-  InternalFlush(flush_id);
+  InternalFlush(deferred_message_id);
 }
 
-void GpuChannelHost::VerifyFlush(uint32_t flush_id) {
+void GpuChannelHost::VerifyFlush(uint32_t deferred_message_id) {
   AutoLock lock(context_lock_);
 
-  InternalFlush(flush_id);
+  InternalFlush(deferred_message_id);
 
-  if (flush_id > verified_flush_id_) {
+  if (deferred_message_id > verified_deferred_message_id_) {
     Send(new GpuChannelMsg_Nop());
-    verified_flush_id_ = next_flush_id_ - 1;
+    verified_deferred_message_id_ = flushed_deferred_message_id_;
   }
 }
 
-void GpuChannelHost::InternalFlush(uint32_t flush_id) {
+void GpuChannelHost::EnqueuePendingOrderingBarrier() {
+  context_lock_.AssertAcquired();
+  if (!pending_ordering_barrier_)
+    return;
+  DCHECK_LT(enqueued_deferred_message_id_,
+            pending_ordering_barrier_->deferred_message_id);
+  enqueued_deferred_message_id_ =
+      pending_ordering_barrier_->deferred_message_id;
+  GpuDeferredMessage deferred_message;
+  deferred_message.message = GpuCommandBufferMsg_AsyncFlush(
+      pending_ordering_barrier_->route_id,
+      pending_ordering_barrier_->put_offset,
+      pending_ordering_barrier_->deferred_message_id);
+  deferred_message.sync_token_fences =
+      std::move(pending_ordering_barrier_->sync_token_fences);
+  deferred_messages_.push_back(std::move(deferred_message));
+  pending_ordering_barrier_.reset();
+}
+
+void GpuChannelHost::InternalFlush(uint32_t deferred_message_id) {
   context_lock_.AssertAcquired();
 
-  if (!flush_list_.empty() && flush_id > flushed_flush_id_) {
-    DCHECK_EQ(flush_list_.back().flush_id, next_flush_id_ - 1);
+  EnqueuePendingOrderingBarrier();
+  if (!deferred_messages_.empty() &&
+      deferred_message_id > flushed_deferred_message_id_) {
+    DCHECK_EQ(enqueued_deferred_message_id_, next_deferred_message_id_ - 1);
 
-    Send(new GpuChannelMsg_FlushCommandBuffers(std::move(flush_list_)));
+    Send(
+        new GpuChannelMsg_FlushDeferredMessages(std::move(deferred_messages_)));
 
-    flush_list_.clear();
-    flushed_flush_id_ = next_flush_id_ - 1;
+    deferred_messages_.clear();
+    flushed_deferred_message_id_ = next_deferred_message_id_ - 1;
   }
 }
 
@@ -230,6 +253,16 @@ operator=(const RouteInfo& other) = default;
 
 GpuChannelHost::Listener::RouteInfo& GpuChannelHost::Listener::RouteInfo::
 operator=(RouteInfo&& other) = default;
+
+GpuChannelHost::OrderingBarrierInfo::OrderingBarrierInfo() = default;
+
+GpuChannelHost::OrderingBarrierInfo::~OrderingBarrierInfo() = default;
+
+GpuChannelHost::OrderingBarrierInfo::OrderingBarrierInfo(
+    OrderingBarrierInfo&&) = default;
+
+GpuChannelHost::OrderingBarrierInfo& GpuChannelHost::OrderingBarrierInfo::
+operator=(OrderingBarrierInfo&&) = default;
 
 GpuChannelHost::Listener::Listener(
     mojo::ScopedMessagePipeHandle handle,

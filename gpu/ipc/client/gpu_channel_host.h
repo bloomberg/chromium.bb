@@ -24,7 +24,6 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/gpu_export.h"
-#include "gpu/ipc/common/flush_params.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/message_filter.h"
 #include "ipc/message_router.h"
@@ -34,6 +33,7 @@ namespace IPC {
 struct PendingSyncMsg;
 class ChannelMojo;
 }
+struct GpuDeferredMessage;
 
 namespace gpu {
 struct SyncToken;
@@ -81,21 +81,29 @@ class GPU_EXPORT GpuChannelHost
   // IPC::Sender implementation:
   bool Send(IPC::Message* msg) override;
 
-  // Enqueue an ordering barrier to defer the flush and return an identifier
-  // that can be used to ensure or verify the flush later.
+  // Enqueue a deferred message for the ordering barrier and return an
+  // identifier that can be used to ensure or verify the deferred message later.
   uint32_t OrderingBarrier(int32_t route_id,
                            int32_t put_offset,
                            std::vector<SyncToken> sync_token_fences);
 
-  // Ensure that the all ordering barriers prior upto |flush_id| have been
-  // flushed. Pass UINT32_MAX to force all pending ordering barriers to be
-  // flushed.
-  void EnsureFlush(uint32_t flush_id);
+  // Enqueues an IPC message that is deferred until the next implicit or
+  // explicit flush. The IPC is also possibly gated on one or more SyncTokens
+  // being released, but is handled in-order relative to other such IPCs and/or
+  // OrderingBarriers. Returns a deferred message id just like OrderingBarrier.
+  uint32_t EnqueueDeferredMessage(
+      const IPC::Message& message,
+      std::vector<SyncToken> sync_token_fences = {});
 
-  // Verify that the all ordering barriers prior upto |flush_id| have reached
-  // the service. Pass UINT32_MAX to force all pending ordering barriers to be
-  // verified.
-  void VerifyFlush(uint32_t flush_id);
+  // Ensure that the all deferred messages prior upto |deferred_message_id| have
+  // been flushed. Pass UINT32_MAX to force all pending deferred messages to be
+  // flushed.
+  void EnsureFlush(uint32_t deferred_message_id);
+
+  // Verify that the all deferred messages prior upto |deferred_message_id| have
+  // reached the service. Pass UINT32_MAX to force all pending deferred messages
+  // to be verified.
+  void VerifyFlush(uint32_t deferred_message_id);
 
   // Destroy this channel. Must be called on the main thread, before
   // destruction.
@@ -124,11 +132,6 @@ class GPU_EXPORT GpuChannelHost
 
   // Reserve one unused transfer buffer ID.
   int32_t ReserveTransferBufferId();
-
-  // An ordering barrier must be placed after any commands that use the buffer
-  // before it is safe to call this function to destroy it. Returns a flush id
-  // just like OrderingBarrier.
-  uint32_t DestroyTransferBuffer(int32_t route_id, int32_t id_to_destroy);
 
   // Reserve one unused image ID.
   int32_t ReserveImageId();
@@ -206,13 +209,32 @@ class GPU_EXPORT GpuChannelHost
     bool lost_ = false;
   };
 
-  void InternalFlush(uint32_t flush_id);
+  struct OrderingBarrierInfo {
+    OrderingBarrierInfo();
+    ~OrderingBarrierInfo();
+    OrderingBarrierInfo(OrderingBarrierInfo&&);
+    OrderingBarrierInfo& operator=(OrderingBarrierInfo&&);
+
+    // Route ID of the command buffer for this command buffer flush.
+    int32_t route_id;
+    // Client put offset. Service get offset is updated in shared memory.
+    int32_t put_offset;
+    // Increasing counter for the deferred message.
+    uint32_t deferred_message_id;
+    // Sync token dependencies of the message. These are sync tokens for which
+    // waits are in the commands that are part of this command buffer flush.
+    std::vector<SyncToken> sync_token_fences;
+  };
+
+  void EnqueuePendingOrderingBarrier();
+  void InternalFlush(uint32_t deferred_message_id);
 
   // Threading notes: all fields are constant during the lifetime of |this|
   // except:
   // - |next_image_id_|, atomic type
   // - |next_route_id_|, atomic type
-  // - |flush_list_| and |*_flush_id_| protected by |context_lock_|
+  // - |deferred_messages_| and |*_deferred_message_id_| protected by
+  // |context_lock_|
   const scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
 
   const int channel_id_;
@@ -230,12 +252,18 @@ class GPU_EXPORT GpuChannelHost
   // Route IDs are allocated in sequence.
   base::AtomicSequenceNumber next_route_id_;
 
-  // Protects |flush_list_| and |*_flush_id_|.
+  // Protects |deferred_messages_|, |pending_ordering_barrier_| and
+  // |*_deferred_message_id_|.
   mutable base::Lock context_lock_;
-  std::vector<FlushParams> flush_list_;
-  uint32_t next_flush_id_ = 1;
-  uint32_t flushed_flush_id_ = 0;
-  uint32_t verified_flush_id_ = 0;
+  std::vector<GpuDeferredMessage> deferred_messages_;
+  base::Optional<OrderingBarrierInfo> pending_ordering_barrier_;
+  uint32_t next_deferred_message_id_ = 1;
+  // Highest deferred message id in |deferred_messages_|.
+  uint32_t enqueued_deferred_message_id_ = 0;
+  // Highest deferred message id sent to the channel.
+  uint32_t flushed_deferred_message_id_ = 0;
+  // Highest deferred message id known to have been received by the service.
+  uint32_t verified_deferred_message_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelHost);
 };

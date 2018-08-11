@@ -114,6 +114,8 @@ class GPU_EXPORT CommandBuffer {
                                                           int32_t* id) = 0;
 
   // Destroy a transfer buffer. The ID must be positive.
+  // An ordering barrier must be placed after any commands that use the buffer
+  // before it is safe to call this function to destroy it.
   virtual void DestroyTransferBuffer(int32_t id) = 0;
 
  private:
