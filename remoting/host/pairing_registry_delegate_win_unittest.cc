@@ -4,12 +4,11 @@
 
 #include "remoting/host/pairing_registry_delegate_win.h"
 
-#include <shlwapi.h>
-
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/registry.h"
+#include "base/win/shlwapi.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {

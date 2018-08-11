@@ -4,13 +4,13 @@
 
 #include <SensorsApi.h>
 #include <objbase.h>
-#include <propvarutil.h>
 #include <sensors.h>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/win/iunknown_impl.h"
+#include "base/win/propvarutil.h"
 #include "base/win/scoped_propvariant.h"
 #include "services/device/generic_sensor/fake_platform_sensor_and_provider.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"

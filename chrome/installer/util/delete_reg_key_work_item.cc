@@ -4,10 +4,9 @@
 
 #include "chrome/installer/util/delete_reg_key_work_item.h"
 
-#include <shlwapi.h>
-
 #include "base/logging.h"
 #include "base/win/registry.h"
+#include "base/win/shlwapi.h"
 #include "chrome/installer/util/install_util.h"
 
 using base::win::RegKey;

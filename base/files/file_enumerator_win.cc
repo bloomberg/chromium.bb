@@ -4,12 +4,12 @@
 
 #include "base/files/file_enumerator.h"
 
-#include <shlwapi.h>
 #include <stdint.h>
 #include <string.h>
 
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/win/shlwapi.h"
 
 namespace base {
 

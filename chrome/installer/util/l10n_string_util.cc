@@ -6,7 +6,6 @@
 
 #include "chrome/installer/util/l10n_string_util.h"
 
-#include <atlbase.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -16,6 +15,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/win/atl.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome/installer/util/installer_util_strings.h"

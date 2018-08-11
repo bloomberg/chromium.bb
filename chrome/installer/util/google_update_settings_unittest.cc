@@ -5,7 +5,6 @@
 #include "chrome/installer/util/google_update_settings.h"
 
 #include <windows.h>
-#include <shlwapi.h>  // For SHDeleteKey.
 #include <stddef.h>
 
 #include <memory>
@@ -17,6 +16,7 @@
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
+#include "base/win/shlwapi.h"  // For SHDeleteKey.
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/install_static/install_util.h"

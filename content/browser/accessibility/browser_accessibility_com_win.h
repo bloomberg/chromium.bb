@@ -5,8 +5,6 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_COM_WIN_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_COM_WIN_H_
 
-#include <atlbase.h>
-#include <atlcom.h>
 #include <oleacc.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -15,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/win/atl.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/common/content_export.h"

@@ -813,6 +813,28 @@ def _CheckNoIOStreamInHeaders(input_api, output_api):
         files) ]
   return []
 
+def _CheckNoStrCatRedefines(input_api, output_api):
+  """Checks no windows headers with StrCat redefined are included directly."""
+  files = []
+  pattern_deny = input_api.re.compile(
+      r'^#include\s*[<"](shlwapi|atlbase|propvarutil|sphelper).h[">]',
+      input_api.re.MULTILINE)
+  pattern_allow = input_api.re.compile(
+      r'^#include\s"base/win/windows_defines.inc"',
+      input_api.re.MULTILINE)
+  for f in input_api.AffectedSourceFiles(input_api.FilterSourceFile):
+    contents = input_api.ReadFile(f)
+    if pattern_deny.search(contents) and not pattern_allow.search(contents):
+      files.append(f.LocalPath())
+
+  if len(files):
+    return [output_api.PresubmitError(
+        'Do not #include shlwapi.h, atlbase.h, propvarutil.h or sphelper.h '
+        'directly since they pollute code with StrCat macro. Instead, '
+        'include matching header from base/win. See http://crbug.com/856536',
+        files) ]
+  return []
+
 
 def _CheckNoUNIT_TESTInSourceFiles(input_api, output_api):
   """Checks to make sure no source files use UNIT_TEST."""

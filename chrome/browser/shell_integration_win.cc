@@ -6,7 +6,6 @@
 
 #include <windows.h>
 #include <objbase.h>
-#include <shlwapi.h>
 #include <shobjidl.h>
 #include <propkey.h>  // Needs to come after shobjidl.h.
 #include <stddef.h>
@@ -36,6 +35,7 @@
 #include "base/timer/timer.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_propvariant.h"
+#include "base/win/shlwapi.h"
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/policy/policy_path_parser.h"

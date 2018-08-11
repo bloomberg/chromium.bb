@@ -4,13 +4,12 @@
 
 #include "chrome/chrome_cleaner/http/error_utils.h"
 
-#include <atlbase.h>
-#include <shlwapi.h>
-
 #include <string>
 
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/win/atl.h"
+#include "base/win/shlwapi.h"
 
 namespace common {
 

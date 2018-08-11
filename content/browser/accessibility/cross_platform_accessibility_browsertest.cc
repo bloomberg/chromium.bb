@@ -23,8 +23,7 @@
 #include "ui/accessibility/ax_tree.h"
 
 #if defined(OS_WIN)
-#include <atlbase.h>
-#include <atlcom.h>
+#include "base/win/atl.h"
 #include "base/win/scoped_com_initializer.h"
 #include "ui/base/win/atl_module.h"
 #endif

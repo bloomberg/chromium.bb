@@ -4,10 +4,6 @@
 
 #include "chrome/browser/win/automation_controller.h"
 
-// Needed for atlcom.h
-#include <atlbase.h>
-
-#include <atlcom.h>
 #include <stdint.h>
 #include <wrl/client.h>
 
@@ -20,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/win/atl.h"
 #include "base/win/scoped_variant.h"
 #include "chrome/browser/win/ui_automation_util.h"
 #include "ui/base/win/atl_module.h"

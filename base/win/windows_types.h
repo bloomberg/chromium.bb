@@ -248,6 +248,5 @@ WINBASEAPI VOID WINAPI SetLastError(_In_ DWORD dwErrCode);
 #define SendMessageCallback SendMessageCallbackW
 #define SetCurrentDirectory SetCurrentDirectoryW
 #define StartService StartServiceW
-#define StrCat StrCatW
 
 #endif  // BASE_WIN_WINDOWS_TYPES_H

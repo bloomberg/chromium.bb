@@ -2,14 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// For WinDDK ATL compatibility, these ATL headers must come first.
-#include "build/build_config.h"
-
-#if defined(OS_WIN)
-#include <atlbase.h>  // NOLINT
-#include <atlwin.h>  // NOLINT
-#endif
-
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 
 #include <limits.h>
@@ -21,6 +13,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
@@ -42,6 +35,10 @@
 #include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
 #include "ui/gfx/paint_vector_icon.h"
+
+#if defined(OS_WIN)
+#include "base/win/atl.h"
+#endif
 
 namespace {
 

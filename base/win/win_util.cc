@@ -14,13 +14,11 @@
 #include <mdmregistration.h>
 #include <objbase.h>
 #include <propkey.h>
-#include <propvarutil.h>
 #include <psapi.h>
 #include <roapi.h>
 #include <sddl.h>
 #include <setupapi.h>
 #include <shellscalingapi.h>
-#include <shlwapi.h>
 #include <signal.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -45,11 +43,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/core_winrt_util.h"
+#include "base/win/propvarutil.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_hstring.h"
 #include "base/win/scoped_propvariant.h"
+#include "base/win/shlwapi.h"
 #include "base/win/win_client_metrics.h"
 #include "base/win/windows_version.h"
 

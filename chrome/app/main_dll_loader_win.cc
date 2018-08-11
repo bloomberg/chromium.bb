@@ -5,7 +5,6 @@
 #include "chrome/app/main_dll_loader_win.h"
 
 #include <windows.h>  // NOLINT
-#include <shlwapi.h>  // NOLINT
 #include <stddef.h>
 #include <stdint.h>
 #include <userenv.h>  // NOLINT
@@ -28,6 +27,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/shlwapi.h"
 #include "base/win/windows_version.h"
 #include "chrome/app/chrome_watcher_client_win.h"
 #include "chrome/app/chrome_watcher_command_line_win.h"

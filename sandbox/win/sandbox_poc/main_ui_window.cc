@@ -11,12 +11,12 @@
 #include <stddef.h>
 #include <time.h>
 #include <windowsx.h>
-#include <atlbase.h>
-#include <atlsecurity.h>
+
 #include <algorithm>
 #include <sstream>
 
 #include "base/logging.h"
+#include "base/win/atl.h"
 #include "sandbox/win/sandbox_poc/resource.h"
 #include "sandbox/win/src/acl.h"
 #include "sandbox/win/src/sandbox.h"

@@ -4,13 +4,12 @@
 
 #include "ui/accessibility/platform/ax_platform_node.h"
 
-#include <atlbase.h>
-#include <atlcom.h>
 #include <oleacc.h>
 #include <wrl/client.h>
 
 #include <memory>
 
+#include "base/win/atl.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
 #include "testing/gtest/include/gtest/gtest.h"

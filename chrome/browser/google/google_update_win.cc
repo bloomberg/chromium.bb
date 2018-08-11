@@ -4,8 +4,6 @@
 
 #include "chrome/browser/google/google_update_win.h"
 
-#include <atlbase.h>
-#include <atlcom.h>
 #include <objbase.h>
 #include <stdint.h>
 #include <string.h>
@@ -33,6 +31,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "base/win/atl.h"
 #include "base/win/scoped_bstr.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"

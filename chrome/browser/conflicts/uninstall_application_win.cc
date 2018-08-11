@@ -4,7 +4,6 @@
 
 #include "chrome/browser/conflicts/uninstall_application_win.h"
 
-#include <atlbase.h>
 #include <wrl/client.h>
 
 #include <memory>
@@ -22,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/win/atl.h"
 #include "base/win/scoped_variant.h"
 #include "chrome/browser/win/automation_controller.h"
 #include "chrome/browser/win/ui_automation_util.h"
