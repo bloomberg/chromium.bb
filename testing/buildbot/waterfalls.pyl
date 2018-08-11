@@ -1399,12 +1399,7 @@
         },
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
-          # TODO(kbr): switch this to
-          # gpu_fyi_win_and_linux_intel_and_nvidia_release_telemetry_tests. Seems
-          # to have been an oversight that
-          # webgl2_conformance_gl_passthrough_tests was't running on the Linux
-          # Intel HD 630 bots.
-          'gpu_telemetry_tests': 'gpu_fyi_win_and_linux_release_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_win_and_linux_intel_and_nvidia_release_telemetry_tests',
         },
       },
       'Linux FYI Release (NVIDIA)': {
