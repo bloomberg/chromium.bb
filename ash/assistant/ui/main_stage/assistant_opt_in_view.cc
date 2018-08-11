@@ -36,9 +36,11 @@ views::StyledLabel::RangeStyleInfo CreateStyleInfo(
 
 // AssistantOptInContainer -----------------------------------------------------
 
-class AssistantOptInContainer : public views::View {
+class AssistantOptInContainer : public views::Button {
  public:
-  AssistantOptInContainer() = default;
+  explicit AssistantOptInContainer(views::ButtonListener* listener)
+      : views::Button(listener) {}
+
   ~AssistantOptInContainer() override = default;
 
   // views::View:
@@ -70,7 +72,7 @@ class AssistantOptInContainer : public views::View {
 
 // AssistantOptInView ----------------------------------------------------------
 
-AssistantOptInView::AssistantOptInView() : views::Button(/*listener=*/this) {
+AssistantOptInView::AssistantOptInView() {
   InitLayout();
 }
 
@@ -96,7 +98,8 @@ void AssistantOptInView::InitLayout() {
       views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
 
   // Container.
-  AssistantOptInContainer* container = new AssistantOptInContainer();
+  AssistantOptInContainer* container =
+      new AssistantOptInContainer(/*listener=*/this);
 
   layout_manager =
       container->SetLayoutManager(std::make_unique<views::BoxLayout>(

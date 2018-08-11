@@ -67,6 +67,12 @@ constexpr base::TimeDelta kFooterAnimationFadeInDuration =
 constexpr base::TimeDelta kFooterAnimationFadeOutDuration =
     base::TimeDelta::FromMilliseconds(100);
 
+// Footer entry animation.
+constexpr base::TimeDelta kFooterEntryAnimationFadeInDelay =
+    base::TimeDelta::FromMilliseconds(283);
+constexpr base::TimeDelta kFooterEntryAnimationFadeInDuration =
+    base::TimeDelta::FromMilliseconds(167);
+
 // Greeting animation.
 constexpr base::TimeDelta kGreetingAnimationFadeInDelay =
     base::TimeDelta::FromMilliseconds(33);
@@ -541,7 +547,7 @@ void AssistantMainStage::OnUiVisibilityChanged(bool visible,
                                                AssistantSource source) {
   if (visible) {
     // When Assistant UI is shown and the motion spec is enabled, we animate in
-    // the appearance of the greeting label.
+    // the appearance of the greeting label and footer.
     if (assistant::ui::kIsMotionSpecEnabled) {
       using namespace assistant::util;
 
@@ -550,7 +556,7 @@ void AssistantMainStage::OnUiVisibilityChanged(bool visible,
       gfx::Transform transform;
       transform.Translate(0, kGreetingAnimationTranslationDip);
 
-      // Set up or pre-animation values.
+      // Set up our pre-animation values.
       greeting_label_->layer()->SetOpacity(0.f);
       greeting_label_->layer()->SetTransform(transform);
 
@@ -566,6 +572,15 @@ void AssistantMainStage::OnUiVisibilityChanged(bool visible,
                    ui::LayerAnimationElement::AnimatableProperty::OPACITY,
                    kGreetingAnimationFadeInDelay),
                CreateOpacityElement(1.f, kGreetingAnimationFadeInDuration))});
+
+      // Animate the footer from 0% to 100% opacity with delay.
+      footer_->layer()->SetOpacity(0.f);
+      footer_->layer()->GetAnimator()->StartAnimation(
+          CreateLayerAnimationSequence(
+              ui::LayerAnimationElement::CreatePauseElement(
+                  ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+                  kFooterEntryAnimationFadeInDelay),
+              CreateOpacityElement(1.f, kFooterEntryAnimationFadeInDuration)));
     }
     return;
   }
