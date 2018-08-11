@@ -257,11 +257,6 @@ void AssistantManagerServiceImpl::AddAssistantNotificationSubscriber(
   notification_subscribers_.AddPtr(std::move(subscriber));
 }
 
-void AssistantManagerServiceImpl::AddAssistantScreenContextSubscriber(
-    mojom::AssistantScreenContextSubscriberPtr subscriber) {
-  screen_context_subscribers_.AddPtr(std::move(subscriber));
-}
-
 void AssistantManagerServiceImpl::RetrieveNotification(
     mojom::AssistantNotificationPtr notification,
     int action_index) {
@@ -319,15 +314,6 @@ void AssistantManagerServiceImpl::OnConversationTurnFinished(
       base::BindOnce(
           &AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread,
           weak_factory_.GetWeakPtr(), resolution));
-}
-
-void AssistantManagerServiceImpl::OnShowContextualHtml(
-    const std::string& html) {
-  main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &AssistantManagerServiceImpl::OnShowContextualHtmlOnMainThread,
-          weak_factory_.GetWeakPtr(), html));
 }
 
 void AssistantManagerServiceImpl::OnShowHtml(const std::string& html) {
@@ -747,12 +733,6 @@ void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
       });
       break;
   }
-}
-
-void AssistantManagerServiceImpl::OnShowContextualHtmlOnMainThread(
-    const std::string& html) {
-  screen_context_subscribers_.ForAllPtrs(
-      [&html](auto* ptr) { ptr->OnContextualHtmlResponse(html); });
 }
 
 void AssistantManagerServiceImpl::OnShowHtmlOnMainThread(
