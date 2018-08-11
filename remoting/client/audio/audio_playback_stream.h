@@ -37,8 +37,6 @@ class AudioPlaybackStream : public protocol::AudioStub {
   void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
                           const base::RepeatingClosure& done) override;
 
-  base::WeakPtr<AudioPlaybackStream> GetWeakPtr();
-
  private:
   class Core;
 
@@ -48,7 +46,6 @@ class AudioPlaybackStream : public protocol::AudioStub {
 
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
 
-  base::WeakPtrFactory<AudioPlaybackStream> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AudioPlaybackStream);
 };
 

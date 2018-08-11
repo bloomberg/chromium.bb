@@ -16,7 +16,6 @@
 
 namespace remoting {
 
-class AudioPlayerAndroid;
 class ChromotingClientRuntime;
 class JniGlDisplayHandler;
 
@@ -161,7 +160,6 @@ class JniClient : public ChromotingSession::Delegate {
   base::android::ScopedJavaGlobalRef<jobject> java_client_;
 
   std::unique_ptr<JniGlDisplayHandler> display_handler_;
-  std::unique_ptr<AudioPlayerAndroid> audio_player_;
 
   std::string host_id_;
 

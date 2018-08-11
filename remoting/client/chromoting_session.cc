@@ -93,7 +93,9 @@ struct ChromotingSession::SessionContext {
   ChromotingClientRuntime* runtime;
   base::WeakPtr<ChromotingSession::Delegate> delegate;
   base::WeakPtr<ClientTelemetryLogger> logger;
-  base::WeakPtr<protocol::AudioStub> audio_player;
+  std::unique_ptr<protocol::AudioStub> audio_player;
+  std::unique_ptr<base::WeakPtrFactory<protocol::AudioStub>>
+      audio_player_weak_factory;
   std::unique_ptr<protocol::CursorShapeStub> cursor_shape_stub;
   std::unique_ptr<protocol::VideoRenderer> video_renderer;
 
@@ -435,9 +437,11 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
       ChromotingEvent::ParseOsFromString(session_context_->info.host_os),
       session_context_->info.host_os_version);
 
-  client_.reset(new ChromotingClient(client_context_.get(), this,
-                                     session_context_->video_renderer.get(),
-                                     session_context_->audio_player));
+  // TODO(yuweih): Ideally we should make ChromotingClient and all its
+  // sub-components (e.g. ConnectionToHost) take raw pointer instead of WeakPtr.
+  client_.reset(new ChromotingClient(
+      client_context_.get(), this, session_context_->video_renderer.get(),
+      session_context_->audio_player_weak_factory->GetWeakPtr()));
 
   XmppSignalStrategy::XmppServerConfig xmpp_config;
   xmpp_config.host = kXmppServer;
@@ -582,7 +586,7 @@ ChromotingSession::ChromotingSession(
     base::WeakPtr<ChromotingSession::Delegate> delegate,
     std::unique_ptr<protocol::CursorShapeStub> cursor_shape_stub,
     std::unique_ptr<protocol::VideoRenderer> video_renderer,
-    base::WeakPtr<protocol::AudioStub> audio_player,
+    std::unique_ptr<protocol::AudioStub> audio_player,
     const ConnectToHostInfo& info) {
   DCHECK(delegate);
   DCHECK(cursor_shape_stub);
@@ -601,7 +605,10 @@ ChromotingSession::ChromotingSession(
   session_context_->runtime = runtime_;
   session_context_->delegate = delegate;
   session_context_->logger = logger_->GetWeakPtr();
-  session_context_->audio_player = audio_player;
+  session_context_->audio_player = std::move(audio_player);
+  session_context_->audio_player_weak_factory =
+      std::make_unique<base::WeakPtrFactory<protocol::AudioStub>>(
+          session_context_->audio_player.get());
   session_context_->cursor_shape_stub = std::move(cursor_shape_stub);
   session_context_->video_renderer = std::move(video_renderer);
   session_context_->info = info;

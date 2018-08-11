@@ -68,7 +68,6 @@ static void ResolveFeedbackDataCallback(
   remoting::GestureInterpreter _gestureInterpreter;
   remoting::KeyboardInterpreter _keyboardInterpreter;
   std::unique_ptr<remoting::RendererProxy> _renderer;
-  std::unique_ptr<remoting::AudioPlaybackStream> _audioStream;
 
   // _session is valid only when the session is connected.
   std::unique_ptr<remoting::ChromotingSession> _session;
@@ -135,7 +134,7 @@ static void ResolveFeedbackDataCallback(
         showMessage:[MDCSnackbarMessage messageWithText:@"Using WebRTC"]];
   }
 
-  _audioStream = std::make_unique<remoting::AudioPlaybackStream>(
+  auto audioStream = std::make_unique<remoting::AudioPlaybackStream>(
       std::make_unique<remoting::AudioPlaybackSinkIos>(),
       _runtime->audio_task_runner());
 
@@ -144,7 +143,7 @@ static void ResolveFeedbackDataCallback(
 
   _session.reset(new remoting::ChromotingSession(
       _sessonDelegate->GetWeakPtr(), [_displayHandler CreateCursorShapeStub],
-      [_displayHandler CreateVideoRenderer], _audioStream->GetWeakPtr(), info));
+      [_displayHandler CreateVideoRenderer], std::move(audioStream), info));
   _renderer = [_displayHandler CreateRendererProxy];
   _gestureInterpreter.SetContext(_renderer.get(), _session.get());
   _keyboardInterpreter.SetContext(_session.get());
@@ -157,10 +156,6 @@ static void ResolveFeedbackDataCallback(
 
   _displayHandler = nil;
 
-  if (_audioStream) {
-    _runtime->network_task_runner()->DeleteSoon(FROM_HERE,
-                                                _audioStream.release());
-  }
   // This needs to be deleted on the display thread since GlDisplayHandler binds
   // its WeakPtrFactory to the display thread.
   // TODO(yuweih): Ideally this constraint can be removed once we allow

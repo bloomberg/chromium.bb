@@ -51,7 +51,7 @@ void AudioPlaybackStream::Core::ResetStreamFormat(
 AudioPlaybackStream::AudioPlaybackStream(
     std::unique_ptr<AudioPlaybackSink> audio_sink,
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner)
-    : audio_task_runner_(audio_task_runner), weak_factory_(this) {
+    : audio_task_runner_(audio_task_runner) {
   DETACH_FROM_THREAD(thread_checker_);
 
   core_ = std::make_unique<Core>(std::move(audio_sink));
@@ -60,10 +60,6 @@ AudioPlaybackStream::AudioPlaybackStream(
 AudioPlaybackStream::~AudioPlaybackStream() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   audio_task_runner_->DeleteSoon(FROM_HERE, core_.release());
-}
-
-base::WeakPtr<AudioPlaybackStream> AudioPlaybackStream::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 void AudioPlaybackStream::ProcessAudioPacket(
