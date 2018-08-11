@@ -16,6 +16,7 @@
 #include "ui/gl/gl_surface.h"
 
 namespace gpu {
+class SharedImageInterface;
 class TransferBuffer;
 struct GpuFeatureInfo;
 struct SharedMemoryLimits;
@@ -61,6 +62,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
   gles2::GLES2Implementation* GetImplementation();
 
   CommandBuffer* GetCommandBuffer();
+
+  SharedImageInterface* GetSharedImageInterface();
 
   void SetUpdateVSyncParametersCallback(
       const InProcessCommandBuffer::UpdateVSyncParametersCallback& callback);

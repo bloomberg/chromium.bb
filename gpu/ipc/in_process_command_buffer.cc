@@ -28,6 +28,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/gpu_control_client.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/common/swap_buffers_flags.h"
@@ -48,6 +49,7 @@
 #include "gpu/command_buffer/service/raster_decoder.h"
 #include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/service_utils.h"
+#include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/config/gpu_crash_keys.h"
@@ -162,6 +164,70 @@ scoped_refptr<CommandBufferTaskExecutor> MaybeGetDefaultTaskExecutor(
 
 }  // anonyous namespace
 
+class InProcessCommandBuffer::SharedImageInterface
+    : public gpu::SharedImageInterface {
+ public:
+  explicit SharedImageInterface(InProcessCommandBuffer* parent)
+      : parent_(parent),
+        command_buffer_id_(CommandBufferId::FromUnsafeValue(
+            g_next_command_buffer_id.GetNext() + 1)) {}
+
+  ~SharedImageInterface() override = default;
+
+  Mailbox CreateSharedImage(viz::ResourceFormat format,
+                            const gfx::Size& size,
+                            const gfx::ColorSpace& color_space,
+                            uint32_t usage) override {
+    auto mailbox = Mailbox::Generate();
+    {
+      base::AutoLock lock(lock_);
+      // Note: we enqueue the task under the lock to guarantee monotonicity of
+      // the release ids as seen by the service. Unretained is safe because
+      // InProcessCommandBuffer synchronizes with the GPU thread at destruction
+      // time, cancelling tasks, before |this| is destroyed.
+      parent_->QueueOnceTask(
+          false,
+          base::BindOnce(&InProcessCommandBuffer::CreateSharedImageOnGpuThread,
+                         parent_->gpu_thread_weak_ptr_, mailbox, format, size,
+                         color_space, usage,
+                         MakeSyncToken(next_fence_sync_release_++)));
+    }
+    return mailbox;
+  }
+
+  void DestroySharedImage(const SyncToken& sync_token,
+                          const Mailbox& mailbox) override {
+    // Need a repeatable task to handle SyncToken waits.
+    parent_->QueueRepeatableTask(base::BindRepeating(
+        &InProcessCommandBuffer::DestroySharedImageOnGpuThread,
+        parent_->gpu_thread_weak_ptr_, sync_token, mailbox));
+  }
+
+  SyncToken GenUnverifiedSyncToken() override {
+    base::AutoLock lock(lock_);
+    return MakeSyncToken(next_fence_sync_release_ - 1);
+  }
+
+  CommandBufferId command_buffer_id() const { return command_buffer_id_; }
+
+ private:
+  SyncToken MakeSyncToken(uint64_t release_id) {
+    return SyncToken(CommandBufferNamespace::IN_PROCESS, command_buffer_id_,
+                     release_id);
+  }
+
+  InProcessCommandBuffer* const parent_;
+
+  const CommandBufferId command_buffer_id_;
+
+  // Accessed on any thread. release_id_lock_ protects access to
+  // next_fence_sync_release_.
+  base::Lock lock_;
+  uint64_t next_fence_sync_release_ = 1;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedImageInterface);
+};
+
 InProcessCommandBuffer::InProcessCommandBuffer(
     scoped_refptr<CommandBufferTaskExecutor> task_executer)
     : command_buffer_id_(CommandBufferId::FromUnsafeValue(
@@ -169,6 +235,7 @@ InProcessCommandBuffer::InProcessCommandBuffer(
       flush_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                    base::WaitableEvent::InitialState::NOT_SIGNALED),
       task_executor_(MaybeGetDefaultTaskExecutor(std::move(task_executer))),
+      shared_image_interface_(new SharedImageInterface(this)),
       fence_sync_wait_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED),
       client_thread_weak_ptr_factory_(this),
@@ -202,6 +269,11 @@ gpu::ServiceTransferCache* InProcessCommandBuffer::GetTransferCacheForTest()
 int InProcessCommandBuffer::GetRasterDecoderIdForTest() const {
   return static_cast<raster::RasterDecoder*>(decoder_.get())
       ->DecoderIdForTest();
+}
+
+gpu::SharedImageInterface* InProcessCommandBuffer::GetSharedImageInterface()
+    const {
+  return shared_image_interface_.get();
 }
 
 bool InProcessCommandBuffer::MakeCurrent() {
@@ -387,6 +459,14 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
       task_executor_->sync_point_manager()->CreateSyncPointClientState(
           GetNamespaceID(), GetCommandBufferID(),
           sync_point_order_data_->sequence_id());
+  // Make the SharedImageInterface use the same sequence as the command buffer,
+  // it's necessary for WebView because of the blocking behavior.
+  // TODO(piman): see if it's worth using a different sequence for non-WebView.
+  shared_image_client_state_ =
+      task_executor_->sync_point_manager()->CreateSyncPointClientState(
+          CommandBufferNamespace::IN_PROCESS,
+          shared_image_interface_->command_buffer_id(),
+          sync_point_order_data_->sequence_id());
 
   if (context_group_->use_passthrough_cmd_decoder()) {
     // When using the passthrough command decoder, only share with other
@@ -562,6 +642,8 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
   gpu_thread_weak_ptr_factory_.InvalidateWeakPtrs();
   // Clean up GL resources if possible.
   bool have_context = context_.get() && context_->MakeCurrent(surface_.get());
+  if (shared_image_factory_)
+    shared_image_factory_->DestroyAllSharedImages(have_context);
 
   // Prepare to destroy the surface while the context is still current, because
   // some surface destructors make GL calls.
@@ -585,6 +667,10 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
   if (sync_point_client_state_) {
     sync_point_client_state_->Destroy();
     sync_point_client_state_ = nullptr;
+  }
+  if (shared_image_client_state_) {
+    shared_image_client_state_->Destroy();
+    shared_image_client_state_ = nullptr;
   }
   gl_share_group_ = nullptr;
   context_group_ = nullptr;
@@ -1187,6 +1273,48 @@ void InProcessCommandBuffer::GetGpuFenceOnGpuThread(
     task_runner->PostTask(FROM_HERE, std::move(callback_closure));
   } else {
     std::move(callback_closure).Run();
+  }
+}
+
+void InProcessCommandBuffer::CreateSharedImageOnGpuThread(
+    const Mailbox& mailbox,
+    viz::ResourceFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage,
+    const SyncToken& sync_token) {
+  CheckSequencedThread();
+  if (!MakeCurrent())
+    return;
+  if (!shared_image_factory_) {
+    shared_image_factory_ = std::make_unique<SharedImageFactory>(
+        GetGpuPreferences(), context_group_->feature_info()->workarounds(),
+        GetGpuFeatureInfo(), context_group_->mailbox_manager(), image_factory_,
+        nullptr);
+  }
+  if (!shared_image_factory_->CreateSharedImage(mailbox, format, size,
+                                                color_space, usage)) {
+    // Signal errors by losing the command buffer.
+    command_buffer_->SetParseError(error::kLostContext);
+    return;
+  }
+  context_group_->mailbox_manager()->PushTextureUpdates(sync_token);
+  shared_image_client_state_->ReleaseFenceSync(sync_token.release_count());
+}
+
+void InProcessCommandBuffer::DestroySharedImageOnGpuThread(
+    const SyncToken& sync_token,
+    const Mailbox& mailbox) {
+  CheckSequencedThread();
+  if (OnWaitSyncToken(sync_token))
+    return;
+  if (!MakeCurrent())
+    return;
+  if (!shared_image_factory_ ||
+      !shared_image_factory_->DestroySharedImage(mailbox)) {
+    // Signal errors by losing the command buffer.
+    command_buffer_->SetParseError(error::kLostContext);
+    return;
   }
 }
 

@@ -116,6 +116,10 @@ ContextSupport* RasterInProcessContext::GetContextSupport() {
   return raster_implementation_.get();
 }
 
+SharedImageInterface* RasterInProcessContext::GetSharedImageInterface() {
+  return command_buffer_->GetSharedImageInterface();
+}
+
 ServiceTransferCache* RasterInProcessContext::GetTransferCacheForTest() const {
   return command_buffer_->GetTransferCacheForTest();
 }
