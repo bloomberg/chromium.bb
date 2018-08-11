@@ -265,13 +265,47 @@
     This name is from your Google Account.
   </message>
 
-  <!-- Autofill Local card migration bubble or prompt -->
+  <!-- Autofill Local card migration bubble or dialog -->
   <if expr="not is_ios and not is_android">
-    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_TITLE" desc="Text to show in the Autofill local card migration intermediate bubble.">
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_TITLE" desc="The title text for a bubble that offers users to start the process of migrating local cards to cloud.">
       Save all your cards in one place?
     </message>
-    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BUTTON_LABEL" desc="Text to show in the Autofill local card migration intermediate bubble button.">
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BUTTON_LABEL" desc="The text in the OK button of a bubble that offers users to start the process of migration local cards to cloud.">
       Continue
+    </message>
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TITLE_OFFER" desc="The title text for a dialog that offers to migrate local cards into the cloud.">
+      All your cards in one place
+    </message>
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TITLE_DONE" desc="The title text for a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud and all cards are successfully migrated.">
+      You're all set!
+    </message>
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TITLE_FIX" desc="The title text for a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud but there are errors with the cards that they need to address.">
+      Almost done
+    </message>
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_OFFER" desc="The body text for a dialog that offers to migrate local cards into the cloud. [ICU Syntax]">
+      {NUM_CARDS, plural,
+      =1 {This card will be saved to your Google Account for faster checkout across devices.}
+      other {These cards will be saved to your Google Account for faster checkout across devices.}}
+    </message>
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_DONE" desc="The body text for a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud and all cards are successfully migrated. [ICU Syntax]">
+      {NUM_CARDS, plural,
+      =1 {This card has been added to your Google Account. You can now use it from any signed-in device.}
+      other {These cards have been added to your Google Account. You can now use them from any signed-in device.}}
+    </message>
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_FIX" desc="The body text shown on a dialog after the user accepts another dialog that offers to migrate local cards into the cloud but there are errors with the cards that they need to address.">
+      Please check the info below and fix any errors, if necessary
+    </message>
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_BUTTON_LABEL_SAVE" desc="The text in the OK button of a dialog that offers to migrate local cards into the cloud.">
+      Save
+    </message>
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_BUTTON_LABEL_CANCEL" desc="The text in the cancel button of a dialog that offers to migrate local cards into the cloud.">
+      Cancel
+    </message>
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_BUTTON_LABEL_DONE" desc="The text in the OK button a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud.">
+      Done
+    </message>
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_BUTTON_LABEL_VIEW_CARDS" desc="The text in the cancel button a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud.">
+      View cards
     </message>
   </if>
 
