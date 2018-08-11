@@ -83,6 +83,11 @@ IPC_STRUCT_BEGIN(GpuChannelMsg_CreateSharedImage_Params)
   IPC_STRUCT_MEMBER(uint32_t, release_id)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(GpuDeferredMessage)
+  IPC_STRUCT_MEMBER(IPC::Message, message)
+  IPC_STRUCT_MEMBER(std::vector<gpu::SyncToken>, sync_token_fences)
+IPC_STRUCT_END()
+
 //------------------------------------------------------------------------------
 // GPU Channel Messages
 // These are messages from a renderer process to the GPU process.
@@ -105,14 +110,12 @@ IPC_SYNC_MESSAGE_CONTROL3_2(GpuChannelMsg_CreateCommandBuffer,
 IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,
                             int32_t /* instance_id */)
 
-IPC_MESSAGE_CONTROL1(GpuChannelMsg_FlushCommandBuffers,
-                     std::vector<gpu::FlushParams> /* flush_list */)
+IPC_MESSAGE_CONTROL1(GpuChannelMsg_FlushDeferredMessages,
+                     std::vector<GpuDeferredMessage> /* deferred_messages */)
 
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_CreateSharedImage,
                     GpuChannelMsg_CreateSharedImage_Params /* params */)
-IPC_MESSAGE_ROUTED2(GpuChannelMsg_DestroySharedImage,
-                    gpu::SyncToken /* sync_token */,
-                    gpu::Mailbox /* id */)
+IPC_MESSAGE_ROUTED1(GpuChannelMsg_DestroySharedImage, gpu::Mailbox /* id */)
 
 // Crash the GPU process in similar way to how chrome://gpucrash does.
 // This is only supported in testing environments, and is otherwise ignored.

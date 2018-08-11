@@ -231,47 +231,39 @@ bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
   if (!gpu_channel_)
     return MessageErrorHandler(message, "Channel destroyed");
 
-  // TODO(sunnyps): Remove the async flush message once the non-scheduler code
-  // path is removed.
-  if (message.type() == GpuCommandBufferMsg_AsyncFlush::ID)
-    return MessageErrorHandler(message, "Invalid flush message");
+  switch (message.type()) {
+    case GpuCommandBufferMsg_AsyncFlush::ID:
+    case GpuCommandBufferMsg_DestroyTransferBuffer::ID:
+    case GpuChannelMsg_CreateSharedImage::ID:
+    case GpuChannelMsg_DestroySharedImage::ID:
+      return MessageErrorHandler(message, "Invalid message");
+    default:
+      break;
+  }
 
-  std::vector<Scheduler::Task> tasks;
+  if (message.type() == GpuChannelMsg_FlushDeferredMessages::ID) {
+    GpuChannelMsg_FlushDeferredMessages::Param params;
 
-  if (message.type() == GpuChannelMsg_FlushCommandBuffers::ID) {
-    GpuChannelMsg_FlushCommandBuffers::Param params;
-
-    if (!GpuChannelMsg_FlushCommandBuffers::Read(&message, &params))
+    if (!GpuChannelMsg_FlushDeferredMessages::Read(&message, &params))
       return MessageErrorHandler(message, "Invalid flush message");
 
-    std::vector<FlushParams> flush_list = std::get<0>(std::move(params));
+    std::vector<GpuDeferredMessage> deferred_messages =
+        std::get<0>(std::move(params));
+    std::vector<Scheduler::Task> tasks;
+    tasks.reserve(deferred_messages.size());
 
-    for (auto& flush_info : flush_list) {
-      auto it = route_sequences_.find(flush_info.route_id);
+    for (auto& deferred_message : deferred_messages) {
+      auto it = route_sequences_.find(deferred_message.message.routing_id());
       if (it == route_sequences_.end()) {
         DLOG(ERROR) << "Invalid route id in flush list";
         continue;
       }
 
-      if (flush_info.transfer_buffer_id_to_destroy) {
-        tasks.emplace_back(
-            it->second /* sequence_id */,
-            base::BindOnce(&GpuChannel::HandleMessage,
-                           gpu_channel_->AsWeakPtr(),
-                           GpuCommandBufferMsg_DestroyTransferBuffer(
-                               flush_info.route_id,
-                               flush_info.transfer_buffer_id_to_destroy)),
-            std::move(flush_info.sync_token_fences));
-      } else {
-        GpuCommandBufferMsg_AsyncFlush flush_message(
-            flush_info.route_id, flush_info.put_offset, flush_info.flush_id);
-
-        tasks.emplace_back(
-            it->second /* sequence_id */,
-            base::BindOnce(&GpuChannel::HandleMessage,
-                           gpu_channel_->AsWeakPtr(), flush_message),
-            std::move(flush_info.sync_token_fences));
-      }
+      tasks.emplace_back(
+          it->second /* sequence_id */,
+          base::BindOnce(&GpuChannel::HandleMessage, gpu_channel_->AsWeakPtr(),
+                         std::move(deferred_message.message)),
+          std::move(deferred_message.sync_token_fences));
     }
 
     scheduler_->ScheduleTasks(std::move(tasks));
@@ -289,21 +281,12 @@ bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
     auto it = route_sequences_.find(message.routing_id());
     if (it == route_sequences_.end())
       return MessageErrorHandler(message, "Invalid route id");
-    std::vector<SyncToken> tokens;
-    if (message.type() == GpuChannelMsg_DestroySharedImage::ID) {
-      GpuChannelMsg_DestroySharedImage::Param params;
-      if (!GpuChannelMsg_DestroySharedImage::Read(&message, &params)) {
-        return MessageErrorHandler(message,
-                                   "Invalid DestroySharedImage message");
-      }
-      tokens.push_back(std::get<0>(params));
-    }
 
     scheduler_->ScheduleTask(
         Scheduler::Task(it->second /* sequence_id */,
                         base::BindOnce(&GpuChannel::HandleMessage,
                                        gpu_channel_->AsWeakPtr(), message),
-                        std::move(tokens)));
+                        std::vector<SyncToken>()));
   }
 
   return true;

@@ -4,6 +4,7 @@
 
 #include "gpu/ipc/service/shared_image_stub.h"
 
+#include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/ipc/common/command_buffer_id.h"
@@ -46,6 +47,8 @@ bool SharedImageStub::OnMessageReceived(const IPC::Message& msg) {
 
 void SharedImageStub::OnCreateSharedImage(
     const GpuChannelMsg_CreateSharedImage_Params& params) {
+  TRACE_EVENT2("gpu", "SharedImageStub::OnCreateSharedImage", "width",
+               params.size.width(), "height", params.size.height());
   if (!MakeContextCurrentAndCreateFactory())
     return;
 
@@ -58,11 +61,8 @@ void SharedImageStub::OnCreateSharedImage(
   sync_point_client_state_->ReleaseFenceSync(params.release_id);
 }
 
-void SharedImageStub::OnDestroySharedImage(const gpu::SyncToken& sync_token,
-                                           const Mailbox& mailbox) {
-  // The Scheduler guaranteed this only executes after the sync_token was
-  // released.
-  DCHECK(channel_->sync_point_manager()->IsSyncTokenReleased(sync_token));
+void SharedImageStub::OnDestroySharedImage(const Mailbox& mailbox) {
+  TRACE_EVENT0("gpu", "SharedImageStub::OnDestroySharedImage");
   if (!MakeContextCurrentAndCreateFactory())
     return;
 

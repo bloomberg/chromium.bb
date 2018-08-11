@@ -66,6 +66,16 @@ class CommandBufferProxyImplTest : public testing::Test {
     return proxy;
   }
 
+  void ExpectOrderingBarrier(const GpuDeferredMessage& params,
+                             int32_t route_id,
+                             int32_t put_offset) {
+    EXPECT_EQ(params.message.routing_id(), route_id);
+    GpuCommandBufferMsg_AsyncFlush::Param async_flush;
+    ASSERT_TRUE(
+        GpuCommandBufferMsg_AsyncFlush::Read(&params.message, &async_flush));
+    EXPECT_EQ(std::get<0>(async_flush), put_offset);
+  }
+
  protected:
   IPC::TestSink sink_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
@@ -85,18 +95,16 @@ TEST_F(CommandBufferProxyImplTest, OrderingBarriersAreCoalescedWithFlush) {
 
   EXPECT_EQ(1u, sink_.message_count());
   const IPC::Message* msg =
-      sink_.GetFirstMessageMatching(GpuChannelMsg_FlushCommandBuffers::ID);
+      sink_.GetFirstMessageMatching(GpuChannelMsg_FlushDeferredMessages::ID);
   ASSERT_TRUE(msg);
-  GpuChannelMsg_FlushCommandBuffers::Param params;
-  ASSERT_TRUE(GpuChannelMsg_FlushCommandBuffers::Read(msg, &params));
-  std::vector<FlushParams> flush_list = std::get<0>(std::move(params));
-  EXPECT_EQ(3u, flush_list.size());
-  EXPECT_EQ(proxy1->route_id(), flush_list[0].route_id);
-  EXPECT_EQ(10, flush_list[0].put_offset);
-  EXPECT_EQ(proxy2->route_id(), flush_list[1].route_id);
-  EXPECT_EQ(20, flush_list[1].put_offset);
-  EXPECT_EQ(proxy1->route_id(), flush_list[2].route_id);
-  EXPECT_EQ(50, flush_list[2].put_offset);
+  GpuChannelMsg_FlushDeferredMessages::Param params;
+  ASSERT_TRUE(GpuChannelMsg_FlushDeferredMessages::Read(msg, &params));
+  std::vector<GpuDeferredMessage> deferred_messages =
+      std::get<0>(std::move(params));
+  EXPECT_EQ(3u, deferred_messages.size());
+  ExpectOrderingBarrier(deferred_messages[0], proxy1->route_id(), 10);
+  ExpectOrderingBarrier(deferred_messages[1], proxy2->route_id(), 20);
+  ExpectOrderingBarrier(deferred_messages[2], proxy1->route_id(), 50);
 }
 
 TEST_F(CommandBufferProxyImplTest, FlushPendingWorkFlushesOrderingBarriers) {
@@ -110,18 +118,16 @@ TEST_F(CommandBufferProxyImplTest, FlushPendingWorkFlushesOrderingBarriers) {
 
   EXPECT_EQ(1u, sink_.message_count());
   const IPC::Message* msg =
-      sink_.GetFirstMessageMatching(GpuChannelMsg_FlushCommandBuffers::ID);
+      sink_.GetFirstMessageMatching(GpuChannelMsg_FlushDeferredMessages::ID);
   ASSERT_TRUE(msg);
-  GpuChannelMsg_FlushCommandBuffers::Param params;
-  ASSERT_TRUE(GpuChannelMsg_FlushCommandBuffers::Read(msg, &params));
-  std::vector<FlushParams> flush_list = std::get<0>(std::move(params));
-  EXPECT_EQ(3u, flush_list.size());
-  EXPECT_EQ(proxy1->route_id(), flush_list[0].route_id);
-  EXPECT_EQ(10, flush_list[0].put_offset);
-  EXPECT_EQ(proxy2->route_id(), flush_list[1].route_id);
-  EXPECT_EQ(20, flush_list[1].put_offset);
-  EXPECT_EQ(proxy1->route_id(), flush_list[2].route_id);
-  EXPECT_EQ(30, flush_list[2].put_offset);
+  GpuChannelMsg_FlushDeferredMessages::Param params;
+  ASSERT_TRUE(GpuChannelMsg_FlushDeferredMessages::Read(msg, &params));
+  std::vector<GpuDeferredMessage> deferred_messages =
+      std::get<0>(std::move(params));
+  EXPECT_EQ(3u, deferred_messages.size());
+  ExpectOrderingBarrier(deferred_messages[0], proxy1->route_id(), 10);
+  ExpectOrderingBarrier(deferred_messages[1], proxy2->route_id(), 20);
+  ExpectOrderingBarrier(deferred_messages[2], proxy1->route_id(), 30);
 }
 
 TEST_F(CommandBufferProxyImplTest, EnsureWorkVisibleFlushesOrderingBarriers) {
@@ -137,23 +143,45 @@ TEST_F(CommandBufferProxyImplTest, EnsureWorkVisibleFlushesOrderingBarriers) {
   EXPECT_EQ(2u, sink_.message_count());
   const IPC::Message* msg = sink_.GetMessageAt(0);
   ASSERT_TRUE(msg);
-  EXPECT_EQ(static_cast<uint32_t>(GpuChannelMsg_FlushCommandBuffers::ID),
+  EXPECT_EQ(static_cast<uint32_t>(GpuChannelMsg_FlushDeferredMessages::ID),
             msg->type());
 
-  GpuChannelMsg_FlushCommandBuffers::Param params;
-  ASSERT_TRUE(GpuChannelMsg_FlushCommandBuffers::Read(msg, &params));
-  std::vector<FlushParams> flush_list = std::get<0>(std::move(params));
-  EXPECT_EQ(3u, flush_list.size());
-  EXPECT_EQ(proxy1->route_id(), flush_list[0].route_id);
-  EXPECT_EQ(10, flush_list[0].put_offset);
-  EXPECT_EQ(proxy2->route_id(), flush_list[1].route_id);
-  EXPECT_EQ(20, flush_list[1].put_offset);
-  EXPECT_EQ(proxy1->route_id(), flush_list[2].route_id);
-  EXPECT_EQ(30, flush_list[2].put_offset);
+  GpuChannelMsg_FlushDeferredMessages::Param params;
+  ASSERT_TRUE(GpuChannelMsg_FlushDeferredMessages::Read(msg, &params));
+  std::vector<GpuDeferredMessage> deferred_messages =
+      std::get<0>(std::move(params));
+  EXPECT_EQ(3u, deferred_messages.size());
+  ExpectOrderingBarrier(deferred_messages[0], proxy1->route_id(), 10);
+  ExpectOrderingBarrier(deferred_messages[1], proxy2->route_id(), 20);
+  ExpectOrderingBarrier(deferred_messages[2], proxy1->route_id(), 30);
 
   msg = sink_.GetMessageAt(1);
   ASSERT_TRUE(msg);
   EXPECT_EQ(static_cast<uint32_t>(GpuChannelMsg_Nop::ID), msg->type());
 }
 
+TEST_F(CommandBufferProxyImplTest,
+       EnqueueDeferredMessageEnqueuesPendingOrderingBarriers) {
+  auto proxy1 = CreateAndInitializeProxy();
+
+  proxy1->OrderingBarrier(10);
+  proxy1->OrderingBarrier(20);
+  channel_->EnqueueDeferredMessage(
+      GpuCommandBufferMsg_DestroyTransferBuffer(proxy1->route_id(), 3));
+  EXPECT_EQ(0u, sink_.message_count());
+  proxy1->FlushPendingWork();
+
+  EXPECT_EQ(1u, sink_.message_count());
+  const IPC::Message* msg =
+      sink_.GetFirstMessageMatching(GpuChannelMsg_FlushDeferredMessages::ID);
+  ASSERT_TRUE(msg);
+  GpuChannelMsg_FlushDeferredMessages::Param params;
+  ASSERT_TRUE(GpuChannelMsg_FlushDeferredMessages::Read(msg, &params));
+  std::vector<GpuDeferredMessage> deferred_messages =
+      std::get<0>(std::move(params));
+  EXPECT_EQ(2u, deferred_messages.size());
+  ExpectOrderingBarrier(deferred_messages[0], proxy1->route_id(), 20);
+  EXPECT_EQ(deferred_messages[1].message.type(),
+            GpuCommandBufferMsg_DestroyTransferBuffer::ID);
+}
 }  // namespace gpu

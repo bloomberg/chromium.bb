@@ -41,8 +41,7 @@ class SharedImageStub : public IPC::Listener, public gles2::MemoryTracker {
  private:
   void OnCreateSharedImage(
       const GpuChannelMsg_CreateSharedImage_Params& params);
-  void OnDestroySharedImage(const gpu::SyncToken& sync_token,
-                            const Mailbox& mailbox);
+  void OnDestroySharedImage(const Mailbox& mailbox);
   bool MakeContextCurrentAndCreateFactory();
   void OnError();
 
