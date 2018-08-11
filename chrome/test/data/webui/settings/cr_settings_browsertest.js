@@ -499,7 +499,7 @@ CrSettingsPeoplePageTest.prototype = {
   ]),
 };
 
-// Flaky, see crbug.com/871545.
+// Flaky, see https://crbug.com/871692 .
 TEST_F('CrSettingsPeoplePageTest', 'DISABLED_All', function() {
   mocha.run();
 });
@@ -583,7 +583,7 @@ CrSettingsResetPageTest.prototype = {
   ]),
 };
 
-// Flaky, see crbug.com/871620.
+// Flaky, see https://crbug.com/871692 .
 TEST_F('CrSettingsResetPageTest', 'DISABLED_All', function() {
   mocha.run();
 });
@@ -987,7 +987,8 @@ CrSettingsCategoryDefaultSettingTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsCategoryDefaultSettingTest', 'All', function() {
+// Flaky, see https://crbug.com/871692 .
+TEST_F('CrSettingsCategoryDefaultSettingTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -1012,7 +1013,7 @@ CrSettingsCategorySettingExceptionsTest.prototype = {
   ]),
 };
 
-// Flaky, see https://crbug.com/872026.
+// Flaky, see https://crbug.com/871692 .
 TEST_F('CrSettingsCategorySettingExceptionsTest', 'DISABLED_All', function() {
   mocha.run();
 });
@@ -1039,7 +1040,7 @@ CrSettingsSiteEntryTest.prototype = {
   ]),
 };
 
-// Flaky, see https://crbug.com/872027.
+// Flaky, see https://crbug.com/871692 .
 TEST_F('CrSettingsSiteEntryTest', 'DISABLED_All', function() {
   mocha.run();
 });
@@ -1101,7 +1102,7 @@ GEN('#else');
 GEN('#define MAYBE_All All');
 GEN('#endif');
 
-// Flaky, see crbug.com/871548.
+// Flaky, see https://crbug.com/871692 .
 TEST_F('CrSettingsSiteDetailsTest', 'DISABLED_All', function() {
   mocha.run();
 });
@@ -1154,7 +1155,8 @@ CrSettingsSiteListTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsSiteListTest', 'SiteList', function() {
+// Flaky, see https://crbug.com/871692 .
+TEST_F('CrSettingsSiteListTest', 'DISABLED_SiteList', function() {
   mocha.grep('SiteList').run();
 });
 
@@ -1162,7 +1164,7 @@ TEST_F('CrSettingsSiteListTest', 'EditExceptionDialog', function() {
   mocha.grep('EditExceptionDialog').run();
 });
 
-// Flaky, see https://crbug.com/872028.
+// Flaky, see https://crbug.com/871692 .
 TEST_F('CrSettingsSiteListTest', 'DISABLED_AddExceptionDialog', function() {
   mocha.grep('AddExceptionDialog').run();
 });
@@ -1516,7 +1518,7 @@ CrSettingsEditDictionaryPageTest.prototype = {
   ]),
 };
 
-// Flaky, see crbug.com/871543.
+// Flaky, see https://crbug.com/871692 .
 TEST_F('CrSettingsEditDictionaryPageTest', 'DISABLED_All', function() {
   mocha.run();
 });
@@ -1549,7 +1551,7 @@ CrSettingsLanguagesTest.prototype = {
   ]),
 };
 
-// Flaky, see http://crbug/871666.
+// Flaky, see https://crbug.com/871692 .
 TEST_F('CrSettingsLanguagesTest', 'DISABLED_All', function() {
   mocha.run();
 });
@@ -1587,11 +1589,12 @@ TEST_F('CrSettingsLanguagesPageTest', 'LanguageMenu', function() {
   mocha.grep(assert(languages_page_tests.TestNames.LanguageMenu)).run();
 });
 
-TEST_F('CrSettingsLanguagesPageTest', 'InputMethods', function() {
+// Flaky, see https://crbug.com/871692 .
+TEST_F('CrSettingsLanguagesPageTest', 'DISABLED_InputMethods', function() {
   mocha.grep(assert(languages_page_tests.TestNames.InputMethods)).run();
 });
 
-// Flaky, see crbug.com/871544.
+// Flaky, see https://crbug.com/871692 .
 TEST_F('CrSettingsLanguagesPageTest', 'DISABLED_Spellcheck', function() {
   mocha.grep(assert(languages_page_tests.TestNames.Spellcheck)).run();
 });
@@ -1613,7 +1616,7 @@ CrSettingsRouteTest.prototype = {
   ]),
 };
 
-// Flaky, see crbug.com/871547.
+// Flaky, see https://crbug.com/871692 .
 TEST_F('CrSettingsRouteTest', 'DISABLED_All', function() {
   mocha.run();
 });
@@ -1631,13 +1634,8 @@ CrSettingsNonExistentRouteTest.prototype = {
   browsePreload: 'chrome://settings/non/existent/route',
 };
 
-// Failing on ChromiumOS dbg. https://crbug.com/709442
-GEN('#if (defined(OS_WIN) || defined(OS_CHROMEOS)) && !defined(NDEBUG)');
-GEN('#define MAYBE_NonExistentRoute DISABLED_NonExistentRoute');
-GEN('#else');
-GEN('#define MAYBE_NonExistentRoute NonExistentRoute');
-GEN('#endif');
-TEST_F('CrSettingsNonExistentRouteTest', 'MAYBE_NonExistentRoute', function() {
+// Flaky, see https://crbug.com/871692 .
+TEST_F('CrSettingsNonExistentRouteTest', 'DISABLED_All', function() {
   suite('NonExistentRoutes', function() {
     test('redirect to basic', function() {
       assertEquals(settings.routes.BASIC, settings.getCurrentRoute());
@@ -1660,7 +1658,8 @@ CrSettingsRouteDynamicParametersTest.prototype = {
   browsePreload: 'chrome://settings/search?guid=a%2Fb&foo=42',
 };
 
-TEST_F('CrSettingsRouteDynamicParametersTest', 'All', function() {
+// Flaky, see https://crbug.com/871692 .
+TEST_F('CrSettingsRouteDynamicParametersTest', 'DISABLED_All', function() {
   suite('DynamicParameters', function() {
     test('get parameters from URL and navigation', function(done) {
       assertEquals(settings.routes.SEARCH, settings.getCurrentRoute());
@@ -1761,7 +1760,8 @@ CrControlledButtonTest.prototype = {
   ]),
 };
 
-TEST_F('CrControlledButtonTest', 'All', function() {
+// Flaky, see https://crbug.com/871692 .
+TEST_F('CrControlledButtonTest', 'DISABLED_All', function() {
   mocha.run();
 });
 

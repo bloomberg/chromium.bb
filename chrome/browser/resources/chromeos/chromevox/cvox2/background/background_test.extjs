@@ -408,7 +408,7 @@ TEST_F('BackgroundTest', 'FocusInputElement', function() {
     }.bind(this));
 });
 
-// Flaky, see http://crbug.com/643902.
+// Flaky, see https://crbug.com/622387.
 TEST_F('BackgroundTest', 'DISABLED_UseEditableState', function() {
   this.runWithLoadedTree(
     function() {/*!
@@ -498,7 +498,7 @@ SYNC_TEST_F('BackgroundTest', 'GlobsToRegExp', function() {
       Background.globsToRegExp_(['url1*', 'u?l2', '*url3']).toString());
 });
 
-// Flaky, see http://crbug.com/635032
+// Flaky, see https://crbug.com/622387.
 TEST_F('BackgroundTest', 'DISABLED_ActiveOrInactive', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
@@ -1167,7 +1167,7 @@ TEST_F('BackgroundTest', 'HeadingLevels', function() {
   });
 });
 
-// Flaky, see crbug.com/693928.
+// Flaky, see https://crbug.com/622387.
 TEST_F('BackgroundTest', 'DISABLED_EditableNavigation', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
@@ -1185,7 +1185,8 @@ TEST_F('BackgroundTest', 'DISABLED_EditableNavigation', function() {
   });
 });
 
-TEST_F('BackgroundTest', 'NavigationMovesFocus', function() {
+// Flaky, see https://crbug.com/622387.
+TEST_F('BackgroundTest', 'DISABLED_NavigationMovesFocus', function() {
   this.runWithLoadedTree(function(root) {/*!
     <p>start</p>
     <input type="text"></input>
@@ -1440,7 +1441,7 @@ TEST_F('BackgroundTest', 'TableColumnHeaders', function() {
   });
 });
 
-// Flaky, see http://crbug.com/825429.
+// Flaky, see https://crbug.com/622387.
 TEST_F('BackgroundTest', 'DISABLED_ActiveDescendantUpdates', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!

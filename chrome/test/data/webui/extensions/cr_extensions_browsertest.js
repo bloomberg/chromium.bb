@@ -88,11 +88,14 @@ CrExtensionsSidebarTest = class extends CrExtensionsBrowserTest {
   }
 };
 
-TEST_F('CrExtensionsSidebarTest', 'LayoutAndClickHandlers', function() {
-  this.runMochaTest(extension_sidebar_tests.TestNames.LayoutAndClickHandlers);
-});
+// Flaky, see https://crbug.com/871692 .
+TEST_F(
+    'CrExtensionsSidebarTest', 'DISABLED_LayoutAndClickHandlers', function() {
+      this.runMochaTest(
+          extension_sidebar_tests.TestNames.LayoutAndClickHandlers);
+    });
 
-// Flaky, see crbug.com/871541.
+// Flaky, see https://crbug.com/871692 .
 TEST_F('CrExtensionsSidebarTest', 'DISABLED_SetSelected', function() {
   this.runMochaTest(extension_sidebar_tests.TestNames.SetSelected);
 });
@@ -347,7 +350,7 @@ TEST_F('CrExtensionsManagerUnitTest', 'Uninstall', function() {
   this.runMochaTest(extension_manager_tests.TestNames.Uninstall);
 });
 
-// Flaky, see crbug.com/871539.
+// Flaky, see https://crbug.com/871692 .
 TEST_F(
     'CrExtensionsManagerUnitTest', 'DISABLED_UninstallFromDetails', function() {
       this.runMochaTest(extension_manager_tests.TestNames.UninstallFromDetails);
@@ -403,9 +406,10 @@ TEST_F(
       this.runMochaTest(extension_manager_tests.TestNames.SplitItems);
     });
 
+// Flaky, see https://crbug.com/871692 .
 TEST_F(
-    'CrExtensionsManagerTestWithMultipleExtensionTypesInstalled', 'ChangePages',
-    function() {
+    'CrExtensionsManagerTestWithMultipleExtensionTypesInstalled',
+    'DISABLED_ChangePages', function() {
       this.runMochaTest(extension_manager_tests.TestNames.ChangePages);
     });
 
@@ -654,7 +658,7 @@ TEST_F('CrExtensionsNavigationHelperTest', 'Conversion', function() {
   this.runMochaTest(extension_navigation_helper_tests.TestNames.Conversions);
 });
 
-// Flaky, see crbug.com/871540.
+// Flaky, see https://crbug.com/871692 .
 TEST_F(
     'CrExtensionsNavigationHelperTest', 'DISABLED_PushAndReplaceState',
     function() {
