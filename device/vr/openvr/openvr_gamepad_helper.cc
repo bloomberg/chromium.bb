@@ -93,15 +93,15 @@ mojom::XRGamepadDataPtr OpenVRGamepadHelper::GetGamepadData(
           }
         } break;
         case vr::k_eControllerAxis_Trigger: {
-          gamepad->axes.push_back(controller_state.rAxis[j].x);
+          auto button = mojom::XRGamepadButton::New();
+          button->value = controller_state.rAxis[j].x;
           uint64_t button_mask = vr::ButtonMaskFromId(
               static_cast<vr::EVRButtonId>(vr::k_EButton_Axis0 + j));
           if ((supported_buttons & button_mask) != 0) {
-            auto button = mojom::XRGamepadButton::New();
             button->pressed =
                 (controller_state.ulButtonPressed & button_mask) != 0;
-            gamepad->buttons.push_back(std::move(button));
           }
+          gamepad->buttons.push_back(std::move(button));
         } break;
       }
     }
