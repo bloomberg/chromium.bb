@@ -3156,10 +3156,9 @@ void WebContentsImpl::SelectRange(const gfx::Point& base,
 
 #if defined(OS_MACOSX)
 void WebContentsImpl::DidChangeTextSelection(const base::string16& text,
-                                             const gfx::Range& range,
-                                             size_t offset) {
+                                             const gfx::Range& range) {
   for (auto& observer : observers_)
-    observer.DidChangeTextSelection(text, range, offset);
+    observer.DidChangeTextSelection(text, range);
 }
 #endif
 

@@ -449,8 +449,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
 
   // Invoked when text selection is changed.
   virtual void DidChangeTextSelection(const base::string16& text,
-                                      const gfx::Range& range,
-                                      size_t offset) {}
+                                      const gfx::Range& range) {}
 
   // Invoked when media is playing or paused.  |id| is unique per player and per
   // RenderFrameHost.  There may be multiple players within a RenderFrameHost
