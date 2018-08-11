@@ -598,6 +598,8 @@ class CC_EXPORT LayerTreeHostImpl
                                 const UIResourceBitmap& bitmap);
   // Deletes a UI resource.  May safely be called more than once.
   virtual void DeleteUIResource(UIResourceId uid);
+  // Evict all UI resources. This differs from ClearUIResources in that this
+  // will not immediately delete the resources' backing textures.
   void EvictAllUIResources();
   bool EvictedUIResourcesExist() const;
 
