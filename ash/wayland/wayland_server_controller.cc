@@ -49,15 +49,13 @@ class WaylandServerController::WaylandWatcher
 // static
 std::unique_ptr<WaylandServerController>
 WaylandServerController::CreateIfNecessary(
-    std::unique_ptr<exo::FileHelper> file_helper,
-    aura::Env* env) {
+    std::unique_ptr<exo::FileHelper> file_helper) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshEnableWaylandServer)) {
     return nullptr;
   }
 
-  return base::WrapUnique(
-      new WaylandServerController(std::move(file_helper), env));
+  return base::WrapUnique(new WaylandServerController(std::move(file_helper)));
 }
 
 WaylandServerController::~WaylandServerController() {
@@ -69,13 +67,12 @@ WaylandServerController::~WaylandServerController() {
 }
 
 WaylandServerController::WaylandServerController(
-    std::unique_ptr<exo::FileHelper> file_helper,
-    aura::Env* env) {
+    std::unique_ptr<exo::FileHelper> file_helper) {
   arc_notification_surface_manager_ =
       std::make_unique<ArcNotificationSurfaceManagerImpl>();
   arc_input_method_surface_manager_ =
       std::make_unique<ArcInputMethodSurfaceManager>();
-  wm_helper_ = std::make_unique<exo::WMHelper>(env);
+  wm_helper_ = std::make_unique<exo::WMHelper>(aura::Env::GetInstance());
   exo::WMHelper::SetInstance(wm_helper_.get());
   display_ = std::make_unique<exo::Display>(
       arc_notification_surface_manager_.get(),

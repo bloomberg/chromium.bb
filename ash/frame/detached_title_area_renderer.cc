@@ -8,7 +8,6 @@
 
 #include "ash/frame/caption_buttons/caption_button_model.h"
 #include "ash/frame/header_view.h"
-#include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_state.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
@@ -103,7 +102,7 @@ DetachedTitleAreaRendererForClient::DetachedTitleAreaRendererForClient(
   std::unique_ptr<views::Widget::InitParams> params =
       CreateInitParams("DetachedTitleAreaRendererForClient");
   views::NativeWidgetAura* native_widget =
-      new views::NativeWidgetAura(widget_, true, Shell::Get()->aura_env());
+      new views::NativeWidgetAura(widget_, true);
   aura::SetWindowType(native_widget->GetNativeWindow(),
                       ui::mojom::WindowType::POPUP);
   ApplyProperties(native_widget->GetNativeWindow(), property_converter,

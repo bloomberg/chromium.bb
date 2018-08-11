@@ -117,7 +117,7 @@ class ArcNotificationContentViewTest : public AshTestBase {
 
     MessageCenterView::disable_animation_for_testing = true;
 
-    wm_helper_ = std::make_unique<exo::WMHelper>(ash::Shell::Get()->aura_env());
+    wm_helper_ = std::make_unique<exo::WMHelper>(aura::Env::GetInstance());
     exo::WMHelper::SetInstance(wm_helper_.get());
     DCHECK(exo::WMHelper::HasInstance());
 

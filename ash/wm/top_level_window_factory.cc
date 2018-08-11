@@ -10,7 +10,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
-#include "ash/window_factory.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/non_client_frame_controller.h"
 #include "ash/wm/property_util.h"
@@ -174,7 +173,7 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
   // destroyed.
   ui::ws2::WindowDelegateImpl* window_delegate =
       new ui::ws2::WindowDelegateImpl();
-  aura::Window* window = window_factory::NewWindow(window_delegate).release();
+  aura::Window* window = new aura::Window(window_delegate);
   window_delegate->set_window(window);
   aura::SetWindowType(window, window_type);
   ApplyProperties(window, property_converter, *properties);

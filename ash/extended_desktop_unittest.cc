@@ -11,7 +11,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/window_factory.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
@@ -347,7 +346,7 @@ TEST_F(ExtendedDesktopTest, GetRootWindowMatching) {
 TEST_F(ExtendedDesktopTest, Capture) {
   // This test deals with input events but not visuals so don't throttle input
   // on visuals.
-  Shell::Get()->aura_env()->set_throttle_input_on_resize_for_testing(false);
+  aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
 
   UpdateDisplay("1000x600,600x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
@@ -654,7 +653,7 @@ TEST_F(ExtendedDesktopTest, PostMoveParentTransientChild) {
   wm::ActivateWindow(window);
   // Create a transient child window of |window| without parenting to |window|
   // yet.
-  std::unique_ptr<aura::Window> child = window_factory::NewWindow();
+  std::unique_ptr<aura::Window> child(new aura::Window(nullptr));
   child->SetType(aura::client::WINDOW_TYPE_NORMAL);
   child->Init(ui::LAYER_TEXTURED);
   child->SetBounds(gfx::Rect(50, 50, 50, 50));
@@ -869,7 +868,7 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
 TEST_F(ExtendedDesktopTest, PassiveGrab) {
   // This test deals with input events but not visuals so don't throttle input
   // on visuals.
-  Shell::Get()->aura_env()->set_throttle_input_on_resize_for_testing(false);
+  aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
   EventLocationRecordingEventHandler event_handler;
   ash::Shell::Get()->AddPreTargetHandler(&event_handler);
 

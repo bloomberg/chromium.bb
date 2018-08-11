@@ -29,7 +29,6 @@
 #include "ash/test_screenshot_delegate.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/utility/screenshot_controller.h"
-#include "ash/window_factory.h"
 #include "ash/wm/top_level_window_factory.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/ws/window_service_owner.h"
@@ -326,7 +325,7 @@ std::unique_ptr<aura::Window> AshTestBase::CreateChildWindow(
     const gfx::Rect& bounds,
     int shell_window_id) {
   std::unique_ptr<aura::Window> window =
-      window_factory::NewWindow(nullptr, aura::client::WINDOW_TYPE_NORMAL);
+      std::make_unique<aura::Window>(nullptr, aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_NOT_DRAWN);
   window->SetBounds(bounds);
   window->set_id(shell_window_id);
@@ -348,7 +347,7 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
     aura::client::WindowType type,
     int id,
     const gfx::Rect& bounds) {
-  aura::Window* window = window_factory::NewWindow(delegate).release();
+  aura::Window* window = new aura::Window(delegate);
   window->set_id(id);
   window->SetType(type);
   window->Init(ui::LAYER_TEXTURED);
@@ -501,7 +500,7 @@ bool AshTestBase::TestIfMouseWarpsAt(ui::test::EventGenerator* event_generator,
   return original_display.id() !=
          screen
              ->GetDisplayNearestPoint(
-                 Shell::Get()->aura_env()->last_mouse_location())
+                 aura::Env::GetInstance()->last_mouse_location())
              .id();
 }
 

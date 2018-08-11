@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/test/context_factories_for_test.h"
@@ -64,10 +63,7 @@ void AshTestSuite::Initialize() {
   }
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
-  // Simulate what happens with single-process-mash.
-  env_ = aura::Env::CreateInstance(::features::IsSingleProcessMash()
-                                       ? aura::Env::Mode::MUS
-                                       : aura::Env::Mode::LOCAL);
+  env_ = aura::Env::CreateInstance();
 }
 
 void AshTestSuite::Shutdown() {

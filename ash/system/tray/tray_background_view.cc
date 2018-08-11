@@ -23,7 +23,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_event_filter.h"
-#include "ash/window_factory.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/layer.h"
@@ -503,7 +502,7 @@ aura::Window* TrayBackgroundView::GetBubbleWindowContainer() {
           ->IsTabletModeWindowManagerEnabled() &&
       drag_controller()) {
     if (!clipping_window_.get()) {
-      clipping_window_ = window_factory::NewWindow();
+      clipping_window_ = std::make_unique<aura::Window>(nullptr);
       clipping_window_->Init(ui::LAYER_NOT_DRAWN);
       clipping_window_->layer()->SetMasksToBounds(true);
       container->AddChild(clipping_window_.get());

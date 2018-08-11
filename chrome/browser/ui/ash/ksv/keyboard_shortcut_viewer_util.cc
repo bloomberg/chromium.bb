@@ -11,7 +11,6 @@
 #include "base/time/time.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "ui/base/ui_base_features.h"
 
 namespace keyboard_shortcut_viewer_util {
 
@@ -25,15 +24,8 @@ void ToggleKeyboardShortcutViewer() {
                              &shortcut_viewer_ptr);
     shortcut_viewer_ptr->Toggle(user_gesture_time);
   } else {
-    // A value of |null| while IsSingleProcessMash() results in the keyboard
-    // shortcut viewer using DesktopNativeWidgetAura, just as all other non-ash
-    // codes does in single-process-mash.
-    aura::Window* context =
-        features::IsSingleProcessMash()
-            ? nullptr
-            : ash::Shell::Get()->GetRootWindowForNewWindows();
-    keyboard_shortcut_viewer::KeyboardShortcutView::Toggle(user_gesture_time,
-                                                           context);
+    keyboard_shortcut_viewer::KeyboardShortcutView::Toggle(
+        user_gesture_time, ash::Shell::Get()->GetRootWindowForNewWindows());
   }
 }
 

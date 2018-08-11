@@ -150,10 +150,11 @@ void NativeCursorManagerAshClassic::SetMouseEventsEnabled(
     ::wm::NativeCursorManagerDelegate* delegate) {
   delegate->CommitMouseEventsEnabled(enabled);
 
-  if (enabled)
-    Shell::Get()->aura_env()->SetLastMouseLocation(disabled_cursor_location_);
-  else
-    disabled_cursor_location_ = Shell::Get()->aura_env()->last_mouse_location();
+  if (enabled) {
+    aura::Env::GetInstance()->SetLastMouseLocation(disabled_cursor_location_);
+  } else {
+    disabled_cursor_location_ = aura::Env::GetInstance()->last_mouse_location();
+  }
 
   SetVisibility(delegate->IsCursorVisible(), delegate);
   NotifyMouseEventsEnableStateChange(enabled);

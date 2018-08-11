@@ -16,7 +16,6 @@
 #include "ash/shell_test_api.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/window_factory.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -81,7 +80,7 @@ class WorkspaceControllerTest : public AshTestBase {
   ~WorkspaceControllerTest() override = default;
 
   aura::Window* CreateTestWindowUnparented() {
-    aura::Window* window = window_factory::NewWindow().release();
+    aura::Window* window = new aura::Window(NULL);
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
     window->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
@@ -89,7 +88,7 @@ class WorkspaceControllerTest : public AshTestBase {
   }
 
   aura::Window* CreateTestWindow() {
-    aura::Window* window = window_factory::NewWindow().release();
+    aura::Window* window = new aura::Window(NULL);
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
     window->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);

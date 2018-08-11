@@ -22,13 +22,13 @@ VideoDetector::VideoDetector(viz::mojom::VideoDetectorObserverRequest request)
       scoped_session_observer_(this),
       is_shutting_down_(false),
       binding_(this, std::move(request)) {
-  Shell::Get()->aura_env()->AddObserver(this);
+  aura::Env::GetInstance()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
 }
 
 VideoDetector::~VideoDetector() {
   Shell::Get()->RemoveShellObserver(this);
-  Shell::Get()->aura_env()->RemoveObserver(this);
+  aura::Env::GetInstance()->RemoveObserver(this);
 }
 
 void VideoDetector::AddObserver(Observer* observer) {

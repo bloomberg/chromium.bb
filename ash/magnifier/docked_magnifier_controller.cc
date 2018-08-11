@@ -453,7 +453,7 @@ void DockedMagnifierController::SwitchCurrentSourceRootWindowIfNeeded(
   // reflector and the viewport widget and its layers. New viewport and
   // reflector may be recreated later if |new_root_window| is not |nullptr|.
   if (reflector_) {
-    Shell::Get()->aura_env()->context_factory_private()->RemoveReflector(
+    aura::Env::GetInstance()->context_factory_private()->RemoveReflector(
         reflector_.get());
     reflector_.reset();
   }
@@ -481,10 +481,10 @@ void DockedMagnifierController::SwitchCurrentSourceRootWindowIfNeeded(
   if (new_input_method)
     new_input_method->AddObserver(this);
 
-  DCHECK(Shell::Get()->aura_env()->context_factory_private());
+  DCHECK(aura::Env::GetInstance()->context_factory_private());
   DCHECK(viewport_widget_);
   reflector_ =
-      Shell::Get()->aura_env()->context_factory_private()->CreateReflector(
+      aura::Env::GetInstance()->context_factory_private()->CreateReflector(
           current_source_root_window_->layer()->GetCompositor(),
           viewport_magnifier_layer_.get());
 }
