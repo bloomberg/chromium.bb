@@ -1548,10 +1548,9 @@ WallpaperManager.prototype.onFileSystemError_ = function(e) {
  * Handles changing of selectedItem in wallpaper manager.
  */
 WallpaperManager.prototype.onSelectedItemChanged_ = function() {
-  this.setWallpaperAttribution(this.selectedItem_);
-
   if (!this.selectedItem_ || this.selectedItem_.source == 'ADDNEW')
     return;
+  this.setWallpaperAttribution(this.selectedItem_);
 
   if (this.selectedItem_.baseURL &&
       (this.useNewWallpaperPicker_ ||
