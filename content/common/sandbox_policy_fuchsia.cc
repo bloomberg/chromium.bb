@@ -16,6 +16,7 @@
 #include "base/fuchsia/filtered_service_directory.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/common/content_switches.h"
 #include "services/service_manager/sandbox/switches.h"
 
@@ -25,7 +26,11 @@ constexpr const char* const kRendererServices[] = {
     fuchsia::fonts::FontProvider::Name_};
 
 SandboxPolicyFuchsia::SandboxPolicyFuchsia() = default;
-SandboxPolicyFuchsia::~SandboxPolicyFuchsia() = default;
+
+SandboxPolicyFuchsia::~SandboxPolicyFuchsia() {
+  service_directory_task_runner_->DeleteSoon(FROM_HERE,
+                                             std::move(service_directory_));
+}
 
 void SandboxPolicyFuchsia::Initialize(service_manager::SandboxType type) {
   DCHECK_NE(type, service_manager::SANDBOX_TYPE_INVALID);
@@ -39,6 +44,7 @@ void SandboxPolicyFuchsia::Initialize(service_manager::SandboxType type) {
   }
 
   if (type_ == service_manager::SANDBOX_TYPE_RENDERER) {
+    service_directory_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     // Create FilteredServicesDirectory for the renderer process and export all
     // services in kRendererServices. ServiceDirectoryProxy must be initialized
     // on a thread that has async_dispatcher.
