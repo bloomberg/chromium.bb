@@ -5803,6 +5803,7 @@ if (!is_android && !is_fuchsia) {
     ]
 
     data = [
+      "//third_party/catapult/telemetry/telemetry/internal/bin/",
       "//tools/perf/run_telemetry_tests",
 
       # For isolate contract.
