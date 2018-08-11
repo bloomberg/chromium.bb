@@ -275,6 +275,7 @@
       false로 설정하면 통계 및 진단 데이터 보고가 사용 중지됩니다.
 
       설정하지 않으면 관리되지 않는 기기에서는 통계 및 진단 데이터 보고가 사용 중지되고 관리 기기에서는 사용 설정됩니다.</translation>
+<translation id="1920046221095339924">기기에서 관리 세션 허용</translation>
 <translation id="1929709556673267855">기기에 적용되는 엔터프라이즈 프린터 설정을 제공합니다.
 
       이 정책을 통해 <ph name="PRODUCT_OS_NAME" /> 기기에 프린터 설정을 제공할 수 있습니다. 정책 형식은 NativePrinters 사전과 같으며, 허용 목록 또는 차단 목록을 사용하려면 프린터별로 'id' 또는 'guid' 입력란을 추가해야 합니다.
@@ -308,6 +309,7 @@
 
       설정이 사용되거나 값이 지정되지 않으면 사용자가 UI에서 주소 정보 자동 완성 기능을 관리할 수 있게 됩니다.</translation>
 <translation id="1960840544413786116">subjectAlternativeName 확장 필드가 누락되었으나 로컬 트러스트 앵커에서 발급된 인증서 허용 여부</translation>
+<translation id="1962273523772270623">Google 서비스의 WebRTC 이벤트 로그 수집 허용</translation>
 <translation id="1964634611280150550">시크릿 모드 사용이 중지됨</translation>
 <translation id="1964802606569741174">이 정책은 Android YouTube 앱에 아무런 영향도 미치지 않습니다. YouTube의 안전 모드를 실행해야 하는 경우 Android YouTube 앱 설치를 허용하지 않아야 합니다.</translation>
 <translation id="1969212217917526199">원격 액세스 호스트의 디버그 빌드 관련 정책을 재정의합니다.
@@ -673,7 +675,6 @@
       모든 목록 항목은 다른 기기 로컬 계정을 구별하기 위해 내부적으로 사용되는 식별자를 지정합니다.</translation>
 <translation id="2769952903507981510">원격 액세스 호스트에 대한 필수 도메인 이름 구성</translation>
 <translation id="2787173078141616821">Android 상태에 관한 정보 보고</translation>
-<translation id="2793923553868251161">보안 컨텍스트로 처리될 출처입니다.</translation>
 <translation id="2799297758492717491">URL 패턴의 허용 목록에서 미디어 자동 재생 허용</translation>
 <translation id="2801230735743888564">기기가 오프라인일 때 사용자가 공룡 부활절 달걀 게임을 플레이할 수 있도록 허용합니다.
 
@@ -1865,12 +1866,6 @@
 <translation id="6155936611791017817">로그인 화면에서 큰 커서의 기본 상태를 설정</translation>
 <translation id="6157537876488211233">쉼표로 구분된 프록시 우회 규칙 목록</translation>
 <translation id="6158324314836466367">엔터프라이즈 웹 스토어 이름(지원 중단됨)</translation>
-<translation id="6164955668342404660">M69에서 지원이 중단되었습니다. 대신 OverrideSecurityRestrictionsOnInsecureOrigin을 사용하세요.
-
-      이 정책에서는 안전한 컨텍스트로 처리될 출처(URL)의 목록을 지정합니다. 이 정책을 통해 조직은 내부 웹 개발을 위한 스테이징 서버를 설정하여 개발자가 스테이징 서버에서 TLS를 배포하지 않고도 안전한 컨텍스트에 필요한 기능을 테스트할 수 있도록 구성할 수 있습니다.
-      이 정책에서 URL 목록을 설정하면 같은 URL의 쉼표로 구분된 목록에 명령줄 플래그 '--unsafely-treat-insecure-origin-as-secure'를 설정하는 것과 같은 효과를 가집니다. 이 정책이 설정되면 명령줄 플래그를 재정의합니다.
-      안전한 컨텍스트에 관해 자세히 알아보려면 https://www.w3.org/TR/secure-contexts/를 참조하세요.
-      </translation>
 <translation id="6181608880636987460"><ph name="FLASH_PLUGIN_NAME" /> 플러그인 실행을 허용하지 않을 사이트를 지정하는 URL 패턴 목록을 설정하도록 허용합니다.
 
           이 정책을 설정하지 않으면 'DefaultPluginsSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.</translation>
@@ -1997,6 +1992,11 @@
       이 정책이 설정되지 않았거나 목록이 비어있는 경우 <ph name="PRODUCT_NAME" />의 모든 스키마에 액세스할 수 있습니다.</translation>
 <translation id="6652197835259177259">로컬 관리 사용자 설정</translation>
 <translation id="6658245400435704251">업데이트를 처음 서버로 푸시한 시점부터 기기가 몇 초까지 임의로 업데이트의 다운로드를 지연시킬 수 있는지 지정합니다. 기기가 이 시간의 일부를 일반 시계 시간 기준으로, 그리고 나머지 시간을 업데이트 확인 횟수 기준으로 지연시킵니다. 모든 경우, 기기가 고착되어 업데이트 다운로드를 계속 기다리지 않도록 분산의 상한이 일정 시간으로 제한되어 있습니다.</translation>
+<translation id="6665599130599311250">이 정책이 false로 설정되어 있거나 설정되어 있지 않으면 관리 손님 세션은 https://support.google.com/chrome/a/answer/3017014에 설명된 대로 표준 '공개 세션'으로 작동합니다.
+
+      이 정책이 true로 설정되어 있으면 관리 손님 세션은 '관리 세션'으로 작동하여 일반 '공개 세션'에 적용된 여러 제한을 해제합니다.
+
+      이 정책이 설정되어 있으면 사용자가 변경하거나 재정의할 수 없습니다.</translation>
 <translation id="6665670272107384733">빠른 잠금 해제를 사용하기 위해 사용자가 비밀번호를 얼마나 자주 입력해야 하는지 설정</translation>
 <translation id="6681229465468164801">사용자에게 USB 기기 액세스 권한 허용을 요청하지 못하도록 차단된 사이트를 지정하는 URL 패턴 목록을 설정하도록 허용합니다.
 
@@ -2046,11 +2046,6 @@
 <translation id="6786967369487349613">로밍 프로필 디렉토리를 설정합니다.</translation>
 <translation id="6810445994095397827">이 사이트에서 자바스크립트 차단</translation>
 <translation id="681446116407619279">지원되는 인증 스키마</translation>
-<translation id="6832455357698286434">
-      이 정책에서는 안전한 컨텍스트로 처리될 출처(URL) 또는 호스트 이름 패턴('*.example.com' 등)의 목록을 지정합니다. 이 정책을 통해 조직은 내부 웹 개발을 위한 스테이징 서버를 설정하여 개발자가 스테이징 서버에서 TLS를 배포하지 않고도 안전한 컨텍스트에 필요한 기능을 테스트할 수 있도록 구성할 수 있습니다.
-      이 정책에서 URL 목록을 설정하면 같은 URL의 쉼표로 구분된 목록에 명령줄 플래그 '--unsafely-treat-insecure-origin-as-secure'를 설정하는 것과 같은 효과를 가집니다. 이 정책이 설정되면 명령줄 플래그를 재정의합니다.
-      안전한 컨텍스트에 관해 자세히 알아보려면 https://www.w3.org/TR/secure-contexts/를 참조하세요.
-      </translation>
 <translation id="6835883744948188639">사용자에게 재실행하는 것이 좋다는 메시지를 반복하여 표시</translation>
 <translation id="6838056959556423778"><ph name="PRODUCT_NAME" /> 기본 프린터 선택 규칙을 재정의합니다.
 
@@ -2162,6 +2157,17 @@
 <translation id="6943577887654905793">Mac 및 Linux 환경설정 이름:</translation>
 <translation id="69525503251220566">기본 검색엔진에 이미지로 검색 기능을 제공하는 매개변수</translation>
 <translation id="6956272732789158625">모든 사이트에서 키 생성 사용 허용 안함</translation>
+<translation id="6982028490425791294">
+      이 정책이 true로 설정되어 있으면 <ph name="PRODUCT_NAME" />에서 Google 서비스(예: Google Meet)에서 WebRTC 이벤트 로그를 수집하고 이러한 로그를 Google로 업로드할 수 있도록 허용합니다.
+
+      이 정책이 false로 설정되어 있거나 설정되어 있지 않으면 <ph name="PRODUCT_NAME" />에서 이러한 로그를 수집하거나 업로드할 수 없습니다.
+
+      이러한 로그에는 주고받는 RTP 패킷의 시간 및 크기, 네트워크 혼잡에 관한 의견, 오디오/동영상 프레임의 시간 및 품질에 관한 메타데이터 등과 같은 정보가 포함됩니다. 이 정보는 대역폭 예상 문제 등과 같은 Chrome에서 음성/화상 통화 시 문제를 디버깅할 때 유용합니다. 로그에는 통화의 음성 또는 동영상 콘텐츠가 포함되어 있지 않습니다.
+
+      이 데이터 수집은 Google 행아웃, Google Meet와 같은 Google 웹 서비스에 의해서만 실행됩니다.
+
+      이러한 로그는 세션 ID를 통해 Google 서비스 자체에서 수집한 다른 로그와 연결될 수 있습니다. 이는 디버깅을 더 쉽게 하기 위해서입니다.
+      </translation>
 <translation id="6994082778848658360">내장된 보안 요소 하드웨어가 2단계 인증과 호환될 경우, 2단계 인증을 제공하는 데 어떻게 사용할지 지정합니다. 기기 전원 버튼은 사용자가 실제로 있는지 감지하는 데 사용됩니다.
 
       '사용 안함'을 선택하면 2차 요소가 제공되지 않습니다.
@@ -2408,7 +2414,6 @@
 <translation id="7617319494457709698">이 정책은 원격 인증에 <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> 기능 <ph name="CHALLENGE_USER_KEY_FUNCTION" />을(를) 사용하도록 허용된 확장 프로그램을 지정합니다. API를 사용하려면 확장 프로그램을 이 목록에 추가해야 합니다.
 
           확장 프로그램이 목록에 없거나 목록이 설정되지 않은 경우, API에 호출 시 오류 코드가 표시되며 호출에 실패합니다.</translation>
-<translation id="7620300057302654932">안전한 컨텍스트로 처리될 출처 또는 호스트 이름 패턴입니다.</translation>
 <translation id="7625444193696794922">기기에서 사용해야 할 특정 배포 채널을 지정합니다.</translation>
 <translation id="7632724434767231364">GSSAPI 라이브러리 이름</translation>
 <translation id="7635471475589566552"><ph name="PRODUCT_NAME" />에서 애플리케이션 언어를 설정하고 사용자가 언어를 변경할 수 없게 합니다.

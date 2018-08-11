@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ml">
 <translation id="100812568230599391">ഡിസ്‌പ്ലേ ശൈലിയെ ഇടകലർത്തിയുള്ള രീതിയിലേക്ക് മാറ്റുക.</translation>
+<translation id="1011903154582639569">ഒരു കീ കണ്ടെത്തുക, തുടർന്ന് ടൈപ്പ് ചെയ്യാൻ ഉയർത്തുക</translation>
 <translation id="1012173283529841972">ലിസ്റ്റ് ഇനം</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">നിങ്ങൾ ആദ്യമായാണോ ChromeVox സംഭാഷണ ഫീഡ്‌ബാക്ക് ഉപയോഗിക്കുന്നത്? ChromeVox ആരംഭിക്കാൻ ആവശ്യമായ കാര്യങ്ങളെ കുറിച്ച് ഈ ട്യൂട്ടോറിയലിൽ വിവരിക്കുന്നു.</translation>
@@ -162,6 +163,7 @@
 <translation id="2553108862507765288">വ്യാകരണ പിശക്</translation>
 <translation id="257674075312929031">ഗ്രൂപ്പ്</translation>
 <translation id="2582407057977008361">അരികിൽ</translation>
+<translation id="2592212930811759050">എഡിറ്റിംഗ് ആരംഭിക്കാൻ രണ്ടുതവണ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="2606210917827248971">ഇവ ഉൾപ്പെടുന്നു {COUNT,plural, =1{# ഇനം}other{# ഇനങ്ങൾ}}</translation>
 <translation id="2614981083756825552">മാത്ത് ML ലേഔട്ട്</translation>
 <translation id="2624431853467395961">"അറിയുക" മോഡ് തുറക്കുക</translation>

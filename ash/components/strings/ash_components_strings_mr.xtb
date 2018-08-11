@@ -5,7 +5,7 @@
 <translation id="1122869341872663659"><ph name="QUERY" /> साठी <ph name="N" /> शोध परिणाम दाखवत आहे</translation>
 <translation id="1195667586424773550">लिंक ड्रॅग करून टॅबच्या अ‍ॅड्रेस बारवर आणा</translation>
 <translation id="1204450209689312104">एक नवीन विंडो गुप्त मोडमध्ये उघडा</translation>
-<translation id="1251638888133819822">पूर्णस्क्रीन भिंग सुरू किंवा बंद करा</translation>
+<translation id="1251638888133819822">क्षेत्रे भिंग सुरू किंवा बंद करा</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">तुमचे हे पेज प्रिंट करा</translation>
@@ -67,7 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> किंवा <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">एका नवीन फोल्डरमध्ये बुकमार्क म्हणून तुमच्या या विंडोमधील उघडलेली सर्व पेज सेव्ह करा</translation>
 <translation id="355103131818127604">बॅकग्राउंडला एका नवीन टॅबमध्ये लिंक उघडा</translation>
-<translation id="3622741593887335780">झूम इन करा (डॉक केलेले असताना किंवा पूर्णस्क्रीन मॅग्निफायर सुरू केलेले असताना)</translation>
+<translation id="3622741593887335780">झूम इन करा (डॉक केलेले असताना किंवा क्षेत्रे मॅग्निफायर सुरू केलेले असताना)</translation>
 <translation id="3649256019230929621">विंडो लहान करा</translation>
 <translation id="3655154169297074232">टॅब आणि विंडो</translation>
 <translation id="3668361878347172356">तुमची याआधीची क्रिया पुन्हा करा</translation>
@@ -136,7 +136,7 @@
 <translation id="6425378783626925378">तुमच्या शेल्फवरील १-८ आयकनवर क्लिक करा</translation>
 <translation id="6435207348963613811">तुमच्या शेल्फवरील आधीचे आयटम हायलाइट करा</translation>
 <translation id="6445033640292336367">टॅबला त्याच्या मूळ स्थितीत परत न्या</translation>
-<translation id="6474744297082284761">झूम अाउट करा (डॉक केलेले असताना किंवा पूर्णस्क्रीन मॅग्निफायर सुरू केलेले असताना)</translation>
+<translation id="6474744297082284761">झूम अाउट करा (डॉक केलेले असताना किंवा क्षेत्रे मॅग्निफायर सुरू केलेले असताना)</translation>
 <translation id="649811797655257835">फाइल निवडा, त्यानंतर <ph name="SPACE" /> दाबा</translation>
 <translation id="6556040137485212400">सर्वाधिक काळासाठी न वापरली गेलेली विंडो उघडा</translation>
 <translation id="666343722268997814">हायलाइट केलेल्या आयटमसाठी राइट क्लिक मेनू उघडा</translation>
@@ -182,7 +182,7 @@
 <translation id="8644639153978066712">फायली अ‍ॅप मध्ये लपलेल्या फायली प्रदर्शित करा</translation>
 <translation id="8717459106217102612">आधीचा शब्द किंवा अक्षर निवडा</translation>
 <translation id="8727232706774971183">तुमच्या सूचना पाहा</translation>
-<translation id="8855885154700222542">पूर्णस्क्रीन की</translation>
+<translation id="8855885154700222542">क्षेत्रे की</translation>
 <translation id="88986195241502842">पृष्ठ खाली</translation>
 <translation id="8924883688469390268">मागील वापरकर्त्यावर स्विच करा</translation>
 <translation id="8977648847395357314">अॅड्रेस बारमध्ये आशय निवडा</translation>

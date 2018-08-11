@@ -61,6 +61,7 @@
 <translation id="1404122904123200417">ฝังอยู่ใน <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“ไม่ติดตาม”</translation>
 <translation id="1407135791313364759">เปิดทั้งหมด</translation>
+<translation id="1409426117486808224">มุมมองอย่างง่ายสำหรับแท็บที่เปิดไว้</translation>
 <translation id="1409879593029778104">ระบบป้องกันการดาวน์โหลด <ph name="FILE_NAME" /> เพราะมีไฟล์นี้อยู่แล้ว</translation>
 <translation id="1414981605391750300">กำลังติดต่อ Google อาจใช้เวลาประมาณ 1 นาที…</translation>
 <translation id="1416550906796893042">เวอร์ชันของแอปพลิเคชัน</translation>
@@ -80,6 +81,7 @@
 <translation id="1566400915470565838">โปรดเชื่อมต่ออินเทอร์เน็ตเพื่อใช้ <ph name="APP_NAME" /></translation>
 <translation id="1569387923882100876">อุปกรณ์ที่เชื่อมต่อ</translation>
 <translation id="1571304935088121812">คัดลอกชื่อผู้ใช้</translation>
+<translation id="1576370611341449972">การดาวน์โหลดจะเกิดขึ้นเมื่อเชื่อมต่อ Wi-Fi เท่านั้น</translation>
 <translation id="1612196535745283361">Chrome ต้องมีสิทธิ์เข้าถึงตำแหน่งเพื่อสแกนหาอุปกรณ์ ตัวเลือกสิทธิ์เข้าถึงตำแหน่ง<ph name="BEGIN_LINK" />สำหรับอุปกรณ์เครื่องนี้ปิดอยู่<ph name="END_LINK" /></translation>
 <translation id="162035744160882748">เปิดการซิงค์ การปรับเปลี่ยนในแบบของคุณ และบริการอื่นๆ ของ Google</translation>
 <translation id="1620510694547887537">กล้องถ่ายรูป</translation>
@@ -344,6 +346,7 @@
 <translation id="3810838688059735925">วิดีโอ</translation>
 <translation id="3810973564298564668">จัดการ</translation>
 <translation id="3819178904835489326">ลบการดาวน์โหลด <ph name="NUMBER_OF_DOWNLOADS" /> รายการแล้ว</translation>
+<translation id="3819562311292413223">ดาวน์โหลดบทความสำหรับคุณ</translation>
 <translation id="3822502789641063741">ล้างพื้นที่เก็บข้อมูลเว็บไซต์ไหม</translation>
 <translation id="385051799172605136">กลับ</translation>
 <translation id="3859306556332390985">ไปข้างหน้า</translation>
@@ -383,6 +386,7 @@
 <translation id="4113030288477039509">มีการจัดการโดยผู้ดูแลระบบ</translation>
 <translation id="4116038641877404294">ดาวน์โหลดหน้าเพื่อใช้งานแบบออฟไลน์</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d บุ๊กมาร์ก}other{%1$d บุ๊กมาร์ก}}</translation>
+<translation id="4149994727733219643">มุมมองอย่างง่ายสำหรับหน้าเว็บ</translation>
 <translation id="4159800535322890630">บล็อกเว็บไซต์ไม่ให้เข้าถึงเซ็นเซอร์</translation>
 <translation id="4165986682804962316">การตั้งค่าไซต์</translation>
 <translation id="4170011742729630528">บริการนี้ยังไม่สามารถใช้ได้ โปรดลองอีกครั้งในภายหลัง</translation>
@@ -553,6 +557,7 @@
 <translation id="5512137114520586844">บัญชีนี้ได้รับการจัดการโดย <ph name="PARENT_NAME" /></translation>
 <translation id="5514904542973294328">ปิดใช้โดยผู้ดูแลระบบของอุปกรณ์นี้</translation>
 <translation id="5515439363601853141">ปลดล็อกเพื่อดูรหัสผ่าน</translation>
+<translation id="5515716148775388141">ไอคอนต่างๆ ย้ายไปที่ด้านล่างของหน้าจอแล้ว</translation>
 <translation id="5517095782334947753">คุณมีบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จาก <ph name="FROM_ACCOUNT" /></translation>
 <translation id="5524843473235508879">การเปลี่ยนเส้นทางถูกบล็อก</translation>
 <translation id="5527082711130173040">Chrome ต้องมีสิทธิ์เข้าถึงตำแหน่งเพื่อสแกนหาอุปกรณ์ โปรด<ph name="BEGIN_LINK1" />อัปเดตสิทธิ์<ph name="END_LINK1" /> การเข้าถึงตำแหน่ง<ph name="BEGIN_LINK2" />สำหรับอุปกรณ์เครื่องนี้ยังปิดอยู่<ph name="END_LINK2" /></translation>
@@ -756,6 +761,7 @@
 <translation id="7016516562562142042">อนุญาตสำหรับเครื่องมือค้นหาปัจจุบัน</translation>
 <translation id="7021515813996758557">ดาวน์โหลด <ph name="FILE_NAME" /> แล้ว</translation>
 <translation id="7022756207310403729">เปิดในเบราว์เซอร์</translation>
+<translation id="702463548815491781">แนะนำให้ใช้เมื่อ TalkBack หรือการเข้าถึงด้วยสวิตช์เปิดอยู่</translation>
 <translation id="7029809446516969842">รหัสผ่าน</translation>
 <translation id="7031882061095297553">ซิงค์กับ</translation>
 <translation id="7032663816368481562">เมื่อคุณแตะ "ดูคำแนะนำแบบนี้อีก" <ph name="ICON" /> ในแถบที่อยู่ คำแนะนำจะแสดงลิงก์ด่วนไปยังหน้าที่เกี่ยวข้อง ระบบจะส่ง URL ของหน้าที่คุณเข้าถึงไปยัง Google</translation>
@@ -784,6 +790,7 @@
 <translation id="7251326866581677552">บล็อกจากบางไซต์</translation>
 <translation id="7253272406652746122">เพิ่มบัญชี Google จากหน้า "บัญชี" ในแอปการตั้งค่าของอุปกรณ์</translation>
 <translation id="7274013316676448362">เว็บไซต์ที่ถูกบล็อก</translation>
+<translation id="72867290065237936">แตะเพื่อสลับระหว่างการแนะนำรหัสผ่านและแป้นพิมพ์</translation>
 <translation id="729975465115245577">อุปกรณ์ของคุณไม่มีแอปไว้จัดเก็บไฟล์รหัสผ่าน</translation>
 <translation id="7302081693174882195">รายละเอียด: จัดเรียงตามปริมาณเน็ตมือถือที่ประหยัดได้</translation>
 <translation id="7333031090786104871">ยังเพิ่มไซต์ก่อนหน้าอยู่</translation>

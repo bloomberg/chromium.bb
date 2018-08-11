@@ -106,7 +106,6 @@
 <translation id="1639239467298939599">Đang tải</translation>
 <translation id="1640180200866533862">Chính sách người dùng</translation>
 <translation id="1640244768702815859">Hãy thử <ph name="BEGIN_LINK" />truy cập trang chủ của trang web<ph name="END_LINK" />.</translation>
-<translation id="1644184664548287040">Cấu hình mạng không hợp lệ và không thể nhập được.</translation>
 <translation id="1644574205037202324">Lịch sử</translation>
 <translation id="1645368109819982629">Giao thức không được hỗ trợ</translation>
 <translation id="1655462015569774233">{1,plural, =1{Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này đã hết hạn hôm qua. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn. Đồng hồ máy tính của bạn hiện được đặt là <ph name="CURRENT_DATE" />. Ngày này có đúng không? Nếu không đúng, bạn phải sửa lại đồng hồ của hệ thống rồi làm mới trang này.}other{Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này đã hết hạn cách đây # ngày. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn. Đồng hồ máy tính của bạn hiện được đặt là <ph name="CURRENT_DATE" />. Ngày này có đúng không? Nếu không đúng, bạn phải sửa lại đồng hồ của hệ thống rồi làm mới trang này.}}</translation>
@@ -207,6 +206,7 @@
 <translation id="2359808026110333948">Tiếp tục</translation>
 <translation id="2365563543831475020">Báo cáo sự cố được ghi lại vào <ph name="CRASH_TIME" /> chưa được tải lên</translation>
 <translation id="2367567093518048410">Mức độ</translation>
+<translation id="2378238891085281592">Bạn đã chuyển sang chế độ riêng tư</translation>
 <translation id="2384307209577226199">Đặt mặc định trong môi trường doanh nghiệp</translation>
 <translation id="2386255080630008482">Chứng chỉ của máy chủ đã bị thu hồi.</translation>
 <translation id="2392959068659972793">Hiển thị chính sách không có giá trị được đặt</translation>
@@ -283,7 +283,6 @@
 <translation id="2941952326391522266">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này là từ <ph name="DOMAIN2" />. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="2948083400971632585">Bạn có thể tắt mọi proxy được định cấu hình cho kết nối từ trang cài đặt.</translation>
 <translation id="2955913368246107853">Đóng thanh tìm</translation>
-<translation id="2958431318199492670">Cấu hình mạng không tuân thủ tiêu chuẩn ONC. Các bộ phận của cấu hình có thể không được nhập.</translation>
 <translation id="2969319727213777354">Để thiết lập kết nối an toàn, bạn cần đặt thời gian đúng cho đồng hồ. Nguyên nhân là do chứng chỉ mà các trang web dùng để tự nhận dạng chỉ có hiệu lực trong khoảng thời gian cụ thể. Vì đồng hồ trên thiết bị của bạn không đúng nên Chrome không thể xác minh các chứng chỉ này.</translation>
 <translation id="2972581237482394796">&amp;Làm lại</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, hiện đã chọn. <ph name="ROW_CONTENT" /></translation>
@@ -514,6 +513,7 @@
 <translation id="450710068430902550">Chia sẻ với quản trị viên</translation>
 <translation id="4515275063822566619">Thẻ và địa chỉ từ Chrome và Tài khoản Google của bạn (<ph name="ACCOUNT_EMAIL" />). Bạn có thể quản lý thẻ và địa chỉ trong <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" />.</translation>
 <translation id="4522570452068850558">Chi tiết</translation>
+<translation id="4524805452350978254">Quản lý thẻ</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Thử tắt tiện ích.</translation>
 <translation id="457875822857220463">Giao hàng</translation>
@@ -700,6 +700,7 @@
 <translation id="5866257070973731571">Thêm số điện thoại</translation>
 <translation id="5869405914158311789">Không thể truy cập trang web này</translation>
 <translation id="5869522115854928033">Mật khẩu đã lưu</translation>
+<translation id="5887400589839399685">Đã lưu thẻ</translation>
 <translation id="5893752035575986141">Thẻ tín dụng được chấp nhận.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (được đồng bộ hóa)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Đang sử dụng 1 cookie}other{Đang sử dụng # cookie}}</translation>
@@ -801,7 +802,6 @@
 <translation id="679355240208270552">Đã bỏ qua vì chính sách đã tắt tìm kiếm mặc định.</translation>
 <translation id="681021252041861472">Trường bắt buộc</translation>
 <translation id="6810899417690483278">ID tùy chỉnh</translation>
-<translation id="6820686453637990663">CVC</translation>
 <translation id="6824266427216888781">Không tải được dữ liệu khu vực</translation>
 <translation id="6825578344716086703">Bạn đã cố gắng truy cập vào <ph name="DOMAIN" /> nhưng máy chủ xuất trình một chứng chỉ được ký bằng một thuật toán chữ ký yếu (chẳng hạn như SHA-1). Điều này có nghĩa là thông tin đăng nhập bảo mật mà máy chủ xuất trình có thể đã bị giả mạo và máy chủ đó có thể không phải là máy chủ mà bạn mong đợi (bạn có thể đang kết nối với kẻ tấn công).</translation>
 <translation id="6831043979455480757">Dịch</translation>
@@ -820,11 +820,13 @@
 <translation id="6948701128805548767">Để xem các yêu cầu và phương thức nhận hàng, hãy chọn một địa chỉ</translation>
 <translation id="6949872517221025916">Đặt lại mật khẩu</translation>
 <translation id="6950684638814147129">Lỗi khi phân tích cú pháp giá trị JSON: <ph name="ERROR" /></translation>
+<translation id="6957624206566198865">Mở trang trong tab Riêng tư mới</translation>
 <translation id="6957887021205513506">Chứng chỉ của máy chủ dường như giả mạo.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Thiết bị</translation>
 <translation id="6970216967273061347">Quận</translation>
 <translation id="6973656660372572881">Cả hai máy chủ proxy cố định và URL tập lệnh .pac đều được chỉ định.</translation>
+<translation id="6984479912851154518">Đang rời khỏi chế độ riêng tư để thanh toán qua một ứng dụng bên ngoài. Bạn có muốn tiếp tục không?</translation>
 <translation id="6989763994942163495">Hiển thị cài đặt nâng cao...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Các khoản phí này có thể là khoản thu một lần hoặc định kỳ và có thể không rõ ràng.</translation>
@@ -1076,6 +1078,7 @@
 <translation id="8820817407110198400">Dấu trang</translation>
 <translation id="883848425547221593">Dấu trang Khác</translation>
 <translation id="884264119367021077">Ðịa chỉ giao hàng</translation>
+<translation id="8846319957959474018">Mở ứng dụng dễ dàng nhờ các dấu trang</translation>
 <translation id="884923133447025588">Không tìm thấy cơ chế thu hồi.</translation>
 <translation id="885730110891505394">Chia sẻ với Google</translation>
 <translation id="8858065207712248076">Chrome khuyên bạn nên đặt lại mật khẩu <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> của mình nếu đã sử dụng lại mật khẩu này trên các trang web khác.</translation>

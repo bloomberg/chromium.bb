@@ -167,6 +167,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="3588820906588687999">Mở ảnh trong tab mới</translation>
 <translation id="3603009562372709545">Sao chép URL liên kết</translation>
 <translation id="3607167657931203000">Dữ liệu tự động điền</translation>
+<translation id="360930808415985584">Kiểm soát tính năng đồng bộ hóa, cá nhân hóa và các nội dung khác</translation>
 <translation id="3609785682760573515">Đang đồng bộ hóa...</translation>
 <translation id="3628119975092896051">Danh sách đọc của bạn khả dụng khi ngoại tuyến. Để thêm một trang vào danh sách đọc, nhấn <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Tải trước trang web</translation>
@@ -213,6 +214,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="4508750114462689118">Đóng quảng cáo đăng nhập</translation>
 <translation id="4526249700380860531">Xem và quản lý mật khẩu đã lưu tại <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Thử đăng nhập lại.</translation>
+<translation id="4541241553780729349">Dữ liệu đồng bộ hóa với Google và các tính năng bạn sử dụng sẽ không thay đổi</translation>
 <translation id="457386861538956877">Thêm...</translation>
 <translation id="461440297010471931">Tìm kiếm bằng Google</translation>
 <translation id="4619615317237390068">Tab từ các thiết bị khác</translation>
@@ -421,7 +423,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="8080028325999236607">Đóng tất cả các tab</translation>
 <translation id="8114753159095730575">Hiện đã có tệp tải xuống. Bạn có thể sử dụng các tùy chọn ở gần cuối màn hình.</translation>
 <translation id="8160722851663543621">Gửi nội dung tìm kiếm từ thanh địa chỉ và hộp tìm kiếm cũng như một số cookie đến công cụ tìm kiếm mặc định của bạn</translation>
-<translation id="8178325540017397816">Các mục bạn đã chọn sẽ bị xóa</translation>
 <translation id="8205564605687841303">Hủy</translation>
 <translation id="8225985093977202398">Tệp và hình ảnh được lưu vào bộ nhớ đệm</translation>
 <translation id="8261506727792406068">Xóa</translation>

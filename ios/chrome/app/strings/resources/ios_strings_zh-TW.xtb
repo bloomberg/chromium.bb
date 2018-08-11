@@ -167,6 +167,7 @@
 <translation id="3588820906588687999">在新分頁中開啟圖片</translation>
 <translation id="3603009562372709545">複製連結網址</translation>
 <translation id="3607167657931203000">自動填入資料</translation>
+<translation id="360930808415985584">管理同步處理、個人化功能等更多設定</translation>
 <translation id="3609785682760573515">同步處理中...</translation>
 <translation id="3628119975092896051">閱讀清單可供離線存取。如要將網頁加入閱讀清單，請輕觸 <ph name="SHARE_OPENING_ICON" />。</translation>
 <translation id="3638472932233958418">預先載入網頁</translation>
@@ -213,6 +214,7 @@
 <translation id="4508750114462689118">關閉登入提示</translation>
 <translation id="4526249700380860531">您可以前往 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看及管理已儲存的密碼</translation>
 <translation id="4536418791685807335">請嘗試重新登入。</translation>
+<translation id="4541241553780729349">同步處理至 Google 的資料和你所使用的功能不會有所改變</translation>
 <translation id="457386861538956877">更多…</translation>
 <translation id="461440297010471931">目前的搜尋引擎是 Google</translation>
 <translation id="4619615317237390068">在其他裝置上開啟的分頁</translation>
@@ -421,7 +423,6 @@
 <translation id="8080028325999236607">關閉所有分頁</translation>
 <translation id="8114753159095730575">可下載檔案，相關選項位於畫面底部。</translation>
 <translation id="8160722851663543621">將網址列和搜尋框中的搜尋字詞以及部分 Cookie 傳送給你的預設搜尋引擎</translation>
-<translation id="8178325540017397816">系統將移除所選項目</translation>
 <translation id="8205564605687841303">取消</translation>
 <translation id="8225985093977202398">快取圖片和檔案</translation>
 <translation id="8261506727792406068">刪除</translation>

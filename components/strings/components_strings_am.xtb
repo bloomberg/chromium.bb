@@ -106,7 +106,6 @@
 <translation id="1639239467298939599">በመጫን ላይ</translation>
 <translation id="1640180200866533862">የተጠቃሚ መምሪያዎች</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />የጣቢያውን መነሻ ገጽ ለመጎብኘት<ph name="END_LINK" /> ይሞክሩ።</translation>
-<translation id="1644184664548287040">የአውታረ መረቡ ውቅር ልክ ያልሆነ እና ሊመጣ የማይችል ነው።</translation>
 <translation id="1644574205037202324">ታሪክ</translation>
 <translation id="1645368109819982629">የማይደገፍ ፕሮቶኮል</translation>
 <translation id="1655462015569774233">{1,plural, =1{ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ለማረጋገጥ አይችልም፤ የደህንነት ማረጋገጫ እውቅና ማረጋገጫው ትላንትና ጊዜው አልፎበታል። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል። የኮምፒውተርዎ ሰዓት አሁን በ<ph name="CURRENT_DATE" /> ተቀናብሯል። ትክክል ይመስልዎታል? ትክክል ካልሆነ፣ የእርስዎን ስርዓት ሰዓት ማስተካከል እና ይህንን ገፅ ማደስ አለብዎ።}one{ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ለማረጋገጥ አይችልም፤ የደህንነት ማረጋገጫ እውቅና ማረጋገጫው ከ# ቀኖች በፊት ጊዜው አልፏል። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል። የኮምፒውተርዎ ሰዓት አሁን በ<ph name="CURRENT_DATE" /> ተቀናብሯል። ትክክል ይመስልዎታል? ትክክል ካልሆነ፣ የእርስዎን ስርዓት ሰዓት ማስተካከል እና ይህንን ገፅ ማደስ አለብዎ።}other{ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ለማረጋገጥ አይችልም፤ የደህንነት ማረጋገጫ እውቅና ማረጋገጫው ከ# ቀኖች በፊት ጊዜው አልፏል። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል። የኮምፒውተርዎ ሰዓት አሁን በ<ph name="CURRENT_DATE" /> ተቀናብሯል። ትክክል ይመስልዎታል? ትክክል ካልሆነ፣ የእርስዎን ስርዓት ሰዓት ማስተካከል እና ይህንን ገፅ ማደስ አለብዎ።}}</translation>
@@ -284,7 +283,6 @@
 <translation id="2941952326391522266">ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ሊያረጋግጥ አልቻለም፤ የደህንነት እውቅና ማረጋገጫው በ<ph name="DOMAIN2" /> ነው የተሰጠው። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል።</translation>
 <translation id="2948083400971632585">ከቅንብሮች ገጽ ሆነው ማናቸውንም ለግንኙነት የተዋቀሩ ተኪዎችን ማሰናከል ይችላሉ።</translation>
 <translation id="2955913368246107853">አግኝ አሞሌን ዝጋ</translation>
-<translation id="2958431318199492670">የአውታረ መረብ ውቅሩ በኦ ኤን ሲ መስፈርቱ አይገዛም። አንዳንድ የውቅሩ ክፍሎች ላይመጡ ይችላሉ።</translation>
 <translation id="2969319727213777354">ደህንነቱ የተጠበቀ ግንኙነት ለመመስረት የእርስዎ ሰዓት በትክክል መዋቀር አለበት። ይሄ የሆነበት ምክንያት ድር ጣቢያዎች ራሳቸውን ለማሳወቅ የሚጠቀሙባቸው የእውቅና ማረጋገጫዎች የሚሰሩት ለተወሰኑ ጊዜዎች ብቻ ስለሆነ ነው። የእርስዎ መሣሪያ ሰዓት ትክክል እንዳለመሆኑ መጠን Google Chrome እነዚህን የእውቅና ማረጋገጫዎች ሊያረጋግጥ አይችልም።</translation>
 <translation id="2972581237482394796">&amp;ድገም</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />፣ አሁን ላይ ተመርጧል። <ph name="ROW_CONTENT" /></translation>
@@ -355,7 +353,6 @@
 <translation id="3391030046425686457">የመላኪያ አድራሻ</translation>
 <translation id="3395827396354264108">የመውሰጃ ዘዴ</translation>
 <translation id="3399952811970034796">የመላኪያ አድራሻ</translation>
-<translation id="3409072600744224192">የእርስዎን ዕልባቶችን በሁሉም መሣሪያዎችዎ ላይ ለማግኘት <ph name="SIGN_IN_LINK" />።</translation>
 <translation id="3422248202833853650">የማህደረ ትውስታ ቦታን ለማስለቀቅ ከሌሎች ፕሮግራሞች ዘግተው ለመውጣት ይውጡ።</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> አሁን ላይ ሊደረስበት አይችልም።</translation>
 <translation id="3427092606871434483">ፍቀድ (ነባሪ)</translation>
@@ -581,7 +578,6 @@
 <translation id="5045550434625856497">ትክክል ያልሆነ የይለፍ ቃል</translation>
 <translation id="5056549851600133418">ለእርስዎ የሚሆኑ ጽሑፎች</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />የወኪሉን አድራሻ መፈተሽ<ph name="END_LINK" /></translation>
-<translation id="5072538239104292703">ካርዶችዎን በሁሉም መሣሪያዎችዎ ላይ ለማግኘት በመለያ ይግቡና ስምረትን ያብሩ።</translation>
 <translation id="5086888986931078152">ከአንዳንድ ጣቢያዎች የመጣ ጥበቃ የሚደረግለት የይዘት መዳረሻ ሊያጡ ይችላሉ።</translation>
 <translation id="5087286274860437796">የአገልጋይ የዕውቅና ማረጋገጫ በዚህ ጊዜ ላይ የሚሰራ አይደለም።</translation>
 <translation id="5087580092889165836">ካርድ አክል</translation>
@@ -627,7 +623,6 @@
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />፣ <ph name="MATCH_POSITION" /> ከ<ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">የእውቂያ መረጃ ይምረጡ</translation>
 <translation id="5327248766486351172">ስም</translation>
-<translation id="5327567770033251652">ስምረትን አብራ</translation>
 <translation id="5332219387342487447">የመላኪያ መንገድ</translation>
 <translation id="5355557959165512791">የዕውቅና ማረጋገጫው ስለተሻረ <ph name="SITE" />ን መጎብኘት አይችሉም። የአውታረ መረብ ስህተቶች እና ጥቃቶች አብዛኛው ጊዜ ጊዜያዊ ብቻ ናቸው፣ ስለዚህ ይህ ገጽ በኋላ ላይ ሊሠራ ይችላል።</translation>
 <translation id="536296301121032821">የመምሪያ ቅንብሮችን ማከማቸት አልተሳካም</translation>
@@ -806,7 +801,6 @@
 <translation id="679355240208270552">ነባሪው ፍለጋ በመምሪያ ስላልነቃ ችላ ተብሏል።</translation>
 <translation id="681021252041861472">የሚያስፈልግ መስክ</translation>
 <translation id="6810899417690483278">የብጁነት መታወቂያ</translation>
-<translation id="6820686453637990663">CVC</translation>
 <translation id="6824266427216888781">የክልሎች ውሂብን መጫን አልተሳካም</translation>
 <translation id="6825578344716086703">እርስዎ <ph name="DOMAIN" />ን ለመድረስ ሞክረዋል፣ ነገር ግን አገልጋዩ ደካማ የፊርማ ስልተ-ቀመር (እንደ SHA-1 ያለ) በመጠቀም የተፈረመ የዕውቅና ማረጋገጫ ነው ያቀረበው። ይህ ማለት አገልጋዩ ያቀረበው የደህንነት ምስክርነቶች የተጭበረበሩ ሊሆኑ ይችላሉ፣ እናም አገልጋዩ እርስዎ የሚጠብቁት አገልጋይ ላይሆን ይችላል (ከአጥቂ ጋር እየተገናኙ ሊሆን ይችላል)።</translation>
 <translation id="6831043979455480757">መተርጎም</translation>
@@ -822,7 +816,6 @@
 <translation id="6915804003454593391">ተጠቃሚ፦</translation>
 <translation id="6944692733090228304">በ<ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> ወደ የማይተዳደር ጣቢያ ላይ የእርስዎን የይለፍ ቃል አስገብተዋል። ለእርስዎ መለያ ጥበቃ ለማድረግ፣ በሌሎች መተግበሪያዎች እና ጣቢያዎች ላይ የእርስዎን የይለፍ ቃል ዳግም አይጠቀሙ።</translation>
 <translation id="6945221475159498467">ይምረጡ</translation>
-<translation id="6948540501704460596">የእርስዎን ዕልባቶችን በሁሉም መሣሪያዎችዎ ላይ ለማግኘት <ph name="SYNC_LINK" />።</translation>
 <translation id="6948701128805548767">የመውሰጃ ዘዴዎችን እና መስፈርቶችን ለመመልከት አድራሻ ይምረጡ</translation>
 <translation id="6949872517221025916">የይለፍ ቃል ዳግም ያስገቡ</translation>
 <translation id="6950684638814147129">የJSON እሴቱን በመተንተን ላይ ሳለ ስህተት፦ <ph name="ERROR" /></translation>
@@ -837,7 +830,6 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">እነዚህ ክፍያዎች የአንድ ጊዜ ወይም ተደጋጋሚ፣ እና የማያስታውቁ ሊሆኑ ይችላሉ።</translation>
 <translation id="7029809446516969842">የይለፍ ቃላት</translation>
-<translation id="7042837854211185817">ካርዶችዎን በሁሉም መሣሪያዎች ላይ ለማግኘት ስምረትን ያብሩ።</translation>
 <translation id="7050187094878475250"><ph name="DOMAIN" /> ጋር ለመድረስ ሞክረዋል፣ ነገር ግን አገልጋዩ አስተማማኝ ለመሆን የሚያስቸግር በጣም ረጅም የሆነ የማረጋገጫ ጊዜ ነው ያለው።</translation>
 <translation id="7053983685419859001">አግድ</translation>
 <translation id="7064851114919012435">የእውቂያ መረጃ</translation>

@@ -106,7 +106,6 @@
 <translation id="1639239467298939599">กำลังโหลด</translation>
 <translation id="1640180200866533862">นโยบายผู้ใช้</translation>
 <translation id="1640244768702815859">ลอง<ph name="BEGIN_LINK" />ไปที่หน้าแรกของเว็บไซต์<ph name="END_LINK" /></translation>
-<translation id="1644184664548287040">การกำหนดค่าเครือข่ายไม่ถูกต้องและไม่สามารถนำเข้า</translation>
 <translation id="1644574205037202324">ประวัติการเข้าชม</translation>
 <translation id="1645368109819982629">ไม่รองรับโปรโตคอล</translation>
 <translation id="1655462015569774233">{1,plural, =1{เซิร์ฟเวอร์นี้พิสูจน์ไม่ได้ว่าเป็น <ph name="DOMAIN" /> เพราะใบรับรองความปลอดภัยหมดอายุไปเมื่อวานนี้ โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ ขณะนี้นาฬิกาของคุณตั้งค่าไว้ที่วันที่ <ph name="CURRENT_DATE" /> การตั้งค่านี้ถูกต้องไหม หากไม่ถูกต้อง คุณควรแก้ไขนาฬิกาของระบบและรีเฟรชหน้านี้}other{เซิร์ฟเวอร์นี้พิสูจน์ไม่ได้ว่าเป็น <ph name="DOMAIN" /> เพราะใบรับรองความปลอดภัยหมดอายุไปเมื่อ # วันที่ผ่านมา โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ ขณะนี้นาฬิกาของคุณตั้งค่าไว้ที่วันที่ <ph name="CURRENT_DATE" /> การตั้งค่านี้ถูกต้องไหม หากไม่ถูกต้อง คุณควรแก้ไขนาฬิกาของระบบและรีเฟรชหน้านี้}}</translation>
@@ -207,6 +206,7 @@
 <translation id="2359808026110333948">ดำเนินการต่อ</translation>
 <translation id="2365563543831475020">รายงานข้อขัดข้องเมื่อ <ph name="CRASH_TIME" /> ยังไม่ได้อัปโหลด</translation>
 <translation id="2367567093518048410">ระดับ</translation>
+<translation id="2378238891085281592">คุณเข้าสู่โหมดส่วนตัวแล้ว</translation>
 <translation id="2384307209577226199">ค่าเริ่มต้นขององค์กร</translation>
 <translation id="2386255080630008482">ใบรับรองของเซิร์ฟเวอร์ถูกเพิกถอนแล้ว</translation>
 <translation id="2392959068659972793">แสดงนโยบายโดยที่ไม่ได้ตั้งค่า</translation>
@@ -283,7 +283,6 @@
 <translation id="2941952326391522266">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะใบรับรองความปลอดภัยมาจาก <ph name="DOMAIN2" /> โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="2948083400971632585">คุณสามารถปิดใช้งานพร็อกซีที่กำหนดค่าสำหรับการเชื่อมต่อจากหน้าการตั้งค่าได้</translation>
 <translation id="2955913368246107853">ปิดแถบค้นหา</translation>
-<translation id="2958431318199492670">การกำหนดค่าเครือข่ายไม่เป็นไปตามมาตรฐาน ONC การกำหนดค่าบางส่วนอาจไม่ได้รับการนำเข้า</translation>
 <translation id="2969319727213777354">หากต้องการสร้างการเชื่อมต่อที่ปลอดภัย คุณต้องตั้งค่านาฬิกาให้ถูกต้องเนื่องจากใบรับรองที่เว็บไซต์ใช้เพื่อระบุตัวตนจะใช้ได้ในช่วงเวลาที่เจาะจงเท่านั้น แต่เนื่องจากนาฬิกาของอุปกรณ์ไม่ถูกต้อง Google Chrome จึงไม่สามารถยืนยันใบรับรองเหล่านี้</translation>
 <translation id="2972581237482394796">&amp;ทำซ้ำ</translation>
 <translation id="2977665033722899841">เลือก <ph name="ROW_NAME" /> อยู่ตอนนี้ <ph name="ROW_CONTENT" /></translation>
@@ -514,6 +513,7 @@
 <translation id="450710068430902550">การแชร์กับผู้ดูแลระบบ</translation>
 <translation id="4515275063822566619">ข้อมูลบัตรและที่อยู่มาจาก Chrome และบัญชี Google (<ph name="ACCOUNT_EMAIL" />) คุณสามารถจัดการข้อมูลเหล่านี้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
 <translation id="4522570452068850558">รายละเอียด</translation>
+<translation id="4524805452350978254">จัดการการ์ด</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">ลองปิดใช้ส่วนขยาย</translation>
 <translation id="457875822857220463">การจัดส่ง</translation>
@@ -600,7 +600,7 @@
 <translation id="5190835502935405962">แถบบุ๊กมาร์ก</translation>
 <translation id="5201306358585911203">หน้าที่ฝังไว้ในหน้าเว็บนี้บอกว่า</translation>
 <translation id="5205222826937269299">ต้องระบุชื่อ</translation>
-<translation id="5215116848420601511">วิธีการชำระเงินและกรอกที่อยู่โดยใช้ Google Pay</translation>
+<translation id="5215116848420601511">วิธีการชำระเงินและที่อยู่จาก Google Pay</translation>
 <translation id="5222812217790122047">ต้องระบุอีเมล</translation>
 <translation id="5230733896359313003">ที่อยู่ในการจัดส่ง</translation>
 <translation id="5250209940322997802">"เชื่อมต่อกับเครือข่าย"</translation>
@@ -700,6 +700,7 @@
 <translation id="5866257070973731571">เพิ่มหมายเลขโทรศัพท์</translation>
 <translation id="5869405914158311789">ไม่สามารถเข้าถึงเว็บไซต์นี้</translation>
 <translation id="5869522115854928033">รหัสผ่านที่บันทึกไว้</translation>
+<translation id="5887400589839399685">บันทึกการ์ดแล้ว</translation>
 <translation id="5893752035575986141">รับบัตรเครดิต</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (ซิงค์แล้ว)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{ใช้งานอยู่ 1 รายการ}other{ใช้งานอยู่ # รายการ}}</translation>
@@ -801,7 +802,6 @@
 <translation id="679355240208270552">ไม่ใช้งานเนื่องจากมีการเปิดใช้การค้นหาเริ่มต้นตามนโยบาย</translation>
 <translation id="681021252041861472">ช่องที่ต้องกรอก</translation>
 <translation id="6810899417690483278">รหัสการปรับแต่ง</translation>
-<translation id="6820686453637990663">CVC</translation>
 <translation id="6824266427216888781">ไม่สามารถโหลดข้อมูลภูมิภาค</translation>
 <translation id="6825578344716086703">คุณพยายามเข้าถึง <ph name="DOMAIN" /> แต่เซิร์ฟเวอร์แสดงใบรับรองที่ลงนามด้วยอัลกอริทึมลายเซ็นที่ไม่รัดกุม (เช่น SHA-1) ซึ่งหมายความว่าข้อมูลรับรองด้านความปลอดภัยที่เซิร์ฟเวอร์แสดงอาจถูกปลอมแปลงขึ้น และเซิร์ฟเวอร์ดังกล่าวอาจไม่ใช่เซิร์ฟเวอร์ที่คุณคิด (คุณอาจกำลังติดต่อกับผู้โจมตี)</translation>
 <translation id="6831043979455480757">แปลภาษา</translation>
@@ -820,11 +820,13 @@
 <translation id="6948701128805548767">หากต้องการดูวิธีการรับสินค้าและข้อกำหนด โปรดเลือกที่อยู่</translation>
 <translation id="6949872517221025916">รีเซ็ตรหัสผ่าน</translation>
 <translation id="6950684638814147129">เกิดข้อผิดพลาดขณะแยกวิเคราะห์ค่า JSON: <ph name="ERROR" /></translation>
+<translation id="6957624206566198865">เปิดหน้าเว็บในแท็บส่วนตัวใหม่</translation>
 <translation id="6957887021205513506">ใบรับรองของเซิร์ฟเวอร์น่าจะเป็นของปลอม</translation>
 <translation id="6965382102122355670">ตกลง</translation>
 <translation id="6965978654500191972">อุปกรณ์</translation>
 <translation id="6970216967273061347">เขต</translation>
 <translation id="6973656660372572881">มีการระบุทั้งพร็อกซีเซิร์ฟเวอร์แบบคงที่และ URL สคริปต์ .pac ไว้</translation>
+<translation id="6984479912851154518">ออกจากโหมดส่วนตัวเพื่อชำระเงินผ่านแอปพลิเคชันภายนอก ดำเนินการต่อไหม</translation>
 <translation id="6989763994942163495">แสดงการตั้งค่าขั้นสูง...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">การเรียกเก็บเงินเหล่านี้อาจเกิดขึ้นครั้งเดียวหรือเป็นเกิดขึ้นซ้ำๆ และอาจไม่แสดงอย่างชัดแจ้ง</translation>
@@ -1076,6 +1078,7 @@
 <translation id="8820817407110198400">บุ๊กมาร์ก</translation>
 <translation id="883848425547221593">บุ๊กมาร์กอื่นๆ</translation>
 <translation id="884264119367021077">ที่อยู่จัดส่ง</translation>
+<translation id="8846319957959474018">เปิดแอปได้ง่ายๆ ด้วยบุ๊กมาร์ก</translation>
 <translation id="884923133447025588">ไม่พบกระบวนการเพิกถอน</translation>
 <translation id="885730110891505394">การแชร์กับ Google</translation>
 <translation id="8858065207712248076">Chrome ขอแนะนำให้รีเซ็ตรหัสผ่าน <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> หากคุณใช้รหัสผ่านนี้ซ้ำในเว็บไซต์อื่น</translation>
@@ -1093,7 +1096,7 @@
 <translation id="8957210676456822347">การให้สิทธิ์แคปทีฟพอร์ทัล</translation>
 <translation id="8971063699422889582">ใบรับรองของเซิร์ฟเวอร์หมดอายุแล้ว</translation>
 <translation id="8978053250194585037">เมื่อเร็วๆ นี้ Google Safe Browsing <ph name="BEGIN_LINK" />ตรวจพบฟิชชิง<ph name="END_LINK" />ใน <ph name="SITE" /> เว็บไซต์ฟิชชิงปลอมเป็นเว็บไซต์อื่นๆ เพื่อหลอกคุณ</translation>
-<translation id="8983003182662520383">วิธีการชำระเงินและกรอกที่อยู่โดยใช้ Google Pay</translation>
+<translation id="8983003182662520383">วิธีการชำระเงินและที่อยู่จาก Google Pay</translation>
 <translation id="8987927404178983737">เดือน</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">ไซต์ที่จะเปิดมีโปรแกรมที่เป็นอันตราย</translation>

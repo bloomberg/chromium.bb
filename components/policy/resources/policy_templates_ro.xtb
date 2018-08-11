@@ -656,7 +656,6 @@
       Fiecare intrare de pe listă specifică un identificator, care este utilizat la nivel intern pentru a face diferența între conturile locale de pe gadget.</translation>
 <translation id="2769952903507981510">Configurați numele de domeniu necesar pentru gazdele de acces la distanță</translation>
 <translation id="2787173078141616821">Raportează informații despre starea Android</translation>
-<translation id="2793923553868251161">Origini care trebuie tratate drept context securizat.</translation>
 <translation id="2799297758492717491">Permite redarea automată a conținutului media pentru o listă albă cu șabloane de adrese URL</translation>
 <translation id="2801230735743888564">Permite utilizatorilor să joace jocul ascuns cu dinozaurul când dispozitivul este offline.
 
@@ -1811,12 +1810,6 @@
 <translation id="6155936611791017817">Setați cursorul mare pe ecranul de conectare ca stare prestabilită</translation>
 <translation id="6157537876488211233">Lista de valori separate prin virgulă a regulilor de ocolire a proxy-ului</translation>
 <translation id="6158324314836466367">Numele magazinului web pentru întreprinderi (politică învechită)</translation>
-<translation id="6164955668342404660">Opțiune învechită în versiunea M69. Folosește OverrideSecurityRestrictionsOnInsecureOrigin.
-
-      Politica specifică o listă de origini (adrese URL) care trebuie tratate drept context securizat. Scopul este să permită organizațiilor să configureze un server de simulare pentru dezvoltările web interne, astfel încât dezvoltatorii lor să testeze funcții care necesită contexte sigure fără a trebui să implementeze TLS pe serverul de simulare.
-      Configurarea unei liste de adrese URL în această politică are același efect precum configurarea semnalizatorului de linie de comandă „--unsafely-treat-insecure-origin-as-secure” într-o listă cu aceleași adrese URL separate prin virgulă. Dacă politica este activată, ea va anula semnalizatorul de linie de comandă.
-      Pentru mai multe informații despre contextele securizate, accesează https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6181608880636987460">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile care nu au permisiunea să ruleze pluginul <ph name="FLASH_PLUGIN_NAME" />.
 
           Dacă această politică nu este configurată, va fi folosită valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultCookiesSetting”, în cazul în care aceasta este configurată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
@@ -1988,11 +1981,6 @@
 <translation id="6786967369487349613">Setează locația profilului de roaming</translation>
 <translation id="6810445994095397827">Blochează JavaScript de pe aceste site-uri</translation>
 <translation id="681446116407619279">Scheme de autentificare acceptate</translation>
-<translation id="6832455357698286434">
-      Politica specifică o listă de origini (adrese URL) sau modele de nume de gazdă (precum „*.example.com”) care trebuie tratate drept contexte securizate. Scopul este să permită organizațiilor să configureze un server de simulare pentru dezvoltările web interne, astfel încât dezvoltatorii lor să testeze funcții care necesită contexte sigure fără a trebui să implementeze TLS pe serverul de simulare.
-      Configurarea unei liste de adrese URL în această politică are același efect precum configurarea semnalizatorului de linie de comandă „--unsafely-treat-insecure-origin-as-secure” într-o listă cu aceleași adrese URL separate prin virgulă. Dacă politica este activată, ea va anula semnalizatorul de linie de comandă.
-      Pentru mai multe informații despre contextele securizate, accesează https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6835883744948188639">Afișează utilizatorului o solicitare recurentă prin care se indică faptul că relansarea este recomandată</translation>
 <translation id="6838056959556423778">Modifică regulile de selectare a imprimantei prestabilite pentru <ph name="PRODUCT_NAME" />.
 
@@ -2343,7 +2331,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7617319494457709698">Această politică specifică extensiile cărora li se permite să folosească funcția <ph name="CHALLENGE_USER_KEY_FUNCTION" /> din <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> pentru atestarea la distanță. Extensiile trebuie să fie adăugate în această listă pentru a folosi API-ul.
 
           Dacă o extensie nu este în listă sau dacă lista nu este configurată, apelul către API nu va reuși și va genera un cod de eroare.</translation>
-<translation id="7620300057302654932">Origini sau modele de nume de gazdă care trebuie tratate drept context securizat.</translation>
 <translation id="7625444193696794922">Specifică un canal de lansare la care ar trebui să fie blocat acest dispozitiv.</translation>
 <translation id="7632724434767231364">Nume bibliotecă GSSAPI</translation>
 <translation id="7635471475589566552">Configurează limba aplicației din <ph name="PRODUCT_NAME" /> și împiedică modificarea limbii de către utilizatori. Dacă activați această setare, <ph name="PRODUCT_NAME" /> utilizează limba indicată. Dacă limba configurată nu este acceptată, este utilizată „en-US”. Dacă această setare este dezactivată sau nu este configurată, <ph name="PRODUCT_NAME" /> utilizează limba preferată specificată de utilizator (dacă este configurată), limba sistemului sau limba „en-US” alternativă.</translation>

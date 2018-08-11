@@ -644,7 +644,6 @@ Pokud je zásada nastavena na hodnotu False nebo nastavena není, budou ikony vi
       Každá položka v seznamu uvádí identifikátor, který se používá k internímu rozlišení různých místních účtů v zařízení.</translation>
 <translation id="2769952903507981510">Konfigurovat povinný název domény pro hostitele vzdáleného přístupu</translation>
 <translation id="2787173078141616821">Hlásit informace o stavu systému Android</translation>
-<translation id="2793923553868251161">Zdroje, které mají být považovány za bezpečný kontext.</translation>
 <translation id="2799297758492717491">Povolit automatické přehrávání médií zahrnutých v seznamu vzorů povolených adres URL</translation>
 <translation id="2801230735743888564">Povolit uživatelům hrát hru s dinosaurem, když je zařízení offline.
 
@@ -1830,12 +1829,6 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name=
 <translation id="6155936611791017817">Nastavení výchozího stavu velkého kurzoru na přihlašovací obrazovce</translation>
 <translation id="6157537876488211233">Seznam pravidel vynechání proxy serveru oddělených čárkami</translation>
 <translation id="6158324314836466367">Název podnikového úložiště aplikací (podpora ukončena)</translation>
-<translation id="6164955668342404660">Od verze M69 tato zásada již není podporována. Použijte namísto ní zásadu OverrideSecurityRestrictionsOnInsecureOrigin.
-
-      Tato zásada udává seznam zdrojů (adres URL), které mají být považovány za bezpečný kontext. Cílem je umožnit organizacím nastavení zkušebního serveru pro vývoj interních webových stránek, aby vývojáři mohli testovat funkce, které vyžadují zabezpečené kontexty, aniž by na testovacím serveru museli implementovat protokol TLS.
-      Nastavení seznamu adres URL v této zásadě má stejný dopad jako nastavení příznaku příkazového řádku --unsafely-treat-insecure-origin-as-secure na čárkami oddělený seznam adres URL. Je-li nastavena tato zásada, bude jí příznak příkazového řádku přepsán.
-      Další informace o bezpečných kontextech naleznete na stránce https://www.w3.org/TR/secure-contexts/.
-      </translation>
 <translation id="6181608880636987460">Umožňuje nastavit seznam vzorů adres URL webů, které nemají povoleno spouštět plugin <ph name="FLASH_PLUGIN_NAME" />.
 
           Pokud tuto zásadu nenastavíte, použije se pro všechny weby globální výchozí hodnota buď ze zásady DefaultPluginsSetting (pokud je nastavena), nebo z osobní konfigurace uživatele.</translation>
@@ -2015,11 +2008,6 @@ Pokud tato zásada není nastavena, funkce aktualizace firmwaru <ph name="TPM_FI
 <translation id="6786967369487349613">Nastavit adresář cestovního profilu</translation>
 <translation id="6810445994095397827">Blokovat JavaScript na těchto stránkách</translation>
 <translation id="681446116407619279">Podporovaná schémata ověření</translation>
-<translation id="6832455357698286434">
-      Tato zásada udává seznam zdrojů (adres URL) nebo vzorů názvů hostitelů (například „*.example.com“), které mají být považovány za bezpečný kontext. Cílem je umožnit organizacím nastavení zkušebního serveru pro vývoj interních webových stránek, aby vývojáři mohli testovat funkce, které vyžadují zabezpečené kontexty, aniž by na testovacím serveru museli implementovat protokol TLS.
-      Nastavení seznamu adres URL v této zásadě má stejný dopad jako nastavení příznaku příkazového řádku --unsafely-treat-insecure-origin-as-secure na čárkami oddělený seznam adres URL. Je-li nastavena tato zásada, bude jí příznak příkazového řádku přepsán.
-      Další informace o bezpečných kontextech naleznete na stránce https://www.w3.org/TR/secure-contexts/.
-      </translation>
 <translation id="6835883744948188639">Zobrazovat uživateli opakovaně výzvu s oznámením, že je doporučen restart</translation>
 <translation id="6838056959556423778">Přepíše v prohlížeči <ph name="PRODUCT_NAME" /> pravidla výběru výchozí tiskárny.
 
@@ -2378,7 +2366,6 @@ Pokud je tato zásada nastavena na hodnotu false, použití protokolu QUIC je za
 <translation id="7617319494457709698">Tato zásada udává, která rozšíření mohou ke vzdálenému ověření používat funkci <ph name="CHALLENGE_USER_KEY_FUNCTION" /> rozhraní <ph name="ENTERPRISE_PLATFORM_KEYS_API" />. Aby rozšíření toto rozhraní API mohla používat, musí být přidána do tohoto seznamu.
 
           Pokud rozšíření v seznamu není nebo seznam není nastaven, volání tohoto rozhraní API se nezdaří a bude vrácen kód chyby.</translation>
-<translation id="7620300057302654932">Zdroje nebo vzory názvů hostitelů, které mají být považovány za bezpečný kontext.</translation>
 <translation id="7625444193696794922">Určuje, jaký kanál verzí by měl být v zařízení nastaven a uzamčen.</translation>
 <translation id="7632724434767231364">Název knihovny GSSAPI</translation>
 <translation id="7635471475589566552">Slouží ke konfiguraci jazyka aplikace <ph name="PRODUCT_NAME" /> a brání uživatelům, aby nastavený jazyk změnili. 

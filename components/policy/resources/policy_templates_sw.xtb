@@ -653,7 +653,6 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
       Kila ingizo la orodha hubainisha kitambulishi, kinachotumiwa ndani kutambua akaunti tofauti za kifaa cha karibu nawe zilizo mbali.</translation>
 <translation id="2769952903507981510">Sanidi jina la kikoa linalohitajika kwa wapangishaji wa ufikivu wa mbali</translation>
 <translation id="2787173078141616821">Ripoti maelezo kuhusu hali ya Android</translation>
-<translation id="2793923553868251161">Vyanzo vitakavyotumika kama muktadha salama.</translation>
 <translation id="2799297758492717491">Ruhusu maudhui yacheze kiotomatiki kwenye orodha ya ruwaza za URL zilizoidhinishwa</translation>
 <translation id="2801230735743888564">Ruruhusu watumiaji wacheze mchezo fiche wa dinosau kifaa kinapokuwa nje ya mtandao.
 
@@ -1844,12 +1843,6 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
 <translation id="6155936611791017817">Weka hali chaguomsingi ya kiteuzi kikubwa kwenye skrini ya kuingia katika akaunti</translation>
 <translation id="6157537876488211233">Orodha iliyotenganishwa kwa koma ya kanuni za ukwepaji wa proksi</translation>
 <translation id="6158324314836466367">Jina la biashara la duka la wavuti (limeacha kuendesha huduma)</translation>
-<translation id="6164955668342404660">Iliacha kuendesha huduma katika M69. Tumia OverrideSecurityRestrictionsOnInsecureOrigin badala yake.
-
-      Sera hii inabainisha orodha ya vyanzo (URL) vitakavyochukuliwa kuwa muktadha salama. Nia yake ni kuruhusu mashirika yaweke seva ya majaribio kwa ajili ya usanidi wa tovuti za ndani, ili wasanidi programu waweze kujaribu vipengele vinavyohitaji muktadha salama bila kutumia TLS kwenye seva ya majaribio.
-      Hatua ya kuweka orodha ya URL katika sera hii ina athari sawa na kuweka mipangilio ya ripoti ya mstari wa amri '--unsafely-treat-insecure-origin-as-secure' kwenye orodha inayotenganishwa kwa koma ya URL sawa. Iwapo umeweka sera hii, itabatilisha ripoti ya mstari wa amri.
-      Kwa maelezo zaidi kuhusu muktadha salama, angalia https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6181608880636987460">Hukuruhusu kuweka orodha ya ruwaza za url inayobainisha tovuti zisizoruhusiwa kutumia programu-jalizi ya <ph name="FLASH_PLUGIN_NAME" />.
 
           Ikiwa sera hii haitawekwa, thamani chaguomsingi itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultPluginsSetting' endapo itawekwa, au mtumiaji akiweka mipangilio mwenyewe.</translation>
@@ -2026,11 +2019,6 @@ Ukiweka sera hii kuwa 'ndivyo', kipindi cha mgeni kinachodhibitiwa kitachukua si
 <translation id="6786967369487349613">Weka saraka ya wasifu isiyo ya kawaida</translation>
 <translation id="6810445994095397827">Zuia JavaScript kwenye tovuti hizi</translation>
 <translation id="681446116407619279">Mipango inayohimiliwa ya uthibitishaji</translation>
-<translation id="6832455357698286434">
-      Sera hii inabainisha orodha ya vyanzo (URL) au mitindo ya majina ya seva pangishi ( kama vile "*.example.com") ya kuzingatiwa kuwa muktadha salama. Nia yake ni kuruhusu mashirika yaweke seva ya majaribio kwa ajili ya usanidi wa tovuti za ndani, ili wasanidi programu waweze kujaribu vipengele wakitumia muktadha salama bila kutumia TLS kwenye seva ya majaribio.
-      Hatua ya kuweka orodha ya URL katika sera hii ina athari sawa na kuweka mipangilio ya ripoti ya mstari wa amri '--unsafely-treat-insecure-origin-as-secure' kwenye orodha inayotenganishwa kwa koma ya URL sawa. Iwapo sera imewekwa, itabatilisha ripoti ya mstari wa amri.
-      Kwa maelezo zaidi kuhusu muktadha salama, angalia https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6835883744948188639">Mwonyeshe mtumiaji kidokezo kinachojirudia, kinachoashiria kwamba inapendekezwa afungue kivinjari upya</translation>
 <translation id="6838056959556423778">Hubatilisha mipangilio ya uteuzi wa printa chaguomsingi ya <ph name="PRODUCT_NAME" />.
 
@@ -2402,7 +2390,6 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 <translation id="7617319494457709698">Sera hii hubainisha viendelezi vinavyoruhusiwa kutumia utendaji wa <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> <ph name="CHALLENGE_USER_KEY_FUNCTION" /> kwa uthibitishaji wa mbali. Lazima viendelezi viongezwe kwenye orodha hii ili kutumia API.
 
           Ikiwa kiendelezi hakiko kwenye orodha, au orodha haijawekwa, mawasiliano na API hayatafanikiwa na kutakuwa na msimbo wa hitilafu.</translation>
-<translation id="7620300057302654932">Vyanzo au mitindo ya majina ya seva pangishi inapaswa kuzingatiwa kama muktadha salama.</translation>
 <translation id="7625444193696794922">Hubainisha kituo cha kutoa ambacho kifaa hiki kinastahili kufungiwa kwacho.</translation>
 <translation id="7632724434767231364">Jina la maktaba ya GSSAPI</translation>
 <translation id="7635471475589566552">Inasanidi lugha ya programu katika <ph name="PRODUCT_NAME" /> na huzuia watumiaji kubadilisha lugha.

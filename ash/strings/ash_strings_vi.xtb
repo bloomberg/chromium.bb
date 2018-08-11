@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">Phải</translation>
 <translation id="1351937230027495976">Thu gọn menu</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
+<translation id="1419738280318246476">Mở khóa thiết bị để thực hiện hành động thông báo</translation>
 <translation id="1467432559032391204">Trái</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Trình chạy</translation>
@@ -225,6 +226,7 @@
 <translation id="4924411785043111640">Khởi động lại và đặt lại</translation>
 <translation id="4961318399572185831">Truyền màn hình</translation>
 <translation id="5069971504769299223">Trình quản lý thiết bị có thể theo dõi hoạt động của bạn.</translation>
+<translation id="5083553833479578423">Mở khóa các tính năng khác của Trợ lý.</translation>
 <translation id="5136175204352732067">Đã kết nối bàn phím khác</translation>
 <translation id="5168181903108465623">Có thiết bị truyền</translation>
 <translation id="5207949376430453814">Đánh dấu điểm chèn văn bản</translation>
@@ -296,6 +298,7 @@
 <translation id="6376931439017688372">Bluetooth đang bật</translation>
 <translation id="639644700271529076">CAPS LOCK tắt</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">Xóa tất cả thông báo</translation>
 <translation id="643147933154517414">Đã xong</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> trên <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Từ chối</translation>
@@ -397,9 +400,11 @@
 <translation id="8152119955266188852">Bạn đã nhấn phím tắt để phóng to toàn màn hình. Bạn có muốn bật chế độ này không?</translation>
 <translation id="8190698733819146287">Tùy chỉnh ngôn ngữ và dữ liệu nhập...</translation>
 <translation id="8191230140820435481">Quản lý ứng dụng, tiện ích và chủ đề của bạn</translation>
+<translation id="8192202700944119416">Đã ẩn thông báo.</translation>
 <translation id="8261506727792406068">Xóa</translation>
 <translation id="8297006494302853456">Yếu</translation>
 <translation id="8308637677604853869">Menu trước</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Tạo ghi chú</translation>
 <translation id="8392451568018454956">Menu tùy chọn dành cho <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Phóng to toàn màn hình</translation>
@@ -441,6 +446,7 @@
 <translation id="8938800817013097409">Thiết bị USB-C (cổng bên phải ở phía sau)</translation>
 <translation id="8940956008527784070">Pin yếu (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">Khởi động nhanh</translation>
+<translation id="899350903320462459">Mở khóa thiết bị bằng <ph name="LOGIN_ID" /> để thực hiện hành động thông báo</translation>
 <translation id="8995603266996330174">Được quản lý bởi <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Đã có bản cập nhật Adobe Flash Player</translation>
 <translation id="9056839673611986238">Thiết bị sẽ được hạ cấp hệ điều hành</translation>

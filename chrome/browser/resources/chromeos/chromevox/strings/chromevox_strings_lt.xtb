@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
 <translation id="100812568230599391">Keisti vaizdo stilių į įterptąjį.</translation>
+<translation id="1011903154582639569">Radę klavišą pakelkite, kad įvestumėte</translation>
 <translation id="1012173283529841972">Sąrašo elementas</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">Ar „ChromeVox“ ekrano skaitymo balsu funkciją naudojate pirmą kartą? Šioje trumpoje mokymo programoje pateikiama pagrindinė informacija, kaip pradėti naudoti „ChromeVox“.</translation>
@@ -163,6 +164,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">Grupė</translation>
 <translation id="2582407057977008361">Šalia</translation>
+<translation id="2592212930811759050">Norėdami pradėti redaguoti palieskite dukart</translation>
 <translation id="2606210917827248971">su {COUNT,plural, =1{# elementu}one{# elementu}few{# elementais}many{# elemento}other{# elementų}}</translation>
 <translation id="2614981083756825552">Matematikos žymėjimo kalbos išdėstymas</translation>
 <translation id="2624431853467395961">Atidarykite mokomąjį režimą</translation>

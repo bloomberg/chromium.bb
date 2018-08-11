@@ -106,7 +106,6 @@
 <translation id="1639239467298939599">Läser in</translation>
 <translation id="1640180200866533862">Användarpolicyer</translation>
 <translation id="1640244768702815859">Testa att <ph name="BEGIN_LINK" />besöka webbplatsens startsida<ph name="END_LINK" />.</translation>
-<translation id="1644184664548287040">Nätverkskonfigurationen är ogiltig och kan inte importeras.</translation>
 <translation id="1644574205037202324">Historik</translation>
 <translation id="1645368109819982629">Det finns inget stöd för protokollet</translation>
 <translation id="1655462015569774233">{1,plural, =1{Det gick inte att bevisa att serverns identitet är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat gick ut i går. Det kan bero på att servern är felkonfigurerad eller att anslutningen har blivit kapad. Dagens datum är <ph name="CURRENT_DATE" /> enligt datorklockan. Går den rätt? I annat fall bör du ställa om datorklockan och sedan uppdatera sidan.}other{Det gick inte att bevisa att serverns identitet är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat gick ut för # dagar sedan. Det kan bero på att servern är felkonfigurerad eller att anslutningen har blivit kapad. Dagens datum är <ph name="CURRENT_DATE" /> enligt datorklockan. Går den rätt? I annat fall bör du ställa om datorklockan och sedan uppdatera sidan.}}</translation>
@@ -284,7 +283,6 @@
 <translation id="2941952326391522266">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat kommer från <ph name="DOMAIN2" />. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="2948083400971632585">Du kan inaktivera alla proxyservrar som har konfigurerats för en anslutning från sidan Inställningar.</translation>
 <translation id="2955913368246107853">Stäng sökfältet</translation>
-<translation id="2958431318199492670">Nätverkskonfigurationen uppfyller inte ONC-standarden. Det kan hända att delar av konfigurationen inte kan importeras.</translation>
 <translation id="2969319727213777354">Om du vill upprätta en säker anslutning måste klockan vara rätt inställd. Det beror på att certifikaten som webbplatserna använder för att identifiera sig har en bestämd giltighetstid. Google Chrome kan inte verifiera certifikaten eftersom klockan på enheten inte går rätt.</translation>
 <translation id="2972581237482394796">&amp;Upprepa</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" /> är markerad just nu. <ph name="ROW_CONTENT" /></translation>
@@ -356,7 +354,6 @@
 <translation id="3391030046425686457">Leveransadress</translation>
 <translation id="3395827396354264108">Alternativ för utlämning</translation>
 <translation id="3399952811970034796">Leveransadress</translation>
-<translation id="3409072600744224192"><ph name="SIGN_IN_LINK" /> om du vill få tillgång till dina kort på alla enheter.</translation>
 <translation id="3422248202833853650">Testa att stänga andra program för att frigöra minne.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> kan inte nås för tillfället.</translation>
 <translation id="3427092606871434483">Tillåt (standard)</translation>
@@ -582,7 +579,6 @@
 <translation id="5045550434625856497">Felaktigt lösenord</translation>
 <translation id="5056549851600133418">Artiklar för dig</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />kontrollera proxyadressen<ph name="END_LINK" /></translation>
-<translation id="5072538239104292703">Logga in och aktivera synkronisering om du vill få tillgång till dina kort på alla enheter.</translation>
 <translation id="5086888986931078152">Du kan förlora tillgången till skyddat innehåll från några webbplatser.</translation>
 <translation id="5087286274860437796">Servercertifikatet är inte giltigt för närvarande.</translation>
 <translation id="5087580092889165836">Lägg till kort</translation>
@@ -628,7 +624,6 @@
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> av <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Välj kontaktuppgifter</translation>
 <translation id="5327248766486351172">Namn</translation>
-<translation id="5327567770033251652">aktivera synkronisering</translation>
 <translation id="5332219387342487447">Fraktmetod</translation>
 <translation id="5355557959165512791">Det går inte att besöka <ph name="SITE" /> just nu eftersom dess certifikat har återkallats. Nätverksfel och attacker är ofta tillfälliga, så sidan kommer förmodligen att fungera senare.</translation>
 <translation id="536296301121032821">Det gick inte att spara policyinställningarna</translation>
@@ -807,7 +802,6 @@
 <translation id="679355240208270552">Ignoreras eftersom standardsökmotorn inte har aktiverats av principen.</translation>
 <translation id="681021252041861472">Obligatoriskt fält</translation>
 <translation id="6810899417690483278">Anpassnings-id</translation>
-<translation id="6820686453637990663">CVC</translation>
 <translation id="6824266427216888781">Det gick inte att läsa in regionsuppgifter</translation>
 <translation id="6825578344716086703">Du försökte besöka <ph name="DOMAIN" />, men servern skickade ett certifikat som signerats med en svag signaturalgoritm (t.ex. SHA-1). Det innebär att säkerhetsuppgifterna som servern uppgav kan vara förfalskade och att servern kanske inte är den server du tror (du kanske kommunicerar med en skadlig server).</translation>
 <translation id="6831043979455480757">Översätt</translation>
@@ -823,7 +817,6 @@
 <translation id="6915804003454593391">Användare:</translation>
 <translation id="6944692733090228304">Du har angett ditt lösenord på en webbplats som inte hanteras av <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Skydda kontot genom att inte återanvända lösenordet i andra appar och webbplatser.</translation>
 <translation id="6945221475159498467">Välj</translation>
-<translation id="6948540501704460596"><ph name="SYNC_LINK" /> om du vill få tillgång till dina kort på alla enheter.</translation>
 <translation id="6948701128805548767">Välj en adress för att visa alternativ för utlämning och krav</translation>
 <translation id="6949872517221025916">Återställ lösenord</translation>
 <translation id="6950684638814147129">Analysen av JSON-värdet misslyckades: <ph name="ERROR" /></translation>
@@ -838,7 +831,6 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Debiteringen kan göras en gång eller återkommande och det behöver inte framgå tydligt att detta händer.</translation>
 <translation id="7029809446516969842">Lösenord</translation>
-<translation id="7042837854211185817">Aktivera synkronisering om du vill få tillgång till dina kort på alla enheter.</translation>
 <translation id="7050187094878475250">Du försökte nå <ph name="DOMAIN" />, men servern svarade med ett certifikat vars giltighetstid är för lång för att det ska vara trovärdigt.</translation>
 <translation id="7053983685419859001">Blockera</translation>
 <translation id="7064851114919012435">Kontaktuppgifter</translation>

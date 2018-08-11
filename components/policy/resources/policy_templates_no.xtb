@@ -666,7 +666,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvert bidrag på listen spesifiserer en identifikator, som brukes internt for å skille de ulike lokale kontoene på enheten fra hverandre.</translation>
 <translation id="2769952903507981510">Konfigurer det ønskede domenenavnet for verter med ekstern adgang</translation>
 <translation id="2787173078141616821">Rapportér informasjon om Android-status</translation>
-<translation id="2793923553868251161">Opprinnelser som skal behandles som sikker kontekst.</translation>
 <translation id="2799297758492717491">Tillat automatisk avspilling av medier fra en godkjenningsliste for nettadressemønstre</translation>
 <translation id="2801230735743888564">Gir brukerne mulighet til å spille dinosaurspill-påskeegget når enheten ikke er koblet til.
 
@@ -1849,12 +1848,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="6155936611791017817">Angi standard tilstand for stor musepeker på påloggingssiden</translation>
 <translation id="6157537876488211233">Kommadelt liste over regler for å omgå proxy-tjener</translation>
 <translation id="6158324314836466367">Navn på bedriftens nettbutikk (avviklet)</translation>
-<translation id="6164955668342404660">Utdatert i M69. Bruk OverrideSecurityRestrictionsOnInsecureOrigin i stedet.
-
-      Denne regelen spesifiserer en liste med opprinnelser (nettadresser) som blir behandlet som sikker kontekst. Hensikten er å la organisasjoner sette opp en testtjener for intern webutvikling, slik at utviklerne kan teste ut funksjoner som krever sikre kontekster uten å måtte distribuere TLS på testtjeneren.
-      Når en liste med nettadresser angis i denne regelen, har det samme effekt som å angi kommandolinjeflagget «--unsafely-treat-unsecure-origin-as-secure» til en kommaseparert liste med de samme nettadressene. Hvis regelen er angitt, overstyrer den kommandolinjeflagget.
-      For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6181608880636987460">Lar deg angi en liste med nettadressemønstre for å spesifisere nettsteder hvor <ph name="FLASH_PLUGIN_NAME" />-programtillegget ikke skal kunne kjøres automatisk.
 
           Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder. Denne verdien hentes fra «DefaultPluginsSetting»-regelen hvis den er angitt, eller fra brukerens personlige konfigurasjon hvis den ikke er angitt.</translation>
@@ -2031,11 +2024,6 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="6786967369487349613">Angir katalogen for roamingprofiler</translation>
 <translation id="6810445994095397827">Blokkér JavaScript på disse nettstedene</translation>
 <translation id="681446116407619279">Støttede autentiseringssystemer</translation>
-<translation id="6832455357698286434">
-      Regelen spesifiserer en liste med opprinnelser (nettadresser) eller vertsnavnmønstre (f.eks. "*.example.com") som blir behandlet som sikre kontekster. Hensikten er å la organisasjoner sette opp en testtjener for intern webutvikling, slik at utviklerne kan teste ut funksjoner som krever sikre kontekster uten å måtte distribuere TLS på testtjeneren.
-      Når en liste med nettadresser angis i denne regelen, har det samme effekt som å angi kommandolinjeflagget «--unsafely-treat-unsecure-origin-as-secure» til en kommaseparert liste med de samme nettadressene. Hvis regelen er angitt, overstyrer den kommandolinjeflagget.
-     For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6835883744948188639">Vis brukeren en gjentakende melding om at omstart anbefales</translation>
 <translation id="6838056959556423778">Overstyrer reglene for valg av standardskriver i <ph name="PRODUCT_NAME" />.
 
@@ -2389,7 +2377,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7617319494457709698">Med denne retningslinjen kan du spesifisere hvilke utvidelser som kan bruke <ph name="ENTERPRISE_PLATFORM_KEYS_API" />-funksjonen <ph name="CHALLENGE_USER_KEY_FUNCTION" /> til ekstern attestering. Utvidelser må legges til i denne listen for å kunne bruke API-et.
 
           Hvis en utvidelse ikke er på listen, eller hvis listen ikke er angitt, kan ikke API-et kalles opp – i stedet vises en feilkode.</translation>
-<translation id="7620300057302654932">Opprinnelser eller vertsnavnmønstre skal behandles som sikker kontekst.</translation>
 <translation id="7625444193696794922">Angir den frigivende kanalen som denne enheten skal låses til.</translation>
 <translation id="7632724434767231364">Navn på GSSAPI-bibliotek</translation>
 <translation id="7635471475589566552">Konfigurerer programmets språk i <ph name="PRODUCT_NAME" />, og hindrer brukeren i å endre på språket.

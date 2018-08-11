@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">ขวา</translation>
 <translation id="1351937230027495976">ยุบเมนู</translation>
 <translation id="1383876407941801731">ค้นหา</translation>
+<translation id="1419738280318246476">ปลดล็อกอุปกรณ์เพื่อดำเนินการแจ้งเตือน</translation>
 <translation id="1467432559032391204">ซ้าย</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">ตัวเรียกใช้งาน</translation>
@@ -225,6 +226,7 @@
 <translation id="4924411785043111640">รีสตาร์ทและรีเซ็ต</translation>
 <translation id="4961318399572185831">แคสต์หน้าจอ</translation>
 <translation id="5069971504769299223">ผู้จัดการของอุปกรณ์อาจมีสิทธิ์ตรวจสอบกิจกรรมของคุณได้</translation>
+<translation id="5083553833479578423">ใช้ฟีเจอร์อื่นๆ ของ Assistant</translation>
 <translation id="5136175204352732067">เชื่อมต่อกับแป้นพิมพ์อื่นแล้ว</translation>
 <translation id="5168181903108465623">เครื่องส่งพร้อมใช้งาน</translation>
 <translation id="5207949376430453814">ไฮไลต์เครื่องหมาย Caret ของข้อความ</translation>
@@ -296,6 +298,7 @@
 <translation id="6376931439017688372">บลูทูธเปิดอยู่</translation>
 <translation id="639644700271529076">CAPS LOCK ปิดอยู่</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">ล้างการแจ้งเตือนทั้งหมด</translation>
 <translation id="643147933154517414">เสร็จเรียบร้อย</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> ใน<ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">ปฏิเสธ</translation>
@@ -397,9 +400,11 @@
 <translation id="8152119955266188852">คุณกดแป้นพิมพ์ลัดสำหรับแว่นขยายทั้งหน้าจอ จะเปิดแว่นขยายไหม</translation>
 <translation id="8190698733819146287">กำหนดค่าภาษาและการป้อนข้อมูล... </translation>
 <translation id="8191230140820435481">จัดการแอปพลิเคชัน ส่วนขยาย และธีมของคุณ</translation>
+<translation id="8192202700944119416">ซ่อนการแจ้งเตือนไว้</translation>
 <translation id="8261506727792406068">ลบ</translation>
 <translation id="8297006494302853456">อ่อน</translation>
 <translation id="8308637677604853869">เมนูก่อนหน้า</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">สร้างโน้ต</translation>
 <translation id="8392451568018454956">เมนูตัวเลือกสำหรับ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">แว่นขยายทั้งหน้าจอ</translation>
@@ -441,6 +446,7 @@
 <translation id="8938800817013097409">อุปกรณ์ USB-C (พอร์ตด้านหลังขวา)</translation>
 <translation id="8940956008527784070">แบตเตอรี่ต่ำ (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">การเริ่มใช้งานด่วน</translation>
+<translation id="899350903320462459">ปลดล็อกอุปกรณ์โดยใช้ <ph name="LOGIN_ID" /> เพื่อดำเนินการแจ้งเตือน</translation>
 <translation id="8995603266996330174">จัดการโดย <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">มีอัปเดต Adobe Flash Player พร้อมใช้งาน</translation>
 <translation id="9056839673611986238">อุปกรณ์จะได้รับการคืนค่าสถานะ</translation>

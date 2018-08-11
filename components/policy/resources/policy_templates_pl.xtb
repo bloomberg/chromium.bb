@@ -512,11 +512,11 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Jeśli pozostanie ono nieokreślone, użytkownik będzie mógł zdecydować, czy chce używać tej funkcji.
 
       Ustawienie zostało usunięte z <ph name="PRODUCT_NAME" /> 29 i nowszych wersji.</translation>
-<translation id="2433412232489478893">Ta zasada określa, czy użytkownicy mogą używać Sieciowych udziałów plików w <ph name="PRODUCT_NAME" />.
+<translation id="2433412232489478893">Ta zasada określa, czy użytkownicy mogą używać sieciowych magazynów plików w <ph name="PRODUCT_NAME" />.
 
-      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, użytkownicy mogą używać Sieciowych udziałów plików.
+      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, użytkownicy mogą używać sieciowych magazynów plików.
 
-      Gdy ta zasada ma wartość fałsz, użytkownicy nie mogą używać Sieciowych udziałów plików.</translation>
+      Gdy ta zasada ma wartość fałsz, użytkownicy nie mogą używać sieciowych magazynów plików.</translation>
 <translation id="2438609638493026652">Włącza raportowanie do Google najważniejszych zdarzeń podczas instalowania aplikacji na Androida. Zdarzenia są rejestrowane tylko w przypadku aplikacji, których instalacja została spowodowana przez zasadę.
 
       Jeśli zasada ma wartość prawda, zdarzenia będą rejestrowane.
@@ -594,7 +594,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2598508021807251719">Określa języki, w których można wyświetlać <ph name="PRODUCT_OS_NAME" />.
 
       Jeśli ta zasada jest skonfigurowana, użytkownik może skonfigurować wyświetlanie <ph name="PRODUCT_OS_NAME" /> tylko w jednym z języków określonych w tej zasadzie. Jeśli zasada jest nieskonfigurowana lub jest ustawiona na pustą listę, <ph name="PRODUCT_OS_NAME" /> można wyświetlać we wszystkich obsługiwanych językach. Jeśli ustawiona lista zawiera nieprawidłowe wartości, będą one ignorowane. Jeśli użytkownik wcześniej skonfigurował wyświetlanie <ph name="PRODUCT_OS_NAME" /> w języku niedozwolonym przez tę zasadę, język wyświetlania zostanie przełączony na dozwolony po następnym zalogowaniu się użytkownika. Jeśli użytkownik skonfigurował preferowane języki i jeden z nich jest dozwolony przez tę zasadę, <ph name="PRODUCT_OS_NAME" /> przełączy się na ten język. W przeciwnym razie <ph name="PRODUCT_OS_NAME" /> przełączy się na język odpowiadający pierwszej prawidłowej wartości z listy, a jeśli lista zawiera same nieprawidłowe wartości – na język zastępczy (obecnie en-US).</translation>
-<translation id="2604182581880595781">Umożliwia skonfigurowanie zasad związanych z Sieciowymi udziałami plików.</translation>
+<translation id="2604182581880595781">Umożliwia skonfigurowanie zasad związanych z sieciowymi magazynami plików.</translation>
 <translation id="2623014935069176671">Poczekaj na początkową aktywność użytkownika</translation>
 <translation id="262740370354162807">Włącz wysyłanie dokumentów do <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2627554163382448569">Udostępnia konfiguracje drukarek firmowych.
@@ -652,7 +652,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Każdy wpis określa identyfikator używany wewnętrznie do rozróżniania lokalnych kont na urządzeniu.</translation>
 <translation id="2769952903507981510">Konfiguracja wymaganej nazwy domeny dla hostów zdalnego dostępu</translation>
 <translation id="2787173078141616821">Przesyłaj informacje o stanie Androida</translation>
-<translation id="2793923553868251161">Źródła uznawane za kontekst bezpieczny.</translation>
 <translation id="2799297758492717491">Zezwalaj na automatyczne odtwarzanie multimediów na podstawie wzorców adresów URL na białej liście</translation>
 <translation id="2801230735743888564">Daje użytkownikom dostęp do ukrytej gry-żartu z dinozaurem, gdy urządzenie jest offline.
 
@@ -674,7 +673,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2823870601012066791">Lokalizacja w rejestrze systemu Windows dla klientów <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Włącz tryb incognito</translation>
 <translation id="2838830882081735096">Nie zezwalaj na migrację danych ani na działanie ARC</translation>
-<translation id="2839294585867804686">Ustawienia Sieciowych udziałów plików</translation>
+<translation id="2839294585867804686">Ustawienia sieciowych magazynów plików</translation>
 <translation id="2840269525054388612">Określa drukarki, z których może korzystać użytkownik.
 
       Ta zasada jest używana tylko wtedy, gdy dla zasady <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> wybrano ustawienie <ph name="PRINTERS_WHITELIST" />.
@@ -1150,7 +1149,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli ta zasada nie została skonfigurowana, zbieranie zanonimizowanych danych z URL-em jako kluczem będzie włączone, ale użytkownik może to zmienić.</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="4261820385751181068">Ustawienia regionalne na ekranie logowania na urządzeniu</translation>
-<translation id="4264607809747169568">Określa dostępność funkcji Sieciowe udziały plików w Chrome OS</translation>
+<translation id="4264607809747169568">Określa dostępność sieciowych magazynów plików w Chrome OS</translation>
 <translation id="427220754384423013">Określa drukarki, z których może korzystać użytkownik.
 
       Ta zasada jest używana tylko wtedy, gdy dla zasady <ph name="BULK_PRINTERS_ACCESS_MODE" /> wybrano ustawienie <ph name="PRINTERS_WHITELIST" />.
@@ -1786,12 +1785,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6155936611791017817">Ustaw domyślny stan dużego kursora na ekranie logowania</translation>
 <translation id="6157537876488211233">Lista rozdzielonych przecinkami reguł omijania serwera proxy</translation>
 <translation id="6158324314836466367">Nazwa firmowego sklepu internetowego (wycofana)</translation>
-<translation id="6164955668342404660">Wycofana w wersji M69. Zamiast niej użyj OverrideSecurityRestrictionsOnInsecureOrigin.
-
-Ta zasada określa listę źródeł (adresów URL), które będą traktowane jako bezpieczne konteksty. Dzięki temu organizacje mogą skonfigurować wewnętrzny serwer do testowania własnych stron internetowych, a programiści mają możliwość testowania funkcji, które wymagają bezpiecznych kontekstów, bez wdrażania zabezpieczeń TLS na serwerze testowym.
-      Określenie listy adresów URL w tej zasadzie działa tak samo jak podanie tych adresów, oddzielonych przecinkami, we fladze wiersza poleceń „--unsafely-treat-insecure-origin-as-secure”. Jeśli ta zasada jest skonfigurowana, zastępuje flagę wiersza poleceń.
-      Więcej informacji o bezpiecznych kontekstach znajdziesz na stronie https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6181608880636987460">Pozwala utworzyć listę wzorców URL-i określających witryny, które nie mogą uruchamiać wtyczki <ph name="FLASH_PLUGIN_NAME" />.
 
           Jeśli ta zasada nie zostanie skonfigurowana, będzie używana wartość domyślna pobrana z zasady „DefaultPluginsSetting” (jeśli jest określona) lub z osobistej konfiguracji użytkownika.</translation>
@@ -1964,11 +1957,6 @@ Ta zasada określa listę źródeł (adresów URL), które będą traktowane jak
 <translation id="6786967369487349613">Ustaw katalog profilu przenośnego</translation>
 <translation id="6810445994095397827">Blokuj kod JavaScript w tych witrynach</translation>
 <translation id="681446116407619279">Obsługiwane schematy uwierzytelniania</translation>
-<translation id="6832455357698286434">
-      Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta (np. „*.example.com”), które będą traktowane jako bezpieczne konteksty. Dzięki temu organizacje mogą skonfigurować wewnętrzny serwer do testowania własnych stron internetowych, a programiści mają możliwość testowania funkcji, które wymagają bezpiecznych kontekstów, bez wdrażania zabezpieczeń TLS na serwerze testowym.
-      Określenie listy adresów URL w tej zasadzie działa tak samo jak podanie tych adresów, oddzielonych przecinkami, we fladze wiersza poleceń „--unsafely-treat-insecure-origin-as-secure”. Jeśli ta zasada jest skonfigurowana, zastępuje flagę wiersza poleceń.
-      Więcej informacji o bezpiecznych kontekstach znajdziesz na stronie https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6835883744948188639">Wyświetlaj cyklicznie komunikat o tym, że zalecane jest ponowne uruchomienie</translation>
 <translation id="6838056959556423778">Zastępuje reguły wybierania domyślnej drukarki w <ph name="PRODUCT_NAME" />.
 
@@ -2313,7 +2301,6 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
 <translation id="7617319494457709698">Ta zasada określa dozwolone rozszerzenia do użycia z funkcją <ph name="CHALLENGE_USER_KEY_FUNCTION" /> interfejsu <ph name="ENTERPRISE_PLATFORM_KEYS_API" />. Rozszerzenia muszą zostać dodane do tej listy, by były używane z interfejsem API.
 
           Jeśli rozszerzenie nie znajduje się na liście lub lista nie jest ustawiona, wywołanie interfejsu API zakończy się błędem.</translation>
-<translation id="7620300057302654932">Źródła lub wzorce nazw hosta, które mają być traktowane jako bezpieczny kontekst.</translation>
 <translation id="7625444193696794922">Określa kanał wersji, z którym to urządzenie powinno być powiązane na stałe.</translation>
 <translation id="7632724434767231364">Nazwa biblioteki GSSAPI</translation>
 <translation id="7635471475589566552">Pozwala skonfigurować język w przeglądarce <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom jego zmianę. Jeśli włączysz to ustawienie, w <ph name="PRODUCT_NAME" /> będzie używany określony język. W przypadku, gdy skonfigurowany język nie jest obsługiwany, wybierana jest opcja „en-US”. Jeśli ustawienie jest wyłączone lub nieskonfigurowane, w <ph name="PRODUCT_NAME" /> używany jest preferowany język określony przez użytkownika (jeśli został skonfigurowany), język ustawiony w systemie lub zastępcza opcja „en-US”.</translation>

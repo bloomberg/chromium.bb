@@ -686,7 +686,6 @@
 <translation id="200544492091181894">Você pode alterar isso a qualquer momento nas configurações</translation>
 <translation id="2006638907958895361">Abrir link no <ph name="APP" /></translation>
 <translation id="2007404777272201486">Informar um problema...</translation>
-<translation id="2016237810978710652">Abrindo arquivos do Linux…</translation>
 <translation id="2016430552235416146">Tradicional</translation>
 <translation id="2017334798163366053">Desativar coleta de dados de desempenho</translation>
 <translation id="2017836877785168846">Limpa o histórico e o preenchimento automático na barra de endereço.</translation>
@@ -3786,7 +3785,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6748775883310276718">Quiosque de aplicativo único</translation>
 <translation id="6751256176799620176">1 pasta selecionada</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Modo anônimo)</translation>
-<translation id="6751815812172740613">Excluir todos os aplicativos e dados do Linux na pasta de arquivos do Linux deste <ph name="DEVICE_TYPE" />?</translation>
 <translation id="6757101664402245801">URL copiado</translation>
 <translation id="6758056191028427665">Diga como estamos nos saindo.</translation>
 <translation id="6759193508432371551">Configuração original</translation>
@@ -4063,7 +4061,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
     <ph name="BEGIN_PARAGRAPH3" />É possível controlar este recurso em Config. &gt; Google. Selecione Uso e diagnóstico no menu.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">Conseguir &amp;ajuda</translation>
 <translation id="7200083590239651963">Selecionar configuração</translation>
-<translation id="7201014958346994077">Não é possível ver os arquivos do Linux</translation>
 <translation id="720110658997053098">Manter este dispositivo permanentemente no modo quiosque</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' excluído</translation>
 <translation id="7206693748120342859">Fazendo download do <ph name="PLUGIN_NAME" />...</translation>
@@ -4679,7 +4676,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8107015733319732394">Instalando a Google Play Store no seu <ph name="DEVICE_TYPE" />. Isso pode demorar alguns minutos.</translation>
 <translation id="8111155949205007504">Compartilhar essa senha com seu iPhone</translation>
 <translation id="8113043281354018522">Escolha o tipo de licença</translation>
-<translation id="8116925261070264013">Com som desativado</translation>
 <translation id="8116972784401310538">&amp;Gerenciador de favoritos</translation>
 <translation id="8117620576188476503">Gerencie conexões, atualizações e configurações com a bandeja de status. Para chegar aqui com o teclado, pressione Alt + Shift + S.</translation>
 <translation id="8118362518458010043">Desativada pelo Chrome. Essa extensão pode não ser segura.</translation>
@@ -5139,7 +5135,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8845001906332463065">Ajuda</translation>
 <translation id="8846141544112579928">Procurando teclado...</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885217322790849332">Para abrir arquivos com $1, primeiro você precisa copiá-los para a pasta de arquivos do Linux.</translation>
 <translation id="8859057652521303089">Selecione o seu idioma:</translation>
 <translation id="8859174528519900719">Subquadro: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Planilha do Excel</translation>

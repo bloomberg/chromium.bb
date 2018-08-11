@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
 <translation id="100812568230599391">प्रदर्शन शैली इंटरलीववर बदला.</translation>
+<translation id="1011903154582639569">की शोधा, नंतर टाइप करण्यासाठी उचला</translation>
 <translation id="1012173283529841972">सूची आयटम</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">तुम्ही ChromeVox वाचिक फीडबॅक पहिल्या वेळी वापरत आहात का? हे जलद ट्युटोरियल ChromeVox सोबत सुरुवात करण्यासाठी आवश्यक गोष्टी समजावून सांगते.</translation>
@@ -162,6 +163,7 @@
 <translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">गट</translation>
 <translation id="2582407057977008361">बाजूचा</translation>
+<translation id="2592212930811759050">संपादन सुरू करण्यासाठी दोनदा टॅप करा</translation>
 <translation id="2606210917827248971">यासह {COUNT,plural, =1{# आयटम}one{# आयटम}other{# आयटम}}</translation>
 <translation id="2614981083756825552">Math ML लेआउट</translation>
 <translation id="2624431853467395961">जाणून घ्या मोड उघडा</translation>

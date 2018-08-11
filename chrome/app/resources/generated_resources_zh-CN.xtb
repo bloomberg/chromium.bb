@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">同步和个性化</translation>
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1399511500114202393">不使用任何用户证书</translation>
+<translation id="1401165786814632797">当设备处于唤醒状态且已解锁时，您可以随时访问自己的 Google 助理，只需说“Ok Google”即可。</translation>
 <translation id="140250605646987970">已找到您的手机，但 Smart Lock 仅适用于运行 Android 5.0 或更高版本的设备。&lt;a&gt;了解详情&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" />（受监管用户）</translation>
 <translation id="1405476660552109915">您希望 <ph name="PASSWORD_MANAGER_BRAND" /> 保存您在此网站上使用的帐号吗？</translation>
@@ -509,7 +510,7 @@
 <translation id="1744060673522309905">无法将此设备加入到该网域中。请确保您未超出可添加的设备数量上限。</translation>
 <translation id="1744108098763830590">背景页</translation>
 <translation id="1745520510852184940">一律进行此翻译</translation>
-<translation id="1746417874336251387">提供将手机与 Chromebook 连接便能使用的新功能</translation>
+<translation id="1746417874336251387">提供可在手机与 Chromebook 连接后使用的新功能</translation>
 <translation id="174937106936716857">文件总数</translation>
 <translation id="175196451752279553">重新打开关闭的标签页(&amp;E)</translation>
 <translation id="1753905327828125965">常去网站</translation>
@@ -682,7 +683,6 @@
 <translation id="200544492091181894">以后，您随时可在“设置”中更改此设置</translation>
 <translation id="2006638907958895361">在<ph name="APP" />中打开链接</translation>
 <translation id="2007404777272201486">报告问题...</translation>
-<translation id="2016237810978710652">正在打开 Linux 文件…</translation>
 <translation id="2016430552235416146">传统</translation>
 <translation id="2017334798163366053">停用性能数据收集</translation>
 <translation id="2017836877785168846">清除历史记录和地址栏中的自动填充项。</translation>
@@ -1507,6 +1507,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> 希望连接到以下所选设备：</translation>
 <translation id="3274763671541996799">您已进入全屏模式。</translation>
 <translation id="3275778913554317645">在窗口中打开</translation>
+<translation id="3278877214895457897">设置完 Chromebook 后，您只需按 Google 助理按钮或说出“Ok Google”，便可随时获得 Google 助理的帮助。</translation>
 <translation id="3279230909244266691">此过程可能需要几分钟的时间。正在启动虚拟机。</translation>
 <translation id="3279741024917655738">在以下屏幕显示全屏视频</translation>
 <translation id="3280237271814976245">另存为(&amp;A)...</translation>
@@ -2270,7 +2271,7 @@
 <translation id="4481530544597605423">未配对的设备</translation>
 <translation id="4482194545587547824">Google 可能会使用您的浏览记录对 Google 搜索和其他 Google 服务进行个性化设置</translation>
 <translation id="4495419450179050807">不要在本页上显示</translation>
-<translation id="4499718683476608392">启用信用卡自动填充功能后，只需点击一次即可填写多个表单</translation>
+<translation id="4499718683476608392">启用信用卡自动填充功能后，只需点击一次即可填写表单</translation>
 <translation id="4500114933761911433">“<ph name="PLUGIN_NAME" />”崩溃了</translation>
 <translation id="450099669180426158">感叹号图标</translation>
 <translation id="4501530680793980440">确认删除</translation>
@@ -2597,6 +2598,7 @@
 <translation id="4992066212339426712">取消静音</translation>
 <translation id="4992458225095111526">确认 Powerwash 操作</translation>
 <translation id="4992473555164495036">您的管理员限制了可用的输入法。</translation>
+<translation id="4992926179187649719">开启“Ok Google”</translation>
 <translation id="4994474651455208930">允许网站要求成为协议的默认处理程序</translation>
 <translation id="4994754230098574403">正在设置</translation>
 <translation id="4996978546172906250">分享方式</translation>
@@ -3767,7 +3769,6 @@
 <translation id="6748775883310276718">单个应用自助服务终端</translation>
 <translation id="6751256176799620176">已选择 1 个文件夹</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" />（隐身）</translation>
-<translation id="6751815812172740613">要从这部 <ph name="DEVICE_TYPE" /> 中删除您“Linux 文件”文件夹中的所有 Linux 应用和数据吗？</translation>
 <translation id="6757101664402245801">网址已复制</translation>
 <translation id="6758056191028427665">让我们知道您的满意度。</translation>
 <translation id="6759193508432371551">恢复出厂设置</translation>
@@ -4044,7 +4045,6 @@
     <ph name="BEGIN_PARAGRAPH3" />要想控制此功能，请依次转到“设置”&gt;“Google”，并从菜单中选择“使用情况和诊断信息”。<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">获取帮助(&amp;E)</translation>
 <translation id="7200083590239651963">选择配置</translation>
-<translation id="7201014958346994077">无法查看 Linux 文件</translation>
 <translation id="720110658997053098">让此设备永久处于自助服务终端模式</translation>
 <translation id="7201118060536064622">已删除“<ph name="DELETED_ITEM_NAME" />”</translation>
 <translation id="7206693748120342859">正在下载 <ph name="PLUGIN_NAME" />...</translation>
@@ -4516,6 +4516,7 @@
 <translation id="7908378463497120834">抱歉，您的外部存储设备上至少有一个分区无法加载。</translation>
 <translation id="7909969815743704077">已在隐身模式下进行下载</translation>
 <translation id="7910768399700579500">新建文件夹(&amp;N)</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">您已在服务器上更改密码。请先退出，然后重新登录。</translation>
 <translation id="7915471803647590281">请先告诉我们所发生的情况，然后再发送反馈。</translation>
 <translation id="7916556741383518510">点击时</translation>
@@ -4657,7 +4658,6 @@
 <translation id="8107015733319732394">正在在您的 <ph name="DEVICE_TYPE" /> 上安装 Google Play 商店。这可能需要几分钟的时间。</translation>
 <translation id="8111155949205007504">将此密码发送到您的 iPhone</translation>
 <translation id="8113043281354018522">选择许可类型</translation>
-<translation id="8116925261070264013">已静音的网站</translation>
 <translation id="8116972784401310538">书签管理器(&amp;B)</translation>
 <translation id="8117620576188476503">使用状态栏管理连接、更新和设置。若要通过键盘访问这些内容，请按 Alt + Shift + S 组合键。</translation>
 <translation id="8118362518458010043">已被 Chrome 停用。此扩展程序可能不安全。</translation>
@@ -5116,7 +5116,6 @@
 <translation id="8845001906332463065">获取帮助</translation>
 <translation id="8846141544112579928">正在搜索键盘…</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885217322790849332">要使用$1打开文件，请先将文件复制到“Linux 文件”文件夹。</translation>
 <translation id="8859057652521303089">选择语言：</translation>
 <translation id="8859174528519900719">辅助框架：<ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excel 电子表格</translation>

@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">Sağa</translation>
 <translation id="1351937230027495976">Menüyü daralt</translation>
 <translation id="1383876407941801731">Ara</translation>
+<translation id="1419738280318246476">Bildirim işlemi gerçekleştirmek için cihazın kilidini açın</translation>
 <translation id="1467432559032391204">Sola</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Başlatıcı</translation>
@@ -224,6 +225,7 @@
 <translation id="4924411785043111640">Yeniden başlat ve sıfırla</translation>
 <translation id="4961318399572185831">Ekranı yayınla</translation>
 <translation id="5069971504769299223">Cihaz yöneticisi, etkinliğinizi izleyebilir.</translation>
+<translation id="5083553833479578423">Diğer Asistan özelliklerinin kilidini açın</translation>
 <translation id="5136175204352732067">Farklı klavye bağlandı</translation>
 <translation id="5168181903108465623">Yayın cihazları kullanılabilir</translation>
 <translation id="5207949376430453814">Metin imlecini vurgula</translation>
@@ -296,6 +298,7 @@
 <translation id="6376931439017688372">Bluetooth açık</translation>
 <translation id="639644700271529076">CAPS LOCK kapalı</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">Tüm bildirimleri temizleyin</translation>
 <translation id="643147933154517414">Tümü bitti</translation>
 <translation id="6445835306623867477"><ph name="RECEIVER_NAME" /> adlı alıcıya <ph name="ROUTE_TITLE" /></translation>
 <translation id="6452181791372256707">Reddet</translation>
@@ -397,9 +400,11 @@
 <translation id="8152119955266188852">Tam ekran büyüteç kısayoluna bastınız. Bu özelliği açmak istiyor musunuz?</translation>
 <translation id="8190698733819146287">Dilleri ve girişi özelleştir...</translation>
 <translation id="8191230140820435481">Uygulamalarınızı, uzantılarınızı ve temalarınızı yönetme</translation>
+<translation id="8192202700944119416">Bildirimler gizlendi.</translation>
 <translation id="8261506727792406068">Sil</translation>
 <translation id="8297006494302853456">Zayıf</translation>
 <translation id="8308637677604853869">Önceki menü</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Not oluştur</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> seçenekler menüsü</translation>
 <translation id="8406981827175133772">Tam Ekran Büyüteci</translation>
@@ -441,6 +446,7 @@
 <translation id="8938800817013097409">USB-C cihaz (arkadaki sağ bağlantı noktası)</translation>
 <translation id="8940956008527784070">Pil gücü az (%<ph name="PERCENTAGE" />)</translation>
 <translation id="8984179138335769204">Hızlı başlat</translation>
+<translation id="899350903320462459">Bildirim işlemi gerçekleştirmek için <ph name="LOGIN_ID" /> olarak cihazın kilidini açın</translation>
 <translation id="8995603266996330174">Yöneten: <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Adobe Flash Player güncellemesi mevcut</translation>
 <translation id="9056839673611986238">Cihaz ilk haline döndürülecek</translation>

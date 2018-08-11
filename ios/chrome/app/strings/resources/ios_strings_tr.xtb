@@ -167,6 +167,7 @@
 <translation id="3588820906588687999">Resmi Yeni Sekmede Aç</translation>
 <translation id="3603009562372709545">Bağlantı URL'sini kopyala</translation>
 <translation id="3607167657931203000">Verileri Otomatik Doldur</translation>
+<translation id="360930808415985584">Senkronizasyon, Kişiselleştirme ve Diğer özellikleri kontrol edin</translation>
 <translation id="3609785682760573515">Senkronize ediliyor...</translation>
 <translation id="3628119975092896051">Okuma listeniz çevrimdışı olarak kullanılabilir. Okuma listenize sayfa eklemek için <ph name="SHARE_OPENING_ICON" /> simgesine dokunun.</translation>
 <translation id="3638472932233958418">Web Sayfalarını Önceden Yükle</translation>
@@ -213,6 +214,7 @@
 <translation id="4508750114462689118">Oturum açma tanıtımını kapat</translation>
 <translation id="4526249700380860531">Kaydedilmiş şifreleri <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> adresinden görüntüleyin ve yönetin</translation>
 <translation id="4536418791685807335">Tekrar oturum açmayı deneyin.</translation>
+<translation id="4541241553780729349">Google ile senkronize ettiğiniz veriler ve kullandığınız özellikler değişmez</translation>
 <translation id="457386861538956877">Diğer...</translation>
 <translation id="461440297010471931">Google ile arama</translation>
 <translation id="4619615317237390068">Diğer cihazlardan sekmeler</translation>
@@ -421,7 +423,6 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="8080028325999236607">Tüm Sekmeleri Kapat</translation>
 <translation id="8114753159095730575">Dosya indirme işlevi kullanılabilir. Seçenekler ekranın alt tarafındadır.</translation>
 <translation id="8160722851663543621">Adres çubuğundan ve arama kutusundan aramaları ve bazı çerezleri varsayılan arama motorunuza gönderir</translation>
-<translation id="8178325540017397816">Seçtiğiniz öğeler kaldırılacak</translation>
 <translation id="8205564605687841303">İptal</translation>
 <translation id="8225985093977202398">Önbelleğe Alınan Resimler ve Dosyalar</translation>
 <translation id="8261506727792406068">Sil</translation>

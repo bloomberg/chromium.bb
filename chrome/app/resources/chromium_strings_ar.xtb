@@ -25,7 +25,7 @@
 <translation id="1808667845054772817">‏إعادة تثبيت Chromium</translation>
 <translation id="1869480248812203386">‏يمكنك المساعدة في جعل Chromium أكثر أمانًا وأسهل استخدامًا بإبلاغ Google تلقائيًا بتفاصيل أي مخاطر أمنية محتملة.</translation>
 <translation id="1881322772814446296">‏أنت تسجل الدخول باستخدام حساب يخضع للإدارة وتتيح للمشرف إمكانية التحكم في ملفك الشخصي على Chromium. وستكون بياناتك في Chromium مثل تطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك والإعدادات الأخرى مرتبطة دائمًا بالمستخدم <ph name="USER_NAME" />. ستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. ويُمكنك اختيار إنشاء ملف شخصي جديد للإبقاء على بياناتك الحالية في Chromium بشكل مستقل. <ph name="LEARN_MORE" /></translation>
-<translation id="1895626441344023878">{0,plural, =0{‏هناك تحديث متاح لـ Chromium}=1{‏هناك تحديث واحد متاح لـ Chromium}two{‏هناك تحديث متاح لـ Chromium منذ يومين (#)}few{‏هناك تحديث متاح لـ Chromium منذ # أيام}many{‏هناك تحديث متاح لـ Chromium منذ # يومًا}other{‏هناك تحديث متاح لـ Chromium منذ # يوم}}</translation>
+<translation id="1895626441344023878">{0,plural, =0{‏يتوفر تحديث لـ Chromium}=1{‏يتوفر تحديث واحد لـ Chromium}two{‏يتوفر تحديث لـ Chromium منذ يومين (#)}few{‏يتوفر تحديث لـ Chromium منذ # أيام}many{‏يتوفر تحديث لـ Chromium منذ # يومًا}other{‏يتوفر تحديث لـ Chromium منذ # يوم}}</translation>
 <translation id="1929939181775079593">‏لا يستجيب Chromium. هل تريد إعادة التشغيل الآن؟</translation>
 <translation id="1966382378801805537">‏يتعذَّر على Chromium تحديد المتصفح التلقائي أو تعيينه</translation>
 <translation id="2008474315282236005">‏سيعمل هذا على حذف عنصر واحد من هذا الجهاز. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chromium كـ <ph name="USER_EMAIL" />.</translation>
@@ -111,7 +111,7 @@
 <translation id="4943838377383847465">‏Chromium في وضع الخلفية.</translation>
 <translation id="4987820182225656817">‏يمكن للضيف استخدام Chromium بدون أن يترك أي أثر وراءه.</translation>
 <translation id="4994636714258228724">‏إضافة نفسك إلى Chromium</translation>
-<translation id="5021854341188256296">{0,plural, =0{‏هناك تحديث متاح لنظام التشغيل Chromium}=1{‏هناك تحديث متاح لنظام التشغيل Chromium}two{‏هناك تحديث متاح لنظام التشغيل Chromium منذ يومين (#)}few{‏هناك تحديث متاح لنظام التشغيل Chromium منذ # أيام}many{‏هناك تحديث متاح لنظام التشغيل Chromium منذ # يومًا}other{‏هناك تحديث متاح لنظام التشغيل Chromium منذ # يوم}}</translation>
+<translation id="5021854341188256296">{0,plural, =0{‏يتوفر تحديث لنظام التشغيل Chromium}=1{‏يتوفر تحديث لنظام التشغيل Chromium}two{‏يتوفر تحديث لنظام التشغيل Chromium منذ يومين (#)}few{‏يتوفر تحديث لنظام التشغيل Chromium منذ # أيام}many{‏يتوفر تحديث لنظام التشغيل Chromium منذ # يومًا}other{‏يتوفر تحديث لنظام التشغيل Chromium منذ # يوم}}</translation>
 <translation id="5032989939245619637">‏حفظ التفاصيل في Chromium</translation>
 <translation id="5045248521775609809">‏إمكانية استخدام Chromium في كل مكان</translation>
 <translation id="5116586539350239523">‏سيخزّن Chromium معلوماتك الشخصية بشكلٍ آمن حتى لا تُضطر إلى كتابتها مرةً أخرى.</translation>
@@ -147,9 +147,9 @@
 <translation id="6072279588547424923">‏تمت إضافة <ph name="EXTENSION_NAME" /> إلى Chromium</translation>
 <translation id="608189560609172163">‏تعذر على Chromium مزامنة البيانات نظرًا لحدوث خطأ أثناء تسجيل الدخول.</translation>
 <translation id="6096348254544841612">‏تخصيص Chromium والتحكُّم فيه. هناك تحديث متوفر.</translation>
-<translation id="6120345080069858279">‏سيحفظ Chromium كلمة المرور هذه في حسابك على Google. ولن تحتاج تذكّرها.</translation>
+<translation id="6120345080069858279">‏سيحفظ Chromium كلمة المرور هذه في حسابك على Google ولن تحتاج تذكّرها.</translation>
 <translation id="6129621093834146363">‏ملف <ph name="FILE_NAME" /> ضار، لذلك فقد حظره Chromium.</translation>
-<translation id="620022061217911843">‏يتطلَّب المُشرف إعادة تشغيل نظام التشغيل Chromium لتطبيق تحديث.</translation>
+<translation id="620022061217911843">‏يطالب المُشرف بإعادة تشغيل نظام التشغيل Chromium لتطبيق تحديث.</translation>
 <translation id="6212496753309875659">‏يحتوي هذا الكمبيوتر فعلاً على إصدار أحدث من Chromium. إذا كان البرنامج لا يعمل، فالرجاء إزالة Chromium وإعادة المحاولة.</translation>
 <translation id="6248213926982192922">‏جعل Chromium المتصفح التلقائي</translation>
 <translation id="6268381023930128611">‏هل تريد الخروج من Chromium؟</translation>

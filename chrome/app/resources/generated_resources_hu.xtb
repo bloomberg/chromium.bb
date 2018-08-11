@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">Szinkronizálás és személyre szabás</translation>
 <translation id="1398853756734560583">Teljes méret</translation>
 <translation id="1399511500114202393">Felhasználói tanúsítvány nélkül</translation>
+<translation id="1401165786814632797">Segédjéhez bármikor hozzáférhet az „OK Google” kimondásával, ha eszköze nincs alvó üzemmódban, és fel is van oldva.</translation>
 <translation id="140250605646987970">Megtaláltuk telefonját. A Smart Lock azonban csak Android 5.0 és újabb rendszert futtató eszközökön működik. &lt;a&gt;További információ&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (felügyelt)</translation>
 <translation id="1405476660552109915">Szeretné, hogy a(z) <ph name="PASSWORD_MANAGER_BRAND" /> mentse az ehhez a webhelyhez tartozó fiókot?</translation>
@@ -685,7 +686,6 @@
 <translation id="200544492091181894">Ezt később módosíthatja a beállítások között</translation>
 <translation id="2006638907958895361">Link megnyitása a következőben: <ph name="APP" /></translation>
 <translation id="2007404777272201486">Hibabejelentés...</translation>
-<translation id="2016237810978710652">Linux-fájlok megnyitása…</translation>
 <translation id="2016430552235416146">Hagyományos</translation>
 <translation id="2017334798163366053">Teljesítményadatok gyűjtésének letiltása</translation>
 <translation id="2017836877785168846">Törli a címsávban található előzményeket és automatikus kiegészítéseket.</translation>
@@ -1511,6 +1511,7 @@
 <translation id="3271648667212143903">A(z) <ph name="ORIGIN" /> csatlakozni szeretne</translation>
 <translation id="3274763671541996799">Teljes képernyős módra váltott.</translation>
 <translation id="3275778913554317645">Megnyitás ablakként</translation>
+<translation id="3278877214895457897">Miután beállította a Chromebookot, a Segéd-gomb megnyomásával, illetve az „Ok Google” kimondásával bármikor segítséget kérhet Segédjétől.</translation>
 <translation id="3279230909244266691">Ez a folyamat néhány percet is igénybe vehet. A virtuális gép indítása folyamatban van.</translation>
 <translation id="3279741024917655738">Teljes képernyős videók megjelenítése a következőn</translation>
 <translation id="3280237271814976245">Mentés &amp;másként...</translation>
@@ -2603,6 +2604,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4992066212339426712">Némítás feloldása</translation>
 <translation id="4992458225095111526">Powerwash megerősítése</translation>
 <translation id="4992473555164495036">A rendszergazda korlátozta a rendelkezésre álló beviteli módokat.</translation>
+<translation id="4992926179187649719">„Ok Google” bekapcsolása</translation>
 <translation id="4994474651455208930">A webhelyek kérhetik, hogy protokollok alapértelmezett kezelői legyenek</translation>
 <translation id="4994754230098574403">Beállítás</translation>
 <translation id="4996978546172906250">Megosztás itt:</translation>
@@ -3782,7 +3784,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6748775883310276718">Egyalkalmazásos kioszk</translation>
 <translation id="6751256176799620176">1 mappa kiválasztva</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Inkognitómód)</translation>
-<translation id="6751815812172740613">Törli a Linux-fájlok mappában található összes Linux-alkalmazást és -adatot erről az eszközről (<ph name="DEVICE_TYPE" />)?</translation>
 <translation id="6757101664402245801">Az URL kimásolva</translation>
 <translation id="6758056191028427665">Ossza meg velünk, mennyire van megelégedve munkánkkal.</translation>
 <translation id="6759193508432371551">Gyári beállítások visszaállítása</translation>
@@ -4059,7 +4060,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
     <ph name="BEGIN_PARAGRAPH3" />Ezt a funkciót a Beállítások &gt; Google pontnál irányíthatja. Válassza ki a Használat és diagnosztika lehetőséget a menüből.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">Súgó</translation>
 <translation id="7200083590239651963">Konfiguráció kiválasztása</translation>
-<translation id="7201014958346994077">A Linux-fájlok megtekintése nem sikerült</translation>
 <translation id="720110658997053098">Az eszköz állandó kioszk módban tartása</translation>
 <translation id="7201118060536064622">„<ph name="DELETED_ITEM_NAME" />” törölve</translation>
 <translation id="7206693748120342859">A(z) <ph name="PLUGIN_NAME" /> plug-in letöltése...</translation>
@@ -4533,6 +4533,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7908378463497120834">Sajnos a külső eszközön legalább egy partíció nem csatlakoztatható.</translation>
 <translation id="7909969815743704077">Letöltve inkognitó módban</translation>
 <translation id="7910768399700579500">&amp;Új mappa</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">A jelszó megváltozott a szerveren. Jelentkezzen ki, majd jelentkezzen be újra.</translation>
 <translation id="7915471803647590281">Kérjük, mondja el, mi történik, mielőtt elküldené a visszajelzést.</translation>
 <translation id="7916556741383518510">Kattintásra</translation>
@@ -4674,7 +4675,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8107015733319732394">Folyamatban van a Google Play Áruház telepítése a(z) <ph name="DEVICE_TYPE" /> eszközre. Ez eltarthat néhány percig.</translation>
 <translation id="8111155949205007504">Ossza meg ezt a jelszót iPhone eszközével</translation>
 <translation id="8113043281354018522">Válasszon licenctípust</translation>
-<translation id="8116925261070264013">Némítva</translation>
 <translation id="8116972784401310538">&amp;Könyvjelzőkezelő</translation>
 <translation id="8117620576188476503">Kapcsolatok, frissítések és beállítások kezelése az állapottálca segítségével. Ha a billentyűzet segítségével szeretne ide eljutni, használja az Alt+Shift+s billentyűparancsot.</translation>
 <translation id="8118362518458010043">A Chrome letiltotta. Ez a bővítmény nem biztonságos.</translation>
@@ -5133,7 +5133,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8845001906332463065">Súgó</translation>
 <translation id="8846141544112579928">Billentyűzet keresése…</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885217322790849332">Ha a(z) $1 segítségével szeretne fájlokat megnyitni, először másolja át őket a Linux-fájlok mappába.</translation>
 <translation id="8859057652521303089">Nyelv kiválasztása:</translation>
 <translation id="8859174528519900719">Subframe: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excel-táblázat</translation>

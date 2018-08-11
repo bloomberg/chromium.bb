@@ -678,7 +678,6 @@
       Katrs saraksta ieraksts apzīmē identifikatoru, kas tiek izmantots iekšēji, lai atšķirtu dažādus ierīces lokālos kontus.</translation>
 <translation id="2769952903507981510">Attālās piekļuves saimniekdatoru obligātā domēna nosaukuma konfigurēšana</translation>
 <translation id="2787173078141616821">Sniegt informāciju par Android statusu</translation>
-<translation id="2793923553868251161">Avoti, kas jāapstrādā kā drošs konteksts</translation>
 <translation id="2799297758492717491">Atļauja automātiski atskaņot multivides saturu, ja URL paraugs ir iekļauts baltajā sarakstā</translation>
 <translation id="2801230735743888564">Ļaujiet lietotājiem spēlēt dinozauru spēli, kad ierīce ir bezsaistē.
 
@@ -1874,12 +1873,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6155936611791017817">Lielā kursora noklusējuma stāvokļa iestatīšana pieteikšanās ekrānā</translation>
 <translation id="6157537876488211233">Ar komatu atdalītu starpniekserveru apiešanas kārtulu saraksts</translation>
 <translation id="6158324314836466367">Uzņēmuma interneta veikala nosaukums (darbība ir pārtraukta)</translation>
-<translation id="6164955668342404660">Novecojusi versijā M69. Izmantojiet “OverrideSecurityRestrictionsOnInsecureOrigin”.
-
-      Šī politika nosaka tādu avotu (vietrāžu URL) sarakstu, kuri ir jāapstrādā kā drošs konteksts. Nolūks ir atļaut organizācijām iestatīt izstādīšanas serveri iekšējai tīmekļa izstrādei, lai organizācijas izstrādātāji varētu izmēģināt funkcijas, kuru darbībai nepieciešams drošs konteksts, izvairoties no TLS izmantošanas izstādīšanas serverī.
-      Politikas vietrāžu URL saraksta noteikšanai ir tāds pats rezultāts kā komandrindas atzīmes “--unsafely-treat-insecure-origin-as-secure” mainīšanai uz komatatdalītu sarakstu, kurā ietverti tie paši URL. Ja politika ir iestatīta, tiks ignorēta komandrindas atzīme.
-      Plašāku informāciju par drošu kontekstu skatiet vietnē https://www.w3.org/TR/secure-contexts/.
-      </translation>
 <translation id="6181608880636987460">Ļauj iestatīt to vietrāžu URL struktūru sarakstu, kas norāda vietnes, kurās nav atļauts izpildīt spraudni <ph name="FLASH_PLUGIN_NAME" />.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota vispārējā noklusējuma vērtība no politikas “DefaultPluginsSetting” (ja tā ir iestatīta) vai lietotāja personiskās konfigurācijas.</translation>
@@ -2002,9 +1995,9 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šī politika nav iestatīta vai saraksts ir tukšs, pārlūkā <ph name="PRODUCT_NAME" /> varēs piekļūt visām shēmām.</translation>
 <translation id="6652197835259177259">Lokāli pārvaldītu lietotāju iestatījumi</translation>
 <translation id="6658245400435704251">Norāda sekunžu skaitu, kuru laikā ierīce var nejaušā secībā atlikt atjauninājuma lejupielādi, sākot ar laiku, kad serveris pirmo reizi nosūtīja atjauninājumu. Daļa no šī ierīces gaidīšanas laika var būt pulksteņa laiks, un daļa — atjauninājuma pārbaužu skaits. Jebkurā gadījumā izkliede ir saistīta ar noteiktu laika periodu, lai ierīces nebūtu bezgalīgi jāgaida atjauninājuma lejupielāde.</translation>
-<translation id="6665599130599311250">Ja politikai ir iestatīta vērtība “False” vai tā nav iestatīta, pārvaldītā viesa sesija rīkosies kā dokumentēts https://support.google.com/chrome/a/answer/3017014 — standarta “Publiskā sesija”.
+<translation id="6665599130599311250">Ja politikai ir iestatīta vērtība “False” vai tā nav iestatīta, pārvaldītā viesa sesija tiks dokumentēta kā https://support.google.com/chrome/a/answer/3017014 — standarta “Publiskā sesija”.
 
-      Ja šai politikai ir iestatīta vērtība “True”, pārvaldītā viesa sesija pieņems “Pārvaldītās sesijas” rīcību, kas atceļ daudzus ierobežojumus, kuri ir spēkā parastai “Publiskajai sesijai”.
+      Ja šai politikai ir iestatīta vērtība “True”, pārvaldītā viesa sesija norisināsies kā "Pārvaldītā sesija", kas atceļ daudzus ierobežojumus, kuri ir spēkā parastai “Publiskajai sesijai”.
  
       Ja šī politika ir iestatīta, lietotājs to nevar mainīt vai ignorēt.</translation>
 <translation id="6665670272107384733">Paroles ievadīšanas biežuma iestatīšana, lai varētu izmantot ātro atbloķēšanu</translation>
@@ -2055,11 +2048,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6786967369487349613">Iestatīt viesabonēšanas profila direktoriju</translation>
 <translation id="6810445994095397827">Bloķēt JavaScript šajās vietnēs</translation>
 <translation id="681446116407619279">Atbalstītās autentifikācijas shēmas</translation>
-<translation id="6832455357698286434">
-      Šī politika nosaka tādu avotu (vietrāžu URL) vai saimniekdatora nosaukuma rakstu sarakstu (piemēram, *.example.com), kuri ir jāapstrādā kā drošs konteksts. Nolūks ir atļaut organizācijām iestatīt izstādīšanas serveri iekšējai tīmekļa izstrādei, lai organizācijas izstrādātāji varētu izmēģināt funkcijas, kuru darbībai nepieciešams drošs konteksts, izvairoties no TLS izmantošanas izstādīšanas serverī.
-      Politikas vietrāžu URL saraksta noteikšanai ir tāds pats rezultāts kā komandrindas atzīmes “--unsafely-treat-insecure-origin-as-secure” mainīšanai uz komatatdalītu sarakstu, kurā ietverti tie paši URL. Ja politika ir iestatīta, tā ignorēs komandrindas atzīmi.
-      Plašāku informāciju par drošu kontekstu skatiet vietnē https://www.w3.org/TR/secure-contexts/.
-      </translation>
 <translation id="6835883744948188639">Periodiski rādīt lietotājam uzvedni par ieteicamu atkārtotu palaišanu</translation>
 <translation id="6838056959556423778">Tiek ignorētas <ph name="PRODUCT_NAME" /> noklusējuma printera atlasīšanas kārtulas.
 
@@ -2173,16 +2161,17 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="69525503251220566">Parametrs, kas noklusējuma meklēšanas pakalpojumu sniedzējam nodrošina funkciju Meklēšana pēc attēla</translation>
 <translation id="6956272732789158625">Neatļaut izmantot atslēgu ģenerēšanu nevienā vietnē</translation>
 <translation id="6982028490425791294">
-      Ja šai politikai ir iestatīta vērtība “True”, <ph name="PRODUCT_NAME" /> ir atļauts apkopot WebRTC notikumu žurnālus no Google pakalpojumiem (piem., Google Meet) un augšupielādēt šos žurnālus uzņēmumam Google.
+      Ja šai politikai ir iestatīta vērtība “True”, <ph name="PRODUCT_NAME" /> ir atļauts apkopot WebRTC notikumu žurnālus no Google pakalpojumiem (piem., Google Meet) un augšupielādēt šos žurnālus Google.
 
       Ja šai politikai ir iestatīta vērtība “False” vai vērtība nav iestatīta, <ph name="PRODUCT_NAME" /> nedrīkst apkopot vai augšupielādēt tādus žurnālus.
 
-      Šie žurnāli satur informāciju, piemēram, nosūtīto un saņemto RTP paku laiku un izmēru, atsauksmes par pārslodzi tīklā un metadatus par audio un video ietvaru laiku un kvalitāti. Šī informācija ir noderīga, atkļūdojot problēmas ar audio vai video zvaniem pārlūkā Chrome, piemēram, joslas platuma novērtējuma problēmas utt. Žurnāli nesatur audio vai video saturu no zvana.
+
+      Šie žurnāli satur informāciju, piemēram, nosūtīto un saņemto RTP paku laiks un izmērs, dati par pārslodzi tīklā un metadati par audio un video laiku un kvalitāti. Šī informācija ir noderīga, risinot audio vai video zvanu problēmas pārlūkā Chrome, piemēram, joslas platuma novērtējuma problēmas utt. Žurnāli nesatur zvana audio vai video saturu.
 
 
       Šo datu apkopošanu var aktivizēt tikai Google tīmekļa pakalpojumi, piemēram, Google Hangouts vai Google Meet.
 
-      Šos žurnālus, izmantojot sesijas ID, var saistīt ar citiem žurnāliem, kurus apkopo pats Google pakalpojums; tas ir paredzēts, lai atvieglotu atkļūdošanu
+      Šos žurnālus, izmantojot sesijas ID, var saistīt ar citiem žurnāliem, kurus apkopo pats Google pakalpojums; tas ir paredzēts, lai atvieglotu atkļūdošanu.
       </translation>
 <translation id="6994082778848658360">Norāda, kā var izmantot pievienoto drošības elementa aparatūru divfaktoru autentificēšanai, ja tā ir saderīga ar šo funkciju.
 Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošanas poga.
@@ -2430,7 +2419,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="7617319494457709698">Šajā politikā ir norādīti paplašinājumi, kuros atļauts attālajai apstiprināšanai izmantot platformas <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> funkciju <ph name="CHALLENGE_USER_KEY_FUNCTION" />. Lai varētu izmantot API, šim sarakstam ir jāpievieno paplašinājumi.
 
           Ja paplašinājums nav iekļauts sarakstā vai ja saraksts nav iestatīts, API izsaukums neizdosies un tiks rādīts kļūdas kods.</translation>
-<translation id="7620300057302654932">Avoti vai saimniekdatora nosaukuma raksti, kas jāapstrādā kā drošs konteksts.</translation>
 <translation id="7625444193696794922">Norāda atbrīvošanas kanālu, pie kura jābūt piesaistītai šai ierīcei.</translation>
 <translation id="7632724434767231364">GSSAPI bibliotēkas nosaukums</translation>
 <translation id="7635471475589566552">Konfigurē produktā <ph name="PRODUCT_NAME" /> izmantoto lietojumprogrammas lokalizāciju un neļauj lietotājiem mainīt šo lokalizāciju.

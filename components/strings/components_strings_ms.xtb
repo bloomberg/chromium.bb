@@ -106,7 +106,6 @@
 <translation id="1639239467298939599">Memuatkan</translation>
 <translation id="1640180200866533862">Dasar pengguna</translation>
 <translation id="1640244768702815859">Cuba <ph name="BEGIN_LINK" />lawat laman utama tapak<ph name="END_LINK" />.</translation>
-<translation id="1644184664548287040">Konfigurasi rangkaian tidak sah dan tidak boleh diimport.</translation>
 <translation id="1644574205037202324">Sejarah</translation>
 <translation id="1645368109819982629">Protokol tidak disokong</translation>
 <translation id="1655462015569774233">{1,plural, =1{Pelayan ini tidak dapat membuktikan bahawa <ph name="DOMAIN" />; sijil keselamatannya tamat tempoh semalam. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintas sambungan anda. Jam komputer anda ditetapkan kepada <ph name="CURRENT_DATE" /> pada masa ini. Adakah itu betul? Jika tidak, anda perlu membetulkan jam sistem anda dan kemudian muat semula halaman ini.}other{Pelayan ini tidak dapat membuktikan bahawa <ph name="DOMAIN" />; sijil keselamatannya tamat tempoh # hari yang lalu. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintas sambungan anda. Jam komputer anda ditetapkan kepada <ph name="CURRENT_DATE" /> pada masa ini. Adakah itu betul? Jika tidak, anda perlu membetulkan jam sistem anda dan kemudian muat semula halaman ini.}}</translation>
@@ -284,7 +283,6 @@
 <translation id="2941952326391522266">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya adalah dari <ph name="DOMAIN2" />. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
 <translation id="2948083400971632585">Anda boleh melumpuhkan sebarang proksi yang dikonfigurasi untuk sambungan dari halaman tetapan.</translation>
 <translation id="2955913368246107853">Tutup bar cari</translation>
-<translation id="2958431318199492670">Konfigurasi rangkaian tidak mematuhi piawaian ONC. Sebahagian konfigurasi tidak boleh diimport.</translation>
 <translation id="2969319727213777354">Untuk mewujudkan sambungan yang selamat, jam anda perlu ditetapkan dengan betul. Perkara ini perlu dilakukan kerana sijil yang digunakan laman web untuk mengenal pastinya hanya sah untuk tempoh masa yang tertentu. Memandangkan jam peranti anda tidak betul, Google Chrome tidak boleh mengesahkan sijil ini.</translation>
 <translation id="2972581237482394796">&amp;Buat Semula</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, dipilih pada masa ini. <ph name="ROW_CONTENT" /></translation>
@@ -356,7 +354,6 @@
 <translation id="3391030046425686457">Alamat penghantaran</translation>
 <translation id="3395827396354264108">Kaedah pengambilan</translation>
 <translation id="3399952811970034796">Alamat Penghantaran</translation>
-<translation id="3409072600744224192">Untuk mendapatkan kad pada semua peranti anda, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3422248202833853650">Cuba keluar daripada atur cara lain untuk mengosongkan memori.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> tidak dapat dicapai pada masa ini.</translation>
 <translation id="3427092606871434483">Benarkan (lalai)</translation>
@@ -583,7 +580,6 @@
 <translation id="5045550434625856497">Kata laluan tidak sah</translation>
 <translation id="5056549851600133418">Artikel untuk anda</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Menyemak alamat proksi<ph name="END_LINK" /></translation>
-<translation id="5072538239104292703">Untuk mendapatkan kad pada semua peranti anda, log masuk dan hidupkan penyegerakan.</translation>
 <translation id="5086888986931078152">Anda mungkin kehilangan akses kepada kandungan dilindungi daripada sesetengah tapak web.</translation>
 <translation id="5087286274860437796">Sijil pelayan tidak sah pada masa ini.</translation>
 <translation id="5087580092889165836">Tambah kad</translation>
@@ -629,7 +625,6 @@
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> daripada <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Pilih Maklumat Hubungan</translation>
 <translation id="5327248766486351172">Nama</translation>
-<translation id="5327567770033251652">hidupkan penyegerakan</translation>
 <translation id="5332219387342487447">Kaedah Penghantaran</translation>
 <translation id="5355557959165512791">Anda tidak boleh melawati <ph name="SITE" /> sekarang kerana sijil tapak ini telah ditarik balik. Ralat dan serangan rangkaian biasanya bersifat sementara. Oleh sebab itu, halaman ini mungkin akan berfungsi semula kemudian.</translation>
 <translation id="536296301121032821">Gagal menyimpan tetapan dasar</translation>
@@ -808,7 +803,6 @@
 <translation id="679355240208270552">Diabaikan kerana carian lalai tidak didayakan oleh dasar.</translation>
 <translation id="681021252041861472">Medan Diperlukan</translation>
 <translation id="6810899417690483278">ID Penyesuaian</translation>
-<translation id="6820686453637990663">CVC</translation>
 <translation id="6824266427216888781">Gagal memuatkan data rantau</translation>
 <translation id="6825578344716086703">Anda cuba untuk mencapai <ph name="DOMAIN" />, tetapi pelayan memberikan sijil yang ditandatangani menggunakan algoritma tandatangan yang lemah (seperti SHA-1). Ini bermakna bahawa bukti kelayakan keselamatan yang diberi pelayan mungkin dipalsukan dan pelayan tersebut bukan seperti yang anda jangkakan (anda mungkin berkomunikasi dengan penyerang).</translation>
 <translation id="6831043979455480757">Terjemah</translation>
@@ -824,7 +818,6 @@
 <translation id="6915804003454593391">Pengguna:</translation>
 <translation id="6944692733090228304">Anda memasukkan kata laluan di tapak yang tidak diurus oleh <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Untuk melindungi akaun anda, jangan gunakan semula kata laluan anda pada apl dan tapak lain.</translation>
 <translation id="6945221475159498467">Pilih</translation>
-<translation id="6948540501704460596">Untuk mendapatkan kad pada semua peranti anda, <ph name="SYNC_LINK" />.</translation>
 <translation id="6948701128805548767">Pilih alamat untuk melihat kaedah dan syarat pengambilan</translation>
 <translation id="6949872517221025916">Tetapkan Semula Kata Laluan</translation>
 <translation id="6950684638814147129">Ralat semasa menghuraikan nilai JSON: <ph name="ERROR" /></translation>
@@ -839,7 +832,6 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Caj ini mungkin caj sekali atau caj berulang dan mungkin tidak ketara.</translation>
 <translation id="7029809446516969842">Kata laluan</translation>
-<translation id="7042837854211185817">Untuk mendapatkan kad anda pada semua peranti, hidupkan penyegerakan.</translation>
 <translation id="7050187094878475250">Anda cuba untuk mencapai <ph name="DOMAIN" />, tetapi pelayan memberikan sijil yang tempoh sahnya terlalu panjang untuk boleh dipercayai.</translation>
 <translation id="7053983685419859001">Sekat</translation>
 <translation id="7064851114919012435">Maklumat hubungan</translation>

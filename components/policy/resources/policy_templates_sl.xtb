@@ -677,7 +677,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Vsak vnos na seznamu določa identifikator, ki se uporablja interno za razlikovanje med lokalnimi računi za napravo.</translation>
 <translation id="2769952903507981510">Nastavitev zahtevanega imena domene za dostop do oddaljenih gostiteljev</translation>
 <translation id="2787173078141616821">Poročanje podatkov o stanju Androida</translation>
-<translation id="2793923553868251161">Izvori naj se obravnavajo kot varni kontekst.</translation>
 <translation id="2799297758492717491">Dovoli samodejno predvajanje predstavnosti na seznamu dovoljenih vzorcev URL</translation>
 <translation id="2801230735743888564">Uporabnikom dovoli igranje skrite igre z dinozavrom, ko je naprava brez internetne povezave.
 
@@ -1881,12 +1880,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6155936611791017817">Nastavitev privzetega stanja velikega kazalca na prijavnem zaslonu</translation>
 <translation id="6157537876488211233">Seznam pravil za obvod proxyja, ločenih z vejico</translation>
 <translation id="6158324314836466367">Ime spletne trgovine podjetja (zastarelo)</translation>
-<translation id="6164955668342404660">Zastarelo v M69. Uporabite OverrideSecurityRestrictionsOnInsecureOrigin.
-
-      Pravilnik določa seznam izvorov (URL-jev), ki se obravnavajo kot varni kontekst. Namen tega je omogočiti organizacijam nastavitev preskusnega produkcijskega strežnika za notranje spletno razvijanje, tako da lahko razvijalci preskušajo funkcije, ki zahtevajo varne kontekste, ne da bi bilo treba uvesti TLS v preskusnem produkcijskem strežniku.
-      Nastavitev seznama URL-jev v tem pravilniku ima enak učinek kot nastavitev zastavice ukazne vrstice »--unsafely-treat-insecure-origin-as-secure« na seznamu, ločenemu z vejicami, istih URL-jev. Če je pravilnik nastavljen, preglasi zastavico ukazne vrstice.
-      Več informacij o varnih kontekstih je na voljo na https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6181608880636987460">Omogoča nastavitev seznama vzorcev URL-jev, ki določa, katerim spletnim mestom je onemogočeno izvajanje vtičnika <ph name="FLASH_PLUGIN_NAME" />.
 
           Če ta pravilnik ni nastavljen, se za vsa spletna mesta uporabi globalna privzeta vrednost iz pravilnika »DefaultPluginsSetting«, kadar je ta pravilnik nastavljen, sicer pa iz osebnih nastavitev uporabnika.</translation>
@@ -2067,11 +2060,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="6786967369487349613">Nastavitev imenika za profil za gostovanje</translation>
 <translation id="6810445994095397827">Blokiraj JavaScript na teh mestih</translation>
 <translation id="681446116407619279">Podprti načini preverjanja pristnosti</translation>
-<translation id="6832455357698286434">
-      Pravilnik določa seznam izvorov (URL-jev) ali vzorcev imena gostitelja (na primer »*.example.com«), ki se obravnavajo kot varni kontekst. Namen tega je omogočiti organizacijam nastavitev preskusnega produkcijskega strežnika za notranje spletno razvijanje, tako da lahko razvijalci preskušajo funkcije, ki zahtevajo varne kontekste, ne da bi bilo treba uvesti TLS v preskusnem produkcijskem strežniku.
-      Nastavitev seznama URL-jev v tem pravilniku ima enak učinek kot nastavitev zastavice ukazne vrstice »--unsafely-treat-insecure-origin-as-secure« na seznamu, ločenemu z vejicami, istih URL-jev. Če je pravilnik nastavljen, preglasi zastavico ukazne vrstice.
-      Več informacij o varnih kontekstih je na voljo na https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6835883744948188639">Uporabniku prikaži ponavljajoč se poziv, ki obvešča, da je priporočen vnovičen zagon</translation>
 <translation id="6838056959556423778">Preglasi pravila za izbiro privzetega tiskalnika za <ph name="PRODUCT_NAME" />.
 
@@ -2441,7 +2429,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7617319494457709698">Ta pravilnik določa dovoljene razširitve, ki lahko uporabljajo metodo <ph name="CHALLENGE_USER_KEY_FUNCTION" /> API-ja <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> za potrjevanje na daljavo. Razširitve, ki lahko uporabljajo API, morate dodati na ta seznam.
 
           Če razširitve ni na seznamu ali seznam ni nastavljen, poziv API-ju ne bo uspel in bo vrnjena koda napake.</translation>
-<translation id="7620300057302654932">Izvori ali vzorci imena gostitelja, ki se obravnavajo kot varni kontekst</translation>
 <translation id="7625444193696794922">Določa kanal za izdajo, na katerega naj bo zaklenjena ta naprava.</translation>
 <translation id="7632724434767231364">Ime knjižnice GSSAPI</translation>
 <translation id="7635471475589566552">Določa območne nastavitve programa  <ph name="PRODUCT_NAME" /> in prepreči uporabnikom, da jih spreminjajo.

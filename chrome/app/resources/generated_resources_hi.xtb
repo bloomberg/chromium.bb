@@ -686,7 +686,6 @@
 <translation id="200544492091181894">आप बाद में सेटिंग में जाकर इसे कभी भी बदल सकते हैं</translation>
 <translation id="2006638907958895361"><ph name="APP" /> में लिंक खोलें</translation>
 <translation id="2007404777272201486">किसी समस्या की रिपोर्ट करें...</translation>
-<translation id="2016237810978710652">'Linux फ़ाइलें' खुल रही हैं...</translation>
 <translation id="2016430552235416146">परंपरागत</translation>
 <translation id="2017334798163366053">'परफ़ॉर्मेंस डेटा' इकट्ठा करना बंद करें</translation>
 <translation id="2017836877785168846">इतिहास साफ़ करता है और पता बार में स्वत: पूर्णता को साफ़ करता है.</translation>
@@ -3782,7 +3781,6 @@
 <translation id="6748775883310276718">सिंगल ऐप किओस्क</translation>
 <translation id="6751256176799620176">1 फ़ोल्डर चयनित</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (गुप्त)</translation>
-<translation id="6751815812172740613">इस <ph name="DEVICE_TYPE" /> से आपके 'Linux फ़ाइलें' फ़ोल्डर में मौजूद सभी Linux ऐप्लिकेशन और डेटा मिटाएं?</translation>
 <translation id="6757101664402245801">URL कॉपी किया गया</translation>
 <translation id="6758056191028427665">हमें बताएं कि हम कैसा प्रदर्शन कर रहे हैं.</translation>
 <translation id="6759193508432371551">फैक्टरी रीसेट करें</translation>
@@ -4059,7 +4057,6 @@
     <ph name="BEGIN_PARAGRAPH3" />आप सेटिंग &gt; Google में जाकर इस फ़ीचर को नियंत्रित कर सकते हैं. मेन्यू में जाकर इस्तेमाल और निदान को चुनें.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">स&amp;हायता प्राप्त करें</translation>
 <translation id="7200083590239651963">कॉन्फ़िगरेशन चुनें</translation>
-<translation id="7201014958346994077">Linux फ़ाइलें नहीं दिखाई जा सकीं</translation>
 <translation id="720110658997053098">इस डिवाइस को हमेशा के लिए किओस्क मोड में रखें</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' मिटाया गया</translation>
 <translation id="7206693748120342859"><ph name="PLUGIN_NAME" /> डाउनलोड हो रहा है...</translation>
@@ -4675,7 +4672,6 @@
 <translation id="8107015733319732394">आपके <ph name="DEVICE_TYPE" /> पर Google Play स्टोर इंस्टॉल हो रहा है. इसमें कुछ मिनट लग सकते हैं.</translation>
 <translation id="8111155949205007504">इस पासवर्ड को अपने iPhone से शेयर करें</translation>
 <translation id="8113043281354018522">लाइसेंस का प्रकार चुनें</translation>
-<translation id="8116925261070264013">आवाज़ बंद की गई</translation>
 <translation id="8116972784401310538">&amp;बुकमार्क प्रबंधक</translation>
 <translation id="8117620576188476503">स्टेटस ट्रे के ज़रिए कनेक्शन, अपडेट और सेटिंग प्रबंधित करें. कीबोर्ड से यहां पहुंचने के लिए, Alt + Shift + S दबाएं.</translation>
 <translation id="8118362518458010043">Chrome ने बंद किया. यह एक्सटेंशन असुरक्षित हो सकता है.</translation>
@@ -5134,7 +5130,6 @@
 <translation id="8845001906332463065">सहायता प्राप्त करें</translation>
 <translation id="8846141544112579928">कीबोर्ड खोजा जा रहा है...</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885217322790849332">$1 वाली फ़ाइलें खोलने के लिए, पहले Linux फ़ाइल फ़ोल्डर को कॉपी करें.</translation>
 <translation id="8859057652521303089">अपनी भाषा चुनें:</translation>
 <translation id="8859174528519900719">सबफ़्रेम: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excel स्‍प्रैडशीट</translation>

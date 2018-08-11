@@ -267,6 +267,7 @@
       Ha az értéke hamis, akkor a rendszer letiltja a használati statisztikák és diagnosztikai adatok jelentését.
 
       Ha nincs beállítva, akkor a rendszer letiltja a használati és diagnosztikai adatok jelentését a nem felügyelt eszközökön, míg engedélyezi a felügyelt eszközökön.</translation>
+<translation id="1920046221095339924">Kezelt munkamenet engedélyezése az eszközön</translation>
 <translation id="1929709556673267855">Eszközökhöz kötött vállalati nyomtatókhoz biztosít beállításokat.
 
       Ez a házirend lehetővé teszi, hogy nyomtatóbeállításokat adjon meg <ph name="PRODUCT_OS_NAME" /> rendszerű eszközökhöz. A formátum megegyezik a NativePrinters szótáréval, továbbá meg kell adni az „id” vagy „guid” mezőt az egyes nyomtatókhoz az engedélyező-, illetve tiltólistára helyezéshez.
@@ -300,6 +301,7 @@
 
       Ha engedélyezve van ez a beállítás, vagy nincs értéke, a felhasználó vezérelheti az Automatikus kitöltés funkció címekkel kapcsolatos használatát a kezelőfelületen.</translation>
 <translation id="1960840544413786116">A helyi bizalmi horgonyok által nyújtott, de a subjectAlternativeName bővítménnyel nem rendelkező tanúsítványok engedélyezése</translation>
+<translation id="1962273523772270623">A WebRTC-eseménynaplók Google-szolgáltatásokból történő begyűjtésének engedélyezése</translation>
 <translation id="1964634611280150550">Inkognitómód letiltva</translation>
 <translation id="1964802606569741174">A házirend nincs hatással az androidos YouTube alkalmazásra. Ha a YouTube-on kényszeríteni kell a Biztonságos módot, akkor az androidos YouTube alkalmazás telepítését nem szabad megengedni.</translation>
 <translation id="1969212217917526199">Felülírja a távoli elérésű gazdagép hibakeresést végző buildjein lévő házirendeket.
@@ -651,7 +653,6 @@
       A lista minden bejegyzése egy azonosítót ad meg, amely az eszköz különböző helyi fiókjainak belső megkülönböztetésére szolgál.</translation>
 <translation id="2769952903507981510">Beállítja a távoli hozzáférésű gazdagép szükséges domainnevét</translation>
 <translation id="2787173078141616821">Az Android állapotával kapcsolatos információk jelentése</translation>
-<translation id="2793923553868251161">Biztonságos környezetként kezelendő eredetek.</translation>
 <translation id="2799297758492717491">A médiatartalmak automatikus lejátszásának engedélyezése az engedélyezőlistán található URL-minták számára</translation>
 <translation id="2801230735743888564">A felhasználók játszhatnak a rejtett dinoszauruszos játékkal, amikor az eszköz offline állapotban van.
 
@@ -1792,12 +1793,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6155936611791017817">A nagy egérmutató alapértelmezett állapotának beállítása a bejelentkezési képernyőn</translation>
 <translation id="6157537876488211233">Proxy figyelmen kívül hagyásával kapcsolatos szabályok vesszővel elválasztott listája</translation>
 <translation id="6158324314836466367">Vállalati internetes áruház neve (megszűnt)</translation>
-<translation id="6164955668342404660">Megszűnt az M69 verzióban. Használja helyette az OverrideSecurityRestrictionsOnInsecureOrigin házirendet.
-
-      Ez a házirend megadja a biztonságos környezetként kezelendő eredetek (URL-ek) listáját. Célja, hogy a szervezetek tesztszervert tudjanak beállítani a belső webfejlesztési munkákhoz, így a fejlesztők tesztelhetik a biztonságos környezetet igénylő funkciókat anélkül, hogy TLS-t kellene használniuk a tesztszerveren.
-      Ha beállítja az URL-ek listáját a házirendben, ugyanazt a hatást éri el, mintha az „--unsafely-treat-insecure-origin-as-secure” parancssori jelzőt használná ugyanazon URL-ek vesszővel elválasztott listájánál. Ha be van állítva a házirend, felülírja a parancssori jelzőt.
-      További információ a biztonságos környezetekről: https://www.w3.org/TR/secure-contexts/.
-      </translation>
 <translation id="6181608880636987460">Lehetővé teszi URL-minták olyan listájának megadását, amely meghatározza, hogy mely webhelyek nem futtathatják a(z) <ph name="FLASH_PLUGIN_NAME" /> beépülő modult.
 
           Ha nem állítja be ezt a házirendet, akkor a böngésző valamennyi webhelyre vonatkozóan a globális alapértelmezett értéket használja a „DefaultPluginsSetting” házirend (ha be van állítva) vagy a felhasználó személyes konfigurációja alapján.</translation>
@@ -1916,6 +1911,11 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha ez a házirend nincs beállítva, vagy ha a lista üres, akkor minden séma elérhető lesz a(z) <ph name="PRODUCT_NAME" /> termékben.</translation>
 <translation id="6652197835259177259">Helyi felügyeletű felhasználói beállítások</translation>
 <translation id="6658245400435704251">Meghatározza a másodpercek számát, amely alatt egy eszköz véletlenszerűen késleltetheti egy frissítés letöltését annak első megjelenésétől a szerveren. Az eszköz ennek az időnek egy részét kivárhatja normál idő szerint, a hátralévő részét pedig a frissítések keresésének száma szerint. A szórás felső határa konstans időmennyiség, így az eszköz soha nem ragad le örökre arra várva, hogy letöltsön egy frissítést.</translation>
+<translation id="6665599130599311250">Ha a házirend értéke hamis vagy nincs beállítva, a kezelt vendég-munkafolyamat a https://support.google.com/chrome/a/answer/3017014 oldalon a szabványos „Nyilvános munkamenet” leírásnak megfelelően működik majd.
+
+      Ha a házirend értéke igaz, a kezelt vendég-munkafolyamat a „Kezelt munkamenet” leírása szerint működik, amelynek során az általában használt „Nyilvános munkamenet” esetén előírt korlátozások nagy részét nem kell betartani.
+
+      Ha a házirend be van állítva, akkor a felhasználó nem képes módosítani vagy felülírni.</translation>
 <translation id="6665670272107384733">Annak szabályozása, hogy a felhasználónak milyen gyakran kell megadnia jelszavát a gyorsfeloldás használatához.</translation>
 <translation id="6681229465468164801">Lehetővé teszi URL-minták olyan listájának megadását, amely meghatározza, hogy mely webhelyek nem kérdezhetik meg a felhasználótól, hogy engedélyezi-e számukra a hozzáférést egy USB-eszközhöz.
 
@@ -1965,11 +1965,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6786967369487349613">Barangolási profilcímtár beállítása</translation>
 <translation id="6810445994095397827">JavaScript letiltása ezeken a webhelyeken</translation>
 <translation id="681446116407619279">Támogatott hitelesítési sémák</translation>
-<translation id="6832455357698286434">
-      Ez a házirend megadja a biztonságos környezetként kezelendő eredetek (URL-ek) vagy gazdagépnévminták (például „*.example.com”) listáját. Célja, hogy a szervezetek tesztszervert tudjanak beállítani a belső webfejlesztési munkákhoz, így a fejlesztők tesztelhetik a biztonságos környezetet igénylő funkciókat anélkül, hogy TLS-t kellene használniuk a tesztszerveren.
-      Ha beállítja az URL-ek listáját a házirendben, ugyanazt a hatást éri el, mintha az „--unsafely-treat-insecure-origin-as-secure” parancssori jelzőt használná ugyanazon URL-ek vesszővel elválasztott listájánál. Ha be van állítva a házirend, felülírja a parancssori jelzőt.
-      További információ a biztonságos környezetekről: https://www.w3.org/TR/secure-contexts/.
-      </translation>
 <translation id="6835883744948188639">Ismétlődő értesítés megjelenítése a felhasználónak arról, hogy ajánlott az újraindítás</translation>
 <translation id="6838056959556423778">Felülbírálja a <ph name="PRODUCT_NAME" /> alapértelmezett nyomtatókiválasztási szabályait.
 
@@ -2080,6 +2075,17 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6943577887654905793">Mac/Linux preferencia neve:</translation>
 <translation id="69525503251220566">Paraméter az alapértelmezett keresési szolgáltatóval végezhető képalapú keresési funkció biztosításához</translation>
 <translation id="6956272732789158625">A kulcsgenerálás használatának letiltása minden webhelyen</translation>
+<translation id="6982028490425791294">
+      Ha a házirend értéke igaz, a(z) <ph name="PRODUCT_NAME" /> engedélyt kap a WebRTC-eseménynaplók begyűjtésére a Google-szolgáltatásokból (pl. a Google Meet felületéről), valamint azok feltöltésére a Google rendszerébe.
+
+      Ha a házirend értéke hamis vagy nincs beállítva, a(z) <ph name="PRODUCT_NAME" /> nem gyűjtheti vagy töltheti fel a naplókat.
+
+      A naplókban olyan különböző információk kerülnek rögzítésre, mint a küldött és fogadott RTP-csomagok ideje vagy mérete, a hálózat túlterheltségéről szóló visszajelzés vagy az audió- és videókeretek idejéről és minőségéről szóló metaadatok. Az említett információk rendkívül hasznosak a Chrome-ban folytatott audió-vagy videóhívásokkal kapcsolatos hibakeresés során, például sávszélesség-becslési problémák stb. esetén.
+
+      Az adatgyűjtést csak a Google internetes szolgáltatásai kezdeményezhetik, mind például a Google Hangouts vagy a Google Meet.
+
+      A naplókat a Google összekapcsolhatja a munkamenet azonosítója alapján a saját maga által gyűjtött naplókkal, ezáltal egyszerűsítve hibakeresés folyamatát.
+      </translation>
 <translation id="6994082778848658360">Meghatározza, hogyan használható az integrált biztonságos hardverelem a kétlépcsős azonosítás biztosítására, amennyiben kompatibilis ezzel a funkcióval. A készülék bekapcsológombja használható a felhasználó fizikai jelenlétének észlelésére.
 
       A „Letiltva” érték kiválasztása esetén nincs használatban kétlépcsős azonosítás.
@@ -2310,7 +2316,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7617319494457709698">Ez a házirend adja meg, hogy mely bővítmények számára engedélyezett az <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> <ph name="CHALLENGE_USER_KEY_FUNCTION" /> funkciójának használata távoli tanúsításhoz. Az API használatához fel kell vennie a bővítményeket erre a listára.
 
           Ha valamelyik bővítmény nincs a listán, vagy a lista nincs beállítva, akkor az API hívása hibakóddal leáll.</translation>
-<translation id="7620300057302654932">Biztonságos környezetként kezelendő eredetek vagy gazdagépnévminták.</translation>
 <translation id="7625444193696794922">Azt a kiadási csatornát határozza meg, amelyhez az eszközt hozzá kell kötni.</translation>
 <translation id="7632724434767231364">GSSAPI könyvtár neve</translation>
 <translation id="7635471475589566552">Beállítja az alkalmazás nyelv- és országkódját a következőben: <ph name="PRODUCT_NAME" />, és megakadályozza, hogy a felhasználók megváltoztassák a kódot. Ha engedélyezi ezt a beállítást, a(z) <ph name="PRODUCT_NAME" /> a megadott nyelv- és országkódot fogja használni. Ha a megadott nyelv- és országkód nem támogatott, az "en-US" lehetőséget használja helyette. Ha ez a beállítás ki van kapcsolva, vagy nincs beállítva, a(z) <ph name="PRODUCT_NAME" /> vagy a felhasználó által meghatározott nyelv- és országkódot használja (ha konfigurálva van), vagy a tartalék "en-US" lehetőséget.</translation>

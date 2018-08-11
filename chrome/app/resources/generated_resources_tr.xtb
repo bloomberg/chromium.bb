@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">Senkronizasyon ve kişiselleştirme</translation>
 <translation id="1398853756734560583">Büyüt</translation>
 <translation id="1399511500114202393">Kullanıcı sertifikası yok</translation>
+<translation id="1401165786814632797">Cihazınız uyanık ve kilidi açık durumdayken "Ok Google" diyerek istediğiniz zaman Asistanınıza erişin.</translation>
 <translation id="140250605646987970">Telefonunuz bulundu. Ancak Smart Lock yalnızca Android 5.0 ve üzeri sürümlere sahip cihazlarda çalışır. &lt;a&gt;Daha fazla bilgi edinin&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (Denetlenen)</translation>
 <translation id="1405476660552109915">Bu siteye ait hesabınızın <ph name="PASSWORD_MANAGER_BRAND" /> tarafından kaydedilmesini ister misiniz?</translation>
@@ -685,7 +686,6 @@
 <translation id="200544492091181894">Bunu daha sonra ayarlarda değiştirebilirsiniz</translation>
 <translation id="2006638907958895361">Bağlantıyı <ph name="APP" /> uygulamasında aç</translation>
 <translation id="2007404777272201486">Sorun Bildirin...</translation>
-<translation id="2016237810978710652">Linux Dosyaları Açılıyor...</translation>
 <translation id="2016430552235416146">Geleneksel</translation>
 <translation id="2017334798163366053">Performans verisi toplamayı devre dışı bırak</translation>
 <translation id="2017836877785168846">Geçmişi ve adres çubuğundaki otomatik tamamlama bilgilerini temizler.</translation>
@@ -1510,6 +1510,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> bağlanmak istiyor</translation>
 <translation id="3274763671541996799">Tam ekrana geçtiniz.</translation>
 <translation id="3275778913554317645">Pencere olarak aç</translation>
+<translation id="3278877214895457897">Chromebook'unuzu kurarken istediğiniz zaman Asistanınızdan yardım almak için Asistan düğmesine basın veya "Ok Google" deyin.</translation>
 <translation id="3279230909244266691">Bu işlem birkaç dakika sürebilir. Sanal makine başlatılıyor.</translation>
 <translation id="3279741024917655738">Tam ekran videoları şurada göster:</translation>
 <translation id="3280237271814976245">Farklı k&amp;aydet...</translation>
@@ -2603,6 +2604,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4992066212339426712">Sesi aç</translation>
 <translation id="4992458225095111526">Powerwash'ı onaylayın</translation>
 <translation id="4992473555164495036">Yöneticiniz kullanılıabilir giriş yöntemlerini sınırladı.</translation>
+<translation id="4992926179187649719">"Ok Google"ı aç</translation>
 <translation id="4994474651455208930">Sitelerin, protokoller için varsayılan işleyiciler olmasını sormasına izin ver</translation>
 <translation id="4994754230098574403">Ayarlanıyor</translation>
 <translation id="4996978546172906250">Paylaşım yöntemi:</translation>
@@ -3781,7 +3783,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6748775883310276718">Tek Uygulama Kiosk'u</translation>
 <translation id="6751256176799620176">1 klasör seçildi</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Gizli mod)</translation>
-<translation id="6751815812172740613">Linux Dosyaları klasörünüzdeki tüm Linux uygulamaları ve verileri bu <ph name="DEVICE_TYPE" /> cihazdan silinsin mi?</translation>
 <translation id="6757101664402245801">URL kopyalandı</translation>
 <translation id="6758056191028427665">Bizimle ilgili görüşünüzü bildirin.</translation>
 <translation id="6759193508432371551">Fabrika ayarlarına sıfırlama</translation>
@@ -4058,7 +4059,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
     <ph name="BEGIN_PARAGRAPH3" />Bu özelliği Ayarlar &gt; Google bölümünden kontrol edebilirsiniz. Menüden Kullanım ve teşhis aracı seçeneğini belirleyin.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">&amp;Yardım Al</translation>
 <translation id="7200083590239651963">Yapılandırmayı seçin</translation>
-<translation id="7201014958346994077">Linux Dosyaları görüntülenemiyor</translation>
 <translation id="720110658997053098">Bu cihazı kalıcı olarak kiosk modunda tut</translation>
 <translation id="7201118060536064622">"<ph name="DELETED_ITEM_NAME" />" silindi</translation>
 <translation id="7206693748120342859"><ph name="PLUGIN_NAME" /> indiriliyor...</translation>
@@ -4531,6 +4531,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7908378463497120834">Maalesef, harici depolama cihazınızdaki en az bir bölüm eklenemedi.</translation>
 <translation id="7909969815743704077">Gizli modda indirildi</translation>
 <translation id="7910768399700579500">&amp;Yeni klasör</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Şifreniz sunucuda değiştirildi. Lütfen oturumu kapatıp tekrar açın.</translation>
 <translation id="7915471803647590281">Geri bildirimi göndermeden önce lütfen bize ne olduğunu söyleyin.</translation>
 <translation id="7916556741383518510">Tıklandığında</translation>
@@ -4672,7 +4673,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8107015733319732394">Google Play Store <ph name="DEVICE_TYPE" /> cihazınıza yükleniyor. Bu işlem birkaç dakika sürebilir.</translation>
 <translation id="8111155949205007504">Bu şifreyi iPhone'unuz ile paylaşın</translation>
 <translation id="8113043281354018522">Lisans türünü seçin</translation>
-<translation id="8116925261070264013">Ses kapatıldı</translation>
 <translation id="8116972784401310538">&amp;Yer imi yöneticisi</translation>
 <translation id="8117620576188476503">Durum tepsisi ile bağlantıları, güncellemeleri ve ayarları yönetin. Klavyeyle buraya ulaşmak için Alt + Üst Karakter + S tuşlarına basın.</translation>
 <translation id="8118362518458010043">Chrome tarafından devre dışı bırakıldı. Bu uzantı güvenli olmayabilir.</translation>
@@ -5131,7 +5131,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8845001906332463065">Yardım alın</translation>
 <translation id="8846141544112579928">Klavye aranıyor...</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885217322790849332">Dosyaları $1 ile açmak için öncelikle Linux Dosyaları klasörüne kopyalayın.</translation>
 <translation id="8859057652521303089">Dilinizi seçin:</translation>
 <translation id="8859174528519900719">Alt çerçeve: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excel e-tablosu</translation>

@@ -106,7 +106,6 @@
 <translation id="1639239467298939599">Nalaganje</translation>
 <translation id="1640180200866533862">Uporabniški pravilniki</translation>
 <translation id="1640244768702815859">Poskusite <ph name="BEGIN_LINK" />obiskati domačo stran spletnega mesta<ph name="END_LINK" />.</translation>
-<translation id="1644184664548287040">Omrežna konfiguracija ni veljavna in je ni mogoče uvoziti.</translation>
 <translation id="1644574205037202324">Zgodovina</translation>
 <translation id="1645368109819982629">Nepodprt protokol</translation>
 <translation id="1655462015569774233">{1,plural, =1{Strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo včeraj. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura vašega računalnika je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to videti v redu? Če ni, pravilno nastavite sistemsko uro in nato osvežite stran.}one{Strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo pred # dnevom. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura vašega računalnika je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to videti v redu? Če ni, pravilno nastavite sistemsko uro in nato osvežite stran.}two{Strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo pred # dnevoma. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura vašega računalnika je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to videti v redu? Če ni, pravilno nastavite sistemsko uro in nato osvežite stran.}few{Strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo pred # dnevi. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura vašega računalnika je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to videti v redu? Če ni, pravilno nastavite sistemsko uro in nato osvežite stran.}other{Strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo pred # dnevi. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura vašega računalnika je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to videti v redu? Če ni, pravilno nastavite sistemsko uro in nato osvežite stran.}}</translation>
@@ -284,7 +283,6 @@
 <translation id="2941952326391522266">Strežniku ni uspelo dokazati, da je res <ph name="DOMAIN" />; njegovo varnostno potrdilo je od <ph name="DOMAIN2" />. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="2948083400971632585">Namestniške strežnike, konfigurirane za povezavo, lahko onemogočite na strani z nastavitvami.</translation>
 <translation id="2955913368246107853">Zapri vrstico za iskanje</translation>
-<translation id="2958431318199492670">Omrežna konfiguracija ne ustreza standardu ONC. Deli konfiguracije morda niso bili uvoženi.</translation>
 <translation id="2969319727213777354">Če želite vzpostaviti varno povezavo, mora biti ura pravilno nastavljena. Potrdila, ki jih uporabljajo spletna mesta za prepoznavanje, namreč veljajo samo določen čas. Ker je ura naprave nepravilna, Google Chrome teh potrdil ne more preveriti.</translation>
 <translation id="2972581237482394796">&amp;Uveljavi</translation>
 <translation id="2977665033722899841">Trenutno izbrano: <ph name="ROW_NAME" />. <ph name="ROW_CONTENT" /></translation>
@@ -356,7 +354,6 @@
 <translation id="3391030046425686457">Naslov za dostavo</translation>
 <translation id="3395827396354264108">Način prevzema</translation>
 <translation id="3399952811970034796">Naslov za dostavo</translation>
-<translation id="3409072600744224192">Če želite dostopati do zaznamkov v vseh napravah, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3422248202833853650">Poskusite zapreti druge programe, da boste tako sprostili pomnilnik.</translation>
 <translation id="3422472998109090673">Spletno mesto <ph name="HOST_NAME" /> trenutno ni dosegljivo.</translation>
 <translation id="3427092606871434483">Dovoli (privzeto)</translation>
@@ -582,7 +579,6 @@
 <translation id="5045550434625856497">Nepravilno geslo</translation>
 <translation id="5056549851600133418">Članki za vas</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />preveriti naslov strežnika proxy<ph name="END_LINK" /></translation>
-<translation id="5072538239104292703">Če želite dostopati do kartic v vseh napravah, se prijavite in vklopite sinhronizacijo.</translation>
 <translation id="5086888986931078152">Morda boste izgubili dostop do zaščitene vsebine na nekaterih spletnih mestih.</translation>
 <translation id="5087286274860437796">Potrdilo strežnika trenutno ni veljavno.</translation>
 <translation id="5087580092889165836">Dodaj kartico</translation>
@@ -628,7 +624,6 @@
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> od <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Izbira podatkov za stik</translation>
 <translation id="5327248766486351172">Ime</translation>
-<translation id="5327567770033251652">vklop sinhronizacije</translation>
 <translation id="5332219387342487447">Način pošiljanja</translation>
 <translation id="5355557959165512791">Spletnega mesta <ph name="SITE" /> trenutno ni mogoče obiskati, saj je to potrdilo preklicano. Napake omrežja in napadi na omrežje so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
 <translation id="536296301121032821">Nastavitev pravilnika ni bilo mogoče shraniti</translation>
@@ -807,7 +802,6 @@
 <translation id="679355240208270552">Prezrto, ker pravilnik ne omogoča privzetega iskanja.</translation>
 <translation id="681021252041861472">Obvezno polje</translation>
 <translation id="6810899417690483278">ID za prilagajanje</translation>
-<translation id="6820686453637990663">CVC</translation>
 <translation id="6824266427216888781">Podatkov o območjih ni bilo mogoče naložiti</translation>
 <translation id="6825578344716086703">Poskusili ste dostopati do domene <ph name="DOMAIN" />, vendar ima strežnik potrdilo, podpisano s šibkim podpisnim algoritmom (kot je SHA-1). To pomeni, da so varnostne poverilnice, ki jih je poslal strežnik, morda ponarejene in strežnik morda ni tisti, ki ga pričakujete (morda komunicirate z napadalcem).</translation>
 <translation id="6831043979455480757">Prevedi</translation>
@@ -823,7 +817,6 @@
 <translation id="6915804003454593391">Uporabnik:</translation>
 <translation id="6944692733090228304">Vnesli ste geslo na spletnem mestu, ki ga ne upravlja: <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Zaradi zaščite računa gesla ne uporabljajte za druge aplikacije in spletna mesta.</translation>
 <translation id="6945221475159498467">Izberi</translation>
-<translation id="6948540501704460596">Če želite dostopati do kartic v vseh napravah, <ph name="SYNC_LINK" />.</translation>
 <translation id="6948701128805548767">Če si želite ogledati načine prevzema in zahteve, izberite naslov</translation>
 <translation id="6949872517221025916">Ponastavitev gesla</translation>
 <translation id="6950684638814147129">Napaka pri razčlenjevanju vrednosti JSON: <ph name="ERROR" /></translation>
@@ -838,7 +831,6 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Te bremenitve so lahko enkratne ali ponavljajoče se in morda niso očitne.</translation>
 <translation id="7029809446516969842">Gesla</translation>
-<translation id="7042837854211185817">Če želite dostopati do kartic v vseh napravah, vklopite sinhronizacijo.</translation>
 <translation id="7050187094878475250">Poskusili ste odpreti <ph name="DOMAIN" />, vendar je strežnik uporabil potrdilo, ki ima predolgo obdobje veljavnosti, da bi bilo verodostojno.</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7064851114919012435">Podatki o stiku</translation>

@@ -106,7 +106,6 @@
 <translation id="1639239467298939599">読み込み中</translation>
 <translation id="1640180200866533862">ユーザー ポリシー</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />サイトのホームページにアクセス<ph name="END_LINK" />してみてください。</translation>
-<translation id="1644184664548287040">ネットワーク設定が無効なためインポートできませんでした。</translation>
 <translation id="1644574205037202324">履歴</translation>
 <translation id="1645368109819982629">サポートされていないプロトコルです</translation>
 <translation id="1655462015569774233">{1,plural, =1{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書の有効期限が昨日付けで切れています。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。パソコンの時計は現在 <ph name="CURRENT_DATE" />に設定されています。この時刻が正しくない場合は、システムの時計を修正した後このページを更新してください。}other{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書の有効期限が # 日前に切れています。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。パソコンの時計は現在 <ph name="CURRENT_DATE" />に設定されています。この時刻が正しくない場合は、システムの時計を修正した後このページを更新してください。}}</translation>
@@ -207,6 +206,7 @@
 <translation id="2359808026110333948">続行</translation>
 <translation id="2365563543831475020"><ph name="CRASH_TIME" /> に作成されたクラッシュ レポートはアップロードされませんでした</translation>
 <translation id="2367567093518048410">レベル</translation>
+<translation id="2378238891085281592">プライベート モードです</translation>
 <translation id="2384307209577226199">企業のデフォルト</translation>
 <translation id="2386255080630008482">サーバーの証明書は取り消されています。</translation>
 <translation id="2392959068659972793">値が設定されていないポリシーを表示する</translation>
@@ -283,7 +283,6 @@
 <translation id="2941952326391522266">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は <ph name="DOMAIN2" /> から発行されています。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="2948083400971632585">接続用に設定されたプロキシは、設定ページで無効にできます。</translation>
 <translation id="2955913368246107853">検索バーを閉じる</translation>
-<translation id="2958431318199492670">ネットワーク設定が ONC 標準に準拠していません。設定の一部がインポートされない可能性があります。</translation>
 <translation id="2969319727213777354">安全な接続を確立するには、時計が正しく設定されている必要があります。これは、ウェブサイトが自身を証明するために使用する証明書には有効期限があるためです。デバイスの時計が正しくないため、Google Chrome でこれらの証明書を確認することができません。</translation>
 <translation id="2972581237482394796">やり直し(&amp;R)</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />が現在選択されています。<ph name="ROW_CONTENT" /></translation>
@@ -514,6 +513,7 @@
 <translation id="450710068430902550">管理者との共有</translation>
 <translation id="4515275063822566619">Chrome と Google アカウント（<ph name="ACCOUNT_EMAIL" />）に保存されているクレジット カードと住所です。[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で管理できます。</translation>
 <translation id="4522570452068850558">詳細</translation>
+<translation id="4524805452350978254">カードを管理</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">拡張機能を無効にしてみてください。</translation>
 <translation id="457875822857220463">配送</translation>
@@ -700,6 +700,7 @@
 <translation id="5866257070973731571">電話番号の追加</translation>
 <translation id="5869405914158311789">このサイトにアクセスできません</translation>
 <translation id="5869522115854928033">保存したパスワード</translation>
+<translation id="5887400589839399685">カードが保存されました</translation>
 <translation id="5893752035575986141">クレジット カードをご利用いただけます。</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" />（同期済み）</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 個が使用中}other{# 個が使用中}}</translation>
@@ -801,7 +802,6 @@
 <translation id="679355240208270552">ポリシーによって既定の検索エンジンが有効になっていないため、無視されました。</translation>
 <translation id="681021252041861472">必須項目</translation>
 <translation id="6810899417690483278">カスタム ID</translation>
-<translation id="6820686453637990663">CVC</translation>
 <translation id="6824266427216888781">地域データを読み込めませんでした</translation>
 <translation id="6825578344716086703"><ph name="DOMAIN" /> にアクセスしようとしましたが、脆弱な署名アルゴリズム（SHA-1 など）を使用して署名された証明書がサーバーから提示されました。このセキュリティ認証情報は偽装されたものである可能性があり、アクセスしようとしたサーバーとは別のサーバーが応答している可能性があります（悪意のあるユーザーと通信している可能性があります）。</translation>
 <translation id="6831043979455480757">翻訳</translation>
@@ -820,11 +820,13 @@
 <translation id="6948701128805548767">受け取り方法と要件を確認するには、住所を選択してください</translation>
 <translation id="6949872517221025916">パスワードを再設定</translation>
 <translation id="6950684638814147129">JSON 値の解析中にエラーが発生しました: <ph name="ERROR" /></translation>
+<translation id="6957624206566198865">ページを新しいプライベート タブで開く</translation>
 <translation id="6957887021205513506">サーバーの証明書が偽造されたもののようです。</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">デバイス</translation>
 <translation id="6970216967273061347">地区</translation>
 <translation id="6973656660372572881">固定プロキシ サーバーと .pac スクリプト URL の両方が指定されています。</translation>
+<translation id="6984479912851154518">外部アプリケーションでのお支払い処理に進むため、プライベート モードを解除します。続行しますか？</translation>
 <translation id="6989763994942163495">詳細設定を表示...</translation>
 <translation id="7012363358306927923">中国銀聯</translation>
 <translation id="7016992613359344582">料金の請求は 1 回限りの場合も毎月行われる場合もあり、課金されたかどうかわからないこともあります。</translation>
@@ -1076,6 +1078,7 @@
 <translation id="8820817407110198400">ブックマーク</translation>
 <translation id="883848425547221593">その他のブックマーク</translation>
 <translation id="884264119367021077">配送先住所</translation>
+<translation id="8846319957959474018">ブックマークを使って簡単にアプリを開くことができます</translation>
 <translation id="884923133447025588">取り消し機構が見つかりません。</translation>
 <translation id="885730110891505394">Google との共有</translation>
 <translation id="8858065207712248076"><ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> パスワードを他のサイトで再使用した場合、Chrome ではパスワードの再設定を促すメッセージが表示されます。</translation>

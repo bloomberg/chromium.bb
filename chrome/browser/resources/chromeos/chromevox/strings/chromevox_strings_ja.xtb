@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
 <translation id="100812568230599391">表示スタイルを交互に変更する。</translation>
+<translation id="1011903154582639569">キーを探し、見つかったら指を離して入力します</translation>
 <translation id="1012173283529841972">リスト項目</translation>
 <translation id="1013742170491673792">検索用語を編集</translation>
 <translation id="1022586497894531524">ChromeVox の音声フィードバックを初めてご利用になる場合は、このクイック チュートリアルで、ChromeVox の利用を開始するための基本事項をご確認ください。</translation>
@@ -163,6 +164,7 @@
 <translation id="2553108862507765288">文法上の誤り</translation>
 <translation id="257674075312929031">グループ</translation>
 <translation id="2582407057977008361">補足</translation>
+<translation id="2592212930811759050">編集を開始するにはダブルタップします</translation>
 <translation id="2606210917827248971">に {COUNT,plural, =1{# 件の項目}other{# 件の項目}}</translation>
 <translation id="2614981083756825552">MathML レイアウト</translation>
 <translation id="2624431853467395961">学習モードを開く</translation>

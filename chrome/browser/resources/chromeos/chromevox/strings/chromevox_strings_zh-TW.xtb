@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
 <translation id="100812568230599391">將顯示樣式變更為交錯。</translation>
+<translation id="1011903154582639569">找到需要的鍵後，放開手指即可輸入</translation>
 <translation id="1012173283529841972">清單項目</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">你是第一次使用 ChromeVox 互動朗讀嗎？本教學課程提供了簡要的基本操作說明，可協助你開始使用 ChromeVox。</translation>
@@ -163,6 +164,7 @@
 <translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">群組</translation>
 <translation id="2582407057977008361">獨立元素</translation>
+<translation id="2592212930811759050">輕觸兩下即可開始編輯</translation>
 <translation id="2606210917827248971">內含 {COUNT,plural, =1{# 個項目}other{# 個項目}}</translation>
 <translation id="2614981083756825552">MathML 版面配置</translation>
 <translation id="2624431853467395961">開啟學習模式</translation>

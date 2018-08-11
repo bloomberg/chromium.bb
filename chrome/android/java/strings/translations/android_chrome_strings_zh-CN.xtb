@@ -61,6 +61,7 @@
 <translation id="1404122904123200417">嵌入位置：<ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“不跟踪”</translation>
 <translation id="1407135791313364759">全部打开</translation>
+<translation id="1409426117486808224">使用简化版视图查看打开的标签页</translation>
 <translation id="1409879593029778104">系统已阻止下载 <ph name="FILE_NAME" />，因为文件已存在。</translation>
 <translation id="1414981605391750300">正在连接到 Google，请稍等片刻…</translation>
 <translation id="1416550906796893042">应用版本</translation>
@@ -80,6 +81,7 @@
 <translation id="1566400915470565838">若想使用“<ph name="APP_NAME" />”，请连接到互联网。</translation>
 <translation id="1569387923882100876">连接的设备</translation>
 <translation id="1571304935088121812">复制用户名</translation>
+<translation id="1576370611341449972">仅在连接到 Wi-Fi 网络时下载</translation>
 <translation id="1612196535745283361">Chrome 需要拥有位置信息使用权才能扫描设备。<ph name="BEGIN_LINK" />此设备的位置信息使用权已被停用<ph name="END_LINK" />。</translation>
 <translation id="162035744160882748">开启同步、个性化和其他 Google 服务</translation>
 <translation id="1620510694547887537">摄像头</translation>
@@ -344,6 +346,7 @@
 <translation id="3810838688059735925">视频</translation>
 <translation id="3810973564298564668">管理</translation>
 <translation id="3819178904835489326">已删除 <ph name="NUMBER_OF_DOWNLOADS" /> 项下载内容</translation>
+<translation id="3819562311292413223">下载为您推荐的文章</translation>
 <translation id="3822502789641063741">要清除网站存储数据吗？</translation>
 <translation id="385051799172605136">后退</translation>
 <translation id="3859306556332390985">前进</translation>
@@ -383,6 +386,7 @@
 <translation id="4113030288477039509">由您的管理员管理</translation>
 <translation id="4116038641877404294">下载网页以便离线查看</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d 个书签}other{%1$d 个书签}}</translation>
+<translation id="4149994727733219643">使用简化版视图查看网页</translation>
 <translation id="4159800535322890630">禁止网站使用您的传感器</translation>
 <translation id="4165986682804962316">网站设置</translation>
 <translation id="4170011742729630528">此服务目前无法使用，请稍后再试。</translation>
@@ -553,6 +557,7 @@
 <translation id="5512137114520586844">该帐号由 <ph name="PARENT_NAME" /> 管理。</translation>
 <translation id="5514904542973294328">已被此设备的管理员停用</translation>
 <translation id="5515439363601853141">需解锁才能查看您的密码</translation>
+<translation id="5515716148775388141">您的图标已移至屏幕底部</translation>
 <translation id="5517095782334947753">您有来自 <ph name="FROM_ACCOUNT" /> 的书签、历史记录、密码及其他设置。</translation>
 <translation id="5524843473235508879">已阻止重定向。</translation>
 <translation id="5527082711130173040">Chrome 需要拥有位置信息使用权才能扫描设备。请<ph name="BEGIN_LINK1" />更新权限<ph name="END_LINK1" />。<ph name="BEGIN_LINK2" />此设备的位置信息使用权也已被停用<ph name="END_LINK2" />。</translation>
@@ -756,6 +761,7 @@
 <translation id="7016516562562142042">已设为可供当前的搜索引擎使用</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> 已下载完毕</translation>
 <translation id="7022756207310403729">在浏览器中打开</translation>
+<translation id="702463548815491781">建议在开启 TalkBack 或“开关控制”时使用</translation>
 <translation id="7029809446516969842">密码</translation>
 <translation id="7031882061095297553">同步到</translation>
 <translation id="7032663816368481562">当您在地址栏中点按“更多类似内容”图标 <ph name="ICON" /> 时，系统会显示指向相关页面的快速链接。您所访问的网页的网址会被发送给 Google。</translation>
@@ -784,6 +790,7 @@
 <translation id="7251326866581677552">已阻止在部分网站中显示广告</translation>
 <translation id="7253272406652746122">请在设备的“设置”应用中，通过“帐号”页面添加 Google 帐号。</translation>
 <translation id="7274013316676448362">禁止访问的网站</translation>
+<translation id="72867290065237936">点按即可在密码建议和键盘之间切换</translation>
 <translation id="729975465115245577">您的设备上没有可以存储密码文件的应用。</translation>
 <translation id="7302081693174882195">详细信息：按已节省的数据流量排序</translation>
 <translation id="7333031090786104871">仍在添加先前的网站</translation>

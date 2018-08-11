@@ -675,7 +675,6 @@
       Setiap masukan senarai menetapkan pengecam, yang digunakan secara dalaman untuk membezakan akaun setempat peranti.</translation>
 <translation id="2769952903507981510">Konfigurasi nama domain yang diperlukan untuk hos akses jauh</translation>
 <translation id="2787173078141616821">Laporkan maklumat tentang status Android</translation>
-<translation id="2793923553868251161">Asalan akan dianggap sebagai konteks selamat.</translation>
 <translation id="2799297758492717491">Benarkan automain media pada senarai putih corak URL</translation>
 <translation id="2801230735743888564">Membolehkan pengguna bermain permainan telur easter dinosaur apabila peranti di luar talian.
 
@@ -1871,12 +1870,6 @@
 <translation id="6155936611791017817">Tetapkan keadaan lalai kursor besar pada skrin log masuk</translation>
 <translation id="6157537876488211233">Senarai diasingkan koma bagi peraturan memintas proksi</translation>
 <translation id="6158324314836466367">Nama kedai web perusahaan (tidak akan digunakan lagi)</translation>
-<translation id="6164955668342404660">Ditamatkan dalam M69. Sebagai ganti, gunakan OverrideSecurityRestrictionsOnInsecureOrigin.
-
-      Dasar ini menentukan senarai asalan (URL) yang perlu dikendalikan sebagai konteks selamat. Tujuannya adalah untuk membenarkan organisasi menyediakan pelayan pemeringkatan untuk pembangunan web dalaman supaya pembangun mereka boleh menguji ciri-ciri yang memerlukan konteks selamat tanpa perlu menggunakan TLS pada pelayan pemeringkatan.
-      Proses penetapan senarai URL dalam dasar ini mempunyai kesan yang sama seperti menetapkan bendera baris perintah '--unsafely-treat-insecure-origin-as-secure' kepada senarai yang dipisahkan koma bagi URL yang sama. Jika dasar ditetapkan, dasar ini akan mengatasi bendera baris perintah.
-      Untuk mendapatkan maklumat lanjut tentang konteks selamat, lihat https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6181608880636987460">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang tidak dibenarkan menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" />.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultPluginsSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna akan digunakan.</translation>
@@ -2057,11 +2050,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="6786967369487349613">Tetapkan direktori profil perayauan</translation>
 <translation id="6810445994095397827">Sekat JavaScript pada tapak ini</translation>
 <translation id="681446116407619279">Skim pengesahan yang disokong</translation>
-<translation id="6832455357698286434">
-      Dasar ini menentukan senarai asalan (URL) atau corak nama hos (seperti "*.contoh.com") yang perlu dikendalikan sebagai konteks selamat. Tujuannya adalah untuk membenarkan organisasi menyediakan pelayan pemeringkatan untuk pembangunan web dalaman supaya pembangun mereka boleh menguji ciri-ciri yang memerlukan konteks selamat tanpa perlu menggunakan TLS pada pelayan pemeringkatan.
-      Proses penetapan senarai URL dalam dasar ini mempunyai kesan yang sama seperti menetapkan bendera baris perintah '--unsafely-treat-insecure-origin-as-secure' kepada senarai yang dipisahkan koma bagi URL yang sama. Jika dasar ditetapkan, dasar ini akan mengatasi bendera baris perintah.
-      Untuk mendapatkan maklumat lanjut tentang konteks selamat, lihat https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6835883744948188639">Tunjukkan gesaan berulang kepada pengguna yang menunjukkan pelancaran semula disyorkan</translation>
 <translation id="6838056959556423778">Membatalkan peraturan pilihan pencetak lalai <ph name="PRODUCT_NAME" />.
 
@@ -2431,7 +2419,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7617319494457709698">Dasar ini menentukan sambungan yang boleh menggunakan fungsi <ph name="CHALLENGE_USER_KEY_FUNCTION" /> <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> untuk pembuktian jauh. Sambungan hendaklah ditambahkan pada senarai ini supaya boleh menggunakan API tersebut.
 
           Jika sambungan tidak tersenarai atau senarai tidak ditetapkan, panggilan kepada API tersebut akan gagal dengan kod ralat.</translation>
-<translation id="7620300057302654932">Asalan atau corak nama hos yang perlu dikendalikan sebagai konteks selamat.</translation>
 <translation id="7625444193696794922">Menetapkan saluran pelepasan yang harus mengunci peranti ini.</translation>
 <translation id="7632724434767231364">Nama perpustakaan GSSAPI</translation>
 <translation id="7635471475589566552">Mengkonfigurasi penempatan aplikasi dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar penempatan.

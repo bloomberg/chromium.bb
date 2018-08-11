@@ -61,6 +61,7 @@ Gayunpaman, hindi ka invisible. Kahit na nakapribado ka, makikita pa rin ng iyon
 <translation id="1404122904123200417">Naka-embed sa <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Huwag Subaybayan”</translation>
 <translation id="1407135791313364759">Buksan lahat</translation>
+<translation id="1409426117486808224">Pinasimpleng view para sa mga bukas na tab</translation>
 <translation id="1409879593029778104">Pinigilan ang pag-download sa <ph name="FILE_NAME" /> dahil may ganitong file na sa kasalukuyan.</translation>
 <translation id="1414981605391750300">Nakikipag-ugnayan sa Google. Maaari itong umabot nang isang minuto…</translation>
 <translation id="1416550906796893042">Bersyon ng application</translation>
@@ -80,6 +81,7 @@ Gayunpaman, hindi ka invisible. Kahit na nakapribado ka, makikita pa rin ng iyon
 <translation id="1566400915470565838">Upang magamit ang <ph name="APP_NAME" />, kumonekta sa internet.</translation>
 <translation id="1569387923882100876">Nakakonektang Device</translation>
 <translation id="1571304935088121812">Kopyahin ang username</translation>
+<translation id="1576370611341449972">Makakapag-download lang gamit ang Wi-Fi</translation>
 <translation id="1612196535745283361">Kailangan ng Chrome ng access sa lokasyon upang magkapag-scan ng mga device. Ang access sa lokasyon ay <ph name="BEGIN_LINK" />naka-off para sa device na ito<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">I-on ang pag-sync, pag-personalize, at iba pang serbisyo ng Google</translation>
 <translation id="1620510694547887537">Camera</translation>
@@ -344,6 +346,7 @@ Gayunpaman, hindi ka invisible. Kahit na nakapribado ka, makikita pa rin ng iyon
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Mamahala</translation>
 <translation id="3819178904835489326">Na-delete ang <ph name="NUMBER_OF_DOWNLOADS" /> (na) pag-download</translation>
+<translation id="3819562311292413223">Mag-download ng mga artikulo para sa iyo</translation>
 <translation id="3822502789641063741">I-clear ang storage ng site?</translation>
 <translation id="385051799172605136">Bumalik</translation>
 <translation id="3859306556332390985">Maghanap nang pasulong</translation>
@@ -383,6 +386,7 @@ Para isaayos ang iyong termino para sa paghahanap, pumindot nang matagal para pu
 <translation id="4113030288477039509">Pinamamahalaan ng iyong administrator</translation>
 <translation id="4116038641877404294">I-download ang mga page upang magamit ang mga ito offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d bookmark}one{%1$d bookmark}other{%1$d na bookmark}}</translation>
+<translation id="4149994727733219643">Pinasimpleng view para sa mga web page</translation>
 <translation id="4159800535322890630">Mag-block ng mga site sa pag-access sa iyong mga sensor</translation>
 <translation id="4165986682804962316">Mga setting ng site</translation>
 <translation id="4170011742729630528">Hindi available ang serbisyo; subukang muli sa ibang pagkakataon.</translation>
@@ -553,6 +557,7 @@ Maaaring may ibang uri ng history ng pag-browse ang iyong Google account tulad n
 <translation id="5512137114520586844">Pinapamahalaan ang account na ito ng <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Na-disable ng administrator ng device na ito</translation>
 <translation id="5515439363601853141">I-unlock upang tingnan ang iyong password</translation>
+<translation id="5515716148775388141">Nailipat ang iyong mga icon sa ibaba ng screen</translation>
 <translation id="5517095782334947753">Mayroon kang mga bookmark, history, password at iba pang mga setting mula sa <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Na-block ang pag-redirect.</translation>
 <translation id="5527082711130173040">Kailangan ng Chrome ng access sa lokasyon upang makapag-scan ng mga device. <ph name="BEGIN_LINK1" />I-update ang mga pahintulot<ph name="END_LINK1" />. Ang access sa lokasyon ay <ph name="BEGIN_LINK2" />naka-off din para sa device na ito<ph name="END_LINK2" />.</translation>
@@ -756,6 +761,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7016516562562142042">Pinapayagan para sa kasalukuyang search engine</translation>
 <translation id="7021515813996758557">Na-download na ang <ph name="FILE_NAME" /></translation>
 <translation id="7022756207310403729">Buksan sa browser</translation>
+<translation id="702463548815491781">Inirerekomenda kapag naka-on ang TalkBack o Switch Access</translation>
 <translation id="7029809446516969842">Mga Password</translation>
 <translation id="7031882061095297553">I-sync sa</translation>
 <translation id="7032663816368481562">Kapag na-tap mo ang Higit pa tulad nito <ph name="ICON" /> sa address bar, ipakita ang mga mabilisang link ng mga kaugnay na page. Ipinapadala sa Google ang mga URL na binibisita mo.</translation>
@@ -784,6 +790,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7251326866581677552">Naka-block sa ilang site</translation>
 <translation id="7253272406652746122">Magdagdag ng Google Account mula sa page na Mga Account sa app na Mga Setting ng iyong device.</translation>
 <translation id="7274013316676448362">Naka-block na site</translation>
+<translation id="72867290065237936">I-tap para mag-toggle sa pagitan ng mga suhestyon ng password at keyboard</translation>
 <translation id="729975465115245577">Walang app sa iyong device upang ma-store ang file ng mga password.</translation>
 <translation id="7302081693174882195">Mga detalye: Pinagbukud-bukod ayon sa laki ng natipid na data</translation>
 <translation id="7333031090786104871">Nagdaragdag pa rin ng nakaraang site</translation>

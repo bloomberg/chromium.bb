@@ -267,6 +267,7 @@
       Jos arvo on epätosi tai sitä ei määritetä, käyttötilastoja ja diagnostiikkadataa ei lähetetä.
 
       Jos käytäntöä ei ole määritetty, käyttötilastojen ja diagnostiikkadatan raportointi poistetaan käytöstä hallinnoimattomilla laitteilla, ja se otetaan käyttöön hallinnoiduilla laitteilla.</translation>
+<translation id="1920046221095339924">Salli hallinnoidut käyttökerrat laitteella</translation>
 <translation id="1929709556673267855">Määritä laitteisiin yhdistettyjen yritystulostimien asetuksia.
 
       Tämän käytännön avulla voit määrittää tulostinasetuksia laitteille, joiden käyttöjärjestelmä on <ph name="PRODUCT_OS_NAME" />. Siinä käytettävä muoto on muuten sama kuin NativePrinters-hakemistossa, mutta kullakin tulostimella on lisäksi pakollinen id- tai guid-kenttä, jota käytetään sallittujen luetteloon tai mustalle listalle merkitsemistä varten.
@@ -300,6 +301,7 @@
 
       Jos tämä asetus on käytössä tai sille ei ole määritetty arvoa, käyttäjä voi hallita osoitteiden automaattista täyttöä käyttöliittymässä.</translation>
 <translation id="1960840544413786116">Hyväksytäänkö paikallisen luottamusankkurin myöntämä varmenne, jos siitä puuttuu subjectAlternativeName-laajennus</translation>
+<translation id="1962273523772270623">Salli WebRTC-tapahtumalokien kerääminen Googlen palveluista</translation>
 <translation id="1964634611280150550">Incognito-tila poistettu käytöstä</translation>
 <translation id="1964802606569741174">Tällä käytännöllä ei ole mitään vaikutusta Androidin YouTube-sovellukseen. Jos YouTuben suojattu tila on käytössä, Androidin YouTube-sovelluksen asentamisen ei pitäisi olla sallittua.</translation>
 <translation id="1969212217917526199">Ohittaa käytännöt etäkäytön isännän vianetsintäversioissa.
@@ -650,7 +652,6 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteeseen lisätyt tilit toisistaan.</translation>
 <translation id="2769952903507981510">Määritä vaadittu verkkotunnuksen nimi etäisännille</translation>
 <translation id="2787173078141616821">Raportoi tietoja Androidin tilasta</translation>
-<translation id="2793923553868251161">Turvallisena kontekstina kohdeltavat alkuperät</translation>
 <translation id="2799297758492717491">Salli mediasisällön automaattinen toisto sallittujen luetteloon kuuluvissa URL-osoitemalleissa</translation>
 <translation id="2801230735743888564">Anna käyttäjien pelata dinosauruspeliä laitteen ollessa offline-tilassa.
 
@@ -1793,12 +1794,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6155936611791017817">Aseta suuren osoittimen oletustila kirjautumisnäytössä</translation>
 <translation id="6157537876488211233">Välityspalvelimen ohitussääntöjen pilkuilla erotettu luettelo</translation>
 <translation id="6158324314836466367">Enterprise-verkkomyymälän nimi (ei enää käytössä)</translation>
-<translation id="6164955668342404660">Poistettu käytöstä M69:ssä. Käytä OverrideSecurityRestrictionsOnInsecureOrigin-käytäntöä sen sijaan.
-
-      Käytäntö määrittelee ne alkuperät (URL-osoitteet), joita kohdellaan turvallisena kontekstina. Tällöin organisaatiot voivat määrittää valmistelupalvelimen sisäistä verkkokehitystä varten ja kehittäjät voivat testata turvallista kontekstia edellyttäviä ominaisuuksia ilman TLS:n käyttöä valmistelupalvelimella. 
-      Kun URL-osoitteita määritetään tällä käytännöllä, tämä vastaa --unsafely-treat-insecure-origin-as-secure‑merkinnän antamista pilkuilla erotetuille osoitteille komentorivillä. Jos tämä käytäntö on määritetty, se ohittaa komentorivimerkinnän.
-      Lisätietoja turvallisista konteksteista on osoitteessa https://www.w3.org/TR/secure-contexts/.
-      </translation>
 <translation id="6181608880636987460">Voit määrittää URL-osoitemalleja, joiden määrittämät sivustot eivät saa suorittaa <ph name="FLASH_PLUGIN_NAME" />-laajennusta.
 
           Jos tätä käytäntöä ei ole määritetty, kaikkiin sivustoihin sovelletaan DefaultPluginsSetting-käytäntöä (jos se on määritetty) tai käyttäjän omien asetusten mukaista yleistä oletusarvoa.</translation>
@@ -1917,6 +1912,11 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
       Jos tätä käytäntöä ei määritetä tai luettelo on tyhjä, kaikkia tuotteen <ph name="PRODUCT_NAME" /> järjestelmiä voidaan käyttää.</translation>
 <translation id="6652197835259177259">Paikallisesti hallinnoitujen käyttäjien asetukset</translation>
 <translation id="6658245400435704251">Määrittää sekunteina ajan, jonka laite voi viivyttää päivityksen lataamista siitä hetkestä, kun päivitys on lähetetty palvelimelle. Osa odotusajasta voidaan määrittää aikana ja loput päivitystarkistusten määränä. Hajonnalle on kuitenkin yläraja, joten laite ei koskaan jää odottamaan päivityksen lataamista loputtomasti.</translation>
+<translation id="6665599130599311250">Jos tämän käytännön arvo on epätosi tai sitä ei ole määritetty, hallinnoidut vierailijakäyttökerrat toimivat kuten tavalliset julkiset käyttökerrat, joista kerrotaan artikkelissa https://support.google.com/chrome/a/answer/3017014.
+
+      Jos tämän käytännön arvo on tosi, hallinnoituja vierailijakäyttökertoja käsitellään hallinnoitujen käyttökertojen sääntöjen mukaisesti, jolloin monet julkisia käyttökertoja koskevat rajoitukset poistetaan.
+
+      Jos tämä käytäntö on määritetty, käyttäjä ei voi muuttaa tai ohittaa sitä.</translation>
 <translation id="6665670272107384733">Määritä, kuinka usein käyttäjän on kirjoitettava salasana, jotta hän voi käyttää lukituksen pika-avaamista</translation>
 <translation id="6681229465468164801">Antaa sinun määrittää luettelon URL-osoitemalleja, joiden määrittämät sivustot eivät saa pyytää käyttäjältä USB-laitteen käyttöoikeutta.
 
@@ -1966,11 +1966,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6786967369487349613">Määritä roaming-profiilihakemisto</translation>
 <translation id="6810445994095397827">Estä JavaScript näissä sivustoissa</translation>
 <translation id="681446116407619279">Tuetut todennusjärjestelmät</translation>
-<translation id="6832455357698286434">
-      Käytäntö määrittelee ne alkuperät (URL-osoitteet) tai isäntänimimallit (esim. "*.example.com"), joita kohdellaan turvallisina konteksteina. Tällöin organisaatiot voivat määrittää valmistelupalvelimen sisäistä verkkokehitystä varten ja kehittäjät voivat testata turvallista kontekstia edellyttäviä ominaisuuksia ilman TLS:n käyttöä valmistelupalvelimella.
-      Kun URL-osoitteita määritetään tällä käytännöllä, tämä vastaa --unsafely-treat-insecure-origin-as-secure‑merkinnän antamista pilkuilla erotetuille osoitteille komentorivillä. Jos tämä käytäntö on määritetty, se ohittaa komentorivimerkinnän.
-      Lisätietoja turvallisista konteksteista on osoitteessa https://www.w3.org/TR/secure-contexts/.
-      </translation>
 <translation id="6835883744948188639">Näytä käyttäjälle toistuva kehote suositellusta uudelleenkäynnistyksestä</translation>
 <translation id="6838056959556423778">Ohittaa tuotteen <ph name="PRODUCT_NAME" /> oletustulostimen valinnan säännöt.
 
@@ -2080,6 +2075,17 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="6943577887654905793">Mac/Linux-asetuksen nimi:</translation>
 <translation id="69525503251220566">Parametri, joka tarjoaa kuvan perusteella haku -ominaisuuden oletushakupalvelulle</translation>
 <translation id="6956272732789158625">Älä salli sivustojen käyttää avainten luomistoimintoa.</translation>
+<translation id="6982028490425791294">
+      Jos tämän käytännön arvo on tosi, <ph name="PRODUCT_NAME" /> saa kerätä WebRTC-tapahtumalokeja Googlen palveluista (esim. Google Meet) ja lähettää niitä Googlelle.
+
+      Jos tämän käytännön arvo on epätosi tai sitä ei ole määritetty, <ph name="PRODUCT_NAME" /> ei saa kerätä tai lähettää kyseisiä lokeja.
+
+      Lokit sisältävät tietoa esimerkiksi lähetettyjen ja vastaanotettujen RTP-pakettien koko- ja ajankohtatietoja, palautetta verkon ruuhkautumisesta ja ääni- ja videokehysten käyttöaikaan ja laatuun liittyviä sisällönkuvaustietoja. Nämä tiedot auttavat korjaamaan Chromen ääni- ja videopuheluihin liittyviä ongelmia, kuten kaistanleveyden arviointivirheitä. Lokeihin ei tallenneta puhelujen ääni- tai videosisältöä.
+
+      Tämän datan keräyksen voi käynnistää vain Googlen verkkopalvelu, kuten Google Hangouts tai Google Meet.
+
+      Nämä lokit voidaan yhdistää käyttökertatunnuksen avulla muihin lokeihin, jotka kyseessä oleva Googlen palvelu on kerännyt. Tämän tarkoituksena on helpottaa virheenkorjausta.
+      </translation>
 <translation id="6994082778848658360">Määrittää laitteen Secure Element ‑komponentin tarjoaman monitasoisen todennuksen käytön, jos se on yhteensopiva tämän ominaisuuden kanssa. Käyttäjän läsnäolo havaitaan laitteen virtapainikkeen avulla.
 
       Jos valittuna on Ei käytössä, toista todennustasoa ei käytetä.
@@ -2310,7 +2316,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7617319494457709698">Tämä käytäntö määrittää laajennukset, joilla on oikeus käyttää <ph name="ENTERPRISE_PLATFORM_KEYS_API" />n funktiota <ph name="CHALLENGE_USER_KEY_FUNCTION" /> etätodennukseen. Vain tässä luettelossa olevat laajennukset voivat käyttää sovellusliittymää.
 
           Jos laajennus ei ole luettelossa tai luetteloa ei ole määritetty, kutsujen lähettäminen sovellusliittymälle epäonnistuu ja palauttaa virhekoodin.</translation>
-<translation id="7620300057302654932">Turvallisena kontekstina kohdeltavat alkuperät tai isäntänimimallit</translation>
 <translation id="7625444193696794922">Määrittää julkaisuversion, jota tämän laitteen tulee käyttää.</translation>
 <translation id="7632724434767231364">GSSAPI-kirjaston nimi</translation>
 <translation id="7635471475589566552">Määrittää tuotteen <ph name="PRODUCT_NAME" /> sovelluksen kielen ja estää käyttäjiä muuttamasta sitä. Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> käyttää määritettyä kieltä. Jos tätä kieltä ei tueta, käytetään kieltä en-US. Jos asetus poistetaan käytöstä tai valintaa ei tehdä, <ph name="PRODUCT_NAME" /> käyttää joko käyttäjän määrittämää kieltä (jos valittu), järjestelmän kieltä tai kieltä en-US, jos näitä kieliä ei tueta.</translation>

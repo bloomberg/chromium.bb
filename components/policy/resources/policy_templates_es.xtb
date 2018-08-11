@@ -675,7 +675,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Cada entrada de la lista especifica un identificador, que se utiliza de forma interna para diferenciar las cuentas locales del dispositivo.</translation>
 <translation id="2769952903507981510">Configurar el nombre de dominio obligatorio para hosts de acceso remoto</translation>
 <translation id="2787173078141616821">Proporcionar información sobre el estado de Android</translation>
-<translation id="2793923553868251161">Orígenes que se deben considerar contexto seguro.</translation>
 <translation id="2799297758492717491">Permitir reproducción automática de contenido multimedia en una lista blanca de patrones de URL</translation>
 <translation id="2801230735743888564">Permite que los usuarios jueguen al juego del huevo de pascua de dinosaurio sin conexión.
 
@@ -1877,12 +1876,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="6155936611791017817">Establecer el estado predeterminado del cursor grande en la pantalla de inicio de sesión</translation>
 <translation id="6157537876488211233">Lista de reglas de omisión de proxy separadas por comas</translation>
 <translation id="6158324314836466367">Nombre de la tienda online de la empresa (política obsoleta)</translation>
-<translation id="6164955668342404660">Obsoleta en M69. Usa OverrideSecurityRestrictionsOnInsecureOrigin en su lugar.
-
-      La política define una lista de orígenes (URLs) que se deben considerar contexto seguro. La intención es permitir que las organizaciones configuren un servidor provisional para desarrollar web internas y conseguir que los desarrolladores puedan probar las funciones que necesiten en contextos seguros sin tener que implementar TLS en el servidor provisional.
-      Definir la lista de URLs de esta política tiene el mismo resultado que asignar el indicador de línea de comandos "--unsafely-treat-insecure-origin-as-secure" a una lista de URL separadas por comas. Al habilitar la política, se anula el indicador de línea de comandos.
-      Para obtener más información sobre los contextos seguros, consulta la página https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6181608880636987460">Permite configurar una lista de patrones de URL que especifican los sitios web que no pueden ejecutar el complemento <ph name="FLASH_PLUGIN_NAME" />.
 
           Si esta política no se configura, se usará para todos los sitios web el valor general predeterminado que se indique en la política "DefaultPluginsSetting" (si se ha configurado) o las preferencias personales del usuario (en caso contrario).</translation>
@@ -2064,11 +2057,6 @@ Al habilitar esta política, se inhabilita la sincronización en la nube.
 <translation id="6786967369487349613">Especificar el directorio de perfiles de itinerancia</translation>
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
 <translation id="681446116407619279">Esquemas de autenticación admitidos</translation>
-<translation id="6832455357698286434">
-      La política define una lista de orígenes (URLs) o de patrones de nombre de host (como "*.example.com") que se deben considerar contextos seguros. La intención es permitir que las organizaciones configuren un servidor provisional para desarrollar web internas y conseguir que los desarrolladores puedan probar las funciones que necesiten en contextos seguros sin tener que implementar TLS en el servidor provisional.
-      Definir la lista de URLs de esta política tiene el mismo resultado que asignar el indicador de línea de comandos "--unsafely-treat-insecure-origin-as-secure" a una lista de URL separadas por comas. Al habilitar la política, se anula el indicador de línea de comandos.
-      Para obtener más información sobre los contextos seguros, consulta la página https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6835883744948188639">Mostrar un mensaje periódico al usuario indicando que se recomienda reiniciar el navegador</translation>
 <translation id="6838056959556423778">Anula las reglas para seleccionar la impresora predeterminada de <ph name="PRODUCT_NAME" />.
 
@@ -2437,7 +2425,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7617319494457709698">Esta política especifica las extensiones que pueden usar la función <ph name="CHALLENGE_USER_KEY_FUNCTION" /> de la API <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> para la confirmación remota. Las extensiones se deben añadir a esta lista para usar la API.
 
           Si la lista no se ha configurado o si una extensión no está incluida en ella, aparecerá un código de error en la llamada a la API.</translation>
-<translation id="7620300057302654932">Orígenes o patrones de nombre de host que se deben considerar contextos seguros.</translation>
 <translation id="7625444193696794922">Permite especificar el canal de versiones al que se vinculará este dispositivo.</translation>
 <translation id="7632724434767231364">Nombre de biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Establece la configuración regional de la aplicación en <ph name="PRODUCT_NAME" /> e impide que los usuarios la modifiquen.

@@ -267,6 +267,7 @@
 <translation id="1397854323885047133">ಸಿಂಕ್‌ ಮತ್ತು ವೈಯಕ್ತೀಕರಣ</translation>
 <translation id="1398853756734560583">ಗರಿಷ್ಠಗೊಳಿಸು</translation>
 <translation id="1399511500114202393">ಯಾವುದೇ ಬಳಕೆದಾರ ಪ್ರಮಾಣಪತ್ರವಿಲ್ಲ</translation>
+<translation id="1401165786814632797">ನಿಮ್ಮ ಸಾಧನವು ಆನ್ ಮತ್ತು ಅನ್‌ಲಾಕ್ ಆಗಿರುವಾಗ, ಯಾವುದೇ ಸಮಯದಲ್ಲಿ ಬೇಕಾದರೂ "ಓಕೆ Google" ಎಂದು ಹೇಳಿ ನಿಮ್ಮ ಅಸಿಸ್ಟೆಂಟ್‌ಗೆ ಪ್ರವೇಶ ಪಡೆಯಿರಿ.</translation>
 <translation id="140250605646987970">ನಿಮ್ಮ ಫೋನ್ ಕಂಡುಬಂದಿದೆ. ಆದರೆ Smart Lock ಕೇವಲ Android 5.0 ಮತ್ತು ಉನ್ನತ ಸಾಧನಗಳಲ್ಲಿ ಮಾತ್ರ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ. &lt;a&gt;ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="1405476660552109915">ಈ ಸೈಟ್‌ಗೆ ನಿಮ್ಮ ಖಾತೆಯನ್ನು <ph name="PASSWORD_MANAGER_BRAND" /> ಉಳಿಸಬೇಕೆಂದು ನೀವು ಬಯಸುವಿರಾ?</translation>
@@ -682,7 +683,6 @@
 <translation id="200544492091181894">ನೀವು ಯಾವಾಗಲೂ ಇದನ್ನು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನಂತರ ಬದಲಾಯಿಸಬಹುದು</translation>
 <translation id="2006638907958895361">ಲಿಂಕ್‌ ಅನ್ನು <ph name="APP" /> ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="2007404777272201486">ಸಮಸ್ಯೆ ವರದಿಮಾಡಿ...</translation>
-<translation id="2016237810978710652">Linux ಫೈಲ್‌ಗಳನ್ನು ತೆರೆಯಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="2016430552235416146">ಸಾಂಪ್ರದಾಯಿಕ</translation>
 <translation id="2017334798163366053">ಕಾರ್ಯಕ್ಷಮತೆ ಡೇಟಾ ಸಂಗ್ರಹಣೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="2017836877785168846">ಇತಿಹಾಸವನ್ನು ತೆರವುಗೊಳಿಸಿ ಮತ್ತು ವಿಳಾಸಪಟ್ಟಿಯಲ್ಲಿರುವುದನ್ನು ಸ್ವಯಂಪೂರ್ಣಗೊಳಿಸಿ.</translation>
@@ -1508,6 +1508,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> ಸಂಪರ್ಕಿಸಲು ಬಯಸುತ್ತದೆ</translation>
 <translation id="3274763671541996799">ನೀವು ಪೂರ್ಣ ಪರದೆಗೆ ಬಂದಿದ್ದೀರಿ.</translation>
 <translation id="3275778913554317645">ವಿಂಡೊ ಅಂತೆ ತೆರೆಯಿರಿ</translation>
+<translation id="3278877214895457897">ನಿಮ್ಮ Chromebook ಅನ್ನು ಹೊಂದಿಸಿದಾಗ, ಅಸಿಸ್ಟೆಂಟ್ ಬಟನ್ ಅನ್ನು ಒತ್ತಿರಿ ಅಥವಾ ಯಾವುದೇ ಸಮಯದಲ್ಲಿ ಬೇಕಾದರೂ ನಿಮ್ಮ ಅಸಿಸ್ಟೆಂಟ್‌‌ನಿಂದ ಸಹಾಯ ಪಡೆಯಲು "ಓಕೆ Google" ಎಂದು ಹೇಳಿ.</translation>
 <translation id="3279230909244266691">ಈ ಪ್ರಕ್ರಿಯೆಯು ಕೆಲವು ನಿಮಿಷಗಳನ್ನು ತೆಗೆದುಕೊಳ್ಳಬಹುದು. ವರ್ಚುವಲ್ ಯಂತ್ರವನ್ನು ಪ್ರಾರಂಭಿಸಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="3279741024917655738">ಇದರಲ್ಲಿ ಪೂರ್ಣಪರದೆಯ ವೀಡಿಯೊಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="3280237271814976245">&amp;ಇದರಂತೆ ಉಳಿಸು</translation>
@@ -2602,6 +2603,7 @@
 <translation id="4992066212339426712">ಅನ್‌ಮ್ಯೂಟ್</translation>
 <translation id="4992458225095111526">ಪವರ್‌ವಾಶ್‌ ಅನ್ನು ಖಚಿತಪಡಿಸಿ</translation>
 <translation id="4992473555164495036">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಲಭ್ಯವಿರುವ ಇನ್‌ಪುಟ್ ವಿಧಾನಗಳನ್ನು ಸೀಮಿತಗೊಳಿಸಿದ್ದಾರೆ.</translation>
+<translation id="4992926179187649719">'ಓಕೆ Google' ಆನ್ ಮಾಡಿ</translation>
 <translation id="4994474651455208930">ಪ್ರೊಟೋಕಾಲ್‌ಗಳಿಗಾಗಿ ಡಿಫಾಲ್ಟ್ ಹ್ಯಾಂಡ್ಲರ್‌‌ಗಳಾಗಲು ಸೈಟ್‌ಗಳನ್ನು ಅನುಮತಿಸಿ</translation>
 <translation id="4994754230098574403">ಹೊಂದಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="4996978546172906250">ಇದರ ಮೂಲಕ ಹಂಚಿ</translation>
@@ -3778,7 +3780,6 @@
 <translation id="6748775883310276718">ಸಿಂಗಲ್‌ ಆಪ್‌ ಕಿಯೊಸ್ಕ್‌</translation>
 <translation id="6751256176799620176">1 ಫೋಲ್ಡರ್ ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (ಅದೃಶ್ಯ)</translation>
-<translation id="6751815812172740613">ಈ <ph name="DEVICE_TYPE" /> ನಿಂದ ನಿಮ್ಮ Linux ಫೈಲ್‌ಗಳ ಫೋಲ್ಡರ್‌ನಲ್ಲಿರುವ ಎಲ್ಲಾ Linux ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಹಾಗೂ ಡೇಟಾವನ್ನು ಅಳಿಸುವುದೇ?</translation>
 <translation id="6757101664402245801">URL ನಕಲಿಸಲಾಗಿದೆ</translation>
 <translation id="6758056191028427665">ನಮ್ಮ ಕೆಲಸದ ಕುರಿತು ನಿಮ್ಮ ಅಭಿಪ್ರಾಯವನ್ನು ತಿಳಿಸಿ.</translation>
 <translation id="6759193508432371551">ಫ್ಯಾಕ್ಟರಿ ರಿಸೆಟ್‌</translation>
@@ -4055,7 +4056,6 @@
 <ph name="BEGIN_PARAGRAPH3" />ಸೆಟ್ಟಿಂಗ್‌ಗಳು &gt; Google ನಿಂದ ಈ ವೈಶಿಷ್ಟ್ಯವನ್ನು ನೀವು ನಿಯಂತ್ರಿಸಬಹುದು. ಮೆನುನಿಂದ ಬಳಕೆ ಮತ್ತು ಡಯಾಗ್ನಾಸ್ಟಿಕ್‌ ಆಯ್ಕೆಮಾಡಿ.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">ಸಹಾಯ ಪಡೆಯಿರಿ</translation>
 <translation id="7200083590239651963">ಕಾನ್ಫಿಗರೇಶನ್ ಆಯ್ಕೆ ಮಾಡಿ</translation>
-<translation id="7201014958346994077">Linux ಫೈಲ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="720110658997053098">ಈ ಸಾಧನವನ್ನು ಕಿಯೋಸ್ಕ್-ಮೋಡ್‌ನಲ್ಲಿ ಶಾಶ್ವತವಾಗಿ ಇರಿಸಿಕೊಳ್ಳಿ</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' ಅನ್ನು ಅಳಿಸಲಾಗಿದೆ</translation>
 <translation id="7206693748120342859"><ph name="PLUGIN_NAME" /> ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
@@ -4522,6 +4522,7 @@
 <translation id="7908378463497120834">ಕ್ಷಮಿಸಿ, ನಿಮ್ಮ ಬಾಹ್ಯ ಸಂಗ್ರಹಣೆ ಸಾಧನದಲ್ಲಿನ ಕನಿಷ್ಠ ಒಂದು ಭಾಗವನ್ನು ಜೋಡಿಸಲಾಗಲಿಲ್ಲ.</translation>
 <translation id="7909969815743704077">ಅಜ್ಞಾತದಲ್ಲಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7910768399700579500">&amp;ಹೊಸ ಫೋಲ್ಡರ್</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">ಸರ್ವರ್‌ನಲ್ಲಿ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಬದಲಾಯಿಸಲಾಗಿದೆ. ಸೈನ್ ಔಟ್ ಮಾಡಿ ಮತ್ತೆ ಸೈನ್ ಇನ್ ಆಗಿರಿ.</translation>
 <translation id="7915471803647590281">ದಯವಿಟ್ಟು ಪ್ರತಿಕ್ರಿಯೆ ಕಳುಹಿಸುವ ಮುಂಚಿತವಾಗಿ ಏನು ನಡೆಯುತ್ತಿದೆ ಎಂದು ನಮಗೆ ತಿಳಿಸಿ.</translation>
 <translation id="7916556741383518510">ಕ್ಲಿಕ್ ಮಾಡಿದಾಗ</translation>
@@ -4661,7 +4662,6 @@
 <translation id="8107015733319732394">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ನಲ್ಲಿ Google Play ಸ್ಟೋರ್ ಅನ್ನು ಸ್ಥಾಪಿಸಲಾಗುತ್ತಿದೆ. ಇದು ಕೆಲವು ನಿಮಿಷಗಳನ್ನು ತೆಗೆದುಕೊಳ್ಳಬಹುದು.</translation>
 <translation id="8111155949205007504">ನಿಮ್ಮ iPhone ಮೂಲಕ ಈ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಿ</translation>
 <translation id="8113043281354018522">ಪರವಾನಗಿ ಪ್ರಕಾರವನ್ನು ಆರಿಸಿ</translation>
-<translation id="8116925261070264013">ಮ್ಯೂಟ್‌ ಆಗಿರುವುದು</translation>
 <translation id="8116972784401310538">&amp;ಬುಕ್‌ಮಾರ್ಕ್‌ ವ್ಯವಸ್ಥಾಪಕ</translation>
 <translation id="8117620576188476503">ಸ್ಥಿತಿ ಟ್ರೇ ಮೂಲಕ ಸಂಪರ್ಕಗಳು, ಅಪ್‌ಡೇಟ್‌ಗಳು ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ. ಕೀಬೋರ್ಡ್‌ಗಳಿಂದ ಇಲ್ಲಿ ಪಡೆಯಲು, Alt + Shift + S ಕೀಗಳನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="8118362518458010043">Chrome ಮೂಲಕ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ. ಈ ವಿಸ್ತರಣೆಯು ಸುರಕ್ಷಿತವಲ್ಲದಿರಬಹುದು.</translation>
@@ -5123,7 +5123,6 @@
 <translation id="8845001906332463065">ಸಹಾಯ ಪಡೆಯಿರಿ</translation>
 <translation id="8846141544112579928">ಕೀಬೋರ್ಡ್‍ಗಾಗಿ ಹುಡುಕಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885217322790849332">$1 ಮೂಲಕ ಫೈಲ್‌ಗಳನ್ನು ತೆರೆಯಲು, ಮೊದಲು Linux ಫೈಲ್‌ಗಳ ಫೋಲ್ಡರ್‌ಗೆ ನಕಲಿಸಿ.</translation>
 <translation id="8859057652521303089">ನಿಮ್ಮ ಭಾಷೆ ಆಯ್ಕೆ ಮಾಡಿ:</translation>
 <translation id="8859174528519900719">ಉಪಫ್ರೇಮ್‌: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excel ಸ್ಪ್ರೆಡ್‌ಶೀಟ್</translation>

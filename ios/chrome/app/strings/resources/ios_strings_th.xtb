@@ -165,6 +165,7 @@
 <translation id="3588820906588687999">เปิดภาพในแท็บใหม่</translation>
 <translation id="3603009562372709545">คัดลอก URL ของลิงก์</translation>
 <translation id="3607167657931203000">ป้อนข้อมูลอัตโนมัติ</translation>
+<translation id="360930808415985584">ควบคุมการซิงค์ การปรับเปลี่ยนในแบบของคุณ และอื่นๆ</translation>
 <translation id="3609785682760573515">กำลังซิงค์...</translation>
 <translation id="3628119975092896051">เรื่องรออ่านของคุณพร้อมใช้งานในแบบออฟไลน์ หากต้องการเพิ่มหน้าลงในเรื่องรออ่าน ให้แตะ<ph name="SHARE_OPENING_ICON" /></translation>
 <translation id="3638472932233958418">โหลดหน้าเว็บล่วงหน้า</translation>
@@ -211,6 +212,7 @@
 <translation id="4508750114462689118">ปิดโปรโมชันการลงชื่อเข้าใช้</translation>
 <translation id="4526249700380860531">ดูและจัดการรหัสผ่านที่บันทึกไว้ที่ <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">ลองลงชื่อเข้าใช้อีกครั้ง</translation>
+<translation id="4541241553780729349">ข้อมูลที่ซิงค์กับ Google และฟีเจอร์ที่ใช้จะไม่เปลี่ยนแปลง</translation>
 <translation id="457386861538956877">เพิ่มเติม...</translation>
 <translation id="461440297010471931">กำลังค้นหาด้วย Google</translation>
 <translation id="4619615317237390068">แท็บจากอุปกรณ์อื่นๆ</translation>
@@ -419,7 +421,6 @@
 <translation id="8080028325999236607">ปิดแท็บทั้งหมด</translation>
 <translation id="8114753159095730575">การดาวน์โหลดไฟล์พร้อมใช้งาน มีตัวเลือกอยู่ทางด้านล่างของหน้าจอ</translation>
 <translation id="8160722851663543621">ส่งการค้นหาจากแถบที่อยู่และช่องค้นหารวมถึงคุกกี้บางรายการไปยังเครื่องมือค้นหาเริ่มต้น</translation>
-<translation id="8178325540017397816">ระบบจะนำรายการที่คุณเลือกออก</translation>
 <translation id="8205564605687841303">ยกเลิก</translation>
 <translation id="8225985093977202398">รูปภาพและไฟล์ที่แคชไว้</translation>
 <translation id="8261506727792406068">ลบ</translation>

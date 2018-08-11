@@ -427,7 +427,7 @@
 <translation id="1627408615528139100">تم التنزيل من قبل</translation>
 <translation id="1632803087685957583">تسمح لك بضبط معدل تكرار لوحة المفاتيح، وتوقّع الكلمات، والمزيد</translation>
 <translation id="1635033183663317347">تم التثبيت من قبل الوصيّ.</translation>
-<translation id="1635885551358739414">‏قد تستخدم Google محتوى المواقع الإلكترونية التي تزورها، بالإضافة إلى نشاط المتصفِّح وتفاعلاته لتخصيص Chrome وخدمات Google الأخرى، مثل "الترجمة" و"البحث" والإعلانات. ويمكنك تخصيص هذه الميزة في "الإعدادات".</translation>
+<translation id="1635885551358739414">‏قد تستخدم Google محتوى المواقع الإلكترونية التي تزورها، بالإضافة إلى نشاط المتصفِّح وتفاعلاته لتخصيص Chrome وخدمات Google الأخرى، مثل "ترجمة" و"بحث" والإعلانات. ويمكنك تخصيص هذه الميزة في "الإعدادات".</translation>
 <translation id="1637224376458524414">‏الحصول على هذه الإشارة المرجعية على جهاز iPhone</translation>
 <translation id="1637765355341780467">حدث خطأ ما أثناء فتح ملفك الشخصي. وقد تكون بعض الميزات غير متاحة.</translation>
 <translation id="1639239467298939599">جارٍ التحميل.</translation>
@@ -686,7 +686,6 @@
 <translation id="200544492091181894">يمكنك تغيير هذا الخيار من الإعدادات متى شئت.</translation>
 <translation id="2006638907958895361">فتح الرابط في <ph name="APP" /></translation>
 <translation id="2007404777272201486">الإبلاغ عن مشكلة...</translation>
-<translation id="2016237810978710652">‏جارٍ فتح ملفات نظام التشغيل Linux...</translation>
 <translation id="2016430552235416146">التقليدي</translation>
 <translation id="2017334798163366053">إيقاف جمع بيانات مستوى الأداء</translation>
 <translation id="2017836877785168846">مسح السجل وعمليات الإكمال التلقائي في شريط العناوين.</translation>
@@ -1792,7 +1791,7 @@
 <translation id="3693415264595406141">كلمة المرور:</translation>
 <translation id="3694027410380121301">تحديد علامة التبويب السابقة</translation>
 <translation id="3699624789011381381">عنوان البريد الإلكتروني</translation>
-<translation id="3699920817649120894">هل ترغب في إيقاف المزامنة والتخصيص؟</translation>
+<translation id="3699920817649120894">هل تريد إيقاف المزامنة والتخصيص؟</translation>
 <translation id="3700888195348409686">جارِ تقديم (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">تم تغيير صفحات بدء التشغيل التابعة لك لإدراج <ph name="URL" />.</translation>
 <translation id="370415077757856453">تم حظر جافا سكريبت</translation>
@@ -2173,7 +2172,7 @@
 <translation id="428608937826130504">عنصر الرف 8</translation>
 <translation id="4287502004382794929">ليست لديك تراخيص برامج كافية لتسجيل هذا الجهاز. يُرجى الاتصال بالمبيعات لشراء المزيد. إذا كنت تعتقد أن هذه الرسالة ظهرت عن طريق الخطأ، فيُرجى الاتصال بالدعم.</translation>
 <translation id="4289540628985791613">نظرة عامة</translation>
-<translation id="4295072614469448764">يُعد التطبيق متاحًا في الوحدة الطرفية. وقد يكون هناك أيضًا رمز في مشغِّل التطبيقات.</translation>
+<translation id="4295072614469448764">أصبح التطبيق متاحًا في الوحدة الطرفية وقد تجد رمزًا له في مشغِّل التطبيقات.</translation>
 <translation id="4296575653627536209">إضافة مستخدم تحت الإشراف</translation>
 <translation id="4297219207642690536">إعادة التشغيل وإعادة الضبط</translation>
 <translation id="4297322094678649474">تغيير اللغات</translation>
@@ -2574,7 +2573,7 @@
 <translation id="4953808748584563296">الصورة الرمزية التلقائية البرتقالية</translation>
 <translation id="4955814292505481804">سنوي</translation>
 <translation id="4957949153200969297">يمكنك تفعيل الميزات ذات الصلة بمزامنة <ph name="IDS_SHORT_PRODUCT_NAME" /> فقط.</translation>
-<translation id="4959262764292427323">‏يتم حفظ كلمات المرور في حسابك على Google، حتى تتمكَّن من استخدامها على أي جهاز.</translation>
+<translation id="4959262764292427323">‏يتم حفظ كلمات المرور في حسابك على Google حتى تتمكَّن من استخدامها على أي جهاز.</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
 <translation id="496226124210045887">المجلد الذي حددته يشتمل على ملفات حساسة. فهل تريد بالتأكيد منح "$1" حق الدخول الدائم للقراءة في هذا المجلد؟</translation>
 <translation id="4964455510556214366">الترتيب</translation>
@@ -3779,7 +3778,6 @@
 <translation id="6748775883310276718">كشك التطبيق الواحد</translation>
 <translation id="6751256176799620176">تم تحديد مجلد واحد</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (التصفح المتخفي)</translation>
-<translation id="6751815812172740613">‏هل تريد حذف جميع تطبيقات Linux والبيانات في مجلد "ملفات Linux" من جهاز <ph name="DEVICE_TYPE" /> هذا؟</translation>
 <translation id="6757101664402245801">‏تم نسخ عنوان URL</translation>
 <translation id="6758056191028427665">يُرجى تقييم أدائنا.</translation>
 <translation id="6759193508432371551">إعادة تعيين إعدادات المصنع</translation>
@@ -4014,7 +4012,7 @@
 <translation id="7127980134843952133">سجل التنزيل</translation>
 <translation id="7131040479572660648">قراءة بياناتك على <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" /> و<ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">إضافة &amp;صفحة...</translation>
-<translation id="7133578150266914903">يعمل المشرف على إغلاق هذا الجهاز (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133578150266914903">‏يعمل المشرف على إعادة النسخة السابقة من نظام التشغيل Chrome إلى هذا الجهاز(<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">لتصغير النص</translation>
 <translation id="7136694880210472378">تعيين كافتراضي</translation>
 <translation id="7136984461011502314">مرحبًا بك في <ph name="PRODUCT_NAME" /></translation>
@@ -4056,7 +4054,6 @@
     <ph name="BEGIN_PARAGRAPH3" />يمكنك التحكُّم في هذه الميزة من "الإعدادات" &gt; Google. يمكنك بعد ذلك اختيار "الاستخدام وبيانات التشخيص" من القائمة.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">الحصول على مساعدة</translation>
 <translation id="7200083590239651963">اختيار تهيئة</translation>
-<translation id="7201014958346994077">‏تعذَّر عرض ملفات Linux</translation>
 <translation id="720110658997053098">تشغيل هذا الجهاز في وضع الكشك دائمًا</translation>
 <translation id="7201118060536064622">تم حذف "<ph name="DELETED_ITEM_NAME" />"</translation>
 <translation id="7206693748120342859">جارٍ تنزيل <ph name="PLUGIN_NAME" />...</translation>
@@ -4673,7 +4670,6 @@
 <translation id="8107015733319732394">‏تثبيت متجر Google Play على <ph name="DEVICE_TYPE" />. قد يستغرق ذلك بضع دقائق.</translation>
 <translation id="8111155949205007504">‏مشاركة كلمة المرور هذه مع جهاز iPhone</translation>
 <translation id="8113043281354018522">اختيار نوع الترخيص</translation>
-<translation id="8116925261070264013">مواقع الويب التي تم كتم الصوت فيها</translation>
 <translation id="8116972784401310538">م&amp;دير الإشارات</translation>
 <translation id="8117620576188476503">‏يمكنك إدارة الاتصالات والتحديثات والإعدادات من خلال شريط الحالة. وللوصول إلى هنا من خلال لوحة المفاتيح، اضغط على Alt + Shift + S.</translation>
 <translation id="8118362518458010043">‏تم إيقاف الإضافة بواسطة متصفح Chrome. ربما تكون هذه الإضافة غير آمنة.</translation>
@@ -4903,7 +4899,7 @@
 <translation id="8497219075884839166">‏الأدوات المساعدة في Windows</translation>
 <translation id="8498214519255567734">يمكنك تسهيل النظر إلى الشاشة أو القراءة في الضوء الخافت</translation>
 <translation id="8498395510292172881">‏متابعة القراءة في Chrome</translation>
-<translation id="8502536196501630039">‏لاستخدام التطبيقات من Google Play، عليك استعادة تطبيقاتك أولاً. ربما تم فقدان بعض بياناتك.</translation>
+<translation id="8502536196501630039">‏لاستخدام التطبيقات من Google Play، عليك استعادة تطبيقاتك أولاً. وقد تلاحظ فقدان بعض بياناتك.</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>
 <translation id="850875081535031620">لم يتم العثور على أي برامج ضارة</translation>
 <translation id="8509646642152301857">تعذّر تنزيل قاموس التدقيق الإملائي.</translation>
@@ -5132,7 +5128,6 @@
 <translation id="8845001906332463065">الحصول على مساعدة</translation>
 <translation id="8846141544112579928">جارٍ البحث عن لوحة المفاتيح...</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885217322790849332">‏لفتح الملفات باستخدام دولار واحد، يمكنك النسخ أولاً إلى المجلد "ملفات نظام التشغيل Linux".</translation>
 <translation id="8859057652521303089">حدد لغتك:</translation>
 <translation id="8859174528519900719">هيكل سفلي: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">‏جدول بيانات Excel</translation>
@@ -5228,7 +5223,7 @@
 <translation id="9009369504041480176">جارٍ تحميل (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">إظهار الرمز دائمًا</translation>
 <translation id="9011178328451474963">علامة التبويب السابقة</translation>
-<translation id="9013707997379828817">أغلق المشرف هذا الجهاز. يُرجى حفظ الملفات المهمة، ثم إعادة التشغيل. وسيتم حذف جميع البيانات المتاحة على الجهاز.</translation>
+<translation id="9013707997379828817">‏أعاد المشرف النسخة السابقة من نظام التشغيل Chrome إلى هذا الجهاز. يُرجى حفظ الملفات المهمة، ثم إعادة التشغيل. وسيتم حذف جميع البيانات المتاحة على الجهاز.</translation>
 <translation id="9014987600015527693">عرض هاتف آخر</translation>
 <translation id="9018218886431812662">اكتمل التثبيت</translation>
 <translation id="901834265349196618">بريد إلكتروني</translation>

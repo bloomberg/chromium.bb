@@ -106,7 +106,6 @@
 <translation id="1639239467298939599">로드 중</translation>
 <translation id="1640180200866533862">사용자 정책</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />사이트의 홈페이지를 방문<ph name="END_LINK" />해 보세요.</translation>
-<translation id="1644184664548287040">네트워크 구성이 잘못되어 가져올 수 없습니다.</translation>
 <translation id="1644574205037202324">방문 기록</translation>
 <translation id="1645368109819982629">지원되지 않는 프로토콜</translation>
 <translation id="1655462015569774233">{1,plural, =1{서버의 보안 인증서가 어제 만료되어 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다. 현재 컴퓨터의 시계가 <ph name="CURRENT_DATE" />로 설정되어 있습니다. 시간이 정확하지 않으면 시스템 시계를 수정한 뒤 이 페이지를 새로고침하세요.}other{서버의 보안 인증서가 #일 전에 만료되어 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다. 현재 컴퓨터의 시계가 <ph name="CURRENT_DATE" />로 설정되어 있습니다. 시간이 정확하지 않으면 시스템 시계를 수정한 뒤 이 페이지를 새로고침하세요.}}</translation>
@@ -207,6 +206,7 @@
 <translation id="2359808026110333948">계속</translation>
 <translation id="2365563543831475020"><ph name="CRASH_TIME" />에 캡처된 비정상 종료 보고서가 업로드되지 않았습니다.</translation>
 <translation id="2367567093518048410">수준</translation>
+<translation id="2378238891085281592">시크릿 모드로 전환됨</translation>
 <translation id="2384307209577226199">엔터프라이즈 기본값</translation>
 <translation id="2386255080630008482">서버 인증서가 폐기되었습니다.</translation>
 <translation id="2392959068659972793">값이 설정되지 않은 정책 표시</translation>
@@ -283,7 +283,6 @@
 <translation id="2941952326391522266">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서가 <ph name="DOMAIN2" />에서 제공한 것입니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="2948083400971632585">설정 페이지의 연결을 구성하는 프록시를 사용 중지할 수 있습니다.</translation>
 <translation id="2955913368246107853">검색 바 닫기</translation>
-<translation id="2958431318199492670">네트워크 설정이 ONC 표준을 준수하지 않습니다. 일부 설정을 가져올 수 없습니다.</translation>
 <translation id="2969319727213777354">보안 연결을 설정하려면 시계가 올바로 설정되어 있어야 합니다. 웹사이트가 자신을 식별하는 데 사용하는 인증서는 특정 기간에만 유효하기 때문입니다. 기기의 시계가 잘못 설정되어 Chrome에서 이 인증서를 확인할 수 없습니다.</translation>
 <translation id="2972581237482394796">다시 실행(&amp;R)</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />이(가) 현재 선택되어 있습니다. <ph name="ROW_CONTENT" /></translation>
@@ -514,6 +513,7 @@
 <translation id="450710068430902550">관리자와 공유</translation>
 <translation id="4515275063822566619">카드와 주소는 Chrome 및 Google 계정(<ph name="ACCOUNT_EMAIL" />)에서 가져왔습니다. 이 정보는 <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 관리할 수 있습니다.</translation>
 <translation id="4522570452068850558">세부정보</translation>
+<translation id="4524805452350978254">카드 관리</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">확장 프로그램 사용 중지해 보기</translation>
 <translation id="457875822857220463">배송</translation>
@@ -577,7 +577,7 @@
 <translation id="5039804452771397117">허용</translation>
 <translation id="5040262127954254034">개인정보</translation>
 <translation id="5045550434625856497">비밀번호가 잘못되었습니다.</translation>
-<translation id="5056549851600133418">추천 도움말</translation>
+<translation id="5056549851600133418">추천 기사</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />프록시 주소 확인<ph name="END_LINK" /></translation>
 <translation id="5086888986931078152">일부 사이트의 보호된 콘텐츠에 액세스하지 못할 수 있습니다.</translation>
 <translation id="5087286274860437796">서버의 인증서가 현재 유효하지 않습니다.</translation>
@@ -700,6 +700,7 @@
 <translation id="5866257070973731571">전화번호 추가</translation>
 <translation id="5869405914158311789">사이트에 연결할 수 없음</translation>
 <translation id="5869522115854928033">저장된 비밀번호</translation>
+<translation id="5887400589839399685">저장된 카드</translation>
 <translation id="5893752035575986141">신용카드를 사용할 수 있습니다.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" />(동기화됨)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1개 사용 중}other{#개 사용 중}}</translation>
@@ -801,7 +802,6 @@
 <translation id="679355240208270552">정책에 의해 기본 검색이 사용 설정되지 않았기 때문에 무시되었습니다.</translation>
 <translation id="681021252041861472">필수 입력란</translation>
 <translation id="6810899417690483278">맞춤설정 ID</translation>
-<translation id="6820686453637990663">CVC</translation>
 <translation id="6824266427216888781">지역 데이터를 로드하지 못했습니다.</translation>
 <translation id="6825578344716086703"><ph name="DOMAIN" />에 접속하려 했으나 서버에서 안전성이 낮은 서명 알고리즘을 사용하여 서명된 인증서(예: SHA-1)를 전달했습니다. 이는 서버에서 전달한 보안 사용자 인증 정보가 위조되었을 수 있으며 사용하려는 서버가 아님을 의미합니다. 서버를 가장한 공격자와 통신 중일 수 있습니다.</translation>
 <translation id="6831043979455480757">번역</translation>
@@ -820,11 +820,13 @@
 <translation id="6948701128805548767">수령 방법과 요구사항을 확인하려면 주소를 선택하세요.</translation>
 <translation id="6949872517221025916">비밀번호 재설정</translation>
 <translation id="6950684638814147129">JSON 값을 파싱하는 중에 오류가 발생했습니다. <ph name="ERROR" /></translation>
+<translation id="6957624206566198865">새 시크릿 탭에서 페이지 열기</translation>
 <translation id="6957887021205513506">서버의 인증서가 위조된 것 같습니다.</translation>
 <translation id="6965382102122355670">확인</translation>
 <translation id="6965978654500191972">기기</translation>
 <translation id="6970216967273061347">구</translation>
 <translation id="6973656660372572881">고정 프록시 서버와 .pac 스크립트 URL이 모두 지정되어 있습니다.</translation>
+<translation id="6984479912851154518">시크릿 모드를 종료하고 외부 애플리케이션에서 결제합니다. 계속하시겠습니까?</translation>
 <translation id="6989763994942163495">고급 설정 표시</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">이러한 청구는 일회성일 수도 있고 반복적일 수도 있으며 명확하지 않을 수도 있습니다.</translation>
@@ -1074,6 +1076,7 @@
 <translation id="8820817407110198400">북마크</translation>
 <translation id="883848425547221593">기타 북마크</translation>
 <translation id="884264119367021077">배송지 주소</translation>
+<translation id="8846319957959474018">북마크로 쉽게 앱 열기</translation>
 <translation id="884923133447025588">폐기 매커니즘을 찾을 수 없습니다.</translation>
 <translation id="885730110891505394">Google과 공유</translation>
 <translation id="8858065207712248076">다른 사이트에서 비밀번호를 재사용했다면 <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> 비밀번호를 재설정하는 것이 좋습니다.</translation>

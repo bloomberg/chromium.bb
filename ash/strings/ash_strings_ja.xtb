@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">右</translation>
 <translation id="1351937230027495976">メニューを折りたたむ</translation>
 <translation id="1383876407941801731">検索</translation>
+<translation id="1419738280318246476">通知に関する操作を行うには、端末のロックを解除してください</translation>
 <translation id="1467432559032391204">左</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" />（HDMI / DP）</translation>
 <translation id="1510238584712386396">ランチャー</translation>
@@ -224,6 +225,7 @@
 <translation id="4924411785043111640">再起動してリセット</translation>
 <translation id="4961318399572185831">画面をキャスト</translation>
 <translation id="5069971504769299223">端末の管理者によりアクティビティが監視される可能性があります。</translation>
+<translation id="5083553833479578423">さらに多くのアシスタント機能をぜひご活用ください。</translation>
 <translation id="5136175204352732067">別のキーボードが接続されています</translation>
 <translation id="5168181903108465623">キャスト デバイスを利用できます</translation>
 <translation id="5207949376430453814">テキスト カーソルをハイライト表示する</translation>
@@ -295,6 +297,7 @@
 <translation id="6376931439017688372">Bluetooth がオンです</translation>
 <translation id="639644700271529076">CapsLock 機能はオフになっています</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">通知をすべて消去</translation>
 <translation id="643147933154517414">すべて確認済み</translation>
 <translation id="6445835306623867477"><ph name="RECEIVER_NAME" /> に「<ph name="ROUTE_TITLE" />」をキャスト中</translation>
 <translation id="6452181791372256707">拒否</translation>
@@ -397,9 +400,11 @@
 <translation id="8152119955266188852">拡大鏡（全画面）のショートカットを押しました。この機能をオンにしますか？</translation>
 <translation id="8190698733819146287">言語と入力方法をカスタマイズ...</translation>
 <translation id="8191230140820435481">アプリ、拡張機能、テーマを管理する</translation>
+<translation id="8192202700944119416">通知は非表示になっています。</translation>
 <translation id="8261506727792406068">削除</translation>
 <translation id="8297006494302853456">弱い</translation>
 <translation id="8308637677604853869">前のメニュー</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">メモを作成</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> のオプション メニュー</translation>
 <translation id="8406981827175133772">拡大鏡（全画面）</translation>
@@ -441,6 +446,7 @@
 <translation id="8938800817013097409">USB-C デバイス（背面右のポート）</translation>
 <translation id="8940956008527784070">バッテリー残量: 少（<ph name="PERCENTAGE" />%）</translation>
 <translation id="8984179138335769204">クイック起動</translation>
+<translation id="899350903320462459">通知に関する操作を行うには、<ph name="LOGIN_ID" /> で端末のロックを解除してください</translation>
 <translation id="8995603266996330174">管理ドメイン: <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Adobe Flash Player のアップデートが利用可能</translation>
 <translation id="9056839673611986238">端末はロールバックされます</translation>

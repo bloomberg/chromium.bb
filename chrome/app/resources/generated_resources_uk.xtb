@@ -686,7 +686,6 @@
 <translation id="200544492091181894">Це можна змінити пізніше в налаштуваннях</translation>
 <translation id="2006638907958895361">Відкрити посилання в додатку <ph name="APP" /></translation>
 <translation id="2007404777272201486">Повідомити про проблему...</translation>
-<translation id="2016237810978710652">Відкриваються файли Linux…</translation>
 <translation id="2016430552235416146">Традиційне</translation>
 <translation id="2017334798163366053">Вимкнути збір даних про ефективність</translation>
 <translation id="2017836877785168846">Очищує історію й автозавершення в адресному рядку.</translation>
@@ -3784,7 +3783,6 @@
 <translation id="6748775883310276718">Термінал з одним додатком</translation>
 <translation id="6751256176799620176">Вибрано 1 папку</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Анонімний перегляд)</translation>
-<translation id="6751815812172740613">Видалити всі додатки та дані Linux у папці "Файли Linux" на цьому пристрої <ph name="DEVICE_TYPE" />?</translation>
 <translation id="6757101664402245801">URL-адресу скопійовано</translation>
 <translation id="6758056191028427665">Поділіться з нами своїми враженнями.</translation>
 <translation id="6759193508432371551">Відновлення заводських налаштувань</translation>
@@ -4061,7 +4059,6 @@
     <ph name="BEGIN_PARAGRAPH3" />Ви можете керувати цією функцією в меню "Налаштування" &gt; Google. Виберіть у меню опцію "Використання та діагностика".<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">Довідка</translation>
 <translation id="7200083590239651963">Виберіть налаштування</translation>
-<translation id="7201014958346994077">Не вдалося переглянути файли Linux</translation>
 <translation id="720110658997053098">Назавжди перевести цей пристрій у режим термінала</translation>
 <translation id="7201118060536064622">Елемент "<ph name="DELETED_ITEM_NAME" />" видалено</translation>
 <translation id="7206693748120342859">Завантаження плагіна <ph name="PLUGIN_NAME" />...</translation>
@@ -4677,7 +4674,6 @@
 <translation id="8107015733319732394">Встановлення додатка Google Play Store на ваш <ph name="DEVICE_TYPE" />. Це може зайняти кілька хвилин.</translation>
 <translation id="8111155949205007504">Надішліть цей пароль на пристрій iPhone</translation>
 <translation id="8113043281354018522">Виберіть тип ліцензії</translation>
-<translation id="8116925261070264013">Звук вимкнено</translation>
 <translation id="8116972784401310538">&amp;Диспетчер закладок</translation>
 <translation id="8117620576188476503">Керуйте з’єднаннями, оновленнями та налаштуваннями за допомогою панелі статусу. Щоб відкрити панель статусу з клавіатури, натисніть Alt+Shift+S.</translation>
 <translation id="8118362518458010043">Розширення вимкнено, оскільки воно може бути небезпечним.</translation>
@@ -5136,7 +5132,6 @@
 <translation id="8845001906332463065">Отримати довідку</translation>
 <translation id="8846141544112579928">Пошук клавіатури…</translation>
 <translation id="8847988622838149491">Сповіщення щодо USB</translation>
-<translation id="885217322790849332">Щоб відкривати файли за допомогою додатка $1, спершу скопіюйте їх у папку "Файли Linux".</translation>
 <translation id="8859057652521303089">Виберіть мову:</translation>
 <translation id="8859174528519900719">Додатковий фрейм: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Таблиця Excel</translation>

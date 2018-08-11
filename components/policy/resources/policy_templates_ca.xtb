@@ -645,7 +645,6 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
 Cada entrada de la llista especifica un identificador, que s'utilitza internament per diferenciar els diversos comptes locals del dispositiu.</translation>
 <translation id="2769952903507981510">Configuració del nom de domini necessari per als amfitrions d'accés remot</translation>
 <translation id="2787173078141616821">Ofereix informació sobre l'estat d'Android</translation>
-<translation id="2793923553868251161">Els orígens es tracten com a context segur.</translation>
 <translation id="2799297758492717491">Permet la reproducció automàtica de contingut multimèdia en una llista blanca de patrons d'URL</translation>
 <translation id="2801230735743888564">Permet que els usuaris juguin al joc del dinosaure que apareix per sorpresa quan el dispositiu està sense connexió.
 
@@ -1782,12 +1781,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6155936611791017817">Defineix l'estat predeterminat del cursor gran a la pàgina d'inici de sessió</translation>
 <translation id="6157537876488211233">Llista de regles d'evitació de servidors intermediaris separada per comes</translation>
 <translation id="6158324314836466367">Nom de la botiga web de l'empresa (obsolet)</translation>
-<translation id="6164955668342404660">Aquesta política es considera obsoleta a M69. Pots fer servir OverrideSecurityRestrictionsOnInsecureOrigin.
-
-      La política especifica una llista d'orígens (URL) que s'han de tractar com a context segur. La intenció és permetre que les organitzacions configurin un servidor de fases per als desenvolupaments web interns, de manera que els desenvolupadors puguin provar funcions que requereixin contexts segurs sense haver d'implementar TLS al servidor de fases.
-      Definir una llista d'URL d'aquesta política té el mateix efecte que assignar la marca de la línia d'ordres "--unsafely-treat-insecure-origin-as-secure" a una llista d'URL separats per comes.
-      Per obtenir més informació sobre els contexts segurs, ves a https://www.w3.org/TR/secure-contexts/.
-      </translation>
 <translation id="6181608880636987460">Permet definir una llista de patrons d'URL que especifiquin llocs que no poden executar el connector <ph name="FLASH_PLUGIN_NAME" />.
 
           Si aquesta política no es defineix, s'utilitzarà per a tots els llocs el valor global predeterminat indicat en la política "DefaultPluginsSetting" (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.</translation>
@@ -1960,11 +1953,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6786967369487349613">Estableix el directori de perfils itinerants</translation>
 <translation id="6810445994095397827">Bloqueja JavaScript en aquests llocs</translation>
 <translation id="681446116407619279">Esquemes d'autenticació compatibles</translation>
-<translation id="6832455357698286434">
-      La política especifica una llista d'orígens (URLs) o de patrons de nom d'amfitrió (com ara "*.example.com") que s'han de tractar com a contexts segurs. La intenció és permetre que les organitzacions configurin un servidor de fases per als desenvolupaments web interns, de manera que els desenvolupadors puguin provar funcions que requereixin contexts segurs sense haver d'implementar TLS al servidor de fases.
-      Definir una llista d'URL d'aquesta política té el mateix efecte que assignar la marca de la línia d'ordres "--unsafely-treat-insecure-origin-as-secure" a una llista d'URL separats per comes. Si la política es defineix, substituirà la marca de la línia d'ordres.
-      Per obtenir més informació sobre els contexts segurs, ves a https://www.w3.org/TR/secure-contexts/.
-      </translation>
 <translation id="6835883744948188639">Mostra una sol·licitud periòdica a l'usuari per indicar-li que es recomana reiniciar el navegador</translation>
 <translation id="6838056959556423778">Substitueix les regles de selecció de la impressora predeterminada a <ph name="PRODUCT_NAME" />.
 
@@ -2308,7 +2296,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7617319494457709698">Aquesta política especifica les extensions que tenen permís per utilitzar la funció <ph name="CHALLENGE_USER_KEY_FUNCTION" /> de l'<ph name="ENTERPRISE_PLATFORM_KEYS_API" /> per a la confirmació remota. Les extensions s'han d'afegir a aquesta llista per poder utilitzar l'API.
 
           Si no s'estableix la llista o no s'hi inclou alguna extensió, les crides a l'API tornaran un codi d'error.</translation>
-<translation id="7620300057302654932">Orígens o patrons de nom d'amfitrió que s'han de tractar com a context segur.</translation>
 <translation id="7625444193696794922">Especifica el canal de llançament al qual aquest dispositiu s'hauria de bloquejar.</translation>
 <translation id="7632724434767231364">Nom de la biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Defineix la configuració regional de les aplicacions a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris la modifiquin. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> fa servir la configuració regional especificada. Si aquesta configuració regional no és compatible, es fa servir "en-US" en lloc seu. Si aquest paràmetre està desactivat o bé si no està configurat, <ph name="PRODUCT_NAME" /> fa servir la configuració regional preferida que hagi especificat l'usuari (en cas que n'hagi configurat cap), la configuració regional del sistema o bé la configuració regional alternativa "en-US".</translation>

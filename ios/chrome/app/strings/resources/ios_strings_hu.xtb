@@ -167,6 +167,7 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="3588820906588687999">Kép megnyitása új lapon</translation>
 <translation id="3603009562372709545">Link URL-jének másolása</translation>
 <translation id="3607167657931203000">Automatikus kitöltés adatai</translation>
+<translation id="360930808415985584">A szinkronizálás, személyre szabás és még sok más vezérlése</translation>
 <translation id="3609785682760573515">Szinkronizálás...</translation>
 <translation id="3628119975092896051">Olvasási listája hozzáférhető offline módban. Ha szeretne hozzáadni oldalakat a listához, koppintson a következőkre: <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Weboldalak előtöltése</translation>
@@ -213,6 +214,7 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="4508750114462689118">Bejelentkezési promóció bezárása</translation>
 <translation id="4526249700380860531">A mentett jelszavak megtekintése és kezelése a <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> címen</translation>
 <translation id="4536418791685807335">Próbáljon meg újra bejelentkezni.</translation>
+<translation id="4541241553780729349">A Google-lal szinkronizált adatok köre és a használt funkciók nem fognak megváltozni</translation>
 <translation id="457386861538956877">Továbbiak...</translation>
 <translation id="461440297010471931">Keresés a Google segítségével</translation>
 <translation id="4619615317237390068">Más eszközök lapjai</translation>
@@ -421,7 +423,6 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="8080028325999236607">Összes lap bezárása</translation>
 <translation id="8114753159095730575">A fájlletöltés megvalósítható. A beállításokat a képernyő alján nyithatja meg.</translation>
 <translation id="8160722851663543621">A címsávban és a keresőmezőben végrehajtott kereséseket, valamint bizonyos cookie-kat elküld az alapértelmezett keresőmotornak</translation>
-<translation id="8178325540017397816">A kiválasztott elemek törlődnek</translation>
 <translation id="8205564605687841303">Mégse</translation>
 <translation id="8225985093977202398">A gyorsítótárban lévő képek és fájlok</translation>
 <translation id="8261506727792406068">Törlés</translation>

@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">જમણે</translation>
 <translation id="1351937230027495976">મેનૂ સંકુચિત કરો</translation>
 <translation id="1383876407941801731">શોધો</translation>
+<translation id="1419738280318246476">નોટિફિકેશન ક્રિયા કરવા માટે ઉપકરણને અનલૉક કરો</translation>
 <translation id="1467432559032391204">ડાબું</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">લૉન્ચર</translation>
@@ -224,6 +225,7 @@
 <translation id="4924411785043111640">ફરી શરૂ કરો અને રીસેટ કરો</translation>
 <translation id="4961318399572185831">સ્ક્રીનને કાસ્ટ કરો</translation>
 <translation id="5069971504769299223">ઉપકરણ મેનેજર તમારી પ્રવૃત્તિનું નિયમન કરી શકે છે.</translation>
+<translation id="5083553833479578423">આસિસ્ટંટની વધુ સુવિધાઓને અનલૉક કરો.</translation>
 <translation id="5136175204352732067">અલગ કીબોર્ડ કનેક્ટ કર્યું</translation>
 <translation id="5168181903108465623">Cast ઉપકરણો ઉપલબ્ધ</translation>
 <translation id="5207949376430453814">ટેક્સ્ટ કૅરેટને હાઇલાઇટ કરો</translation>
@@ -295,6 +297,7 @@
 <translation id="6376931439017688372">બ્લૂટૂથ ચાલુ છે</translation>
 <translation id="639644700271529076">CAPS LOCK બંધ છે</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">બધા નોટિફિકેશન સાફ કરો</translation>
 <translation id="643147933154517414">થઈ ગયું</translation>
 <translation id="6445835306623867477"><ph name="RECEIVER_NAME" /> પર <ph name="ROUTE_TITLE" /></translation>
 <translation id="6452181791372256707">નકારો</translation>
@@ -396,9 +399,11 @@
 <translation id="8152119955266188852">તમે પૂર્ણ-સ્ક્રીન મૅગ્નિફાયર માટેનો શૉર્ટકટ દબાવેલ છે. શું તમે તે ચાલુ કરવા માગો છો?</translation>
 <translation id="8190698733819146287">ભાષાઓ અને ઇનપુટને કસ્ટમાઇઝ કરો...</translation>
 <translation id="8191230140820435481">તમારી ઍપ્લિકેશનો, એક્સ્ટેન્શન અને થીમ્સ મેનેજ કરો</translation>
+<translation id="8192202700944119416">નોટિફિકેશન છુપાવેલા છે.</translation>
 <translation id="8261506727792406068">કાઢી નાખો</translation>
 <translation id="8297006494302853456">નબળું</translation>
 <translation id="8308637677604853869">પહેલાનું મેનૂ</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">નોંધ બનાવો</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> માટે વિકલ્પો મેનૂ</translation>
 <translation id="8406981827175133772">પૂર્ણસ્ક્રીન મૅગ્નિફાયર</translation>
@@ -440,6 +445,7 @@
 <translation id="8938800817013097409">USB-C ઉપકરણ (પાછળની બાજુએ જમણું પોર્ટ)</translation>
 <translation id="8940956008527784070">બૅટરી ઓછી (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">ઝડપી લૉન્ચ</translation>
+<translation id="899350903320462459">નોટિફિકેશન ક્રિયા કરવા માટે ઉપકરણને <ph name="LOGIN_ID" /> તરીકે અનલૉક કરો</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> દ્વારા સંચાલિત</translation>
 <translation id="9029474291399787231">Adobe Flash Player અપડેટ ઉપલબ્ધ છે</translation>
 <translation id="9056839673611986238">ઉપકરણ રોલ બૅક કરવામાં આવશે</translation>

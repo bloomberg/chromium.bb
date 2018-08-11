@@ -266,6 +266,7 @@
       Si el valor se establece como falso, se inhabilitará el envío de datos de diagnóstico y métricas.
 
       Si esta política no se configura, el envío de datos de diagnóstico y métricas se inhabilitará en los dispositivos no administrados y se habilitará en los dispositivos administrados.</translation>
+<translation id="1920046221095339924">Permitir las sesiones administradas en el dispositivo</translation>
 <translation id="1929709556673267855">Proporciona configuraciones para las impresoras empresariales vinculadas a dispositivos.
 
       Esta política te permite proporcionar configuraciones de impresoras a dispositivos <ph name="PRODUCT_OS_NAME" />. El formato es el mismo que el del diccionario NativePrinters, con un campo adicional "id" o "guid" obligatorio por impresora para la lista blanca o negra.
@@ -299,6 +300,7 @@
 
       Si se habilita esta configuración o no se establece ningún valor, el usuario podrá controlar la función "Autocompletar" para las direcciones en la IU.</translation>
 <translation id="1960840544413786116">Permitir o no los certificados emitidos por los anclajes de confianza locales que no tienen la extensión subjectAlternativeName</translation>
+<translation id="1962273523772270623">Permitir la recopilación de registro de acontecimientos de WebRTC que provienen de los servicios de Google</translation>
 <translation id="1964634611280150550">Modo incógnito inhabilitado</translation>
 <translation id="1964802606569741174">Esta política no tiene efecto en la app de YouTube de Android. Si se debe aplicar el modo de seguridad en YouTube, se debe inhabilitar la instalación de la app de YouTube de Android.</translation>
 <translation id="1969212217917526199">Anula las políticas en compilaciones de depuración del host de acceso remoto.
@@ -643,7 +645,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Cada entrada de la lista especifica un identificador, que se utiliza de forma interna para diferenciar las cuentas locales del dispositivo.</translation>
 <translation id="2769952903507981510">Configura el nombre de dominio requerido para los hosts de acceso remoto.</translation>
 <translation id="2787173078141616821">Informar datos sobre el estado de Android</translation>
-<translation id="2793923553868251161">Los orígenes se considerarán como contexto seguro.</translation>
 <translation id="2799297758492717491">Permitir la reproducción automática de contenido multimedia en una lista blanca de patrones de URL</translation>
 <translation id="2801230735743888564">Permitir que los usuarios jueguen con el huevo de pascua del dinosaurio cuando el dispositivo se encuentra sin conexión
 
@@ -1784,12 +1785,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6155936611791017817">Establece el estado predeterminado del cursor grande en la pantalla de acceso.</translation>
 <translation id="6157537876488211233">Lista separada por comas de las normas de omisión de proxy</translation>
 <translation id="6158324314836466367">Indica el nombre de la tienda web de la empresa (en desuso).</translation>
-<translation id="6164955668342404660">Dejó de estar disponible en M69. Usa OverrideSecurityRestrictionsOnInsecureOrigin en su lugar.
-
-      La política especifica una lista de orígenes (URL) que se considerarán como contexto seguro. El objetivo es permitir que las organizaciones configuren un servidor de etapas de pruebas para desarrollos web internos, a fin de que sus desarrolladores puedan probar las funciones que requieren contextos seguros sin la necesidad de implementar TLS en el servidor de etapas de pruebas.
-      Configurar una lista de URL en esta política tiene el mismo efecto que configurar la marca de línea de comandos "--unsafely-treat-insecure-origin-as-secure" en una lista de elementos separados por comas de las mismas URL. Si se establece la política, anulará la marca de línea de comandos.
-      Para obtener más información sobre contextos seguros, consulta https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6181608880636987460">Te permite establecer una lista de patrones de URL que especifican los sitios que no tienen permitido ejecutar el complemento <ph name="FLASH_PLUGIN_NAME" />.
 
           Si esta política no se establece, el valor predeterminado global se usará para todos los sitios, ya sea desde la política "DefaultPluginsSetting", si está configurada, o desde otro tipo de configuración personal del usuario.</translation>
@@ -1908,6 +1903,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si no se establece esta política o si la lista está vacía, se podrá acceder a todos los esquemas en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Configuración de los usuarios administrados localmente</translation>
 <translation id="6658245400435704251">Especifica la cantidad máxima de segundos que un dispositivo puede retrasar aleatoriamente la descarga de una actualización desde el momento en el que la descarga se envío al servidor por primera vez. El dispositivo puede dedicar una parte de este tiempo al proceso de actualización y el resto a realizar las comprobaciones necesarias. En cualquier caso, el límite superior de la dispersión es un período de tiempo constante, para que el dispositivo no se quede bloqueado mientras espera descargar una actualización.</translation>
+<translation id="6665599130599311250">Si esta política se establece como falsa o no se establece, las sesiones de invitado administradas se comportarán como se indica en https://support.google.com/chrome/a/answer/3017014, la "sesión pública" estándar.
+
+      Si esta política se establece como verdadera, las sesiones de invitado administradas se comportarán como "sesiones administradas", que no incluyen muchas de las restricciones que se aplican a las "sesiones públicas" estándar.
+
+      Si no se establece, el usuario no puede cambiarla ni anularla.</translation>
 <translation id="6665670272107384733">Establecer la frecuencia con la que el usuario debe ingresar la contraseña para usar el desbloqueo rápido</translation>
 <translation id="6681229465468164801">Te permite establecer una lista de patrones de URL que especifica los sitios que no pueden solicitarle al usuario acceso a un dispositivo USB.
 
@@ -1957,11 +1957,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6786967369487349613">Establecer el directorio del perfil de itinerancia</translation>
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
 <translation id="681446116407619279">Esquemas de autenticación compatibles</translation>
-<translation id="6832455357698286434">
-      La política especifica una lista de orígenes (URL) o patrones de nombres de host (como "*.ejemplo.com") que se considerarán como contexto seguro. El objetivo es permitir que las organizaciones configuren un servidor de etapas de pruebas para desarrollos web internos, a fin de que sus programadores puedan probar las funciones que requieren contextos seguros sin la necesidad de implementar TLS en el servidor de etapas de pruebas.
-      Configurar una lista de URL en esta política tiene el mismo efecto que configurar la marca de línea de comandos "--unsafely-treat-insecure-origin-as-secure" en una lista de elementos separados por comas de las mismas URL. Si se establece la política, se anulará la marca de línea de comandos.
-      Para obtener más información sobre contextos seguros, consulta https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="6835883744948188639">Mostrar un mensaje recurrente al usuario para indicarle que se recomienda llevar a cabo el reinicio</translation>
 <translation id="6838056959556423778">Anula las reglas predeterminadas de selección de impresora de <ph name="PRODUCT_NAME" />.
 
@@ -2074,6 +2069,17 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6943577887654905793">Nombre de preferencia de Mac/Linux:</translation>
 <translation id="69525503251220566">Parámetro que proporciona una función de búsqueda por imagen para el proveedor de búsquedas predeterminado</translation>
 <translation id="6956272732789158625">No permitir que los sitios utilicen la generación de claves</translation>
+<translation id="6982028490425791294">
+      Si la política se establece como verdadera, <ph name="PRODUCT_NAME" /> puede recopilar registros de acontecimientos de WebRTC provenientes de los servicios de Google (p. ej., Google Meet) y cargarlos a Google.
+
+      Si se establece como falsa, o no se establece, <ph name="PRODUCT_NAME" /> no puede recopilar estos registros ni cargarlos.
+
+      Estos registros contienen información como el momento en que se enviaron o recibieron paquetes RTP, el tamaño de estos paquetes, comentarios sobre la congestión de la red y metadatos sobre el tiempo y la calidad de los cuadros de video y audio. Esta información es útil para depurar problemas con llamadas de audio o videollamadas en Chrome, como los problemas relacionados con la estimación del ancho de banda, etc. Los registros no incluyen contenido de audio o video de la llamada.
+
+      Esta recopilación de datos solo se puede activar mediante servicios web de Google, como Google Hangouts o Google Meet.
+
+      Es posible que estos registros se asocien (mediante un ID de sesión) con otros registros que recopila el mismo servicio de Google a fin de facilitar la depuración.
+      </translation>
 <translation id="6994082778848658360">Especifica la forma en que los elementos de hardware de seguridad integrados se usan para la autenticación de dos factores, si son compatibles con esta función. El botón de encendido de la máquina se usa para detectar la presencia física del usuario.
 
 Si se selecciona "Inhabilitada", no se proporciona un segundo factor.
@@ -2304,7 +2310,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7617319494457709698">Esta política especifica las extensiones con permiso para usar la API <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> con la función <ph name="CHALLENGE_USER_KEY_FUNCTION" /> para la verificación remota. Para poder usar la API, las extensiones deben agregarse a esta lista.
 
           Si una extensión no está en la lista o no se establece la lista, las llamadas a la API fallarán y se mostrará un código de error.</translation>
-<translation id="7620300057302654932">Los orígenes o patrones de nombres de host se considerarán como contexto seguro.</translation>
 <translation id="7625444193696794922">Especifica el canal de publicaciones al que debe conectarse este dispositivo.</translation>
 <translation id="7632724434767231364">Nombre de la biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Si se establece la configuración regional de la aplicación en <ph name="PRODUCT_NAME" />, los usuarios no podrán cambiarla. Si se habilita esta configuración, <ph name="PRODUCT_NAME" /> usará aquella que se especificó. Si la configuración regional no es compatible, se usará "en-US" en su lugar. Si esta opción se inhabilita o no se configura, <ph name="PRODUCT_NAME" /> usará la configuración regional preferida que haya especificado el usuario (si está configurada), la configuración regional del sistema o la configuración regional alternativa "en-US".</translation>

@@ -239,7 +239,7 @@
 <translation id="544691375626129091">تمت إضافة كل المستخدمين المتوفرين لهذه الجلسة.</translation>
 <translation id="5457599981699367932">تصفَّح كزائر</translation>
 <translation id="54609108002486618">تتم إدارته</translation>
-<translation id="5496819745535887422">يعمل المشرف على إغلاق جهازك. وسيتم حذف جميع البيانات عند إعادة تشغيل الجهاز.</translation>
+<translation id="5496819745535887422">‏يعمل المشرف على إعادة النسخة السابقة من نظام التشغيل Chrome إلى جهازك. وسيتم حذف جميع البيانات عند إعادة تشغيل الجهاز.</translation>
 <translation id="553675580533261935">جارٍ الخروج من الجلسة</translation>
 <translation id="5537725057119320332">إرسال</translation>
 <translation id="5548285847212963613">يمكن أن تساعد الإضافة " <ph name="EXTENSION_NAME" /> "على الاتصال بهذه الشبكة.</translation>
@@ -449,7 +449,7 @@
 <translation id="899350903320462459">إلغاء قفل الجهاز من خلال <ph name="LOGIN_ID" /> لتنفيذ إجراء الإشعارات</translation>
 <translation id="8995603266996330174">مدار بواسطة <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">‏هناك تحديث جديد لتطبيق Adobe Flash Player</translation>
-<translation id="9056839673611986238">سيتم إغلاق الجهاز.</translation>
+<translation id="9056839673611986238">‏سيتم إعادة النسخة السابقة من نظام التشغيل Chrome إلى جهازك.</translation>
 <translation id="9074739597929991885">بلوتوث</translation>
 <translation id="9079731690316798640">‏Wi-Fi:‏ <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">الميكروفون قيد الاستخدام</translation>

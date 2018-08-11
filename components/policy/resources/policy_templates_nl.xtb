@@ -662,7 +662,6 @@
       Elke lijstvermelding specificeert een ID die intern wordt gebruikt om de verschillende lokale accounts van het apparaat te onderscheiden.</translation>
 <translation id="2769952903507981510">De vereiste domeinnaam configureren voor hosts voor externe toegang</translation>
 <translation id="2787173078141616821">Informatie over de status van Android rapporteren</translation>
-<translation id="2793923553868251161">Beginpunten moeten worden behandeld als beveiligde context.</translation>
 <translation id="2799297758492717491">Automatisch afspelen van media toestaan op een witte lijst met URL-patronen</translation>
 <translation id="2801230735743888564">Toestaan dat gebruikers de easter egg-dinosaurusgame spelen wanneer het apparaat offline is.
 
@@ -1858,12 +1857,6 @@
 <translation id="6155936611791017817">De standaardstatus van de grote muisaanwijzer op het inlogscherm instellen</translation>
 <translation id="6157537876488211233">Door komma's gescheiden lijst van regels voor proxyomzeiling</translation>
 <translation id="6158324314836466367">Naam van zakelijke webwinkel (verouderd)</translation>
-<translation id="6164955668342404660">Beëindigd in M69. Gebruik in plaats daarvan OverrideSecurityRestrictionsOnInsecureOrigin.
-
-      Dit beleid specificeert een lijst met herkomsten (URL's) die moeten worden behandeld als beveiligde context. Het is de bedoeling dat organisaties hiermee een staging-server kunnen instellen voor interne webontwikkeling, zodat hun ontwikkelaars functies kunnen testen die een beveiligde context vereisen, zonder dat ze TLS op de staging-server hoeven te implementeren.
-      Wanneer er een lijst met URL's wordt ingesteld in dit beleid, heeft dit hetzelfde effect als wanneer de opdrachtregelmarkering '--unsafely-treat-insecure-origin-as-secure' wordt ingesteld op een door komma's gescheiden lijst met dezelfde URL's. Als het beleid is ingesteld, wordt de opdrachtregelmarkering overschreven.
-      Ga naar https://www.w3.org/TR/secure-contexts/ voor meer informatie over beveiligde contexten.
-      </translation>
 <translation id="6181608880636987460">Hiermee kun je een lijst met URL-patronen opgeven voor sites die de <ph name="FLASH_PLUGIN_NAME" />-plug-in niet mogen uitvoeren.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites. Je vindt deze in het beleid 'DefaultPluginsSetting' (als dit is ingesteld), of in de persoonlijke configuratie van de gebruiker.</translation>
@@ -2044,11 +2037,6 @@
 <translation id="6786967369487349613">De map voor roaming-profielen instellen</translation>
 <translation id="6810445994095397827">JavaScript blokkeren op deze sites</translation>
 <translation id="681446116407619279">Ondersteunde authenticatieschema's</translation>
-<translation id="6832455357698286434">
-      Dit beleid specificeert een lijst met herkomsten (URL's) of hostnaampatronen (zoals '*.example.com') die moeten worden behandeld als beveiligde context. Het is de bedoeling dat organisaties hiermee een staging-server kunnen instellen voor interne webontwikkeling, zodat hun ontwikkelaars functies kunnen testen die een beveiligde context vereisen, zonder dat ze TLS op de staging-server hoeven te implementeren.
-      Wanneer er een lijst met URL's wordt ingesteld in dit beleid, heeft dit hetzelfde effect als wanneer de opdrachtregelmarkering '--unsafely-treat-insecure-origin-as-secure' wordt ingesteld op een door komma's gescheiden lijst met dezelfde URL's. Als het beleid is ingesteld, wordt de opdrachtregelmarkering overschreven.
-      Ga naar https://www.w3.org/TR/secure-contexts/ voor meer informatie over beveiligde contexten.
-      </translation>
 <translation id="6835883744948188639">Toon de gebruiker een terugkerende prompt om aan te geven dat opnieuw opstarten wordt aanbevolen</translation>
 <translation id="6838056959556423778">Hiermee negeer je de regels van <ph name="PRODUCT_NAME" /> voor selectie van de standaardprinter.
 
@@ -2408,7 +2396,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7617319494457709698">Dit beleid geeft aan welke extensies de <ph name="ENTERPRISE_PLATFORM_KEYS_API" />-functie <ph name="CHALLENGE_USER_KEY_FUNCTION" /> mogen gebruiken voor externe bevestiging. Je moet extensies aan deze lijst toevoegen om de API te kunnen gebruiken.
 
           Als een extensie niet in de lijst voorkomt of als de lijst niet is ingesteld, mislukt het aanroepen van de API en wordt er een foutcode weergegeven.</translation>
-<translation id="7620300057302654932">Herkomsten of hostnaampatronen die moeten worden behandeld als beveiligde context.</translation>
 <translation id="7625444193696794922">Hiermee wordt het releasekanaal gespecificeerd waarmee dit apparaat moet worden vergrendeld.</translation>
 <translation id="7632724434767231364">Naam van GSSAPI-bibliotheek</translation>
 <translation id="7635471475589566552">Hiermee wordt de landinstelling voor de applicatie geconfigureerd in <ph name="PRODUCT_NAME" /> en wordt voorkomen dat gebruikers de landinstelling kunnen wijzigen.

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="100812568230599391">디스플레이 스타일을 인터리브로 변경</translation>
+<translation id="1011903154582639569">키를 찾은 다음 손가락을 떼서 입력하세요.</translation>
 <translation id="1012173283529841972">목록 항목</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">ChromeVox 음성 피드백을 처음 사용하시나요? 이 빠른 가이드에서 ChromeVox를 시작하기 위한 기본사항을 알아볼 수 있습니다.</translation>
@@ -163,6 +164,7 @@
 <translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">그룹</translation>
 <translation id="2582407057977008361">사이드 바</translation>
+<translation id="2592212930811759050">수정하려면 두 번 탭하세요.</translation>
 <translation id="2606210917827248971">에{COUNT,plural, =1{항목 #개 포함}other{항목 #개 포함}}</translation>
 <translation id="2614981083756825552">Math ML 레이아웃</translation>
 <translation id="2624431853467395961">학습 모드 열기</translation>

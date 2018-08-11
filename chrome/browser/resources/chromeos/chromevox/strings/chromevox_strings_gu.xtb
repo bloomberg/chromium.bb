@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
 <translation id="100812568230599391">વર્તમાન પ્રદર્શન શૈલીને ઇન્ટરલીવ પર બદલો.</translation>
+<translation id="1011903154582639569">કી શોધો, પછી ટાઇપ કરવા માટે ઊંચકો</translation>
 <translation id="1012173283529841972">સૂચિ આઇટમ</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">શું તમે ChromeVoxના બોલાયેલ પ્રતિસાદનો પહેલી વાર ઉપયોગ કરી રહ્યા છો? આ ઝડપી ટ્યૂટૉરિઅલ ChromeVox શરૂ કરવા માટેની જરૂરી બાબતો સમજાવે છે.</translation>
@@ -163,6 +164,7 @@
 <translation id="2553108862507765288">વ્યાકરણની ભૂલ</translation>
 <translation id="257674075312929031">જૂથ</translation>
 <translation id="2582407057977008361">એક તરફ</translation>
+<translation id="2592212930811759050">ફેરફાર શરૂ કરવા માટે બે વાર ટૅપ કરો</translation>
 <translation id="2606210917827248971">આ સાથેની {COUNT,plural, =1{# આઇટમ}one{# આઇટમ}other{# આઇટમ}}</translation>
 <translation id="2614981083756825552">ગણિત ML લેઆઉટ</translation>
 <translation id="2624431853467395961">જાણો મોડ ખોલો</translation>

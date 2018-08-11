@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">동기화 및 맞춤설정</translation>
 <translation id="1398853756734560583">최대화</translation>
 <translation id="1399511500114202393">사용자 인증서 없음</translation>
+<translation id="1401165786814632797">기기가 켜져 있고 잠금 해제되어 있을 때 "Ok Google"이라고 말하면 언제든지 어시스턴트를 이용할 수 있습니다.</translation>
 <translation id="140250605646987970">휴대전화를 찾았습니다. 하지만 Smart Lock은 Android 5.0 이상이 설치된 기기에서만 작동합니다. &lt;a&gt;자세히 알아보기&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" />(관리 대상)</translation>
 <translation id="1405476660552109915"><ph name="PASSWORD_MANAGER_BRAND" />에서 이 사이트의 계정을 저장하도록 하시겠습니까?</translation>
@@ -685,7 +686,6 @@
 <translation id="200544492091181894">나중에 언제든지 설정에서 변경 가능</translation>
 <translation id="2006638907958895361"><ph name="APP" />에서 링크 열기</translation>
 <translation id="2007404777272201486">문제 신고...</translation>
-<translation id="2016237810978710652">Linux 파일을 여는 중...</translation>
 <translation id="2016430552235416146">기본</translation>
 <translation id="2017334798163366053">성능 데이터 수집 사용 중지</translation>
 <translation id="2017836877785168846">검색주소창의 검색 기록 및 자동 완성 항목을 삭제합니다.</translation>
@@ -1510,6 +1510,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" />에서 연결하려고 함</translation>
 <translation id="3274763671541996799">전체화면으로 전환되었습니다.</translation>
 <translation id="3275778913554317645">창으로 열기</translation>
+<translation id="3278877214895457897">Chromebook 설정이 완료되면 언제든지 어시스턴트 버튼을 누르거나 "Ok Google"이라고 말하여 어시스턴트로부터 도움을 받으세요.</translation>
 <translation id="3279230909244266691">이 과정은 몇 분 정도 소요될 수 있습니다. 가상 머신을 시작합니다.</translation>
 <translation id="3279741024917655738">다음에서 동영상을 전체화면으로 표시</translation>
 <translation id="3280237271814976245">다른 이름으로 저장(&amp;A)...</translation>
@@ -2601,6 +2602,7 @@
 <translation id="4992066212339426712">음소거 해제</translation>
 <translation id="4992458225095111526">Powerwash 확인</translation>
 <translation id="4992473555164495036">관리자가 사용 가능한 입력 방법을 제한했습니다.</translation>
+<translation id="4992926179187649719">'Ok Google' 사용 설정</translation>
 <translation id="4994474651455208930">사이트에서 프로토콜에 대한 기본 핸들러가 될지 여부를 묻도록 허용</translation>
 <translation id="4994754230098574403">설정 중입니다.</translation>
 <translation id="4996978546172906250">공유 방법</translation>
@@ -3778,7 +3780,6 @@
 <translation id="6748775883310276718">단일 앱 키오스크</translation>
 <translation id="6751256176799620176">폴더 1개 선택됨</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (시크릿 모드)</translation>
-<translation id="6751815812172740613">이 <ph name="DEVICE_TYPE" />에서 Linux 파일 폴더에 있는 모든 Linux 애플리케이션과 데이터를 삭제하시겠습니까?</translation>
 <translation id="6757101664402245801">URL을 복사했습니다</translation>
 <translation id="6758056191028427665">개선할 점이나 격려하고 싶은 점을 알려주세요.</translation>
 <translation id="6759193508432371551">초기화</translation>
@@ -4055,7 +4056,6 @@
     <ph name="BEGIN_PARAGRAPH3" />설정 &gt; Google에서 이 기능을 관리할 수 있습니다. 메뉴에서 사용 및 진단을 선택하세요.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">도움말 보기</translation>
 <translation id="7200083590239651963">설정 선택</translation>
-<translation id="7201014958346994077">Linux 파일을 볼 수 없음</translation>
 <translation id="720110658997053098">이 기기를 키오스크 모드로 영구 고정</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' 삭제됨</translation>
 <translation id="7206693748120342859"><ph name="PLUGIN_NAME" />을(를) 다운로드 중...</translation>
@@ -4529,6 +4529,7 @@
 <translation id="7908378463497120834">죄송합니다. 외부 저장장치에 있는 하나 이상의 파티션을 마운트하지 못했습니다.</translation>
 <translation id="7909969815743704077">시크릿 모드에서 다운로드됨</translation>
 <translation id="7910768399700579500">새 폴더(&amp;N)</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">서버에서 비밀번호가 변경되었습니다. 로그아웃한 다음 다시 로그인해 주세요.</translation>
 <translation id="7915471803647590281">의견을 보내기 전에 현재 상황을 입력해 주세요.</translation>
 <translation id="7916556741383518510">클릭 시</translation>
@@ -4670,7 +4671,6 @@
 <translation id="8107015733319732394"><ph name="DEVICE_TYPE" />에 Google Play 스토어를 설치합니다. 설치하는 데 몇 분 정도 걸릴 수 있습니다.</translation>
 <translation id="8111155949205007504">이 비밀번호를 iPhone과 공유하기</translation>
 <translation id="8113043281354018522">라이선스 유형 선택</translation>
-<translation id="8116925261070264013">음소거됨</translation>
 <translation id="8116972784401310538">북마크 관리자(&amp;B)</translation>
 <translation id="8117620576188476503">상태 표시줄에서 연결, 업데이트, 설정을 관리하세요. 키보드를 사용하여 이동하려면 Alt + Shift + S를 누르면 됩니다.</translation>
 <translation id="8118362518458010043">Chrome에서 사용 중지했습니다. 이 확장 프로그램은 안전하지 않을 수 있습니다.</translation>
@@ -5129,7 +5129,6 @@
 <translation id="8845001906332463065">도움말 보기</translation>
 <translation id="8846141544112579928">키보드 검색 중...</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885217322790849332">$1을(를) 사용하여 파일을 열려면 먼저 파일을 Linux 파일 폴더로 복사하세요.</translation>
 <translation id="8859057652521303089">언어 선택:</translation>
 <translation id="8859174528519900719">서브프레임: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excel 스프레드시트</translation>

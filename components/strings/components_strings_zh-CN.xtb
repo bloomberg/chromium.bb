@@ -106,7 +106,6 @@
 <translation id="1639239467298939599">正在加载</translation>
 <translation id="1640180200866533862">用户政策</translation>
 <translation id="1640244768702815859">请尝试<ph name="BEGIN_LINK" />访问该网站的首页<ph name="END_LINK" />。</translation>
-<translation id="1644184664548287040">网络配置无效，无法导入。</translation>
 <translation id="1644574205037202324">历史记录</translation>
 <translation id="1645368109819982629">协议不受支持</translation>
 <translation id="1655462015569774233">{1,plural, =1{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书已在昨天过期。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}other{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书已在 # 天前过期。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}}</translation>
@@ -207,6 +206,7 @@
 <translation id="2359808026110333948">继续</translation>
 <translation id="2365563543831475020">于 <ph name="CRASH_TIME" /> 获取的崩溃报告未上传</translation>
 <translation id="2367567093518048410">级别</translation>
+<translation id="2378238891085281592">您已启用无痕模式</translation>
 <translation id="2384307209577226199">在企业环境中默认实施</translation>
 <translation id="2386255080630008482">服务器的证书已撤消。</translation>
 <translation id="2392959068659972793">显示未设定值的政策</translation>
@@ -283,7 +283,6 @@
 <translation id="2941952326391522266">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书来自<ph name="DOMAIN2" />。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="2948083400971632585">您可以在设置页面中停用任何针对某个连接配置的代理。</translation>
 <translation id="2955913368246107853">关闭查找栏</translation>
-<translation id="2958431318199492670">网络配置不符合 ONC 标准。无法导入配置的某些部分。</translation>
 <translation id="2969319727213777354">要建立安全连接，您的时钟设置必须正确。这是因为，网站用于证明身份的证书仅在特定时间段有效。由于您设备的时钟不正确，因此 Google Chrome 无法验证这些证书。</translation>
 <translation id="2972581237482394796">重做(&amp;R)</translation>
 <translation id="2977665033722899841">目前已选择“<ph name="ROW_NAME" />”。<ph name="ROW_CONTENT" /></translation>
@@ -511,6 +510,7 @@
 <translation id="450710068430902550">与管理员分享</translation>
 <translation id="4515275063822566619">信用卡选项和地址选项均来自 Chrome 和您的 Google 帐号 (<ph name="ACCOUNT_EMAIL" />)。您可在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中管理这些选项。</translation>
 <translation id="4522570452068850558">详细信息</translation>
+<translation id="4524805452350978254">管理卡片</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">尝试停用扩展程序。</translation>
 <translation id="457875822857220463">递送</translation>
@@ -697,6 +697,7 @@
 <translation id="5866257070973731571">添加电话号码</translation>
 <translation id="5869405914158311789">无法访问此网站</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
+<translation id="5887400589839399685">已保存卡片</translation>
 <translation id="5893752035575986141">接受信用卡。</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" />（已同步）</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{正在使用 1 个}other{正在使用 # 个}}</translation>
@@ -797,7 +798,6 @@
 <translation id="679355240208270552">由于政策未启用默认搜索引擎，因此政策值已被忽略。</translation>
 <translation id="681021252041861472">必填字段</translation>
 <translation id="6810899417690483278">自定义 ID</translation>
-<translation id="6820686453637990663">CVC</translation>
 <translation id="6824266427216888781">未能加载区域数据</translation>
 <translation id="6825578344716086703">您尝试访问的是 <ph name="DOMAIN" />，但是服务器出示的证书是使用弱签名算法（例如 SHA-1）签署的。这意味着服务器出示的安全凭据可能是伪造的，因此这可能并不是您想要访问的服务器（您可能正在与攻击者进行通信）。</translation>
 <translation id="6831043979455480757">翻译</translation>
@@ -816,11 +816,13 @@
 <translation id="6948701128805548767">要查看取货方式和要求，请选择相应地址</translation>
 <translation id="6949872517221025916">重置密码</translation>
 <translation id="6950684638814147129">解析 JSON 值时出错：<ph name="ERROR" /></translation>
+<translation id="6957624206566198865">在新的无痕标签页中打开网页</translation>
 <translation id="6957887021205513506">该服务器的证书似乎是伪造的。</translation>
 <translation id="6965382102122355670">确定</translation>
 <translation id="6965978654500191972">设备</translation>
 <translation id="6970216967273061347">区</translation>
 <translation id="6973656660372572881">固定代理服务器和 .pac 脚本网址均已指定。</translation>
+<translation id="6984479912851154518">即将退出无痕模式，以便通过外部应用付款。要继续吗？</translation>
 <translation id="6989763994942163495">显示高级设置...</translation>
 <translation id="7012363358306927923">中国银联</translation>
 <translation id="7016992613359344582">这些费用可能只收取一次，也可能会周期性收取，而且可能不易察觉。</translation>
@@ -1072,6 +1074,7 @@
 <translation id="8820817407110198400">书签</translation>
 <translation id="883848425547221593">其他书签</translation>
 <translation id="884264119367021077">送货地址</translation>
+<translation id="8846319957959474018">利用书签轻松打开应用</translation>
 <translation id="884923133447025588">未找到任何吊销机制。</translation>
 <translation id="885730110891505394">与 Google 分享</translation>
 <translation id="8858065207712248076">如果您在其他网站上重复使用了您的 <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> 密码，Chrome 建议您重置该密码。</translation>

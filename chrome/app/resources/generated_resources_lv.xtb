@@ -686,7 +686,6 @@
 <translation id="200544492091181894">Vēlāk varēsiet to mainīt iestatījumos.</translation>
 <translation id="2006638907958895361">Atvērt saiti lietotnē <ph name="APP" /></translation>
 <translation id="2007404777272201486">Ziņot par problēmu...</translation>
-<translation id="2016237810978710652">Notiek Linux failu atvēršana…</translation>
 <translation id="2016430552235416146">Tradicionālā</translation>
 <translation id="2017334798163366053">Atspējot veiktspējas datu apkopošanu</translation>
 <translation id="2017836877785168846">Notīra vēsturi un automātiskās pabeigšanas ierakstus adreses joslā.</translation>
@@ -3783,7 +3782,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6748775883310276718">Vienas lietotnes kiosks</translation>
 <translation id="6751256176799620176">Atlasīta 1 mape</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Inkognito režīms)</translation>
-<translation id="6751815812172740613">Vai dzēst visas Linux lietojumprogrammas un datus mapē Linux faili no šīs ierīces: <ph name="DEVICE_TYPE" />?</translation>
 <translation id="6757101664402245801">URL ir nokopēts</translation>
 <translation id="6758056191028427665">Sniedziet atsauksmes par pakalpojuma darbību.</translation>
 <translation id="6759193508432371551">Rūpnīcas datu atiestatīšana</translation>
@@ -4060,7 +4058,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
     <ph name="BEGIN_PARAGRAPH3" />Šo funkciju varat kontrolēt sadaļā Iestatījumi &gt; Google. Izvēlnē atlasiet vienumu Lietojums un diagnostika.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">Saņemt p&amp;alīdzību</translation>
 <translation id="7200083590239651963">Konfigurācijas atlasīšana</translation>
-<translation id="7201014958346994077">Nevar skatīt Linux failus</translation>
 <translation id="720110658997053098">Pastāvīgi turēt ierīcei ieslēgtu kioska režīmu</translation>
 <translation id="7201118060536064622">Vienums “<ph name="DELETED_ITEM_NAME" />” ir izdzēsts.</translation>
 <translation id="7206693748120342859">Notiek spraudņa <ph name="PLUGIN_NAME" /> lejupielāde...</translation>
@@ -4675,7 +4672,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="8107015733319732394">Notiek Google Play veikala instalēšana jūsu ierīcē (<ph name="DEVICE_TYPE" />). Tas var ilgt dažas minūtes.</translation>
 <translation id="8111155949205007504">Kopīgojiet šo paroli ar savu iPhone tālruni</translation>
 <translation id="8113043281354018522">Izvēlieties licences veidu</translation>
-<translation id="8116925261070264013">Izslēgta skaņa</translation>
 <translation id="8116972784401310538">&amp;Grāmatzīmju pārvaldnieks</translation>
 <translation id="8117620576188476503">Statusa joslā varat pārvaldīt savienojumus, atjauninājumus un iestatījumus. Lai tai piekļūtu, nospiediet taustiņu kombināciju Alt + Shift + S.</translation>
 <translation id="8118362518458010043">Atspējoja pārlūks Chrome. Šis paplašinājums, iespējams, nav drošs.</translation>
@@ -5135,7 +5131,6 @@ Citas personas ar lēnu savienojumu, iespējams, neredzēs jūsu saturu.</transl
 <translation id="8845001906332463065">Saņemt palīdzību</translation>
 <translation id="8846141544112579928">Notiek tastatūras meklēšana...</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="885217322790849332">Lai atvērtu failus, izmantojot $1, vispirms kopējiet to Linux failu mapē.</translation>
 <translation id="8859057652521303089">Atlasiet savu valodu:</translation>
 <translation id="8859174528519900719">Apakšrāmis: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excel izklājlapa</translation>

@@ -167,6 +167,7 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="3588820906588687999">Avaa kuva uudessa välilehdessä</translation>
 <translation id="3603009562372709545">Kopioi linkin URL-osoite</translation>
 <translation id="3607167657931203000">Automaattisen täytön tiedot</translation>
+<translation id="360930808415985584">Määritä synkronointi, personointi ja muita asetuksia</translation>
 <translation id="3609785682760573515">Synkronoidaan…</translation>
 <translation id="3628119975092896051">Lukulistasi on käytettävissä offline-tilassa. Lisää sivu lukulistaasi valitsemalla <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Esilataa verkkosivut</translation>
@@ -213,6 +214,7 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="4508750114462689118">Sulje kirjautumismainos</translation>
 <translation id="4526249700380860531">Tarkastele ja hallinnoi tallennettuja salasanoja osoitteessa <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Yritä kirjautua sisään uudelleen.</translation>
+<translation id="4541241553780729349">Datan synkronointia Googleen ja käyttämiäsi ominaisuuksia ei muuteta</translation>
 <translation id="457386861538956877">Lisää...</translation>
 <translation id="461440297010471931">Haetaan Googlella</translation>
 <translation id="4619615317237390068">Välilehdet muista laitteista</translation>
@@ -421,7 +423,6 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="8080028325999236607">Sulje kaikki välilehdet</translation>
 <translation id="8114753159095730575">Ladattava tiedosto on saatavilla. Ruudun alaosassa on käytettävissä valintoja.</translation>
 <translation id="8160722851663543621">Lähettää osoitekentän ja hakukentän kautta tehdyt haut sekä joitakin evästeitä oletushakukoneellesi</translation>
-<translation id="8178325540017397816">Valitut kohteet poistetaan</translation>
 <translation id="8205564605687841303">Peruuta</translation>
 <translation id="8225985093977202398">Välimuistissa olevat kuvat ja tiedostot</translation>
 <translation id="8261506727792406068">Poista</translation>
