@@ -957,46 +957,47 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
       GetLayoutBox()->GetDocument().SetAnnotatedRegionsDirty(true);
 
     // Our proprietary overflow: overlay value doesn't trigger a layout.
-    // If the box is managed by LayoutNG, don't go here. We don't want to
-    // re-enter the NG layout algorithm for this box from here.
     if (((horizontal_scrollbar_should_change &&
           GetLayoutBox()->StyleRef().OverflowX() != EOverflow::kOverlay) ||
          (vertical_scrollbar_should_change &&
-          GetLayoutBox()->StyleRef().OverflowY() != EOverflow::kOverlay)) &&
-        !IsManagedByLayoutNG(*GetLayoutBox())) {
+          GetLayoutBox()->StyleRef().OverflowY() != EOverflow::kOverlay))) {
       if ((vertical_scrollbar_should_change &&
            GetLayoutBox()->IsHorizontalWritingMode()) ||
           (horizontal_scrollbar_should_change &&
            !GetLayoutBox()->IsHorizontalWritingMode())) {
         GetLayoutBox()->SetPreferredLogicalWidthsDirty();
       }
-      if (PreventRelayoutScope::RelayoutIsPrevented()) {
-        // We're not doing re-layout right now, but we still want to
-        // add the scrollbar to the logical width now, to facilitate parent
-        // layout.
-        GetLayoutBox()->UpdateLogicalWidth();
-        PreventRelayoutScope::SetBoxNeedsLayout(*this, had_horizontal_scrollbar,
-                                                had_vertical_scrollbar);
-      } else {
-        in_overflow_relayout_ = true;
-        SubtreeLayoutScope layout_scope(*GetLayoutBox());
-        layout_scope.SetNeedsLayout(
-            GetLayoutBox(), LayoutInvalidationReason::kScrollbarChanged);
-        if (GetLayoutBox()->IsLayoutBlock()) {
-          LayoutBlock* block = ToLayoutBlock(GetLayoutBox());
-          block->ScrollbarsChanged(horizontal_scrollbar_should_change,
-                                   vertical_scrollbar_should_change);
-          block->UpdateBlockLayout(true);
+      // If the box is managed by LayoutNG, don't go here. We don't want to
+      // re-enter the NG layout algorithm for this box from here.
+      if (!IsManagedByLayoutNG(*GetLayoutBox())) {
+        if (PreventRelayoutScope::RelayoutIsPrevented()) {
+          // We're not doing re-layout right now, but we still want to
+          // add the scrollbar to the logical width now, to facilitate parent
+          // layout.
+          GetLayoutBox()->UpdateLogicalWidth();
+          PreventRelayoutScope::SetBoxNeedsLayout(
+              *this, had_horizontal_scrollbar, had_vertical_scrollbar);
         } else {
-          GetLayoutBox()->UpdateLayout();
+          in_overflow_relayout_ = true;
+          SubtreeLayoutScope layout_scope(*GetLayoutBox());
+          layout_scope.SetNeedsLayout(
+              GetLayoutBox(), LayoutInvalidationReason::kScrollbarChanged);
+          if (GetLayoutBox()->IsLayoutBlock()) {
+            LayoutBlock* block = ToLayoutBlock(GetLayoutBox());
+            block->ScrollbarsChanged(horizontal_scrollbar_should_change,
+                                     vertical_scrollbar_should_change);
+            block->UpdateBlockLayout(true);
+          } else {
+            GetLayoutBox()->UpdateLayout();
+          }
+          in_overflow_relayout_ = false;
+          scrollbar_manager_.DestroyDetachedScrollbars();
         }
-        in_overflow_relayout_ = false;
-        scrollbar_manager_.DestroyDetachedScrollbars();
-      }
-      LayoutObject* parent = GetLayoutBox()->Parent();
-      if (parent && parent->IsFlexibleBox()) {
-        ToLayoutFlexibleBox(parent)->ClearCachedMainSizeForChild(
-            *GetLayoutBox());
+        LayoutObject* parent = GetLayoutBox()->Parent();
+        if (parent && parent->IsFlexibleBox()) {
+          ToLayoutFlexibleBox(parent)->ClearCachedMainSizeForChild(
+              *GetLayoutBox());
+        }
       }
     }
   }
