@@ -35187,6 +35187,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="Browser_actions">
     Namespace used when offline page is saved from browser actions.
   </int>
+  <int value="9" label="Live_page_sharing">
+    Namespace used when offline page is saved for live page sharing.
+  </int>
 </enum>
 
 <enum name="OfflinePagesOfflineUsage">

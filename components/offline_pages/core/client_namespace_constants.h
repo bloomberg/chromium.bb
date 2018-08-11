@@ -24,6 +24,7 @@ extern const char kDownloadNamespace[];
 extern const char kNTPSuggestionsNamespace[];
 extern const char kSuggestedArticlesNamespace[];
 extern const char kBrowserActionsNamespace[];
+extern const char kLivePageSharingNamespace[];
 
 // Enum of namespaces used by metric collection.
 // See OfflinePagesNamespaceEnumeration in enums.xml for histogram usages.
@@ -39,6 +40,7 @@ enum class OfflinePagesNamespaceEnumeration {
   NTP_SUGGESTION = 6,
   SUGGESTED_ARTICLES = 7,
   BROWSER_ACTIONS = 8,
+  LIVE_PAGE_SHARING = 9,
   // NOTE: always keep this entry at the end. Add new result types only
   // immediately above this line. Make sure to update the corresponding
   // histogram enum accordingly.

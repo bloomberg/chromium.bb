@@ -21,6 +21,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -374,6 +375,37 @@ public class OfflinePageUtils {
     }
 
     /**
+     * Save the page loaded in current tab and share the saved page.
+     *
+     * @param activity The activity used for sharing and file provider interaction.
+     * @param currentTab The current tab from which the page is being shared.
+     * @param shareCallback The callback to be used to send the ShareParams. This will only be
+     *                      called if this function call returns true.
+     * @return true if the sharing of the page is possible. The callback will be invoked if
+     *                      saving the page succeeds.
+     */
+    public static boolean saveAndSharePage(
+            final Activity activity, Tab tab, final Callback<ShareParams> shareCallback) {
+        OfflinePageBridge offlinePageBridge = getInstance().getOfflinePageBridge(tab.getProfile());
+
+        if (offlinePageBridge == null) {
+            Log.e(TAG, "Unable to share current tab as an offline page.");
+            return false;
+        }
+
+        WebContents webContents = tab.getWebContents();
+        if (webContents == null) return false;
+
+        GetPagesByNamespaceForLivePageSharingCallback callback =
+                new GetPagesByNamespaceForLivePageSharingCallback(
+                        activity, tab, shareCallback, offlinePageBridge);
+        offlinePageBridge.getPagesByNamespace(
+                OfflinePageBridge.LIVE_PAGE_SHARING_NAMESPACE, callback);
+
+        return true;
+    }
+
+    /**
      * If possible, creates the ShareParams needed to share the current offline page loaded in the
      * provided tab as a MHTML file.
      *
@@ -386,7 +418,22 @@ public class OfflinePageUtils {
      */
     public static boolean maybeShareOfflinePage(
             final Activity activity, Tab tab, final Callback<ShareParams> shareCallback) {
+        if (!OfflinePageBridge.isPageSharingEnabled()) return false;
+
         if (tab == null) return false;
+
+        boolean isOfflinePage = OfflinePageUtils.isOfflinePage(tab);
+        RecordHistogram.recordBooleanHistogram("OfflinePages.SharedPageWasOffline", isOfflinePage);
+
+        // If the current tab is not showing an offline page, try to see if we should do live page
+        // sharing.
+        if (!isOfflinePage) {
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_PAGES_LIVE_PAGE_SHARING)) {
+                return saveAndSharePage(activity, tab, shareCallback);
+            } else {
+                return false;
+            }
+        }
 
         OfflinePageBridge offlinePageBridge = getInstance().getOfflinePageBridge(tab.getProfile());
 
@@ -459,8 +506,8 @@ public class OfflinePageUtils {
      */
     public static boolean isOfflinePageShareable(
             OfflinePageBridge offlinePageBridge, OfflinePageItem offlinePage, Uri uri) {
-        // Return false if there is no offline page or sharing is not enabled.
-        if (offlinePage == null || !OfflinePageBridge.isPageSharingEnabled()) return false;
+        // Return false if there is no offline page.
+        if (offlinePage == null) return false;
 
         String offlinePath = offlinePage.getFilePath();
 
