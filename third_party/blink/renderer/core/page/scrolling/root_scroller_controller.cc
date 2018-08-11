@@ -92,6 +92,21 @@ PaintLayerScrollableArea* GetScrollableArea(const Element& element) {
   return ToLayoutBox(element.GetLayoutObject())->GetScrollableArea();
 }
 
+bool ScrollsVerticalOverflow(LayoutView& layout_view) {
+  DCHECK(layout_view.GetScrollableArea());
+
+  if (layout_view.Size().IsZero() ||
+      !layout_view.GetScrollableArea()->HasVerticalOverflow() ||
+      !layout_view.ScrollsOverflowY())
+    return false;
+
+  ScrollbarMode h_mode;
+  ScrollbarMode v_mode;
+  layout_view.CalculateScrollbarModes(h_mode, v_mode);
+
+  return v_mode != kScrollbarAlwaysOff;
+}
+
 }  // namespace
 
 // static
@@ -374,9 +389,9 @@ void RootScrollerController::ProcessImplicitCandidates() {
   if (!document_->GetLayoutView())
     return;
 
-  // If the document has scrollable content, that's a good sign we shouldn't
-  // implicitly promote anything.
-  if (document_->GetLayoutView()->GetScrollableArea()->ScrollsOverflow())
+  // If the main document has vertical scrolling, that's a good sign we
+  // shouldn't implicitly promote anything.
+  if (ScrollsVerticalOverflow(*document_->GetLayoutView()))
     return;
 
   Element* highest_z_element = nullptr;
