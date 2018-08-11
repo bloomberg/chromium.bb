@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_page_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 
@@ -241,8 +242,20 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
     box_->ComputePreferredLogicalWidths();
   }
 
+  bool preferred_logical_widths_were_dirty =
+      box_->PreferredLogicalWidthsDirty();
   layout_result = LayoutWithAlgorithm(*this, constraint_space, break_token,
                                       /* ignored */ nullptr);
+  if (!preferred_logical_widths_were_dirty &&
+      box_->PreferredLogicalWidthsDirty()) {
+    // The only thing that should dirty preferred widths at this point is the
+    // addition of overflow:auto scrollbars in a descendant. To avoid a
+    // potential infinite loop, run layout again with auto scrollbars frozen in
+    // their current state.
+    PaintLayerScrollableArea::FreezeScrollbarsScope freeze_scrollbars;
+    layout_result = LayoutWithAlgorithm(*this, constraint_space, break_token,
+                                        /* ignored */ nullptr);
+  }
   if (block_flow) {
     block_flow->SetCachedLayoutResult(constraint_space, break_token,
                                       layout_result);

@@ -430,6 +430,10 @@ LayoutUnit ComputeInlineSizeForFragment(const NGConstraintSpace& space,
     } else {
       min_and_max = node.ComputeMinMaxSize(space.GetWritingMode(),
                                            MinMaxSizeInput(), &space);
+      // Cache these computed values
+      MinMaxSize contribution = ComputeMinAndMaxContentContribution(
+          style.GetWritingMode(), style, min_and_max);
+      box->SetPreferredLogicalWidthsFromNG(contribution);
     }
   }
 
