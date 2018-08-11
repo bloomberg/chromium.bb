@@ -371,6 +371,9 @@ void RendererWindowTreeClient::OnPerformDragDropCompleted(
 
 void RendererWindowTreeClient::OnDragDropDone() {}
 
+void RendererWindowTreeClient::OnTopmostWindowChanged(
+    const std::vector<ui::Id>& topmost_ids) {}
+
 void RendererWindowTreeClient::OnChangeCompleted(uint32_t change_id,
                                                  bool success) {
   // Don't DCHECK success, as it's possible we'll try to do some operations

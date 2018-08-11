@@ -364,6 +364,17 @@ interface WindowTree {
   // Called by the client to cancel any in progress drag drop operation. This
   // will result in a change completed for the underlying change.
   CancelDragDrop(uint64 window_id);
+
+  // Called by the client to start a session of observing the topmost window
+  // under the cursor or touch point. Once called, OnTopmostWindowChanged() is
+  // called on the client whenever the topmost window changes. |source|
+  // specifies what type of located events should be observed (mouse or touch),
+  // and |window_id| specifies the initial target of the located event.
+  ObserveTopmostWindow(MoveLoopSource source, uint64 window_id);
+
+  // Called by the client to request stopping the ongoing session of observing
+  // the topmost window under the cursor.
+  StopObservingTopmostWindow();
 };
 
 // Changes to windows are not sent to the connection that originated the
@@ -571,6 +582,14 @@ interface WindowTreeClient {
   // an OnDragDropStart() message. This signals that a client can forget the
   // |drag_data| passed in via the first message.
   OnDragDropDone();
+
+  // Called when the topmost window under the cursor/touch changes. The client
+  // receives at most two IDs for the topmost windows. The first one is for the
+  // topmost window. The second one is optionally for the second topmost window
+  // if the first one happens to be the current event target. The second one
+  // will be used by the client when they want to ignore the event target.
+  // Each ID can be 0 when the window is not hosted by the client.
+  OnTopmostWindowChanged(array<uint64> topmost_ids);
 
   // A change initiated from the client has completed. See description of
   // change ids for details.

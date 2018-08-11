@@ -64,6 +64,7 @@ class InFlightFocusChange;
 class InFlightPropertyChange;
 class InFlightVisibleChange;
 class MusContextFactory;
+class TopmostWindowTracker;
 class WindowMus;
 class WindowPortMus;
 class WindowTreeClientDelegate;
@@ -173,6 +174,13 @@ class AURA_EXPORT WindowTreeClient
   // Returns the root of this connection.
   std::set<Window*> GetRoots();
 
+  // Start observing the topmost window at the cursor. The topmost window is
+  // tracked by the returned object. |source| specifies the event source which
+  // causes this, and |initial_target| specifies the target window of the event.
+  std::unique_ptr<TopmostWindowTracker> StartObservingTopmostWindow(
+      ui::mojom::MoveLoopSource source,
+      aura::Window* initial_target);
+
   // Returns true if the specified window was created by this client.
   bool WasCreatedByThisClient(const WindowMus* window) const;
 
@@ -199,6 +207,7 @@ class AURA_EXPORT WindowTreeClient
   friend class InFlightPropertyChange;
   friend class InFlightTransformChange;
   friend class InFlightVisibleChange;
+  friend class TopmostWindowTracker;
   friend class WindowPortMus;
   friend class WindowTreeClientPrivate;
 
@@ -311,6 +320,10 @@ class AURA_EXPORT WindowTreeClient
   void SetWindowTransformFromServer(WindowMus* window,
                                     const gfx::Transform& transform);
   void SetWindowVisibleFromServer(WindowMus* window, bool visible);
+
+  // Stop observing the topmost window at the cursor. This deletes the
+  // TopmostWindowTracker.
+  void StopObservingTopmostWindow();
 
   // Called from OnWindowMusBoundsChanged() and SetRootWindowBounds().
   void ScheduleInFlightBoundsChange(WindowMus* window,
@@ -430,6 +443,7 @@ class AURA_EXPORT WindowTreeClient
                                   bool success,
                                   uint32_t action_taken) override;
   void OnDragDropDone() override;
+  void OnTopmostWindowChanged(const std::vector<ui::Id>& topmost_ids) override;
   void OnChangeCompleted(uint32_t change_id, bool success) override;
   void RequestClose(ui::Id window_id) override;
   void GetScreenProviderObserver(
@@ -523,6 +537,8 @@ class AURA_EXPORT WindowTreeClient
   bool is_from_embed_ = false;
 
   bool in_destructor_;
+
+  TopmostWindowTracker* topmost_window_tracker_ = nullptr;
 
   // A mapping to shared memory that is one 32 bit integer long. The window
   // server uses this to let us synchronously read the cursor location.

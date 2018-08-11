@@ -4,5 +4,11 @@
 
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 
-WindowFinder::WindowFinder() {}
-WindowFinder::~WindowFinder() {}
+#include "base/memory/ptr_util.h"
+
+// static
+std::unique_ptr<WindowFinder> WindowFinder::Create(
+    TabDragController::EventSource source,
+    gfx::NativeWindow window) {
+  return base::WrapUnique(new WindowFinder());
+}

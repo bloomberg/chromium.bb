@@ -54,6 +54,8 @@ component("lib") {
     "screen_provider.h",
     "server_window.cc",
     "server_window.h",
+    "topmost_window_observer.cc",
+    "topmost_window_observer.h",
     "user_activity_monitor.cc",
     "user_activity_monitor.h",
     "window_delegate_impl.cc",

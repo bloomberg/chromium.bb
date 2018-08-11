@@ -390,4 +390,8 @@ void TestWindowTree::PerformWindowMove(uint32_t change_id,
 
 void TestWindowTree::CancelWindowMove(ui::Id window_id) {}
 
+void TestWindowTree::ObserveTopmostWindow(ui::mojom::MoveLoopSource source,
+                                          ui::Id window_id) {}
+void TestWindowTree::StopObservingTopmostWindow() {}
+
 }  // namespace aura

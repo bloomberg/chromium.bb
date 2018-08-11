@@ -278,6 +278,11 @@ void TestWindowTreeClient::OnDragDropDone() {
   tracker_.OnDragDropDone();
 }
 
+void TestWindowTreeClient::OnTopmostWindowChanged(
+    const std::vector<Id>& topmost_ids) {
+  tracker_.OnTopmostWindowChanged(topmost_ids);
+}
+
 void TestWindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {
   tracker_.OnChangeCompleted(change_id, success);
 }

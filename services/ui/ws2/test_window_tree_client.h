@@ -182,6 +182,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
                                   bool success,
                                   uint32_t action_taken) override;
   void OnDragDropDone() override;
+  void OnTopmostWindowChanged(const std::vector<Id>& topmost_ids) override;
   void OnChangeCompleted(uint32_t change_id, bool success) override;
   void RequestClose(Id window_id) override;
   void GetScreenProviderObserver(

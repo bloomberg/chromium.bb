@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ui/common/util.h"
+#include "services/ui/ws2/ids.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/geometry/point_conversions.h"
 
@@ -176,6 +177,11 @@ std::string ChangeToDescription(const Change& change,
                                 WindowIdToString(change.window_id).c_str());
     case CHANGE_TYPE_DRAG_DROP_DONE:
       return "DragDropDone";
+    case CHANGE_TYPE_TOPMOST_WINDOW_CHANGED:
+      return base::StringPrintf(
+          "TopmostWindowChanged window_id=%s window_id2=%s",
+          WindowIdToString(change.window_id).c_str(),
+          WindowIdToString(change.window_id2).c_str());
     case CHANGE_TYPE_ON_PERFORM_DRAG_DROP_COMPLETED:
       return base::StringPrintf(
           "OnPerformDragDropCompleted id=%d success=%s action=%d",
@@ -559,6 +565,18 @@ void TestChangeTracker::OnCompleteDrop(Id window_id) {
 void TestChangeTracker::OnDragDropDone() {
   Change change;
   change.type = CHANGE_TYPE_DRAG_DROP_DONE;
+  AddChange(change);
+}
+
+void TestChangeTracker::OnTopmostWindowChanged(
+    const std::vector<Id>& topmost_ids) {
+  DCHECK_LE(topmost_ids.size(), 2u);
+  Change change;
+  change.type = CHANGE_TYPE_TOPMOST_WINDOW_CHANGED;
+  change.window_id =
+      (topmost_ids.size() > 0) ? topmost_ids[0] : kInvalidTransportId;
+  change.window_id2 =
+      (topmost_ids.size() > 1) ? topmost_ids[1] : kInvalidTransportId;
   AddChange(change);
 }
 
