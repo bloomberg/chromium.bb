@@ -155,12 +155,11 @@ bool History::ShouldThrottleStateObjectChanges() {
 
   const auto now = TimeTicks::Now();
   const TimeDelta elapsed = now - state_flood_guard.last_token_grant;
-  static constexpr base::TimeDelta kTokenRefreshInterval =
-      base::TimeDelta::FromMilliseconds(8);
+  static constexpr base::TimeDelta kTimePerToken =
+      base::TimeDelta::FromMilliseconds(16);
   static constexpr int kMaxTokens = 50;
   // It is OK to truncate from int64_t to int here.
-  const int tokens_earned =
-      std::min<int>(elapsed / kTokenRefreshInterval, kMaxTokens);
+  const int tokens_earned = std::min<int>(elapsed / kTimePerToken, kMaxTokens);
 
   if (tokens_earned > 0) {
     state_flood_guard.tokens = tokens_earned - 1;  // One consumed immediately.
