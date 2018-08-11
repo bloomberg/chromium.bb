@@ -45,7 +45,7 @@ class ArcAccessibilityHelperBridgeBrowserTest : public InProcessBrowserTest {
     chromeos::AccessibilityManager::Get()->SetProfileForTest(
         browser()->profile());
 
-    wm_helper_ = std::make_unique<exo::WMHelper>(aura::Env::GetInstance());
+    wm_helper_ = std::make_unique<exo::WMHelper>(ash::Shell::Get()->aura_env());
     exo::WMHelper::SetInstance(wm_helper_.get());
   }
 

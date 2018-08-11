@@ -260,12 +260,12 @@ TEST_F(PartialScreenshotControllerTest, MouseWarpTest) {
   StartPartialScreenshotSession();
   EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(499, 11)));
   EXPECT_EQ(gfx::Point(499, 11),
-            aura::Env::GetInstance()->last_mouse_location());
+            Shell::Get()->aura_env()->last_mouse_location());
 
   Cancel();
   EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(499, 11)));
   EXPECT_EQ(gfx::Point(501, 11),
-            aura::Env::GetInstance()->last_mouse_location());
+            Shell::Get()->aura_env()->last_mouse_location());
 }
 
 TEST_F(PartialScreenshotControllerTest, CursorVisibilityTest) {

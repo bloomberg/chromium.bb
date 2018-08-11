@@ -7,11 +7,16 @@
 
 #include "ash/system/message_center/arc/arc_notification_surface.h"
 
+namespace aura {
+class Env;
+}
+
 namespace ash {
 
 class MockArcNotificationSurface : public ArcNotificationSurface {
  public:
-  explicit MockArcNotificationSurface(const std::string& notification_key);
+  explicit MockArcNotificationSurface(const std::string& notification_key,
+                                      aura::Env* aura_env = nullptr);
   ~MockArcNotificationSurface() override;
 
   gfx::Size GetSize() const override;

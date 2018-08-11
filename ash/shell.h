@@ -31,6 +31,7 @@ class PrefRegistrySimple;
 class PrefService;
 
 namespace aura {
+class Env;
 class RootWindow;
 class Window;
 }  // namespace aura
@@ -397,6 +398,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
 
   DockedMagnifierController* docked_magnifier_controller();
+  aura::Env* aura_env() { return aura_env_; }
   ::wm::CompoundEventFilter* env_filter() { return env_filter_.get(); }
   EventRewriterController* event_rewriter_controller() {
     return event_rewriter_controller_.get();
@@ -708,6 +710,13 @@ class ASH_EXPORT Shell : public SessionObserver,
       std::unique_ptr<::PrefService> pref_service);
 
   static Shell* instance_;
+
+  // |owned_aura_env_| is non-null if Shell created aura::Env. Shell creates
+  // aura::Env only in single-process-mash mode.
+  std::unique_ptr<aura::Env> owned_aura_env_;
+
+  // This is either |owned_aura_env_|, or Env::GetInstance().
+  aura::Env* aura_env_;
 
   // The CompoundEventFilter owned by aura::Env object.
   std::unique_ptr<::wm::CompoundEventFilter> env_filter_;

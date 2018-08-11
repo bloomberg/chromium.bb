@@ -38,11 +38,6 @@ AshWindowTreeHost::AshWindowTreeHost()
 AshWindowTreeHost::~AshWindowTreeHost() = default;
 
 void AshWindowTreeHost::TranslateLocatedEvent(ui::LocatedEvent* event) {
-  // NOTE: This code is not called in mus/mash, it is handled on the server
-  // side.
-  // TODO(sky): remove this when mus is the default http://crbug.com/763996.
-  DCHECK_EQ(aura::Env::Mode::LOCAL, aura::Env::GetInstance()->mode());
-
   if (event->IsTouchEvent())
     return;
 

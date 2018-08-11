@@ -8,8 +8,8 @@ include_rules = [
 specific_include_rules = {
   # mash-ok. https://crbug.com/841020
   "keyboard_shortcut_viewer_util\.cc": [
-    "+ash/shell.h",
     "+ash/components/shortcut_viewer/views/keyboard_shortcut_view.h",
+    "+ash/shell.h",
   ],
   # Tests.
   "keyboard_shortcut_viewer_metadata_unittest\.cc": [

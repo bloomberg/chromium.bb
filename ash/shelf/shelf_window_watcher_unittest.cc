@@ -15,6 +15,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/window_factory.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -116,7 +117,7 @@ TEST_F(ShelfWindowWatcherTest, OpenAndCloseMash) {
       aura::client::WINDOW_TYPE_TOOLTIP};
   for (aura::client::WindowType type : no_item_types) {
     std::unique_ptr<aura::Window> window =
-        std::make_unique<aura::Window>(nullptr, type);
+        window_factory::NewWindow(nullptr, type);
     window->Init(ui::LAYER_NOT_DRAWN);
     Shell::GetPrimaryRootWindow()
         ->GetChildById(kShellWindowId_DefaultContainer)
@@ -305,7 +306,7 @@ TEST_F(ShelfWindowWatcherTest, ItemIcon) {
 
 TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForChildWindows) {
   std::unique_ptr<aura::Window> window =
-      std::make_unique<aura::Window>(nullptr, aura::client::WINDOW_TYPE_NORMAL);
+      window_factory::NewWindow(nullptr, aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_NOT_DRAWN);
   window->SetProperty(kShelfIDKey, new std::string(ShelfID("a").Serialize()));
   window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
@@ -316,7 +317,7 @@ TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForChildWindows) {
   EXPECT_EQ(3, model_->item_count());
 
   std::unique_ptr<aura::Window> child =
-      std::make_unique<aura::Window>(nullptr, aura::client::WINDOW_TYPE_NORMAL);
+      window_factory::NewWindow(nullptr, aura::client::WINDOW_TYPE_NORMAL);
   child->Init(ui::LAYER_NOT_DRAWN);
   child->SetProperty(kShelfIDKey, new std::string(ShelfID("b").Serialize()));
   child->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
@@ -333,7 +334,7 @@ TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForChildWindows) {
 
 TEST_F(ShelfWindowWatcherTest, CreateShelfEntriesForTransientWindows) {
   std::unique_ptr<aura::Window> window =
-      std::make_unique<aura::Window>(nullptr, aura::client::WINDOW_TYPE_NORMAL);
+      window_factory::NewWindow(nullptr, aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_NOT_DRAWN);
   window->SetProperty(kShelfIDKey, new std::string(ShelfID("a").Serialize()));
   window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
@@ -344,7 +345,7 @@ TEST_F(ShelfWindowWatcherTest, CreateShelfEntriesForTransientWindows) {
   EXPECT_EQ(3, model_->item_count());
 
   std::unique_ptr<aura::Window> transient =
-      std::make_unique<aura::Window>(nullptr, aura::client::WINDOW_TYPE_NORMAL);
+      window_factory::NewWindow(nullptr, aura::client::WINDOW_TYPE_NORMAL);
   transient->Init(ui::LAYER_NOT_DRAWN);
   transient->SetProperty(kShelfIDKey,
                          new std::string(ShelfID("b").Serialize()));

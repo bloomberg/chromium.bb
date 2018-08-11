@@ -132,7 +132,8 @@ HeaderView::HeaderView(views::Widget* target_widget,
         target_widget, this, caption_button_container_);
   } else {
     DCHECK_EQ(mojom::WindowStyle::BROWSER, window_style);
-    DCHECK(!::features::IsAshInBrowserProcess());
+    DCHECK(!::features::IsAshInBrowserProcess() ||
+           ::features::IsSingleProcessMash());
     appearance_provider_ = std::make_unique<WindowPropertyAppearanceProvider>(
         target_widget_->GetNativeWindow());
     auto frame_header = std::make_unique<CustomFrameHeader>(
