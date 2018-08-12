@@ -5688,13 +5688,12 @@ void GLES2Implementation::EndQueryEXT(GLenum target) {
   if (target == GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM) {
     DCHECK(capabilities_.chromium_nonblocking_readback);
     DCHECK(query);
-    GLuint query_id = query->id();
     auto serial = readback_buffer_shadow_tracker_->buffer_shadow_serial();
     readback_buffer_shadow_tracker_->IncrementSerial();
     auto buffers = readback_buffer_shadow_tracker_->TakeUnfencedBufferList();
-    SignalQuery(query_id, base::BindOnce(
-                              &GLES2Implementation::BufferShadowWrittenCallback,
-                              std::move(buffers), serial));
+    query->SetCompletedCallback(
+        base::BindOnce(&GLES2Implementation::BufferShadowWrittenCallback,
+                       std::move(buffers), serial));
   }
 }
 
