@@ -32,7 +32,7 @@ bool AudioOutputStreamFuchsia::Open() {
   fuchsia::media::AudioPtr audio_server =
       base::fuchsia::ComponentContext::GetDefault()
           ->ConnectToService<fuchsia::media::Audio>();
-  audio_server->CreateRendererV2(audio_renderer_.NewRequest());
+  audio_server->CreateAudioRenderer2(audio_renderer_.NewRequest());
   audio_renderer_.set_error_handler(
       fit::bind_member(this, &AudioOutputStreamFuchsia::OnRendererError));
 
@@ -200,7 +200,7 @@ void AudioOutputStreamFuchsia::PumpSamples() {
 
   if (reference_time_.is_null()) {
     audio_renderer_->Play(
-        fuchsia::media::kNoTimestamp, stream_position_samples_ - frames_filled,
+        fuchsia::media::NO_TIMESTAMP, stream_position_samples_ - frames_filled,
         [this](int64_t reference_time, int64_t media_time) {
           if (!callback_)
             return;

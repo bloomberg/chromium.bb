@@ -49,7 +49,7 @@ bool MixerOutputStreamFuchsia::Start(int requested_sample_rate, int channels) {
   fuchsia::media::AudioPtr audio_server =
       base::fuchsia::ComponentContext::GetDefault()
           ->ConnectToService<fuchsia::media::Audio>();
-  audio_server->CreateRendererV2(audio_renderer_.NewRequest());
+  audio_server->CreateAudioRenderer2(audio_renderer_.NewRequest());
   audio_renderer_.set_error_handler(
       fit::bind_member(this, &MixerOutputStreamFuchsia::OnRendererError));
 
