@@ -88,15 +88,11 @@ CrExtensionsSidebarTest = class extends CrExtensionsBrowserTest {
   }
 };
 
-// Flaky, see https://crbug.com/871692 .
-TEST_F(
-    'CrExtensionsSidebarTest', 'DISABLED_LayoutAndClickHandlers', function() {
-      this.runMochaTest(
-          extension_sidebar_tests.TestNames.LayoutAndClickHandlers);
-    });
+TEST_F('CrExtensionsSidebarTest', 'LayoutAndClickHandlers', function() {
+  this.runMochaTest(extension_sidebar_tests.TestNames.LayoutAndClickHandlers);
+});
 
-// Flaky, see https://crbug.com/871692 .
-TEST_F('CrExtensionsSidebarTest', 'DISABLED_SetSelected', function() {
+TEST_F('CrExtensionsSidebarTest', 'SetSelected', function() {
   this.runMochaTest(extension_sidebar_tests.TestNames.SetSelected);
 });
 
@@ -350,11 +346,9 @@ TEST_F('CrExtensionsManagerUnitTest', 'Uninstall', function() {
   this.runMochaTest(extension_manager_tests.TestNames.Uninstall);
 });
 
-// Flaky, see https://crbug.com/871692 .
-TEST_F(
-    'CrExtensionsManagerUnitTest', 'DISABLED_UninstallFromDetails', function() {
-      this.runMochaTest(extension_manager_tests.TestNames.UninstallFromDetails);
-    });
+TEST_F('CrExtensionsManagerUnitTest', 'UninstallFromDetails', function() {
+  this.runMochaTest(extension_manager_tests.TestNames.UninstallFromDetails);
+});
 
 TEST_F('CrExtensionsManagerUnitTest', 'ToggleIncognito', function() {
   this.runMochaTest(extension_manager_tests.TestNames.ToggleIncognitoMode);
@@ -406,10 +400,9 @@ TEST_F(
       this.runMochaTest(extension_manager_tests.TestNames.SplitItems);
     });
 
-// Flaky, see https://crbug.com/871692 .
 TEST_F(
-    'CrExtensionsManagerTestWithMultipleExtensionTypesInstalled',
-    'DISABLED_ChangePages', function() {
+    'CrExtensionsManagerTestWithMultipleExtensionTypesInstalled', 'ChangePages',
+    function() {
       this.runMochaTest(extension_manager_tests.TestNames.ChangePages);
     });
 
@@ -658,13 +651,10 @@ TEST_F('CrExtensionsNavigationHelperTest', 'Conversion', function() {
   this.runMochaTest(extension_navigation_helper_tests.TestNames.Conversions);
 });
 
-// Flaky, see https://crbug.com/871692 .
-TEST_F(
-    'CrExtensionsNavigationHelperTest', 'DISABLED_PushAndReplaceState',
-    function() {
-      this.runMochaTest(
-          extension_navigation_helper_tests.TestNames.PushAndReplaceState);
-    });
+TEST_F('CrExtensionsNavigationHelperTest', 'PushAndReplaceState', function() {
+  this.runMochaTest(
+      extension_navigation_helper_tests.TestNames.PushAndReplaceState);
+});
 
 TEST_F('CrExtensionsNavigationHelperTest', 'SupportedRoutes', function() {
   this.runMochaTest(
