@@ -40,8 +40,15 @@ class TestSyncService : public syncer::FakeSyncService {
   syncer::ModelTypeSet GetPreferredDataTypes() const override {
     return chosen_types_;
   }
+  bool IsUsingSecondaryPassphrase() const override {
+    return is_using_passphrase_;
+  }
 
   void SetTransportState(TransportState state) { state_ = state; }
+  void SetIsUsingPassphrase(bool using_passphrase) {
+    is_using_passphrase_ = using_passphrase;
+  }
+
   void FireStateChanged() {
     if (observer_)
       observer_->OnStateChanged(this);
@@ -51,6 +58,7 @@ class TestSyncService : public syncer::FakeSyncService {
   syncer::SyncServiceObserver* observer_ = nullptr;
   TransportState state_ = TransportState::ACTIVE;
   syncer::ModelTypeSet chosen_types_ = syncer::UserSelectableTypes();
+  bool is_using_passphrase_ = false;
   PrefService* pref_service_;
 };
 
@@ -241,6 +249,25 @@ TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent_SyncNotActive) {
 
   // UnifiedConsentService starts syncing everything.
   EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+}
+
+TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent_WithCustomPassphrase) {
+  CreateConsentService();
+  identity_test_environment_.SetPrimaryAccount("testaccount");
+  EXPECT_FALSE(consent_service_->IsUnifiedConsentGiven());
+  EXPECT_FALSE(AreAllNonPersonalizedServicesEnabled());
+
+  // Enable Unified Consent.
+  consent_service_->SetUnifiedConsentGiven(true);
+  EXPECT_TRUE(consent_service_->IsUnifiedConsentGiven());
+  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
+
+  // Set custom passphrase.
+  sync_service_.SetIsUsingPassphrase(true);
+  sync_service_.FireStateChanged();
+
+  // Setting a custom passphrase forces off unified consent given.
+  EXPECT_FALSE(consent_service_->IsUnifiedConsentGiven());
 }
 
 // Test whether unified consent is disabled when any of its dependent services

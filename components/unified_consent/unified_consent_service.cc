@@ -235,6 +235,14 @@ void UnifiedConsentService::OnPrimaryAccountCleared(
 }
 
 void UnifiedConsentService::OnStateChanged(syncer::SyncService* sync) {
+  if (!sync_service_->IsEngineInitialized())
+    return;
+
+  if (sync_service_->IsUsingSecondaryPassphrase() && IsUnifiedConsentGiven()) {
+    // Force off unified consent given when the user sets a custom passphrase.
+    SetUnifiedConsentGiven(false);
+  }
+
   syncer::SyncPrefs sync_prefs(pref_service_);
   if (IsUnifiedConsentGiven() != sync_prefs.HasKeepEverythingSynced()) {
     // Make sync-everything consistent with the |kUnifiedConsentGiven| pref.
