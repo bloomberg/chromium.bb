@@ -11,6 +11,7 @@ Polymer({
   is: 'settings-cups-edit-printer-dialog',
 
   behaviors: [
+    CrScrollableBehavior,
     SetManufacturerModelBehavior,
   ],
 

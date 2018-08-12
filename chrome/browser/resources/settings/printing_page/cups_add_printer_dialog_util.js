@@ -33,10 +33,6 @@ Polymer({
 Polymer({
   is: 'add-printer-dialog',
 
-  behaviors: [
-    CrScrollableBehavior,
-  ],
-
   /** @private */
   attached: function() {
     this.$.dialog.showModal();
