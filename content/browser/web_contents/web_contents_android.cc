@@ -860,16 +860,6 @@ bool WebContentsAndroid::IsBeingDestroyed(JNIEnv* env,
   return web_contents_->IsBeingDestroyed();
 }
 
-int WebContentsAndroid::GetTopControlsShrinkBlinkHeightPixForTesting(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
-  float scale = web_contents_->GetNativeView()->GetDipScale();
-  return (rwhva && rwhva->DoBrowserControlsShrinkBlinkSize())
-             ? rwhva->GetTopControlsHeight() * scale
-             : 0;
-}
-
 void WebContentsAndroid::SetDisplayCutoutSafeArea(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,

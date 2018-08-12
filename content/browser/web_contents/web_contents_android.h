@@ -243,12 +243,6 @@ class CONTENT_EXPORT WebContentsAndroid
   bool IsBeingDestroyed(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj);
 
-  // Returns the amount of the top controls height if controls are in the state
-  // of shrinking Blink's view size, otherwise 0.
-  int GetTopControlsShrinkBlinkHeightPixForTesting(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-
   void SetDisplayCutoutSafeArea(JNIEnv* env,
                                 const base::android::JavaParamRef<jobject>& obj,
                                 int top,
