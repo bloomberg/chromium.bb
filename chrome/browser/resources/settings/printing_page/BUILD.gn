@@ -37,13 +37,13 @@ js_library("cups_add_printer_dialog") {
 js_library("cups_add_printer_dialog_util") {
   deps = [
     ":cups_printers_browser_proxy",
-    "//ui/webui/resources/cr_elements:cr_scrollable_behavior",
   ]
 }
 
 js_library("cups_edit_printer_dialog") {
   deps = [
     ":cups_set_manufacturer_model_behavior",
+    "//ui/webui/resources/cr_elements:cr_scrollable_behavior",
   ]
 }
 
