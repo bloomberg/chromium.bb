@@ -2701,6 +2701,8 @@ crbug.com/870526 external/wpt/push-api/idlharness.https.any.serviceworker.html [
 crbug.com/870526 external/wpt/budget-api/idlharness.https.any.worker.html [ Skip ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/budget-api/idlharness.https.any.html [ Timeout ]
+crbug.com/626703 external/wpt/infrastructure/server/secure-context.https.any.serviceworker.html [ Skip ]
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-with-activation-succeeds.html [ Timeout ]
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-without-activation-fails.tentative.html [ Timeout ]
 crbug.com/626703 external/wpt/svg/painting/reftests/paint-order-001.svg [ Failure ]
