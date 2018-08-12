@@ -219,9 +219,11 @@ fuchsia_sdk_fidl_pkg("media") {
 
   sources = [
     "audio.fidl",
-    "audio_capturer.fidl",
+    "audio_in.fidl",
+    "audio_out.fidl",
     "audio_renderer.fidl",
-    "media_transport.fidl",
+    "gain_control.fidl",
+    "stream.fidl",
     "stream_type.fidl",
   ]
 }
