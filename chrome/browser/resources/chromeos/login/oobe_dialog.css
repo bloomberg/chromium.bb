@@ -85,5 +85,5 @@
 #oobe-icon-div ::slotted(iron-icon) {
   --iron-icon-height: 32px;
   --iron-icon-width: 32px;
-  --iron-icon-fill-color: var(--google-blue-500);
+  --iron-icon-fill-color: var(--google-blue-600);
 }
