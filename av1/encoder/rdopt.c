@@ -11285,7 +11285,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
   int64_t best_est_rd = INT64_MAX;
   // TODO(angiebird): Turn this on when this speed feature is well tested
-#if 0
+#if 1
   const InterModeRdModel *md = &tile_data->inter_mode_rd_models[bsize];
   const int do_tx_search = !md->ready;
 #else
@@ -11556,9 +11556,16 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   if (!do_tx_search) {
     inter_modes_info_sort(inter_modes_info, inter_modes_info->rd_idx_pair_arr);
     search_state.best_rd = INT64_MAX;
+
+    int64_t top_est_rd =
+        inter_modes_info->est_rd_arr[inter_modes_info->rd_idx_pair_arr[0].idx];
     for (int j = 0; j < inter_modes_info->num; ++j) {
       const int data_idx = inter_modes_info->rd_idx_pair_arr[j].idx;
       *mbmi = inter_modes_info->mbmi_arr[data_idx];
+      int64_t curr_est_rd = inter_modes_info->est_rd_arr[data_idx];
+      if (curr_est_rd * 0.9 > top_est_rd) {
+        continue;
+      }
       const int mode_rate = inter_modes_info->mode_rate_arr[data_idx];
 
       x->skip = 0;
