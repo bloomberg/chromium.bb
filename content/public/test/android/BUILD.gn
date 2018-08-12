@@ -61,12 +61,14 @@ generate_jni("content_test_jni") {
   jni_package = "content/public/test"
   sources = [
     "javatests/src/org/chromium/content/browser/test/InterstitialPageDelegateAndroid.java",
+    "javatests/src/org/chromium/content/browser/test/util/DOMUtils.java",
   ]
 }
 
 static_library("content_native_test_support") {
   testonly = true
   sources = [
+    "dom_utils.cc",
     "interstitial_page_delegate_android.cc",
     "interstitial_page_delegate_android.h",
   ]
@@ -76,5 +78,6 @@ static_library("content_native_test_support") {
     "//content/public/browser",
     "//device/gamepad",
     "//media/midi",
+    "//ui/android",
   ]
 }

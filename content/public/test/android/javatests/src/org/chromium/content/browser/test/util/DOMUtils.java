@@ -13,6 +13,7 @@ import android.view.View;
 import org.junit.Assert;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.WebContents;
@@ -26,8 +27,8 @@ import java.util.concurrent.TimeoutException;
 /**
  * Collection of DOM-based utilities.
  */
+@JNINamespace("content")
 public class DOMUtils {
-
     private static final long MEDIA_TIMEOUT_SECONDS = scaleTimeout(10);
     private static final long MEDIA_TIMEOUT_MILLISECONDS = MEDIA_TIMEOUT_SECONDS * 1000;
 
@@ -506,9 +507,8 @@ public class DOMUtils {
 
     private static int getMaybeTopControlsHeight(final WebContents webContents) {
         try {
-            return ThreadUtils.runOnUiThreadBlocking(() -> {
-                return ((WebContentsImpl) webContents).getTopControlsShrinkBlinkHeightForTesting();
-            });
+            return ThreadUtils.runOnUiThreadBlocking(
+                    () -> nativeGetTopControlsShrinkBlinkHeight(webContents));
         } catch (ExecutionException e) {
             return 0;
         }
@@ -561,4 +561,6 @@ public class DOMUtils {
 
         return new Rect(bounds[0], bounds[1], bounds[0] + bounds[2], bounds[1] + bounds[3]);
     }
+
+    private static native int nativeGetTopControlsShrinkBlinkHeight(WebContents webContents);
 }

@@ -618,18 +618,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         }
     }
 
-    /**
-     * @return The amount of the top controls height if controls are in the state
-     *    of shrinking Blink's view size, otherwise 0.
-     */
-    @VisibleForTesting
-    public int getTopControlsShrinkBlinkHeightForTesting() {
-        // TODO(jinsukkim): Let callsites provide with its own top controls height to remove
-        //                  the test-only method in content layer.
-        if (mNativeWebContentsAndroid == 0) return 0;
-        return nativeGetTopControlsShrinkBlinkHeightPixForTesting(mNativeWebContentsAndroid);
-    }
-
     @VisibleForTesting
     @Override
     public boolean isSelectPopupVisibleForTesting() {
@@ -972,8 +960,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     private native int nativeGetWidth(long nativeWebContentsAndroid);
     private native int nativeGetHeight(long nativeWebContentsAndroid);
     private native EventForwarder nativeGetOrCreateEventForwarder(long nativeWebContentsAndroid);
-    private native int nativeGetTopControlsShrinkBlinkHeightPixForTesting(
-            long nativeWebContentsAndroid);
     private native void nativeSetViewAndroidDelegate(
             long nativeWebContentsAndroid, ViewAndroidDelegate viewDelegate);
     private native void nativeSendOrientationChangeEvent(
