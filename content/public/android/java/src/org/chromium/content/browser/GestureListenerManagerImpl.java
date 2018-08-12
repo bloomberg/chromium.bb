@@ -165,7 +165,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
     }
 
     /* Called when ongoing fling gesture needs to be reset. */
-    public void resetFlingGesture() {
+    private void resetFlingGesture() {
         if (mHasActiveFlingScroll) {
             onFlingEnd();
             mHasActiveFlingScroll = false;
@@ -324,7 +324,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
         return mIsTouchScrollInProgress || mHasActiveFlingScroll;
     }
 
-    void setTouchScrollInProgress(boolean touchScrollInProgress) {
+    private void setTouchScrollInProgress(boolean touchScrollInProgress) {
         mIsTouchScrollInProgress = touchScrollInProgress;
 
         // Use the active touch scroll signal for hiding. The animation movement
@@ -336,7 +336,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
      * Reset scroll and fling accounting, notifying listeners as appropriate.
      * This is useful as a failsafe when the input stream may have been interruped.
      */
-    void resetScrollInProgress() {
+    private void resetScrollInProgress() {
         if (!isScrollInProgress()) return;
 
         final boolean touchScrollInProgress = mIsTouchScrollInProgress;
