@@ -931,7 +931,6 @@ source_set("unit_tests") {
     "//third_party/pyftpdlib/",
     "//third_party/pywebsocket/src/mod_pywebsocket/",
     "//third_party/tlslite/",
-    "$root_out_dir/pyproto/google/",
   ]
 
   deps = [
