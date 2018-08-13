@@ -387,8 +387,8 @@ WindowTreeClient::WindowTreeClient(
     client::GetTransientWindowClient()->AddObserver(this);
   if (connector) {  // |connector| can be null in tests.
     if (!io_task_runner) {
-      // |io_task_runner| is null in most case. But for the browser process,
-      // the |io_task_runner| is the browser's IO thread.
+      // |io_task_runner| is typically null. When used in the browser process,
+      // |io_task_runner| is the browser's IO thread.
       io_thread_ = std::make_unique<base::Thread>("IOThread");
       base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
       thread_options.priority = base::ThreadPriority::NORMAL;

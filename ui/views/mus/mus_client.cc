@@ -85,16 +85,6 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
     cursor_factory_ozone_ = std::make_unique<ui::CursorDataFactoryOzone>();
 #endif
 
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      params.io_task_runner;
-  if (!io_task_runner) {
-    io_thread_ = std::make_unique<base::Thread>("IOThread");
-    base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
-    thread_options.priority = base::ThreadPriority::NORMAL;
-    CHECK(io_thread_->StartWithOptions(thread_options));
-    io_task_runner = io_thread_->task_runner();
-  }
-
   property_converter_ = std::make_unique<aura::PropertyConverter>();
   property_converter_->RegisterPrimitiveProperty(
       ::wm::kShadowElevationKey,
@@ -107,10 +97,9 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
   service_manager::Connector* connector = params.connector;
 
   if (!params.window_tree_client) {
-    DCHECK(io_task_runner);
     owned_window_tree_client_ =
         aura::WindowTreeClient::CreateForWindowTreeFactory(
-            connector, this, true, std::move(io_task_runner));
+            connector, this, true, std::move(params.io_task_runner));
     window_tree_client_ = owned_window_tree_client_.get();
     aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client_);
   } else {
