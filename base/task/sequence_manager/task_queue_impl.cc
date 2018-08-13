@@ -341,6 +341,10 @@ void TaskQueueImpl::ReloadEmptyImmediateQueue(TaskDeque* queue) {
   AutoLock immediate_incoming_queue_lock(immediate_incoming_queue_lock_);
   queue->swap(immediate_incoming_queue());
 
+  // Since |immediate_incoming_queue| is empty, now is a good time to consider
+  // reducing it's capacity if we're wasting memory.
+  immediate_incoming_queue().MaybeShrinkQueue();
+
   // Activate delayed fence if necessary. This is ideologically similar to
   // ActivateDelayedFenceIfNeeded, but due to immediate tasks being posted
   // from any thread we can't generate an enqueue order for the fence there,
@@ -517,6 +521,13 @@ void TaskQueueImpl::AsValueInto(TimeTicks now,
                     main_thread_only().immediate_work_queue->Size());
   state->SetInteger("delayed_work_queue_size",
                     main_thread_only().delayed_work_queue->Size());
+
+  state->SetInteger("immediate_incoming_queue_capacity",
+                    immediate_incoming_queue().capacity());
+  state->SetInteger("immediate_work_queue_capacity",
+                    immediate_work_queue()->Capacity());
+  state->SetInteger("delayed_work_queue_capacity",
+                    delayed_work_queue()->Capacity());
 
   if (!main_thread_only().delayed_incoming_queue.empty()) {
     TimeDelta delay_to_next_task =
@@ -878,6 +889,9 @@ void TaskQueueImpl::SweepCanceledDelayedTasks(TimeTicks now) {
   }
 
   main_thread_only().delayed_incoming_queue = std::move(remaining_tasks);
+
+  // Also consider shrinking the work queue if it's wasting memory.
+  main_thread_only().delayed_work_queue->MaybeShrinkQueue();
 
   LazyNow lazy_now(now);
   UpdateDelayedWakeUp(&lazy_now);
