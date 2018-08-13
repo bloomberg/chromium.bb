@@ -39,38 +39,35 @@ DeviceSettingsTestBase::DeviceSettingsTestBase()
     : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
       user_manager_(new FakeChromeUserManager()),
       user_manager_enabler_(base::WrapUnique(user_manager_)),
-      owner_key_util_(new ownership::MockOwnerKeyUtil()) {
+      owner_key_util_(new ownership::MockOwnerKeyUtil()),
+      dbus_setter_(chromeos::DBusThreadManager::GetSetterForTesting()) {
   OwnerSettingsServiceChromeOSFactory::SetDeviceSettingsServiceForTesting(
       &device_settings_service_);
   OwnerSettingsServiceChromeOSFactory::GetInstance()->SetOwnerKeyUtilForTesting(
       owner_key_util_);
-}
-
-DeviceSettingsTestBase::~DeviceSettingsTestBase() {
-  base::RunLoop().RunUntilIdle();
-}
-
-void DeviceSettingsTestBase::SetUp() {
-  // Initialize DBusThreadManager with a stub implementation.
-  dbus_setter_ = chromeos::DBusThreadManager::GetSetterForTesting();
-
   base::RunLoop().RunUntilIdle();
 
   device_policy_.payload().mutable_metrics_enabled()->set_metrics_enabled(
       false);
+  ReloadDevicePolicy();
   owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
-  device_policy_.Build();
-  session_manager_client_.set_device_policy(device_policy_.GetBlob());
   device_settings_service_.SetSessionManager(&session_manager_client_,
                                              owner_key_util_);
+
   profile_.reset(new TestingProfile());
 }
 
-void DeviceSettingsTestBase::TearDown() {
+DeviceSettingsTestBase::~DeviceSettingsTestBase() {
   OwnerSettingsServiceChromeOSFactory::SetDeviceSettingsServiceForTesting(NULL);
   FlushDeviceSettings();
   device_settings_service_.UnsetSessionManager();
   DBusThreadManager::Shutdown();
+  base::RunLoop().RunUntilIdle();
+}
+
+void DeviceSettingsTestBase::ReloadDevicePolicy() {
+  device_policy_.Build();
+  session_manager_client_.set_device_policy(device_policy_.GetBlob());
 }
 
 void DeviceSettingsTestBase::FlushDeviceSettings() {

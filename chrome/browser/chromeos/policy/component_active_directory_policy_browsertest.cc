@@ -72,7 +72,7 @@ class ComponentActiveDirectoryPolicyTest
  protected:
   ComponentActiveDirectoryPolicyTest()
       : install_attributes_(
-            chromeos::ScopedStubInstallAttributes::CreateActiveDirectoryManaged(
+            chromeos::StubInstallAttributes::CreateActiveDirectoryManaged(
                 kTestDomain,
                 kTestDeviceId)) {
     builder_.policy_data().set_policy_type(

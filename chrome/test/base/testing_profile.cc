@@ -900,6 +900,13 @@ void TestingProfile::set_last_selected_directory(const base::FilePath& path) {
   last_selected_directory_ = path;
 }
 
+#if defined(OS_CHROMEOS)
+chromeos::ScopedCrosSettingsTestHelper*
+TestingProfile::ScopedCrosSettingsTestHelper() {
+  return scoped_cros_settings_test_helper_.get();
+}
+#endif
+
 void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(this,

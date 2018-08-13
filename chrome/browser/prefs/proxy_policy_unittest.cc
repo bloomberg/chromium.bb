@@ -29,6 +29,10 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
+#endif
+
 using ::testing::Return;
 using ::testing::_;
 
@@ -123,6 +127,10 @@ class ProxyPolicyTest : public testing::Test {
   base::CommandLine command_line_;
   MockConfigurationPolicyProvider provider_;
   std::unique_ptr<PolicyServiceImpl> policy_service_;
+
+#if defined(OS_CHROMEOS)
+  chromeos::ScopedStubInstallAttributes test_install_attributes_;
+#endif
 };
 
 TEST_F(ProxyPolicyTest, OverridesCommandLineOptions) {

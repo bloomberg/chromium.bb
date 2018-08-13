@@ -1937,21 +1937,13 @@ class GetAuthTokenFunctionPublicSessionTest : public GetAuthTokenFunctionTest {
 
  protected:
   void SetUpInProcessBrowserTestFixture() override {
-     GetAuthTokenFunctionTest::SetUpInProcessBrowserTestFixture();
+    GetAuthTokenFunctionTest::SetUpInProcessBrowserTestFixture();
 
-     // Set up the user manager to fake a public session.
-     EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp())
-         .WillRepeatedly(Return(false));
-     EXPECT_CALL(*user_manager_, IsLoggedInAsPublicAccount())
-         .WillRepeatedly(Return(true));
-
-    // Set up fake install attributes to make the device appeared as
-    // enterprise-managed.
-     std::unique_ptr<chromeos::StubInstallAttributes> attributes =
-         std::make_unique<chromeos::StubInstallAttributes>();
-     attributes->SetCloudManaged("example.com", "fake-id");
-     policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
-         attributes.release());
+    // Set up the user manager to fake a public session.
+    EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*user_manager_, IsLoggedInAsPublicAccount())
+        .WillRepeatedly(Return(true));
   }
 
   scoped_refptr<Extension> CreateTestExtension(const std::string& id) {
@@ -1964,6 +1956,12 @@ class GetAuthTokenFunctionPublicSessionTest : public GetAuthTokenFunctionTest {
         .SetID(id)
         .Build();
   }
+
+  // Set up fake install attributes to make the device appeared as
+  // enterprise-managed.
+  chromeos::ScopedStubInstallAttributes test_install_attributes_{
+      chromeos::StubInstallAttributes::CreateCloudManaged("example.com",
+                                                          "fake-id")};
 
   // Owned by |user_manager_enabler|.
   chromeos::MockUserManager* user_manager_;

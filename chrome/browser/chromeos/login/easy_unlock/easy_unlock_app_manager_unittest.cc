@@ -15,8 +15,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -271,9 +270,8 @@ class EasyUnlockAppManagerTest : public testing::Test {
   // Needed by extension system.
   content::TestBrowserThreadBundle thread_bundle_;
 
-  // Cros settings and device settings are needed when creating user manager.
-  ScopedTestDeviceSettingsService test_device_settings_service_;
-  ScopedTestCrosSettings test_cros_settings_;
+  // Cros settings are needed when creating user manager.
+  ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   // Needed for creating ExtensionService.
   ScopedTestUserManager test_user_manager_;
 

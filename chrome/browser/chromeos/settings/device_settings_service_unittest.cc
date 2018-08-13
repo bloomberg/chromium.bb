@@ -62,12 +62,10 @@ class DeviceSettingsServiceTest : public DeviceSettingsTestBase {
       : operation_completed_(false),
         is_owner_(true),
         is_owner_set_(false),
-        ownership_status_(DeviceSettingsService::OWNERSHIP_UNKNOWN) {}
-
-  void SetUp() override {
+        ownership_status_(DeviceSettingsService::OWNERSHIP_UNKNOWN) {
     device_policy_.payload().mutable_device_policy_refresh_rate()->
         set_device_policy_refresh_rate(120);
-    DeviceSettingsTestBase::SetUp();
+    ReloadDevicePolicy();
   }
 
   void CheckPolicy() {

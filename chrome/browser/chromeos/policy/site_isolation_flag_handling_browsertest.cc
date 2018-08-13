@@ -269,13 +269,6 @@ class SiteIsolationFlagHandlingTest
   void SetUpInProcessBrowserTestFixture() override {
     policy::LoginPolicyTestBase::SetUpInProcessBrowserTestFixture();
 
-    // Set up fake install attributes to pretend the machine is enrolled. This
-    // is important because ephemeral users only work on enrolled machines.
-    auto attributes = std::make_unique<StubInstallAttributes>();
-    attributes->SetCloudManaged("example.com", "fake-id");
-    policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
-        attributes.release());
-
     // Set up fake_session_manager_client_ so we can verify the flags for the
     // user session.
     auto fake_session_manager_client =
@@ -355,6 +348,11 @@ class SiteIsolationFlagHandlingTest
 
   // This will be set to |true| when chrome has requested a restart.
   bool attempt_restart_called_ = false;
+
+  // Set up fake install attributes to pretend the machine is enrolled. This
+  // is important because ephemeral users only work on enrolled machines.
+  ScopedStubInstallAttributes test_install_attributes_{
+      StubInstallAttributes::CreateCloudManaged("example.com", "fake-id")};
 
   // Observes for user session start.
   std::unique_ptr<content::WindowedNotificationObserver>

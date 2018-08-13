@@ -88,8 +88,7 @@ class EnrollmentPolicyObserverTest : public DeviceSettingsTestBase {
 
   void SetUpDevicePolicy(bool enrollment_id_needed) {
     device_policy_.policy_data().set_enrollment_id_needed(enrollment_id_needed);
-    device_policy_.Build();
-    session_manager_client_.set_device_policy(device_policy_.GetBlob());
+    ReloadDevicePolicy();
     ReloadDeviceSettings();
   }
 

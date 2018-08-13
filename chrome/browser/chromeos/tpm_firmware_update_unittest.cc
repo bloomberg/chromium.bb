@@ -94,6 +94,7 @@ class TPMFirmwareUpdateModesTest : public testing::Test {
   std::unique_ptr<base::ScopedPathOverride> path_override_;
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+  ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   chromeos::system::ScopedFakeStatisticsProvider statistics_provider_;
 
   const std::set<Mode> kAllModes{Mode::kPowerwash, Mode::kPreserveDeviceState};
@@ -180,6 +181,8 @@ class TPMFirmwareUpdateModesEnterpriseTest : public TPMFirmwareUpdateModesTest {
   void SetUp() override {
     TPMFirmwareUpdateModesTest::SetUp();
     cros_settings_test_helper_.ReplaceProvider(kTPMFirmwareUpdateSettings);
+    cros_settings_test_helper_.InstallAttributes()->SetCloudManaged(
+        "example.com", "fake-device-id");
   }
 
   void SetPolicy(const std::set<Mode>& modes) {
@@ -190,11 +193,6 @@ class TPMFirmwareUpdateModesEnterpriseTest : public TPMFirmwareUpdateModesTest {
                 base::Value(modes.count(Mode::kPreserveDeviceState) > 0));
     cros_settings_test_helper_.Set(kTPMFirmwareUpdateSettings, dict);
   }
-
-  ScopedStubInstallAttributes install_attributes_ =
-      ScopedStubInstallAttributes::CreateCloudManaged("example.com",
-                                                      "fake-device-id");
-  ScopedCrosSettingsTestHelper cros_settings_test_helper_;
 };
 
 TEST_F(TPMFirmwareUpdateModesEnterpriseTest, DeviceSettingPending) {

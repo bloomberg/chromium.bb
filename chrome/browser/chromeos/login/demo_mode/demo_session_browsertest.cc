@@ -22,7 +22,7 @@ class DemoSessionDemoEnrolledDeviceTest : public LoginManagerTest {
  public:
   DemoSessionDemoEnrolledDeviceTest()
       : LoginManagerTest(true /*should_launch_browser*/),
-        install_attributes_(ScopedStubInstallAttributes::CreateCloudManaged(
+        install_attributes_(StubInstallAttributes::CreateCloudManaged(
             DemoSetupController::kDemoModeDomain,
             kFakeDeviceId)) {}
   ~DemoSessionDemoEnrolledDeviceTest() override = default;
@@ -44,8 +44,8 @@ class DemoSessionNonDemoEnrolledDeviceTest : public LoginManagerTest {
   DemoSessionNonDemoEnrolledDeviceTest()
       : LoginManagerTest(true /*should_launch_browser*/),
         install_attributes_(
-            ScopedStubInstallAttributes::CreateCloudManaged(kNonDemoDomain,
-                                                            kFakeDeviceId)) {}
+            StubInstallAttributes::CreateCloudManaged(kNonDemoDomain,
+                                                      kFakeDeviceId)) {}
   ~DemoSessionNonDemoEnrolledDeviceTest() override = default;
 
  private:
@@ -64,8 +64,7 @@ class DemoSessionConsumerDeviceTest : public LoginManagerTest {
  public:
   DemoSessionConsumerDeviceTest()
       : LoginManagerTest(true /*should_launch_browser*/),
-        install_attributes_(
-            ScopedStubInstallAttributes::CreateConsumerOwned()) {}
+        install_attributes_(StubInstallAttributes::CreateConsumerOwned()) {}
   ~DemoSessionConsumerDeviceTest() override = default;
 
  private:
@@ -84,7 +83,7 @@ class DemoSessionUnownedDeviceTest : public LoginManagerTest {
  public:
   DemoSessionUnownedDeviceTest()
       : LoginManagerTest(true /*should_launch_browser*/),
-        install_attributes_(ScopedStubInstallAttributes::CreateUnset()) {}
+        install_attributes_(StubInstallAttributes::CreateUnset()) {}
   ~DemoSessionUnownedDeviceTest() override = default;
 
  private:
@@ -103,10 +102,9 @@ class DemoSessionActiveDirectoryDeviceTest : public LoginManagerTest {
  public:
   DemoSessionActiveDirectoryDeviceTest()
       : LoginManagerTest(true /*should_launch_browser*/),
-        install_attributes_(
-            ScopedStubInstallAttributes::CreateActiveDirectoryManaged(
-                DemoSetupController::kDemoModeDomain,
-                kFakeDeviceId)) {}
+        install_attributes_(StubInstallAttributes::CreateActiveDirectoryManaged(
+            DemoSetupController::kDemoModeDomain,
+            kFakeDeviceId)) {}
   ~DemoSessionActiveDirectoryDeviceTest() override = default;
 
  private:

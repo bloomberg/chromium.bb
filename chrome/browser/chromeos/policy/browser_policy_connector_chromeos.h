@@ -108,6 +108,9 @@ class BrowserPolicyConnectorChromeOS
   // For other OSes the function will always return DEVICE_MODE_CONSUMER.
   DeviceMode GetDeviceMode() const;
 
+  // Delegates to chromeos::InstallAttributes::Get()
+  chromeos::InstallAttributes* GetInstallAttributes() const;
+
   // Get the enrollment configuration for the device as decided by various
   // factors. See DeviceCloudPolicyInitializer::GetPrescribedEnrollmentConfig()
   // for details.
@@ -132,10 +135,6 @@ class BrowserPolicyConnectorChromeOS
   // May be nullptr, e.g. for devices managed by Active Directory.
   DeviceLocalAccountPolicyService* GetDeviceLocalAccountPolicyService() const {
     return device_local_account_policy_service_.get();
-  }
-
-  chromeos::InstallAttributes* GetInstallAttributes() const {
-    return install_attributes_.get();
   }
 
   // May be nullptr, e.g. for devices managed by Active Directory.
@@ -166,13 +165,6 @@ class BrowserPolicyConnectorChromeOS
   // Sets the device cloud policy initializer for testing.
   void SetDeviceCloudPolicyInitializerForTesting(
       std::unique_ptr<DeviceCloudPolicyInitializer> initializer);
-
-  // Sets the install attributes for testing. Must be called before the browser
-  // is created. RemoveInstallAttributesForTesting must be called after the test
-  // to free the attributes.
-  static void SetInstallAttributesForTesting(
-      chromeos::InstallAttributes* attributes);
-  static void RemoveInstallAttributesForTesting();
 
   // Registers device refresh rate pref.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -206,7 +198,6 @@ class BrowserPolicyConnectorChromeOS
 
   // Components of the device cloud policy implementation.
   std::unique_ptr<ServerBackedStateKeysBroker> state_keys_broker_;
-  std::unique_ptr<chromeos::InstallAttributes> install_attributes_;
   std::unique_ptr<AffiliatedInvalidationServiceProvider>
       affiliated_invalidation_service_provider_;
   DeviceCloudPolicyManagerChromeOS* device_cloud_policy_manager_ = nullptr;

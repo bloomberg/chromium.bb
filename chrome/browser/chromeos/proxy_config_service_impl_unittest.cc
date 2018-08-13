@@ -15,8 +15,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
@@ -370,8 +369,7 @@ class ProxyConfigServiceImplTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable profile_prefs_;
 
  private:
-  ScopedTestDeviceSettingsService test_device_settings_service_;
-  ScopedTestCrosSettings test_cros_settings_;
+  ScopedCrosSettingsTestHelper cros_settings_test_helper_;
 };
 
 TEST_F(ProxyConfigServiceImplTest, NetworkProxy) {

@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -67,6 +68,8 @@ class EnrollmentScreenUnitTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   // Replace main thread's task runner with a mock for duration of test.
   base::ScopedMockTimeMessageLoopTaskRunner runner_;
+
+  ScopedStubInstallAttributes test_install_attributes_;
 
   // Objects required by the EnrollmentScreen that can be re-used.
   pairing_chromeos::FakeControllerPairingController fake_controller_;

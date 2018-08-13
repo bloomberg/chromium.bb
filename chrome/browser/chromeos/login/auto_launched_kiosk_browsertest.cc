@@ -287,9 +287,8 @@ class AutoLaunchedKioskTest : public extensions::ExtensionApiTest {
  public:
   AutoLaunchedKioskTest()
       : install_attributes_(
-            chromeos::ScopedStubInstallAttributes::CreateCloudManaged(
-                "domain.com",
-                "device_id")),
+            chromeos::StubInstallAttributes::CreateCloudManaged("domain.com",
+                                                                "device_id")),
         fake_session_manager_(new PersistentSessionManagerClient()),
         fake_cws_(new FakeCWS) {
     set_chromeos_user_ = false;

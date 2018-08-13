@@ -21,7 +21,7 @@
 
 namespace base {
 class Value;
-}
+}  // namespace base
 
 namespace enterprise_management {
 class ChromeDeviceSettingsProto;
@@ -30,6 +30,8 @@ class ChromeDeviceSettingsProto;
 namespace chromeos {
 
 // CrosSettingsProvider implementation that works with device settings.
+// Dependency: chromeos::InstallAttributes must be initialized while this class
+// is in use.
 //
 // Note that the write path is in the process of being migrated to
 // OwnerSettingsServiceChromeOS (crbug.com/230018).

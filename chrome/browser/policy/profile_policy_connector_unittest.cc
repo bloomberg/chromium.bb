@@ -30,6 +30,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "components/user_manager/scoped_user_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -75,6 +76,10 @@ class ProfilePolicyConnectorTest : public testing::Test {
   MockConfigurationPolicyProvider mock_provider_;
   MockCloudPolicyStore cloud_policy_store_;
   std::unique_ptr<CloudPolicyManager> cloud_policy_manager_;
+
+#if defined(OS_CHROMEOS)
+  chromeos::ScopedStubInstallAttributes test_install_attributes_;
+#endif  // defined(OS_CHROMEOS)
 };
 
 TEST_F(ProfilePolicyConnectorTest, IsManagedForManagedUsers) {

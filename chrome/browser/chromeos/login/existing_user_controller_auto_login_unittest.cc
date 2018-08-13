@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -137,6 +138,7 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
   ScopedTestingLocalState local_state_;
 
   // Required by ExistingUserController:
+  ScopedStubInstallAttributes test_install_attributes_;
   ScopedDeviceSettingsTestHelper device_settings_test_helper_;
   ScopedTestCrosSettings test_cros_settings_;
   MockUserManager* mock_user_manager_;

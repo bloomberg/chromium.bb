@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "components/policy/core/common/chrome_schema.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service_impl.h"
-#include "components/policy/policy_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace policy {
@@ -35,10 +35,10 @@ BrowserPolicyConnectorBase::BrowserPolicyConnectorBase(
 
   // Initialize the SchemaRegistry with the Chrome schema before creating any
   // of the policy providers in subclasses.
-  chrome_schema_ = Schema::Wrap(GetChromeSchemaData());
-  handler_list_ = handler_list_factory.Run(chrome_schema_);
+  const Schema& chrome_schema = policy::GetChromeSchema();
+  handler_list_ = handler_list_factory.Run(chrome_schema);
   schema_registry_.RegisterComponent(PolicyNamespace(POLICY_DOMAIN_CHROME, ""),
-                                     chrome_schema_);
+                                     chrome_schema);
 }
 
 BrowserPolicyConnectorBase::~BrowserPolicyConnectorBase() {
@@ -64,7 +64,7 @@ void BrowserPolicyConnectorBase::Shutdown() {
 }
 
 const Schema& BrowserPolicyConnectorBase::GetChromeSchema() const {
-  return chrome_schema_;
+  return policy::GetChromeSchema();
 }
 
 CombinedSchemaRegistry* BrowserPolicyConnectorBase::GetSchemaRegistry() {

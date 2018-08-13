@@ -10,9 +10,11 @@
 #include "components/user_manager/user.h"
 
 class AccountId;
-class CrosSettings;
 
 namespace chromeos {
+
+class CrosSettings;
+
 namespace chrome_user_manager_util {
 
 // Implements user_manager::UserManager::GetPlatformKnownUserId for ChromeOS

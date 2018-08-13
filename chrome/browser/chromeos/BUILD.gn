@@ -124,6 +124,7 @@ source_set("chromeos") {
     "//components/password_manager/core/browser:hash_password_manager",
     "//components/policy:generated",
     "//components/policy/core/browser",
+    "//components/policy/core/common:common",
     "//components/pref_registry",
     "//components/proxy_config",
     "//components/quirks",

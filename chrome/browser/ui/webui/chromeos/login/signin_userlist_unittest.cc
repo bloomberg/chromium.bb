@@ -12,8 +12,7 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller_delegate.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
@@ -64,9 +63,6 @@ class SigninPrepareUserListTest : public ash::AshTestBase,
       fake_user_manager_->AddUser(AccountId::FromUserEmail(kUsers[i]));
 
     fake_user_manager_->set_owner_id(AccountId::FromUserEmail(kOwner));
-
-    chromeos::DeviceSettingsService::Initialize();
-    chromeos::CrosSettings::Initialize();
   }
 
   void TearDown() override {
@@ -78,6 +74,7 @@ class SigninPrepareUserListTest : public ash::AshTestBase,
   // MultiProfileUserControllerDelegate overrides:
   void OnUserNotAllowed(const std::string& user_email) override {}
 
+  ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   FakeChromeUserManager* fake_user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
   std::unique_ptr<TestingProfileManager> profile_manager_;

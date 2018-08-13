@@ -12,8 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/dbus/shill_service_client.h"
@@ -61,9 +60,6 @@ class VersionUpdaterCrosTest : public ::testing::Test {
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_user_manager_, Shutdown()).Times(AtLeast(0));
 
-    DeviceSettingsService::Initialize();
-    CrosSettings::Initialize();
-
     NetworkHandler::Initialize();
     base::RunLoop().RunUntilIdle();
   }
@@ -92,9 +88,6 @@ class VersionUpdaterCrosTest : public ::testing::Test {
 
   void TearDown() override {
     NetworkHandler::Shutdown();
-
-    CrosSettings::Shutdown();
-    DeviceSettingsService::Shutdown();
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -103,6 +96,7 @@ class VersionUpdaterCrosTest : public ::testing::Test {
 
   MockUserManager* mock_user_manager_;  // Not owned.
   user_manager::ScopedUserManager user_manager_enabler_;
+  ScopedCrosSettingsTestHelper cros_settings_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(VersionUpdaterCrosTest);
 };

@@ -22,7 +22,6 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -435,10 +434,8 @@ class CryptohomeAuthenticatorTest : public testing::Test {
   UserContext user_context_with_transformed_key_;
   Key transformed_key_;
 
-  ScopedDeviceSettingsTestHelper device_settings_test_helper_;
-  ScopedTestCrosSettings test_cros_settings_;
-
-  chromeos::FakeChromeUserManager* user_manager_;
+  ScopedCrosSettingsTestHelper cros_settings_test_helper_;
+  FakeChromeUserManager* user_manager_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;

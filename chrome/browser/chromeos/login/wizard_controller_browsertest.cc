@@ -1013,8 +1013,7 @@ INSTANTIATE_TEST_CASE_P(
 
 class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
  protected:
-  WizardControllerDeviceStateTest()
-      : install_attributes_(ScopedStubInstallAttributes::CreateUnset()) {
+  WizardControllerDeviceStateTest() {
     fake_statistics_provider_.SetMachineStatistic(
         system::kSerialNumberKeyForTest, "test");
     fake_statistics_provider_.SetMachineStatistic(system::kActivateDateKey,
@@ -1060,7 +1059,9 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
   base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
 
  private:
-  ScopedStubInstallAttributes install_attributes_;
+  ScopedStubInstallAttributes test_install_attributes_{
+      StubInstallAttributes::CreateUnset()};
+
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(WizardControllerDeviceStateTest);

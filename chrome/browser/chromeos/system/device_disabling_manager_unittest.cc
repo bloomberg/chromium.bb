@@ -17,7 +17,7 @@
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
@@ -74,12 +74,8 @@ class DeviceDisablingManagerTestBase : public testing::Test,
   void SetConsumerOwned();
 
  private:
-  chromeos::StubInstallAttributes* GetInstallAttributes();
-
   content::TestBrowserThreadBundle thread_bundle_;
-  chromeos::ScopedStubInstallAttributes install_attributes_;
-  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
+  chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   chromeos::FakeChromeUserManager fake_user_manager_;
   std::unique_ptr<DeviceDisablingManager> device_disabling_manager_;
   FakeStatisticsProvider statistics_provider_;
@@ -87,8 +83,7 @@ class DeviceDisablingManagerTestBase : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(DeviceDisablingManagerTestBase);
 };
 
-DeviceDisablingManagerTestBase::DeviceDisablingManagerTestBase()
-    : install_attributes_(ScopedStubInstallAttributes::CreateUnset()) {
+DeviceDisablingManagerTestBase::DeviceDisablingManagerTestBase() {
   system::StatisticsProvider::SetTestProvider(&statistics_provider_);
 }
 
@@ -113,24 +108,16 @@ void DeviceDisablingManagerTestBase::LogIn() {
 }
 
 void DeviceDisablingManagerTestBase::SetUnowned() {
-  GetInstallAttributes()->Clear();
+  cros_settings_test_helper_.InstallAttributes()->Clear();
 }
 
 void DeviceDisablingManagerTestBase::SetEnterpriseOwned() {
-  GetInstallAttributes()->SetCloudManaged(kEnrollmentDomain, "fake-id");
+  cros_settings_test_helper_.InstallAttributes()->SetCloudManaged(
+      kEnrollmentDomain, "fake-id");
 }
 
 void DeviceDisablingManagerTestBase::SetConsumerOwned() {
-  GetInstallAttributes()->SetConsumerOwned();
-}
-
-chromeos::StubInstallAttributes*
-DeviceDisablingManagerTestBase::GetInstallAttributes() {
-  return static_cast<chromeos::StubInstallAttributes*>(
-      TestingBrowserProcess::GetGlobal()
-      ->platform_part()
-      ->browser_policy_connector_chromeos()
-      ->GetInstallAttributes());
+  cros_settings_test_helper_.InstallAttributes()->SetConsumerOwned();
 }
 
 // Base class for tests that verify device disabling behavior during OOBE, when
@@ -251,6 +238,7 @@ TEST_F(DeviceDisablingManagerOOBETest, NotDisabledWhenConsumerOwned) {
 // as disabled, device disabling is not turned off by flag and the device is not
 // owned yet.
 TEST_F(DeviceDisablingManagerOOBETest, ShowWhenDisabledAndNotOwned) {
+  SetUnowned();
   SetDeviceDisabled(true);
   CheckWhetherDeviceDisabledDuringOOBE();
   EXPECT_TRUE(device_disabled());

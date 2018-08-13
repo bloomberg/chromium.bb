@@ -123,8 +123,13 @@ void ScopedCrosSettingsTestHelper::CopyStoredValue(const std::string& path) {
   }
 }
 
+StubInstallAttributes* ScopedCrosSettingsTestHelper::InstallAttributes() {
+  return test_install_attributes_->Get();
+}
+
 void ScopedCrosSettingsTestHelper::Initialize(bool create_settings_service) {
   if (create_settings_service) {
+    test_install_attributes_.reset(new ScopedStubInstallAttributes());
     CHECK(!DeviceSettingsService::IsInitialized());
     test_device_settings_service_.reset(new ScopedTestDeviceSettingsService());
     test_cros_settings_.reset(new ScopedTestCrosSettings());

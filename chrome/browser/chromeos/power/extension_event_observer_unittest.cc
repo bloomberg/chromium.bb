@@ -13,8 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/common/extensions/api/gcm.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -144,9 +143,8 @@ class ExtensionEventObserverTest : public ::testing::Test {
   // and RenderProcessHosts.
   content::RenderViewHostTestEnabler render_view_host_test_enabler_;
 
-  // Chrome OS needs extra services to run in the following order.
-  ScopedTestDeviceSettingsService test_device_settings_service_;
-  ScopedTestCrosSettings test_cros_settings_;
+  // Chrome OS needs the CrosSettings test helper.
+  ScopedCrosSettingsTestHelper cros_settings_test_helper_;
 
   // Owned by |scoped_user_manager_enabler_|.
   FakeChromeUserManager* fake_user_manager_;

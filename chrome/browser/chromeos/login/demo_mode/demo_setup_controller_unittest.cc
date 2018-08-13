@@ -15,6 +15,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_test_utils.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -107,6 +108,7 @@ class DemoSetupControllerTest : public testing::Test {
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ScopedTestingLocalState testing_local_state_;
+  ScopedStubInstallAttributes test_install_attributes_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSetupControllerTest);
 };

@@ -179,13 +179,6 @@ class WallpaperPolicyTest : public LoginManagerTest,
     DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
 
-    // Set up fake install attributes.
-    std::unique_ptr<chromeos::StubInstallAttributes> attributes =
-        std::make_unique<chromeos::StubInstallAttributes>();
-    attributes->SetCloudManaged("fake-domain", "fake-id");
-    policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
-        attributes.release());
-
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
     ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
   }
@@ -322,6 +315,9 @@ class WallpaperPolicyTest : public LoginManagerTest,
     fake_session_manager_client_->set_device_policy(device_policy_.GetBlob());
     fake_session_manager_client_->OnPropertyChangeComplete(true /* success */);
   }
+
+  ScopedStubInstallAttributes test_install_attributes_{
+      StubInstallAttributes::CreateCloudManaged("fake-domain", "fake-id")};
 
   base::FilePath test_data_dir_;
   std::unique_ptr<base::RunLoop> run_loop_;
