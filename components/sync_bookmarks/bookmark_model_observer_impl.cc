@@ -49,8 +49,9 @@ void BookmarkModelObserverImpl::BookmarkNodeMoved(
 
   // We shouldn't see changes to the top-level nodes.
   DCHECK(!model->is_permanent_node(node));
-  // TODO(crbug.com/516866): continue only if
-  // model->client()->CanSyncNode(node).
+  if (!model->client()->CanSyncNode(node)) {
+    return;
+  }
   const SyncedBookmarkTracker::Entity* entity =
       bookmark_tracker_->GetEntityForBookmarkNode(node);
   DCHECK(entity);
@@ -76,8 +77,9 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
     const bookmarks::BookmarkNode* parent,
     int index) {
   const bookmarks::BookmarkNode* node = parent->GetChild(index);
-  // TODO(crbug.com/516866): continue only if
-  // model->client()->CanSyncNode(node).
+  if (!model->client()->CanSyncNode(node)) {
+    return;
+  }
 
   const SyncedBookmarkTracker::Entity* parent_entity =
       bookmark_tracker_->GetEntityForBookmarkNode(parent);
@@ -110,8 +112,9 @@ void BookmarkModelObserverImpl::OnWillRemoveBookmarks(
     const bookmarks::BookmarkNode* parent,
     int old_index,
     const bookmarks::BookmarkNode* node) {
-  // TODO(crbug.com/516866): continue only if
-  // model->client()->CanSyncNode(node).
+  if (!model->client()->CanSyncNode(node)) {
+    return;
+  }
   ProcessDelete(parent, node);
   nudge_for_commit_closure_.Run();
 }
@@ -135,8 +138,9 @@ void BookmarkModelObserverImpl::BookmarkAllUserNodesRemoved(
 void BookmarkModelObserverImpl::BookmarkNodeChanged(
     bookmarks::BookmarkModel* model,
     const bookmarks::BookmarkNode* node) {
-  // TODO(crbug.com/516866): continue only if
-  // model->client()->CanSyncNode(node).
+  if (!model->client()->CanSyncNode(node)) {
+    return;
+  }
 
   // We shouldn't see changes to the top-level nodes.
   DCHECK(!model->is_permanent_node(node));
@@ -185,8 +189,9 @@ void BookmarkModelObserverImpl::BookmarkMetaInfoChanged(
 void BookmarkModelObserverImpl::BookmarkNodeFaviconChanged(
     bookmarks::BookmarkModel* model,
     const bookmarks::BookmarkNode* node) {
-  // TODO(crbug.com/516866): continue only if
-  // model->client()->CanSyncNode(node).
+  if (!model->client()->CanSyncNode(node)) {
+    return;
+  }
 
   // We shouldn't see changes to the top-level nodes.
   DCHECK(!model->is_permanent_node(node));
@@ -205,8 +210,9 @@ void BookmarkModelObserverImpl::BookmarkNodeFaviconChanged(
 void BookmarkModelObserverImpl::BookmarkNodeChildrenReordered(
     bookmarks::BookmarkModel* model,
     const bookmarks::BookmarkNode* node) {
-  // TODO(crbug.com/516866): continue only if
-  // model->client()->CanSyncNode(node).
+  if (!model->client()->CanSyncNode(node)) {
+    return;
+  }
 
   // The given node's children got reordered. We need to reorder all the
   // corresponding sync node.
