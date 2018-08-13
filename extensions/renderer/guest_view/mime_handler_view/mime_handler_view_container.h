@@ -10,27 +10,11 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "components/guest_view/renderer/guest_view_container.h"
-#include "content/public/common/transferrable_url_loader.mojom.h"
-#include "extensions/common/api/mime_handler.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "services/network/public/mojom/url_loader.mojom.h"
-#include "third_party/blink/public/web/web_associated_url_loader_client.h"
-#include "ui/gfx/geometry/size.h"
+#include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_base.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
-
-namespace blink {
-class WebAssociatedURLLoader;
-}  // namespace blink
-
-namespace content {
-class URLLoaderThrottle;
-struct WebPluginInfo;
-}  // namespace content
 
 namespace extensions {
 
@@ -51,16 +35,12 @@ namespace extensions {
 //    |didFinishLoading| (from WebAssociatedURLLoaderClient) when data is
 //    received and when it has finished being received.
 class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
-                                 public blink::WebAssociatedURLLoaderClient,
-                                 public mime_handler::BeforeUnloadControl {
+                                 public MimeHandlerViewContainerBase {
  public:
   MimeHandlerViewContainer(content::RenderFrame* render_frame,
                            const content::WebPluginInfo& info,
                            const std::string& mime_type,
                            const GURL& original_url);
-
-  static std::vector<MimeHandlerViewContainer*> FromRenderFrame(
-      content::RenderFrame* render_frame);
 
   // GuestViewContainer implementation.
   bool OnMessage(const IPC::Message& message) override;
@@ -79,30 +59,21 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
   // GuestViewContainer overrides.
   void OnRenderFrameDestroyed() override;
 
-  // Post a JavaScript message to the guest.
-  void PostJavaScriptMessage(v8::Isolate* isolate,
-                             v8::Local<v8::Value> message);
-
-  // Post |message| to the guest.
-  void PostMessageFromValue(const base::Value& message);
-
-  // If the URL matches the same URL that this object has created and it hasn't
-  // added a throttle yet, it will return a new one for the purpose of
-  // intercepting it.
-  std::unique_ptr<content::URLLoaderThrottle> MaybeCreatePluginThrottle(
-      const GURL& url);
-
  protected:
   ~MimeHandlerViewContainer() override;
 
  private:
-  class PluginResourceThrottle;
+  // MimeHandlerViewContainerBase override.
+  content::RenderFrame* GetEmbedderRenderFrame() const final;
+  void CreateMimeHandlerViewGuestIfNecessary() final;
+  blink::WebFrame* GetGuestProxyFrame() const final;
+  int32_t GetInstanceId() const final;
+  gfx::Size GetElementSize() const final;
 
-  // Called for embedded plugins when network service is enabled. This is called
-  // by the URLLoaderThrottle which intercepts the resource load, which is then
-  // sent to the browser to be handed off to the plugin.
-  void SetEmbeddedLoader(
-      content::mojom::TransferrableURLLoaderPtr transferrable_url_loader);
+  // mime_handler::BeforeUnloadControl implementation.
+  void SetShowBeforeUnloadDialog(
+      bool show_dialog,
+      SetShowBeforeUnloadDialogCallback callback) override;
 
   // Message handlers.
   void OnCreateMimeHandlerViewGuestACK(int element_instance_id);
@@ -110,64 +81,11 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
                        int guest_proxy_routing_id);
   void OnMimeHandlerViewGuestOnLoadCompleted(int element_instance_id);
 
-  // Creates a guest when a geometry and the URL of the extension to navigate
-  // to are available.
-  void CreateMimeHandlerViewGuestIfNecessary();
-
-  // mime_handler::BeforeUnloadControl implementation.
-  void SetShowBeforeUnloadDialog(
-      bool show_dialog,
-      SetShowBeforeUnloadDialogCallback callback) override;
-
-  // Path of the plugin.
-  const std::string plugin_path_;
-
-  // The MIME type of the plugin.
-  const std::string mime_type_;
-
-  // The URL of the extension to navigate to.
-  std::string view_id_;
-
-  // Whether the plugin is embedded or not.
-  bool is_embedded_;
-
-  // The original URL of the plugin.
-  GURL original_url_;
-
   // The RenderView routing ID of the guest.
   int guest_proxy_routing_id_;
 
-  // Used when network service is enabled:
-  bool waiting_to_create_throttle_ = false;
-  content::mojom::TransferrableURLLoaderPtr transferrable_url_loader_;
-
-  // Used when network service is disabled:
-  // A URL loader to load the |original_url_| when the plugin is embedded. In
-  // the embedded case, no URL request is made automatically.
-  std::unique_ptr<blink::WebAssociatedURLLoader> loader_;
-
-  // The scriptable object that backs the plugin.
-  v8::Global<v8::Object> scriptable_object_;
-
-  // Pending postMessage messages that need to be sent to the guest. These are
-  // queued while the guest is loading and once it is fully loaded they are
-  // delivered so that messages aren't lost.
-  std::vector<v8::Global<v8::Value>> pending_messages_;
-
-  // True if a guest process has been requested.
-  bool guest_created_ = false;
-
-  // True if the guest page has fully loaded and its JavaScript onload function
-  // has been called.
-  bool guest_loaded_;
-
   // The size of the element.
   base::Optional<gfx::Size> element_size_;
-
-  mojo::Binding<mime_handler::BeforeUnloadControl>
-      before_unload_control_binding_;
-
-  base::WeakPtrFactory<MimeHandlerViewContainer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewContainer);
 };
