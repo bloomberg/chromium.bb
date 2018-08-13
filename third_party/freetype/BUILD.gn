@@ -63,6 +63,7 @@ source_set("freetype_source") {
     "src/src/base/ftbase.c",
     "src/src/base/ftbbox.c",
     "src/src/base/ftbitmap.c",
+    "src/src/base/ftdebug.c",
     "src/src/base/ftfstype.c",
     "src/src/base/ftgasp.c",
     "src/src/base/ftglyph.c",
