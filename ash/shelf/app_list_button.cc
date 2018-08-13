@@ -20,6 +20,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
+#include "ash/shell_state.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
@@ -141,6 +142,8 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
             "VoiceInteraction.Started.AppListButtonLongPress"));
         assistant_overlay_->BurstAnimation();
         event->SetHandled();
+        Shell::Get()->shell_state()->SetRootWindowForNewWindows(
+            GetWidget()->GetNativeWindow()->GetRootWindow());
         if (chromeos::switches::IsAssistantEnabled()) {
           Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
               AssistantSource::kLongPressLauncher);
