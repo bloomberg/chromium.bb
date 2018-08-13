@@ -155,8 +155,8 @@ PrefsManager.prototype.migrateToGlobalTtsSettings_ = function(
                 globalPitch != PrefsManager.DEFAULT_PITCH;
             let optionsEqual = stsRate == globalRate && stsPitch == globalPitch;
             if (optionsEqual) {
-              // No need to write global prefs or do an alert if all the prefs
-              // are the same as defaults. Just remove STS rate and pitch.
+              // No need to write global prefs if all the prefs are the same
+              // as defaults. Just remove STS rate and pitch.
               this.onTtsSettingsMigrationSuccess_();
               return;
             }
@@ -187,11 +187,7 @@ PrefsManager.prototype.migrateToGlobalTtsSettings_ = function(
               }));
               Promise.all(setPrefsPromises)
                   .then(
-                      () => {
-                        this.onTtsSettingsMigrationSuccess_(
-                            chrome.i18n.getMessage(
-                                'select_to_speak_tts_migrated_to_global'));
-                      },
+                      this.onTtsSettingsMigrationSuccess_.bind(this),
                       (error) => {
                         console.log(error);
                         this.migrationInProgress_ = false;
@@ -199,8 +195,7 @@ PrefsManager.prototype.migrateToGlobalTtsSettings_ = function(
             } else if (globalOptionsModified) {
               // Global options were already modified, so STS will use global
               // settings regardless of whether STS was modified yet or not.
-              this.onTtsSettingsMigrationSuccess_(chrome.i18n.getMessage(
-                  'select_to_speak_tts_not_migrated_to_global'));
+              this.onTtsSettingsMigrationSuccess_();
             }
           },
           (error) => {
@@ -211,37 +206,13 @@ PrefsManager.prototype.migrateToGlobalTtsSettings_ = function(
 
 /**
  * When TTS settings are successfully migrated, removes rate and pitch from
- * chrome.storage.sync and may notify the user.
- * @param {string=} opt_message The message to show to the user on migration
- *     success. If not included, no notification will be shown.
+ * chrome.storage.sync.
  * @private
  */
-PrefsManager.prototype.onTtsSettingsMigrationSuccess_ = function(opt_message) {
+PrefsManager.prototype.onTtsSettingsMigrationSuccess_ = function() {
   chrome.storage.sync.remove('rate');
   chrome.storage.sync.remove('pitch');
   this.migrationInProgress_ = false;
-  if (opt_message === undefined)
-    return;
-  let notificationId = 'sts_tts_migration';
-  chrome.notifications.create(notificationId, {
-    type: 'basic',
-    iconUrl: 'select_to_speak-2x.svg',
-    title: chrome.i18n.getMessage('select_to_speak_tts_migration_title'),
-    requireInteraction: true,  // Do not time out for a11y.
-    message: opt_message,
-    buttons: [{
-      title: chrome.i18n.getMessage(
-          'select_to_speak_options_text_to_speech_settings_link')
-    }]
-  });
-  chrome.notifications.onButtonClicked.addListener((id, index) => {
-    if (id !== notificationId)
-      return;
-    // TODO(katie): Should we dismiss the notification when a button is
-    // clicked? Check with UX.
-    let url = 'chrome://settings/manageAccessibility/tts';
-    chrome.tabs.create({url: url});
-  });
 };
 
 /**
@@ -270,7 +241,7 @@ PrefsManager.prototype.initPreferences = function() {
           }
           if (prefs['rate'] && prefs['pitch']) {
             // Removes 'rate' and 'pitch' prefs after migrating data to global
-            // TTS settings if appropriate, and notifying the user if needed.
+            // TTS settings if appropriate.
             this.migrateToGlobalTtsSettings_(prefs['rate'], prefs['pitch']);
           }
         });
