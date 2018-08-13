@@ -476,6 +476,10 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
                  selectedFolder:self.folder];
   folderViewController.delegate = self;
   self.folderViewController = folderViewController;
+  if (@available(iOS 11, *)) {
+    self.folderViewController.navigationItem.largeTitleDisplayMode =
+        UINavigationItemLargeTitleDisplayModeNever;
+  }
 
   [self.navigationController pushViewController:self.folderViewController
                                        animated:YES];
