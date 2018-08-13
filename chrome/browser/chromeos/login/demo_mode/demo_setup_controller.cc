@@ -30,7 +30,7 @@ constexpr char kOfflineDeviceLocalAccountPolicyFileName[] =
 // The policy blob data for offline demo-mode is embedded into the filesystem.
 // TODO(mukai, agawronska): fix this when switching to dm-verity image.
 constexpr const base::FilePath::CharType kOfflineDemoModeDir[] =
-    FILE_PATH_LITERAL("/usr/share/chromeos-assets/demo_mode_resources/policy");
+    FILE_PATH_LITERAL("/usr/share/demo_mode_resources/policy");
 
 bool CheckOfflinePolicyFilesExist(const base::FilePath& policy_dir,
                                   std::string* message) {
