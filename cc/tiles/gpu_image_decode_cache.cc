@@ -234,21 +234,6 @@ bool DrawAndScaleImage(const DrawImage& draw_image, SkPixmap* target_pixmap) {
   return scaled_pixmap.readPixels(pixmap);
 }
 
-// Returns the GL texture ID backing the given SkImage.
-GrGLuint GlIdFromSkImage(SkImage* image) {
-  DCHECK(image->isTextureBacked());
-  GrBackendTexture backend_texture =
-      image->getBackendTexture(true /* flushPendingGrContextIO */);
-  if (!backend_texture.isValid())
-    return 0;
-
-  GrGLTextureInfo info;
-  if (!backend_texture.getGLTextureInfo(&info))
-    return 0;
-
-  return info.fID;
-}
-
 // Takes ownership of the backing texture of an SkImage. This allows us to
 // delete this texture under Skia (via discardable).
 sk_sp<SkImage> TakeOwnershipOfSkImageBacking(GrContext* context,
@@ -287,7 +272,8 @@ void DeleteSkImageAndPreventCaching(viz::RasterContextProvider* context,
   if (image_owned) {
     // Delete |original_image_owned| as Skia will not clean it up. We are
     // holding the context lock here, so we can delete immediately.
-    uint32_t texture_id = GlIdFromSkImage(image_owned.get());
+    uint32_t texture_id =
+        GpuImageDecodeCache::GlIdFromSkImage(image_owned.get());
     context->ContextGL()->DeleteTextures(1, &texture_id);
   }
 }
@@ -667,6 +653,21 @@ void GpuImageDecodeCache::ImageData::ValidateBudgeted() const {
   // If the image is budgeted, it must be refed.
   DCHECK(is_budgeted);
   DCHECK_GT(upload.ref_count, 0u);
+}
+
+// static
+GrGLuint GpuImageDecodeCache::GlIdFromSkImage(const SkImage* image) {
+  DCHECK(image->isTextureBacked());
+  GrBackendTexture backend_texture =
+      image->getBackendTexture(true /* flushPendingGrContextIO */);
+  if (!backend_texture.isValid())
+    return 0;
+
+  GrGLTextureInfo info;
+  if (!backend_texture.getGLTextureInfo(&info))
+    return 0;
+
+  return info.fID;
 }
 
 GpuImageDecodeCache::GpuImageDecodeCache(viz::RasterContextProvider* context,
@@ -1732,6 +1733,12 @@ void GpuImageDecodeCache::UnlockImage(ImageData* image_data) {
     ids_pending_unlock_.push_back(*image_data->upload.transfer_cache_id());
   }
   image_data->upload.OnUnlock();
+
+  // If we were holding onto an unmipped image for defering deletion, do it now
+  // it is guarenteed to have no-refs.
+  auto unmipped_image = image_data->upload.take_unmipped_image();
+  if (unmipped_image)
+    images_pending_deletion_.push_back(std::move(unmipped_image));
 }
 
 // We always run pending operations in the following order:
@@ -2020,8 +2027,10 @@ void GpuImageDecodeCache::UpdateMipsIfNeeded(const DrawImage& draw_image,
   if (!image_with_mips)
     return;
 
-  // We *must* get a new SkImage, or we will have lifetime issues.
-  DCHECK_NE(image_with_mips.get(), previous_image.get());
+  // No need to do anything if mipping this image results in the same texture.
+  // Deleting it below will result in lifetime issues.
+  if (GlIdFromSkImage(image_with_mips.get()) == image_data->upload.gl_id())
+    return;
 
   // Skia owns our new image, take ownership.
   sk_sp<SkImage> image_with_mips_owned = TakeOwnershipOfSkImageBacking(
@@ -2031,8 +2040,11 @@ void GpuImageDecodeCache::UpdateMipsIfNeeded(const DrawImage& draw_image,
   if (!image_with_mips_owned)
     return;
 
-  // Delete the previous image and set the new one to the cache.
-  images_pending_deletion_.push_back(image_data->upload.image());
+  // The previous image might be in the in-use cache, potentially held
+  // externally. We must defer deleting it until the entry is unlocked.
+  image_data->upload.set_unmipped_image(image_data->upload.image());
+
+  // Set the new image on the cache.
   image_data->upload.Reset();
   image_data->upload.SetImage(std::move(image_with_mips_owned));
   context_->ContextGL()->InitializeDiscardableTextureCHROMIUM(
