@@ -179,6 +179,7 @@ core_idl_files =
                     "frame/bar_prop.idl",
                     "frame/deprecation_report_body.idl",
                     "frame/external.idl",
+                    "frame/feature_policy_violation_report_body.idl",
                     "frame/history.idl",
                     "frame/intervention_report_body.idl",
                     "frame/location.idl",

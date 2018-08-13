@@ -33,12 +33,14 @@
 #include <memory>
 
 #include "services/network/public/cpp/features.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/CoreProbeSink.h"
 #include "third_party/blink/renderer/core/aom/computed_accessible_node.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
@@ -59,11 +61,14 @@
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
+#include "third_party/blink/renderer/core/frame/feature_policy_violation_report_body.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
+#include "third_party/blink/renderer/core/frame/report.h"
+#include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
@@ -1413,6 +1418,36 @@ int64_t LocalFrame::GetUkmSourceId() {
   if (!document)
     return ukm::kInvalidSourceId;
   return document->UkmSourceID();
+}
+
+const mojom::blink::ReportingServiceProxyPtr& LocalFrame::GetReportingService()
+    const {
+  if (!reporting_service_) {
+    Platform::Current()->GetConnector()->BindInterface(
+        Platform::Current()->GetBrowserServiceName(), &reporting_service_);
+  }
+  return reporting_service_;
+}
+
+void LocalFrame::ReportFeaturePolicyViolation(
+    mojom::FeaturePolicyFeature feature) const {
+  const String& feature_name = GetNameForFeature(feature);
+  FeaturePolicyViolationReportBody* body = new FeaturePolicyViolationReportBody(
+      feature_name, "Feature policy violation", SourceLocation::Capture());
+  Report* report =
+      new Report("feature-policy", GetDocument()->Url().GetString(), body);
+  ReportingContext::From(GetDocument())->QueueReport(report);
+
+  bool is_null;
+  int line_number = body->lineNumber(is_null);
+  line_number = is_null ? 0 : line_number;
+  int column_number = body->columnNumber(is_null);
+  column_number = is_null ? 0 : column_number;
+
+  // Send the feature policy violation report to the Reporting API.
+  GetReportingService()->QueueFeaturePolicyViolationReport(
+      GetDocument()->Url(), feature_name, "Feature policy violation",
+      body->sourceFile(), line_number, column_number);
 }
 
 }  // namespace blink

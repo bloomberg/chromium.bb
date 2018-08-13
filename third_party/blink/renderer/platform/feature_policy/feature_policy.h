@@ -90,6 +90,8 @@ PLATFORM_EXPORT void DisallowFeature(mojom::FeaturePolicyFeature,
 PLATFORM_EXPORT void AllowFeatureEverywhere(mojom::FeaturePolicyFeature,
                                             ParsedFeaturePolicy&);
 
+PLATFORM_EXPORT const String& GetNameForFeature(mojom::FeaturePolicyFeature);
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FEATURE_POLICY_FEATURE_POLICY_H_
