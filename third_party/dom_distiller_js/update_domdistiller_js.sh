@@ -36,7 +36,7 @@
   git reset --hard ${new_gitsha}
   git log --oneline ${curr_gitsha}..${new_gitsha} > $changes
 
-  echo -n Bug: > $bugs
+  echo -n 'Bug: ' > $bugs
 
   # This extracts BUG= lines from the log, extracts the numbers part, removes
   # whitespace and deletes empty lines. Then, split on ',', sort, uniquify and
@@ -87,9 +87,10 @@
     echo "Roll DOM Distiller JavaScript distribution package"
     echo
     echo "Diff since last roll:"
-    echo "https://github.com/chromium/dom-distiller/compare/${curr_gitsha}...${new_gitsha}"
+    echo "https://chromium.googlesource.com/chromium/dom-distiller/+/${curr_gitsha}..${new_gitsha}"
     echo
     echo "Picked up changes:"
+    echo "https://chromium.googlesource.com/chromium/dom-distiller/+log/${curr_gitsha}..${new_gitsha}"
     cat $changes
     echo
     cat $bugs
