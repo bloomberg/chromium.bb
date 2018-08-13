@@ -5,6 +5,8 @@
 #ifndef UI_MESSAGE_CENTER_VIEWS_MESSAGE_POPUP_COLLECTION_H_
 #define UI_MESSAGE_CENTER_VIEWS_MESSAGE_POPUP_COLLECTION_H_
 
+#include <memory>
+
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/message_center_export.h"
