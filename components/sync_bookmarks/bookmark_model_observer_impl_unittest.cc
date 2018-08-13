@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
@@ -441,6 +442,39 @@ TEST_F(BookmarkModelObserverImplTest, ShouldPositionSiblings) {
   EXPECT_TRUE(PositionOf(bookmark_node1).LessThan(PositionOf(bookmark_node2)));
   EXPECT_TRUE(PositionOf(bookmark_node1).LessThan(PositionOf(bookmark_node3)));
   EXPECT_TRUE(PositionOf(bookmark_node3).LessThan(PositionOf(bookmark_node2)));
+}
+
+TEST_F(BookmarkModelObserverImplTest, ShouldNotSyncUnsyncableBookmarks) {
+  bookmarks::BookmarkPermanentNodeList extra_nodes;
+  extra_nodes.push_back(
+      std::make_unique<bookmarks::BookmarkPermanentNode>(100));
+  bookmarks::BookmarkPermanentNode* extra_node = extra_nodes.back().get();
+  auto client = std::make_unique<bookmarks::TestBookmarkClient>();
+  client->SetExtraNodesToLoad(std::move(extra_nodes));
+
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModelWithClient(std::move(client));
+  model->AddObserver(observer());
+
+  EXPECT_CALL(*nudge_for_commit_closure(), Run()).Times(0);
+  // In the TestBookmarkClient, descendants of extra nodes shouldn't be synced.
+  const bookmarks::BookmarkNode* unsyncable_node =
+      model->AddURL(/*parent=*/extra_node, /*index=*/0,
+                    base::ASCIIToUTF16("Title"), GURL("http://www.url.com"));
+  // Only bookmark bar should be tracked.
+  EXPECT_THAT(bookmark_tracker()->TrackedEntitiesCountForTest(), 1U);
+
+  EXPECT_CALL(*nudge_for_commit_closure(), Run()).Times(0);
+  // In the TestBookmarkClient, descendants of extra nodes shouldn't be synced.
+  model->SetTitle(unsyncable_node, base::ASCIIToUTF16("NewTitle"));
+  // Only bookmark bar should be tracked.
+  EXPECT_THAT(bookmark_tracker()->TrackedEntitiesCountForTest(), 1U);
+
+  EXPECT_CALL(*nudge_for_commit_closure(), Run()).Times(0);
+  // In the TestBookmarkClient, descendants of extra nodes shouldn't be synced.
+  model->Remove(unsyncable_node);
+  // Only bookmark bar should be tracked.
+  EXPECT_THAT(bookmark_tracker()->TrackedEntitiesCountForTest(), 1U);
 }
 
 }  // namespace
