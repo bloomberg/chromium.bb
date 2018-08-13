@@ -45,7 +45,8 @@ def AddCommonArgs(arg_parser):
                            help='The path to the SSH configuration used for '
                                 'connecting to the target device.')
   common_args.add_argument('--system-log-file',
-                           help='File to write system logs to.')
+                           help='File to write system logs to. Specify - to '
+                                'log to stdout.')
   common_args.add_argument('--exclude-system-logs',
                            action='store_false',
                            dest='include_system_logs',
@@ -76,9 +77,16 @@ def GetDeploymentTargetForArgs(args):
   """Constructs a deployment target object using parameters taken from
   command line arguments."""
 
+  if args.system_log_file == '-':
+    system_log_file = sys.stdout
+  elif args.system_log_file:
+    system_log_file = open(args.system_log_file, 'w')
+  else:
+    system_log_file = None
+
   if not args.device:
     return QemuTarget(args.output_directory, args.target_cpu,
-                      args.system_log_file)
+                      system_log_file)
   else:
     return DeviceTarget(args.output_directory, args.target_cpu, args.host,
-                        args.port, args.ssh_config, args.system_log_file)
+                        args.port, args.ssh_config, system_log_file)

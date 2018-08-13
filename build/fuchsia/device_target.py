@@ -108,7 +108,7 @@ class DeviceTarget(target.Target):
         loglistener_path = os.path.join(SDK_ROOT, 'tools', 'loglistener')
         self._loglistener = subprocess.Popen(
             [loglistener_path, node_name],
-            stdout=open(self._system_log_file, 'w'),
+            stdout=self._system_log_file,
             stderr=subprocess.STDOUT, stdin=open(os.devnull))
 
       logging.debug('Waiting for device to join network.')
