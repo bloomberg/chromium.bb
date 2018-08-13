@@ -11,6 +11,9 @@
 @interface IdentityChooserTransitionDelegate
     : NSObject<UIViewControllerTransitioningDelegate>
 
+// Origin of the animation. Must be in the window coordinates.
+@property(nonatomic, assign) CGPoint origin;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_UNIFIED_CONSENT_IDENTITY_CHOOSER_IDENTITY_CHOOSER_TRANSITION_DELEGATE_H_

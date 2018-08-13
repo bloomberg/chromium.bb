@@ -203,7 +203,7 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
   self.identityPickerView.canChangeIdentity = self.interactable;
   self.identityPickerView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.identityPickerView addTarget:self
-                              action:@selector(identityPickerAction:)
+                              action:@selector(identityPickerAction:forEvent:)
                     forControlEvents:UIControlEventTouchUpInside];
   [container addSubview:self.identityPickerView];
 
@@ -354,8 +354,13 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
 
 #pragma mark - UI actions
 
-- (void)identityPickerAction:(id)sender {
-  [self.delegate unifiedConsentViewControllerDidTapIdentityPickerView:self];
+- (void)identityPickerAction:(id)sender forEvent:(UIEvent*)event {
+  UITouch* touch = event.allTouches.anyObject;
+  [self.delegate
+      unifiedConsentViewControllerDidTapIdentityPickerView:self
+                                                   atPoint:
+                                                       [touch
+                                                           locationInView:nil]];
 }
 
 #pragma mark - Private

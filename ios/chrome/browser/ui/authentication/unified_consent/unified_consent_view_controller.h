@@ -21,9 +21,11 @@ extern NSString* const kUnifiedConsentScrollViewIdentifier;
 - (void)unifiedConsentViewControllerDidTapSettingsLink:
     (UnifiedConsentViewController*)controller;
 
-// Called when the user taps on the IdentityPickerView.
+// Called when the user taps at |point| on the IdentityPickerView. |point| is in
+// the window coordinates.
 - (void)unifiedConsentViewControllerDidTapIdentityPickerView:
-    (UnifiedConsentViewController*)controller;
+            (UnifiedConsentViewController*)controller
+                                                     atPoint:(CGPoint)point;
 
 // Called when the user scrolls down to the bottom (or when the view controller
 // is loaded with no scroll needed).

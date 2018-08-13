@@ -20,15 +20,6 @@
 @property(nonatomic, weak) id<IdentityChooserViewControllerPresentationDelegate>
     presentationDelegate;
 
-// Initialises IdentityChooserViewController.
-- (instancetype)init NS_DESIGNATED_INITIALIZER;
-
-// -[IdentityChooserViewController init] should be used.
-- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
-                           appBarStyle:
-                               (ChromeTableViewControllerStyle)appBarStyle
-    NS_UNAVAILABLE;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_UNIFIED_CONSENT_IDENTITY_CHOOSER_IDENTITY_CHOOSER_VIEW_CONTROLLER_H_

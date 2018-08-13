@@ -13,6 +13,8 @@
 
 @implementation IdentityChooserTransitionDelegate
 
+@synthesize origin = _origin;
+
 #pragma mark - UIViewControllerTransitioningDelegate
 
 - (UIPresentationController*)
@@ -30,6 +32,7 @@ animationControllerForPresentedController:(UIViewController*)presented
                          sourceController:(UIViewController*)source {
   IdentityChooserAnimator* animator = [[IdentityChooserAnimator alloc] init];
   animator.appearing = YES;
+  animator.origin = self.origin;
   return animator;
 }
 

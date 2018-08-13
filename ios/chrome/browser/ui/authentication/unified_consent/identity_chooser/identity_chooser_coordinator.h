@@ -19,6 +19,8 @@
 @property(nonatomic, strong) ChromeIdentity* selectedIdentity;
 // Delegate.
 @property(nonatomic, weak) id<IdentityChooserCoordinatorDelegate> delegate;
+// Origin of the animation for the IdentityChooser.
+@property(nonatomic, assign) CGPoint origin;
 
 @end
 

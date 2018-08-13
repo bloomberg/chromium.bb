@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_item.h"
-#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_transition_delegate.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_view_controller_presentation_delegate.h"
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
 
@@ -26,29 +25,9 @@ const CGFloat kRowHeight = 54.;
 const CGFloat kFooterHeight = 17.;
 }  // namespace
 
-@interface IdentityChooserViewController ()
-
-@property(nonatomic, strong)
-    IdentityChooserTransitionDelegate* transitionController;
-
-@end
-
 @implementation IdentityChooserViewController
 
 @synthesize presentationDelegate = _presentationDelegate;
-@synthesize transitionController = _transitionController;
-
-- (instancetype)init {
-  self = [super initWithTableViewStyle:UITableViewStylePlain
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
-  if (self) {
-    self.modalPresentationStyle = UIModalPresentationCustom;
-    _transitionController = [[IdentityChooserTransitionDelegate alloc] init];
-    self.transitioningDelegate = _transitionController;
-    self.modalPresentationStyle = UIModalPresentationCustom;
-  }
-  return self;
-}
 
 - (void)viewDidLoad {
   [super viewDidLoad];
