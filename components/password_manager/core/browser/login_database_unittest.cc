@@ -2061,6 +2061,7 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
   auto form3 = AddDummyLogin("foo3", GURL("https://foo3.com/"), false);
 
   LoginDatabase db(database_path());
+  base::HistogramTester histogram_tester;
   ASSERT_TRUE(db.Init());
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -2076,6 +2077,20 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
 #else
   EXPECT_EQ(DatabaseCleanupResult::kSuccess, db.DeleteUndecryptableLogins());
 #endif
+
+// Check histograms.
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  histogram_tester.ExpectUniqueSample("PasswordManager.CleanedUpPasswords", 1,
+                                      1);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.DeleteUndecryptableLoginsReturnValue",
+      metrics_util::DeleteUndecryptableLoginsReturnValue::kSuccessLoginsDeleted,
+      1);
+#else
+  EXPECT_TRUE(
+      histogram_tester.GetAllSamples("PasswordManager.CleanedUpPasswords")
+          .empty());
+#endif
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -2085,9 +2100,19 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, KeychainLockedTest) {
 
   OSCryptMocker::SetBackendLocked(true);
   LoginDatabase db(database_path());
+  base::HistogramTester histogram_tester;
   ASSERT_TRUE(db.Init());
   EXPECT_EQ(DatabaseCleanupResult::kEncryptionUnavailable,
             db.DeleteUndecryptableLogins());
+
+  EXPECT_TRUE(
+      histogram_tester.GetAllSamples("PasswordManager.CleanedUpPasswords")
+          .empty());
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.DeleteUndecryptableLoginsReturnValue",
+      metrics_util::DeleteUndecryptableLoginsReturnValue::
+          kEncryptionUnavailable,
+      1);
 }
 #endif
 

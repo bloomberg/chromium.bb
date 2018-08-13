@@ -9875,6 +9875,13 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Invalid delays">Insufficient amount of data.</int>
 </enum>
 
+<enum name="DeleteUndecryptableLoginsReturnValue">
+  <int value="0" label="Success - no passwords were deleted"/>
+  <int value="1" label="Success - there were deleted passwords"/>
+  <int value="2" label="Item failure"/>
+  <int value="3" label="Encryption unavailable"/>
+</enum>
+
 <enum name="DeprecatedAcceleratorUsage">
   <int value="0" label="Deprecated key accelerator is used"/>
   <int value="1" label="New key accelerator is used"/>

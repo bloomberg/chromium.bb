@@ -199,6 +199,20 @@ enum class CredentialSourceType {
   kCredentialManagementAPI
 };
 
+// Metrics: PasswordManager.DeleteUndecryptableLoginsReturnValue
+enum class DeleteUndecryptableLoginsReturnValue {
+  // No broken entries were deleted.
+  kSuccessNoDeletions = 0,
+  // There were broken entries that were successfully deleted.
+  kSuccessLoginsDeleted = 1,
+  // Broken entries were found, but failed to be deleted.
+  kItemFailure = 2,
+  // Encryption is unavailable, it's impossible to determine which entries are
+  // broken.
+  kEncryptionUnavailable = 3,
+  kMaxValue = kEncryptionUnavailable,
+};
+
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 enum class SyncPasswordHashChange {
   SAVED_ON_CHROME_SIGNIN,
@@ -357,6 +371,10 @@ void LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
 
 // Log a frame of a submitted password form.
 void LogSubmittedFormFrame(SubmittedFormFrame frame);
+
+// Log a return value of LoginDatabase::DeleteUndecryptableLogins method.
+void LogDeleteUndecryptableLoginsReturnValue(
+    DeleteUndecryptableLoginsReturnValue return_value);
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 // Log a save sync password change event.

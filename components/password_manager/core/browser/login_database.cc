@@ -1266,8 +1266,12 @@ bool LoginDatabase::DeleteAndRecreateDatabaseFile() {
 DatabaseCleanupResult LoginDatabase::DeleteUndecryptableLogins() {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // If the Keychain is unavailable, don't delete any logins.
-  if (!OSCrypt::IsEncryptionAvailable())
+  if (!OSCrypt::IsEncryptionAvailable()) {
+    metrics_util::LogDeleteUndecryptableLoginsReturnValue(
+        metrics_util::DeleteUndecryptableLoginsReturnValue::
+            kEncryptionUnavailable);
     return DatabaseCleanupResult::kEncryptionUnavailable;
+  }
 
   DCHECK(db_.is_open());
 
@@ -1299,8 +1303,23 @@ DatabaseCleanupResult LoginDatabase::DeleteUndecryptableLogins() {
   }
 
   for (const auto& form : forms_to_be_deleted) {
-    if (!RemoveLogin(form))
+    if (!RemoveLogin(form)) {
+      metrics_util::LogDeleteUndecryptableLoginsReturnValue(
+          metrics_util::DeleteUndecryptableLoginsReturnValue::kItemFailure);
       return DatabaseCleanupResult::kItemFailure;
+    }
+  }
+
+  if (forms_to_be_deleted.empty()) {
+    metrics_util::LogDeleteUndecryptableLoginsReturnValue(
+        metrics_util::DeleteUndecryptableLoginsReturnValue::
+            kSuccessNoDeletions);
+  } else {
+    metrics_util::LogDeleteUndecryptableLoginsReturnValue(
+        metrics_util::DeleteUndecryptableLoginsReturnValue::
+            kSuccessLoginsDeleted);
+    UMA_HISTOGRAM_COUNTS_100("PasswordManager.CleanedUpPasswords",
+                             forms_to_be_deleted.size());
   }
 #endif
 
