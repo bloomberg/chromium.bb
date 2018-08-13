@@ -86,7 +86,7 @@
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/dom_storage_message_filter.h"
 #include "content/browser/field_trial_recorder.h"
-#include "content/browser/fileapi/fileapi_message_filter.h"
+#include "content/browser/fileapi/file_system_manager_impl.h"
 #include "content/browser/font_unique_name_lookup/font_unique_name_lookup_service.h"
 #include "content/browser/frame_host/render_frame_message_filter.h"
 #include "content/browser/gpu/browser_gpu_client_delegate.h"
@@ -1848,9 +1848,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #if BUILDFLAG(ENABLE_PLUGINS)
   AddFilter(new PepperRendererConnection(GetID()));
 #endif
-  AddFilter(new FileAPIMessageFilter(
-      GetID(), storage_partition_impl_->GetFileSystemContext(),
-      blob_storage_context.get()));
   AddFilter(new BlobDispatcherHost(GetID(), blob_storage_context));
 #if defined(OS_MACOSX)
   AddFilter(new TextInputClientMessageFilter());
@@ -1990,6 +1987,13 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   registry->AddInterface(
       base::Bind(&PushMessagingManager::BindRequest,
                  base::Unretained(push_messaging_manager_.get())));
+
+  file_system_manager_impl_.reset(new FileSystemManagerImpl(
+      GetID(), storage_partition_impl_->GetFileSystemContext(),
+      ChromeBlobStorageContext::GetFor(GetBrowserContext())));
+  registry->AddInterface(
+      base::BindRepeating(&FileSystemManagerImpl::BindRequest,
+                          base::Unretained(file_system_manager_impl_.get())));
 
   if (gpu_client_) {
     // |gpu_client_| outlives the registry, because its destruction is posted to

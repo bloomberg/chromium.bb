@@ -8,37 +8,35 @@
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
+#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "storage/browser/fileapi/file_observers.h"
-
-namespace storage {
-class FileSystemContext;
-class FileSystemURL;
-}
+#include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 
 namespace content {
 
 // Installs a temporary storage::FileUpdateObserver for use in browser tests
 // that need to wait for a specific fileapi operation to complete.
-class TestFileapiOperationWaiter : public storage::FileUpdateObserver {
+class TestFileapiOperationWaiter
+    : public blink::mojom::FileSystemOperationListener {
  public:
-  explicit TestFileapiOperationWaiter(storage::FileSystemContext* context);
+  TestFileapiOperationWaiter();
   ~TestFileapiOperationWaiter() override;
 
-  // Returns true if OnStartUpdate has occurred.
-  bool did_start_update() { return did_start_update_; }
+  void WaitForOperationToFinish();
 
-  // Wait for the next OnEndUpdate event.
-  void WaitForEndUpdate();
+  // Callback for passing into blink::mojom::FileSystem::Create.
+  void DidCreate(base::File::Error error_code);
 
-  // FileUpdateObserver overrides.
-  void OnStartUpdate(const storage::FileSystemURL& url) override;
-  void OnUpdate(const storage::FileSystemURL& url, int64_t delta) override;
-  void OnEndUpdate(const storage::FileSystemURL& url) override;
+  // blink::mojom::FileSystemOperationListener
+  void ResultsRetrieved(
+      std::vector<filesystem::mojom::DirectoryEntryPtr> entries,
+      bool has_more) override;
+  void ErrorOccurred(base::File::Error error_code) override;
+  void DidWrite(int64_t byte_count, bool complete) override;
 
  private:
-  bool did_start_update_ = false;
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFileapiOperationWaiter);

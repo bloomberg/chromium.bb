@@ -73,6 +73,7 @@ class SharedPersistentMemoryAllocator;
 namespace content {
 class BrowserPluginMessageFilter;
 class ChildConnection;
+class FileSystemManagerImpl;
 class GpuClientImpl;
 class IndexedDBDispatcherHost;
 class InProcessChildThreadParams;
@@ -413,6 +414,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // This is used to ensure that unload handlers have a chance to execute
   // before the process shuts down.
   void DelayProcessShutdownForUnload(const base::TimeDelta& timeout);
+
+  FileSystemManagerImpl* GetFileSystemManagerForTesting() {
+    return file_system_manager_impl_.get();
+  }
 
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.
@@ -814,6 +819,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #endif
 
   scoped_refptr<ResourceMessageFilter> resource_message_filter_;
+  std::unique_ptr<FileSystemManagerImpl, BrowserThread::DeleteOnIOThread>
+      file_system_manager_impl_;
   std::unique_ptr<GpuClientImpl, BrowserThread::DeleteOnIOThread> gpu_client_;
   std::unique_ptr<PushMessagingManager, BrowserThread::DeleteOnIOThread>
       push_messaging_manager_;
