@@ -257,7 +257,7 @@ class TabStrip : public views::View,
   bool CanPaintThrobberToLayer() const override;
   SkColor GetToolbarTopSeparatorColor() const override;
   SkColor GetTabSeparatorColor() const override;
-  SkColor GetTabBackgroundColor(TabState state) const override;
+  SkColor GetTabBackgroundColor(TabState state, bool opaque) const override;
   SkColor GetTabForegroundColor(TabState state) const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   int GetBackgroundResourceId(bool* has_custom_image) const override;

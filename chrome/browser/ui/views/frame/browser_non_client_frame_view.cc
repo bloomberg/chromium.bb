@@ -126,7 +126,7 @@ bool BrowserNonClientFrameView::HasVisibleBackgroundTabShapes() const {
 
   // Background tab shapes are visible iff the tab color differs from the frame
   // color.
-  return GetTabBackgroundColor(TAB_INACTIVE) != GetFrameColor();
+  return GetTabBackgroundColor(TAB_INACTIVE, true) != GetFrameColor();
 }
 
 gfx::ImageSkia BrowserNonClientFrameView::GetIncognitoAvatarIcon() const {
@@ -144,7 +144,15 @@ SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {
       ShouldPaintAsActive()
           ? ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR
           : ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE;
-  return GetThemeOrDefaultColor(color_id);
+
+  SkColor paint_color = GetThemeOrDefaultColor(color_id);
+
+  // In refresh, the vertical tab separator might show through the stroke if the
+  // stroke color is translucent.  To prevent this, always use an opaque stroke
+  // color.
+  return MD::IsRefreshUi()
+             ? color_utils::GetResultingPaintColor(paint_color, GetFrameColor())
+             : paint_color;
 }
 
 SkColor BrowserNonClientFrameView::GetTabSeparatorColor() const {
@@ -154,13 +162,14 @@ SkColor BrowserNonClientFrameView::GetTabSeparatorColor() const {
   // 1.84 contrast ratio, whichever is larger" (and make sure the blend is large
   // enough in the default theme to not need adjusting).
   constexpr SkAlpha kTabSeparatorAlpha = 0x4D;  // 30%
-  const SkColor tab_color = GetTabBackgroundColor(TAB_INACTIVE);
+  const SkColor tab_color = GetTabBackgroundColor(TAB_INACTIVE, true);
   const SkColor base_color =
       color_utils::BlendTowardOppositeLuma(tab_color, SK_AlphaOPAQUE);
   return color_utils::AlphaBlend(base_color, tab_color, kTabSeparatorAlpha);
 }
 
-SkColor BrowserNonClientFrameView::GetTabBackgroundColor(TabState state) const {
+SkColor BrowserNonClientFrameView::GetTabBackgroundColor(TabState state,
+                                                         bool opaque) const {
   if (state == TAB_ACTIVE)
     return GetThemeOrDefaultColor(ThemeProperties::COLOR_TOOLBAR);
 
@@ -171,11 +180,16 @@ SkColor BrowserNonClientFrameView::GetTabBackgroundColor(TabState state) const {
   // When the background tab color has not been customized, use the actual frame
   // color instead of COLOR_BACKGROUND_TAB; these will differ for single-tab
   // mode and custom window frame colors.
-  return (MD::IsRefreshUi() && !tp->HasCustomColor(color_id))
-             ? color_utils::HSLShift(
-                   GetFrameColor(),
-                   tp->GetTint(ThemeProperties::TINT_BACKGROUND_TAB))
-             : GetThemeOrDefaultColor(color_id);
+  const SkColor background =
+      (MD::IsRefreshUi() && !tp->HasCustomColor(color_id))
+          ? color_utils::HSLShift(
+                GetFrameColor(),
+                tp->GetTint(ThemeProperties::TINT_BACKGROUND_TAB))
+          : GetThemeOrDefaultColor(color_id);
+
+  return opaque
+             ? color_utils::GetResultingPaintColor(background, GetFrameColor())
+             : background;
 }
 
 SkColor BrowserNonClientFrameView::GetTabForegroundColor(TabState state) const {
@@ -187,7 +201,7 @@ SkColor BrowserNonClientFrameView::GetTabForegroundColor(TabState state) const {
           ? ThemeProperties::COLOR_BACKGROUND_TAB_TEXT
           : ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE;
   if (MD::IsRefreshUi() && !GetThemeProvider()->HasCustomColor(color_id)) {
-    const SkColor background_color = GetTabBackgroundColor(TAB_INACTIVE);
+    const SkColor background_color = GetTabBackgroundColor(TAB_INACTIVE, true);
     const SkColor default_color = color_utils::IsDark(background_color)
                                       ? gfx::kGoogleGrey500
                                       : gfx::kGoogleGrey700;
@@ -282,7 +296,7 @@ bool BrowserNonClientFrameView::ShouldDrawStrokes() const {
   // fall back to a stroke.  Always compute the contrast ratio against the
   // active frame color, to avoid toggling the stroke on and off as the window
   // activation state changes.
-  return color_utils::GetContrastRatio(GetTabBackgroundColor(TAB_ACTIVE),
+  return color_utils::GetContrastRatio(GetTabBackgroundColor(TAB_ACTIVE, true),
                                        GetFrameColor(true)) < 1.3;
 }
 
