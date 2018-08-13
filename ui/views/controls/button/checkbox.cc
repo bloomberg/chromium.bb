@@ -41,7 +41,6 @@ Checkbox::Checkbox(const base::string16& label, ButtonListener* listener)
   set_request_focus_on_press(false);
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
-  focus_ring_ = FocusRing::Install(this);
 
   // Limit the checkbox height to match the legacy appearance.
   const gfx::Size preferred_size(LabelButton::CalculatePreferredSize());
@@ -138,8 +137,8 @@ std::unique_ptr<LabelButtonBorder> Checkbox::CreateDefaultBorder() const {
 
 void Checkbox::Layout() {
   LabelButton::Layout();
-  if (focus_ring_ && !image()->bounds().IsEmpty())
-    focus_ring_->SetPath(GetFocusRingPath());
+  if (focus_ring() && !image()->bounds().IsEmpty())
+    focus_ring()->SetPath(GetFocusRingPath());
 }
 
 SkPath Checkbox::GetFocusRingPath() const {
