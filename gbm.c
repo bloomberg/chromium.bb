@@ -229,7 +229,7 @@ PUBLIC void *gbm_bo_map(struct gbm_bo *bo, uint32_t x, uint32_t y, uint32_t widt
 	void *addr;
 	off_t offset;
 	uint32_t map_flags;
-	struct rectangle rect = { .x = x, .y = y, .width = width, .height = height };
+	struct rectangle rect = {.x = x, .y = y, .width = width, .height = height };
 	if (!bo || width == 0 || height == 0 || !stride || !map_data)
 		return NULL;
 
@@ -265,7 +265,7 @@ PUBLIC uint32_t gbm_bo_get_height(struct gbm_bo *bo)
 
 PUBLIC uint32_t gbm_bo_get_stride(struct gbm_bo *bo)
 {
-  return gbm_bo_get_stride_for_plane(bo, 0);
+	return gbm_bo_get_stride_for_plane(bo, 0);
 }
 
 PUBLIC uint32_t gbm_bo_get_stride_or_tiling(struct gbm_bo *bo)
@@ -285,7 +285,7 @@ PUBLIC uint64_t gbm_bo_get_format_modifier(struct gbm_bo *bo)
 
 PUBLIC uint64_t gbm_bo_get_modifier(struct gbm_bo *bo)
 {
-    return gbm_bo_get_plane_format_modifier(bo, 0);
+	return gbm_bo_get_plane_format_modifier(bo, 0);
 }
 
 PUBLIC struct gbm_device *gbm_bo_get_device(struct gbm_bo *bo)
@@ -310,7 +310,7 @@ PUBLIC size_t gbm_bo_get_num_planes(struct gbm_bo *bo)
 
 PUBLIC size_t gbm_bo_get_plane_count(struct gbm_bo *bo)
 {
-    return drv_bo_get_num_planes(bo->bo);
+	return drv_bo_get_num_planes(bo->bo);
 }
 
 PUBLIC union gbm_bo_handle gbm_bo_get_plane_handle(struct gbm_bo *bo, size_t plane)
@@ -335,7 +335,7 @@ PUBLIC uint32_t gbm_bo_get_plane_offset(struct gbm_bo *bo, size_t plane)
 
 PUBLIC uint32_t gbm_bo_get_offset(struct gbm_bo *bo, size_t plane)
 {
-    return drv_bo_get_plane_offset(bo->bo, plane);
+	return drv_bo_get_plane_offset(bo->bo, plane);
 }
 
 PUBLIC uint32_t gbm_bo_get_plane_size(struct gbm_bo *bo, size_t plane)
@@ -350,7 +350,7 @@ PUBLIC uint32_t gbm_bo_get_plane_stride(struct gbm_bo *bo, size_t plane)
 
 PUBLIC uint32_t gbm_bo_get_stride_for_plane(struct gbm_bo *bo, size_t plane)
 {
-    return drv_bo_get_plane_stride(bo->bo, plane);
+	return drv_bo_get_plane_stride(bo->bo, plane);
 }
 
 PUBLIC uint64_t gbm_bo_get_plane_format_modifier(struct gbm_bo *bo, size_t plane)

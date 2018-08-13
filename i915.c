@@ -419,9 +419,7 @@ static int i915_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint32_t
 					 uint32_t format, const uint64_t *modifiers, uint32_t count)
 {
 	static const uint64_t modifier_order[] = {
-		I915_FORMAT_MOD_Y_TILED,
-		I915_FORMAT_MOD_X_TILED,
-		DRM_FORMAT_MOD_LINEAR,
+		I915_FORMAT_MOD_Y_TILED, I915_FORMAT_MOD_X_TILED, DRM_FORMAT_MOD_LINEAR,
 	};
 	uint64_t modifier;
 
