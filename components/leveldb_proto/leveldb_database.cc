@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -24,6 +25,13 @@
 
 namespace leveldb_proto {
 
+namespace {
+
+// Covers 8MB block cache,
+const int kMaxApproxMemoryUseMB = 16;
+
+}  // namespace
+
 LevelDB::LevelDB(const char* client_name)
     : open_histogram_(nullptr), destroy_histogram_(nullptr) {
   // Used in lieu of UMA_HISTOGRAM_ENUMERATION because the histogram name is
@@ -35,6 +43,10 @@ LevelDB::LevelDB(const char* client_name)
   destroy_histogram_ = base::LinearHistogram::FactoryGet(
       std::string("LevelDB.Destroy.") + client_name, 1,
       leveldb_env::LEVELDB_STATUS_MAX, leveldb_env::LEVELDB_STATUS_MAX + 1,
+      base::Histogram::kUmaTargetedHistogramFlag);
+  approx_mem_histogram_ = base::LinearHistogram::FactoryGet(
+      std::string("LevelDB.ApproximateMemoryUse.") + client_name, 1,
+      kMaxApproxMemoryUseMB * 1048576, kMaxApproxMemoryUseMB * 4,
       base::Histogram::kUmaTargetedHistogramFlag);
 }
 
@@ -48,7 +60,8 @@ bool LevelDB::Init(const base::FilePath& database_dir,
   database_dir_ = database_dir;
   open_options_ = options;
 
-  if (database_dir.empty()) {
+  bool in_mem = database_dir.empty();
+  if (in_mem) {
     env_ = leveldb_chrome::NewMemEnv("LevelDB");
     open_options_.env = env_.get();
   }
@@ -66,8 +79,20 @@ bool LevelDB::Init(const base::FilePath& database_dir,
     // the meaning of corruptions/open which is an important statistic.
   }
 
-  if (status.ok())
+  if (status.ok()) {
+    if (!in_mem) {
+      // Record the approximate memory usage of this DB right after init.
+      // This should just be the size of the MemTable since we haven't done any
+      // reads/writes and the block cache should be empty.
+      uint64_t approx_mem = 0;
+      std::string usage_string;
+      if (db_->GetProperty("leveldb.approximate-memory-usage", &usage_string) &&
+          base::StringToUint64(usage_string, &approx_mem)) {
+        approx_mem_histogram_->Add(approx_mem);
+      }
+    }
     return true;
+  }
 
   LOG(WARNING) << "Unable to open " << database_dir.value() << ": "
                << status.ToString();
