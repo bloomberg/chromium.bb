@@ -42,16 +42,6 @@ InlineFlowBoxPainter::InlineFlowBoxPainter(const InlineFlowBox& flow_box)
           flow_box.GetLineLayoutItem().StyleRef(),
           flow_box.GetLineLayoutItem().StyleRef(flow_box.IsFirstLineStyle())),
       inline_flow_box_(flow_box) {
-  object_has_multiple_boxes_ = inline_flow_box_.PrevForSameLayoutObject() ||
-                               inline_flow_box_.NextForSameLayoutObject();
-  bool force_include_logical_edges =
-      (!inline_flow_box_.PrevForSameLayoutObject() &&
-       !inline_flow_box_.NextForSameLayoutObject()) ||
-      !inline_flow_box_.Parent();
-  include_logical_left_edge_for_box_shadow_ =
-      force_include_logical_edges || inline_flow_box_.IncludeLogicalLeftEdge();
-  include_logical_right_edge_for_box_shadow_ =
-      force_include_logical_edges || inline_flow_box_.IncludeLogicalRightEdge();
 }
 
 void InlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
@@ -162,7 +152,8 @@ LayoutRect InlineFlowBoxPainter::PaintRectForImageStrip(
 
 InlineBoxPainterBase::BorderPaintingType
 InlineFlowBoxPainter::GetBorderPaintType(const LayoutRect& adjusted_frame_rect,
-                                         IntRect& adjusted_clip_rect) const {
+                                         IntRect& adjusted_clip_rect,
+                                         bool object_has_multiple_boxes) const {
   adjusted_clip_rect = PixelSnappedIntRect(adjusted_frame_rect);
   if (inline_flow_box_.Parent() &&
       inline_flow_box_.GetLineLayoutItem().StyleRef().HasBorderDecoration()) {
@@ -226,12 +217,14 @@ void InlineFlowBoxPainter::PaintBackgroundBorderShadow(
 
   LayoutRect paint_rect = AdjustedPaintRect(paint_offset);
 
+  bool object_has_multiple_boxes = inline_flow_box_.PrevForSameLayoutObject() ||
+                                   inline_flow_box_.NextForSameLayoutObject();
   const auto& box_model = *ToLayoutBoxModelObject(
       LineLayoutAPIShim::LayoutObjectFrom(inline_flow_box_.BoxModelObject()));
   BackgroundImageGeometry geometry(box_model);
   BoxModelObjectPainter box_painter(box_model, &inline_flow_box_);
   PaintBoxDecorationBackground(box_painter, paint_info, paint_offset,
-                               paint_rect, geometry,
+                               paint_rect, geometry, object_has_multiple_boxes,
                                inline_flow_box_.IncludeLogicalLeftEdge(),
                                inline_flow_box_.IncludeLogicalRightEdge());
 }
@@ -257,12 +250,15 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
 
   const auto& mask_nine_piece_image = box_model.StyleRef().MaskBoxImage();
   const auto* mask_box_image = mask_nine_piece_image.GetImage();
+  bool object_has_multiple_boxes = inline_flow_box_.PrevForSameLayoutObject() ||
+                                   inline_flow_box_.NextForSameLayoutObject();
 
   // Figure out if we need to push a transparency layer to render our mask.
   BackgroundImageGeometry geometry(box_model);
   BoxModelObjectPainter box_painter(box_model, &inline_flow_box_);
   PaintFillLayers(box_painter, paint_info, Color::kTransparent,
-                  box_model.StyleRef().MaskLayers(), paint_rect, geometry);
+                  box_model.StyleRef().MaskLayers(), paint_rect, geometry,
+                  object_has_multiple_boxes);
 
   bool has_box_image = mask_box_image && mask_box_image->CanRender();
   if (!has_box_image || !mask_box_image->IsLoaded()) {
@@ -348,6 +344,22 @@ void InlineFlowBoxPainter::RecordHitTestData(const PaintInfo& paint_info,
   HitTestData::RecordTouchActionRect(
       paint_info.context, inline_flow_box_,
       TouchActionRect(AdjustedPaintRect(paint_offset), touch_action));
+}
+
+void InlineFlowBoxPainter::PaintNormalBoxShadow(const PaintInfo& info,
+                                                const ComputedStyle& s,
+                                                const LayoutRect& paint_rect) {
+  BoxPainterBase::PaintNormalBoxShadow(
+      info, paint_rect, s, inline_flow_box_.IncludeLogicalLeftEdge(),
+      inline_flow_box_.IncludeLogicalRightEdge());
+}
+
+void InlineFlowBoxPainter::PaintInsetBoxShadow(const PaintInfo& info,
+                                               const ComputedStyle& s,
+                                               const LayoutRect& paint_rect) {
+  BoxPainterBase::PaintInsetBoxShadowWithBorderRect(
+      info, paint_rect, s, inline_flow_box_.IncludeLogicalLeftEdge(),
+      inline_flow_box_.IncludeLogicalRightEdge());
 }
 
 }  // namespace blink

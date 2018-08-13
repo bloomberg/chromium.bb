@@ -19,6 +19,7 @@ void InlineBoxPainterBase::PaintBoxDecorationBackground(
     const LayoutPoint& paint_offset,
     LayoutRect adjusted_frame_rect,
     BackgroundImageGeometry geometry,
+    bool object_has_multiple_boxes,
     bool include_logical_left_edge,
     bool include_logical_right_edge) {
   // Shadow comes first and is behind the background and border.
@@ -27,14 +28,14 @@ void InlineBoxPainterBase::PaintBoxDecorationBackground(
   Color background_color =
       line_style_.VisitedDependentColor(GetCSSPropertyBackgroundColor());
   PaintFillLayers(box_painter, paint_info, background_color,
-                  line_style_.BackgroundLayers(), adjusted_frame_rect,
-                  geometry);
+                  line_style_.BackgroundLayers(), adjusted_frame_rect, geometry,
+                  object_has_multiple_boxes);
 
   PaintInsetBoxShadow(paint_info, line_style_, adjusted_frame_rect);
 
   IntRect adjusted_clip_rect;
-  BorderPaintingType border_painting_type =
-      GetBorderPaintType(adjusted_frame_rect, adjusted_clip_rect);
+  BorderPaintingType border_painting_type = GetBorderPaintType(
+      adjusted_frame_rect, adjusted_clip_rect, object_has_multiple_boxes);
   switch (border_painting_type) {
     case kDontPaintBorders:
       break;
@@ -65,12 +66,16 @@ void InlineBoxPainterBase::PaintFillLayers(BoxPainterBase& box_painter,
                                            const FillLayer& layer,
                                            const LayoutRect& rect,
                                            BackgroundImageGeometry& geometry,
+                                           bool object_has_multiple_boxes,
                                            SkBlendMode op) {
   // FIXME: This should be a for loop or similar. It's a little non-trivial to
   // do so, however, since the layers need to be painted in reverse order.
-  if (layer.Next())
-    PaintFillLayers(box_painter, info, c, *layer.Next(), rect, geometry, op);
-  PaintFillLayer(box_painter, info, c, layer, rect, geometry, op);
+  if (layer.Next()) {
+    PaintFillLayers(box_painter, info, c, *layer.Next(), rect, geometry,
+                    object_has_multiple_boxes, op);
+  }
+  PaintFillLayer(box_painter, info, c, layer, rect, geometry,
+                 object_has_multiple_boxes, op);
 }
 
 void InlineBoxPainterBase::PaintFillLayer(BoxPainterBase& box_painter,
@@ -79,11 +84,12 @@ void InlineBoxPainterBase::PaintFillLayer(BoxPainterBase& box_painter,
                                           const FillLayer& fill_layer,
                                           const LayoutRect& paint_rect,
                                           BackgroundImageGeometry& geometry,
+                                          bool object_has_multiple_boxes,
                                           SkBlendMode op) {
   StyleImage* img = fill_layer.GetImage();
   bool has_fill_image = img && img->CanRender();
 
-  if (!object_has_multiple_boxes_ ||
+  if (!object_has_multiple_boxes ||
       (!has_fill_image && !style_.HasBorderRadius())) {
     box_painter.PaintFillLayer(paint_info, c, fill_layer, paint_rect,
                                kBackgroundBleedNone, geometry, op, false);
@@ -91,7 +97,7 @@ void InlineBoxPainterBase::PaintFillLayer(BoxPainterBase& box_painter,
   }
 
   // Handle fill images that clone or spans multiple lines.
-  bool multi_line = object_has_multiple_boxes_ &&
+  bool multi_line = object_has_multiple_boxes &&
                     style_.BoxDecorationBreak() != EBoxDecorationBreak::kClone;
   LayoutRect rect = multi_line
                         ? PaintRectForImageStrip(paint_rect, style_.Direction())
@@ -101,22 +107,6 @@ void InlineBoxPainterBase::PaintFillLayer(BoxPainterBase& box_painter,
   box_painter.PaintFillLayer(paint_info, c, fill_layer, rect,
                              kBackgroundBleedNone, geometry, op, multi_line,
                              paint_rect.Size());
-}
-
-void InlineBoxPainterBase::PaintNormalBoxShadow(const PaintInfo& info,
-                                                const ComputedStyle& s,
-                                                const LayoutRect& paint_rect) {
-  BoxPainterBase::PaintNormalBoxShadow(
-      info, paint_rect, s, include_logical_left_edge_for_box_shadow_,
-      include_logical_right_edge_for_box_shadow_);
-}
-
-void InlineBoxPainterBase::PaintInsetBoxShadow(const PaintInfo& info,
-                                               const ComputedStyle& s,
-                                               const LayoutRect& paint_rect) {
-  BoxPainterBase::PaintInsetBoxShadowWithBorderRect(
-      info, paint_rect, s, include_logical_left_edge_for_box_shadow_,
-      include_logical_right_edge_for_box_shadow_);
 }
 
 }  // namespace blink
