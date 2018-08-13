@@ -24,6 +24,7 @@
 #ifndef CHROME_ELF_NT_REGISTRY_NT_REGISTRY_H_
 #define CHROME_ELF_NT_REGISTRY_NT_REGISTRY_H_
 
+#include <string>
 #include <vector>
 
 #include "sandbox/win/src/nt_internals.h"  // NTSTATUS
