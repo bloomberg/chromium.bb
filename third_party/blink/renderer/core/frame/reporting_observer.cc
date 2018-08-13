@@ -24,9 +24,15 @@ ReportingObserver* ReportingObserver::Create(
 ReportingObserver::ReportingObserver(ExecutionContext* execution_context,
                                      V8ReportingObserverCallback* callback,
                                      ReportingObserverOptions options)
-    : execution_context_(execution_context),
+    : ContextClient(execution_context),
+      execution_context_(execution_context),
       callback_(callback),
-      options_(options) {}
+      options_(options),
+      registered_(false) {}
+
+bool ReportingObserver::HasPendingActivity() const {
+  return registered_;
+}
 
 void ReportingObserver::ReportToCallback() {
   // The reports queued to be sent to callbacks are copied (and cleared) before
@@ -66,10 +72,12 @@ void ReportingObserver::ClearBuffered() {
 }
 
 void ReportingObserver::observe() {
+  registered_ = true;
   ReportingContext::From(execution_context_)->RegisterObserver(this);
 }
 
 void ReportingObserver::disconnect() {
+  registered_ = false;
   ReportingContext::From(execution_context_)->UnregisterObserver(this);
 }
 
@@ -84,6 +92,7 @@ void ReportingObserver::Trace(blink::Visitor* visitor) {
   visitor->Trace(callback_);
   visitor->Trace(report_queue_);
   ScriptWrappable::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink
