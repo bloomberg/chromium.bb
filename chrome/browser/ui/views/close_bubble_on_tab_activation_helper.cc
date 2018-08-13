@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/close_bubble_on_tab_activation_helper.h"
 
 #include "chrome/browser/ui/browser.h"
-#include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/widget/widget.h"
 
 CloseBubbleOnTabActivationHelper::CloseBubbleOnTabActivationHelper(

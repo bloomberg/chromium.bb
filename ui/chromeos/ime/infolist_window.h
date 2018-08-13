@@ -15,7 +15,7 @@
 #include "ui/base/ime/infolist_entry.h"
 #include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/gfx/font_list.h"
-#include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace ui {
 namespace ime {

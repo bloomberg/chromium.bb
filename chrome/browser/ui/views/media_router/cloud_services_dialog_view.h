@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_VIEW_H_
 
 #include "base/strings/string16.h"
-#include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/styled_label_listener.h"
 
 class Browser;

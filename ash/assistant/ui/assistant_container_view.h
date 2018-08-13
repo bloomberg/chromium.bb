@@ -8,7 +8,7 @@
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
-#include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace gfx {
 class SlideAnimation;

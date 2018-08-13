@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_observer.h"
-#include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 class BrowserActionsContainer;
 class BrowserView;
