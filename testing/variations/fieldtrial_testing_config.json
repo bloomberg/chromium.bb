@@ -1301,7 +1301,8 @@
     "DefaultEnableOopRasterization": [
         {
             "platforms": [
-                "android"
+                "android",
+                "chromeos"
             ],
             "experiments": [
                 {
