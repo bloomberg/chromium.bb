@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #include "ios/chrome/browser/ui/history/history_entries_status_item.h"
 #import "ios/chrome/browser/ui/history/history_entries_status_item_delegate.h"
@@ -955,28 +956,29 @@ const CGFloat kAlphaForDisabledSearchBar = 0.5;
 
 // Opens URL in a new non-incognito tab and dismisses the history view.
 - (void)openURLInNewTab:(const GURL&)URL {
-  GURL copiedURL(URL);
+  OpenNewTabCommand* command =
+      [[OpenNewTabCommand alloc] initWithURL:URL
+                                    referrer:web::Referrer()
+                                 inIncognito:NO
+                                inBackground:NO
+                                    appendTo:kLastTab];
+
   [self.localDispatcher dismissHistoryWithCompletion:^{
-    [self.loader webPageOrderedOpen:copiedURL
-                           referrer:web::Referrer()
-                        inIncognito:NO
-                       inBackground:NO
-                        originPoint:CGPointZero
-                           appendTo:kLastTab];
+    [self.loader webPageOrderedOpen:command];
     [self.presentationDelegate showActiveRegularTabFromHistory];
   }];
 }
 
 // Opens URL in a new incognito tab and dismisses the history view.
 - (void)openURLInNewIncognitoTab:(const GURL&)URL {
-  GURL copiedURL(URL);
+  OpenNewTabCommand* command =
+      [[OpenNewTabCommand alloc] initWithURL:URL
+                                    referrer:web::Referrer()
+                                 inIncognito:YES
+                                inBackground:NO
+                                    appendTo:kLastTab];
   [self.localDispatcher dismissHistoryWithCompletion:^{
-    [self.loader webPageOrderedOpen:copiedURL
-                           referrer:web::Referrer()
-                        inIncognito:YES
-                       inBackground:NO
-                        originPoint:CGPointZero
-                           appendTo:kLastTab];
+    [self.loader webPageOrderedOpen:command];
     [self.presentationDelegate showActiveIncognitoTabFromHistory];
   }];
 }

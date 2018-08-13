@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/sessions/session_util.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
+#include "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/browser/web_state_list/web_state_opener.h"
 #include "ios/web/public/web_state/web_state.h"
@@ -69,33 +70,14 @@ initWithRegularWebStateList:(WebStateList*)regularWebStateList
   AppendAndActivateWebState(self.regularWebStateList, std::move(webState));
 }
 
-// Opens |URL| in a new regular tab.
-- (void)webPageOrderedOpen:(const GURL&)URL
-                  referrer:(const web::Referrer&)referrer
-              inBackground:(BOOL)inBackground
-               originPoint:(CGPoint)originPoint
-                  appendTo:(OpenPosition)appendTo {
-  [self webPageOrderedOpen:URL
-                  referrer:referrer
-               inIncognito:NO
-              inBackground:inBackground
-               originPoint:originPoint
-                  appendTo:appendTo];
-}
-
 // In tab grid, |inBackground| is ignored, which means that the new WebState is
 // activated. |appendTo| is also ignored, so the new WebState is always appended
 // at the end of the list. The page transition type is explicit rather than
 // linked.
-- (void)webPageOrderedOpen:(const GURL&)URL
-                  referrer:(const web::Referrer&)referrer
-               inIncognito:(BOOL)inIncognito
-              inBackground:(BOOL)inBackground
-               originPoint:(CGPoint)originPoint
-                  appendTo:(OpenPosition)appendTo {
+- (void)webPageOrderedOpen:(OpenNewTabCommand*)command {
   WebStateList* webStateList;
   ios::ChromeBrowserState* browserState;
-  if (inIncognito) {
+  if (command.inIncognito) {
     webStateList = self.incognitoWebStateList;
     browserState = self.incognitoBrowserState;
   } else {
@@ -106,8 +88,8 @@ initWithRegularWebStateList:(WebStateList*)regularWebStateList
   DCHECK(browserState);
   web::WebState::CreateParams params(browserState);
   std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
-  web::NavigationManager::WebLoadParams loadParams(URL);
-  loadParams.referrer = referrer;
+  web::NavigationManager::WebLoadParams loadParams(command.URL);
+  loadParams.referrer = command.referrer;
   loadParams.transition_type = ui::PAGE_TRANSITION_TYPED;
   webState->GetNavigationManager()->LoadURLWithParams(loadParams);
   AppendAndActivateWebState(webStateList, std::move(webState));

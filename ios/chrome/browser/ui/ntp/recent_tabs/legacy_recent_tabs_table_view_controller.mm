@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #include "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/legacy_recent_tabs_table_view_controller_delegate.h"
@@ -639,11 +640,13 @@ enum CellType {
       [self sessionAtIndexPath:indexPath];
   [self dismissRecentTabsModal];
   for (auto const& tab : session->tabs) {
-    [_loader webPageOrderedOpen:tab->virtual_url
-                       referrer:web::Referrer()
-                   inBackground:YES
-                    originPoint:CGPointZero
-                       appendTo:kLastTab];
+    OpenNewTabCommand* command =
+        [[OpenNewTabCommand alloc] initWithURL:tab->virtual_url
+                                      referrer:web::Referrer()
+                                   inIncognito:NO
+                                  inBackground:YES
+                                      appendTo:kLastTab];
+    [_loader webPageOrderedOpen:command];
   }
 }
 

@@ -4,6 +4,8 @@
 
 #import "ios/chrome/test/fakes/fake_url_loader.h"
 
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -34,22 +36,10 @@
   self.extraHeaders = params.extra_headers;
 }
 
-- (void)webPageOrderedOpen:(const GURL&)url
-                  referrer:(const web::Referrer&)referrer
-              inBackground:(BOOL)inBackground
-               originPoint:(CGPoint)originPoint
-                  appendTo:(OpenPosition)appendTo {
-}
-
-- (void)webPageOrderedOpen:(const GURL&)url
-                  referrer:(const web::Referrer&)referrer
-               inIncognito:(BOOL)inIncognito
-              inBackground:(BOOL)inBackground
-               originPoint:(CGPoint)originPoint
-                  appendTo:(OpenPosition)appendTo {
-  _url = url;
-  _referrer = referrer;
-  self.inIncognito = inIncognito;
+- (void)webPageOrderedOpen:(OpenNewTabCommand*)command {
+  _url = command.URL;
+  _referrer = command.referrer;
+  self.inIncognito = command.inIncognito;
 }
 
 - (void)loadSessionTab:(const sessions::SessionTab*)sessionTab {

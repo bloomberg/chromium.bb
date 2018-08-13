@@ -1555,11 +1555,9 @@ enum class ShowTabSwitcherSnapshotResult {
     } else {
       [self dismissModalDialogsWithCompletion:^{
         self.currentBVC = [command inIncognito] ? self.otrBVC : self.mainBVC;
-        [self.currentBVC webPageOrderedOpen:[command URL]
-                                   referrer:[command referrer]
-                               inBackground:[command inBackground]
-                                originPoint:[command originPoint]
-                                   appendTo:[command appendTo]];
+        DCHECK(self.currentBVC.browserState->IsOffTheRecord() ==
+               command.inIncognito);
+        [self.currentBVC webPageOrderedOpen:command];
       }
                                dismissOmnibox:YES];
     }

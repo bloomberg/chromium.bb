@@ -30,6 +30,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_transitioning_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_delegate.h"
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller.h"
@@ -563,12 +564,13 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
            inBackground:(BOOL)inBackground {
   // TODO(crbug.com/695749):  Open bookmarklet in new tab doesn't work.  See how
   // to deal with this later.
-  [_loader webPageOrderedOpen:url
-                     referrer:web::Referrer()
-                  inIncognito:inIncognito
-                 inBackground:inBackground
-                  originPoint:CGPointZero
-                     appendTo:kLastTab];
+  OpenNewTabCommand* command =
+      [[OpenNewTabCommand alloc] initWithURL:url
+                                    referrer:web::Referrer()
+                                 inIncognito:inIncognito
+                                inBackground:inBackground
+                                    appendTo:kLastTab];
+  [_loader webPageOrderedOpen:command];
 }
 
 @end

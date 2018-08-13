@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/history/features.h"
 #import "ios/chrome/browser/ui/history/history_entries_status_item_delegate.h"
@@ -882,28 +883,28 @@ initWithLoader:(id<UrlLoader>)loader
 }
 
 - (void)openURLInNewTab:(const GURL&)URL {
-  GURL copiedURL(URL);
+  OpenNewTabCommand* command =
+      [[OpenNewTabCommand alloc] initWithURL:URL
+                                    referrer:web::Referrer()
+                                 inIncognito:NO
+                                inBackground:NO
+                                    appendTo:kLastTab];
   [self.delegate historyCollectionViewController:self
                        shouldCloseWithCompletion:^{
-                         [self.URLLoader webPageOrderedOpen:copiedURL
-                                                   referrer:web::Referrer()
-                                                inIncognito:NO
-                                               inBackground:NO
-                                                originPoint:CGPointZero
-                                                   appendTo:kLastTab];
+                         [self.URLLoader webPageOrderedOpen:command];
                        }];
 }
 
 - (void)openURLInNewIncognitoTab:(const GURL&)URL {
-  GURL copiedURL(URL);
+  OpenNewTabCommand* command =
+      [[OpenNewTabCommand alloc] initWithURL:URL
+                                    referrer:web::Referrer()
+                                 inIncognito:YES
+                                inBackground:NO
+                                    appendTo:kLastTab];
   [self.delegate historyCollectionViewController:self
                        shouldCloseWithCompletion:^{
-                         [self.URLLoader webPageOrderedOpen:copiedURL
-                                                   referrer:web::Referrer()
-                                                inIncognito:YES
-                                               inBackground:NO
-                                                originPoint:CGPointZero
-                                                   appendTo:kLastTab];
+                         [self.URLLoader webPageOrderedOpen:command];
                        }];
 }
 
