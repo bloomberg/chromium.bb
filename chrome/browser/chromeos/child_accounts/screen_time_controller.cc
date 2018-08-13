@@ -91,9 +91,12 @@ base::TimeDelta ScreenTimeController::GetScreenTimeDuration() const {
   return current_screen_duration + previous_duration;
 }
 
-void ScreenTimeController::CheckTimeLimit() {
-  // Stop any currently running timer.
-  ResetTimers();
+void ScreenTimeController::CheckTimeLimit(const std::string& source) {
+  VLOG(1) << "Checking time limits (source=" << source << ")";
+
+  // Stop all timers. They will be rescheduled below.
+  ResetStateTimers();
+  ResetInSessionTimers();
 
   base::Time now = base::Time::Now();
   const icu::TimeZone& time_zone =
@@ -162,10 +165,12 @@ void ScreenTimeController::CheckTimeLimit() {
   }
 
   if (!state.next_state_change_time.is_null()) {
+    VLOG(1) << "Scheduling state change timer in "
+            << state.next_state_change_time - now;
     next_state_timer_.Start(
-        FROM_HERE, state.next_state_change_time - base::Time::Now(),
+        FROM_HERE, state.next_state_change_time - now,
         base::BindRepeating(&ScreenTimeController::CheckTimeLimit,
-                            base::Unretained(this)));
+                            base::Unretained(this), "next_state_timer_"));
   }
 
   // Schedule timer to refresh the screen time usage.
@@ -174,6 +179,7 @@ void ScreenTimeController::CheckTimeLimit() {
   if (reset_time <= now) {
     RefreshScreenLimit();
   } else {
+    VLOG(1) << "Scheduling screen reset timer in " << reset_time - now;
     reset_screen_time_timer_.Start(
         FROM_HERE, reset_time - now,
         base::BindRepeating(&ScreenTimeController::RefreshScreenLimit,
@@ -246,24 +252,30 @@ void ScreenTimeController::RefreshScreenLimit() {
 }
 
 void ScreenTimeController::OnPolicyChanged() {
-  CheckTimeLimit();
+  CheckTimeLimit("OnPolicyChanged");
 }
 
-void ScreenTimeController::ResetTimers() {
+void ScreenTimeController::ResetStateTimers() {
+  VLOG(1) << "Stopping state timers";
   next_state_timer_.Stop();
-  warning_notification_timer_.Stop();
-  exit_notification_timer_.Stop();
-  save_screen_time_timer_.Stop();
   reset_screen_time_timer_.Stop();
 }
 
+void ScreenTimeController::ResetInSessionTimers() {
+  VLOG(1) << "Stopping in-session timers";
+  warning_notification_timer_.Stop();
+  exit_notification_timer_.Stop();
+  save_screen_time_timer_.Stop();
+}
+
 void ScreenTimeController::SaveScreenTimeProgressBeforeExit() {
+  VLOG(1) << "Saving screen time progress before exiting";
   pref_service_->SetInteger(prefs::kScreenTimeMinutesUsed,
                             GetScreenTimeDuration().InMinutes());
   pref_service_->ClearPref(prefs::kCurrentScreenStartTime);
   pref_service_->CommitPendingWrite();
   current_screen_start_time_ = base::Time();
-  ResetTimers();
+  ResetInSessionTimers();
 }
 
 void ScreenTimeController::SaveScreenTimeProgressPeriodically() {
@@ -428,7 +440,7 @@ void ScreenTimeController::OnSessionStateChanged() {
     pref_service_->SetTime(prefs::kCurrentScreenStartTime,
                            current_screen_start_time_);
     pref_service_->CommitPendingWrite();
-    CheckTimeLimit();
+    CheckTimeLimit("OnSessionStateChanged");
 
     save_screen_time_timer_.Start(
         FROM_HERE, kScreenTimeUsageUpdateFrequency,
@@ -439,7 +451,7 @@ void ScreenTimeController::OnSessionStateChanged() {
 }
 
 void ScreenTimeController::TimezoneChanged(const icu::TimeZone& timezone) {
-  CheckTimeLimit();
+  CheckTimeLimit("TimezoneChanged");
 }
 
 }  // namespace chromeos

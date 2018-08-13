@@ -39,14 +39,14 @@ class ScreenTimeController : public KeyedService,
   // kScreenTimeMinutesUsed plus time passed since |current_screen_start_time_|.
   base::TimeDelta GetScreenTimeDuration() const;
 
-  // Call time limit processor for new state.
-  void CheckTimeLimit();
-
  private:
   // The types of time limit notifications. |SCREEN_TIME| is used when the
   // the screen time limit is about to be used up, and |BED_TIME| is used when
   // the bed time is approaching.
   enum TimeLimitNotificationType { kScreenTime, kBedTime };
+
+  // Call time limit processor for new state.
+  void CheckTimeLimit(const std::string& source);
 
   // Request to lock the screen and show the time limits message when the screen
   // is locked.
@@ -73,7 +73,8 @@ class ScreenTimeController : public KeyedService,
   void OnPolicyChanged();
 
   // Reset any currently running timers.
-  void ResetTimers();
+  void ResetStateTimers();
+  void ResetInSessionTimers();
 
   // Save the screen time progress when screen is locked, or user sign out or
   // power down the device.
@@ -98,10 +99,17 @@ class ScreenTimeController : public KeyedService,
 
   content::BrowserContext* context_;
   PrefService* pref_service_;
+
+  // Called to show warning and exit notifications.
   base::OneShotTimer warning_notification_timer_;
   base::OneShotTimer exit_notification_timer_;
-  base::OneShotTimer next_state_timer_;
+
+  // Called to record the current amount of time spent in-session.
   base::RepeatingTimer save_screen_time_timer_;
+
+  // Timers that are called when lock screen state change event happens, ie,
+  // bedtime is over or the usage limit ends.
+  base::OneShotTimer next_state_timer_;
   base::OneShotTimer reset_screen_time_timer_;
 
   // Timestamp to keep track of the screen start time for the current active
