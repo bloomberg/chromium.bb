@@ -499,9 +499,6 @@ TEST_F(ServiceWorkerProviderContextTest, SetController_Null) {
 // S13nServiceWorker: Test that SetController correctly sets (or resets)
 // the controller service worker for clients.
 TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
-  // This test has temporary LOG(ERROR) logging to debug
-  // https://crbug.com/862294.
-
   EnableS13nServiceWorker();
   const int kProviderId = 10;
 
@@ -515,7 +512,6 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
       mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
 
   // (1) Test if setting the controller via the CTOR works.
-  LOG(ERROR) << "1 test ctor";
 
   // Make the object host for .controller.
   auto object_host1 =
@@ -552,15 +548,12 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   base::RunLoop loop1;
   fake_controller1.set_fetch_callback(loop1.QuitClosure());
   StartRequest(subresource_loader_factory1, kURL1);
-  LOG(ERROR) << "1 loop1.Run()";
   loop1.Run();
-  LOG(ERROR) << "1 loop1.Run() finished";
   EXPECT_EQ(kURL1, fake_controller1.fetch_event_request().url);
   EXPECT_EQ(1, fake_controller1.fetch_event_count());
 
   // (2) Test if resetting the controller to a new one via SetController
   // works.
-  LOG(ERROR) << "2 reset controller to new one";
 
   // Setup the new controller.
   auto object_host2 =
@@ -584,12 +577,8 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   object_host1->RunOnConnectionError(drop_binding_loop.QuitClosure());
   container_ptr->SetController(std::move(controller_info2),
                                std::vector<blink::mojom::WebFeature>(), true);
-  LOG(ERROR) << "2 FlushForTesting()";
   container_ptr.FlushForTesting();
-  LOG(ERROR) << "2 FlushForTesting() finished";
-  LOG(ERROR) << "2 drop_binding_loop.Run()";
   drop_binding_loop.Run();
-  LOG(ERROR) << "2 drop_binding_loop.Run() finished";
   EXPECT_EQ(0, object_host1->GetBindingCount());
 
   // Subresource loader factory must be available, and should be the same
@@ -602,25 +591,20 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   // The SetController() call results in another Mojo call to
   // ControllerServiceWorkerConnector.UpdateController(). Flush that interface
   // pointer to ensure the message was received.
-  LOG(ERROR) << "2 FlushControllerConnector()";
   FlushControllerConnector(provider_context.get());
-  LOG(ERROR) << "2 FlushControllerConnector() finished";
 
   // Performing a request should reach the new controller.
   const GURL kURL2("https://www.example.com/foo2.png");
   base::RunLoop loop2;
   fake_controller2.set_fetch_callback(loop2.QuitClosure());
   StartRequest(subresource_loader_factory2, kURL2);
-  LOG(ERROR) << "2 loop2.Run()";
   loop2.Run();
-  LOG(ERROR) << "2 loop2.Run() finished";
   EXPECT_EQ(kURL2, fake_controller2.fetch_event_request().url);
   EXPECT_EQ(1, fake_controller2.fetch_event_count());
   // The request should not go to the previous controller.
   EXPECT_EQ(1, fake_controller1.fetch_event_count());
 
   // (3) Test if resetting the controller to nullptr works.
-  LOG(ERROR) << "3 reset controller to null";
   base::RunLoop drop_binding_loop2;
   object_host2->RunOnConnectionError(drop_binding_loop2.QuitClosure());
   container_ptr->SetController(mojom::ControllerServiceWorkerInfo::New(),
@@ -628,12 +612,8 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
 
   // The controller is reset. References to the old controller must be
   // released.
-  LOG(ERROR) << "3 FlushForTesting()";
   container_ptr.FlushForTesting();
-  LOG(ERROR) << "3 FlushForTesting() finished";
-  LOG(ERROR) << "3 drop_binding_loop2.Run()";
   drop_binding_loop2.Run();
-  LOG(ERROR) << "3 drop_binding_loop2.Run() finished";
   EXPECT_EQ(0, object_host2->GetBindingCount());
 
   // Subresource loader factory must not be available.
@@ -642,9 +622,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   // The SetController() call results in another Mojo call to
   // ControllerServiceWorkerConnector.UpdateController(). Flush that interface
   // pointer to ensure the message was received.
-  LOG(ERROR) << "3 FlushControllerConnector()";
   FlushControllerConnector(provider_context.get());
-  LOG(ERROR) << "3 FlushControllerConnector() finished";
 
   // Performing a request using the subresource factory obtained before
   // falls back to the network.
@@ -653,9 +631,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   fake_loader_factory_.set_start_loader_callback(loop3.QuitClosure());
   EXPECT_EQ(0UL, fake_loader_factory_.clients_count());
   StartRequest(subresource_loader_factory2, kURL3);
-  LOG(ERROR) << "3 loop3.Run()";
   loop3.Run();
-  LOG(ERROR) << "3 loop3.Run() finished";
   EXPECT_EQ(kURL3, fake_loader_factory_.last_request_url());
   EXPECT_EQ(1UL, fake_loader_factory_.clients_count());
 
@@ -665,7 +641,6 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
 
   // (4) Test if resetting the controller to yet another one via SetController
   // works.
-  LOG(ERROR) << "4 reset controller yet another one";
   auto object_host4 =
       std::make_unique<MockServiceWorkerObjectHost>(202 /* version_id */);
   ASSERT_EQ(0, object_host4->GetBindingCount());
@@ -682,9 +657,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   controller_info4->endpoint = controller_ptr4.PassInterface();
   container_ptr->SetController(std::move(controller_info4),
                                std::vector<blink::mojom::WebFeature>(), true);
-  LOG(ERROR) << "4 FlushForTesting()";
   container_ptr.FlushForTesting();
-  LOG(ERROR) << "4 FlushForTesting() finished";
 
   // Subresource loader factory must be available.
   auto* subresource_loader_factory4 =
@@ -694,18 +667,14 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   // The SetController() call results in another Mojo call to
   // ControllerServiceWorkerConnector.UpdateController(). Flush that interface
   // pointer to ensure the message was received.
-  LOG(ERROR) << "4 FlushControllerConnector()";
   FlushControllerConnector(provider_context.get());
-  LOG(ERROR) << "4 FlushControllerConnector() finished";
 
   // Performing a request should reach the new controller.
   const GURL kURL4("https://www.example.com/foo4.png");
   base::RunLoop loop4;
   fake_controller4.set_fetch_callback(loop4.QuitClosure());
   StartRequest(subresource_loader_factory4, kURL4);
-  LOG(ERROR) << "4 loop4.Run()";
   loop4.Run();
-  LOG(ERROR) << "4 loop4.Run() finished";
   EXPECT_EQ(kURL4, fake_controller4.fetch_event_request().url);
   EXPECT_EQ(1, fake_controller4.fetch_event_count());
 
@@ -719,9 +688,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   // The outcome is not deterministic but should not crash.
   StartRequest(subresource_loader_factory4, kURL4);
   fake_controller4.Disconnect();
-  LOG(ERROR) << "4 RunUntilIdle() again";
   base::RunLoop().RunUntilIdle();
-  LOG(ERROR) << "4 RunUntilIdle() finished";
 }
 
 TEST_F(ServiceWorkerProviderContextTest, ControllerWithoutFetchHandler) {
