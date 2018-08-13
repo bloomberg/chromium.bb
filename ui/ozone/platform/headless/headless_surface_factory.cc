@@ -20,9 +20,7 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
-#include "ui/ozone/common/gl_ozone_osmesa.h"
 #include "ui/ozone/common/gl_surface_egl_readback.h"
-#include "ui/ozone/platform/headless/gl_surface_osmesa_png.h"
 #include "ui/ozone/platform/headless/headless_window.h"
 #include "ui/ozone/platform/headless/headless_window_manager.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
@@ -111,26 +109,6 @@ class TestPixmap : public gfx::NativePixmap {
   DISALLOW_COPY_AND_ASSIGN(TestPixmap);
 };
 
-class GLOzoneOSMesaHeadless : public GLOzoneOSMesa {
- public:
-  explicit GLOzoneOSMesaHeadless(HeadlessSurfaceFactory* surface_factory)
-      : surface_factory_(surface_factory) {}
-
-  ~GLOzoneOSMesaHeadless() override = default;
-
-  // GLOzone:
-  scoped_refptr<gl::GLSurface> CreateViewGLSurface(
-      gfx::AcceleratedWidget window) override {
-    return gl::InitializeGLSurface(
-        new GLSurfaceOSMesaPng(surface_factory_->GetPathForWidget(window)));
-  }
-
- private:
-  HeadlessSurfaceFactory* const surface_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(GLOzoneOSMesaHeadless);
-};
-
 class GLOzoneEGLHeadless : public GLOzoneEGL {
  public:
   GLOzoneEGLHeadless() = default;
@@ -166,7 +144,6 @@ class GLOzoneEGLHeadless : public GLOzoneEGL {
 
 HeadlessSurfaceFactory::HeadlessSurfaceFactory(base::FilePath base_path)
     : base_path_(base_path),
-      osmesa_implementation_(std::make_unique<GLOzoneOSMesaHeadless>(this)),
       swiftshader_implementation_(std::make_unique<GLOzoneEGLHeadless>()) {
   CheckBasePath();
 }
@@ -190,15 +167,12 @@ base::FilePath HeadlessSurfaceFactory::GetPathForWidget(
 
 std::vector<gl::GLImplementation>
 HeadlessSurfaceFactory::GetAllowedGLImplementations() {
-  return std::vector<gl::GLImplementation>{gl::kGLImplementationOSMesaGL,
-                                           gl::kGLImplementationSwiftShaderGL};
+  return std::vector<gl::GLImplementation>{gl::kGLImplementationSwiftShaderGL};
 }
 
 GLOzone* HeadlessSurfaceFactory::GetGLOzone(
     gl::GLImplementation implementation) {
   switch (implementation) {
-    case gl::kGLImplementationOSMesaGL:
-      return osmesa_implementation_.get();
     case gl::kGLImplementationEGLGLES2:
     case gl::kGLImplementationSwiftShaderGL:
       return swiftshader_implementation_.get();

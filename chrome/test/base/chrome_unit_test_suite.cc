@@ -144,10 +144,6 @@ void ChromeUnitTestSuite::InitializeProviders() {
 
   gl::GLSurfaceTestSupport::InitializeOneOff();
 
-#if defined(OS_MACOSX)
-  gpu::ImageTransportSurface::SetAllowOSMesaForTesting(true);
-#endif
-
   update_client::UpdateQueryParams::SetDelegate(
       ChromeUpdateQueryParamsDelegate::GetInstance());
 }

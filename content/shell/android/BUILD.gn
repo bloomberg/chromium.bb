@@ -179,14 +179,13 @@ android_apk("content_shell_apk") {
     "//media/capture/video/android:capture_java",
     "//net/android:net_java",
     "//services/shape_detection:shape_detection_java",
-    "//third_party/mesa:osmesa",
+    "//third_party/mesa_headers",
     "//ui/android:ui_java",
   ]
   apk_name = "ContentShell"
   android_manifest = content_shell_manifest
   android_manifest_dep = ":content_shell_manifest"
   shared_libraries = [ ":libcontent_shell_content_view" ]
-  loadable_modules = [ "$root_out_dir/libosmesa.so" ]
   command_line_flags_file = "content-shell-command-line"
 }
 

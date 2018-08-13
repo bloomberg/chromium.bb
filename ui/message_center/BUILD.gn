@@ -230,7 +230,7 @@ if (enable_message_center) {
     ]
 
     data_deps = [
-      "//third_party/mesa:osmesa",
+      "//third_party/mesa_headers",
       "//ui/resources:ui_test_pak_data",
     ]
 

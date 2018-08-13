@@ -28,7 +28,7 @@ target(link_target_type, "service") {
     "vda_video_decoder.h",
   ]
 
-  include_dirs = [ "//third_party/mesa/src/include" ]
+  include_dirs = [ "//third_party/mesa_headers" ]
 
   public_deps = [
     "//base",
@@ -44,7 +44,7 @@ target(link_target_type, "service") {
     "//media/gpu",
     "//media/gpu:buildflags",
     "//media/gpu/ipc/common",
-    "//third_party/mesa:mesa_headers",
+    "//third_party/mesa_headers",
     "//ui/gfx/ipc/color",
   ]
 

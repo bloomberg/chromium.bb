@@ -61,7 +61,7 @@ base::OnceClosure MaybeWrapWithGPUSandboxHook(
         gpu::EnableSwiftShaderIfNeeded(
             command_line, gpu_feature_info,
             gpu_preferences.disable_software_rasterizer, needs_more_info);
-        // Preload either the desktop GL or the osmesa so, depending on the
+        // Preload either the desktop GL or SwiftShader so, depending on the
         // --use-gl flag.
         gl::init::InitializeGLOneOff();
 

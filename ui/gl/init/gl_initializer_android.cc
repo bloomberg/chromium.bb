@@ -13,8 +13,6 @@
 #include "ui/gl/gl_egl_api_implementation.h"
 #include "ui/gl/gl_features.h"
 #include "ui/gl/gl_gl_api_implementation.h"
-#include "ui/gl/gl_implementation_osmesa.h"
-#include "ui/gl/gl_osmesa_api_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
 
 #if BUILDFLAG(USE_STATIC_ANGLE)
@@ -89,8 +87,6 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
   switch (implementation) {
     case kGLImplementationEGLGLES2:
       return InitializeStaticEGLInternal();
-    case kGLImplementationOSMesaGL:
-      return InitializeStaticGLBindingsOSMesaGL();
     case kGLImplementationMockGL:
     case kGLImplementationStubGL:
       SetGLImplementation(implementation);
@@ -106,14 +102,12 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
 void InitializeDebugGLBindings() {
   InitializeDebugGLBindingsEGL();
   InitializeDebugGLBindingsGL();
-  InitializeDebugGLBindingsOSMESA();
 }
 
 void ShutdownGLPlatform() {
   GLSurfaceEGL::ShutdownOneOff();
   ClearBindingsEGL();
   ClearBindingsGL();
-  ClearBindingsOSMESA();
 }
 
 }  // namespace init

@@ -33,7 +33,6 @@ const struct {
   GLImplementation implementation;
 } kGLImplementationNamePairs[] = {
     {kGLImplementationDesktopName, kGLImplementationDesktopGL},
-    {kGLImplementationOSMesaName, kGLImplementationOSMesaGL},
     {kGLImplementationSwiftShaderName, kGLImplementationSwiftShaderGL},
 #if defined(OS_MACOSX)
     {kGLImplementationAppleName, kGLImplementationAppleGL},
@@ -98,7 +97,6 @@ gfx::ExtensionSet GetGLExtensionsFromCurrentContext(
 }  // namespace
 
 base::ThreadLocalPointer<CurrentGL>* g_current_gl_context_tls = NULL;
-OSMESAApi* g_current_osmesa_context;
 
 #if defined(USE_EGL)
 EGLApi* g_current_egl_context;
@@ -122,13 +120,7 @@ GLImplementation GetNamedGLImplementation(const std::string& name) {
 }
 
 GLImplementation GetSoftwareGLImplementation() {
-#if (BUILDFLAG(ENABLE_SWIFTSHADER) &&         \
-     (defined(OS_WIN) || defined(OS_LINUX) || \
-      (defined(OS_MACOSX) && defined(USE_EGL))))
   return kGLImplementationSwiftShaderGL;
-#else
-  return kGLImplementationOSMesaGL;
-#endif
 }
 
 const char* GetGLImplementationName(GLImplementation implementation) {
@@ -151,7 +143,6 @@ GLImplementation GetGLImplementation() {
 bool HasDesktopGLFeatures() {
   return kGLImplementationDesktopGL == g_gl_implementation ||
          kGLImplementationDesktopGLCoreProfile == g_gl_implementation ||
-         kGLImplementationOSMesaGL == g_gl_implementation ||
          kGLImplementationAppleGL == g_gl_implementation;
 }
 

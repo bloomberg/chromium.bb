@@ -38,7 +38,6 @@ class WaylandSurfaceFactory : public SurfaceFactoryOzone {
  private:
   WaylandConnection* connection_;
   std::unique_ptr<GLOzone> egl_implementation_;
-  std::unique_ptr<GLOzone> osmesa_implementation_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandSurfaceFactory);
 };

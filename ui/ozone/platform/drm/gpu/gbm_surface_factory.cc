@@ -16,7 +16,6 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
-#include "ui/ozone/common/gl_ozone_osmesa.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
@@ -103,7 +102,6 @@ class GLOzoneEGLGbm : public GLOzoneEGL {
 GbmSurfaceFactory::GbmSurfaceFactory(DrmThreadProxy* drm_thread_proxy)
     : egl_implementation_(
           std::make_unique<GLOzoneEGLGbm>(this, drm_thread_proxy)),
-      osmesa_implementation_(std::make_unique<GLOzoneOSMesa>()),
       drm_thread_proxy_(drm_thread_proxy) {}
 
 GbmSurfaceFactory::~GbmSurfaceFactory() {
@@ -133,7 +131,6 @@ std::vector<gl::GLImplementation>
 GbmSurfaceFactory::GetAllowedGLImplementations() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return std::vector<gl::GLImplementation>{gl::kGLImplementationEGLGLES2,
-                                           gl::kGLImplementationOSMesaGL,
                                            gl::kGLImplementationSwiftShaderGL};
 }
 
@@ -142,8 +139,6 @@ GLOzone* GbmSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
     case gl::kGLImplementationEGLGLES2:
     case gl::kGLImplementationSwiftShaderGL:
       return egl_implementation_.get();
-    case gl::kGLImplementationOSMesaGL:
-      return osmesa_implementation_.get();
     default:
       return nullptr;
   }

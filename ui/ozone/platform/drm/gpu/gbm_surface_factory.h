@@ -84,7 +84,6 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
       const gfx::NativePixmapHandle& handle);
 
   std::unique_ptr<GLOzone> egl_implementation_;
-  std::unique_ptr<GLOzone> osmesa_implementation_;
 
   base::ThreadChecker thread_checker_;
 

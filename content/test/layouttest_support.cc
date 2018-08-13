@@ -436,7 +436,6 @@ void EnableRendererLayoutTestMode() {
 
 void EnableBrowserLayoutTestMode() {
 #if defined(OS_MACOSX)
-  gpu::ImageTransportSurface::SetAllowOSMesaForTesting(true);
   PopupMenuHelper::DontShowPopupMenuForTesting();
 #endif
   RenderWidgetHostImpl::DisableResizeAckCheckForTesting();

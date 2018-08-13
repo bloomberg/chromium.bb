@@ -114,7 +114,7 @@ component("gpu") {
     "//base",
     "//gpu",
     "//media",
-    "//third_party/mesa:mesa_headers",
+    "//third_party/mesa_headers",
     "//ui/gfx/geometry",
   ]
   deps = [

@@ -16,7 +16,7 @@ from collections import namedtuple
 
 HEADER_PATHS = [
   '../../third_party/khronos',
-  '../../third_party/mesa/src/include',
+  '../../third_party/mesa_headers',
   '.',
   '../../gpu',
 ]
@@ -2110,51 +2110,6 @@ GL_FUNCTIONS = [
   'arguments': 'GLenum mode, GLsizei n, const GLint* box', },
 ]
 
-OSMESA_FUNCTIONS = [
-{ 'return_type': 'void',
-  'names': ['OSMesaColorClamp'],
-  'arguments': 'GLboolean enable', },
-{ 'return_type': 'OSMesaContext',
-  'names': ['OSMesaCreateContext'],
-  'arguments': 'GLenum format, OSMesaContext sharelist', },
-{ 'return_type': 'OSMesaContext',
-  'names': ['OSMesaCreateContextExt'],
-  'arguments':
-      'GLenum format, GLint depthBits, GLint stencilBits, GLint accumBits, '
-      'OSMesaContext sharelist', },
-{ 'return_type': 'void',
-  'names': ['OSMesaDestroyContext'],
-  'arguments': 'OSMesaContext ctx', },
-{ 'return_type': 'GLboolean',
-  'names': ['OSMesaGetColorBuffer'],
-  'arguments': 'OSMesaContext c, GLint* width, GLint* height, GLint* format, '
-               'void** buffer', },
-{ 'return_type': 'OSMesaContext',
-  'names': ['OSMesaGetCurrentContext'],
-  'arguments': 'void', },
-{ 'return_type': 'GLboolean',
-  'names': ['OSMesaGetDepthBuffer'],
-  'arguments':
-      'OSMesaContext c, GLint* width, GLint* height, GLint* bytesPerValue, '
-      'void** buffer', },
-{ 'return_type': 'void',
-  'names': ['OSMesaGetIntegerv'],
-  'arguments': 'GLint pname, GLint* value', },
-{ 'return_type': 'OSMESAproc',
-  'names': ['OSMesaGetProcAddress'],
-  'arguments': 'const char* funcName',
-  'logging_code': """
-  GL_SERVICE_LOG("GL_RESULT: " << reinterpret_cast<void*>(result));
-""", },
-{ 'return_type': 'GLboolean',
-  'names': ['OSMesaMakeCurrent'],
-  'arguments': 'OSMesaContext ctx, void* buffer, GLenum type, GLsizei width, '
-               'GLsizei height', },
-{ 'return_type': 'void',
-  'names': ['OSMesaPixelStore'],
-  'arguments': 'GLint pname, GLint value', },
-]
-
 EGL_FUNCTIONS = [
 { 'return_type': 'EGLBoolean',
   'names': ['eglBindAPI'],
@@ -2740,7 +2695,6 @@ FUNCTION_SETS = [
       "GL_EXT_unpack_subimage",
     ]
   ],
-  [OSMESA_FUNCTIONS, 'osmesa', [], []],
   [EGL_FUNCTIONS, 'egl', [
       'EGL/eglext.h',
       # Files below are Chromium-specific and shipped with Chromium sources.

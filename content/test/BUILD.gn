@@ -979,7 +979,7 @@ test("content_browsertests") {
     "//third_party/blink/public:blink",
     "//third_party/leveldatabase",
     "//third_party/libaom:av1_buildflags",
-    "//third_party/mesa:osmesa",
+    "//third_party/mesa_headers",
     "//third_party/zlib",
     "//ui/accessibility",
     "//ui/accessibility:ax_enums_mojo",
@@ -1005,7 +1005,7 @@ test("content_browsertests") {
     ":web_ui_test_mojo_bindings_js_data_deps",
     "//content/shell:pak",
     "//testing/buildbot/filters:content_browsertests_filters",
-    "//third_party/mesa:osmesa",
+    "//third_party/mesa_headers",
   ]
 
   if (enable_plugins) {
@@ -1929,7 +1929,7 @@ test("content_unittests") {
 
   data_deps = [
     "//components/services/filesystem:filesystem",
-    "//third_party/mesa:osmesa",
+    "//third_party/mesa_headers",
   ]
 
   if (is_posix) {

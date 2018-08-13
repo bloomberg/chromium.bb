@@ -382,8 +382,6 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(features::kDirectManipulationStylus);
 
-    gpu::ImageTransportSurface::SetAllowOSMesaForTesting(true);
-
     browser_context_ = std::make_unique<TestBrowserContext>();
     process_host_ =
         std::make_unique<MockRenderProcessHost>(browser_context_.get());

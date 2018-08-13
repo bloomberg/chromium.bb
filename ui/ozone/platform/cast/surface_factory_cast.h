@@ -41,7 +41,6 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
 
  private:
   std::unique_ptr<GLOzoneEglCast> egl_implementation_;
-  std::unique_ptr<GLOzone> osmesa_implementation_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceFactoryCast);
 };

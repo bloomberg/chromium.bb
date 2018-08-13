@@ -51,10 +51,6 @@ void CompositorTestSuite::Initialize() {
   display::win::SetDefaultDeviceScaleFactor(1.0f);
 #endif
 
-#if defined(OS_MACOSX)
-  gpu::ImageTransportSurface::SetAllowOSMesaForTesting(true);
-#endif
-
   scoped_task_environment_ =
       std::make_unique<base::test::ScopedTaskEnvironment>(
           base::test::ScopedTaskEnvironment::MainThreadType::UI);

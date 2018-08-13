@@ -64,8 +64,6 @@ component("gl") {
     "gl_bindings.h",
     "gl_bindings_autogen_gl.cc",
     "gl_bindings_autogen_gl.h",
-    "gl_bindings_autogen_osmesa.cc",
-    "gl_bindings_autogen_osmesa.h",
     "gl_context.cc",
     "gl_context.h",
     "gl_context_stub.cc",
@@ -96,8 +94,6 @@ component("gl") {
     "gl_image_stub.h",
     "gl_implementation.cc",
     "gl_implementation.h",
-    "gl_osmesa_api_implementation.cc",
-    "gl_osmesa_api_implementation.h",
     "gl_share_group.cc",
     "gl_share_group.h",
     "gl_state_restorer.cc",
@@ -141,7 +137,7 @@ component("gl") {
   configs += [ "//build/config:precompiled_headers" ]
   defines = [ "GL_IMPLEMENTATION" ]
 
-  include_dirs = [ "//third_party/mesa/src/include" ]
+  include_dirs = [ "//third_party/mesa_headers" ]
 
   all_dependent_configs = [ ":gl_config" ]
 
@@ -155,15 +151,12 @@ component("gl") {
     "//third_party/angle:includes",
   ]
   public_deps = [
-    ":osmesa_sources",
     "//base",
-    "//third_party/mesa:mesa_headers",
+    "//third_party/mesa_headers",
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
-
-  allow_circular_includes_from = [ ":osmesa_sources" ]
 
   data_deps = []
   if (enable_swiftshader) {
@@ -228,21 +221,12 @@ component("gl") {
     ]
   }
 
-  # TODO(camurcu): Windows/Ozone uses OSMesa for now. Will be updated.
-  if (is_android || is_linux || is_fuchsia || (is_win && use_ozone)) {
-    sources += [
-      "gl_implementation_osmesa.cc",
-      "gl_implementation_osmesa.h",
-    ]
-  }
   if (use_x11) {
     sources += [
       "gl_surface_egl_x11.cc",
       "gl_surface_egl_x11.h",
       "gl_surface_glx_x11.cc",
       "gl_surface_glx_x11.h",
-      "gl_surface_osmesa_x11.cc",
-      "gl_surface_osmesa_x11.h",
     ]
 
     deps += [ "//ui/base/x" ]
@@ -287,8 +271,6 @@ component("gl") {
       "gl_context_wgl.h",
       "gl_image_dxgi.cc",
       "gl_image_dxgi.h",
-      "gl_surface_osmesa_win.cc",
-      "gl_surface_osmesa_win.h",
       "gl_surface_wgl.cc",
       "gl_surface_wgl.h",
       "gl_wgl_api_implementation.cc",
@@ -304,7 +286,6 @@ component("gl") {
     data_deps += [
       "//third_party/angle:libEGL",
       "//third_party/angle:libGLESv2",
-      "//third_party/mesa:osmesa",
       "//third_party/swiftshader",
     ]
   }
@@ -336,6 +317,7 @@ component("gl") {
       data_deps += [
         "//third_party/angle:libEGL",
         "//third_party/angle:libGLESv2",
+        "//third_party/mesa_headers",
         "//third_party/swiftshader",
       ]
     }
@@ -390,33 +372,6 @@ if (is_mac && use_egl) {
       "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
     ]
   }
-}
-
-# OSMesaContext, OSMesaCreateContext and other functions are declared
-# and defined in for instance gl/gl_bindings.h and
-# gl/gl_bindings_autogen_osmesa.cc. They are also declared slightly
-# differently in the real mesa headers in <GL/osmesa.h>.  This target
-# is for code that uses the real OSMesa API and can't be combined with
-# code that uses the wrapper API.
-source_set("osmesa_sources") {
-  # Only a helper build target. Not to be used outside this file.
-  visibility = [ ":gl" ]
-
-  sources = [
-    "gl_context_osmesa.cc",
-    "gl_context_osmesa.h",
-    "gl_surface_osmesa.cc",
-    "gl_surface_osmesa.h",
-  ]
-
-  deps = [
-    "//third_party/mesa:mesa_headers",
-    "//ui/gfx",
-  ]
-
-  defines = [ "GL_IMPLEMENTATION" ]
-
-  configs += [ "//third_party/khronos:khronos_headers" ]
 }
 
 static_library("gl_unittest_utils") {
@@ -568,7 +523,7 @@ test("gl_unittests") {
   ]
 
   data_deps = [
-    "//third_party/mesa:osmesa",
+    "//third_party/mesa_headers",
   ]
 
   if (use_x11) {

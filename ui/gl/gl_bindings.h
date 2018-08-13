@@ -376,11 +376,9 @@
 #define GL_RG8_EXT 0x822B
 #endif /* GL_EXT_texture_rg */
 
-// This is from NV_path_rendering, but the Mesa GL header is not up to date with
-// the most recent
-// version of the extension. This definition could be removed once glext.h
-// r27498 or later is
-// imported.
+// This is from NV_path_rendering, but the GL header is not up to date with the
+// most recent version of the extension. This definition could be removed once
+// glext.h r27498 or later is imported.
 #ifndef GL_FRAGMENT_INPUT_NV
 #define GL_FRAGMENT_INPUT_NV 0x936D
 #endif
@@ -436,15 +434,10 @@
 #define GL_MAX_VIEWS_OVR 0x9631
 #define GL_FRAMEBUFFER_INCOMPLETE_VIEW_TARGETS_OVR 0x9633
 
-// Forward declare OSMesa types.
-typedef struct osmesa_context *OSMesaContext;
-typedef void (*OSMESAproc)();
-
 // Forward declare EGL types.
 typedef uint64_t EGLuint64CHROMIUM;
 
 #include "gl_bindings_autogen_gl.h"
-#include "gl_bindings_autogen_osmesa.h"
 
 #if defined(USE_EGL)
 #include "gl_bindings_autogen_egl.h"
@@ -481,18 +474,6 @@ struct GL_EXPORT CurrentGL {
   GLApi* Api = nullptr;
   DriverGL* Driver = nullptr;
   const GLVersionInfo* Version = nullptr;
-};
-
-struct GL_EXPORT DriverOSMESA {
-  void InitializeStaticBindings();
-  void InitializeExtensionBindings();
-  void ClearBindings();
-
-  ProcsOSMESA fn;
-  ExtensionsOSMESA ext;
-
- private:
-  static std::string GetPlatformExtensions();
 };
 
 #if defined(OS_WIN)
@@ -544,9 +525,6 @@ struct GL_EXPORT DriverGLX {
 #define g_current_gl_driver g_current_gl_context_tls->Get()->Driver
 #define g_current_gl_version g_current_gl_context_tls->Get()->Version
 GL_EXPORT extern base::ThreadLocalPointer<CurrentGL>* g_current_gl_context_tls;
-
-GL_EXPORT extern OSMESAApi* g_current_osmesa_context;
-GL_EXPORT extern DriverOSMESA g_driver_osmesa;
 
 #if defined(USE_EGL)
 GL_EXPORT extern EGLApi* g_current_egl_context;

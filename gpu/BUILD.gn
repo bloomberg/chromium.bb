@@ -482,8 +482,7 @@ test("gpu_unittests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/angle:translator",
-    "//third_party/mesa:mesa_headers",
-    "//third_party/mesa:osmesa",
+    "//third_party/mesa_headers",
     "//ui/gfx",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
@@ -529,7 +528,7 @@ test("gpu_perftests") {
   data_deps = [
     # Needed for isolate script to execute.
     "//testing:run_perf_test",
-    "//third_party/mesa:osmesa",
+    "//third_party/mesa_headers",
   ]
 
   # This target should not require the Chrome executable to run.

@@ -21,7 +21,6 @@
 #include "ui/gl/gl_features.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_osmesa_api_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_switching_manager.h"
 
@@ -73,49 +72,6 @@ bool InitializeOneOffForSandbox() {
   CGLReleasePixelFormat(format);
   DCHECK_NE(num_pixel_formats, 0);
   initialized = true;
-  return true;
-}
-
-bool InitializeStaticOSMesaInternal() {
-  // osmesa.so is located in the build directory. This code path is only
-  // valid in a developer build environment.
-  base::FilePath exe_path;
-  if (!base::PathService::Get(base::FILE_EXE, &exe_path)) {
-    LOG(ERROR) << "PathService::Get failed.";
-    return false;
-  }
-  base::FilePath bundle_path = base::mac::GetAppBundlePath(exe_path);
-  // Some unit test targets depend on osmesa but aren't built as app
-  // bundles. In that case, the .so is next to the executable.
-  if (bundle_path.empty())
-    bundle_path = exe_path;
-  base::FilePath build_dir_path = bundle_path.DirName();
-  base::FilePath osmesa_path = build_dir_path.Append("osmesa.so");
-
-  // When using OSMesa, just use OSMesaGetProcAddress to find entry points.
-  base::NativeLibrary library = base::LoadNativeLibrary(osmesa_path, NULL);
-  if (!library) {
-    LOG(ERROR) << "osmesa.so not found at " << osmesa_path.value();
-    return false;
-  }
-
-  GLGetProcAddressProc get_proc_address =
-      reinterpret_cast<GLGetProcAddressProc>(
-          base::GetFunctionPointerFromNativeLibrary(library,
-                                                    "OSMesaGetProcAddress"));
-  if (!get_proc_address) {
-    LOG(ERROR) << "OSMesaGetProcAddress not found.";
-    base::UnloadNativeLibrary(library);
-    return false;
-  }
-
-  SetGLGetProcAddressProc(get_proc_address);
-  AddGLNativeLibrary(library);
-  SetGLImplementation(kGLImplementationOSMesaGL);
-
-  InitializeStaticGLBindingsGL();
-  InitializeStaticGLBindingsOSMESA();
-
   return true;
 }
 
@@ -245,8 +201,6 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
   switch (implementation) {
-    case kGLImplementationOSMesaGL:
-      return InitializeStaticOSMesaInternal();
     case kGLImplementationDesktopGL:
     case kGLImplementationDesktopGLCoreProfile:
     case kGLImplementationAppleGL:
@@ -270,12 +224,10 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
 
 void InitializeDebugGLBindings() {
   InitializeDebugGLBindingsGL();
-  InitializeDebugGLBindingsOSMESA();
 }
 
 void ShutdownGLPlatform() {
   ClearBindingsGL();
-  ClearBindingsOSMESA();
 }
 
 }  // namespace init

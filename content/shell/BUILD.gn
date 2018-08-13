@@ -899,7 +899,7 @@ group("content_shell_crash_test") {
   testonly = true
   data_deps = [
     ":content_shell",
-    "//third_party/mesa:osmesa",
+    "//third_party/mesa_headers",
   ]
   data = [
     "//content/shell/tools/breakpad_integration_test.py",

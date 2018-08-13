@@ -509,7 +509,7 @@ if (!is_ios) {
       sources += [ "android/motion_event_android_unittest.cc" ]
     } else {
       data_deps = [
-        "//third_party/mesa:osmesa",
+        "//third_party/mesa_headers",
       ]
     }
 

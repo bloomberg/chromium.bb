@@ -229,7 +229,7 @@ test("app_list_unittests") {
   ]
 
   data_deps = [
-    "//third_party/mesa:osmesa",
+    "//third_party/mesa_headers",
     "//ui/resources:ui_test_pak_data",
   ]
 }

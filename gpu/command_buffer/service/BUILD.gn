@@ -240,7 +240,7 @@ target(link_target_type, "gles2_sources") {
   ]
 
   # Prefer mesa GL headers to system headers, which cause problems on Win.
-  include_dirs = [ "//third_party/mesa/src/include" ]
+  include_dirs = [ "//third_party/mesa_headers" ]
 
   public_deps = [
     "//gpu/command_buffer/common",

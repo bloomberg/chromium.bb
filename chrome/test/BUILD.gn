@@ -1064,7 +1064,7 @@ test("browser_tests") {
       "//ppapi:power_saver_test_plugin",
       "//remoting/webapp:browser_test_resources",
       "//remoting/webapp:unit_tests",
-      "//third_party/mesa:osmesa",
+      "//third_party/mesa_headers",
       "//third_party/widevine/cdm:widevine_test_license_server",
     ]
 
@@ -4913,7 +4913,7 @@ if (!is_android) {
     # Runtime dependencies
     data_deps = [
       "//ppapi:ppapi_tests",
-      "//third_party/mesa:osmesa",
+      "//third_party/mesa_headers",
     ]
 
     if (use_aura) {
@@ -5542,7 +5542,7 @@ if (!is_android && !is_fuchsia) {
     ]
 
     data_deps = [
-      "//third_party/mesa:osmesa",
+      "//third_party/mesa_headers",
     ]
 
     if (is_mac) {

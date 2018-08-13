@@ -28,10 +28,6 @@
 
 namespace gl {
 
-std::string DriverOSMESA::GetPlatformExtensions() {
-  return "";
-}
-
 #if defined(OS_WIN)
 std::string DriverWGL::GetPlatformExtensions() {
   const char* str = nullptr;

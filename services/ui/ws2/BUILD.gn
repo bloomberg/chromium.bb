@@ -202,7 +202,7 @@ source_set("tests") {
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
     "//testing/gtest",
-    "//third_party/mesa:osmesa",
+    "//third_party/mesa_headers",
     "//ui/aura:test_support",
     "//ui/events:test_support",
     "//ui/platform_window",
