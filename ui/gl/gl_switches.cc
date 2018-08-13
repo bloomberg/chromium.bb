@@ -8,7 +8,6 @@
 namespace gl {
 
 const char kGLImplementationDesktopName[] = "desktop";
-const char kGLImplementationOSMesaName[] = "osmesa";
 const char kGLImplementationAppleName[] = "apple";
 const char kGLImplementationEGLName[] = "egl";
 const char kGLImplementationANGLEName[] = "angle";
@@ -66,7 +65,6 @@ const char kUseANGLE[]                      = "use-angle";
 //           default).
 //  egl: whatever EGL / GLES2 the user has installed (Windows default - actually
 //       ANGLE).
-//  osmesa: The OSMesa software renderer.
 //  swiftshader: The SwiftShader software renderer.
 const char kUseGL[]                         = "use-gl";
 

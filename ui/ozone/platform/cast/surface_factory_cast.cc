@@ -13,7 +13,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/vsync_provider.h"
-#include "ui/ozone/common/gl_ozone_osmesa.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
 namespace ui {
@@ -85,8 +84,7 @@ class CastPixmap : public gfx::NativePixmap {
 SurfaceFactoryCast::SurfaceFactoryCast() : SurfaceFactoryCast(nullptr) {}
 
 SurfaceFactoryCast::SurfaceFactoryCast(
-    std::unique_ptr<chromecast::CastEglPlatform> egl_platform)
-    : osmesa_implementation_(std::make_unique<GLOzoneOSMesa>()) {
+    std::unique_ptr<chromecast::CastEglPlatform> egl_platform) {
   if (egl_platform) {
     egl_implementation_ =
         std::make_unique<GLOzoneEglCast>(std::move(egl_platform));
@@ -100,7 +98,6 @@ SurfaceFactoryCast::GetAllowedGLImplementations() {
   std::vector<gl::GLImplementation> impls;
   if (egl_implementation_)
     impls.push_back(gl::kGLImplementationEGLGLES2);
-  impls.push_back(gl::kGLImplementationOSMesaGL);
   return impls;
 }
 
@@ -108,8 +105,6 @@ GLOzone* SurfaceFactoryCast::GetGLOzone(gl::GLImplementation implementation) {
   switch (implementation) {
     case gl::kGLImplementationEGLGLES2:
       return egl_implementation_.get();
-    case gl::kGLImplementationOSMesaGL:
-      return osmesa_implementation_.get();
     default:
       return nullptr;
   }

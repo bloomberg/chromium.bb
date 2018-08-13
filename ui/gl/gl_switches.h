@@ -14,7 +14,6 @@ namespace gl {
 
 // The GL implementation names that can be passed to --use-gl.
 GL_EXPORT extern const char kGLImplementationDesktopName[];
-GL_EXPORT extern const char kGLImplementationOSMesaName[];
 GL_EXPORT extern const char kGLImplementationAppleName[];
 GL_EXPORT extern const char kGLImplementationEGLName[];
 GL_EXPORT extern const char kGLImplementationANGLEName[];

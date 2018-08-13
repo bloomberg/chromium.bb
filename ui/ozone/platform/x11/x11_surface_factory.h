@@ -33,7 +33,6 @@ class X11SurfaceFactory : public SurfaceFactoryOzone {
  private:
   std::unique_ptr<GLOzone> glx_implementation_;
   std::unique_ptr<GLOzone> egl_implementation_;
-  std::unique_ptr<GLOzone> osmesa_implementation_;
 
   DISALLOW_COPY_AND_ASSIGN(X11SurfaceFactory);
 };

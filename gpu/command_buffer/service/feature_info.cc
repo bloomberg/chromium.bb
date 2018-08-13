@@ -1084,10 +1084,8 @@ void FeatureInfo::InitializeFeatures() {
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   // TODO(dcastagna): Determine ycbcr_420v_image on CrOS at runtime
   // querying minigbm. https://crbug.com/646148
-  if (gl::GetGLImplementation() != gl::kGLImplementationOSMesaGL) {
-    AddExtensionString("GL_CHROMIUM_ycbcr_420v_image");
-    feature_flags_.chromium_image_ycbcr_420v = true;
-  }
+  AddExtensionString("GL_CHROMIUM_ycbcr_420v_image");
+  feature_flags_.chromium_image_ycbcr_420v = true;
 #endif
 
   if (gfx::HasExtension(extensions, "GL_APPLE_ycbcr_422")) {

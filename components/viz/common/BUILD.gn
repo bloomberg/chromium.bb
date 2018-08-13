@@ -267,7 +267,7 @@ viz_test("viz_benchmark") {
   ]
 
   data_deps = [
-    "//third_party/mesa:osmesa",
+    "//third_party/mesa_headers",
   ]
 }
 

@@ -14,7 +14,6 @@
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
-#include "ui/ozone/common/gl_ozone_osmesa.h"
 #include "ui/ozone/platform/wayland/gl_surface_wayland.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
@@ -186,8 +185,7 @@ bool GLOzoneEGLWayland::LoadGLES2Bindings(gl::GLImplementation impl) {
 }  // namespace
 
 WaylandSurfaceFactory::WaylandSurfaceFactory(WaylandConnection* connection)
-    : connection_(connection),
-      osmesa_implementation_(std::make_unique<GLOzoneOSMesa>()) {
+    : connection_(connection) {
   if (connection_)
     egl_implementation_ = std::make_unique<GLOzoneEGLWayland>(connection_);
 }
@@ -210,7 +208,6 @@ WaylandSurfaceFactory::GetAllowedGLImplementations() {
     impls.push_back(gl::kGLImplementationEGLGLES2);
     impls.push_back(gl::kGLImplementationSwiftShaderGL);
   }
-  impls.push_back(gl::kGLImplementationOSMesaGL);
   return impls;
 }
 
@@ -220,8 +217,6 @@ GLOzone* WaylandSurfaceFactory::GetGLOzone(
     case gl::kGLImplementationEGLGLES2:
     case gl::kGLImplementationSwiftShaderGL:
       return egl_implementation_.get();
-    case gl::kGLImplementationOSMesaGL:
-      return osmesa_implementation_.get();
     default:
       return nullptr;
   }

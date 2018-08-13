@@ -39,7 +39,6 @@ class HeadlessSurfaceFactory : public SurfaceFactoryOzone {
   // Base path for window output PNGs.
   base::FilePath base_path_;
 
-  std::unique_ptr<GLOzone> osmesa_implementation_;
   std::unique_ptr<GLOzone> swiftshader_implementation_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessSurfaceFactory);

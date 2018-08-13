@@ -10,7 +10,6 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
-#include "ui/ozone/common/gl_ozone_osmesa.h"
 #include "ui/ozone/platform/x11/gl_ozone_glx.h"
 #include "ui/ozone/platform/x11/gl_surface_egl_ozone_x11.h"
 #include "ui/ozone/platform/x11/gl_surface_egl_readback_x11.h"
@@ -71,16 +70,15 @@ class GLOzoneEGLX11 : public GLOzoneEGL {
 
 X11SurfaceFactory::X11SurfaceFactory()
     : glx_implementation_(std::make_unique<GLOzoneGLX>()),
-      egl_implementation_(std::make_unique<GLOzoneEGLX11>()),
-      osmesa_implementation_(std::make_unique<GLOzoneOSMesa>()) {}
+      egl_implementation_(std::make_unique<GLOzoneEGLX11>()) {}
 
 X11SurfaceFactory::~X11SurfaceFactory() {}
 
 std::vector<gl::GLImplementation>
 X11SurfaceFactory::GetAllowedGLImplementations() {
-  return std::vector<gl::GLImplementation>{
-      gl::kGLImplementationDesktopGL, gl::kGLImplementationEGLGLES2,
-      gl::kGLImplementationOSMesaGL, gl::kGLImplementationSwiftShaderGL};
+  return std::vector<gl::GLImplementation>{gl::kGLImplementationDesktopGL,
+                                           gl::kGLImplementationEGLGLES2,
+                                           gl::kGLImplementationSwiftShaderGL};
 }
 
 GLOzone* X11SurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
@@ -90,8 +88,6 @@ GLOzone* X11SurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
     case gl::kGLImplementationEGLGLES2:
     case gl::kGLImplementationSwiftShaderGL:
       return egl_implementation_.get();
-    case gl::kGLImplementationOSMesaGL:
-      return osmesa_implementation_.get();
     default:
       return nullptr;
   }

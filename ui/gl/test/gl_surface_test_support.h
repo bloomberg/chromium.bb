@@ -14,7 +14,7 @@ class GLSurfaceTestSupport {
   static void InitializeOneOff();
   static void InitializeNoExtensionsOneOff();
   static void InitializeOneOffImplementation(GLImplementation impl,
-                                             bool fallback_to_osmesa);
+                                             bool fallback_to_swiftshader);
   static void InitializeOneOffWithMockBindings();
   static void InitializeOneOffWithStubBindings();
 };

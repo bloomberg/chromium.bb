@@ -45,10 +45,6 @@ void ViewsTestSuite::Initialize() {
   base::TestSuite::Initialize();
   gl::GLSurfaceTestSupport::InitializeOneOff();
 
-#if defined(OS_MACOSX)
-  gpu::ImageTransportSurface::SetAllowOSMesaForTesting(true);
-#endif
-
   ui::RegisterPathProvider();
 
   base::FilePath ui_test_pak_path;

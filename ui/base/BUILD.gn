@@ -1040,7 +1040,7 @@ test("ui_base_unittests") {
     ]
     data_deps += [
       "//ui/resources:ui_test_pak",  # TODO(brettw): this does nothing.
-      "//third_party/mesa:osmesa",
+      "//third_party/mesa_headers",
     ]
   }
   if (is_linux || is_win || is_fuchsia) {

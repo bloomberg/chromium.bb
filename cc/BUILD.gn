@@ -552,7 +552,7 @@ cc_static_library("test_support") {
   ]
   if (!is_android) {
     data_deps = [
-      "//third_party/mesa:osmesa",
+      "//third_party/mesa_headers",
     ]
   }
 }
@@ -751,9 +751,8 @@ cc_test("cc_unittests") {
     "//ui/gl",
     "//ui/gl:test_support",
   ]
-
   data_deps = [
-    "//third_party/mesa:osmesa",
+    "//third_party/mesa_headers",
   ]
 }
 

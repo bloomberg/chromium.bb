@@ -13,8 +13,6 @@ source_set("common") {
     "egl_util.h",
     "gl_ozone_egl.cc",
     "gl_ozone_egl.h",
-    "gl_ozone_osmesa.cc",
-    "gl_ozone_osmesa.h",
     "gl_surface_egl_readback.cc",
     "gl_surface_egl_readback.h",
     "gpu/ozone_gpu_message_generator.cc",
@@ -37,7 +35,7 @@ source_set("common") {
   ]
 
   data_deps = [
-    "//third_party/mesa:osmesa",
+    "//third_party/mesa_headers",
   ]
 
   visibility = [ "//ui/ozone/platform/*" ]

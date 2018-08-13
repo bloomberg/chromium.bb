@@ -359,7 +359,6 @@ ui/gl/GL/glextchromium.h
 ui/gl/gl_bindings_api_autogen_egl.h
 ui/gl/gl_bindings_api_autogen_gl.h
 ui/gl/gl_bindings_api_autogen_glx.h
-ui/gl/gl_bindings_api_autogen_osmesa.h
 ui/gl/gpu_preference.h
 ui/gl/gpu_switching_observer.h
 ui/ozone/ozone_base_export.h

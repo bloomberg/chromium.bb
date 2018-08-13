@@ -907,7 +907,7 @@ if (!is_ios) {
       "//skia/public/interfaces:interfaces_js_data_deps",
       "//third_party/blink/public:blink_devtools_frontend_resources_files",
       "//third_party/blink/public:mojo_bindings_js_data_deps",
-      "//third_party/mesa:osmesa",
+      "//third_party/mesa_headers",
       "//tools/imagediff",
     ]
 

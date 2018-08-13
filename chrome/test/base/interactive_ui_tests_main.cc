@@ -39,10 +39,6 @@ class InteractiveUITestSuite : public ChromeTestSuite {
   void Initialize() override {
     ChromeTestSuite::Initialize();
 
-#if defined(OS_MACOSX)
-    gpu::ImageTransportSurface::SetAllowOSMesaForTesting(true);
-#endif
-
     // Only allow ui_controls to be used in interactive_ui_tests, since they
     // depend on focus and can't be sharded.
     ui_controls::EnableUIControls();

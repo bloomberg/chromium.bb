@@ -53,7 +53,7 @@ void InitializeOneOffHelper(bool init_extensions) {
 
 #if defined(OS_ANDROID) || defined(OS_FUCHSIA)
   // On Android we always use hardware GL.
-  // On Fuchsia, we always use fake GL, but we don't want Mesa or other software
+  // On Fuchsia, we always use fake GL, but we don't want any software
   // GLs, but rather a stub implementation.
   use_software_gl = false;
 #endif
