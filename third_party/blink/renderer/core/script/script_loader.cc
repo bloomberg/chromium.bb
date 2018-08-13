@@ -301,15 +301,24 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   //
   // FIXME: If script is parser inserted, verify it's still in the original
   // document.
-  Document& element_document = element_->GetDocument();
-  Document* context_document = element_document.ContextDocument();
-  if (!element_document.ExecutingFrame())
-    return false;
-  if (!context_document || !context_document->ExecutingFrame())
-    return false;
 
   // <spec step="11">If scripting is disabled for the script element, then
   // return. The script is not executed.</spec>
+  //
+  // <spec
+  // href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-n-noscript">
+  // Scripting is disabled for a node if [the node's node document has no
+  // browsing context], or if scripting is disabled in that browsing context.
+  // </spec>
+  Document& element_document = element_->GetDocument();
+  // TODO(timothygu): Investigate if we could switch from ExecutingFrame() to
+  // ExecutingWindow().
+  if (!element_document.ExecutingFrame())
+    return false;
+
+  Document* context_document = element_document.ContextDocument();
+  if (!context_document || !context_document->ExecutingFrame())
+    return false;
   if (!context_document->CanExecuteScripts(kAboutToExecuteScript))
     return false;
 
