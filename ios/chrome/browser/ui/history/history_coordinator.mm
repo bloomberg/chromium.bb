@@ -108,6 +108,8 @@
           dismissViewControllerAnimated:YES
                              completion:completionHandler];
       self.historyNavigationController = nil;
+      _browsingHistoryDriver = nullptr;
+      _browsingHistoryService = nullptr;
     };
     if (self.historyClearBrowsingDataCoordinator) {
       [self.historyClearBrowsingDataCoordinator stopWithCompletion:^() {
