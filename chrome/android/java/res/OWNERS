@@ -6,7 +6,6 @@ set noparent
 file://content/public/android/java/res/OWNERS
 
 # New Tab Page changes only:
-dgn@chromium.org
 mvanouwerkerk@chromium.org
 peconn@chromium.org
 
