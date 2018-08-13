@@ -233,6 +233,12 @@ gfx::Range RenderWidgetHostViewBase::GetSelectedRange() {
   return GetTextInputManager()->GetTextSelection(this)->range();
 }
 
+size_t RenderWidgetHostViewBase::GetOffsetForSurroundingText() {
+  if (!GetTextInputManager())
+    return 0;
+  return GetTextInputManager()->GetTextSelection(this)->offset();
+}
+
 void RenderWidgetHostViewBase::SetBackgroundColor(SkColor color) {
   DCHECK(SkColorGetA(color) == SK_AlphaOPAQUE ||
          SkColorGetA(color) == SK_AlphaTRANSPARENT);
