@@ -20,9 +20,9 @@
 namespace {
 
 // The total number of Ash accelerators.
-constexpr int kAshAcceleratorsTotalNum = 101;
+constexpr int kAshAcceleratorsTotalNum = 100;
 // The hash of Ash accelerators.
-constexpr char kAshAcceleratorsHash[] = "48e2af8115132ccec79dc16ebe7da7fb";
+constexpr char kAshAcceleratorsHash[] = "98969dc2242e5d4b01a8c6043f26e9dd";
 #if defined(GOOGLE_CHROME_BUILD)
 // Internal builds add an extra accelerator for the Feedback app.
 // The total number of Chrome accelerators (available on Chrome OS).
@@ -225,7 +225,7 @@ TEST_F(KeyboardShortcutViewerMetadataTest,
       "Keyboard Shortcut Viewer shortcuts and the following value(s) on the "
       "top of this file:\n";
   const int ash_accelerators_number = ash_accelerators.size();
-  EXPECT_TRUE(ash_accelerators_number == kAshAcceleratorsTotalNum)
+  EXPECT_EQ(ash_accelerators_number, kAshAcceleratorsTotalNum)
       << kCommonMessage
       << "kAshAcceleratorsTotalNum=" << ash_accelerators_number << "\n";
 
@@ -233,12 +233,12 @@ TEST_F(KeyboardShortcutViewerMetadataTest,
                    AshAcceleratorDataCmp());
   const std::string ash_accelerators_hash =
       HashAshAcceleratorData(ash_accelerators);
-  EXPECT_TRUE(ash_accelerators_hash == kAshAcceleratorsHash)
+  EXPECT_EQ(ash_accelerators_hash, kAshAcceleratorsHash)
       << kCommonMessage << "kAshAcceleratorsHash=\"" << ash_accelerators_hash
       << "\"\n";
 
   const int chrome_accelerators_number = chrome_accelerators.size();
-  EXPECT_TRUE(chrome_accelerators_number == kChromeAcceleratorsTotalNum)
+  EXPECT_EQ(chrome_accelerators_number, kChromeAcceleratorsTotalNum)
       << kCommonMessage
       << "kChromeAcceleratorsTotalNum=" << chrome_accelerators_number << "\n";
 
@@ -246,7 +246,7 @@ TEST_F(KeyboardShortcutViewerMetadataTest,
                    ChromeAcceleratorMappingCmp());
   const std::string chrome_accelerators_hash =
       HashChromeAcceleratorMapping(chrome_accelerators);
-  EXPECT_TRUE(chrome_accelerators_hash == kChromeAcceleratorsHash)
+  EXPECT_EQ(chrome_accelerators_hash, kChromeAcceleratorsHash)
       << kCommonMessage << "kChromeAcceleratorsHash=\""
       << chrome_accelerators_hash << "\"\n";
 }

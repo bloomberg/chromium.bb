@@ -68,7 +68,7 @@ enum KeyboardCode {
   VKEY_SELECT = 0x29,
   VKEY_PRINT = 0x2A,
   VKEY_EXECUTE = 0x2B,
-  VKEY_SNAPSHOT = 0x2C,
+  VKEY_SNAPSHOT = 0x2C,  // Print Screen / SysRq
   VKEY_INSERT = 0x2D,
   VKEY_DELETE = 0x2E,
   VKEY_HELP = 0x2F,

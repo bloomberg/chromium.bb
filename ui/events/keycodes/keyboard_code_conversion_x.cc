@@ -824,7 +824,7 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
     case XK_Select:
       return VKEY_SELECT;
     case XK_Print:
-      return VKEY_PRINT;
+      return VKEY_SNAPSHOT;
     case XK_Execute:
       return VKEY_EXECUTE;
     case XK_Insert:
@@ -1119,7 +1119,7 @@ KeyboardCode DefaultKeyboardCodeFromHardwareKeycode(
       VKEY_RETURN,        // 0x68: KEY_KPENTER          KP_Enter
       VKEY_RCONTROL,      // 0x69: KEY_RIGHTCTRL        Control_R
       VKEY_DIVIDE,        // 0x6A: KEY_KPSLASH          KP_Divide
-      VKEY_PRINT,         // 0x6B: KEY_SYSRQ            Print
+      VKEY_SNAPSHOT,      // 0x6B: KEY_SYSRQ            Print
       VKEY_RMENU,         // 0x6C: KEY_RIGHTALT         Alt_R
       VKEY_RETURN,        // 0x6D: KEY_LINEFEED         Linefeed
       VKEY_HOME,          // 0x6E: KEY_HOME             Home
