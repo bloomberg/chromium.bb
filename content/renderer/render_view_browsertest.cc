@@ -1783,7 +1783,15 @@ TEST_F(RenderViewImplTest, OnDeleteSurroundingText) {
   EXPECT_EQ(0, info.selection_end);
 }
 
-TEST_F(RenderViewImplTest, OnDeleteSurroundingTextInCodePoints) {
+#if defined(OS_ANDROID)
+// Failing on Android M: http://crbug.com/873580
+#define MAYBE_OnDeleteSurroundingTextInCodePoints \
+  DISABLED_OnDeleteSurroundingTextInCodePoints
+#else
+#define MAYBE_OnDeleteSurroundingTextInCodePoints \
+  OnDeleteSurroundingTextInCodePoints
+#endif
+TEST_F(RenderViewImplTest, MAYBE_OnDeleteSurroundingTextInCodePoints) {
   // Load an HTML page consisting of an input field.
   LoadHTML(
       // "ab" + trophy + space + "cdef" + trophy + space + "gh".
