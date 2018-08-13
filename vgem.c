@@ -35,10 +35,6 @@ static int vgem_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32
 	width = ALIGN(width, MESA_LLVMPIPE_TILE_SIZE);
 	height = ALIGN(height, MESA_LLVMPIPE_TILE_SIZE);
 
-	/* HAL_PIXEL_FORMAT_YV12 requires that the buffer's height not be aligned. */
-	if (bo->format == DRM_FORMAT_YVU420_ANDROID)
-		height = bo->height;
-
 	return drv_dumb_bo_create(bo, width, height, format, flags);
 }
 

@@ -266,8 +266,11 @@ int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t 
 		/* Align width to 32 pixels, so chroma strides are 16 bytes as
 		 * Android requires. */
 		aligned_width = ALIGN(width, 32);
-		/* Adjust the height to include room for chroma planes */
-		aligned_height = 3 * DIV_ROUND_UP(height, 2);
+		/* Adjust the height to include room for chroma planes.
+		 *
+		 * HAL_PIXEL_FORMAT_YV12 requires that the buffer's height not
+		 * be aligned. */
+		aligned_height = 3 * DIV_ROUND_UP(bo->height, 2);
 		break;
 	case DRM_FORMAT_YVU420:
 	case DRM_FORMAT_NV12:

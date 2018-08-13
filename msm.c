@@ -35,10 +35,6 @@ static int msm_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_
 	width = ALIGN(width, MESA_LLVMPIPE_TILE_SIZE);
 	height = ALIGN(height, MESA_LLVMPIPE_TILE_SIZE);
 
-	/* HAL_PIXEL_FORMAT_YV12 requires that the buffer's height not be aligned. */
-	if (bo->format == DRM_FORMAT_YVU420_ANDROID)
-		height = bo->height;
-
 	/*
 	 * The extra 12KB at the end are a requirement of the Venus codec driver.
 	 * Since |height| will be multiplied by 3/2 in drv_dumb_bo_create,
