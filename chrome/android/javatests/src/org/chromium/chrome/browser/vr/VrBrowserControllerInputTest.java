@@ -35,8 +35,10 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.RenderCoordinates;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * End-to-end tests for Daydream controller input while in the VR browser.
@@ -75,44 +77,95 @@ public class VrBrowserControllerInputTest {
      */
     @Test
     @MediumTest
-    public void testControllerScrolling() throws InterruptedException {
-        mVrTestRule.loadUrl(
-                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
-                PAGE_LOAD_TIMEOUT_S);
-        final RenderCoordinates coord =
-                RenderCoordinates.fromWebContents(mVrTestRule.getWebContents());
-        waitForPageToBeScrollable(coord);
+    public void testControllerScrolling() throws InterruptedException, Exception {
+        String url = VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling");
 
-        // Test that scrolling down works
-        int startScrollPoint = coord.getScrollYPixInt();
-        // Arbitrary, but valid values to scroll smoothly
+        final AtomicReference<RenderCoordinates> coord = new AtomicReference<RenderCoordinates>();
+        Runnable waitScrollable = () -> {
+            coord.set(RenderCoordinates.fromWebContents(mVrTestRule.getWebContents()));
+            waitForPageToBeScrollable(coord.get());
+        };
+
+        Callable<Integer> getYCoord = () -> {
+            return coord.get().getScrollYPixInt();
+        };
+        Callable<Integer> getXCoord = () -> {
+            return coord.get().getScrollXPixInt();
+        };
+
+        testControllerScrollingImpl(url, waitScrollable, getYCoord, getXCoord);
+    }
+
+    /**
+     * Verifies that scrolling via the Daydream controller's touchpad works in cross-origin iframes
+     * (file:// URLs appear to be always treated as different origins).
+     * Automation of a manual test in https://crbug.com/862153.
+     */
+    @Test
+    @MediumTest
+    public void testControllerScrollingIframe() throws InterruptedException, Exception {
+        String url = VrBrowserTestFramework.getFileUrlForHtmlTestFile(
+                "test_controller_scrolling_iframe_outer");
+
+        Runnable waitScrollable = () -> {
+            // We need to focus the iframe before we can start running JavaScript in it.
+            mVrBrowserTestFramework.runJavaScriptOrFail(
+                    "document.getElementById('fs_iframe').focus()", POLL_TIMEOUT_SHORT_MS);
+            mVrBrowserTestFramework.pollJavaScriptBooleanInFrameOrFail(
+                    "document.documentElement.scrollHeight > document.documentElement.clientHeight",
+                    POLL_TIMEOUT_LONG_MS);
+        };
+
+        Callable<Integer> getYCoord = () -> {
+            // Round necessary to prevent Integer from failing due to decimal points.
+            return Integer.valueOf(mVrBrowserTestFramework.runJavaScriptInFrameOrFail(
+                    "Math.round(document.documentElement.scrollTop)", POLL_TIMEOUT_SHORT_MS));
+        };
+        Callable<Integer> getXCoord = () -> {
+            // Round necessary to prevent Integer from failing due to decimal points.
+            return Integer.valueOf(mVrBrowserTestFramework.runJavaScriptInFrameOrFail(
+                    "Math.round(document.documentElement.scrollLeft)", POLL_TIMEOUT_SHORT_MS));
+        };
+
+        testControllerScrollingImpl(url, waitScrollable, getYCoord, getXCoord);
+    }
+
+    private void testControllerScrollingImpl(String url, Runnable waitScrollable,
+            Callable<Integer> getYCoord, Callable<Integer> getXCoord)
+            throws InterruptedException, Exception {
+        mVrTestRule.loadUrl(url, PAGE_LOAD_TIMEOUT_S);
+        waitScrollable.run();
+
+        // Test that scrolling down works.
+        int startScrollPoint = getYCoord.call().intValue();
+        // Arbitrary, but valid values to scroll smoothly.
         int scrollSteps = 20;
         int scrollSpeed = 60;
         mController.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed);
         // We need this second scroll down, otherwise the horizontal scrolling becomes flaky
         // This actually seems to not be an issue in this test case anymore, but still occurs in
         // the fling scroll test, so keep around here as an extra precaution.
-        // TODO(bsheedy): Figure out why this is the case
+        // TODO(bsheedy): Figure out why this is the case.
         mController.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed);
-        int endScrollPoint = coord.getScrollYPixInt();
+        int endScrollPoint = getYCoord.call().intValue();
         Assert.assertTrue("Controller failed to scroll down", startScrollPoint < endScrollPoint);
 
-        // Test that scrolling up works
+        // Test that scrolling up works.
         startScrollPoint = endScrollPoint;
         mController.scroll(EmulatedVrController.ScrollDirection.UP, scrollSteps, scrollSpeed);
-        endScrollPoint = coord.getScrollYPixInt();
+        endScrollPoint = getYCoord.call().intValue();
         Assert.assertTrue("Controller failed to scroll up", startScrollPoint > endScrollPoint);
 
-        // Test that scrolling right works
-        startScrollPoint = coord.getScrollXPixInt();
+        // Test that scrolling right works.
+        startScrollPoint = getXCoord.call().intValue();
         mController.scroll(EmulatedVrController.ScrollDirection.RIGHT, scrollSteps, scrollSpeed);
-        endScrollPoint = coord.getScrollXPixInt();
+        endScrollPoint = getXCoord.call().intValue();
         Assert.assertTrue("Controller failed to scroll right", startScrollPoint < endScrollPoint);
 
-        // Test that scrolling left works
+        // Test that scrolling left works.
         startScrollPoint = endScrollPoint;
         mController.scroll(EmulatedVrController.ScrollDirection.LEFT, scrollSteps, scrollSpeed);
-        endScrollPoint = coord.getScrollXPixInt();
+        endScrollPoint = getXCoord.call().intValue();
         Assert.assertTrue("Controller failed to scroll left", startScrollPoint > endScrollPoint);
     }
 
@@ -129,14 +182,14 @@ public class VrBrowserControllerInputTest {
                 RenderCoordinates.fromWebContents(mVrTestRule.getWebContents());
         waitForPageToBeScrollable(coord);
 
-        // Arbitrary, but valid values to trigger fling scrolling
+        // Arbitrary, but valid values to trigger fling scrolling.
         int scrollSteps = 10;
         int scrollSpeed = 10;
 
-        // Test fling scrolling down
+        // Test fling scrolling down.
         mController.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed);
         final AtomicInteger endScrollPoint = new AtomicInteger(coord.getScrollYPixInt());
-        // Check that we continue to scroll past wherever we were when we let go of the touchpad
+        // Check that we continue to scroll past wherever we were when we let go of the touchpad.
         CriteriaHelper.pollInstrumentationThread(
                 ()
                         -> { return coord.getScrollYPixInt() > endScrollPoint.get(); },
@@ -144,7 +197,7 @@ public class VrBrowserControllerInputTest {
                 POLL_CHECK_INTERVAL_LONG_MS);
         mController.cancelFlingScroll();
 
-        // Test fling scrolling up
+        // Test fling scrolling up.
         mController.scroll(EmulatedVrController.ScrollDirection.UP, scrollSteps, scrollSpeed);
         endScrollPoint.set(coord.getScrollYPixInt());
         CriteriaHelper.pollInstrumentationThread(
@@ -157,7 +210,7 @@ public class VrBrowserControllerInputTest {
         // horizontally, so scroll down a bit to ensure that isn't the case.
         mController.scroll(EmulatedVrController.ScrollDirection.DOWN, 10, 60);
 
-        // Test fling scrolling right
+        // Test fling scrolling right.
         mController.scroll(EmulatedVrController.ScrollDirection.RIGHT, scrollSteps, scrollSpeed);
         endScrollPoint.set(coord.getScrollXPixInt());
         CriteriaHelper.pollInstrumentationThread(
@@ -167,7 +220,7 @@ public class VrBrowserControllerInputTest {
                 POLL_CHECK_INTERVAL_LONG_MS);
         mController.cancelFlingScroll();
 
-        // Test fling scrolling left
+        // Test fling scrolling left.
         mController.scroll(EmulatedVrController.ScrollDirection.LEFT, scrollSteps, scrollSpeed);
         endScrollPoint.set(coord.getScrollXPixInt());
         CriteriaHelper.pollInstrumentationThread(
@@ -191,6 +244,27 @@ public class VrBrowserControllerInputTest {
         mController.performControllerClick();
         ChromeTabUtils.waitForTabPageLoaded(mVrTestRule.getActivity().getActivityTab(),
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"));
+    }
+
+    /**
+     * Verifies that controller clicks in the VR browser on cross-origin iframes are properly
+     * registered. This is done by clicking on a link in the iframe and ensuring that it causes a
+     * navigation.
+     * Automation of a manual test in https://crbug.com/862153.
+     */
+    @Test
+    @MediumTest
+    public void testControllerClicksRegisterOnIframe() throws InterruptedException {
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_iframe_clicks_outer"));
+        mController.performControllerClick();
+        // Wait until the iframe's current location matches the URL of the page that gets navigated
+        // to on click.
+        mVrBrowserTestFramework.pollJavaScriptBooleanInFrameOrFail("window.location.href == '"
+                        + VrBrowserTestFramework.getFileUrlForHtmlTestFile(
+                                  "test_iframe_clicks_inner_nav")
+                        + "'",
+                POLL_TIMEOUT_SHORT_MS);
     }
 
     /*
