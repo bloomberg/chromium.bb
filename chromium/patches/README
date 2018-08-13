@@ -802,3 +802,10 @@ Date:   Thu May 24 13:43:24 2018 -0700
  Affects: 
 libavutil/encryption_info.c
 
+
+------------------------------------------------------------------
+Sent for upstream approval:
+
+    avutil/encryption_info: Fix size calculation.
+    Affects:
+      avutil/encryption_info.c
