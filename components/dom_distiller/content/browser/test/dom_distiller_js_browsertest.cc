@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/callback.h"
+#include "base/cfi_buildflags.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -101,8 +102,13 @@ class DomDistillerJsTest : public content::ContentBrowserTest {
   }
 };
 
-#if defined(MEMORY_SANITIZER)
+// Disabled on MSan and Android CFI bots.
 // https://crbug.com/845180
+#if defined(MEMORY_SANITIZER) ||                                 \
+    (defined(OS_ANDROID) &&                                      \
+     (BUILDFLAG(CFI_CAST_CHECK) || BUILDFLAG(CFI_ICALL_CHECK) || \
+      BUILDFLAG(CFI_ENFORCEMENT_DIAGNOSTIC) ||                   \
+      BUILDFLAG(CFI_ENFORCEMENT_TRAP)))
 #define MAYBE_RunJsTests DISABLED_RunJsTests
 #else
 #define MAYBE_RunJsTests RunJsTests
