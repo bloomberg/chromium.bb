@@ -22,13 +22,15 @@ class SaveCardIconView : public PageActionIconView {
  public:
   SaveCardIconView(CommandUpdater* command_updater,
                    Browser* browser,
-                   PageActionIconView::Delegate* delegate);
+                   PageActionIconView::Delegate* delegate,
+                   const gfx::FontList& font_list);
   ~SaveCardIconView() override;
 
   // PageActionIconView:
   views::BubbleDialogDelegateView* GetBubble() const override;
   bool Update() override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
+  bool ShouldShowSeparator() const override;
 
  protected:
   // PageActionIconView:
@@ -37,6 +39,9 @@ class SaveCardIconView : public PageActionIconView {
 
  private:
   SaveCardBubbleControllerImpl* GetController() const;
+
+  // gfx::AnimationDelegate:
+  void AnimationEnded(const gfx::Animation* animation) override;
 
   // May be nullptr.
   Browser* const browser_;

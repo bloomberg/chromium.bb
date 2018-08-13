@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_ICON_LABEL_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_ICON_LABEL_BUBBLE_VIEW_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -145,6 +146,9 @@ class IconLabelBubbleView : public views::InkDropObserver,
   void NotifyClick(const ui::Event& event) override;
   void OnFocus() override;
   void OnBlur() override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationCanceled(const gfx::Animation* animation) override;
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
@@ -160,6 +164,21 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // If the separator is not shown, and ShouldShowExtraEndSpace() is false,
   // this returns 0.
   int GetPrefixedSeparatorWidth() const;
+
+  // Set up for icons that animate their labels in and then out.
+  void SetUpForInOutAnimation();
+
+  // Animates the view in and disables highlighting for hover and focus.
+  // TODO(bruthig): See https://crbug.com/669253. Since the ink drop highlight
+  // currently cannot handle host resizes, the highlight needs to be disabled
+  // when the animation is running.
+  void AnimateIn(int string_id);
+  void PauseAnimation();
+  void UnpauseAnimation();
+
+  // Returns true iff the slide animation has started, has not ended and is
+  // currently paused.
+  bool is_animation_paused() const { return is_animation_paused_; }
 
  private:
   // Spacing between the image and the label.
@@ -180,6 +199,8 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // views::View:
   const char* GetClassName() const override;
 
+  void ShowAnimation();
+
   // The contents of the bubble.
   views::ImageView* image_;
   views::Label* label_;
@@ -195,7 +216,15 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // event. If this is true then IsTriggerableEvent() will return false to
   // prevent the bubble from reshowing. This flag is necessary because the
   // bubble gets dismissed before the button handles the mouse release event.
-  bool suppress_button_release_;
+  bool suppress_button_release_ = false;
+
+  // Slide animation for label.
+  gfx::SlideAnimation slide_animation_{this};
+
+  // Parameters for the slide animation.
+  bool is_animation_paused_ = false;
+  double pause_animation_state_ = 0.0;
+  double open_state_fraction_ = 0.0;
 
   DISALLOW_COPY_AND_ASSIGN(IconLabelBubbleView);
 };

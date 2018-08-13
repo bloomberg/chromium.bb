@@ -4,13 +4,16 @@
 
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 
+#include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -41,6 +44,18 @@ constexpr int kIconLabelBubbleSpaceBesideSeparator = 8;
 constexpr int kIconLabelBubbleFadeInDurationMs = 250;
 constexpr int kIconLabelBubbleFadeOutDurationMs = 175;
 
+// The type of tweening for the animation.
+const gfx::Tween::Type kTweenType = gfx::Tween::EASE_IN_OUT;
+
+// The time for the text to animate out, as well as in.
+constexpr int kSlideTimeMS = 600;
+
+// The total time for the in and out text animation.
+constexpr int kAnimationDurationMS = 3000;
+
+// The fraction of time taken for the text to animate out, as well as in.
+const double kOpenTimeFraction =
+    static_cast<double>(kSlideTimeMS) / kAnimationDurationMS;
 }  // namespace
 
 //////////////////////////////////////////////////////////////////
@@ -112,8 +127,7 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list)
       image_(new views::ImageView()),
       label_(new views::Label(base::string16(), {font_list})),
       ink_drop_container_(new views::InkDropContainerView()),
-      separator_view_(new SeparatorView(this)),
-      suppress_button_release_(false) {
+      separator_view_(new SeparatorView(this)) {
   // Disable separate hit testing for |image_|.  This prevents views treating
   // |image_| as a separate mouse hover region from |this|.
   image_->set_can_process_events_within_subtree(false);
@@ -158,6 +172,8 @@ void IconLabelBubbleView::InkDropRippleAnimationEnded(
     views::InkDropState state) {}
 
 bool IconLabelBubbleView::ShouldShowLabel() const {
+  if (slide_animation_.is_animating() || is_animation_paused_)
+    return !IsShrinking() || (width() > image()->GetPreferredSize().width());
   return label_->visible() && !label_->text().empty();
 }
 
@@ -183,11 +199,22 @@ bool IconLabelBubbleView::ShouldShowExtraEndSpace() const {
 }
 
 double IconLabelBubbleView::WidthMultiplier() const {
-  return 1.0;
+  if (!slide_animation_.is_animating() && !is_animation_paused_)
+    return 1.0;
+
+  double state = is_animation_paused_ ? pause_animation_state_
+                                      : slide_animation_.GetCurrentValue();
+  double size_fraction = 1.0;
+  if (state < open_state_fraction_)
+    size_fraction = state / open_state_fraction_;
+  if (state > (1.0 - open_state_fraction_))
+    size_fraction = (1.0 - state) / open_state_fraction_;
+  return size_fraction;
 }
 
 bool IconLabelBubbleView::IsShrinking() const {
-  return false;
+  return slide_animation_.is_animating() && !is_animation_paused_ &&
+         slide_animation_.GetCurrentValue() > (1.0 - open_state_fraction_);
 }
 
 bool IconLabelBubbleView::ShowBubble(const ui::Event& event) {
@@ -381,6 +408,32 @@ void IconLabelBubbleView::OnBlur() {
   Button::OnBlur();
 }
 
+void IconLabelBubbleView::AnimationEnded(const gfx::Animation* animation) {
+  slide_animation_.Reset();
+  if (!is_animation_paused_) {
+    // If there is no separator to show, then that means we want the text to
+    // disappear after animating.
+    if (!ShouldShowSeparator())
+      label()->SetVisible(false);
+    parent()->Layout();
+    parent()->SchedulePaint();
+  }
+
+  GetInkDrop()->SetShowHighlightOnHover(true);
+  GetInkDrop()->SetShowHighlightOnFocus(true);
+}
+
+void IconLabelBubbleView::AnimationProgressed(const gfx::Animation* animation) {
+  if (!is_animation_paused_) {
+    parent()->Layout();
+    parent()->SchedulePaint();
+  }
+}
+
+void IconLabelBubbleView::AnimationCanceled(const gfx::Animation* animation) {
+  AnimationEnded(animation);
+}
+
 void IconLabelBubbleView::OnWidgetDestroying(views::Widget* widget) {
   widget->RemoveObserver(this);
 }
@@ -477,4 +530,58 @@ bool IconLabelBubbleView::OnActivate(const ui::Event& event) {
 
 const char* IconLabelBubbleView::GetClassName() const {
   return "IconLabelBubbleView";
+}
+
+void IconLabelBubbleView::SetUpForInOutAnimation() {
+  SetInkDropMode(InkDropMode::ON);
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+  image_->EnableCanvasFlippingForRTLUI(true);
+  label_->SetElideBehavior(gfx::NO_ELIDE);
+  label_->SetVisible(false);
+
+  slide_animation_.SetSlideDuration(kAnimationDurationMS);
+  slide_animation_.SetTweenType(kTweenType);
+  open_state_fraction_ =
+      gfx::Tween::CalculateValue(kTweenType, kOpenTimeFraction);
+}
+
+void IconLabelBubbleView::AnimateIn(int string_id) {
+  if (!label()->visible()) {
+    SetLabel(l10n_util::GetStringUTF16(string_id));
+    label()->SetVisible(true);
+    ShowAnimation();
+  }
+}
+
+void IconLabelBubbleView::PauseAnimation() {
+  if (slide_animation_.is_animating()) {
+    // If the user clicks while we're animating, the bubble arrow will be
+    // pointing to the image, and if we allow the animation to keep running, the
+    // image will move away from the arrow (or we'll have to move the bubble,
+    // which is even worse). So we want to stop the animation.  We have two
+    // choices: jump to the final post-animation state (no label visible), or
+    // pause the animation where we are and continue running after the bubble
+    // closes. The former looks more jerky, so we avoid it unless the animation
+    // hasn't even fully exposed the image yet, in which case pausing with half
+    // an image visible will look broken.
+    if (!is_animation_paused_ && ShouldShowLabel()) {
+      is_animation_paused_ = true;
+      pause_animation_state_ = slide_animation_.GetCurrentValue();
+    }
+    slide_animation_.Reset();
+  }
+}
+
+void IconLabelBubbleView::UnpauseAnimation() {
+  if (is_animation_paused_) {
+    slide_animation_.Reset(pause_animation_state_);
+    is_animation_paused_ = false;
+    ShowAnimation();
+  }
+}
+
+void IconLabelBubbleView::ShowAnimation() {
+  slide_animation_.Show();
+  GetInkDrop()->SetShowHighlightOnHover(false);
+  GetInkDrop()->SetShowHighlightOnFocus(false);
 }

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -249,6 +250,10 @@ bool SaveCardBubbleControllerImpl::ShouldShowSignInPromo() const {
              browser_sync::ProfileSyncService::DISABLE_REASON_USER_CHOICE);
 }
 
+bool SaveCardBubbleControllerImpl::CanAnimate() const {
+  return can_animate_;
+}
+
 void SaveCardBubbleControllerImpl::OnSyncPromoAccepted(
     const AccountInfo& account,
     bool is_default_promo_account) {
@@ -286,6 +291,11 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
     }
     case BubbleType::LOCAL_SAVE:
       DCHECK(!local_save_card_callback_.is_null());
+      // Show an animated card saved confirmation message next time
+      // UpdateIcon() is called.
+      can_animate_ = base::FeatureList::IsEnabled(
+          features::kAutofillSaveCardSignInAfterLocalSave);
+
       local_save_card_callback_.Run();
       local_save_card_callback_.Reset();
       break;
@@ -301,16 +311,14 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
   const BubbleType previous_bubble_type = current_bubble_type_;
   current_bubble_type_ = BubbleType::INACTIVE;
 
-  // If user just saved a card locally, and we can show the sign in promo,
-  // then show the sign in promo. If we can't show the sign in promo
-  // then |current_bubble_type_| will be set to |MANAGE_CARDS|.
+  // If user just saved a card locally, the next bubble can either be a sign-in
+  // promo or a manage cards view. If we need to show a sign-in promo, that
+  // will be handled by OnAnimationEnded(), otherwise clicking the icon again
+  // will show the MANAGE_CARDS bubble, which is set here.
   if (previous_bubble_type == BubbleType::LOCAL_SAVE &&
       base::FeatureList::IsEnabled(
           features::kAutofillSaveCardSignInAfterLocalSave)) {
-    if (ShouldShowSignInPromo())
-      ShowBubbleForSignInPromo();
-    else
-      current_bubble_type_ = BubbleType::MANAGE_CARDS;
+    current_bubble_type_ = BubbleType::MANAGE_CARDS;
   }
 
   if (previous_bubble_type == BubbleType::LOCAL_SAVE ||
@@ -381,6 +389,17 @@ void SaveCardBubbleControllerImpl::OnBubbleClosed() {
   if (current_bubble_type_ == BubbleType::SIGN_IN_PROMO)
     current_bubble_type_ = BubbleType::MANAGE_CARDS;
   UpdateIcon();
+}
+
+void SaveCardBubbleControllerImpl::OnAnimationEnded() {
+  // Do not repeat the animation next time UpdateIcon() is called, unless
+  // explicitly set somewhere else.
+  can_animate_ = false;
+
+  // We do not want to show the promo if the user clicked on the icon and the
+  // manage cards bubble started to show.
+  if (!save_card_bubble_view_)
+    ShowBubbleForSignInPromo();
 }
 
 const LegalMessageLines& SaveCardBubbleControllerImpl::GetLegalMessageLines()

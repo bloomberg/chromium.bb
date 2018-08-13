@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
@@ -237,8 +238,8 @@ void LocationBarView::Init() {
   page_action_icons_.push_back(manage_passwords_icon_view_);
 
   if (browser_) {
-    save_credit_card_icon_view_ =
-        new autofill::SaveCardIconView(command_updater(), browser_, this);
+    save_credit_card_icon_view_ = new autofill::SaveCardIconView(
+        command_updater(), browser_, this, font_list);
     page_action_icons_.push_back(save_credit_card_icon_view_);
   }
   translate_icon_view_ = new TranslateIconView(command_updater(), this);
