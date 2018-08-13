@@ -40,7 +40,7 @@ class CONTENT_EXPORT FlingSchedulerAndroid : public FlingSchedulerBase,
   void OnCompositingDidCommit() override {}
   void OnRootWindowVisibilityChanged(bool visible) override {}
   void OnAttachCompositor() override {}
-  void OnDetachCompositor() override {}
+  void OnDetachCompositor() override;
   void OnAnimate(base::TimeTicks frame_begin_time) override;
   void OnActivityStopped() override {}
   void OnActivityStarted() override {}
