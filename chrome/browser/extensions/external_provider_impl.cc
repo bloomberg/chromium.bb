@@ -76,7 +76,7 @@ namespace {
 // Certain default extensions are no longer needed on ARC devices as they were
 // replaced by their ARC counterparts.
 bool ShouldUninstallExtensionReplacedByArcApp(const std::string& extension_id) {
-  if (arc::IsWebstoreSearchEnabled())
+  if (!arc::IsArcAvailable())
     return false;
 
   if (extension_id == extension_misc::kGooglePlayBooksAppId ||

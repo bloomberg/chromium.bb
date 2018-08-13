@@ -72,14 +72,7 @@ bool IsArcAvailable() {
 }
 
 bool IsWebstoreSearchEnabled() {
-  const auto* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(chromeos::switches::kArcAvailability)) {
-    const std::string value =
-        command_line->GetSwitchValueASCII(chromeos::switches::kArcAvailability);
-
-    return value == kAvailabilityNone;
-  }
-  return true;
+  return false;
 }
 
 bool IsPlayStoreAvailable() {
