@@ -153,6 +153,16 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   // Forwards proxy authentication headers to the UI thread.
   void UpdateProxyRequestHeaders(net::HttpRequestHeaders headers);
 
+  // Notifies |this| that there there is a change in the effective connection
+  // type.
+  void OnEffectiveConnectionTypeChanged(net::EffectiveConnectionType type);
+
+  // Notifies |this| that there there is a change in the HTTP RTT estimate.
+  void OnRTTOrThroughputEstimatesComputed(base::TimeDelta http_rtt);
+
+  // Returns the current estimate of the effective connection type.
+  net::EffectiveConnectionType GetEffectiveConnectionType() const;
+
   // Various accessor methods.
   DataReductionProxyConfigurator* configurator() const {
     return configurator_.get();
@@ -323,6 +333,9 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   // IO thread is still available at the time of destruction. If the IO thread
   // is unavailable, then the destruction will happen on the UI thread.
   std::unique_ptr<NetworkPropertiesManager> network_properties_manager_;
+
+  // Current estimate of the effective connection type.
+  net::EffectiveConnectionType effective_connection_type_;
 
   base::WeakPtrFactory<DataReductionProxyIOData> weak_factory_;
 

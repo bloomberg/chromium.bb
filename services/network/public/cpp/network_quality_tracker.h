@@ -29,7 +29,9 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkQualityTracker
  public:
   class COMPONENT_EXPORT(NETWORK_CPP) EffectiveConnectionTypeObserver {
    public:
-    // Called when there is a change in the effective connection type.
+    // Called when there is a change in the effective connection type. The
+    // |observer| is notified of the current effective connection type on the
+    // same thread on which it was added.
     virtual void OnEffectiveConnectionTypeChanged(
         net::EffectiveConnectionType type) = 0;
 
@@ -49,6 +51,8 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkQualityTracker
     // RTT or downstream estimate. If either of the RTT estimates are
     // unavailable, then the value of that estimate is set to base::TimeDelta().
     // If downstream estimate is unavailable, its value is set to INT32_MAX.
+    // The |observer| is notified of the current effective connection type on
+    // the same thread on which it was added.
     virtual void OnRTTOrThroughputEstimatesComputed(
         base::TimeDelta http_rtt,
         base::TimeDelta transport_rtt,
@@ -122,7 +126,21 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkQualityTracker
   void RemoveRTTAndThroughputEstimatesObserver(
       RTTAndThroughputEstimatesObserver* observer);
 
+  // Changes effective connection type estimate to the provided value, and
+  // reports |effective_connection_type| to all
+  // EffectiveConnectionTypeObservers.
+  void ReportEffectiveConnectionTypeForTesting(
+      net::EffectiveConnectionType effective_connection_type);
+
+  // Changes RTT and throughput estimate to the provided estimates, and
+  // reports it to all RTTAndThroughputEstimatesObservers.
+  void ReportRTTsAndThroughputForTesting(base::TimeDelta http_rtt,
+                                         int32_t downstream_throughput_kbps);
+
  protected:
+  // Constructor for testing purposes only without the network service instance.
+  NetworkQualityTracker();
+
   // NetworkQualityEstimatorManagerClient implementation. Protected for testing.
   void OnNetworkQualityChanged(
       net::EffectiveConnectionType effective_connection_type,

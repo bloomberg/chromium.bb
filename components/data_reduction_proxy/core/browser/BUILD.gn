@@ -79,6 +79,7 @@ if (is_android) {
       "//crypto",
       "//google_apis",
       "//net:net",
+      "//services/network/public/cpp",
       "//url:url",
     ]
   }
@@ -113,6 +114,8 @@ static_library("browser") {
     "//crypto",
     "//google_apis",
     "//net",
+    "//services/network:network_service",
+    "//services/network/public/cpp",
     "//third_party/leveldatabase",
     "//url",
   ]
@@ -148,6 +151,7 @@ static_library("test_support") {
     "//components/previews/core:test_support",
     "//net",
     "//net:test_support",
+    "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -213,6 +217,8 @@ source_set("unit_tests") {
     "//components/previews/core:test_support",
     "//components/variations",
     "//net:test_support",
+    "//services/network:network_service",
+    "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
