@@ -37,6 +37,17 @@ js_library("dimmable_ui_controller") {
     "image_editor:image_editor_prompt",
     "//ui/webui/resources/js:assert",
   ]
+  externs_list = [
+    "$externs_path/chrome.js",
+    "$externs_path/chrome_extensions.js",  # For chrome.accessibilityFeatures.
+  ]
+}
+
+js_library("dimmable_ui_controller_unittest") {
+  deps = [
+    ":dimmable_ui_controller",
+    "//ui/webui/resources/js:webui_resource_test",
+  ]
 }
 
 js_library("entry_list_watcher") {
@@ -170,6 +181,7 @@ js_library("thumbnail_mode") {
 
 js_unit_tests("unit_tests") {
   deps = [
+    ":dimmable_ui_controller_unittest",
     ":gallery_util_unittest",
     ":ribbon_unittest",
   ]

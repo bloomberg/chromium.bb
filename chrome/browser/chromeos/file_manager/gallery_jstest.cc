@@ -56,6 +56,5 @@ IN_PROC_BROWSER_TEST_F(GalleryJsTest, SlideModeTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryJsTest, DimmableUIControllerTest) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("dimmable_ui_controller_unittest.html")));
+  RunGeneratedTest("/dimmable_ui_controller_unittest.html");
 }
