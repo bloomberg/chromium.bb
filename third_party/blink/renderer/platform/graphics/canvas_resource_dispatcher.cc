@@ -83,60 +83,61 @@ void UpdatePlaceholderImage(
     base::WeakPtr<CanvasResourceDispatcher> dispatcher,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     int placeholder_canvas_id,
-    scoped_refptr<blink::CanvasResource> image,
+    scoped_refptr<blink::CanvasResource> canvas_resource,
     viz::ResourceId resource_id) {
   DCHECK(IsMainThread());
   OffscreenCanvasPlaceholder* placeholder_canvas =
       OffscreenCanvasPlaceholder::GetPlaceholderById(placeholder_canvas_id);
   if (placeholder_canvas) {
     placeholder_canvas->SetPlaceholderFrame(
-        std::move(image), std::move(dispatcher), std::move(task_runner),
-        resource_id);
+        std::move(canvas_resource), std::move(dispatcher),
+        std::move(task_runner), resource_id);
   }
 }
 
 }  // namespace
 
 void CanvasResourceDispatcher::PostImageToPlaceholderIfNotBlocked(
-    scoped_refptr<CanvasResource> image,
+    scoped_refptr<CanvasResource> canvas_resource,
     viz::ResourceId resource_id) {
   if (placeholder_canvas_id_ == kInvalidPlaceholderCanvasId) {
     ReclaimResourceInternal(resource_id);
     return;
   }
-  // Determines whether the main thread may be blocked. If unblocked, post the
-  // image. Otherwise, save the image and do not post it.
+  // Determines whether the main thread may be blocked. If unblocked, post
+  // |canvas_resource|. Otherwise, save it but do not post it.
   if (num_unreclaimed_frames_posted_ < kMaxUnreclaimedPlaceholderFrames) {
-    this->PostImageToPlaceholder(std::move(image), resource_id);
+    this->PostImageToPlaceholder(std::move(canvas_resource), resource_id);
     num_unreclaimed_frames_posted_++;
   } else {
     DCHECK(num_unreclaimed_frames_posted_ == kMaxUnreclaimedPlaceholderFrames);
     if (latest_unposted_image_) {
-      // The previous unposted image becomes obsolete now.
+      // The previous unposted resource becomes obsolete now.
       ReclaimResourceInternal(latest_unposted_resource_id_);
     }
 
-    latest_unposted_image_ = std::move(image);
+    latest_unposted_image_ = std::move(canvas_resource);
     latest_unposted_resource_id_ = resource_id;
   }
 }
 
 void CanvasResourceDispatcher::PostImageToPlaceholder(
-    scoped_refptr<CanvasResource> image,
+    scoped_refptr<CanvasResource> canvas_resource,
     viz::ResourceId resource_id) {
   scoped_refptr<base::SingleThreadTaskRunner> dispatcher_task_runner =
       Platform::Current()->CurrentThread()->GetTaskRunner();
 
-  // After this point, |image| can only be used on the main thread, until it
-  // is returned.
-  image->Transfer();
+  // After this point, |canvas_resource| can only be used on the main thread,
+  // until it is returned.
+  canvas_resource->Transfer();
 
   PostCrossThreadTask(
       *Platform::Current()->MainThread()->Scheduler()->CompositorTaskRunner(),
       FROM_HERE,
       CrossThreadBind(UpdatePlaceholderImage, this->GetWeakPtr(),
                       WTF::Passed(std::move(dispatcher_task_runner)),
-                      placeholder_canvas_id_, std::move(image), resource_id));
+                      placeholder_canvas_id_, std::move(canvas_resource),
+                      resource_id));
 }
 
 void CanvasResourceDispatcher::DispatchFrameSync(
@@ -422,9 +423,8 @@ void CanvasResourceDispatcher::SetSuspendAnimation(bool suspend_animation) {
 }
 
 void CanvasResourceDispatcher::SetNeedsBeginFrameInternal() {
-  if (sink_) {
+  if (sink_)
     sink_->SetNeedsBeginFrame(needs_begin_frame_ && !suspend_animation_);
-  }
 }
 
 void CanvasResourceDispatcher::OnBeginFrame(
@@ -439,7 +439,7 @@ void CanvasResourceDispatcher::OnBeginFrame(
 
   if (Client())
     Client()->BeginFrame();
-  // TODO(eseckler): Tell |m_sink| if we did not draw during the BeginFrame.
+  // TODO(eseckler): Tell |sink_| if we did not draw during the BeginFrame.
   current_begin_frame_ack_.sequence_number =
       viz::BeginFrameArgs::kInvalidFrameNumber;
 }
