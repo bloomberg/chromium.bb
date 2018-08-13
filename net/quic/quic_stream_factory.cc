@@ -321,8 +321,7 @@ class QuicStreamFactory::Job {
 
   ~Job();
 
-  int Run(CompletionOnceCallback host_resolution_callback,
-          CompletionOnceCallback callback);
+  int Run(CompletionOnceCallback callback);
 
   int DoLoop(int rv);
   int DoResolveHost();
@@ -445,13 +444,10 @@ QuicStreamFactory::Job::~Job() {
   // non-null.
 }
 
-int QuicStreamFactory::Job::Run(CompletionOnceCallback host_resolution_callback,
-                                CompletionOnceCallback callback) {
+int QuicStreamFactory::Job::Run(CompletionOnceCallback callback) {
   int rv = DoLoop(OK);
-  if (rv == ERR_IO_PENDING) {
-    host_resolution_callback_ = std::move(host_resolution_callback);
+  if (rv == ERR_IO_PENDING)
     callback_ = std::move(callback);
-  }
 
   return rv > 0 ? OK : rv;
 }
@@ -492,8 +488,10 @@ void QuicStreamFactory::Job::OnResolveHostComplete(int rv) {
   DCHECK_EQ(STATE_RESOLVE_HOST_COMPLETE, io_state_);
 
   rv = DoLoop(rv);
-  if (!host_resolution_callback_.is_null())
-    base::ResetAndReturn(&host_resolution_callback_).Run(rv);
+
+  for (auto* request : stream_requests_) {
+    request->OnHostResolutionComplete(rv);
+  }
 
   if (rv != ERR_IO_PENDING && !callback_.is_null())
     base::ResetAndReturn(&callback_).Run(rv);
@@ -1053,8 +1051,6 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
                             WasQuicRecentlyBroken(session_key.server_id()),
                             priority, cert_verify_flags, net_log);
   int rv = job->Run(
-      base::BindRepeating(&QuicStreamFactory::OnJobHostResolutionComplete,
-                          base::Unretained(this), job.get()),
       base::BindRepeating(&QuicStreamFactory::OnJobComplete,
                           base::Unretained(this), job.get()));
   if (rv == ERR_IO_PENDING) {
@@ -1121,14 +1117,6 @@ bool QuicStreamFactory::HasMatchingIpSession(const QuicSessionAliasKey& key,
     }
   }
   return false;
-}
-
-void QuicStreamFactory::OnJobHostResolutionComplete(Job* job, int rv) {
-  auto iter = active_jobs_.find(job->key().session_key());
-  DCHECK(iter != active_jobs_.end());
-  for (auto* request : iter->second->stream_requests()) {
-    request->OnHostResolutionComplete(rv);
-  }
 }
 
 void QuicStreamFactory::OnJobComplete(Job* job, int rv) {

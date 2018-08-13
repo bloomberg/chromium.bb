@@ -404,7 +404,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   bool HasMatchingIpSession(const QuicSessionAliasKey& key,
                             const AddressList& address_list);
-  void OnJobHostResolutionComplete(Job* job, int rv);
   void OnJobComplete(Job* job, int rv);
   void OnCertVerifyJobComplete(CertVerifierJob* job, int rv);
   bool HasActiveSession(const QuicSessionKey& session_key) const;
