@@ -592,7 +592,7 @@ bool SpellChecker::SelectionStartHasMarkerFor(
   unsigned start_offset = static_cast<unsigned>(from);
   unsigned end_offset = static_cast<unsigned>(from + length);
   DocumentMarkerVector markers =
-      GetFrame().GetDocument()->Markers().MarkersFor(ToText(node));
+      GetFrame().GetDocument()->Markers().MarkersFor(ToText(*node));
   for (size_t i = 0; i < markers.size(); ++i) {
     DocumentMarker* marker = markers[i];
     if (marker->StartOffset() <= start_offset &&

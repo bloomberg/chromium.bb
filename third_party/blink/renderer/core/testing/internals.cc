@@ -936,7 +936,7 @@ unsigned Internals::markerCountForNode(Node* node,
 
   return node->GetDocument()
       .Markers()
-      .MarkersFor(ToText(node), marker_types.value())
+      .MarkersFor(ToText(*node), marker_types.value())
       .size();
 }
 
@@ -945,7 +945,7 @@ unsigned Internals::activeMarkerCountForNode(Node* node) {
 
   // Only TextMatch markers can be active.
   DocumentMarkerVector markers = node->GetDocument().Markers().MarkersFor(
-      ToText(node), DocumentMarker::MarkerTypes::TextMatch());
+      ToText(*node), DocumentMarker::MarkerTypes::TextMatch());
 
   unsigned active_marker_count = 0;
   for (const auto& marker : markers) {
@@ -971,7 +971,7 @@ DocumentMarker* Internals::MarkerAt(Node* node,
   }
 
   DocumentMarkerVector markers = node->GetDocument().Markers().MarkersFor(
-      ToText(node), marker_types.value());
+      ToText(*node), marker_types.value());
   if (markers.size() <= index)
     return nullptr;
   return markers[index];

@@ -120,7 +120,7 @@ TEST_F(TextSuggestionControllerTest, ApplyTextSuggestion) {
 
   // This returns the markers sorted by start offset; we need them sorted by
   // start *and* end offset, since we have multiple markers starting at 0.
-  DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(text);
+  DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(*text);
   std::sort(markers.begin(), markers.end(),
             [](const DocumentMarker* marker1, const DocumentMarker* marker2) {
               if (marker1->StartOffset() != marker2->StartOffset())
@@ -183,7 +183,7 @@ TEST_F(TextSuggestionControllerTest,
   // Check the tag for the marker that was just added (the current tag value is
   // not reset between test cases).
   int32_t marker_tag =
-      ToSuggestionMarker(GetDocument().Markers().MarkersFor(text)[0])->Tag();
+      ToSuggestionMarker(GetDocument().Markers().MarkersFor(*text)[0])->Tag();
 
   // Select immediately before "mispelled".
   GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
@@ -195,7 +195,7 @@ TEST_F(TextSuggestionControllerTest,
   GetDocument().GetFrame()->GetTextSuggestionController().ApplyTextSuggestion(
       marker_tag, 0);
 
-  EXPECT_EQ(0u, GetDocument().Markers().MarkersFor(text).size());
+  EXPECT_EQ(0u, GetDocument().Markers().MarkersFor(*text).size());
   EXPECT_EQ("misspelled", text->textContent());
 }
 
