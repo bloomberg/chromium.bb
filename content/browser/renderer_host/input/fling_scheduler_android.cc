@@ -67,6 +67,13 @@ ui::WindowAndroid* FlingSchedulerAndroid::GetRootWindow() {
   return host_->GetView()->GetNativeView()->GetWindowAndroid();
 }
 
+void FlingSchedulerAndroid::OnDetachCompositor() {
+  // Once the window's compositor has detached, we will no longer receive
+  // OnAnimate calls. Stop observing the window.
+  observed_window_->RemoveObserver(this);
+  observed_window_ = nullptr;
+}
+
 void FlingSchedulerAndroid::OnAnimate(base::TimeTicks frame_begin_time) {
   DCHECK(observed_window_);
   if (fling_controller_)
