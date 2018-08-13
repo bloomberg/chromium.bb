@@ -634,13 +634,23 @@ class WebrtcLoggingPrivateApiStartEventLoggingTestBase
 
  protected:
   void SetUp() override {
-    auto const webrtc_remote_event_logging = features::kWebRtcRemoteEventLog;
-    if (WebRtcEventLogCollectionFeature()) {
-      scoped_feature_list_.InitAndEnableFeature(webrtc_remote_event_logging);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(webrtc_remote_event_logging);
-    }
+    SetUpFeatures();
     WebrtcLoggingPrivateApiTest::SetUp();
+  }
+
+  void SetUpFeatures() {
+    std::vector<base::Feature> enabled;
+    std::vector<base::Feature> disabled;
+
+    if (WebRtcEventLogCollectionFeature()) {
+      enabled.push_back(features::kWebRtcRemoteEventLog);
+    } else {
+      disabled.push_back(features::kWebRtcRemoteEventLog);
+    }
+
+    enabled.push_back(features::kWebRtcRemoteEventLogGzipped);
+
+    scoped_feature_list_.InitWithFeatures(enabled, disabled);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -704,6 +714,18 @@ IN_PROC_BROWSER_TEST_F(
   constexpr bool expect_success = false;
   const std::string error_message =
       kStartRemoteLoggingFailureUnlimitedSizeDisallowed;
+  StartEventLogging(peer_connection_id, max_size_bytes, expect_success,
+                    error_message);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebrtcLoggingPrivateApiStartEventLoggingTestFeatureAndPolicyEnabled,
+    StartEventLoggingWithTooSmallMaxSize) {
+  const std::string peer_connection_id = "id";
+  SetUpPeerConnection(peer_connection_id);
+  const int max_size_bytes = 1;
+  constexpr bool expect_success = false;
+  const std::string error_message = kStartRemoteLoggingFailureMaxSizeTooSmall;
   StartEventLogging(peer_connection_id, max_size_bytes, expect_success,
                     error_message);
 }
