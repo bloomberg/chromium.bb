@@ -202,6 +202,10 @@ AuthenticatorTransport TypeConverter<AuthenticatorTransport, String>::Convert(
     return AuthenticatorTransport::NFC;
   if (transport == "ble")
     return AuthenticatorTransport::BLE;
+  if (transport == "cable")
+    return AuthenticatorTransport::CABLE;
+  if (transport == "internal")
+    return AuthenticatorTransport::INTERNAL;
   NOTREACHED();
   return AuthenticatorTransport::USB;
 }
@@ -309,6 +313,11 @@ TypeConverter<PublicKeyCredentialDescriptorPtr,
       mojo_descriptor->transports.push_back(
           ConvertTo<AuthenticatorTransport>(transport));
     }
+  } else {
+    mojo_descriptor->transports = {
+        AuthenticatorTransport::USB, AuthenticatorTransport::BLE,
+        AuthenticatorTransport::NFC, AuthenticatorTransport::CABLE,
+        AuthenticatorTransport::INTERNAL};
   }
   return mojo_descriptor;
 }
