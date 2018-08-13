@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "media/audio/audio_device_info_accessor_for_tests.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
@@ -97,7 +98,13 @@ TEST_F(AudioOutputTest, StopTwice) {
 }
 
 // This test produces actual audio for .25 seconds on the default device.
-TEST_F(AudioOutputTest, Play200HzTone) {
+#if defined(OS_FUCHSIA)
+// TODO(https://crbug.com/873676): Test flakes started when SDK rolled.
+#define MAYBE_Play200HzTone DISABLED_Play200HzTone
+#else
+#define MAYBE_Play200HzTone Play200HzTone
+#endif
+TEST_F(AudioOutputTest, MAYBE_Play200HzTone) {
   ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info_->HasAudioOutputDevices());
 
   stream_params_ =
