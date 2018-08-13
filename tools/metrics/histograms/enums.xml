@@ -28657,6 +28657,7 @@ from previous Chrome versions.
   <int value="-70595606" label="ash-enable-unified-desktop"/>
   <int value="-69427025" label="OfflinePagesPrefetchingUI:enabled"/>
   <int value="-68877684" label="BackgroundVideoTrackOptimization:enabled"/>
+  <int value="-68619312" label="PassiveDocumentWheelEventListeners:disabled"/>
   <int value="-68225452" label="enable-translate-new-ux"/>
   <int value="-67297229" label="OfflinePagesDescriptivePendingStatus:disabled"/>
   <int value="-64839201" label="SyncUSSAutofillWalletData:disabled"/>
@@ -29481,6 +29482,7 @@ from previous Chrome versions.
   <int value="1630988998" label="VrBrowsingExperimentalRendering:disabled"/>
   <int value="1632112977" label="ash-disable-tablet-autohide-titlebars"/>
   <int value="1633456034" label="chrome-home-swipe-logic"/>
+  <int value="1634732103" label="PassiveDocumentWheelEventListeners:enabled"/>
   <int value="1634897915" label="password-import-export:enabled"/>
   <int value="1634980726" label="VrShellExperimentalRendering:disabled"/>
   <int value="1636962093" label="disable-material-design-ntp"/>

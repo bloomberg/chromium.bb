@@ -260,17 +260,24 @@ void EventTarget::SetDefaultAddEventListenerOptions(
   }
 
   if (IsWheelScrollBlockingEvent(event_type) && IsTopLevelNode()) {
-    if (executing_window) {
-      if (options.hasPassive()) {
+    if (options.hasPassive()) {
+      if (executing_window) {
         UseCounter::Count(
             executing_window->document(),
             options.passive()
                 ? WebFeature::kAddDocumentLevelPassiveTrueWheelEventListener
                 : WebFeature::kAddDocumentLevelPassiveFalseWheelEventListener);
-      } else {
+      }
+    } else {  // !options.hasPassive()
+      if (executing_window) {
         UseCounter::Count(
             executing_window->document(),
             WebFeature::kAddDocumentLevelPassiveDefaultWheelEventListener);
+      }
+      if (RuntimeEnabledFeatures::PassiveDocumentWheelEventListenersEnabled()) {
+        options.setPassive(true);
+        options.SetPassiveForcedForDocumentTarget(true);
+        return;
       }
     }
   }

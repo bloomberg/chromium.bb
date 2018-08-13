@@ -260,6 +260,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnablePassiveDocumentEventListeners(
       base::FeatureList::IsEnabled(features::kPassiveDocumentEventListeners));
 
+  WebRuntimeFeatures::EnablePassiveDocumentWheelEventListeners(
+      base::FeatureList::IsEnabled(
+          features::kPassiveDocumentWheelEventListeners));
+
   WebRuntimeFeatures::EnableFeatureFromString(
       "FontCacheScaling",
       base::FeatureList::IsEnabled(features::kFontCacheScaling));
