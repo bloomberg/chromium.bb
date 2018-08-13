@@ -31,6 +31,12 @@
         app:cornerRadiusBottomStart="@dimen/download_manager_prefetch_thumbnail_corner_radius"
         tools:ignore="ContentDescription" />
 
+    <org.chromium.chrome.browser.download.home.view.SelectionView
+        android:id="@+id/selection"
+        style="@style/DownloadItemSelectionView"
+        app:layout_column="0"
+        app:layout_row="0"/>
+
     <Space
         android:layout_width="wrap_content"
         android:layout_height="0dp"

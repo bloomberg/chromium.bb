@@ -77,6 +77,7 @@ public class GenericViewHolder extends ThumbnailAwareViewHolder {
     private void updateThumbnailView() {
         Resources resources = itemView.getContext().getResources();
         SelectionView selectionView = itemView.findViewById(R.id.selection);
+        selectionView.setVisibility(selectionView.isSelected() ? View.VISIBLE : View.GONE);
         mThumbnailView.setVisibility(selectionView.isSelected() ? View.GONE : View.VISIBLE);
         if (mThumbnailBitmap != null) {
             assert !mThumbnailBitmap.isRecycled();
