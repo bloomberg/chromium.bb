@@ -32,6 +32,9 @@ constexpr char kBackdropSurpriseMeImageUrl[] =
     "https://clients3.google.com/cast/chromecast/home/wallpaper/"
     "image?rt=b";
 
+// The label used to return exclusive content or filter unwanted images.
+constexpr char kFilteringLabel[] = "chromebook";
+
 // Helper function to parse the data from a |backdrop::Image| object and save it
 // to |image_info_out|.
 void ParseImageInfo(
@@ -142,6 +145,7 @@ void CollectionInfoFetcher::Start(OnCollectionsInfoFetched callback) {
   backdrop::GetCollectionsRequest request;
   // The language field may include the country code (e.g. "en-US").
   request.set_language(g_browser_process->GetApplicationLocale());
+  request.add_filtering_label(kFilteringLabel);
   std::string serialized_proto;
   request.SerializeToString(&serialized_proto);
 
@@ -219,6 +223,7 @@ void ImageInfoFetcher::Start(OnImagesInfoFetched callback) {
   // The language field may include the country code (e.g. "en-US").
   request.set_language(g_browser_process->GetApplicationLocale());
   request.set_collection_id(collection_id_);
+  request.add_filtering_label(kFilteringLabel);
   std::string serialized_proto;
   request.SerializeToString(&serialized_proto);
 
@@ -294,6 +299,7 @@ void SurpriseMeImageFetcher::Start(OnSurpriseMeImageFetched callback) {
   // The language field may include the country code (e.g. "en-US").
   request.set_language(g_browser_process->GetApplicationLocale());
   request.add_collection_ids(collection_id_);
+  request.add_filtering_label(kFilteringLabel);
   if (!resume_token_.empty())
     request.set_resume_token(resume_token_);
   std::string serialized_proto;
