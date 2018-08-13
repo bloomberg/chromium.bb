@@ -248,7 +248,6 @@ Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką,
 <translation id="8599548569518771270">{0,plural, =0{„Chromium“ OS bus paleista iš naujo dabar}=1{„Chromium“ OS bus paleista iš naujo po 1 sekundės}one{„Chromium“ OS bus paleista iš naujo po # sekundės}few{„Chromium“ OS bus paleista iš naujo po # sekundžių}many{„Chromium“ OS bus paleista iš naujo po # sekundės}other{„Chromium“ OS bus paleista iš naujo po # sekundžių}}</translation>
 <translation id="8619360774459241877">Pristatoma „Chromium“...</translation>
 <translation id="8621669128220841554">Nepavyko įdiegti dėl nenurodytos klaidos. Atsisiųskite „Chromium“ dar kartą.</translation>
-<translation id="8628626585870903697">„Chromium“ neįtraukta PDF žiūryklė, reikalinga, kad veiktų „Spaudinio peržiūra“.</translation>
 <translation id="8667808506758191620">Jūsų „<ph name="DEVICE_TYPE" />“ atnaujintas.</translation>
 <translation id="8697124171261953979">Ji taip pat kontroliuoja, koks puslapis rodomas, kai paleidžiate „Chromium“ arba ieškote „Omnibox“.</translation>
 <translation id="8704119203788522458">Tai jūsų „Chromium“</translation>

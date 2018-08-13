@@ -1,10 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
-<translation id="111880247472081232">La configuración de síntesis de voz de Enunciar Selección se ha migrado a la configuración de síntesis de voz global.</translation>
 <translation id="1197088940767939838">Naranja</translation>
 <translation id="1273314450961659276">Configuración de síntesis de voz</translation>
-<translation id="1498542103351704084">La configuración de síntesis de voz de Enunciar Selección se ha actualizado</translation>
 <translation id="1555130319947370107">Azul</translation>
 <translation id="1666326070478924810">Configuración de Enunciar Selección</translation>
 <translation id="1966649499058910679">Destacar cada palabra cuando se pronuncia</translation>
@@ -12,7 +10,6 @@
 <translation id="2714180132046334502">Fondo oscuro</translation>
 <translation id="27349076983469322">Fondo claro</translation>
 <translation id="335581015389089642">Voz</translation>
-<translation id="3784184786832188702">Enunciar Selección ahora utiliza la configuración de síntesis de voz global.</translation>
 <translation id="5901630391730855834">Amarillo</translation>
 <translation id="6017514345406065928">Verde</translation>
 <translation id="6475604559827479857">Color para destacar palabras:</translation>

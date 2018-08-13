@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">סנכרון והתאמה אישית</translation>
 <translation id="1398853756734560583">הגדל</translation>
 <translation id="1399511500114202393">אין אישור משתמש</translation>
+<translation id="1401165786814632797">‏גישה אל Assistant בכל פעם שאומרים "OK Google" כשהמכשיר אינו במצב שינה ואינו נעול.</translation>
 <translation id="140250605646987970">‏הטלפון שלך נמצא, אך Smart Lock פועל רק במכשירי Android מגרסה 5.0 ואילך. &lt;a&gt;למידע נוסף&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (בפיקוח)</translation>
 <translation id="1405476660552109915">האם ברצונך ש-<ph name="PASSWORD_MANAGER_BRAND" /> ישמור את חשבונך לאתר הזה?</translation>
@@ -454,7 +455,6 @@
 <translation id="166179487779922818">הסיסמה קצרה מדי.</translation>
 <translation id="1661867754829461514">‏חסר PIN</translation>
 <translation id="16620462294541761">מצטערים, לא ניתן לאמת את הסיסמה שלך. נסה שוב.</translation>
-<translation id="1662550410081243962">שמירה ומילוי של אמצעי תשלום</translation>
 <translation id="166278006618318542">אלגוריתם מפתח ציבורי של נושא</translation>
 <translation id="166439687370499867">אין אישור לשנות את תצורת הרשתות המשותפות</translation>
 <translation id="1665611772925418501">הקובץ לא ניתן לשינוי.</translation>
@@ -862,7 +862,6 @@
 <translation id="2282146716419988068">‏תהליך GPU</translation>
 <translation id="2282155092769082568">כתובת אתר של תצורה אוטומטית:</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">שמירה ומילוי של כתובות</translation>
 <translation id="2286841657746966508">כתובת לחיוב</translation>
 <translation id="2288181517385084064">מעבר למקליט וידאו</translation>
 <translation id="2288735659267887385">הגדרות של נגישות</translation>
@@ -1366,6 +1365,7 @@
 <translation id="3031557471081358569">בחר פריטים לייבוא:</translation>
 <translation id="3031601332414921114">המשך בהדפסה</translation>
 <translation id="303198083543495566">גיאוגרפיה</translation>
+<translation id="3033999583152214331">‏הפעלת כלים, עורכים וסביבות פיתוח משולבות (IDE) של Linux ב-Chromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;מידע נוסף&lt;/a&gt;</translation>
 <translation id="3036546437875325427">‏הפעל Flash</translation>
 <translation id="3037754279345160234">אי אפשר לנתח את התצורה כדי להצטרף לדומיין. יש לפנות למנהל המערכת.</translation>
 <translation id="3038612606416062604">הוספה ידנית של מדפסת</translation>
@@ -1506,6 +1506,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> רוצה להתחבר אל</translation>
 <translation id="3274763671541996799">עברת למסך מלא.</translation>
 <translation id="3275778913554317645">פתח כחלון</translation>
+<translation id="3278877214895457897">‏אחרי הגדרת ה-Chromebook, כדי לקבל עזרה מה-Assistant אפשר ללחוץ על לחצן ה-Assistant או לומר "OK Google".</translation>
 <translation id="3279230909244266691">הפעולה עשויה להימשך מספר דקות. מתבצעת הפעלה של המכונה הווירטואלית.</translation>
 <translation id="3279741024917655738">הצגת סרטונים במסך מלא פועלת</translation>
 <translation id="3280237271814976245">שמור &amp;בשם...</translation>
@@ -2599,6 +2600,7 @@
 <translation id="4992066212339426712">בטל השתקה</translation>
 <translation id="4992458225095111526">‏אשר פעולת Powerwash</translation>
 <translation id="4992473555164495036">מנהל המערכת הגביל את שיטות הקלט הזמינות.</translation>
+<translation id="4992926179187649719">‏הפעלת 'Ok Google'</translation>
 <translation id="4994474651455208930">אפשר לאתרים לבקש להפוך למטפלי ברירת המחדל עבור פרוטוקולים</translation>
 <translation id="4994754230098574403">בתהליך הגדרה</translation>
 <translation id="4996978546172906250">שתף באמצעות</translation>
@@ -4523,6 +4525,7 @@
 <translation id="7908378463497120834">מצטערים, לא ניתן להעלות לפחות מחיצה אחת במכשיר האחסון החיצוני שלך.</translation>
 <translation id="7909969815743704077">ההורדה בוצעה במצב גלישה בסתר</translation>
 <translation id="7910768399700579500">&amp;תיקייה חדשה</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">הסיסמה שלך שונתה בשרת. צא ולאחר מכן היכנס מחדש.</translation>
 <translation id="7915471803647590281">ספר לנו מה קורה לפני שליחת המשוב.</translation>
 <translation id="7916556741383518510">בזמן לחיצה</translation>

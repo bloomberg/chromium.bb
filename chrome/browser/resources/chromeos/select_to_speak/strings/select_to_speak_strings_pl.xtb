@@ -1,10 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
-<translation id="111880247472081232">Twoje ustawienia zamiany tekstu na mowę w Przeczytaj na głos zostały przeniesione do globalnych ustawień zamiany tekstu na mowę.</translation>
 <translation id="1197088940767939838">Pomarańczowy</translation>
 <translation id="1273314450961659276">Ustawienia zamiany tekstu na mowę</translation>
-<translation id="1498542103351704084">Ustawienia zamiany tekstu na mowę w Przeczytaj na głos zostały zaktualizowane</translation>
 <translation id="1555130319947370107">Niebieski</translation>
 <translation id="1666326070478924810">Ustawienia funkcji Przeczytaj na głos</translation>
 <translation id="1966649499058910679">Zaznacz słowo, gdy jest wymawiane</translation>
@@ -12,7 +10,6 @@
 <translation id="2714180132046334502">Ciemne tło</translation>
 <translation id="27349076983469322">Jasne tło</translation>
 <translation id="335581015389089642">Mowa</translation>
-<translation id="3784184786832188702">Przeczytaj na głos używa teraz globalnych ustawień zamiany tekstu na mowę.</translation>
 <translation id="5901630391730855834">Żółty</translation>
 <translation id="6017514345406065928">Zielony</translation>
 <translation id="6475604559827479857">Kolor zaznaczenia słów:</translation>

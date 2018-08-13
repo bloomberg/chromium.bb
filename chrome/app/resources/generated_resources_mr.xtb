@@ -457,7 +457,6 @@
 <translation id="166179487779922818">पासवर्ड खूप लहान आहे.</translation>
 <translation id="1661867754829461514">पिन गहाळ आहे </translation>
 <translation id="16620462294541761">क्षमस्व, आपला पासवर्ड सत्यापित करणे शक्य नाही. कृपया पुन्हा प्रयत्न करा.</translation>
-<translation id="1662550410081243962">पेमेंट पद्धती सेव्ह करा आणि भरा</translation>
 <translation id="166278006618318542">विषय सार्वजनिक की अल्गोरिदम</translation>
 <translation id="166439687370499867">शेअर केलेल्या नेटवर्कची कॉन्फिगरेशन बदलण्याची परवानगी नाही</translation>
 <translation id="1665611772925418501">फाइल सुधारली जाऊ शकली नाही.</translation>
@@ -865,7 +864,6 @@
 <translation id="2282146716419988068">GPU प्रक्रिया</translation>
 <translation id="2282155092769082568">स्वयंकॉन्फिगरेशन URL:</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">पत्ते भरा आणि सेव्ह करा</translation>
 <translation id="2286841657746966508">बिलिंग पत्ता</translation>
 <translation id="2288181517385084064">व्हिडिओ रेकॉर्डरवर स्विच करा</translation>
 <translation id="2288735659267887385">प्रवेशयोग्यता सेटिंग्ज</translation>
@@ -1369,6 +1367,7 @@
 <translation id="3031557471081358569">आयात करण्यासाठी आयटम निवडा:</translation>
 <translation id="3031601332414921114">प्रिंट पुन्हा सुरू करा</translation>
 <translation id="303198083543495566">भूगोल</translation>
+<translation id="3033999583152214331">तुमच्या Chromebook वर Linux टूल, संपादक आणि IDEs रन करा &lt;a target="_blank" href="<ph name="URL" />"&gt;अधिक जाणून घ्या&lt;/a&gt;</translation>
 <translation id="3036546437875325427">फ्लॅश सक्षम करा</translation>
 <translation id="3037754279345160234">डोमेनला कॉंफिगरेशनमध्ये सामील करण्यासाठी पार्स करू शकत नाही. कृपया तुमच्या अॅडमिनिस्ट्रेटरशी संपर्क साधा.</translation>
 <translation id="3038612606416062604">एक प्रिंटर व्यक्तिचलितपणे जोडा</translation>

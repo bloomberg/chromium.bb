@@ -458,7 +458,6 @@
 <translation id="166179487779922818">Mot de passe trop court.</translation>
 <translation id="1661867754829461514">Code secret manquant</translation>
 <translation id="16620462294541761">Mot de passe incorrect. Veuillez réessayer.</translation>
-<translation id="1662550410081243962">Enregistrer et renseigner les modes de paiement</translation>
 <translation id="166278006618318542">Algorithme de clé publique de l'objet</translation>
 <translation id="166439687370499867">La modification de la configuration d'un réseau partagé n'est pas autorisée</translation>
 <translation id="1665611772925418501">Impossible de modifier le fichier.</translation>
@@ -866,7 +865,6 @@
 <translation id="2282146716419988068">GPU</translation>
 <translation id="2282155092769082568">URL de configuration automatique :</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">Enregistrer et renseigner les adresses</translation>
 <translation id="2286841657746966508">Adresse de facturation</translation>
 <translation id="2288181517385084064">Passer en mode enregistreur vidéo</translation>
 <translation id="2288735659267887385">Paramètres d'accessibilité</translation>
@@ -1370,6 +1368,7 @@
 <translation id="3031557471081358569">Sélectionnez les éléments à importer :</translation>
 <translation id="3031601332414921114">Reprendre l'impression</translation>
 <translation id="303198083543495566">Géographie</translation>
+<translation id="3033999583152214331">Exécutez des outils, des éditeurs et des IDE Linux sur votre Chromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;En savoir plus&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Activer Flash</translation>
 <translation id="3037754279345160234">Impossible d'analyser la configuration d'association de l'appareil au domaine. Veuillez contacter votre administrateur.</translation>
 <translation id="3038612606416062604">Ajouter une imprimante manuellement</translation>

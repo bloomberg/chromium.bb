@@ -455,7 +455,6 @@
 <translation id="166179487779922818">പാസ്‌വേഡ് വളരെ ചെറുതാണ്.</translation>
 <translation id="1661867754829461514">PIN കാണാനില്ല</translation>
 <translation id="16620462294541761">ക്ഷമിക്കൂ, നിങ്ങളുടെ രഹസ്യവാക്ക് പരിശോധിക്കാന്‍ കഴിഞ്ഞില്ല. ദയവായി വീണ്ടും ശ്രമിക്കുക.</translation>
-<translation id="1662550410081243962">പേയ്‌മെന്റ് രീതികൾ സംരക്ഷിച്ച് സ്വമേധയാ പൂരിപ്പിക്കുക</translation>
 <translation id="166278006618318542">സബ്‌ജക്റ്റ് പൊതു കീ അല്‍‌ഗോരിതം</translation>
 <translation id="166439687370499867">പങ്കിട്ട നെറ്റ്‍വര്‍ക്ക് കോൺഫിഗറേഷനുകൾ മാറ്റാനാകില്ല</translation>
 <translation id="1665611772925418501">ഫയൽ പരിഷ്‌ക്കരിക്കാൻ കഴിഞ്ഞില്ല.</translation>
@@ -863,7 +862,6 @@
 <translation id="2282146716419988068">GPU പ്രോസസ്സ്</translation>
 <translation id="2282155092769082568">സ്വയമേവ കോൺഫിഗറേഷൻ URL:</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">വിലാസങ്ങൾ സംരക്ഷിച്ച് സ്വമേധയാ പൂരിപ്പിക്കുക</translation>
 <translation id="2286841657746966508">ബില്ലിംഗ് വിലാസം</translation>
 <translation id="2288181517385084064">വീഡിയോ റെക്കോർഡറിലേക്ക് മാറുക</translation>
 <translation id="2288735659267887385">ഉപയോഗസഹായി ക്രമീകരണങ്ങൾ</translation>
@@ -1367,6 +1365,7 @@
 <translation id="3031557471081358569">ഇറക്കുമതി ചെയ്യുന്നതിനായി ഇനങ്ങള്‍ തിരഞ്ഞെടുക്കുക:</translation>
 <translation id="3031601332414921114">പ്രിന്റിംഗ്‌ ആരംഭിക്കുക</translation>
 <translation id="303198083543495566">ഭൂമിശാസ്‌ത്രം</translation>
+<translation id="3033999583152214331">നിങ്ങളുടെ Chromebook-ൽ Linux ടൂളുകളും എഡിറ്ററുകളും IDE-കളും റൺ ചെയ്യുക. &lt;a target="_blank" href="<ph name="URL" />"&gt;കൂടുതലറിയുക&lt;/a&gt;</translation>
 <translation id="3036546437875325427">'ഫ്ലാഷ്' പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="3037754279345160234">ഡൊമെയ്‌നിൽ ചേരാനുള്ള കോൺഫിഗറേഷൻ വിശകലനം ചെയ്യാനാവില്ല. നിങ്ങളുടെ അഡ്‌മിനിസ്ട്രേറ്ററെ ബന്ധപ്പെടുക.</translation>
 <translation id="3038612606416062604">നേരിട്ട് ഒരു പ്രിന്റർ ചേർക്കുക</translation>

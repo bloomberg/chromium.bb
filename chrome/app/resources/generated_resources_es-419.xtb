@@ -455,7 +455,6 @@
 <translation id="166179487779922818">La contraseña es demasiado corta.</translation>
 <translation id="1661867754829461514">Falta el número de PIN </translation>
 <translation id="16620462294541761">No es posible verificar tu contraseña. Inténtalo nuevamente.</translation>
-<translation id="1662550410081243962">Guardar y completar formas de pago</translation>
 <translation id="166278006618318542">Algoritmo de clave pública del sujeto</translation>
 <translation id="166439687370499867">No se permite cambiar las opciones de configuración de la red compartida</translation>
 <translation id="1665611772925418501">No se pudo modificar el archivo.</translation>
@@ -863,7 +862,6 @@
 <translation id="2282146716419988068">Proceso de GPU</translation>
 <translation id="2282155092769082568">URL de autoconfiguración:</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">Guardar y completar direcciones</translation>
 <translation id="2286841657746966508">Dirección de facturación</translation>
 <translation id="2288181517385084064">Cambiar a la grabadora de video</translation>
 <translation id="2288735659267887385">Configuración de accesibilidad</translation>
@@ -1367,6 +1365,7 @@
 <translation id="3031557471081358569">Selecciona elementos para importar:</translation>
 <translation id="3031601332414921114">Reanudar la impresión</translation>
 <translation id="303198083543495566">Geografía</translation>
+<translation id="3033999583152214331">Ejecuta IDE, editores y herramientas de Linux en tu Chromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;Más información&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Habilitar Flash</translation>
 <translation id="3037754279345160234">No se puede analizar la configuración para vincular el dominio. Comunícate con el administrador.</translation>
 <translation id="3038612606416062604">Agregar una impresora manualmente</translation>

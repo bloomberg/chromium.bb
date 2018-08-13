@@ -454,7 +454,6 @@
 <translation id="166179487779922818">પાસવર્ડ ખૂબ ટૂંકો છે.</translation>
 <translation id="1661867754829461514">PIN ખૂટે છે</translation>
 <translation id="16620462294541761">માફ કરશો, તમારો પાસવર્ડ ચકાસી શકાયો નથી. કૃપા કરીને ફરીથી પ્રયત્ન કરો.</translation>
-<translation id="1662550410081243962">ચુકવણી પદ્ધતિઓ સાચવો અને ભરો</translation>
 <translation id="166278006618318542">વિષય સાર્વજનિક કી અલ્ગોરિધમ</translation>
 <translation id="166439687370499867">શેર કરેલ નેટવર્કની ગોઠવણીમાં ફેરફાર કરવાની મંજૂરી નથી</translation>
 <translation id="1665611772925418501">ફાઇલ સંશોધિત કરી શકાઈ નથી.</translation>
@@ -862,7 +861,6 @@
 <translation id="2282146716419988068">GPU પ્રક્રિયા</translation>
 <translation id="2282155092769082568">સ્વતઃગોઠવણી URL:</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">સરનામાં સાચવો અને ભરો</translation>
 <translation id="2286841657746966508">બિલિંગ સરનામું</translation>
 <translation id="2288181517385084064">વીડિઓ રેકોર્ડર પર સ્વિચ કરો</translation>
 <translation id="2288735659267887385">ઍક્સેસિબિલિટી સેટિંગ્સ</translation>
@@ -1366,6 +1364,7 @@
 <translation id="3031557471081358569">આયાત કરવા માટે આઇટમ્સ પસંદ કરો:</translation>
 <translation id="3031601332414921114">છાપવાનું ફરી શરૂ કરો</translation>
 <translation id="303198083543495566">સ્થાન માહિતી</translation>
+<translation id="3033999583152214331">તમારી Chromebook પર Linuxના સાધનો, એડિટર અને IDEs ચલાવો. &lt;a target="_blank" href="<ph name="URL" />"&gt;વધુ જાણો&lt;/a&gt;</translation>
 <translation id="3036546437875325427">ફ્લેશ સક્ષમ કરો</translation>
 <translation id="3037754279345160234">ડોમેનમાં જોડાવા માટે ગોઠવણીનું વિશ્લેષણ કરી શકતાં નથી. કૃપા કરીને તમારા વ્યવસ્થાપકનો સંપર્ક કરો.</translation>
 <translation id="3038612606416062604">પ્રિન્ટરને મેન્યુઅલી ઉમેરો</translation>

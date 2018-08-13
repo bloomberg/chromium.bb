@@ -246,7 +246,6 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="8599548569518771270">{0,plural, =0{ОС Chromium перезапуститься зараз}=1{ОС Chromium перезапуститься через 1 секунду}one{ОС Chromium перезапуститься через # секунду}few{ОС Chromium перезапуститься через # секунди}many{ОС Chromium перезапуститься через # секунд}other{ОС Chromium перезапуститься через # секунди}}</translation>
 <translation id="8619360774459241877">Запускається Chromium…</translation>
 <translation id="8621669128220841554">Не вдалося встановити через невизначену помилку. Завантажте Chromium ще раз.</translation>
-<translation id="8628626585870903697">У Chromium немає засобу перегляду файлів PDF, який потрібен для перегляду версії для друку.</translation>
 <translation id="8667808506758191620">Ваш пристрій <ph name="DEVICE_TYPE" /> оновлено.</translation>
 <translation id="8697124171261953979">Розширення також змінило сторінку, яка відкривається під час запуску Chromium або пошуку в універсальному вікні пошуку.</translation>
 <translation id="8704119203788522458">Це ваш Chromium</translation>

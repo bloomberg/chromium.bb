@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">ימינה</translation>
 <translation id="1351937230027495976">כיווץ התפריט</translation>
 <translation id="1383876407941801731">חפש</translation>
+<translation id="1419738280318246476">כדי לבצע את פעולת ההודעה יש לבטל את נעילת המכשיר</translation>
 <translation id="1467432559032391204">שמאלה</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">מפעיל</translation>
@@ -224,6 +225,7 @@
 <translation id="4924411785043111640">הפעלה מחדש ואתחול</translation>
 <translation id="4961318399572185831">העברת מסך</translation>
 <translation id="5069971504769299223">מנהל המכשיר עשוי לעקוב אחרי הפעילות שלך.</translation>
+<translation id="5083553833479578423">‏יש לך אפשרות להפעיל תכונות Assistant נוספות.</translation>
 <translation id="5136175204352732067">חוברה מקלדת אחרת</translation>
 <translation id="5168181903108465623">מכשירי העברה זמינים</translation>
 <translation id="5207949376430453814">הדגשה של סמן הטקסט</translation>
@@ -295,6 +297,7 @@
 <translation id="6376931439017688372">‏Bluetooth פועל</translation>
 <translation id="639644700271529076">‏CAPS LOCK כבוי</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="642644398083277086">ניקוי כל ההודעות</translation>
 <translation id="643147933154517414">הפעולה הושלמה</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> במכשיר <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">דחה</translation>
@@ -398,9 +401,11 @@
 <translation id="8152119955266188852">לחצת על מקש הקיצור של זכוכית מגדלת במסך מלא. להפעיל אותה?</translation>
 <translation id="8190698733819146287">התאם אישית שפה וקלט...</translation>
 <translation id="8191230140820435481">לנהל את היישומים, התוספים והעיצובים שלך</translation>
+<translation id="8192202700944119416">ההודעות מוסתרות.</translation>
 <translation id="8261506727792406068">מחיקה</translation>
 <translation id="8297006494302853456">חלש</translation>
 <translation id="8308637677604853869">התפריט הקודם</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">יצירת הערה</translation>
 <translation id="8392451568018454956">תפריט אפשרויות עבור <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">זכוכית מגדלת במסך מלא</translation>
@@ -442,6 +447,7 @@
 <translation id="8938800817013097409">‏מכשיר עם יציאת USB-C (יציאה ימנית מאחור)</translation>
 <translation id="8940956008527784070">‏סוללה חלשה (‎<ph name="PERCENTAGE" />%‎)</translation>
 <translation id="8984179138335769204">פתיחה מהירה</translation>
+<translation id="899350903320462459">יש לבטל את נעילת המכשיר כ-<ph name="LOGIN_ID" /> על מנת לבצע את פעולת ההודעה</translation>
 <translation id="8995603266996330174">מנוהל על ידי <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">‏יש עדכון בשביל Adobe Flash Player</translation>
 <translation id="9056839673611986238">המכשיר יוחזר למצב קודם</translation>

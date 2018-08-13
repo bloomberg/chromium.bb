@@ -458,7 +458,6 @@
 <translation id="166179487779922818">パスワードが短すぎます。</translation>
 <translation id="1661867754829461514">PIN がありません</translation>
 <translation id="16620462294541761">パスワードを確認できませんでした。もう一度お試しください。</translation>
-<translation id="1662550410081243962">お支払い方法の保存と入力</translation>
 <translation id="166278006618318542">サブジェクトの公開鍵アルゴリズム</translation>
 <translation id="166439687370499867">共有のネットワーク設定を変更することはできません</translation>
 <translation id="1665611772925418501">ファイルを修正することができませんでした。</translation>
@@ -866,7 +865,6 @@
 <translation id="2282146716419988068">GPU プロセス</translation>
 <translation id="2282155092769082568">自動設定 URL:</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">住所の保存と入力</translation>
 <translation id="2286841657746966508">請求先住所</translation>
 <translation id="2288181517385084064">動画レコーダーに切り替え</translation>
 <translation id="2288735659267887385">ユーザー補助機能の設定</translation>
@@ -1370,6 +1368,7 @@
 <translation id="3031557471081358569">インポートするデータを選択:</translation>
 <translation id="3031601332414921114">印刷を再開</translation>
 <translation id="303198083543495566">位置情報</translation>
+<translation id="3033999583152214331">Chromebook で Linux のツール、エディタ、IDE を実行します。&lt;a target="_blank" href="<ph name="URL" />"&gt;詳細&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Flash を有効にする</translation>
 <translation id="3037754279345160234">ドメインの参加設定を解析できません。管理者にお問い合わせください。</translation>
 <translation id="3038612606416062604">プリンタを手動で追加</translation>

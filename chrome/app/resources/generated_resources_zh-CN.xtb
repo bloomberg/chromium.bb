@@ -455,7 +455,6 @@
 <translation id="166179487779922818">密码太短。</translation>
 <translation id="1661867754829461514">缺少 PIN</translation>
 <translation id="16620462294541761">抱歉，无法验证您的密码，请重试。</translation>
-<translation id="1662550410081243962">保存并填写付款方式</translation>
 <translation id="166278006618318542">证书持有者公共密钥算法</translation>
 <translation id="166439687370499867">不允许更改共享网络配置</translation>
 <translation id="1665611772925418501">无法修改该文件。</translation>
@@ -863,7 +862,6 @@
 <translation id="2282146716419988068">GPU 进程</translation>
 <translation id="2282155092769082568">自动配置网址：</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">保存并填写地址</translation>
 <translation id="2286841657746966508">帐单邮寄地址</translation>
 <translation id="2288181517385084064">切换到录像机</translation>
 <translation id="2288735659267887385">无障碍设置</translation>

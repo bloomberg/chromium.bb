@@ -274,6 +274,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis regelen er angitt som «False» (usann), er rapportering av beregninger og diagnostikkdata deaktivert.
 
       Hvis den ikke er konfigurert, er rapportering av beregninger og diagnostikkdata deaktivert på ikke-administrerte enheter og aktivert på administrerte enheter.</translation>
+<translation id="1920046221095339924">Tillatt administrering av økter på enheten</translation>
 <translation id="1929709556673267855">Gir konfigurasjoner for bedriftsskrivere som er bundet til enheter.
 
       Med denne regelen kan du gi skriverkonfigurasjoner til enheter med <ph name="PRODUCT_OS_NAME" />. Formatet er det samme som for NativePrinters-ordlisten, med et ekstra påkrevd «id»- eller «quid»-felt per skriver for godkjenning eller sperring.
@@ -307,6 +308,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
       Hvis denne innstillingen er på eller ikke har noen verdi, kan brukeren kontrollere all funksjonalitet for autofyllfunksjonen i brukergrensesnittet.</translation>
 <translation id="1960840544413786116">Hvorvidt du vil tillate sertifikater som utstedes av lokale klareringsankre som mangler subjectAlternativeName-utvidelsen</translation>
+<translation id="1962273523772270623">Tillatt samling av WebRTC aktivitetslog fra Google-tjenester</translation>
 <translation id="1964634611280150550">Inkognitomodus er deaktivert</translation>
 <translation id="1964802606569741174">Denne regelen har ingen innvirkning på YouTube-appen for Android. Hvis du vil tvinge bruk av sikkerhetsmodus for YouTube, bør du ikke tillate installasjon av YouTube-appen for Android.</translation>
 <translation id="1969212217917526199">Overstyrer reglene i delversjonene for feilsøking på fjerntilgangsverten.
@@ -1975,6 +1977,11 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
       Hvis denne innstillingen ikke angis eller listen er tom, blir alle oppsettene tilgjengelige i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Innstillinger for lokalt administrerte brukere</translation>
 <translation id="6658245400435704251">Angir grensen for hvor mange sekunder en enhet tilfeldig kan utsette nedlastingen av en oppdatering, fra tidspunktet oppdateringen første ble sendt til tjeneren. Enheten kan sette av en del av denne tiden i form av faktisk ventetid, og den gjenværende delen i form av antall oppdateringer som skal kontrolleres. I alle tilfelle er det den øvre grensen for spredning knyttet til en konstant tidsmengde, slik at enheten aldri blir stående fast og vente på å laste ned en oppdatering for alltid.</translation>
+<translation id="6665599130599311250">Hvis denne regelen er satt til usann eller ikke stilt inn, vil den administrerte gjesteøkten oppføre seg som dokumentert i https://support.google.com/chrome/a/answer/3017014 - standarden for «Offentlig økt» 
+
+      Hvis denne regelen er satt til sann, vil den administrerte gjesteøkten benytte seg av samme oppførselen til «Administrert økt», noe som fjerner mange av begrensningene som gjelder for vanlig «Offentlig økt».  
+
+     Hvis denne regelen er angitt, kan ikke brukeren endre den eller overstyre den.</translation>
 <translation id="6665670272107384733">Angi hvor ofte brukerne må skrive inn passord for å bruke hurtigopplåsing</translation>
 <translation id="6681229465468164801">Lar deg angi en liste med nettadressemønstre for å spesifisere nettsteder som er forhindret fra å be brukeren om tilgang til en USB-enhet.
 
@@ -2135,6 +2142,17 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="6943577887654905793">Innstillingsnavn for Mac/Linux:</translation>
 <translation id="69525503251220566">Parameteret som tilbyr search-by-image-funksjonen for standardsøkemotoren</translation>
 <translation id="6956272732789158625">Ikke tillat noen nettsteder å bruke nøkkelgenerering</translation>
+<translation id="6982028490425791294">
+      Hvis regelen er satt til sann, vil <ph name="PRODUCT_NAME" /> tillate samling av WebRTC aktiveringslogg fra Google-tjenester (f.eks. Google Meet) og laste opp disse loggene til Google.
+
+      Hvis denne regelen er satt til .usann eller ikke satt, vil <ph name="PRODUCT_NAME" /> ikke samle eller laste opp slike logger.
+
+      Disse loggene inneholder informasjon slik som tid og størrelse på send og mottatte RTP-pakker, tilbakemelding om overbelastning av nettverket og metadata om tid og kvalitet av lyd- og videorammer. Denne informasjon er nyttig ved feilsøking av problemer med lyd- og videosamtaler i Chrome, slik som båndbredde, estimeringsproblemer, osv. Loggene inneholder ikke lyd- og videoinnhold fra samtalen.
+
+      Disse datainnsamlingene kan kun bli utløst av Googles nettjenester, slik som Google Hangouts eller Google Meet.
+
+      Disse loggene kan knyttes sammen,ved hjel av en økt-ID, med andre logger samlet av Google-tjenester selv; med ønske om å gjøre feilsøking enklere.
+      </translation>
 <translation id="6994082778848658360">Spesifiserer hvordan det integrerte sikre maskinvareelementet kan brukes til å tilby tofaktor-autentisering hvis det er kompatibelt med denne funksjonen. Av/på-knappen på maskinen brukes til å finne ut om brukeren er fysisk til stede.
 
       Hvis «Disabled» (deaktivert) er valgt, tilbys ingen tofaktor-autentisering.
