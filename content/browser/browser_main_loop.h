@@ -102,6 +102,10 @@ class SwapMetricsDriver;
 class TracingControllerImpl;
 struct MainFunctionParams;
 
+namespace responsiveness {
+class Watcher;
+}  // namespace responsiveness
+
 #if defined(OS_ANDROID)
 class ScreenOrientationDelegate;
 #endif
@@ -370,6 +374,7 @@ class CONTENT_EXPORT BrowserMainLoop {
       discardable_shared_memory_manager_;
   scoped_refptr<SaveFileManager> save_file_manager_;
   std::unique_ptr<content::TracingControllerImpl> tracing_controller_;
+  scoped_refptr<responsiveness::Watcher> responsiveness_watcher_;
 #if !defined(OS_ANDROID)
   // A SharedBitmapManager used to sharing and mapping IDs to shared memory
   // between processes for software compositing. When the display compositor is

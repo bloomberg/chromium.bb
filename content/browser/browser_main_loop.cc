@@ -83,6 +83,7 @@
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/scheduler/responsiveness/watcher.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/startup_data_impl.h"
@@ -436,6 +437,9 @@ void SetFileUrlPathAliasForIpcFuzzer() {
       switches::kFileUrlPathAlias, alias_switch);
 }
 #endif
+
+const base::Feature kBrowserResponsivenessCalculator{
+    "BrowserResponsivenessCalculator", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace
 
@@ -1471,6 +1475,11 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   ThemeHelperMac::GetInstance();
   SystemHotkeyHelperMac::GetInstance()->DeferredLoadSystemHotkeys();
 #endif  // defined(OS_MACOSX)
+
+  if (base::FeatureList::IsEnabled(kBrowserResponsivenessCalculator)) {
+    responsiveness_watcher_ = new responsiveness::Watcher;
+    responsiveness_watcher_->SetUp();
+  }
 
 #if defined(OS_ANDROID)
   media::SetMediaDrmBridgeClient(GetContentClient()->GetMediaDrmBridgeClient());
