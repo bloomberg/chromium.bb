@@ -192,6 +192,7 @@ void ManageProfileHandler::HandleSetProfileIconToDefaultAvatar(
 
   PrefService* pref_service = profile_->GetPrefs();
   pref_service->SetInteger(prefs::kProfileAvatarIndex, new_icon_index);
+  pref_service->SetInteger(prefs::kProfileLocalAvatarIndex, new_icon_index);
   pref_service->SetBoolean(prefs::kProfileUsingDefaultAvatar, false);
   pref_service->SetBoolean(prefs::kProfileUsingGAIAAvatar, false);
 

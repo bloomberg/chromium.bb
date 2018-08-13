@@ -164,6 +164,12 @@ void GAIAInfoUpdateService::OnUsernameChanged(const std::string& username) {
     entry->SetGAIAPicture(nullptr);
     // Unset the cached URL.
     profile_->GetPrefs()->ClearPref(prefs::kProfileGAIAInfoPictureURL);
+    if (profile_->GetPrefs()->GetInteger(prefs::kProfileLocalAvatarIndex) !=
+        -1) {
+      // Restore avatar from the local prefs.
+      entry->SetAvatarIconIndex(
+          profile_->GetPrefs()->GetInteger(prefs::kProfileLocalAvatarIndex));
+    }
   } else {
     // Update the new user's GAIA info.
     Update();

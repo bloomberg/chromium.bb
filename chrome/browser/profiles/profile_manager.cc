@@ -1055,6 +1055,11 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileAvatarIndex))
     profile->GetPrefs()->SetInteger(prefs::kProfileAvatarIndex, avatar_index);
 
+  if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileLocalAvatarIndex)) {
+    profile->GetPrefs()->SetInteger(prefs::kProfileLocalAvatarIndex,
+                                    avatar_index);
+  }
+
   if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileName))
     profile->GetPrefs()->SetString(prefs::kProfileName, profile_name);
 

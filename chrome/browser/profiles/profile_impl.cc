@@ -396,6 +396,7 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kProfileName, std::string(),
                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #endif
+  registry->RegisterIntegerPref(prefs::kProfileLocalAvatarIndex, -1);
 
   registry->RegisterStringPref(prefs::kSupervisedUserId, std::string());
 #if defined(OS_ANDROID)

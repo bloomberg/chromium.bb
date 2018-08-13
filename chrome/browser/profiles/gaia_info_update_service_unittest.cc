@@ -338,4 +338,27 @@ TEST_F(GAIAInfoUpdateServiceTest, LogIn) {
                               "pat@example.com");
 }
 
+TEST_F(GAIAInfoUpdateServiceTest, RestoreAvatarIndexOnLogout) {
+  identity::SetPrimaryAccount(SigninManagerFactory::GetForProfile(profile()),
+                              IdentityManagerFactory::GetForProfile(profile()),
+                              "pat@example.com");
+
+  const size_t kLocalAvatarIndex = 10;
+  const size_t kRemoteAvatarIndex = 5;
+
+  profile()->GetPrefs()->SetInteger(prefs::kProfileLocalAvatarIndex,
+                                    kLocalAvatarIndex);
+
+  ASSERT_EQ(1u, storage()->GetNumberOfProfiles());
+  ProfileAttributesEntry* entry = storage()->GetAllProfilesAttributes().front();
+  entry->SetAvatarIconIndex(kRemoteAvatarIndex);
+  EXPECT_EQ(kRemoteAvatarIndex, entry->GetAvatarIconIndex());
+
+  // Log out.
+  identity::ClearPrimaryAccount(
+      SigninManagerFactory::GetForProfile(profile()),
+      IdentityManagerFactory::GetForProfile(profile()));
+  EXPECT_EQ(kLocalAvatarIndex, entry->GetAvatarIconIndex());
+}
+
 #endif
