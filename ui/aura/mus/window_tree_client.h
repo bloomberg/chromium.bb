@@ -108,13 +108,6 @@ class AURA_EXPORT WindowTreeClient
       bool create_discardable_memory = true,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr);
 
-  // Creates a WindowTreeClient such that the Window Service creates a single
-  // WindowTreeHost. This is useful for testing and examples.
-  static std::unique_ptr<WindowTreeClient> CreateForWindowTreeHostFactory(
-      service_manager::Connector* connector,
-      WindowTreeClientDelegate* delegate,
-      bool create_discardable_memory = true);
-
   ~WindowTreeClient() override;
 
   service_manager::Connector* connector() { return connector_; }

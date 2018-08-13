@@ -72,6 +72,10 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   // in the returned object is null.
   ObservedPointerEvent PopObservedPointerEvent();
 
+  // Sets the mojom::WindowTree for this client. Used when creating a client
+  // using mojom::WindowTreeFactory.
+  void SetWindowTree(mojom::WindowTreePtr tree);
+
   mojom::WindowTree* tree() { return tree_.get(); }
   TestChangeTracker* tracker() { return &tracker_; }
   Id root_window_id() const { return root_window_id_; }

@@ -56,6 +56,11 @@ TestWindowTreeClient::PopObservedPointerEvent() {
   return event;
 }
 
+void TestWindowTreeClient::SetWindowTree(mojom::WindowTreePtr tree) {
+  DCHECK(!tree_);
+  tree_ = std::move(tree);
+}
+
 bool TestWindowTreeClient::AckFirstEvent(WindowTree* tree,
                                          mojom::EventResult result) {
   if (input_events_.empty())

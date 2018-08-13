@@ -17,7 +17,6 @@
 #include "services/ui/common/util.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
-#include "services/ui/public/interfaces/window_tree_host_factory.mojom.h"
 #include "services/ui/ws2/ids.h"
 #include "services/ui/ws2/test_window_tree_client.h"
 #include "services/ui/ws2/window_server_service_test_base.h"
@@ -601,25 +600,23 @@ class WindowTreeClientTest : public WindowServerServiceTestBase {
 
     WindowServerServiceTestBase::SetUp();
 
-    mojom::WindowTreeHostFactoryPtr factory;
+    mojom::WindowTreeFactoryPtr factory;
     // TODO: figure out better way to isolate this!
     connector()->BindInterface("ui", &factory);
 
+    // Connect |wt_client_1| as the first client.
     mojom::WindowTreeClientPtr tree_client_ptr;
     wt_client1_ = std::make_unique<TestWindowTreeClient2>();
     wt_client1_->Bind(MakeRequest(&tree_client_ptr));
 
-    factory->CreateWindowTreeHost(MakeRequest(&host_),
-                                  std::move(tree_client_ptr));
+    mojom::WindowTreePtr tree_ptr;
+    factory->CreateWindowTree(MakeRequest(&tree_ptr),
+                              std::move(tree_client_ptr));
+    wt_client1_->SetWindowTree(std::move(tree_ptr));
 
-    // Next we should get an embed call on the "window manager" client.
-    wt_client1_->WaitForOnEmbed();
-
-    ASSERT_EQ(1u, changes1()->size());
-    EXPECT_EQ(CHANGE_TYPE_EMBED, (*changes1())[0].type);
-    ASSERT_FALSE((*changes1())[0].windows.empty());
-    root_window_id_ = (*changes1())[0].windows[0].window_id;
-    ASSERT_EQ(root_window_id_, wt_client1_->root_window_id());
+    // Creates a window to use as root window. 1000 is an arbitrary ID not used
+    // in any test cases.
+    root_window_id_ = wt_client1_->NewWindow(1000);
     changes1()->clear();
   }
 
@@ -636,8 +633,6 @@ class WindowTreeClientTest : public WindowServerServiceTestBase {
   std::unique_ptr<TestWindowTreeClient2> wt_client1_;
   std::unique_ptr<TestWindowTreeClient2> wt_client2_;
   std::unique_ptr<TestWindowTreeClient2> wt_client3_;
-
-  mojom::WindowTreeHostPtr host_;
 
  private:
   std::unique_ptr<WindowTreeClientFactory> client_factory_;

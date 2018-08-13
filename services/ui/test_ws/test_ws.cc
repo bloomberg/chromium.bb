@@ -9,7 +9,6 @@
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -21,16 +20,10 @@
 #include "services/ui/gpu_host/gpu_host.h"
 #include "services/ui/gpu_host/gpu_host_delegate.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/window_tree_host_factory.mojom.h"
 #include "services/ui/test_ws/test_drag_drop_client.h"
 #include "services/ui/test_ws/test_gpu_interface_provider.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_delegate.h"
-#include "services/ui/ws2/window_tree.h"
-#include "services/ui/ws2/window_tree_binding.h"
-#include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/default_capture_client.h"
-#include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -42,73 +35,6 @@
 
 namespace ui {
 namespace test {
-
-class TestWS;
-
-// See description in README.md for details on what this code is intended for.
-
-// Holds the data for a single client connected via WindowTreeHostFactory. Each
-// client has an aura::Window.
-class Client {
- public:
-  Client(ws2::WindowService* window_service,
-         aura::Window* root,
-         mojom::WindowTreeClientPtr tree_client_ptr) {
-    window_ = std::make_unique<aura::Window>(nullptr);
-    window_->Init(LAYER_NOT_DRAWN);
-    window_->set_owned_by_parent(false);
-    root->AddChild(window_.get());
-    binding_ = std::make_unique<ws2::WindowTreeBinding>();
-    mojom::WindowTreeClient* tree_client = tree_client_ptr.get();
-    binding_->InitForEmbed(
-        window_service, std::move(tree_client_ptr), tree_client, window_.get(),
-        base::BindOnce(&Client::OnConnectionLost, base::Unretained(this)));
-  }
-
-  ~Client() = default;
-
- private:
-  void OnConnectionLost() {
-    binding_.reset();
-    window_.reset();
-  }
-
-  std::unique_ptr<aura::Window> window_;
-  std::unique_ptr<ws2::WindowTreeBinding> binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(Client);
-};
-
-// mojom::WindowTreeHostFactory implementation that creates an instance of
-// Client for all WindowTreeHost requests.
-class WindowTreeHostFactory : public mojom::WindowTreeHostFactory {
- public:
-  WindowTreeHostFactory(ws2::WindowService* window_service, aura::Window* root)
-      : window_service_(window_service), root_(root) {}
-
-  ~WindowTreeHostFactory() override = default;
-
-  void AddBinding(mojom::WindowTreeHostFactoryRequest request) {
-    window_tree_host_factory_bindings_.AddBinding(this, std::move(request));
-  }
-
- private:
-  // mojom::WindowTreeHostFactory implementation.
-  void CreateWindowTreeHost(mojom::WindowTreeHostRequest host,
-                            mojom::WindowTreeClientPtr tree_client) override {
-    // |host| is unused.
-    clients_.push_back(std::make_unique<Client>(window_service_, root_,
-                                                std::move(tree_client)));
-  }
-
-  ws2::WindowService* window_service_;
-  aura::Window* root_;
-  mojo::BindingSet<mojom::WindowTreeHostFactory>
-      window_tree_host_factory_bindings_;
-  std::vector<std::unique_ptr<Client>> clients_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostFactory);
-};
 
 // Service implementation that brings up the Window Service on top of aura.
 // Uses ws2::WindowService to provide the Window Service and
@@ -223,11 +149,6 @@ class TestWindowService : public service_manager::Service,
         std::make_unique<TestGpuInterfaceProvider>(
             gpu_host_.get(), discardable_shared_memory_manager_.get()),
         aura_test_helper_->focus_client());
-    window_tree_host_factory_ = std::make_unique<WindowTreeHostFactory>(
-        window_service.get(), aura_test_helper_->root_window());
-    window_service->registry()->AddInterface(
-        base::BindRepeating(&WindowTreeHostFactory::AddBinding,
-                            base::Unretained(window_tree_host_factory_.get())));
     service_context_ = std::make_unique<service_manager::ServiceContext>(
         std::move(window_service), std::move(request));
     pid_receiver->SetPID(base::GetCurrentProcId());
@@ -280,7 +201,6 @@ class TestWindowService : public service_manager::Service,
   std::unique_ptr<service_manager::ServiceContext> service_context_;
 
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
-  std::unique_ptr<WindowTreeHostFactory> window_tree_host_factory_;
 
   std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;

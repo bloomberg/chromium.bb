@@ -71,9 +71,6 @@
           "ui.mojom.InputDeviceServer",
           "ui.mojom.TouchDeviceServer",
           "ui.mojom.UserActivityMonitor"
-        ],
-        "window_tree_host_factory": [
-          "ui.mojom.WindowTreeHostFactory"
         ]
       },
       "requires": {
