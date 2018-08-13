@@ -59,12 +59,13 @@ double GetTokenSimilarity(
 
   const ReferenceSet& old_ref_set = old_image_index.refs(old_type);
   const ReferenceSet& new_ref_set = new_image_index.refs(new_type);
-  IndirectReference old_reference = old_ref_set.at(src);
-  IndirectReference new_reference = new_ref_set.at(dst);
+  Reference old_reference = old_ref_set.at(src);
+  Reference new_reference = new_ref_set.at(dst);
   PoolTag pool_tag = old_ref_set.pool_tag();
 
   double affinity = targets_affinities[pool_tag.value()].AffinityBetween(
-      old_reference.target_key, new_reference.target_key);
+      old_ref_set.target_pool().KeyForOffset(old_reference.target),
+      new_ref_set.target_pool().KeyForOffset(new_reference.target));
 
   // Both targets are not associated, which implies a weak match.
   if (affinity == 0.0)

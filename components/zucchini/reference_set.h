@@ -15,11 +15,11 @@ namespace zucchini {
 
 class TargetPool;
 
-// Container of distinct indirect references of one type, along with traits,
-// only used during patch generation.
+// Container of distinct references of one type, along with traits, only used
+// during patch generation.
 class ReferenceSet {
  public:
-  using const_iterator = std::vector<IndirectReference>::const_iterator;
+  using const_iterator = std::vector<Reference>::const_iterator;
 
   // |traits| specifies the reference represented. |target_pool| specifies
   // common targets shared by all reference represented, and mediates target
@@ -36,19 +36,17 @@ class ReferenceSet {
   void InitReferences(ReferenceReader&& ref_reader);
   void InitReferences(const std::vector<Reference>& refs);
 
-  const std::vector<IndirectReference>& references() const {
-    return references_;
-  }
+  const std::vector<Reference>& references() const { return references_; }
   const ReferenceTypeTraits& traits() const { return traits_; }
   const TargetPool& target_pool() const { return target_pool_; }
   TypeTag type_tag() const { return traits_.type_tag; }
   PoolTag pool_tag() const { return traits_.pool_tag; }
   offset_t width() const { return traits_.width; }
 
-  // Looks up the IndirectReference by an |offset| that it spans. |offset| is
-  // assumed to be valid, i.e., |offset| must be spanned by some
-  // IndirectReference in |references_|.
-  IndirectReference at(offset_t offset) const;
+  // Looks up the Reference by an |offset| that it spans. |offset| is assumed to
+  // be valid, i.e., |offset| must be spanned by some Reference in
+  // |references_|.
+  Reference at(offset_t offset) const;
 
   size_t size() const { return references_.size(); }
   const_iterator begin() const { return references_.begin(); }
@@ -57,8 +55,8 @@ class ReferenceSet {
  private:
   ReferenceTypeTraits traits_;
   const TargetPool& target_pool_;
-  // List of distinct IndirectReference instances sorted by location.
-  std::vector<IndirectReference> references_;
+  // List of distinct Reference instances sorted by location.
+  std::vector<Reference> references_;
 };
 
 }  // namespace zucchini

@@ -85,15 +85,6 @@ inline bool operator==(const Reference& a, const Reference& b) {
   return a.location == b.location && a.target == b.target;
 }
 
-struct IndirectReference {
-  offset_t location;
-  key_t target_key;  // Key within a pool of references with same semantics.
-};
-
-inline bool operator==(const IndirectReference& a, const IndirectReference& b) {
-  return a.location == b.location && a.target_key == b.target_key;
-}
-
 // Interface for extracting References through member function GetNext().
 // This is used by Disassemblers to extract references from an image file.
 // Typically, a Reader lazily extracts values and does not hold any storage.

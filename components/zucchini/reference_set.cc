@@ -16,12 +16,11 @@ namespace zucchini {
 namespace {
 
 // Returns true if |refs| is sorted by location.
-bool IsReferenceListSorted(const std::vector<IndirectReference>& refs) {
-  return std::is_sorted(
-      refs.begin(), refs.end(),
-      [](const IndirectReference& a, const IndirectReference& b) {
-        return a.location < b.location;
-      });
+bool IsReferenceListSorted(const std::vector<Reference>& refs) {
+  return std::is_sorted(refs.begin(), refs.end(),
+                        [](const Reference& a, const Reference& b) {
+                          return a.location < b.location;
+                        });
 }
 
 }  // namespace
@@ -36,28 +35,22 @@ void ReferenceSet::InitReferences(ReferenceReader&& ref_reader) {
   DCHECK(references_.empty());
   for (auto ref = ref_reader.GetNext(); ref.has_value();
        ref = ref_reader.GetNext()) {
-    references_.push_back(
-        {ref->location, target_pool_.KeyForOffset(ref->target)});
+    references_.push_back(*ref);
   }
   DCHECK(IsReferenceListSorted(references_));
 }
 
 void ReferenceSet::InitReferences(const std::vector<Reference>& refs) {
   DCHECK(references_.empty());
-  references_.reserve(refs.size());
-  std::transform(refs.begin(), refs.end(), std::back_inserter(references_),
-                 [&](const Reference& ref) -> IndirectReference {
-                   return {ref.location, target_pool_.KeyForOffset(ref.target)};
-                 });
   DCHECK(IsReferenceListSorted(references_));
+  references_.assign(refs.begin(), refs.end());
 }
 
-IndirectReference ReferenceSet::at(offset_t offset) const {
-  auto pos =
-      std::upper_bound(references_.begin(), references_.end(), offset,
-                       [](offset_t offset, const IndirectReference& ref) {
-                         return offset < ref.location;
-                       });
+Reference ReferenceSet::at(offset_t offset) const {
+  auto pos = std::upper_bound(references_.begin(), references_.end(), offset,
+                              [](offset_t offset, const Reference& ref) {
+                                return offset < ref.location;
+                              });
 
   DCHECK(pos != references_.begin());  // Iterators.
   --pos;
