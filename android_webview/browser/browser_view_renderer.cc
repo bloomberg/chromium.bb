@@ -350,21 +350,17 @@ sk_sp<SkPicture> BrowserViewRenderer::CapturePicture(int width,
   SkPictureRecorder recorder;
   SkCanvas* rec_canvas = recorder.beginRecording(width, height, NULL, 0);
   if (compositor_) {
-    gfx::Vector2dF scroll_offset =
-        content::IsUseZoomForDSFEnabled()
-            ? gfx::ScaleVector2d(scroll_offset_dip_, dip_scale_)
-            : scroll_offset_dip_;
     {
       // Reset scroll back to the origin, will go back to the old
       // value when scroll_reset is out of scope.
-      base::AutoReset<gfx::Vector2dF> scroll_reset(&scroll_offset_dip_,
+      base::AutoReset<gfx::Vector2dF> scroll_reset(&scroll_offset_unscaled_,
                                                    gfx::Vector2dF());
       compositor_->DidChangeRootLayerScrollOffset(
-          gfx::ScrollOffset(scroll_offset));
+          gfx::ScrollOffset(scroll_offset_unscaled_));
       CompositeSW(rec_canvas);
     }
     compositor_->DidChangeRootLayerScrollOffset(
-        gfx::ScrollOffset(scroll_offset));
+        gfx::ScrollOffset(scroll_offset_unscaled_));
   }
   return recorder.finishRecordingAsPicture();
 }
@@ -562,53 +558,53 @@ void BrowserViewRenderer::SetDipScale(float dip_scale) {
 
 gfx::Vector2d BrowserViewRenderer::max_scroll_offset() const {
   DCHECK_GT(dip_scale_, 0.f);
-  return gfx::ToCeiledVector2d(gfx::ScaleVector2d(
-      max_scroll_offset_dip_, dip_scale_ * page_scale_factor_));
+  float scale = content::IsUseZoomForDSFEnabled()
+                    ? page_scale_factor_
+                    : dip_scale_ * page_scale_factor_;
+  return gfx::ToCeiledVector2d(
+      gfx::ScaleVector2d(max_scroll_offset_unscaled_, scale));
 }
 
 void BrowserViewRenderer::ScrollTo(const gfx::Vector2d& scroll_offset) {
   gfx::Vector2d max_offset = max_scroll_offset();
-  gfx::Vector2dF scroll_offset_dip;
+  gfx::Vector2dF scroll_offset_unscaled;
   // To preserve the invariant that scrolling to the maximum physical pixel
   // value also scrolls to the maximum dip pixel value we transform the physical
   // offset into the dip offset by using a proportion (instead of dividing by
   // dip_scale * page_scale_factor).
   if (max_offset.x()) {
-    scroll_offset_dip.set_x((scroll_offset.x() * max_scroll_offset_dip_.x()) /
-                            max_offset.x());
+    scroll_offset_unscaled.set_x(
+        (scroll_offset.x() * max_scroll_offset_unscaled_.x()) / max_offset.x());
   }
   if (max_offset.y()) {
-    scroll_offset_dip.set_y((scroll_offset.y() * max_scroll_offset_dip_.y()) /
-                            max_offset.y());
+    scroll_offset_unscaled.set_y(
+        (scroll_offset.y() * max_scroll_offset_unscaled_.y()) / max_offset.y());
   }
 
-  DCHECK_LE(0.f, scroll_offset_dip.x());
-  DCHECK_LE(0.f, scroll_offset_dip.y());
-  DCHECK(scroll_offset_dip.x() < max_scroll_offset_dip_.x() ||
-         scroll_offset_dip.x() - max_scroll_offset_dip_.x() < kEpsilon)
-      << scroll_offset_dip.x() << " " << max_scroll_offset_dip_.x();
-  DCHECK(scroll_offset_dip.y() < max_scroll_offset_dip_.y() ||
-         scroll_offset_dip.y() - max_scroll_offset_dip_.y() < kEpsilon)
-      << scroll_offset_dip.y() << " " << max_scroll_offset_dip_.y();
+  DCHECK_LE(0.f, scroll_offset_unscaled.x());
+  DCHECK_LE(0.f, scroll_offset_unscaled.y());
+  DCHECK(scroll_offset_unscaled.x() < max_scroll_offset_unscaled_.x() ||
+         scroll_offset_unscaled.x() - max_scroll_offset_unscaled_.x() <
+             kEpsilon)
+      << scroll_offset_unscaled.x() << " " << max_scroll_offset_unscaled_.x();
+  DCHECK(scroll_offset_unscaled.y() < max_scroll_offset_unscaled_.y() ||
+         scroll_offset_unscaled.y() - max_scroll_offset_unscaled_.y() <
+             kEpsilon)
+      << scroll_offset_unscaled.y() << " " << max_scroll_offset_unscaled_.y();
 
-  if (scroll_offset_dip_ == scroll_offset_dip)
+  if (scroll_offset_unscaled_ == scroll_offset_unscaled)
     return;
 
-  scroll_offset_dip_ = scroll_offset_dip;
+  scroll_offset_unscaled_ = scroll_offset_unscaled;
 
-  TRACE_EVENT_INSTANT2("android_webview",
-               "BrowserViewRenderer::ScrollTo",
-               TRACE_EVENT_SCOPE_THREAD,
-               "x",
-               scroll_offset_dip.x(),
-               "y",
-               scroll_offset_dip.y());
+  TRACE_EVENT_INSTANT2("android_webview", "BrowserViewRenderer::ScrollTo",
+                       TRACE_EVENT_SCOPE_THREAD, "x",
+                       scroll_offset_unscaled.x(), "y",
+                       scroll_offset_unscaled.y());
 
-  if (compositor_) {
-    compositor_->DidChangeRootLayerScrollOffset(gfx::ScrollOffset(
-        content::IsUseZoomForDSFEnabled() ? scroll_offset
-                                          : scroll_offset_dip_));
-  }
+  if (compositor_)
+    compositor_->DidChangeRootLayerScrollOffset(
+        gfx::ScrollOffset(scroll_offset_unscaled));
 }
 
 void BrowserViewRenderer::DidUpdateContent(
@@ -625,23 +621,23 @@ void BrowserViewRenderer::DidUpdateContent(
 }
 
 void BrowserViewRenderer::SetTotalRootLayerScrollOffset(
-    const gfx::Vector2dF& scroll_offset_dip) {
-  if (scroll_offset_dip_ == scroll_offset_dip)
+    const gfx::Vector2dF& scroll_offset_unscaled) {
+  if (scroll_offset_unscaled_ == scroll_offset_unscaled)
     return;
-  scroll_offset_dip_ = scroll_offset_dip;
+  scroll_offset_unscaled_ = scroll_offset_unscaled;
 
   gfx::Vector2d max_offset = max_scroll_offset();
   gfx::Vector2d scroll_offset;
   // For an explanation as to why this is done this way see the comment in
   // BrowserViewRenderer::ScrollTo.
-  if (max_scroll_offset_dip_.x()) {
-    scroll_offset.set_x((scroll_offset_dip.x() * max_offset.x()) /
-                        max_scroll_offset_dip_.x());
+  if (max_scroll_offset_unscaled_.x()) {
+    scroll_offset.set_x((scroll_offset_unscaled.x() * max_offset.x()) /
+                        max_scroll_offset_unscaled_.x());
   }
 
-  if (max_scroll_offset_dip_.y()) {
-    scroll_offset.set_y((scroll_offset_dip.y() * max_offset.y()) /
-                        max_scroll_offset_dip_.y());
+  if (max_scroll_offset_unscaled_.y()) {
+    scroll_offset.set_y((scroll_offset_unscaled.y() * max_offset.y()) /
+                        max_scroll_offset_unscaled_.y());
   }
 
   DCHECK_LE(0, scroll_offset.x());
@@ -663,34 +659,27 @@ void BrowserViewRenderer::UpdateRootLayerState(
   if (compositor != compositor_)
     return;
 
-  gfx::Vector2dF total_scroll_offset_dip = total_scroll_offset;
-  gfx::Vector2dF max_scroll_offset_dip = total_max_scroll_offset;
   gfx::SizeF scrollable_size_dip = scrollable_size;
-  if (content::IsUseZoomForDSFEnabled()) {
-    total_scroll_offset_dip.Scale(1 / dip_scale_);
-    max_scroll_offset_dip.Scale(1 / dip_scale_);
+  if (content::IsUseZoomForDSFEnabled())
     scrollable_size_dip.Scale(1 / dip_scale_);
-  }
 
   TRACE_EVENT_INSTANT1(
-      "android_webview",
-      "BrowserViewRenderer::UpdateRootLayerState",
-      TRACE_EVENT_SCOPE_THREAD,
-      "state",
-      RootLayerStateAsValue(total_scroll_offset_dip, scrollable_size_dip));
+      "android_webview", "BrowserViewRenderer::UpdateRootLayerState",
+      TRACE_EVENT_SCOPE_THREAD, "state",
+      RootLayerStateAsValue(total_scroll_offset, scrollable_size_dip));
 
-  DCHECK_GE(max_scroll_offset_dip.x(), 0.f);
-  DCHECK_GE(max_scroll_offset_dip.y(), 0.f);
+  DCHECK_GE(total_max_scroll_offset.x(), 0.f);
+  DCHECK_GE(total_max_scroll_offset.y(), 0.f);
   DCHECK_GT(page_scale_factor, 0.f);
   // SetDipScale should have been called at least once before this is called.
   DCHECK_GT(dip_scale_, 0.f);
 
-  if (max_scroll_offset_dip_ != max_scroll_offset_dip ||
+  if (max_scroll_offset_unscaled_ != total_max_scroll_offset ||
       scrollable_size_dip_ != scrollable_size_dip ||
       page_scale_factor_ != page_scale_factor ||
       min_page_scale_factor_ != min_page_scale_factor ||
       max_page_scale_factor_ != max_page_scale_factor) {
-    max_scroll_offset_dip_ = max_scroll_offset_dip;
+    max_scroll_offset_unscaled_ = total_max_scroll_offset;
     scrollable_size_dip_ = scrollable_size_dip;
     page_scale_factor_ = page_scale_factor;
     min_page_scale_factor_ = min_page_scale_factor;
@@ -700,21 +689,23 @@ void BrowserViewRenderer::UpdateRootLayerState(
                                page_scale_factor, min_page_scale_factor,
                                max_page_scale_factor);
   }
-  SetTotalRootLayerScrollOffset(total_scroll_offset_dip);
+  SetTotalRootLayerScrollOffset(total_scroll_offset);
 }
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 BrowserViewRenderer::RootLayerStateAsValue(
-    const gfx::Vector2dF& total_scroll_offset_dip,
+    const gfx::Vector2dF& total_scroll_offset,
     const gfx::SizeF& scrollable_size_dip) {
   std::unique_ptr<base::trace_event::TracedValue> state(
       new base::trace_event::TracedValue());
 
-  state->SetDouble("total_scroll_offset_dip.x", total_scroll_offset_dip.x());
-  state->SetDouble("total_scroll_offset_dip.y", total_scroll_offset_dip.y());
+  state->SetDouble("total_scroll_offset.x", total_scroll_offset.x());
+  state->SetDouble("total_scroll_offset.y", total_scroll_offset.y());
 
-  state->SetDouble("max_scroll_offset_dip.x", max_scroll_offset_dip_.x());
-  state->SetDouble("max_scroll_offset_dip.y", max_scroll_offset_dip_.y());
+  state->SetDouble("max_scroll_offset_unscaled.x",
+                   max_scroll_offset_unscaled_.x());
+  state->SetDouble("max_scroll_offset_unscaled.y",
+                   max_scroll_offset_unscaled_.y());
 
   state->SetDouble("scrollable_size_dip.width", scrollable_size_dip.width());
   state->SetDouble("scrollable_size_dip.height", scrollable_size_dip.height());
@@ -777,8 +768,8 @@ std::string BrowserViewRenderer::ToString() const {
   base::StringAppendF(&str,
                       "global visible rect: %s ",
                       last_on_draw_global_visible_rect_.ToString().c_str());
-  base::StringAppendF(
-      &str, "scroll_offset_dip: %s ", scroll_offset_dip_.ToString().c_str());
+  base::StringAppendF(&str, "scroll_offset_unscaled: %s ",
+                      scroll_offset_unscaled_.ToString().c_str());
   base::StringAppendF(&str,
                       "overscroll_rounding_error_: %s ",
                       overscroll_rounding_error_.ToString().c_str());

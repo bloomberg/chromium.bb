@@ -100,7 +100,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   float dip_scale() const { return dip_scale_; }
   float page_scale_factor() const { return page_scale_factor_; }
 
-  // Set the root layer scroll offset to |new_value|.
+  // Set the root layer scroll offset to |new_value|. The |new_value| here is in
+  // physical pixel.
   void ScrollTo(const gfx::Vector2d& new_value);
 
   // Android views hierarchy gluing.
@@ -224,11 +225,13 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   gfx::SizeF scrollable_size_dip_;
 
-  // TODO(miletus): Make scroll_offset_dip_ a gfx::ScrollOffset.
-  gfx::Vector2dF scroll_offset_dip_;
+  // When zoom-for-dsf enabled |max_scroll_offset_unscaled_| and
+  // |scroll_offset_unscaled_| is in physical pixel; otherwise, they are in dip
+  // TODO(miletus): Make scroll_offset_unscaled_ a gfx::ScrollOffset.
+  gfx::Vector2dF scroll_offset_unscaled_;
 
-  // TODO(miletus): Make max_scroll_offset_dip_ a gfx::ScrollOffset.
-  gfx::Vector2dF max_scroll_offset_dip_;
+  // TODO(miletus): Make max_scroll_offset_unscaled_ a gfx::ScrollOffset.
+  gfx::Vector2dF max_scroll_offset_unscaled_;
 
   // Used to prevent rounding errors from accumulating enough to generate
   // visible skew (especially noticeable when scrolling up and down in the same
