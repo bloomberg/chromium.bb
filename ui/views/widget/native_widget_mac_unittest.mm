@@ -27,7 +27,7 @@
 #import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
-#include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"

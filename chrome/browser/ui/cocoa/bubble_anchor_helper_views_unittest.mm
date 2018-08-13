@@ -9,7 +9,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 

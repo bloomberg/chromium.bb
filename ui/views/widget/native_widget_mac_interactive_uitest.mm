@@ -12,7 +12,7 @@
 #include "ui/base/test/ui_controls.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
-#include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/views_interactive_ui_test_base.h"
