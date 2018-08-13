@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/unguessable_token.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -128,7 +127,10 @@ WebRtcRemoteEventLogManager::WebRtcRemoteEventLogManager(
       network_connection_tracker_(nullptr),
       uploading_supported_for_connection_type_(false),
       scheduled_upload_tasks_(0),
-      task_runner_(task_runner) {
+      task_runner_(task_runner),
+      weak_ptr_factory_(
+          std::make_unique<base::WeakPtrFactory<WebRtcRemoteEventLogManager>>(
+              this)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Proactive pruning would not do anything at the moment; it will be started
   // with the first enabled browser context. This will all have the benefit
@@ -140,6 +142,14 @@ WebRtcRemoteEventLogManager::~WebRtcRemoteEventLogManager() {
   // TODO(crbug.com/775415): Purge from disk files which were being uploaded
   // while destruction took place, thereby avoiding endless attempts to upload
   // the same file.
+
+  if (weak_ptr_factory_) {
+    // Not a unit test; that would have gone through ShutDownForTesting().
+    const bool will_delete =
+        task_runner_->DeleteSoon(FROM_HERE, weak_ptr_factory_.release());
+    DCHECK(!will_delete)
+        << "Task runners must have been stopped by this stage of shutdown.";
+  }
 
   if (network_connection_tracker_) {
     // * |network_connection_tracker_| might already have posted a task back
@@ -161,14 +171,14 @@ void WebRtcRemoteEventLogManager::SetNetworkConnectionTracker(
   DCHECK(!network_connection_tracker_);
 
   // |this| is only destroyed (on the UI thread) after |task_runner_| stops,
-  // so both base::Unretained(this) and AddNetworkConnectionObserver() are safe.
+  // so AddNetworkConnectionObserver() is safe.
 
   network_connection_tracker_ = network_connection_tracker;
   network_connection_tracker_->AddNetworkConnectionObserver(this);
 
   auto callback =
       base::BindOnce(&WebRtcRemoteEventLogManager::OnConnectionChanged,
-                     base::Unretained(this));
+                     weak_ptr_factory_->GetWeakPtr());
   network::mojom::ConnectionType connection_type;
   const bool sync_answer = network_connection_tracker_->GetConnectionType(
       &connection_type, std::move(callback));
@@ -217,9 +227,9 @@ void WebRtcRemoteEventLogManager::EnableForBrowserContext(
     return;
   }
 
-  AddPendingLogs(browser_context_id, remote_bound_logs_dir);
-
   enabled_browser_contexts_.insert(browser_context_id);
+
+  AddPendingLogs(browser_context_id, remote_bound_logs_dir);
 
   if (!proactive_prune_scheduling_delta_.is_zero() &&
       !proactive_prune_scheduling_started_) {
@@ -228,7 +238,6 @@ void WebRtcRemoteEventLogManager::EnableForBrowserContext(
   }
 }
 
-// TODO(crbug.com/775415): Add unit tests.
 void WebRtcRemoteEventLogManager::DisableForBrowserContext(
     BrowserContextId browser_context_id) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -240,8 +249,14 @@ void WebRtcRemoteEventLogManager::DisableForBrowserContext(
   enabled_browser_contexts_.erase(browser_context_id);
 
 #if DCHECK_IS_ON()
-  // All of the RPHs associated with this BrowserContext must already have
-  // exited, which should have implicitly stopped all active logs.
+  // DisableForBrowserContext() is called in one of two cases:
+  // 1. If Chrome is shutting down. In that case, all the RPHs associated with
+  //    this BrowserContext must already have exited, which should have
+  //    implicitly stopped all active logs.
+  // 2. Remote-bound logging is no longer allowed for this BrowserContext.
+  //    In that case, some peer connections associated with this BrowserContext
+  //    might still be active, or become active at a later time, but all
+  //    logs must have already been stopped.
   auto pred = [browser_context_id](decltype(active_logs_)::value_type& log) {
     return log.first.browser_context_id == browser_context_id;
   };
@@ -249,7 +264,6 @@ void WebRtcRemoteEventLogManager::DisableForBrowserContext(
 #endif
 
   // Pending logs for this BrowserContext are no longer eligible for upload.
-  // (Active uploads, if any, are not affected.)
   for (auto it = pending_logs_.begin(); it != pending_logs_.end();) {
     if (it->browser_context_id == browser_context_id) {
       it = pending_logs_.erase(it);
@@ -257,6 +271,9 @@ void WebRtcRemoteEventLogManager::DisableForBrowserContext(
       ++it;
     }
   }
+
+  // Active uploads of logs associated with this BrowserContext must be stopped.
+  MaybeCancelUpload(base::Time::Min(), base::Time::Max(), browser_context_id);
 
   // Active logs may have been removed, which could remove upload suppression,
   // or pending logs which were about to be uploaded may have been removed,
@@ -417,6 +434,7 @@ void WebRtcRemoteEventLogManager::RenderProcessHostExitedDestroyed(
 
 void WebRtcRemoteEventLogManager::OnConnectionChanged(
     network::mojom::ConnectionType type) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   // Even if switching from WiFi to Ethernet, or between to WiFi connections,
   // reset the timer (if running) until an upload is permissible due to stable
   // upload-supporting conditions.
@@ -443,6 +461,14 @@ void WebRtcRemoteEventLogManager::UploadConditionsHoldForTesting(
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::BindOnce(std::move(callback), UploadConditionsHold()));
+}
+
+void WebRtcRemoteEventLogManager::ShutDownForTesting(base::OnceClosure reply) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  weak_ptr_factory_->InvalidateWeakPtrs();
+  weak_ptr_factory_.reset();
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   base::BindOnce(std::move(reply)));
 }
 
 bool WebRtcRemoteEventLogManager::AreLogParametersValid(
@@ -473,6 +499,7 @@ bool WebRtcRemoteEventLogManager::AreLogParametersValid(
 
 bool WebRtcRemoteEventLogManager::BrowserContextEnabled(
     BrowserContextId browser_context_id) const {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   const auto it = enabled_browser_contexts_.find(browser_context_id);
   return it != enabled_browser_contexts_.cend();
 }
@@ -627,12 +654,10 @@ void WebRtcRemoteEventLogManager::RecurringPendingLogsPrune() {
 
   PrunePendingLogs();
 
-  // |this| is only destroyed (on the UI thread) after |task_runner_| stops,
-  // so both base::Unretained(this) is safe.
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  task_runner_->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&WebRtcRemoteEventLogManager::RecurringPendingLogsPrune,
-                     base::Unretained(this)),
+                     weak_ptr_factory_->GetWeakPtr()),
       proactive_prune_scheduling_delta_);
 }
 
@@ -666,6 +691,7 @@ void WebRtcRemoteEventLogManager::MaybeCancelActiveLogs(
     const base::Time& delete_begin,
     const base::Time& delete_end,
     BrowserContextId browser_context_id) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   for (auto it = active_logs_.begin(); it != active_logs_.end();) {
     // Since the file is active, assume it's still being modified.
     if (LogFileMatchesFilter(it->first.browser_context_id, base::Time::Now(),
@@ -681,6 +707,7 @@ void WebRtcRemoteEventLogManager::MaybeCancelUpload(
     const base::Time& delete_begin,
     const base::Time& delete_end,
     base::Optional<BrowserContextId> browser_context_id) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (uploader_) {
     const WebRtcLogFileInfo& info = uploader_->GetWebRtcLogFileInfo();
     if (LogFileMatchesFilter(info.browser_context_id, info.last_modified,
@@ -704,6 +731,7 @@ bool WebRtcRemoteEventLogManager::LogFileMatchesFilter(
     base::Optional<BrowserContextId> filter_browser_context_id,
     const base::Time& filter_range_begin,
     const base::Time& filter_range_end) const {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (filter_browser_context_id &&
       *filter_browser_context_id != log_browser_context_id) {
     return false;
@@ -742,6 +770,7 @@ bool WebRtcRemoteEventLogManager::UploadSuppressed() const {
 }
 
 bool WebRtcRemoteEventLogManager::UploadConditionsHold() const {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   return !uploader_ && !pending_logs_.empty() && !UploadSuppressed() &&
          uploading_supported_for_connection_type_;
 }
@@ -769,7 +798,7 @@ void WebRtcRemoteEventLogManager::ManageUploadSchedule() {
   task_runner_->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&WebRtcRemoteEventLogManager::MaybeStartUploading,
-                     base::Unretained(this)),
+                     weak_ptr_factory_->GetWeakPtr()),
       upload_delay_);
 }
 
@@ -800,12 +829,9 @@ void WebRtcRemoteEventLogManager::MaybeStartUploading() {
     // delay of length |upload_delay_| before the next one starts.
     time_when_upload_conditions_met_ = base::TimeTicks();
 
-    // |this| is only destroyed (on the UI thread) after |task_runner_| stops,
-    // so base::Unretained(this) is safe. (|uploader_| and |uploader_factory_|
-    // live on |task_runner_|.)
     auto callback = base::BindOnce(
         &WebRtcRemoteEventLogManager::OnWebRtcEventLogUploadComplete,
-        base::Unretained(this));
+        weak_ptr_factory_->GetWeakPtr());
 
     // The uploader takes ownership of the file; it's no longer considered to be
     // pending. (If the upload fails, the log will be deleted.)

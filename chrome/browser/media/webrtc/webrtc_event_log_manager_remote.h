@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
@@ -57,12 +58,18 @@ class WebRtcRemoteEventLogManager final
   // peer connections associated with this BrowserContext, in the
   // BrowserContext's user-data directory, becomes possible.
   // This method would typically be called when a BrowserContext is initialized.
+  // Enabling for the same BrowserContext twice in a row, without disabling
+  // in between, is an error.
   void EnableForBrowserContext(BrowserContextId browser_context_id,
                                const base::FilePath& browser_context_dir);
 
-  // Enables remote-bound logging for a given BrowserContext. Pending logs from
-  // earlier (while it was enabled) may still be uploaded, but no additional
-  // logs will be created.
+  // Disables remote-bound logging for a given BrowserContext. Pending logs from
+  // earlier (while it was enabled) may no longer be uploaded, additional
+  // logs will not be created, and any active uploads associated with the
+  // BrowserContext will be cancelled.
+  // Disabling for a BrowserContext which was not enabled is not an error,
+  // because the caller is not required to know whether a previous call
+  // to EnableForBrowserContext() was successful.
   void DisableForBrowserContext(BrowserContextId browser_context_id);
 
   // Called to inform |this| of peer connections being added/removed.
@@ -152,6 +159,11 @@ class WebRtcRemoteEventLogManager final
   // Exposes UploadConditionsHold() to unit tests. See WebRtcEventLogManager's
   // documentation for the rationale.
   void UploadConditionsHoldForTesting(base::OnceCallback<void(bool)> callback);
+
+  // In production code, |task_runner_| stops running tasks as part of Chrome's
+  // shut-down process, before |this| is torn down. In unit tests, this is
+  // not the case.
+  void ShutDownForTesting(base::OnceClosure reply);
 
  private:
   // Validates log parameters (at the moment, only max file size).
@@ -380,6 +392,15 @@ class WebRtcRemoteEventLogManager final
   // |this| is created and destroyed on the UI thread, but operates on the
   // following IO-capable sequenced task runner.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  // Weak pointer factory. Only expected to be useful for unit tests, because
+  // in production, |task_runner_| is stopped during shut-down, so tasks will
+  // either find the pointer to be valid, or not run because the runner has
+  // already been stopped.
+  // Note that the unique_ptr is used just to make it clearer that ownership is
+  // here. In reality, this is never auto-destroyed; see destructor for details.
+  std::unique_ptr<base::WeakPtrFactory<WebRtcRemoteEventLogManager>>
+      weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcRemoteEventLogManager);
 };
