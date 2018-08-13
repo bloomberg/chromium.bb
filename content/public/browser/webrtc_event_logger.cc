@@ -5,6 +5,7 @@
 #include "content/public/browser/webrtc_event_logger.h"
 
 #include "base/logging.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
 
@@ -15,6 +16,7 @@ WebRtcEventLogger* WebRtcEventLogger::Get() {
 }
 
 WebRtcEventLogger::WebRtcEventLogger() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!g_webrtc_event_logger);
   g_webrtc_event_logger = this;
   // Checking that g_webrtc_event_logger was never set before, in a way that
@@ -22,6 +24,7 @@ WebRtcEventLogger::WebRtcEventLogger() {
 }
 
 WebRtcEventLogger::~WebRtcEventLogger() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(g_webrtc_event_logger, this);
   g_webrtc_event_logger = nullptr;
 }

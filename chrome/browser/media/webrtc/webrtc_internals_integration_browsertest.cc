@@ -8,8 +8,8 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
+#include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/webrtc_event_logger.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -40,11 +40,11 @@ class WebRTCInternalsIntegrationBrowserTest : public WebRtcTestBase {
   // internal task runners (if any exist) before we examine anything we
   // expect to be produced by WebRtcEventLogger (files, etc.).
   void WaitForEventLogProcessing() {
-    auto* webrtc_event_logger = content::WebRtcEventLogger::Get();
-    ASSERT_TRUE(webrtc_event_logger);
+    WebRtcEventLogManager* manager = WebRtcEventLogManager::GetInstance();
+    ASSERT_TRUE(manager);
 
     base::RunLoop run_loop;
-    webrtc_event_logger->PostNullTaskForTesting(run_loop.QuitWhenIdleClosure());
+    manager->PostNullTaskForTesting(run_loop.QuitWhenIdleClosure());
     run_loop.Run();
   }
 
