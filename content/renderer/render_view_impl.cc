@@ -1135,6 +1135,7 @@ GURL RenderViewImpl::GetURLForGraphicsContext3DForWidget() {
 void RenderViewImpl::DidCommitCompositorFrameForWidget() {
   for (auto& observer : observers_)
     observer.DidCommitCompositorFrame();
+  UpdatePreferredSize();
 }
 
 void RenderViewImpl::DidCompletePageScaleAnimationForWidget() {
@@ -1666,7 +1667,8 @@ void RenderViewImpl::DidUpdateMainFrameLayout() {
   for (auto& observer : observers_)
     observer.DidUpdateMainFrameLayout();
 
-  UpdatePreferredSize();
+  // The main frame may have changed size.
+  needs_preferred_size_update_ = true;
 }
 
 void RenderViewImpl::NavigateBackForwardSoon(int offset) {
@@ -1739,6 +1741,11 @@ void RenderViewImpl::UpdatePreferredSize() {
   // message.
   if (!send_preferred_size_changes_ || !webview())
     return;
+
+  if (!needs_preferred_size_update_)
+    return;
+  needs_preferred_size_update_ = false;
+
   blink::WebSize tmp_size = webview()->ContentsPreferredMinimumSize();
   blink::WebRect tmp_rect(0, 0, tmp_size.width, tmp_size.height);
   WidgetClient()->ConvertViewportToWindow(&tmp_rect);
@@ -1852,6 +1859,8 @@ void RenderViewImpl::OnEnablePreferredSizeChangedMode() {
 
   if (!webview())
     return;
+
+  needs_preferred_size_update_ = true;
 
   // We need to ensure |UpdatePreferredSize| gets called. If a layout is needed,
   // force an update here which will call |DidUpdateMainFrameLayout|.

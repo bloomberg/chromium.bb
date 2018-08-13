@@ -31,6 +31,10 @@ class AwRenderViewExt : public content::RenderViewObserver {
 
   gfx::Size last_sent_contents_size_;
 
+  // Whether the contents size may have changed and |UpdateContentsSize| needs
+  // to be called.
+  bool needs_contents_size_update_ = true;
+
   DISALLOW_COPY_AND_ASSIGN(AwRenderViewExt);
 };
 

@@ -553,6 +553,10 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // If true, we send IPC messages when |preferred_size_| changes.
   bool send_preferred_size_changes_ = false;
 
+  // Whether the preferred size may have changed and |UpdatePreferredSize| needs
+  // to be called.
+  bool needs_preferred_size_update_ = true;
+
   // If non-empty, and |send_preferred_size_changes_| is true, disable drawing
   // scroll bars on windows smaller than this size.  Used for windows that the
   // browser resizes to the size of the content, such as browser action popups.

@@ -26,7 +26,8 @@ void AwRenderViewExt::DidCommitCompositorFrame() {
 }
 
 void AwRenderViewExt::DidUpdateMainFrameLayout() {
-  UpdateContentsSize();
+  // The size may have changed.
+  needs_contents_size_update_ = true;
 }
 
 void AwRenderViewExt::OnDestruct() {
@@ -46,6 +47,10 @@ void AwRenderViewExt::UpdateContentsSize() {
   // process when it is no longer the active main frame.
   if (!webview || !main_render_frame)
     return;
+
+  if (!needs_contents_size_update_)
+    return;
+  needs_contents_size_update_ = false;
 
   gfx::Size contents_size = main_render_frame->GetWebFrame()->DocumentSize();
 
