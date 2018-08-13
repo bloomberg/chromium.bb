@@ -110,6 +110,9 @@ class CC_EXPORT GpuImageDecodeCache
                                int max_texture_size);
   ~GpuImageDecodeCache() override;
 
+  // Returns the GL texture ID backing the given SkImage.
+  static GrGLuint GlIdFromSkImage(const SkImage* image);
+
   // ImageDecodeCache overrides.
 
   // Finds the existing uploaded image for the provided DrawImage. Creates an
@@ -272,6 +275,14 @@ class CC_EXPORT GpuImageDecodeCache
       return transfer_cache_id_;
     }
 
+    void set_unmipped_image(sk_sp<SkImage> image) {
+      unmipped_image_ = std::move(image);
+    }
+    sk_sp<SkImage> take_unmipped_image() {
+      DCHECK(!is_locked_);
+      return std::move(unmipped_image_);
+    }
+
    private:
     // Used for internal DCHECKs only.
     enum class Mode {
@@ -291,6 +302,9 @@ class CC_EXPORT GpuImageDecodeCache
 
     // Used if |mode_| == kTransferCache.
     base::Optional<uint32_t> transfer_cache_id_;
+
+    // The original un-mipped image, retained until it can be safely deleted.
+    sk_sp<SkImage> unmipped_image_;
   };
 
   struct ImageData : public base::RefCountedThreadSafe<ImageData> {

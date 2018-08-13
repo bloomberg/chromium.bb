@@ -24,6 +24,7 @@
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
 #include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
@@ -19838,6 +19839,8 @@ error::Error GLES2DecoderImpl::HandleLockDiscardableTextureCHROMIUM(
   GLuint texture_id = c.texture_id;
   if (!GetContextGroup()->discardable_manager()->LockTexture(
           texture_id, group_->texture_manager())) {
+    // Temporarily log a crash dump for debugging crbug.com/870317.
+    base::debug::DumpWithoutCrashing();
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glLockDiscardableTextureCHROMIUM",
                        "Texture ID not initialized");
   }

@@ -19,6 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
 namespace cc {
@@ -61,6 +62,16 @@ class FakeDiscardableManager {
     cached_textures_limit_ = limit;
   }
 
+  void ExpectLocked(GLuint texture_id) {
+    EXPECT_TRUE(textures_.end() != textures_.find(texture_id));
+
+    // Any value > kHandleLockedStart represents a locked texture. As we
+    // increment this value with each lock, we need the entire range and can't
+    // add additional values > kHandleLockedStart in the future.
+    EXPECT_GE(textures_[texture_id], kHandleLockedStart);
+    EXPECT_LE(textures_[texture_id], kHandleLockedEnd);
+  }
+
  private:
   void EnforceLimit() {
     for (auto it = textures_.begin(); it != textures_.end(); ++it) {
@@ -73,16 +84,6 @@ class FakeDiscardableManager {
       gl_->TestGLES2Interface::DeleteTextures(1, &it->first);
       live_textures_count_--;
     }
-  }
-
-  void ExpectLocked(GLuint texture_id) {
-    EXPECT_TRUE(textures_.end() != textures_.find(texture_id));
-
-    // Any value > kHandleLockedStart represents a locked texture. As we
-    // increment this value with each lock, we need the entire range and can't
-    // add additional values > kHandleLockedStart in the future.
-    EXPECT_GE(textures_[texture_id], kHandleLockedStart);
-    EXPECT_LE(textures_[texture_id], kHandleLockedEnd);
   }
 
   const int32_t kHandleDeleted = 0;
@@ -2614,6 +2615,103 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedSubsequentDraw) {
     EXPECT_EQ(image_with_mips, decoded_draw_image.image());
     cache->DrawWithImageFinished(draw_image, decoded_draw_image);
     cache->UnrefImage(draw_image);
+  }
+}
+
+TEST_P(GpuImageDecodeCacheTest, MipsAddedWhileOriginalInUse) {
+#if defined(OS_WIN)
+  // TODO(ericrk): Mips are temporarily disabled to investigate a memory
+  // regression on Windows. https://crbug.com/867468
+  return;
+#endif  // defined(OS_WIN)
+
+  auto cache = CreateCache();
+  bool is_decomposable = true;
+  auto filter_quality = kMedium_SkFilterQuality;
+
+  PaintImage image = CreateDiscardablePaintImage(gfx::Size(100, 100));
+
+  struct Decode {
+    DrawImage image;
+    DecodedDrawImage decoded_image;
+  };
+  std::vector<Decode> images_to_unlock;
+
+  // Create an image with no scaling. It will not have mips.
+  {
+    DrawImage draw_image(
+        image, SkIRect::MakeWH(image.width(), image.height()), filter_quality,
+        CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
+        PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+    ImageDecodeCache::TaskResult result = cache->GetTaskForImageAndRef(
+        draw_image, ImageDecodeCache::TracingInfo());
+    EXPECT_TRUE(result.need_unref);
+    EXPECT_TRUE(result.task);
+
+    TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
+    TestTileTaskRunner::ProcessTask(result.task.get());
+
+    // Must hold context lock before calling GetDecodedImageForDraw /
+    // DrawWithImageFinished.
+    viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+    DecodedDrawImage decoded_draw_image =
+        EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+    EXPECT_TRUE(decoded_draw_image.image());
+    EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+
+    // No mips should be generated
+    sk_sp<SkImage> image_with_mips =
+        decoded_draw_image.image()->makeTextureImage(
+            context_provider()->GrContext(), nullptr, GrMipMapped::kYes);
+    EXPECT_NE(image_with_mips, decoded_draw_image.image());
+
+    images_to_unlock.push_back({draw_image, decoded_draw_image});
+  }
+
+  // Second decode with mips.
+  {
+    DrawImage draw_image(
+        image, SkIRect::MakeWH(image.width(), image.height()), filter_quality,
+        CreateMatrix(SkSize::Make(0.6f, 0.6f), is_decomposable),
+        PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+    ImageDecodeCache::TaskResult result = cache->GetTaskForImageAndRef(
+        draw_image, ImageDecodeCache::TracingInfo());
+    EXPECT_TRUE(result.need_unref);
+    EXPECT_FALSE(result.task);
+
+    // Must hold context lock before calling GetDecodedImageForDraw /
+    // DrawWithImageFinished.
+    viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+    DecodedDrawImage decoded_draw_image =
+        EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+
+    EXPECT_TRUE(decoded_draw_image.image());
+    EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+
+    // Mips should be generated
+    sk_sp<SkImage> image_with_mips =
+        decoded_draw_image.image()->makeTextureImage(
+            context_provider()->GrContext(), nullptr, GrMipMapped::kYes);
+    EXPECT_EQ(image_with_mips, decoded_draw_image.image());
+
+    images_to_unlock.push_back({draw_image, decoded_draw_image});
+  }
+
+  // Reduce cache usage to make sure anything marked for deletion is actually
+  // deleted.
+  cache->ReduceCacheUsage();
+
+  {
+    // All images which are currently ref-ed must have locked textures.
+    viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+    for (const auto& decode : images_to_unlock) {
+      if (!use_transfer_cache_) {
+        discardable_manager_.ExpectLocked(GpuImageDecodeCache::GlIdFromSkImage(
+            decode.decoded_image.image().get()));
+      }
+      cache->DrawWithImageFinished(decode.image, decode.decoded_image);
+      cache->UnrefImage(decode.image);
+    }
   }
 }
 
