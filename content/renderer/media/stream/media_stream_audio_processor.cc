@@ -612,8 +612,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   audio_processing_.reset(ap_builder.Create(config));
 
   // Enable the audio processing components.
-  webrtc::AudioProcessing::Config apm_config;
-
   if (playout_data_source_) {
     playout_data_source_->AddPlayoutSink(this);
   }
@@ -633,8 +631,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   if (properties.goog_noise_suppression)
     EnableNoiseSuppression(audio_processing_.get(), NoiseSuppression::kHigh);
 
-  apm_config.high_pass_filter.enabled = properties.goog_highpass_filter;
-
   if (goog_typing_detection) {
     // TODO(xians): Remove this |typing_detector_| after the typing suppression
     // is enabled by default.
@@ -645,6 +641,8 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   if (properties.goog_auto_gain_control)
     EnableAutomaticGainControl(audio_processing_.get());
 
+  webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
+  apm_config.high_pass_filter.enabled = properties.goog_highpass_filter;
   audio_processing_->ApplyConfig(apm_config);
 
   RecordProcessingState(AUDIO_PROCESSING_ENABLED);
