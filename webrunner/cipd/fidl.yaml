@@ -7,8 +7,14 @@
 # To create a CIPD package, run the following command from the build output
 # directory.
 #
-# cipd create --pkg-def ../../webrunner/cipd/fidl.yaml \
-#             -tag version:$(cat fuchsia_artifacts/build_id.txt)
+# $ cipd create --pkg-def ../../webrunner/cipd/fidl.yaml \
+#               -ref latest \
+#               -tag version:$(cat fuchsia_artifacts/build_id.txt)
+#
+# The most recent package can be discovered by searching for the "latest" ref:
+#
+# $ cipd describe chromium/fuchsia/fidl -version latest
+
 package: chromium/fuchsia/fidl
 description: FIDL definitions for the "chromium" service.
 root: ../fidl
