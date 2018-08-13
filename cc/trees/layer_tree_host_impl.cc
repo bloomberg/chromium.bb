@@ -1911,8 +1911,6 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   metadata.root_background_color = active_tree_->background_color();
   metadata.content_source_id = active_tree_->content_source_id();
 
-  active_tree_->GetViewportSelection(&metadata.selection);
-
   // Skip recording frame metrics for android_webview
   // (using_synchronous_renderer_compositor) scrolls because different
   // application is handling frame presentation in android webview.
@@ -1944,6 +1942,10 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
 
   if (last_draw_referenced_surfaces_ != referenced_surfaces)
     last_draw_referenced_surfaces_ = referenced_surfaces;
+
+#if defined(OS_ANDROID)
+  active_tree_->GetViewportSelection(&metadata.selection);
+#endif
 
   const auto* inner_viewport_scroll_node = InnerViewportScrollNode();
   if (!inner_viewport_scroll_node)

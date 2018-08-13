@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "build/build_config.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "services/viz/public/cpp/compositing/begin_frame_args_struct_traits.h"
 #include "services/viz/public/cpp/compositing/frame_deadline_struct_traits.h"
@@ -91,11 +92,6 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return metadata.root_background_color;
   }
 
-  static const viz::Selection<gfx::SelectionBound>& selection(
-      const viz::CompositorFrameMetadata& metadata) {
-    return metadata.selection;
-  }
-
   static const std::vector<ui::LatencyInfo>& latency_info(
       const viz::CompositorFrameMetadata& metadata) {
     return metadata.latency_info;
@@ -139,6 +135,13 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
       const viz::CompositorFrameMetadata& metadata) {
     return metadata.request_presentation_feedback;
   }
+
+#if defined(OS_ANDROID)
+  static const viz::Selection<gfx::SelectionBound>& selection(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.selection;
+  }
+#endif  // defined(OS_ANDROID)
 
   static bool Read(viz::mojom::CompositorFrameMetadataDataView data,
                    viz::CompositorFrameMetadata* out);

@@ -625,15 +625,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   const float bottom_bar_height(1234.5f);
   const float bottom_bar_shown_ratio(1.0f);
   const uint32_t root_background_color = 1337;
-  Selection<gfx::SelectionBound> selection;
-  selection.start.SetEdge(gfx::PointF(1234.5f, 67891.f),
-                          gfx::PointF(5432.1f, 1987.6f));
-  selection.start.set_visible(true);
-  selection.start.set_type(gfx::SelectionBound::CENTER);
-  selection.end.SetEdge(gfx::PointF(1337.5f, 52124.f),
-                        gfx::PointF(1234.3f, 8765.6f));
-  selection.end.set_visible(false);
-  selection.end.set_type(gfx::SelectionBound::RIGHT);
   ui::LatencyInfo latency_info;
   latency_info.set_trace_id(5);
   latency_info.AddLatencyNumber(
@@ -650,6 +641,17 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   uint32_t frame_token = 0xdeadbeef;
   uint64_t begin_frame_ack_sequence_number = 0xdeadbeef;
   FrameDeadline frame_deadline(base::TimeTicks(), 4u, base::TimeDelta(), true);
+#if defined(OS_ANDROID)
+  Selection<gfx::SelectionBound> selection;
+  selection.start.SetEdge(gfx::PointF(1234.5f, 67891.f),
+                          gfx::PointF(5432.1f, 1987.6f));
+  selection.start.set_visible(true);
+  selection.start.set_type(gfx::SelectionBound::CENTER);
+  selection.end.SetEdge(gfx::PointF(1337.5f, 52124.f),
+                        gfx::PointF(1234.3f, 8765.6f));
+  selection.end.set_visible(false);
+  selection.end.set_type(gfx::SelectionBound::RIGHT);
+#endif  // defined(OS_ANDROID)
 
   CompositorFrameMetadata input;
   input.device_scale_factor = device_scale_factor;
@@ -668,13 +670,15 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.bottom_controls_height = bottom_bar_height;
   input.bottom_controls_shown_ratio = bottom_bar_shown_ratio;
   input.root_background_color = root_background_color;
-  input.selection = selection;
   input.latency_info = latency_infos;
   input.referenced_surfaces = referenced_surfaces;
   input.activation_dependencies = activation_dependencies;
   input.deadline = frame_deadline;
   input.frame_token = frame_token;
   input.begin_frame_ack.sequence_number = begin_frame_ack_sequence_number;
+#if defined(OS_ANDROID)
+  input.selection = selection;
+#endif  // defined(OS_ANDROID)
 
   CompositorFrameMetadata output;
   SerializeAndDeserialize<mojom::CompositorFrameMetadata>(input, &output);
@@ -694,7 +698,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(bottom_bar_height, output.bottom_controls_height);
   EXPECT_EQ(bottom_bar_shown_ratio, output.bottom_controls_shown_ratio);
   EXPECT_EQ(root_background_color, output.root_background_color);
-  EXPECT_EQ(selection, output.selection);
   EXPECT_EQ(latency_infos.size(), output.latency_info.size());
   EXPECT_TRUE(output.latency_info[0].FindLatency(
       ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT, nullptr));
@@ -709,6 +712,9 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(frame_token, output.frame_token);
   EXPECT_EQ(begin_frame_ack_sequence_number,
             output.begin_frame_ack.sequence_number);
+#if defined(OS_ANDROID)
+  EXPECT_EQ(selection, output.selection);
+#endif  // defined(OS_ANDROID)
 }
 
 TEST_F(StructTraitsTest, RenderPass) {

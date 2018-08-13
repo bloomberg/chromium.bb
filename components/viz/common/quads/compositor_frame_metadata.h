@@ -10,17 +10,21 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/frame_deadline.h"
-#include "components/viz/common/quads/selection.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_range.h"
 #include "components/viz/common/viz_common_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
-#include "ui/gfx/selection_bound.h"
 #include "ui/latency/latency_info.h"
+
+#if defined(OS_ANDROID)
+#include "components/viz/common/quads/selection.h"
+#include "ui/gfx/selection_bound.h"
+#endif  // defined(OS_ANDROID)
 
 namespace viz {
 
@@ -80,10 +84,6 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   // it's too small to fill the box the parent reserved for it.
   SkColor root_background_color = SK_ColorWHITE;
 
-  // Provides selection region updates relative to the current viewport. If the
-  // selection is empty or otherwise unused, the bound types will indicate such.
-  Selection<gfx::SelectionBound> selection;
-
   std::vector<ui::LatencyInfo> latency_info;
 
   // This is the set of Surfaces that are referenced by this frame.
@@ -142,6 +142,12 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   // |request_presentation_feedback| flag turned on, a presentation feedback
   // will be provided to CompositorFrameSinkClient.
   bool request_presentation_feedback = false;
+
+#if defined(OS_ANDROID)
+  // Provides selection region updates relative to the current viewport. If the
+  // selection is empty or otherwise unused, the bound types will indicate such.
+  Selection<gfx::SelectionBound> selection;
+#endif  // defined(OS_ANDROID)
 
  private:
   CompositorFrameMetadata(const CompositorFrameMetadata& other);
