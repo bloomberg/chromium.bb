@@ -374,7 +374,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                   GLint internalformat,
                   GLenum format,
                   GLenum type,
-                  HTMLCanvasElement*,
+                  CanvasRenderingContextHost*,
                   ExceptionState&);
   void texImage2D(ExecutionContext*,
                   GLenum target,
@@ -427,7 +427,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                      GLint yoffset,
                      GLenum format,
                      GLenum type,
-                     HTMLCanvasElement*,
+                     CanvasRenderingContextHost*,
                      ExceptionState&);
   void texSubImage2D(ExecutionContext*,
                      GLenum target,
@@ -1458,12 +1458,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                 HTMLImageElement*,
                                 ExceptionState&);
 
-  // Helper function for tex{Sub}Image2D to make sure canvas is ready and
-  // wouldn't taint Origin.
-  bool ValidateHTMLCanvasElement(const SecurityOrigin*,
-                                 const char* function_name,
-                                 HTMLCanvasElement*,
-                                 ExceptionState&);
+  // Helper function for tex{Sub}Image2D to make sure canvas or OffscreenCanvas
+  // is ready and wouldn't taint Origin.
+  bool ValidateCanvasRenderingContextHost(const SecurityOrigin*,
+                                          const char* function_name,
+                                          CanvasRenderingContextHost*,
+                                          ExceptionState&);
 
   // Helper function for tex{Sub}Image2D to make sure video is ready wouldn't
   // taint Origin.
@@ -1624,21 +1624,21 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                       GLint,
                                       ExceptionState&);
 
-  void TexImageHelperHTMLCanvasElement(const SecurityOrigin*,
-                                       TexImageFunctionID,
-                                       GLenum,
-                                       GLint,
-                                       GLint,
-                                       GLenum,
-                                       GLenum,
-                                       GLint,
-                                       GLint,
-                                       GLint,
-                                       HTMLCanvasElement*,
-                                       const IntRect&,
-                                       GLsizei,
-                                       GLint,
-                                       ExceptionState&);
+  void TexImageHelperCanvasRenderingContextHost(const SecurityOrigin*,
+                                                TexImageFunctionID,
+                                                GLenum,
+                                                GLint,
+                                                GLint,
+                                                GLenum,
+                                                GLenum,
+                                                GLint,
+                                                GLint,
+                                                GLint,
+                                                CanvasRenderingContextHost*,
+                                                const IntRect&,
+                                                GLsizei,
+                                                GLint,
+                                                ExceptionState&);
 
   void TexImageHelperHTMLVideoElement(const SecurityOrigin*,
                                       TexImageFunctionID,

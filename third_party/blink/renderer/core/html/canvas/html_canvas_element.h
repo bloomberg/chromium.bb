@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.h"
 #include "third_party/blink/renderer/core/html/canvas/image_encode_options.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -91,7 +90,6 @@ class CORE_EXPORT HTMLCanvasElement final
     : public HTMLElement,
       public ContextLifecycleObserver,
       public PageVisibilityObserver,
-      public CanvasImageSource,
       public CanvasRenderingContextHost,
       public WebSurfaceLayerBridgeObserver,
       public ImageBitmapSource,
