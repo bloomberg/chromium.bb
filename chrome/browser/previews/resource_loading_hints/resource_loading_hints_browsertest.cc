@@ -283,8 +283,8 @@ class ResourceLoadingHintsBrowserTest
 
 // Previews InfoBar (which these tests triggers) does not work on Mac.
 // See crbug.com/782322 for details. Also occasional flakes on win7/linux
-// (crbug.com/789542, crbug.com/866212).
-#if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(OS_LINUX)
+// (https://crbug.com/789542).
+#if !defined(OS_MACOSX) && !defined(OS_WIN)
 #define MAYBE_ResourceLoadingHintsHttpsWhitelisted \
   ResourceLoadingHintsHttpsWhitelisted
 #define MAYBE_ResourceLoadingHintsHttpsWhitelistedRedirectToHttps \
