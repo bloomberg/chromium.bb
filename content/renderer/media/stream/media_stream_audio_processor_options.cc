@@ -202,13 +202,17 @@ void EchoInformation::ReportAndResetAecDivergentFilterStats() {
 }
 
 void EnableEchoCancellation(AudioProcessing* audio_processing) {
+  // TODO(bugs.webrtc.org/9535): Remove double-booking AEC toggle when the
+  // config applies (from 2018-08-16).
+  webrtc::AudioProcessing::Config apm_config = audio_processing->GetConfig();
+  apm_config.echo_canceller.enabled = true;
 #if defined(OS_ANDROID)
   // Mobile devices are using AECM.
   CHECK_EQ(0, audio_processing->echo_control_mobile()->set_routing_mode(
                   webrtc::EchoControlMobile::kSpeakerphone));
   CHECK_EQ(0, audio_processing->echo_control_mobile()->Enable(true));
-  return;
-#endif
+  apm_config.echo_canceller.mobile_mode = true;
+#else
   int err = audio_processing->echo_cancellation()->set_suppression_level(
       webrtc::EchoCancellation::kHighSuppression);
 
@@ -217,6 +221,9 @@ void EnableEchoCancellation(AudioProcessing* audio_processing) {
   err |= audio_processing->echo_cancellation()->enable_delay_logging(true);
   err |= audio_processing->echo_cancellation()->Enable(true);
   CHECK_EQ(err, 0);
+  apm_config.echo_canceller.mobile_mode = false;
+#endif
+  audio_processing->ApplyConfig(apm_config);
 }
 
 void EnableNoiseSuppression(AudioProcessing* audio_processing,
