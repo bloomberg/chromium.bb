@@ -240,6 +240,7 @@ html[dir=rtl] #bg-sel-tiles {
   height: 51px;
   line-height: 52px;
   text-align: center;
+  user-select: none;
 }
 
 #bg-sel-back {
@@ -330,6 +331,7 @@ html[dir=rtl] .is-img-sel #bg-sel-title {
   height: 64px;
   padding-left: 0;
   position: absolute;
+  user-select: none;
   width: 100%;
 }
 
@@ -377,7 +379,7 @@ html[dir=rtl] #bg-sel-footer-cancel {
 }
 
 #bg-sel-footer-cancel:hover {
-  background-color: rgb(154, 160, 166, 0.04);
+  background-color: rgba(154, 160, 166, 0.04);
 }
 
 #bg-sel-footer-cancel:active {
