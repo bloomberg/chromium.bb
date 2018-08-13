@@ -22,9 +22,18 @@ const int kLeaveFullScreenAreaHeightInPixel = 2;
 
 }  // namespace
 
-TabletModeEventHandler::TabletModeEventHandler() = default;
+TabletModeEventHandler::TabletModeEventHandler() {
+  Shell::Get()->AddPreTargetHandler(this);
+}
 
-TabletModeEventHandler::~TabletModeEventHandler() = default;
+TabletModeEventHandler::~TabletModeEventHandler() {
+  Shell::Get()->RemovePreTargetHandler(this);
+}
+
+void TabletModeEventHandler::OnTouchEvent(ui::TouchEvent* event) {
+  if (ToggleFullscreen(*event))
+    event->StopPropagation();
+}
 
 bool TabletModeEventHandler::ToggleFullscreen(const ui::TouchEvent& event) {
   if (event.type() != ui::ET_TOUCH_PRESSED)
