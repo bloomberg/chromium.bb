@@ -567,18 +567,12 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
 
   GestureEventData CreateGesture(const GestureEventDetails& details,
                                  const MotionEvent& event) const {
-    return GestureEventData(details,
-                            event.GetPointerId(),
-                            event.GetToolType(),
-                            event.GetEventTime(),
-                            event.GetX(),
-                            event.GetY(),
-                            event.GetRawX(),
-                            event.GetRawY(),
+    return GestureEventData(details, event.GetPointerId(), event.GetToolType(),
+                            event.GetEventTime(), event.GetX(), event.GetY(),
+                            event.GetRawX(), event.GetRawY(),
                             event.GetPointerCount(),
                             GetBoundingBox(event, details.type()),
-                            event.GetFlags(),
-                            0U);
+                            event.GetFlags(), event.GetUniqueEventId());
   }
 
   GestureEventData CreateGesture(EventType type,

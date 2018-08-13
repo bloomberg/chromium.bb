@@ -105,7 +105,7 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
                               const gfx::PointF& pos_in_root);
   blink::WebGestureEvent GetPinchGestureEvent(
       blink::WebInputEvent::Type type,
-      const blink::WebInputEvent& original_event);
+      const blink::WebGestureEvent& original_event);
 
   // The following methods generate and pass gesture events to the renderer.
   void PinchBegin(const blink::WebGestureEvent& event);

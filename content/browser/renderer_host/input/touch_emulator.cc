@@ -363,14 +363,7 @@ void TouchEmulator::OnGestureEvent(const ui::GestureEventData& gesture) {
   WebGestureEvent gesture_event =
       ui::CreateWebGestureEventFromGestureEventData(gesture);
 
-  if (!gesture_event.unique_touch_event_id) {
-    // TODO(wjmaclean): Find out why the local GestureProvider puts id=0 on
-    // kGestureShowPress. This is a problem for RWHIER as it will cause it to
-    // attempt to re-target the event. There must be a nicer solution than
-    // setting the id to -1.
-    DCHECK(gesture_event.GetType() == blink::WebInputEvent::kGestureShowPress);
-    gesture_event.unique_touch_event_id = -1;
-  }
+  DCHECK(gesture_event.unique_touch_event_id);
 
   switch (gesture_event.GetType()) {
     case WebInputEvent::kUndefined:
@@ -528,11 +521,12 @@ void TouchEmulator::ScrollEnd(const WebGestureEvent& event) {
 
 WebGestureEvent TouchEmulator::GetPinchGestureEvent(
     WebInputEvent::Type type,
-    const WebInputEvent& original_event) {
+    const WebGestureEvent& original_event) {
   WebGestureEvent event(type, ModifiersWithoutMouseButtons(original_event),
                         original_event.TimeStamp(),
                         blink::kWebGestureDeviceTouchscreen);
   event.SetPositionInWidget(pinch_anchor_);
+  event.unique_touch_event_id = original_event.unique_touch_event_id;
   return event;
 }
 
