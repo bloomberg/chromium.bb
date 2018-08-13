@@ -23,7 +23,6 @@ crbug.com/450202 fast/multicol/span/overflow-on-multicol.html [ Skip ]
 crbug.com/591099 fast/block/marquee-width-shrinks-to-fit-in-fixed-size-container.html [ Failure ]
 
 # Whitespace differences only
-crbug.com/854889 accessibility/canvas-fallback-content-2.html [ Failure ]
 
 # Wrong quirks mode line height for pattern <div><a><img></a></div>
 crbug.com/854840 fast/table/backgr_border-table-quirks-collapsed-border.html [ Failure ]
@@ -517,7 +516,6 @@ crbug.com/591099 paint/invalidation/line-flow-with-floats-6.html [ Failure ]
 crbug.com/591099 paint/invalidation/line-flow-with-floats-7.html [ Failure ]
 crbug.com/591099 paint/invalidation/line-flow-with-floats-9.html [ Failure ]
 crbug.com/824918 paint/invalidation/multicol/multicol-repaint.html [ Failure ]
-crbug.com/591099 paint/invalidation/offset-change-wrong-invalidation-with-float.html [ Failure ]
 crbug.com/835484 paint/invalidation/outline/focus-continuations.html [ Failure ]
 crbug.com/835484 paint/invalidation/outline/focus-enable-continuations.html [ Failure ]
 crbug.com/835484 paint/invalidation/outline/focus-layers.html [ Failure ]
