@@ -11,9 +11,11 @@
 #include "base/test/scoped_task_environment.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
+#include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/model/data_type_activation_request.h"
+#include "components/undo/bookmark_undo_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -120,38 +122,27 @@ void InitWithSyncedBookmarks(const std::vector<BookmarkInfo>& bookmarks,
   AssertState(processor, bookmarks);
 }
 
-class TestSyncClient : public syncer::FakeSyncClient {
- public:
-  explicit TestSyncClient(bookmarks::BookmarkModel* bookmark_model)
-      : bookmark_model_(bookmark_model) {}
-
-  bookmarks::BookmarkModel* GetBookmarkModel() override {
-    return bookmark_model_;
-  }
-
- private:
-  bookmarks::BookmarkModel* bookmark_model_;
-};
-
 class BookmarkModelTypeProcessorTest : public testing::Test {
  public:
   BookmarkModelTypeProcessorTest()
       : bookmark_model_(bookmarks::TestBookmarkClient::CreateModel()),
-        sync_client_(bookmark_model_.get()),
-        processor_(sync_client()->GetBookmarkUndoServiceIfExists()) {
+        processor_(&bookmark_undo_service_) {
     // TODO(crbug.com/516866): This class assumes model is loaded and sync has
     // started before running tests. We should test other variations (i.e. model
     // isn't loaded yet and/or sync didn't start yet).
-    processor_.ModelReadyToSync(/*metadata_str=*/std::string(),
-                                schedule_save_closure_.Get(),
-                                bookmark_model_.get());
+    processor_.ModelReadyToSync(
+        /*metadata_str=*/std::string(), schedule_save_closure_.Get(),
+        bookmark_model_.get());
     syncer::DataTypeActivationRequest request;
     request.cache_guid = kCacheGuid;
+    processor_.SetFaviconService(&favicon_service_);
     processor_.OnSyncStarting(request, base::DoNothing());
   }
-
-  TestSyncClient* sync_client() { return &sync_client_; }
   bookmarks::BookmarkModel* bookmark_model() { return bookmark_model_.get(); }
+  BookmarkUndoService* bookmark_undo_service() {
+    return &bookmark_undo_service_;
+  }
+  favicon::FaviconService* favicon_service() { return &favicon_service_; }
   BookmarkModelTypeProcessor* processor() { return &processor_; }
   base::MockCallback<base::RepeatingClosure>* schedule_save_closure() {
     return &schedule_save_closure_;
@@ -161,7 +152,8 @@ class BookmarkModelTypeProcessorTest : public testing::Test {
   base::test::ScopedTaskEnvironment task_environment_;
   NiceMock<base::MockCallback<base::RepeatingClosure>> schedule_save_closure_;
   std::unique_ptr<bookmarks::BookmarkModel> bookmark_model_;
-  TestSyncClient sync_client_;
+  BookmarkUndoService bookmark_undo_service_;
+  NiceMock<favicon::MockFaviconService> favicon_service_;
   BookmarkModelTypeProcessor processor_;
 };
 
@@ -296,8 +288,8 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldDecodeSyncMetadata) {
   bookmark_metadata->mutable_metadata()->set_server_id(kNodeId);
 
   // Create a new processor and init it with the metadata str.
-  BookmarkModelTypeProcessor new_processor(
-      sync_client()->GetBookmarkUndoServiceIfExists());
+  BookmarkModelTypeProcessor new_processor(bookmark_undo_service());
+
   std::string metadata_str;
   model_metadata.SerializeToString(&metadata_str);
   new_processor.ModelReadyToSync(metadata_str, base::DoNothing(),
@@ -330,8 +322,7 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldDecodeEncodedSyncMetadata) {
   model_metadata.mutable_model_type_state()->set_initial_sync_done(true);
 
   // Create a new processor and init it with the same metadata str.
-  BookmarkModelTypeProcessor new_processor(
-      sync_client()->GetBookmarkUndoServiceIfExists());
+  BookmarkModelTypeProcessor new_processor(bookmark_undo_service());
   model_metadata.SerializeToString(&metadata_str);
   new_processor.ModelReadyToSync(metadata_str, base::DoNothing(),
                                  bookmark_model());

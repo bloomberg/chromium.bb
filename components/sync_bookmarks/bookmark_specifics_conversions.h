@@ -15,10 +15,15 @@ class BookmarkSpecifics;
 class EntitySpecifics;
 }  // namespace sync_pb
 
+namespace favicon {
+class FaviconService;
+}  // namespace favicon
+
 namespace sync_bookmarks {
 
 sync_pb::EntitySpecifics CreateSpecificsFromBookmarkNode(
-    const bookmarks::BookmarkNode* node);
+    const bookmarks::BookmarkNode* node,
+    bookmarks::BookmarkModel* model);
 
 // Creates a bookmark node under the given parent node from the given specifics.
 // Returns the newly created node. Callers must verify that
@@ -28,14 +33,16 @@ const bookmarks::BookmarkNode* CreateBookmarkNodeFromSpecifics(
     const bookmarks::BookmarkNode* parent,
     int index,
     bool is_folder,
-    bookmarks::BookmarkModel* model);
+    bookmarks::BookmarkModel* model,
+    favicon::FaviconService* favicon_service);
 
 // Updates the bookmark node |node| with the data in |specifics|. Callers must
 // verify that |specifics| passes the IsValidBookmarkSpecifics().
 void UpdateBookmarkNodeFromSpecifics(
     const sync_pb::BookmarkSpecifics& specifics,
     const bookmarks::BookmarkNode* node,
-    bookmarks::BookmarkModel* model);
+    bookmarks::BookmarkModel* model,
+    favicon::FaviconService* favicon_service);
 
 // Checks if a bookmark specifics represents a valid bookmark. |is_folder| is
 // whether this specifics is for a folder. Valid specifics must not be empty,

@@ -44,10 +44,13 @@ void BookmarkSyncService::DecodeBookmarkSyncMetadata(
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
-BookmarkSyncService::GetBookmarkSyncControllerDelegate() {
+BookmarkSyncService::GetBookmarkSyncControllerDelegate(
+    favicon::FaviconService* favicon_service) {
+  DCHECK(favicon_service);
   if (!bookmark_model_type_processor_) {
     return nullptr;
   }
+  bookmark_model_type_processor_->SetFaviconService(favicon_service);
   return bookmark_model_type_processor_->GetWeakPtr();
 }
 

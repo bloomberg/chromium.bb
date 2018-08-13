@@ -61,7 +61,8 @@ void BookmarkModelObserverImpl::BookmarkNodeMoved(
   const sync_pb::UniquePosition unique_position =
       ComputePosition(*new_parent, new_index, sync_id).ToProto();
 
-  sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(node);
+  sync_pb::EntitySpecifics specifics =
+      CreateSpecificsFromBookmarkNode(node, model);
 
   bookmark_tracker_->Update(sync_id, entity->metadata()->server_version(),
                             modification_time, unique_position, specifics);
@@ -94,7 +95,8 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
   const sync_pb::UniquePosition unique_position =
       ComputePosition(*parent, index, sync_id).ToProto();
 
-  sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(node);
+  sync_pb::EntitySpecifics specifics =
+      CreateSpecificsFromBookmarkNode(node, model);
 
   bookmark_tracker_->Add(sync_id, node, server_version, creation_time,
                          unique_position, specifics);
@@ -158,8 +160,14 @@ void BookmarkModelObserverImpl::BookmarkNodeChanged(
   }
   const std::string& sync_id = entity->metadata()->server_id();
   const base::Time modification_time = base::Time::Now();
-  sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(node);
-
+  sync_pb::EntitySpecifics specifics =
+      CreateSpecificsFromBookmarkNode(node, model);
+  if (entity->MatchesSpecificsHash(specifics)) {
+    // We should push data to the server only if there is an actual change in
+    // the data. We could hit this code path without having actual changes
+    // (e.g.upon a favicon load).
+    return;
+  }
   bookmark_tracker_->Update(sync_id, entity->metadata()->server_version(),
                             modification_time,
                             entity->metadata()->unique_position(), specifics);
@@ -177,7 +185,21 @@ void BookmarkModelObserverImpl::BookmarkMetaInfoChanged(
 void BookmarkModelObserverImpl::BookmarkNodeFaviconChanged(
     bookmarks::BookmarkModel* model,
     const bookmarks::BookmarkNode* node) {
-  NOTIMPLEMENTED();
+  // TODO(crbug.com/516866): continue only if
+  // model->client()->CanSyncNode(node).
+
+  // We shouldn't see changes to the top-level nodes.
+  DCHECK(!model->is_permanent_node(node));
+
+  // Ignore favicons that are being loaded.
+  if (!node->is_favicon_loaded()) {
+    // Subtle way to trigger a load of the favicon. This very same function will
+    // be notified when the favicon gets loaded (read from HistoryService and
+    // cached in RAM within BookmarkModel).
+    model->GetFavicon(node);
+    return;
+  }
+  BookmarkNodeChanged(model, node);
 }
 
 void BookmarkModelObserverImpl::BookmarkNodeChildrenReordered(
@@ -220,7 +242,7 @@ void BookmarkModelObserverImpl::BookmarkNodeChildrenReordered(
     previous_position = position;
 
     const sync_pb::EntitySpecifics specifics =
-        CreateSpecificsFromBookmarkNode(node);
+        CreateSpecificsFromBookmarkNode(node, model);
 
     bookmark_tracker_->Update(sync_id, entity->metadata()->server_version(),
                               modification_time, position.ToProto(), specifics);

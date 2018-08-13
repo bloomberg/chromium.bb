@@ -9,21 +9,27 @@
 
 #include "components/sync/engine/non_blocking_sync_common.h"
 
+namespace bookmarks {
+class BookmarkModel;
+}
+
 namespace sync_bookmarks {
 
 class SyncedBookmarkTracker;
 
 class BookmarkLocalChangesBuilder {
  public:
-  // |bookmark_tracker| must not be null and must outlive this object.
-  explicit BookmarkLocalChangesBuilder(
-      const SyncedBookmarkTracker* bookmark_tracker);
+  // |bookmark_tracker| and |bookmark_model| must not be null and must outlive
+  // this object.
+  BookmarkLocalChangesBuilder(const SyncedBookmarkTracker* bookmark_tracker,
+                              bookmarks::BookmarkModel* bookmark_model);
   // Builds the commit requests list.
   std::vector<syncer::CommitRequestData> BuildCommitRequests(
       size_t max_entries) const;
 
  private:
   const SyncedBookmarkTracker* const bookmark_tracker_;
+  bookmarks::BookmarkModel* const bookmark_model_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkLocalChangesBuilder);
 };

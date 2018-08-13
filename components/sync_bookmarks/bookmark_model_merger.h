@@ -16,6 +16,10 @@ class BookmarkModel;
 class BookmarkNode;
 }  // namespace bookmarks
 
+namespace favicon {
+class FaviconService;
+}  // namespace favicon
+
 namespace sync_bookmarks {
 
 class SyncedBookmarkTracker;
@@ -27,10 +31,11 @@ class SyncedBookmarkTracker;
 // used by the BookmarkModelTypeProcessor().
 class BookmarkModelMerger {
  public:
-  // |updates|, |bookmark_model| and |bookmark_tracker| must not be null and
-  // must outlive this object.
+  // |updates|, |bookmark_model|, |favicon_service| and |bookmark_tracker| must
+  // not be null and must outlive this object.
   BookmarkModelMerger(const syncer::UpdateResponseDataList* updates,
                       bookmarks::BookmarkModel* bookmark_model,
+                      favicon::FaviconService* favicon_service,
                       SyncedBookmarkTracker* bookmark_tracker);
 
   ~BookmarkModelMerger();
@@ -71,6 +76,7 @@ class BookmarkModelMerger {
 
   const syncer::UpdateResponseDataList* const updates_;
   bookmarks::BookmarkModel* const bookmark_model_;
+  favicon::FaviconService* const favicon_service_;
   SyncedBookmarkTracker* const bookmark_tracker_;
   // Stores the tree of |updates_| as a map from a remote node to a
   // vector of remote children. It's constructed in the c'tor.

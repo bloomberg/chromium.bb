@@ -40,6 +40,7 @@
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
+#include "components/sync_bookmarks/bookmark_sync_service.h"
 #include "components/sync_sessions/session_data_type_controller.h"
 #include "components/sync_sessions/session_model_type_controller.h"
 
@@ -110,7 +111,8 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
         web_data_service_on_disk,
     const scoped_refptr<autofill::AutofillWebDataService>&
         web_data_service_in_memory,
-    const scoped_refptr<password_manager::PasswordStore>& password_store)
+    const scoped_refptr<password_manager::PasswordStore>& password_store,
+    sync_bookmarks::BookmarkSyncService* bookmark_sync_service)
     : sync_client_(sync_client),
       channel_(channel),
       version_(version),
@@ -120,7 +122,8 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
       db_thread_(db_thread),
       web_data_service_on_disk_(web_data_service_on_disk),
       web_data_service_in_memory_(web_data_service_in_memory),
-      password_store_(password_store) {}
+      password_store_(password_store),
+      bookmark_sync_service_(bookmark_sync_service) {}
 
 ProfileSyncComponentsFactoryImpl::~ProfileSyncComponentsFactoryImpl() {}
 
@@ -202,8 +205,14 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   // disabled.
   if (!disabled_types.Has(syncer::BOOKMARKS)) {
     if (FeatureList::IsEnabled(switches::kSyncUSSBookmarks)) {
-      controllers.push_back(CreateModelTypeControllerForModelRunningOnUIThread(
-          syncer::BOOKMARKS));
+      controllers.push_back(std::make_unique<ModelTypeController>(
+          syncer::BOOKMARKS,
+          std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+              ui_thread_,
+              base::BindRepeating(&sync_bookmarks::BookmarkSyncService::
+                                      GetBookmarkSyncControllerDelegate,
+                                  base::Unretained(bookmark_sync_service_),
+                                  sync_client_->GetFaviconService()))));
     } else {
       controllers.push_back(std::make_unique<BookmarkDataTypeController>(
           error_callback, sync_client_));

@@ -78,13 +78,15 @@ void ApplyRemoteUpdate(
     const SyncedBookmarkTracker::Entity* tracked_entity,
     const SyncedBookmarkTracker::Entity* new_parent_tracked_entity,
     bookmarks::BookmarkModel* model,
-    SyncedBookmarkTracker* tracker) {
+    SyncedBookmarkTracker* tracker,
+    favicon::FaviconService* favicon_service) {
   const syncer::EntityData& update_entity = update.entity.value();
   DCHECK(!update_entity.is_deleted());
   DCHECK(tracked_entity);
   DCHECK(new_parent_tracked_entity);
   DCHECK(model);
   DCHECK(tracker);
+  DCHECK(favicon_service);
   const bookmarks::BookmarkNode* node = tracked_entity->bookmark_node();
   const bookmarks::BookmarkNode* old_parent = node->parent();
   const bookmarks::BookmarkNode* new_parent =
@@ -98,7 +100,7 @@ void ApplyRemoteUpdate(
     return;
   }
   UpdateBookmarkNodeFromSpecifics(update_entity.specifics.bookmark(), node,
-                                  model);
+                                  model, favicon_service);
   // Compute index information before updating the |tracker|.
   const int old_index = old_parent->GetIndexOf(node);
   const int new_index =
@@ -122,10 +124,14 @@ void ApplyRemoteUpdate(
 
 BookmarkRemoteUpdatesHandler::BookmarkRemoteUpdatesHandler(
     bookmarks::BookmarkModel* bookmark_model,
+    favicon::FaviconService* favicon_service,
     SyncedBookmarkTracker* bookmark_tracker)
-    : bookmark_model_(bookmark_model), bookmark_tracker_(bookmark_tracker) {
+    : bookmark_model_(bookmark_model),
+      favicon_service_(favicon_service),
+      bookmark_tracker_(bookmark_tracker) {
   DCHECK(bookmark_model);
   DCHECK(bookmark_tracker);
+  DCHECK(favicon_service);
 }
 
 void BookmarkRemoteUpdatesHandler::Process(
@@ -302,7 +308,7 @@ void BookmarkRemoteUpdatesHandler::ProcessRemoteCreate(
           update_entity.specifics.bookmark(), parent_node,
           ComputeChildNodeIndex(parent_node, update_entity.unique_position,
                                 bookmark_tracker_),
-          update_entity.is_folder, bookmark_model_);
+          update_entity.is_folder, bookmark_model_, favicon_service_);
   if (!bookmark_node) {
     // We ignore bookmarks we can't add.
     DLOG(ERROR) << "Failed to create bookmark node with title "
@@ -361,7 +367,7 @@ void BookmarkRemoteUpdatesHandler::ProcessRemoteUpdate(
     return;
   }
   ApplyRemoteUpdate(update, tracked_entity, new_parent_entity, bookmark_model_,
-                    bookmark_tracker_);
+                    bookmark_tracker_, favicon_service_);
 }
 
 void BookmarkRemoteUpdatesHandler::ProcessRemoteDelete(
@@ -495,7 +501,7 @@ void BookmarkRemoteUpdatesHandler::ProcessConflict(
                             syncer::ConflictResolution::USE_REMOTE,
                             syncer::ConflictResolution::TYPE_SIZE);
   ApplyRemoteUpdate(update, tracked_entity, new_parent_entity, bookmark_model_,
-                    bookmark_tracker_);
+                    bookmark_tracker_, favicon_service_);
 }
 
 void BookmarkRemoteUpdatesHandler::RemoveEntityAndChildrenFromTracker(

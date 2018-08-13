@@ -256,7 +256,8 @@ void ChromeSyncClient::Initialize() {
         content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::UI),
         web_data_service_thread_, profile_web_data_service_,
-        account_web_data_service_, password_store_);
+        account_web_data_service_, password_store_,
+        BookmarkSyncServiceFactory::GetForProfile(profile_));
   }
 }
 
@@ -610,10 +611,6 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
       return ProfileSyncServiceFactory::GetForProfile(profile_)
           ->GetSessionSyncControllerDelegate();
     }
-    case syncer::BOOKMARKS: {
-      return BookmarkSyncServiceFactory::GetForProfile(profile_)
-          ->GetBookmarkSyncControllerDelegate();
-    }
 
     // We don't exercise this function for certain datatypes, because their
     // controllers get the delegate elsewhere.
@@ -621,6 +618,7 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
     case syncer::AUTOFILL_PROFILE:
     case syncer::AUTOFILL_WALLET_DATA:
     case syncer::AUTOFILL_WALLET_METADATA:
+    case syncer::BOOKMARKS:
     case syncer::TYPED_URLS:
       NOTREACHED();
       return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
