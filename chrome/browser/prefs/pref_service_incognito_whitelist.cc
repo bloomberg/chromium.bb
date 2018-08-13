@@ -137,6 +137,12 @@ const char* persistent_pref_names[] = {
     metrics::prefs::kUninstallMetricsUptimeSec, metrics::prefs::kUkmCellDataUse,
     metrics::prefs::kUmaCellDataUse, metrics::prefs::kUserCellDataUse,
 
+    // Although UKMs are not collected in incognito, theses preferences may be
+    // changed by UMA/Sync/Unity consent, and need to be the same between
+    // incognito and regular modes.
+    ukm::prefs::kUkmClientId, ukm::prefs::kUkmPersistedLogs,
+    ukm::prefs::kUkmSessionId,
+
     // Variations preferences maybe changed from incognito mode and should be
     // kept in sync between incognito and regular modes.
     variations::prefs::kVariationsCompressedSeed,
@@ -818,10 +824,6 @@ const char* temporary_incognito_whitelist[] = {
     // components/suggestions/suggestions_pref_names.h
     suggestions::prefs::kSuggestionsBlacklist,
     suggestions::prefs::kSuggestionsData,
-
-    // components/ukm/ukm_pref_names.h
-    ukm::prefs::kUkmClientId, ukm::prefs::kUkmPersistedLogs,
-    ukm::prefs::kUkmSessionId,
 
     // components/unified_consent/pref_names.h
     unified_consent::prefs::kUnifiedConsentGiven,
