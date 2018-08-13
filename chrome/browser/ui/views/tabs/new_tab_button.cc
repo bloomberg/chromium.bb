@@ -478,7 +478,7 @@ void NewTabButton::PaintFill(bool pressed,
           SkShader::kRepeat_TileMode, &flags);
       DCHECK(succeeded);
     } else {
-      flags.setColor(GetButtonFillColor());
+      flags.setColor(GetButtonFillColor(false));
     }
 
     cc::PaintFlags shadow_flags = flags;
@@ -541,13 +541,13 @@ void NewTabButton::PaintPlusIcon(gfx::Canvas* canvas, int offset, int size) {
                    paint_flags);
 }
 
-SkColor NewTabButton::GetButtonFillColor() const {
+SkColor NewTabButton::GetButtonFillColor(bool opaque) const {
   if (new_tab_promo_observer_.IsObservingSources()) {
     return GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_ProminentButtonColor);
   }
 
-  return tab_strip_->GetTabBackgroundColor(TAB_INACTIVE);
+  return tab_strip_->GetTabBackgroundColor(TAB_INACTIVE, opaque);
 }
 
 SkColor NewTabButton::GetIconColor() const {
@@ -657,5 +657,5 @@ void NewTabButton::UpdateInkDropBaseColor() {
   DCHECK(MD::IsNewerMaterialUi());
 
   set_ink_drop_base_color(color_utils::BlendTowardOppositeLuma(
-      GetButtonFillColor(), SK_AlphaOPAQUE));
+      GetButtonFillColor(true), SK_AlphaOPAQUE));
 }

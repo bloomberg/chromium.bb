@@ -46,6 +46,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -1013,7 +1014,9 @@ void GtkUi::LoadGtkValues() {
   colors_[ThemeProperties::COLOR_TAB_TEXT] = tab_text_color;
   colors_[ThemeProperties::COLOR_BOOKMARK_TEXT] = tab_text_color;
   colors_[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
-      color_utils::BlendTowardOppositeLuma(tab_text_color, 50);
+      ui::MaterialDesignController::IsRefreshUi()
+          ? GetFgColor(header_selector + " GtkLabel")
+          : color_utils::BlendTowardOppositeLuma(tab_text_color, 50);
 
   SkColor location_bar_border = GetBorderColor("GtkEntry#entry");
   if (SkColorGetA(location_bar_border))
@@ -1041,12 +1044,18 @@ void GtkUi::LoadGtkValues() {
 
   // These colors represent the border drawn around tabs and between
   // the tabstrip and toolbar.
-  SkColor toolbar_top_separator = GetToolbarTopSeparatorColor(
-      GetBorderColor(header_selector + " GtkButton#button"), frame_color,
-      tab_border, tab_color);
-  SkColor toolbar_top_separator_inactive = GetToolbarTopSeparatorColor(
-      GetBorderColor(header_selector + ":backdrop GtkButton#button"),
-      frame_color_inactive, tab_border, tab_color);
+  SkColor toolbar_top_separator =
+      GetBorderColor(header_selector + " GtkButton#button");
+  SkColor toolbar_top_separator_inactive =
+      GetBorderColor(header_selector + ":backdrop GtkButton#button");
+  if (!ui::MaterialDesignController::IsRefreshUi()) {
+    toolbar_top_separator = GetToolbarTopSeparatorColor(
+        toolbar_top_separator, frame_color, tab_border, tab_color);
+    toolbar_top_separator_inactive = GetToolbarTopSeparatorColor(
+        toolbar_top_separator_inactive, frame_color_inactive, tab_border,
+        tab_color);
+  }
+
   // Unlike with toolbars, we always want a border around tabs, so let
   // ThemeService choose the border color if the theme doesn't provide one.
   if (SkColorGetA(toolbar_top_separator) &&
@@ -1069,10 +1078,16 @@ void GtkUi::LoadGtkValues() {
   colors_[ThemeProperties::COLOR_TOOLBAR] = tab_color;
   colors_[ThemeProperties::COLOR_CONTROL_BACKGROUND] = tab_color;
 
-  colors_[ThemeProperties::COLOR_BACKGROUND_TAB] =
-      color_utils::HSLShift(tab_color, kDefaultTintBackgroundTab);
-  colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO] =
-      color_utils::HSLShift(tab_color, kDefaultTintBackgroundTabIncognito);
+  if (ui::MaterialDesignController::IsRefreshUi()) {
+    colors_[ThemeProperties::COLOR_BACKGROUND_TAB] = SK_ColorTRANSPARENT;
+    colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO] =
+        SK_ColorTRANSPARENT;
+  } else {
+    colors_[ThemeProperties::COLOR_BACKGROUND_TAB] =
+        color_utils::HSLShift(tab_color, kDefaultTintBackgroundTab);
+    colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO] =
+        color_utils::HSLShift(tab_color, kDefaultTintBackgroundTabIncognito);
+  }
 
   colors_[ThemeProperties::COLOR_NTP_LINK] = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);

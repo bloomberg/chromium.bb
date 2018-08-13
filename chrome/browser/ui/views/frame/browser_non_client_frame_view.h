@@ -97,8 +97,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   SkColor GetTabSeparatorColor() const;
 
   // Returns the tab background color based on both the |state| of the tab and
-  // the activation state of the window.
-  SkColor GetTabBackgroundColor(TabState state) const;
+  // the activation state of the window.  If |opaque| is true, the resulting
+  // color after drawing the tab background on the frame will be returned.
+  SkColor GetTabBackgroundColor(TabState state, bool opaque) const;
 
   // Returns the tab foreground color of the for the text based on both the
   // |state| of the tab and the activation state of the window.

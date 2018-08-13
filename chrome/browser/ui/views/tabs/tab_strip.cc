@@ -1147,8 +1147,8 @@ SkColor TabStrip::GetTabSeparatorColor() const {
   return controller_->GetTabSeparatorColor();
 }
 
-SkColor TabStrip::GetTabBackgroundColor(TabState state) const {
-  return controller_->GetTabBackgroundColor(state);
+SkColor TabStrip::GetTabBackgroundColor(TabState state, bool opaque) const {
+  return controller_->GetTabBackgroundColor(state, opaque);
 }
 
 SkColor TabStrip::GetTabForegroundColor(TabState state) const {
@@ -2081,8 +2081,9 @@ void TabStrip::UpdateOpacities() {
   // opacity of 0.45.
   constexpr float kDesiredContrastRadialGradient = 1.13728f;
 
-  const SkColor active_tab_bg_color = GetTabBackgroundColor(TAB_ACTIVE);
-  const SkColor inactive_tab_bg_color = GetTabBackgroundColor(TAB_INACTIVE);
+  const SkColor active_tab_bg_color = GetTabBackgroundColor(TAB_ACTIVE, true);
+  const SkColor inactive_tab_bg_color =
+      GetTabBackgroundColor(TAB_INACTIVE, true);
 
   const SkAlpha hover_base_alpha_wide =
       color_utils::GetBlendValueWithMinimumContrast(
