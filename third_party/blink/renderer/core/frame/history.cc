@@ -134,11 +134,21 @@ String History::scrollRestoration(ExceptionState& exception_state) {
 }
 
 HistoryScrollRestorationType History::ScrollRestorationInternal() const {
-  HistoryItem* history_item =
-      GetFrame() ? GetFrame()->Loader().GetDocumentLoader()->GetHistoryItem()
-                 : nullptr;
-  return history_item ? history_item->ScrollRestorationType()
-                      : kScrollRestorationAuto;
+  constexpr HistoryScrollRestorationType default_type = kScrollRestorationAuto;
+
+  LocalFrame* frame = GetFrame();
+  if (!frame)
+    return default_type;
+
+  DocumentLoader* document_loader = frame->Loader().GetDocumentLoader();
+  if (!document_loader)
+    return default_type;
+
+  HistoryItem* history_item = document_loader->GetHistoryItem();
+  if (!history_item)
+    return default_type;
+
+  return history_item->ScrollRestorationType();
 }
 
 // TODO(crbug.com/394296): This is not the long-term fix to IPC flooding that we
