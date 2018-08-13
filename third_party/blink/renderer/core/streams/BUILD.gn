@@ -9,6 +9,11 @@ blink_core_sources("streams") {
     "readable_stream_default_controller_wrapper.h",
     "readable_stream_operations.cc",
     "readable_stream_operations.h",
+    "transform_stream.cc",
+    "transform_stream.h",
+    "transform_stream_default_controller.cc",
+    "transform_stream_default_controller.h",
+    "transform_stream_transformer.h",
     "underlying_source_base.cc",
     "underlying_source_base.h",
   ]

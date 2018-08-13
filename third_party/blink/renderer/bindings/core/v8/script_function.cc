@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -26,6 +27,16 @@ v8::Local<v8::Function> ScriptFunction::BindToV8Function() {
       .ToLocalChecked();
 }
 
+ScriptValue ScriptFunction::Call(ScriptValue) {
+  NOTREACHED();
+  return ScriptValue();
+}
+
+void ScriptFunction::CallRaw(const v8::FunctionCallbackInfo<v8::Value>& args) {
+  ScriptValue result = Call(ScriptValue(GetScriptState(), args[0]));
+  V8SetReturnValue(args, result.V8Value());
+}
+
 void ScriptFunction::CallCallback(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   DCHECK(args.Data()->IsExternal());
@@ -33,9 +44,7 @@ void ScriptFunction::CallCallback(
                                                "Blink_CallCallback");
   ScriptFunction* script_function = static_cast<ScriptFunction*>(
       v8::Local<v8::External>::Cast(args.Data())->Value());
-  ScriptValue result = script_function->Call(
-      ScriptValue(script_function->GetScriptState(), args[0]));
-  V8SetReturnValue(args, result.V8Value());
+  script_function->CallRaw(args);
 }
 
 }  // namespace blink

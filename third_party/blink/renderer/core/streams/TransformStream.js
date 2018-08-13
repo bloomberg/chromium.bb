@@ -23,7 +23,12 @@
   const _writable = v8.createPrivateSymbol('[[writable]]');
   const _controlledTransformStream =
       v8.createPrivateSymbol('[[controlledTransformStream]]');
+
+  // Unlike the version in the standard, the controller is passed to this.
   const _flushAlgorithm = v8.createPrivateSymbol('[[flushAlgorithm]]');
+
+  // Unlike the version in the standard, the controller is passed in as the
+  // second argument.
   const _transformAlgorithm = v8.createPrivateSymbol('[[transformAlgorithm]]');
 
   // Javascript functions. It is important to use these copies, as the ones on
@@ -45,7 +50,7 @@
   const {
     hasOwnPropertyNoThrow,
     resolvePromise,
-    CreateAlgorithmFromUnderlyingMethodPassingController,
+    CreateAlgorithmFromUnderlyingMethod,
     CallOrNoop1,
     MakeSizeAlgorithmFromSizeFunction,
     PromiseCall2,
@@ -129,6 +134,8 @@
 
   const TransformStream_prototype = TransformStream.prototype;
 
+  // The controller is passed to |transformAlgorithm| and |flushAlgorithm|,
+  // unlike in the standard.
   function CreateTransformStream(
       startAlgorithm, transformAlgorithm, flushAlgorithm, writableHighWaterMark,
       writableSizeAlgorithm, readableHighWaterMark, readableSizeAlgorithm) {
@@ -322,8 +329,8 @@
         }
       };
     }
-    const flushAlgorithm = CreateAlgorithmFromUnderlyingMethodPassingController(
-        transformer, 'flush', 0, controller, 'transformer.flush');
+    const flushAlgorithm = CreateAlgorithmFromUnderlyingMethod(
+        transformer, 'flush', 1, 'transformer.flush');
     SetUpTransformStreamDefaultController(
         stream, controller, transformAlgorithm, flushAlgorithm);
   }
@@ -397,11 +404,11 @@
         // assert(binding.isWritableStreamWritable(writable),
         //        `state is "writable"`);
 
-        return controller[_transformAlgorithm](chunk);
+        return controller[_transformAlgorithm](chunk, controller);
       });
     }
 
-    return controller[_transformAlgorithm](chunk);
+    return controller[_transformAlgorithm](chunk, controller);
   }
 
   function TransformStreamDefaultSinkAbortAlgorithm(stream, reason) {
@@ -412,7 +419,7 @@
   function TransformStreamDefaultSinkCloseAlgorithm(stream) {
     const readable = stream[_readable];
     const controller = stream[_transformStreamController];
-    const flushPromise = controller[_flushAlgorithm]();
+    const flushPromise = controller[_flushAlgorithm](controller);
     TransformStreamDefaultControllerClearAlgorithms(controller);
 
     return thenPromise(
@@ -445,6 +452,22 @@
     return stream[_backpressureChangePromise];
   }
 
+  // A wrapper for CreateTransformStream() with only the arguments that
+  // blink::TransformStream needs. |transformAlgorithm| and |flushAlgorithm| are
+  // passed the controller, unlike in the standard.
+  function createTransformStreamSimple(transformAlgorithm, flushAlgorithm) {
+    return CreateTransformStream(() => Promise_resolve(),
+                                 transformAlgorithm, flushAlgorithm);
+  }
+
+  function getTransformStreamReadable(stream) {
+    return stream[_readable];
+  }
+
+  function getTransformStreamWritable(stream) {
+    return stream[_writable];
+  }
+
   //
   // Additions to the global object
   //
@@ -459,5 +482,10 @@
   //
   // Exports to Blink
   //
-  binding.CreateTransformStream = CreateTransformStream;
+  Object.assign(binding, {
+    createTransformStreamSimple,
+    TransformStreamDefaultControllerEnqueue,
+    getTransformStreamReadable,
+    getTransformStreamWritable
+  });
 });

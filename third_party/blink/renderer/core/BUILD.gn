@@ -2085,6 +2085,7 @@ jumbo_source_set("unit_tests") {
     "scroll/scrollable_area_test.cc",
     "scroll/scrollbar_theme_overlay_test.cc",
     "streams/readable_stream_operations_test.cc",
+    "streams/transform_stream_test.cc",
     "style/border_value_test.cc",
     "style/computed_style_test.cc",
     "style/filter_operations_test.cc",
