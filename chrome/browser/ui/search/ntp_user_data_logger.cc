@@ -15,8 +15,10 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/search/ntp_user_data_types.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/ntp_tiles/metrics.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -84,6 +86,10 @@ enum VoiceError {
 
   VOICE_ERROR_MAX
 };
+
+// Key used in prefs::kNtpCustomBackgroundDict to save a background image URL.
+// TODO(crbug.com/873699): Refactor customization check for better testability.
+const char* kNtpCustomBackgroundURL = "background_url";
 
 // Logs BackgroundCustomization availability on the NTP,
 void LogBackgroundCustomizationAvailability(
@@ -186,6 +192,10 @@ LoggingEventToCustomizeLocalImageBackgroundAction(NTPLoggingEventType event) {
 CustomizeShortcutAction LoggingEventToCustomizeShortcutAction(
     NTPLoggingEventType event) {
   switch (event) {
+    case NTP_CUSTOMIZE_SHORTCUT_ADD:
+      return CustomizeShortcutAction::CUSTOMIZE_SHORTCUT_ACTION_ADD;
+    case NTP_CUSTOMIZE_SHORTCUT_UPDATE:
+      return CustomizeShortcutAction::CUSTOMIZE_SHORTCUT_ACTION_UPDATE;
     case NTP_CUSTOMIZE_SHORTCUT_REMOVE:
       return CustomizeShortcutAction::CUSTOMIZE_SHORTCUT_ACTION_REMOVE;
     case NTP_CUSTOMIZE_SHORTCUT_CANCEL:
@@ -321,12 +331,21 @@ NTPUserDataLogger* NTPUserDataLogger::GetOrCreateFromWebContents(
 
 void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
                                  base::TimeDelta time) {
+  if (event == NTP_ALL_TILES_LOADED) {
+    EmitNtpStatistics(time);
+  }
+
+  // All other events can only be logged by the Google NTP
+  if (!DefaultSearchProviderIsGoogle()) {
+    return;
+  }
+
   switch (event) {
     case NTP_ALL_TILES_RECEIVED:
       tiles_received_time_ = time;
       break;
     case NTP_ALL_TILES_LOADED:
-      EmitNtpStatistics(time);
+      // permitted above for non-Google search providers
       break;
     case NTP_VOICE_ACTION_ACTIVATE_FAKEBOX:
     case NTP_VOICE_ACTION_ACTIVATE_KEYBOARD:
@@ -404,6 +423,8 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
           "NewTabPage.CustomizeLocalImageBackgroundAction",
           LoggingEventToCustomizeLocalImageBackgroundAction(event));
       break;
+    case NTP_CUSTOMIZE_SHORTCUT_ADD:
+    case NTP_CUSTOMIZE_SHORTCUT_UPDATE:
     case NTP_CUSTOMIZE_SHORTCUT_REMOVE:
     case NTP_CUSTOMIZE_SHORTCUT_CANCEL:
     case NTP_CUSTOMIZE_SHORTCUT_DONE:
@@ -466,6 +487,18 @@ bool NTPUserDataLogger::DefaultSearchProviderIsGoogle() const {
 bool NTPUserDataLogger::ThemeIsConfigured() const {
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
   return !theme_service->GetThemeID().empty();
+}
+
+bool NTPUserDataLogger::CustomBackgroundIsConfigured() const {
+  const base::DictionaryValue* background_info =
+      profile_->GetPrefs()->GetDictionary(prefs::kNtpCustomBackgroundDict);
+  const base::Value* background_url =
+      background_info->FindKey(kNtpCustomBackgroundURL);
+  if (!background_url) {
+    return false;
+  }
+  GURL custom_background_url(background_url->GetString());
+  return custom_background_url.is_valid();
 }
 
 void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
@@ -582,6 +615,11 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
         ShortcutCustomization::SHORTCUT_CUSTOMIZATION_UNAVAILABLE_FEATURE);
   }
 
+  if (CustomBackgroundIsConfigured()) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "NewTabPage.Customized",
+        LoggingEventToCustomizedFeature(NTP_BACKGROUND_CUSTOMIZED));
+  }
   has_emitted_ = true;
   during_startup_ = false;
 }

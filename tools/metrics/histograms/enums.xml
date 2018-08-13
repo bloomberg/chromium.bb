@@ -34688,21 +34688,22 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="NTPCustomizeAction">
-  <int value="0" label="'Chrome backgrounds' menu item clicked"/>
-  <int value="1" label="'Upload an image' menu item clicked"/>
-  <int value="2" label="'Restore default background' menu item clicked"/>
-  <int value="3" label="Attribution link on a customized background clicked"/>
-  <int value="4" label="Add shortcut' link clicked."/>
-  <int value="5" label="Edit shortcut' link clicked."/>
-  <int value="6" label="Restore default shortcuts' menu item clicked."/>
+  <int value="0" label="'Chrome backgrounds' menu item clicked."/>
+  <int value="1" label="'Upload an image' menu item clicked."/>
+  <int value="2" label="'Restore default background' menu item clicked."/>
+  <int value="3" label="Attribution link on a customized background clicked."/>
+  <int value="4" label="'Add shortcut' link clicked."/>
+  <int value="5" label="'Edit shortcut' link clicked."/>
+  <int value="6" label="'Restore default shortcuts' menu item clicked."/>
 </enum>
 
 <enum name="NTPCustomizeChromeBackgroundAction">
   <int value="0"
-      label="Collection selected in the 'Chrome backgrounds' dialog"/>
-  <int value="1" label="Image selected in the 'Chrome backgrounds' dialog"/>
-  <int value="2" label="'Cancel' clicked in the 'Chrome backgrounds' dialog"/>
-  <int value="3" label="'Done' clicked in the 'Chrome backgrounds' dialog"/>
+      label="Collection selected in the 'Chrome backgrounds' dialog."/>
+  <int value="1" label="Image selected in the 'Chrome backgrounds' dialog."/>
+  <int value="2" label="'Cancel' clicked in the 'Chrome backgrounds' dialog."/>
+  <int value="3"
+      label="Image set as background (through double-click or 'Done')."/>
 </enum>
 
 <enum name="NTPCustomizedFeatures">
@@ -34716,12 +34717,14 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="NTPCustomizeShortcutAction">
-  <int value="0" label="Remove' clicked in the 'Edit shortcut' dialog"/>
-  <int value="1" label="Cancel' clicked in the 'Edit shortcut' dialog"/>
-  <int value="2" label="Done' clicked in the 'Edit shortcut' dialog"/>
-  <int value="3" label="'Undo' clicked in the message pop-up"/>
+  <int value="0" label="A custom shortcut was removed."/>
+  <int value="1" label="'Cancel' was clicked in the 'Edit shortcut' dialog."/>
+  <int value="2" label="'Done' was clicked in the 'Edit shortcut' dialog."/>
+  <int value="3" label="A custom shortcut action was undone."/>
   <int value="4"
-      label="'Restore default shortcuts' clicked in the message pop-up"/>
+      label="All custom shortcuts were restored (via menu or message pop-up)."/>
+  <int value="5" label="A custom shortcut was added."/>
+  <int value="6" label="A custom shortcut was updated."/>
 </enum>
 
 <enum name="NtpFollowAction">

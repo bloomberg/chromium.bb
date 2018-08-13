@@ -790,6 +790,7 @@ void NewTabPageBindings::DeleteMostVisitedItem(v8::Isolate* isolate,
   if (ntp_tiles::IsCustomLinksEnabled() &&
       HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl))) {
     search_box->DeleteCustomLink(*rid);
+    search_box->LogEvent(NTPLoggingEventType::NTP_CUSTOMIZE_SHORTCUT_REMOVE);
   } else {
     search_box->DeleteMostVisitedItem(*rid);
   }
@@ -853,11 +854,13 @@ void NewTabPageBindings::UpdateCustomLink(int rid,
     if (!gurl.is_valid() || title.empty())
       return;
     search_box->AddCustomLink(gurl, title);
+    search_box->LogEvent(NTPLoggingEventType::NTP_CUSTOMIZE_SHORTCUT_ADD);
   } else {
     // Check that the URL, if provided, is valid.
     if (!url.empty() && !gurl.is_valid())
       return;
     search_box->UpdateCustomLink(rid, gurl, title);
+    search_box->LogEvent(NTPLoggingEventType::NTP_CUSTOMIZE_SHORTCUT_UPDATE);
   }
 }
 
@@ -866,11 +869,10 @@ void NewTabPageBindings::UndoCustomLinkAction() {
   if (!ntp_tiles::IsCustomLinksEnabled())
     return;
   SearchBox* search_box = GetSearchBoxForCurrentContext();
-  if (!search_box || !(HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)) ||
-                       HasOrigin(GURL(chrome::kChromeSearchLocalNtpUrl)))) {
+  if (!search_box)
     return;
-  }
   search_box->UndoCustomLinkAction();
+  search_box->LogEvent(NTPLoggingEventType::NTP_CUSTOMIZE_SHORTCUT_UNDO);
 }
 
 // static
@@ -878,18 +880,16 @@ void NewTabPageBindings::ResetCustomLinks() {
   if (!ntp_tiles::IsCustomLinksEnabled())
     return;
   SearchBox* search_box = GetSearchBoxForCurrentContext();
-  if (!search_box || !(HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)) ||
-                       HasOrigin(GURL(chrome::kChromeSearchLocalNtpUrl)))) {
+  if (!search_box)
     return;
-  }
   search_box->ResetCustomLinks();
+  search_box->LogEvent(NTPLoggingEventType::NTP_CUSTOMIZE_SHORTCUT_RESTORE_ALL);
 }
 
 // static
 void NewTabPageBindings::LogEvent(int event) {
   SearchBox* search_box = GetSearchBoxForCurrentContext();
-  if (!search_box || !(HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)) ||
-                       HasOrigin(GURL(chrome::kChromeSearchLocalNtpUrl)))) {
+  if (!search_box) {
     return;
   }
   if (event <= NTP_EVENT_TYPE_LAST)
@@ -964,6 +964,9 @@ void NewTabPageBindings::SetCustomBackgroundURLWithAttributions(
   search_box->SetCustomBackgroundURLWithAttributions(
       GURL(background_url), attribution_line_1, attribution_line_2,
       GURL(attribution_action_url));
+  // Captures saving the background by double-clicking, or clicking 'Done'.
+  search_box->LogEvent(
+      NTPLoggingEventType::NTP_CUSTOMIZE_CHROME_BACKGROUND_DONE);
 }
 
 // static

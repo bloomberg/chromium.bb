@@ -67,8 +67,13 @@ class TestNTPUserDataLogger : public NTPUserDataLogger {
 
   bool ThemeIsConfigured() const override { return is_theme_configured_; }
 
+  bool CustomBackgroundIsConfigured() const override {
+    return is_custom_background_configured_;
+  }
+
   bool is_google_ = true;
   bool is_theme_configured_ = false;
+  bool is_custom_background_configured_ = false;
 };
 
 class NTPUserDataLoggerTest : public testing::Test {
@@ -938,4 +943,152 @@ TEST_F(NTPUserDataLoggerTest,
           static_cast<int>(BackgroundCustomization::
                                BACKGROUND_CUSTOMIZATION_UNAVAILABLE_THEME),
           1)));
+}
+
+TEST_F(NTPUserDataLoggerTest, ShouldRecordBackgroundCustomization) {
+  base::HistogramTester histogram_tester;
+
+  TestNTPUserDataLogger logger((GURL(chrome::kChromeSearchLocalNtpUrl)));
+  logger.is_custom_background_configured_ = true;
+
+  base::TimeDelta delta_tiles_received = base::TimeDelta::FromMilliseconds(10);
+  base::TimeDelta delta_tiles_loaded = base::TimeDelta::FromMilliseconds(100);
+
+  // Send the ALL_TILES_RECEIVED event.
+  logger.LogEvent(NTP_ALL_TILES_RECEIVED, delta_tiles_received);
+
+  // Send the ALL_TILES_LOADED event, this should trigger emitting histograms.
+  logger.LogEvent(NTP_ALL_TILES_LOADED, delta_tiles_loaded);
+
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.LoadTime"), SizeIs(1));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.LoadTime.LocalNTP"),
+              SizeIs(1));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.LoadTime.LocalNTP.Google"),
+      SizeIs(1));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.LoadTime.LocalNTP.Other"),
+      IsEmpty());
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.LoadTime.Web"),
+              IsEmpty());
+
+  histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime",
+                                         delta_tiles_loaded, 1);
+  histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime.LocalNTP",
+                                         delta_tiles_loaded, 1);
+  histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime.LocalNTP.Google",
+                                         delta_tiles_loaded, 1);
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "NewTabPage.CustomizationAvailability.Backgrounds"),
+      ElementsAre(Bucket(
+          static_cast<int>(
+              BackgroundCustomization::BACKGROUND_CUSTOMIZATION_AVAILABLE),
+          1)));
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.Customized"),
+      ElementsAre(Bucket(
+          static_cast<int>(CustomizedFeature::CUSTOMIZED_FEATURE_BACKGROUND),
+          1)));
+}
+
+TEST_F(NTPUserDataLoggerTest, ShouldRecordCustomizationActionFromNTPGoogle) {
+  base::HistogramTester histogram_tester;
+
+  TestNTPUserDataLogger logger(GURL("https://www.google.com/_/chrome/newtab"));
+  logger.is_google_ = true;
+
+  base::TimeDelta delta_tiles_received = base::TimeDelta::FromMilliseconds(10);
+  base::TimeDelta delta_tiles_loaded = base::TimeDelta::FromMilliseconds(100);
+
+  // Send the ALL_TILES_RECEIVED event.
+  logger.LogEvent(NTP_ALL_TILES_RECEIVED, delta_tiles_received);
+
+  // Send the ALL_TILES_LOADED event, this should trigger emitting histograms.
+  logger.LogEvent(NTP_ALL_TILES_LOADED, delta_tiles_loaded);
+
+  // Attempt to log an event that is only supported when the default search
+  // provider is Google.
+  logger.LogEvent(NTP_CUSTOMIZE_CHROME_BACKGROUNDS_CLICKED, delta_tiles_loaded);
+
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.LoadTime"), SizeIs(1));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.LoadTime.LocalNTP"),
+              IsEmpty());
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.LoadTime.Web"),
+              SizeIs(1));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.LoadTime.Web.Google"),
+              SizeIs(1));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.LoadTime.Web.Other"),
+              IsEmpty());
+
+  histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime",
+                                         delta_tiles_loaded, 1);
+  histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime.Web",
+                                         delta_tiles_loaded, 1);
+  histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime.Web.Google",
+                                         delta_tiles_loaded, 1);
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "NewTabPage.CustomizationAvailability.Backgrounds"),
+      ElementsAre(Bucket(
+          static_cast<int>(
+              BackgroundCustomization::BACKGROUND_CUSTOMIZATION_AVAILABLE),
+          1)));
+
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.CustomizeAction"),
+              ElementsAre(Bucket(
+                  static_cast<int>(
+                      CustomizeAction::CUSTOMIZE_ACTION_CHROME_BACKGROUNDS),
+                  1)));
+}
+
+TEST_F(NTPUserDataLoggerTest, ShouldNotRecordCustomizationActionFromNTPOther) {
+  base::HistogramTester histogram_tester;
+
+  TestNTPUserDataLogger logger(GURL("https://www.notgoogle.com/newtab"));
+  logger.is_google_ = false;
+
+  base::TimeDelta delta_tiles_received = base::TimeDelta::FromMilliseconds(10);
+  base::TimeDelta delta_tiles_loaded = base::TimeDelta::FromMilliseconds(100);
+
+  // Send the ALL_TILES_RECEIVED event.
+  logger.LogEvent(NTP_ALL_TILES_RECEIVED, delta_tiles_received);
+
+  // Send the ALL_TILES_LOADED event, this should trigger emitting histograms.
+  logger.LogEvent(NTP_ALL_TILES_LOADED, delta_tiles_loaded);
+
+  // Attempt to log an event that is only supported when the default search
+  // provider is Google.
+  logger.LogEvent(NTP_CUSTOMIZE_CHROME_BACKGROUNDS_CLICKED, delta_tiles_loaded);
+
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.LoadTime"), SizeIs(1));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.LoadTime.LocalNTP"),
+              IsEmpty());
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.LoadTime.Web"),
+              SizeIs(1));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.LoadTime.Web.Google"),
+              IsEmpty());
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.LoadTime.Web.Other"),
+              SizeIs(1));
+
+  histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime",
+                                         delta_tiles_loaded, 1);
+  histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime.Web",
+                                         delta_tiles_loaded, 1);
+  histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime.Web.Other",
+                                         delta_tiles_loaded, 1);
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.CustomizationAvailability.Backgrounds"),
+              ElementsAre(Bucket(
+                  static_cast<int>(
+                      BackgroundCustomization::
+                          BACKGROUND_CUSTOMIZATION_UNAVAILABLE_SEARCH_PROVIDER),
+                  1)));
+
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.CustomizeAction"),
+              IsEmpty());
 }

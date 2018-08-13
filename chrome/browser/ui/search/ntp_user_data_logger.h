@@ -43,7 +43,8 @@ class NTPUserDataLogger
 
   // Called when an event occurs on the NTP that requires a counter to be
   // incremented. |time| is the delta time from navigation start until this
-  // event happened.
+  // event happened. The NTP_ALL_TILES_LOADED event may be logged from all NTPs;
+  // all others require Google as the default search provider.
   void LogEvent(NTPLoggingEventType event, base::TimeDelta time);
 
   // Logs an impression on one of the NTP tiles by given details.
@@ -81,6 +82,9 @@ class NTPUserDataLogger
 
   // Returns whether a theme is configured. Virtual for testing.
   virtual bool ThemeIsConfigured() const;
+
+  // Returns whether a custom background is configured. Virtual for testing.
+  virtual bool CustomBackgroundIsConfigured() const;
 
   // Logs a number of statistics regarding the NTP. Called when an NTP tab is
   // about to be deactivated (be it by switching tabs, losing focus or closing

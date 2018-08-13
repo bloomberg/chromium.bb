@@ -226,16 +226,22 @@ bool InstantService::DeleteCustomLink(const GURL& url) {
   return false;
 }
 
-void InstantService::UndoCustomLinkAction() {
-  if (most_visited_sites_) {
+bool InstantService::UndoCustomLinkAction() {
+  // Non-Google search providers are not supported.
+  if (most_visited_sites_ && search::DefaultSearchProviderIsGoogle(profile_)) {
     most_visited_sites_->UndoCustomLinkAction();
+    return true;
   }
+  return false;
 }
 
-void InstantService::ResetCustomLinks() {
-  if (most_visited_sites_) {
+bool InstantService::ResetCustomLinks() {
+  // Non-Google search providers are not supported.
+  if (most_visited_sites_ && search::DefaultSearchProviderIsGoogle(profile_)) {
     most_visited_sites_->UninitializeCustomLinks();
+    return true;
   }
+  return false;
 }
 
 void InstantService::UpdateThemeInfo() {
