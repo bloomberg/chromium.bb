@@ -131,7 +131,8 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   // Indicates begin frames are paused from the browser.
   bool begin_frame_paused_ = false;
 
-  // Updated by both renderer and browser.
+  // Updated by both renderer and browser. This is in physical pixel when
+  // use-zoom-for-dsf is enabled, otherwise in dip.
   gfx::ScrollOffset root_scroll_offset_;
 
   // Indicates that whether OnComputeScroll is called or overridden. The
@@ -146,6 +147,7 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   bool invalidate_needs_draw_;
   uint32_t did_activate_pending_tree_count_;
   uint32_t frame_metadata_version_ = 0u;
+  // Physical pixel when use-zoom-for-dsf is enabled, otherwise in dip.
   gfx::ScrollOffset max_scroll_offset_;
   gfx::SizeF scrollable_size_;
   float page_scale_factor_ = 0.f;
