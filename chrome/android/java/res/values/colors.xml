@@ -158,8 +158,8 @@
     <color name="locationbar_dark_hint_text">@color/search_box_hint</color>
     <color name="locationbar_light_hint_text">@color/modern_grey_400</color>
     <color name="locationbar_light_selection_color">#CC5595FE</color>
-    <color name="locationbar_status_color">@color/black_alpha_54</color>
-    <color name="locationbar_status_color_light">@android:color/white</color>
+    <color name="locationbar_status_offline_color">@color/black_alpha_54</color>
+    <color name="locationbar_status_offline_color_light">@android:color/white</color>
     <color name="locationbar_status_separator_color">@color/black_alpha_24</color>
     <color name="locationbar_status_separator_color_light">#3DFFFFFF</color>
     <color name="omnibox_focused_fading_background_color">@color/black_alpha_65</color>

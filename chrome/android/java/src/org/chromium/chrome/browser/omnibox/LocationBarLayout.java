@@ -1096,15 +1096,9 @@ public class LocationBarLayout extends FrameLayout
 
         int verboseStatusVisibility = verboseStatusVisible ? VISIBLE : GONE;
 
-        mVerboseStatusTextView.setTextColor(ApiCompatibilityUtils.getColor(getResources(),
-                mUseDarkColors ? R.color.locationbar_status_color
-                        : R.color.locationbar_status_color_light));
         mVerboseStatusTextView.setVisibility(verboseStatusVisibility);
 
         View separator = findViewById(R.id.location_bar_verbose_status_separator);
-        separator.setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(), mUseDarkColors
-                ? R.color.locationbar_status_separator_color
-                : R.color.locationbar_status_separator_color_light));
         separator.setVisibility(verboseStatusVisibility);
 
         findViewById(R.id.location_bar_verbose_status_extra_space)
@@ -1117,6 +1111,11 @@ public class LocationBarLayout extends FrameLayout
         }
 
         mVerboseStatusTextView.setText(mToolbarDataProvider.getVerboseStatusString());
+        mVerboseStatusTextView.setTextColor(
+                mToolbarDataProvider.getVerboseStatusTextColor(getResources(), mUseDarkColors));
+
+        separator.setBackgroundColor(mToolbarDataProvider.getVerboseStatusSeparatorColor(
+                getResources(), mUseDarkColors));
     }
 
     /**
