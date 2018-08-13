@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
@@ -234,19 +235,21 @@ void FidoBleConnection::WriteControlPoint(const std::vector<uint8_t>& data,
     return;
   }
 
+#if defined(OS_MACOSX)
   // Attempt a write without response for performance reasons. Fall back to a
   // confirmed write in case of failure, e.g. when the characteristic does not
   // provide the required property.
   if (control_point->WriteWithoutResponse(data)) {
     DVLOG(2) << "Write without response succeeded.";
     std::move(callback).Run(true);
-  } else {
-    auto copyable_callback =
-        base::AdaptCallbackForRepeating(std::move(callback));
-    control_point->WriteRemoteCharacteristic(
-        data, base::Bind(OnWrite, copyable_callback),
-        base::Bind(OnWriteError, copyable_callback));
+    return;
   }
+#endif  // defined(OS_MACOSX)
+
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
+  control_point->WriteRemoteCharacteristic(
+      data, base::Bind(OnWrite, copyable_callback),
+      base::Bind(OnWriteError, copyable_callback));
 }
 
 void FidoBleConnection::WriteServiceRevision(ServiceRevision service_revision,
