@@ -15,6 +15,7 @@ namespace switches {
 extern const char kSyncDeferredStartupTimeoutSeconds[];
 extern const char kSyncDisableDeferredStartup[];
 extern const char kSyncEnableGetUpdateAvoidance[];
+extern const char kSyncIncludeSpecificsInProtocolLog[];
 extern const char kSyncServiceURL[];
 extern const char kSyncShortInitialRetryOverride[];
 extern const char kSyncShortNudgeDelayForTest[];

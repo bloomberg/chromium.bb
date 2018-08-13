@@ -191,11 +191,20 @@ function onReceivedListOfTypes(e) {
       onReceivedListOfTypes);
 }
 
+function onReceivedIncludeSpecificsInitialState(e) {
+  $('capture-specifics').checked = e.details.includeSpecifics;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   chrome.sync.events.addEventListener(
       'onReceivedListOfTypes',
       onReceivedListOfTypes);
   chrome.sync.requestListOfTypes();
+
+  chrome.sync.events.addEventListener(
+    'onReceivedIncludeSpecificsInitialState',
+    onReceivedIncludeSpecificsInitialState);
+  chrome.sync.requestIncludeSpecificsInitialState();
 });
 
 var dumpToFileLink = $('dump-to-file');

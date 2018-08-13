@@ -64,6 +64,13 @@ bool HasSomethingAtIndex(const base::ListValue* list, int index) {
   return false;
 }
 
+// Returns the initial state of the "include specifics" flag, based on whether
+// or not the corresponding command-line switch is set.
+bool GetIncludeSpecificsInitialState() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSyncIncludeSpecificsInProtocolLog);
+}
+
 }  //  namespace
 
 SyncInternalsMessageHandler::SyncInternalsMessageHandler()
@@ -72,7 +79,8 @@ SyncInternalsMessageHandler::SyncInternalsMessageHandler()
 
 SyncInternalsMessageHandler::SyncInternalsMessageHandler(
     AboutSyncDataDelegate about_sync_data_delegate)
-    : about_sync_data_delegate_(std::move(about_sync_data_delegate)),
+    : include_specifics_(GetIncludeSpecificsInitialState()),
+      about_sync_data_delegate_(std::move(about_sync_data_delegate)),
       weak_ptr_factory_(this) {}
 
 SyncInternalsMessageHandler::~SyncInternalsMessageHandler() {
@@ -113,6 +121,12 @@ void SyncInternalsMessageHandler::RegisterMessages() {
       base::BindRepeating(
           &SyncInternalsMessageHandler::HandleRequestListOfTypes,
           base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      syncer::sync_ui_util::kRequestIncludeSpecificsInitialState,
+      base::BindRepeating(&SyncInternalsMessageHandler::
+                              HandleRequestIncludeSpecificsInitialState,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       syncer::sync_ui_util::kRequestUserEventsVisibility,
@@ -210,6 +224,19 @@ void SyncInternalsMessageHandler::HandleRequestListOfTypes(
   }
   event_details.Set(syncer::sync_ui_util::kTypes, std::move(type_list));
   DispatchEvent(syncer::sync_ui_util::kOnReceivedListOfTypes, event_details);
+}
+
+void SyncInternalsMessageHandler::HandleRequestIncludeSpecificsInitialState(
+    const ListValue* args) {
+  DCHECK(args->empty());
+  AllowJavascript();
+
+  DictionaryValue value;
+  value.SetBoolean(syncer::sync_ui_util::kIncludeSpecifics,
+                   GetIncludeSpecificsInitialState());
+
+  DispatchEvent(syncer::sync_ui_util::kOnReceivedIncludeSpecificsInitialState,
+                value);
 }
 
 void SyncInternalsMessageHandler::HandleGetAllNodes(const ListValue* args) {

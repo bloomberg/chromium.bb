@@ -50,25 +50,30 @@ const char kGetAllNodes[] = "getAllNodes";
 const char kGetAllNodesCallback[] = "chrome.sync.getAllNodesCallback";
 const char kRegisterForEvents[] = "registerForEvents";
 const char kRegisterForPerTypeCounters[] = "registerForPerTypeCounters";
+const char kRequestIncludeSpecificsInitialState[] =
+    "requestIncludeSpecificsInitialState";
 const char kRequestListOfTypes[] = "requestListOfTypes";
+const char kRequestStart[] = "requestStart";
+const char kRequestStop[] = "requestStop";
 const char kRequestUpdatedAboutInfo[] = "requestUpdatedAboutInfo";
 const char kRequestUserEventsVisibility[] = "requestUserEventsVisibility";
 const char kSetIncludeSpecifics[] = "setIncludeSpecifics";
+const char kTriggerRefresh[] = "triggerRefresh";
 const char kUserEventsVisibilityCallback[] =
     "chrome.sync.userEventsVisibilityCallback";
 const char kWriteUserEvent[] = "writeUserEvent";
-const char kRequestStart[] = "requestStart";
-const char kRequestStop[] = "requestStop";
-const char kTriggerRefresh[] = "triggerRefresh";
 
 // Other strings.
 const char kCommit[] = "commit";
 const char kCounters[] = "counters";
 const char kCounterType[] = "counterType";
+const char kIncludeSpecifics[] = "includeSpecifics";
 const char kModelType[] = "modelType";
 const char kOnAboutInfoUpdated[] = "onAboutInfoUpdated";
 const char kOnCountersUpdated[] = "onCountersUpdated";
 const char kOnProtocolEvent[] = "onProtocolEvent";
+const char kOnReceivedIncludeSpecificsInitialState[] =
+    "onReceivedIncludeSpecificsInitialState";
 const char kOnReceivedListOfTypes[] = "onReceivedListOfTypes";
 const char kStatus[] = "status";
 const char kTypes[] = "types";
