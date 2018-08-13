@@ -456,6 +456,8 @@ class H264ConfigChangeDetector : public ConfigChangeDetector {
   // Detects stream configuration changes.
   // Returns false on failure.
   bool DetectConfig(const uint8_t* stream, unsigned int size) override;
+  gfx::Rect current_visible_rect(
+      const gfx::Rect& container_visible_rect) const override;
   VideoColorSpace current_color_space(
       const VideoColorSpace& container_color_space) const override;
 
@@ -581,6 +583,17 @@ bool H264ConfigChangeDetector::DetectConfig(const uint8_t* stream,
   return true;
 }
 
+gfx::Rect H264ConfigChangeDetector::current_visible_rect(
+    const gfx::Rect& container_visible_rect) const {
+  if (!parser_)
+    return container_visible_rect;
+  // TODO(hubbe): Is using last_sps_id_ correct here?
+  const H264SPS* sps = parser_->GetSPS(last_sps_id_);
+  if (!sps)
+    return container_visible_rect;
+  return sps->GetVisibleRect().value_or(container_visible_rect);
+}
+
 VideoColorSpace H264ConfigChangeDetector::current_color_space(
     const VideoColorSpace& container_color_space) const {
   if (!parser_)
@@ -593,7 +606,7 @@ VideoColorSpace H264ConfigChangeDetector::current_color_space(
   return container_color_space;
 }
 
-// Doesn't actually detect config changes, only color spaces.
+// Doesn't actually detect config changes, only stream metadata.
 class VP9ConfigChangeDetector : public ConfigChangeDetector {
  public:
   VP9ConfigChangeDetector() : ConfigChangeDetector(), parser_(false) {}
@@ -605,6 +618,8 @@ class VP9ConfigChangeDetector : public ConfigChangeDetector {
     parser_.SetStream(stream, size);
     Vp9FrameHeader fhdr;
     while (parser_.ParseNextFrame(&fhdr) == Vp9Parser::kOk) {
+      visible_rect_ = gfx::Rect(fhdr.render_width, fhdr.render_height);
+
       // TODO(hubbe): move the conversion from Vp9FrameHeader to VideoColorSpace
       // into a common, reusable location.
       color_space_.range = fhdr.color_range ? gfx::ColorSpace::RangeID::FULL
@@ -664,6 +679,12 @@ class VP9ConfigChangeDetector : public ConfigChangeDetector {
       DVLOG(3) << "Deferring config change until next keyframe...";
     return true;
   }
+
+  gfx::Rect current_visible_rect(
+      const gfx::Rect& container_visible_rect) const override {
+    return visible_rect_.IsEmpty() ? container_visible_rect : visible_rect_;
+  }
+
   VideoColorSpace current_color_space(
       const VideoColorSpace& container_color_space) const override {
     // For VP9, container color spaces override video stream color spaces.
@@ -676,6 +697,7 @@ class VP9ConfigChangeDetector : public ConfigChangeDetector {
  private:
   gfx::Size size_;
   bool pending_config_changed_ = false;
+  gfx::Rect visible_rect_;
   VideoColorSpace color_space_;
   Vp9Parser parser_;
 };
@@ -683,9 +705,11 @@ class VP9ConfigChangeDetector : public ConfigChangeDetector {
 DXVAVideoDecodeAccelerator::PendingSampleInfo::PendingSampleInfo(
     int32_t buffer_id,
     Microsoft::WRL::ComPtr<IMFSample> sample,
+    const gfx::Rect& visible_rect,
     const gfx::ColorSpace& color_space)
     : input_buffer_id(buffer_id),
       picture_buffer_id(-1),
+      visible_rect(visible_rect),
       color_space(color_space),
       output_sample(sample) {}
 
@@ -1894,7 +1918,8 @@ bool DXVAVideoDecodeAccelerator::GetStreamsInfoAndBufferReqs() {
   return true;
 }
 
-void DXVAVideoDecodeAccelerator::DoDecode(const gfx::ColorSpace& color_space) {
+void DXVAVideoDecodeAccelerator::DoDecode(const gfx::Rect& visible_rect,
+                                          const gfx::ColorSpace& color_space) {
   TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::DoDecode");
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   // This function is also called from FlushInternal in a loop which could
@@ -1972,13 +1997,14 @@ void DXVAVideoDecodeAccelerator::DoDecode(const gfx::ColorSpace& color_space) {
 
   inputs_before_decode_ = 0;
 
-  RETURN_AND_NOTIFY_ON_FAILURE(ProcessOutputSample(output_sample, color_space),
-                               "Failed to process output sample.",
-                               PLATFORM_FAILURE, );
+  RETURN_AND_NOTIFY_ON_FAILURE(
+      ProcessOutputSample(output_sample, visible_rect, color_space),
+      "Failed to process output sample.", PLATFORM_FAILURE, );
 }
 
 bool DXVAVideoDecodeAccelerator::ProcessOutputSample(
     Microsoft::WRL::ComPtr<IMFSample> sample,
+    const gfx::Rect& visible_rect,
     const gfx::ColorSpace& color_space) {
   RETURN_ON_FAILURE(sample, "Decode succeeded with NULL output sample", false);
 
@@ -1991,7 +2017,7 @@ bool DXVAVideoDecodeAccelerator::ProcessOutputSample(
     base::AutoLock lock(decoder_lock_);
     DCHECK(pending_output_samples_.empty());
     pending_output_samples_.push_back(
-        PendingSampleInfo(input_buffer_id, sample, color_space));
+        PendingSampleInfo(input_buffer_id, sample, visible_rect, color_space));
   }
 
   if (pictures_requested_) {
@@ -2063,6 +2089,7 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
 
       pending_sample->picture_buffer_id = index->second->id();
       index->second->set_bound();
+      index->second->set_visible_rect(pending_sample->visible_rect);
       index->second->set_color_space(pending_sample->color_space);
 
       if (index->second->CanBindSamples()) {
@@ -2249,14 +2276,13 @@ void DXVAVideoDecodeAccelerator::RequestPictureBuffers(int width, int height) {
 void DXVAVideoDecodeAccelerator::NotifyPictureReady(
     int picture_buffer_id,
     int input_buffer_id,
+    const gfx::Rect& visible_rect,
     const gfx::ColorSpace& color_space,
     bool allow_overlay) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   // This task could execute after the decoder has been torn down.
   if (GetState() != kUninitialized && client_) {
-    // TODO(henryhsu): Use correct visible size instead of (0, 0). We can't use
-    // coded size here so use (0, 0) intentionally to have the client choose.
-    Picture picture(picture_buffer_id, input_buffer_id, gfx::Rect(0, 0),
+    Picture picture(picture_buffer_id, input_buffer_id, visible_rect,
                     color_space, allow_overlay);
     client_->PictureReady(picture);
   }
@@ -2335,10 +2361,7 @@ void DXVAVideoDecodeAccelerator::FlushInternal() {
   // Attempt to retrieve an output frame from the decoder. If we have one,
   // return and proceed when the output frame is processed. If we don't have a
   // frame then we are done.
-  VideoColorSpace color_space = config_.container_color_space;
-  if (config_change_detector_)
-    color_space = config_change_detector_->current_color_space(color_space);
-  DoDecode(color_space.ToGfxColorSpace());
+  DoDecode(current_visible_rect_, current_color_space_.ToGfxColorSpace());
   if (OutputSamplesPresent())
     return;
 
@@ -2387,9 +2410,14 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
     return;
   }
 
+  gfx::Rect visible_rect;
   VideoColorSpace color_space = config_.container_color_space;
-  if (config_change_detector_)
+  if (config_change_detector_) {
+    visible_rect = config_change_detector_->current_visible_rect(visible_rect);
     color_space = config_change_detector_->current_color_space(color_space);
+  }
+  current_visible_rect_ = visible_rect;
+  current_color_space_ = color_space;
 
   if (!inputs_before_decode_) {
     TRACE_EVENT_ASYNC_BEGIN0("gpu", "DXVAVideoDecodeAccelerator.Decoding",
@@ -2407,7 +2435,7 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
   // process the input again. Failure in either of these steps is treated as a
   // decoder failure.
   if (hr == MF_E_NOTACCEPTING) {
-    DoDecode(color_space.ToGfxColorSpace());
+    DoDecode(visible_rect, color_space.ToGfxColorSpace());
     // If the DoDecode call resulted in an output frame then we should not
     // process any more input until that frame is copied to the target surface.
     if (!OutputSamplesPresent()) {
@@ -2439,7 +2467,7 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to process input sample",
                                   PLATFORM_FAILURE, );
 
-  DoDecode(color_space.ToGfxColorSpace());
+  DoDecode(visible_rect, color_space.ToGfxColorSpace());
 
   State state = GetState();
   RETURN_AND_NOTIFY_ON_FAILURE(
@@ -2673,9 +2701,9 @@ void DXVAVideoDecodeAccelerator::CopySurfaceComplete(
   RETURN_AND_NOTIFY_ON_FAILURE(result, "Failed to complete copying surface",
                                PLATFORM_FAILURE, );
 
-  NotifyPictureReady(picture_buffer->id(), input_buffer_id,
-                     picture_buffer->color_space(),
-                     picture_buffer->AllowOverlay());
+  NotifyPictureReady(
+      picture_buffer->id(), input_buffer_id, picture_buffer->visible_rect(),
+      picture_buffer->color_space(), picture_buffer->AllowOverlay());
 
   {
     base::AutoLock lock(decoder_lock_);
@@ -2727,9 +2755,9 @@ void DXVAVideoDecodeAccelerator::BindPictureBufferToSample(
   RETURN_AND_NOTIFY_ON_FAILURE(result, "Failed to complete copying surface",
                                PLATFORM_FAILURE, );
 
-  NotifyPictureReady(picture_buffer->id(), input_buffer_id,
-                     picture_buffer->color_space(),
-                     picture_buffer->AllowOverlay());
+  NotifyPictureReady(
+      picture_buffer->id(), input_buffer_id, picture_buffer->visible_rect(),
+      picture_buffer->color_space(), picture_buffer->AllowOverlay());
 
   {
     base::AutoLock lock(decoder_lock_);
