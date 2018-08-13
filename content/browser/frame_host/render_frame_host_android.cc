@@ -10,6 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/unguessable_token_android.h"
 #include "base/bind.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -36,6 +37,15 @@ void OnGetCanonicalUrlForSharing(
   }
 
   base::android::RunStringCallbackAndroid(jcallback, url->spec());
+}
+
+void OnExecuteJavaScriptResult(const base::android::JavaRef<jobject>& jcallback,
+                               const base::Value* value) {
+  std::string result;
+  JSONStringValueSerializer serializer(&result);
+  bool value_serialized = serializer.SerializeAndOmitBinaryValues(*value);
+  DCHECK(value_serialized);
+  base::android::RunStringCallbackAndroid(jcallback, result);
 }
 }  // namespace
 
@@ -99,6 +109,18 @@ void RenderFrameHostAndroid::NotifyUserActivation(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>&) {
   render_frame_host_->NotifyUserActivation();
+}
+
+void RenderFrameHostAndroid::ExecuteJavaScriptForTests(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& jscript,
+    const base::android::JavaParamRef<jobject>& jcallback) {
+  base::string16 script(ConvertJavaStringToUTF16(env, jscript));
+  auto callback = base::BindRepeating(
+      &OnExecuteJavaScriptResult,
+      base::android::ScopedJavaGlobalRef<jobject>(env, jcallback));
+  render_frame_host_->ExecuteJavaScriptForTests(script, callback);
 }
 
 }  // namespace content

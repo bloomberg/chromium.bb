@@ -58,10 +58,25 @@ public class VrBrowserWebInputEditingTest {
     @MediumTest
     @CommandLineFlags.Add("enable-features=VrLaunchIntents")
     public void testWebInputFocus() throws InterruptedException {
-        // Load page in VR and make sure the controller is pointed at the content quad.
-        mVrTestRule.loadUrl(
-                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_web_input_editing"),
-                PAGE_LOAD_TIMEOUT_S);
+        testWebInputFocusImpl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_web_input_editing"));
+    }
+
+    /**
+     * Verifies the same thing as testWebInputFocus, but with the input box in a cross-origin
+     * iframe.
+     * Automation of a manual test in https://crbug.com/862153
+     */
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add("enable-features=VrLaunchIntents")
+    public void testWebInputFocusIframe() throws InterruptedException {
+        testWebInputFocusImpl(VrBrowserTestFramework.getFileUrlForHtmlTestFile(
+                "test_web_input_editing_iframe_outer"));
+    }
+
+    private void testWebInputFocusImpl(String url) throws InterruptedException {
+        mVrTestRule.loadUrl(url, PAGE_LOAD_TIMEOUT_S);
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
 
         VrShell vrShell = TestVrShellDelegate.getVrShellForTesting();
