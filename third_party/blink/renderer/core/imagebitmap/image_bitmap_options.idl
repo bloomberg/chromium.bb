@@ -7,12 +7,12 @@
 enum ImageOrientation { "none", "flipY" };
 enum PremultiplyAlpha { "none", "premultiply", "default" };
 enum ColorSpaceConversion { "none", "default", "srgb", "linear-rgb", "rec2020", "p3" };
-[RuntimeEnabled=ExtendedImageBitmapOptions] enum ResizeQuality { "pixelated", "low", "medium", "high" };
+enum ResizeQuality { "pixelated", "low", "medium", "high" };
 dictionary ImageBitmapOptions {
     ImageOrientation imageOrientation = "none";
     PremultiplyAlpha premultiplyAlpha = "default";
     ColorSpaceConversion colorSpaceConversion = "default";
-    [RuntimeEnabled=ExtendedImageBitmapOptions, EnforceRange] unsigned long resizeWidth;
-    [RuntimeEnabled=ExtendedImageBitmapOptions, EnforceRange] unsigned long resizeHeight;
-    [RuntimeEnabled=ExtendedImageBitmapOptions] ResizeQuality resizeQuality = "low";
+    [EnforceRange] unsigned long resizeWidth;
+    [EnforceRange] unsigned long resizeHeight;
+    ResizeQuality resizeQuality = "low";
 };

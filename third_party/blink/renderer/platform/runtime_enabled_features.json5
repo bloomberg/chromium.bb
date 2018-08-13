@@ -437,10 +437,6 @@
       status: "experimental",
     },
     {
-      name: "ExtendedImageBitmapOptions",
-      status: "experimental",
-    },
-    {
       name: "ExtendedTextMetrics",
       status: "experimental",
     },
