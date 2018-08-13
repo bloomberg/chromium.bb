@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/frame_host/navigation_entry_impl.h"
+
+#include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_file_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/ssl_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -327,5 +330,23 @@ TEST_F(NavigationEntryTest, NavigationEntryExtraData) {
   EXPECT_FALSE(entry1_->GetExtraData("search_terms", &output2));
   EXPECT_EQ(ASCIIToUTF16(""), output2);
 }
+
+#if defined(OS_ANDROID)
+// Test that content URIs correctly show the file display name as the title.
+TEST_F(NavigationEntryTest, NavigationEntryContentUri) {
+  base::FilePath image_path;
+  EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &image_path));
+  image_path = image_path.Append(FILE_PATH_LITERAL("content"));
+  image_path = image_path.Append(FILE_PATH_LITERAL("test"));
+  image_path = image_path.Append(FILE_PATH_LITERAL("data"));
+  image_path = image_path.Append(FILE_PATH_LITERAL("blank.jpg"));
+  EXPECT_TRUE(base::PathExists(image_path));
+
+  base::FilePath content_uri = base::InsertImageIntoMediaStore(image_path);
+
+  entry1_->SetURL(GURL(content_uri.value()));
+  EXPECT_EQ(ASCIIToUTF16("blank.jpg"), entry1_->GetTitleForDisplay());
+}
+#endif
 
 }  // namespace content

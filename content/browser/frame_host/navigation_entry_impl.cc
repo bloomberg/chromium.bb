@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/containers/queue.h"
+#include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -27,6 +28,10 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "ui/gfx/text_elider.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/content_uri_utils.h"
+#endif
 
 using base::UTF16ToUTF8;
 
@@ -456,6 +461,16 @@ const base::string16& NavigationEntryImpl::GetTitleForDisplay() const {
     // embedding".)
     base::i18n::WrapStringWithLTRFormatting(&title);
   }
+
+#if defined(OS_ANDROID)
+  if (GetURL().SchemeIs(url::kContentScheme)) {
+    base::string16 file_display_name;
+    if (base::MaybeGetFileDisplayName(base::FilePath(GetURL().spec()),
+                                      &file_display_name)) {
+      title = file_display_name;
+    }
+  }
+#endif
 
   gfx::ElideString(title, kMaxTitleChars, &cached_display_title_);
   return cached_display_title_;

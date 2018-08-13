@@ -42,4 +42,22 @@ std::string GetContentUriMimeType(const FilePath& content_uri) {
   return base::android::ConvertJavaStringToUTF8(env, j_mime.obj());
 }
 
+bool MaybeGetFileDisplayName(const FilePath& content_uri,
+                             base::string16* file_display_name) {
+  DCHECK(content_uri.IsContentUri());
+  DCHECK(file_display_name);
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> j_uri =
+      ConvertUTF8ToJavaString(env, content_uri.value());
+  ScopedJavaLocalRef<jstring> j_display_name =
+      Java_ContentUriUtils_maybeGetDisplayName(env, j_uri);
+
+  if (j_display_name.is_null())
+    return false;
+
+  *file_display_name = base::android::ConvertJavaStringToUTF16(j_display_name);
+  return true;
+}
+
 }  // namespace base
