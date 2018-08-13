@@ -27,7 +27,7 @@ import org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcp;
 public class PasswordAccessorySheetCoordinator implements KeyboardAccessoryData.Tab.Listener {
     private final Context mContext;
     private final SimpleListObservable<Item> mModel = new SimpleListObservable<>();
-    private final KeyboardAccessoryData.Observer<Item> mMediator = mModel::set;
+    private final KeyboardAccessoryData.Observer<Item> mMediator = (t, items) -> mModel.set(items);
 
     private final KeyboardAccessoryData.Tab mTab;
 

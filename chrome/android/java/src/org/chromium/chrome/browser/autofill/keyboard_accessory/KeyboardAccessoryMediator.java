@@ -10,12 +10,15 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.autofill.AutofillKeyboardSuggestions;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryCoordinator.VisibilityDelegate;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
 import org.chromium.ui.base.WindowAndroid;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * This is the second part of the controller of the keyboard accessory component.
@@ -58,8 +61,19 @@ class KeyboardAccessoryMediator
     }
 
     @Override
-    public void onItemsAvailable(KeyboardAccessoryData.Action[] actions) {
-        mModel.setActions(actions);
+    public void onItemsAvailable(int typeId, KeyboardAccessoryData.Action[] actions) {
+        assert typeId != DEFAULT_TYPE : "Did not specify which Action type has been updated.";
+        // If there is a new list, retain all actions that are of a different type than the provided
+        // actions.
+        List<Action> retainedActions = new ArrayList<>();
+        for (Action a : mModel.getActionList()) {
+            if (a.getActionType() == typeId) continue;
+            retainedActions.add(a);
+        }
+        // Always append autofill suggestions to the very end.
+        int insertPos = typeId == AccessoryAction.AUTOFILL_SUGGESTION ? retainedActions.size() : 0;
+        retainedActions.addAll(insertPos, Arrays.asList(actions));
+        mModel.setActions(retainedActions.toArray(new Action[retainedActions.size()]));
     }
 
     @Override
@@ -81,16 +95,8 @@ class KeyboardAccessoryMediator
         mModel.getTabList().set(tabs);
     }
 
-    void setSuggestions(AutofillKeyboardSuggestions suggestions) {
-        mModel.setAutofillSuggestions(suggestions);
-    }
-
     void dismiss() {
         mModel.setActiveTab(null);
-        if (mModel.getAutofillSuggestions() != null) {
-            mModel.getAutofillSuggestions().dismiss();
-            mModel.setAutofillSuggestions(null);
-        }
         updateVisibility();
     }
 
@@ -131,7 +137,8 @@ class KeyboardAccessoryMediator
             // When the accessory just (dis)appeared, there should be no active tab.
             mModel.setActiveTab(null);
             if (!mModel.isVisible()) {
-                mModel.setActions(new Action[0]);
+                // TODO(fhorschig|ioanap): Maybe the generation bridge should take care of that.
+                onItemsAvailable(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, new Action[0]);
             }
             return;
         }
@@ -146,10 +153,6 @@ class KeyboardAccessoryMediator
             return;
         }
         if (propertyKey == KeyboardAccessoryModel.PropertyKey.TAB_SELECTION_CALLBACKS) {
-            return;
-        }
-        if (propertyKey == KeyboardAccessoryModel.PropertyKey.SUGGESTIONS) {
-            updateVisibility();
             return;
         }
         assert false : "Every property update needs to be handled explicitly!";
@@ -177,8 +180,7 @@ class KeyboardAccessoryMediator
 
     private boolean shouldShowAccessory() {
         if (!mIsKeyboardVisible && mModel.activeTab() == null) return false;
-        return mModel.getAutofillSuggestions() != null || mModel.getActionList().size() > 0
-                || mModel.getTabList().size() > 0;
+        return mModel.getActionList().size() > 0 || mModel.getTabList().size() > 0;
     }
 
     private void updateVisibility() {

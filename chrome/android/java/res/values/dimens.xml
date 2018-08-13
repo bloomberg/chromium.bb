@@ -129,7 +129,6 @@
     <dimen name="keyboard_accessory_height">48dp</dimen>
     <dimen name="keyboard_accessory_padding">6dp</dimen>
     <dimen name="keyboard_accessory_sheet_height">330dp</dimen>
-    <dimen name="keyboard_accessory_text_size">14sp</dimen>
     <dimen name="keyboard_accessory_suggestion_margin">16dp</dimen>
     <dimen name="keyboard_accessory_suggestion_height">48dp</dimen>
     <dimen name="keyboard_accessory_suggestion_icon_size">20dp</dimen>

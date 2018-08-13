@@ -27,11 +27,13 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.DropdownPopupWindowInterface;
 
 import java.util.concurrent.ExecutionException;
@@ -174,6 +176,7 @@ public class ManualFillingIntegrationTest {
 
     @Test
     @SmallTest
+    @Features.DisableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
     public void testOpeningSheetDismissesAutofill()
             throws InterruptedException, TimeoutException, ExecutionException {
         mHelper.loadTestPage(false);

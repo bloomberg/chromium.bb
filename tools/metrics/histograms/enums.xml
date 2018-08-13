@@ -361,8 +361,9 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="AccessoryAction">
-  <int value="0" label="Automatic password generation selected"/>
-  <int value="1" label="'Manage all passwords' link selected"/>
+  <int value="0" label="Automatic password generation"/>
+  <int value="1" label="'Manage all passwords' link"/>
+  <int value="2" label="Autofill suggestion"/>
 </enum>
 
 <enum name="AccessoryBarContents">

@@ -12,15 +12,18 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessory
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * This class provides helpers to record metrics related to the keyboard accessory and its sheets.
  * It can set up observers to observe {@link KeyboardAccessoryModel}s, {@link AccessorySheetModel}s
  * or {@link ListObservable<Item>}s changes and records metrics accordingly.
  */
-class KeyboardAccessoryMetricsRecorder {
+public class KeyboardAccessoryMetricsRecorder {
     static final String UMA_KEYBOARD_ACCESSORY_ACTION_IMPRESSION =
             "KeyboardAccessory.AccessoryActionImpression";
-    static final String UMA_KEYBOARD_ACCESSORY_ACTION_SELECTED =
+    public static final String UMA_KEYBOARD_ACCESSORY_ACTION_SELECTED =
             "KeyboardAccessory.AccessoryActionSelected";
     static final String UMA_KEYBOARD_ACCESSORY_BAR_SHOWN = "KeyboardAccessory.AccessoryBarShown";
     static final String UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTIONS =
@@ -46,8 +49,7 @@ class KeyboardAccessoryMetricsRecorder {
                 return;
             }
             if (propertyKey == KeyboardAccessoryModel.PropertyKey.ACTIVE_TAB
-                    || propertyKey == KeyboardAccessoryModel.PropertyKey.TAB_SELECTION_CALLBACKS
-                    || propertyKey == KeyboardAccessoryModel.PropertyKey.SUGGESTIONS) {
+                    || propertyKey == KeyboardAccessoryModel.PropertyKey.TAB_SELECTION_CALLBACKS) {
                 return;
             }
             assert false : "Every property update needs to be handled explicitly!";
@@ -107,7 +109,7 @@ class KeyboardAccessoryMetricsRecorder {
                 UMA_KEYBOARD_ACCESSORY_ACTION_IMPRESSION, bucket, AccessoryAction.COUNT);
     }
 
-    static void recordActionSelected(@AccessoryAction int bucket) {
+    public static void recordActionSelected(@AccessoryAction int bucket) {
         RecordHistogram.recordEnumeratedHistogram(
                 UMA_KEYBOARD_ACCESSORY_ACTION_SELECTED, bucket, AccessoryAction.COUNT);
     }
@@ -163,14 +165,28 @@ class KeyboardAccessoryMetricsRecorder {
             case AccessoryBarContents.WITH_TABS:
                 return keyboardAccessoryModel.getTabList().size() > 0;
             case AccessoryBarContents.WITH_ACTIONS:
-                return keyboardAccessoryModel.getActionList().size() > 0;
+                return hasAtLeastOneActionOfType(keyboardAccessoryModel.getActionList(),
+                        AccessoryAction.MANAGE_PASSWORDS,
+                        AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
             case AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS:
-                return keyboardAccessoryModel.getAutofillSuggestions() != null;
+                return hasAtLeastOneActionOfType(keyboardAccessoryModel.getActionList(),
+                        AccessoryAction.AUTOFILL_SUGGESTION);
             case AccessoryBarContents.ANY_CONTENTS: // Intentional fallthrough.
             case AccessoryBarContents.NO_CONTENTS:
                 return false; // General impression is logged last.
         }
         assert false : "Did not check whether to record an impression bucket " + bucket + ".";
+        return false;
+    }
+
+    private static boolean hasAtLeastOneActionOfType(
+            SimpleListObservable<KeyboardAccessoryData.Action> actionList,
+            @AccessoryAction int... types) {
+        Set<Integer> typeList = new HashSet<>(types.length);
+        for (@AccessoryAction int type : types) typeList.add(type);
+        for (KeyboardAccessoryData.Action action : actionList) {
+            if (typeList.contains(action.getActionType())) return true;
+        }
         return false;
     }
 }

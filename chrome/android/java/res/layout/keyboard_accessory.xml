@@ -16,7 +16,7 @@
     android:orientation="horizontal"
     android:layout_height="@dimen/keyboard_accessory_height"
     android:layout_width="match_parent"
-    android:paddingEnd="@dimen/keyboard_accessory_padding"
+    android:paddingEnd="0dp"
     android:paddingStart="@dimen/keyboard_accessory_padding">
 
     <android.support.design.widget.TabLayout
@@ -27,11 +27,6 @@
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/actions_view"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent" />
-
-    <HorizontalScrollView
-        android:id="@+id/suggestions_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent" />
 

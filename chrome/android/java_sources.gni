@@ -89,7 +89,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/appmenu/AppMenuObserver.java",
   "java/src/org/chromium/chrome/browser/appmenu/AppMenuPropertiesDelegate.java",
   "java/src/org/chromium/chrome/browser/autofill/AutofillKeyboardAccessoryBridge.java",
-  "java/src/org/chromium/chrome/browser/autofill/AutofillKeyboardSuggestions.java",
   "java/src/org/chromium/chrome/browser/autofill/AutofillLogger.java",
   "java/src/org/chromium/chrome/browser/autofill/AutofillPopupBridge.java",
   "java/src/org/chromium/chrome/browser/autofill/CardUnmaskBridge.java",
