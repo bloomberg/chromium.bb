@@ -2791,7 +2791,8 @@ ShadowRoot* Element::attachShadow(const ShadowRootInit& shadow_root_init_dict,
   DCHECK(!shadow_root_init_dict.hasMode() || !GetShadowRoot());
   bool delegates_focus = shadow_root_init_dict.hasDelegatesFocus() &&
                          shadow_root_init_dict.delegatesFocus();
-  return &AttachShadowRootInternal(type, delegates_focus);
+  bool manual_slotting = shadow_root_init_dict.slotting() == "manual";
+  return &AttachShadowRootInternal(type, delegates_focus, manual_slotting);
 }
 
 ShadowRoot& Element::CreateShadowRootInternal() {
@@ -2808,7 +2809,8 @@ ShadowRoot& Element::CreateUserAgentShadowRoot() {
 }
 
 ShadowRoot& Element::AttachShadowRootInternal(ShadowRootType type,
-                                              bool delegates_focus) {
+                                              bool delegates_focus,
+                                              bool manual_slotting) {
   // SVG <use> is a special case for using this API to create a closed shadow
   // root.
   DCHECK(CanAttachShadowRoot() || IsSVGUseElement(*this));
@@ -2819,6 +2821,8 @@ ShadowRoot& Element::AttachShadowRootInternal(ShadowRootType type,
   GetDocument().SetShadowCascadeOrder(ShadowCascadeOrder::kShadowCascadeV1);
   ShadowRoot& shadow_root = CreateAndAttachShadowRoot(type);
   shadow_root.SetDelegatesFocus(delegates_focus);
+  shadow_root.SetSlotting(manual_slotting ? ShadowRootSlotting::kManual
+                                          : ShadowRootSlotting::kAuto);
   return shadow_root;
 }
 
