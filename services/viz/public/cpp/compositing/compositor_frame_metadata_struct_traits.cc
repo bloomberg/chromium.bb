@@ -42,11 +42,13 @@ bool StructTraits<viz::mojom::CompositorFrameMetadataDataView,
   out->send_frame_token_to_embedder = data.send_frame_token_to_embedder();
   out->request_presentation_feedback = data.request_presentation_feedback();
   out->root_background_color = data.root_background_color();
-  return data.ReadSelection(&out->selection) &&
-         data.ReadLatencyInfo(&out->latency_info) &&
+  return data.ReadLatencyInfo(&out->latency_info) &&
          data.ReadReferencedSurfaces(&out->referenced_surfaces) &&
          data.ReadDeadline(&out->deadline) &&
          data.ReadActivationDependencies(&out->activation_dependencies) &&
+#if defined(OS_ANDROID)
+         data.ReadSelection(&out->selection) &&
+#endif  // defined(OS_ANDROID)
          data.ReadBeginFrameAck(&out->begin_frame_ack);
 }
 

@@ -10200,6 +10200,7 @@ TEST_F(LayerTreeHostImplLatencyInfoUITest,
       ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, nullptr));
 }
 
+#if defined(OS_ANDROID)
 TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
   int root_layer_id = 1;
   std::unique_ptr<SolidColorLayerImpl> root =
@@ -10299,6 +10300,7 @@ TEST_F(LayerTreeHostImplTest, HiddenSelectionBoundsStayHidden) {
   EXPECT_FALSE(selection_after.start.visible());
   EXPECT_FALSE(selection_after.end.visible());
 }
+#endif  // defined(OS_ANDROID)
 
 class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
  public:

@@ -29,7 +29,6 @@ struct CompositorFrameMetadata {
   float bottom_controls_height;
   float bottom_controls_shown_ratio;
   uint32 root_background_color;
-  Selection selection;
   array<ui.mojom.LatencyInfo> latency_info;
   array<SurfaceRange> referenced_surfaces;
   FrameDeadline deadline;
@@ -39,4 +38,7 @@ struct CompositorFrameMetadata {
   uint32 frame_token;
   bool send_frame_token_to_embedder;
   bool request_presentation_feedback;
+
+  [EnableIf=is_android]
+  Selection selection;
 };

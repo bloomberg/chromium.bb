@@ -8,6 +8,7 @@
 #ifndef CONTENT_COMMON_CONTENT_PARAM_TRAITS_MACROS_H_
 #define CONTENT_COMMON_CONTENT_PARAM_TRAITS_MACROS_H_
 
+#include "components/viz/common/quads/selection.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/download/mhtml_save_status.h"
