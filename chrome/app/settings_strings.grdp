@@ -631,15 +631,6 @@
   <message name="IDS_SETTINGS_AUTOFILL_TOGGLE_LABEL" desc="Label for a toggle that allows users to control whether forms should be autofilled with data such as addresses and credit cards, but not passwords.">
     Autofill forms
   </message>
-  <message name="IDS_SETTINGS_AUTOFILL_ENABLE_PROFILES_TOGGLE_LABEL" desc="Label for a toggle that allows users to control whether addresses should be saved and forms should be autofilled with them.">
-    Save and fill addresses
-  </message>
-  <message name="IDS_SETTINGS_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_LABEL" desc="Label for a toggle that allows users to control whether credit cards should be saved and forms should be autofilled with it.">
-    Save and fill payment methods
-  </message>
-  <message name="IDS_SETTINGS_AUTOFILL_ADDRESSES_HEADING" desc="Title for the list of addresses that chrome has saved for use in filling in forms.">
-    Addresses
-  </message>
   <message name="IDS_SETTINGS_AUTOFILL_ADDRESSES_ADD_TITLE" desc="This is the title for the 'Add address' dialog. This dialog allows a user to create a new address.">
     Add address
   </message>
@@ -662,9 +653,6 @@
   <!-- TODO(https://crbug.com/854562): Remove this string once Autofill Home is fully launched. -->
   <message name="IDS_SETTINGS_AUTOFILL_CREDIT_CARD_DETAIL" desc="Description of what toggling the 'Credit card' setting does. Immediately underneath IDS_SETTINGS_AUTOFILL_CREDIT_CARD_HEADING.">
     Enable credit card Autofill to fill out forms in a single click
-  </message>
-  <message name="IDS_SETTINGS_AUTOFILL_PAYMENT_METHODS" desc="Title for the list of saved payment methods that can be used to fill in forms.">
-    Payment methods
   </message>
   <message name="IDS_SETTINGS_AUTOFILL_CREDIT_CARD_TYPE_COLUMN_LABEL" desc="Label for the column containing the type of credit card that is saved. The type is in the format: `Visa ****1234`.">
     Type

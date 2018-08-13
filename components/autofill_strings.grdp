@@ -444,6 +444,35 @@
     No saved addresses
   </message>
 
+  <!-- Autofill settings -->
+  <message name="IDS_AUTOFILL_ADDRESSES" desc="Title for the list of addresses that chrome has saved for use in filling in forms.">
+    Addresses
+  </message>
+  <if expr="not is_ios">
+    <then>
+      <message name="IDS_AUTOFILL_PAYMENT_METHODS" desc="Title for the list of saved payment methods that can be used to fill in forms. Sentence-Cased.">
+        Payment methods
+      </message>
+      <message name="IDS_AUTOFILL_ENABLE_PROFILES_TOGGLE_LABEL" desc="Label for a toggle that allows users to control whether addresses should be saved and forms should be autofilled with them. Sentence-Cased.">
+        Save and fill addresses
+      </message>
+      <message name="IDS_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_LABEL" desc="Label for a toggle that allows users to control whether credit cards should be saved and forms should be autofilled with it. Sentence-Cased.">
+        Save and fill payment methods
+      </message>
+    </then>
+    <else>
+      <message name="IDS_AUTOFILL_PAYMENT_METHODS" desc="Title for the list of saved payment methods that can be used to fill in forms. Title-Cased.">
+        Payment Methods
+      </message>
+      <message name="IDS_AUTOFILL_ENABLE_PROFILES_TOGGLE_LABEL" desc="Label for a toggle that allows users to control whether addresses should be saved and forms should be autofilled with them. Title-Cased.">
+        Save and Fill Addresses
+      </message>
+      <message name="IDS_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_LABEL" desc="Label for a toggle that allows users to control whether credit cards should be saved and forms should be autofilled with it. Title-Cased.">
+        Save and Fill Payment Methods
+      </message>
+    </else>
+  </if>
+
   <!-- Autofill/Wallet integration preferences -->
   <if expr="not is_ios">
     <then>
