@@ -1384,11 +1384,9 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
       {"googlePayments", IDS_SETTINGS_GOOGLE_PAYMENTS},
       {"googlePaymentsCached", IDS_SETTINGS_GOOGLE_PAYMENTS_CACHED},
       {"autofillFormsLabel", IDS_SETTINGS_AUTOFILL_TOGGLE_LABEL},
-      {"enableProfilesLabel",
-       IDS_SETTINGS_AUTOFILL_ENABLE_PROFILES_TOGGLE_LABEL},
-      {"enableCreditCardsLabel",
-       IDS_SETTINGS_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_LABEL},
-      {"addresses", IDS_SETTINGS_AUTOFILL_ADDRESSES_HEADING},
+      {"enableProfilesLabel", IDS_AUTOFILL_ENABLE_PROFILES_TOGGLE_LABEL},
+      {"enableCreditCardsLabel", IDS_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_LABEL},
+      {"addresses", IDS_AUTOFILL_ADDRESSES},
       {"addAddressTitle", IDS_SETTINGS_AUTOFILL_ADDRESSES_ADD_TITLE},
       {"editAddressTitle", IDS_SETTINGS_AUTOFILL_ADDRESSES_EDIT_TITLE},
       {"addressCountry", IDS_SETTINGS_AUTOFILL_ADDRESSES_COUNTRY},
@@ -1460,7 +1458,7 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
     html_source->AddLocalizedString("passwords",
                                     IDS_SETTINGS_PASSWORDS_AUTOFILL_HOME);
     html_source->AddLocalizedString("creditCards",
-                                    IDS_SETTINGS_AUTOFILL_PAYMENT_METHODS);
+                                    IDS_AUTOFILL_PAYMENT_METHODS);
     html_source->AddLocalizedString("noCreditCardsFound",
                                     IDS_SETTINGS_PAYMENT_METHODS_NONE);
   } else {
