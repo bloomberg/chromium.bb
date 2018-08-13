@@ -19,6 +19,7 @@
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/common/extension.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 
 class WebAppIconDownloader;
@@ -102,6 +103,12 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // Begins the asynchronous bookmark app creation.
   void Create(const CreateBookmarkAppCallback& callback);
 
+  // If called, the installed extension will be considered policy installed.
+  void set_is_policy_installed_app() { is_policy_installed_app_ = true; }
+
+  // If called, the installed extension will be considered default installed.
+  void set_is_default_app() { is_default_app_ = true; }
+
  protected:
   // Protected methods for testing.
 
@@ -156,6 +163,10 @@ class BookmarkAppHelper : public content::NotificationObserver {
   InstallableManager* installable_manager_;
 
   ForInstallableSite for_installable_site_ = ForInstallableSite::kUnknown;
+
+  bool is_policy_installed_app_ = false;
+
+  bool is_default_app_ = false;
 
   // The mechanism via which the app creation was triggered.
   WebappInstallSource install_source_;

@@ -141,7 +141,9 @@ std::string ConvertTimeToExtensionVersion(const base::Time& create_time) {
 scoped_refptr<Extension> ConvertWebAppToExtension(
     const WebApplicationInfo& web_app,
     const base::Time& create_time,
-    const base::FilePath& extensions_dir) {
+    const base::FilePath& extensions_dir,
+    int extra_creation_flags,
+    Manifest::Location install_source) {
   base::FilePath install_temp_dir =
       file_util::GetInstallTempDir(extensions_dir);
   if (install_temp_dir.empty()) {
@@ -236,9 +238,9 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
 
   // Finally, create the extension object to represent the unpacked directory.
   std::string error;
-  scoped_refptr<Extension> extension =
-      Extension::Create(temp_dir.GetPath(), Manifest::INTERNAL, *root,
-                        Extension::FROM_BOOKMARK, &error);
+  scoped_refptr<Extension> extension = Extension::Create(
+      temp_dir.GetPath(), install_source, *root,
+      Extension::FROM_BOOKMARK | extra_creation_flags, &error);
   if (!extension.get()) {
     LOG(ERROR) << error;
     return NULL;

@@ -546,6 +546,15 @@ void BookmarkAppHelper::OnBubbleCompleted(
     const WebApplicationInfo& web_app_info) {
   if (user_accepted) {
     web_app_info_ = web_app_info;
+
+    if (is_policy_installed_app_)
+      crx_installer_->set_install_source(Manifest::EXTERNAL_POLICY);
+
+    // InstallWebApp will OR the creation flags with FROM_BOOKMARK.
+    crx_installer_->set_creation_flags(is_default_app_
+                                           ? Extension::WAS_INSTALLED_BY_DEFAULT
+                                           : Extension::NO_FLAGS);
+
     crx_installer_->InstallWebApp(web_app_info_);
 
     if (InstallableMetrics::IsReportableInstallSource(install_source_) &&

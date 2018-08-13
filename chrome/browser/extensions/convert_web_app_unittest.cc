@@ -258,7 +258,8 @@ TEST(ExtensionFromWebApp, Basic) {
   }
 
   scoped_refptr<Extension> extension = ConvertWebAppToExtension(
-      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), extensions_dir.GetPath());
+      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), extensions_dir.GetPath(),
+      Extension::NO_FLAGS, Manifest::INTERNAL);
   ASSERT_TRUE(extension.get());
 
   base::ScopedTempDir extension_dir;
@@ -266,7 +267,13 @@ TEST(ExtensionFromWebApp, Basic) {
 
   EXPECT_TRUE(extension->is_app());
   EXPECT_TRUE(extension->is_hosted_app());
+  EXPECT_TRUE(extension->from_bookmark());
   EXPECT_FALSE(extension->is_legacy_packaged_app());
+
+  EXPECT_FALSE(extension->was_installed_by_default());
+  EXPECT_FALSE(extension->was_installed_by_oem());
+  EXPECT_FALSE(extension->from_webstore());
+  EXPECT_EQ(Manifest::INTERNAL, extension->location());
 
   EXPECT_EQ("zVvdNZy3Mp7CFU8JVSyXNlDuHdVLbP7fDO3TGVzj/0w=",
             extension->public_key());
@@ -304,7 +311,8 @@ TEST(ExtensionFromWebApp, Minimal) {
   web_app.app_url = GURL("http://aaronboodman.com/gearpad/");
 
   scoped_refptr<Extension> extension = ConvertWebAppToExtension(
-      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), extensions_dir.GetPath());
+      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), extensions_dir.GetPath(),
+      Extension::NO_FLAGS, Manifest::INTERNAL);
   ASSERT_TRUE(extension.get());
 
   base::ScopedTempDir extension_dir;
@@ -312,7 +320,13 @@ TEST(ExtensionFromWebApp, Minimal) {
 
   EXPECT_TRUE(extension->is_app());
   EXPECT_TRUE(extension->is_hosted_app());
+  EXPECT_TRUE(extension->from_bookmark());
   EXPECT_FALSE(extension->is_legacy_packaged_app());
+
+  EXPECT_FALSE(extension->was_installed_by_default());
+  EXPECT_FALSE(extension->was_installed_by_oem());
+  EXPECT_FALSE(extension->from_webstore());
+  EXPECT_EQ(Manifest::INTERNAL, extension->location());
 
   EXPECT_EQ("zVvdNZy3Mp7CFU8JVSyXNlDuHdVLbP7fDO3TGVzj/0w=",
             extension->public_key());
@@ -326,6 +340,52 @@ TEST(ExtensionFromWebApp, Minimal) {
   EXPECT_EQ(0u,
             extension->permissions_data()->active_permissions().apis().size());
   ASSERT_EQ(0u, extension->web_extent().patterns().size());
+}
+
+TEST(ExtensionFromWebApp, ExtraInstallationFlags) {
+  base::ScopedTempDir extensions_dir;
+  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
+
+  WebApplicationInfo web_app;
+  web_app.title = base::ASCIIToUTF16("Gearpad");
+  web_app.app_url = GURL("http://aaronboodman.com/gearpad/");
+
+  scoped_refptr<Extension> extension = ConvertWebAppToExtension(
+      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), extensions_dir.GetPath(),
+      Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_OEM,
+      Manifest::INTERNAL);
+  ASSERT_TRUE(extension.get());
+
+  EXPECT_TRUE(extension->is_app());
+  EXPECT_TRUE(extension->is_hosted_app());
+  EXPECT_TRUE(extension->from_bookmark());
+  EXPECT_FALSE(extension->is_legacy_packaged_app());
+
+  EXPECT_TRUE(extension->was_installed_by_oem());
+  EXPECT_TRUE(extension->from_webstore());
+  EXPECT_FALSE(extension->was_installed_by_default());
+  EXPECT_EQ(Manifest::INTERNAL, extension->location());
+}
+
+TEST(ExtensionFromWebApp, ExternalPolicyLocation) {
+  base::ScopedTempDir extensions_dir;
+  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
+
+  WebApplicationInfo web_app;
+  web_app.title = base::ASCIIToUTF16("Gearpad");
+  web_app.app_url = GURL("http://aaronboodman.com/gearpad/");
+
+  scoped_refptr<Extension> extension = ConvertWebAppToExtension(
+      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), extensions_dir.GetPath(),
+      Extension::NO_FLAGS, Manifest::EXTERNAL_POLICY);
+  ASSERT_TRUE(extension.get());
+
+  EXPECT_TRUE(extension->is_app());
+  EXPECT_TRUE(extension->is_hosted_app());
+  EXPECT_TRUE(extension->from_bookmark());
+  EXPECT_FALSE(extension->is_legacy_packaged_app());
+
+  EXPECT_EQ(Manifest::EXTERNAL_POLICY, extension->location());
 }
 
 // Tests that a scope not ending in "/" works correctly.
@@ -343,7 +403,8 @@ TEST(ExtensionFromWebApp, ScopeDoesNotEndInSlash) {
   web_app.scope = GURL("http://aaronboodman.com/gear");
 
   scoped_refptr<Extension> extension = ConvertWebAppToExtension(
-      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), extensions_dir.GetPath());
+      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), extensions_dir.GetPath(),
+      Extension::NO_FLAGS, Manifest::INTERNAL);
   ASSERT_TRUE(extension.get());
   EXPECT_EQ(web_app.scope, GetScopeURLFromBookmarkApp(extension.get()));
 }
