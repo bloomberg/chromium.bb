@@ -232,7 +232,10 @@ class RLZTracker {
   // Minimum delay before sending financial ping after initialization.
   base::TimeDelta min_init_delay_;
 
-  // Runner for RLZ background tasks.  The checked is used to verify operations
+  class WrapperURLLoaderFactory;
+  std::unique_ptr<WrapperURLLoaderFactory> custom_url_loader_factory_;
+
+  // Runner for RLZ background tasks.  The checker is used to verify operations
   // occur in the correct sequence, especially in tests.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   SEQUENCE_CHECKER(sequence_checker_);

@@ -7,6 +7,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "mojo/core/embedder/embedder.h"
 #include "rlz/lib/rlz_lib.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,6 +24,8 @@ int main(int argc, char **argv) {
 
   testing::InitGoogleMock(&argc, argv);
   testing::InitGoogleTest(&argc, argv);
+
+  mojo::core::Init();
 
   int ret = RUN_ALL_TESTS();
   if (ret == 0) {

@@ -11,9 +11,11 @@
 #include "rlz/lib/rlz_enums.h"
 
 #if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+namespace mojom {
+class URLLoaderFactory;
+}
+}  // namespace network
 #endif
 
 namespace rlz_lib {
@@ -62,7 +64,7 @@ class FinancialPing {
   static int64_t GetSystemTimeAsInt64();
 
 #if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
-  static bool SetURLRequestContext(net::URLRequestContextGetter* context);
+  static bool SetURLLoaderFactory(network::mojom::URLLoaderFactory* factory);
 #endif
 
  private:

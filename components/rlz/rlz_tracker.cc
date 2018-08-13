@@ -21,6 +21,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/rlz/rlz_tracker_delegate.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/syslog_logging.h"
@@ -151,15 +152,59 @@ bool SendFinancialPing(const std::string& brand,
 #else
   product_signature = "chrome";
 #endif
-  return rlz_lib::SendFinancialPing(rlz_lib::CHROME, points,
-                                    product_signature.c_str(),
-                                    brand.c_str(), referral_ascii.c_str(),
-                                    lang_ascii.c_str(), false, true);
+  return rlz_lib::SendFinancialPing(
+      rlz_lib::CHROME, points, product_signature.c_str(), brand.c_str(),
+      referral_ascii.c_str(), lang_ascii.c_str(), false, true);
 }
 
 }  // namespace
 
 RLZTracker* RLZTracker::tracker_ = nullptr;
+
+// WrapperURLLoaderFactory subclasses mojom::URLLoaderFactory as non-mojo, cross
+// thread class. It basically posts ::CreateLoaderAndStart calls over to the UI
+// thread, to call them on the real mojo object.
+class RLZTracker::WrapperURLLoaderFactory
+    : public network::mojom::URLLoaderFactory {
+ public:
+  explicit WrapperURLLoaderFactory(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      : url_loader_factory_(std::move(url_loader_factory)),
+        main_thread_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    if (main_thread_task_runner_->RunsTasksInCurrentSequence()) {
+      url_loader_factory_->CreateLoaderAndStart(
+          std::move(loader), routing_id, request_id, options, request,
+          std::move(client), traffic_annotation);
+    } else {
+      main_thread_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&WrapperURLLoaderFactory::CreateLoaderAndStart,
+                         base::Unretained(this), std::move(loader), routing_id,
+                         request_id, options, request, std::move(client),
+                         traffic_annotation));
+    }
+  }
+  void Clone(network::mojom::URLLoaderFactoryRequest factory) override {
+    NOTIMPLEMENTED();
+  }
+
+ private:
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  // Runner for RLZ main thread tasks.
+  scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(WrapperURLLoaderFactory);
+};
 
 // static
 RLZTracker* RLZTracker::GetInstance() {
@@ -261,9 +306,11 @@ bool RLZTracker::Init(bool first_run,
 #endif
 
   // Could be null; don't run if so.  RLZ will try again next restart.
-  net::URLRequestContextGetter* context_getter = delegate_->GetRequestContext();
-  if (context_getter) {
-    rlz_lib::SetURLRequestContext(context_getter);
+  auto shared_url_loader_factory = delegate_->GetURLLoaderFactory();
+  if (shared_url_loader_factory) {
+    custom_url_loader_factory_ =
+        std::make_unique<WrapperURLLoaderFactory>(shared_url_loader_factory);
+    rlz_lib::SetURLLoaderFactory(custom_url_loader_factory_.get());
     ScheduleDelayedInit(delay);
   }
 
@@ -571,7 +618,7 @@ bool RLZTracker::ScheduleClearRlzState() {
 // static
 void RLZTracker::CleanupRlz() {
   GetInstance()->Cleanup();
-  rlz_lib::SetURLRequestContext(nullptr);
+  rlz_lib::SetURLLoaderFactory(nullptr);
 }
 
 // static

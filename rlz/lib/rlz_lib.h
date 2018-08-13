@@ -24,7 +24,7 @@
 // Define one of
 // + RLZ_NETWORK_IMPLEMENTATION_WIN_INET: Uses win inet to send financial pings.
 // + RLZ_NETWORK_IMPLEMENTATION_CHROME_NET: Uses chrome's network stack to send
-//   financial pings. rlz_lib::SetURLRequestContext() must be called before
+//   financial pings. rlz_lib::SetURLLoaderFactory() must be called before
 //   any calls to SendFinancialPing().
 #if defined(RLZ_NETWORK_IMPLEMENTATION_WIN_INET) && \
     defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
@@ -41,9 +41,11 @@
 #endif
 
 #if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+namespace mojom {
+class URLLoaderFactory;
+}  // namespace mojom
+}  // namespace network
 #endif
 
 namespace rlz_lib {
@@ -74,10 +76,8 @@ const size_t kMaxDccLength = 128;
 const size_t kMaxCgiLength = 2048;
 
 #if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
-// Set the URLRequestContextGetter used by SendFinancialPing(). The IO message
-// loop returned by this context will be used for the IO done by
-// SendFinancialPing().
-bool RLZ_LIB_API SetURLRequestContext(net::URLRequestContextGetter* context);
+// Set the URLLoaderFactory used by SendFinancialPing().
+bool RLZ_LIB_API SetURLLoaderFactory(network::mojom::URLLoaderFactory* factory);
 #endif
 
 // RLZ storage functions.
@@ -182,7 +182,7 @@ bool RLZ_LIB_API ParseFinancialPingResponse(Product product,
 // This ping method should be called daily. (More frequent calls will fail).
 // Also, if there are no events, the call will succeed only once a week.
 //
-// If RLZ_NETWORK_IMPLEMENTATION_CHROME_NET is set, SetURLRequestContext() needs
+// If RLZ_NETWORK_IMPLEMENTATION_CHROME_NET is set, SetURLLoaderFactory() needs
 // to be called before calling this function.
 //
 // product            : The product to ping for.

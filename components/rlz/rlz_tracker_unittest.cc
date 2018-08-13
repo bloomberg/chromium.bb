@@ -17,6 +17,7 @@
 #include "components/rlz/rlz_tracker_delegate.h"
 #include "net/url_request/url_request_test_util.h"
 #include "rlz/test/rlz_test_helpers.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_IOS)
@@ -71,8 +72,10 @@ class TestRLZTrackerDelegate : public RLZTrackerDelegate {
 
   bool IsOnUIThread() override { return true; }
 
-  net::URLRequestContextGetter* GetRequestContext() override {
-    return request_context_getter_.get();
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
+      override {
+    NOTIMPLEMENTED() << "If this is called, it needs an implementation.";
+    return nullptr;
   }
 
   bool GetBrand(std::string* brand) override {

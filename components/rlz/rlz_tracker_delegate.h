@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace rlz {
 
@@ -30,8 +30,9 @@ class RLZTrackerDelegate {
   // Returns whether the current thread is the UI thread.
   virtual bool IsOnUIThread() = 0;
 
-  // Returns the URLRequestContextGetter to use for network connections.
-  virtual net::URLRequestContextGetter* GetRequestContext() = 0;
+  // Returns the SharedURLLoaderFactory to use for network connections.
+  virtual scoped_refptr<network::SharedURLLoaderFactory>
+  GetURLLoaderFactory() = 0;
 
   // Returns the brand code for the installation of Chrome in |brand| and a
   // boolean indicating whether the operation was a success or not.

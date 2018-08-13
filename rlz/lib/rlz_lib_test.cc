@@ -43,6 +43,9 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/threading/thread.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/test/test_url_loader_factory.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -79,7 +82,7 @@ class RlzLibTest : public RlzLibTestBase {
                             const char* product_id,
                             const char* product_lang,
                             bool exclude_machine_id,
-                            net::FakeURLFetcherFactory* factory) {
+                            network::TestURLLoaderFactory* url_loader_factory) {
     const char kGoodPingResponses[] =
         "version: 3.0.914.7250\r\n"
         "url: "
@@ -97,10 +100,9 @@ class RlzLibTest : public RlzLibTestBase {
     EXPECT_TRUE(rlz_lib::FinancialPing::FormRequest(
         product, access_points, product_signature, product_brand, product_id,
         product_lang, exclude_machine_id, &request));
-    GURL url = GURL(base::StringPrintf(
-        "https://%s%s", rlz_lib::kFinancialServer, request.c_str()));
-    factory->SetFakeResponse(url, kGoodPingResponses, net::HTTP_OK,
-                             net::URLRequestStatus::SUCCESS);
+    std::string url = base::StringPrintf(
+        "https://%s%s", rlz_lib::kFinancialServer, request.c_str());
+    url_loader_factory->AddResponse(url, kGoodPingResponses);
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -483,14 +485,12 @@ TEST_F(RlzLibTest, ParsePingResponseWithStatefulEvents) {
   EXPECT_STREQ("events=W1I", value);
 }
 
-class URLRequestRAII {
+class URLLoaderFactoryRAII {
  public:
-  URLRequestRAII(net::URLRequestContextGetter* context) {
-    rlz_lib::SetURLRequestContext(context);
+  URLLoaderFactoryRAII(network::mojom::URLLoaderFactory* factory) {
+    rlz_lib::SetURLLoaderFactory(factory);
   }
-  ~URLRequestRAII() {
-    rlz_lib::SetURLRequestContext(NULL);
-  }
+  ~URLLoaderFactoryRAII() { rlz_lib::SetURLLoaderFactory(nullptr); }
 };
 
 TEST_F(RlzLibTest, SendFinancialPing) {
@@ -503,15 +503,13 @@ TEST_F(RlzLibTest, SendFinancialPing) {
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
 
-  base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  network::TestURLLoaderFactory test_url_loader_factory;
+  scoped_refptr<network::SharedURLLoaderFactory>
+      test_shared_url_loader_factory =
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              &test_url_loader_factory);
 
-  base::Thread io_thread("rlz_unittest_io_thread");
-  ASSERT_TRUE(io_thread.StartWithOptions(options));
-
-  scoped_refptr<net::TestURLRequestContextGetter> context =
-      new net::TestURLRequestContextGetter(io_thread.task_runner());
-  URLRequestRAII set_context(context.get());
+  URLLoaderFactoryRAII set_factory(test_shared_url_loader_factory.get());
 #endif
 
   MachineDealCodeHelper::Clear();
@@ -533,23 +531,21 @@ TEST_F(RlzLibTest, SendFinancialPing) {
      rlz_lib::NO_ACCESS_POINT};
 
   // Excluding machine id from requests so that a stable URL is used and
-  // this test can use FakeURLFetcherFactory.
-  net::FakeURLFetcherFactory factory(nullptr);
+  // this test can use TestURLLoaderFactory.
   FakeGoodPingResponse(rlz_lib::TOOLBAR_NOTIFIER, points, "swg", "GGLA",
                        "SwgProductId1234", "en-UK",
-                       /* exclude_machine_id */ true, &factory);
+                       /* exclude_machine_id */ true, &test_url_loader_factory);
 
-  EXPECT_TRUE(rlz_lib::SendFinancialPing(rlz_lib::TOOLBAR_NOTIFIER, points,
-                                         "swg", "GGLA", "SwgProductId1234",
-                                         "en-UK",
-                                         /* exclude_machine_id */ true,
-                                         /* skip_time_check */true));
+  rlz_lib::SendFinancialPing(rlz_lib::TOOLBAR_NOTIFIER, points, "swg", "GGLA",
+                             "SwgProductId1234", "en-UK",
+                             /* exclude_machine_id */ true,
+                             /* skip_time_check */ true);
 }
 
 #if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
 
-void ResetContext() {
-  rlz_lib::SetURLRequestContext(NULL);
+void ResetURLLoaderFactory() {
+  rlz_lib::SetURLLoaderFactory(nullptr);
 }
 
 TEST_F(RlzLibTest, SendFinancialPingDuringShutdown) {
@@ -567,9 +563,12 @@ TEST_F(RlzLibTest, SendFinancialPingDuringShutdown) {
   base::Thread io_thread("rlz_unittest_io_thread");
   ASSERT_TRUE(io_thread.StartWithOptions(options));
 
-  scoped_refptr<net::TestURLRequestContextGetter> context =
-      new net::TestURLRequestContextGetter(io_thread.task_runner());
-  URLRequestRAII set_context(context.get());
+  network::TestURLLoaderFactory test_url_loader_factory;
+  scoped_refptr<network::SharedURLLoaderFactory>
+      test_shared_url_loader_factory =
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              &test_url_loader_factory);
+  URLLoaderFactoryRAII set_factory(test_shared_url_loader_factory.get());
 
   rlz_lib::AccessPoint points[] =
     {rlz_lib::IETB_SEARCH_BOX, rlz_lib::NO_ACCESS_POINT,
@@ -577,11 +576,13 @@ TEST_F(RlzLibTest, SendFinancialPingDuringShutdown) {
   rlz_lib::test::ResetSendFinancialPingInterrupted();
   EXPECT_FALSE(rlz_lib::test::WasSendFinancialPingInterrupted());
 
-  io_thread.task_runner()->PostTask(FROM_HERE, base::BindOnce(&ResetContext));
-  std::string request;
-  EXPECT_FALSE(rlz_lib::SendFinancialPing(rlz_lib::TOOLBAR_NOTIFIER, points,
-      "swg", "GGLA", "SwgProductId1234", "en-UK", false,
-      /*skip_time_check=*/true));
+  io_thread.task_runner()->PostTask(FROM_HERE,
+                                    base::BindOnce(&ResetURLLoaderFactory));
+
+  rlz_lib::SendFinancialPing(rlz_lib::TOOLBAR_NOTIFIER, points, "swg", "GGLA",
+                             "SwgProductId1234", "en-UK",
+                             /* exclude_machine_id */ false,
+                             /* skip_time_check */ true);
 
   EXPECT_TRUE(rlz_lib::test::WasSendFinancialPingInterrupted());
   rlz_lib::test::ResetSendFinancialPingInterrupted();
