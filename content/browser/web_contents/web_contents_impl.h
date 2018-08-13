@@ -715,7 +715,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SelectRange(const gfx::Point& base, const gfx::Point& extent) override;
 #if defined(OS_MACOSX)
   void DidChangeTextSelection(const base::string16& text,
-                              const gfx::Range& range) override;
+                              const gfx::Range& range,
+                              size_t offset) override;
 #endif
   void MoveCaret(const gfx::Point& extent) override;
   void AdjustSelectionByCharacterOffset(int start_adjust,

@@ -138,7 +138,8 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
 #if defined(OS_MACOSX)
   virtual void DidChangeTextSelection(const base::string16& text,
-                                      const gfx::Range& range) {}
+                                      const gfx::Range& range,
+                                      size_t offset) {}
 #endif
 
   // Request the renderer to Move the caret to the new position.

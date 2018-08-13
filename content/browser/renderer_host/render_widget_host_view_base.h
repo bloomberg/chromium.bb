@@ -117,6 +117,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   base::string16 GetSelectedText() override;
   base::string16 GetSurroundingText() override;
   gfx::Range GetSelectedRange() override;
+  size_t GetOffsetForSurroundingText() override;
   bool IsMouseLocked() override;
   bool LockKeyboard(base::Optional<base::flat_set<ui::DomCode>> codes) override;
   void SetBackgroundColor(SkColor color) override;
