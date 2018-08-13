@@ -48,6 +48,8 @@ KeyedService* UnifiedConsentServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
+  if (!sync_service)
+    return nullptr;
 
   if (!IsUnifiedConsentEnabled(profile)) {
     unified_consent::UnifiedConsentService::RollbackIfNeeded(
