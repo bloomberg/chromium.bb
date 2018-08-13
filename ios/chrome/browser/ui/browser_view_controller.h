@@ -110,6 +110,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 // deallocated soon.
 - (void)browserStateDestroyed;
 
+// Opens a new tab as if originating from |originPoint| and |focusOmnibox|.
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
                      focusOmnibox:(BOOL)focusOmnibox;
 

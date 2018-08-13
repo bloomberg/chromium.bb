@@ -342,11 +342,13 @@ const char kRateThisAppCommand[] = "ratethisapp";
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_PROMO];
 
   if (notificationPromo->IsURLPromo()) {
-    [self.dispatcher webPageOrderedOpen:notificationPromo->url()
-                               referrer:web::Referrer()
-                           inBackground:NO
-                            originPoint:CGPointZero
-                               appendTo:kCurrentTab];
+    OpenNewTabCommand* command =
+        [[OpenNewTabCommand alloc] initWithURL:notificationPromo->url()
+                                      referrer:web::Referrer()
+                                   inIncognito:NO
+                                  inBackground:NO
+                                      appendTo:kCurrentTab];
+    [self.dispatcher webPageOrderedOpen:command];
     return;
   }
 
@@ -533,12 +535,14 @@ const char kRateThisAppCommand[] = "ratethisapp";
                 incognito:(BOOL)incognito
               originPoint:(CGPoint)originPoint {
   // Open the tab in background if it is non-incognito only.
-  [self.dispatcher webPageOrderedOpen:URL
-                             referrer:web::Referrer()
-                          inIncognito:incognito
-                         inBackground:!incognito
-                          originPoint:originPoint
-                             appendTo:kCurrentTab];
+  OpenNewTabCommand* command =
+      [[OpenNewTabCommand alloc] initWithURL:URL
+                                    referrer:web::Referrer()
+                                 inIncognito:incognito
+                                inBackground:!incognito
+                                    appendTo:kCurrentTab];
+  command.originPoint = originPoint;
+  [self.dispatcher webPageOrderedOpen:command];
 }
 
 // Logs a histogram due to a Most Visited item being opened.

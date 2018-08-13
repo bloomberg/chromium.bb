@@ -7,7 +7,17 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/url_loader.h"
+class GURL;
+
+namespace web {
+struct Referrer;
+}
+
+// Describes the intended position for a new tab.
+enum OpenPosition {
+  kCurrentTab,  // Relative to currently selected tab.
+  kLastTab      // Always at end of tab model.
+};
 
 // Command sent to open a new tab, optionally including a point (in UIWindow
 // coordinates).
@@ -83,7 +93,7 @@
 @property(nonatomic, readonly, assign) BOOL fromChrome;
 
 // Location where the new tab should be opened.
-@property(nonatomic, readonly, assign) OpenPosition appendTo;
+@property(nonatomic, assign) OpenPosition appendTo;
 
 @end
 

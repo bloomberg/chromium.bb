@@ -3598,12 +3598,19 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
         // The "New Tab" item in the context menu opens a new tab in the current
         // browser state. |isOffTheRecord| indicates whether or not the current
         // browser state is incognito.
-        [weakSelf webPageOrderedOpen:link
-                            referrer:referrer
-                         inIncognito:weakSelf.isOffTheRecord
-                        inBackground:YES
-                         originPoint:originPoint
-                            appendTo:kCurrentTab];
+        BrowserViewController* strongSelf = weakSelf;
+        if (!strongSelf)
+          return;
+
+        OpenNewTabCommand* command =
+            [[OpenNewTabCommand alloc] initWithURL:link
+                                          referrer:referrer
+                                       inIncognito:strongSelf.isOffTheRecord
+                                      inBackground:YES
+
+                                          appendTo:kCurrentTab];
+        command.originPoint = originPoint;
+        [strongSelf webPageOrderedOpen:command];
       };
       [_contextMenuCoordinator addItemWithTitle:title action:action];
       if (!_isOffTheRecord) {
@@ -3612,12 +3619,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
             IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB);
         action = ^{
           Record(ACTION_OPEN_IN_INCOGNITO_TAB, isImage, isLink);
-          [weakSelf webPageOrderedOpen:link
-                              referrer:referrer
-                           inIncognito:YES
-                          inBackground:NO
-                           originPoint:CGPointZero
-                              appendTo:kCurrentTab];
+
+          OpenNewTabCommand* command =
+              [[OpenNewTabCommand alloc] initWithURL:link
+                                            referrer:referrer
+                                         inIncognito:YES
+                                        inBackground:NO
+
+                                            appendTo:kCurrentTab];
+          [weakSelf webPageOrderedOpen:command];
         };
         [_contextMenuCoordinator addItemWithTitle:title action:action];
       }
@@ -3675,11 +3685,19 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
         IDS_IOS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
     action = ^{
       Record(ACTION_OPEN_IMAGE_IN_NEW_TAB, isImage, isLink);
-      [weakSelf webPageOrderedOpen:imageUrl
-                          referrer:referrer
-                      inBackground:true
-                       originPoint:originPoint
-                          appendTo:kCurrentTab];
+      BrowserViewController* strongSelf = weakSelf;
+      if (!strongSelf)
+        return;
+
+      OpenNewTabCommand* command =
+          [[OpenNewTabCommand alloc] initWithURL:imageUrl
+                                        referrer:referrer
+                                     inIncognito:strongSelf.isOffTheRecord
+                                    inBackground:YES
+
+                                        appendTo:kCurrentTab];
+      command.originPoint = originPoint;
+      [strongSelf openNewTabInCurrentMode:command];
     };
     [_contextMenuCoordinator addItemWithTitle:title action:action];
 
@@ -4437,12 +4455,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Some URLs are not allowed while in incognito.  If we are in incognito and
   // load a disallowed URL, instead create a new tab not in the incognito state.
   if (_isOffTheRecord && !IsURLAllowedInIncognito(params.url)) {
-    [self webPageOrderedOpen:params.url
-                    referrer:web::Referrer()
-                 inIncognito:NO
-                inBackground:NO
-                 originPoint:CGPointZero
-                    appendTo:kCurrentTab];
+    OpenNewTabCommand* command =
+        [[OpenNewTabCommand alloc] initWithURL:params.url
+                                      referrer:web::Referrer()
+                                   inIncognito:NO
+                                  inBackground:NO
+                                      appendTo:kCurrentTab];
+    [self webPageOrderedOpen:command];
     return;
   }
 
@@ -4484,66 +4503,21 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     self.currentWebState->ExecuteUserJavaScript(script);
 }
 
-// Load a new URL on a new page/tab.
-- (void)webPageOrderedOpen:(const GURL&)URL
-                  referrer:(const web::Referrer&)referrer
-              inBackground:(BOOL)inBackground
-               originPoint:(CGPoint)originPoint
-                  appendTo:(OpenPosition)appendTo {
-  Tab* adjacentTab = nil;
-  if (appendTo == kCurrentTab)
-    adjacentTab = [_model currentTab];
-
-  GURL capturedURL = URL;
-  web::Referrer capturedReferrer = referrer;
-  auto openTab = ^{
-    [_model insertTabWithURL:capturedURL
-                    referrer:capturedReferrer
-                  transition:ui::PAGE_TRANSITION_LINK
-                      opener:adjacentTab
-                 openedByDOM:NO
-                     atIndex:TabModelConstants::kTabPositionAutomatically
-                inBackground:inBackground];
-  };
-
-  if (!IsUIRefreshPhase1Enabled() || !inBackground || [self canShowTabStrip] ||
-      CGPointEqualToPoint(originPoint, CGPointZero)) {
-    openTab();
-  } else {
-    [self animateNewTabInBackgroundFromPoint:originPoint
-                              withCompletion:openTab];
-  }
-}
-
-- (void)webPageOrderedOpen:(const GURL&)url
-                  referrer:(const web::Referrer&)referrer
-               inIncognito:(BOOL)inIncognito
-              inBackground:(BOOL)inBackground
-               originPoint:(CGPoint)originPoint
-                  appendTo:(OpenPosition)appendTo {
+- (void)webPageOrderedOpen:(OpenNewTabCommand*)command {
   // Send either the "New Tab Opened" or "New Incognito Tab" opened to the
   // feature_engagement::Tracker based on |inIncognito|.
-  feature_engagement::NotifyNewTabEvent(_model.browserState, inIncognito);
+  feature_engagement::NotifyNewTabEvent(_model.browserState,
+                                        command.inIncognito);
 
-  if (inIncognito == _isOffTheRecord) {
-    [self webPageOrderedOpen:url
-                    referrer:referrer
-                inBackground:inBackground
-                 originPoint:originPoint
-                    appendTo:appendTo];
+  if (command.inIncognito == _isOffTheRecord) {
+    [self openNewTabInCurrentMode:command];
     return;
   }
   // When sending an open command that switches modes, ensure the tab
   // ends up appended to the end of the model, not just next to what is
   // currently selected in the other mode. This is done with the |append|
   // parameter.
-  OpenNewTabCommand* command = [[OpenNewTabCommand alloc]
-       initWithURL:url
-          referrer:web::Referrer()  // Strip referrer when switching modes.
-       inIncognito:inIncognito
-      inBackground:inBackground
-          appendTo:kLastTab];
-  command.originPoint = originPoint;
+  command.appendTo = kLastTab;
   [self.dispatcher openURL:command];
 }
 
@@ -4568,6 +4542,35 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 #pragma mark - UrlLoader helpers
+
+// Opens a new tab in the current mode, following |command| parameters. The
+// |inIncognito| parameter is not taken into account.
+- (void)openNewTabInCurrentMode:(OpenNewTabCommand*)command {
+  Tab* adjacentTab = nil;
+  if (command.appendTo == kCurrentTab)
+    adjacentTab = [_model currentTab];
+
+  GURL capturedURL = command.URL;
+  web::Referrer capturedReferrer = command.referrer;
+  auto openTab = ^{
+    [self.tabModel insertTabWithURL:capturedURL
+                           referrer:capturedReferrer
+                         transition:ui::PAGE_TRANSITION_LINK
+                             opener:adjacentTab
+                        openedByDOM:NO
+                            atIndex:TabModelConstants::kTabPositionAutomatically
+                       inBackground:command.inBackground];
+  };
+
+  if (!IsUIRefreshPhase1Enabled() || !command.inBackground ||
+      [self canShowTabStrip] ||
+      CGPointEqualToPoint(command.originPoint, CGPointZero)) {
+    openTab();
+  } else {
+    [self animateNewTabInBackgroundFromPoint:command.originPoint
+                              withCompletion:openTab];
+  }
+}
 
 // Induce an intentional crash in the browser process.
 - (void)induceBrowserCrash {
@@ -4950,11 +4953,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)showHelpPage {
   GURL helpUrl(l10n_util::GetStringUTF16(IDS_IOS_TOOLS_MENU_HELP_URL));
-  [self webPageOrderedOpen:helpUrl
-                  referrer:web::Referrer()
-              inBackground:NO
-               originPoint:CGPointZero
-                  appendTo:kCurrentTab];
+  OpenNewTabCommand* command =
+      [[OpenNewTabCommand alloc] initWithURL:helpUrl
+                                    referrer:web::Referrer()
+                                 inIncognito:NO
+                                inBackground:NO
+                                    appendTo:kCurrentTab];
+  [self openNewTabInCurrentMode:command];
 }
 
 - (void)showBookmarksManager {

@@ -30,6 +30,7 @@ source_set("fakes") {
     "//ios/chrome/browser/download",
     "//ios/chrome/browser/store_kit",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/download",
     "//ios/chrome/browser/ui/presenters",
     "//ios/web/public",

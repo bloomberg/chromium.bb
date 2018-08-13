@@ -45,6 +45,7 @@ source_set("coordinator") {
     ":page_info",
     "//base",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",

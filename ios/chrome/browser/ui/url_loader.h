@@ -11,21 +11,11 @@
 #include "components/sessions/core/session_id.h"
 #import "ios/web/public/navigation_manager.h"
 
-class GURL;
+@class OpenNewTabCommand;
 
 namespace sessions {
 struct SessionTab;
 }
-
-namespace web {
-struct Referrer;
-}
-
-// Describes the intended position for a new tab.
-enum OpenPosition {
-  kCurrentTab,  // Relative to currently selected tab.
-  kLastTab      // Always at end of tab model.
-};
 
 @protocol UrlLoader<NSObject>
 
@@ -36,22 +26,7 @@ enum OpenPosition {
 // placed in the model according to |appendTo|. |originPoint| is used when the
 // tab is opened in background as the origin point for the animation, it is not
 // used if the tab is opened in foreground.
-- (void)webPageOrderedOpen:(const GURL&)url
-                  referrer:(const web::Referrer&)referrer
-              inBackground:(BOOL)inBackground
-               originPoint:(CGPoint)originPoint
-                  appendTo:(OpenPosition)appendTo;
-
-// Load a new URL on a new page/tab. The |referrer| is optional. The tab will be
-// placed in the model according to |appendTo|. |originPoint| is used when the
-// tab is opened in background as the origin point for the animation, it is not
-// used if the tab is opened in foreground.
-- (void)webPageOrderedOpen:(const GURL&)url
-                  referrer:(const web::Referrer&)referrer
-               inIncognito:(BOOL)inIncognito
-              inBackground:(BOOL)inBackground
-               originPoint:(CGPoint)originPoint
-                  appendTo:(OpenPosition)appendTo;
+- (void)webPageOrderedOpen:(OpenNewTabCommand*)command;
 
 // Load a tab with the given session.
 - (void)loadSessionTab:(const sessions::SessionTab*)sessionTab;

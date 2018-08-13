@@ -8,11 +8,13 @@
 
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/chrome_coordinator+fullscreen_disabling.h"
 #include "ios/chrome/browser/ui/page_info/page_info_model.h"
@@ -142,11 +144,14 @@ NSString* const kPageInfoWillHideNotification =
 }
 
 - (void)showSecurityHelpPage {
-  [self.loader webPageOrderedOpen:GURL(kPageInfoHelpCenterURL)
-                         referrer:web::Referrer()
-                     inBackground:NO
-                      originPoint:CGPointZero
-                         appendTo:kCurrentTab];
+  OpenNewTabCommand* command =
+      [[OpenNewTabCommand alloc] initWithURL:GURL(kPageInfoHelpCenterURL)
+                                    referrer:web::Referrer()
+                                 inIncognito:self.browserState->IsOffTheRecord()
+                                inBackground:NO
+                                    appendTo:kLastTab];
+
+  [self.loader webPageOrderedOpen:command];
   [self hidePageInfo];
 }
 

@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_commands.h"
 #import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_params.h"
@@ -364,15 +365,16 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 
   // Use a referrer with a specific URL to signal that this entry should not be
   // taken into account for the Most Visited tiles.
-  web::Referrer referrer =
-      web::Referrer(GURL(kReadingListReferrerURL), web::ReferrerPolicyDefault);
   if (newTab) {
-    [self.loader webPageOrderedOpen:loadURL
-                           referrer:referrer
-                        inIncognito:incognito
-                       inBackground:NO
-                        originPoint:CGPointZero
-                           appendTo:kLastTab];
+    web::Referrer referrer = web::Referrer(GURL(kReadingListReferrerURL),
+                                           web::ReferrerPolicyDefault);
+    OpenNewTabCommand* command =
+        [[OpenNewTabCommand alloc] initWithURL:loadURL
+                                      referrer:referrer
+                                   inIncognito:incognito
+                                  inBackground:NO
+                                      appendTo:kLastTab];
+    [self.loader webPageOrderedOpen:command];
   } else {
     web::NavigationManager::WebLoadParams params(loadURL);
     params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
