@@ -54,9 +54,10 @@ class CursorShapeStub;
 - (void)setSurfaceSize:(const CGRect&)frame;
 
 // Must be called immediately after the object is constructed.
-- (std::unique_ptr<remoting::RendererProxy>)CreateRendererProxy;
-- (std::unique_ptr<remoting::protocol::VideoRenderer>)CreateVideoRenderer;
-- (std::unique_ptr<remoting::protocol::CursorShapeStub>)CreateCursorShapeStub;
+- (std::unique_ptr<remoting::protocol::VideoRenderer>)createVideoRenderer;
+- (std::unique_ptr<remoting::protocol::CursorShapeStub>)createCursorShapeStub;
+
+@property(readonly) remoting::RendererProxy* rendererProxy;
 
 // This is write-only but @property doesn't support write-only modifier.
 @property id<GlDisplayHandlerDelegate> delegate;

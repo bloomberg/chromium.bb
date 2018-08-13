@@ -5,9 +5,11 @@
 #ifndef REMOTING_CLIENT_UI_RENDERER_PROXY_H_
 #define REMOTING_CLIENT_UI_RENDERER_PROXY_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
 
 namespace remoting {
 
@@ -15,7 +17,8 @@ class GlRenderer;
 class QueuedTaskPoster;
 class ViewMatrix;
 
-// A class to proxy calls to GlRenderer from one thread to another.
+// A class to proxy calls to GlRenderer from one thread to another. Must be
+// created and used on the same thread.
 // TODO(yuweih): This should be removed once we have moved Drawables out of
 // GlRenderer.
 class RendererProxy {
@@ -32,8 +35,6 @@ class RendererProxy {
   void SetCursorVisibility(bool visible);
   void StartInputFeedback(float x, float y, float diameter);
 
-  base::WeakPtr<RendererProxy> GetWeakPtr();
-
  private:
   // Runs the |task| on the thread of |task_runner_|. All tasks run with
   // |needs_synchronization| set to true inside the same tick will be run on
@@ -45,11 +46,9 @@ class RendererProxy {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<remoting::QueuedTaskPoster> ui_task_poster_;
 
-  base::WeakPtrFactory<RendererProxy> weak_factory_;
+  THREAD_CHECKER(thread_checker_);
 
-  // RenderStubProxy is neither copyable nor movable.
-  RendererProxy(const RendererProxy&) = delete;
-  RendererProxy& operator=(const RendererProxy&) = delete;
+  DISALLOW_COPY_AND_ASSIGN(RendererProxy);
 };
 
 }  // namespace remoting
