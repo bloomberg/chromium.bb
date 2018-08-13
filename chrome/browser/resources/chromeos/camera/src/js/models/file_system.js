@@ -262,7 +262,7 @@ camera.models.FileSystem.migratePictures = function() {
 /**
  * Generates a file name for the picture.
  * @param {boolean} isVideo Picture is a video.
- * @param {int} time Timestamp of the picture in millisecond.
+ * @param {number} time Timestamp of the picture in millisecond.
  * @return {string} Picture's file name.
  * @private
  */
