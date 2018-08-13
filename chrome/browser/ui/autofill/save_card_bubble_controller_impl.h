@@ -86,6 +86,7 @@ class SaveCardBubbleControllerImpl
   //    to the server -- this should change.
   // TODO(crbug.com/864702): Don't show promo if user is a butter user.
   bool ShouldShowSignInPromo() const override;
+  bool CanAnimate() const override;
   void OnSyncPromoAccepted(const AccountInfo& account,
                            bool is_default_promo_account) override;
   void OnSaveButton(
@@ -94,6 +95,7 @@ class SaveCardBubbleControllerImpl
   void OnLegalMessageLinkClicked(const GURL& url) override;
   void OnManageCardsClicked() override;
   void OnBubbleClosed() override;
+  void OnAnimationEnded() override;
   const LegalMessageLines& GetLegalMessageLines() const override;
   bool IsUploadSave() const override;
   BubbleType GetBubbleType() const override;
@@ -131,6 +133,9 @@ class SaveCardBubbleControllerImpl
 
   // The web_contents associated with this controller.
   content::WebContents* web_contents_;
+
+  // Is true only if the card saved animation can be shown.
+  bool can_animate_ = false;
 
   // Weak reference. Will be nullptr if no bubble is currently shown.
   SaveCardBubbleView* save_card_bubble_view_ = nullptr;

@@ -13,19 +13,24 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
 
 SaveCardIconView::SaveCardIconView(CommandUpdater* command_updater,
                                    Browser* browser,
-                                   PageActionIconView::Delegate* delegate)
+                                   PageActionIconView::Delegate* delegate,
+                                   const gfx::FontList& font_list)
     : PageActionIconView(command_updater,
                          IDC_SAVE_CREDIT_CARD_FOR_PAGE,
-                         delegate),
+                         delegate,
+                         font_list),
       browser_(browser) {
   DCHECK(delegate);
   set_id(VIEW_ID_SAVE_CREDIT_CARD_BUTTON);
+
+  SetUpForInOutAnimation();
 }
 
 SaveCardIconView::~SaveCardIconView() {}
@@ -51,6 +56,11 @@ bool SaveCardIconView::Update() {
 
   enabled &= SetCommandEnabled(enabled);
   SetVisible(enabled);
+
+  AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
+  if (enabled && controller->CanAnimate())
+    AnimateIn(IDS_AUTOFILL_CARD_SAVED);
+
   return was_visible != visible();
 }
 
@@ -73,6 +83,19 @@ SaveCardBubbleControllerImpl* SaveCardIconView::GetController() const {
   if (!web_contents)
     return nullptr;
   return autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents);
+}
+
+bool SaveCardIconView::ShouldShowSeparator() const {
+  return false;
+}
+
+void SaveCardIconView::AnimationEnded(const gfx::Animation* animation) {
+  IconLabelBubbleView::AnimationEnded(animation);
+
+  // |controller| may be nullptr due to lazy initialization.
+  SaveCardBubbleControllerImpl* controller = GetController();
+  if (controller)
+    controller->OnAnimationEnded();
 }
 
 }  // namespace autofill

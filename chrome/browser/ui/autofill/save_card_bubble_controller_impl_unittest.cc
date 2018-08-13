@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 
 #include <stddef.h>
+#include <string>
 #include <utility>
 
 #include "base/json/json_reader.h"
@@ -41,7 +42,8 @@ class TestSaveCardBubbleControllerImpl : public SaveCardBubbleControllerImpl {
         std::make_unique<TestSaveCardBubbleControllerImpl>(web_contents));
   }
 
-  // Overriding because calling the original function causes unit test to crash.
+  // Overriding because parent function requires a browser window to redirect
+  // properly, which is not available in unit tests.
   void ShowPaymentsSettingsPage() override{};
 
   explicit TestSaveCardBubbleControllerImpl(content::WebContents* web_contents)
@@ -128,6 +130,12 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
   void CloseAndReshowBubble() {
     controller()->OnBubbleClosed();
     controller()->ReshowBubble();
+  }
+
+  void ClickSaveButton() {
+    controller()->OnSaveButton();
+    if (controller()->CanAnimate())
+      controller()->OnAnimationEnded();
   }
 
  protected:
@@ -264,7 +272,7 @@ TEST_F(SaveCardBubbleControllerImplTest, Metrics_Local_FirstShow_SaveButton) {
   ShowLocalBubble();
 
   base::HistogramTester histogram_tester;
-  controller()->OnSaveButton();
+  ClickSaveButton();
   controller()->OnBubbleClosed();
 
   histogram_tester.ExpectUniqueSample(
@@ -277,7 +285,7 @@ TEST_F(SaveCardBubbleControllerImplTest, Metrics_Local_Reshows_SaveButton) {
   CloseAndReshowBubble();
 
   base::HistogramTester histogram_tester;
-  controller()->OnSaveButton();
+  ClickSaveButton();
   controller()->OnBubbleClosed();
 
   histogram_tester.ExpectUniqueSample(
@@ -290,7 +298,7 @@ TEST_F(SaveCardBubbleControllerImplTest,
   ShowUploadBubble(/*should_request_name_from_user=*/true);
 
   base::HistogramTester histogram_tester;
-  controller()->OnSaveButton();
+  ClickSaveButton();
   controller()->OnBubbleClosed();
 
   histogram_tester.ExpectUniqueSample(
@@ -304,7 +312,7 @@ TEST_F(SaveCardBubbleControllerImplTest,
   CloseAndReshowBubble();
 
   base::HistogramTester histogram_tester;
-  controller()->OnSaveButton();
+  ClickSaveButton();
   controller()->OnBubbleClosed();
 
   histogram_tester.ExpectUniqueSample(
@@ -376,7 +384,7 @@ TEST_F(SaveCardBubbleControllerImplTest,
   controller()->OnBubbleClosed();
 
   ShowLocalBubble();
-  controller()->OnSaveButton();
+  ClickSaveButton();
   controller()->OnBubbleClosed();
 
   ShowLocalBubble();
@@ -415,7 +423,7 @@ TEST_F(SaveCardBubbleControllerImplTest,
   controller()->OnBubbleClosed();
 
   ShowUploadBubble();
-  controller()->OnSaveButton();
+  ClickSaveButton();
   controller()->OnBubbleClosed();
 
   ShowUploadBubble();
@@ -923,7 +931,7 @@ TEST_F(SaveCardBubbleControllerImplTest,
       features::kAutofillSaveCardSignInAfterLocalSave);
 
   ShowLocalBubble();
-  controller()->OnSaveButton();
+  ClickSaveButton();
 
   // Sign-in promo should be shown after accepting local save.
   EXPECT_EQ(BubbleType::SIGN_IN_PROMO, controller()->GetBubbleType());
@@ -935,7 +943,7 @@ TEST_F(SaveCardBubbleControllerImplTest, Local_FirstShow_SaveButton_NoBubble) {
       features::kAutofillSaveCardSignInAfterLocalSave);
 
   ShowLocalBubble();
-  controller()->OnSaveButton();
+  ClickSaveButton();
 
   // When this flag is disabled, no promo should appear and
   // the icon should go away.
@@ -966,7 +974,7 @@ TEST_F(SaveCardBubbleControllerImplTest,
       features::kAutofillSaveCardSignInAfterLocalSave);
 
   ShowLocalBubble();
-  controller()->OnSaveButton();
+  ClickSaveButton();
   CloseAndReshowBubble();
 
   // After closing the sign-in promo, clicking the icon should bring
@@ -1018,7 +1026,7 @@ TEST_F(SaveCardBubbleControllerImplTest,
       features::kAutofillSaveCardSignInAfterLocalSave);
 
   ShowLocalBubble();
-  controller()->OnSaveButton();
+  ClickSaveButton();
   CloseAndReshowBubble();
   controller()->OnBubbleClosed();
 
@@ -1108,7 +1116,7 @@ TEST_F(SaveCardBubbleControllerImplTest,
       features::kAutofillSaveCardSignInAfterLocalSave);
 
   ShowUploadBubble();
-  controller()->OnSaveButton();
+  ClickSaveButton();
 
   // Icon should disappear after an upload save,
   // even when this flag is enabled.
