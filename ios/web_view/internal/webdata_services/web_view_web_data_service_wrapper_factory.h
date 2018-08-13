@@ -46,6 +46,12 @@ class WebViewWebDataServiceWrapperFactory
   GetAutofillWebDataForBrowserState(WebViewBrowserState* browser_state,
                                     ServiceAccessType access_type);
 
+  // Returns the account-scoped AutofillWebDataService associated with the
+  // |browser_state|.
+  static scoped_refptr<autofill::AutofillWebDataService>
+  GetAutofillWebDataForAccount(WebViewBrowserState* browser_state,
+                               ServiceAccessType access_type);
+
   // Returns the TokenWebData associated with |browser_state|.
   static scoped_refptr<TokenWebData> GetTokenWebDataForBrowserState(
       WebViewBrowserState* browser_state,

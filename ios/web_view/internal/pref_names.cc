@@ -6,8 +6,8 @@
 
 namespace prefs {
 
-// The value to use for Accept-Languages HTTP header when making an HTTP
-// request.
 const char kAcceptLanguages[] = "intl.accept_languages";
+
+const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
 
 }  // namespace prefs
