@@ -4,7 +4,6 @@
 Bug(none) external/wpt/clear-site-data/storage.https.html [ Failure ]
 Bug(none) external/wpt/clear-site-data/navigation.https.html [ Timeout ]
 crbug.com/829417 external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Timeout ]
-crbug.com/771118 external/wpt/service-workers/service-worker/mime-sniffing.https.html [ Failure ]
 
 Bug(none) http/tests/misc/redirect-to-about-blank.html [ Timeout ]
 Bug(none) http/tests/security/cors-rfc1918 [ Crash Timeout ]
