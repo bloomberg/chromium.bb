@@ -213,8 +213,7 @@ Status WebViewImpl::Load(const std::string& url, const Timeout* timeout) {
     return Status(kUnknownError, "unsupported protocol");
   base::DictionaryValue params;
   params.SetString("url", url);
-  if (browser_info_->major_version >= 63 &&
-      navigation_tracker_->IsNonBlocking()) {
+  if (navigation_tracker_->IsNonBlocking()) {
     // With non-bloakcing navigation tracker, the previous navigation might
     // still be in progress, and this can cause the new navigate command to be
     // ignored on Chrome v63 and above. Stop previous navigation first.
@@ -404,33 +403,7 @@ Status WebViewImpl::GetFrameByFunction(const std::string& frame,
 
 Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
                                         const std::string& frame) {
-  WebViewImpl* target = GetTargetForFrame(this, frame);
-  bool needs_special_oopif_handling = browser_info_->major_version <= 65;
-  if (needs_special_oopif_handling && target != nullptr && target != this) {
-    if (target->IsDetached())
-      return Status(kTargetDetached);
-    WebViewImplHolder target_holder(target);
-    return target->DispatchMouseEvents(events, frame);
-  }
-
   double page_scale_factor = 1.0;
-  if (browser_info_->build_no >= 2358 && browser_info_->build_no <= 2430 &&
-      (browser_info_->is_android ||
-       mobile_emulation_override_manager_->IsEmulatingTouch())) {
-    // As of crrev.com/323900, on Android and under mobile emulation,
-    // Input.dispatchMouseEvent fails to apply the page scale factor to the
-    // mouse event coordinates. This leads to the MouseEvent being triggered on
-    // the wrong location on the page. This was fixed on the browser side in
-    // crrev.com/333979.
-    // TODO(samuong): remove once we stop supporting M45.
-    std::unique_ptr<base::Value> value;
-    Status status = EvaluateScript(
-        std::string(), "window.screen.width / window.innerWidth;", &value);
-    if (status.IsError())
-      return status;
-    if (!value->GetAsDouble(&page_scale_factor))
-      return Status(kUnknownError, "unable to determine page scale factor");
-  }
   for (std::list<MouseEvent>::const_iterator it = events.begin();
        it != events.end(); ++it) {
     base::DictionaryValue params;
@@ -499,8 +472,7 @@ Status WebViewImpl::GetCookies(std::unique_ptr<base::ListValue>* cookies,
   base::DictionaryValue params;
   std::unique_ptr<base::DictionaryValue> result;
 
-  if (browser_info_->build_no >= 3029 &&
-      browser_info_->browser_name != "webview") {
+  if (browser_info_->browser_name != "webview") {
     base::ListValue url_list;
     url_list.AppendString(current_page_url);
     params.SetKey("urls", url_list.Clone());
@@ -529,16 +501,10 @@ Status WebViewImpl::DeleteCookie(const std::string& name,
   base::DictionaryValue params;
   params.SetString("url", url);
   std::string command;
-  if (browser_info_->build_no >= 3189) {
-    params.SetString("name", name);
-    params.SetString("domain", domain);
-    params.SetString("path", path);
-    command = "Network.deleteCookies";
-  } else {
-    params.SetString("cookieName", name);
-    command = "Page.deleteCookie";
-  }
-
+  params.SetString("name", name);
+  params.SetString("domain", domain);
+  params.SetString("path", path);
+  command = "Network.deleteCookies";
   return client_->SendCommand(command, params);
 }
 
@@ -581,12 +547,7 @@ Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id,
   if (status.code() == kTimeout && stop_load_on_timeout) {
     VLOG(0) << "Timed out. Stopping navigation...";
     navigation_tracker_->set_timed_out(true);
-    if (browser_info_->major_version >= 63) {
-      client_->SendCommand("Page.stopLoading", base::DictionaryValue());
-    } else {
-      std::unique_ptr<base::Value> unused_value;
-      EvaluateScript(std::string(), "window.stop();", &unused_value);
-    }
+    client_->SendCommand("Page.stopLoading", base::DictionaryValue());
     // We don't consider |timeout| here to make sure the navigation actually
     // stops and we cleanup properly after a command that caused a navigation
     // that timed out.  Otherwise we might have to wait for that before

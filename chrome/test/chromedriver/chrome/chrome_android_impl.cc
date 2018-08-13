@@ -64,11 +64,7 @@ Status ChromeAndroidImpl::GetWindow(const std::string& target_id,
 }
 
 bool ChromeAndroidImpl::HasTouchScreen() const {
-  const BrowserInfo* browser_info = GetBrowserInfo();
-  if (browser_info->browser_name == "webview")
-    return browser_info->major_version >= 44;
-  else
-    return browser_info->build_no >= 2388;
+  return true;
 }
 
 Status ChromeAndroidImpl::QuitImpl() {

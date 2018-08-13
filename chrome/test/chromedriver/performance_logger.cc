@@ -252,22 +252,8 @@ Status PerformanceLogger::CollectTraceEvents() {
                   "was not started");
   }
 
-  // Prior to commit position 433389, DevTools did not return a response to
-  // Tracing.end commands, so we need to ignore it here to avoid a timeout. See
-  // https://bugs.chromium.org/p/chromedriver/issues/detail?id=1607 for details.
-  // TODO(samuong): remove this after we stop supporting Chrome 56.
-  bool wait_for_response = true;
-  if (session_->chrome) {
-    const BrowserInfo* browser_info = session_->chrome->GetBrowserInfo();
-    if (browser_info->browser_name == "chrome" && browser_info->build_no < 2925)
-      wait_for_response = false;
-  }
   base::DictionaryValue params;
-  Status status(kOk);
-  if (wait_for_response)
-    status = browser_client_->SendCommand("Tracing.end", params);
-  else
-    status = browser_client_->SendAsyncCommand("Tracing.end", params);
+  Status status = browser_client_->SendCommand("Tracing.end", params);
   if (status.IsError()) {
     LOG(ERROR) << "error when stopping trace: " << status.message();
     return status;
