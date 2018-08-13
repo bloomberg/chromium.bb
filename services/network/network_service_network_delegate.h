@@ -32,6 +32,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceNetworkDelegate
                        const base::FilePath& original_path,
                        const base::FilePath& absolute_path) const override;
 
+  bool OnCanQueueReportingReport(const url::Origin& origin) const override;
+  void OnCanSendReportingReports(std::set<url::Origin> origins,
+                                 base::OnceCallback<void(std::set<url::Origin>)>
+                                     result_callback) const override;
+  bool OnCanSetReportingClient(const url::Origin& origin,
+                               const GURL& endpoint) const override;
+  bool OnCanUseReportingClient(const url::Origin& origin,
+                               const GURL& endpoint) const override;
+
   NetworkContext* network_context_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceNetworkDelegate);
