@@ -10,49 +10,6 @@
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 
-namespace mojo {
-
-// TODO(leonhsl): Deprecate this converter once we replace usages of
-// content::ServiceWorkerResponse with blink::mojom::FetchAPIResponse in
-// background_fetch codes.
-template <>
-struct TypeConverter<content::ServiceWorkerResponse,
-                     blink::mojom::FetchAPIResponse> {
-  static content::ServiceWorkerResponse Convert(
-      const blink::mojom::FetchAPIResponse& input) {
-    content::ServiceWorkerResponse output;
-    output.url_list = std::move(input.url_list);
-    output.status_code = input.status_code;
-    output.status_text = std::move(input.status_text);
-    output.response_type = input.response_type;
-    output.headers.insert(input.headers.begin(), input.headers.end());
-    if (input.blob) {
-      output.blob_uuid = input.blob->uuid;
-      output.blob_size = input.blob->size;
-      output.blob = base::MakeRefCounted<storage::BlobHandle>(
-          blink::mojom::BlobPtr(std::move(input.blob->blob)));
-    }
-    output.error = input.error;
-    output.response_time = input.response_time;
-    output.is_in_cache_storage = input.is_in_cache_storage;
-    if (input.cache_storage_cache_name) {
-      output.cache_storage_cache_name =
-          std::move(*(input.cache_storage_cache_name));
-    }
-    output.cors_exposed_header_names =
-        std::move(input.cors_exposed_header_names);
-    if (input.side_data_blob) {
-      output.side_data_blob_uuid = input.side_data_blob->uuid;
-      output.side_data_blob_size = input.side_data_blob->size;
-      output.side_data_blob = base::MakeRefCounted<storage::BlobHandle>(
-          blink::mojom::BlobPtr(std::move(input.side_data_blob->blob)));
-    }
-    return output;
-  }
-};
-
-}  // namespace mojo
-
 namespace content {
 
 namespace background_fetch {
@@ -214,7 +171,7 @@ void GetSettledFetchesTask::DidMatchRequest(
     FillUncachedResponse(settled_fetch, std::move(callback));
     return;
   }
-  settled_fetch->response = cache_response->To<ServiceWorkerResponse>();
+  settled_fetch->response = std::move(cache_response);
   std::move(callback).Run();
 }
 
@@ -224,9 +181,11 @@ void GetSettledFetchesTask::FillUncachedResponse(
   background_fetch_succeeded_ = false;
 
   // TODO(rayankans): Fill unmatched response with error reports.
-  settled_fetch->response.response_type =
+  DCHECK(!settled_fetch->response);
+  settled_fetch->response = blink::mojom::FetchAPIResponse::New();
+  settled_fetch->response->response_type =
       network::mojom::FetchResponseType::kError;
-  settled_fetch->response.url_list.push_back(settled_fetch->request.url);
+  settled_fetch->response->url_list.push_back(settled_fetch->request.url);
 
   std::move(callback).Run();
 }

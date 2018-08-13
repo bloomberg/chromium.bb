@@ -12,6 +12,7 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom.h"
 
 namespace content {
 
@@ -55,12 +56,16 @@ struct CONTENT_EXPORT BackgroundFetchRegistration {
 // Analogous to the following structure in the spec:
 // http://wicg.github.io/background-fetch/#backgroundfetchsettledfetch
 struct CONTENT_EXPORT BackgroundFetchSettledFetch {
+  static blink::mojom::FetchAPIResponsePtr MakeCloneResponse(
+      const blink::mojom::FetchAPIResponsePtr& response);
   BackgroundFetchSettledFetch();
   BackgroundFetchSettledFetch(const BackgroundFetchSettledFetch& other);
+  BackgroundFetchSettledFetch& operator=(
+      const BackgroundFetchSettledFetch& other);
   ~BackgroundFetchSettledFetch();
 
   ServiceWorkerFetchRequest request;
-  ServiceWorkerResponse response;
+  blink::mojom::FetchAPIResponsePtr response;
 };
 
 }  // namespace content
