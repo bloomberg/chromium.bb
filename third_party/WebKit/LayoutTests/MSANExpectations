@@ -32,6 +32,8 @@ crbug.com/704360 [ Linux ] shapedetection/detection-HTMLVideoElement.html [ Time
 crbug.com/704360 [ Linux ] shapedetection/detection-HTMLCanvasElement.html [ Timeout Pass ]
 crbug.com/704360 [ Linux ] shapedetection/detection-ImageData.html [ Timeout Pass ]
 
+crbug.com/873570 [ Linux ] external/wpt/encoding/textdecoder-fatal-single-byte.any.html [ Timeout Pass ]
+
 # Times out on MSAN
 crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-samples-in-snapshot.js [ Timeout ]
 crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-merged-nodes.js [ Timeout ]
