@@ -5,6 +5,7 @@
 #include "chrome/browser/vr/elements/content_element.h"
 
 #include "chrome/browser/vr/platform_ui_input_delegate.h"
+#include "chrome/browser/vr/ui_element_renderer.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace vr {
@@ -88,8 +89,7 @@ void PlatformUiElement::SetTextureId(unsigned int texture_id) {
   texture_id_ = texture_id;
 }
 
-void PlatformUiElement::SetTextureLocation(
-    UiElementRenderer::TextureLocation location) {
+void PlatformUiElement::SetTextureLocation(GlTextureLocation location) {
   texture_location_ = location;
 }
 

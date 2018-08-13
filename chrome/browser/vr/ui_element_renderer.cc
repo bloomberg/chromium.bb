@@ -57,7 +57,7 @@ void UiElementRenderer::Init() {
 void UiElementRenderer::DrawTexturedQuad(
     int texture_data_handle,
     int overlay_texture_data_handle,
-    TextureLocation texture_location,
+    GlTextureLocation texture_location,
     const gfx::Transform& model_view_proj_matrix,
     const gfx::RectF& clip_rect,
     float opacity,
@@ -70,9 +70,10 @@ void UiElementRenderer::DrawTexturedQuad(
       corner_radius * 2.0 > element_size.height()) {
     return;
   }
-  TexturedQuadRenderer* renderer = texture_location == kTextureLocationExternal
-                                       ? external_textured_quad_renderer_.get()
-                                       : textured_quad_renderer_.get();
+  TexturedQuadRenderer* renderer =
+      texture_location == kGlTextureLocationExternal
+          ? external_textured_quad_renderer_.get()
+          : textured_quad_renderer_.get();
   if (!texture_data_handle && !overlay_texture_data_handle) {
     // If we're blending, why are we even drawing a transparent quad?
     DCHECK(!blend);

@@ -829,9 +829,9 @@ std::unique_ptr<UiElement> CreateHostedUi(
   hosted_ui->AddBinding(VR_BIND_FUNC(
       unsigned int, Model, model, model->hosted_platform_ui.texture_id,
       PlatformUiElement, hosted_ui.get(), SetTextureId));
-  hosted_ui->AddBinding(VR_BIND_FUNC(
-      UiElementRenderer::TextureLocation, Model, model, model->content_location,
-      PlatformUiElement, hosted_ui.get(), SetTextureLocation));
+  hosted_ui->AddBinding(VR_BIND_FUNC(GlTextureLocation, Model, model,
+                                     model->content_location, PlatformUiElement,
+                                     hosted_ui.get(), SetTextureLocation));
   hosted_ui->AddBinding(std::make_unique<Binding<bool>>(
       VR_BIND_LAMBDA(
           [](Model* m) { return m->hosted_platform_ui.hosted_ui_enabled; },
@@ -1435,17 +1435,15 @@ void UiSceneCreator::CreateContentQuad() {
   main_content->AddBinding(
       VR_BIND_FUNC(unsigned int, Model, model_, model->content_texture_id,
                    ContentElement, main_content.get(), SetTextureId));
-  main_content->AddBinding(VR_BIND_FUNC(UiElementRenderer::TextureLocation,
-                                        Model, model_, model->content_location,
-                                        ContentElement, main_content.get(),
-                                        SetTextureLocation));
+  main_content->AddBinding(
+      VR_BIND_FUNC(GlTextureLocation, Model, model_, model->content_location,
+                   ContentElement, main_content.get(), SetTextureLocation));
   main_content->AddBinding(VR_BIND_FUNC(
       unsigned int, Model, model_, model->content_overlay_texture_id,
       ContentElement, main_content.get(), SetOverlayTextureId));
-  main_content->AddBinding(
-      VR_BIND_FUNC(UiElementRenderer::TextureLocation, Model, model_,
-                   model->content_overlay_location, ContentElement,
-                   main_content.get(), SetOverlayTextureLocation));
+  main_content->AddBinding(VR_BIND_FUNC(
+      GlTextureLocation, Model, model_, model->content_overlay_location,
+      ContentElement, main_content.get(), SetOverlayTextureLocation));
   main_content->AddBinding(VR_BIND_FUNC(
       bool, Model, model_, !model->content_overlay_texture_non_empty,
       ContentElement, main_content.get(), SetOverlayTextureEmpty));

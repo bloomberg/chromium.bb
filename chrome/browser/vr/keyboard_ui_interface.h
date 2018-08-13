@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_KEYBOARD_UI_INTERFACE_H_
 
 #include "chrome/browser/vr/model/text_input_info.h"
+#include "chrome/browser/vr/vr_base_export.h"
 
 namespace vr {
 
@@ -13,7 +14,7 @@ namespace vr {
 // that we have this interface to restrict the UI API to keyboard-specific
 // callback functions because the keyboard delegate doesn't need access to all
 // of the UI.
-class KeyboardUiInterface {
+class VR_BASE_EXPORT KeyboardUiInterface {
  public:
   virtual ~KeyboardUiInterface() {}
   virtual void OnInputEdited(const EditedText& info) = 0;

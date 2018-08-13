@@ -66,6 +66,7 @@ class VR_UI_EXPORT UiScene {
   std::vector<UiElement*>& GetAllElements();
   Elements GetElementsToHitTest();
   Elements GetElementsToDraw();
+  bool HasWebXrOverlayElementsToDraw();
   Elements GetWebVrOverlayElementsToDraw();
 
   float background_distance() const { return background_distance_; }

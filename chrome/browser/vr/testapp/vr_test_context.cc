@@ -13,11 +13,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/vr/assets_load_status.h"
+#include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/graphics_delegate.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/toolbar_state.h"
+#include "chrome/browser/vr/render_info.h"
 #include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/testapp/assets_component_version.h"
@@ -457,10 +459,9 @@ void VrTestContext::OnGlInitialized(
   unsigned int content_texture_id = CreateTexture(0xFF000080);
   unsigned int ui_texture_id = CreateTexture(0xFF008000);
 
-  ui_->OnGlInitialized(content_texture_id,
-                       UiElementRenderer::kTextureLocationLocal,
-                       content_texture_id,
-                       UiElementRenderer::kTextureLocationLocal, ui_texture_id);
+  ui_->OnGlInitialized(content_texture_id, kGlTextureLocationLocal,
+                       content_texture_id, kGlTextureLocationLocal,
+                       ui_texture_id);
 
   keyboard_delegate_->Initialize(
       ui_instance_->scene()->SurfaceProviderForTesting(),

@@ -19,13 +19,11 @@
 #include "chrome/browser/android/vr/android_vsync_helper.h"
 #include "chrome/browser/android/vr/vr_controller.h"
 #include "chrome/browser/android/vr/web_xr_presentation_state.h"
-#include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/fps_meter.h"
 #include "chrome/browser/vr/model/controller_model.h"
+#include "chrome/browser/vr/render_info.h"
 #include "chrome/browser/vr/render_loop.h"
 #include "chrome/browser/vr/sliding_average.h"
-#include "chrome/browser/vr/ui_input_manager.h"
-#include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
@@ -64,6 +62,8 @@ class BrowserUiInterface;
 class FPSMeter;
 class GlBrowserInterface;
 class MailboxToSurfaceBridge;
+class PlatformInputHandler;
+class PlatformUiInputDelegate;
 class ScopedGpuTrace;
 class SlidingTimeDeltaAverage;
 class UiInterface;

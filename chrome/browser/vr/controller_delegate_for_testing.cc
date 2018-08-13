@@ -5,24 +5,26 @@
 #include "chrome/browser/vr/controller_delegate_for_testing.h"
 
 #include "chrome/browser/vr/input_event.h"
-#include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/ui_interface.h"
 #include "chrome/browser/vr/ui_scene_constants.h"
 #include "chrome/browser/vr/ui_test_input.h"
+#include "ui/gfx/geometry/quaternion.h"
 
 namespace {
 
 // Laser origin relative to the center of the controller.
 constexpr gfx::Point3F kLaserOriginOffset = {0.0f, 0.0f, -0.05f};
+constexpr gfx::Vector3dF kForwardVector(0.0f, 0.0f, -1.0f);
+constexpr gfx::Vector3dF kStartControllerPosition(0.3, -0.3, -0.3);
 
 // We position the controller in a fixed position (no arm model).
 // The location constants are approximations that allow us to have the
 // controller and the laser visible on the screenshots.
 void SetOriginAndTransform(vr::ControllerModel* model) {
   gfx::Transform mat;
-  mat.Translate3d(vr::kStartControllerPosition);
-  mat.PreconcatTransform(gfx::Transform(
-      gfx::Quaternion(vr::kForwardVector, model->laser_direction)));
+  mat.Translate3d(kStartControllerPosition);
+  mat.PreconcatTransform(
+      gfx::Transform(gfx::Quaternion(kForwardVector, model->laser_direction)));
   model->transform = mat;
   model->laser_origin = kLaserOriginOffset;
   mat.TransformPoint(&model->laser_origin);

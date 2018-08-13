@@ -7,6 +7,7 @@
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/model/text_input_info.h"
 #include "chrome/browser/vr/text_input_delegate.h"
+#include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_scene_constants.h"
 #include "chrome/browser/vr/vr_geometry_util.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -90,8 +91,7 @@ void ContentElement::SetOverlayTextureId(unsigned int texture_id) {
   overlay_texture_id_ = texture_id;
 }
 
-void ContentElement::SetOverlayTextureLocation(
-    UiElementRenderer::TextureLocation location) {
+void ContentElement::SetOverlayTextureLocation(GlTextureLocation location) {
   overlay_texture_location_ = location;
 }
 

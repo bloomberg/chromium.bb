@@ -7,28 +7,31 @@
 
 #include <memory>
 #include <queue>
+#include <utility>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
+#include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/keyboard_ui_interface.h"
-#include "chrome/browser/vr/platform_controller.h"
-#include "chrome/browser/vr/ui_element_renderer.h"
-#include "chrome/browser/vr/ui_input_manager.h"
-#include "chrome/browser/vr/ui_scene.h"
 
 namespace gfx {
 class Point3F;
+class PointF;
+class Transform;
 }
 
 namespace vr {
 
 class BrowserUiInterface;
+class InputEvent;
 class PlatformUiInputDelegate;
 struct ControllerModel;
 struct RenderInfo;
 struct ReticleModel;
 enum class UserFriendlyElementName;
+
+using InputEventList = std::vector<std::unique_ptr<InputEvent>>;
 
 // This interface represents the methods that should be called by its owner, and
 // also serves to make all such methods virtual for the sake of separating a UI
@@ -62,12 +65,11 @@ class UiInterface : public BrowserUiInterface, public KeyboardUiInterface {
   virtual void ShowPlatformToast(const base::string16& text) = 0;
   virtual void CancelPlatformToast() = 0;
   virtual bool ShouldRenderWebVr() = 0;
-  virtual void OnGlInitialized(
-      unsigned int content_texture_id,
-      UiElementRenderer::TextureLocation content_location,
-      unsigned int content_overlay_texture_id,
-      UiElementRenderer::TextureLocation content_overlay_location,
-      unsigned int ui_texture_id) = 0;
+  virtual void OnGlInitialized(unsigned int content_texture_id,
+                               GlTextureLocation content_location,
+                               unsigned int content_overlay_texture_id,
+                               GlTextureLocation content_overlay_location,
+                               unsigned int ui_texture_id) = 0;
   virtual void OnPause() = 0;
   virtual void OnControllerUpdated(const ControllerModel& controller_model,
                                    const ReticleModel& reticle_model) = 0;
@@ -96,7 +98,7 @@ class UiInterface : public BrowserUiInterface, public KeyboardUiInterface {
                          float xborder,
                          float yborder) = 0;
   virtual void DrawWebVrOverlayForeground(const RenderInfo&) = 0;
-  virtual UiScene::Elements GetWebVrOverlayElementsToDraw() = 0;
+  virtual bool HasWebXrOverlayElementsToDraw() = 0;
   virtual void HandleInput(base::TimeTicks current_time,
                            const RenderInfo& render_info,
                            const ControllerModel& controller_model,
@@ -107,14 +109,14 @@ class UiInterface : public BrowserUiInterface, public KeyboardUiInterface {
   virtual void RequestUnfocus(int element_id) = 0;
 
   // This function calculates the minimal FOV (in degrees) which covers all
-  // visible |elements| as if it was viewing from fov_recommended. For example,
-  // if fov_recommended is {20.f, 20.f, 20.f, 20.f}. And all elements appear on
-  // screen within a FOV of {-11.f, 19.f, 9.f, 9.f} if we use fov_recommended.
-  // Ideally, the calculated minimal FOV should be the same. In practice, the
-  // elements might get clipped near the edge sometimes due to float precison.
-  // To fix this, we add a small margin (1 degree) to all directions. So the
-  // |out_fov| set by this function should be {-10.f, 20.f, 10.f, 10.f} in the
-  // example case.
+  // visible overflow elements as if it was viewing from fov_recommended. For
+  // example, if fov_recommended is {20.f, 20.f, 20.f, 20.f}. And all elements
+  // appear on screen within a FOV of {-11.f, 19.f, 9.f, 9.f} if we use
+  // fov_recommended. Ideally, the calculated minimal FOV should be the same. In
+  // practice, the elements might get clipped near the edge sometimes due to
+  // float precision. To fix this, we add a small margin (1 degree) to all
+  // directions. So the |out_fov| set by this function should be {-10.f, 20.f,
+  // 10.f, 10.f} in the example case.
   // Using a smaller FOV could improve the performance a lot while we are
   // showing UIs on top of WebVR content.
   struct FovRectangle {
@@ -123,10 +125,12 @@ class UiInterface : public BrowserUiInterface, public KeyboardUiInterface {
     float bottom;
     float top;
   };
-  virtual FovRectangle GetMinimalFov(
-      const gfx::Transform& view_matrix,
-      const std::vector<const UiElement*>& elements,
-      const FovRectangle& fov_recommended,
+  virtual std::pair<FovRectangle, FovRectangle>
+  GetMinimalFovForWebXrOverlayElements(
+      const gfx::Transform& left_view,
+      const FovRectangle& fov_recommended_left,
+      const gfx::Transform& right_view,
+      const FovRectangle& fov_recommended_right,
       float z_near) = 0;
 };
 

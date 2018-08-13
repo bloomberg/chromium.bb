@@ -15,7 +15,6 @@
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_interface.h"
-#include "chrome/browser/vr/ui_renderer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/transform.h"
 

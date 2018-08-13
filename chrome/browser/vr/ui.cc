@@ -9,6 +9,7 @@
 #include "chrome/browser/vr/ui.h"
 
 #include "base/numerics/math_constants.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/vr/content_input_delegate.h"
@@ -38,11 +39,36 @@ namespace vr {
 
 namespace {
 
-float Clamp(float value, float min, float max) {
-  return std::max(min, std::min(value, max));
-}
-
 constexpr float kMargin = 1.f * base::kPiFloat / 180;
+
+UiElementName UserFriendlyElementNameToUiElementName(
+    UserFriendlyElementName name) {
+  switch (name) {
+    case UserFriendlyElementName::kUrl:
+      return kUrlBarOriginRegion;
+    case UserFriendlyElementName::kBackButton:
+      return kUrlBarBackButton;
+    case UserFriendlyElementName::kForwardButton:
+      return kOverflowMenuForwardButton;
+    case UserFriendlyElementName::kReloadButton:
+      return kOverflowMenuReloadButton;
+    case UserFriendlyElementName::kOverflowMenu:
+      return kUrlBarOverflowButton;
+    case UserFriendlyElementName::kPageInfoButton:
+      return kUrlBarSecurityButton;
+    case UserFriendlyElementName::kBrowsingDialog:
+      return k2dBrowsingHostedUiContent;
+    case UserFriendlyElementName::kContentQuad:
+      return kContentQuad;
+    case UserFriendlyElementName::kNewIncognitoTab:
+      return kOverflowMenuNewIncognitoTabItem;
+    case UserFriendlyElementName::kCloseIncognitoTabs:
+      return kOverflowMenuCloseAllIncognitoTabsItem;
+    default:
+      NOTREACHED();
+      return kNone;
+  }
+}
 
 }  // namespace
 
@@ -338,12 +364,11 @@ bool Ui::ShouldRenderWebVr() {
   return model_->web_vr.presenting_web_vr();
 }
 
-void Ui::OnGlInitialized(
-    unsigned int content_texture_id,
-    UiElementRenderer::TextureLocation content_location,
-    unsigned int content_overlay_texture_id,
-    UiElementRenderer::TextureLocation content_overlay_location,
-    unsigned int ui_texture_id) {
+void Ui::OnGlInitialized(unsigned int content_texture_id,
+                         GlTextureLocation content_location,
+                         unsigned int content_overlay_texture_id,
+                         GlTextureLocation content_overlay_location,
+                         unsigned int ui_texture_id) {
   ui_element_renderer_ = std::make_unique<UiElementRenderer>();
   ui_renderer_ =
       std::make_unique<UiRenderer>(scene_.get(), ui_element_renderer_.get());
@@ -637,8 +662,8 @@ void Ui::DrawWebVrOverlayForeground(const vr::RenderInfo& info) {
   ui_renderer_->DrawWebVrOverlayForeground(info);
 }
 
-UiScene::Elements Ui::GetWebVrOverlayElementsToDraw() {
-  return scene_->GetWebVrOverlayElementsToDraw();
+bool Ui::HasWebXrOverlayElementsToDraw() {
+  return scene_->HasWebXrOverlayElementsToDraw();
 }
 
 void Ui::HandleInput(base::TimeTicks current_time,
@@ -677,6 +702,18 @@ void Ui::HandleMenuButtonEvents(InputEventList* input_event_list) {
       ++it;
     }
   }
+}
+
+std::pair<UiInterface::FovRectangle, UiInterface::FovRectangle>
+Ui::GetMinimalFovForWebXrOverlayElements(
+    const gfx::Transform& left_view,
+    const FovRectangle& fov_recommended_left,
+    const gfx::Transform& right_view,
+    const FovRectangle& fov_recommended_right,
+    float z_near) {
+  auto elements = scene_->GetWebVrOverlayElementsToDraw();
+  return {GetMinimalFov(left_view, elements, fov_recommended_left, z_near),
+          GetMinimalFov(right_view, elements, fov_recommended_right, z_near)};
 }
 
 Ui::FovRectangle Ui::GetMinimalFov(
@@ -740,10 +777,11 @@ Ui::FovRectangle Ui::GetMinimalFov(
     }
 
     // Clamp to Z near plane's boundary.
-    bounds_left = Clamp(bounds_left, z_near_left, z_near_right);
-    bounds_right = Clamp(bounds_right, z_near_left, z_near_right);
-    bounds_bottom = Clamp(bounds_bottom, z_near_bottom, z_near_top);
-    bounds_top = Clamp(bounds_top, z_near_bottom, z_near_top);
+    bounds_left = base::ClampToRange(bounds_left, z_near_left, z_near_right);
+    bounds_right = base::ClampToRange(bounds_right, z_near_left, z_near_right);
+    bounds_bottom =
+        base::ClampToRange(bounds_bottom, z_near_bottom, z_near_top);
+    bounds_top = base::ClampToRange(bounds_top, z_near_bottom, z_near_top);
 
     left = std::min(bounds_left, left);
     right = std::max(bounds_right, right);
