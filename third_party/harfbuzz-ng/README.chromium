@@ -14,9 +14,16 @@ API from the old one.
 
 This copy of harfbuzz is updated by putting the new commit hash matching one in
 https://chromium.googlesource.com/external/github.com/harfbuzz/harfbuzz/ to the
-top level DEPS file. When upgrading, check whether files have been added or
-removed in upstream and whether the BUILD.gn file needs to be updated to reflect
-that.
+top level DEPS file. When upgrading, check in ther HarfBuzz repository whether
+files have been added or removed in upstream and whether the BUILD.gn file needs
+to be updated to reflect that or whether the files can be added to the exception
+lis below.
+
+Example:
+    $ cd ~/dev/harfbuzz/
+    $ git diff --diff-filter=A --stat 1.8.3..1.8.7
+
+Replace 1.8.3 and 1.8.7 with the respective revision hashes for your roll CL.
 
 Chromium-local cherry picks or patches can be done by pushing new branches to
 refs/heads/chromium/ of [1]. The set of HarfBuzz OWNERS has write rights to this
@@ -46,9 +53,12 @@ Currently we are intentionally not building the following files from HarfBuzz.
     hb-directwrite.cc
     hb-directwrite.h
     hb-fallback-shape.cc
+    hb-iter-private.hh
+    hb-machinery-private.hh
     hb-map-private.hh
     hb-map.cc
     hb-map.h
+    hb-null.hh
     hb-ot-color-sbix-table.hh
     hb-ot-color-svg-table.hh
     hb-ot-color.cc
@@ -58,4 +68,5 @@ Currently we are intentionally not building the following files from HarfBuzz.
     hb-subset.cc
     hb-uniscribe.cc
     hb-uniscribe.h
+    hb-vector-private.hh
     test-unicode-ranges.cc
