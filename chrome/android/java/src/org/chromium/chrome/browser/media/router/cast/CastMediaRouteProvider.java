@@ -199,6 +199,7 @@ public class CastMediaRouteProvider extends BaseMediaRouteProvider {
         ChromeCastSessionManager.get().stopApplication();
     }
 
+    // Migrated to CafMediaRouteProvider. See https://crbug.com/711860.
     @Override
     public void detachRoute(String routeId) {
         mRoutes.remove(routeId);

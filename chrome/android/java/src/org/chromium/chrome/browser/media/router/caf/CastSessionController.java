@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.media.router.caf;
 
 import com.google.android.gms.cast.framework.CastSession;
 
-import org.chromium.chrome.browser.media.router.ClientRecord;
 import org.chromium.chrome.browser.media.router.MediaSink;
 import org.chromium.chrome.browser.media.router.MediaSource;
 
@@ -19,11 +18,11 @@ public class CastSessionController {
     private static final String TAG = "CastSessionController";
 
     private final CastSession mCastSession;
-    private final CafMediaRouteProvider mProvider;
+    private final CafBaseMediaRouteProvider mProvider;
     private final MediaSink mSink;
     private final MediaSource mSource;
 
-    public CastSessionController(CastSession castSession, CafMediaRouteProvider provider,
+    public CastSessionController(CastSession castSession, CafBaseMediaRouteProvider provider,
             MediaSink sink, MediaSource source) {
         mCastSession = castSession;
         mProvider = provider;
@@ -43,19 +42,6 @@ public class CastSessionController {
         return mCastSession;
     }
 
-    public void onSessionStarted() {
-        for (ClientRecord client : mProvider.getClientRecords().values()) {
-            if (!client.isConnected) continue;
-
-            onClientConnected(client.clientId);
-        }
-        // TODO(zqzhang): register necessary listeners and attach to RemoteMediaClient.
-    }
-
-    public void onSessionEnded() {
-        // Not implemented.
-    }
-
     public void endSession() {
         CastSession currentCastSession =
                 CastUtils.getCastContext().getSessionManager().getCurrentCastSession();
@@ -64,12 +50,12 @@ public class CastSessionController {
         }
     }
 
-    public void notifyReceiverAction(
-            String routeId, MediaSink sink, String clientId, String action) {
+    public void onSessionStarted() {
         // Not implemented.
     }
 
-    private void onClientConnected(String clientId) {
+    public void notifyReceiverAction(
+            String routeId, MediaSink sink, String clientId, String action) {
         // Not implemented.
     }
 }

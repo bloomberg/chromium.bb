@@ -1,17 +1,21 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-package org.chromium.chrome.browser.media.router.cast;
+package org.chromium.chrome.browser.media.router.caf;
 
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.media.MediaRouteSelector;
 import android.support.v7.media.MediaRouter;
 import android.support.v7.media.MediaRouter.RouteInfo;
 
+import com.google.android.gms.cast.framework.CastSession;
+import com.google.android.gms.cast.framework.SessionManagerListener;
+
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.DiscoveryCallback;
 import org.chromium.chrome.browser.media.router.DiscoveryDelegate;
-import org.chromium.chrome.browser.media.router.FlingingController;
 import org.chromium.chrome.browser.media.router.MediaRoute;
 import org.chromium.chrome.browser.media.router.MediaRouteManager;
 import org.chromium.chrome.browser.media.router.MediaRouteProvider;
@@ -24,19 +28,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 /**
- * A {@link BaseMediaRouteProvider} common implementation for MediaRouteProviders.
+ * A base provider containing common implementation for CAF-based {@link MediaRouteProvider}s.
  */
-public abstract class BaseMediaRouteProvider
-        implements MediaRouteProvider, DiscoveryDelegate,
-                   ChromeCastSessionManager.CastSessionManagerListener {
-    private static final String TAG = "MediaRouter";
+public abstract class CafBaseMediaRouteProvider
+        implements MediaRouteProvider, DiscoveryDelegate, SessionManagerListener<CastSession> {
+    private static final String TAG = "CafMR";
 
     protected static final List<MediaSink> NO_SINKS = Collections.emptyList();
-
     protected final MediaRouter mAndroidMediaRouter;
     protected final MediaRouteManager mManager;
     protected final Map<String, DiscoveryCallback> mDiscoveryCallbacks =
@@ -45,9 +44,10 @@ public abstract class BaseMediaRouteProvider
     protected Handler mHandler = new Handler();
 
     // There can be only one Cast session at the same time on Android.
-    protected CastSession mSession;
+    private CastSessionController mSessionController;
+    private CreateRouteRequestInfo mPendingCreateRouteRequestInfo;
 
-    protected BaseMediaRouteProvider(MediaRouter androidMediaRouter, MediaRouteManager manager) {
+    protected CafBaseMediaRouteProvider(MediaRouter androidMediaRouter, MediaRouteManager manager) {
         mAndroidMediaRouter = androidMediaRouter;
         mManager = manager;
     }
@@ -57,21 +57,14 @@ public abstract class BaseMediaRouteProvider
      * not support the source.
      */
     @Nullable
-    protected abstract MediaSource getSourceFromId(@Nonnull String sourceId);
+    protected abstract MediaSource getSourceFromId(@NonNull String sourceId);
 
-    /**
-     * @return A CastSessionLaunchRequest encapsulating a session launch request.
-     */
-    @Nullable
-    protected abstract ChromeCastSessionManager.CastSessionLaunchRequest createSessionLaunchRequest(
-            MediaSource source, MediaSink sink, String presentationId, String origin, int tabId,
-            boolean isIncognito, int nativeRequestId);
+    protected abstract void requestSessionLaunch(CreateRouteRequestInfo createRouteRequest);
 
     /**
      * Forward the sinks back to the native counterpart.
      */
-    // Migrated to CafBaseMediaRouteProvider. See https://crbug.com/711860.
-    protected void onSinksReceivedInternal(String sourceId, @Nonnull List<MediaSink> sinks) {
+    private final void onSinksReceivedInternal(String sourceId, @NonNull List<MediaSink> sinks) {
         Log.d(TAG, "Reporting %d sinks for source: %s", sinks.size(), sourceId);
         mManager.onSinksReceived(sourceId, this, sinks);
     }
@@ -79,25 +72,19 @@ public abstract class BaseMediaRouteProvider
     /**
      * {@link DiscoveryDelegate} implementation.
      */
-    // Migrated to CafBaseMediaRouteProvider. See https://crbug.com/711860.
     @Override
-    public void onSinksReceived(String sourceId, @Nonnull List<MediaSink> sinks) {
+    public final void onSinksReceived(String sourceId, @NonNull List<MediaSink> sinks) {
         Log.d(TAG, "Received %d sinks for sourceId: %s", sinks.size(), sourceId);
         mHandler.post(() -> { onSinksReceivedInternal(sourceId, sinks); });
     }
 
-    /**
-     * {@link MediaRouteProvider} implementation.
-     */
-    // Migrated to CafBaseMediaRouteProvider. See https://crbug.com/711860.
     @Override
-    public boolean supportsSource(@Nonnull String sourceId) {
+    public final boolean supportsSource(String sourceId) {
         return getSourceFromId(sourceId) != null;
     }
 
-    // Migrated to CafBaseMediaRouteProvider. See https://crbug.com/711860.
     @Override
-    public void startObservingMediaSinks(@Nonnull String sourceId) {
+    public final void startObservingMediaSinks(String sourceId) {
         Log.d(TAG, "startObservingMediaSinks: " + sourceId);
 
         if (mAndroidMediaRouter == null) {
@@ -143,15 +130,16 @@ public abstract class BaseMediaRouteProvider
         mDiscoveryCallbacks.put(applicationId, callback);
     }
 
-    // Migrated to CafBaseMediaRouteProvider. See https://crbug.com/711860.
     @Override
-    public void stopObservingMediaSinks(@Nonnull String sourceId) {
-        Log.d(TAG, "stopObservingMediaSinks: " + sourceId);
+    public final void stopObservingMediaSinks(String sourceId) {
+        Log.d(TAG, "startObservingMediaSinks: " + sourceId);
+
         if (mAndroidMediaRouter == null) return;
 
         MediaSource source = getSourceFromId(sourceId);
         if (source == null) return;
 
+        // No-op, if already monitoring the application for this source.
         String applicationId = source.getApplicationId();
         DiscoveryCallback callback = mDiscoveryCallbacks.get(applicationId);
         if (callback == null) return;
@@ -164,10 +152,13 @@ public abstract class BaseMediaRouteProvider
         }
     }
 
-    // Migrated to CafBaseMediaRouteProvider. See https://crbug.com/711860.
     @Override
-    public void createRoute(String sourceId, String sinkId, String presentationId, String origin,
-            int tabId, boolean isIncognito, int nativeRequestId) {
+    public final void createRoute(String sourceId, String sinkId, String presentationId,
+            String origin, int tabId, boolean isIncognito, int nativeRequestId) {
+        Log.d(TAG, "createRoute");
+        if (mPendingCreateRouteRequestInfo != null) {
+            // TODO(zqzhang): do something.
+        }
         if (mAndroidMediaRouter == null) {
             mManager.onRouteRequestError("Not supported", nativeRequestId);
             return;
@@ -185,59 +176,87 @@ public abstract class BaseMediaRouteProvider
             return;
         }
 
-        ChromeCastSessionManager.CastSessionLaunchRequest request = createSessionLaunchRequest(
+        mPendingCreateRouteRequestInfo = new CreateRouteRequestInfo(
                 source, sink, presentationId, origin, tabId, isIncognito, nativeRequestId);
 
-        ChromeCastSessionManager.get().requestSessionLaunch(request);
+        requestSessionLaunch(mPendingCreateRouteRequestInfo);
     }
 
     @Override
-    public abstract void joinRoute(
-            String sourceId, String presentationId, String origin, int tabId, int nativeRequestId);
+    public void closeRoute(String routeId) {
+        MediaRoute route = mRoutes.get(routeId);
+        if (route == null) return;
+
+        if (!hasSession()) {
+            mRoutes.remove(routeId);
+            mManager.onRouteClosed(routeId);
+            return;
+        }
+
+        mSessionController.endSession();
+    }
 
     @Override
-    public abstract void closeRoute(String routeId);
-
-    @Override
-    public abstract void detachRoute(String routeId);
-
-    @Override
-    public abstract void sendStringMessage(String routeId, String message, int nativeCallbackId);
-
-    // ChromeCastSessionObserver implementation.
-    @Override
-    public abstract void onSessionStarting(
-            ChromeCastSessionManager.CastSessionLaunchRequest originalRequest);
-
-    @Override
-    public abstract void onSessionEnded();
-
-    // Migrated to CafBaseMediaRouteProvider. See https://crbug.com/711860.
-    @Override
-    public void onSessionStartFailed() {
+    public void onSessionStartFailed(CastSession session, int error) {
         for (String routeId : mRoutes.keySet()) {
             mManager.onRouteClosedWithError(routeId, "Launch error");
         }
         mRoutes.clear();
-    };
-
-    // Migrated to CafBaseMediaRouteProvider. See https://crbug.com/711860.
-    @Override
-    public void onSessionStarted(CastSession session) {
-        mSession = session;
-    }
-
-    // Migrated to CafBaseMediaRouteProvider.endAllRoutes(). See https://crbug.com/711860.
-    @Override
-    public void onSessionStopAction() {
-        if (mSession == null) return;
-
-        for (String routeId : mRoutes.keySet()) closeRoute(routeId);
     }
 
     @Override
-    @Nullable
-    public FlingingController getFlingingController(String routeId) {
-        return null;
+    public final void onSessionStarted(CastSession session, String sessionId) {
+        mSessionController = new CastSessionController(session, this,
+                mPendingCreateRouteRequestInfo.sink, mPendingCreateRouteRequestInfo.source);
+
+        onSessionStarted(mPendingCreateRouteRequestInfo);
+
+        MediaSink sink = mPendingCreateRouteRequestInfo.sink;
+        MediaSource source = mPendingCreateRouteRequestInfo.source;
+        MediaRoute route = new MediaRoute(
+                sink.getId(), source.getSourceId(), mPendingCreateRouteRequestInfo.presentationId);
+        mRoutes.put(route.id, route);
+        mManager.onRouteCreated(
+                route.id, route.sinkId, mPendingCreateRouteRequestInfo.nativeRequestId, this, true);
+
+        mPendingCreateRouteRequestInfo = null;
+    }
+
+    // TODO(zqzhang): this is a temporary workaround for give CafMRP to manage ClientRecords on
+    // session start. This needs to be removed once ClientRecord management gets refactored.
+    abstract void onSessionStarted(CreateRouteRequestInfo request);
+
+    protected boolean hasSession() {
+        return mSessionController != null;
+    }
+
+    protected CastSessionController sessionController() {
+        return mSessionController;
+    }
+
+    // TODO(zqzhang): This should go away once the session controller becomes a sticky instance.
+    protected void detachFromSession() {
+        mSessionController = null;
+    }
+
+    protected static class CreateRouteRequestInfo {
+        public final MediaSource source;
+        public final MediaSink sink;
+        public final String presentationId;
+        public final String origin;
+        public final int tabId;
+        public final boolean isIncognito;
+        public final int nativeRequestId;
+
+        public CreateRouteRequestInfo(MediaSource source, MediaSink sink, String presentationId,
+                String origin, int tabId, boolean isIncognito, int nativeRequestId) {
+            this.source = source;
+            this.sink = sink;
+            this.presentationId = presentationId;
+            this.origin = origin;
+            this.tabId = tabId;
+            this.isIncognito = isIncognito;
+            this.nativeRequestId = nativeRequestId;
+        }
     }
 }
