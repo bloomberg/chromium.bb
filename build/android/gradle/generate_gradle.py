@@ -169,7 +169,7 @@ class _ProjectEntry(object):
     self._build_config = None
     self._java_files = None
     self._all_entries = None
-    self.android_test_entries = None
+    self.android_test_entries = []
 
   @classmethod
   def FromGnTarget(cls, gn_target):
@@ -373,21 +373,24 @@ class _ProjectContextGenerator(object):
       res_zips += entry.ResZips()
     return set(_RebasePath(res_zips))
 
-  def GeneratedInputs(self, root_entry):
-    generated_inputs = self.AllResZips(root_entry)
-    generated_inputs.update(self.AllSrcjars(root_entry))
+  def GeneratedInputs(self, root_entry, fast=None):
+    generated_inputs = set()
+    if not fast:
+      generated_inputs.update(self.AllResZips(root_entry))
+      generated_inputs.update(self.AllSrcjars(root_entry))
     for entry in self._GetEntries(root_entry):
       generated_inputs.update(entry.GeneratedJavaFiles())
       generated_inputs.update(entry.PrebuiltJars())
     return generated_inputs
 
-  def GeneratedZips(self, root_entry):
+  def GeneratedZips(self, root_entry, fast=None):
     entry_output_dir = self.EntryOutputDir(root_entry)
     tuples = []
-    tuples.extend((s, os.path.join(entry_output_dir, _SRCJARS_SUBDIR))
-                  for s in self.AllSrcjars(root_entry))
-    tuples.extend((s, os.path.join(entry_output_dir, _RES_SUBDIR))
-                  for s in self.AllResZips(root_entry))
+    if not fast:
+      tuples.extend((s, os.path.join(entry_output_dir, _SRCJARS_SUBDIR))
+                    for s in self.AllSrcjars(root_entry))
+      tuples.extend((s, os.path.join(entry_output_dir, _RES_SUBDIR))
+                    for s in self.AllResZips(root_entry))
     return tuples
 
   def GenerateManifest(self, root_entry):
@@ -972,24 +975,24 @@ def main():
     _WriteFile(os.path.join(generator.project_dir, 'local.properties'),
                _GenerateLocalProperties(sdk_path))
 
-  if not args.fast:
-    zip_tuples = []
-    generated_inputs = set()
-    for entry in entries:
+  zip_tuples = []
+  generated_inputs = set()
+  for entry in entries:
+    entries_to_gen = [entry]
+    entries_to_gen.extend(entry.android_test_entries)
+    for entry_to_gen in entries_to_gen:
       # Build all paths references by .gradle that exist within output_dir.
-      generated_inputs.update(generator.GeneratedInputs(entry))
-      zip_tuples.extend(generator.GeneratedZips(entry))
-    if generated_inputs:
-      logging.warning('Building generated source files...')
-      targets = _RebasePath(generated_inputs, output_dir)
-      _RunNinja(output_dir, targets, args.j)
-    if zip_tuples:
-      _ExtractZips(generator.project_dir, zip_tuples)
+      generated_inputs.update(
+          generator.GeneratedInputs(entry_to_gen, args.fast))
+      zip_tuples.extend(generator.GeneratedZips(entry_to_gen, args.fast))
+  if generated_inputs:
+    logging.warning('Building generated source files...')
+    targets = _RebasePath(generated_inputs, output_dir)
+    _RunNinja(output_dir, targets, args.j)
+  if zip_tuples:
+    _ExtractZips(generator.project_dir, zip_tuples)
 
   logging.warning('Generated projects for Android Studio %s', channel)
-  if not args.fast:
-    logging.warning('Run with --fast flag to skip generating files (faster, '
-                    'but less correct)')
   logging.warning('For more tips: https://chromium.googlesource.com/chromium'
                   '/src.git/+/master/docs/android_studio.md')
 
