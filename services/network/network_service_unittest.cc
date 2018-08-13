@@ -967,6 +967,11 @@ class AllowBadCertsNetworkServiceClient : public mojom::NetworkServiceClient {
     NOTREACHED();
   }
 
+  void OnLoadingStateUpdate(std::vector<mojom::LoadInfoPtr> infos,
+                            OnLoadingStateUpdateCallback callback) override {
+    NOTREACHED();
+  }
+
  private:
   mojo::Binding<mojom::NetworkServiceClient> binding_;
 

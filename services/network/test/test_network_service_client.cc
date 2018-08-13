@@ -104,4 +104,8 @@ void TestNetworkServiceClient::OnFileUploadRequested(
   std::move(callback).Run(net::OK, std::move(files));
 }
 
+void TestNetworkServiceClient::OnLoadingStateUpdate(
+    std::vector<mojom::LoadInfoPtr> infos,
+    OnLoadingStateUpdateCallback callback) {}
+
 }  // namespace network
