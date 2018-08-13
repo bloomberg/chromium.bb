@@ -54,10 +54,11 @@ bool CheckRequirementsOnResponseUserEntity(
   return true;
 }
 
-// Checks whether credential ID returned from the authenticator was included
-// in the allowed list for authenticators. If the device has resident key
-// support, returned credential ID may be resident credential. Thus, returned
-// credential ID need not be in allowed list.
+// Checks whether credential ID returned from the authenticator and transport
+// type used matches the transport type and credential ID defined in
+// PublicKeyCredentialDescriptor of the allowed list. If the device has resident
+// key support, returned credential ID may be resident credential. Thus,
+// returned credential ID need not be in allowed list.
 // TODO(hongjunchoi) : Add link to section of the CTAP spec once it is
 // published.
 bool CheckResponseCredentialIdMatchesRequestAllowList(
@@ -71,11 +72,47 @@ bool CheckResponseCredentialIdMatchesRequestAllowList(
   }
   // Credential ID may be omitted if allow list has size 1. Otherwise, it needs
   // to match.
+  const auto transport_used = authenticator.AuthenticatorTransport();
   return (allow_list->size() == 1 && !response.credential()) ||
          std::any_of(allow_list->cbegin(), allow_list->cend(),
-                     [&response](const auto& credential) {
-                       return credential.id() == response.raw_credential_id();
+                     [&response, transport_used](const auto& credential) {
+                       return credential.id() == response.raw_credential_id() &&
+                              base::ContainsKey(credential.transports(),
+                                                transport_used);
                      });
+}
+
+// Checks UserVerificationRequirement enum passed from the relying party is
+// compatible with the authenticator, and updates the request to the
+// "effective" user verification requirement.
+// https://w3c.github.io/webauthn/#effective-user-verification-requirement-for-assertion
+bool CheckUserVerificationCompatible(FidoAuthenticator* authenticator,
+                                     CtapGetAssertionRequest* request) {
+  const auto uv_availability =
+      authenticator->Options().user_verification_availability();
+
+  switch (request->user_verification()) {
+    case UserVerificationRequirement::kRequired:
+      return uv_availability ==
+             AuthenticatorSupportedOptions::UserVerificationAvailability::
+                 kSupportedAndConfigured;
+
+    case UserVerificationRequirement::kDiscouraged:
+      return true;
+
+    case UserVerificationRequirement::kPreferred:
+      if (uv_availability ==
+          AuthenticatorSupportedOptions::UserVerificationAvailability::
+              kSupportedAndConfigured) {
+        request->SetUserVerification(UserVerificationRequirement::kRequired);
+      } else {
+        request->SetUserVerification(UserVerificationRequirement::kDiscouraged);
+      }
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace
@@ -116,43 +153,6 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
 }
 
 GetAssertionRequestHandler::~GetAssertionRequestHandler() = default;
-
-namespace {
-
-// Checks UserVerificationRequirement enum passed from the relying party is
-// compatible with the authenticator, and updates the request to the
-// "effective" user verification requirement.
-// https://w3c.github.io/webauthn/#effective-user-verification-requirement-for-assertion
-bool CheckUserVerificationCompatible(FidoAuthenticator* authenticator,
-                                     CtapGetAssertionRequest* request) {
-  const auto uv_availability =
-      authenticator->Options().user_verification_availability();
-
-  switch (request->user_verification()) {
-    case UserVerificationRequirement::kRequired:
-      return uv_availability ==
-             AuthenticatorSupportedOptions::UserVerificationAvailability::
-                 kSupportedAndConfigured;
-
-    case UserVerificationRequirement::kDiscouraged:
-      return true;
-
-    case UserVerificationRequirement::kPreferred:
-      if (uv_availability ==
-          AuthenticatorSupportedOptions::UserVerificationAvailability::
-              kSupportedAndConfigured) {
-        request->SetUserVerification(UserVerificationRequirement::kRequired);
-      } else {
-        request->SetUserVerification(UserVerificationRequirement::kDiscouraged);
-      }
-      return true;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-}  // namespace
 
 void GetAssertionRequestHandler::DispatchRequest(
     FidoAuthenticator* authenticator) {

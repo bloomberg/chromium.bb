@@ -238,4 +238,33 @@ TEST_F(FidoGetAssertionHandlerTest, IncorrectUserEntity) {
   EXPECT_FALSE(get_assertion_callback().was_called());
 }
 
+// Tests a scenario where authenticator of incorrect transport type was used to
+// conduct CTAP GetAssertion call.
+TEST_F(FidoGetAssertionHandlerTest, IncorrectTransportType) {
+  // GetAssertion request that expects GetAssertion call for credential
+  // |CredentialType::kPublicKey| to be signed with Cable authenticator.
+  CtapGetAssertionRequest request(test_data::kRelyingPartyId,
+                                  test_data::kClientDataHash);
+  request.SetAllowList(
+      {{CredentialType::kPublicKey,
+        fido_parsing_utils::Materialize(
+            test_data::kTestGetAssertionCredentialId),
+        {FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy}}});
+  auto request_handler =
+      CreateGetAssertionHandlerWithRequest(std::move(request));
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+  auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation();
+  // Since transport type of |device| is different from what the relying party
+  // defined in |request| above, this request should fail.
+  device->SetDeviceTransport(FidoTransportProtocol::kUsbHumanInterfaceDevice);
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetAssertion,
+      test_data::kTestGetAssertionResponse);
+
+  discovery()->AddDevice(std::move(device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(get_assertion_callback().was_called());
+}
+
 }  // namespace device

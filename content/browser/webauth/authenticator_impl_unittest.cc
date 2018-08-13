@@ -65,6 +65,7 @@ using blink::mojom::PublicKeyCredentialRpEntityPtr;
 using blink::mojom::PublicKeyCredentialType;
 using blink::mojom::PublicKeyCredentialUserEntity;
 using blink::mojom::PublicKeyCredentialUserEntityPtr;
+using blink::mojom::AuthenticatorTransport;
 using cbor::CBORValue;
 using cbor::CBORReader;
 
@@ -257,6 +258,7 @@ std::vector<PublicKeyCredentialDescriptorPtr> GetTestAllowCredentials() {
   credential->type = PublicKeyCredentialType::PUBLIC_KEY;
   std::vector<uint8_t> id(32, 0x0A);
   credential->id = id;
+  credential->transports.push_back(AuthenticatorTransport::USB);
   descriptors.push_back(std::move(credential));
   return descriptors;
 }
@@ -827,6 +829,7 @@ TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
     auto credential = PublicKeyCredentialDescriptor::New();
     credential->type = PublicKeyCredentialType::PUBLIC_KEY;
     credential->id.resize(size);
+    credential->transports.push_back(AuthenticatorTransport::USB);
 
     const bool should_be_valid = size < 256;
     if (should_be_valid) {
@@ -1538,6 +1541,8 @@ TEST_F(AuthenticatorContentBrowserClientTest, Unfocused) {
     auto credential = PublicKeyCredentialDescriptor::New();
     credential->type = PublicKeyCredentialType::PUBLIC_KEY;
     credential->id.resize(16);
+    credential->transports = {AuthenticatorTransport::USB};
+
     ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
         credential->id, kTestRelyingPartyId));
     options->allow_credentials.emplace_back(std::move(credential));

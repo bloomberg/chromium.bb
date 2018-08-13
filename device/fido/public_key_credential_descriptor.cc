@@ -41,7 +41,22 @@ PublicKeyCredentialDescriptor::CreateFromCBORValue(
 PublicKeyCredentialDescriptor::PublicKeyCredentialDescriptor(
     CredentialType credential_type,
     std::vector<uint8_t> id)
-    : credential_type_(credential_type), id_(std::move(id)) {}
+    : PublicKeyCredentialDescriptor(
+          credential_type,
+          std::move(id),
+          {FidoTransportProtocol::kUsbHumanInterfaceDevice,
+           FidoTransportProtocol::kBluetoothLowEnergy,
+           FidoTransportProtocol::kNearFieldCommunication,
+           FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
+           FidoTransportProtocol::kInternal}) {}
+
+PublicKeyCredentialDescriptor::PublicKeyCredentialDescriptor(
+    CredentialType credential_type,
+    std::vector<uint8_t> id,
+    base::flat_set<FidoTransportProtocol> transports)
+    : credential_type_(credential_type),
+      id_(std::move(id)),
+      transports_(std::move(transports)) {}
 
 PublicKeyCredentialDescriptor::PublicKeyCredentialDescriptor(
     const PublicKeyCredentialDescriptor& other) = default;

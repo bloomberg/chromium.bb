@@ -5,7 +5,9 @@
 #include "content/browser/webauth/authenticator_type_converters.h"
 
 #include <algorithm>
+#include <utility>
 
+#include "base/containers/flat_set.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 
@@ -33,6 +35,10 @@ TypeConverter<::device::FidoTransportProtocol, AuthenticatorTransport>::Convert(
       return ::device::FidoTransportProtocol::kNearFieldCommunication;
     case AuthenticatorTransport::BLE:
       return ::device::FidoTransportProtocol::kBluetoothLowEnergy;
+    case AuthenticatorTransport::CABLE:
+      return ::device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy;
+    case AuthenticatorTransport::INTERNAL:
+      return ::device::FidoTransportProtocol::kInternal;
   }
   NOTREACHED();
   return ::device::FidoTransportProtocol::kUsbHumanInterfaceDevice;
@@ -78,8 +84,14 @@ TypeConverter<std::vector<::device::PublicKeyCredentialDescriptor>,
   credential_descriptors.reserve(input.size());
 
   for (const auto& credential : input) {
+    base::flat_set<::device::FidoTransportProtocol> protocols;
+    for (const auto& protocol : credential->transports) {
+      protocols.emplace(ConvertTo<::device::FidoTransportProtocol>(protocol));
+    }
+
     credential_descriptors.emplace_back(::device::PublicKeyCredentialDescriptor(
-        ConvertTo<::device::CredentialType>(credential->type), credential->id));
+        ConvertTo<::device::CredentialType>(credential->type), credential->id,
+        std::move(protocols)));
   }
   return credential_descriptors;
 }

@@ -266,6 +266,8 @@ enum AuthenticatorTransport {
   USB,
   NFC,
   BLE,
+  CABLE,
+  INTERNAL,
 };
 
 // Interface to direct authenticators to create or use a public key credential.
