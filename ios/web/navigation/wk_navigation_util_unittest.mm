@@ -7,10 +7,15 @@
 #include <memory>
 #include <vector>
 
+#include "base/json/json_reader.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/test/test_url_constants.h"
 #include "net/base/escape.h"
+#import "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -55,6 +60,49 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrl) {
       "\"urls\":[\"http://www.0.com/\",\"http://www.1.com/\","
       "\"about:blank?for=testwebui%3A%2F%2Fwebui%2F\"]}",
       session_json);
+}
+
+// Verifies that large session can be stored in NSURL. GURL is converted to
+// NSURL, because NSURL is passed to WKWebView during the session restoration.
+TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrlForLargeSession) {
+  // Create restore session URL with large number of items.
+  const size_t kItemCount = 5000;
+  std::vector<std::unique_ptr<NavigationItem>> items;
+  for (size_t i = 0; i < kItemCount; i++) {
+    auto item = std::make_unique<NavigationItemImpl>();
+    item->SetURL(GURL(base::StringPrintf("http://www.%zu.com", i)));
+    item->SetTitle(base::ASCIIToUTF16(base::StringPrintf("Test%zu", i)));
+    items.push_back(std::move(item));
+  }
+  GURL restore_session_url =
+      CreateRestoreSessionUrl(/*last_committed_item_index=*/0, items);
+  ASSERT_TRUE(IsRestoreSessionUrl(restore_session_url));
+
+  // Extract session JSON from restoration URL.
+  NSString* fragment = net::NSURLWithGURL(restore_session_url).fragment;
+  NSString* encoded_session = [fragment substringFromIndex:strlen("session=")];
+  std::string session_json = net::UnescapeURLComponent(
+      base::SysNSStringToUTF8(encoded_session),
+      net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+
+  // Parse JSON to get the session dictionary.
+  int error_code = 0;
+  std::unique_ptr<base::Value> session_value(
+      base::JSONReader::ReadAndReturnError(session_json, base::JSON_PARSE_RFC,
+                                           &error_code, nullptr));
+  ASSERT_EQ(0, error_code);
+  ASSERT_TRUE(session_value.get());
+
+  // Verify that all titles and URLs are present.
+  base::Value* titles_value = session_value->FindKey("titles");
+  ASSERT_TRUE(titles_value);
+  ASSERT_TRUE(titles_value->is_list());
+  ASSERT_EQ(kItemCount, titles_value->GetList().size());
+
+  base::Value* urls_value = session_value->FindKey("urls");
+  ASSERT_TRUE(urls_value);
+  ASSERT_TRUE(urls_value->is_list());
+  ASSERT_EQ(kItemCount, urls_value->GetList().size());
 }
 
 TEST_F(WKNavigationUtilTest, IsNotRestoreSessionUrl) {
