@@ -9,7 +9,7 @@
 #include "chrome/browser/extensions/extension_view_host.h"
 #import "chrome/browser/ui/cocoa/bubble_anchor_helper_views.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 ExtensionPopupViewsMac::~ExtensionPopupViewsMac() {
   // ObjC id collides with views::View::id().

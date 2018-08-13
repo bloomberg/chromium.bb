@@ -21,7 +21,7 @@
 #import "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/widget/widget.h"
 #include "url/url_constants.h"
 

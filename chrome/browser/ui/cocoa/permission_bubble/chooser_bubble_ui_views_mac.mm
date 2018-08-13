@@ -15,7 +15,7 @@
 #import "chrome/browser/ui/cocoa/bubble_anchor_helper_views.h"
 #import "chrome/browser/ui/cocoa/permission_bubble/chooser_bubble_ui_cocoa.h"
 #include "chrome/browser/ui/permission_bubble/chooser_bubble_delegate.h"
-#include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 
 void ChooserBubbleUi::CreateAndShowCocoa(
