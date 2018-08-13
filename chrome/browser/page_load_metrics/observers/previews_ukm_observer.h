@@ -53,6 +53,7 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
   bool client_lofi_seen_ = false;
   bool lite_page_seen_ = false;
   bool noscript_seen_ = false;
+  bool resource_loading_hints_seen_ = false;
   bool opt_out_occurred_ = false;
   bool origin_opt_out_occurred_ = false;
   bool save_data_enabled_ = false;
