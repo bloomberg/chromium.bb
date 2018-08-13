@@ -123,10 +123,8 @@ constexpr int kIconSize = 16;
 constexpr int kMenuEdgeMargin = 16;
 
 // If the bubble is too large to fit on the screen, it still needs to be at
-// least this tall to show the default items. The default items is what a signed
-// in user with 1 profile sees: account name, autofill home and 3 profile
-// actions.
-constexpr int kMinimumScrollableContentHeight = 340;
+// least this tall to show one row.
+constexpr int kMinimumScrollableContentHeight = 40;
 
 constexpr int kVerticalSpacing = 16;
 
