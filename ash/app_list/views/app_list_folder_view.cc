@@ -585,7 +585,7 @@ void AppListFolderView::UpdatePreferredBounds() {
   preferred_bounds_ = gfx::Rect(GetPreferredSize());
   preferred_bounds_ += (icon_bounds_in_container.CenterPoint() -
                         preferred_bounds_.CenterPoint());
-  preferred_bounds_.AdjustToFit(container_view_->GetContentsBounds());
+  preferred_bounds_.AdjustToFit(container_view_->apps_grid_view()->bounds());
 
   auto* const keyboard_controller = keyboard::KeyboardController::Get();
   if (keyboard_controller->enabled()) {
