@@ -83,6 +83,18 @@ class ManagedWebContents : public content::WebContentsDelegate,
       std::move(callback_).Run(embed_token_);
   }
 
+  void NavigateBack(
+      ash::mojom::WebContentsManager::NavigateWebContentsBackCallback
+          callback) {
+    content::NavigationController& controller = web_contents_->GetController();
+    if (controller.CanGoBack()) {
+      controller.GoBack();
+      std::move(callback).Run(true);
+    } else {
+      std::move(callback).Run(false);
+    }
+  }
+
  private:
   void InitWebContents(Profile* profile,
                        ash::mojom::ManagedWebContentsParamsPtr params) {
@@ -190,4 +202,10 @@ void WebContentsManager::ReleaseAllWebContents(
     const std::vector<base::UnguessableToken>& id_tokens) {
   for (const base::UnguessableToken& id_token : id_tokens)
     managed_web_contents_map_.erase(id_token);
+}
+
+void WebContentsManager::NavigateWebContentsBack(
+    const base::UnguessableToken& id_token,
+    ash::mojom::WebContentsManager::NavigateWebContentsBackCallback callback) {
+  managed_web_contents_map_[id_token]->NavigateBack(std::move(callback));
 }

@@ -39,6 +39,10 @@ class WebContentsManager : public ash::mojom::WebContentsManager {
   void ReleaseWebContents(const base::UnguessableToken& id_token) override;
   void ReleaseAllWebContents(
       const std::vector<base::UnguessableToken>& id_tokens) override;
+  void NavigateWebContentsBack(
+      const base::UnguessableToken& id_token,
+      ash::mojom::WebContentsManager::NavigateWebContentsBackCallback callback)
+      override;
 
  private:
   mojo::Binding<ash::mojom::WebContentsManager> binding_;

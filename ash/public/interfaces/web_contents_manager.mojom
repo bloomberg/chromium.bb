@@ -32,6 +32,12 @@ interface WebContentsManager {
   // Releases any resources associated with any WebContents uniquely identified
   // by one of the specified |id_tokens|.
   ReleaseAllWebContents(array<mojo_base.mojom.UnguessableToken> id_tokens);
+
+  // Navigates the WebContents uniquely identified by |id_token| back relative
+  // to the current history entry. The callback returns true if the WebContents
+  // were navigated, false otherwise.
+  NavigateWebContentsBack(mojo_base.mojom.UnguessableToken id_token)
+    => (bool navigated);
 };
 
 // Defines parameters for a managed WebContents.

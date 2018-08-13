@@ -7,7 +7,6 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
-#include "ash/assistant/ui/caption_bar.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "ash/public/interfaces/web_contents_manager.mojom.h"
@@ -54,9 +53,34 @@ void AssistantWebView::InitLayout() {
 
   // Caption bar.
   caption_bar_ = new CaptionBar();
-  caption_bar_->set_delegate(assistant_controller_->ui_controller());
+  caption_bar_->set_delegate(this);
   caption_bar_->SetButtonVisible(CaptionButtonId::kMinimize, false);
   AddChildView(caption_bar_);
+}
+
+bool AssistantWebView::OnCaptionButtonPressed(CaptionButtonId id) {
+  CaptionBarDelegate* delegate = assistant_controller_->ui_controller();
+
+  // We need special handling of the back button. When possible, the back button
+  // should navigate backwards in the managed WebContents' history stack.
+  if (id == CaptionButtonId::kBack && web_contents_id_token_.has_value()) {
+    assistant_controller_->NavigateWebContentsBack(
+        web_contents_id_token_.value(),
+        base::BindOnce(
+            [](CaptionBarDelegate* delegate, bool navigated) {
+              // If the WebContents' did not navigate it is because we are
+              // already at the first entry in the history stack and we cannot
+              // navigate back any further. In this case, we give back control
+              // to our primary caption button delegate.
+              if (!navigated)
+                delegate->OnCaptionButtonPressed(CaptionButtonId::kBack);
+            },
+            base::Unretained(delegate)));
+    return true;
+  }
+
+  // For all other buttons we defer to our primary caption button delegate.
+  return delegate->OnCaptionButtonPressed(id);
 }
 
 void AssistantWebView::OnDeepLinkReceived(

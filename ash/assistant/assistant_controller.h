@@ -73,6 +73,13 @@ class ASH_EXPORT AssistantController
   // |id_token_list|.
   void ReleaseWebContents(const std::vector<base::UnguessableToken>& id_tokens);
 
+  // Navigates the WebContents uniquely identified by |id_token| back relative
+  // to the current history entry. The supplied |callback| will run specifying
+  // true if navigation occurred, false otherwise.
+  void NavigateWebContentsBack(
+      const base::UnguessableToken& id_token,
+      mojom::WebContentsManager::NavigateWebContentsBackCallback callback);
+
   // Downloads the image found at the specified |url|. On completion, the
   // supplied |callback| will be run with the downloaded image. If the download
   // attempt is unsuccessful, a NULL image is returned.
