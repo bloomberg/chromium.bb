@@ -91,7 +91,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   };
 
   enum {
-    kInitialFramerate = 30,
+    kDefaultFramerate = 30,
     // These are rather subjectively tuned.
     kInputBufferCount = 2,
     kOutputBufferCount = 2,

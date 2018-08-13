@@ -35,11 +35,13 @@ VideoEncodeAccelerator::Config::Config(
     const gfx::Size& input_visible_size,
     VideoCodecProfile output_profile,
     uint32_t initial_bitrate,
+    base::Optional<uint32_t> initial_framerate,
     base::Optional<uint8_t> h264_output_level)
     : input_format(input_format),
       input_visible_size(input_visible_size),
       output_profile(output_profile),
       initial_bitrate(initial_bitrate),
+      initial_framerate(initial_framerate),
       h264_output_level(h264_output_level) {}
 
 VideoEncodeAccelerator::Config::~Config() = default;
@@ -51,6 +53,10 @@ std::string VideoEncodeAccelerator::Config::AsHumanReadableString() const {
       VideoPixelFormatToString(input_format).c_str(),
       input_visible_size.ToString().c_str(),
       GetProfileName(output_profile).c_str(), initial_bitrate);
+  if (initial_framerate) {
+    str += base::StringPrintf(", initial_framerate: %u",
+                              initial_framerate.value());
+  }
   if (h264_output_level) {
     str += base::StringPrintf(", h264_output_level: %u",
                               h264_output_level.value());
