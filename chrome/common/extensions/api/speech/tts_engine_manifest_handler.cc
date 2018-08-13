@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -68,8 +67,6 @@ bool TtsVoices::Parse(const base::ListValue* tts_voices,
         return false;
       }
     }
-    UMA_HISTOGRAM_BOOLEAN("TextToSpeechEngine.ParseVoice.HasGender",
-                          !voice_data.gender.empty());
     if (one_tts_voice->HasKey(keys::kTtsVoicesRemote)) {
       if (!one_tts_voice->GetBoolean(
               keys::kTtsVoicesRemote, &voice_data.remote)) {
