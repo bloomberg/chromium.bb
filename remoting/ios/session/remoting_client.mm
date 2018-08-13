@@ -23,7 +23,6 @@
 #include "remoting/client/chromoting_client_runtime.h"
 #include "remoting/client/chromoting_session.h"
 #include "remoting/client/connect_to_host_info.h"
-#include "remoting/client/display/renderer_proxy.h"
 #include "remoting/client/gesture_interpreter.h"
 #include "remoting/client/input/keyboard_interpreter.h"
 #import "remoting/ios/facade/remoting_authentication.h"
@@ -67,7 +66,6 @@ static void ResolveFeedbackDataCallback(
   remoting::protocol::SecretFetchedCallback _secretFetchedCallback;
   remoting::GestureInterpreter _gestureInterpreter;
   remoting::KeyboardInterpreter _keyboardInterpreter;
-  std::unique_ptr<remoting::RendererProxy> _renderer;
 
   // _session is valid only when the session is connected.
   std::unique_ptr<remoting::ChromotingSession> _session;
@@ -142,10 +140,9 @@ static void ResolveFeedbackDataCallback(
   _displayHandler.delegate = self;
 
   _session.reset(new remoting::ChromotingSession(
-      _sessonDelegate->GetWeakPtr(), [_displayHandler CreateCursorShapeStub],
-      [_displayHandler CreateVideoRenderer], std::move(audioStream), info));
-  _renderer = [_displayHandler CreateRendererProxy];
-  _gestureInterpreter.SetContext(_renderer.get(), _session.get());
+      _sessonDelegate->GetWeakPtr(), [_displayHandler createCursorShapeStub],
+      [_displayHandler createVideoRenderer], std::move(audioStream), info));
+  _gestureInterpreter.SetContext(_displayHandler.rendererProxy, _session.get());
   _keyboardInterpreter.SetContext(_session.get());
 
   _session->Connect();
@@ -155,14 +152,6 @@ static void ResolveFeedbackDataCallback(
   _session.reset();
 
   _displayHandler = nil;
-
-  // This needs to be deleted on the display thread since GlDisplayHandler binds
-  // its WeakPtrFactory to the display thread.
-  // TODO(yuweih): Ideally this constraint can be removed once we allow
-  // GlRenderer to be created on the UI thread before being used.
-  if (_renderer) {
-    _runtime->display_task_runner()->DeleteSoon(FROM_HERE, _renderer.release());
-  }
 
   _gestureInterpreter.SetContext(nullptr, nullptr);
   _keyboardInterpreter.SetContext(nullptr);

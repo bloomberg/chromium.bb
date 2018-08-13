@@ -44,8 +44,6 @@ class Core : public protocol::CursorShapeStub, public GlRendererDelegate {
 
   void SetHandlerDelegate(id<GlDisplayHandlerDelegate> delegate);
 
-  std::unique_ptr<RendererProxy> GrabRendererProxy();
-
   // CursorShapeStub interface.
   void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override;
 
@@ -62,15 +60,14 @@ class Core : public protocol::CursorShapeStub, public GlRendererDelegate {
 
   std::unique_ptr<protocol::FrameConsumer> GrabFrameConsumer();
 
+  // The renderer proxy should be used on the UI thread.
+  RendererProxy* renderer_proxy() { return renderer_proxy_.get(); }
+
   // Returns a weak pointer to be used on the display thread.
   base::WeakPtr<Core> GetWeakPtr();
 
  private:
   remoting::ChromotingClientRuntime* runtime_;
-
-  // Will be std::move'd when GrabRendererProxy() is called.
-  std::unique_ptr<RendererProxy> owned_renderer_proxy_;
-  base::WeakPtr<RendererProxy> renderer_proxy_;
 
   // Will be std::move'd when GrabFrameConsumer() is called.
   std::unique_ptr<DualBufferFrameConsumer> owned_frame_consumer_;
@@ -79,6 +76,9 @@ class Core : public protocol::CursorShapeStub, public GlRendererDelegate {
   EAGLContext* eagl_context_;
   std::unique_ptr<GlRenderer> renderer_;
   __weak id<GlDisplayHandlerDelegate> handler_delegate_;
+
+  // This should be used and deleted on the UI thread.
+  std::unique_ptr<RendererProxy> renderer_proxy_;
 
   // Valid only when the surface is created.
   __weak EAGLView* view_;
@@ -92,7 +92,7 @@ class Core : public protocol::CursorShapeStub, public GlRendererDelegate {
 
 Core::Core() : weak_factory_(this) {
   runtime_ = ChromotingClientRuntime::GetInstance();
-  DCHECK(!runtime_->display_task_runner()->BelongsToCurrentThread());
+  DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
 
   weak_ptr_ = weak_factory_.GetWeakPtr();
 
@@ -103,9 +103,8 @@ Core::Core() : weak_factory_(this) {
       protocol::FrameConsumer::PixelFormat::FORMAT_RGBA));
   frame_consumer_ = owned_frame_consumer_->GetWeakPtr();
 
-  owned_renderer_proxy_.reset(
-      new RendererProxy(runtime_->display_task_runner()));
-  renderer_proxy_ = owned_renderer_proxy_->GetWeakPtr();
+  renderer_proxy_ =
+      std::make_unique<RendererProxy>(runtime_->display_task_runner());
 
   runtime_->display_task_runner()->PostTask(
       FROM_HERE, base::Bind(&Core::Initialize, GetWeakPtr()));
@@ -113,6 +112,7 @@ Core::Core() : weak_factory_(this) {
 
 Core::~Core() {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  runtime_->ui_task_runner()->DeleteSoon(FROM_HERE, renderer_proxy_.release());
 }
 
 void Core::Initialize() {
@@ -134,19 +134,19 @@ void Core::Initialize() {
 
   renderer_ = remoting::GlRenderer::CreateGlRendererWithDesktop();
 
-  renderer_proxy_->Initialize(renderer_->GetWeakPtr());
-
   renderer_->SetDelegate(weak_ptr_);
+
+  // Safe to use base::Unretained because |renderer_proxy_| is destroyed on UI
+  // after Core is destroyed.
+  runtime_->ui_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&RendererProxy::Initialize,
+                                base::Unretained(renderer_proxy_.get()),
+                                renderer_->GetWeakPtr()));
 }
 
 void Core::SetHandlerDelegate(id<GlDisplayHandlerDelegate> delegate) {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
   handler_delegate_ = delegate;
-}
-
-std::unique_ptr<RendererProxy> Core::GrabRendererProxy() {
-  DCHECK(owned_renderer_proxy_);
-  return std::move(owned_renderer_proxy_);
 }
 
 void Core::SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) {
@@ -265,16 +265,12 @@ base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
 
 #pragma mark - Public
 
-- (std::unique_ptr<remoting::RendererProxy>)CreateRendererProxy {
-  return _core->GrabRendererProxy();
-}
-
-- (std::unique_ptr<remoting::protocol::VideoRenderer>)CreateVideoRenderer {
+- (std::unique_ptr<remoting::protocol::VideoRenderer>)createVideoRenderer {
   return std::make_unique<remoting::SoftwareVideoRenderer>(
       _core->GrabFrameConsumer());
 }
 
-- (std::unique_ptr<remoting::protocol::CursorShapeStub>)CreateCursorShapeStub {
+- (std::unique_ptr<remoting::protocol::CursorShapeStub>)createCursorShapeStub {
   return std::make_unique<remoting::CursorShapeStubProxy>(
       _core->GetWeakPtr(), _runtime->display_task_runner());
 }
@@ -301,6 +297,10 @@ base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
 }
 
 #pragma mark - Properties
+
+- (remoting::RendererProxy*)rendererProxy {
+  return _core->renderer_proxy();
+}
 
 - (void)setDelegate:(id<GlDisplayHandlerDelegate>)delegate {
   _runtime->display_task_runner()->PostTask(

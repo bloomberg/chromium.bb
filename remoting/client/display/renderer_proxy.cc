@@ -15,12 +15,12 @@ namespace remoting {
 RendererProxy::RendererProxy(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(task_runner),
-      ui_task_poster_(new remoting::QueuedTaskPoster(task_runner_)),
-      weak_factory_(this) {}
+      ui_task_poster_(new remoting::QueuedTaskPoster(task_runner_)) {}
 
 RendererProxy::~RendererProxy() = default;
 
 void RendererProxy::Initialize(base::WeakPtr<GlRenderer> renderer) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   renderer_ = renderer;
 }
 
@@ -49,12 +49,9 @@ void RendererProxy::StartInputFeedback(float x, float y, float diameter) {
       false);
 }
 
-base::WeakPtr<RendererProxy> RendererProxy::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
-}
-
 void RendererProxy::RunTaskOnProperThread(const base::Closure& task,
                                           bool needs_synchronization) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (task_runner_->BelongsToCurrentThread()) {
     task.Run();
     return;
