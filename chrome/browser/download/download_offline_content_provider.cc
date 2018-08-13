@@ -57,8 +57,7 @@ DownloadOfflineContentProvider::~DownloadOfflineContentProvider() {
 }
 
 // TODO(shaktisahu) : Pass DownloadOpenSource.
-void DownloadOfflineContentProvider::OpenItem(LaunchLocation location,
-                                              const ContentId& id) {
+void DownloadOfflineContentProvider::OpenItem(const ContentId& id) {
   download::DownloadItem* item = manager_->GetDownloadByGuid(id.id);
   if (item)
     item->OpenDownload();

@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.offline_items_collection.ContentId;
-import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
@@ -149,7 +148,7 @@ public class StubbedProvider implements BackendProvider {
         }
 
         @Override
-        public void openItem(@LaunchLocation int location, ContentId id) {}
+        public void openItem(ContentId id) {}
         @Override
         public void pauseDownload(ContentId id) {}
         @Override

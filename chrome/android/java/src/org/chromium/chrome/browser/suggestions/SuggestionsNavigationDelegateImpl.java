@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
-import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
@@ -131,9 +130,8 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
             assert windowOpenDisposition == WindowOpenDisposition.CURRENT_TAB
                     || windowOpenDisposition == WindowOpenDisposition.NEW_WINDOW
                     || windowOpenDisposition == WindowOpenDisposition.NEW_BACKGROUND_TAB;
-            OfflinePageUtils.getLoadUrlParamsForOpeningOfflineVersion(article.mUrl,
-                    article.getOfflinePageOfflineId(), LaunchLocation.SUGGESTION,
-                    (loadUrlParams) -> {
+            OfflinePageUtils.getLoadUrlParamsForOpeningOfflineVersion(
+                    article.mUrl, article.getOfflinePageOfflineId(), (loadUrlParams) -> {
                         // Extra headers are not read in loadUrl, but verbatim headers are.
                         loadUrlParams.setVerbatimHeaders(loadUrlParams.getExtraHeadersString());
                         openDownloadSuggestion(windowOpenDisposition, article, loadUrlParams);

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.download.items;
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.components.offline_items_collection.ContentId;
-import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
@@ -33,9 +32,9 @@ class DownloadBlockedOfflineContentProvider
     }
 
     @Override
-    public void openItem(@LaunchLocation int location, ContentId id) {
+    public void openItem(ContentId id) {
         assert !LegacyHelpers.isLegacyDownload(id);
-        mProvider.openItem(location, id);
+        mProvider.openItem(id);
     }
 
     @Override

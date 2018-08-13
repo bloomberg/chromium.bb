@@ -10,7 +10,6 @@ if (is_android) {
 static_library("core") {
   sources = [
     "fail_state.h",
-    "launch_location.h",
     "offline_content_aggregator.cc",
     "offline_content_aggregator.h",
     "offline_content_provider.h",
@@ -110,7 +109,6 @@ if (is_android) {
 
     sources = [
       "fail_state.h",
-      "launch_location.h",
       "offline_item.h",
       "offline_item_filter.h",
       "offline_item_state.h",

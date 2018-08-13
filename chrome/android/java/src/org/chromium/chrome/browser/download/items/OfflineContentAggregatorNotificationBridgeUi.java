@@ -9,7 +9,6 @@ import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadNotifier;
 import org.chromium.chrome.browser.download.DownloadServiceDelegate;
 import org.chromium.components.offline_items_collection.ContentId;
-import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
@@ -67,7 +66,7 @@ public class OfflineContentAggregatorNotificationBridgeUi
 
     /** @see OfflineContentProvider#openItem(ContentId) */
     public void openItem(ContentId id) {
-        mProvider.openItem(LaunchLocation.NOTIFICATION, id);
+        mProvider.openItem(id);
     }
 
     // OfflineContentProvider.Observer implementation.

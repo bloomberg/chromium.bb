@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactor
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
 import org.chromium.components.download.DownloadState;
-import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
@@ -578,7 +577,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
         @Override
         public void open() {
-            getOfflineContentProvider().openItem(LaunchLocation.DOWNLOAD_HOME, mItem.id);
+            getOfflineContentProvider().openItem(mItem.id);
             recordOpenSuccess();
         }
 
