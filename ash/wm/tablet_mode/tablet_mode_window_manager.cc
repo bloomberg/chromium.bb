@@ -14,7 +14,7 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/tablet_mode/scoped_skip_user_session_blocked_check.h"
 #include "ash/wm/tablet_mode/tablet_mode_backdrop_delegate_impl.h"
-#include "ash/wm/tablet_mode/tablet_mode_event_handler_classic.h"
+#include "ash/wm/tablet_mode/tablet_mode_event_handler.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
@@ -248,7 +248,7 @@ TabletModeWindowManager::TabletModeWindowManager() {
   display::Screen::GetScreen()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->split_view_controller()->AddObserver(this);
-  event_handler_ = std::make_unique<wm::TabletModeEventHandlerClassic>();
+  event_handler_ = std::make_unique<wm::TabletModeEventHandler>();
 }
 
 void TabletModeWindowManager::MaximizeAllWindows() {
