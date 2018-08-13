@@ -1280,11 +1280,10 @@ class ErrorPageOfflineTest : public ErrorPageTest {
 #if defined(OS_CHROMEOS)
     if (enroll_) {
       // Set up fake install attributes.
-      std::unique_ptr<chromeos::StubInstallAttributes> attributes =
-          std::make_unique<chromeos::StubInstallAttributes>();
-      attributes->SetCloudManaged("example.com", "fake-id");
-      policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
-          attributes.release());
+      test_install_attributes_ =
+          std::make_unique<chromeos::ScopedStubInstallAttributes>(
+              chromeos::StubInstallAttributes::CreateCloudManaged("example.com",
+                                                                  "fake-id"));
     }
 #endif
 
@@ -1319,7 +1318,7 @@ class ErrorPageOfflineTest : public ErrorPageTest {
 
   std::string NavigateToPageAndReadText() {
 #if defined(OS_CHROMEOS)
-      // Check enterprise enrollment
+    // Check enterprise enrollment
     policy::BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()
         ->browser_policy_connector_chromeos();
@@ -1353,6 +1352,9 @@ class ErrorPageOfflineTest : public ErrorPageTest {
 #if defined(OS_CHROMEOS)
   // Whether to enroll this CrOS device
   bool enroll_ = true;
+
+  std::unique_ptr<chromeos::ScopedStubInstallAttributes>
+      test_install_attributes_;
 #endif
 
   // Mock policy provider for both user and device policies.

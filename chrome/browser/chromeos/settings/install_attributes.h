@@ -49,6 +49,18 @@ class InstallAttributes {
   static std::string GetEnterpriseOwnedInstallAttributesBlobForTesting(
       const std::string& user_name);
 
+  // Manage singleton instance.
+  static void Initialize();
+  static bool IsInitialized();
+  static void Shutdown();
+  static InstallAttributes* Get();
+
+  // Sets the singleton to |test_instance|. Does not take ownership of the
+  // instance. Should be matched with a call to |ShutdownForTesting| once the
+  // test is finished and before the instance is deleted.
+  static void SetForTesting(InstallAttributes* test_instance);
+  static void ShutdownForTesting();
+
   explicit InstallAttributes(CryptohomeClient* cryptohome_client);
   ~InstallAttributes();
 

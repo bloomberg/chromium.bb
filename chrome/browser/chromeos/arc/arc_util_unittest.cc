@@ -23,7 +23,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/install_attributes.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -153,22 +153,6 @@ class ScopedLogIn {
   DISALLOW_COPY_AND_ASSIGN(ScopedLogIn);
 };
 
-class FakeInstallAttributesManaged : public chromeos::InstallAttributes {
- public:
-  FakeInstallAttributesManaged() : chromeos::InstallAttributes(nullptr) {
-    device_locked_ = true;
-  }
-
-  ~FakeInstallAttributesManaged() {
-    policy::BrowserPolicyConnectorChromeOS::RemoveInstallAttributesForTesting();
-  }
-
-  void SetIsManaged(bool is_managed) {
-    registration_mode_ = is_managed ? policy::DEVICE_MODE_ENTERPRISE
-                                    : policy::DEVICE_MODE_CONSUMER;
-  }
-};
-
 bool IsArcAllowedForProfileOnFirstCall(const Profile* profile) {
   ResetArcAllowedCheckForTesting(profile);
   return IsArcAllowedForProfile(profile);
@@ -228,6 +212,7 @@ class ChromeArcUtilTest : public testing::Test {
  private:
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
   content::TestBrowserThreadBundle thread_bundle_;
+  chromeos::ScopedStubInstallAttributes test_install_attributes_;
   base::ScopedTempDir data_dir_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;

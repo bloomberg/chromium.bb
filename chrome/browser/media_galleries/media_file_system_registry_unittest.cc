@@ -51,8 +51,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #endif
 
 namespace content {
@@ -393,8 +392,7 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
   // Needed for extension service & friends to work.
 
 #if defined(OS_CHROMEOS)
-  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
+  chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
 #endif
 
   MockProfileSharedRenderProcessHostFactory rph_factory_;

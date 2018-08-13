@@ -47,8 +47,8 @@ class DeviceSettingsTestBase : public testing::Test {
   DeviceSettingsTestBase();
   ~DeviceSettingsTestBase() override;
 
-  void SetUp() override;
-  void TearDown() override;
+  // Subclasses that modify the DevicePolicy should call this afterwards.
+  void ReloadDevicePolicy();
 
   // Flushes any pending device settings operations.
   void FlushDeviceSettings();
@@ -72,9 +72,10 @@ class DeviceSettingsTestBase : public testing::Test {
   // Local DeviceSettingsService instance for tests. Avoid using in combination
   // with the global instance (DeviceSettingsService::Get()).
   DeviceSettingsService device_settings_service_;
-  std::unique_ptr<TestingProfile> profile_;
 
   std::unique_ptr<DBusThreadManagerSetter> dbus_setter_;
+
+  std::unique_ptr<TestingProfile> profile_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceSettingsTestBase);

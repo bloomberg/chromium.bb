@@ -131,14 +131,6 @@ class EnterpriseDeviceAttributesTest
         nullptr /* fake_auth_policy_client */, affiliated_account_id_,
         user_affiliation_ids);
 
-    // Set up fake install attributes.
-    std::unique_ptr<chromeos::StubInstallAttributes> attributes =
-        std::make_unique<chromeos::StubInstallAttributes>();
-
-    attributes->SetCloudManaged("fake-domain", "fake-id");
-    policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
-        attributes.release());
-
     test_helper_.InstallOwnerKey();
     // Init the device policy.
     policy::DevicePolicyBuilder* device_policy = test_helper_.device_policy();
@@ -230,6 +222,9 @@ class EnterpriseDeviceAttributesTest
                                      kAffiliatedUserGaiaId);
 
  private:
+  chromeos::ScopedStubInstallAttributes test_install_attributes_{
+      chromeos::StubInstallAttributes::CreateCloudManaged("fake-domain",
+                                                          "fake-id")};
   policy::MockConfigurationPolicyProvider policy_provider_;
   policy::DevicePolicyCrosTestHelper test_helper_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;

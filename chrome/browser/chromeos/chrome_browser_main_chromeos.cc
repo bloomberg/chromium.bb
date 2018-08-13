@@ -89,6 +89,7 @@
 #include "chrome/browser/chromeos/resource_reporter/resource_reporter.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/browser/chromeos/settings/shutdown_policy_forwarder.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/user_removal_manager.h"
@@ -301,6 +302,7 @@ class DBusPreEarlyInit {
     // signals sent from the session manager. This needs to happen before
     // g_browser_process initializes BrowserPolicyConnector.
     DeviceSettingsService::Initialize();
+    InstallAttributes::Initialize();
   }
 
   ~DBusPreEarlyInit() {
@@ -1206,7 +1208,8 @@ void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {
 
   ChromeBrowserMainPartsLinux::PostDestroyThreads();
 
-  // Destroy DeviceSettingsService after g_browser_process.
+  // Shutdown these services after g_browser_process.
+  InstallAttributes::Shutdown();
   DeviceSettingsService::Shutdown();
 }
 

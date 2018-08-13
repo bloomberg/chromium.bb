@@ -20,8 +20,7 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/ash_test_views_delegate.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #else
 #include "ui/views/test/scoped_views_test_helper.h"
 #endif
@@ -188,8 +187,7 @@ class BrowserWithTestWindowTest : public testing::Test {
   base::ShadowingAtExitManager at_exit_manager_;
 
 #if defined(OS_CHROMEOS)
-  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
+  chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   chromeos::ScopedTestUserManager test_user_manager_;
 #endif
 

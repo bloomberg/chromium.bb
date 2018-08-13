@@ -336,10 +336,12 @@ class TestingProfile : public Profile {
   void SetExitType(ExitType exit_type) override {}
   ExitType GetLastSessionExitType() override;
   network::mojom::NetworkContextPtr CreateMainNetworkContext() override;
+
 #if defined(OS_CHROMEOS)
   void ChangeAppLocale(const std::string&, AppLocaleChangedVia) override {}
   void OnLogin() override {}
   void InitChromeOSPreferences() override {}
+  chromeos::ScopedCrosSettingsTestHelper* ScopedCrosSettingsTestHelper();
 #endif  // defined(OS_CHROMEOS)
 
   // Schedules a task on the history backend and runs a nested loop until the

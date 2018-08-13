@@ -45,8 +45,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #endif
 
 using testing::_;
@@ -320,8 +319,7 @@ class BackgroundModeManagerWithExtensionsTest : public testing::Test {
 
 #if defined(OS_CHROMEOS)
   // ChromeOS needs extra services to run in the following order.
-  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
+  chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   chromeos::ScopedTestUserManager test_user_manager_;
 #endif
 

@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -92,6 +93,7 @@ class CrosSettingsTest : public testing::Test {
 
   ScopedTestingLocalState local_state_;
   ScopedDeviceSettingsTestHelper device_settings_test_helper_;
+  ScopedStubInstallAttributes scoped_stub_install_attributes_;
   CrosSettings settings_;
 
   std::map<std::string, std::unique_ptr<base::Value>> expected_props_;

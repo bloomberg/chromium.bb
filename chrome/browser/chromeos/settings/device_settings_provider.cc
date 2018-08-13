@@ -21,17 +21,18 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/off_hours/off_hours_proto_parser.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
+#include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/policy/core/common/chrome_schema.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -136,9 +137,8 @@ std::unique_ptr<base::Value> DecodeJsonStringAndDropUnknownBySchema(
     return nullptr;
   }
 
-  const policy::Schema& schema = g_browser_process->browser_policy_connector()
-                                     ->GetChromeSchema()
-                                     .GetKnownProperty(policy_name);
+  const policy::Schema& schema =
+      policy::GetChromeSchema().GetKnownProperty(policy_name);
 
   if (!schema.valid()) {
     LOG(WARNING) << "Unknown or invalid policy schema for " << policy_name
@@ -162,9 +162,9 @@ std::unique_ptr<base::Value> DecodeJsonStringAndDropUnknownBySchema(
   return root;
 }
 
-void DecodeLoginPolicies(
-    const em::ChromeDeviceSettingsProto& policy,
-    PrefValueMap* new_values_cache) {
+void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
+                         bool is_enterprise_managed,
+                         PrefValueMap* new_values_cache) {
   // For all our boolean settings the following is applicable:
   // true is default permissive value and false is safe prohibitive value.
   // Exceptions:
@@ -201,10 +201,8 @@ void DecodeLoginPolicies(
       !policy.guest_mode_enabled().has_guest_mode_enabled() ||
       policy.guest_mode_enabled().guest_mode_enabled());
 
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   bool supervised_users_enabled = false;
-  if (connector->IsEnterpriseManaged()) {
+  if (is_enterprise_managed) {
     supervised_users_enabled =
         policy.has_supervised_users_settings() &&
         policy.supervised_users_settings().has_supervised_users_enabled() &&
@@ -535,9 +533,9 @@ void DecodeHeartbeatPolicies(
   }
 }
 
-void DecodeGenericPolicies(
-    const em::ChromeDeviceSettingsProto& policy,
-    PrefValueMap* new_values_cache) {
+void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
+                           bool is_enterprise_managed,
+                           PrefValueMap* new_values_cache) {
   if (policy.has_metrics_enabled() &&
       policy.metrics_enabled().has_metrics_enabled()) {
     new_values_cache->SetBoolean(kStatsReportingPref,
@@ -545,9 +543,6 @@ void DecodeGenericPolicies(
   } else {
     // If the policy is missing, default to reporting enabled on enterprise-
     // enrolled devices, c.f. crbug/456186.
-    policy::BrowserPolicyConnectorChromeOS* connector =
-        g_browser_process->platform_part()->browser_policy_connector_chromeos();
-    bool is_enterprise_managed = connector->IsEnterpriseManaged();
     new_values_cache->SetBoolean(kStatsReportingPref, is_enterprise_managed);
   }
 
@@ -709,9 +704,7 @@ void DecodeGenericPolicies(
   } else {
     // If the policy is missing, default to false on enterprise-enrolled
     // devices.
-    policy::BrowserPolicyConnectorChromeOS* connector =
-        g_browser_process->platform_part()->browser_policy_connector_chromeos();
-    if (connector->IsEnterpriseManaged()) {
+    if (is_enterprise_managed) {
       new_values_cache->SetBoolean(kVirtualMachinesAllowed, false);
     }
   }
@@ -779,12 +772,14 @@ bool DeviceSettingsProvider::IsDeviceSetting(const std::string& name) {
 void DeviceSettingsProvider::DecodePolicies(
     const em::ChromeDeviceSettingsProto& policy,
     PrefValueMap* new_values_cache) {
-  DecodeLoginPolicies(policy, new_values_cache);
+  bool is_enterprise_managed = InstallAttributes::Get()->IsEnterpriseManaged();
+
+  DecodeLoginPolicies(policy, is_enterprise_managed, new_values_cache);
   DecodeNetworkPolicies(policy, new_values_cache);
   DecodeAutoUpdatePolicies(policy, new_values_cache);
   DecodeReportingPolicies(policy, new_values_cache);
   DecodeHeartbeatPolicies(policy, new_values_cache);
-  DecodeGenericPolicies(policy, new_values_cache);
+  DecodeGenericPolicies(policy, is_enterprise_managed, new_values_cache);
   DecodeLogUploadPolicies(policy, new_values_cache);
 }
 
@@ -958,9 +953,7 @@ void DeviceSettingsProvider::UpdateValuesCache(
 bool DeviceSettingsProvider::MitigateMissingPolicy() {
   // First check if the device has been owned already and if not exit
   // immediately.
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (connector->GetDeviceMode() != policy::DEVICE_MODE_CONSUMER)
+  if (InstallAttributes::Get()->GetMode() != policy::DEVICE_MODE_CONSUMER)
     return false;
 
   // If we are here the policy file were corrupted or missing. This can happen

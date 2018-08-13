@@ -620,12 +620,6 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
     DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
 
-    // Set up fake install attributes.
-    std::unique_ptr<chromeos::StubInstallAttributes> attributes =
-        std::make_unique<chromeos::StubInstallAttributes>();
-    attributes->SetCloudManaged("fake-domain", "fake-id");
-    policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
-        attributes.release());
     UserImageManagerTest::SetUpInProcessBrowserTestFixture();
   }
 
@@ -684,6 +678,8 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
     return policy;
   }
 
+  ScopedStubInstallAttributes test_install_attributes_{
+      StubInstallAttributes::CreateCloudManaged("fake-domain", "fake-id")};
   policy::UserPolicyBuilder user_policy_;
   policy::DevicePolicyBuilder device_policy_;
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;

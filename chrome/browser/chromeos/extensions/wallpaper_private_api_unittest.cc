@@ -9,8 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -37,14 +36,10 @@ class WallpaperPrivateApiUnittest : public testing::Test {
 
   void SetUp() override {
     // Required for WallpaperControllerClient.
-    chromeos::DeviceSettingsService::Initialize();
-    chromeos::CrosSettings::Initialize();
     chromeos::SystemSaltGetter::Initialize();
   }
 
   void TearDown() override {
-    chromeos::CrosSettings::Shutdown();
-    chromeos::DeviceSettingsService::Shutdown();
     chromeos::SystemSaltGetter::Shutdown();
   }
 
@@ -55,6 +50,8 @@ class WallpaperPrivateApiUnittest : public testing::Test {
 
  private:
   std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+
+  chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
 
   chromeos::FakeChromeUserManager* fake_user_manager_;
 

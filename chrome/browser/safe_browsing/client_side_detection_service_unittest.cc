@@ -30,6 +30,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
+#endif
+
 using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::StrictMock;
@@ -239,6 +243,10 @@ class ClientSideDetectionServiceTest : public testing::Test {
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
+
+#if defined(OS_CHROMEOS)
+  chromeos::ScopedStubInstallAttributes test_install_attributes_;
+#endif
 
  private:
   void SendRequestDone(base::OnceClosure continuation_callback,

@@ -265,13 +265,13 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
 // Same as above, but enrolled into an enterprise
 class DeviceSettingsProviderTestEnterprise : public DeviceSettingsProviderTest {
  protected:
-  DeviceSettingsProviderTestEnterprise()
-      : install_attributes_(ScopedStubInstallAttributes::CreateCloudManaged(
-            policy::PolicyBuilder::kFakeDomain,
-            policy::PolicyBuilder::kFakeDeviceId)) {}
-
- private:
-  ScopedStubInstallAttributes install_attributes_;
+  void SetUp() override {
+    DeviceSettingsProviderTest::SetUp();
+    profile_->ScopedCrosSettingsTestHelper()
+        ->InstallAttributes()
+        ->SetCloudManaged(policy::PolicyBuilder::kFakeDomain,
+                          policy::PolicyBuilder::kFakeDeviceId);
+  }
 };
 
 TEST_F(DeviceSettingsProviderTest, InitializationTest) {

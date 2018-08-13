@@ -137,7 +137,7 @@ class CloudExternalDataPolicyObserverTest
   std::string avatar_policy_1_;
   std::string avatar_policy_2_;
 
-  chromeos::CrosSettings cros_settings_;
+  std::unique_ptr<chromeos::CrosSettings> cros_settings_;
   std::unique_ptr<DeviceLocalAccountPolicyService>
       device_local_account_policy_service_;
   FakeAffiliatedInvalidationServiceProvider
@@ -171,9 +171,7 @@ CloudExternalDataPolicyObserverTest::CloudExternalDataPolicyObserverTest()
     : device_local_account_user_id_(GenerateDeviceLocalAccountUserId(
           kDeviceLocalAccount,
           DeviceLocalAccount::TYPE_PUBLIC_SESSION)),
-      cros_settings_(&device_settings_service_),
-      profile_manager_(TestingBrowserProcess::GetGlobal()) {
-}
+      profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
 CloudExternalDataPolicyObserverTest::~CloudExternalDataPolicyObserverTest() {
 }
@@ -185,10 +183,12 @@ void CloudExternalDataPolicyObserverTest::SetUp() {
   shared_url_loader_factory_ =
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &url_loader_factory_);
+  cros_settings_ =
+      std::make_unique<chromeos::CrosSettings>(&device_settings_service_);
   device_local_account_policy_service_.reset(
       new DeviceLocalAccountPolicyService(
-          &session_manager_client_, &device_settings_service_, &cros_settings_,
-          &affiliated_invalidation_service_provider_,
+          &session_manager_client_, &device_settings_service_,
+          cros_settings_.get(), &affiliated_invalidation_service_provider_,
           base::ThreadTaskRunnerHandle::Get(),
           base::ThreadTaskRunnerHandle::Get(),
           base::ThreadTaskRunnerHandle::Get(), shared_url_loader_factory_));
@@ -217,6 +217,7 @@ void CloudExternalDataPolicyObserverTest::TearDown() {
   }
   device_local_account_policy_service_->Shutdown();
   device_local_account_policy_service_.reset();
+  cros_settings_.reset();
   chromeos::DeviceSettingsTestBase::TearDown();
 }
 
@@ -246,10 +247,8 @@ void CloudExternalDataPolicyObserverTest::OnExternalDataFetched(
 
 void CloudExternalDataPolicyObserverTest::CreateObserver() {
   observer_.reset(new CloudExternalDataPolicyObserver(
-      &cros_settings_,
-      device_local_account_policy_service_.get(),
-      key::kUserAvatarImage,
-      this));
+      cros_settings_.get(), device_local_account_policy_service_.get(),
+      key::kUserAvatarImage, this));
   observer_->Init();
 }
 

@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
@@ -247,6 +248,8 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   }
 
  private:
+  chromeos::ScopedStubInstallAttributes test_install_attributes_;
+
   // These get created for each session.
   aura::Window::Windows windows_;
 

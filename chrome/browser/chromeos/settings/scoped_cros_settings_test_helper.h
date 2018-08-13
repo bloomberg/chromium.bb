@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chromeos/settings/cros_settings_provider.h"
 
 class Profile;
@@ -64,8 +65,13 @@ class ScopedCrosSettingsTestHelper {
   // later on browser test startup by the device settings service.
   void StoreCachedDeviceSetting(const std::string& path);
 
+  // Get the scoped install attributes to change them as needed for the
+  // current test.
+  StubInstallAttributes* InstallAttributes();
+
  private:
   // Helpers used to mock out cros settings.
+  std::unique_ptr<ScopedStubInstallAttributes> test_install_attributes_;
   std::unique_ptr<ScopedTestDeviceSettingsService>
       test_device_settings_service_;
   std::unique_ptr<ScopedTestCrosSettings> test_cros_settings_;

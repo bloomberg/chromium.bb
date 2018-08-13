@@ -149,14 +149,14 @@ class DeviceCloudPolicyManagerChromeOSTest
     chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
     cryptohome::AsyncMethodCaller::Initialize();
 
-    install_attributes_.reset(
-        new chromeos::InstallAttributes(fake_cryptohome_client_));
+    install_attributes_ =
+        std::make_unique<chromeos::InstallAttributes>(fake_cryptohome_client_);
     store_ = new DeviceCloudPolicyStoreChromeOS(
         &device_settings_service_, install_attributes_.get(),
         base::ThreadTaskRunnerHandle::Get());
-    manager_.reset(new TestingDeviceCloudPolicyManagerChromeOS(
+    manager_ = std::make_unique<TestingDeviceCloudPolicyManagerChromeOS>(
         base::WrapUnique(store_), base::ThreadTaskRunnerHandle::Get(),
-        &state_keys_broker_));
+        &state_keys_broker_);
 
     RegisterLocalState(local_state_.registry());
     manager_->Init(&schema_registry_);
@@ -272,8 +272,6 @@ class DeviceCloudPolicyManagerChromeOSTest
   std::string url_fetcher_response_string_;
   TestingPrefServiceSimple local_state_;
   MockDeviceManagementService device_management_service_;
-  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   chromeos::FakeSessionManagerClient fake_session_manager_client_;
   chromeos::FakeCryptohomeClient* fake_cryptohome_client_;

@@ -20,8 +20,7 @@
 #include "chrome/browser/chromeos/lock_screen_apps/fake_lock_screen_profile_creator.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_constants.h"
@@ -441,8 +440,7 @@ class LockScreenAppManagerImplTest
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
   content::TestBrowserThreadBundle threads_;
 
-  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
+  chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   chromeos::ScopedTestUserManager user_manager_;
 
   TestingProfileManager profile_manager_;

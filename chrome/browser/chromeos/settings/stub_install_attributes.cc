@@ -6,13 +6,46 @@
 
 #include <string>
 
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 namespace chromeos {
 
 StubInstallAttributes::StubInstallAttributes() : InstallAttributes(nullptr) {
   device_locked_ = true;
+}
+
+// static
+std::unique_ptr<StubInstallAttributes> StubInstallAttributes::CreateUnset() {
+  auto result = std::make_unique<StubInstallAttributes>();
+  result->Clear();
+  return result;
+}
+
+// static
+std::unique_ptr<StubInstallAttributes>
+StubInstallAttributes::CreateConsumerOwned() {
+  auto result = std::make_unique<StubInstallAttributes>();
+  result->SetConsumerOwned();
+  return result;
+}
+
+// static
+std::unique_ptr<StubInstallAttributes>
+StubInstallAttributes::CreateCloudManaged(const std::string& domain,
+                                          const std::string& device_id) {
+  auto result = std::make_unique<StubInstallAttributes>();
+  result->SetCloudManaged(domain, device_id);
+  return result;
+}
+
+// static
+std::unique_ptr<StubInstallAttributes>
+StubInstallAttributes::CreateActiveDirectoryManaged(
+    const std::string& realm,
+    const std::string& device_id) {
+  auto result = std::make_unique<StubInstallAttributes>();
+  result->SetActiveDirectoryManaged(realm, device_id);
+  return result;
 }
 
 void StubInstallAttributes::Clear() {
@@ -46,50 +79,28 @@ void StubInstallAttributes::SetActiveDirectoryManaged(
   registration_device_id_ = device_id;
 }
 
-// static
-ScopedStubInstallAttributes ScopedStubInstallAttributes::CreateUnset() {
-  StubInstallAttributes* attributes = new StubInstallAttributes();
-  attributes->Clear();
-  policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
-      attributes);
-  return ScopedStubInstallAttributes();
-}
+ScopedStubInstallAttributes::ScopedStubInstallAttributes()
+    : ScopedStubInstallAttributes(std::make_unique<StubInstallAttributes>()) {}
 
-// static
-ScopedStubInstallAttributes ScopedStubInstallAttributes::CreateConsumerOwned() {
-  StubInstallAttributes* attributes = new StubInstallAttributes();
-  attributes->SetConsumerOwned();
-  policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
-      attributes);
-  return ScopedStubInstallAttributes();
-}
-
-// static
-ScopedStubInstallAttributes ScopedStubInstallAttributes::CreateCloudManaged(
-    const std::string& domain,
-    const std::string& device_id) {
-  StubInstallAttributes* attributes = new StubInstallAttributes();
-  attributes->SetCloudManaged(domain, device_id);
-  policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
-      attributes);
-  return ScopedStubInstallAttributes();
-}
-
-// static
-ScopedStubInstallAttributes
-ScopedStubInstallAttributes::CreateActiveDirectoryManaged(
-    const std::string& realm,
-    const std::string& device_id) {
-  StubInstallAttributes* attributes = new StubInstallAttributes();
-  attributes->SetActiveDirectoryManaged(realm, device_id);
-  policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
-      attributes);
-  return ScopedStubInstallAttributes();
+ScopedStubInstallAttributes::ScopedStubInstallAttributes(
+    std::unique_ptr<StubInstallAttributes> install_attributes)
+    : install_attributes_(std::move(install_attributes)) {
+  // The constructor calls SetForTesting with these install_attributes, so
+  // in the destructor we make the matching call to ShutdownForTesting.
+  InstallAttributes::SetForTesting(install_attributes_.get());
 }
 
 ScopedStubInstallAttributes::~ScopedStubInstallAttributes() {
-  if (cleanup_)
-    policy::BrowserPolicyConnectorChromeOS::RemoveInstallAttributesForTesting();
+  // Make sure that the install_attributes_ that are held by this class
+  // are still the same as the global singleton - if not, then that singleton
+  // has been overwritten somewhere else, which is probably a bug.
+  CHECK_EQ(install_attributes_.get(), InstallAttributes::Get());
+
+  InstallAttributes::ShutdownForTesting();  // Unset the global singleton.
+}
+
+StubInstallAttributes* ScopedStubInstallAttributes::Get() {
+  return install_attributes_.get();
 }
 
 }  // namespace chromeos
