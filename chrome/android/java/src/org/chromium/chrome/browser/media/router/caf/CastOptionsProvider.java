@@ -16,7 +16,10 @@ import java.util.List;
 public class CastOptionsProvider implements OptionsProvider {
     @Override
     public CastOptions getCastOptions(Context context) {
-        return new CastOptions.Builder().setCastMediaOptions(null).build();
+        return new CastOptions.Builder()
+                .setCastMediaOptions(null)
+                .setEnableReconnectionService(false)
+                .build();
     }
 
     @Override
