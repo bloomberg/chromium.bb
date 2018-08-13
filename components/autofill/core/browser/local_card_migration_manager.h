@@ -84,8 +84,8 @@ class LocalCardMigrationManager {
       const base::string16& context_token,
       std::unique_ptr<base::DictionaryValue> legal_message);
 
-  // Check whether a local card is already a server card.
-  bool IsServerCard(CreditCard* local_card) const;
+  // Fetch all migratable credit cards and store in |migratable_credit_cards_|.
+  void GetMigratableCreditCards();
 
   AutofillClient* const client_;
 

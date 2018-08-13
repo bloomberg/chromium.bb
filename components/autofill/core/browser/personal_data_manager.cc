@@ -1993,6 +1993,20 @@ bool PersonalDataManager::IsKnownCard(const CreditCard& credit_card) {
   return false;
 }
 
+bool PersonalDataManager::IsServerCard(const CreditCard* credit_card) const {
+  // Check whether the current card itself is a server card.
+  if (credit_card->record_type() != autofill::CreditCard::LOCAL_CARD)
+    return true;
+
+  std::vector<CreditCard*> server_credit_cards = GetServerCreditCards();
+  // Check whether the current card is already uploaded.
+  for (const CreditCard* server_card : server_credit_cards) {
+    if (credit_card->HasSameNumberAs(*server_card))
+      return true;
+  }
+  return false;
+}
+
 std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
     const AutofillType& type,
     const base::string16& field_contents,

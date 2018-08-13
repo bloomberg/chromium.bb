@@ -336,6 +336,9 @@ class PersonalDataManager : public KeyedService,
   // |credit_card| is equal to any masked server card known by the browser.
   bool IsKnownCard(const CreditCard& credit_card);
 
+  // Check whether a card is a server card or has a duplicated server card.
+  bool IsServerCard(const CreditCard* credit_card) const;
+
   // Sets the value that can skip the checks to see if we are syncing in a test.
   void SetSyncingForTest(bool is_syncing_for_test) {
     is_syncing_for_test_ = is_syncing_for_test;
