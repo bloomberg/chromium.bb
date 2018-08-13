@@ -10,6 +10,7 @@
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/canvas.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/views/message_view.h"
@@ -32,6 +33,32 @@ const int kMaxVisibleNotifications = 100;
 
 }  // namespace
 
+StackingNotificationCounterView::StackingNotificationCounterView() = default;
+
+StackingNotificationCounterView::~StackingNotificationCounterView() = default;
+
+void StackingNotificationCounterView::SetCount(int stacking_count) {
+  stacking_count_ = std::min(stacking_count, kStackingNotificationCounterMax);
+  SetVisible(stacking_count > 0);
+  SchedulePaint();
+}
+
+void StackingNotificationCounterView::OnPaint(gfx::Canvas* canvas) {
+  int x = kStackingNotificationCounterStartX;
+  const int y = kStackingNotificationCounterHeight / 2;
+
+  cc::PaintFlags flags;
+  flags.setColor(kStackingNotificationCounterColor);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setAntiAlias(true);
+
+  for (int i = 0; i < stacking_count_; ++i) {
+    canvas->DrawCircle(gfx::Point(x, y), kStackingNotificationCounterRadius,
+                       flags);
+    x += kStackingNotificationCounterDistanceX;
+  }
+}
+
 // UnifiedMessageCenterView
 // ///////////////////////////////////////////////////////////
 
@@ -42,6 +69,8 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
     : tray_controller_(tray_controller),
       parent_(parent),
       message_center_(message_center),
+      stacking_counter_(new StackingNotificationCounterView()),
+      scroll_bar_(new MessageCenterScrollBar(this)),
       scroller_(new views::ScrollView()),
       message_list_view_(new MessageListView()) {
   DCHECK(message_center_);
@@ -52,10 +81,12 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
   set_notify_enter_exit_on_child(true);
   SetFocusBehavior(views::View::FocusBehavior::NEVER);
 
+  AddChildView(stacking_counter_);
+
   // Need to set the transparent background explicitly, since ScrollView has
   // set the default opaque background color.
   scroller_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  scroller_->SetVerticalScrollBar(new MessageCenterScrollBar(this));
+  scroller_->SetVerticalScrollBar(scroll_bar_);
   scroller_->set_draw_overflow_indicator(false);
   AddChildView(scroller_);
 
@@ -101,6 +132,8 @@ void UnifiedMessageCenterView::Init() {
   focus_manager_ = GetFocusManager();
   if (focus_manager_)
     focus_manager_->AddFocusChangeListener(this);
+
+  LayoutInternal(false /* force */);
   ScrollToPositionFromBottom();
   NotifyHeightBelowScroll();
 }
@@ -133,9 +166,42 @@ void UnifiedMessageCenterView::SetNotifications(
 }
 
 void UnifiedMessageCenterView::Layout() {
-  scroller_->SetBounds(0, 0, width(), height());
+  LayoutInternal(true /* force */);
   ScrollToPositionFromBottom();
   NotifyHeightBelowScroll();
+}
+
+void UnifiedMessageCenterView::LayoutInternal(bool force) {
+  // GetCountAboveVisibleRect() only works after SetBoundsRect() is called at
+  // least once.
+  if (scroller_->bounds().IsEmpty())
+    scroller_->SetBoundsRect(GetContentsBounds());
+
+  bool was_visible = stacking_counter_->visible();
+  stacking_counter_->SetCount(message_list_view_->GetCountAboveVisibleRect());
+
+  // Only do the actual layout if counter visibility is changed or forced.
+  if (was_visible != stacking_counter_->visible() || force) {
+    if (stacking_counter_->visible()) {
+      gfx::Rect counter_bounds(GetContentsBounds());
+      counter_bounds.set_height(kStackingNotificationCounterHeight);
+      stacking_counter_->SetBoundsRect(counter_bounds);
+
+      gfx::Insets scroller_insets(kStackingNotificationCounterHeight, 0, 0, 0);
+      gfx::Rect scroller_bounds(GetContentsBounds());
+      scroller_bounds.Inset(scroller_insets);
+      scroller_->SetBoundsRect(scroller_bounds);
+    } else {
+      scroller_->SetBoundsRect(GetContentsBounds());
+    }
+  }
+
+  // Adjust scroll position when counter visibility is changed so that on-screen
+  // position of notification list does not change.
+  if (was_visible != stacking_counter_->visible()) {
+    scroll_bar_->ScrollByContentsOffset(kStackingNotificationCounterHeight *
+                                        (was_visible ? 1 : -1));
+  }
 }
 
 gfx::Size UnifiedMessageCenterView::CalculatePreferredSize() const {
@@ -219,10 +285,10 @@ void UnifiedMessageCenterView::OnAllNotificationsCleared() {
 
 void UnifiedMessageCenterView::OnMessageCenterScrolled() {
   // Notification list is scrolled manually e.g. by mouse or gesture.
-  auto* scroll_bar = scroller_->vertical_scroll_bar();
   // Save the distance from the bottom when manually scrolled.
   position_from_bottom_ =
-      scroll_bar->GetMaxPosition() - scroller_->GetVisibleRect().y();
+      scroll_bar_->GetMaxPosition() - scroller_->GetVisibleRect().y();
+  LayoutInternal(false /* force */);
   NotifyHeightBelowScroll();
 }
 
@@ -253,6 +319,8 @@ void UnifiedMessageCenterView::Update() {
   scroller_->Layout();
 
   PreferredSizeChanged();
+  LayoutInternal(false /* force */);
+  ScrollToPositionFromBottom();
   NotifyHeightBelowScroll();
 }
 
@@ -287,9 +355,8 @@ void UnifiedMessageCenterView::UpdateNotification(const std::string& id) {
 
 void UnifiedMessageCenterView::ScrollToPositionFromBottom() {
   scroller_->ScrollToPosition(
-      const_cast<views::ScrollBar*>(scroller_->vertical_scroll_bar()),
-      std::max(0, scroller_->vertical_scroll_bar()->GetMaxPosition() -
-                      position_from_bottom_));
+      scroll_bar_,
+      std::max(0, scroll_bar_->GetMaxPosition() - position_from_bottom_));
 }
 
 }  // namespace ash
