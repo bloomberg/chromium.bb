@@ -27,35 +27,11 @@ const int kIconSizeGigantor = 512;
 const int kIconSizeSmallBetweenMediumAndLarge = 63;
 const int kIconSizeLargeBetweenMediumAndLarge = 96;
 
-SkBitmap CreateSquareBitmapWithColor(int size, SkColor color) {
+BitmapAndSource CreateSquareIcon(const GURL& gurl, int size, SkColor color) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(size, size);
   bitmap.eraseColor(color);
-  return bitmap;
-}
-
-web_app::BitmapAndSource CreateSquareBitmapAndSourceWithColor(int size,
-                                                              SkColor color) {
-  return web_app::BitmapAndSource(GURL(),
-                                  CreateSquareBitmapWithColor(size, color));
-}
-
-struct IconInfo {
-  IconInfo() : width(0), height(0) {}
-  ~IconInfo() = default;
-
-  GURL url;
-  int width;
-  int height;
-  SkBitmap data;
-};
-
-IconInfo CreateIconInfoWithBitmap(int size, SkColor color) {
-  IconInfo icon_info;
-  icon_info.width = size;
-  icon_info.height = size;
-  icon_info.data = CreateSquareBitmapWithColor(size, color);
-  return icon_info;
+  return BitmapAndSource(gurl, bitmap);
 }
 
 std::set<int> TestSizesToGenerate() {
@@ -67,18 +43,18 @@ std::set<int> TestSizesToGenerate() {
 }
 
 void ValidateAllIconsWithURLsArePresent(
-    const std::vector<IconInfo>& icons_to_check,
+    const std::vector<BitmapAndSource>& icons_to_check,
     const std::map<int, BitmapAndSource>& size_map) {
   EXPECT_EQ(icons_to_check.size(), size_map.size());
 
   // Check that every icon with URL has a mapped icon.
   for (const auto& icon : icons_to_check) {
-    if (!icon.url.is_empty()) {
+    if (!icon.source_url.is_empty()) {
       bool found = false;
-      if (base::ContainsKey(size_map, icon.width)) {
-        const BitmapAndSource& mapped_icon = size_map.at(icon.width);
-        if (mapped_icon.source_url == icon.url &&
-            mapped_icon.bitmap.width() == icon.width) {
+      if (base::ContainsKey(size_map, icon.bitmap.width())) {
+        const BitmapAndSource& mapped_icon = size_map.at(icon.bitmap.width());
+        if (mapped_icon.source_url == icon.source_url &&
+            mapped_icon.bitmap.width() == icon.bitmap.width()) {
           found = true;
         }
       }
@@ -87,14 +63,11 @@ void ValidateAllIconsWithURLsArePresent(
   }
 }
 
-std::vector<web_app::BitmapAndSource>::const_iterator
-FindLargestBitmapAndSourceVector(
-    const std::vector<web_app::BitmapAndSource>& bitmap_vector) {
+std::vector<BitmapAndSource>::const_iterator FindLargestBitmapAndSourceVector(
+    const std::vector<BitmapAndSource>& bitmap_vector) {
   auto result = bitmap_vector.end();
   int largest = -1;
-  for (std::vector<web_app::BitmapAndSource>::const_iterator it =
-           bitmap_vector.begin();
-       it != bitmap_vector.end(); ++it) {
+  for (auto it = bitmap_vector.begin(); it != bitmap_vector.end(); ++it) {
     if (it->bitmap.width() > largest) {
       result = it;
     }
@@ -102,13 +75,10 @@ FindLargestBitmapAndSourceVector(
   return result;
 }
 
-std::vector<web_app::BitmapAndSource>::const_iterator
-FindMatchingBitmapAndSourceVector(
-    const std::vector<web_app::BitmapAndSource>& bitmap_vector,
+std::vector<BitmapAndSource>::const_iterator FindMatchingBitmapAndSourceVector(
+    const std::vector<BitmapAndSource>& bitmap_vector,
     int size) {
-  for (std::vector<web_app::BitmapAndSource>::const_iterator it =
-           bitmap_vector.begin();
-       it != bitmap_vector.end(); ++it) {
+  for (auto it = bitmap_vector.begin(); it != bitmap_vector.end(); ++it) {
     if (it->bitmap.width() == size) {
       return it;
     }
@@ -116,13 +86,11 @@ FindMatchingBitmapAndSourceVector(
   return bitmap_vector.end();
 }
 
-std::vector<web_app::BitmapAndSource>::const_iterator
+std::vector<BitmapAndSource>::const_iterator
 FindEqualOrLargerBitmapAndSourceVector(
-    const std::vector<web_app::BitmapAndSource>& bitmap_vector,
+    const std::vector<BitmapAndSource>& bitmap_vector,
     int size) {
-  for (std::vector<web_app::BitmapAndSource>::const_iterator it =
-           bitmap_vector.begin();
-       it != bitmap_vector.end(); ++it) {
+  for (auto it = bitmap_vector.begin(); it != bitmap_vector.end(); ++it) {
     if (it->bitmap.width() >= size) {
       return it;
     }
@@ -131,8 +99,8 @@ FindEqualOrLargerBitmapAndSourceVector(
 }
 
 void ValidateIconsGeneratedAndResizedCorrectly(
-    std::vector<web_app::BitmapAndSource> downloaded,
-    std::map<int, web_app::BitmapAndSource> size_map,
+    std::vector<BitmapAndSource> downloaded,
+    std::map<int, BitmapAndSource> size_map,
     std::set<int> sizes_to_generate,
     int expected_generated,
     int expected_resized) {
@@ -196,15 +164,13 @@ void TestIconGeneration(int icon_size,
   std::vector<BitmapAndSource> downloaded;
 
   // Add an icon with a URL and bitmap. 'Download' it.
-  IconInfo icon_info = CreateIconInfoWithBitmap(icon_size, SK_ColorRED);
-  icon_info.url = GURL(kAppIconURL1);
-  downloaded.push_back(BitmapAndSource(icon_info.url, icon_info.data));
+  downloaded.push_back(
+      CreateSquareIcon(GURL(kAppIconURL1), icon_size, SK_ColorRED));
 
   // Now run the resizing/generation and validation.
   SkColor generated_icon_color = SK_ColorTRANSPARENT;
-  std::map<int, web_app::BitmapAndSource> size_map =
-      ResizeIconsAndGenerateMissing(downloaded, TestSizesToGenerate(), GURL(),
-                                    &generated_icon_color);
+  auto size_map = ResizeIconsAndGenerateMissing(
+      downloaded, TestSizesToGenerate(), GURL(), &generated_icon_color);
 
   ValidateIconsGeneratedAndResizedCorrectly(
       downloaded, size_map, TestSizesToGenerate(), expected_generated,
@@ -223,14 +189,13 @@ TEST(WebAppIconGeneratorTest, ConstrainBitmapsToSizes) {
   desired_sizes.insert(256);
 
   {
-    std::vector<web_app::BitmapAndSource> bitmaps;
-    bitmaps.push_back(CreateSquareBitmapAndSourceWithColor(16, SK_ColorRED));
-    bitmaps.push_back(CreateSquareBitmapAndSourceWithColor(32, SK_ColorGREEN));
-    bitmaps.push_back(
-        CreateSquareBitmapAndSourceWithColor(144, SK_ColorYELLOW));
+    std::vector<BitmapAndSource> bitmaps;
+    bitmaps.push_back(CreateSquareIcon(GURL(), 16, SK_ColorRED));
+    bitmaps.push_back(CreateSquareIcon(GURL(), 32, SK_ColorGREEN));
+    bitmaps.push_back(CreateSquareIcon(GURL(), 144, SK_ColorYELLOW));
 
-    std::map<int, web_app::BitmapAndSource> results(
-        ConstrainBitmapsToSizes(bitmaps, desired_sizes));
+    std::map<int, BitmapAndSource> results =
+        ConstrainBitmapsToSizes(bitmaps, desired_sizes);
 
     EXPECT_EQ(6u, results.size());
     ValidateBitmapSizeAndColor(results[16].bitmap, 16, SK_ColorRED);
@@ -241,14 +206,14 @@ TEST(WebAppIconGeneratorTest, ConstrainBitmapsToSizes) {
     ValidateBitmapSizeAndColor(results[256].bitmap, 256, SK_ColorYELLOW);
   }
   {
-    std::vector<web_app::BitmapAndSource> bitmaps;
-    bitmaps.push_back(CreateSquareBitmapAndSourceWithColor(512, SK_ColorRED));
-    bitmaps.push_back(CreateSquareBitmapAndSourceWithColor(18, SK_ColorGREEN));
-    bitmaps.push_back(CreateSquareBitmapAndSourceWithColor(33, SK_ColorBLUE));
-    bitmaps.push_back(CreateSquareBitmapAndSourceWithColor(17, SK_ColorYELLOW));
+    std::vector<BitmapAndSource> bitmaps;
+    bitmaps.push_back(CreateSquareIcon(GURL(), 512, SK_ColorRED));
+    bitmaps.push_back(CreateSquareIcon(GURL(), 18, SK_ColorGREEN));
+    bitmaps.push_back(CreateSquareIcon(GURL(), 33, SK_ColorBLUE));
+    bitmaps.push_back(CreateSquareIcon(GURL(), 17, SK_ColorYELLOW));
 
-    std::map<int, web_app::BitmapAndSource> results(
-        ConstrainBitmapsToSizes(bitmaps, desired_sizes));
+    std::map<int, BitmapAndSource> results =
+        ConstrainBitmapsToSizes(bitmaps, desired_sizes);
 
     EXPECT_EQ(6u, results.size());
     ValidateBitmapSizeAndColor(results[16].bitmap, 16, SK_ColorYELLOW);
@@ -261,62 +226,48 @@ TEST(WebAppIconGeneratorTest, ConstrainBitmapsToSizes) {
 }
 
 TEST(WebAppIconGeneratorTest, LinkedAppIconsAreNotChanged) {
-  std::vector<IconInfo> icons_info;
+  std::vector<BitmapAndSource> icons;
 
-  IconInfo icon_info;
-  icon_info.url = GURL(kAppIconURL3);
+  const GURL url = GURL(kAppIconURL3);
+  const SkColor color = SK_ColorBLACK;
 
-  icon_info.width = kIconSizeMedium;
-  icons_info.push_back(icon_info);
-
-  icon_info.width = kIconSizeSmall;
-  icons_info.push_back(icon_info);
-
-  icon_info.width = kIconSizeLarge;
-  icons_info.push_back(icon_info);
+  icons.push_back(CreateSquareIcon(url, kIconSizeMedium, color));
+  icons.push_back(CreateSquareIcon(url, kIconSizeSmall, color));
+  icons.push_back(CreateSquareIcon(url, kIconSizeLarge, color));
 
   // 'Download' one of the icons without a size or bitmap.
   std::vector<BitmapAndSource> downloaded;
-  downloaded.push_back(BitmapAndSource(
-      GURL(kAppIconURL3),
-      CreateSquareBitmapWithColor(kIconSizeLarge, SK_ColorBLACK)));
+  downloaded.push_back(CreateSquareIcon(url, kIconSizeLarge, color));
 
   const auto& sizes = TestSizesToGenerate();
 
   // Now run the resizing and generation into a new web icons info.
   SkColor generated_icon_color = SK_ColorTRANSPARENT;
-  std::map<int, web_app::BitmapAndSource> size_map =
-      ResizeIconsAndGenerateMissing(downloaded, sizes, GURL(),
-                                    &generated_icon_color);
+  std::map<int, BitmapAndSource> size_map = ResizeIconsAndGenerateMissing(
+      downloaded, sizes, GURL(), &generated_icon_color);
   EXPECT_EQ(sizes.size(), size_map.size());
 
   // Now check that the linked app icons (i.e. those with URLs) are matching.
-  ValidateAllIconsWithURLsArePresent(icons_info, size_map);
+  ValidateAllIconsWithURLsArePresent(icons, size_map);
 }
 
 TEST(WebAppIconGeneratorTest, IconsResizedFromOddSizes) {
   std::vector<BitmapAndSource> downloaded;
 
+  const SkColor color = SK_ColorRED;
+
   // Add three icons with a URL and bitmap. 'Download' each of them.
-  IconInfo icon_info = CreateIconInfoWithBitmap(kIconSizeSmall, SK_ColorRED);
-  icon_info.url = GURL(kAppIconURL1);
-  downloaded.push_back(web_app::BitmapAndSource(icon_info.url, icon_info.data));
-
-  icon_info = CreateIconInfoWithBitmap(kIconSizeSmallBetweenMediumAndLarge,
-                                       SK_ColorRED);
-  icon_info.url = GURL(kAppIconURL2);
-  downloaded.push_back(web_app::BitmapAndSource(icon_info.url, icon_info.data));
-
-  icon_info = CreateIconInfoWithBitmap(kIconSizeLargeBetweenMediumAndLarge,
-                                       SK_ColorRED);
-  icon_info.url = GURL(kAppIconURL3);
-  downloaded.push_back(web_app::BitmapAndSource(icon_info.url, icon_info.data));
+  downloaded.push_back(
+      CreateSquareIcon(GURL(kAppIconURL1), kIconSizeSmall, color));
+  downloaded.push_back(CreateSquareIcon(
+      GURL(kAppIconURL2), kIconSizeSmallBetweenMediumAndLarge, color));
+  downloaded.push_back(CreateSquareIcon(
+      GURL(kAppIconURL3), kIconSizeLargeBetweenMediumAndLarge, color));
 
   // Now run the resizing and generation.
   SkColor generated_icon_color = SK_ColorTRANSPARENT;
-  std::map<int, web_app::BitmapAndSource> size_map =
-      ResizeIconsAndGenerateMissing(downloaded, TestSizesToGenerate(), GURL(),
-                                    &generated_icon_color);
+  std::map<int, BitmapAndSource> size_map = ResizeIconsAndGenerateMissing(
+      downloaded, TestSizesToGenerate(), GURL(), &generated_icon_color);
 
   // No icons should be generated. The LARGE and MEDIUM sizes should be resized.
   ValidateIconsGeneratedAndResizedCorrectly(downloaded, size_map,
@@ -324,26 +275,19 @@ TEST(WebAppIconGeneratorTest, IconsResizedFromOddSizes) {
 }
 
 TEST(WebAppIconGeneratorTest, IconsResizedFromLarger) {
-  std::vector<web_app::BitmapAndSource> downloaded;
+  std::vector<BitmapAndSource> downloaded;
 
   // Add three icons with a URL and bitmap. 'Download' two of them and pretend
   // the third failed to download.
-  IconInfo icon_info = CreateIconInfoWithBitmap(kIconSizeSmall, SK_ColorRED);
-  icon_info.url = GURL(kAppIconURL1);
-  downloaded.push_back(web_app::BitmapAndSource(icon_info.url, icon_info.data));
-
-  icon_info = CreateIconInfoWithBitmap(kIconSizeLarge, SK_ColorBLUE);
-  icon_info.url = GURL(kAppIconURL2);
-
-  icon_info = CreateIconInfoWithBitmap(kIconSizeGigantor, SK_ColorBLACK);
-  icon_info.url = GURL(kAppIconURL3);
-  downloaded.push_back(web_app::BitmapAndSource(icon_info.url, icon_info.data));
+  downloaded.push_back(
+      CreateSquareIcon(GURL(kAppIconURL1), kIconSizeSmall, SK_ColorRED));
+  downloaded.push_back(
+      CreateSquareIcon(GURL(kAppIconURL3), kIconSizeGigantor, SK_ColorBLACK));
 
   // Now run the resizing and generation.
   SkColor generated_icon_color = SK_ColorTRANSPARENT;
-  std::map<int, web_app::BitmapAndSource> size_map =
-      ResizeIconsAndGenerateMissing(downloaded, TestSizesToGenerate(), GURL(),
-                                    &generated_icon_color);
+  std::map<int, BitmapAndSource> size_map = ResizeIconsAndGenerateMissing(
+      downloaded, TestSizesToGenerate(), GURL(), &generated_icon_color);
 
   // Expect icon for MEDIUM and LARGE to be resized from the gigantor icon
   // as it was not downloaded.
@@ -352,23 +296,13 @@ TEST(WebAppIconGeneratorTest, IconsResizedFromLarger) {
 }
 
 TEST(WebAppIconGeneratorTest, AllIconsGeneratedWhenNotDownloaded) {
-  std::vector<web_app::BitmapAndSource> downloaded;
-
   // Add three icons with a URL and bitmap. 'Download' none of them.
-  IconInfo icon_info = CreateIconInfoWithBitmap(kIconSizeSmall, SK_ColorRED);
-  icon_info.url = GURL(kAppIconURL1);
-
-  icon_info = CreateIconInfoWithBitmap(kIconSizeLarge, SK_ColorBLUE);
-  icon_info.url = GURL(kAppIconURL2);
-
-  icon_info = CreateIconInfoWithBitmap(kIconSizeGigantor, SK_ColorBLACK);
-  icon_info.url = GURL(kAppIconURL3);
+  std::vector<BitmapAndSource> downloaded;
 
   // Now run the resizing and generation.
   SkColor generated_icon_color = SK_ColorTRANSPARENT;
-  std::map<int, web_app::BitmapAndSource> size_map =
-      ResizeIconsAndGenerateMissing(downloaded, TestSizesToGenerate(), GURL(),
-                                    &generated_icon_color);
+  std::map<int, BitmapAndSource> size_map = ResizeIconsAndGenerateMissing(
+      downloaded, TestSizesToGenerate(), GURL(), &generated_icon_color);
 
   // Expect all icons to be generated.
   ValidateIconsGeneratedAndResizedCorrectly(downloaded, size_map,
@@ -376,25 +310,18 @@ TEST(WebAppIconGeneratorTest, AllIconsGeneratedWhenNotDownloaded) {
 }
 
 TEST(WebAppIconGeneratorTest, IconResizedFromLargerAndSmaller) {
-  std::vector<web_app::BitmapAndSource> downloaded;
+  std::vector<BitmapAndSource> downloaded;
 
   // Pretend the huge icon wasn't downloaded but two smaller ones were.
-  IconInfo icon_info = CreateIconInfoWithBitmap(kIconSizeTiny, SK_ColorRED);
-  icon_info.url = GURL(kAppIconURL1);
-  downloaded.push_back(web_app::BitmapAndSource(icon_info.url, icon_info.data));
-
-  icon_info = CreateIconInfoWithBitmap(kIconSizeMedium, SK_ColorBLUE);
-  icon_info.url = GURL(kAppIconURL2);
-  downloaded.push_back(web_app::BitmapAndSource(icon_info.url, icon_info.data));
-
-  icon_info = CreateIconInfoWithBitmap(kIconSizeGigantor, SK_ColorBLACK);
-  icon_info.url = GURL(kAppIconURL3);
+  downloaded.push_back(
+      CreateSquareIcon(GURL(kAppIconURL1), kIconSizeTiny, SK_ColorRED));
+  downloaded.push_back(
+      CreateSquareIcon(GURL(kAppIconURL2), kIconSizeMedium, SK_ColorBLUE));
 
   // Now run the resizing and generation.
   SkColor generated_icon_color = SK_ColorTRANSPARENT;
-  std::map<int, web_app::BitmapAndSource> size_map =
-      ResizeIconsAndGenerateMissing(downloaded, TestSizesToGenerate(), GURL(),
-                                    &generated_icon_color);
+  std::map<int, BitmapAndSource> size_map = ResizeIconsAndGenerateMissing(
+      downloaded, TestSizesToGenerate(), GURL(), &generated_icon_color);
 
   // Expect no icons to be generated, but the LARGE and SMALL icons to be
   // resized from the MEDIUM icon.
