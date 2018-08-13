@@ -13,6 +13,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
@@ -21,6 +22,7 @@
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 #include "components/password_manager/core/browser/password_store_factory_util.h"
+#import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "ios/web_view/internal/webdata_services/web_view_web_data_service_wrapper_factory.h"
 
@@ -49,6 +51,19 @@ WebViewPasswordStoreFactory::GetForBrowserState(
 // static
 WebViewPasswordStoreFactory* WebViewPasswordStoreFactory::GetInstance() {
   return base::Singleton<WebViewPasswordStoreFactory>::get();
+}
+
+// static
+void WebViewPasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
+    WebViewBrowserState* browser_state) {
+  scoped_refptr<password_manager::PasswordStore> password_store =
+      GetForBrowserState(browser_state, ServiceAccessType::EXPLICIT_ACCESS);
+  syncer::SyncService* sync_service =
+      WebViewProfileSyncServiceFactory::GetForBrowserState(browser_state);
+  password_manager::ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
+      password_store.get(), sync_service,
+      browser_state->GetSharedURLLoaderFactory(),
+      browser_state->GetStatePath());
 }
 
 WebViewPasswordStoreFactory::WebViewPasswordStoreFactory()

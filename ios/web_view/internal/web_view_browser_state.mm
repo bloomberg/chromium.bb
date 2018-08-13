@@ -21,6 +21,8 @@
 #include "components/prefs/pref_filter.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/signin/ios/browser/active_state_manager.h"
+#include "components/sync/base/pref_names.h"
+#include "components/sync/base/sync_prefs.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "ios/web/public/web_thread.h"
@@ -42,7 +44,9 @@
 #include "ios/web_view/internal/signin/web_view_signin_error_controller_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
 #import "ios/web_view/internal/sync/web_view_gcm_profile_service_factory.h"
+#import "ios/web_view/internal/sync/web_view_model_type_store_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_invalidation_provider_factory.h"
+#import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
 #include "ios/web_view/internal/translate/web_view_translate_accept_languages_factory.h"
 #include "ios/web_view/internal/translate/web_view_translate_ranker_factory.h"
 #include "ios/web_view/internal/web_view_url_request_context_getter.h"
@@ -160,6 +164,8 @@ void WebViewBrowserState::RegisterPrefs(
   pref_registry->RegisterStringPref(prefs::kAcceptLanguages,
                                     l10n_util::GetLocaleOverride());
   pref_registry->RegisterBooleanPref(prefs::kOfferTranslateEnabled, true);
+  pref_registry->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled,
+                                     true);
   translate::TranslatePrefs::RegisterProfilePrefs(pref_registry);
 
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
@@ -169,6 +175,7 @@ void WebViewBrowserState::RegisterPrefs(
 
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   gcm::GCMChannelStatusSyncer::RegisterProfilePrefs(pref_registry);
+  syncer::SyncPrefs::RegisterProfilePrefs(pref_registry);
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 
   // Instantiate all factories to setup dependency graph for pref registration.
@@ -197,6 +204,8 @@ void WebViewBrowserState::RegisterPrefs(
   WebViewIdentityManagerFactory::GetInstance();
   WebViewGCMProfileServiceFactory::GetInstance();
   WebViewProfileInvalidationProviderFactory::GetInstance();
+  WebViewProfileSyncServiceFactory::GetInstance();
+  WebViewModelTypeStoreServiceFactory::GetInstance();
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 
   BrowserStateDependencyManager::GetInstance()
