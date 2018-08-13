@@ -1,0 +1,962 @@
+[1532465687.788][INFO]: [34030c426d7b7daf5749d665c50002b4] COMMAND InitSession {
+   "desiredCapabilities": {
+      "chromeOptions": {
+         "args": [ "no-sandbox", "disable-gpu" ],
+         "binary": "/usr/local/google/home/cwinstanley/chromium/src/out/Default/chrome"
+      },
+      "goog:testName": "__main__.ChromeDriverTest.testCanSwitchToPrintPreviewDialog",
+      "loggingPrefs": {
+
+      }
+   }
+}
+[1532465687.789][INFO]: Populating Preferences file: {
+   "alternate_error_pages": {
+      "enabled": false
+   },
+   "autofill": {
+      "enabled": false
+   },
+   "browser": {
+      "check_default_browser": false
+   },
+   "distribution": {
+      "import_bookmarks": false,
+      "import_history": false,
+      "import_search_engine": false,
+      "make_chrome_default_for_user": false,
+      "skip_first_run_ui": true
+   },
+   "dns_prefetching": {
+      "enabled": false
+   },
+   "profile": {
+      "content_settings": {
+         "pattern_pairs": {
+            "https://*,*": {
+               "media-stream": {
+                  "audio": "Default",
+                  "video": "Default"
+               }
+            }
+         }
+      },
+      "default_content_setting_values": {
+         "geolocation": 1
+      },
+      "default_content_settings": {
+         "geolocation": 1,
+         "mouselock": 1,
+         "notifications": 1,
+         "popups": 1,
+         "ppapi-broker": 1
+      },
+      "password_manager_enabled": false
+   },
+   "safebrowsing": {
+      "enabled": false
+   },
+   "search": {
+      "suggest_enabled": false
+   },
+   "translate": {
+      "enabled": false
+   }
+}
+[1532465687.789][INFO]: Populating Local State file: {
+   "background_mode": {
+      "enabled": false
+   },
+   "ssl": {
+      "rev_checking": {
+         "enabled": false
+      }
+   }
+}
+[1532465687.791][INFO]: Launching chrome: /usr/local/google/home/cwinstanley/chromium/src/out/Default/chrome --disable-background-networking --disable-client-side-phishing-detection --disable-default-apps --disable-gpu --disable-hang-monitor --disable-popup-blocking --disable-prompt-on-repost --disable-sync --disable-web-resources --enable-automation --enable-logging --force-fieldtrials=SiteIsolationExtensions/Control --ignore-certificate-errors --load-extension=/tmp/.org.chromium.Chromium.5kZuq5/internal --log-level=0 --metrics-recording-only --no-first-run --no-sandbox --password-store=basic --remote-debugging-port=0 --test-type=webdriver --use-mock-keychain --user-data-dir=/tmp/.org.chromium.Chromium.G34iMA data:,
+[244620:244620:0724/135449.689459:ERROR:gpu_process_transport_factory.cc(642)] Switching to software compositing.
+[244620:244620:0724/135449.689526:ERROR:gpu_process_transport_factory.cc(1007)] Lost UI shared context.
+[244620:244620:0724/135449.766536:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[244620:244620:0724/135449.766676:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[244620:244620:0724/135449.766735:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[244620:244620:0724/135449.766781:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[244620:244620:0724/135449.767778:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[244620:244620:0724/135449.774644:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[244620:244620:0724/135449.817988:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[244620:244620:0724/135449.851316:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[244620:244620:0724/135449.851398:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+
+DevTools listening on ws://127.0.0.1:46037/devtools/browser/8d156d15-98bc-4f9f-9fd1-1cf9996b4db8
+[1532465689.883][DEBUG]: DevTools request: http://localhost:46037/json/version
+[244620:244620:0724/135449.994659:WARNING:password_store_factory.cc(253)] Using basic (unencrypted) store for password storage. See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_password_storage.md for more information about password storage options.
+[244620:244620:0724/135449.998320:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[1532465690.212][DEBUG]: DevTools response: {
+   "Browser": "Chrome/69.0.3491.0",
+   "Protocol-Version": "1.3",
+   "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3491.0 Safari/537.36",
+   "V8-Version": "6.9.389",
+   "WebKit-Version": "537.36 (@410f2c4912d46a5fae2fe6c0b2e24d9eb6359761)",
+   "webSocketDebuggerUrl": "ws://localhost:46037/devtools/browser/8d156d15-98bc-4f9f-9fd1-1cf9996b4db8"
+}
+
+[1532465690.247][DEBUG]: DevTools request: http://localhost:46037/json
+[1532465690.261][DEBUG]: DevTools response: [ {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:46037/devtools/page/BC3EFA586FCFF9B465F014DB477688A0",
+   "id": "BC3EFA586FCFF9B465F014DB477688A0",
+   "title": "Chrome Automation Extension",
+   "type": "background_page",
+   "url": "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb/_generated_background_page.html",
+   "webSocketDebuggerUrl": "ws://localhost:46037/devtools/page/BC3EFA586FCFF9B465F014DB477688A0"
+}, {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:46037/devtools/page/5C8367BC91409B81F30373EC8CCDB897",
+   "id": "5C8367BC91409B81F30373EC8CCDB897",
+   "title": "",
+   "type": "page",
+   "url": "data:,",
+   "webSocketDebuggerUrl": "ws://localhost:46037/devtools/page/5C8367BC91409B81F30373EC8CCDB897"
+} ]
+
+[1532465690.261][DEBUG]: DevTools request: http://localhost:46037/json
+[1532465690.297][DEBUG]: DevTools response: [ {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:46037/devtools/page/BC3EFA586FCFF9B465F014DB477688A0",
+   "id": "BC3EFA586FCFF9B465F014DB477688A0",
+   "title": "Chrome Automation Extension",
+   "type": "background_page",
+   "url": "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb/_generated_background_page.html",
+   "webSocketDebuggerUrl": "ws://localhost:46037/devtools/page/BC3EFA586FCFF9B465F014DB477688A0"
+}, {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:46037/devtools/page/5C8367BC91409B81F30373EC8CCDB897",
+   "id": "5C8367BC91409B81F30373EC8CCDB897",
+   "title": "",
+   "type": "page",
+   "url": "data:,",
+   "webSocketDebuggerUrl": "ws://localhost:46037/devtools/page/5C8367BC91409B81F30373EC8CCDB897"
+} ]
+
+[1532465690.299][INFO]: resolved localhost to ["::1","127.0.0.1"]
+[1532465690.302][DEBUG]: DEVTOOLS COMMAND Log.enable (id=1) {
+
+}
+[1532465690.302][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=2) {
+
+}
+[1532465690.303][DEBUG]: DEVTOOLS COMMAND Target.setAutoAttach (id=3) {
+   "autoAttach": true,
+   "waitForDebuggerOnStart": false
+}
+[1532465690.303][DEBUG]: DEVTOOLS COMMAND Page.enable (id=4) {
+
+}
+[1532465690.303][DEBUG]: DEVTOOLS COMMAND Page.enable (id=5) {
+
+}
+[1532465690.336][DEBUG]: DEVTOOLS RESPONSE Log.enable (id=1) {
+
+}
+[1532465690.337][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=2) {
+   "root": {
+      "backendNodeId": 1,
+      "baseURL": "about:blank",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 2,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 3,
+            "childNodeCount": 0,
+            "localName": "head",
+            "nodeId": 3,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 2
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 4,
+            "childNodeCount": 0,
+            "localName": "body",
+            "nodeId": 4,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 2
+         } ],
+         "frameId": "5C8367BC91409B81F30373EC8CCDB897",
+         "localName": "html",
+         "nodeId": 2,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 1
+      } ],
+      "documentURL": "",
+      "localName": "",
+      "nodeId": 1,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1532465690.337][DEBUG]: DEVTOOLS RESPONSE Target.setAutoAttach (id=3) {
+
+}
+[1532465690.337][DEBUG]: DEVTOOLS RESPONSE Page.enable (id=4) {
+
+}
+[1532465690.337][DEBUG]: DEVTOOLS RESPONSE Page.enable (id=5) {
+
+}
+[1532465690.337][DEBUG]: DEVTOOLS COMMAND Runtime.enable (id=6) {
+
+}
+[1532465690.419][DEBUG]: DEVTOOLS EVENT Page.frameNavigated {
+   "frame": {
+      "id": "5C8367BC91409B81F30373EC8CCDB897",
+      "loaderId": "9389AC358D2553F9E69F2D86B2733C63",
+      "mimeType": "text/plain",
+      "securityOrigin": "://",
+      "url": "data:,"
+   }
+}
+[1532465690.419][DEBUG]: DEVTOOLS EVENT DOM.documentUpdated {
+
+}
+[1532465690.419][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=7) {
+
+}
+[1532465690.420][DEBUG]: DEVTOOLS EVENT Page.loadEventFired {
+   "timestamp": 78374.700041
+}
+[1532465690.420][DEBUG]: DEVTOOLS EVENT Page.frameStoppedLoading {
+   "frameId": "5C8367BC91409B81F30373EC8CCDB897"
+}
+[1532465690.420][DEBUG]: DEVTOOLS EVENT DOM.documentUpdated {
+
+}
+[1532465690.420][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=8) {
+
+}
+[1532465690.420][DEBUG]: DEVTOOLS EVENT Page.domContentEventFired {
+   "timestamp": 78374.703013
+}
+[1532465690.433][DEBUG]: DEVTOOLS EVENT Runtime.executionContextCreated {
+   "context": {
+      "auxData": {
+         "frameId": "5C8367BC91409B81F30373EC8CCDB897",
+         "isDefault": true
+      },
+      "id": 1,
+      "name": "",
+      "origin": "://"
+   }
+}
+[1532465690.433][DEBUG]: DEVTOOLS RESPONSE Runtime.enable (id=6) {
+
+}
+[1532465690.433][DEBUG]: DEVTOOLS EVENT Page.frameResized {
+
+}
+[1532465690.439][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=7) {
+   "root": {
+      "backendNodeId": 5,
+      "baseURL": "data:,",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 6,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 7,
+            "childNodeCount": 0,
+            "localName": "head",
+            "nodeId": 7,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 6
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 8,
+            "childNodeCount": 0,
+            "localName": "body",
+            "nodeId": 8,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 6
+         } ],
+         "frameId": "5C8367BC91409B81F30373EC8CCDB897",
+         "localName": "html",
+         "nodeId": 6,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 5
+      } ],
+      "documentURL": "data:,",
+      "localName": "",
+      "nodeId": 5,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1532465690.440][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=8) {
+   "root": {
+      "backendNodeId": 5,
+      "baseURL": "data:,",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 6,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 7,
+            "childNodeCount": 0,
+            "localName": "head",
+            "nodeId": 11,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 10
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 8,
+            "childNodeCount": 0,
+            "localName": "body",
+            "nodeId": 12,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 10
+         } ],
+         "frameId": "5C8367BC91409B81F30373EC8CCDB897",
+         "localName": "html",
+         "nodeId": 10,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 9
+      } ],
+      "documentURL": "data:,",
+      "localName": "",
+      "nodeId": 9,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1532465690.441][DEBUG]: DEVTOOLS COMMAND Page.enable (id=9) {
+
+}
+[1532465690.462][DEBUG]: DEVTOOLS RESPONSE Page.enable (id=9) {
+
+}
+[1532465690.462][DEBUG]: DEVTOOLS COMMAND Runtime.enable (id=10) {
+
+}
+[1532465690.474][DEBUG]: DEVTOOLS RESPONSE Runtime.enable (id=10) {
+
+}
+[1532465690.475][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=11) {
+   "expression": "(function() { // Copyright (c) 2012 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\n/**\n * Enum f...",
+   "returnByValue": true
+}
+[1532465690.496][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=11) {
+   "result": {
+      "type": "object",
+      "value": {
+         "status": 0,
+         "value": 1
+      }
+   }
+}
+[1532465690.497][INFO]: [34030c426d7b7daf5749d665c50002b4] RESPONSE InitSession {
+   "acceptInsecureCerts": false,
+   "acceptSslCerts": false,
+   "applicationCacheEnabled": false,
+   "browserConnectionEnabled": false,
+   "browserName": "chrome",
+   "chrome": {
+      "chromedriverVersion": "2.40 (1ba6d2ec0853ea1d507bccc09f540f5ea1db0394)",
+      "userDataDir": "/tmp/.org.chromium.Chromium.G34iMA"
+   },
+   "cssSelectorsEnabled": true,
+   "databaseEnabled": false,
+   "goog:chromeOptions": {
+      "debuggerAddress": "localhost:46037"
+   },
+   "handlesAlerts": true,
+   "hasTouchScreen": false,
+   "javascriptEnabled": true,
+   "locationContextEnabled": true,
+   "mobileEmulationEnabled": false,
+   "nativeEvents": true,
+   "networkConnectionEnabled": false,
+   "pageLoadStrategy": "normal",
+   "platform": "Linux",
+   "rotatable": false,
+   "setWindowRect": true,
+   "takesHeapSnapshot": true,
+   "takesScreenshot": true,
+   "unexpectedAlertBehaviour": "",
+   "version": "69.0.3491.0",
+   "webStorageEnabled": true
+}
+[1532465690.498][INFO]: [34030c426d7b7daf5749d665c50002b4] COMMAND GetWindows {
+
+}
+[1532465690.498][DEBUG]: DevTools request: http://localhost:46037/json
+[1532465690.503][DEBUG]: DevTools response: [ {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:46037/devtools/page/BC3EFA586FCFF9B465F014DB477688A0",
+   "id": "BC3EFA586FCFF9B465F014DB477688A0",
+   "title": "Chrome Automation Extension",
+   "type": "background_page",
+   "url": "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb/_generated_background_page.html",
+   "webSocketDebuggerUrl": "ws://localhost:46037/devtools/page/BC3EFA586FCFF9B465F014DB477688A0"
+}, {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:46037/devtools/page/5C8367BC91409B81F30373EC8CCDB897",
+   "id": "5C8367BC91409B81F30373EC8CCDB897",
+   "title": "data:,",
+   "type": "page",
+   "url": "data:,",
+   "webSocketDebuggerUrl": "ws://localhost:46037/devtools/page/5C8367BC91409B81F30373EC8CCDB897"
+} ]
+
+[1532465690.503][INFO]: [34030c426d7b7daf5749d665c50002b4] RESPONSE GetWindows [ "CDwindow-5C8367BC91409B81F30373EC8CCDB897" ]
+[1532465690.505][INFO]: [34030c426d7b7daf5749d665c50002b4] COMMAND ExecuteScript {
+   "args": [  ],
+   "script": "setTimeout(function(){window.print();}, 0);"
+}
+[1532465690.505][INFO]: Waiting for pending navigations...
+[1532465690.505][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=12) {
+   "expression": "1"
+}
+[1532465690.508][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=12) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1532465690.508][INFO]: Done waiting for pending navigations. Status: ok
+[1532465690.509][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=13) {
+   "expression": "(function() { // Copyright (c) 2012 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\n/**\n * Enum f...",
+   "returnByValue": true
+}
+[1532465690.520][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=13) {
+   "result": {
+      "type": "object",
+      "value": {
+         "status": 0
+      }
+   }
+}
+[1532465690.521][INFO]: Waiting for pending navigations...
+[1532465690.521][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=14) {
+   "expression": "1"
+}
+[1532465690.571][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=14) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1532465690.572][INFO]: Done waiting for pending navigations. Status: ok
+[1532465690.572][INFO]: [34030c426d7b7daf5749d665c50002b4] RESPONSE ExecuteScript
+[1532465690.573][INFO]: [34030c426d7b7daf5749d665c50002b4] COMMAND GetWindows {
+
+}
+[1532465690.573][DEBUG]: DevTools request: http://localhost:46037/json
+[1532465690.575][DEBUG]: DevTools response: [ {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:46037/devtools/page/336FDBF833C7472DBC17C4050248E417",
+   "id": "336FDBF833C7472DBC17C4050248E417",
+   "title": "",
+   "type": "other",
+   "url": "chrome://print/",
+   "webSocketDebuggerUrl": "ws://localhost:46037/devtools/page/336FDBF833C7472DBC17C4050248E417"
+}, {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:46037/devtools/page/BC3EFA586FCFF9B465F014DB477688A0",
+   "id": "BC3EFA586FCFF9B465F014DB477688A0",
+   "title": "Chrome Automation Extension",
+   "type": "background_page",
+   "url": "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb/_generated_background_page.html",
+   "webSocketDebuggerUrl": "ws://localhost:46037/devtools/page/BC3EFA586FCFF9B465F014DB477688A0"
+}, {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:46037/devtools/page/5C8367BC91409B81F30373EC8CCDB897",
+   "id": "5C8367BC91409B81F30373EC8CCDB897",
+   "title": "data:,",
+   "type": "page",
+   "url": "data:,",
+   "webSocketDebuggerUrl": "ws://localhost:46037/devtools/page/5C8367BC91409B81F30373EC8CCDB897"
+} ]
+
+[1532465690.576][INFO]: [34030c426d7b7daf5749d665c50002b4] RESPONSE GetWindows [ "CDwindow-5C8367BC91409B81F30373EC8CCDB897", "CDwindow-336FDBF833C7472DBC17C4050248E417" ]
+[1532465690.578][INFO]: [34030c426d7b7daf5749d665c50002b4] COMMAND SwitchToWindow {
+   "name": "CDwindow-336FDBF833C7472DBC17C4050248E417"
+}
+[1532465690.578][DEBUG]: DevTools request: http://localhost:46037/json
+[1532465690.579][DEBUG]: DevTools response: [ {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:46037/devtools/page/336FDBF833C7472DBC17C4050248E417",
+   "id": "336FDBF833C7472DBC17C4050248E417",
+   "title": "",
+   "type": "other",
+   "url": "chrome://print/",
+   "webSocketDebuggerUrl": "ws://localhost:46037/devtools/page/336FDBF833C7472DBC17C4050248E417"
+}, {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:46037/devtools/page/BC3EFA586FCFF9B465F014DB477688A0",
+   "id": "BC3EFA586FCFF9B465F014DB477688A0",
+   "title": "Chrome Automation Extension",
+   "type": "background_page",
+   "url": "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb/_generated_background_page.html",
+   "webSocketDebuggerUrl": "ws://localhost:46037/devtools/page/BC3EFA586FCFF9B465F014DB477688A0"
+}, {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:46037/devtools/page/5C8367BC91409B81F30373EC8CCDB897",
+   "id": "5C8367BC91409B81F30373EC8CCDB897",
+   "title": "data:,",
+   "type": "page",
+   "url": "data:,",
+   "webSocketDebuggerUrl": "ws://localhost:46037/devtools/page/5C8367BC91409B81F30373EC8CCDB897"
+} ]
+
+[1532465690.580][DEBUG]: DevTools request: http://localhost:46037/json/activate/336FDBF833C7472DBC17C4050248E417
+[1532465690.581][DEBUG]: DevTools response: Target activated
+[1532465690.581][INFO]: [34030c426d7b7daf5749d665c50002b4] RESPONSE SwitchToWindow
+[1532465690.582][INFO]: [34030c426d7b7daf5749d665c50002b4] COMMAND GetUrl {
+
+}
+[1532465690.583][INFO]: resolved localhost to ["::1","127.0.0.1"]
+[1532465690.584][DEBUG]: DEVTOOLS COMMAND Log.enable (id=1) {
+
+}
+[1532465690.584][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=2) {
+
+}
+[1532465690.585][DEBUG]: DEVTOOLS COMMAND Target.setAutoAttach (id=3) {
+   "autoAttach": true,
+   "waitForDebuggerOnStart": false
+}
+[1532465690.585][DEBUG]: DEVTOOLS COMMAND Page.enable (id=4) {
+
+}
+[1532465690.585][DEBUG]: DEVTOOLS COMMAND Page.enable (id=5) {
+
+}
+[1532465690.678][DEBUG]: DEVTOOLS RESPONSE Log.enable (id=1) {
+
+}
+[1532465690.679][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=2) {
+   "root": {
+      "backendNodeId": 1,
+      "baseURL": "about:blank",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 2,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 3,
+            "childNodeCount": 0,
+            "localName": "head",
+            "nodeId": 3,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 2
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 4,
+            "childNodeCount": 0,
+            "localName": "body",
+            "nodeId": 4,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 2
+         } ],
+         "frameId": "336FDBF833C7472DBC17C4050248E417",
+         "localName": "html",
+         "nodeId": 2,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 1
+      } ],
+      "documentURL": "",
+      "localName": "",
+      "nodeId": 1,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1532465690.680][DEBUG]: DEVTOOLS RESPONSE Target.setAutoAttach (id=3) {
+
+}
+[1532465690.680][DEBUG]: DEVTOOLS RESPONSE Page.enable (id=4) {
+
+}
+[1532465690.680][DEBUG]: DEVTOOLS RESPONSE Page.enable (id=5) {
+
+}
+[1532465690.680][DEBUG]: DEVTOOLS COMMAND Runtime.enable (id=6) {
+
+}
+[1532465690.831][DEBUG]: DEVTOOLS EVENT Page.frameNavigated {
+   "frame": {
+      "id": "336FDBF833C7472DBC17C4050248E417",
+      "loaderId": "6917444EFA0CB39CAD7230DF5C7CD794",
+      "mimeType": "text/html",
+      "securityOrigin": "chrome://print",
+      "url": "chrome://print/"
+   }
+}
+[1532465690.832][DEBUG]: DEVTOOLS EVENT DOM.documentUpdated {
+
+}
+[1532465690.832][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=7) {
+
+}
+[1532465690.832][DEBUG]: DEVTOOLS EVENT Runtime.executionContextCreated {
+   "context": {
+      "auxData": {
+         "frameId": "336FDBF833C7472DBC17C4050248E417",
+         "isDefault": true
+      },
+      "id": 1,
+      "name": "",
+      "origin": "chrome://print"
+   }
+}
+[1532465690.832][DEBUG]: DEVTOOLS RESPONSE Runtime.enable (id=6) {
+
+}
+[1532465690.865][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=7) {
+   "root": {
+      "backendNodeId": 5,
+      "baseURL": "chrome://print/",
+      "childNodeCount": 2,
+      "children": [ {
+         "backendNodeId": 6,
+         "localName": "",
+         "nodeId": 6,
+         "nodeName": "html",
+         "nodeType": 10,
+         "nodeValue": "",
+         "parentId": 5,
+         "publicId": "",
+         "systemId": ""
+      }, {
+         "attributes": [ "id", "print-preview", "class", "focus-outline-visible", "i18n-values", "dir:textdirection;lang:language" ],
+         "backendNodeId": 7,
+         "childNodeCount": 1,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 8,
+            "childNodeCount": 30,
+            "localName": "head",
+            "nodeId": 8,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 7
+         } ],
+         "frameId": "336FDBF833C7472DBC17C4050248E417",
+         "localName": "html",
+         "nodeId": 7,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 5
+      } ],
+      "documentURL": "chrome://print/",
+      "localName": "",
+      "nodeId": 5,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1532465690.865][DEBUG]: DEVTOOLS COMMAND Page.enable (id=8) {
+
+}
+[1532465690.981][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 31,
+   "nodeId": 8
+}
+[1532465690.981][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 32,
+   "nodeId": 8
+}
+[1532465690.981][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 33,
+   "nodeId": 8
+}
+[1532465690.981][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 34,
+   "nodeId": 8
+}
+[1532465690.981][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 35,
+   "nodeId": 8
+}
+[1532465690.981][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 36,
+   "nodeId": 8
+}
+[1532465690.981][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 37,
+   "nodeId": 8
+}
+[1532465690.982][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 38,
+   "nodeId": 8
+}
+[1532465690.982][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 39,
+   "nodeId": 8
+}
+[1532465690.982][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 40,
+   "nodeId": 8
+}
+[1532465690.982][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 41,
+   "nodeId": 8
+}
+[1532465690.982][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 42,
+   "nodeId": 8
+}
+[1532465691.011][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 43,
+   "nodeId": 8
+}
+[1532465691.011][DEBUG]: DEVTOOLS EVENT DOM.childNodeInserted {
+   "node": {
+      "attributes": [  ],
+      "backendNodeId": 9,
+      "childNodeCount": 0,
+      "localName": "body",
+      "nodeId": 9,
+      "nodeName": "BODY",
+      "nodeType": 1,
+      "nodeValue": ""
+   },
+   "parentNodeId": 7,
+   "previousNodeId": 8
+}
+[1532465691.012][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 1,
+   "nodeId": 9
+}
+[1532465691.012][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 2,
+   "nodeId": 9
+}
+[1532465691.012][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 3,
+   "nodeId": 9
+}
+[1532465691.012][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 4,
+   "nodeId": 9
+}
+[1532465691.012][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 5,
+   "nodeId": 9
+}
+[1532465691.012][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 6,
+   "nodeId": 9
+}
+[1532465691.013][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 7,
+   "nodeId": 9
+}
+[1532465691.013][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 8,
+   "nodeId": 9
+}
+[1532465691.013][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 9,
+   "nodeId": 9
+}
+[1532465691.013][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 10,
+   "nodeId": 9
+}
+[1532465691.013][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 11,
+   "nodeId": 9
+}
+[244620:244620:0724/135451.247801:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[1532465691.263][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 12,
+   "nodeId": 9
+}
+[1532465691.263][DEBUG]: DEVTOOLS EVENT DOM.attributeModified {
+   "name": "dir",
+   "nodeId": 7,
+   "value": "ltr"
+}
+[1532465691.263][DEBUG]: DEVTOOLS EVENT DOM.attributeModified {
+   "name": "lang",
+   "nodeId": 7,
+   "value": "en"
+}
+[1532465691.264][DEBUG]: DEVTOOLS EVENT DOM.attributeModified {
+   "name": "i18n-processed",
+   "nodeId": 7,
+   "value": ""
+}
+[1532465691.264][DEBUG]: DEVTOOLS EVENT DOM.documentUpdated {
+
+}
+[1532465691.264][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=9) {
+
+}
+[1532465691.264][DEBUG]: DEVTOOLS EVENT Page.domContentEventFired {
+   "timestamp": 78375.604406
+}
+[1532465691.264][DEBUG]: DEVTOOLS RESPONSE Page.enable (id=8) {
+
+}
+[1532465691.322][DEBUG]: DEVTOOLS EVENT Page.loadEventFired {
+   "timestamp": 78375.638976
+}
+[1532465691.323][DEBUG]: DEVTOOLS EVENT Page.frameStoppedLoading {
+   "frameId": "336FDBF833C7472DBC17C4050248E417"
+}
+[1532465691.324][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=9) {
+   "root": {
+      "backendNodeId": 5,
+      "baseURL": "chrome://print/",
+      "childNodeCount": 2,
+      "children": [ {
+         "backendNodeId": 6,
+         "localName": "",
+         "nodeId": 11,
+         "nodeName": "html",
+         "nodeType": 10,
+         "nodeValue": "",
+         "parentId": 10,
+         "publicId": "",
+         "systemId": ""
+      }, {
+         "attributes": [ "id", "print-preview", "class", "focus-outline-visible", "i18n-values", "dir:textdirection;lang:language", "dir", "ltr", "lang", "en", "i18n-processed", "" ],
+         "backendNodeId": 7,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 8,
+            "childNodeCount": 43,
+            "localName": "head",
+            "nodeId": 13,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 12
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 9,
+            "childNodeCount": 12,
+            "localName": "body",
+            "nodeId": 14,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 12
+         } ],
+         "frameId": "336FDBF833C7472DBC17C4050248E417",
+         "localName": "html",
+         "nodeId": 12,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 10
+      } ],
+      "documentURL": "chrome://print/",
+      "localName": "",
+      "nodeId": 10,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1532465691.324][DEBUG]: DEVTOOLS COMMAND Runtime.enable (id=10) {
+
+}
+[1532465691.347][DEBUG]: DEVTOOLS RESPONSE Runtime.enable (id=10) {
+
+}
+[1532465691.348][INFO]: Waiting for pending navigations...
+[1532465691.348][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=11) {
+   "expression": "1"
+}
+[1532465691.363][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=11) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1532465691.363][INFO]: Done waiting for pending navigations. Status: ok
+[1532465691.365][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=12) {
+   "expression": "(function() { // Copyright (c) 2012 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\n/**\n * Enum f...",
+   "returnByValue": true
+}
+[1532465691.373][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=12) {
+   "result": {
+      "type": "object",
+      "value": {
+         "status": 0,
+         "value": "chrome://print/"
+      }
+   }
+}
+[1532465691.373][INFO]: Waiting for pending navigations...
+[1532465691.373][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=13) {
+   "expression": "1"
+}
+[1532465691.376][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=13) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1532465691.376][INFO]: Done waiting for pending navigations. Status: ok
+[1532465691.376][INFO]: [34030c426d7b7daf5749d665c50002b4] RESPONSE GetUrl "chrome://print/"
+[1532465691.377][INFO]: [34030c426d7b7daf5749d665c50002b4] COMMAND Quit {
+
+}
+[0724/135451.394913:ERROR:nacl_helper_linux.cc(310)] NaCl helper process running without a sandbox!
+Most likely you need to configure your SUID sandbox correctly
+[1532465691.433][INFO]: [34030c426d7b7daf5749d665c50002b4] RESPONSE Quit
+[1532465691.433][DEBUG]: Log type 'driver' lost 0 entries on destruction
+[1532465691.433][DEBUG]: Log type 'browser' lost 0 entries on destruction

@@ -1,0 +1,1865 @@
+[1531863199.465][INFO]: [fabe88df10ea0dd60fdb549b7dd1488c] COMMAND InitSession {
+   "desiredCapabilities": {
+      "chromeOptions": {
+         "args": [ "no-sandbox", "disable-gpu" ],
+         "binary": "/usr/local/google/home/cwinstanley/chromium/src/out/Default/chrome"
+      },
+      "goog:testName": "__main__.ChromeDriverTest.testSendCommand",
+      "loggingPrefs": {
+
+      }
+   }
+}
+[1531863199.466][INFO]: Populating Preferences file: {
+   "alternate_error_pages": {
+      "enabled": false
+   },
+   "autofill": {
+      "enabled": false
+   },
+   "browser": {
+      "check_default_browser": false
+   },
+   "distribution": {
+      "import_bookmarks": false,
+      "import_history": false,
+      "import_search_engine": false,
+      "make_chrome_default_for_user": false,
+      "skip_first_run_ui": true
+   },
+   "dns_prefetching": {
+      "enabled": false
+   },
+   "profile": {
+      "content_settings": {
+         "pattern_pairs": {
+            "https://*,*": {
+               "media-stream": {
+                  "audio": "Default",
+                  "video": "Default"
+               }
+            }
+         }
+      },
+      "default_content_setting_values": {
+         "geolocation": 1
+      },
+      "default_content_settings": {
+         "geolocation": 1,
+         "mouselock": 1,
+         "notifications": 1,
+         "popups": 1,
+         "ppapi-broker": 1
+      },
+      "password_manager_enabled": false
+   },
+   "safebrowsing": {
+      "enabled": false
+   },
+   "search": {
+      "suggest_enabled": false
+   },
+   "translate": {
+      "enabled": false
+   }
+}
+[1531863199.467][INFO]: Populating Local State file: {
+   "background_mode": {
+      "enabled": false
+   },
+   "ssl": {
+      "rev_checking": {
+         "enabled": false
+      }
+   }
+}
+[1531863199.468][INFO]: Launching chrome: /usr/local/google/home/cwinstanley/chromium/src/out/Default/chrome --disable-background-networking --disable-client-side-phishing-detection --disable-default-apps --disable-gpu --disable-hang-monitor --disable-popup-blocking --disable-prompt-on-repost --disable-sync --disable-web-resources --enable-automation --enable-logging --force-fieldtrials=SiteIsolationExtensions/Control --ignore-certificate-errors --load-extension=/tmp/.org.chromium.Chromium.iMLkM5/internal --log-level=0 --metrics-recording-only --no-first-run --no-sandbox --password-store=basic --remote-debugging-port=0 --test-type=webdriver --use-mock-keychain --user-data-dir=/tmp/.org.chromium.Chromium.ETUdZo data:,
+[187881:187881:0717/143321.361562:ERROR:gpu_process_transport_factory.cc(642)] Switching to software compositing.
+[187881:187881:0717/143321.361635:ERROR:gpu_process_transport_factory.cc(1007)] Lost UI shared context.
+[187881:187881:0717/143321.439269:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[187881:187881:0717/143321.439380:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[187881:187881:0717/143321.439432:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[187881:187881:0717/143321.439481:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[187881:187881:0717/143321.440339:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[187881:187881:0717/143321.446788:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[187881:187881:0717/143321.490662:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[187881:187881:0717/143321.526059:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[187881:187881:0717/143321.526134:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+
+DevTools listening on ws://127.0.0.1:42621/devtools/browser/707a2a6a-70bd-49c8-8638-b9c5b3063805
+[1531863201.550][DEBUG]: DevTools request: http://localhost:42621/json/version
+[187881:187881:0717/143321.681947:WARNING:password_store_factory.cc(253)] Using basic (unencrypted) store for password storage. See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_password_storage.md for more information about password storage options.
+[187881:187881:0717/143321.684734:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[1531863201.906][DEBUG]: DevTools response: {
+   "Browser": "Chrome/69.0.3491.0",
+   "Protocol-Version": "1.3",
+   "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3491.0 Safari/537.36",
+   "V8-Version": "6.9.389",
+   "WebKit-Version": "537.36 (@410f2c4912d46a5fae2fe6c0b2e24d9eb6359761)",
+   "webSocketDebuggerUrl": "ws://localhost:42621/devtools/browser/707a2a6a-70bd-49c8-8638-b9c5b3063805"
+}
+
+[1531863201.951][DEBUG]: DevTools request: http://localhost:42621/json
+[1531863201.985][DEBUG]: DevTools response: [ {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:42621/devtools/page/B9F03C5D408D73A7B8199BFC71542C9E",
+   "id": "B9F03C5D408D73A7B8199BFC71542C9E",
+   "title": "Chrome Automation Extension",
+   "type": "background_page",
+   "url": "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb/_generated_background_page.html",
+   "webSocketDebuggerUrl": "ws://localhost:42621/devtools/page/B9F03C5D408D73A7B8199BFC71542C9E"
+}, {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:42621/devtools/page/44A1E671E32C81FEE572C1069DD0EE29",
+   "id": "44A1E671E32C81FEE572C1069DD0EE29",
+   "title": "",
+   "type": "page",
+   "url": "data:,",
+   "webSocketDebuggerUrl": "ws://localhost:42621/devtools/page/44A1E671E32C81FEE572C1069DD0EE29"
+} ]
+
+[1531863201.986][DEBUG]: DevTools request: http://localhost:42621/json
+[1531863201.992][DEBUG]: DevTools response: [ {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:42621/devtools/page/B9F03C5D408D73A7B8199BFC71542C9E",
+   "id": "B9F03C5D408D73A7B8199BFC71542C9E",
+   "title": "Chrome Automation Extension",
+   "type": "background_page",
+   "url": "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb/_generated_background_page.html",
+   "webSocketDebuggerUrl": "ws://localhost:42621/devtools/page/B9F03C5D408D73A7B8199BFC71542C9E"
+}, {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:42621/devtools/page/44A1E671E32C81FEE572C1069DD0EE29",
+   "id": "44A1E671E32C81FEE572C1069DD0EE29",
+   "title": "",
+   "type": "page",
+   "url": "data:,",
+   "webSocketDebuggerUrl": "ws://localhost:42621/devtools/page/44A1E671E32C81FEE572C1069DD0EE29"
+} ]
+
+[1531863201.994][INFO]: resolved localhost to ["::1","127.0.0.1"]
+[1531863201.994][DEBUG]: WebSocket::Connect code=ERR_IO_PENDING
+[1531863201.994][DEBUG]: WebSocket::OnSocketConnect code=OK
+[1531863201.994][DEBUG]: WebSocket::OnSocketConnect handshake
+GET /devtools/page/44A1E671E32C81FEE572C1069DD0EE29 HTTP/1.1
+Host: localhost
+Upgrade: websocket
+Connection: Upgrade
+Sec-WebSocket-Key: mi7wxb05BYlm4X5BWKdKSA==
+Sec-WebSocket-Version: 13
+Pragma: no-cache
+Cache-Control: no-cache
+
+
+[1531863201.996][DEBUG]: WebSocket::OnReadDuringHandshake
+HTTP/1.1 101 WebSocket Protocol Handshake
+Upgrade: WebSocket
+Connection: Upgrade
+Sec-WebSocket-Accept: 0i5Tiv/4WPtorg7Dj/RDZCSH9i8=
+
+
+[1531863201.996][DEBUG]: DEVTOOLS COMMAND Log.enable (id=1) {
+
+}
+[1531863201.996][DEBUG]: WebSocket::Send {"id":1,"method":"Log.enable","params":{}}
+[1531863201.997][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=2) {
+
+}
+[1531863201.997][DEBUG]: WebSocket::Send {"id":2,"method":"DOM.getDocument","params":{}}
+[1531863201.997][DEBUG]: DEVTOOLS COMMAND Target.setAutoAttach (id=3) {
+   "autoAttach": true,
+   "waitForDebuggerOnStart": false
+}
+[1531863201.997][DEBUG]: WebSocket::Send {"id":3,"method":"Target.setAutoAttach","params":{"autoAttach":true,"waitForDebuggerOnStart":false}}
+[1531863201.997][DEBUG]: DEVTOOLS COMMAND Page.enable (id=4) {
+
+}
+[1531863201.997][DEBUG]: WebSocket::Send {"id":4,"method":"Page.enable","params":{}}
+[1531863201.997][DEBUG]: DEVTOOLS COMMAND Page.enable (id=5) {
+
+}
+[1531863201.997][DEBUG]: WebSocket::Send {"id":5,"method":"Page.enable","params":{}}
+[1531863202.041][DEBUG]: WebSocket::OnReadDuringOpen {"id":1,"result":{}}
+[1531863202.042][DEBUG]: DEVTOOLS RESPONSE Log.enable (id=1) {
+
+}
+[1531863202.095][DEBUG]: WebSocket::OnReadDuringOpen {"id":2,"result":{"root":{"nodeId":1,"backendNodeId":2,"nodeType":9,"nodeName":"#document","localName":"","nodeValue":"","childNodeCount":1,"children":[{"nodeId":2,"parentId":1,"backendNodeId":3,"nodeType":1,"nodeName":"HTML","localName":"html","nodeValue":"","childNodeCount":2,"children":[{"nodeId":3,"parentId":2,"backendNodeId":4,"nodeType":1,"nodeName":"HEAD","localName":"head","nodeValue":"","childNodeCount":0,"attributes":[]},{"nodeId":4,"parentId":2,"backendNodeId":5,"nodeType":1,"nodeName":"BODY","localName":"body","nodeValue":"","childNodeCount":0,"attributes":[]}],"attributes":[],"frameId":"44A1E671E32C81FEE572C1069DD0EE29"}],"documentURL":"data:,","baseURL":"data:,","xmlVersion":""}}}
+[1531863202.095][DEBUG]: WebSocket::OnReadDuringOpen {"id":3,"result":{}}
+[1531863202.095][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=2) {
+   "root": {
+      "backendNodeId": 2,
+      "baseURL": "data:,",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 3,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 4,
+            "childNodeCount": 0,
+            "localName": "head",
+            "nodeId": 3,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 2
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 5,
+            "childNodeCount": 0,
+            "localName": "body",
+            "nodeId": 4,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 2
+         } ],
+         "frameId": "44A1E671E32C81FEE572C1069DD0EE29",
+         "localName": "html",
+         "nodeId": 2,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 1
+      } ],
+      "documentURL": "data:,",
+      "localName": "",
+      "nodeId": 1,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1531863202.096][DEBUG]: DEVTOOLS RESPONSE Target.setAutoAttach (id=3) {
+
+}
+[1531863202.096][DEBUG]: WebSocket::OnReadDuringOpen {"id":4,"result":{}}
+[1531863202.096][DEBUG]: WebSocket::OnReadDuringOpen {"id":5,"result":{}}
+[1531863202.096][DEBUG]: DEVTOOLS RESPONSE Page.enable (id=4) {
+
+}
+[1531863202.096][DEBUG]: DEVTOOLS RESPONSE Page.enable (id=5) {
+
+}
+[1531863202.096][DEBUG]: DEVTOOLS COMMAND Runtime.enable (id=6) {
+
+}
+[1531863202.097][DEBUG]: WebSocket::Send {"id":6,"method":"Runtime.enable","params":{}}
+[1531863202.109][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.frameResized","params":{}}
+[1531863202.109][DEBUG]: DEVTOOLS EVENT Page.frameResized {
+
+}
+[1531863202.153][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Runtime.executionContextCreated","params":{"context":{"id":1,"origin":"://","name":"","auxData":{"isDefault":true,"frameId":"44A1E671E32C81FEE572C1069DD0EE29"}}}}
+[1531863202.153][DEBUG]: WebSocket::OnReadDuringOpen {"id":6,"result":{}}
+[1531863202.154][DEBUG]: DEVTOOLS EVENT Runtime.executionContextCreated {
+   "context": {
+      "auxData": {
+         "frameId": "44A1E671E32C81FEE572C1069DD0EE29",
+         "isDefault": true
+      },
+      "id": 1,
+      "name": "",
+      "origin": "://"
+   }
+}
+[1531863202.154][DEBUG]: DEVTOOLS RESPONSE Runtime.enable (id=6) {
+
+}
+[1531863202.154][DEBUG]: DEVTOOLS COMMAND Page.enable (id=7) {
+
+}
+[1531863202.154][DEBUG]: WebSocket::Send {"id":7,"method":"Page.enable","params":{}}
+[1531863202.158][DEBUG]: WebSocket::OnReadDuringOpen {"id":7,"result":{}}
+[1531863202.158][DEBUG]: DEVTOOLS RESPONSE Page.enable (id=7) {
+
+}
+[1531863202.159][DEBUG]: DEVTOOLS COMMAND Runtime.enable (id=8) {
+
+}
+[1531863202.159][DEBUG]: WebSocket::Send {"id":8,"method":"Runtime.enable","params":{}}
+[1531863202.160][DEBUG]: WebSocket::OnReadDuringOpen {"id":8,"result":{}}
+[1531863202.161][DEBUG]: DEVTOOLS RESPONSE Runtime.enable (id=8) {
+
+}
+[1531863202.162][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=9) {
+   "expression": "(function() { // Copyright (c) 2012 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\n/**\n * Enum f...",
+   "returnByValue": true
+}
+[1531863202.162][DEBUG]: WebSocket::Send {"id":9,"method":"Runtime.evaluate","params":{"expression":"(function() { // Copyright (c) 2012 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\n/**\n * Enum for WebDriver status codes.\n * @enum {number}\n */\nvar StatusCode = {\n  STALE_ELEMENT_REFERENCE: 10,\n  UNKNOWN_ERROR: 13,\n};\n\n/**\n * Enum for node types.\n * @enum {number}\n */\nvar NodeType = {\n  ELEMENT: 1,\n  DOCUMENT: 9,\n};\n\n/**\n * Dictionary key to use for holding an element ID.\n * @const\n * @type {string}\n */\nvar ELEMENT_KEY = 'ELEMENT';\n\n/**\n * True if using W3C Element references.\n * @const\n * @type {boolean}\n */\nvar w3cEnabled = false;\n\n/**\n * True if shadow dom is enabled.\n * @const\n * @type {boolean}\n */\nvar SHADOW_DOM_ENABLED = typeof ShadowRoot === 'function';\n\n/**\n * Generates a unique ID to identify an element.\n * @void\n * @return {string} Randomly generated ID.\n */\nfunction generateUUID() {\n  var array = new Uint8Array(16);\n  window.crypto.getRandomValues(array);\n  array[6] = 0x40 | (array[6] & 0x0f);\n  array[8] = 0x80 | (array[8] & 0x3f);\n\n  var UUID = \"\";\n  for (var i = 0; i \u003C 16; i++) {\n    var temp = array[i].toString(16);\n    if (temp.length \u003C 2)\n      temp = \"0\" + temp;\n    UUID += temp;\n    if (i == 3 || i == 5 || i == 7 || i == 9)\n      UUID += \"-\";\n  }\n  return UUID;\n};\n\n/**\n * A cache which maps IDs \u003C-> cached objects for the purpose of identifying\n * a script object remotely. Uses UUIDs for identification.\n * @constructor\n */\nfunction CacheWithUUID() {\n  this.cache_ = {};\n}\n\nCacheWithUUID.prototype = {\n  /**\n   * Stores a given item in the cache and returns a unique UUID.\n   *\n   * @param {!Object} item The item to store in the cache.\n   * @return {number} The UUID for the cached item.\n   */\n  storeItem: function(item) {\n    for (var i in this.cache_) {\n      if (item == this.cache_[i])\n        return i;\n    }\n    var id = generateUUID();\n    this.cache_[id] = item;\n    return id;\n  },\n\n  /**\n   * Retrieves the cached object for the given ID.\n   *\n   * @param {number} id The ID for the cached item to retrieve.\n   * @return {!Object} The retrieved item.\n   */\n  retrieveItem: function(id) {\n    var item = this.cache_[id];\n    if (item)\n      return item;\n    var error = new Error('not in cache');\n    error.code = StatusCode.STALE_ELEMENT_REFERENCE;\n    error.message = 'element is not attached to the page document';\n    throw error;\n  },\n\n  /**\n   * Clears stale items from the cache.\n   */\n  clearStale: function() {\n    for (var id in this.cache_) {\n      var node = this.cache_[id];\n      if (!this.isNodeReachable_(node))\n        delete this.cache_[id];\n    }\n  },\n\n  /**\n    * @private\n    * @param {!Node} node The node to check.\n    * @return {boolean} If the nodes is reachable.\n    */\n  isNodeReachable_: function(node) {\n    var nodeRoot = getNodeRootThroughAnyShadows(node);\n    return (nodeRoot == document);\n  }\n\n\n};\n\n/**\n * A cache which maps IDs \u003C-> cached objects for the purpose of identifying\n * a script object remotely.\n * @constructor\n */\nfunction Cache() {\n  this.cache_ = {};\n  this.nextId_ = 1;\n  this.idPrefix_ = Math.random().toString();\n}\n\nCache.prototype = {\n\n  /**\n   * Stores a given item in the cache and returns a unique ID.\n   *\n   * @param {!Object} item The item to store in the cache.\n   * @return {number} The ID for the cached item.\n   */\n  storeItem: function(item) {\n    for (var i in this.cache_) {\n      if (item == this.cache_[i])\n        return i;\n    }\n    var id = this.idPrefix_  + '-' + this.nextId_;\n    this.cache_[id] = item;\n    this.nextId_++;\n    return id;\n  },\n\n  /**\n   * Retrieves the cached object for the given ID.\n   *\n   * @param {number} id The ID for the cached item to retrieve.\n   * @return {!Object} The retrieved item.\n   */\n  retrieveItem: function(id) {\n    var item = this.cache_[id];\n    if (item)\n      return item;\n    var error = new Error('not in cache');\n    error.code = StatusCode.STALE_ELEMENT_REFERENCE;\n    error.message = 'element is not attached to the page document';\n    throw error;\n  },\n\n  /**\n   * Clears stale items from the cache.\n   */\n  clearStale: function() {\n    for (var id in this.cache_) {\n      var node = this.cache_[id];\n      if (!this.isNodeReachable_(node))\n        delete this.cache_[id];\n    }\n  },\n\n  /**\n    * @private\n    * @param {!Node} node The node to check.\n    * @return {boolean} If the nodes is reachable.\n    */\n  isNodeReachable_: function(node) {\n    var nodeRoot = getNodeRootThroughAnyShadows(node);\n    return (nodeRoot == document);\n  }\n};\n\n/**\n * Returns the root element of the node.  Found by traversing parentNodes until\n * a node with no parent is found.  This node is considered the root.\n * @param {?Node} node The node to find the root element for.\n * @return {?Node} The root node.\n */\nfunction getNodeRoot(node) {\n  while (node && node.parentNode) {\n    node = node.parentNode;\n  }\n  return node;\n}\n\n/**\n * Returns the root element of the node, jumping up through shadow roots if\n * any are found.\n */\nfunction getNodeRootThroughAnyShadows(node) {\n  var root = getNodeRoot(node);\n  while (SHADOW_DOM_ENABLED && root instanceof ShadowRoot) {\n    root = getNodeRoot(root.host);\n  }\n  return root;\n}\n\n/**\n * Returns the global object cache for the page.\n * @param {Document=} opt_doc The document whose cache to retrieve. Defaults to\n *     the current document.\n * @return {!Cache} The page's object cache.\n */\nfunction getPageCache(opt_doc, opt_w3c) {\n  var doc = opt_doc || document;\n  var w3c = opt_w3c || false;\n  var key = '$cdc_asdjflasutopfhvcZLmcfl_';\n  if (w3c) {\n    if (!(key in doc))\n      doc[key] = new CacheWithUUID();\n    return doc[key];\n  } else {\n    if (!(key in doc))\n      doc[key] = new Cache();\n    return doc[key];\n  }\n}\n\n/**\n * Wraps the given value to be transmitted remotely by converting\n * appropriate objects to cached object IDs.\n *\n * @param {*} value The value to wrap.\n * @return {*} The wrapped value.\n */\nfunction wrap(value) {\n  // As of crrev.com/1316933002, typeof() for some elements will return\n  // 'function', not 'object'. So we need to check for both non-null objects, as\n  // well Elements that also happen to be callable functions (e.g. \u003Cembed> and\n  // \u003Cobject> elements). Note that we can not use |value instanceof Object| here\n  // since this does not work with frames/iframes, for example\n  // frames[0].document.body instanceof Object == false even though\n  // typeof(frames[0].document.body) == 'object'.\n  if ((typeof(value) == 'object' && value != null) ||\n      (typeof(value) == 'function' && value.nodeName &&\n       value.nodeType == NodeType.ELEMENT)) {\n    var nodeType = value['nodeType'];\n    if (nodeType == NodeType.ELEMENT || nodeType == NodeType.DOCUMENT\n        || (SHADOW_DOM_ENABLED && value instanceof ShadowRoot)) {\n      var wrapped = {};\n      var root = getNodeRootThroughAnyShadows(value);\n      wrapped[ELEMENT_KEY] = getPageCache(root, w3cEnabled).storeItem(value);\n      return wrapped;\n    }\n\n    var obj;\n    if (typeof(value.length) == 'number') {\n      obj = [];\n      for (var i = 0; i \u003C value.length; i++)\n        obj[i] = wrap(value[i]);\n    } else {\n      obj = {};\n      for (var prop in value)\n        obj[prop] = wrap(value[prop]);\n    }\n    return obj;\n  }\n  return value;\n}\n\n/**\n * Unwraps the given value by converting from object IDs to the cached\n * objects.\n *\n * @param {*} value The value to unwrap.\n * @param {Cache} cache The cache to retrieve wrapped elements from.\n * @return {*} The unwrapped value.\n */\nfunction unwrap(value, cache) {\n  if (typeof(value) == 'object' && value != null) {\n    if (ELEMENT_KEY in value)\n      return cache.retrieveItem(value[ELEMENT_KEY]);\n\n    var obj;\n    if (typeof(value.length) == 'number') {\n      obj = [];\n      for (var i = 0; i \u003C value.length; i++)\n        obj[i] = unwrap(value[i], cache);\n    } else {\n      obj = {};\n      for (var prop in value)\n        obj[prop] = unwrap(value[prop], cache);\n    }\n    return obj;\n  }\n  return value;\n}\n\n/**\n * Calls a given function and returns its value.\n *\n * The inputs to and outputs of the function will be unwrapped and wrapped\n * respectively, unless otherwise specified. This wrapping involves converting\n * between cached object reference IDs and actual JS objects. The cache will\n * automatically be pruned each call to remove stale references.\n *\n * @param  {Array\u003Cstring>} shadowHostIds The host ids of the nested shadow\n *     DOMs the function should be executed in the context of.\n * @param {function(...[*]) : *} func The function to invoke.\n * @param {!Array\u003C*>} args The array of arguments to supply to the function,\n *     which will be unwrapped before invoking the function.\n * @param {boolean} w3c Whether to return a W3C compliant element reference.\n * @param {boolean=} opt_unwrappedReturn Whether the function's return value\n *     should be left unwrapped.\n * @return {*} An object containing a status and value property, where status\n *     is a WebDriver status code and value is the wrapped value. If an\n *     unwrapped return was specified, this will be the function's pure return\n *     value.\n */\nfunction callFunction(shadowHostIds, func, args, w3c, opt_unwrappedReturn) {\n  if (w3c) {\n    w3cEnabled = true;\n    ELEMENT_KEY = 'element-6066-11e4-a52e-4f735466cecf';\n\n  }\n  var cache = getPageCache(null, w3cEnabled);\n  cache.clearStale();\n  if (shadowHostIds && SHADOW_DOM_ENABLED) {\n    for (var i = 0; i \u003C shadowHostIds.length; i++) {\n      var host = cache.retrieveItem(shadowHostIds[i]);\n      // TODO(zachconrad): Use the olderShadowRoot API when available to check\n      // all of the shadow roots.\n      cache = getPageCache(host.webkitShadowRoot, w3cEnabled);\n      cache.clearStale();\n    }\n  }\n\n  if (opt_unwrappedReturn)\n    return func.apply(null, unwrap(args, cache));\n\n  var status = 0;\n  try {\n    var returnValue = wrap(func.apply(null, unwrap(args, cache)));\n  } catch (error) {\n    status = error.code || StatusCode.UNKNOWN_ERROR;\n    var returnValue = error.message;\n  }\n  return {\n      status: status,\n      value: returnValue\n  }\n}\n; return callFunction.apply(null, arguments) }\n).apply(null, [null, function(s) { return 1; }, [], false])","returnByValue":true}}
+[1531863202.200][DEBUG]: WebSocket::OnReadDuringOpen {"id":9,"result":{"result":{"type":"object","value":{"status":0,"value":1}}}}
+[1531863202.200][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=9) {
+   "result": {
+      "type": "object",
+      "value": {
+         "status": 0,
+         "value": 1
+      }
+   }
+}
+[1531863202.200][INFO]: [fabe88df10ea0dd60fdb549b7dd1488c] RESPONSE InitSession {
+   "acceptInsecureCerts": false,
+   "acceptSslCerts": false,
+   "applicationCacheEnabled": false,
+   "browserConnectionEnabled": false,
+   "browserName": "chrome",
+   "chrome": {
+      "chromedriverVersion": "2.40 (f4699e1107eca6e847cd7117cfe51619863b23e3)",
+      "userDataDir": "/tmp/.org.chromium.Chromium.ETUdZo"
+   },
+   "cssSelectorsEnabled": true,
+   "databaseEnabled": false,
+   "goog:chromeOptions": {
+      "debuggerAddress": "localhost:42621"
+   },
+   "handlesAlerts": true,
+   "hasTouchScreen": false,
+   "javascriptEnabled": true,
+   "locationContextEnabled": true,
+   "mobileEmulationEnabled": false,
+   "nativeEvents": true,
+   "networkConnectionEnabled": false,
+   "pageLoadStrategy": "normal",
+   "platform": "Linux",
+   "rotatable": false,
+   "setWindowRect": true,
+   "takesHeapSnapshot": true,
+   "takesScreenshot": true,
+   "unexpectedAlertBehaviour": "",
+   "version": "69.0.3491.0",
+   "webStorageEnabled": true
+}
+[1531863202.203][INFO]: [fabe88df10ea0dd60fdb549b7dd1488c] COMMAND SendCommandAndGetResult {
+   "cmd": "CSS.enable",
+   "params": {
+
+   }
+}
+[1531863202.203][INFO]: Waiting for pending navigations...
+[1531863202.203][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=10) {
+   "expression": "1"
+}
+[1531863202.203][DEBUG]: WebSocket::Send {"id":10,"method":"Runtime.evaluate","params":{"expression":"1"}}
+[1531863202.205][DEBUG]: WebSocket::OnReadDuringOpen {"id":10,"result":{"result":{"type":"number","value":1,"description":"1"}}}
+[1531863202.205][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=10) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1531863202.206][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=11) {
+
+}
+[1531863202.206][DEBUG]: WebSocket::Send {"id":11,"method":"DOM.getDocument","params":{}}
+[1531863202.207][DEBUG]: WebSocket::OnReadDuringOpen {"id":11,"result":{"root":{"nodeId":5,"backendNodeId":2,"nodeType":9,"nodeName":"#document","localName":"","nodeValue":"","childNodeCount":1,"children":[{"nodeId":6,"parentId":5,"backendNodeId":3,"nodeType":1,"nodeName":"HTML","localName":"html","nodeValue":"","childNodeCount":2,"children":[{"nodeId":7,"parentId":6,"backendNodeId":4,"nodeType":1,"nodeName":"HEAD","localName":"head","nodeValue":"","childNodeCount":0,"attributes":[]},{"nodeId":8,"parentId":6,"backendNodeId":5,"nodeType":1,"nodeName":"BODY","localName":"body","nodeValue":"","childNodeCount":0,"attributes":[]}],"attributes":[],"frameId":"44A1E671E32C81FEE572C1069DD0EE29"}],"documentURL":"data:,","baseURL":"data:,","xmlVersion":""}}}
+[1531863202.208][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=11) {
+   "root": {
+      "backendNodeId": 2,
+      "baseURL": "data:,",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 3,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 4,
+            "childNodeCount": 0,
+            "localName": "head",
+            "nodeId": 7,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 6
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 5,
+            "childNodeCount": 0,
+            "localName": "body",
+            "nodeId": 8,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 6
+         } ],
+         "frameId": "44A1E671E32C81FEE572C1069DD0EE29",
+         "localName": "html",
+         "nodeId": 6,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 5
+      } ],
+      "documentURL": "data:,",
+      "localName": "",
+      "nodeId": 5,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1531863202.208][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=12) {
+   "expression": "var frame = document.createElement('iframe');frame.name = 'chromedriver dummy frame';frame.src = 'about:blank';document.body.appendChild(frame);window.setTimeout(function() {  document.body.removeC..."
+}
+[1531863202.208][DEBUG]: WebSocket::Send {"id":12,"method":"Runtime.evaluate","params":{"expression":"var frame = document.createElement('iframe');frame.name = 'chromedriver dummy frame';frame.src = 'about:blank';document.body.appendChild(frame);window.setTimeout(function() {  document.body.removeChild(frame);}, 0);"}}
+[1531863202.229][DEBUG]: WebSocket::OnReadDuringOpen {"method":"DOM.childNodeCountUpdated","params":{"nodeId":8,"childNodeCount":1}}
+[1531863202.230][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.frameAttached","params":{"frameId":"C481AF1F0CD041FFAF8D1E91E3AEB63F","parentFrameId":"44A1E671E32C81FEE572C1069DD0EE29","stack":{"callFrames":[{"functionName":"","scriptId":"20","url":"","lineNumber":0,"columnNumber":125}]}}}
+[1531863202.230][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 1,
+   "nodeId": 8
+}
+[1531863202.230][DEBUG]: DEVTOOLS EVENT Page.frameAttached {
+   "frameId": "C481AF1F0CD041FFAF8D1E91E3AEB63F",
+   "parentFrameId": "44A1E671E32C81FEE572C1069DD0EE29",
+   "stack": {
+      "callFrames": [ {
+         "columnNumber": 125,
+         "functionName": "",
+         "lineNumber": 0,
+         "scriptId": "20",
+         "url": ""
+      } ]
+   }
+}
+[1531863202.248][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.frameStartedLoading","params":{"frameId":"C481AF1F0CD041FFAF8D1E91E3AEB63F"}}
+[1531863202.249][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.frameNavigated","params":{"frame":{"id":"C481AF1F0CD041FFAF8D1E91E3AEB63F","parentId":"44A1E671E32C81FEE572C1069DD0EE29","loaderId":"12EDD1BFE00B1942D71D4685FE483DA7","name":"chromedriver dummy frame","url":"about:blank","securityOrigin":"://","mimeType":"text/html"}}}
+[1531863202.249][DEBUG]: DEVTOOLS EVENT Page.frameStartedLoading {
+   "frameId": "C481AF1F0CD041FFAF8D1E91E3AEB63F"
+}
+[1531863202.249][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Runtime.executionContextCreated","params":{"context":{"id":2,"origin":"://","name":"","auxData":{"isDefault":true,"frameId":"C481AF1F0CD041FFAF8D1E91E3AEB63F"}}}}
+[1531863202.249][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.frameStoppedLoading","params":{"frameId":"C481AF1F0CD041FFAF8D1E91E3AEB63F"}}
+[1531863202.249][DEBUG]: WebSocket::OnReadDuringOpen {"id":12,"result":{"result":{"type":"number","value":1,"description":"1"}}}
+[1531863202.249][DEBUG]: DEVTOOLS EVENT Page.frameNavigated {
+   "frame": {
+      "id": "C481AF1F0CD041FFAF8D1E91E3AEB63F",
+      "loaderId": "12EDD1BFE00B1942D71D4685FE483DA7",
+      "mimeType": "text/html",
+      "name": "chromedriver dummy frame",
+      "parentId": "44A1E671E32C81FEE572C1069DD0EE29",
+      "securityOrigin": "://",
+      "url": "about:blank"
+   }
+}
+[1531863202.249][DEBUG]: DEVTOOLS EVENT Runtime.executionContextCreated {
+   "context": {
+      "auxData": {
+         "frameId": "C481AF1F0CD041FFAF8D1E91E3AEB63F",
+         "isDefault": true
+      },
+      "id": 2,
+      "name": "",
+      "origin": "://"
+   }
+}
+[1531863202.249][DEBUG]: DEVTOOLS EVENT Page.frameStoppedLoading {
+   "frameId": "C481AF1F0CD041FFAF8D1E91E3AEB63F"
+}
+[1531863202.249][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=12) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1531863202.249][INFO]: Done waiting for pending navigations. Status: ok
+[1531863202.250][DEBUG]: DEVTOOLS COMMAND CSS.enable (id=13) {
+
+}
+[1531863202.250][DEBUG]: WebSocket::Send {"id":13,"method":"CSS.enable","params":{}}
+[1531863202.566][DEBUG]: WebSocket::OnReadDuringOpen {"method":"DOM.childNodeCountUpdated","params":{"nodeId":8,"childNodeCount":0}}
+[1531863202.567][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Runtime.executionContextDestroyed","params":{"executionContextId":2}}
+[1531863202.567][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.frameDetached","params":{"frameId":"C481AF1F0CD041FFAF8D1E91E3AEB63F"}}
+[1531863202.567][DEBUG]: WebSocket::OnReadDuringOpen {"id":13,"result":{}}
+[1531863202.567][DEBUG]: DEVTOOLS EVENT DOM.childNodeCountUpdated {
+   "childNodeCount": 0,
+   "nodeId": 8
+}
+[1531863202.567][DEBUG]: DEVTOOLS EVENT Runtime.executionContextDestroyed {
+   "executionContextId": 2
+}
+[1531863202.567][DEBUG]: DEVTOOLS EVENT Page.frameDetached {
+   "frameId": "C481AF1F0CD041FFAF8D1E91E3AEB63F"
+}
+[1531863202.567][DEBUG]: DEVTOOLS RESPONSE CSS.enable (id=13) {
+
+}
+[1531863202.567][INFO]: Waiting for pending navigations...
+[1531863202.567][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=14) {
+   "expression": "1"
+}
+[1531863202.567][DEBUG]: WebSocket::Send {"id":14,"method":"Runtime.evaluate","params":{"expression":"1"}}
+[1531863202.580][DEBUG]: WebSocket::OnReadDuringOpen {"id":14,"result":{"result":{"type":"number","value":1,"description":"1"}}}
+[1531863202.580][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=14) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1531863202.581][INFO]: Done waiting for pending navigations. Status: ok
+[1531863202.581][INFO]: [fabe88df10ea0dd60fdb549b7dd1488c] RESPONSE SendCommandAndGetResult {
+
+}
+[1531863202.582][INFO]: [fabe88df10ea0dd60fdb549b7dd1488c] COMMAND Quit {
+
+}
+[1531863202.591][DEBUG]: WebSocket::OnRead error OK
+[0717/143322.595383:ERROR:nacl_helper_linux.cc(310)] NaCl helper process running without a sandbox!
+Most likely you need to configure your SUID sandbox correctly
+[1531863202.632][INFO]: [fabe88df10ea0dd60fdb549b7dd1488c] RESPONSE Quit
+[1531863202.632][DEBUG]: Log type 'driver' lost 0 entries on destruction
+[1531863202.632][DEBUG]: Log type 'browser' lost 0 entries on destruction
+[1531863202.634][INFO]: [0f6b4c103433f5fcb203e99eda4df358] COMMAND InitSession {
+   "desiredCapabilities": {
+      "chromeOptions": {
+         "args": [ "no-sandbox", "disable-gpu" ],
+         "binary": "/usr/local/google/home/cwinstanley/chromium/src/out/Default/chrome"
+      },
+      "goog:testName": "__main__.ChromeDriverTest.testSendCommandAndGetResult",
+      "loggingPrefs": {
+
+      }
+   }
+}
+[1531863202.635][INFO]: Populating Preferences file: {
+   "alternate_error_pages": {
+      "enabled": false
+   },
+   "autofill": {
+      "enabled": false
+   },
+   "browser": {
+      "check_default_browser": false
+   },
+   "distribution": {
+      "import_bookmarks": false,
+      "import_history": false,
+      "import_search_engine": false,
+      "make_chrome_default_for_user": false,
+      "skip_first_run_ui": true
+   },
+   "dns_prefetching": {
+      "enabled": false
+   },
+   "profile": {
+      "content_settings": {
+         "pattern_pairs": {
+            "https://*,*": {
+               "media-stream": {
+                  "audio": "Default",
+                  "video": "Default"
+               }
+            }
+         }
+      },
+      "default_content_setting_values": {
+         "geolocation": 1
+      },
+      "default_content_settings": {
+         "geolocation": 1,
+         "mouselock": 1,
+         "notifications": 1,
+         "popups": 1,
+         "ppapi-broker": 1
+      },
+      "password_manager_enabled": false
+   },
+   "safebrowsing": {
+      "enabled": false
+   },
+   "search": {
+      "suggest_enabled": false
+   },
+   "translate": {
+      "enabled": false
+   }
+}
+[1531863202.635][INFO]: Populating Local State file: {
+   "background_mode": {
+      "enabled": false
+   },
+   "ssl": {
+      "rev_checking": {
+         "enabled": false
+      }
+   }
+}
+[1531863202.636][INFO]: Launching chrome: /usr/local/google/home/cwinstanley/chromium/src/out/Default/chrome --disable-background-networking --disable-client-side-phishing-detection --disable-default-apps --disable-gpu --disable-hang-monitor --disable-popup-blocking --disable-prompt-on-repost --disable-sync --disable-web-resources --enable-automation --enable-logging --force-fieldtrials=SiteIsolationExtensions/Control --ignore-certificate-errors --load-extension=/tmp/.org.chromium.Chromium.cXrCcS/internal --log-level=0 --metrics-recording-only --no-first-run --no-sandbox --password-store=basic --remote-debugging-port=0 --test-type=webdriver --use-mock-keychain --user-data-dir=/tmp/.org.chromium.Chromium.V87nZY data:,
+[187979:187979:0717/143324.490691:ERROR:gpu_process_transport_factory.cc(642)] Switching to software compositing.
+[187979:187979:0717/143324.490794:ERROR:gpu_process_transport_factory.cc(1007)] Lost UI shared context.
+[187979:187979:0717/143324.580792:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[187979:187979:0717/143324.580919:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[187979:187979:0717/143324.580976:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[187979:187979:0717/143324.581036:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[187979:187979:0717/143324.582056:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[187979:187979:0717/143324.589236:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[187979:187979:0717/143324.633717:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[187979:187979:0717/143324.664208:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[187979:187979:0717/143324.664285:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+
+DevTools listening on ws://127.0.0.1:33913/devtools/browser/f4889dc0-7fea-4459-894a-b8ea2c3edb50
+[1531863204.743][DEBUG]: DevTools request: http://localhost:33913/json/version
+[187979:187979:0717/143324.811528:WARNING:password_store_factory.cc(253)] Using basic (unencrypted) store for password storage. See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_password_storage.md for more information about password storage options.
+[187979:187979:0717/143324.814360:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[1531863205.032][DEBUG]: DevTools response: {
+   "Browser": "Chrome/69.0.3491.0",
+   "Protocol-Version": "1.3",
+   "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3491.0 Safari/537.36",
+   "V8-Version": "6.9.389",
+   "WebKit-Version": "537.36 (@410f2c4912d46a5fae2fe6c0b2e24d9eb6359761)",
+   "webSocketDebuggerUrl": "ws://localhost:33913/devtools/browser/f4889dc0-7fea-4459-894a-b8ea2c3edb50"
+}
+
+[1531863205.085][DEBUG]: DevTools request: http://localhost:33913/json
+[1531863205.115][DEBUG]: DevTools response: [ {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:33913/devtools/page/001DF2E5CD9BCD35E72B126A06C27132",
+   "id": "001DF2E5CD9BCD35E72B126A06C27132",
+   "title": "Chrome Automation Extension",
+   "type": "background_page",
+   "url": "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb/_generated_background_page.html",
+   "webSocketDebuggerUrl": "ws://localhost:33913/devtools/page/001DF2E5CD9BCD35E72B126A06C27132"
+}, {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:33913/devtools/page/B964E93E0B286A4AE028430612945420",
+   "id": "B964E93E0B286A4AE028430612945420",
+   "title": "",
+   "type": "page",
+   "url": "data:,",
+   "webSocketDebuggerUrl": "ws://localhost:33913/devtools/page/B964E93E0B286A4AE028430612945420"
+} ]
+
+[1531863205.116][DEBUG]: DevTools request: http://localhost:33913/json
+[1531863205.125][DEBUG]: DevTools response: [ {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:33913/devtools/page/001DF2E5CD9BCD35E72B126A06C27132",
+   "id": "001DF2E5CD9BCD35E72B126A06C27132",
+   "title": "Chrome Automation Extension",
+   "type": "background_page",
+   "url": "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb/_generated_background_page.html",
+   "webSocketDebuggerUrl": "ws://localhost:33913/devtools/page/001DF2E5CD9BCD35E72B126A06C27132"
+}, {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:33913/devtools/page/B964E93E0B286A4AE028430612945420",
+   "id": "B964E93E0B286A4AE028430612945420",
+   "title": "",
+   "type": "page",
+   "url": "data:,",
+   "webSocketDebuggerUrl": "ws://localhost:33913/devtools/page/B964E93E0B286A4AE028430612945420"
+} ]
+
+[1531863205.126][INFO]: resolved localhost to ["::1","127.0.0.1"]
+[1531863205.126][DEBUG]: WebSocket::Connect code=ERR_IO_PENDING
+[1531863205.126][DEBUG]: WebSocket::OnSocketConnect code=OK
+[1531863205.126][DEBUG]: WebSocket::OnSocketConnect handshake
+GET /devtools/page/B964E93E0B286A4AE028430612945420 HTTP/1.1
+Host: localhost
+Upgrade: websocket
+Connection: Upgrade
+Sec-WebSocket-Key: etd0364tmz3W+7wgAul6xA==
+Sec-WebSocket-Version: 13
+Pragma: no-cache
+Cache-Control: no-cache
+
+
+[1531863205.128][DEBUG]: WebSocket::OnReadDuringHandshake
+HTTP/1.1 101 WebSocket Protocol Handshake
+Upgrade: WebSocket
+Connection: Upgrade
+Sec-WebSocket-Accept: Lqypd42/w3NW8xCf1aLV4F5Qyl4=
+
+
+[1531863205.128][DEBUG]: DEVTOOLS COMMAND Log.enable (id=1) {
+
+}
+[1531863205.128][DEBUG]: WebSocket::Send {"id":1,"method":"Log.enable","params":{}}
+[1531863205.128][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=2) {
+
+}
+[1531863205.128][DEBUG]: WebSocket::Send {"id":2,"method":"DOM.getDocument","params":{}}
+[1531863205.128][DEBUG]: DEVTOOLS COMMAND Target.setAutoAttach (id=3) {
+   "autoAttach": true,
+   "waitForDebuggerOnStart": false
+}
+[1531863205.129][DEBUG]: WebSocket::Send {"id":3,"method":"Target.setAutoAttach","params":{"autoAttach":true,"waitForDebuggerOnStart":false}}
+[1531863205.129][DEBUG]: DEVTOOLS COMMAND Page.enable (id=4) {
+
+}
+[1531863205.129][DEBUG]: WebSocket::Send {"id":4,"method":"Page.enable","params":{}}
+[1531863205.129][DEBUG]: DEVTOOLS COMMAND Page.enable (id=5) {
+
+}
+[1531863205.129][DEBUG]: WebSocket::Send {"id":5,"method":"Page.enable","params":{}}
+[1531863205.172][DEBUG]: WebSocket::OnReadDuringOpen {"id":1,"result":{}}
+[1531863205.173][DEBUG]: DEVTOOLS RESPONSE Log.enable (id=1) {
+
+}
+[1531863205.173][DEBUG]: WebSocket::OnReadDuringOpen {"id":2,"result":{"root":{"nodeId":1,"backendNodeId":1,"nodeType":9,"nodeName":"#document","localName":"","nodeValue":"","childNodeCount":1,"children":[{"nodeId":2,"parentId":1,"backendNodeId":2,"nodeType":1,"nodeName":"HTML","localName":"html","nodeValue":"","childNodeCount":2,"children":[{"nodeId":3,"parentId":2,"backendNodeId":3,"nodeType":1,"nodeName":"HEAD","localName":"head","nodeValue":"","childNodeCount":0,"attributes":[]},{"nodeId":4,"parentId":2,"backendNodeId":4,"nodeType":1,"nodeName":"BODY","localName":"body","nodeValue":"","childNodeCount":0,"attributes":[]}],"attributes":[],"frameId":"B964E93E0B286A4AE028430612945420"}],"documentURL":"","baseURL":"about:blank","xmlVersion":""}}}
+[1531863205.173][DEBUG]: WebSocket::OnReadDuringOpen {"id":3,"result":{}}
+[1531863205.173][DEBUG]: WebSocket::OnReadDuringOpen {"id":4,"result":{}}
+[1531863205.173][DEBUG]: WebSocket::OnReadDuringOpen {"id":5,"result":{}}
+[1531863205.174][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=2) {
+   "root": {
+      "backendNodeId": 1,
+      "baseURL": "about:blank",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 2,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 3,
+            "childNodeCount": 0,
+            "localName": "head",
+            "nodeId": 3,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 2
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 4,
+            "childNodeCount": 0,
+            "localName": "body",
+            "nodeId": 4,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 2
+         } ],
+         "frameId": "B964E93E0B286A4AE028430612945420",
+         "localName": "html",
+         "nodeId": 2,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 1
+      } ],
+      "documentURL": "",
+      "localName": "",
+      "nodeId": 1,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1531863205.174][DEBUG]: DEVTOOLS RESPONSE Target.setAutoAttach (id=3) {
+
+}
+[1531863205.174][DEBUG]: DEVTOOLS RESPONSE Page.enable (id=4) {
+
+}
+[1531863205.174][DEBUG]: DEVTOOLS RESPONSE Page.enable (id=5) {
+
+}
+[1531863205.174][DEBUG]: DEVTOOLS COMMAND Runtime.enable (id=6) {
+
+}
+[1531863205.174][DEBUG]: WebSocket::Send {"id":6,"method":"Runtime.enable","params":{}}
+[1531863205.230][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.frameNavigated","params":{"frame":{"id":"B964E93E0B286A4AE028430612945420","loaderId":"31089E9BDC5890B0B84C9E1F532E4C92","url":"data:,","securityOrigin":"://","mimeType":"text/plain"}}}
+[1531863205.230][DEBUG]: WebSocket::OnReadDuringOpen {"method":"DOM.documentUpdated","params":{}}
+[1531863205.231][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.loadEventFired","params":{"timestamp":704990.515395}}
+[1531863205.231][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.frameStoppedLoading","params":{"frameId":"B964E93E0B286A4AE028430612945420"}}
+[1531863205.231][DEBUG]: WebSocket::OnReadDuringOpen {"method":"DOM.documentUpdated","params":{}}
+[1531863205.231][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.domContentEventFired","params":{"timestamp":704990.518346}}
+[1531863205.231][DEBUG]: DEVTOOLS EVENT Page.frameNavigated {
+   "frame": {
+      "id": "B964E93E0B286A4AE028430612945420",
+      "loaderId": "31089E9BDC5890B0B84C9E1F532E4C92",
+      "mimeType": "text/plain",
+      "securityOrigin": "://",
+      "url": "data:,"
+   }
+}
+[1531863205.231][DEBUG]: DEVTOOLS EVENT DOM.documentUpdated {
+
+}
+[1531863205.231][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=7) {
+
+}
+[1531863205.231][DEBUG]: WebSocket::Send {"id":7,"method":"DOM.getDocument","params":{}}
+[1531863205.232][DEBUG]: DEVTOOLS EVENT Page.loadEventFired {
+   "timestamp": 704990.515395
+}
+[1531863205.232][DEBUG]: DEVTOOLS EVENT Page.frameStoppedLoading {
+   "frameId": "B964E93E0B286A4AE028430612945420"
+}
+[1531863205.232][DEBUG]: DEVTOOLS EVENT DOM.documentUpdated {
+
+}
+[1531863205.232][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=8) {
+
+}
+[1531863205.232][DEBUG]: WebSocket::Send {"id":8,"method":"DOM.getDocument","params":{}}
+[1531863205.232][DEBUG]: DEVTOOLS EVENT Page.domContentEventFired {
+   "timestamp": 704990.518346
+}
+[1531863205.246][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.frameResized","params":{}}
+[1531863205.246][DEBUG]: DEVTOOLS EVENT Page.frameResized {
+
+}
+[1531863205.246][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Runtime.executionContextCreated","params":{"context":{"id":1,"origin":"://","name":"","auxData":{"isDefault":true,"frameId":"B964E93E0B286A4AE028430612945420"}}}}
+[1531863205.246][DEBUG]: WebSocket::OnReadDuringOpen {"id":6,"result":{}}
+[1531863205.247][DEBUG]: DEVTOOLS EVENT Runtime.executionContextCreated {
+   "context": {
+      "auxData": {
+         "frameId": "B964E93E0B286A4AE028430612945420",
+         "isDefault": true
+      },
+      "id": 1,
+      "name": "",
+      "origin": "://"
+   }
+}
+[1531863205.247][DEBUG]: DEVTOOLS RESPONSE Runtime.enable (id=6) {
+
+}
+[1531863205.251][DEBUG]: WebSocket::OnReadDuringOpen {"id":7,"result":{"root":{"nodeId":5,"backendNodeId":5,"nodeType":9,"nodeName":"#document","localName":"","nodeValue":"","childNodeCount":1,"children":[{"nodeId":6,"parentId":5,"backendNodeId":6,"nodeType":1,"nodeName":"HTML","localName":"html","nodeValue":"","childNodeCount":2,"children":[{"nodeId":7,"parentId":6,"backendNodeId":7,"nodeType":1,"nodeName":"HEAD","localName":"head","nodeValue":"","childNodeCount":0,"attributes":[]},{"nodeId":8,"parentId":6,"backendNodeId":8,"nodeType":1,"nodeName":"BODY","localName":"body","nodeValue":"","childNodeCount":0,"attributes":[]}],"attributes":[],"frameId":"B964E93E0B286A4AE028430612945420"}],"documentURL":"data:,","baseURL":"data:,","xmlVersion":""}}}
+[1531863205.252][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=7) {
+   "root": {
+      "backendNodeId": 5,
+      "baseURL": "data:,",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 6,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 7,
+            "childNodeCount": 0,
+            "localName": "head",
+            "nodeId": 7,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 6
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 8,
+            "childNodeCount": 0,
+            "localName": "body",
+            "nodeId": 8,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 6
+         } ],
+         "frameId": "B964E93E0B286A4AE028430612945420",
+         "localName": "html",
+         "nodeId": 6,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 5
+      } ],
+      "documentURL": "data:,",
+      "localName": "",
+      "nodeId": 5,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1531863205.253][DEBUG]: WebSocket::OnReadDuringOpen {"id":8,"result":{"root":{"nodeId":9,"backendNodeId":5,"nodeType":9,"nodeName":"#document","localName":"","nodeValue":"","childNodeCount":1,"children":[{"nodeId":10,"parentId":9,"backendNodeId":6,"nodeType":1,"nodeName":"HTML","localName":"html","nodeValue":"","childNodeCount":2,"children":[{"nodeId":11,"parentId":10,"backendNodeId":7,"nodeType":1,"nodeName":"HEAD","localName":"head","nodeValue":"","childNodeCount":0,"attributes":[]},{"nodeId":12,"parentId":10,"backendNodeId":8,"nodeType":1,"nodeName":"BODY","localName":"body","nodeValue":"","childNodeCount":0,"attributes":[]}],"attributes":[],"frameId":"B964E93E0B286A4AE028430612945420"}],"documentURL":"data:,","baseURL":"data:,","xmlVersion":""}}}
+[1531863205.254][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=8) {
+   "root": {
+      "backendNodeId": 5,
+      "baseURL": "data:,",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 6,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 7,
+            "childNodeCount": 0,
+            "localName": "head",
+            "nodeId": 11,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 10
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 8,
+            "childNodeCount": 0,
+            "localName": "body",
+            "nodeId": 12,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 10
+         } ],
+         "frameId": "B964E93E0B286A4AE028430612945420",
+         "localName": "html",
+         "nodeId": 10,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 9
+      } ],
+      "documentURL": "data:,",
+      "localName": "",
+      "nodeId": 9,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1531863205.254][DEBUG]: DEVTOOLS COMMAND Page.enable (id=9) {
+
+}
+[1531863205.254][DEBUG]: WebSocket::Send {"id":9,"method":"Page.enable","params":{}}
+[1531863205.296][DEBUG]: WebSocket::OnReadDuringOpen {"id":9,"result":{}}
+[1531863205.296][DEBUG]: DEVTOOLS RESPONSE Page.enable (id=9) {
+
+}
+[1531863205.297][DEBUG]: DEVTOOLS COMMAND Runtime.enable (id=10) {
+
+}
+[1531863205.297][DEBUG]: WebSocket::Send {"id":10,"method":"Runtime.enable","params":{}}
+[1531863205.303][DEBUG]: WebSocket::OnReadDuringOpen {"id":10,"result":{}}
+[1531863205.303][DEBUG]: DEVTOOLS RESPONSE Runtime.enable (id=10) {
+
+}
+[1531863205.304][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=11) {
+   "expression": "(function() { // Copyright (c) 2012 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\n/**\n * Enum f...",
+   "returnByValue": true
+}
+[1531863205.304][DEBUG]: WebSocket::Send {"id":11,"method":"Runtime.evaluate","params":{"expression":"(function() { // Copyright (c) 2012 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\n/**\n * Enum for WebDriver status codes.\n * @enum {number}\n */\nvar StatusCode = {\n  STALE_ELEMENT_REFERENCE: 10,\n  UNKNOWN_ERROR: 13,\n};\n\n/**\n * Enum for node types.\n * @enum {number}\n */\nvar NodeType = {\n  ELEMENT: 1,\n  DOCUMENT: 9,\n};\n\n/**\n * Dictionary key to use for holding an element ID.\n * @const\n * @type {string}\n */\nvar ELEMENT_KEY = 'ELEMENT';\n\n/**\n * True if using W3C Element references.\n * @const\n * @type {boolean}\n */\nvar w3cEnabled = false;\n\n/**\n * True if shadow dom is enabled.\n * @const\n * @type {boolean}\n */\nvar SHADOW_DOM_ENABLED = typeof ShadowRoot === 'function';\n\n/**\n * Generates a unique ID to identify an element.\n * @void\n * @return {string} Randomly generated ID.\n */\nfunction generateUUID() {\n  var array = new Uint8Array(16);\n  window.crypto.getRandomValues(array);\n  array[6] = 0x40 | (array[6] & 0x0f);\n  array[8] = 0x80 | (array[8] & 0x3f);\n\n  var UUID = \"\";\n  for (var i = 0; i \u003C 16; i++) {\n    var temp = array[i].toString(16);\n    if (temp.length \u003C 2)\n      temp = \"0\" + temp;\n    UUID += temp;\n    if (i == 3 || i == 5 || i == 7 || i == 9)\n      UUID += \"-\";\n  }\n  return UUID;\n};\n\n/**\n * A cache which maps IDs \u003C-> cached objects for the purpose of identifying\n * a script object remotely. Uses UUIDs for identification.\n * @constructor\n */\nfunction CacheWithUUID() {\n  this.cache_ = {};\n}\n\nCacheWithUUID.prototype = {\n  /**\n   * Stores a given item in the cache and returns a unique UUID.\n   *\n   * @param {!Object} item The item to store in the cache.\n   * @return {number} The UUID for the cached item.\n   */\n  storeItem: function(item) {\n    for (var i in this.cache_) {\n      if (item == this.cache_[i])\n        return i;\n    }\n    var id = generateUUID();\n    this.cache_[id] = item;\n    return id;\n  },\n\n  /**\n   * Retrieves the cached object for the given ID.\n   *\n   * @param {number} id The ID for the cached item to retrieve.\n   * @return {!Object} The retrieved item.\n   */\n  retrieveItem: function(id) {\n    var item = this.cache_[id];\n    if (item)\n      return item;\n    var error = new Error('not in cache');\n    error.code = StatusCode.STALE_ELEMENT_REFERENCE;\n    error.message = 'element is not attached to the page document';\n    throw error;\n  },\n\n  /**\n   * Clears stale items from the cache.\n   */\n  clearStale: function() {\n    for (var id in this.cache_) {\n      var node = this.cache_[id];\n      if (!this.isNodeReachable_(node))\n        delete this.cache_[id];\n    }\n  },\n\n  /**\n    * @private\n    * @param {!Node} node The node to check.\n    * @return {boolean} If the nodes is reachable.\n    */\n  isNodeReachable_: function(node) {\n    var nodeRoot = getNodeRootThroughAnyShadows(node);\n    return (nodeRoot == document);\n  }\n\n\n};\n\n/**\n * A cache which maps IDs \u003C-> cached objects for the purpose of identifying\n * a script object remotely.\n * @constructor\n */\nfunction Cache() {\n  this.cache_ = {};\n  this.nextId_ = 1;\n  this.idPrefix_ = Math.random().toString();\n}\n\nCache.prototype = {\n\n  /**\n   * Stores a given item in the cache and returns a unique ID.\n   *\n   * @param {!Object} item The item to store in the cache.\n   * @return {number} The ID for the cached item.\n   */\n  storeItem: function(item) {\n    for (var i in this.cache_) {\n      if (item == this.cache_[i])\n        return i;\n    }\n    var id = this.idPrefix_  + '-' + this.nextId_;\n    this.cache_[id] = item;\n    this.nextId_++;\n    return id;\n  },\n\n  /**\n   * Retrieves the cached object for the given ID.\n   *\n   * @param {number} id The ID for the cached item to retrieve.\n   * @return {!Object} The retrieved item.\n   */\n  retrieveItem: function(id) {\n    var item = this.cache_[id];\n    if (item)\n      return item;\n    var error = new Error('not in cache');\n    error.code = StatusCode.STALE_ELEMENT_REFERENCE;\n    error.message = 'element is not attached to the page document';\n    throw error;\n  },\n\n  /**\n   * Clears stale items from the cache.\n   */\n  clearStale: function() {\n    for (var id in this.cache_) {\n      var node = this.cache_[id];\n      if (!this.isNodeReachable_(node))\n        delete this.cache_[id];\n    }\n  },\n\n  /**\n    * @private\n    * @param {!Node} node The node to check.\n    * @return {boolean} If the nodes is reachable.\n    */\n  isNodeReachable_: function(node) {\n    var nodeRoot = getNodeRootThroughAnyShadows(node);\n    return (nodeRoot == document);\n  }\n};\n\n/**\n * Returns the root element of the node.  Found by traversing parentNodes until\n * a node with no parent is found.  This node is considered the root.\n * @param {?Node} node The node to find the root element for.\n * @return {?Node} The root node.\n */\nfunction getNodeRoot(node) {\n  while (node && node.parentNode) {\n    node = node.parentNode;\n  }\n  return node;\n}\n\n/**\n * Returns the root element of the node, jumping up through shadow roots if\n * any are found.\n */\nfunction getNodeRootThroughAnyShadows(node) {\n  var root = getNodeRoot(node);\n  while (SHADOW_DOM_ENABLED && root instanceof ShadowRoot) {\n    root = getNodeRoot(root.host);\n  }\n  return root;\n}\n\n/**\n * Returns the global object cache for the page.\n * @param {Document=} opt_doc The document whose cache to retrieve. Defaults to\n *     the current document.\n * @return {!Cache} The page's object cache.\n */\nfunction getPageCache(opt_doc, opt_w3c) {\n  var doc = opt_doc || document;\n  var w3c = opt_w3c || false;\n  var key = '$cdc_asdjflasutopfhvcZLmcfl_';\n  if (w3c) {\n    if (!(key in doc))\n      doc[key] = new CacheWithUUID();\n    return doc[key];\n  } else {\n    if (!(key in doc))\n      doc[key] = new Cache();\n    return doc[key];\n  }\n}\n\n/**\n * Wraps the given value to be transmitted remotely by converting\n * appropriate objects to cached object IDs.\n *\n * @param {*} value The value to wrap.\n * @return {*} The wrapped value.\n */\nfunction wrap(value) {\n  // As of crrev.com/1316933002, typeof() for some elements will return\n  // 'function', not 'object'. So we need to check for both non-null objects, as\n  // well Elements that also happen to be callable functions (e.g. \u003Cembed> and\n  // \u003Cobject> elements). Note that we can not use |value instanceof Object| here\n  // since this does not work with frames/iframes, for example\n  // frames[0].document.body instanceof Object == false even though\n  // typeof(frames[0].document.body) == 'object'.\n  if ((typeof(value) == 'object' && value != null) ||\n      (typeof(value) == 'function' && value.nodeName &&\n       value.nodeType == NodeType.ELEMENT)) {\n    var nodeType = value['nodeType'];\n    if (nodeType == NodeType.ELEMENT || nodeType == NodeType.DOCUMENT\n        || (SHADOW_DOM_ENABLED && value instanceof ShadowRoot)) {\n      var wrapped = {};\n      var root = getNodeRootThroughAnyShadows(value);\n      wrapped[ELEMENT_KEY] = getPageCache(root, w3cEnabled).storeItem(value);\n      return wrapped;\n    }\n\n    var obj;\n    if (typeof(value.length) == 'number') {\n      obj = [];\n      for (var i = 0; i \u003C value.length; i++)\n        obj[i] = wrap(value[i]);\n    } else {\n      obj = {};\n      for (var prop in value)\n        obj[prop] = wrap(value[prop]);\n    }\n    return obj;\n  }\n  return value;\n}\n\n/**\n * Unwraps the given value by converting from object IDs to the cached\n * objects.\n *\n * @param {*} value The value to unwrap.\n * @param {Cache} cache The cache to retrieve wrapped elements from.\n * @return {*} The unwrapped value.\n */\nfunction unwrap(value, cache) {\n  if (typeof(value) == 'object' && value != null) {\n    if (ELEMENT_KEY in value)\n      return cache.retrieveItem(value[ELEMENT_KEY]);\n\n    var obj;\n    if (typeof(value.length) == 'number') {\n      obj = [];\n      for (var i = 0; i \u003C value.length; i++)\n        obj[i] = unwrap(value[i], cache);\n    } else {\n      obj = {};\n      for (var prop in value)\n        obj[prop] = unwrap(value[prop], cache);\n    }\n    return obj;\n  }\n  return value;\n}\n\n/**\n * Calls a given function and returns its value.\n *\n * The inputs to and outputs of the function will be unwrapped and wrapped\n * respectively, unless otherwise specified. This wrapping involves converting\n * between cached object reference IDs and actual JS objects. The cache will\n * automatically be pruned each call to remove stale references.\n *\n * @param  {Array\u003Cstring>} shadowHostIds The host ids of the nested shadow\n *     DOMs the function should be executed in the context of.\n * @param {function(...[*]) : *} func The function to invoke.\n * @param {!Array\u003C*>} args The array of arguments to supply to the function,\n *     which will be unwrapped before invoking the function.\n * @param {boolean} w3c Whether to return a W3C compliant element reference.\n * @param {boolean=} opt_unwrappedReturn Whether the function's return value\n *     should be left unwrapped.\n * @return {*} An object containing a status and value property, where status\n *     is a WebDriver status code and value is the wrapped value. If an\n *     unwrapped return was specified, this will be the function's pure return\n *     value.\n */\nfunction callFunction(shadowHostIds, func, args, w3c, opt_unwrappedReturn) {\n  if (w3c) {\n    w3cEnabled = true;\n    ELEMENT_KEY = 'element-6066-11e4-a52e-4f735466cecf';\n\n  }\n  var cache = getPageCache(null, w3cEnabled);\n  cache.clearStale();\n  if (shadowHostIds && SHADOW_DOM_ENABLED) {\n    for (var i = 0; i \u003C shadowHostIds.length; i++) {\n      var host = cache.retrieveItem(shadowHostIds[i]);\n      // TODO(zachconrad): Use the olderShadowRoot API when available to check\n      // all of the shadow roots.\n      cache = getPageCache(host.webkitShadowRoot, w3cEnabled);\n      cache.clearStale();\n    }\n  }\n\n  if (opt_unwrappedReturn)\n    return func.apply(null, unwrap(args, cache));\n\n  var status = 0;\n  try {\n    var returnValue = wrap(func.apply(null, unwrap(args, cache)));\n  } catch (error) {\n    status = error.code || StatusCode.UNKNOWN_ERROR;\n    var returnValue = error.message;\n  }\n  return {\n      status: status,\n      value: returnValue\n  }\n}\n; return callFunction.apply(null, arguments) }\n).apply(null, [null, function(s) { return 1; }, [], false])","returnByValue":true}}
+[1531863205.337][DEBUG]: WebSocket::OnReadDuringOpen {"id":11,"result":{"result":{"type":"object","value":{"status":0,"value":1}}}}
+[1531863205.337][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=11) {
+   "result": {
+      "type": "object",
+      "value": {
+         "status": 0,
+         "value": 1
+      }
+   }
+}
+[1531863205.337][INFO]: [0f6b4c103433f5fcb203e99eda4df358] RESPONSE InitSession {
+   "acceptInsecureCerts": false,
+   "acceptSslCerts": false,
+   "applicationCacheEnabled": false,
+   "browserConnectionEnabled": false,
+   "browserName": "chrome",
+   "chrome": {
+      "chromedriverVersion": "2.40 (f4699e1107eca6e847cd7117cfe51619863b23e3)",
+      "userDataDir": "/tmp/.org.chromium.Chromium.V87nZY"
+   },
+   "cssSelectorsEnabled": true,
+   "databaseEnabled": false,
+   "goog:chromeOptions": {
+      "debuggerAddress": "localhost:33913"
+   },
+   "handlesAlerts": true,
+   "hasTouchScreen": false,
+   "javascriptEnabled": true,
+   "locationContextEnabled": true,
+   "mobileEmulationEnabled": false,
+   "nativeEvents": true,
+   "networkConnectionEnabled": false,
+   "pageLoadStrategy": "normal",
+   "platform": "Linux",
+   "rotatable": false,
+   "setWindowRect": true,
+   "takesHeapSnapshot": true,
+   "takesScreenshot": true,
+   "unexpectedAlertBehaviour": "",
+   "version": "69.0.3491.0",
+   "webStorageEnabled": true
+}
+[1531863205.339][INFO]: [0f6b4c103433f5fcb203e99eda4df358] COMMAND Navigate {
+   "url": "http://127.0.0.1:33535/chromedriver/page_test.html"
+}
+[1531863205.339][INFO]: Waiting for pending navigations...
+[1531863205.339][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=12) {
+   "expression": "1"
+}
+[1531863205.339][DEBUG]: WebSocket::Send {"id":12,"method":"Runtime.evaluate","params":{"expression":"1"}}
+[1531863205.341][DEBUG]: WebSocket::OnReadDuringOpen {"id":12,"result":{"result":{"type":"number","value":1,"description":"1"}}}
+[1531863205.341][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=12) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1531863205.341][INFO]: Done waiting for pending navigations. Status: ok
+[1531863205.341][DEBUG]: DEVTOOLS COMMAND Page.navigate (id=13) {
+   "url": "http://127.0.0.1:33535/chromedriver/page_test.html"
+}
+[1531863205.341][DEBUG]: WebSocket::Send {"id":13,"method":"Page.navigate","params":{"url":"http://127.0.0.1:33535/chromedriver/page_test.html"}}
+[1531863205.660][DEBUG]: WebSocket::OnReadDuringOpen {"id":13,"result":{"frameId":"B964E93E0B286A4AE028430612945420","loaderId":"69C61E868BE89B10BD586FD138460DD6"}}
+[1531863205.661][DEBUG]: DEVTOOLS RESPONSE Page.navigate (id=13) {
+   "frameId": "B964E93E0B286A4AE028430612945420",
+   "loaderId": "69C61E868BE89B10BD586FD138460DD6"
+}
+[1531863205.661][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=14) {
+   "expression": "document.URL"
+}
+[1531863205.661][DEBUG]: WebSocket::Send {"id":14,"method":"Runtime.evaluate","params":{"expression":"document.URL"}}
+[1531863205.667][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Runtime.executionContextsCleared","params":{}}
+[1531863205.667][DEBUG]: DEVTOOLS EVENT Runtime.executionContextsCleared {
+
+}
+[1531863205.683][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.frameStartedLoading","params":{"frameId":"B964E93E0B286A4AE028430612945420"}}
+[1531863205.683][DEBUG]: DEVTOOLS EVENT Page.frameStartedLoading {
+   "frameId": "B964E93E0B286A4AE028430612945420"
+}
+[1531863205.729][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Runtime.executionContextsCleared","params":{}}
+[1531863205.729][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.frameNavigated","params":{"frame":{"id":"B964E93E0B286A4AE028430612945420","loaderId":"69C61E868BE89B10BD586FD138460DD6","url":"http://127.0.0.1:33535/chromedriver/page_test.html","securityOrigin":"http://127.0.0.1:33535","mimeType":"text/html"}}}
+[1531863205.729][DEBUG]: DEVTOOLS EVENT Runtime.executionContextsCleared {
+
+}
+[1531863205.729][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Runtime.executionContextCreated","params":{"context":{"id":1,"origin":"http://127.0.0.1:33535","name":"","auxData":{"isDefault":true,"frameId":"B964E93E0B286A4AE028430612945420"}}}}
+[1531863205.729][DEBUG]: DEVTOOLS EVENT Page.frameNavigated {
+   "frame": {
+      "id": "B964E93E0B286A4AE028430612945420",
+      "loaderId": "69C61E868BE89B10BD586FD138460DD6",
+      "mimeType": "text/html",
+      "securityOrigin": "http://127.0.0.1:33535",
+      "url": "http://127.0.0.1:33535/chromedriver/page_test.html"
+   }
+}
+[1531863205.729][DEBUG]: WebSocket::OnReadDuringOpen {"method":"DOM.documentUpdated","params":{}}
+[1531863205.730][DEBUG]: DEVTOOLS EVENT Runtime.executionContextCreated {
+   "context": {
+      "auxData": {
+         "frameId": "B964E93E0B286A4AE028430612945420",
+         "isDefault": true
+      },
+      "id": 1,
+      "name": "",
+      "origin": "http://127.0.0.1:33535"
+   }
+}
+[1531863205.730][DEBUG]: DEVTOOLS EVENT DOM.documentUpdated {
+
+}
+[1531863205.730][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=15) {
+
+}
+[1531863205.730][DEBUG]: WebSocket::Send {"id":15,"method":"DOM.getDocument","params":{}}
+[188019:188019:0717/143325.732801:ERROR:render_process_impl.cc(208)] WebFrame LEAKED 1 TIMES
+[1531863205.788][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.loadEventFired","params":{"timestamp":704991.058432}}
+[1531863205.789][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.frameStoppedLoading","params":{"frameId":"B964E93E0B286A4AE028430612945420"}}
+[1531863205.789][DEBUG]: DEVTOOLS EVENT Page.loadEventFired {
+   "timestamp": 704991.058432
+}
+[1531863205.789][DEBUG]: WebSocket::OnReadDuringOpen {"method":"DOM.documentUpdated","params":{}}
+[1531863205.789][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.domContentEventFired","params":{"timestamp":704991.085351}}
+[1531863205.789][DEBUG]: WebSocket::OnReadDuringOpen {"id":14,"result":{"result":{"type":"string","value":"http://127.0.0.1:33535/chromedriver/page_test.html"}}}
+[1531863205.789][DEBUG]: DEVTOOLS EVENT Page.frameStoppedLoading {
+   "frameId": "B964E93E0B286A4AE028430612945420"
+}
+[1531863205.789][DEBUG]: DEVTOOLS EVENT DOM.documentUpdated {
+
+}
+[1531863205.789][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=16) {
+
+}
+[1531863205.789][DEBUG]: WebSocket::Send {"id":16,"method":"DOM.getDocument","params":{}}
+[1531863205.789][DEBUG]: DEVTOOLS EVENT Page.domContentEventFired {
+   "timestamp": 704991.085351
+}
+[1531863205.789][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=14) {
+   "result": {
+      "type": "string",
+      "value": "http://127.0.0.1:33535/chromedriver/page_test.html"
+   }
+}
+[1531863205.793][DEBUG]: WebSocket::OnReadDuringOpen {"id":15,"result":{"root":{"nodeId":1,"backendNodeId":1,"nodeType":9,"nodeName":"#document","localName":"","nodeValue":"","childNodeCount":1,"children":[{"nodeId":2,"parentId":1,"backendNodeId":2,"nodeType":1,"nodeName":"HTML","localName":"html","nodeValue":"","childNodeCount":2,"children":[{"nodeId":3,"parentId":2,"backendNodeId":3,"nodeType":1,"nodeName":"HEAD","localName":"head","nodeValue":"","childNodeCount":2,"attributes":[]},{"nodeId":4,"parentId":2,"backendNodeId":4,"nodeType":1,"nodeName":"BODY","localName":"body","nodeValue":"","childNodeCount":1,"attributes":[]}],"attributes":[],"frameId":"B964E93E0B286A4AE028430612945420"}],"documentURL":"http://127.0.0.1:33535/chromedriver/page_test.html","baseURL":"http://127.0.0.1:33535/chromedriver/page_test.html","xmlVersion":""}}}
+[1531863205.793][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=15) {
+   "root": {
+      "backendNodeId": 1,
+      "baseURL": "http://127.0.0.1:33535/chromedriver/page_test.html",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 2,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 3,
+            "childNodeCount": 2,
+            "localName": "head",
+            "nodeId": 3,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 2
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 4,
+            "childNodeCount": 1,
+            "localName": "body",
+            "nodeId": 4,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 2
+         } ],
+         "frameId": "B964E93E0B286A4AE028430612945420",
+         "localName": "html",
+         "nodeId": 2,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 1
+      } ],
+      "documentURL": "http://127.0.0.1:33535/chromedriver/page_test.html",
+      "localName": "",
+      "nodeId": 1,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1531863205.797][DEBUG]: WebSocket::OnReadDuringOpen {"id":16,"result":{"root":{"nodeId":5,"backendNodeId":1,"nodeType":9,"nodeName":"#document","localName":"","nodeValue":"","childNodeCount":1,"children":[{"nodeId":6,"parentId":5,"backendNodeId":2,"nodeType":1,"nodeName":"HTML","localName":"html","nodeValue":"","childNodeCount":2,"children":[{"nodeId":7,"parentId":6,"backendNodeId":3,"nodeType":1,"nodeName":"HEAD","localName":"head","nodeValue":"","childNodeCount":2,"attributes":[]},{"nodeId":8,"parentId":6,"backendNodeId":4,"nodeType":1,"nodeName":"BODY","localName":"body","nodeValue":"","childNodeCount":1,"attributes":[]}],"attributes":[],"frameId":"B964E93E0B286A4AE028430612945420"}],"documentURL":"http://127.0.0.1:33535/chromedriver/page_test.html","baseURL":"http://127.0.0.1:33535/chromedriver/page_test.html","xmlVersion":""}}}
+[1531863205.797][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=16) {
+   "root": {
+      "backendNodeId": 1,
+      "baseURL": "http://127.0.0.1:33535/chromedriver/page_test.html",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 2,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 3,
+            "childNodeCount": 2,
+            "localName": "head",
+            "nodeId": 7,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 6
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 4,
+            "childNodeCount": 1,
+            "localName": "body",
+            "nodeId": 8,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 6
+         } ],
+         "frameId": "B964E93E0B286A4AE028430612945420",
+         "localName": "html",
+         "nodeId": 6,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 5
+      } ],
+      "documentURL": "http://127.0.0.1:33535/chromedriver/page_test.html",
+      "localName": "",
+      "nodeId": 5,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1531863205.797][INFO]: Waiting for pending navigations...
+[1531863205.798][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=17) {
+   "expression": "1"
+}
+[1531863205.798][DEBUG]: WebSocket::Send {"id":17,"method":"Runtime.evaluate","params":{"expression":"1"}}
+[1531863205.800][DEBUG]: WebSocket::OnReadDuringOpen {"id":17,"result":{"result":{"type":"number","value":1,"description":"1"}}}
+[1531863205.800][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=17) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1531863205.800][INFO]: Done waiting for pending navigations. Status: ok
+[1531863205.800][INFO]: [0f6b4c103433f5fcb203e99eda4df358] RESPONSE Navigate
+[1531863205.803][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Log.entryAdded","params":{"entry":{"source":"network","level":"error","text":"Failed to load resource: the server responded with a status of 404 (Not Found)","timestamp":1531863205800.79,"url":"http://127.0.0.1:33535/favicon.ico","networkRequestId":"1000188058.2"}}}
+[1531863205.803][INFO]: [0f6b4c103433f5fcb203e99eda4df358] COMMAND SendCommandAndGetResult {
+   "cmd": "DOM.getDocument",
+   "params": {
+
+   }
+}
+[1531863205.803][DEBUG]: DEVTOOLS EVENT Log.entryAdded {
+   "entry": {
+      "level": "error",
+      "networkRequestId": "1000188058.2",
+      "source": "network",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "timestamp": 1531863205800.79,
+      "url": "http://127.0.0.1:33535/favicon.ico"
+   }
+}
+[1531863205.803][INFO]: Waiting for pending navigations...
+[1531863205.803][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=18) {
+   "expression": "1"
+}
+[1531863205.803][DEBUG]: WebSocket::Send {"id":18,"method":"Runtime.evaluate","params":{"expression":"1"}}
+[1531863205.805][DEBUG]: WebSocket::OnReadDuringOpen {"id":18,"result":{"result":{"type":"number","value":1,"description":"1"}}}
+[1531863205.805][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=18) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1531863205.805][INFO]: Done waiting for pending navigations. Status: ok
+[1531863205.805][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=19) {
+
+}
+[1531863205.805][DEBUG]: WebSocket::Send {"id":19,"method":"DOM.getDocument","params":{}}
+[1531863205.806][DEBUG]: WebSocket::OnReadDuringOpen {"id":19,"result":{"root":{"nodeId":9,"backendNodeId":1,"nodeType":9,"nodeName":"#document","localName":"","nodeValue":"","childNodeCount":1,"children":[{"nodeId":10,"parentId":9,"backendNodeId":2,"nodeType":1,"nodeName":"HTML","localName":"html","nodeValue":"","childNodeCount":2,"children":[{"nodeId":11,"parentId":10,"backendNodeId":3,"nodeType":1,"nodeName":"HEAD","localName":"head","nodeValue":"","childNodeCount":2,"attributes":[]},{"nodeId":12,"parentId":10,"backendNodeId":4,"nodeType":1,"nodeName":"BODY","localName":"body","nodeValue":"","childNodeCount":1,"attributes":[]}],"attributes":[],"frameId":"B964E93E0B286A4AE028430612945420"}],"documentURL":"http://127.0.0.1:33535/chromedriver/page_test.html","baseURL":"http://127.0.0.1:33535/chromedriver/page_test.html","xmlVersion":""}}}
+[1531863205.807][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=19) {
+   "root": {
+      "backendNodeId": 1,
+      "baseURL": "http://127.0.0.1:33535/chromedriver/page_test.html",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 2,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 3,
+            "childNodeCount": 2,
+            "localName": "head",
+            "nodeId": 11,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 10
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 4,
+            "childNodeCount": 1,
+            "localName": "body",
+            "nodeId": 12,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 10
+         } ],
+         "frameId": "B964E93E0B286A4AE028430612945420",
+         "localName": "html",
+         "nodeId": 10,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 9
+      } ],
+      "documentURL": "http://127.0.0.1:33535/chromedriver/page_test.html",
+      "localName": "",
+      "nodeId": 9,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1531863205.807][INFO]: Waiting for pending navigations...
+[1531863205.807][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=20) {
+   "expression": "1"
+}
+[1531863205.807][DEBUG]: WebSocket::Send {"id":20,"method":"Runtime.evaluate","params":{"expression":"1"}}
+[1531863205.833][DEBUG]: WebSocket::OnReadDuringOpen {"id":20,"result":{"result":{"type":"number","value":1,"description":"1"}}}
+[1531863205.834][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=20) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1531863205.834][INFO]: Done waiting for pending navigations. Status: ok
+[1531863205.834][INFO]: [0f6b4c103433f5fcb203e99eda4df358] RESPONSE SendCommandAndGetResult {
+   "root": {
+      "backendNodeId": 1,
+      "baseURL": "http://127.0.0.1:33535/chromedriver/page_test.html",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 2,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 3,
+            "childNodeCount": 2,
+            "localName": "head",
+            "nodeId": 11,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 10
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 4,
+            "childNodeCount": 1,
+            "localName": "body",
+            "nodeId": 12,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 10
+         } ],
+         "frameId": "B964E93E0B286A4AE028430612945420",
+         "localName": "html",
+         "nodeId": 10,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 9
+      } ],
+      "documentURL": "http://127.0.0.1:33535/chromedriver/page_test.html",
+      "localName": "",
+      "nodeId": 9,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1531863205.835][INFO]: [0f6b4c103433f5fcb203e99eda4df358] COMMAND Quit {
+
+}
+[1531863205.845][DEBUG]: WebSocket::OnRead error OK
+[0717/143325.850019:ERROR:nacl_helper_linux.cc(310)] NaCl helper process running without a sandbox!
+Most likely you need to configure your SUID sandbox correctly
+[1531863205.889][INFO]: [0f6b4c103433f5fcb203e99eda4df358] RESPONSE Quit
+[1531863205.889][DEBUG]: Log type 'driver' lost 0 entries on destruction
+[1531863205.889][DEBUG]: Log type 'browser' lost 1 entries on destruction
+[1531863205.891][INFO]: [9bb38e74d3c9216918ea31596608f757] COMMAND InitSession {
+   "desiredCapabilities": {
+      "chromeOptions": {
+         "args": [ "no-sandbox", "disable-gpu" ],
+         "binary": "/usr/local/google/home/cwinstanley/chromium/src/out/Default/chrome"
+      },
+      "goog:testName": "__main__.ChromeDriverTest.testSendCommandNoParams",
+      "loggingPrefs": {
+
+      }
+   }
+}
+[1531863205.892][INFO]: Populating Preferences file: {
+   "alternate_error_pages": {
+      "enabled": false
+   },
+   "autofill": {
+      "enabled": false
+   },
+   "browser": {
+      "check_default_browser": false
+   },
+   "distribution": {
+      "import_bookmarks": false,
+      "import_history": false,
+      "import_search_engine": false,
+      "make_chrome_default_for_user": false,
+      "skip_first_run_ui": true
+   },
+   "dns_prefetching": {
+      "enabled": false
+   },
+   "profile": {
+      "content_settings": {
+         "pattern_pairs": {
+            "https://*,*": {
+               "media-stream": {
+                  "audio": "Default",
+                  "video": "Default"
+               }
+            }
+         }
+      },
+      "default_content_setting_values": {
+         "geolocation": 1
+      },
+      "default_content_settings": {
+         "geolocation": 1,
+         "mouselock": 1,
+         "notifications": 1,
+         "popups": 1,
+         "ppapi-broker": 1
+      },
+      "password_manager_enabled": false
+   },
+   "safebrowsing": {
+      "enabled": false
+   },
+   "search": {
+      "suggest_enabled": false
+   },
+   "translate": {
+      "enabled": false
+   }
+}
+[1531863205.893][INFO]: Populating Local State file: {
+   "background_mode": {
+      "enabled": false
+   },
+   "ssl": {
+      "rev_checking": {
+         "enabled": false
+      }
+   }
+}
+[1531863205.894][INFO]: Launching chrome: /usr/local/google/home/cwinstanley/chromium/src/out/Default/chrome --disable-background-networking --disable-client-side-phishing-detection --disable-default-apps --disable-gpu --disable-hang-monitor --disable-popup-blocking --disable-prompt-on-repost --disable-sync --disable-web-resources --enable-automation --enable-logging --force-fieldtrials=SiteIsolationExtensions/Control --ignore-certificate-errors --load-extension=/tmp/.org.chromium.Chromium.sRpya4/internal --log-level=0 --metrics-recording-only --no-first-run --no-sandbox --password-store=basic --remote-debugging-port=0 --test-type=webdriver --use-mock-keychain --user-data-dir=/tmp/.org.chromium.Chromium.GVvqbY data:,
+[188089:188089:0717/143327.653007:ERROR:gpu_process_transport_factory.cc(642)] Switching to software compositing.
+[188089:188089:0717/143327.653068:ERROR:gpu_process_transport_factory.cc(1007)] Lost UI shared context.
+[188089:188089:0717/143327.726978:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[188089:188089:0717/143327.727080:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[188089:188089:0717/143327.727125:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[188089:188089:0717/143327.727208:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[188089:188089:0717/143327.728058:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[188089:188089:0717/143327.734448:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[188089:188089:0717/143327.779161:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[188089:188089:0717/143327.810226:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[188089:188089:0717/143327.810299:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+
+DevTools listening on ws://127.0.0.1:46229/devtools/browser/99063c4e-24b4-45a2-8d10-18b0c7427e63
+[1531863207.857][DEBUG]: DevTools request: http://localhost:46229/json/version
+[188089:188089:0717/143327.952695:WARNING:password_store_factory.cc(253)] Using basic (unencrypted) store for password storage. See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_password_storage.md for more information about password storage options.
+[188089:188089:0717/143327.955357:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[1531863208.164][DEBUG]: DevTools response: {
+   "Browser": "Chrome/69.0.3491.0",
+   "Protocol-Version": "1.3",
+   "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3491.0 Safari/537.36",
+   "V8-Version": "6.9.389",
+   "WebKit-Version": "537.36 (@410f2c4912d46a5fae2fe6c0b2e24d9eb6359761)",
+   "webSocketDebuggerUrl": "ws://localhost:46229/devtools/browser/99063c4e-24b4-45a2-8d10-18b0c7427e63"
+}
+
+[1531863208.222][DEBUG]: DevTools request: http://localhost:46229/json
+[1531863208.249][DEBUG]: DevTools response: [ {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:46229/devtools/page/01B73166752F9101E17A93858A863C07",
+   "id": "01B73166752F9101E17A93858A863C07",
+   "title": "Chrome Automation Extension",
+   "type": "background_page",
+   "url": "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb/_generated_background_page.html",
+   "webSocketDebuggerUrl": "ws://localhost:46229/devtools/page/01B73166752F9101E17A93858A863C07"
+}, {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:46229/devtools/page/D0ECF1006762992B9D81370276F4C62A",
+   "id": "D0ECF1006762992B9D81370276F4C62A",
+   "title": "",
+   "type": "page",
+   "url": "data:,",
+   "webSocketDebuggerUrl": "ws://localhost:46229/devtools/page/D0ECF1006762992B9D81370276F4C62A"
+} ]
+
+[1531863208.250][DEBUG]: DevTools request: http://localhost:46229/json
+[1531863208.252][DEBUG]: DevTools response: [ {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:46229/devtools/page/01B73166752F9101E17A93858A863C07",
+   "id": "01B73166752F9101E17A93858A863C07",
+   "title": "Chrome Automation Extension",
+   "type": "background_page",
+   "url": "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb/_generated_background_page.html",
+   "webSocketDebuggerUrl": "ws://localhost:46229/devtools/page/01B73166752F9101E17A93858A863C07"
+}, {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:46229/devtools/page/D0ECF1006762992B9D81370276F4C62A",
+   "id": "D0ECF1006762992B9D81370276F4C62A",
+   "title": "",
+   "type": "page",
+   "url": "data:,",
+   "webSocketDebuggerUrl": "ws://localhost:46229/devtools/page/D0ECF1006762992B9D81370276F4C62A"
+} ]
+
+[1531863208.253][INFO]: resolved localhost to ["::1","127.0.0.1"]
+[1531863208.253][DEBUG]: WebSocket::Connect code=ERR_IO_PENDING
+[1531863208.253][DEBUG]: WebSocket::OnSocketConnect code=OK
+[1531863208.253][DEBUG]: WebSocket::OnSocketConnect handshake
+GET /devtools/page/D0ECF1006762992B9D81370276F4C62A HTTP/1.1
+Host: localhost
+Upgrade: websocket
+Connection: Upgrade
+Sec-WebSocket-Key: 1Dx0yRRfcKHPTeRiX0zIzQ==
+Sec-WebSocket-Version: 13
+Pragma: no-cache
+Cache-Control: no-cache
+
+
+[1531863208.255][DEBUG]: WebSocket::OnReadDuringHandshake
+HTTP/1.1 101 WebSocket Protocol Handshake
+Upgrade: WebSocket
+Connection: Upgrade
+Sec-WebSocket-Accept: 1hOfv37TdZcKNMIBQyhiAYTKALE=
+
+
+[1531863208.256][DEBUG]: DEVTOOLS COMMAND Log.enable (id=1) {
+
+}
+[1531863208.256][DEBUG]: WebSocket::Send {"id":1,"method":"Log.enable","params":{}}
+[1531863208.256][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=2) {
+
+}
+[1531863208.256][DEBUG]: WebSocket::Send {"id":2,"method":"DOM.getDocument","params":{}}
+[1531863208.256][DEBUG]: DEVTOOLS COMMAND Target.setAutoAttach (id=3) {
+   "autoAttach": true,
+   "waitForDebuggerOnStart": false
+}
+[1531863208.256][DEBUG]: WebSocket::Send {"id":3,"method":"Target.setAutoAttach","params":{"autoAttach":true,"waitForDebuggerOnStart":false}}
+[1531863208.257][DEBUG]: DEVTOOLS COMMAND Page.enable (id=4) {
+
+}
+[1531863208.257][DEBUG]: WebSocket::Send {"id":4,"method":"Page.enable","params":{}}
+[1531863208.257][DEBUG]: DEVTOOLS COMMAND Page.enable (id=5) {
+
+}
+[1531863208.257][DEBUG]: WebSocket::Send {"id":5,"method":"Page.enable","params":{}}
+[1531863208.304][DEBUG]: WebSocket::OnReadDuringOpen {"id":1,"result":{}}
+[1531863208.304][DEBUG]: WebSocket::OnReadDuringOpen {"id":2,"result":{"root":{"nodeId":1,"backendNodeId":1,"nodeType":9,"nodeName":"#document","localName":"","nodeValue":"","childNodeCount":1,"children":[{"nodeId":2,"parentId":1,"backendNodeId":2,"nodeType":1,"nodeName":"HTML","localName":"html","nodeValue":"","childNodeCount":2,"children":[{"nodeId":3,"parentId":2,"backendNodeId":3,"nodeType":1,"nodeName":"HEAD","localName":"head","nodeValue":"","childNodeCount":0,"attributes":[]},{"nodeId":4,"parentId":2,"backendNodeId":4,"nodeType":1,"nodeName":"BODY","localName":"body","nodeValue":"","childNodeCount":0,"attributes":[]}],"attributes":[],"frameId":"D0ECF1006762992B9D81370276F4C62A"}],"documentURL":"","baseURL":"about:blank","xmlVersion":""}}}
+[1531863208.304][DEBUG]: DEVTOOLS RESPONSE Log.enable (id=1) {
+
+}
+[1531863208.304][DEBUG]: WebSocket::OnReadDuringOpen {"id":3,"result":{}}
+[1531863208.305][DEBUG]: WebSocket::OnReadDuringOpen {"id":4,"result":{}}
+[1531863208.305][DEBUG]: WebSocket::OnReadDuringOpen {"id":5,"result":{}}
+[1531863208.305][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=2) {
+   "root": {
+      "backendNodeId": 1,
+      "baseURL": "about:blank",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 2,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 3,
+            "childNodeCount": 0,
+            "localName": "head",
+            "nodeId": 3,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 2
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 4,
+            "childNodeCount": 0,
+            "localName": "body",
+            "nodeId": 4,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 2
+         } ],
+         "frameId": "D0ECF1006762992B9D81370276F4C62A",
+         "localName": "html",
+         "nodeId": 2,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 1
+      } ],
+      "documentURL": "",
+      "localName": "",
+      "nodeId": 1,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1531863208.306][DEBUG]: DEVTOOLS RESPONSE Target.setAutoAttach (id=3) {
+
+}
+[1531863208.306][DEBUG]: DEVTOOLS RESPONSE Page.enable (id=4) {
+
+}
+[1531863208.306][DEBUG]: DEVTOOLS RESPONSE Page.enable (id=5) {
+
+}
+[1531863208.306][DEBUG]: DEVTOOLS COMMAND Runtime.enable (id=6) {
+
+}
+[1531863208.306][DEBUG]: WebSocket::Send {"id":6,"method":"Runtime.enable","params":{}}
+[1531863208.378][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.frameNavigated","params":{"frame":{"id":"D0ECF1006762992B9D81370276F4C62A","loaderId":"7A5DC3494D348F02608F3CE48656BFCD","url":"data:,","securityOrigin":"://","mimeType":"text/plain"}}}
+[1531863208.379][DEBUG]: DEVTOOLS EVENT Page.frameNavigated {
+   "frame": {
+      "id": "D0ECF1006762992B9D81370276F4C62A",
+      "loaderId": "7A5DC3494D348F02608F3CE48656BFCD",
+      "mimeType": "text/plain",
+      "securityOrigin": "://",
+      "url": "data:,"
+   }
+}
+[1531863208.379][DEBUG]: WebSocket::OnReadDuringOpen {"method":"DOM.documentUpdated","params":{}}
+[1531863208.379][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.loadEventFired","params":{"timestamp":704993.643267}}
+[1531863208.379][DEBUG]: DEVTOOLS EVENT DOM.documentUpdated {
+
+}
+[1531863208.379][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.frameStoppedLoading","params":{"frameId":"D0ECF1006762992B9D81370276F4C62A"}}
+[1531863208.379][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=7) {
+
+}
+[1531863208.379][DEBUG]: WebSocket::OnReadDuringOpen {"method":"DOM.documentUpdated","params":{}}
+[1531863208.379][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.domContentEventFired","params":{"timestamp":704993.645754}}
+[1531863208.379][DEBUG]: WebSocket::Send {"id":7,"method":"DOM.getDocument","params":{}}
+[1531863208.379][DEBUG]: DEVTOOLS EVENT Page.loadEventFired {
+   "timestamp": 704993.643267
+}
+[1531863208.380][DEBUG]: DEVTOOLS EVENT Page.frameStoppedLoading {
+   "frameId": "D0ECF1006762992B9D81370276F4C62A"
+}
+[1531863208.380][DEBUG]: DEVTOOLS EVENT DOM.documentUpdated {
+
+}
+[1531863208.380][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=8) {
+
+}
+[1531863208.380][DEBUG]: WebSocket::Send {"id":8,"method":"DOM.getDocument","params":{}}
+[1531863208.380][DEBUG]: DEVTOOLS EVENT Page.domContentEventFired {
+   "timestamp": 704993.645754
+}
+[1531863208.392][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Page.frameResized","params":{}}
+[1531863208.392][DEBUG]: DEVTOOLS EVENT Page.frameResized {
+
+}
+[1531863208.394][DEBUG]: WebSocket::OnReadDuringOpen {"method":"Runtime.executionContextCreated","params":{"context":{"id":1,"origin":"://","name":"","auxData":{"isDefault":true,"frameId":"D0ECF1006762992B9D81370276F4C62A"}}}}
+[1531863208.394][DEBUG]: WebSocket::OnReadDuringOpen {"id":6,"result":{}}
+[1531863208.394][DEBUG]: DEVTOOLS EVENT Runtime.executionContextCreated {
+   "context": {
+      "auxData": {
+         "frameId": "D0ECF1006762992B9D81370276F4C62A",
+         "isDefault": true
+      },
+      "id": 1,
+      "name": "",
+      "origin": "://"
+   }
+}
+[1531863208.394][DEBUG]: DEVTOOLS RESPONSE Runtime.enable (id=6) {
+
+}
+[1531863208.400][DEBUG]: WebSocket::OnReadDuringOpen {"id":7,"result":{"root":{"nodeId":5,"backendNodeId":5,"nodeType":9,"nodeName":"#document","localName":"","nodeValue":"","childNodeCount":1,"children":[{"nodeId":6,"parentId":5,"backendNodeId":6,"nodeType":1,"nodeName":"HTML","localName":"html","nodeValue":"","childNodeCount":2,"children":[{"nodeId":7,"parentId":6,"backendNodeId":7,"nodeType":1,"nodeName":"HEAD","localName":"head","nodeValue":"","childNodeCount":0,"attributes":[]},{"nodeId":8,"parentId":6,"backendNodeId":8,"nodeType":1,"nodeName":"BODY","localName":"body","nodeValue":"","childNodeCount":0,"attributes":[]}],"attributes":[],"frameId":"D0ECF1006762992B9D81370276F4C62A"}],"documentURL":"data:,","baseURL":"data:,","xmlVersion":""}}}
+[1531863208.400][DEBUG]: WebSocket::OnReadDuringOpen {"id":8,"result":{"root":{"nodeId":9,"backendNodeId":5,"nodeType":9,"nodeName":"#document","localName":"","nodeValue":"","childNodeCount":1,"children":[{"nodeId":10,"parentId":9,"backendNodeId":6,"nodeType":1,"nodeName":"HTML","localName":"html","nodeValue":"","childNodeCount":2,"children":[{"nodeId":11,"parentId":10,"backendNodeId":7,"nodeType":1,"nodeName":"HEAD","localName":"head","nodeValue":"","childNodeCount":0,"attributes":[]},{"nodeId":12,"parentId":10,"backendNodeId":8,"nodeType":1,"nodeName":"BODY","localName":"body","nodeValue":"","childNodeCount":0,"attributes":[]}],"attributes":[],"frameId":"D0ECF1006762992B9D81370276F4C62A"}],"documentURL":"data:,","baseURL":"data:,","xmlVersion":""}}}
+[1531863208.401][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=7) {
+   "root": {
+      "backendNodeId": 5,
+      "baseURL": "data:,",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 6,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 7,
+            "childNodeCount": 0,
+            "localName": "head",
+            "nodeId": 7,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 6
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 8,
+            "childNodeCount": 0,
+            "localName": "body",
+            "nodeId": 8,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 6
+         } ],
+         "frameId": "D0ECF1006762992B9D81370276F4C62A",
+         "localName": "html",
+         "nodeId": 6,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 5
+      } ],
+      "documentURL": "data:,",
+      "localName": "",
+      "nodeId": 5,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1531863208.402][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=8) {
+   "root": {
+      "backendNodeId": 5,
+      "baseURL": "data:,",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 6,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 7,
+            "childNodeCount": 0,
+            "localName": "head",
+            "nodeId": 11,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 10
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 8,
+            "childNodeCount": 0,
+            "localName": "body",
+            "nodeId": 12,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 10
+         } ],
+         "frameId": "D0ECF1006762992B9D81370276F4C62A",
+         "localName": "html",
+         "nodeId": 10,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 9
+      } ],
+      "documentURL": "data:,",
+      "localName": "",
+      "nodeId": 9,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1531863208.403][DEBUG]: DEVTOOLS COMMAND Page.enable (id=9) {
+
+}
+[1531863208.403][DEBUG]: WebSocket::Send {"id":9,"method":"Page.enable","params":{}}
+[1531863208.425][DEBUG]: WebSocket::OnReadDuringOpen {"id":9,"result":{}}
+[1531863208.426][DEBUG]: DEVTOOLS RESPONSE Page.enable (id=9) {
+
+}
+[1531863208.426][DEBUG]: DEVTOOLS COMMAND Runtime.enable (id=10) {
+
+}
+[1531863208.426][DEBUG]: WebSocket::Send {"id":10,"method":"Runtime.enable","params":{}}
+[1531863208.448][DEBUG]: WebSocket::OnReadDuringOpen {"id":10,"result":{}}
+[1531863208.448][DEBUG]: DEVTOOLS RESPONSE Runtime.enable (id=10) {
+
+}
+[1531863208.449][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=11) {
+   "expression": "(function() { // Copyright (c) 2012 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\n/**\n * Enum f...",
+   "returnByValue": true
+}
+[1531863208.449][DEBUG]: WebSocket::Send {"id":11,"method":"Runtime.evaluate","params":{"expression":"(function() { // Copyright (c) 2012 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\n/**\n * Enum for WebDriver status codes.\n * @enum {number}\n */\nvar StatusCode = {\n  STALE_ELEMENT_REFERENCE: 10,\n  UNKNOWN_ERROR: 13,\n};\n\n/**\n * Enum for node types.\n * @enum {number}\n */\nvar NodeType = {\n  ELEMENT: 1,\n  DOCUMENT: 9,\n};\n\n/**\n * Dictionary key to use for holding an element ID.\n * @const\n * @type {string}\n */\nvar ELEMENT_KEY = 'ELEMENT';\n\n/**\n * True if using W3C Element references.\n * @const\n * @type {boolean}\n */\nvar w3cEnabled = false;\n\n/**\n * True if shadow dom is enabled.\n * @const\n * @type {boolean}\n */\nvar SHADOW_DOM_ENABLED = typeof ShadowRoot === 'function';\n\n/**\n * Generates a unique ID to identify an element.\n * @void\n * @return {string} Randomly generated ID.\n */\nfunction generateUUID() {\n  var array = new Uint8Array(16);\n  window.crypto.getRandomValues(array);\n  array[6] = 0x40 | (array[6] & 0x0f);\n  array[8] = 0x80 | (array[8] & 0x3f);\n\n  var UUID = \"\";\n  for (var i = 0; i \u003C 16; i++) {\n    var temp = array[i].toString(16);\n    if (temp.length \u003C 2)\n      temp = \"0\" + temp;\n    UUID += temp;\n    if (i == 3 || i == 5 || i == 7 || i == 9)\n      UUID += \"-\";\n  }\n  return UUID;\n};\n\n/**\n * A cache which maps IDs \u003C-> cached objects for the purpose of identifying\n * a script object remotely. Uses UUIDs for identification.\n * @constructor\n */\nfunction CacheWithUUID() {\n  this.cache_ = {};\n}\n\nCacheWithUUID.prototype = {\n  /**\n   * Stores a given item in the cache and returns a unique UUID.\n   *\n   * @param {!Object} item The item to store in the cache.\n   * @return {number} The UUID for the cached item.\n   */\n  storeItem: function(item) {\n    for (var i in this.cache_) {\n      if (item == this.cache_[i])\n        return i;\n    }\n    var id = generateUUID();\n    this.cache_[id] = item;\n    return id;\n  },\n\n  /**\n   * Retrieves the cached object for the given ID.\n   *\n   * @param {number} id The ID for the cached item to retrieve.\n   * @return {!Object} The retrieved item.\n   */\n  retrieveItem: function(id) {\n    var item = this.cache_[id];\n    if (item)\n      return item;\n    var error = new Error('not in cache');\n    error.code = StatusCode.STALE_ELEMENT_REFERENCE;\n    error.message = 'element is not attached to the page document';\n    throw error;\n  },\n\n  /**\n   * Clears stale items from the cache.\n   */\n  clearStale: function() {\n    for (var id in this.cache_) {\n      var node = this.cache_[id];\n      if (!this.isNodeReachable_(node))\n        delete this.cache_[id];\n    }\n  },\n\n  /**\n    * @private\n    * @param {!Node} node The node to check.\n    * @return {boolean} If the nodes is reachable.\n    */\n  isNodeReachable_: function(node) {\n    var nodeRoot = getNodeRootThroughAnyShadows(node);\n    return (nodeRoot == document);\n  }\n\n\n};\n\n/**\n * A cache which maps IDs \u003C-> cached objects for the purpose of identifying\n * a script object remotely.\n * @constructor\n */\nfunction Cache() {\n  this.cache_ = {};\n  this.nextId_ = 1;\n  this.idPrefix_ = Math.random().toString();\n}\n\nCache.prototype = {\n\n  /**\n   * Stores a given item in the cache and returns a unique ID.\n   *\n   * @param {!Object} item The item to store in the cache.\n   * @return {number} The ID for the cached item.\n   */\n  storeItem: function(item) {\n    for (var i in this.cache_) {\n      if (item == this.cache_[i])\n        return i;\n    }\n    var id = this.idPrefix_  + '-' + this.nextId_;\n    this.cache_[id] = item;\n    this.nextId_++;\n    return id;\n  },\n\n  /**\n   * Retrieves the cached object for the given ID.\n   *\n   * @param {number} id The ID for the cached item to retrieve.\n   * @return {!Object} The retrieved item.\n   */\n  retrieveItem: function(id) {\n    var item = this.cache_[id];\n    if (item)\n      return item;\n    var error = new Error('not in cache');\n    error.code = StatusCode.STALE_ELEMENT_REFERENCE;\n    error.message = 'element is not attached to the page document';\n    throw error;\n  },\n\n  /**\n   * Clears stale items from the cache.\n   */\n  clearStale: function() {\n    for (var id in this.cache_) {\n      var node = this.cache_[id];\n      if (!this.isNodeReachable_(node))\n        delete this.cache_[id];\n    }\n  },\n\n  /**\n    * @private\n    * @param {!Node} node The node to check.\n    * @return {boolean} If the nodes is reachable.\n    */\n  isNodeReachable_: function(node) {\n    var nodeRoot = getNodeRootThroughAnyShadows(node);\n    return (nodeRoot == document);\n  }\n};\n\n/**\n * Returns the root element of the node.  Found by traversing parentNodes until\n * a node with no parent is found.  This node is considered the root.\n * @param {?Node} node The node to find the root element for.\n * @return {?Node} The root node.\n */\nfunction getNodeRoot(node) {\n  while (node && node.parentNode) {\n    node = node.parentNode;\n  }\n  return node;\n}\n\n/**\n * Returns the root element of the node, jumping up through shadow roots if\n * any are found.\n */\nfunction getNodeRootThroughAnyShadows(node) {\n  var root = getNodeRoot(node);\n  while (SHADOW_DOM_ENABLED && root instanceof ShadowRoot) {\n    root = getNodeRoot(root.host);\n  }\n  return root;\n}\n\n/**\n * Returns the global object cache for the page.\n * @param {Document=} opt_doc The document whose cache to retrieve. Defaults to\n *     the current document.\n * @return {!Cache} The page's object cache.\n */\nfunction getPageCache(opt_doc, opt_w3c) {\n  var doc = opt_doc || document;\n  var w3c = opt_w3c || false;\n  var key = '$cdc_asdjflasutopfhvcZLmcfl_';\n  if (w3c) {\n    if (!(key in doc))\n      doc[key] = new CacheWithUUID();\n    return doc[key];\n  } else {\n    if (!(key in doc))\n      doc[key] = new Cache();\n    return doc[key];\n  }\n}\n\n/**\n * Wraps the given value to be transmitted remotely by converting\n * appropriate objects to cached object IDs.\n *\n * @param {*} value The value to wrap.\n * @return {*} The wrapped value.\n */\nfunction wrap(value) {\n  // As of crrev.com/1316933002, typeof() for some elements will return\n  // 'function', not 'object'. So we need to check for both non-null objects, as\n  // well Elements that also happen to be callable functions (e.g. \u003Cembed> and\n  // \u003Cobject> elements). Note that we can not use |value instanceof Object| here\n  // since this does not work with frames/iframes, for example\n  // frames[0].document.body instanceof Object == false even though\n  // typeof(frames[0].document.body) == 'object'.\n  if ((typeof(value) == 'object' && value != null) ||\n      (typeof(value) == 'function' && value.nodeName &&\n       value.nodeType == NodeType.ELEMENT)) {\n    var nodeType = value['nodeType'];\n    if (nodeType == NodeType.ELEMENT || nodeType == NodeType.DOCUMENT\n        || (SHADOW_DOM_ENABLED && value instanceof ShadowRoot)) {\n      var wrapped = {};\n      var root = getNodeRootThroughAnyShadows(value);\n      wrapped[ELEMENT_KEY] = getPageCache(root, w3cEnabled).storeItem(value);\n      return wrapped;\n    }\n\n    var obj;\n    if (typeof(value.length) == 'number') {\n      obj = [];\n      for (var i = 0; i \u003C value.length; i++)\n        obj[i] = wrap(value[i]);\n    } else {\n      obj = {};\n      for (var prop in value)\n        obj[prop] = wrap(value[prop]);\n    }\n    return obj;\n  }\n  return value;\n}\n\n/**\n * Unwraps the given value by converting from object IDs to the cached\n * objects.\n *\n * @param {*} value The value to unwrap.\n * @param {Cache} cache The cache to retrieve wrapped elements from.\n * @return {*} The unwrapped value.\n */\nfunction unwrap(value, cache) {\n  if (typeof(value) == 'object' && value != null) {\n    if (ELEMENT_KEY in value)\n      return cache.retrieveItem(value[ELEMENT_KEY]);\n\n    var obj;\n    if (typeof(value.length) == 'number') {\n      obj = [];\n      for (var i = 0; i \u003C value.length; i++)\n        obj[i] = unwrap(value[i], cache);\n    } else {\n      obj = {};\n      for (var prop in value)\n        obj[prop] = unwrap(value[prop], cache);\n    }\n    return obj;\n  }\n  return value;\n}\n\n/**\n * Calls a given function and returns its value.\n *\n * The inputs to and outputs of the function will be unwrapped and wrapped\n * respectively, unless otherwise specified. This wrapping involves converting\n * between cached object reference IDs and actual JS objects. The cache will\n * automatically be pruned each call to remove stale references.\n *\n * @param  {Array\u003Cstring>} shadowHostIds The host ids of the nested shadow\n *     DOMs the function should be executed in the context of.\n * @param {function(...[*]) : *} func The function to invoke.\n * @param {!Array\u003C*>} args The array of arguments to supply to the function,\n *     which will be unwrapped before invoking the function.\n * @param {boolean} w3c Whether to return a W3C compliant element reference.\n * @param {boolean=} opt_unwrappedReturn Whether the function's return value\n *     should be left unwrapped.\n * @return {*} An object containing a status and value property, where status\n *     is a WebDriver status code and value is the wrapped value. If an\n *     unwrapped return was specified, this will be the function's pure return\n *     value.\n */\nfunction callFunction(shadowHostIds, func, args, w3c, opt_unwrappedReturn) {\n  if (w3c) {\n    w3cEnabled = true;\n    ELEMENT_KEY = 'element-6066-11e4-a52e-4f735466cecf';\n\n  }\n  var cache = getPageCache(null, w3cEnabled);\n  cache.clearStale();\n  if (shadowHostIds && SHADOW_DOM_ENABLED) {\n    for (var i = 0; i \u003C shadowHostIds.length; i++) {\n      var host = cache.retrieveItem(shadowHostIds[i]);\n      // TODO(zachconrad): Use the olderShadowRoot API when available to check\n      // all of the shadow roots.\n      cache = getPageCache(host.webkitShadowRoot, w3cEnabled);\n      cache.clearStale();\n    }\n  }\n\n  if (opt_unwrappedReturn)\n    return func.apply(null, unwrap(args, cache));\n\n  var status = 0;\n  try {\n    var returnValue = wrap(func.apply(null, unwrap(args, cache)));\n  } catch (error) {\n    status = error.code || StatusCode.UNKNOWN_ERROR;\n    var returnValue = error.message;\n  }\n  return {\n      status: status,\n      value: returnValue\n  }\n}\n; return callFunction.apply(null, arguments) }\n).apply(null, [null, function(s) { return 1; }, [], false])","returnByValue":true}}
+[1531863208.469][DEBUG]: WebSocket::OnReadDuringOpen {"id":11,"result":{"result":{"type":"object","value":{"status":0,"value":1}}}}
+[1531863208.470][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=11) {
+   "result": {
+      "type": "object",
+      "value": {
+         "status": 0,
+         "value": 1
+      }
+   }
+}
+[1531863208.470][INFO]: [9bb38e74d3c9216918ea31596608f757] RESPONSE InitSession {
+   "acceptInsecureCerts": false,
+   "acceptSslCerts": false,
+   "applicationCacheEnabled": false,
+   "browserConnectionEnabled": false,
+   "browserName": "chrome",
+   "chrome": {
+      "chromedriverVersion": "2.40 (f4699e1107eca6e847cd7117cfe51619863b23e3)",
+      "userDataDir": "/tmp/.org.chromium.Chromium.GVvqbY"
+   },
+   "cssSelectorsEnabled": true,
+   "databaseEnabled": false,
+   "goog:chromeOptions": {
+      "debuggerAddress": "localhost:46229"
+   },
+   "handlesAlerts": true,
+   "hasTouchScreen": false,
+   "javascriptEnabled": true,
+   "locationContextEnabled": true,
+   "mobileEmulationEnabled": false,
+   "nativeEvents": true,
+   "networkConnectionEnabled": false,
+   "pageLoadStrategy": "normal",
+   "platform": "Linux",
+   "rotatable": false,
+   "setWindowRect": true,
+   "takesHeapSnapshot": true,
+   "takesScreenshot": true,
+   "unexpectedAlertBehaviour": "",
+   "version": "69.0.3491.0",
+   "webStorageEnabled": true
+}
+[1531863208.473][INFO]: [9bb38e74d3c9216918ea31596608f757] COMMAND SendCommandAndGetResult {
+   "cmd": "CSS.enable",
+   "params": null
+}
+[1531863208.473][INFO]: Waiting for pending navigations...
+[1531863208.473][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=12) {
+   "expression": "1"
+}
+[1531863208.473][DEBUG]: WebSocket::Send {"id":12,"method":"Runtime.evaluate","params":{"expression":"1"}}
+[1531863208.478][DEBUG]: WebSocket::OnReadDuringOpen {"id":12,"result":{"result":{"type":"number","value":1,"description":"1"}}}
+[1531863208.478][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=12) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1531863208.478][INFO]: Done waiting for pending navigations. Status: ok
+[1531863208.513][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=13) {
+   "expression": "1"
+}
+[1531863208.513][DEBUG]: WebSocket::Send {"id":13,"method":"Runtime.evaluate","params":{"expression":"1"}}
+[1531863208.515][DEBUG]: WebSocket::OnReadDuringOpen {"id":13,"result":{"result":{"type":"number","value":1,"description":"1"}}}
+[1531863208.515][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=13) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1531863208.515][INFO]: Waiting for pending navigations...
+[1531863208.515][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=14) {
+   "expression": "1"
+}
+[1531863208.515][DEBUG]: WebSocket::Send {"id":14,"method":"Runtime.evaluate","params":{"expression":"1"}}
+[1531863208.517][DEBUG]: WebSocket::OnReadDuringOpen {"id":14,"result":{"result":{"type":"number","value":1,"description":"1"}}}
+[1531863208.517][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=14) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1531863208.517][INFO]: Done waiting for pending navigations. Status: ok
+[1531863208.517][INFO]: [9bb38e74d3c9216918ea31596608f757] RESPONSE SendCommandAndGetResult ERROR unknown error: params not passed
+  (Session info: chrome=69.0.3491.0)
+[1531863208.518][INFO]: [9bb38e74d3c9216918ea31596608f757] COMMAND Quit {
+
+}
+[1531863208.531][DEBUG]: WebSocket::OnRead error OK
+[0717/143328.535499:ERROR:nacl_helper_linux.cc(310)] NaCl helper process running without a sandbox!
+Most likely you need to configure your SUID sandbox correctly
+[1531863208.569][INFO]: [9bb38e74d3c9216918ea31596608f757] RESPONSE Quit
+[1531863208.569][DEBUG]: Log type 'driver' lost 0 entries on destruction
+[1531863208.569][DEBUG]: Log type 'browser' lost 0 entries on destruction

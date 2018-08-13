@@ -207,6 +207,7 @@ void ExecuteSessionCommandOnSessionThread(
     const CommandCallback& callback_on_cmd,
     const base::Closure& terminate_on_cmd) {
   Session* session = GetThreadLocalSession();
+
   if (!session) {
     cmd_task_runner->PostTask(
         FROM_HERE,
@@ -219,7 +220,8 @@ void ExecuteSessionCommandOnSessionThread(
   if (IsVLogOn(0)) {
     if (!session->driver_log ||
         session->driver_log->min_level() != Log::Level::kOff) {
-      VLOG(0) << "COMMAND " << command_name << " "
+      VLOG(0) << "[" << session->id << "] "
+              << "COMMAND " << command_name << " "
               << FormatValueForDisplay(*params);
     }
   }
@@ -269,13 +271,14 @@ void ExecuteSessionCommandOnSessionThread(
     if (IsVLogOn(0)) {
       std::string result;
       if (status.IsError()) {
-        result = status.message();
+        result = "ERROR " + status.message();
       } else if (value) {
         result = FormatValueForDisplay(*value);
       }
       if (!session->driver_log ||
           session->driver_log->min_level() != Log::Level::kOff) {
-        VLOG(0) << "RESPONSE " << command_name
+        VLOG(0) << "[" << session->id << "] "
+                << "RESPONSE " << command_name
                 << (result.length() ? " " + result : "");
       }
     }

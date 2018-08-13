@@ -319,18 +319,30 @@ int main(int argc, char *argv[]) {
   if (cmd_line->HasSwitch("h") || cmd_line->HasSwitch("help")) {
     std::string options;
     const char* const kOptionAndDescriptions[] = {
-        "port=PORT", "port to listen on",
-        "adb-port=PORT", "adb server port",
-        "log-path=FILE", "write server log to file instead of stderr, "
-            "increases log level to INFO",
-        "log-level=LEVEL", "set log level: ALL, DEBUG, INFO, WARNING, "
-            "SEVERE, OFF",
-        "verbose", "log verbosely (equivalent to --log-level=ALL)",
-        "silent", "log nothing (equivalent to --log-level=OFF)",
-        "version", "print the version number and exit",
-        "url-base", "base URL path prefix for commands, e.g. wd/url",
-        "whitelisted-ips", "comma-separated whitelist of remote IPv4 addresses "
-            "which are allowed to connect to ChromeDriver",
+        "port=PORT",
+        "port to listen on",
+        "adb-port=PORT",
+        "adb server port",
+        "log-path=FILE",
+        "write server log to file instead of stderr, "
+        "increases log level to INFO",
+        "log-level=LEVEL",
+        "set log level: ALL, DEBUG, INFO, WARNING, "
+        "SEVERE, OFF",
+        "verbose",
+        "log verbosely (equivalent to --log-level=ALL)",
+        "silent",
+        "log nothing (equivalent to --log-level=OFF)",
+        "replayable",
+        "(experimental) log verbosely and don't truncate long "
+        "strings so that the log can be replayed.",
+        "version",
+        "print the version number and exit",
+        "url-base",
+        "base URL path prefix for commands, e.g. wd/url",
+        "whitelisted-ips",
+        "comma-separated whitelist of remote IPv4 addresses "
+        "which are allowed to connect to ChromeDriver",
     };
     for (size_t i = 0; i < arraysize(kOptionAndDescriptions) - 1; i += 2) {
       options += base::StringPrintf(

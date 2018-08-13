@@ -235,7 +235,6 @@ Log::Level WebDriverLog::min_level() const {
 }
 
 bool InitLogging() {
-  InitLogging(&InternalIsVLogOn);
   g_start_time = base::TimeTicks::Now().ToInternalValue();
 
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
@@ -252,6 +251,9 @@ bool InitLogging() {
       return false;
     }
   }
+
+  Log::truncate_logged_params = !cmd_line->HasSwitch("replayable");
+  Log::is_vlog_on_func = &InternalIsVLogOn;
 
   int num_level_switches = 0;
 

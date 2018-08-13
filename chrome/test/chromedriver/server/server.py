@@ -13,7 +13,7 @@ import urllib2
 class Server(object):
   """A running ChromeDriver server."""
 
-  def __init__(self, exe_path, log_path=None, verbose=True):
+  def __init__(self, exe_path, log_path=None, verbose=True, replayable=False):
     """Starts the ChromeDriver server and waits for it to be ready.
 
     Args:
@@ -31,7 +31,10 @@ class Server(object):
       chromedriver_args.extend(['--log-path=%s' %log_path])
       if verbose:
         chromedriver_args.extend(['--verbose',
-                                  '--vmodule=*/chrome/test/chromedriver/*=4'])
+                                  '--vmodule=*/chrome/test/chromedriver/*=3'])
+      if replayable:
+        chromedriver_args.extend(['--replayable']);
+
     self._process = subprocess.Popen(chromedriver_args)
     self._url = 'http://127.0.0.1:%d' % port
     if self._process is None:

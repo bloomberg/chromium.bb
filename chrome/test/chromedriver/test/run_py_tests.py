@@ -29,17 +29,29 @@ import urllib2
 import uuid
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(1, os.path.join(_THIS_DIR, os.pardir))
-sys.path.insert(1, os.path.join(_THIS_DIR, os.pardir, 'client'))
-sys.path.insert(1, os.path.join(_THIS_DIR, os.pardir, 'server'))
+_PARENT_DIR = os.path.join(_THIS_DIR, os.pardir)
+_CLIENT_DIR = os.path.join(_PARENT_DIR, "client")
+_SERVER_DIR = os.path.join(_PARENT_DIR, "server")
+_TEST_DIR = os.path.join(_PARENT_DIR, "test")
 
+sys.path.insert(1, _PARENT_DIR)
 import chrome_paths
-import chromedriver
-import unittest_util
 import util
+sys.path.remove(_PARENT_DIR)
+
+sys.path.insert(1, _CLIENT_DIR)
+import chromedriver
+import webelement
+sys.path.remove(_CLIENT_DIR)
+
+sys.path.insert(1, _SERVER_DIR)
 import server
-from webelement import WebElement
+sys.path.remove(_SERVER_DIR)
+
+sys.path.insert(1, _TEST_DIR)
+import unittest_util
 import webserver
+sys.path.remove(_TEST_DIR)
 
 
 _TEST_DATA_DIR = os.path.join(chrome_paths.GetTestData(), 'chromedriver')
@@ -586,7 +598,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>a</div><div>b</div>";')
     self.assertTrue(
-        isinstance(self._driver.FindElement('tag name', 'div'), WebElement))
+        isinstance(self._driver.FindElement('tag name', 'div'),
+                   webelement.WebElement))
 
   def testNoSuchElementExceptionMessage(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -614,7 +627,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertTrue(isinstance(divs, list))
     self.assertEquals(2, len(divs))
     for div in divs:
-      self.assertTrue(isinstance(div, WebElement))
+      self.assertTrue(isinstance(div, webelement.WebElement))
 
   def testFindChildElement(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -622,7 +635,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         'document.body.innerHTML = "<div><br><br></div><div><a></a></div>";')
     element = self._driver.FindElement('tag name', 'div')
     self.assertTrue(
-        isinstance(element.FindElement('tag name', 'br'), WebElement))
+        isinstance(element.FindElement('tag name', 'br'),
+                   webelement.WebElement))
 
   def testFindChildElements(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -633,7 +647,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertTrue(isinstance(brs, list))
     self.assertEquals(2, len(brs))
     for br in brs:
-      self.assertTrue(isinstance(br, WebElement))
+      self.assertTrue(isinstance(br, webelement.WebElement))
 
   def testHoverOverElement(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -2873,6 +2887,10 @@ if __name__ == '__main__':
       '', '--log-path',
       help='Output verbose server logs to this file')
   parser.add_option(
+      '', '--replayable',
+      help="Don't truncate long strings in the log so that the log can be "
+          "replayed.")
+  parser.add_option(
       '', '--reference-chromedriver',
       help='Path to the reference chromedriver server')
   parser.add_option(
@@ -2910,6 +2928,9 @@ if __name__ == '__main__':
     parser.error('Path given by --chromedriver is invalid.\n' +
                  'Please run "%s --help" for help' % __file__)
 
+  if options.replayable and not options.log_path:
+    parser.error('Need path specified when replayable log set to true.')
+
   global _CHROMEDRIVER_BINARY
   _CHROMEDRIVER_BINARY = options.chromedriver
 
@@ -2917,7 +2938,8 @@ if __name__ == '__main__':
       options.android_package not in _ANDROID_NEGATIVE_FILTER):
     parser.error('Invalid --android-package')
 
-  chromedriver_server = server.Server(_CHROMEDRIVER_BINARY, options.log_path)
+  chromedriver_server = server.Server(_CHROMEDRIVER_BINARY, options.log_path,
+                                      replayable=options.replayable)
   global _CHROMEDRIVER_SERVER_URL
   _CHROMEDRIVER_SERVER_URL = chromedriver_server.GetUrl()
 
