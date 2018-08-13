@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_mediator.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_transition_delegate.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_view_controller.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_view_controller_presentation_delegate.h"
 
@@ -42,23 +43,38 @@ typedef NS_ENUM(NSInteger, IdentityChooserCoordinatorState) {
     IdentityChooserViewController* identityChooserViewController;
 // Coordinator state.
 @property(nonatomic, assign) IdentityChooserCoordinatorState state;
+// Transition delegate for the view controller presentation.
+@property(nonatomic, strong)
+    IdentityChooserTransitionDelegate* transitionController;
 
 @end
 
 @implementation IdentityChooserCoordinator
 
 @synthesize delegate = _delegate;
+@synthesize origin = _origin;
 @synthesize identityChooserMediator = _identityChooserMediator;
 @synthesize identityChooserViewController = _identityChooserViewController;
 @synthesize state = _state;
+@synthesize transitionController = _transitionController;
 
 - (void)start {
   [super start];
   DCHECK_EQ(IdentityChooserCoordinatorStateNotStarted, self.state);
   self.state = IdentityChooserCoordinatorStateStarted;
   // Creates the controller.
-  self.identityChooserViewController =
-      [[IdentityChooserViewController alloc] init];
+  self.identityChooserViewController = [[IdentityChooserViewController alloc]
+      initWithTableViewStyle:UITableViewStylePlain
+                 appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self.identityChooserViewController.modalPresentationStyle =
+      UIModalPresentationCustom;
+  self.transitionController = [[IdentityChooserTransitionDelegate alloc] init];
+  self.transitionController.origin = self.origin;
+  self.identityChooserViewController.transitioningDelegate =
+      self.transitionController;
+  self.identityChooserViewController.modalPresentationStyle =
+      UIModalPresentationCustom;
+
   // Creates the mediator.
   self.identityChooserMediator = [[IdentityChooserMediator alloc] init];
   self.identityChooserMediator.identityChooserViewController =

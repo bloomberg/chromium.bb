@@ -55,6 +55,8 @@ source_set("identity_chooser_ui") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/colors",
+    "//ios/chrome/browser/ui/image_util",
+    "//ios/chrome/browser/ui/resources:menu_shadow",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",

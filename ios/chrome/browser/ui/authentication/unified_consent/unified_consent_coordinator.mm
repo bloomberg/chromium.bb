@@ -89,11 +89,13 @@
 }
 
 - (void)unifiedConsentViewControllerDidTapIdentityPickerView:
-    (UnifiedConsentViewController*)controller {
+            (UnifiedConsentViewController*)controller
+                                                     atPoint:(CGPoint)point {
   DCHECK_EQ(self.unifiedConsentViewController, controller);
   self.identityChooserCoordinator = [[IdentityChooserCoordinator alloc]
       initWithBaseViewController:self.unifiedConsentViewController];
   self.identityChooserCoordinator.delegate = self;
+  self.identityChooserCoordinator.origin = point;
   [self.identityChooserCoordinator start];
   self.identityChooserCoordinator.selectedIdentity = self.selectedIdentity;
 }

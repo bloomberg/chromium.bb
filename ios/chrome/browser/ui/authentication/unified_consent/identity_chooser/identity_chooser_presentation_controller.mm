@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_presentation_controller.h"
 
+#import "ios/chrome/browser/ui/image_util/image_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -13,18 +14,24 @@
 namespace {
 const CGFloat kMaxWidth = 350;
 const CGFloat kMaxHeight = 350;
-const CGFloat kMinimumMargin = 25;
+const CGFloat kMinimumMarginHorizontal = 25;
+const CGFloat kMinimumMarginVertical = 35;
+
+const CGFloat kShadowMargin = 196;
+const CGFloat kContainerCornerRadius = 13.0;
 }  // namespace
 
 @interface IdentityChooserPresentationController ()
 
 @property(nonatomic, strong) UIView* shieldView;
+@property(nonatomic, strong) UIView* shadowContainer;
 
 @end
 
 @implementation IdentityChooserPresentationController
 
 @synthesize shieldView = _shieldView;
+@synthesize shadowContainer = _shadowContainer;
 
 #pragma mark - UIPresentationController
 
@@ -35,8 +42,9 @@ const CGFloat kMinimumMargin = 25;
   CGFloat availableWidth = CGRectGetWidth(safeAreaFrame);
   CGFloat availableHeight = CGRectGetHeight(safeAreaFrame);
 
-  CGFloat width = MIN(kMaxWidth, availableWidth - 2 * kMinimumMargin);
-  CGFloat height = MIN(kMaxHeight, availableHeight - 2 * kMinimumMargin);
+  CGFloat width = MIN(kMaxWidth, availableWidth - 2 * kMinimumMarginHorizontal);
+  CGFloat height =
+      MIN(kMaxHeight, availableHeight - 2 * kMinimumMarginVertical);
 
   CGRect presentedViewFrame = safeAreaFrame;
   presentedViewFrame.origin.x += (availableWidth - width) / 2;
@@ -47,10 +55,12 @@ const CGFloat kMinimumMargin = 25;
   return presentedViewFrame;
 }
 
+- (UIView*)presentedView {
+  return self.shadowContainer;
+}
+
 - (void)presentationTransitionWillBegin {
   self.shieldView = [[UIView alloc] init];
-  // TODO(crbug.com/873065): Change this for the real shadow.
-  self.shieldView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.2];
   self.shieldView.frame = self.containerView.bounds;
   [self.containerView addSubview:self.shieldView];
   [self.shieldView
@@ -58,14 +68,40 @@ const CGFloat kMinimumMargin = 25;
                                initWithTarget:self
                                        action:@selector(handleShieldTap)]];
 
-  [self.containerView addSubview:self.presentedViewController.view];
+  self.shadowContainer = [[UIView alloc] init];
+
+  UIView* contentClippingView = [[UIView alloc] init];
+  contentClippingView.layer.cornerRadius = kContainerCornerRadius;
+  contentClippingView.layer.masksToBounds = YES;
+  contentClippingView.clipsToBounds = YES;
+
+  UIImageView* shadowView =
+      [[UIImageView alloc] initWithImage:StretchableImageNamed(@"menu_shadow")];
+
+  shadowView.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+  self.presentedViewController.view.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+  contentClippingView.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+
+  [contentClippingView addSubview:self.presentedViewController.view];
+  [self.shadowContainer addSubview:shadowView];
+  [self.shadowContainer addSubview:contentClippingView];
+
+  [self.containerView addSubview:self.shadowContainer];
+
+  self.shadowContainer.frame = [self frameOfPresentedViewInContainerView];
+  contentClippingView.frame = self.shadowContainer.bounds;
+  self.presentedViewController.view.frame = self.shadowContainer.bounds;
+  shadowView.frame =
+      CGRectInset(self.shadowContainer.bounds, -kShadowMargin, -kShadowMargin);
 }
 
 - (void)containerViewWillLayoutSubviews {
   self.shieldView.frame = self.containerView.bounds;
 
-  self.presentedViewController.view.frame =
-      [self frameOfPresentedViewInContainerView];
+  self.shadowContainer.frame = [self frameOfPresentedViewInContainerView];
 }
 
 #pragma mark - Private

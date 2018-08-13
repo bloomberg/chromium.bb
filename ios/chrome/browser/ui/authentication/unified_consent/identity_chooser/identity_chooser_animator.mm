@@ -8,19 +8,21 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+const CGFloat kAnimationDuration = 0.25;
+const CGFloat kDamping = 0.85;
+const CGFloat kScaleFactor = 0.1;
+}  // namespace
+
 @implementation IdentityChooserAnimator
 
 @synthesize appearing = _appearing;
+@synthesize origin = _origin;
 
 #pragma mark - UIViewControllerAnimatedTransitioning
 
 - (void)animateTransition:
     (id<UIViewControllerContextTransitioning>)transitionContext {
-  // Get views and view controllers for this transition.
-  // The baseView is the view on top of which the VC is presented.
-  UIView* baseView = [transitionContext
-      viewForKey:self.appearing ? UITransitionContextFromViewKey
-                                : UITransitionContextToViewKey];
   // The VC being presented/dismissed and its view.
   UIViewController* presentedViewController = [transitionContext
       viewControllerForKey:self.appearing
@@ -30,22 +32,47 @@
       viewForKey:self.appearing ? UITransitionContextToViewKey
                                 : UITransitionContextFromViewKey];
 
-  // Always add the destination view to the container.
   UIView* containerView = [transitionContext containerView];
   if (self.appearing) {
     [containerView addSubview:presentedView];
+    presentedView.frame =
+        [transitionContext finalFrameForViewController:presentedViewController];
+  }
+  CGPoint endCenter = presentedView.center;
+  CGAffineTransform finalTransform;
+  CGAffineTransform scaleDown =
+      CGAffineTransformMakeScale(kScaleFactor, kScaleFactor);
+
+  if (self.appearing) {
+    if (!CGPointEqualToPoint(self.origin, CGPointZero)) {
+      presentedView.center =
+          [containerView convertPoint:self.origin fromView:nil];
+    }
+    presentedView.alpha = 0;
+    presentedView.transform = scaleDown;
+    finalTransform = CGAffineTransformIdentity;
   } else {
-    [containerView addSubview:baseView];
+    finalTransform = scaleDown;
   }
 
-  presentedView.frame =
-      [transitionContext finalFrameForViewController:presentedViewController];
-  [transitionContext completeTransition:YES];
+  [UIView animateWithDuration:kAnimationDuration
+      delay:0
+      usingSpringWithDamping:kDamping
+      initialSpringVelocity:0
+      options:0
+      animations:^{
+        presentedView.center = endCenter;
+        presentedView.transform = finalTransform;
+        presentedView.alpha = self.appearing ? 1 : 0;
+      }
+      completion:^(BOOL finished) {
+        [transitionContext completeTransition:YES];
+      }];
 }
 
 - (NSTimeInterval)transitionDuration:
     (id<UIViewControllerContextTransitioning>)transitionContext {
-  return 0;
+  return kAnimationDuration;
 }
 
 @end
