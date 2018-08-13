@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertTrue;
 
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.AUTOFILL_SUGGESTION;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
@@ -138,8 +139,7 @@ public class KeyboardAccessoryViewTest {
             mModel.getActionList().set(new KeyboardAccessoryData.Action[] {
                     new KeyboardAccessoryData.Action(
                             "First", GENERATE_PASSWORD_AUTOMATIC, action -> {}),
-                    new KeyboardAccessoryData.Action(
-                            "Second", GENERATE_PASSWORD_AUTOMATIC, action -> {})});
+                    new KeyboardAccessoryData.Action("Second", AUTOFILL_SUGGESTION, action -> {})});
         });
 
         onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("First")));

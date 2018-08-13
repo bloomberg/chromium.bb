@@ -177,8 +177,10 @@ public class ManualFillingControllerTest {
     @Test
     public void testKeyboardAccessoryActionsPersistAfterSwitchingBrowserTabs() {
         ManualFillingMediator mediator = mController.getMediatorForTesting();
-        Provider<Action> firstTabProvider = new PropertyProvider<>();
-        Provider<Action> secondTabProvider = new PropertyProvider<>();
+        PropertyProvider<Action> firstTabProvider =
+                new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
+        PropertyProvider<Action> secondTabProvider =
+                new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
         SimpleListObservable<Action> keyboardActions = mediator.getKeyboardAccessory()
                                                                .getMediatorForTesting()
                                                                .getModelForTesting()
@@ -196,7 +198,7 @@ public class ManualFillingControllerTest {
         // Simulate creating a second tab:
         Tab secondTab = addTab(mediator, 2222, firstTab);
         mController.registerActionProvider(secondTabProvider);
-        secondTabProvider.notifyObservers(new Action[] {});
+        secondTabProvider.notifyObservers(new Action[0]);
         mMockItemListObserver.onItemRangeRemoved(keyboardActions, 0, 1);
         assertThat(keyboardActions.size(), is(0)); // No actions on this tab.
 
@@ -270,12 +272,14 @@ public class ManualFillingControllerTest {
         // Open a tab.
         Tab tab = addTab(mediator, 1111, null);
         // Add an action provider that never provided actions.
-        mController.registerActionProvider(new PropertyProvider<>());
+        mController.registerActionProvider(
+                new PropertyProvider<Action>(GENERATE_PASSWORD_AUTOMATIC));
         assertThat(keyboardAccessoryModel.getActionList().size(), is(0));
 
         // Create a new tab with an action:
         Tab secondTab = addTab(mediator, 1111, tab);
-        PropertyProvider<Action> provider = new PropertyProvider<>();
+        PropertyProvider<Action> provider =
+                new PropertyProvider<Action>(GENERATE_PASSWORD_AUTOMATIC);
         mController.registerActionProvider(provider);
         provider.notifyObservers(new Action[] {
                 new Action("Test Action", GENERATE_PASSWORD_AUTOMATIC, (action) -> {})});
@@ -294,13 +298,15 @@ public class ManualFillingControllerTest {
         // Open a tab.
         Tab tab = addTab(mediator, 1111, null);
         // Add an action provider that hasn't provided actions yet.
-        PropertyProvider<Action> delayedProvider = new PropertyProvider<>();
+        PropertyProvider<Action> delayedProvider =
+                new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
         mController.registerActionProvider(delayedProvider);
         assertThat(keyboardAccessoryModel.getActionList().size(), is(0));
 
         // Create and switch to a new tab:
         Tab secondTab = addTab(mediator, 1111, tab);
-        PropertyProvider<Action> provider = new PropertyProvider<>();
+        PropertyProvider<Action> provider =
+                new PropertyProvider<Action>(GENERATE_PASSWORD_AUTOMATIC);
         mController.registerActionProvider(provider);
 
         // And provide data to the active tab.
@@ -331,9 +337,11 @@ public class ManualFillingControllerTest {
                                                           .getModelForTesting();
 
         Provider<Item> firstTabProvider = new PropertyProvider<>();
-        PropertyProvider<Action> firstActionProvider = new PropertyProvider<>();
+        PropertyProvider<Action> firstActionProvider =
+                new PropertyProvider<Action>(GENERATE_PASSWORD_AUTOMATIC);
         Provider<Item> secondTabProvider = new PropertyProvider<>();
-        PropertyProvider<Action> secondActionProvider = new PropertyProvider<>();
+        PropertyProvider<Action> secondActionProvider =
+                new PropertyProvider<Action>(GENERATE_PASSWORD_AUTOMATIC);
 
         // Simulate opening a new tab:
         Tab firstTab = addTab(mediator, 1111, null);

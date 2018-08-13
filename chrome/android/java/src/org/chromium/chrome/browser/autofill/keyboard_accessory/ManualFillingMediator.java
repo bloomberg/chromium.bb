@@ -11,6 +11,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
@@ -36,13 +37,11 @@ class ManualFillingMediator
     /**
      * Provides a cache for a given Provider which can repeat the last notification to all
      * observers.
-     * @param <T> The data that is sent to observers.
      */
-    @VisibleForTesting
-    protected class ProviderCacheAdapter<T> extends KeyboardAccessoryData.PropertyProvider<T>
-            implements KeyboardAccessoryData.Observer<T> {
+    private class ActionProviderCacheAdapter extends KeyboardAccessoryData.PropertyProvider<Action>
+            implements KeyboardAccessoryData.Observer<Action> {
         private final Tab mTab;
-        private T[] mLastItems;
+        private Action[] mLastItems;
 
         /**
          * Creates an adapter that listens to the given |provider| and stores items provided by it.
@@ -51,7 +50,9 @@ class ManualFillingMediator
          * @param provider The {@link Provider} to observe and whose data to cache.
          * @param defaultItems The items to be notified about if the Provider hasn't provided any.
          */
-        ProviderCacheAdapter(Tab tab, Provider<T> provider, T[] defaultItems) {
+        ActionProviderCacheAdapter(Tab tab, KeyboardAccessoryData.PropertyProvider<Action> provider,
+                Action[] defaultItems) {
+            super(provider.mType);
             mTab = tab;
             provider.addObserver(this);
             mLastItems = defaultItems;
@@ -66,10 +67,10 @@ class ManualFillingMediator
         }
 
         @Override
-        public void onItemsAvailable(T[] items) {
-            mLastItems = items;
+        public void onItemsAvailable(int typeId, Action[] actions) {
+            mLastItems = actions;
             // Update the contents immediately, if the adapter connects to an active element.
-            if (mTab == mActiveBrowserTab) notifyObservers(items);
+            if (mTab == mActiveBrowserTab) notifyObservers(actions);
         }
     }
 
@@ -80,7 +81,7 @@ class ManualFillingMediator
     @VisibleForTesting
     static class AccessoryState {
         @Nullable
-        ProviderCacheAdapter<KeyboardAccessoryData.Action> mActionsProvider;
+        ActionProviderCacheAdapter mActionsProvider;
         @Nullable
         PasswordAccessorySheetCoordinator mPasswordAccessorySheet;
     }
@@ -160,9 +161,9 @@ class ManualFillingMediator
         getPasswordAccessorySheet().registerItemProvider(itemProvider);
     }
 
-    void registerActionProvider(Provider<KeyboardAccessoryData.Action> actionProvider) {
-        ProviderCacheAdapter<KeyboardAccessoryData.Action> adapter = new ProviderCacheAdapter<>(
-                mActiveBrowserTab, actionProvider, new KeyboardAccessoryData.Action[0]);
+    void registerActionProvider(KeyboardAccessoryData.PropertyProvider<Action> actionProvider) {
+        ActionProviderCacheAdapter adapter =
+                new ActionProviderCacheAdapter(mActiveBrowserTab, actionProvider, new Action[0]);
         mModel.get(mActiveBrowserTab).mActionsProvider = adapter;
         getKeyboardAccessory().registerActionListProvider(adapter);
     }
@@ -178,6 +179,11 @@ class ManualFillingMediator
             return true;
         }
         return false;
+    }
+
+    void dismiss() {
+        mKeyboardAccessory.dismiss();
+        UiUtils.hideKeyboard(mActivity.getCurrentFocus());
     }
 
     void notifyPopupOpened(DropdownPopupWindow popup) {

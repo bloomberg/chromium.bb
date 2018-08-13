@@ -6,7 +6,9 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
@@ -15,7 +17,6 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessory
 import org.chromium.chrome.browser.modelutil.LazyViewBinderAdapter;
 import org.chromium.chrome.browser.modelutil.ListModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.SimpleListObservable;
-import org.chromium.ui.widget.ButtonCompat;
 
 /**
  * Observes {@link KeyboardAccessoryModel} changes (like a newly available tab) and triggers the
@@ -25,24 +26,35 @@ class KeyboardAccessoryViewBinder
         implements LazyViewBinderAdapter.SimpleViewBinder<KeyboardAccessoryModel,
                 KeyboardAccessoryView, PropertyKey> {
     static class ActionViewHolder extends RecyclerView.ViewHolder {
-        public ActionViewHolder(ButtonCompat actionView) {
+        public ActionViewHolder(View actionView) {
             super(actionView);
         }
 
-        public static ActionViewHolder create(ViewGroup parent, int viewType) {
-            assert viewType == 0;
-            return new ActionViewHolder(
-                    (ButtonCompat) LayoutInflater.from(parent.getContext())
-                            .inflate(R.layout.keyboard_accessory_action, parent, false));
+        public static ActionViewHolder create(ViewGroup parent, @AccessoryAction int viewType) {
+            switch (viewType) {
+                case AccessoryAction.GENERATE_PASSWORD_AUTOMATIC:
+                    return new ActionViewHolder(
+                            LayoutInflater.from(parent.getContext())
+                                    .inflate(R.layout.keyboard_accessory_action, parent, false));
+                case AccessoryAction.AUTOFILL_SUGGESTION:
+                    return new ActionViewHolder(
+                            LayoutInflater.from(parent.getContext())
+                                    .inflate(R.layout.keyboard_accessory_chip, parent, false));
+                case AccessoryAction.MANAGE_PASSWORDS: // Intentional fallthrough.
+                case AccessoryAction.COUNT:
+                    assert false : "Type " + viewType + " is not a valid accessory bar action!";
+            }
+            assert false : "Action type " + viewType + " was not handled!";
+            return null;
         }
 
         public void bind(Action action) {
-            getActionView().setText(action.getCaption());
-            getActionView().setOnClickListener(view -> action.getCallback().onResult(action));
+            getView().setText(action.getCaption());
+            getView().setOnClickListener(view -> action.getCallback().onResult(action));
         }
 
-        private ButtonCompat getActionView() {
-            return (ButtonCompat) super.itemView;
+        private TextView getView() {
+            return (TextView) super.itemView;
         }
     }
 
@@ -124,10 +136,6 @@ class KeyboardAccessoryViewBinder
             // Don't add null as listener. It's a valid state but an invalid argument.
             if (model.getTabSelectionCallbacks() == null) return;
             view.setTabSelectionAdapter(model.getTabSelectionCallbacks());
-            return;
-        }
-        if (propertyKey == PropertyKey.SUGGESTIONS) {
-            view.updateSuggestions(model.getAutofillSuggestions());
             return;
         }
         assert false : "Every possible property update needs to be handled!";

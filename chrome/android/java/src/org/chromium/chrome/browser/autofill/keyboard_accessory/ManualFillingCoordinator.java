@@ -55,6 +55,13 @@ public class ManualFillingCoordinator {
         return mMediator.handleBackPress();
     }
 
+    /**
+     * Ensures that keyboard accessory and keyboard are hidden and reset.
+     */
+    public void dismiss() {
+        mMediator.dismiss();
+    }
+
     public void notifyPopupAvailable(DropdownPopupWindow popup) {
         mMediator.notifyPopupOpened(popup);
     }
@@ -74,7 +81,8 @@ public class ManualFillingCoordinator {
         mMediator.onOpenKeyboard();
     }
 
-    void registerActionProvider(Provider<KeyboardAccessoryData.Action> actionProvider) {
+    void registerActionProvider(
+            KeyboardAccessoryData.PropertyProvider<KeyboardAccessoryData.Action> actionProvider) {
         mMediator.registerActionProvider(actionProvider);
     }
 

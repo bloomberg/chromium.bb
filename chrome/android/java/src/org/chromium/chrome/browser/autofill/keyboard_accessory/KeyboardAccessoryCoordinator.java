@@ -8,7 +8,6 @@ import android.support.v4.view.ViewPager;
 import android.view.ViewStub;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.autofill.AutofillKeyboardSuggestions;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.ActionViewHolder;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.TabViewBinder;
 import org.chromium.chrome.browser.modelutil.LazyViewBinderAdapter;
@@ -85,7 +84,8 @@ public class KeyboardAccessoryCoordinator {
     static RecyclerViewAdapter<ActionViewHolder, Void> createActionsAdapter(
             KeyboardAccessoryModel model) {
         return new RecyclerViewAdapter<>(
-                new SimpleRecyclerViewMcp<>(model.getActionList(), null, ActionViewHolder::bind),
+                new SimpleRecyclerViewMcp<>(model.getActionList(),
+                        KeyboardAccessoryData.Action::getActionType, ActionViewHolder::bind),
                 ActionViewHolder::create);
     }
 
@@ -158,15 +158,6 @@ public class KeyboardAccessoryCoordinator {
      */
     public void destroy() {
         mMediator.destroy();
-    }
-
-    /**
-     * TODO(fhorschig): Remove this function. The suggestions bridge should become a provider.
-     * Sets a View that will be displayed in a scroll view at the end of the accessory.
-     * @param suggestions The suggestions to be rendered into the accessory.
-     */
-    public void setSuggestions(AutofillKeyboardSuggestions suggestions) {
-        mMediator.setSuggestions(suggestions);
     }
 
     /**

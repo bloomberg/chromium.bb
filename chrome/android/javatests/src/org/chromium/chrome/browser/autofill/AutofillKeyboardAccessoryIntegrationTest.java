@@ -4,18 +4,12 @@
 
 package org.chromium.chrome.browser.autofill;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.action.ViewActions.scrollTo;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
-
 import static org.chromium.ui.base.LocalizationUtils.setRtlForTesting;
 
-import android.os.Build;
 import android.support.test.filters.MediumTest;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
 import org.junit.Assert;
@@ -27,7 +21,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
@@ -89,13 +82,13 @@ public class AutofillKeyboardAccessoryIntegrationTest {
                 + "</form></body></html>"));
         new AutofillTestHelper().setProfile(new AutofillProfile("", "https://www.example.com",
                 "Johnathan Smithonian-Jackson", "Acme Inc", "1 Main\nApt A", "CA", "San Francisco",
-                "", "94102", "", "US", "(415) 888-9999", "john@acme.inc", "en"));
+                "", "94102", "", "US", "(415) 888-9999", "john.sj@acme-mail.inc", "en"));
         new AutofillTestHelper().setProfile(new AutofillProfile("", "https://www.example.com",
                 "Jane Erika Donovanova", "Acme Inc", "1 Main\nApt A", "CA", "San Francisco", "",
-                "94102", "", "US", "(415) 999-0000", "jane@acme.inc", "en"));
+                "94102", "", "US", "(415) 999-0000", "donovanova.j@acme-mail.inc", "en"));
         new AutofillTestHelper().setProfile(new AutofillProfile("", "https://www.example.com",
                 "Marcus McSpartangregor", "Acme Inc", "1 Main\nApt A", "CA", "San Francisco", "",
-                "94102", "", "US", "(415) 999-0000", "marc@acme.inc", "en"));
+                "94102", "", "US", "(415) 999-0000", "marc@acme-mail.inc", "en"));
         setRtlForTesting(isRtl);
         ThreadUtils.runOnUiThreadBlocking(() -> {
             Tab tab = mActivityTestRule.getActivity().getActivityTab();
@@ -150,51 +143,19 @@ public class AutofillKeyboardAccessoryIntegrationTest {
     public void testSwitchFieldsRescrollsKeyboardAccessory()
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(false);
-        DOMUtils.clickNode(mWebContentsRef.get(), "fn");
+        DOMUtils.clickNode(mWebContentsRef.get(), "em");
 
         CriteriaHelper.pollUiThread(Criteria.equals(true,
                 ()
                         -> UiUtils.isKeyboardShowing(
                                 mActivityTestRule.getActivity(), mContainerRef.get())));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> getSuggestionsComponent().scrollTo(2000, 0));
-        assertSuggestionScrollPosition(
-                false, "First suggestion should be off the screen after manual scroll.");
+        ThreadUtils.runOnUiThreadBlocking(() -> getSuggestionsComponent().scrollToPosition(2));
+
+        assertSuggestionsScrollState(false, "Should keep the manual scroll position.");
 
         DOMUtils.clickNode(mWebContentsRef.get(), "ln");
-        assertSuggestionScrollPosition(
-                true, "First suggestion should be on the screen after switching fields.");
-    }
-
-    /**
-     * Switching fields in RTL should re-scroll the keyboard accessory to the right.
-     *
-     * RTL is only supported on Jelly Bean MR 1+.
-     * http://android-developers.blogspot.com/2013/03/native-rtl-support-in-android-42.html
-     */
-    @Test
-    @MediumTest
-    @Feature({"keyboard-accessory"})
-    @MinAndroidSdkLevel(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    @DisabledTest(message = "crbug.com/836027")
-    public void testSwitchFieldsRescrollsKeyboardAccessoryRtl()
-            throws ExecutionException, InterruptedException, TimeoutException {
-        loadTestPage(true);
-        DOMUtils.clickNode(mWebContentsRef.get(), "fn");
-
-        CriteriaHelper.pollUiThread(Criteria.equals(true,
-                ()
-                        -> UiUtils.isKeyboardShowing(
-                                mActivityTestRule.getActivity(), mContainerRef.get())));
-        assertSuggestionScrollPosition(false, "Last suggestion should be off the screen intially.");
-
-        ThreadUtils.runOnUiThreadBlocking(() -> getSuggestionsComponent().scrollTo(-500, 0));
-        assertSuggestionScrollPosition(
-                true, "Last suggestion should be on the screen after manual scroll.");
-
-        DOMUtils.clickNode(mWebContentsRef.get(), "ln");
-        assertSuggestionScrollPosition(
-                false, "Last suggestion should be off the screen after switching fields.");
+        assertSuggestionsScrollState(true, "Should be scrolled back to position 0.");
     }
 
     /**
@@ -216,7 +177,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
                                 mActivityTestRule.getActivity(), mContainerRef.get())));
         Assert.assertTrue("Keyboard accessory should be visible.", isAccessoryVisible());
 
-        onView(withText("Marcus")).perform(scrollTo(), click());
+        ThreadUtils.runOnUiThreadBlocking(() -> getSuggestionAt(0).performClick());
 
         CriteriaHelper.pollUiThread(Criteria.equals(false,
                 ()
@@ -225,35 +186,33 @@ public class AutofillKeyboardAccessoryIntegrationTest {
         Assert.assertTrue("Keyboard accessory should be hidden.", isAccessoryGone());
     }
 
-    private void assertSuggestionScrollPosition(boolean shouldBeOnScreen, String failureReason) {
+    private void assertSuggestionsScrollState(boolean isScrollingReset, String failureReason) {
         CriteriaHelper.pollUiThread(new Criteria(failureReason) {
             @Override
             public boolean isSatisfied() {
-                View suggestion = getSuggestionAt(0);
-                if (suggestion == null) return false;
-                int[] location = new int[2];
-                suggestion.getLocationOnScreen(location);
-                return shouldBeOnScreen ? location[0] > 0 : location[0] < 0;
+                return isScrollingReset
+                        ? getSuggestionsComponent().computeHorizontalScrollOffset() <= 0
+                        : getSuggestionsComponent().computeHorizontalScrollOffset() > 0;
             }
         });
     }
 
-    private HorizontalScrollView getSuggestionsComponent() {
+    private RecyclerView getSuggestionsComponent() {
         final ViewGroup keyboardAccessory = ThreadUtils.runOnUiThreadBlockingNoException(
                 () -> mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory));
         if (keyboardAccessory == null) return null; // It might still be loading, so don't assert!
 
-        final View scrollview = keyboardAccessory.findViewById(R.id.suggestions_view);
-        if (scrollview == null) return null; // It might still be loading, so don't assert!
+        final View recyclerView = keyboardAccessory.findViewById(R.id.actions_view);
+        if (recyclerView == null) return null; // It might still be loading, so don't assert!
 
-        return (HorizontalScrollView) scrollview;
+        return (RecyclerView) recyclerView;
     }
 
     private View getSuggestionAt(int index) {
-        ViewGroup scrollview = getSuggestionsComponent();
-        if (scrollview == null) return null; // It might still be loading, so don't assert!
+        ViewGroup recyclerView = getSuggestionsComponent();
+        if (recyclerView == null) return null; // It might still be loading, so don't assert!
 
-        return scrollview.getChildAt(index);
+        return recyclerView.getChildAt(index);
     }
 
     private boolean isAccessoryVisible() throws ExecutionException {

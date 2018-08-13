@@ -19,21 +19,16 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
-import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.autofill.AutofillKeyboardSuggestions;
-
-import javax.annotation.Nullable;
 
 /**
  * The Accessory sitting above the keyboard and below the content area. It is used for autofill
  * suggestions and manual entry points assisting the user in filling forms.
  */
 class KeyboardAccessoryView extends LinearLayout {
-    private HorizontalScrollView mSuggestionsView;
     private RecyclerView mActionsView;
     private TabLayout mTabLayout;
     private TabLayout.TabLayoutOnPageChangeListener mPageChangeListener;
@@ -67,18 +62,9 @@ class KeyboardAccessoryView extends LinearLayout {
 
         mTabLayout = findViewById(R.id.tabs);
 
-        mSuggestionsView = findViewById(R.id.suggestions_view);
-
         // Apply RTL layout changes to the views children:
-        ApiCompatibilityUtils.setLayoutDirection(mSuggestionsView,
+        ApiCompatibilityUtils.setLayoutDirection(mActionsView,
                 isLayoutRtl() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
-    }
-
-    @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        super.onLayout(changed, left, top, right, bottom);
-        // When the size changes, the scrolling should be reset.
-        mSuggestionsView.fullScroll(isLayoutRtl() ? FOCUS_RIGHT : FOCUS_LEFT);
     }
 
     void setVisible(boolean visible) {
@@ -145,18 +131,6 @@ class KeyboardAccessoryView extends LinearLayout {
         }
     }
 
-    // TODO(crbug/722897): Check to handle RTL.
-    // TODO(fhorschig): This should use a RecyclerView. The model should contain single suggestions.
-    /**
-     * Shows the given suggestions. If set to null, it only removes existing suggestions.
-     * @param suggestions Autofill suggestion data.
-     */
-    void updateSuggestions(@Nullable AutofillKeyboardSuggestions suggestions) {
-        mSuggestionsView.removeAllViews();
-        if (suggestions == null) return;
-        mSuggestionsView.addView(suggestions);
-    }
-
     private void show() {
         bringToFront(); // Needs to overlay every component and the bottom sheet - like a keyboard.
         setVisibility(View.VISIBLE);
@@ -172,15 +146,13 @@ class KeyboardAccessoryView extends LinearLayout {
         recyclerView.setLayoutManager(
                 new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
 
+        int pad = getResources().getDimensionPixelSize(R.dimen.keyboard_accessory_padding);
         // Create margins between every element.
-        recyclerView.addItemDecoration(new HorizontalDividerItemDecoration(
-                getResources().getDimensionPixelSize(R.dimen.keyboard_accessory_padding)));
+        recyclerView.addItemDecoration(new HorizontalDividerItemDecoration(pad));
 
         // Remove all animations - the accessory shouldn't be visibly built anyway.
         recyclerView.setItemAnimator(null);
 
-        int pad = getResources().getDimensionPixelSize(R.dimen.keyboard_accessory_padding);
-        int halfPad = getResources().getDimensionPixelSize(R.dimen.keyboard_accessory_half_padding);
-        recyclerView.setPadding(pad, halfPad, pad, halfPad);
+        recyclerView.setPadding(isLayoutRtl() ? 0 : pad, 0, isLayoutRtl() ? pad : 0, 0);
     }
 }

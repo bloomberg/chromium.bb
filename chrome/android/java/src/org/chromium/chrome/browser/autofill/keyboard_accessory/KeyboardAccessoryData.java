@@ -44,13 +44,16 @@ public class KeyboardAccessoryData {
      * @param <T> An {@link Action}, {@link Tab} or {@link Item} that this instance observes.
      */
     public interface Observer<T> {
+        int DEFAULT_TYPE = Integer.MIN_VALUE;
+
         /**
          * A provider calls this function with a list of items that should be available in the
          * keyboard accessory.
-         * @param actions The actions to be displayed in the Accessory. It's a native array as the
+         * @param typeId Specifies which type of item this update affects.
+         * @param items The items to be displayed in the Accessory. It's a native array as the
          *                provider is typically a bridge called via JNI which prefers native types.
          */
-        void onItemsAvailable(T[] actions);
+        void onItemsAvailable(int typeId, T[] items);
     }
 
     /**
@@ -306,6 +309,15 @@ public class KeyboardAccessoryData {
      */
     public static class PropertyProvider<T> implements Provider<T> {
         private final List<Observer<T>> mObservers = new ArrayList<>();
+        protected int mType;
+
+        public PropertyProvider() {
+            this(Observer.DEFAULT_TYPE);
+        }
+
+        public PropertyProvider(int type) {
+            mType = type;
+        }
 
         @Override
         public void addObserver(Observer<T> observer) {
@@ -315,7 +327,7 @@ public class KeyboardAccessoryData {
         @Override
         public void notifyObservers(T[] items) {
             for (Observer<T> observer : mObservers) {
-                observer.onItemsAvailable(items);
+                observer.onItemsAvailable(mType, items);
             }
         }
     }

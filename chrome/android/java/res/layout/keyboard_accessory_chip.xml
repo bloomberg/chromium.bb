@@ -3,9 +3,10 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<org.chromium.ui.widget.ButtonCompat
+<!-- TODO(fhorschig): android:elevation has no effect pre-Lollipop. Possibly, using a CardView or
+     holo drawables could create compatibility - if this becomes the final design.-->
+<TextView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:gravity="center"
     android:layout_height="@dimen/keyboard_accessory_action_height"
     android:layout_width="wrap_content"
@@ -17,7 +18,6 @@
     android:paddingTop="0dp"
     android:layout_marginBottom="@dimen/keyboard_accessory_half_padding"
     android:layout_marginTop="@dimen/keyboard_accessory_half_padding"
-    android:textAlignment="center"
-    android:textAppearance="@style/WhiteButtonText"
-    app:buttonColor="@color/light_active_color"
-    app:buttonRaised="false"/>
+    android:elevation="2dp"
+    android:textAppearance="@style/BlackTitle2"
+    android:background="@drawable/autofill_chip_inset"/>
