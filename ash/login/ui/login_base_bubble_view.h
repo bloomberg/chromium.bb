@@ -6,7 +6,7 @@
 #define ASH_LOGIN_UI_LOGIN_BASE_BUBBLE_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/view.h"
 
 namespace ash {

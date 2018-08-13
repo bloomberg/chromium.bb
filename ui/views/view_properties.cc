@@ -6,7 +6,7 @@
 
 #include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 #if !defined(USE_AURA)
 // aura_constants.cc also declared the bool and int[32_t]

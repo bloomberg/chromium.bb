@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace gfx {
 class Rect;

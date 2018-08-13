@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 class CriticalNotificationBubbleView : public views::BubbleDialogDelegateView {
  public:

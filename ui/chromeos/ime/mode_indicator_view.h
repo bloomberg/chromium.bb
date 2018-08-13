@@ -10,7 +10,7 @@
 #include "base/timer/timer.h"
 #include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {

@@ -7,7 +7,7 @@
 
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace content {
 class WebContents;

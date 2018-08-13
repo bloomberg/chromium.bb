@@ -6,7 +6,7 @@
 #define ASH_SHELF_SHELF_TOOLTIP_BUBBLE_BASE_H_
 
 #include "ash/ash_export.h"
-#include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace views {
 class View;
