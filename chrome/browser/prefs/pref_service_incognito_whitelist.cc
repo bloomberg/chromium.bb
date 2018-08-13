@@ -23,7 +23,6 @@
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "components/rappor/rappor_pref_names.h"
-#include "components/rappor/rappor_prefs.h"
 #include "components/reading_list/core/reading_list_pref_names.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/startup_metric_utils/browser/pref_names.h"
@@ -136,6 +135,11 @@ const char* persistent_pref_names[] = {
     metrics::prefs::kUninstallMetricsPageLoadCount,
     metrics::prefs::kUninstallMetricsUptimeSec, metrics::prefs::kUkmCellDataUse,
     metrics::prefs::kUmaCellDataUse, metrics::prefs::kUserCellDataUse,
+
+    // Rappor preferences are not used in incognito mode, but they are written
+    // in startup if they don't exist. So if the startup would be in incognito,
+    // they need to be persisted.
+    rappor::prefs::kRapporCohortSeed, rappor::prefs::kRapporSecret,
 
     // Although UKMs are not collected in incognito, theses preferences may be
     // changed by UMA/Sync/Unity consent, and need to be the same between
@@ -799,14 +803,6 @@ const char* temporary_incognito_whitelist[] = {
     ProxyPrefs::kDirectProxyModeName, ProxyPrefs::kAutoDetectProxyModeName,
     ProxyPrefs::kPacScriptProxyModeName, ProxyPrefs::kFixedServersProxyModeName,
     ProxyPrefs::kSystemProxyModeName,
-
-    // components/rappor/rappor_pref_names.h
-    rappor::prefs::kRapporCohortDeprecated, rappor::prefs::kRapporCohortSeed,
-    rappor::prefs::kRapporLastDailySample, rappor::prefs::kRapporSecret,
-
-    // components/rappor/rappor_prefs.h
-    rappor::internal::kLoadCohortHistogramName,
-    rappor::internal::kLoadSecretHistogramName,
 
     // components/reading_list/core/reading_list_pref_names.h
     reading_list::prefs::kReadingListHasUnseenEntries,
