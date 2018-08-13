@@ -25,10 +25,10 @@ namespace ash {
 namespace {
 
 // Appearance.
-constexpr int kIconSizeDip = 20;
-constexpr int kLineHeightDip = 20;
+constexpr int kIconSizeDip = 24;
+constexpr int kLineHeightDip = 24;
 constexpr int kMaxWidthDip = 512;
-constexpr int kPaddingLeftDip = 14;
+constexpr int kPaddingLeftDip = 12;
 constexpr int kPaddingRightDip = 24;
 constexpr int kPreferredHeightDip = 48;
 
@@ -85,8 +85,9 @@ void AssistantMiniView::InitLayout() {
   // Label.
   label_->SetAutoColorReadabilityEnabled(false);
   label_->SetEnabledColor(kTextColorPrimary);
-  label_->SetFontList(
-      assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(1));
+  label_->SetFontList(assistant::ui::GetDefaultFontList()
+                          .DeriveWithSizeDelta(1)
+                          .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
   label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   label_->SetLineHeight(kLineHeightDip);
   AddChildView(label_);
