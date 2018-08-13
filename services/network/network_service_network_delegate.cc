@@ -52,4 +52,36 @@ bool NetworkServiceNetworkDelegate::OnCanAccessFile(
   return true;
 }
 
+bool NetworkServiceNetworkDelegate::OnCanQueueReportingReport(
+    const url::Origin& origin) const {
+  // TODO(crbug.com/845559): Disable all Reporting uploads until we can perform
+  // a BACKGROUND_SYNC permissions check across service boundaries.
+  return false;
+}
+
+void NetworkServiceNetworkDelegate::OnCanSendReportingReports(
+    std::set<url::Origin> origins,
+    base::OnceCallback<void(std::set<url::Origin>)> result_callback) const {
+  // TODO(crbug.com/845559): Disable all Reporting uploads until we can perform
+  // a BACKGROUND_SYNC permissions check across service boundaries.
+  origins.clear();
+  std::move(result_callback).Run(std::move(origins));
+}
+
+bool NetworkServiceNetworkDelegate::OnCanSetReportingClient(
+    const url::Origin& origin,
+    const GURL& endpoint) const {
+  // TODO(crbug.com/845559): Disable all Reporting uploads until we can perform
+  // a BACKGROUND_SYNC permissions check across service boundaries.
+  return false;
+}
+
+bool NetworkServiceNetworkDelegate::OnCanUseReportingClient(
+    const url::Origin& origin,
+    const GURL& endpoint) const {
+  // TODO(crbug.com/845559): Disable all Reporting uploads until we can perform
+  // a BACKGROUND_SYNC permissions check across service boundaries.
+  return false;
+}
+
 }  // namespace network
