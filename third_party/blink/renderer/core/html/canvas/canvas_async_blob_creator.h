@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/html/canvas/image_encode_options.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
@@ -56,7 +57,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   };
 
   static CanvasAsyncBlobCreator* Create(scoped_refptr<StaticBitmapImage>,
-                                        const String& mime_type,
+                                        const ImageEncodingMimeType mime_type,
                                         V8BlobCallback*,
                                         ToBlobFunctionType function_type,
                                         TimeTicks start_time,
@@ -94,7 +95,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
                          ExecutionContext*,
                          ScriptPromiseResolver*);
   static ImageEncodeOptions GetImageEncodeOptionsForMimeType(
-      ImageEncoder::MimeType);
+      ImageEncodingMimeType);
   // Methods are virtual for unit testing
   virtual void ScheduleInitiateEncoding(double quality);
   virtual void IdleEncodeRows(TimeTicks deadline);
@@ -124,7 +125,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   Member<ExecutionContext> context_;
 
   SkPixmap src_data_;
-  ImageEncoder::MimeType mime_type_;
+  ImageEncodingMimeType mime_type_;
   const ImageEncodeOptions encode_options_;
   ToBlobFunctionType function_type_;
   sk_sp<SkData> png_16bit_data_helper_;

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_ENCODERS_IMAGE_ENCODER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_ENCODERS_IMAGE_ENCODER_H_
 
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkStream.h"
@@ -47,14 +48,7 @@ class PLATFORM_EXPORT ImageEncoder {
                      const SkPixmap& src,
                      const SkWebpEncoder::Options&);
 
-  enum MimeType {
-    kMimeTypePng,
-    kMimeTypeJpeg,
-    kMimeTypeWebp,
-    kNumberOfMimeTypeSupported
-  };
-
-  static int MaxDimension(MimeType mime_type);
+  static int MaxDimension(ImageEncodingMimeType mime_type);
 
   static std::unique_ptr<ImageEncoder> Create(Vector<unsigned char>* dst,
                                               const SkPixmap& src,

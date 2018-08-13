@@ -1099,7 +1099,7 @@ String AXLayoutObject::ImageDataUrl(const IntSize& max_size) const {
   if (!buffer)
     return String();
 
-  return buffer->ToDataURL("image/png", 1.0);
+  return buffer->ToDataURL(kMimeTypePng, 1.0);
 }
 
 String AXLayoutObject::GetText() const {

@@ -66,7 +66,7 @@ std::unique_ptr<ImageEncoder> ImageEncoder::Create(
   return image_encoder;
 }
 
-int ImageEncoder::MaxDimension(MimeType mime_type) {
+int ImageEncoder::MaxDimension(ImageEncodingMimeType mime_type) {
   switch (mime_type) {
     case kMimeTypePng:
       return 65535;
