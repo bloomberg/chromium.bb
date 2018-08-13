@@ -60,6 +60,9 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   // is same as one shown when volume buttons on keyboard are pressed.
   void ShowVolumeSliderBubble();
 
+  // Shows main bubble with audio settings detailed view.
+  void ShowAudioDetailedViewBubble();
+
   // Return the bounds of the bubble in the screen.
   gfx::Rect GetBubbleBoundsInScreen() const;
 

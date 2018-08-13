@@ -60,6 +60,9 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
   // Ensure the bubble is expanded.
   void EnsureExpanded();
 
+  // Show audio settings detailed view.
+  void ShowAudioDetailedView();
+
   // Update bubble bounds and focus if necessary.
   void UpdateBubble();
 

@@ -120,13 +120,11 @@ class MoreButton : public views::Button {
 
 }  // namespace
 
-UnifiedVolumeView::UnifiedVolumeView(UnifiedVolumeSliderController* controller,
-                                     bool is_main_view)
+UnifiedVolumeView::UnifiedVolumeView(UnifiedVolumeSliderController* controller)
     : UnifiedSliderView(controller,
                         kSystemMenuVolumeHighIcon,
                         IDS_ASH_STATUS_TRAY_VOLUME),
-      more_button_(new MoreButton(controller)),
-      is_main_view_(is_main_view) {
+      more_button_(new MoreButton(controller)) {
   DCHECK(CrasAudioHandler::IsInitialized());
   CrasAudioHandler::Get()->AddAudioObserver(this);
   AddChildView(more_button_);
@@ -148,9 +146,8 @@ void UnifiedVolumeView::Update(bool by_user) {
   button()->SetToggled(!is_muted);
   button()->SetVectorIcon(GetVolumeIconForLevel(is_muted ? 0.f : level));
 
-  more_button_->SetVisible(is_main_view_ &&
-                           (CrasAudioHandler::Get()->has_alternative_input() ||
-                            CrasAudioHandler::Get()->has_alternative_output()));
+  more_button_->SetVisible(CrasAudioHandler::Get()->has_alternative_input() ||
+                           CrasAudioHandler::Get()->has_alternative_output());
 
   // Slider's value is in finer granularity than audio volume level(0.01),
   // there will be a small discrepancy between slider's value and volume level
