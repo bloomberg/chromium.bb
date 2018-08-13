@@ -72,10 +72,10 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   ~WebRtcEventLogManager() override;
 
   void EnableForBrowserContext(content::BrowserContext* browser_context,
-                               base::OnceClosure reply) override;
+                               base::OnceClosure reply);
 
   void DisableForBrowserContext(content::BrowserContext* browser_context,
-                                base::OnceClosure reply) override;
+                                base::OnceClosure reply);
 
   void PeerConnectionAdded(int render_process_id,
                            int lid,  // Renderer-local PeerConnection ID.
@@ -153,8 +153,9 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
                              base::OnceClosure reply);
 
  private:
-  friend class SigninManagerAndroidTest;       // Calls *ForTesting() methods.
-  friend class WebRtcEventLogManagerTestBase;  // Calls *ForTesting() methods.
+  friend class SigninManagerAndroidTest;
+  friend class WebRtcEventLogManagerTestBase;
+  friend class WebRTCInternalsIntegrationBrowserTest;
 
   using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;
 
@@ -301,7 +302,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   // TODO(crbug.com/775415): Remove this and use PostNullTaskForTesting instead.
   scoped_refptr<base::SequencedTaskRunner>& GetTaskRunnerForTesting();
 
-  void PostNullTaskForTesting(base::OnceClosure reply) override;
+  void PostNullTaskForTesting(base::OnceClosure reply);
 
   // Documented in WebRtcRemoteEventLogManager.
   void ShutDownForTesting(base::OnceClosure reply);

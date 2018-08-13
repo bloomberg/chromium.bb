@@ -6,17 +6,17 @@
 
 #include "base/callback_forward.h"
 #include "base/logging.h"
+#include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/webrtc_event_logger.h"
 
 WebRtcEventLogManagerKeyedService::WebRtcEventLogManagerKeyedService(
     content::BrowserContext* browser_context)
     : browser_context_(browser_context) {
   DCHECK(!browser_context_->IsOffTheRecord());
 
-  content::WebRtcEventLogger* logger = content::WebRtcEventLogger::Get();
-  if (logger) {
-    logger->EnableForBrowserContext(browser_context_, base::OnceClosure());
+  WebRtcEventLogManager* manager = WebRtcEventLogManager::GetInstance();
+  if (manager) {
+    manager->EnableForBrowserContext(browser_context_, base::OnceClosure());
     reported_ = true;
   } else {
     reported_ = false;
@@ -24,9 +24,9 @@ WebRtcEventLogManagerKeyedService::WebRtcEventLogManagerKeyedService(
 }
 
 void WebRtcEventLogManagerKeyedService::Shutdown() {
-  content::WebRtcEventLogger* logger = content::WebRtcEventLogger::Get();
-  if (logger) {
-    DCHECK(reported_) << "content::WebRtcEventLogger constructed too late.";
-    logger->DisableForBrowserContext(browser_context_, base::OnceClosure());
+  WebRtcEventLogManager* manager = WebRtcEventLogManager::GetInstance();
+  if (manager) {
+    DCHECK(reported_) << "WebRtcEventLogManager constructed too late.";
+    manager->DisableForBrowserContext(browser_context_, base::OnceClosure());
   }
 }

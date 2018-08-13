@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -29,7 +30,6 @@
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/webrtc_event_logger.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension_builder.h"
 #include "third_party/zlib/google/compression_utils.h"
@@ -349,7 +349,7 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
   }
 
   void SetUpPeerConnection(const std::string& peer_connection_id) {
-    auto* manager = content::WebRtcEventLogger::Get();
+    auto* manager = WebRtcEventLogManager::GetInstance();
     auto* rph = web_contents()->GetRenderViewHost()->GetProcess();
 
     const int render_process_id = rph->GetID();

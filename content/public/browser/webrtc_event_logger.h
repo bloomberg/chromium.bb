@@ -11,11 +11,7 @@
 #include "base/files/file_path.h"
 #include "content/common/content_export.h"
 
-class WebRTCInternalsIntegrationBrowserTest;
-
 namespace content {
-
-class BrowserContext;
 
 // Interface for a logger of WebRTC events, which the embedding application may
 // subclass and instantiate. Only one instance may ever be created, and it must
@@ -32,30 +28,6 @@ class CONTENT_EXPORT WebRtcEventLogger {
   // posted earlier with a reference to the WebRtcEventLogger object, will
   // not execute.
   virtual ~WebRtcEventLogger();
-
-  // TODO(eladalon): Change from using BrowserContext to using Profile.
-  // https://crbug.com/775415
-
-  // Enables WebRTC event logging for a given BrowserContext:
-  // * Pending logs from previous sessions become eligible to be uploaded.
-  // * New logs for active peer connections *may* be recorded. (This does *not*
-  //   start logging; it just makes it possible.)
-  // This function would typically be called during a BrowserContext's
-  // initialization.
-  // This function must not be called for an off-the-records BrowserContext.
-  // Local-logging is not associated with BrowserContexts, and is allowed even
-  // if EnableForBrowserContext is not called. That is, even for incognito mode.
-  virtual void EnableForBrowserContext(BrowserContext* browser_context,
-                                       base::OnceClosure reply) = 0;
-
-  // Disables WebRTC event logging for a given BrowserContext. New remote-bound
-  // WebRTC event logs will no longer be created for this BrowserContext.
-  // This would typically be called when a BrowserContext is destroyed. One must
-  // therefore be careful note to call any of BrowserContext's virtual methods.
-  // TODO(eladalon): After changing to a Profile-centered interface, change this
-  // to not even receive a pointer. https://crbug.com/775415
-  virtual void DisableForBrowserContext(BrowserContext* browser_context,
-                                        base::OnceClosure reply) = 0;
 
   // Call this to let the logger know when a PeerConnection was created.
   // |peer_connection_id| should be a non-empty, relatively short (i.e.
@@ -127,15 +99,7 @@ class CONTENT_EXPORT WebRtcEventLogger {
       base::OnceCallback<void(std::pair<bool, bool>)> reply) = 0;
 
  protected:
-  friend WebRTCInternalsIntegrationBrowserTest;  // (PostNullTaskForTesting)
-
   WebRtcEventLogger();
-
-  // Allows tests to synchronize with internal task queues (if such exist in
-  // the subclass). This allows tests to only examine products (such as log
-  // files) at a time when, if the program is behaving as expected, they would
-  // be guaranteed to be ready.
-  virtual void PostNullTaskForTesting(base::OnceClosure reply) = 0;
 };
 
 }  // namespace content
