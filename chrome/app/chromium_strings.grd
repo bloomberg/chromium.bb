@@ -412,7 +412,7 @@ Chromium is unable to recover your settings.
 
       <!-- Print Preview -->
       <message name="IDS_PRINT_PREVIEW_NO_PLUGIN" desc="Message to display when the PDF viewer is missing.">
-        Chromium does not include the PDF viewer which is required for Print Preview to function.
+        Chromium cannot show the print preview when the built-in PDF viewer is missing.
       </message>
 
       <!-- Download Shelf Items -->

@@ -117,8 +117,8 @@ cr.define('invalid_settings_browsertest', function() {
         assertFalse(overlayEl.classList.contains('invisible'));
 
         // Make sure the correct text is shown.
-        const expectedMessageChromium = 'Chromium does not include the PDF ' +
-            'viewer which is required for Print Preview to function.';
+        const expectedMessageChromium = 'Chromium cannot show the print ' +
+            'preview when the built-in PDF viewer is missing.';
         const expectedMessageChrome = 'Google Chrome cannot show the print ' +
             'preview when the built-in PDF viewer is missing.';
         assertTrue(
