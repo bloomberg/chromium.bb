@@ -198,6 +198,7 @@ bindings_unittest_files =
           "core/v8/script_promise_test.cc",
           "core/v8/script_streamer_test.cc",
           "core/v8/script_wrappable_marking_visitor_test.cc",
+          "core/v8/script_wrappable_v8_gc_integration_test.cc",
           "core/v8/script_wrappable_visitor_test.cc",
           "core/v8/to_v8_test.cc",
           "core/v8/trace_wrapper_member_test.cc",
