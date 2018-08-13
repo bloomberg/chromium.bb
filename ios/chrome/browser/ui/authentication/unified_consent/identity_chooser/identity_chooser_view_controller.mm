@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_item.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_transition_delegate.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_view_controller_presentation_delegate.h"
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
 
@@ -28,7 +29,7 @@ const CGFloat kFooterHeight = 17.;
 @interface IdentityChooserViewController ()
 
 @property(nonatomic, strong)
-    MDCDialogTransitionController* transitionController;
+    IdentityChooserTransitionDelegate* transitionController;
 
 @end
 
@@ -42,7 +43,7 @@ const CGFloat kFooterHeight = 17.;
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     self.modalPresentationStyle = UIModalPresentationCustom;
-    _transitionController = [[MDCDialogTransitionController alloc] init];
+    _transitionController = [[IdentityChooserTransitionDelegate alloc] init];
     self.transitioningDelegate = _transitionController;
     self.modalPresentationStyle = UIModalPresentationCustom;
   }
