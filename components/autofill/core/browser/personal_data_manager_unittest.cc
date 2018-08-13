@@ -2190,6 +2190,102 @@ TEST_F(PersonalDataManagerTest, IsKnownCard_LastFourDoesNotMatch) {
   ASSERT_FALSE(personal_data_->IsKnownCard(cardToCompare));
 }
 
+TEST_F(PersonalDataManagerTest, IsServerCard_DuplicateOfFullServerCard) {
+  // Add a full server card.
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "b459"));
+  test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton",
+                          "4234567890122110" /* Visa */, "12", "2999", "1");
+
+  SetServerCards(server_cards);
+
+  // Add a dupe local card of a full server card.
+  CreditCard local_card("287151C8-6AB1-487C-9095-28E80BE5DA15",
+                        test::kEmptyOrigin);
+  test::SetCreditCardInfo(&local_card, "Emmet Dalton",
+                          "4234 5678 9012 2110" /* Visa */, "12", "2999", "1");
+  personal_data_->AddCreditCard(local_card);
+
+  // Make sure everything is set up correctly.
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+  EXPECT_EQ(2U, personal_data_->GetCreditCards().size());
+
+  CreditCard cardToCompare;
+  cardToCompare.SetNumber(base::ASCIIToUTF16("4234 5678 9012 2110") /* Visa */);
+  ASSERT_TRUE(personal_data_->IsServerCard(&cardToCompare));
+  ASSERT_TRUE(personal_data_->IsServerCard(&local_card));
+}
+
+TEST_F(PersonalDataManagerTest, IsServerCard_DuplicateOfMaskedServerCard) {
+  // Add a masked server card.
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b459"));
+  test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton",
+                          "2110" /* last 4 digits */, "12", "2999", "1");
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
+
+  SetServerCards(server_cards);
+
+  // Add a dupe local card of a full server card.
+  CreditCard local_card("287151C8-6AB1-487C-9095-28E80BE5DA15",
+                        test::kEmptyOrigin);
+  test::SetCreditCardInfo(&local_card, "Emmet Dalton",
+                          "4234 5678 9012 2110" /* Visa */, "12", "2999", "1");
+  personal_data_->AddCreditCard(local_card);
+
+  // Make sure everything is set up correctly.
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+  EXPECT_EQ(2U, personal_data_->GetCreditCards().size());
+
+  CreditCard cardToCompare;
+  cardToCompare.SetNumber(base::ASCIIToUTF16("4234 5678 9012 2110") /* Visa */);
+  ASSERT_TRUE(personal_data_->IsServerCard(&cardToCompare));
+  ASSERT_TRUE(personal_data_->IsServerCard(&local_card));
+}
+
+TEST_F(PersonalDataManagerTest, IsServerCard_AlreadyServerCard) {
+  std::vector<CreditCard> server_cards;
+  // Create a full server card.
+  CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "c789");
+  test::SetCreditCardInfo(&full_server_card, "Homer Simpson",
+                          "4234567890123456" /* Visa */, "01", "2999", "1");
+  server_cards.push_back(full_server_card);
+  // Create a masked server card.
+  CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  test::SetCreditCardInfo(&masked_card, "Homer Simpson", "2110" /* Visa */,
+                          "01", "2999", "1");
+  masked_card.SetNetworkForMaskedCard(kVisaCard);
+  server_cards.push_back(masked_card);
+
+  SetServerCards(server_cards);
+
+  // Make sure everything is set up correctly.
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+  EXPECT_EQ(2U, personal_data_->GetCreditCards().size());
+
+  ASSERT_TRUE(personal_data_->IsServerCard(&full_server_card));
+  ASSERT_TRUE(personal_data_->IsServerCard(&masked_card));
+}
+
+TEST_F(PersonalDataManagerTest, IsServerCard_UniqueLocalCard) {
+  // Add a unique local card.
+  CreditCard local_card("1141084B-72D7-4B73-90CF-3D6AC154673B",
+                        test::kEmptyOrigin);
+  test::SetCreditCardInfo(&local_card, "Homer Simpson",
+                          "4234567890123456" /* Visa */, "01", "2999", "1");
+  personal_data_->AddCreditCard(local_card);
+
+  // Make sure everything is set up correctly.
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+  EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
+
+  ASSERT_FALSE(personal_data_->IsServerCard(&local_card));
+}
+
 // Test that a masked server card is not suggested if more that six numbers have
 // been typed in the field.
 TEST_F(PersonalDataManagerTest,

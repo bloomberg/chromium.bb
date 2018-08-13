@@ -53,20 +53,8 @@ bool LocalCardMigrationManager::ShouldOfferLocalCardMigration(
   if (!IsCreditCardMigrationEnabled())
     return false;
 
-  std::vector<CreditCard*> local_credit_cards =
-      personal_data_manager_->GetLocalCreditCards();
-
-  // Empty previous state.
-  migratable_credit_cards_.clear();
-
-  // Initialize the local credit card list and queue for showing and uploading.
-  for (CreditCard* credit_card : local_credit_cards) {
-    // If the card is valid (has a valid card number, expiration date, and is
-    // not expired) and is not a server card, add it to the list of migratable
-    // cards.
-    if (credit_card->IsValid() && !IsServerCard(credit_card))
-      migratable_credit_cards_.push_back(MigratableCreditCard(*credit_card));
-  }
+  // Fetch all migratable credit cards and store in |migratable_credit_cards_|.
+  GetMigratableCreditCards();
 
   // If the form was submitted with a local card, only offer migration instead
   // of Upstream if there are other local cards to migrate as well. If the form
@@ -174,15 +162,23 @@ int LocalCardMigrationManager::GetDetectedValues() const {
   return detected_values;
 }
 
-bool LocalCardMigrationManager::IsServerCard(CreditCard* local_card) const {
-  std::vector<CreditCard*> server_credit_cards =
-      personal_data_manager_->GetServerCreditCards();
-  // Check whether the current card is already uploaded.
-  for (const CreditCard* server_card : server_credit_cards) {
-    if (local_card->HasSameNumberAs(*server_card))
-      return true;
+void LocalCardMigrationManager::GetMigratableCreditCards() {
+  std::vector<CreditCard*> local_credit_cards =
+      personal_data_manager_->GetLocalCreditCards();
+
+  // Empty previous state.
+  migratable_credit_cards_.clear();
+
+  // Initialize the local credit card list and queue for showing and uploading.
+  for (CreditCard* credit_card : local_credit_cards) {
+    // If the card is valid (has a valid card number, expiration date, and is
+    // not expired) and is not a server card, add it to the list of migratable
+    // cards.
+    if (credit_card->IsValid() &&
+        !personal_data_manager_->IsServerCard(credit_card)) {
+      migratable_credit_cards_.push_back(MigratableCreditCard(*credit_card));
+    }
   }
-  return false;
 }
 
 }  // namespace autofill
