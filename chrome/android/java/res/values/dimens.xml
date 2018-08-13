@@ -587,6 +587,9 @@
     <dimen name="download_manager_section_title_padding_top_condensed">0dp</dimen>
     <dimen name="download_manager_section_title_padding_bottom">0dp</dimen>
     <dimen name="download_manager_section_title_padding_image">8dp</dimen>
+    <!-- The corner radius is calculated by subtracting the hairline border width from the
+         background card corner radius. -->
+    <dimen name="download_manager_prefetch_thumbnail_corner_radius">7dp</dimen>
 
     <!-- Navigation history popup dimensions -->
     <dimen name="navigation_popup_width">312dp</dimen>
