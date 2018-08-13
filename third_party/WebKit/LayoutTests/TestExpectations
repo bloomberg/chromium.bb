@@ -2759,7 +2759,7 @@ crbug.com/626703 external/wpt/css/css-text/white-space/break-spaces-003.html [ F
 crbug.com/626703 external/wpt/css/css-text/white-space/textarea-break-spaces-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/textarea-break-spaces-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-column-row-gap-003.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/svg/shapes/reftests/pathlength-002.svg [ Failure ]
+crbug.com/863355 [ Mac ] external/wpt/svg/shapes/reftests/pathlength-002.svg [ Failure ]
 crbug.com/366559 external/wpt/svg/shapes/reftests/pathlength-003.svg [ Failure ]
 crbug.com/366559 external/wpt/svg/text/reftests/textpath-side-001.svg [ Failure ]
 crbug.com/366559 external/wpt/svg/text/reftests/textpath-shape-001.svg [ Failure ]
