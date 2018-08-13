@@ -6,20 +6,14 @@
 #define CHROMECAST_GRAPHICS_GESTURES_SIDE_SWIPE_DETECTOR_H_
 
 #include "base/timer/elapsed_timer.h"
-#include "base/timer/timer.h"
 #include "chromecast/graphics/cast_gesture_handler.h"
 #include "ui/events/event_rewriter.h"
-#include "ui/events/gesture_detection/gesture_detector.h"
 
 namespace aura {
 class Window;
 }  // namespace aura
 
 namespace chromecast {
-
-namespace test {
-class SideSwipeDetectorTest;
-}  // namespace test
 
 // An event rewriter for detecting system-wide gestures performed on the margins
 // of the root window.
@@ -34,10 +28,8 @@ class SideSwipeDetector : public ui::EventRewriter {
 
   ~SideSwipeDetector() override;
 
-  bool GetMarginPosition(const gfx::Point& point,
-                         const gfx::Rect& screen_bounds,
-                         CastSideSwipeOrigin* side,
-                         CastGestureHandler::Corner* corner) const;
+  CastSideSwipeOrigin GetDragPosition(const gfx::Point& point,
+                                      const gfx::Rect& screen_bounds) const;
 
   // Overridden from ui::EventRewriter
   ui::EventRewriteStatus RewriteEvent(
@@ -48,16 +40,7 @@ class SideSwipeDetector : public ui::EventRewriter {
       std::unique_ptr<ui::Event>* new_event) override;
 
  private:
-  friend class test::SideSwipeDetectorTest;
-  void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> mock_timer);
-
   void StashEvent(const ui::TouchEvent& event);
-  void OnCornerHoldTimerFired();
-  void EndCornerHold(const ui::TouchEvent& event);
-  void CancelCornerHoldCheck();
-
-  ui::EventRewriteStatus StartNextDispatchStashedEvents(
-      std::unique_ptr<ui::Event>* new_event);
 
   const int gesture_start_width_;
   const int gesture_start_height_;
@@ -65,18 +48,10 @@ class SideSwipeDetector : public ui::EventRewriter {
 
   CastGestureHandler* gesture_handler_;
   aura::Window* root_window_;
-  CastSideSwipeOrigin current_swipe_origin_;
-  int current_pointer_id_;
-  base::ElapsedTimer gesture_elapsed_timer_;
-  std::deque<ui::TouchEvent> stashed_events_;
+  CastSideSwipeOrigin current_swipe_;
+  base::ElapsedTimer current_swipe_time_;
 
-  // A default gesture detector config, so we can share the same
-  // longpress timeout for corner hold.
-  ui::GestureDetector::Config gesture_detector_config_;
-  std::unique_ptr<base::OneShotTimer> corner_hold_timer_;
-  std::unique_ptr<ui::Event> corner_hold_start_event_;
-  bool in_corner_hold_;
-  CastGestureHandler::Corner current_corner_origin_;
+  std::deque<ui::TouchEvent> stashed_events_;
 
   DISALLOW_COPY_AND_ASSIGN(SideSwipeDetector);
 };
