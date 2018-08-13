@@ -161,6 +161,8 @@ CString CacheStorageErrorString(mojom::blink::CacheStorageError error) {
       return CString("operation too large.");
     case mojom::blink::CacheStorageError::kErrorStorage:
       return CString("storage failure.");
+    case mojom::blink::CacheStorageError::kErrorDuplicateOperation:
+      return CString("duplicate operation.");
     case mojom::blink::CacheStorageError::kSuccess:
       // This function should only be called upon error.
       break;
