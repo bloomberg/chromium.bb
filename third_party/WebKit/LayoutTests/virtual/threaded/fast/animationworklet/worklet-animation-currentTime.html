@@ -1,4 +1,11 @@
 <!DOCTYPE html>
+<style>
+#target {
+  width: 100px;
+  height: 100px;
+  background-color: green;
+}
+</style>
 
 <script id="simple_animate" type="text/worklet">
 registerAnimator("test_animator", class {
@@ -13,7 +20,7 @@ registerAnimator("test_animator", class {
   }
 });
 </script>
-<div id="target"></div>
+<div id="target" style="will-change: transform, opacity;"></div>
 <script src="resources/animation-worklet-tests.js"></script>
 <script>
 if (window.testRunner) {
