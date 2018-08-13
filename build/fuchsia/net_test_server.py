@@ -22,16 +22,42 @@ PORT_MAP_RE = re.compile('Allocated port (?P<port>\d+) for remote')
 GET_PORT_NUM_TIMEOUT_SECS = 5
 
 
-def _ConnectPortForwardingTask(target, local_port):
+class ForwardingScheme:
+  def __init__(self, local_port, remote_port, is_reversed):
+    """A simple POD class that represents a single SSH tunnel connection to be
+    created.
+
+    Args:
+      local_port (int): The device on the local machine where SSH is running
+          to allocate as an endpoint for the SSH tunnel.
+      remote_port (int): The port on the remote device to be allocated for the
+          SSH tunnel.
+      is_reversed (bool): Whether or not this should create a reverse SSH
+          tunnel.
+    """
+
+    self.local = local_port
+    self.remote = remote_port
+    self.reverse = is_reversed
+
+
+def _ConnectPortForwardingTask(target, scheme):
   """Establishes a port forwarding SSH task to a localhost TCP endpoint hosted
   at port |local_port|. Blocks until port forwarding is established.
 
   Returns the remote port number."""
 
-  forwarding_flags = ['-O', 'forward',  # Send SSH mux control signal.
-                      '-R', '0:localhost:%d' % local_port,
+  forwarding_schema = '%d:localhost:%d' % (scheme.remote, scheme.local)
+  if scheme.reverse:
+    port_forwarding_clause = ['-R', forwarding_schema]
+  else:
+    port_forwarding_clause = ['-L', forwarding_schema]
+
+  forwarding_flags = ['-O', 'forward', # Send SSH mux control signal.
                       '-v',   # Get forwarded port info from stderr.
                       '-NT']  # Don't execute command; don't allocate terminal.
+  forwarding_flags.extend(port_forwarding_clause)
+
   task = target.RunCommandPiped([],
                                 ssh_args=forwarding_flags,
                                 stderr=subprocess.PIPE)
@@ -58,7 +84,7 @@ def _ConnectPortForwardingTask(target, local_port):
         if matched:
           device_port = int(matched.group('port'))
           logging.debug('Port forwarding established (local=%d, device=%d)' %
-                        (local_port, device_port))
+                        (scheme.local, scheme.remote))
           task.wait()
           return device_port
         line = ''
@@ -75,11 +101,10 @@ class SSHPortForwarder(chrome_test_server_spawner.PortForwarder):
     # Maps the host (server) port to the device port number.
     self._port_mapping = {}
 
-  def Map(self, port_pairs):
-    for p in port_pairs:
-      _, host_port = p
-      self._port_mapping[host_port] = \
-          _ConnectPortForwardingTask(self._target, host_port)
+  def Map(self, scheme_list):
+    for scheme in scheme_list:
+      self._port_mapping[scheme.local] = \
+          _ConnectPortForwardingTask(self._target, scheme)
 
   def GetDevicePortForHostPort(self, host_port):
     return self._port_mapping[host_port]
