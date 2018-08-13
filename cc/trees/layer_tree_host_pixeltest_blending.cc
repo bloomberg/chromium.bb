@@ -374,16 +374,7 @@ TEST_F(LayerTreeHostBlendingPixelTest,
       SOFTWARE, FILE_PATH_LITERAL("blending_render_pass_mask.png"), kUseMasks);
 }
 
-// Fails on Linux CFI, see https://crbug.com/872733.
-#if defined(OS_LINUX)
-#define MAYBE_BlendingWithRenderPassWithMaskAA_GL \
-  DISABLED_BlendingWithRenderPassWithMaskAA_GL
-#else
-#define MAYBE_BlendingWithRenderPassWithMaskAA_GL \
-  BlendingWithRenderPassWithMaskAA_GL
-#endif
-TEST_F(LayerTreeHostBlendingPixelTest,
-       MAYBE_BlendingWithRenderPassWithMaskAA_GL) {
+TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassWithMaskAA_GL) {
   RunBlendingWithRenderPass(ZERO_COPY,
                             FILE_PATH_LITERAL("blending_render_pass_mask.png"),
                             kUseMasks | kUseAntialiasing);
@@ -408,16 +399,7 @@ TEST_F(LayerTreeHostBlendingPixelTest,
       SOFTWARE, FILE_PATH_LITERAL("blending_render_pass.png"), kUseColorMatrix);
 }
 
-// Fails on Linux CFI, see https://crbug.com/872733.
-#if defined(OS_LINUX)
-#define MAYBE_BlendingWithRenderPassColorMatrixAA_GL \
-  DISABLED_BlendingWithRenderPassColorMatrixAA_GL
-#else
-#define MAYBE_BlendingWithRenderPassColorMatrixAA_GL \
-  BlendingWithRenderPassColorMatrixAA_GL
-#endif
-TEST_F(LayerTreeHostBlendingPixelTest,
-       MAYBE_BlendingWithRenderPassColorMatrixAA_GL) {
+TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassColorMatrixAA_GL) {
   RunBlendingWithRenderPass(ZERO_COPY,
                             FILE_PATH_LITERAL("blending_render_pass.png"),
                             kUseAntialiasing | kUseColorMatrix);
@@ -445,8 +427,7 @@ TEST_F(LayerTreeHostBlendingPixelTest,
 }
 
 // Often times out on Windows 10. See: https://crbug.com/870236.
-// Fails on Linux CFI, see https://crbug.com/872733.
-#if (defined(OS_WIN) || defined(OS_LINUX))
+#if defined(OS_WIN)
 #define MAYBE_BlendingWithRenderPassWithMaskColorMatrixAA_GL \
   DISABLED_BlendingWithRenderPassWithMaskColorMatrixAA_GL
 #else
@@ -493,16 +474,8 @@ TEST_F(LayerTreeHostBlendingPixelTest,
                             kUseMasks | kForceShaders);
 }
 
-// Fails on Linux CFI, see https://crbug.com/872733.
-#if defined(OS_LINUX)
-#define MAYBE_BlendingWithRenderPassShadersWithMaskAA_GL \
-  DISABLED_BlendingWithRenderPassShadersWithMaskAA_GL
-#else
-#define MAYBE_BlendingWithRenderPassShadersWithMaskAA_GL \
-  BlendingWithRenderPassShadersWithMaskAA_GL
-#endif
 TEST_F(LayerTreeHostBlendingPixelTest,
-       MAYBE_BlendingWithRenderPassShadersWithMaskAA_GL) {
+       BlendingWithRenderPassShadersWithMaskAA_GL) {
   RunBlendingWithRenderPass(ZERO_COPY,
                             FILE_PATH_LITERAL("blending_render_pass_mask.png"),
                             kUseMasks | kUseAntialiasing | kForceShaders);
@@ -522,54 +495,29 @@ TEST_F(LayerTreeHostBlendingPixelTest,
                             kUseColorMatrix | kForceShaders);
 }
 
-// Fails on Linux CFI, see https://crbug.com/872733.
-#if defined(OS_LINUX)
-#define MAYBE_BlendingWithRenderPassShadersColorMatrixAA_GL \
-  DISABLED_BlendingWithRenderPassShadersColorMatrixAA_GL
-#else
-#define MAYBE_BlendingWithRenderPassShadersColorMatrixAA_GL \
-  BlendingWithRenderPassShadersColorMatrixAA_GL
-#endif
 TEST_F(LayerTreeHostBlendingPixelTest,
-       MAYBE_BlendingWithRenderPassShadersColorMatrixAA_GL) {
+       BlendingWithRenderPassShadersColorMatrixAA_GL) {
   RunBlendingWithRenderPass(ZERO_COPY,
                             FILE_PATH_LITERAL("blending_render_pass.png"),
                             kUseAntialiasing | kUseColorMatrix | kForceShaders);
 }
 
-// Fails on Linux CFI, see https://crbug.com/872733.
-#if defined(OS_LINUX)
-#define MAYBE_BlendingWithRenderPassShadersWithMaskColorMatrix_GL \
-  DISABLED_BlendingWithRenderPassShadersWithMaskColorMatrix_GL
-#else
-#define MAYBE_BlendingWithRenderPassShadersWithMaskColorMatrix_GL \
-  BlendingWithRenderPassShadersWithMaskColorMatrix_GL
-#endif
 TEST_F(LayerTreeHostBlendingPixelTest,
-       MAYBE_BlendingWithRenderPassShadersWithMaskColorMatrix_GL) {
+       BlendingWithRenderPassShadersWithMaskColorMatrix_GL) {
   RunBlendingWithRenderPass(ZERO_COPY,
                             FILE_PATH_LITERAL("blending_render_pass_mask.png"),
                             kUseMasks | kUseColorMatrix | kForceShaders);
 }
 
-// Fails on Linux CFI, see https://crbug.com/872733.
-#if defined(OS_LINUX)
-#define MAYBE_BlendingWithRenderPassShadersWithMaskColorMatrix_GL_TextureRect \
-  DISABLED_BlendingWithRenderPassShadersWithMaskColorMatrix_GL_TextureRect
-#else
-#define MAYBE_BlendingWithRenderPassShadersWithMaskColorMatrix_GL_TextureRect \
-  BlendingWithRenderPassShadersWithMaskColorMatrix_GL_TextureRect
-#endif
 TEST_F(LayerTreeHostBlendingPixelTest,
-       MAYBE_BlendingWithRenderPassShadersWithMaskColorMatrix_GL_TextureRect) {
+       BlendingWithRenderPassShadersWithMaskColorMatrix_GL_TextureRect) {
   RunBlendingWithRenderPass(ZERO_COPY,
                             FILE_PATH_LITERAL("blending_render_pass_mask.png"),
                             kUseMasks | kUseColorMatrix | kForceShaders);
 }
 
 // Often times out on Windows 10. See: https://crbug.com/870236.
-// Fails on Linux CFI, see https://crbug.com/872733.
-#if (defined(OS_WIN) || defined(OS_LINUX))
+#if defined(OS_WIN)
 #define MAYBE_BlendingWithRenderPassShadersWithMaskColorMatrixAA_GL \
   DISABLED_BlendingWithRenderPassShadersWithMaskColorMatrixAA_GL
 #else
