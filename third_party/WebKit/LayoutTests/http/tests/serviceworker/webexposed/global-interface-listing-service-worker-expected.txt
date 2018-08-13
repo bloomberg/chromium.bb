@@ -36,6 +36,11 @@ interface BackgroundFetchManager
     method fetch
     method get
     method getIds
+interface BackgroundFetchRecord
+    attribute @@toStringTag
+    getter request
+    getter responseReady
+    method constructor
 interface BackgroundFetchRegistration : EventTarget
     attribute @@toStringTag
     getter downloadTotal
