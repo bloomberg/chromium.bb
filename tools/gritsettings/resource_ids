@@ -309,6 +309,10 @@
     "messages": [24400],
   },
 
+  "device/fido/fido_strings.grd": {
+    "messages": [24440],
+  },
+
   "extensions/browser/resources/extensions_browser_resources.grd": {
     "structures": [24450],
   },

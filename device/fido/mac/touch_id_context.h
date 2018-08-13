@@ -14,6 +14,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
 
 namespace device {
 namespace fido {
@@ -49,7 +50,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO)
   // string to the user. On completion or error, the provided callback is
   // invoked, unless the TouchIdContext instance has been destroyed in the
   // meantime (in which case nothing happens).
-  virtual void PromptTouchId(std::string reason, Callback callback);
+  virtual void PromptTouchId(const base::string16& reason, Callback callback);
 
   // authentication_context returns the LAContext used for the Touch ID prompt.
   LAContext* authentication_context() const { return context_; }

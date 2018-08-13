@@ -13,11 +13,14 @@
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/mac/keychain.h"
 #include "device/fido/mac/util.h"
 #include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_user_entity.h"
+#include "device/fido/strings/grit/fido_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace device {
 namespace fido {
@@ -73,9 +76,9 @@ void GetAssertionOperation::Run() {
     return;
   }
 
-  // Prompt the user for consent.
-  // TODO(martinkr): Localize reason strings.
-  PromptTouchId("sign in to " + RpId());
+  // Display the macOS Touch ID prompt.
+  PromptTouchId(l10n_util::GetStringFUTF16(IDS_WEBAUTHN_TOUCH_ID_PROMPT_REASON,
+                                           base::UTF8ToUTF16(RpId())));
 }
 
 void GetAssertionOperation::PromptTouchIdDone(bool success) {

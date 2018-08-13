@@ -77,7 +77,8 @@ TouchIdContext::~TouchIdContext() {
   [context_ invalidate];
 }
 
-void TouchIdContext::PromptTouchId(std::string reason, Callback callback) {
+void TouchIdContext::PromptTouchId(const base::string16& reason,
+                                   Callback callback) {
   callback_ = std::move(callback);
   scoped_refptr<base::SequencedTaskRunner> runner =
       base::SequencedTaskRunnerHandle::Get();
@@ -88,7 +89,7 @@ void TouchIdContext::PromptTouchId(std::string reason, Callback callback) {
   // the sign bit there.
   [context_ evaluateAccessControl:access_control_
                         operation:LAAccessControlOperationUseKeySign
-                  localizedReason:base::SysUTF8ToNSString(reason)
+                  localizedReason:base::SysUTF16ToNSString(reason)
                             reply:^(BOOL success, NSError* error) {
                               // The reply block is invoked in a separate
                               // thread. We want to invoke the callback in the
