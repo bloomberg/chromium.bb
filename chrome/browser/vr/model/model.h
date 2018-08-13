@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/model/capturing_state_model.h"
 #include "chrome/browser/vr/model/color_scheme.h"
 #include "chrome/browser/vr/model/controller_model.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/model/ui_mode.h"
 #include "chrome/browser/vr/model/web_vr_model.h"
-#include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/vr_ui_export.h"
 #include "ui/gfx/transform.h"
 
@@ -46,10 +46,8 @@ struct VR_UI_EXPORT Model {
   unsigned int content_texture_id = 0;
   unsigned int content_overlay_texture_id = 0;
   bool content_overlay_texture_non_empty = false;
-  UiElementRenderer::TextureLocation content_location =
-      UiElementRenderer::kTextureLocationLocal;
-  UiElementRenderer::TextureLocation content_overlay_location =
-      UiElementRenderer::kTextureLocationLocal;
+  GlTextureLocation content_location = kGlTextureLocationLocal;
+  GlTextureLocation content_overlay_location = kGlTextureLocationLocal;
   bool waiting_for_background = false;
   bool background_loaded = false;
   bool supports_selection = true;

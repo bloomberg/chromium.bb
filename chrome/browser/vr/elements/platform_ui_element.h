@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/ui_element.h"
-#include "chrome/browser/vr/ui_element_renderer.h"
+#include "chrome/browser/vr/gl_texture_location.h"
 
 namespace vr {
 
@@ -46,22 +46,19 @@ class PlatformUiElement : public UiElement {
               const CameraModel& model) const override;
 
   void SetTextureId(unsigned int texture_id);
-  void SetTextureLocation(UiElementRenderer::TextureLocation location);
+  void SetTextureLocation(GlTextureLocation location);
 
   void SetDelegate(PlatformUiInputDelegate* delegate);
 
  protected:
   PlatformUiInputDelegate* delegate() const { return delegate_; }
   unsigned int texture_id() const { return texture_id_; }
-  UiElementRenderer::TextureLocation texture_location() const {
-    return texture_location_;
-  }
+  GlTextureLocation texture_location() const { return texture_location_; }
 
  private:
   PlatformUiInputDelegate* delegate_ = nullptr;
   unsigned int texture_id_ = 0;
-  UiElementRenderer::TextureLocation texture_location_ =
-      UiElementRenderer::kTextureLocationExternal;
+  GlTextureLocation texture_location_ = kGlTextureLocationExternal;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformUiElement);
 };

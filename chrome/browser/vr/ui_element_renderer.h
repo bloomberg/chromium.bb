@@ -17,8 +17,8 @@
 #include "chrome/browser/vr/elements/laser.h"
 #include "chrome/browser/vr/elements/reticle.h"
 #include "chrome/browser/vr/elements/shadow.h"
+#include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/macros.h"
-#include "chrome/browser/vr/ui_element_renderer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -51,18 +51,13 @@ class WebVrRenderer;
 // loss/recreation.
 class UiElementRenderer {
  public:
-  enum TextureLocation {
-    kTextureLocationLocal,
-    kTextureLocationExternal,
-  };
-
   UiElementRenderer();
   VIRTUAL_FOR_MOCKS ~UiElementRenderer();
 
   VIRTUAL_FOR_MOCKS void DrawTexturedQuad(
       int texture_data_handle,
       int overlay_texture_data_handle,
-      TextureLocation texture_location,
+      GlTextureLocation texture_location,
       const gfx::Transform& model_view_proj_matrix,
       const gfx::RectF& clip_rect,
       float opacity,

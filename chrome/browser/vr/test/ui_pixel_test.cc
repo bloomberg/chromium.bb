@@ -5,7 +5,9 @@
 #include "chrome/browser/vr/test/ui_pixel_test.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/model/model.h"
+#include "chrome/browser/vr/render_info.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
 #include "third_party/skia/include/core/SkImageEncoder.h"
@@ -53,10 +55,8 @@ void UiPixelTest::MakeUi(const UiInitialState& ui_initial_state,
                          const ToolbarState& toolbar_state) {
   ui_ = std::make_unique<Ui>(browser_.get(), nullptr, nullptr, nullptr, nullptr,
                              ui_initial_state);
-  ui_->OnGlInitialized(content_texture_,
-                       vr::UiElementRenderer::kTextureLocationLocal,
-                       content_overlay_texture_,
-                       vr::UiElementRenderer::kTextureLocationLocal, 0);
+  ui_->OnGlInitialized(content_texture_, kGlTextureLocationLocal,
+                       content_overlay_texture_, kGlTextureLocationLocal, 0);
   ui_->GetBrowserUiWeakPtr()->SetToolbarState(toolbar_state);
 }
 

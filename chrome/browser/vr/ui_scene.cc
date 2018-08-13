@@ -262,6 +262,14 @@ UiScene::Elements UiScene::GetElementsToDraw() {
       });
 }
 
+bool UiScene::HasWebXrOverlayElementsToDraw() {
+  auto* webvr_root = GetUiElementByName(kWebVrRoot);
+  return AnyVisibleElementSatisfiesPredicate(
+      webvr_root, [](UiElement* element) {
+        return element->draw_phase() == kPhaseOverlayForeground;
+      });
+}
+
 UiScene::Elements UiScene::GetWebVrOverlayElementsToDraw() {
   auto* webvr_root = GetUiElementByName(kWebVrRoot);
   return GetVisibleElementsWithPredicate(webvr_root, [](UiElement* element) {

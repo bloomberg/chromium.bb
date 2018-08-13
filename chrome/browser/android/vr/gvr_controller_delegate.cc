@@ -10,7 +10,7 @@
 #include "chrome/browser/vr/input_event.h"
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/pose_util.h"
-#include "chrome/browser/vr/ui_renderer.h"
+#include "chrome/browser/vr/render_info.h"
 
 namespace {
 constexpr gfx::Vector3dF kForwardVector = {0.0f, 0.0f, -1.0f};

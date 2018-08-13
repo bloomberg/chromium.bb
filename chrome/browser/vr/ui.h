@@ -137,12 +137,11 @@ class VR_EXPORT Ui : public UiInterface {
   void ShowPlatformToast(const base::string16& text) override;
   void CancelPlatformToast() override;
   bool ShouldRenderWebVr() override;
-  void OnGlInitialized(
-      unsigned int content_texture_id,
-      UiElementRenderer::TextureLocation content_location,
-      unsigned int content_overlay_texture_id,
-      UiElementRenderer::TextureLocation content_overlay_location,
-      unsigned int ui_texture_id) override;
+  void OnGlInitialized(unsigned int content_texture_id,
+                       GlTextureLocation content_location,
+                       unsigned int content_overlay_texture_id,
+                       GlTextureLocation content_overlay_location,
+                       unsigned int ui_texture_id) override;
 
   void OnPause() override;
   void OnControllerUpdated(const ControllerModel& controller_model,
@@ -173,7 +172,7 @@ class VR_EXPORT Ui : public UiInterface {
                  float xborder,
                  float yborder) override;
   void DrawWebVrOverlayForeground(const RenderInfo& render_info) override;
-  UiScene::Elements GetWebVrOverlayElementsToDraw() override;
+  bool HasWebXrOverlayElementsToDraw() override;
 
   void HandleInput(base::TimeTicks current_time,
                    const RenderInfo& render_info,
@@ -183,10 +182,12 @@ class VR_EXPORT Ui : public UiInterface {
 
   void HandleMenuButtonEvents(InputEventList* input_event_list) override;
 
-  FovRectangle GetMinimalFov(const gfx::Transform& view_matrix,
-                             const std::vector<const UiElement*>& elements,
-                             const FovRectangle& fov_recommended,
-                             float z_near) override;
+  std::pair<FovRectangle, FovRectangle> GetMinimalFovForWebXrOverlayElements(
+      const gfx::Transform& left_view,
+      const FovRectangle& fov_recommended_left,
+      const gfx::Transform& right_view,
+      const FovRectangle& fov_recommended_right,
+      float z_near) override;
 
   void RequestFocus(int element_id) override;
   void RequestUnfocus(int element_id) override;
@@ -203,6 +204,10 @@ class VR_EXPORT Ui : public UiInterface {
   UiBrowserInterface* browser_;
   ContentElement* GetContentElement();
   std::vector<TabModel>::iterator FindTab(int id, std::vector<TabModel>* tabs);
+  FovRectangle GetMinimalFov(const gfx::Transform& view_matrix,
+                             const std::vector<const UiElement*>& elements,
+                             const FovRectangle& fov_recommended,
+                             float z_near);
 
   // This state may be further abstracted into a SkiaUi object.
   std::unique_ptr<UiScene> scene_;

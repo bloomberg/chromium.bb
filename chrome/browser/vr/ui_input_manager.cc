@@ -14,6 +14,7 @@
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/model/reticle_model.h"
 #include "chrome/browser/vr/model/text_input_info.h"
+#include "chrome/browser/vr/render_info.h"
 #include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
 

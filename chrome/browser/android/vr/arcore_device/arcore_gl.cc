@@ -43,13 +43,12 @@ constexpr std::array<float, 6> kDisplayCoordinatesForTransform = {
 gfx::Transform ConvertUvsToTransformMatrix(const std::vector<float>& uvs) {
   // We're creating a matrix that transforms viewport UV coordinates (for a
   // screen-filling quad, origin at bottom left, u=1 at right, v=1 at top) to
-  // camera texture UV coordinates. This matrix is used with
-  // vr::WebVrRenderer to compute texture coordinates for copying an
-  // appropriately cropped and rotated subsection of the camera image. The
-  // SampleData is a bit unfortunate. ARCore doesn't provide a way to get a
-  // matrix directly. There's a function to transform UV vectors individually,
-  // which obviously can't be used from a shader, so we run that on selected
-  // vectors and recreate the matrix from the result.
+  // camera texture UV coordinates. This matrix is used to compute texture
+  // coordinates for copying an appropriately cropped and rotated subsection of
+  // the camera image. The SampleData is a bit unfortunate. ARCore doesn't
+  // provide a way to get a matrix directly. There's a function to transform UV
+  // vectors individually, which obviously can't be used from a shader, so we
+  // run that on selected vectors and recreate the matrix from the result.
 
   // Assumes that |uvs| is the result of transforming the display coordinates
   // from kDisplayCoordinatesForTransform. This combines the solved matrix with

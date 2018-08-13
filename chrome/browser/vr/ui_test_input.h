@@ -75,9 +75,6 @@ struct UiTestState {
   base::TimeTicks start_time = base::TimeTicks::Now();
 };
 
-UiElementName UserFriendlyElementNameToUiElementName(
-    UserFriendlyElementName name);
-
 }  // namespace vr
 
 #endif  // CHROME_BROWSER_VR_UI_TEST_INPUT_H_

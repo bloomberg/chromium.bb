@@ -12,9 +12,10 @@
 #include "chrome/browser/vr/graphics_delegate.h"
 #include "chrome/browser/vr/input_event.h"
 #include "chrome/browser/vr/model/controller_model.h"
+#include "chrome/browser/vr/model/reticle_model.h"
+#include "chrome/browser/vr/render_info.h"
 #include "chrome/browser/vr/render_loop_browser_interface.h"
 #include "chrome/browser/vr/ui_interface.h"
-#include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/ui_test_input.h"
 
 namespace vr {

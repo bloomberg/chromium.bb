@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/vr/fps_meter.h"
-#include "chrome/browser/vr/renderers/web_vr_renderer.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/display/display.h"

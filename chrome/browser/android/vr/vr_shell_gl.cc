@@ -29,17 +29,13 @@
 #include "chrome/browser/android/vr/vr_controller.h"
 #include "chrome/browser/android/vr/vr_shell.h"
 #include "chrome/browser/vr/assets_loader.h"
-#include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/graphics_delegate.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/camera_model.h"
-#include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/pose_util.h"
-#include "chrome/browser/vr/ui.h"
-#include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_interface.h"
-#include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "chrome/browser/vr/vr_geometry_util.h"
 #include "chrome/browser/vr/vr_gl_util.h"
@@ -178,17 +174,13 @@ gfx::RectF ClampRect(gfx::RectF bounds) {
   return bounds;
 }
 
-gvr::Rectf GetMinimalFov(const gfx::Transform& view_matrix,
-                         const std::vector<const UiElement*>& elements,
-                         const gvr::Rectf& recommended,
-                         float z_near,
-                         UiInterface* ui) {
-  Ui::FovRectangle rect =
-      ui->GetMinimalFov(view_matrix, elements,
-                        Ui::FovRectangle{recommended.left, recommended.right,
-                                         recommended.bottom, recommended.top},
-                        z_near);
+gvr::Rectf ToGvrRectf(const UiInterface::FovRectangle& rect) {
   return gvr::Rectf{rect.left, rect.right, rect.bottom, rect.top};
+}
+
+UiInterface::FovRectangle ToUiFovRect(const gvr::Rectf& rect) {
+  return UiInterface::FovRectangle{rect.left, rect.right, rect.bottom,
+                                   rect.top};
 }
 
 }  // namespace
@@ -316,10 +308,9 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
   // responding to RequestPresent.
   InitializeRenderer();
 
-  ui_->OnGlInitialized(
-      content_texture_id_, UiElementRenderer::kTextureLocationExternal,
-      content_overlay_texture_id_, UiElementRenderer::kTextureLocationExternal,
-      ui_texture_id);
+  ui_->OnGlInitialized(content_texture_id_, kGlTextureLocationExternal,
+                       content_overlay_texture_id_, kGlTextureLocationExternal,
+                       ui_texture_id);
 }
 
 void VrShellGl::OnGpuProcessConnectionReady() {
@@ -1318,21 +1309,16 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
   }
 
   std::vector<const UiElement*> overlay_elements;
-  if (is_webxr_frame) {
-    overlay_elements = ui_->GetWebVrOverlayElementsToDraw();
-  }
-
-  TRACE_COUNTER1("gpu", "VR overlay element count", overlay_elements.size());
-
-  if (!overlay_elements.empty() && is_webxr_frame) {
+  if (is_webxr_frame && ui_->HasWebXrOverlayElementsToDraw()) {
     // WebVR content may use an arbitrary size buffer. We need to draw browser
     // UI on a different buffer to make sure that our UI has enough resolution.
     acquired_frame_.BindBuffer(kMultiSampleBuffer);
     glClear(GL_COLOR_BUFFER_BIT);
     // Update recommended fov and uv per frame.
-    const gvr::Rectf& fov_recommended_left = main_viewport_.left.GetSourceFov();
-    const gvr::Rectf& fov_recommended_right =
-        main_viewport_.right.GetSourceFov();
+    const auto& fov_recommended_left =
+        ToUiFovRect(main_viewport_.left.GetSourceFov());
+    const auto& fov_recommended_right =
+        ToUiFovRect(main_viewport_.right.GetSourceFov());
 
     // Set render info to recommended setting. It will be used as our base for
     // optimization.
@@ -1342,12 +1328,13 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
     UpdateEyeInfos(render_info_webvr_browser_ui.head_pose,
                    webvr_overlay_viewport_, render_size_webvr_ui_,
                    &render_info_webvr_browser_ui);
-    webvr_overlay_viewport_.left.SetSourceFov(GetMinimalFov(
+    auto fovs = ui_->GetMinimalFovForWebXrOverlayElements(
         render_info_webvr_browser_ui.left_eye_model.view_matrix,
-        overlay_elements, fov_recommended_left, kZNear, ui_.get()));
-    webvr_overlay_viewport_.right.SetSourceFov(GetMinimalFov(
+        fov_recommended_left,
         render_info_webvr_browser_ui.right_eye_model.view_matrix,
-        overlay_elements, fov_recommended_right, kZNear, ui_.get()));
+        fov_recommended_right, kZNear);
+    webvr_overlay_viewport_.left.SetSourceFov(ToGvrRectf(fovs.first));
+    webvr_overlay_viewport_.right.SetSourceFov(ToGvrRectf(fovs.second));
 
     DCHECK_EQ(viewport_list_.GetSize(), 2U);
     viewport_list_.SetBufferViewport(2, webvr_overlay_viewport_.left);
