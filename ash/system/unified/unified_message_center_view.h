@@ -35,6 +35,22 @@ namespace ash {
 class UnifiedSystemTrayController;
 class UnifiedSystemTrayView;
 
+class StackingNotificationCounterView : public views::View {
+ public:
+  StackingNotificationCounterView();
+  ~StackingNotificationCounterView() override;
+
+  void SetCount(int stacking_count);
+
+  // views::View:
+  void OnPaint(gfx::Canvas* canvas) override;
+
+ private:
+  int stacking_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(StackingNotificationCounterView);
+};
+
 // Container for message list view. Acts as a controller/delegate of message
 // list view, passing data back and forth to message center.
 class ASH_EXPORT UnifiedMessageCenterView
@@ -104,10 +120,16 @@ class ASH_EXPORT UnifiedMessageCenterView
   // Scroll the notification list to |position_from_bottom_|.
   void ScrollToPositionFromBottom();
 
+  // If |force| is false, it might not do the actual layout i.e. it assumes
+  // the reason of layout change is limited to |stacking_counter_| visibility.
+  void LayoutInternal(bool force);
+
   UnifiedSystemTrayController* const tray_controller_;
   UnifiedSystemTrayView* const parent_;
   message_center::MessageCenter* const message_center_;
 
+  StackingNotificationCounterView* const stacking_counter_;
+  MessageCenterScrollBar* const scroll_bar_;
   views::ScrollView* const scroller_;
   MessageListView* const message_list_view_;
 
