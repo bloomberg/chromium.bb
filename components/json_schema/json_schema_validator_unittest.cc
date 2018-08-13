@@ -174,4 +174,30 @@ TEST(JSONSchemaValidator, IsValidSchema) {
       })",
                                                   0, &error))
       << error;
+
+  EXPECT_FALSE(JSONSchemaValidator::IsValidSchema(R"(
+      {
+        "type": "object",
+        "properties": {"foo": {"type": "number"}},
+        "required": ["bar"]
+      })",
+                                                  0, &error))
+      << error;
+
+  EXPECT_FALSE(JSONSchemaValidator::IsValidSchema(R"(
+      {
+        "type": "object",
+        "required": ["bar"]
+      })",
+                                                  0, &error))
+      << error;
+
+  EXPECT_TRUE(JSONSchemaValidator::IsValidSchema(R"(
+      {
+        "type": "object",
+        "properties": {"foo": {"type": "number"}},
+        "required": ["foo"]
+      })",
+                                                 0, &error))
+      << error;
 }

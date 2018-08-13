@@ -106,6 +106,9 @@ bool IsValidSchema(const base::DictionaryValue* dict,
   const base::DictionaryValue* dictionary_value = nullptr;
   std::string string_value;
 
+  const base::ListValue* required_properties_value = nullptr;
+  const base::DictionaryValue* properties_value = nullptr;
+
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
     // Validate the "type" attribute, which may be a string or a list.
     if (it.key() == schema::kType) {
@@ -195,8 +198,8 @@ bool IsValidSchema(const base::DictionaryValue* dict,
 
     // Validate the "properties" attribute. Each entry maps a key to a schema.
     if (it.key() == schema::kProperties) {
-      it.value().GetAsDictionary(&dictionary_value);
-      for (base::DictionaryValue::Iterator iter(*dictionary_value);
+      it.value().GetAsDictionary(&properties_value);
+      for (base::DictionaryValue::Iterator iter(*properties_value);
            !iter.IsAtEnd(); iter.Advance()) {
         if (!iter.value().GetAsDictionary(&dictionary_value)) {
           *error = "properties must be a dictionary";
@@ -239,14 +242,12 @@ bool IsValidSchema(const base::DictionaryValue* dict,
 
     // Validate "required" attribute.
     if (it.key() == schema::kRequired) {
-      it.value().GetAsList(&list_value);
-      for (const base::Value& value : *list_value) {
+      it.value().GetAsList(&required_properties_value);
+      for (const base::Value& value : *required_properties_value) {
         if (value.type() != base::Value::Type::STRING) {
           *error = "Invalid value in 'required' attribute";
           return false;
         }
-        // TODO(crbug.com/856903): Check that |value| is a key in
-        // schema::kProperties
       }
     }
 
@@ -294,6 +295,18 @@ bool IsValidSchema(const base::DictionaryValue* dict,
 
     if (it.key() == schema::kRef)
       has_type_or_ref = true;
+  }
+
+  // Check that properties in'required' are in the 'properties' object.
+  if (required_properties_value) {
+    for (const base::Value& value : required_properties_value->GetList()) {
+      const std::string& name = value.GetString();
+      if (!properties_value || !properties_value->HasKey(name)) {
+        *error = "Property '" + name +
+                 "' was listed in 'required', but not defined in 'properties'.";
+        return false;
+      }
+    }
   }
 
   if (!has_type_or_ref) {

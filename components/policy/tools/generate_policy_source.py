@@ -619,14 +619,17 @@ class SchemaNodesGenerator:
         self.root_properties_begin = begin
         self.root_properties_end = end
 
-      # TODO(crbug.com/856903): Check that each string in
-      # |required_properties| is in |properties|.
       required_begin = len(self.required_properties)
       required_properties = schema.get('required', [])
       assert type(required_properties) is list
       assert all(type(x) == str for x in required_properties)
       self.required_properties += required_properties
       required_end = len(self.required_properties)
+
+      # Check that each string in |required_properties| is in |properties|.
+      properties = schema.get('properties', {})
+      for name in required_properties:
+        assert properties.has_key(name)
 
       extra = len(self.properties_nodes)
       self.properties_nodes.append((begin, end, pattern_end, required_begin,
