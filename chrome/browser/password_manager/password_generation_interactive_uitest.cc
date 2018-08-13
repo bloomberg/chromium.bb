@@ -300,9 +300,8 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
   EXPECT_TRUE(GenerationPopupShowing());
 }
 
-// https://crbug.com/791389
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
-                       DISABLED_AutoSavingGeneratedPassword) {
+                       AutoSavingGeneratedPassword) {
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
@@ -319,9 +318,7 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
   content::SimulateKeyPress(WebContents(), ui::DomKey::FromCharacter('U'),
                             ui::DomCode::US_U, ui::VKEY_U, false, false, false,
                             false);
-  content::SimulateKeyPress(WebContents(), ui::DomKey::FromCharacter('N'),
-                            ui::DomCode::US_N, ui::VKEY_N, false, false, false,
-                            false);
+  WaitForElementValue("username_field", "U");
 
   // Submit form.
   NavigationObserver observer(WebContents());
@@ -338,6 +335,6 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
       password_store->stored_passwords();
   EXPECT_EQ(1u, stored_passwords.size());
   EXPECT_EQ(1u, stored_passwords.begin()->second.size());
-  EXPECT_EQ(base::UTF8ToUTF16("UN"),
+  EXPECT_EQ(base::UTF8ToUTF16("U"),
             (stored_passwords.begin()->second)[0].username_value);
 }
