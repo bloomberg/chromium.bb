@@ -8,7 +8,6 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/audio/unified_volume_view.h"
-#include "ash/system/unified/unified_system_tray_controller.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 
@@ -17,14 +16,16 @@ using chromeos::CrasAudioHandler;
 namespace ash {
 
 UnifiedVolumeSliderController::UnifiedVolumeSliderController(
-    UnifiedSystemTrayController* tray_controller)
-    : tray_controller_(tray_controller) {}
+    UnifiedVolumeSliderController::Delegate* delegate)
+    : delegate_(delegate) {
+  DCHECK(delegate);
+}
 
 UnifiedVolumeSliderController::~UnifiedVolumeSliderController() = default;
 
 views::View* UnifiedVolumeSliderController::CreateView() {
   DCHECK(!slider_);
-  slider_ = new UnifiedVolumeView(this, !!tray_controller_);
+  slider_ = new UnifiedVolumeView(this);
   return slider_;
 }
 
@@ -38,7 +39,7 @@ void UnifiedVolumeSliderController::ButtonPressed(views::Button* sender,
       base::RecordAction(base::UserMetricsAction("StatusArea_Audio_Unmuted"));
     CrasAudioHandler::Get()->SetOutputMute(mute_on);
   } else if (sender == slider_->more_button()) {
-    tray_controller_->ShowAudioDetailedView();
+    delegate_->OnAudioSettingsButtonClicked();
   }
 }
 

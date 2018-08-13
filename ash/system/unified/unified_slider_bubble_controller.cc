@@ -7,7 +7,6 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/brightness/unified_brightness_slider_controller.h"
 #include "ash/system/keyboard_brightness/unified_keyboard_brightness_slider_controller.h"
 #include "ash/system/status_area_widget.h"
@@ -109,6 +108,10 @@ void UnifiedSliderBubbleController::OnKeyboardBrightnessChanged(bool by_user) {
     ShowBubble(SLIDER_TYPE_KEYBOARD_BRIGHTNESS);
 }
 
+void UnifiedSliderBubbleController::OnAudioSettingsButtonClicked() {
+  tray_->ShowAudioDetailedViewBubble();
+}
+
 void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
   if (IsAnyMainBubbleShown()) {
     tray_->EnsureBubbleExpanded();
@@ -195,7 +198,7 @@ void UnifiedSliderBubbleController::CreateSliderController() {
   switch (slider_type_) {
     case SLIDER_TYPE_VOLUME:
       slider_controller_ =
-          std::make_unique<UnifiedVolumeSliderController>(nullptr);
+          std::make_unique<UnifiedVolumeSliderController>(this);
       return;
     case SLIDER_TYPE_DISPLAY_BRIGHTNESS:
       slider_controller_ =

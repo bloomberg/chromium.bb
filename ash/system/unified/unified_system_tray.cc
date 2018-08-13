@@ -206,6 +206,11 @@ void UnifiedSystemTray::ShowVolumeSliderBubble() {
       UnifiedSliderBubbleController::SLIDER_TYPE_VOLUME);
 }
 
+void UnifiedSystemTray::ShowAudioDetailedViewBubble() {
+  ShowBubble(false /* show_by_click */);
+  bubble_->ShowAudioDetailedView();
+}
+
 void UnifiedSystemTray::SetTrayBubbleHeight(int height) {
   ui_delegate_->SetTrayBubbleHeight(height);
 }

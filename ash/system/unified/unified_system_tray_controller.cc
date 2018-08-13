@@ -331,6 +331,10 @@ void UnifiedSystemTrayController::AnimationCanceled(
   UpdateExpandedAmount();
 }
 
+void UnifiedSystemTrayController::OnAudioSettingsButtonClicked() {
+  ShowAudioDetailedView();
+}
+
 void UnifiedSystemTrayController::InitFeaturePods() {
   AddFeaturePodItem(std::make_unique<NetworkFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<BluetoothFeaturePodController>(this));

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -29,7 +30,9 @@ class UnifiedSystemTrayModel;
 class UnifiedSystemTrayView;
 
 // Controller class of UnifiedSystemTrayView. Handles events of the view.
-class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
+class ASH_EXPORT UnifiedSystemTrayController
+    : public gfx::AnimationDelegate,
+      public UnifiedVolumeSliderController::Delegate {
  public:
   UnifiedSystemTrayController(UnifiedSystemTrayModel* model,
                               UnifiedSystemTrayBubble* bubble = nullptr);
@@ -113,6 +116,9 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
+
+  // UnifiedVolumeSliderController::Delegate:
+  void OnAudioSettingsButtonClicked() override;
 
   UnifiedSystemTrayModel* model() { return model_; }
 
