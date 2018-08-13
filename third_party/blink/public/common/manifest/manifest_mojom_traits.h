@@ -167,11 +167,39 @@ struct BLINK_COMMON_EXPORT
 
 template <>
 struct BLINK_COMMON_EXPORT
+    StructTraits<blink::mojom::ManifestShareTargetParamsDataView,
+                 ::blink::Manifest::ShareTargetParams> {
+  static const base::Optional<base::StringPiece16> text(
+      const ::blink::Manifest::ShareTargetParams& share_target_params) {
+    return internal::TruncateNullableString16(share_target_params.text);
+  }
+  static const base::Optional<base::StringPiece16> title(
+      const ::blink::Manifest::ShareTargetParams& share_target_params) {
+    return internal::TruncateNullableString16(share_target_params.title);
+  }
+  static const base::Optional<base::StringPiece16> url(
+      const ::blink::Manifest::ShareTargetParams& share_target_params) {
+    return internal::TruncateNullableString16(share_target_params.url);
+  }
+  static bool Read(blink::mojom::ManifestShareTargetParamsDataView data,
+                   ::blink::Manifest::ShareTargetParams* out);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
     StructTraits<blink::mojom::ManifestShareTargetDataView,
                  ::blink::Manifest::ShareTarget> {
   static const GURL& url_template(
       const ::blink::Manifest::ShareTarget& share_target) {
     return share_target.url_template;
+  }
+  static const GURL& action(
+      const ::blink::Manifest::ShareTarget& share_target) {
+    return share_target.action;
+  }
+  static const ::blink::Manifest::ShareTargetParams& params(
+      const ::blink::Manifest::ShareTarget& share_target) {
+    return share_target.params;
   }
   static bool Read(blink::mojom::ManifestShareTargetDataView data,
                    ::blink::Manifest::ShareTarget* out);

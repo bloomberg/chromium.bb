@@ -17,6 +17,10 @@ bool Manifest::ImageResource::operator==(
   return src == other.src && type == other.type && sizes == other.sizes;
 }
 
+Manifest::ShareTargetParams::ShareTargetParams() = default;
+
+Manifest::ShareTargetParams::~ShareTargetParams() = default;
+
 Manifest::ShareTarget::ShareTarget() = default;
 
 Manifest::ShareTarget::~ShareTarget() = default;

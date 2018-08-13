@@ -137,11 +137,35 @@ bool StructTraits<blink::mojom::ManifestRelatedApplicationDataView,
   return !(out->url.is_empty() && out->id.is_null());
 }
 
+bool StructTraits<blink::mojom::ManifestShareTargetParamsDataView,
+                  ::blink::Manifest::ShareTargetParams>::
+    Read(blink::mojom::ManifestShareTargetParamsDataView data,
+         ::blink::Manifest::ShareTargetParams* out) {
+  TruncatedString16 string;
+  if (!data.ReadText(&string))
+    return false;
+  out->text = base::NullableString16(std::move(string.string));
+
+  if (!data.ReadTitle(&string))
+    return false;
+  out->title = base::NullableString16(std::move(string.string));
+
+  if (!data.ReadUrl(&string))
+    return false;
+  out->url = base::NullableString16(std::move(string.string));
+
+  return true;
+}
+
 bool StructTraits<blink::mojom::ManifestShareTargetDataView,
                   ::blink::Manifest::ShareTarget>::
     Read(blink::mojom::ManifestShareTargetDataView data,
          ::blink::Manifest::ShareTarget* out) {
-  return data.ReadUrlTemplate(&out->url_template);
+  if (!data.ReadUrlTemplate(&out->url_template))
+    return false;
+  if (!data.ReadAction(&out->action))
+    return false;
+  return data.ReadParams(&out->params);
 }
 
 }  // namespace mojo
