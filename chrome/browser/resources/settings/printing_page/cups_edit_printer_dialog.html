@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="cups_add_printer_dialog_util.html">
 <link rel="import" href="cups_printer_shared_css.html">
@@ -82,16 +83,16 @@
           </cr-input>
         </div>
         <div class="settings-box two-line">
-          <drop-down-search-box items="[[manufacturerList]]"
+          <cr-searchable-drop-down items="[[manufacturerList]]"
               label="$i18n{printerManufacturer}"
               value="{{activePrinter.ppdManufacturer}}">
-          </drop-down-search-box>
+          </cr-searchable-drop-down>
         </div>
         <div class="settings-box two-line">
-          <drop-down-search-box items="[[modelList]]"
+          <cr-searchable-drop-down items="[[modelList]]"
               label="$i18n{printerModel}"
               value="{{activePrinter.ppdModel}}">
-          </drop-down-search-box>
+          </cr-searchable-drop-down>
         </div>
         <div class="settings-box two-line last">
           <cr-input class="browse-file-input" readonly tabindex="-1"
