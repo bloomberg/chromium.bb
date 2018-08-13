@@ -55,8 +55,9 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_CSSFilterEffects',
         ['mac', ('nvidia', 0xfe9)], bug=690277)
 
-    # Became flaky on 10.13.6.
-    self.Flaky('Pixel_CSSFilterEffects', ['highsierra', 'amd'], bug=872423)
+    # Became flaky on 10.13.6. When it flakes, it flakes 3 times, so
+    # mark failing, unfortunately.
+    self.Fail('Pixel_CSSFilterEffects', ['highsierra', 'amd'], bug=872423)
 
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
