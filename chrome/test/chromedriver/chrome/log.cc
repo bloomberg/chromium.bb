@@ -25,9 +25,10 @@ void Log::AddEntry(Level level,
   AddEntryTimestamped(base::Time::Now(), level, source, message);
 }
 
-namespace {
+bool Log::truncate_logged_params = true;
+IsVLogOnFunc Log::is_vlog_on_func = NULL;
 
-IsVLogOnFunc g_is_vlog_on_func = NULL;
+namespace {
 
 void TruncateString(std::string* data) {
   const size_t kMaxLength = 200;
@@ -78,14 +79,10 @@ std::unique_ptr<base::Value> SmartDeepCopy(const base::Value* value) {
 
 }  // namespace
 
-void InitLogging(IsVLogOnFunc is_vlog_on_func) {
-  g_is_vlog_on_func = is_vlog_on_func;
-}
-
 bool IsVLogOn(int vlog_level) {
-  if (!g_is_vlog_on_func)
+  if (!Log::is_vlog_on_func)
     return false;
-  return g_is_vlog_on_func(vlog_level);
+  return Log::is_vlog_on_func(vlog_level);
 }
 
 std::string PrettyPrintValue(const base::Value& value) {
@@ -102,8 +99,8 @@ std::string PrettyPrintValue(const base::Value& value) {
 }
 
 std::string FormatValueForDisplay(const base::Value& value) {
-  std::unique_ptr<base::Value> copy(SmartDeepCopy(&value));
-  return PrettyPrintValue(*copy);
+  return PrettyPrintValue(Log::truncate_logged_params ? *SmartDeepCopy(&value)
+                                                      : value);
 }
 
 std::string FormatJsonForDisplay(const std::string& json) {

@@ -1,0 +1,840 @@
+[1532715851.089][INFO]: [c3681035a5e0990f0e117e8f7299f793] COMMAND InitSession {
+   "desiredCapabilities": {
+      "chromeOptions": {
+         "args": [ "no-sandbox", "disable-gpu" ],
+         "binary": "/usr/local/google/home/cwinstanley/chromium/src/out/Default/chrome"
+      },
+      "goog:testName": "__main__.ChromeDriverTest.testClearElement",
+      "loggingPrefs": {
+
+      }
+   }
+}
+[1532715851.091][INFO]: Populating Preferences file: {
+   "alternate_error_pages": {
+      "enabled": false
+   },
+   "autofill": {
+      "enabled": false
+   },
+   "browser": {
+      "check_default_browser": false
+   },
+   "distribution": {
+      "import_bookmarks": false,
+      "import_history": false,
+      "import_search_engine": false,
+      "make_chrome_default_for_user": false,
+      "skip_first_run_ui": true
+   },
+   "dns_prefetching": {
+      "enabled": false
+   },
+   "profile": {
+      "content_settings": {
+         "pattern_pairs": {
+            "https://*,*": {
+               "media-stream": {
+                  "audio": "Default",
+                  "video": "Default"
+               }
+            }
+         }
+      },
+      "default_content_setting_values": {
+         "geolocation": 1
+      },
+      "default_content_settings": {
+         "geolocation": 1,
+         "mouselock": 1,
+         "notifications": 1,
+         "popups": 1,
+         "ppapi-broker": 1
+      },
+      "password_manager_enabled": false
+   },
+   "safebrowsing": {
+      "enabled": false
+   },
+   "search": {
+      "suggest_enabled": false
+   },
+   "translate": {
+      "enabled": false
+   }
+}
+[1532715851.091][INFO]: Populating Local State file: {
+   "background_mode": {
+      "enabled": false
+   },
+   "ssl": {
+      "rev_checking": {
+         "enabled": false
+      }
+   }
+}
+[1532715851.093][INFO]: Launching chrome: /usr/local/google/home/cwinstanley/chromium/src/out/Default/chrome --disable-background-networking --disable-client-side-phishing-detection --disable-default-apps --disable-gpu --disable-hang-monitor --disable-popup-blocking --disable-prompt-on-repost --disable-sync --disable-web-resources --enable-automation --enable-logging --force-fieldtrials=SiteIsolationExtensions/Control --ignore-certificate-errors --load-extension=/tmp/.org.chromium.Chromium.dSDYJV/internal --log-level=0 --metrics-recording-only --no-first-run --no-sandbox --password-store=basic --remote-debugging-port=0 --test-type=webdriver --use-mock-keychain --user-data-dir=/tmp/.org.chromium.Chromium.sNKRlA data:,
+[177326:177326:0727/112412.906746:ERROR:gpu_process_transport_factory.cc(642)] Switching to software compositing.
+[177326:177326:0727/112412.906816:ERROR:gpu_process_transport_factory.cc(1007)] Lost UI shared context.
+[177326:177326:0727/112412.979987:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[177326:177326:0727/112412.980088:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[177326:177326:0727/112412.980136:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[177326:177326:0727/112412.980187:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[177326:177326:0727/112412.981120:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[177326:177326:0727/112412.987219:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[177326:177326:0727/112413.029745:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[177326:177326:0727/112413.058116:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[177326:177326:0727/112413.058189:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+
+DevTools listening on ws://127.0.0.1:42389/devtools/browser/c1db1762-008c-4b83-9084-8136bbf371bc
+[1532715853.120][DEBUG]: DevTools request: http://localhost:42389/json/version
+[177326:177326:0727/112413.276097:WARNING:password_store_factory.cc(253)] Using basic (unencrypted) store for password storage. See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_password_storage.md for more information about password storage options.
+[177326:177326:0727/112413.279021:WARNING:account_consistency_mode_manager.cc(290)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[1532715853.554][DEBUG]: DevTools response: {
+   "Browser": "Chrome/69.0.3491.0",
+   "Protocol-Version": "1.3",
+   "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3491.0 Safari/537.36",
+   "V8-Version": "6.9.389",
+   "WebKit-Version": "537.36 (@410f2c4912d46a5fae2fe6c0b2e24d9eb6359761)",
+   "webSocketDebuggerUrl": "ws://localhost:42389/devtools/browser/c1db1762-008c-4b83-9084-8136bbf371bc"
+}
+
+[1532715853.604][DEBUG]: DevTools request: http://localhost:42389/json
+[1532715853.631][DEBUG]: DevTools response: [ {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:42389/devtools/page/08D69CE97DC6528F9911C005A6E83DC0",
+   "id": "08D69CE97DC6528F9911C005A6E83DC0",
+   "title": "Chrome Automation Extension",
+   "type": "background_page",
+   "url": "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb/_generated_background_page.html",
+   "webSocketDebuggerUrl": "ws://localhost:42389/devtools/page/08D69CE97DC6528F9911C005A6E83DC0"
+}, {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:42389/devtools/page/2BD057A9A54060B8A7969DB92D36643F",
+   "id": "2BD057A9A54060B8A7969DB92D36643F",
+   "title": "",
+   "type": "page",
+   "url": "data:,",
+   "webSocketDebuggerUrl": "ws://localhost:42389/devtools/page/2BD057A9A54060B8A7969DB92D36643F"
+} ]
+
+[1532715853.631][DEBUG]: DevTools request: http://localhost:42389/json
+[1532715853.634][DEBUG]: DevTools response: [ {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:42389/devtools/page/08D69CE97DC6528F9911C005A6E83DC0",
+   "id": "08D69CE97DC6528F9911C005A6E83DC0",
+   "title": "Chrome Automation Extension",
+   "type": "background_page",
+   "url": "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb/_generated_background_page.html",
+   "webSocketDebuggerUrl": "ws://localhost:42389/devtools/page/08D69CE97DC6528F9911C005A6E83DC0"
+}, {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:42389/devtools/page/2BD057A9A54060B8A7969DB92D36643F",
+   "id": "2BD057A9A54060B8A7969DB92D36643F",
+   "title": "",
+   "type": "page",
+   "url": "data:,",
+   "webSocketDebuggerUrl": "ws://localhost:42389/devtools/page/2BD057A9A54060B8A7969DB92D36643F"
+} ]
+
+[1532715853.635][INFO]: resolved localhost to ["::1","127.0.0.1"]
+[1532715853.637][DEBUG]: DEVTOOLS COMMAND Log.enable (id=1) {
+
+}
+[1532715853.638][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=2) {
+
+}
+[1532715853.638][DEBUG]: DEVTOOLS COMMAND Target.setAutoAttach (id=3) {
+   "autoAttach": true,
+   "waitForDebuggerOnStart": false
+}
+[1532715853.638][DEBUG]: DEVTOOLS COMMAND Page.enable (id=4) {
+
+}
+[1532715853.638][DEBUG]: DEVTOOLS COMMAND Page.enable (id=5) {
+
+}
+[1532715853.683][DEBUG]: DEVTOOLS RESPONSE Log.enable (id=1) {
+
+}
+[1532715853.684][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=2) {
+   "root": {
+      "backendNodeId": 1,
+      "baseURL": "about:blank",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 2,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 3,
+            "childNodeCount": 0,
+            "localName": "head",
+            "nodeId": 3,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 2
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 4,
+            "childNodeCount": 0,
+            "localName": "body",
+            "nodeId": 4,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 2
+         } ],
+         "frameId": "2BD057A9A54060B8A7969DB92D36643F",
+         "localName": "html",
+         "nodeId": 2,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 1
+      } ],
+      "documentURL": "",
+      "localName": "",
+      "nodeId": 1,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1532715853.684][DEBUG]: DEVTOOLS RESPONSE Target.setAutoAttach (id=3) {
+
+}
+[1532715853.684][DEBUG]: DEVTOOLS RESPONSE Page.enable (id=4) {
+
+}
+[1532715853.684][DEBUG]: DEVTOOLS RESPONSE Page.enable (id=5) {
+
+}
+[1532715853.684][DEBUG]: DEVTOOLS COMMAND Runtime.enable (id=6) {
+
+}
+[1532715853.762][DEBUG]: DEVTOOLS EVENT Page.frameNavigated {
+   "frame": {
+      "id": "2BD057A9A54060B8A7969DB92D36643F",
+      "loaderId": "308D732787153987EE4D2B0CAB8965B0",
+      "mimeType": "text/plain",
+      "securityOrigin": "://",
+      "url": "data:,"
+   }
+}
+[1532715853.762][DEBUG]: DEVTOOLS EVENT DOM.documentUpdated {
+
+}
+[1532715853.762][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=7) {
+
+}
+[1532715853.762][DEBUG]: DEVTOOLS EVENT Page.loadEventFired {
+   "timestamp": 328538.03996
+}
+[1532715853.762][DEBUG]: DEVTOOLS EVENT Page.frameStoppedLoading {
+   "frameId": "2BD057A9A54060B8A7969DB92D36643F"
+}
+[1532715853.762][DEBUG]: DEVTOOLS EVENT DOM.documentUpdated {
+
+}
+[1532715853.762][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=8) {
+
+}
+[1532715853.763][DEBUG]: DEVTOOLS EVENT Page.domContentEventFired {
+   "timestamp": 328538.042859
+}
+[1532715853.780][DEBUG]: DEVTOOLS EVENT Runtime.executionContextCreated {
+   "context": {
+      "auxData": {
+         "frameId": "2BD057A9A54060B8A7969DB92D36643F",
+         "isDefault": true
+      },
+      "id": 1,
+      "name": "",
+      "origin": "://"
+   }
+}
+[1532715853.780][DEBUG]: DEVTOOLS RESPONSE Runtime.enable (id=6) {
+
+}
+[1532715853.781][DEBUG]: DEVTOOLS EVENT Page.frameResized {
+
+}
+[1532715853.790][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=7) {
+   "root": {
+      "backendNodeId": 5,
+      "baseURL": "data:,",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 6,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 7,
+            "childNodeCount": 0,
+            "localName": "head",
+            "nodeId": 7,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 6
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 8,
+            "childNodeCount": 0,
+            "localName": "body",
+            "nodeId": 8,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 6
+         } ],
+         "frameId": "2BD057A9A54060B8A7969DB92D36643F",
+         "localName": "html",
+         "nodeId": 6,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 5
+      } ],
+      "documentURL": "data:,",
+      "localName": "",
+      "nodeId": 5,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1532715853.791][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=8) {
+   "root": {
+      "backendNodeId": 5,
+      "baseURL": "data:,",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 6,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 7,
+            "childNodeCount": 0,
+            "localName": "head",
+            "nodeId": 11,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 10
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 8,
+            "childNodeCount": 0,
+            "localName": "body",
+            "nodeId": 12,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 10
+         } ],
+         "frameId": "2BD057A9A54060B8A7969DB92D36643F",
+         "localName": "html",
+         "nodeId": 10,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 9
+      } ],
+      "documentURL": "data:,",
+      "localName": "",
+      "nodeId": 9,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1532715853.791][DEBUG]: DEVTOOLS COMMAND Page.enable (id=9) {
+
+}
+[1532715853.835][DEBUG]: DEVTOOLS RESPONSE Page.enable (id=9) {
+
+}
+[1532715853.835][DEBUG]: DEVTOOLS COMMAND Runtime.enable (id=10) {
+
+}
+[1532715853.843][DEBUG]: DEVTOOLS RESPONSE Runtime.enable (id=10) {
+
+}
+[1532715853.844][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=11) {
+   "expression": "(function() { // Copyright (c) 2012 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\n/**\n * Enum for WebDriver status codes.\n * @enum {number}\n */\nvar StatusCode = {\n  STALE_ELEMENT_REFERENCE: 10,\n  UNKNOWN_ERROR: 13,\n};\n\n/**\n * Enum for node types.\n * @enum {number}\n */\nvar NodeType = {\n  ELEMENT: 1,\n  DOCUMENT: 9,\n};\n\n/**\n * Dictionary key to use for holding an element ID.\n * @const\n * @type {string}\n */\nvar ELEMENT_KEY = 'ELEMENT';\n\n/**\n * True if using W3C Element references.\n * @const\n * @type {boolean}\n */\nvar w3cEnabled = false;\n\n/**\n * True if shadow dom is enabled.\n * @const\n * @type {boolean}\n */\nvar SHADOW_DOM_ENABLED = typeof ShadowRoot === 'function';\n\n/**\n * Generates a unique ID to identify an element.\n * @void\n * @return {string} Randomly generated ID.\n */\nfunction generateUUID() {\n  var array = new Uint8Array(16);\n  window.crypto.getRandomValues(array);\n  array[6] = 0x40 | (array[6] & 0x0f);\n  array[8] = 0x80 | (array[8] & 0x3f);\n\n  var UUID = \"\";\n  for (var i = 0; i \u003C 16; i++) {\n    var temp = array[i].toString(16);\n    if (temp.length \u003C 2)\n      temp = \"0\" + temp;\n    UUID += temp;\n    if (i == 3 || i == 5 || i == 7 || i == 9)\n      UUID += \"-\";\n  }\n  return UUID;\n};\n\n/**\n * A cache which maps IDs \u003C-> cached objects for the purpose of identifying\n * a script object remotely. Uses UUIDs for identification.\n * @constructor\n */\nfunction CacheWithUUID() {\n  this.cache_ = {};\n}\n\nCacheWithUUID.prototype = {\n  /**\n   * Stores a given item in the cache and returns a unique UUID.\n   *\n   * @param {!Object} item The item to store in the cache.\n   * @return {number} The UUID for the cached item.\n   */\n  storeItem: function(item) {\n    for (var i in this.cache_) {\n      if (item == this.cache_[i])\n        return i;\n    }\n    var id = generateUUID();\n    this.cache_[id] = item;\n    return id;\n  },\n\n  /**\n   * Retrieves the cached object for the given ID.\n   *\n   * @param {number} id The ID for the cached item to retrieve.\n   * @return {!Object} The retrieved item.\n   */\n  retrieveItem: function(id) {\n    var item = this.cache_[id];\n    if (item)\n      return item;\n    var error = new Error('not in cache');\n    error.code = StatusCode.STALE_ELEMENT_REFERENCE;\n    error.message = 'element is not attached to the page document';\n    throw error;\n  },\n\n  /**\n   * Clears stale items from the cache.\n   */\n  clearStale: function() {\n    for (var id in this.cache_) {\n      var node = this.cache_[id];\n      if (!this.isNodeReachable_(node))\n        delete this.cache_[id];\n    }\n  },\n\n  /**\n    * @private\n    * @param {!Node} node The node to check.\n    * @return {boolean} If the nodes is reachable.\n    */\n  isNodeReachable_: function(node) {\n    var nodeRoot = getNodeRootThroughAnyShadows(node);\n    return (nodeRoot == document);\n  }\n\n\n};\n\n/**\n * A cache which maps IDs \u003C-> cached objects for the purpose of identifying\n * a script object remotely.\n * @constructor\n */\nfunction Cache() {\n  this.cache_ = {};\n  this.nextId_ = 1;\n  this.idPrefix_ = Math.random().toString();\n}\n\nCache.prototype = {\n\n  /**\n   * Stores a given item in the cache and returns a unique ID.\n   *\n   * @param {!Object} item The item to store in the cache.\n   * @return {number} The ID for the cached item.\n   */\n  storeItem: function(item) {\n    for (var i in this.cache_) {\n      if (item == this.cache_[i])\n        return i;\n    }\n    var id = this.idPrefix_  + '-' + this.nextId_;\n    this.cache_[id] = item;\n    this.nextId_++;\n    return id;\n  },\n\n  /**\n   * Retrieves the cached object for the given ID.\n   *\n   * @param {number} id The ID for the cached item to retrieve.\n   * @return {!Object} The retrieved item.\n   */\n  retrieveItem: function(id) {\n    var item = this.cache_[id];\n    if (item)\n      return item;\n    var error = new Error('not in cache');\n    error.code = StatusCode.STALE_ELEMENT_REFERENCE;\n    error.message = 'element is not attached to the page document';\n    throw error;\n  },\n\n  /**\n   * Clears stale items from the cache.\n   */\n  clearStale: function() {\n    for (var id in this.cache_) {\n      var node = this.cache_[id];\n      if (!this.isNodeReachable_(node))\n        delete this.cache_[id];\n    }\n  },\n\n  /**\n    * @private\n    * @param {!Node} node The node to check.\n    * @return {boolean} If the nodes is reachable.\n    */\n  isNodeReachable_: function(node) {\n    var nodeRoot = getNodeRootThroughAnyShadows(node);\n    return (nodeRoot == document);\n  }\n};\n\n/**\n * Returns the root element of the node.  Found by traversing parentNodes until\n * a node with no parent is found.  This node is considered the root.\n * @param {?Node} node The node to find the root element for.\n * @return {?Node} The root node.\n */\nfunction getNodeRoot(node) {\n  while (node && node.parentNode) {\n    node = node.parentNode;\n  }\n  return node;\n}\n\n/**\n * Returns the root element of the node, jumping up through shadow roots if\n * any are found.\n */\nfunction getNodeRootThroughAnyShadows(node) {\n  var root = getNodeRoot(node);\n  while (SHADOW_DOM_ENABLED && root instanceof ShadowRoot) {\n    root = getNodeRoot(root.host);\n  }\n  return root;\n}\n\n/**\n * Returns the global object cache for the page.\n * @param {Document=} opt_doc The document whose cache to retrieve. Defaults to\n *     the current document.\n * @return {!Cache} The page's object cache.\n */\nfunction getPageCache(opt_doc, opt_w3c) {\n  var doc = opt_doc || document;\n  var w3c = opt_w3c || false;\n  var key = '$cdc_asdjflasutopfhvcZLmcfl_';\n  if (w3c) {\n    if (!(key in doc))\n      doc[key] = new CacheWithUUID();\n    return doc[key];\n  } else {\n    if (!(key in doc))\n      doc[key] = new Cache();\n    return doc[key];\n  }\n}\n\n/**\n * Wraps the given value to be transmitted remotely by converting\n * appropriate objects to cached object IDs.\n *\n * @param {*} value The value to wrap.\n * @return {*} The wrapped value.\n */\nfunction wrap(value) {\n  // As of crrev.com/1316933002, typeof() for some elements will return\n  // 'function', not 'object'. So we need to check for both non-null objects, as\n  // well Elements that also happen to be callable functions (e.g. \u003Cembed> and\n  // \u003Cobject> elements). Note that we can not use |value instanceof Object| here\n  // since this does not work with frames/iframes, for example\n  // frames[0].document.body instanceof Object == false even though\n  // typeof(frames[0].document.body) == 'object'.\n  if ((typeof(value) == 'object' && value != null) ||\n      (typeof(value) == 'function' && value.nodeName &&\n       value.nodeType == NodeType.ELEMENT)) {\n    var nodeType = value['nodeType'];\n    if (nodeType == NodeType.ELEMENT || nodeType == NodeType.DOCUMENT\n        || (SHADOW_DOM_ENABLED && value instanceof ShadowRoot)) {\n      var wrapped = {};\n      var root = getNodeRootThroughAnyShadows(value);\n      wrapped[ELEMENT_KEY] = getPageCache(root, w3cEnabled).storeItem(value);\n      return wrapped;\n    }\n\n    var obj;\n    if (typeof(value.length) == 'number') {\n      obj = [];\n      for (var i = 0; i \u003C value.length; i++)\n        obj[i] = wrap(value[i]);\n    } else {\n      obj = {};\n      for (var prop in value)\n        obj[prop] = wrap(value[prop]);\n    }\n    return obj;\n  }\n  return value;\n}\n\n/**\n * Unwraps the given value by converting from object IDs to the cached\n * objects.\n *\n * @param {*} value The value to unwrap.\n * @param {Cache} cache The cache to retrieve wrapped elements from.\n * @return {*} The unwrapped value.\n */\nfunction unwrap(value, cache) {\n  if (typeof(value) == 'object' && value != null) {\n    if (ELEMENT_KEY in value)\n      return cache.retrieveItem(value[ELEMENT_KEY]);\n\n    var obj;\n    if (typeof(value.length) == 'number') {\n      obj = [];\n      for (var i = 0; i \u003C value.length; i++)\n        obj[i] = unwrap(value[i], cache);\n    } else {\n      obj = {};\n      for (var prop in value)\n        obj[prop] = unwrap(value[prop], cache);\n    }\n    return obj;\n  }\n  return value;\n}\n\n/**\n * Calls a given function and returns its value.\n *\n * The inputs to and outputs of the function will be unwrapped and wrapped\n * respectively, unless otherwise specified. This wrapping involves converting\n * between cached object reference IDs and actual JS objects. The cache will\n * automatically be pruned each call to remove stale references.\n *\n * @param  {Array\u003Cstring>} shadowHostIds The host ids of the nested shadow\n *     DOMs the function should be executed in the context of.\n * @param {function(...[*]) : *} func The function to invoke.\n * @param {!Array\u003C*>} args The array of arguments to supply to the function,\n *     which will be unwrapped before invoking the function.\n * @param {boolean} w3c Whether to return a W3C compliant element reference.\n * @param {boolean=} opt_unwrappedReturn Whether the function's return value\n *     should be left unwrapped.\n * @return {*} An object containing a status and value property, where status\n *     is a WebDriver status code and value is the wrapped value. If an\n *     unwrapped return was specified, this will be the function's pure return\n *     value.\n */\nfunction callFunction(shadowHostIds, func, args, w3c, opt_unwrappedReturn) {\n  if (w3c) {\n    w3cEnabled = true;\n    ELEMENT_KEY = 'element-6066-11e4-a52e-4f735466cecf';\n\n  }\n  var cache = getPageCache(null, w3cEnabled);\n  cache.clearStale();\n  if (shadowHostIds && SHADOW_DOM_ENABLED) {\n    for (var i = 0; i \u003C shadowHostIds.length; i++) {\n      var host = cache.retrieveItem(shadowHostIds[i]);\n      // TODO(zachconrad): Use the olderShadowRoot API when available to check\n      // all of the shadow roots.\n      cache = getPageCache(host.webkitShadowRoot, w3cEnabled);\n      cache.clearStale();\n    }\n  }\n\n  if (opt_unwrappedReturn)\n    return func.apply(null, unwrap(args, cache));\n\n  var status = 0;\n  try {\n    var returnValue = wrap(func.apply(null, unwrap(args, cache)));\n  } catch (error) {\n    status = error.code || StatusCode.UNKNOWN_ERROR;\n    var returnValue = error.message;\n  }\n  return {\n      status: status,\n      value: returnValue\n  }\n}\n; return callFunction.apply(null, arguments) }\n).apply(null, [null, function(s) { return 1; }, [], false])",
+   "returnByValue": true
+}
+[1532715853.875][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=11) {
+   "result": {
+      "type": "object",
+      "value": {
+         "status": 0,
+         "value": 1
+      }
+   }
+}
+[1532715853.876][INFO]: [c3681035a5e0990f0e117e8f7299f793] RESPONSE InitSession {
+   "acceptInsecureCerts": false,
+   "acceptSslCerts": false,
+   "applicationCacheEnabled": false,
+   "browserConnectionEnabled": false,
+   "browserName": "chrome",
+   "chrome": {
+      "chromedriverVersion": "2.40 (8486fd6e5eb99bf7d30a4ee2c2937d229d06e595)",
+      "userDataDir": "/tmp/.org.chromium.Chromium.sNKRlA"
+   },
+   "cssSelectorsEnabled": true,
+   "databaseEnabled": false,
+   "goog:chromeOptions": {
+      "debuggerAddress": "localhost:42389"
+   },
+   "handlesAlerts": true,
+   "hasTouchScreen": false,
+   "javascriptEnabled": true,
+   "locationContextEnabled": true,
+   "mobileEmulationEnabled": false,
+   "nativeEvents": true,
+   "networkConnectionEnabled": false,
+   "pageLoadStrategy": "normal",
+   "platform": "Linux",
+   "rotatable": false,
+   "setWindowRect": true,
+   "takesHeapSnapshot": true,
+   "takesScreenshot": true,
+   "unexpectedAlertBehaviour": "",
+   "version": "69.0.3491.0",
+   "webStorageEnabled": true
+}
+[1532715853.877][INFO]: [c3681035a5e0990f0e117e8f7299f793] COMMAND Navigate {
+   "url": "http://127.0.0.1:34537/chromedriver/empty.html"
+}
+[1532715853.877][INFO]: Waiting for pending navigations...
+[1532715853.877][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=12) {
+   "expression": "1"
+}
+[1532715853.880][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=12) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1532715853.880][INFO]: Done waiting for pending navigations. Status: ok
+[1532715853.880][DEBUG]: DEVTOOLS COMMAND Page.navigate (id=13) {
+   "url": "http://127.0.0.1:34537/chromedriver/empty.html"
+}
+[1532715854.170][DEBUG]: DEVTOOLS RESPONSE Page.navigate (id=13) {
+   "frameId": "2BD057A9A54060B8A7969DB92D36643F",
+   "loaderId": "CFC45975294A7B1707735281585563E8"
+}
+[1532715854.170][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=14) {
+   "expression": "document.URL"
+}
+[1532715854.180][DEBUG]: DEVTOOLS EVENT Runtime.executionContextsCleared {
+
+}
+[1532715854.198][DEBUG]: DEVTOOLS EVENT Page.frameStartedLoading {
+   "frameId": "2BD057A9A54060B8A7969DB92D36643F"
+}
+[177373:177373:0727/112414.261698:ERROR:render_process_impl.cc(208)] WebFrame LEAKED 1 TIMES
+[1532715854.276][DEBUG]: DEVTOOLS EVENT Runtime.executionContextsCleared {
+
+}
+[1532715854.276][DEBUG]: DEVTOOLS EVENT Page.frameNavigated {
+   "frame": {
+      "id": "2BD057A9A54060B8A7969DB92D36643F",
+      "loaderId": "CFC45975294A7B1707735281585563E8",
+      "mimeType": "text/html",
+      "securityOrigin": "http://127.0.0.1:34537",
+      "url": "http://127.0.0.1:34537/chromedriver/empty.html"
+   }
+}
+[1532715854.276][DEBUG]: DEVTOOLS EVENT Runtime.executionContextCreated {
+   "context": {
+      "auxData": {
+         "frameId": "2BD057A9A54060B8A7969DB92D36643F",
+         "isDefault": true
+      },
+      "id": 1,
+      "name": "",
+      "origin": "http://127.0.0.1:34537"
+   }
+}
+[1532715854.276][DEBUG]: DEVTOOLS EVENT DOM.documentUpdated {
+
+}
+[1532715854.276][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=15) {
+
+}
+[1532715854.307][DEBUG]: DEVTOOLS EVENT Page.loadEventFired {
+   "timestamp": 328538.58037
+}
+[1532715854.307][DEBUG]: DEVTOOLS EVENT Page.frameStoppedLoading {
+   "frameId": "2BD057A9A54060B8A7969DB92D36643F"
+}
+[1532715854.307][DEBUG]: DEVTOOLS EVENT DOM.documentUpdated {
+
+}
+[1532715854.307][DEBUG]: DEVTOOLS COMMAND DOM.getDocument (id=16) {
+
+}
+[1532715854.307][DEBUG]: DEVTOOLS EVENT Page.domContentEventFired {
+   "timestamp": 328538.582574
+}
+[1532715854.307][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=14) {
+   "result": {
+      "type": "string",
+      "value": "http://127.0.0.1:34537/chromedriver/empty.html"
+   }
+}
+[1532715854.313][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=15) {
+   "root": {
+      "backendNodeId": 1,
+      "baseURL": "http://127.0.0.1:34537/chromedriver/empty.html",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 2,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 3,
+            "childNodeCount": 0,
+            "localName": "head",
+            "nodeId": 3,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 2
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 4,
+            "childNodeCount": 0,
+            "children": [ {
+               "backendNodeId": 5,
+               "localName": "",
+               "nodeId": 5,
+               "nodeName": "#text",
+               "nodeType": 3,
+               "nodeValue": "\n",
+               "parentId": 4
+            } ],
+            "localName": "body",
+            "nodeId": 4,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 2
+         } ],
+         "frameId": "2BD057A9A54060B8A7969DB92D36643F",
+         "localName": "html",
+         "nodeId": 2,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 1
+      } ],
+      "documentURL": "http://127.0.0.1:34537/chromedriver/empty.html",
+      "localName": "",
+      "nodeId": 1,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1532715854.318][DEBUG]: DEVTOOLS RESPONSE DOM.getDocument (id=16) {
+   "root": {
+      "backendNodeId": 1,
+      "baseURL": "http://127.0.0.1:34537/chromedriver/empty.html",
+      "childNodeCount": 1,
+      "children": [ {
+         "attributes": [  ],
+         "backendNodeId": 2,
+         "childNodeCount": 2,
+         "children": [ {
+            "attributes": [  ],
+            "backendNodeId": 3,
+            "childNodeCount": 0,
+            "localName": "head",
+            "nodeId": 8,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 7
+         }, {
+            "attributes": [  ],
+            "backendNodeId": 4,
+            "childNodeCount": 0,
+            "children": [ {
+               "backendNodeId": 5,
+               "localName": "",
+               "nodeId": 10,
+               "nodeName": "#text",
+               "nodeType": 3,
+               "nodeValue": "\n",
+               "parentId": 9
+            } ],
+            "localName": "body",
+            "nodeId": 9,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 7
+         } ],
+         "frameId": "2BD057A9A54060B8A7969DB92D36643F",
+         "localName": "html",
+         "nodeId": 7,
+         "nodeName": "HTML",
+         "nodeType": 1,
+         "nodeValue": "",
+         "parentId": 6
+      } ],
+      "documentURL": "http://127.0.0.1:34537/chromedriver/empty.html",
+      "localName": "",
+      "nodeId": 6,
+      "nodeName": "#document",
+      "nodeType": 9,
+      "nodeValue": "",
+      "xmlVersion": ""
+   }
+}
+[1532715854.319][INFO]: Waiting for pending navigations...
+[1532715854.319][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=17) {
+   "expression": "1"
+}
+[1532715854.322][DEBUG]: DEVTOOLS EVENT Log.entryAdded {
+   "entry": {
+      "level": "error",
+      "networkRequestId": "1000177411.2",
+      "source": "network",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "timestamp": 1532715854319.89,
+      "url": "http://127.0.0.1:34537/favicon.ico"
+   }
+}
+[1532715854.324][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=17) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1532715854.324][INFO]: Done waiting for pending navigations. Status: ok
+[1532715854.324][INFO]: [c3681035a5e0990f0e117e8f7299f793] RESPONSE Navigate
+[1532715854.325][INFO]: [c3681035a5e0990f0e117e8f7299f793] COMMAND ExecuteScript {
+   "args": [  ],
+   "script": "document.body.innerHTML = '\u003Cinput type=\"text\" value=\"abc\">';return document.getElementsByTagName(\"input\")[0];"
+}
+[1532715854.325][INFO]: Waiting for pending navigations...
+[1532715854.325][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=18) {
+   "expression": "1"
+}
+[1532715854.327][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=18) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1532715854.327][INFO]: Done waiting for pending navigations. Status: ok
+[1532715854.329][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=19) {
+   "expression": "(function() { // Copyright (c) 2012 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\n/**\n * Enum for WebDriver status codes.\n * @enum {number}\n */\nvar StatusCode = {\n  STALE_ELEMENT_REFERENCE: 10,\n  UNKNOWN_ERROR: 13,\n};\n\n/**\n * Enum for node types.\n * @enum {number}\n */\nvar NodeType = {\n  ELEMENT: 1,\n  DOCUMENT: 9,\n};\n\n/**\n * Dictionary key to use for holding an element ID.\n * @const\n * @type {string}\n */\nvar ELEMENT_KEY = 'ELEMENT';\n\n/**\n * True if using W3C Element references.\n * @const\n * @type {boolean}\n */\nvar w3cEnabled = false;\n\n/**\n * True if shadow dom is enabled.\n * @const\n * @type {boolean}\n */\nvar SHADOW_DOM_ENABLED = typeof ShadowRoot === 'function';\n\n/**\n * Generates a unique ID to identify an element.\n * @void\n * @return {string} Randomly generated ID.\n */\nfunction generateUUID() {\n  var array = new Uint8Array(16);\n  window.crypto.getRandomValues(array);\n  array[6] = 0x40 | (array[6] & 0x0f);\n  array[8] = 0x80 | (array[8] & 0x3f);\n\n  var UUID = \"\";\n  for (var i = 0; i \u003C 16; i++) {\n    var temp = array[i].toString(16);\n    if (temp.length \u003C 2)\n      temp = \"0\" + temp;\n    UUID += temp;\n    if (i == 3 || i == 5 || i == 7 || i == 9)\n      UUID += \"-\";\n  }\n  return UUID;\n};\n\n/**\n * A cache which maps IDs \u003C-> cached objects for the purpose of identifying\n * a script object remotely. Uses UUIDs for identification.\n * @constructor\n */\nfunction CacheWithUUID() {\n  this.cache_ = {};\n}\n\nCacheWithUUID.prototype = {\n  /**\n   * Stores a given item in the cache and returns a unique UUID.\n   *\n   * @param {!Object} item The item to store in the cache.\n   * @return {number} The UUID for the cached item.\n   */\n  storeItem: function(item) {\n    for (var i in this.cache_) {\n      if (item == this.cache_[i])\n        return i;\n    }\n    var id = generateUUID();\n    this.cache_[id] = item;\n    return id;\n  },\n\n  /**\n   * Retrieves the cached object for the given ID.\n   *\n   * @param {number} id The ID for the cached item to retrieve.\n   * @return {!Object} The retrieved item.\n   */\n  retrieveItem: function(id) {\n    var item = this.cache_[id];\n    if (item)\n      return item;\n    var error = new Error('not in cache');\n    error.code = StatusCode.STALE_ELEMENT_REFERENCE;\n    error.message = 'element is not attached to the page document';\n    throw error;\n  },\n\n  /**\n   * Clears stale items from the cache.\n   */\n  clearStale: function() {\n    for (var id in this.cache_) {\n      var node = this.cache_[id];\n      if (!this.isNodeReachable_(node))\n        delete this.cache_[id];\n    }\n  },\n\n  /**\n    * @private\n    * @param {!Node} node The node to check.\n    * @return {boolean} If the nodes is reachable.\n    */\n  isNodeReachable_: function(node) {\n    var nodeRoot = getNodeRootThroughAnyShadows(node);\n    return (nodeRoot == document);\n  }\n\n\n};\n\n/**\n * A cache which maps IDs \u003C-> cached objects for the purpose of identifying\n * a script object remotely.\n * @constructor\n */\nfunction Cache() {\n  this.cache_ = {};\n  this.nextId_ = 1;\n  this.idPrefix_ = Math.random().toString();\n}\n\nCache.prototype = {\n\n  /**\n   * Stores a given item in the cache and returns a unique ID.\n   *\n   * @param {!Object} item The item to store in the cache.\n   * @return {number} The ID for the cached item.\n   */\n  storeItem: function(item) {\n    for (var i in this.cache_) {\n      if (item == this.cache_[i])\n        return i;\n    }\n    var id = this.idPrefix_  + '-' + this.nextId_;\n    this.cache_[id] = item;\n    this.nextId_++;\n    return id;\n  },\n\n  /**\n   * Retrieves the cached object for the given ID.\n   *\n   * @param {number} id The ID for the cached item to retrieve.\n   * @return {!Object} The retrieved item.\n   */\n  retrieveItem: function(id) {\n    var item = this.cache_[id];\n    if (item)\n      return item;\n    var error = new Error('not in cache');\n    error.code = StatusCode.STALE_ELEMENT_REFERENCE;\n    error.message = 'element is not attached to the page document';\n    throw error;\n  },\n\n  /**\n   * Clears stale items from the cache.\n   */\n  clearStale: function() {\n    for (var id in this.cache_) {\n      var node = this.cache_[id];\n      if (!this.isNodeReachable_(node))\n        delete this.cache_[id];\n    }\n  },\n\n  /**\n    * @private\n    * @param {!Node} node The node to check.\n    * @return {boolean} If the nodes is reachable.\n    */\n  isNodeReachable_: function(node) {\n    var nodeRoot = getNodeRootThroughAnyShadows(node);\n    return (nodeRoot == document);\n  }\n};\n\n/**\n * Returns the root element of the node.  Found by traversing parentNodes until\n * a node with no parent is found.  This node is considered the root.\n * @param {?Node} node The node to find the root element for.\n * @return {?Node} The root node.\n */\nfunction getNodeRoot(node) {\n  while (node && node.parentNode) {\n    node = node.parentNode;\n  }\n  return node;\n}\n\n/**\n * Returns the root element of the node, jumping up through shadow roots if\n * any are found.\n */\nfunction getNodeRootThroughAnyShadows(node) {\n  var root = getNodeRoot(node);\n  while (SHADOW_DOM_ENABLED && root instanceof ShadowRoot) {\n    root = getNodeRoot(root.host);\n  }\n  return root;\n}\n\n/**\n * Returns the global object cache for the page.\n * @param {Document=} opt_doc The document whose cache to retrieve. Defaults to\n *     the current document.\n * @return {!Cache} The page's object cache.\n */\nfunction getPageCache(opt_doc, opt_w3c) {\n  var doc = opt_doc || document;\n  var w3c = opt_w3c || false;\n  var key = '$cdc_asdjflasutopfhvcZLmcfl_';\n  if (w3c) {\n    if (!(key in doc))\n      doc[key] = new CacheWithUUID();\n    return doc[key];\n  } else {\n    if (!(key in doc))\n      doc[key] = new Cache();\n    return doc[key];\n  }\n}\n\n/**\n * Wraps the given value to be transmitted remotely by converting\n * appropriate objects to cached object IDs.\n *\n * @param {*} value The value to wrap.\n * @return {*} The wrapped value.\n */\nfunction wrap(value) {\n  // As of crrev.com/1316933002, typeof() for some elements will return\n  // 'function', not 'object'. So we need to check for both non-null objects, as\n  // well Elements that also happen to be callable functions (e.g. \u003Cembed> and\n  // \u003Cobject> elements). Note that we can not use |value instanceof Object| here\n  // since this does not work with frames/iframes, for example\n  // frames[0].document.body instanceof Object == false even though\n  // typeof(frames[0].document.body) == 'object'.\n  if ((typeof(value) == 'object' && value != null) ||\n      (typeof(value) == 'function' && value.nodeName &&\n       value.nodeType == NodeType.ELEMENT)) {\n    var nodeType = value['nodeType'];\n    if (nodeType == NodeType.ELEMENT || nodeType == NodeType.DOCUMENT\n        || (SHADOW_DOM_ENABLED && value instanceof ShadowRoot)) {\n      var wrapped = {};\n      var root = getNodeRootThroughAnyShadows(value);\n      wrapped[ELEMENT_KEY] = getPageCache(root, w3cEnabled).storeItem(value);\n      return wrapped;\n    }\n\n    var obj;\n    if (typeof(value.length) == 'number') {\n      obj = [];\n      for (var i = 0; i \u003C value.length; i++)\n        obj[i] = wrap(value[i]);\n    } else {\n      obj = {};\n      for (var prop in value)\n        obj[prop] = wrap(value[prop]);\n    }\n    return obj;\n  }\n  return value;\n}\n\n/**\n * Unwraps the given value by converting from object IDs to the cached\n * objects.\n *\n * @param {*} value The value to unwrap.\n * @param {Cache} cache The cache to retrieve wrapped elements from.\n * @return {*} The unwrapped value.\n */\nfunction unwrap(value, cache) {\n  if (typeof(value) == 'object' && value != null) {\n    if (ELEMENT_KEY in value)\n      return cache.retrieveItem(value[ELEMENT_KEY]);\n\n    var obj;\n    if (typeof(value.length) == 'number') {\n      obj = [];\n      for (var i = 0; i \u003C value.length; i++)\n        obj[i] = unwrap(value[i], cache);\n    } else {\n      obj = {};\n      for (var prop in value)\n        obj[prop] = unwrap(value[prop], cache);\n    }\n    return obj;\n  }\n  return value;\n}\n\n/**\n * Calls a given function and returns its value.\n *\n * The inputs to and outputs of the function will be unwrapped and wrapped\n * respectively, unless otherwise specified. This wrapping involves converting\n * between cached object reference IDs and actual JS objects. The cache will\n * automatically be pruned each call to remove stale references.\n *\n * @param  {Array\u003Cstring>} shadowHostIds The host ids of the nested shadow\n *     DOMs the function should be executed in the context of.\n * @param {function(...[*]) : *} func The function to invoke.\n * @param {!Array\u003C*>} args The array of arguments to supply to the function,\n *     which will be unwrapped before invoking the function.\n * @param {boolean} w3c Whether to return a W3C compliant element reference.\n * @param {boolean=} opt_unwrappedReturn Whether the function's return value\n *     should be left unwrapped.\n * @return {*} An object containing a status and value property, where status\n *     is a WebDriver status code and value is the wrapped value. If an\n *     unwrapped return was specified, this will be the function's pure return\n *     value.\n */\nfunction callFunction(shadowHostIds, func, args, w3c, opt_unwrappedReturn) {\n  if (w3c) {\n    w3cEnabled = true;\n    ELEMENT_KEY = 'element-6066-11e4-a52e-4f735466cecf';\n\n  }\n  var cache = getPageCache(null, w3cEnabled);\n  cache.clearStale();\n  if (shadowHostIds && SHADOW_DOM_ENABLED) {\n    for (var i = 0; i \u003C shadowHostIds.length; i++) {\n      var host = cache.retrieveItem(shadowHostIds[i]);\n      // TODO(zachconrad): Use the olderShadowRoot API when available to check\n      // all of the shadow roots.\n      cache = getPageCache(host.webkitShadowRoot, w3cEnabled);\n      cache.clearStale();\n    }\n  }\n\n  if (opt_unwrappedReturn)\n    return func.apply(null, unwrap(args, cache));\n\n  var status = 0;\n  try {\n    var returnValue = wrap(func.apply(null, unwrap(args, cache)));\n  } catch (error) {\n    status = error.code || StatusCode.UNKNOWN_ERROR;\n    var returnValue = error.message;\n  }\n  return {\n      status: status,\n      value: returnValue\n  }\n}\n; return callFunction.apply(null, arguments) }\n).apply(null, [null, function(){document.body.innerHTML = '\u003Cinput type=\"text\" value=\"abc\">';return document.getElementsByTagName(\"input\")[0];}, [], false])",
+   "returnByValue": true
+}
+[1532715854.359][DEBUG]: DEVTOOLS EVENT DOM.childNodeInserted {
+   "node": {
+      "attributes": [ "type", "text", "value", "abc" ],
+      "backendNodeId": 6,
+      "childNodeCount": 0,
+      "children": [  ],
+      "localName": "input",
+      "nodeId": 11,
+      "nodeName": "INPUT",
+      "nodeType": 1,
+      "nodeValue": "",
+      "shadowRoots": [ {
+         "backendNodeId": 7,
+         "childNodeCount": 1,
+         "localName": "",
+         "nodeId": 12,
+         "nodeName": "#document-fragment",
+         "nodeType": 11,
+         "nodeValue": "",
+         "shadowRootType": "user-agent"
+      } ]
+   },
+   "parentNodeId": 9,
+   "previousNodeId": 0
+}
+[1532715854.360][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=19) {
+   "result": {
+      "type": "object",
+      "value": {
+         "status": 0,
+         "value": {
+            "ELEMENT": "0.47435541797315195-1"
+         }
+      }
+   }
+}
+[1532715854.360][INFO]: Waiting for pending navigations...
+[1532715854.360][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=20) {
+   "expression": "1"
+}
+[1532715854.409][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=20) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1532715854.409][INFO]: Done waiting for pending navigations. Status: ok
+[1532715854.409][INFO]: [c3681035a5e0990f0e117e8f7299f793] RESPONSE ExecuteScript {
+   "ELEMENT": "0.47435541797315195-1"
+}
+[1532715854.411][INFO]: [c3681035a5e0990f0e117e8f7299f793] COMMAND ExecuteScript {
+   "args": [ {
+      "ELEMENT": "0.47435541797315195-1"
+   } ],
+   "script": "return arguments[0].value;"
+}
+[1532715854.411][INFO]: Waiting for pending navigations...
+[1532715854.411][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=21) {
+   "expression": "1"
+}
+[1532715854.428][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=21) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1532715854.428][INFO]: Done waiting for pending navigations. Status: ok
+[1532715854.429][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=22) {
+   "expression": "(function() { // Copyright (c) 2012 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\n/**\n * Enum for WebDriver status codes.\n * @enum {number}\n */\nvar StatusCode = {\n  STALE_ELEMENT_REFERENCE: 10,\n  UNKNOWN_ERROR: 13,\n};\n\n/**\n * Enum for node types.\n * @enum {number}\n */\nvar NodeType = {\n  ELEMENT: 1,\n  DOCUMENT: 9,\n};\n\n/**\n * Dictionary key to use for holding an element ID.\n * @const\n * @type {string}\n */\nvar ELEMENT_KEY = 'ELEMENT';\n\n/**\n * True if using W3C Element references.\n * @const\n * @type {boolean}\n */\nvar w3cEnabled = false;\n\n/**\n * True if shadow dom is enabled.\n * @const\n * @type {boolean}\n */\nvar SHADOW_DOM_ENABLED = typeof ShadowRoot === 'function';\n\n/**\n * Generates a unique ID to identify an element.\n * @void\n * @return {string} Randomly generated ID.\n */\nfunction generateUUID() {\n  var array = new Uint8Array(16);\n  window.crypto.getRandomValues(array);\n  array[6] = 0x40 | (array[6] & 0x0f);\n  array[8] = 0x80 | (array[8] & 0x3f);\n\n  var UUID = \"\";\n  for (var i = 0; i \u003C 16; i++) {\n    var temp = array[i].toString(16);\n    if (temp.length \u003C 2)\n      temp = \"0\" + temp;\n    UUID += temp;\n    if (i == 3 || i == 5 || i == 7 || i == 9)\n      UUID += \"-\";\n  }\n  return UUID;\n};\n\n/**\n * A cache which maps IDs \u003C-> cached objects for the purpose of identifying\n * a script object remotely. Uses UUIDs for identification.\n * @constructor\n */\nfunction CacheWithUUID() {\n  this.cache_ = {};\n}\n\nCacheWithUUID.prototype = {\n  /**\n   * Stores a given item in the cache and returns a unique UUID.\n   *\n   * @param {!Object} item The item to store in the cache.\n   * @return {number} The UUID for the cached item.\n   */\n  storeItem: function(item) {\n    for (var i in this.cache_) {\n      if (item == this.cache_[i])\n        return i;\n    }\n    var id = generateUUID();\n    this.cache_[id] = item;\n    return id;\n  },\n\n  /**\n   * Retrieves the cached object for the given ID.\n   *\n   * @param {number} id The ID for the cached item to retrieve.\n   * @return {!Object} The retrieved item.\n   */\n  retrieveItem: function(id) {\n    var item = this.cache_[id];\n    if (item)\n      return item;\n    var error = new Error('not in cache');\n    error.code = StatusCode.STALE_ELEMENT_REFERENCE;\n    error.message = 'element is not attached to the page document';\n    throw error;\n  },\n\n  /**\n   * Clears stale items from the cache.\n   */\n  clearStale: function() {\n    for (var id in this.cache_) {\n      var node = this.cache_[id];\n      if (!this.isNodeReachable_(node))\n        delete this.cache_[id];\n    }\n  },\n\n  /**\n    * @private\n    * @param {!Node} node The node to check.\n    * @return {boolean} If the nodes is reachable.\n    */\n  isNodeReachable_: function(node) {\n    var nodeRoot = getNodeRootThroughAnyShadows(node);\n    return (nodeRoot == document);\n  }\n\n\n};\n\n/**\n * A cache which maps IDs \u003C-> cached objects for the purpose of identifying\n * a script object remotely.\n * @constructor\n */\nfunction Cache() {\n  this.cache_ = {};\n  this.nextId_ = 1;\n  this.idPrefix_ = Math.random().toString();\n}\n\nCache.prototype = {\n\n  /**\n   * Stores a given item in the cache and returns a unique ID.\n   *\n   * @param {!Object} item The item to store in the cache.\n   * @return {number} The ID for the cached item.\n   */\n  storeItem: function(item) {\n    for (var i in this.cache_) {\n      if (item == this.cache_[i])\n        return i;\n    }\n    var id = this.idPrefix_  + '-' + this.nextId_;\n    this.cache_[id] = item;\n    this.nextId_++;\n    return id;\n  },\n\n  /**\n   * Retrieves the cached object for the given ID.\n   *\n   * @param {number} id The ID for the cached item to retrieve.\n   * @return {!Object} The retrieved item.\n   */\n  retrieveItem: function(id) {\n    var item = this.cache_[id];\n    if (item)\n      return item;\n    var error = new Error('not in cache');\n    error.code = StatusCode.STALE_ELEMENT_REFERENCE;\n    error.message = 'element is not attached to the page document';\n    throw error;\n  },\n\n  /**\n   * Clears stale items from the cache.\n   */\n  clearStale: function() {\n    for (var id in this.cache_) {\n      var node = this.cache_[id];\n      if (!this.isNodeReachable_(node))\n        delete this.cache_[id];\n    }\n  },\n\n  /**\n    * @private\n    * @param {!Node} node The node to check.\n    * @return {boolean} If the nodes is reachable.\n    */\n  isNodeReachable_: function(node) {\n    var nodeRoot = getNodeRootThroughAnyShadows(node);\n    return (nodeRoot == document);\n  }\n};\n\n/**\n * Returns the root element of the node.  Found by traversing parentNodes until\n * a node with no parent is found.  This node is considered the root.\n * @param {?Node} node The node to find the root element for.\n * @return {?Node} The root node.\n */\nfunction getNodeRoot(node) {\n  while (node && node.parentNode) {\n    node = node.parentNode;\n  }\n  return node;\n}\n\n/**\n * Returns the root element of the node, jumping up through shadow roots if\n * any are found.\n */\nfunction getNodeRootThroughAnyShadows(node) {\n  var root = getNodeRoot(node);\n  while (SHADOW_DOM_ENABLED && root instanceof ShadowRoot) {\n    root = getNodeRoot(root.host);\n  }\n  return root;\n}\n\n/**\n * Returns the global object cache for the page.\n * @param {Document=} opt_doc The document whose cache to retrieve. Defaults to\n *     the current document.\n * @return {!Cache} The page's object cache.\n */\nfunction getPageCache(opt_doc, opt_w3c) {\n  var doc = opt_doc || document;\n  var w3c = opt_w3c || false;\n  var key = '$cdc_asdjflasutopfhvcZLmcfl_';\n  if (w3c) {\n    if (!(key in doc))\n      doc[key] = new CacheWithUUID();\n    return doc[key];\n  } else {\n    if (!(key in doc))\n      doc[key] = new Cache();\n    return doc[key];\n  }\n}\n\n/**\n * Wraps the given value to be transmitted remotely by converting\n * appropriate objects to cached object IDs.\n *\n * @param {*} value The value to wrap.\n * @return {*} The wrapped value.\n */\nfunction wrap(value) {\n  // As of crrev.com/1316933002, typeof() for some elements will return\n  // 'function', not 'object'. So we need to check for both non-null objects, as\n  // well Elements that also happen to be callable functions (e.g. \u003Cembed> and\n  // \u003Cobject> elements). Note that we can not use |value instanceof Object| here\n  // since this does not work with frames/iframes, for example\n  // frames[0].document.body instanceof Object == false even though\n  // typeof(frames[0].document.body) == 'object'.\n  if ((typeof(value) == 'object' && value != null) ||\n      (typeof(value) == 'function' && value.nodeName &&\n       value.nodeType == NodeType.ELEMENT)) {\n    var nodeType = value['nodeType'];\n    if (nodeType == NodeType.ELEMENT || nodeType == NodeType.DOCUMENT\n        || (SHADOW_DOM_ENABLED && value instanceof ShadowRoot)) {\n      var wrapped = {};\n      var root = getNodeRootThroughAnyShadows(value);\n      wrapped[ELEMENT_KEY] = getPageCache(root, w3cEnabled).storeItem(value);\n      return wrapped;\n    }\n\n    var obj;\n    if (typeof(value.length) == 'number') {\n      obj = [];\n      for (var i = 0; i \u003C value.length; i++)\n        obj[i] = wrap(value[i]);\n    } else {\n      obj = {};\n      for (var prop in value)\n        obj[prop] = wrap(value[prop]);\n    }\n    return obj;\n  }\n  return value;\n}\n\n/**\n * Unwraps the given value by converting from object IDs to the cached\n * objects.\n *\n * @param {*} value The value to unwrap.\n * @param {Cache} cache The cache to retrieve wrapped elements from.\n * @return {*} The unwrapped value.\n */\nfunction unwrap(value, cache) {\n  if (typeof(value) == 'object' && value != null) {\n    if (ELEMENT_KEY in value)\n      return cache.retrieveItem(value[ELEMENT_KEY]);\n\n    var obj;\n    if (typeof(value.length) == 'number') {\n      obj = [];\n      for (var i = 0; i \u003C value.length; i++)\n        obj[i] = unwrap(value[i], cache);\n    } else {\n      obj = {};\n      for (var prop in value)\n        obj[prop] = unwrap(value[prop], cache);\n    }\n    return obj;\n  }\n  return value;\n}\n\n/**\n * Calls a given function and returns its value.\n *\n * The inputs to and outputs of the function will be unwrapped and wrapped\n * respectively, unless otherwise specified. This wrapping involves converting\n * between cached object reference IDs and actual JS objects. The cache will\n * automatically be pruned each call to remove stale references.\n *\n * @param  {Array\u003Cstring>} shadowHostIds The host ids of the nested shadow\n *     DOMs the function should be executed in the context of.\n * @param {function(...[*]) : *} func The function to invoke.\n * @param {!Array\u003C*>} args The array of arguments to supply to the function,\n *     which will be unwrapped before invoking the function.\n * @param {boolean} w3c Whether to return a W3C compliant element reference.\n * @param {boolean=} opt_unwrappedReturn Whether the function's return value\n *     should be left unwrapped.\n * @return {*} An object containing a status and value property, where status\n *     is a WebDriver status code and value is the wrapped value. If an\n *     unwrapped return was specified, this will be the function's pure return\n *     value.\n */\nfunction callFunction(shadowHostIds, func, args, w3c, opt_unwrappedReturn) {\n  if (w3c) {\n    w3cEnabled = true;\n    ELEMENT_KEY = 'element-6066-11e4-a52e-4f735466cecf';\n\n  }\n  var cache = getPageCache(null, w3cEnabled);\n  cache.clearStale();\n  if (shadowHostIds && SHADOW_DOM_ENABLED) {\n    for (var i = 0; i \u003C shadowHostIds.length; i++) {\n      var host = cache.retrieveItem(shadowHostIds[i]);\n      // TODO(zachconrad): Use the olderShadowRoot API when available to check\n      // all of the shadow roots.\n      cache = getPageCache(host.webkitShadowRoot, w3cEnabled);\n      cache.clearStale();\n    }\n  }\n\n  if (opt_unwrappedReturn)\n    return func.apply(null, unwrap(args, cache));\n\n  var status = 0;\n  try {\n    var returnValue = wrap(func.apply(null, unwrap(args, cache)));\n  } catch (error) {\n    status = error.code || StatusCode.UNKNOWN_ERROR;\n    var returnValue = error.message;\n  }\n  return {\n      status: status,\n      value: returnValue\n  }\n}\n; return callFunction.apply(null, arguments) }\n).apply(null, [null, function(){return arguments[0].value;}, [{\"ELEMENT\":\"0.47435541797315195-1\"}], false])",
+   "returnByValue": true
+}
+[1532715854.434][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=22) {
+   "result": {
+      "type": "object",
+      "value": {
+         "status": 0,
+         "value": "abc"
+      }
+   }
+}
+[1532715854.435][INFO]: Waiting for pending navigations...
+[1532715854.435][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=23) {
+   "expression": "1"
+}
+[1532715854.436][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=23) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1532715854.436][INFO]: Done waiting for pending navigations. Status: ok
+[1532715854.436][INFO]: [c3681035a5e0990f0e117e8f7299f793] RESPONSE ExecuteScript "abc"
+[1532715854.438][INFO]: [c3681035a5e0990f0e117e8f7299f793] COMMAND ClearElement {
+   "id": "0.47435541797315195-1"
+}
+[1532715854.438][INFO]: Waiting for pending navigations...
+[1532715854.438][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=24) {
+   "expression": "1"
+}
+[1532715854.445][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=24) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1532715854.445][INFO]: Done waiting for pending navigations. Status: ok
+[1532715854.451][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=25) {
+   "expression": "(function() { // Copyright (c) 2012 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\n/**\n * Enum for WebDriver status codes.\n * @enum {number}\n */\nvar StatusCode = {\n  STALE_ELEMENT_REFERENCE: 10,\n  UNKNOWN_ERROR: 13,\n};\n\n/**\n * Enum for node types.\n * @enum {number}\n */\nvar NodeType = {\n  ELEMENT: 1,\n  DOCUMENT: 9,\n};\n\n/**\n * Dictionary key to use for holding an element ID.\n * @const\n * @type {string}\n */\nvar ELEMENT_KEY = 'ELEMENT';\n\n/**\n * True if using W3C Element references.\n * @const\n * @type {boolean}\n */\nvar w3cEnabled = false;\n\n/**\n * True if shadow dom is enabled.\n * @const\n * @type {boolean}\n */\nvar SHADOW_DOM_ENABLED = typeof ShadowRoot === 'function';\n\n/**\n * Generates a unique ID to identify an element.\n * @void\n * @return {string} Randomly generated ID.\n */\nfunction generateUUID() {\n  var array = new Uint8Array(16);\n  window.crypto.getRandomValues(array);\n  array[6] = 0x40 | (array[6] & 0x0f);\n  array[8] = 0x80 | (array[8] & 0x3f);\n\n  var UUID = \"\";\n  for (var i = 0; i \u003C 16; i++) {\n    var temp = array[i].toString(16);\n    if (temp.length \u003C 2)\n      temp = \"0\" + temp;\n    UUID += temp;\n    if (i == 3 || i == 5 || i == 7 || i == 9)\n      UUID += \"-\";\n  }\n  return UUID;\n};\n\n/**\n * A cache which maps IDs \u003C-> cached objects for the purpose of identifying\n * a script object remotely. Uses UUIDs for identification.\n * @constructor\n */\nfunction CacheWithUUID() {\n  this.cache_ = {};\n}\n\nCacheWithUUID.prototype = {\n  /**\n   * Stores a given item in the cache and returns a unique UUID.\n   *\n   * @param {!Object} item The item to store in the cache.\n   * @return {number} The UUID for the cached item.\n   */\n  storeItem: function(item) {\n    for (var i in this.cache_) {\n      if (item == this.cache_[i])\n        return i;\n    }\n    var id = generateUUID();\n    this.cache_[id] = item;\n    return id;\n  },\n\n  /**\n   * Retrieves the cached object for the given ID.\n   *\n   * @param {number} id The ID for the cached item to retrieve.\n   * @return {!Object} The retrieved item.\n   */\n  retrieveItem: function(id) {\n    var item = this.cache_[id];\n    if (item)\n      return item;\n    var error = new Error('not in cache');\n    error.code = StatusCode.STALE_ELEMENT_REFERENCE;\n    error.message = 'element is not attached to the page document';\n    throw error;\n  },\n\n  /**\n   * Clears stale items from the cache.\n   */\n  clearStale: function() {\n    for (var id in this.cache_) {\n      var node = this.cache_[id];\n      if (!this.isNodeReachable_(node))\n        delete this.cache_[id];\n    }\n  },\n\n  /**\n    * @private\n    * @param {!Node} node The node to check.\n    * @return {boolean} If the nodes is reachable.\n    */\n  isNodeReachable_: function(node) {\n    var nodeRoot = getNodeRootThroughAnyShadows(node);\n    return (nodeRoot == document);\n  }\n\n\n};\n\n/**\n * A cache which maps IDs \u003C-> cached objects for the purpose of identifying\n * a script object remotely.\n * @constructor\n */\nfunction Cache() {\n  this.cache_ = {};\n  this.nextId_ = 1;\n  this.idPrefix_ = Math.random().toString();\n}\n\nCache.prototype = {\n\n  /**\n   * Stores a given item in the cache and returns a unique ID.\n   *\n   * @param {!Object} item The item to store in the cache.\n   * @return {number} The ID for the cached item.\n   */\n  storeItem: function(item) {\n    for (var i in this.cache_) {\n      if (item == this.cache_[i])\n        return i;\n    }\n    var id = this.idPrefix_  + '-' + this.nextId_;\n    this.cache_[id] = item;\n    this.nextId_++;\n    return id;\n  },\n\n  /**\n   * Retrieves the cached object for the given ID.\n   *\n   * @param {number} id The ID for the cached item to retrieve.\n   * @return {!Object} The retrieved item.\n   */\n  retrieveItem: function(id) {\n    var item = this.cache_[id];\n    if (item)\n      return item;\n    var error = new Error('not in cache');\n    error.code = StatusCode.STALE_ELEMENT_REFERENCE;\n    error.message = 'element is not attached to the page document';\n    throw error;\n  },\n\n  /**\n   * Clears stale items from the cache.\n   */\n  clearStale: function() {\n    for (var id in this.cache_) {\n      var node = this.cache_[id];\n      if (!this.isNodeReachable_(node))\n        delete this.cache_[id];\n    }\n  },\n\n  /**\n    * @private\n    * @param {!Node} node The node to check.\n    * @return {boolean} If the nodes is reachable.\n    */\n  isNodeReachable_: function(node) {\n    var nodeRoot = getNodeRootThroughAnyShadows(node);\n    return (nodeRoot == document);\n  }\n};\n\n/**\n * Returns the root element of the node.  Found by traversing parentNodes until\n * a node with no parent is found.  This node is considered the root.\n * @param {?Node} node The node to find the root element for.\n * @return {?Node} The root node.\n */\nfunction getNodeRoot(node) {\n  while (node && node.parentNode) {\n    node = node.parentNode;\n  }\n  return node;\n}\n\n/**\n * Returns the root element of the node, jumping up through shadow roots if\n * any are found.\n */\nfunction getNodeRootThroughAnyShadows(node) {\n  var root = getNodeRoot(node);\n  while (SHADOW_DOM_ENABLED && root instanceof ShadowRoot) {\n    root = getNodeRoot(root.host);\n  }\n  return root;\n}\n\n/**\n * Returns the global object cache for the page.\n * @param {Document=} opt_doc The document whose cache to retrieve. Defaults to\n *     the current document.\n * @return {!Cache} The page's object cache.\n */\nfunction getPageCache(opt_doc, opt_w3c) {\n  var doc = opt_doc || document;\n  var w3c = opt_w3c || false;\n  var key = '$cdc_asdjflasutopfhvcZLmcfl_';\n  if (w3c) {\n    if (!(key in doc))\n      doc[key] = new CacheWithUUID();\n    return doc[key];\n  } else {\n    if (!(key in doc))\n      doc[key] = new Cache();\n    return doc[key];\n  }\n}\n\n/**\n * Wraps the given value to be transmitted remotely by converting\n * appropriate objects to cached object IDs.\n *\n * @param {*} value The value to wrap.\n * @return {*} The wrapped value.\n */\nfunction wrap(value) {\n  // As of crrev.com/1316933002, typeof() for some elements will return\n  // 'function', not 'object'. So we need to check for both non-null objects, as\n  // well Elements that also happen to be callable functions (e.g. \u003Cembed> and\n  // \u003Cobject> elements). Note that we can not use |value instanceof Object| here\n  // since this does not work with frames/iframes, for example\n  // frames[0].document.body instanceof Object == false even though\n  // typeof(frames[0].document.body) == 'object'.\n  if ((typeof(value) == 'object' && value != null) ||\n      (typeof(value) == 'function' && value.nodeName &&\n       value.nodeType == NodeType.ELEMENT)) {\n    var nodeType = value['nodeType'];\n    if (nodeType == NodeType.ELEMENT || nodeType == NodeType.DOCUMENT\n        || (SHADOW_DOM_ENABLED && value instanceof ShadowRoot)) {\n      var wrapped = {};\n      var root = getNodeRootThroughAnyShadows(value);\n      wrapped[ELEMENT_KEY] = getPageCache(root, w3cEnabled).storeItem(value);\n      return wrapped;\n    }\n\n    var obj;\n    if (typeof(value.length) == 'number') {\n      obj = [];\n      for (var i = 0; i \u003C value.length; i++)\n        obj[i] = wrap(value[i]);\n    } else {\n      obj = {};\n      for (var prop in value)\n        obj[prop] = wrap(value[prop]);\n    }\n    return obj;\n  }\n  return value;\n}\n\n/**\n * Unwraps the given value by converting from object IDs to the cached\n * objects.\n *\n * @param {*} value The value to unwrap.\n * @param {Cache} cache The cache to retrieve wrapped elements from.\n * @return {*} The unwrapped value.\n */\nfunction unwrap(value, cache) {\n  if (typeof(value) == 'object' && value != null) {\n    if (ELEMENT_KEY in value)\n      return cache.retrieveItem(value[ELEMENT_KEY]);\n\n    var obj;\n    if (typeof(value.length) == 'number') {\n      obj = [];\n      for (var i = 0; i \u003C value.length; i++)\n        obj[i] = unwrap(value[i], cache);\n    } else {\n      obj = {};\n      for (var prop in value)\n        obj[prop] = unwrap(value[prop], cache);\n    }\n    return obj;\n  }\n  return value;\n}\n\n/**\n * Calls a given function and returns its value.\n *\n * The inputs to and outputs of the function will be unwrapped and wrapped\n * respectively, unless otherwise specified. This wrapping involves converting\n * between cached object reference IDs and actual JS objects. The cache will\n * automatically be pruned each call to remove stale references.\n *\n * @param  {Array\u003Cstring>} shadowHostIds The host ids of the nested shadow\n *     DOMs the function should be executed in the context of.\n * @param {function(...[*]) : *} func The function to invoke.\n * @param {!Array\u003C*>} args The array of arguments to supply to the function,\n *     which will be unwrapped before invoking the function.\n * @param {boolean} w3c Whether to return a W3C compliant element reference.\n * @param {boolean=} opt_unwrappedReturn Whether the function's return value\n *     should be left unwrapped.\n * @return {*} An object containing a status and value property, where status\n *     is a WebDriver status code and value is the wrapped value. If an\n *     unwrapped return was specified, this will be the function's pure return\n *     value.\n */\nfunction callFunction(shadowHostIds, func, args, w3c, opt_unwrappedReturn) {\n  if (w3c) {\n    w3cEnabled = true;\n    ELEMENT_KEY = 'element-6066-11e4-a52e-4f735466cecf';\n\n  }\n  var cache = getPageCache(null, w3cEnabled);\n  cache.clearStale();\n  if (shadowHostIds && SHADOW_DOM_ENABLED) {\n    for (var i = 0; i \u003C shadowHostIds.length; i++) {\n      var host = cache.retrieveItem(shadowHostIds[i]);\n      // TODO(zachconrad): Use the olderShadowRoot API when available to check\n      // all of the shadow roots.\n      cache = getPageCache(host.webkitShadowRoot, w3cEnabled);\n      cache.clearStale();\n    }\n  }\n\n  if (opt_unwrappedReturn)\n    return func.apply(null, unwrap(args, cache));\n\n  var status = 0;\n  try {\n    var returnValue = wrap(func.apply(null, unwrap(args, cache)));\n  } catch (error) {\n    status = error.code || StatusCode.UNKNOWN_ERROR;\n    var returnValue = error.message;\n  }\n  return {\n      status: status,\n      value: returnValue\n  }\n}\n; return callFunction.apply(null, arguments) }\n).apply(null, [null, function(){return function(){var g,aa=this;function k(a){return void 0!==a}function l(a){return\"string\"==typeof a}function n(a){return\"number\"==typeof a}function ba(a,b){a=a.split(\".\");var c=aa;a[0]in c||!c.execScript||c.execScript(\"var \"+a[0]);for(var d;a.length&&(d=a.shift());)!a.length&&k(b)?c[d]=b:c=c[d]&&c[d]!==Object.prototype[d]?c[d]:c[d]={}}\nfunction ca(a){var b=typeof a;if(\"object\"==b)if(a){if(a instanceof Array)return\"array\";if(a instanceof Object)return b;var c=Object.prototype.toString.call(a);if(\"[object Window]\"==c)return\"object\";if(\"[object Array]\"==c||\"number\"==typeof a.length&&\"undefined\"!=typeof a.splice&&\"undefined\"!=typeof a.propertyIsEnumerable&&!a.propertyIsEnumerable(\"splice\"))return\"array\";if(\"[object Function]\"==c||\"undefined\"!=typeof a.call&&\"undefined\"!=typeof a.propertyIsEnumerable&&!a.propertyIsEnumerable(\"call\"))return\"function\"}else return\"null\";\nelse if(\"function\"==b&&\"undefined\"==typeof a.call)return\"object\";return b}function da(a){var b=ca(a);return\"array\"==b||\"object\"==b&&\"number\"==typeof a.length}function ea(a){return\"function\"==ca(a)}function fa(a){var b=typeof a;return\"object\"==b&&null!=a||\"function\"==b}function ga(a,b,c){return a.call.apply(a.bind,arguments)}\nfunction ha(a,b,c){if(!a)throw Error();if(2\u003Carguments.length){var d=Array.prototype.slice.call(arguments,2);return function(){var c=Array.prototype.slice.call(arguments);Array.prototype.unshift.apply(c,d);return a.apply(b,c)}}return function(){return a.apply(b,arguments)}}function ia(a,b,c){ia=Function.prototype.bind&&-1!=Function.prototype.bind.toString().indexOf(\"native code\")?ga:ha;return ia.apply(null,arguments)}\nfunction ja(a,b){var c=Array.prototype.slice.call(arguments,1);return function(){var b=c.slice();b.push.apply(b,arguments);return a.apply(this,b)}}function p(a,b){function c(){}c.prototype=b.prototype;a.Da=b.prototype;a.prototype=new c;a.prototype.constructor=a;a.Ba=function(a,c,f){for(var d=Array(arguments.length-2),e=2;e\u003Carguments.length;e++)d[e-2]=arguments[e];return b.prototype[c].apply(a,d)}};var ka=window;var la=String.prototype.trim?function(a){return a.trim()}:function(a){return a.replace(/^[\\s\\xa0]+|[\\s\\xa0]+$/g,\"\")};function ma(a,b){return a\u003Cb?-1:a>b?1:0}function na(a){return String(a).replace(/\\-([a-z])/g,function(a,c){return c.toUpperCase()})};function oa(a,b){if(l(a))return l(b)&&1==b.length?a.indexOf(b,0):-1;for(var c=0;c\u003Ca.length;c++)if(c in a&&a[c]===b)return c;return-1}function q(a,b){for(var c=a.length,d=l(a)?a.split(\"\"):a,e=0;e\u003Cc;e++)e in d&&b.call(void 0,d[e],e,a)}function r(a,b,c){var d=c;q(a,function(c,f){d=b.call(void 0,d,c,f,a)});return d}function u(a,b){for(var c=a.length,d=l(a)?a.split(\"\"):a,e=0;e\u003Cc;e++)if(e in d&&b.call(void 0,d[e],e,a))return!0;return!1}\nfunction pa(a,b){for(var c=a.length,d=l(a)?a.split(\"\"):a,e=0;e\u003Cc;e++)if(e in d&&!b.call(void 0,d[e],e,a))return!1;return!0}function qa(a){return Array.prototype.concat.apply([],arguments)}function ra(a){var b=a.length;if(0\u003Cb){for(var c=Array(b),d=0;d\u003Cb;d++)c[d]=a[d];return c}return[]}function sa(a,b,c){return 2>=arguments.length?Array.prototype.slice.call(a,b):Array.prototype.slice.call(a,b,c)};var ta={aliceblue:\"#f0f8ff\",antiquewhite:\"#faebd7\",aqua:\"#00ffff\",aquamarine:\"#7fffd4\",azure:\"#f0ffff\",beige:\"#f5f5dc\",bisque:\"#ffe4c4\",black:\"#000000\",blanchedalmond:\"#ffebcd\",blue:\"#0000ff\",blueviolet:\"#8a2be2\",brown:\"#a52a2a\",burlywood:\"#deb887\",cadetblue:\"#5f9ea0\",chartreuse:\"#7fff00\",chocolate:\"#d2691e\",coral:\"#ff7f50\",cornflowerblue:\"#6495ed\",cornsilk:\"#fff8dc\",crimson:\"#dc143c\",cyan:\"#00ffff\",darkblue:\"#00008b\",darkcyan:\"#008b8b\",darkgoldenrod:\"#b8860b\",darkgray:\"#a9a9a9\",darkgreen:\"#006400\",\ndarkgrey:\"#a9a9a9\",darkkhaki:\"#bdb76b\",darkmagenta:\"#8b008b\",darkolivegreen:\"#556b2f\",darkorange:\"#ff8c00\",darkorchid:\"#9932cc\",darkred:\"#8b0000\",darksalmon:\"#e9967a\",darkseagreen:\"#8fbc8f\",darkslateblue:\"#483d8b\",darkslategray:\"#2f4f4f\",darkslategrey:\"#2f4f4f\",darkturquoise:\"#00ced1\",darkviolet:\"#9400d3\",deeppink:\"#ff1493\",deepskyblue:\"#00bfff\",dimgray:\"#696969\",dimgrey:\"#696969\",dodgerblue:\"#1e90ff\",firebrick:\"#b22222\",floralwhite:\"#fffaf0\",forestgreen:\"#228b22\",fuchsia:\"#ff00ff\",gainsboro:\"#dcdcdc\",\nghostwhite:\"#f8f8ff\",gold:\"#ffd700\",goldenrod:\"#daa520\",gray:\"#808080\",green:\"#008000\",greenyellow:\"#adff2f\",grey:\"#808080\",honeydew:\"#f0fff0\",hotpink:\"#ff69b4\",indianred:\"#cd5c5c\",indigo:\"#4b0082\",ivory:\"#fffff0\",khaki:\"#f0e68c\",lavender:\"#e6e6fa\",lavenderblush:\"#fff0f5\",lawngreen:\"#7cfc00\",lemonchiffon:\"#fffacd\",lightblue:\"#add8e6\",lightcoral:\"#f08080\",lightcyan:\"#e0ffff\",lightgoldenrodyellow:\"#fafad2\",lightgray:\"#d3d3d3\",lightgreen:\"#90ee90\",lightgrey:\"#d3d3d3\",lightpink:\"#ffb6c1\",lightsalmon:\"#ffa07a\",\nlightseagreen:\"#20b2aa\",lightskyblue:\"#87cefa\",lightslategray:\"#778899\",lightslategrey:\"#778899\",lightsteelblue:\"#b0c4de\",lightyellow:\"#ffffe0\",lime:\"#00ff00\",limegreen:\"#32cd32\",linen:\"#faf0e6\",magenta:\"#ff00ff\",maroon:\"#800000\",mediumaquamarine:\"#66cdaa\",mediumblue:\"#0000cd\",mediumorchid:\"#ba55d3\",mediumpurple:\"#9370db\",mediumseagreen:\"#3cb371\",mediumslateblue:\"#7b68ee\",mediumspringgreen:\"#00fa9a\",mediumturquoise:\"#48d1cc\",mediumvioletred:\"#c71585\",midnightblue:\"#191970\",mintcream:\"#f5fffa\",mistyrose:\"#ffe4e1\",\nmoccasin:\"#ffe4b5\",navajowhite:\"#ffdead\",navy:\"#000080\",oldlace:\"#fdf5e6\",olive:\"#808000\",olivedrab:\"#6b8e23\",orange:\"#ffa500\",orangered:\"#ff4500\",orchid:\"#da70d6\",palegoldenrod:\"#eee8aa\",palegreen:\"#98fb98\",paleturquoise:\"#afeeee\",palevioletred:\"#db7093\",papayawhip:\"#ffefd5\",peachpuff:\"#ffdab9\",peru:\"#cd853f\",pink:\"#ffc0cb\",plum:\"#dda0dd\",powderblue:\"#b0e0e6\",purple:\"#800080\",red:\"#ff0000\",rosybrown:\"#bc8f8f\",royalblue:\"#4169e1\",saddlebrown:\"#8b4513\",salmon:\"#fa8072\",sandybrown:\"#f4a460\",seagreen:\"#2e8b57\",\nseashell:\"#fff5ee\",sienna:\"#a0522d\",silver:\"#c0c0c0\",skyblue:\"#87ceeb\",slateblue:\"#6a5acd\",slategray:\"#708090\",slategrey:\"#708090\",snow:\"#fffafa\",springgreen:\"#00ff7f\",steelblue:\"#4682b4\",tan:\"#d2b48c\",teal:\"#008080\",thistle:\"#d8bfd8\",tomato:\"#ff6347\",turquoise:\"#40e0d0\",violet:\"#ee82ee\",wheat:\"#f5deb3\",white:\"#ffffff\",whitesmoke:\"#f5f5f5\",yellow:\"#ffff00\",yellowgreen:\"#9acd32\"};var ua=\"backgroundColor borderTopColor borderRightColor borderBottomColor borderLeftColor color outlineColor\".split(\" \"),va=/#([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])/,wa=/^#(?:[0-9a-f]{3}){1,2}$/i,xa=/^(?:rgba)?\\((\\d{1,3}),\\s?(\\d{1,3}),\\s?(\\d{1,3}),\\s?(0|1|0\\.\\d*)\\)$/i,ya=/^(?:rgb)?\\((0|[1-9]\\d{0,2}),\\s?(0|[1-9]\\d{0,2}),\\s?(0|[1-9]\\d{0,2})\\)$/i;function v(a,b){this.code=a;this.state=w[a]||za;this.message=b||\"\";a=this.state.replace(/((?:^|\\s+)[a-z])/g,function(a){return a.toUpperCase().replace(/^[\\s\\xa0]+/g,\"\")});b=a.length-5;if(0>b||a.indexOf(\"Error\",b)!=b)a+=\"Error\";this.name=a;a=Error(this.message);a.name=this.name;this.stack=a.stack||\"\"}p(v,Error);var za=\"unknown error\",w={15:\"element not selectable\",11:\"element not visible\"};w[31]=za;w[30]=za;w[24]=\"invalid cookie domain\";w[29]=\"invalid element coordinates\";w[12]=\"invalid element state\";\nw[32]=\"invalid selector\";w[51]=\"invalid selector\";w[52]=\"invalid selector\";w[17]=\"javascript error\";w[405]=\"unsupported operation\";w[34]=\"move target out of bounds\";w[27]=\"no such alert\";w[7]=\"no such element\";w[8]=\"no such frame\";w[23]=\"no such window\";w[28]=\"script timeout\";w[33]=\"session not created\";w[10]=\"stale element reference\";w[21]=\"timeout\";w[25]=\"unable to set cookie\";w[26]=\"unexpected alert open\";w[13]=za;w[9]=\"unknown command\";v.prototype.toString=function(){return this.name+\": \"+this.message};var Aa;a:{var Ba=aa.navigator;if(Ba){var Ca=Ba.userAgent;if(Ca){Aa=Ca;break a}}Aa=\"\"};function Ea(a){var b=Fa;Object.prototype.hasOwnProperty.call(b,\"528\")||(b[\"528\"]=a(\"528\"))};var Ga=-1!=Aa.indexOf(\"Macintosh\"),Ha=-1!=Aa.indexOf(\"Windows\"),Ia,Ja=\"\",Ka=/WebKit\\/(\\S+)/.exec(Aa);Ka&&(Ja=Ka?Ka[1]:\"\");Ia=Ja;var Fa={};\nfunction La(){Ea(function(){for(var a=0,b=la(String(Ia)).split(\".\"),c=la(\"528\").split(\".\"),d=Math.max(b.length,c.length),e=0;0==a&&e\u003Cd;e++){var f=b[e]||\"\",h=c[e]||\"\";do{f=/(\\d*)(\\D*)(.*)/.exec(f)||[\"\",\"\",\"\",\"\"];h=/(\\d*)(\\D*)(.*)/.exec(h)||[\"\",\"\",\"\",\"\"];if(0==f[0].length&&0==h[0].length)break;a=ma(0==f[1].length?0:parseInt(f[1],10),0==h[1].length?0:parseInt(h[1],10))||ma(0==f[2].length,0==h[2].length)||ma(f[2],h[2]);f=f[3];h=h[3]}while(0==a)}return 0\u003C=a})};function x(a,b){this.x=k(a)?a:0;this.y=k(b)?b:0}g=x.prototype;g.clone=function(){return new x(this.x,this.y)};g.toString=function(){return\"(\"+this.x+\", \"+this.y+\")\"};g.ceil=function(){this.x=Math.ceil(this.x);this.y=Math.ceil(this.y);return this};g.floor=function(){this.x=Math.floor(this.x);this.y=Math.floor(this.y);return this};g.round=function(){this.x=Math.round(this.x);this.y=Math.round(this.y);return this};\ng.translate=function(a,b){a instanceof x?(this.x+=a.x,this.y+=a.y):(this.x+=Number(a),n(b)&&(this.y+=b));return this};g.scale=function(a,b){b=n(b)?b:a;this.x*=a;this.y*=b;return this};function Ma(a,b){this.width=a;this.height=b}g=Ma.prototype;g.clone=function(){return new Ma(this.width,this.height)};g.toString=function(){return\"(\"+this.width+\" x \"+this.height+\")\"};g.ceil=function(){this.width=Math.ceil(this.width);this.height=Math.ceil(this.height);return this};g.floor=function(){this.width=Math.floor(this.width);this.height=Math.floor(this.height);return this};g.round=function(){this.width=Math.round(this.width);this.height=Math.round(this.height);return this};\ng.scale=function(a,b){b=n(b)?b:a;this.width*=a;this.height*=b;return this};function Na(a,b,c){function d(c){c&&b.appendChild(l(c)?a.createTextNode(c):c)}for(var e=1;e\u003Cc.length;e++){var f=c[e];!da(f)||fa(f)&&0\u003Cf.nodeType?d(f):q(Oa(f)?ra(f):f,d)}}function Pa(a){for(;a&&1!=a.nodeType;)a=a.previousSibling;return a}function Qa(a,b){if(!a||!b)return!1;if(a.contains&&1==b.nodeType)return a==b||a.contains(b);if(\"undefined\"!=typeof a.compareDocumentPosition)return a==b||!!(a.compareDocumentPosition(b)&16);for(;b&&a!=b;)b=b.parentNode;return b==a}\nfunction Ra(a,b){if(a==b)return 0;if(a.compareDocumentPosition)return a.compareDocumentPosition(b)&2?1:-1;if(\"sourceIndex\"in a||a.parentNode&&\"sourceIndex\"in a.parentNode){var c=1==a.nodeType,d=1==b.nodeType;if(c&&d)return a.sourceIndex-b.sourceIndex;var e=a.parentNode,f=b.parentNode;return e==f?Sa(a,b):!c&&Qa(e,b)?-1*Ta(a,b):!d&&Qa(f,a)?Ta(b,a):(c?a.sourceIndex:e.sourceIndex)-(d?b.sourceIndex:f.sourceIndex)}d=A(a);c=d.createRange();c.selectNode(a);c.collapse(!0);a=d.createRange();a.selectNode(b);\na.collapse(!0);return c.compareBoundaryPoints(aa.Range.START_TO_END,a)}function Ta(a,b){var c=a.parentNode;if(c==b)return-1;for(;b.parentNode!=c;)b=b.parentNode;return Sa(b,a)}function Sa(a,b){for(;b=b.previousSibling;)if(b==a)return-1;return 1}function A(a){return 9==a.nodeType?a:a.ownerDocument||a.document}function Oa(a){if(a&&\"number\"==typeof a.length){if(fa(a))return\"function\"==typeof a.item||\"string\"==typeof a.item;if(ea(a))return\"function\"==typeof a.item}return!1}\nfunction Ua(a,b,c){a&&!c&&(a=a.parentNode);for(c=0;a;){if(b(a))return a;a=a.parentNode;c++}return null}function Va(a){try{return a&&a.activeElement}catch(b){}return null}function Wa(a){this.M=a||aa.document||document}g=Wa.prototype;g.getElementsByTagName=function(a,b){return(b||this.M).getElementsByTagName(String(a))};g.createElement=function(a){return this.M.createElement(String(a))};g.createTextNode=function(a){return this.M.createTextNode(String(a))};g.appendChild=function(a,b){a.appendChild(b)};\ng.append=function(a,b){Na(A(a),a,arguments)};g.canHaveChildren=function(a){if(1!=a.nodeType)return!1;switch(a.tagName){case \"APPLET\":case \"AREA\":case \"BASE\":case \"BR\":case \"COL\":case \"COMMAND\":case \"EMBED\":case \"FRAME\":case \"HR\":case \"IMG\":case \"INPUT\":case \"IFRAME\":case \"ISINDEX\":case \"KEYGEN\":case \"LINK\":case \"NOFRAMES\":case \"NOSCRIPT\":case \"META\":case \"OBJECT\":case \"PARAM\":case \"SCRIPT\":case \"SOURCE\":case \"STYLE\":case \"TRACK\":case \"WBR\":return!1}return!0};\ng.removeNode=function(a){return a&&a.parentNode?a.parentNode.removeChild(a):null};g.contains=Qa;function Xa(a){var b=\"tabindex\";return\"style\"==b?Ya(a.style.cssText):(a=a.getAttributeNode(b))&&a.specified?a.value:null}var Za=/[;]+(?=(?:(?:[^\"]*\"){2})*[^\"]*$)(?=(?:(?:[^']*'){2})*[^']*$)(?=(?:[^()]*\\([^()]*\\))*[^()]*$)/;function Ya(a){var b=[];q(a.split(Za),function(a){var c=a.indexOf(\":\");0\u003Cc&&(a=[a.slice(0,c),a.slice(c+1)],2==a.length&&b.push(a[0].toLowerCase(),\":\",a[1],\";\"))});b=b.join(\"\");return b=\";\"==b.charAt(b.length-1)?b:b+\";\"}\nfunction B(a,b){b&&\"string\"!==typeof b&&(b=b.toString());return!!a&&1==a.nodeType&&(!b||a.tagName.toUpperCase()==b)};/*\n\n The MIT License\n\n Copyright (c) 2007 Cybozu Labs, Inc.\n Copyright (c) 2012 Google Inc.\n\n Permission is hereby granted, free of charge, to any person obtaining a copy\n of this software and associated documentation files (the \"Software\"), to\n deal in the Software without restriction, including without limitation the\n rights to use, copy, modify, merge, publish, distribute, sublicense, and/or\n sell copies of the Software, and to permit persons to whom the Software is\n furnished to do so, subject to the following conditions:\n\n The above copyright notice and this permission notice shall be included in\n all copies or substantial portions of the Software.\n\n THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING\n FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS\n IN THE SOFTWARE.\n*/\nfunction $a(a,b,c){this.s=a;this.ya=b||1;this.o=c||1};function ab(a){this.$=a;this.P=0}function bb(a){a=a.match(cb);for(var b=0;b\u003Ca.length;b++)db.test(a[b])&&a.splice(b,1);return new ab(a)}var cb=/\\$?(?:(?![0-9-\\.])(?:\\*|[\\w-\\.]+):)?(?![0-9-\\.])(?:\\*|[\\w-\\.]+)|\\/\\/|\\.\\.|::|\\d+(?:\\.\\d*)?|\\.\\d+|\"[^\"]*\"|'[^']*'|[!\u003C>]=|\\s+|./g,db=/^\\s/;function C(a,b){return a.$[a.P+(b||0)]}ab.prototype.next=function(){return this.$[this.P++]};ab.prototype.back=function(){this.P--};ab.prototype.empty=function(){return this.$.length\u003C=this.P};function D(a){var b=null,c=a.nodeType;1==c&&(b=a.textContent,b=void 0==b||null==b?a.innerText:b,b=void 0==b||null==b?\"\":b);if(\"string\"!=typeof b)if(9==c||1==c){a=9==c?a.documentElement:a.firstChild;for(var c=0,d=[],b=\"\";a;){do 1!=a.nodeType&&(b+=a.nodeValue),d[c++]=a;while(a=a.firstChild);for(;c&&!(a=d[--c].nextSibling););}}else b=a.nodeValue;return\"\"+b}\nfunction eb(a,b,c){if(null===b)return!0;try{if(!a.getAttribute)return!1}catch(d){return!1}return null==c?!!a.getAttribute(b):a.getAttribute(b,2)==c}function fb(a,b,c,d,e){return gb.call(null,a,b,l(c)?c:null,l(d)?d:null,e||new E)}\nfunction gb(a,b,c,d,e){b.getElementsByName&&d&&\"name\"==c?(b=b.getElementsByName(d),q(b,function(b){a.matches(b)&&e.add(b)})):b.getElementsByClassName&&d&&\"class\"==c?(b=b.getElementsByClassName(d),q(b,function(b){b.className==d&&a.matches(b)&&e.add(b)})):a instanceof F?hb(a,b,c,d,e):b.getElementsByTagName&&(b=b.getElementsByTagName(a.getName()),q(b,function(a){eb(a,c,d)&&e.add(a)}));return e}\nfunction hb(a,b,c,d,e){for(b=b.firstChild;b;b=b.nextSibling)eb(b,c,d)&&a.matches(b)&&e.add(b),hb(a,b,c,d,e)};function E(){this.o=this.j=null;this.J=0}function ib(a){this.node=a;this.next=this.F=null}function jb(a,b){if(!a.j)return b;if(!b.j)return a;var c=a.j;b=b.j;for(var d=null,e,f=0;c&&b;)c.node==b.node?(e=c,c=c.next,b=b.next):0\u003CRa(c.node,b.node)?(e=b,b=b.next):(e=c,c=c.next),(e.F=d)?d.next=e:a.j=e,d=e,f++;for(e=c||b;e;)e.F=d,d=d.next=e,f++,e=e.next;a.o=d;a.J=f;return a}E.prototype.unshift=function(a){a=new ib(a);a.next=this.j;this.o?this.j.F=a:this.j=this.o=a;this.j=a;this.J++};\nE.prototype.add=function(a){a=new ib(a);a.F=this.o;this.j?this.o.next=a:this.j=this.o=a;this.o=a;this.J++};function kb(a){return(a=a.j)?a.node:null}E.prototype.v=function(){return this.J};function lb(a){return(a=kb(a))?D(a):\"\"}E.prototype.iterator=function(a){return new mb(this,!!a)};function mb(a,b){this.ua=a;this.ca=(this.H=b)?a.o:a.j;this.X=null}mb.prototype.next=function(){var a=this.ca;if(null==a)return null;var b=this.X=a;this.ca=this.H?a.F:a.next;return b.node};\nmb.prototype.remove=function(){var a=this.ua,b=this.X;if(!b)throw Error(\"Next must be called at least once before remove.\");var c=b.F,b=b.next;c?c.next=b:a.j=b;b?b.F=c:a.o=c;a.J--;this.X=null};function G(a){this.i=a;this.l=this.A=!1;this.K=null}function I(a){return\"\\n  \"+a.toString().split(\"\\n\").join(\"\\n  \")}G.prototype.h=function(){return this.A};function nb(a,b){a.A=b}function ob(a,b){a.l=b}G.prototype.D=function(){return this.K};function J(a,b){a=a.evaluate(b);return a instanceof E?+lb(a):+a}function K(a,b){a=a.evaluate(b);return a instanceof E?lb(a):\"\"+a}function pb(a,b){a=a.evaluate(b);return a instanceof E?!!a.v():!!a};function qb(a,b,c){G.call(this,a.i);this.Z=a;this.ga=b;this.la=c;this.A=b.h()||c.h();this.l=b.l||c.l;this.Z==rb&&(c.l||c.h()||4==c.i||0==c.i||!b.D()?b.l||b.h()||4==b.i||0==b.i||!c.D()||(this.K={name:c.D().name,I:b}):this.K={name:b.D().name,I:c})}p(qb,G);\nfunction sb(a,b,c,d,e){b=b.evaluate(d);c=c.evaluate(d);var f;if(b instanceof E&&c instanceof E){b=b.iterator();for(d=b.next();d;d=b.next())for(e=c.iterator(),f=e.next();f;f=e.next())if(a(D(d),D(f)))return!0;return!1}if(b instanceof E||c instanceof E){b instanceof E?(e=b,d=c):(e=c,d=b);f=e.iterator();for(var h=typeof d,m=f.next();m;m=f.next()){switch(h){case \"number\":m=+D(m);break;case \"boolean\":m=!!D(m);break;case \"string\":m=D(m);break;default:throw Error(\"Illegal primitive type for comparison.\");\n}if(e==b&&a(m,d)||e==c&&a(d,m))return!0}return!1}return e?\"boolean\"==typeof b||\"boolean\"==typeof c?a(!!b,!!c):\"number\"==typeof b||\"number\"==typeof c?a(+b,+c):a(b,c):a(+b,+c)}qb.prototype.evaluate=function(a){return this.Z.u(this.ga,this.la,a)};qb.prototype.toString=function(){var a=\"Binary Expression: \"+this.Z,a=a+I(this.ga);return a+=I(this.la)};function tb(a,b,c,d){this.xa=a;this.ja=b;this.i=c;this.u=d}tb.prototype.toString=function(){return this.xa};var ub={};\nfunction L(a,b,c,d){if(ub.hasOwnProperty(a))throw Error(\"Binary operator already created: \"+a);a=new tb(a,b,c,d);return ub[a.toString()]=a}L(\"div\",6,1,function(a,b,c){return J(a,c)/J(b,c)});L(\"mod\",6,1,function(a,b,c){return J(a,c)%J(b,c)});L(\"*\",6,1,function(a,b,c){return J(a,c)*J(b,c)});L(\"+\",5,1,function(a,b,c){return J(a,c)+J(b,c)});L(\"-\",5,1,function(a,b,c){return J(a,c)-J(b,c)});L(\"\u003C\",4,2,function(a,b,c){return sb(function(a,b){return a\u003Cb},a,b,c)});\nL(\">\",4,2,function(a,b,c){return sb(function(a,b){return a>b},a,b,c)});L(\"\u003C=\",4,2,function(a,b,c){return sb(function(a,b){return a\u003C=b},a,b,c)});L(\">=\",4,2,function(a,b,c){return sb(function(a,b){return a>=b},a,b,c)});var rb=L(\"=\",3,2,function(a,b,c){return sb(function(a,b){return a==b},a,b,c,!0)});L(\"!=\",3,2,function(a,b,c){return sb(function(a,b){return a!=b},a,b,c,!0)});L(\"and\",2,2,function(a,b,c){return pb(a,c)&&pb(b,c)});L(\"or\",1,2,function(a,b,c){return pb(a,c)||pb(b,c)});function vb(a,b){if(b.v()&&4!=a.i)throw Error(\"Primary expression must evaluate to nodeset if filter has predicate(s).\");G.call(this,a.i);this.ka=a;this.f=b;this.A=a.h();this.l=a.l}p(vb,G);vb.prototype.evaluate=function(a){a=this.ka.evaluate(a);return wb(this.f,a)};vb.prototype.toString=function(){var a=\"Filter:\"+I(this.ka);return a+=I(this.f)};function xb(a,b){if(b.length\u003Ca.ia)throw Error(\"Function \"+a.m+\" expects at least\"+a.ia+\" arguments, \"+b.length+\" given\");if(null!==a.Y&&b.length>a.Y)throw Error(\"Function \"+a.m+\" expects at most \"+a.Y+\" arguments, \"+b.length+\" given\");a.va&&q(b,function(b,d){if(4!=b.i)throw Error(\"Argument \"+d+\" to function \"+a.m+\" is not of type Nodeset: \"+b);});G.call(this,a.i);this.O=a;this.U=b;nb(this,a.A||u(b,function(a){return a.h()}));ob(this,a.ta&&!b.length||a.sa&&!!b.length||u(b,function(a){return a.l}))}\np(xb,G);xb.prototype.evaluate=function(a){return this.O.u.apply(null,qa(a,this.U))};xb.prototype.toString=function(){var a=\"Function: \"+this.O;if(this.U.length)var b=r(this.U,function(a,b){return a+I(b)},\"Arguments:\"),a=a+I(b);return a};function yb(a,b,c,d,e,f,h,m,y){this.m=a;this.i=b;this.A=c;this.ta=d;this.sa=e;this.u=f;this.ia=h;this.Y=k(m)?m:h;this.va=!!y}yb.prototype.toString=function(){return this.m};var zb={};\nfunction N(a,b,c,d,e,f,h,m){if(zb.hasOwnProperty(a))throw Error(\"Function already created: \"+a+\".\");zb[a]=new yb(a,b,c,d,!1,e,f,h,m)}N(\"boolean\",2,!1,!1,function(a,b){return pb(b,a)},1);N(\"ceiling\",1,!1,!1,function(a,b){return Math.ceil(J(b,a))},1);N(\"concat\",3,!1,!1,function(a,b){return r(sa(arguments,1),function(b,d){return b+K(d,a)},\"\")},2,null);N(\"contains\",2,!1,!1,function(a,b,c){b=K(b,a);a=K(c,a);return-1!=b.indexOf(a)},2);N(\"count\",1,!1,!1,function(a,b){return b.evaluate(a).v()},1,1,!0);\nN(\"false\",2,!1,!1,function(){return!1},0);N(\"floor\",1,!1,!1,function(a,b){return Math.floor(J(b,a))},1);N(\"id\",4,!1,!1,function(a,b){var c=a.s,d=9==c.nodeType?c:c.ownerDocument;a=K(b,a).split(/\\s+/);var e=[];q(a,function(a){a=d.getElementById(a);!a||0\u003C=oa(e,a)||e.push(a)});e.sort(Ra);var f=new E;q(e,function(a){f.add(a)});return f},1);N(\"lang\",2,!1,!1,function(){return!1},1);N(\"last\",1,!0,!1,function(a){if(1!=arguments.length)throw Error(\"Function last expects ()\");return a.o},0);\nN(\"local-name\",3,!1,!0,function(a,b){return(a=b?kb(b.evaluate(a)):a.s)?a.localName||a.nodeName.toLowerCase():\"\"},0,1,!0);N(\"name\",3,!1,!0,function(a,b){return(a=b?kb(b.evaluate(a)):a.s)?a.nodeName.toLowerCase():\"\"},0,1,!0);N(\"namespace-uri\",3,!0,!1,function(){return\"\"},0,1,!0);N(\"normalize-space\",3,!1,!0,function(a,b){return(b?K(b,a):D(a.s)).replace(/[\\s\\xa0]+/g,\" \").replace(/^\\s+|\\s+$/g,\"\")},0,1);N(\"not\",2,!1,!1,function(a,b){return!pb(b,a)},1);\nN(\"number\",1,!1,!0,function(a,b){return b?J(b,a):+D(a.s)},0,1);N(\"position\",1,!0,!1,function(a){return a.ya},0);N(\"round\",1,!1,!1,function(a,b){return Math.round(J(b,a))},1);N(\"starts-with\",2,!1,!1,function(a,b,c){b=K(b,a);a=K(c,a);return 0==b.lastIndexOf(a,0)},2);N(\"string\",3,!1,!0,function(a,b){return b?K(b,a):D(a.s)},0,1);N(\"string-length\",1,!1,!0,function(a,b){return(b?K(b,a):D(a.s)).length},0,1);\nN(\"substring\",3,!1,!1,function(a,b,c,d){c=J(c,a);if(isNaN(c)||Infinity==c||-Infinity==c)return\"\";d=d?J(d,a):Infinity;if(isNaN(d)||-Infinity===d)return\"\";c=Math.round(c)-1;var e=Math.max(c,0);a=K(b,a);return Infinity==d?a.substring(e):a.substring(e,c+Math.round(d))},2,3);N(\"substring-after\",3,!1,!1,function(a,b,c){b=K(b,a);a=K(c,a);c=b.indexOf(a);return-1==c?\"\":b.substring(c+a.length)},2);\nN(\"substring-before\",3,!1,!1,function(a,b,c){b=K(b,a);a=K(c,a);a=b.indexOf(a);return-1==a?\"\":b.substring(0,a)},2);N(\"sum\",1,!1,!1,function(a,b){a=b.evaluate(a).iterator();b=0;for(var c=a.next();c;c=a.next())b+=+D(c);return b},1,1,!0);N(\"translate\",3,!1,!1,function(a,b,c,d){b=K(b,a);c=K(c,a);var e=K(d,a);d={};for(var f=0;f\u003Cc.length;f++)a=c.charAt(f),a in d||(d[a]=e.charAt(f));c=\"\";for(f=0;f\u003Cb.length;f++)a=b.charAt(f),c+=a in d?d[a]:a;return c},3);N(\"true\",2,!1,!1,function(){return!0},0);function F(a,b){this.na=a;this.ha=k(b)?b:null;this.B=null;switch(a){case \"comment\":this.B=8;break;case \"text\":this.B=3;break;case \"processing-instruction\":this.B=7;break;case \"node\":break;default:throw Error(\"Unexpected argument\");}}function Ab(a){return\"comment\"==a||\"text\"==a||\"processing-instruction\"==a||\"node\"==a}F.prototype.matches=function(a){return null===this.B||this.B==a.nodeType};F.prototype.getName=function(){return this.na};\nF.prototype.toString=function(){var a=\"Kind Test: \"+this.na;null===this.ha||(a+=I(this.ha));return a};function Bb(a){G.call(this,3);this.ma=a.substring(1,a.length-1)}p(Bb,G);Bb.prototype.evaluate=function(){return this.ma};Bb.prototype.toString=function(){return\"Literal: \"+this.ma};function Cb(a,b){this.m=a.toLowerCase();a=\"*\"==this.m?\"*\":\"http://www.w3.org/1999/xhtml\";this.R=b?b.toLowerCase():a}Cb.prototype.matches=function(a){var b=a.nodeType;if(1!=b&&2!=b)return!1;b=k(a.localName)?a.localName:a.nodeName;return\"*\"!=this.m&&this.m!=b.toLowerCase()?!1:\"*\"==this.R?!0:this.R==(a.namespaceURI?a.namespaceURI.toLowerCase():\"http://www.w3.org/1999/xhtml\")};Cb.prototype.getName=function(){return this.m};\nCb.prototype.toString=function(){return\"Name Test: \"+(\"http://www.w3.org/1999/xhtml\"==this.R?\"\":this.R+\":\")+this.m};function Db(a){G.call(this,1);this.oa=a}p(Db,G);Db.prototype.evaluate=function(){return this.oa};Db.prototype.toString=function(){return\"Number: \"+this.oa};function Eb(a,b){G.call(this,a.i);this.ea=a;this.L=b;this.A=a.h();this.l=a.l;1==this.L.length&&(a=this.L[0],a.V||a.C!=Fb||(a=a.T,\"*\"!=a.getName()&&(this.K={name:a.getName(),I:null})))}p(Eb,G);function Gb(){G.call(this,4)}p(Gb,G);Gb.prototype.evaluate=function(a){var b=new E;a=a.s;9==a.nodeType?b.add(a):b.add(a.ownerDocument);return b};Gb.prototype.toString=function(){return\"Root Helper Expression\"};function Hb(){G.call(this,4)}p(Hb,G);Hb.prototype.evaluate=function(a){var b=new E;b.add(a.s);return b};\nHb.prototype.toString=function(){return\"Context Helper Expression\"};function Ib(a){return\"/\"==a||\"//\"==a}\nEb.prototype.evaluate=function(a){var b=this.ea.evaluate(a);if(!(b instanceof E))throw Error(\"Filter expression must evaluate to nodeset.\");a=this.L;for(var c=0,d=a.length;c\u003Cd&&b.v();c++){var e=a[c],f=b.iterator(e.C.H);if(e.h()||e.C!=Jb)if(e.h()||e.C!=Kb){var h=f.next();for(b=e.evaluate(new $a(h));null!=(h=f.next());)h=e.evaluate(new $a(h)),b=jb(b,h)}else h=f.next(),b=e.evaluate(new $a(h));else{for(h=f.next();(b=f.next())&&(!h.contains||h.contains(b))&&b.compareDocumentPosition(h)&8;h=b);b=e.evaluate(new $a(h))}}return b};\nEb.prototype.toString=function(){var a=\"Path Expression:\"+I(this.ea);if(this.L.length){var b=r(this.L,function(a,b){return a+I(b)},\"Steps:\");a+=I(b)}return a};function O(a,b){this.f=a;this.H=!!b}function wb(a,b,c){for(c=c||0;c\u003Ca.f.length;c++)for(var d=a.f[c],e=b.iterator(),f=b.v(),h,m=0;h=e.next();m++){var y=a.H?f-m:m+1;h=d.evaluate(new $a(h,y,f));if(\"number\"==typeof h)y=y==h;else if(\"string\"==typeof h||\"boolean\"==typeof h)y=!!h;else if(h instanceof E)y=0\u003Ch.v();else throw Error(\"Predicate.evaluate returned an unexpected type.\");y||e.remove()}return b}O.prototype.D=function(){return 0\u003Cthis.f.length?this.f[0].D():null};\nO.prototype.h=function(){for(var a=0;a\u003Cthis.f.length;a++){var b=this.f[a];if(b.h()||1==b.i||0==b.i)return!0}return!1};O.prototype.v=function(){return this.f.length};O.prototype.toString=function(){return r(this.f,function(a,b){return a+I(b)},\"Predicates:\")};function P(a,b,c,d){G.call(this,4);this.C=a;this.T=b;this.f=c||new O([]);this.V=!!d;b=this.f.D();a.Aa&&b&&(this.K={name:b.name,I:b.I});this.A=this.f.h()}p(P,G);\nP.prototype.evaluate=function(a){var b=a.s,c=this.D(),d=null,e=null,f=0;c&&(d=c.name,e=c.I?K(c.I,a):null,f=1);if(this.V)if(this.h()||this.C!=Lb)if(b=(new P(Mb,new F(\"node\"))).evaluate(a).iterator(),c=b.next())for(a=this.u(c,d,e,f);null!=(c=b.next());)a=jb(a,this.u(c,d,e,f));else a=new E;else a=fb(this.T,b,d,e),a=wb(this.f,a,f);else a=this.u(a.s,d,e,f);return a};P.prototype.u=function(a,b,c,d){a=this.C.O(this.T,a,b,c);return a=wb(this.f,a,d)};\nP.prototype.toString=function(){var a=\"Step:\"+I(\"Operator: \"+(this.V?\"//\":\"/\"));this.C.m&&(a+=I(\"Axis: \"+this.C));a+=I(this.T);if(this.f.v()){var b=r(this.f.f,function(a,b){return a+I(b)},\"Predicates:\");a+=I(b)}return a};function Nb(a,b,c,d){this.m=a;this.O=b;this.H=c;this.Aa=d}Nb.prototype.toString=function(){return this.m};var Ob={};function Q(a,b,c,d){if(Ob.hasOwnProperty(a))throw Error(\"Axis already created: \"+a);b=new Nb(a,b,c,!!d);return Ob[a]=b}\nQ(\"ancestor\",function(a,b){for(var c=new E;b=b.parentNode;)a.matches(b)&&c.unshift(b);return c},!0);Q(\"ancestor-or-self\",function(a,b){var c=new E;do a.matches(b)&&c.unshift(b);while(b=b.parentNode);return c},!0);\nvar Fb=Q(\"attribute\",function(a,b){var c=new E,d=a.getName();if(b=b.attributes)if(a instanceof F&&null===a.B||\"*\"==d)for(d=0;a=b[d];d++)c.add(a);else(a=b.getNamedItem(d))&&c.add(a);return c},!1),Lb=Q(\"child\",function(a,b,c,d,e){c=l(c)?c:null;d=l(d)?d:null;e=e||new E;for(b=b.firstChild;b;b=b.nextSibling)eb(b,c,d)&&a.matches(b)&&e.add(b);return e},!1,!0);Q(\"descendant\",fb,!1,!0);\nvar Mb=Q(\"descendant-or-self\",function(a,b,c,d){var e=new E;eb(b,c,d)&&a.matches(b)&&e.add(b);return fb(a,b,c,d,e)},!1,!0),Jb=Q(\"following\",function(a,b,c,d){var e=new E;do for(var f=b;f=f.nextSibling;)eb(f,c,d)&&a.matches(f)&&e.add(f),e=fb(a,f,c,d,e);while(b=b.parentNode);return e},!1,!0);Q(\"following-sibling\",function(a,b){for(var c=new E;b=b.nextSibling;)a.matches(b)&&c.add(b);return c},!1);Q(\"namespace\",function(){return new E},!1);\nvar Pb=Q(\"parent\",function(a,b){var c=new E;if(9==b.nodeType)return c;if(2==b.nodeType)return c.add(b.ownerElement),c;b=b.parentNode;a.matches(b)&&c.add(b);return c},!1),Kb=Q(\"preceding\",function(a,b,c,d){var e=new E,f=[];do f.unshift(b);while(b=b.parentNode);for(var h=1,m=f.length;h\u003Cm;h++){var y=[];for(b=f[h];b=b.previousSibling;)y.unshift(b);for(var H=0,t=y.length;H\u003Ct;H++)b=y[H],eb(b,c,d)&&a.matches(b)&&e.add(b),e=fb(a,b,c,d,e)}return e},!0,!0);\nQ(\"preceding-sibling\",function(a,b){for(var c=new E;b=b.previousSibling;)a.matches(b)&&c.unshift(b);return c},!0);var Qb=Q(\"self\",function(a,b){var c=new E;a.matches(b)&&c.add(b);return c},!1);function Rb(a){G.call(this,1);this.da=a;this.A=a.h();this.l=a.l}p(Rb,G);Rb.prototype.evaluate=function(a){return-J(this.da,a)};Rb.prototype.toString=function(){return\"Unary Expression: -\"+I(this.da)};function Sb(a){G.call(this,4);this.S=a;nb(this,u(this.S,function(a){return a.h()}));ob(this,u(this.S,function(a){return a.l}))}p(Sb,G);Sb.prototype.evaluate=function(a){var b=new E;q(this.S,function(c){c=c.evaluate(a);if(!(c instanceof E))throw Error(\"Path expression must evaluate to NodeSet.\");b=jb(b,c)});return b};Sb.prototype.toString=function(){return r(this.S,function(a,b){return a+I(b)},\"Union Expression:\")};function Tb(a,b){this.a=a;this.wa=b}function Ub(a){for(var b,c=[];;){R(a,\"Missing right hand side of binary expression.\");b=Vb(a);var d=a.a.next();if(!d)break;var e=(d=ub[d]||null)&&d.ja;if(!e){a.a.back();break}for(;c.length&&e\u003C=c[c.length-1].ja;)b=new qb(c.pop(),c.pop(),b);c.push(b,d)}for(;c.length;)b=new qb(c.pop(),c.pop(),b);return b}function R(a,b){if(a.a.empty())throw Error(b);}function Wb(a,b){a=a.a.next();if(a!=b)throw Error(\"Bad token, expected: \"+b+\" got: \"+a);}\nfunction Xb(a){a=a.a.next();if(\")\"!=a)throw Error(\"Bad token: \"+a);}function Yb(a){a=a.a.next();if(2>a.length)throw Error(\"Unclosed literal string\");return new Bb(a)}\nfunction Zb(a){var b=[];if(Ib(C(a.a))){var c=a.a.next();var d=C(a.a);if(\"/\"==c&&(a.a.empty()||\".\"!=d&&\"..\"!=d&&\"@\"!=d&&\"*\"!=d&&!/(?![0-9])[\\w]/.test(d)))return new Gb;d=new Gb;R(a,\"Missing next location step.\");c=$b(a,c);b.push(c)}else{a:{c=C(a.a);d=c.charAt(0);switch(d){case \"$\":throw Error(\"Variable reference not allowed in HTML XPath\");case \"(\":a.a.next();c=Ub(a);R(a,'unclosed \"(\"');Wb(a,\")\");break;case '\"':case \"'\":c=Yb(a);break;default:if(isNaN(+c))if(!Ab(c)&&/(?![0-9])[\\w]/.test(d)&&\"(\"==C(a.a,\n1)){c=a.a.next();c=zb[c]||null;a.a.next();for(d=[];\")\"!=C(a.a);){R(a,\"Missing function argument list.\");d.push(Ub(a));if(\",\"!=C(a.a))break;a.a.next()}R(a,\"Unclosed function argument list.\");Xb(a);c=new xb(c,d)}else{c=null;break a}else c=new Db(+a.a.next())}\"[\"==C(a.a)&&(d=new O(ac(a)),c=new vb(c,d))}if(c)if(Ib(C(a.a)))d=c;else return c;else c=$b(a,\"/\"),d=new Hb,b.push(c)}for(;Ib(C(a.a));)c=a.a.next(),R(a,\"Missing next location step.\"),c=$b(a,c),b.push(c);return new Eb(d,b)}\nfunction $b(a,b){if(\"/\"!=b&&\"//\"!=b)throw Error('Step op should be \"/\" or \"//\"');if(\".\"==C(a.a)){var c=new P(Qb,new F(\"node\"));a.a.next();return c}if(\"..\"==C(a.a))return c=new P(Pb,new F(\"node\")),a.a.next(),c;if(\"@\"==C(a.a)){var d=Fb;a.a.next();R(a,\"Missing attribute name\")}else if(\"::\"==C(a.a,1)){if(!/(?![0-9])[\\w]/.test(C(a.a).charAt(0)))throw Error(\"Bad token: \"+a.a.next());var e=a.a.next();d=Ob[e]||null;if(!d)throw Error(\"No axis with name: \"+e);a.a.next();R(a,\"Missing node name\")}else d=Lb;e=\nC(a.a);if(/(?![0-9])[\\w\\*]/.test(e.charAt(0)))if(\"(\"==C(a.a,1)){if(!Ab(e))throw Error(\"Invalid node type: \"+e);e=a.a.next();if(!Ab(e))throw Error(\"Invalid type name: \"+e);Wb(a,\"(\");R(a,\"Bad nodetype\");var f=C(a.a).charAt(0),h=null;if('\"'==f||\"'\"==f)h=Yb(a);R(a,\"Bad nodetype\");Xb(a);e=new F(e,h)}else if(e=a.a.next(),f=e.indexOf(\":\"),-1==f)e=new Cb(e);else{var h=e.substring(0,f);if(\"*\"==h)var m=\"*\";else if(m=a.wa(h),!m)throw Error(\"Namespace prefix not declared: \"+h);e=e.substr(f+1);e=new Cb(e,m)}else throw Error(\"Bad token: \"+\na.a.next());a=new O(ac(a),d.H);return c||new P(d,e,a,\"//\"==b)}function ac(a){for(var b=[];\"[\"==C(a.a);){a.a.next();R(a,\"Missing predicate expression.\");var c=Ub(a);b.push(c);R(a,\"Unclosed predicate expression.\");Wb(a,\"]\")}return b}function Vb(a){if(\"-\"==C(a.a))return a.a.next(),new Rb(Vb(a));var b=Zb(a);if(\"|\"!=C(a.a))a=b;else{for(b=[b];\"|\"==a.a.next();)R(a,\"Missing next union location path.\"),b.push(Zb(a));a.a.back();a=new Sb(b)}return a};function bc(a){switch(a.nodeType){case 1:return ja(cc,a);case 9:return bc(a.documentElement);case 11:case 10:case 6:case 12:return dc;default:return a.parentNode?bc(a.parentNode):dc}}function dc(){return null}function cc(a,b){if(a.prefix==b)return a.namespaceURI||\"http://www.w3.org/1999/xhtml\";var c=a.getAttributeNode(\"xmlns:\"+b);return c&&c.specified?c.value||null:a.parentNode&&9!=a.parentNode.nodeType?cc(a.parentNode,b):null};function ec(a,b){if(!a.length)throw Error(\"Empty XPath expression.\");a=bb(a);if(a.empty())throw Error(\"Invalid XPath expression.\");b?ea(b)||(b=ia(b.lookupNamespaceURI,b)):b=function(){return null};var c=Ub(new Tb(a,b));if(!a.empty())throw Error(\"Bad token: \"+a.next());this.evaluate=function(a,b){a=c.evaluate(new $a(a));return new S(a,b)}}\nfunction S(a,b){if(0==b)if(a instanceof E)b=4;else if(\"string\"==typeof a)b=2;else if(\"number\"==typeof a)b=1;else if(\"boolean\"==typeof a)b=3;else throw Error(\"Unexpected evaluation result.\");if(2!=b&&1!=b&&3!=b&&!(a instanceof E))throw Error(\"value could not be converted to the specified type\");this.resultType=b;switch(b){case 2:this.stringValue=a instanceof E?lb(a):\"\"+a;break;case 1:this.numberValue=a instanceof E?+lb(a):+a;break;case 3:this.booleanValue=a instanceof E?0\u003Ca.v():!!a;break;case 4:case 5:case 6:case 7:var c=\na.iterator();var d=[];for(var e=c.next();e;e=c.next())d.push(e);this.snapshotLength=a.v();this.invalidIteratorState=!1;break;case 8:case 9:this.singleNodeValue=kb(a);break;default:throw Error(\"Unknown XPathResult type.\");}var f=0;this.iterateNext=function(){if(4!=b&&5!=b)throw Error(\"iterateNext called with wrong result type\");return f>=d.length?null:d[f++]};this.snapshotItem=function(a){if(6!=b&&7!=b)throw Error(\"snapshotItem called with wrong result type\");return a>=d.length||0>a?null:d[a]}}\nS.ANY_TYPE=0;S.NUMBER_TYPE=1;S.STRING_TYPE=2;S.BOOLEAN_TYPE=3;S.UNORDERED_NODE_ITERATOR_TYPE=4;S.ORDERED_NODE_ITERATOR_TYPE=5;S.UNORDERED_NODE_SNAPSHOT_TYPE=6;S.ORDERED_NODE_SNAPSHOT_TYPE=7;S.ANY_UNORDERED_NODE_TYPE=8;S.FIRST_ORDERED_NODE_TYPE=9;function fc(a){this.lookupNamespaceURI=bc(a)}\nba(\"wgxpath.install\",function(a,b){a=a||aa;var c=a.Document&&a.Document.prototype||a.document;if(!c.evaluate||b)a.XPathResult=S,c.evaluate=function(a,b,c,h){return(new ec(a,c)).evaluate(b,h)},c.createExpression=function(a,b){return new ec(a,b)},c.createNSResolver=function(a){return new fc(a)}});var U={};U.aa=function(){var a={Ea:\"http://www.w3.org/2000/svg\"};return function(b){return a[b]||null}}();\nU.u=function(a,b,c){var d=A(a);if(!d.documentElement)return null;try{for(var e=d.createNSResolver?d.createNSResolver(d.documentElement):U.aa,f={},h=d.getElementsByTagName(\"*\"),m=0;m\u003Ch.length;++m){var y=h[m],H=y.namespaceURI;if(H&&!f[H]){var t=y.lookupPrefix(H);if(!t)var z=H.match(\".*/(\\\\w+)/?$\"),t=z?z[1]:\"xhtml\";f[H]=t}}var M={},T;for(T in f)M[f[T]]=T;e=function(a){return M[a]||null};try{return d.evaluate(b,a,e,c,null)}catch(Da){if(\"TypeError\"===Da.name)return e=d.createNSResolver?d.createNSResolver(d.documentElement):\nU.aa,d.evaluate(b,a,e,c,null);throw Da;}}catch(Da){throw new v(32,\"Unable to locate an element with the xpath expression \"+b+\" because of the following error:\\n\"+Da);}};U.ba=function(a,b){if(!a||1!=a.nodeType)throw new v(32,'The result of the xpath expression \"'+b+'\" is: '+a+\". It should be an element.\");};\nU.za=function(a,b){var c=function(){var c=U.u(b,a,9);return c?c.singleNodeValue||null:b.selectSingleNode?(c=A(b),c.setProperty&&c.setProperty(\"SelectionLanguage\",\"XPath\"),b.selectSingleNode(a)):null}();null===c||U.ba(c,a);return c};\nU.Ca=function(a,b){var c=function(){var c=U.u(b,a,7);if(c){for(var e=c.snapshotLength,f=[],h=0;h\u003Ce;++h)f.push(c.snapshotItem(h));return f}return b.selectNodes?(c=A(b),c.setProperty&&c.setProperty(\"SelectionLanguage\",\"XPath\"),b.selectNodes(a)):[]}();q(c,function(b){U.ba(b,a)});return c};function gc(a,b,c,d){this.top=a;this.right=b;this.bottom=c;this.left=d}g=gc.prototype;g.clone=function(){return new gc(this.top,this.right,this.bottom,this.left)};g.toString=function(){return\"(\"+this.top+\"t, \"+this.right+\"r, \"+this.bottom+\"b, \"+this.left+\"l)\"};g.contains=function(a){return this&&a?a instanceof gc?a.left>=this.left&&a.right\u003C=this.right&&a.top>=this.top&&a.bottom\u003C=this.bottom:a.x>=this.left&&a.x\u003C=this.right&&a.y>=this.top&&a.y\u003C=this.bottom:!1};\ng.expand=function(a,b,c,d){fa(a)?(this.top-=a.top,this.right+=a.right,this.bottom+=a.bottom,this.left-=a.left):(this.top-=a,this.right+=Number(b),this.bottom+=Number(c),this.left-=Number(d));return this};g.ceil=function(){this.top=Math.ceil(this.top);this.right=Math.ceil(this.right);this.bottom=Math.ceil(this.bottom);this.left=Math.ceil(this.left);return this};\ng.floor=function(){this.top=Math.floor(this.top);this.right=Math.floor(this.right);this.bottom=Math.floor(this.bottom);this.left=Math.floor(this.left);return this};g.round=function(){this.top=Math.round(this.top);this.right=Math.round(this.right);this.bottom=Math.round(this.bottom);this.left=Math.round(this.left);return this};g.translate=function(a,b){a instanceof x?(this.left+=a.x,this.right+=a.x,this.top+=a.y,this.bottom+=a.y):(this.left+=a,this.right+=a,n(b)&&(this.top+=b,this.bottom+=b));return this};\ng.scale=function(a,b){b=n(b)?b:a;this.left*=a;this.right*=a;this.top*=b;this.bottom*=b;return this};function V(a,b,c,d){this.left=a;this.top=b;this.width=c;this.height=d}g=V.prototype;g.clone=function(){return new V(this.left,this.top,this.width,this.height)};g.toString=function(){return\"(\"+this.left+\", \"+this.top+\" - \"+this.width+\"w x \"+this.height+\"h)\"};g.contains=function(a){return a instanceof x?a.x>=this.left&&a.x\u003C=this.left+this.width&&a.y>=this.top&&a.y\u003C=this.top+this.height:this.left\u003C=a.left&&this.left+this.width>=a.left+a.width&&this.top\u003C=a.top&&this.top+this.height>=a.top+a.height};\ng.ceil=function(){this.left=Math.ceil(this.left);this.top=Math.ceil(this.top);this.width=Math.ceil(this.width);this.height=Math.ceil(this.height);return this};g.floor=function(){this.left=Math.floor(this.left);this.top=Math.floor(this.top);this.width=Math.floor(this.width);this.height=Math.floor(this.height);return this};g.round=function(){this.left=Math.round(this.left);this.top=Math.round(this.top);this.width=Math.round(this.width);this.height=Math.round(this.height);return this};\ng.translate=function(a,b){a instanceof x?(this.left+=a.x,this.top+=a.y):(this.left+=a,n(b)&&(this.top+=b));return this};g.scale=function(a,b){b=n(b)?b:a;this.left*=a;this.width*=a;this.top*=b;this.height*=b;return this};var hc=\"function\"===typeof ShadowRoot,ic=\"A AREA BUTTON INPUT LABEL SELECT TEXTAREA\".split(\" \");function jc(a){return u(ic,function(b){return B(a,b)})||null!=Xa(a)&&0\u003C=Number(a.tabIndex)||(kc(a)||(B(a,\"INPUT\")?\"file\"==a.type.toLowerCase():!1))&&!a.readOnly}var lc=\"BUTTON INPUT OPTGROUP OPTION SELECT TEXTAREA\".split(\" \");\nfunction mc(a){return u(lc,function(b){return B(a,b)})?a.disabled?!1:a.parentNode&&1==a.parentNode.nodeType&&B(a,\"OPTGROUP\")||B(a,\"OPTION\")?mc(a.parentNode):!Ua(a,function(a){var b=a.parentNode;if(b&&B(b,\"FIELDSET\")&&b.disabled){if(!B(a,\"LEGEND\"))return!0;for(;a=k(a.previousElementSibling)?a.previousElementSibling:Pa(a.previousSibling);)if(B(a,\"LEGEND\"))return!0}return!1},!0):!0}var nc=\"text search tel url email password number\".split(\" \");\nfunction kc(a){return B(a,\"TEXTAREA\")?!0:B(a,\"INPUT\")?0\u003C=oa(nc,a.type.toLowerCase()):oc(a)?!0:!1}function oc(a){function b(a){return\"inherit\"==a.contentEditable?(a=pc(a))?b(a):!1:\"true\"==a.contentEditable}return k(a.contentEditable)?k(a.isContentEditable)?a.isContentEditable:b(a):!1}function pc(a){for(a=a.parentNode;a&&1!=a.nodeType&&9!=a.nodeType&&11!=a.nodeType;)a=a.parentNode;return B(a)?a:null}\nfunction W(a,b){b=na(b);if(\"float\"==b||\"cssFloat\"==b||\"styleFloat\"==b)b=\"cssFloat\";a:{var c=b;var d=A(a);if(d.defaultView&&d.defaultView.getComputedStyle&&(d=d.defaultView.getComputedStyle(a,null))){c=d[c]||d.getPropertyValue(c)||\"\";break a}c=\"\"}a=c||qc(a,b);if(null===a)a=null;else if(0\u003C=oa(ua,b)){b:{var e=a.match(xa);if(e&&(b=Number(e[1]),c=Number(e[2]),d=Number(e[3]),e=Number(e[4]),0\u003C=b&&255>=b&&0\u003C=c&&255>=c&&0\u003C=d&&255>=d&&0\u003C=e&&1>=e)){b=[b,c,d,e];break b}b=null}if(!b)b:{if(d=a.match(ya))if(b=Number(d[1]),\nc=Number(d[2]),d=Number(d[3]),0\u003C=b&&255>=b&&0\u003C=c&&255>=c&&0\u003C=d&&255>=d){b=[b,c,d,1];break b}b=null}if(!b)b:{b=a.toLowerCase();c=ta[b.toLowerCase()];if(!c&&(c=\"#\"==b.charAt(0)?b:\"#\"+b,4==c.length&&(c=c.replace(va,\"#$1$1$2$2$3$3\")),!wa.test(c))){b=null;break b}b=[parseInt(c.substr(1,2),16),parseInt(c.substr(3,2),16),parseInt(c.substr(5,2),16),1]}a=b?\"rgba(\"+b.join(\", \")+\")\":a}return a}\nfunction qc(a,b){var c=a.currentStyle||a.style,d=c[b];!k(d)&&ea(c.getPropertyValue)&&(d=c.getPropertyValue(b));return\"inherit\"!=d?k(d)?d:null:(a=pc(a))?qc(a,b):null}\nfunction rc(a,b,c){function d(a){var b=sc(a);return 0\u003Cb.height&&0\u003Cb.width?!0:B(a,\"PATH\")&&(0\u003Cb.height||0\u003Cb.width)?(a=W(a,\"stroke-width\"),!!a&&0\u003CparseInt(a,10)):\"hidden\"!=W(a,\"overflow\")&&u(a.childNodes,function(a){return 3==a.nodeType||B(a)&&d(a)})}function e(a){return tc(a)==X&&pa(a.childNodes,function(a){return!B(a)||e(a)||!d(a)})}if(!B(a))throw Error(\"Argument to isShown must be of type Element\");if(B(a,\"BODY\"))return!0;if(B(a,\"OPTION\")||B(a,\"OPTGROUP\"))return a=Ua(a,function(a){return B(a,\"SELECT\")}),\n!!a&&rc(a,!0,c);var f=uc(a);if(f)return!!f.fa&&0\u003Cf.rect.width&&0\u003Cf.rect.height&&rc(f.fa,b,c);if(B(a,\"INPUT\")&&\"hidden\"==a.type.toLowerCase()||B(a,\"NOSCRIPT\"))return!1;f=W(a,\"visibility\");return\"collapse\"!=f&&\"hidden\"!=f&&c(a)&&(b||0!=vc(a))&&d(a)?!e(a):!1}\nfunction wc(a){var b=hc?function(c){if(\"none\"==W(c,\"display\"))return!1;do{var d=c.parentNode;if(c.getDestinationInsertionPoints){var e=c.getDestinationInsertionPoints();0\u003Ce.length&&(d=e[e.length-1])}if(d instanceof ShadowRoot)return!0;!d||9!=d.nodeType&&11!=d.nodeType||(d=null)}while(a&&1!=a.nodeType);return!d||b(d)}:function(a){if(\"none\"==W(a,\"display\"))return!1;a=pc(a);return!a||b(a)};return rc(a,!0,b)}var X=\"hidden\";\nfunction tc(a){function b(a){function b(a){return a==h?!0:0==W(a,\"display\").lastIndexOf(\"inline\",0)||\"absolute\"==c&&\"static\"==W(a,\"position\")?!1:!0}var c=W(a,\"position\");if(\"fixed\"==c)return H=!0,a==h?null:h;for(a=pc(a);a&&!b(a);)a=pc(a);return a}function c(a){var b=a;if(\"visible\"==y)if(a==h&&m)b=m;else if(a==m)return{x:\"visible\",y:\"visible\"};b={x:W(b,\"overflow-x\"),y:W(b,\"overflow-y\")};a==h&&(b.x=\"visible\"==b.x?\"auto\":b.x,b.y=\"visible\"==b.y?\"auto\":b.y);return b}function d(a){if(a==h){var b=(new Wa(f)).M;\na=b.scrollingElement?b.scrollingElement:b.body||b.documentElement;b=b.parentWindow||b.defaultView;a=new x(b.pageXOffset||a.scrollLeft,b.pageYOffset||a.scrollTop)}else a=new x(a.scrollLeft,a.scrollTop);return a}var e=xc(a);var f=A(a),h=f.documentElement,m=f.body,y=W(h,\"overflow\"),H;for(a=b(a);a;a=b(a)){var t=c(a);if(\"visible\"!=t.x||\"visible\"!=t.y){var z=sc(a);if(0==z.width||0==z.height)return X;var M=e.right\u003Cz.left,T=e.bottom\u003Cz.top;if(M&&\"hidden\"==t.x||T&&\"hidden\"==t.y)return X;if(M&&\"visible\"!=t.x||\nT&&\"visible\"!=t.y){M=d(a);T=e.bottom\u003Cz.top-M.y;if(e.right\u003Cz.left-M.x&&\"visible\"!=t.x||T&&\"visible\"!=t.x)return X;e=tc(a);return e==X?X:\"scroll\"}M=e.left>=z.left+z.width;z=e.top>=z.top+z.height;if(M&&\"hidden\"==t.x||z&&\"hidden\"==t.y)return X;if(M&&\"visible\"!=t.x||z&&\"visible\"!=t.y){if(H&&(t=d(a),e.left>=h.scrollWidth-t.x||e.right>=h.scrollHeight-t.y))return X;e=tc(a);return e==X?X:\"scroll\"}}}return\"none\"}\nfunction sc(a){var b=uc(a);if(b)return b.rect;if(B(a,\"HTML\"))return a=A(a),a=((a?a.parentWindow||a.defaultView:window)||window).document,a=\"CSS1Compat\"==a.compatMode?a.documentElement:a.body,a=new Ma(a.clientWidth,a.clientHeight),new V(0,0,a.width,a.height);try{var c=a.getBoundingClientRect()}catch(d){return new V(0,0,0,0)}return new V(c.left,c.top,c.right-c.left,c.bottom-c.top)}\nfunction uc(a){var b=B(a,\"MAP\");if(!b&&!B(a,\"AREA\"))return null;var c=b?a:B(a.parentNode,\"MAP\")?a.parentNode:null,d=null,e=null;c&&c.name&&(d=U.za('/descendant::*[@usemap = \"#'+c.name+'\"]',A(c)))&&(e=sc(d),b||\"default\"==a.shape.toLowerCase()||(a=yc(a),b=Math.min(Math.max(a.left,0),e.width),c=Math.min(Math.max(a.top,0),e.height),e=new V(b+e.left,c+e.top,Math.min(a.width,e.width-b),Math.min(a.height,e.height-c))));return{fa:d,rect:e||new V(0,0,0,0)}}\nfunction yc(a){var b=a.shape.toLowerCase();a=a.coords.split(\",\");if(\"rect\"==b&&4==a.length){var b=a[0],c=a[1];return new V(b,c,a[2]-b,a[3]-c)}if(\"circle\"==b&&3==a.length)return b=a[2],new V(a[0]-b,a[1]-b,2*b,2*b);if(\"poly\"==b&&2\u003Ca.length){for(var b=a[0],c=a[1],d=b,e=c,f=2;f+1\u003Ca.length;f+=2)b=Math.min(b,a[f]),d=Math.max(d,a[f]),c=Math.min(c,a[f+1]),e=Math.max(e,a[f+1]);return new V(b,c,d-b,e-c)}return new V(0,0,0,0)}function xc(a){a=sc(a);return new gc(a.top,a.left+a.width,a.top+a.height,a.left)}\nfunction vc(a){var b=1,c=W(a,\"opacity\");c&&(b=Number(c));(a=pc(a))&&(b*=vc(a));return b};function zc(){this.N=ka.document.documentElement;var a=Va(A(this.N));a&&Ac(this,a)}function Ac(a,b){a.N=b;B(b,\"OPTION\")&&Ua(b,function(a){return B(a,\"SELECT\")})}function Bc(a){var b=Ua(a.N,function(a){return!!a&&B(a)&&jc(a)},!0),b=b||a.N;a=Va(A(b));if(b!=a){if(a&&ea(a.blur)&&!B(a,\"BODY\"))try{a.blur()}catch(c){throw c;}ea(b.focus)&&b.focus()}};La();La();function Cc(a,b,c){this.B=a;this.pa=b;this.qa=c}Cc.prototype.create=function(a){a=A(a).createEvent(\"HTMLEvents\");a.initEvent(this.B,this.pa,this.qa);return a};Cc.prototype.toString=function(){return this.B};var Dc=new Cc(\"change\",!0,!1);function Ec(a,b){this.w={};this.g=[];this.G=0;var c=arguments.length;if(1\u003Cc){if(c%2)throw Error(\"Uneven number of arguments\");for(var d=0;d\u003Cc;d+=2)this.set(arguments[d],arguments[d+1])}else a&&this.addAll(a)}function Fc(a){Gc(a);return a.g.concat()}g=Ec.prototype;g.clear=function(){this.w={};this.G=this.g.length=0};g.remove=function(a){return Object.prototype.hasOwnProperty.call(this.w,a)?(delete this.w[a],this.G--,this.g.length>2*this.G&&Gc(this),!0):!1};\nfunction Gc(a){var b,c;if(a.G!=a.g.length){for(b=c=0;c\u003Ca.g.length;){var d=a.g[c];Object.prototype.hasOwnProperty.call(a.w,d)&&(a.g[b++]=d);c++}a.g.length=b}if(a.G!=a.g.length){var e={};for(b=c=0;c\u003Ca.g.length;)d=a.g[c],Object.prototype.hasOwnProperty.call(e,d)||(a.g[b++]=d,e[d]=1),c++;a.g.length=b}}g.get=function(a,b){return Object.prototype.hasOwnProperty.call(this.w,a)?this.w[a]:b};g.set=function(a,b){Object.prototype.hasOwnProperty.call(this.w,a)||(this.G++,this.g.push(a));this.w[a]=b};\ng.addAll=function(a){if(a instanceof Ec){var b=Fc(a);Gc(a);for(var c=[],d=0;d\u003Ca.g.length;d++)c.push(a.w[a.g[d]]);a=c}else{b=[];var d=0;for(e in a)b[d++]=e;d=[];var e=0;for(c in a)d[e++]=a[c];a=d}for(c=0;c\u003Cb.length;c++)this.set(b[c],a[c])};g.forEach=function(a,b){for(var c=Fc(this),d=0;d\u003Cc.length;d++){var e=c[d],f=this.get(e);a.call(b,f,e,this)}};g.clone=function(){return new Ec(this)};var Hc={};function Y(a,b,c){fa(a)&&(a=a.b);a=new Ic(a);!b||b in Hc&&!c||(Hc[b]={key:a,shift:!1},c&&(Hc[c]={key:a,shift:!0}));return a}function Ic(a){this.code=a}Y(8);Y(9);Y(13);var Jc=Y(16),Kc=Y(17),Lc=Y(18);Y(19);Y(20);Y(27);Y(32,\" \");Y(33);Y(34);Y(35);Y(36);Y(37);Y(38);Y(39);Y(40);Y(44);Y(45);Y(46);Y(48,\"0\",\")\");Y(49,\"1\",\"!\");Y(50,\"2\",\"@\");Y(51,\"3\",\"#\");Y(52,\"4\",\"$\");Y(53,\"5\",\"%\");Y(54,\"6\",\"^\");Y(55,\"7\",\"&\");Y(56,\"8\",\"*\");Y(57,\"9\",\"(\");Y(65,\"a\",\"A\");Y(66,\"b\",\"B\");Y(67,\"c\",\"C\");Y(68,\"d\",\"D\");\nY(69,\"e\",\"E\");Y(70,\"f\",\"F\");Y(71,\"g\",\"G\");Y(72,\"h\",\"H\");Y(73,\"i\",\"I\");Y(74,\"j\",\"J\");Y(75,\"k\",\"K\");Y(76,\"l\",\"L\");Y(77,\"m\",\"M\");Y(78,\"n\",\"N\");Y(79,\"o\",\"O\");Y(80,\"p\",\"P\");Y(81,\"q\",\"Q\");Y(82,\"r\",\"R\");Y(83,\"s\",\"S\");Y(84,\"t\",\"T\");Y(85,\"u\",\"U\");Y(86,\"v\",\"V\");Y(87,\"w\",\"W\");Y(88,\"x\",\"X\");Y(89,\"y\",\"Y\");Y(90,\"z\",\"Z\");var Mc=Y(Ha?{c:91,b:91}:Ga?{c:224,b:91}:{c:0,b:91});Y(Ha?{c:92,b:92}:Ga?{c:224,b:93}:{c:0,b:92});Y(Ha?{c:93,b:93}:Ga?{c:0,b:0}:{c:93,b:null});Y({c:96,b:96},\"0\");Y({c:97,b:97},\"1\");\nY({c:98,b:98},\"2\");Y({c:99,b:99},\"3\");Y({c:100,b:100},\"4\");Y({c:101,b:101},\"5\");Y({c:102,b:102},\"6\");Y({c:103,b:103},\"7\");Y({c:104,b:104},\"8\");Y({c:105,b:105},\"9\");Y({c:106,b:106},\"*\");Y({c:107,b:107},\"+\");Y({c:109,b:109},\"-\");Y({c:110,b:110},\".\");Y({c:111,b:111},\"/\");Y(144);Y(112);Y(113);Y(114);Y(115);Y(116);Y(117);Y(118);Y(119);Y(120);Y(121);Y(122);Y(123);Y({c:107,b:187},\"=\",\"+\");Y(108,\",\");Y({c:109,b:189},\"-\",\"_\");Y(188,\",\",\"\u003C\");Y(190,\".\",\">\");Y(191,\"/\",\"?\");Y(192,\"`\",\"~\");Y(219,\"[\",\"{\");\nY(220,\"\\\\\",\"|\");Y(221,\"]\",\"}\");Y({c:59,b:186},\";\",\":\");Y(222,\"'\",'\"');var Nc=new Ec;Nc.set(1,Jc);Nc.set(2,Kc);Nc.set(4,Lc);Nc.set(8,Mc);(function(a){var b=new Ec;q(Fc(a),function(c){b.set(a.get(c).code,c)});return b})(Nc);function Z(){zc.call(this)}p(Z,zc);Z.W=void 0;Z.ra=function(){return Z.W?Z.W:Z.W=new Z};ba(\"_\",function(a){if(!wc(a)||!mc(a)||\"none\"==W(a,\"pointer-events\"))throw new v(12,\"Element is not currently interactable and may not be manipulated\");if(!(kc(a)||B(a,\"INPUT\")&&\"file\"==a.type.toLowerCase())||a.readOnly)throw new v(12,\"Element must be user-editable in order to clear it.\");var b=Z.ra();Ac(b,a);Bc(b);a.value?(a.value=\"\",b=Dc.create(a,void 0),\"isTrusted\"in b||(b.isTrusted=!1),a.dispatchEvent(b)):B(a,\"INPUT\")&&a.getAttribute(\"type\")&&\"number\"==a.getAttribute(\"type\").toLowerCase()&&(a.value=\n\"\");oc(a)&&(a.innerHTML=\" \")});; return this._.apply(null,arguments);}.apply({navigator:typeof window!='undefined'?window.navigator:null,document:typeof window!='undefined'?window.document:null}, arguments);}, [{\"ELEMENT\":\"0.47435541797315195-1\"}], false])",
+   "returnByValue": true
+}
+[1532715854.493][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=25) {
+   "result": {
+      "type": "object",
+      "value": {
+         "status": 0
+      }
+   }
+}
+[1532715854.493][INFO]: Waiting for pending navigations...
+[1532715854.493][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=26) {
+   "expression": "1"
+}
+[1532715854.498][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=26) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1532715854.498][INFO]: Done waiting for pending navigations. Status: ok
+[1532715854.498][INFO]: [c3681035a5e0990f0e117e8f7299f793] RESPONSE ClearElement
+[1532715854.499][INFO]: [c3681035a5e0990f0e117e8f7299f793] COMMAND ExecuteScript {
+   "args": [ {
+      "ELEMENT": "0.47435541797315195-1"
+   } ],
+   "script": "return arguments[0].value;"
+}
+[1532715854.499][INFO]: Waiting for pending navigations...
+[1532715854.499][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=27) {
+   "expression": "1"
+}
+[1532715854.501][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=27) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1532715854.501][INFO]: Done waiting for pending navigations. Status: ok
+[1532715854.502][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=28) {
+   "expression": "(function() { // Copyright (c) 2012 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\n/**\n * Enum for WebDriver status codes.\n * @enum {number}\n */\nvar StatusCode = {\n  STALE_ELEMENT_REFERENCE: 10,\n  UNKNOWN_ERROR: 13,\n};\n\n/**\n * Enum for node types.\n * @enum {number}\n */\nvar NodeType = {\n  ELEMENT: 1,\n  DOCUMENT: 9,\n};\n\n/**\n * Dictionary key to use for holding an element ID.\n * @const\n * @type {string}\n */\nvar ELEMENT_KEY = 'ELEMENT';\n\n/**\n * True if using W3C Element references.\n * @const\n * @type {boolean}\n */\nvar w3cEnabled = false;\n\n/**\n * True if shadow dom is enabled.\n * @const\n * @type {boolean}\n */\nvar SHADOW_DOM_ENABLED = typeof ShadowRoot === 'function';\n\n/**\n * Generates a unique ID to identify an element.\n * @void\n * @return {string} Randomly generated ID.\n */\nfunction generateUUID() {\n  var array = new Uint8Array(16);\n  window.crypto.getRandomValues(array);\n  array[6] = 0x40 | (array[6] & 0x0f);\n  array[8] = 0x80 | (array[8] & 0x3f);\n\n  var UUID = \"\";\n  for (var i = 0; i \u003C 16; i++) {\n    var temp = array[i].toString(16);\n    if (temp.length \u003C 2)\n      temp = \"0\" + temp;\n    UUID += temp;\n    if (i == 3 || i == 5 || i == 7 || i == 9)\n      UUID += \"-\";\n  }\n  return UUID;\n};\n\n/**\n * A cache which maps IDs \u003C-> cached objects for the purpose of identifying\n * a script object remotely. Uses UUIDs for identification.\n * @constructor\n */\nfunction CacheWithUUID() {\n  this.cache_ = {};\n}\n\nCacheWithUUID.prototype = {\n  /**\n   * Stores a given item in the cache and returns a unique UUID.\n   *\n   * @param {!Object} item The item to store in the cache.\n   * @return {number} The UUID for the cached item.\n   */\n  storeItem: function(item) {\n    for (var i in this.cache_) {\n      if (item == this.cache_[i])\n        return i;\n    }\n    var id = generateUUID();\n    this.cache_[id] = item;\n    return id;\n  },\n\n  /**\n   * Retrieves the cached object for the given ID.\n   *\n   * @param {number} id The ID for the cached item to retrieve.\n   * @return {!Object} The retrieved item.\n   */\n  retrieveItem: function(id) {\n    var item = this.cache_[id];\n    if (item)\n      return item;\n    var error = new Error('not in cache');\n    error.code = StatusCode.STALE_ELEMENT_REFERENCE;\n    error.message = 'element is not attached to the page document';\n    throw error;\n  },\n\n  /**\n   * Clears stale items from the cache.\n   */\n  clearStale: function() {\n    for (var id in this.cache_) {\n      var node = this.cache_[id];\n      if (!this.isNodeReachable_(node))\n        delete this.cache_[id];\n    }\n  },\n\n  /**\n    * @private\n    * @param {!Node} node The node to check.\n    * @return {boolean} If the nodes is reachable.\n    */\n  isNodeReachable_: function(node) {\n    var nodeRoot = getNodeRootThroughAnyShadows(node);\n    return (nodeRoot == document);\n  }\n\n\n};\n\n/**\n * A cache which maps IDs \u003C-> cached objects for the purpose of identifying\n * a script object remotely.\n * @constructor\n */\nfunction Cache() {\n  this.cache_ = {};\n  this.nextId_ = 1;\n  this.idPrefix_ = Math.random().toString();\n}\n\nCache.prototype = {\n\n  /**\n   * Stores a given item in the cache and returns a unique ID.\n   *\n   * @param {!Object} item The item to store in the cache.\n   * @return {number} The ID for the cached item.\n   */\n  storeItem: function(item) {\n    for (var i in this.cache_) {\n      if (item == this.cache_[i])\n        return i;\n    }\n    var id = this.idPrefix_  + '-' + this.nextId_;\n    this.cache_[id] = item;\n    this.nextId_++;\n    return id;\n  },\n\n  /**\n   * Retrieves the cached object for the given ID.\n   *\n   * @param {number} id The ID for the cached item to retrieve.\n   * @return {!Object} The retrieved item.\n   */\n  retrieveItem: function(id) {\n    var item = this.cache_[id];\n    if (item)\n      return item;\n    var error = new Error('not in cache');\n    error.code = StatusCode.STALE_ELEMENT_REFERENCE;\n    error.message = 'element is not attached to the page document';\n    throw error;\n  },\n\n  /**\n   * Clears stale items from the cache.\n   */\n  clearStale: function() {\n    for (var id in this.cache_) {\n      var node = this.cache_[id];\n      if (!this.isNodeReachable_(node))\n        delete this.cache_[id];\n    }\n  },\n\n  /**\n    * @private\n    * @param {!Node} node The node to check.\n    * @return {boolean} If the nodes is reachable.\n    */\n  isNodeReachable_: function(node) {\n    var nodeRoot = getNodeRootThroughAnyShadows(node);\n    return (nodeRoot == document);\n  }\n};\n\n/**\n * Returns the root element of the node.  Found by traversing parentNodes until\n * a node with no parent is found.  This node is considered the root.\n * @param {?Node} node The node to find the root element for.\n * @return {?Node} The root node.\n */\nfunction getNodeRoot(node) {\n  while (node && node.parentNode) {\n    node = node.parentNode;\n  }\n  return node;\n}\n\n/**\n * Returns the root element of the node, jumping up through shadow roots if\n * any are found.\n */\nfunction getNodeRootThroughAnyShadows(node) {\n  var root = getNodeRoot(node);\n  while (SHADOW_DOM_ENABLED && root instanceof ShadowRoot) {\n    root = getNodeRoot(root.host);\n  }\n  return root;\n}\n\n/**\n * Returns the global object cache for the page.\n * @param {Document=} opt_doc The document whose cache to retrieve. Defaults to\n *     the current document.\n * @return {!Cache} The page's object cache.\n */\nfunction getPageCache(opt_doc, opt_w3c) {\n  var doc = opt_doc || document;\n  var w3c = opt_w3c || false;\n  var key = '$cdc_asdjflasutopfhvcZLmcfl_';\n  if (w3c) {\n    if (!(key in doc))\n      doc[key] = new CacheWithUUID();\n    return doc[key];\n  } else {\n    if (!(key in doc))\n      doc[key] = new Cache();\n    return doc[key];\n  }\n}\n\n/**\n * Wraps the given value to be transmitted remotely by converting\n * appropriate objects to cached object IDs.\n *\n * @param {*} value The value to wrap.\n * @return {*} The wrapped value.\n */\nfunction wrap(value) {\n  // As of crrev.com/1316933002, typeof() for some elements will return\n  // 'function', not 'object'. So we need to check for both non-null objects, as\n  // well Elements that also happen to be callable functions (e.g. \u003Cembed> and\n  // \u003Cobject> elements). Note that we can not use |value instanceof Object| here\n  // since this does not work with frames/iframes, for example\n  // frames[0].document.body instanceof Object == false even though\n  // typeof(frames[0].document.body) == 'object'.\n  if ((typeof(value) == 'object' && value != null) ||\n      (typeof(value) == 'function' && value.nodeName &&\n       value.nodeType == NodeType.ELEMENT)) {\n    var nodeType = value['nodeType'];\n    if (nodeType == NodeType.ELEMENT || nodeType == NodeType.DOCUMENT\n        || (SHADOW_DOM_ENABLED && value instanceof ShadowRoot)) {\n      var wrapped = {};\n      var root = getNodeRootThroughAnyShadows(value);\n      wrapped[ELEMENT_KEY] = getPageCache(root, w3cEnabled).storeItem(value);\n      return wrapped;\n    }\n\n    var obj;\n    if (typeof(value.length) == 'number') {\n      obj = [];\n      for (var i = 0; i \u003C value.length; i++)\n        obj[i] = wrap(value[i]);\n    } else {\n      obj = {};\n      for (var prop in value)\n        obj[prop] = wrap(value[prop]);\n    }\n    return obj;\n  }\n  return value;\n}\n\n/**\n * Unwraps the given value by converting from object IDs to the cached\n * objects.\n *\n * @param {*} value The value to unwrap.\n * @param {Cache} cache The cache to retrieve wrapped elements from.\n * @return {*} The unwrapped value.\n */\nfunction unwrap(value, cache) {\n  if (typeof(value) == 'object' && value != null) {\n    if (ELEMENT_KEY in value)\n      return cache.retrieveItem(value[ELEMENT_KEY]);\n\n    var obj;\n    if (typeof(value.length) == 'number') {\n      obj = [];\n      for (var i = 0; i \u003C value.length; i++)\n        obj[i] = unwrap(value[i], cache);\n    } else {\n      obj = {};\n      for (var prop in value)\n        obj[prop] = unwrap(value[prop], cache);\n    }\n    return obj;\n  }\n  return value;\n}\n\n/**\n * Calls a given function and returns its value.\n *\n * The inputs to and outputs of the function will be unwrapped and wrapped\n * respectively, unless otherwise specified. This wrapping involves converting\n * between cached object reference IDs and actual JS objects. The cache will\n * automatically be pruned each call to remove stale references.\n *\n * @param  {Array\u003Cstring>} shadowHostIds The host ids of the nested shadow\n *     DOMs the function should be executed in the context of.\n * @param {function(...[*]) : *} func The function to invoke.\n * @param {!Array\u003C*>} args The array of arguments to supply to the function,\n *     which will be unwrapped before invoking the function.\n * @param {boolean} w3c Whether to return a W3C compliant element reference.\n * @param {boolean=} opt_unwrappedReturn Whether the function's return value\n *     should be left unwrapped.\n * @return {*} An object containing a status and value property, where status\n *     is a WebDriver status code and value is the wrapped value. If an\n *     unwrapped return was specified, this will be the function's pure return\n *     value.\n */\nfunction callFunction(shadowHostIds, func, args, w3c, opt_unwrappedReturn) {\n  if (w3c) {\n    w3cEnabled = true;\n    ELEMENT_KEY = 'element-6066-11e4-a52e-4f735466cecf';\n\n  }\n  var cache = getPageCache(null, w3cEnabled);\n  cache.clearStale();\n  if (shadowHostIds && SHADOW_DOM_ENABLED) {\n    for (var i = 0; i \u003C shadowHostIds.length; i++) {\n      var host = cache.retrieveItem(shadowHostIds[i]);\n      // TODO(zachconrad): Use the olderShadowRoot API when available to check\n      // all of the shadow roots.\n      cache = getPageCache(host.webkitShadowRoot, w3cEnabled);\n      cache.clearStale();\n    }\n  }\n\n  if (opt_unwrappedReturn)\n    return func.apply(null, unwrap(args, cache));\n\n  var status = 0;\n  try {\n    var returnValue = wrap(func.apply(null, unwrap(args, cache)));\n  } catch (error) {\n    status = error.code || StatusCode.UNKNOWN_ERROR;\n    var returnValue = error.message;\n  }\n  return {\n      status: status,\n      value: returnValue\n  }\n}\n; return callFunction.apply(null, arguments) }\n).apply(null, [null, function(){return arguments[0].value;}, [{\"ELEMENT\":\"0.47435541797315195-1\"}], false])",
+   "returnByValue": true
+}
+[1532715854.506][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=28) {
+   "result": {
+      "type": "object",
+      "value": {
+         "status": 0,
+         "value": ""
+      }
+   }
+}
+[1532715854.506][INFO]: Waiting for pending navigations...
+[1532715854.506][DEBUG]: DEVTOOLS COMMAND Runtime.evaluate (id=29) {
+   "expression": "1"
+}
+[1532715854.507][DEBUG]: DEVTOOLS RESPONSE Runtime.evaluate (id=29) {
+   "result": {
+      "description": "1",
+      "type": "number",
+      "value": 1
+   }
+}
+[1532715854.507][INFO]: Done waiting for pending navigations. Status: ok
+[1532715854.507][INFO]: [c3681035a5e0990f0e117e8f7299f793] RESPONSE ExecuteScript ""
+[1532715854.509][INFO]: [c3681035a5e0990f0e117e8f7299f793] COMMAND Quit {
+
+}
+[0727/112414.522983:ERROR:nacl_helper_linux.cc(310)] NaCl helper process running without a sandbox!
+Most likely you need to configure your SUID sandbox correctly
+[1532715854.559][INFO]: [c3681035a5e0990f0e117e8f7299f793] RESPONSE Quit
+[1532715854.559][DEBUG]: Log type 'driver' lost 0 entries on destruction
+[1532715854.559][DEBUG]: Log type 'browser' lost 1 entries on destruction
