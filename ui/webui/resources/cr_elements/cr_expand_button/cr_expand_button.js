@@ -54,7 +54,6 @@ Polymer({
     return expanded ? 'true' : 'false';
   },
 
-
   /**
    * @param {boolean} expanded
    * @private
@@ -111,6 +110,9 @@ Polymer({
    * @private
    */
   updateRippleHoldDown_: function(holdDown) {
-    this.$$('paper-ripple').holdDown = holdDown;
+    const button = /** @type {{ensureRipple: Function, getRipple: Function}} */
+        (this.$$('paper-icon-button-light'));
+    button.ensureRipple();
+    button.getRipple().holdDown = holdDown;
   },
 });
