@@ -17,7 +17,6 @@ enum WebFeature {
   kOBSOLETE_PageDestruction = 0,
   kWorkerStart = 4,
   kSharedWorkerStart = 5,
-  kUnprefixedIndexedDB = 9,
   kOpenWebDatabase = 10,
   kUnprefixedRequestAnimationFrame = 13,
   kPrefixedRequestAnimationFrame = 14,
@@ -1981,6 +1980,7 @@ enum WebFeature {
   kPPAPIWebSocket = 2524,
   kV8MediaStreamTrack_ContentHint_AttributeGetter = 2525,
   kV8MediaStreamTrack_ContentHint_AttributeSetter = 2526,
+  kV8IDBFactory_Open_Method = 2527,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -19581,6 +19581,7 @@ Called by update_net_error_codes.py.-->
   <int value="2524" label="PPAPIWebSocket"/>
   <int value="2525" label="V8MediaStreamTrack_ContentHint_AttributeGetter"/>
   <int value="2526" label="V8MediaStreamTrack_ContentHint_AttributeSetter"/>
+  <int value="2527" label="V8IDBFactory_Open_Method"/>
 </enum>
 
 <enum name="FeedbackSource">
