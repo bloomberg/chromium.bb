@@ -4,7 +4,9 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -286,6 +288,28 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, OnUpdatedDiscardedState) {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabOpenerCraziness) {
   ASSERT_TRUE(RunExtensionTest("tabs/tab_opener_id"));
 }
+
+class IncognitoExtensionApiTabTest : public ExtensionApiTabTest,
+                                     public testing::WithParamInterface<bool> {
+};
+
+IN_PROC_BROWSER_TEST_P(IncognitoExtensionApiTabTest, Tabs) {
+  bool is_incognito_enabled = GetParam();
+  Browser* incognito_browser =
+      OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
+  std::string args = base::StringPrintf(
+      R"({"isIncognito": %s, "windowId": %d})",
+      is_incognito_enabled ? "true" : "false",
+      extensions::ExtensionTabUtil::GetWindowId(incognito_browser));
+
+  EXPECT_TRUE(RunExtensionSubtestWithArgAndFlags(
+      "tabs/basics", "incognito.html", args.data(),
+      is_incognito_enabled ? extensions::ExtensionApiTest::kFlagEnableIncognito
+                           : extensions::ExtensionApiTest::kFlagNone))
+      << message_;
+}
+
+INSTANTIATE_TEST_CASE_P(, IncognitoExtensionApiTabTest, testing::Bool());
 
 // Adding a new test? Awesome. But API tests are the old hotness. The new
 // hotness is extension_function_test_utils. See tabs_test.cc for an example.
