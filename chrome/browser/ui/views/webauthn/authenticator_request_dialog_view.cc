@@ -19,6 +19,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/window/dialog_client_view.h"
 
 // static
 void ShowAuthenticatorRequestDialog(
@@ -182,11 +183,17 @@ void AuthenticatorRequestDialogView::ReplaceCurrentSheetWith(
   // sheet likely wants to provide a new configuration.
   DialogModelChanged();
 
-  // The accessibility title is also sourced from the |sheet_|'s step title, so
-  // update it unless the widget is not yet shown or already being torn down.
+  // If the widget is not yet shown or already being torn down, we are done. In
+  // the former case, sizing/layout will happen once the dialog is visible.
   if (!GetWidget())
     return;
 
+  // Force re-layout of the entire dialog client view, which includes the sheet
+  // content as well as the button row on the bottom.
+  DCHECK(GetDialogClientView());
+  GetDialogClientView()->Layout();
+
+  // The accessibility title is also sourced from the |sheet_|'s step title.
   GetWidget()->UpdateWindowTitle();
 
   // TODO(https://crbug.com/849323): Investigate how a web-modal dialog's
