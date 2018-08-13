@@ -1463,8 +1463,8 @@ void av1_build_bitmask_vert_info(
   const int is_uv = plane > 0;
   TX_SIZE tx_size = TX_16X16, prev_tx_size = TX_16X16;
   uint8_t level, prev_level = 1;
-  int skip, prev_skip = 0;
-  int is_coding_block_border;
+  uint64_t skip, prev_skip = 0;
+  uint64_t is_coding_block_border;
 
   for (int r = 0; (r << MI_SIZE_LOG2) < plane_ptr->dst.height; r += row_step) {
     const int mi_row = r << subsampling_y;
@@ -1534,8 +1534,8 @@ void av1_build_bitmask_horz_info(
   const int is_uv = plane > 0;
   TX_SIZE tx_size = TX_16X16, prev_tx_size = TX_16X16;
   uint8_t level, prev_level = 1;
-  int skip, prev_skip = 0;
-  int is_coding_block_border;
+  uint64_t skip, prev_skip = 0;
+  uint64_t is_coding_block_border;
 
   for (int c = 0; (c << MI_SIZE_LOG2) < plane_ptr->dst.width; c += col_step) {
     const int mi_col = c << subsampling_x;
@@ -2219,6 +2219,92 @@ void av1_filter_block_plane_horz(const AV1_COMMON *const cm,
   }
 }
 
+void av1_filter_block_plane_vert_test(const AV1_COMMON *const cm,
+                                      const MACROBLOCKD *const xd,
+                                      const int plane,
+                                      const MACROBLOCKD_PLANE *const plane_ptr,
+                                      const uint32_t mi_row,
+                                      const uint32_t mi_col) {
+  const int row_step = MI_SIZE >> MI_SIZE_LOG2;
+  const uint32_t scale_horz = plane_ptr->subsampling_x;
+  const uint32_t scale_vert = plane_ptr->subsampling_y;
+  uint8_t *const dst_ptr = plane_ptr->dst.buf;
+  const int dst_stride = plane_ptr->dst.stride;
+  const int y_range = cm->mi_rows >> scale_vert;
+  const int x_range = cm->mi_cols >> scale_horz;
+  for (int y = 0; y < y_range; y += row_step) {
+    uint8_t *p = dst_ptr + y * MI_SIZE * dst_stride;
+    for (int x = 0; x < x_range;) {
+      // inner loop always filter vertical edges in a MI block. If MI size
+      // is 8x8, it will filter the vertical edge aligned with a 8x8 block.
+      // If 4x4 trasnform is used, it will then filter the internal edge
+      //  aligned with a 4x4 block
+      const uint32_t curr_x = ((mi_col * MI_SIZE) >> scale_horz) + x * MI_SIZE;
+      const uint32_t curr_y = ((mi_row * MI_SIZE) >> scale_vert) + y * MI_SIZE;
+      uint32_t advance_units;
+      TX_SIZE tx_size;
+      AV1_DEBLOCKING_PARAMETERS params;
+      memset(&params, 0, sizeof(params));
+
+      tx_size =
+          set_lpf_parameters(&params, ((ptrdiff_t)1 << scale_horz), cm, xd,
+                             VERT_EDGE, curr_x, curr_y, plane, plane_ptr);
+      if (tx_size == TX_INVALID) {
+        params.filter_length = 0;
+        tx_size = TX_4X4;
+      }
+
+      // advance the destination pointer
+      advance_units = tx_size_wide_unit[tx_size];
+      x += advance_units;
+      p += advance_units * MI_SIZE;
+    }
+  }
+}
+
+void av1_filter_block_plane_horz_test(const AV1_COMMON *const cm,
+                                      const MACROBLOCKD *const xd,
+                                      const int plane,
+                                      const MACROBLOCKD_PLANE *const plane_ptr,
+                                      const uint32_t mi_row,
+                                      const uint32_t mi_col) {
+  const int col_step = MI_SIZE >> MI_SIZE_LOG2;
+  const uint32_t scale_horz = plane_ptr->subsampling_x;
+  const uint32_t scale_vert = plane_ptr->subsampling_y;
+  uint8_t *const dst_ptr = plane_ptr->dst.buf;
+  const int dst_stride = plane_ptr->dst.stride;
+  const int y_range = cm->mi_rows >> scale_vert;
+  const int x_range = cm->mi_cols >> scale_horz;
+  for (int x = 0; x < x_range; x += col_step) {
+    uint8_t *p = dst_ptr + x * MI_SIZE;
+    for (int y = 0; y < y_range;) {
+      // inner loop always filter vertical edges in a MI block. If MI size
+      // is 8x8, it will first filter the vertical edge aligned with a 8x8
+      // block. If 4x4 trasnform is used, it will then filter the internal
+      // edge aligned with a 4x4 block
+      const uint32_t curr_x = ((mi_col * MI_SIZE) >> scale_horz) + x * MI_SIZE;
+      const uint32_t curr_y = ((mi_row * MI_SIZE) >> scale_vert) + y * MI_SIZE;
+      uint32_t advance_units;
+      TX_SIZE tx_size;
+      AV1_DEBLOCKING_PARAMETERS params;
+      memset(&params, 0, sizeof(params));
+
+      tx_size =
+          set_lpf_parameters(&params, (cm->mi_stride << scale_vert), cm, xd,
+                             HORZ_EDGE, curr_x, curr_y, plane, plane_ptr);
+      if (tx_size == TX_INVALID) {
+        params.filter_length = 0;
+        tx_size = TX_4X4;
+      }
+
+      // advance the destination pointer
+      advance_units = tx_size_high_unit[tx_size];
+      y += advance_units;
+      p += advance_units * dst_stride * MI_SIZE;
+    }
+  }
+}
+
 static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
                              MACROBLOCKD *xd, int start, int stop,
 #if LOOP_FILTER_BITMASK
@@ -2233,6 +2319,7 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
 
 #if LOOP_FILTER_BITMASK
   if (is_decoding) {
+    cm->is_decoding = is_decoding;
     for (plane = plane_start; plane < plane_end; plane++) {
       if (plane == 0 && !(cm->lf.filter_level[0]) && !(cm->lf.filter_level[1]))
         break;
@@ -2243,6 +2330,10 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
 
       av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, 0, 0,
                            plane, plane + 1);
+
+      av1_filter_block_plane_vert_test(cm, xd, plane, &pd[plane], 0, 0);
+      av1_filter_block_plane_horz_test(cm, xd, plane, &pd[plane], 0, 0);
+
       av1_build_bitmask_vert_info(cm, &pd[plane], plane);
       av1_build_bitmask_horz_info(cm, &pd[plane], plane);
 

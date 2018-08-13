@@ -1242,6 +1242,7 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
                                TX_SIZE tx_size, int depth,
 #if LOOP_FILTER_BITMASK
                                AV1_COMMON *cm, int mi_row, int mi_col,
+                               int store_bitmask,
 #endif
                                int blk_row, int blk_col, aom_reader *r) {
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
@@ -1288,15 +1289,18 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
       txfm_partition_update(xd->above_txfm_context + blk_col,
                             xd->left_txfm_context + blk_row, sub_txs, tx_size);
 #if LOOP_FILTER_BITMASK
-      store_bitmask_vartx(cm, mi_row + blk_row, mi_col + blk_col, BLOCK_8X8,
-                          TX_4X4, mbmi);
+      if (store_bitmask) {
+        store_bitmask_vartx(cm, mi_row + blk_row, mi_col + blk_col,
+                            txsize_to_bsize[tx_size], TX_4X4, mbmi);
+      }
 #endif
       return;
     }
 #if LOOP_FILTER_BITMASK
-    if (depth + 1 == MAX_VARTX_DEPTH) {
+    if (depth + 1 == MAX_VARTX_DEPTH && store_bitmask) {
       store_bitmask_vartx(cm, mi_row + blk_row, mi_col + blk_col,
                           txsize_to_bsize[tx_size], sub_txs, mbmi);
+      store_bitmask = 0;
     }
 #endif
 
@@ -1307,7 +1311,7 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
         int offsetc = blk_col + col;
         read_tx_size_vartx(xd, mbmi, sub_txs, depth + 1,
 #if LOOP_FILTER_BITMASK
-                           cm, mi_row, mi_col,
+                           cm, mi_row, mi_col, store_bitmask,
 #endif
                            offsetr, offsetc, r);
       }
@@ -1324,8 +1328,10 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
     txfm_partition_update(xd->above_txfm_context + blk_col,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
 #if LOOP_FILTER_BITMASK
-    store_bitmask_vartx(cm, mi_row + blk_row, mi_col + blk_col,
-                        txsize_to_bsize[tx_size], tx_size, mbmi);
+    if (store_bitmask) {
+      store_bitmask_vartx(cm, mi_row + blk_row, mi_col + blk_col,
+                          txsize_to_bsize[tx_size], tx_size, mbmi);
+    }
 #endif
   }
 }
@@ -1505,7 +1511,9 @@ static void store_bitmask_univariant_tx(AV1_COMMON *cm, int mi_row, int mi_col,
 }
 
 static void store_bitmask_other_info(AV1_COMMON *cm, int mi_row, int mi_col,
-                                     BLOCK_SIZE bsize, MB_MODE_INFO *mbmi) {
+                                     BLOCK_SIZE bsize, MB_MODE_INFO *mbmi,
+                                     int is_horz_coding_block_border,
+                                     int is_vert_coding_block_border) {
   int index;
   int shift;
   int row;
@@ -1513,14 +1521,19 @@ static void store_bitmask_other_info(AV1_COMMON *cm, int mi_row, int mi_col,
   const int row_start = mi_row % MI_SIZE_64X64;
   const int col_start = mi_col % MI_SIZE_64X64;
   shift = get_index_shift(col_start, row_start, &index);
-  const uint64_t top_edge_mask =
-      ((uint64_t)1 << (shift + mi_size_wide[bsize])) - ((uint64_t)1 << shift);
-  lfm->is_horz_border.bits[index] |= top_edge_mask;
-  const int is_vert_border = mask_id_table_vert_border[bsize];
-  const int vert_shift = block_size_high[bsize] <= 8 ? shift : col_start;
-  for (int i = 0; i + index < 4; ++i) {
-    lfm->is_vert_border.bits[i + index] |=
-        (left_mask_univariant_reordered[is_vert_border].bits[i] << vert_shift);
+  if (is_horz_coding_block_border) {
+    const uint64_t top_edge_mask =
+        ((uint64_t)1 << (shift + mi_size_wide[bsize])) - ((uint64_t)1 << shift);
+    lfm->is_horz_border.bits[index] |= top_edge_mask;
+  }
+  if (is_vert_coding_block_border) {
+    const int is_vert_border = mask_id_table_vert_border[bsize];
+    const int vert_shift = block_size_high[bsize] <= 8 ? shift : col_start;
+    for (int i = 0; i + index < 4; ++i) {
+      lfm->is_vert_border.bits[i + index] |=
+          (left_mask_univariant_reordered[is_vert_border].bits[i]
+           << vert_shift);
+    }
   }
   const int is_skip = mbmi->skip && is_inter_block(mbmi);
   if (is_skip) {
@@ -1574,7 +1587,7 @@ static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
       for (int idx = 0; idx < width; idx += bw)
         read_tx_size_vartx(xd, mbmi, max_tx_size, 0,
 #if LOOP_FILTER_BITMASK
-                           cm, mi_row, mi_col,
+                           cm, mi_row, mi_col, 1,
 #endif
                            idy, idx, r);
   } else {
@@ -1602,12 +1615,12 @@ static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
   const int w = mi_size_wide[bsize];
   const int h = mi_size_high[bsize];
   if (w <= mi_size_wide[BLOCK_64X64] && h <= mi_size_high[BLOCK_64X64]) {
-    store_bitmask_other_info(cm, mi_row, mi_col, bsize, mbmi);
+    store_bitmask_other_info(cm, mi_row, mi_col, bsize, mbmi, 1, 1);
   } else {
     for (int row = 0; row < h; row += mi_size_high[BLOCK_64X64]) {
       for (int col = 0; col < w; col += mi_size_wide[BLOCK_64X64]) {
         store_bitmask_other_info(cm, mi_row + row, mi_col + col, BLOCK_64X64,
-                                 mbmi);
+                                 mbmi, row == 0, col == 0);
       }
     }
   }
