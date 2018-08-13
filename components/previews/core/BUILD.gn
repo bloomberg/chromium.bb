@@ -18,8 +18,6 @@ static_library("core") {
     "previews_switches.h",
     "previews_user_data.cc",
     "previews_user_data.h",
-    "test_previews_decider.cc",
-    "test_previews_decider.h",
   ]
 
   deps = [
@@ -29,6 +27,24 @@ static_library("core") {
     "//net:net",
     "//third_party/re2",
     "//url:url",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "test_previews_decider.cc",
+    "test_previews_decider.h",
+  ]
+
+  deps = [
+    ":core",
+    "//base",
+    "//base/test:test_support",
+    "//net",
+    "//net:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }
 
@@ -43,6 +59,7 @@ source_set("unit_tests") {
 
   deps = [
     ":core",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/blacklist/opt_out_blacklist",
