@@ -67,8 +67,6 @@ js_library("closure_compile_externs") {
   sources = []
   externs_list = [
     "$externs_path/command_line_private.js",
-    "$externs_path/file_manager_private.js",
-    "$externs_path/file_system_provider.js",
     "$externs_path/metrics_private.js",
     "$externs_path/web_animations.js",
     "../../../externs/app_window_common.js",
@@ -611,7 +609,13 @@ js_library("volume_manager_wrapper") {
     "//ui/webui/resources/js/cr/ui:array_data_model",
   ]
   externs_list = [
+    # Note: volume_info has a dependency on chrome.fileManagerPrivate.IconSet.
+    # Also, fileManagerPrivate depends on chrome.fileSystemProvider, so these
+    # must be introduced together.
+    "$externs_path/file_manager_private.js",
+    "$externs_path/file_system_provider.js",
     "../../../externs/background/volume_manager_factory.js",
+    "../../../externs/volume_info.js",
     "../../../externs/volume_info_list.js",
     "../../../externs/volume_manager.js",
   ]

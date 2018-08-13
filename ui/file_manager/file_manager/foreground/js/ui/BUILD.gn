@@ -45,8 +45,6 @@ js_library("closure_compile_externs") {
   sources = []
   externs_list = [
     "$externs_path/command_line_private.js",
-    "$externs_path/file_manager_private.js",
-    "$externs_path/file_system_provider.js",
     "$externs_path/metrics_private.js",
     "$externs_path/web_animations.js",
     "../../../../externs/app_window_common.js",
@@ -55,7 +53,6 @@ js_library("closure_compile_externs") {
     "../../../../externs/background/file_operation_manager.js",
     "../../../../externs/background/import_history.js",
     "../../../../externs/background/import_history_enum.js",
-    "../../../../externs/background/volume_manager_factory.js",
     "../../../../externs/background_window.js",
     "../../../../externs/chrome_echo_private.js",
     "../../../../externs/chrome_webstore_widget_private.js",
@@ -68,9 +65,6 @@ js_library("closure_compile_externs") {
     "../../../../externs/paper_elements.js",
     "../../../../externs/platform.js",
     "../../../../externs/search_item.js",
-    "../../../../externs/volume_info.js",
-    "../../../../externs/volume_info_list.js",
-    "../../../../externs/volume_manager.js",
     "//third_party/analytics/externs.js",
   ]
 }
