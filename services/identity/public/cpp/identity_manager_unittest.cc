@@ -1173,7 +1173,8 @@ TEST_F(IdentityManagerTest, CreateAccessTokenFetcher) {
   std::unique_ptr<AccessTokenFetcher> token_fetcher =
       identity_manager()->CreateAccessTokenFetcherForAccount(
           identity_manager()->GetPrimaryAccountInfo().account_id,
-          "dummy_consumer", scopes, std::move(callback));
+          "dummy_consumer", scopes, std::move(callback),
+          AccessTokenFetcher::Mode::kImmediate);
   EXPECT_TRUE(token_fetcher);
 }
 
@@ -1192,7 +1193,8 @@ TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
   std::unique_ptr<AccessTokenFetcher> token_fetcher =
       identity_manager()->CreateAccessTokenFetcherForAccount(
           identity_manager()->GetPrimaryAccountInfo().account_id,
-          "dummy_consumer", scopes, std::move(callback));
+          "dummy_consumer", scopes, std::move(callback),
+          AccessTokenFetcher::Mode::kImmediate);
 
   run_loop.Run();
 

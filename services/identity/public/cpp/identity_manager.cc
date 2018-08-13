@@ -220,10 +220,11 @@ IdentityManager::CreateAccessTokenFetcherForAccount(
     const std::string& account_id,
     const std::string& oauth_consumer_name,
     const OAuth2TokenService::ScopeSet& scopes,
-    AccessTokenFetcher::TokenCallback callback) {
+    AccessTokenFetcher::TokenCallback callback,
+    AccessTokenFetcher::Mode mode) {
   return std::make_unique<AccessTokenFetcher>(account_id, oauth_consumer_name,
                                               token_service_, scopes,
-                                              std::move(callback));
+                                              std::move(callback), mode);
 }
 
 void IdentityManager::RemoveAccessTokenFromCache(

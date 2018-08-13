@@ -15,12 +15,46 @@ AccessTokenFetcher::AccessTokenFetcher(
     const std::string& oauth_consumer_name,
     OAuth2TokenService* token_service,
     const OAuth2TokenService::ScopeSet& scopes,
-    TokenCallback callback)
+    TokenCallback callback,
+    Mode mode)
     : OAuth2TokenService::Consumer(oauth_consumer_name),
       account_id_(account_id),
       token_service_(token_service),
       scopes_(scopes),
-      callback_(std::move(callback)) {
+      mode_(mode),
+      callback_(std::move(callback)),
+      token_service_observer_(this) {
+  if (mode_ == Mode::kImmediate || IsRefreshTokenAvailable()) {
+    StartAccessTokenRequest();
+    return;
+  }
+
+  // Start observing the IdentityManager. This observer will be removed either
+  // when a refresh token is obtained and an access token request is started or
+  // when this object is destroyed.
+  token_service_observer_.Add(token_service_);
+}
+
+AccessTokenFetcher::~AccessTokenFetcher() {}
+
+bool AccessTokenFetcher::IsRefreshTokenAvailable() const {
+  DCHECK_EQ(Mode::kWaitUntilRefreshTokenAvailable, mode_);
+
+  return token_service_->RefreshTokenIsAvailable(account_id_);
+}
+
+void AccessTokenFetcher::StartAccessTokenRequest() {
+  DCHECK(mode_ == Mode::kImmediate || IsRefreshTokenAvailable());
+
+  // By the time of starting an access token request, we should no longer be
+  // listening for signin-related events.
+  DCHECK(!token_service_observer_.IsObserving(token_service_));
+
+  // Note: We might get here even in cases where we know that there's no refresh
+  // token. We're requesting an access token anyway, so that the token service
+  // will generate an appropriate error code that we can return to the client.
+  DCHECK(!access_token_request_);
+
   // TODO(843510): Consider making the request to ProfileOAuth2TokenService
   // asynchronously once there are no direct clients of PO2TS (i.e., PO2TS is
   // used only by this class and IdentityManager).
@@ -28,7 +62,17 @@ AccessTokenFetcher::AccessTokenFetcher(
       token_service_->StartRequest(account_id_, scopes_, this);
 }
 
-AccessTokenFetcher::~AccessTokenFetcher() {}
+void AccessTokenFetcher::OnRefreshTokenAvailable(
+    const std::string& account_id) {
+  DCHECK_EQ(Mode::kWaitUntilRefreshTokenAvailable, mode_);
+
+  if (!IsRefreshTokenAvailable())
+    return;
+
+  token_service_observer_.Remove(token_service_);
+
+  StartAccessTokenRequest();
+}
 
 void AccessTokenFetcher::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,

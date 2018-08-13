@@ -21,6 +21,7 @@
 
 using base::MockCallback;
 using sync_preferences::TestingPrefServiceSyncable;
+using testing::_;
 using testing::StrictMock;
 
 namespace identity {
@@ -63,11 +64,12 @@ class AccessTokenFetcherTest : public testing::Test,
 
   std::unique_ptr<AccessTokenFetcher> CreateFetcher(
       const std::string& account_id,
-      AccessTokenFetcher::TokenCallback callback) {
+      AccessTokenFetcher::TokenCallback callback,
+      AccessTokenFetcher::Mode mode) {
     std::set<std::string> scopes{"scope"};
     return std::make_unique<AccessTokenFetcher>(account_id, "test_consumer",
                                                 &token_service_, scopes,
-                                                std::move(callback));
+                                                std::move(callback), mode);
   }
 
   AccountTrackerService* account_tracker() { return account_tracker_.get(); }
@@ -102,7 +104,7 @@ class AccessTokenFetcherTest : public testing::Test,
   base::OnceClosure on_access_token_request_callback_;
 };
 
-TEST_F(AccessTokenFetcherTest, CallsBackOnFulfilledRequest) {
+TEST_F(AccessTokenFetcherTest, OneShotShouldCallBackOnFulfilledRequest) {
   TestTokenCallback callback;
 
   base::RunLoop run_loop;
@@ -112,7 +114,8 @@ TEST_F(AccessTokenFetcherTest, CallsBackOnFulfilledRequest) {
   token_service()->UpdateCredentials(account_id, "refresh token");
 
   // This should result in a request for an access token.
-  auto fetcher = CreateFetcher(account_id, callback.Get());
+  auto fetcher = CreateFetcher(account_id, callback.Get(),
+                               AccessTokenFetcher::Mode::kImmediate);
 
   run_loop.Run();
 
@@ -126,6 +129,95 @@ TEST_F(AccessTokenFetcherTest, CallsBackOnFulfilledRequest) {
       access_token_info().expiration_time);
 }
 
+TEST_F(AccessTokenFetcherTest,
+       WaitUntilAvailableShouldCallBackOnFulfilledRequest) {
+  TestTokenCallback callback;
+
+  base::RunLoop run_loop;
+  set_on_access_token_request_callback(run_loop.QuitClosure());
+
+  std::string account_id = AddAccount(kTestGaiaId, kTestEmail);
+  token_service()->UpdateCredentials(account_id, "refresh token");
+
+  // Since the refresh token is already available, this should result in an
+  // immediate request for an access token.
+  auto fetcher =
+      CreateFetcher(account_id, callback.Get(),
+                    AccessTokenFetcher::Mode::kWaitUntilRefreshTokenAvailable);
+
+  run_loop.Run();
+
+  // Once the access token request is fulfilled, we should get called back with
+  // the access token.
+  EXPECT_CALL(callback, Run(GoogleServiceAuthError::AuthErrorNone(),
+                            access_token_info()));
+
+  token_service()->IssueAllTokensForAccount(
+      account_id, access_token_info().token,
+      access_token_info().expiration_time);
+}
+
+TEST_F(AccessTokenFetcherTest,
+       WaitUntilAvailableShouldCallBackOnFulfilledRequestAfterTokenAvailable) {
+  TestTokenCallback callback;
+
+  base::RunLoop run_loop;
+  set_on_access_token_request_callback(run_loop.QuitClosure());
+
+  std::string account_id = AddAccount(kTestGaiaId, kTestEmail);
+
+  // Since the refresh token is not available yet, this should just start
+  // waiting for it.
+  auto fetcher =
+      CreateFetcher(account_id, callback.Get(),
+                    AccessTokenFetcher::Mode::kWaitUntilRefreshTokenAvailable);
+
+  // Before the refresh token is available, the callback shouldn't get called.
+  EXPECT_CALL(callback, Run(_, _)).Times(0);
+  token_service()->IssueAllTokensForAccount(
+      account_id, access_token_info().token,
+      access_token_info().expiration_time);
+
+  // Once the refresh token becomes available, we should get an access token
+  // request.
+  token_service()->UpdateCredentials(account_id, "refresh token");
+
+  run_loop.Run();
+
+  // Once the access token request is fulfilled, we should get called back with
+  // the access token.
+  EXPECT_CALL(callback, Run(GoogleServiceAuthError::AuthErrorNone(),
+                            access_token_info()));
+
+  token_service()->IssueAllTokensForAccount(
+      account_id, access_token_info().token,
+      access_token_info().expiration_time);
+}
+
+TEST_F(AccessTokenFetcherTest,
+       WaitUntilAvailableShouldIgnoreRefreshTokenForDifferentAccount) {
+  TestTokenCallback callback;
+
+  MockCallback<base::OnceClosure> access_token_request_callback;
+  set_on_access_token_request_callback(access_token_request_callback.Get());
+
+  std::string account_id = AddAccount(kTestGaiaId, kTestEmail);
+  std::string other_account_id = AddAccount(kTestGaiaId2, kTestEmail2);
+
+  // Since the refresh token is not available yet, this should just start
+  // waiting for it.
+  auto fetcher =
+      CreateFetcher(account_id, callback.Get(),
+                    AccessTokenFetcher::Mode::kWaitUntilRefreshTokenAvailable);
+
+  // A refresh token for a different account should make no difference.
+  EXPECT_CALL(callback, Run(_, _)).Times(0);
+  EXPECT_CALL(access_token_request_callback, Run()).Times(0);
+  token_service()->UpdateCredentials(other_account_id, "refresh token");
+
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(AccessTokenFetcherTest, ShouldNotReplyIfDestroyed) {
   TestTokenCallback callback;
 
@@ -136,7 +228,8 @@ TEST_F(AccessTokenFetcherTest, ShouldNotReplyIfDestroyed) {
   token_service()->UpdateCredentials(account_id, "refresh token");
 
   // This should result in a request for an access token.
-  auto fetcher = CreateFetcher(account_id, callback.Get());
+  auto fetcher = CreateFetcher(account_id, callback.Get(),
+                               AccessTokenFetcher::Mode::kImmediate);
 
   run_loop.Run();
 
@@ -155,7 +248,8 @@ TEST_F(AccessTokenFetcherTest, ReturnsErrorWhenAccountIsUnknown) {
   base::RunLoop run_loop;
 
   // Account not present -> we should get called back.
-  auto fetcher = CreateFetcher("dummy_account_id", callback.Get());
+  auto fetcher = CreateFetcher("dummy_account_id", callback.Get(),
+                               AccessTokenFetcher::Mode::kImmediate);
 
   EXPECT_CALL(callback,
               Run(GoogleServiceAuthError(
@@ -174,7 +268,8 @@ TEST_F(AccessTokenFetcherTest, ReturnsErrorWhenAccountHasNoRefreshToken) {
   std::string account_id = AddAccount(kTestGaiaId, kTestEmail);
 
   // Account has no refresh token -> we should get called back.
-  auto fetcher = CreateFetcher(account_id, callback.Get());
+  auto fetcher = CreateFetcher(account_id, callback.Get(),
+                               AccessTokenFetcher::Mode::kImmediate);
 
   EXPECT_CALL(callback,
               Run(GoogleServiceAuthError(
@@ -195,7 +290,8 @@ TEST_F(AccessTokenFetcherTest, CanceledAccessTokenRequest) {
   token_service()->UpdateCredentials(account_id, "refresh token");
 
   // This should result in a request for an access token.
-  auto fetcher = CreateFetcher(account_id, callback.Get());
+  auto fetcher = CreateFetcher(account_id, callback.Get(),
+                               AccessTokenFetcher::Mode::kImmediate);
 
   run_loop.Run();
 
@@ -224,7 +320,8 @@ TEST_F(AccessTokenFetcherTest, RefreshTokenRevoked) {
   token_service()->UpdateCredentials(account_id, "refresh token");
 
   // This should result in a request for an access token.
-  auto fetcher = CreateFetcher(account_id, callback.Get());
+  auto fetcher = CreateFetcher(account_id, callback.Get(),
+                               AccessTokenFetcher::Mode::kImmediate);
 
   run_loop.Run();
 
@@ -248,7 +345,8 @@ TEST_F(AccessTokenFetcherTest, FailedAccessTokenRequest) {
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
-  auto fetcher = CreateFetcher(account_id, callback.Get());
+  auto fetcher = CreateFetcher(account_id, callback.Get(),
+                               AccessTokenFetcher::Mode::kImmediate);
 
   run_loop.Run();
 
@@ -272,7 +370,8 @@ TEST_F(AccessTokenFetcherTest, MultipleRequestsForSameAccountFulfilled) {
   token_service()->UpdateCredentials(account_id, "refresh token");
 
   // This should result in a request for an access token.
-  auto fetcher = CreateFetcher(account_id, callback.Get());
+  auto fetcher = CreateFetcher(account_id, callback.Get(),
+                               AccessTokenFetcher::Mode::kImmediate);
 
   run_loop.Run();
 
@@ -280,7 +379,8 @@ TEST_F(AccessTokenFetcherTest, MultipleRequestsForSameAccountFulfilled) {
   TestTokenCallback callback2;
   base::RunLoop run_loop2;
   set_on_access_token_request_callback(run_loop2.QuitClosure());
-  auto fetcher2 = CreateFetcher(account_id, callback2.Get());
+  auto fetcher2 = CreateFetcher(account_id, callback2.Get(),
+                                AccessTokenFetcher::Mode::kImmediate);
   run_loop2.Run();
 
   // Once the access token request is fulfilled, both requests should get
@@ -304,7 +404,8 @@ TEST_F(AccessTokenFetcherTest, MultipleRequestsForDifferentAccountsFulfilled) {
   token_service()->UpdateCredentials(account_id, "refresh token");
 
   // This should result in a request for an access token.
-  auto fetcher = CreateFetcher(account_id, callback.Get());
+  auto fetcher = CreateFetcher(account_id, callback.Get(),
+                               AccessTokenFetcher::Mode::kImmediate);
 
   run_loop.Run();
 
@@ -314,7 +415,8 @@ TEST_F(AccessTokenFetcherTest, MultipleRequestsForDifferentAccountsFulfilled) {
   TestTokenCallback callback2;
   base::RunLoop run_loop2;
   set_on_access_token_request_callback(run_loop2.QuitClosure());
-  auto fetcher2 = CreateFetcher(account_id2, callback2.Get());
+  auto fetcher2 = CreateFetcher(account_id2, callback2.Get(),
+                                AccessTokenFetcher::Mode::kImmediate);
   run_loop2.Run();
 
   // Once the first access token request is fulfilled, it should get
@@ -345,7 +447,8 @@ TEST_F(AccessTokenFetcherTest,
   token_service()->UpdateCredentials(account_id, "refresh token");
 
   // This should result in a request for an access token.
-  auto fetcher = CreateFetcher(account_id, callback.Get());
+  auto fetcher = CreateFetcher(account_id, callback.Get(),
+                               AccessTokenFetcher::Mode::kImmediate);
   run_loop.Run();
 
   // Add a second account and request an access token for it.
@@ -356,7 +459,8 @@ TEST_F(AccessTokenFetcherTest,
   set_on_access_token_request_callback(run_loop2.QuitClosure());
 
   TestTokenCallback callback2;
-  auto fetcher2 = CreateFetcher(account_id2, callback2.Get());
+  auto fetcher2 = CreateFetcher(account_id2, callback2.Get(),
+                                AccessTokenFetcher::Mode::kImmediate);
   run_loop2.Run();
 
   // Cancel the first access token request: This should result in a callback

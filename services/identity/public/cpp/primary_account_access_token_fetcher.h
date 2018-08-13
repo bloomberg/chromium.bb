@@ -28,7 +28,12 @@ class PrimaryAccountAccessTokenFetcher : public IdentityManager::Observer {
   // Specifies how this instance should behave:
   // |kImmediate|: Makes one-shot immediate request.
   // |kWaitUntilAvailable|: Waits for the primary account to be available
-  // before making the request.
+  // before making the request. In particular, "available" is defined as the
+  // moment when (a) there is a primary account and (b) that account has a
+  // refresh token. This semantics is richer than using an AccessTokenFetcher in
+  // kWaitUntilRefreshTokenAvailable mode, as the latter will make a request
+  // once the specified account has a refresh token, regardless of whether it's
+  // the primary account at that point.
   // Note that using |kWaitUntilAvailable| can result in waiting forever
   // if the user is not signed in and doesn't sign in.
   enum class Mode { kImmediate, kWaitUntilAvailable };
