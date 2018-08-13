@@ -402,6 +402,12 @@ void AXTreeSourceArc::SerializeNode(AXNodeInfoData* node,
     }
   }
 
+  std::string place_holder;
+  if (GetProperty(node, AXStringProperty::HINT_TEXT, &place_holder)) {
+    out_data->AddStringAttribute(ax::mojom::StringAttribute::kPlaceholder,
+                                 place_holder);
+  }
+
   // Int properties.
   int traversal_before = -1, traversal_after = -1;
   if (GetProperty(node, AXIntProperty::TRAVERSAL_BEFORE, &traversal_before)) {

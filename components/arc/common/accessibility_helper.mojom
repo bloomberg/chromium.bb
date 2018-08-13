@@ -124,7 +124,8 @@ enum AccessibilityStringProperty {
   CHROME_ROLE,  // Chrome only
   ROLE_DESCRIPTION,  // Chrome only
   TOOLTIP,
-  PANE_TITLE
+  PANE_TITLE,
+  HINT_TEXT
 };
 
 // These fields are taken from int instance members of
