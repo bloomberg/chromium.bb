@@ -41,20 +41,14 @@
 #include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
 #include "mojo/core/embedder/embedder.h"
 #include "net/cert/cert_verifier.h"
-#include "net/cert/ct_policy_enforcer.h"
-#include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_auth_scheme.h"
-#include "net/http/http_network_session.h"
-#include "net/http/http_server_properties_impl.h"
-#include "net/http/transport_security_state.h"
 #include "net/log/file_net_log_observer.h"
-#include "net/socket/client_socket_factory.h"
-#include "net/socket/ssl_client_socket.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/default_channel_id_store.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -144,40 +138,6 @@ void MessageSentCallback(int64_t user_serial_number,
             << " Message send status: " << status;
 }
 
-// Needed to use a real host resolver.
-class MyTestURLRequestContext : public net::TestURLRequestContext {
- public:
-  MyTestURLRequestContext() : TestURLRequestContext(true) {
-    context_storage_.set_host_resolver(
-        net::HostResolver::CreateDefaultResolver(NULL));
-    context_storage_.set_transport_security_state(
-        std::make_unique<net::TransportSecurityState>());
-    Init();
-  }
-
-  ~MyTestURLRequestContext() override {}
-};
-
-class MyTestURLRequestContextGetter : public net::TestURLRequestContextGetter {
- public:
-  explicit MyTestURLRequestContextGetter(
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
-      : TestURLRequestContextGetter(io_task_runner) {}
-
-  net::TestURLRequestContext* GetURLRequestContext() override {
-    // Construct |context_| lazily so it gets constructed on the right
-    // thread (the IO thread).
-    if (!context_)
-      context_.reset(new MyTestURLRequestContext());
-    return context_.get();
-  }
-
- private:
-  ~MyTestURLRequestContextGetter() override {}
-
-  std::unique_ptr<MyTestURLRequestContext> context_;
-};
-
 // A cert verifier that access all certificates.
 class MyTestCertVerifier : public net::CertVerifier {
  public:
@@ -209,9 +169,7 @@ class MCSProbeAuthPreferences : public net::HttpAuthPreferences {
 
 class MCSProbe {
  public:
-  MCSProbe(
-      const base::CommandLine& command_line,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
+  explicit MCSProbe(const base::CommandLine& command_line);
   ~MCSProbe();
 
   void Start();
@@ -244,20 +202,12 @@ class MCSProbe {
   int server_port_;
 
   // Network state.
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  std::unique_ptr<net::URLRequestContext> url_request_context_;
   net::NetLog net_log_;
   std::unique_ptr<net::FileNetLogObserver> logger_;
   std::unique_ptr<net::HostResolver> host_resolver_;
-  std::unique_ptr<net::CertVerifier> cert_verifier_;
-  std::unique_ptr<net::ChannelIDService> system_channel_id_service_;
-  std::unique_ptr<net::TransportSecurityState> transport_security_state_;
-  std::unique_ptr<net::CTVerifier> cert_transparency_verifier_;
-  std::unique_ptr<net::CTPolicyEnforcer> ct_policy_enforcer_;
   MCSProbeAuthPreferences http_auth_preferences_;
   std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
-  std::unique_ptr<net::HttpServerPropertiesImpl> http_server_properties_;
-  std::unique_ptr<net::HttpNetworkSession> network_session_;
-  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service_;
 
   FakeGCMStatsRecorder recorder_;
   std::unique_ptr<GCMStore> gcm_store_;
@@ -276,15 +226,12 @@ class MCSProbe {
   std::unique_ptr<base::RunLoop> run_loop_;
 };
 
-MCSProbe::MCSProbe(
-    const base::CommandLine& command_line,
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter)
+MCSProbe::MCSProbe(const base::CommandLine& command_line)
     : command_line_(command_line),
       gcm_store_path_(base::FilePath(FILE_PATH_LITERAL("gcm_store"))),
       android_id_(0),
       secret_(0),
       server_port_(0),
-      url_request_context_getter_(url_request_context_getter),
       file_thread_("FileThread") {
   if (command_line.HasSwitch(kRMQFileName)) {
     gcm_store_path_ = command_line.GetSwitchValuePath(kRMQFileName);
@@ -382,29 +329,27 @@ void MCSProbe::InitializeNetworkState() {
   }
 
   host_resolver_ = net::HostResolver::CreateDefaultResolver(&net_log_);
-
-  if (command_line_.HasSwitch(kIgnoreCertSwitch)) {
-    cert_verifier_ = std::make_unique<MyTestCertVerifier>();
-  } else {
-    cert_verifier_ = net::CertVerifier::CreateDefault();
-  }
-  system_channel_id_service_ = std::make_unique<net::ChannelIDService>(
-      new net::DefaultChannelIDStore(nullptr));
-
-  transport_security_state_ = std::make_unique<net::TransportSecurityState>();
-  cert_transparency_verifier_ = std::make_unique<net::MultiLogCTVerifier>();
-  ct_policy_enforcer_ = std::make_unique<net::DefaultCTPolicyEnforcer>();
   http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
       host_resolver_.get(), &http_auth_preferences_,
       std::vector<std::string>{net::kBasicAuthScheme});
-  http_server_properties_ = std::make_unique<net::HttpServerPropertiesImpl>();
-  proxy_resolution_service_ =
-      net::ProxyResolutionService::CreateDirectWithNetLog(&net_log_);
+
+  net::URLRequestContextBuilder builder;
+  builder.set_net_log(&net_log_);
+  builder.set_shared_host_resolver(host_resolver_.get());
+  builder.set_shared_http_auth_handler_factory(
+      http_auth_handler_factory_.get());
+  builder.set_proxy_resolution_service(
+      net::ProxyResolutionService::CreateDirect());
+
+  if (command_line_.HasSwitch(kIgnoreCertSwitch))
+    builder.SetCertVerifier(std::make_unique<MyTestCertVerifier>());
+
+  url_request_context_ = builder.Build();
 
   // Wrap it up with network service APIs.
   network_context_ = std::make_unique<network::NetworkContext>(
       nullptr /* network_service */, mojo::MakeRequest(&network_context_pipe_),
-      url_request_context_getter_->GetURLRequestContext());
+      url_request_context_.get());
   auto url_loader_factory_params =
       network::mojom::URLLoaderFactoryParams::New();
   url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
@@ -491,14 +436,10 @@ int MCSProbeMain(int argc, char* argv[]) {
   base::MessageLoopForIO message_loop;
   base::TaskScheduler::CreateAndStartWithDefaultParams("MCSProbe");
 
-  // For check-in and creating registration ids.
-  const scoped_refptr<MyTestURLRequestContextGetter> context_getter =
-      new MyTestURLRequestContextGetter(base::ThreadTaskRunnerHandle::Get());
-
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  MCSProbe mcs_probe(command_line, context_getter);
+  MCSProbe mcs_probe(command_line);
   mcs_probe.Start();
 
   base::RunLoop run_loop;
