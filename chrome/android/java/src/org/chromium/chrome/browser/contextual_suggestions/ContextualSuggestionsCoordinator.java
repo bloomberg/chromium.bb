@@ -105,6 +105,13 @@ public class ContextualSuggestionsCoordinator {
      *                          things needed to display suggestions (e.g. favicons, thumbnails).
      */
     void showSuggestions(ContextualSuggestionsSource suggestionsSource) {
+        // If the content coordinator has already been destroyed when this method is called, return
+        // early. See https://crbug.com/873052.
+        if (mContentCoordinator == null) {
+            assert false : "ContentCoordinator false when #showSuggestions was called.";
+            return;
+        }
+
         SuggestionsNavigationDelegate navigationDelegate = new SuggestionsNavigationDelegateImpl(
                 mActivity, mProfile, mBottomSheetController.getBottomSheet(), mTabModelSelector);
         SuggestionsUiDelegateImpl uiDelegate = new SuggestionsUiDelegateImpl(suggestionsSource,

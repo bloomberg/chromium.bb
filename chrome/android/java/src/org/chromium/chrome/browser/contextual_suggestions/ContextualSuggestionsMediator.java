@@ -73,6 +73,7 @@ class ContextualSuggestionsMediator
     private @Nullable TextBubble mHelpBubble;
     private @Nullable WebContents mCurrentWebContents;
 
+    private boolean mModelPreparedForCurrentTab;
     private boolean mSuggestionsSetOnBottomSheet;
     private boolean mDidSuggestionsShowForTab;
     private boolean mHasRecordedPeekEventForTab;
@@ -279,7 +280,7 @@ class ContextualSuggestionsMediator
     }
 
     private void onToolbarButtonClicked() {
-        if (mSuggestionsSetOnBottomSheet) return;
+        if (mSuggestionsSetOnBottomSheet || !mModelPreparedForCurrentTab) return;
 
         maybeShowContentInSheet();
         mCoordinator.showSuggestions(mSuggestionsSource);
@@ -395,7 +396,7 @@ class ContextualSuggestionsMediator
      * be cleared.
      */
     private void clearSuggestions() {
-        // TODO(twellington): Does this signal need to go back to FetchHelper?
+        mModelPreparedForCurrentTab = false;
 
         // Remove suggestions before clearing model state so that views don't respond to model
         // changes while suggestions are hiding. See https://crbug.com/840579.
@@ -470,6 +471,8 @@ class ContextualSuggestionsMediator
         mModel.setMenuButtonDelegate(this);
         mModel.setDefaultToolbarClickListener(view -> mCoordinator.expandBottomSheet());
         mModel.setTitle(title);
+
+        mModelPreparedForCurrentTab = true;
     }
 
     private void maybeShowContentInSheet() {
