@@ -1524,12 +1524,6 @@ blink::WebString RenderThreadImpl::GetUserAgent() const {
   return user_agent_;
 }
 
-bool RenderThreadImpl::OnMessageReceived(const IPC::Message& msg) {
-  if (file_system_dispatcher_->OnMessageReceived(msg))
-    return true;
-  return ChildThreadImpl::OnMessageReceived(msg);
-}
-
 void RenderThreadImpl::OnAssociatedInterfaceRequest(
     const std::string& name,
     mojo::ScopedInterfaceEndpointHandle handle) {

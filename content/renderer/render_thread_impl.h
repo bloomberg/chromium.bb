@@ -227,7 +227,6 @@ class CONTENT_EXPORT RenderThreadImpl
   blink::WebString GetUserAgent() const override;
 
   // IPC::Listener implementation via ChildThreadImpl:
-  bool OnMessageReceived(const IPC::Message& msg) override;
   void OnAssociatedInterfaceRequest(
       const std::string& name,
       mojo::ScopedInterfaceEndpointHandle handle) override;
