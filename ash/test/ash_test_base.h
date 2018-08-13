@@ -85,7 +85,7 @@ class AshTestBase : public testing::Test {
   // Call this only if this code is being run outside of ash, for example, in
   // browser tests that use AshTestBase. This disables CHECKs that are
   // applicable only when used inside ash.
-  // TODO: remove this and ban usage of AshTestHelper outside of ash.
+  // TODO: remove this and ban usage of AshTestBase outside of ash.
   void SetRunningOutsideAsh();
 
   // Update the display configuration as given in |display_specs|.
