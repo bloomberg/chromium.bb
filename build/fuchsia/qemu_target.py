@@ -11,6 +11,7 @@ import os
 import platform
 import socket
 import subprocess
+import sys
 import time
 
 from common import SDK_ROOT, EnsurePathExists
@@ -143,11 +144,11 @@ class QemuTarget(target.Target):
     # This approach is used instead of loglistener to debug
     # https://crbug.com/86975 .
     if self._system_log_file:
-      stdout = open(self._system_log_file, 'w')
+      stdout = self._system_log_file
       stderr = subprocess.STDOUT
     else:
       stdout = open(os.devnull)
-      stderr = open(os.devnull)
+      stderr = sys.stderr
 
     self._qemu_process = subprocess.Popen(qemu_command, stdin=open(os.devnull),
                                           stdout=stdout, stderr=stderr)
@@ -157,12 +158,13 @@ class QemuTarget(target.Target):
     logging.info('Shutting down QEMU.')
     self._qemu_process.kill()
 
-  def GetQemuStdout(self):
-    return self._qemu_process.stdout
+  def _IsQemuStillRunning(self):
+    return os.waitpid(self._qemu_process.pid, os.WNOHANG)[0] == 0
 
   def _GetEndpoint(self):
+    if not self._IsQemuStillRunning():
+      raise Exception('QEMU quit unexpectedly.')
     return ('localhost', self._host_ssh_port)
 
   def _GetSshConfigPath(self):
     return boot_data.GetSSHConfigPath(self._output_dir)
-
