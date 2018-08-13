@@ -25,10 +25,6 @@
 
     <org.chromium.chrome.browser.download.home.view.SelectionView
         android:id="@+id/selection"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_gravity="start|top"
-        android:layout_marginStart="6dp"
-        android:layout_marginTop="6dp"/>
+        style="@style/DownloadItemSelectionView"/>
 
 </FrameLayout>

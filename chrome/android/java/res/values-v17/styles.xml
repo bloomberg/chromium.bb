@@ -729,6 +729,12 @@
         <item name="android:ellipsize">end</item>
         <item name="android:singleLine">true</item>
     </style>
+    <style name="DownloadItemSelectionView">
+        <item name="android:layout_width">24dp</item>
+        <item name="android:layout_height">24dp</item>
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+    </style>
 
     <!-- Data Reduction -->
     <style name="TextAppearance.DataUsageBreakdownColumnLabel" parent="@style/BlackButtonText">
