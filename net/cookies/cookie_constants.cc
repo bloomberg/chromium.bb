@@ -17,6 +17,7 @@ const char kPriorityHigh[] = "high";
 
 const char kSameSiteLax[] = "lax";
 const char kSameSiteStrict[] = "strict";
+const char kSameSiteDefault[] = "default";
 
 }  // namespace
 
@@ -45,6 +46,18 @@ CookiePriority StringToCookiePriority(const std::string& priority) {
     return COOKIE_PRIORITY_LOW;
 
   return COOKIE_PRIORITY_DEFAULT;
+}
+
+std::string CookieSameSiteToString(CookieSameSite same_site) {
+  switch (same_site) {
+    case CookieSameSite::LAX_MODE:
+      return kSameSiteLax;
+    case CookieSameSite::STRICT_MODE:
+      return kSameSiteStrict;
+    case CookieSameSite::DEFAULT_MODE:
+      return kSameSiteDefault;
+  }
+  return "INVALID";
 }
 
 CookieSameSite StringToCookieSameSite(const std::string& same_site) {

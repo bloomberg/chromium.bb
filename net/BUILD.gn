@@ -625,6 +625,8 @@ component("net") {
       "cookies/cookie_monster.h",
       "cookies/cookie_monster_change_dispatcher.cc",
       "cookies/cookie_monster_change_dispatcher.h",
+      "cookies/cookie_monster_netlog_params.cc",
+      "cookies/cookie_monster_netlog_params.h",
       "cookies/cookie_options.cc",
       "cookies/cookie_options.h",
       "cookies/cookie_store.cc",
