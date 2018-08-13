@@ -661,3 +661,11 @@ UIEdgeInsets SafeAreaInsetsForView(UIView* view) {
     return UIEdgeInsetsZero;
   }
 }
+
+NSString* TextForTabCount(long count) {
+  if (count <= 0)
+    return @"";
+  if (count > 99)
+    return @":)";
+  return [NSString stringWithFormat:@"%ld", count];
+}

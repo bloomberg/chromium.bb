@@ -108,15 +108,6 @@ CGPoint RectCenter(CGRect rect) {
   return CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
 }
 
-// Returns the string to use for a numeric item count.
-NSString* StringForItemCount(long count) {
-  if (count == 0)
-    return @"";
-  if (count > 99)
-    return @":-)";
-  return [NSString stringWithFormat:@"%ld", count];
-}
-
 // Convenience method that composes an asset name and returns the correct image
 // (in template rendering mode) based on the segment name (one of "regular",
 // "incognito, "remote") and whether the selected state image is needed or not.
@@ -240,7 +231,7 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
 // visible when the slider is over a segment), and an ivar to store values that
 // are set before the labels are created.
 - (void)setRegularTabCount:(NSUInteger)regularTabCount {
-  NSString* regularText = StringForItemCount(regularTabCount);
+  NSString* regularText = TextForTabCount(regularTabCount);
   self.regularLabel.text = regularText;
   self.regularSelectedLabel.text = regularText;
   _regularTabCount = regularTabCount;
