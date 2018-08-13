@@ -1347,9 +1347,9 @@ TEST_F(BackgroundFetchDataManagerTest, GetSettledFetchesFromCache) {
   // Sanity check that the responses are written to / read from the cache.
   EXPECT_TRUE(MatchCache(requests[0]));
   EXPECT_TRUE(MatchCache(requests[1]));
-  EXPECT_EQ(settled_fetches[0].response.cache_storage_cache_name,
+  EXPECT_EQ(settled_fetches[0].response->cache_storage_cache_name,
             kExampleUniqueId);
-  EXPECT_EQ(settled_fetches[1].response.cache_storage_cache_name,
+  EXPECT_EQ(settled_fetches[1].response->cache_storage_cache_name,
             kExampleUniqueId);
 
   RestartDataManagerFromPersistentStorage();
@@ -1444,7 +1444,7 @@ TEST_F(BackgroundFetchDataManagerTest,
                                    &succeeded, &settled_fetches);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(settled_fetches.size(), 1u);
-  EXPECT_EQ(settled_fetches[0].response.response_type,
+  EXPECT_EQ(settled_fetches[0].response->response_type,
             network::mojom::FetchResponseType::kError);
 }
 

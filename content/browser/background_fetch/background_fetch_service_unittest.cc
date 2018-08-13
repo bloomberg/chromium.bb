@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <utility>
@@ -9,6 +10,7 @@
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
@@ -45,6 +47,16 @@ blink::Manifest::ImageResource CreateIcon(const std::string& src,
   icon.type = base::ASCIIToUTF16(type);
 
   return icon;
+}
+
+bool ContainsHeader(const base::flat_map<std::string, std::string>& headers,
+                    const std::string& target) {
+  return headers.cend() !=
+         std::find_if(headers.cbegin(), headers.cend(),
+                      [target](const auto& pair) -> bool {
+                        return base::CompareCaseInsensitiveASCII(pair.first,
+                                                                 target) == 0;
+                      });
 }
 
 class BadMessageObserver {
@@ -529,41 +541,45 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
     ASSERT_EQ(fetches[i].request.url, requests[i].url);
     EXPECT_EQ(fetches[i].request.method, requests[i].method);
 
-    EXPECT_EQ(fetches[i].response.url_list[0], fetches[i].request.url);
-    EXPECT_EQ(fetches[i].response.response_type,
+    EXPECT_EQ(fetches[i].response->url_list[0], fetches[i].request.url);
+    EXPECT_EQ(fetches[i].response->response_type,
               network::mojom::FetchResponseType::kDefault);
 
     switch (i) {
       case 0:
-        EXPECT_EQ(fetches[i].response.status_code, kFirstResponseCode);
-        EXPECT_EQ(fetches[i].response.headers.count("Content-Type"), 1u);
-        EXPECT_EQ(fetches[i].response.headers.count("X-Cat"), 1u);
+        EXPECT_EQ(fetches[i].response->status_code, kFirstResponseCode);
+        EXPECT_TRUE(
+            ContainsHeader(fetches[i].response->headers, "Content-Type"));
+        EXPECT_TRUE(ContainsHeader(fetches[i].response->headers, "X-Cat"));
         break;
       case 1:
-        EXPECT_EQ(fetches[i].response.status_code, kSecondResponseCode);
-        EXPECT_EQ(fetches[i].response.headers.count("Content-Type"), 1u);
-        EXPECT_EQ(fetches[i].response.headers.count("X-Cat"), 0u);
+        EXPECT_EQ(fetches[i].response->status_code, kSecondResponseCode);
+        EXPECT_TRUE(
+            ContainsHeader(fetches[i].response->headers, "Content-Type"));
+        EXPECT_FALSE(ContainsHeader(fetches[i].response->headers, "X-Cat"));
         break;
       case 2:
-        EXPECT_EQ(fetches[i].response.status_code, kThirdResponseCode);
-        EXPECT_EQ(fetches[i].response.headers.count("Content-Type"), 1u);
-        EXPECT_EQ(fetches[i].response.headers.count("X-Cat"), 0u);
+        EXPECT_EQ(fetches[i].response->status_code, kThirdResponseCode);
+        EXPECT_TRUE(
+            ContainsHeader(fetches[i].response->headers, "Content-Type"));
+        EXPECT_FALSE(ContainsHeader(fetches[i].response->headers, "X-Cat"));
         break;
       default:
         NOTREACHED();
     }
 
     // TODO(peter): change-detector tests for unsupported properties.
-    EXPECT_EQ(fetches[i].response.error,
+    EXPECT_EQ(fetches[i].response->error,
               blink::mojom::ServiceWorkerResponseError::kUnknown);
 
     // Verify that all properties have a sensible value.
-    EXPECT_FALSE(fetches[i].response.response_time.is_null());
+    EXPECT_FALSE(fetches[i].response->response_time.is_null());
 
     // Verify that the response blobs have been populated. We cannot consume
     // their data here since the handles have already been released.
-    ASSERT_FALSE(fetches[i].response.blob_uuid.empty());
-    ASSERT_GT(fetches[i].response.blob_size, 0u);
+    ASSERT_TRUE(fetches[i].response->blob);
+    ASSERT_FALSE(fetches[i].response->blob->uuid.empty());
+    ASSERT_GT(fetches[i].response->blob->size, 0u);
   }
 }
 
@@ -628,30 +644,29 @@ TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
     ASSERT_EQ(fetches[i].request.url, requests[i].url);
     EXPECT_EQ(fetches[i].request.method, requests[i].method);
 
-    EXPECT_EQ(fetches[i].response.url_list[0], fetches[i].request.url);
-    EXPECT_EQ(fetches[i].response.response_type,
+    EXPECT_EQ(fetches[i].response->url_list[0], fetches[i].request.url);
+    EXPECT_EQ(fetches[i].response->response_type,
               network::mojom::FetchResponseType::kDefault);
 
     switch (i) {
       case 0:
-        EXPECT_EQ(fetches[i].response.status_code, 404);
+        EXPECT_EQ(fetches[i].response->status_code, 404);
         break;
       case 1:
-        EXPECT_EQ(fetches[i].response.status_code, 0);
+        EXPECT_EQ(fetches[i].response->status_code, 0);
         break;
       default:
         NOTREACHED();
     }
 
-    EXPECT_TRUE(fetches[i].response.headers.empty());
-    EXPECT_TRUE(fetches[i].response.blob_uuid.empty());
-    EXPECT_EQ(fetches[i].response.blob_size, 0u);
-    EXPECT_FALSE(fetches[i].response.response_time.is_null());
+    EXPECT_TRUE(fetches[i].response->headers.empty());
+    EXPECT_FALSE(fetches[i].response->blob);
+    EXPECT_FALSE(fetches[i].response->response_time.is_null());
 
     // TODO(peter): change-detector tests for unsupported properties.
-    EXPECT_EQ(fetches[i].response.error,
+    EXPECT_EQ(fetches[i].response->error,
               blink::mojom::ServiceWorkerResponseError::kUnknown);
-    EXPECT_TRUE(fetches[i].response.cors_exposed_header_names.empty());
+    EXPECT_TRUE(fetches[i].response->cors_exposed_header_names.empty());
   }
 }
 

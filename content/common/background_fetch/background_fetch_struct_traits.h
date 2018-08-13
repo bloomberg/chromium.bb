@@ -83,9 +83,10 @@ struct CONTENT_EXPORT
       const content::BackgroundFetchSettledFetch& fetch) {
     return fetch.request;
   }
-  static const content::ServiceWorkerResponse& response(
+  static blink::mojom::FetchAPIResponsePtr response(
       const content::BackgroundFetchSettledFetch& fetch) {
-    return fetch.response;
+    return content::BackgroundFetchSettledFetch::MakeCloneResponse(
+        fetch.response);
   }
 
   static bool Read(content::mojom::BackgroundFetchSettledFetchDataView data,

@@ -282,40 +282,43 @@ void ToWebServiceWorkerRequest(const ServiceWorkerFetchRequest& request,
 }
 
 // Converts |response| to its equivalent type in the Blink API.
-// TODO(peter): Remove this when the Mojo FetchAPIResponse type exists.
-void ToWebServiceWorkerResponse(const ServiceWorkerResponse& response,
+// TODO(leonhsl): Remove this when we propagate
+// blink::mojom::FetchAPIResponsePtr into Blink instead of
+// WebServiceWorkerResponse.
+void ToWebServiceWorkerResponse(blink::mojom::FetchAPIResponse* response,
                                 blink::WebServiceWorkerResponse* web_response) {
   DCHECK(web_response);
 
   std::vector<blink::WebURL> url_list;
-  for (const GURL& url : response.url_list)
+  for (const GURL& url : response->url_list)
     url_list.push_back(blink::WebURL(url));
 
   web_response->SetURLList(blink::WebVector<blink::WebURL>(url_list));
-  web_response->SetStatus(static_cast<unsigned short>(response.status_code));
-  web_response->SetStatusText(blink::WebString::FromUTF8(response.status_text));
-  web_response->SetResponseType(response.response_type);
-  for (const auto& pair : response.headers) {
+  web_response->SetStatus(static_cast<unsigned short>(response->status_code));
+  web_response->SetStatusText(
+      blink::WebString::FromUTF8(response->status_text));
+  web_response->SetResponseType(response->response_type);
+  for (const auto& pair : response->headers) {
     web_response->SetHeader(blink::WebString::FromUTF8(pair.first),
                             blink::WebString::FromUTF8(pair.second));
   }
-  if (!response.blob_uuid.empty()) {
-    DCHECK(response.blob);
-    mojo::ScopedMessagePipeHandle blob_pipe;
-    if (response.blob)
-      blob_pipe = response.blob->Clone().PassInterface().PassHandle();
-    web_response->SetBlob(blink::WebString::FromASCII(response.blob_uuid),
-                          response.blob_size, std::move(blob_pipe));
+  if (response->blob) {
+    DCHECK(!response->blob->uuid.empty());
+    DCHECK(response->blob->blob.is_valid());
+    web_response->SetBlob(blink::WebString::FromASCII(response->blob->uuid),
+                          response->blob->size,
+                          response->blob->blob.PassHandle());
   }
-  web_response->SetError(response.error);
-  web_response->SetResponseTime(response.response_time);
-  if (response.is_in_cache_storage) {
-    web_response->SetCacheStorageCacheName(
-        blink::WebString::FromUTF8(response.cache_storage_cache_name));
+  web_response->SetError(response->error);
+  web_response->SetResponseTime(response->response_time);
+  if (response->is_in_cache_storage) {
+    web_response->SetCacheStorageCacheName(blink::WebString::FromUTF8(
+        response->cache_storage_cache_name ? *response->cache_storage_cache_name
+                                           : ""));
   }
 
   std::vector<blink::WebString> cors_exposed_header_names;
-  for (const auto& name : response.cors_exposed_header_names)
+  for (const auto& name : response->cors_exposed_header_names)
     cors_exposed_header_names.push_back(blink::WebString::FromUTF8(name));
 
   web_response->SetCorsExposedHeaderNames(
@@ -1595,7 +1598,8 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchAbortEvent(
       fetches.size());
   for (size_t i = 0; i < fetches.size(); ++i) {
     ToWebServiceWorkerRequest(fetches[i].request, &web_fetches[i].request);
-    ToWebServiceWorkerResponse(fetches[i].response, &web_fetches[i].response);
+    ToWebServiceWorkerResponse(fetches[i].response.get(),
+                               &web_fetches[i].response);
   }
 
   proxy_->DispatchBackgroundFetchAbortEvent(
@@ -1646,7 +1650,8 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchFailEvent(
       fetches.size());
   for (size_t i = 0; i < fetches.size(); ++i) {
     ToWebServiceWorkerRequest(fetches[i].request, &web_fetches[i].request);
-    ToWebServiceWorkerResponse(fetches[i].response, &web_fetches[i].response);
+    ToWebServiceWorkerResponse(fetches[i].response.get(),
+                               &web_fetches[i].response);
   }
 
   proxy_->DispatchBackgroundFetchFailEvent(
@@ -1674,7 +1679,8 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchedEvent(
       fetches.size());
   for (size_t i = 0; i < fetches.size(); ++i) {
     ToWebServiceWorkerRequest(fetches[i].request, &web_fetches[i].request);
-    ToWebServiceWorkerResponse(fetches[i].response, &web_fetches[i].response);
+    ToWebServiceWorkerResponse(fetches[i].response.get(),
+                               &web_fetches[i].response);
   }
 
   proxy_->DispatchBackgroundFetchedEvent(
