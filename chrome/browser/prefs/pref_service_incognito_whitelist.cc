@@ -28,7 +28,6 @@
 #include "components/startup_metric_utils/browser/pref_names.h"
 #include "components/suggestions/suggestions_pref_names.h"
 #include "components/ukm/ukm_pref_names.h"
-#include "components/unified_consent/pref_names.h"
 #include "components/variations/pref_names.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "services/preferences/public/cpp/tracked/pref_names.h"
@@ -820,11 +819,6 @@ const char* temporary_incognito_whitelist[] = {
     // components/suggestions/suggestions_pref_names.h
     suggestions::prefs::kSuggestionsBlacklist,
     suggestions::prefs::kSuggestionsData,
-
-    // components/unified_consent/pref_names.h
-    unified_consent::prefs::kUnifiedConsentGiven,
-    unified_consent::prefs::kUnifiedConsentMigrationState,
-    unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
 
     // components/web_resource/web_resource_pref_names.h
     prefs::kEulaAccepted,
