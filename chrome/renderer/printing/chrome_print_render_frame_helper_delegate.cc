@@ -22,7 +22,7 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/common/constants.h"
-#include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
+#include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_base.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 ChromePrintRenderFrameHelperDelegate::ChromePrintRenderFrameHelperDelegate() =
@@ -75,8 +75,8 @@ bool ChromePrintRenderFrameHelperDelegate::OverridePrint(
   if (!frame->GetDocument().IsPluginDocument())
     return false;
 
-  std::vector<extensions::MimeHandlerViewContainer*> mime_handlers =
-      extensions::MimeHandlerViewContainer::FromRenderFrame(
+  std::vector<extensions::MimeHandlerViewContainerBase*> mime_handlers =
+      extensions::MimeHandlerViewContainerBase::FromRenderFrame(
           content::RenderFrame::FromWebFrame(frame));
   if (!mime_handlers.empty()) {
     // This message is handled in chrome/browser/resources/pdf/pdf_viewer.js and
