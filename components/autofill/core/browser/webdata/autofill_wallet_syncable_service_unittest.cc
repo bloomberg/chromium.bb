@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
@@ -52,6 +53,21 @@ syncer::SyncData CreateSyncDataForWalletAddress(const std::string& id) {
   return syncer::SyncData::CreateLocalData(id, id, specifics);
 }
 
+syncer::SyncData CreateSyncDataForPaymentsCustomerData(const std::string& id) {
+  sync_pb::EntitySpecifics specifics;
+
+  sync_pb::AutofillWalletSpecifics* wallet_specifics =
+      specifics.mutable_autofill_wallet();
+  wallet_specifics->set_type(
+      sync_pb::AutofillWalletSpecifics_WalletInfoType::
+          AutofillWalletSpecifics_WalletInfoType_CUSTOMER_DATA);
+
+  sync_pb::PaymentsCustomerData* customer_data_specifics =
+      wallet_specifics->mutable_customer_data();
+  customer_data_specifics->set_id(id);
+  return syncer::SyncData::CreateLocalData(id, id, specifics);
+}
+
 class TestAutofillTable : public AutofillTable {
  public:
   explicit TestAutofillTable(std::vector<CreditCard> cards_on_disk)
@@ -77,9 +93,10 @@ class TestAutofillTable : public AutofillTable {
 // Verify that the link between a card and its billing address from sync is
 // present in the generated Autofill objects.
 TEST(AutofillWalletSyncableServiceTest,
-     PopulateWalletCardsAndAddresses_BillingAddressIdTransfer) {
+     PopulateWalletTypesFromSyncData_BillingAddressIdTransfer) {
   std::vector<CreditCard> wallet_cards;
   std::vector<AutofillProfile> wallet_addresses;
+  std::vector<PaymentsCustomerData> customer_data;
   syncer::SyncDataList data_list;
 
   // Create a Sync data for a card and its billing address.
@@ -87,8 +104,8 @@ TEST(AutofillWalletSyncableServiceTest,
   data_list.push_back(CreateSyncDataForWalletCreditCard(
       "card1" /* id */, "1" /* billing_address_id */));
 
-  AutofillWalletSyncableService::PopulateWalletCardsAndAddresses(
-      data_list, &wallet_cards, &wallet_addresses);
+  AutofillWalletSyncableService::PopulateWalletTypesFromSyncData(
+      data_list, &wallet_cards, &wallet_addresses, &customer_data);
 
   ASSERT_EQ(1U, wallet_cards.size());
   ASSERT_EQ(1U, wallet_addresses.size());
@@ -206,6 +223,7 @@ TEST(AutofillWalletSyncableServiceTest, NewWalletCard) {
 
   std::vector<AutofillProfile> wallet_addresses;
   std::vector<CreditCard> wallet_cards;
+  std::vector<PaymentsCustomerData> customer_data;
   syncer::SyncDataList data_list;
 
   // Create a Sync data for a card and its billing address.
@@ -213,8 +231,8 @@ TEST(AutofillWalletSyncableServiceTest, NewWalletCard) {
   data_list.push_back(CreateSyncDataForWalletCreditCard(
       "card1" /* id */, "1" /* billing_address_id */));
 
-  AutofillWalletSyncableService::PopulateWalletCardsAndAddresses(
-      data_list, &wallet_cards, &wallet_addresses);
+  AutofillWalletSyncableService::PopulateWalletTypesFromSyncData(
+      data_list, &wallet_cards, &wallet_addresses, &customer_data);
 
   ASSERT_EQ(1U, wallet_cards.size());
 
@@ -227,14 +245,15 @@ TEST(AutofillWalletSyncableServiceTest, NewWalletCard) {
 TEST(AutofillWalletSyncableServiceTest, EmptyNameOnCard) {
   std::vector<CreditCard> wallet_cards;
   std::vector<AutofillProfile> wallet_addresses;
+  std::vector<PaymentsCustomerData> customer_data;
   syncer::SyncDataList data_list;
 
   // Create a Sync data for a card and its billing address.
   data_list.push_back(CreateSyncDataForWalletCreditCard(
       "card1" /* id */, "1" /* billing_address_id */));
 
-  AutofillWalletSyncableService::PopulateWalletCardsAndAddresses(
-      data_list, &wallet_cards, &wallet_addresses);
+  AutofillWalletSyncableService::PopulateWalletTypesFromSyncData(
+      data_list, &wallet_cards, &wallet_addresses, &customer_data);
 
   ASSERT_EQ(1U, wallet_cards.size());
 
@@ -245,6 +264,23 @@ TEST(AutofillWalletSyncableServiceTest, EmptyNameOnCard) {
       wallet_cards.back().GetRawInfo(autofill::CREDIT_CARD_NAME_FIRST).empty());
   EXPECT_TRUE(
       wallet_cards.back().GetRawInfo(autofill::CREDIT_CARD_NAME_LAST).empty());
+}
+
+TEST(AutofillWalletSyncableServiceTest, PaymentsCustomerData) {
+  std::vector<CreditCard> wallet_cards;
+  std::vector<AutofillProfile> wallet_addresses;
+  std::vector<PaymentsCustomerData> customer_data;
+  syncer::SyncDataList data_list;
+
+  // Create Sync data for Payments Customer data.
+  data_list.push_back(
+      CreateSyncDataForPaymentsCustomerData("deadbeef" /* id */));
+
+  AutofillWalletSyncableService::PopulateWalletTypesFromSyncData(
+      data_list, &wallet_cards, &wallet_addresses, &customer_data);
+
+  // Make sure the Payments customer id is there.
+  EXPECT_EQ("deadbeef", customer_data.back().customer_id);
 }
 
 TEST(AutofillWalletSyncableServiceTest, ComputeCardsDiff) {

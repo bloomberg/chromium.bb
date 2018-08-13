@@ -20,6 +20,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/autofill_sync_bridge_test_util.h"
 #include "components/autofill/core/browser/webdata/autofill_sync_bridge_util.h"
@@ -53,13 +54,15 @@ using testing::UnorderedElementsAre;
 // Base64 encodings of the server IDs, used as ids in WalletMetadataSpecifics
 // (these are suitable for syncing, because they are valid UTF-8).
 const char kAddr1SpecificsId[] = "YWRkcjHvv74=";
-//const char kAddr2SpecificsId[] = "YWRkcjLvv74=";
 const char kCard1SpecificsId[] = "Y2FyZDHvv74=";
-//const char kCard2SpecificsId[] = "Y2FyZDLvv74=";
+
+// Represents a Payments customer id.
+const char kCustomerDataId[] = "deadbeef";
 
 // Unique sync tags for the server IDs.
 const char kAddr1SyncTag[] = "YWRkcjHvv74=";
 const char kCard1SyncTag[] = "Y2FyZDHvv74=";
+const char kCustomerDataSyncTag[] = "deadbeef";
 
 const char kLocaleString[] = "en-US";
 const base::Time kJune2017 = base::Time::FromDoubleT(1497552271);
@@ -267,7 +270,7 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AutofillWalletSyncBridgeTest);
 };
 
-// The following 2 tests make sure client tags stay stable.
+// The following 3 tests make sure client tags stay stable.
 TEST_F(AutofillWalletSyncBridgeTest, GetClientTagForAddress) {
   AutofillWalletSpecifics specifics =
       CreateAutofillWalletSpecificsForAddress(kAddr1SpecificsId);
@@ -282,7 +285,15 @@ TEST_F(AutofillWalletSyncBridgeTest, GetClientTagForCard) {
             kCard1SyncTag);
 }
 
-// The following 2 tests make sure storage keys stay stable.
+TEST_F(AutofillWalletSyncBridgeTest, GetClientTagForCustomerData) {
+  AutofillWalletSpecifics specifics =
+      CreateAutofillWalletSpecificsForPaymentsCustomerData(
+          kCustomerDataSyncTag);
+  EXPECT_EQ(bridge()->GetClientTag(SpecificsToEntity(specifics)),
+            kCustomerDataSyncTag);
+}
+
+// The following 3 tests make sure storage keys stay stable.
 TEST_F(AutofillWalletSyncBridgeTest, GetStorageKeyForAddress) {
   AutofillWalletSpecifics specifics1 =
       CreateAutofillWalletSpecificsForAddress(kAddr1SpecificsId);
@@ -297,6 +308,13 @@ TEST_F(AutofillWalletSyncBridgeTest, GetStorageKeyForCard) {
             kCard1SpecificsId);
 }
 
+TEST_F(AutofillWalletSyncBridgeTest, GetStorageKeyForCustomerData) {
+  AutofillWalletSpecifics specifics3 =
+      CreateAutofillWalletSpecificsForPaymentsCustomerData(kCustomerDataId);
+  EXPECT_EQ(bridge()->GetStorageKey(SpecificsToEntity(specifics3)),
+            kCustomerDataId);
+}
+
 TEST_F(AutofillWalletSyncBridgeTest,
        GetAllDataForDebugging_ShouldReturnAllData) {
   AutofillProfile address1 = test::GetServerProfile();
@@ -305,6 +323,8 @@ TEST_F(AutofillWalletSyncBridgeTest,
   CreditCard card1 = test::GetMaskedServerCard();
   CreditCard card2 = test::GetMaskedServerCardAmex();
   table()->SetServerCreditCards({card1, card2});
+  PaymentsCustomerData customer_data{/*customer_id=*/kCustomerDataId};
+  table()->SetPaymentsCustomerData(&customer_data);
 
   AutofillWalletSpecifics profile_specifics1;
   SetAutofillWalletSpecificsFromServerProfile(address1, &profile_specifics1);
@@ -314,12 +334,16 @@ TEST_F(AutofillWalletSyncBridgeTest,
   SetAutofillWalletSpecificsFromServerCard(card1, &card_specifics1);
   AutofillWalletSpecifics card_specifics2;
   SetAutofillWalletSpecificsFromServerCard(card2, &card_specifics2);
+  AutofillWalletSpecifics customer_data_specifics;
+  SetAutofillWalletSpecificsFromPaymentsCustomerData(customer_data,
+                                                     &customer_data_specifics);
 
   EXPECT_THAT(GetAllLocalData(),
               UnorderedElementsAre(EqualsSpecifics(profile_specifics1),
                                    EqualsSpecifics(profile_specifics2),
                                    EqualsSpecifics(card_specifics1),
-                                   EqualsSpecifics(card_specifics2)));
+                                   EqualsSpecifics(card_specifics2),
+                                   EqualsSpecifics(customer_data_specifics)));
 }
 
 // Tests that when a new wallet card and new wallet address are sent by the
@@ -330,6 +354,8 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_NewWalletAddressAndCard) {
   table()->SetServerProfiles({address1});
   CreditCard card1 = test::GetMaskedServerCard();
   table()->SetServerCreditCards({card1});
+  PaymentsCustomerData customer_data{/*customer_id=*/kCustomerDataId};
+  table()->SetPaymentsCustomerData(&customer_data);
 
   // Create a different profile and a different card on the server.
   AutofillProfile address2 = test::GetServerProfile2();
@@ -338,13 +364,17 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_NewWalletAddressAndCard) {
   CreditCard card2 = test::GetMaskedServerCardAmex();
   AutofillWalletSpecifics card_specifics2;
   SetAutofillWalletSpecificsFromServerCard(card2, &card_specifics2);
+  AutofillWalletSpecifics customer_data_specifics;
+  SetAutofillWalletSpecificsFromPaymentsCustomerData(customer_data,
+                                                     &customer_data_specifics);
 
-  StartSyncing({profile_specifics2, card_specifics2});
+  StartSyncing({profile_specifics2, card_specifics2, customer_data_specifics});
 
   // Only the server card should be present on the client.
   EXPECT_THAT(GetAllLocalData(),
               UnorderedElementsAre(EqualsSpecifics(profile_specifics2),
-                                   EqualsSpecifics(card_specifics2)));
+                                   EqualsSpecifics(card_specifics2),
+                                   EqualsSpecifics(customer_data_specifics)));
 }
 
 // Tests that when the server sends no cards or address, the client should

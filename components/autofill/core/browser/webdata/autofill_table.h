@@ -33,6 +33,7 @@ class AutofillProfile;
 class AutofillTableEncryptor;
 class AutofillTableTest;
 class CreditCard;
+struct PaymentsCustomerData;
 
 struct FormFieldData;
 
@@ -263,6 +264,11 @@ struct FormFieldData;
 //                      for one model type, there was an id column with value 1
 //                      for the single entry.
 //   value              The serialized ModelTypeState record.
+//
+// payments_customer_data
+//                      Contains Google Payments customer data.
+//
+//   customer_id        A string representing the Google Payments customer id.
 
 class AutofillTable : public WebDatabaseTable,
                       public syncer::SyncMetadataStore {
@@ -397,6 +403,14 @@ class AutofillTable : public WebDatabaseTable,
 
   bool UpdateServerCardMetadata(const CreditCard& credit_card);
   bool UpdateServerAddressMetadata(const AutofillProfile& profile);
+
+  // Setters and getters related to the Google Payments customer data.
+  // Passing null to the setter will clear the data.
+  void SetPaymentsCustomerData(const PaymentsCustomerData* customer_data);
+  // Getter returns false if it could not execute the database statement, and
+  // may return true but leave |customer_data| untouched if there is no data.
+  bool GetPaymentsCustomerData(
+      std::unique_ptr<PaymentsCustomerData>* customer_data) const;
 
   // Deletes all data from the server card and profile tables. Returns true if
   // any data was deleted, false if not (so false means "commit not needed"
@@ -593,6 +607,7 @@ class AutofillTable : public WebDatabaseTable,
   bool InitServerAddressMetadataTable();
   bool InitAutofillSyncMetadataTable();
   bool InitModelTypeStateTable();
+  bool InitPaymentsCustomerDataTable();
 
   std::unique_ptr<AutofillTableEncryptor> autofill_table_encryptor_;
 

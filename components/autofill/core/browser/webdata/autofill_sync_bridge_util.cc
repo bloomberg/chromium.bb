@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/sync/model/entity_data.h"
@@ -306,6 +307,37 @@ CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
   return result;
 }
 
+std::unique_ptr<EntityData> CreateEntityDataFromPaymentsCustomerData(
+    const PaymentsCustomerData& customer_data) {
+  // We use customer_id as a storage key here.
+  auto entity_data = std::make_unique<EntityData>();
+  entity_data->non_unique_name = GetClientTagForSpecificsId(
+      AutofillWalletSpecifics::CUSTOMER_DATA, customer_data.customer_id);
+
+  AutofillWalletSpecifics* wallet_specifics =
+      entity_data->specifics.mutable_autofill_wallet();
+
+  SetAutofillWalletSpecificsFromPaymentsCustomerData(customer_data,
+                                                     wallet_specifics);
+
+  return entity_data;
+}
+
+void SetAutofillWalletSpecificsFromPaymentsCustomerData(
+    const PaymentsCustomerData& customer_data,
+    AutofillWalletSpecifics* wallet_specifics) {
+  wallet_specifics->set_type(AutofillWalletSpecifics::CUSTOMER_DATA);
+
+  sync_pb::PaymentsCustomerData* mutable_customer_data =
+      wallet_specifics->mutable_customer_data();
+  mutable_customer_data->set_id(customer_data.customer_id);
+}
+
+PaymentsCustomerData CustomerDataFromSpecifics(
+    const sync_pb::PaymentsCustomerData& customer_data) {
+  return PaymentsCustomerData{/*customer_id=*/customer_data.id()};
+}
+
 void CopyRelevantWalletMetadataFromDisk(
     const AutofillTable& table,
     std::vector<CreditCard>* cards_from_server) {
@@ -333,10 +365,11 @@ void CopyRelevantWalletMetadataFromDisk(
   }
 }
 
-void PopulateWalletCardsAndAddresses(
+void PopulateWalletTypesFromSyncData(
     const syncer::EntityChangeList& entity_data,
     std::vector<CreditCard>* wallet_cards,
-    std::vector<AutofillProfile>* wallet_addresses) {
+    std::vector<AutofillProfile>* wallet_addresses,
+    std::vector<PaymentsCustomerData>* customer_data) {
   std::map<std::string, std::string> ids;
 
   for (const syncer::EntityChange& change : entity_data) {
@@ -359,6 +392,9 @@ void PopulateWalletCardsAndAddresses(
             wallet_addresses->back().server_id();
         break;
       case sync_pb::AutofillWalletSpecifics::CUSTOMER_DATA:
+        customer_data->push_back(
+            CustomerDataFromSpecifics(autofill_specifics.customer_data()));
+        break;
       case sync_pb::AutofillWalletSpecifics::UNKNOWN:
         // Just ignore new entry types that the client doesn't know about.
         break;

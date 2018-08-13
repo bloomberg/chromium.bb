@@ -112,6 +112,13 @@ class AutofillWebData {
                                       const base::string16& full_number) = 0;
   virtual void MaskServerCreditCard(const std::string& id) = 0;
 
+  // Initiates the request for Payments customer data.  The method
+  // OnWebDataServiceRequestDone of |consumer| gets called when the request is
+  // finished, with the customer data included in the argument |result|. The
+  // consumer owns the data.
+  virtual WebDataServiceBase::Handle GetPaymentsCustomerData(
+      WebDataServiceConsumer* consumer) = 0;
+
   // Updates the metadata for a server card (masked or not).
   virtual void UpdateServerCardMetadata(const CreditCard& credit_card) = 0;
 

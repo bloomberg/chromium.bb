@@ -139,6 +139,11 @@ AutofillProfile ProfileFromWalletCardSpecifics(
   return profile;
 }
 
+PaymentsCustomerData CustomerDataFromSyncSpecifics(
+    const sync_pb::PaymentsCustomerData& customer_data) {
+  return PaymentsCustomerData{/*customer_id=*/customer_data.id()};
+}
+
 }  // namespace
 
 // static
@@ -264,10 +269,11 @@ void AutofillWalletSyncableService::InjectStartSyncFlare(
 }
 
 // static
-void AutofillWalletSyncableService::PopulateWalletCardsAndAddresses(
+void AutofillWalletSyncableService::PopulateWalletTypesFromSyncData(
     const syncer::SyncDataList& data_list,
     std::vector<CreditCard>* wallet_cards,
-    std::vector<AutofillProfile>* wallet_addresses) {
+    std::vector<AutofillProfile>* wallet_addresses,
+    std::vector<PaymentsCustomerData>* customer_data) {
   std::map<std::string, std::string> ids;
 
   for (const syncer::SyncData& data : data_list) {
@@ -288,6 +294,9 @@ void AutofillWalletSyncableService::PopulateWalletCardsAndAddresses(
             wallet_addresses->back().server_id();
         break;
       case sync_pb::AutofillWalletSpecifics::CUSTOMER_DATA:
+        customer_data->push_back(
+            CustomerDataFromSyncSpecifics(autofill_specifics.customer_data()));
+        break;
       case sync_pb::AutofillWalletSpecifics::UNKNOWN:
         // Just ignore new entry types that the client doesn't know about.
         break;
@@ -335,7 +344,9 @@ syncer::SyncMergeResult AutofillWalletSyncableService::SetSyncData(
     bool is_initial_data) {
   std::vector<CreditCard> wallet_cards;
   std::vector<AutofillProfile> wallet_addresses;
-  PopulateWalletCardsAndAddresses(data_list, &wallet_cards, &wallet_addresses);
+  std::vector<PaymentsCustomerData> customer_data;
+  PopulateWalletTypesFromSyncData(data_list, &wallet_cards, &wallet_addresses,
+                                  &customer_data);
 
   // Users can set billing address of the server credit card locally, but that
   // information does not propagate to either Chrome Sync or Google Payments
@@ -366,6 +377,16 @@ syncer::SyncMergeResult AutofillWalletSyncableService::SetSyncData(
       static_cast<int>(existing_cards.size() + existing_addresses.size()));
   merge_result.set_num_items_after_association(
       static_cast<int>(wallet_cards.size() + wallet_addresses.size()));
+
+  if (customer_data.empty()) {
+    // Clears the data only.
+    table->SetPaymentsCustomerData(nullptr);
+  } else {
+    // In case there were multiple entries (and there shouldn't!), we take the
+    // first entry in the vector.
+    DCHECK_EQ(1u, customer_data.size());
+    table->SetPaymentsCustomerData(&customer_data.front());
+  }
 
   if (!is_initial_data) {
     UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCardsAdded",

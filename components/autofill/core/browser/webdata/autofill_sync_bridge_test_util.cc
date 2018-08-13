@@ -44,4 +44,18 @@ sync_pb::AutofillWalletSpecifics CreateAutofillWalletSpecificsForAddress(
   return wallet_specifics;
 }
 
+sync_pb::AutofillWalletSpecifics
+CreateAutofillWalletSpecificsForPaymentsCustomerData(
+    const std::string& specifics_id) {
+  sync_pb::AutofillWalletSpecifics wallet_specifics;
+  wallet_specifics.set_type(
+      sync_pb::AutofillWalletSpecifics_WalletInfoType::
+          AutofillWalletSpecifics_WalletInfoType_CUSTOMER_DATA);
+
+  sync_pb::PaymentsCustomerData* customer_data_specifics =
+      wallet_specifics.mutable_customer_data();
+  customer_data_specifics->set_id(specifics_id);
+  return wallet_specifics;
+}
+
 }  // namespace autofill

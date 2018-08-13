@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/autofill_sync_bridge_test_util.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -62,10 +63,8 @@ class AutofillSyncBridgeUtilTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AutofillSyncBridgeUtilTest);
 };
 
-// Tests that the link between a card and its billing address from sync is
-// present in the generated Autofill objects.
-TEST_F(AutofillSyncBridgeUtilTest,
-       PopulateWalletCardsAndAddresses_BillingAddressIdTransfer) {
+// Tests that PopulateWalletTypesFromSyncData behaves as expected.
+TEST_F(AutofillSyncBridgeUtilTest, PopulateWalletTypesFromSyncData) {
   // Add an address and a card that has its billing address id set to the
   // address' id.
   syncer::EntityChangeList entity_data;
@@ -81,14 +80,23 @@ TEST_F(AutofillSyncBridgeUtilTest,
                             /*id=*/"card1", /*billing_address_id=*/address_id),
                         /*client_tag=*/"card-card1")
           .PassToPtr()));
+  entity_data.push_back(EntityChange::CreateAdd(
+      "deadbeef",
+      SpecificsToEntity(CreateAutofillWalletSpecificsForPaymentsCustomerData(
+                            /*specifics_id=*/"deadbeef"),
+                        /*client_tag=*/"customer-deadbeef")
+          .PassToPtr()));
 
   std::vector<CreditCard> wallet_cards;
   std::vector<AutofillProfile> wallet_addresses;
-  PopulateWalletCardsAndAddresses(entity_data, &wallet_cards,
-                                  &wallet_addresses);
+  std::vector<PaymentsCustomerData> customer_data;
+  PopulateWalletTypesFromSyncData(entity_data, &wallet_cards, &wallet_addresses,
+                                  &customer_data);
 
   ASSERT_EQ(1U, wallet_cards.size());
   ASSERT_EQ(1U, wallet_addresses.size());
+
+  EXPECT_EQ("deadbeef", customer_data.back().customer_id);
 
   // Make sure the card's billing address id is equal to the address' server id.
   EXPECT_EQ(wallet_addresses.back().server_id(),

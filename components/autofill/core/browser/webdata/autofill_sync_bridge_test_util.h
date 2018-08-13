@@ -24,6 +24,10 @@ sync_pb::AutofillWalletSpecifics CreateAutofillWalletSpecificsForCard(
     const std::string& specifics_id,
     const std::string& billing_address_id = "");
 
+sync_pb::AutofillWalletSpecifics
+CreateAutofillWalletSpecificsForPaymentsCustomerData(
+    const std::string& specifics_id);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_SYNC_BRIDGE_TEST_UTIL_H_

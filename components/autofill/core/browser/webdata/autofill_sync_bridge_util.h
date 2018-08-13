@@ -16,6 +16,7 @@ namespace autofill {
 class AutofillProfile;
 class AutofillTable;
 class CreditCard;
+struct PaymentsCustomerData;
 
 // Returns the wallet specifics id for the specified |server_id|.
 std::string GetSpecificsIdForEntryServerId(const std::string& server_id);
@@ -58,6 +59,21 @@ std::unique_ptr<syncer::EntityData> CreateEntityDataFromCard(
 // Creates an AutofillProfile from the specified |card| specifics.
 CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card);
 
+// Creates a EntityData object corresponding to the specified |customer_data|.
+std::unique_ptr<syncer::EntityData> CreateEntityDataFromPaymentsCustomerData(
+    const PaymentsCustomerData& customer_data);
+
+// Sets the fields of the |wallet_specifics| based on the specified
+// |customer_data|.
+void SetAutofillWalletSpecificsFromPaymentsCustomerData(
+    const PaymentsCustomerData& customer_data,
+    sync_pb::AutofillWalletSpecifics* wallet_specifics);
+
+// Creates a PaymentCustomerData object corresponding to the sync datatype
+// |customer_data|.
+PaymentsCustomerData CustomerDataFromSpecifics(
+    const sync_pb::PaymentsCustomerData& customer_data);
+
 // TODO(sebsg): This should probably copy the converted state for the address
 // too.
 // Copies the metadata from the local cards (if present) to the corresponding
@@ -68,12 +84,13 @@ void CopyRelevantWalletMetadataFromDisk(
     const AutofillTable& table,
     std::vector<CreditCard>* cards_from_server);
 
-// Populates the wallet cards and addresses from the sync data and uses the
-// sync data to link the card to its billing address.
-void PopulateWalletCardsAndAddresses(
+// Populates the wallet datatypes from the sync data and uses the sync data to
+// link the card to its billing address.
+void PopulateWalletTypesFromSyncData(
     const ::syncer::EntityChangeList& entity_data,
     std::vector<CreditCard>* wallet_cards,
-    std::vector<AutofillProfile>* wallet_addresses);
+    std::vector<AutofillProfile>* wallet_addresses,
+    std::vector<PaymentsCustomerData>* customer_data);
 
 }  // namespace autofill
 
