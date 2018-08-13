@@ -30,6 +30,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/api/management/management_api.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_system.h"
@@ -194,16 +195,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
       "/extensions/api_test/webstore_private/noframe.html");
   content::WebContents* web_contents = GetWebContents();
   ui_test_utils::NavigateToURL(browser(), url);
+
+  // Try to load the same URL, but with the current Chrome web store origin in
+  // an iframe (i.e. http://www.example.com)
+  content::TestNavigationObserver observer(web_contents);
   ASSERT_TRUE(content::ExecuteScript(web_contents, "dropFrame()"));
   WaitForLoadStop(web_contents);
   content::RenderFrameHost* subframe =
       content::ChildFrameAt(web_contents->GetMainFrame(), 0);
   ASSERT_TRUE(subframe);
-  // The subframe load should fail due to XFO. Currently that results in
-  // loading a blank page with the URL "data:,", but this check will need to
-  // change when XFO failures result in an error page - see
-  // https://crbug.com/870815.
-  EXPECT_EQ(GURL("data:,"), subframe->GetLastCommittedURL());
+
+  // The subframe load should fail due to XFO.
+  GURL iframe_url = embedded_test_server()->GetURL(
+      "www.example.com", "/extensions/api_test/webstore_private/noframe.html");
+  EXPECT_EQ(iframe_url, subframe->GetLastCommittedURL());
+  EXPECT_FALSE(observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_RESPONSE, observer.last_net_error_code());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, FrameErrorPageBlocked) {
@@ -211,16 +218,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, FrameErrorPageBlocked) {
       "/extensions/api_test/webstore_private/noframe2.html");
   content::WebContents* web_contents = GetWebContents();
   ui_test_utils::NavigateToURL(browser(), url);
+
+  // Try to load the same URL, but with the current Chrome web store origin in
+  // an iframe (i.e. http://www.example.com)
+  content::TestNavigationObserver observer(web_contents);
   ASSERT_TRUE(content::ExecuteScript(web_contents, "dropFrame()"));
   WaitForLoadStop(web_contents);
   content::RenderFrameHost* subframe =
       content::ChildFrameAt(web_contents->GetMainFrame(), 0);
   ASSERT_TRUE(subframe);
-  // The subframe load should fail due to XFO. Currently that results in
-  // loading a blank page with the URL "data:,", but this check will need to
-  // change when XFO failures result in an error page - see
-  // https://crbug.com/870815.
-  EXPECT_EQ(GURL("data:,"), subframe->GetLastCommittedURL());
+
+  // The subframe load should fail due to XFO.
+  GURL iframe_url = embedded_test_server()->GetURL(
+      "www.example.com",
+      "/nonesuch/extensions/api_test/webstore_private/noframe2.html ");
+  EXPECT_EQ(iframe_url, subframe->GetLastCommittedURL());
+  EXPECT_FALSE(observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_RESPONSE, observer.last_net_error_code());
 }
 
 // Test cases where the user accepts the install confirmation dialog.
