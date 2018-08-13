@@ -43,7 +43,8 @@ AccessTokenFetcherAdaptor::AccessTokenFetcherAdaptor(
   access_token_fetcher_ = identity_manager->CreateAccessTokenFetcherForAccount(
       active_account_id, oauth_consumer_name, scopes,
       base::BindOnce(&AccessTokenFetcherAdaptor::HandleTokenRequestCompletion,
-                     base::Unretained(this)));
+                     base::Unretained(this)),
+      identity::AccessTokenFetcher::Mode::kImmediate);
 }
 
 void AccessTokenFetcherAdaptor::HandleTokenRequestCompletion(

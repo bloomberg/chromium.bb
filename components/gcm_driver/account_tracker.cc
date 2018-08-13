@@ -226,7 +226,8 @@ void AccountIdFetcher::Start() {
   access_token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForAccount(
       account_key_, "gaia_account_tracker", scopes,
       base::BindOnce(&AccountIdFetcher::AccessTokenFetched,
-                     base::Unretained(this)));
+                     base::Unretained(this)),
+      identity::AccessTokenFetcher::Mode::kImmediate);
 }
 
 void AccountIdFetcher::AccessTokenFetched(
