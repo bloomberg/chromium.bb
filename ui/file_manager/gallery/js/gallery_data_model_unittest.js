@@ -6,37 +6,20 @@ var model;
 var fileSystem;
 var item;
 
-/**
- * Mock thumbnail model.
- */
-function ThumbnailModel() {
-}
-
-ThumbnailModel.prototype.get = function(entries) {
-  return Promise.resolve(entries.map(function() {
-    return {};
-  }));
-};
-
 function setUp() {
-  model = new GalleryDataModel(
-      /* Mock MetadataModel */{
-        get: function() {
-          return Promise.resolve([{}]);
-        }
-      },
-      /* Mock EntryListWatcher */{});
+  // Avoid creating the default EntryListWatcher, since it needs access to
+  // fileManagerPrivate, which is not in the unit test environment.
+  let mockEntryListWatcher = /** @type{!EntryListWatcher} */ ({});
+  model = new GalleryDataModel(new MockMetadataModel({}), mockEntryListWatcher);
+
   fileSystem = new MockFileSystem('volumeId');
   model.fallbackSaveDirectory = fileSystem.root;
 }
 
 function testSaveItemOverwrite(callback) {
-  var item = new GalleryItem(
-      new MockEntry(fileSystem, '/test.jpg'),
-      null,
-      /* metadataItem */ {},
-      /* thumbnailMetadataItem */ {},
-      /* original */ true);
+  var item = new MockGalleryItem(
+      new MockFileEntry(fileSystem, '/test.jpg'), null, {}, null,
+      false /* isOriginal */);
 
   // Mocking the saveToFile method.
   item.saveToFile = function(
@@ -57,15 +40,13 @@ function testSaveItemOverwrite(callback) {
 }
 
 function testSaveItemToNewFile(callback) {
-  var item = new GalleryItem(
-      new MockEntry(fileSystem, '/test.webp'),
-      null,
-      /* metadataItem */ {},
-      /* thumbnailMetadataItem */ {},
-      /* original */ true);
+  var item = new MockGalleryItem(
+      new MockFileEntry(fileSystem, '/test.webp'), null, {}, null,
+      true /* isOriginal */);
 
   // Mocking the saveToFile method. In this case, Gallery saves to a new file
   // since it cannot overwrite to webp image file.
+  /** @suppress {accessControls} */
   item.saveToFile = function(
       volumeManager,
       metadataModel,
@@ -74,8 +55,8 @@ function testSaveItemToNewFile(callback) {
       overwrite,
       callback) {
     // Gallery item track new file.
-    this.entry_ = new MockEntry(fileSystem, '/test (1).png');
-    this.original_ = false;
+    item.entry_ = new MockFileEntry(fileSystem, '/test (1).png');
+    item.original_ = false;
     callback(true);
   };
   model.push(item);

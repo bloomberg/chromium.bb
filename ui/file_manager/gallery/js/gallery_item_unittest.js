@@ -35,21 +35,8 @@ function setUp() {
   };
 }
 
-/**
- * Returns a mock of metadata model.
- * @private
- * @return {!MetadataModel}
- */
 function getMockMetadataModel() {
-  return {
-    get: function(entries, names) {
-      return Promise.resolve([
-        {size: 200}
-      ]);
-    },
-    notifyEntriesChanged: function() {
-    }
-  };
+  return new MockMetadataModel({size: 200});
 }
 
 /**
