@@ -127,15 +127,6 @@ UIColor* BackgroundColor() {
   return [UIColor colorWithRed:0.149 green:0.149 blue:0.164 alpha:1];
 }
 
-// Returns the string to use for a numeric item count.
-NSString* StringForItemCount(long count) {
-  if (count == 0)
-    return @"";
-  if (count > 99)
-    return @":-)";
-  return [NSString stringWithFormat:@"%ld", count];
-}
-
 }  // namespace
 
 // Helper class to display a UIButton with the image and text centered
@@ -1103,7 +1094,7 @@ NSString* StringForItemCount(long count) {
 
 - (void)tabModelDidChangeTabCount:(TabModel*)model {
   if (IsUIRefreshPhase1Enabled()) {
-    [_tabSwitcherButton setTitle:StringForItemCount(model.count)
+    [_tabSwitcherButton setTitle:TextForTabCount(model.count)
                         forState:UIControlStateNormal];
   }
 }

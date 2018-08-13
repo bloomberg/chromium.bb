@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -37,14 +38,7 @@ const CGFloat kLabelSize = 14;
   // the button's title may be empty or contain an easter egg, but the
   // accessibility value will always be equal to |tabCount|.
   NSString* tabStripButtonValue = [NSString stringWithFormat:@"%d", tabCount];
-  NSString* tabStripButtonTitle = tabStripButtonValue;
-  if (tabCount <= 0) {
-    tabStripButtonTitle = @"";
-  } else if (tabCount > kShowTabStripButtonMaxTabCount) {
-    // As an easter egg, show a smiley face instead of the count if the user has
-    // more than 99 tabs open.
-    tabStripButtonTitle = @":)";
-  }
+  NSString* tabStripButtonTitle = TextForTabCount(tabCount);
 
   // TODO(crbug.com/799601): Delete this once its not needed.
   if (base::FeatureList::IsEnabled(kMemexTabSwitcher)) {
