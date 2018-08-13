@@ -32,11 +32,6 @@ crbug.com/585188 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitel
 crbug.com/585188 http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
 crbug.com/585188 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
 
-# https://crbug.com/601584 - No OOPIF support for UserGestureIndicator triggers
-#                            cross-origin-iframe.html layout test failure
-crbug.com/601584 external/wpt/bluetooth/requestDevice/cross-origin-iframe.sub.https.html [ Skip ]
-crbug.com/601584 virtual/outofblink-cors/external/wpt/bluetooth/requestDevice/cross-origin-iframe.sub.https.html [ Skip ]
-
 # https://crbug.com/606594 - UaF of delegate_ in WebFrameTestClient::willSendRequest
 # https://crbug.com/786510 - test tries to access cross-origin document body
 crbug.com/606594 http/tests/local/serviceworker/fetch-request-body-file.html [ Skip ]
