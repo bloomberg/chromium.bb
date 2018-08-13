@@ -1888,6 +1888,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateForChildren() {
     UpdateScrollAndScrollTranslation();
   }
   UpdateOutOfFlowContext();
+
+#if DCHECK_IS_ON()
+  if (properties_)
+    properties_->Validate();
+#endif
 }
 
 }  // namespace
