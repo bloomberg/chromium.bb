@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 Found 1595 tests; 1467 PASS, 128 FAIL, 0 TIMEOUT, 0 NOTRUN.
-PASS SVG interfaces
+PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS SVGElement interface: existence and properties of interface object
 PASS SVGElement interface object length

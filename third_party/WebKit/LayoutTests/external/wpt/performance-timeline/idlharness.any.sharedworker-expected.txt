@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
 Found 67 tests; 60 PASS, 7 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idlharness
-PASS Test IDL implementation of performance-timeline API
+PASS idl_test setup
 PASS Partial interface Performance: original interface defined
 PASS PerformanceEntry interface: existence and properties of interface object
 PASS PerformanceEntry interface object length

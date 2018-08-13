@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 Found 377 tests; 322 PASS, 55 FAIL, 0 TIMEOUT, 0 NOTRUN.
-PASS Test driver
+PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS Partial interface Window: original interface defined
 PASS MediaList interface: existence and properties of interface object

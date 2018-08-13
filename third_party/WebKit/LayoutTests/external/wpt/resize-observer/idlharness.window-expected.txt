@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-PASS Test IDL implementation of ResizeObserver
+PASS idl_test setup
 PASS ResizeObserverEntry creator
 PASS ResizeObserver interface: existence and properties of interface object
 PASS ResizeObserver interface object length

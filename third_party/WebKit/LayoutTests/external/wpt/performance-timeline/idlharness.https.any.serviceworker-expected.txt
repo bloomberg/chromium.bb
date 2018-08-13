@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS idlharness
-PASS Test IDL implementation of performance-timeline API
+PASS idl_test setup
 PASS Partial interface Performance: original interface defined
 PASS PerformanceEntry interface: existence and properties of interface object
 PASS PerformanceEntry interface object length

@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 Found 85 tests; 79 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
-PASS pointerevents interfaces
+PASS idl_test setup
 PASS Partial interface Element: original interface defined
 PASS Partial interface GlobalEventHandlers: original interface defined
 PASS Partial interface Navigator: original interface defined
