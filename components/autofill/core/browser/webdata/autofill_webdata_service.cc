@@ -213,6 +213,15 @@ void AutofillWebDataService::MaskServerCreditCard(const std::string& id) {
            autofill_backend_, id));
 }
 
+WebDataServiceBase::Handle AutofillWebDataService::GetPaymentsCustomerData(
+    WebDataServiceConsumer* consumer) {
+  return wdbs_->ScheduleDBTaskWithResult(
+      FROM_HERE,
+      Bind(&AutofillWebDataBackendImpl::GetPaymentsCustomerData,
+           autofill_backend_),
+      consumer);
+}
+
 void AutofillWebDataService::ClearAllServerData() {
   wdbs_->ScheduleDBTask(
       FROM_HERE,

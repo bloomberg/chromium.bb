@@ -21,6 +21,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
@@ -459,6 +460,9 @@ class PersonalDataManager : public KeyedService,
   // Loads the saved credit cards from the web database.
   virtual void LoadCreditCards();
 
+  // Loads the payments customer data from the web database.
+  virtual void LoadPaymentsCustomerData();
+
   // Cancels a pending query to the local web database.  |handle| is a pointer
   // to the query handle.
   void CancelPendingLocalQuery(WebDataServiceBase::Handle* handle);
@@ -515,7 +519,7 @@ class PersonalDataManager : public KeyedService,
   std::unique_ptr<PersonalDatabaseHelper> database_helper_;
 
   // True if personal data has been loaded from the web database.
-  bool is_data_loaded_;
+  bool is_data_loaded_ = false;
 
   // The loaded web profiles. These are constructed from entries on web pages
   // and from manually editing in the settings.
@@ -523,6 +527,9 @@ class PersonalDataManager : public KeyedService,
 
   // Profiles read from the user's account stored on the server.
   mutable std::vector<std::unique_ptr<AutofillProfile>> server_profiles_;
+
+  // Stores the PaymentsCustomerData obtained from the database.
+  std::unique_ptr<PaymentsCustomerData> payments_customer_data_;
 
   // Storage for web profiles.  Contents are weak references.  Lifetime managed
   // by |web_profiles_|.
@@ -536,10 +543,11 @@ class PersonalDataManager : public KeyedService,
   // is queried on another sequence, we record the query handle until we
   // get called back.  We store handles for both profile and credit card queries
   // so they can be loaded at the same time.
-  WebDataServiceBase::Handle pending_profiles_query_;
-  WebDataServiceBase::Handle pending_server_profiles_query_;
-  WebDataServiceBase::Handle pending_creditcards_query_;
-  WebDataServiceBase::Handle pending_server_creditcards_query_;
+  WebDataServiceBase::Handle pending_profiles_query_ = 0;
+  WebDataServiceBase::Handle pending_server_profiles_query_ = 0;
+  WebDataServiceBase::Handle pending_creditcards_query_ = 0;
+  WebDataServiceBase::Handle pending_server_creditcards_query_ = 0;
+  WebDataServiceBase::Handle pending_customer_data_query_ = 0;
 
   // The observers.
   base::ObserverList<PersonalDataManagerObserver> observers_;
@@ -669,23 +677,23 @@ class PersonalDataManager : public KeyedService,
   mutable std::string default_country_code_;
 
   // The PrefService that this instance uses. Must outlive this instance.
-  PrefService* pref_service_;
+  PrefService* pref_service_ = nullptr;
 
   // The identity manager that this instance uses. Must outlive this instance.
-  identity::IdentityManager* identity_manager_;
+  identity::IdentityManager* identity_manager_ = nullptr;
 
   // The sync service this instances uses. Must outlive this instance.
-  syncer::SyncService* sync_service_;
+  syncer::SyncService* sync_service_ = nullptr;
 
   // Whether the user is currently operating in an off-the-record context.
   // Default value is false.
-  bool is_off_the_record_;
+  bool is_off_the_record_ = false;
 
   // Whether we have already logged the stored profile metrics this session.
-  mutable bool has_logged_stored_profile_metrics_;
+  mutable bool has_logged_stored_profile_metrics_ = false;
 
   // Whether we have already logged the stored credit card metrics this session.
-  mutable bool has_logged_stored_credit_card_metrics_;
+  mutable bool has_logged_stored_credit_card_metrics_ = false;
 
   // An observer to listen for changes to prefs::kAutofillCreditCardEnabled.
   std::unique_ptr<BooleanPrefMember> credit_card_enabled_pref_;

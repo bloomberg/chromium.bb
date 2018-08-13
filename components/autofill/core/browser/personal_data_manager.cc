@@ -456,18 +456,7 @@ class PersonalDatabaseHelper
 };
 
 PersonalDataManager::PersonalDataManager(const std::string& app_locale)
-    : is_data_loaded_(false),
-      pending_profiles_query_(0),
-      pending_server_profiles_query_(0),
-      pending_creditcards_query_(0),
-      pending_server_creditcards_query_(0),
-      app_locale_(app_locale),
-      pref_service_(nullptr),
-      identity_manager_(nullptr),
-      sync_service_(nullptr),
-      is_off_the_record_(false),
-      has_logged_stored_profile_metrics_(false),
-      has_logged_stored_credit_card_metrics_(false) {
+    : app_locale_(app_locale) {
   database_helper_ = std::make_unique<PersonalDatabaseHelper>(this);
 }
 
@@ -492,6 +481,7 @@ void PersonalDataManager::Init(
   }
   LoadProfiles();
   LoadCreditCards();
+  LoadPaymentsCustomerData();
 
   // Check if profile cleanup has already been performed this major version.
   is_autofill_profile_cleanup_pending_ =
@@ -508,6 +498,7 @@ PersonalDataManager::~PersonalDataManager() {
   CancelPendingLocalQuery(&pending_server_profiles_query_);
   CancelPendingLocalQuery(&pending_creditcards_query_);
   CancelPendingServerQuery(&pending_server_creditcards_query_);
+  CancelPendingServerQuery(&pending_customer_data_query_);
 }
 
 void PersonalDataManager::Shutdown() {
@@ -565,7 +556,8 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
     WebDataServiceBase::Handle h,
     std::unique_ptr<WDTypedResult> result) {
   DCHECK(pending_profiles_query_ || pending_server_profiles_query_ ||
-         pending_creditcards_query_ || pending_server_creditcards_query_);
+         pending_creditcards_query_ || pending_server_creditcards_query_ ||
+         pending_customer_data_query_);
 
   if (!result) {
     // Error from the web database.
@@ -576,6 +568,8 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
     else if (h == pending_server_creditcards_query_)
       pending_server_creditcards_query_ = 0;
     else if (h == pending_server_profiles_query_)
+      pending_server_profiles_query_ = 0;
+    else if (h == pending_server_creditcards_query_)
       pending_server_profiles_query_ = 0;
   } else {
     switch (result->GetType()) {
@@ -608,6 +602,16 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
             ResetFullServerCards();
         }
         break;
+      case AUTOFILL_CUSTOMERDATA_RESULT:
+        DCHECK_EQ(h, pending_customer_data_query_)
+            << "received customer data from invalid request.";
+        pending_customer_data_query_ = 0;
+
+        payments_customer_data_ =
+            static_cast<WDResult<std::unique_ptr<PaymentsCustomerData>>*>(
+                result.get())
+                ->GetValue();
+        break;
       default:
         NOTREACHED();
     }
@@ -619,6 +623,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   if (pending_profiles_query_ == 0 && pending_creditcards_query_ == 0 &&
       pending_server_profiles_query_ == 0 &&
       pending_server_creditcards_query_ == 0 &&
+      pending_customer_data_query_ == 0 &&
       database_helper_->GetServerDatabase()) {
     // On initial data load, is_data_loaded_ will be false here.
     if (!is_data_loaded_) {
@@ -1147,6 +1152,7 @@ std::vector<CreditCard*> PersonalDataManager::GetCreditCards() const {
 void PersonalDataManager::Refresh() {
   LoadProfiles();
   LoadCreditCards();
+  LoadPaymentsCustomerData();
 }
 
 std::vector<AutofillProfile*> PersonalDataManager::GetProfilesToSuggest()
@@ -1812,6 +1818,16 @@ void PersonalDataManager::CancelPendingServerQueries() {
   }
   // TODO(crbug.com/864519): also cancel the server addresses query once they
   // use the account storage.
+}
+
+void PersonalDataManager::LoadPaymentsCustomerData() {
+  if (!database_helper_->GetServerDatabase())
+    return;
+
+  CancelPendingServerQuery(&pending_customer_data_query_);
+
+  pending_customer_data_query_ =
+      database_helper_->GetServerDatabase()->GetPaymentsCustomerData(this);
 }
 
 std::string PersonalDataManager::SaveImportedProfile(

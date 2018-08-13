@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -417,6 +418,15 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateServerAddressMetadata(
   }
 
   return WebDatabase::COMMIT_NEEDED;
+}
+
+std::unique_ptr<WDTypedResult>
+AutofillWebDataBackendImpl::GetPaymentsCustomerData(WebDatabase* db) {
+  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
+  std::unique_ptr<PaymentsCustomerData> customer_data;
+  AutofillTable::FromWebDatabase(db)->GetPaymentsCustomerData(&customer_data);
+  return std::make_unique<WDResult<std::unique_ptr<PaymentsCustomerData>>>(
+      AUTOFILL_CUSTOMERDATA_RESULT, std::move(customer_data));
 }
 
 WebDatabase::State AutofillWebDataBackendImpl::ClearAllServerData(

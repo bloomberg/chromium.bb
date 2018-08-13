@@ -127,6 +127,7 @@ jumbo_static_library("browser") {
     "payments/full_card_request.h",
     "payments/payments_client.cc",
     "payments/payments_client.h",
+    "payments/payments_customer_data.h",
     "payments/payments_request.h",
     "payments/payments_service_url.cc",
     "payments/payments_service_url.h",

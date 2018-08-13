@@ -163,6 +163,9 @@ class AutofillWebDataBackendImpl
   WebDatabase::State UpdateServerAddressMetadata(const AutofillProfile& profile,
                                                  WebDatabase* db);
 
+  // Returns the PaymentsCustomerData from the database.
+  std::unique_ptr<WDTypedResult> GetPaymentsCustomerData(WebDatabase* db);
+
   WebDatabase::State ClearAllServerData(WebDatabase* db);
   WebDatabase::State ClearAllLocalData(WebDatabase* db);
 

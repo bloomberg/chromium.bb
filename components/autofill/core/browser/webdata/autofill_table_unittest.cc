@@ -24,6 +24,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -2232,6 +2233,39 @@ TEST_F(AutofillTableTest, DeleteUnmaskedCard) {
   EXPECT_EQ(CreditCard::MASKED_SERVER_CARD, outputs[0]->record_type());
   EXPECT_EQ(masked_number, outputs[0]->GetRawInfo(CREDIT_CARD_NUMBER));
   outputs.clear();
+}
+
+// Test that we can get what we set.
+TEST_F(AutofillTableTest, SetGetPaymentsCustomerData) {
+  PaymentsCustomerData input{/*customer_id=*/"deadbeef"};
+  table_->SetPaymentsCustomerData(&input);
+
+  std::unique_ptr<PaymentsCustomerData> output;
+  ASSERT_TRUE(table_->GetPaymentsCustomerData(&output));
+  EXPECT_EQ(input, *output);
+}
+
+// We don't set anything in the table. Test that we don't crash.
+TEST_F(AutofillTableTest, GetPaymentsCustomerData_NoData) {
+  std::unique_ptr<PaymentsCustomerData> output;
+  ASSERT_TRUE(table_->GetPaymentsCustomerData(&output));
+  EXPECT_FALSE(output);
+}
+
+// The latest PaymentsCustomerData that was set is returned.
+TEST_F(AutofillTableTest, SetGetPaymentsCustomerData_MultipleSet) {
+  PaymentsCustomerData input{/*customer_id=*/"deadbeef"};
+  table_->SetPaymentsCustomerData(&input);
+
+  PaymentsCustomerData input2{/*customer_id=*/"wallet"};
+  table_->SetPaymentsCustomerData(&input2);
+
+  PaymentsCustomerData input3{/*customer_id=*/"latest"};
+  table_->SetPaymentsCustomerData(&input3);
+
+  std::unique_ptr<PaymentsCustomerData> output;
+  ASSERT_TRUE(table_->GetPaymentsCustomerData(&output));
+  EXPECT_EQ(input3, *output);
 }
 
 const size_t kMaxCount = 2;

@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
@@ -413,7 +414,7 @@ bool AutofillTable::CreateTablesIfNecessary() {
           InitMaskedCreditCardsTable() && InitUnmaskedCreditCardsTable() &&
           InitServerCardMetadataTable() && InitServerAddressesTable() &&
           InitServerAddressMetadataTable() && InitAutofillSyncMetadataTable() &&
-          InitModelTypeStateTable());
+          InitModelTypeStateTable() && InitPaymentsCustomerDataTable());
 }
 
 bool AutofillTable::IsSyncable() {
@@ -1343,6 +1344,39 @@ bool AutofillTable::UpdateServerAddressMetadata(
   transaction.Commit();
 
   return db_->GetLastChangeCount() > 0;
+}
+
+void AutofillTable::SetPaymentsCustomerData(
+    const PaymentsCustomerData* customer_data) {
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return;
+
+  // Delete all old values.
+  sql::Statement customer_data_delete(
+      db_->GetUniqueStatement("DELETE FROM payments_customer_data"));
+  customer_data_delete.Run();
+
+  if (customer_data) {
+    sql::Statement insert_customer_data(db_->GetUniqueStatement(
+        "INSERT INTO payments_customer_data (customer_id) VALUES (?)"));
+    insert_customer_data.BindString(0, customer_data->customer_id);
+    insert_customer_data.Run();
+  }
+
+  transaction.Commit();
+}
+
+bool AutofillTable::GetPaymentsCustomerData(
+    std::unique_ptr<PaymentsCustomerData>* customer_data) const {
+  sql::Statement s(db_->GetUniqueStatement(
+      "SELECT customer_id FROM payments_customer_data"));
+  if (s.Step()) {
+    customer_data->reset(
+        new PaymentsCustomerData(/*customer_id=*/s.ColumnString(0)));
+  }
+
+  return s.Succeeded();
 }
 
 bool AutofillTable::ClearAllServerData() {
@@ -2772,6 +2806,17 @@ bool AutofillTable::InitModelTypeStateTable() {
   if (!db_->DoesTableExist("autofill_model_type_state")) {
     if (!db_->Execute("CREATE TABLE autofill_model_type_state ("
                       "model_type INTEGER NOT NULL PRIMARY KEY, value BLOB)")) {
+      NOTREACHED();
+      return false;
+    }
+  }
+  return true;
+}
+
+bool AutofillTable::InitPaymentsCustomerDataTable() {
+  if (!db_->DoesTableExist("payments_customer_data")) {
+    if (!db_->Execute("CREATE TABLE payments_customer_data "
+                      "(customer_id VARCHAR)")) {
       NOTREACHED();
       return false;
     }

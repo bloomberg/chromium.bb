@@ -98,6 +98,10 @@ class AutofillWebDataService : public AutofillWebData,
                               const base::string16& full_number) override;
   void MaskServerCreditCard(const std::string& id) override;
 
+  // PaymentsCustomerData.
+  WebDataServiceBase::Handle GetPaymentsCustomerData(
+      WebDataServiceConsumer* consumer) override;
+
   void ClearAllServerData();
   void ClearAllLocalData();
 

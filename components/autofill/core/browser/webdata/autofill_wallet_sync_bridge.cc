@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_profile_sync_util.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/webdata/autofill_sync_bridge_util.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
@@ -127,8 +128,10 @@ void AutofillWalletSyncBridge::GetAllDataForDebugging(DataCallback callback) {
 
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
   std::vector<std::unique_ptr<CreditCard>> cards;
+  std::unique_ptr<PaymentsCustomerData> customer_data;
   if (!GetAutofillTable()->GetServerProfiles(&profiles) ||
-      !GetAutofillTable()->GetServerCreditCards(&cards)) {
+      !GetAutofillTable()->GetServerCreditCards(&cards) ||
+      !GetAutofillTable()->GetPaymentsCustomerData(&customer_data)) {
     change_processor()->ReportError(
         {FROM_HERE, "Failed to load entries from table."});
     return;
@@ -144,6 +147,10 @@ void AutofillWalletSyncBridge::GetAllDataForDebugging(DataCallback callback) {
                CreateEntityDataFromCard(*entry));
   }
 
+  if (customer_data) {
+    batch->Put(GetStorageKeyForEntryServerId(customer_data->customer_id),
+               CreateEntityDataFromPaymentsCustomerData(*customer_data));
+  }
   std::move(callback).Run(std::move(batch));
 }
 
@@ -166,10 +173,12 @@ std::string AutofillWalletSyncBridge::GetStorageKey(
 void AutofillWalletSyncBridge::SetSyncData(
     const syncer::EntityChangeList& entity_data,
     bool is_initial_data) {
+  // Extract the Autofill types from the sync |entity_data|.
   std::vector<CreditCard> wallet_cards;
   std::vector<AutofillProfile> wallet_addresses;
-  PopulateWalletCardsAndAddresses(entity_data, &wallet_cards,
-                                  &wallet_addresses);
+  std::vector<PaymentsCustomerData> customer_data;
+  PopulateWalletTypesFromSyncData(entity_data, &wallet_cards, &wallet_addresses,
+                                  &customer_data);
 
   // Users can set billing address of the server credit card locally, but that
   // information does not propagate to either Chrome Sync or Google Payments
@@ -195,6 +204,15 @@ void AutofillWalletSyncBridge::SetSyncData(
       ComputeAutofillWalletDiff(existing_addresses, wallet_addresses);
   if (!addresses_diff.IsEmpty())
     table->SetServerProfiles(wallet_addresses);
+
+  if (customer_data.empty()) {
+    // Clears the data only.
+    table->SetPaymentsCustomerData(nullptr);
+  } else {
+    // In case there were multiple entries (and there shouldn't!), we take the
+    // first entry in the vector.
+    table->SetPaymentsCustomerData(&customer_data.front());
+  }
 
   if (!is_initial_data) {
     UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCardsAdded",

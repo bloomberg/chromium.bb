@@ -332,6 +332,7 @@ class MockPersonalDataManager : public PersonalDataManager {
   MOCK_CONST_METHOD0(IsDataLoaded, bool());
   MOCK_METHOD0(LoadProfiles, void());
   MOCK_METHOD0(LoadCreditCards, void());
+  MOCK_METHOD0(LoadPaymentsCustomerData, void());
   MOCK_METHOD0(Refresh, void());
 };
 
@@ -373,12 +374,14 @@ class ProfileSyncServiceAutofillTest
 
     EXPECT_CALL(personal_data_manager(), LoadProfiles());
     EXPECT_CALL(personal_data_manager(), LoadCreditCards());
+    EXPECT_CALL(personal_data_manager(), LoadPaymentsCustomerData());
 
     personal_data_manager_->Init(web_data_service_,
                                  /*account_database=*/nullptr,
                                  profile_sync_service_bundle()->pref_service(),
                                  /*identity_manager=*/nullptr,
                                  /*is_off_the_record=*/false);
+    personal_data_manager_->SetUseAccountStorageForServerCards(false);
 
     web_data_service_->StartSyncableService();
 
