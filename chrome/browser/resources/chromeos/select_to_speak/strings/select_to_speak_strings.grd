@@ -168,15 +168,6 @@
       <message desc="Link to the Text-to-Speech settings page." name="IDS_SELECT_TO_SPEAK_OPTIONS_TEXT_TO_SPEECH_SETTINGS_LINK">
         Text-to-Speech settings
       </message>
-      <message desc="Title for a notification shown to the user when Select-to-Speak migrates Text-to-Speech settings to the global Text-to-Speech settings page." name="IDS_SELECT_TO_SPEAK_TTS_MIGRATION_TITLE">
-        Select-to-Speak speech settings updated
-      </message>
-      <message desc="Message shown to the user when Select-to-Speak's Text-to-Speech settings have been copied into the global Text-to-Speech settings." name="IDS_SELECT_TO_SPEAK_TTS_MIGRATED_TO_GLOBAL">
-        Your Select-to-Speak Text-to-Speech settings were migrated to global Text-to-Speech settings.
-      </message>
-      <message desc="Message shown to the user when Select-to-Speak's Text-to-Speech settings were overwritten by the global Text-to-Speech settings." name="IDS_SELECT_TO_SPEAK_TTS_NOT_MIGRATED_TO_GLOBAL">
-        Select to speak now uses global Text-to-Speech settings.
-      </message>
       <message desc="Voice name for the system default Text-to-Speech voice" name="IDS_SELECT_TO_SPEAK_SYSTEM_VOICE">
         System Text-to-Speech voice
       </message>

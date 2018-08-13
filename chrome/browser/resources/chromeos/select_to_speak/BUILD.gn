@@ -161,7 +161,6 @@ js2gtest("select_to_speak_extjs_tests") {
   ]
   gen_include_files = [
     "../chromevox/testing/callback_helper.js",
-    "mock_notifications.js",
     "mock_storage.js",
     "mock_tts.js",
     "select_to_speak_e2e_test_base.js",
