@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
@@ -71,6 +72,7 @@ class MockBluetoothGattCharacteristic
                     const base::Closure&,
                     const ErrorCallback&));
 #endif
+  MOCK_METHOD1(WriteWithoutResponse, bool(base::span<const uint8_t>));
 
   void AddMockDescriptor(
       std::unique_ptr<MockBluetoothGattDescriptor> mock_descriptor);

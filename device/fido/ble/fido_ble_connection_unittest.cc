@@ -251,6 +251,16 @@ class FidoBleConnectionTest : public ::testing::Test {
   }
 
   void SetNextWriteControlPointResponse(bool success) {
+// For performance reasons we try writes without responses first on macOS.
+#if defined(OS_MACOSX)
+    EXPECT_CALL(*u2f_control_point_, WriteWithoutResponse)
+        .WillOnce(Return(success));
+    if (success)
+      return;
+#else
+    EXPECT_CALL(*u2f_control_point_, WriteWithoutResponse).Times(0);
+#endif  // defined(OS_MACOSX)
+
     EXPECT_CALL(*u2f_control_point_, WriteRemoteCharacteristic(_, _, _))
         .WillOnce(Invoke([success](const auto& data, const auto& callback,
                                    const auto& error_callback) {
