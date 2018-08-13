@@ -26,7 +26,7 @@ class EndToEndSyncTest : public testing::Test {
     TestService::Options options;
     test_service_.reset(new TestService(options));
     ASSERT_TRUE(test_service_->StartService());
-    ASSERT_TRUE(test_service_->WaitUntilServiceIsStarted());
+    test_service_->WaitUntilServiceIsStarted();
     ASSERT_FALSE(test_service_->HasDBusThread());
 
     // Create the client.

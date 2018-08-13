@@ -23,6 +23,6 @@ int main(int argc, char** argv) {
   options.dbus_task_runner = dbus_thread.task_runner();
   dbus::TestService* test_service = new dbus::TestService(options);
   CHECK(test_service->StartService());
-  CHECK(test_service->WaitUntilServiceIsStarted());
+  test_service->WaitUntilServiceIsStarted();
   CHECK(test_service->HasDBusThread());
 }

@@ -68,7 +68,7 @@ TEST_F(ObjectProxyTest, WaitForServiceToBeAvailableRunOnce) {
 
   // Start the service. The callback should be called asynchronously.
   ASSERT_TRUE(test_service.StartService());
-  ASSERT_TRUE(test_service.WaitUntilServiceIsStarted());
+  test_service.WaitUntilServiceIsStarted();
   ASSERT_TRUE(test_service.has_ownership());
   num_calls = 0;
   base::RunLoop().RunUntilIdle();
@@ -96,7 +96,7 @@ TEST_F(ObjectProxyTest, WaitForServiceToBeAvailableAlreadyRunning) {
       test_service.service_name(), ObjectPath("/org/chromium/TestObject"));
 
   ASSERT_TRUE(test_service.StartService());
-  ASSERT_TRUE(test_service.WaitUntilServiceIsStarted());
+  test_service.WaitUntilServiceIsStarted();
   ASSERT_TRUE(test_service.has_ownership());
 
   // Since the service is already running, the callback should be invoked
@@ -132,7 +132,7 @@ TEST_F(ObjectProxyTest, WaitForServiceToBeAvailableMultipleCallbacks) {
 
   // Start the service and confirm that both callbacks are invoked.
   ASSERT_TRUE(test_service.StartService());
-  ASSERT_TRUE(test_service.WaitUntilServiceIsStarted());
+  test_service.WaitUntilServiceIsStarted();
   ASSERT_TRUE(test_service.has_ownership());
   num_calls_1 = 0;
   num_calls_2 = 0;
