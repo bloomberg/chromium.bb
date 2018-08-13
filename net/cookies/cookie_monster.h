@@ -31,6 +31,7 @@
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster_change_dispatcher.h"
 #include "net/cookies/cookie_store.h"
+#include "net/log/net_log_with_source.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -616,6 +617,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // code has a consistent view of the CookieStore, rather than out of concern
   // for typical use.
   bool seen_global_task_;
+
+  NetLogWithSource net_log_;
 
   scoped_refptr<PersistentCookieStore> store_;
 

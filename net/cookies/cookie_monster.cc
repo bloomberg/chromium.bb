@@ -67,8 +67,10 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster_change_dispatcher.h"
+#include "net/cookies/cookie_monster_netlog_params.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
+#include "net/log/net_log.h"
 #include "net/ssl/channel_id_service.h"
 #include "url/origin.h"
 
@@ -372,6 +374,9 @@ CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
       started_fetching_all_cookies_(false),
       finished_fetching_all_cookies_(false),
       seen_global_task_(false),
+      // TODO(https://crbug.com/801910): Hook up Cookies logging by using a
+      // non-null NetLog.
+      net_log_(NetLogWithSource::Make(nullptr, NetLogSourceType::COOKIE_STORE)),
       store_(std::move(store)),
       last_access_threshold_(last_access_threshold),
       channel_id_service_(channel_id_service),
@@ -393,6 +398,10 @@ CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
         base::Bind(&ChannelIDStore::Flush,
                    base::Unretained(channel_id_service_->GetChannelIDStore())));
   }
+  net_log_.BeginEvent(
+      NetLogEventType::COOKIE_STORE_ALIVE,
+      base::BindRepeating(&NetLogCookieMonsterConstructorCallback,
+                          store != nullptr, channel_id_service != nullptr));
 }
 
 // Asynchronous CookieMonster API
@@ -551,6 +560,9 @@ void CookieMonster::SetCookieableSchemes(
 void CookieMonster::SetPersistSessionCookies(bool persist_session_cookies) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!initialized_);
+  net_log_.AddEvent(
+      NetLogEventType::COOKIE_STORE_SESSION_PERSISTENCE,
+      NetLog::BoolCallback("persistence", persist_session_cookies));
   persist_session_cookies_ = persist_session_cookies;
 }
 
@@ -615,6 +627,7 @@ CookieMonster::~CookieMonster() {
     InternalDeleteCookie(current_cookie_it, false /* sync_to_store */,
                          DELETE_COOKIE_DONT_RECORD);
   }
+  net_log_.EndEvent(NetLogEventType::COOKIE_STORE_ALIVE);
 }
 
 void CookieMonster::GetAllCookies(GetCookieListCallback callback) {
@@ -1142,6 +1155,10 @@ bool CookieMonster::DeleteAnyEquivalentCookie(
       skipped_secure_cookie = true;
       histogram_cookie_delete_equivalent_->Add(
           COOKIE_DELETE_EQUIVALENT_SKIPPING_SECURE);
+      net_log_.AddEvent(
+          NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_SECURE,
+          base::BindRepeating(&NetLogCookieMonsterCookieRejectedSecure, cc,
+                              &ecc));
       // If the cookie is equivalent to the new cookie and wouldn't have been
       // skipped for being HTTP-only, record that it is a skipped secure cookie
       // that would have been deleted otherwise.
@@ -1162,6 +1179,10 @@ bool CookieMonster::DeleteAnyEquivalentCookie(
           << "Duplicate equivalent cookies found, cookie store is corrupted.";
       if (skip_httponly && cc->IsHttpOnly()) {
         skipped_httponly = true;
+        net_log_.AddEvent(
+            NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_HTTPONLY,
+            base::BindRepeating(&NetLogCookieMonsterCookieRejectedHttponly, cc,
+                                &ecc));
       } else {
         histogram_cookie_delete_equivalent_->Add(
             COOKIE_DELETE_EQUIVALENT_FOUND);
@@ -1187,6 +1208,9 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
   DCHECK(thread_checker_.CalledOnValidThread());
   CanonicalCookie* cc_ptr = cc.get();
 
+  net_log_.AddEvent(NetLogEventType::COOKIE_STORE_COOKIE_ADDED,
+                    base::BindRepeating(&NetLogCookieMonsterCookieAdded,
+                                        cc.get(), sync_to_store));
   if ((cc_ptr->IsPersistent() || persist_session_cookies_) && store_.get() &&
       sync_to_store)
     store_->AddCookie(*cc_ptr);
@@ -1362,10 +1386,16 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
       << "InternalDeleteCookie()"
       << ", cause:" << deletion_cause << ", cc: " << cc->DebugString();
 
+  ChangeCausePair mapping = kChangeCauseMapping[deletion_cause];
+  if (deletion_cause != DELETE_COOKIE_DONT_RECORD) {
+    net_log_.AddEvent(NetLogEventType::COOKIE_STORE_COOKIE_DELETED,
+                      base::BindRepeating(&NetLogCookieMonsterCookieDeleted, cc,
+                                          mapping.cause, sync_to_store));
+  }
+
   if ((cc->IsPersistent() || persist_session_cookies_) && store_.get() &&
       sync_to_store)
     store_->DeleteCookie(*cc);
-  ChangeCausePair mapping = kChangeCauseMapping[deletion_cause];
   change_dispatcher_.DispatchChange(*cc, mapping.cause, mapping.notify);
   cookies_.erase(it);
 }
