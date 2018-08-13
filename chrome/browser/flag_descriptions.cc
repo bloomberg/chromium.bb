@@ -1402,6 +1402,12 @@ const char kPassiveDocumentEventListenersDescription[] =
     "Forces touchstart, and touchmove event listeners on document level "
     "targets (which haven't requested otherwise) to be treated as passive.";
 
+const char kPassiveDocumentWheelEventListenersName[] =
+    "Document Level Wheel Event Listeners Passive Default";
+const char kPassiveDocumentWheelEventListenersDescription[] =
+    "Forces wheel, and mousewheel event listeners on document level targets "
+    "(which haven't requested otherwise) to be treated as passive.";
+
 const char kPasswordForceSavingName[] = "Force-saving of passwords";
 const char kPasswordForceSavingDescription[] =
     "Allow the user to manually enforce password saving instead of relying on "

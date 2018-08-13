@@ -119,8 +119,12 @@ bool WheelEvent::IsWheelEvent() const {
 void WheelEvent::preventDefault() {
   MouseEvent::preventDefault();
 
-  if (HandlingPassive() == PassiveMode::kNotPassiveDefault && currentTarget() &&
-      currentTarget()->IsTopLevelNode()) {
+  if (!currentTarget() || !currentTarget()->IsTopLevelNode())
+    return;
+
+  PassiveMode passive_mode = HandlingPassive();
+  if (passive_mode == PassiveMode::kPassiveForcedDocumentLevel ||
+      passive_mode == PassiveMode::kNotPassiveDefault) {
     if (ExecutionContext* context = currentTarget()->GetExecutionContext()) {
       UseCounter::Count(
           context,
