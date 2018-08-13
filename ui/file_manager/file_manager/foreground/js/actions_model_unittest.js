@@ -15,21 +15,6 @@ loadTimeData.data = {
   DOWNLOADS_DIRECTORY_LABEL: ''
 };
 
-function MockMetadataModel() {
-  this.properties = null;
-}
-
-MockMetadataModel.prototype.get = function() {
-  return Promise.resolve([this.properties]);
-};
-
-MockMetadataModel.prototype.getCache = function() {
-  return [this.properties];
-};
-
-MockMetadataModel.prototype.notifyEntriesChanged = function() {
-};
-
 function MockFolderShortcutsModel() {
   this.has = false;
 }
@@ -93,7 +78,7 @@ function setUp() {
   providedFileSystem = volumeManager.getCurrentProfileVolumeInfo(
       VolumeManagerCommon.VolumeType.PROVIDED).fileSystem;
 
-  metadataModel = new MockMetadataModel();
+  metadataModel = new MockMetadataModel(null);
   shortcutsModel = new MockFolderShortcutsModel();
   driveSyncHandler = new MockDriveSyncHandler();
   ui = new MockUI();

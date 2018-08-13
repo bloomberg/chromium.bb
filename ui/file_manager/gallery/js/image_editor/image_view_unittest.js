@@ -2,30 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * Helper to construct testing GalleryItem objects.
- *
- * @param {!FileEntry} entry
- * @param {EntryLocation} locationInfo
- * @param {Object} metadataItem
- * @param {ThumbnailMetadataItem=} opt_thumbnailMetadataItem
- * @param {boolean=} opt_original Whether the entry is original or edited.
- * @constructor
- * @extends GalleryItem
- */
-function MockGalleryItem(
-    entry, locationInfo, metadataItem, opt_thumbnailMetadataItem,
-    opt_original) {
-  let entryLocation = locationInfo || /** @type {!EntryLocation} */ ({});
-  GalleryItem.call(
-      this, entry, entryLocation, /** @type {MetadataItem} */ (metadataItem),
-      opt_thumbnailMetadataItem || null, opt_original || false);
-}
-
-MockGalleryItem.prototype = {
-  __proto__: GalleryItem.prototype
-};
-
 function testImageView() {
   var mockFileSystem = new MockFileSystem('volumeId');
   var mockEntry = new MockFileEntry(mockFileSystem, '/test.jpg');

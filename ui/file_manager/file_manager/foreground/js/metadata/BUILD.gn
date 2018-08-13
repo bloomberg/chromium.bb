@@ -168,6 +168,12 @@ js_library("metadata_provider") {
 js_library("metadata_request") {
 }
 
+js_library("mock_metadata") {
+  deps = [
+    ":metadata_model",
+  ]
+}
+
 js_library("mpeg_parser") {
   deps = [
     ":metadata_parser",

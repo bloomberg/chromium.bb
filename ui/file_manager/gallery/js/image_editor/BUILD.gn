@@ -182,7 +182,7 @@ js_library("image_view") {
 js_library("image_view_unittest") {
   deps = [
     ":image_view",
-    "../../../file_manager/common/js:mock_entry",
+    "..:mock_gallery_item",
     "//ui/webui/resources/js:webui_resource_test",
   ]
 }
