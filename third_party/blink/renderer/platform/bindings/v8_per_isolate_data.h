@@ -200,41 +200,20 @@ class PLATFORM_EXPORT V8PerIsolateData {
     return active_script_wrappables_.Get();
   }
 
-  class PLATFORM_EXPORT TemporaryScriptWrappableVisitorScope {
-    WTF_MAKE_NONCOPYABLE(TemporaryScriptWrappableVisitorScope);
-    STACK_ALLOCATED();
-
-   public:
-    TemporaryScriptWrappableVisitorScope(
-        v8::Isolate* isolate,
-        std::unique_ptr<ScriptWrappableMarkingVisitor> visitor)
-        : isolate_(isolate), saved_visitor_(std::move(visitor)) {
-      SwapWithV8PerIsolateDataVisitor(saved_visitor_);
-    }
-    ~TemporaryScriptWrappableVisitorScope() {
-      SwapWithV8PerIsolateDataVisitor(saved_visitor_);
-    }
-
-    inline ScriptWrappableMarkingVisitor* CurrentVisitor() {
-      return V8PerIsolateData::From(isolate_)
-          ->GetScriptWrappableMarkingVisitor();
-    }
-
-   private:
-    void SwapWithV8PerIsolateDataVisitor(
-        std::unique_ptr<ScriptWrappableMarkingVisitor>&);
-
-    v8::Isolate* isolate_;
-    std::unique_ptr<ScriptWrappableMarkingVisitor> saved_visitor_;
-  };
-
   void SetScriptWrappableMarkingVisitor(
       std::unique_ptr<ScriptWrappableMarkingVisitor> visitor) {
     script_wrappable_visitor_ = std::move(visitor);
   }
-  ScriptWrappableMarkingVisitor* GetScriptWrappableMarkingVisitor() {
+
+  ScriptWrappableMarkingVisitor* GetScriptWrappableMarkingVisitor() const {
     return script_wrappable_visitor_.get();
   }
+
+  void SwapScriptWrappableMarkingVisitor(
+      std::unique_ptr<ScriptWrappableMarkingVisitor>& other) {
+    script_wrappable_visitor_.swap(other);
+  }
+
   int IsNearV8HeapLimitHandled() { return handled_near_v8_heap_limit_; }
 
   void HandledNearV8HeapLimit() { handled_near_v8_heap_limit_ = true; }

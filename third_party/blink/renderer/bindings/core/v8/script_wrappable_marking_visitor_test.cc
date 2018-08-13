@@ -16,250 +16,41 @@
 
 namespace blink {
 
-static void PreciselyCollectGarbage() {
-  ThreadState::Current()->CollectAllGarbage();
-}
-
-static void RunV8Scavenger(v8::Isolate* isolate) {
-  V8GCController::CollectGarbage(isolate, true);
-}
-
-static void RunV8FullGc(v8::Isolate* isolate) {
-  V8GCController::CollectGarbage(isolate, false);
-}
-
-TEST(ScriptWrappableMarkingVisitorTest,
-     ScriptWrappableMarkingVisitorTracesWrappers) {
-  V8TestingScope scope;
-  ScriptWrappableMarkingVisitor* visitor =
-      V8PerIsolateData::From(scope.GetIsolate())
-          ->GetScriptWrappableMarkingVisitor();
-  DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::Create();
-  DeathAwareScriptWrappable* dependency = DeathAwareScriptWrappable::Create();
-  target->SetWrappedDependency(dependency);
-
-  // The graph needs to be set up before starting tracing as otherwise the
-  // conservative write barrier would trigger.
-  visitor->TracePrologue();
-
-  HeapObjectHeader* target_header = HeapObjectHeader::FromPayload(target);
-  HeapObjectHeader* dependency_header =
-      HeapObjectHeader::FromPayload(dependency);
-
-  EXPECT_TRUE(visitor->MarkingDeque()->IsEmpty());
-  EXPECT_FALSE(target_header->IsWrapperHeaderMarked());
-  EXPECT_FALSE(dependency_header->IsWrapperHeaderMarked());
-
-  std::pair<void*, void*> pair = std::make_pair(
-      const_cast<WrapperTypeInfo*>(target->GetWrapperTypeInfo()), target);
-  visitor->RegisterV8Reference(pair);
-  EXPECT_EQ(visitor->MarkingDeque()->size(), 1ul);
-
-  visitor->AdvanceTracing(
-      0, v8::EmbedderHeapTracer::AdvanceTracingActions(
-             v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION));
-  EXPECT_EQ(visitor->MarkingDeque()->size(), 0ul);
-  EXPECT_TRUE(target_header->IsWrapperHeaderMarked());
-  EXPECT_TRUE(dependency_header->IsWrapperHeaderMarked());
-
-  visitor->AbortTracing();
-}
-
-TEST(ScriptWrappableMarkingVisitorTest,
-     OilpanCollectObjectsNotReachableFromV8) {
-  V8TestingScope scope;
-  v8::Isolate* isolate = scope.GetIsolate();
-
-  {
-    v8::HandleScope handle_scope(isolate);
-    DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
-    DeathAwareScriptWrappable::ObserveDeathsOf(object);
-
-    // Creates new V8 wrapper and associates it with global scope
-    ToV8(object, scope.GetContext()->Global(), isolate);
-  }
-
-  RunV8Scavenger(isolate);
-  RunV8FullGc(isolate);
-  PreciselyCollectGarbage();
-
-  EXPECT_TRUE(DeathAwareScriptWrappable::HasDied());
-}
-
-TEST(ScriptWrappableMarkingVisitorTest,
-     OilpanDoesntCollectObjectsReachableFromV8) {
-  V8TestingScope scope;
-  v8::Isolate* isolate = scope.GetIsolate();
-  v8::HandleScope handle_scope(isolate);
-  DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
-  DeathAwareScriptWrappable::ObserveDeathsOf(object);
-
-  // Creates new V8 wrapper and associates it with global scope
-  ToV8(object, scope.GetContext()->Global(), isolate);
-
-  RunV8Scavenger(isolate);
-  RunV8FullGc(isolate);
-  PreciselyCollectGarbage();
-
-  EXPECT_FALSE(DeathAwareScriptWrappable::HasDied());
-}
-
-TEST(ScriptWrappableMarkingVisitorTest, V8ReportsLiveObjectsDuringScavenger) {
-  V8TestingScope scope;
-  v8::Isolate* isolate = scope.GetIsolate();
-  v8::HandleScope handle_scope(isolate);
-  DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
-  DeathAwareScriptWrappable::ObserveDeathsOf(object);
-
-  v8::Local<v8::Value> wrapper =
-      ToV8(object, scope.GetContext()->Global(), isolate);
-  EXPECT_TRUE(wrapper->IsObject());
-  v8::Local<v8::Object> wrapper_object =
-      wrapper->ToObject(scope.GetContext()).ToLocalChecked();
-  // V8 collects wrappers with unmodified maps (as they can be recreated
-  // without loosing any data if needed). We need to create some property on
-  // wrapper so V8 will not see it as unmodified.
-  EXPECT_TRUE(wrapper_object->CreateDataProperty(scope.GetContext(), 1, wrapper)
-                  .IsJust());
-
-  RunV8Scavenger(isolate);
-  PreciselyCollectGarbage();
-
-  EXPECT_FALSE(DeathAwareScriptWrappable::HasDied());
-}
-
-TEST(ScriptWrappableMarkingVisitorTest, V8ReportsLiveObjectsDuringFullGc) {
-  V8TestingScope scope;
-  v8::Isolate* isolate = scope.GetIsolate();
-  v8::HandleScope handle_scope(isolate);
-  DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
-  DeathAwareScriptWrappable::ObserveDeathsOf(object);
-
-  ToV8(object, scope.GetContext()->Global(), isolate);
-
-  RunV8Scavenger(isolate);
-  RunV8FullGc(isolate);
-  PreciselyCollectGarbage();
-
-  EXPECT_FALSE(DeathAwareScriptWrappable::HasDied());
-}
-
-TEST(ScriptWrappableMarkingVisitorTest, OilpanClearsHeadersWhenObjectDied) {
-  V8TestingScope scope;
-
-  DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
-  ScriptWrappableMarkingVisitor* visitor =
-      V8PerIsolateData::From(scope.GetIsolate())
-          ->GetScriptWrappableMarkingVisitor();
-  visitor->TracePrologue();
-  auto* header = HeapObjectHeader::FromPayload(object);
-  visitor->headers_to_unmark_.push_back(header);
-
-  PreciselyCollectGarbage();
-
-  EXPECT_FALSE(visitor->headers_to_unmark_.Contains(header));
-  visitor->AbortTracing();
-}
-
-TEST(ScriptWrappableMarkingVisitorTest,
-     OilpanClearsMarkingDequeWhenObjectDied) {
-  V8TestingScope scope;
-
-  DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
-  ScriptWrappableMarkingVisitor* visitor =
-      V8PerIsolateData::From(scope.GetIsolate())
-          ->GetScriptWrappableMarkingVisitor();
-  visitor->TracePrologue();
-
-  visitor->TraceWithWrappers(object);
-
-  EXPECT_EQ(visitor->MarkingDeque()->front().RawObjectPointer(), object);
-
-  PreciselyCollectGarbage();
-
-  EXPECT_EQ(visitor->MarkingDeque()->front().RawObjectPointer(), nullptr);
-
-  visitor->AbortTracing();
-}
-
-TEST(ScriptWrappableMarkingVisitorTest,
-     MarkedObjectDoesNothingOnWriteBarrierHitWhenDependencyIsMarkedToo) {
-  V8TestingScope scope;
-
-  ScriptWrappableMarkingVisitor* visitor =
-      V8PerIsolateData::From(scope.GetIsolate())
-          ->GetScriptWrappableMarkingVisitor();
-  visitor->TracePrologue();
-
-  DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::Create();
-  DeathAwareScriptWrappable* dependencies[] = {
-      DeathAwareScriptWrappable::Create(), DeathAwareScriptWrappable::Create(),
-      DeathAwareScriptWrappable::Create(), DeathAwareScriptWrappable::Create()};
-
-  HeapObjectHeader::FromPayload(target)->MarkWrapperHeader();
-  for (int i = 0; i < 4; i++) {
-    HeapObjectHeader::FromPayload(dependencies[i])->MarkWrapperHeader();
-  }
-
-  EXPECT_TRUE(visitor->MarkingDeque()->IsEmpty());
-
-  target->SetWrappedDependency(dependencies[0]);
-  target->AddWrappedVectorDependency(dependencies[1]);
-  target->AddWrappedHashMapDependency(dependencies[2], dependencies[3]);
-
-  EXPECT_TRUE(visitor->MarkingDeque()->IsEmpty());
-  visitor->AbortTracing();
-}
-
-TEST(ScriptWrappableMarkingVisitorTest,
-     MarkedObjectMarksDependencyOnWriteBarrierHitWhenNotMarked) {
-  V8TestingScope scope;
-
-  ScriptWrappableMarkingVisitor* visitor =
-      V8PerIsolateData::From(scope.GetIsolate())
-          ->GetScriptWrappableMarkingVisitor();
-  visitor->TracePrologue();
-
-  DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::Create();
-  DeathAwareScriptWrappable* dependencies[] = {
-      DeathAwareScriptWrappable::Create(), DeathAwareScriptWrappable::Create(),
-      DeathAwareScriptWrappable::Create(), DeathAwareScriptWrappable::Create()};
-
-  HeapObjectHeader::FromPayload(target)->MarkWrapperHeader();
-
-  EXPECT_TRUE(visitor->MarkingDeque()->IsEmpty());
-
-  target->SetWrappedDependency(dependencies[0]);
-  target->AddWrappedVectorDependency(dependencies[1]);
-  target->AddWrappedHashMapDependency(dependencies[2], dependencies[3]);
-
-  for (int i = 0; i < 4; i++) {
-    EXPECT_TRUE(visitor->MarkingDequeContains(dependencies[i]));
-  }
-
-  visitor->AbortTracing();
-}
-
 namespace {
 
-class HandleContainer
-    : public blink::GarbageCollectedFinalized<HandleContainer> {
+// Temporarily swaps out the underlying ScriptWrappableMarkingVisitor from a
+// given v8::Isolate. Gracefully finalized potentially running garbage
+// collections.
+class TemporaryScriptWrappableVisitorScope {
+  WTF_MAKE_NONCOPYABLE(TemporaryScriptWrappableVisitorScope);
+  STACK_ALLOCATED();
+
  public:
-  static HandleContainer* Create() { return new HandleContainer(); }
-  virtual ~HandleContainer() = default;
-
-  void Trace(blink::Visitor* visitor) {
-    visitor->Trace(handle_.Cast<v8::Value>());
+  TemporaryScriptWrappableVisitorScope(
+      v8::Isolate* isolate,
+      std::unique_ptr<ScriptWrappableMarkingVisitor> controller)
+      : isolate_(isolate), saved_controller_(std::move(controller)) {
+    SwapWithV8PerIsolateDataVisitor();
   }
+  ~TemporaryScriptWrappableVisitorScope() { SwapWithV8PerIsolateDataVisitor(); }
 
-  void SetValue(v8::Isolate* isolate, v8::Local<v8::String> string) {
-    handle_.Set(isolate, string);
+  ScriptWrappableMarkingVisitor* CurrentVisitor() {
+    return V8PerIsolateData::From(isolate_)->GetScriptWrappableMarkingVisitor();
   }
 
  private:
-  HandleContainer() = default;
+  void SwapWithV8PerIsolateDataVisitor() {
+    ScriptWrappableMarkingVisitor* current = CurrentVisitor();
+    if (current)
+      ScriptWrappableMarkingVisitor::PerformCleanup(isolate_);
 
-  TraceWrapperV8Reference<v8::String> handle_;
+    V8PerIsolateData::From(isolate_)->SwapScriptWrappableMarkingVisitor(
+        saved_controller_);
+    isolate_->SetEmbedderHeapTracer(CurrentVisitor());
+  }
+
+  v8::Isolate* const isolate_;
+  std::unique_ptr<ScriptWrappableMarkingVisitor> saved_controller_;
 };
 
 class InterceptingScriptWrappableMarkingVisitor
@@ -296,13 +87,13 @@ class InterceptingScriptWrappableMarkingVisitor
 };
 
 class InterceptingScriptWrappableMarkingVisitorScope
-    : public V8PerIsolateData::TemporaryScriptWrappableVisitorScope {
+    : public TemporaryScriptWrappableVisitorScope {
   WTF_MAKE_NONCOPYABLE(InterceptingScriptWrappableMarkingVisitorScope);
   STACK_ALLOCATED();
 
  public:
   InterceptingScriptWrappableMarkingVisitorScope(v8::Isolate* isolate)
-      : V8PerIsolateData::TemporaryScriptWrappableVisitorScope(
+      : TemporaryScriptWrappableVisitorScope(
             isolate,
             std::unique_ptr<InterceptingScriptWrappableMarkingVisitor>(
                 new InterceptingScriptWrappableMarkingVisitor(isolate))) {
@@ -317,6 +108,144 @@ class InterceptingScriptWrappableMarkingVisitorScope
     return reinterpret_cast<InterceptingScriptWrappableMarkingVisitor*>(
         CurrentVisitor());
   }
+};
+
+void PreciselyCollectGarbage() {
+  ThreadState::Current()->CollectAllGarbage();
+}
+
+}  // namespace
+
+// =============================================================================
+// Wrapper tracing tests for Blink handling. ===================================
+// =============================================================================
+
+TEST(ScriptWrappableMarkingVisitorTest,
+     ScriptWrappableMarkingVisitorTracesWrappers) {
+  V8TestingScope scope;
+
+  DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::Create();
+  DeathAwareScriptWrappable* dependency = DeathAwareScriptWrappable::Create();
+  target->SetWrappedDependency(dependency);
+
+  // The graph needs to be set up before starting tracing as otherwise the
+  // conservative write barrier would trigger.
+  InterceptingScriptWrappableMarkingVisitorScope intercepting_scope(
+      scope.GetIsolate());
+  ScriptWrappableMarkingVisitor* visitor = intercepting_scope.Visitor();
+
+  HeapObjectHeader* target_header = HeapObjectHeader::FromPayload(target);
+  HeapObjectHeader* dependency_header =
+      HeapObjectHeader::FromPayload(dependency);
+
+  EXPECT_TRUE(visitor->MarkingDeque()->IsEmpty());
+  EXPECT_FALSE(target_header->IsWrapperHeaderMarked());
+  EXPECT_FALSE(dependency_header->IsWrapperHeaderMarked());
+
+  std::pair<void*, void*> pair = std::make_pair(
+      const_cast<WrapperTypeInfo*>(target->GetWrapperTypeInfo()), target);
+  visitor->RegisterV8Reference(pair);
+  EXPECT_EQ(visitor->MarkingDeque()->size(), 1ul);
+
+  visitor->AdvanceTracing(
+      0, v8::EmbedderHeapTracer::AdvanceTracingActions(
+             v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION));
+  EXPECT_EQ(visitor->MarkingDeque()->size(), 0ul);
+  EXPECT_TRUE(target_header->IsWrapperHeaderMarked());
+  EXPECT_TRUE(dependency_header->IsWrapperHeaderMarked());
+}
+
+TEST(ScriptWrappableMarkingVisitorTest,
+     OilpanClearsMarkingDequeWhenObjectDied) {
+  V8TestingScope scope;
+
+  DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
+  InterceptingScriptWrappableMarkingVisitorScope intercepting_scope(
+      scope.GetIsolate());
+  ScriptWrappableMarkingVisitor* visitor = intercepting_scope.Visitor();
+
+  visitor->TraceWithWrappers(object);
+
+  EXPECT_EQ(visitor->MarkingDeque()->front().RawObjectPointer(), object);
+
+  PreciselyCollectGarbage();
+
+  EXPECT_EQ(visitor->MarkingDeque()->front().RawObjectPointer(), nullptr);
+}
+
+TEST(ScriptWrappableMarkingVisitorTest,
+     MarkedObjectDoesNothingOnWriteBarrierHitWhenDependencyIsMarkedToo) {
+  V8TestingScope scope;
+
+  InterceptingScriptWrappableMarkingVisitorScope intercepting_scope(
+      scope.GetIsolate());
+  ScriptWrappableMarkingVisitor* visitor = intercepting_scope.Visitor();
+
+  DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::Create();
+  DeathAwareScriptWrappable* dependencies[] = {
+      DeathAwareScriptWrappable::Create(), DeathAwareScriptWrappable::Create(),
+      DeathAwareScriptWrappable::Create(), DeathAwareScriptWrappable::Create()};
+
+  HeapObjectHeader::FromPayload(target)->MarkWrapperHeader();
+  for (int i = 0; i < 4; i++) {
+    HeapObjectHeader::FromPayload(dependencies[i])->MarkWrapperHeader();
+  }
+
+  EXPECT_TRUE(visitor->MarkingDeque()->IsEmpty());
+
+  target->SetWrappedDependency(dependencies[0]);
+  target->AddWrappedVectorDependency(dependencies[1]);
+  target->AddWrappedHashMapDependency(dependencies[2], dependencies[3]);
+
+  EXPECT_TRUE(visitor->MarkingDeque()->IsEmpty());
+}
+
+TEST(ScriptWrappableMarkingVisitorTest,
+     MarkedObjectMarksDependencyOnWriteBarrierHitWhenNotMarked) {
+  V8TestingScope scope;
+
+  InterceptingScriptWrappableMarkingVisitorScope intercepting_scope(
+      scope.GetIsolate());
+  ScriptWrappableMarkingVisitor* visitor = intercepting_scope.Visitor();
+
+  DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::Create();
+  DeathAwareScriptWrappable* dependencies[] = {
+      DeathAwareScriptWrappable::Create(), DeathAwareScriptWrappable::Create(),
+      DeathAwareScriptWrappable::Create(), DeathAwareScriptWrappable::Create()};
+
+  HeapObjectHeader::FromPayload(target)->MarkWrapperHeader();
+
+  EXPECT_TRUE(visitor->MarkingDeque()->IsEmpty());
+
+  target->SetWrappedDependency(dependencies[0]);
+  target->AddWrappedVectorDependency(dependencies[1]);
+  target->AddWrappedHashMapDependency(dependencies[2], dependencies[3]);
+
+  for (int i = 0; i < 4; i++) {
+    EXPECT_TRUE(visitor->MarkingDequeContains(dependencies[i]));
+  }
+}
+
+namespace {
+
+class HandleContainer
+    : public blink::GarbageCollectedFinalized<HandleContainer> {
+ public:
+  static HandleContainer* Create() { return new HandleContainer(); }
+  virtual ~HandleContainer() = default;
+
+  void Trace(blink::Visitor* visitor) {
+    visitor->Trace(handle_.Cast<v8::Value>());
+  }
+
+  void SetValue(v8::Isolate* isolate, v8::Local<v8::String> string) {
+    handle_.Set(isolate, string);
+  }
+
+ private:
+  HandleContainer() = default;
+
+  TraceWrapperV8Reference<v8::String> handle_;
 };
 
 }  // namespace
@@ -396,9 +325,6 @@ TEST(ScriptWrappableMarkingVisitor, WriteBarrierForScriptWrappable) {
 
 TEST(ScriptWrappableMarkingVisitorTest, WriteBarrierOnHeapVectorSwap1) {
   V8TestingScope scope;
-  ScriptWrappableMarkingVisitor* visitor =
-      V8PerIsolateData::From(scope.GetIsolate())
-          ->GetScriptWrappableMarkingVisitor();
 
   HeapVector<DeathAwareScriptWrappable::Wrapper> vector1;
   DeathAwareScriptWrappable* entry1 = DeathAwareScriptWrappable::Create();
@@ -407,22 +333,19 @@ TEST(ScriptWrappableMarkingVisitorTest, WriteBarrierOnHeapVectorSwap1) {
   DeathAwareScriptWrappable* entry2 = DeathAwareScriptWrappable::Create();
   vector2.push_back(entry2);
 
-  visitor->TracePrologue();
+  InterceptingScriptWrappableMarkingVisitorScope intercepting_scope(
+      scope.GetIsolate());
+  ScriptWrappableMarkingVisitor* visitor = intercepting_scope.Visitor();
 
   EXPECT_TRUE(visitor->MarkingDeque()->IsEmpty());
   swap(vector1, vector2);
 
   EXPECT_TRUE(visitor->MarkingDequeContains(entry1));
   EXPECT_TRUE(visitor->MarkingDequeContains(entry2));
-
-  visitor->AbortTracing();
 }
 
 TEST(ScriptWrappableMarkingVisitorTest, WriteBarrierOnHeapVectorSwap2) {
   V8TestingScope scope;
-  ScriptWrappableMarkingVisitor* visitor =
-      V8PerIsolateData::From(scope.GetIsolate())
-          ->GetScriptWrappableMarkingVisitor();
 
   HeapVector<DeathAwareScriptWrappable::Wrapper> vector1;
   DeathAwareScriptWrappable* entry1 = DeathAwareScriptWrappable::Create();
@@ -431,7 +354,9 @@ TEST(ScriptWrappableMarkingVisitorTest, WriteBarrierOnHeapVectorSwap2) {
   DeathAwareScriptWrappable* entry2 = DeathAwareScriptWrappable::Create();
   vector2.push_back(entry2);
 
-  visitor->TracePrologue();
+  InterceptingScriptWrappableMarkingVisitorScope intercepting_scope(
+      scope.GetIsolate());
+  ScriptWrappableMarkingVisitor* visitor = intercepting_scope.Visitor();
 
   EXPECT_TRUE(visitor->MarkingDeque()->IsEmpty());
   swap(vector1, vector2);
@@ -439,8 +364,6 @@ TEST(ScriptWrappableMarkingVisitorTest, WriteBarrierOnHeapVectorSwap2) {
   // Only entry2 is held alive by TraceWrapperMember, so we only expect this
   // barrier to fire.
   EXPECT_TRUE(visitor->MarkingDequeContains(entry2));
-
-  visitor->AbortTracing();
 }
 
 namespace {
@@ -495,9 +418,6 @@ class Base : public blink::GarbageCollected<Base>,
 
 TEST(ScriptWrappableMarkingVisitorTest, MixinTracing) {
   V8TestingScope scope;
-  ScriptWrappableMarkingVisitor* visitor =
-      V8PerIsolateData::From(scope.GetIsolate())
-          ->GetScriptWrappableMarkingVisitor();
 
   DeathAwareScriptWrappable* base_wrapper = DeathAwareScriptWrappable::Create();
   DeathAwareScriptWrappable* mixin_wrapper =
@@ -510,7 +430,9 @@ TEST(ScriptWrappableMarkingVisitorTest, MixinTracing) {
   // Make sure that mixin does not point to the object header.
   EXPECT_NE(static_cast<void*>(base), static_cast<void*>(mixin));
 
-  visitor->TracePrologue();
+  InterceptingScriptWrappableMarkingVisitorScope intercepting_scope(
+      scope.GetIsolate());
+  ScriptWrappableMarkingVisitor* visitor = intercepting_scope.Visitor();
 
   EXPECT_TRUE(visitor->MarkingDeque()->IsEmpty());
 
@@ -531,7 +453,22 @@ TEST(ScriptWrappableMarkingVisitorTest, MixinTracing) {
       HeapObjectHeader::FromPayload(mixin_wrapper)->IsWrapperHeaderMarked());
 
   mixin_handle = nullptr;
-  visitor->AbortTracing();
+}
+
+TEST(ScriptWrappableMarkingVisitorTest, OilpanClearsHeadersWhenObjectDied) {
+  V8TestingScope scope;
+
+  DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
+  InterceptingScriptWrappableMarkingVisitorScope intercepting_scope(
+      scope.GetIsolate());
+  ScriptWrappableMarkingVisitor* visitor = intercepting_scope.Visitor();
+  auto* header = HeapObjectHeader::FromPayload(object);
+  visitor->headers_to_unmark_.push_back(header);
+  object = nullptr;
+
+  PreciselyCollectGarbage();
+
+  EXPECT_FALSE(visitor->headers_to_unmark_.Contains(header));
 }
 
 }  // namespace blink
