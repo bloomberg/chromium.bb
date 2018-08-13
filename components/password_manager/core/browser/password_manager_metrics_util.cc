@@ -200,6 +200,12 @@ void LogSubmittedFormFrame(SubmittedFormFrame frame) {
                             SubmittedFormFrame::SUBMITTED_FORM_FRAME_COUNT);
 }
 
+void LogDeleteUndecryptableLoginsReturnValue(
+    DeleteUndecryptableLoginsReturnValue return_value) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.DeleteUndecryptableLoginsReturnValue", return_value);
+}
+
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void LogSyncPasswordHashChange(SyncPasswordHashChange event) {
   UMA_HISTOGRAM_ENUMERATION(
