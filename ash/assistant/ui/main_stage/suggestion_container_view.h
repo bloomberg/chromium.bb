@@ -9,6 +9,7 @@
 
 #include "ash/app_list/views/suggestion_chip_view.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/ui/assistant_scroll_view.h"
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/views/controls/scroll_view.h"
@@ -20,7 +21,7 @@ class AssistantController;
 // SuggestionContainerView is the child of AssistantMainView concerned with
 // laying out SuggestionChipViews in response to Assistant interaction model
 // suggestion events.
-class SuggestionContainerView : public views::ScrollView,
+class SuggestionContainerView : public AssistantScrollView,
                                 public AssistantInteractionModelObserver,
                                 public views::ButtonListener {
  public:
@@ -29,9 +30,10 @@ class SuggestionContainerView : public views::ScrollView,
   explicit SuggestionContainerView(AssistantController* assistant_controller);
   ~SuggestionContainerView() override;
 
-  // views::View:
+  // AssistantScrollView:
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
+  void OnContentsPreferredSizeChanged(views::View* content_view) override;
 
   // AssistantInteractionModelObserver:
   void OnResponseChanged(const AssistantResponse& response) override;
@@ -42,13 +44,11 @@ class SuggestionContainerView : public views::ScrollView,
 
  private:
   void InitLayout();
-  void UpdateContentsBounds();
 
   // Invoked on suggestion chip icon downloaded event.
   void OnSuggestionChipIconDownloaded(int id, const gfx::ImageSkia& icon);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
-  views::View* contents_view_;                       // Owned by view hierarchy.
 
   // Cache of suggestion chip views owned by the view hierarchy. The key for the
   // map is the unique identifier by which the Assistant interaction model

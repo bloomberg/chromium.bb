@@ -10,8 +10,9 @@
 #include <vector>
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/ui/assistant_scroll_view.h"
 #include "base/macros.h"
-#include "ui/views/view.h"
+#include "ui/views/view_observer.h"
 
 namespace ui {
 class CallbackLayerAnimationObserver;
@@ -21,7 +22,6 @@ namespace ash {
 
 class AssistantCardElement;
 class AssistantController;
-class AssistantHeaderView;
 class AssistantResponse;
 class AssistantTextElement;
 class AssistantUiElement;
@@ -30,14 +30,16 @@ enum class AssistantUiElementType;
 // UiElementContainerView is the child of AssistantMainView concerned with
 // laying out text views and embedded card views in response to Assistant
 // interaction model UI element events.
-class UiElementContainerView : public views::View,
+class UiElementContainerView : public AssistantScrollView,
                                public AssistantInteractionModelObserver {
  public:
   explicit UiElementContainerView(AssistantController* assistant_controller);
   ~UiElementContainerView() override;
 
-  // views::View:
-  void ChildPreferredSizeChanged(views::View* child) override;
+  // AssistantScrollView:
+  gfx::Size CalculatePreferredSize() const override;
+  int GetHeightForWidth(int width) const override;
+  void OnContentsPreferredSizeChanged(views::View* content_view) override;
 
   // AssistantInteractionModelObserver:
   void OnCommittedQueryChanged(const AssistantQuery& query) override;
@@ -67,8 +69,6 @@ class UiElementContainerView : public views::View,
   void ReleaseAllCards();
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
-
-  std::unique_ptr<AssistantHeaderView> assistant_header_view_;
 
   // Uniquely identifies cards owned by AssistantCardRenderer.
   std::vector<base::UnguessableToken> id_token_list_;

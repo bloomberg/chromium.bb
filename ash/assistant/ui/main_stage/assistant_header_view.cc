@@ -25,6 +25,7 @@ namespace {
 
 // Appearance.
 constexpr int kIconSizeDip = 24;
+constexpr int kPaddingHorizontalDip = 32;
 
 // Appear animation.
 constexpr base::TimeDelta kAppearAnimationFadeInDelay =
@@ -75,7 +76,8 @@ void AssistantHeaderView::ChildVisibilityChanged(views::View* child) {
 
 void AssistantHeaderView::InitLayout() {
   layout_manager_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical));
+      views::BoxLayout::Orientation::kVertical,
+      gfx::Insets(0, 0, kSpacingDip, 0)));
 
   layout_manager_->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
@@ -121,7 +123,8 @@ void AssistantHeaderView::OnResponseChanged(const AssistantResponse& response) {
   // The molecule icon will be animated from the center of its parent, to the
   // left hand side.
   gfx::Transform transform;
-  transform.Translate(-(width() - molecule_icon_->width()) / 2, 0);
+  transform.Translate(
+      -(width() - molecule_icon_->width()) / 2 + kPaddingHorizontalDip, 0);
 
   // Animate the molecule icon.
   molecule_icon_->layer()->GetAnimator()->StartTogether(

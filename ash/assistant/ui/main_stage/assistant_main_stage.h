@@ -25,6 +25,7 @@ namespace ash {
 
 class AssistantController;
 class AssistantFooterView;
+class AssistantHeaderView;
 class AssistantProgressIndicator;
 class AssistantQueryView;
 class UiElementContainerView;
@@ -59,9 +60,9 @@ class AssistantMainStage : public views::View,
   void OnUiVisibilityChanged(bool visible, AssistantSource source) override;
 
  private:
-  void InitLayout(AssistantController* assistant_controller);
-  void InitContentLayoutContainer(AssistantController* assistant_controller);
-  void InitQueryLayoutContainer(AssistantController* assistant_controller);
+  void InitLayout();
+  void InitContentLayoutContainer();
+  void InitQueryLayoutContainer();
   void InitOverlayLayoutContainer();
 
   void UpdateTopPadding();
@@ -81,6 +82,7 @@ class AssistantMainStage : public views::View,
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
   // Content layout container and children. Owned by view hierarchy.
+  AssistantHeaderView* header_;
   views::View* content_layout_container_;
   UiElementContainerView* ui_element_container_;
   AssistantFooterView* footer_;
