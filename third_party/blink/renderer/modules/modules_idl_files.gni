@@ -69,6 +69,7 @@ modules_idl_files =
           "background_fetch/background_fetch_fail_event.idl",
           "background_fetch/background_fetch_fetch.idl",
           "background_fetch/background_fetch_manager.idl",
+          "background_fetch/background_fetch_record.idl",
           "background_fetch/background_fetch_registration.idl",
           "background_fetch/background_fetch_settled_event.idl",
           "background_fetch/background_fetch_settled_fetch.idl",
