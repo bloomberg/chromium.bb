@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
 import android.view.MotionEvent.PointerProperties;
@@ -16,6 +17,7 @@ import org.chromium.content_public.browser.MotionEventSynthesizer;
  */
 public class MotionEventSynthesizerImpl implements MotionEventSynthesizer {
     private static final int MAX_NUM_POINTERS = 16;
+    private static final int SOURCE = InputDevice.SOURCE_CLASS_POINTER;
 
     private final PointerProperties[] mPointerProperties;
     private final PointerCoords[] mPointerCoords;
@@ -90,16 +92,15 @@ public class MotionEventSynthesizerImpl implements MotionEventSynthesizer {
      * @param action Type of the action to inject.
      * @param pointerCount The number of points associated with the event.
      * @param timeInMs Timestamp for the event.
-     * @param source Source of the event.
      */
     @Override
-    public void inject(int action, int pointerCount, long timeInMs, int source) {
+    public void inject(int action, int pointerCount, long timeInMs) {
         switch (action) {
             case MotionEventAction.START: {
                 mDownTimeInMs = timeInMs;
                 MotionEvent event =
                         MotionEvent.obtain(mDownTimeInMs, timeInMs, MotionEvent.ACTION_DOWN, 1,
-                                mPointerProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, source, 0);
+                                mPointerProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, SOURCE, 0);
                 mTarget.dispatchTouchEvent(event);
                 event.recycle();
 
@@ -110,7 +111,7 @@ public class MotionEventSynthesizerImpl implements MotionEventSynthesizer {
                     int pointerIndex = 1 << MotionEvent.ACTION_POINTER_INDEX_SHIFT;
                     event = MotionEvent.obtain(mDownTimeInMs, timeInMs,
                             MotionEvent.ACTION_POINTER_DOWN | pointerIndex, pointerCount,
-                            mPointerProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, source, 0);
+                            mPointerProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, SOURCE, 0);
                     mTarget.dispatchTouchEvent(event);
                     event.recycle();
                 }
@@ -119,7 +120,7 @@ public class MotionEventSynthesizerImpl implements MotionEventSynthesizer {
             case MotionEventAction.MOVE: {
                 MotionEvent event = MotionEvent.obtain(mDownTimeInMs, timeInMs,
                         MotionEvent.ACTION_MOVE, pointerCount, mPointerProperties, mPointerCoords,
-                        0, 0, 1, 1, 0, 0, source, 0);
+                        0, 0, 1, 1, 0, 0, SOURCE, 0);
                 mTarget.dispatchTouchEvent(event);
                 event.recycle();
                 break;
@@ -127,7 +128,7 @@ public class MotionEventSynthesizerImpl implements MotionEventSynthesizer {
             case MotionEventAction.CANCEL: {
                 MotionEvent event =
                         MotionEvent.obtain(mDownTimeInMs, timeInMs, MotionEvent.ACTION_CANCEL, 1,
-                                mPointerProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, source, 0);
+                                mPointerProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, SOURCE, 0);
                 mTarget.dispatchTouchEvent(event);
                 event.recycle();
                 break;
@@ -140,14 +141,14 @@ public class MotionEventSynthesizerImpl implements MotionEventSynthesizer {
                     int pointerIndex = 1 << MotionEvent.ACTION_POINTER_INDEX_SHIFT;
                     MotionEvent event = MotionEvent.obtain(mDownTimeInMs, timeInMs,
                             MotionEvent.ACTION_POINTER_UP | pointerIndex, pointerCount,
-                            mPointerProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, source, 0);
+                            mPointerProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, SOURCE, 0);
                     mTarget.dispatchTouchEvent(event);
                     event.recycle();
                 }
 
                 MotionEvent event =
                         MotionEvent.obtain(mDownTimeInMs, timeInMs, MotionEvent.ACTION_UP, 1,
-                                mPointerProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, source, 0);
+                                mPointerProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, SOURCE, 0);
                 mTarget.dispatchTouchEvent(event);
                 event.recycle();
                 break;
@@ -156,7 +157,7 @@ public class MotionEventSynthesizerImpl implements MotionEventSynthesizer {
                 assert pointerCount == 1;
                 MotionEvent event = MotionEvent.obtain(mDownTimeInMs, timeInMs,
                         MotionEvent.ACTION_SCROLL, pointerCount, mPointerProperties, mPointerCoords,
-                        0, 0, 1, 1, 0, 0, source, 0);
+                        0, 0, 1, 1, 0, 0, SOURCE, 0);
                 mTarget.dispatchGenericMotionEvent(event);
                 event.recycle();
                 break;
@@ -164,7 +165,7 @@ public class MotionEventSynthesizerImpl implements MotionEventSynthesizer {
             case MotionEventAction.HOVER_ENTER:
             case MotionEventAction.HOVER_EXIT:
             case MotionEventAction.HOVER_MOVE: {
-                injectHover(action, pointerCount, timeInMs, source);
+                injectHover(action, pointerCount, timeInMs);
                 break;
             }
             default: {
@@ -174,13 +175,13 @@ public class MotionEventSynthesizerImpl implements MotionEventSynthesizer {
         }
     }
 
-    private void injectHover(int action, int pointerCount, long timeInMs, int source) {
+    private void injectHover(int action, int pointerCount, long timeInMs) {
         assert pointerCount == 1;
         int androidAction = MotionEvent.ACTION_HOVER_ENTER;
         if (MotionEventAction.HOVER_EXIT == action) androidAction = MotionEvent.ACTION_HOVER_EXIT;
         if (MotionEventAction.HOVER_MOVE == action) androidAction = MotionEvent.ACTION_HOVER_MOVE;
         MotionEvent event = MotionEvent.obtain(mDownTimeInMs, timeInMs, androidAction, pointerCount,
-                mPointerProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, source, 0);
+                mPointerProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, SOURCE, 0);
         mTarget.dispatchGenericMotionEvent(event);
         event.recycle();
     }
