@@ -129,18 +129,10 @@ id<GREYMatcher> SearchIconButton() {
 id<GREYMatcher> CancelButton() {
   return grey_accessibilityID(kHistoryToolbarCancelButtonIdentifier);
 }
-// Matcher for the button to open the clear browsing data panel.
-id<GREYMatcher> OpenClearBrowsingDataButton() {
-  return grey_accessibilityID(kHistoryToolbarClearBrowsingButtonIdentifier);
-}
 // Matcher for the Open in New Incognito Tab option in the context menu.
 id<GREYMatcher> OpenInNewIncognitoTabButton() {
   return ButtonWithAccessibilityLabelId(
       IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB);
-}
-// Matcher for the clear browsing data button on the clear browsing data panel.
-id<GREYMatcher> ClearBrowsingDataButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_CLEAR_BUTTON);
 }
 
 }  // namespace
@@ -156,8 +148,6 @@ id<GREYMatcher> ClearBrowsingDataButton() {
 - (void)loadTestURLs;
 // Displays the history UI.
 - (void)openHistoryPanel;
-// Asserts that the history UI displays no history entries.
-- (void)assertNoHistoryShown;
 // Resets which data is selected in the Clear Browsing Data UI.
 - (void)resetBrowsingDataPrefs;
 
@@ -213,7 +203,7 @@ id<GREYMatcher> ClearBrowsingDataButton() {
 // Tests that no history is shown if there has been no navigation.
 - (void)testDisplayNoHistory {
   [self openHistoryPanel];
-  [self assertNoHistoryShown];
+  [ChromeEarlGreyUI assertHistoryHasNoEntries];
 }
 
 // Tests that the history panel displays navigation history.
@@ -321,7 +311,7 @@ id<GREYMatcher> ClearBrowsingDataButton() {
   [[EarlGrey selectElementWithMatcher:DeleteHistoryEntriesButton()]
       performAction:grey_tap()];
 
-  [self assertNoHistoryShown];
+  [ChromeEarlGreyUI assertHistoryHasNoEntries];
 }
 
 // Tests clear browsing history.
@@ -329,31 +319,8 @@ id<GREYMatcher> ClearBrowsingDataButton() {
   [self loadTestURLs];
   [self openHistoryPanel];
 
-  // Open the Clear Browsing Data dialog.
-  [[EarlGrey selectElementWithMatcher:OpenClearBrowsingDataButton()]
-      performAction:grey_tap()];
-
-  // Uncheck "Cookies, Site Data" and "Cached Images and Files," which are
-  // checked by default, and press "Clear Browsing Data"
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ClearCookiesButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ClearCacheButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:ClearBrowsingDataButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                          ConfirmClearBrowsingDataButton()]
-      performAction:grey_tap()];
-
-  // Include sufficientlyVisible condition for the case of the clear browsing
-  // dialog, which also has a "Done" button and is displayed over the history
-  // panel.
-  id<GREYMatcher> visibleDoneButton = grey_allOf(
-      chrome_test_util::SettingsDoneButton(), grey_sufficientlyVisible(), nil);
-  [[EarlGrey selectElementWithMatcher:visibleDoneButton]
-      performAction:grey_tap()];
-
-  [self assertNoHistoryShown];
+  [ChromeEarlGreyUI openAndClearBrowsingDataFromHistory];
+  [ChromeEarlGreyUI assertHistoryHasNoEntries];
 }
 
 // Tests display and selection of 'Open in New Tab' in a context menu on a
@@ -457,28 +424,6 @@ id<GREYMatcher> ClearBrowsingDataButton() {
 - (void)openHistoryPanel {
   [ChromeEarlGreyUI openToolsMenu];
   [ChromeEarlGreyUI tapToolsMenuButton:HistoryButton()];
-}
-
-- (void)assertNoHistoryShown {
-  id<GREYMatcher> noHistoryMessageMatcher =
-      grey_allOf(grey_text(l10n_util::GetNSString(IDS_HISTORY_NO_RESULTS)),
-                 grey_sufficientlyVisible(), nil);
-  [[EarlGrey selectElementWithMatcher:noHistoryMessageMatcher]
-      assertWithMatcher:grey_notNil()];
-
-  if (IsUIRefreshPhase1Enabled()) {
-    id<GREYMatcher> historyEntryMatcher =
-        grey_allOf(grey_kindOfClass([TableViewURLCell class]),
-                   grey_sufficientlyVisible(), nil);
-    [[EarlGrey selectElementWithMatcher:historyEntryMatcher]
-        assertWithMatcher:grey_nil()];
-  } else {
-    id<GREYMatcher> historyEntryMatcher =
-        grey_allOf(grey_kindOfClass([LegacyHistoryEntryCell class]),
-                   grey_sufficientlyVisible(), nil);
-    [[EarlGrey selectElementWithMatcher:historyEntryMatcher]
-        assertWithMatcher:grey_nil()];
-  }
 }
 
 - (void)resetBrowsingDataPrefs {
