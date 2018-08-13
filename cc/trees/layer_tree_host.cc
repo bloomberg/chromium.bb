@@ -791,7 +791,12 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
       base::JSONWriter::WriteWithOptions(
           *property_trees->AsTracedValue()->ToBaseValue(),
           base::JSONWriter::OPTIONS_PRETTY_PRINT, &out);
-      VLOG(3) << out;
+      std::stringstream ss(out);
+      while (!ss.eof()) {
+        std::string line;
+        std::getline(ss, line);
+        VLOG(3) << line;
+      }
     }
   }
 
