@@ -47,25 +47,28 @@ extern const char kGetAllNodes[];
 extern const char kGetAllNodesCallback[];
 extern const char kRegisterForEvents[];
 extern const char kRegisterForPerTypeCounters[];
+extern const char kRequestIncludeSpecificsInitialState[];
 extern const char kRequestListOfTypes[];
+extern const char kRequestStart[];
+extern const char kRequestStop[];
 extern const char kRequestUpdatedAboutInfo[];
 extern const char kRequestUserEventsVisibility[];
 extern const char kSetIncludeSpecifics[];
+extern const char kTriggerRefresh[];
 extern const char kUserEventsVisibilityCallback[];
 extern const char kWriteUserEvent[];
-extern const char kRequestStart[];
-extern const char kRequestStop[];
-extern const char kTriggerRefresh[];
 
 // Other strings.
 // Must match the constants used in the resource files.
 extern const char kCommit[];
 extern const char kCounters[];
 extern const char kCounterType[];
+extern const char kIncludeSpecifics[];
 extern const char kModelType[];
 extern const char kOnAboutInfoUpdated[];
 extern const char kOnCountersUpdated[];
 extern const char kOnProtocolEvent[];
+extern const char kOnReceivedIncludeSpecificsInitialState[];
 extern const char kOnReceivedListOfTypes[];
 extern const char kStatus[];
 extern const char kTypes[];

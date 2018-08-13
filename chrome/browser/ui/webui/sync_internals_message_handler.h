@@ -52,8 +52,11 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
   // Fires an event to send updated info back to the page.
   void HandleRequestUpdatedAboutInfo(const base::ListValue* args);
 
-  // Fires and event to send the list of types back to the page.
+  // Fires an event to send the list of types back to the page.
   void HandleRequestListOfTypes(const base::ListValue* args);
+
+  // Fires an event to send the initial state of the "include specifics" flag.
+  void HandleRequestIncludeSpecificsInitialState(const base::ListValue* args);
 
   // Handler for getAllNodes message.  Needs a |request_id| argument.
   void HandleGetAllNodes(const base::ListValue* args);

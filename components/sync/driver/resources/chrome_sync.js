@@ -62,7 +62,7 @@ cr.define('chrome.sync', function() {
   }
 
   /**
-   * Asks the browser to refresh our snapshot of sync state.  Should result
+   * Asks the browser to refresh our snapshot of sync state. Should result
    * in an onAboutInfoUpdated event being emitted.
    */
   var requestUpdatedAboutInfo = function() {
@@ -70,12 +70,21 @@ cr.define('chrome.sync', function() {
   };
 
   /**
-   * Asks the browser to send us the list of registered types.  Should result
+   * Asks the browser to send us the list of registered types. Should result
    * in an onReceivedListOfTypes event being emitted.
    */
   var requestListOfTypes = function() {
     chrome.send('requestListOfTypes');
   };
+
+  /**
+   * Asks the browser to send us the initial state of the "include specifics"
+   * flag. Should result in an onReceivedIncludeSpecificsInitialState event
+   * being emitted.
+   */
+  var requestIncludeSpecificsInitialState = function() {
+    chrome.send('requestIncludeSpecificsInitialState');
+  }
 
   /**
    * Asks the browser if we should show the User Events tab or not.
@@ -170,6 +179,7 @@ cr.define('chrome.sync', function() {
     registerForEvents: registerForEvents,
     registerForPerTypeCounters: registerForPerTypeCounters,
     requestUpdatedAboutInfo: requestUpdatedAboutInfo,
+    requestIncludeSpecificsInitialState: requestIncludeSpecificsInitialState,
     requestListOfTypes: requestListOfTypes,
     requestUserEventsVisibility: requestUserEventsVisibility,
     setIncludeSpecifics: setIncludeSpecifics,
