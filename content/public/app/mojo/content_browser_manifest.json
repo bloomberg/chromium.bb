@@ -167,6 +167,7 @@
           "blink.mojom.MediaSessionService",
           "blink.mojom.NotificationService",
           "blink.mojom.PermissionService",
+          "blink.mojom.Portal",
           "blink.mojom.PrefetchURLLoaderService",
           "blink.mojom.PresentationService",
           "blink.mojom.QuotaDispatcherHost",
