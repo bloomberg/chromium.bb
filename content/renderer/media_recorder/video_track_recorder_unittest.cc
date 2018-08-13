@@ -17,6 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/stream/mock_media_stream_video_source.h"
@@ -92,6 +93,9 @@ class VideoTrackRecorderTest
     blink_source_.Reset();
     video_track_recorder_.reset();
     blink::WebHeap::CollectAllGarbageForTesting();
+    // VideoTrackRecorder::Encoder::~Encoder may post a DeleteSoon(), which
+    // may cause ASAN to detect a memory leak if we don't wait.
+    scoped_task_environment_.RunUntilIdle();
   }
 
   void InitializeRecorder(VideoTrackRecorder::CodecId codec) {
@@ -137,7 +141,7 @@ class VideoTrackRecorderTest
   }
 
   uint32_t NumFramesInEncode() {
-    return video_track_recorder_->encoder_->num_frames_in_encode_;
+    return video_track_recorder_->encoder_->num_frames_in_encode_->count();
   }
 
   // A ChildProcess is needed to fool the Tracks and Sources into believing they

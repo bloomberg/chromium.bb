@@ -75,6 +75,11 @@ VEAEncoder::VEAEncoder(
 }
 
 VEAEncoder::~VEAEncoder() {
+  if (encoding_task_runner_->BelongsToCurrentThread()) {
+    DestroyOnEncodingTaskRunner();
+    return;
+  }
+
   base::WaitableEvent release_waiter(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -276,7 +281,8 @@ void VEAEncoder::DestroyOnEncodingTaskRunner(
     base::WaitableEvent* async_waiter) {
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
   video_encoder_.reset();
-  async_waiter->Signal();
+  if (async_waiter)
+    async_waiter->Signal();
 }
 
 }  // namespace content

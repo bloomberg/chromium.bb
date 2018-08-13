@@ -70,7 +70,7 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
 
   void ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size);
 
-  void DestroyOnEncodingTaskRunner(base::WaitableEvent* async_waiter);
+  void DestroyOnEncodingTaskRunner(base::WaitableEvent* async_waiter = nullptr);
 
   media::GpuVideoAcceleratorFactories* const gpu_factories_;
 
