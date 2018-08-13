@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_EVENT_LISTENER_H_
-#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_EVENT_LISTENER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_EVENT_LISTENER_OR_EVENT_HANDLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_EVENT_LISTENER_OR_EVENT_HANDLER_H_
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_listener.h"
@@ -39,23 +39,24 @@ namespace blink {
 
 class Event;
 
-// V8EventListener is a wrapper of a JS object implements EventListener
-// interface (has handleEvent(event) method), or a JS function that can handle
-// the event.
-class V8EventListener : public V8AbstractEventListener {
+// V8EventListenerOrEventHandler is a wrapper of a JS object implements
+// EventListener interface (has handleEvent(event) method), or a JS function
+// that can handle the event.
+class V8EventListenerOrEventHandler : public V8AbstractEventListener {
  public:
-  static V8EventListener* Create(v8::Local<v8::Object> listener,
-                                 bool is_attribute,
-                                 ScriptState* script_state,
-                                 const V8PrivateProperty::Symbol& property) {
-    V8EventListener* event_listener =
-        new V8EventListener(is_attribute, script_state);
+  static V8EventListenerOrEventHandler* Create(
+      v8::Local<v8::Object> listener,
+      bool is_attribute,
+      ScriptState* script_state,
+      const V8PrivateProperty::Symbol& property) {
+    V8EventListenerOrEventHandler* event_listener =
+        new V8EventListenerOrEventHandler(is_attribute, script_state);
     event_listener->SetListenerObject(script_state, listener, property);
     return event_listener;
   }
 
  protected:
-  V8EventListener(bool is_attribute, ScriptState*);
+  V8EventListenerOrEventHandler(bool is_attribute, ScriptState*);
   v8::Local<v8::Function> GetListenerFunction(ScriptState*);
   v8::Local<v8::Value> CallListenerFunction(ScriptState*,
                                             v8::Local<v8::Value>,
@@ -64,4 +65,4 @@ class V8EventListener : public V8AbstractEventListener {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_EVENT_LISTENER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_EVENT_LISTENER_OR_EVENT_HANDLER_H_

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener_or_event_handler.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -39,12 +39,14 @@
 
 namespace blink {
 
-V8EventListener::V8EventListener(bool is_attribute, ScriptState* script_state)
+V8EventListenerOrEventHandler::V8EventListenerOrEventHandler(
+    bool is_attribute,
+    ScriptState* script_state)
     : V8AbstractEventListener(script_state->GetIsolate(),
                               is_attribute,
                               script_state->World()) {}
 
-v8::Local<v8::Function> V8EventListener::GetListenerFunction(
+v8::Local<v8::Function> V8EventListenerOrEventHandler::GetListenerFunction(
     ScriptState* script_state) {
   v8::Local<v8::Object> listener =
       GetListenerObject(ExecutionContext::From(script_state));
@@ -85,7 +87,7 @@ v8::Local<v8::Function> V8EventListener::GetListenerFunction(
   return v8::Local<v8::Function>();
 }
 
-v8::Local<v8::Value> V8EventListener::CallListenerFunction(
+v8::Local<v8::Value> V8EventListenerOrEventHandler::CallListenerFunction(
     ScriptState* script_state,
     v8::Local<v8::Value> js_event,
     Event* event) {

@@ -51,8 +51,8 @@ class ScriptWrappable;
   X(SameObject, PerformanceLongTaskTimingAttribution) \
   X(SameObject, PushManagerSupportedContentEncodings) \
   X(V8ErrorHandler, ErrorHandler)                     \
-  X(V8EventListener, AttributeListener)               \
-  X(V8EventListener, Listener)                        \
+  X(V8EventListenerOrEventHandler, AttributeListener) \
+  X(V8EventListenerOrEventHandler, Listener)          \
   SCRIPT_PROMISE_PROPERTIES(X, Promise)               \
   SCRIPT_PROMISE_PROPERTIES(X, Resolver)
 

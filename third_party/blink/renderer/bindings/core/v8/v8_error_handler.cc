@@ -40,15 +40,17 @@
 namespace blink {
 
 V8ErrorHandler::V8ErrorHandler(bool is_inline, ScriptState* script_state)
-    : V8EventListener(is_inline, script_state) {}
+    : V8EventListenerOrEventHandler(is_inline, script_state) {}
 
 v8::Local<v8::Value> V8ErrorHandler::CallListenerFunction(
     ScriptState* script_state,
     v8::Local<v8::Value> js_event,
     Event* event) {
   DCHECK(!js_event.IsEmpty());
-  if (!event->HasInterface(EventNames::ErrorEvent))
-    return V8EventListener::CallListenerFunction(script_state, js_event, event);
+  if (!event->HasInterface(EventNames::ErrorEvent)) {
+    return V8EventListenerOrEventHandler::CallListenerFunction(script_state,
+                                                               js_event, event);
+  }
 
   ErrorEvent* error_event = static_cast<ErrorEvent*>(event);
   if (error_event->World() && error_event->World() != &World())
