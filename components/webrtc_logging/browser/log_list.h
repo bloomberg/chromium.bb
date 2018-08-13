@@ -17,9 +17,8 @@ namespace webrtc_logging {
 
 class LogList {
  public:
-  // Creates the upload list with the given callback delegate for a
-  // browser context. The upload list loads and parses a text file list of
-  // WebRTC logs stored locally and/or uploaded.
+  // Creates the upload list for a browser context. The upload list loads and
+  // parses a text file list of WebRTC logs stored locally and/or uploaded.
   static UploadList* CreateWebRtcLogList(
       content::BrowserContext* browser_context);
 
