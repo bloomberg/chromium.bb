@@ -40,7 +40,6 @@ class MockDelegate : public MessageCenterUiDelegate {
     return show_popups_success_;
   }
   void HideMessageCenter() override {}
-  bool ShowNotifierSettings() override { return true; }
 
   bool show_popups_success_ = true;
   bool show_message_center_success_ = true;

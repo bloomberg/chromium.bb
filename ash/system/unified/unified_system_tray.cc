@@ -45,7 +45,6 @@ class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
   void HidePopups() override;
   bool ShowMessageCenter(bool show_by_click) override;
   void HideMessageCenter() override;
-  bool ShowNotifierSettings() override;
 
   MessageCenterUiController* ui_controller() { return ui_controller_.get(); }
 
@@ -107,10 +106,6 @@ bool UnifiedSystemTray::UiDelegate::ShowMessageCenter(bool show_by_click) {
 
 void UnifiedSystemTray::UiDelegate::HideMessageCenter() {
   owner_->HideBubbleInternal();
-}
-
-bool UnifiedSystemTray::UiDelegate::ShowNotifierSettings() {
-  return false;
 }
 
 class UnifiedSystemTray::NetworkStateDelegate

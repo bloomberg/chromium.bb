@@ -181,24 +181,19 @@ class ScrollShadowView : public views::View {
 
 // MessageCenterView ///////////////////////////////////////////////////////////
 
-MessageCenterView::MessageCenterView(
-    MessageCenter* message_center,
-    int max_height,
-    bool initially_settings_visible)
+MessageCenterView::MessageCenterView(MessageCenter* message_center,
+                                     int max_height)
     : message_center_(message_center),
-      settings_visible_(initially_settings_visible),
+      settings_visible_(false),
       is_locked_(Shell::Get()->session_controller()->IsScreenLocked()) {
   if (is_locked_ && !AshMessageCenterLockScreenController::IsEnabled())
     mode_ = Mode::LOCKED;
-  else if (initially_settings_visible)
-    mode_ = Mode::SETTINGS;
 
   message_center_->AddObserver(this);
   set_notify_enter_exit_on_child(true);
   SetFocusBehavior(views::View::FocusBehavior::NEVER);
 
-  button_bar_ = new MessageCenterButtonBar(
-      this, message_center, initially_settings_visible, is_locked_);
+  button_bar_ = new MessageCenterButtonBar(this, message_center, is_locked_);
   button_bar_->SetCloseAllButtonEnabled(false);
 
   const int button_height = button_bar_->GetPreferredSize().height();
@@ -522,11 +517,6 @@ void MessageCenterView::OnQuietModeChanged(bool is_quiet_mode) {
 
 void MessageCenterView::AnimationEnded(const gfx::Animation* animation) {
   DCHECK_EQ(animation, settings_transition_animation_.get());
-
-  message_center::Visibility visibility =
-      mode_ == Mode::SETTINGS ? message_center::VISIBILITY_SETTINGS
-                              : message_center::VISIBILITY_MESSAGE_CENTER;
-  message_center_->SetVisibility(visibility);
 
   if (source_view_) {
     source_view_->SetVisible(false);

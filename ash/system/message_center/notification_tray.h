@@ -85,7 +85,6 @@ class ASH_EXPORT NotificationTray
   void HideMessageCenter() override;
   bool ShowPopups() override;
   void HidePopups() override;
-  bool ShowNotifierSettings() override;
 
   // Activates the notification tray bubble.
   void ActivateBubble();
@@ -108,12 +107,6 @@ class ASH_EXPORT NotificationTray
   FRIEND_TEST_ALL_PREFIXES(NotificationTrayTest, CloseOnActivation);
 
   void UpdateTrayContent();
-
-  // The actual process to show the message center. Set |show_settings| to true
-  // if the message center should be initialized with the settings visible. Set
-  // |show_by_click| to true if the message center is shown by mouse or gesture
-  // click. Returns true if the center is successfully created.
-  bool ShowMessageCenterInternal(bool show_settings, bool show_by_click);
 
   // Queries login status and the status area widget to determine visibility of
   // the message center.

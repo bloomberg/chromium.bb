@@ -12,8 +12,6 @@ enum Visibility {
   VISIBILITY_TRANSIENT = 0,
   // When the message center view is being displayed.
   VISIBILITY_MESSAGE_CENTER,
-  // When the settings view is being displayed.
-  VISIBILITY_SETTINGS,
 };
 
 // Identifies the source of a displayed notification.

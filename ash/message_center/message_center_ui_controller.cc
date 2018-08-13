@@ -107,16 +107,6 @@ void MessageCenterUiController::HidePopupBubbleInternal() {
   popups_visible_ = false;
 }
 
-void MessageCenterUiController::ShowNotifierSettingsBubble() {
-  if (popups_visible_)
-    HidePopupBubbleInternal();
-
-  message_center_visible_ = delegate_->ShowNotifierSettings();
-  message_center_->SetVisibility(message_center::VISIBILITY_SETTINGS);
-
-  NotifyUiControllerChanged();
-}
-
 void MessageCenterUiController::OnNotificationAdded(
     const std::string& notification_id) {
   OnMessageCenterChanged();
@@ -139,11 +129,6 @@ void MessageCenterUiController::OnNotificationClicked(
     const base::Optional<base::string16>& reply) {
   if (popups_visible_)
     OnMessageCenterChanged();
-}
-
-void MessageCenterUiController::OnNotificationSettingsClicked(bool handled) {
-  if (!handled)
-    ShowNotifierSettingsBubble();
 }
 
 void MessageCenterUiController::OnNotificationDisplayed(

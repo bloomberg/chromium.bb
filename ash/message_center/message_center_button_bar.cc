@@ -106,7 +106,6 @@ views::Separator* CreateVerticalSeparator() {
 MessageCenterButtonBar::MessageCenterButtonBar(
     MessageCenterView* message_center_view,
     MessageCenter* message_center,
-    bool settings_initially_visible,
     bool locked)
     : message_center_view_(message_center_view),
       message_center_(message_center),
@@ -191,8 +190,8 @@ MessageCenterButtonBar::MessageCenterButtonBar(
 
   AddChildView(button_container_);
 
-  SetCloseAllButtonEnabled(!settings_initially_visible);
-  SetBackArrowVisible(settings_initially_visible);
+  SetCloseAllButtonEnabled(true);
+  SetBackArrowVisible(false);
 }
 
 MessageCenterButtonBar::~MessageCenterButtonBar() = default;

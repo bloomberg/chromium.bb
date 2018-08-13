@@ -129,9 +129,6 @@ void MessageCenterStatsCollector::OnCenterVisibilityChanged(
       base::RecordAction(
           base::UserMetricsAction("Notifications.ShowMessageCenter"));
       break;
-    case VISIBILITY_SETTINGS:
-      base::RecordAction(base::UserMetricsAction("Notifications.ShowSettings"));
-      break;
   }
 }
 
