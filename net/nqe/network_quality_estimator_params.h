@@ -214,6 +214,10 @@ class NET_EXPORT NetworkQualityEstimatorParams {
     return socket_watchers_min_notification_interval_;
   }
 
+  // Returns true if end-to-end RTT estimates can be used for computing network
+  // quality estimate.
+  bool use_end_to_end_rtt() const { return use_end_to_end_rtt_; }
+
   // Sets the forced effective connection type as |type|.
   void SetForcedEffectiveConnectionTypeForTesting(EffectiveConnectionType type);
 
@@ -243,6 +247,7 @@ class NET_EXPORT NetworkQualityEstimatorParams {
   const base::TimeDelta hanging_request_min_duration_;
   const bool add_default_platform_observations_;
   const base::TimeDelta socket_watchers_min_notification_interval_;
+  const bool use_end_to_end_rtt_;
 
   bool use_small_responses_;
 

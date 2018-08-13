@@ -485,6 +485,10 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
               params_,
               "socket_watchers_min_notification_interval_msec",
               200))),
+      use_end_to_end_rtt_(
+          GetStringValueForVariationParamWithDefaultValue(params_,
+                                                          "use_end_to_end_rtt",
+                                                          "false") == "true"),
       use_small_responses_(false) {
   DCHECK(hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_ == -1 ||
          hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_ > 0);

@@ -176,6 +176,17 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
     rtt_estimate_internal_ = value;
   }
 
+  void set_start_time_null_end_to_end_rtt(const base::TimeDelta rtt) {
+    // Callers should not set effective connection type along with the
+    // lower-layer metrics.
+    DCHECK(!effective_connection_type_ && !recent_effective_connection_type_);
+    start_time_null_end_to_end_rtt_ = rtt;
+  }
+
+  void set_start_time_null_end_to_end_rtt_observation_count(size_t count) {
+    end_to_end_rtt_observation_count_at_last_ect_computation_ = count;
+  }
+
   void SetAccuracyRecordingIntervals(
       const std::vector<base::TimeDelta>& accuracy_recording_intervals);
 
@@ -271,6 +282,9 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
 
   // If set, GetRTTEstimateInternal() would return the set value.
   base::Optional<base::TimeDelta> rtt_estimate_internal_;
+
+  // If set, GetRTTEstimateInternal() would return the set value.
+  base::Optional<base::TimeDelta> start_time_null_end_to_end_rtt_;
 
   // If set, GetBandwidthDelayProductKbits() would return its set value.
   // Otherwise, the base implementation is called.
