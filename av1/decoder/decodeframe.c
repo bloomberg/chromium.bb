@@ -5516,19 +5516,17 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   if (!cm->allow_intrabc && !cm->single_tile_decoding) {
     if (cm->lf.filter_level[0] || cm->lf.filter_level[1]) {
-#if LOOP_FILTER_BITMASK
-      av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb, 1, 0,
-                            num_planes, 0);
-#else
       if (pbi->num_workers > 1) {
         av1_loop_filter_frame_mt(get_frame_new_buffer(cm), cm, &pbi->mb, 0,
                                  num_planes, 0, pbi->tile_workers,
                                  pbi->num_workers, &pbi->lf_row_sync);
       } else {
-        av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb, 0,
-                              num_planes, 0);
-      }
+        av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
+#if LOOP_FILTER_BITMASK
+                              1,
 #endif
+                              0, num_planes, 0);
+      }
     }
 
     const int do_loop_restoration =
