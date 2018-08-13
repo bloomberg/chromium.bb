@@ -4,6 +4,7 @@ include_rules = [
   "+net",
   "+rlz",
   "+ui/base",
+  "+services/network/public",
 
   # rlz is used on iOS.
   "-content",

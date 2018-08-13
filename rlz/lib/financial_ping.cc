@@ -29,6 +29,8 @@
 #include "rlz/lib/rlz_lib.h"
 #include "rlz/lib/rlz_value_store.h"
 #include "rlz/lib/string_utils.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 #if !defined(OS_WIN)
 #include "base/time/time.h"
@@ -61,10 +63,6 @@ class InternetHandle {
 #include "base/time/time.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 #endif
@@ -169,12 +167,12 @@ bool FinancialPing::FormRequest(Product product,
 // The pointer to URLRequestContextGetter used by FinancialPing::PingServer().
 // It is atomic pointer because it can be accessed and modified by multiple
 // threads.
-AtomicWord g_context;
+AtomicWord g_URLLoaderFactory;
 
-bool FinancialPing::SetURLRequestContext(
-    net::URLRequestContextGetter* context) {
-  base::subtle::Release_Store(
-      &g_context, reinterpret_cast<AtomicWord>(context));
+bool FinancialPing::SetURLLoaderFactory(
+    network::mojom::URLLoaderFactory* factory) {
+  base::subtle::Release_Store(&g_URLLoaderFactory,
+                              reinterpret_cast<AtomicWord>(factory));
   return true;
 }
 
@@ -225,31 +223,26 @@ class RefCountedWaitableEvent
   base::WaitableEvent event_;
   base::Lock lock_;
   std::string response_;
-  int response_code_ = net::URLFetcher::RESPONSE_CODE_INVALID;
+  int response_code_ = -1;
 };
 
-// A fetcher delegate that signals an instance of RefCountedWaitableEvent when
-// the fetch completes.
-class FinancialPingUrlFetcherDelegate : public net::URLFetcherDelegate {
- public:
-  FinancialPingUrlFetcherDelegate(scoped_refptr<RefCountedWaitableEvent> event)
-      : event_(std::move(event)) {}
-
-  void SetFetcher(std::unique_ptr<net::URLFetcher> fetcher) {
-    fetcher_ = std::move(fetcher);
+// The URL load complete callback signals an instance of
+// RefCountedWaitableEvent when the load completes.
+void OnURLLoadComplete(std::unique_ptr<network::SimpleURLLoader> url_loader,
+                       scoped_refptr<RefCountedWaitableEvent> event,
+                       std::unique_ptr<std::string> response_body) {
+  int response_code = -1;
+  if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers) {
+    response_code = url_loader->ResponseInfo()->headers->response_code();
   }
 
- private:
-  void OnURLFetchComplete(const net::URLFetcher* source) override {
-    std::string response;
-    source->GetResponseAsString(&response);
-    event_->SignalFetchComplete(source->GetResponseCode(), std::move(response));
-    base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  std::string response;
+  if (response_body) {
+    response = std::move(*response_body);
   }
 
-  scoped_refptr<RefCountedWaitableEvent> event_;
-  std::unique_ptr<net::URLFetcher> fetcher_;
-};
+  event->SignalFetchComplete(response_code, std::move(response));
+}
 
 bool send_financial_ping_interrupted_for_test = false;
 
@@ -260,7 +253,7 @@ void ShutdownCheck(scoped_refptr<RefCountedWaitableEvent> event) {
   if (base::subtle::Acquire_Load(&g_cancelShutdownCheck))
     return;
 
-  if (!base::subtle::Acquire_Load(&g_context)) {
+  if (!base::subtle::Acquire_Load(&g_URLLoaderFactory)) {
     send_financial_ping_interrupted_for_test = true;
     event->SignalShutdown();
     return;
@@ -276,21 +269,17 @@ void ShutdownCheck(scoped_refptr<RefCountedWaitableEvent> event) {
 
 void PingRlzServer(std::string url,
                    scoped_refptr<RefCountedWaitableEvent> event) {
-  // Copy the pointer to stack because g_context may be set to NULL
+  // Copy the pointer to stack because g_URLLoaderFactory may be set to NULL
   // in different thread. The instance is guaranteed to exist while
   // the method is running.
-  net::URLRequestContextGetter* context =
-      reinterpret_cast<net::URLRequestContextGetter*>(
-          base::subtle::Acquire_Load(&g_context));
+  network::mojom::URLLoaderFactory* url_loader_factory =
+      reinterpret_cast<network::mojom::URLLoaderFactory*>(
+          base::subtle::Acquire_Load(&g_URLLoaderFactory));
 
-  // Browser shutdown will cause the context to be reset to NULL.
+  // Browser shutdown will cause the factory to be reset to NULL.
   // ShutdownCheck will catch this.
-  if (!context)
+  if (!url_loader_factory)
     return;
-
-  // Delegate will delete itself when the fetch completes.
-  FinancialPingUrlFetcherDelegate* delegate =
-      new FinancialPingUrlFetcherDelegate(event);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("rlz_ping", R"(
@@ -315,21 +304,22 @@ void PingRlzServer(std::string url,
           setting: "This feature cannot be disabled in settings."
           policy_exception_justification: "Not implemented."
         })");
-  std::unique_ptr<net::URLFetcher> fetcher = net::URLFetcher::Create(
-      GURL(url), net::URLFetcher::GET, delegate, traffic_annotation);
-
-  fetcher->SetLoadFlags(
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GURL(url);
+  resource_request->load_flags =
       net::LOAD_DISABLE_CACHE | net::LOAD_DO_NOT_SEND_AUTH_DATA |
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
 
-  // Ensure rlz_lib::SetURLRequestContext() has been called before sending
-  // pings.
-  fetcher->SetRequestContext(context);
-  fetcher->Start();
+  auto url_loader = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
 
-  // Pass ownership of the fetcher to the delegate.  Otherwise the fetch will
-  // be canceled when the URLFetcher object is destroyed.
-  delegate->SetFetcher(std::move(fetcher));
+  // Pass ownership of the loader to the bound function. Otherwise the load will
+  // be canceled when the SimpleURLLoader object is destroyed.
+  auto* url_loader_ptr = url_loader.get();
+  url_loader_ptr->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory,
+      base::BindOnce(&OnURLLoadComplete, std::move(url_loader),
+                     std::move(event)));
 }
 #endif
 
@@ -426,7 +416,7 @@ FinancialPing::PingResponse FinancialPing::PingServer(const char* request,
   if (!is_signaled)
     return PING_FAILURE;
 
-  if (event->GetResponseCode() == net::URLFetcher::RESPONSE_CODE_INVALID) {
+  if (event->GetResponseCode() == -1) {
     return PING_SHUTDOWN;
   } else if (event->GetResponseCode() != 200) {
     return PING_FAILURE;

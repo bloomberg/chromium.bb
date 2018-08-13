@@ -36,7 +36,7 @@ class ChromeRLZTrackerDelegate : public rlz::RLZTrackerDelegate,
   // RLZTrackerDelegate implementation.
   void Cleanup() override;
   bool IsOnUIThread() override;
-  net::URLRequestContextGetter* GetRequestContext() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool GetBrand(std::string* brand) override;
   bool IsBrandOrganic(const std::string& brand) override;
   bool GetReactivationBrand(std::string* brand) override;
