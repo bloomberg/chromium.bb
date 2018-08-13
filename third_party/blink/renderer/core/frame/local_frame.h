@@ -35,6 +35,7 @@
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom-blink.h"
+#include "third_party/blink/public/platform/reporting.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -369,6 +370,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   SmoothScrollSequencer& GetSmoothScrollSequencer();
 
+  void ReportFeaturePolicyViolation(mojom::FeaturePolicyFeature) const override;
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -402,6 +405,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // FrameScheduler::Delegate overrides:
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
+
+  const mojom::blink::ReportingServiceProxyPtr& GetReportingService() const;
 
   std::unique_ptr<FrameScheduler> frame_scheduler_;
 
@@ -457,6 +462,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   Member<SmoothScrollSequencer> smooth_scroll_sequencer_;
 
   InterfaceRegistry* const interface_registry_;
+  // This is declared mutable so that the service endpoint can be cached by
+  // const methods.
+  mutable mojom::blink::ReportingServiceProxyPtr reporting_service_;
 
   IntRect remote_viewport_intersection_;
   std::unique_ptr<FrameResourceCoordinator> frame_resource_coordinator_;

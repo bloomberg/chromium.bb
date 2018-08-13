@@ -51,6 +51,7 @@ blink_core_sources("frame") {
     "event_handler_registry.cc",
     "event_handler_registry.h",
     "external.h",
+    "feature_policy_violation_report_body.h",
     "find_in_page.cc",
     "find_in_page.h",
     "frame.cc",

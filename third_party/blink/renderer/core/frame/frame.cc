@@ -248,14 +248,18 @@ bool Frame::ConsumeTransientUserActivation(
              : UserGestureIndicator::ConsumeUserGesture();
 }
 
-bool Frame::IsFeatureEnabled(mojom::FeaturePolicyFeature feature) const {
+bool Frame::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
+                             ReportOptions report_on_failure) const {
   FeaturePolicy* feature_policy = GetSecurityContext()->GetFeaturePolicy();
   // The policy should always be initialized before checking it to ensure we
   // properly inherit the parent policy.
   DCHECK(feature_policy);
 
-  // Otherwise, check policy.
-  return feature_policy->IsFeatureEnabled(feature);
+  if (feature_policy->IsFeatureEnabled(feature))
+    return true;
+  if (report_on_failure == ReportOptions::kReportOnFailure)
+    ReportFeaturePolicyViolation(feature);
+  return false;
 }
 
 void Frame::SetOwner(FrameOwner* owner) {
