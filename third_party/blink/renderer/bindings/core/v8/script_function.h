@@ -41,14 +41,13 @@ namespace blink {
 // A common way of using ScriptFunction is as follows:
 //
 // class DerivedFunction : public ScriptFunction {
-//     // This returns a V8 function which the DerivedFunction is bound to.
-//     // The DerivedFunction is destructed when the V8 function is
-//     // garbage-collected.
-//     static v8::Local<v8::Function> createFunction(ScriptState* scriptState)
-//     {
-//         DerivedFunction* self = new DerivedFunction(scriptState);
-//         return self->bindToV8Function();
-//     }
+//   // This returns a V8 function which the DerivedFunction is bound to.
+//   // The DerivedFunction is destroyed when the V8 function is
+//   // garbage-collected.
+//   static v8::Local<v8::Function> CreateFunction(ScriptState* script_state) {
+//     DerivedFunction* self = new DerivedFunction(script_state);
+//     return self->BindToV8Function();
+//   }
 // };
 class CORE_EXPORT ScriptFunction
     : public GarbageCollectedFinalized<ScriptFunction> {
@@ -65,7 +64,14 @@ class CORE_EXPORT ScriptFunction
   v8::Local<v8::Function> BindToV8Function();
 
  private:
-  virtual ScriptValue Call(ScriptValue) = 0;
+  // Subclasses should implement one of Call() or CallRaw(). Most will implement
+  // Call().
+  virtual ScriptValue Call(ScriptValue);
+
+  // To support more than one argument, or for low-level access to the V8 API,
+  // implement CallRaw(). The default implementation delegates to Call().
+  virtual void CallRaw(const v8::FunctionCallbackInfo<v8::Value>&);
+
   static void CallCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
   Member<ScriptState> script_state_;
