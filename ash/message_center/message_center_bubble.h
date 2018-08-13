@@ -41,8 +41,6 @@ class MessageCenterBubble : public views::WidgetObserver,
   void SetMaxHeight(int height);
   int max_height() const { return max_height_; }
 
-  void SetSettingsVisible();
-
   // Called after the bubble view has been constructed. Creates and initializes
   // the bubble contents.
   void InitializeContents(views::TrayBubbleView* bubble_view);
@@ -66,9 +64,6 @@ class MessageCenterBubble : public views::WidgetObserver,
   // child view of |bubble_view_|. They're added to the view tree by calling
   // InitializeContents.
   MessageCenterView* message_center_view_ = nullptr;
-
-  // Use settings view as the initially visible content if true.
-  bool initially_settings_visible_ = false;
 
   int max_height_;
 

@@ -344,8 +344,7 @@ void NotificationTray::DisableAnimationsForTest(bool disable) {
 
 // Public methods.
 
-bool NotificationTray::ShowMessageCenterInternal(bool show_settings,
-                                                 bool show_by_click) {
+bool NotificationTray::ShowMessageCenter(bool show_by_click) {
   if (!ShouldShowMessageCenter())
     return false;
 
@@ -365,9 +364,6 @@ bool NotificationTray::ShowMessageCenterInternal(bool show_settings,
   // screen. This padding should be applied in all types of shelf alignment.
   message_center_bubble->SetMaxHeight(max_height - kPaddingFromScreenTop);
 
-  if (show_settings)
-    message_center_bubble->SetSettingsVisible();
-
   // For vertical shelf alignments, anchor to the NotificationTray, but for
   // horizontal (i.e. bottom) shelves, anchor to the system tray.
   TrayBackgroundView* anchor_tray = this;
@@ -380,10 +376,6 @@ bool NotificationTray::ShowMessageCenterInternal(bool show_settings,
   shelf()->UpdateAutoHideState();
   SetIsActive(true);
   return true;
-}
-
-bool NotificationTray::ShowMessageCenter(bool show_by_click) {
-  return ShowMessageCenterInternal(false /* show_settings */, show_by_click);
 }
 
 void NotificationTray::HideMessageCenter() {
@@ -500,16 +492,6 @@ bool NotificationTray::ShouldEnableExtraKeyboardAccessibility() {
 
 void NotificationTray::HideBubble(const views::TrayBubbleView* bubble_view) {
   HideBubbleWithView(bubble_view);
-}
-
-bool NotificationTray::ShowNotifierSettings() {
-  if (IsMessageCenterVisible()) {
-    static_cast<MessageCenterBubble*>(message_center_bubble()->bubble())
-        ->SetSettingsVisible();
-    return true;
-  }
-  return ShowMessageCenterInternal(true /* show_settings */,
-                                   false /* show_by_click */);
 }
 
 void NotificationTray::OnMessageCenterContentsChanged() {

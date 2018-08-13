@@ -50,9 +50,6 @@ class ASH_EXPORT MessageCenterUiController
   // Returns whether the popup was visible before.
   bool HidePopupBubble();
 
-  // Toggles the visibility of the settings view in the message center bubble.
-  void ShowNotifierSettingsBubble();
-
   bool message_center_visible() { return message_center_visible_; }
   bool popups_visible() { return popups_visible_; }
   MessageCenterUiDelegate* delegate() { return delegate_; }
@@ -73,7 +70,6 @@ class ASH_EXPORT MessageCenterUiController
       const std::string& notification_id,
       const base::Optional<int>& button_index,
       const base::Optional<base::string16>& reply) override;
-  void OnNotificationSettingsClicked(bool handled) override;
   void OnNotificationDisplayed(
       const std::string& notification_id,
       const message_center::DisplaySource source) override;

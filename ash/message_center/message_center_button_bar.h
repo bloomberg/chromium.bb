@@ -34,7 +34,6 @@ class MessageCenterButtonBar : public views::View,
  public:
   MessageCenterButtonBar(MessageCenterView* message_center_view,
                          message_center::MessageCenter* message_center,
-                         bool settings_initially_visible,
                          bool locked);
   ~MessageCenterButtonBar() override;
 
