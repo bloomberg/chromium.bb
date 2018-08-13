@@ -261,9 +261,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/797998
     "race:content::SandboxIPCHandler::HandleLocaltime\n"
 
-    //
-    "race:third_party/harfbuzz-ng/src/*\n"
-
     // End of suppressions.
     ;  // Please keep this semicolon.
 
