@@ -15,9 +15,23 @@ class AuthContext;
 class CastMessage;
 class DeviceAuthMessage;
 
+// Reserved message namespaces for internal messages.
+static constexpr char kCastInternalNamespacePrefix[] =
+    "urn:x-cast:com.google.cast.";
+static constexpr char kAuthNamespace[] =
+    "urn:x-cast:com.google.cast.tp.deviceauth";
+static constexpr char kHeartbeatNamespace[] =
+    "urn:x-cast:com.google.cast.tp.heartbeat";
+static constexpr char kConnectionNamespace[] =
+    "urn:x-cast:com.google.cast.tp.connection";
+static constexpr char kReceiverNamespace[] =
+    "urn:x-cast:com.google.cast.receiver";
+static constexpr char kBroadcastNamespace[] =
+    "urn:x-cast:com.google.cast.broadcast";
+
 // Sender and receiver IDs to use for platform messages.
-constexpr char kPlatformSenderId[] = "sender-0";
-constexpr char kPlatformReceiverId[] = "receiver-0";
+static constexpr char kPlatformSenderId[] = "sender-0";
+static constexpr char kPlatformReceiverId[] = "receiver-0";
 
 // Cast application protocol message types.
 enum class CastMessageType {
@@ -46,12 +60,8 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryFromCastMessage(
 // messages.
 bool IsCastInternalNamespace(const std::string& message_namespace);
 
-// Parses the JSON-encoded payload of |message| and returns the value in the
-// "type" field or |kUnknown| if the parse fails or the field is not found.
-// The result is only valid if |message| is a Cast application protocol message.
-CastMessageType ParseMessageType(const CastMessage& message);
-
-// Similar to |ParseMessageType()|, but |payload| is already JSON-parsed.
+// Returns the value in the "type" field or |kOther| if the field is not found.
+// The result is only valid if |payload| is a Cast application protocol message.
 CastMessageType ParseMessageTypeFromPayload(const base::Value& payload);
 
 // Returns a human readable string for |message_type|.
