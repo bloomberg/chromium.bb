@@ -9,11 +9,12 @@ import org.chromium.content_public.browser.ChildProcessImportance;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Iterator;
 
 /**
  * Ranking of ChildProcessConnections for a particular ChildConnectionAllocator.
  */
-public class ChildProcessRanking {
+public class ChildProcessRanking implements Iterable<ChildProcessConnection> {
     private static class ConnectionWithRank {
         public final ChildProcessConnection connection;
 
@@ -86,6 +87,32 @@ public class ChildProcessRanking {
         }
     }
 
+    private class ReverseRankIterator implements Iterator<ChildProcessConnection> {
+        private final int mSizeOnConstruction;
+        private int mNextIndex;
+
+        public ReverseRankIterator() {
+            mSizeOnConstruction = ChildProcessRanking.this.mSize;
+            mNextIndex = mSizeOnConstruction - 1;
+        }
+
+        @Override
+        public boolean hasNext() {
+            modificationCheck();
+            return mNextIndex >= 0;
+        }
+
+        @Override
+        public ChildProcessConnection next() {
+            modificationCheck();
+            return ChildProcessRanking.this.mRankings[mNextIndex--].connection;
+        }
+
+        private void modificationCheck() {
+            assert mSizeOnConstruction == ChildProcessRanking.this.mSize;
+        }
+    }
+
     private static final RankComparator COMPARATOR = new RankComparator();
 
     // Not the most theoretically efficient data structure, but is good enough
@@ -95,6 +122,15 @@ public class ChildProcessRanking {
 
     public ChildProcessRanking(int maxSize) {
         mRankings = new ConnectionWithRank[maxSize];
+    }
+
+    /**
+     * Iterate from lowest to highest rank. Ranking should not be modified during iteration,
+     * including using Iterator.delete.
+     */
+    @Override
+    public Iterator<ChildProcessConnection> iterator() {
+        return new ReverseRankIterator();
     }
 
     public void addConnection(ChildProcessConnection connection, boolean foreground,

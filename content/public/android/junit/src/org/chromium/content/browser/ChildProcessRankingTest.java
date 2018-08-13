@@ -28,6 +28,12 @@ public class ChildProcessRankingTest {
 
     private void assertRankingAndRemoveAll(
             ChildProcessRanking ranking, ChildProcessConnection[] connections) {
+        int index = connections.length;
+        for (ChildProcessConnection c : ranking) {
+            Assert.assertEquals(connections[--index], c);
+        }
+        Assert.assertEquals(0, index);
+
         for (int i = connections.length - 1; i >= 0; i--) {
             Assert.assertEquals(connections[i], ranking.getLowestRankedConnection());
             ranking.removeConnection(connections[i]);

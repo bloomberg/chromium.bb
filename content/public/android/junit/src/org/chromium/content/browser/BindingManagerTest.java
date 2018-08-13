@@ -28,6 +28,7 @@ import org.chromium.base.test.TestChildProcessConnection;
 import org.chromium.base.test.util.Feature;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Unit tests for BindingManager and ChildProcessConnection.
@@ -40,7 +41,7 @@ import java.util.ArrayList;
 public class BindingManagerTest {
     // Creates a mocked ChildProcessConnection that is optionally added to a BindingManager.
     private static ChildProcessConnection createTestChildProcessConnection(
-            int pid, BindingManager manager) {
+            int pid, BindingManager manager, List<ChildProcessConnection> iterable) {
         TestChildProcessConnection connection = new TestChildProcessConnection(
                 new ComponentName("org.chromium.test", "TestService"),
                 false /* bindToCallerCheck */, false /* bindAsExternalService */,
@@ -48,6 +49,7 @@ public class BindingManagerTest {
         connection.setPid(pid);
         connection.start(false /* useStrongBinding */, null /* serviceCallback */);
         manager.increaseRecency(connection);
+        iterable.add(connection);
         connection.removeModerateBinding(); // Remove initial binding.
         return connection;
     }
@@ -57,13 +59,16 @@ public class BindingManagerTest {
     // Created in setUp() for convenience.
     BindingManager mManager;
 
+    List<ChildProcessConnection> mIterable;
+
     @Before
     public void setUp() {
         // The tests run on only one thread. Pretend that is the launcher thread so LauncherThread
         // asserts are not triggered.
         LauncherThread.setCurrentThreadAsLauncherThread();
         mActivity = Robolectric.buildActivity(Activity.class).setup().get();
-        mManager = new BindingManager(mActivity, 4, true);
+        mIterable = new ArrayList<>();
+        mManager = new BindingManager(mActivity, 4, mIterable, true);
     }
 
     @After
@@ -82,7 +87,7 @@ public class BindingManagerTest {
 
         ChildProcessConnection[] connections = new ChildProcessConnection[3];
         for (int i = 0; i < connections.length; i++) {
-            connections[i] = createTestChildProcessConnection(i + 1 /* pid */, manager);
+            connections[i] = createTestChildProcessConnection(i + 1 /* pid */, manager, mIterable);
         }
 
         // Verify that each connection has a moderate binding after binding and releasing a strong
@@ -134,7 +139,7 @@ public class BindingManagerTest {
 
         ChildProcessConnection[] connections = new ChildProcessConnection[4];
         for (int i = 0; i < connections.length; i++) {
-            connections[i] = createTestChildProcessConnection(i + 1 /* pid */, manager);
+            connections[i] = createTestChildProcessConnection(i + 1 /* pid */, manager, mIterable);
         }
 
         for (ChildProcessConnection connection : connections) {
@@ -167,15 +172,17 @@ public class BindingManagerTest {
 
         ChildProcessConnection[] connections = new ChildProcessConnection[4];
         for (int i = 0; i < connections.length; i++) {
-            connections[i] = createTestChildProcessConnection(i + 1 /* pid */, manager);
+            connections[i] = createTestChildProcessConnection(i + 1 /* pid */, manager, mIterable);
         }
 
         for (Pair<Integer, Integer> pair : levelAndExpectedVictimCountList) {
             String message = "Failed for the level=" + pair.first;
+            mIterable.clear();
             // Verify that each connection has a moderate binding after binding and releasing a
             // strong binding.
             for (ChildProcessConnection connection : connections) {
                 manager.increaseRecency(connection);
+                mIterable.add(connection);
                 Assert.assertTrue(message, connection.isModerateBindingBound());
             }
 
@@ -197,7 +204,7 @@ public class BindingManagerTest {
     public void testModerateBindingTillBackgroundedSentToBackground() {
         BindingManager manager = mManager;
 
-        ChildProcessConnection connection = createTestChildProcessConnection(0, manager);
+        ChildProcessConnection connection = createTestChildProcessConnection(0, manager, mIterable);
         Assert.assertTrue(connection.isModerateBindingBound());
 
         manager.onSentToBackground();
