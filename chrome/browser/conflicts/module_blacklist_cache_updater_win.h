@@ -63,19 +63,27 @@ class SequencedTaskRunner;
 // blacklist.
 class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
  public:
-  // The decision that explains why a particular module was added to the
-  // blacklist or not.
+  // A decision that explains whether or not a module is to be blocked. This
+  // decision is made with respect to the logic in the currently running
+  // executable and the current version of the module list. It may not
+  // correspond with the blocking decisions that were enforced by the blocking
+  // logic in chrome_elf during early startup. Those decisions are cached from
+  // the previous browser launch which may be with respect to (a) an entirely
+  // different version of the browser and/or (b) an entirely different version
+  // of the module list.
   //
   // Note that this enum is very similar to the ModuleWarningDecision in
   // IncompatibleApplicationsUpdater. This is done so that it is easier to keep
   // the 2 features separate, as they can be independently enabled/disabled.
-  enum ModuleBlockingDecision {
+  enum class ModuleBlockingDecision {
     // Explicitly defined as zero so it is the default value when a
     // ModuleBlockingDecision variable is value-initialized
     // (std::vector::resize()).
     kUnknown = 0,
-    // A shell extension or IME that is not loaded in the process yet.
-    kNotLoaded,
+
+    // Detailed reasons why modules will be allowed to load in subsequent
+    // startups.
+
     // Input method editors are allowed.
     kAllowedIME,
     // Allowed because the certificate's subject of the module matches the
@@ -90,18 +98,44 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
     kAllowedMicrosoft,
     // Explicitly whitelisted by the Module List component.
     kAllowedWhitelisted,
+    // New "allowed" reasons should be added here!
+
     // Unwanted, but allowed to load by the Module List component. This is
     // usually because blocking the module would cause more stability issues
     // than allowing it. If the IncompatibleApplicationsWarning feature is
-    // enabled, this module may cause a warning, depending on if it can be tied
-    // back to an installed application.
+    // enabled, this module will cause a warning if it can be tied back to an
+    // installed application.
     kTolerated,
-    // Blacklisted and will be blocked next launch.
-    kBlacklisted,
-    // The module was blocked from loading into the process.
-    kBlocked,
-    // This module should have been blocked but wasn't.
-    kBypassedBlocking,
+
+    // Detailed reasons why modules will not be allowed to load in subsequent
+    // startups.
+
+    // The module will be blocked because it is explicitly listed in the module
+    // blacklist.
+    kDisallowedExplicit,
+    // The module will be implicitly blocked because it is not otherwise
+    // whitelisted.
+    kDisallowedImplicit,
+    // New "disallowed" reasons should be added here!
+  };
+
+  struct ModuleBlockingState {
+    // Whether or not the module was in the blacklist cache that existed at
+    // startup.
+    bool was_in_blacklist_cache;
+
+    // Whether or not the module was ever actively blocked from loading during
+    // this session.
+    bool was_blocked;
+
+    // Whether or not the module ever loaded during this session. Usually this
+    // means that the module is currently loaded, but it's possible for DLLs to
+    // subsequently be unloaded at runtime.
+    bool was_loaded;
+
+    // The current blocking decision. This is synced to the cache and will be
+    // applied at the next startup.
+    ModuleBlockingDecision blocking_decision;
   };
 
   struct CacheUpdateResult {
@@ -149,11 +183,34 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
   void OnModuleDatabaseIdle() override;
 
   // Returns the blocking decision for a module.
-  ModuleBlockingDecision GetModuleBlockingDecision(
+  const ModuleBlockingState& GetModuleBlockingState(
       ModuleInfoKey module_key) const;
 
  private:
+  // The state of the module with respect to the ModuleList.
+  enum class ModuleListState {
+    // The module is not in the module list at all.
+    kUnlisted,
+    // The module is in the module list and is explicitly whitelisted.
+    kWhitelisted,
+    // The module is in the module list and "blacklisted", but loading is
+    // tolerated.
+    kTolerated,
+    // The module is explicitly blacklisted.
+    kBlacklisted,
+  };
+
   void OnTimerExpired();
+
+  // Gets the state of a module with respect to the module list.
+  ModuleListState DetermineModuleListState(const ModuleInfoKey& module_key,
+                                           const ModuleInfoData& module_data);
+
+  // Determines whether or not a module *should* be whitelisted or blacklisted
+  // on the next startup. Returns a ModuleBlockingDecision.
+  ModuleBlockingDecision DetermineModuleBlockingDecision(
+      const ModuleInfoKey& module_key,
+      const ModuleInfoData& module_data);
 
   // Posts the task to update the cache on |background_sequence_|.
   void StartModuleBlacklistCacheUpdate();
@@ -185,9 +242,9 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
   // OnModuleDatabaseIdle() is never called again.
   base::OneShotTimer timer_;
 
-  // Holds the blocking decision for all known modules. The index is the module
+  // Holds the blocking state for all known modules. The index is the module
   // id.
-  std::vector<ModuleBlockingDecision> module_blocking_decisions_;
+  std::vector<ModuleBlockingState> module_blocking_state_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
