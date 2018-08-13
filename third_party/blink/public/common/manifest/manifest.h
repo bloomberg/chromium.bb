@@ -61,6 +61,16 @@ struct BLINK_COMMON_EXPORT Manifest {
     std::vector<Purpose> purpose;
   };
 
+  // Structure representing a Web Share target's query parameter keys.
+  struct BLINK_COMMON_EXPORT ShareTargetParams {
+    ShareTargetParams();
+    ~ShareTargetParams();
+
+    base::NullableString16 title;
+    base::NullableString16 text;
+    base::NullableString16 url;
+  };
+
   // Structure representing how a Web Share target handles an incoming share.
   struct BLINK_COMMON_EXPORT ShareTarget {
     ShareTarget();
@@ -68,7 +78,13 @@ struct BLINK_COMMON_EXPORT Manifest {
 
     // The URL template that contains placeholders to be replaced with shared
     // data. Empty if the parsing failed.
+    // TODO(ckitagawa): Remove this once |action| has replaced it everywhere.
     GURL url_template;
+
+    // The URL used for sharing. Query parameters are added to this comprised of
+    // keys from |params| and values from the shared data.
+    GURL action;
+    ShareTargetParams params;
   };
 
   // Structure representing a related application.
