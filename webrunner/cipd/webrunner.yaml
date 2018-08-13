@@ -14,10 +14,16 @@
 # To create a CIPD package, run the following command from the build output
 # directory.
 #
-# cipd create --pkg-def ../../webrunner/cipd/webrunner.yaml \
-#             -pkg-var targetarch:$TARGET_ARCH \
-#             -pkg-var outdir:`pwd` \
-#             -tag version:$(cat fuchsia_artifacts/build_id.txt)
+# $ cipd create --pkg-def ../../webrunner/cipd/webrunner.yaml \
+#               -pkg-var targetarch:$TARGET_ARCH \
+#               -pkg-var outdir:`pwd` \
+#               -ref latest \
+#               -tag version:$(cat fuchsia_artifacts/build_id.txt)
+#
+# The most recent package can be discovered by searching for the "latest" ref:
+#
+# $ cipd describe chromium/fuchsia/webrunner-$TARGET_ARCH -version latest
+
 package: chromium/fuchsia/webrunner-${targetarch}
 description: Prebuilt Chrome and Web Runner binaries for Fuchsia.
 root: ${outdir}/fuchsia_artifacts
