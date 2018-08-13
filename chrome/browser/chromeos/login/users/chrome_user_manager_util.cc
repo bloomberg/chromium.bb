@@ -66,6 +66,10 @@ bool IsManagedSessionEnabled(const user_manager::User* active_user) {
           ->policy_map()
           .Get(policy::key::kDeviceLocalAccountManagedSessionEnabled);
 
+  // If the policy is not set, enable managed session by default.
+  if (!entry)
+    return true;
+
   return entry && entry->value && entry->value->GetBool();
 }
 
