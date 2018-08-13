@@ -84,9 +84,6 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   // The unique id for the associated label's accessible object.
   int32_t label_ax_id_;
 
-  // The focus ring to use for this Checkbox.
-  std::unique_ptr<FocusRing> focus_ring_;
-
   DISALLOW_COPY_AND_ASSIGN(Checkbox);
 };
 
