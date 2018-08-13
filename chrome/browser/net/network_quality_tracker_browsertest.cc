@@ -168,8 +168,11 @@ IN_PROC_BROWSER_TEST_F(NetworkQualityTrackerBrowserTest,
   EXPECT_NE(nullptr, tracker);
 
   base::RunLoop run_loop;
+  SimulateNetworkQualityChange(net::EFFECTIVE_CONNECTION_TYPE_4G);
   TestNetworkQualityObserver network_quality_observer(tracker);
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+  network_quality_observer.WaitForNotification(
+      net::EFFECTIVE_CONNECTION_TYPE_4G);
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_4G,
             network_quality_observer.effective_connection_type());
 
   SimulateNetworkQualityChange(net::EFFECTIVE_CONNECTION_TYPE_3G);
@@ -177,8 +180,17 @@ IN_PROC_BROWSER_TEST_F(NetworkQualityTrackerBrowserTest,
       net::EFFECTIVE_CONNECTION_TYPE_3G);
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_3G,
             network_quality_observer.effective_connection_type());
+
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, network_quality_observer.num_notifications());
+
+  // Verify that not too many effective connection type observations are
+  // received. Note that setting the effective connection type to UNKNOWN above,
+  // and adding the observer is racy. In some cases, the observer may receiver
+  // the notification about effective connection type being UNKNOWN, followed
+  // by other notifications.
+  EXPECT_LE(1u, network_quality_observer.num_notifications());
+  EXPECT_GE(5u, network_quality_observer.num_notifications());
+
   // Typical RTT and downlink values when effective connection type is 3G. Taken
   // from net::NetworkQualityEstimatorParams.
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(450),
