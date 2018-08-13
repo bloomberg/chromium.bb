@@ -58,6 +58,12 @@
 // Open a new incognito tab via the tools menu.
 + (void)openNewIncognitoTab;
 
+// Open and clear browsing data from history.
++ (void)openAndClearBrowsingDataFromHistory;
+
+// Assert that history is empty.
++ (void)assertHistoryHasNoEntries;
+
 // Reloads the page via the reload button, and does not wait for the page to
 // finish loading.
 + (void)reload;
