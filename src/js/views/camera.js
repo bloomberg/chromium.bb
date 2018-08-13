@@ -93,12 +93,19 @@ camera.views.Camera = function(context, router, model) {
   this.toast_ = new camera.views.Toast();
 
   /**
-   * Options for the camera-view.
+   * Options for the camera.
    * @type {camera.views.camera.Options}
    * @private
    */
   this.options_ = new camera.views.camera.Options(
       router, this.stop_.bind(this));
+
+  /**
+   * Record-time for the elapsed recording time.
+   * @type {camera.views.camera.RecordTime}
+   * @private
+   */
+  this.recordTime_ = new camera.views.camera.RecordTime();
 
   /**
    * Button for going to the gallery.
@@ -113,13 +120,6 @@ camera.views.Camera = function(context, router, model) {
    * @private
    */
   this.shutterButton_ = document.querySelector('#take-picture');
-
-  /**
-   * Timer for elapsed recording time for video recording.
-   * @type {?number}
-   * @private
-   */
-  this.recordingTimer_ = null;
 
   /**
    * @type {string}
@@ -300,55 +300,6 @@ camera.views.Camera.prototype.showToastMessage_ = function(message, named) {
 };
 
 /**
- * Starts to show the timer of elapsed recording time.
- * TODO(yuli): Extract recording-timer as RecordTime.show/hide.
- * @private
- */
-camera.views.Camera.prototype.showRecordingTimer_ = function() {
-  // Format number of seconds into "HH:MM:SS" string.
-  var formatSeconds = function(seconds) {
-    var sec = seconds % 60;
-    var min = Math.floor(seconds / 60) % 60;
-    var hr = Math.floor(seconds / 3600);
-    if (sec < 10) {
-      sec = '0' + sec;
-    }
-    if (min < 10) {
-      min = '0' + min;
-    }
-    if (hr < 10) {
-      hr = '0' + hr;
-    }
-    return hr + ':' + min + ':' + sec;
-  };
-
-  var timerElement = document.querySelector('#recording-timer');
-  timerElement.classList.add('visible');
-  var timerTicks = 0;
-  timerElement.textContent = formatSeconds(timerTicks);
-
-  this.recordingTimer_ = setInterval(function() {
-    timerTicks++;
-    timerElement.textContent = formatSeconds(timerTicks);
-  }, 1000);
-};
-
-/**
- * Stops and hides the timer of recording time.
- * @private
- */
-camera.views.Camera.prototype.hideRecordingTimer_ = function() {
-  if (this.recordingTimer_) {
-    clearInterval(this.recordingTimer_);
-    this.recordingTimer_ = null;
-  }
-
-  var timerElement = document.querySelector('#recording-timer');
-  timerElement.textContent = '';
-  timerElement.classList.remove('visible');
-};
-
-/**
  * Begins to take photo or recording with the current options, e.g. timer.
  * @private
  */
@@ -432,7 +383,7 @@ camera.views.Camera.prototype.createRecordingBlob_ = function() {
     var onstop = (event) => {
       this.mediaRecorder_.removeEventListener('dataavailable', ondataavailable);
       this.mediaRecorder_.removeEventListener('stop', onstop);
-      this.hideRecordingTimer_();
+      this.recordTime_.stop();
       this.shutterButton_.classList.remove('flash');
       this.setShutterLabel_('recordVideoStartButton');
 
@@ -451,7 +402,7 @@ camera.views.Camera.prototype.createRecordingBlob_ = function() {
     // Start recording and update the UI for the ongoing recording.
     this.mediaRecorder_.start();
     this.shutterButton_.classList.add('flash');
-    this.showRecordingTimer_();
+    this.recordTime_.start();
 
     // Re-enable the shutter button to stop recording later and flash the
     // shutter button until the recording is stopped.

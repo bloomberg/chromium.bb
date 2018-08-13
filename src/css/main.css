@@ -450,11 +450,12 @@ body.browser #browser {
   left: 0;
   right: 0;
   top: 0;
-  opacity: 0;
+  opacity: 0.5;
+  visibility: hidden;
 }
 
 body.capturing #preview-grid.visible {
-  opacity: 0.5;
+  visibility: visible;
 }
 
 #preview-grid-horizontal {
@@ -506,16 +507,36 @@ body.capturing #preview-grid.visible {
   opacity: 1;
 }
 
-#recording-timer {
-  color: white;
-  font-size: 16px;
-  width: 70px;
+#record-time {
+  align-items: center;
+  display: flex;
+  justify-content: flex-start;
+  pointer-events: none;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
   height: 32px;
-  opacity: 0;
+  padding: 0 12px;
+  visibility: hidden;
 }
 
-#recording-timer.visible {
-  opacity: 1;
+#record-time.visible {
+  visibility: visible;
+}
+
+#record-time .icon {
+  flex-shrink: 0;
+  background-color: #ea4335;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+#record-time #record-time-msg {
+  flex-shrink: 0;
+  color: white;
+  font-size: 13px;
+  font-family: 'Roboto', sans-serif;
+  margin-left: 8px;
 }
 
 #browser .buttons {
