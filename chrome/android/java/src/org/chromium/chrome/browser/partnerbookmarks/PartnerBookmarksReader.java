@@ -124,7 +124,7 @@ public class PartnerBookmarksReader {
             assert false : "readBookmarks called after nativeDestroy.";
             return;
         }
-        new ReadBookmarksTask().execute();
+        new ReadBookmarksTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
