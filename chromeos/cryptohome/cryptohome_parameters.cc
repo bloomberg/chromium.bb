@@ -20,14 +20,24 @@ namespace {
 const char kCryptohome[] = "cryptohome";
 
 const std::string GetCryptohomeId(const AccountId& account_id) {
-  // Guest/kiosk/managed/public accounts have empty GaiaId. Default to email.
-  if (account_id.GetAccountType() == AccountType::UNKNOWN)
-    return account_id.GetUserEmail();  // Migrated
+  switch (account_id.GetAccountType()) {
+    case AccountType::GOOGLE: {
+      if (GetGaiaIdMigrationStatus(account_id))
+        return account_id.GetAccountIdKey();
+      return account_id.GetUserEmail();  // Migrated.
+    }
+    case AccountType::ACTIVE_DIRECTORY: {
+      // Always use the account id key, authpolicyd relies on it!
+      return account_id.GetAccountIdKey();
+    }
+    case AccountType::UNKNOWN: {
+      // Guest/kiosk/managed/public accounts have empty GaiaId. Use email.
+      return account_id.GetUserEmail();  // Migrated.
+    }
+  }
 
-  if (GetGaiaIdMigrationStatus(account_id))
-    return account_id.GetAccountIdKey();
-
-  return account_id.GetUserEmail();  // Migrated
+  NOTREACHED();
+  return account_id.GetUserEmail();
 }
 
 }  //  anonymous namespace
