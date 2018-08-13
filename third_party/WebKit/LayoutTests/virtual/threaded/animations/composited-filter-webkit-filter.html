@@ -4,16 +4,19 @@
 <style>
 @keyframes test {
   from {
-    -webkit-filter: saturate(0);
-    filter: none;
+    -webkit-filter: saturate(0.25);
+    filter: saturate(0.25);
   }
   to {
-    -webkit-filter: saturate(1);
-    filter: none;
+    -webkit-filter: saturate(0.75);
+    filter: saturate(0.75);
   }
 }
 #target {
-  animation: test 1e10s;
+  animation: test 1e3s;
+  height: 100px;
+  width: 100px;
+  background: green;
 }
 </style>
 <div id="target"></div>
