@@ -16,10 +16,8 @@ namespace {
 
 // Sizes.
 const CGFloat kAvatarSize = 40.;
-const CGFloat kTitleFontSize = 14.;
-const CGFloat kSubtitleFontSize = 12.;
 // Distances/margins.
-const CGFloat kTitleOffset = 2;
+const CGFloat kTitleOffset = 4;
 const CGFloat kHorizontalAvatarMargin = 16.;
 const CGFloat kVerticalMargin = 12.;
 // Colors
@@ -66,22 +64,28 @@ const CGFloat kSubtitleTextColorAlpha = .54;
     // Title.
     _title = [[UILabel alloc] init];
     _title.translatesAutoresizingMaskIntoConstraints = NO;
+    _title.numberOfLines = 0;
     _title.textColor = [UIColor colorWithWhite:0 alpha:kTitleTextColorAlpha];
-    _title.font = [UIFont systemFontOfSize:kTitleFontSize];
+    _title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
     [self addSubview:_title];
 
     // Subtitle.
     _subtitle = [[UILabel alloc] init];
     _subtitle.translatesAutoresizingMaskIntoConstraints = NO;
+    _subtitle.numberOfLines = 0;
     _subtitle.textColor =
         [UIColor colorWithWhite:0 alpha:kSubtitleTextColorAlpha];
-    _subtitle.font = [UIFont systemFontOfSize:kSubtitleFontSize];
+    _subtitle.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     [self addSubview:_subtitle];
+
+    // Text container.
+    UILayoutGuide* textContainerGuide = [[UILayoutGuide alloc] init];
+    [self addLayoutGuide:textContainerGuide];
 
     // Layout constraints.
     NSDictionary* views = @{
       @"avatar" : _avatarView,
-      @"title" : _title,
+      @"container" : textContainerGuide,
       @"subtitle" : _subtitle,
     };
     NSDictionary* metrics = @{
@@ -91,7 +95,7 @@ const CGFloat kSubtitleTextColorAlpha = .54;
     };
     NSArray* constraints = @[
       // Horizontal constraints.
-      @"H:|-(HAvatarMargin)-[avatar]-(HAvatarMargin)-[title]|",
+      @"H:|-(HAvatarMargin)-[avatar]-(HAvatarMargin)-[container]|",
       // Vertical constraints.
       // Size constraints.
       @"H:[avatar(AvatarSize)]",
@@ -102,22 +106,39 @@ const CGFloat kSubtitleTextColorAlpha = .54;
     AddSameConstraintsToSides(_title, _subtitle,
                               LayoutSides::kLeading | LayoutSides::kTrailing);
     _titleConstraintForNameAndEmail =
-        [self.centerYAnchor constraintEqualToAnchor:_title.bottomAnchor
-                                           constant:kTitleOffset];
-    _titleConstraintForEmailOnly =
-        [self.centerYAnchor constraintEqualToAnchor:_title.centerYAnchor];
-    [self.centerYAnchor constraintEqualToAnchor:_subtitle.topAnchor
-                                       constant:-kTitleOffset]
-        .active = YES;
+        [_subtitle.topAnchor constraintEqualToAnchor:_title.bottomAnchor
+                                            constant:kTitleOffset];
+    _titleConstraintForEmailOnly = [textContainerGuide.bottomAnchor
+        constraintEqualToAnchor:_title.bottomAnchor];
+
+    [NSLayoutConstraint activateConstraints:@[
+      [self.centerYAnchor
+          constraintEqualToAnchor:textContainerGuide.centerYAnchor],
+      [textContainerGuide.leadingAnchor
+          constraintEqualToAnchor:_title.leadingAnchor],
+      [textContainerGuide.leadingAnchor
+          constraintEqualToAnchor:_subtitle.leadingAnchor],
+      [textContainerGuide.trailingAnchor
+          constraintEqualToAnchor:_title.trailingAnchor],
+      [textContainerGuide.trailingAnchor
+          constraintEqualToAnchor:_subtitle.trailingAnchor],
+      [textContainerGuide.topAnchor constraintEqualToAnchor:_title.topAnchor],
+      [textContainerGuide.bottomAnchor
+          constraintEqualToAnchor:_subtitle.bottomAnchor],
+    ]];
+
     _verticalConstraints = @[
-      [_avatarView.topAnchor constraintEqualToAnchor:self.topAnchor
-                                            constant:kVerticalMargin],
-      [self.bottomAnchor constraintEqualToAnchor:_avatarView.bottomAnchor
-                                        constant:kVerticalMargin],
-      [_title.topAnchor constraintGreaterThanOrEqualToAnchor:self.topAnchor
-                                                    constant:kVerticalMargin],
+      [_avatarView.topAnchor
+          constraintGreaterThanOrEqualToAnchor:self.topAnchor
+                                      constant:kVerticalMargin],
       [self.bottomAnchor
-          constraintGreaterThanOrEqualToAnchor:_subtitle.bottomAnchor
+          constraintGreaterThanOrEqualToAnchor:_avatarView.bottomAnchor
+                                      constant:kVerticalMargin],
+      [textContainerGuide.topAnchor
+          constraintGreaterThanOrEqualToAnchor:self.topAnchor
+                                      constant:kVerticalMargin],
+      [self.bottomAnchor
+          constraintGreaterThanOrEqualToAnchor:textContainerGuide.bottomAnchor
                                       constant:kVerticalMargin],
     ];
     [NSLayoutConstraint activateConstraints:_verticalConstraints];

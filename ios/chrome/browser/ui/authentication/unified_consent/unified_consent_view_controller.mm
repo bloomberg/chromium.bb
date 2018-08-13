@@ -125,10 +125,12 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
 }
 
 - (void)scrollToBottom {
+  // Add one point to make sure that it is actually scrolled to the bottom (as
+  // there are some issues when the fonts are increased).
   CGPoint bottomOffset =
       CGPointMake(0, self.scrollView.contentSize.height -
                          self.scrollView.bounds.size.height +
-                         self.scrollView.contentInset.bottom);
+                         self.scrollView.contentInset.bottom + 1);
   [self.scrollView setContentOffset:bottomOffset animated:YES];
 }
 
