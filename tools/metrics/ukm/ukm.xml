@@ -3077,6 +3077,12 @@ be describing additional metrics about the same event.
       by the origin site (rather than the user).
     </summary>
   </metric>
+  <metric name="resource_loading_hints">
+    <summary>
+      Set to 1 when a user is shown a resource loading hints based preview on a
+      page load.
+    </summary>
+  </metric>
   <metric name="save_data_enabled">
     <summary>
       Set to 1 if the data saver feature was enabled in Chrome at the time of
