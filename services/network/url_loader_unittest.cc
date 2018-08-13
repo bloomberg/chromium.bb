@@ -1982,6 +1982,11 @@ class TestAuthNetworkServiceClient : public mojom::NetworkServiceClient {
     NOTREACHED();
   }
 
+  void OnLoadingStateUpdate(std::vector<mojom::LoadInfoPtr> infos,
+                            OnLoadingStateUpdateCallback callback) override {
+    NOTREACHED();
+  }
+
   void set_credentials_response(CredentialsResponse credentials_response) {
     credentials_response_ = credentials_response;
   }

@@ -57,6 +57,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
@@ -2367,7 +2368,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UpdateLoadState) {
   // Wait for the response to be ready, but never finish it.
   EXPECT_TRUE(frame_pauser.WaitForResponse());
   EXPECT_FALSE(frame_pauser.was_successful());
-  waiter.Wait(net::LOAD_STATE_WAITING_FOR_DELEGATE, paused_host);
+  // Note: the pausing only works for the non-network service path because of
+  // http://crbug.com/791049.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    waiter.Wait(net::LOAD_STATE_IDLE, base::string16());
+  else
+    waiter.Wait(net::LOAD_STATE_WAITING_FOR_DELEGATE, paused_host);
 
   load_resource(a_frame, "/a_img");
   a_response->WaitForRequest();
@@ -2390,10 +2396,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UpdateLoadState) {
   waiter.Wait(net::LOAD_STATE_READING_RESPONSE, a_host);
   a_response->Done();
 
-  // Now the only request in flight should be the delayed frame.
-  waiter.Wait(net::LOAD_STATE_WAITING_FOR_DELEGATE, paused_host);
-  frame_pauser.ResumeNavigation();
-  waiter.Wait(net::LOAD_STATE_IDLE, base::string16());
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // Now the only request in flight should be the delayed frame.
+    waiter.Wait(net::LOAD_STATE_WAITING_FOR_DELEGATE, paused_host);
+    frame_pauser.ResumeNavigation();
+    waiter.Wait(net::LOAD_STATE_IDLE, base::string16());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NotifyPreferencesChanged) {

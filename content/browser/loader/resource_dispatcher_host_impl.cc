@@ -1909,6 +1909,7 @@ net::URLRequest* ResourceDispatcherHostImpl::GetURLRequest(
 }
 
 // static
+// This is duplicated in services/network/network_service.cc.
 bool ResourceDispatcherHostImpl::LoadInfoIsMoreInteresting(const LoadInfo& a,
                                                            const LoadInfo& b) {
   // Set |*_uploading_size| to be the size of the corresponding upload body if

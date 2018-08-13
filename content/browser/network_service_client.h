@@ -63,6 +63,8 @@ class CONTENT_EXPORT NetworkServiceClient
                       const GURL& first_party_url,
                       const net::CanonicalCookie& cookie,
                       bool blocked_by_policy) override;
+  void OnLoadingStateUpdate(std::vector<network::mojom::LoadInfoPtr> infos,
+                            OnLoadingStateUpdateCallback callback) override;
 
  private:
   mojo::Binding<network::mojom::NetworkServiceClient> binding_;

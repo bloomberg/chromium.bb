@@ -249,6 +249,8 @@ class NetworkContext::ContextNetworkDelegate
                                   GURL* new_url) override {
     if (!enable_referrers_)
       request->SetReferrer(std::string());
+    if (network_context_->network_service())
+      network_context_->network_service()->OnBeforeURLRequest();
   }
 
   void OnCompletedInternal(net::URLRequest* request,

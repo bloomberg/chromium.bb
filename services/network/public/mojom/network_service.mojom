@@ -6,6 +6,7 @@ module network.mojom;
 
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
@@ -38,6 +39,16 @@ interface SSLPrivateKey {
 // needs to be called.
 interface AuthChallengeResponder {
    OnAuthCredentials(AuthCredentials? credentials);
+};
+
+struct LoadInfo {
+  uint32 process_id;
+  uint32 routing_id;
+  string host;
+  uint32 load_state;  // net::LoadState enum
+  mojo_base.mojom.String16 state_param;
+  uint64 upload_position;
+  uint64 upload_size;
 };
 
 // Network service interface to the browser.
@@ -109,6 +120,11 @@ interface NetworkServiceClient {
       int32 process_id, int32 routing_id, url.mojom.Url url,
       url.mojom.Url frame_url, array<CanonicalCookie> cookie_list,
       bool blocked_by_policy);
+
+  // Called periodically to update the client about progress of the current
+  // loads. To avoid flooding the client, it has to ack the update before it can
+  // receive the next update.
+  OnLoadingStateUpdate(array<LoadInfo> infos) => ();
 };
 
 // An HTTPS server to send DNS queries to, per the DNS Queries over HTTPS spec.

@@ -65,6 +65,8 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
                              bool async,
                              const std::vector<base::FilePath>& file_paths,
                              OnFileUploadRequestedCallback callback) override;
+  void OnLoadingStateUpdate(std::vector<mojom::LoadInfoPtr> infos,
+                            OnLoadingStateUpdateCallback callback) override;
 
  private:
   bool enable_uploads_;

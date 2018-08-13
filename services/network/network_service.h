@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/http/http_auth_preferences.h"
@@ -147,6 +148,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // one if needed.
   net::HttpAuthHandlerFactory* GetHttpAuthHandlerFactory();
 
+  // Notification that a URLLoader is about to start.
+  void OnBeforeURLRequest();
+
   bool quic_disabled() const { return quic_disabled_; }
   bool HasRawHeadersAccess(uint32_t process_id) const;
 
@@ -180,6 +184,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // Called by a NetworkContext when its mojo pipe is closed. Deletes the
   // context.
   void OnNetworkContextConnectionClosed(NetworkContext* network_context);
+
+  // Starts the timer to call NetworkServiceClient::OnLoadingStateUpdate(), if
+  // timer isn't already running, |waiting_on_load_state_ack_| is false, and
+  // there are live URLLoaders.
+  // Only works when network service is enabled.
+  void MaybeStartUpdateLoadInfoTimer();
+
+  // Checks all pending requests and updates the load info if necessary.
+  void UpdateLoadInfo();
+
+  // Invoked once the browser has acknowledged receiving the previous LoadInfo.
+  // Starts timer call UpdateLoadInfo() again, if needed.
+  void AckUpdateLoadInfo();
 
   std::unique_ptr<MojoNetLog> owned_net_log_;
   // TODO(https://crbug.com/767450): Remove this, once Chrome no longer creates
@@ -236,6 +253,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   bool os_crypt_config_set_ = false;
 
   std::unique_ptr<certificate_transparency::STHDistributor> sth_distributor_;
+
+  // A timer that periodically calls UpdateLoadInfo while there are pending
+  // loads and not waiting on an ACK from the client for the last sent
+  // LoadInfo callback.
+  base::OneShotTimer update_load_info_timer_;
+  // True if a LoadInfoList has been sent to the client, but has yet to be
+  // acknowledged.
+  bool waiting_on_load_state_ack_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkService);
 };

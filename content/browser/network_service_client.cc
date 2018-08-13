@@ -425,4 +425,34 @@ void NetworkServiceClient::OnCookieChange(int process_id,
       process_id, routing_id, url, first_party_url, cookie, blocked_by_policy);
 }
 
+void NetworkServiceClient::OnLoadingStateUpdate(
+    std::vector<network::mojom::LoadInfoPtr> infos,
+    OnLoadingStateUpdateCallback callback) {
+  auto rdh_infos = std::make_unique<ResourceDispatcherHostImpl::LoadInfoList>();
+
+  // TODO(jam): once ResourceDispatcherHost is gone remove the translation
+  // (other than adding the WebContents callback).
+  for (auto& info : infos) {
+    ResourceDispatcherHostImpl::LoadInfo load_info;
+    load_info.host = std::move(info->host);
+    load_info.load_state.state = static_cast<net::LoadState>(info->load_state);
+    load_info.load_state.param = std::move(info->state_param);
+    load_info.upload_position = info->upload_position;
+    load_info.upload_size = info->upload_size;
+    load_info.web_contents_getter =
+        info->process_id
+            ? base::BindRepeating(WebContentsImpl::FromRenderFrameHostID,
+                                  info->process_id, info->routing_id)
+            : base::BindRepeating(WebContents::FromFrameTreeNodeId,
+                                  info->routing_id);
+    rdh_infos->push_back(std::move(load_info));
+  }
+
+  auto* rdh = ResourceDispatcherHostImpl::Get();
+  ResourceDispatcherHostImpl::UpdateLoadStateOnUI(rdh->loader_delegate_,
+                                                  std::move(rdh_infos));
+
+  std::move(callback).Run();
+}
+
 }  // namespace content
