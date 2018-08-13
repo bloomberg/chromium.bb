@@ -3910,6 +3910,10 @@ crbug.com/722212 virtual/user-activation-v2/fast/events/pointerevents/mouse-poin
 crbug.com/722943 media/audio-repaint.html [ Skip ]
 crbug.com/722943 virtual/video-surface-layer/media/audio-repaint.html [ Skip ]
 
+# Sheriff failures 2018-08-13
+crbug.com/873547 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-event-fired.html [ Timeout Pass ]
+crbug.com/873547 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-event-fired.html [ Timeout Pass ]
+
 crbug.com/715718 external/wpt/media-source/mediasource-activesourcebuffers.html [ Failure Pass ]
 crbug.com/715718 external/wpt/media-source/mediasource-remove.html [ Failure Pass ]
 crbug.com/715718 [ Win ] external/wpt/xhr/FormData-append.html [ Failure Pass ]
