@@ -6870,41 +6870,59 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                             "document.querySelector('iframe').onload = "
                             "    function() { document.title = 'loaded'; };"));
 
-  GURL blocked_urls[] = {
-    embedded_test_server()->GetURL("b.com", "/frame-ancestors-none.html"),
-    embedded_test_server()->GetURL("b.com", "/x-frame-options-deny.html")
+  const struct {
+    const char* url;
+    bool use_error_page;
+  } kTestCases[] = {
+      {"/frame-ancestors-none.html", false},
+      {"/x-frame-options-deny.html", true},
   };
 
-  for (size_t i = 0; i < arraysize(blocked_urls); ++i) {
+  for (const auto& test : kTestCases) {
+    GURL blocked_url = embedded_test_server()->GetURL("b.com", test.url);
     EXPECT_TRUE(ExecuteScript(shell(), "document.title = 'not loaded';"));
     base::string16 expected_title(base::UTF8ToUTF16("loaded"));
     TitleWatcher title_watcher(shell()->web_contents(), expected_title);
 
     // Navigate the subframe to a blocked URL.
     TestNavigationObserver load_observer(shell()->web_contents());
-    EXPECT_TRUE(ExecuteScript(shell(), "frames[0].location.href = '" +
-                                           blocked_urls[i].spec() + "';"));
+    EXPECT_TRUE(ExecuteScript(
+        shell(), "frames[0].location.href = '" + blocked_url.spec() + "';"));
     load_observer.Wait();
 
     // The blocked frame's origin should become unique.
     EXPECT_EQ("null", root->child_at(0)->current_origin().Serialize());
 
-    // Ensure that we don't use the blocked URL as the blocked frame's last
-    // committed URL (see https://crbug.com/622385).
-    EXPECT_NE(root->child_at(0)->current_frame_host()->GetLastCommittedURL(),
-              blocked_urls[i]);
+    // X-Frame-Options and CSP frame-ancestors behave differently. XFO commits
+    // an error page, while CSP commits a "data:," URL.
+    // TODO(https://crbug.com/870815): Use an error page for both.
+    if (test.use_error_page) {
+      EXPECT_FALSE(load_observer.last_navigation_succeeded());
+      EXPECT_EQ(net::ERR_BLOCKED_BY_RESPONSE,
+                load_observer.last_net_error_code());
+      EXPECT_EQ(root->child_at(0)->current_frame_host()->GetLastCommittedURL(),
+                blocked_url);
+      EXPECT_EQ("Error", EvalJs(root->child_at(0), "document.title"));
+    } else {
+      EXPECT_TRUE(load_observer.last_navigation_succeeded());
+      EXPECT_EQ(net::OK, load_observer.last_net_error_code());
+      // Ensure that we don't use the blocked URL as the blocked frame's last
+      // committed URL (see https://crbug.com/622385).
+      EXPECT_EQ(root->child_at(0)->current_frame_host()->GetLastCommittedURL(),
+                GURL("data:,"));
+
+      // The blocked navigation should behave like an empty 200 response. Make
+      // sure that the frame's document.title is empty: this double-checks both
+      // that the blocked URL's contents wasn't loaded, and that the old page
+      // isn't active anymore (both of these pages have non-empty titles).
+      EXPECT_EQ("", EvalJs(root->child_at(0), "document.title"));
+    }
 
     // The blocked frame should still fire a load event in its parent's process.
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
     // Check that the current RenderFrameHost has stopped loading.
     EXPECT_FALSE(root->child_at(0)->current_frame_host()->is_loading());
-
-    // The blocked navigation should behave like an empty 200 response. Make
-    // sure that the frame's document.title is empty: this double-checks both
-    // that the blocked URL's contents wasn't loaded, and that the old page
-    // isn't active anymore (both of these pages have non-empty titles).
-    EXPECT_EQ("", EvalJs(root->child_at(0), "document.title"));
 
     // Navigate the subframe to another cross-origin page and ensure that this
     // navigation succeeds.  Use a renderer-initiated navigation to test the

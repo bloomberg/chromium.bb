@@ -7467,8 +7467,12 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     TestNavigationObserver observer(shell()->web_contents());
     controller.GoBack();
     observer.Wait();
+    GURL x_frame_options_deny_url =
+        embedded_test_server()->GetURL("/x-frame-options-deny.html");
+    EXPECT_EQ(x_frame_options_deny_url, root->child_at(0)->current_url());
+    EXPECT_EQ(net::ERR_BLOCKED_BY_RESPONSE, observer.last_net_error_code());
+    EXPECT_FALSE(observer.last_navigation_succeeded());
   }
-  EXPECT_EQ(GURL("data:,"), root->child_at(0)->current_url());
 
   // Go back again.  This would have been same-document if the prior navigation
   // had succeeded.

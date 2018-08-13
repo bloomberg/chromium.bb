@@ -2638,23 +2638,6 @@ void RenderFrameImpl::LoadNavigationErrorPage(
   const blink::WebHistoryItem& history_item =
       entry ? entry->root() : blink::WebHistoryItem();
 
-  // Requests blocked by the X-Frame-Options HTTP response header don't display
-  // error pages but a blank page instead.
-  // TODO(alexmos, mkwst, arthursonzogni): This block can be removed once error
-  // pages are refactored. See crbug.com/588314 and crbug.com/622385.
-  if (error.reason() == net::ERR_BLOCKED_BY_RESPONSE) {
-    // Do not preserve the history item for blocked navigations, since we will
-    // not attempt to reload it later.  Also, it is important that the document
-    // sequence number is not preserved, so that other navigations will not be
-    // considered same-document with this data URL.
-    const blink::WebHistoryItem& blank_history_item = blink::WebHistoryItem();
-    frame_load_type = blink::WebFrameLoadType::kStandard;
-    LoadNavigationErrorPageInternal("", GURL("data:,"), WebURL(), replace,
-                                    frame_load_type, blank_history_item,
-                                    std::move(navigation_data));
-    return;
-  }
-
   std::string error_html;
   if (error_page_content.has_value()) {
     error_html = error_page_content.value();
