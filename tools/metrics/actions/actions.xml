@@ -3338,6 +3338,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="BrowserForSystemProfile">
+  <obsolete>
+    No longer needed as the number of users affected by https://crbug.com/482176
+    is now approximately zero.
+  </obsolete>
   <owner>mlerman@chromium.org</owner>
   <description>
     A browser opened with the System Profile. Tsk, tsk. Any non-zero amount

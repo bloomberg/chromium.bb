@@ -408,12 +408,8 @@ Browser::Browser(const CreateParams& params)
   CHECK(IncognitoModePrefs::CanOpenBrowser(profile_));
   CHECK(!profile_->IsGuestSession() || profile_->IsOffTheRecord())
       << "Only off the record browser may be opened in guest mode";
-  DCHECK(!profile_->IsSystemProfile())
+  CHECK(!profile_->IsSystemProfile())
       << "The system profile should never have a real browser.";
-  // TODO(mlerman): After this hits stable channel, see if there are counts
-  // for this metric. If not, change the DCHECK above to a CHECK.
-  if (profile_->IsSystemProfile())
-    base::RecordAction(base::UserMetricsAction("BrowserForSystemProfile"));
 
   // TODO(jeremy): Move to initializer list once flag is removed.
   if (IsFastTabUnloadEnabled())
