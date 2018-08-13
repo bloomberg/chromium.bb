@@ -21,10 +21,10 @@ namespace {
 // longer before sending the next log. This backoff process helps reduce load
 // on a server that is having issues.
 // The following is the multiplier we use to expand that inter-log duration.
-const double kBackoffMultiplier = 1.1;
+const double kBackoffMultiplier = 2;
 
-// The maximum backoff interval in minutes.
-const int kMaxBackoffIntervalMinutes = 10;
+// The maximum backoff interval in hours.
+const int kMaxBackoffIntervalHours = 24;
 
 // Minutes to wait if we are unable to upload due to data usage cap.
 const int kOverDataUsageIntervalMinutes = 5;
@@ -37,7 +37,7 @@ base::TimeDelta BackOffUploadInterval(base::TimeDelta interval) {
       kBackoffMultiplier * interval.InMicroseconds()));
 
   base::TimeDelta max_interval =
-      base::TimeDelta::FromMinutes(kMaxBackoffIntervalMinutes);
+      base::TimeDelta::FromHours(kMaxBackoffIntervalHours);
   if (interval > max_interval || interval.InSeconds() < 0) {
     interval = max_interval;
   }
@@ -51,9 +51,9 @@ base::TimeDelta GetUnsentLogsInterval() {
   return base::TimeDelta::FromSeconds(3);
 }
 
-// Inital time delay after a log uploaded fails before retrying it.
+// Initial time delay after a log uploaded fails before retrying it.
 base::TimeDelta GetInitialBackoffInterval() {
-  return base::TimeDelta::FromSeconds(15);
+  return base::TimeDelta::FromMinutes(5);
 }
 
 }  // namespace
