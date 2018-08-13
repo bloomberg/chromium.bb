@@ -220,8 +220,9 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, OneThirdPartyModule) {
 
   EXPECT_EQ(1u, blacklisted_modules.size());
   ASSERT_EQ(
-      ModuleBlacklistCacheUpdater::ModuleBlockingDecision::kBlacklisted,
-      module_blacklist_cache_updater->GetModuleBlockingDecision(module_key));
+      ModuleBlacklistCacheUpdater::ModuleBlockingDecision::kDisallowedImplicit,
+      module_blacklist_cache_updater->GetModuleBlockingState(module_key)
+          .blocking_decision);
 }
 
 TEST_F(ModuleBlacklistCacheUpdaterTest, IgnoreMicrosoftModules) {
@@ -265,7 +266,8 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, IgnoreMicrosoftModules) {
   EXPECT_EQ(0u, blacklisted_modules.size());
   ASSERT_EQ(
       ModuleBlacklistCacheUpdater::ModuleBlockingDecision::kAllowedMicrosoft,
-      module_blacklist_cache_updater->GetModuleBlockingDecision(module_key));
+      module_blacklist_cache_updater->GetModuleBlockingState(module_key)
+          .blocking_decision);
 }
 
 // Tests that modules with a matching certificate subject are whitelisted.
@@ -294,10 +296,10 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, WhitelistMatchingCertificateSubject) {
                                      &blacklisted_modules, &md5_digest));
 
   EXPECT_EQ(0u, blacklisted_modules.size());
-  ASSERT_EQ(
-      ModuleBlacklistCacheUpdater::ModuleBlockingDecision::
-          kAllowedSameCertificate,
-      module_blacklist_cache_updater->GetModuleBlockingDecision(module_key));
+  ASSERT_EQ(ModuleBlacklistCacheUpdater::ModuleBlockingDecision::
+                kAllowedSameCertificate,
+            module_blacklist_cache_updater->GetModuleBlockingState(module_key)
+                .blocking_decision);
 }
 
 // Make sure IMEs are allowed while shell extensions are blacklisted.
@@ -335,12 +337,13 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, RegisteredModules) {
 
   // Make sure the only blacklisted module is the shell extension.
   ASSERT_EQ(1u, blacklisted_modules.size());
+  ASSERT_EQ(ModuleBlacklistCacheUpdater::ModuleBlockingDecision::kAllowedIME,
+            module_blacklist_cache_updater->GetModuleBlockingState(module_key1)
+                .blocking_decision);
   ASSERT_EQ(
-      ModuleBlacklistCacheUpdater::ModuleBlockingDecision::kAllowedIME,
-      module_blacklist_cache_updater->GetModuleBlockingDecision(module_key1));
-  ASSERT_EQ(
-      ModuleBlacklistCacheUpdater::ModuleBlockingDecision::kBlacklisted,
-      module_blacklist_cache_updater->GetModuleBlockingDecision(module_key2));
+      ModuleBlacklistCacheUpdater::ModuleBlockingDecision::kDisallowedImplicit,
+      module_blacklist_cache_updater->GetModuleBlockingState(module_key2)
+          .blocking_decision);
 
   third_party_dlls::PackedListModule expected;
   const std::string module_basename = base::UTF16ToUTF8(
