@@ -14,11 +14,10 @@
 
 namespace {
 // Top margin for the label.
-CGFloat kTopMargin = 24.;
+CGFloat kTopMargin = 20.;
+CGFloat kBottomMargin = 15;
 // Leading margin for the label.
 CGFloat kLeadingMargin = 24.;
-// Label font size.
-CGFloat kTitleFontSize = 14.;
 // Label font color alpha.
 CGFloat kFontAlpha = .87;
 }  // namespace
@@ -35,7 +34,7 @@ CGFloat kFontAlpha = .87;
     label.translatesAutoresizingMaskIntoConstraints = NO;
     label.text =
         l10n_util::GetNSString(IDS_IOS_ACCOUNT_IDENTITY_CHOOSER_CHOOSE_ACCOUNT);
-    label.font = [UIFont boldSystemFontOfSize:kTitleFontSize];
+    label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
     label.textColor = [UIColor colorWithWhite:0. alpha:kFontAlpha];
     [self.contentView addSubview:label];
     NSDictionary* views = @{
@@ -44,12 +43,13 @@ CGFloat kFontAlpha = .87;
     NSDictionary* metrics = @{
       @"LeadingMargin" : @(kLeadingMargin),
       @"TopMargin" : @(kTopMargin),
+      @"BottomMargin" : @(kBottomMargin),
     };
     NSArray* constraints = @[
       // Horitizontal constraints.
       @"H:|-(LeadingMargin)-[label]-(>=0)-|",
       // Vertical constraints.
-      @"V:|-(TopMargin)-[label]",
+      @"V:|-(TopMargin)-[label]-(BottomMargin)-|",
     ];
     ApplyVisualConstraintsWithMetrics(constraints, views, metrics);
 

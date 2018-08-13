@@ -38,7 +38,7 @@ const CGFloat kFooterHeight = 17.;
   self.tableView.sectionFooterHeight = 0;
   // Setting -UITableView.rowHeight is required for iOS 10. On iOS 11, the row
   // height is automatically set.
-  self.tableView.rowHeight = kRowHeight;
+  self.tableView.estimatedRowHeight = kRowHeight;
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
