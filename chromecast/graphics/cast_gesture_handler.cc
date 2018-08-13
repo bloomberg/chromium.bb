@@ -10,8 +10,4 @@ bool CastGestureHandler::CanHandleSwipe(CastSideSwipeOrigin swipe_origin) {
   return false;
 }
 
-CastGestureHandler::Corner CastGestureHandler::HandledCornerHolds() const {
-  return NO_CORNERS;
-}
-
 }  // namespace chromecast
