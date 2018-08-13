@@ -75,4 +75,11 @@ const CGFloat kFooterHeight = 17.;
   }
 }
 
+#pragma mark UIAccessibilityAction
+
+- (BOOL)accessibilityPerformEscape {
+  [self dismissViewControllerAnimated:YES completion:nil];
+  return YES;
+}
+
 @end
