@@ -116,7 +116,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, RemoveFootnoteView);
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, LayoutWithIcon);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CloseReasons);
-  FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateTest, CloseMethods);
+  FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateViewTest, CloseMethods);
 
   // Mirrors the bubble's arrow location on the |vertical| or horizontal axis,
   // if the generated window bounds don't fit in the monitor bounds.
