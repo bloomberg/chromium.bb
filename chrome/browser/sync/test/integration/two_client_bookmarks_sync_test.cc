@@ -118,7 +118,7 @@ class TwoClientBookmarksSyncTestIncludingUssTests
     : public UssSwitchToggler,
       public TwoClientBookmarksSyncTest {
  public:
-  TwoClientBookmarksSyncTestIncludingUssTests(){};
+  TwoClientBookmarksSyncTestIncludingUssTests() {}
   ~TwoClientBookmarksSyncTestIncludingUssTests() override {}
 
  private:
@@ -205,7 +205,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_AddFirstBMWithFavicon) {
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
+                       SC_AddFirstBMWithFavicon) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
   const GURL page_url(kGenericURL);
@@ -224,7 +225,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_AddFirstBMWithFavicon) {
 // In particular, the synced 16x16 favicon bitmap should overwrite 16x16
 // favicon bitmaps on all clients. (Though non-16x16 favicon bitmaps
 // are unchanged).
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_SetFaviconHiDPI) {
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
+                       SC_SetFaviconHiDPI) {
   // Set the supported scale factors to include 2x such that CreateFavicon()
   // creates a favicon with hidpi representations and that methods in the
   // FaviconService request hidpi favicons.
@@ -263,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_SetFaviconHiDPI) {
 // favicon should be redownloaded when the web when the bookmark is visited.
 // If sync prevents the "last updated time" from expiring, the favicon is
 // never redownloaded from the web. (http://crbug.com/481414)
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        SC_UpdatingTitleDoesNotUpdateFaviconLastUpdatedTime) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
@@ -309,7 +311,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 // ensures that sync has the most up to date data and prevents sync from
 // reverting the newly updated bookmark favicon back to the old favicon.
 // crbug.com/485657
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        SC_SetFaviconTwoBookmarksSameIconURL) {
   const GURL page_url1("http://www.google.com/a");
   const GURL page_url2("http://www.google.com/b");
@@ -342,7 +344,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_DeleteFavicon) {
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
+                       SC_DeleteFavicon) {
   const GURL page_url("http://www.google.com/a");
   const GURL icon_url("http://www.google.com/favicon.ico");
 

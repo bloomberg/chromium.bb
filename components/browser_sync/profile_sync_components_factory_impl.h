@@ -30,6 +30,10 @@ namespace password_manager {
 class PasswordStore;
 }
 
+namespace sync_bookmarks {
+class BookmarkSyncService;
+}
+
 namespace browser_sync {
 
 class ProfileSyncComponentsFactoryImpl
@@ -47,7 +51,8 @@ class ProfileSyncComponentsFactoryImpl
           web_data_service_on_disk,
       const scoped_refptr<autofill::AutofillWebDataService>&
           web_data_service_in_memory,
-      const scoped_refptr<password_manager::PasswordStore>& password_store);
+      const scoped_refptr<password_manager::PasswordStore>& password_store,
+      sync_bookmarks::BookmarkSyncService* bookmark_sync_service);
   ~ProfileSyncComponentsFactoryImpl() override;
 
   // SyncApiComponentFactory implementation:
@@ -113,6 +118,7 @@ class ProfileSyncComponentsFactoryImpl
   const scoped_refptr<autofill::AutofillWebDataService>
       web_data_service_in_memory_;
   const scoped_refptr<password_manager::PasswordStore> password_store_;
+  sync_bookmarks::BookmarkSyncService* const bookmark_sync_service_;
 
   // Whether to override PREFERENCES to use USS.
   static bool override_prefs_controller_to_uss_for_test_;

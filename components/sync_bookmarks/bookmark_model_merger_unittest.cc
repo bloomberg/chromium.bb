@@ -11,11 +11,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
+#include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::_;
 using testing::Eq;
 using testing::UnorderedElementsAre;
 
@@ -33,7 +35,9 @@ syncer::UpdateResponseData CreateUpdateResponseData(
     const std::string& title,
     const std::string& url,
     bool is_folder,
-    const syncer::UniquePosition& unique_position) {
+    const syncer::UniquePosition& unique_position,
+    const std::string& icon_url = std::string(),
+    const std::string& icon_data = std::string()) {
   syncer::EntityData data;
   data.id = server_id;
   data.parent_id = parent_id;
@@ -43,6 +47,8 @@ syncer::UpdateResponseData CreateUpdateResponseData(
       data.specifics.mutable_bookmark();
   bookmark_specifics->set_title(title);
   bookmark_specifics->set_url(url);
+  bookmark_specifics->set_icon_url(icon_url);
+  bookmark_specifics->set_favicon(icon_data);
 
   data.is_folder = is_folder;
   syncer::UpdateResponseData response_data;
@@ -223,7 +229,10 @@ TEST(BookmarkModelMergerTest, ShouldMergeLocalAndRemoteModels) {
 
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::make_unique<sync_pb::ModelTypeState>());
-  BookmarkModelMerger(&updates, bookmark_model.get(), &tracker).Merge();
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  BookmarkModelMerger(&updates, bookmark_model.get(), &favicon_service,
+                      &tracker)
+      .Merge();
   ASSERT_THAT(bookmark_bar_node->child_count(), Eq(3));
 
   // Verify Folder 1.
@@ -368,7 +377,10 @@ TEST(BookmarkModelMergerTest, ShouldMergeRemoteReorderToLocalModel) {
 
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::make_unique<sync_pb::ModelTypeState>());
-  BookmarkModelMerger(&updates, bookmark_model.get(), &tracker).Merge();
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  BookmarkModelMerger(&updates, bookmark_model.get(), &favicon_service,
+                      &tracker)
+      .Merge();
   ASSERT_THAT(bookmark_bar_node->child_count(), Eq(3));
 
   EXPECT_THAT(bookmark_bar_node->GetChild(0)->GetTitle(),
@@ -388,6 +400,59 @@ TEST(BookmarkModelMergerTest, ShouldMergeRemoteReorderToLocalModel) {
 
   // Verify positions in tracker.
   EXPECT_TRUE(PositionsInTrackerMatchModel(bookmark_bar_node, tracker));
+}
+
+TEST(BookmarkModelMergerTest, ShouldMergeFaviconsForRemoteNodesOnly) {
+  const std::string kTitle1 = "title1";
+  const GURL kUrl1("http://www.url1.com");
+  // -------- The local model --------
+  // bookmark_bar
+  //  |- title 1
+
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model->bookmark_bar_node();
+  bookmark_model->AddURL(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16(kTitle1),
+      kUrl1);
+
+  // -------- The remote model --------
+  // bookmark_bar
+  //  |- title 2
+
+  const std::string kTitle2 = "title2";
+  const std::string kId2 = "Id2";
+  const GURL kUrl2("http://www.url2.com");
+  const GURL kIcon2Url("http://www.icon-url.com");
+  syncer::UniquePosition pos2 = syncer::UniquePosition::InitialPosition(
+      syncer::UniquePosition::RandomSuffix());
+
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateBookmarkBarNodeUpdateData());
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kId2, /*parent_id=*/kBookmarkBarId, kTitle2, kUrl2.spec(),
+      /*is_folder=*/false, /*unique_position=*/pos2, kIcon2Url.spec(),
+      /*icon_data=*/"PNG"));
+
+  // -------- The expected merge outcome --------
+  // bookmark_bar
+  //  |- title 2
+  //  |- title 1
+
+  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
+                                std::make_unique<sync_pb::ModelTypeState>());
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+
+  // Favicon should be set for the remote node.
+  EXPECT_CALL(favicon_service,
+              AddPageNoVisitForBookmark(kUrl2, base::UTF8ToUTF16(kTitle2)));
+  EXPECT_CALL(favicon_service, MergeFavicon(kUrl2, _, _, _, _));
+
+  BookmarkModelMerger(&updates, bookmark_model.get(), &favicon_service,
+                      &tracker)
+      .Merge();
 }
 
 }  // namespace sync_bookmarks

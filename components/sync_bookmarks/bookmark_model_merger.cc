@@ -170,13 +170,16 @@ BuildUpdatesTreeWithoutTombstonesWithSortedChildren(
 BookmarkModelMerger::BookmarkModelMerger(
     const UpdateResponseDataList* updates,
     bookmarks::BookmarkModel* bookmark_model,
+    favicon::FaviconService* favicon_service,
     SyncedBookmarkTracker* bookmark_tracker)
     : updates_(updates),
       bookmark_model_(bookmark_model),
+      favicon_service_(favicon_service),
       bookmark_tracker_(bookmark_tracker),
       updates_tree_(
           BuildUpdatesTreeWithoutTombstonesWithSortedChildren(updates_)) {
   DCHECK(bookmark_tracker_->IsEmpty());
+  DCHECK(favicon_service);
 }
 
 BookmarkModelMerger::~BookmarkModelMerger() {}
@@ -272,7 +275,7 @@ void BookmarkModelMerger::ProcessRemoteCreation(
   const bookmarks::BookmarkNode* bookmark_node =
       CreateBookmarkNodeFromSpecifics(
           remote_update_entity.specifics.bookmark(), local_parent, index,
-          remote_update_entity.is_folder, bookmark_model_);
+          remote_update_entity.is_folder, bookmark_model_, favicon_service_);
   if (!bookmark_node) {
     // We ignore bookmarks we can't add.
     DLOG(ERROR) << "Failed to create bookmark node with title "
@@ -332,7 +335,7 @@ void BookmarkModelMerger::ProcessLocalCreation(
 
   const bookmarks::BookmarkNode* node = parent->GetChild(index);
   const sync_pb::EntitySpecifics specifics =
-      CreateSpecificsFromBookmarkNode(node);
+      CreateSpecificsFromBookmarkNode(node, bookmark_model_);
   bookmark_tracker_->Add(sync_id, node, server_version, creation_time,
                          pos.ToProto(), specifics);
   // Mark the entity that it needs to be committed.

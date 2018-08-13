@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
+#include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unique_position.h"
@@ -21,6 +22,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
+using testing::_;
+using testing::ElementsAre;
 using testing::Eq;
 
 namespace sync_bookmarks {
@@ -203,7 +206,9 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
       CreateBookmarkBarNodeUpdateData()};
   // TODO(crbug.com/516866): Create a test fixture that would encapsulate
   // the merge functionality for all relevant tests.
-  BookmarkModelMerger(&bookmark_bar_updates, bookmark_model.get(), &tracker)
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  BookmarkModelMerger(&bookmark_bar_updates, bookmark_model.get(),
+                      &favicon_service, &tracker)
       .Merge();
 
   const std::string kId0 = "id0";
@@ -222,7 +227,8 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
                                              /*parent_id=*/kId0,
                                              /*is_deletion=*/false));
 
-  BookmarkRemoteUpdatesHandler updates_handler(bookmark_model.get(), &tracker);
+  BookmarkRemoteUpdatesHandler updates_handler(bookmark_model.get(),
+                                               &favicon_service, &tracker);
   updates_handler.Process(updates);
 
   // All nodes should be tracked including the bookmark_bar.
@@ -293,8 +299,9 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
   updates.push_back(CreateUpdateResponseData(/*server_id=*/kId2,
                                              /*parent_id=*/kId1,
                                              /*is_deletion=*/true));
-
-  BookmarkRemoteUpdatesHandler updates_handler(bookmark_model.get(), &tracker);
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  BookmarkRemoteUpdatesHandler updates_handler(bookmark_model.get(),
+                                               &favicon_service, &tracker);
   updates_handler.Process(updates);
 
   // |tracker| should be empty now.
@@ -315,7 +322,9 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
                                 std::make_unique<sync_pb::ModelTypeState>());
   const syncer::UpdateResponseDataList bookmark_bar_updates = {
       CreateBookmarkBarNodeUpdateData()};
-  BookmarkModelMerger(&bookmark_bar_updates, bookmark_model.get(), &tracker)
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  BookmarkModelMerger(&bookmark_bar_updates, bookmark_model.get(),
+                      &favicon_service, &tracker)
       .Merge();
 
   const std::string kId0 = "id0";
@@ -343,7 +352,8 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
       /*server_id=*/kId1, /*parent_id=*/kBookmarkBarId,
       /*is_deletion=*/false, /*unique_position=*/pos1));
 
-  BookmarkRemoteUpdatesHandler updates_handler(bookmark_model.get(), &tracker);
+  BookmarkRemoteUpdatesHandler updates_handler(bookmark_model.get(),
+                                               &favicon_service, &tracker);
   updates_handler.Process(updates);
 
   // All nodes should have been added to the model in the correct order.
@@ -413,8 +423,9 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
       /*unique_position=*/
       syncer::UniquePosition::Between(positions[1], positions[2],
                                       syncer::UniquePosition::RandomSuffix())));
-
-  BookmarkRemoteUpdatesHandler updates_handler(bookmark_model.get(), &tracker);
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  BookmarkRemoteUpdatesHandler updates_handler(bookmark_model.get(),
+                                               &favicon_service, &tracker);
   updates_handler.Process(updates);
 
   // Model should have been updated.
@@ -479,8 +490,9 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
       /*unique_position=*/
       syncer::UniquePosition::Between(positions[3], positions[4],
                                       syncer::UniquePosition::RandomSuffix())));
-
-  BookmarkRemoteUpdatesHandler updates_handler(bookmark_model.get(), &tracker);
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  BookmarkRemoteUpdatesHandler updates_handler(bookmark_model.get(),
+                                               &favicon_service, &tracker);
   updates_handler.Process(updates);
 
   // Model should have been updated.
@@ -545,8 +557,9 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
       /*unique_position=*/
       syncer::UniquePosition::InitialPosition(
           syncer::UniquePosition::RandomSuffix())));
-
-  BookmarkRemoteUpdatesHandler updates_handler(bookmark_model.get(), &tracker);
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  BookmarkRemoteUpdatesHandler updates_handler(bookmark_model.get(),
+                                               &favicon_service, &tracker);
   updates_handler.Process(updates);
 
   // Model should have been updated.
@@ -554,6 +567,107 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
   ASSERT_THAT(bookmark_bar_node->GetChild(1)->child_count(), Eq(1));
   EXPECT_THAT(bookmark_bar_node->GetChild(1)->GetChild(0)->GetTitle(),
               Eq(ASCIIToUTF16(ids[4])));
+}
+
+TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
+     ShouldMergeFaviconUponRemoteCreationsWithFavicon) {
+  // Prepare creation updates to construct this structure:
+  // bookmark_bar
+  //  |- node0
+
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
+                                std::make_unique<sync_pb::ModelTypeState>());
+  const syncer::UpdateResponseDataList bookmark_bar_updates = {
+      CreateBookmarkBarNodeUpdateData()};
+  // TODO(crbug.com/516866): Create a test fixture that would encapsulate
+  // the merge functionality for all relevant tests.
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  BookmarkModelMerger(&bookmark_bar_updates, bookmark_model.get(),
+                      &favicon_service, &tracker)
+      .Merge();
+  const std::string kTitle = "Title";
+  const GURL kUrl("http://www.url.com");
+  const GURL kIconUrl("http://www.icon-url.com");
+
+  syncer::UpdateResponseDataList updates;
+  syncer::EntityData data;
+  data.id = "server_id";
+  data.parent_id = kBookmarkBarId;
+  data.unique_position = syncer::UniquePosition::InitialPosition(
+                             syncer::UniquePosition::RandomSuffix())
+                             .ToProto();
+  sync_pb::BookmarkSpecifics* bookmark_specifics =
+      data.specifics.mutable_bookmark();
+  // Use the server id as the title for simplicity.
+  bookmark_specifics->set_title(kTitle);
+  bookmark_specifics->set_url(kUrl.spec());
+  bookmark_specifics->set_icon_url(kIconUrl.spec());
+  bookmark_specifics->set_favicon("PNG");
+  data.is_folder = false;
+  syncer::UpdateResponseData response_data;
+  response_data.entity = data.PassToPtr();
+  // Similar to what's done in the loopback_server.
+  response_data.response_version = 0;
+
+  updates.push_back(response_data);
+
+  BookmarkRemoteUpdatesHandler updates_handler(bookmark_model.get(),
+                                               &favicon_service, &tracker);
+  EXPECT_CALL(favicon_service,
+              AddPageNoVisitForBookmark(kUrl, base::UTF8ToUTF16(kTitle)));
+  EXPECT_CALL(favicon_service, MergeFavicon(kUrl, kIconUrl, _, _, _));
+  updates_handler.Process(updates);
+}
+
+TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
+     ShouldDeleteFaviconUponRemoteCreationsWithoutFavicon) {
+  // Prepare creation updates to construct this structure:
+  // bookmark_bar
+  //  |- node0
+
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
+                                std::make_unique<sync_pb::ModelTypeState>());
+  const syncer::UpdateResponseDataList bookmark_bar_updates = {
+      CreateBookmarkBarNodeUpdateData()};
+  // TODO(crbug.com/516866): Create a test fixture that would encapsulate
+  // the merge functionality for all relevant tests.
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  BookmarkModelMerger(&bookmark_bar_updates, bookmark_model.get(),
+                      &favicon_service, &tracker)
+      .Merge();
+  const std::string kTitle = "Title";
+  const GURL kUrl("http://www.url.com");
+
+  syncer::UpdateResponseDataList updates;
+  syncer::EntityData data;
+  data.id = "server_id";
+  data.parent_id = kBookmarkBarId;
+  data.unique_position = syncer::UniquePosition::InitialPosition(
+                             syncer::UniquePosition::RandomSuffix())
+                             .ToProto();
+  sync_pb::BookmarkSpecifics* bookmark_specifics =
+      data.specifics.mutable_bookmark();
+  // Use the server id as the title for simplicity.
+  bookmark_specifics->set_title(kTitle);
+  bookmark_specifics->set_url(kUrl.spec());
+  data.is_folder = false;
+  syncer::UpdateResponseData response_data;
+  response_data.entity = data.PassToPtr();
+  // Similar to what's done in the loopback_server.
+  response_data.response_version = 0;
+
+  updates.push_back(response_data);
+
+  BookmarkRemoteUpdatesHandler updates_handler(bookmark_model.get(),
+                                               &favicon_service, &tracker);
+  EXPECT_CALL(favicon_service,
+              DeleteFaviconMappings(ElementsAre(kUrl),
+                                    favicon_base::IconType::kFavicon));
+  updates_handler.Process(updates);
 }
 
 }  // namespace

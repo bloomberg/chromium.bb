@@ -45,8 +45,6 @@ bool SyncedBookmarkTracker::Entity::IsUnsynced() const {
 
 bool SyncedBookmarkTracker::Entity::MatchesDataIgnoringParent(
     const syncer::EntityData& data) const {
-  // TODO(crbug.com/516866): Compare the actual specifics instead of the
-  // specifics hash.
   if (metadata_->is_deleted() || data.is_deleted()) {
     // In case of deletion, no need to check the specifics.
     return metadata_->is_deleted() == data.is_deleted();

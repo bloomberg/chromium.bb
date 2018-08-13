@@ -17,15 +17,20 @@ class BookmarkModel;
 class BookmarkNode;
 }  // namespace bookmarks
 
+namespace favicon {
+class FaviconService;
+}  // namespace favicon
+
 namespace sync_bookmarks {
 
 // Responsible for processing one batch of remote updates received from the sync
 // server.
 class BookmarkRemoteUpdatesHandler {
  public:
-  // |bookmark_model| and |bookmark_tracker| must not be null and must outlive
-  // this object.
+  // |bookmark_model|, |favicon_service| and |bookmark_tracker| must not be null
+  // and must outlive this object.
   BookmarkRemoteUpdatesHandler(bookmarks::BookmarkModel* bookmark_model,
+                               favicon::FaviconService* favicon_service,
                                SyncedBookmarkTracker* bookmark_tracker);
   // Processes the updates received from the sync server in |updates| and
   // updates the |bookmark_model_| and |bookmark_tracker_| accordingly.
@@ -87,6 +92,7 @@ class BookmarkRemoteUpdatesHandler {
   void RemoveEntityAndChildrenFromTracker(const bookmarks::BookmarkNode* node);
 
   bookmarks::BookmarkModel* const bookmark_model_;
+  favicon::FaviconService* const favicon_service_;
   SyncedBookmarkTracker* const bookmark_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkRemoteUpdatesHandler);

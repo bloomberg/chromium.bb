@@ -22,6 +22,10 @@ namespace bookmarks {
 class BookmarkModel;
 }
 
+namespace favicon {
+class FaviconService;
+}
+
 namespace sync_bookmarks {
 class BookmarkModelTypeProcessor;
 
@@ -43,8 +47,15 @@ class BookmarkSyncService : public KeyedService {
       bookmarks::BookmarkModel* model);
 
   // Returns the ModelTypeControllerDelegate for syncer::BOOKMARKS.
+  // |favicon_service| is the favicon service used when processing updates in
+  // the underlying processor. It could have been a separate a setter in
+  // BookmarkSyncService instead of passing it as a parameter to
+  // GetBookmarkSyncControllerDelegate(). However, this would incur the risk of
+  // overlooking setting it. Therefore, it has been added as a parameter to the
+  // GetBookmarkSyncControllerDelegate() in order to gauarantee it will be set
+  // before the processor starts receiving updates.
   virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
-  GetBookmarkSyncControllerDelegate();
+  GetBookmarkSyncControllerDelegate(favicon::FaviconService* favicon_service);
 
  private:
   // BookmarkModelTypeProcessor handles communications between sync engine and

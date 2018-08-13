@@ -51,6 +51,9 @@ class SyncedBookmarkTracker {
     // information.
     bool MatchesDataIgnoringParent(const syncer::EntityData& data) const;
 
+    // Check whether |specifics| matches the stored specifics_hash.
+    bool MatchesSpecificsHash(const sync_pb::EntitySpecifics& specifics) const;
+
     // Returns null for tomstones.
     const bookmarks::BookmarkNode* bookmark_node() const {
       return bookmark_node_;
@@ -63,9 +66,6 @@ class SyncedBookmarkTracker {
     sync_pb::EntityMetadata* metadata() { return metadata_.get(); }
 
    private:
-    // Check whether |specifics| matches the stored specifics_hash.
-    bool MatchesSpecificsHash(const sync_pb::EntitySpecifics& specifics) const;
-
     // Null for tombstones.
     const bookmarks::BookmarkNode* bookmark_node_;
 

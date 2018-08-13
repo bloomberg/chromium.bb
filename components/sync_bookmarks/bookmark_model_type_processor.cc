@@ -103,7 +103,7 @@ void BookmarkModelTypeProcessor::GetLocalChanges(
     size_t max_entries,
     GetLocalChangesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  BookmarkLocalChangesBuilder builder(bookmark_tracker_.get());
+  BookmarkLocalChangesBuilder builder(bookmark_tracker_.get(), bookmark_model_);
   std::vector<syncer::CommitRequestData> local_changes =
       builder.BuildCommitRequests(max_entries);
   std::move(callback).Run(std::move(local_changes));
@@ -146,7 +146,8 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
           bookmark_model_, bookmark_undo_service_,
           bookmark_model_observer_.get());
 
-      BookmarkModelMerger(&updates, bookmark_model_, bookmark_tracker_.get())
+      BookmarkModelMerger(&updates, bookmark_model_, favicon_service_,
+                          bookmark_tracker_.get())
           .Merge();
     }
     schedule_save_closure_.Run();
@@ -155,8 +156,8 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
   }
   ScopedRemoteUpdateBookmarks update_bookmarks(
       bookmark_model_, bookmark_undo_service_, bookmark_model_observer_.get());
-  BookmarkRemoteUpdatesHandler updates_handler(bookmark_model_,
-                                               bookmark_tracker_.get());
+  BookmarkRemoteUpdatesHandler updates_handler(
+      bookmark_model_, favicon_service_, bookmark_tracker_.get());
   updates_handler.Process(updates);
   bookmark_tracker_->set_model_type_state(
       std::make_unique<sync_pb::ModelTypeState>(model_type_state));
@@ -240,6 +241,12 @@ void BookmarkModelTypeProcessor::ModelReadyToSync(
   ConnectIfReady();
 }
 
+void BookmarkModelTypeProcessor::SetFaviconService(
+    favicon::FaviconService* favicon_service) {
+  DCHECK(favicon_service);
+  favicon_service_ = favicon_service;
+}
+
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 BookmarkModelTypeProcessor::GetWeakPtr() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -251,6 +258,8 @@ void BookmarkModelTypeProcessor::OnSyncStarting(
     StartCallback start_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(start_callback);
+  // |favicon_service_| should have been set by now.
+  DCHECK(favicon_service_);
   DVLOG(1) << "Sync is starting for Bookmarks";
 
   cache_guid_ = request.cache_guid;

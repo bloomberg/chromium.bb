@@ -17,9 +17,11 @@
 namespace sync_bookmarks {
 
 BookmarkLocalChangesBuilder::BookmarkLocalChangesBuilder(
-    const SyncedBookmarkTracker* const bookmark_tracker)
-    : bookmark_tracker_(bookmark_tracker) {
+    const SyncedBookmarkTracker* const bookmark_tracker,
+    bookmarks::BookmarkModel* bookmark_model)
+    : bookmark_tracker_(bookmark_tracker), bookmark_model_(bookmark_model) {
   DCHECK(bookmark_tracker);
+  DCHECK(bookmark_model);
 }
 
 std::vector<syncer::CommitRequestData>
@@ -64,7 +66,7 @@ BookmarkLocalChangesBuilder::BuildCommitRequests(size_t max_entries) const {
       data.unique_position = metadata->unique_position();
       // Assign specifics only for the non-deletion case. In case of deletion,
       // EntityData should contain empty specifics to indicate deletion.
-      data.specifics = CreateSpecificsFromBookmarkNode(node);
+      data.specifics = CreateSpecificsFromBookmarkNode(node, bookmark_model_);
     }
     request.entity = data.PassToPtr();
     request.sequence_number = metadata->sequence_number();
