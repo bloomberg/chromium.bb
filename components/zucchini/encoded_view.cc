@@ -29,7 +29,7 @@ EncodedView::value_type EncodedView::Projection(offset_t location) const {
 
   // |location| points into a Reference.
   const ReferenceSet& ref_set = image_index_.refs(type);
-  IndirectReference ref = ref_set.at(location);
+  Reference ref = ref_set.at(location);
   DCHECK_GE(location, ref.location);
   DCHECK_LT(location, ref.location + ref_set.width());
 
@@ -40,11 +40,12 @@ EncodedView::value_type EncodedView::Projection(offset_t location) const {
   }
 
   PoolTag pool_tag = ref_set.pool_tag();
+  const auto& target_pool = ref_set.target_pool();
 
   // Targets with an associated Label will use its Label index in projection.
-  DCHECK_EQ(image_index_.pool(pool_tag).size(),
-            pool_infos_[pool_tag.value()].labels.size());
-  uint32_t label = pool_infos_[pool_tag.value()].labels[ref.target_key];
+  DCHECK_EQ(target_pool.size(), pool_infos_[pool_tag.value()].labels.size());
+  uint32_t label = pool_infos_[pool_tag.value()]
+                       .labels[target_pool.KeyForOffset(ref.target)];
 
   // Projection is done on (|target|, |type|), shifted by
   // kBaseReferenceProjection to avoid collisions with raw content.

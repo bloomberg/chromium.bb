@@ -202,21 +202,19 @@ bool GenerateReferencesDelta(const ReferenceSet& src_refs,
         equiv.src_offset + (dst_ref->location - equiv.dst_offset);
     auto src_ref = std::lower_bound(
         src_refs.begin(), src_refs.end(), src_loc,
-        [](const IndirectReference& a, offset_t b) { return a.location < b; });
+        [](const Reference& a, offset_t b) { return a.location < b; });
     for (; dst_ref != dst_refs.end() &&
            dst_ref->location + ref_width <= equiv.dst_end();
          ++dst_ref, ++src_ref) {
       // Local offset of |src_ref| should match that of |dst_ref|.
       DCHECK_EQ(src_ref->location - equiv.src_offset,
                 dst_ref->location - equiv.dst_offset);
-      offset_t old_offset =
-          src_refs.target_pool().OffsetForKey(src_ref->target_key);
+      offset_t old_offset = src_ref->target;
       offset_t new_estimated_offset =
           offset_mapper.ExtendedForwardProject(old_offset);
       offset_t new_estimated_key =
           projected_target_pool.KeyForNearestOffset(new_estimated_offset);
-      offset_t new_offset =
-          dst_refs.target_pool().OffsetForKey(dst_ref->target_key);
+      offset_t new_offset = dst_ref->target;
       offset_t new_key = projected_target_pool.KeyForOffset(new_offset);
 
       reference_delta_sink->PutNext(

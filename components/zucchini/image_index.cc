@@ -47,7 +47,7 @@ bool ImageIndex::IsToken(offset_t location) const {
     return true;
 
   // |location| points into a Reference.
-  IndirectReference reference = refs(type).at(location);
+  Reference reference = refs(type).at(location);
   // Only the first byte of a reference is a token.
   return location == reference.location;
 }
