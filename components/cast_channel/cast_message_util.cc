@@ -20,16 +20,6 @@ using base::Value;
 namespace cast_channel {
 
 namespace {
-// Reserved message namespaces for internal messages.
-constexpr char kCastInternalNamespacePrefix[] = "urn:x-cast:com.google.cast.";
-constexpr char kAuthNamespace[] = "urn:x-cast:com.google.cast.tp.deviceauth";
-constexpr char kHeartbeatNamespace[] =
-    "urn:x-cast:com.google.cast.tp.heartbeat";
-constexpr char kConnectionNamespace[] =
-    "urn:x-cast:com.google.cast.tp.connection";
-constexpr char kReceiverNamespace[] = "urn:x-cast:com.google.cast.receiver";
-constexpr char kBroadcastNamespace[] = "urn:x-cast:com.google.cast.broadcast";
-
 // Text payload keys.
 constexpr char kTypeNodeId[] = "type";
 constexpr char kRequestIdNodeId[] = "requestId";
@@ -119,13 +109,6 @@ bool IsCastInternalNamespace(const std::string& message_namespace) {
   // messages.
   return base::StartsWith(message_namespace, kCastInternalNamespacePrefix,
                           base::CompareCase::SENSITIVE);
-}
-
-CastMessageType ParseMessageType(const CastMessage& message) {
-  std::unique_ptr<base::DictionaryValue> dictionary =
-      GetDictionaryFromCastMessage(message);
-  return dictionary ? ParseMessageTypeFromPayload(*dictionary)
-                    : CastMessageType::kOther;
 }
 
 CastMessageType ParseMessageTypeFromPayload(const base::Value& payload) {
