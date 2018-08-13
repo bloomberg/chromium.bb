@@ -141,7 +141,7 @@ enum SBThreatType {
   // Enterprise password reuse detected on low reputation page,
   SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE,
 
-  // Deceptive mobile billing practice detected.
+  // Potential billing detected.
   SB_THREAT_TYPE_BILLING,
 };
 
