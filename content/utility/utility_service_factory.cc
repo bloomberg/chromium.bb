@@ -27,8 +27,6 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/shape_detection/public/mojom/constants.mojom.h"
-#include "services/shape_detection/shape_detection_service.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/service_impl.h"
 #include "services/viz/public/interfaces/constants.mojom.h"
@@ -144,12 +142,6 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
   info.factory = base::Bind(&CreateCdmService);
   services->emplace(media::mojom::kCdmServiceName, info);
 #endif
-
-  service_manager::EmbeddedServiceInfo shape_detection_info;
-  shape_detection_info.factory =
-      base::Bind(&shape_detection::ShapeDetectionService::Create);
-  services->insert(std::make_pair(shape_detection::mojom::kServiceName,
-                                  shape_detection_info));
 
   service_manager::EmbeddedServiceInfo data_decoder_info;
   data_decoder_info.factory = base::Bind(&CreateDataDecoderService);
