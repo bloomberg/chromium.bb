@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_SEARCH_NTP_USER_DATA_TYPES_H_
 
 // This enum must match the numbering for NTPBackgroundCustomizationAvailability
-// in enums.xml. Do not reorder or remove items, only add new items before
-// BACKGROUND_CUSTOMIZATION_MAX.
+// in enums.xml. Do not reorder or remove items, and update kMaxValue when new
+// items are added.
 enum class BackgroundCustomization {
   BACKGROUND_CUSTOMIZATION_AVAILABLE = 0,
   BACKGROUND_CUSTOMIZATION_UNAVAILABLE_FEATURE = 1,
@@ -18,8 +18,8 @@ enum class BackgroundCustomization {
 };
 
 // This enum must match the numbering for NTPShortcutCustomizationAvailability
-// in enums.xml. Do not reorder or remove items, only add new items before
-// SHORTCUT_CUSTOMIZATION_MAX.
+// in enums.xml. Do not reorder or remove items, and update kMaxValue when new
+// items are added.
 enum class ShortcutCustomization {
   SHORTCUT_CUSTOMIZATION_AVAILABLE = 0,
   SHORTCUT_CUSTOMIZATION_UNAVAILABLE_FEATURE = 1,
@@ -29,8 +29,8 @@ enum class ShortcutCustomization {
 };
 
 // This enum must match the numbering for NTPCustomizedFeatures in
-// enums.xml. Do not reorder or remove items, only add new items before
-// CUSTOMIZED_FEATURE_MAX.
+// enums.xml. Do not reorder or remove items, and update kMaxValue when new
+// items are added.
 enum class CustomizedFeature {
   CUSTOMIZED_FEATURE_BACKGROUND = 0,
   CUSTOMIZED_FEATURE_SHORTCUT = 1,
@@ -39,8 +39,8 @@ enum class CustomizedFeature {
 };
 
 // This enum must match the numbering for NTPCustomizeAction in
-// enums.xml. Do not reorder or remove items, and only add new items before
-// CUSTOMIZE_ACTION_MAX.
+// enums.xml. Do not reorder or remove items, and update kMaxValue when new
+// items are added.
 enum class CustomizeAction {
   CUSTOMIZE_ACTION_CHROME_BACKGROUNDS = 0,
   CUSTOMIZE_ACTION_LOCAL_IMAGE = 1,
@@ -54,8 +54,8 @@ enum class CustomizeAction {
 };
 
 // This enum must match the numbering for NTPCustomizeChromeBackgroundAction in
-// enums.xml. Do not reorder or remove items, and only add new items before
-// CUSTOMIZE_CHROME_BACKGROUND_ACTION_MAX.
+// enums.xml. Do not reorder or remove items, and update kMaxValue when new
+// items are added.
 enum class CustomizeChromeBackgroundAction {
   CUSTOMIZE_CHROME_BACKGROUND_ACTION_SELECT_COLLECTION = 0,
   CUSTOMIZE_CHROME_BACKGROUND_ACTION_SELECT_IMAGE = 1,
@@ -66,8 +66,8 @@ enum class CustomizeChromeBackgroundAction {
 };
 
 // This enum must match the numbering for NTPCustomizeLocalImageBackgroundAction
-// in enums.xml. Do not reorder or remove items, and only add new items before
-// CUSTOMIZE_LOCAL_IMAGE_BACKGROUND_ACTION_MAX.
+// in enums.xml. Do not reorder or remove items, and update kMaxValue when new
+// items are added.
 enum class CustomizeLocalImageBackgroundAction {
   CUSTOMIZE_LOCAL_IMAGE_BACKGROUND_ACTION_CANCEL = 0,
   CUSTOMIZE_LOCAL_IMAGE_BACKGROUND_ACTION_DONE = 1,
@@ -76,16 +76,18 @@ enum class CustomizeLocalImageBackgroundAction {
 };
 
 // This enum must match the numbering for NTPCustomizeShortcutAction in
-// enums.xml. Do not reorder or remove items, and only add new items before
-// CUSTOMIZE_SHORTCUT_ACTION_MAX.
+// enums.xml. Do not reorder or remove items, and update kMaxValue when new
+// items are added.
 enum class CustomizeShortcutAction {
   CUSTOMIZE_SHORTCUT_ACTION_REMOVE = 0,
   CUSTOMIZE_SHORTCUT_ACTION_CANCEL = 1,
   CUSTOMIZE_SHORTCUT_ACTION_DONE = 2,
   CUSTOMIZE_SHORTCUT_ACTION_UNDO = 3,
   CUSTOMIZE_SHORTCUT_ACTION_RESTORE_ALL = 4,
+  CUSTOMIZE_SHORTCUT_ACTION_ADD = 5,
+  CUSTOMIZE_SHORTCUT_ACTION_UPDATE = 6,
 
-  kMaxValue = CUSTOMIZE_SHORTCUT_ACTION_RESTORE_ALL
+  kMaxValue = CUSTOMIZE_SHORTCUT_ACTION_UPDATE
 };
 
 #endif  // CHROME_BROWSER_UI_SEARCH_NTP_USER_DATA_TYPES_H_

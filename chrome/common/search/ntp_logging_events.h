@@ -113,18 +113,22 @@ enum NTPLoggingEventType {
   // 'Done' was clicked in the 'Upload an image' dialog.
   NTP_CUSTOMIZE_LOCAL_IMAGE_DONE = 52,
 
-  // 'Remove' was clicked in the 'Edit shortcut' dialog.
+  // A custom shortcut was removed.
   NTP_CUSTOMIZE_SHORTCUT_REMOVE = 53,
   // 'Cancel' was clicked in the 'Edit shortcut' dialog.
   NTP_CUSTOMIZE_SHORTCUT_CANCEL = 54,
   // 'Done' was clicked in the 'Edit shortcut' dialog.
   NTP_CUSTOMIZE_SHORTCUT_DONE = 55,
-  // 'Undo' was clicked in the message pop-up.
+  // A custom shortcut action was undone.
   NTP_CUSTOMIZE_SHORTCUT_UNDO = 56,
-  // 'Restore default shortcuts' was clicked in the message pop-up.
+  // All custom shortcuts were restored.
   NTP_CUSTOMIZE_SHORTCUT_RESTORE_ALL = 57,
+  // A custom shortcut was added.
+  NTP_CUSTOMIZE_SHORTCUT_ADD = 58,
+  // A custom shortcut was updated.
+  NTP_CUSTOMIZE_SHORTCUT_UPDATE = 59,
 
-  NTP_EVENT_TYPE_LAST = NTP_CUSTOMIZE_SHORTCUT_RESTORE_ALL
+  NTP_EVENT_TYPE_LAST = NTP_CUSTOMIZE_SHORTCUT_UPDATE
 };
 
 #endif  // CHROME_COMMON_SEARCH_NTP_LOGGING_EVENTS_H_

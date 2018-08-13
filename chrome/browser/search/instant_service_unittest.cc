@@ -14,12 +14,26 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/url_constants.h"
+#include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/ntp_tile.h"
 #include "components/ntp_tiles/section_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using InstantServiceTest = InstantUnitTestBase;
+
+class InstantServiceTestCustomLinksEnabled : public InstantServiceTest {
+ public:
+  InstantServiceTestCustomLinksEnabled() {
+    scoped_feature_list_.InitAndEnableFeature(ntp_tiles::kNtpCustomLinks);
+  }
+  ~InstantServiceTestCustomLinksEnabled() override {}
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(InstantServiceTestCustomLinksEnabled);
+};
 
 class InstantServiceTestCustomBackgroundsEnabled : public InstantServiceTest {
  public:
@@ -49,6 +63,24 @@ TEST_F(InstantServiceTest, GetNTPTileSuggestion) {
   ASSERT_EQ(1, (int)items.size());
   EXPECT_EQ(ntp_tiles::TileSource::TOP_SITES, items[0].source);
   EXPECT_EQ(ntp_tiles::TileTitleSource::TITLE_TAG, items[0].title_source);
+}
+
+TEST_F(InstantServiceTestCustomLinksEnabled,
+       DisableUndoCustomLinkActionForNonGoogleSearchProvider) {
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  EXPECT_TRUE(instant_service_->UndoCustomLinkAction());
+
+  SetUserSelectedDefaultSearchProvider("https://www.search.com");
+  EXPECT_FALSE(instant_service_->UndoCustomLinkAction());
+}
+
+TEST_F(InstantServiceTestCustomLinksEnabled,
+       DisableResetCustomLinksForNonGoogleSearchProvider) {
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  EXPECT_TRUE(instant_service_->ResetCustomLinks());
+
+  SetUserSelectedDefaultSearchProvider("https://www.search.com");
+  EXPECT_FALSE(instant_service_->ResetCustomLinks());
 }
 
 TEST_F(InstantServiceTestCustomBackgroundsEnabled, SetCustomBackgroundURL) {

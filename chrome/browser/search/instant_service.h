@@ -89,11 +89,13 @@ class InstantService : public KeyedService,
   // Invoked when the Instant page wants to delete a custom link.
   bool DeleteCustomLink(const GURL& url);
   // Invoked when the Instant page wants to undo the previous custom link
-  // action.
-  void UndoCustomLinkAction();
+  // action. Returns false and does nothing if the profile is using a non-Google
+  // search provider.
+  bool UndoCustomLinkAction();
   // Invoked when the Instant page wants to delete all custom links and use Most
-  // Visited sites instead.
-  void ResetCustomLinks();
+  // Visited sites instead. Returns false and does nothing if the profile is
+  // using a non-Google search provider.
+  bool ResetCustomLinks();
 
   // Invoked by the InstantController to update theme information for NTP.
   //
