@@ -826,7 +826,6 @@
 
     <!-- Omnibox -->
     <style name="TextAppearance.OmniboxVerboseStatus" parent="@android:style/TextAppearance.Medium">
-        <item name="android:textColor">@color/locationbar_status_color</item>
         <item name="android:textSize">@dimen/location_bar_url_text_size</item>
     </style>
 </resources>
