@@ -46,6 +46,7 @@ namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
+class PostMessageOptions;
 class ScriptState;
 
 class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
@@ -62,6 +63,10 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   void postMessage(ScriptState*,
                    const ScriptValue& message,
                    Vector<ScriptValue>& transfer,
+                   ExceptionState&);
+  void postMessage(ScriptState*,
+                   const ScriptValue& message,
+                   const PostMessageOptions&,
                    ExceptionState&);
 
   void start();

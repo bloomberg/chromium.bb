@@ -15,6 +15,7 @@
 
 namespace blink {
 
+class PostMessageOptions;
 class ScriptPromiseResolver;
 class ScriptState;
 
@@ -39,6 +40,10 @@ class MODULES_EXPORT ServiceWorkerClient : public ScriptWrappable {
   void postMessage(ScriptState*,
                    const ScriptValue& message,
                    Vector<ScriptValue>& transfer,
+                   ExceptionState&);
+  void postMessage(ScriptState*,
+                   const ScriptValue& message,
+                   const PostMessageOptions&,
                    ExceptionState&);
 
  protected:

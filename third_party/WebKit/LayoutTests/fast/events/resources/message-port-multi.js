@@ -24,7 +24,6 @@ shouldThrow('channel.port1.postMessage("duplicate port", [channel3.port1, channe
 // Should be OK to send channel3.port1 (should not have been disentangled by the previous failed calls).
 channel.port1.postMessage("entangled ports", [channel3.port1, channel3.port2]);
 
-shouldThrow('channel.port1.postMessage("notAnArray", channel3.port1)', '"TypeError: Failed to execute \'postMessage\' on \'MessagePort\': Iterator getter is not callable."');
 shouldThrow('channel.port1.postMessage("notASequence", [{length: 3}])', '"TypeError: Failed to execute \'postMessage\' on \'MessagePort\': Value at index 0 does not have a transferable type."');
 var arrayBuffer = new ArrayBuffer(2);
 shouldThrow('channel.port1.postMessage("duplicate buffer", [arrayBuffer, arrayBuffer])', '"DataCloneError: Failed to execute \'postMessage\' on \'MessagePort\': ArrayBuffer at index 1 is a duplicate of an earlier ArrayBuffer."');

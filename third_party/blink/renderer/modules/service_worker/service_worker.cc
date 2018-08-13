@@ -55,6 +55,16 @@ void ServiceWorker::postMessage(ScriptState* script_state,
                                 const ScriptValue& message,
                                 Vector<ScriptValue>& transfer,
                                 ExceptionState& exception_state) {
+  PostMessageOptions options;
+  if (!transfer.IsEmpty())
+    options.setTransfer(transfer);
+  postMessage(script_state, message, options, exception_state);
+}
+
+void ServiceWorker::postMessage(ScriptState* script_state,
+                                const ScriptValue& message,
+                                const PostMessageOptions& options,
+                                ExceptionState& exception_state) {
   ServiceWorkerContainerClient* client =
       ServiceWorkerContainerClient::From(GetExecutionContext());
   if (!client || !client->Provider()) {
@@ -64,10 +74,7 @@ void ServiceWorker::postMessage(ScriptState* script_state,
     return;
   }
 
-  PostMessageOptions options;
   Transferables transferables;
-  if (!transfer.IsEmpty())
-    options.setTransfer(transfer);
 
   scoped_refptr<SerializedScriptValue> serialized_message =
       PostMessageHelper::SerializeMessageByCopy(script_state->GetIsolate(),

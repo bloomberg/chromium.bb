@@ -35,6 +35,7 @@
     Exposed=DedicatedWorker
 ] interface DedicatedWorkerGlobalScope : WorkerGlobalScope {
     [CallWith=ScriptState, RaisesException] void postMessage(any message, optional sequence<object> transfer = []);
+    [RuntimeEnabled=PostMessageOptions, CallWith=ScriptState, RaisesException] void postMessage(any message, PostMessageOptions options);
 
     void close();
 

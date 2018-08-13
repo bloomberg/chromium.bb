@@ -41,6 +41,7 @@ namespace blink {
 
 class DedicatedWorkerObjectProxy;
 class DedicatedWorkerThread;
+class PostMessageOptions;
 class ScriptState;
 struct GlobalScopeCreationParams;
 
@@ -67,6 +68,10 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   void postMessage(ScriptState*,
                    const ScriptValue& message,
                    Vector<ScriptValue>& transfer,
+                   ExceptionState&);
+  void postMessage(ScriptState*,
+                   const ScriptValue& message,
+                   const PostMessageOptions&,
                    ExceptionState&);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message);

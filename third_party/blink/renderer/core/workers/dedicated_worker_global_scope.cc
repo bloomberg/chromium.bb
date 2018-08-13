@@ -91,7 +91,13 @@ void DedicatedWorkerGlobalScope::postMessage(ScriptState* script_state,
   PostMessageOptions options;
   if (!transfer.IsEmpty())
     options.setTransfer(transfer);
+  postMessage(script_state, message, options, exception_state);
+}
 
+void DedicatedWorkerGlobalScope::postMessage(ScriptState* script_state,
+                                             const ScriptValue& message,
+                                             const PostMessageOptions& options,
+                                             ExceptionState& exception_state) {
   Transferables transferables;
   scoped_refptr<SerializedScriptValue> serialized_message =
       PostMessageHelper::SerializeMessageByMove(script_state->GetIsolate(),
