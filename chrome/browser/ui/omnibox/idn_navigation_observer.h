@@ -8,6 +8,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+class SiteEngagementService;
+
 // Observes navigations and shows an infobar if an IDN hostname visually looks
 // like a top domain.
 class IdnNavigationObserver
@@ -41,7 +43,8 @@ class IdnNavigationObserver
  private:
   // Returns a site that the user has used before that |url| may be attempting
   // to spoof, based on skeleton comparison.
-  std::string GetMatchingSiteEngagementDomain(const GURL& url);
+  std::string GetMatchingSiteEngagementDomain(SiteEngagementService* service,
+                                              const GURL& url);
 };
 
 #endif  // CHROME_BROWSER_UI_OMNIBOX_IDN_NAVIGATION_OBSERVER_H_

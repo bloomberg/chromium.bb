@@ -45,6 +45,18 @@ class IdnNavigationObserverBrowserTest
         ->ResetBaseScoreForURL(url, score);
   }
 
+  void TestInfobarNotShown(const GURL& navigated_url) {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(web_contents);
+
+    content::TestNavigationObserver navigation_observer(web_contents, 1);
+    ui_test_utils::NavigateToURL(browser(), navigated_url);
+    navigation_observer.Wait();
+    EXPECT_EQ(0u, infobar_service->infobar_count());
+  }
+
   void TestInfobarShown(const GURL& navigated_url,
                         const GURL& expected_suggested_url) {
     // Sanity check navigated_url.
@@ -100,30 +112,16 @@ INSTANTIATE_TEST_CASE_P(,
 
 // Navigating to a non-IDN shouldn't show an infobar.
 IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest, NonIdn_NoInfobar) {
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  content::TestNavigationObserver navigation_observer(web_contents, 1);
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("google.com", "/title1.html"));
-  navigation_observer.Wait();
-  EXPECT_EQ(0u, infobar_service->infobar_count());
+  TestInfobarNotShown(
+      embedded_test_server()->GetURL("google.com", "/title1.html"));
 }
 
 // Navigating to a domain whose visual representation does not look like a
 // top domain shouldn't show an infobar.
 IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest,
                        NonTopDomainIdn_NoInfobar) {
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-
-  content::TestNavigationObserver navigation_observer(web_contents, 1);
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("éxample.com", "/title1.html"));
-  EXPECT_EQ(0u, infobar_service->infobar_count());
+  TestInfobarNotShown(
+      embedded_test_server()->GetURL("éxample.com", "/title1.html"));
 }
 
 // Navigating to a domain whose visual representation looks like a top domain
@@ -149,6 +147,19 @@ IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest, TopDomainIdn_Infobar) {
   histograms.ExpectBucketCount(
       IdnNavigationObserver::kHistogramName,
       IdnNavigationObserver::NavigationSuggestionEvent::kMatchTopSite, 1);
+}
+
+// Same as TopDomainIdn_Infobar but the user has engaged with the domain before.
+// Shouldn't show an infobar.
+IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest,
+                       TopDomainIdn_EngagedSite_NoInfobar) {
+  if (!IsFeatureEnabled())
+    return;
+
+  // If the user already engaged with the site, the infobar shouldn't be shown.
+  const GURL url = embedded_test_server()->GetURL("googlé.com", "/title1.html");
+  SetSiteEngagementScore(url, 20);
+  TestInfobarNotShown(url);
 }
 
 // Navigating to a domain whose visual representation looks like a domain with a
@@ -204,16 +215,9 @@ IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest,
 // The infobar shouldn't be shown when the feature is disabled.
 IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest,
                        TopDomainIdn_FeatureDisabled) {
-  if (GetParam())
+  if (IsFeatureEnabled())
     return;
 
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-
-  content::TestNavigationObserver navigation_observer(web_contents, 1);
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("googlé.com", "/title1.html"));
-  EXPECT_EQ(0u, infobar_service->infobar_count());
+  TestInfobarNotShown(
+      embedded_test_server()->GetURL("googlé.com", "/title1.html"));
 }

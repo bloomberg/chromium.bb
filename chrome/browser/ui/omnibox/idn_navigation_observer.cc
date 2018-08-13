@@ -49,8 +49,15 @@ IdnNavigationObserver::~IdnNavigationObserver() {}
 void IdnNavigationObserver::NavigationEntryCommitted(
     const content::LoadCommittedDetails& load_details) {
   const GURL url = load_details.entry->GetVirtualURL();
-  const base::StringPiece host = url.host_piece();
+  // If the user has engaged with this site, don't show any lookalike
+  // navigation suggestions.
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  SiteEngagementService* service = SiteEngagementService::Get(profile);
+  if (service->IsEngagementAtLeast(url, blink::mojom::EngagementLevel::LOW))
+    return;
 
+  const base::StringPiece host = url.host_piece();
   url_formatter::IDNConversionResult result =
       url_formatter::IDNToUnicodeWithDetails(host);
   if (!result.has_idn_component)
@@ -58,7 +65,7 @@ void IdnNavigationObserver::NavigationEntryCommitted(
 
   std::string matched_domain;
   if (result.matching_top_domain.empty()) {
-    matched_domain = GetMatchingSiteEngagementDomain(url);
+    matched_domain = GetMatchingSiteEngagementDomain(service, url);
     if (matched_domain.empty())
       return;
     RecordEvent(NavigationSuggestionEvent::kMatchSiteEngagement);
@@ -92,13 +99,8 @@ void IdnNavigationObserver::CreateForWebContents(
 }
 
 std::string IdnNavigationObserver::GetMatchingSiteEngagementDomain(
+    SiteEngagementService* service,
     const GURL& url) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  SiteEngagementService* service = SiteEngagementService::Get(profile);
-  if (service->IsEngagementAtLeast(url, blink::mojom::EngagementLevel::LOW))
-    return std::string();
-
   // Compute skeletons using eTLD+1.
   const std::string domain_and_registry =
       net::registry_controlled_domains::GetDomainAndRegistry(
@@ -120,7 +122,8 @@ std::string IdnNavigationObserver::GetMatchingSiteEngagementDomain(
                                       blink::mojom::EngagementLevel::LOW))
       continue;
 
-    // If this is already an engaged site, don't suggest any alternatives.
+    // If the user has engaged with eTLD+1 of this site, don't show any
+    // lookalike navigation suggestions.
     const std::string engaged_domain_and_registry =
         net::registry_controlled_domains::GetDomainAndRegistry(
             detail.origin,
