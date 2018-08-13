@@ -9,6 +9,7 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/main_stage/assistant_footer_view.h"
+#include "ash/assistant/ui/main_stage/assistant_header_view.h"
 #include "ash/assistant/ui/main_stage/assistant_progress_indicator.h"
 #include "ash/assistant/ui/main_stage/assistant_query_view.h"
 #include "ash/assistant/ui/main_stage/ui_element_container_view.h"
@@ -166,7 +167,7 @@ AssistantMainStage::AssistantMainStage(
               /*animation_ended_callback=*/base::BindRepeating(
                   &AssistantMainStage::OnFooterAnimationEnded,
                   base::Unretained(this)))) {
-  InitLayout(assistant_controller);
+  InitLayout();
 
   // The view hierarchy will be destructed before Shell, which owns
   // AssistantController, so AssistantController is guaranteed to outlive the
@@ -211,7 +212,7 @@ void AssistantMainStage::OnViewVisibilityChanged(views::View* view) {
   PreferredSizeChanged();
 }
 
-void AssistantMainStage::InitLayout(AssistantController* assistant_controller) {
+void AssistantMainStage::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // The children of AssistantMainStage will be animated on their own layers and
@@ -220,13 +221,12 @@ void AssistantMainStage::InitLayout(AssistantController* assistant_controller) {
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetMasksToBounds(true);
 
-  InitContentLayoutContainer(assistant_controller);
-  InitQueryLayoutContainer(assistant_controller);
+  InitContentLayoutContainer();
+  InitQueryLayoutContainer();
   InitOverlayLayoutContainer();
 }
 
-void AssistantMainStage::InitContentLayoutContainer(
-    AssistantController* assistant_controller) {
+void AssistantMainStage::InitContentLayoutContainer() {
   // Note that we will observe children of |content_layout_container_| to handle
   // preferred size and visibility change events in AssistantMainStage. This is
   // necessary because |content_layout_container_| may not change size in
@@ -238,15 +238,19 @@ void AssistantMainStage::InitContentLayoutContainer(
           std::make_unique<views::BoxLayout>(
               views::BoxLayout::Orientation::kVertical));
 
+  // Header.
+  header_ = new AssistantHeaderView(assistant_controller_);
+  content_layout_container_->AddChildView(header_);
+
   // UI element container.
-  ui_element_container_ = new UiElementContainerView(assistant_controller);
+  ui_element_container_ = new UiElementContainerView(assistant_controller_);
   ui_element_container_->AddObserver(this);
   content_layout_container_->AddChildView(ui_element_container_);
 
   layout_manager->SetFlexForView(ui_element_container_, 1);
 
   // Footer.
-  footer_ = new AssistantFooterView(assistant_controller);
+  footer_ = new AssistantFooterView(assistant_controller_);
   footer_->AddObserver(this);
 
   // The footer will be animated on its own layer.
@@ -258,8 +262,7 @@ void AssistantMainStage::InitContentLayoutContainer(
   AddChildView(content_layout_container_);
 }
 
-void AssistantMainStage::InitQueryLayoutContainer(
-    AssistantController* assistant_controller) {
+void AssistantMainStage::InitQueryLayoutContainer() {
   // Note that we will observe children of |query_layout_container_| to handle
   // preferred size and visibility change events in AssistantMainStage. This is
   // necessary because |query_layout_container_| may not change size in response
@@ -612,13 +615,12 @@ void AssistantMainStage::UpdateTopPadding() {
   const int top_padding = active_query_view_ ? active_query_view_->height() : 0;
 
   // Apply top padding to the content layout container by applying an empty
-  // border to the UI element container, its first child.
-  ui_element_container_->SetBorder(
-      views::CreateEmptyBorder(top_padding, 0, 0, 0));
+  // border to the header, its first child.
+  header_->SetBorder(views::CreateEmptyBorder(top_padding, 0, 0, 0));
 
   // Force a layout/paint pass.
-  ui_element_container_->Layout();
-  ui_element_container_->SchedulePaint();
+  content_layout_container_->Layout();
+  content_layout_container_->SchedulePaint();
 
   // Apply top padding to the overlay layout container by applying an empty
   // border to its children.

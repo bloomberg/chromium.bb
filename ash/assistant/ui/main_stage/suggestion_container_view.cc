@@ -11,7 +11,6 @@
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -21,22 +20,6 @@ namespace {
 // Appearance.
 constexpr int kPreferredHeightDip = 48;
 
-// InvisibleScrollBar ----------------------------------------------------------
-
-class InvisibleScrollBar : public views::OverlayScrollBar {
- public:
-  explicit InvisibleScrollBar(bool horizontal)
-      : views::OverlayScrollBar(horizontal) {}
-
-  ~InvisibleScrollBar() override = default;
-
-  // views::OverlayScrollBar:
-  int GetThickness() const override { return 0; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InvisibleScrollBar);
-};
-
 }  // namespace
 
 // SuggestionContainerView -----------------------------------------------------
@@ -44,7 +27,6 @@ class InvisibleScrollBar : public views::OverlayScrollBar {
 SuggestionContainerView::SuggestionContainerView(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
-      contents_view_(new views::View()),
       download_request_weak_factory_(this) {
   InitLayout();
 
@@ -65,21 +47,20 @@ int SuggestionContainerView::GetHeightForWidth(int width) const {
   return kPreferredHeightDip;
 }
 
+void SuggestionContainerView::OnContentsPreferredSizeChanged(
+    views::View* content_view) {
+  const int preferred_width = content_view->GetPreferredSize().width();
+  content_view->SetSize(gfx::Size(preferred_width, kPreferredHeightDip));
+}
+
 void SuggestionContainerView::InitLayout() {
-  // Contents.
   views::BoxLayout* layout_manager =
-      contents_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      content_view()->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
           gfx::Insets(0, kPaddingDip), kSpacingDip));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_END);
-
-  // ScrollView.
-  SetBackgroundColor(SK_ColorTRANSPARENT);
-  SetContents(contents_view_);
-  SetHorizontalScrollBar(new InvisibleScrollBar(/*horizontal=*/true));
-  SetVerticalScrollBar(new InvisibleScrollBar(/*horizontal=*/false));
 }
 
 void SuggestionContainerView::OnResponseChanged(
@@ -123,10 +104,8 @@ void SuggestionContainerView::OnResponseChanged(
     // suggestion chip view. This is used for handling icon download events.
     suggestion_chip_views_[id] = suggestion_chip_view;
 
-    contents_view_->AddChildView(suggestion_chip_view);
+    content_view()->AddChildView(suggestion_chip_view);
   }
-
-  UpdateContentsBounds();
 }
 
 void SuggestionContainerView::OnResponseCleared() {
@@ -134,10 +113,8 @@ void SuggestionContainerView::OnResponseCleared() {
   download_request_weak_factory_.InvalidateWeakPtrs();
 
   // When modifying the view hierarchy, make sure we keep our view cache synced.
-  contents_view_->RemoveAllChildViews(/*delete_children=*/true);
+  content_view()->RemoveAllChildViews(/*delete_children=*/true);
   suggestion_chip_views_.clear();
-
-  UpdateContentsBounds();
 }
 
 void SuggestionContainerView::OnSuggestionChipIconDownloaded(
@@ -151,11 +128,6 @@ void SuggestionContainerView::ButtonPressed(views::Button* sender,
                                             const ui::Event& event) {
   assistant_controller_->interaction_controller()->OnSuggestionChipPressed(
       static_cast<app_list::SuggestionChipView*>(sender)->id());
-}
-
-void SuggestionContainerView::UpdateContentsBounds() {
-  contents_view_->SetBounds(0, 0, contents_view_->GetPreferredSize().width(),
-                            kPreferredHeightDip);
 }
 
 }  // namespace ash

@@ -9,7 +9,6 @@
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
-#include "ash/assistant/ui/main_stage/assistant_header_view.h"
 #include "ash/assistant/ui/main_stage/assistant_text_element_view.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
@@ -24,7 +23,6 @@
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/view_observer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -131,28 +129,38 @@ UiElementContainerView::~UiElementContainerView() {
   ReleaseAllCards();
 }
 
-void UiElementContainerView::ChildPreferredSizeChanged(views::View* child) {
-  PreferredSizeChanged();
+gfx::Size UiElementContainerView::CalculatePreferredSize() const {
+  return gfx::Size(INT_MAX, GetHeightForWidth(INT_MAX));
+}
+
+int UiElementContainerView::GetHeightForWidth(int width) const {
+  return content_view()->GetHeightForWidth(width);
+}
+
+void UiElementContainerView::OnContentsPreferredSizeChanged(
+    views::View* content_view) {
+  const int preferred_height = content_view->GetHeightForWidth(width());
+  content_view->SetSize(gfx::Size(width(), preferred_height));
 }
 
 void UiElementContainerView::InitLayout() {
   views::BoxLayout* layout_manager =
-      SetLayoutManager(std::make_unique<views::BoxLayout>(
+      content_view()->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical,
           gfx::Insets(0, kPaddingHorizontalDip), kSpacingDip));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_START);
-
-  // Header.
-  assistant_header_view_ =
-      std::make_unique<AssistantHeaderView>(assistant_controller_);
-  assistant_header_view_->set_owned_by_client();
-  AddChildView(assistant_header_view_.get());
 }
 
 void UiElementContainerView::OnCommittedQueryChanged(
     const AssistantQuery& query) {
+  // We don't allow processing of events while waiting for the next query
+  // response. The contents will be faded out, so it should not be interactive.
+  // We also scroll to the top to play nice with the transition animation.
+  set_can_process_events_within_subtree(false);
+  ScrollToPosition(vertical_scroll_bar(), 0);
+
   if (!assistant::ui::kIsMotionSpecEnabled)
     return;
 
@@ -206,12 +214,8 @@ void UiElementContainerView::OnResponseCleared() {
   // Prevent any in-flight card rendering requests from returning.
   render_request_weak_factory_.InvalidateWeakPtrs();
 
-  RemoveAllChildViews(/*delete_children=*/true);
+  content_view()->RemoveAllChildViews(/*delete_children=*/true);
   ui_element_layers_.clear();
-
-  AddChildView(assistant_header_view_.get());
-
-  PreferredSizeChanged();
 
   ReleaseAllCards();
 
@@ -241,6 +245,10 @@ void UiElementContainerView::OnResponseAdded(
 
 void UiElementContainerView::OnAllUiElementsAdded() {
   DCHECK(!is_processing_ui_element_);
+
+  // Now that the response for the current query has been added to the view
+  // hierarchy, we can re-enable processing of events.
+  set_can_process_events_within_subtree(true);
 
   // If the motion spec is disabled, there's nothing to do because the views
   // do not need to be animated in.
@@ -347,7 +355,7 @@ void UiElementContainerView::OnCardReady(
         app_list::AnswerCardContentsRegistry::Get()->GetView(
             embed_token.value()));
 
-    AddChildView(view_holder);
+    content_view()->AddChildView(view_holder);
     view_holder->Attach();
 
     if (assistant::ui::kIsMotionSpecEnabled) {
@@ -365,8 +373,6 @@ void UiElementContainerView::OnCardReady(
     }
   }
   // TODO(dmblack): Handle Mash case.
-
-  PreferredSizeChanged();
 
   // Once the card has been rendered and embedded, we can resume processing
   // any UI elements that are in the pending queue.
@@ -393,8 +399,7 @@ void UiElementContainerView::OnTextElementAdded(
         text_element_view->layer(), kTextElementAnimationFadeOutOpacity));
   }
 
-  AddChildView(text_element_view);
-  PreferredSizeChanged();
+  content_view()->AddChildView(text_element_view);
 }
 
 void UiElementContainerView::SetProcessingUiElement(bool is_processing) {
