@@ -307,6 +307,7 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/widget/ButtonCompat.java",
     "java/src/org/chromium/ui/widget/CheckableImageView.java",
     "java/src/org/chromium/ui/widget/RectProvider.java",
+    "java/src/org/chromium/ui/widget/RoundedCornerImageView.java",
     "java/src/org/chromium/ui/widget/TextViewWithClickableSpans.java",
     "java/src/org/chromium/ui/widget/TextViewWithLeading.java",
     "java/src/org/chromium/ui/widget/Toast.java",
