@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 Found 71 tests; 62 PASS, 9 FAIL, 0 TIMEOUT, 0 NOTRUN.
-PASS Test css-animations IDL implementation
+PASS idl_test setup
 PASS Partial interface CSSRule: original interface defined
 PASS Partial interface mixin GlobalEventHandlers: original interface mixin defined
 PASS AnimationEvent interface: existence and properties of interface object

@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 FAIL idlharness promise_test: Unhandled rejection with value: object "NotAllowedError: The operation either timed out or was not allowed. See: https://w3c.github.io/webauthn/#sec-assertion-privacy."
-PASS WebAuthn interfaces.
+PASS idl_test setup
 PASS Partial dictionary CredentialCreationOptions: original dictionary defined
 PASS Partial dictionary CredentialRequestOptions: original dictionary defined
 PASS Partial interface PublicKeyCredential: original interface defined

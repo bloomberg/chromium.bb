@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 Found 322 tests; 243 PASS, 79 FAIL, 0 TIMEOUT, 0 NOTRUN.
-PASS cssom-view interfaces
+PASS idl_test setup
 PASS Partial interface Window: original interface defined
 PASS Partial interface Document: original interface defined
 PASS Partial interface Element: original interface defined

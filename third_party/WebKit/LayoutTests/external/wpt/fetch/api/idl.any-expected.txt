@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 Found 139 tests; 133 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
-PASS Fetch Standard IDL
+PASS idl_test setup
 PASS Partial interface mixin WindowOrWorkerGlobalScope: original interface mixin defined
 PASS Headers interface: existence and properties of interface object
 PASS Headers interface object length

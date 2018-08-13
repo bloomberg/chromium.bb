@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 Found 447 tests; 414 PASS, 33 FAIL, 0 TIMEOUT, 0 NOTRUN.
-PASS CSS Typed OM IDL test
+PASS idl_test setup
 PASS Partial interface Element: original interface defined
 PASS Partial interface CSSStyleRule: original interface defined
 PASS Partial interface ElementCSSInlineStyle: original interface defined

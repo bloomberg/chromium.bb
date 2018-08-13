@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-PASS Test IDL implementation of css-transitions API
+PASS idl_test setup
 PASS Partial interface GlobalEventHandlers: original interface defined
 PASS TransitionEvent interface: existence and properties of interface object
 PASS TransitionEvent interface object length

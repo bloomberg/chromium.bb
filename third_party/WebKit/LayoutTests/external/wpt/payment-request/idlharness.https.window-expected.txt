@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-PASS Setup for Payment Request API IDL tests.
+PASS idl_test setup
 PASS PaymentRequest interface: existence and properties of interface object
 PASS PaymentRequest interface object length
 PASS PaymentRequest interface object name

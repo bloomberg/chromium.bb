@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-PASS pointerevents extension interfaces
+PASS idl_test setup
 PASS Partial dictionary PointerEventInit: original dictionary defined
 PASS Partial interface PointerEvent: original interface defined
 PASS PointerEvent interface: operation getCoalescedEvents()

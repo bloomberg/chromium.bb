@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-PASS Test driver
+PASS idl_test setup
 PASS BaseAudioContext interface: existence and properties of interface object
 PASS BaseAudioContext interface object length
 PASS BaseAudioContext interface object name
