@@ -370,7 +370,13 @@ TEST_F(ContextMenuJsTest, MAYBE_LinkOfTextWithCalloutDefault) {
 // Tests that no callout information about a link is displayed when
 // -webkit-touch-callout property is set to none. Please see:
 // https://developer.mozilla.org/en-US/docs/Web/CSS/-webkit-touch-callout
-TEST_F(ContextMenuJsTest, LinkOfTextWithCalloutNone) {
+// TODO(crbug.com/873662): This test is flaky on iOS 11 device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_LinkOfTextWithCalloutNone LinkOfTextWithCalloutNone
+#else
+#define MAYBE_LinkOfTextWithCalloutNone FLAKY_LinkOfTextWithCalloutNone
+#endif
+TEST_F(ContextMenuJsTest, MAYBE_LinkOfTextWithCalloutNone) {
   const char kLinkHtml[] =
       "<a href='%s' style='-webkit-touch-callout:none;'>link</a>";
 
@@ -400,7 +406,13 @@ TEST_F(ContextMenuJsTest, LinkOfTextWithCalloutFromAncester) {
 // Tests that setting -webkit-touch-callout property can override the value
 // inherited from ancester. Please see:
 // https://developer.mozilla.org/en-US/docs/Web/CSS/-webkit-touch-callout
-TEST_F(ContextMenuJsTest, LinkOfTextWithCalloutOverride) {
+// TODO(crbug.com/873660): This test is flaky on iOS 11 device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_LinkOfTextWithCalloutOverride LinkOfTextWithCalloutOverride
+#else
+#define MAYBE_LinkOfTextWithCalloutOverride FLAKY_LinkOfTextWithCalloutOverride
+#endif
+TEST_F(ContextMenuJsTest, MAYBE_LinkOfTextWithCalloutOverride) {
   const char kLinkHtml[] =
       "<body style='-webkit-touch-callout: none'>"
       " <a href='%s' style='-webkit-touch-callout: default'>link</a>"
