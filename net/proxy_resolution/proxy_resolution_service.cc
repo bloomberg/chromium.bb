@@ -1092,15 +1092,10 @@ std::unique_ptr<ProxyResolutionService> ProxyResolutionService::CreateFixed(
 
 // static
 std::unique_ptr<ProxyResolutionService> ProxyResolutionService::CreateDirect() {
-  return CreateDirectWithNetLog(NULL);
-}
-
-std::unique_ptr<ProxyResolutionService>
-ProxyResolutionService::CreateDirectWithNetLog(NetLog* net_log) {
   // Use direct connections.
   return std::make_unique<ProxyResolutionService>(
       std::make_unique<ProxyConfigServiceDirect>(),
-      std::make_unique<ProxyResolverFactoryForNullResolver>(), net_log);
+      std::make_unique<ProxyResolverFactoryForNullResolver>(), nullptr);
 }
 
 // static

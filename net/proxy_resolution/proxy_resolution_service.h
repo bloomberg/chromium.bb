@@ -261,9 +261,6 @@ class NET_EXPORT ProxyResolutionService
 
   // Creates a proxy service that uses a DIRECT connection for all requests.
   static std::unique_ptr<ProxyResolutionService> CreateDirect();
-  // |net_log|'s lifetime must exceed ProxyResolutionService.
-  static std::unique_ptr<ProxyResolutionService> CreateDirectWithNetLog(
-      NetLog* net_log);
 
   // This method is used by tests to create a ProxyResolutionService that
   // returns a hardcoded proxy fallback list (|pac_string|) for every URL.
