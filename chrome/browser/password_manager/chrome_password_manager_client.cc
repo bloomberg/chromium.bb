@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prerender/prerender_contents.h"
@@ -906,6 +907,11 @@ ChromePasswordManagerClient::GetPasswordRequirementsService() {
   return password_manager::PasswordRequirementsServiceFactory::
       GetForBrowserContext(
           Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+}
+
+favicon::FaviconService* ChromePasswordManagerClient::GetFaviconService() {
+  return FaviconServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
 void ChromePasswordManagerClient::UpdateFormManagers() {

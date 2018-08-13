@@ -22,6 +22,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -36,6 +37,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/image/image_unittest_util.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -50,10 +52,13 @@ const char kAliceUsername[] = "alice";
 const char kAlicePassword[] = "password";
 
 using autofill::Suggestion;
+using autofill::SuggestionVectorIconsAre;
 using autofill::SuggestionVectorIdsAre;
 using autofill::SuggestionVectorValuesAre;
 using autofill::SuggestionVectorLabelsAre;
 using testing::_;
+using testing::ElementsAreArray;
+using testing::Return;
 
 using UkmEntry = ukm::builders::PageWithPassword;
 
@@ -85,6 +90,7 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   const GURL& GetMainFrameURL() const override { return main_frame_url_; }
 
   MOCK_METHOD0(GeneratePassword, void());
+  MOCK_METHOD0(GetFaviconService, favicon::FaviconService*());
 
  private:
   MockPasswordManagerDriver driver_;
@@ -141,6 +147,15 @@ std::vector<base::string16> GetSuggestionList(
   return credentials;
 }
 
+std::vector<base::string16> GetIconsList(std::vector<std::string> icons) {
+  std::vector<base::string16> ret(icons.size());
+  std::transform(icons.begin(), icons.end(), ret.begin(), &base::ASCIIToUTF16);
+  // On older Android versions the item "Manage passwords" is absent.
+  if (!IsPreLollipopAndroid())
+    ret.push_back(base::string16());
+  return ret;
+}
+
 }  // namespace
 
 class PasswordAutofillManagerTest : public testing::Test {
@@ -168,8 +183,16 @@ class PasswordAutofillManagerTest : public testing::Test {
       autofill::AutofillClient* autofill_client) {
     password_autofill_manager_.reset(new PasswordAutofillManager(
         client->mock_driver(), autofill_client, client));
+    favicon::MockFaviconService favicon_service;
+    EXPECT_CALL(*client, GetFaviconService())
+        .WillOnce(Return(&favicon_service));
+    EXPECT_CALL(favicon_service,
+                GetFaviconImageForPageURL(fill_data_.origin, _, _));
     password_autofill_manager_->OnAddPasswordFormMapping(fill_data_id_,
                                                          fill_data_);
+    testing::Mock::VerifyAndClearExpectations(client);
+    // Suppress the warnings in the tests.
+    EXPECT_CALL(*client, GetFaviconService()).WillRepeatedly(Return(nullptr));
   }
 
  protected:
@@ -240,7 +263,7 @@ TEST_F(PasswordAutofillManagerTest, PreviewSuggestion) {
       fill_data_id(), test_username_));
 }
 
-// Test that the popup is marked as visible after recieving password
+// Test that the popup is marked as visible after receiving password
 // suggestions.
 TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
   for (bool is_suggestion_on_password_field : {false, true}) {
@@ -257,10 +280,18 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
     data.password_field.value = test_password_;
     data.preferred_realm = "http://foo.com/";
     int dummy_key = 0;
+    favicon::MockFaviconService favicon_service;
+    EXPECT_CALL(*client, GetFaviconService())
+        .WillOnce(Return(&favicon_service));
+    favicon_base::FaviconImageCallback callback;
+    EXPECT_CALL(favicon_service, GetFaviconImageForPageURL(data.origin, _, _))
+        .WillOnce(DoAll(testing::SaveArg<1>(&callback), Return(1)));
     password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
 
-    EXPECT_CALL(*client->mock_driver(),
-                FillSuggestion(test_username_, test_password_));
+    // Resolve the favicon.
+    favicon_base::FaviconImageResult image_result;
+    image_result.image = gfx::test::CreateImage(16, 16);
+    callback.Run(image_result);
 
     std::vector<autofill::PopupItemId> ids = {
         is_suggestion_on_password_field
@@ -269,18 +300,25 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
     if (!IsPreLollipopAndroid()) {
       ids.push_back(autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
     }
+    std::vector<Suggestion> suggestions;
     EXPECT_CALL(
         *autofill_client,
         ShowAutofillPopup(
             _, _, SuggestionVectorIdsAre(testing::ElementsAreArray(ids)), false,
-            _));
+            _))
+        .WillOnce(testing::SaveArg<2>(&suggestions));
 
     int show_suggestion_options =
         is_suggestion_on_password_field ? autofill::IS_PASSWORD_FIELD : 0;
     password_autofill_manager_->OnShowPasswordSuggestions(
         dummy_key, base::i18n::RIGHT_TO_LEFT, base::string16(),
         show_suggestion_options, element_bounds);
+    ASSERT_GE(suggestions.size(), 1u);
+    EXPECT_TRUE(gfx::test::AreImagesEqual(suggestions[0].custom_icon,
+                                          image_result.image));
 
+    EXPECT_CALL(*client->mock_driver(),
+                FillSuggestion(test_username_, test_password_));
     // Accepting a suggestion should trigger a call to hide the popup.
     EXPECT_CALL(*autofill_client, HideAutofillPopup());
     password_autofill_manager_->DidAcceptSuggestion(
@@ -757,17 +795,23 @@ TEST_F(PasswordAutofillManagerTest,
   data.origin = GURL("https://foo.test");
 
   int dummy_key = 0;
+  favicon::MockFaviconService favicon_service;
+  EXPECT_CALL(*client, GetFaviconService()).WillOnce(Return(&favicon_service));
+  EXPECT_CALL(favicon_service, GetFaviconImageForPageURL(data.origin, _, _));
   password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
 
   // Bring up the drop-down with the generaion option.
   base::string16 generation_string =
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_GENERATE_PASSWORD);
-  EXPECT_CALL(*autofill_client,
-              ShowAutofillPopup(
-                  element_bounds, base::i18n::RIGHT_TO_LEFT,
-                  SuggestionVectorValuesAre(testing::ElementsAreArray(
-                      GetSuggestionList({test_username_, generation_string}))),
-                  false, _));
+  EXPECT_CALL(
+      *autofill_client,
+      ShowAutofillPopup(
+          element_bounds, base::i18n::RIGHT_TO_LEFT,
+          AllOf(SuggestionVectorValuesAre(ElementsAreArray(
+                    GetSuggestionList({test_username_, generation_string}))),
+                SuggestionVectorIconsAre(
+                    ElementsAreArray(GetIconsList({"globeIcon", "keyIcon"})))),
+          false, _));
   EXPECT_TRUE(
       password_autofill_manager_->MaybeShowPasswordSuggestionsWithGeneration(
           element_bounds, base::i18n::RIGHT_TO_LEFT));

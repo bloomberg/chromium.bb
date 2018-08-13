@@ -92,4 +92,8 @@ PasswordManagerClient::GetPasswordRequirementsService() {
   return nullptr;
 }
 
+favicon::FaviconService* PasswordManagerClient::GetFaviconService() {
+  return nullptr;
+}
+
 }  // namespace password_manager

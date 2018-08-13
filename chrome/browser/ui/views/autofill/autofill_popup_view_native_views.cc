@@ -69,6 +69,25 @@ namespace autofill {
 
 namespace {
 
+// Describes the possible layouts which can be applied to the rows in the popup.
+enum class PopupItemLayoutType {
+  kLeadingIcon,  // Icon (if any) shown on the leading (left in LTR) side.
+  kTrailingIcon  // Icon (if any) shown on the trailing (right in LTR) side.
+};
+
+// Returns the icon alignment for the drop down of type |frontend_id|. See
+// PopupItemId for allowed values.
+PopupItemLayoutType GetLayoutType(int frontend_id) {
+  switch (frontend_id) {
+    case autofill::PopupItemId::POPUP_ITEM_ID_USERNAME_ENTRY:
+    case autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ENTRY:
+    case autofill::PopupItemId::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY:
+      return PopupItemLayoutType::kLeadingIcon;
+    default:
+      return PopupItemLayoutType::kTrailingIcon;
+  }
+}
+
 // Container view that holds one child view and limits its width to the
 // specified maximum.
 class ConstrainedWidthView : public views::View {
@@ -122,7 +141,6 @@ class AutofillPopupItemView : public AutofillPopupRowView {
   void CreateContent() override;
   void RefreshStyle() override;
 
- protected:
   virtual int GetPrimaryTextStyle() = 0;
   virtual views::View* CreateValueLabel();
   // The description view can be nullptr.
@@ -132,6 +150,7 @@ class AutofillPopupItemView : public AutofillPopupRowView {
   views::Label* CreateDescriptionLabelInternal() const;
 
  private:
+  void AddIcon(gfx::ImageSkia icon);
   void AddSpacerWithSize(int spacer_width,
                          bool resize,
                          views::BoxLayout* layout);
@@ -333,6 +352,17 @@ void AutofillPopupItemView::CreateContent() {
   layout->set_minimum_cross_axis_size(
       views::MenuConfig::instance().touchable_menu_height + extra_height_);
 
+  const gfx::ImageSkia icon =
+      controller->layout_model().GetIconImage(line_number_);
+  int frontend_id = controller->GetSuggestionAt(line_number_).frontend_id;
+
+  if (!icon.isNull() &&
+      GetLayoutType(frontend_id) == PopupItemLayoutType::kLeadingIcon) {
+    AddIcon(icon);
+    AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
+                      /*resize=*/false, layout);
+  }
+
   AddChildView(CreateValueLabel());
 
   AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
@@ -342,16 +372,11 @@ void AutofillPopupItemView::CreateContent() {
   if (description_label)
     AddChildView(description_label);
 
-  const gfx::ImageSkia icon =
-      controller->layout_model().GetIconImage(line_number_);
-  if (!icon.isNull()) {
+  if (!icon.isNull() &&
+      GetLayoutType(frontend_id) == PopupItemLayoutType::kTrailingIcon) {
     AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
                       /*resize=*/false, layout);
-
-    auto* image_view = new views::ImageView();
-    image_view->SetImage(icon);
-
-    AddChildView(image_view);
+    AddIcon(icon);
   }
 }
 
@@ -391,6 +416,12 @@ views::Label* AutofillPopupItemView::CreateDescriptionLabelInternal() const {
     return subtext_label;
   }
   return nullptr;
+}
+
+void AutofillPopupItemView::AddIcon(gfx::ImageSkia icon) {
+  auto* image_view = new views::ImageView();
+  image_view->SetImage(icon);
+  AddChildView(image_view);
 }
 
 void AutofillPopupItemView::AddSpacerWithSize(int spacer_width,

@@ -109,6 +109,7 @@ class ChromePasswordManagerClient
   const password_manager::LogManager* GetLogManager() const override;
   password_manager::PasswordRequirementsService*
   GetPasswordRequirementsService() override;
+  favicon::FaviconService* GetFaviconService() override;
   void UpdateFormManagers() override;
 
   // autofill::mojom::PasswordManagerClient overrides.
