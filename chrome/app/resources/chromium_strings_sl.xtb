@@ -249,7 +249,6 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="8599548569518771270">{0,plural, =0{OS Chromium se bo zdaj znova zagnal}=1{OS Chromium se bo znova zagnal čez 1 sekundo}one{OS Chromium se bo znova zagnal čez # sekundo}two{OS Chromium se bo znova zagnal čez # sekundi}few{OS Chromium se bo znova zagnal čez # sekunde}other{OS Chromium se bo znova zagnal čez # sekund}}</translation>
 <translation id="8619360774459241877">Zagon Chromiuma …</translation>
 <translation id="8621669128220841554">Namestitev ni uspela zaradi nenavedene napake. Znova prenesite Chromium.</translation>
-<translation id="8628626585870903697">Chromium nima pregledovalnika datotek PDF, ki je potreben za predogled tiskanja.</translation>
 <translation id="8667808506758191620">Naprava <ph name="DEVICE_TYPE" /> je posodobljena.</translation>
 <translation id="8697124171261953979">Določa tudi, katera stran je prikazana, ko zaženete Chromium ali iščete v naslovni vrstici.</translation>
 <translation id="8704119203788522458">To je vaš Chromium</translation>

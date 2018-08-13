@@ -17,6 +17,7 @@
 <translation id="2647554856022461007">Chromium kan bruke nettjenester for å forbedre brukeropplevelsen din på nettet. Du kan slå av disse tjenestene. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">Få smarte funksjoner fra Google i Chromium</translation>
 <translation id="2730884209570016437">Chromium kan ikke bruke kameraet fordi det brukes av en annen app</translation>
+<translation id="2797210818057553964">Du kan når som helst tilpasse dette i Chromium-innstillingene</translation>
 <translation id="3256316712990552818">Kopiert til Chromium</translation>
 <translation id="3413120535237193088">Logg på Chromium for å få bokmerkene dine på alle enhetene du bruker.</translation>
 <translation id="3473048256428424907">Slå på Chromium QR-skanneren</translation>
@@ -45,6 +46,7 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">De valgte dataene er fjernet fra Chromium og alle synkroniserte enheter. Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel for søk og aktivitet fra andre Google-tjenester, på history.google.com.</translation>
 <translation id="7400689562045506105">Bruk Chromium overalt</translation>
+<translation id="7499048969477415415">Innstillingene som kontrollerer synkronisering, personlig tilpasning og andre Google-tjenester i Chromium, er blitt endret. Dette kan påvirke de nåværende innstillingene dine.</translation>
 <translation id="7674213385180944843">Åpne Innstillinger &gt; Personvern &gt; Kamera &gt; Chromium, og slå på kameraet.</translation>
 <translation id="7746854981345936341">Chromium-tips. Noen knapper, slik som Tilbake, Frem og Søk, er nå nederst på skjermen.</translation>
 <translation id="786327964234957808">Du bytter synkroniseringskonto fra <ph name="USER_EMAIL1" /> til <ph name="USER_EMAIL2" />. De eksisterende Chromium-dataene dine administreres av <ph name="DOMAIN" />. Dette fører til at dataene dine slettes fra denne enheten, men de blir værende i <ph name="USER_EMAIL1" />.</translation>

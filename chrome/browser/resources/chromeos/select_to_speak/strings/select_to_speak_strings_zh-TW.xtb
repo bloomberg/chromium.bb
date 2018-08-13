@@ -1,10 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
-<translation id="111880247472081232">你的隨選朗讀文字轉語音設定已轉移至全域文字轉語音設定。</translation>
 <translation id="1197088940767939838">橘色</translation>
 <translation id="1273314450961659276">文字轉語音設定</translation>
-<translation id="1498542103351704084">隨選朗讀語音設定已更新</translation>
 <translation id="1555130319947370107">藍色</translation>
 <translation id="1666326070478924810">隨選朗讀設定</translation>
 <translation id="1966649499058910679">醒目顯示每個朗讀的字詞</translation>
@@ -12,7 +10,6 @@
 <translation id="2714180132046334502">深色背景</translation>
 <translation id="27349076983469322">淺色背景</translation>
 <translation id="335581015389089642">語音</translation>
-<translation id="3784184786832188702">隨選朗讀功能現在使用全域文字轉語音設定。</translation>
 <translation id="5901630391730855834">黃色</translation>
 <translation id="6017514345406065928">綠色</translation>
 <translation id="6475604559827479857">文字醒目顯示顏色：</translation>

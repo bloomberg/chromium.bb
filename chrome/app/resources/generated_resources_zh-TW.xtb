@@ -458,7 +458,6 @@
 <translation id="166179487779922818">密碼太短。</translation>
 <translation id="1661867754829461514">找不到 PIN</translation>
 <translation id="16620462294541761">很抱歉，系統無法驗證你的密碼，請再試一次。</translation>
-<translation id="1662550410081243962">儲存及填入付款方式</translation>
 <translation id="166278006618318542">主體公開金鑰演算法</translation>
 <translation id="166439687370499867">不允許變更共用網路設定</translation>
 <translation id="1665611772925418501">無法修改檔案。</translation>
@@ -866,7 +865,6 @@
 <translation id="2282146716419988068">GPU 處理程序</translation>
 <translation id="2282155092769082568">自動設定網址：</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">儲存及填入地址</translation>
 <translation id="2286841657746966508">帳單地址</translation>
 <translation id="2288181517385084064">切換至攝影機</translation>
 <translation id="2288735659267887385">協助工具設定</translation>
@@ -1370,6 +1368,7 @@
 <translation id="3031557471081358569">選取要匯入的項目：</translation>
 <translation id="3031601332414921114">繼續列印</translation>
 <translation id="303198083543495566">地理位置</translation>
+<translation id="3033999583152214331">在 Chromebook 上執行 Linux 工具、編輯器和 IDE。&lt;a target="_blank" href="<ph name="URL" />"&gt;瞭解詳情&lt;/a&gt;</translation>
 <translation id="3036546437875325427">啟用 Flash</translation>
 <translation id="3037754279345160234">無法對加入網域的設定進行剖析，請與你的管理員聯絡。</translation>
 <translation id="3038612606416062604">手動新增印表機</translation>

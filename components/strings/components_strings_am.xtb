@@ -63,6 +63,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />ኩኪዎችዎን ማጽዳት ይሞክሩ<ph name="END_LINK" /></translation>
 <translation id="1314614906530272393">የተመረጠው ክፍለ-ጊዜ የለም።</translation>
 <translation id="1323433172918577554">ተጨማሪ አሳይ</translation>
+<translation id="132390688737681464">አድራሻዎችን አስቀምጥ እና ሙላ</translation>
 <translation id="1333989956347591814">የእርስዎ እንቅስቃሴ ለሚከተሉት <ph name="BEGIN_EMPHASIS" />አሁንም የሚታይ ሊሆን ይችላል<ph name="END_EMPHASIS" />፦
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />እርስዎ የሚጎበኟቸው ድር ጣቢያዎች
@@ -110,9 +111,11 @@
 <translation id="1645368109819982629">የማይደገፍ ፕሮቶኮል</translation>
 <translation id="1655462015569774233">{1,plural, =1{ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ለማረጋገጥ አይችልም፤ የደህንነት ማረጋገጫ እውቅና ማረጋገጫው ትላንትና ጊዜው አልፎበታል። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል። የኮምፒውተርዎ ሰዓት አሁን በ<ph name="CURRENT_DATE" /> ተቀናብሯል። ትክክል ይመስልዎታል? ትክክል ካልሆነ፣ የእርስዎን ስርዓት ሰዓት ማስተካከል እና ይህንን ገፅ ማደስ አለብዎ።}one{ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ለማረጋገጥ አይችልም፤ የደህንነት ማረጋገጫ እውቅና ማረጋገጫው ከ# ቀኖች በፊት ጊዜው አልፏል። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል። የኮምፒውተርዎ ሰዓት አሁን በ<ph name="CURRENT_DATE" /> ተቀናብሯል። ትክክል ይመስልዎታል? ትክክል ካልሆነ፣ የእርስዎን ስርዓት ሰዓት ማስተካከል እና ይህንን ገፅ ማደስ አለብዎ።}other{ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ለማረጋገጥ አይችልም፤ የደህንነት ማረጋገጫ እውቅና ማረጋገጫው ከ# ቀኖች በፊት ጊዜው አልፏል። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል። የኮምፒውተርዎ ሰዓት አሁን በ<ph name="CURRENT_DATE" /> ተቀናብሯል። ትክክል ይመስልዎታል? ትክክል ካልሆነ፣ የእርስዎን ስርዓት ሰዓት ማስተካከል እና ይህንን ገፅ ማደስ አለብዎ።}}</translation>
 <translation id="1656489000284462475">መውሰጃ</translation>
+<translation id="1662550410081243962">የመክፈያ ዘዴዎችን አስቀምጥ እና ሙላ</translation>
 <translation id="1663943134801823270">ካርዶች እና አድራሻዎች ከChrome የመጡ ናቸው። በ<ph name="BEGIN_LINK" />ቅንብሮች<ph name="END_LINK" /> ውስጥ ሊያስተዳድሯቸው ይችላሉ።</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> የእርስዎን መረጃ ለመጠበቅ በመደበኝነት ምስጠራ ይጠቀማል። Google Chrome አሁን ከ<ph name="SITE" /> ጋር ለመገናኘት ሲሞክር ድር ጣቢያው ያልተለመዱ እና ትክክል ያልሆኑ ምስክርነቶችን መልሷል። ይህ አንድ አጥቂ <ph name="SITE" />ን አስመስሎ ለመቅረብ ሲሞክር ነው ወይም አንድ የWi-Fi መግቢያ ገጽ ግንኙነቱን ሲያቋረጥ ሊከሰት ይችላል። Google Chrome ማንኛውም የውሂብ ልውውጥ ከመካሄዱ በፊት ግንኙነቱን ስላቋረጠው የእርስዎ መረጃ ደህንነት  አሁንም የተጠበቀ ነው።</translation>
 <translation id="168841957122794586">የአገልጋይ እውቅና ማረጋገጫው ደካማ የሆነ ባለስውር መረጃ ቁልፍ ነው ያለው።</translation>
+<translation id="1697532407822776718">በቃ ጨርሰዋል!</translation>
 <translation id="1706954506755087368">{1,plural, =1{ይህ አገልጋይ <ph name="DOMAIN" /> እንደሆነ ማረጋገጥ አልቻለም፤ የደህንነት ማረጋገጫ እውቅና ማረጋገጫው ከነገ የመጣ ነው ይላል። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል።}one{ይህ አገልጋይ <ph name="DOMAIN" /> እንደሆነ ማረጋገጥ አልቻለም፤ የደህንነት ማረጋገጫ እውቅና ማረጋገጫው የወደፊት # ቀንኖች የመጣ ነው ይላል። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል።}other{ይህ አገልጋይ <ph name="DOMAIN" /> እንደሆነ ማረጋገጥ አልቻለም፤ የደህንነት ማረጋገጫ እውቅና ማረጋገጫው የወደፊት # ቀንኖች የመጣ ነው ይላል። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል።}}</translation>
 <translation id="1710259589646384581">ስርዓተ ክወና</translation>
 <translation id="1721312023322545264">ይህን ጣቢያ ለመጎብኘት ከ<ph name="NAME" /> ፈቃድ ያስፈልገዎታል</translation>
@@ -193,6 +196,7 @@
 <translation id="225207911366869382">ይህ ዋጋ ለዚህ መመሪያ ተቋርጧል።</translation>
 <translation id="2262243747453050782">የኤች ቲ ቲ ፒ ስህተት</translation>
 <translation id="2270484714375784793">ስልክ ቁጥር</translation>
+<translation id="2283340219607151381">አድራሻዎችን አስቀምጥ እና ሙላ</translation>
 <translation id="2292556288342944218">የእርስዎ የበየነመረብ መዳረሻ ታግዷል</translation>
 <translation id="2316887270356262533">እስከ 1 ሜባ ቦታ ድረስ ያስለቅቃል። አንዳንድ ጣቢያዎች በሚቀጥለው ጉብኝትዎ ላይ ይበልጥ በዝግታ ሊጫኑ ይችላሉ።</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> የተጠቃሚ ስም እና የይለፍ ቃል ያስፈልገዋል።</translation>
@@ -274,6 +278,7 @@
 <translation id="2851634818064021665">ይህን ጣቢያ ለመጎብኘት ፈቃድ ያስፈልገዎታል</translation>
 <translation id="2856444702002559011">አጥቂዎች የእርስዎን መረጃ (ለምሳሌ፦ የይለፍ ቃላትን፣ መልዕክቶችን፣ ወይም የክሬዲት ካርዶችን የመሳሰሉ) ከ<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ለመስረቅ እየሞከሩ ሊሆኑ ይችላሉ። <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2881276955470682203">ካርድ ይቀመጥ?</translation>
+<translation id="2903493209154104877">አድራሻዎች</translation>
 <translation id="2909946352844186028">የአውታረ መረብ ለውጥ ተገኝቷል።</translation>
 <translation id="2916038427272391327">ሌሎች ፕሮግራሞችን ይዝጉ</translation>
 <translation id="2922350208395188000">የአገልጋይ እውቅና ማረጋገጫ ሊረጋገጥ አልቻለም።</translation>
@@ -1146,6 +1151,7 @@
 <translation id="973773823069644502">የማድረሻ አድራሻ ያክሉ</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{ምንም}=1{1 ንጥል}one{# ንጥሎች}other{# ንጥሎች}}</translation>
 <translation id="981121421437150478">ከመስመር ውጪ</translation>
+<translation id="984275831282074731">የመክፈያ ዘዴዎች</translation>
 <translation id="985199708454569384">&lt;p&gt;የእርስዎ ኮምፒውተር ወይም የተንቀሳቃሽ መሣሪያ ውሂብና ሰዓት ትክክል ካልሆኑ ይህን ስህተት ያዩታል።&lt;/p&gt;
     &lt;p&gt;ስህተቱን ለማስተካከል የመሣሪያዎን ሰዓት ይክፈቱ። ሰዓቱ እና ቀኑ ትክክል መሆኑን ያረጋግጡ።&lt;/p&gt;</translation>
 <translation id="988159990683914416">የገንቢዎች ግንባታ</translation>

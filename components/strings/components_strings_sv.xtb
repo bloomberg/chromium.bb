@@ -63,6 +63,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Testa att rensa cookies<ph name="END_LINK" /></translation>
 <translation id="1314614906530272393">Den valda sessionen finns inte.</translation>
 <translation id="1323433172918577554">Visa fler</translation>
+<translation id="132390688737681464">Spara och fyll i adresser</translation>
 <translation id="1333989956347591814">Din aktivitet <ph name="BEGIN_EMPHASIS" />kanske fortfarande är synlig<ph name="END_EMPHASIS" /> för:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />webbplatser som du besöker
@@ -110,9 +111,11 @@
 <translation id="1645368109819982629">Det finns inget stöd för protokollet</translation>
 <translation id="1655462015569774233">{1,plural, =1{Det gick inte att bevisa att serverns identitet är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat gick ut i går. Det kan bero på att servern är felkonfigurerad eller att anslutningen har blivit kapad. Dagens datum är <ph name="CURRENT_DATE" /> enligt datorklockan. Går den rätt? I annat fall bör du ställa om datorklockan och sedan uppdatera sidan.}other{Det gick inte att bevisa att serverns identitet är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat gick ut för # dagar sedan. Det kan bero på att servern är felkonfigurerad eller att anslutningen har blivit kapad. Dagens datum är <ph name="CURRENT_DATE" /> enligt datorklockan. Går den rätt? I annat fall bör du ställa om datorklockan och sedan uppdatera sidan.}}</translation>
 <translation id="1656489000284462475">Upphämtning</translation>
+<translation id="1662550410081243962">Spara och fyll i betalningsmetoder</translation>
 <translation id="1663943134801823270">Kort och adresser har hämtats från Chrome. Du hanterar dessa under <ph name="BEGIN_LINK" />Inställningar<ph name="END_LINK" />.</translation>
 <translation id="1676269943528358898">På <ph name="SITE" /> används vanligtvis kryptering (SSL) för att skydda din information. När Chrome försökte ansluta till <ph name="SITE" /> den här gången skickade webbplatsen tillbaka ovanliga och felaktiga uppgifter. Sådant kan hända när en angripare utger sig för att vara <ph name="SITE" /> eller när anslutningen har avbrutits av en Wi-Fi-inloggningsskärm. Din information är fortfarande säker eftersom Chrome avbröt anslutningen innan någon data utbyttes.</translation>
 <translation id="168841957122794586">Servercertifikatet innehåller en svag kryptografisk nyckel.</translation>
+<translation id="1697532407822776718">Färdigt!</translation>
 <translation id="1706954506755087368">{1,plural, =1{Det gick inte att bevisa att serverns identitet är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat uppges börja gälla i morgon. Det kan bero på att servern är felkonfigurerad eller att anslutningen har blivit kapad.}other{Det gick inte att bevisa att serverns identitet är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat uppges börja gälla om # dagar. Det kan bero på att servern är felkonfigurerad eller att anslutningen har blivit kapad.}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1721312023322545264">Du behöver tillstånd från <ph name="NAME" /> om du vill besöka den här webbplatsen</translation>
@@ -193,6 +196,7 @@
 <translation id="225207911366869382">Värdet är inte längre giltigt för policyn.</translation>
 <translation id="2262243747453050782">HTTP-fel</translation>
 <translation id="2270484714375784793">Telefonnummer</translation>
+<translation id="2283340219607151381">Spara och fyll i adresser</translation>
 <translation id="2292556288342944218">Internetanslutningen har blockerats</translation>
 <translation id="2316887270356262533">Frigör mindre än 1 MB. Vissa webbplatser kan läsas in långsammare nästa gång du besöker dem.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> kräver användarnamn och lösenord.</translation>
@@ -274,6 +278,7 @@
 <translation id="2851634818064021665">Du behöver tillstånd att besöka den här webbplatsen</translation>
 <translation id="2856444702002559011">En angripare kan försöka stjäla dina uppgifter från <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (t.ex. lösenord, meddelanden eller kreditkortsuppgifter). <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2881276955470682203">Vill du spara kortet?</translation>
+<translation id="2903493209154104877">Adresser</translation>
 <translation id="2909946352844186028">En nätverksförändring upptäcktes.</translation>
 <translation id="2916038427272391327">Stäng andra program</translation>
 <translation id="2922350208395188000">Servercertifikatet kan inte kontrolleras.</translation>
@@ -1147,6 +1152,7 @@
 <translation id="973773823069644502">Lägg till leveransadress</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Ingen}=1{1 objekt}other{# objekt}}</translation>
 <translation id="981121421437150478">Offline</translation>
+<translation id="984275831282074731">Betalningsmetoder</translation>
 <translation id="985199708454569384">&lt;p&gt;Felet visas om klockan går fel eller fel datum är inställt på datorn eller den mobila enheten.&lt;/p&gt;
     &lt;p&gt;Åtgärda felet genom att öppna klockan på enheten. Ställ in rätt tid och datum.&lt;/p&gt;</translation>
 <translation id="988159990683914416">Utvecklarversion</translation>

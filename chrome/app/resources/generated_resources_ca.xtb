@@ -458,7 +458,6 @@
 <translation id="166179487779922818">La contrasenya és massa curta.</translation>
 <translation id="1661867754829461514">Falta el PIN</translation>
 <translation id="16620462294541761">No s'ha pogut verificar la teva contrasenya. Torna-ho a provar.</translation>
-<translation id="1662550410081243962">Desa i emplena les formes de pagament</translation>
 <translation id="166278006618318542">Algoritme de clau pública del subjecte</translation>
 <translation id="166439687370499867">No es pot canviar la configuració de la xarxa compartida</translation>
 <translation id="1665611772925418501">El fitxer no s'ha pogut modificar.</translation>
@@ -866,7 +865,6 @@
 <translation id="2282146716419988068">Procés de GPU</translation>
 <translation id="2282155092769082568">URL de configuració automàtica:</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">Desa i emplena les adreces</translation>
 <translation id="2286841657746966508">Adreça de facturació</translation>
 <translation id="2288181517385084064">Canvia a la gravadora de vídeo</translation>
 <translation id="2288735659267887385">Configuració d'accessibilitat</translation>
@@ -1369,6 +1367,7 @@
 <translation id="3031557471081358569">Seleccioneu els elements que voleu importar:</translation>
 <translation id="3031601332414921114">Reprèn la impressió</translation>
 <translation id="303198083543495566">Geografia</translation>
+<translation id="3033999583152214331">Executa les eines, els editors i els IDE de Linux a Chromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;Més informació&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Activa Flash</translation>
 <translation id="3037754279345160234">No es pot analitzar la configuració per unir-se al domini. Contacta amb l'administrador.</translation>
 <translation id="3038612606416062604">Afegeix una impressora manualment</translation>

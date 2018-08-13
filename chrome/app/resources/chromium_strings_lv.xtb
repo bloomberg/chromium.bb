@@ -244,7 +244,6 @@ Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL"
 <translation id="8599548569518771270">{0,plural, =0{Operētājsistēma Chromium OS tiks restartēta tūlīt}=1{Operētājsistēma Chromium OS tiks restartēta pēc 1 sekundes}zero{Operētājsistēma Chromium OS tiks restartēta pēc # sekundēm}one{Operētājsistēma Chromium OS tiks restartēta pēc # sekundes}other{Operētājsistēma Chromium OS tiks restartēta pēc # sekundēm}}</translation>
 <translation id="8619360774459241877">Notiek Chromium palaišana...</translation>
 <translation id="8621669128220841554">Instalēšana neizdevās nenoteiktas kļūdas dēļ. Lejupielādējiet pārlūku Chromium vēlreiz.</translation>
-<translation id="8628626585870903697">Pārlūka Chromium komplektācijā nav PDF skatītāja, kas nepieciešams funkcijas Drukas priekšskatījums darbībai.</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> ierīce ir atjaunināta.</translation>
 <translation id="8697124171261953979">Tas nosaka arī to, kāda lapa tiks rādīta, kad atvērsiet pārlūku Chromium vai meklēsiet, izmantojot universālo lodziņu.</translation>
 <translation id="8704119203788522458">Šis ir jūsu Chromium</translation>

@@ -246,7 +246,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="8599548569518771270">{0,plural, =0{Sistemul de operare Chromium va reporni acum}=1{Sistemul de operare Chromium va reporni într-o secundă}few{Sistemul de operare Chromium va reporni în # secunde}other{Sistemul de operare Chromium va reporni în # de secunde}}</translation>
 <translation id="8619360774459241877">Se lansează Chromium...</translation>
 <translation id="8621669128220841554">Instalarea nu a reușit din cauza unei erori neprecizate. Descărcați Chromium din nou.</translation>
-<translation id="8628626585870903697">Chromium nu include vizualizatorul PDF care este necesar pentru funcționarea Previzualizării înainte de printare.</translation>
 <translation id="8667808506758191620">Dispozitivul <ph name="DEVICE_TYPE" /> este actualizat.</translation>
 <translation id="8697124171261953979">Stabilește și ce pagină se afișează când porniți Chromium sau când căutați din caseta polivalentă.</translation>
 <translation id="8704119203788522458">Acesta este browserul dvs. Chromium</translation>

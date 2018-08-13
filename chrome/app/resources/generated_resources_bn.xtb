@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">সিঙ্ক এবং ব্যক্তিগতকরণ</translation>
 <translation id="1398853756734560583">বড় করুন</translation>
 <translation id="1399511500114202393">কোনও ব্যবহারকারীর সার্টিফিকেট নেই</translation>
+<translation id="1401165786814632797">আপনার ডিভাইস সক্রিয় এবং আনলক থাকাকালীন "OK Google" বলে যেকোনও সময়ে আপনার অ্যাসিস্ট্যান্ট অ্যাক্সেস করুন।</translation>
 <translation id="140250605646987970">আপনার ফোন পাওয়া গেছে৷ কিন্তু ডিভাইসে শুধুমাত্র Android 5.0 এবং তার উপরের সংস্করণের সঙ্গেই Smart Lock কাজ করে৷ &lt;a&gt;আরও জানুন&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (তত্বাবধানে থাকা)</translation>
 <translation id="1405476660552109915">আপনি কি চান যে <ph name="PASSWORD_MANAGER_BRAND" /> এই সাইটের জন্য আপনার অ্যাকাউন্ট সংরক্ষণ করুক?</translation>
@@ -456,7 +457,6 @@
 <translation id="166179487779922818">পাসওয়ার্ডটি অত্যন্ত ছোট৷</translation>
 <translation id="1661867754829461514">পিন হারিয়েছে</translation>
 <translation id="16620462294541761">দুঃখিত, আপনার পাসওয়ার্ড যাচাই করা যায়নি৷ দয়া করে আবার চেষ্টা করুন৷</translation>
-<translation id="1662550410081243962">পেমেন্টের পদ্ধতিগুলি পূরণ করে সেভ করুন</translation>
 <translation id="166278006618318542">বিষয় সর্বজনীন কী অ্যালগারিদম</translation>
 <translation id="166439687370499867">শেয়ার করার নেটওয়ার্ক কনফিগারেশন পরিবর্তনের অনুমতি নেই</translation>
 <translation id="1665611772925418501">ফাইল সংশোধন করা যায়নি৷</translation>
@@ -864,7 +864,6 @@
 <translation id="2282146716419988068">GPU প্রক্রিয়া</translation>
 <translation id="2282155092769082568">স্বতঃকনফিগারেশান URL:</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">অ্যাড্রেস পূরণ করে সেভ করুন</translation>
 <translation id="2286841657746966508">বিলিং ঠিকানা</translation>
 <translation id="2288181517385084064">এর বদলে ভিডিও রেকর্ড করুন</translation>
 <translation id="2288735659267887385">অ্যাক্সেসযোগ্যতার সেটিংস</translation>
@@ -1370,6 +1369,7 @@
 <translation id="3031557471081358569">আমদানির জন্য আইটেম বেছে নিন:</translation>
 <translation id="3031601332414921114">প্রিন্ট আবার শুরু করুন</translation>
 <translation id="303198083543495566">ভূগোল</translation>
+<translation id="3033999583152214331">আপনার Chromebook-এ Linux টুল, এডিটর, এবং IDEs চালান৷ &lt;a target="_blank" href="<ph name="URL" />"&gt;আরও জানুন&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Flash সক্ষম করুন</translation>
 <translation id="3037754279345160234">ডোমেনে যোগ করার জন্য প্রয়োজনীয় কনফিগারেশন পার্স করা যাচ্ছে না। আপনার অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন।</translation>
 <translation id="3038612606416062604">নিজ হাতে একটি প্রিন্টার যোগ করুন</translation>
@@ -1510,6 +1510,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> এদের সঙ্গে সংযুক্ত হতে চায়</translation>
 <translation id="3274763671541996799">আপনি পূর্ণ পর্দায় দেথতে শুরু করেছেন৷</translation>
 <translation id="3275778913554317645">উইন্ডো হিসাবে খুলুন</translation>
+<translation id="3278877214895457897">আপনার Chromebook সেট-আপ করা হয়ে গেলে, অ্যাসিস্ট্যান্টের থেকে যেকোনও সময় সাহায্য পেতে অ্যাসিস্ট্যান্ট বোতামটি টিপুন অথবা "Ok Google" বলুন।</translation>
 <translation id="3279230909244266691">এতে কয়েক মিনিট সময় লাগতে পারে। ভার্চুয়াল মেশিন শুরু করা হচ্ছে।</translation>
 <translation id="3279741024917655738">এতে সম্পূর্ণ স্ক্রিন ভিডিও দেখুন</translation>
 <translation id="3280237271814976245">এই &amp;রূপে সেভ করুন...</translation>
@@ -2599,6 +2600,7 @@
 <translation id="4992066212339426712">সশব্দ করুন</translation>
 <translation id="4992458225095111526">পাওয়ারওয়াশ নিশ্চিত করুন</translation>
 <translation id="4992473555164495036">আপনার অ্যাডমিনিস্ট্রেটর উপলভ্য ইনপুট পদ্ধতিগুলি সীমাবদ্ধ করেছেন।</translation>
+<translation id="4992926179187649719">'Ok Google' চালু করুন</translation>
 <translation id="4994474651455208930">সাইটগুলিকে প্রোটোকলের জন্য ডিফল্ট হ্যান্ডলার হওয়ার জন্য জিজ্ঞাসা করার অনুমতি দেয়</translation>
 <translation id="4994754230098574403">সেট আপ করা হচ্ছে</translation>
 <translation id="4996978546172906250">এর মাধ্যমে শেয়ার করুন</translation>
@@ -4523,6 +4525,7 @@
 <translation id="7908378463497120834">দুঃখিত, ডিভাইসটির কমপক্ষে একটি ভাগ আটকানো যায়নি৷</translation>
 <translation id="7909969815743704077">ছদ্মবেশী ভাবে ডাউনলোড হয়েছে</translation>
 <translation id="7910768399700579500">&amp;নতুন ফোল্ডার</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">সার্ভারে আপনার পাসওয়ার্ড পাল্টানো হয়েছে। অনুগ্রহ করে সাইন-আউট করে আবার সাইন-ইন করুন।</translation>
 <translation id="7915471803647590281">প্রতিক্রিয়াটি প্রেরণের আগে কী ঘটছে তা দয়া করে আমাদের জানান৷ </translation>
 <translation id="7916556741383518510">ক্লিক করা হলে</translation>

@@ -1,10 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
-<translation id="111880247472081232">La configuració de síntesi de veu del servei Escolta la selecció s'ha migrat a la configuració global de síntesi de veu.</translation>
 <translation id="1197088940767939838">Taronja</translation>
 <translation id="1273314450961659276">Configuració de síntesi de veu</translation>
-<translation id="1498542103351704084">S'ha actualitzat la configuració de veu del servei Escolta la selecció</translation>
 <translation id="1555130319947370107">Blau</translation>
 <translation id="1666326070478924810">Configuració d'Escolta la selecció</translation>
 <translation id="1966649499058910679">Destaca cada paraula a mesura que es digui</translation>
@@ -12,7 +10,6 @@
 <translation id="2714180132046334502">Fons fosc</translation>
 <translation id="27349076983469322">Fons clar</translation>
 <translation id="335581015389089642">Veu</translation>
-<translation id="3784184786832188702">Ara el servei Escolta la selecció utilitza la configuració global de síntesi de veu.</translation>
 <translation id="5901630391730855834">Groc</translation>
 <translation id="6017514345406065928">Verd</translation>
 <translation id="6475604559827479857">Color per destacar paraules:</translation>

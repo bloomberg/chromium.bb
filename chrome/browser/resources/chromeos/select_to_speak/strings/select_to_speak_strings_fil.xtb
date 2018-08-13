@@ -1,10 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
-<translation id="111880247472081232">Na-migrate ang iyong mga setting ng Select-to-Speak Text-to-Speech sa mga pangkalahatang setting ng Text-to-Speech.</translation>
 <translation id="1197088940767939838">Orange</translation>
 <translation id="1273314450961659276">Mga setting ng Text-to-Speech</translation>
-<translation id="1498542103351704084">Na-update ang mga setting ng Select-to-Speak speech</translation>
 <translation id="1555130319947370107">Asul</translation>
 <translation id="1666326070478924810">Mga Setting ng Select to Speak</translation>
 <translation id="1966649499058910679">I-highlight ang bawat salita habang binibigkas ito</translation>
@@ -12,7 +10,6 @@
 <translation id="2714180132046334502">Madilim na background</translation>
 <translation id="27349076983469322">Maliwanag na background</translation>
 <translation id="335581015389089642">Pananalita</translation>
-<translation id="3784184786832188702">Gumagamit na ng mga pandaigdigang setting ng Text-to-Speech ang Select to speak.</translation>
 <translation id="5901630391730855834">Dilaw</translation>
 <translation id="6017514345406065928">Berde</translation>
 <translation id="6475604559827479857">Kulay para sa mga pag-highlight ng salita:</translation>

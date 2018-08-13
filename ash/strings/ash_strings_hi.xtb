@@ -381,12 +381,12 @@
 <translation id="7842569679327885685">चेतावनी: यह फ़ीचर प्रयोग के लिए है</translation>
 <translation id="7846634333498149051">कीबोर्ड</translation>
 <translation id="790040513076446191">निजता-संबंधी सेटिंग में हेरफेर करें</translation>
-<translation id="7904094684485781019">इस खाते के व्यवस्थापक ने एकाधिक प्रवेश को अस्वीकार कर दिया है.</translation>
+<translation id="7904094684485781019">इस खाते के व्यवस्थापक ने एक से ज़्यादा साइन-इन को अक्षम कर दिया है.</translation>
 <translation id="7933084174919150729">Google Assistant सिर्फ़ प्राथमिक प्रोफ़ाइल के लिए उपलब्ध है.</translation>
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> और <ph name="SECOND_PARENT_EMAIL" /> खाता संभालते हैं</translation>
 <translation id="7977927628060636163">मोबाइल नेटवर्क खोजे जा रहे हैं...</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
-<translation id="7994370417837006925">एकाधिक प्रवेश</translation>
+<translation id="7994370417837006925">एकाधिक साइन इन</translation>
 <translation id="8000066093800657092">नेटवर्क नहीं है</translation>
 <translation id="8029241286966751120">फ़ुलस्क्रीन पर सामग्री को बड़ा दिखाने की सुविधा चालू है. उसे बंद पर टॉगल करने के लिए Ctrl+Search+M फिर से दबाएं.</translation>
 <translation id="8030169304546394654">डिसकनेक्ट किया गया</translation>
@@ -459,7 +459,7 @@
 <translation id="9151726767154816831">अपडेट करने के लिए पुनः प्रारंभ करें और पावरवॉश करें</translation>
 <translation id="9179259655489829027">यह फ़ीचर आपको पासवर्ड के बिना किसी भी साइन इन किए हुए उपयोगकर्ता को जल्दी से एक्सेस करने देता है. इस फ़ीचर का इस्तेमाल सिर्फ़ अपने भरोसेमंद खातों के साथ करें.</translation>
 <translation id="9193626018745640770">ऐसे रिसीवर पर कास्ट किया जा रहा है जिसकी जानकारी नहीं है</translation>
-<translation id="9194617393863864469">किसी अन्‍य उपयोगकर्ता में रूप में साइन इन करें...</translation>
+<translation id="9194617393863864469">किसी अन्‍य उपयोगकर्ता में साइन इन करें...</translation>
 <translation id="9201131092683066720">बैटरी <ph name="PERCENTAGE" />% भरी हुई है.</translation>
 <translation id="9210037371811586452">संयुक्त डेस्कटॉप मोड से बाहर निकाला जा रहा है</translation>
 <translation id="9215934040295798075">वॉलपेपर सेट करें</translation>

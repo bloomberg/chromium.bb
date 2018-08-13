@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="100812568230599391">Endre visningsstilen til innfelt.</translation>
+<translation id="1011903154582639569">Finn en tast, deretter løft for å skrive</translation>
 <translation id="1012173283529841972">Listeelement</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">Bruker du taletilbakemelding med ChromeVox for første gang? Denne kjappe veiledningen forklarer det grunnleggende om hvordan du tar i bruk ChromeVox.</translation>
@@ -163,6 +164,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">Gruppe</translation>
 <translation id="2582407057977008361">Aside-tag</translation>
+<translation id="2592212930811759050">Dobbelttrykk for å starte å redigere</translation>
 <translation id="2606210917827248971">med {COUNT,plural, =1{# element}other{# elementer}}</translation>
 <translation id="2614981083756825552">MathML-utforming</translation>
 <translation id="2624431853467395961">Åpne læremodus</translation>

@@ -248,7 +248,6 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="8599548569518771270">{0,plural, =0{Chromium OS se reiniciará ahora}=1{Chromium OS se reiniciará en 1 segundo}other{Chromium OS se reiniciará en # segundos}}</translation>
 <translation id="8619360774459241877">Iniciando Chromium...</translation>
 <translation id="8621669128220841554">La instalación ha fallado debido a un error no especificado. Vuelve a descargar Chromium.</translation>
-<translation id="8628626585870903697">Chromium no incluye el visor de PDF que se necesita para que la vista previa de impresión funcione.</translation>
 <translation id="8667808506758191620">El dispositivo <ph name="DEVICE_TYPE" /> está actualizado.</translation>
 <translation id="8697124171261953979">También controla qué página se muestra al iniciar Chromium o al hacer búsquedas desde el omnibox.</translation>
 <translation id="8704119203788522458">Aquí tienes tu navegador Chromium</translation>

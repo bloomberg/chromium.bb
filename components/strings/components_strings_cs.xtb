@@ -63,6 +63,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Zkuste vymazat soubory cookie<ph name="END_LINK" /></translation>
 <translation id="1314614906530272393">Vybraná relace neexistuje.</translation>
 <translation id="1323433172918577554">Zobrazit více</translation>
+<translation id="132390688737681464">Ukládat a vyplňovat adresy</translation>
 <translation id="1333989956347591814">Vaše aktivita <ph name="BEGIN_EMPHASIS" />může být nadále viditelná<ph name="END_EMPHASIS" /> pro následující subjekty:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />navštívené weby,
@@ -110,9 +111,11 @@
 <translation id="1645368109819982629">Nepodporovaný protokol</translation>
 <translation id="1655462015569774233">{1,plural, =1{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu včera vypršela. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste nastavit správné hodiny systému a poté tuto stránku načíst znovu.}few{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu vypršela před # dny. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste čas v počítači opravit a poté tuto stránku načíst znovu.}many{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu vypršela před # dnem. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste nastavit správné hodiny systému a poté tuto stránku načíst znovu.}other{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu vypršela před # dny. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste nastavit správné hodiny systému a poté tuto stránku načíst znovu.}}</translation>
 <translation id="1656489000284462475">Vyzvednutí</translation>
+<translation id="1662550410081243962">Ukládat a vyplňovat platební metody</translation>
 <translation id="1663943134801823270">Karty a adresy pocházejí z Chromu. Můžete je spravovat v <ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" />.</translation>
 <translation id="1676269943528358898">Web <ph name="SITE" /> vaše informace běžně chrání šifrováním. Když se prohlížeč Chrome k webu <ph name="SITE" /> pokusil připojit tentokrát, web vrátil neobvyklé a nesprávné identifikační údaje. K tomuto problému může dojít, pokud se za web <ph name="SITE" /> pokouší vydávat nějaký útočník nebo pokud bylo připojení přerušeno přihlašovací obrazovkou sítě Wi-Fi. Vaše informace jsou i nadále v bezpečí, protože prohlížeč Google Chrome připojení přerušil dříve, než došlo k odeslání jakýchkoliv dat.</translation>
 <translation id="168841957122794586">Certifikát serveru obsahuje slabý kryptografický klíč.</translation>
+<translation id="1697532407822776718">Vše je nastaveno!</translation>
 <translation id="1706954506755087368">{1,plural, =1{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Uvedené datum vystavení jeho bezpečnostního certifikátu je zítra. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.}few{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Uvedené datum vystavení jeho bezpečnostního certifikátu je až za # dny. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.}many{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Uvedené datum vystavení jeho bezpečnostního certifikátu je až za # dne. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.}other{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Uvedené datum vystavení jeho bezpečnostního certifikátu je až za # dní. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.}}</translation>
 <translation id="1710259589646384581">Operační systém</translation>
 <translation id="1721312023322545264">Zdá se, že k návštěvě tohoto webu potřebujete povolení od správce <ph name="NAME" /></translation>
@@ -193,6 +196,7 @@
 <translation id="225207911366869382">Tato hodnota již pro tuto zásadu není podporována.</translation>
 <translation id="2262243747453050782">Chyba protokolu HTTP</translation>
 <translation id="2270484714375784793">Telefonní číslo</translation>
+<translation id="2283340219607151381">Ukládat a vyplňovat adresy</translation>
 <translation id="2292556288342944218">Vaše připojení k internetu je blokováno</translation>
 <translation id="2316887270356262533">Uvolní více než 1 MB. Je možné, že se některé weby při příští návštěvě budou načítat pomaleji.</translation>
 <translation id="2317259163369394535">Doména <ph name="DOMAIN" /> vyžaduje zadání uživatelského jména a hesla.</translation>
@@ -274,6 +278,7 @@
 <translation id="2851634818064021665">K návštěvě tohoto webu potřebujete povolení</translation>
 <translation id="2856444702002559011">Útočníci se mohou pokusit odcizit vaše údaje na webu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (například hesla, zprávy nebo informace o platebních kartách). <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2881276955470682203">Uložit kartu?</translation>
+<translation id="2903493209154104877">Adresy</translation>
 <translation id="2909946352844186028">Byla zjištěna změna sítě.</translation>
 <translation id="2916038427272391327">Zavřete ostatní programy</translation>
 <translation id="2922350208395188000">Certifikát serveru nelze zkontrolovat.</translation>
@@ -1142,6 +1147,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="973773823069644502">Přidat adresu doručení</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Žádné}=1{1 položka}few{# položky}many{# položky}other{# položek}}</translation>
 <translation id="981121421437150478">Offline</translation>
+<translation id="984275831282074731">Platební metody</translation>
 <translation id="985199708454569384">&lt;p&gt;Tato chyba se zobrazuje, pokud máte v počítači nebo mobilním zařízení nastaveno nepřesné datum a čas.&lt;/p&gt;
     &lt;p&gt;Chcete-li tuto chybu odstranit, otevřete v zařízení hodiny. Zkontrolujte, zda jsou datum a čas nastaveny správně.&lt;/p&gt;</translation>
 <translation id="988159990683914416">Vývojářské sestavení</translation>

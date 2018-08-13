@@ -1,10 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
-<translation id="111880247472081232">Ihre Sprachausgabe-Einstellungen für die Funktion "Vorlesen" wurden zu den globalen Sprachausgabe-Einstellungen migriert.</translation>
 <translation id="1197088940767939838">Orange</translation>
 <translation id="1273314450961659276">Einstellungen für Sprachausgabe</translation>
-<translation id="1498542103351704084">Spracheinstellungen für die Funktion "Vorlesen" wurden aktualisiert</translation>
 <translation id="1555130319947370107">Blau</translation>
 <translation id="1666326070478924810">Einstellungen für "Vorlesen"</translation>
 <translation id="1966649499058910679">Jedes Wort hervorheben, das gerade gesprochen wird</translation>
@@ -12,7 +10,6 @@
 <translation id="2714180132046334502">Dunkler Hintergrund</translation>
 <translation id="27349076983469322">Heller Hintergrund</translation>
 <translation id="335581015389089642">Sprachausgabe</translation>
-<translation id="3784184786832188702">Für die Funktion "Vorlesen" werden jetzt globale Sprachausgabe-Einstellungen verwendet.</translation>
 <translation id="5901630391730855834">Gelb</translation>
 <translation id="6017514345406065928">Grün</translation>
 <translation id="6475604559827479857">Farbe zum Hervorheben von Wörtern:</translation>

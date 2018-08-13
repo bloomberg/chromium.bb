@@ -1,10 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
-<translation id="111880247472081232">Inställningarna för text-till-tal under Textuppläsning har migrerats till de övergripande inställningarna för text till tal.</translation>
 <translation id="1197088940767939838">Orange</translation>
 <translation id="1273314450961659276">Inställningar för text till tal</translation>
-<translation id="1498542103351704084">Talinställningarna för Textuppläsning har uppdaterats</translation>
 <translation id="1555130319947370107">Blå</translation>
 <translation id="1666326070478924810">Inställningar för Textuppläsning</translation>
 <translation id="1966649499058910679">Markera orden allt eftersom de läses upp</translation>
@@ -12,7 +10,6 @@
 <translation id="2714180132046334502">Mörk bakgrund</translation>
 <translation id="27349076983469322">Ljus bakgrund</translation>
 <translation id="335581015389089642">Tal</translation>
-<translation id="3784184786832188702">Nu används de övergripande inställningarna för text till tal med Textuppläsning.</translation>
 <translation id="5901630391730855834">Gul</translation>
 <translation id="6017514345406065928">Grön</translation>
 <translation id="6475604559827479857">Markera ord med färgen:</translation>

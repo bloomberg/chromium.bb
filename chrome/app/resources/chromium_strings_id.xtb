@@ -246,7 +246,6 @@ Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</tr
 <translation id="8599548569518771270">{0,plural, =0{Chromium OS akan dimulai ulang sekarang}=1{Chromium OS akan dimulai ulang dalam 1 detik}other{Chromium OS akan dimulai ulang dalam # detik}}</translation>
 <translation id="8619360774459241877">Meluncurkan Chromium...</translation>
 <translation id="8621669128220841554">Pemasangan gagal karena kesalahan yang tidak ditentukan. Download Chromium lagi.</translation>
-<translation id="8628626585870903697">Chromium tidak menyertakan penampil PDF yang dibutuhkan agar Pratinjau Cetak berfungsi.</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> Anda sudah diperbarui.</translation>
 <translation id="8697124171261953979">Juga mengontrol halaman apa yang ditampilkan saat Anda memulai Chromium atau menelusuri dari Omnibox.</translation>
 <translation id="8704119203788522458">Ini Chromium Anda</translation>

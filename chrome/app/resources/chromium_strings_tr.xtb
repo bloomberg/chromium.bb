@@ -244,7 +244,6 @@ Daha fazla talimat için lütfen e-postanızı (<ph name="ACCOUNT_EMAIL" />) kon
 <translation id="8599548569518771270">{0,plural, =0{Chromium OS şimdi yeniden başlatılacak}=1{Chromium OS 1 saniye içinde yeniden başlatılacak}other{Chromium OS # saniye içinde yeniden başlatılacak}}</translation>
 <translation id="8619360774459241877">Chromium başlatılıyor...</translation>
 <translation id="8621669128220841554">Yükleme belirtilmeyen bir hata nedeniyle başarısız oldu. Lütfen Chromium'u tekrar indirin.</translation>
-<translation id="8628626585870903697">Chromium, Baskı Önizleme için gerekli olan PDF görüntüleyiciyi içermez.</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> cihazınız güncel.</translation>
 <translation id="8697124171261953979">Ayrıca Chromium'u başlattığınızda veya Çok Amaçlı Adres Çubuğu'ndan arama yaptığınızda gösterilecek sayfayı da denetler.</translation>
 <translation id="8704119203788522458">Bu sizin Chromium'unuz</translation>

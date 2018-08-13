@@ -271,6 +271,7 @@
 <translation id="1397854323885047133">Synkronisering og personlig tilpasning</translation>
 <translation id="1398853756734560583">Maksimer</translation>
 <translation id="1399511500114202393">Ingen brukersertifikater</translation>
+<translation id="1401165786814632797">Få tilgang til assistenten din når som helst ved å si «Ok Google» når enheten er på og ulåst.</translation>
 <translation id="140250605646987970">Telefonen din er funnet, men Smart Lock fungerer bare på enheter med Android 5.0 og nyere. &lt;a&gt;Finn ut mer&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (administrert)</translation>
 <translation id="1405476660552109915">Vil du at <ph name="PASSWORD_MANAGER_BRAND" /> skal lagre kontoen din for dette nettstedet?</translation>
@@ -454,7 +455,6 @@
 <translation id="166179487779922818">Passordet er for kort.</translation>
 <translation id="1661867754829461514">Personlig kode mangler</translation>
 <translation id="16620462294541761">Beklager, passordet kan ikke verifiseres. Prøv på nytt.</translation>
-<translation id="1662550410081243962">Lagre og fyll ut betalingsmåter</translation>
 <translation id="166278006618318542">Algoritme for enhetens offentlige nøkkel</translation>
 <translation id="166439687370499867">Det er ikke tillatt å endre delte nettverkskonfigurasjoner</translation>
 <translation id="1665611772925418501">Kunne ikke endre filen.</translation>
@@ -862,7 +862,6 @@
 <translation id="2282146716419988068">GPU-prosess</translation>
 <translation id="2282155092769082568">Nettadresse for automatisk konfigurering:</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">Lagre og fyll inn adresser</translation>
 <translation id="2286841657746966508">Faktureringsadresse</translation>
 <translation id="2288181517385084064">Bytt til videoopptaker</translation>
 <translation id="2288735659267887385">Innstillinger for tilgjengelighet</translation>
@@ -1506,6 +1505,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> vil koble til</translation>
 <translation id="3274763671541996799">Du bruker full skjerm.</translation>
 <translation id="3275778913554317645">Åpne som vindu</translation>
+<translation id="3278877214895457897">Når Chromebooken er konfigurert, trykker du på Assistent-knappen eller sier «Ok Google» for å snakke med assistenten når som helst.</translation>
 <translation id="3279230909244266691">Denne prosessen kan ta noen minutter. Starter den virtuelle maskinen.</translation>
 <translation id="3279741024917655738">Vis videoer i full skjerm på</translation>
 <translation id="3280237271814976245">L&amp;agre som...</translation>
@@ -2596,6 +2596,7 @@
 <translation id="4992066212339426712">Slå på lyden</translation>
 <translation id="4992458225095111526">Bekreft Powerwash</translation>
 <translation id="4992473555164495036">Administratoren har begrenset de tilgjengelige inndatametodene.</translation>
+<translation id="4992926179187649719">Slå på «Ok Google»</translation>
 <translation id="4994474651455208930">Tillat at nettsteder kan be om å bli standard behandlere for protokoller</translation>
 <translation id="4994754230098574403">Konfigurerer</translation>
 <translation id="4996978546172906250">Del via</translation>
@@ -4518,6 +4519,7 @@
 <translation id="7908378463497120834">Beklager, men minst én partisjon på den eksterne lagringsenheten din kunne ikke tilkobles.</translation>
 <translation id="7909969815743704077">Lastet ned i inkognitomodus</translation>
 <translation id="7910768399700579500">&amp;Ny mappe</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Passordet ditt er endret på tjeneren. Logg av og på igjen.</translation>
 <translation id="7915471803647590281">Fortell oss hva som skjer før du sender tilbakemeldingen.</translation>
 <translation id="7916556741383518510">Ved klikk</translation>

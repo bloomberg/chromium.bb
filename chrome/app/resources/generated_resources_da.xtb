@@ -455,7 +455,6 @@
 <translation id="166179487779922818">Adgangskoden er for kort.</translation>
 <translation id="1661867754829461514">Pinkode mangler</translation>
 <translation id="16620462294541761">Din adgangskode blev ikke bekræftet. Prøv igen.</translation>
-<translation id="1662550410081243962">Gem og udfyld betalingsmetoder</translation>
 <translation id="166278006618318542">Algoritme for emnets offentlige nøgle</translation>
 <translation id="166439687370499867">Det er ikke tilladt at ændre delte netværkskonfigurationer</translation>
 <translation id="1665611772925418501">Filen kunne ikke ændres.</translation>
@@ -863,7 +862,6 @@
 <translation id="2282146716419988068">GPU-proces</translation>
 <translation id="2282155092769082568">Webadresse til automatisk konfiguration:</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">Gem og udfyld adresser</translation>
 <translation id="2286841657746966508">Faktureringsadresse</translation>
 <translation id="2288181517385084064">Skift til videooptagelse</translation>
 <translation id="2288735659267887385">Indstillinger for hjælpefunktioner</translation>
@@ -1368,6 +1366,7 @@
 <translation id="3031557471081358569">Vælg at importere følgende:</translation>
 <translation id="3031601332414921114">Genoptag udskrivning</translation>
 <translation id="303198083543495566">Geografi</translation>
+<translation id="3033999583152214331">Kør Linux-værktøjer, -redigeringsværktøjer og -IDE'er på din Chromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;Få flere oplysninger&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Aktivér Flash</translation>
 <translation id="3037754279345160234">Konfigurationen for domænetilmelding kunne ikke parses. Kontakt din administrator.</translation>
 <translation id="3038612606416062604">Tilføj en printer manuelt</translation>

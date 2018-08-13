@@ -63,6 +63,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Try clearing your cookies<ph name="END_LINK" /></translation>
 <translation id="1314614906530272393">The selected session does not exist.</translation>
 <translation id="1323433172918577554">Show More</translation>
+<translation id="132390688737681464">Save and Fill Addresses</translation>
 <translation id="1333989956347591814">Your activity <ph name="BEGIN_EMPHASIS" />might still be visible<ph name="END_EMPHASIS" /> to:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />Websites that you visit
@@ -110,9 +111,11 @@
 <translation id="1645368109819982629">Unsupported protocol</translation>
 <translation id="1655462015569774233">{1,plural, =1{This server could not prove that it is <ph name="DOMAIN" />; its security certificate expired yesterday. This may be caused by a misconfiguration or an attacker intercepting your connection. Your computer's clock is currently set to <ph name="CURRENT_DATE" />. Does that look right? If not, you should correct your system's clock and then refresh this page.}other{This server could not prove that it is <ph name="DOMAIN" />; its security certificate expired # days ago. This may be caused by a misconfiguration or an attacker intercepting your connection. Your computer's clock is currently set to <ph name="CURRENT_DATE" />. Does that look right? If not, you should correct your system's clock and then refresh this page.}}</translation>
 <translation id="1656489000284462475">Pick up</translation>
+<translation id="1662550410081243962">Save and fill payment methods</translation>
 <translation id="1663943134801823270">Cards and addresses are from Chrome. You can manage them in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> normally uses encryption to protect your information. When Google Chrome tried to connect to <ph name="SITE" /> this time, the website sent back unusual and incorrect credentials. This may happen when an attacker is trying to pretend to be <ph name="SITE" />, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Google Chrome stopped the connection before any data was exchanged.</translation>
 <translation id="168841957122794586">The server certificate contains a weak cryptographic key.</translation>
+<translation id="1697532407822776718">You're all set!</translation>
 <translation id="1706954506755087368">{1,plural, =1{This server could not prove that it is <ph name="DOMAIN" />; its security certificate is supposedly from tomorrow. This may be caused by a misconfiguration or an attacker intercepting your connection.}other{This server could not prove that it is <ph name="DOMAIN" />; its security certificate is supposedly from # days in the future. This may be caused by a misconfiguration or an attacker intercepting your connection.}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1721312023322545264">You need permission from <ph name="NAME" /> to visit this site</translation>
@@ -193,6 +196,7 @@
 <translation id="225207911366869382">This value is deprecated for this policy.</translation>
 <translation id="2262243747453050782">HTTP error</translation>
 <translation id="2270484714375784793">Phone number</translation>
+<translation id="2283340219607151381">Save and fill addresses</translation>
 <translation id="2292556288342944218">Your Internet access is blocked</translation>
 <translation id="2316887270356262533">Frees up less than 1 MB. Some sites may load more slowly on your next visit.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> requires a username and password.</translation>
@@ -274,6 +278,7 @@
 <translation id="2851634818064021665">You need permission to visit this site</translation>
 <translation id="2856444702002559011">Attackers might be trying to steal your information from <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (for example, passwords, messages or credit cards). <ph name="BEGIN_LEARN_MORE_LINK" />Learn more<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2881276955470682203">Save card?</translation>
+<translation id="2903493209154104877">Addresses</translation>
 <translation id="2909946352844186028">A network change was detected.</translation>
 <translation id="2916038427272391327">Close other programmes</translation>
 <translation id="2922350208395188000">Server's certificate cannot be checked.</translation>
@@ -1146,6 +1151,7 @@
 <translation id="973773823069644502">Add delivery address</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{None}=1{1 item}other{# items}}</translation>
 <translation id="981121421437150478">Offline</translation>
+<translation id="984275831282074731">Payment methods</translation>
 <translation id="985199708454569384">&lt;p&gt;You'll see this error if your computer or mobile device's date and time are inaccurate.&lt;/p&gt;
     &lt;p&gt;To fix the error, open your device's clock. Make sure that the time and date are correct.&lt;/p&gt;</translation>
 <translation id="988159990683914416">Developer Build</translation>

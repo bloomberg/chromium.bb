@@ -458,7 +458,6 @@
 <translation id="166179487779922818">Şifre çok kısa.</translation>
 <translation id="1661867754829461514">PIN eksik</translation>
 <translation id="16620462294541761">Maalesef, şifreniz doğrulanamadı. Lütfen tekrar deneyin.</translation>
-<translation id="1662550410081243962">Ödeme yöntemlerini kaydet ve doldur</translation>
 <translation id="166278006618318542">Konu Ortak Anahtar Algoritması</translation>
 <translation id="166439687370499867">Paylaşılan ağ yapılandırmalarının değiştirilmesine izin verilmez</translation>
 <translation id="1665611772925418501">Dosya değiştirilemedi.</translation>
@@ -866,7 +865,6 @@
 <translation id="2282146716419988068">GPU İşlemi</translation>
 <translation id="2282155092769082568">Otomatik yapılandırma URL'si:</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">Adresleri kaydet ve doldur</translation>
 <translation id="2286841657746966508">Fatura adresi</translation>
 <translation id="2288181517385084064">Video kaydediciye geç</translation>
 <translation id="2288735659267887385">Erişilebilirlik ayarları</translation>
@@ -1370,6 +1368,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3031557471081358569">İçe aktarılacak öğeleri seçin:</translation>
 <translation id="3031601332414921114">Yazdırma işlemini devam ettir</translation>
 <translation id="303198083543495566">Coğrafya</translation>
+<translation id="3033999583152214331">Chromebook'unuzda Linux araçları, düzenleyicileri ve IDE'lerini çalıştırın. &lt;a target="_blank" href="<ph name="URL" />"&gt;Daha fazla bilgi&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Flash'ı etkinleştir</translation>
 <translation id="3037754279345160234">Alana katılmak için yapılandırma ayrıştırılamıyor. Lütfen yöneticinizle iletişime geçin.</translation>
 <translation id="3038612606416062604">Manuel olarak yazıcı ekleyin</translation>

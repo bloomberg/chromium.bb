@@ -1,10 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
-<translation id="111880247472081232">तुमचे बोलण्यासाठी निवडा टेक्‍स्‍ट टू स्‍पीच सेटिंग्ज जागतिक टेक्‍स्‍ट टू स्‍पीच सेटिंग्जवर हलवले गेले.</translation>
 <translation id="1197088940767939838">नारिंगी</translation>
 <translation id="1273314450961659276">टेक्‍स्‍ट टू स्‍पीच सेटिंग्ज</translation>
-<translation id="1498542103351704084">बोलण्यासाठी निवडा स्‍पीच सेटिंग्ज अपडेट झाले</translation>
 <translation id="1555130319947370107">निळा</translation>
 <translation id="1666326070478924810">बोलण्यासाठी निवडा सेटिंग्ज</translation>
 <translation id="1966649499058910679">प्रत्येक शब्द तो बोलला जात असताना हायलाइट करा</translation>
@@ -12,7 +10,6 @@
 <translation id="2714180132046334502">गडद बॅकग्राउंड</translation>
 <translation id="27349076983469322">फिकट बॅकग्राउंड</translation>
 <translation id="335581015389089642">भाषण</translation>
-<translation id="3784184786832188702">बोलण्यासाठी निवडा आता जागतिक टेक्‍स्‍ट टू स्‍पीच सेटिंग्ज वापरते.</translation>
 <translation id="5901630391730855834">पिवळा</translation>
 <translation id="6017514345406065928">हिरवा</translation>
 <translation id="6475604559827479857">शब्द हायलाइट करण्यासाठी रंग:</translation>

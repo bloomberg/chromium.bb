@@ -248,7 +248,6 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="8599548569518771270">{0,plural, =0{Chromium OS startas om nu}=1{Om en sekund startas Chromium OS om}other{Om # sekunder startas Chromium OS om}}</translation>
 <translation id="8619360774459241877">Chromium startas …</translation>
 <translation id="8621669128220841554">Installationen misslyckades på grund av ett okänt fel. Ladda ned Chromium igen.</translation>
-<translation id="8628626585870903697">Chromium har inte det PDF-visningsprogram som krävs för att förhandsgranskning ska fungera.</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> är uppdaterad.</translation>
 <translation id="8697124171261953979">Det styr också vilken sida som visas när du startar Chromium eller söker i adressfältet.</translation>
 <translation id="8704119203788522458">Det här är Chromium</translation>

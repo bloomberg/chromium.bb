@@ -458,7 +458,6 @@
 <translation id="166179487779922818">Ο κωδικός πρόσβασης είναι πολύ σύντομος.</translation>
 <translation id="1661867754829461514">Απουσιάζει το PIN </translation>
 <translation id="16620462294541761">Λυπούμαστε, δεν ήταν δυνατή η επαλήθευση του κωδικού πρόσβασής σας. Δοκιμάστε ξανά.</translation>
-<translation id="1662550410081243962">Αποθήκευση και συμπλήρωση τρόπων πληρωμής</translation>
 <translation id="166278006618318542">Αλγόριθμος δημόσιου κλειδιού υποκειμένου</translation>
 <translation id="166439687370499867">Δεν επιτρέπεται η αλλαγή διαμορφώσεων κοινόχρηστου δικτύου</translation>
 <translation id="1665611772925418501">Δεν ήταν δυνατή η τροποποίηση του αρχείου.</translation>
@@ -866,7 +865,6 @@
 <translation id="2282146716419988068">Διαδικασία GPU</translation>
 <translation id="2282155092769082568">Αυτόματη διαμόρφωση URL</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">Αποθήκευση και συμπλήρωση διευθύνσεων</translation>
 <translation id="2286841657746966508">Διεύθυνση τιμολόγησης</translation>
 <translation id="2288181517385084064">Εναλλαγή σε πρόγραμμα εγγραφής βίντεο</translation>
 <translation id="2288735659267887385">Ρυθμίσεις προσβασιμότητας</translation>
@@ -1370,6 +1368,7 @@
 <translation id="3031557471081358569">Επιλογή στοιχείων για εισαγωγή:</translation>
 <translation id="3031601332414921114">Συνέχιση εκτύπωσης</translation>
 <translation id="303198083543495566">Γεωγραφία</translation>
+<translation id="3033999583152214331">Εκτελέστε εργαλεία, προγράμματα επεξεργασίας και IDE Linux στο Chromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Ενεργοποίηση Flash</translation>
 <translation id="3037754279345160234">Δεν είναι δυνατή η ανάλυση της διαμόρφωσης για συμμετοχή σε τομέα. Επικοινωνήστε με τον διαχειριστή σας.</translation>
 <translation id="3038612606416062604">Μη αυτόματη προσθήκη εκτυπωτή</translation>

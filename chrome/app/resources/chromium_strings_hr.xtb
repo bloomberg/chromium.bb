@@ -246,7 +246,6 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="8599548569518771270">{0,plural, =0{OS Chromium sada će se ponovo pokrenuti}=1{OS Chromium ponovo će se pokrenuti za 1 sekundu}one{OS Chromium ponovo će se pokrenuti za # sekundu}few{OS Chromium ponovo će se pokrenuti za # sekunde}other{OS Chromium ponovo će se pokrenuti za # sekundi}}</translation>
 <translation id="8619360774459241877">Pokretanje Chromiuma...</translation>
 <translation id="8621669128220841554">Instalacija nije uspjela zbog nepoznate pogreške. Ponovo preuzmite Chromium.</translation>
-<translation id="8628626585870903697">Chromium ne uključuje pregledač PDF-a koji je potreban da bi pregled ispisa funkcionirao.</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> je ažuriran.</translation>
 <translation id="8697124171261953979">Upravlja i time koja se stranica prikazuje prilikom pokretanja Chromiuma ili pretraživanja putem višenamjenskog okvira.</translation>
 <translation id="8704119203788522458">To je vaš Chromium</translation>

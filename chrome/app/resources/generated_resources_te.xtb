@@ -457,7 +457,6 @@
 <translation id="166179487779922818">పాస్‌వర్డ్ చాలా చిన్నదిగా ఉంది.</translation>
 <translation id="1661867754829461514">PIN లేదు</translation>
 <translation id="16620462294541761">క్షమించండి, మీ పాస్‌వర్డ్ ధృవీకరించబడలేదు. దయచేసి మళ్ళీ ప్రయత్నించండి.</translation>
-<translation id="1662550410081243962">చెల్లింపు పద్ధతులను సేవ్ చేసి, పూరించండి</translation>
 <translation id="166278006618318542">విషయం పబ్లిక్ కీ అల్గారిథం</translation>
 <translation id="166439687370499867">షేర్ చేసిన నెట్‌వర్క్ కాన్ఫిగరేషన్‌లను మార్చడం అనుమతించబడదు</translation>
 <translation id="1665611772925418501">ఫైల్‌ను సవరించడం సాధ్యపడదు.</translation>
@@ -865,7 +864,6 @@
 <translation id="2282146716419988068">GPU ప్రాసెస్</translation>
 <translation id="2282155092769082568">స్వయంచాలక కాన్ఫిగరేషన్ URL:</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">చిరునామాలను సేవ్ చేసి, పూరించండి</translation>
 <translation id="2286841657746966508">బిల్లింగ్ చిరునామా</translation>
 <translation id="2288181517385084064">వీడియో రికార్డర్‌కి మార్చు</translation>
 <translation id="2288735659267887385">ప్రాప్యత సెట్టింగ్‌లు</translation>
@@ -1369,6 +1367,7 @@
 <translation id="3031557471081358569">దిగుమతి చెయ్యడానికి ఐటమ్‌లను ఎంచుకోండి:</translation>
 <translation id="3031601332414921114">ముద్రణను పునఃప్రారంభించు</translation>
 <translation id="303198083543495566">భూగోళ శాస్త్రం</translation>
+<translation id="3033999583152214331">మీ Chromebookలో Linux సాధనాలు, ఎడిటర్‌లు మరియు IDEలను అమలు చేయండి. &lt;a target = "_ blank" href = " <ph name="URL" /> "&gt;మరింత తెలుసుకోండి&lt;/a&gt;</translation>
 <translation id="3036546437875325427">ఫ్లాష్‌ను ప్రారంభించు</translation>
 <translation id="3037754279345160234">డొమైన్‌లో చేరడానికి కాన్ఫిగరేషన్‌ను అన్వయించడం సాధ్యపడలేదు. దయచేసి మీ నిర్వాహకుడిని సంప్రదించండి.</translation>
 <translation id="3038612606416062604">ఒక ప్రింటర్‌ను మాన్యువల్‌గా జోడించండి</translation>

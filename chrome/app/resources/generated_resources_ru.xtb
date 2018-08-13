@@ -457,7 +457,6 @@
 <translation id="166179487779922818">Слишком короткий пароль.</translation>
 <translation id="1661867754829461514">PIN-код отсутствует</translation>
 <translation id="16620462294541761">К сожалению, не удалось подтвердить пароль. Повторите попытку.</translation>
-<translation id="1662550410081243962">Сохранять и автоматически подставлять платежные данные</translation>
 <translation id="166278006618318542">Алгоритм открытого ключа субъекта</translation>
 <translation id="166439687370499867">Изменять настройки общей сети запрещено</translation>
 <translation id="1665611772925418501">Не удалось изменить файл.</translation>
@@ -865,7 +864,6 @@
 <translation id="2282146716419988068">Процесс GPU</translation>
 <translation id="2282155092769082568">URL автоматической настройки:</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">Сохранять и автоматически подставлять адреса</translation>
 <translation id="2286841657746966508">Платежный адрес</translation>
 <translation id="2288181517385084064">Перейти в режим видео</translation>
 <translation id="2288735659267887385">Специальные возможности</translation>
@@ -1371,6 +1369,7 @@
 <translation id="3031557471081358569">Выберите элементы для импорта:</translation>
 <translation id="3031601332414921114">Возобновить печать</translation>
 <translation id="303198083543495566">Место съемки</translation>
+<translation id="3033999583152214331">Запускайте инструменты, редакторы и интегрированные среды разработки Linux на устройстве Chromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;Подробнее…&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Включить Flash</translation>
 <translation id="3037754279345160234">Не удалось проанализировать конфигурацию для подключения к домену. Обратитесь к администратору.</translation>
 <translation id="3038612606416062604">Добавление принтера вручную</translation>

@@ -458,7 +458,6 @@
 <translation id="166179487779922818">Parool on liiga lühike.</translation>
 <translation id="1661867754829461514">PIN-kood puudub</translation>
 <translation id="16620462294541761">Kahjuks ei õnnestunud teie parooli kinnitada. Proovige uuesti.</translation>
-<translation id="1662550410081243962">Salvesta ja sisesta makseviisid</translation>
 <translation id="166278006618318542">Subjekti avaliku võtme algoritm</translation>
 <translation id="166439687370499867">Jagatud võrgu seadistuste muutmine ei ole lubatud</translation>
 <translation id="1665611772925418501">Faili ei saa muuta.</translation>
@@ -866,7 +865,6 @@
 <translation id="2282146716419988068">GPU-protsess</translation>
 <translation id="2282155092769082568">Automaatse konfigureerimise URL:</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">Salvesta ja sisesta aadressid</translation>
 <translation id="2286841657746966508">Arveldusaadress</translation>
 <translation id="2288181517385084064">Lülitu videosalvestile</translation>
 <translation id="2288735659267887385">Juurdepääsetavuse seaded</translation>
@@ -1370,6 +1368,7 @@
 <translation id="3031557471081358569">Valige imporditavad üksused:</translation>
 <translation id="3031601332414921114">Jätka printimist</translation>
 <translation id="303198083543495566">Geograafia</translation>
+<translation id="3033999583152214331">Käitage oma Chromebookis Linuxi tööriistu, redaktoreid ja IDE-sid. &lt;a target="_blank" href="<ph name="URL" />"&gt;Lisateave&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Luba Flash</translation>
 <translation id="3037754279345160234">Domeeniga liitumise seadistust ei saa sõeluda. Võtke ühendust administraatoriga.</translation>
 <translation id="3038612606416062604">Printeri käsitsi lisamine</translation>

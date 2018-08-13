@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
 <translation id="100812568230599391">প্রদর্শন শৈলীকে একটি অন্যটির মাঝে সমাবেশিত হিসেবে পরিবর্তন করুন।</translation>
+<translation id="1011903154582639569">একটি বোতাম খুঁজুন, তারপর টাইপ করার জন্য তুলুন</translation>
 <translation id="1012173283529841972">তালিকা আইটেম</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">আপনি কি ChromeVox এর পড়ে শোনানো মতামতের সুবিধাটি প্রথমবারের জন্য ব্যবহার করছেন? কিভাবে ChromeVox ব্যবহার করা শুরু করতে হয় এই সংক্ষিপ্ত টিউটোরিয়ালটি সে বিষয়ে প্রয়োজনীয় বিষয়গুলি ব্যাখ্যা করে।</translation>
@@ -163,6 +164,7 @@
 <translation id="2553108862507765288">ব্যাকরণগত ভুল</translation>
 <translation id="257674075312929031">গ্রুপ</translation>
 <translation id="2582407057977008361">একপাশে</translation>
+<translation id="2592212930811759050">এডিট শুরু করতে ডবল-ট্যাপ করুন</translation>
 <translation id="2606210917827248971">সাথে আছে {COUNT,plural, =1{#টি আইটেম}one{#টি আইটেম}other{#টি আইটেম}}</translation>
 <translation id="2614981083756825552">গাণিতিক ML লেআউট</translation>
 <translation id="2624431853467395961">শিখন মোড খুলুন</translation>

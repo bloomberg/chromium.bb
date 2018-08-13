@@ -458,7 +458,6 @@
 <translation id="166179487779922818">비밀번호가 너무 짧습니다.</translation>
 <translation id="1661867754829461514">PIN이 없습니다.</translation>
 <translation id="16620462294541761">비밀번호가 일치하지 않습니다. 다시 시도해 주세요.</translation>
-<translation id="1662550410081243962">결제 수단 저장 및 자동 입력</translation>
 <translation id="166278006618318542">대상 공개 키 알고리즘</translation>
 <translation id="166439687370499867">공유 네트워크 설정 변경은 허용되지 않습니다</translation>
 <translation id="1665611772925418501">파일을 수정하지 못했습니다.</translation>
@@ -866,7 +865,6 @@
 <translation id="2282146716419988068">GPU 프로세스</translation>
 <translation id="2282155092769082568">자동설정 URL:</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">주소 저장 및 자동 입력</translation>
 <translation id="2286841657746966508">결제주소</translation>
 <translation id="2288181517385084064">동영상 녹화로 전환</translation>
 <translation id="2288735659267887385">접근성 설정</translation>
@@ -1370,6 +1368,7 @@
 <translation id="3031557471081358569">가져올 항목 선택:</translation>
 <translation id="3031601332414921114">인쇄 계속하기</translation>
 <translation id="303198083543495566">위치</translation>
+<translation id="3033999583152214331">Chromebook에서 Linux 도구, 편집기, IDE를 실행하세요. &lt;a target="_blank" href="<ph name="URL" />"&gt;자세히 알아보기&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Flash 사용</translation>
 <translation id="3037754279345160234">도메인 연결 구성을 파싱할 수 없습니다. 관리자에게 문의하세요.</translation>
 <translation id="3038612606416062604">수동으로 프린터 추가</translation>

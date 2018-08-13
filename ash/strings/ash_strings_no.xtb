@@ -25,6 +25,7 @@
 <translation id="1346748346194534595">Høyre</translation>
 <translation id="1351937230027495976">Skjul menyen</translation>
 <translation id="1383876407941801731">Søk</translation>
+<translation id="1419738280318246476">Lås opp enheten for å utføre varselhandlinger</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Appvelger</translation>
@@ -224,6 +225,7 @@
 <translation id="4924411785043111640">Start på nytt og tilbakestill</translation>
 <translation id="4961318399572185831">Cast skjermen</translation>
 <translation id="5069971504769299223">Enhetsadministratoren kan muligens overvåke aktiviteten din.</translation>
+<translation id="5083553833479578423">Lås opp flere Assistent-funksjoner.</translation>
 <translation id="5136175204352732067">Et annet tastatur er koblet til</translation>
 <translation id="5168181903108465623">Cast-enheter er tilgjengelige</translation>
 <translation id="5207949376430453814">Fremhev tekstinnsettingspunktet</translation>
@@ -295,6 +297,7 @@
 <translation id="6376931439017688372">Bluetooth er på</translation>
 <translation id="639644700271529076">CAPS LOCK er av</translation>
 <translation id="6406704438230478924">alt gr</translation>
+<translation id="642644398083277086">Fjern alle varsler</translation>
 <translation id="643147933154517414">Ingen varsler</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> på <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Avslå</translation>
@@ -396,9 +399,11 @@
 <translation id="8152119955266188852">Du trykket på snarveien for lupen for hele skjermen. Vil du slå den på?</translation>
 <translation id="8190698733819146287">Tilpass språk og inndata</translation>
 <translation id="8191230140820435481">Administrering av programmer, utvidelser og temaer</translation>
+<translation id="8192202700944119416">Varsler er skjult.</translation>
 <translation id="8261506727792406068">Slett</translation>
 <translation id="8297006494302853456">Svak</translation>
 <translation id="8308637677604853869">Forrige meny</translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /><ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Opprett et notat</translation>
 <translation id="8392451568018454956">Alternativmenyen for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Lupe for hele skjermen</translation>
@@ -440,6 +445,7 @@
 <translation id="8938800817013097409">USB-C-enhet (høyre port på baksiden)</translation>
 <translation id="8940956008527784070">Lavt batterinivå (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="8984179138335769204">Hurtigtaster</translation>
+<translation id="899350903320462459">Lås opp enheter som <ph name="LOGIN_ID" /> for å utføre varselhandlinger</translation>
 <translation id="8995603266996330174">Drevet av <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">En oppdatering av Adobe Flash Player er tilgjengelig</translation>
 <translation id="9056839673611986238">Enheten blir tilbakestilt til forrige versjon</translation>

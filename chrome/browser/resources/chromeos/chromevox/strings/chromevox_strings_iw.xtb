@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
 <translation id="100812568230599391">עבור להצגה משולבת.</translation>
+<translation id="1011903154582639569">יש לעבור אל מקש רצוי ולהרים את האצבע כדי להקליד אותו</translation>
 <translation id="1012173283529841972">פריט רשימה</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">‏האם זה השימוש הראשון שלך בקורא המסך הקולי ChromeVox? המדריך הקצר הזה מסביר את עקרונות הבסיס של ChromeVox למתחילים.</translation>
@@ -163,6 +164,7 @@
 <translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">קבוצה</translation>
 <translation id="2582407057977008361">בצד</translation>
+<translation id="2592212930811759050">לחיצה פעמיים מפעילה עריכה</translation>
 <translation id="2606210917827248971">עם {COUNT,plural, =1{פריט אחד}two{שני פריטים}many{# פריטים}other{# פריטים}}</translation>
 <translation id="2614981083756825552">‏פריסת Math ML</translation>
 <translation id="2624431853467395961">פתח מצב למידה</translation>

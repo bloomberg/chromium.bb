@@ -246,7 +246,6 @@
 <translation id="8599548569518771270">{0,plural, =0{‏ستتم إعادة تشغيل نظام التشغيل Chromium الآن}=1{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال ثانية واحدة}two{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال ثانيتين (#)}few{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال # ثوانٍ}many{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال # ثانيةً}other{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال # ثانية}}</translation>
 <translation id="8619360774459241877">‏جارٍ إطلاق Chromium...</translation>
 <translation id="8621669128220841554">‏تعذّر التثبيت نظرًا لحدوث خطأ غير محدد. يُرجى إعادة تنزيل Chromium.</translation>
-<translation id="8628626585870903697">‏لا يتضمن Chromium عارض PDF المطلوب لإجراء معاينة الطباعة.</translation>
 <translation id="8667808506758191620">جهاز <ph name="DEVICE_TYPE" /> مُحدّث.</translation>
 <translation id="8697124171261953979">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chromium أو إجراء بحث من المربع متعدد الاستخدامات.</translation>
 <translation id="8704119203788522458">‏هذا هو Chromium الخاص بك</translation>

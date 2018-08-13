@@ -458,7 +458,6 @@
 <translation id="166179487779922818">Masyadong maikli ang password.</translation>
 <translation id="1661867754829461514">Nawawala ang PIN</translation>
 <translation id="16620462294541761">Paumanhin, hindi ma-verify ang iyong password. Pakisubukang muli.</translation>
-<translation id="1662550410081243962">I-save at punan ang mga paraan ng pagbabayad</translation>
 <translation id="166278006618318542">Subject Public Key Algorithm</translation>
 <translation id="166439687370499867">Hindi pinapayagan ang pagbago sa mga nakabahaging configuration ng network</translation>
 <translation id="1665611772925418501">Hindi mababago ang file.</translation>
@@ -866,7 +865,6 @@
 <translation id="2282146716419988068">Proseso ng GPU</translation>
 <translation id="2282155092769082568">Autoconfiguration URL:</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">I-save at punan ang mga address</translation>
 <translation id="2286841657746966508">Billing address</translation>
 <translation id="2288181517385084064">Lumipat sa video recorder</translation>
 <translation id="2288735659267887385">Mga setting ng pagiging naa-access</translation>
@@ -1370,6 +1368,7 @@
 <translation id="3031557471081358569">Pumili ng mga item na ii-import:</translation>
 <translation id="3031601332414921114">Ituloy ang pag-print</translation>
 <translation id="303198083543495566">Heograpiya</translation>
+<translation id="3033999583152214331">Magpatakbo ng mga Linux tool, editor, at IDE sa iyong Chromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;Matuto pa&lt;/a&gt;</translation>
 <translation id="3036546437875325427">I-enable ang Flash</translation>
 <translation id="3037754279345160234">Hindi ma-parse ang configuration para magsama ng domain. Makipag-ugnayan sa iyong administrator.</translation>
 <translation id="3038612606416062604">Manual na magdagdag ng printer</translation>

@@ -458,7 +458,6 @@
 <translation id="166179487779922818">A jelszó túl rövid.</translation>
 <translation id="1661867754829461514">Hiányzó PIN-kód</translation>
 <translation id="16620462294541761">Sajnáljuk, jelszavát nem sikerült megerősíteni. Próbálja meg újra.</translation>
-<translation id="1662550410081243962">Fizetési módok mentése és betöltése</translation>
 <translation id="166278006618318542">Nyilvános kulcs algoritmusa</translation>
 <translation id="166439687370499867">A megosztott hálózati konfigurációk módosítása nem engedélyezett</translation>
 <translation id="1665611772925418501">A fájlt nem lehet módosítani.</translation>
@@ -866,7 +865,6 @@
 <translation id="2282146716419988068">GPU-folyamat</translation>
 <translation id="2282155092769082568">URL automatikus konfigurációja:</translation>
 <translation id="2283117145434822734">F6</translation>
-<translation id="2283340219607151381">Címek mentése és betöltése</translation>
 <translation id="2286841657746966508">Számlázási cím</translation>
 <translation id="2288181517385084064">Váltás videófelvevőre</translation>
 <translation id="2288735659267887385">Kisegítő beállítások</translation>
@@ -1371,6 +1369,7 @@
 <translation id="3031557471081358569">Válassza ki az importálandó elemeket:</translation>
 <translation id="3031601332414921114">A nyomtatás folytatása</translation>
 <translation id="303198083543495566">Földrajzi helyzet</translation>
+<translation id="3033999583152214331">Linuxos eszközök, szerkesztők és IDE-szoftverek futtatása a Chromebookon. &lt;a target="_blank" href="<ph name="URL" />"&gt;További információ&lt;/a&gt;.</translation>
 <translation id="3036546437875325427">Flash engedélyezése</translation>
 <translation id="3037754279345160234">Nem lehet elemezni a domaincsatlakoztatási konfigurációt. Vegye fel a kapcsolatot a rendszergazdával.</translation>
 <translation id="3038612606416062604">Nyomtató hozzáadása manuálisan</translation>
