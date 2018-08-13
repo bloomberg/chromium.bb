@@ -87,10 +87,10 @@ bool CheckForMaxDownscalingImagePolicy(const LocalFrame& frame,
   if (layout_width > 0 && layout_height > 0 && image_width > 0 &&
       image_height > 0) {
     double device_pixel_ratio = frame.DevicePixelRatio();
-    if (LayoutUnit(image_width / kmax_downscaling_ratio * device_pixel_ratio) >
-            layout_width ||
-        LayoutUnit(image_height / kmax_downscaling_ratio * device_pixel_ratio) >
-            layout_height)
+    if (LayoutUnit(image_width / (kmax_downscaling_ratio *
+                                  device_pixel_ratio)) > layout_width ||
+        LayoutUnit(image_height / (kmax_downscaling_ratio *
+                                   device_pixel_ratio)) > layout_height)
       return true;
   }
   return false;
