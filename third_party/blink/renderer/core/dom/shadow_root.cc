@@ -74,6 +74,7 @@ ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
       type_(static_cast<unsigned short>(type)),
       registered_with_parent_shadow_root_(false),
       delegates_focus_(false),
+      slotting_(static_cast<unsigned short>(ShadowRootSlotting::kAuto)),
       needs_distribution_recalc_(false),
       unused_(0) {
   if (IsV0())

@@ -6,23 +6,21 @@ See https://crbug.com/869308
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <div id="host">
-  <div id="child1"></div>
+</div>
+<div id="host1">
 </div>
 
 <script>
 const host = document.querySelector('#host');
-const child1 = document.querySelector('#child1');
-const shadow_root = host.attachShadow({ mode: 'open', slotting: 'manual' });
-const slot1 = document.createElement('slot');
-shadow_root.appendChild(slot1);
+const host1 = document.querySelector('#host1');
 
 test(() => {
-  assert_equals(child1.assignedSlot, null);
-  assert_array_equals(slot1.assignedElements(), []);
-
-  slot1.assign([child1]);
-
-  assert_equals(child1.assignedSlot, slot1);
-  assert_array_equals(slot1.assignedElements(), [child1]);
-}, 'slot.assign(nodes) should work');
+  assert_not_equals(host.attachShadow({ mode: 'open', slotting: 'manual' }),
+                    null, 'slotting manual should work');
+  assert_not_equals(host1.attachShadow({ mode: 'open', slotting: 'auto' }),
+                    null, 'slotting auto should work');
+  assert_throws(new TypeError(), () => {
+    host.attachShadow({ mode: 'open', slotting: 'exceptional' })},
+                'others should throw exception');
+}, 'attachShadow can take slotting parameter');
 </script>

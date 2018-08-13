@@ -653,6 +653,10 @@
       status: "experimental",
     },
     {
+      name:"ManualSlotting",
+      status:"test",
+    },
+    {
       name: "MediaCapabilities",
       origin_trial_feature_name: "MediaCapabilities",
       status: "stable",
