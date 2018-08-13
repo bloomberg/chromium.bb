@@ -2493,9 +2493,13 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     rc->gfu_boost =
         calc_arf_boost(cpi, alt_offset, (i - 1), (i - 1), &f_boost, &b_boost);
     rc->source_alt_ref_pending = 1;
+
+    // do not replace ARFs with overlay frames, and keep it as GOLDEN_REF
+    cpi->preserve_arf_as_gld = 1;
   } else {
     rc->gfu_boost = AOMMAX((int)boost_score, MIN_ARF_GF_BOOST);
     rc->source_alt_ref_pending = 0;
+    cpi->preserve_arf_as_gld = 0;
   }
 
   // Set the interval until the next gf.

@@ -3379,9 +3379,15 @@ static void update_reference_frames(AV1_COMP *cpi) {
     // slot and, if we're updating the GF, the current frame becomes the new GF.
     int tmp;
 
-    ref_cnt_fb(pool->frame_bufs,
-               &cm->ref_frame_map[cpi->ref_fb_idx[ALTREF_FRAME - 1]],
-               cm->new_fb_idx);
+    // ARF in general is a better reference than overlay. We shouldkeep ARF as
+    // reference instead of replacing it with overlay.
+
+    if (!cpi->preserve_arf_as_gld) {
+      ref_cnt_fb(pool->frame_bufs,
+                 &cm->ref_frame_map[cpi->ref_fb_idx[ALTREF_FRAME - 1]],
+                 cm->new_fb_idx);
+    }
+
     tmp = cpi->ref_fb_idx[ALTREF_FRAME - 1];
     cpi->ref_fb_idx[ALTREF_FRAME - 1] = cpi->ref_fb_idx[GOLDEN_FRAME - 1];
     cpi->ref_fb_idx[GOLDEN_FRAME - 1] = tmp;

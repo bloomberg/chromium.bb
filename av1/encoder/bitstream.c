@@ -2239,8 +2239,13 @@ static int get_refresh_mask(AV1_COMP *cpi) {
     // Note: This is highly specific to the use of ARF as a forward reference,
     // and this needs to be generalized as other uses are implemented
     // (like RTC/temporal scalability).
-    return refresh_mask |
-           (cpi->refresh_golden_frame << cpi->ref_fb_idx[ALTREF_FRAME - 1]);
+
+    if (cpi->preserve_arf_as_gld) {
+      return refresh_mask;
+    } else {
+      return refresh_mask |
+             (cpi->refresh_golden_frame << cpi->ref_fb_idx[ALTREF_FRAME - 1]);
+    }
   } else {
     const int arf_idx = cpi->ref_fb_idx[ALTREF_FRAME - 1];
     return refresh_mask |
