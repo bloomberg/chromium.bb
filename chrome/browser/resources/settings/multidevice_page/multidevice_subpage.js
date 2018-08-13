@@ -53,6 +53,12 @@ Polymer({
         settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED;
   },
 
+  /** @private */
+  handleForgetDeviceClick_: function() {
+    // TODO(jordynass): Have this navigate to the route for dialog once it is
+    // built.
+  },
+
   /**
    * @return {string}
    * @private

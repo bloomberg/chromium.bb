@@ -7,16 +7,19 @@
 <link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="../settings_vars_css.html">
 
 <dom-module id="settings-multidevice-feature-item">
   <template>
     <style include="settings-shared">
-      iron-icon {
-        padding: 2px;
+      #card {
+        border-top: var(--settings-separator-line);
+        border-top-style: var(--feature-item-border-top-style, solid);
+        padding: 0;
       }
 
-      #item-text-container {
-        padding-inline-start: 18px;
+      iron-icon {
+        padding: 2px;
       }
     </style>
     <div id="card"
@@ -33,8 +36,8 @@
       </div>
       <template is="dom-if" if="[[hasSubpageClickHandler_(subpageRoute)]]">
         <paper-icon-button-light class="subpage-arrow">
-            <button aria-label="[[featureName]]"
-                aria-describedby="featureSecondary"></button>
+          <button aria-label="[[featureName]]"
+              aria-describedby="featureSecondary"></button>
         </paper-icon-button-light>
         <div class="separator"></div>
       </template>

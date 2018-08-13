@@ -60,7 +60,8 @@ suite('Multidevice', function() {
   });
 
   test('AndroidMessages item shows correct input control', function() {
-    const inputControl = multideviceSubpage.$$('[slot=feature-controller]');
+    const inputControl = multideviceSubpage.$$(
+        '#android-messages-item > div[slot=feature-controller]');
 
     multideviceSubpage.androidMessagesRequiresSetup_ = true;
     Polymer.dom.flush();
