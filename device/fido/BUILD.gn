@@ -126,9 +126,11 @@ component("fido") {
     "//components/cbor",
     "//crypto",
     "//device/base",
+    "//device/fido/strings",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//third_party/boringssl",
+    "//ui/base",
   ]
 
   public_deps = [

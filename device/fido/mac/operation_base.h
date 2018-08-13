@@ -56,13 +56,13 @@ class API_AVAILABLE(macosx(10.12.2)) OperationBase : public Operation {
   // PromptTouchId triggers a Touch ID consent dialog with the given reason
   // string. Subclasses implement the PromptTouchIdDone callback to receive the
   // result.
-  void PromptTouchId(std::string reason) {
+  void PromptTouchId(const base::string16& reason) {
     // The callback passed to TouchIdContext::Prompt will not fire if the
     // TouchIdContext itself has been deleted. Since that it is owned by this
     // class, there is no need to bind the callback to a weak ref here.
     touch_id_context_->PromptTouchId(
-        std::move(reason), base::BindOnce(&OperationBase::PromptTouchIdDone,
-                                          base::Unretained(this)));
+        reason, base::BindOnce(&OperationBase::PromptTouchIdDone,
+                               base::Unretained(this)));
   }
 
   // Callback for |PromptTouchId|.
