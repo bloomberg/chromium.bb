@@ -1180,7 +1180,7 @@ void AXNodeObject::Markers(Vector<DocumentMarker::MarkerType>& marker_types,
 
   DocumentMarkerController& marker_controller = GetDocument()->Markers();
   DocumentMarkerVector markers =
-      marker_controller.MarkersFor(ToText(GetNode()));
+      marker_controller.MarkersFor(ToText(*GetNode()));
   for (size_t i = 0; i < markers.size(); ++i) {
     DocumentMarker* marker = markers[i];
     if (MarkerTypeIsUsedForAccessibility(marker->GetType())) {

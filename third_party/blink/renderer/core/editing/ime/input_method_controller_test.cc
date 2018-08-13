@@ -1480,13 +1480,13 @@ TEST_F(InputMethodControllerTest, ImeTextSpanAppearsCorrectlyAfterNewline) {
   ASSERT_EQ(0u,
             GetDocument()
                 .Markers()
-                .MarkersFor(ToText(first_line_position.ComputeContainerNode()))
+                .MarkersFor(ToText(*first_line_position.ComputeContainerNode()))
                 .size());
-  ASSERT_EQ(1u,
-            GetDocument()
-                .Markers()
-                .MarkersFor(ToText(second_line_position.ComputeContainerNode()))
-                .size());
+  ASSERT_EQ(
+      1u, GetDocument()
+              .Markers()
+              .MarkersFor(ToText(*second_line_position.ComputeContainerNode()))
+              .size());
 
   // Verify marker has correct start/end offsets (measured from the beginning
   // of the node, which is the beginning of the line)
@@ -1627,7 +1627,8 @@ TEST_F(InputMethodControllerTest,
   // Check that the marker is still attached to "text" and doesn't include
   // either space around it
   EXPECT_EQ(
-      1u, GetDocument().Markers().MarkersFor(ToText(div->firstChild())).size());
+      1u,
+      GetDocument().Markers().MarkersFor(ToText(*div->firstChild())).size());
   EXPECT_STREQ("text",
                GetMarkedText(GetDocument().Markers(), div->firstChild(), 0)
                    .Utf8()
@@ -2414,14 +2415,14 @@ TEST_F(InputMethodControllerTest, CompositionUnderlineSpansMultipleNodes) {
 
   const DocumentMarkerVector& text1_markers =
       GetDocument().Markers().MarkersFor(
-          text1, DocumentMarker::MarkerTypes::Composition());
+          *text1, DocumentMarker::MarkerTypes::Composition());
   EXPECT_EQ(1u, text1_markers.size());
   EXPECT_EQ(0u, text1_markers[0]->StartOffset());
   EXPECT_EQ(1u, text1_markers[0]->EndOffset());
 
   const DocumentMarkerVector& text2_markers =
       GetDocument().Markers().MarkersFor(
-          text2, DocumentMarker::MarkerTypes::Composition());
+          *text2, DocumentMarker::MarkerTypes::Composition());
   EXPECT_EQ(1u, text2_markers.size());
   EXPECT_EQ(0u, text2_markers[0]->StartOffset());
   EXPECT_EQ(3u, text2_markers[0]->EndOffset());

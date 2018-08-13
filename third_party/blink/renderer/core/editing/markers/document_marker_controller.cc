@@ -472,13 +472,13 @@ DocumentMarkerController::MarkersIntersectingRange(
 }
 
 DocumentMarkerVector DocumentMarkerController::MarkersFor(
-    const Text* node,
+    const Text& text,
     DocumentMarker::MarkerTypes marker_types) const {
   DocumentMarkerVector result;
   if (!PossiblyHasMarkers(marker_types))
     return result;
 
-  MarkerLists* markers = markers_.at(node);
+  MarkerLists* markers = markers_.at(&text);
   if (!markers)
     return result;
 
@@ -518,23 +518,23 @@ DocumentMarkerVector DocumentMarkerController::Markers() const {
 }
 
 DocumentMarkerVector DocumentMarkerController::ComputeMarkersToPaint(
-    const Text& node) const {
+    const Text& text) const {
   // We don't render composition or spelling markers that overlap suggestion
   // markers.
   // Note: DocumentMarkerController::MarkersFor() returns markers sorted by
   // start offset.
   const DocumentMarkerVector& suggestion_markers =
-      MarkersFor(&node, DocumentMarker::MarkerTypes::Suggestion());
+      MarkersFor(text, DocumentMarker::MarkerTypes::Suggestion());
   if (suggestion_markers.IsEmpty()) {
     // If there are no suggestion markers, we can return early as a minor
     // performance optimization.
     return MarkersFor(
-        &node, DocumentMarker::MarkerTypes::AllBut(
-                   DocumentMarker::MarkerTypes(DocumentMarker::kSuggestion)));
+        text, DocumentMarker::MarkerTypes::AllBut(
+                  DocumentMarker::MarkerTypes(DocumentMarker::kSuggestion)));
   }
 
   const DocumentMarkerVector& markers_overridden_by_suggestion_markers =
-      MarkersFor(&node,
+      MarkersFor(text,
                  DocumentMarker::MarkerTypes(DocumentMarker::kComposition |
                                              DocumentMarker::kSpelling));
 
@@ -585,9 +585,9 @@ DocumentMarkerVector DocumentMarkerController::ComputeMarkersToPaint(
   markers_to_paint.AppendVector(suggestion_markers);
 
   markers_to_paint.AppendVector(MarkersFor(
-      &node, DocumentMarker::MarkerTypes::AllBut(DocumentMarker::MarkerTypes(
-                 DocumentMarker::kComposition | DocumentMarker::kSpelling |
-                 DocumentMarker::kSuggestion))));
+      text, DocumentMarker::MarkerTypes::AllBut(DocumentMarker::MarkerTypes(
+                DocumentMarker::kComposition | DocumentMarker::kSpelling |
+                DocumentMarker::kSuggestion))));
 
   return markers_to_paint;
 }
