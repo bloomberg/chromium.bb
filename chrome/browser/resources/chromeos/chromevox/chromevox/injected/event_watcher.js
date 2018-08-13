@@ -1355,21 +1355,21 @@ cvox.ChromeVoxEventWatcher.doProcessQueue_ = function() {
       lastFocusTimestamp = evt.timeStamp;
     }
   }
-  cvox.ChromeVoxEventWatcher.events_ = [];
+  var liveRegionEvents = [];
+  var otherEvents = [];
   for (i = 0; evt = events[i]; i++) {
     var prevEvt = events[i - 1] || {};
     if ((i >= lastFocusIndex || evt.type == 'LiveRegion') &&
         (prevEvt.type != 'focus' || evt.type != 'change')) {
-      cvox.ChromeVoxEventWatcher.events_.push(evt);
+      if (evt.type == 'LiveRegion') {
+        liveRegionEvents.push(evt);
+      } else {
+        otherEvents.push(evt);
+      }
     }
   }
-
-  cvox.ChromeVoxEventWatcher.events_.sort(function(a, b) {
-    if (b.type != 'LiveRegion' && a.type == 'LiveRegion') {
-      return 1;
-    }
-    return -1;
-  });
+  // Make sure that live region events are at the end of the events array.
+  cvox.ChromeVoxEventWatcher.events_ = [...otherEvents, ...liveRegionEvents];
 
   // If the most recent focus event was very recent, wait for things to
   // settle down before processing events, unless the max wait time has
