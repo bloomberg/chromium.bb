@@ -429,7 +429,8 @@ TEST_F(FlingControllerTest, DISABLED_GestureFlingNotCancelledBySmallTimeDelta) {
   EXPECT_GT(last_sent_gesture_.data.scroll_update.delta_x, 0.f);
 }
 
-TEST_F(FlingControllerTest, GestureFlingWithNegativeTimeDelta) {
+// TODO(https://crbug.com/836996): Timing-dependent flakes on some platforms.
+TEST_F(FlingControllerTest, DISABLED_GestureFlingWithNegativeTimeDelta) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchscreen,
                      gfx::Vector2dF(1000, 0));
