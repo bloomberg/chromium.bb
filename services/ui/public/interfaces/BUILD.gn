@@ -19,8 +19,6 @@ mojom("interfaces") {
     "window_server_test.mojom",
     "window_tree.mojom",
     "window_tree_constants.mojom",
-    "window_tree_host.mojom",
-    "window_tree_host_factory.mojom",
   ]
 
   import_dirs = [

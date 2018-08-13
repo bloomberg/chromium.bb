@@ -27,7 +27,6 @@
 #include "services/ui/public/cpp/gpu/gpu.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/window_tree_host_factory.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/transient_window_client.h"
@@ -177,25 +176,6 @@ std::unique_ptr<WindowTreeClient> WindowTreeClient::CreateForWindowTreeFactory(
   wtc->binding_.Bind(MakeRequest(&client));
   factory->CreateWindowTree(MakeRequest(&window_tree), std::move(client));
   wtc->SetWindowTree(std::move(window_tree));
-  return wtc;
-}
-
-// static
-std::unique_ptr<WindowTreeClient>
-WindowTreeClient::CreateForWindowTreeHostFactory(
-    service_manager::Connector* connector,
-    WindowTreeClientDelegate* delegate,
-    bool create_discardable_memory) {
-  std::unique_ptr<WindowTreeClient> wtc(new WindowTreeClient(
-      connector, delegate, nullptr, nullptr, create_discardable_memory));
-  ui::mojom::WindowTreeHostFactoryPtr factory;
-  connector->BindInterface(ui::mojom::kServiceName, &factory);
-
-  ui::mojom::WindowTreeHostPtr window_tree_host;
-  ui::mojom::WindowTreeClientPtr client;
-  wtc->binding_.Bind(MakeRequest(&client));
-  factory->CreateWindowTreeHost(MakeRequest(&window_tree_host),
-                                std::move(client));
   return wtc;
 }
 
