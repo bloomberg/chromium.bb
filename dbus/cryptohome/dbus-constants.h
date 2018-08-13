@@ -160,6 +160,8 @@ enum MountError {
   MOUNT_ERROR_OLD_ENCRYPTION = 1 << 7,
   // Previous migration attempt was aborted in the middle. Must resume it first.
   MOUNT_ERROR_PREVIOUS_MIGRATION_INCOMPLETE = 1 << 8,
+  // The operation to remove a key failed.
+  MOUNT_ERROR_REMOVE_FAILED = 1 << 9,
   MOUNT_ERROR_RECREATED = 1 << 31,
 };
 // Status code signaled from MigrateToDircrypto().
