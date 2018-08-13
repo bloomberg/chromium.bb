@@ -44,7 +44,8 @@ class DeviceManagerImpl : public mojom::UsbDeviceManager,
   void GetDevices(mojom::UsbEnumerationOptionsPtr options,
                   GetDevicesCallback callback) override;
   void GetDevice(const std::string& guid,
-                 mojom::UsbDeviceRequest device_request) override;
+                 mojom::UsbDeviceRequest device_request,
+                 mojom::UsbDeviceClientPtr device_client) override;
   void SetClient(mojom::UsbDeviceManagerClientPtr client) override;
 
   // Callbacks to handle the async responses from the underlying UsbService.

@@ -14,6 +14,7 @@
 #include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
 #include "device/usb/usb_service.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 
@@ -25,7 +26,8 @@ class UsbDevice;
 // another UsbDeviceManager instance and checking requests with the provided
 // device::usb::PermissionProvider.
 class WebUsbServiceImpl : public blink::mojom::WebUsbService,
-                          public device::UsbService::Observer {
+                          public device::UsbService::Observer,
+                          public device::mojom::UsbDeviceClient {
  public:
   static void Create(
       base::WeakPtr<device::usb::PermissionProvider> permission_provider,
@@ -46,6 +48,11 @@ class WebUsbServiceImpl : public blink::mojom::WebUsbService,
   // device::UsbService::Observer implementation:
   void OnDeviceAdded(scoped_refptr<device::UsbDevice> device) override;
   void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override;
+
+  // device::mojom::UsbDeviceClient implementation:
+  void OnDeviceOpened() override;
+  void OnDeviceClosed() override;
+
   void WillDestroyUsbService() override;
 
   void OnConnectionError();
@@ -55,6 +62,9 @@ class WebUsbServiceImpl : public blink::mojom::WebUsbService,
   // Used to bind with Blink.
   mojo::StrongBindingPtr<blink::mojom::WebUsbService> binding_;
   device::mojom::UsbDeviceManagerClientPtr client_;
+
+  // Binding used to connect with USB devices for opened/closed events.
+  mojo::BindingSet<device::mojom::UsbDeviceClient> device_client_bindings_;
 
   device::mojom::UsbDeviceManagerPtr device_manager_;
   ScopedObserver<device::UsbService, device::UsbService::Observer> observer_;

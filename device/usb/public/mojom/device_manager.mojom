@@ -36,7 +36,8 @@ interface UsbDeviceManager {
   GetDevices(UsbEnumerationOptions? options) => (array<UsbDeviceInfo> results);
 
   // Requests a device by guid.
-  GetDevice(string guid, UsbDevice& device_request);
+  GetDevice(string guid, UsbDevice& device_request,
+            UsbDeviceClient? device_client);
 
   // Sets the client for this DeviceManager service. The service will notify its
   // client of device events such as connection and disconnection.

@@ -103,10 +103,9 @@ void OnIsochronousTransferOut(
 
 // static
 void DeviceImpl::Create(scoped_refptr<device::UsbDevice> device,
-                        base::WeakPtr<PermissionProvider> permission_provider,
-                        mojom::UsbDeviceRequest request) {
-  auto* device_impl =
-      new DeviceImpl(std::move(device), std::move(permission_provider));
+                        mojom::UsbDeviceRequest request,
+                        mojom::UsbDeviceClientPtr client) {
+  auto* device_impl = new DeviceImpl(std::move(device), std::move(client));
   device_impl->binding_ = mojo::MakeStrongBinding(base::WrapUnique(device_impl),
                                                   std::move(request));
 }
@@ -116,10 +115,10 @@ DeviceImpl::~DeviceImpl() {
 }
 
 DeviceImpl::DeviceImpl(scoped_refptr<device::UsbDevice> device,
-                       base::WeakPtr<PermissionProvider> permission_provider)
+                       mojom::UsbDeviceClientPtr client)
     : device_(std::move(device)),
-      permission_provider_(std::move(permission_provider)),
       observer_(this),
+      client_(std::move(client)),
       weak_factory_(this) {
   DCHECK(device_);
   observer_.Add(device_.get());
@@ -128,8 +127,8 @@ DeviceImpl::DeviceImpl(scoped_refptr<device::UsbDevice> device,
 void DeviceImpl::CloseHandle() {
   if (device_handle_) {
     device_handle_->Close();
-    if (permission_provider_)
-      permission_provider_->DecrementConnectionCount();
+    if (client_)
+      client_->OnDeviceClosed();
   }
   device_handle_ = nullptr;
 }
@@ -174,8 +173,9 @@ void DeviceImpl::OnOpen(base::WeakPtr<DeviceImpl> self,
   }
 
   self->device_handle_ = std::move(handle);
-  if (self->device_handle_ && self->permission_provider_)
-    self->permission_provider_->IncrementConnectionCount();
+  if (self->device_handle_ && self->client_)
+    self->client_->OnDeviceOpened();
+
   std::move(callback).Run(self->device_handle_
                               ? mojom::UsbOpenDeviceError::OK
                               : mojom::UsbOpenDeviceError::ACCESS_DENIED);

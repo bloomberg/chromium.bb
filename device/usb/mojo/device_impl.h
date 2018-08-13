@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "device/usb/mojo/permission_provider.h"
 #include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_handle.h"
@@ -22,22 +21,20 @@
 namespace device {
 namespace usb {
 
-class PermissionProvider;
-
 // Implementation of the public Device interface. Instances of this class are
 // constructed by DeviceManagerImpl and are strongly bound to their MessagePipe
 // lifetime.
 class DeviceImpl : public mojom::UsbDevice, public device::UsbDevice::Observer {
  public:
   static void Create(scoped_refptr<device::UsbDevice> device,
-                     base::WeakPtr<PermissionProvider> permission_provider,
-                     mojom::UsbDeviceRequest request);
+                     mojom::UsbDeviceRequest request,
+                     mojom::UsbDeviceClientPtr client);
 
   ~DeviceImpl() override;
 
  private:
   DeviceImpl(scoped_refptr<device::UsbDevice> device,
-             base::WeakPtr<PermissionProvider> permission_provider);
+             mojom::UsbDeviceClientPtr client);
 
   // Closes the device if it's open. This will always set |device_handle_| to
   // null.
@@ -99,7 +96,6 @@ class DeviceImpl : public mojom::UsbDevice, public device::UsbDevice::Observer {
   void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override;
 
   const scoped_refptr<device::UsbDevice> device_;
-  base::WeakPtr<PermissionProvider> permission_provider_;
   ScopedObserver<device::UsbDevice, device::UsbDevice::Observer> observer_;
 
   // The device handle. Will be null before the device is opened and after it
@@ -107,6 +103,7 @@ class DeviceImpl : public mojom::UsbDevice, public device::UsbDevice::Observer {
   scoped_refptr<UsbDeviceHandle> device_handle_;
 
   mojo::StrongBindingPtr<mojom::UsbDevice> binding_;
+  device::mojom::UsbDeviceClientPtr client_;
   base::WeakPtrFactory<DeviceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceImpl);
