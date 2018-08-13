@@ -414,9 +414,13 @@ TEST_F(HarfBuzzShaperTest, ShapeLatinSegment) {
 
 // Represents the case where a part of a cluster has a different color.
 // <div>0x647<span style="color: red;">0x64A</span></div>
-// This test requires context-aware shaping which hasn't been implemented yet.
-// See crbug.com/689155
-TEST_F(HarfBuzzShaperTest, DISABLED_ShapeArabicWithContext) {
+// TODO(crbug.com/689155): Still fails on Mac, AAT?
+#if defined(OS_MACOSX)
+#define MAYBE_ShapeArabicWithContext DISABLED_ShapeArabicWithContext
+#else
+#define MAYBE_ShapeArabicWithContext ShapeArabicWithContext
+#endif
+TEST_F(HarfBuzzShaperTest, MAYBE_ShapeArabicWithContext) {
   UChar arabic_string[] = {0x647, 0x64A};
   HarfBuzzShaper shaper(String(arabic_string, 2));
 
@@ -1446,8 +1450,15 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakLatinDiscretionaryLigatures) {
             referenceResult->SnappedStartPositionForOffset(12));
 }
 
-// TODO(layout-dev): This test fails on Mac due to AAT shaping.
-TEST_F(HarfBuzzShaperTest, DISABLED_SafeToBreakArabicCommonLigatures) {
+// TODO(crbug.com/870712): This test fails on Mac due to AAT shaping and
+// font fallback differences on Android.
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#define MAYBE_SafeToBreakArabicCommonLigatures \
+  DISABLED_SafeToBreakArabicCommonLigatures
+#else
+#define MAYBE_SafeToBreakArabicCommonLigatures SafeToBreakArabicCommonLigatures
+#endif
+TEST_F(HarfBuzzShaperTest, MAYBE_SafeToBreakArabicCommonLigatures) {
   FontDescription::VariantLigatures ligatures;
   ligatures.common = FontDescription::kEnabledLigaturesState;
 
@@ -1479,7 +1490,12 @@ TEST_F(HarfBuzzShaperTest, DISABLED_SafeToBreakArabicCommonLigatures) {
 
 // Test when some characters are missing in |runs_|.
 // RTL on Mac may not have runs for all characters. crbug.com/774034
-TEST_P(ShapeParameterTest, DISABLED_SafeToBreakMissingRun) {
+#if defined(OS_MACOSX)
+#define MAYBE_SafeToBreakMissingRun DISABLED_SafeToBreakMissingRun
+#else
+#define MAYBE_SafeToBreakMissingRun SafeToBreakMissingRun
+#endif
+TEST_P(ShapeParameterTest, MAYBE_SafeToBreakMissingRun) {
   TextDirection direction = GetParam();
   scoped_refptr<ShapeResult> result = ShapeResult::Create(&font, 8, direction);
   result->InsertRunForTesting(2, 1, direction, {0});
