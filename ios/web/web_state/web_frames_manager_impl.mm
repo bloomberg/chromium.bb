@@ -4,7 +4,9 @@
 
 #include "ios/web/web_state/web_frames_manager_impl.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -33,7 +35,8 @@ DEFINE_WEB_STATE_USER_DATA_KEY(WebFramesManagerImpl);
 
 WebFramesManagerImpl::~WebFramesManagerImpl() = default;
 
-WebFramesManagerImpl::WebFramesManagerImpl(web::WebState* web_state) {}
+WebFramesManagerImpl::WebFramesManagerImpl(web::WebState* web_state)
+    : web_state_(web_state) {}
 
 void WebFramesManagerImpl::AddFrame(std::unique_ptr<WebFrame> frame) {
   if (frame->IsMainFrame()) {
@@ -76,6 +79,11 @@ const std::vector<WebFrame*>& WebFramesManagerImpl::GetAllWebFrames() {
 
 WebFrame* WebFramesManagerImpl::GetMainWebFrame() {
   return main_web_frame_;
+}
+
+void WebFramesManagerImpl::RegisterExistingFrames() {
+  web_state_->ExecuteJavaScript(
+      base::UTF8ToUTF16("__gCrWeb.frameMessaging.getExistingFrames();"));
 }
 
 }  // namespace

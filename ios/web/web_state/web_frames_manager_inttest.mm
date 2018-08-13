@@ -4,6 +4,7 @@
 
 #import "ios/web/public/test/web_test_with_web_state.h"
 
+#include "base/ios/ios_util.h"
 #include "ios/web/public/web_state/web_frame.h"
 #include "ios/web/web_state/web_frames_manager_impl.h"
 
@@ -22,9 +23,18 @@ TEST_F(WebFramesManagerTest, SingleWebFrameAdded) {
 
   WebFramesManagerImpl* frames_manager =
       WebFramesManagerImpl::FromWebState(web_state());
-  EXPECT_EQ(1ul, frames_manager->GetAllWebFrames().size());
 
   WebFrame* main_web_frame = frames_manager->GetMainWebFrame();
+  if (!base::ios::IsRunningOnIOS11OrLater()) {
+    // No WebFrame is created on iOS 10.
+    // TODO(crbug.com/872818): Cleanup once iOS 10 support is dropped.
+    EXPECT_EQ(0ul, frames_manager->GetAllWebFrames().size());
+    ASSERT_FALSE(main_web_frame);
+    return;
+  }
+
+  EXPECT_EQ(1ul, frames_manager->GetAllWebFrames().size());
+
   ASSERT_TRUE(main_web_frame);
   EXPECT_TRUE(main_web_frame->IsMainFrame());
   EXPECT_FALSE(main_web_frame->GetFrameId().empty());
