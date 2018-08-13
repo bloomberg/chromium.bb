@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/window_cycle_event_filter_classic.h"
+#include "ash/wm/window_cycle_event_filter.h"
 
 #include "ash/accelerators/debug_commands.h"
 #include "ash/shell.h"
@@ -12,7 +12,7 @@
 
 namespace ash {
 
-WindowCycleEventFilterClassic::WindowCycleEventFilterClassic() {
+WindowCycleEventFilter::WindowCycleEventFilter() {
   Shell::Get()->AddPreTargetHandler(this);
   // Handling release of "Alt" must come before other pretarget handlers
   // (specifically, the partial screenshot handler). See crbug.com/651939
@@ -22,12 +22,12 @@ WindowCycleEventFilterClassic::WindowCycleEventFilterClassic() {
                                     ui::EventTarget::Priority::kSystem);
 }
 
-WindowCycleEventFilterClassic::~WindowCycleEventFilterClassic() {
+WindowCycleEventFilter::~WindowCycleEventFilter() {
   Shell::Get()->RemovePreTargetHandler(this);
   Shell::Get()->RemovePreTargetHandler(&alt_release_handler_);
 }
 
-void WindowCycleEventFilterClassic::OnKeyEvent(ui::KeyEvent* event) {
+void WindowCycleEventFilter::OnKeyEvent(ui::KeyEvent* event) {
   // Until the alt key is released, all key events except the trigger key press
   // (which is handled by the accelerator controller to call Step) are handled
   // by this window cycle controller: https://crbug.com/340339.
@@ -53,7 +53,7 @@ void WindowCycleEventFilterClassic::OnKeyEvent(ui::KeyEvent* event) {
   }
 }
 
-void WindowCycleEventFilterClassic::OnMouseEvent(ui::MouseEvent* event) {
+void WindowCycleEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   // Prevent mouse clicks from doing anything while the Alt+Tab UI is active
   // <crbug.com/641171> but don't interfere with drag and drop operations
   // <crbug.com/660945>.
@@ -63,12 +63,11 @@ void WindowCycleEventFilterClassic::OnMouseEvent(ui::MouseEvent* event) {
   }
 }
 
-WindowCycleEventFilterClassic::AltReleaseHandler::AltReleaseHandler() = default;
+WindowCycleEventFilter::AltReleaseHandler::AltReleaseHandler() = default;
 
-WindowCycleEventFilterClassic::AltReleaseHandler::~AltReleaseHandler() =
-    default;
+WindowCycleEventFilter::AltReleaseHandler::~AltReleaseHandler() = default;
 
-void WindowCycleEventFilterClassic::AltReleaseHandler::OnKeyEvent(
+void WindowCycleEventFilter::AltReleaseHandler::OnKeyEvent(
     ui::KeyEvent* event) {
   // Views uses VKEY_MENU for both left and right Alt keys.
   if (event->key_code() == ui::VKEY_MENU &&
