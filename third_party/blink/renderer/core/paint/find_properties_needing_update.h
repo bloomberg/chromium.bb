@@ -21,9 +21,10 @@ namespace blink {
 // using LayoutObject::SetNeedsPaintPropertyUpdate() or by forcing a subtree
 // update (see: PaintPropertyTreeBuilderContext::force_subtree_update).
 //
-// This scope class works by recording the paint property state of an object
-// before rebuilding properties, forcing the properties to get updated, then
-// checking that the updated properties match the original properties.
+// This scope class works by marking the paint property state as immutable
+// before rebuilding properties, forcing the properties to get updated, which
+// causes object paint properties to DCHECK that property values are not
+// changed.
 
 #define DUMP_PROPERTIES(original, updated)                           \
   "\nOriginal:\n"                                                    \
@@ -67,8 +68,10 @@ class FindObjectPropertiesNeedingUpdateScope {
     object.GetMutableForPainting()
         .SetOnlyThisNeedsPaintPropertyUpdateForTesting();
 
-    if (const auto* properties = fragment_data_.PaintProperties())
-      original_properties_ = properties->Clone();
+    if (const auto* properties = fragment_data_.PaintProperties()) {
+      had_original_properties_ = true;
+      properties->SetImmutable();
+    }
 
     if (fragment_data_.HasLocalBorderBoxProperties()) {
       original_local_border_box_properties_ =
@@ -83,73 +86,18 @@ class FindObjectPropertiesNeedingUpdateScope {
     // property update.
     LayoutPoint paint_offset = fragment_data_.PaintOffset();
     DCHECK_OBJECT_PROPERTY_EQ(object_, &original_paint_offset_, &paint_offset);
-    const auto* object_properties = fragment_data_.PaintProperties();
-    if (original_properties_ && object_properties) {
-      DCHECK_OBJECT_PROPERTY_EQ(object_,
-                                original_properties_->PaintOffsetTranslation(),
-                                object_properties->PaintOffsetTranslation());
-    }
 
     // No need to check if an update was already needed.
     if (needed_paint_property_update_ || needed_forced_subtree_update_)
       return;
 
-    // If these checks fail, the paint properties changed unexpectedly. This is
-    // due to missing one of these paint property invalidations:
-    // 1) The LayoutObject should have been marked as needing an update with
-    //    LayoutObject::setNeedsPaintPropertyUpdate().
-    // 2) The PrePaintTreeWalk should have had a forced subtree update (see:
-    //    PaintPropertyTreeBuilderContext::force_subtree_update).
-    if (original_properties_ && object_properties) {
-      DCHECK_OBJECT_PROPERTY_EQ(object_, original_properties_->Transform(),
-                                object_properties->Transform());
-      DCHECK_OBJECT_PROPERTY_EQ(object_, original_properties_->Effect(),
-                                object_properties->Effect());
-      DCHECK_OBJECT_PROPERTY_EQ(object_, original_properties_->Filter(),
-                                object_properties->Filter());
-      DCHECK_OBJECT_PROPERTY_EQ(object_,
-                                original_properties_->VerticalScrollbarEffect(),
-                                object_properties->VerticalScrollbarEffect());
-      DCHECK_OBJECT_PROPERTY_EQ(
-          object_, original_properties_->HorizontalScrollbarEffect(),
-          object_properties->HorizontalScrollbarEffect());
-      DCHECK_OBJECT_PROPERTY_EQ(object_, original_properties_->Mask(),
-                                object_properties->Mask());
-      DCHECK_OBJECT_PROPERTY_EQ(object_, original_properties_->ClipPath(),
-                                object_properties->ClipPath());
-      DCHECK_OBJECT_PROPERTY_EQ(object_,
-                                original_properties_->LinkHighlightEffect(),
-                                object_properties->LinkHighlightEffect());
-      DCHECK_OBJECT_PROPERTY_EQ(object_, original_properties_->ClipPathClip(),
-                                object_properties->ClipPathClip());
-      DCHECK_OBJECT_PROPERTY_EQ(object_, original_properties_->MaskClip(),
-                                object_properties->MaskClip());
-      DCHECK_OBJECT_PROPERTY_EQ(object_, original_properties_->CssClip(),
-                                object_properties->CssClip());
-      DCHECK_OBJECT_PROPERTY_EQ(object_,
-                                original_properties_->CssClipFixedPosition(),
-                                object_properties->CssClipFixedPosition());
-      DCHECK_OBJECT_PROPERTY_EQ(object_,
-                                original_properties_->OverflowControlsClip(),
-                                object_properties->OverflowControlsClip());
-      DCHECK_OBJECT_PROPERTY_EQ(object_,
-                                original_properties_->InnerBorderRadiusClip(),
-                                object_properties->InnerBorderRadiusClip());
-      DCHECK_OBJECT_PROPERTY_EQ(object_, original_properties_->OverflowClip(),
-                                object_properties->OverflowClip());
-      DCHECK_OBJECT_PROPERTY_EQ(object_, original_properties_->Perspective(),
-                                object_properties->Perspective());
-      DCHECK_OBJECT_PROPERTY_EQ(
-          object_, original_properties_->ReplacedContentTransform(),
-          object_properties->ReplacedContentTransform());
-      DCHECK_OBJECT_PROPERTY_EQ(object_, original_properties_->Scroll(),
-                                object_properties->Scroll());
-      DCHECK_OBJECT_PROPERTY_EQ(object_,
-                                original_properties_->ScrollTranslation(),
-                                object_properties->ScrollTranslation());
+    const auto* properties = fragment_data_.PaintProperties();
+    if (properties) {
+      DCHECK(had_original_properties_);
+      DCHECK(properties->IsImmutable());
+      properties->SetMutable();
     } else {
-      DCHECK_EQ(!!original_properties_, !!object_properties)
-          << " Object: " << object_.DebugName();
+      DCHECK(!had_original_properties_);
     }
 
     if (original_local_border_box_properties_ &&
@@ -177,12 +125,12 @@ class FindObjectPropertiesNeedingUpdateScope {
  private:
   const LayoutObject& object_;
   const FragmentData& fragment_data_;
-  bool needed_paint_property_update_;
-  bool needed_forced_subtree_update_;
+  bool needed_paint_property_update_ = false;
+  bool needed_forced_subtree_update_ = false;
   LayoutPoint original_paint_offset_;
-  std::unique_ptr<const ObjectPaintProperties> original_properties_;
   std::unique_ptr<const PropertyTreeState>
       original_local_border_box_properties_;
+  bool had_original_properties_ = false;
 };
 
 }  // namespace blink
