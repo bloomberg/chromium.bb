@@ -328,14 +328,14 @@ config("compiler") {
       }
     }
 
+    # sha1 build-ids can slow the build so only use them for the official
+    # builds. The rest of the build types use the faster uuid build-ids.
+    # (we exclude NaCl targets on Windows since a bug in binutils-2.24 breaks
+    #  --build-id=uuid on Windows hosts)
     if (is_official_build) {
-      # Explicitly pass --build-id to ld. Compilers used to always pass this
-      # implicitly but don't any more (in particular clang when built without
-      # ENABLE_LINKER_BUILD_ID=ON). The crash infrastructure does need a build
-      # id, so explicitly enable it in official builds. It's not needed in
-      # unofficial builds and computing it does slow down the link, so go with
-      # faster links in unofficial builds.
       ldflags += [ "-Wl,--build-id=sha1" ]
+    } else if (!is_nacl || host_os != "win") {
+      ldflags += [ "-Wl,--build-id=uuid" ]
     }
 
     if (!is_android) {
