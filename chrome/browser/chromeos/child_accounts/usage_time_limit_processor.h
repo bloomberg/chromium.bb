@@ -112,8 +112,8 @@ class Override {
 enum class ActivePolicies {
   kNoActivePolicy,
   kOverride,
-  kFixedLimit,
-  kUsageLimit
+  kFixedLimit,  // Past bed time (ie, 9pm)
+  kUsageLimit   // Too much time on screen (ie, 30 minutes per day)
 };
 
 struct State {
