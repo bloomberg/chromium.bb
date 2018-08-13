@@ -38,9 +38,8 @@ ThrottledOfflineContentProvider::~ThrottledOfflineContentProvider() {
   wrapped_provider_->RemoveObserver(this);
 }
 
-void ThrottledOfflineContentProvider::OpenItem(LaunchLocation location,
-                                               const ContentId& id) {
-  wrapped_provider_->OpenItem(location, id);
+void ThrottledOfflineContentProvider::OpenItem(const ContentId& id) {
+  wrapped_provider_->OpenItem(id);
   FlushUpdates();
 }
 

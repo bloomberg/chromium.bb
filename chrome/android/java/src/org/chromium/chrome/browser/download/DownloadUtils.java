@@ -56,7 +56,6 @@ import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.FailState;
-import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
@@ -587,7 +586,7 @@ public class DownloadUtils {
             @DownloadMetrics.DownloadOpenSource int source) {
         if (LegacyHelpers.isLegacyOfflinePage(contentId)) {
             OfflineContentAggregatorFactory.forProfile(Profile.getLastUsedProfile())
-                    .openItem(LaunchLocation.PROGRESS_BAR, contentId);
+                    .openItem(contentId);
         } else {
             DownloadManagerService.getDownloadManagerService().openDownload(
                     contentId, isOffTheRecord, source);

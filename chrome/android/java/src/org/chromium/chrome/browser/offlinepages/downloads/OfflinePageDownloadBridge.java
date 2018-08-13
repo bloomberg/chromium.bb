@@ -87,20 +87,17 @@ public class OfflinePageDownloadBridge {
      * item with specified GUID is not found or can't be opened, nothing happens.
      */
     @CalledByNative
-    private static void openItem(
-            final String url, final long offlineId, final int location, final boolean openInCct) {
-        OfflinePageUtils.getLoadUrlParamsForOpeningOfflineVersion(
-                url, offlineId, location, (params) -> {
-                    if (params == null) return;
-                    boolean openingFromDownloadsHome =
-                            ApplicationStatus.getLastTrackedFocusedActivity()
-                                    instanceof DownloadActivity;
-                    if (openInCct && openingFromDownloadsHome) {
-                        openItemInCct(offlineId, params);
-                    } else {
-                        openItemInNewTab(offlineId, params);
-                    }
-                });
+    private static void openItem(final String url, final long offlineId, final boolean openInCct) {
+        OfflinePageUtils.getLoadUrlParamsForOpeningOfflineVersion(url, offlineId, (params) -> {
+            if (params == null) return;
+            boolean openingFromDownloadsHome =
+                    ApplicationStatus.getLastTrackedFocusedActivity() instanceof DownloadActivity;
+            if (openInCct && openingFromDownloadsHome) {
+                openItemInCct(offlineId, params);
+            } else {
+                openItemInNewTab(offlineId, params);
+            }
+        });
     }
 
     /**

@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
-#include "components/offline_items_collection/core/launch_location.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_model.h"
 
@@ -210,11 +209,10 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
       const jlong j_timestamp_millis,
       const base::android::JavaParamRef<jobject>& j_callback_obj);
 
-  void GetLoadUrlParamsByOfflineId(
+  void GetLaunchUrlByOfflineId(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jlong j_offline_id,
-      jint launch_location,
       const base::android::JavaParamRef<jobject>& j_callback_obj);
 
   void GetLoadUrlParamsForOpeningMhtmlFileOrContent(
@@ -236,7 +234,6 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
 
  private:
   void GetPageByOfflineIdDone(
-      offline_items_collection::LaunchLocation launch_location,
       const base::android::ScopedJavaGlobalRef<jobject>& j_callback_obj,
       const OfflinePageItem* offline_page);
 

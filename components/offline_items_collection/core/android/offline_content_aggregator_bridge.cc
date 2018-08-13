@@ -122,12 +122,10 @@ OfflineContentAggregatorBridge::~OfflineContentAggregatorBridge() {
 void OfflineContentAggregatorBridge::OpenItem(
     JNIEnv* env,
     const JavaParamRef<jobject>& jobj,
-    jint launch_location,
     const JavaParamRef<jstring>& j_namespace,
     const JavaParamRef<jstring>& j_id) {
-  provider_->OpenItem(static_cast<LaunchLocation>(launch_location),
-                      JNI_OfflineContentAggregatorBridge_CreateContentId(
-                          env, j_namespace, j_id));
+  provider_->OpenItem(JNI_OfflineContentAggregatorBridge_CreateContentId(
+      env, j_namespace, j_id));
 }
 
 void OfflineContentAggregatorBridge::RemoveItem(

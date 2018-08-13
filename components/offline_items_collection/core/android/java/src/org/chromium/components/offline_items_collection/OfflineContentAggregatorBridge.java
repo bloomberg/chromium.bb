@@ -38,9 +38,9 @@ public class OfflineContentAggregatorBridge implements OfflineContentProvider {
 
     // OfflineContentProvider implementation.
     @Override
-    public void openItem(@LaunchLocation int location, ContentId id) {
+    public void openItem(ContentId id) {
         if (mNativeOfflineContentAggregatorBridge == 0) return;
-        nativeOpenItem(mNativeOfflineContentAggregatorBridge, location, id.namespace, id.id);
+        nativeOpenItem(mNativeOfflineContentAggregatorBridge, id.namespace, id.id);
     }
 
     @Override
@@ -163,8 +163,8 @@ public class OfflineContentAggregatorBridge implements OfflineContentProvider {
     }
 
     // Methods called to C++ via JNI.
-    private native void nativeOpenItem(long nativeOfflineContentAggregatorBridge,
-            @LaunchLocation int location, String nameSpace, String id);
+    private native void nativeOpenItem(
+            long nativeOfflineContentAggregatorBridge, String nameSpace, String id);
     private native void nativeRemoveItem(
             long nativeOfflineContentAggregatorBridge, String nameSpace, String id);
     private native void nativeCancelDownload(
