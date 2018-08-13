@@ -79,6 +79,8 @@ class SearchTabHelper : public content::WebContentsObserver,
                            ChromeIdentityCheckSignedOutMismatch);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest, HistorySyncCheckSyncing);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest, HistorySyncCheckNotSyncing);
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
+                           FileSelectedUpdatesLastSelectedDirectory);
 
   explicit SearchTabHelper(content::WebContents* web_contents);
 

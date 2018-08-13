@@ -234,6 +234,19 @@ TEST_F(SearchTabHelperTest, HistorySyncCheckNotSyncing) {
   EXPECT_FALSE(search_tab_helper->HistorySyncCheck());
 }
 
+TEST_F(SearchTabHelperTest, FileSelectedUpdatesLastSelectedDirectory) {
+  NavigateAndCommit(GURL(chrome::kChromeUINewTabURL));
+  SearchTabHelper* search_tab_helper =
+      SearchTabHelper::FromWebContents(web_contents());
+  ASSERT_NE(nullptr, search_tab_helper);
+
+  base::FilePath filePath =
+      base::FilePath::FromUTF8Unsafe("a/b/c/Picture/kitten.png");
+  search_tab_helper->FileSelected(filePath, 0, {});
+  Profile* profile = search_tab_helper->profile();
+  EXPECT_EQ(filePath.DirName(), profile->last_selected_directory());
+}
+
 TEST_F(SearchTabHelperTest, TitleIsSetForNTP) {
   NavigateAndCommit(GURL(chrome::kChromeUINewTabURL));
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE),
