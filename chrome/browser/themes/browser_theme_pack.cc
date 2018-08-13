@@ -776,22 +776,27 @@ bool BrowserThemePack::GetTint(int id, color_utils::HSL* hsl) const {
 bool BrowserThemePack::GetColor(int id, SkColor* color) const {
   static const base::NoDestructor<
       base::flat_set<ThemeProperties::OverwritableByUserThemeProperty>>
-      kOpaqueColors({
-          // Background tabs must be opaque since the tabstrip expects to be
-          // able to render text opaquely atop them.
-          ThemeProperties::COLOR_BACKGROUND_TAB,
-          ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE,
-          ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO,
-          ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE,
-          // The frame colors will be used for background tabs when not
-          // otherwise overridden and thus must be opaque as well.
-          ThemeProperties::COLOR_FRAME, ThemeProperties::COLOR_FRAME_INACTIVE,
-          ThemeProperties::COLOR_FRAME_INCOGNITO,
-          ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE,
-          // The toolbar is used as the foreground tab color, so it must be
-          // opaque just like background tabs.
-          ThemeProperties::COLOR_TOOLBAR,
-      });
+      kOpaqueColors(
+          // Explicitly creating a base::flat_set here is not strictly
+          // necessary according to C++, but we do so to work around
+          // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=84849.
+          base::flat_set<ThemeProperties::OverwritableByUserThemeProperty>({
+              // Background tabs must be opaque since the tabstrip expects to be
+              // able to render text opaquely atop them.
+              ThemeProperties::COLOR_BACKGROUND_TAB,
+              ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE,
+              ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO,
+              ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE,
+              // The frame colors will be used for background tabs when not
+              // otherwise overridden and thus must be opaque as well.
+              ThemeProperties::COLOR_FRAME,
+              ThemeProperties::COLOR_FRAME_INACTIVE,
+              ThemeProperties::COLOR_FRAME_INCOGNITO,
+              ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE,
+              // The toolbar is used as the foreground tab color, so it must be
+              // opaque just like background tabs.
+              ThemeProperties::COLOR_TOOLBAR,
+          }));
 
   if (colors_) {
     for (size_t i = 0; i < kColorTableLength; ++i) {
