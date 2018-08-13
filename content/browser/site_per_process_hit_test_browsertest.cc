@@ -4744,7 +4744,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
-                       DISABLED_ClippedOOPIFFastPath) {
+                       ClippedOOPIFFastPath) {
   if (!features::IsVizHitTestingEnabled())
     return;
   auto hit_test_data =
