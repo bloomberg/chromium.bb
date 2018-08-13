@@ -50,8 +50,10 @@ FT_BEGIN_HEADER
    *   slightly to pre-define the macro FT_CONFIG_OPTIONS_H used to
    *   locate this file during the build.  For example,
    *
+   *   {
    *     #define FT_CONFIG_OPTIONS_H  <myftoptions.h>
    *     #include <freetype/config/ftheader.h>
+   *   }
    *
    *   will use `$BUILD/myftoptions.h' instead of this file for macro
    *   definitions.
@@ -75,36 +77,39 @@ FT_BEGIN_HEADER
   /*************************************************************************/
 
 
-  /*#***********************************************************************/
-  /*                                                                       */
-  /* If you enable this configuration option, FreeType recognizes an       */
-  /* environment variable called `FREETYPE_PROPERTIES', which can be used  */
-  /* to control the various font drivers and modules.  The controllable    */
-  /* properties are listed in the section @properties.                     */
-  /*                                                                       */
-  /* You have to undefine this configuration option on platforms that lack */
-  /* the concept of environment variables (and thus don't have the         */
-  /* `getenv' function), for example Windows CE.                           */
-  /*                                                                       */
-  /* `FREETYPE_PROPERTIES' has the following syntax form (broken here into */
-  /* multiple lines for better readability).                               */
-  /*                                                                       */
-  /* {                                                                     */
-  /*   <optional whitespace>                                               */
-  /*   <module-name1> ':'                                                  */
-  /*   <property-name1> '=' <property-value1>                              */
-  /*   <whitespace>                                                        */
-  /*   <module-name2> ':'                                                  */
-  /*   <property-name2> '=' <property-value2>                              */
-  /*   ...                                                                 */
-  /* }                                                                     */
-  /*                                                                       */
-  /* Example:                                                              */
-  /*                                                                       */
-  /*   FREETYPE_PROPERTIES=truetype:interpreter-version=35 \               */
-  /*                       cff:no-stem-darkening=1 \                       */
-  /*                       autofitter:warping=1                            */
-  /*                                                                       */
+  /*#************************************************************************
+   *
+   * If you enable this configuration option, FreeType recognizes an
+   * environment variable called `FREETYPE_PROPERTIES', which can be used to
+   * control the various font drivers and modules.  The controllable
+   * properties are listed in the section @properties.
+   *
+   * You have to undefine this configuration option on platforms that lack
+   * the concept of environment variables (and thus don't have the `getenv'
+   * function), for example Windows CE.
+   *
+   * `FREETYPE_PROPERTIES' has the following syntax form (broken here into
+   * multiple lines for better readability).
+   *
+   * {
+   *   <optional whitespace>
+   *   <module-name1> ':'
+   *   <property-name1> '=' <property-value1>
+   *   <whitespace>
+   *   <module-name2> ':'
+   *   <property-name2> '=' <property-value2>
+   *   ...
+   * }
+   *
+   * Example:
+   *
+   * {
+   *   FREETYPE_PROPERTIES=truetype:interpreter-version=35 \
+   *                       cff:no-stem-darkening=1 \
+   *                       autofitter:warping=1
+   * }
+   *
+   */
 #define FT_CONFIG_OPTION_ENVIRONMENT_PROPERTIES
 
 
@@ -350,8 +355,7 @@ FT_BEGIN_HEADER
    *
    * Guessing methods to access embedded resource forks
    *
-   *   Enable extra Mac fonts support on non-Mac platforms (e.g.
-   *   GNU/Linux).
+   *   Enable extra Mac fonts support on non-Mac platforms (e.g., GNU/Linux).
    *
    *   Resource forks which include fonts data are stored sometimes in
    *   locations which users or developers don't expected.  In some cases,
@@ -428,22 +432,28 @@ FT_BEGIN_HEADER
    *   boolean variables (consequently, you should *never* enable this
    *   while compiling in `release' mode):
    *
+   *   {
    *     _af_debug_disable_horz_hints
    *     _af_debug_disable_vert_hints
    *     _af_debug_disable_blue_hints
+   *   }
    *
    *   Additionally, the following functions provide dumps of various
    *   internal autofit structures to stdout (using `printf'):
    *
+   *   {
    *     af_glyph_hints_dump_points
    *     af_glyph_hints_dump_segments
    *     af_glyph_hints_dump_edges
    *     af_glyph_hints_get_num_segments
    *     af_glyph_hints_get_segment_offset
+   *   }
    *
    *   As an argument, they use another global variable:
    *
+   *   {
    *     _af_debug_hints
+   *   }
    *
    *   Please have a look at the `ftgrid' demo program to see how those
    *   variables and macros should be used.
@@ -916,9 +926,11 @@ FT_BEGIN_HEADER
    * like Fedora that did not un-patch the following change (which was
    * present in FreeType between versions 2.4.6 and 2.7.1, inclusive).
    *
+   * {
    *   2011-07-16  Steven Chu  <steven.f.chu@gmail.com>
    *
    *     [truetype] Fix metrics on size request for scalable fonts.
+   * }
    *
    * This problematic commit is now reverted (more or less).
    */
