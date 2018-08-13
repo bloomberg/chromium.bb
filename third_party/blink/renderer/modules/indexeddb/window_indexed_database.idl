@@ -27,5 +27,5 @@
 [
     ImplementedAs=GlobalIndexedDB
 ] partial interface Window {
-    [MeasureAs=UnprefixedIndexedDB] readonly attribute IDBFactory indexedDB;
+    readonly attribute IDBFactory indexedDB;
 };
