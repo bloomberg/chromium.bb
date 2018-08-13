@@ -144,6 +144,12 @@ void AssistantController::ReleaseWebContents(
   web_contents_manager_->ReleaseAllWebContents(id_tokens);
 }
 
+void AssistantController::NavigateWebContentsBack(
+    const base::UnguessableToken& id_token,
+    mojom::WebContentsManager::NavigateWebContentsBackCallback callback) {
+  web_contents_manager_->NavigateWebContentsBack(id_token, std::move(callback));
+}
+
 void AssistantController::DownloadImage(
     const GURL& url,
     mojom::AssistantImageDownloader::DownloadCallback callback) {

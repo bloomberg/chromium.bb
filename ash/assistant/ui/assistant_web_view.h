@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/assistant/assistant_controller_observer.h"
+#include "ash/assistant/ui/caption_bar.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "ui/views/view.h"
@@ -19,14 +20,14 @@ class UnguessableToken;
 namespace ash {
 
 class AssistantController;
-class CaptionBar;
 
 // AssistantWebView is a child of AssistantBubbleView which allows Assistant UI
 // to render remotely hosted content within its bubble. It provides a CaptionBar
 // for window level controls and a WebView/RemoteViewHost for embedding web
 // contents.
 class AssistantWebView : public views::View,
-                         public AssistantControllerObserver {
+                         public AssistantControllerObserver,
+                         public CaptionBarDelegate {
  public:
   explicit AssistantWebView(AssistantController* assistant_controller);
   ~AssistantWebView() override;
@@ -35,6 +36,9 @@ class AssistantWebView : public views::View,
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void ChildPreferredSizeChanged(views::View* child) override;
+
+  // CaptionBarDelegate:
+  bool OnCaptionButtonPressed(CaptionButtonId id) override;
 
   // AssistantControllerObserver:
   void OnDeepLinkReceived(
