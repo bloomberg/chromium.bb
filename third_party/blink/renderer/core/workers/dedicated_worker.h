@@ -27,6 +27,7 @@ namespace blink {
 class DedicatedWorkerMessagingProxy;
 class ExceptionState;
 class ExecutionContext;
+class PostMessageOptions;
 class ScriptState;
 class WorkerClassicScriptLoader;
 class WorkerClients;
@@ -57,6 +58,10 @@ class CORE_EXPORT DedicatedWorker final
   void postMessage(ScriptState*,
                    const ScriptValue& message,
                    Vector<ScriptValue>& transfer,
+                   ExceptionState&);
+  void postMessage(ScriptState*,
+                   const ScriptValue& message,
+                   const PostMessageOptions&,
                    ExceptionState&);
   void terminate();
   BeginFrameProviderParams CreateBeginFrameProviderParams();

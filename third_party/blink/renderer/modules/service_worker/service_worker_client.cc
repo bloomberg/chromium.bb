@@ -91,11 +91,18 @@ void ServiceWorkerClient::postMessage(ScriptState* script_state,
                                       const ScriptValue& message,
                                       Vector<ScriptValue>& transfer,
                                       ExceptionState& exception_state) {
-  ExecutionContext* context = ExecutionContext::From(script_state);
   PostMessageOptions options;
-  Transferables transferables;
   if (!transfer.IsEmpty())
     options.setTransfer(transfer);
+  postMessage(script_state, message, options, exception_state);
+}
+
+void ServiceWorkerClient::postMessage(ScriptState* script_state,
+                                      const ScriptValue& message,
+                                      const PostMessageOptions& options,
+                                      ExceptionState& exception_state) {
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  Transferables transferables;
 
   scoped_refptr<SerializedScriptValue> serialized_message =
       PostMessageHelper::SerializeMessageByCopy(script_state->GetIsolate(),

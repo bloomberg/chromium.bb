@@ -115,11 +115,17 @@ void DedicatedWorker::postMessage(ScriptState* script_state,
                                   const ScriptValue& message,
                                   Vector<ScriptValue>& transfer,
                                   ExceptionState& exception_state) {
-  DCHECK(GetExecutionContext()->IsContextThread());
-
   PostMessageOptions options;
   if (!transfer.IsEmpty())
     options.setTransfer(transfer);
+  postMessage(script_state, message, options, exception_state);
+}
+
+void DedicatedWorker::postMessage(ScriptState* script_state,
+                                  const ScriptValue& message,
+                                  const PostMessageOptions& options,
+                                  ExceptionState& exception_state) {
+  DCHECK(GetExecutionContext()->IsContextThread());
 
   Transferables transferables;
   scoped_refptr<SerializedScriptValue> serialized_message =

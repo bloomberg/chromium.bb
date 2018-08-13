@@ -959,6 +959,10 @@
       status: "experimental",
     },
     {
+      name: "PostMessageOptions",
+      status: "experimental",
+    },
+    {
       name: "PreciseMemoryInfo",
     },
     // This feature is deprecated and we are evangelizing affected sites.
@@ -1344,10 +1348,6 @@
     {
       name: "WebXRHitTest",
       status: "experimental"
-    },
-    {
-      name: "WindowPostMessageOptions",
-      status: "experimental",
     },
     {
       name: "WorkerNosniffBlock",

@@ -66,17 +66,23 @@ void MessagePort::postMessage(ScriptState* script_state,
                               const ScriptValue& message,
                               Vector<ScriptValue>& transfer,
                               ExceptionState& exception_state) {
+  PostMessageOptions options;
+  if (!transfer.IsEmpty())
+    options.setTransfer(transfer);
+  postMessage(script_state, message, options, exception_state);
+}
+
+void MessagePort::postMessage(ScriptState* script_state,
+                              const ScriptValue& message,
+                              const PostMessageOptions& options,
+                              ExceptionState& exception_state) {
   if (!IsEntangled())
     return;
   DCHECK(GetExecutionContext());
   DCHECK(!IsNeutered());
 
-  PostMessageOptions options;
   BlinkTransferableMessage msg;
   Transferables transferables;
-  if (!transfer.IsEmpty())
-    options.setTransfer(transfer);
-
   msg.message = PostMessageHelper::SerializeMessageByMove(
       script_state->GetIsolate(), message, options, transferables,
       exception_state);

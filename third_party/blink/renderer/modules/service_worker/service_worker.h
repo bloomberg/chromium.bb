@@ -43,6 +43,7 @@
 
 namespace blink {
 
+class PostMessageOptions;
 class ScriptState;
 
 class MODULES_EXPORT ServiceWorker final
@@ -65,6 +66,10 @@ class MODULES_EXPORT ServiceWorker final
   void postMessage(ScriptState*,
                    const ScriptValue& message,
                    Vector<ScriptValue>& transfer,
+                   ExceptionState&);
+  void postMessage(ScriptState*,
+                   const ScriptValue& message,
+                   const PostMessageOptions&,
                    ExceptionState&);
 
   String scriptURL() const;

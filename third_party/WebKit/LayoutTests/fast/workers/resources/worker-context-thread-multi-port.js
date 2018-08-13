@@ -28,13 +28,6 @@ try {
 }
 
 try {
-    postMessage("notAnArray", channel3.port1);
-    testFailed("posting a non-array should throw");
-} catch (e) {
-    testPassed("posting a non-array did throw: " + e);
-}
-
-try {
     postMessage("notASequence", [{length: 3}]);
     testFailed("posting a non-sequence should throw");
 } catch (e) {
@@ -54,4 +47,3 @@ function testFailed(msg) {
 function testPassed(msg) {
     postMessage("PASS"+msg);
 }
-

@@ -32,6 +32,7 @@
     Exposed=(Window,Worker,AudioWorklet)
 ] interface MessagePort : EventTarget {
     [CallWith=ScriptState, RaisesException, Measure] void postMessage(any message, optional sequence<object> transfer = []);
+    [RuntimeEnabled=PostMessageOptions, CallWith=ScriptState, RaisesException, Measure] void postMessage(any message, PostMessageOptions options);
     [Measure] void start();
     [Measure] void close();
 
