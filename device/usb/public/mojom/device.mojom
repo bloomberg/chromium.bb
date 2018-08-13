@@ -271,3 +271,19 @@ interface UsbDevice {
                          uint32 timeout)
       => (array<UsbIsochronousPacket> packets);
 };
+
+// This client is introduced for keeping connection count for a tab through
+// WebUSBPermissionProvider. It will be implemented by WebUsbServiceImpl and
+// passed to the UsbDevice via UsbDeviceManager::GetDevice method.
+interface UsbDeviceClient {
+  // Called when a device is opened successfully.
+  // This event may be triggered once more than OnDeviceClosed while the device
+  // is in use.
+  OnDeviceOpened();
+
+  // Called when a device is closed successfully.
+  // This event may not be triggered when the device is in use. But eventually,
+  // after the whole lifecycle, it is expected to have the same number of this
+  // call as that of OnDeviceOpened.
+  OnDeviceClosed();
+};

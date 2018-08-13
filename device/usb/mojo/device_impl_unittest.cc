@@ -24,7 +24,6 @@
 #include "base/stl_util.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_device_handle.h"
-#include "device/usb/mojo/mock_permission_provider.h"
 #include "device/usb/mojo/type_converters.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -138,6 +137,24 @@ void ExpectTransferStatusAndThen(mojom::UsbTransferStatus expected_status,
   continuation.Run();
 }
 
+class MockUsbDeviceClient : public mojom::UsbDeviceClient {
+ public:
+  MockUsbDeviceClient() : binding_(this) {}
+  ~MockUsbDeviceClient() override = default;
+
+  mojom::UsbDeviceClientPtr CreateInterfacePtrAndBind() {
+    mojom::UsbDeviceClientPtr client;
+    binding_.Bind(mojo::MakeRequest(&client));
+    return client;
+  }
+
+  MOCK_METHOD0(OnDeviceOpened, void());
+  MOCK_METHOD0(OnDeviceClosed, void());
+
+ private:
+  mojo::Binding<mojom::UsbDeviceClient> binding_;
+};
+
 class USBDeviceImplTest : public testing::Test {
  public:
   USBDeviceImplTest()
@@ -150,7 +167,6 @@ class USBDeviceImplTest : public testing::Test {
   void TearDown() override { base::RunLoop().RunUntilIdle(); }
 
  protected:
-  MockPermissionProvider& permission_provider() { return permission_provider_; }
   MockUsbDevice& mock_device() { return *mock_device_.get(); }
   bool is_device_open() const { return is_device_open_; }
   MockUsbDeviceHandle& mock_handle() { return *mock_handle_.get(); }
@@ -163,14 +179,15 @@ class USBDeviceImplTest : public testing::Test {
                                   uint16_t product_id,
                                   const std::string& manufacturer,
                                   const std::string& product,
-                                  const std::string& serial) {
+                                  const std::string& serial,
+                                  mojom::UsbDeviceClientPtr client) {
     mock_device_ =
         new MockUsbDevice(vendor_id, product_id, manufacturer, product, serial);
     mock_handle_ = new MockUsbDeviceHandle(mock_device_.get());
 
     UsbDevicePtr proxy;
-    DeviceImpl::Create(mock_device_, permission_provider_.GetWeakPtr(),
-                       mojo::MakeRequest(&proxy));
+    DeviceImpl::Create(mock_device_, mojo::MakeRequest(&proxy),
+                       std::move(client));
 
     // Set up mock handle calls to respond based on mock device configs
     // established by the test.
@@ -202,9 +219,12 @@ class USBDeviceImplTest : public testing::Test {
     return proxy;
   }
 
-  UsbDevicePtr GetMockDeviceProxy() {
-    return GetMockDeviceProxy(0x1234, 0x5678, "ACME", "Frobinator", "ABCDEF");
+  UsbDevicePtr GetMockDeviceProxy(mojom::UsbDeviceClientPtr client) {
+    return GetMockDeviceProxy(0x1234, 0x5678, "ACME", "Frobinator", "ABCDEF",
+                              std::move(client));
   }
+
+  UsbDevicePtr GetMockDeviceProxy() { return GetMockDeviceProxy(nullptr); }
 
   void AddMockConfig(const ConfigBuilder& builder) {
     const UsbConfigDescriptor& config = builder.config();
@@ -419,8 +439,6 @@ class USBDeviceImplTest : public testing::Test {
 
   std::set<uint8_t> claimed_interfaces_;
 
-  MockPermissionProvider permission_provider_;
-
   DISALLOW_COPY_AND_ASSIGN(USBDeviceImplTest);
 };
 
@@ -436,12 +454,14 @@ TEST_F(USBDeviceImplTest, Disconnect) {
 }
 
 TEST_F(USBDeviceImplTest, Open) {
-  UsbDevicePtr device = GetMockDeviceProxy();
+  MockUsbDeviceClient device_client;
+  UsbDevicePtr device =
+      GetMockDeviceProxy(device_client.CreateInterfacePtrAndBind());
 
   EXPECT_FALSE(is_device_open());
 
   EXPECT_CALL(mock_device(), OpenInternal(_));
-  EXPECT_CALL(permission_provider(), IncrementConnectionCount());
+  EXPECT_CALL(device_client, OnDeviceOpened());
 
   {
     base::RunLoop loop;
@@ -459,7 +479,10 @@ TEST_F(USBDeviceImplTest, Open) {
   }
 
   EXPECT_CALL(mock_handle(), Close());
-  EXPECT_CALL(permission_provider(), DecrementConnectionCount());
+  EXPECT_CALL(device_client, OnDeviceClosed());
+
+  device.reset();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(USBDeviceImplTest, Close) {

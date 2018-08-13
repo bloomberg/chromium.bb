@@ -54,7 +54,12 @@ void WebUsbServiceImpl::GetDevices(GetDevicesCallback callback) {
 void WebUsbServiceImpl::GetDevice(
     const std::string& guid,
     device::mojom::UsbDeviceRequest device_request) {
-  device_manager_->GetDevice(guid, std::move(device_request));
+  // Try to bind with the new device to be created for DeviceOpened/Closed
+  // events.
+  device::mojom::UsbDeviceClientPtr device_client;
+  device_client_bindings_.AddBinding(this, mojo::MakeRequest(&device_client));
+  device_manager_->GetDevice(guid, std::move(device_request),
+                             std::move(device_client));
 }
 
 void WebUsbServiceImpl::SetClient(
@@ -75,6 +80,17 @@ void WebUsbServiceImpl::OnDeviceRemoved(
       permission_provider_->HasDevicePermission(device)) {
     client_->OnDeviceRemoved(device::mojom::UsbDeviceInfo::From(*device));
   }
+}
+
+// device::mojom::UsbDeviceClient implementation:
+void WebUsbServiceImpl::OnDeviceOpened() {
+  if (permission_provider_)
+    permission_provider_->IncrementConnectionCount();
+}
+
+void WebUsbServiceImpl::OnDeviceClosed() {
+  if (permission_provider_)
+    permission_provider_->DecrementConnectionCount();
 }
 
 void WebUsbServiceImpl::OnConnectionError() {
