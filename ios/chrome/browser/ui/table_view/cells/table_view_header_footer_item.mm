@@ -25,9 +25,18 @@
   DCHECK([headerFooter class] == self.cellClass);
   headerFooter.accessibilityTraits = self.accessibilityTraits;
   headerFooter.accessibilityIdentifier = self.accessibilityIdentifier;
-  UIVisualEffectView* visualEffect = [[UIVisualEffectView alloc]
-      initWithEffect:styler.tableViewSectionHeaderBlurEffect];
-  headerFooter.backgroundView = visualEffect;
+  // Use the styler tableViewSectionHeaderBlurEffect if available, if not use
+  // the styler tableViewBackgroundColor (as a performance optimization) if
+  // available.
+  if (styler.tableViewSectionHeaderBlurEffect) {
+    UIVisualEffectView* visualEffect = [[UIVisualEffectView alloc]
+        initWithEffect:styler.tableViewSectionHeaderBlurEffect];
+    headerFooter.backgroundView = visualEffect;
+  } else if (styler.tableViewBackgroundColor) {
+    UIView* backgroundView = [[UIView alloc] init];
+    backgroundView.backgroundColor = styler.tableViewBackgroundColor;
+    headerFooter.backgroundView = backgroundView;
+  }
 }
 
 - (CGFloat)headerHeightForWidth:(CGFloat)width {

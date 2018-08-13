@@ -45,9 +45,6 @@ constexpr float kRotationNinetyCCW = -(90 / 180.0) * M_PI;
   DisclosureDirection direction =
       self.collapsed ? DisclosureDirectionUp : DisclosureDirectionDown;
   [header setInitialDirection:direction];
-  // Use colors from styler if available.
-  if (styler.tableViewBackgroundColor)
-    header.contentView.backgroundColor = styler.tableViewBackgroundColor;
   if (styler.headerFooterTitleColor)
     header.titleLabel.textColor = styler.headerFooterTitleColor;
 }
