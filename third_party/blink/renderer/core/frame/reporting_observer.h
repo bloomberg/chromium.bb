@@ -5,11 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REPORTING_OBSERVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REPORTING_OBSERVER_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_reporting_observer_callback.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/report.h"
 #include "third_party/blink/renderer/core/frame/reporting_observer_options.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -17,13 +17,20 @@ namespace blink {
 class ExecutionContext;
 class Report;
 
-class CORE_EXPORT ReportingObserver final : public ScriptWrappable {
+class CORE_EXPORT ReportingObserver final
+    : public ScriptWrappable,
+      public ActiveScriptWrappable<ReportingObserver>,
+      public ContextClient {
+  USING_GARBAGE_COLLECTED_MIXIN(ReportingObserver);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static ReportingObserver* Create(ExecutionContext*,
                                    V8ReportingObserverCallback*,
                                    ReportingObserverOptions);
+
+  // ActiveScriptWrappable
+  bool HasPendingActivity() const final;
 
   // Call the callback with all reports in |report_queue_|.
   void ReportToCallback();
@@ -54,9 +61,10 @@ class CORE_EXPORT ReportingObserver final : public ScriptWrappable {
                              ReportingObserverOptions);
 
   Member<ExecutionContext> execution_context_;
-  Member<V8ReportingObserverCallback> callback_;
+  TraceWrapperMember<V8ReportingObserverCallback> callback_;
   ReportingObserverOptions options_;
   HeapVector<Member<Report>> report_queue_;
+  bool registered_;
 };
 
 }  // namespace blink

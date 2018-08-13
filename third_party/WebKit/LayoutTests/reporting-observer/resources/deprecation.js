@@ -23,6 +23,10 @@ async_test(function(test) {
   });
   observer.observe();
 
+  // This ensures that ReportingObserver is traced properly. This will cause the
+  // test to fail otherwise.
+  window.gc();
+
   // Use two deprecated features to generate two deprecation reports.
   window.webkitStorageInfo;
   window.webkitURL;
