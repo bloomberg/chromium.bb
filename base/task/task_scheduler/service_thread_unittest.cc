@@ -43,7 +43,7 @@ void VerifyHasStringOnStack(const std::string& query) {
 #endif
 
 TEST(TaskSchedulerServiceThreadTest, MAYBE_StackHasIdentifyingFrame) {
-  ServiceThread service_thread(nullptr);
+  ServiceThread service_thread(nullptr, DoNothing());
   service_thread.Start();
 
   service_thread.task_runner()->PostTask(
