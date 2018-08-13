@@ -32,15 +32,6 @@ NGInlineBoxFragmentPainter::NGInlineBoxFragmentPainter(
       border_edges_(NGBorderEdges::FromPhysical(
           inline_box_fragment.PhysicalFragment().BorderEdges(),
           inline_box_fragment.Style().GetWritingMode())) {
-  NGPaintFragment::FragmentRange fragments =
-      inline_box_fragment.InlineFragmentsFor(
-          inline_box_fragment.GetLayoutObject());
-  NGPaintFragment::FragmentRange::iterator iter = fragments.begin();
-  object_has_multiple_boxes_ = ++iter != fragments.end();
-  include_logical_left_edge_for_box_shadow_ =
-      !object_has_multiple_boxes_ || border_edges_.line_left;
-  include_logical_right_edge_for_box_shadow_ =
-      !object_has_multiple_boxes_ || border_edges_.line_right;
 }
 
 void NGInlineBoxFragmentPainter::Paint(const PaintInfo& paint_info,
@@ -87,13 +78,20 @@ void NGInlineBoxFragmentPainter::PaintBackgroundBorderShadow(
   LayoutRect adjusted_frame_rect =
       LayoutRect(adjusted_paint_offset, frame_rect.Size());
 
+  NGPaintFragment::FragmentRange fragments =
+      inline_box_fragment_.InlineFragmentsFor(
+          inline_box_fragment_.GetLayoutObject());
+  NGPaintFragment::FragmentRange::iterator iter = fragments.begin();
+  bool object_has_multiple_boxes = ++iter != fragments.end();
+
   // TODO(eae): Switch to LayoutNG version of BackgroundImageGeometry.
   BackgroundImageGeometry geometry(*static_cast<const LayoutBoxModelObject*>(
       inline_box_fragment_.GetLayoutObject()));
   NGBoxFragmentPainter box_painter(inline_box_fragment_);
   PaintBoxDecorationBackground(
       box_painter, paint_info, paint_offset, adjusted_frame_rect, geometry,
-      border_edges_.line_left, border_edges_.line_right);
+      object_has_multiple_boxes, border_edges_.line_left,
+      border_edges_.line_right);
 }
 
 void NGInlineBoxFragmentPainter::ComputeFragmentOffsetOnLine(
@@ -101,7 +99,6 @@ void NGInlineBoxFragmentPainter::ComputeFragmentOffsetOnLine(
     LayoutUnit* offset_on_line,
     LayoutUnit* total_width) const {
   WritingMode writing_mode = inline_box_fragment_.Style().GetWritingMode();
-  DCHECK(object_has_multiple_boxes_);
   NGPaintFragment::FragmentRange fragments =
       inline_box_fragment_.InlineFragmentsFor(
           inline_box_fragment_.GetLayoutObject());
@@ -139,7 +136,6 @@ LayoutRect NGInlineBoxFragmentPainter::PaintRectForImageStrip(
   // multiple lines, you still paint it as though you had one single line. This
   // means each line has to pick up the background where the previous line left
   // off.
-  DCHECK(object_has_multiple_boxes_);
   LayoutUnit offset_on_line;
   LayoutUnit total_width;
   ComputeFragmentOffsetOnLine(direction, &offset_on_line, &total_width);
@@ -184,7 +180,8 @@ static LayoutRect NGClipRectForNinePieceImageStrip(
 InlineBoxPainterBase::BorderPaintingType
 NGInlineBoxFragmentPainter::GetBorderPaintType(
     const LayoutRect& adjusted_frame_rect,
-    IntRect& adjusted_clip_rect) const {
+    IntRect& adjusted_clip_rect,
+    bool object_has_multiple_boxes) const {
   adjusted_clip_rect = PixelSnappedIntRect(adjusted_frame_rect);
   if (inline_box_fragment_.Parent() &&
       inline_box_fragment_.Style().HasBorderDecoration()) {
@@ -199,7 +196,7 @@ NGInlineBoxFragmentPainter::GetBorderPaintType(
     // The simple case is where we either have no border image or we are the
     // only box for this object.  In those cases only a single call to draw is
     // required.
-    if (!has_border_image || !object_has_multiple_boxes_)
+    if (!has_border_image || !object_has_multiple_boxes)
       return kPaintBordersWithoutClip;
 
     // We have a border image that spans multiple lines.
@@ -209,6 +206,22 @@ NGInlineBoxFragmentPainter::GetBorderPaintType(
     return kPaintBordersWithClip;
   }
   return kDontPaintBorders;
+}
+
+void NGInlineBoxFragmentPainter::PaintNormalBoxShadow(
+    const PaintInfo& info,
+    const ComputedStyle& s,
+    const LayoutRect& paint_rect) {
+  BoxPainterBase::PaintNormalBoxShadow(
+      info, paint_rect, s, border_edges_.line_left, border_edges_.line_right);
+}
+
+void NGInlineBoxFragmentPainter::PaintInsetBoxShadow(
+    const PaintInfo& info,
+    const ComputedStyle& s,
+    const LayoutRect& paint_rect) {
+  BoxPainterBase::PaintInsetBoxShadowWithBorderRect(
+      info, paint_rect, s, border_edges_.line_left, border_edges_.line_right);
 }
 
 }  // namespace blink

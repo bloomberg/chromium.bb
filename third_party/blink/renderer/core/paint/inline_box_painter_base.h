@@ -43,6 +43,7 @@ class InlineBoxPainterBase {
                                     const LayoutPoint& paint_offset,
                                     LayoutRect adjusted_frame_rect,
                                     BackgroundImageGeometry,
+                                    bool object_has_multiple_boxes,
                                     bool include_logical_left_edge,
                                     bool include_logical_right_edge);
 
@@ -53,6 +54,7 @@ class InlineBoxPainterBase {
                        const FillLayer&,
                        const LayoutRect&,
                        BackgroundImageGeometry& geometry,
+                       bool object_has_multiple_boxes,
                        SkBlendMode op = SkBlendMode::kSrcOver);
   void PaintFillLayer(BoxPainterBase&,
                       const PaintInfo&,
@@ -60,13 +62,14 @@ class InlineBoxPainterBase {
                       const FillLayer&,
                       const LayoutRect&,
                       BackgroundImageGeometry& geometry,
+                      bool object_has_multiple_boxes,
                       SkBlendMode op);
-  void PaintNormalBoxShadow(const PaintInfo&,
-                            const ComputedStyle&,
-                            const LayoutRect& paint_rect);
-  void PaintInsetBoxShadow(const PaintInfo&,
-                           const ComputedStyle&,
-                           const LayoutRect& paint_rect);
+  virtual void PaintNormalBoxShadow(const PaintInfo&,
+                                    const ComputedStyle&,
+                                    const LayoutRect& paint_rect) = 0;
+  virtual void PaintInsetBoxShadow(const PaintInfo&,
+                                   const ComputedStyle&,
+                                   const LayoutRect& paint_rect) = 0;
 
   virtual LayoutRect PaintRectForImageStrip(const LayoutRect&,
                                             TextDirection direction) const = 0;
@@ -78,7 +81,8 @@ class InlineBoxPainterBase {
   };
   virtual BorderPaintingType GetBorderPaintType(
       const LayoutRect& adjusted_frame_rect,
-      IntRect& adjusted_clip_rect) const = 0;
+      IntRect& adjusted_clip_rect,
+      bool object_has_multiple_boxes) const = 0;
 
   const ImageResourceObserver& image_observer_;
   Member<const Document> document_;
@@ -89,10 +93,6 @@ class InlineBoxPainterBase {
 
   // Style taking ::first-line into account.
   const ComputedStyle& line_style_;
-
-  bool object_has_multiple_boxes_;
-  bool include_logical_left_edge_for_box_shadow_;
-  bool include_logical_right_edge_for_box_shadow_;
 };
 
 }  // namespace blink

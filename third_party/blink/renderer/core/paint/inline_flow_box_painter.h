@@ -37,6 +37,12 @@ class InlineFlowBoxPainter : public InlineBoxPainterBase {
  protected:
   LayoutRect PaintRectForImageStrip(const LayoutRect&,
                                     TextDirection) const override;
+  void PaintNormalBoxShadow(const PaintInfo&,
+                            const ComputedStyle&,
+                            const LayoutRect& paint_rect) override;
+  void PaintInsetBoxShadow(const PaintInfo&,
+                           const ComputedStyle&,
+                           const LayoutRect& paint_rect) override;
 
  private:
   void PaintBackgroundBorderShadow(const PaintInfo&,
@@ -45,7 +51,8 @@ class InlineFlowBoxPainter : public InlineBoxPainterBase {
 
   BorderPaintingType GetBorderPaintType(
       const LayoutRect& adjusted_frame_rect,
-      IntRect& adjusted_clip_rect) const override;
+      IntRect& adjusted_clip_rect,
+      bool object_has_multiple_boxes) const override;
 
   LayoutRect AdjustedPaintRect(const LayoutPoint& paint_offset) const;
 
