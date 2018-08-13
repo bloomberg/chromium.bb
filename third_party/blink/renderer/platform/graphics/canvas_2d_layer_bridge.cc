@@ -283,6 +283,9 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
 #if DCHECK_IS_ON()
     // If resource provider is accelerated, a layer should already exist.
     // unless this is a canvas in low latency mode.
+    // If this DCHECK fails, it probably means that
+    // CanvasRenderingContextHost::GetOrCreateCanvasResourceProvider() was
+    // called on a 2D context before this function.
     if (IsAccelerated()) {
       DCHECK(!!layer_ ||
              (resource_host_ && resource_host_->LowLatencyEnabled()));

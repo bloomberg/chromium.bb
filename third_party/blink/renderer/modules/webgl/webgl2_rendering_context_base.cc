@@ -1214,7 +1214,7 @@ void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
     return;
   }
 
-  TexImageHelperHTMLCanvasElement(
+  TexImageHelperCanvasRenderingContextHost(
       execution_context->GetSecurityOrigin(), kTexImage2D, target, level,
       internalformat, format, type, 0, 0, 0, canvas,
       GetTextureSourceSubRectangle(width, height), 1, 0, exception_state);
@@ -1306,14 +1306,15 @@ void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
                                         exception_state);
 }
 
-void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
-                                            GLenum target,
-                                            GLint level,
-                                            GLint internalformat,
-                                            GLenum format,
-                                            GLenum type,
-                                            HTMLCanvasElement* canvas,
-                                            ExceptionState& exception_state) {
+void WebGL2RenderingContextBase::texImage2D(
+    ExecutionContext* execution_context,
+    GLenum target,
+    GLint level,
+    GLint internalformat,
+    GLenum format,
+    GLenum type,
+    CanvasRenderingContextHost* context_host,
+    ExceptionState& exception_state) {
   if (isContextLost())
     return;
   if (bound_pixel_unpack_buffer_) {
@@ -1323,8 +1324,8 @@ void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
   }
 
   WebGLRenderingContextBase::texImage2D(execution_context, target, level,
-                                        internalformat, format, type, canvas,
-                                        exception_state);
+                                        internalformat, format, type,
+                                        context_host, exception_state);
 }
 
 void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
@@ -1478,7 +1479,7 @@ void WebGL2RenderingContextBase::texSubImage2D(
     return;
   }
 
-  TexImageHelperHTMLCanvasElement(
+  TexImageHelperCanvasRenderingContextHost(
       execution_context->GetSecurityOrigin(), kTexSubImage2D, target, level, 0,
       format, type, xoffset, yoffset, 0, canvas,
       GetTextureSourceSubRectangle(width, height), 1, 0, exception_state);
@@ -1584,7 +1585,7 @@ void WebGL2RenderingContextBase::texSubImage2D(
     GLint yoffset,
     GLenum format,
     GLenum type,
-    HTMLCanvasElement* canvas,
+    CanvasRenderingContextHost* context_host,
     ExceptionState& exception_state) {
   if (isContextLost())
     return;
@@ -1596,7 +1597,7 @@ void WebGL2RenderingContextBase::texSubImage2D(
 
   WebGLRenderingContextBase::texSubImage2D(execution_context, target, level,
                                            xoffset, yoffset, format, type,
-                                           canvas, exception_state);
+                                           context_host, exception_state);
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(
@@ -1820,11 +1821,11 @@ void WebGL2RenderingContextBase::texImage3D(ExecutionContext* execution_context,
     return;
   }
 
-  TexImageHelperHTMLCanvasElement(execution_context->GetSecurityOrigin(),
-                                  kTexImage3D, target, level, internalformat,
-                                  format, type, 0, 0, 0, canvas,
-                                  GetTextureSourceSubRectangle(width, height),
-                                  depth, unpack_image_height_, exception_state);
+  TexImageHelperCanvasRenderingContextHost(
+      execution_context->GetSecurityOrigin(), kTexImage3D, target, level,
+      internalformat, format, type, 0, 0, 0, canvas,
+      GetTextureSourceSubRectangle(width, height), depth, unpack_image_height_,
+      exception_state);
 }
 
 void WebGL2RenderingContextBase::texImage3D(ExecutionContext* execution_context,
@@ -2015,7 +2016,7 @@ void WebGL2RenderingContextBase::texSubImage3D(
     GLsizei depth,
     GLenum format,
     GLenum type,
-    HTMLCanvasElement* canvas,
+    CanvasRenderingContextHost* context_host,
     ExceptionState& exception_state) {
   if (isContextLost())
     return;
@@ -2025,11 +2026,11 @@ void WebGL2RenderingContextBase::texSubImage3D(
     return;
   }
 
-  TexImageHelperHTMLCanvasElement(execution_context->GetSecurityOrigin(),
-                                  kTexSubImage3D, target, level, 0, format,
-                                  type, xoffset, yoffset, zoffset, canvas,
-                                  GetTextureSourceSubRectangle(width, height),
-                                  depth, unpack_image_height_, exception_state);
+  TexImageHelperCanvasRenderingContextHost(
+      execution_context->GetSecurityOrigin(), kTexSubImage3D, target, level, 0,
+      format, type, xoffset, yoffset, zoffset, context_host,
+      GetTextureSourceSubRectangle(width, height), depth, unpack_image_height_,
+      exception_state);
 }
 
 void WebGL2RenderingContextBase::texSubImage3D(

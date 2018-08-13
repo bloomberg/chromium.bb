@@ -628,6 +628,9 @@ typedef unrestricted float GLclampf;
         GLenum format, GLenum type, HTMLCanvasElement canvas);
     [CallWith=ExecutionContext, RaisesException] void texImage2D(
         GLenum target, GLint level, GLint internalformat,
+        GLenum format, GLenum type, OffscreenCanvas offscreenCanvas);
+    [CallWith=ExecutionContext, RaisesException] void texImage2D(
+        GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, HTMLVideoElement video);
     [RaisesException] void texImage2D(
         GLenum target, GLint level, GLint internalformat,
@@ -646,6 +649,9 @@ typedef unrestricted float GLclampf;
     [CallWith=ExecutionContext, RaisesException] void texSubImage2D(
         GLenum target, GLint level, GLint xoffset, GLint yoffset,
         GLenum format, GLenum type, HTMLCanvasElement canvas);
+    [CallWith=ExecutionContext, RaisesException] void texSubImage2D(
+        GLenum target, GLint level, GLint xoffset, GLint yoffset,
+        GLenum format, GLenum type, OffscreenCanvas offscreenCanvas);
     [CallWith=ExecutionContext, RaisesException] void texSubImage2D(
         GLenum target, GLint level, GLint xoffset, GLint yoffset,
         GLenum format, GLenum type, HTMLVideoElement video);
