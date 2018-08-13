@@ -12,6 +12,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
+import android.provider.MediaStore;
+import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
@@ -206,6 +209,22 @@ public abstract class ContentUriUtils {
             return "";
         }
         return "";
+    }
+
+    /**
+     * Method to resolve the display name of a content URI if possible.
+     *
+     * @param uriString the content URI to look up.
+     * @return the display name of the uri if present in the database or null otherwise.
+     */
+    @Nullable
+    @CalledByNative
+    public static String maybeGetDisplayName(String uriString) {
+        Uri uri = Uri.parse(uriString);
+        String displayName = getDisplayName(
+                uri, ContextUtils.getApplicationContext(), MediaStore.MediaColumns.DISPLAY_NAME);
+
+        return TextUtils.isEmpty(displayName) ? null : displayName;
     }
 
     /**
