@@ -26,6 +26,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/favicon/core/favicon_util.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -81,6 +82,7 @@ base::string16 GetUsernameFromSuggestion(const base::string16& suggestion) {
 void AppendSuggestionIfMatching(
     const base::string16& field_suggestion,
     const base::string16& field_contents,
+    const gfx::Image& custom_icon,
     const std::string& signon_realm,
     bool show_all,
     bool is_password_field,
@@ -103,6 +105,9 @@ void AppendSuggestionIfMatching(
                                      base::CompareCase::SENSITIVE)
             ? autofill::Suggestion::PREFIX_MATCH
             : autofill::Suggestion::SUBSTRING_MATCH;
+    suggestion.custom_icon = custom_icon;
+    // The UI code will pick up an icon from the resources based on the string.
+    suggestion.icon = base::ASCIIToUTF16("globeIcon");
     suggestions->push_back(suggestion);
   }
 }
@@ -114,16 +119,17 @@ void AppendSuggestionIfMatching(
 // substring or a prefix based on the flag.
 void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
                     const base::string16& current_username,
+                    const gfx::Image& custom_icon,
                     bool show_all,
                     bool is_password_field,
                     std::vector<autofill::Suggestion>* suggestions) {
   AppendSuggestionIfMatching(
-      fill_data.username_field.value, current_username,
+      fill_data.username_field.value, current_username, custom_icon,
       fill_data.preferred_realm, show_all, is_password_field,
       fill_data.password_field.value.size(), suggestions);
 
   for (const auto& login : fill_data.additional_logins) {
-    AppendSuggestionIfMatching(login.first, current_username,
+    AppendSuggestionIfMatching(login.first, current_username, custom_icon,
                                login.second.realm, show_all, is_password_field,
                                login.second.password.size(), suggestions);
   }
@@ -207,6 +213,7 @@ void PasswordAutofillManager::OnAddPasswordFormMapping(
     return;
 
   login_to_password_info_[key] = fill_data;
+  RequestFavicon(fill_data.origin);
 }
 
 void PasswordAutofillManager::OnShowPasswordSuggestions(
@@ -223,7 +230,7 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
     NOTREACHED();
     return;
   }
-  GetSuggestions(fill_data_it->second, typed_username,
+  GetSuggestions(fill_data_it->second, typed_username, page_favicon_,
                  (options & autofill::SHOW_ALL) != 0,
                  (options & autofill::IS_PASSWORD_FIELD) != 0, &suggestions);
 
@@ -273,14 +280,15 @@ bool PasswordAutofillManager::MaybeShowPasswordSuggestionsWithGeneration(
     return false;
   std::vector<autofill::Suggestion> suggestions;
   GetSuggestions(login_to_password_info_.begin()->second, base::string16(),
-                 true /* show_all */, true /* is_password_field */,
-                 &suggestions);
+                 page_favicon_, true /* show_all */,
+                 true /* is_password_field */, &suggestions);
   form_data_key_ = login_to_password_info_.begin()->first;
 
   // Add 'Generation' option.
+  // The UI code will pick up an icon from the resources based on the string.
   autofill::Suggestion suggestion(
       l10n_util::GetStringUTF8(IDS_PASSWORD_MANAGER_GENERATE_PASSWORD),
-      std::string(), std::string(),
+      std::string(), std::string("keyIcon"),
       autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY);
   suggestions.push_back(suggestion);
 
@@ -304,6 +312,8 @@ bool PasswordAutofillManager::MaybeShowPasswordSuggestionsWithGeneration(
 
 void PasswordAutofillManager::DidNavigateMainFrame() {
   login_to_password_info_.clear();
+  favicon_tracker_.TryCancelAll();
+  page_favicon_ = gfx::Image();
 }
 
 bool PasswordAutofillManager::FillSuggestionForTest(
@@ -432,6 +442,23 @@ bool PasswordAutofillManager::FindLoginInfo(
 
   *found_password = iter->second;
   return true;
+}
+
+void PasswordAutofillManager::RequestFavicon(const GURL& url) {
+  if (!password_client_)
+    return;
+  favicon::GetFaviconImageForPageURL(
+      password_client_->GetFaviconService(), url,
+      favicon_base::IconType::kFavicon,
+      base::BindRepeating(&PasswordAutofillManager::OnFaviconReady,
+                          weak_ptr_factory_.GetWeakPtr()),
+      &favicon_tracker_);
+}
+
+void PasswordAutofillManager::OnFaviconReady(
+    const favicon_base::FaviconImageResult& result) {
+  if (!result.image.IsEmpty())
+    page_favicon_ = result.image;
 }
 
 }  //  namespace password_manager

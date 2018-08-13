@@ -209,6 +209,9 @@ ui::NativeTheme::ColorId AutofillPopupLayoutModel::GetValueFontColorIDForRow(
 
 gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
   std::vector<autofill::Suggestion> suggestions = delegate_->GetSuggestions();
+  if (!suggestions[index].custom_icon.IsEmpty())
+    return suggestions[index].custom_icon.AsImageSkia();
+
   const base::string16& icon_str = suggestions[index].icon;
   if (icon_str.empty())
     return gfx::ImageSkia();
@@ -225,6 +228,10 @@ gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
     return gfx::CreateVectorIcon(toolbar::kHttpsInvalidIcon, kIconSize,
                                  gfx::kGoogleRed700);
   }
+  if (icon_str == base::ASCIIToUTF16("keyIcon"))
+    return gfx::CreateVectorIcon(kKeyIcon, kIconSize, gfx::kChromeIconGrey);
+  if (icon_str == base::ASCIIToUTF16("globeIcon"))
+    return gfx::CreateVectorIcon(kGlobeIcon, kIconSize, gfx::kChromeIconGrey);
 
   // For other suggestion entries, get icon from PNG files.
   int icon_id = GetIconResourceID(icon_str);

@@ -21,6 +21,10 @@ namespace autofill {
 class AutofillManager;
 }
 
+namespace favicon {
+class FaviconService;
+}
+
 class GURL;
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
@@ -256,6 +260,9 @@ class PasswordManagerClient {
   // has not been implemented for a specific platform or the context is an
   // incognito context. Callers should guard against this.
   virtual PasswordRequirementsService* GetPasswordRequirementsService();
+
+  // Returns the favicon service used to retrieve icons for an origin.
+  virtual favicon::FaviconService* GetFaviconService();
 
   // Causes all live PasswordFormManager objects to query the password store
   // again. Results in updating the fill information on the page.
