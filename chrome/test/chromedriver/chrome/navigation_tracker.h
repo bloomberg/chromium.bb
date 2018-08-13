@@ -64,7 +64,6 @@ class NavigationTracker : public DevToolsEventListener,
  private:
   DevToolsClient* client_;
   LoadingState loading_state_;
-  const BrowserInfo* browser_info_;
   const JavaScriptDialogManager* dialog_manager_;
   std::set<std::string> pending_frame_set_;
   std::set<std::string> scheduled_frame_set_;

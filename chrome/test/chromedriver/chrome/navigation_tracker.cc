@@ -41,7 +41,6 @@ NavigationTracker::NavigationTracker(
     const JavaScriptDialogManager* dialog_manager)
     : client_(client),
       loading_state_(kUnknown),
-      browser_info_(browser_info),
       dialog_manager_(dialog_manager),
       dummy_execution_context_id_(0),
       load_event_fired_(true),
@@ -56,7 +55,6 @@ NavigationTracker::NavigationTracker(
     const JavaScriptDialogManager* dialog_manager)
     : client_(client),
       loading_state_(known_state),
-      browser_info_(browser_info),
       dialog_manager_(dialog_manager),
       dummy_execution_context_id_(0),
       load_event_fired_(true),
@@ -215,25 +213,6 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
       return Status(kUnknownError, "missing or invalid 'frameId'");
     pending_frame_set_.insert(frame_id);
     loading_state_ = kLoading;
-
-    if (browser_info_->major_version >= 63 &&
-        browser_info_->major_version < 67) {
-      // Check if the document is really loading.
-      base::DictionaryValue params;
-      params.SetString("expression", "document.readyState");
-      std::unique_ptr<base::DictionaryValue> result;
-      Status status =
-          client_->SendCommandAndGetResult("Runtime.evaluate", params, &result);
-      std::string value;
-      if (status.IsError() || !result->GetString("result.value", &value)) {
-        LOG(ERROR) << "Unable to retrieve document state " << status.message();
-        return status;
-      }
-      if (value == "complete") {
-        pending_frame_set_.erase(frame_id);
-        loading_state_ = kNotLoading;
-      }
-    }
   } else if (method == "Page.frameStoppedLoading") {
     std::string frame_id;
     if (!params.GetString("frameId", &frame_id))

@@ -25,6 +25,7 @@ class JavaScriptDialogManager : public DevToolsEventListener {
  public:
   explicit JavaScriptDialogManager(DevToolsClient* client,
                                    const BrowserInfo* browser_info);
+
   ~JavaScriptDialogManager() override;
 
   bool IsDialogOpen() const;
@@ -43,8 +44,6 @@ class JavaScriptDialogManager : public DevToolsEventListener {
 
  private:
   DevToolsClient* client_;
-  const BrowserInfo* browser_info_;
-
   // The queue of unhandled dialogs. This may be greater than 1 in rare
   // cases. E.g., if the page shows an alert but before the manager received
   // the event, a script was injected via Inspector that triggered an alert.
