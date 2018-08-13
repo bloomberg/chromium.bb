@@ -128,6 +128,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/audio/public/cpp/audio_system_factory.h"
 #include "services/audio/public/mojom/constants.mojom.h"
+#include "services/network/transitional_url_loader_factory_owner.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
@@ -810,6 +811,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
       skia::SkiaMemoryDumpProvider::GetInstance(), "Skia", nullptr);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       sql::SqlMemoryDumpProvider::GetInstance(), "Sql", nullptr);
+  network::TransitionalURLLoaderFactoryOwner::DisallowUsageInProcess();
 }
 
 int BrowserMainLoop::PreCreateThreads() {
