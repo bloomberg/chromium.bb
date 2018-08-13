@@ -56,8 +56,7 @@ class TestService : public base::Thread {
   bool StartService();
 
   // Waits until the service is started (i.e. all methods are exported).
-  // Returns true on success.
-  bool WaitUntilServiceIsStarted() WARN_UNUSED_RESULT;
+  void WaitUntilServiceIsStarted();
 
   // Shuts down the service and blocks until it's done.
   void ShutdownAndBlock();

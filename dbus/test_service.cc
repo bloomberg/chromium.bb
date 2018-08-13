@@ -63,10 +63,9 @@ bool TestService::StartService() {
   return StartWithOptions(thread_options);
 }
 
-bool TestService::WaitUntilServiceIsStarted() {
-  const base::TimeDelta timeout(TestTimeouts::action_max_timeout());
+void TestService::WaitUntilServiceIsStarted() {
   // Wait until the ownership of the service name is obtained.
-  return on_name_obtained_.TimedWait(timeout);
+  on_name_obtained_.Wait();
 }
 
 void TestService::ShutdownAndBlock() {
