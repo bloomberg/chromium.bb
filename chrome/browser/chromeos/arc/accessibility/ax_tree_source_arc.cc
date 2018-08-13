@@ -350,7 +350,7 @@ void AXTreeSourceArc::SerializeNode(AXNodeInfoData* node,
   int labelled_by = -1;
 
   // Accessible name computation picks the first non-empty string from content
-  // description, text, or labelled by text.
+  // description, text, labelled by text, or pane title.
   std::string name;
   bool has_name =
       GetProperty(node, AXStringProperty::CONTENT_DESCRIPTION, &name);
@@ -366,6 +366,8 @@ void AXTreeSourceArc::SerializeNode(AXNodeInfoData* node,
           ax::mojom::StringAttribute::kName, &name);
     }
   }
+  if (name.empty())
+    has_name |= GetProperty(node, AXStringProperty::PANE_TITLE, &name);
 
   // If it exists, set tooltip value as descritiption on node.
   std::string tooltip;
