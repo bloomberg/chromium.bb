@@ -48,7 +48,6 @@
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/env.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/compositor/layer_animator.h"
@@ -255,19 +254,12 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     }
 
     views::ViewsTestBase::SetUp();
-
-    // Creates AnswerCardContentsRegistry and registers a fake answer card
-    // view for classic ash. Otherwise, the answer card view will not be
-    // created. Revisit this when the test runs in mash.
-    if (aura::Env::GetInstanceDontCreate() &&
-        aura::Env::GetInstanceDontCreate()->mode() == aura::Env::Mode::LOCAL) {
-      answer_card_contents_registry_ =
-          std::make_unique<AnswerCardContentsRegistry>();
-      fake_answer_card_view_ = std::make_unique<views::View>();
-      fake_answer_card_view_->set_owned_by_client();
-      fake_answer_card_token_ = answer_card_contents_registry_->Register(
-          fake_answer_card_view_.get());
-    }
+    answer_card_contents_registry_ =
+        std::make_unique<AnswerCardContentsRegistry>();
+    fake_answer_card_view_ = std::make_unique<views::View>();
+    fake_answer_card_view_->set_owned_by_client();
+    fake_answer_card_token_ =
+        answer_card_contents_registry_->Register(fake_answer_card_view_.get());
 
     // Initialize app list view.
     delegate_ = std::make_unique<AppListTestViewDelegate>();
