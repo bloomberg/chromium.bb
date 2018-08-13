@@ -106,6 +106,10 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
     return num_tasks_between_waits_histogram_;
   }
 
+  const HistogramBase* num_workers_histogram() const {
+    return num_workers_histogram_;
+  }
+
   void GetHistograms(std::vector<const HistogramBase*>* histograms) const;
 
   // Returns the maximum number of non-blocked tasks that can run concurrently
@@ -140,6 +144,9 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Sets the MayBlock waiting threshold to TimeDelta::Max().
   void MaximizeMayBlockThresholdForTesting();
+
+  // Records number of worker.
+  void RecordNumWorkersHistogram() const;
 
  private:
   class SchedulerWorkerDelegateImpl;
@@ -333,6 +340,10 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // TaskScheduler.NumTasksBetweenWaits.[worker pool name] histogram.
   // Intentionally leaked.
   HistogramBase* const num_tasks_between_waits_histogram_;
+
+  // TaskScheduler.NumWorkers.[worker pool name] histogram.
+  // Intentionally leaked.
+  HistogramBase* const num_workers_histogram_;
 
   scoped_refptr<TaskRunner> service_thread_task_runner_;
 

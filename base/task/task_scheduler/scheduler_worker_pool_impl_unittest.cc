@@ -35,6 +35,7 @@
 #include "base/task_runner.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -1698,6 +1699,14 @@ TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, RacyCleanup) {
   // Unwinding this test will be racy if worker cleanup can race with
   // SchedulerWorkerPoolImpl destruction : https://crbug.com/810464.
   worker_pool_.reset();
+}
+
+TEST_P(TaskSchedulerWorkerPoolImplTestParam, RecordNumWorkersHistogram) {
+  HistogramTester tester;
+  worker_pool_->RecordNumWorkersHistogram();
+  EXPECT_FALSE(
+      tester.GetAllSamples("TaskScheduler.NumWorkers.TestWorkerPoolPool")
+          .empty());
 }
 
 }  // namespace internal

@@ -49,6 +49,7 @@ constexpr char kNumTasksBeforeDetachHistogramPrefix[] =
     "TaskScheduler.NumTasksBeforeDetach.";
 constexpr char kNumTasksBetweenWaitsHistogramPrefix[] =
     "TaskScheduler.NumTasksBetweenWaits.";
+constexpr char kNumThreadsHistogramPrefix[] = "TaskScheduler.NumWorkers.";
 constexpr size_t kMaxNumberOfWorkers = 256;
 
 // Only used in DCHECKs.
@@ -196,6 +197,18 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
           100,
           50,
           HistogramBase::kUmaTargetedHistogramFlag)),
+      // Mimics the UMA_HISTOGRAM_COUNTS_100 macro. A SchedulerWorkerPool is
+      // expected to run between zero and a few tens of workers.
+      // When it runs more than 100 worker, there is no need to know the exact
+      // number of workers that ran.
+      num_workers_histogram_(Histogram::FactoryGet(
+          JoinString(
+              {kNumThreadsHistogramPrefix, histogram_label, kPoolNameSuffix},
+              ""),
+          1,
+          100,
+          50,
+          HistogramBase::kUmaTargetedHistogramFlag)),
       tracked_ref_factory_(this) {
   DCHECK(!histogram_label.empty());
   DCHECK(!pool_label_.empty());
@@ -270,6 +283,7 @@ void SchedulerWorkerPoolImpl::GetHistograms(
     std::vector<const HistogramBase*>* histograms) const {
   histograms->push_back(detach_duration_histogram_);
   histograms->push_back(num_tasks_between_waits_histogram_);
+  histograms->push_back(num_workers_histogram_);
 }
 
 int SchedulerWorkerPoolImpl::GetMaxConcurrentNonBlockedTasksDeprecated() const {
@@ -358,6 +372,11 @@ size_t SchedulerWorkerPoolImpl::NumberOfIdleWorkersForTesting() const {
 
 void SchedulerWorkerPoolImpl::MaximizeMayBlockThresholdForTesting() {
   maximum_blocked_threshold_for_testing_.Set();
+}
+
+void SchedulerWorkerPoolImpl::RecordNumWorkersHistogram() const {
+  AutoSchedulerLock auto_lock(lock_);
+  num_workers_histogram_->Add(workers_.size());
 }
 
 SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::

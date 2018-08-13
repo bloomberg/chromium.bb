@@ -8,6 +8,8 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial_params.h"
@@ -34,7 +36,10 @@ TaskSchedulerImpl::TaskSchedulerImpl(
     StringPiece histogram_label,
     std::unique_ptr<TaskTrackerImpl> task_tracker)
     : task_tracker_(std::move(task_tracker)),
-      service_thread_(std::make_unique<ServiceThread>(task_tracker_.get())),
+      service_thread_(std::make_unique<ServiceThread>(
+          task_tracker_.get(),
+          BindRepeating(&TaskSchedulerImpl::ReportHeartbeatMetrics,
+                        Unretained(this)))),
       single_thread_task_runner_manager_(task_tracker_->GetTrackedRef(),
                                          &delayed_task_manager_) {
   DCHECK(!histogram_label.empty());
@@ -274,6 +279,11 @@ TaskTraits TaskSchedulerImpl::SetUserBlockingPriorityIfNeeded(
   return all_tasks_user_blocking_.IsSet()
              ? TaskTraits::Override(traits, {TaskPriority::USER_BLOCKING})
              : traits;
+}
+
+void TaskSchedulerImpl::ReportHeartbeatMetrics() const {
+  for (const auto& worker_pool : worker_pools_)
+    worker_pool->RecordNumWorkersHistogram();
 }
 
 }  // namespace internal
