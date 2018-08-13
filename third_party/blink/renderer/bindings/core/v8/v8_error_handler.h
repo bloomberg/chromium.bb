@@ -32,14 +32,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_ERROR_HANDLER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener_or_event_handler.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 
 class ErrorEvent;
 
-class V8ErrorHandler final : public V8EventListener {
+class V8ErrorHandler final : public V8EventListenerOrEventHandler {
  public:
   static V8ErrorHandler* Create(v8::Local<v8::Object> listener,
                                 bool is_inline,
