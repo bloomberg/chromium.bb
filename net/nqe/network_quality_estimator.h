@@ -373,6 +373,9 @@ class NET_EXPORT NetworkQualityEstimator
   // Params to configure the network quality estimator.
   const std::unique_ptr<NetworkQualityEstimatorParams> params_;
 
+  // Number of end to end RTT samples available when the ECT was last computed.
+  size_t end_to_end_rtt_observation_count_at_last_ect_computation_;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            AdaptiveRecomputationEffectiveConnectionType);
@@ -602,7 +605,6 @@ class NET_EXPORT NetworkQualityEstimator
 
   // Number of transport RTT samples available when the ECT was last computed.
   size_t transport_rtt_observation_count_last_ect_computation_;
-  size_t end_to_end_rtt_observation_count_at_last_ect_computation_;
 
   // Number of RTT observations received since the effective connection type was
   // last computed.

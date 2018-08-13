@@ -216,6 +216,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
     std::unique_ptr<NetworkQualityEstimatorParams> params,
     NetLog* net_log)
     : params_(std::move(params)),
+      end_to_end_rtt_observation_count_at_last_ect_computation_(0),
       use_localhost_requests_(false),
       disable_offline_check_(false),
       tick_clock_(base::DefaultTickClock::GetInstance()),
@@ -236,7 +237,6 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       rtt_observations_size_at_last_ect_computation_(0),
       throughput_observations_size_at_last_ect_computation_(0),
       transport_rtt_observation_count_last_ect_computation_(0),
-      end_to_end_rtt_observation_count_at_last_ect_computation_(0),
       new_rtt_observations_since_last_ect_computation_(0),
       new_throughput_observations_since_last_ect_computation_(0),
       increase_in_transport_rtt_updater_posted_(false),
@@ -370,6 +370,23 @@ void NetworkQualityEstimator::NotifyStartTransaction(
 bool NetworkQualityEstimator::IsHangingRequest(
     base::TimeDelta observed_http_rtt) const {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // If there are sufficient number of end to end RTT samples available, use
+  // the end to end RTT estimate to determine if the request is hanging.
+  // If |observed_http_rtt| is within a fixed multiplier of |end_to_end_rtt_|,
+  // then |observed_http_rtt| is determined to be not a hanging-request RTT.
+  if (params_->use_end_to_end_rtt() && end_to_end_rtt_.has_value() &&
+      end_to_end_rtt_observation_count_at_last_ect_computation_ >=
+          params_->http_rtt_transport_rtt_min_count() &&
+      params_->hanging_request_http_rtt_upper_bound_transport_rtt_multiplier() >
+          0 &&
+      observed_http_rtt <
+          params_->hanging_request_http_rtt_upper_bound_transport_rtt_multiplier() *
+              end_to_end_rtt_.value()) {
+    UMA_HISTOGRAM_TIMES("NQE.RTT.NotAHangingRequest.EndToEndRTT",
+                        observed_http_rtt);
+    return false;
+  }
 
   if (transport_rtt_observation_count_last_ect_computation_ >=
           params_->http_rtt_transport_rtt_min_count() &&
@@ -1189,6 +1206,18 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
                 params_->lower_bound_http_rtt_transport_rtt_multiplier());
       }
     }
+  }
+
+  // Put lower bound on |http_rtt| using |end_to_end_rtt|.
+  if (params_->use_end_to_end_rtt() &&
+      *end_to_end_rtt != nqe::internal::InvalidRTT() &&
+      end_to_end_rtt_observation_count_at_last_ect_computation_ >=
+          params_->http_rtt_transport_rtt_min_count() &&
+      params_->lower_bound_http_rtt_transport_rtt_multiplier() > 0) {
+    *http_rtt =
+        std::max(*http_rtt,
+                 *end_to_end_rtt *
+                     params_->lower_bound_http_rtt_transport_rtt_multiplier());
   }
 
   if (!GetRecentDownlinkThroughputKbps(start_time, downstream_throughput_kbps))

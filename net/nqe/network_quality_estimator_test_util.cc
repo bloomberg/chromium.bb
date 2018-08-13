@@ -196,6 +196,10 @@ bool TestNetworkQualityEstimator::GetRecentRTT(
       }
       break;
     case nqe::internal::OBSERVATION_CATEGORY_END_TO_END:
+      if (start_time_null_end_to_end_rtt_) {
+        *rtt = start_time_null_end_to_end_rtt_.value();
+        return true;
+      }
       break;
     case nqe::internal::OBSERVATION_CATEGORY_COUNT:
       NOTREACHED();
