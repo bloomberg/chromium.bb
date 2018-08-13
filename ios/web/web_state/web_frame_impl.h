@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "crypto/symmetric_key.h"
 #include "url/gurl.h"
 
 namespace web {
@@ -19,6 +20,7 @@ class WebState;
 class WebFrameImpl : public WebFrame {
  public:
   WebFrameImpl(const std::string& frame_id,
+               std::unique_ptr<crypto::SymmetricKey> frame_key,
                bool is_main_frame,
                GURL security_origin,
                web::WebState* web_state);
@@ -36,6 +38,9 @@ class WebFrameImpl : public WebFrame {
   // The frame identifier which uniquely identifies this frame across the
   // application's lifetime.
   std::string frame_id_;
+  // The symmetric encryption key used to encrypt messages addressed to the
+  // frame. Stored in a base64 encoded string.
+  std::unique_ptr<crypto::SymmetricKey> frame_key_;
   // Whether or not the receiver represents the main frame.
   bool is_main_frame_ = false;
   // The security origin associated with this frame.

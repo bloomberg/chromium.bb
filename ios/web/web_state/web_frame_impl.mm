@@ -13,13 +13,17 @@
 namespace web {
 
 WebFrameImpl::WebFrameImpl(const std::string& frame_id,
+                           std::unique_ptr<crypto::SymmetricKey> frame_key,
                            bool is_main_frame,
                            GURL security_origin,
                            web::WebState* web_state)
     : frame_id_(frame_id),
+      frame_key_(std::move(frame_key)),
       is_main_frame_(is_main_frame),
       security_origin_(security_origin),
-      web_state_(web_state) {}
+      web_state_(web_state) {
+  DCHECK(frame_key_);
+}
 
 WebFrameImpl::~WebFrameImpl() = default;
 

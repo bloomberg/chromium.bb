@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/mru_cache.h"
@@ -35,6 +36,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "crypto/symmetric_key.h"
 #import "ios/net/http_response_headers_util.h"
 #include "ios/web/history_state_util.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
@@ -2437,9 +2439,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (void)frameBecameAvailableWithMessage:(WKScriptMessage*)message {
+  // Validate all expected message components because any frame could falsify
+  // this message.
   if (_isBeingDestroyed || ![message.body isKindOfClass:[NSDictionary class]] ||
-      ![message.body[@"crwFrameId"] isKindOfClass:[NSString class]]) {
-    // WebController is being destroyed or message is invalid.
+      ![message.body[@"crwFrameId"] isKindOfClass:[NSString class]] ||
+      ![message.body[@"crwFrameKey"] isKindOfClass:[NSString class]] ||
+      [message.body[@"crwFrameKey"] length] == 0) {
+    // WebController is being destroyed, message is invalid, or frame does not
+    // have a key.
     return;
   }
 
@@ -2447,13 +2454,23 @@ registerLoadRequestForURL:(const GURL&)requestURL
       web::WebFramesManagerImpl::FromWebState([self webState]);
 
   std::string frameID = base::SysNSStringToUTF8(message.body[@"crwFrameId"]);
+  std::string encodedFrameKeyString =
+      base::SysNSStringToUTF8(message.body[@"crwFrameKey"]);
   if (!framesManager->GetFrameWithId(frameID)) {
     GURL messageFrameOrigin =
         web::GURLOriginWithWKSecurityOrigin(message.frameInfo.securityOrigin);
-    auto newFrame = std::make_unique<web::WebFrameImpl>(
-        frameID, message.frameInfo.mainFrame, messageFrameOrigin,
-        self.webState);
-    framesManager->AddFrame(std::move(newFrame));
+
+    std::string decodedFrameKeyString;
+    base::Base64Decode(encodedFrameKeyString, &decodedFrameKeyString);
+    std::unique_ptr<crypto::SymmetricKey> frameKey =
+        crypto::SymmetricKey::Import(crypto::SymmetricKey::Algorithm::AES,
+                                     decodedFrameKeyString);
+    if (frameKey) {
+      auto newFrame = std::make_unique<web::WebFrameImpl>(
+          frameID, std::move(frameKey), message.frameInfo.mainFrame,
+          messageFrameOrigin, self.webState);
+      framesManager->AddFrame(std::move(newFrame));
+    }
   }
 }
 
@@ -4678,6 +4695,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // notify web view delegate about received response, so web controller does
     // not get a chance to properly update MIME type.
     [_windowIDJSManager inject];
+    web::WebFramesManagerImpl::FromWebState(self.webState)
+        ->RegisterExistingFrames();
   }
 
   if (committedNavigation) {

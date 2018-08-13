@@ -26,6 +26,9 @@ class WebFramesManagerImpl
   void RemoveFrameWithId(const std::string& frame_id);
   // Removes all web frames from the list of associated web frames.
   void RemoveAllWebFrames();
+  // Broadcasts a (not encrypted) JavaScript message to get the identifiers
+  // and keys of existing frames.
+  void RegisterExistingFrames();
 
   // Returns the web frame with |frame_id|, if one exisits, from the list of
   // associated web frames.
@@ -45,6 +48,7 @@ class WebFramesManagerImpl
 
   // Reference to the current main web frame.
   WebFrame* main_web_frame_ = nullptr;
+  WebState* web_state_ = nullptr;
 };
 
 }  // namespace web
