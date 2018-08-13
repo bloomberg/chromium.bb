@@ -155,9 +155,6 @@ using bookmarks::BookmarkNode;
   [super viewDidLoad];
   [super loadModel];
 
-  if ([self respondsToSelector:@selector(setEdgesForExtendedLayout:)]) {
-    [self setEdgesForExtendedLayout:UIRectEdgeNone];
-  }
   self.view.accessibilityIdentifier =
       kBookmarkFolderPickerViewContainerIdentifier;
   self.title = l10n_util::GetNSString(IDS_IOS_BOOKMARK_CHOOSE_GROUP_BUTTON);
@@ -173,6 +170,7 @@ using bookmarks::BookmarkNode;
     doneItem.accessibilityIdentifier =
         kBookmarkFolderEditNavigationBarDoneButtonIdentifier;
     self.navigationItem.rightBarButtonItem = doneItem;
+    [self setEdgesForExtendedLayout:UIRectEdgeNone];
   }
 
   if (self.allowsCancel) {
