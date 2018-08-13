@@ -51,6 +51,12 @@ enum ImageDataStorageFormat {
   kFloat32ArrayStorageFormat,
 };
 
+enum ImageEncodingMimeType {
+  kMimeTypePng,
+  kMimeTypeJpeg,
+  kMimeTypeWebp,
+};
+
 enum StrokeStyle {
   kNoStroke,
   kSolidStroke,
@@ -213,6 +219,10 @@ PLATFORM_EXPORT String CompositeOperatorName(CompositeOperator, BlendMode);
 PLATFORM_EXPORT bool ParseCompositeAndBlendMode(const String&,
                                                 CompositeOperator&,
                                                 BlendMode&);
+
+PLATFORM_EXPORT String ImageEncodingMimeTypeName(ImageEncodingMimeType);
+PLATFORM_EXPORT bool ParseImageEncodingMimeType(const String&,
+                                                ImageEncodingMimeType&);
 
 PLATFORM_EXPORT String LineCapName(LineCap);
 PLATFORM_EXPORT bool ParseLineCap(const String&, LineCap&);

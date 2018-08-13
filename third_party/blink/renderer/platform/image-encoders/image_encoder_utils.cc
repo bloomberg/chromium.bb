@@ -10,7 +10,9 @@
 
 namespace blink {
 
-const char ImageEncoderUtils::kDefaultMimeType[] = "image/png";
+const ImageEncodingMimeType ImageEncoderUtils::kDefaultEncodingMimeType =
+    kMimeTypePng;
+const char ImageEncoderUtils::kDefaultRequestedMimeType[] = "image/png";
 
 // This enum is used in a UMA histogram; the values should not be changed.
 enum RequestedImageMimeType {
@@ -25,60 +27,64 @@ enum RequestedImageMimeType {
   kNumberOfRequestedImageMimeTypes
 };
 
-String ImageEncoderUtils::ToEncodingMimeType(const String& mime_type,
-                                             const EncodeReason encode_reason) {
-  String lowercase_mime_type = mime_type.DeprecatedLower();
+ImageEncodingMimeType ImageEncoderUtils::ToEncodingMimeType(
+    const String& mime_type_name,
+    const EncodeReason encode_reason) {
+  String lowercase_mime_type = mime_type_name.DeprecatedLower();
 
-  if (mime_type.IsNull())
-    lowercase_mime_type = kDefaultMimeType;
+  RequestedImageMimeType requested_mime_type;
+  if (mime_type_name.IsNull())
+    lowercase_mime_type = kDefaultRequestedMimeType;
 
-  RequestedImageMimeType image_format;
   if (lowercase_mime_type == "image/png") {
-    image_format = kRequestedImageMimeTypePng;
+    requested_mime_type = kRequestedImageMimeTypePng;
   } else if (lowercase_mime_type == "image/jpeg") {
-    image_format = kRequestedImageMimeTypeJpeg;
+    requested_mime_type = kRequestedImageMimeTypeJpeg;
   } else if (lowercase_mime_type == "image/webp") {
-    image_format = kRequestedImageMimeTypeWebp;
+    requested_mime_type = kRequestedImageMimeTypeWebp;
   } else if (lowercase_mime_type == "image/gif") {
-    image_format = kRequestedImageMimeTypeGif;
+    requested_mime_type = kRequestedImageMimeTypeGif;
   } else if (lowercase_mime_type == "image/bmp" ||
              lowercase_mime_type == "image/x-windows-bmp") {
-    image_format = kRequestedImageMimeTypeBmp;
+    requested_mime_type = kRequestedImageMimeTypeBmp;
   } else if (lowercase_mime_type == "image/x-icon") {
-    image_format = kRequestedImageMimeTypeIco;
+    requested_mime_type = kRequestedImageMimeTypeIco;
   } else if (lowercase_mime_type == "image/tiff" ||
              lowercase_mime_type == "image/x-tiff") {
-    image_format = kRequestedImageMimeTypeTiff;
+    requested_mime_type = kRequestedImageMimeTypeTiff;
   } else {
-    image_format = kRequestedImageMimeTypeUnknown;
+    requested_mime_type = kRequestedImageMimeTypeUnknown;
   }
 
   if (encode_reason == kEncodeReasonToDataURL) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram,
-                                    to_data_url_image_format_histogram,
+                                    to_data_url_requested_mime_type_histogram,
                                     ("Canvas.RequestedImageMimeTypes_toDataURL",
                                      kNumberOfRequestedImageMimeTypes));
-    to_data_url_image_format_histogram.Count(image_format);
+    to_data_url_requested_mime_type_histogram.Count(requested_mime_type);
   } else if (encode_reason == kEncodeReasonToBlobCallback) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        EnumerationHistogram, to_blob_callback_image_format_histogram,
+        EnumerationHistogram, to_blob_callback_requested_mime_type_histogram,
         ("Canvas.RequestedImageMimeTypes_toBlobCallback",
          kNumberOfRequestedImageMimeTypes));
-    to_blob_callback_image_format_histogram.Count(image_format);
+    to_blob_callback_requested_mime_type_histogram.Count(requested_mime_type);
   } else if (encode_reason == kEncodeReasonConvertToBlobPromise) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        EnumerationHistogram, convert_to_blob_promise_image_format_histogram,
+        EnumerationHistogram,
+        convert_to_blob_promise_requested_mime_type_histogram,
         ("Canvas.RequestedImageMimeTypes_convertToBlobPromise",
          kNumberOfRequestedImageMimeTypes));
-    convert_to_blob_promise_image_format_histogram.Count(image_format);
+    convert_to_blob_promise_requested_mime_type_histogram.Count(
+        requested_mime_type);
   }
 
+  ImageEncodingMimeType encoding_mime_type = kDefaultEncodingMimeType;
   // FIXME: Make isSupportedImageMIMETypeForEncoding threadsafe (to allow this
   // method to be used on a worker thread).
-  if (!MIMETypeRegistry::IsSupportedImageMIMETypeForEncoding(
+  if (MIMETypeRegistry::IsSupportedImageMIMETypeForEncoding(
           lowercase_mime_type))
-    lowercase_mime_type = kDefaultMimeType;
-  return lowercase_mime_type;
+    ParseImageEncodingMimeType(lowercase_mime_type, encoding_mime_type);
+  return encoding_mime_type;
 }
 
 }  // namespace blink

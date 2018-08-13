@@ -32,6 +32,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -47,8 +48,9 @@ class PLATFORM_EXPORT ImageDataBuffer {
       scoped_refptr<StaticBitmapImage>);
   static std::unique_ptr<ImageDataBuffer> Create(const SkPixmap&);
 
-  String ToDataURL(const String& mime_type, const double& quality) const;
-  bool EncodeImage(const String& mime_type,
+  String ToDataURL(const ImageEncodingMimeType mime_type,
+                   const double& quality) const;
+  bool EncodeImage(const ImageEncodingMimeType mime_type,
                    const double& quality,
                    Vector<unsigned char>* encoded_image) const;
 
@@ -66,7 +68,7 @@ class PLATFORM_EXPORT ImageDataBuffer {
 
   bool IsValid() { return is_valid_; }  // Only used by Create()
 
-  bool EncodeImageInternal(const String& mime_type,
+  bool EncodeImageInternal(const ImageEncodingMimeType mime_type,
                            const double& quality,
                            Vector<unsigned char>* encoded_image,
                            const SkPixmap& pixmap) const;

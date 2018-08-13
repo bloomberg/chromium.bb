@@ -84,6 +84,27 @@ String CompositeOperatorName(CompositeOperator op, BlendMode blend_op) {
   return kCompositeOperatorNames[op];
 }
 
+bool ParseImageEncodingMimeType(const String& mime_type_name,
+                                ImageEncodingMimeType& mime_type) {
+  if (mime_type_name == "image/png")
+    mime_type = kMimeTypePng;
+  else if (mime_type_name == "image/jpeg")
+    mime_type = kMimeTypeJpeg;
+  else if (mime_type_name == "image/webp")
+    mime_type = kMimeTypeWebp;
+  else
+    return false;
+  return true;
+}
+
+String ImageEncodingMimeTypeName(ImageEncodingMimeType mime_type) {
+  DCHECK_GE(mime_type, 0);
+  DCHECK_LT(mime_type, 3);
+  const char* const kMimeTypeNames[3] = {"image/png", "image/jpeg",
+                                         "image/webp"};
+  return kMimeTypeNames[mime_type];
+}
+
 bool ParseLineCap(const String& s, LineCap& cap) {
   if (s == "butt") {
     cap = kButtCap;

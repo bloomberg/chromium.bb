@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_ENCODERS_IMAGE_ENCODER_UTILS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_ENCODERS_IMAGE_ENCODER_UTILS_H_
 
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -18,10 +19,13 @@ class PLATFORM_EXPORT ImageEncoderUtils {
     kEncodeReasonConvertToBlobPromise = 2,
     kNumberOfEncodeReasons
   };
-  static String ToEncodingMimeType(const String& mime_type, const EncodeReason);
 
   // Default image mime type for toDataURL and toBlob functions
-  static const char kDefaultMimeType[];
+  static const char kDefaultRequestedMimeType[];
+  static const ImageEncodingMimeType kDefaultEncodingMimeType;
+
+  static ImageEncodingMimeType ToEncodingMimeType(const String&,
+                                                  const EncodeReason);
 };
 
 }  // namespace blink

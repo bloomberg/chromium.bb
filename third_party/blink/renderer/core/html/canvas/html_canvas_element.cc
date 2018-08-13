@@ -755,8 +755,8 @@ void HTMLCanvasElement::SetSurfaceSize(const IntSize& size) {
 }
 
 const AtomicString HTMLCanvasElement::ImageSourceURL() const {
-  return AtomicString(
-      ToDataURLInternal(ImageEncoderUtils::kDefaultMimeType, 0, kFrontBuffer));
+  return AtomicString(ToDataURLInternal(
+      ImageEncoderUtils::kDefaultRequestedMimeType, 0, kFrontBuffer));
 }
 
 scoped_refptr<StaticBitmapImage> HTMLCanvasElement::Snapshot(
@@ -808,21 +808,22 @@ String HTMLCanvasElement::ToDataURLInternal(
   if (!IsPaintable())
     return String("data:,");
 
-  String encoding_mime_type = ImageEncoderUtils::ToEncodingMimeType(
-      mime_type, ImageEncoderUtils::kEncodeReasonToDataURL);
+  ImageEncodingMimeType encoding_mime_type =
+      ImageEncoderUtils::ToEncodingMimeType(
+          mime_type, ImageEncoderUtils::kEncodeReasonToDataURL);
 
   base::Optional<ScopedUsHistogramTimer> timer;
-  if (encoding_mime_type == "image/png") {
+  if (encoding_mime_type == kMimeTypePng) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, scoped_us_counter_png,
         ("Blink.Canvas.ToDataURL.PNG", 0, 10000000, 50));
     timer.emplace(scoped_us_counter_png);
-  } else if (encoding_mime_type == "image/jpeg") {
+  } else if (encoding_mime_type == kMimeTypeJpeg) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, scoped_us_counter_jpeg,
         ("Blink.Canvas.ToDataURL.JPEG", 0, 10000000, 50));
     timer.emplace(scoped_us_counter_jpeg);
-  } else if (encoding_mime_type == "image/webp") {
+  } else if (encoding_mime_type == kMimeTypeWebp) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, scoped_us_counter_webp,
         ("Blink.Canvas.ToDataURL.WEBP", 0, 10000000, 50));
@@ -890,8 +891,9 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
       quality = v8_value.As<v8::Number>()->Value();
   }
 
-  String encoding_mime_type = ImageEncoderUtils::ToEncodingMimeType(
-      mime_type, ImageEncoderUtils::kEncodeReasonToBlobCallback);
+  ImageEncodingMimeType encoding_mime_type =
+      ImageEncoderUtils::ToEncodingMimeType(
+          mime_type, ImageEncoderUtils::kEncodeReasonToBlobCallback);
 
   CanvasAsyncBlobCreator* async_creator = nullptr;
   scoped_refptr<StaticBitmapImage> image_bitmap =
