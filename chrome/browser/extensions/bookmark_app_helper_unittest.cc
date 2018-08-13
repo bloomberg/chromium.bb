@@ -79,6 +79,8 @@ class BookmarkAppHelperExtensionServiceTest
     InitializeEmptyExtensionService();
     service_->Init();
     EXPECT_EQ(0u, registry()->enabled_extensions().size());
+    web_contents_ =
+        content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
   }
 
   void TearDown() override {
@@ -94,7 +96,11 @@ class BookmarkAppHelperExtensionServiceTest
     }
   }
 
+  content::WebContents* web_contents() { return web_contents_.get(); }
+
  private:
+  std::unique_ptr<content::WebContents> web_contents_;
+
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppHelperExtensionServiceTest);
 };
 
@@ -155,6 +161,17 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
     BookmarkAppHelper::OnIconsDownloaded(success, bitmaps);
   }
 
+  void FinishCreationForNonInstallableSite() {
+    CompleteInstallableCheck("", blink::Manifest(), ForInstallableSite::kNo);
+
+    std::map<GURL, std::vector<SkBitmap>> icon_map;
+    icon_map[GURL(kAppUrl)].push_back(
+        CreateSquareBitmapWithColor(kIconSizeSmall, SK_ColorRED));
+    CompleteIconDownload(true, icon_map);
+
+    content::RunAllTasksUntilIdle();
+  }
+
   const Extension* extension() { return extension_; }
 
   const WebAppIconDownloader* web_app_icon_downloader() {
@@ -176,27 +193,20 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkApp) {
   web_app_info.title = base::UTF8ToUTF16(kAppTitle);
   web_app_info.description = base::UTF8ToUTF16(kAppDescription);
 
-  std::unique_ptr<content::WebContents> contents(
-      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
-  TestBookmarkAppHelper helper(service_, web_app_info, contents.get());
+  TestBookmarkAppHelper helper(service_, web_app_info, web_contents());
   helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                            base::Unretained(&helper)));
+  helper.FinishCreationForNonInstallableSite();
 
-  helper.CompleteInstallableCheck(kManifestUrl, blink::Manifest(),
-                                  ForInstallableSite::kNo);
-
-  std::map<GURL, std::vector<SkBitmap> > icon_map;
-  icon_map[GURL(kAppUrl)].push_back(
-      CreateSquareBitmapWithColor(kIconSizeSmall, SK_ColorRED));
-  helper.CompleteIconDownload(true, icon_map);
-
-  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(helper.extension());
   const Extension* extension =
       service_->GetInstalledExtension(helper.extension()->id());
   EXPECT_TRUE(extension);
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
   EXPECT_TRUE(extension->from_bookmark());
+  EXPECT_FALSE(extension->was_installed_by_default());
+  EXPECT_FALSE(Manifest::IsPolicyLocation(helper.extension()->location()));
+
   EXPECT_EQ(kAppTitle, extension->name());
   EXPECT_EQ(kAppDescription, extension->description());
   EXPECT_EQ(GURL(kAppUrl), AppLaunchInfo::GetLaunchWebURL(extension));
@@ -205,9 +215,46 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkApp) {
           extension, kIconSizeSmall, ExtensionIconSet::MATCH_EXACTLY).empty());
   EXPECT_FALSE(
       AppBannerSettingsHelper::GetSingleBannerEvent(
-          contents.get(), web_app_info.app_url, web_app_info.app_url.spec(),
+          web_contents(), web_app_info.app_url, web_app_info.app_url.spec(),
           AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN)
           .is_null());
+}
+
+TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppDefaultApp) {
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = GURL(kAppUrl);
+  web_app_info.title = base::UTF8ToUTF16(kAppTitle);
+  web_app_info.description = base::UTF8ToUTF16(kAppDescription);
+
+  TestBookmarkAppHelper helper(service_, web_app_info, web_contents());
+  helper.set_is_default_app();
+  helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
+                           base::Unretained(&helper)));
+  helper.FinishCreationForNonInstallableSite();
+
+  ASSERT_TRUE(helper.extension());
+  EXPECT_TRUE(helper.extension()->from_bookmark());
+  EXPECT_TRUE(helper.extension()->was_installed_by_default());
+  EXPECT_FALSE(Manifest::IsPolicyLocation(helper.extension()->location()));
+}
+
+TEST_F(BookmarkAppHelperExtensionServiceTest,
+       CreateBookmarkAppPolicyInstalled) {
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = GURL(kAppUrl);
+  web_app_info.title = base::UTF8ToUTF16(kAppTitle);
+  web_app_info.description = base::UTF8ToUTF16(kAppDescription);
+
+  TestBookmarkAppHelper helper(service_, web_app_info, web_contents());
+  helper.set_is_policy_installed_app();
+  helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
+                           base::Unretained(&helper)));
+  helper.FinishCreationForNonInstallableSite();
+
+  ASSERT_TRUE(helper.extension());
+  EXPECT_TRUE(helper.extension()->from_bookmark());
+  EXPECT_FALSE(helper.extension()->was_installed_by_default());
+  EXPECT_TRUE(Manifest::IsPolicyLocation(helper.extension()->location()));
 }
 
 class BookmarkAppHelperExtensionServiceInstallableSiteTest
@@ -226,9 +273,7 @@ TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
        CreateBookmarkAppWithManifest) {
   WebApplicationInfo web_app_info;
 
-  std::unique_ptr<content::WebContents> contents(
-      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
-  TestBookmarkAppHelper helper(service_, web_app_info, contents.get());
+  TestBookmarkAppHelper helper(service_, web_app_info, web_contents());
   helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                            base::Unretained(&helper)));
 
@@ -254,7 +299,7 @@ TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
   EXPECT_EQ(SK_ColorBLUE, AppThemeColorInfo::GetThemeColor(extension).value());
   EXPECT_FALSE(
       AppBannerSettingsHelper::GetSingleBannerEvent(
-          contents.get(), manifest.start_url, manifest.start_url.spec(),
+          web_contents(), manifest.start_url, manifest.start_url.spec(),
           AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN)
           .is_null());
 
@@ -268,9 +313,7 @@ TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
 TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
        CreateBookmarkAppWithManifestIcons) {
   WebApplicationInfo web_app_info;
-  std::unique_ptr<content::WebContents> contents(
-      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
-  TestBookmarkAppHelper helper(service_, web_app_info, contents.get());
+  TestBookmarkAppHelper helper(service_, web_app_info, web_contents());
   helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                            base::Unretained(&helper)));
 
@@ -318,9 +361,7 @@ TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
        CreateBookmarkAppWithManifestNoScope) {
   WebApplicationInfo web_app_info;
 
-  std::unique_ptr<content::WebContents> contents(
-      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
-  TestBookmarkAppHelper helper(service_, web_app_info, contents.get());
+  TestBookmarkAppHelper helper(service_, web_app_info, web_contents());
   helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                            base::Unretained(&helper)));
 
@@ -356,14 +397,12 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
   WebApplicationInfo web_app_info;
   std::map<GURL, std::vector<SkBitmap>> icon_map;
 
-  std::unique_ptr<content::WebContents> contents(
-      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
   blink::Manifest manifest;
   manifest.start_url = GURL(kAppUrl);
   manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
   manifest.scope = GURL(kAppScope);
   {
-    TestBookmarkAppHelper helper(service_, web_app_info, contents.get());
+    TestBookmarkAppHelper helper(service_, web_app_info, web_contents());
     helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                              base::Unretained(&helper)));
 
@@ -380,7 +419,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
               GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
   }
   {
-    TestBookmarkAppHelper helper(service_, web_app_info, contents.get());
+    TestBookmarkAppHelper helper(service_, web_app_info, web_contents());
     helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                              base::Unretained(&helper)));
 
@@ -405,9 +444,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
   web_app_info.description = base::UTF8ToUTF16(kAppDescription);
   web_app_info.app_url = GURL(kAppUrl);
 
-  std::unique_ptr<content::WebContents> contents(
-      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
-  TestBookmarkAppHelper helper(service_, web_app_info, contents.get());
+  TestBookmarkAppHelper helper(service_, web_app_info, web_contents());
   helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                            base::Unretained(&helper)));
 

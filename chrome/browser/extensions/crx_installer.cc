@@ -293,8 +293,9 @@ void CrxInstaller::UpdateExtensionFromUnpackedCrx(
 
 void CrxInstaller::ConvertWebAppOnFileThread(
     const WebApplicationInfo& web_app) {
-  scoped_refptr<Extension> extension(ConvertWebAppToExtension(
-      web_app, base::Time::Now(), install_directory_));
+  scoped_refptr<Extension> extension(
+      ConvertWebAppToExtension(web_app, base::Time::Now(), install_directory_,
+                               creation_flags_, install_source_));
   if (!extension.get()) {
     // Validation should have stopped any potential errors before getting here.
     NOTREACHED() << "Could not convert web app to extension.";

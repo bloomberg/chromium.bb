@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "extensions/common/manifest.h"
 
 namespace base {
 class DictionaryValue;
@@ -71,7 +72,9 @@ std::string ConvertTimeToExtensionVersion(const base::Time& time);
 scoped_refptr<Extension> ConvertWebAppToExtension(
     const WebApplicationInfo& web_app_info,
     const base::Time& create_time,
-    const base::FilePath& extensions_dir);
+    const base::FilePath& extensions_dir,
+    int extra_creation_flags,
+    Manifest::Location install_source);
 
 }  // namespace extensions
 
