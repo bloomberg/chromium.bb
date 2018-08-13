@@ -4536,16 +4536,12 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 
 static void tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
                           int blk_row, int blk_col, int plane, int block,
-                          int plane_bsize, const ENTROPY_CONTEXT *a,
-                          const ENTROPY_CONTEXT *l, RD_STATS *rd_stats,
+                          int plane_bsize, TXB_CTX *txb_ctx, RD_STATS *rd_stats,
                           FAST_TX_SEARCH_MODE ftxs_mode, int64_t ref_rdcost,
                           TXB_RD_INFO *rd_info_array) {
   const struct macroblock_plane *const p = &x->plane[plane];
-  TXB_CTX txb_ctx;
-  get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
   const uint16_t cur_joint_ctx =
-      (txb_ctx.dc_sign_ctx << 8) + txb_ctx.txb_skip_ctx;
-
+      (txb_ctx->dc_sign_ctx << 8) + txb_ctx->txb_skip_ctx;
   const int txk_type_idx =
       av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
   // Look up RD and terminate early in case when we've already processed exactly
@@ -4570,7 +4566,7 @@ static void tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 
   RD_STATS this_rd_stats;
   search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  &txb_ctx, ftxs_mode, 0, ref_rdcost, &this_rd_stats);
+                  txb_ctx, ftxs_mode, 0, ref_rdcost, &this_rd_stats);
 
   av1_merge_rd_stats(rd_stats, &this_rd_stats);
 
@@ -4734,8 +4730,8 @@ static void try_tx_block_no_split(
   rd_stats->zero_rate = zero_blk_rate;
   const int index = av1_get_txb_size_index(plane_bsize, blk_row, blk_col);
   mbmi->inter_tx_size[index] = tx_size;
-  tx_block_rd_b(cpi, x, tx_size, blk_row, blk_col, 0, block, plane_bsize, pta,
-                ptl, rd_stats, ftxs_mode, ref_best_rd,
+  tx_block_rd_b(cpi, x, tx_size, blk_row, blk_col, 0, block, plane_bsize,
+                &txb_ctx, rd_stats, ftxs_mode, ref_best_rd,
                 rd_info_node != NULL ? rd_info_node->rd_info_array : NULL);
   assert(rd_stats->rate < INT_MAX);
 
@@ -5198,8 +5194,8 @@ static void tx_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
                                   .txb_skip_cost[txb_ctx.txb_skip_ctx][1];
     rd_stats->zero_rate = zero_blk_rate;
     rd_stats->ref_rdcost = ref_best_rd;
-    tx_block_rd_b(cpi, x, tx_size, blk_row, blk_col, 0, block, plane_bsize, ta,
-                  tl, rd_stats, ftxs_mode, ref_best_rd, NULL);
+    tx_block_rd_b(cpi, x, tx_size, blk_row, blk_col, 0, block, plane_bsize,
+                  &txb_ctx, rd_stats, ftxs_mode, ref_best_rd, NULL);
     const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
     if (RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist) >=
             RDCOST(x->rdmult, zero_blk_rate, rd_stats->sse) ||
@@ -5742,8 +5738,10 @@ static void tx_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
   ENTROPY_CONTEXT *ta = above_ctx + blk_col;
   ENTROPY_CONTEXT *tl = left_ctx + blk_row;
+  TXB_CTX txb_ctx;
+  get_txb_ctx(plane_bsize, tx_size, plane, ta, tl, &txb_ctx);
   tx_block_rd_b(cpi, x, tx_size, blk_row, blk_col, plane, block, plane_bsize,
-                ta, tl, rd_stats, ftxs_mode, INT64_MAX, NULL);
+                &txb_ctx, rd_stats, ftxs_mode, INT64_MAX, NULL);
   av1_set_txb_context(x, plane, block, tx_size, ta, tl);
 }
 
