@@ -9,13 +9,16 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event_init.h"
+#include "third_party/blink/renderer/core/fileapi/file_list.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser.h"
+#include "third_party/blink/renderer/core/html/forms/file_input_type.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
@@ -201,6 +204,31 @@ TEST_F(HTMLInputElementTest, ChangingInputTypeCausesShadowRootToBeCreated) {
   EXPECT_EQ(nullptr, input->UserAgentShadowRoot());
   input->setAttribute(HTMLNames::typeAttr, "text");
   EXPECT_NE(nullptr, input->UserAgentShadowRoot());
+}
+
+TEST_F(HTMLInputElementTest, RepaintAfterClearingFile) {
+  GetDocument().body()->SetInnerHTMLFromString("<input type='file' />");
+  HTMLInputElement* input =
+      ToHTMLInputElement(GetDocument().body()->firstChild());
+
+  Vector<FileChooserFileInfo> files;
+  files.push_back(
+      FileChooserFileInfo("/native/path/native-file", "display-name"));
+  FileList* list = FileInputType::CreateFileList(files, false);
+  ASSERT_TRUE(list);
+  EXPECT_EQ(1u, list->length());
+
+  input->setFiles(list);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  ASSERT_TRUE(input->GetLayoutObject());
+  EXPECT_FALSE(input->GetLayoutObject()->ShouldCheckForPaintInvalidation());
+
+  input->setValue("");
+  GetDocument().UpdateStyleAndLayoutTree();
+
+  ASSERT_TRUE(input->GetLayoutObject());
+  EXPECT_TRUE(input->GetLayoutObject()->ShouldCheckForPaintInvalidation());
 }
 
 }  // namespace blink

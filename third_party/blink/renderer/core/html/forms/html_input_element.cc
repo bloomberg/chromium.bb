@@ -1919,6 +1919,7 @@ scoped_refptr<ComputedStyle> HTMLInputElement::CustomStyleForLayoutObject() {
 }
 
 void HTMLInputElement::DidRecalcStyle(StyleRecalcChange change) {
+  TextControlElement::DidRecalcStyle(change);
   if (change != kReattach)
     return;
   ComputedStyle* style = GetNonAttachedStyle();
