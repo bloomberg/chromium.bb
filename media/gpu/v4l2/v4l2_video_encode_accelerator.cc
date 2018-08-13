@@ -250,7 +250,9 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  RequestEncodingParametersChange(config.initial_bitrate, kInitialFramerate);
+  RequestEncodingParametersChange(
+      config.initial_bitrate,
+      config.initial_framerate.value_or(kDefaultFramerate));
 
   encoder_state_ = kInitialized;
 

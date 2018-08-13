@@ -296,8 +296,10 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
 
   // TODO(johnylin): pass |config.h264_output_level| to H264Encoder.
   //                 https://crbug.com/863327
-  if (!encoder_->Initialize(config.input_visible_size, config.output_profile,
-                            config.initial_bitrate, kDefaultFramerate)) {
+  if (!encoder_->Initialize(
+          config.input_visible_size, config.output_profile,
+          config.initial_bitrate,
+          config.initial_framerate.value_or(kDefaultFramerate))) {
     NOTIFY_ERROR(kInvalidArgumentError, "Failed initializing encoder");
     return;
   }

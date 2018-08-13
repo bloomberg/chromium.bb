@@ -49,6 +49,8 @@ struct VideoEncodeAcceleratorConfig {
   gfx.mojom.Size input_visible_size;
   VideoCodecProfile output_profile;
   uint32 initial_bitrate;
+  uint32 initial_framerate;
+  bool has_initial_framerate;  // Whether or not config has initial framerate
   uint8 h264_output_level;
   bool has_h264_output_level;  // Whether or not config has H264 output level
 };

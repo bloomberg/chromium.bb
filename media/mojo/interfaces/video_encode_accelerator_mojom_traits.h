@@ -98,6 +98,16 @@ struct StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
     return input.initial_bitrate;
   }
 
+  static uint32_t initial_framerate(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.initial_framerate.value_or(0);
+  }
+
+  static bool has_initial_framerate(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.initial_framerate.has_value();
+  }
+
   static uint8_t h264_output_level(
       const media::VideoEncodeAccelerator::Config& input) {
     return input.h264_output_level.value_or(0);

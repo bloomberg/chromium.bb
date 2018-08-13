@@ -102,6 +102,7 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
            const gfx::Size& input_visible_size,
            VideoCodecProfile output_profile,
            uint32_t initial_bitrate,
+           base::Optional<uint32_t> initial_framerate = base::nullopt,
            base::Optional<uint8_t> h264_output_level = base::nullopt);
 
     ~Config();
@@ -121,6 +122,10 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
 
     // Initial bitrate of encoded output stream in bits per second.
     uint32_t initial_bitrate;
+
+    // Initial encoding framerate in frames per second. This is optional and
+    // VideoEncodeAccelerator should use default framerate if not given.
+    base::Optional<uint32_t> initial_framerate;
 
     // Codec level of encoded output stream for H264 only. This value should
     // be aligned to the H264 standard definition of SPS.level_idc. The only
