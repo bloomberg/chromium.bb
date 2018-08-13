@@ -1162,7 +1162,12 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 class SitePerProcessEmulatedTouchBrowserTest
     : public SitePerProcessHitTestBrowserTest {
  public:
-  enum TestType { ScrollBubbling, PinchGoesToMainFrame, TouchActionBubbling };
+  enum TestType {
+    ScrollBubbling,
+    PinchGoesToMainFrame,
+    TouchActionBubbling,
+    ShowPressHasTouchID
+  };
 
   ~SitePerProcessEmulatedTouchBrowserTest() override {}
 
@@ -1212,6 +1217,10 @@ class SitePerProcessEmulatedTouchBrowserTest
                       1);
           EXPECT_EQ(blink::kWebGestureDeviceTouchscreen,
                     gesture_event.SourceDevice());
+          // We expect all gesture events to have non-zero ids otherwise they
+          // can force hit-testing in RenderWidgetHostInputEventRouter even
+          // when it's unnecessary.
+          EXPECT_NE(0U, gesture_event.unique_touch_event_id);
           return true;
         });
 
@@ -1223,6 +1232,9 @@ class SitePerProcessEmulatedTouchBrowserTest
         break;
       case PinchGoesToMainFrame:
         expected_gesture_type = blink::WebInputEvent::kGesturePinchBegin;
+        break;
+      case ShowPressHasTouchID:
+        expected_gesture_type = blink::WebInputEvent::kGestureShowPress;
         break;
       default:
         ASSERT_TRUE(false);
@@ -1288,6 +1300,12 @@ class SitePerProcessEmulatedTouchBrowserTest
     // Send mouse events and wait for GesturePinchBegin.
     router->RouteMouseEvent(root_rwhv, &mouse_move_event, ui::LatencyInfo());
     router->RouteMouseEvent(root_rwhv, &mouse_down_event, ui::LatencyInfo());
+    if (test_type == ShowPressHasTouchID) {
+      // Wait for child to receive GestureShowPress. If this test fails, it
+      // will either DCHECK or time out.
+      child_gesture_event_observer.Wait();
+      return;
+    }
     router->RouteMouseEvent(root_rwhv, &mouse_drag_event, ui::LatencyInfo());
     router->RouteMouseEvent(root_rwhv, &mouse_up_event, ui::LatencyInfo());
 
@@ -1304,6 +1322,11 @@ class SitePerProcessEmulatedTouchBrowserTest
     touch_emulator->Disable();
   }
 };
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
+                       EmulatedTouchShowPressHasTouchID) {
+  RunTest(ShowPressHasTouchID);
+}
 
 #if defined(OS_CHROMEOS)
 // Flaky: https://crbug.com/833380
