@@ -3293,6 +3293,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'eve',
       'eve-arcnext',
       'kevin-arcnext',
+      'nocturne',
       'peach_pit',
       'peppy',
       'reef',
