@@ -715,14 +715,22 @@ class BBJSONGenerator(object):
   def get_valid_bot_names(self):
     # Extract bot names from infra/config/global/luci-milo.cfg.
     bot_names = set()
-    for l in self.read_file(os.path.join(
-        '..', '..', 'infra', 'config', 'global', 'luci-milo.cfg')).splitlines():
-      if (not 'name: "buildbucket/luci.chromium.' in l and
-          not 'name: "buildbot/chromium.' in l):
-        continue
-      # l looks like `name: "buildbucket/luci.chromium.try/win_chromium_dbg_ng"`
-      # Extract win_chromium_dbg_ng part.
-      bot_names.add(l[l.rindex('/') + 1:l.rindex('"')])
+    infra_config_dir = os.path.abspath(
+        os.path.join(os.path.dirname(__file__),
+                     '..', '..', 'infra', 'config', 'global'))
+    milo_configs = [
+        os.path.join(infra_config_dir, 'luci-milo.cfg'),
+        os.path.join(infra_config_dir, 'luci-milo-dev.cfg'),
+    ]
+    for c in milo_configs:
+      for l in self.read_file(c).splitlines():
+        if (not 'name: "buildbucket/luci.chromium.' in l and
+            not 'name: "buildbot/chromium.' in l):
+          continue
+        # l looks like
+        # `name: "buildbucket/luci.chromium.try/win_chromium_dbg_ng"`
+        # Extract win_chromium_dbg_ng part.
+        bot_names.add(l[l.rindex('/') + 1:l.rindex('"')])
     return bot_names
 
   def get_bots_that_do_not_actually_exist(self):
