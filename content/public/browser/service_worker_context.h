@@ -39,7 +39,7 @@ enum class StartServiceWorkerForNavigationHintResult {
   // Something failed.
   FAILED = 5,
   // Add new result to record here.
-  NUM_TYPES
+  kMaxValue = FAILED,
 };
 
 // Represents the per-StoragePartition service worker data.
