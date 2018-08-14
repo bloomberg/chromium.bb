@@ -53,6 +53,9 @@ class BufferingMixerSource : public MixerInput::Source,
     // Called when the end-of-stream buffer has been played out.
     virtual void OnEos() = 0;
 
+    // Called when the audio is ready to play.
+    virtual void OnAudioReadyForPlayback() = 0;
+
    protected:
     virtual ~Delegate() = default;
   };
@@ -68,7 +71,13 @@ class BufferingMixerSource : public MixerInput::Source,
                        const std::string& device_id,
                        AudioContentType content_type,
                        int playout_channel,
-                       int64_t playback_start_timestamp);
+                       int64_t playback_start_pts,
+                       bool start_playback_asap);
+
+  // Specifies the absolute timestamp (relative to the RenderingDelay clock)
+  // that the playback should start at. This should only be called if
+  // |start_playback_asap| is false during constructing.
+  void StartPlaybackAt(int64_t playback_start_timestamp);
 
   // Queues some PCM data to be mixed. |data| must be in planar float format.
   // If the buffer can accept more data, the delegate's OnWritePcmCompletion()
@@ -107,7 +116,8 @@ class BufferingMixerSource : public MixerInput::Source,
     struct Members {
       Members(BufferingMixerSource* source,
               int input_samples_per_second,
-              int num_channels);
+              int num_channels,
+              int64_t playback_start_timestamp);
       ~Members();
 
       State state_;
@@ -122,6 +132,11 @@ class BufferingMixerSource : public MixerInput::Source,
       AudioFader fader_;
       bool zero_fader_frames_;
       bool started_;
+      // The absolute timestamp relative to clock monotonic (raw) at which the
+      // playback should start. INT64_MIN indicates playback should start ASAP.
+      // INT64_MAX indicates playback should start at a specified timestamp,
+      // but we don't know what that timestamp is.
+      int64_t playback_start_timestamp_;
 
      private:
       DISALLOW_COPY_AND_ASSIGN(Members);
@@ -150,7 +165,8 @@ class BufferingMixerSource : public MixerInput::Source,
 
     LockedMembers(BufferingMixerSource* source,
                   int input_samples_per_second,
-                  int num_channels);
+                  int num_channels,
+                  int64_t playback_start_timestamp);
     ~LockedMembers();
 
     AcquiredLock Lock();
@@ -192,6 +208,13 @@ class BufferingMixerSource : public MixerInput::Source,
   void PostPcmCompletion(RenderingDelay delay);
   void PostEos();
   void PostError(MixerError error);
+  void PostAudioReadyForPlayback();
+  int64_t GetCurrentBufferedDataInUs();
+  void DropAudio(int64_t frames);
+  bool CanDropFrames(int64_t frames_to_drop);
+  int64_t DataToFrames(int64_t size);
+  void CheckAndStartPlaybackIfNecessary(int num_frames,
+                                        int64_t playback_absolute_timestamp);
 
   Delegate* const delegate_;
   const int num_channels_;
@@ -206,9 +229,13 @@ class BufferingMixerSource : public MixerInput::Source,
   const int max_queued_frames_;
   // Minimum number of frames buffered before starting to fill data.
   const int start_threshold_frames_;
-  // The absolute timestamp relative to clock monotonic (raw) at which the
-  // playback should start. INT64_MIN indicates playback should start ASAP.
-  const int64_t playback_start_timestamp_;
+  bool audio_ready_for_playback_fired_ = false;
+
+  // The PTS the playback should start at. We will drop audio pushed to us
+  // with PTS values below this value. If the audio doesn't have a starting
+  // PTS, then this value can be INT64_MIN, to play whatever audio is sent
+  // to us.
+  int64_t playback_start_pts_;
 
   LockedMembers locked_members_;
 

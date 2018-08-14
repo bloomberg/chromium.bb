@@ -56,15 +56,10 @@ class AudioVideoPipelineDeviceTest;
 namespace {
 
 const base::TimeDelta kMonitorLoopDelay = base::TimeDelta::FromMilliseconds(20);
-#if defined(ENABLE_VIDEO_WITH_MIXED_AUDIO)
-// TODO(almasrymina): enable these tests to work with non-zero starting PTS.
-const int64_t kStartPts = 0;
-#else
-// Call Start() with an initial PTS of 1 second, to test the behaviour if
+// Call Start() with an initial PTS of 0.5 seconds, to test the behaviour if
 // we push buffers with a PTS before the start PTS. In this case the backend
 // should report the PTS as no later than the last pushed buffers.
-const int64_t kStartPts = 1000 * 1000;
-#endif
+const int64_t kStartPts = 500 * 1000;
 
 // Amount that PTS is allowed to progress past the time that Pause() was called.
 const int kPausePtsSlackMs = 75;
@@ -737,6 +732,12 @@ void AudioVideoPipelineDeviceTest::Start() {
   RunStoppedChecks();
 
   backend_->Start(kStartPts);
+  // The buffering logic in the media pipeline always starts playback in a
+  // paused state. For AV sync reasons, the AV sync media backend now depends on
+  // this behavior and doesn't start playback without it, so it needs to be
+  // added to the test.
+  backend_->Pause();
+  backend_->Resume();
   int64_t current_pts = backend()->GetCurrentPts();
   EXPECT_TRUE(current_pts == kStartPts ||
               current_pts == std::numeric_limits<int64_t>::min());
@@ -834,6 +835,17 @@ void AudioVideoPipelineDeviceTest::MonitorLoop() {
   int64_t playback_start_time =
       backend_for_mixer->GetPlaybackStartTimeForTesting();
 
+  // The playback start time will be INT64_MIN until the audio and video are
+  // ready for playback, so just defer all the AV sync checks till then.
+  if (playback_start_time == INT64_MIN) {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&AudioVideoPipelineDeviceTest::MonitorLoop,
+                       base::Unretained(this)),
+        kMonitorLoopDelay);
+    return;
+  }
+
   int64_t playback_start_pts =
       backend_for_mixer->GetPlaybackStartPtsForTesting();
 
@@ -856,13 +868,13 @@ void AudioVideoPipelineDeviceTest::MonitorLoop() {
     // Check AV sync.
     int64_t apts = 0;
     int64_t apts_timestamp = 0;
-    EXPECT_TRUE(backend_for_mixer->audio_decoder()->GetTimestampedPts(
-        &apts_timestamp, &apts));
+    if (backend_for_mixer->audio_decoder()->GetTimestampedPts(&apts_timestamp,
+                                                              &apts)) {
+      int64_t av_sync_difference =
+          (apts - apts_timestamp) - (vpts - vpts_timestamp);
 
-    int64_t av_sync_difference =
-        (apts - apts_timestamp) - (vpts - vpts_timestamp);
-
-    EXPECT_LT(abs(av_sync_difference), 16000);
+      EXPECT_LT(abs(av_sync_difference), 16000);
+    }
   }
 #endif
 
@@ -1141,6 +1153,7 @@ TEST_F(AudioVideoPipelineDeviceTest, AudioImmediateEos) {
   feeder->SetAudioConfig(DefaultAudioConfig());
   SetAudioFeeder(std::move(feeder));
 
+  ASSERT_TRUE(audio_decoder->SetConfig(DefaultAudioConfig()));
   StartImmediateEosTest();
   base::RunLoop().RunUntilIdle();
 }
@@ -1164,6 +1177,8 @@ TEST_F(AudioVideoPipelineDeviceTest, VideoImmediateEos) {
   audio_feeder->SetAudioConfig(DefaultAudioConfig());
   SetAudioFeeder(std::move(audio_feeder));
 
+  ASSERT_TRUE(audio_decoder->SetConfig(DefaultAudioConfig()));
+  ASSERT_TRUE(video_decoder->SetConfig(DefaultVideoConfig()));
   StartImmediateEosTest();
   base::RunLoop().RunUntilIdle();
 }
@@ -1245,15 +1260,6 @@ TEST_F(AudioVideoPipelineDeviceTest, WebmPlayback_WithEffectsStreams) {
 
 TEST_F(AudioVideoPipelineDeviceTest, Mp4Playback) {
   set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
-  ConfigureForFile("bear.mp4");
-  Start();
-  base::RunLoop().Run();
-}
-
-TEST_F(AudioVideoPipelineDeviceTest, Mp4PlaybackStartsPaused) {
-  set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
-  AddPause(base::TimeDelta(), base::TimeDelta::FromSeconds(1));
-
   ConfigureForFile("bear.mp4");
   Start();
   base::RunLoop().Run();

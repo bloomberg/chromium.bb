@@ -54,7 +54,7 @@ class AvSync {
   virtual void NotifyResume() = 0;
 
   // Notify that the video playback rate has been changed to |rate|. AvSync will
-  // typically match the audio playback rate to that.
+  // typically match the audio playback rate to |rate|.
   virtual void NotifyPlaybackRateChange(float rate) = 0;
 };
 

@@ -41,7 +41,8 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
   ~AudioDecoderForMixer() override;
 
   virtual void Initialize();
-  virtual bool Start(int64_t timestamp);
+  virtual bool Start(int64_t pts, bool start_playback_asap);
+  void StartPlaybackAt(int64_t timestamp);
   virtual void Stop();
   virtual bool Pause();
   virtual bool Resume();
@@ -67,12 +68,14 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
     double rate;
     double input_frames;
     int64_t output_frames;
+    int64_t base_pts;
   };
 
   // BufferingMixerSource::Delegate implementation:
   void OnWritePcmCompletion(RenderingDelay delay) override;
   void OnMixerError(MixerError error) override;
   void OnEos() override;
+  void OnAudioReadyForPlayback() override;
 
   void CleanUpPcm();
   void CreateDecoder();
@@ -121,7 +124,8 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
 
   scoped_refptr<::media::AudioBufferMemoryPool> pool_;
 
-  int64_t playback_start_timestamp_ = 0;
+  int64_t playback_start_pts_ = 0;
+  bool start_playback_asap_ = false;
 
   base::WeakPtrFactory<AudioDecoderForMixer> weak_factory_;
 

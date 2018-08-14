@@ -27,6 +27,7 @@ class VideoDecoderNull : public VideoDecoderForMixer {
   bool SetConfig(const VideoConfig& config) override;
 
   bool Initialize() override;
+  void SetObserver(VideoDecoderForMixer::Observer* observer) override;
   bool Start(int64_t start_pts, bool need_avsync) override;
   void Stop() override;
   bool Pause() override;
@@ -43,6 +44,7 @@ class VideoDecoderNull : public VideoDecoderForMixer {
   void OnEndOfStream();
 
   Delegate* delegate_;
+  Observer* observer_;
   base::WeakPtrFactory<VideoDecoderNull> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderNull);

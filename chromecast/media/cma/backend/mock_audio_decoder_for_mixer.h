@@ -27,7 +27,7 @@ class MockAudioDecoderForMixer : public AudioDecoderForMixer {
 
   // AudioDecoderForMixer implementation:
   void Initialize() override;
-  bool Start(int64_t timestamp) override;
+  bool Start(int64_t pts, bool start_playback_asap) override;
   void Stop() override;
   bool Pause() override;
   bool Resume() override;

@@ -19,6 +19,7 @@
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/public/media/cast_decoder_buffer.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_timestamp_helper.h"
 #include "media/base/channel_layout.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/sample_format.h"
@@ -36,6 +37,11 @@ namespace chromecast {
 namespace media {
 
 namespace {
+
+int64_t SamplesToMicroseconds(int64_t samples, int sample_rate) {
+  return ::media::AudioTimestampHelper::FramesToTime(samples, sample_rate)
+      .InMicroseconds();
+}
 
 const int kNumChannels = 2;
 const int kDefaultFramesPerBuffer = 1024;
@@ -76,7 +82,10 @@ bool MediaPipelineBackend::AudioDecoder::RequiresDecryption() {
 }
 
 AudioDecoderForMixer::RateShifterInfo::RateShifterInfo(float playback_rate)
-    : rate(playback_rate), input_frames(0), output_frames(0) {}
+    : rate(playback_rate),
+      input_frames(0),
+      output_frames(0),
+      base_pts(INT64_MIN) {}
 
 AudioDecoderForMixer::AudioDecoderForMixer(
     MediaPipelineBackendForMixer* backend)
@@ -133,13 +142,15 @@ void AudioDecoderForMixer::Initialize() {
   last_mixer_delay_.delay_microseconds = 0;
 }
 
-bool AudioDecoderForMixer::Start(int64_t playback_start_timestamp) {
+bool AudioDecoderForMixer::Start(int64_t playback_start_pts,
+                                 bool start_playback_asap) {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(IsValidConfig(config_));
   mixer_input_.reset(new BufferingMixerSource(
       this, config_.samples_per_second, backend_->Primary(),
       backend_->DeviceId(), backend_->ContentType(),
-      ToPlayoutChannel(backend_->AudioChannel()), playback_start_timestamp));
+      ToPlayoutChannel(backend_->AudioChannel()), playback_start_pts,
+      start_playback_asap));
 
   mixer_input_->SetVolumeMultiplier(volume_multiplier_);
   // Create decoder_ if necessary. This can happen if Stop() was called, and
@@ -150,8 +161,15 @@ bool AudioDecoderForMixer::Start(int64_t playback_start_timestamp) {
   if (!rate_shifter_) {
     CreateRateShifter(config_.samples_per_second);
   }
-  playback_start_timestamp_ = playback_start_timestamp;
+  playback_start_pts_ = playback_start_pts;
+  start_playback_asap_ = start_playback_asap;
   return true;
+}
+
+void AudioDecoderForMixer::StartPlaybackAt(int64_t playback_start_timestamp) {
+  LOG(INFO) << __func__
+            << " playback_start_timestamp_=" << playback_start_timestamp;
+  mixer_input_->StartPlaybackAt(playback_start_timestamp);
 }
 
 void AudioDecoderForMixer::Stop() {
@@ -299,7 +317,8 @@ bool AudioDecoderForMixer::SetConfig(const AudioConfig& config) {
     mixer_input_.reset(new BufferingMixerSource(
         this, config.samples_per_second, backend_->Primary(),
         backend_->DeviceId(), backend_->ContentType(),
-        ToPlayoutChannel(backend_->AudioChannel()), playback_start_timestamp_));
+        ToPlayoutChannel(backend_->AudioChannel()), playback_start_pts_,
+        start_playback_asap_));
     mixer_input_->SetVolumeMultiplier(volume_multiplier_);
     pending_output_frames_ = kNoPendingOutput;
   }
@@ -460,6 +479,9 @@ void AudioDecoderForMixer::OnBufferDecoded(
         base::TimeDelta(), pool_);
     rate_shifter_->EnqueueBuffer(buffer);
     rate_shifter_info_.back().input_frames += input_frames;
+    if (rate_shifter_info_.back().base_pts == INT64_MIN) {
+      rate_shifter_info_.back().base_pts = decoded->timestamp();
+    }
   }
 
   PushRateShifted();
@@ -537,6 +559,10 @@ void AudioDecoderForMixer::PushRateShifted() {
     return;
   }
 
+  int64_t buffer_timestamp =
+      rate_info->base_pts + SamplesToMicroseconds(rate_info->output_frames,
+                                                  config_.samples_per_second);
+
   rate_info->output_frames += out_frames;
   DCHECK_GE(possible_output_frames, rate_info->output_frames);
 
@@ -547,6 +573,10 @@ void AudioDecoderForMixer::PushRateShifted() {
     memcpy(output_buffer->writable_data() + c * channel_data_size,
            rate_shifter_output_->channel(c), channel_data_size);
   }
+  DCHECK(rate_shifter_info_.front().base_pts != INT64_MIN);
+  output_buffer->set_timestamp(
+      base::TimeDelta::FromMicroseconds(buffer_timestamp));
+
   pending_output_frames_ = out_frames;
   mixer_input_->WritePcm(output_buffer);
 
@@ -618,6 +648,11 @@ void AudioDecoderForMixer::OnMixerError(MixerError error) {
 void AudioDecoderForMixer::OnEos() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   delegate_->OnEndOfStream();
+}
+
+void AudioDecoderForMixer::OnAudioReadyForPlayback() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  backend_->OnAudioReadyForPlayback();
 }
 
 }  // namespace media

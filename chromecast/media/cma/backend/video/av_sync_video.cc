@@ -82,8 +82,8 @@ AvSyncVideo::AvSyncVideo(
 }
 
 void AvSyncVideo::UpkeepAvSync() {
-  if (backend_->MonotonicClockNow() <
-      (playback_start_timestamp_us_ + kAvSyncUpkeepInterval.InMicroseconds())) {
+  if (backend_->MonotonicClockNow() - kAvSyncUpkeepInterval.InMicroseconds() <
+      playback_start_timestamp_us_) {
     return;
   }
 
@@ -118,13 +118,6 @@ void AvSyncVideo::UpkeepAvSync() {
     last_vpts_value_recorded_ = new_current_vpts;
   }
 
-  if (!first_video_pts_received_) {
-    LOG(INFO) << "Video starting at difference="
-              << (new_vpts_timestamp - new_current_vpts) -
-                     (playback_start_timestamp_us_ - playback_start_pts_us_);
-    first_video_pts_received_ = true;
-  }
-
   int64_t new_current_apts = 0;
   int64_t new_apts_timestamp = 0;
 
@@ -136,13 +129,6 @@ void AvSyncVideo::UpkeepAvSync() {
   }
 
   audio_pts_->AddSample(new_apts_timestamp, new_current_apts, 1.0);
-
-  if (!first_audio_pts_received_) {
-    LOG(INFO) << "Audio starting at difference="
-              << (new_apts_timestamp - new_current_apts) -
-                     (playback_start_timestamp_us_ - playback_start_pts_us_);
-    first_audio_pts_received_ = true;
-  }
 
   if (video_pts_->num_samples() < 10 || audio_pts_->num_samples() < 20) {
     VLOG(4) << "Linear regression samples too little."
@@ -176,6 +162,20 @@ void AvSyncVideo::UpkeepAvSync() {
                << ". Flushing...";
     FlushAudioPts();
     return;
+  }
+
+  if (!first_video_pts_received_) {
+    LOG(INFO) << "Video starting at difference="
+              << (new_vpts_timestamp - new_current_vpts) -
+                     (playback_start_timestamp_us_ - playback_start_pts_us_);
+    first_video_pts_received_ = true;
+  }
+
+  if (!first_audio_pts_received_) {
+    LOG(INFO) << "Audio starting at difference="
+              << (new_apts_timestamp - new_current_apts) -
+                     (playback_start_timestamp_us_ - playback_start_pts_us_);
+    first_audio_pts_received_ = true;
   }
 
   error_->AddSample(now, current_apts - current_vpts, 1.0);
@@ -421,8 +421,9 @@ void AvSyncVideo::NotifyStart(int64_t timestamp, int64_t pts) {
 }
 
 void AvSyncVideo::NotifyStop() {
+  LOG(INFO) << __func__;
   StopAvSync();
-  playback_start_timestamp_us_ = INT64_MIN;
+  playback_start_timestamp_us_ = INT64_MAX;
   playback_start_pts_us_ = INT64_MIN;
 }
 
@@ -431,7 +432,13 @@ void AvSyncVideo::NotifyPause() {
 }
 
 void AvSyncVideo::NotifyResume() {
-  playback_start_timestamp_us_ = backend_->MonotonicClockNow();
+  int64_t now = backend_->MonotonicClockNow();
+
+  // If for some reason we get a resume before we hit the playback start time,
+  // we need to retain it.
+  if (now > playback_start_timestamp_us_) {
+    playback_start_timestamp_us_ = now;
+  }
   LOG(INFO) << __func__
             << " playback_start_timestamp_us_=" << playback_start_timestamp_us_;
   StartAvSync();

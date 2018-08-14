@@ -56,7 +56,15 @@ bool VideoDecoderNull::Initialize() {
   return true;
 }
 
+void VideoDecoderNull::SetObserver(VideoDecoderForMixer::Observer* observer) {
+  DCHECK(observer);
+  observer_ = observer;
+}
+
 bool VideoDecoderNull::Start(int64_t start_pts, bool need_avsync) {
+  if (observer_) {
+    observer_->VideoReadyToPlay();
+  }
   return true;
 }
 
