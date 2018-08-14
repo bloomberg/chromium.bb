@@ -23,7 +23,7 @@ aura::Window* GetOwnerRootWindow(views::Widget* owner) {
 MenuPreTargetHandler::MenuPreTargetHandler(MenuController* controller,
                                            Widget* owner)
     : controller_(controller), root_(GetOwnerRootWindow(owner)) {
-  aura::Env::GetInstanceDontCreate()->AddPreTargetHandler(
+  aura::Env::GetInstance()->AddPreTargetHandler(
       this, ui::EventTarget::Priority::kSystem);
   if (root_) {
     wm::GetActivationClient(root_)->AddObserver(this);
@@ -32,7 +32,7 @@ MenuPreTargetHandler::MenuPreTargetHandler(MenuController* controller,
 }
 
 MenuPreTargetHandler::~MenuPreTargetHandler() {
-  aura::Env::GetInstanceDontCreate()->RemovePreTargetHandler(this);
+  aura::Env::GetInstance()->RemovePreTargetHandler(this);
   Cleanup();
 }
 

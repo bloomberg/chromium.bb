@@ -1,6 +1,7 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 
 #include <string>
@@ -431,9 +432,8 @@ void ArcAppWindowLauncherController::OnWindowActivated(
 }
 
 void ArcAppWindowLauncherController::StartObserving(Profile* profile) {
-  aura::Env* env = aura::Env::GetInstanceDontCreate();
-  if (env)
-    env->AddObserver(this);
+  if (aura::Env::HasInstance())
+    aura::Env::GetInstance()->AddObserver(this);
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile);
   DCHECK(prefs);
   prefs->AddObserver(this);
@@ -444,9 +444,8 @@ void ArcAppWindowLauncherController::StopObserving(Profile* profile) {
     window->RemoveObserver(this);
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile);
   prefs->RemoveObserver(this);
-  aura::Env* env = aura::Env::GetInstanceDontCreate();
-  if (env)
-    env->RemoveObserver(this);
+  if (aura::Env::HasInstance())
+    aura::Env::GetInstance()->RemoveObserver(this);
 }
 
 ArcAppWindowLauncherItemController*

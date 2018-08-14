@@ -100,7 +100,7 @@ class AURA_EXPORT Env : public ui::EventTarget,
   // returned by GetInstance()) *and* an instance is created via
   // CreateLocalInstanceForInProcess().
   static Env* GetInstance();
-  static Env* GetInstanceDontCreate();
+  static bool HasInstance();
 
   Mode mode() const { return mode_; }
 

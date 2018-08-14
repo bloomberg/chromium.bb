@@ -100,8 +100,8 @@ Env* Env::GetInstance() {
 }
 
 // static
-Env* Env::GetInstanceDontCreate() {
-  return g_primary_instance;
+bool Env::HasInstance() {
+  return !!g_primary_instance;
 }
 
 std::unique_ptr<WindowPort> Env::CreateWindowPort(Window* window) {

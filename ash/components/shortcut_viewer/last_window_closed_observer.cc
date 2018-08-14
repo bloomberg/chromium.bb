@@ -12,7 +12,7 @@ namespace keyboard_shortcut_viewer {
 LastWindowClosedObserver::LastWindowClosedObserver(
     const base::RepeatingClosure& callback)
     : callback_(callback) {
-  env_observer_.Add(aura::Env::GetInstanceDontCreate());
+  env_observer_.Add(aura::Env::GetInstance());
 }
 
 LastWindowClosedObserver::~LastWindowClosedObserver() = default;
