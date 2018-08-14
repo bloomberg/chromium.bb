@@ -2306,7 +2306,7 @@ void PrintRenderFrameHelper::PrintPreviewContext::Finished() {
 }
 
 void PrintRenderFrameHelper::PrintPreviewContext::Failed(bool report_error) {
-  DCHECK(state_ == INITIALIZED || state_ == RENDERING);
+  DCHECK(state_ != UNINITIALIZED);
   state_ = INITIALIZED;
   if (report_error) {
     DCHECK_NE(PREVIEW_ERROR_NONE, error_);
