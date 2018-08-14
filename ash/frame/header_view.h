@@ -126,6 +126,7 @@ class ASH_EXPORT HeaderView : public views::View,
   void PaintHeaderContent(gfx::Canvas* canvas);
 
   void UpdateBackButton();
+  void UpdateCaptionButtonsVisibility();
 
   // The widget that the caption buttons act on.
   views::Widget* target_widget_;

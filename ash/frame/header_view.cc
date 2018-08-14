@@ -240,6 +240,7 @@ void HeaderView::ChildPreferredSizeChanged(views::View* child) {
 }
 
 void HeaderView::OnTabletModeStarted() {
+  UpdateCaptionButtonsVisibility();
   caption_button_container_->UpdateCaptionButtonState(true /*=animate*/);
   parent()->Layout();
   if (target_widget_ &&
@@ -250,6 +251,7 @@ void HeaderView::OnTabletModeStarted() {
 }
 
 void HeaderView::OnTabletModeEnded() {
+  UpdateCaptionButtonsVisibility();
   caption_button_container_->UpdateCaptionButtonState(true /*=animate*/);
   parent()->Layout();
   if (target_widget_)
@@ -297,7 +299,7 @@ void HeaderView::SetShouldPaintHeader(bool paint) {
     return;
 
   should_paint_ = paint;
-  caption_button_container_->SetVisible(should_paint_);
+  UpdateCaptionButtonsVisibility();
   SchedulePaint();
 }
 
@@ -387,6 +389,18 @@ void HeaderView::UpdateBackButton() {
     delete back_button;
     frame_header_->SetBackButton(nullptr);
   }
+}
+
+void HeaderView::UpdateCaptionButtonsVisibility() {
+  if (!target_widget_)
+    return;
+
+  caption_button_container_->SetVisible(
+      should_paint_ && !(Shell::Get()
+                             ->tablet_mode_controller()
+                             ->IsTabletModeWindowManagerEnabled() &&
+                         target_widget_->GetNativeWindow()->GetProperty(
+                             ash::kHideCaptionButtonsInTabletModeKey)));
 }
 
 }  // namespace ash
