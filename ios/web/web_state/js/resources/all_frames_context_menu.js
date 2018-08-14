@@ -15,59 +15,6 @@ goog.require('__crWeb.common');
 (function() {
 
 /**
- * Returns an object representing the details of the given element.
- * @param {number} x Horizontal center of the selected point in page
- *                 coordinates.
- * @param {number} y Vertical center of the selected point in page
- *                 coordinates.
- * @return {Object} An object of the same form as returned by
- *                  {@code getResponseForLinkElement} or
- *                  {@code getResponseForImageElement} or null if no element was
- *                  found.
- */
-__gCrWeb['getElementFromPointInPageCoordinates'] = function(x, y) {
-  var hitCoordinates = spiralCoordinates_(x, y);
-  for (var index = 0; index < hitCoordinates.length; index++) {
-    var coordinates = hitCoordinates[index];
-
-    var coordinateDetails = newCoordinate(coordinates.x, coordinates.y);
-    var element = elementsFromCoordinates(coordinateDetails);
-    if (!element || !element.tagName) {
-      // Nothing under the hit point. Try the next hit point.
-      continue;
-    }
-
-    // Also check element's ancestors. A bound on the level is used here to
-    // avoid large overhead when no links or images are found.
-    var level = 0;
-    while (++level < 8 && element && element != document) {
-      var tagName = element.tagName;
-      if (!tagName) continue;
-      tagName = tagName.toLowerCase();
-
-      if (tagName === 'input' || tagName === 'textarea' ||
-          tagName === 'select' || tagName === 'option') {
-        // If the element is a known input element, stop the spiral search and
-        // return empty results.
-        return {};
-      }
-
-      if (getComputedWebkitTouchCallout_(element) !== 'none') {
-        if (tagName === 'a' && element.href) {
-          return getResponseForLinkElement(element);
-        }
-
-        if (tagName === 'img' && element.src) {
-          return getResponseForImageElement(element);
-        }
-      }
-      element = element.parentNode;
-    }
-  }
-  return {};
-};
-
-/**
  * Returns an object representing the details of a given link element.
  * @param {HTMLElement} element The element whose details will be returned.
  * @return {!Object} An object of the form {

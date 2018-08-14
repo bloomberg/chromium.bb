@@ -10,9 +10,6 @@
 namespace web {
 namespace features {
 
-// Used to enable asynchronous DOM element fetching for context menu.
-extern const base::Feature kContextMenuElementPostMessage;
-
 // Used to enable API to send messages directly to frames of a webpage.
 extern const base::Feature kWebFrameMessaging;
 
