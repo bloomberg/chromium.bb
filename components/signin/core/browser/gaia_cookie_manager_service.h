@@ -59,6 +59,9 @@ class GaiaCookieManagerService : public KeyedService,
 
     GaiaCookieRequestType request_type() const { return request_type_; }
     const std::vector<std::string>& account_ids() const { return account_ids_; }
+    // For use in the Request of type ADD_ACCOUNT which must have exactly one
+    // account_id in the array. It checks this condition and extracts this one
+    // account.
     const std::string GetAccountID();
     const std::string& source() const {return source_; }
 
@@ -186,6 +189,12 @@ class GaiaCookieManagerService : public KeyedService,
                                    const std::string& access_token,
                                    const std::string& source);
 
+  // Takes list of account_ids and sets the cookie for these accounts regardless
+  // of the current cookie state. Removes the accounts that are not in
+  // account_ids and add the missing ones.
+  void SetAccountsInCookie(const std::vector<std::string>& account_ids,
+                           const std::string& source);
+
   // Returns if the listed accounts are up to date or not. The out parameter
   // will be assigned the current cached accounts (whether they are not up to
   // date or not). If the accounts are not up to date, a ListAccounts fetch is
@@ -275,6 +284,11 @@ class GaiaCookieManagerService : public KeyedService,
   // Helper method for AddAccountToCookie* methods.
   void AddAccountToCookieInternal(const std::string& account_id,
                                   const std::string& source);
+
+  // Starts the process of fetching the access token with OauthLogin scope and
+  // performing SetAccountsInCookie on success.  Virtual so that it can be
+  // overridden in tests.
+  virtual void StartFetchingAccesstokens();
 
   // Starts the proess of fetching the uber token and performing a merge session
   // for the next account.  Virtual so that it can be overriden in tests.

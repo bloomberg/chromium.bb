@@ -286,6 +286,15 @@ void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
                                               delegate_->GetGaiaApiSource());
 }
 
+void AccountReconcilor::PerformSetCookiesAction(
+    const std::vector<std::string>& account_ids) {
+  reconcile_is_noop_ = false;
+  VLOG(1) << "AccountReconcilor::PerformSetCookiesAction: "
+          << base::JoinString(account_ids, " ");
+  cookie_manager_service_->SetAccountsInCookie(account_ids,
+                                               delegate_->GetGaiaApiSource());
+}
+
 void AccountReconcilor::PerformLogoutAllAccountsAction() {
   reconcile_is_noop_ = false;
   if (!delegate_->IsAccountConsistencyEnforced())

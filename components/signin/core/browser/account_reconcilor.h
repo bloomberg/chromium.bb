@@ -190,6 +190,8 @@ class AccountReconcilor : public KeyedService,
   // consistency is enabled. Virtual so that they can be overridden in tests.
   virtual void PerformMergeAction(const std::string& account_id);
   virtual void PerformLogoutAllAccountsAction();
+  virtual void PerformSetCookiesAction(
+      const std::vector<std::string>& account_ids);
 
   // Used during periodic reconciliation.
   void StartReconcile();

@@ -88,6 +88,7 @@ GaiaCookieManagerService::GaiaCookieRequest::~GaiaCookieRequest() {
 }
 
 const std::string GaiaCookieManagerService::GaiaCookieRequest::GetAccountID() {
+  DCHECK_EQ(request_type_, GaiaCookieRequestType::ADD_ACCOUNT);
   DCHECK_EQ(1u, account_ids_.size());
   return account_ids_[0];
 }
@@ -391,6 +392,27 @@ void GaiaCookieManagerService::Shutdown() {
   cookie_change_subscription_.reset();
 }
 
+void GaiaCookieManagerService::SetAccountsInCookie(
+    const std::vector<std::string>& account_ids,
+    const std::string& source) {
+  VLOG(1) << "GaiaCookieManagerService::SetAccountsInCookie: "
+          << base::JoinString(account_ids, " ");
+  // TODO(valeriyas): clear access_tokens_ here (introduced in follow-up cls)
+  if (!signin_client_->AreSigninCookiesAllowed()) {
+    for (const std::string account_id : account_ids) {
+      SignalComplete(account_id, GoogleServiceAuthError(
+                                     GoogleServiceAuthError::REQUEST_CANCELED));
+    }
+    return;
+  }
+  requests_.push_back(
+      GaiaCookieRequest::CreateSetAccountsRequest(account_ids, source));
+  if (requests_.size() == 1) {
+    signin_client_->DelayNetworkCall(
+        base::Bind(&GaiaCookieManagerService::StartFetchingAccesstokens,
+                   base::Unretained(this)));
+  }
+}
 
 void GaiaCookieManagerService::AddAccountToCookieInternal(
     const std::string& account_id,
@@ -791,6 +813,11 @@ void GaiaCookieManagerService::OnLogOutFailure(
   HandleNextRequest();
 }
 
+void GaiaCookieManagerService::StartFetchingAccesstokens() {
+  // TODO(valeriyas): Fetch access tokens and call SetAccountInCookiesWithTokens
+  // on success
+}
+
 void GaiaCookieManagerService::StartFetchingUbertoken() {
   const std::string account_id = requests_.front().GetAccountID();
   VLOG(1) << "GaiaCookieManagerService::StartFetchingUbertoken account_id="
@@ -861,19 +888,23 @@ void GaiaCookieManagerService::HandleNextRequest() {
   } else {
     switch (requests_.front().request_type()) {
       case GaiaCookieRequestType::ADD_ACCOUNT:
+        DCHECK_EQ(1u, requests_.front().account_ids().size());
         signin_client_->DelayNetworkCall(
             base::Bind(&GaiaCookieManagerService::StartFetchingUbertoken,
                        base::Unretained(this)));
         break;
       case GaiaCookieRequestType::SET_ACCOUNTS:
+        DCHECK(!requests_.front().account_ids().empty());
         // TODO(https://crbug.com/872725): StartFetchingAccessTokens...
         break;
       case GaiaCookieRequestType::LOG_OUT:
+        DCHECK(requests_.front().account_ids().empty());
         signin_client_->DelayNetworkCall(
             base::Bind(&GaiaCookieManagerService::StartGaiaLogOut,
                        base::Unretained(this)));
         break;
       case GaiaCookieRequestType::LIST_ACCOUNTS:
+        DCHECK(requests_.front().account_ids().empty());
         uber_token_fetcher_.reset();
         signin_client_->DelayNetworkCall(
             base::Bind(&GaiaCookieManagerService::StartFetchingListAccounts,
