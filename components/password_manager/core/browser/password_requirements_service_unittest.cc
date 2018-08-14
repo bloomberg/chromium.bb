@@ -127,6 +127,8 @@ TEST_F(PasswordRequirementsServiceTest, ExerciseEverything) {
   for (const auto& test : tests) {
     SCOPED_TRACE(test.test_name);
 
+    service_.ClearDataForTesting();
+
     // Populate the service with data.
     if (test.spec_for_domain) {
       fetcher_ptr_->SetDataToReturn(test_origin_, *(test.spec_for_domain));

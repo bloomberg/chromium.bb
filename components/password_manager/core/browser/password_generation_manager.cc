@@ -38,8 +38,7 @@ PasswordGenerationManager::PasswordGenerationManager(
 PasswordGenerationManager::~PasswordGenerationManager() {
 }
 
-void PasswordGenerationManager::ProcessPasswordRequirements(
-    const std::vector<autofill::FormStructure*>& forms) {
+void PasswordGenerationManager::PrefetchSpec(const GURL& origin) {
   // IsGenerationEnabled is called multiple times and it is sufficient to
   // log debug data once.
   if (!IsGenerationEnabled(/*log_debug_data=*/false))
@@ -53,10 +52,23 @@ void PasswordGenerationManager::ProcessPasswordRequirements(
     return;
 
   // Fetch password requirements for the domain.
-  if (IsRequirementsFetchingEnabled()) {
-    password_requirements_service->PrefetchSpec(
-        client_->GetLastCommittedEntryURL().GetOrigin());
-  }
+  if (IsRequirementsFetchingEnabled())
+    password_requirements_service->PrefetchSpec(origin);
+}
+
+void PasswordGenerationManager::ProcessPasswordRequirements(
+    const std::vector<autofill::FormStructure*>& forms) {
+  // IsGenerationEnabled is called multiple times and it is sufficient to
+  // log debug data once.
+  if (!IsGenerationEnabled(/*log_debug_data=*/false))
+    return;
+
+  // It is legit to have no PasswordRequirementsService on some platforms where
+  // it has not been implemented.
+  PasswordRequirementsService* password_requirements_service =
+      client_->GetPasswordRequirementsService();
+  if (!password_requirements_service)
+    return;
 
   // Store password requirements from the autofill server.
   for (const autofill::FormStructure* form : forms) {
