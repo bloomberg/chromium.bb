@@ -223,15 +223,21 @@ size_t TemplateURLRef::SearchTermsArgs::EstimateMemoryUsage() const {
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
     ContextualSearchParams()
     : version(-1),
-      contextual_cards_version(0) {}
+      contextual_cards_version(0),
+      previous_event_id(0),
+      previous_event_results(0) {}
 
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
     int version,
     int contextual_cards_version,
-    const std::string& home_country)
+    const std::string& home_country,
+    int64_t previous_event_id,
+    int previous_event_results)
     : version(version),
       contextual_cards_version(contextual_cards_version),
-      home_country(home_country) {}
+      home_country(home_country),
+      previous_event_id(previous_event_id),
+      previous_event_results(previous_event_results) {}
 
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
     const ContextualSearchParams& other) = default;
@@ -1034,6 +1040,14 @@ std::string TemplateURLRef::HandleReplacements(
         }
         if (!params.home_country.empty())
           args.push_back("ctxs_hc=" + params.home_country);
+        if (params.previous_event_id != 0) {
+          args.push_back("ctxsl_pid=" +
+                         base::Int64ToString(params.previous_event_id));
+        }
+        if (params.previous_event_results != 0) {
+          args.push_back("ctxsl_per=" +
+                         base::IntToString(params.previous_event_results));
+        }
 
         HandleReplacement(std::string(), base::JoinString(args, "&"), *i, &url);
         break;
