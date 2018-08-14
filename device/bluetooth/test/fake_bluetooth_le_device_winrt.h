@@ -7,6 +7,7 @@
 
 #include <windows.devices.bluetooth.h>
 #include <windows.foundation.h>
+#include <wrl/client.h>
 #include <wrl/implements.h>
 
 #include <stdint.h>
@@ -17,6 +18,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/test/fake_device_information_winrt.h"
 
 namespace device {
 
@@ -28,6 +30,7 @@ class FakeBluetoothLEDeviceWinrt
           Microsoft::WRL::RuntimeClassFlags<
               Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
           ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice,
+          ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice2,
           ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice3,
           ABI::Windows::Foundation::IClosable> {
  public:
@@ -70,6 +73,15 @@ class FakeBluetoothLEDeviceWinrt
   IFACEMETHODIMP remove_ConnectionStatusChanged(
       EventRegistrationToken token) override;
 
+  // IBluetoothLEDevice2:
+  IFACEMETHODIMP get_DeviceInformation(
+      ABI::Windows::Devices::Enumeration::IDeviceInformation** value) override;
+  IFACEMETHODIMP get_Appearance(
+      ABI::Windows::Devices::Bluetooth::IBluetoothLEAppearance** value)
+      override;
+  IFACEMETHODIMP get_BluetoothAddressType(
+      ABI::Windows::Devices::Bluetooth::BluetoothAddressType* value) override;
+
   // IBluetoothLEDevice3:
   IFACEMETHODIMP get_DeviceAccessInformation(
       ABI::Windows::Devices::Enumeration::IDeviceAccessInformation** value)
@@ -102,6 +114,7 @@ class FakeBluetoothLEDeviceWinrt
   // IClosable:
   IFACEMETHODIMP Close() override;
 
+  void SimulateDevicePaired(bool is_paired);
   void SimulateGattConnection();
   void SimulateGattConnectionError(
       BluetoothDevice::ConnectErrorCode error_code);
@@ -126,6 +139,9 @@ class FakeBluetoothLEDeviceWinrt
       ABI::Windows::Devices::Bluetooth::BluetoothLEDevice*,
       IInspectable*>>
       connection_status_changed_handler_;
+
+  Microsoft::WRL::ComPtr<ABI::Windows::Devices::Enumeration::IDeviceInformation>
+      device_information_ = Microsoft::WRL::Make<FakeDeviceInformationWinrt>();
 
   Microsoft::WRL::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<
       ABI::Windows::Devices::Bluetooth::BluetoothLEDevice*,

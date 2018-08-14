@@ -15,6 +15,7 @@
 #include "base/win/async_operation.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_winrt.h"
 #include "device/bluetooth/test/bluetooth_test_win.h"
+#include "device/bluetooth/test/fake_device_information_pairing_winrt.h"
 #include "device/bluetooth/test/fake_gatt_characteristic_winrt.h"
 #include "device/bluetooth/test/fake_gatt_device_service_winrt.h"
 #include "device/bluetooth/test/fake_gatt_device_services_result_winrt.h"
@@ -23,6 +24,7 @@ namespace device {
 
 namespace {
 
+using ABI::Windows::Devices::Bluetooth::BluetoothAddressType;
 using ABI::Windows::Devices::Bluetooth::BluetoothCacheMode;
 using ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus;
 using ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus_Connected;
@@ -44,8 +46,10 @@ using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattDeviceServicesResult;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     IGattDeviceService;
+using ABI::Windows::Devices::Bluetooth::IBluetoothLEAppearance;
 using ABI::Windows::Devices::Enumeration::DeviceAccessStatus;
 using ABI::Windows::Devices::Enumeration::IDeviceAccessInformation;
+using ABI::Windows::Devices::Enumeration::IDeviceInformation;
 using ABI::Windows::Foundation::Collections::IVectorView;
 using ABI::Windows::Foundation::IAsyncOperation;
 using ABI::Windows::Foundation::ITypedEventHandler;
@@ -125,6 +129,21 @@ HRESULT FakeBluetoothLEDeviceWinrt::remove_ConnectionStatusChanged(
   return S_OK;
 }
 
+HRESULT FakeBluetoothLEDeviceWinrt::get_DeviceInformation(
+    IDeviceInformation** value) {
+  return device_information_.CopyTo(value);
+}
+
+HRESULT FakeBluetoothLEDeviceWinrt::get_Appearance(
+    IBluetoothLEAppearance** value) {
+  return E_NOTIMPL;
+}
+
+HRESULT FakeBluetoothLEDeviceWinrt::get_BluetoothAddressType(
+    BluetoothAddressType* value) {
+  return E_NOTIMPL;
+}
+
 HRESULT FakeBluetoothLEDeviceWinrt::get_DeviceAccessInformation(
     IDeviceAccessInformation** value) {
   return E_NOTIMPL;
@@ -166,6 +185,11 @@ HRESULT FakeBluetoothLEDeviceWinrt::GetGattServicesForUuidWithCacheModeAsync(
 HRESULT FakeBluetoothLEDeviceWinrt::Close() {
   bluetooth_test_winrt_->OnFakeBluetoothGattDisconnect();
   return S_OK;
+}
+
+void FakeBluetoothLEDeviceWinrt::SimulateDevicePaired(bool is_paired) {
+  device_information_ = Make<FakeDeviceInformationWinrt>(
+      Make<FakeDeviceInformationPairingWinrt>(is_paired));
 }
 
 void FakeBluetoothLEDeviceWinrt::SimulateGattConnection() {

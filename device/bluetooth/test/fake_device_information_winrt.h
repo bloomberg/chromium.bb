@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "device/bluetooth/test/fake_device_information_pairing_winrt.h"
 
 namespace device {
 
@@ -19,9 +20,18 @@ class FakeDeviceInformationWinrt
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<
               Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
-          ABI::Windows::Devices::Enumeration::IDeviceInformation> {
+          ABI::Windows::Devices::Enumeration::IDeviceInformation,
+          ABI::Windows::Devices::Enumeration::IDeviceInformation2> {
  public:
+  FakeDeviceInformationWinrt();
+  // Explicit const char* constructor is required to break ambiguity for C
+  // string arguments.
+  explicit FakeDeviceInformationWinrt(const char* name);
   explicit FakeDeviceInformationWinrt(std::string name);
+  explicit FakeDeviceInformationWinrt(
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::Devices::Enumeration::IDeviceInformationPairing>
+          pairing);
   ~FakeDeviceInformationWinrt() override;
 
   // IDeviceInformation:
@@ -46,8 +56,19 @@ class FakeDeviceInformationWinrt
           ABI::Windows::Devices::Enumeration::DeviceThumbnail*>** async_op)
       override;
 
+  // IDeviceInformation2:
+  IFACEMETHODIMP get_Kind(
+      ABI::Windows::Devices::Enumeration::DeviceInformationKind* value)
+      override;
+  IFACEMETHODIMP get_Pairing(
+      ABI::Windows::Devices::Enumeration::IDeviceInformationPairing** value)
+      override;
+
  private:
   std::string name_;
+  Microsoft::WRL::ComPtr<
+      ABI::Windows::Devices::Enumeration::IDeviceInformationPairing>
+      pairing_ = Microsoft::WRL::Make<FakeDeviceInformationPairingWinrt>(false);
 
   DISALLOW_COPY_AND_ASSIGN(FakeDeviceInformationWinrt);
 };

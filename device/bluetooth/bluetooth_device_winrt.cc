@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/bluetooth_device_winrt.h"
 
+#include <windows.devices.enumeration.h>
 #include <windows.foundation.h>
 
 #include <utility>
@@ -35,8 +36,12 @@ using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     IGattDeviceServicesResult;
 using ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice;
+using ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice2;
 using ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice3;
 using ABI::Windows::Devices::Bluetooth::IBluetoothLEDeviceStatics;
+using ABI::Windows::Devices::Enumeration::IDeviceInformation;
+using ABI::Windows::Devices::Enumeration::IDeviceInformation2;
+using ABI::Windows::Devices::Enumeration::IDeviceInformationPairing;
 using ABI::Windows::Foundation::IAsyncOperation;
 using ABI::Windows::Foundation::IClosable;
 using Microsoft::WRL::ComPtr;
@@ -147,8 +152,54 @@ base::Optional<std::string> BluetoothDeviceWinrt::GetName() const {
 }
 
 bool BluetoothDeviceWinrt::IsPaired() const {
-  NOTIMPLEMENTED();
-  return false;
+  if (!ble_device_) {
+    VLOG(2) << "No BLE device instance present.";
+    return false;
+  }
+
+  ComPtr<IBluetoothLEDevice2> ble_device_2;
+  HRESULT hr = ble_device_.As(&ble_device_2);
+  if (FAILED(hr)) {
+    VLOG(2) << "Obtaining IBluetoothLEDevice2 failed: "
+            << logging::SystemErrorCodeToString(hr);
+    return false;
+  }
+
+  ComPtr<IDeviceInformation> device_information;
+  hr = ble_device_2->get_DeviceInformation(&device_information);
+  if (FAILED(hr)) {
+    VLOG(2) << "Getting Device Information failed: "
+            << logging::SystemErrorCodeToString(hr);
+    return false;
+  }
+
+  ComPtr<IDeviceInformation2> device_information_2;
+  hr = device_information.As(&device_information_2);
+  if (FAILED(hr)) {
+    VLOG(2) << "Obtaining IDeviceInformation2 failed: "
+            << logging::SystemErrorCodeToString(hr);
+    return false;
+  }
+
+  ComPtr<IDeviceInformationPairing> pairing;
+  hr = device_information_2->get_Pairing(&pairing);
+  if (FAILED(hr)) {
+    VLOG(2) << "DeviceInformation::get_Pairing() failed: "
+            << logging::SystemErrorCodeToString(hr);
+    return false;
+  }
+
+  boolean is_paired;
+  hr = pairing->get_IsPaired(&is_paired);
+  if (FAILED(hr)) {
+    VLOG(2) << "DeviceInformationPairing::get_IsPaired() failed: "
+            << logging::SystemErrorCodeToString(hr);
+    return false;
+  }
+
+  VLOG(2) << "BluetoothDeviceWinrt::IsPaired(): "
+          << (is_paired ? "True" : "False");
+  return is_paired;
 }
 
 bool BluetoothDeviceWinrt::IsConnected() const {
