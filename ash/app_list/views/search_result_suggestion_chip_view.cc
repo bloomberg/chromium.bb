@@ -12,6 +12,7 @@
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "ui/accessibility/ax_node_data.h"
 
 namespace app_list {
 
@@ -82,6 +83,11 @@ gfx::Size SearchResultSuggestionChipView::CalculatePreferredSize() const {
     return gfx::Size();
 
   return suggestion_chip_view_->GetPreferredSize();
+}
+
+void SearchResultSuggestionChipView::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kGenericContainer;
 }
 
 void SearchResultSuggestionChipView::UpdateSuggestionChipView() {
