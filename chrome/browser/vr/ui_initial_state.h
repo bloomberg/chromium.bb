@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_VR_UI_INITIAL_STATE_H_
 #define CHROME_BROWSER_VR_UI_INITIAL_STATE_H_
 
-#include "chrome/browser/vr/vr_base_export.h"
+#include "chrome/browser/vr/vr_export.h"
 
 namespace vr {
 
 // This class describes the initial state of a UI, and may be used by a UI
 // instances owner to specify a custom state on startup.
-struct VR_BASE_EXPORT UiInitialState {
+struct VR_EXPORT UiInitialState {
   UiInitialState();
   UiInitialState(const UiInitialState& other);
   bool in_web_vr = false;

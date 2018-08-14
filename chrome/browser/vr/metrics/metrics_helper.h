@@ -13,7 +13,7 @@
 #include "chrome/browser/vr/assets_component_update_status.h"
 #include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/mode.h"
-#include "chrome/browser/vr/vr_base_export.h"
+#include "chrome/browser/vr/vr_export.h"
 
 namespace base {
 class Version;
@@ -24,7 +24,7 @@ namespace vr {
 // Helper to collect VR UMA metrics.
 //
 // For thread-safety, all functions must be called in sequence.
-class VR_BASE_EXPORT MetricsHelper {
+class VR_EXPORT MetricsHelper {
  public:
   MetricsHelper();
   ~MetricsHelper();

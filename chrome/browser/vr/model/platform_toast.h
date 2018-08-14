@@ -6,11 +6,12 @@
 #define CHROME_BROWSER_VR_MODEL_PLATFORM_TOAST_H_
 
 #include "base/strings/string16.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 
 namespace vr {
 
 // Represent a request to show a text only Toast.
-struct PlatformToast {
+struct VR_UI_EXPORT PlatformToast {
   PlatformToast();
   explicit PlatformToast(base::string16 text);
 

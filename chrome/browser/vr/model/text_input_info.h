@@ -11,12 +11,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/vr/text_edit_action.h"
-#include "chrome/browser/vr/vr_base_export.h"
+#include "chrome/browser/vr/vr_export.h"
 
 namespace vr {
 
 // Represents the state of an editable text field.
-struct VR_BASE_EXPORT TextInputInfo {
+struct VR_EXPORT TextInputInfo {
  public:
   TextInputInfo();
   explicit TextInputInfo(base::string16 t);
@@ -65,7 +65,7 @@ struct VR_BASE_EXPORT TextInputInfo {
 // A superset of TextInputInfo, consisting of a current and previous text field
 // state.  A keyboard can return this structure, allowing clients to derive
 // deltas in keyboard state.
-struct VR_BASE_EXPORT EditedText {
+struct VR_EXPORT EditedText {
  public:
   EditedText();
   EditedText(const EditedText& other);

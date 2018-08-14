@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_VR_RENDER_INFO_H_
 
 #include "chrome/browser/vr/model/camera_model.h"
-#include "chrome/browser/vr/vr_base_export.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "ui/gfx/transform.h"
 
 namespace vr {
 
 // Provides information for rendering such as the viewport and view/projection
 // matrix.
-struct VR_BASE_EXPORT RenderInfo {
+struct VR_EXPORT RenderInfo {
   gfx::Transform head_pose;
   CameraModel left_eye_model;
   CameraModel right_eye_model;

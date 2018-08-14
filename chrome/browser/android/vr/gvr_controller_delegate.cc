@@ -55,21 +55,22 @@ ControllerModel GvrControllerDelegate::GetModel(const RenderInfo& render_info) {
 
   ControllerModel controller_model;
   controller_->GetTransform(&controller_model.transform);
-  controller_model.touchpad_button_state = UiInputManager::ButtonState::UP;
+  controller_model.touchpad_button_state = PlatformController::ButtonState::kUp;
   DCHECK(!(controller_->ButtonUpHappened(PlatformController::kButtonSelect) &&
            controller_->ButtonDownHappened(PlatformController::kButtonSelect)))
       << "Cannot handle a button down and up event within one frame.";
   if (controller_->ButtonState(gvr::kControllerButtonClick)) {
-    controller_model.touchpad_button_state = UiInputManager::ButtonState::DOWN;
+    controller_model.touchpad_button_state =
+        PlatformController::ButtonState::kDown;
   }
   controller_model.app_button_state =
       controller_->ButtonState(gvr::kControllerButtonApp)
-          ? UiInputManager::ButtonState::DOWN
-          : UiInputManager::ButtonState::UP;
+          ? PlatformController::ButtonState::kDown
+          : PlatformController::ButtonState::kUp;
   controller_model.home_button_state =
       controller_->ButtonState(gvr::kControllerButtonHome)
-          ? UiInputManager::ButtonState::DOWN
-          : UiInputManager::ButtonState::UP;
+          ? PlatformController::ButtonState::kDown
+          : PlatformController::ButtonState::kUp;
   controller_model.opacity = controller_->GetOpacity();
   controller_model.laser_direction = controller_direction;
   controller_model.laser_origin = controller_->GetPointerStart();

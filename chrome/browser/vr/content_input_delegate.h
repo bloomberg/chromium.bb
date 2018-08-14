@@ -15,7 +15,7 @@
 #include "chrome/browser/vr/model/text_input_info.h"
 #include "chrome/browser/vr/platform_ui_input_delegate.h"
 #include "chrome/browser/vr/text_edit_action.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 
 namespace vr {
 
@@ -23,7 +23,7 @@ class PlatformInputHandler;
 
 // This class is responsible for processing all events and gestures for
 // ContentElement.
-class VR_EXPORT ContentInputDelegate : public PlatformUiInputDelegate {
+class VR_UI_EXPORT ContentInputDelegate : public PlatformUiInputDelegate {
  public:
   ContentInputDelegate();
   explicit ContentInputDelegate(PlatformInputHandler* content);

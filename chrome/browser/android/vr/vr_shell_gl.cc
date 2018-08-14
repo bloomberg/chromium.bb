@@ -1308,7 +1308,6 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
     acquired_frame_.Unbind();
   }
 
-  std::vector<const UiElement*> overlay_elements;
   if (is_webxr_frame && ui_->HasWebXrOverlayElementsToDraw()) {
     // WebVR content may use an arbitrary size buffer. We need to draw browser
     // UI on a different buffer to make sure that our UI has enough resolution.

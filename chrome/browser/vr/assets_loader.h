@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/version.h"
 #include "chrome/browser/vr/assets_load_status.h"
-#include "chrome/browser/vr/vr_base_export.h"
+#include "chrome/browser/vr/vr_export.h"
 
 namespace base {
 class DictionaryValue;
@@ -40,7 +40,7 @@ struct Assets;
 // component will be made available on a different thread than the asset load
 // request. Internally, the function calls will be posted on the main thread.
 // The asset load may be performed on a worker thread.
-class VR_BASE_EXPORT AssetsLoader {
+class VR_EXPORT AssetsLoader {
  public:
   typedef base::OnceCallback<void(AssetsLoadStatus status,
                                   std::unique_ptr<Assets> assets,

@@ -7,11 +7,11 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 
 namespace vr {
 
-struct VR_EXPORT TabModel {
+struct VR_UI_EXPORT TabModel {
   TabModel(int id, const base::string16& title);
   TabModel(const TabModel& other);
   ~TabModel();

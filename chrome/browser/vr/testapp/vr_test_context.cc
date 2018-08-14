@@ -404,7 +404,8 @@ ControllerModel VrTestContext::UpdateController(const RenderInfo& render_info,
 
   ControllerModel controller_model;
   controller_model.touchpad_button_state =
-      touchpad_pressed_ ? UiInputManager::DOWN : UiInputManager::UP;
+      touchpad_pressed_ ? PlatformController::ButtonState::kDown
+                        : PlatformController::ButtonState::kUp;
   controller_model.touchpad_touch_position = touchpad_touch_position_;
   controller_model.touching_touchpad = touching_touchpad_;
   controller_model.recentered = recentered_;

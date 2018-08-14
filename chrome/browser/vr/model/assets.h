@@ -8,13 +8,13 @@
 #include <memory>
 
 #include "base/version.h"
-#include "chrome/browser/vr/vr_base_export.h"
+#include "chrome/browser/vr/vr_export.h"
 
 class SkBitmap;
 
 namespace vr {
 
-struct VR_BASE_EXPORT Assets {
+struct VR_EXPORT Assets {
   Assets();
   ~Assets();
 

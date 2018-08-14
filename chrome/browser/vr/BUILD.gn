@@ -26,13 +26,16 @@ source_set("vr_gl_utils") {
     "vr_gl_util.h",
   ]
 
+  public_deps = [
+    "//ui/gl/init",
+  ]
+
   deps = [
     "//skia",
-    "//ui/gl/init",
   ]
 }
 
-source_set("vr_ui") {
+component("vr_ui") {
   sources = [
     "animation.cc",
     "animation.h",
@@ -136,8 +139,6 @@ source_set("vr_ui") {
     "frame_lifecycle.h",
     "ganesh_surface_provider.cc",
     "ganesh_surface_provider.h",
-    "macros.h",
-    "mode.h",
     "model/color_scheme.cc",
     "model/color_scheme.h",
     "model/modal_prompt_type.cc",
@@ -196,26 +197,23 @@ source_set("vr_ui") {
     "//cc/animation",
     "//chrome/app:generated_resources",
     "//chrome/browser/vr/vector_icons",
-    "//components/omnibox/browser",
+    "//chrome/common:constants",
     "//components/toolbar:vector_icons",
     "//components/url_formatter",
     "//components/vector_icons",
     "//media",
     "//net",
     "//skia",
-    "//ui/base",
   ]
 
   defines = [
     "VR_IMPLEMENTATION",
-    "VR_BASE_IMPLEMENTATION",
     "VR_UI_IMPLEMENTATION",
   ]
 }
 
 component("vr_common") {
   sources = [
-    "browser_ui_interface.h",
     "controller_delegate.h",
     "controller_delegate_for_testing.cc",
     "controller_delegate_for_testing.h",
@@ -225,13 +223,6 @@ component("vr_common") {
     "gesture_detector.h",
     "graphics_delegate.cc",
     "graphics_delegate.h",
-    "model/camera_model.h",
-    "model/capturing_state_model.h",
-    "model/hosted_platform_ui.h",
-    "model/reticle_model.h",
-    "model/speech_recognition_model.h",
-    "model/ui_mode.h",
-    "model/web_vr_model.h",
     "render_loop.cc",
     "render_loop.h",
     "render_loop_browser_interface.h",
@@ -251,15 +242,10 @@ component("vr_common") {
     "sliding_average.h",
     "sounds_manager_audio_delegate.cc",
     "sounds_manager_audio_delegate.h",
-    "speech_recognizer.cc",
-    "speech_recognizer.h",
-    "text_input_delegate.cc",
-    "text_input_delegate.h",
     "toolbar_helper.cc",
     "toolbar_helper.h",
     "ui_factory.cc",
     "ui_factory.h",
-    "vr_export.h",
   ]
 
   public_deps = [
@@ -268,25 +254,20 @@ component("vr_common") {
   ]
 
   deps = [
-    ":vr_build_features",
     ":vr_gl_utils",
     ":vr_ui",
     "//base",
     "//cc/animation",
     "//cc/paint",
-    "//chrome/app:generated_resources",
     "//chrome/browser/vr/vector_icons",
     "//chrome/common:constants",
     "//components/omnibox/browser",
     "//components/rappor/public:public",
-    "//components/security_state/core",
-    "//components/strings",
     "//components/toolbar",
     "//components/toolbar:vector_icons",
     "//components/ukm/content",
     "//components/vector_icons",
     "//content/public/browser",
-    "//content/public/common",
     "//device/vr",
     "//device/vr/buildflags:buildflags",
     "//device/vr/public/mojom",
@@ -301,7 +282,6 @@ component("vr_common") {
 
   defines = [
     "VR_IMPLEMENTATION",
-    "VR_BASE_IMPLEMENTATION",
     "VR_UI_IMPLEMENTATION",
   ]
 }
@@ -314,56 +294,81 @@ source_set("vr_base") {
     "assets_load_status.h",
     "assets_loader.cc",
     "assets_loader.h",
+    "browser_ui_interface.h",
     "exit_vr_prompt_choice.h",
     "gl_texture_location.h",
     "input_event.cc",
     "input_event.h",
     "keyboard_delegate.h",
     "keyboard_ui_interface.h",
+    "macros.h",
     "metrics/metrics_helper.cc",
     "metrics/metrics_helper.h",
     "metrics/session_metrics_helper.cc",
     "metrics/session_metrics_helper.h",
+    "mode.h",
     "model/assets.cc",
     "model/assets.h",
+    "model/camera_model.h",
+    "model/capturing_state_model.h",
     "model/controller_model.cc",
     "model/controller_model.h",
+    "model/hosted_platform_ui.h",
     "model/omnibox_suggestions.cc",
     "model/omnibox_suggestions.h",
+    "model/reticle_model.h",
+    "model/speech_recognition_model.h",
     "model/text_input_info.cc",
     "model/text_input_info.h",
     "model/toolbar_state.cc",
     "model/toolbar_state.h",
+    "model/ui_mode.h",
+    "model/web_vr_model.h",
+    "platform_controller.h",
     "platform_input_handler.h",
     "platform_ui_input_delegate.cc",
     "platform_ui_input_delegate.h",
     "pose_util.cc",
     "pose_util.h",
     "render_info.h",
+    "speech_recognizer.cc",
+    "speech_recognizer.h",
     "text_edit_action.cc",
     "text_edit_action.h",
+    "text_input_delegate.cc",
+    "text_input_delegate.h",
     "ui_browser_interface.h",
     "ui_initial_state.cc",
     "ui_initial_state.h",
     "ui_interface.h",
     "ui_test_input.h",
     "ui_unsupported_mode.h",
-    "vr_base_export.h",
+    "vr_export.h",
     "vr_geometry_util.cc",
     "vr_geometry_util.h",
   ]
 
   defines = [
     "VR_IMPLEMENTATION",
-    "VR_BASE_IMPLEMENTATION",
     "VR_UI_IMPLEMENTATION",
+  ]
+
+  public_deps = [
+    ":vr_build_features",
+    "//components/omnibox/browser",
+    "//components/strings:components_strings_grit",
+    "//content/public/common",
+    "//ui/base",
   ]
 
   deps = [
     "//base",
+    "//chrome/app:generated_resources",
     "//components/rappor:rappor",
+    "//components/security_state/core",
     "//components/ukm/content",
     "//components/url_formatter",
+    "//content/public/browser:browser",
     "//media",
     "//net",
     "//services/metrics/public/cpp:ukm_builders",
@@ -426,6 +431,7 @@ test("vr_common_unittests") {
   deps = [
     ":vr_test_support",
     "//components/url_formatter",
+    "//components/vector_icons",
     "//mojo/public/cpp/bindings",
     "//services/network:test_support",
     "//testing/gmock",
@@ -502,8 +508,10 @@ source_set("vr_test_support") {
   public_deps = [
     ":vr_common",
     ":vr_test_pak",
+    ":vr_ui",
     "//base/test:test_support",
     "//cc:test_support",
+    "//components/omnibox/browser:browser",
     "//components/security_state/core",
     "//components/toolbar:vector_icons",
     "//content/test:test_support",
@@ -537,7 +545,13 @@ source_set("vr_gl_test_support") {
   public_deps = [
     "//base/test:test_support",
     "//skia",
+    "//testing/gtest",
     "//ui/gl",
+    "//ui/gl:test_support",
+  ]
+
+  deps = [
+    ":vr_common",  # For graphics delegate.
   ]
 }
 

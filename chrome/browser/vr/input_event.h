@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_VR_INPUT_EVENT_H_
 
 #include "base/time/time.h"
-#include "chrome/browser/vr/vr_base_export.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace vr {
 
-class VR_BASE_EXPORT InputEvent {
+class VR_EXPORT InputEvent {
  public:
   enum Type {
     kTypeUndefined = -1,

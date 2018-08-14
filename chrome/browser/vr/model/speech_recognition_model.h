@@ -6,10 +6,11 @@
 #define CHROME_BROWSER_VR_MODEL_SPEECH_RECOGNITION_MODEL_H_
 
 #include "base/strings/string16.h"
+#include "chrome/browser/vr/vr_export.h"
 
 namespace vr {
 
-struct SpeechRecognitionModel {
+struct VR_EXPORT SpeechRecognitionModel {
   int speech_recognition_state = 0;
   bool has_or_can_request_audio_permission = true;
   base::string16 recognition_result;

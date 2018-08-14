@@ -7,8 +7,7 @@
 
 #include "base/time/time.h"
 #include "chrome/browser/vr/platform_controller.h"
-#include "chrome/browser/vr/ui_input_manager.h"
-#include "chrome/browser/vr/vr_base_export.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/transform.h"
 
@@ -18,7 +17,7 @@ namespace vr {
 // platform-specific VR subsystem (e.g., GVR). It is used by both the
 // UiInputManager (for generating gestures), and by the UI for rendering the
 // controller.
-struct VR_BASE_EXPORT ControllerModel {
+struct VR_EXPORT ControllerModel {
   ControllerModel();
   ControllerModel(const ControllerModel& other);
   ~ControllerModel();
@@ -26,9 +25,12 @@ struct VR_BASE_EXPORT ControllerModel {
   gfx::Transform transform;
   gfx::Vector3dF laser_direction;
   gfx::Point3F laser_origin;
-  UiInputManager::ButtonState touchpad_button_state = UiInputManager::UP;
-  UiInputManager::ButtonState app_button_state = UiInputManager::UP;
-  UiInputManager::ButtonState home_button_state = UiInputManager::UP;
+  PlatformController::ButtonState touchpad_button_state =
+      PlatformController::ButtonState::kUp;
+  PlatformController::ButtonState app_button_state =
+      PlatformController::ButtonState::kUp;
+  PlatformController::ButtonState home_button_state =
+      PlatformController::ButtonState::kUp;
   bool touching_touchpad = false;
   gfx::PointF touchpad_touch_position;
   float opacity = 1.0f;

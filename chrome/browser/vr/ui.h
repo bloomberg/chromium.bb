@@ -46,7 +46,7 @@ struct ReticleModel;
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.
 // It is not threadsafe and must only be used on the GL thread.
-class VR_EXPORT Ui : public UiInterface {
+class VR_UI_EXPORT Ui : public UiInterface {
  public:
   Ui(UiBrowserInterface* browser,
      PlatformInputHandler* content_input_forwarder,
