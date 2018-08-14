@@ -35,6 +35,7 @@ import org.robolectric.shadows.ShadowLog;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.media.router.CastSessionUtil;
 import org.chromium.chrome.browser.media.router.ClientRecord;
 import org.chromium.chrome.browser.media.router.cast.CastMessageHandler.RequestRecord;
 import org.chromium.chrome.browser.media.router.cast.JSONTestUtils.JSONObjectLike;

@@ -4,10 +4,17 @@
 
 package org.chromium.chrome.browser.media.router.caf;
 
+import android.support.v7.media.MediaRouter;
+
+import com.google.android.gms.cast.CastDevice;
 import com.google.android.gms.cast.framework.CastSession;
 
+import org.chromium.chrome.browser.media.router.CastSessionUtil;
 import org.chromium.chrome.browser.media.router.MediaSink;
 import org.chromium.chrome.browser.media.router.MediaSource;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A wrapper for {@link CastSession}, extending its functionality for Chrome MediaRouter.
@@ -43,19 +50,46 @@ public class CastSessionController {
     }
 
     public void endSession() {
-        CastSession currentCastSession =
-                CastUtils.getCastContext().getSessionManager().getCurrentCastSession();
-        if (currentCastSession == mCastSession) {
-            CastUtils.getCastContext().getSessionManager().endCurrentSession(true);
+        MediaRouter mediaRouter = mProvider.getAndroidMediaRouter();
+        mediaRouter.selectRoute(mediaRouter.getDefaultRoute());
+    }
+
+    public List<String> getNamespaces() {
+        // Not implemented.
+        return new ArrayList<>();
+    }
+
+    public List<String> getCapabilities() {
+        List<String> capabilities = new ArrayList<>();
+        if (mCastSession == null || !mCastSession.isConnected()) return capabilities;
+        CastDevice device = mCastSession.getCastDevice();
+        if (device.hasCapability(CastDevice.CAPABILITY_AUDIO_IN)) {
+            capabilities.add("audio_in");
         }
+        if (device.hasCapability(CastDevice.CAPABILITY_AUDIO_OUT)) {
+            capabilities.add("audio_out");
+        }
+        if (device.hasCapability(CastDevice.CAPABILITY_VIDEO_IN)) {
+            capabilities.add("video_in");
+        }
+        if (device.hasCapability(CastDevice.CAPABILITY_VIDEO_OUT)) {
+            capabilities.add("video_out");
+        }
+        return capabilities;
     }
 
     public void onSessionStarted() {
         // Not implemented.
     }
 
-    public void notifyReceiverAction(
-            String routeId, MediaSink sink, String clientId, String action) {
-        // Not implemented.
+    public boolean isConnected() {
+        return mCastSession != null && mCastSession.isConnected();
+    }
+
+    public void updateRemoteMediaClient(String message) {
+        if (!isConnected()) return;
+
+        mCastSession.getRemoteMediaClient().onMessageReceived(
+                mCastSession.getCastDevice(), CastSessionUtil.MEDIA_NAMESPACE, message);
     }
 }

@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.media.router.MediaSink;
 import org.chromium.chrome.browser.media.router.MediaSource;
 import org.chromium.chrome.browser.media.router.cast.CastMediaSource;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +38,7 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
 
     private ClientRecord mLastRemovedRouteRecord;
     private final Map<String, ClientRecord> mClientRecords = new HashMap<String, ClientRecord>();
+    private CafMessageHandler mMessageHandler;
 
     public static CafMediaRouteProvider create(MediaRouteManager manager) {
         return new CafMediaRouteProvider(ChromeMediaRouter.getAndroidMediaRouter(), manager);
@@ -54,10 +56,10 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
     public void requestSessionLaunch(CreateRouteRequestInfo request) {
         CastUtils.getCastContext().setReceiverApplicationId(request.source.getApplicationId());
 
-        for (MediaRouter.RouteInfo routeInfo : mAndroidMediaRouter.getRoutes()) {
+        for (MediaRouter.RouteInfo routeInfo : getAndroidMediaRouter().getRoutes()) {
             if (routeInfo.getId().equals(request.sink.getId())) {
                 // Unselect and then select so that CAF will get notified of the selection.
-                mAndroidMediaRouter.unselect(0);
+                getAndroidMediaRouter().unselect(0);
                 routeInfo.select();
                 break;
             }
@@ -100,11 +102,11 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
         if (!isRouteInRecord) return;
 
         ClientRecord client = getClientRecordByRouteId(routeId);
-        if (client != null && mAndroidMediaRouter != null) {
+        if (client != null) {
             MediaSink sink = MediaSink.fromSinkId(
-                    sessionController().getSink().getId(), mAndroidMediaRouter);
+                    sessionController().getSink().getId(), getAndroidMediaRouter());
             if (sink != null) {
-                sessionController().notifyReceiverAction(routeId, sink, client.clientId, "stop");
+                mMessageHandler.sendReceiverActionToClient(routeId, sink, client.clientId, "stop");
             }
         }
     }
@@ -133,6 +135,20 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
         return CastMediaSource.from(sourceId);
     }
 
+    public void sendMessageToClient(String clientId, String message) {
+        ClientRecord clientRecord = mClientRecords.get(clientId);
+        if (clientRecord == null) return;
+
+        if (!clientRecord.isConnected) {
+            Log.d(TAG, "Queueing message to client %s: %s", clientId, message);
+            clientRecord.pendingMessages.add(message);
+            return;
+        }
+
+        Log.d(TAG, "Sending message to client %s: %s", clientId, message);
+        mManager.onMessage(clientRecord.routeId, message);
+    }
+
     ///////////////////////////////////////////////
     // SessionManagerListener implementation
     ///////////////////////////////////////////////
@@ -156,10 +172,13 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
         if (clientId != null) {
             ClientRecord clientRecord = mClientRecords.get(clientId);
             if (clientRecord != null) {
-                sessionController().notifyReceiverAction(
+                mMessageHandler.sendReceiverActionToClient(
                         clientRecord.routeId, sink, clientId, "cast");
             }
         }
+
+        mMessageHandler.onSessionStarted(sessionController());
+        sessionController().getSession().getRemoteMediaClient().requestStatus();
     }
 
     @Override
@@ -191,9 +210,7 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
         }
 
         detachFromSession();
-        if (mAndroidMediaRouter != null) {
-            mAndroidMediaRouter.selectRoute(mAndroidMediaRouter.getDefaultRoute());
-        }
+        getAndroidMediaRouter().selectRoute(getAndroidMediaRouter().getDefaultRoute());
     }
 
     @Override
@@ -290,5 +307,13 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
         if (originA == null || originA.isEmpty() || originB == null || originB.isEmpty())
             return false;
         return originA.equals(originB);
+    }
+
+    Collection<String> getClients() {
+        return mClientRecords.keySet();
+    }
+
+    Map<String, ClientRecord> getClientRecordss() {
+        return mClientRecords;
     }
 }
