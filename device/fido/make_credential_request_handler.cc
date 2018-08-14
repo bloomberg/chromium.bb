@@ -34,6 +34,11 @@ bool CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
        !options.is_platform_device()) ||
       (authenticator_selection_criteria.authenticator_attachement() ==
            AuthenticatorAttachment::kCrossPlatform &&
+       options.is_platform_device()) ||
+      // TODO(crbug.com/873710): Reenable platform authenticators for kAny,
+      // once Touch ID is integrated into the UI.
+      (authenticator_selection_criteria.authenticator_attachement() ==
+           AuthenticatorAttachment::kAny &&
        options.is_platform_device())) {
     return false;
   }
