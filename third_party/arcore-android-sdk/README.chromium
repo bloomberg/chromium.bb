@@ -29,6 +29,9 @@ The LICENSE file is taken from
  * https://github.com/google-ar/arcore-unity-sdk/blob/master/LICENSE
 
 Changes:
+2018-08-10 - First, removed arcore shim copy target from BUILD.gn since it is no
+             longer needed. Second, added zero-byte dummy arcore library for AR
+             module support.
 2018-07-26 - Added test-apks/ subdirectory for storing production versions of AR
              APKs for testing.
 2018-07-19 - Updated BUILD.gn to support secondary abi (the previous change for
