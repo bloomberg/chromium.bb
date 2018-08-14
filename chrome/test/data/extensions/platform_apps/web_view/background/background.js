@@ -31,13 +31,13 @@ chrome.test.runTests([
           '/extensions/platform_apps/web_view/background/webview_auth.html';
       var authUrl = 'http://localhost:' + port + '/auth-basic';
       var webview = document.createElement('webview');
+      webview.request.onCompleted.addListener(function(details) {
+        if (authUrl == details.url) {
+          chrome.test.assertEq(401, details.statusCode);
+          chrome.test.succeed();
+        }
+      }, {urls: [authUrl]});
       webview.onloadstop = function(e) {
-        webview.request.onCompleted.addListener(function(details) {
-          if (authUrl == details.url) {
-            chrome.test.assertEq(401, details.statusCode);
-            chrome.test.succeed();
-          }
-        }, {urls: ['<all_urls>']});
         webview.contentWindow.postMessage({request: 'xhr', url: authUrl}, '*');
       };
       webview.setAttribute('src', url);

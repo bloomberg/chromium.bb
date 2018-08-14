@@ -10,7 +10,6 @@
 -ProxySettingsApiTest.ProxyEventsInvalidProxy
 -RegisterProtocolHandlerBrowserTest.CustomHandler
 -SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
--WebViewTest.WebViewInBackgroundPage
 
 # Domain Reliability has yet to be hookup to the NetworkService.
 # https://crbug.com/853251
