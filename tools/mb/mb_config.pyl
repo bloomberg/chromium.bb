@@ -554,7 +554,7 @@
     },
 
     'tryserver.chromium.chromiumos': {
-      'chromeos-amd64-generic-rel': 'cros_chrome_sdk_headless_ozone',
+      'chromeos-amd64-generic-rel': 'cros_chrome_sdk_headless_ozone_dcheck_always_on',
       'chromeos-daisy-rel': 'cros_chrome_sdk',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot',
       'linux-chromeos-compile-dbg': 'chromeos_with_codecs_debug_bot',
