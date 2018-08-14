@@ -8,9 +8,11 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 // AuthenticatorSheetModelBase ------------------------------------------------
 
@@ -26,6 +28,11 @@ AuthenticatorSheetModelBase::~AuthenticatorSheetModelBase() {
     dialog_model_->RemoveObserver(this);
     dialog_model_ = nullptr;
   }
+}
+
+// static
+gfx::ImageSkia* AuthenticatorSheetModelBase::GetImage(int resource_id) {
+  return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
 }
 
 bool AuthenticatorSheetModelBase::IsBackButtonVisible() const {
@@ -74,6 +81,10 @@ void AuthenticatorSheetModelBase::OnModelDestroyed() {
 
 // AuthenticatorInitialSheetModel ---------------------------------------------
 
+gfx::ImageSkia* AuthenticatorInitialSheetModel::GetStepIllustration() const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_WELCOME_1X);
+}
+
 base::string16 AuthenticatorInitialSheetModel::GetStepTitle() const {
   // TODO(hongjunchoi): Insert actual domain name from model to
   // |application_name|.
@@ -107,6 +118,11 @@ void AuthenticatorInitialSheetModel::OnAccept() {
 
 // AuthenticatorTransportSelectorSheetModel -----------------------------------
 
+gfx::ImageSkia* AuthenticatorTransportSelectorSheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_WELCOME_1X);
+}
+
 base::string16 AuthenticatorTransportSelectorSheetModel::GetStepTitle() const {
   // TODO(hongjunchoi): Insert actual domain name from model to
   // |application_name|.
@@ -128,6 +144,12 @@ void AuthenticatorTransportSelectorSheetModel::OnTransportSelected(
 
 // AuthenticatorInsertAndActivateUsbOnRegisterSheetModel ----------------------
 
+gfx::ImageSkia*
+AuthenticatorInsertAndActivateUsbOnRegisterSheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_USB_1X);
+}
+
 base::string16
 AuthenticatorInsertAndActivateUsbOnRegisterSheetModel::GetStepTitle() const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_USB_TITLE_ON_REGISTER);
@@ -140,6 +162,11 @@ AuthenticatorInsertAndActivateUsbOnRegisterSheetModel::GetStepDescription()
 }
 
 // AuthenticatorInsertAndActivateUsbOnSignSheetModel ----------------------
+
+gfx::ImageSkia*
+AuthenticatorInsertAndActivateUsbOnSignSheetModel::GetStepIllustration() const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_USB_1X);
+}
 
 base::string16 AuthenticatorInsertAndActivateUsbOnSignSheetModel::GetStepTitle()
     const {
@@ -157,6 +184,10 @@ AuthenticatorInsertAndActivateUsbOnSignSheetModel::GetStepDescription() const {
 
 // AuthenticatorTimeoutErrorModel ---------------------------------------------
 
+gfx::ImageSkia* AuthenticatorTimeoutErrorModel::GetStepIllustration() const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR_TIMEOUT_1X);
+}
+
 base::string16 AuthenticatorTimeoutErrorModel::GetStepTitle() const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_TIMEOUT_TITLE);
 }
@@ -166,6 +197,11 @@ base::string16 AuthenticatorTimeoutErrorModel::GetStepDescription() const {
 }
 
 // AuthenticatorBlePowerOnManualSheetModel ------------------------------------
+
+gfx::ImageSkia* AuthenticatorBlePowerOnManualSheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH_1X);
+}
 
 base::string16 AuthenticatorBlePowerOnManualSheetModel::GetStepTitle() const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_POWER_ON_MANUAL_TITLE);
@@ -192,6 +228,11 @@ base::string16 AuthenticatorBlePowerOnManualSheetModel::GetAcceptButtonLabel()
 
 // AuthenticatorBlePairingBeginSheetModel -------------------------------------
 
+gfx::ImageSkia* AuthenticatorBlePairingBeginSheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_1X);
+}
+
 base::string16 AuthenticatorBlePairingBeginSheetModel::GetStepTitle() const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_PAIRING_BEGIN_TITLE);
 }
@@ -216,6 +257,11 @@ base::string16 AuthenticatorBlePairingBeginSheetModel::GetAcceptButtonLabel()
 
 // AuthenticatorBleEnterPairingModeSheetModel ---------------------------------
 
+gfx::ImageSkia*
+AuthenticatorBleEnterPairingModeSheetModel::GetStepIllustration() const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_1X);
+}
+
 base::string16 AuthenticatorBleEnterPairingModeSheetModel::GetStepTitle()
     const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_ENTER_PAIRING_MODE_TITLE);
@@ -229,6 +275,11 @@ base::string16 AuthenticatorBleEnterPairingModeSheetModel::GetStepDescription()
 
 // AuthenticatorBleDeviceSelectionSheetModel ----------------------------------
 
+gfx::ImageSkia* AuthenticatorBleDeviceSelectionSheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_NAME_1X);
+}
+
 base::string16 AuthenticatorBleDeviceSelectionSheetModel::GetStepTitle() const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_DEVICE_SELECTION_TITLE);
 }
@@ -240,6 +291,11 @@ base::string16 AuthenticatorBleDeviceSelectionSheetModel::GetStepDescription()
 }
 
 // AuthenticatorBlePinEntrySheetModel -----------------------------------------
+
+gfx::ImageSkia* AuthenticatorBlePinEntrySheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_PIN_1X);
+}
 
 base::string16 AuthenticatorBlePinEntrySheetModel::GetStepTitle() const {
   // TODO(hongjunchoi): Insert actual device name from model to |device_name|.
@@ -267,6 +323,11 @@ base::string16 AuthenticatorBlePinEntrySheetModel::GetAcceptButtonLabel()
 
 // AuthenticatorBleVerifyingSheetModel ----------------------------------------
 
+gfx::ImageSkia* AuthenticatorBleVerifyingSheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_1X);
+}
+
 base::string16 AuthenticatorBleVerifyingSheetModel::GetStepTitle() const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_VERIFYING_TITLE);
 }
@@ -276,6 +337,11 @@ base::string16 AuthenticatorBleVerifyingSheetModel::GetStepDescription() const {
 }
 
 // AuthenticatorBleActivateSheetModel -----------------------------------------
+
+gfx::ImageSkia* AuthenticatorBleActivateSheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_TAP_1X);
+}
 
 base::string16 AuthenticatorBleActivateSheetModel::GetStepTitle() const {
   // TODO(hongjunchoi): Insert actual domain name from model to

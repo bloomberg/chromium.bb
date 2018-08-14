@@ -19,6 +19,7 @@ class PlaceholderSheetModel : public AuthenticatorSheetModelBase {
 
  private:
   // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override { return nullptr; }
   base::string16 GetStepTitle() const override { return base::string16(); }
   base::string16 GetStepDescription() const override {
     return base::string16();

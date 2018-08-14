@@ -25,6 +25,10 @@ class AuthenticatorSheetModelBase
   }
 
  protected:
+  // Pulls the image with the given |resource_id| from the resource bundle and
+  // loads it in Skia format.
+  static gfx::ImageSkia* GetImage(int resource_id);
+
   // AuthenticatorRequestSheetModel:
   bool IsBackButtonVisible() const override;
   bool IsCancelButtonVisible() const override;
@@ -52,6 +56,7 @@ class AuthenticatorInitialSheetModel : public AuthenticatorSheetModelBase {
 
  private:
   // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
   bool IsAcceptButtonVisible() const override;
@@ -73,6 +78,7 @@ class AuthenticatorTransportSelectorSheetModel
 
  private:
   // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
 };
@@ -84,6 +90,7 @@ class AuthenticatorInsertAndActivateUsbOnRegisterSheetModel
 
  private:
   // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
 };
@@ -95,6 +102,7 @@ class AuthenticatorInsertAndActivateUsbOnSignSheetModel
 
  private:
   // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
 };
@@ -105,6 +113,7 @@ class AuthenticatorTimeoutErrorModel : public AuthenticatorSheetModelBase {
 
  private:
   // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
 };
@@ -116,6 +125,7 @@ class AuthenticatorBlePowerOnManualSheetModel
 
  private:
   // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
   bool IsAcceptButtonVisible() const override;
@@ -130,6 +140,7 @@ class AuthenticatorBlePairingBeginSheetModel
 
  private:
   // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
   bool IsAcceptButtonVisible() const override;
@@ -144,6 +155,7 @@ class AuthenticatorBleEnterPairingModeSheetModel
 
  private:
   // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
 };
@@ -155,6 +167,7 @@ class AuthenticatorBleDeviceSelectionSheetModel
 
  private:
   // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
 };
@@ -165,6 +178,7 @@ class AuthenticatorBlePinEntrySheetModel : public AuthenticatorSheetModelBase {
 
  private:
   // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
   bool IsAcceptButtonVisible() const override;
@@ -178,6 +192,7 @@ class AuthenticatorBleVerifyingSheetModel : public AuthenticatorSheetModelBase {
 
  private:
   // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
 };
@@ -188,6 +203,7 @@ class AuthenticatorBleActivateSheetModel : public AuthenticatorSheetModelBase {
 
  private:
   // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
 };
