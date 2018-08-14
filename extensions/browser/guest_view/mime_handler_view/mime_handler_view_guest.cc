@@ -10,12 +10,14 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/web_preferences.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/mime_handler_private/mime_handler_private.h"
 #include "extensions/browser/extension_registry.h"
@@ -216,6 +218,9 @@ void MimeHandlerViewGuest::DidAttachToEmbedder() {
   web_contents()->GetController().LoadURL(
       stream_->handler_url(), content::Referrer(),
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
+  auto prefs = web_contents()->GetRenderViewHost()->GetWebkitPreferences();
+  prefs.navigate_on_drag_drop = true;
+  web_contents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
 }
 
 void MimeHandlerViewGuest::DidInitialize(
