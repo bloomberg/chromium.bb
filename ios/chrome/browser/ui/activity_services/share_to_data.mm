@@ -14,23 +14,38 @@
 #endif
 
 @interface ShareToData () {
+ @private
   // URL to be shared with share extensions.
-  GURL _shareURL;
+  GURL shareURL_;
 
   // Visible URL of the page.
-  GURL _visibleURL;
+  GURL visibleURL_;
+
+  // Title to be shared (not nil).
+  NSString* title_;
+
+  // Whether the title was provided by the page (i.e., was not generated from
+  // the url).
+  BOOL isOriginalTitle_;
+
+  // Whether the page is printable or not.
+  BOOL isPagePrintable_;
 }
+
+@property(nonatomic, readwrite, copy) NSString* title;
+@property(nonatomic, readwrite, assign) BOOL isOriginalTitle;
+@property(nonatomic, readwrite, assign) BOOL isPagePrintable;
 @end
 
 @implementation ShareToData
 
-@synthesize title = _title;
+@synthesize title = title_;
 @synthesize image = image_;
-@synthesize thumbnailGenerator = _thumbnailGenerator;
-@synthesize isOriginalTitle = _isOriginalTitle;
-@synthesize isPagePrintable = _isPagePrintable;
-@synthesize isPageSearchable = _isPageSearchable;
-@synthesize userAgent = _userAgent;
+@synthesize thumbnailGenerator = thumbnailGenerator_;
+@synthesize isOriginalTitle = isOriginalTitle_;
+@synthesize isPagePrintable = isPagePrintable_;
+@synthesize isPageSearchable = isPageSearchable_;
+@synthesize userAgent = userAgent_;
 
 - (id)initWithShareURL:(const GURL&)shareURL
             visibleURL:(const GURL&)visibleURL
@@ -45,32 +60,32 @@
   DCHECK(title);
   self = [super init];
   if (self) {
-    _shareURL = shareURL;
-    _visibleURL = visibleURL;
-    _title = [title copy];
-    _isOriginalTitle = isOriginalTitle;
-    _isPagePrintable = isPagePrintable;
-    _isPageSearchable = isPageSearchable;
-    _userAgent = userAgent;
-    _thumbnailGenerator = thumbnailGenerator;
+    shareURL_ = shareURL;
+    visibleURL_ = visibleURL;
+    title_ = [title copy];
+    isOriginalTitle_ = isOriginalTitle;
+    isPagePrintable_ = isPagePrintable;
+    isPageSearchable_ = isPageSearchable;
+    userAgent_ = userAgent;
+    thumbnailGenerator_ = thumbnailGenerator;
   }
   return self;
 }
 
 - (const GURL&)shareURL {
-  return _shareURL;
+  return shareURL_;
 }
 
 - (const GURL&)visibleURL {
-  return _visibleURL;
+  return visibleURL_;
 }
 
 - (NSURL*)shareNSURL {
-  return net::NSURLWithGURL(_shareURL);
+  return net::NSURLWithGURL(shareURL_);
 }
 
 - (NSURL*)passwordManagerNSURL {
-  return net::NSURLWithGURL(_visibleURL);
+  return net::NSURLWithGURL(visibleURL_);
 }
 
 @end

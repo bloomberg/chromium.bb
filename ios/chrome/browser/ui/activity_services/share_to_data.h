@@ -34,12 +34,8 @@
 @property(nonatomic, readonly) NSURL* shareNSURL;
 @property(nonatomic, readonly) NSURL* passwordManagerNSURL;
 
-// Title to be shared (not nil).
 @property(nonatomic, readonly, copy) NSString* title;
-// Whether the title was provided by the page (i.e., was not generated from
-// the url).
 @property(nonatomic, readonly, assign) BOOL isOriginalTitle;
-// Whether the page is printable or not.
 @property(nonatomic, readonly, assign) BOOL isPagePrintable;
 // Whether FindInPage can be enabled for this page.
 @property(nonatomic, readonly, assign) BOOL isPageSearchable;
