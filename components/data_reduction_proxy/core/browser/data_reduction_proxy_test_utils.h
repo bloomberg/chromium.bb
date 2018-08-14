@@ -39,9 +39,12 @@ class TestingPrefServiceSimple;
 namespace net {
 class MockClientSocketFactory;
 class NetLog;
-class TestNetworkQualityEstimator;
 class URLRequestContext;
 class URLRequestContextStorage;
+}
+
+namespace network {
+class TestNetworkQualityTracker;
 }
 
 namespace data_reduction_proxy {
@@ -182,6 +185,7 @@ class MockDataReductionProxyService : public DataReductionProxyService {
  public:
   MockDataReductionProxyService(
       DataReductionProxySettings* settings,
+      network::TestNetworkQualityTracker* test_network_quality_tracker,
       PrefService* prefs,
       net::URLRequestContextGetter* request_context,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
@@ -483,6 +487,10 @@ class DataReductionProxyTestContext {
     return params_;
   }
 
+  network::TestNetworkQualityTracker* test_network_quality_tracker() const {
+    return test_network_quality_tracker_.get();
+  }
+
   void InitSettingsWithoutCheck();
 
   // Returns the proxies that are currently configured for "http://" requests,
@@ -514,7 +522,6 @@ class DataReductionProxyTestContext {
       std::unique_ptr<TestDataReductionProxyEventStorageDelegate>
           storage_delegate,
       std::unique_ptr<TestConfigStorer> config_storer,
-      std::unique_ptr<net::TestNetworkQualityEstimator> estimator,
       TestDataReductionProxyParams* params,
       unsigned int test_context_flags);
 
@@ -527,7 +534,6 @@ class DataReductionProxyTestContext {
   std::unique_ptr<TestingPrefServiceSimple> simple_pref_service_;
   std::unique_ptr<net::TestNetLog> net_log_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-  std::unique_ptr<net::TestNetworkQualityEstimator> estimator_;
   // Non-owned pointer. Will be NULL if |this| was built without specifying a
   // |net::MockClientSocketFactory|.
   net::MockClientSocketFactory* mock_socket_factory_;
@@ -536,6 +542,8 @@ class DataReductionProxyTestContext {
   std::unique_ptr<DataReductionProxySettings> settings_;
   std::unique_ptr<TestDataReductionProxyEventStorageDelegate> storage_delegate_;
   std::unique_ptr<TestConfigStorer> config_storer_;
+  std::unique_ptr<network::TestNetworkQualityTracker>
+      test_network_quality_tracker_;
 
   TestDataReductionProxyParams* params_;
 

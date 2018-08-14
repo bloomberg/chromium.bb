@@ -16,7 +16,6 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
-#include "net/nqe/network_quality_estimator.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context.h"
@@ -28,14 +27,14 @@ namespace data_reduction_proxy {
 WarmupURLFetcher::WarmupURLFetcher(
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter,
-    WarmupURLFetcherCallback callback)
+    WarmupURLFetcherCallback callback,
+    GetHttpRttCallback get_http_rtt_callback)
     : is_fetch_in_flight_(false),
       previous_attempt_counts_(0),
       url_request_context_getter_(url_request_context_getter),
-      callback_(callback) {
+      callback_(callback),
+      get_http_rtt_callback_(get_http_rtt_callback) {
   DCHECK(url_request_context_getter_);
-  DCHECK(url_request_context_getter_->GetURLRequestContext()
-             ->network_quality_estimator());
 }
 
 WarmupURLFetcher::~WarmupURLFetcher() {}
@@ -236,12 +235,8 @@ base::TimeDelta WarmupURLFetcher::GetFetchTimeout() const {
   DCHECK_LT(0u, http_rtt_multiplier);
   DCHECK_GE(1000u, http_rtt_multiplier);
 
-  const net::NetworkQualityEstimator* network_quality_estimator =
-      url_request_context_getter_->GetURLRequestContext()
-          ->network_quality_estimator();
-
   base::Optional<base::TimeDelta> http_rtt_estimate =
-      network_quality_estimator->GetHttpRTT();
+      get_http_rtt_callback_.Run();
   if (!http_rtt_estimate)
     return max_timeout;
 
