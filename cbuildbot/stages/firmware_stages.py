@@ -24,6 +24,10 @@ from chromite.lib import gs
 from chromite.lib import osutils
 
 
+class UnsafeBuildForPushImage(Exception):
+  """Raised if push_image is run against a non-signable build."""
+
+
 class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
                            generic_stages.BoardSpecificBuilderStage,
                            generic_stages.ArchivingStageMixin):
@@ -66,6 +70,14 @@ class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
     """Uniqify the name across boards."""
     return '%s_%s' % (self._current_board, constants.FIRMWARE_ARCHIVE_NAME)
 
+  @property
+  def dummy_archive_url(self):
+    """Uniqify the name across boards."""
+    return os.path.join(
+        config_lib.GetConfig().params.ARCHIVE_URL,
+        self.dummy_firmware_config,
+        self.firmware_version)
+
   def CreateBoardFirmwareArchive(self):
     """Create/publish the firmware build artifact for the current board."""
     logging.info('Create %s', self.firmware_name)
@@ -106,22 +118,36 @@ class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
     firmware_path = os.path.join(self.archive_path, self.firmware_name)
     metadata_path = os.path.join(self.archive_path, self.metadata_name)
 
-    dummy_archive_url = os.path.join(
-        config_lib.GetConfig().params.ARCHIVE_URL,
-        self.dummy_firmware_config,
-        self.firmware_version)
-
     gs_context = gs.GSContext(acl=self.acl, dry_run=self._run.options.debug)
-    gs_context.CopyInto(firmware_path, dummy_archive_url,
+    gs_context.CopyInto(firmware_path, self.dummy_archive_url,
                         filename=constants.FIRMWARE_ARCHIVE_NAME)
-    gs_context.CopyInto(metadata_path, dummy_archive_url,
+    gs_context.CopyInto(metadata_path, self.dummy_archive_url,
                         filename=constants.METADATA_JSON)
 
-    dummy_http_url = gs.GsUrlToHttp(dummy_archive_url,
+    dummy_http_url = gs.GsUrlToHttp(self.dummy_archive_url,
                                     public=False, directory=True)
 
     label = '%s Firmware' % self._current_board
     logging.PrintBuildbotLink(label, dummy_http_url)
+
+  def PushBoardImage(self):
+    """Helper method to run push_image against the dummy boards artifacts."""
+    # This helper script is only available on internal manifests currently.
+    if not self._run.config['internal']:
+      raise UnsafeBuildForPushImage("Can't use push_image on external builds.")
+
+    logging.info('Use pushimage to publish signing artifacts for: %s',
+                 self._current_board)
+
+    # Push build artifacts to gs://chromeos-releases for signing and release.
+    # This runs TOT pushimage against the build artifacts for the branch.
+    commands.PushImages(
+        board=self._current_board,
+        archive_url=self.dummy_archive_url,
+        dryrun=self._run.options.debug or not self._run.config['push_image'],
+        profile=self._run.options.profile or self._run.config['profile'],
+        sign_types=self._run.config['sign_types'] or [],
+        buildroot=self._build_root)
 
   def PerformStage(self):
     """Archive and publish the firmware build artifacts."""
@@ -147,3 +173,4 @@ class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
     self.CreateBoardFirmwareArchive()
     self.CreateBoardMetadataJson()
     self.CreateBoardBuildResult()
+    self.PushBoardImage()
