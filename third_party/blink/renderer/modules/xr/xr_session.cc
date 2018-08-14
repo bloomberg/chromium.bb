@@ -296,16 +296,17 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
 
   // TODO(https://crbug.com/843376): Reject the promise if device doesn't
   // support the hit-test API.
-
   device::mojom::blink::XRRayPtr ray = device::mojom::blink::XRRay::New();
-  ray->origin.resize(3);
-  ray->origin[0] = origin.View()->Data()[0];
-  ray->origin[1] = origin.View()->Data()[1];
-  ray->origin[2] = origin.View()->Data()[2];
-  ray->direction.resize(3);
-  ray->direction[0] = direction.View()->Data()[0];
-  ray->direction[1] = direction.View()->Data()[1];
-  ray->direction[2] = direction.View()->Data()[2];
+
+  ray->origin = gfx::mojom::blink::Point3F::New();
+  ray->origin->x = origin.View()->Data()[0];
+  ray->origin->y = origin.View()->Data()[1];
+  ray->origin->z = origin.View()->Data()[2];
+
+  ray->direction = gfx::mojom::blink::Vector3dF::New();
+  ray->direction->x = direction.View()->Data()[0];
+  ray->direction->y = direction.View()->Data()[1];
+  ray->direction->z = direction.View()->Data()[2];
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();

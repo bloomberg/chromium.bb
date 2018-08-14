@@ -9,6 +9,7 @@
 #include "ui/gfx/geometry/insets_f.h"
 #include "ui/gfx/geometry/mojo/geometry.mojom-shared.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -17,6 +18,7 @@
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 
 namespace mojo {
 
@@ -60,6 +62,17 @@ struct StructTraits<gfx::mojom::PointFDataView, gfx::PointF> {
   static float y(const gfx::PointF& p) { return p.y(); }
   static bool Read(gfx::mojom::PointFDataView data, gfx::PointF* out) {
     out->SetPoint(data.x(), data.y());
+    return true;
+  }
+};
+
+template <>
+struct StructTraits<gfx::mojom::Point3FDataView, gfx::Point3F> {
+  static float x(const gfx::Point3F& p) { return p.x(); }
+  static float y(const gfx::Point3F& p) { return p.y(); }
+  static float z(const gfx::Point3F& p) { return p.z(); }
+  static bool Read(gfx::mojom::Point3FDataView data, gfx::Point3F* out) {
+    out->SetPoint(data.x(), data.y(), data.z());
     return true;
   }
 };
@@ -138,6 +151,19 @@ struct StructTraits<gfx::mojom::Vector2dFDataView, gfx::Vector2dF> {
   static bool Read(gfx::mojom::Vector2dFDataView data, gfx::Vector2dF* out) {
     out->set_x(data.x());
     out->set_y(data.y());
+    return true;
+  }
+};
+
+template <>
+struct StructTraits<gfx::mojom::Vector3dFDataView, gfx::Vector3dF> {
+  static float x(const gfx::Vector3dF& v) { return v.x(); }
+  static float y(const gfx::Vector3dF& v) { return v.y(); }
+  static float z(const gfx::Vector3dF& v) { return v.z(); }
+  static bool Read(gfx::mojom::Vector3dFDataView data, gfx::Vector3dF* out) {
+    out->set_x(data.x());
+    out->set_y(data.y());
+    out->set_y(data.z());
     return true;
   }
 };
