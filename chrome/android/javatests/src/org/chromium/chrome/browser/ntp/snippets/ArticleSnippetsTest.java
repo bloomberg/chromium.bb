@@ -164,7 +164,7 @@ public class ArticleSnippetsTest {
 
             mRecyclerView = new SuggestionsRecyclerView(activity);
             mContextMenuManager = new ContextMenuManager(mUiDelegate.getNavigationDelegate(),
-                    mRecyclerView::setTouchEnabled, activity::closeContextMenu);
+                    mRecyclerView::setTouchEnabled, activity::closeContextMenu, false);
             mRecyclerView.init(mUiConfig, mContextMenuManager);
 
             mSuggestion = new SnippetArticleViewHolder(mRecyclerView, mContextMenuManager,
