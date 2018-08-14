@@ -23,6 +23,7 @@
 #include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/core/autofill_payment_instrument.h"
+#include "components/payments/core/features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -224,6 +225,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingMaskedCard) {
+  // Masked cards are from Google Pay.
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kReturnGooglePayInBasicCard);
+
   NavigateTo("/payment_request_no_shipping_test.html");
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kJune2017);
@@ -305,6 +310,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingMaskedCard) {
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                        EditingMaskedCard_ClickOnPaymentsLink) {
+  // Masked cards are from Google Pay.
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kReturnGooglePayInBasicCard);
+
   NavigateTo("/payment_request_no_shipping_test.html");
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kJune2017);
