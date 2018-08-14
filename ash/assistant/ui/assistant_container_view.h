@@ -7,12 +7,17 @@
 
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "base/macros.h"
+#include "ui/display/display_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace gfx {
 class SlideAnimation;
 }  // namespace gfx
+
+namespace aura {
+class Window;
+}  // namespace aura
 
 namespace ash {
 
@@ -23,6 +28,7 @@ class AssistantWebView;
 
 class AssistantContainerView : public views::BubbleDialogDelegateView,
                                public AssistantUiModelObserver,
+                               public display::DisplayObserver,
                                public gfx::AnimationDelegate {
  public:
   explicit AssistantContainerView(AssistantController* assistant_controller);
@@ -44,8 +50,18 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
+  // display::DisplayObserver:
+  void OnWillProcessDisplayChanges() override {}
+  void OnDidProcessDisplayChanges() override {}
+  void OnDisplayAdded(const display::Display& new_display) override {}
+  void OnDisplayRemoved(const display::Display& old_display) override {}
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
+
  private:
-  void SetAnchor();
+  // Sets anchor rect to |root_window|. If it's null,
+  // result of GetRootWindowForNewWindows() will be used.
+  void SetAnchor(aura::Window* root_window);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 

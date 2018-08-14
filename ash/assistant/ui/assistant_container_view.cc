@@ -115,8 +115,7 @@ AssistantContainerView::AssistantContainerView(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller) {
   set_accept_events(true);
-  SetAnchor();
-  set_arrow(views::BubbleBorder::Arrow::BOTTOM_CENTER);
+  SetAnchor(nullptr);
   set_close_on_deactivate(false);
   set_color(kBackgroundColor);
   set_margins(gfx::Insets());
@@ -131,9 +130,11 @@ AssistantContainerView::AssistantContainerView(
   // The AssistantController owns the view hierarchy to which
   // AssistantContainerView belongs so is guaranteed to outlive it.
   assistant_controller_->ui_controller()->AddModelObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
 }
 
 AssistantContainerView::~AssistantContainerView() {
+  display::Screen::GetScreen()->RemoveObserver(this);
   assistant_controller_->ui_controller()->RemoveModelObserver(this);
 }
 
@@ -237,11 +238,12 @@ void AssistantContainerView::RequestFocus() {
   }
 }
 
-// TODO(dmblack): Handle dynamic re-anchoring due to shelf repositioning, etc.
-void AssistantContainerView::SetAnchor() {
+void AssistantContainerView::SetAnchor(aura::Window* root_window) {
+  if (!root_window)
+    root_window = Shell::Get()->GetRootWindowForNewWindows();
   // Anchor to the display matching where new windows will be opened.
   display::Display display = display::Screen::GetScreen()->GetDisplayMatching(
-      Shell::Get()->GetRootWindowForNewWindows()->GetBoundsInScreen());
+      root_window->GetBoundsInScreen());
 
   // Anchor to the bottom center of the work area.
   gfx::Rect work_area = display.work_area();
@@ -249,6 +251,7 @@ void AssistantContainerView::SetAnchor() {
                                work_area.width(), 0);
 
   SetAnchorRect(anchor);
+  set_arrow(views::BubbleBorder::Arrow::BOTTOM_CENTER);
 }
 
 void AssistantContainerView::OnUiModeChanged(AssistantUiMode ui_mode) {
@@ -299,6 +302,14 @@ void AssistantContainerView::AnimationProgressed(
   bounds.set_y(bottom - bounds.height());
 
   GetWidget()->SetBounds(bounds);
+}
+
+void AssistantContainerView::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t changed_metrics) {
+  aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
+  if (root_window == Shell::Get()->GetRootWindowForDisplayId(display.id()))
+    SetAnchor(root_window);
 }
 
 }  // namespace ash
