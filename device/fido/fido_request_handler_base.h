@@ -131,6 +131,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   void DiscoveryStarted(FidoDiscovery* discovery, bool success) final;
   void DeviceAdded(FidoDiscovery* discovery, FidoDevice* device) final;
   void DeviceRemoved(FidoDiscovery* discovery, FidoDevice* device) final;
+  void BluetoothAdapterPowerChanged(bool is_powered_on) final;
 
   void AddAuthenticator(std::unique_ptr<FidoAuthenticator> authenticator);
   void MaybeAddPlatformAuthenticator();

@@ -57,6 +57,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery {
     virtual void DeviceAdded(FidoDiscovery* discovery, FidoDevice* device) = 0;
     virtual void DeviceRemoved(FidoDiscovery* discovery,
                                FidoDevice* device) = 0;
+    virtual void BluetoothAdapterPowerChanged(bool is_powered_on) {}
   };
 
   // Factory function to construct an instance that discovers authenticators on
