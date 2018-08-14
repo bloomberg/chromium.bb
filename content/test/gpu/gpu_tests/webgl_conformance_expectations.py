@@ -126,10 +126,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',
         bug=625738)
 
-    # canvas.commit() promise synchronization isn't fully reliable yet.
-    self.Fail('conformance/offscreencanvas/offscreencanvas-resize.html',
-        bug=709484)
-
     # This test needs to be rewritten to measure its expected
     # performance; it's currently too flaky even on release bots.
     self.Skip('conformance/rendering/texture-switch-performance.html',
