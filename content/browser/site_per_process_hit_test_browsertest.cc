@@ -1340,16 +1340,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
   RunTest(ScrollBubbling);
 }
 
-#if defined(OS_LINUX)
-// Flaky: https://crbug.com/833380
-#define MAYBE_EmulatedTouchPinchGoesToMainFrame \
-  DISABLED_EmulatedTouchPinchGoesToMainFrame
-#else
-#define MAYBE_EmulatedTouchPinchGoesToMainFrame \
-  EmulatedTouchPinchGoesToMainFrame
-#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
-                       MAYBE_EmulatedTouchPinchGoesToMainFrame) {
+                       EmulatedTouchPinchGoesToMainFrame) {
   RunTest(PinchGoesToMainFrame);
 }
 
