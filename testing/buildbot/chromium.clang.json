@@ -153,9 +153,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_components_browsertests",
+        "name": "not_site_per_process_components_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -169,9 +169,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_components_unittests",
+        "name": "not_site_per_process_components_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -203,10 +203,9 @@
       },
       {
         "args": [
-          "--enable-features=TracingPerfettoBackend",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-site-isolation-trials"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "not_site_per_process_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -214,9 +213,10 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--enable-features=TracingPerfettoBackend",
+          "--gtest_filter=TracingControllerTest.*"
         ],
-        "name": "site_per_process_content_browsertests",
+        "name": "perfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -241,9 +241,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_content_unittests",
+        "name": "not_site_per_process_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -319,9 +319,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_extensions_browsertests",
+        "name": "not_site_per_process_extensions_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -335,9 +335,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_extensions_unittests",
+        "name": "not_site_per_process_extensions_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -827,9 +827,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_components_browsertests",
+        "name": "not_site_per_process_components_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -843,9 +843,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_components_unittests",
+        "name": "not_site_per_process_components_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -877,10 +877,9 @@
       },
       {
         "args": [
-          "--enable-features=TracingPerfettoBackend",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-site-isolation-trials"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "not_site_per_process_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -888,9 +887,10 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--enable-features=TracingPerfettoBackend",
+          "--gtest_filter=TracingControllerTest.*"
         ],
-        "name": "site_per_process_content_browsertests",
+        "name": "perfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -915,9 +915,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_content_unittests",
+        "name": "not_site_per_process_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -993,9 +993,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_extensions_browsertests",
+        "name": "not_site_per_process_extensions_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1009,9 +1009,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_extensions_unittests",
+        "name": "not_site_per_process_extensions_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -10509,9 +10509,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_components_browsertests",
+        "name": "not_site_per_process_components_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -10525,9 +10525,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_components_unittests",
+        "name": "not_site_per_process_components_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -10559,10 +10559,9 @@
       },
       {
         "args": [
-          "--enable-features=TracingPerfettoBackend",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-site-isolation-trials"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "not_site_per_process_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -10570,9 +10569,10 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--enable-features=TracingPerfettoBackend",
+          "--gtest_filter=TracingControllerTest.*"
         ],
-        "name": "site_per_process_content_browsertests",
+        "name": "perfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -10597,9 +10597,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_content_unittests",
+        "name": "not_site_per_process_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -10675,9 +10675,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_extensions_browsertests",
+        "name": "not_site_per_process_extensions_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -10691,9 +10691,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_extensions_unittests",
+        "name": "not_site_per_process_extensions_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -11179,9 +11179,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_components_browsertests",
+        "name": "not_site_per_process_components_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -11195,9 +11195,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_components_unittests",
+        "name": "not_site_per_process_components_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -11229,10 +11229,9 @@
       },
       {
         "args": [
-          "--enable-features=TracingPerfettoBackend",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-site-isolation-trials"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "not_site_per_process_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -11240,9 +11239,10 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--enable-features=TracingPerfettoBackend",
+          "--gtest_filter=TracingControllerTest.*"
         ],
-        "name": "site_per_process_content_browsertests",
+        "name": "perfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -11267,9 +11267,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_content_unittests",
+        "name": "not_site_per_process_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -11345,9 +11345,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_extensions_browsertests",
+        "name": "not_site_per_process_extensions_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -11361,9 +11361,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_extensions_unittests",
+        "name": "not_site_per_process_extensions_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -11819,9 +11819,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_components_browsertests",
+        "name": "not_site_per_process_components_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -11835,9 +11835,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_components_unittests",
+        "name": "not_site_per_process_components_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -11869,10 +11869,9 @@
       },
       {
         "args": [
-          "--enable-features=TracingPerfettoBackend",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-site-isolation-trials"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "not_site_per_process_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -11880,9 +11879,10 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--enable-features=TracingPerfettoBackend",
+          "--gtest_filter=TracingControllerTest.*"
         ],
-        "name": "site_per_process_content_browsertests",
+        "name": "perfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -11907,9 +11907,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_content_unittests",
+        "name": "not_site_per_process_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -11985,9 +11985,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_extensions_browsertests",
+        "name": "not_site_per_process_extensions_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -12001,9 +12001,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_extensions_unittests",
+        "name": "not_site_per_process_extensions_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -12469,9 +12469,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_components_browsertests",
+        "name": "not_site_per_process_components_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -12485,9 +12485,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_components_unittests",
+        "name": "not_site_per_process_components_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -12519,10 +12519,9 @@
       },
       {
         "args": [
-          "--enable-features=TracingPerfettoBackend",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-site-isolation-trials"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "not_site_per_process_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -12530,9 +12529,10 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--enable-features=TracingPerfettoBackend",
+          "--gtest_filter=TracingControllerTest.*"
         ],
-        "name": "site_per_process_content_browsertests",
+        "name": "perfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -12557,9 +12557,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_content_unittests",
+        "name": "not_site_per_process_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -12635,9 +12635,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_extensions_browsertests",
+        "name": "not_site_per_process_extensions_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -12651,9 +12651,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_extensions_unittests",
+        "name": "not_site_per_process_extensions_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -13128,9 +13128,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_components_browsertests",
+        "name": "not_site_per_process_components_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -13144,9 +13144,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_components_unittests",
+        "name": "not_site_per_process_components_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -13179,10 +13179,9 @@
       },
       {
         "args": [
-          "--enable-features=TracingPerfettoBackend",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-site-isolation-trials"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "not_site_per_process_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -13190,9 +13189,10 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--enable-features=TracingPerfettoBackend",
+          "--gtest_filter=TracingControllerTest.*"
         ],
-        "name": "site_per_process_content_browsertests",
+        "name": "perfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -13217,9 +13217,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_content_unittests",
+        "name": "not_site_per_process_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -13295,9 +13295,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_extensions_browsertests",
+        "name": "not_site_per_process_extensions_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -13311,9 +13311,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_extensions_unittests",
+        "name": "not_site_per_process_extensions_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -21556,9 +21556,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_components_browsertests",
+        "name": "not_site_per_process_components_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -21572,9 +21572,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_components_unittests",
+        "name": "not_site_per_process_components_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -21606,10 +21606,9 @@
       },
       {
         "args": [
-          "--enable-features=TracingPerfettoBackend",
-          "--gtest_filter=TracingControllerTest.*"
+          "--disable-site-isolation-trials"
         ],
-        "name": "perfetto_content_browsertests",
+        "name": "not_site_per_process_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -21617,9 +21616,10 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--enable-features=TracingPerfettoBackend",
+          "--gtest_filter=TracingControllerTest.*"
         ],
-        "name": "site_per_process_content_browsertests",
+        "name": "perfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -21644,9 +21644,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_content_unittests",
+        "name": "not_site_per_process_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -21722,9 +21722,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_extensions_browsertests",
+        "name": "not_site_per_process_extensions_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -21738,9 +21738,9 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--disable-site-isolation-trials"
         ],
-        "name": "site_per_process_extensions_unittests",
+        "name": "not_site_per_process_extensions_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },

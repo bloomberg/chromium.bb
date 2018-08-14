@@ -419,8 +419,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // opted into --isolate-origins mode of Site Isolation.
   virtual std::vector<url::Origin> GetOriginsRequiringDedicatedProcess();
 
-  // Allows the embedder to programmatically opt into --site-per-process mode of
-  // Site Isolation.
+  // Allows the embedder to programmatically control whether the
+  // --site-per-process mode of Site Isolation should be used.
   //
   // Note that for correctness, the same value should be consistently returned.
   // See also https://crbug.com/825369
