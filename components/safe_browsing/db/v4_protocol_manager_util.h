@@ -19,6 +19,7 @@
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string_piece.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/safebrowsing.pb.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
@@ -77,6 +78,18 @@ struct V4ProtocolConfig {
  private:
   V4ProtocolConfig() = delete;
 };
+
+// Get the v4 protocol config struct with a given client name, and ability to
+// enable/disable database auto update.
+V4ProtocolConfig GetV4ProtocolConfig(const std::string& client_name,
+                                     bool disable_auto_update);
+
+// Returns the URL to use for sending threat reports and other Safe Browsing
+// hits back to Safe Browsing service.
+std::string GetReportUrl(
+    const V4ProtocolConfig& config,
+    const std::string& method,
+    const ExtendedReportingLevel* reporting_level = nullptr);
 
 // Different types of threats that SafeBrowsing protects against. This is the
 // type that's returned to the clients of SafeBrowsing in Chromium.

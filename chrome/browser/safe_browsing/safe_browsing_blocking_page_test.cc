@@ -25,7 +25,6 @@
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
@@ -126,19 +125,8 @@ class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   }
 
   void OnCheckBrowseURLDone(const GURL& gurl, Client* client) {
-    SBThreatTypeSet expected_threats = CreateSBThreatTypeSet(
-        {SB_THREAT_TYPE_URL_MALWARE, SB_THREAT_TYPE_URL_PHISHING,
-         SB_THREAT_TYPE_URL_UNWANTED});
-    // TODO(nparker): Remove ref to LocalSafeBrowsingDatabase by calling
-    // client->OnCheckBrowseUrlResult(..) directly.
-    LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck sb_check(
-        std::vector<GURL>(1, gurl),
-        std::vector<SBFullHash>(),
-        client,
-        MALWARE,
-        expected_threats);
-    sb_check.url_results[0] = badurls.at(gurl.spec());
-    sb_check.OnSafeBrowsingResult();
+    client->OnCheckBrowseUrlResult(gurl, badurls.at(gurl.spec()),
+                                   ThreatMetadata());
   }
 
   void SetURLThreatType(const GURL& url, SBThreatType threat_type) {

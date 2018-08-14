@@ -571,13 +571,8 @@ void V4LocalDatabaseManager::DatabaseUpdated() {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(
-            &V4LocalDatabaseManager::PostUpdateNotificationOnUIThread, this));
+            &SafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished, this));
   }
-}
-
-void V4LocalDatabaseManager::PostUpdateNotificationOnUIThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  update_complete_callback_list_.Notify();
 }
 
 void V4LocalDatabaseManager::DeletePVer3StoreFiles() {

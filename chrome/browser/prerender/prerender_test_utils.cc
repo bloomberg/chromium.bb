@@ -18,7 +18,6 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
@@ -266,18 +265,8 @@ FakeSafeBrowsingDatabaseManager::~FakeSafeBrowsingDatabaseManager() {}
 
 void FakeSafeBrowsingDatabaseManager::OnCheckBrowseURLDone(const GURL& gurl,
                                                            Client* client) {
-  safe_browsing::SBThreatTypeSet expected_threats =
-      safe_browsing::CreateSBThreatTypeSet(
-          {safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
-           safe_browsing::SB_THREAT_TYPE_URL_PHISHING});
-
-  // TODO(nparker): Replace SafeBrowsingCheck w/ a call to
-  // client->OnCheckBrowseUrlResult()
-  safe_browsing::LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck sb_check(
-      std::vector<GURL>(1, gurl), std::vector<safe_browsing::SBFullHash>(),
-      client, safe_browsing::MALWARE, expected_threats);
-  sb_check.url_results[0] = bad_urls_[gurl.spec()];
-  sb_check.OnSafeBrowsingResult();
+  client->OnCheckBrowseUrlResult(gurl, bad_urls_[gurl.spec()],
+                                 safe_browsing::ThreatMetadata());
 }
 
 TestPrerenderContents::TestPrerenderContents(

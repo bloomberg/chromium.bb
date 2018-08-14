@@ -1140,37 +1140,18 @@ class FakeDownloadProtectionService
   }
 };
 
-class FakeSafeBrowsingService
-    : public safe_browsing::TestSafeBrowsingService,
-      public safe_browsing::ServicesDelegate::ServicesCreator {
+class FakeSafeBrowsingService : public safe_browsing::TestSafeBrowsingService {
  public:
-  FakeSafeBrowsingService()
-      : TestSafeBrowsingService(
-            safe_browsing::V4FeatureList::V4UsageStatus::V4_DISABLED) {
-    services_delegate_ =
-        safe_browsing::ServicesDelegate::CreateForTest(this, this);
-  }
+  FakeSafeBrowsingService() : TestSafeBrowsingService() {}
 
  protected:
   ~FakeSafeBrowsingService() override {}
 
   // ServicesDelegate::ServicesCreator:
   bool CanCreateDownloadProtectionService() override { return true; }
-  bool CanCreateIncidentReportingService() override { return false; }
-  bool CanCreateResourceRequestDetector() override { return false; }
   safe_browsing::DownloadProtectionService* CreateDownloadProtectionService()
       override {
     return new FakeDownloadProtectionService();
-  }
-  safe_browsing::IncidentReportingService* CreateIncidentReportingService()
-      override {
-    NOTREACHED();
-    return nullptr;
-  }
-  safe_browsing::ResourceRequestDetector* CreateResourceRequestDetector()
-      override {
-    NOTREACHED();
-    return nullptr;
   }
 
  private:

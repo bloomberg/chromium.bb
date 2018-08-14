@@ -213,6 +213,9 @@ source_set("v4_protocol_manager_util") {
   ]
   deps = [
     "//base",
+    "//components/safe_browsing/common:safe_browsing_prefs",
+    "//components/version_info:version_info",
+    "//google_apis:google_apis",
     "//net",
     "//url",
   ]

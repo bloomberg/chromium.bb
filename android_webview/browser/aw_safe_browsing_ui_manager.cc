@@ -16,6 +16,7 @@
 #include "components/safe_browsing/browser/safe_browsing_network_context.h"
 #include "components/safe_browsing/browser/safe_browsing_url_request_context_getter.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
+#include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/ping_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/features.h"
@@ -129,18 +130,10 @@ void AwSafeBrowsingUIManager::SendSerializedThreatDetails(
 
   if (!ping_manager_) {
     // Lazy creation of ping manager, needs to happen on IO thread.
-    safe_browsing::SafeBrowsingProtocolConfig config;
-    config.client_name = GetProtocolConfigClientName();
-    config.disable_auto_update = false;
-    config.url_prefix = ::safe_browsing::kSbDefaultURLPrefix;
-    config.backup_connect_error_url_prefix =
-        ::safe_browsing::kSbBackupConnectErrorURLPrefix;
-    config.backup_http_error_url_prefix =
-        ::safe_browsing::kSbBackupHttpErrorURLPrefix;
-    config.backup_network_error_url_prefix =
-        ::safe_browsing::kSbBackupNetworkErrorURLPrefix;
     ping_manager_ = ::safe_browsing::PingManager::Create(
-        network_context_->GetURLLoaderFactory(), config);
+        network_context_->GetURLLoaderFactory(),
+        safe_browsing::GetV4ProtocolConfig(GetProtocolConfigClientName(),
+                                           false /* disable_auto_update */));
   }
 
   if (!serialized.empty()) {

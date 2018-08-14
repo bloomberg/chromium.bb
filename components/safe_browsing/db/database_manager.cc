@@ -146,6 +146,11 @@ SafeBrowsingDatabaseManager::RegisterDatabaseUpdatedCallback(
   return update_complete_callback_list_.Add(cb);
 }
 
+void SafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  update_complete_callback_list_.Notify();
+}
+
 SafeBrowsingDatabaseManager::SafeBrowsingApiCheck::SafeBrowsingApiCheck(
     const GURL& url,
     Client* client)

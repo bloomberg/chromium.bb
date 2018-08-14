@@ -11,7 +11,9 @@
 #include "base/sha1.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "components/version_info/version_info.h"
 #include "crypto/sha2.h"
+#include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/ip_address.h"
 #include "net/http/http_request_headers.h"
@@ -30,6 +32,11 @@ const char kSbV4UrlPrefix[] = "https://safebrowsing.googleapis.com/v4";
 const base::FilePath::CharType kStoreSuffix[] = FILE_PATH_LITERAL(".store");
 
 namespace {
+
+// The default URL prefix where browser reports safe browsing hits and malware
+// details.
+const char kSbReportsURLPrefix[] =
+    "https://safebrowsing.google.com/safebrowsing";
 
 std::string Unescape(const std::string& url) {
   std::string unescaped_str(url);
@@ -67,8 +74,31 @@ std::string Escape(const std::string& url) {
 
 }  // namespace
 
+V4ProtocolConfig GetV4ProtocolConfig(const std::string& client_name,
+                                     bool disable_auto_update) {
+  return V4ProtocolConfig(client_name, disable_auto_update,
+                          google_apis::GetAPIKey(),
+                          version_info::GetVersionNumber());
+}
+
 void SetSbV4UrlPrefixForTesting(const char* url_prefix) {
   g_sbv4_url_prefix_for_testing = url_prefix;
+}
+
+std::string GetReportUrl(const V4ProtocolConfig& config,
+                         const std::string& method,
+                         const ExtendedReportingLevel* reporting_level) {
+  std::string url = base::StringPrintf(
+      "%s/%s?client=%s&appver=%s&pver=4.0", kSbReportsURLPrefix, method.c_str(),
+      config.client_name.c_str(), config.version.c_str());
+  std::string api_key = google_apis::GetAPIKey();
+  if (!api_key.empty()) {
+    base::StringAppendF(&url, "&key=%s",
+                        net::EscapeQueryParamValue(api_key, true).c_str());
+  }
+  if (reporting_level)
+    url.append(base::StringPrintf("&ext=%d", *reporting_level));
+  return url;
 }
 
 std::ostream& operator<<(std::ostream& os, const ListIdentifier& id) {

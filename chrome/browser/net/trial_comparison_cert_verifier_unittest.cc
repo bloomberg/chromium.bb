@@ -224,9 +224,8 @@ class TrialComparisonCertVerifierTest : public testing::Test {
                 content::BrowserThread::IO));
     TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
         system_request_context_getter_.get());
-    sb_service_ = base::MakeRefCounted<safe_browsing::TestSafeBrowsingService>(
-        // Doesn't matter, just need to choose one.
-        safe_browsing::V4FeatureList::V4UsageStatus::V4_DISABLED);
+    sb_service_ =
+        base::MakeRefCounted<safe_browsing::TestSafeBrowsingService>();
     TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(
         sb_service_.get());
     g_browser_process->safe_browsing_service()->Initialize();

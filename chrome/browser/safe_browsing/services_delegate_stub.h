@@ -18,11 +18,13 @@ class ServicesDelegateStub : public ServicesDelegate {
 
  private:
   // ServicesDelegate:
-  const scoped_refptr<SafeBrowsingDatabaseManager>& v4_local_database_manager()
+  const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager()
       const override;
-  void Initialize(bool v4_enabled = false) override;
+  void Initialize() override;
   void InitializeCsdService(scoped_refptr<network::SharedURLLoaderFactory>
                                 url_loader_factory) override;
+  void SetDatabaseManagerForTest(
+      SafeBrowsingDatabaseManager* database_manager) override;
   void ShutdownServices() override;
   void RefreshState(bool enable) override;
   void ProcessResourceRequest(const ResourceRequestInfo* request) override;
@@ -43,7 +45,9 @@ class ServicesDelegateStub : public ServicesDelegate {
   PasswordProtectionService* GetPasswordProtectionService(
       Profile* profile) const override;
 
-  scoped_refptr<SafeBrowsingDatabaseManager> v4_local_database_manager_;
+  scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
+  // Has the database_manager been set for tests?
+  bool database_manager_set_for_tests_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ServicesDelegateStub);
 };

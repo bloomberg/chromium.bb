@@ -91,9 +91,10 @@ TestSafeBrowsingDatabaseHelper::TestSafeBrowsingDatabaseHelper(
         v4_get_hash_factory,
     std::vector<safe_browsing::ListIdentifier> lists_to_insert)
     : v4_get_hash_factory_(v4_get_hash_factory.get()) {
-  sb_factory_ = std::make_unique<safe_browsing::TestSafeBrowsingServiceFactory>(
-      safe_browsing::V4FeatureList::V4UsageStatus::V4_ONLY);
+  sb_factory_ =
+      std::make_unique<safe_browsing::TestSafeBrowsingServiceFactory>();
   sb_factory_->SetTestUIManager(new FakeSafeBrowsingUIManager());
+  sb_factory_->UseV4LocalDatabaseManager();
   safe_browsing::SafeBrowsingService::RegisterFactory(sb_factory_.get());
 
   auto store_factory = std::make_unique<safe_browsing::TestV4StoreFactory>();

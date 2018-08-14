@@ -34,7 +34,7 @@ class PingManager {
   // Create an instance of the safe browsing ping manager.
   static std::unique_ptr<PingManager> Create(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const SafeBrowsingProtocolConfig& config);
+      const V4ProtocolConfig& config);
 
   void OnURLLoaderComplete(network::SimpleURLLoader* source,
                            std::unique_ptr<std::string> response_body);
@@ -53,13 +53,15 @@ class PingManager {
   // Constructs a PingManager that issues network requests
   // using |url_loader_factory|.
   PingManager(scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-              const SafeBrowsingProtocolConfig& config);
+              const V4ProtocolConfig& config);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PingManagerTest, TestSafeBrowsingHitUrl);
   FRIEND_TEST_ALL_PREFIXES(PingManagerTest, TestThreatDetailsUrl);
   FRIEND_TEST_ALL_PREFIXES(PingManagerTest, TestReportThreatDetails);
   FRIEND_TEST_ALL_PREFIXES(PingManagerTest, TestReportSafeBrowsingHit);
+
+  const V4ProtocolConfig config_;
 
   typedef std::set<std::unique_ptr<network::SimpleURLLoader>> Reports;
 
@@ -69,18 +71,8 @@ class PingManager {
   // Generates URL for reporting threat details for users who opt-in.
   GURL ThreatDetailsUrl() const;
 
-  // Current product version sent in each request.
-  std::string version_;
-
-  // The safe browsing client name sent in each request.
-  std::string client_name_;
-
   // The URLLoaderFactory we use to issue network requests.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-
-  // URL prefix where browser reports hits to the safebrowsing list and
-  // sends detaild threat reports for UMA users.
-  std::string url_prefix_;
 
   // Track outstanding SafeBrowsing report fetchers for clean up.
   // We add both "hit" and "detail" fetchers in this set.

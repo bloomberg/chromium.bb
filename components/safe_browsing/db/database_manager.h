@@ -261,6 +261,7 @@ class SafeBrowsingDatabaseManager
 
   friend class base::RefCountedDeleteOnSequence<SafeBrowsingDatabaseManager>;
   friend class base::DeleteHelper<SafeBrowsingDatabaseManager>;
+  friend class V4LocalDatabaseManager;
 
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseManagerTest,
                            CheckApiBlacklistUrlPrefixes);
@@ -295,6 +296,11 @@ class SafeBrowsingDatabaseManager
   // Whether the service is running. 'enabled_' is used by the
   // SafeBrowsingDatabaseManager on the IO thread during normal operations.
   bool enabled_;
+
+  // Make callbacks about the completion of database update process. This is
+  // currently used by the extension blacklist checker to disable any installed
+  // extensions that have been blacklisted since.
+  void NotifyDatabaseUpdateFinished();
 
   // Created and destroyed via StartOnIOThread/StopOnIOThread.
   std::unique_ptr<V4GetHashProtocolManager> v4_get_hash_protocol_manager_;

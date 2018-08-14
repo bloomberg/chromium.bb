@@ -19,6 +19,7 @@
 namespace safe_browsing {
 
 class SafeBrowsingDatabaseManager;
+struct V4ProtocolConfig;
 
 // Actual ServicesDelegate implementation. Create via
 // ServicesDelegate::Create().
@@ -30,11 +31,13 @@ class ServicesDelegateImpl : public ServicesDelegate {
 
  private:
   // ServicesDelegate:
-  const scoped_refptr<SafeBrowsingDatabaseManager>& v4_local_database_manager()
+  const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager()
       const override;
-  void Initialize(bool v4_enabled) override;
+  void Initialize() override;
   void InitializeCsdService(scoped_refptr<network::SharedURLLoaderFactory>
                                 url_loader_factory) override;
+  void SetDatabaseManagerForTest(
+      SafeBrowsingDatabaseManager* database_manager) override;
   void ShutdownServices() override;
   void RefreshState(bool enable) override;
   void ProcessResourceRequest(const ResourceRequestInfo* request) override;
@@ -59,6 +62,7 @@ class ServicesDelegateImpl : public ServicesDelegate {
   // LEGACY as the current level.
   ExtendedReportingLevel GetEstimatedExtendedReportingLevel() const;
 
+  scoped_refptr<SafeBrowsingDatabaseManager> CreateDatabaseManager();
   DownloadProtectionService* CreateDownloadProtectionService();
   IncidentReportingService* CreateIncidentReportingService();
   ResourceRequestDetector* CreateResourceRequestDetector();
@@ -76,9 +80,12 @@ class ServicesDelegateImpl : public ServicesDelegate {
   SafeBrowsingService* const safe_browsing_service_;
   ServicesDelegate::ServicesCreator* const services_creator_;
 
-  // The Pver4 local database manager handles the database and download logic
+  // The database manager that handles the database checking and update logic
   // Accessed on both UI and IO thread.
-  scoped_refptr<SafeBrowsingDatabaseManager> v4_local_database_manager_;
+  scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
+
+  // Has the database_manager been set for tests?
+  bool database_manager_set_for_tests_ = false;
 
   // Tracks existing Profiles, and their corresponding
   // ChromePasswordProtectionService instances.
