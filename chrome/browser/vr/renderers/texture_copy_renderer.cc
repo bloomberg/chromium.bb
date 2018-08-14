@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/renderers/web_vr_renderer.h"
+#include "chrome/browser/vr/renderers/texture_copy_renderer.h"
 
 #include "chrome/browser/vr/vr_gl_util.h"
 
@@ -47,7 +47,7 @@ static constexpr char const* kWebVrFragmentShader = OEIE_SHADER(
 
 }  // namespace
 
-WebVrRenderer::WebVrRenderer()
+TextureCopyRenderer::TextureCopyRenderer()
     : BaseQuadRenderer(kWebVrVertexShader, kWebVrFragmentShader) {
   texture_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
   uv_transform_ = glGetUniformLocation(program_handle_, "u_UvTransform");
@@ -56,10 +56,10 @@ WebVrRenderer::WebVrRenderer()
 }
 
 // Draw the stereo WebVR frame
-void WebVrRenderer::Draw(int texture_handle,
-                         const float (&uv_transform)[16],
-                         float xborder,
-                         float yborder) {
+void TextureCopyRenderer::Draw(int texture_handle,
+                               const float (&uv_transform)[16],
+                               float xborder,
+                               float yborder) {
   glUseProgram(program_handle_);
 
   // Bind vertex attributes
@@ -93,6 +93,6 @@ void WebVrRenderer::Draw(int texture_handle,
 // Note that we don't explicitly delete gl objects here, they're deleted
 // automatically when we call ShutdownGL, and deleting them here leads to
 // segfaults.
-WebVrRenderer::~WebVrRenderer() = default;
+TextureCopyRenderer::~TextureCopyRenderer() = default;
 
 }  // namespace vr

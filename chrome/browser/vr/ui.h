@@ -159,7 +159,6 @@ class VR_EXPORT Ui : public UiInterface {
   gfx::Point3F GetTargetPointForTesting(UserFriendlyElementName element_name,
                                         const gfx::PointF& position) override;
   bool IsContentVisibleAndOpaque() override;
-  bool IsContentOverlayTextureEmpty() override;
   void SetContentUsesQuadLayer(bool uses_quad_buffers) override;
   gfx::Transform GetContentWorldSpaceTransform() override;
 
@@ -167,10 +166,11 @@ class VR_EXPORT Ui : public UiInterface {
   bool SceneHasDirtyTextures() const override;
   void UpdateSceneTextures() override;
   void Draw(const RenderInfo& render_info) override;
-  void DrawWebVr(int texture_data_handle,
-                 const float (&uv_transform)[16],
-                 float xborder,
-                 float yborder) override;
+  void DrawContent(const float (&uv_transform)[16],
+                   float xborder,
+                   float yborder) override;
+  void DrawWebXr(int texture_data_handle,
+                 const float (&uv_transform)[16]) override;
   void DrawWebVrOverlayForeground(const RenderInfo& render_info) override;
   bool HasWebXrOverlayElementsToDraw() override;
 

@@ -55,7 +55,7 @@ gfx::Transform ConvertUvsToTransformMatrix(const std::vector<float>& uvs) {
   // a Y flip because ARCore's "normalized screen space" coordinates have the
   // origin at the top left to match 2D Android APIs, so it needs a Y flip to
   // get an origin at bottom left as used for textures.
-  DCHECK(uvs.size() == 6);
+  DCHECK_EQ(uvs.size(), 6U);
   float u00 = uvs[0];
   float v00 = uvs[1];
   float u10 = uvs[2];

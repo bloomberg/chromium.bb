@@ -187,7 +187,7 @@ class VrShellGl : public RenderLoop,
   void DrawFrameSubmitNow(int16_t frame_index, const gfx::Transform& head_pose);
   bool ShouldDrawWebVr();
   void DrawWebVr();
-  void DrawContentQuad(bool draw_overlay_texture);
+  void DrawContentQuad();
   bool WebVrPoseByteIsValid(int pose_index_byte);
 
   void OnContentFrameAvailable();

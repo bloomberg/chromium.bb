@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_RENDERERS_WEB_VR_RENDERER_H_
-#define CHROME_BROWSER_VR_RENDERERS_WEB_VR_RENDERER_H_
+#ifndef CHROME_BROWSER_VR_RENDERERS_TEXTURE_COPY_RENDERER_H_
+#define CHROME_BROWSER_VR_RENDERERS_TEXTURE_COPY_RENDERER_H_
 
 #include "base/macros.h"
 #include "chrome/browser/vr/renderers/base_quad_renderer.h"
@@ -12,10 +12,10 @@
 namespace vr {
 
 // Renders a page-generated stereo VR view.
-class VR_UI_EXPORT WebVrRenderer : public BaseQuadRenderer {
+class VR_UI_EXPORT TextureCopyRenderer : public BaseQuadRenderer {
  public:
-  WebVrRenderer();
-  ~WebVrRenderer() override;
+  TextureCopyRenderer();
+  ~TextureCopyRenderer() override;
 
   void Draw(int texture_handle,
             const float (&uv_transform)[16],
@@ -28,9 +28,9 @@ class VR_UI_EXPORT WebVrRenderer : public BaseQuadRenderer {
   GLuint x_border_handle_;
   GLuint y_border_handle_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebVrRenderer);
+  DISALLOW_COPY_AND_ASSIGN(TextureCopyRenderer);
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_RENDERERS_WEB_VR_RENDERER_H_
+#endif  // CHROME_BROWSER_VR_RENDERERS_TEXTURE_COPY_RENDERER_H_

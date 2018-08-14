@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <iomanip>
 #include <queue>
 #include <sstream>
+#include <string>
+#include <utility>
 
 #include "chrome/browser/vr/ui.h"
 
@@ -615,10 +618,6 @@ bool Ui::IsContentVisibleAndOpaque() {
   return GetContentElement()->IsVisibleAndOpaque();
 }
 
-bool Ui::IsContentOverlayTextureEmpty() {
-  return GetContentElement()->GetOverlayTextureEmpty();
-}
-
 void Ui::SetContentUsesQuadLayer(bool uses_quad_layer) {
   return GetContentElement()->SetUsesQuadLayer(uses_quad_layer);
 }
@@ -650,12 +649,24 @@ void Ui::Draw(const vr::RenderInfo& info) {
   ui_renderer_->Draw(info);
 }
 
-void Ui::DrawWebVr(int texture_data_handle,
-                   const float (&uv_transform)[16],
-                   float xborder,
-                   float yborder) {
-  ui_element_renderer_->DrawWebVr(texture_data_handle, uv_transform, xborder,
-                                  yborder);
+void Ui::DrawContent(const float (&uv_transform)[16],
+                     float xborder,
+                     float yborder) {
+  if (!model_->content_texture_id || !model_->content_overlay_texture_id)
+    return;
+  ui_element_renderer_->DrawTextureCopy(model_->content_texture_id,
+                                        uv_transform, xborder, yborder);
+  if (!GetContentElement()->GetOverlayTextureEmpty()) {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    ui_element_renderer_->DrawTextureCopy(model_->content_overlay_texture_id,
+                                          uv_transform, xborder, yborder);
+  }
+}
+
+void Ui::DrawWebXr(int texture_data_handle, const float (&uv_transform)[16]) {
+  ui_element_renderer_->DrawTextureCopy(texture_data_handle, uv_transform, 0,
+                                        0);
 }
 
 void Ui::DrawWebVrOverlayForeground(const vr::RenderInfo& info) {
