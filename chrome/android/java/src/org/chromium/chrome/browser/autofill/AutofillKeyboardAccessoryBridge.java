@@ -56,8 +56,7 @@ public class AutofillKeyboardAccessoryBridge
 
     @Override
     public void suggestionSelected(int listIndex) {
-        KeyboardAccessoryMetricsRecorder.recordActionSelected(
-                AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
+        KeyboardAccessoryMetricsRecorder.recordActionSelected(AccessoryAction.AUTOFILL_SUGGESTION);
         if (mManualFillingCoordinator != null) mManualFillingCoordinator.dismiss();
         if (mNativeAutofillKeyboardAccessory == 0) return;
         nativeSuggestionSelected(mNativeAutofillKeyboardAccessory, listIndex);
