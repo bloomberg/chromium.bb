@@ -2400,7 +2400,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'daisy_spring',
       'edgar',
       'elm',
-      'eve',
       'falco',
       'fizz',
       'gale',
@@ -2487,6 +2486,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'capri', # contact:ghines@
       'capri-zfpga', # contact:victoryang@
       'cobblepot', # contact:jkoleszar@
+      'eve', # contact: michaelpg@ (crbug.com/872351)
       'eve-arcnext', # contact: ihf@ (crbug.com/826755)
       'fizz-accelerator', # contact:perley@
       'gonzo', # contact:icoolidge@
