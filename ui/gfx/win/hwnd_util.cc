@@ -49,23 +49,20 @@ void AdjustWindowToFit(HWND hwnd, const RECT& bounds, bool fit_to_monitor) {
                  SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
-// Turn off optimizations for these functions so they show up in crash reports.
-MSVC_DISABLE_OPTIMIZE();
+// Don't inline these functions so they show up in crash reports.
 
-void CrashOutOfMemory() {
+NOINLINE void CrashOutOfMemory() {
   PLOG(FATAL);
 }
 
-void CrashAccessDenied() {
+NOINLINE void CrashAccessDenied() {
   PLOG(FATAL);
 }
 
 // Crash isn't one of the ones we commonly see.
-void CrashOther() {
+NOINLINE void CrashOther() {
   PLOG(FATAL);
 }
-
-MSVC_ENABLE_OPTIMIZE();
 
 }  // namespace
 
