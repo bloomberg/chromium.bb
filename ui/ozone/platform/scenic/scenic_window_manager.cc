@@ -11,6 +11,13 @@ namespace ui {
 ScenicWindowManager::ScenicWindowManager() = default;
 ScenicWindowManager::~ScenicWindowManager() = default;
 
+std::unique_ptr<PlatformScreen> ScenicWindowManager::CreateScreen() {
+  DCHECK(windows_.IsEmpty());
+  auto screen = std::make_unique<ScenicScreen>();
+  screen_ = screen->GetWeakPtr();
+  return screen;
+}
+
 fuchsia::ui::viewsv1::ViewManager* ScenicWindowManager::GetViewManager() {
   if (!view_manager_) {
     view_manager_ = base::fuchsia::ComponentContext::GetDefault()
@@ -32,13 +39,18 @@ fuchsia::ui::scenic::Scenic* ScenicWindowManager::GetScenic() {
 }
 
 int32_t ScenicWindowManager::AddWindow(ScenicWindow* window) {
-  return windows_.Add(window);
+  int32_t id = windows_.Add(window);
+  if (screen_)
+    screen_->OnWindowAdded(id);
+  return id;
 }
 
 void ScenicWindowManager::RemoveWindow(int32_t window_id,
                                        ScenicWindow* window) {
   DCHECK_EQ(window, windows_.Lookup(window_id));
   windows_.Remove(window_id);
+  if (screen_)
+    screen_->OnWindowRemoved(window_id);
 }
 
 ScenicWindow* ScenicWindowManager::GetWindow(int32_t window_id) {

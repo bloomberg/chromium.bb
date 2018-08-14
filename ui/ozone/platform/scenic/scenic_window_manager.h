@@ -15,6 +15,7 @@
 #include "base/threading/thread_checker.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/ozone_export.h"
+#include "ui/ozone/platform/scenic/scenic_screen.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
@@ -33,6 +34,8 @@ class OZONE_EXPORT ScenicWindowManager {
   ScenicWindowManager();
   ~ScenicWindowManager();
 
+  std::unique_ptr<PlatformScreen> CreateScreen();
+
   // ViewManager and Scenic services that are used by ScenicWindow. Both
   // interfaces are initialized lazily on the first call and they don't change
   // afterwards. ScenicWindowManager keeps the ownership.
@@ -46,10 +49,14 @@ class OZONE_EXPORT ScenicWindowManager {
   // Called by ScenicWindow destructor to unregister |window|.
   void RemoveWindow(int32_t window_id, ScenicWindow* window);
 
+  ScenicScreen* screen() { return screen_.get(); }
+
   ScenicWindow* GetWindow(int32_t window_id);
 
  private:
   base::IDMap<ScenicWindow*> windows_;
+
+  base::WeakPtr<ScenicScreen> screen_;
 
   fuchsia::ui::viewsv1::ViewManagerPtr view_manager_;
   fuchsia::ui::scenic::ScenicPtr scenic_;
