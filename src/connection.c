@@ -686,7 +686,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 			struct wl_map *objects,
 			const struct wl_message *message)
 {
-	uint32_t *p, *next, *end, length, id;
+	uint32_t *p, *next, *end, length, length_in_u32, id;
 	int fd;
 	char *s;
 	int i, count, num_arrays;
@@ -742,8 +742,8 @@ wl_connection_demarshal(struct wl_connection *connection,
 				break;
 			}
 
-			next = p + div_roundup(length, sizeof *p);
-			if (next > end) {
+			length_in_u32 = div_roundup(length, sizeof *p);
+			if ((uint32_t) (end - p) < length_in_u32) {
 				wl_log("message too short, "
 				       "object (%d), message %s(%s)\n",
 				       closure->sender_id, message->name,
@@ -751,6 +751,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 				errno = EINVAL;
 				goto err;
 			}
+			next = p + length_in_u32;
 
 			s = (char *) p;
 
@@ -801,8 +802,8 @@ wl_connection_demarshal(struct wl_connection *connection,
 		case 'a':
 			length = *p++;
 
-			next = p + div_roundup(length, sizeof *p);
-			if (next > end) {
+			length_in_u32 = div_roundup(length, sizeof *p);
+			if ((uint32_t) (end - p) < length_in_u32) {
 				wl_log("message too short, "
 				       "object (%d), message %s(%s)\n",
 				       closure->sender_id, message->name,
@@ -810,6 +811,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 				errno = EINVAL;
 				goto err;
 			}
+			next = p + length_in_u32;
 
 			array_extra->size = length;
 			array_extra->alloc = 0;
