@@ -27848,6 +27848,7 @@ from previous Chrome versions.
   <int value="-1731149013" label="AndroidMessagesIntegration:enabled"/>
   <int value="-1729926412" label="enable-webusb-notifications"/>
   <int value="-1725507605" label="enable-web-midi"/>
+  <int value="-1720653947" label="WebRtcHybridAgc:disabled"/>
   <int value="-1719833926" label="disable-answers-in-suggest"/>
   <int value="-1716654100" label="tab-capture-downscale-quality"/>
   <int value="-1714128884" label="disable-launcher-search-provider-api"/>
@@ -29086,6 +29087,7 @@ from previous Chrome versions.
   <int value="806334184" label="AndroidSpellChecker:enabled"/>
   <int value="807447752" label="ChromeMemex:disabled"/>
   <int value="807734471" label="tab-management-experiment-type-disabled"/>
+  <int value="809698565" label="WebRtcHybridAgc:enabled"/>
   <int value="811374216" label="disable-new-bookmark-apps"/>
   <int value="812710781" label="SyncUSSBookmarks:disabled"/>
   <int value="820650704" label="disable-ntp-popular-sites"/>

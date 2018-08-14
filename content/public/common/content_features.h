@@ -130,6 +130,7 @@ CONTENT_EXPORT extern const base::Feature kWebRtcHWVP8Encoding;
 CONTENT_EXPORT extern const base::Feature kWebRtcMultiplexCodec;
 CONTENT_EXPORT extern const base::Feature kWebRtcScreenshareSwEncoding;
 CONTENT_EXPORT extern const base::Feature kWebRtcUseEchoCanceller3;
+CONTENT_EXPORT extern const base::Feature kWebRtcHybridAgc;
 CONTENT_EXPORT extern const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames;
 CONTENT_EXPORT extern const base::Feature kWebUsb;
 CONTENT_EXPORT extern const base::Feature kWebVrVsyncAlign;
