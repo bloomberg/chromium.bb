@@ -92,6 +92,7 @@ bool IsAccessAllowedInternal(const base::FilePath& path,
       "/home/chronos/user/WebRTC Logs",
       "/media",
       "/opt/oem",
+      "/run/arc/sdcard/write/emulated/0",
       "/usr/share/chromeos-assets",
       "/var/log",
   };
