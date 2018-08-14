@@ -95,14 +95,14 @@ group("generate_mojo_bindings") {
   visibility = [ ":*" ]
 
   deps = [
-    "//device/gamepad/public/mojom:mojom_blink__generator",
-    "//device/usb/public/mojom:mojom_blink__generator",
-    "//device/vr/public/mojom:mojom_blink__generator",
-    "//media/capture/mojom:image_capture_blink__generator",
-    "//services/device/public/mojom:generic_sensor__generator",
-    "//services/device/public/mojom:mojom_blink__generator",
-    "//services/shape_detection/public/mojom:mojom_blink__generator",
-    "//third_party/blink/public:media_devices_mojo_bindings_blink__generator",
+    "//device/gamepad/public/mojom:mojom_blink_headers",
+    "//device/usb/public/mojom:mojom_blink_headers",
+    "//device/vr/public/mojom:mojom_blink_headers",
+    "//media/capture/mojom:image_capture_blink_headers",
+    "//services/device/public/mojom:generic_sensor_headers",
+    "//services/device/public/mojom:mojom_blink_headers",
+    "//services/shape_detection/public/mojom:mojom_blink_headers",
+    "//third_party/blink/public:media_devices_mojo_bindings_blink_headers",
   ]
 }
 
