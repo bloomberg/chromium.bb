@@ -82,6 +82,15 @@ void InitializeAudioTrackControls(const blink::WebUserMediaRequest& web_request,
 
 void InitializeVideoTrackControls(const blink::WebUserMediaRequest& web_request,
                                   TrackControls* track_controls) {
+  if (web_request.MediaRequestType() ==
+      blink::WebUserMediaRequest::MediaType::kDisplayMedia) {
+    track_controls->requested = true;
+    track_controls->stream_type = MEDIA_DISPLAY_VIDEO_CAPTURE;
+    return;
+  }
+
+  DCHECK_EQ(blink::WebUserMediaRequest::MediaType::kUserMedia,
+            web_request.MediaRequestType());
   const blink::WebMediaConstraints& constraints =
       web_request.VideoConstraints();
   DCHECK(!constraints.IsNull());
@@ -554,9 +563,16 @@ void UserMediaProcessor::SetupVideoInput() {
     GenerateStreamForCurrentRequestInfo();
     return;
   }
+
   auto& video_controls = current_request_info_->stream_controls()->video;
   InitializeVideoTrackControls(current_request_info_->web_request(),
                                &video_controls);
+
+  if (video_controls.stream_type == MEDIA_DISPLAY_VIDEO_CAPTURE) {
+    SelectVideoContentSettings(false /* allow_device_id_constraint */);
+    return;
+  }
+
   if (IsDeviceMediaType(video_controls.stream_type)) {
     GetMediaDevicesDispatcher()->GetVideoInputCapabilities(base::BindOnce(
         &UserMediaProcessor::SelectVideoDeviceSettings,
@@ -572,7 +588,7 @@ void UserMediaProcessor::SetupVideoInput() {
       GetUserMediaRequestFailed(result, failed_constraint_name);
       return;
     }
-    SelectVideoContentSettings();
+    SelectVideoContentSettings(true /* allow_device_id_constraint */);
   }
 }
 
@@ -622,7 +638,8 @@ void UserMediaProcessor::SelectVideoDeviceSettings(
   GenerateStreamForCurrentRequestInfo();
 }
 
-void UserMediaProcessor::SelectVideoContentSettings() {
+void UserMediaProcessor::SelectVideoContentSettings(
+    bool allow_device_id_constraint) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(current_request_info_);
   gfx::Size screen_size = GetScreenSize();
@@ -638,8 +655,10 @@ void UserMediaProcessor::SelectVideoContentSettings() {
                               failed_constraint_name);
     return;
   }
-  current_request_info_->stream_controls()->video.device_id =
-      settings.device_id();
+  if (allow_device_id_constraint) {
+    current_request_info_->stream_controls()->video.device_id =
+        settings.device_id();
+  }
   current_request_info_->SetVideoCaptureSettings(settings,
                                                  true /* is_content_capture */);
   GenerateStreamForCurrentRequestInfo();

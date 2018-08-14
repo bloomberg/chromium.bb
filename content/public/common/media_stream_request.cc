@@ -18,7 +18,8 @@ bool IsAudioInputMediaType(MediaStreamType type) {
 bool IsVideoInputMediaType(MediaStreamType type) {
   return (type == MEDIA_DEVICE_VIDEO_CAPTURE ||
           type == MEDIA_GUM_TAB_VIDEO_CAPTURE ||
-          type == MEDIA_GUM_DESKTOP_VIDEO_CAPTURE);
+          type == MEDIA_GUM_DESKTOP_VIDEO_CAPTURE ||
+          type == MEDIA_DISPLAY_VIDEO_CAPTURE);
 }
 
 bool IsScreenCaptureMediaType(MediaStreamType type) {

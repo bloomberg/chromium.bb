@@ -1041,6 +1041,13 @@ void MediaStreamManager::PostRequestToUI(
     devices.reserve(devices.size() + video_devices.size());
     devices.insert(devices.end(), video_devices.begin(), video_devices.end());
 
+    // We cannot select a display device without user action, therefore add a
+    // fake one for tests.
+    if (request->video_type() == MEDIA_DISPLAY_VIDEO_CAPTURE) {
+      DCHECK(devices.empty());
+      devices.push_back(MediaStreamDevice(MEDIA_DISPLAY_VIDEO_CAPTURE,
+                                          "Fake id", "Fake name"));
+    }
     std::unique_ptr<FakeMediaStreamUIProxy> fake_ui = fake_ui_factory_.Run();
     fake_ui->SetAvailableDevices(devices);
 
@@ -1069,6 +1076,13 @@ void MediaStreamManager::SetUpRequest(const std::string& label) {
       request->controls.audio.stream_type));
   request->SetVideoType(request->controls.video.stream_type);
 
+  const bool is_display_capture =
+      request->video_type() == MEDIA_DISPLAY_VIDEO_CAPTURE;
+  if (is_display_capture && !SetUpDisplayCaptureRequest(request)) {
+    FinalizeRequestFailed(label, request, MEDIA_DEVICE_SCREEN_CAPTURE_FAILURE);
+    return;
+  }
+
   const bool is_tab_capture =
       request->audio_type() == MEDIA_GUM_TAB_AUDIO_CAPTURE ||
       request->video_type() == MEDIA_GUM_TAB_VIDEO_CAPTURE;
@@ -1086,7 +1100,7 @@ void MediaStreamManager::SetUpRequest(const std::string& label) {
     return;
   }
 
-  if (!is_tab_capture && !is_screen_capture) {
+  if (!is_tab_capture && !is_screen_capture && !is_display_capture) {
     if (IsDeviceMediaType(request->audio_type()) ||
         IsDeviceMediaType(request->video_type())) {
       StartEnumeration(request, label);
@@ -1100,6 +1114,26 @@ void MediaStreamManager::SetUpRequest(const std::string& label) {
     }
   }
   ReadOutputParamsAndPostRequestToUI(label, request, MediaDeviceEnumeration());
+}
+
+bool MediaStreamManager::SetUpDisplayCaptureRequest(DeviceRequest* request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(request->video_type() == MEDIA_DISPLAY_VIDEO_CAPTURE);
+
+  // getDisplayMedia function does not permit the use of constraints for
+  // selection of a source, see
+  // https://w3c.github.io/mediacapture-screen-share/#constraints.
+  if (!request->controls.video.requested ||
+      !request->controls.video.device_id.empty()) {
+    LOG(ERROR) << "Invalid display media request.";
+    return false;
+  }
+
+  request->CreateUIRequest(std::string() /* requested_audio_device_id */,
+                           std::string() /* requested_video_device_id */);
+  DVLOG(3) << "Audio requested " << request->controls.audio.requested
+           << " Video requested " << request->controls.video.requested;
+  return true;
 }
 
 bool MediaStreamManager::SetUpDeviceCaptureRequest(
