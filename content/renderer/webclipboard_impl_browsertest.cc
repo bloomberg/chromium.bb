@@ -22,21 +22,15 @@ class WebClipboardImplTest : public ContentBrowserTest {
   ~WebClipboardImplTest() override = default;
 };
 
-#if defined(OS_CHROMEOS)
-// Test is flaky on ChromeOS (https://crbug.com/867339).
-#define MAYBE_PasteRTF DISABLED_PasteRTF
-#else
-#define MAYBE_PasteRTF PasteRTF
-#endif
-IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, MAYBE_PasteRTF) {
+IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, PasteRTF) {
   BrowserTestClipboardScope clipboard;
 
   const std::string rtf_content = "{\\rtf1\\ansi Hello, {\\b world.}}";
   clipboard.SetRtf(rtf_content);
 
+  FrameFocusedObserver focus_observer(shell()->web_contents()->GetMainFrame());
   // paste_listener.html takes RTF from the clipboard and sets the title.
   NavigateToURL(shell(), GetTestUrl(".", "paste_listener.html"));
-  FrameFocusedObserver focus_observer(shell()->web_contents()->GetMainFrame());
   focus_observer.Wait();
 
   const base::string16 expected_title = base::UTF8ToUTF16(rtf_content);
@@ -45,22 +39,16 @@ IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, MAYBE_PasteRTF) {
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
-#if (defined(OS_CHROMEOS) && !defined(NDEBUG)) || defined(OS_MACOSX)
-// Test is flaky on ChromeOS (dbg) and mac (https://crbug.com/867954).
-#define MAYBE_ImageCopy DISABLED_ImageCopy
-#else
-#define MAYBE_ImageCopy ImageCopy
-#endif
-IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, MAYBE_ImageCopy) {
+IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, ImageCopy) {
   BrowserTestClipboardScope clipboard;
   clipboard.SetText("");
 
   base::string16 expected_types;
   expected_types = base::ASCIIToUTF16("file;image/png string;text/html");
 
-  NavigateToURL(shell(), GetTestUrl(".", "image_copy_types.html"));
   WebContents* web_contents = shell()->web_contents();
   FrameFocusedObserver focus_observer(web_contents->GetMainFrame());
+  NavigateToURL(shell(), GetTestUrl(".", "image_copy_types.html"));
   focus_observer.Wait();
 
   // Populate an iframe with an image, and wait for load to complete.
