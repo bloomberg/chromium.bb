@@ -2085,6 +2085,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(registry.get(),
                        base::BindRepeating(&GetNetworkChangeManager));
 
+  registry->AddInterface(base::BindRepeating(
+      &RenderProcessHostImpl::BindVideoDecoderService, base::Unretained(this)));
+
   // ---- Please do not register interfaces below this line ------
   //
   // This call should be done after registering all interfaces above, so that
@@ -2165,6 +2168,13 @@ void RenderProcessHostImpl::CreateStoragePartitionService(
   }
 
   storage_partition_impl_->Bind(id_, std::move(request));
+}
+
+void RenderProcessHostImpl::BindVideoDecoderService(
+    media::mojom::InterfaceFactoryRequest request) {
+  if (!video_decoder_proxy_)
+    video_decoder_proxy_.reset(new VideoDecoderProxy());
+  video_decoder_proxy_->Add(std::move(request));
 }
 
 void RenderProcessHostImpl::CreateRendererHost(
