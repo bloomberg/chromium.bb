@@ -208,6 +208,8 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
       OnResponseStartedCallback on_response_started_callback) override;
   void SetOnUploadProgressCallback(
       UploadProgressCallback on_upload_progress_callback) override;
+  void SetOnDownloadProgressCallback(
+      DownloadProgressCallback on_download_progress_callback) override;
   void SetAllowPartialResults(bool allow_partial_results) override;
   void SetAllowHttpErrorResults(bool allow_http_error_results) override;
   void AttachStringForUpload(const std::string& upload_data,
@@ -229,6 +231,12 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   // reported in URLLoaderCompletionStatus(), if
   // URLLoaderCompletionStatus indicates a success.
   void OnBodyHandlerDone(net::Error error, int64_t received_body_size);
+
+  // Called by BodyHandler to report download progress.
+  void OnBodyHandlerProgress(int64_t downloaded);
+
+  // Posted to report download progress in a non-reentrant way.
+  void DispatchDownloadProgress(int64_t downloaded);
 
   // Finished the request with the provided error code, after freeing Mojo
   // resources. Closes any open pipes, so no URLLoader or BodyHandlers callbacks
@@ -314,6 +322,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   std::vector<OnRedirectCallback> on_redirect_callback_;
   OnResponseStartedCallback on_response_started_callback_;
   UploadProgressCallback on_upload_progress_callback_;
+  DownloadProgressCallback on_download_progress_callback_;
   bool allow_partial_results_ = false;
   bool allow_http_error_results_ = false;
 
@@ -413,6 +422,8 @@ class BodyReader {
   }
 
   void Resume() { ReadData(); }
+
+  int64_t total_bytes_read() { return total_bytes_read_; }
 
  private:
   void MojoReadyCallback(MojoResult result,
@@ -528,8 +539,10 @@ class BodyReader {
 class BodyHandler {
  public:
   // A raw pointer is safe, since |simple_url_loader| owns the BodyHandler.
-  explicit BodyHandler(SimpleURLLoaderImpl* simple_url_loader)
-      : simple_url_loader_(simple_url_loader) {}
+  BodyHandler(SimpleURLLoaderImpl* simple_url_loader,
+              bool want_download_progress)
+      : simple_url_loader_(simple_url_loader),
+        want_download_progress_(want_download_progress) {}
   virtual ~BodyHandler() {}
 
   // Called by SimpleURLLoader with the data pipe received from the URLLoader.
@@ -559,8 +572,15 @@ class BodyHandler {
  protected:
   SimpleURLLoaderImpl* simple_url_loader() { return simple_url_loader_; }
 
+  void ReportProgress(int64_t total_downloaded) {
+    if (!want_download_progress_)
+      return;
+    simple_url_loader_->OnBodyHandlerProgress(total_downloaded);
+  }
+
  private:
   SimpleURLLoaderImpl* const simple_url_loader_;
+  bool const want_download_progress_;
 
   DISALLOW_COPY_AND_ASSIGN(BodyHandler);
 };
@@ -571,9 +591,10 @@ class SaveToStringBodyHandler : public BodyHandler,
  public:
   SaveToStringBodyHandler(
       SimpleURLLoaderImpl* simple_url_loader,
+      bool want_download_progress,
       SimpleURLLoader::BodyAsStringCallback body_as_string_callback,
       int64_t max_body_size)
-      : BodyHandler(simple_url_loader),
+      : BodyHandler(simple_url_loader, want_download_progress),
         max_body_size_(max_body_size),
         body_as_string_callback_(std::move(body_as_string_callback)) {}
 
@@ -610,6 +631,7 @@ class SaveToStringBodyHandler : public BodyHandler,
 
   net::Error OnDataRead(uint32_t length, const char* data) override {
     body_->append(data, length);
+    ReportProgress(body_reader_->total_bytes_read());
     return net::OK;
   }
 
@@ -634,7 +656,7 @@ class HeadersOnlyBodyHandler : public BodyHandler, public BodyReader::Delegate {
   HeadersOnlyBodyHandler(
       SimpleURLLoaderImpl* simple_url_loader,
       SimpleURLLoader::HeadersOnlyCallback headers_only_callback)
-      : BodyHandler(simple_url_loader),
+      : BodyHandler(simple_url_loader, false /* no download progress */),
         headers_only_callback_(std::move(headers_only_callback)) {}
 
   ~HeadersOnlyBodyHandler() override {}
@@ -688,21 +710,26 @@ class SaveToFileBodyHandler : public BodyHandler {
   // body and write to the file. If |create_temp_file| is true, a temp file is
   // created instead of using |path|.
   SaveToFileBodyHandler(SimpleURLLoaderImpl* simple_url_loader,
+                        bool want_download_progress,
                         SimpleURLLoader::DownloadToFileCompleteCallback
                             download_to_file_complete_callback,
                         const base::FilePath& path,
                         bool create_temp_file,
                         uint64_t max_body_size,
                         base::TaskPriority task_priority)
-      : BodyHandler(simple_url_loader),
+      : BodyHandler(simple_url_loader, want_download_progress),
         download_to_file_complete_callback_(
             std::move(download_to_file_complete_callback)),
         weak_ptr_factory_(this) {
     DCHECK(create_temp_file || !path.empty());
 
     // Can only do this after initializing the WeakPtrFactory.
-    file_writer_ = std::make_unique<FileWriter>(path, create_temp_file,
-                                                max_body_size, task_priority);
+    file_writer_ = std::make_unique<FileWriter>(
+        path, create_temp_file, max_body_size, task_priority,
+        want_download_progress
+            ? base::BindRepeating(&SaveToFileBodyHandler::ReportProgress,
+                                  weak_ptr_factory_.GetWeakPtr())
+            : base::RepeatingCallback<void(int64_t)>());
   }
 
   ~SaveToFileBodyHandler() override {
@@ -785,14 +812,16 @@ class SaveToFileBodyHandler : public BodyHandler {
     FileWriter(const base::FilePath& path,
                bool create_temp_file,
                int64_t max_body_size,
-               base::TaskPriority priority)
+               base::TaskPriority priority,
+               base::RepeatingCallback<void(int64_t)> progress_callback)
         : body_handler_task_runner_(base::SequencedTaskRunnerHandle::Get()),
           file_writer_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), priority,
                base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
           path_(path),
           create_temp_file_(create_temp_file),
-          max_body_size_(max_body_size) {
+          max_body_size_(max_body_size),
+          progress_callback_(progress_callback) {
       DCHECK(body_handler_task_runner_->RunsTasksInCurrentSequence());
       DCHECK(create_temp_file_ || !path_.empty());
     }
@@ -893,6 +922,12 @@ class SaveToFileBodyHandler : public BodyHandler {
         data += written;
       }
 
+      if (progress_callback_) {
+        body_handler_task_runner_->PostTask(
+            FROM_HERE, base::BindOnce(progress_callback_,
+                                      body_reader_->total_bytes_read()));
+      }
+
       return net::OK;
     }
 
@@ -947,6 +982,10 @@ class SaveToFileBodyHandler : public BodyHandler {
     const bool create_temp_file_;
     const int64_t max_body_size_;
 
+    // If not is_null(), should be invoked on |body_handler_task_runner_| to
+    // report progress.
+    base::RepeatingCallback<void(int64_t)> progress_callback_;
+
     // File being downloaded to. Created just before reading from the data pipe.
     base::File file_;
 
@@ -994,8 +1033,9 @@ class DownloadAsStreamBodyHandler : public BodyHandler,
                                     public BodyReader::Delegate {
  public:
   DownloadAsStreamBodyHandler(SimpleURLLoaderImpl* simple_url_loader,
+                              bool want_download_progress,
                               SimpleURLLoaderStreamConsumer* stream_consumer)
-      : BodyHandler(simple_url_loader),
+      : BodyHandler(simple_url_loader, want_download_progress),
         stream_consumer_(stream_consumer),
         weak_ptr_factory_(this) {}
 
@@ -1034,8 +1074,12 @@ class DownloadAsStreamBodyHandler : public BodyHandler,
         base::BindOnce(&DownloadAsStreamBodyHandler::Resume,
                        weak_ptr_factory_.GetWeakPtr()));
     // Protect against deletion.
-    if (weak_this)
+    if (weak_this) {
+      // ReportProgress can't trigger deletion itself since it doesn't invoke
+      // outside code synchronously.
+      ReportProgress(body_reader_->total_bytes_read());
       in_recursive_call_ = false;
+    }
     return net::ERR_IO_PENDING;
   }
 
@@ -1101,7 +1145,8 @@ void SimpleURLLoaderImpl::DownloadToString(
     size_t max_body_size) {
   DCHECK_LE(max_body_size, kMaxBoundedStringDownloadSize);
   body_handler_ = std::make_unique<SaveToStringBodyHandler>(
-      this, std::move(body_as_string_callback), max_body_size);
+      this, !on_download_progress_callback_.is_null(),
+      std::move(body_as_string_callback), max_body_size);
   Start(url_loader_factory);
 }
 
@@ -1109,7 +1154,8 @@ void SimpleURLLoaderImpl::DownloadToStringOfUnboundedSizeUntilCrashAndDie(
     mojom::URLLoaderFactory* url_loader_factory,
     BodyAsStringCallback body_as_string_callback) {
   body_handler_ = std::make_unique<SaveToStringBodyHandler>(
-      this, std::move(body_as_string_callback),
+      this, !on_download_progress_callback_.is_null(),
+      std::move(body_as_string_callback),
       // int64_t because URLLoaderCompletionStatus::decoded_body_length
       // is an int64_t, not a size_t.
       std::numeric_limits<int64_t>::max());
@@ -1119,6 +1165,7 @@ void SimpleURLLoaderImpl::DownloadToStringOfUnboundedSizeUntilCrashAndDie(
 void SimpleURLLoaderImpl::DownloadHeadersOnly(
     mojom::URLLoaderFactory* url_loader_factory,
     HeadersOnlyCallback headers_only_callback) {
+  on_download_progress_callback_.Reset();
   body_handler_ = std::make_unique<HeadersOnlyBodyHandler>(
       this, std::move(headers_only_callback));
   Start(url_loader_factory);
@@ -1131,7 +1178,8 @@ void SimpleURLLoaderImpl::DownloadToFile(
     int64_t max_body_size) {
   DCHECK(!file_path.empty());
   body_handler_ = std::make_unique<SaveToFileBodyHandler>(
-      this, std::move(download_to_file_complete_callback), file_path,
+      this, !on_download_progress_callback_.is_null(),
+      std::move(download_to_file_complete_callback), file_path,
       false /* create_temp_file */, max_body_size, GetTaskPriority());
   Start(url_loader_factory);
 }
@@ -1141,7 +1189,8 @@ void SimpleURLLoaderImpl::DownloadToTempFile(
     DownloadToFileCompleteCallback download_to_file_complete_callback,
     int64_t max_body_size) {
   body_handler_ = std::make_unique<SaveToFileBodyHandler>(
-      this, std::move(download_to_file_complete_callback), base::FilePath(),
+      this, !on_download_progress_callback_.is_null(),
+      std::move(download_to_file_complete_callback), base::FilePath(),
       true /* create_temp_file */, max_body_size, GetTaskPriority());
   Start(url_loader_factory);
 }
@@ -1149,8 +1198,8 @@ void SimpleURLLoaderImpl::DownloadToTempFile(
 void SimpleURLLoaderImpl::DownloadAsStream(
     mojom::URLLoaderFactory* url_loader_factory,
     SimpleURLLoaderStreamConsumer* stream_consumer) {
-  body_handler_ =
-      std::make_unique<DownloadAsStreamBodyHandler>(this, stream_consumer);
+  body_handler_ = std::make_unique<DownloadAsStreamBodyHandler>(
+      this, !on_download_progress_callback_.is_null(), stream_consumer);
   Start(url_loader_factory);
 }
 
@@ -1167,8 +1216,20 @@ void SimpleURLLoaderImpl::SetOnResponseStartedCallback(
 
 void SimpleURLLoaderImpl::SetOnUploadProgressCallback(
     UploadProgressCallback on_upload_progress_callback) {
+  // Check if a request has not yet been started.
+  DCHECK(!body_handler_);
+
   on_upload_progress_callback_ = std::move(on_upload_progress_callback);
   DCHECK(on_upload_progress_callback_);
+}
+
+void SimpleURLLoaderImpl::SetOnDownloadProgressCallback(
+    DownloadProgressCallback on_download_progress_callback) {
+  // Check if a request has not yet been started.
+  DCHECK(!body_handler_);
+
+  on_download_progress_callback_ = on_download_progress_callback;
+  DCHECK(on_download_progress_callback_);
 }
 
 void SimpleURLLoaderImpl::SetAllowPartialResults(bool allow_partial_results) {
@@ -1312,6 +1373,30 @@ void SimpleURLLoaderImpl::OnBodyHandlerDone(net::Error error,
   MaybeComplete();
 }
 
+void SimpleURLLoaderImpl::OnBodyHandlerProgress(int64_t progress) {
+  if (on_download_progress_callback_) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&SimpleURLLoaderImpl::DispatchDownloadProgress,
+                       weak_ptr_factory_.GetWeakPtr(), progress));
+  }
+}
+
+void SimpleURLLoaderImpl::DispatchDownloadProgress(int64_t downloaded) {
+  DCHECK(on_download_progress_callback_);
+
+  // Make sure we're still in the right state since this is posted
+  // asynchronously. In particular checking ->finished ensures that a partial
+  // progress event isn't dispatched after the everything-is-loaded event
+  // sent from FinishWithResult().
+  if (!request_state_->body_started || request_state_->request_completed ||
+      request_state_->finished) {
+    return;
+  }
+
+  on_download_progress_callback_.Run(downloaded);
+}
+
 void SimpleURLLoaderImpl::FinishWithResult(int net_error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!request_state_->finished);
@@ -1321,6 +1406,16 @@ void SimpleURLLoaderImpl::FinishWithResult(int net_error) {
 
   request_state_->finished = true;
   request_state_->net_error = net_error;
+
+  // Synthesize a final progress callback.
+  if (on_download_progress_callback_) {
+    base::WeakPtr<SimpleURLLoaderImpl> weak_this =
+        weak_ptr_factory_.GetWeakPtr();
+    on_download_progress_callback_.Run(GetContentSize());
+    // If deleted by the callback, bail now.
+    if (!weak_this)
+      return;
+  }
 
   // If it's a partial download or an error was received, erase the body.
   bool destroy_results =
@@ -1351,6 +1446,9 @@ void SimpleURLLoaderImpl::StartRequest(
     mojom::URLLoaderFactory* url_loader_factory) {
   DCHECK(resource_request_);
   DCHECK(url_loader_factory);
+
+  if (on_upload_progress_callback_)
+    resource_request_->enable_upload_progress = true;
 
   mojom::URLLoaderClientPtr client_ptr;
   client_binding_.Bind(mojo::MakeRequest(&client_ptr));
