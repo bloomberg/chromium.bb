@@ -99,8 +99,8 @@ namespace gpu {
 namespace gles2 {
 
 GLES2DecoderTestBase::GLES2DecoderTestBase()
-    : surface_(NULL),
-      context_(NULL),
+    : surface_(nullptr),
+      context_(nullptr),
       client_buffer_id_(100),
       client_framebuffer_id_(101),
       client_program_id_(102),
@@ -300,7 +300,7 @@ void GLES2DecoderTestBase::InitDecoderWithWorkarounds(
   EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, kServiceAttrib0BufferId))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, VertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, 0, NULL))
+  EXPECT_CALL(*gl_, VertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, 0, nullptr))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, 0))
@@ -603,7 +603,7 @@ void GLES2DecoderTestBase::ResetDecoder() {
   decoder_.reset();
   group_->Destroy(mock_decoder_.get(), false);
   command_buffer_service_.reset();
-  ::gl::MockGLInterface::SetGLInterface(NULL);
+  ::gl::MockGLInterface::SetGLInterface(nullptr);
   gl_.reset();
   gl::init::ShutdownGL(false);
 }
@@ -2281,7 +2281,7 @@ void GLES2DecoderTestBase::AddExpectationsForSimulatedAttrib0WithError(
         GL_ARRAY_BUFFER, 0, num_vertices * sizeof(GLfloat) * 4, _))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, VertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL))
+    EXPECT_CALL(*gl_, VertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, nullptr))
         .Times(1)
         .RetiresOnSaturation();
     EXPECT_CALL(*gl_, VertexAttribDivisorANGLE(0, 0))
@@ -2308,7 +2308,7 @@ void GLES2DecoderTestBase::SetupMockGLBehaviors() {
       .WillByDefault(WithArg<1>(Invoke(
           &gl_states_,
           &GLES2DecoderTestBase::MockGLStates::OnBindArrayBuffer)));
-  ON_CALL(*gl_, VertexAttribPointer(_, _, _, _, _, NULL))
+  ON_CALL(*gl_, VertexAttribPointer(_, _, _, _, _, nullptr))
       .WillByDefault(InvokeWithoutArgs(
           &gl_states_,
           &GLES2DecoderTestBase::MockGLStates::OnVertexAttribNullPointer));
@@ -2405,7 +2405,7 @@ void GLES2DecoderPassthroughTestBase::OnSwapBuffers(uint64_t swap_id,
                                                     uint32_t flags) {}
 
 void GLES2DecoderPassthroughTestBase::SetUp() {
-  base::CommandLine::Init(0, NULL);
+  base::CommandLine::Init(0, nullptr);
   auto* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(switches::kUseGL,
                                   gl::kGLImplementationANGLEName);

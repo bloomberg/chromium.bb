@@ -41,7 +41,7 @@ TEST_F(GpuDriverBugListTest, CurrentListForImagination) {
 #endif  // OS_ANDROID
 
 TEST_F(GpuDriverBugListTest, AppendSingleWorkaround) {
-  base::CommandLine command_line(0, NULL);
+  base::CommandLine command_line(0, nullptr);
   command_line.AppendSwitch(GpuDriverBugWorkaroundTypeToString(
       DISABLE_CHROMIUM_FRAMEBUFFER_MULTISAMPLE));
   std::set<int> workarounds;
@@ -55,7 +55,7 @@ TEST_F(GpuDriverBugListTest, AppendSingleWorkaround) {
 }
 
 TEST_F(GpuDriverBugListTest, AppendForceGPUWorkaround) {
-  base::CommandLine command_line(0, NULL);
+  base::CommandLine command_line(0, nullptr);
   command_line.AppendSwitch(
       GpuDriverBugWorkaroundTypeToString(FORCE_DISCRETE_GPU));
   std::set<int> workarounds;

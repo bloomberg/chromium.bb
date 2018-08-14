@@ -690,7 +690,7 @@ const GLubyte* GetString(PP_Resource context_id, GLenum name) {
   if (enter.succeeded()) {
     return ToGles2Impl(&enter)->GetString(name);
   } else {
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -1514,7 +1514,7 @@ void* MapBufferSubDataCHROMIUM(PP_Resource context_id,
     return ToGles2Impl(&enter)->MapBufferSubDataCHROMIUM(target, offset, size,
                                                          access);
   } else {
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -1540,7 +1540,7 @@ void* MapTexSubImage2DCHROMIUM(PP_Resource context_id,
     return ToGles2Impl(&enter)->MapTexSubImage2DCHROMIUM(
         target, level, xoffset, yoffset, width, height, format, type, access);
   } else {
-    return NULL;
+    return nullptr;
   }
 }
 

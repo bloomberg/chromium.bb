@@ -206,7 +206,7 @@ Renderbuffer::~Renderbuffer() {
       glDeleteRenderbuffersEXT(1, &id);
     }
     manager_->StopTracking(this);
-    manager_ = NULL;
+    manager_ = nullptr;
   }
 }
 
@@ -272,7 +272,7 @@ void RenderbufferManager::CreateRenderbuffer(
 Renderbuffer* RenderbufferManager::GetRenderbuffer(
     GLuint client_id) {
   RenderbufferMap::iterator it = renderbuffers_.find(client_id);
-  return it != renderbuffers_.end() ? it->second.get() : NULL;
+  return it != renderbuffers_.end() ? it->second.get() : nullptr;
 }
 
 void RenderbufferManager::RemoveRenderbuffer(GLuint client_id) {

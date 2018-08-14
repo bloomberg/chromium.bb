@@ -632,7 +632,7 @@ TEST_P(GLES2DecoderTest, GenQueriesEXTImmediateValidArgs) {
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(*cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   QueryManager* query_manager = decoder_->GetQueryManager();
-  ASSERT_TRUE(query_manager != NULL);
+  ASSERT_TRUE(query_manager != nullptr);
   EXPECT_TRUE(query_manager->IsValidQuery(kNewClientId));
 }
 
@@ -643,7 +643,7 @@ TEST_P(GLES2DecoderTest, GenQueriesEXTImmediateDuplicateOrNullIds) {
   cmd->Init(3, temp);
   EXPECT_EQ(error::kInvalidArguments, ExecuteImmediateCmd(*cmd, sizeof(temp)));
   QueryManager* query_manager = decoder_->GetQueryManager();
-  ASSERT_TRUE(query_manager != NULL);
+  ASSERT_TRUE(query_manager != nullptr);
   EXPECT_FALSE(query_manager->IsValidQuery(kNewClientId));
   EXPECT_FALSE(query_manager->IsValidQuery(kNewClientId + 1));
   GLuint null_id[2] = {kNewClientId, 0};
@@ -697,9 +697,9 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXT) {
 
   // Query object should not be created untill BeginQueriesEXT.
   QueryManager* query_manager = decoder_->GetQueryManager();
-  ASSERT_TRUE(query_manager != NULL);
+  ASSERT_TRUE(query_manager != nullptr);
   QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
-  EXPECT_TRUE(query == NULL);
+  EXPECT_TRUE(query == nullptr);
 
   // BeginQueryEXT should fail  if id is not generated from GenQueriesEXT.
   begin_cmd.Init(GL_ANY_SAMPLES_PASSED_EXT, kInvalidClientId, shared_memory_id_,
@@ -714,7 +714,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXT) {
 
   // After BeginQueriesEXT id name should have query object associated with it.
   query = query_manager->GetQuery(kNewClientId);
-  ASSERT_TRUE(query != NULL);
+  ASSERT_TRUE(query != nullptr);
   EXPECT_FALSE(query->IsPending());
 
   // Test trying begin again fails
@@ -1019,9 +1019,9 @@ TEST_P(GLES2DecoderTest, BeginEndQueryEXTCommandsIssuedCHROMIUM) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   QueryManager* query_manager = decoder_->GetQueryManager();
-  ASSERT_TRUE(query_manager != NULL);
+  ASSERT_TRUE(query_manager != nullptr);
   QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
-  ASSERT_TRUE(query != NULL);
+  ASSERT_TRUE(query != nullptr);
   EXPECT_FALSE(query->IsPending());
 
   // Test end succeeds
@@ -1044,9 +1044,9 @@ TEST_P(GLES2DecoderTest, BeginEndQueryEXTGetErrorQueryCHROMIUM) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   QueryManager* query_manager = decoder_->GetQueryManager();
-  ASSERT_TRUE(query_manager != NULL);
+  ASSERT_TRUE(query_manager != nullptr);
   QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
-  ASSERT_TRUE(query != NULL);
+  ASSERT_TRUE(query != nullptr);
   EXPECT_FALSE(query->IsPending());
 
   // Test end succeeds
@@ -1102,9 +1102,9 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   QueryManager* query_manager = decoder_->GetQueryManager();
-  ASSERT_TRUE(query_manager != NULL);
+  ASSERT_TRUE(query_manager != nullptr);
   QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
-  ASSERT_TRUE(query != NULL);
+  ASSERT_TRUE(query != nullptr);
   EXPECT_FALSE(query->IsPending());
 
   EXPECT_CALL(*gl_, Flush()).RetiresOnSaturation();
@@ -1221,9 +1221,9 @@ TEST_P(GLES2DecoderManualInitTest, QueryCounterEXTTimeStamp) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   QueryManager* query_manager = decoder_->GetQueryManager();
-  ASSERT_TRUE(query_manager != NULL);
+  ASSERT_TRUE(query_manager != nullptr);
   QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
-  ASSERT_TRUE(query != NULL);
+  ASSERT_TRUE(query != nullptr);
   EXPECT_TRUE(query->IsPending());
 }
 

@@ -33,7 +33,7 @@ TEST_F(GLDescheduleTest, Deschedule) {
   glGenTextures(1, &tex);
   glBindTexture(GL_TEXTURE_2D, tex);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-               NULL);
+               nullptr);
 
   GLuint fbo = 0;
   glGenFramebuffers(1, &fbo);

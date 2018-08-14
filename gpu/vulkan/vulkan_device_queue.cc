@@ -96,8 +96,7 @@ bool VulkanDeviceQueue::Initialize(
   result = vkEnumerateDeviceLayerProperties(vk_physical_device_,
                                             &num_device_layers, nullptr);
   if (VK_SUCCESS != result) {
-    DLOG(ERROR) << "vkEnumerateDeviceLayerProperties(NULL) failed: "
-                << result;
+    DLOG(ERROR) << "vkEnumerateDeviceLayerProperties(NULL) failed: " << result;
     return false;
   }
 

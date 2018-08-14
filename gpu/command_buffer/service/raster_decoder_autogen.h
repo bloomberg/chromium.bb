@@ -26,7 +26,7 @@ error::Error RasterDecoderImpl::HandleDeleteTexturesImmediate(
   volatile const GLuint* textures =
       gles2::GetImmediateDataAs<volatile const GLuint*>(c, data_size,
                                                         immediate_data_size);
-  if (textures == NULL) {
+  if (textures == nullptr) {
     return error::kOutOfBounds;
   }
   DeleteTexturesHelper(n, textures);
@@ -73,12 +73,12 @@ error::Error RasterDecoderImpl::HandleGetIntegerv(
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLint* params = result ? result->GetData() : NULL;
+  GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->g_l_state.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetIntegerv", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetIntegerv");
@@ -107,7 +107,7 @@ error::Error RasterDecoderImpl::HandleGenQueriesEXTImmediate(
   }
   volatile GLuint* queries = gles2::GetImmediateDataAs<volatile GLuint*>(
       c, data_size, immediate_data_size);
-  if (queries == NULL) {
+  if (queries == nullptr) {
     return error::kOutOfBounds;
   }
   auto queries_copy = std::make_unique<GLuint[]>(n);
@@ -134,7 +134,7 @@ error::Error RasterDecoderImpl::HandleDeleteQueriesEXTImmediate(
   volatile const GLuint* queries =
       gles2::GetImmediateDataAs<volatile const GLuint*>(c, data_size,
                                                         immediate_data_size);
-  if (queries == NULL) {
+  if (queries == nullptr) {
     return error::kOutOfBounds;
   }
   DeleteQueriesEXTHelper(n, queries);
@@ -222,7 +222,7 @@ error::Error RasterDecoderImpl::HandleBeginRasterCHROMIUMImmediate(
   volatile const GLbyte* mailbox =
       gles2::GetImmediateDataAs<volatile const GLbyte*>(c, data_size,
                                                         immediate_data_size);
-  if (mailbox == NULL) {
+  if (mailbox == nullptr) {
     return error::kOutOfBounds;
   }
   DoBeginRasterCHROMIUM(sk_color, msaa_sample_count, can_use_lcd_text,
@@ -357,7 +357,7 @@ error::Error RasterDecoderImpl::HandleProduceTextureDirectImmediate(
   }
   volatile GLbyte* mailbox = gles2::GetImmediateDataAs<volatile GLbyte*>(
       c, data_size, immediate_data_size);
-  if (mailbox == NULL) {
+  if (mailbox == nullptr) {
     return error::kOutOfBounds;
   }
   DoProduceTextureDirect(texture, mailbox);
@@ -394,7 +394,7 @@ error::Error RasterDecoderImpl::HandleCreateAndConsumeTextureINTERNALImmediate(
                                     "format");
     return error::kNoError;
   }
-  if (mailbox == NULL) {
+  if (mailbox == nullptr) {
     return error::kOutOfBounds;
   }
   DoCreateAndConsumeTextureINTERNAL(texture_id, use_buffer, buffer_usage,

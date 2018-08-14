@@ -20,7 +20,7 @@ MockTransferBuffer::MockTransferBuffer(CommandBuffer* command_buffer,
       alignment_(alignment),
       actual_buffer_index_(0),
       expected_buffer_index_(0),
-      last_alloc_(NULL),
+      last_alloc_(nullptr),
       expected_offset_(result_size),
       actual_offset_(result_size),
       initialize_fail_(initialize_fail) {

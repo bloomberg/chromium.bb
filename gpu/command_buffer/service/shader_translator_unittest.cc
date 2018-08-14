@@ -40,8 +40,8 @@ class ShaderTranslatorTest : public testing::Test {
                                            false));
   }
   void TearDown() override {
-    vertex_translator_ = NULL;
-    fragment_translator_ = NULL;
+    vertex_translator_ = nullptr;
+    fragment_translator_ = nullptr;
   }
 
   scoped_refptr<ShaderTranslator> vertex_translator_;
@@ -79,8 +79,8 @@ class ES3ShaderTranslatorTest : public testing::Test {
                                            false));
   }
   void TearDown() override {
-    vertex_translator_ = NULL;
-    fragment_translator_ = NULL;
+    vertex_translator_ = nullptr;
+    fragment_translator_ = nullptr;
   }
 
   scoped_refptr<ShaderTranslator> vertex_translator_;

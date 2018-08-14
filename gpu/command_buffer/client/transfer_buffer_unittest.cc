@@ -141,7 +141,7 @@ TEST_F(TransferBufferTest, Free) {
   EXPECT_EQ(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
 
   // See that it gets reallocated.
-  EXPECT_TRUE(transfer_buffer_->GetResultBuffer() != NULL);
+  EXPECT_TRUE(transfer_buffer_->GetResultBuffer() != nullptr);
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
   EXPECT_NE(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
 
@@ -160,7 +160,7 @@ TEST_F(TransferBufferTest, Free) {
   // See that it gets reallocated.
   unsigned int size = 0;
   void* data = transfer_buffer_->AllocUpTo(1, &size);
-  EXPECT_TRUE(data != NULL);
+  EXPECT_TRUE(data != nullptr);
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
   EXPECT_NE(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
   int32_t token = helper_->InsertToken();
@@ -203,12 +203,12 @@ TEST_F(TransferBufferTest, TooLargeAllocation) {
   Initialize();
   // Check that we can't allocate large than max size.
   void* ptr = transfer_buffer_->Alloc(kTransferBufferSize + 1);
-  EXPECT_TRUE(ptr == NULL);
+  EXPECT_TRUE(ptr == nullptr);
   // Check we if we try to allocate larger than max we get max.
   unsigned int size_allocated = 0;
   ptr = transfer_buffer_->AllocUpTo(
       kTransferBufferSize + 1, &size_allocated);
-  ASSERT_TRUE(ptr != NULL);
+  ASSERT_TRUE(ptr != nullptr);
   EXPECT_EQ(kTransferBufferSize - kStartingOffset, size_allocated);
   transfer_buffer_->FreePendingToken(ptr, 1);
 }
@@ -359,7 +359,7 @@ TEST_F(TransferBufferExpandContractTest, ExpandWithSmallAllocations) {
   // Allocate one more byte to force expansion.
   ExpectCreateTransferBuffer(kStartTransferBufferSize * 2);
   ptr = transfer_buffer_->AllocUpTo(1, &size_allocated);
-  ASSERT_TRUE(ptr != NULL);
+  ASSERT_TRUE(ptr != nullptr);
   EXPECT_EQ(1u, size_allocated);
   transfer_buffer_->FreePendingToken(ptr, token);
 
@@ -369,7 +369,7 @@ TEST_F(TransferBufferExpandContractTest, ExpandWithSmallAllocations) {
   transfer_buffer_->FreePendingToken(ptr, token);
   ExpectCreateTransferBuffer(kStartTransferBufferSize * 4);
   ptr = transfer_buffer_->AllocUpTo(1, &size_allocated);
-  ASSERT_TRUE(ptr != NULL);
+  ASSERT_TRUE(ptr != nullptr);
   EXPECT_EQ(1u, size_allocated);
   transfer_buffer_->FreePendingToken(ptr, token);
 
@@ -379,7 +379,7 @@ TEST_F(TransferBufferExpandContractTest, ExpandWithSmallAllocations) {
   transfer_buffer_->FreePendingToken(ptr, token);
   EXPECT_CALL(*command_buffer(), Flush(_)).Times(1).RetiresOnSaturation();
   ptr = transfer_buffer_->AllocUpTo(1, &size_allocated);
-  ASSERT_TRUE(ptr != NULL);
+  ASSERT_TRUE(ptr != nullptr);
   EXPECT_EQ(1u, size_allocated);
   transfer_buffer_->FreePendingToken(ptr, token);
   EXPECT_EQ(kMaxTransferBufferSize - kStartingOffset,
@@ -419,7 +419,7 @@ TEST_F(TransferBufferExpandContractTest, ExpandWithLargeAllocations) {
   ExpectCreateTransferBuffer(kStartTransferBufferSize * 4);
   unsigned int size_requested = transfer_buffer_->GetFreeSize() + 1;
   ptr = transfer_buffer_->AllocUpTo(size_requested, &size_allocated);
-  ASSERT_TRUE(ptr != NULL);
+  ASSERT_TRUE(ptr != nullptr);
   EXPECT_EQ(size_requested, size_allocated);
   transfer_buffer_->FreePendingToken(ptr, token);
 
@@ -457,7 +457,7 @@ TEST_F(TransferBufferExpandContractTest, ShrinkRingBuffer) {
   // Expand the ring buffer to the maximum size.
   ExpectCreateTransferBuffer(kMaxTransferBufferSize);
   void* ptr = transfer_buffer_->Alloc(kMaxTransferBufferSize - kStartingOffset);
-  EXPECT_TRUE(ptr != NULL);
+  EXPECT_TRUE(ptr != nullptr);
   transfer_buffer_->FreePendingToken(ptr, token);
 
   // We shouldn't shrink before we reach the allocation threshold.
@@ -465,14 +465,14 @@ TEST_F(TransferBufferExpandContractTest, ShrinkRingBuffer) {
        allocated < (kStartTransferBufferSize + kStartingOffset) *
                        (TransferBuffer::kShrinkThreshold);) {
     ptr = transfer_buffer_->Alloc(kStartTransferBufferSize);
-    EXPECT_TRUE(ptr != NULL);
+    EXPECT_TRUE(ptr != nullptr);
     transfer_buffer_->FreePendingToken(ptr, token);
     allocated += kStartTransferBufferSize;
   }
   // The next allocation should trip the threshold and shrink.
   ExpectCreateTransferBuffer(kStartTransferBufferSize * 2);
   ptr = transfer_buffer_->Alloc(1);
-  EXPECT_TRUE(ptr != NULL);
+  EXPECT_TRUE(ptr != nullptr);
   transfer_buffer_->FreePendingToken(ptr, token);
 }
 
@@ -510,7 +510,7 @@ TEST_F(TransferBufferExpandContractTest, Contract) {
   const size_t kSize2 = 128 - kStartingOffset;
   unsigned int size_allocated = 0;
   void* ptr = transfer_buffer_->AllocUpTo(kSize1, &size_allocated);
-  ASSERT_TRUE(ptr != NULL);
+  ASSERT_TRUE(ptr != nullptr);
   EXPECT_EQ(kSize2, size_allocated);
   EXPECT_EQ(kSize2, transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc());
   transfer_buffer_->FreePendingToken(ptr, 1);
@@ -535,7 +535,7 @@ TEST_F(TransferBufferExpandContractTest, Contract) {
       .RetiresOnSaturation();
 
   ptr = transfer_buffer_->AllocUpTo(kSize1, &size_allocated);
-  ASSERT_TRUE(ptr != NULL);
+  ASSERT_TRUE(ptr != nullptr);
   EXPECT_EQ(kSize2, size_allocated);
   EXPECT_EQ(kSize2, transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc());
   transfer_buffer_->FreePendingToken(ptr, 1);
@@ -566,7 +566,7 @@ TEST_F(TransferBufferExpandContractTest, OutOfMemory) {
   const size_t kSize1 = 512 - kStartingOffset;
   unsigned int size_allocated = 0;
   void* ptr = transfer_buffer_->AllocUpTo(kSize1, &size_allocated);
-  ASSERT_TRUE(ptr == NULL);
+  ASSERT_TRUE(ptr == nullptr);
   EXPECT_FALSE(transfer_buffer_->HaveBuffer());
 }
 

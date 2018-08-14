@@ -100,7 +100,7 @@ base::Closure GpuMemoryBufferImplIOSurface::AllocateForTesting(
 
 bool GpuMemoryBufferImplIOSurface::Map() {
   DCHECK(!mapped_);
-  IOReturn status = IOSurfaceLock(io_surface_, lock_flags_, NULL);
+  IOReturn status = IOSurfaceLock(io_surface_, lock_flags_, nullptr);
   DCHECK_NE(status, kIOReturnCannotLock);
   mapped_ = true;
   return true;
@@ -114,7 +114,7 @@ void* GpuMemoryBufferImplIOSurface::memory(size_t plane) {
 
 void GpuMemoryBufferImplIOSurface::Unmap() {
   DCHECK(mapped_);
-  IOSurfaceUnlock(io_surface_, lock_flags_, NULL);
+  IOSurfaceUnlock(io_surface_, lock_flags_, nullptr);
   mapped_ = false;
 }
 

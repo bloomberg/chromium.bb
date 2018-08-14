@@ -16,7 +16,7 @@ static T LocalGetAs(const std::vector<int8_t>& data,
   const int8_t* p = &data[0] + offset;
   if (offset + size > data.size()) {
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
   return static_cast<T>(static_cast<const void*>(p));
 }
@@ -112,19 +112,21 @@ GLint ProgramInfoManager::Program::GetAttribLocation(
 
 const ProgramInfoManager::Program::VertexAttrib*
 ProgramInfoManager::Program::GetAttribInfo(GLint index) const {
-  return (static_cast<size_t>(index) < attrib_infos_.size()) ?
-      &attrib_infos_[index] : NULL;
+  return (static_cast<size_t>(index) < attrib_infos_.size())
+             ? &attrib_infos_[index]
+             : nullptr;
 }
 
 const ProgramInfoManager::Program::UniformInfo*
 ProgramInfoManager::Program::GetUniformInfo(GLint index) const {
-  return (static_cast<size_t>(index) < uniform_infos_.size()) ?
-      &uniform_infos_[index] : NULL;
+  return (static_cast<size_t>(index) < uniform_infos_.size())
+             ? &uniform_infos_[index]
+             : nullptr;
 }
 
 const ProgramInfoManager::Program::UniformBlock*
 ProgramInfoManager::Program::GetUniformBlock(GLuint index) const {
-  return (index < uniform_blocks_.size()) ? &uniform_blocks_[index] : NULL;
+  return (index < uniform_blocks_.size()) ? &uniform_blocks_[index] : nullptr;
 }
 
 GLint ProgramInfoManager::Program::GetUniformLocation(
@@ -253,8 +255,9 @@ void ProgramInfoManager::Program::UniformBlockBinding(
 
 const ProgramInfoManager::Program::TransformFeedbackVarying*
 ProgramInfoManager::Program::GetTransformFeedbackVarying(GLuint index) const {
-  return (index < transform_feedback_varyings_.size()) ?
-      &transform_feedback_varyings_[index] : NULL;
+  return (index < transform_feedback_varyings_.size())
+             ? &transform_feedback_varyings_[index]
+             : nullptr;
 }
 
 bool ProgramInfoManager::Program::GetUniformsiv(
@@ -594,7 +597,7 @@ ProgramInfoManager::Program* ProgramInfoManager::GetProgramInfo(
   lock_.AssertAcquired();
   ProgramInfoMap::iterator it = program_infos_.find(program);
   if (it == program_infos_.end()) {
-    return NULL;
+    return nullptr;
   }
   Program* info = &it->second;
   if (info->IsCached(type))
@@ -640,7 +643,7 @@ ProgramInfoManager::Program* ProgramInfoManager::GetProgramInfo(
       break;
     default:
       NOTREACHED();
-      return NULL;
+      return nullptr;
   }
   return info;
 }

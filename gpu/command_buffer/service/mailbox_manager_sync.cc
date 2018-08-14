@@ -87,7 +87,7 @@ MailboxManagerSync::TextureGroup* MailboxManagerSync::TextureGroup::FromName(
     const Mailbox& name) {
   MailboxToGroupMap::iterator it = mailbox_to_group_.Get().find(name);
   if (it == mailbox_to_group_.Get().end())
-    return NULL;
+    return nullptr;
 
   return it->second.get();
 }
@@ -158,7 +158,7 @@ Texture* MailboxManagerSync::TextureGroup::FindTexture(
     if (it->first == manager)
       return it->second;
   }
-  return NULL;
+  return nullptr;
 }
 
 MailboxManagerSync::TextureGroupRef::TextureGroupRef(unsigned version,
@@ -198,7 +198,7 @@ Texture* MailboxManagerSync::ConsumeTexture(const Mailbox& mailbox) {
       scoped_allow_cross_thread_ref_count_access;
   TextureGroup* group = TextureGroup::FromName(mailbox);
   if (!group)
-    return NULL;
+    return nullptr;
 
   // Check if a texture already exists in this share group.
   Texture* texture = group->FindTexture(this);
@@ -247,7 +247,7 @@ void MailboxManagerSync::ProduceTexture(const Mailbox& mailbox,
     TextureDefinition definition;
     if (!SkipTextureWorkarounds(texture)) {
       base::AutoUnlock unlock(g_lock.Get());
-      definition = TextureDefinition(texture, kNewTextureVersion, NULL);
+      definition = TextureDefinition(texture, kNewTextureVersion, nullptr);
     }
     group_for_texture = new TextureGroup(definition);
     group_for_texture->AddTexture(this, texture);
@@ -307,7 +307,7 @@ void MailboxManagerSync::UpdateDefinitionLocked(TextureBase* texture_base,
   }
 
   group->SetDefinition(TextureDefinition(texture, ++group_ref->version,
-                                         image ? image_buffer : NULL));
+                                         image ? image_buffer : nullptr));
 }
 
 void MailboxManagerSync::PushTextureUpdates(const SyncToken& token) {

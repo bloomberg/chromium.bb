@@ -24,13 +24,13 @@ void GLStateRestorerImpl::RestoreState(const gl::GLStateRestorer* prev_state) {
   const GLStateRestorerImpl* restorer_impl =
       static_cast<const GLStateRestorerImpl*>(prev_state);
 
-  decoder_->RestoreState(
-      restorer_impl ? restorer_impl->GetContextState() : NULL);
+  decoder_->RestoreState(restorer_impl ? restorer_impl->GetContextState()
+                                       : nullptr);
 }
 
 void GLStateRestorerImpl::RestoreAllTextureUnitAndSamplerBindings() {
   DCHECK(decoder_.get());
-  decoder_->RestoreAllTextureUnitAndSamplerBindings(NULL);
+  decoder_->RestoreAllTextureUnitAndSamplerBindings(nullptr);
 }
 
 void GLStateRestorerImpl::RestoreActiveTexture() {

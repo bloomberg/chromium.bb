@@ -89,7 +89,7 @@ bool GLTestHelper::CheckGLError(const char* msg, int line) {
 GLuint GLTestHelper::CompileShader(GLenum type, const char* shaderSrc) {
   GLuint shader = glCreateShader(type);
   // Load the shader source
-  glShaderSource(shader, 1, &shaderSrc, NULL);
+  glShaderSource(shader, 1, &shaderSrc, nullptr);
   // Compile the shader
   glCompileShader(shader);
 
@@ -280,7 +280,7 @@ struct BitmapInfoHeader{
 bool GLTestHelper::SaveBackbufferAsBMP(
     const char* filename, int width, int height) {
   FILE* fp = fopen(filename, "wb");
-  EXPECT_TRUE(fp != NULL);
+  EXPECT_TRUE(fp != nullptr);
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
   int num_pixels = width * height;
   int size = num_pixels * 4;

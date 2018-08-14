@@ -23,7 +23,7 @@ class Surface : public tcu::egl::WindowSurface {
           int height)
       : tcu::egl::WindowSurface(display,
                                 config,
-                                (EGLNativeWindowType)NULL,
+                                (EGLNativeWindowType) nullptr,
                                 attribList),
         width_(width),
         height_(height) {}

@@ -159,7 +159,7 @@ bool CollectDriverInfoD3D(const std::wstring& device_id, GPUInfo* gpu_info) {
 
   // create device info for the display device
   HDEVINFO device_info =
-      ::SetupDiGetClassDevs(&display_class, NULL, NULL, DIGCF_PRESENT);
+      ::SetupDiGetClassDevs(&display_class, nullptr, nullptr, DIGCF_PRESENT);
   if (device_info == INVALID_HANDLE_VALUE) {
     LOG(ERROR) << "Creating device info failed";
     return false;
@@ -178,8 +178,8 @@ bool CollectDriverInfoD3D(const std::wstring& device_id, GPUInfo* gpu_info) {
   while (SetupDiEnumDeviceInfo(device_info, index++, &device_info_data)) {
     WCHAR value[255];
     if (SetupDiGetDeviceRegistryPropertyW(
-            device_info, &device_info_data, SPDRP_DRIVER, NULL,
-            reinterpret_cast<PBYTE>(value), sizeof(value), NULL)) {
+            device_info, &device_info_data, SPDRP_DRIVER, nullptr,
+            reinterpret_cast<PBYTE>(value), sizeof(value), nullptr)) {
       HKEY key;
       std::wstring driver_key = L"System\\CurrentControlSet\\Control\\Class\\";
       driver_key += value;
@@ -188,19 +188,19 @@ bool CollectDriverInfoD3D(const std::wstring& device_id, GPUInfo* gpu_info) {
       if (result == ERROR_SUCCESS) {
         GPUInfo::GPUDevice device;
         DWORD dwcb_data = sizeof(value);
-        result = RegQueryValueExW(key, L"DriverVersion", NULL, NULL,
+        result = RegQueryValueExW(key, L"DriverVersion", nullptr, nullptr,
                                   reinterpret_cast<LPBYTE>(value), &dwcb_data);
         if (result == ERROR_SUCCESS)
           device.driver_version = base::UTF16ToASCII(std::wstring(value));
 
         dwcb_data = sizeof(value);
-        result = RegQueryValueExW(key, L"DriverDate", NULL, NULL,
+        result = RegQueryValueExW(key, L"DriverDate", nullptr, nullptr,
                                   reinterpret_cast<LPBYTE>(value), &dwcb_data);
         if (result == ERROR_SUCCESS)
           device.driver_date = base::UTF16ToASCII(std::wstring(value));
 
         dwcb_data = sizeof(value);
-        result = RegQueryValueExW(key, L"ProviderName", NULL, NULL,
+        result = RegQueryValueExW(key, L"ProviderName", nullptr, nullptr,
                                   reinterpret_cast<LPBYTE>(value), &dwcb_data);
         if (result == ERROR_SUCCESS)
           device.driver_vendor = base::UTF16ToASCII(std::wstring(value));
@@ -645,7 +645,7 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   DISPLAY_DEVICE dd;
   dd.cb = sizeof(DISPLAY_DEVICE);
   std::wstring id;
-  for (int i = 0; EnumDisplayDevices(NULL, i, &dd, 0); ++i) {
+  for (int i = 0; EnumDisplayDevices(nullptr, i, &dd, 0); ++i) {
     if (dd.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) {
       id = dd.DeviceID;
       break;

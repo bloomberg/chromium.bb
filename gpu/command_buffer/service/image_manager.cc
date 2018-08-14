@@ -31,7 +31,7 @@ gl::GLImage* ImageManager::LookupImage(int32_t service_id) {
   if (iter != images_.end())
     return iter->second.get();
 
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace gles2

@@ -1150,7 +1150,7 @@ void GLES2Implementation::GetProgramInfoLog(GLuint program,
       GPU_CLIENT_LOG("------\n" << infolog << "\n------");
     }
   }
-  if (length != NULL) {
+  if (length != nullptr) {
     *length = max_size;
   }
   CheckGLError();
@@ -1294,7 +1294,7 @@ void GLES2Implementation::GetShaderInfoLog(GLuint shader,
       GPU_CLIENT_LOG("------\n" << infolog << "\n------");
     }
   }
-  if (length != NULL) {
+  if (length != nullptr) {
     *length = max_size;
   }
   CheckGLError();
@@ -1321,7 +1321,7 @@ void GLES2Implementation::GetShaderSource(GLuint shader,
       GPU_CLIENT_LOG("------\n" << source << "\n------");
     }
   }
-  if (length != NULL) {
+  if (length != nullptr) {
     *length = max_size;
   }
   CheckGLError();
@@ -2008,7 +2008,7 @@ void GLES2Implementation::TransformFeedbackVaryings(GLuint program,
     return;
   }
 
-  if (!PackStringsToBucket(count, varyings, NULL,
+  if (!PackStringsToBucket(count, varyings, nullptr,
                            "glTransformFeedbackVaryings")) {
     return;
   }
@@ -3131,7 +3131,7 @@ void GLES2Implementation::GetTranslatedShaderSourceANGLE(GLuint shader,
       GPU_CLIENT_LOG("------\n" << source << "\n------");
     }
   }
-  if (length != NULL) {
+  if (length != nullptr) {
     *length = max_size;
   }
   CheckGLError();

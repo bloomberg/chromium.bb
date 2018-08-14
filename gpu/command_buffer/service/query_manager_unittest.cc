@@ -160,18 +160,18 @@ TEST_F(QueryManagerTest, Basic) {
   scoped_refptr<QueryManager::Query> query(
       CreateQuery(GL_ANY_SAMPLES_PASSED_EXT, kClient1Id, shared_memory_id_,
                   kSharedMemoryOffset, kService1Id));
-  ASSERT_TRUE(query.get() != NULL);
+  ASSERT_TRUE(query.get() != nullptr);
   // Check we can get the same Query.
   EXPECT_EQ(query.get(), manager_->GetQuery(kClient1Id));
   // Check we get nothing for a non-existent query.
-  EXPECT_TRUE(manager_->GetQuery(kClient2Id) == NULL);
+  EXPECT_TRUE(manager_->GetQuery(kClient2Id) == nullptr);
   // Check we can delete the query.
   EXPECT_CALL(*gl_, DeleteQueries(1, ::testing::Pointee(kService1Id)))
       .Times(1)
       .RetiresOnSaturation();
   manager_->RemoveQuery(kClient1Id);
   // Check we get nothing for a non-existent query.
-  EXPECT_TRUE(manager_->GetQuery(kClient1Id) == NULL);
+  EXPECT_TRUE(manager_->GetQuery(kClient1Id) == nullptr);
   // Check query is deleted
   EXPECT_TRUE(query->IsDeleted());
   EXPECT_FALSE(manager_->HavePendingQueries());
@@ -185,13 +185,13 @@ TEST_F(QueryManagerTest, Destroy) {
   scoped_refptr<QueryManager::Query> query(
       CreateQuery(GL_ANY_SAMPLES_PASSED_EXT, kClient1Id, shared_memory_id_,
                   kSharedMemoryOffset, kService1Id));
-  ASSERT_TRUE(query.get() != NULL);
+  ASSERT_TRUE(query.get() != nullptr);
   EXPECT_CALL(*gl_, DeleteQueries(1, ::testing::Pointee(kService1Id)))
       .Times(1)
       .RetiresOnSaturation();
   manager_->Destroy(true);
   // Check we get nothing for a non-existent query.
-  EXPECT_TRUE(manager_->GetQuery(kClient1Id) == NULL);
+  EXPECT_TRUE(manager_->GetQuery(kClient1Id) == nullptr);
   // Check query is deleted
   EXPECT_TRUE(query->IsDeleted());
 }
@@ -205,7 +205,7 @@ TEST_F(QueryManagerTest, QueryBasic) {
   scoped_refptr<QueryManager::Query> query(
       CreateQuery(kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset,
                   kService1Id));
-  ASSERT_TRUE(query.get() != NULL);
+  ASSERT_TRUE(query.get() != nullptr);
 
   EXPECT_TRUE(query->IsValid());
   EXPECT_FALSE(query->IsDeleted());
@@ -227,12 +227,12 @@ TEST_F(QueryManagerTest, ProcessPendingQuery) {
   scoped_refptr<QueryManager::Query> query(
       CreateQuery(kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset,
                   kService1Id));
-  ASSERT_TRUE(query.get() != NULL);
+  ASSERT_TRUE(query.get() != nullptr);
 
   // Setup shared memory like client would.
   QuerySync* sync = decoder_->GetSharedMemoryAs<QuerySync*>(
       shared_memory_id_, kSharedMemoryOffset, sizeof(*sync));
-  ASSERT_TRUE(sync != NULL);
+  ASSERT_TRUE(sync != nullptr);
   sync->Reset();
 
   // Queue it
@@ -289,7 +289,7 @@ TEST_F(QueryManagerTest, ProcessPendingQueries) {
   // Setup shared memory like client would.
   QuerySync* sync1 = decoder_->GetSharedMemoryAs<QuerySync*>(
       shared_memory_id_, kSharedMemoryOffset, sizeof(*sync1) * 3);
-  ASSERT_TRUE(sync1 != NULL);
+  ASSERT_TRUE(sync1 != nullptr);
   QuerySync* sync2 = sync1 + 1;
   QuerySync* sync3 = sync2 + 1;
 
@@ -303,9 +303,9 @@ TEST_F(QueryManagerTest, ProcessPendingQueries) {
   scoped_refptr<QueryManager::Query> query3(
       CreateQuery(kTarget, kClient3Id, shared_memory_id_,
                   kSharedMemoryOffset + sizeof(*sync1) * 2, kService3Id));
-  ASSERT_TRUE(query1.get() != NULL);
-  ASSERT_TRUE(query2.get() != NULL);
-  ASSERT_TRUE(query3.get() != NULL);
+  ASSERT_TRUE(query1.get() != nullptr);
+  ASSERT_TRUE(query2.get() != nullptr);
+  ASSERT_TRUE(query3.get() != nullptr);
   EXPECT_FALSE(manager_->HavePendingQueries());
 
   sync1->Reset();
@@ -394,7 +394,7 @@ TEST_F(QueryManagerTest, ExitWithPendingQuery) {
   scoped_refptr<QueryManager::Query> query(
       CreateQuery(kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset,
                   kService1Id));
-  ASSERT_TRUE(query.get() != NULL);
+  ASSERT_TRUE(query.get() != nullptr);
 
   // Queue it
   QueueQuery(query.get(), kService1Id, kSubmitCount);
@@ -419,7 +419,7 @@ TEST_F(QueryManagerTest, ARBOcclusionQuery2) {
   QueryManager::Query* query =
       CreateQueryOnManager(manager.get(), kTarget, kClient1Id,
                            shared_memory_id_, kSharedMemoryOffset, kService1Id);
-  ASSERT_TRUE(query != NULL);
+  ASSERT_TRUE(query != nullptr);
 
   EXPECT_CALL(*gl_, BeginQuery(GL_ANY_SAMPLES_PASSED_EXT, kService1Id))
       .Times(1)
@@ -451,7 +451,7 @@ TEST_F(QueryManagerTest, ARBOcclusionQuery) {
   QueryManager::Query* query =
       CreateQueryOnManager(manager.get(), kTarget, kClient1Id,
                            shared_memory_id_, kSharedMemoryOffset, kService1Id);
-  ASSERT_TRUE(query != NULL);
+  ASSERT_TRUE(query != nullptr);
 
   EXPECT_CALL(*gl_, BeginQuery(GL_SAMPLES_PASSED_ARB, kService1Id))
       .Times(1)
@@ -482,7 +482,7 @@ TEST_F(QueryManagerTest, ARBOcclusionPauseResume) {
   QueryManager::Query* query =
       CreateQueryOnManager(manager.get(), kTarget, kClient1Id,
                            shared_memory_id_, kSharedMemoryOffset, kService1Id);
-  ASSERT_TRUE(query != NULL);
+  ASSERT_TRUE(query != nullptr);
 
   EXPECT_CALL(*gl_, BeginQuery(GL_SAMPLES_PASSED_ARB, kService1Id))
       .Times(1)
@@ -565,7 +565,7 @@ TEST_F(QueryManagerTest, TimeElapsedQuery) {
 
   QueryManager::Query* query = CreateQuery(
       kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset, 0);
-  ASSERT_TRUE(query != NULL);
+  ASSERT_TRUE(query != nullptr);
 
   fake_timing_queries.ExpectGPUTimerQuery(*gl_, true);
   fake_timing_queries.SetCurrentGLTime(
@@ -597,7 +597,7 @@ TEST_F(QueryManagerTest, TimeElapsedPauseResume) {
 
   QueryManager::Query* query = CreateQuery(
       kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset, 0);
-  ASSERT_TRUE(query != NULL);
+  ASSERT_TRUE(query != nullptr);
 
   fake_timing_queries.ExpectGPUTimerQuery(*gl_, true);
   fake_timing_queries.SetCurrentGLTime(
@@ -665,7 +665,7 @@ TEST_F(QueryManagerManualSetupTest, TimeElapsedDisjoint) {
 
   QueryManager::Query* query = CreateQuery(
       kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset, 0);
-  ASSERT_TRUE(query != NULL);
+  ASSERT_TRUE(query != nullptr);
 
   // Disjoint happening before the query should not trigger a disjoint event.
   fake_timing_queries.SetDisjoint();
@@ -702,7 +702,7 @@ TEST_F(QueryManagerTest, TimeStampQuery) {
 
   QueryManager::Query* query = CreateQuery(
       kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset, 0);
-  ASSERT_TRUE(query != NULL);
+  ASSERT_TRUE(query != nullptr);
 
   const uint64_t expected_result =
       100u * base::Time::kNanosecondsPerMicrosecond;
@@ -729,7 +729,7 @@ TEST_F(QueryManagerTest, TimeStampQueryPending) {
 
   QueryManager::Query* query = CreateQuery(
       kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset, 0);
-  ASSERT_TRUE(query != NULL);
+  ASSERT_TRUE(query != nullptr);
 
   const uint64_t expected_result =
       100u * base::Time::kNanosecondsPerMicrosecond;
@@ -769,7 +769,7 @@ TEST_F(QueryManagerManualSetupTest, TimeStampDisjoint) {
 
   QueryManager::Query* query = CreateQuery(
       kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset, 0);
-  ASSERT_TRUE(query != NULL);
+  ASSERT_TRUE(query != nullptr);
 
   // Disjoint happening before the query should not trigger a disjoint event.
   fake_timing_queries.SetDisjoint();
@@ -819,7 +819,7 @@ TEST_F(QueryManagerManualSetupTest, DisjointContinualTest) {
 
   QueryManager::Query* query = CreateQuery(
       kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset, 0);
-  ASSERT_TRUE(query != NULL);
+  ASSERT_TRUE(query != nullptr);
 
   fake_timing_queries.ExpectGPUTimeStampQuery(*gl_, false);
   manager_->QueryCounter(query, kSubmitCount);
@@ -847,12 +847,12 @@ TEST_F(QueryManagerTest, GetErrorQuery) {
   QueryManager::Query* query =
       CreateQueryOnManager(manager.get(), kTarget, kClient1Id,
                            shared_memory_id_, kSharedMemoryOffset, 0);
-  ASSERT_TRUE(query != NULL);
+  ASSERT_TRUE(query != nullptr);
 
   // Setup shared memory like client would.
   QuerySync* sync = decoder_->GetSharedMemoryAs<QuerySync*>(
       shared_memory_id_, kSharedMemoryOffset, sizeof(*sync));
-  ASSERT_TRUE(sync != NULL);
+  ASSERT_TRUE(sync != nullptr);
   sync->Reset();
 
   manager->BeginQuery(query);
@@ -889,7 +889,7 @@ TEST_F(QueryManagerTest, OcclusionQuery) {
   QueryManager::Query* query =
       CreateQueryOnManager(manager.get(), kTarget, kClient1Id,
                            shared_memory_id_, kSharedMemoryOffset, kService1Id);
-  ASSERT_TRUE(query != NULL);
+  ASSERT_TRUE(query != nullptr);
 
   EXPECT_CALL(*gl_, BeginQuery(GL_SAMPLES_PASSED_ARB, kService1Id))
       .Times(1)

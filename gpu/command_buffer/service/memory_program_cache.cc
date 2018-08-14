@@ -414,7 +414,7 @@ void MemoryProgramCache::SaveLinkedProgram(
     return;
   }
   std::vector<uint8_t> binary(length);
-  glGetProgramBinary(program, length, NULL, &format,
+  glGetProgramBinary(program, length, nullptr, &format,
                      reinterpret_cast<char*>(binary.data()));
 
   if (compress_program_binaries_) {

@@ -20,7 +20,7 @@
 tcu::Platform* createPlatform ();
 
 void GTFMain(int argc, char* argv[]) {
-  setvbuf(stdout, DE_NULL, _IOLBF, 4*1024);
+  setvbuf(stdout, DE_nullptr, _IOLBF, 4 * 1024);
 
   try {
     tcu::CommandLine cmdLine(argc, argv);

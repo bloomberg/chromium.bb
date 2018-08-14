@@ -67,10 +67,10 @@ class GPU_EXPORT Buffer : public base::RefCountedThreadSafe<Buffer> {
   void* memory() const { return memory_; }
   size_t size() const { return size_; }
 
-  // Returns NULL if the address overflows the memory.
+  // Returns nullptr if the address overflows the memory.
   void* GetDataAddress(uint32_t data_offset, uint32_t data_size) const;
 
-  // Returns NULL if the address overflows the memory.
+  // Returns nullptr if the address overflows the memory.
   void* GetDataAddressAndSize(uint32_t data_offset, uint32_t* data_size) const;
 
   // Returns the remaining size of the buffer after an offset

@@ -489,7 +489,7 @@ void TextureManager::Destroy() {
       progress_reporter_->ReportProgress();
   }
   for (int ii = 0; ii < kNumDefaultTextures; ++ii) {
-    default_textures_[ii] = NULL;
+    default_textures_[ii] = nullptr;
     if (progress_reporter_)
       progress_reporter_->ReportProgress();
   }
@@ -771,24 +771,12 @@ void Texture::AddToSignature(
   const Texture::LevelInfo& info =
       face_infos_[face_index].level_infos[level];
 
-  TextureSignature signature_data(target,
-                                  level,
-                                  sampler_state_,
-                                  usage_,
-                                  info.internal_format,
-                                  info.width,
-                                  info.height,
-                                  info.depth,
-                                  base_level_,
-                                  info.border,
-                                  max_level_,
-                                  info.format,
-                                  info.type,
-                                  info.image.get() != NULL,
-                                  CanRender(feature_info),
-                                  CanRenderTo(feature_info, level),
-                                  npot_,
-                                  emulating_rgb_);
+  TextureSignature signature_data(
+      target, level, sampler_state_, usage_, info.internal_format, info.width,
+      info.height, info.depth, base_level_, info.border, max_level_,
+      info.format, info.type, info.image.get() != nullptr,
+      CanRender(feature_info), CanRenderTo(feature_info, level), npot_,
+      emulating_rgb_);
 
   signature->append(TextureTag, sizeof(TextureTag));
   signature->append(reinterpret_cast<const char*>(&signature_data),
@@ -1068,7 +1056,7 @@ void Texture::UpdateHasImages() {
   for (size_t ii = 0; ii < face_infos_.size(); ++ii) {
     for (size_t jj = 0; jj < face_infos_[ii].level_infos.size(); ++jj) {
       const Texture::LevelInfo& info = face_infos_[ii].level_infos[jj];
-      if (info.image.get() != NULL) {
+      if (info.image.get() != nullptr) {
         has_images = true;
         break;
       }
@@ -1211,7 +1199,7 @@ void Texture::SetLevelInfo(GLenum target,
     ScopedMemTrackerChange change(this);
     estimated_size_ -= info.estimated_size;
     GLES2Util::ComputeImageDataSizes(width, height, depth, format, type, 4,
-                                     &info.estimated_size, NULL, NULL);
+                                     &info.estimated_size, nullptr, nullptr);
     estimated_size_ += info.estimated_size;
   }
 
@@ -1802,7 +1790,7 @@ const Texture::LevelInfo* Texture::GetLevelInfo(GLint target,
                                                 GLint level) const {
   if (target != GL_TEXTURE_2D && target != GL_TEXTURE_EXTERNAL_OES &&
       target != GL_TEXTURE_RECTANGLE_ARB) {
-    return NULL;
+    return nullptr;
   }
 
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
@@ -1812,7 +1800,7 @@ const Texture::LevelInfo* Texture::GetLevelInfo(GLint target,
     if (info.target != 0)
       return &info;
   }
-  return NULL;
+  return nullptr;
 }
 
 gl::GLImage* Texture::GetLevelImage(GLint target,
@@ -1954,7 +1942,7 @@ TextureRef::~TextureRef() {
   manager_->StopTracking(this);
   texture_->RemoveTextureRef(
       this, force_context_lost_ ? false : manager_->have_context_);
-  manager_ = NULL;
+  manager_ = nullptr;
 }
 
 void TextureRef::ForceContextLost() {
@@ -2288,7 +2276,7 @@ TextureRef* TextureManager::CreateTexture(
 TextureRef* TextureManager::GetTexture(
     GLuint client_id) const {
   TextureMap::const_iterator it = textures_.find(client_id);
-  return it != textures_.end() ? it->second.get() : NULL;
+  return it != textures_.end() ? it->second.get() : nullptr;
 }
 
 scoped_refptr<TextureRef> TextureManager::TakeTexture(GLuint client_id) {
@@ -2372,7 +2360,7 @@ Texture* TextureManager::GetTextureForServiceId(GLuint service_id) const {
     if (texture->service_id() == service_id)
       return texture;
   }
-  return NULL;
+  return nullptr;
 }
 
 GLsizei TextureManager::ComputeMipMapCount(GLenum target,
@@ -2505,7 +2493,7 @@ bool TextureManager::ValidateTextureParameters(
 TextureRef* TextureManager::GetTextureInfoForTarget(
     ContextState* state, GLenum target) {
   TextureUnit& unit = state->texture_units[state->active_texture_unit];
-  TextureRef* texture = NULL;
+  TextureRef* texture = nullptr;
   switch (target) {
     case GL_TEXTURE_2D:
       texture = unit.bound_texture_2d.get();
@@ -2533,7 +2521,7 @@ TextureRef* TextureManager::GetTextureInfoForTarget(
       break;
     default:
       NOTREACHED();
-      return NULL;
+      return nullptr;
   }
   return texture;
 }
@@ -2542,9 +2530,9 @@ TextureRef* TextureManager::GetTextureInfoForTargetUnlessDefault(
     ContextState* state, GLenum target) {
   TextureRef* texture = GetTextureInfoForTarget(state, target);
   if (!texture)
-    return NULL;
+    return nullptr;
   if (texture == GetDefaultTextureInfo(target))
-    return NULL;
+    return nullptr;
   return texture;
 }
 

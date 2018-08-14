@@ -1090,7 +1090,7 @@ void RasterDecoderImpl::Destroy(bool have_context) {
 
   if (group_.get()) {
     group_->Destroy(this, have_context);
-    group_ = NULL;
+    group_ = nullptr;
   }
 
   // Destroy the surface before the context, some surface destructors make GL
@@ -1098,8 +1098,8 @@ void RasterDecoderImpl::Destroy(bool have_context) {
   surface_ = nullptr;
 
   if (context_.get()) {
-    context_->ReleaseCurrent(NULL);
-    context_ = NULL;
+    context_->ReleaseCurrent(nullptr);
+    context_ = nullptr;
   }
 }
 
@@ -1633,10 +1633,10 @@ bool RasterDecoderImpl::GetHelper(GLenum pname,
 bool RasterDecoderImpl::GetNumValuesReturnedForGLGet(GLenum pname,
                                                      GLsizei* num_values) {
   *num_values = 0;
-  if (state_.GetStateAsGLint(pname, NULL, num_values)) {
+  if (state_.GetStateAsGLint(pname, nullptr, num_values)) {
     return true;
   }
-  return GetHelper(pname, NULL, num_values);
+  return GetHelper(pname, nullptr, num_values);
 }
 
 base::StringPiece RasterDecoderImpl::GetLogPrefix() {

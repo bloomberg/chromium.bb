@@ -112,7 +112,7 @@ void* MappedMemoryManager::Alloc(unsigned int size,
   scoped_refptr<gpu::Buffer> shm =
       cmd_buf->CreateTransferBuffer(chunk_size, &id);
   if (id  < 0)
-    return NULL;
+    return nullptr;
   DCHECK(shm.get());
   MemoryChunk* mc = new MemoryChunk(id, shm, helper_);
   allocated_memory_ += mc->GetSize();

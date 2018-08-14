@@ -106,7 +106,7 @@ void ParamTraits<gpu::Mailbox>::Write(base::Pickle* m, const param_type& p) {
 bool ParamTraits<gpu::Mailbox>::Read(const base::Pickle* m,
                                      base::PickleIterator* iter,
                                      param_type* p) {
-  const char* bytes = NULL;
+  const char* bytes = nullptr;
   if (!iter->ReadBytes(&bytes, sizeof(p->name)))
     return false;
   DCHECK(bytes);

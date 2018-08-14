@@ -4896,7 +4896,7 @@ std::string GLES2Util::GetStringCmpFunction(uint32_t value) {
 }
 
 std::string GLES2Util::GetStringCompressedTextureFormat(uint32_t value) {
-  return GLES2Util::GetQualifiedEnumString(NULL, 0, value);
+  return GLES2Util::GetQualifiedEnumString(nullptr, 0, value);
 }
 
 std::string GLES2Util::GetStringCoverageModulationComponents(uint32_t value) {
@@ -5010,7 +5010,7 @@ std::string GLES2Util::GetStringFramebufferAttachmentParameter(uint32_t value) {
 }
 
 std::string GLES2Util::GetStringFramebufferParameter(uint32_t value) {
-  return GLES2Util::GetQualifiedEnumString(NULL, 0, value);
+  return GLES2Util::GetQualifiedEnumString(nullptr, 0, value);
 }
 
 std::string GLES2Util::GetStringFramebufferTarget(uint32_t value) {
@@ -5682,7 +5682,7 @@ std::string GLES2Util::GetStringSamplerParameter(uint32_t value) {
 }
 
 std::string GLES2Util::GetStringShaderBinaryFormat(uint32_t value) {
-  return GLES2Util::GetQualifiedEnumString(NULL, 0, value);
+  return GLES2Util::GetQualifiedEnumString(nullptr, 0, value);
 }
 
 std::string GLES2Util::GetStringShaderParameter(uint32_t value) {

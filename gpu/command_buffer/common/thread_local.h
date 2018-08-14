@@ -26,7 +26,7 @@ inline ThreadLocalKey ThreadLocalAlloc() {
   return TlsAlloc();
 #else
   ThreadLocalKey key;
-  pthread_key_create(&key, NULL);
+  pthread_key_create(&key, nullptr);
   return key;
 #endif
 }

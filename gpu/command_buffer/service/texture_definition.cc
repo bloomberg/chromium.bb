@@ -175,7 +175,7 @@ scoped_refptr<NativeImageBufferEGL> NativeImageBufferEGL::Create(
   if (egl_image == EGL_NO_IMAGE_KHR) {
     LOG(ERROR) << "eglCreateImageKHR for cross-thread sharing failed: 0x"
                << std::hex << eglGetError();
-    return NULL;
+    return nullptr;
   }
 
   return new NativeImageBufferEGL(egl_display, egl_image);
@@ -191,7 +191,7 @@ NativeImageBufferEGL::NativeImageBufferEGL(EGLDisplay display,
     : NativeImageBuffer(),
       egl_display_(display),
       egl_image_(image),
-      write_client_(NULL) {
+      write_client_(nullptr) {
   DCHECK(egl_display_ != EGL_NO_DISPLAY);
   DCHECK(egl_image_ != EGL_NO_IMAGE_KHR);
 }
@@ -210,7 +210,7 @@ void NativeImageBufferEGL::AddClient(gl::GLImage* client) {
 void NativeImageBufferEGL::RemoveClient(gl::GLImage* client) {
   base::AutoLock lock(lock_);
   if (write_client_ == client)
-    write_client_ = NULL;
+    write_client_ = nullptr;
   for (std::list<ClientInfo>::iterator it = client_infos_.begin();
        it != client_infos_.end();
        it++) {
@@ -272,7 +272,7 @@ scoped_refptr<NativeImageBuffer> NativeImageBuffer::Create(GLuint texture_id) {
       return new NativeImageBufferStub;
     default:
       NOTREACHED();
-      return NULL;
+      return nullptr;
   }
 }
 
@@ -435,7 +435,7 @@ void TextureDefinition::UpdateTexture(Texture* texture) const {
     if (bound_id == static_cast<GLint>(old_service_id)) {
       glBindTexture(target_, service_id);
     }
-    texture->SetLevelImage(target_, 0, NULL, Texture::UNBOUND);
+    texture->SetLevelImage(target_, 0, nullptr, Texture::UNBOUND);
   }
 
   UpdateTextureInternal(texture);

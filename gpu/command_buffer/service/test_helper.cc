@@ -130,7 +130,7 @@ void TestHelper::SetupTextureInitializationExpectations(
     kServiceBlackRectangleTextureId,
     kServiceDefaultRectangleTextureId };
 
-  const GLuint* texture_ids = NULL;
+  const GLuint* texture_ids = nullptr;
   switch (target) {
     case GL_TEXTURE_2D:
       texture_ids = &texture_2d_ids[0];
@@ -1149,7 +1149,7 @@ void TestHelper::SetShaderStates(
       .WillOnce(Return(options_affecting_compilation))
       .RetiresOnSaturation();
   if (expected_valid) {
-    EXPECT_CALL(*gl, ShaderSource(shader->service_id(), 1, _, NULL))
+    EXPECT_CALL(*gl, ShaderSource(shader->service_id(), 1, _, nullptr))
         .Times(1)
         .RetiresOnSaturation();
     EXPECT_CALL(*gl, CompileShader(shader->service_id()))

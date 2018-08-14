@@ -922,7 +922,7 @@ class GPU_GLES2_EXPORT TextureManager
         return default_textures_[kRectangleARB].get();
       default:
         NOTREACHED();
-        return NULL;
+        return nullptr;
     }
   }
 

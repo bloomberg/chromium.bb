@@ -453,7 +453,7 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DTwiceClearsUnclearedTexture) {
 
   gles2::TextureManager* manager = group().texture_manager();
   gles2::TextureRef* texture_ref = manager->GetTexture(client_texture_id_);
-  ASSERT_TRUE(texture_ref != NULL);
+  ASSERT_TRUE(texture_ref != nullptr);
   gles2::Texture* texture = texture_ref->texture();
   EXPECT_TRUE(texture->SafeToRenderFrom());
 }

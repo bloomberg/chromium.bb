@@ -49,7 +49,7 @@ scoped_refptr<ShaderTranslator> ShaderTranslatorCache::GetTranslator(
     translator->AddDestructionObserver(this);
     return translator;
   } else {
-    return NULL;
+    return nullptr;
   }
 }
 

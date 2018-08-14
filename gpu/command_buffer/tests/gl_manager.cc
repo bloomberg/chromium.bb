@@ -238,15 +238,15 @@ GLManager::~GLManager() {
   if (!use_count_) {
     if (base_share_group_) {
       delete base_share_group_;
-      base_share_group_ = NULL;
+      base_share_group_ = nullptr;
     }
     if (base_surface_) {
       delete base_surface_;
-      base_surface_ = NULL;
+      base_surface_ = nullptr;
     }
     if (base_context_) {
       delete base_context_;
-      base_context_ = NULL;
+      base_context_ = nullptr;
     }
   }
 }
@@ -300,14 +300,14 @@ void GLManager::InitializeWithWorkaroundsImpl(
     mailbox_manager_ = &owned_mailbox_manager_;
   }
 
-  gl::GLShareGroup* share_group = NULL;
+  gl::GLShareGroup* share_group = nullptr;
   if (options.share_group_manager) {
     share_group = options.share_group_manager->share_group();
   } else if (options.share_mailbox_manager) {
     share_group = options.share_mailbox_manager->share_group();
   }
 
-  gles2::ContextGroup* context_group = NULL;
+  gles2::ContextGroup* context_group = nullptr;
   scoped_refptr<gles2::ShareGroup> client_share_group;
   if (options.share_group_manager) {
     context_group = options.share_group_manager->decoder_->GetContextGroup();
@@ -315,7 +315,7 @@ void GLManager::InitializeWithWorkaroundsImpl(
       options.share_group_manager->gles2_implementation()->share_group();
   }
 
-  gl::GLContext* real_gl_context = NULL;
+  gl::GLContext* real_gl_context = nullptr;
   if (options.virtual_manager &&
       !gpu_preferences_.use_passthrough_cmd_decoder) {
     real_gl_context = options.virtual_manager->context();
@@ -370,7 +370,8 @@ void GLManager::InitializeWithWorkaroundsImpl(
   command_buffer_->set_handler(decoder_.get());
 
   surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
-  ASSERT_TRUE(surface_.get() != NULL) << "could not create offscreen surface";
+  ASSERT_TRUE(surface_.get() != nullptr)
+      << "could not create offscreen surface";
 
   if (base_context_) {
     context_ = scoped_refptr<gl::GLContext>(new gpu::GLContextVirtual(
@@ -390,7 +391,7 @@ void GLManager::InitializeWithWorkaroundsImpl(
       g_gpu_feature_info.ApplyToGLContext(context_.get());
     }
   }
-  ASSERT_TRUE(context_.get() != NULL) << "could not create GL context";
+  ASSERT_TRUE(context_.get() != nullptr) << "could not create GL context";
 
   ASSERT_TRUE(context_->MakeCurrent(surface_.get()));
 

@@ -159,7 +159,7 @@ class FeatureInfoTest
   }
 
   void TearDown() override {
-    info_ = NULL;
+    info_ = nullptr;
     GpuServiceTest::TearDown();
   }
 

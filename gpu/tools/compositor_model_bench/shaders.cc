@@ -239,7 +239,7 @@ static void ReportAnyShaderCompilationErrors(GLuint shader, ShaderID id) {
   GLsizei length;
   glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
   std::unique_ptr<GLchar[]> log(new GLchar[length + 1]);
-  glGetShaderInfoLog(shader, length, NULL, log.get());
+  glGetShaderInfoLog(shader, length, nullptr, log.get());
   LOG(ERROR) << log.get() << " in shader " << ShaderNameFromID(id);
 }
 

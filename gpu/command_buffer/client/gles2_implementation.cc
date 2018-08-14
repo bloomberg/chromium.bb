@@ -1608,7 +1608,7 @@ bool GLES2Implementation::GetUniformIndicesHelper(
     return false;
   }
   result->SetNumResults(0);
-  if (!PackStringsToBucket(count, names, NULL, "glGetUniformIndices")) {
+  if (!PackStringsToBucket(count, names, nullptr, "glGetUniformIndices")) {
     return false;
   }
   helper_->GetUniformIndices(program, kResultBucketId,
@@ -3621,7 +3621,7 @@ const GLubyte* GLES2Implementation::GetStringHelper(GLenum name) {
   if (name == GL_EXTENSIONS && cached_extension_string_) {
     return reinterpret_cast<const GLubyte*>(cached_extension_string_);
   }
-  const char* result = NULL;
+  const char* result = nullptr;
   // Clears the bucket so if the command fails nothing will be in it.
   helper_->SetBucketSize(kResultBucketId, 0);
   helper_->GetString(name, kResultBucketId);
@@ -4980,11 +4980,11 @@ void* GLES2Implementation::MapBufferSubDataCHROMIUM(
   if (access != GL_WRITE_ONLY) {
     SetGLErrorInvalidEnum(
         "glMapBufferSubDataCHROMIUM", access, "access");
-    return NULL;
+    return nullptr;
   }
   if (!ValidateSize("glMapBufferSubDataCHROMIUM", size) ||
       !ValidateOffset("glMapBufferSubDataCHROMIUM", offset)) {
-    return NULL;
+    return nullptr;
   }
 
   int32_t shm_id;
@@ -4992,7 +4992,7 @@ void* GLES2Implementation::MapBufferSubDataCHROMIUM(
   void* mem = mapped_memory_->Alloc(size, &shm_id, &shm_offset);
   if (!mem) {
     SetGLError(GL_OUT_OF_MEMORY, "glMapBufferSubDataCHROMIUM", "out of memory");
-    return NULL;
+    return nullptr;
   }
 
   std::pair<MappedBufferMap::iterator, bool> result =
@@ -5219,28 +5219,29 @@ void* GLES2Implementation::MapTexSubImage2DCHROMIUM(
   if (access != GL_WRITE_ONLY) {
     SetGLErrorInvalidEnum(
         "glMapTexSubImage2DCHROMIUM", access, "access");
-    return NULL;
+    return nullptr;
   }
   // NOTE: target is NOT checked because the service will check it
   // and we don't know what targets are valid.
   if (level < 0 || xoffset < 0 || yoffset < 0 || width < 0 || height < 0) {
     SetGLError(
         GL_INVALID_VALUE, "glMapTexSubImage2DCHROMIUM", "bad dimensions");
-    return NULL;
+    return nullptr;
   }
   uint32_t size;
-  if (!GLES2Util::ComputeImageDataSizes(
-      width, height, 1, format, type, unpack_alignment_, &size, NULL, NULL)) {
+  if (!GLES2Util::ComputeImageDataSizes(width, height, 1, format, type,
+                                        unpack_alignment_, &size, nullptr,
+                                        nullptr)) {
     SetGLError(
         GL_INVALID_VALUE, "glMapTexSubImage2DCHROMIUM", "image size too large");
-    return NULL;
+    return nullptr;
   }
   int32_t shm_id;
   unsigned int shm_offset;
   void* mem = mapped_memory_->Alloc(size, &shm_id, &shm_offset);
   if (!mem) {
     SetGLError(GL_OUT_OF_MEMORY, "glMapTexSubImage2DCHROMIUM", "out of memory");
-    return NULL;
+    return nullptr;
   }
 
   std::pair<MappedTextureMap::iterator, bool> result =
@@ -5291,7 +5292,7 @@ const GLchar* GLES2Implementation::GetRequestableExtensionsCHROMIUM() {
       << "] glGetRequestableExtensionsCHROMIUM()");
   TRACE_EVENT0("gpu",
                "GLES2Implementation::GetRequestableExtensionsCHROMIUM()");
-  const char* result = NULL;
+  const char* result = nullptr;
   // Clear the bucket so if the command fails nothing will be in it.
   helper_->SetBucketSize(kResultBucketId, 0);
   helper_->GetRequestableExtensionsCHROMIUM(kResultBucketId);
@@ -5358,7 +5359,7 @@ void GLES2Implementation::GetProgramInfoCHROMIUM(
         GL_INVALID_VALUE, "glProgramInfoCHROMIUM", "bufsize less than 0.");
     return;
   }
-  if (size == NULL) {
+  if (size == nullptr) {
     SetGLError(GL_INVALID_VALUE, "glProgramInfoCHROMIUM", "size is null.");
     return;
   }
@@ -5400,7 +5401,7 @@ void GLES2Implementation::GetUniformBlocksCHROMIUM(
         GL_INVALID_VALUE, "glGetUniformBlocksCHROMIUM", "bufsize less than 0.");
     return;
   }
-  if (size == NULL) {
+  if (size == nullptr) {
     SetGLError(GL_INVALID_VALUE, "glGetUniformBlocksCHROMIUM", "size is null.");
     return;
   }
@@ -5442,7 +5443,7 @@ void GLES2Implementation::GetUniformsES3CHROMIUM(
         GL_INVALID_VALUE, "glGetUniformsES3CHROMIUM", "bufsize less than 0.");
     return;
   }
-  if (size == NULL) {
+  if (size == nullptr) {
     SetGLError(GL_INVALID_VALUE, "glGetUniformsES3CHROMIUM", "size is null.");
     return;
   }
@@ -5484,7 +5485,7 @@ void GLES2Implementation::GetTransformFeedbackVaryingsCHROMIUM(
                "bufsize less than 0.");
     return;
   }
-  if (size == NULL) {
+  if (size == nullptr) {
     SetGLError(GL_INVALID_VALUE, "glGetTransformFeedbackVaryingsCHROMIUM",
                "size is null.");
     return;
@@ -5549,7 +5550,7 @@ GLboolean GLES2Implementation::IsQueryEXT(GLuint id) {
   // TODO(gman): To be spec compliant IDs from other contexts sharing
   // resources need to return true here even though you can't share
   // queries across contexts?
-  return query_tracker_->GetQuery(id) != NULL;
+  return query_tracker_->GetQuery(id) != nullptr;
 }
 
 void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
@@ -5995,27 +5996,27 @@ void* GLES2Implementation::MapBufferCHROMIUM(GLuint target, GLenum access) {
     case GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM:
       if (access != GL_READ_ONLY) {
         SetGLError(GL_INVALID_ENUM, "glMapBufferCHROMIUM", "bad access mode");
-        return NULL;
+        return nullptr;
       }
       break;
     default:
       SetGLError(
           GL_INVALID_ENUM, "glMapBufferCHROMIUM", "invalid target");
-      return NULL;
+      return nullptr;
   }
   GLuint buffer_id;
   GetBoundPixelTransferBuffer(target, "glMapBufferCHROMIUM", &buffer_id);
   if (!buffer_id) {
-    return NULL;
+    return nullptr;
   }
   BufferTracker::Buffer* buffer = buffer_tracker_->GetBuffer(buffer_id);
   if (!buffer) {
     SetGLError(GL_INVALID_OPERATION, "glMapBufferCHROMIUM", "invalid buffer");
-    return NULL;
+    return nullptr;
   }
   if (buffer->mapped()) {
     SetGLError(GL_INVALID_OPERATION, "glMapBufferCHROMIUM", "already mapped");
-    return NULL;
+    return nullptr;
   }
   // Here we wait for previous transfer operations to be finished.
   if (buffer->last_usage_token()) {

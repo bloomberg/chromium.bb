@@ -1112,8 +1112,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetBooleanv(
   typedef cmds::GetBooleanv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLboolean* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLboolean* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1144,8 +1144,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetBufferParameteri64v(
   typedef cmds::GetBufferParameteri64v::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLint64* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLint64* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1174,8 +1174,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetBufferParameteriv(
   typedef cmds::GetBufferParameteriv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1221,8 +1221,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetFloatv(
   typedef cmds::GetFloatv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLfloat* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLfloat* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1254,8 +1254,8 @@ GLES2DecoderPassthroughImpl::HandleGetFramebufferAttachmentParameteriv(
   typedef cmds::GetFramebufferAttachmentParameteriv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1285,8 +1285,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetInteger64v(
   typedef cmds::GetInteger64v::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLint64* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLint64* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1316,8 +1316,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetIntegeri_v(
   typedef cmds::GetIntegeri_v::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.data_shm_id, c.data_shm_offset, sizeof(Result), &buffer_size);
-  GLint* data = result ? result->GetData() : NULL;
-  if (data == NULL) {
+  GLint* data = result ? result->GetData() : nullptr;
+  if (data == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1347,8 +1347,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetInteger64i_v(
   typedef cmds::GetInteger64i_v::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.data_shm_id, c.data_shm_offset, sizeof(Result), &buffer_size);
-  GLint64* data = result ? result->GetData() : NULL;
-  if (data == NULL) {
+  GLint64* data = result ? result->GetData() : nullptr;
+  if (data == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1375,8 +1375,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetIntegerv(
   typedef cmds::GetIntegerv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1404,8 +1404,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetProgramiv(
   typedef cmds::GetProgramiv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1434,8 +1434,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetRenderbufferParameteriv(
   typedef cmds::GetRenderbufferParameteriv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1467,8 +1467,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetSamplerParameterfv(
   typedef cmds::GetSamplerParameterfv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLfloat* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLfloat* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1500,8 +1500,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetSamplerParameteriv(
   typedef cmds::GetSamplerParameteriv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1530,8 +1530,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetShaderiv(
   typedef cmds::GetShaderiv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1561,8 +1561,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetSynciv(
   typedef cmds::GetSynciv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.values_shm_id, c.values_shm_offset, sizeof(Result), &buffer_size);
-  GLint* values = result ? result->GetData() : NULL;
-  if (values == NULL) {
+  GLint* values = result ? result->GetData() : nullptr;
+  if (values == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1590,8 +1590,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetTexParameterfv(
   typedef cmds::GetTexParameterfv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLfloat* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLfloat* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1620,8 +1620,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetTexParameteriv(
   typedef cmds::GetTexParameteriv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1650,8 +1650,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetVertexAttribfv(
   typedef cmds::GetVertexAttribfv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLfloat* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLfloat* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1680,8 +1680,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetVertexAttribiv(
   typedef cmds::GetVertexAttribiv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1712,8 +1712,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetVertexAttribIiv(
   typedef cmds::GetVertexAttribIiv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -1744,8 +1744,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetVertexAttribIuiv(
   typedef cmds::GetVertexAttribIuiv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLuint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLuint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -2286,9 +2286,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleShaderSourceBucket(
     return error::kInvalidArguments;
   }
   const char** str =
-      strs.size() > 0 ? const_cast<const char**>(&strs[0]) : NULL;
+      strs.size() > 0 ? const_cast<const char**>(&strs[0]) : nullptr;
   const GLint* length =
-      len.size() > 0 ? const_cast<const GLint*>(&len[0]) : NULL;
+      len.size() > 0 ? const_cast<const GLint*>(&len[0]) : nullptr;
   (void)length;
   error::Error error = DoShaderSource(shader, count, str, length);
   if (error != error::kNoError) {
@@ -2511,9 +2511,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleTransformFeedbackVaryingsBucket(
     return error::kInvalidArguments;
   }
   const char** varyings =
-      strs.size() > 0 ? const_cast<const char**>(&strs[0]) : NULL;
+      strs.size() > 0 ? const_cast<const char**>(&strs[0]) : nullptr;
   const GLint* length =
-      len.size() > 0 ? const_cast<const GLint*>(&len[0]) : NULL;
+      len.size() > 0 ? const_cast<const GLint*>(&len[0]) : nullptr;
   (void)length;
   GLenum buffermode = static_cast<GLenum>(c.buffermode);
   error::Error error =

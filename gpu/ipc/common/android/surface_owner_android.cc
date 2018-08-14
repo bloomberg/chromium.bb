@@ -112,8 +112,9 @@ ImageReader::ImageReader(GLuint texture_id)
   if (return_code != AMEDIA_OK) {
     LOG(ERROR) << " Image reader creation failed.";
     if (return_code == AMEDIA_ERROR_INVALID_PARAMETER) {
-      LOG(ERROR) << "Either reader is NULL, or one or more of width, height, "
-                    "format, maxImages arguments is not supported";
+      LOG(ERROR)
+          << "Either reader is nullptr, or one or more of width, height, "
+             "format, maxImages arguments is not supported";
     } else
       LOG(ERROR) << "unknown error";
     return;
@@ -153,7 +154,7 @@ void ImageReader::SetFrameAvailableCallback(
 }
 
 ImageReader::~ImageReader() {
-  loader_.AImageReader_setImageListener(image_reader_, NULL);
+  loader_.AImageReader_setImageListener(image_reader_, nullptr);
 
   // Delete the image before closing the associated image reader.
   if (current_image_)
@@ -204,7 +205,7 @@ void ImageReader::UpdateTexImage() {
   // just return if error occurs.
   switch (return_code) {
     case AMEDIA_ERROR_INVALID_PARAMETER:
-      LOG(ERROR) << " Image is NULL";
+      LOG(ERROR) << " Image is nullptr";
       return;
     case AMEDIA_IMGREADER_MAX_IMAGES_ACQUIRED:
       LOG(ERROR)

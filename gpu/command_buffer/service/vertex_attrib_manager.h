@@ -201,7 +201,7 @@ class GPU_GLES2_EXPORT VertexAttribManager
     if (index < vertex_attribs_.size()) {
       return &vertex_attribs_[index];
     }
-    return NULL;
+    return nullptr;
   }
 
   void UpdateAttribBaseTypeAndMask(GLuint loc, GLenum base_type) {

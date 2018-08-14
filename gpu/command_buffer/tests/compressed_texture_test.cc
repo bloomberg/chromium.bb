@@ -47,7 +47,7 @@ static const char* extension(GLenum format) {
     default:
       NOTREACHED();
   }
-  return NULL;
+  return nullptr;
 }
 
 // Index that chooses the given colors (color_0 and color_1),

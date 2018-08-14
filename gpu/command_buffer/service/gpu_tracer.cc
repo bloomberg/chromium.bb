@@ -35,10 +35,7 @@ static_assert(NUM_TRACER_SOURCES == arraysize(kGpuTraceSourceNames),
               "Trace source names must match enumeration.");
 
 TraceMarker::TraceMarker(const std::string& category, const std::string& name)
-    : category_(category),
-      name_(name),
-      trace_(NULL) {
-}
+    : category_(category), name_(name), trace_(nullptr) {}
 
 TraceMarker::TraceMarker(const TraceMarker& other) = default;
 

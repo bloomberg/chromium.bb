@@ -105,7 +105,7 @@ class BaseGpuTest : public GpuServiceTest {
   }
 
   void TearDown() override {
-    gpu_timing_client_ = NULL;
+    gpu_timing_client_ = nullptr;
     gl_fake_queries_.Reset();
     GpuServiceTest::TearDown();
   }

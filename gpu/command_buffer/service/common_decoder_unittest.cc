@@ -17,7 +17,7 @@ namespace gpu {
 TEST(CommonDecoderBucket, Basic) {
   CommonDecoder::Bucket bucket;
   EXPECT_EQ(0u, bucket.size());
-  EXPECT_TRUE(NULL == bucket.GetData(0, 0));
+  EXPECT_TRUE(nullptr == bucket.GetData(0, 0));
 }
 
 TEST(CommonDecoderBucket, Size) {
@@ -32,13 +32,13 @@ TEST(CommonDecoderBucket, GetData) {
   CommonDecoder::Bucket bucket;
 
   bucket.SetSize(24);
-  EXPECT_TRUE(NULL != bucket.GetData(0, 0));
-  EXPECT_TRUE(NULL != bucket.GetData(24, 0));
-  EXPECT_TRUE(NULL == bucket.GetData(25, 0));
-  EXPECT_TRUE(NULL != bucket.GetData(0, 24));
-  EXPECT_TRUE(NULL == bucket.GetData(0, 25));
+  EXPECT_TRUE(nullptr != bucket.GetData(0, 0));
+  EXPECT_TRUE(nullptr != bucket.GetData(24, 0));
+  EXPECT_TRUE(nullptr == bucket.GetData(25, 0));
+  EXPECT_TRUE(nullptr != bucket.GetData(0, 24));
+  EXPECT_TRUE(nullptr == bucket.GetData(0, 25));
   bucket.SetSize(23);
-  EXPECT_TRUE(NULL == bucket.GetData(0, 24));
+  EXPECT_TRUE(nullptr == bucket.GetData(0, 24));
 }
 
 TEST(CommonDecoderBucket, SetData) {
@@ -112,7 +112,7 @@ const size_t CommonDecoderTest::kBufferSize;
 const uint32_t CommonDecoderTest::kInvalidShmId;
 
 TEST_F(CommonDecoderTest, DoCommonCommandInvalidCommand) {
-  EXPECT_EQ(error::kUnknownCommand, decoder_.DoCommand(999999, 0, NULL));
+  EXPECT_EQ(error::kUnknownCommand, decoder_.DoCommand(999999, 0, nullptr));
 }
 
 TEST_F(CommonDecoderTest, HandleNoop) {
@@ -144,19 +144,19 @@ TEST_F(CommonDecoderTest, SetBucketSize) {
   const uint32_t kBucketLength1 = 1234;
   const uint32_t kBucketLength2 = 78;
   // Check the bucket does not exist.
-  EXPECT_TRUE(NULL == decoder_.GetBucket(kBucketId));
+  EXPECT_TRUE(nullptr == decoder_.GetBucket(kBucketId));
   // Check we can create one.
   cmd.Init(kBucketId, kBucketLength1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   CommonDecoder::Bucket* bucket;
   bucket = decoder_.GetBucket(kBucketId);
-  EXPECT_TRUE(NULL != bucket);
+  EXPECT_TRUE(nullptr != bucket);
   EXPECT_EQ(kBucketLength1, bucket->size());
   // Check we can change it.
   cmd.Init(kBucketId, kBucketLength2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   bucket = decoder_.GetBucket(kBucketId);
-  EXPECT_TRUE(NULL != bucket);
+  EXPECT_TRUE(nullptr != bucket);
   EXPECT_EQ(kBucketLength2, bucket->size());
   // Check we can delete it.
   cmd.Init(kBucketId, 0);

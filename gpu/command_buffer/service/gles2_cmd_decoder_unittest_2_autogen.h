@@ -21,7 +21,7 @@ TEST_P(GLES2DecoderTest2, GetProgramInfoLogValidArgs) {
   cmd.Init(client_program_id_, kBucketId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   CommonDecoder::Bucket* bucket = decoder_->GetBucket(kBucketId);
-  ASSERT_TRUE(bucket != NULL);
+  ASSERT_TRUE(bucket != nullptr);
   EXPECT_EQ(strlen(kInfo) + 1, bucket->size());
   EXPECT_EQ(0,
             memcmp(bucket->GetData(0, bucket->size()), kInfo, bucket->size()));
