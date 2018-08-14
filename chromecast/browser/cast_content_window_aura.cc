@@ -79,7 +79,9 @@ CastContentWindowAura::CastContentWindowAura(
     bool is_touch_enabled)
     : delegate_(delegate),
       gesture_dispatcher_(std::make_unique<CastGestureDispatcher>(delegate_)),
-      is_touch_enabled_(is_touch_enabled) {
+      is_touch_enabled_(is_touch_enabled),
+      window_(nullptr),
+      has_screen_access_(false) {
   DCHECK(delegate_);
 }
 
@@ -92,23 +94,36 @@ CastContentWindowAura::~CastContentWindowAura() {
 void CastContentWindowAura::CreateWindowForWebContents(
     content::WebContents* web_contents,
     CastWindowManager* window_manager,
-    bool is_visible,
     CastWindowManager::WindowId z_order,
     VisibilityPriority visibility_priority) {
   DCHECK(web_contents);
   window_manager_ = window_manager;
   DCHECK(window_manager_);
-  gfx::NativeView window = web_contents->GetNativeView();
-  window_manager_->SetWindowId(window, z_order);
-  window_manager_->AddWindow(window);
+  window_ = web_contents->GetNativeView();
+  window_manager_->SetWindowId(window_, z_order);
+  window_manager_->AddWindow(window_);
   window_manager_->AddGestureHandler(this);
 
-  touch_blocker_ = std::make_unique<TouchBlocker>(window, !is_touch_enabled_);
+  touch_blocker_ = std::make_unique<TouchBlocker>(window_, !is_touch_enabled_);
 
-  if (is_visible) {
-    window->Show();
+  if (has_screen_access_) {
+    window_->Show();
   } else {
-    window->Hide();
+    window_->Hide();
+  }
+}
+
+void CastContentWindowAura::GrantScreenAccess() {
+  has_screen_access_ = true;
+  if (window_) {
+    window_->Show();
+  }
+}
+
+void CastContentWindowAura::RevokeScreenAccess() {
+  has_screen_access_ = false;
+  if (window_) {
+    window_->Hide();
   }
 }
 

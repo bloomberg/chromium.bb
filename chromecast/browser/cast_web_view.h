@@ -122,9 +122,16 @@ class CastWebView {
   // |is_visible| is true. |z_order| determines how this window is layered in
   // relationt other windows (higher value == more foreground).
   virtual void InitializeWindow(CastWindowManager* window_manager,
-                                bool is_visible,
                                 CastWindowManager::WindowId z_order,
                                 VisibilityPriority initial_priority) = 0;
+
+  // Allows the page to be shown on the screen. The page cannot be shown on the
+  // screen until this is called.
+  virtual void GrantScreenAccess() = 0;
+
+  // Prevents the page from being shown on the screen until GrantScreenAccess()
+  // is called.
+  virtual void RevokeScreenAccess() = 0;
 
   // Observer interface:
   void AddObserver(Observer* observer);

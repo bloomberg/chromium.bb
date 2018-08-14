@@ -10,6 +10,10 @@
 #include "chromecast/browser/cast_gesture_dispatcher.h"
 #include "chromecast/graphics/cast_gesture_handler.h"
 
+namespace aura {
+class Window;
+}  // namespace aura
+
 namespace content {
 class WebContents;
 }  // namespace content
@@ -28,9 +32,10 @@ class CastContentWindowAura : public CastContentWindow,
   void CreateWindowForWebContents(
       content::WebContents* web_contents,
       CastWindowManager* window_manager,
-      bool is_visible,
       CastWindowManager::WindowId z_order,
       VisibilityPriority visibility_priority) override;
+  void GrantScreenAccess() override;
+  void RevokeScreenAccess() override;
   void RequestVisibility(VisibilityPriority visibility_priority) override;
   void NotifyVisibilityChange(VisibilityType visibility_type) override;
   void RequestMoveOut() override;
@@ -63,6 +68,8 @@ class CastContentWindowAura : public CastContentWindow,
 
   // TODO(seantopping): Inject in constructor.
   CastWindowManager* window_manager_ = nullptr;
+  aura::Window* window_;
+  bool has_screen_access_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentWindowAura);
 };

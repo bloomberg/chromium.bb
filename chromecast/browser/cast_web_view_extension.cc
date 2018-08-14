@@ -64,12 +64,19 @@ void CastWebViewExtension::ClosePage(const base::TimeDelta& shutdown_delay) {}
 
 void CastWebViewExtension::InitializeWindow(
     CastWindowManager* window_manager,
-    bool is_visible,
     CastWindowManager::WindowId z_order,
     VisibilityPriority initial_priority) {
-  window_->CreateWindowForWebContents(web_contents(), window_manager,
-                                      is_visible, z_order, initial_priority);
+  window_->CreateWindowForWebContents(web_contents(), window_manager, z_order,
+                                      initial_priority);
   web_contents()->Focus();
+}
+
+void CastWebViewExtension::GrantScreenAccess() {
+  window_->GrantScreenAccess();
+}
+
+void CastWebViewExtension::RevokeScreenAccess() {
+  window_->RevokeScreenAccess();
 }
 
 void CastWebViewExtension::WebContentsDestroyed() {

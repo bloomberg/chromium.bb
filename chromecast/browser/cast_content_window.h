@@ -121,8 +121,8 @@ class CastContentWindow {
 
   virtual ~CastContentWindow() {}
 
-  // Creates a full-screen window for |web_contents| and displays it if
-  // |is_visible| is true.
+  // Creates a full-screen window for |web_contents| and displays it if screen
+  // access has been granted.
   // |web_contents| should outlive this CastContentWindow.
   // |window_manager| should outlive this CastContentWindow.
   // TODO(seantopping): This method probably shouldn't exist; this class should
@@ -130,9 +130,16 @@ class CastContentWindow {
   virtual void CreateWindowForWebContents(
       content::WebContents* web_contents,
       CastWindowManager* window_manager,
-      bool is_visible,
       CastWindowManager::WindowId z_order,
       VisibilityPriority visibility_priority) = 0;
+
+  // Allows the window to be shown on the screen. The window cannot be shown on
+  // the screen until this is called.
+  virtual void GrantScreenAccess() = 0;
+
+  // Prevents the window from being shown on the screen until
+  // GrantScreenAccess() is called.
+  virtual void RevokeScreenAccess() = 0;
 
   // Enables touch input to be routed to the window's WebContents.
   virtual void EnableTouchInput(bool enabled) = 0;

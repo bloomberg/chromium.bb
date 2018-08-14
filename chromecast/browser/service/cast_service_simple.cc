@@ -76,8 +76,9 @@ void CastServiceSimple::StartInternal() {
                                            nullptr,         /* extension */
                                            GURL() /* initial_url */);
   cast_web_view_->LoadUrl(startup_url_);
+  cast_web_view_->GrantScreenAccess();
   cast_web_view_->InitializeWindow(
-      window_manager_, true /* is_visible */, CastWindowManager::APP,
+      window_manager_, CastWindowManager::APP,
       chromecast::shell::VisibilityPriority::STICKY_ACTIVITY);
 }
 
