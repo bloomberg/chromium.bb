@@ -185,12 +185,13 @@ static const uint16_t kLegacyAmdGpuList[] = {
     0x9990, 0x9991, 0x9992, 0x9993, 0x9994, 0x9995, 0x9996, 0x9997, 0x9998,
     0x9999, 0x999a, 0x999b, 0x999c, 0x999d, 0x99a0, 0x99a2, 0x99a4};
 
-// Legacy Intel GPUs (Second generation) which have trouble with resolutions
-// higher than 1920 x 1088
+// Legacy Intel GPUs which have trouble even querying if resolutions higher than
+// 1920 x 1088 are supported. Updated based on crash reports.
 //
 // NOTE: This list must be kept in sorted order.
 static const uint16_t kLegacyIntelGpuList[] = {
-    0x102, 0x106, 0x116, 0x126,
+    0x102, 0x106, 0x116, 0x126, 0x152, 0x156, 0x166,
+    0x402, 0x406, 0x416, 0x41e, 0xa06, 0xa16, 0xf31,
 };
 
 constexpr const wchar_t* const kMediaFoundationVideoDecoderDLLs[] = {
