@@ -8,7 +8,6 @@
 #include <set>
 #include <string>
 
-#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/blame_context.h"
@@ -705,10 +704,6 @@ SchedulingLifecycleState FrameSchedulerImpl::CalculateLifecycleState(
   if (parent_page_scheduler_->IsFrozen() &&
       !parent_page_scheduler_->KeepActive()) {
     DCHECK(!parent_page_scheduler_->IsPageVisible());
-    // TODO(crbug.com/873214): Remove this after collecting sufficient crash
-    // data.
-    if (parent_page_scheduler_->IsPageVisible())
-      base::debug::DumpWithoutCrashing();
     return SchedulingLifecycleState::kStopped;
   }
   if (subresource_loading_paused_ && type == ObserverType::kLoader)
