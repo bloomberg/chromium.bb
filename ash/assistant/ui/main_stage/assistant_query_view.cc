@@ -87,7 +87,7 @@ void AssistantQueryView::SetQuery(const AssistantQuery& query) {
               voice_query.low_confidence_speech());
       break;
     }
-    case AssistantQueryType::kEmpty:
+    case AssistantQueryType::kNull:
       SetText(std::string());
       break;
   }
