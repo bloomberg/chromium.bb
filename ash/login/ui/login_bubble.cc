@@ -95,11 +95,17 @@ class LoginErrorBubbleView : public LoginBaseBubbleView {
  public:
   LoginErrorBubbleView(views::View* content, views::View* anchor_view)
       : LoginBaseBubbleView(anchor_view) {
-    SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical, gfx::Insets(),
-        kBubbleBetweenChildSpacingDp));
     set_anchor_view_insets(
         gfx::Insets(kAnchorViewErrorBubbleVerticalSpacingDp, 0));
+
+    gfx::Insets margins(kUserMenuMarginHeight, kUserMenuMarginWidth);
+
+    set_margins(gfx::Insets(0, margins.left(), 0, margins.right()));
+
+    SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kVertical,
+        gfx::Insets(margins.top(), 0, margins.bottom(), 0),
+        kBubbleBetweenChildSpacingDp));
 
     auto* alert_view = new NonAccessibleView("AlertIconContainer");
     alert_view->SetLayoutManager(
@@ -651,13 +657,9 @@ void LoginBubble::EnsureBubbleInWorkArea() {
   int vertical_offset = 0;
   int horizontal_offset = 0;
 
-  // If the widget extends down into the shelf, move it up. Also shift right
-  // so the arrow is still showing.
+  // If the widget extends down into the shelf, move it up.
   if (work_area.bottom() < view_bounds.bottom()) {
     vertical_offset = work_area.bottom() - view_bounds.bottom();
-    horizontal_offset =
-        bubble_view_->GetAnchorView()->GetBoundsInScreen().right() -
-        view_bounds.x();
   }
 
   // If the widget extends past the right side of the screen, make it go to
