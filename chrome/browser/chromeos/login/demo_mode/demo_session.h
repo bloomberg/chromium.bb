@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 
 namespace chromeos {
 
@@ -89,6 +90,14 @@ class DemoSession {
  private:
   DemoSession();
   ~DemoSession();
+
+  // Called after load of a currently installed (if any) demo mode resources
+  // component has finished.
+  // On success, |path| is expected to contain the path as which the component
+  // is loaded.
+  void InstalledComponentLoaded(
+      component_updater::CrOSComponentManager::Error error,
+      const base::FilePath& path);
 
   // Callback for the image loader request to load offline demo mode resources.
   // |mount_path| is the path at which the resources were loaded.

@@ -29,11 +29,11 @@ DemoSession::EnrollmentType g_force_enrollment_type =
     DemoSession::EnrollmentType::kNone;
 
 // The name of the offline demo resource image loader component.
-constexpr char kOfflineResourcesComponentName[] = "demo_mode_resources";
+constexpr char kDemoResourcesComponentName[] = "demo-mode-resources";
 
 // The path from which the offline demo mode resources component should be
 // loaded by the image loader service.
-constexpr base::FilePath::CharType kOfflineResourcesComponentPath[] =
+constexpr base::FilePath::CharType kPreInstalledDemoResourcesComponentPath[] =
     FILE_PATH_LITERAL(
         "/mnt/stateful_partition/unencrypted/demo_mode_resources");
 
@@ -135,13 +135,40 @@ void DemoSession::EnsureOfflineResourcesLoaded(
 
   if (offline_resources_load_requested_)
     return;
-
   offline_resources_load_requested_ = true;
+
+  component_updater::CrOSComponentManager* cros_component_manager =
+      g_browser_process->platform_part()->cros_component_manager();
+  if (cros_component_manager) {
+    g_browser_process->platform_part()->cros_component_manager()->Load(
+        kDemoResourcesComponentName,
+        component_updater::CrOSComponentManager::MountPolicy::kMount,
+        component_updater::CrOSComponentManager::UpdatePolicy::kSkip,
+        base::BindOnce(&DemoSession::InstalledComponentLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    // Cros component manager may be unset in tests - if that is the case,
+    // report component install failure, so DemoSession attempts loading the
+    // component directly from the pre-installed component path.
+    InstalledComponentLoaded(
+        component_updater::CrOSComponentManager::Error::INSTALL_FAILURE,
+        base::FilePath());
+  }
+}
+
+void DemoSession::InstalledComponentLoaded(
+    component_updater::CrOSComponentManager::Error error,
+    const base::FilePath& path) {
+  if (error == component_updater::CrOSComponentManager::Error::NONE) {
+    OnOfflineResourcesLoaded(base::make_optional(path));
+    return;
+  }
+
   chromeos::DBusThreadManager::Get()
       ->GetImageLoaderClient()
       ->LoadComponentAtPath(
-          kOfflineResourcesComponentName,
-          base::FilePath(kOfflineResourcesComponentPath),
+          kDemoResourcesComponentName,
+          base::FilePath(kPreInstalledDemoResourcesComponentPath),
           base::BindOnce(&DemoSession::OnOfflineResourcesLoaded,
                          weak_ptr_factory_.GetWeakPtr()));
 }
