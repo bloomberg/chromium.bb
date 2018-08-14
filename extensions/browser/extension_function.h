@@ -27,6 +27,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
 #include "ipc/ipc_message.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 class ExtensionFunction;
 class UIThreadExtensionFunction;
@@ -573,7 +574,7 @@ class UIThreadExtensionFunction : public ExtensionFunction {
 
   bool is_from_service_worker() const {
     return service_worker_version_id_ !=
-           extensions::kInvalidServiceWorkerVersionId;
+           blink::mojom::kInvalidServiceWorkerVersionId;
   }
 
   // The dispatcher that will service this extension function call.
