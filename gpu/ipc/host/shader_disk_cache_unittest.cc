@@ -54,7 +54,7 @@ TEST_F(ShaderDiskCacheTest, ClearsCache) {
   InitCache();
 
   scoped_refptr<ShaderDiskCache> cache = factory()->Get(kDefaultClientId);
-  ASSERT_TRUE(cache.get() != NULL);
+  ASSERT_TRUE(cache.get() != nullptr);
 
   net::TestCompletionCallback available_cb;
   int rv = cache->SetAvailableCallback(available_cb.callback());
@@ -81,7 +81,7 @@ TEST_F(ShaderDiskCacheTest, SafeToDeleteCacheMidEntryOpen) {
 
   // Create a cache and wait for it to open.
   scoped_refptr<ShaderDiskCache> cache = factory()->Get(kDefaultClientId);
-  ASSERT_TRUE(cache.get() != NULL);
+  ASSERT_TRUE(cache.get() != nullptr);
   net::TestCompletionCallback available_cb;
   int rv = cache->SetAvailableCallback(available_cb.callback());
   ASSERT_EQ(net::OK, available_cb.GetResult(rv));
@@ -96,7 +96,7 @@ TEST_F(ShaderDiskCacheTest, SafeToDeleteCacheMidEntryOpen) {
   // Open a new cache (to pass time on the cache thread) and verify all is
   // well.
   cache = factory()->Get(kDefaultClientId);
-  ASSERT_TRUE(cache.get() != NULL);
+  ASSERT_TRUE(cache.get() != nullptr);
   net::TestCompletionCallback available_cb2;
   int rv2 = cache->SetAvailableCallback(available_cb2.callback());
   ASSERT_EQ(net::OK, available_cb2.GetResult(rv2));

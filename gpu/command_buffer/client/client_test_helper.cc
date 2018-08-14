@@ -70,7 +70,7 @@ void FakeCommandBufferServiceBase::DestroyTransferBufferHelper(int32_t id) {
   DCHECK_GE(id, kTransferBufferBaseId);
   DCHECK_LT(id, kTransferBufferBaseId + kMaxTransferBuffers);
   id -= kTransferBufferBaseId;
-  transfer_buffer_buffers_[id] = NULL;
+  transfer_buffer_buffers_[id] = nullptr;
 }
 
 scoped_refptr<Buffer> FakeCommandBufferServiceBase::GetTransferBuffer(

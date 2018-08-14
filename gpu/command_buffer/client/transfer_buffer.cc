@@ -24,7 +24,7 @@ TransferBuffer::TransferBuffer(CommandBufferHelper* helper)
       max_buffer_size_(0),
       alignment_(0),
       buffer_id_(-1),
-      result_buffer_(NULL),
+      result_buffer_(nullptr),
       result_shm_offset_(0),
       usable_(true) {}
 
@@ -60,8 +60,8 @@ void TransferBuffer::Free() {
     helper_->OrderingBarrier();
     helper_->command_buffer()->DestroyTransferBuffer(buffer_id_);
     buffer_id_ = -1;
-    buffer_ = NULL;
-    result_buffer_ = NULL;
+    buffer_ = nullptr;
+    result_buffer_ = nullptr;
     result_shm_offset_ = 0;
     previous_ring_buffers_.push_back(std::move(ring_buffer_));
     last_allocated_size_ = 0;
@@ -198,7 +198,7 @@ void* TransferBuffer::AllocUpTo(
   ShrinkOrExpandRingBufferIfNecessary(size);
 
   if (!HaveBuffer()) {
-    return NULL;
+    return nullptr;
   }
 
   unsigned int max_size = ring_buffer_->GetLargestFreeOrPendingSize();
@@ -211,12 +211,12 @@ void* TransferBuffer::Alloc(unsigned int size) {
   ShrinkOrExpandRingBufferIfNecessary(size);
 
   if (!HaveBuffer()) {
-    return NULL;
+    return nullptr;
   }
 
   unsigned int max_size = ring_buffer_->GetLargestFreeOrPendingSize();
   if (size > max_size) {
-    return NULL;
+    return nullptr;
   }
   bytes_since_last_shrink_ += size;
   return ring_buffer_->Alloc(size);
@@ -248,7 +248,7 @@ unsigned int TransferBuffer::GetMaxAllocation() const {
 void ScopedTransferBufferPtr::Release() {
   if (buffer_) {
     transfer_buffer_->FreePendingToken(buffer_, helper_->InsertToken());
-    buffer_ = NULL;
+    buffer_ = nullptr;
     size_ = 0;
   }
 }
@@ -256,7 +256,7 @@ void ScopedTransferBufferPtr::Release() {
 void ScopedTransferBufferPtr::Discard() {
   if (buffer_) {
     transfer_buffer_->DiscardBlock(buffer_);
-    buffer_ = NULL;
+    buffer_ = nullptr;
     size_ = 0;
   }
 }

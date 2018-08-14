@@ -9,7 +9,7 @@
 namespace gpu {
 
 namespace {
-GpuSurfaceLookup* g_instance = NULL;
+GpuSurfaceLookup* g_instance = nullptr;
 }  // anonymous namespace
 
 // static

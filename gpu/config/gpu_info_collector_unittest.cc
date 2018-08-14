@@ -177,7 +177,7 @@ class GPUInfoCollectorTest
   }
 
   void TearDown() override {
-    ::gl::MockGLInterface::SetGLInterface(NULL);
+    ::gl::MockGLInterface::SetGLInterface(nullptr);
     gl_.reset();
     gl::init::ShutdownGL(false);
 

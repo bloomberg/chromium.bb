@@ -281,8 +281,8 @@ ShaderDiskReadHelper::ShaderDiskReadHelper(ShaderDiskCache* cache,
     : cache_(cache),
       shader_loaded_callback_(callback),
       op_type_(OPEN_NEXT),
-      buf_(NULL),
-      entry_(NULL),
+      buf_(nullptr),
+      entry_(nullptr),
       weak_ptr_factory_(this) {}
 
 ShaderDiskReadHelper::~ShaderDiskReadHelper() {
@@ -367,9 +367,9 @@ int ShaderDiskReadHelper::ReadComplete(int rv) {
                                 std::string(buf_->data(), buf_->size()));
   }
 
-  buf_ = NULL;
+  buf_ = nullptr;
   entry_->Close();
-  entry_ = NULL;
+  entry_ = nullptr;
 
   op_type_ = OPEN_NEXT;
   return net::OK;
@@ -457,7 +457,7 @@ scoped_refptr<ShaderDiskCache> ShaderCacheFactory::Get(int32_t client_id) {
   DCHECK(CalledOnValidThread());
   ClientIdToPathMap::iterator iter = client_id_to_path_map_.find(client_id);
   if (iter == client_id_to_path_map_.end())
-    return NULL;
+    return nullptr;
   return ShaderCacheFactory::GetByPath(iter->second);
 }
 

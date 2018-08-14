@@ -600,7 +600,7 @@ GLuint ApplyFramebufferAttachmentCMAAINTELResourceManager::CreateProgram(
     GLint info_log_length;
     glGetProgramiv(program, GL_INFO_LOG_LENGTH, &info_log_length);
     std::vector<GLchar> info_log(info_log_length);
-    glGetProgramInfoLog(program, static_cast<GLsizei>(info_log.size()), NULL,
+    glGetProgramInfoLog(program, static_cast<GLsizei>(info_log.size()), nullptr,
                         &info_log[0]);
     DLOG(ERROR) << "ApplyFramebufferAttachmentCMAAINTEL: "
                 << "program link failed: " << &info_log[0];
@@ -639,7 +639,7 @@ GLuint ApplyFramebufferAttachmentCMAAINTELResourceManager::CreateShader(
 
   std::string header_str = header.str();
   const char* source_array[4] = {header_str.c_str(), defines, "\n", source};
-  glShaderSource(shader, 4, source_array, NULL);
+  glShaderSource(shader, 4, source_array, nullptr);
 
   glCompileShader(shader);
 
@@ -650,7 +650,7 @@ GLuint ApplyFramebufferAttachmentCMAAINTELResourceManager::CreateShader(
     GLint info_log_length;
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &info_log_length);
     std::vector<GLchar> info_log(info_log_length);
-    glGetShaderInfoLog(shader, static_cast<GLsizei>(info_log.size()), NULL,
+    glGetShaderInfoLog(shader, static_cast<GLsizei>(info_log.size()), nullptr,
                        &info_log[0]);
     DLOG(ERROR) << "ApplyFramebufferAttachmentCMAAINTEL: "
                 << "shader compilation failed: "

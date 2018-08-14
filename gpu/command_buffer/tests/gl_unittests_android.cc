@@ -38,11 +38,11 @@ TEST_F(GLSurfaceTextureTest, SimpleTest) {
   scoped_refptr<gl::SurfaceTexture> surface_texture(
       gl::SurfaceTexture::Create(texture));
   gfx::AcceleratedWidget window = surface_texture->CreateSurface();
-  EXPECT_TRUE(window != NULL);
+  EXPECT_TRUE(window != nullptr);
 
   scoped_refptr<gl::GLSurface> gl_surface =
       gl::init::CreateViewGLSurface(window);
-  EXPECT_TRUE(gl_surface.get() != NULL);
+  EXPECT_TRUE(gl_surface.get() != nullptr);
 
   gl_.SetSurface(gl_surface.get());
 

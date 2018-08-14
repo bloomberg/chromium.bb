@@ -527,7 +527,9 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
   void DoLockDiscardableTextureCHROMIUM(GLuint texture_id);
   bool IsDiscardableTextureUnlocked(GLuint texture_id);
 
-  GLvoid* BufferOffset(unsigned i) { return static_cast<int8_t*>(NULL) + (i); }
+  GLvoid* BufferOffset(unsigned i) {
+    return static_cast<int8_t*>(nullptr) + (i);
+  }
 
   template <typename Command, typename Result>
   bool IsObjectHelper(GLuint client_id) {
@@ -780,7 +782,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
       // When a vertex array object is bound, some drivers (AMD Linux,
       // Qualcomm, etc.) have a bug where it incorrectly generates an
       // GL_INVALID_OPERATION on glVertexAttribPointer() if pointer
-      // is NULL, no buffer is bound on GL_ARRAY_BUFFER.
+      // is nullptr, no buffer is bound on GL_ARRAY_BUFFER.
       // Make sure we don't trigger this bug.
       if (bound_vertex_array_object_ != 0)
         EXPECT_TRUE(bound_array_buffer_object_ != 0);

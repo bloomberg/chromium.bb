@@ -67,7 +67,7 @@ GpuWatchdogThread::GpuWatchdogThread()
 #endif
       suspension_counter_(this),
 #if defined(USE_X11)
-      display_(NULL),
+      display_(nullptr),
       window_(0),
       atom_(x11::None),
       host_tty_(-1),
@@ -509,11 +509,11 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
 
 #if defined(USE_X11)
 void GpuWatchdogThread::SetupXServer() {
-  display_ = XOpenDisplay(NULL);
+  display_ = XOpenDisplay(nullptr);
   if (display_) {
     window_ =
         XCreateWindow(display_, DefaultRootWindow(display_), 0, 0, 1, 1, 0,
-                      CopyFromParent, InputOutput, CopyFromParent, 0, NULL);
+                      CopyFromParent, InputOutput, CopyFromParent, 0, nullptr);
     atom_ = XInternAtom(display_, "CHECK", x11::False);
   }
   host_tty_ = GetActiveTTY();

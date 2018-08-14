@@ -34,7 +34,7 @@ class MockClientCommandBufferImpl : public MockClientCommandBuffer {
                                                   int32_t* id) override {
     if (context_lost_) {
       *id = -1;
-      return NULL;
+      return nullptr;
     }
     return MockClientCommandBuffer::CreateTransferBuffer(size, id);
   }
@@ -82,22 +82,22 @@ TEST_F(BufferTrackerTest, Basic) {
 
   // Check we can create a Buffer.
   BufferTracker::Buffer* buffer = buffer_tracker_->CreateBuffer(kId1, size);
-  ASSERT_TRUE(buffer != NULL);
+  ASSERT_TRUE(buffer != nullptr);
   // Check we can get the same Buffer.
   EXPECT_EQ(buffer, buffer_tracker_->GetBuffer(kId1));
   // Check mapped memory address.
-  EXPECT_TRUE(buffer->address() != NULL);
+  EXPECT_TRUE(buffer->address() != nullptr);
   // Check shared memory was allocated.
   EXPECT_EQ(1lu, mapped_memory_->num_chunks());
   // Check we get nothing for a non-existent buffer.
-  EXPECT_TRUE(buffer_tracker_->GetBuffer(kId2) == NULL);
+  EXPECT_TRUE(buffer_tracker_->GetBuffer(kId2) == nullptr);
   // Check we can delete the buffer.
   buffer_tracker_->RemoveBuffer(kId1);
   // Check shared memory was freed.
   mapped_memory_->FreeUnused();
   EXPECT_EQ(0lu, mapped_memory_->num_chunks());
   // Check we get nothing for a non-existent buffer.
-  EXPECT_TRUE(buffer_tracker_->GetBuffer(kId1) == NULL);
+  EXPECT_TRUE(buffer_tracker_->GetBuffer(kId1) == nullptr);
 }
 
 TEST_F(BufferTrackerTest, ZeroSize) {
@@ -105,9 +105,9 @@ TEST_F(BufferTrackerTest, ZeroSize) {
 
   // Check we can create a Buffer with zero size.
   BufferTracker::Buffer* buffer = buffer_tracker_->CreateBuffer(kId, 0);
-  ASSERT_TRUE(buffer != NULL);
+  ASSERT_TRUE(buffer != nullptr);
   // Check mapped memory address.
-  EXPECT_TRUE(buffer->address() == NULL);
+  EXPECT_TRUE(buffer->address() == nullptr);
   // Check no shared memory was allocated.
   EXPECT_EQ(0lu, mapped_memory_->num_chunks());
   // Check we can delete the buffer.
@@ -121,11 +121,11 @@ TEST_F(BufferTrackerTest, LostContext) {
   command_buffer_->set_context_lost(true);
   // Check we can create a Buffer when after losing context.
   BufferTracker::Buffer* buffer = buffer_tracker_->CreateBuffer(kId, size);
-  ASSERT_TRUE(buffer != NULL);
+  ASSERT_TRUE(buffer != nullptr);
   // Check mapped memory address.
   EXPECT_EQ(64u, buffer->size());
   // Check mapped memory address.
-  EXPECT_TRUE(buffer->address() == NULL);
+  EXPECT_TRUE(buffer->address() == nullptr);
   // Check no shared memory was allocated.
   EXPECT_EQ(0lu, mapped_memory_->num_chunks());
   // Check we can delete the buffer.
@@ -137,7 +137,7 @@ TEST_F(BufferTrackerTest, Unmanage) {
   const GLsizeiptr size = 64;
 
   BufferTracker::Buffer* buffer = buffer_tracker_->CreateBuffer(kId, size);
-  ASSERT_TRUE(buffer != NULL);
+  ASSERT_TRUE(buffer != nullptr);
   EXPECT_EQ(mapped_memory_->bytes_in_use(), static_cast<size_t>(size));
 
   void* mem = buffer->address();

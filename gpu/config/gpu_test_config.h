@@ -125,7 +125,7 @@ class GPU_EXPORT GPUTestBotConfig : public GPUTestConfig {
   bool Matches(const std::string& config_data) const;
 
   // Setup the config with the current gpu testing environment.
-  // If gpu_info is NULL, collect GPUInfo first.
+  // If gpu_info is nullptr, collect GPUInfo first.
   bool LoadCurrentConfig(const GPUInfo* gpu_info);
 
   // Check if this bot's config matches |config_data| or any of the |configs|.

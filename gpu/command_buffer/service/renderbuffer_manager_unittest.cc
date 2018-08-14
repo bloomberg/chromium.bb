@@ -58,7 +58,7 @@ class RenderbufferManagerTest : public RenderbufferManagerTestBase {
   void SetUp() override {
     bool depth24_supported = false;
     bool use_gles = false;
-    SetUpBase(NULL, depth24_supported, use_gles);
+    SetUpBase(nullptr, depth24_supported, use_gles);
   }
 };
 
@@ -99,11 +99,11 @@ TEST_F(RenderbufferManagerTest, Basic) {
   // Check renderbuffer got created.
   scoped_refptr<Renderbuffer> renderbuffer1 =
       manager_->GetRenderbuffer(kClient1Id);
-  ASSERT_TRUE(renderbuffer1.get() != NULL);
+  ASSERT_TRUE(renderbuffer1.get() != nullptr);
   EXPECT_FALSE(manager_->HaveUnclearedRenderbuffers());
   EXPECT_EQ(kClient1Id, renderbuffer1->client_id());
   // Check we get nothing for a non-existent renderbuffer.
-  EXPECT_TRUE(manager_->GetRenderbuffer(kClient2Id) == NULL);
+  EXPECT_TRUE(manager_->GetRenderbuffer(kClient2Id) == nullptr);
   // Check trying to a remove non-existent renderbuffers does not crash.
   manager_->RemoveRenderbuffer(kClient2Id);
   // Check that the renderbuffer is deleted when the last ref is released.
@@ -112,7 +112,7 @@ TEST_F(RenderbufferManagerTest, Basic) {
       .RetiresOnSaturation();
   // Check we can't get the renderbuffer after we remove it.
   manager_->RemoveRenderbuffer(kClient1Id);
-  EXPECT_TRUE(manager_->GetRenderbuffer(kClient1Id) == NULL);
+  EXPECT_TRUE(manager_->GetRenderbuffer(kClient1Id) == nullptr);
   EXPECT_FALSE(manager_->HaveUnclearedRenderbuffers());
   EXPECT_EQ(0u, renderbuffer1->client_id());
 }
@@ -125,13 +125,13 @@ TEST_F(RenderbufferManagerTest, Destroy) {
   // Check renderbuffer got created.
   Renderbuffer* renderbuffer1 =
       manager_->GetRenderbuffer(kClient1Id);
-  ASSERT_TRUE(renderbuffer1 != NULL);
+  ASSERT_TRUE(renderbuffer1 != nullptr);
   EXPECT_CALL(*gl_, DeleteRenderbuffersEXT(1, ::testing::Pointee(kService1Id)))
       .Times(1)
       .RetiresOnSaturation();
   manager_->Destroy(true);
   renderbuffer1 = manager_->GetRenderbuffer(kClient1Id);
-  ASSERT_TRUE(renderbuffer1 == NULL);
+  ASSERT_TRUE(renderbuffer1 == nullptr);
 }
 
 TEST_F(RenderbufferManagerTest, Renderbuffer) {
@@ -142,7 +142,7 @@ TEST_F(RenderbufferManagerTest, Renderbuffer) {
   // Check renderbuffer got created.
   Renderbuffer* renderbuffer1 =
       manager_->GetRenderbuffer(kClient1Id);
-  ASSERT_TRUE(renderbuffer1 != NULL);
+  ASSERT_TRUE(renderbuffer1 != nullptr);
   EXPECT_EQ(kService1Id, renderbuffer1->service_id());
   EXPECT_EQ(0, renderbuffer1->samples());
   EXPECT_EQ(static_cast<GLenum>(GL_RGBA4), renderbuffer1->internal_format());
@@ -189,7 +189,7 @@ TEST_F(RenderbufferManagerMemoryTrackerTest, Basic) {
   manager_->CreateRenderbuffer(kClient1Id, kService1Id);
   Renderbuffer* renderbuffer1 =
       manager_->GetRenderbuffer(kClient1Id);
-  ASSERT_TRUE(renderbuffer1 != NULL);
+  ASSERT_TRUE(renderbuffer1 != nullptr);
 
   const GLsizei kSamples = 4;
   const GLenum kFormat = GL_RGBA4;
@@ -221,7 +221,7 @@ TEST_F(RenderbufferManagerTest, UseDeletedRenderbufferInfo) {
   manager_->CreateRenderbuffer(kClient1Id, kService1Id);
   scoped_refptr<Renderbuffer> renderbuffer1(
       manager_->GetRenderbuffer(kClient1Id));
-  ASSERT_TRUE(renderbuffer1.get() != NULL);
+  ASSERT_TRUE(renderbuffer1.get() != nullptr);
   // Remove it.
   manager_->RemoveRenderbuffer(kClient1Id);
   // Use after removing.
@@ -239,7 +239,7 @@ TEST_F(RenderbufferManagerTest, UseDeletedRenderbufferInfo) {
   EXPECT_CALL(*gl_, DeleteRenderbuffersEXT(1, ::testing::Pointee(kService1Id)))
       .Times(1)
       .RetiresOnSaturation();
-  renderbuffer1 = NULL;
+  renderbuffer1 = nullptr;
 }
 
 namespace {
@@ -258,7 +258,7 @@ TEST_F(RenderbufferManagerTest, AddToSignature) {
   manager_->CreateRenderbuffer(kClient1Id, kService1Id);
   scoped_refptr<Renderbuffer> renderbuffer1(
       manager_->GetRenderbuffer(kClient1Id));
-  ASSERT_TRUE(renderbuffer1.get() != NULL);
+  ASSERT_TRUE(renderbuffer1.get() != nullptr);
   const GLsizei kSamples = 4;
   const GLenum kFormat = GL_RGBA4;
   const GLsizei kWidth = 128;
@@ -316,7 +316,7 @@ class RenderbufferManagerFormatGLESTest : public RenderbufferManagerTestBase {
   void SetUp() override {
     bool depth24_supported = true;
     bool use_gles = true;
-    SetUpBase(NULL, depth24_supported, use_gles);
+    SetUpBase(nullptr, depth24_supported, use_gles);
   }
 };
 
@@ -332,7 +332,7 @@ class RenderbufferManagerFormatNonGLESTest :
   void SetUp() override {
     bool depth24_supported = true;
     bool use_gles = false;
-    SetUpBase(NULL, depth24_supported, use_gles);
+    SetUpBase(nullptr, depth24_supported, use_gles);
   }
 };
 

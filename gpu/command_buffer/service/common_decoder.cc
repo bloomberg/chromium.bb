@@ -38,12 +38,12 @@ void* CommonDecoder::Bucket::GetData(size_t offset, size_t size) const {
   if (OffsetSizeValid(offset, size)) {
     return data_.get() + offset;
   }
-  return NULL;
+  return nullptr;
 }
 
 void CommonDecoder::Bucket::SetSize(size_t size) {
   if (size != size_) {
-    data_.reset(size ? new int8_t[size] : NULL);
+    data_.reset(size ? new int8_t[size] : nullptr);
     size_ = size;
     memset(data_.get(), 0, size);
   }
@@ -59,7 +59,7 @@ bool CommonDecoder::Bucket::SetData(
 }
 
 void CommonDecoder::Bucket::SetFromString(const char* str) {
-  // Strings are passed NULL terminated to distinguish between empty string
+  // Strings are passed nullptr terminated to distinguish between empty string
   // and no string.
   if (!str) {
     SetSize(0);
@@ -176,7 +176,7 @@ const char* CommonDecoder::GetCommonCommandName(
 
 CommonDecoder::Bucket* CommonDecoder::GetBucket(uint32_t bucket_id) const {
   BucketMap::const_iterator iter(buckets_.find(bucket_id));
-  return iter != buckets_.end() ? &(*iter->second) : NULL;
+  return iter != buckets_.end() ? &(*iter->second) : nullptr;
 }
 
 CommonDecoder::Bucket* CommonDecoder::CreateBucket(uint32_t bucket_id) {
@@ -310,7 +310,7 @@ error::Error CommonDecoder::HandleGetBucketStart(
   int32_t data_memory_id = args.data_memory_id;
   uint32_t data_memory_offset = args.data_memory_offset;
   uint32_t data_memory_size = args.data_memory_size;
-  uint8_t* data = NULL;
+  uint8_t* data = nullptr;
   if (data_memory_size != 0 || data_memory_id != 0 || data_memory_offset != 0) {
     data = GetSharedMemoryAs<uint8_t*>(data_memory_id, data_memory_offset,
                                        data_memory_size);

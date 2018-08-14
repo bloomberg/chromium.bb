@@ -71,7 +71,7 @@ TEST_F(VertexArrayObjectManagerTest, Basic) {
     EXPECT_EQ(0u, param);
     EXPECT_TRUE(manager_->GetAttribPointer(
         ii, GL_VERTEX_ATTRIB_ARRAY_POINTER, &ptr));
-    EXPECT_TRUE(NULL == ptr);
+    EXPECT_TRUE(nullptr == ptr);
   }
 }
 
@@ -187,10 +187,10 @@ TEST_F(VertexArrayObjectManagerTest, HaveEnabledClientSideArrays) {
   EXPECT_FALSE(manager_->HaveEnabledClientSideBuffers());
   // Check turning on an array and assigning a buffer.
   manager_->SetAttribEnable(1, true);
-  manager_->SetAttribPointer(123, 1, 3, GL_BYTE, true, 3, NULL, GL_FALSE);
+  manager_->SetAttribPointer(123, 1, 3, GL_BYTE, true, 3, nullptr, GL_FALSE);
   EXPECT_FALSE(manager_->HaveEnabledClientSideBuffers());
   // Check unassigning a buffer.
-  manager_->SetAttribPointer(0, 1, 3, GL_BYTE, true, 3, NULL, GL_FALSE);
+  manager_->SetAttribPointer(0, 1, 3, GL_BYTE, true, 3, nullptr, GL_FALSE);
   EXPECT_TRUE(manager_->HaveEnabledClientSideBuffers());
   // Check disabling the array.
   manager_->SetAttribEnable(1, false);

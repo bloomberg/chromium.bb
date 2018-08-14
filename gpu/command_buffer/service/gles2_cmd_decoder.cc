@@ -16458,7 +16458,7 @@ void GLES2DecoderImpl::ReadBackBuffersIntoShadowCopies(
     void* mapped = api()->glMapBufferRangeFn(GL_ARRAY_BUFFER, 0, buffer->size(),
                                              GL_MAP_READ_BIT);
     if (!mapped) {
-      DLOG(ERROR) << "glMapBufferRange unexpectedly returned NULL";
+      DLOG(ERROR) << "glMapBufferRange unexpectedly returned nullptr";
       MarkContextLost(error::kOutOfMemory);
       group_->LoseContexts(error::kUnknown);
       return;

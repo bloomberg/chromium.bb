@@ -52,7 +52,7 @@ const uint32_t VertexAttribManagerTest::kNumVertexAttribs;
 #endif
 
 TEST_F(VertexAttribManagerTest, Basic) {
-  EXPECT_TRUE(manager_->GetVertexAttrib(kNumVertexAttribs) == NULL);
+  EXPECT_TRUE(manager_->GetVertexAttrib(kNumVertexAttribs) == nullptr);
   EXPECT_FALSE(manager_->HaveFixedAttribs());
 
   const VertexAttribManager::VertexAttribList& enabled_attribs =
@@ -61,9 +61,9 @@ TEST_F(VertexAttribManagerTest, Basic) {
 
   for (uint32_t ii = 0; ii < kNumVertexAttribs; ii += kNumVertexAttribs - 1) {
     VertexAttrib* attrib = manager_->GetVertexAttrib(ii);
-    ASSERT_TRUE(attrib != NULL);
+    ASSERT_TRUE(attrib != nullptr);
     EXPECT_EQ(ii, attrib->index());
-    EXPECT_TRUE(attrib->buffer() == NULL);
+    EXPECT_TRUE(attrib->buffer() == nullptr);
     EXPECT_EQ(0, attrib->offset());
     EXPECT_EQ(4, attrib->size());
     EXPECT_EQ(static_cast<GLenum>(GL_FLOAT), attrib->type());
@@ -99,10 +99,10 @@ TEST_F(VertexAttribManagerTest, Enable) {
 }
 
 TEST_F(VertexAttribManagerTest, SetAttribInfo) {
-  BufferManager buffer_manager(NULL, NULL);
+  BufferManager buffer_manager(nullptr, nullptr);
   buffer_manager.CreateBuffer(1, 2);
   Buffer* buffer = buffer_manager.GetBuffer(1);
-  ASSERT_TRUE(buffer != NULL);
+  ASSERT_TRUE(buffer != nullptr);
 
   VertexAttrib* attrib = manager_->GetVertexAttrib(1);
 
@@ -118,30 +118,34 @@ TEST_F(VertexAttribManagerTest, SetAttribInfo) {
 
   // The VertexAttribManager must be destroyed before the BufferManager
   // so it releases its buffers.
-  manager_ = NULL;
+  manager_ = nullptr;
   buffer_manager.MarkContextLost();
   buffer_manager.Destroy();
 }
 
 TEST_F(VertexAttribManagerTest, HaveFixedAttribs) {
   EXPECT_FALSE(manager_->HaveFixedAttribs());
-  manager_->SetAttribInfo(1, NULL, 4, GL_FIXED, GL_FALSE, 0, 16, 0, GL_FALSE);
+  manager_->SetAttribInfo(1, nullptr, 4, GL_FIXED, GL_FALSE, 0, 16, 0,
+                          GL_FALSE);
   EXPECT_TRUE(manager_->HaveFixedAttribs());
-  manager_->SetAttribInfo(3, NULL, 4, GL_FIXED, GL_FALSE, 0, 16, 0, GL_FALSE);
+  manager_->SetAttribInfo(3, nullptr, 4, GL_FIXED, GL_FALSE, 0, 16, 0,
+                          GL_FALSE);
   EXPECT_TRUE(manager_->HaveFixedAttribs());
-  manager_->SetAttribInfo(1, NULL, 4, GL_FLOAT, GL_FALSE, 0, 16, 0, GL_FALSE);
+  manager_->SetAttribInfo(1, nullptr, 4, GL_FLOAT, GL_FALSE, 0, 16, 0,
+                          GL_FALSE);
   EXPECT_TRUE(manager_->HaveFixedAttribs());
-  manager_->SetAttribInfo(3, NULL, 4, GL_FLOAT, GL_FALSE, 0, 16, 0, GL_FALSE);
+  manager_->SetAttribInfo(3, nullptr, 4, GL_FLOAT, GL_FALSE, 0, 16, 0,
+                          GL_FALSE);
   EXPECT_FALSE(manager_->HaveFixedAttribs());
 }
 
 TEST_F(VertexAttribManagerTest, CanAccess) {
   const GLenum kTarget = GL_ARRAY_BUFFER;
   MockErrorState error_state;
-  BufferManager buffer_manager(NULL, NULL);
+  BufferManager buffer_manager(nullptr, nullptr);
   buffer_manager.CreateBuffer(1, 2);
   Buffer* buffer = buffer_manager.GetBuffer(1);
-  ASSERT_TRUE(buffer != NULL);
+  ASSERT_TRUE(buffer != nullptr);
 
   VertexAttrib* attrib = manager_->GetVertexAttrib(1);
 
@@ -152,23 +156,20 @@ TEST_F(VertexAttribManagerTest, CanAccess) {
   EXPECT_FALSE(attrib->CanAccess(0));
 
   EXPECT_TRUE(buffer_manager.SetTarget(buffer, kTarget));
-  TestHelper::DoBufferData(
-      gl_.get(), &error_state, &buffer_manager, buffer,
-      kTarget, 15, GL_STATIC_DRAW, NULL, GL_NO_ERROR);
+  TestHelper::DoBufferData(gl_.get(), &error_state, &buffer_manager, buffer,
+                           kTarget, 15, GL_STATIC_DRAW, nullptr, GL_NO_ERROR);
 
   EXPECT_FALSE(attrib->CanAccess(0));
-  TestHelper::DoBufferData(
-      gl_.get(), &error_state, &buffer_manager, buffer,
-      kTarget, 16, GL_STATIC_DRAW, NULL, GL_NO_ERROR);
+  TestHelper::DoBufferData(gl_.get(), &error_state, &buffer_manager, buffer,
+                           kTarget, 16, GL_STATIC_DRAW, nullptr, GL_NO_ERROR);
   EXPECT_TRUE(attrib->CanAccess(0));
   EXPECT_FALSE(attrib->CanAccess(1));
 
   manager_->SetAttribInfo(1, buffer, 4, GL_FLOAT, GL_FALSE, 0, 16, 1, GL_FALSE);
   EXPECT_FALSE(attrib->CanAccess(0));
 
-  TestHelper::DoBufferData(
-      gl_.get(), &error_state, &buffer_manager, buffer,
-      kTarget, 32, GL_STATIC_DRAW, NULL, GL_NO_ERROR);
+  TestHelper::DoBufferData(gl_.get(), &error_state, &buffer_manager, buffer,
+                           kTarget, 32, GL_STATIC_DRAW, nullptr, GL_NO_ERROR);
   EXPECT_TRUE(attrib->CanAccess(0));
   EXPECT_FALSE(attrib->CanAccess(1));
   manager_->SetAttribInfo(1, buffer, 4, GL_FLOAT, GL_FALSE, 0, 16, 0, GL_FALSE);
@@ -179,19 +180,19 @@ TEST_F(VertexAttribManagerTest, CanAccess) {
 
   // The VertexAttribManager must be destroyed before the BufferManager
   // so it releases its buffers.
-  manager_ = NULL;
+  manager_ = nullptr;
   buffer_manager.MarkContextLost();
   buffer_manager.Destroy();
 }
 
 TEST_F(VertexAttribManagerTest, Unbind) {
-  BufferManager buffer_manager(NULL, NULL);
+  BufferManager buffer_manager(nullptr, nullptr);
   buffer_manager.CreateBuffer(1, 2);
   buffer_manager.CreateBuffer(3, 4);
   Buffer* buffer1 = buffer_manager.GetBuffer(1);
   Buffer* buffer2 = buffer_manager.GetBuffer(3);
-  ASSERT_TRUE(buffer1 != NULL);
-  ASSERT_TRUE(buffer2 != NULL);
+  ASSERT_TRUE(buffer1 != nullptr);
+  ASSERT_TRUE(buffer2 != nullptr);
 
   VertexAttrib* attrib1 = manager_->GetVertexAttrib(1);
   VertexAttrib* attrib3 = manager_->GetVertexAttrib(3);
@@ -212,12 +213,12 @@ TEST_F(VertexAttribManagerTest, Unbind) {
   // Unbind buffer.
   manager_->Unbind(buffer1, nullptr);
   // Check they were detached
-  EXPECT_TRUE(NULL == attrib1->buffer());
-  EXPECT_TRUE(NULL == attrib3->buffer());
+  EXPECT_TRUE(nullptr == attrib1->buffer());
+  EXPECT_TRUE(nullptr == attrib3->buffer());
 
   // The VertexAttribManager must be destroyed before the BufferManager
   // so it releases its buffers.
-  manager_ = NULL;
+  manager_ = nullptr;
   buffer_manager.MarkContextLost();
   buffer_manager.Destroy();
 }

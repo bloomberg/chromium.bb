@@ -210,8 +210,8 @@ class GLES2DecoderTestWithCHROMIUMPathRendering : public GLES2DecoderTest {
     // ok, even if there is nothing in the actual path object. To remain
     // compatible with the API, we allocate path object state even when using
     // the mock API.
-    EXPECT_CALL(*gl_,
-                PathCommandsNV(kServicePathId, 0, NULL, 0, GL_FLOAT, NULL))
+    EXPECT_CALL(
+        *gl_, PathCommandsNV(kServicePathId, 0, nullptr, 0, GL_FLOAT, nullptr))
         .RetiresOnSaturation();
     cmds::PathCommandsCHROMIUM pcmd;
     pcmd.Init(client_path_id_, 0, 0, 0, 0, GL_FLOAT, 0, 0);
@@ -248,10 +248,10 @@ class GLES2DecoderTestWithCHROMIUMPathRendering : public GLES2DecoderTest {
     bool copy_paths = false;  // Paths are copied for each call that has paths,
                               // since the implementation modifies the memory
                               // area.
-    void* paths = NULL;
+    void* paths = nullptr;
     uint32_t paths_shm_id = 0;
     uint32_t paths_shm_offset = 0;
-    GLfloat* transforms = NULL;
+    GLfloat* transforms = nullptr;
     uint32_t transforms_shm_id = 0;
     uint32_t transforms_shm_offset = 0;
 
@@ -960,7 +960,8 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
 
 TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
        PathCommandsCHROMIUMEmptyCommands) {
-  EXPECT_CALL(*gl_, PathCommandsNV(kServicePathId, 0, NULL, 0, GL_FLOAT, NULL))
+  EXPECT_CALL(*gl_,
+              PathCommandsNV(kServicePathId, 0, nullptr, 0, GL_FLOAT, nullptr))
       .RetiresOnSaturation();
   cmds::PathCommandsCHROMIUM cmd;
   cmd.Init(client_path_id_, 0, 0, 0, 0, GL_FLOAT, 0, 0);
@@ -1430,9 +1431,9 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
 
   for (size_t i = 0; i < arraysize(kFillModes); ++i) {
     memcpy(paths, kPaths, sizeof(kPaths));
-    EXPECT_CALL(*gl_,
-                StencilFillPathInstancedNV(kPathCount, GL_UNSIGNED_INT, _, 0,
-                                           kFillModes[i], kMask, GL_NONE, NULL))
+    EXPECT_CALL(*gl_, StencilFillPathInstancedNV(kPathCount, GL_UNSIGNED_INT, _,
+                                                 0, kFillModes[i], kMask,
+                                                 GL_NONE, nullptr))
         .RetiresOnSaturation();
     sfi_cmd.Init(kPathCount, GL_UNSIGNED_INT, shared_memory_id_,
                  shared_memory_offset_, 0, kFillModes[i], kMask, GL_NONE, 0, 0);
@@ -1443,7 +1444,7 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
     EXPECT_CALL(*gl_,
                 StencilThenCoverFillPathInstancedNV(
                     kPathCount, GL_UNSIGNED_INT, _, 0, kFillModes[i], kMask,
-                    GL_BOUNDING_BOX_OF_BOUNDING_BOXES_NV, GL_NONE, NULL))
+                    GL_BOUNDING_BOX_OF_BOUNDING_BOXES_NV, GL_NONE, nullptr))
         .RetiresOnSaturation();
     stcfi_cmd.Init(kPathCount, GL_UNSIGNED_INT, shared_memory_id_,
                    shared_memory_offset_, 0, kFillModes[i], kMask,
@@ -1495,10 +1496,10 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, InstancedCalls) {
   InstancedTestcase testcases[] = {
       // Test a normal call.
       {kPathCount, GL_UNSIGNED_INT, kPaths, 0, kFillMode, kReference, kMask,
-       GL_NONE, NULL, sizeof(kPaths), 0, error::kNoError, GL_NO_ERROR, true},
+       GL_NONE, nullptr, sizeof(kPaths), 0, error::kNoError, GL_NO_ERROR, true},
       // Test that the path base is applied correctly for each instanced call.
       {kPathCount, GL_UNSIGNED_INT, kPathsWithBase, kPathBase, kFillMode,
-       kReference, kMask, GL_NONE, NULL, sizeof(kPaths), 0, error::kNoError,
+       kReference, kMask, GL_NONE, nullptr, sizeof(kPaths), 0, error::kNoError,
        GL_NO_ERROR, true},
       {kPathCount, GL_UNSIGNED_INT, kPathsWithBase, kPathBase, kFillMode,
        kReference, kMask,
@@ -1587,8 +1588,8 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, InstancedNoCalls) {
 
   InstancedTestcase testcases[] = {
       // Zero path count produces no error, no call.
-      {0, GL_UNSIGNED_INT, NULL, 0, kFillMode, kReference, kMask, GL_NONE, NULL,
-       0, 0, error::kNoError, GL_NO_ERROR, false},
+      {0, GL_UNSIGNED_INT, nullptr, 0, kFillMode, kReference, kMask, GL_NONE,
+       nullptr, 0, 0, error::kNoError, GL_NO_ERROR, false},
 
       // Zero path count, even with path data, produces no error, no call.
       {0, GL_UNSIGNED_INT, kPaths, 0, kFillMode, kReference, kMask,
@@ -1601,7 +1602,7 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, InstancedNoCalls) {
        sizeof(transform_values), error::kNoError, GL_INVALID_VALUE, false},
 
       // Passing paths count but not having the shm data is a connection error.
-      {kPathCount, GL_UNSIGNED_INT, NULL, 0, kFillMode, kReference, kMask,
+      {kPathCount, GL_UNSIGNED_INT, nullptr, 0, kFillMode, kReference, kMask,
        GL_TRANSLATE_X_CHROMIUM, transform_values, 0, sizeof(transform_values),
        error::kOutOfBounds, GL_NO_ERROR, false},
 
@@ -1629,7 +1630,7 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, InstancedNoCalls) {
       // Test that if we have transform, not having the shm data is a connection
       // error.
       {kPathCount, GL_UNSIGNED_INT, kPaths, 0, kFillMode, kReference, kMask,
-       GL_TRANSLATE_X_CHROMIUM, NULL, sizeof(kPaths), 0, error::kOutOfBounds,
+       GL_TRANSLATE_X_CHROMIUM, nullptr, sizeof(kPaths), 0, error::kOutOfBounds,
        GL_NO_ERROR, false},
 
   };

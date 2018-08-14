@@ -311,7 +311,7 @@ class GLES2DecoderVertexArraysOESTest : public GLES2DecoderWithShaderTest {
     cmd->Init(1, &temp);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(*cmd, sizeof(temp)));
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
-    EXPECT_TRUE(GetVertexArrayInfo(kNewClientId) != NULL);
+    EXPECT_TRUE(GetVertexArrayInfo(kNewClientId) != nullptr);
     AddExpectationsForDeleteVertexArraysOES();
   }
 
@@ -322,13 +322,13 @@ class GLES2DecoderVertexArraysOESTest : public GLES2DecoderWithShaderTest {
     cmd->Init(3, temp);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(*cmd, sizeof(temp)));
-    EXPECT_TRUE(GetVertexArrayInfo(kNewClientId) == NULL);
-    EXPECT_TRUE(GetVertexArrayInfo(kNewClientId + 1) == NULL);
+    EXPECT_TRUE(GetVertexArrayInfo(kNewClientId) == nullptr);
+    EXPECT_TRUE(GetVertexArrayInfo(kNewClientId + 1) == nullptr);
     GLuint null_id[2] = {kNewClientId, 0};
     cmd->Init(2, null_id);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(*cmd, sizeof(temp)));
-    EXPECT_TRUE(GetVertexArrayInfo(kNewClientId) == NULL);
+    EXPECT_TRUE(GetVertexArrayInfo(kNewClientId) == nullptr);
   }
 
   void GenVertexArraysOESImmediateInvalidArgs() {
@@ -348,7 +348,7 @@ class GLES2DecoderVertexArraysOESTest : public GLES2DecoderWithShaderTest {
     EXPECT_EQ(error::kNoError,
               ExecuteImmediateCmd(cmd, sizeof(client_vertexarray_id_)));
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
-    EXPECT_TRUE(GetVertexArrayInfo(client_vertexarray_id_) == NULL);
+    EXPECT_TRUE(GetVertexArrayInfo(client_vertexarray_id_) == nullptr);
     vertex_array_deleted_manually_ = true;
   }
 
@@ -370,7 +370,7 @@ class GLES2DecoderVertexArraysOESTest : public GLES2DecoderWithShaderTest {
     EXPECT_EQ(error::kNoError,
               ExecuteImmediateCmd(cmd, sizeof(client_vertexarray_id_)));
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
-    EXPECT_TRUE(GetVertexArrayInfo(client_vertexarray_id_) == NULL);
+    EXPECT_TRUE(GetVertexArrayInfo(client_vertexarray_id_) == nullptr);
     vertex_array_deleted_manually_ = true;
   }
 
@@ -525,7 +525,7 @@ TEST_P(GLES2DecoderTest, BufferDataGLError) {
   DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
   BufferManager* manager = group().buffer_manager();
   Buffer* buffer = manager->GetBuffer(client_buffer_id_);
-  ASSERT_TRUE(buffer != NULL);
+  ASSERT_TRUE(buffer != nullptr);
   EXPECT_EQ(0, buffer->size());
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))

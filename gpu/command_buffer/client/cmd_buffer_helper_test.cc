@@ -403,7 +403,7 @@ TEST_F(CommandBufferHelperTest, TestCommandProcessing) {
   EXPECT_EQ(0, GetGetOffset());
 
   // Add 3 commands through the helper
-  AddCommandWithExpect(error::kNoError, kUnusedCommandId, 0, NULL);
+  AddCommandWithExpect(error::kNoError, kUnusedCommandId, 0, nullptr);
 
   CommandBufferEntry args1[2];
   args1[0].value_uint32 = 3;
@@ -500,8 +500,8 @@ TEST_F(CommandBufferHelperTest, TestAvailableEntries) {
   args[1].value_float = 4.f;
 
   // Add 2 commands through the helper - 8 entries
-  AddCommandWithExpect(error::kNoError, kUnusedCommandId + 1, 0, NULL);
-  AddCommandWithExpect(error::kNoError, kUnusedCommandId + 2, 0, NULL);
+  AddCommandWithExpect(error::kNoError, kUnusedCommandId + 1, 0, nullptr);
+  AddCommandWithExpect(error::kNoError, kUnusedCommandId + 2, 0, nullptr);
   AddCommandWithExpect(error::kNoError, kUnusedCommandId + 3, 2, args);
   AddCommandWithExpect(error::kNoError, kUnusedCommandId + 4, 2, args);
 
@@ -611,7 +611,7 @@ TEST_F(CommandBufferHelperTest, FreeRingBuffer) {
   EXPECT_FALSE(helper_->HaveRingBuffer());
 
   // Test that WaitForAvailableEntries allocates a new one
-  AddCommandWithExpect(error::kNoError, kUnusedCommandId, 0, NULL);
+  AddCommandWithExpect(error::kNoError, kUnusedCommandId, 0, nullptr);
   EXPECT_TRUE(helper_->HaveRingBuffer());
   helper_->Finish();
   helper_->FreeRingBuffer();
@@ -621,7 +621,7 @@ TEST_F(CommandBufferHelperTest, FreeRingBuffer) {
   Mock::VerifyAndClearExpectations(api_mock_.get());
 
   // Test that FreeRingBuffer doesn't force a finish
-  AddCommandWithExpect(error::kNoError, kUnusedCommandId, 0, NULL);
+  AddCommandWithExpect(error::kNoError, kUnusedCommandId, 0, nullptr);
   EXPECT_TRUE(helper_->HaveRingBuffer());
   int32_t old_get_offset = command_buffer_->GetLastState().get_offset;
   EXPECT_NE(helper_->GetPutOffsetForTest(), old_get_offset);

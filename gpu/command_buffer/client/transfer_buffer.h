@@ -163,11 +163,10 @@ class GPU_EXPORT TransferBuffer : public TransferBufferInterface {
 // A class that will manage the lifetime of a transferbuffer allocation.
 class GPU_EXPORT ScopedTransferBufferPtr {
  public:
-  ScopedTransferBufferPtr(
-      unsigned int size,
-      CommandBufferHelper* helper,
-      TransferBufferInterface* transfer_buffer)
-      : buffer_(NULL),
+  ScopedTransferBufferPtr(unsigned int size,
+                          CommandBufferHelper* helper,
+                          TransferBufferInterface* transfer_buffer)
+      : buffer_(nullptr),
         size_(0),
         helper_(helper),
         transfer_buffer_(transfer_buffer) {
@@ -177,7 +176,7 @@ class GPU_EXPORT ScopedTransferBufferPtr {
   // Constructs an empty and invalid allocation that should be Reset() later.
   ScopedTransferBufferPtr(CommandBufferHelper* helper,
                           TransferBufferInterface* transfer_buffer)
-      : buffer_(NULL),
+      : buffer_(nullptr),
         size_(0),
         helper_(helper),
         transfer_buffer_(transfer_buffer) {}
@@ -186,9 +185,7 @@ class GPU_EXPORT ScopedTransferBufferPtr {
     Release();
   }
 
-  bool valid() const {
-    return buffer_ != NULL;
-  }
+  bool valid() const { return buffer_ != nullptr; }
 
   unsigned int size() const {
     return size_;

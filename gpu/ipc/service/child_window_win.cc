@@ -134,7 +134,7 @@ void CreateWindowsOnThread(const gfx::Size& size,
   HWND window = CreateWindowEx(
       WS_EX_NOPARENTNOTIFY, reinterpret_cast<wchar_t*>(g_window_class), L"",
       WS_CHILDWINDOW | WS_DISABLED | WS_VISIBLE, 0, 0, size.width(),
-      size.height(), *parent_window, NULL, NULL, NULL);
+      size.height(), *parent_window, nullptr, nullptr, nullptr);
   CHECK(window);
   *child_window = window;
   gfx::SetWindowUserData(window, shared_data);

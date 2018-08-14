@@ -294,7 +294,7 @@ class CommandBufferSetup {
         share_group_(new gl::GLShareGroup),
         translator_cache_(gpu_preferences_) {
     logging::SetMinLogLevel(logging::LOG_FATAL);
-    base::CommandLine::Init(0, NULL);
+    base::CommandLine::Init(0, nullptr);
 
     auto* command_line = base::CommandLine::ForCurrentProcess();
     ALLOW_UNUSED_LOCAL(command_line);

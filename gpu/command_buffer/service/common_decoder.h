@@ -65,8 +65,8 @@ class GPU_EXPORT CommonDecoder {
       return size_;
     }
 
-    // Gets a pointer to a section the bucket. Returns NULL if offset or size is
-    // out of range.
+    // Gets a pointer to a section the bucket. Returns nullptr if offset or size
+    // is out of range.
     void* GetData(size_t offset, size_t size) const;
 
     template <typename T>
@@ -124,7 +124,7 @@ class GPU_EXPORT CommonDecoder {
   // Creates a bucket. If the bucket already exists returns that bucket.
   Bucket* CreateBucket(uint32_t bucket_id);
 
-  // Gets a bucket. Returns NULL if the bucket does not exist.
+  // Gets a bucket. Returns nullptr if the bucket does not exist.
   Bucket* GetBucket(uint32_t bucket_id) const;
 
   // Gets the address of shared memory data, given a shared memory ID and an
@@ -135,7 +135,7 @@ class GPU_EXPORT CommonDecoder {
   //   offset: the offset of the data in the shared memory buffer.
   //   size: the size of the data.
   // Returns:
-  //   NULL if shm_id isn't a valid shared memory buffer ID or if the size
+  //   nullptr if shm_id isn't a valid shared memory buffer ID or if the size
   //   check fails. Return a pointer to the data otherwise.
   void* GetAddressAndCheckSize(unsigned int shm_id,
                                unsigned int offset,
@@ -220,4 +220,3 @@ class GPU_EXPORT CommonDecoder {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_COMMON_DECODER_H_
-

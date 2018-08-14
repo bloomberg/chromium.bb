@@ -83,7 +83,7 @@ void BufferManager::CreateBuffer(GLuint client_id, GLuint service_id) {
 Buffer* BufferManager::GetBuffer(
     GLuint client_id) {
   BufferMap::iterator it = buffers_.find(client_id);
-  return it != buffers_.end() ? it->second.get() : NULL;
+  return it != buffers_.end() ? it->second.get() : nullptr;
 }
 
 void BufferManager::RemoveBuffer(GLuint client_id) {
@@ -226,10 +226,10 @@ void Buffer::SetRange(GLintptr offset, GLsizeiptr size, const GLvoid * data) {
 
 const void* Buffer::GetRange(GLintptr offset, GLsizeiptr size) const {
   if (shadow_.empty()) {
-    return NULL;
+    return nullptr;
   }
   if (!CheckRange(offset, size)) {
-    return NULL;
+    return nullptr;
   }
   DCHECK_LE(static_cast<size_t>(offset + size), shadow_.size());
   return shadow_.data() + offset;

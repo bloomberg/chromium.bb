@@ -41,7 +41,7 @@ TEST_P(GLES3DecoderTest, BindBufferBaseValidArgsNewId) {
   cmd.Init(GL_TRANSFORM_FEEDBACK_BUFFER, 2, kNewClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(GetBuffer(kNewClientId) != NULL);
+  EXPECT_TRUE(GetBuffer(kNewClientId) != nullptr);
 }
 
 TEST_P(GLES3DecoderTest, BindBufferRangeValidArgs) {
@@ -99,7 +99,7 @@ TEST_P(GLES3DecoderTest, BindBufferRangeValidArgsNewId) {
   cmd.Init(GL_TRANSFORM_FEEDBACK_BUFFER, 2, kNewClientId, 4, 4);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(GetBuffer(kNewClientId) != NULL);
+  EXPECT_TRUE(GetBuffer(kNewClientId) != nullptr);
 }
 
 TEST_P(GLES3DecoderTest, MapBufferRangeUnmapBufferReadSucceeds) {

@@ -48,7 +48,7 @@ scoped_refptr<gl::GLSurface> InitializeGLSurface() {
       gl::init::CreateOffscreenGLSurface(gfx::Size()));
   if (!surface.get()) {
     LOG(ERROR) << "gl::GLContext::CreateOffscreenGLSurface failed";
-    return NULL;
+    return nullptr;
   }
 
   return surface;
@@ -61,12 +61,12 @@ scoped_refptr<gl::GLContext> InitializeGLContext(gl::GLSurface* surface) {
       gl::init::CreateGLContext(nullptr, surface, attribs));
   if (!context.get()) {
     LOG(ERROR) << "gl::init::CreateGLContext failed";
-    return NULL;
+    return nullptr;
   }
 
   if (!context->MakeCurrent(surface)) {
     LOG(ERROR) << "gl::GLContext::MakeCurrent() failed";
-    return NULL;
+    return nullptr;
   }
 
   return context;

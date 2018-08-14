@@ -103,7 +103,7 @@ void CommandBufferService::SetGetBuffer(int32_t transfer_buffer_id) {
   ++state_.set_get_buffer_count;
 
   // If the buffer is invalid we handle it gracefully.
-  // This means ring_buffer_ can be NULL.
+  // This means ring_buffer_ can be nullptr.
   ring_buffer_ = GetTransferBuffer(transfer_buffer_id);
   if (ring_buffer_) {
     int32_t size = ring_buffer_->size();

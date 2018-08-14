@@ -1716,7 +1716,7 @@ const Program::UniformInfo*
     Program::GetUniformInfo(
         GLint index) const {
   if (static_cast<size_t>(index) >= uniform_infos_.size()) {
-    return NULL;
+    return nullptr;
   }
   return &uniform_infos_[index];
 }
@@ -1795,7 +1795,7 @@ bool Program::AttachShader(
   DCHECK(shader_manager);
   DCHECK(shader);
   int index = ShaderTypeToIndex(shader->shader_type());
-  if (attached_shaders_[index].get() != NULL) {
+  if (attached_shaders_[index].get() != nullptr) {
     return false;
   }
   attached_shaders_[index] = scoped_refptr<Shader>(shader);
@@ -1814,7 +1814,7 @@ void Program::DetachShader(
   DCHECK(shader_manager);
   DCHECK(shader);
   DCHECK(IsShaderAttached(shader));
-  attached_shaders_[ShaderTypeToIndex(shader->shader_type())] = NULL;
+  attached_shaders_[ShaderTypeToIndex(shader->shader_type())] = nullptr;
   shader_manager->UnuseShader(shader);
 }
 
@@ -1872,7 +1872,7 @@ bool Program::DetectAttribLocationBindingConflicts() const {
   std::set<GLint> location_binding_used;
   for (const auto& key_value : bind_attrib_location_map_) {
     // Find out if an attribute is statically used in this program's shaders.
-    const sh::Attribute* attrib = NULL;
+    const sh::Attribute* attrib = nullptr;
     const std::string* mapped_name = GetAttribMappedName(key_value.first);
     if (!mapped_name)
       continue;
@@ -1884,7 +1884,7 @@ bool Program::DetectAttribLocationBindingConflicts() const {
         if (attrib->staticUse)
           break;
         else
-          attrib = NULL;
+          attrib = nullptr;
       }
     }
     if (attrib) {
@@ -2586,7 +2586,7 @@ Program::~Program() {
       glDeleteProgram(service_id());
     }
     manager_->StopTracking(this);
-    manager_ = NULL;
+    manager_ = nullptr;
   }
 }
 
@@ -2644,7 +2644,7 @@ Program* ProgramManager::CreateProgram(
 
 Program* ProgramManager::GetProgram(GLuint client_id) {
   ProgramMap::iterator it = programs_.find(client_id);
-  return it != programs_.end() ? it->second.get() : NULL;
+  return it != programs_.end() ? it->second.get() : nullptr;
 }
 
 bool ProgramManager::GetClientId(GLuint service_id, GLuint* client_id) const {

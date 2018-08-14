@@ -45,7 +45,7 @@ GLES2FunctionPointer GetGLFunctionPointer(const char* name) {
       return named_function->func;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace gles2

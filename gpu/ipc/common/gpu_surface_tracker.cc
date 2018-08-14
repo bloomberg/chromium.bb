@@ -37,7 +37,7 @@ GpuSurfaceTracker::GpuSurfaceTracker()
 }
 
 GpuSurfaceTracker::~GpuSurfaceTracker() {
-  gpu::GpuSurfaceLookup::InitInstance(NULL);
+  gpu::GpuSurfaceLookup::InitInstance(nullptr);
 }
 
 GpuSurfaceTracker* GpuSurfaceTracker::GetInstance() {

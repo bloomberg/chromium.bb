@@ -179,9 +179,7 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return program_manager_.get();
   }
 
-  bool has_program_cache() const {
-    return program_cache_ != NULL;
-  }
+  bool has_program_cache() const { return program_cache_ != nullptr; }
 
   void set_program_cache(ProgramCache* program_cache) {
     program_cache_ = program_cache;

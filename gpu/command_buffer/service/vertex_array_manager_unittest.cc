@@ -58,13 +58,13 @@ TEST_F(VertexArrayManagerTest, Basic) {
                                       kNumVertexAttribs, true, false);
   // Check creation success
   VertexAttribManager* info1 = manager_->GetVertexAttribManager(kClient1Id);
-  ASSERT_TRUE(info1 != NULL);
+  ASSERT_TRUE(info1 != nullptr);
   EXPECT_EQ(kService1Id, info1->service_id());
   GLuint client_id = 0;
   EXPECT_TRUE(manager_->GetClientId(info1->service_id(), &client_id));
   EXPECT_EQ(kClient1Id, client_id);
   // Check we get nothing for a non-existent name.
-  EXPECT_TRUE(manager_->GetVertexAttribManager(kClient2Id) == NULL);
+  EXPECT_TRUE(manager_->GetVertexAttribManager(kClient2Id) == nullptr);
   // Check trying to a remove non-existent name does not crash.
   manager_->RemoveVertexAttribManager(kClient2Id);
   // Check that it gets deleted when the last reference is released.
@@ -73,7 +73,7 @@ TEST_F(VertexArrayManagerTest, Basic) {
       .RetiresOnSaturation();
   // Check we can't get the texture after we remove it.
   manager_->RemoveVertexAttribManager(kClient1Id);
-  EXPECT_TRUE(manager_->GetVertexAttribManager(kClient1Id) == NULL);
+  EXPECT_TRUE(manager_->GetVertexAttribManager(kClient1Id) == nullptr);
 }
 
 TEST_F(VertexArrayManagerTest, Destroy) {
@@ -85,14 +85,14 @@ TEST_F(VertexArrayManagerTest, Destroy) {
                                     true, false);
   // Check creation success
   VertexAttribManager* info1 = manager.GetVertexAttribManager(kClient1Id);
-  ASSERT_TRUE(info1 != NULL);
+  ASSERT_TRUE(info1 != nullptr);
   EXPECT_CALL(*gl_, DeleteVertexArraysOES(1, ::testing::Pointee(kService1Id)))
       .Times(1)
       .RetiresOnSaturation();
   manager.Destroy(true);
   // Check that resources got freed.
   info1 = manager.GetVertexAttribManager(kClient1Id);
-  ASSERT_TRUE(info1 == NULL);
+  ASSERT_TRUE(info1 == nullptr);
 }
 
 }  // namespace gles2

@@ -1635,13 +1635,13 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
     // Nearest filter needed for framebuffer completeness on some drivers.
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, width, 0, GL_RGBA,
-                 GL_FLOAT, NULL);
+                 GL_FLOAT, nullptr);
     glBindFramebufferEXT(GL_FRAMEBUFFER, fb_id);
     glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                               GL_TEXTURE_2D, tex_id, 0);
     GLenum status_rgba = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, width, 0, GL_RGB, GL_FLOAT,
-                 NULL);
+                 nullptr);
     GLenum status_rgb = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
 
     // For desktop systems, check to see if we support rendering to the full
@@ -1657,7 +1657,7 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
       DCHECK_EQ(arraysize(internal_formats), arraysize(formats));
       for (size_t i = 0; i < arraysize(formats); ++i) {
         glTexImage2D(GL_TEXTURE_2D, 0, internal_formats[i], width, width, 0,
-                     formats[i], GL_FLOAT, NULL);
+                     formats[i], GL_FLOAT, nullptr);
         full_float_support &= glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) ==
                               GL_FRAMEBUFFER_COMPLETE;
       }

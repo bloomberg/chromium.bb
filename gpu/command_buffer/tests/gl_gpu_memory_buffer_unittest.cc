@@ -291,7 +291,7 @@ TEST_P(GpuMemoryBufferTest, Lifecycle) {
                             InternalFormat(GetParam()));
   ASSERT_NE(0u, image_id);
   ASSERT_TRUE(gl_.decoder()->GetImageManagerForTest()->LookupImage(image_id) !=
-              NULL);
+              nullptr);
 
   // Bind the image.
   glBindTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id);
@@ -395,7 +395,7 @@ TEST_F(GpuMemoryBufferTestEGL, GLCreateImageCHROMIUMFromNativePixmap) {
   // ImageManager. I.e. for the tests the ImageManager lives in the client side
   // so there is no need to call glShallowFinishCHROMIUM().
   EXPECT_TRUE(gl_.decoder()->GetImageManagerForTest()->LookupImage(image_id) !=
-              NULL);
+              nullptr);
   ASSERT_TRUE(glGetError() == GL_NO_ERROR);
 
   // Need a texture to bind the image.

@@ -89,11 +89,11 @@ void TransferBufferManager::DestroyTransferBuffer(int32_t id) {
 
 scoped_refptr<Buffer> TransferBufferManager::GetTransferBuffer(int32_t id) {
   if (id == 0)
-    return NULL;
+    return nullptr;
 
   BufferMap::iterator it = registered_buffers_.find(id);
   if (it == registered_buffers_.end())
-    return NULL;
+    return nullptr;
 
   return it->second;
 }

@@ -69,8 +69,8 @@ class ProgramInfoManagerTest : public testing::Test {
     {
       base::AutoLock auto_lock(program_info_manager_->lock_);
       program_ = program_info_manager_->GetProgramInfo(
-          NULL, kClientProgramId, ProgramInfoManager::kNone);
-      ASSERT_TRUE(program_ != NULL);
+          nullptr, kClientProgramId, ProgramInfoManager::kNone);
+      ASSERT_TRUE(program_ != nullptr);
     }
   }
 
@@ -202,7 +202,7 @@ TEST_F(ProgramInfoManagerTest, UpdateES2) {
 
   for (uint32_t ii = 0; ii < data.header.num_uniforms; ++ii) {
     const Program::UniformInfo* info = program_->GetUniformInfo(ii);
-    EXPECT_TRUE(info != NULL);
+    EXPECT_TRUE(info != nullptr);
     EXPECT_EQ(data.uniforms[ii].type, info->type);
     EXPECT_EQ(data.uniforms[ii].size, info->size);
     EXPECT_LT(kNames[0].length(),
@@ -239,7 +239,7 @@ TEST_F(ProgramInfoManagerTest, UpdateES3UniformBlocks) {
   for (uint32_t ii = 0; ii < data.header.num_uniform_blocks; ++ii) {
     EXPECT_EQ(ii, program_->GetUniformBlockIndex(kName[ii]));
     const Program::UniformBlock* info = program_->GetUniformBlock(ii);
-    EXPECT_TRUE(info != NULL);
+    EXPECT_TRUE(info != nullptr);
     EXPECT_EQ(data.entry[ii].binding, info->binding);
     EXPECT_EQ(data.entry[ii].data_size, info->data_size);
     EXPECT_EQ(data.entry[ii].active_uniforms,
@@ -256,7 +256,7 @@ TEST_F(ProgramInfoManagerTest, UpdateES3UniformBlocks) {
   }
 
   EXPECT_EQ(GL_INVALID_INDEX, program_->GetUniformBlockIndex("BadName"));
-  EXPECT_EQ(NULL, program_->GetUniformBlock(data.header.num_uniform_blocks));
+  EXPECT_EQ(nullptr, program_->GetUniformBlock(data.header.num_uniform_blocks));
 }
 
 TEST_F(ProgramInfoManagerTest, UpdateES3TransformFeedbackVaryings) {
@@ -288,14 +288,14 @@ TEST_F(ProgramInfoManagerTest, UpdateES3TransformFeedbackVaryings) {
        ++ii) {
     const Program::TransformFeedbackVarying* varying =
         program_->GetTransformFeedbackVarying(ii);
-    EXPECT_TRUE(varying != NULL);
+    EXPECT_TRUE(varying != nullptr);
     EXPECT_EQ(data.entry[ii].size, static_cast<uint32_t>(varying->size));
     EXPECT_EQ(data.entry[ii].type, varying->type);
     EXPECT_EQ(kName[ii], varying->name);
     EXPECT_GE(max_name_length, static_cast<GLint>(varying->name.size()) + 1);
   }
-  EXPECT_EQ(NULL, program_->GetTransformFeedbackVarying(
-  data.header.num_transform_feedback_varyings));
+  EXPECT_EQ(nullptr, program_->GetTransformFeedbackVarying(
+                         data.header.num_transform_feedback_varyings));
 }
 
 TEST_F(ProgramInfoManagerTest, GetUniformBlockIndexCached) {
@@ -306,11 +306,11 @@ TEST_F(ProgramInfoManagerTest, GetUniformBlockIndexCached) {
   program_->UpdateES3UniformBlocks(result);
 
   EXPECT_EQ(0u, program_info_manager_->GetUniformBlockIndex(
-      NULL, kClientProgramId, data.name0));
+                    nullptr, kClientProgramId, data.name0));
   EXPECT_EQ(1u, program_info_manager_->GetUniformBlockIndex(
-      NULL, kClientProgramId, data.name1));
+                    nullptr, kClientProgramId, data.name1));
   EXPECT_EQ(GL_INVALID_INDEX, program_info_manager_->GetUniformBlockIndex(
-      NULL, kClientProgramId, "BadName"));
+                                  nullptr, kClientProgramId, "BadName"));
 }
 
 TEST_F(ProgramInfoManagerTest, GetActiveUniformBlockNameCached) {
@@ -323,30 +323,35 @@ TEST_F(ProgramInfoManagerTest, GetActiveUniformBlockNameCached) {
   GLsizei buf_size = std::max(strlen(data.name0), strlen(data.name1)) + 1;
   std::vector<char> buffer(buf_size);
   GLsizei length = 0;
-  EXPECT_EQ(true, program_info_manager_->GetActiveUniformBlockName(
-      NULL, kClientProgramId, 0, buf_size, &length, &buffer[0]));
+  EXPECT_EQ(true,
+            program_info_manager_->GetActiveUniformBlockName(
+                nullptr, kClientProgramId, 0, buf_size, &length, &buffer[0]));
   EXPECT_EQ(static_cast<GLsizei>(strlen(data.name0)), length);
   EXPECT_STREQ(data.name0, &buffer[0]);
 
-  EXPECT_EQ(true, program_info_manager_->GetActiveUniformBlockName(
-      NULL, kClientProgramId, 1, buf_size, &length, &buffer[0]));
+  EXPECT_EQ(true,
+            program_info_manager_->GetActiveUniformBlockName(
+                nullptr, kClientProgramId, 1, buf_size, &length, &buffer[0]));
   EXPECT_EQ(static_cast<GLsizei>(strlen(data.name1)), length);
   EXPECT_STREQ(data.name1, &buffer[0]);
 
-  // Test length == NULL.
-  EXPECT_EQ(true, program_info_manager_->GetActiveUniformBlockName(
-      NULL, kClientProgramId, 0, buf_size, NULL, &buffer[0]));
+  // Test length == nullptr.
+  EXPECT_EQ(true,
+            program_info_manager_->GetActiveUniformBlockName(
+                nullptr, kClientProgramId, 0, buf_size, nullptr, &buffer[0]));
   EXPECT_STREQ(data.name0, &buffer[0]);
 
-  // Test buffer == NULL.
-  EXPECT_EQ(true, program_info_manager_->GetActiveUniformBlockName(
-      NULL, kClientProgramId, 0, buf_size, &length, NULL));
+  // Test buffer == nullptr.
+  EXPECT_EQ(true,
+            program_info_manager_->GetActiveUniformBlockName(
+                nullptr, kClientProgramId, 0, buf_size, &length, nullptr));
   EXPECT_EQ(0, length);
 
   // Test buf_size smaller than string size.
   buf_size = strlen(data.name0);
-  EXPECT_EQ(true, program_info_manager_->GetActiveUniformBlockName(
-      NULL, kClientProgramId, 0, buf_size, &length, &buffer[0]));
+  EXPECT_EQ(true,
+            program_info_manager_->GetActiveUniformBlockName(
+                nullptr, kClientProgramId, 0, buf_size, &length, &buffer[0]));
   EXPECT_EQ(buf_size, length + 1);
   EXPECT_STREQ(std::string(data.name0).substr(0, length).c_str(), &buffer[0]);
 }
@@ -364,36 +369,37 @@ TEST_F(ProgramInfoManagerTest, GetActiveUniformBlockivCached) {
     ASSERT_GE(2u, data.entry[ii].active_uniforms);
     GLint params[2];
     EXPECT_TRUE(program_info_manager_->GetActiveUniformBlockiv(
-        NULL, kClientProgramId, ii, GL_UNIFORM_BLOCK_BINDING, params));
+        nullptr, kClientProgramId, ii, GL_UNIFORM_BLOCK_BINDING, params));
     EXPECT_EQ(data.entry[ii].binding, static_cast<uint32_t>(params[0]));
 
     EXPECT_TRUE(program_info_manager_->GetActiveUniformBlockiv(
-        NULL, kClientProgramId, ii, GL_UNIFORM_BLOCK_DATA_SIZE, params));
+        nullptr, kClientProgramId, ii, GL_UNIFORM_BLOCK_DATA_SIZE, params));
     EXPECT_EQ(data.entry[ii].data_size, static_cast<uint32_t>(params[0]));
 
     EXPECT_TRUE(program_info_manager_->GetActiveUniformBlockiv(
-        NULL, kClientProgramId, ii, GL_UNIFORM_BLOCK_NAME_LENGTH, params));
+        nullptr, kClientProgramId, ii, GL_UNIFORM_BLOCK_NAME_LENGTH, params));
     EXPECT_EQ(strlen(kName[ii]) + 1, static_cast<uint32_t>(params[0]));
 
     EXPECT_TRUE(program_info_manager_->GetActiveUniformBlockiv(
-        NULL, kClientProgramId, ii, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, params));
+        nullptr, kClientProgramId, ii, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS,
+        params));
     EXPECT_EQ(data.entry[ii].active_uniforms, static_cast<uint32_t>(params[0]));
 
     EXPECT_TRUE(program_info_manager_->GetActiveUniformBlockiv(
-        NULL, kClientProgramId, ii,
-        GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, params));
+        nullptr, kClientProgramId, ii, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES,
+        params));
     for (uint32_t uu = 0; uu < data.entry[ii].active_uniforms; ++uu) {
       EXPECT_EQ(kIndices[ii][uu], static_cast<uint32_t>(params[uu]));
     }
 
     EXPECT_TRUE(program_info_manager_->GetActiveUniformBlockiv(
-        NULL, kClientProgramId, ii,
+        nullptr, kClientProgramId, ii,
         GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER, params));
     EXPECT_EQ(data.entry[ii].referenced_by_vertex_shader,
               static_cast<uint32_t>(params[0]));
 
     EXPECT_TRUE(program_info_manager_->GetActiveUniformBlockiv(
-        NULL, kClientProgramId, ii,
+        nullptr, kClientProgramId, ii,
         GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER, params));
     EXPECT_EQ(data.entry[ii].referenced_by_fragment_shader,
               static_cast<uint32_t>(params[0]));
@@ -415,8 +421,8 @@ TEST_F(ProgramInfoManagerTest, GetTransformFeedbackVaryingCached) {
     GLsizei size = 0;
     GLenum type = 0;
     EXPECT_EQ(true, program_info_manager_->GetTransformFeedbackVarying(
-        NULL, kClientProgramId, ii, buf_size,
-        &length, &size, &type, &buffer[0]));
+                        nullptr, kClientProgramId, ii, buf_size, &length, &size,
+                        &type, &buffer[0]));
     EXPECT_EQ(data.entry[ii].size, static_cast<uint32_t>(size));
     EXPECT_EQ(data.entry[ii].type, static_cast<uint32_t>(type));
     EXPECT_STREQ(kName[ii], &buffer[0]);
@@ -437,7 +443,7 @@ TEST_F(ProgramInfoManagerTest, GetUniformIndices) {
     const GLsizei kCount = 2;
     GLuint indices[kCount];
     EXPECT_TRUE(program_info_manager_->GetUniformIndices(
-        NULL, kClientProgramId, kCount, kNames, indices));
+        nullptr, kClientProgramId, kCount, kNames, indices));
     for (GLsizei ii = 0; ii < kCount; ++ii) {
       EXPECT_EQ(kIndices[ii], indices[ii]);
     }
@@ -449,7 +455,7 @@ TEST_F(ProgramInfoManagerTest, GetUniformIndices) {
     const GLsizei kCount = 2;
     GLuint indices[kCount];
     EXPECT_TRUE(program_info_manager_->GetUniformIndices(
-        NULL, kClientProgramId, kCount, kNames, indices));
+        nullptr, kClientProgramId, kCount, kNames, indices));
     for (GLsizei ii = 0; ii < kCount; ++ii) {
       EXPECT_EQ(kIndices[ii], indices[ii]);
     }
@@ -461,7 +467,7 @@ TEST_F(ProgramInfoManagerTest, GetUniformIndices) {
     const GLsizei kCount = 2;
     GLuint indices[kCount];
     EXPECT_TRUE(program_info_manager_->GetUniformIndices(
-        NULL, kClientProgramId, kCount, kNames, indices));
+        nullptr, kClientProgramId, kCount, kNames, indices));
     for (GLsizei ii = 0; ii < kCount; ++ii) {
       EXPECT_EQ(kIndices[ii], indices[ii]);
     }
@@ -474,7 +480,7 @@ TEST_F(ProgramInfoManagerTest, GetUniformIndices) {
     const GLsizei kCount = 3;
     GLuint indices[kCount];
     EXPECT_TRUE(program_info_manager_->GetUniformIndices(
-        NULL, kClientProgramId, kCount, kNames, indices));
+        nullptr, kClientProgramId, kCount, kNames, indices));
     for (GLsizei ii = 0; ii < kCount; ++ii) {
       EXPECT_EQ(kIndices[ii], indices[ii]);
     }
@@ -498,23 +504,23 @@ TEST_F(ProgramInfoManagerTest, GetActiveUniformsivCached) {
   }
   std::vector<GLint> block_index(count);
   EXPECT_TRUE(program_info_manager_->GetActiveUniformsiv(
-      NULL, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
+      nullptr, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
       GL_UNIFORM_BLOCK_INDEX, &block_index[0]));
   std::vector<GLint> offset(count);
   EXPECT_TRUE(program_info_manager_->GetActiveUniformsiv(
-      NULL, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
+      nullptr, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
       GL_UNIFORM_OFFSET, &offset[0]));
   std::vector<GLint> array_stride(count);
   EXPECT_TRUE(program_info_manager_->GetActiveUniformsiv(
-      NULL, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
+      nullptr, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
       GL_UNIFORM_ARRAY_STRIDE, &array_stride[0]));
   std::vector<GLint> matrix_stride(count);
   EXPECT_TRUE(program_info_manager_->GetActiveUniformsiv(
-      NULL, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
+      nullptr, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
       GL_UNIFORM_MATRIX_STRIDE, &matrix_stride[0]));
   std::vector<GLint> is_row_major(count);
   EXPECT_TRUE(program_info_manager_->GetActiveUniformsiv(
-      NULL, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
+      nullptr, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
       GL_UNIFORM_IS_ROW_MAJOR, &is_row_major[0]));
 
   for (uint32_t ii = 0; ii < count; ++ii) {
@@ -536,15 +542,15 @@ TEST_F(ProgramInfoManagerTest, GetActiveUniformsivCached) {
 
   std::vector<GLint> size(count);
   EXPECT_TRUE(program_info_manager_->GetActiveUniformsiv(
-      NULL, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
+      nullptr, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
       GL_UNIFORM_SIZE, &size[0]));
   std::vector<GLint> type(count);
   EXPECT_TRUE(program_info_manager_->GetActiveUniformsiv(
-      NULL, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
+      nullptr, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
       GL_UNIFORM_TYPE, &type[0]));
   std::vector<GLint> name_length(count);
   EXPECT_TRUE(program_info_manager_->GetActiveUniformsiv(
-      NULL, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
+      nullptr, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
       GL_UNIFORM_NAME_LENGTH, &name_length[0]));
 
   for (uint32_t ii = 0; ii < count; ++ii) {

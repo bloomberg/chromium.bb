@@ -175,7 +175,7 @@ TEST_F(MappedMemoryManagerTest, Basic) {
   int32_t id3 = -1;
   unsigned int offset3 = 0xFFFFFFFFU;
   void* mem3 = manager_->Alloc(kSize, &id3, &offset3);
-  ASSERT_TRUE(mem3 != NULL);
+  ASSERT_TRUE(mem3 != nullptr);
   EXPECT_NE(mem2, mem3);
   EXPECT_NE(id2, id3);
   EXPECT_EQ(0u, offset3);
@@ -187,8 +187,8 @@ TEST_F(MappedMemoryManagerTest, Basic) {
   unsigned int offset5 = 0xFFFFFFFFU;
   void* mem4 = manager_->Alloc(kSize / 2, &id4, &offset4);
   void* mem5 = manager_->Alloc(kSize / 2, &id5, &offset5);
-  ASSERT_TRUE(mem4 != NULL);
-  ASSERT_TRUE(mem5 != NULL);
+  ASSERT_TRUE(mem4 != nullptr);
+  ASSERT_TRUE(mem5 != nullptr);
   EXPECT_EQ(id3, id4);
   EXPECT_EQ(id4, id5);
   EXPECT_EQ(0u, offset4);
@@ -252,13 +252,13 @@ TEST_F(MappedMemoryManagerTest, FreeUnused) {
 
   void* m1 = manager_->Alloc(kAllocSize, &id, &offset);
   void* m2 = manager_->Alloc(kAllocSize, &id, &offset);
-  ASSERT_TRUE(m1 != NULL);
-  ASSERT_TRUE(m2 != NULL);
+  ASSERT_TRUE(m1 != nullptr);
+  ASSERT_TRUE(m2 != nullptr);
   // m1 and m2 fit in one chunk
   EXPECT_EQ(1u, manager_->num_chunks());
 
   void* m3 = manager_->Alloc(kAllocSize, &id, &offset);
-  ASSERT_TRUE(m3 != NULL);
+  ASSERT_TRUE(m3 != nullptr);
   // m3 needs another chunk
   EXPECT_EQ(2u, manager_->num_chunks());
 

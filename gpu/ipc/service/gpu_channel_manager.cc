@@ -101,7 +101,7 @@ GpuChannelManager::~GpuChannelManager() {
   gpu_channels_.clear();
   if (default_offscreen_surface_.get()) {
     default_offscreen_surface_->Destroy();
-    default_offscreen_surface_ = NULL;
+    default_offscreen_surface_ = nullptr;
   }
 }
 

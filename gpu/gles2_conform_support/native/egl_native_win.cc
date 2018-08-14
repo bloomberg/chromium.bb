@@ -54,7 +54,7 @@ GTFbool GTFNativeCreateWindow(EGLNativeDisplayType nativeDisplay,
                               const char* title, int width, int height,
                               EGLNativeWindowType *pNativeWindow) {
   WNDCLASS wnd_class = {0};
-  HINSTANCE instance = GetModuleHandle(NULL);
+  HINSTANCE instance = GetModuleHandle(nullptr);
   wnd_class.style = CS_OWNDC;
   wnd_class.lpfnWndProc = WindowProc;
   wnd_class.hInstance = instance;
@@ -80,19 +80,11 @@ GTFbool GTFNativeCreateWindow(EGLNativeDisplayType nativeDisplay,
   const std::string wnd_title = title;
 #endif  // UNICODE
 
-  HWND hwnd = CreateWindow(
-      wnd_class.lpszClassName,
-      wnd_title.c_str(),
-      wnd_style,
-      0,
-      0,
-      wnd_rect.right - wnd_rect.left,
-      wnd_rect.bottom - wnd_rect.top,
-      NULL,
-      NULL,
-      instance,
-      NULL);
-  if (hwnd == NULL)
+  HWND hwnd = CreateWindow(wnd_class.lpszClassName, wnd_title.c_str(),
+                           wnd_style, 0, 0, wnd_rect.right - wnd_rect.left,
+                           wnd_rect.bottom - wnd_rect.top, nullptr, nullptr,
+                           instance, nullptr);
+  if (hwnd == nullptr)
     return GTFfalse;
 
   ShowWindow(hwnd, SW_SHOWNORMAL);
@@ -103,12 +95,12 @@ GTFbool GTFNativeCreateWindow(EGLNativeDisplayType nativeDisplay,
 void GTFNativeDestroyWindow(EGLNativeDisplayType nativeDisplay,
                             EGLNativeWindowType nativeWindow) {
   DestroyWindow(nativeWindow);
-  UnregisterClass(kWindowClassName, GetModuleHandle(NULL));
+  UnregisterClass(kWindowClassName, GetModuleHandle(nullptr));
 }
 
 EGLImageKHR GTFCreateEGLImage(int width, int height,
                               GLenum format, GLenum type) {
-  return (EGLImageKHR)NULL;
+  return (EGLImageKHR) nullptr;
 }
 
 void GTFDestroyEGLImage(EGLImageKHR image) {

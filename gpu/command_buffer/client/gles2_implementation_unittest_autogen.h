@@ -1564,7 +1564,7 @@ TEST_F(GLES2ImplementationTest, ShaderSource) {
   expected.cmd_bucket.Init(1, kBucketId);
   expected.clear_bucket_size.Init(kBucketId, 0);
   const char* kStrings[] = {kString1, kString2};
-  gl_->ShaderSource(1, 2, kStrings, NULL);
+  gl_->ShaderSource(1, 2, kStrings, nullptr);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

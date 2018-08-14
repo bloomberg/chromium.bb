@@ -30,7 +30,7 @@ bool GLContextVirtual::Initialize(gl::GLSurface* compatible_surface,
 
 void GLContextVirtual::Destroy() {
   shared_context_->OnReleaseVirtuallyCurrent(this);
-  shared_context_ = NULL;
+  shared_context_ = nullptr;
 }
 
 bool GLContextVirtual::MakeCurrent(gl::GLSurface* surface) {
@@ -55,7 +55,7 @@ bool GLContextVirtual::IsCurrent(gl::GLSurface* surface) {
     return shared_context_->IsCurrent(surface);
 
   // Otherwise, only insure the context itself is current.
-  return shared_context_->IsCurrent(NULL);
+  return shared_context_->IsCurrent(nullptr);
 }
 
 void* GLContextVirtual::GetHandle() {

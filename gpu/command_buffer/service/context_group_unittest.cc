@@ -74,11 +74,11 @@ TEST_F(ContextGroupTest, Basic) {
   EXPECT_EQ(0u, group_->max_fragment_uniform_vectors());
   EXPECT_EQ(0u, group_->max_varying_vectors());
   EXPECT_EQ(0u, group_->max_vertex_uniform_vectors());
-  EXPECT_TRUE(group_->buffer_manager() == NULL);
-  EXPECT_TRUE(group_->renderbuffer_manager() == NULL);
-  EXPECT_TRUE(group_->texture_manager() == NULL);
-  EXPECT_TRUE(group_->program_manager() == NULL);
-  EXPECT_TRUE(group_->shader_manager() == NULL);
+  EXPECT_TRUE(group_->buffer_manager() == nullptr);
+  EXPECT_TRUE(group_->renderbuffer_manager() == nullptr);
+  EXPECT_TRUE(group_->texture_manager() == nullptr);
+  EXPECT_TRUE(group_->program_manager() == nullptr);
+  EXPECT_TRUE(group_->shader_manager() == nullptr);
   EXPECT_FALSE(group_->use_passthrough_cmd_decoder());
 }
 
@@ -102,18 +102,18 @@ TEST_F(ContextGroupTest, InitializeNoExtensions) {
             group_->max_varying_vectors());
   EXPECT_EQ(static_cast<uint32_t>(TestHelper::kMaxVertexUniformVectors),
             group_->max_vertex_uniform_vectors());
-  EXPECT_TRUE(group_->buffer_manager() != NULL);
-  EXPECT_TRUE(group_->renderbuffer_manager() != NULL);
-  EXPECT_TRUE(group_->texture_manager() != NULL);
-  EXPECT_TRUE(group_->program_manager() != NULL);
-  EXPECT_TRUE(group_->shader_manager() != NULL);
+  EXPECT_TRUE(group_->buffer_manager() != nullptr);
+  EXPECT_TRUE(group_->renderbuffer_manager() != nullptr);
+  EXPECT_TRUE(group_->texture_manager() != nullptr);
+  EXPECT_TRUE(group_->program_manager() != nullptr);
+  EXPECT_TRUE(group_->shader_manager() != nullptr);
 
   group_->Destroy(decoder_.get(), false);
-  EXPECT_TRUE(group_->buffer_manager() == NULL);
-  EXPECT_TRUE(group_->renderbuffer_manager() == NULL);
-  EXPECT_TRUE(group_->texture_manager() == NULL);
-  EXPECT_TRUE(group_->program_manager() == NULL);
-  EXPECT_TRUE(group_->shader_manager() == NULL);
+  EXPECT_TRUE(group_->buffer_manager() == nullptr);
+  EXPECT_TRUE(group_->renderbuffer_manager() == nullptr);
+  EXPECT_TRUE(group_->texture_manager() == nullptr);
+  EXPECT_TRUE(group_->program_manager() == nullptr);
+  EXPECT_TRUE(group_->shader_manager() == nullptr);
 }
 
 TEST_F(ContextGroupTest, MultipleContexts) {
@@ -140,27 +140,27 @@ TEST_F(ContextGroupTest, MultipleContexts) {
                                DisallowedFeatures()),
             gpu::ContextResult::kSuccess);
 
-  EXPECT_TRUE(group_->buffer_manager() != NULL);
-  EXPECT_TRUE(group_->renderbuffer_manager() != NULL);
-  EXPECT_TRUE(group_->texture_manager() != NULL);
-  EXPECT_TRUE(group_->program_manager() != NULL);
-  EXPECT_TRUE(group_->shader_manager() != NULL);
+  EXPECT_TRUE(group_->buffer_manager() != nullptr);
+  EXPECT_TRUE(group_->renderbuffer_manager() != nullptr);
+  EXPECT_TRUE(group_->texture_manager() != nullptr);
+  EXPECT_TRUE(group_->program_manager() != nullptr);
+  EXPECT_TRUE(group_->shader_manager() != nullptr);
 
   group_->Destroy(decoder_.get(), false);
 
-  EXPECT_TRUE(group_->buffer_manager() != NULL);
-  EXPECT_TRUE(group_->renderbuffer_manager() != NULL);
-  EXPECT_TRUE(group_->texture_manager() != NULL);
-  EXPECT_TRUE(group_->program_manager() != NULL);
-  EXPECT_TRUE(group_->shader_manager() != NULL);
+  EXPECT_TRUE(group_->buffer_manager() != nullptr);
+  EXPECT_TRUE(group_->renderbuffer_manager() != nullptr);
+  EXPECT_TRUE(group_->texture_manager() != nullptr);
+  EXPECT_TRUE(group_->program_manager() != nullptr);
+  EXPECT_TRUE(group_->shader_manager() != nullptr);
 
   group_->Destroy(decoder2_.get(), false);
 
-  EXPECT_TRUE(group_->buffer_manager() == NULL);
-  EXPECT_TRUE(group_->renderbuffer_manager() == NULL);
-  EXPECT_TRUE(group_->texture_manager() == NULL);
-  EXPECT_TRUE(group_->program_manager() == NULL);
-  EXPECT_TRUE(group_->shader_manager() == NULL);
+  EXPECT_TRUE(group_->buffer_manager() == nullptr);
+  EXPECT_TRUE(group_->renderbuffer_manager() == nullptr);
+  EXPECT_TRUE(group_->texture_manager() == nullptr);
+  EXPECT_TRUE(group_->program_manager() == nullptr);
+  EXPECT_TRUE(group_->shader_manager() == nullptr);
 }
 
 }  // namespace gles2

@@ -102,7 +102,7 @@ TEST_F(MailboxManagerTest, Basic) {
 
   // Destroy should cleanup the mailbox.
   DestroyTexture(texture);
-  EXPECT_EQ(NULL, manager_->ConsumeTexture(name));
+  EXPECT_EQ(nullptr, manager_->ConsumeTexture(name));
 }
 
 // Tests behavior with multiple produce on the same texture.
@@ -128,8 +128,8 @@ TEST_F(MailboxManagerTest, ProduceMultipleMailbox) {
 
   // Destroy should cleanup all mailboxes.
   DestroyTexture(texture);
-  EXPECT_EQ(NULL, manager_->ConsumeTexture(name1));
-  EXPECT_EQ(NULL, manager_->ConsumeTexture(name2));
+  EXPECT_EQ(nullptr, manager_->ConsumeTexture(name1));
+  EXPECT_EQ(nullptr, manager_->ConsumeTexture(name2));
 }
 
 // Tests behavior with multiple produce on the same mailbox with different
@@ -153,7 +153,7 @@ TEST_F(MailboxManagerTest, ProduceMultipleTexture) {
 
   // Destroying the texture that's bound should clean up.
   DestroyTexture(texture1);
-  EXPECT_EQ(NULL, manager_->ConsumeTexture(name));
+  EXPECT_EQ(nullptr, manager_->ConsumeTexture(name));
 }
 
 const GLsizei kMaxTextureWidth = 64;
@@ -219,7 +219,7 @@ class MailboxManagerSyncTest : public MailboxManagerTest {
   }
 
   void TearDown() override {
-    context_->ReleaseCurrent(NULL);
+    context_->ReleaseCurrent(nullptr);
     MailboxManagerTest::TearDown();
   }
 
@@ -240,8 +240,8 @@ TEST_F(MailboxManagerSyncTest, ProduceDestroy) {
   EXPECT_EQ(texture, manager_->ConsumeTexture(name));
 
   DestroyTexture(texture);
-  EXPECT_EQ(NULL, manager_->ConsumeTexture(name));
-  EXPECT_EQ(NULL, manager2_->ConsumeTexture(name));
+  EXPECT_EQ(nullptr, manager_->ConsumeTexture(name));
+  EXPECT_EQ(nullptr, manager2_->ConsumeTexture(name));
 }
 
 TEST_F(MailboxManagerSyncTest, ProduceSyncDestroy) {
@@ -258,8 +258,8 @@ TEST_F(MailboxManagerSyncTest, ProduceSyncDestroy) {
   manager2_->PullTextureUpdates(g_sync_token);
 
   DestroyTexture(texture);
-  EXPECT_EQ(NULL, manager_->ConsumeTexture(name));
-  EXPECT_EQ(NULL, manager2_->ConsumeTexture(name));
+  EXPECT_EQ(nullptr, manager_->ConsumeTexture(name));
+  EXPECT_EQ(nullptr, manager2_->ConsumeTexture(name));
 }
 
 TEST_F(MailboxManagerSyncTest, ProduceSyncMultipleMailbox) {
@@ -279,8 +279,8 @@ TEST_F(MailboxManagerSyncTest, ProduceSyncMultipleMailbox) {
 
   DestroyTexture(old_texture);
   DestroyTexture(texture);
-  EXPECT_EQ(NULL, manager_->ConsumeTexture(name));
-  EXPECT_EQ(NULL, manager2_->ConsumeTexture(name));
+  EXPECT_EQ(nullptr, manager_->ConsumeTexture(name));
+  EXPECT_EQ(nullptr, manager2_->ConsumeTexture(name));
 }
 
 // Duplicates a texture into a second manager instance, and then
@@ -312,7 +312,7 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeResize) {
   SetLevelInfo(texture, GL_TEXTURE_2D, 0, GL_RGBA, 16, 32, 1, 0, GL_RGBA,
                GL_UNSIGNED_BYTE, gfx::Rect(16, 32));
   // Should have been orphaned
-  EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
+  EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == nullptr);
 
   // Synchronize again
   manager_->PushTextureUpdates(g_sync_token);
@@ -325,7 +325,7 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeResize) {
   EXPECT_EQ(32, height);
 
   // Should have gotten a new attachment
-  EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) != NULL);
+  EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) != nullptr);
   // Resize original texture again....
   SetLevelInfo(texture, GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 1, 0, GL_RGBA,
                GL_UNSIGNED_BYTE, gfx::Rect(64, 64));
@@ -345,8 +345,8 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeResize) {
   EXPECT_EQ(64, height);
 
   DestroyTexture(new_texture);
-  EXPECT_EQ(NULL, manager_->ConsumeTexture(name));
-  EXPECT_EQ(NULL, manager2_->ConsumeTexture(name));
+  EXPECT_EQ(nullptr, manager_->ConsumeTexture(name));
+  EXPECT_EQ(nullptr, manager2_->ConsumeTexture(name));
 }
 
 // Makes sure changes are correctly published even when updates are
@@ -360,8 +360,8 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeBidirectional) {
   Mailbox name1 = Mailbox::Generate();
   Texture* texture2 = DefineTexture();
   Mailbox name2 = Mailbox::Generate();
-  TextureBase* new_texture1 = NULL;
-  TextureBase* new_texture2 = NULL;
+  TextureBase* new_texture1 = nullptr;
+  TextureBase* new_texture2 = nullptr;
 
   manager_->ProduceTexture(name1, texture1);
   manager2_->ProduceTexture(name2, texture2);
@@ -463,8 +463,8 @@ TEST_F(MailboxManagerSyncTest, ClearedStateSynced) {
   DestroyTexture(texture);
   DestroyTexture(new_texture);
 
-  EXPECT_EQ(NULL, manager_->ConsumeTexture(name));
-  EXPECT_EQ(NULL, manager2_->ConsumeTexture(name));
+  EXPECT_EQ(nullptr, manager_->ConsumeTexture(name));
+  EXPECT_EQ(nullptr, manager2_->ConsumeTexture(name));
 }
 
 TEST_F(MailboxManagerSyncTest, SyncIncompleteTexture) {
@@ -514,8 +514,8 @@ TEST_F(MailboxManagerSyncTest, SyncIncompleteTexture) {
   DestroyTexture(texture);
   DestroyTexture(new_texture);
 
-  EXPECT_EQ(NULL, manager_->ConsumeTexture(name));
-  EXPECT_EQ(NULL, manager2_->ConsumeTexture(name));
+  EXPECT_EQ(nullptr, manager_->ConsumeTexture(name));
+  EXPECT_EQ(nullptr, manager2_->ConsumeTexture(name));
 }
 
 // Putting the same texture into multiple mailboxes should result in sharing

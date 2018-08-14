@@ -163,7 +163,7 @@ TEST_P(GLES2DecoderRestoreStateTest, NullPreviousStateBGR) {
   // Expect to restore the active texture unit to GL_TEXTURE0.
   AddExpectationsForActiveTexture(GL_TEXTURE0);
 
-  GetDecoder()->RestoreAllTextureUnitAndSamplerBindings(NULL);
+  GetDecoder()->RestoreAllTextureUnitAndSamplerBindings(nullptr);
 }
 
 TEST_P(GLES2DecoderRestoreStateTest, NullPreviousState) {
@@ -187,7 +187,7 @@ TEST_P(GLES2DecoderRestoreStateTest, NullPreviousState) {
   // Expect to restore the active texture unit to GL_TEXTURE0.
   AddExpectationsForActiveTexture(GL_TEXTURE0);
 
-  GetDecoder()->RestoreAllTextureUnitAndSamplerBindings(NULL);
+  GetDecoder()->RestoreAllTextureUnitAndSamplerBindings(nullptr);
 }
 
 TEST_P(GLES2DecoderRestoreStateTest, WithPreviousStateBGR) {
@@ -198,7 +198,7 @@ TEST_P(GLES2DecoderRestoreStateTest, WithPreviousStateBGR) {
 
   // Construct a previous ContextState with all texture bindings
   // set to default textures.
-  ContextState prev_state(NULL, NULL, NULL);
+  ContextState prev_state(nullptr, nullptr, nullptr);
   InitializeContextState(&prev_state, std::numeric_limits<uint32_t>::max(), 0);
 
   InSequence sequence;
@@ -221,7 +221,7 @@ TEST_P(GLES2DecoderRestoreStateTest, WithPreviousState) {
 
   // Construct a previous ContextState with all texture bindings
   // set to default textures.
-  ContextState prev_state(NULL, NULL, NULL);
+  ContextState prev_state(nullptr, nullptr, nullptr);
   InitializeContextState(&prev_state, std::numeric_limits<uint32_t>::max(), 0);
 
   InSequence sequence;
@@ -251,7 +251,7 @@ TEST_P(GLES2DecoderRestoreStateTest, ActiveUnit1) {
 
   // Construct a previous ContextState with all texture bindings
   // set to default textures.
-  ContextState prev_state(NULL, NULL, NULL);
+  ContextState prev_state(nullptr, nullptr, nullptr);
   InitializeContextState(&prev_state, std::numeric_limits<uint32_t>::max(), 0);
 
   InSequence sequence;
@@ -284,7 +284,7 @@ TEST_P(GLES2DecoderRestoreStateTest, NonDefaultUnit0BGR) {
   // Construct a previous ContextState with GL_TEXTURE_2D target in
   // GL_TEXTURE0 unit bound to a non-default texture and the rest
   // set to default textures.
-  ContextState prev_state(NULL, NULL, NULL);
+  ContextState prev_state(nullptr, nullptr, nullptr);
   InitializeContextState(&prev_state, 0, kServiceTextureId);
 
   InSequence sequence;
@@ -316,7 +316,7 @@ TEST_P(GLES2DecoderRestoreStateTest, NonDefaultUnit1BGR) {
   // Construct a previous ContextState with GL_TEXTURE_2D target in
   // GL_TEXTURE1 unit bound to a non-default texture and the rest
   // set to default textures.
-  ContextState prev_state(NULL, NULL, NULL);
+  ContextState prev_state(nullptr, nullptr, nullptr);
   InitializeContextState(&prev_state, 1, kServiceTextureId);
 
   InSequence sequence;
@@ -353,7 +353,7 @@ TEST_P(GLES2DecoderRestoreStateTest, DefaultUnit0) {
   // Construct a previous ContextState with GL_TEXTURE_2D target in
   // GL_TEXTURE0 unit bound to a non-default texture and the rest
   // set to default textures.
-  ContextState prev_state(NULL, NULL, NULL);
+  ContextState prev_state(nullptr, nullptr, nullptr);
   InitializeContextState(&prev_state, 0, kServiceTextureId);
 
   InSequence sequence;
@@ -383,7 +383,7 @@ TEST_P(GLES2DecoderRestoreStateTest, DefaultUnit1) {
   // Construct a previous ContextState with GL_TEXTURE_2D target in
   // GL_TEXTURE1 unit bound to a non-default texture and the rest
   // set to default textures.
-  ContextState prev_state(NULL, NULL, NULL);
+  ContextState prev_state(nullptr, nullptr, nullptr);
   InitializeContextState(&prev_state, 1, kServiceTextureId);
 
   InSequence sequence;
@@ -436,7 +436,7 @@ TEST_P(GLES2DecoderRestoreStateTest, ES3NullPreviousStateWithSampler) {
   // Expect to restore the active texture unit to GL_TEXTURE0.
   AddExpectationsForActiveTexture(GL_TEXTURE0);
 
-  GetDecoder()->RestoreAllTextureUnitAndSamplerBindings(NULL);
+  GetDecoder()->RestoreAllTextureUnitAndSamplerBindings(nullptr);
 }
 
 TEST_P(GLES2DecoderRestoreStateTest, ES3RestoreExistingSampler) {
@@ -447,7 +447,7 @@ TEST_P(GLES2DecoderRestoreStateTest, ES3RestoreExistingSampler) {
 
   // Construct a previous ContextState assuming an ES3 context and with all
   // texture bindings set to default textures.
-  ContextState prev_state(feature_info.get(), NULL, NULL);
+  ContextState prev_state(feature_info.get(), nullptr, nullptr);
   InitializeContextState(&prev_state, std::numeric_limits<uint32_t>::max(), 0);
 
   InSequence sequence;
@@ -468,7 +468,7 @@ TEST_P(GLES2DecoderRestoreStateTest, ES3RestoreZeroSampler) {
   // Construct a previous ContextState assuming an ES3 context and with all
   // texture bindings set to default textures.
   SamplerManager sampler_manager(feature_info.get());
-  ContextState prev_state(feature_info.get(), NULL, NULL);
+  ContextState prev_state(feature_info.get(), nullptr, nullptr);
   InitializeContextState(&prev_state, std::numeric_limits<uint32_t>::max(), 0);
   // Set up a sampler in the previous state. The client_id and service_id
   // don't matter except that they're non-zero.

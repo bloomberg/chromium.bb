@@ -77,7 +77,7 @@ void RecurseDiagnosticTree(DxDiagNode* output,
           std::string child_name8 = base::WideToUTF8(child_name16);
           DxDiagNode* output_child = &output->children[child_name8];
 
-          IDxDiagContainer* child_container = NULL;
+          IDxDiagContainer* child_container = nullptr;
           hr = container->GetChildContainer(child_name16, &child_container);
           if (SUCCEEDED(hr)) {
             RecurseDiagnosticTree(output_child, child_container, depth - 1);
@@ -97,24 +97,24 @@ bool GetDxDiagnostics(DxDiagNode* output) {
 
   HRESULT hr;
   bool success = false;
-  IDxDiagProvider* provider = NULL;
-  hr = CoCreateInstance(CLSID_DxDiagProvider, NULL, CLSCTX_INPROC_SERVER,
+  IDxDiagProvider* provider = nullptr;
+  hr = CoCreateInstance(CLSID_DxDiagProvider, nullptr, CLSCTX_INPROC_SERVER,
                         IID_IDxDiagProvider,
                         reinterpret_cast<void**>(&provider));
   if (SUCCEEDED(hr)) {
     DXDIAG_INIT_PARAMS params = { sizeof(params) };
     params.dwDxDiagHeaderVersion = DXDIAG_DX9_SDK_VERSION;
     params.bAllowWHQLChecks = FALSE;
-    params.pReserved = NULL;
+    params.pReserved = nullptr;
 
     hr = provider->Initialize(&params);
     if (SUCCEEDED(hr)) {
-      IDxDiagContainer* root = NULL;
+      IDxDiagContainer* root = nullptr;
       hr = provider->GetRootContainer(&root);
       if (SUCCEEDED(hr)) {
         // Limit to the DisplayDevices subtree. The tree in its entirity is
         // enormous and only this branch contains useful information.
-        IDxDiagContainer* display_devices = NULL;
+        IDxDiagContainer* display_devices = nullptr;
         hr = root->GetChildContainer(L"DxDiag_DisplayDevices",
                                      &display_devices);
         if (SUCCEEDED(hr)) {

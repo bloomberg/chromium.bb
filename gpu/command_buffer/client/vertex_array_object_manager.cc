@@ -45,11 +45,10 @@ class GLES2_IMPL_EXPORT VertexArrayObject {
           size_(4),
           type_(GL_FLOAT),
           normalized_(GL_FALSE),
-          pointer_(NULL),
+          pointer_(nullptr),
           gl_stride_(0),
           divisor_(0),
-          integer_(GL_FALSE) {
-    }
+          integer_(GL_FALSE) {}
 
     bool enabled() const {
       return enabled_;
@@ -327,7 +326,7 @@ const VertexArrayObject::VertexAttrib* VertexArrayObject::GetAttrib(
     const VertexAttrib* attrib = &vertex_attribs_[index];
     return attrib;
   }
-  return NULL;
+  return nullptr;
 }
 
 VertexArrayObjectManager::VertexArrayObjectManager(
@@ -523,7 +522,7 @@ bool VertexArrayObjectManager::SetupSimulatedClientSideBuffers(
   gl_helper->BindBuffer(GL_ARRAY_BUFFER, array_buffer_id_);
   array_buffer_offset_ = 0;
   if (total_size > array_buffer_size_) {
-    gl->BufferDataHelper(GL_ARRAY_BUFFER, total_size, NULL, GL_DYNAMIC_DRAW);
+    gl->BufferDataHelper(GL_ARRAY_BUFFER, total_size, nullptr, GL_DYNAMIC_DRAW);
     array_buffer_size_ = total_size;
   }
   for (GLuint ii = 0; ii < vertex_attribs.size(); ++ii) {
@@ -617,8 +616,8 @@ bool VertexArrayObjectManager::SetupSimulatedIndexAndClientSideBuffers(
     GLsizei bytes_needed = bytes_per_element * count;
     if (bytes_needed > element_array_buffer_size_) {
       element_array_buffer_size_ = bytes_needed;
-      gl->BufferDataHelper(
-          GL_ELEMENT_ARRAY_BUFFER, bytes_needed, NULL, GL_DYNAMIC_DRAW);
+      gl->BufferDataHelper(GL_ELEMENT_ARRAY_BUFFER, bytes_needed, nullptr,
+                           GL_DYNAMIC_DRAW);
     }
     gl->BufferSubDataHelper(
         GL_ELEMENT_ARRAY_BUFFER, 0, bytes_needed, indices);

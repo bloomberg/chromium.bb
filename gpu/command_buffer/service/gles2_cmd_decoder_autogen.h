@@ -315,7 +315,7 @@ error::Error GLES2DecoderImpl::HandleBufferSubData(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glBufferSubData", "size < 0");
     return error::kNoError;
   }
-  if (data == NULL) {
+  if (data == nullptr) {
     return error::kOutOfBounds;
   }
   DoBufferSubData(target, offset, size, data);
@@ -399,7 +399,7 @@ error::Error GLES2DecoderImpl::HandleClearBufferfvImmediate(
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glClearBufferfv", buffer, "buffer");
     return error::kNoError;
   }
-  if (value == NULL) {
+  if (value == nullptr) {
     return error::kOutOfBounds;
   }
   DoClearBufferfv(buffer, drawbuffers, value);
@@ -429,7 +429,7 @@ error::Error GLES2DecoderImpl::HandleClearBufferivImmediate(
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glClearBufferiv", buffer, "buffer");
     return error::kNoError;
   }
-  if (value == NULL) {
+  if (value == nullptr) {
     return error::kOutOfBounds;
   }
   DoClearBufferiv(buffer, drawbuffers, value);
@@ -459,7 +459,7 @@ error::Error GLES2DecoderImpl::HandleClearBufferuivImmediate(
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glClearBufferuiv", buffer, "buffer");
     return error::kNoError;
   }
-  if (value == NULL) {
+  if (value == nullptr) {
     return error::kOutOfBounds;
   }
   DoClearBufferuiv(buffer, drawbuffers, value);
@@ -744,7 +744,7 @@ error::Error GLES2DecoderImpl::HandleDeleteBuffersImmediate(
   }
   volatile const GLuint* buffers = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
-  if (buffers == NULL) {
+  if (buffers == nullptr) {
     return error::kOutOfBounds;
   }
   DeleteBuffersHelper(n, buffers);
@@ -765,7 +765,7 @@ error::Error GLES2DecoderImpl::HandleDeleteFramebuffersImmediate(
   volatile const GLuint* framebuffers =
       GetImmediateDataAs<volatile const GLuint*>(c, data_size,
                                                  immediate_data_size);
-  if (framebuffers == NULL) {
+  if (framebuffers == nullptr) {
     return error::kOutOfBounds;
   }
   DeleteFramebuffersHelper(n, framebuffers);
@@ -786,7 +786,7 @@ error::Error GLES2DecoderImpl::HandleDeleteRenderbuffersImmediate(
   volatile const GLuint* renderbuffers =
       GetImmediateDataAs<volatile const GLuint*>(c, data_size,
                                                  immediate_data_size);
-  if (renderbuffers == NULL) {
+  if (renderbuffers == nullptr) {
     return error::kOutOfBounds;
   }
   DeleteRenderbuffersHelper(n, renderbuffers);
@@ -808,7 +808,7 @@ error::Error GLES2DecoderImpl::HandleDeleteSamplersImmediate(
   }
   volatile const GLuint* samplers = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
-  if (samplers == NULL) {
+  if (samplers == nullptr) {
     return error::kOutOfBounds;
   }
   DeleteSamplersHelper(n, samplers);
@@ -839,7 +839,7 @@ error::Error GLES2DecoderImpl::HandleDeleteTexturesImmediate(
   }
   volatile const GLuint* textures = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
-  if (textures == NULL) {
+  if (textures == nullptr) {
     return error::kOutOfBounds;
   }
   DeleteTexturesHelper(n, textures);
@@ -862,7 +862,7 @@ error::Error GLES2DecoderImpl::HandleDeleteTransformFeedbacksImmediate(
   }
   volatile const GLuint* ids = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
-  if (ids == NULL) {
+  if (ids == nullptr) {
     return error::kOutOfBounds;
   }
   DeleteTransformFeedbacksHelper(n, ids);
@@ -1116,7 +1116,7 @@ error::Error GLES2DecoderImpl::HandleGenBuffersImmediate(
   }
   volatile GLuint* buffers =
       GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
-  if (buffers == NULL) {
+  if (buffers == nullptr) {
     return error::kOutOfBounds;
   }
   auto buffers_copy = std::make_unique<GLuint[]>(n);
@@ -1156,7 +1156,7 @@ error::Error GLES2DecoderImpl::HandleGenFramebuffersImmediate(
   }
   volatile GLuint* framebuffers =
       GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
-  if (framebuffers == NULL) {
+  if (framebuffers == nullptr) {
     return error::kOutOfBounds;
   }
   auto framebuffers_copy = std::make_unique<GLuint[]>(n);
@@ -1182,7 +1182,7 @@ error::Error GLES2DecoderImpl::HandleGenRenderbuffersImmediate(
   }
   volatile GLuint* renderbuffers =
       GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
-  if (renderbuffers == NULL) {
+  if (renderbuffers == nullptr) {
     return error::kOutOfBounds;
   }
   auto renderbuffers_copy = std::make_unique<GLuint[]>(n);
@@ -1209,7 +1209,7 @@ error::Error GLES2DecoderImpl::HandleGenSamplersImmediate(
   }
   volatile GLuint* samplers =
       GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
-  if (samplers == NULL) {
+  if (samplers == nullptr) {
     return error::kOutOfBounds;
   }
   auto samplers_copy = std::make_unique<GLuint[]>(n);
@@ -1234,7 +1234,7 @@ error::Error GLES2DecoderImpl::HandleGenTexturesImmediate(
   }
   volatile GLuint* textures =
       GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
-  if (textures == NULL) {
+  if (textures == nullptr) {
     return error::kOutOfBounds;
   }
   auto textures_copy = std::make_unique<GLuint[]>(n);
@@ -1262,7 +1262,7 @@ error::Error GLES2DecoderImpl::HandleGenTransformFeedbacksImmediate(
   }
   volatile GLuint* ids =
       GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
-  if (ids == NULL) {
+  if (ids == nullptr) {
     return error::kOutOfBounds;
   }
   auto ids_copy = std::make_unique<GLuint[]>(n);
@@ -1289,12 +1289,12 @@ error::Error GLES2DecoderImpl::HandleGetBooleanv(
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLboolean* params = result ? result->GetData() : NULL;
+  GLboolean* params = result ? result->GetData() : nullptr;
   if (!validators_->g_l_state.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetBooleanv", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetBooleanv");
@@ -1328,7 +1328,7 @@ error::Error GLES2DecoderImpl::HandleGetBufferParameteri64v(
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLint64* params = result ? result->GetData() : NULL;
+  GLint64* params = result ? result->GetData() : nullptr;
   if (!validators_->buffer_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetBufferParameteri64v", target,
                                     "target");
@@ -1338,7 +1338,7 @@ error::Error GLES2DecoderImpl::HandleGetBufferParameteri64v(
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetBufferParameteri64v", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   // Check that the client initialized the result.
@@ -1364,7 +1364,7 @@ error::Error GLES2DecoderImpl::HandleGetBufferParameteriv(
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLint* params = result ? result->GetData() : NULL;
+  GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->buffer_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetBufferParameteriv", target, "target");
     return error::kNoError;
@@ -1373,7 +1373,7 @@ error::Error GLES2DecoderImpl::HandleGetBufferParameteriv(
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetBufferParameteriv", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   // Check that the client initialized the result.
@@ -1411,12 +1411,12 @@ error::Error GLES2DecoderImpl::HandleGetFloatv(uint32_t immediate_data_size,
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLfloat* params = result ? result->GetData() : NULL;
+  GLfloat* params = result ? result->GetData() : nullptr;
   if (!validators_->g_l_state.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetFloatv", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetFloatv");
@@ -1451,7 +1451,7 @@ error::Error GLES2DecoderImpl::HandleGetFramebufferAttachmentParameteriv(
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLint* params = result ? result->GetData() : NULL;
+  GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->framebuffer_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetFramebufferAttachmentParameteriv",
                                     target, "target");
@@ -1467,7 +1467,7 @@ error::Error GLES2DecoderImpl::HandleGetFramebufferAttachmentParameteriv(
                                     pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetFramebufferAttachmentParameteriv");
@@ -1500,12 +1500,12 @@ error::Error GLES2DecoderImpl::HandleGetInteger64v(
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLint64* params = result ? result->GetData() : NULL;
+  GLint64* params = result ? result->GetData() : nullptr;
   if (!validators_->g_l_state.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetInteger64v", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetInteger64v");
@@ -1538,12 +1538,12 @@ error::Error GLES2DecoderImpl::HandleGetIntegeri_v(
   }
   Result* result = GetSharedMemoryAs<Result*>(c.data_shm_id, c.data_shm_offset,
                                               Result::ComputeSize(num_values));
-  GLint* data = result ? result->GetData() : NULL;
+  GLint* data = result ? result->GetData() : nullptr;
   if (!validators_->indexed_g_l_state.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetIntegeri_v", pname, "pname");
     return error::kNoError;
   }
-  if (data == NULL) {
+  if (data == nullptr) {
     return error::kOutOfBounds;
   }
   // Check that the client initialized the result.
@@ -1571,12 +1571,12 @@ error::Error GLES2DecoderImpl::HandleGetInteger64i_v(
   }
   Result* result = GetSharedMemoryAs<Result*>(c.data_shm_id, c.data_shm_offset,
                                               Result::ComputeSize(num_values));
-  GLint64* data = result ? result->GetData() : NULL;
+  GLint64* data = result ? result->GetData() : nullptr;
   if (!validators_->indexed_g_l_state.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetInteger64i_v", pname, "pname");
     return error::kNoError;
   }
-  if (data == NULL) {
+  if (data == nullptr) {
     return error::kOutOfBounds;
   }
   // Check that the client initialized the result.
@@ -1601,12 +1601,12 @@ error::Error GLES2DecoderImpl::HandleGetIntegerv(
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLint* params = result ? result->GetData() : NULL;
+  GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->g_l_state.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetIntegerv", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetIntegerv");
@@ -1637,12 +1637,12 @@ error::Error GLES2DecoderImpl::HandleGetProgramiv(
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLint* params = result ? result->GetData() : NULL;
+  GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->program_parameter.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetProgramiv", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetProgramiv");
@@ -1675,7 +1675,7 @@ error::Error GLES2DecoderImpl::HandleGetRenderbufferParameteriv(
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLint* params = result ? result->GetData() : NULL;
+  GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->render_buffer_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetRenderbufferParameteriv", target,
                                     "target");
@@ -1686,7 +1686,7 @@ error::Error GLES2DecoderImpl::HandleGetRenderbufferParameteriv(
                                     "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetRenderbufferParameteriv");
@@ -1720,12 +1720,12 @@ error::Error GLES2DecoderImpl::HandleGetSamplerParameterfv(
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLfloat* params = result ? result->GetData() : NULL;
+  GLfloat* params = result ? result->GetData() : nullptr;
   if (!validators_->sampler_parameter.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetSamplerParameterfv", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetSamplerParameterfv");
@@ -1759,12 +1759,12 @@ error::Error GLES2DecoderImpl::HandleGetSamplerParameteriv(
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLint* params = result ? result->GetData() : NULL;
+  GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->sampler_parameter.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetSamplerParameteriv", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetSamplerParameteriv");
@@ -1795,12 +1795,12 @@ error::Error GLES2DecoderImpl::HandleGetShaderiv(
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLint* params = result ? result->GetData() : NULL;
+  GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->shader_parameter.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetShaderiv", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetShaderiv");
@@ -1832,12 +1832,12 @@ error::Error GLES2DecoderImpl::HandleGetSynciv(uint32_t immediate_data_size,
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.values_shm_id, c.values_shm_offset, Result::ComputeSize(num_values));
-  GLint* values = result ? result->GetData() : NULL;
+  GLint* values = result ? result->GetData() : nullptr;
   if (!validators_->sync_parameter.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetSynciv", pname, "pname");
     return error::kNoError;
   }
-  if (values == NULL) {
+  if (values == nullptr) {
     return error::kOutOfBounds;
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetSynciv");
@@ -1868,7 +1868,7 @@ error::Error GLES2DecoderImpl::HandleGetTexParameterfv(
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLfloat* params = result ? result->GetData() : NULL;
+  GLfloat* params = result ? result->GetData() : nullptr;
   if (!validators_->get_tex_param_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetTexParameterfv", target, "target");
     return error::kNoError;
@@ -1877,7 +1877,7 @@ error::Error GLES2DecoderImpl::HandleGetTexParameterfv(
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetTexParameterfv", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetTexParameterfv");
@@ -1908,7 +1908,7 @@ error::Error GLES2DecoderImpl::HandleGetTexParameteriv(
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLint* params = result ? result->GetData() : NULL;
+  GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->get_tex_param_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetTexParameteriv", target, "target");
     return error::kNoError;
@@ -1917,7 +1917,7 @@ error::Error GLES2DecoderImpl::HandleGetTexParameteriv(
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetTexParameteriv", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetTexParameteriv");
@@ -1948,12 +1948,12 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribfv(
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLfloat* params = result ? result->GetData() : NULL;
+  GLfloat* params = result ? result->GetData() : nullptr;
   if (!validators_->vertex_attribute.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetVertexAttribfv", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetVertexAttribfv");
@@ -1984,12 +1984,12 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribiv(
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLint* params = result ? result->GetData() : NULL;
+  GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->vertex_attribute.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetVertexAttribiv", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetVertexAttribiv");
@@ -2022,12 +2022,12 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribIiv(
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLint* params = result ? result->GetData() : NULL;
+  GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->vertex_attribute.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetVertexAttribIiv", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetVertexAttribIiv");
@@ -2060,12 +2060,12 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribIuiv(
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLuint* params = result ? result->GetData() : NULL;
+  GLuint* params = result ? result->GetData() : nullptr;
   if (!validators_->vertex_attribute.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetVertexAttribIuiv", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetVertexAttribIuiv");
@@ -2156,7 +2156,7 @@ error::Error GLES2DecoderImpl::HandleInvalidateFramebufferImmediate(
                        "count < 0");
     return error::kNoError;
   }
-  if (attachments == NULL) {
+  if (attachments == nullptr) {
     return error::kOutOfBounds;
   }
   DoInvalidateFramebuffer(target, count, attachments);
@@ -2198,7 +2198,7 @@ error::Error GLES2DecoderImpl::HandleInvalidateSubFramebufferImmediate(
                        "count < 0");
     return error::kNoError;
   }
-  if (attachments == NULL) {
+  if (attachments == nullptr) {
     return error::kOutOfBounds;
   }
   if (width < 0) {
@@ -2542,7 +2542,7 @@ error::Error GLES2DecoderImpl::HandleSamplerParameterfvImmediate(
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glSamplerParameterfv", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   DoSamplerParameterfv(sampler, pname, params);
@@ -2590,7 +2590,7 @@ error::Error GLES2DecoderImpl::HandleSamplerParameterivImmediate(
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glSamplerParameteriv", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   DoSamplerParameteriv(sampler, pname, params);
@@ -2642,9 +2642,9 @@ error::Error GLES2DecoderImpl::HandleShaderSourceBucket(
     return error::kInvalidArguments;
   }
   const char** str =
-      strs.size() > 0 ? const_cast<const char**>(&strs[0]) : NULL;
+      strs.size() > 0 ? const_cast<const char**>(&strs[0]) : nullptr;
   const GLint* length =
-      len.size() > 0 ? const_cast<const GLint*>(&len[0]) : NULL;
+      len.size() > 0 ? const_cast<const GLint*>(&len[0]) : nullptr;
   (void)length;
   DoShaderSource(shader, count, str, length);
   return error::kNoError;
@@ -2902,7 +2902,7 @@ error::Error GLES2DecoderImpl::HandleTexParameterfvImmediate(
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glTexParameterfv", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   DoTexParameterfv(target, pname, params);
@@ -2954,7 +2954,7 @@ error::Error GLES2DecoderImpl::HandleTexParameterivImmediate(
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glTexParameteriv", pname, "pname");
     return error::kNoError;
   }
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   DoTexParameteriv(target, pname, params);
@@ -3023,9 +3023,9 @@ error::Error GLES2DecoderImpl::HandleTransformFeedbackVaryingsBucket(
     return error::kInvalidArguments;
   }
   const char** varyings =
-      strs.size() > 0 ? const_cast<const char**>(&strs[0]) : NULL;
+      strs.size() > 0 ? const_cast<const char**>(&strs[0]) : nullptr;
   const GLint* length =
-      len.size() > 0 ? const_cast<const GLint*>(&len[0]) : NULL;
+      len.size() > 0 ? const_cast<const GLint*>(&len[0]) : nullptr;
   (void)length;
   GLenum buffermode = static_cast<GLenum>(c.buffermode);
   if (!validators_->buffer_mode.IsValid(buffermode)) {
@@ -3071,7 +3071,7 @@ error::Error GLES2DecoderImpl::HandleUniform1fvImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniform1fv", "count < 0");
     return error::kNoError;
   }
-  if (v == NULL) {
+  if (v == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniform1fv(location, count, v);
@@ -3108,7 +3108,7 @@ error::Error GLES2DecoderImpl::HandleUniform1ivImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniform1iv", "count < 0");
     return error::kNoError;
   }
-  if (v == NULL) {
+  if (v == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniform1iv(location, count, v);
@@ -3152,7 +3152,7 @@ error::Error GLES2DecoderImpl::HandleUniform1uivImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniform1uiv", "count < 0");
     return error::kNoError;
   }
-  if (v == NULL) {
+  if (v == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniform1uiv(location, count, v);
@@ -3194,7 +3194,7 @@ error::Error GLES2DecoderImpl::HandleUniform2fvImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniform2fv", "count < 0");
     return error::kNoError;
   }
-  if (v == NULL) {
+  if (v == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniform2fv(location, count, v);
@@ -3235,7 +3235,7 @@ error::Error GLES2DecoderImpl::HandleUniform2ivImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniform2iv", "count < 0");
     return error::kNoError;
   }
-  if (v == NULL) {
+  if (v == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniform2iv(location, count, v);
@@ -3280,7 +3280,7 @@ error::Error GLES2DecoderImpl::HandleUniform2uivImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniform2uiv", "count < 0");
     return error::kNoError;
   }
-  if (v == NULL) {
+  if (v == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniform2uiv(location, count, v);
@@ -3323,7 +3323,7 @@ error::Error GLES2DecoderImpl::HandleUniform3fvImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniform3fv", "count < 0");
     return error::kNoError;
   }
-  if (v == NULL) {
+  if (v == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniform3fv(location, count, v);
@@ -3365,7 +3365,7 @@ error::Error GLES2DecoderImpl::HandleUniform3ivImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniform3iv", "count < 0");
     return error::kNoError;
   }
-  if (v == NULL) {
+  if (v == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniform3iv(location, count, v);
@@ -3411,7 +3411,7 @@ error::Error GLES2DecoderImpl::HandleUniform3uivImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniform3uiv", "count < 0");
     return error::kNoError;
   }
-  if (v == NULL) {
+  if (v == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniform3uiv(location, count, v);
@@ -3455,7 +3455,7 @@ error::Error GLES2DecoderImpl::HandleUniform4fvImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniform4fv", "count < 0");
     return error::kNoError;
   }
-  if (v == NULL) {
+  if (v == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniform4fv(location, count, v);
@@ -3498,7 +3498,7 @@ error::Error GLES2DecoderImpl::HandleUniform4ivImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniform4iv", "count < 0");
     return error::kNoError;
   }
-  if (v == NULL) {
+  if (v == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniform4iv(location, count, v);
@@ -3545,7 +3545,7 @@ error::Error GLES2DecoderImpl::HandleUniform4uivImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniform4uiv", "count < 0");
     return error::kNoError;
   }
-  if (v == NULL) {
+  if (v == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniform4uiv(location, count, v);
@@ -3575,7 +3575,7 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix2fvImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniformMatrix2fv", "count < 0");
     return error::kNoError;
   }
-  if (value == NULL) {
+  if (value == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniformMatrix2fv(location, count, transpose, value);
@@ -3607,7 +3607,7 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix2x3fvImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniformMatrix2x3fv", "count < 0");
     return error::kNoError;
   }
-  if (value == NULL) {
+  if (value == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniformMatrix2x3fv(location, count, transpose, value);
@@ -3639,7 +3639,7 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix2x4fvImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniformMatrix2x4fv", "count < 0");
     return error::kNoError;
   }
-  if (value == NULL) {
+  if (value == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniformMatrix2x4fv(location, count, transpose, value);
@@ -3669,7 +3669,7 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix3fvImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniformMatrix3fv", "count < 0");
     return error::kNoError;
   }
-  if (value == NULL) {
+  if (value == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniformMatrix3fv(location, count, transpose, value);
@@ -3701,7 +3701,7 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix3x2fvImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniformMatrix3x2fv", "count < 0");
     return error::kNoError;
   }
-  if (value == NULL) {
+  if (value == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniformMatrix3x2fv(location, count, transpose, value);
@@ -3733,7 +3733,7 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix3x4fvImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniformMatrix3x4fv", "count < 0");
     return error::kNoError;
   }
-  if (value == NULL) {
+  if (value == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniformMatrix3x4fv(location, count, transpose, value);
@@ -3763,7 +3763,7 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4fvImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniformMatrix4fv", "count < 0");
     return error::kNoError;
   }
-  if (value == NULL) {
+  if (value == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniformMatrix4fv(location, count, transpose, value);
@@ -3795,7 +3795,7 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4x2fvImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniformMatrix4x2fv", "count < 0");
     return error::kNoError;
   }
-  if (value == NULL) {
+  if (value == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniformMatrix4x2fv(location, count, transpose, value);
@@ -3827,7 +3827,7 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4x3fvImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUniformMatrix4x3fv", "count < 0");
     return error::kNoError;
   }
-  if (value == NULL) {
+  if (value == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniformMatrix4x3fv(location, count, transpose, value);
@@ -3880,7 +3880,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib1fvImmediate(
   }
   volatile const GLfloat* values = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
-  if (values == NULL) {
+  if (values == nullptr) {
     return error::kOutOfBounds;
   }
   DoVertexAttrib1fv(indx, values);
@@ -3915,7 +3915,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib2fvImmediate(
   }
   volatile const GLfloat* values = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
-  if (values == NULL) {
+  if (values == nullptr) {
     return error::kOutOfBounds;
   }
   DoVertexAttrib2fv(indx, values);
@@ -3951,7 +3951,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib3fvImmediate(
   }
   volatile const GLfloat* values = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
-  if (values == NULL) {
+  if (values == nullptr) {
     return error::kOutOfBounds;
   }
   DoVertexAttrib3fv(indx, values);
@@ -3988,7 +3988,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib4fvImmediate(
   }
   volatile const GLfloat* values = GetImmediateDataAs<volatile const GLfloat*>(
       c, data_size, immediate_data_size);
-  if (values == NULL) {
+  if (values == nullptr) {
     return error::kOutOfBounds;
   }
   DoVertexAttrib4fv(indx, values);
@@ -4029,7 +4029,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribI4ivImmediate(
   }
   volatile const GLint* values = GetImmediateDataAs<volatile const GLint*>(
       c, data_size, immediate_data_size);
-  if (values == NULL) {
+  if (values == nullptr) {
     return error::kOutOfBounds;
   }
   DoVertexAttribI4iv(indx, values);
@@ -4070,7 +4070,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribI4uivImmediate(
   }
   volatile const GLuint* values = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
-  if (values == NULL) {
+  if (values == nullptr) {
     return error::kOutOfBounds;
   }
   DoVertexAttribI4uiv(indx, values);
@@ -4322,7 +4322,7 @@ error::Error GLES2DecoderImpl::HandleGenQueriesEXTImmediate(
   }
   volatile GLuint* queries =
       GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
-  if (queries == NULL) {
+  if (queries == nullptr) {
     return error::kOutOfBounds;
   }
   auto queries_copy = std::make_unique<GLuint[]>(n);
@@ -4348,7 +4348,7 @@ error::Error GLES2DecoderImpl::HandleDeleteQueriesEXTImmediate(
   }
   volatile const GLuint* queries = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
-  if (queries == NULL) {
+  if (queries == nullptr) {
     return error::kOutOfBounds;
   }
   DeleteQueriesEXTHelper(n, queries);
@@ -4440,7 +4440,7 @@ error::Error GLES2DecoderImpl::HandleGenVertexArraysOESImmediate(
   }
   volatile GLuint* arrays =
       GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
-  if (arrays == NULL) {
+  if (arrays == nullptr) {
     return error::kOutOfBounds;
   }
   auto arrays_copy = std::make_unique<GLuint[]>(n);
@@ -4466,7 +4466,7 @@ error::Error GLES2DecoderImpl::HandleDeleteVertexArraysOESImmediate(
   }
   volatile const GLuint* arrays = GetImmediateDataAs<volatile const GLuint*>(
       c, data_size, immediate_data_size);
-  if (arrays == NULL) {
+  if (arrays == nullptr) {
     return error::kOutOfBounds;
   }
   DeleteVertexArraysOESHelper(n, arrays);
@@ -4736,7 +4736,7 @@ error::Error GLES2DecoderImpl::HandleProduceTextureDirectCHROMIUMImmediate(
   }
   volatile GLbyte* mailbox =
       GetImmediateDataAs<volatile GLbyte*>(c, data_size, immediate_data_size);
-  if (mailbox == NULL) {
+  if (mailbox == nullptr) {
     return error::kOutOfBounds;
   }
   DoProduceTextureDirectCHROMIUM(texture, mailbox);
@@ -4759,7 +4759,7 @@ error::Error GLES2DecoderImpl::HandleCreateAndConsumeTextureINTERNALImmediate(
   }
   volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
       c, data_size, immediate_data_size);
-  if (mailbox == NULL) {
+  if (mailbox == nullptr) {
     return error::kOutOfBounds;
   }
   DoCreateAndConsumeTextureINTERNAL(texture, mailbox);
@@ -4863,7 +4863,7 @@ error::Error GLES2DecoderImpl::HandleDiscardFramebufferEXTImmediate(
                        "count < 0");
     return error::kNoError;
   }
-  if (attachments == NULL) {
+  if (attachments == nullptr) {
     return error::kOutOfBounds;
   }
   DoDiscardFramebufferEXT(target, count, attachments);
@@ -4941,7 +4941,7 @@ error::Error GLES2DecoderImpl::HandleDrawBuffersEXTImmediate(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glDrawBuffersEXT", "count < 0");
     return error::kNoError;
   }
-  if (bufs == NULL) {
+  if (bufs == nullptr) {
     return error::kOutOfBounds;
   }
   DoDrawBuffersEXT(count, bufs);
@@ -4969,7 +4969,7 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerInUseQueryCHROMIUMImmediate(
                        "count < 0");
     return error::kNoError;
   }
-  if (textures == NULL) {
+  if (textures == nullptr) {
     return error::kOutOfBounds;
   }
   DoScheduleCALayerInUseQueryCHROMIUM(count, textures);
@@ -5025,7 +5025,7 @@ error::Error GLES2DecoderImpl::HandleMatrixLoadfCHROMIUMImmediate(
                                     "matrixMode");
     return error::kNoError;
   }
-  if (m == NULL) {
+  if (m == nullptr) {
     return error::kOutOfBounds;
   }
   DoMatrixLoadfCHROMIUM(matrixMode, m);
@@ -5164,7 +5164,7 @@ GLES2DecoderImpl::HandleUniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate(
   volatile const GLfloat* transform =
       GetImmediateDataAs<volatile const GLfloat*>(c, data_size,
                                                   immediate_data_size);
-  if (transform == NULL) {
+  if (transform == nullptr) {
     return error::kOutOfBounds;
   }
   DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(location, transpose, transform);
@@ -5212,7 +5212,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffersWithBoundsCHROMIUMImmediate(
                        "count < 0");
     return error::kNoError;
   }
-  if (rects == NULL) {
+  if (rects == nullptr) {
     return error::kOutOfBounds;
   }
   if (!validators_->swap_buffers_flags.IsValid(flags)) {
@@ -5316,7 +5316,7 @@ error::Error GLES2DecoderImpl::HandleWindowRectanglesEXTImmediate(
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glWindowRectanglesEXT", mode, "mode");
     return error::kNoError;
   }
-  if (box == NULL) {
+  if (box == nullptr) {
     return error::kOutOfBounds;
   }
   DoWindowRectanglesEXT(mode, count, box);

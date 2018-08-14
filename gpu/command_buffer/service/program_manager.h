@@ -213,8 +213,9 @@ class GPU_GLES2_EXPORT Program : public base::RefCounted<Program> {
   }
 
   const VertexAttrib* GetAttribInfo(GLint index) const {
-    return (static_cast<size_t>(index) < attrib_infos_.size()) ?
-       &attrib_infos_[index] : NULL;
+    return (static_cast<size_t>(index) < attrib_infos_.size())
+               ? &attrib_infos_[index]
+               : nullptr;
   }
 
   GLint GetAttribLocation(const std::string& original_name) const;
@@ -226,28 +227,28 @@ class GPU_GLES2_EXPORT Program : public base::RefCounted<Program> {
         return &attrib_infos_[index];
       }
     }
-    return NULL;
+    return nullptr;
   }
 
   const UniformInfo* GetUniformInfo(GLint index) const;
 
-  // If the original name is not found, return NULL.
+  // If the original name is not found, return nullptr.
   const std::string* GetAttribMappedName(
       const std::string& original_name) const;
 
-  // If the original name is not found, return NULL.
+  // If the original name is not found, return nullptr.
   const std::string* GetUniformMappedName(
       const std::string& original_name) const;
 
-  // If the hashed name name is not found, return NULL.
+  // If the hashed name name is not found, return nullptr.
   // Use this only when one of the more specific Get*Info methods can't be used.
   const std::string* GetOriginalNameFromHashedName(
       const std::string& hashed_name) const;
 
-  // If the hashed name is not found, return NULL.
+  // If the hashed name is not found, return nullptr.
   const sh::Varying* GetVaryingInfo(const std::string& hashed_name) const;
 
-  // If the hashed name is not found, return NULL.
+  // If the hashed name is not found, return nullptr.
   const sh::InterfaceBlock* GetInterfaceBlockInfo(
       const std::string& hashed_name) const;
 
@@ -466,7 +467,7 @@ class GPU_GLES2_EXPORT Program : public base::RefCounted<Program> {
   ~Program();
 
   void set_log_info(const char* str) {
-    log_info_.reset(str ? new std::string(str) : NULL);
+    log_info_.reset(str ? new std::string(str) : nullptr);
   }
 
   void ClearLinkStatus() {

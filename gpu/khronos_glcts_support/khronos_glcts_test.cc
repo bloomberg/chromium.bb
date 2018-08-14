@@ -42,7 +42,7 @@ bool RunKhronosGLCTSTest(const char* test_name) {
     return false;
   }
   gpu::GPUTestBotConfig bot_config;
-  if (!bot_config.LoadCurrentConfig(NULL)) {
+  if (!bot_config.LoadCurrentConfig(nullptr)) {
     LOG(ERROR) << "Fail to load bot configuration";
     return false;
   }

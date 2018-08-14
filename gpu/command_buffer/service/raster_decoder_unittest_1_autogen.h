@@ -21,7 +21,7 @@ TEST_P(RasterDecoderTest1, DeleteTexturesImmediateValidArgs) {
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(client_texture_id_)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(GetTexture(client_texture_id_) == NULL);
+  EXPECT_TRUE(GetTexture(client_texture_id_) == nullptr);
 }
 
 TEST_P(RasterDecoderTest1, DeleteTexturesImmediateInvalidArgs) {

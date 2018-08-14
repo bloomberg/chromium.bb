@@ -106,27 +106,27 @@ class GPU_GLES2_EXPORT Shader : public base::RefCounted<Shader> {
   const sh::OutputVariable* GetOutputVariableInfo(
       const std::string& name) const;
 
-  // If the original_name is not found, return NULL.
+  // If the original_name is not found, return nullptr.
   const std::string* GetAttribMappedName(
       const std::string& original_name) const;
 
-  // If the original_name is not found, return NULL.
+  // If the original_name is not found, return nullptr.
   const std::string* GetUniformMappedName(
       const std::string& original_name) const;
 
-  // If the original_name is not found, return NULL.
+  // If the original_name is not found, return nullptr.
   const std::string* GetVaryingMappedName(
       const std::string& original_name) const;
 
-  // If the original_name is not found, return NULL.
+  // If the original_name is not found, return nullptr.
   const std::string* GetInterfaceBlockMappedName(
       const std::string& original_name) const;
 
-  // If the original_name is not found, return NULL.
+  // If the original_name is not found, return nullptr.
   const std::string* GetOutputVariableMappedName(
       const std::string& original_name) const;
 
-  // If the hashed_name is not found, return NULL.
+  // If the hashed_name is not found, return nullptr.
   // Use this only when one of the more specific Get*Info methods can't be used.
   const std::string* GetOriginalNameFromHashedName(
       const std::string& hashed_name) const;
@@ -291,8 +291,8 @@ class GPU_GLES2_EXPORT ShaderManager {
       GLuint service_id,
       GLenum shader_type);
 
-  // Gets an existing shader info for the given shader ID. Returns NULL if none
-  // exists.
+  // Gets an existing shader info for the given shader ID. Returns nullptr if
+  // none exists.
   Shader* GetShader(GLuint client_id);
 
   // Gets a client id for a given service id.

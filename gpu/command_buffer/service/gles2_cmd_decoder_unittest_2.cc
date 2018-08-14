@@ -625,7 +625,7 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::GetProgramInfoLog, 0>(
       .WillOnce(SetArgPointee<2>(0));
 
   Program* program = GetProgram(client_program_id_);
-  ASSERT_TRUE(program != NULL);
+  ASSERT_TRUE(program != nullptr);
 
   cmds::AttachShader attach_cmd;
   attach_cmd.Init(client_program_id_, kClientVertexShaderId);
@@ -634,7 +634,7 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::GetProgramInfoLog, 0>(
   attach_cmd.Init(client_program_id_, kClientFragmentShaderId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(attach_cmd));
 
-  program->Link(NULL, Program::kCountOnlyStaticallyUsed, this);
+  program->Link(nullptr, Program::kCountOnlyStaticallyUsed, this);
 };
 
 template <>

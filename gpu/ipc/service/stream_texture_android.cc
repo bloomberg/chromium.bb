@@ -92,17 +92,17 @@ void StreamTexture::OnWillDestroyStub(bool have_context) {
   owner_stub_->RemoveDestructionObserver(this);
   owner_stub_->channel()->RemoveRoute(route_id_);
 
-  owner_stub_ = NULL;
+  owner_stub_ = nullptr;
 
   // If the owner goes away, there is no need to keep the SurfaceTexture around.
   // The GL texture will keep working regardless with the currently bound frame.
-  surface_owner_ = NULL;
+  surface_owner_ = nullptr;
 }
 
 std::unique_ptr<ui::ScopedMakeCurrent> StreamTexture::MakeStubCurrent() {
   std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current;
   bool needs_make_current =
-      !owner_stub_->decoder_context()->GetGLContext()->IsCurrent(NULL);
+      !owner_stub_->decoder_context()->GetGLContext()->IsCurrent(nullptr);
   if (needs_make_current) {
     scoped_make_current.reset(new ui::ScopedMakeCurrent(
         owner_stub_->decoder_context()->GetGLContext(),

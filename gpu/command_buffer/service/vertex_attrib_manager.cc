@@ -39,7 +39,7 @@ VertexAttrib::VertexAttrib()
       divisor_(0),
       integer_(GL_FALSE),
       is_client_side_array_(false),
-      list_(NULL) {}
+      list_(nullptr) {}
 
 VertexAttrib::VertexAttrib(const VertexAttrib& other) = default;
 
@@ -86,8 +86,8 @@ bool VertexAttrib::CanAccess(GLuint index) const {
 
 VertexAttribManager::VertexAttribManager(bool do_buffer_refcounting)
     : num_fixed_attribs_(0),
-      element_array_buffer_(NULL),
-      manager_(NULL),
+      element_array_buffer_(nullptr),
+      manager_(nullptr),
       deleted_(false),
       is_bound_(false),
       do_buffer_refcounting_(do_buffer_refcounting),
@@ -98,7 +98,7 @@ VertexAttribManager::VertexAttribManager(VertexArrayManager* manager,
                                          uint32_t num_vertex_attribs,
                                          bool do_buffer_refcounting)
     : num_fixed_attribs_(0),
-      element_array_buffer_(NULL),
+      element_array_buffer_(nullptr),
       manager_(manager),
       deleted_(false),
       is_bound_(false),
@@ -115,7 +115,7 @@ VertexAttribManager::~VertexAttribManager() {
         glDeleteVertexArraysOES(1, &service_id_);
     }
     manager_->StopTracking(this);
-    manager_ = NULL;
+    manager_ = nullptr;
   }
 }
 

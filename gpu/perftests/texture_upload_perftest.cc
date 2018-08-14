@@ -72,7 +72,7 @@ GLuint LoadShader(const GLenum type, const char* const src) {
   GLuint shader = 0;
   shader = glCreateShader(type);
   CHECK_NE(0u, shader);
-  glShaderSource(shader, 1, &src, NULL);
+  glShaderSource(shader, 1, &src, nullptr);
   glCompileShader(shader);
 
   GLint compiled = 0;
@@ -82,7 +82,7 @@ GLuint LoadShader(const GLenum type, const char* const src) {
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
     if (len > 1) {
       std::unique_ptr<char[]> error_log(new char[len]);
-      glGetShaderInfoLog(shader, len, NULL, error_log.get());
+      glGetShaderInfoLog(shader, len, nullptr, error_log.get());
       LOG(ERROR) << "Error compiling shader: " << error_log.get();
     }
   }

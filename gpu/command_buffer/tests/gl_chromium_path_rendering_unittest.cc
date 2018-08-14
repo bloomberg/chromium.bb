@@ -444,7 +444,7 @@ TEST_F(CHROMIUMPathRenderingTest, TestPathObjectState) {
   glPathCommandsCHROMIUM(path, arraysize(commands), commands, arraysize(coords),
                          GL_FLOAT, coords);
   EXPECT_TRUE(glIsPathCHROMIUM(path));
-  glPathCommandsCHROMIUM(path, 0, NULL, 0, GL_FLOAT, NULL);
+  glPathCommandsCHROMIUM(path, 0, nullptr, 0, GL_FLOAT, nullptr);
   EXPECT_TRUE(glIsPathCHROMIUM(path));  // The surprise.
   TryAllDrawFunctions(path, GL_NO_ERROR);
   glDeletePathsCHROMIUM(path, 1);
@@ -453,7 +453,7 @@ TEST_F(CHROMIUMPathRenderingTest, TestPathObjectState) {
   // path to acquire state.
   path = glGenPathsCHROMIUM(1);
   EXPECT_FALSE(glIsPathCHROMIUM(path));
-  glPathCommandsCHROMIUM(path, 0, NULL, 0, GL_FLOAT, NULL);
+  glPathCommandsCHROMIUM(path, 0, nullptr, 0, GL_FLOAT, nullptr);
   EXPECT_TRUE(glIsPathCHROMIUM(path));  // The surprise.
   glDeletePathsCHROMIUM(path, 1);
 
@@ -526,7 +526,7 @@ TEST_F(CHROMIUMPathRenderingTest, TestPathRenderingInvalidArgs) {
     return;
 
   GLuint path = glGenPathsCHROMIUM(1);
-  glPathCommandsCHROMIUM(path, 0, NULL, 0, GL_FLOAT, NULL);
+  glPathCommandsCHROMIUM(path, 0, nullptr, 0, GL_FLOAT, nullptr);
 
   // Verify that normal calls work.
   glStencilFillPathCHROMIUM(path, GL_COUNT_UP_CHROMIUM, 0x7F);
@@ -556,11 +556,11 @@ TEST_F(CHROMIUMPathRenderingTest, TestPathRenderingInvalidArgs) {
                  << path_count);
     glStencilFillPathInstancedCHROMIUM(path_count, GL_UNSIGNED_INT, &path, 0,
                                        GL_COUNT_UP_CHROMIUM - 1, 0x7F, GL_NONE,
-                                       NULL);
+                                       nullptr);
     EXPECT_EQ(static_cast<GLenum>(GL_INVALID_ENUM), glGetError());
     glStencilThenCoverFillPathInstancedCHROMIUM(
         path_count, GL_UNSIGNED_INT, &path, 0, GL_COUNT_UP_CHROMIUM - 1, 0x7F,
-        GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM, GL_NONE, NULL);
+        GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM, GL_NONE, nullptr);
     EXPECT_EQ(static_cast<GLenum>(GL_INVALID_ENUM), glGetError());
   }
 
@@ -577,11 +577,11 @@ TEST_F(CHROMIUMPathRenderingTest, TestPathRenderingInvalidArgs) {
                  << path_count);
     glStencilFillPathInstancedCHROMIUM(path_count, GL_UNSIGNED_INT, &path, 0,
                                        GL_COUNT_UP_CHROMIUM, 0x30, GL_NONE,
-                                       NULL);
+                                       nullptr);
     EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), glGetError());
     glStencilThenCoverFillPathInstancedCHROMIUM(
         path_count, GL_UNSIGNED_INT, &path, 0, GL_COUNT_DOWN_CHROMIUM, 0xFE,
-        GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM, GL_NONE, NULL);
+        GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM, GL_NONE, nullptr);
     EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), glGetError());
   }
 
@@ -1273,7 +1273,7 @@ TEST_P(CHROMIUMPathRenderingWithTexturingTest,
   // Test that using invalid (not linked) program is an invalid operation.
   // See similar calls at the end of the test for discussion about the
   // arguments.
-  glProgramPathFragmentInputGenCHROMIUM(program, -1, GL_NONE, 0, NULL);
+  glProgramPathFragmentInputGenCHROMIUM(program, -1, GL_NONE, 0, nullptr);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
 
   glLinkProgram(program);

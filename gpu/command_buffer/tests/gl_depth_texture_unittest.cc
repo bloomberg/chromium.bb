@@ -107,9 +107,8 @@ TEST_F(DepthTextureTest, RenderTo) {
 
   glGenTextures(1, &color_texture);
   glBindTexture(GL_TEXTURE_2D, color_texture);
-  glTexImage2D(
-      GL_TEXTURE_2D, 0, GL_RGBA, kResolution, kResolution,
-      0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kResolution, kResolution, 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -144,9 +143,8 @@ TEST_F(DepthTextureTest, RenderTo) {
     }
 
     glBindTexture(GL_TEXTURE_2D, depth_texture);
-    glTexImage2D(
-        GL_TEXTURE_2D, 0, format, kResolution, kResolution,
-        0, format, type, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, kResolution, kResolution, 0, format,
+                 type, nullptr);
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);

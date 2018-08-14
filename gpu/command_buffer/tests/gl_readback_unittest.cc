@@ -65,9 +65,7 @@ TEST_F(GLReadbackTest, ReadPixelsWithPBOAndQuery) {
   glGenQueriesEXT(1, &q);
   glBindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, b);
   glBufferData(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM,
-               kWidth * kHeight * kBytesPerPixel,
-               NULL,
-               GL_STREAM_READ);
+               kWidth * kHeight * kBytesPerPixel, nullptr, GL_STREAM_READ);
   glBeginQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM, q);
   glReadPixels(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE, 0);
   glEndQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM);
@@ -129,7 +127,7 @@ static GLuint CompileShader(GLenum type, const char *data) {
   const char *shaderStrings[1] = { data };
 
   GLuint shader = glCreateShader(type);
-  glShaderSource(shader, 1, shaderStrings, NULL);
+  glShaderSource(shader, 1, shaderStrings, nullptr);
   glCompileShader(shader);
 
   GLint compile_status = 0;
@@ -165,19 +163,19 @@ TEST_F(GLReadbackTest, MAYBE_ReadPixelsFloat) {
   size_t test_count = 0;
   const char *extensions = reinterpret_cast<const char*>(
       glGetString(GL_EXTENSIONS));
-  if (strstr(extensions, "GL_OES_texture_half_float") != NULL) {
-      TestFormat rgb16f = { GL_RGB, GL_HALF_FLOAT_OES, 3 };
-      test_formats[test_count++] = rgb16f;
+  if (strstr(extensions, "GL_OES_texture_half_float") != nullptr) {
+    TestFormat rgb16f = {GL_RGB, GL_HALF_FLOAT_OES, 3};
+    test_formats[test_count++] = rgb16f;
 
-      TestFormat rgba16f = { GL_RGBA, GL_HALF_FLOAT_OES, 4 };
-      test_formats[test_count++] = rgba16f;
+    TestFormat rgba16f = {GL_RGBA, GL_HALF_FLOAT_OES, 4};
+    test_formats[test_count++] = rgba16f;
   }
-  if (strstr(extensions, "GL_OES_texture_float") != NULL) {
-      TestFormat rgb32f = { GL_RGB, GL_FLOAT, 3 };
-      test_formats[test_count++] = rgb32f;
+  if (strstr(extensions, "GL_OES_texture_float") != nullptr) {
+    TestFormat rgb32f = {GL_RGB, GL_FLOAT, 3};
+    test_formats[test_count++] = rgb32f;
 
-      TestFormat rgba32f = { GL_RGBA, GL_FLOAT, 4 };
-      test_formats[test_count++] = rgba32f;
+    TestFormat rgba32f = {GL_RGBA, GL_FLOAT, 4};
+    test_formats[test_count++] = rgba32f;
   }
 
   const char *vs_source =
@@ -232,8 +230,8 @@ TEST_F(GLReadbackTest, MAYBE_ReadPixelsFloat) {
       reinterpret_cast<void*>(quad_vertices), GL_STATIC_DRAW);
 
   GLint position_location = glGetAttribLocation(program, "a_position");
-  glVertexAttribPointer(
-      position_location, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), NULL);
+  glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE,
+                        2 * sizeof(float), nullptr);
   glEnableVertexAttribArray(position_location);
 
   glUseProgram(program);
@@ -245,9 +243,9 @@ TEST_F(GLReadbackTest, MAYBE_ReadPixelsFloat) {
     GLuint texture_id = 0;
     glGenTextures(1, &texture_id);
     glBindTexture(GL_TEXTURE_2D, texture_id);
-    glTexImage2D(
-        GL_TEXTURE_2D, 0, test_formats[ii].format, kTextureSize, kTextureSize,
-        0, test_formats[ii].format, test_formats[ii].type, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, test_formats[ii].format, kTextureSize,
+                 kTextureSize, 0, test_formats[ii].format,
+                 test_formats[ii].type, nullptr);
 
     GLuint framebuffer = 0;
     glGenFramebuffers(1, &framebuffer);

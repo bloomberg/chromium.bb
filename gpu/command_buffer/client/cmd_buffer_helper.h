@@ -134,7 +134,7 @@ class GPU_EXPORT CommandBufferHelper
     if (entries > immediate_entry_count_) {
       WaitForAvailableEntries(entries);
       if (entries > immediate_entry_count_)
-        return NULL;
+        return nullptr;
     }
 
     DCHECK_LE(entries, immediate_entry_count_);

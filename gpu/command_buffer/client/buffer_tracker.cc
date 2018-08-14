@@ -28,7 +28,7 @@ BufferTracker::Buffer* BufferTracker::CreateBuffer(
   DCHECK_LE(0, size);
   int32_t shm_id = -1;
   uint32_t shm_offset = 0;
-  void* address = NULL;
+  void* address = nullptr;
   if (size)
     address = mapped_memory_->Alloc(size, &shm_id, &shm_offset);
 
@@ -41,7 +41,7 @@ BufferTracker::Buffer* BufferTracker::CreateBuffer(
 
 BufferTracker::Buffer* BufferTracker::GetBuffer(GLuint client_id) {
   BufferMap::iterator it = buffers_.find(client_id);
-  return it != buffers_.end() ? it->second : NULL;
+  return it != buffers_.end() ? it->second : nullptr;
 }
 
 void BufferTracker::RemoveBuffer(GLuint client_id) {
@@ -61,7 +61,7 @@ void BufferTracker::FreePendingToken(Buffer* buffer, int32_t token) {
   buffer->size_ = 0;
   buffer->shm_id_ = 0;
   buffer->shm_offset_ = 0;
-  buffer->address_ = NULL;
+  buffer->address_ = nullptr;
   buffer->last_usage_token_ = 0;
   buffer->last_async_upload_token_ = 0;
 }
@@ -70,7 +70,7 @@ void BufferTracker::Unmanage(Buffer* buffer) {
   buffer->size_ = 0;
   buffer->shm_id_ = 0;
   buffer->shm_offset_ = 0;
-  buffer->address_ = NULL;
+  buffer->address_ = nullptr;
   buffer->last_usage_token_ = 0;
   buffer->last_async_upload_token_ = 0;
 }
@@ -82,7 +82,7 @@ void BufferTracker::Free(Buffer* buffer) {
   buffer->size_ = 0;
   buffer->shm_id_ = 0;
   buffer->shm_offset_ = 0;
-  buffer->address_ = NULL;
+  buffer->address_ = nullptr;
   buffer->last_usage_token_ = 0;
   buffer->last_async_upload_token_ = 0;
 }

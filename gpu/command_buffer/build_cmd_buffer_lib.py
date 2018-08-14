@@ -2053,7 +2053,7 @@ TEST_P(%(test_name)s, %(name)sValidArgsNewId) {
   cmd.Init(kNewClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(Get%(resource_type)s(kNewClientId) != NULL);
+  EXPECT_TRUE(Get%(resource_type)s(kNewClientId) != nullptr);
 }
 """
       self.WriteValidUnitTest(func, f, valid_test, {
@@ -2083,7 +2083,7 @@ TEST_P(%(test_name)s, %(name)sValidArgsNewId) {
   cmd.Init(%(args_with_new_id)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(Get%(resource_type)s(kNewClientId) != NULL);
+  EXPECT_TRUE(Get%(resource_type)s(kNewClientId) != nullptr);
 }
 """
 
@@ -2324,7 +2324,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(*cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(Get%(resource_name)s(kNewClientId) != NULL);
+  EXPECT_TRUE(Get%(resource_name)s(kNewClientId) != nullptr);
 }
 """
     self.WriteValidUnitTest(func, f, valid_test, {
@@ -2339,13 +2339,13 @@ TEST_P(%(test_name)s, %(name)sDuplicateOrNullIds) {
   cmd->Init(3, temp);
   EXPECT_EQ(error::kInvalidArguments,
             ExecuteImmediateCmd(*cmd, sizeof(temp)));
-  EXPECT_TRUE(Get%(resource_name)s(kNewClientId) == NULL);
-  EXPECT_TRUE(Get%(resource_name)s(kNewClientId + 1) == NULL);
+  EXPECT_TRUE(Get%(resource_name)s(kNewClientId) == nullptr);
+  EXPECT_TRUE(Get%(resource_name)s(kNewClientId + 1) == nullptr);
   GLuint null_id[2] = {kNewClientId, 0};
   cmd->Init(2, null_id);
   EXPECT_EQ(error::kInvalidArguments,
             ExecuteImmediateCmd(*cmd, sizeof(temp)));
-  EXPECT_TRUE(Get%(resource_name)s(kNewClientId) == NULL);
+  EXPECT_TRUE(Get%(resource_name)s(kNewClientId) == nullptr);
 }
     """
     self.WriteValidUnitTest(func, f, duplicate_id_test, {
@@ -2698,7 +2698,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_TRUE(
-      Get%(upper_resource_name)s(client_%(resource_name)s_id_) == NULL);
+      Get%(upper_resource_name)s(client_%(resource_name)s_id_) == nullptr);
 }
 """
     self.WriteValidUnitTest(func, f, valid_test, {
@@ -2731,7 +2731,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
             ExecuteImmediateCmd(cmd, sizeof(client_%(resource_name)s_id_)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_TRUE(
-      Get%(upper_resource_name)s(client_%(resource_name)s_id_) == NULL);
+      Get%(upper_resource_name)s(client_%(resource_name)s_id_) == nullptr);
 }
 """
     self.WriteValidUnitTest(func, f, valid_test, {
@@ -2934,7 +2934,7 @@ class GETnHandler(TypeHandler):
   Result* result = GetSharedMemoryAs<Result*>(
       c.%(last_arg_name)s_shm_id, c.%(last_arg_name)s_shm_offset,
       Result::ComputeSize(num_values));
-  %(last_arg_type)s %(last_arg_name)s = result ? result->GetData() : NULL;
+  %(last_arg_type)s %(last_arg_name)s = result ? result->GetData() : nullptr;
 """
     f.write(code % {
         'last_arg_type': last_arg.type,
@@ -2982,8 +2982,8 @@ class GETnHandler(TypeHandler):
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
       c.%(last_arg_name)s_shm_id, c.%(last_arg_name)s_shm_offset,
       sizeof(Result), &buffer_size);
-  %(last_arg_type)s %(last_arg_name)s = result ? result->GetData() : NULL;
-  if (%(last_arg_name)s == NULL) {
+  %(last_arg_type)s %(last_arg_name)s = result ? result->GetData() : nullptr;
+  if (%(last_arg_name)s == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -3967,7 +3967,7 @@ class PUTSTRHandler(ArrayArgTypeHandler):
 """
     f.write(code_block % {
         'data': data_arg.name,
-        'length': length_arg.name if not length_arg == None else 'NULL',
+        'length': length_arg.name if not length_arg == None else 'nullptr',
         'func_name': func.name,
         'bucket_args': ', '.join(bucket_args),
       })
@@ -4031,7 +4031,7 @@ TEST_F(%(prefix)sImplementationTest, %(name)s) {
         gl_args.append('kStrings')
         bucket_args.append('kBucketId')
       elif arg == self.__GetLengthArg(func):
-        gl_args.append('NULL')
+        gl_args.append('nullptr')
       elif arg.name == 'count':
         gl_args.append('2')
       else:
@@ -4635,7 +4635,7 @@ class STRnHandler(TypeHandler):
       GPU_CLIENT_LOG("------\\n" << %(dest_name)s << "\\n------");
     }
   }
-  if (%(length_name)s != NULL) {
+  if (%(length_name)s != nullptr) {
     *%(length_name)s = max_size;
   }
   CheckGLError();
@@ -4675,7 +4675,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   CommonDecoder::Bucket* bucket = decoder_->GetBucket(kBucketId);
-  ASSERT_TRUE(bucket != NULL);
+  ASSERT_TRUE(bucket != nullptr);
   EXPECT_EQ(strlen(kInfo) + 1, bucket->size());
   EXPECT_EQ(0, memcmp(bucket->GetData(0, bucket->size()), kInfo,
                       bucket->size()));
@@ -5285,7 +5285,7 @@ class ImmediatePointerArgument(Argument):
     """Overridden from Argument."""
     if self.optional:
       return
-    f.write("  if (%s == NULL) {\n" % self.name)
+    f.write("  if (%s == nullptr) {\n" % self.name)
     f.write("    return error::kOutOfBounds;\n")
     f.write("  }\n")
 
@@ -5368,7 +5368,7 @@ class PointerArgument(Argument):
     """Overridden from Argument."""
     if self.optional:
       return
-    f.write("  if (%s == NULL) {\n" % self.name)
+    f.write("  if (%s == nullptr) {\n" % self.name)
     f.write("    return error::kOutOfBounds;\n")
     f.write("  }\n")
 
@@ -5455,9 +5455,9 @@ class InputStringArrayBucketArgument(Argument):
     return error::kInvalidArguments;
   }
   const char** %(original_name)s =
-      strs.size() > 0 ? const_cast<const char**>(&strs[0]) : NULL;
+      strs.size() > 0 ? const_cast<const char**>(&strs[0]) : nullptr;
   const GLint* length =
-      len.size() > 0 ? const_cast<const GLint*>(&len[0]) : NULL;
+      len.size() > 0 ? const_cast<const GLint*>(&len[0]) : nullptr;
   (void)length;
 """
     f.write(code % {
@@ -5732,7 +5732,7 @@ class Function(object):
     elif self.return_type == "GLboolean":
       return "GL_FALSE"
     elif "*" in self.return_type:
-      return "NULL"
+      return "nullptr"
     return "0"
 
   def GetGLFunctionName(self):
@@ -7110,7 +7110,7 @@ extern const NameToFunc g_gles2_function_table[] = {
         f.write(
             '  { "gl%s", reinterpret_cast<GLES2FunctionPointer>(gl%s), },\n' %
             (func.name, func.name))
-      f.write("""  { NULL, NULL, },
+      f.write("""  { nullptr, nullptr, },
 };
 
 }  // namespace gles2
@@ -7402,7 +7402,7 @@ const size_t %(p)sUtil::enum_to_string_table_len_ =
 """ % _prefix)
           else:
             f.write("""  return %sUtil::GetQualifiedEnumString(
-      NULL, 0, value);
+      nullptr, 0, value);
 }
 
 """ % _prefix)

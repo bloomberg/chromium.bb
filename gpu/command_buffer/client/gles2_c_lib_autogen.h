@@ -3212,7 +3212,7 @@ extern const NameToFunc g_gles2_function_table[] = {
             glFramebufferTextureMultiviewLayeredANGLE),
     },
     {
-        NULL, NULL,
+        nullptr, nullptr,
     },
 };
 

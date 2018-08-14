@@ -1290,7 +1290,7 @@ TEST_P(GLES2DecoderManualInitTest, ReadPixelsAsyncError) {
   EXPECT_CALL(*gl_, DeleteBuffersARB(1, _)).Times(1);
   EXPECT_CALL(*gl_, BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, _)).Times(2);
   EXPECT_CALL(*gl_,
-              BufferData(GL_PIXEL_PACK_BUFFER_ARB, _, NULL, GL_STREAM_READ))
+              BufferData(GL_PIXEL_PACK_BUFFER_ARB, _, nullptr, GL_STREAM_READ))
       .Times(1);
 
   ReadPixels cmd;
@@ -1336,7 +1336,7 @@ class GLES2ReadPixelsAsyncTest : public GLES2DecoderManualInitTest {
     EXPECT_CALL(*gl_, BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, kServiceBufferId))
         .Times(1);
     EXPECT_CALL(*gl_, BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0)).Times(1);
-    EXPECT_CALL(*gl_, BufferData(GL_PIXEL_PACK_BUFFER_ARB, kBufferSize, NULL,
+    EXPECT_CALL(*gl_, BufferData(GL_PIXEL_PACK_BUFFER_ARB, kBufferSize, nullptr,
                                  GL_STREAM_READ))
         .Times(1);
     GLsync sync = reinterpret_cast<GLsync>(kServiceSyncId);
@@ -3053,7 +3053,7 @@ void GLES2DecoderWithShaderTest::CheckRenderbufferChangesMarkFBOAsNotComplete(
 
   Framebuffer* framebuffer =
       framebuffer_manager->GetFramebuffer(client_framebuffer_id_);
-  ASSERT_TRUE(framebuffer != NULL);
+  ASSERT_TRUE(framebuffer != nullptr);
   framebuffer_manager->MarkAsComplete(framebuffer);
   EXPECT_TRUE(framebuffer_manager->IsComplete(framebuffer));
 
@@ -3142,7 +3142,7 @@ void GLES2DecoderWithShaderTest::CheckTextureChangesMarkFBOAsNotComplete(
 
   Framebuffer* framebuffer =
       framebuffer_manager->GetFramebuffer(client_framebuffer_id_);
-  ASSERT_TRUE(framebuffer != NULL);
+  ASSERT_TRUE(framebuffer != nullptr);
   framebuffer_manager->MarkAsComplete(framebuffer);
   EXPECT_TRUE(framebuffer_manager->IsComplete(framebuffer));
 

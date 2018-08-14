@@ -65,7 +65,7 @@ const volatile void* AddressAfterStruct(const volatile T& pod) {
   return reinterpret_cast<const volatile uint8_t*>(&pod) + sizeof(pod);
 }
 
-// Returns the address of the frst byte after the struct or NULL if size >
+// Returns the address of the frst byte after the struct or nullptr if size >
 // immediate_data_size.
 template <typename RETURN_TYPE, typename COMMAND_TYPE>
 RETURN_TYPE GetImmediateDataAs(const volatile COMMAND_TYPE& pod,
@@ -74,7 +74,7 @@ RETURN_TYPE GetImmediateDataAs(const volatile COMMAND_TYPE& pod,
   return (size <= immediate_data_size)
              ? static_cast<RETURN_TYPE>(
                    const_cast<volatile void*>(AddressAfterStruct(pod)))
-             : NULL;
+             : nullptr;
 }
 
 struct GLES2_UTILS_EXPORT PixelStoreParams {
