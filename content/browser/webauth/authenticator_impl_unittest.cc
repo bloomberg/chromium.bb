@@ -1141,7 +1141,7 @@ class TestAuthenticatorRequestDelegate
         is_focused_(is_focused) {}
   ~TestAuthenticatorRequestDelegate() override {}
 
-  void DidStartRequest() override {
+  void DidStartRequest(base::OnceClosure cancel_callback) override {
     ASSERT_TRUE(did_start_request_callback_) << "DidStartRequest called twice.";
     std::move(did_start_request_callback_).Run();
   }

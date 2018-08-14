@@ -16,7 +16,8 @@ AuthenticatorRequestClientDelegate::AuthenticatorRequestClientDelegate() =
 AuthenticatorRequestClientDelegate::~AuthenticatorRequestClientDelegate() =
     default;
 
-void AuthenticatorRequestClientDelegate::DidStartRequest() {}
+void AuthenticatorRequestClientDelegate::DidStartRequest(
+    base::OnceClosure cancel_callback) {}
 
 bool AuthenticatorRequestClientDelegate::ShouldPermitIndividualAttestation(
     const std::string& relying_party_id) {

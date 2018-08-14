@@ -71,6 +71,10 @@ class AuthenticatorRequestDialogModel {
     // Called when the UX flow has navigated to a different step, so the UI
     // should update.
     virtual void OnStepTransition() {}
+
+    // Called when the user cancelled WebAuthN request by clicking the
+    // "cancel" button or the back arrow in the UI dialog.
+    virtual void OnCancelRequest() {}
   };
 
   AuthenticatorRequestDialogModel();

@@ -123,6 +123,14 @@ ChromeAuthenticatorRequestDelegate::~ChromeAuthenticatorRequestDelegate() {
   }
 }
 
+base::Optional<device::FidoTransportProtocol>
+ChromeAuthenticatorRequestDelegate::GetLastTransportUsed() const {
+  PrefService* prefs =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
+  return device::ConvertToFidoTransportProtocol(
+      prefs->GetString(kWebAuthnLastTransportUsedPrefName));
+}
+
 base::WeakPtr<ChromeAuthenticatorRequestDelegate>
 ChromeAuthenticatorRequestDelegate::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
@@ -134,7 +142,8 @@ content::BrowserContext* ChromeAuthenticatorRequestDelegate::browser_context()
       ->GetBrowserContext();
 }
 
-void ChromeAuthenticatorRequestDelegate::DidStartRequest() {
+void ChromeAuthenticatorRequestDelegate::DidStartRequest(
+    base::OnceClosure cancel_callback) {
 #if !defined(OS_ANDROID)
   if (!IsWebAuthnUiEnabled())
     return;
@@ -143,6 +152,7 @@ void ChromeAuthenticatorRequestDelegate::DidStartRequest() {
   weak_dialog_model_ = dialog_model.get();
   SetInitialUiModelBasedOnPreviouslyUsedTransport(weak_dialog_model_,
                                                   GetLastTransportUsed());
+  cancel_callback_ = std::move(cancel_callback);
   weak_dialog_model_->AddObserver(this);
 
   ShowAuthenticatorRequestDialog(
@@ -248,12 +258,12 @@ ChromeAuthenticatorRequestDelegate::GetTouchIdAuthenticatorConfig() const {
 }
 #endif
 
-base::Optional<device::FidoTransportProtocol>
-ChromeAuthenticatorRequestDelegate::GetLastTransportUsed() const {
+void ChromeAuthenticatorRequestDelegate::UpdateLastTransportUsed(
+    device::FidoTransportProtocol transport) {
   PrefService* prefs =
       Profile::FromBrowserContext(browser_context())->GetPrefs();
-  return device::ConvertToFidoTransportProtocol(
-      prefs->GetString(kWebAuthnLastTransportUsedPrefName));
+  prefs->SetString(kWebAuthnLastTransportUsedPrefName,
+                   device::ToString(transport));
 }
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorAdded(
@@ -281,15 +291,14 @@ void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorRemoved(
       saved_authenticators.end());
 }
 
-void ChromeAuthenticatorRequestDelegate::UpdateLastTransportUsed(
-    device::FidoTransportProtocol transport) {
-  PrefService* prefs =
-      Profile::FromBrowserContext(browser_context())->GetPrefs();
-  prefs->SetString(kWebAuthnLastTransportUsedPrefName,
-                   device::ToString(transport));
-}
-
 void ChromeAuthenticatorRequestDelegate::OnModelDestroyed() {
   DCHECK(weak_dialog_model_);
   weak_dialog_model_ = nullptr;
+}
+
+void ChromeAuthenticatorRequestDelegate::OnCancelRequest() {
+  // |cancel_callback_| must be invoked at most once as invocation of
+  // |cancel_callback_| will destroy |this|.
+  DCHECK(cancel_callback_);
+  std::move(cancel_callback_).Run();
 }

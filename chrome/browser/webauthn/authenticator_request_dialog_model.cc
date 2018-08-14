@@ -73,11 +73,17 @@ void AuthenticatorRequestDialogModel::TryUsbDevice() {
   DCHECK_EQ(current_step(), Step::kUsbInsertAndActivateOnRegister);
 }
 
-void AuthenticatorRequestDialogModel::Cancel() {}
+void AuthenticatorRequestDialogModel::Cancel() {
+  for (auto& observer : observers_)
+    observer.OnCancelRequest();
+}
 
 void AuthenticatorRequestDialogModel::Back() {
-  // For now, return to the initial step all the time.
-  SetCurrentStep(Step::kInitial);
+  if (current_step() == Step::kInitial) {
+    Cancel();
+  } else {
+    SetCurrentStep(Step::kInitial);
+  }
 }
 
 void AuthenticatorRequestDialogModel::AddObserver(Observer* observer) {

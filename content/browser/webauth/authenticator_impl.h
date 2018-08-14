@@ -141,6 +141,8 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
 
   // Runs when timer expires and cancels all issued requests to a U2fDevice.
   void OnTimeout();
+  // Runs when the user cancels WebAuthN request via UI dialog.
+  void Cancel();
 
   void InvokeCallbackAndCleanup(
       MakeCredentialCallback callback,
