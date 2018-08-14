@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.sync.GoogleServiceAuthError.State;
 import org.chromium.components.sync.AndroidSyncSettings;
 
 /**
@@ -63,7 +64,8 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         }
         if (shouldSyncAuthErrorBeShown()) {
             showSyncNotification(
-                    mProfileSyncService.getAuthError().getMessage(), createSettingsIntent());
+                    GoogleServiceAuthError.getMessageID(mProfileSyncService.getAuthError()),
+                    createSettingsIntent());
         } else if (mProfileSyncService.isEngineInitialized()
                 && mProfileSyncService.isPassphraseRequiredForDecryption()) {
             if (mProfileSyncService.isPassphrasePrompted()) {
@@ -124,17 +126,17 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
 
     private boolean shouldSyncAuthErrorBeShown() {
         switch (mProfileSyncService.getAuthError()) {
-            case NONE:
-            case CONNECTION_FAILED:
-            case SERVICE_UNAVAILABLE:
-            case REQUEST_CANCELED:
-            case INVALID_GAIA_CREDENTIALS:
+            case State.NONE:
+            case State.CONNECTION_FAILED:
+            case State.SERVICE_UNAVAILABLE:
+            case State.REQUEST_CANCELED:
+            case State.INVALID_GAIA_CREDENTIALS:
                 return false;
-            case USER_NOT_SIGNED_UP:
-            case CAPTCHA_REQUIRED:
-            case ACCOUNT_DELETED:
-            case ACCOUNT_DISABLED:
-            case TWO_FACTOR:
+            case State.USER_NOT_SIGNED_UP:
+            case State.CAPTCHA_REQUIRED:
+            case State.ACCOUNT_DELETED:
+            case State.ACCOUNT_DISABLED:
+            case State.TWO_FACTOR:
                 return true;
             default:
                 Log.w(TAG, "Not showing unknown Auth Error: " + mProfileSyncService.getAuthError());

@@ -96,7 +96,8 @@ public class SyncPreference extends Preference {
         }
 
         if (profileSyncService.getAuthError() != GoogleServiceAuthError.State.NONE) {
-            return res.getString(profileSyncService.getAuthError().getMessage());
+            return res.getString(
+                    GoogleServiceAuthError.getMessageID(profileSyncService.getAuthError()));
         }
 
         if (profileSyncService.getProtocolErrorClientAction()
