@@ -275,7 +275,6 @@ html element a
 html element abbr
 html element acronym
 html element address
-html element applet
 html element area
     property alt
     property coords
@@ -359,7 +358,6 @@ html element base
 html element basefont
 html element bdi
 html element bdo
-html element bgsound
 html element big
 html element blockquote
     property cite
@@ -434,7 +432,6 @@ html element colgroup
     property span
     property vAlign
     property width
-html element command
 html element content
     property getDistributedNodes
     property select
@@ -581,7 +578,6 @@ html element iframe
     property src
     property srcdoc
     property width
-html element image
 html element img
     property align
     property alt
@@ -670,7 +666,6 @@ html element ins
     property cite
     property dateTime
 html element kbd
-html element keygen
 html element label
     property control
     property form
