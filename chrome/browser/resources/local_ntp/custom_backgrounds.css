@@ -336,24 +336,31 @@ html[dir=rtl] .is-img-sel #bg-sel-title {
 }
 
 .bg-sel-footer-button {
+  border: none;
   border-radius: 4px;
   bottom: 16px;
   font-family: 'Roboto', arial, sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
+  height: 32px;
   line-height: normal;
+  padding: 0 16px;
   position: absolute;
   text-align: center;
+  transition-duration: 200ms;
+  transition-property: background-color, color, box-shadow, border;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   vertical-align: middle;
+}
+
+.bg-sel-footer-button:disabled {
+  transition: none;
 }
 
 #bg-sel-footer-done {
   background-color: rgb(241, 243, 244);
   color: rgb(128, 134, 139);
-  height: 24px;
-  padding-top: 9px;
   right: 16px;
-  width: 62px;
 }
 
 html[dir=rtl] #bg-sel-footer-done {
@@ -362,14 +369,11 @@ html[dir=rtl] #bg-sel-footer-done {
 }
 
 #bg-sel-footer-cancel {
-  background-color: #fff;
+  background-color: white;
   border: 1px solid rgb(218, 220, 224);
   color: rgb(26, 115, 232);
-  height: 23px;
   margin-right: 8px;
-  padding-top: 8px;
   right: 78px;
-  width: 66px;
 }
 
 html[dir=rtl] #bg-sel-footer-cancel {
@@ -379,23 +383,31 @@ html[dir=rtl] #bg-sel-footer-cancel {
 }
 
 #bg-sel-footer-cancel:hover {
-  background-color: rgba(154, 160, 166, 0.04);
+  background-color: rgba(66, 133, 244, 0.04);
+  border-color: rgb(210, 227, 252);
 }
 
 #bg-sel-footer-cancel:active {
-  background-color: #fff;
-  box-shadow: 0 1px 1px 0 rgba(60, 64, 67, 0.3), 0 1px 1px 1px rgba(60, 64, 67, 0.15);
-  outline: none;
+  background-color: white;
+  border-color: white;
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3),
+  0 3px 6px 2px rgba(60, 64, 67, 0.15);
 }
 
 #bg-sel-footer-done.done-available:active {
-  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 2px 6px 2px rgba(60, 64, 67, 0.15);
-  outline: none;
+  box-shadow: 0 1px 2px 0 rgba(66, 133, 244, 0.3),
+      0 3px 6px 2px rgba(66, 133, 244, 0.15);
+}
+
+#bg-sel-footer-done.done-available:hover {
+  background-color: rgb(41, 123, 231);
+  box-shadow: 0 1px 2px 0 rgba(66, 133, 244, 0.3),
+      0 1px 3px 1px rgba(66, 133, 244, 0.15);
 }
 
 #bg-sel-footer-done.done-available {
   background-color: rgb(26, 115, 232);
-  color: #FFF;
+  color: white;
 }
 
 #bg-sel-footer-toggle-text {

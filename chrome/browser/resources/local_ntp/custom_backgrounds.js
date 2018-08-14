@@ -419,6 +419,8 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
     tile.id = 'coll_tile_' + i;
     tile.dataset.tile_num = i;
     tile.tabIndex = -1;
+    // Accessibility support for screen readers.
+    tile.setAttribute('role', 'button');
 
     var title = document.createElement('div');
     title.classList.add(customBackgrounds.CLASSES.COLLECTION_TITLE);
@@ -576,6 +578,8 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
   for (var i = 0; i < imageData.length; ++i) {
     var tile = document.createElement('div');
     tile.classList.add(customBackgrounds.CLASSES.COLLECTION_TILE);
+    // Accessibility support for screen readers.
+    tile.setAttribute('role', 'button');
 
     // Set the background image, the name of the source variable differs
     // depending on if it's coming from Chrome Backgrounds or Google Photos.
@@ -641,7 +645,8 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
 
     tile.onclick = function(event) {
       let clickCount = event.detail;
-      if (clickCount == 1) {
+      // Control + option + space will fire the onclick event with 0 clickCount.
+      if (clickCount <= 1) {
         tileInteraction(event);
       } else if (clickCount == 2 && customBackgrounds.selectedTile == this) {
         customBackgrounds.setBackground(this.dataset.url,
