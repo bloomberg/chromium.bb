@@ -122,7 +122,6 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
   }
 
   DCHECK(surface->HasActiveFrame());
-  surface->UpdateSurfaceReferences();
 
   // Check if this is a display root surface and the SurfaceId is changing.
   if (is_root_ && (!referenced_local_surface_id_ ||

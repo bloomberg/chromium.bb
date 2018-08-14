@@ -98,29 +98,6 @@ void Surface::UnrefResources(const std::vector<ReturnedResource>& resources) {
     surface_client_->UnrefResources(resources);
 }
 
-void Surface::UpdateSurfaceReferences() {
-  const base::flat_set<SurfaceId>& existing_referenced_surfaces =
-      surface_manager_->GetSurfacesReferencedByParent(surface_id());
-  base::flat_set<SurfaceId> new_referenced_surfaces(
-      active_referenced_surfaces().begin(), active_referenced_surfaces().end(),
-      base::KEEP_FIRST_OF_DUPES);
-
-  // Populate list of surface references to add and remove by getting the
-  // difference between existing surface references and surface references for
-  // latest activated CompositorFrame.
-  std::vector<SurfaceReference> references_to_add;
-  std::vector<SurfaceReference> references_to_remove;
-  GetSurfaceReferenceDifference(surface_id(), existing_referenced_surfaces,
-                                new_referenced_surfaces, &references_to_add,
-                                &references_to_remove);
-
-  // Modify surface references stored in SurfaceManager.
-  if (!references_to_add.empty())
-    surface_manager_->AddSurfaceReferences(references_to_add);
-  if (!references_to_remove.empty())
-    surface_manager_->RemoveSurfaceReferences(references_to_remove);
-}
-
 void Surface::RejectCompositorFramesToFallbackSurfaces() {
   for (const SurfaceRange& surface_range :
        GetPendingFrame().metadata.referenced_surfaces) {
@@ -142,6 +119,65 @@ void Surface::RejectCompositorFramesToFallbackSurfaces() {
     if (fallback_surface &&
         fallback_surface->surface_id() != surface_range.end()) {
       fallback_surface->Close();
+    }
+  }
+}
+
+void Surface::UpdateSurfaceReferences() {
+  const base::flat_set<SurfaceId>& existing_referenced_surfaces =
+      surface_manager_->GetSurfacesReferencedByParent(surface_id());
+
+  // Populate list of surface references to add and remove by getting the
+  // difference between existing surface references and surface references for
+  // latest activated CompositorFrame.
+  std::vector<SurfaceReference> references_to_add;
+  std::vector<SurfaceReference> references_to_remove;
+  GetSurfaceReferenceDifference(surface_id(), existing_referenced_surfaces,
+                                active_referenced_surfaces(),
+                                &references_to_add, &references_to_remove);
+
+  // Modify surface references stored in SurfaceManager.
+  if (!references_to_add.empty())
+    surface_manager_->AddSurfaceReferences(references_to_add);
+  if (!references_to_remove.empty())
+    surface_manager_->RemoveSurfaceReferences(references_to_remove);
+}
+
+void Surface::OnChildActivated(const SurfaceId& activated_id) {
+  DCHECK(HasActiveFrame());
+
+  for (size_t i = 0;
+       i < active_frame_data_->frame.metadata.referenced_surfaces.size(); i++) {
+    const SurfaceRange& surface_range =
+        active_frame_data_->frame.metadata.referenced_surfaces[i];
+    const SurfaceId& last_id = last_surface_id_for_range_[i];
+
+    // If |activated_id| is in fallback's FrameSinkId but we already reference a
+    // SurfaceId in the primary's FrameSinkId, we do nothing.
+    if (surface_range.HasDifferentFrameSinkIds() && last_id.is_valid() &&
+        last_id.frame_sink_id() == surface_range.end().frame_sink_id() &&
+        activated_id.frame_sink_id() ==
+            surface_range.start()->frame_sink_id()) {
+      continue;
+    }
+
+    if (surface_range.IsInRangeInclusive(activated_id)) {
+      // Remove the old reference.
+      if (last_id.is_valid()) {
+        auto old_it = active_referenced_surfaces_.find(last_id);
+        if (old_it != active_referenced_surfaces_.end())
+          active_referenced_surfaces_.erase(old_it);
+        surface_manager_->RemoveSurfaceReferences(
+            {SurfaceReference(surface_info_.id(), last_id)});
+      }
+
+      // Add a new reference.
+      active_referenced_surfaces_.insert(activated_id);
+      surface_manager_->AddSurfaceReferences(
+          {SurfaceReference(surface_info_.id(), activated_id)});
+
+      // Update the referenced surface for this range.
+      last_surface_id_for_range_[i] = activated_id;
     }
   }
 }
@@ -306,6 +342,56 @@ void Surface::ActivatePendingFrame(base::Optional<base::TimeDelta> duration) {
   ActivateFrame(std::move(frame_data), duration);
 }
 
+void Surface::UpdateObservedSinks(
+    const base::flat_set<FrameSinkId>& new_observed_sinks) {
+  std::vector<FrameSinkId> sinks_to_remove;
+  std::vector<FrameSinkId> sinks_to_add;
+
+  for (const FrameSinkId& sink_id : new_observed_sinks)
+    if (observed_sinks_.count(sink_id) == 0)
+      sinks_to_add.push_back(sink_id);
+
+  for (const FrameSinkId& sink_id : observed_sinks_)
+    if (new_observed_sinks.count(sink_id) == 0)
+      sinks_to_remove.push_back(sink_id);
+
+  for (const FrameSinkId& sink_id : sinks_to_remove) {
+    observed_sinks_.erase(sink_id);
+    surface_manager_->RemoveActivationObserver(sink_id, surface_info_.id());
+  }
+
+  for (const FrameSinkId& sink_id : sinks_to_add) {
+    observed_sinks_.insert(sink_id);
+    surface_manager_->AddActivationObserver(sink_id, surface_info_.id());
+  }
+}
+
+void Surface::RecomputeActiveReferencedSurfaces() {
+  // Extract the latest in flight surface from the ranges in the frame then
+  // notify SurfaceManager of the new references.
+  active_referenced_surfaces_.clear();
+  last_surface_id_for_range_.clear();
+  base::flat_set<FrameSinkId> new_observed_sinks;
+  for (const SurfaceRange& surface_range :
+       active_frame_data_->frame.metadata.referenced_surfaces) {
+    // Observe frame sinks of both endpoints of the range.
+    new_observed_sinks.insert(surface_range.end().frame_sink_id());
+    if (surface_range.HasDifferentFrameSinkIds())
+      new_observed_sinks.insert(surface_range.start()->frame_sink_id());
+
+    Surface* surface =
+        surface_manager_->GetLatestInFlightSurface(surface_range);
+    if (surface) {
+      active_referenced_surfaces_.insert(surface->surface_id());
+      last_surface_id_for_range_.push_back(surface->surface_id());
+    } else {
+      last_surface_id_for_range_.push_back(SurfaceId());
+    }
+  }
+  UpdateObservedSinks(new_observed_sinks);
+  UpdateSurfaceReferences();
+}
+
 // A frame is activated if all its Surface ID dependences are active or a
 // deadline has hit and the frame was forcibly activated. |duration| is a
 // measure of the time the frame has spent waiting on dependencies to arrive.
@@ -331,12 +417,7 @@ void Surface::ActivateFrame(FrameData frame_data,
 
   active_frame_data_ = std::move(frame_data);
 
-  active_referenced_surfaces_.clear();
-  for (SurfaceRange surface_range :
-       active_frame_data_->frame.metadata.referenced_surfaces) {
-    if (surface_range.start())
-      active_referenced_surfaces_.emplace_back(*surface_range.start());
-  }
+  RecomputeActiveReferencedSurfaces();
 
   for (auto& copy_request : old_copy_requests)
     RequestCopyOfOutput(std::move(copy_request));
