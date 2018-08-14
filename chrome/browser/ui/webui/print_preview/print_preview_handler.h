@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 
 #include "base/files/file_path.h"
@@ -103,7 +104,7 @@ class PrintPreviewHandler
   // Notify the WebUI that the page preview is ready.
   void SendPagePreviewReady(int page_index,
                             int preview_uid,
-                            int preview_response_id);
+                            int preview_request_id);
 
   int regenerate_preview_request_count() const {
     return regenerate_preview_request_count_;
@@ -354,6 +355,9 @@ class PrintPreviewHandler
 
   // Maps preview request ids to callbacks.
   std::map<int, std::string> preview_callbacks_;
+
+  // Set of preview request ids for failed previews.
+  std::set<int> preview_failures_;
 
   base::WeakPtrFactory<PrintPreviewHandler> weak_factory_;
 
