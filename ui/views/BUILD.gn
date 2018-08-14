@@ -78,7 +78,6 @@ jumbo_component("views") {
     "background.h",
     "border.h",
     "bubble/bubble_border.h",
-    "bubble/bubble_dialog_delegate.h",
     "bubble/bubble_dialog_delegate_view.h",
     "bubble/bubble_frame_view.h",
     "bubble/info_bubble.h",
