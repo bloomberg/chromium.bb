@@ -394,7 +394,7 @@ public class CastMediaRouteProvider extends BaseMediaRouteProvider {
                         tabId));
     }
 
-    // TODO(zqzhang): Move this method to CastMessageHandler.
+    // Migrated to CastMessageHandler.sendReceiverActionToClient. See https://crbug.com/711860.
     private void sendReceiverAction(
             String routeId, MediaSink sink, String clientId, String action) {
         try {

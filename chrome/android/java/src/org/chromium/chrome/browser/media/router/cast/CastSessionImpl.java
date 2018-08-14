@@ -20,6 +20,7 @@ import org.json.JSONObject;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.media.router.CastSessionUtil;
 import org.chromium.chrome.browser.media.router.FlingingController;
 import org.chromium.chrome.browser.media.router.MediaSource;
 import org.chromium.chrome.browser.media.ui.MediaNotificationInfo;
@@ -41,9 +42,6 @@ import javax.annotation.Nullable;
  */
 public class CastSessionImpl implements MediaNotificationListener, CastSession {
     private static final String TAG = "MediaRouter";
-
-    // The value is borrowed from the Android Cast SDK code to match their behavior.
-    private static final double MIN_VOLUME_LEVEL_DELTA = 1e-7;
 
     private static class CastMessagingChannel implements Cast.MessageReceivedCallback {
         private final CastSession mSession;
@@ -405,7 +403,8 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
                 double newLevel = volume.getDouble("level");
                 double currentLevel = Cast.CastApi.getVolume(mApiClient);
                 if (!Double.isNaN(currentLevel)
-                        && Math.abs(currentLevel - newLevel) > MIN_VOLUME_LEVEL_DELTA) {
+                        && Math.abs(currentLevel - newLevel)
+                                > CastSessionUtil.MIN_VOLUME_LEVEL_DELTA) {
                     Cast.CastApi.setVolume(mApiClient, newLevel);
                     waitForVolumeChange = true;
                 }

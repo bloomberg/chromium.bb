@@ -36,7 +36,7 @@ public abstract class CafBaseMediaRouteProvider
     private static final String TAG = "CafMR";
 
     protected static final List<MediaSink> NO_SINKS = Collections.emptyList();
-    protected final MediaRouter mAndroidMediaRouter;
+    private final @NonNull MediaRouter mAndroidMediaRouter;
     protected final MediaRouteManager mManager;
     protected final Map<String, DiscoveryCallback> mDiscoveryCallbacks =
             new HashMap<String, DiscoveryCallback>();
@@ -87,13 +87,6 @@ public abstract class CafBaseMediaRouteProvider
     public final void startObservingMediaSinks(String sourceId) {
         Log.d(TAG, "startObservingMediaSinks: " + sourceId);
 
-        if (mAndroidMediaRouter == null) {
-            // If the MediaRouter API is not available, report no devices so the page doesn't even
-            // try to cast.
-            onSinksReceived(sourceId, NO_SINKS);
-            return;
-        }
-
         MediaSource source = getSourceFromId(sourceId);
         if (source == null) {
             // If the source is invalid or not supported by this provider, report no devices
@@ -134,8 +127,6 @@ public abstract class CafBaseMediaRouteProvider
     public final void stopObservingMediaSinks(String sourceId) {
         Log.d(TAG, "startObservingMediaSinks: " + sourceId);
 
-        if (mAndroidMediaRouter == null) return;
-
         MediaSource source = getSourceFromId(sourceId);
         if (source == null) return;
 
@@ -158,10 +149,6 @@ public abstract class CafBaseMediaRouteProvider
         Log.d(TAG, "createRoute");
         if (mPendingCreateRouteRequestInfo != null) {
             // TODO(zqzhang): do something.
-        }
-        if (mAndroidMediaRouter == null) {
-            mManager.onRouteRequestError("Not supported", nativeRequestId);
-            return;
         }
 
         MediaSink sink = MediaSink.fromSinkId(sinkId, mAndroidMediaRouter);
@@ -220,6 +207,10 @@ public abstract class CafBaseMediaRouteProvider
                 route.id, route.sinkId, mPendingCreateRouteRequestInfo.nativeRequestId, this, true);
 
         mPendingCreateRouteRequestInfo = null;
+    }
+
+    public @NonNull MediaRouter getAndroidMediaRouter() {
+        return mAndroidMediaRouter;
     }
 
     // TODO(zqzhang): this is a temporary workaround for give CafMRP to manage ClientRecords on

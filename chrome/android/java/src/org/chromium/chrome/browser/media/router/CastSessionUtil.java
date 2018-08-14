@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.media.router.cast;
+package org.chromium.chrome.browser.media.router;
 
 import com.google.android.gms.cast.CastDevice;
 import com.google.android.gms.cast.RemoteMediaPlayer;
@@ -15,6 +15,9 @@ import org.chromium.content_public.common.MediaMetadata;
  */
 public class CastSessionUtil {
     public static final String MEDIA_NAMESPACE = "urn:x-cast:com.google.cast.media";
+
+    // The value is borrowed from the Android Cast SDK code to match their behavior.
+    public static final double MIN_VOLUME_LEVEL_DELTA = 1e-7;
 
     /**
      * Builds a MediaMetadata from the given CastDevice and MediaPlayer, and sets it on the builder
