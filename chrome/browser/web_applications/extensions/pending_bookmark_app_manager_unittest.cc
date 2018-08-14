@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_shortcut_installation_task.h"
@@ -24,8 +25,21 @@ namespace extensions {
 
 namespace {
 
-const char kWebAppUrl[] = "https://foo.example";
-const char kWrongUrl[] = "https://bar.example";
+const char kFooWebAppUrl[] = "https://foo.example";
+const char kBarWebAppUrl[] = "https://bar.example";
+
+const char kWrongUrl[] = "https://foobar.example";
+
+web_app::PendingAppManager::AppInfo GetFooAppInfo() {
+  return web_app::PendingAppManager::AppInfo(
+      GURL(kFooWebAppUrl), web_app::PendingAppManager::LaunchContainer::kTab);
+}
+
+web_app::PendingAppManager::AppInfo GetBarAppInfo() {
+  return web_app::PendingAppManager::AppInfo(
+      GURL(kBarWebAppUrl),
+      web_app::PendingAppManager::LaunchContainer::kWindow);
+}
 
 }  // namespace
 
@@ -56,7 +70,17 @@ class TestBookmarkAppShortcutInstallationTask
 
 class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
  public:
-  PendingBookmarkAppManagerTest() = default;
+  PendingBookmarkAppManagerTest()
+      : test_web_contents_creator_(base::BindRepeating(
+            &PendingBookmarkAppManagerTest::CreateTestWebContents,
+            base::Unretained(this))),
+        successful_installation_task_creator_(base::BindRepeating(
+            &PendingBookmarkAppManagerTest::CreateSuccessfulInstallationTask,
+            base::Unretained(this))),
+        failing_installation_task_creator_(base::BindRepeating(
+            &PendingBookmarkAppManagerTest::CreateFailingInstallationTask,
+            base::Unretained(this))) {}
+
   ~PendingBookmarkAppManagerTest() override = default;
 
   void SetUp() override {
@@ -97,6 +121,21 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
  protected:
   void ResetResults() { install_succeeded_ = base::nullopt; }
 
+  const PendingBookmarkAppManager::WebContentsFactory&
+  test_web_contents_creator() {
+    return test_web_contents_creator_;
+  }
+
+  const PendingBookmarkAppManager::TaskFactory&
+  successful_installation_task_creator() {
+    return successful_installation_task_creator_;
+  }
+
+  const PendingBookmarkAppManager::TaskFactory&
+  failing_installation_task_creator() {
+    return failing_installation_task_creator_;
+  }
+
   content::WebContentsTester* web_contents_tester() {
     return web_contents_tester_;
   }
@@ -107,75 +146,152 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
   content::WebContentsTester* web_contents_tester_ = nullptr;
   base::Optional<bool> install_succeeded_;
 
+  PendingBookmarkAppManager::WebContentsFactory test_web_contents_creator_;
+  PendingBookmarkAppManager::TaskFactory successful_installation_task_creator_;
+  PendingBookmarkAppManager::TaskFactory failing_installation_task_creator_;
+
   DISALLOW_COPY_AND_ASSIGN(PendingBookmarkAppManagerTest);
 };
 
 TEST_F(PendingBookmarkAppManagerTest, Install_Succeeds) {
   PendingBookmarkAppManager pending_app_manager(profile());
   pending_app_manager.SetFactoriesForTesting(
-      base::BindRepeating(&PendingBookmarkAppManagerTest::CreateTestWebContents,
-                          base::Unretained(this)),
-      base::BindRepeating(
-          &PendingBookmarkAppManagerTest::CreateSuccessfulInstallationTask,
-          base::Unretained(this)));
+      test_web_contents_creator(), successful_installation_task_creator());
 
   pending_app_manager.Install(
-      web_app::PendingAppManager::AppInfo(
-          GURL(kWebAppUrl), web_app::PendingAppManager::LaunchContainer::kTab),
+      GetFooAppInfo(),
       base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
                      base::Unretained(this)));
-  web_contents_tester()->NavigateAndCommit(GURL(kWebAppUrl));
-  web_contents_tester()->TestDidFinishLoad(GURL(kWebAppUrl));
+
+  base::RunLoop().RunUntilIdle();
+  web_contents_tester()->NavigateAndCommit(GURL(kFooWebAppUrl));
+  web_contents_tester()->TestDidFinishLoad(GURL(kFooWebAppUrl));
   EXPECT_TRUE(install_succeeded());
 }
 
 TEST_F(PendingBookmarkAppManagerTest, Install_SucceedsTwice) {
   PendingBookmarkAppManager pending_app_manager(profile());
   pending_app_manager.SetFactoriesForTesting(
-      base::BindRepeating(&PendingBookmarkAppManagerTest::CreateTestWebContents,
-                          base::Unretained(this)),
-      base::BindRepeating(
-          &PendingBookmarkAppManagerTest::CreateSuccessfulInstallationTask,
-          base::Unretained(this)));
+      test_web_contents_creator(), successful_installation_task_creator());
 
   pending_app_manager.Install(
-      web_app::PendingAppManager::AppInfo(
-          GURL(kWebAppUrl), web_app::PendingAppManager::LaunchContainer::kTab),
+      GetFooAppInfo(),
       base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
                      base::Unretained(this)));
-  web_contents_tester()->NavigateAndCommit(GURL(kWebAppUrl));
-  web_contents_tester()->TestDidFinishLoad(GURL(kWebAppUrl));
+
+  base::RunLoop().RunUntilIdle();
+  web_contents_tester()->NavigateAndCommit(GURL(kFooWebAppUrl));
+  web_contents_tester()->TestDidFinishLoad(GURL(kFooWebAppUrl));
   EXPECT_TRUE(install_succeeded());
   ResetResults();
 
   pending_app_manager.Install(
-      web_app::PendingAppManager::AppInfo(
-          GURL(kWebAppUrl), web_app::PendingAppManager::LaunchContainer::kTab),
+      GetBarAppInfo(),
       base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
                      base::Unretained(this)));
-  web_contents_tester()->NavigateAndCommit(GURL(kWebAppUrl));
-  web_contents_tester()->TestDidFinishLoad(GURL(kWebAppUrl));
+
+  base::RunLoop().RunUntilIdle();
+  web_contents_tester()->NavigateAndCommit(GURL(kBarWebAppUrl));
+  web_contents_tester()->TestDidFinishLoad(GURL(kBarWebAppUrl));
+  EXPECT_TRUE(install_succeeded());
+}
+
+TEST_F(PendingBookmarkAppManagerTest, Install_PendingSuccessfulTask) {
+  PendingBookmarkAppManager pending_app_manager(profile());
+  pending_app_manager.SetFactoriesForTesting(
+      test_web_contents_creator(), successful_installation_task_creator());
+
+  pending_app_manager.Install(
+      GetFooAppInfo(),
+      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
+                     base::Unretained(this)));
+  pending_app_manager.Install(
+      GetBarAppInfo(),
+      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
+                     base::Unretained(this)));
+
+  // Finish the first install.
+  base::RunLoop().RunUntilIdle();
+  web_contents_tester()->NavigateAndCommit(GURL(kFooWebAppUrl));
+  web_contents_tester()->TestDidFinishLoad(GURL(kFooWebAppUrl));
+  EXPECT_TRUE(install_succeeded());
+  ResetResults();
+
+  // Finish the second install.
+  base::RunLoop().RunUntilIdle();
+  web_contents_tester()->NavigateAndCommit(GURL(kBarWebAppUrl));
+  web_contents_tester()->TestDidFinishLoad(GURL(kBarWebAppUrl));
+  EXPECT_TRUE(install_succeeded());
+}
+
+TEST_F(PendingBookmarkAppManagerTest, Install_PendingFailingTask) {
+  PendingBookmarkAppManager pending_app_manager(profile());
+  pending_app_manager.SetFactoriesForTesting(
+      test_web_contents_creator(), successful_installation_task_creator());
+
+  pending_app_manager.Install(
+      GetFooAppInfo(),
+      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
+                     base::Unretained(this)));
+  pending_app_manager.Install(
+      GetBarAppInfo(),
+      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
+                     base::Unretained(this)));
+
+  // Fail the first install.
+  base::RunLoop().RunUntilIdle();
+  web_contents_tester()->NavigateAndCommit(GURL(kBarWebAppUrl));
+  web_contents_tester()->TestDidFinishLoad(GURL(kBarWebAppUrl));
+  EXPECT_FALSE(install_succeeded());
+  ResetResults();
+
+  // Finish the second install.
+  base::RunLoop().RunUntilIdle();
+  web_contents_tester()->NavigateAndCommit(GURL(kBarWebAppUrl));
+  web_contents_tester()->TestDidFinishLoad(GURL(kBarWebAppUrl));
+  EXPECT_TRUE(install_succeeded());
+}
+
+TEST_F(PendingBookmarkAppManagerTest, Install_ReentrantCallback) {
+  PendingBookmarkAppManager pending_app_manager(profile());
+  pending_app_manager.SetFactoriesForTesting(
+      test_web_contents_creator(), successful_installation_task_creator());
+
+  // Call install with a callback that tries to install another app.
+  pending_app_manager.Install(
+      GetFooAppInfo(),
+      base::BindLambdaForTesting([&](const std::string& app_id) {
+        InstallCallback(app_id);
+        pending_app_manager.Install(
+            GetBarAppInfo(),
+            base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
+                           base::Unretained(this)));
+      }));
+  // Finish the first install.
+  base::RunLoop().RunUntilIdle();
+  web_contents_tester()->NavigateAndCommit(GURL(kFooWebAppUrl));
+  web_contents_tester()->TestDidFinishLoad(GURL(kFooWebAppUrl));
+  EXPECT_TRUE(install_succeeded());
+  ResetResults();
+
+  base::RunLoop().RunUntilIdle();
+  web_contents_tester()->NavigateAndCommit(GURL(kBarWebAppUrl));
+  web_contents_tester()->TestDidFinishLoad(GURL(kBarWebAppUrl));
   EXPECT_TRUE(install_succeeded());
 }
 
 TEST_F(PendingBookmarkAppManagerTest, Install_FailsSameInstallPending) {
   PendingBookmarkAppManager pending_app_manager(profile());
   pending_app_manager.SetFactoriesForTesting(
-      base::BindRepeating(&PendingBookmarkAppManagerTest::CreateTestWebContents,
-                          base::Unretained(this)),
-      base::BindRepeating(
-          &PendingBookmarkAppManagerTest::CreateSuccessfulInstallationTask,
-          base::Unretained(this)));
+      test_web_contents_creator(), successful_installation_task_creator());
 
   pending_app_manager.Install(
-      web_app::PendingAppManager::AppInfo(
-          GURL(kWebAppUrl), web_app::PendingAppManager::LaunchContainer::kTab),
+      GetFooAppInfo(),
       base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
                      base::Unretained(this)));
 
   pending_app_manager.Install(
-      web_app::PendingAppManager::AppInfo(
-          GURL(kWebAppUrl), web_app::PendingAppManager::LaunchContainer::kTab),
+      GetFooAppInfo(),
       base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
                      base::Unretained(this)));
 
@@ -184,26 +300,23 @@ TEST_F(PendingBookmarkAppManagerTest, Install_FailsSameInstallPending) {
   ResetResults();
 
   // The original install should still be able to succeed.
-  web_contents_tester()->NavigateAndCommit(GURL(kWebAppUrl));
-  web_contents_tester()->TestDidFinishLoad(GURL(kWebAppUrl));
+  base::RunLoop().RunUntilIdle();
+  web_contents_tester()->NavigateAndCommit(GURL(kFooWebAppUrl));
+  web_contents_tester()->TestDidFinishLoad(GURL(kFooWebAppUrl));
   EXPECT_TRUE(install_succeeded());
 }
 
 TEST_F(PendingBookmarkAppManagerTest, Install_FailsLoadIncorrectURL) {
   PendingBookmarkAppManager pending_app_manager(profile());
   pending_app_manager.SetFactoriesForTesting(
-      base::BindRepeating(&PendingBookmarkAppManagerTest::CreateTestWebContents,
-                          base::Unretained(this)),
-      base::BindRepeating(
-          &PendingBookmarkAppManagerTest::CreateSuccessfulInstallationTask,
-          base::Unretained(this)));
+      test_web_contents_creator(), successful_installation_task_creator());
 
   pending_app_manager.Install(
-      web_app::PendingAppManager::AppInfo(
-          GURL(kWebAppUrl), web_app::PendingAppManager::LaunchContainer::kTab),
+      GetFooAppInfo(),
       base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
                      base::Unretained(this)));
 
+  base::RunLoop().RunUntilIdle();
   web_contents_tester()->NavigateAndCommit(GURL(kWrongUrl));
   web_contents_tester()->TestDidFinishLoad(GURL(kWrongUrl));
   EXPECT_FALSE(install_succeeded());
