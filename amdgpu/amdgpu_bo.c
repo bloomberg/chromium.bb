@@ -255,6 +255,7 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 		     struct amdgpu_bo_import_result *output)
 {
 	struct drm_gem_open open_arg = {};
+	struct drm_gem_close close_arg = {};
 	struct amdgpu_bo *bo = NULL;
 	int r;
 	int dma_fd;
@@ -342,15 +343,19 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 
 		bo->handle = open_arg.handle;
 		if (dev->flink_fd != dev->fd) {
+			close_arg.handle = open_arg.handle;
 			r = drmPrimeHandleToFD(dev->flink_fd, bo->handle, DRM_CLOEXEC, &dma_fd);
 			if (r) {
 				free(bo);
+				drmIoctl(dev->flink_fd, DRM_IOCTL_GEM_CLOSE,
+					 &close_arg);
 				pthread_mutex_unlock(&dev->bo_table_mutex);
 				return r;
 			}
 			r = drmPrimeFDToHandle(dev->fd, dma_fd, &bo->handle );
 
 			close(dma_fd);
+			drmIoctl(dev->flink_fd, DRM_IOCTL_GEM_CLOSE, &close_arg);
 
 			if (r) {
 				free(bo);
