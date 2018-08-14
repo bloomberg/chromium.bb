@@ -88,7 +88,6 @@ NSString* const kURLAndDistillationDateFormat = @"%s • %@";
   URLCell.titleLabel.text = [self titleLabelText];
   URLCell.URLLabel.text = [self URLLabelText];
   URLCell.metadataLabel.text = self.distillationSizeText;
-  URLCell.metadataLabel.hidden = !self.distillationSizeText.length;
   URLCell.cellUniqueIdentifier = base::SysUTF8ToNSString(self.entryURL.host());
   URLCell.accessibilityTraits |= UIAccessibilityTraitButton;
   // If the background color specified by the styler is opaque, use it as the
@@ -110,6 +109,7 @@ NSString* const kURLAndDistillationDateFormat = @"%s • %@";
       self.distillationState);
   cell.accessibilityCustomActions =
       [self.customActionFactory customActionsForItem:self];
+  [URLCell configureUILayout];
 }
 
 #pragma mark - NSObject

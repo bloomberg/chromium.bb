@@ -35,7 +35,8 @@ class GURL;
 
 // TableViewURLCell is used in Bookmarks, Reading List, and Recent Tabs.  It
 // contains a favicon, a title, a URL, and optionally some metadata such as a
-// timestamp or a file size.
+// timestamp or a file size. After configuring the cell, make sure to call
+// configureUILayout:.
 @interface TableViewURLCell : UITableViewCell
 
 // The imageview that is displayed on the leading edge of the cell.  This
@@ -60,6 +61,11 @@ class GURL;
 
 // Unique identifier that matches with one URLItem.
 @property(nonatomic, strong) NSString* cellUniqueIdentifier;
+
+// Properly configure the subview layouts once all labels' properties have been
+// configured. This must be called at the end of configureCell: for all items
+// that use TableViewURLCell.
+- (void)configureUILayout;
 
 @end
 
