@@ -47,59 +47,17 @@ ChromeLayoutProvider::CreateLayoutProvider() {
 }
 
 gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {
-  switch (metric) {
-    case ChromeInsetsMetric::INSETS_TOAST:
-      return gfx::Insets(0, 8);
-    case INSETS_BOOKMARKS_BAR_BUTTON:
-      if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
-        return gfx::Insets(8, 12);
-      return GetInsetsMetric(views::InsetsMetric::INSETS_LABEL_BUTTON);
-    default:
-      return views::LayoutProvider::GetInsetsMetric(metric);
-  }
+  CHECK(false);
+  return gfx::Insets();
 }
-
 int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
-  switch (metric) {
-    case DISTANCE_BUTTON_MINIMUM_WIDTH:
-      return 48;
-    case DISTANCE_CONTENT_LIST_VERTICAL_SINGLE:
-      return 4;
-    case DISTANCE_CONTENT_LIST_VERTICAL_MULTI:
-      return 8;
-    case DISTANCE_CONTROL_LIST_VERTICAL:
-      return GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL);
-    case DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL:
-      return 8;
-    case DISTANCE_RELATED_CONTROL_VERTICAL_SMALL:
-      return 4;
-    case DISTANCE_RELATED_LABEL_HORIZONTAL_LIST:
-      return 8;
-    case DISTANCE_SUBSECTION_HORIZONTAL_INDENT:
-      return 10;
-    case DISTANCE_UNRELATED_CONTROL_HORIZONTAL:
-      return 12;
-    case DISTANCE_UNRELATED_CONTROL_HORIZONTAL_LARGE:
-      return 20;
-    case DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE:
-      return 30;
-    case DISTANCE_TOAST_CONTROL_VERTICAL:
-      return 8;
-    case DISTANCE_TOAST_LABEL_VERTICAL:
-      return 12;
-    case DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH:
-      return 400;
-    case DISTANCE_LARGE_MODAL_DIALOG_PREFERRED_WIDTH:
-      return 512;
-    case DISTANCE_BUBBLE_PREFERRED_WIDTH:
-      return 320;
-    default:
-      return views::LayoutProvider::GetDistanceMetric(metric);
-  }
+  CHECK(false);
+  return 0;
 }
 
 const views::TypographyProvider& ChromeLayoutProvider::GetTypographyProvider()
     const {
+  CHECK(false);
   // This is not a data member because then HarmonyLayoutProvider would inherit
   // it, even when it provides its own.
   CR_DEFINE_STATIC_LOCAL(LegacyTypographyProvider, legacy_provider, ());
@@ -108,13 +66,16 @@ const views::TypographyProvider& ChromeLayoutProvider::GetTypographyProvider()
 
 views::GridLayout::Alignment
 ChromeLayoutProvider::GetControlLabelGridAlignment() const {
+  CHECK(false);
   return views::GridLayout::TRAILING;
 }
 
 bool ChromeLayoutProvider::UseExtraDialogPadding() const {
+  CHECK(false);
   return true;
 }
 
 bool ChromeLayoutProvider::ShouldShowWindowIcon() const {
+  CHECK(false);
   return true;
 }
