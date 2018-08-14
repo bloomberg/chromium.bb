@@ -104,6 +104,9 @@ group("metrics_python_tests") {
     "//tools/metrics/histograms/generate_expired_histograms_array_unittest.py",
     "//tools/metrics/histograms/merge_xml.py",
 
+    "//tools/metrics/rappor/model.py",
+    "//tools/metrics/rappor/pretty_print_test.py",
+
     "//tools/metrics/ukm/model.py",
     "//tools/metrics/ukm/pretty_print_test.py",
 
