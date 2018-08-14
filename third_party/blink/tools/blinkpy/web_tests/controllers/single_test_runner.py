@@ -189,8 +189,15 @@ class SingleTestRunner(object):
     def _save_baseline_data(self, data, extension, is_missing):
         if data is None:
             return
+
         port = self._port
         fs = self._filesystem
+
+        # It's OK that a testharness test or image-first test doesn't have the
+        # particular baseline, as long as |is_missing| is False.
+        current_expected_path = port.expected_filename(self._test_name, extension)
+        if not fs.exists(current_expected_path) and not is_missing:
+            return
 
         flag_specific_dir = port.baseline_flag_specific_dir()
         if flag_specific_dir:
@@ -212,11 +219,9 @@ class SingleTestRunner(object):
             _log.info('Removing the current baseline "%s"', port.relative_test_filename(output_path))
             fs.remove(output_path)
 
+        # Note that current_expected_path may change because of the above file removal.
         current_expected_path = port.expected_filename(self._test_name, extension)
-        if not fs.exists(current_expected_path):
-            if not is_missing or not self._options.reset_results:
-                return
-        elif fs.sha1(current_expected_path) == hashlib.sha1(data).hexdigest():
+        if fs.exists(current_expected_path) and fs.sha1(current_expected_path) == hashlib.sha1(data).hexdigest():
             if self._options.reset_results:
                 _log.info('Not writing new expected result "%s" because it is the same as the current expected result',
                           port.relative_test_filename(output_path))
