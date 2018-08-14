@@ -361,7 +361,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
       BOOL incognito =
           bvc == [[_browserLauncher browserViewInformation] otrBVC];
       [bvc.dispatcher
-          openURL:[OpenNewTabCommand commandWithIncognito:incognito]];
+          openURLInNewTab:[OpenNewTabCommand commandWithIncognito:incognito]];
     }
   } else {
     [[[_browserLauncher browserViewInformation] currentBVC]

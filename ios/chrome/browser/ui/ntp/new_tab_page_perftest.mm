@@ -40,7 +40,7 @@ class NewTabPagePerfTest : public PerfTestWithBVC {
   }
   base::TimeDelta TimedNewTab() {
     base::Time startTime = base::Time::NowFromSystemTime();
-    [[bvc_ dispatcher] openURL:[OpenNewTabCommand command]];
+    [[bvc_ dispatcher] openURLInNewTab:[OpenNewTabCommand command]];
     return base::Time::NowFromSystemTime() - startTime;
   }
   void SettleUI() {

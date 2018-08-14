@@ -1694,7 +1694,7 @@ UIColor* BackgroundColor() {
                                  inIncognito:_isIncognito
                                 inBackground:NO
                                     appendTo:kLastTab];
-  [self.dispatcher openURL:command];
+  [self.dispatcher openURLInNewTab:command];
 }
 
 #pragma mark - TabViewDelegate
