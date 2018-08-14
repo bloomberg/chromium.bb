@@ -98,6 +98,9 @@
         _formActivityObserverBridge =
             std::make_unique<autofill::FormActivityObserverBridge>(_webState,
                                                                    self);
+        _webStateObserverBridge =
+            std::make_unique<web::WebStateObserverBridge>(self);
+        webState->AddObserver(_webStateObserverBridge.get());
       }
     }
     _formInputAccessoryHandler = [[FormInputAccessoryViewHandler alloc] init];
