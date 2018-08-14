@@ -723,14 +723,114 @@ Once Blink removes Shadow DOM v0 in the future, you don't need to call
 `Node::UpdateDistributionForFlatTreeTraversal` before using `FlatTreeTraversal`
 beforehand in most cases, however, that wouldn't happen soon.
 
+# Event path and Event Retargeting
+
+<!-- Old doc: https://www.w3.org/TR/2014/WD-shadow-dom-20140617/ -->
+
+[DOM Standard] defines how an event should be dispatched
+[here](https://dom.spec.whatwg.org/#concept-event-dispatch), including how
+[event path](https://dom.spec.whatwg.org/#event-path) should be calculated,
+however, I wouldn't be surprised if the steps described there might look a kind
+of cryptogram to you.
+
+In this README, I'll explain how an event is dispatched and how its event path
+is calculated briefly by using some relatively-understandable examples.
+
+Here is the example composed tree:
+
+```text
+A
+└── B
+    ├──/shadowroot-C
+    │   └── D
+    │       ├──/shadowroot-E
+    │       │   └── F
+    │       │       └── slot-G
+    │       └── H
+    │           └── I
+    │               ├──/shadowroot-J
+    │               │   └── K
+    │               │       ├──/shadowroot-L
+    │               │       │   └── M
+    │               │       │       ├──/shadowroot-N
+    │               │       │       │   └── slot-O
+    │               │       │       └── slot-P
+    │               │       └── Q
+    │               │           └── slot-R
+    │               └── slot-S
+    └── T
+        └── U
+```
+
+Slot Assignments:
+
+| slot   | slot's assigned nodes |
+| ------ | --------------------- |
+| slot-G | [H]                   |
+| slot-O | [slot-P]              |
+| slot-P | [O]                   |
+| slot-R | [slot-S]              |
+| slot-S | [T]                   |
+
+Given that, suppose that an event is fired on `U`, an event path would be (in
+reverse order):
+
+```text
+[U => T => slot-S => slot-R => Q => slot-P => slot-O => shadowroot-N => M
+=> shadowroot-L => K => shadowroot-J => I => H => slot-G => F => shadowroot-E
+=> D => shadowroot-C => B => A]
+```
+
+Roughly speaking, an event's _parent_ (the next node in event path) is
+calculated as follows:
+
+- If a node is assigned to a slot, the _parent_ is the node's asigned slot.
+- If a node is a shadow root, the _parent_ is its shadow host.
+- In other cases, the _parent_ is node's parent.
+
+In the above case, `event.target`, `U`, doesn't change in its lifetime because
+`U` can be _seen_ from every nodes there. However, if an event is fired on node
+`Q`, for example, `event.target` would be adjusted for some nodes in event path
+to honer encapsulation. That is called _event re-targeting_.
+
+Here is an event path for an event which is fired on `Q` :
+
+| event.currenttarget | (re-targeted) event.target |
+| ------------------- | -------------------------- |
+| Q                   | Q                          |
+| slot-P              | Q                          |
+| slot-O              | Q                          |
+| shadowroot-N        | Q                          |
+| M                   | Q                          |
+| shadowroot-L        | Q                          |
+| K                   | Q                          |
+| shadowroot-J        | Q                          |
+| I                   | I                          |
+| H                   | I                          |
+| slot-G              | I                          |
+| F                   | I                          |
+| shadowroot-E        | I                          |
+| D                   | I                          |
+| shadowroot-C        | I                          |
+| B                   | B                          |
+| A                   | B                          |
+
+# Design goal of event path calculation
+
+TODO(hayato): Explain.
+
+# Composed events
+
+TODO(hayato): Explain.
+
+# Event path and related targets
+
+TODO(hayato): Explain.
+
 # DOM mutations
 
 TODO(hayato): Explain.
 
 # Related flags
-
-TODO(hayato): Explain.
-
-# Event path and Event Retargeting
 
 TODO(hayato): Explain.
