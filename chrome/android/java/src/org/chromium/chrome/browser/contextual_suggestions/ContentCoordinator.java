@@ -70,7 +70,7 @@ class ContentCoordinator {
         mWindowAndroid = windowAndroid;
 
         mContextMenuManager = new ContextMenuManager(uiDelegate.getNavigationDelegate(),
-                mRecyclerView::setTouchEnabled, closeContextMenuCallback);
+                mRecyclerView::setTouchEnabled, closeContextMenuCallback, true);
         mWindowAndroid.addContextMenuCloseListener(mContextMenuManager);
 
         ClusterList clusterList = mModel.getClusterList();

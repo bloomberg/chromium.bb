@@ -4238,6 +4238,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ContextualSuggestions.ContextMenu">
+  <owner>huayinz@chromium.org</owner>
+  <owner>twellington@chromium.com</owner>
+  <description>
+    Android: User used the context menu on a suggested item on the contextual
+    suggestions surface.
+  </description>
+</action>
+
 <action name="ContextualSuggestions.Preference.Disabled">
   <owner>huayinz@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -18632,62 +18641,12 @@ should be able to be added at any place in this file.
   <description>User opened a content suggestion.</description>
 </action>
 
-<action name="Suggestions.ContextMenu.DownloadItem">
+<action name="Suggestions.ContextMenu">
   <owner>mvanouwerkerk@chromium.org</owner>
   <owner>galinap@google.com</owner>
   <description>
-    Android: User used the context menu to download a suggested item.
-  </description>
-</action>
-
-<action name="Suggestions.ContextMenu.LearnMore">
-  <owner>mvanouwerkerk@chromium.org</owner>
-  <owner>peconn@chromium.org</owner>
-  <description>
-    Android: User used the context menu to follow the learn more link to product
-    help.
-  </description>
-</action>
-
-<action name="Suggestions.ContextMenu.OpenItemInIncognitoTab">
-  <owner>mvanouwerkerk@chromium.org</owner>
-  <owner>galinap@google.com</owner>
-  <description>
-    Android: User used the context menu to open a suggested item in an incognito
-    tab.
-  </description>
-</action>
-
-<action name="Suggestions.ContextMenu.OpenItemInNewTab">
-  <owner>mvanouwerkerk@chromium.org</owner>
-  <owner>galinap@google.com</owner>
-  <description>
-    Android: User used the context menu to open a suggested item in a new tab.
-  </description>
-</action>
-
-<action name="Suggestions.ContextMenu.OpenItemInNewWindow">
-  <owner>mvanouwerkerk@chromium.org</owner>
-  <owner>galinap@google.com</owner>
-  <description>
-    Android: User used the context menu to open a suggested item in a new
-    window.
-  </description>
-</action>
-
-<action name="Suggestions.ContextMenu.RemoveItem">
-  <owner>mvanouwerkerk@chromium.org</owner>
-  <owner>galinap@google.com</owner>
-  <description>
-    Android: User used the context menu to remove a suggested item.
-  </description>
-</action>
-
-<action name="Suggestions.ContextMenu.Shown">
-  <owner>mvanouwerkerk@chromium.org</owner>
-  <owner>galinap@google.com</owner>
-  <description>
-    Android: User opened the context menu on a suggested item.
+    Android: User used the context menu to download a suggested item on the new
+    tab page.
   </description>
 </action>
 
@@ -20157,6 +20116,20 @@ should be able to be added at any place in this file.
       name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH"/>
   <affected-action
       name="InProductHelp.ShouldTriggerHelpUIResult.WouldHaveTriggered.IPH"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="DownloadItem" label="Download a suggested item."/>
+  <suffix name="LearnMore" label="Open the learn more link for product help."/>
+  <suffix name="OpenItemInIncognitoTab"
+      label="Open a suggested item in an incognito tab."/>
+  <suffix name="OpenItemInNewTab" label="Open a suggested item in a new tab."/>
+  <suffix name="OpenItemInNewWindow"
+      label="Open a suggested item in a new window."/>
+  <suffix name="RemoveItem" label="Remove a suggested item."/>
+  <suffix name="Shown" label="Context menu is opened."/>
+  <affected-action name="ContextualSuggestions.ContextMenu"/>
+  <affected-action name="Suggestions.ContextMenu"/>
 </action-suffix>
 
 </actions>

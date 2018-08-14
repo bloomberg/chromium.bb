@@ -202,7 +202,7 @@ public class FeedNewTabPage extends NewTabPage implements TouchEnabledDelegate {
         Runnable closeContextMenuCallback = () -> mTab.getActivity().closeContextMenu();
         ContextMenuManager contextMenuManager =
                 new ContextMenuManager(mNewTabPageManager.getNavigationDelegate(),
-                        this::setTouchEnabled, closeContextMenuCallback);
+                        this::setTouchEnabled, closeContextMenuCallback, false);
         mTab.getWindowAndroid().addContextMenuCloseListener(contextMenuManager);
 
         mNewTabPageLayout.initialize(mNewTabPageManager, mTab, mTileGroupDelegate,

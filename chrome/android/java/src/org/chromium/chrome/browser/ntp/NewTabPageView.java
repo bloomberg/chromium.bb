@@ -124,7 +124,7 @@ public class NewTabPageView extends FrameLayout {
         // is reparented.
         Runnable closeContextMenuCallback = () -> mTab.getActivity().closeContextMenu();
         mContextMenuManager = new ContextMenuManager(mManager.getNavigationDelegate(),
-                mRecyclerView::setTouchEnabled, closeContextMenuCallback);
+                mRecyclerView::setTouchEnabled, closeContextMenuCallback, false);
         mTab.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
 
         mNewTabPageLayout.initialize(manager, tab, tileGroupDelegate, searchProviderHasLogo,
