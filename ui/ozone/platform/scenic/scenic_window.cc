@@ -220,21 +220,18 @@ void ScenicWindow::OnScenicEvents(
       continue;
 
     auto& metrics = event.gfx().metrics();
-    if (metrics.node_id == parent_node_id_) {
-      float new_device_pixel_ratio =
-          std::max(metrics.metrics.scale_x, metrics.metrics.scale_y);
-      if (device_pixel_ratio_ == 0.0) {
-        device_pixel_ratio_ = new_device_pixel_ratio;
-        if (!size_dips_.IsEmpty())
-          UpdateSize();
-      } else if (device_pixel_ratio_ != new_device_pixel_ratio) {
-        // Ozone currently doesn't support dynamic changes in
-        // device_pixel_ratio.
-        // TODO(crbug.com/850650): Update Ozone/Aura to allow DPI changes
-        // after OnAcceleratedWidgetAvailable().
-        NOTIMPLEMENTED() << "Ignoring display metrics event.";
-      }
-    }
+    if (metrics.node_id != parent_node_id_)
+      continue;
+
+    device_pixel_ratio_ =
+        std::max(metrics.metrics.scale_x, metrics.metrics.scale_y);
+
+    ScenicScreen* screen = manager_->screen();
+    if (screen)
+      screen->OnWindowMetrics(window_id_, device_pixel_ratio_);
+
+    if (!size_dips_.IsEmpty())
+      UpdateSize();
   }
 }
 

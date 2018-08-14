@@ -97,6 +97,10 @@ class OzonePlatformScenic : public OzonePlatform {
     return std::make_unique<display::FakeDisplayDelegate>();
   }
 
+  std::unique_ptr<PlatformScreen> CreateScreen() override {
+    return window_manager_.CreateScreen();
+  }
+
   void InitializeUI(const InitParams& params) override {
     if (!PlatformEventSource::GetInstance())
       platform_event_source_ = std::make_unique<ScenicPlatformEventSource>();
