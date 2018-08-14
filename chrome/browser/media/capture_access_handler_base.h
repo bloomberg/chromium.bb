@@ -30,12 +30,12 @@ class CaptureAccessHandlerBase : public MediaAccessHandler {
   // deemed secure if all connected video sinks are reported secure and the
   // connections to the sinks are being managed by a trusted extension.
   bool IsInsecureCapturingInProgress(int render_process_id,
-                                     int render_frame_id);
+                                     int render_frame_id) override;
 
   void UpdateCapturingLinkSecured(int render_process_id,
                                   int render_frame_id,
                                   int page_request_id,
-                                  bool is_secure);
+                                  bool is_secure) override;
 
  protected:
   static bool IsExtensionWhitelistedForScreenCapture(
@@ -46,13 +46,16 @@ class CaptureAccessHandlerBase : public MediaAccessHandler {
   void UpdateExtensionTrusted(const content::MediaStreamRequest& request,
                               const extensions::Extension* extension);
 
+  void UpdateTrusted(const content::MediaStreamRequest& request,
+                     bool is_trusted);
+
  private:
   struct Session;
 
   void AddCaptureSession(int render_process_id,
                          int render_frame_id,
                          int page_request_id,
-                         bool is_extension_trusted);
+                         bool is_trusted);
 
   void RemoveCaptureSession(int render_process_id,
                             int render_frame_id,

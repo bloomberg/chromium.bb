@@ -29,6 +29,7 @@ class MediaAccessHandler {
   virtual bool SupportsStreamType(content::WebContents* web_contents,
                                   const content::MediaStreamType type,
                                   const extensions::Extension* extension) = 0;
+
   // Check media access permission. |extension| is set to NULL if request was
   // made from a drive-by page.
   virtual bool CheckMediaAccessPermission(
@@ -36,18 +37,32 @@ class MediaAccessHandler {
       const GURL& security_origin,
       content::MediaStreamType type,
       const extensions::Extension* extension) = 0;
+
   // Process media access requests. |extension| is set to NULL if request was
   // made from a drive-by page.
   virtual void HandleRequest(content::WebContents* web_contents,
                              const content::MediaStreamRequest& request,
                              content::MediaResponseCallback callback,
                              const extensions::Extension* extension) = 0;
+
   // Update media request state. Called on UI thread.
   virtual void UpdateMediaRequestState(int render_process_id,
                                        int render_frame_id,
                                        int page_request_id,
                                        content::MediaStreamType stream_type,
                                        content::MediaRequestState state) {}
+
+  // Return true if there is any ongoing insecured capturing. The capturing is
+  // deemed secure if all connected video sinks are reported secure and the
+  // connections to the sinks are being managed by a trusted source.
+  virtual bool IsInsecureCapturingInProgress(int render_process_id,
+                                             int render_frame_id);
+
+  //  Update any ongoing insecured capturing state.
+  virtual void UpdateCapturingLinkSecured(int render_process_id,
+                                          int render_frame_id,
+                                          int page_request_id,
+                                          bool is_secure) {}
 
  protected:
   // Helper function for derived classes which takes in whether audio/video

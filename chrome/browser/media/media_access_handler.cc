@@ -4,12 +4,18 @@
 
 #include "chrome/browser/media/media_access_handler.h"
 
+#include <memory>
 #include <utility>
 
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
+
+bool MediaAccessHandler::IsInsecureCapturingInProgress(int render_process_id,
+                                                       int render_frame_id) {
+  return false;
+}
 
 // static
 void MediaAccessHandler::CheckDevicesAndRunCallback(
