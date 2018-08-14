@@ -60,10 +60,6 @@ class AccessibilityManager : public TripleTapDetectorDelegate {
   // Enable or disable screen reader support, including touch exploration.
   void SetScreenReader(bool enable);
 
-  // TODO(kpschoedel): remove once AccessibilityServiceImpl::SetScreenReader()
-  // changes to call SetScreenReader() here.
-  void EnableTouchExploration(bool enable);
-
   // Update the touch exploration controller so that synthesized
   // touch events are anchored at this point.
   void SetTouchAccessibilityAnchorPoint(const gfx::Point& anchor_point);
@@ -83,13 +79,6 @@ class AccessibilityManager : public TripleTapDetectorDelegate {
   // Sets the player for earcons.
   void SetAccessibilitySoundPlayer(
       std::unique_ptr<AccessibilitySoundPlayer> player);
-
-  // Sets the delegate for earcons.
-  // TODO(kpschoedel) remove when caller has changed.
-  void SetAccessibilitySoundDelegate(
-      std::unique_ptr<AccessibilitySoundPlayer> player) {
-    SetAccessibilitySoundPlayer(std::move(player));
-  }
 
  private:
   aura::WindowTreeHost* window_tree_host_;
