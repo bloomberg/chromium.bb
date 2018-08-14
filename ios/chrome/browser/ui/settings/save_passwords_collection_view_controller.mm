@@ -233,10 +233,6 @@ initWithActivityItems:(NSArray*)activityItems
   return self;
 }
 
-- (void)dealloc {
-  [passwordManagerEnabled_ setObserver:nil];
-}
-
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.collectionView.prefetchingEnabled = NO;

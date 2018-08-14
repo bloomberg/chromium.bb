@@ -16,7 +16,7 @@
 @property(nonatomic, assign) BOOL value;
 
 // The observer subscribing to this observable boolean's changes notifications.
-@property(nonatomic, assign) id<BooleanObserver> observer;
+@property(nonatomic, weak) id<BooleanObserver> observer;
 
 @end
 
