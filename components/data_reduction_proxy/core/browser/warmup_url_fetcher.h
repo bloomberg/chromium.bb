@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -37,14 +36,9 @@ class WarmupURLFetcher : public net::URLFetcherDelegate {
   typedef base::RepeatingCallback<void(const net::ProxyServer&, FetchResult)>
       WarmupURLFetcherCallback;
 
-  // Callback to obtain the current HTTP RTT estimate.
-  typedef base::RepeatingCallback<base::Optional<base::TimeDelta>()>
-      GetHttpRttCallback;
-
   WarmupURLFetcher(const scoped_refptr<net::URLRequestContextGetter>&
                        url_request_context_getter,
-                   WarmupURLFetcherCallback callback,
-                   GetHttpRttCallback get_http_rtt_callback);
+                   WarmupURLFetcherCallback callback);
 
   ~WarmupURLFetcher() override;
 
@@ -105,9 +99,6 @@ class WarmupURLFetcher : public net::URLFetcherDelegate {
   // Callback that should be executed when the fetching of the warmup URL is
   // completed.
   WarmupURLFetcherCallback callback_;
-
-  // Callback to obtain the current HTTP RTT estimate.
-  GetHttpRttCallback get_http_rtt_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

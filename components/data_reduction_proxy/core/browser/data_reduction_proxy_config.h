@@ -205,12 +205,6 @@ class DataReductionProxyConfig
   // When triggering previews, prevent long term black list rules.
   void SetIgnoreLongTermBlackListRules(bool ignore_long_term_black_list_rules);
 
-  // Called when there is a change in the HTTP RTT estimate.
-  void OnRTTOrThroughputEstimatesComputed(base::TimeDelta http_rtt);
-
-  // Returns the current HTTP RTT estimate.
-  base::Optional<base::TimeDelta> GetHttpRttEstimate() const;
-
   // Returns the value set in SetIgnoreLongTermBlackListRules.
   bool IgnoreBlackListLongTermRulesForTesting() const;
 
@@ -264,7 +258,7 @@ class DataReductionProxyConfig
                            ShouldAcceptServerPreview);
 
   // Values of the estimated network quality at the beginning of the most
-  // recent query of the Network quality estimate provider.
+  // recent query of the Network Quality Estimator.
   enum NetworkQualityAtLastQuery {
     NETWORK_QUALITY_AT_LAST_QUERY_UNKNOWN,
     NETWORK_QUALITY_AT_LAST_QUERY_SLOW,
@@ -381,9 +375,6 @@ class DataReductionProxyConfig
   // Should be accessed only on the IO thread. Guaranteed to be non-null during
   // the lifetime of |this| if accessed on the IO thread.
   NetworkPropertiesManager* network_properties_manager_;
-
-  // Current HTTP RTT estimate.
-  base::Optional<base::TimeDelta> http_rtt_;
 
   base::WeakPtrFactory<DataReductionProxyConfig> weak_factory_;
 

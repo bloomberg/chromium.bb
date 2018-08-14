@@ -58,6 +58,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/nqe/effective_connection_type.h"
+#include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
@@ -71,7 +72,6 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/network/test/test_network_quality_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -344,6 +344,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
         net::ProxyResolutionService::CreateFixedFromPacResult(
             proxy_server.ToPacString(), TRAFFIC_ANNOTATION_FOR_TESTS);
     context_->set_proxy_resolution_service(proxy_resolution_service_.get());
+    context_->set_network_quality_estimator(&test_network_quality_estimator_);
 
     mock_socket_factory_.reset(new net::MockClientSocketFactory());
 
@@ -537,9 +538,8 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
                                       const std::string& response_headers,
                                       bool expect_cached,
                                       bool expect_brotli) {
-    test_network_quality_tracker()->ReportEffectiveConnectionTypeForTesting(
+    test_network_quality_estimator()->set_effective_connection_type(
         net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
-    base::RunLoop().RunUntilIdle();
     GURL url(kTestURL);
 
     int response_body_size = 140;
@@ -708,7 +708,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
         "www.google.com\r\nProxy-Connection: "
         "keep-alive\r\nUser-Agent:\r\nAccept-Encoding: gzip, "
         "deflate\r\nAccept-Language: en-us,fr\r\n"
-        "chrome-proxy-ect: Unknown\r\n"
+        "chrome-proxy-ect: 4G\r\n"
         "Chrome-Proxy: " +
         io_data()->test_request_options()->GetHeaderValueForTesting() +
         (page_id_value.empty() ? "" : (", " + page_id_value)) + "\r\n\r\n";
@@ -748,9 +748,8 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
       net::EffectiveConnectionType effective_connection_type,
       bool expect_ect_header,
       bool expect_cached) {
-    test_network_quality_tracker()->ReportEffectiveConnectionTypeForTesting(
+    test_network_quality_estimator()->set_effective_connection_type(
         effective_connection_type);
-    base::RunLoop().RunUntilIdle();
 
     net::TestDelegate delegate;
     std::unique_ptr<net::URLRequest> request = context_->CreateRequest(
@@ -849,8 +848,8 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
 
   TestLoFiDecider* lofi_decider() const { return lofi_decider_; }
 
-  network::TestNetworkQualityTracker* test_network_quality_tracker() {
-    return test_context_->test_network_quality_tracker();
+  net::TestNetworkQualityEstimator* test_network_quality_estimator() {
+    return &test_network_quality_estimator_;
   }
 
   net::SSLSocketDataProvider* ssl_socket_data_provider() {
@@ -867,6 +866,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
   TestLoFiDecider* lofi_decider_;
   TestLoFiUIService* lofi_ui_service_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
+  net::TestNetworkQualityEstimator test_network_quality_estimator_;
 
   net::SSLSocketDataProvider ssl_socket_data_provider_;
 
@@ -1074,9 +1074,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
     net::HttpRequestHeaders headers;
     net::ProxyRetryInfoMap proxy_retry_info;
 
-    test_network_quality_tracker()->ReportEffectiveConnectionTypeForTesting(
+    test_network_quality_estimator()->set_effective_connection_type(
         net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
-    base::RunLoop().RunUntilIdle();
 
     std::unique_ptr<net::URLRequest> request =
         context()->CreateRequest(GURL(kTestURL), net::RequestPriority::IDLE,
@@ -1132,9 +1131,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
           true, true,
       },
   };
-  test_network_quality_tracker()->ReportEffectiveConnectionTypeForTesting(
+  test_network_quality_estimator()->set_effective_connection_type(
       net::EFFECTIVE_CONNECTION_TYPE_4G);
-  base::RunLoop().RunUntilIdle();
   base::FieldTrialList field_trial_list(nullptr);
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "DataCompressionProxyHoldback", "Enabled"));
@@ -1181,9 +1179,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
   net::HttpRequestHeaders headers_original;
   net::ProxyRetryInfoMap proxy_retry_info;
 
-  test_network_quality_tracker()->ReportEffectiveConnectionTypeForTesting(
+  test_network_quality_estimator()->set_effective_connection_type(
       net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
-  base::RunLoop().RunUntilIdle();
 
   std::unique_ptr<net::URLRequest> request =
       context()->CreateRequest(GURL(kTestURL), net::RequestPriority::IDLE,

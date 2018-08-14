@@ -226,9 +226,7 @@ void DataReductionProxyConfig::InitializeOnIOThread(
       url_request_context_getter,
       base::BindRepeating(
           &DataReductionProxyConfig::HandleWarmupFetcherResponse,
-          base::Unretained(this)),
-      base::BindRepeating(&DataReductionProxyConfig::GetHttpRttEstimate,
-                          base::Unretained(this))));
+          base::Unretained(this))));
 
   if (ShouldAddDefaultProxyBypassRules())
     AddDefaultProxyBypassRules();
@@ -752,18 +750,6 @@ size_t DataReductionProxyConfig::GetWarmupURLFetchAttemptCounts() const {
   return network_properties_manager_->GetWarmupURLFetchAttemptCounts(
       warmup_url_fetch_in_flight_secure_proxy_,
       warmup_url_fetch_in_flight_core_proxy_);
-}
-
-void DataReductionProxyConfig::OnRTTOrThroughputEstimatesComputed(
-    base::TimeDelta http_rtt) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  http_rtt_ = http_rtt;
-}
-
-base::Optional<base::TimeDelta> DataReductionProxyConfig::GetHttpRttEstimate()
-    const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return http_rtt_;
 }
 
 bool DataReductionProxyConfig::enabled_by_user_and_reachable() const {

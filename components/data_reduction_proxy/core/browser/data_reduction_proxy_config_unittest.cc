@@ -53,6 +53,7 @@
 #include "net/http/http_status_code.h"
 #include "net/log/test_net_log.h"
 #include "net/nqe/effective_connection_type.h"
+#include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"

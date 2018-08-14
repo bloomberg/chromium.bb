@@ -19,6 +19,10 @@
 
 using testing::_;
 
+namespace net {
+class NetworkQualityEstimator;
+}
+
 namespace data_reduction_proxy {
 
 TestDataReductionProxyConfig::TestDataReductionProxyConfig(

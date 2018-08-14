@@ -4,9 +4,6 @@
 
 #include <string>
 
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -14,7 +11,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
@@ -71,20 +67,6 @@ class DataSaverWithServerBrowserTest : public InProcessBrowserTest {
     content::RunAllPendingInMessageLoop();
   }
 
-  net::EffectiveConnectionType GetEffectiveConnectionType() const {
-    return DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-               browser()->profile())
-        ->data_reduction_proxy_service()
-        ->GetEffectiveConnectionType();
-  }
-
-  base::Optional<base::TimeDelta> GetHttpRttEstimate() const {
-    return DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-               browser()->profile())
-        ->data_reduction_proxy_service()
-        ->GetHttpRttEstimate();
-  }
-
   std::unique_ptr<net::test_server::HttpResponse> VerifySaveDataHeader(
       const net::test_server::HttpRequest& request) {
     auto save_data_header_it = request.headers.find("save-data");
@@ -133,51 +115,4 @@ IN_PROC_BROWSER_TEST_F(DataSaverWithServerBrowserTest, ReloadPage) {
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   content::WaitForLoadStop(
       browser()->tab_strip_model()->GetActiveWebContents());
-}
-
-// Test that the data saver receives changes in effective connection type.
-IN_PROC_BROWSER_TEST_F(DataSaverWithServerBrowserTest,
-                       EffectiveConnectionType) {
-  Init();
-  ASSERT_TRUE(test_server_->Start());
-  EnableDataSaver(true);
-
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_4G, GetEffectiveConnectionType());
-
-  g_browser_process->network_quality_tracker()
-      ->ReportEffectiveConnectionTypeForTesting(
-          net::EFFECTIVE_CONNECTION_TYPE_2G);
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, GetEffectiveConnectionType());
-
-  g_browser_process->network_quality_tracker()
-      ->ReportEffectiveConnectionTypeForTesting(
-          net::EFFECTIVE_CONNECTION_TYPE_3G);
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_3G, GetEffectiveConnectionType());
-}
-
-// Test that the data saver receives changes in HTTP RTT estimate.
-IN_PROC_BROWSER_TEST_F(DataSaverWithServerBrowserTest, HttpRttEstimate) {
-  Init();
-  ASSERT_TRUE(test_server_->Start());
-  EnableDataSaver(true);
-
-  EXPECT_TRUE(GetHttpRttEstimate().has_value());
-
-  g_browser_process->network_quality_tracker()
-      ->ReportRTTsAndThroughputForTesting(
-          base::TimeDelta::FromMilliseconds(100), 0);
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(100), GetHttpRttEstimate());
-
-  g_browser_process->network_quality_tracker()
-      ->ReportRTTsAndThroughputForTesting(
-          base::TimeDelta::FromMilliseconds(500), 0);
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(500), GetHttpRttEstimate());
 }

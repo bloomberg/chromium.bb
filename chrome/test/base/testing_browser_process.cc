@@ -32,7 +32,6 @@
 #include "media/media_buildflags.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "printing/buildflags/buildflags.h"
-#include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -170,11 +169,7 @@ TestingBrowserProcess::shared_url_loader_factory() {
 
 network::NetworkQualityTracker*
 TestingBrowserProcess::network_quality_tracker() {
-  if (!network_quality_tracker_) {
-    network_quality_tracker_ = std::make_unique<network::NetworkQualityTracker>(
-        base::BindRepeating(&content::GetNetworkService));
-  }
-  return network_quality_tracker_.get();
+  return nullptr;
 }
 
 WatchDogThread* TestingBrowserProcess::watchdog_thread() {

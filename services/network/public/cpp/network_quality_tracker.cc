@@ -72,35 +72,6 @@ void NetworkQualityTracker::RemoveRTTAndThroughputEstimatesObserver(
   rtt_and_throughput_observer_list_.RemoveObserver(observer);
 }
 
-void NetworkQualityTracker::ReportEffectiveConnectionTypeForTesting(
-    net::EffectiveConnectionType effective_connection_type) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  effective_connection_type_ = effective_connection_type;
-  for (auto& observer : effective_connection_type_observer_list_)
-    observer.OnEffectiveConnectionTypeChanged(effective_connection_type);
-}
-
-void NetworkQualityTracker::ReportRTTsAndThroughputForTesting(
-    base::TimeDelta http_rtt,
-    int32_t downstream_throughput_kbps) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  http_rtt_ = http_rtt;
-  downlink_bandwidth_kbps_ = downstream_throughput_kbps;
-
-  for (auto& observer : rtt_and_throughput_observer_list_) {
-    observer.OnRTTOrThroughputEstimatesComputed(http_rtt_, http_rtt_,
-                                                downlink_bandwidth_kbps_);
-  }
-}
-
-// For testing only.
-NetworkQualityTracker::NetworkQualityTracker()
-    : effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
-      downlink_bandwidth_kbps_(std::numeric_limits<int32_t>::max()),
-      binding_(this) {}
-
 void NetworkQualityTracker::OnNetworkQualityChanged(
     net::EffectiveConnectionType effective_connection_type,
     base::TimeDelta http_rtt,

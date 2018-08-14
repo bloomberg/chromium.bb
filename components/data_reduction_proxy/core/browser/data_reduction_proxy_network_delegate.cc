@@ -31,6 +31,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/nqe/effective_connection_type.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/url_request/url_request.h"
@@ -373,9 +374,10 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
       data->set_session_key(
           data_reduction_proxy_request_options_->GetSecureSession());
       data->set_request_url(request->url());
-      if (data_reduction_proxy_io_data_) {
-        data->set_effective_connection_type(
-            data_reduction_proxy_io_data_->GetEffectiveConnectionType());
+      if (request->context()->network_quality_estimator()) {
+        data->set_effective_connection_type(request->context()
+                                                ->network_quality_estimator()
+                                                ->GetEffectiveConnectionType());
       }
       data->set_connection_type(
           net::NetworkChangeNotifier::GetConnectionType());
@@ -727,9 +729,10 @@ void DataReductionProxyNetworkDelegate::MaybeAddChromeProxyECTHeader(
   if (request_headers->HasHeader(chrome_proxy_ect_header()))
     request_headers->RemoveHeader(chrome_proxy_ect_header());
 
-  if (data_reduction_proxy_io_data_) {
-    net::EffectiveConnectionType type =
-        data_reduction_proxy_io_data_->GetEffectiveConnectionType();
+  if (request.context()->network_quality_estimator()) {
+    net::EffectiveConnectionType type = request.context()
+                                            ->network_quality_estimator()
+                                            ->GetEffectiveConnectionType();
     if (type > net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
       DCHECK_NE(net::EFFECTIVE_CONNECTION_TYPE_LAST, type);
       request_headers->SetHeader(chrome_proxy_ect_header(),
