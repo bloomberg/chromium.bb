@@ -809,3 +809,7 @@ Sent for upstream approval:
     avutil/encryption_info: Fix size calculation.
     Affects:
       avutil/encryption_info.c
+
+    avformat/mov: Allow saio/saiz in clear content.
+    Affects:
+      avformat/mov.c
