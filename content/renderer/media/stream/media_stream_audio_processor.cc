@@ -589,8 +589,12 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   // If the experimental AGC is enabled, check for overridden config params.
   if (properties.goog_experimental_auto_gain_control) {
     auto startup_min_volume = GetStartupMinVolumeForAgc();
-    config.Set<webrtc::ExperimentalAgc>(
-        new webrtc::ExperimentalAgc(true, startup_min_volume.value_or(0)));
+    auto* experimental_agc =
+        new webrtc::ExperimentalAgc(true, startup_min_volume.value_or(0));
+    experimental_agc->digital_adaptive_disabled =
+        base::FeatureList::IsEnabled(features::kWebRtcHybridAgc);
+
+    config.Set<webrtc::ExperimentalAgc>(experimental_agc);
   }
 
   // Create and configure the webrtc::AudioProcessing.
@@ -643,6 +647,12 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
   apm_config.high_pass_filter.enabled = properties.goog_highpass_filter;
+
+  if (properties.goog_experimental_auto_gain_control) {
+    apm_config.gain_controller2.enabled =
+        base::FeatureList::IsEnabled(features::kWebRtcHybridAgc);
+    apm_config.gain_controller2.fixed_gain_db = 0.f;
+  }
   audio_processing_->ApplyConfig(apm_config);
 
   RecordProcessingState(AUDIO_PROCESSING_ENABLED);

@@ -2047,6 +2047,10 @@ const char kWebrtcEchoCanceller3Name[] = "WebRTC Echo Canceller 3.";
 const char kWebrtcEchoCanceller3Description[] =
     "Experimental WebRTC echo canceller (AEC3).";
 
+const char kWebrtcHybridAgcName[] = "WebRTC hybrid Agc2/Agc1.";
+const char kWebrtcHybridAgcDescription[] =
+    "WebRTC Agc2 digital adaptation with Agc1 analog adaptation.";
+
 const char kWebrtcHwDecodingName[] = "WebRTC hardware video decoding";
 const char kWebrtcHwDecodingDescription[] =
     "Support in WebRTC for decoding video streams using platform hardware.";

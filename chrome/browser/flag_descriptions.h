@@ -1240,6 +1240,9 @@ extern const char kWebPaymentsModifiersDescription[];
 extern const char kWebrtcEchoCanceller3Name[];
 extern const char kWebrtcEchoCanceller3Description[];
 
+extern const char kWebrtcHybridAgcName[];
+extern const char kWebrtcHybridAgcDescription[];
+
 extern const char kWebrtcHwDecodingName[];
 extern const char kWebrtcHwDecodingDescription[];
 

@@ -579,6 +579,11 @@ const base::Feature kWebRtcScreenshareSwEncoding{
 const base::Feature kWebRtcUseEchoCanceller3{"WebRtcUseEchoCanceller3",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the WebRTC Agc2 digital adaptation with WebRTC Agc1 analog
+// adaptation. Feature for http://crbug.com/873650. Is sent to WebRTC.
+const base::Feature kWebRtcHybridAgc{"WebRtcHybridAgc",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use GpuMemoryBuffer backed VideoFrames in media streams.
 const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames{
     "WebRTC-UseGpuMemoryBufferVideoFrames", base::FEATURE_ENABLED_BY_DEFAULT};
