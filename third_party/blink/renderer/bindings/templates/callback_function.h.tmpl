@@ -30,7 +30,9 @@ class {{exported}}{{cpp_class}} final : public CallbackFunctionBase {
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
   v8::Maybe<{{return_cpp_type}}> Invoke({{argument_declarations | join(', ')}}) WARN_UNUSED_RESULT;
 
-{% if idl_type == 'void' %}
+{# Type Function is often used as a sort of wild cards, and its return value is
+   often discarded. So, this provides some convenience. #}
+{% if idl_type == 'void' or callback_function_name == 'Function' %}
   // Performs "invoke", and then reports an exception, if any, to the global
   // error handler such as DevTools' console.
   void InvokeAndReportException({{argument_declarations | join(', ')}});
@@ -52,7 +54,7 @@ class V8PersistentCallbackFunction<{{cpp_class}}> final : public V8PersistentCal
   V8CallbackFunction* ToNonV8Persistent() { return Proxy(); }
 
   v8::Maybe<{{return_cpp_type}}> Invoke({{argument_declarations | join(', ')}}) WARN_UNUSED_RESULT;
-{% if idl_type == 'void' %}
+{% if idl_type == 'void' or callback_function_name == 'Function' %}
   {{exported}}void InvokeAndReportException({{argument_declarations | join(', ')}});
 {% endif %}
 

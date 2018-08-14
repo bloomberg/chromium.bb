@@ -146,12 +146,12 @@ v8::Maybe<{{return_cpp_type}}> {{cpp_class}}::Invoke({{argument_declarations | j
   {% endif %}
 }
 
-{% if idl_type == 'void' %}
+{% if idl_type == 'void' or callback_function_name == 'Function' %}
 void {{cpp_class}}::InvokeAndReportException({{argument_declarations | join(', ')}}) {
   v8::TryCatch try_catch(GetIsolate());
   try_catch.SetVerbose(true);
 
-  v8::Maybe<void> maybe_result =
+  v8::Maybe<{{return_cpp_type}}> maybe_result =
       Invoke({{
                  (['callback_this_value'] +
                   (arguments|map(attribute='name')|list)
@@ -171,7 +171,7 @@ v8::Maybe<{{return_cpp_type}}> V8PersistentCallbackFunction<{{cpp_class}}>::Invo
       }});
 }
 
-{% if idl_type == 'void' %}
+{% if idl_type == 'void' or callback_function_name == 'Function' %}
 void V8PersistentCallbackFunction<{{cpp_class}}>::InvokeAndReportException({{argument_declarations | join(', ')}}) {
   Proxy()->InvokeAndReportException(
       {{
