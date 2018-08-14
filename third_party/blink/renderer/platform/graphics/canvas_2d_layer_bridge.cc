@@ -246,7 +246,8 @@ void Canvas2DLayerBridge::Hibernate() {
       snapshot->PaintImageForCurrentFrame().GetSkImage(), 0, 0, &copy_paint);
   hibernation_image_ = temp_hibernation_surface->makeImageSnapshot();
   ResetResourceProvider();
-  layer_->ClearTexture();
+  if (layer_)
+    layer_->ClearTexture();
 
   // shouldBeDirectComposited() may have changed.
   if (resource_host_)
