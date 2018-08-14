@@ -33,6 +33,9 @@ class MessageCenterScrollBar : public views::OverlayScrollBar {
   // ui::EventHandler overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
+  // views::ScrollDelegate overrides:
+  bool OnScroll(float dx, float dy) override;
+
   // False if no event is recorded yet. True if the first event is recorded.
   bool stats_recorded_ = false;
 
