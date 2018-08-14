@@ -64,7 +64,8 @@ RemoteFrameView* RemoteFrameView::Create(RemoteFrame* remote_frame) {
 }
 
 void RemoteFrameView::UpdateViewportIntersectionsForSubtree() {
-  if (!remote_frame_->OwnerLayoutObject())
+  LayoutEmbeddedContent* owner = remote_frame_->OwnerLayoutObject();
+  if (!owner)
     return;
 
   LocalFrameView* local_root_view =
@@ -72,38 +73,44 @@ void RemoteFrameView::UpdateViewportIntersectionsForSubtree() {
   if (!local_root_view)
     return;
 
-  // Start with rect in remote frame's coordinate space. Then
-  // mapToVisualRectInAncestorSpace will move it to the local root's coordinate
-  // space and account for any clip from containing elements such as a
-  // scrollable div. Passing nullptr as an argument to
-  // mapToVisualRectInAncestorSpace causes it to be clipped to the viewport,
-  // even if there are RemoteFrame ancestors in the frame tree.
-  LayoutRect rect(0, 0, frame_rect_.Width(), frame_rect_.Height());
-  rect.Move(remote_frame_->OwnerLayoutObject()->ContentBoxOffset());
   IntRect viewport_intersection;
-  if (remote_frame_->OwnerLayoutObject()->MapToVisualRectInAncestorSpace(
-          nullptr, rect, kUseGeometryMapper)) {
-    IntRect root_visible_rect(IntPoint(), local_root_view->Size());
-    IntRect intersected_rect = EnclosingIntRect(rect);
-    intersected_rect.Intersect(root_visible_rect);
+  DocumentLifecycle::LifecycleState parent_state =
+      owner->GetDocument().Lifecycle().GetState();
 
-    // Translate the intersection rect from the root frame's coordinate space
-    // to the remote frame's coordinate space.
-    FloatRect viewport_intersection_float =
-        remote_frame_->OwnerLayoutObject()
-            ->AncestorToLocalQuad(local_root_view->GetLayoutView(),
-                                  FloatQuad(intersected_rect),
-                                  kTraverseDocumentBoundaries | kUseTransforms)
-            .BoundingBox();
-    viewport_intersection_float.Move(
-        -remote_frame_->OwnerLayoutObject()->ContentBoxOffset());
-    viewport_intersection = EnclosingIntRect(viewport_intersection_float);
+  // If the parent LocalFrameView is throttled and out-of-date, then we can't
+  // get any useful information.
+  if (parent_state >= DocumentLifecycle::kLayoutClean) {
+    // Start with rect in remote frame's coordinate space. Then
+    // mapToVisualRectInAncestorSpace will move it to the local root's
+    // coordinate space and account for any clip from containing elements such
+    // as a scrollable div. Passing nullptr as an argument to
+    // mapToVisualRectInAncestorSpace causes it to be clipped to the viewport,
+    // even if there are RemoteFrame ancestors in the frame tree.
+    LayoutRect rect(0, 0, frame_rect_.Width(), frame_rect_.Height());
+    rect.Move(owner->ContentBoxOffset());
+    if (owner->MapToVisualRectInAncestorSpace(nullptr, rect,
+                                              kUseGeometryMapper)) {
+      IntRect root_visible_rect(IntPoint(), local_root_view->Size());
+      IntRect intersected_rect = EnclosingIntRect(rect);
+      intersected_rect.Intersect(root_visible_rect);
+
+      // Translate the intersection rect from the root frame's coordinate space
+      // to the remote frame's coordinate space.
+      FloatRect viewport_intersection_float =
+          remote_frame_->OwnerLayoutObject()
+              ->AncestorToLocalQuad(
+                  local_root_view->GetLayoutView(), FloatQuad(intersected_rect),
+                  kTraverseDocumentBoundaries | kUseTransforms)
+              .BoundingBox();
+      viewport_intersection_float.Move(
+          -remote_frame_->OwnerLayoutObject()->ContentBoxOffset());
+      viewport_intersection = EnclosingIntRect(viewport_intersection_float);
+    }
   }
 
   if (viewport_intersection == last_viewport_intersection_)
     return;
 
-  // TODO(szager): Propagate occlusion information.
   last_viewport_intersection_ = viewport_intersection;
   remote_frame_->Client()->UpdateRemoteViewportIntersection(
       viewport_intersection);

@@ -119,7 +119,6 @@ crbug.com/801992 http/tests/misc/iframe-script-modify-attr.html [ Pass Crash ]
 
 crbug.com/711468 virtual/gpu/fast/canvas/canvas-composite-image.html [ Pass Timeout ]
 crbug.com/711468 virtual/gpu/fast/canvas/canvas-scale-strokePath-shadow.html [ Pass Timeout ]
-crbug.com/711468 http/tests/intersection-observer/cross-origin-iframe-with-nesting.html [ Failure ]
 
 crbug.com/807675 http/tests/images/image-decode-in-frame.html [ Crash Failure ]
 
