@@ -69,12 +69,13 @@ class ChromeAuthenticatorRequestDelegate
       const std::string& relying_party_id,
       base::OnceCallback<void(bool)> callback) override;
   bool IsFocused() override;
-  void BluetoothAdapterIsAvailable() override;
+  void UpdateLastTransportUsed(
+      device::FidoTransportProtocol transport) override;
+
+  // device::FidoRequestHandlerBase::TransportAvailabilityObserver:
   void FidoAuthenticatorAdded(
       const device::FidoAuthenticator& authenticator) override;
   void FidoAuthenticatorRemoved(base::StringPiece device_id) override;
-  void UpdateLastTransportUsed(
-      device::FidoTransportProtocol transport) override;
 
   // AuthenticatorRequestDialogModel::Observer:
   void OnModelDestroyed() override;

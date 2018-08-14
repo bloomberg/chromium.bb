@@ -256,34 +256,14 @@ ChromeAuthenticatorRequestDelegate::GetLastTransportUsed() const {
       prefs->GetString(kWebAuthnLastTransportUsedPrefName));
 }
 
-void ChromeAuthenticatorRequestDelegate::BluetoothAdapterIsAvailable() {
-  if (!IsWebAuthnUiEnabled())
-    return;
-
-  DCHECK(weak_dialog_model_);
-  weak_dialog_model_->transport_list_model()->AppendTransport(
-      AuthenticatorTransport::kBluetoothLowEnergy);
-}
-
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorAdded(
     const device::FidoAuthenticator& authenticator) {
   if (!IsWebAuthnUiEnabled())
     return;
 
   DCHECK(weak_dialog_model_);
-
-  // We are only caching device information for BLE and platform authenticators.
-  const auto transport = authenticator.AuthenticatorTransport();
-  if (transport == device::FidoTransportProtocol::kInternal ||
-      transport == device::FidoTransportProtocol::kBluetoothLowEnergy) {
-    if (transport == device::FidoTransportProtocol::kInternal) {
-      weak_dialog_model_->transport_list_model()->AppendTransport(
-          AuthenticatorTransport::kInternal);
-    }
-
-    weak_dialog_model_->saved_authenticators().emplace_back(
-        authenticator.GetId(), authenticator.AuthenticatorTransport());
-  }
+  weak_dialog_model_->saved_authenticators().emplace_back(
+      authenticator.GetId(), authenticator.AuthenticatorTransport());
 }
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorRemoved(
@@ -294,13 +274,10 @@ void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorRemoved(
   DCHECK(weak_dialog_model_);
   auto& saved_authenticators = weak_dialog_model_->saved_authenticators();
   saved_authenticators.erase(
-      std::remove_if(
-          saved_authenticators.begin(), saved_authenticators.end(),
-          [device_id](const auto& authenticator_reference) {
-            return authenticator_reference.transport ==
-                       device::FidoTransportProtocol::kBluetoothLowEnergy &&
-                   authenticator_reference.device_id == device_id;
-          }),
+      std::remove_if(saved_authenticators.begin(), saved_authenticators.end(),
+                     [device_id](const auto& authenticator_reference) {
+                       return authenticator_reference.device_id == device_id;
+                     }),
       saved_authenticators.end());
 }
 

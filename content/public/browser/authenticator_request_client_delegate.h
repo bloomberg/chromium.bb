@@ -27,7 +27,7 @@ namespace content {
 //
 // [1]: See https://www.w3.org/TR/webauthn/.
 class CONTENT_EXPORT AuthenticatorRequestClientDelegate
-    : public device::FidoRequestHandlerBase::AuthenticatorMapObserver {
+    : public device::FidoRequestHandlerBase::TransportAvailabilityObserver {
  public:
   AuthenticatorRequestClientDelegate();
   ~AuthenticatorRequestClientDelegate() override;
@@ -87,8 +87,10 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // WebAuthN UI will default to the same transport type during next API call.
   virtual void UpdateLastTransportUsed(device::FidoTransportProtocol transport);
 
-  // device::FidoRequestHandlerBase::AuthenticatorMapObserver:
-  void BluetoothAdapterIsAvailable() override;
+  // device::FidoRequestHandlerBase::TransportAvailabilityObserver:
+  void OnTransportAvailabilityEnumerated(
+      device::FidoRequestHandlerBase::TransportAvailabilityInfo data) override;
+  void BluetoothAdapterPowerChanged(bool is_powered_on) override;
   void FidoAuthenticatorAdded(
       const device::FidoAuthenticator& authenticator) override;
   void FidoAuthenticatorRemoved(base::StringPiece device_id) override;

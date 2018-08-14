@@ -5,6 +5,7 @@
 #include "device/fido/get_assertion_request_handler.h"
 
 #include <algorithm>
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
@@ -115,6 +116,26 @@ bool CheckUserVerificationCompatible(FidoAuthenticator* authenticator,
   return false;
 }
 
+std::set<FidoTransportProtocol> GetAllowedTransports(
+    const CtapGetAssertionRequest& request) {
+  const auto& allowed_list = request.allow_list();
+  if (!allowed_list) {
+    return {FidoTransportProtocol::kInternal,
+            FidoTransportProtocol::kNearFieldCommunication,
+            FidoTransportProtocol::kUsbHumanInterfaceDevice,
+            FidoTransportProtocol::kBluetoothLowEnergy,
+            FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
+  }
+
+  std::set<FidoTransportProtocol> protocols;
+  for (const auto credential : *allowed_list) {
+    protocols.insert(credential.transports().begin(),
+                     credential.transports().end());
+  }
+
+  return protocols;
+}
+
 }  // namespace
 
 GetAssertionRequestHandler::GetAssertionRequestHandler(
@@ -149,6 +170,10 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
     discoveries().push_back(std::move(discovery));
   }
 
+  transport_availability_info().request_type =
+      FidoRequestHandlerBase::RequestType::kGetAssertion;
+  transport_availability_info().available_transports =
+      GetAllowedTransports(request_);
   Start();
 }
 

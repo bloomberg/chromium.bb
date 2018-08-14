@@ -1669,7 +1669,9 @@ class MockAuthenticatorRequestDelegateObserver
             true /* is_focused */) {}
   ~MockAuthenticatorRequestDelegateObserver() override = default;
 
-  MOCK_METHOD0(BluetoothAdapterIsAvailable, void());
+  MOCK_METHOD1(
+      OnTransportAvailabilityEnumerated,
+      void(device::FidoRequestHandlerBase::TransportAvailabilityInfo data));
   MOCK_METHOD1(FidoAuthenticatorAdded, void(const device::FidoAuthenticator&));
   MOCK_METHOD1(FidoAuthenticatorRemoved, void(base::StringPiece));
 
@@ -1780,7 +1782,7 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
       device::FidoTransportProtocol::kBluetoothLowEnergy);
   const auto device_id = mock_ble_device->GetId();
 
-  EXPECT_CALL(*mock_delegate_ptr, BluetoothAdapterIsAvailable());
+  EXPECT_CALL(*mock_delegate_ptr, OnTransportAvailabilityEnumerated(_));
 
   base::RunLoop ble_device_found_done;
   EXPECT_CALL(*mock_delegate_ptr, FidoAuthenticatorAdded(_))
