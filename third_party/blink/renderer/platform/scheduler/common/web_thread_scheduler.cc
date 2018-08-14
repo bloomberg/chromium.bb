@@ -70,6 +70,12 @@ WebThreadScheduler::IPCTaskRunner() {
   return nullptr;
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+WebThreadScheduler::CleanupTaskRunner() {
+  NOTREACHED();
+  return nullptr;
+}
+
 std::unique_ptr<WebThread> WebThreadScheduler::CreateMainThread() {
   NOTREACHED();
   return nullptr;

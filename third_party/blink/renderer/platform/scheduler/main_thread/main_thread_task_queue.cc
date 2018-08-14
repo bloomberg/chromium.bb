@@ -51,6 +51,8 @@ const char* MainThreadTaskQueue::NameForQueueType(
       return "input_tq";
     case MainThreadTaskQueue::QueueType::kDetached:
       return "detached_tq";
+    case MainThreadTaskQueue::QueueType::kCleanup:
+      return "cleanup_tq";
     case MainThreadTaskQueue::QueueType::kOther:
       return "other_tq";
     case MainThreadTaskQueue::QueueType::kCount:
@@ -70,6 +72,7 @@ MainThreadTaskQueue::QueueClass MainThreadTaskQueue::QueueClassForQueueType(
     case QueueType::kTest:
     case QueueType::kV8:
     case QueueType::kIPC:
+    case QueueType::kCleanup:
       return QueueClass::kNone;
     case QueueType::kFrameLoading:
     case QueueType::kFrameLoadingControl:

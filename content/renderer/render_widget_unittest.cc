@@ -149,8 +149,7 @@ class InteractiveRenderWidget : public RenderWidget {
                      blink::kWebDisplayModeUndefined,
                      false,
                      false,
-                     false,
-                     blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
+                     false),
         always_overscroll_(false) {
     Init(RenderWidget::ShowCallback(), mock_webwidget());
 
@@ -395,8 +394,7 @@ class PopupRenderWidget : public RenderWidget {
                      blink::kWebDisplayModeUndefined,
                      false,
                      false,
-                     false,
-                     blink::scheduler::GetSingleThreadTaskRunnerForTesting()) {
+                     false) {
     Init(RenderWidget::ShowCallback(), mock_webwidget());
     did_show_ = true;
   }

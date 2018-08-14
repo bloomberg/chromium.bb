@@ -191,13 +191,14 @@ enum class TaskType : unsigned {
   kMainThreadTaskQueueIdle = 41,
   kMainThreadTaskQueueIPC = 42,
   kMainThreadTaskQueueControl = 43,
+  kMainThreadTaskQueueCleanup = 52,
   kCompositorThreadTaskQueueDefault = 45,
   kCompositorThreadTaskQueueInput = 49,
   kWorkerThreadTaskQueueDefault = 46,
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 52,
+  kCount = 53,
 };
 
 }  // namespace blink

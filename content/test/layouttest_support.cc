@@ -85,8 +85,8 @@ RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
   test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
 
-  auto* render_view_proxy = new test_runner::WebViewTestProxy(
-      compositor_deps, params, base::ThreadTaskRunnerHandle::Get());
+  auto* render_view_proxy =
+      new test_runner::WebViewTestProxy(compositor_deps, params);
 
   BlinkTestRunner* test_runner = new BlinkTestRunner(render_view_proxy);
   // TODO(lukasza): Using the 1st BlinkTestRunner as the main delegate is wrong,
@@ -113,7 +113,7 @@ RenderWidget* CreateWebWidgetTestProxy(int32_t routing_id,
                                        bool never_visible) {
   auto* render_widget_proxy = new test_runner::WebWidgetTestProxy(
       routing_id, compositor_deps, popup_type, screen_info, display_mode,
-      swapped_out, hidden, never_visible, base::ThreadTaskRunnerHandle::Get());
+      swapped_out, hidden, never_visible);
   return render_widget_proxy;
 }
 

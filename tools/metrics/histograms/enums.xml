@@ -41029,6 +41029,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="17" label="IPC"/>
   <int value="18" label="Input"/>
   <int value="19" label="Detached"/>
+  <int value="20" label="Cleanup"/>
 </enum>
 
 <enum name="RendererSchedulerTaskType">
@@ -41084,6 +41085,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="49" label="CompositorThreadTaskQueueInput"/>
   <int value="50" label="NetworkingWithURLLoaderAnnotation"/>
   <int value="51" label="WorkerAnimation"/>
+  <int value="52" label="MainThreadTaskQueueCleanup"/>
 </enum>
 
 <enum name="RendererSchedulerTaskUseCase">
