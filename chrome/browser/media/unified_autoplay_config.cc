@@ -19,12 +19,14 @@ void UnifiedAutoplayConfig::RegisterProfilePrefs(
 
 // static
 bool UnifiedAutoplayConfig::ShouldBlockAutoplay(Profile* profile) {
+  return !IsBlockAutoplayUserModifiable(profile) ||
+         profile->GetPrefs()->GetBoolean(prefs::kBlockAutoplayEnabled);
+}
+
+// static
+bool UnifiedAutoplayConfig::IsBlockAutoplayUserModifiable(Profile* profile) {
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile);
-  if (settings_map->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SOUND,
-                                             nullptr) == CONTENT_SETTING_BLOCK) {
-    return true;
-  }
-
-  return profile->GetPrefs()->GetBoolean(prefs::kBlockAutoplayEnabled);
+  return settings_map->GetDefaultContentSetting(
+             CONTENT_SETTINGS_TYPE_SOUND, nullptr) != CONTENT_SETTING_BLOCK;
 }

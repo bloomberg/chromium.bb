@@ -23,9 +23,7 @@
 class HostContentSettingsMap;
 class Profile;
 
-#if defined(OS_CHROMEOS)
 class PrefChangeRegistrar;
-#endif
 
 namespace base {
 class ListValue;
@@ -93,6 +91,7 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerInfobarTest,
                            SettingPermissionsTriggersInfobar);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, SessionOnlyException);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, BlockAutoplay_Update);
 
   // Asynchronously fetches the usage for a given origin. Replies back with
   // OnGetUsageInfo above.
@@ -163,6 +162,12 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   // Removes a particular zoom level for a given host.
   void HandleRemoveZoomLevel(const base::ListValue* args);
 
+  // Notifies the JS side about the state of the block autoplay toggle.
+  void SendBlockAutoplayStatus();
+
+  // Updates the block autoplay enabled pref when the UI is toggled.
+  void HandleSetBlockAutoplayEnabled(const base::ListValue* args);
+
   void SetBrowsingDataLocalStorageHelperForTesting(
       scoped_refptr<BrowsingDataLocalStorageHelper> helper);
 
@@ -185,10 +190,8 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   // Change observer for content settings.
   ScopedObserver<HostContentSettingsMap, content_settings::Observer> observer_;
 
-#if defined(OS_CHROMEOS)
   // Change observer for prefs.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
-#endif
 
   scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper_;
 

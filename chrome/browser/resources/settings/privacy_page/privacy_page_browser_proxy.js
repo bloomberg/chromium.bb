@@ -33,6 +33,9 @@ cr.define('settings', function() {
 
     /** @param {boolean} enabled */
     setSafeBrowsingExtendedReportingEnabled(enabled) {}
+
+    /** @param {boolean} enabled */
+    setBlockAutoplayEnabled(enabled) {}
   }
 
   /**
@@ -60,6 +63,11 @@ cr.define('settings', function() {
     /** @override */
     setSafeBrowsingExtendedReportingEnabled(enabled) {
       chrome.send('setSafeBrowsingExtendedReportingEnabled', [enabled]);
+    }
+
+    /** @override */
+    setBlockAutoplayEnabled(enabled) {
+      chrome.send('setBlockAutoplayEnabled', [enabled]);
     }
 
     // <if expr="is_win or is_macosx">

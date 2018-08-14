@@ -11,6 +11,7 @@ class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
       'setMetricsReportingEnabled',
       'setSafeBrowsingExtendedReportingEnabled',
       'showManageSSLCertificates',
+      'setBlockAutoplayEnabled',
     ]);
 
     /** @type {!MetricsReporting} */
@@ -51,5 +52,10 @@ class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
   /** @override */
   setSafeBrowsingExtendedReportingEnabled(enabled) {
     this.methodCalled('setSafeBrowsingExtendedReportingEnabled', enabled);
+  }
+
+  /** @override */
+  setBlockAutoplayEnabled(enabled) {
+    this.methodCalled('setBlockAutoplayEnabled', enabled);
   }
 }

@@ -3,6 +3,14 @@
 // found in the LICENSE file.
 
 /**
+ * @typedef {{
+ *   enabled: boolean,
+ *   pref: !chrome.settingsPrivate.PrefObject
+ * }}
+ */
+let BlockAutoplayStatus;
+
+/**
  * @fileoverview
  * 'settings-privacy-page' is the settings page containing privacy and
  * security settings.
@@ -63,6 +71,22 @@ Polymer({
       type: Boolean,
       value: function() {
         return loadTimeData.getBoolean('enableSoundContentSetting');
+      }
+    },
+
+    /** @private */
+    enableBlockAutoplayContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableBlockAutoplayContentSetting');
+      }
+    },
+
+    /** @private {BlockAutoplayStatus} */
+    blockAutoplayStatus_: {
+      type: Object,
+      value: function() {
+        return /** @type {BlockAutoplayStatus} */ ({});
       }
     },
 
@@ -150,6 +174,15 @@ Polymer({
     this.ContentSettingsTypes = settings.ContentSettingsTypes;
 
     this.browserProxy_ = settings.PrivacyPageBrowserProxyImpl.getInstance();
+
+    this.onBlockAutoplayStatusChanged_({
+      pref: /** @type {chrome.settingsPrivate.PrefObject} */ ({value: false}),
+      enabled: false
+    });
+
+    this.addWebUIListener(
+        'onBlockAutoplayStatusChanged',
+        this.onBlockAutoplayStatusChanged_.bind(this));
   },
 
   /** @protected */
@@ -165,6 +198,25 @@ Polymer({
   onDoNotTrackDomChange_: function(event) {
     if (this.showDoNotTrackDialog_)
       this.maybeShowDoNotTrackDialog_();
+  },
+
+  /**
+   * Called when the block autoplay status changes.
+   * @param {BlockAutoplayStatus} autoplayStatus
+   * @private
+   */
+  onBlockAutoplayStatusChanged_: function(autoplayStatus) {
+    this.blockAutoplayStatus_ = autoplayStatus;
+  },
+
+  /**
+   * Updates the block autoplay pref when the toggle is changed.
+   * @param {!Event} event
+   * @private
+   */
+  onBlockAutoplayToggleChange_: function(event) {
+    const target = /** @type {!SettingsToggleButtonElement} */ (event.target);
+    this.browserProxy_.setBlockAutoplayEnabled(target.checked);
   },
 
   /**

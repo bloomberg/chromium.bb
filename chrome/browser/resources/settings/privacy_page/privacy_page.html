@@ -319,6 +319,15 @@
                 toggle-on-label="$i18n{siteSettingsSoundAllowRecommended}"
                 category="{{ContentSettingsTypes.SOUND}}">
             </category-default-setting>
+            <settings-toggle-button
+                id="block-autoplay-setting"
+                label="$i18n{siteSettingsBlockAutoplaySetting}"
+                pref="{{blockAutoplayStatus_.pref}}"
+                disabled="[[!blockAutoplayStatus_.enabled]]"
+                hidden="[[!enableBlockAutoplayContentSetting_]]"
+                on-settings-boolean-control-change="onBlockAutoplayToggleChange_"
+                no-set-pref>
+            </settings-toggle-button>
             <category-setting-exceptions
                 category="{{ContentSettingsTypes.SOUND}}"
                 block-header="$i18n{siteSettingsBlockSound}">
