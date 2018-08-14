@@ -123,18 +123,6 @@ void InMemoryURLIndex::Init() {
   PostRestoreFromCacheFileTask();
 }
 
-size_t InMemoryURLIndex::EstimateMemoryUsage() const {
-  size_t res = 0;
-
-  res += base::trace_event::EstimateMemoryUsage(scheme_whitelist_);
-
-  // TODO(dyaroshev): Add support for scoped_refptr in
-  //                  base::trace_event::EstimateMemoryUsage.
-  res += sizeof(URLIndexPrivateData) + private_data_->EstimateMemoryUsage();
-
-  return res;
-}
-
 void InMemoryURLIndex::ClearPrivateData() {
   private_data_->Clear();
 }
@@ -227,7 +215,14 @@ void InMemoryURLIndex::OnHistoryServiceLoaded(
 bool InMemoryURLIndex::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* process_memory_dump) {
-  size_t res = EstimateMemoryUsage();
+  size_t res = 0;
+
+  res += base::trace_event::EstimateMemoryUsage(scheme_whitelist_);
+
+  // TODO(dyaroshev): Add support for scoped_refptr in
+  //                  base::trace_event::EstimateMemoryUsage.
+  res += sizeof(URLIndexPrivateData) + private_data_->EstimateMemoryUsage();
+
   const std::string dump_name =
       base::StringPrintf("omnibox/in_memory_url_index/0x%" PRIXPTR,
                          reinterpret_cast<uintptr_t>(this));

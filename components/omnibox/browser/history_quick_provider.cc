@@ -45,13 +45,7 @@ HistoryQuickProvider::HistoryQuickProvider(AutocompleteProviderClient* client)
 
 void HistoryQuickProvider::Start(const AutocompleteInput& input,
                                  bool minimal_changes) {
-  // TODO(etienneb): Remove metrics when https://crbug/868419 is closed.
-  size_t memory_usage = 0;
-  if (in_memory_url_index_)
-    memory_usage = in_memory_url_index_->EstimateMemoryUsage();
-  TRACE_EVENT2("omnibox", "HistoryQuickProvider::Start",
-               "memory_url_index_.memory_usage", memory_usage, "text_length",
-               input.text().length());
+  TRACE_EVENT0("omnibox", "HistoryQuickProvider::Start");
   matches_.clear();
   if (disabled_ || input.from_omnibox_focus())
     return;
