@@ -281,9 +281,12 @@ public class ProfileSyncService {
         return nativeSetDecryptionPassphrase(mNativeProfileSyncServiceAndroid, passphrase);
     }
 
-    public GoogleServiceAuthError.State getAuthError() {
+    public @GoogleServiceAuthError.State int getAuthError() {
         int authErrorCode = nativeGetAuthError(mNativeProfileSyncServiceAndroid);
-        return GoogleServiceAuthError.State.fromCode(authErrorCode);
+        if (authErrorCode < 0 || authErrorCode >= GoogleServiceAuthError.State.NUM_ENTRIES) {
+            throw new IllegalArgumentException("No state for code: " + authErrorCode);
+        }
+        return authErrorCode;
     }
 
     /**
