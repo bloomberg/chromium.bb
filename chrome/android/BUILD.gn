@@ -533,6 +533,30 @@ zip("chrome_version_srcjar") {
   ]
 }
 
+# Files used for both chrome tests and VR/AR tests
+android_library("chrome_test_util_java") {
+  testonly = true
+
+  java_files = [
+    "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabActivityTestRule.java",
+    "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabsTestUtils.java",
+    "javatests/src/org/chromium/chrome/browser/media/RouterTestUtils.java",
+    "javatests/src/org/chromium/chrome/browser/webapps/TestFetchStorageCallback.java",
+    "javatests/src/org/chromium/chrome/browser/webapps/WebappActivityTestRule.java",
+  ]
+
+  deps = [
+    ":browser_java_test_support",
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//chrome/android:chrome_java",
+    "//chrome/test/android:chrome_java_test_support",
+    "//content/public/android:content_java",
+    "//third_party/custom_tabs_client:custom_tabs_support_java",
+    "//third_party/espresso:espresso_all_java",
+  ]
+}
+
 android_library("chrome_test_java") {
   testonly = true
 
@@ -541,6 +565,7 @@ android_library("chrome_test_java") {
 
   deps = [
     ":browser_java_test_support",
+    ":chrome_test_util_java",
     ":partner_location_descriptor_proto_java",
     "$google_play_services_package:google_play_services_base_java",
     "$google_play_services_package:google_play_services_basement_java",
@@ -704,9 +729,6 @@ if (enable_vr || (enable_arcore && package_arcore)) {
     testonly = true
 
     java_files = [
-      "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabActivityTestRule.java",
-      "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabsTestUtils.java",
-      "javatests/src/org/chromium/chrome/browser/media/RouterTestUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr/rules/ChromeTabbedActivityXrTestRule.java",
       "javatests/src/org/chromium/chrome/browser/vr/rules/CustomTabActivityXrTestRule.java",
       "javatests/src/org/chromium/chrome/browser/vr/rules/XrActivityRestriction.java",
@@ -716,11 +738,9 @@ if (enable_vr || (enable_arcore && package_arcore)) {
       "javatests/src/org/chromium/chrome/browser/vr/util/XrTestRuleUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr/WebXrTestFramework.java",
       "javatests/src/org/chromium/chrome/browser/vr/XrTestFramework.java",
-      "javatests/src/org/chromium/chrome/browser/webapps/TestFetchStorageCallback.java",
-      "javatests/src/org/chromium/chrome/browser/webapps/WebappActivityTestRule.java",
     ]
 
-    deps = chrome_test_xr_java_deps
+    deps = chrome_test_xr_java_deps + [ ":chrome_test_util_java" ]
 
     data = [
       "//chrome/test/data/xr/e2e_test_files/",
@@ -734,6 +754,7 @@ if (enable_vr || (enable_arcore && package_arcore)) {
       testonly = true
 
       java_files = [
+        "javatests/src/org/chromium/chrome/browser/vr/jsdialog/VrBrowserJavaScriptModalDialogTest.java",
         "javatests/src/org/chromium/chrome/browser/vr/EmulatedVrController.java",
         "javatests/src/org/chromium/chrome/browser/vr/mock/MockBrowserKeyboardInterface.java",
         "javatests/src/org/chromium/chrome/browser/vr/mock/MockVrCoreVersionChecker.java",
@@ -777,6 +798,7 @@ if (enable_vr || (enable_arcore && package_arcore)) {
                "//chrome/android:chrome_test_xr_java",
                "//third_party/gvr-android-sdk:controller_test_api_java",
                "//third_party/gvr-android-sdk:gvr_common_java",
+               ":chrome_test_util_java",
              ]
 
       data = [

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.vr.util;
 import android.graphics.PointF;
 import android.view.Choreographer;
 import android.view.View;
+import android.view.ViewGroup;
 
 import org.junit.Assert;
 
@@ -170,6 +171,14 @@ public class NativeUiUtils {
             Choreographer.getInstance().postFrameCallback(callback);
         });
         frameLatch.await();
+    }
+
+    /**
+     * Returns the Container of 2D UI that is shown in VR.
+     */
+    public static ViewGroup getVrViewContainer() {
+        VrShell vrShell = TestVrShellDelegate.getVrShellForTesting();
+        return vrShell.getVrViewContainerForTesting();
     }
 
     private static void clickFallbackUiButton(int buttonId) throws InterruptedException {
