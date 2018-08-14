@@ -319,7 +319,7 @@ void TabStrip::FrameColorsChanged() {
   for (int i = 0; i < tab_count(); ++i)
     tab_at(i)->FrameColorsChanged();
   new_tab_button_->FrameColorsChanged();
-  UpdateOpacities();
+  UpdateContrastRatioValues();
   SchedulePaint();
 }
 
@@ -1144,7 +1144,7 @@ SkColor TabStrip::GetToolbarTopSeparatorColor() const {
 }
 
 SkColor TabStrip::GetTabSeparatorColor() const {
-  return controller_->GetTabSeparatorColor();
+  return separator_color_;
 }
 
 SkColor TabStrip::GetTabBackgroundColor(TabState state, bool opaque) const {
@@ -1440,6 +1440,8 @@ void TabStrip::OnThemeChanged() {
   // available.
   if (MD::IsRefreshUi())
     SingleTabModeChanged();
+  else
+    FrameColorsChanged();
 }
 
 BrowserRootView::DropIndex TabStrip::GetDropIndex(
@@ -1507,7 +1509,7 @@ void TabStrip::Init() {
     drop_indicator_height = drop_image->height();
   }
 
-  UpdateOpacities();
+  UpdateContrastRatioValues();
 }
 
 void TabStrip::StartInsertTabAnimation(int model_index) {
@@ -2060,47 +2062,56 @@ void TabStrip::UpdateStackedLayoutFromMouseEvent(views::View* source,
   }
 }
 
-void TabStrip::UpdateOpacities() {
-  // There may be no controller in unit tests, and call to GetTabBackgroundColor
-  // below requires one, so bail early if it is absent.
+void TabStrip::UpdateContrastRatioValues() {
+  // There may be no controller in unit tests, and the call to
+  // GetTabBackgroundColor() below requires one, so bail early if it is absent.
   if (!controller_)
     return;
-
-  // The contrast ratio for the hover effect on standard-width tabs.
-  // In the default Refresh color scheme, this corresponds to a hover
-  // opacity of 0.4.
-  constexpr float kDesiredContrastHoveredStandardWidthTab = 1.11f;
-
-  // The contrast ratio for the hover effect on min-width tabs.
-  // In the default Refresh color scheme, this corresponds to a hover
-  // opacity of 0.65.
-  constexpr float kDesiredContrastHoveredMinWidthTab = 1.19f;
-
-  // The contrast ratio for the radial gradient effect on hovered tabs.
-  // In the default Refresh color scheme, this corresponds to a hover
-  // opacity of 0.45.
-  constexpr float kDesiredContrastRadialGradient = 1.13728f;
 
   const SkColor active_tab_bg_color = GetTabBackgroundColor(TAB_ACTIVE, true);
   const SkColor inactive_tab_bg_color =
       GetTabBackgroundColor(TAB_INACTIVE, true);
 
+  // The contrast ratio for the hover effect on standard-width tabs.
+  // In the default Refresh color scheme, this corresponds to a hover
+  // opacity of 0.4.
+  constexpr float kDesiredContrastHoveredStandardWidthTab = 1.11f;
   const SkAlpha hover_base_alpha_wide =
       color_utils::GetBlendValueWithMinimumContrast(
           inactive_tab_bg_color, active_tab_bg_color, inactive_tab_bg_color,
           kDesiredContrastHoveredStandardWidthTab);
+  hover_opacity_min_ = hover_base_alpha_wide / 255.0f;
+
+  // The contrast ratio for the hover effect on min-width tabs.
+  // In the default Refresh color scheme, this corresponds to a hover
+  // opacity of 0.65.
+  constexpr float kDesiredContrastHoveredMinWidthTab = 1.19f;
   const SkAlpha hover_base_alpha_narrow =
       color_utils::GetBlendValueWithMinimumContrast(
           inactive_tab_bg_color, active_tab_bg_color, inactive_tab_bg_color,
           kDesiredContrastHoveredMinWidthTab);
+  hover_opacity_max_ = hover_base_alpha_narrow / 255.0f;
+
+  // The contrast ratio for the radial gradient effect on hovered tabs.
+  // In the default Refresh color scheme, this corresponds to a hover
+  // opacity of 0.45.
+  constexpr float kDesiredContrastRadialGradient = 1.13728f;
   const SkAlpha radial_highlight_alpha =
       color_utils::GetBlendValueWithMinimumContrast(
           inactive_tab_bg_color, active_tab_bg_color, inactive_tab_bg_color,
           kDesiredContrastRadialGradient);
-
-  hover_opacity_min_ = hover_base_alpha_wide / 255.0f;
-  hover_opacity_max_ = hover_base_alpha_narrow / 255.0f;
   radial_highlight_opacity_ = radial_highlight_alpha / 255.0f;
+
+  // The contrast ratio for the separator between inactive tabs.
+  // In the default Refresh color scheme, this corresponds to a tab text opacity
+  // of 0.46.
+  const SkColor text_color = GetTabForegroundColor(TAB_INACTIVE);
+  constexpr float kTabSeparatorRatio = 1.84f;
+  const SkAlpha separator_alpha = color_utils::GetBlendValueWithMinimumContrast(
+      inactive_tab_bg_color, text_color, inactive_tab_bg_color,
+      kTabSeparatorRatio);
+  separator_color_ = color_utils::AlphaBlend(text_color, inactive_tab_bg_color,
+                                             separator_alpha);
 }
 
 void TabStrip::ResizeLayoutTabs() {

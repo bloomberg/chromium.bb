@@ -155,19 +155,6 @@ SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {
              : paint_color;
 }
 
-SkColor BrowserNonClientFrameView::GetTabSeparatorColor() const {
-  DCHECK(MD::IsRefreshUi());
-  // TODO(pkasting): https://crbug.com/866689  Replace this with "blend
-  // background tab text color toward background tab background color at 46% or
-  // 1.84 contrast ratio, whichever is larger" (and make sure the blend is large
-  // enough in the default theme to not need adjusting).
-  constexpr SkAlpha kTabSeparatorAlpha = 0x4D;  // 30%
-  const SkColor tab_color = GetTabBackgroundColor(TAB_INACTIVE, true);
-  const SkColor base_color =
-      color_utils::BlendTowardOppositeLuma(tab_color, SK_AlphaOPAQUE);
-  return color_utils::AlphaBlend(base_color, tab_color, kTabSeparatorAlpha);
-}
-
 SkColor BrowserNonClientFrameView::GetTabBackgroundColor(TabState state,
                                                          bool opaque) const {
   if (state == TAB_ACTIVE)

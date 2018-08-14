@@ -93,9 +93,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // state of the window.
   SkColor GetToolbarTopSeparatorColor() const;
 
-  // Under Refresh, returns the color of the separator between the tabs.
-  SkColor GetTabSeparatorColor() const;
-
   // Returns the tab background color based on both the |state| of the tab and
   // the activation state of the window.  If |opaque| is true, the resulting
   // color after drawing the tab background on the frame will be returned.
