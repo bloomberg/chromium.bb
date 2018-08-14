@@ -2140,7 +2140,7 @@
     'gpu': ['piman+watch@chromium.org'],
     'gpu_passthrough_cmd_decoder': ['geofflang+watch@chromium.org'],
     'guest_view': ['ekaramad@chromium.org',
-                   'macnee@chromium.org',
+                   'mcnee@chromium.org',
                    'wjmaclean@chromium.org'],
     'headless': ['headless-reviews@chromium.org'],
     'history_ui': ['pam+watch@chromium.org'],
