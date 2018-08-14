@@ -7,7 +7,6 @@
 #import <XCTest/XCTest.h>
 
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -21,7 +20,6 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/disabled_test_macros.h"
-#import "ios/web/public/features.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -183,33 +181,24 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 }
 
 // Tests that selecting "Open Image" from the context menu properly opens the
-// image in the current tab. (With the kContextMenuElementPostMessage feature
-// disabled.)
+// image in the current tab.
 - (void)testOpenImageInCurrentTabFromContextMenu {
-  base::test::ScopedFeatureList scopedFeatureList;
-  scopedFeatureList.InitAndDisableFeature(
-      web::features::kContextMenuElementPostMessage);
-
   const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
   [ChromeEarlGrey loadURL:pageURL];
   [ChromeEarlGrey waitForWebViewContainingText:kLogoPageText];
 
   LongPressElement(kLogoPageChromiumImageId);
   TapOnContextMenuButton(OpenImageButton());
-
   [ChromeEarlGrey waitForPageToFinishLoading];
 
-  // Verify url and tab count.
-  GREYAssertEqual(chrome_test_util::GetMainTabCount(), 1,
-                  @"Image should be opened in existing tab.");
+  // Verify url.
   const GURL imageURL = self.testServer->GetURL(kLogoPageImageSourcePath);
   [[EarlGrey selectElementWithMatcher:OmniboxText(imageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
 // Tests that selecting "Open Image in New Tab" from the context menu properly
-// opens the image in a new background tab. (With the
-// kContextMenuElementPostMessage feature disabled.)
+// opens the image in a new background tab.
 // TODO(crbug.com/817810): Enable this test.
 #if TARGET_IPHONE_SIMULATOR
 #define MAYBE_testOpenImageInNewTabFromContextMenu \
@@ -219,10 +208,6 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   FLAKY_testOpenImageInNewTabFromContextMenu
 #endif
 - (void)MAYBE_testOpenImageInNewTabFromContextMenu {
-  base::test::ScopedFeatureList scopedFeatureList;
-  scopedFeatureList.InitAndDisableFeature(
-      web::features::kContextMenuElementPostMessage);
-
   const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
   [ChromeEarlGrey loadURL:pageURL];
   [ChromeEarlGrey waitForWebViewContainingText:kLogoPageText];
@@ -240,8 +225,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
       assertWithMatcher:grey_notNil()];
 }
 
-// Tests "Open in New Tab" on context menu. (With the
-// kContextMenuElementPostMessage feature disabled.)
+// Tests "Open in New Tab" on context menu.
 // TODO(crbug.com/817810): Enable this test.
 #if TARGET_IPHONE_SIMULATOR
 #define MAYBE_testContextMenuOpenInNewTab testContextMenuOpenInNewTab
@@ -249,10 +233,6 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 #define MAYBE_testContextMenuOpenInNewTab FLAKY_testContextMenuOpenInNewTab
 #endif
 - (void)MAYBE_testContextMenuOpenInNewTab {
-  base::test::ScopedFeatureList scopedFeatureList;
-  scopedFeatureList.InitAndDisableFeature(
-      web::features::kContextMenuElementPostMessage);
-
   const GURL initialURL = self.testServer->GetURL(kInitialPageUrl);
   [ChromeEarlGrey loadURL:initialURL];
   [ChromeEarlGrey waitForWebViewContainingText:kInitialPageDestinationLinkText];
@@ -270,8 +250,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
       assertWithMatcher:grey_notNil()];
 }
 
-// Tests that the context menu is displayed for an image url. (With the
-// kContextMenuElementPostMessage feature disabled.)
+// Tests that the context menu is displayed for an image url.
 // TODO(crbug.com/817810): Enable this test.
 #if TARGET_IPHONE_SIMULATOR
 #define MAYBE_testContextMenuDisplayedOnImage testContextMenuDisplayedOnImage
@@ -280,10 +259,6 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   FLAKY_testContextMenuDisplayedOnImage
 #endif
 - (void)MAYBE_testContextMenuDisplayedOnImage {
-  base::test::ScopedFeatureList scopedFeatureList;
-  scopedFeatureList.InitAndDisableFeature(
-      web::features::kContextMenuElementPostMessage);
-
   const GURL imageURL = self.testServer->GetURL(kLogoPageImageSourcePath);
   [ChromeEarlGrey loadURL:imageURL];
 
@@ -309,161 +284,8 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
       assertWithMatcher:grey_notNil()];
 }
 
-// Tests that the element fetch duration is logged once with the
-// kContextMenuElementPostMessage feature disabled.
+// Tests that the element fetch duration is logged once.
 - (void)testContextMenuElementFetchDurationMetric {
-  base::test::ScopedFeatureList scopedFeatureList;
-  scopedFeatureList.InitAndDisableFeature(
-      web::features::kContextMenuElementPostMessage);
-  chrome_test_util::HistogramTester histogramTester;
-
-  const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
-  [ChromeEarlGrey loadURL:pageURL];
-  [ChromeEarlGrey waitForWebViewContainingText:kLogoPageText];
-
-  LongPressElement(kLogoPageChromiumImageId);
-  TapOnContextMenuButton(OpenImageButton());
-  [ChromeEarlGrey waitForPageToFinishLoading];
-
-  histogramTester.ExpectTotalCount("ContextMenu.DOMElementFetchDuration", 1,
-                                   ^(NSString* error) {
-                                     GREYFail(error);
-                                   });
-}
-
-// Tests that selecting "Open Image" from the context menu properly opens the
-// image in the current tab. (With the kContextMenuElementPostMessage feature
-// enabled.)
-- (void)testOpenImageInCurrentTabFromContextMenuPostMessage {
-  base::test::ScopedFeatureList scopedFeatureList;
-  scopedFeatureList.InitAndEnableFeature(
-      web::features::kContextMenuElementPostMessage);
-
-  const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
-  [ChromeEarlGrey loadURL:pageURL];
-  [ChromeEarlGrey waitForWebViewContainingText:kLogoPageText];
-
-  LongPressElement(kLogoPageChromiumImageId);
-  TapOnContextMenuButton(OpenImageButton());
-  [ChromeEarlGrey waitForPageToFinishLoading];
-
-  // Verify url.
-  const GURL imageURL = self.testServer->GetURL(kLogoPageImageSourcePath);
-  [[EarlGrey selectElementWithMatcher:OmniboxText(imageURL.GetContent())]
-      assertWithMatcher:grey_notNil()];
-}
-
-// Tests that selecting "Open Image in New Tab" from the context menu properly
-// opens the image in a new background tab. (With the
-// kContextMenuElementPostMessage feature enabled.)
-// TODO(crbug.com/817810): Enable this test.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testOpenImageInNewTabFromContextMenuPostMessage \
-  testOpenImageInNewTabFromContextMenuPostMessage
-#else
-#define MAYBE_testOpenImageInNewTabFromContextMenuPostMessage \
-  FLAKY_testOpenImageInNewTabFromContextMenuPostMessage
-#endif
-- (void)MAYBE_testOpenImageInNewTabFromContextMenuPostMessage {
-  base::test::ScopedFeatureList scopedFeatureList;
-  scopedFeatureList.InitAndEnableFeature(
-      web::features::kContextMenuElementPostMessage);
-
-  const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
-  [ChromeEarlGrey loadURL:pageURL];
-  [ChromeEarlGrey waitForWebViewContainingText:kLogoPageText];
-
-  LongPressElement(kLogoPageChromiumImageId);
-  TapOnContextMenuButton(OpenImageInNewTabButton());
-
-  [ChromeEarlGrey waitForMainTabCount:2];
-  SelectTabAtIndexInCurrentMode(1U);
-  [ChromeEarlGrey waitForPageToFinishLoading];
-
-  // Verify url.
-  const GURL imageURL = self.testServer->GetURL(kLogoPageImageSourcePath);
-  [[EarlGrey selectElementWithMatcher:OmniboxText(imageURL.GetContent())]
-      assertWithMatcher:grey_notNil()];
-}
-
-// Tests "Open in New Tab" on context menu. (With the
-// kContextMenuElementPostMessage feature enabled.)
-// TODO(crbug.com/817810): Enable this test.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testContextMenuOpenInNewTabPostMessage \
-  testContextMenuOpenInNewTabPostMessage
-#else
-#define MAYBE_testContextMenuOpenInNewTabPostMessage \
-  FLAKY_testContextMenuOpenInNewTabPostMessage
-#endif
-- (void)MAYBE_testContextMenuOpenInNewTabPostMessage {
-  base::test::ScopedFeatureList scopedFeatureList;
-  scopedFeatureList.InitAndEnableFeature(
-      web::features::kContextMenuElementPostMessage);
-
-  const GURL initialURL = self.testServer->GetURL(kInitialPageUrl);
-  [ChromeEarlGrey loadURL:initialURL];
-  [ChromeEarlGrey waitForWebViewContainingText:kInitialPageDestinationLinkText];
-
-  LongPressElement(kInitialPageDestinationLinkId);
-  TapOnContextMenuButton(OpenLinkInNewTabButton());
-
-  [ChromeEarlGrey waitForMainTabCount:2];
-  SelectTabAtIndexInCurrentMode(1U);
-  [ChromeEarlGrey waitForWebViewContainingText:kDestinationPageText];
-
-  // Verify url.
-  const GURL destinationURL = self.testServer->GetURL(kDestinationPageUrl);
-  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
-      assertWithMatcher:grey_notNil()];
-}
-
-// Tests that the context menu is displayed for an image url. (With the
-// kContextMenuElementPostMessage feature enabled.)
-// TODO(crbug.com/817810): Enable this test.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testContextMenuDisplayedOnImagePostMessage \
-  testContextMenuDisplayedOnImagePostMessage
-#else
-#define MAYBE_testContextMenuDisplayedOnImagePostMessage \
-  FLAKY_testContextMenuDisplayedOnImagePostMessage
-#endif
-- (void)MAYBE_testContextMenuDisplayedOnImagePostMessage {
-  base::test::ScopedFeatureList scopedFeatureList;
-  scopedFeatureList.InitAndEnableFeature(
-      web::features::kContextMenuElementPostMessage);
-
-  const GURL imageURL = self.testServer->GetURL(kLogoPageImageSourcePath);
-  [ChromeEarlGrey loadURL:imageURL];
-
-  // Calculate a point inside the displayed image. Javascript can not be used to
-  // find the element because no DOM exists.
-  CGPoint point = CGPointMake(
-      CGRectGetMidX([chrome_test_util::GetActiveViewController() view].bounds),
-      20.0);
-
-  id<GREYMatcher> web_view_matcher =
-      web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
-  [[EarlGrey selectElementWithMatcher:web_view_matcher]
-      performAction:grey_longPressAtPointWithDuration(
-                        point, kGREYLongPressDefaultDuration)];
-
-  TapOnContextMenuButton(OpenImageInNewTabButton());
-  [ChromeEarlGrey waitForMainTabCount:2];
-  SelectTabAtIndexInCurrentMode(1U);
-  [ChromeEarlGrey waitForPageToFinishLoading];
-
-  // Verify url.
-  [[EarlGrey selectElementWithMatcher:OmniboxText(imageURL.GetContent())]
-      assertWithMatcher:grey_notNil()];
-}
-
-// Tests that the element fetch duration is logged once with the
-// kContextMenuElementPostMessage feature enabled.
-- (void)testContextMenuElementFetchDurationMetricPostMessage {
-  base::test::ScopedFeatureList scopedFeatureList;
-  scopedFeatureList.InitAndEnableFeature(
-      web::features::kContextMenuElementPostMessage);
   chrome_test_util::HistogramTester histogramTester;
 
   const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
@@ -481,11 +303,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 }
 
 // Tests that system touches are cancelled when the context menu is shown.
-// (While the kContextMenuElementPostMessage feature is enabled.)
-- (void)testContextMenuCancelSystemTouchesMetricPostMessage {
-  base::test::ScopedFeatureList scopedFeatureList;
-  scopedFeatureList.InitAndEnableFeature(
-      web::features::kContextMenuElementPostMessage);
+- (void)testContextMenuCancelSystemTouchesMetric {
   chrome_test_util::HistogramTester histogramTester;
 
   const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
@@ -505,10 +323,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
 // Tests that the system selected text callout is displayed instead of the
 // context menu when user long presses on plain text.
-- (void)testContextMenuSelectedTextCalloutPostMessage {
-  base::test::ScopedFeatureList scopedFeatureList;
-  scopedFeatureList.InitAndEnableFeature(
-      web::features::kContextMenuElementPostMessage);
+- (void)testContextMenuSelectedTextCallout {
   chrome_test_util::HistogramTester histogramTester;
 
   // Load the destination page directly because it has a plain text message on

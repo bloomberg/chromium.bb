@@ -18,7 +18,7 @@ goog.provide('__crWeb.mainFrameContextMenu');
  * found element (or an empty object if no links or images are found) back to
  * the application by posting a 'FindElementResultHandler' message.
  * The object returned in the message is of the same form as
- * {@code getElementFromPointInPageCoordinates} result.
+ * {@code findElementAtPointInPageCoordinates} result.
  * @param {string} requestId An identifier which be returned in the result
  *                 dictionary of this request.
  * @param {number} x Horizontal center of the selected point in web view
@@ -35,23 +35,6 @@ __gCrWeb['findElementAtPoint'] =
                                                    x * scale,
                                                    y * scale);
     };
-
-/**
- * Returns the url of the image or link under the selected point. Returns an
- * empty object if no links or images are found.
- * @param {number} x Horizontal center of the selected point in web view
- *                   coordinates.
- * @param {number} y Vertical center of the selected point in web view
- *                 coordinates.
- * @param {number} webViewWidth the width of web view.
- * @param {number} webViewHeight the height of web view.
- * @return {!Object} An object in the same form as
- *                   {@code getElementFromPointInPageCoordinates} result.
- */
-__gCrWeb['getElementFromPoint'] = function(x, y, webViewWidth, webViewHeight) {
-  var scale = getPageWidth() / webViewWidth;
-  return __gCrWeb.getElementFromPointInPageCoordinates(x * scale, y * scale);
-};
 
 /**
  * Suppresses the next click such that they are not handled by JS click

@@ -100,11 +100,6 @@ extern const char kCaptivePortalMetricsDescription[];
 extern const char kContextualSearch[];
 extern const char kContextualSearchDescription[];
 
-// Title and description for the flag to enable returning the DOM element for
-// context menu using webkit postMessage API.
-extern const char kContextMenuElementPostMessageName[];
-extern const char kContextMenuElementPostMessageDescription[];
-
 // Title and description for the flag to enable copying image.
 extern const char kCopyImageName[];
 extern const char kCopyImageDescription[];

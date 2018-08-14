@@ -178,10 +178,6 @@ struct ContextMenuInfo {
     _delegate = delegate;
     _injectionEvaluator = injectionEvaluator;
     _pendingElementFetchRequests = [[NSMutableDictionary alloc] init];
-    // Default to assuming all elements are from the main frame since this value
-    // will not be updated unless the
-    // |web::features::kContextMenuElementPostMessage| feature is enabled.
-    _contextMenuInfoForLastTouch.is_main_frame = YES;
 
     // The system context menu triggers after 0.55 second. Add a gesture
     // recognizer with a shorter delay to be able to cancel the system menu if
@@ -219,20 +215,17 @@ struct ContextMenuInfo {
       }
     }
 
-    if (base::FeatureList::IsEnabled(
-            web::features::kContextMenuElementPostMessage)) {
-      // Listen for fetched element response.
-      web::WKWebViewConfigurationProvider& configurationProvider =
-          web::WKWebViewConfigurationProvider::FromBrowserState(browserState);
-      CRWWKScriptMessageRouter* messageRouter =
-          configurationProvider.GetScriptMessageRouter();
-      __weak CRWContextMenuController* weakSelf = self;
-      [messageRouter setScriptMessageHandler:^(WKScriptMessage* message) {
-        [weakSelf didReceiveScriptMessage:message];
-      }
-                                        name:kFindElementResultHandlerName
-                                     webView:webView];
+    // Listen for fetched element response.
+    web::WKWebViewConfigurationProvider& configurationProvider =
+        web::WKWebViewConfigurationProvider::FromBrowserState(browserState);
+    CRWWKScriptMessageRouter* messageRouter =
+        configurationProvider.GetScriptMessageRouter();
+    __weak CRWContextMenuController* weakSelf = self;
+    [messageRouter setScriptMessageHandler:^(WKScriptMessage* message) {
+      [weakSelf didReceiveScriptMessage:message];
     }
+                                      name:kFindElementResultHandlerName
+                                   webView:webView];
   }
   return self;
 }
@@ -492,41 +485,20 @@ struct ContextMenuInfo {
   CGFloat webViewContentWidth = webViewContentSize.width;
   CGFloat webViewContentHeight = webViewContentSize.height;
 
-  NSString* formatString;
-  web::JavaScriptResultBlock completionHandler = nil;
-  if (base::FeatureList::IsEnabled(
-          web::features::kContextMenuElementPostMessage)) {
-    NSString* requestID =
-        base::SysUTF8ToNSString(base::UnguessableToken::Create().ToString());
-    HTMLElementFetchRequest* fetchRequest =
-        [[HTMLElementFetchRequest alloc] initWithFoundElementHandler:handler];
-    _pendingElementFetchRequests[requestID] = fetchRequest;
-
-    formatString =
-        [NSString stringWithFormat:
-                      @"__gCrWeb.findElementAtPoint('%@', %%g, %%g, %%g, %%g);",
-                      requestID];
-  } else {
-    formatString = @"__gCrWeb.getElementFromPoint(%g, %g, %g, %g);";
-    base::TimeTicks getElementStartTime = base::TimeTicks::Now();
-    __weak CRWContextMenuController* weakSelf = self;
-    completionHandler = ^(id element, NSError* error) {
-      [weakSelf logElementFetchDurationWithStartTime:getElementStartTime];
-      if (error.code == WKErrorWebContentProcessTerminated ||
-          error.code == WKErrorWebViewInvalidated) {
-        // Renderer was terminated or view deallocated.
-        handler(nil);
-      } else {
-        handler(base::mac::ObjCCastStrict<NSDictionary>(element));
-      }
-    };
-  }
+  NSString* requestID =
+      base::SysUTF8ToNSString(base::UnguessableToken::Create().ToString());
+  HTMLElementFetchRequest* fetchRequest =
+      [[HTMLElementFetchRequest alloc] initWithFoundElementHandler:handler];
+  _pendingElementFetchRequests[requestID] = fetchRequest;
+  NSString* formatString = [NSString
+      stringWithFormat:
+          @"__gCrWeb.findElementAtPoint('%@', %%g, %%g, %%g, %%g);", requestID];
 
   NSString* getElementScript =
       [NSString stringWithFormat:formatString, point.x + scrollOffset.x,
                                  point.y + scrollOffset.y, webViewContentWidth,
                                  webViewContentHeight];
-  [self executeJavaScript:getElementScript completionHandler:completionHandler];
+  [self executeJavaScript:getElementScript completionHandler:nil];
 }
 
 @end
