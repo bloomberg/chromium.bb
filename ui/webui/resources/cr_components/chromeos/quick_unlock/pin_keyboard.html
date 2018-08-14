@@ -116,8 +116,7 @@
       }
 
       paper-ripple {
-        border-radius: 100px;
-        color: #000;
+        color: var(--google-grey-700);
         height: 48px;
         left: 6px;
         width: 48px;
@@ -169,19 +168,19 @@
         <paper-button class="digit-button" on-tap="onNumberTap_" value="1"
             noink>
           <inner-text class="number">[[i18n('pinKeyboard1')]]</inner-text>
-          <paper-ripple>
+          <paper-ripple class="circle" center></paper-ripple>
         </paper-button>
         <paper-button class="digit-button" on-tap="onNumberTap_" value="2"
             noink>
           <inner-text class="number">[[i18n('pinKeyboard2')]]</inner-text>
           <inner-text class="letter">ABC</inner-text>
-          <paper-ripple>
+          <paper-ripple class="circle" center></paper-ripple>
         </paper-button>
         <paper-button class="digit-button" on-tap="onNumberTap_" value="3"
             noink>
           <inner-text class="number">[[i18n('pinKeyboard3')]]</inner-text>
           <inner-text class="letter">DEF</inner-text>
-          <paper-ripple>
+          <paper-ripple class="circle" center></paper-ripple>
         </paper-button>
       </div>
       <div class="row">
@@ -189,19 +188,19 @@
             noink>
           <inner-text class="number">[[i18n('pinKeyboard4')]]</inner-text>
           <inner-text class="letter">GHI</inner-text>
-          <paper-ripple>
+          <paper-ripple class="circle" center></paper-ripple>
         </paper-button>
         <paper-button class="digit-button" on-tap="onNumberTap_" value="5"
             noink>
           <inner-text class="number">[[i18n('pinKeyboard5')]]</inner-text>
           <inner-text class="letter">JKL</inner-text>
-          <paper-ripple>
+          <paper-ripple class="circle" center></paper-ripple>
         </paper-button>
         <paper-button class="digit-button" on-tap="onNumberTap_" value="6"
             noink>
           <inner-text class="number">[[i18n('pinKeyboard6')]]</inner-text>
           <inner-text class="letter">MNO</inner-text>
-          <paper-ripple>
+          <paper-ripple class="circle" center></paper-ripple>
         </paper-button>
       </div>
       <div class="row">
@@ -209,19 +208,19 @@
             noink>
           <inner-text class="number">[[i18n('pinKeyboard7')]]</inner-text>
           <inner-text class="letter">PQRS</inner-text>
-          <paper-ripple>
+          <paper-ripple class="circle" center></paper-ripple>
         </paper-button>
         <paper-button class="digit-button" on-tap="onNumberTap_" value="8"
             noink>
           <inner-text class="number">[[i18n('pinKeyboard8')]]</inner-text>
           <inner-text class="letter">TUV</inner-text>
-          <paper-ripple>
+          <paper-ripple class="circle" center></paper-ripple>
         </paper-button>
         <paper-button class="digit-button" on-tap="onNumberTap_" value="9"
             noink>
           <inner-text class="number">[[i18n('pinKeyboard9')]]</inner-text>
           <inner-text class="letter">WXYZ</inner-text>
-          <paper-ripple>
+          <paper-ripple class="circle" center></paper-ripple>
         </paper-button>
       </div>
       <div class="row bottom-row">
@@ -230,7 +229,7 @@
             noink>
           <inner-text class="number">[[i18n('pinKeyboard0')]]</inner-text>
           <inner-text class="letter">+</inner-text>
-          <paper-ripple>
+          <paper-ripple class="circle" center></paper-ripple>
         </paper-button>
         <div id="backspaceButtonContainer">
           <paper-icon-button id="backspaceButton" class="digit-button"
@@ -242,7 +241,7 @@
               title="[[i18n('pinKeyboardDeleteAccessibleName')]]"
               noink>
           </paper-icon-button>
-          <paper-ripple>
+          <paper-ripple class="circle" center></paper-ripple>
         </div>
       </div>
     </div>

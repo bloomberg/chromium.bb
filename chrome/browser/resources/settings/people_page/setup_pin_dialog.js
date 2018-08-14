@@ -263,6 +263,8 @@ Polymer({
         this.quickUnlockPrivate_.checkCredential(
             chrome.quickUnlockPrivate.QuickUnlockMode.PIN,
             this.pinKeyboardValue_, this.processPinProblems_.bind(this));
+      } else {
+        this.enableSubmit_ = false;
       }
       return;
     }
