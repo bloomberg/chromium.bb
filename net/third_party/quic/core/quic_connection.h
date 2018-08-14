@@ -146,9 +146,9 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   virtual void PostProcessAfterData() = 0;
 
   // Called when the connection sends ack after
-  // kMaxConsecutiveNonRetransmittablePackets consecutive not retransmittable
-  // packets sent. To instigate an ack from peer, a retransmittable frame needs
-  // to be added.
+  // max_consecutive_num_packets_with_no_retransmittable_frames_ consecutive not
+  // retransmittable packets sent. To instigate an ack from peer, a
+  // retransmittable frame needs to be added.
   virtual void OnAckNeedsRetransmittableFrame() = 0;
 
   // Called when a ping needs to be sent.
@@ -770,6 +770,12 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   bool IsPathDegrading() const { return is_path_degrading_; }
 
+  // TODO(wub): Remove this function once
+  // quic_reloadable_flag_quic_donot_retransmit_old_window_update is deprecated.
+  void set_donot_retransmit_old_window_updates(bool value) {
+    donot_retransmit_old_window_updates_ = value;
+  }
+
  protected:
   // Calls cancel() on all the alarms owned by this connection.
   void CancelAllAlarms();
@@ -1254,6 +1260,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Consecutive number of sent packets which have no retransmittable frames.
   size_t consecutive_num_packets_with_no_retransmittable_frames_;
+  // After this many packets sent without retransmittable frames, an artificial
+  // retransmittable frame(a WINDOW_UPDATE) will be created to solicit an ack
+  // from the peer. Default to kMaxConsecutiveNonRetransmittablePackets.
+  size_t max_consecutive_num_packets_with_no_retransmittable_frames_;
 
   // If true, the connection will fill up the pipe with extra data whenever the
   // congestion controller needs it in order to make a bandwidth estimate.  This
@@ -1297,6 +1307,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Latched value of quic_reloadable_flag_quic_retransmissions_app_limited.
   const bool retransmissions_app_limited_;
+
+  // Latched value of
+  // quic_reloadable_flag_quic_donot_retransmit_old_window_update.
+  bool donot_retransmit_old_window_updates_;
 };
 
 }  // namespace quic

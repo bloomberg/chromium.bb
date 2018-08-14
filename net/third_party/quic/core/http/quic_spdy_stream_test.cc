@@ -1047,6 +1047,16 @@ TEST_P(QuicSpdyStreamTest, OnPriorityFrame) {
   EXPECT_EQ(kV3HighestPriority, stream_->priority());
 }
 
+TEST_P(QuicSpdyStreamTest, OnPriorityFrameAfterSendingData) {
+  Initialize(kShouldProcessData);
+
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
+      .WillOnce(Return(QuicConsumedData(4, true)));
+  stream_->WriteOrBufferData("data", true, nullptr);
+  stream_->OnPriorityFrame(kV3HighestPriority);
+  EXPECT_EQ(kV3HighestPriority, stream_->priority());
+}
+
 TEST_P(QuicSpdyStreamTest, SetPriorityBeforeUpdateStreamPriority) {
   MockQuicConnection* connection = new testing::StrictMock<MockQuicConnection>(
       &helper_, &alarm_factory_, Perspective::IS_SERVER,

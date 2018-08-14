@@ -132,10 +132,10 @@ class QuicUnackedPacketMapTest : public QuicTestWithParam<bool> {
                                      transmission_type, now_, true);
       return;
     }
-    const QuicTransmissionInfo& info =
-        unacked_packets_.GetTransmissionInfo(old_packet_number);
+    QuicTransmissionInfo* info =
+        unacked_packets_.GetMutableTransmissionInfo(old_packet_number);
     QuicStreamId stream_id = kHeadersStreamId;
-    for (const auto& frame : info.retransmittable_frames) {
+    for (const auto& frame : info->retransmittable_frames) {
       if (frame.type == STREAM_FRAME) {
         stream_id = frame.stream_frame->stream_id;
         break;
@@ -144,6 +144,7 @@ class QuicUnackedPacketMapTest : public QuicTestWithParam<bool> {
     UpdatePacketState(
         old_packet_number,
         QuicUtils::RetransmissionTypeToPacketState(transmission_type));
+    info->retransmission = new_packet_number;
     SerializedPacket packet(
         CreateRetransmittablePacketForStream(new_packet_number, stream_id));
     unacked_packets_.AddSentPacket(&packet, 0, transmission_type, now_, true);
@@ -355,8 +356,13 @@ TEST_P(QuicUnackedPacketMapTest, RetransmitThreeTimes) {
   std::vector<QuicPacketNumber> unacked3;
   std::vector<QuicPacketNumber> retransmittable3;
   if (unacked_packets_.session_decides_what_to_write()) {
-    unacked3 = {1, 3, 5, 6};
-    retransmittable3 = {1, 3, 5, 6};
+    if (unacked_packets_.fix_is_useful_for_retransmission()) {
+      unacked3 = {3, 5, 6};
+      retransmittable3 = {3, 5, 6};
+    } else {
+      unacked3 = {1, 3, 5, 6};
+      retransmittable3 = {1, 3, 5, 6};
+    }
   } else {
     unacked3 = {3, 5, 6};
     retransmittable3 = {5, 6};
@@ -375,8 +381,13 @@ TEST_P(QuicUnackedPacketMapTest, RetransmitThreeTimes) {
   std::vector<QuicPacketNumber> unacked4;
   std::vector<QuicPacketNumber> retransmittable4;
   if (unacked_packets_.session_decides_what_to_write()) {
-    unacked4 = {1, 3, 5, 7};
-    retransmittable4 = {1, 3, 5, 7};
+    if (unacked_packets_.fix_is_useful_for_retransmission()) {
+      unacked4 = {3, 5, 7};
+      retransmittable4 = {3, 5, 7};
+    } else {
+      unacked4 = {1, 3, 5, 7};
+      retransmittable4 = {1, 3, 5, 7};
+    }
   } else {
     unacked4 = {3, 5, 7};
     retransmittable4 = {7};
@@ -453,7 +464,11 @@ TEST_P(QuicUnackedPacketMapTest, RetransmitFourTimes) {
 
   std::vector<QuicPacketNumber> unacked4;
   if (unacked_packets_.session_decides_what_to_write()) {
-    unacked4 = {1, 3, 4, 6};
+    if (unacked_packets_.fix_is_useful_for_retransmission()) {
+      unacked4 = {4, 6};
+    } else {
+      unacked4 = {1, 3, 4, 6};
+    }
   } else {
     unacked4 = {4, 6};
   }
@@ -462,7 +477,11 @@ TEST_P(QuicUnackedPacketMapTest, RetransmitFourTimes) {
   VerifyInFlightPackets(pending4, QUIC_ARRAYSIZE(pending4));
   std::vector<QuicPacketNumber> retransmittable4;
   if (unacked_packets_.session_decides_what_to_write()) {
-    retransmittable4 = {1, 3, 4, 6};
+    if (unacked_packets_.fix_is_useful_for_retransmission()) {
+      retransmittable4 = {4, 6};
+    } else {
+      retransmittable4 = {1, 3, 4, 6};
+    }
   } else {
     retransmittable4 = {6};
   }
@@ -485,6 +504,74 @@ TEST_P(QuicUnackedPacketMapTest, SendWithGap) {
   EXPECT_FALSE(unacked_packets_.IsUnacked(4));
   EXPECT_TRUE(unacked_packets_.IsUnacked(5));
   EXPECT_EQ(5u, unacked_packets_.largest_sent_packet());
+}
+
+TEST_P(QuicUnackedPacketMapTest, AggregateContiguousAckedStreamFrames) {
+  testing::InSequence s;
+  EXPECT_CALL(notifier_, OnFrameAcked(_, _)).Times(0);
+  unacked_packets_.NotifyAggregatedStreamFrameAcked(QuicTime::Delta::Zero());
+
+  QuicTransmissionInfo info1;
+  QuicStreamFrame stream_frame1(3, false, 0, 100);
+  info1.retransmittable_frames.push_back(QuicFrame(&stream_frame1));
+
+  QuicTransmissionInfo info2;
+  QuicStreamFrame stream_frame2(3, false, 100, 100);
+  info2.retransmittable_frames.push_back(QuicFrame(&stream_frame2));
+
+  QuicTransmissionInfo info3;
+  QuicStreamFrame stream_frame3(3, false, 200, 100);
+  info3.retransmittable_frames.push_back(QuicFrame(&stream_frame3));
+
+  QuicTransmissionInfo info4;
+  QuicStreamFrame stream_frame4(3, true, 300, 0);
+  info4.retransmittable_frames.push_back(QuicFrame(&stream_frame4));
+
+  // Verify stream frames are aggregated.
+  EXPECT_CALL(notifier_, OnFrameAcked(_, _)).Times(0);
+  unacked_packets_.MaybeAggregateAckedStreamFrame(info1,
+                                                  QuicTime::Delta::Zero());
+  EXPECT_CALL(notifier_, OnFrameAcked(_, _)).Times(0);
+  unacked_packets_.MaybeAggregateAckedStreamFrame(info2,
+                                                  QuicTime::Delta::Zero());
+  EXPECT_CALL(notifier_, OnFrameAcked(_, _)).Times(0);
+  unacked_packets_.MaybeAggregateAckedStreamFrame(info3,
+                                                  QuicTime::Delta::Zero());
+
+  // Verify aggregated stream frame gets acked since fin is acked.
+  EXPECT_CALL(notifier_, OnFrameAcked(_, _)).Times(1);
+  unacked_packets_.MaybeAggregateAckedStreamFrame(info4,
+                                                  QuicTime::Delta::Zero());
+}
+
+TEST_P(QuicUnackedPacketMapTest, CannotAggregateAckedControlFrames) {
+  testing::InSequence s;
+  QuicWindowUpdateFrame window_update(1, 5, 100);
+  QuicStreamFrame stream_frame1(3, false, 0, 100);
+  QuicStreamFrame stream_frame2(3, false, 100, 100);
+  QuicBlockedFrame blocked(2, 5);
+  QuicGoAwayFrame go_away(3, QUIC_PEER_GOING_AWAY, 5, "Going away.");
+
+  QuicTransmissionInfo info1;
+  info1.retransmittable_frames.push_back(QuicFrame(&window_update));
+  info1.retransmittable_frames.push_back(QuicFrame(&stream_frame1));
+  info1.retransmittable_frames.push_back(QuicFrame(&stream_frame2));
+
+  QuicTransmissionInfo info2;
+  info2.retransmittable_frames.push_back(QuicFrame(&blocked));
+  info2.retransmittable_frames.push_back(QuicFrame(&go_away));
+
+  // Verify 2 contiguous stream frames are aggregated.
+  EXPECT_CALL(notifier_, OnFrameAcked(_, _)).Times(1);
+  unacked_packets_.MaybeAggregateAckedStreamFrame(info1,
+                                                  QuicTime::Delta::Zero());
+  // Verify aggregated stream frame gets acked.
+  EXPECT_CALL(notifier_, OnFrameAcked(_, _)).Times(3);
+  unacked_packets_.MaybeAggregateAckedStreamFrame(info2,
+                                                  QuicTime::Delta::Zero());
+
+  EXPECT_CALL(notifier_, OnFrameAcked(_, _)).Times(0);
+  unacked_packets_.NotifyAggregatedStreamFrameAcked(QuicTime::Delta::Zero());
 }
 
 }  // namespace

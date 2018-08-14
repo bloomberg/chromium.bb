@@ -553,6 +553,9 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // A reverse iterator of last_ack_frame_.packets. This is reset in
   // OnAckRangeStart, and gradually moves in OnAckRange..
   PacketNumberQueue::const_reverse_iterator acked_packets_iter_;
+
+  // Latched value of quic_reloadable_flag_quic_aggregate_acked_stream_frames.
+  const bool aggregate_acked_stream_frames_;
 };
 
 }  // namespace quic

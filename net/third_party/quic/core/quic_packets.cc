@@ -70,6 +70,7 @@ QuicPacketHeader::QuicPacketHeader()
       source_connection_id_length(PACKET_0BYTE_CONNECTION_ID),
       reset_flag(false),
       version_flag(false),
+      has_possible_stateless_reset_token(false),
       packet_number_length(PACKET_4BYTE_PACKET_NUMBER),
       version(
           ParsedQuicVersion(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED)),

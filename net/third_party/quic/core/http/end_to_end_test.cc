@@ -874,6 +874,37 @@ TEST_P(EndToEndTest, LargePostWithPacketLoss) {
   VerifyCleanConnection(true);
 }
 
+// Regression test for b/80090281.
+TEST_P(EndToEndTest, LargePostWithPacketLossAndAlwaysBundleWindowUpdates) {
+  ASSERT_TRUE(Initialize());
+
+  // Wait for the server SHLO before upping the packet loss.
+  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
+  server_thread_->WaitForCryptoHandshakeConfirmed();
+
+  // Normally server only bundles a retransmittable frame once every other
+  // kMaxConsecutiveNonRetransmittablePackets ack-only packets. Setting the max
+  // to 0 to reliably reproduce b/80090281.
+  server_thread_->Schedule([this]() {
+    QuicConnectionPeer::SetMaxConsecutiveNumPacketsWithNoRetransmittableFrames(
+        GetServerConnection(), 0);
+  });
+
+  SetPacketLossPercentage(30);
+
+  // 10 KB body.
+  QuicString body(1024 * 10, 'a');
+  SpdyHeaderBlock headers;
+  headers[":method"] = "POST";
+  headers[":path"] = "/foo";
+  headers[":scheme"] = "https";
+  headers[":authority"] = server_hostname_;
+
+  EXPECT_EQ(kFooResponseBody,
+            client_->SendCustomSynchronousRequest(headers, body));
+  VerifyCleanConnection(true);
+}
+
 TEST_P(EndToEndTest, LargePostWithPacketLossAndBlockedSocket) {
   if (!BothSidesSupportStatelessRejects()) {
     // Connect with lower fake packet loss than we'd like to test.  Until

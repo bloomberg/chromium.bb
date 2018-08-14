@@ -203,12 +203,33 @@ void QuartcSession::ResetStream(QuicStreamId stream_id,
   }
 }
 
+void QuartcSession::OnCongestionWindowChange(QuicTime now) {
+  DCHECK(session_delegate_);
+  const RttStats* rtt_stats = connection_->sent_packet_manager().GetRttStats();
+
+  QuicBandwidth bandwidth_estimate =
+      connection_->sent_packet_manager().BandwidthEstimate();
+
+  QuicByteCount in_flight =
+      connection_->sent_packet_manager().GetBytesInFlight();
+  QuicBandwidth pacing_rate =
+      connection_->sent_packet_manager().GetSendAlgorithm()->PacingRate(
+          in_flight);
+
+  session_delegate_->OnCongestionControlChange(bandwidth_estimate, pacing_rate,
+                                               rtt_stats->latest_rtt());
+}
+
 void QuartcSession::OnConnectionClosed(QuicErrorCode error,
                                        const QuicString& error_details,
                                        ConnectionCloseSource source) {
   QuicSession::OnConnectionClosed(error, error_details, source);
   DCHECK(session_delegate_);
   session_delegate_->OnConnectionClosed(error, error_details, source);
+
+  // The session may be deleted after OnConnectionClosed(), so |this| must be
+  // removed from the packet transport's delegate before it is deleted.
+  packet_writer_->SetPacketTransportDelegate(nullptr);
 }
 
 void QuartcSession::SetPreSharedKey(QuicStringPiece key) {
@@ -240,6 +261,10 @@ void QuartcSession::StartCryptoHandshake() {
     crypto_stream_.reset(crypto_stream);
     QuicSession::Initialize();
   }
+
+  // QUIC is ready to process incoming packets after QuicSession::Initialize().
+  // Set the packet transport delegate to begin receiving packets.
+  packet_writer_->SetPacketTransportDelegate(this);
 }
 
 void QuartcSession::CloseConnection(const QuicString& details) {
@@ -263,11 +288,10 @@ void QuartcSession::OnTransportCanWrite() {
   }
 }
 
-bool QuartcSession::OnTransportReceived(const char* data, size_t data_len) {
+void QuartcSession::OnTransportReceived(const char* data, size_t data_len) {
   QuicReceivedPacket packet(data, data_len, clock_->Now());
   ProcessUdpPacket(connection()->self_address(), connection()->peer_address(),
                    packet);
-  return true;
 }
 
 void QuartcSession::OnProofValid(

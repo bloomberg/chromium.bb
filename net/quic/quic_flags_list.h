@@ -149,7 +149,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_optimize_inflight_check, false)
 
 // When you\'re app-limited entering recovery, stay app-limited until you exit
 // recovery in QUIC BBR.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_app_limited_recovery, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_app_limited_recovery, false)
 
 // If true, mark QUIC as app-limited after sending queued packets or
 // retransmisssions and we then become congestion control blocked.
@@ -191,3 +191,32 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup4, false)
 // If true, QuicCryptoServerConfig::EvaluateClientHello will use GetCertChain
 // instead of the more expensive GetProof.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_get_cert_chain, false)
+
+// If true, try to aggregate acked stream frames.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_aggregate_acked_stream_frames,
+          false)
+
+// If true, only process stateless reset packets on the client side.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_process_stateless_reset_at_client_only,
+    false)
+
+// If true, do not retransmit old window update frames.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_donot_retransmit_old_window_update2,
+          false)
+
+// If ture, make QuicSession::GetStream faster by skipping the lookup into
+// static stream map, when possible.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_session_faster_get_stream,
+          false)
+
+// If true, when session decides what to write, set a approximate retransmission
+// for packets to be retransmitted. Also check packet state in
+// IsPacketUsefulForRetransmittableData.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_fix_is_useful_for_retrans,
+          false)

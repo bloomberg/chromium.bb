@@ -130,6 +130,9 @@ class QuicConnectionPeer {
                                    QuicPacketCount max_tracked_packets);
   static void SetSessionDecidesWhatToWrite(QuicConnection* connection);
   static void SetNegotiatedVersion(QuicConnection* connection);
+  static void SetMaxConsecutiveNumPacketsWithNoRetransmittableFrames(
+      QuicConnection* connection,
+      size_t new_value);
 };
 
 }  // namespace test

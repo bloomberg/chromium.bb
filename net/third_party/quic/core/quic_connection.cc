@@ -313,6 +313,8 @@ QuicConnection::QuicConnection(
       write_error_occurred_(false),
       no_stop_waiting_frames_(transport_version() > QUIC_VERSION_43),
       consecutive_num_packets_with_no_retransmittable_frames_(0),
+      max_consecutive_num_packets_with_no_retransmittable_frames_(
+          kMaxConsecutiveNonRetransmittablePackets),
       fill_up_link_during_probing_(false),
       probing_retransmission_pending_(false),
       stateless_reset_token_received_(false),
@@ -326,7 +328,8 @@ QuicConnection::QuicConnection(
           GetQuicReloadableFlag(quic_add_to_blocked_list_if_writer_blocked)),
       ack_reordered_packets_(GetQuicReloadableFlag(quic_ack_reordered_packets)),
       retransmissions_app_limited_(
-          GetQuicReloadableFlag(quic_retransmissions_app_limited)) {
+          GetQuicReloadableFlag(quic_retransmissions_app_limited)),
+      donot_retransmit_old_window_updates_(false) {
   if (ack_mode_ == ACK_DECIMATION) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_enable_ack_decimation);
   }
@@ -2072,14 +2075,14 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   QuicTime packet_send_time = clock_->Now();
   if (supports_release_time_ && per_packet_options_ != nullptr) {
     QuicTime next_release_time = sent_packet_manager_.GetNextReleaseTime();
-    uint64_t release_time_delay_ns = 0;
+    QuicTime::Delta release_time_delay = QuicTime::Delta::Zero();
     QuicTime now = packet_send_time;
     if (next_release_time > now) {
-      release_time_delay_ns = (next_release_time - now).ToMicroseconds() * 1000;
+      release_time_delay = next_release_time - now;
       // Set packet_send_time to the future to make the RTT estimation accurate.
       packet_send_time = next_release_time;
     }
-    per_packet_options_->SetReleaseTimeDelay(release_time_delay_ns);
+    per_packet_options_->release_time_delay = release_time_delay;
   }
   WriteResult result = writer_->WritePacket(
       packet->encrypted_buffer, encrypted_length, self_address().host(),
@@ -2351,11 +2354,13 @@ void QuicConnection::SendAck() {
 
   packet_generator_.SetShouldSendAck(!no_stop_waiting_frames_);
   if (consecutive_num_packets_with_no_retransmittable_frames_ <
-      kMaxConsecutiveNonRetransmittablePackets) {
+      max_consecutive_num_packets_with_no_retransmittable_frames_) {
     return;
   }
   consecutive_num_packets_with_no_retransmittable_frames_ = 0;
-  if (packet_generator_.HasRetransmittableFrames()) {
+  if (packet_generator_.HasRetransmittableFrames() ||
+      (donot_retransmit_old_window_updates_ &&
+       visitor_->WillingAndAbleToWrite())) {
     // There are pending retransmittable frames.
     return;
   }

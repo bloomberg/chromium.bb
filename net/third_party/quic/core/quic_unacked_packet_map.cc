@@ -7,6 +7,7 @@
 #include "net/third_party/quic/core/quic_connection_stats.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
+#include "net/third_party/quic/platform/api/quic_flag_utils.h"
 
 namespace quic {
 
@@ -20,7 +21,9 @@ QuicUnackedPacketMap::QuicUnackedPacketMap()
       pending_crypto_packet_count_(0),
       last_crypto_packet_sent_time_(QuicTime::Zero()),
       session_notifier_(nullptr),
-      session_decides_what_to_write_(false) {}
+      session_decides_what_to_write_(false),
+      fix_is_useful_for_retransmission_(
+          GetQuicReloadableFlag(quic_fix_is_useful_for_retrans)) {}
 
 QuicUnackedPacketMap::~QuicUnackedPacketMap() {
   for (QuicTransmissionInfo& transmission_info : unacked_packets_) {
@@ -170,6 +173,9 @@ void QuicUnackedPacketMap::RemoveRetransmittability(
     QuicTransmissionInfo* info) {
   if (session_decides_what_to_write_) {
     DeleteFrames(&info->retransmittable_frames);
+    if (fix_is_useful_for_retransmission_) {
+      info->retransmission = 0;
+    }
     return;
   }
   while (info->retransmission != 0) {
@@ -218,11 +224,20 @@ bool QuicUnackedPacketMap::IsPacketUsefulForCongestionControl(
 
 bool QuicUnackedPacketMap::IsPacketUsefulForRetransmittableData(
     const QuicTransmissionInfo& info) const {
-  // Packet may have retransmittable frames, or the data may have been
-  // retransmitted with a new packet number.
-  return HasRetransmittableFrames(info) ||
-         // Allow for an extra 1 RTT before stopping to track old packets.
-         info.retransmission > largest_acked_;
+  if (!session_decides_what_to_write_ || !fix_is_useful_for_retransmission_) {
+    // Packet may have retransmittable frames, or the data may have been
+    // retransmitted with a new packet number.
+    // Allow for an extra 1 RTT before stopping to track old packets.
+    return info.retransmission > largest_acked_ ||
+           HasRetransmittableFrames(info);
+  }
+
+  // Wait for 1 RTT before giving up on the lost packet.
+  if (info.retransmission > largest_acked_) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fix_is_useful_for_retrans);
+    return true;
+  }
+  return false;
 }
 
 bool QuicUnackedPacketMap::IsPacketUseless(
@@ -393,6 +408,59 @@ void QuicUnackedPacketMap::RetransmitFrames(const QuicTransmissionInfo& info,
                                             TransmissionType type) {
   DCHECK(session_decides_what_to_write_);
   session_notifier_->RetransmitFrames(info.retransmittable_frames, type);
+}
+
+void QuicUnackedPacketMap::MaybeAggregateAckedStreamFrame(
+    const QuicTransmissionInfo& info,
+    QuicTime::Delta ack_delay) {
+  if (session_notifier_ == nullptr) {
+    return;
+  }
+  for (const auto& frame : info.retransmittable_frames) {
+    // Determine whether acked stream frame can be aggregated.
+    const bool can_aggregate =
+        frame.type == STREAM_FRAME &&
+        frame.stream_frame->stream_id == aggregated_stream_frame_.stream_id &&
+        frame.stream_frame->offset == aggregated_stream_frame_.offset +
+                                          aggregated_stream_frame_.data_length;
+    if (can_aggregate) {
+      // Aggregate stream frame.
+      aggregated_stream_frame_.data_length += frame.stream_frame->data_length;
+      aggregated_stream_frame_.fin = frame.stream_frame->fin;
+      if (aggregated_stream_frame_.fin) {
+        // Notify session notifier aggregated stream frame gets acked if fin is
+        // acked.
+        NotifyAggregatedStreamFrameAcked(ack_delay);
+      }
+      continue;
+    }
+
+    NotifyAggregatedStreamFrameAcked(ack_delay);
+    if (frame.type != STREAM_FRAME || frame.stream_frame->fin) {
+      session_notifier_->OnFrameAcked(frame, ack_delay);
+      continue;
+    }
+
+    // Delay notifying session notifier stream frame gets acked in case it can
+    // be aggregated with following acked ones.
+    aggregated_stream_frame_.stream_id = frame.stream_frame->stream_id;
+    aggregated_stream_frame_.offset = frame.stream_frame->offset;
+    aggregated_stream_frame_.data_length = frame.stream_frame->data_length;
+    aggregated_stream_frame_.fin = frame.stream_frame->fin;
+  }
+}
+
+void QuicUnackedPacketMap::NotifyAggregatedStreamFrameAcked(
+    QuicTime::Delta ack_delay) {
+  if (aggregated_stream_frame_.stream_id == kInvalidStreamId ||
+      session_notifier_ == nullptr) {
+    // Aggregated stream frame is empty.
+    return;
+  }
+  session_notifier_->OnFrameAcked(QuicFrame(&aggregated_stream_frame_),
+                                  ack_delay);
+  // Clear aggregated stream frame.
+  aggregated_stream_frame_.stream_id = kInvalidStreamId;
 }
 
 void QuicUnackedPacketMap::SetSessionDecideWhatToWrite(

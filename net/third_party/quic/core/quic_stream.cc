@@ -230,7 +230,6 @@ SpdyPriority QuicStream::priority() const {
 }
 
 void QuicStream::SetPriority(SpdyPriority priority) {
-  DCHECK_EQ(0u, stream_bytes_written());
   priority_ = priority;
   session_->UpdateStreamPriority(id(), priority);
 }

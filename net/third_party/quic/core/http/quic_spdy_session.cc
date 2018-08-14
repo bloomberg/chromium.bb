@@ -342,7 +342,7 @@ void QuicSpdySession::Initialize() {
 
   headers_stream_ = QuicMakeUnique<QuicHeadersStream>((this));
   DCHECK_EQ(kHeadersStreamId, headers_stream_->id());
-  static_streams()[kHeadersStreamId] = headers_stream_.get();
+  RegisterStaticStream(kHeadersStreamId, headers_stream_.get());
 
   set_max_uncompressed_header_bytes(max_inbound_header_list_size_);
 

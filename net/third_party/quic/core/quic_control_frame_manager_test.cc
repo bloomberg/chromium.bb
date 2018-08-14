@@ -34,6 +34,10 @@ class QuicControlFrameManagerTest : public QuicTest {
     DeleteFrame(&const_cast<QuicFrame&>(frame));
     return true;
   }
+  bool SaveControlFrame(const QuicFrame& frame) {
+    frame_ = frame;
+    return true;
+  }
 
  protected:
   void Initialize() {
@@ -74,6 +78,7 @@ class QuicControlFrameManagerTest : public QuicTest {
   MockQuicConnection* connection_;
   std::unique_ptr<StrictMock<MockQuicSession>> session_;
   std::unique_ptr<QuicControlFrameManager> manager_;
+  QuicFrame frame_;
 };
 
 TEST_F(QuicControlFrameManagerTest, OnControlFrameAcked) {
@@ -197,6 +202,72 @@ TEST_F(QuicControlFrameManagerTest, DonotSendPingWithBufferedFrames) {
   // Send PING when there is buffered frames.
   manager_->WritePing();
   // Verify only the buffered 3 frames are sent.
+  EXPECT_CALL(*connection_, SendControlFrame(_))
+      .Times(3)
+      .WillRepeatedly(
+          Invoke(this, &QuicControlFrameManagerTest::ClearControlFrame));
+  manager_->OnCanWrite();
+  EXPECT_FALSE(manager_->HasPendingRetransmission());
+  EXPECT_FALSE(manager_->WillingToWrite());
+}
+
+TEST_F(QuicControlFrameManagerTest, DonotRetransmitOldWindowUpdates) {
+  SetQuicReloadableFlag(quic_donot_retransmit_old_window_update2, true);
+  Initialize();
+  // Send two more window updates of the same stream.
+  manager_->WriteOrBufferWindowUpdate(kTestStreamId, 200);
+  QuicWindowUpdateFrame window_update2(5, kTestStreamId, 200);
+
+  manager_->WriteOrBufferWindowUpdate(kTestStreamId, 300);
+  QuicWindowUpdateFrame window_update3(6, kTestStreamId, 300);
+  InSequence s;
+  // Flush all buffered control frames.
+  EXPECT_CALL(*connection_, SendControlFrame(_))
+      .WillRepeatedly(
+          Invoke(this, &QuicControlFrameManagerTest::ClearControlFrame));
+  manager_->OnCanWrite();
+
+  // Mark all 3 window updates as lost.
+  manager_->OnControlFrameLost(QuicFrame(&window_update_));
+  manager_->OnControlFrameLost(QuicFrame(&window_update2));
+  manager_->OnControlFrameLost(QuicFrame(&window_update3));
+  EXPECT_TRUE(manager_->HasPendingRetransmission());
+  EXPECT_TRUE(manager_->WillingToWrite());
+
+  // Verify only the latest window update gets retransmitted.
+  EXPECT_CALL(*connection_, SendControlFrame(_))
+      .WillOnce(Invoke(this, &QuicControlFrameManagerTest::SaveControlFrame));
+  manager_->OnCanWrite();
+  EXPECT_EQ(6u, frame_.window_update_frame->control_frame_id);
+  EXPECT_FALSE(manager_->HasPendingRetransmission());
+  EXPECT_FALSE(manager_->WillingToWrite());
+  DeleteFrame(&frame_);
+}
+
+TEST_F(QuicControlFrameManagerTest, RetransmitWindowUpdateOfDifferentStreams) {
+  SetQuicReloadableFlag(quic_donot_retransmit_old_window_update2, true);
+  Initialize();
+  // Send two more window updates of different streams.
+  manager_->WriteOrBufferWindowUpdate(kTestStreamId + 2, 200);
+  QuicWindowUpdateFrame window_update2(5, kTestStreamId + 2, 200);
+
+  manager_->WriteOrBufferWindowUpdate(kTestStreamId + 4, 300);
+  QuicWindowUpdateFrame window_update3(6, kTestStreamId + 4, 300);
+  InSequence s;
+  // Flush all buffered control frames.
+  EXPECT_CALL(*connection_, SendControlFrame(_))
+      .WillRepeatedly(
+          Invoke(this, &QuicControlFrameManagerTest::ClearControlFrame));
+  manager_->OnCanWrite();
+
+  // Mark all 3 window updates as lost.
+  manager_->OnControlFrameLost(QuicFrame(&window_update_));
+  manager_->OnControlFrameLost(QuicFrame(&window_update2));
+  manager_->OnControlFrameLost(QuicFrame(&window_update3));
+  EXPECT_TRUE(manager_->HasPendingRetransmission());
+  EXPECT_TRUE(manager_->WillingToWrite());
+
+  // Verify all 3 window updates get retransmitted.
   EXPECT_CALL(*connection_, SendControlFrame(_))
       .Times(3)
       .WillRepeatedly(

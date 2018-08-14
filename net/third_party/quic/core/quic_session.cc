@@ -49,9 +49,15 @@ QuicSession::QuicSession(QuicConnection* connection,
                        perspective() == Perspective::IS_SERVER,
                        nullptr),
       currently_writing_stream_id_(0),
+      largest_static_stream_id_(0),
       goaway_sent_(false),
       goaway_received_(false),
-      control_frame_manager_(this) {}
+      faster_get_stream_(GetQuicReloadableFlag(quic_session_faster_get_stream)),
+      control_frame_manager_(this) {
+  if (faster_get_stream_) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_session_faster_get_stream);
+  }
+}
 
 void QuicSession::Initialize() {
   connection_->set_visitor(this);
@@ -59,8 +65,12 @@ void QuicSession::Initialize() {
   connection_->SetDataProducer(this);
   connection_->SetFromConfig(config_);
 
+  // Make sure connection and control frame manager latch the same flag values.
+  connection_->set_donot_retransmit_old_window_updates(
+      control_frame_manager_.donot_retransmit_old_window_updates());
+
   DCHECK_EQ(kCryptoStreamId, GetMutableCryptoStream()->id());
-  static_stream_map_[kCryptoStreamId] = GetMutableCryptoStream();
+  RegisterStaticStream(kCryptoStreamId, GetMutableCryptoStream());
 }
 
 QuicSession::~QuicSession() {
@@ -75,6 +85,14 @@ QuicSession::~QuicSession() {
          "still waiting for final byte offset: "
       << GetNumLocallyClosedOutgoingStreamsHighestOffset();
   QUIC_LOG_IF(WARNING, !zombie_streams_.empty()) << "Still have zombie streams";
+}
+
+void QuicSession::RegisterStaticStream(QuicStreamId id, QuicStream* stream) {
+  static_stream_map_[id] = stream;
+
+  if (faster_get_stream_) {
+    largest_static_stream_id_ = std::max(id, largest_static_stream_id_);
+  }
 }
 
 void QuicSession::OnStreamFrame(const QuicStreamFrame& frame) {
@@ -1012,9 +1030,18 @@ void QuicSession::OnStreamDoneWaitingForAcks(QuicStreamId id) {
 }
 
 QuicStream* QuicSession::GetStream(QuicStreamId id) const {
-  auto static_stream = static_stream_map_.find(id);
-  if (static_stream != static_stream_map_.end()) {
-    return static_stream->second;
+  if (faster_get_stream_) {
+    if (id <= largest_static_stream_id_) {
+      auto static_stream = static_stream_map_.find(id);
+      if (static_stream != static_stream_map_.end()) {
+        return static_stream->second;
+      }
+    }
+  } else {
+    auto static_stream = static_stream_map_.find(id);
+    if (static_stream != static_stream_map_.end()) {
+      return static_stream->second;
+    }
   }
   auto active_stream = dynamic_stream_map_.find(id);
   if (active_stream != dynamic_stream_map_.end()) {
