@@ -87,16 +87,16 @@ public class PrintingContext implements PrintingContextInterface {
         return mController.getPageHeight();
     }
 
+    // Called along window.print() path to initialize a printing job.
     @CalledByNative
     public void showPrintDialog() {
         ThreadUtils.assertOnUiThread();
         if (mController != null) {  // The native side doesn't check if printing is enabled
-            mController.startPendingPrint(this);
-        } else {
-            Log.d(TAG, "Unable to start printing, feature not available.");
-            // Printing disabled. Notify the native side to stop waiting.
-            showSystemDialogDone();
+            mController.startPendingPrint();
         }
+        // Reply to native side with |CANCEL| since there is no printing settings available yet at
+        // this stage.
+        showSystemDialogDone();
     }
 
     @CalledByNative
@@ -139,8 +139,8 @@ public class PrintingContext implements PrintingContextInterface {
         nativeAskUserForSettingsReply(mNativeObject, success);
     }
 
-    @Override
-    public void showSystemDialogDone() {
+    private void showSystemDialogDone() {
+        assert mNativeObject != 0;
         nativeShowSystemDialogDone(mNativeObject);
     }
 

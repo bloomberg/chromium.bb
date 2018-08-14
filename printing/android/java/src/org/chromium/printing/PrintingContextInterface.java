@@ -15,10 +15,4 @@ public interface PrintingContextInterface {
      * @param delete If true, delete the entry (if it exists).  If false, add it to the map.
      */
     void updatePrintingContextMap(int fileDescriptor, boolean delete);
-
-    /**
-     * Notifies the native side that the printing process is completed. This method should be
-     * called when the process was initiated by the native side (window.print())
-     */
-    void showSystemDialogDone();
 }
