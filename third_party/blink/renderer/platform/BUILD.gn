@@ -1596,6 +1596,8 @@ jumbo_static_library("test_support") {
     "testing/test_paint_artifact.h",
     "testing/testing_platform_support.cc",
     "testing/testing_platform_support.h",
+    "testing/testing_platform_support_with_custom_scheduler.cc",
+    "testing/testing_platform_support_with_custom_scheduler.h",
     "testing/testing_platform_support_with_mock_scheduler.cc",
     "testing/testing_platform_support_with_mock_scheduler.h",
     "testing/testing_platform_support_with_web_rtc.cc",

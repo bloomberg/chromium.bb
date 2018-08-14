@@ -8,7 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_custom_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -61,29 +61,6 @@ class MockIdleDeadlineScheduler final : public ThreadScheduler {
   DISALLOW_COPY_AND_ASSIGN(MockIdleDeadlineScheduler);
 };
 
-class MockIdleDeadlineThread final : public WebThread {
- public:
-  MockIdleDeadlineThread() = default;
-  ~MockIdleDeadlineThread() override = default;
-  bool IsCurrentThread() const override { return true; }
-  ThreadScheduler* Scheduler() const override { return &scheduler_; }
-
- private:
-  mutable MockIdleDeadlineScheduler scheduler_;
-  DISALLOW_COPY_AND_ASSIGN(MockIdleDeadlineThread);
-};
-
-class MockIdleDeadlinePlatform : public TestingPlatformSupport {
- public:
-  MockIdleDeadlinePlatform() = default;
-  ~MockIdleDeadlinePlatform() override = default;
-  WebThread* CurrentThread() override { return &thread_; }
-
- private:
-  MockIdleDeadlineThread thread_;
-  DISALLOW_COPY_AND_ASSIGN(MockIdleDeadlinePlatform);
-};
-
 }  // namespace
 
 class IdleDeadlineTest : public testing::Test {
@@ -110,7 +87,10 @@ TEST_F(IdleDeadlineTest, deadlineInPast) {
 }
 
 TEST_F(IdleDeadlineTest, yieldForHighPriorityWork) {
-  ScopedTestingPlatformSupport<MockIdleDeadlinePlatform> platform;
+  MockIdleDeadlineScheduler scheduler;
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithCustomScheduler,
+                               ThreadScheduler*>
+      platform(&scheduler);
 
   IdleDeadline* deadline =
       IdleDeadline::Create(TimeTicks() + TimeDelta::FromSecondsD(1.25),
