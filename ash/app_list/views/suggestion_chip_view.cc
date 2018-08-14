@@ -118,7 +118,7 @@ void SuggestionChipView::InitLayout(const Params& params) {
                                                : kAppListTextColor);
   text_view_->SetFontList(
       assistant_style_
-          ? ash::assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(2)
+          ? ash::assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(1)
           : AppListConfig::instance().app_title_font());
   SetText(params.text);
   AddChildView(text_view_);

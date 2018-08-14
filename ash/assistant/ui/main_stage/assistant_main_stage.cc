@@ -288,7 +288,8 @@ void AssistantMainStage::InitOverlayLayoutContainer() {
   greeting_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_PROMPT_DEFAULT));
   greeting_label_->SetAutoColorReadabilityEnabled(false);
-  greeting_label_->SetBorder(views::CreateEmptyBorder(/*top=*/32, 0, 0, 0));
+  greeting_label_->SetBorder(
+      views::CreateEmptyBorder(kGreetingLabelMarginTopDip, 0, 0, 0));
   greeting_label_->SetEnabledColor(kTextColorPrimary);
   greeting_label_->SetFontList(
       assistant::ui::GetDefaultFontList()
