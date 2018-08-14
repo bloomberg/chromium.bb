@@ -72,13 +72,7 @@ SRC_RESOURCES= \
 	src/images/browser_button_export.png \
 	src/images/browser_button_print.png \
 	src/images/camera_app_icons_128.png \
-	src/images/camera_app_icons_256.png \
-	src/images/camera_app_icons_32.png \
 	src/images/camera_app_icons_48.png \
-	src/images/camera_app_icons_64.png \
-	src/images/camera_app_icons_96.png \
-	src/images/camera_app_icons_favicon_16.png \
-	src/images/camera_app_icons_favicon_32.png \
         src/images/camera_button_grid_off.svg \
         src/images/camera_button_grid_on.svg \
         src/images/camera_button_mic_off.svg \
@@ -127,10 +121,11 @@ SRC_PATH=src/
 SRC_MANIFEST=src/manifest.json
 
 # Manifest file for the tests.crx package.
+# TODO(yuli): Remove tests.crx
 SRC_TESTS_MANIFEST=src/manifest-tests.json
 
-# Builds camera.crx and tests.crx
-all: build/camera.crx build/tests.crx
+# Builds camera.crx
+all: build/camera.crx
 
 # Builds the release version.
 build/camera: $(SRC_RESOURCES) $(SRC_MANIFEST)

@@ -6,10 +6,7 @@
   "default_locale": "en",
   "minimum_chrome_version": "60.0.0.0",
   "icons": {
-    "32": "images/camera_app_icons_32.png",
     "48": "images/camera_app_icons_48.png",
-    "64": "images/camera_app_icons_64.png",
-    "96": "images/camera_app_icons_96.png",
     "128": "images/camera_app_icons_128.png"
   },
   "permissions": [
