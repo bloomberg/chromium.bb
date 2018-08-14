@@ -204,6 +204,16 @@ good reason (and consider whether [sparse histograms](#When-To-Use-Sparse-
 Histograms) might work better for you in that case--they do not pre- allocate
 their buckets).
 
+### Timing Histograms
+
+You can easily emit a time duration (time delta) using UMA_HISTOGRAM_TIMES,
+UMA_HISTOGRAM_MEDIUM_TIMES, and UMA_HISTOGRAM_LONG_TIMES macros, and their
+friends, as well as helpers such as SCOPED_UMA_HISTOGRAM_TIMER. Many timing
+histograms are used for performance monitoring; if this is the case for you,
+please read [this document about how to structure timing histograms to make
+them more useful and
+actionable](https://chromium.googlesource.com/chromium/src/+/lkcr/docs/speed/diagnostic_metrics.md).
+
 ### Percentage or Ratio Histograms
 
 You can easily emit a percentage histogram using the
