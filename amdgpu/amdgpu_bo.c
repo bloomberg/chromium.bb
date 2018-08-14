@@ -48,18 +48,12 @@ static void amdgpu_close_kms_handle(amdgpu_device_handle dev,
 	drmIoctl(dev->fd, DRM_IOCTL_GEM_CLOSE, &args);
 }
 
-int amdgpu_bo_alloc(amdgpu_device_handle dev,
-		    struct amdgpu_bo_alloc_request *alloc_buffer,
-		    amdgpu_bo_handle *buf_handle)
+static int amdgpu_bo_create(amdgpu_device_handle dev,
+			    uint64_t size,
+			    uint32_t handle,
+			    amdgpu_bo_handle *buf_handle)
 {
 	struct amdgpu_bo *bo;
-	union drm_amdgpu_gem_create args;
-	unsigned heap = alloc_buffer->preferred_heap;
-	int r = 0;
-
-	/* It's an error if the heap is not specified */
-	if (!(heap & (AMDGPU_GEM_DOMAIN_GTT | AMDGPU_GEM_DOMAIN_VRAM)))
-		return -EINVAL;
 
 	bo = calloc(1, sizeof(struct amdgpu_bo));
 	if (!bo)
@@ -67,7 +61,25 @@ int amdgpu_bo_alloc(amdgpu_device_handle dev,
 
 	atomic_set(&bo->refcount, 1);
 	bo->dev = dev;
-	bo->alloc_size = alloc_buffer->alloc_size;
+	bo->alloc_size = size;
+	bo->handle = handle;
+	pthread_mutex_init(&bo->cpu_access_mutex, NULL);
+
+	*buf_handle = bo;
+	return 0;
+}
+
+int amdgpu_bo_alloc(amdgpu_device_handle dev,
+		    struct amdgpu_bo_alloc_request *alloc_buffer,
+		    amdgpu_bo_handle *buf_handle)
+{
+	union drm_amdgpu_gem_create args;
+	unsigned heap = alloc_buffer->preferred_heap;
+	int r = 0;
+
+	/* It's an error if the heap is not specified */
+	if (!(heap & (AMDGPU_GEM_DOMAIN_GTT | AMDGPU_GEM_DOMAIN_VRAM)))
+		return -EINVAL;
 
 	memset(&args, 0, sizeof(args));
 	args.in.bo_size = alloc_buffer->alloc_size;
@@ -80,24 +92,23 @@ int amdgpu_bo_alloc(amdgpu_device_handle dev,
 	/* Allocate the buffer with the preferred heap. */
 	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_GEM_CREATE,
 				&args, sizeof(args));
+	if (r)
+		goto out;
+
+	r = amdgpu_bo_create(dev, alloc_buffer->alloc_size, args.out.handle,
+			     buf_handle);
 	if (r) {
-		free(bo);
-		return r;
+		amdgpu_close_kms_handle(dev, args.out.handle);
+		goto out;
 	}
 
-	bo->handle = args.out.handle;
-
-	pthread_mutex_lock(&bo->dev->bo_table_mutex);
-	r = handle_table_insert(&bo->dev->bo_handles, bo->handle, bo);
-	pthread_mutex_unlock(&bo->dev->bo_table_mutex);
-
-	pthread_mutex_init(&bo->cpu_access_mutex, NULL);
-
+	pthread_mutex_lock(&dev->bo_table_mutex);
+	r = handle_table_insert(&dev->bo_handles, (*buf_handle)->handle,
+				*buf_handle);
+	pthread_mutex_unlock(&dev->bo_table_mutex);
 	if (r)
-		amdgpu_bo_free(bo);
-	else
-		*buf_handle = bo;
-
+		amdgpu_bo_free(*buf_handle);
+out:
 	return r;
 }
 
@@ -257,7 +268,9 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 	struct drm_gem_open open_arg = {};
 	struct drm_gem_close close_arg = {};
 	struct amdgpu_bo *bo = NULL;
-	int r;
+	uint32_t handle = 0, flink_name = 0;
+	uint64_t alloc_size = 0;
+	int r = 0;
 	int dma_fd;
 	uint64_t dma_buf_size = 0;
 
@@ -267,22 +280,18 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 
 	/* Convert a DMA buf handle to a KMS handle now. */
 	if (type == amdgpu_bo_handle_type_dma_buf_fd) {
-		uint32_t handle;
 		off_t size;
 
 		/* Get a KMS handle. */
 		r = drmPrimeFDToHandle(dev->fd, shared_handle, &handle);
-		if (r) {
-			pthread_mutex_unlock(&dev->bo_table_mutex);
-			return r;
-		}
+		if (r)
+			goto unlock;
 
 		/* Query the buffer size. */
 		size = lseek(shared_handle, 0, SEEK_END);
 		if (size == (off_t)-1) {
-			pthread_mutex_unlock(&dev->bo_table_mutex);
-			amdgpu_close_kms_handle(dev, handle);
-			return -errno;
+			r = -errno;
+			goto free_bo_handle;
 		}
 		lseek(shared_handle, 0, SEEK_SET);
 
@@ -303,12 +312,12 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 	case amdgpu_bo_handle_type_kms:
 	case amdgpu_bo_handle_type_kms_noimport:
 		/* Importing a KMS handle in not allowed. */
-		pthread_mutex_unlock(&dev->bo_table_mutex);
-		return -EPERM;
+		r = -EPERM;
+		goto unlock;
 
 	default:
-		pthread_mutex_unlock(&dev->bo_table_mutex);
-		return -EINVAL;
+		r = -EINVAL;
+		goto unlock;
 	}
 
 	if (bo) {
@@ -321,62 +330,37 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 		return 0;
 	}
 
-	bo = calloc(1, sizeof(struct amdgpu_bo));
-	if (!bo) {
-		pthread_mutex_unlock(&dev->bo_table_mutex);
-		if (type == amdgpu_bo_handle_type_dma_buf_fd) {
-			amdgpu_close_kms_handle(dev, shared_handle);
-		}
-		return -ENOMEM;
-	}
-
 	/* Open the handle. */
 	switch (type) {
 	case amdgpu_bo_handle_type_gem_flink_name:
 		open_arg.name = shared_handle;
 		r = drmIoctl(dev->flink_fd, DRM_IOCTL_GEM_OPEN, &open_arg);
-		if (r) {
-			free(bo);
-			pthread_mutex_unlock(&dev->bo_table_mutex);
-			return r;
-		}
+		if (r)
+			goto unlock;
 
-		bo->handle = open_arg.handle;
+		flink_name = shared_handle;
+		handle = open_arg.handle;
+		alloc_size = open_arg.size;
 		if (dev->flink_fd != dev->fd) {
-			close_arg.handle = open_arg.handle;
-			r = drmPrimeHandleToFD(dev->flink_fd, bo->handle, DRM_CLOEXEC, &dma_fd);
-			if (r) {
-				free(bo);
-				drmIoctl(dev->flink_fd, DRM_IOCTL_GEM_CLOSE,
-					 &close_arg);
-				pthread_mutex_unlock(&dev->bo_table_mutex);
-				return r;
-			}
-			r = drmPrimeFDToHandle(dev->fd, dma_fd, &bo->handle );
-
+			r = drmPrimeHandleToFD(dev->flink_fd, handle,
+					       DRM_CLOEXEC, &dma_fd);
+			if (r)
+				goto free_bo_handle;
+			r = drmPrimeFDToHandle(dev->fd, dma_fd, &handle);
 			close(dma_fd);
-			drmIoctl(dev->flink_fd, DRM_IOCTL_GEM_CLOSE, &close_arg);
-
-			if (r) {
-				free(bo);
-				pthread_mutex_unlock(&dev->bo_table_mutex);
-				return r;
-			}
-		}
-		bo->flink_name = shared_handle;
-		bo->alloc_size = open_arg.size;
-		r = handle_table_insert(&dev->bo_flink_names, shared_handle,
-					bo);
-		if (r) {
-			pthread_mutex_unlock(&dev->bo_table_mutex);
-			amdgpu_bo_free(bo);
-			return r;
+			if (r)
+				goto free_bo_handle;
+			close_arg.handle = open_arg.handle;
+			r = drmIoctl(dev->flink_fd, DRM_IOCTL_GEM_CLOSE,
+				     &close_arg);
+			if (r)
+				goto free_bo_handle;
 		}
 		break;
 
 	case amdgpu_bo_handle_type_dma_buf_fd:
-		bo->handle = shared_handle;
-		bo->alloc_size = dma_buf_size;
+		handle = shared_handle;
+		alloc_size = dma_buf_size;
 		break;
 
 	case amdgpu_bo_handle_type_kms:
@@ -385,16 +369,41 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 	}
 
 	/* Initialize it. */
-	atomic_set(&bo->refcount, 1);
-	bo->dev = dev;
-	pthread_mutex_init(&bo->cpu_access_mutex, NULL);
+	r = amdgpu_bo_create(dev, alloc_size, handle, &bo);
+	if (r)
+		goto free_bo_handle;
 
-	handle_table_insert(&dev->bo_handles, bo->handle, bo);
-	pthread_mutex_unlock(&dev->bo_table_mutex);
+	r = handle_table_insert(&dev->bo_handles, bo->handle, bo);
+	if (r)
+		goto free_bo_handle;
+	if (flink_name) {
+		bo->flink_name = flink_name;
+		r = handle_table_insert(&dev->bo_flink_names, flink_name,
+					bo);
+		if (r)
+			goto remove_handle;
+
+	}
 
 	output->buf_handle = bo;
 	output->alloc_size = bo->alloc_size;
+	pthread_mutex_unlock(&dev->bo_table_mutex);
 	return 0;
+
+remove_handle:
+	handle_table_remove(&dev->bo_handles, bo->handle);
+free_bo_handle:
+	if (flink_name && !close_arg.handle && open_arg.handle) {
+		close_arg.handle = open_arg.handle;
+		drmIoctl(dev->flink_fd, DRM_IOCTL_GEM_CLOSE, &close_arg);
+	}
+	if (bo)
+		amdgpu_bo_free(bo);
+	else
+		amdgpu_close_kms_handle(dev, handle);
+unlock:
+	pthread_mutex_unlock(&dev->bo_table_mutex);
+	return r;
 }
 
 int amdgpu_bo_free(amdgpu_bo_handle buf_handle)
@@ -580,7 +589,6 @@ int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
 				    amdgpu_bo_handle *buf_handle)
 {
 	int r;
-	struct amdgpu_bo *bo;
 	struct drm_amdgpu_gem_userptr args;
 
 	args.addr = (uintptr_t)cpu;
@@ -590,28 +598,21 @@ int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
 	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_GEM_USERPTR,
 				&args, sizeof(args));
 	if (r)
-		return r;
+		goto out;
 
-	bo = calloc(1, sizeof(struct amdgpu_bo));
-	if (!bo)
-		return -ENOMEM;
+	r = amdgpu_bo_create(dev, size, args.handle, buf_handle);
+	if (r) {
+		amdgpu_close_kms_handle(dev, args.handle);
+		goto out;
+	}
 
-	atomic_set(&bo->refcount, 1);
-	bo->dev = dev;
-	bo->alloc_size = size;
-	bo->handle = args.handle;
-
-	pthread_mutex_lock(&bo->dev->bo_table_mutex);
-	r = handle_table_insert(&bo->dev->bo_handles, bo->handle, bo);
-	pthread_mutex_unlock(&bo->dev->bo_table_mutex);
-
-	pthread_mutex_init(&bo->cpu_access_mutex, NULL);
-
+	pthread_mutex_lock(&dev->bo_table_mutex);
+	r = handle_table_insert(&dev->bo_handles, (*buf_handle)->handle,
+				*buf_handle);
+	pthread_mutex_unlock(&dev->bo_table_mutex);
 	if (r)
-		amdgpu_bo_free(bo);
-	else
-		*buf_handle = bo;
-
+		amdgpu_bo_free(*buf_handle);
+out:
 	return r;
 }
 
