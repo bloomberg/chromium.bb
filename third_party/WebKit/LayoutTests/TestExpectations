@@ -2699,6 +2699,7 @@ crbug.com/870526 external/wpt/budget-api/idlharness.https.any.worker.html [ Skip
 crbug.com/873540 external/wpt/budget-api/idlharness.https.any.html [ Timeout Crash ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Android ] virtual/media-gpu-accelerated/external/wpt/media-source/mediasource-play.html [ Crash ]
 crbug.com/626703 external/wpt/payment-request/PaymentValidationErrors/retry-shows-payer-member-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/PaymentValidationErrors/retry-shows-shippingAddress-member-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/PaymentValidationErrors/retry-shows-error-member-manual.https.html [ Skip ]
