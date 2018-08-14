@@ -184,11 +184,7 @@ JSONTraceExporter::JSONTraceExporter(const std::string& config,
                                      perfetto::TracingService* service)
     : config_(config), metadata_(std::make_unique<base::DictionaryValue>()) {
   consumer_endpoint_ = service->ConnectConsumer(this);
-}
 
-JSONTraceExporter::~JSONTraceExporter() = default;
-
-void JSONTraceExporter::OnConnect() {
   // Start tracing.
   perfetto::TraceConfig trace_config;
   trace_config.add_buffers()->set_size_kb(4096 * 100);
@@ -206,6 +202,10 @@ void JSONTraceExporter::OnConnect() {
 
   consumer_endpoint_->EnableTracing(trace_config);
 }
+
+JSONTraceExporter::~JSONTraceExporter() = default;
+
+void JSONTraceExporter::OnConnect() {}
 
 void JSONTraceExporter::OnDisconnect() {}
 
