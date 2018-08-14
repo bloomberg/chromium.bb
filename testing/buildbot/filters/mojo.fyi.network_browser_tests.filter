@@ -119,9 +119,9 @@
 -ResourceLoadingHintsBrowserTest.ResourceLoadingHintsHttp
 -ResourceLoadingHintsBrowserTest.ResourceLoadingHintsHttpsNoWhitelisted
 
-# These rely on proxy configuration and PAC execution being configured on the
-# legacy in-process URLRequestContext. They should be removed or updated to
-# use Mojo APIs instead.
+# https://crbug.com/851609
+# Extension listeners for "chrome.proxy.onProxyError" are not called for errors
+# in PAC scripts.
 -ProxySettingsApiTest.ProxyEventsParseError
 
 # http://crbug.com/827582
