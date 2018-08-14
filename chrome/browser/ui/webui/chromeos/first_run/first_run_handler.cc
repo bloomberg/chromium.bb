@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_handler.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
 #include "base/values.h"
 #include "chromeos/chromeos_switches.h"
@@ -50,6 +51,8 @@ void FirstRunHandler::ShowStepPositioned(const std::string& name,
   step_params.SetKey(
       "voiceInteractionEnabled",
       base::Value(chromeos::switches::IsVoiceInteractionEnabled()));
+  step_params.SetKey("unifiedSystemTrayEnabled",
+                     base::Value(ash::features::IsSystemTrayUnifiedEnabled()));
 
   web_ui()->CallJavascriptFunctionUnsafe("cr.FirstRun.showStep", step_params);
 }

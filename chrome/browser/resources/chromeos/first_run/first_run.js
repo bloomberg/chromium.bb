@@ -246,6 +246,8 @@ cr.define('cr.FirstRun', function() {
       }
       if (stepParams.voiceInteractionEnabled)
         step.setVoiceInteractionEnabled();
+      if (stepParams.unifiedSystemTrayEnabled)
+        step.setUnifiedSystemTrayEnabled(true);
       step.show(true, function(step) {
         step.focusDefaultControl();
         this.currentStep_ = step;
