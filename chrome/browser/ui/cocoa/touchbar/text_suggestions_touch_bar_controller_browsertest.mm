@@ -115,13 +115,21 @@ class TextSuggestionsTouchBarControllerTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest, MakeTouchBar) {
   if (@available(macOS 10.12.2, *)) {
     NSString* const kTextSuggestionsTouchBarId = @"text-suggestions";
+    NSArray* const kSuggestions = @[ @"text" ];
 
     // Touch bar shouldn't appear if the focused element is not a textfield.
     UnfocusTextfield();
+    [touch_bar_controller_ setSuggestions:kSuggestions];
     EXPECT_FALSE([touch_bar_controller_ makeTouchBar]);
 
-    // Touch bar should appear if a textfield is focused.
+    // Touch bar shouldn't appear if there are no suggestions.
     FocusTextfield();
+    [touch_bar_controller_ setSuggestions:[NSArray array]];
+    EXPECT_FALSE([touch_bar_controller_ makeTouchBar]);
+
+    // Touch bar should appear if textfield is focused and there are
+    // suggestions.
+    [touch_bar_controller_ setSuggestions:kSuggestions];
     NSTouchBar* touch_bar = [touch_bar_controller_ makeTouchBar];
     EXPECT_TRUE(touch_bar);
     EXPECT_TRUE([[touch_bar customizationIdentifier]

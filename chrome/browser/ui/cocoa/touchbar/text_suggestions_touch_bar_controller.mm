@@ -109,7 +109,7 @@ class WebContentsTextObserver : public content::WebContentsObserver {
 }
 
 - (NSTouchBar*)makeTouchBar {
-  if (![self isTextfieldFocused])
+  if (![self isTextfieldFocused] || ![suggestions_ count])
     return nil;
 
   base::scoped_nsobject<NSTouchBar> touchBar([[ui::NSTouchBar() alloc] init]);
