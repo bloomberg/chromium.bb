@@ -13,8 +13,25 @@ include_rules = [
 
   # For access to testing command line switches.
   "+ppapi/shared_impl",
+
+  # The extensions system should not depend on Chrome Platform Apps (or any
+  # other component of the apps system).
+  # https://crbug.com/873872.
+  "-chrome/browser/apps/",
 ]
 specific_include_rules = {
+  "extension_system_impl\.cc": [
+    # TODO(https://crbug.com/873872): Remove this.
+    "+chrome/browser/apps/platform_apps/browser_context_keyed_service_factories.h",
+  ],
+
+  ".*test(_chromeos)?\.(cc|h)$": [
+    # For now, tests are allowed to depend on app_browsertest_util.h, since
+    # that's where PlatformAppBrowserTest is defined. Ideally, we'd eventually
+    # move all Platform App-specific tests to chrome/browser/apps/platform_apps.
+    "+chrome/browser/apps/platform_apps/app_browsertest_util.h",
+  ],
+
   "extension_protocols_unittest\.cc": [
     "+services/network/test",
   ],
