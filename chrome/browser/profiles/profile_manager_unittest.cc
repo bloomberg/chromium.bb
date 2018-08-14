@@ -850,6 +850,7 @@ TEST_F(ProfileManagerTest, InitProfileForRegularToChildTransition) {
   builder.SetPath(dest_path);
   builder.OverrideIsNewProfile(false);
   std::unique_ptr<Profile> profile = builder.Build();
+  profile->GetPrefs()->SetBoolean(arc::prefs::kArcSignedIn, true);
 
   user_manager->UserLoggedIn(account_id, user_id_hash,
                              false /* browser_restart */, true /* is_child */);
@@ -878,6 +879,7 @@ TEST_F(ProfileManagerTest, InitProfileForChildToRegularTransition) {
   builder.OverrideIsNewProfile(false);
   builder.SetSupervisedUserId(supervised_users::kChildAccountSUID);
   std::unique_ptr<Profile> profile = builder.Build();
+  profile->GetPrefs()->SetBoolean(arc::prefs::kArcSignedIn, true);
 
   user_manager->UserLoggedIn(account_id, user_id_hash,
                              false /* browser_restart */, false /* is_child */);
@@ -886,6 +888,35 @@ TEST_F(ProfileManagerTest, InitProfileForChildToRegularTransition) {
   EXPECT_EQ(
       profile->GetPrefs()->GetInteger(arc::prefs::kArcSupervisionTransition),
       static_cast<int>(arc::ArcSupervisionTransition::CHILD_TO_REGULAR));
+  EXPECT_TRUE(profile->GetPrefs()->GetString(prefs::kSupervisedUserId).empty());
+}
+
+TEST_F(ProfileManagerTest,
+       InitProfileForChildToRegularTransitionArcNotSignedIn) {
+  chromeos::ProfileHelper* profile_helper = chromeos::ProfileHelper::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+
+  const std::string user_email = "child@example.com";
+  const AccountId account_id = AccountId::FromUserEmailGaiaId(user_email, "1");
+  const std::string user_id_hash =
+      profile_helper->GetUserIdHashByUserIdForTesting(user_email);
+  const base::FilePath dest_path =
+      profile_helper->GetProfilePathByUserIdHash(user_id_hash);
+
+  TestingProfile::Builder builder;
+  builder.SetPath(dest_path);
+  builder.OverrideIsNewProfile(false);
+  builder.SetSupervisedUserId(supervised_users::kChildAccountSUID);
+  std::unique_ptr<Profile> profile = builder.Build();
+  profile->GetPrefs()->SetBoolean(arc::prefs::kArcSignedIn, false);
+
+  user_manager->UserLoggedIn(account_id, user_id_hash,
+                             false /* browser_restart */, false /* is_child */);
+  g_browser_process->profile_manager()->InitProfileUserPrefs(profile.get());
+
+  EXPECT_EQ(
+      profile->GetPrefs()->GetInteger(arc::prefs::kArcSupervisionTransition),
+      static_cast<int>(arc::ArcSupervisionTransition::NO_TRANSITION));
   EXPECT_TRUE(profile->GetPrefs()->GetString(prefs::kSupervisedUserId).empty());
 }
 
