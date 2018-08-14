@@ -283,11 +283,11 @@ AccessibilityRole AXLayoutObject::NativeAccessibilityRoleIgnoringAria() const {
       return HasPopup() ? kPopUpButtonRole : kButtonRole;
     if (IsSVGImage())
       return kSVGRootRole;
+
     return kImageRole;
   }
-  // Note: if JavaScript is disabled, the layoutObject won't be a
-  // LayoutHTMLCanvas.
-  if (IsHTMLCanvasElement(node) && layout_object_->IsCanvas())
+
+  if (IsHTMLCanvasElement(node))
     return kCanvasRole;
 
   if (css_box && css_box->IsLayoutView())
@@ -766,12 +766,15 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (IsCanvas()) {
     if (CanvasHasFallbackContent())
       return false;
-    LayoutHTMLCanvas* canvas = ToLayoutHTMLCanvas(layout_object_);
-    if (canvas->Size().Height() <= 1 || canvas->Size().Width() <= 1) {
+
+    const auto* canvas = ToLayoutHTMLCanvasOrNull(layout_object_);
+    if (canvas &&
+        (canvas->Size().Height() <= 1 || canvas->Size().Width() <= 1)) {
       if (ignored_reasons)
         ignored_reasons->push_back(IgnoredReason(kAXProbablyPresentational));
       return true;
     }
+
     // Otherwise fall through; use presence of help text, title, or description
     // to decide.
   }
@@ -1872,15 +1875,19 @@ AXObject* AXLayoutObject::RawNextSibling() const {
 }
 
 void AXLayoutObject::AddChildren() {
-  DCHECK(!IsDetached());
+  if (IsDetached())
+    return;
+
+  if (IsHTMLCanvasElement(GetNode()))
+    return AXNodeObject::AddChildren();
+
   // If the need to add more children in addition to existing children arises,
   // childrenChanged should have been called, leaving the object with no
   // children.
   DCHECK(!have_children_);
-
   have_children_ = true;
 
-  HeapVector<Member<AXObject>> owned_children;
+  AXObjectVector owned_children;
   ComputeAriaOwnsChildren(owned_children);
 
   for (AXObject* obj = RawFirstChild(); obj; obj = obj->RawNextSibling()) {
@@ -1893,7 +1900,6 @@ void AXLayoutObject::AddChildren() {
   AddHiddenChildren();
   AddPopupChildren();
   AddImageMapChildren();
-  AddCanvasChildren();
   AddRemoteSVGChildren();
   AddTableChildren();
   AddInlineTextBoxChildren(false);
@@ -3341,18 +3347,6 @@ void AXLayoutObject::AddImageMapChildren() {
         AXObjectCache().Remove(area_object->AXObjectID());
     }
   }
-}
-
-void AXLayoutObject::AddCanvasChildren() {
-  if (!IsHTMLCanvasElement(GetNode()))
-    return;
-
-  // If it's a canvas, it won't have laid out children, but it might have
-  // accessible fallback content.  Clear m_haveChildren because
-  // AXNodeObject::addChildren will expect it to be false.
-  DCHECK(!children_.size());
-  have_children_ = false;
-  AXNodeObject::AddChildren();
 }
 
 void AXLayoutObject::AddPopupChildren() {

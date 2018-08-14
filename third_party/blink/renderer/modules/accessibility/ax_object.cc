@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/not_found.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -1838,14 +1839,9 @@ int AXObject::IndexInParent() const {
   if (!ParentObjectUnignored())
     return 0;
 
-  const auto& siblings = ParentObjectUnignored()->Children();
-  int child_count = siblings.size();
-
-  for (int index = 0; index < child_count; ++index) {
-    if (siblings[index].Get() == this)
-      return index;
-  }
-  return 0;
+  const AXObjectVector& siblings = ParentObjectUnignored()->Children();
+  size_t index = siblings.Find(this);
+  return (index == kNotFound) ? 0 : static_cast<int>(index);
 }
 
 bool AXObject::IsLiveRegion() const {
@@ -2095,6 +2091,9 @@ AXObject* AXObject::NextSibling() const {
   if (!parent)
     return nullptr;
 
+  if (AccessibilityIsIgnored())
+    NOTREACHED() << "We don't support finding siblings for ignored objects.";
+
   if (IndexInParent() < parent->ChildCount() - 1)
     return *(parent->Children().begin() + IndexInParent() + 1);
 
@@ -2106,6 +2105,9 @@ AXObject* AXObject::PreviousSibling() const {
   if (!parent)
     return nullptr;
 
+  if (AccessibilityIsIgnored())
+    NOTREACHED() << "We don't support finding siblings for ignored objects.";
+
   if (IndexInParent() > 0)
     return *(parent->Children().begin() + IndexInParent() - 1);
 
@@ -2113,11 +2115,17 @@ AXObject* AXObject::PreviousSibling() const {
 }
 
 AXObject* AXObject::NextInTreeObject(bool can_wrap_to_first_element) const {
-  if (ChildCount())
-    return FirstChild();
+  // We don't support finding the next sibling for an ignored object, so we
+  // return the next sibling of the deepest unignored ancestor, which is the
+  // next best thing that doesn't violate next-in-order semantics.
+  if (!AccessibilityIsIgnored()) {
+    if (ChildCount())
+      return FirstChild();
 
-  if (NextSibling())
-    return NextSibling();
+    if (NextSibling())
+      return NextSibling();
+  }
+
   AXObject* current_object = const_cast<AXObject*>(this);
   while (current_object->ParentObjectUnignored()) {
     current_object = current_object->ParentObjectUnignored();
@@ -2130,7 +2138,10 @@ AXObject* AXObject::NextInTreeObject(bool can_wrap_to_first_element) const {
 }
 
 AXObject* AXObject::PreviousInTreeObject(bool can_wrap_to_last_element) const {
-  AXObject* sibling = PreviousSibling();
+  // We don't support finding the previous sibling for an ignored object, so we
+  // return the deepest unignored ancestor instead, which is the next best thing
+  // that doesn't violate previous-in-order semantics.
+  AXObject* sibling = AccessibilityIsIgnored() ? nullptr : PreviousSibling();
   if (!sibling) {
     if (ParentObjectUnignored())
       return ParentObjectUnignored();

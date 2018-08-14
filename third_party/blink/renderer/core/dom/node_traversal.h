@@ -75,8 +75,9 @@ class NodeTraversal {
   }
 
   // Like next, but skips children and starts with the next sibling.
-  static Node* NextSkippingChildren(const Node&);
-  static Node* NextSkippingChildren(const Node&, const Node* stay_within);
+  CORE_EXPORT static Node* NextSkippingChildren(const Node&);
+  CORE_EXPORT static Node* NextSkippingChildren(const Node&,
+                                                const Node* stay_within);
 
   static Node* FirstWithin(const Node& current) { return current.firstChild(); }
 
@@ -88,8 +89,9 @@ class NodeTraversal {
   static Node* Previous(const Node&, const Node* stay_within = nullptr);
 
   // Like previous, but skips children and starts with the next sibling.
-  static Node* PreviousSkippingChildren(const Node&,
-                                        const Node* stay_within = nullptr);
+  CORE_EXPORT static Node* PreviousSkippingChildren(
+      const Node&,
+      const Node* stay_within = nullptr);
 
   // Like next, but visits parents after their children.
   static Node* NextPostOrder(const Node&, const Node* stay_within = nullptr);

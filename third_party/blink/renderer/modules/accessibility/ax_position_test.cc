@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 #include "third_party/blink/renderer/modules/accessibility/testing/accessibility_test.h"
@@ -34,14 +35,14 @@ constexpr char kCSSBeforeAndAfter[] = R"HTML(
 constexpr char kHTMLTable[] = R"HTML(
     <p id="before">Before table.</p>
     <table id="table" border="1">
-      <thead>
+      <thead id="thead">
         <tr id="headerRow">
           <th id="firstHeaderCell">Number</th>
           <th>Month</th>
           <th id="lastHeaderCell">Expenses</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="tbody">
         <tr id="firstRow">
           <th id="firstCell">1</th>
           <td>Jan</td>
@@ -617,37 +618,162 @@ TEST_F(AccessibilityTest, AXPositionFromDOMPositionWithWhiteSpace) {
 // beginning of the next.
 //
 
-TEST_F(AccessibilityTest, PositionInTextWithAffinity) {}
+TEST_F(AccessibilityTest, PositionInTextWithAffinity) {
+  SetBodyInnerHTML(R"HTML(<p id="paragraph">Hello</p>)HTML");
+  const Node* text = GetElementById("paragraph")->firstChild();
+  ASSERT_NE(nullptr, text);
+  ASSERT_TRUE(text->IsTextNode());
+  const AXObject* ax_static_text =
+      GetAXObjectByElementId("paragraph")->FirstChild();
+  ASSERT_NE(nullptr, ax_static_text);
+  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
 
-TEST_F(AccessibilityTest, PositionFromTextPositionWithAffinity) {}
+  // Converting from AX to DOM positions should maintain affinity.
+  const auto ax_position = AXPosition::CreatePositionInTextObject(
+      *ax_static_text, 3, TextAffinity::kUpstream);
+  const auto position = ax_position.ToPositionWithAffinity();
+  EXPECT_EQ(TextAffinity::kUpstream, position.Affinity());
 
-TEST_F(AccessibilityTest, PositionInTextWithAffinityAndWhiteSpace) {}
-
-TEST_F(AccessibilityTest, PositionFromTextPositionWithAffinityAndWhiteSpace) {}
-
-//
-// Test converting to and from accessibility positions with offsets in labels
-// and alt text. Alt text, aria-label and other ARIA relationships can cause the
-// accessible name of an object to be different than its DOM text.
-//
-
-TEST_F(AccessibilityTest, PositionInHTMLLabel) {}
-
-TEST_F(AccessibilityTest, PositionInARIALabel) {}
-
-TEST_F(AccessibilityTest, PositionInARIALabelledBy) {}
-
-TEST_F(AccessibilityTest, PositionInPlaceholder) {}
-
-TEST_F(AccessibilityTest, PositionInAltText) {}
-
-TEST_F(AccessibilityTest, PositionInTitle) {}
+  // Converting from DOM to AX positions should maintain affinity.
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(TextAffinity::kUpstream, ax_position.Affinity());
+}
 
 //
-// Some objects are accessibility ignored.
+// Test converting to and from accessibility positions with offsets in HTML
+// labels. HTML labels are ignored in the accessibility tree when associated
+// with checkboxes and radio buttons.
 //
 
-TEST_F(AccessibilityTest, PositionInIgnoredObject) {}
+TEST_F(AccessibilityTest, PositionInHTMLLabel) {
+  SetBodyInnerHTML(R"HTML(
+      <label id="label" for="input">
+        Label text.
+      </label>
+      <p id="paragraph">Intervening paragraph.</p>
+      <input id="input" type="checkbox" checked>
+      )HTML");
+
+  const Node* label = GetElementById("label");
+  ASSERT_NE(nullptr, label);
+  const Node* label_text = label->firstChild();
+  ASSERT_NE(nullptr, label_text);
+  ASSERT_TRUE(label_text->IsTextNode());
+  const Node* paragraph = GetElementById("paragraph");
+  ASSERT_NE(nullptr, paragraph);
+
+  const AXObject* ax_root = GetAXRootObject();
+  ASSERT_NE(nullptr, ax_root);
+  ASSERT_EQ(AccessibilityRole::kWebAreaRole, ax_root->RoleValue());
+  // The HTML label element should be ignored.
+  const AXObject* ax_label = GetAXObjectByElementId("label");
+  ASSERT_NE(nullptr, ax_label);
+  ASSERT_TRUE(ax_label->AccessibilityIsIgnored());
+  const AXObject* ax_paragraph = GetAXObjectByElementId("paragraph");
+  ASSERT_NE(nullptr, ax_paragraph);
+  ASSERT_EQ(AccessibilityRole::kParagraphRole, ax_paragraph->RoleValue());
+
+  // All of the following DOM positions should be ignored in the accessibility
+  // tree.
+  const auto position_before = Position::BeforeNode(*label);
+  const auto position_before_text = Position::BeforeNode(*label_text);
+  const auto position_in_text = Position::FirstPositionInNode(*label_text);
+  const auto position_after = Position::AfterNode(*label);
+
+  for (const auto& position : {position_before, position_before_text,
+                               position_in_text, position_after}) {
+    const auto ax_position =
+        AXPosition::FromPosition(position, TextAffinity::kDownstream,
+                                 AXPositionAdjustmentBehavior::kMoveLeft);
+    EXPECT_FALSE(ax_position.IsTextPosition());
+    EXPECT_EQ(ax_root, ax_position.ContainerObject());
+    EXPECT_EQ(0, ax_position.ChildIndex());
+    EXPECT_EQ(ax_paragraph, ax_position.ChildAfterTreePosition());
+
+    const auto position_from_ax = ax_position.ToPositionWithAffinity();
+    EXPECT_EQ(GetDocument().body(), position_from_ax.AnchorNode());
+    EXPECT_EQ(3, position_from_ax.GetPosition().OffsetInContainerNode());
+    EXPECT_EQ(paragraph,
+              position_from_ax.GetPosition().ComputeNodeAfterPosition());
+  }
+}
+
+//
+// Objects with "display: none" or the "hidden" attribute are accessibility
+// ignored.
+//
+
+TEST_F(AccessibilityTest, PositionInIgnoredObject) {
+  SetBodyInnerHTML(R"HTML(
+      <div id="hidden" hidden>Hidden.</div><p id="visible">Visible.</p>
+      )HTML");
+
+  const Node* hidden = GetElementById("hidden");
+  ASSERT_NE(nullptr, hidden);
+  const Node* visible = GetElementById("visible");
+  ASSERT_NE(nullptr, visible);
+
+  const AXObject* ax_root = GetAXRootObject();
+  ASSERT_NE(nullptr, ax_root);
+  ASSERT_EQ(AccessibilityRole::kWebAreaRole, ax_root->RoleValue());
+  ASSERT_EQ(1, ax_root->ChildCount());
+  const AXObject* ax_visible = ax_root->FirstChild();
+  ASSERT_NE(nullptr, ax_visible);
+  ASSERT_EQ(AccessibilityRole::kParagraphRole, ax_visible->RoleValue());
+
+  // The fact that there is a hidden object before |visible| should not affect
+  // setting a position before it.
+  const auto ax_position_before_visible =
+      AXPosition::CreatePositionBeforeObject(*ax_visible);
+  const auto position_before_visible =
+      ax_position_before_visible.ToPositionWithAffinity();
+  EXPECT_EQ(GetDocument().body(), position_before_visible.AnchorNode());
+  EXPECT_EQ(2, position_before_visible.GetPosition().OffsetInContainerNode());
+  EXPECT_EQ(visible,
+            position_before_visible.GetPosition().ComputeNodeAfterPosition());
+
+  const auto ax_position_before_visible_from_dom =
+      AXPosition::FromPosition(position_before_visible);
+  EXPECT_EQ(ax_position_before_visible, ax_position_before_visible_from_dom);
+  EXPECT_EQ(ax_visible,
+            ax_position_before_visible_from_dom.ChildAfterTreePosition());
+
+  // A position at the beginning of the body will appear to be before the hidden
+  // element in the DOM, but it should be before the visible object in the
+  // accessibility tree since the hidden element is not in the tree. Hence, when
+  // converting to the corresponding DOM position, it should be before the
+  // visible element in the DOM as well.
+  const auto ax_position_first =
+      AXPosition::CreateFirstPositionInObject(*ax_root);
+  const auto position_first = ax_position_first.ToPositionWithAffinity();
+  EXPECT_EQ(GetDocument().body(), position_first.AnchorNode());
+  EXPECT_FALSE(position_first.GetPosition().IsBeforeChildren());
+  EXPECT_EQ(2, position_first.GetPosition().OffsetInContainerNode());
+  EXPECT_EQ(visible, position_first.GetPosition().ComputeNodeAfterPosition());
+
+  const auto ax_position_first_from_dom =
+      AXPosition::FromPosition(position_first);
+  EXPECT_EQ(ax_position_first, ax_position_first_from_dom);
+  EXPECT_EQ(ax_visible, ax_position_first_from_dom.ChildAfterTreePosition());
+
+  // A DOM position before |hidden| should convert to an accessibility position
+  // before |visible|.
+  const auto position_before = Position::BeforeNode(*hidden);
+  const auto ax_position_before_from_dom =
+      AXPosition::FromPosition(position_before);
+  EXPECT_EQ(ax_root, ax_position_before_from_dom.ContainerObject());
+  EXPECT_EQ(0, ax_position_before_from_dom.ChildIndex());
+  EXPECT_EQ(ax_visible, ax_position_before_from_dom.ChildAfterTreePosition());
+
+  // A DOM position after |hidden| should convert to an accessibility position
+  // before |visible|.
+  const auto position_after = Position::AfterNode(*hidden);
+  const auto ax_position_after_from_dom =
+      AXPosition::FromPosition(position_after);
+  EXPECT_EQ(ax_root, ax_position_after_from_dom.ContainerObject());
+  EXPECT_EQ(0, ax_position_after_from_dom.ChildIndex());
+  EXPECT_EQ(ax_visible, ax_position_after_from_dom.ChildAfterTreePosition());
+}
 
 //
 // Aria-hidden can cause things in the DOM to be hidden from accessibility.
@@ -655,12 +781,18 @@ TEST_F(AccessibilityTest, PositionInIgnoredObject) {}
 
 TEST_F(AccessibilityTest, BeforePositionInARIAHiddenShouldSkipARIAHidden) {
   SetBodyInnerHTML(R"HTML(
-      <p id="before">Before aria-hidden.</p>
-      <p id="ariaHidden" aria-hidden="true">Aria-hidden.</p>
-      <p id="after">After aria-hidden.</p>
+      <div role="main" id="container">
+        <p id="before">Before aria-hidden.</p>
+        <p id="ariaHidden" aria-hidden="true">Aria-hidden.</p>
+        <p id="after">After aria-hidden.</p>
+      </div>
       )HTML");
+
+  const Node* container = GetElementById("container");
+  ASSERT_NE(nullptr, container);
   const Node* after = GetElementById("after");
   ASSERT_NE(nullptr, after);
+
   const AXObject* ax_before = GetAXObjectByElementId("before");
   ASSERT_NE(nullptr, ax_before);
   ASSERT_EQ(AccessibilityRole::kParagraphRole, ax_before->RoleValue());
@@ -672,7 +804,7 @@ TEST_F(AccessibilityTest, BeforePositionInARIAHiddenShouldSkipARIAHidden) {
 
   const auto ax_position = AXPosition::CreatePositionAfterObject(*ax_before);
   const auto position = ax_position.ToPositionWithAffinity();
-  EXPECT_EQ(GetDocument().body(), position.AnchorNode());
+  EXPECT_EQ(container, position.AnchorNode());
   EXPECT_EQ(5, position.GetPosition().OffsetInContainerNode());
   EXPECT_EQ(after, position.GetPosition().ComputeNodeAfterPosition());
 
@@ -687,12 +819,14 @@ TEST_F(AccessibilityTest, PreviousPositionAfterARIAHiddenShouldSkipARIAHidden) {
       <p id="ariaHidden" aria-hidden="true">Aria-hidden.</p>
       <p id="after">After aria-hidden.</p>
       )HTML");
+
   const Node* before = GetElementById("before");
   ASSERT_NE(nullptr, before);
   ASSERT_NE(nullptr, before->firstChild());
   ASSERT_TRUE(before->firstChild()->IsTextNode());
   const Node* after = GetElementById("after");
   ASSERT_NE(nullptr, after);
+
   const AXObject* ax_after = GetAXObjectByElementId("after");
   ASSERT_NE(nullptr, ax_after);
   ASSERT_EQ(AccessibilityRole::kParagraphRole, ax_after->RoleValue());
@@ -722,21 +856,22 @@ TEST_F(AccessibilityTest, PreviousPositionAfterARIAHiddenShouldSkipARIAHidden) {
   EXPECT_EQ(nullptr, ax_position_previous_from_dom.ChildAfterTreePosition());
 }
 
-TEST_F(AccessibilityTest, DISABLED_FromPositionInARIAHidden) {
+TEST_F(AccessibilityTest, FromPositionInARIAHidden) {
   SetBodyInnerHTML(R"HTML(
-      <p id="before">Before aria-hidden.</p>
-      <p id="ariaHidden" aria-hidden="true">Aria-hidden.</p>
-      <p id="after">After aria-hidden.</p>
+      <div role="main" id="container">
+        <p id="before">Before aria-hidden.</p>
+        <p id="ariaHidden" aria-hidden="true">Aria-hidden.</p>
+        <p id="after">After aria-hidden.</p>
+      </div>
       )HTML");
+
   const Node* hidden = GetElementById("ariaHidden");
   ASSERT_NE(nullptr, hidden);
-  const Node* text = hidden->firstChild();
-  ASSERT_NE(nullptr, text);
-  ASSERT_TRUE(text->IsTextNode());
-  const AXObject* ax_root = GetAXRootObject();
-  ASSERT_NE(nullptr, ax_root);
-  ASSERT_EQ(AccessibilityRole::kWebAreaRole, ax_root->RoleValue());
-  ASSERT_EQ(2, ax_root->ChildCount());
+
+  const AXObject* ax_container = GetAXObjectByElementId("container");
+  ASSERT_NE(nullptr, ax_container);
+  ASSERT_EQ(AccessibilityRole::kMainRole, ax_container->RoleValue());
+  ASSERT_EQ(2, ax_container->ChildCount());
   const AXObject* ax_after = GetAXObjectByElementId("after");
   ASSERT_NE(nullptr, ax_after);
   ASSERT_EQ(AccessibilityRole::kParagraphRole, ax_after->RoleValue());
@@ -744,27 +879,28 @@ TEST_F(AccessibilityTest, DISABLED_FromPositionInARIAHidden) {
   ASSERT_TRUE(GetAXObjectByElementId("ariaHidden")->AccessibilityIsIgnored());
 
   const auto position_first = Position::FirstPositionInNode(*hidden);
-  const auto position_last = Position::LastPositionInNode(*hidden);
   const auto position_before = Position::BeforeNode(*hidden);
   const auto position_after = Position::AfterNode(*hidden);
-  const auto position_text = Position::EditingPositionOf(text, 3);
-  const auto positions = {position_first, position_last, position_before,
-                          position_after, position_text};
+  const auto positions = {position_first, position_before, position_after};
 
   for (const auto& position : positions) {
-    const auto ax_position_left = AXPosition::FromPosition(position);
+    const auto ax_position_left =
+        AXPosition::FromPosition(position, TextAffinity::kDownstream,
+                                 AXPositionAdjustmentBehavior::kMoveLeft);
     EXPECT_TRUE(ax_position_left.IsValid());
     EXPECT_FALSE(ax_position_left.IsTextPosition());
-    EXPECT_EQ(ax_root, ax_position_left.ContainerObject());
+    EXPECT_EQ(ax_container, ax_position_left.ContainerObject());
     EXPECT_EQ(1, ax_position_left.ChildIndex());
     EXPECT_EQ(ax_after, ax_position_left.ChildAfterTreePosition());
 
-    const auto ax_position_right = AXPosition::FromPosition(position);
+    const auto ax_position_right =
+        AXPosition::FromPosition(position, TextAffinity::kDownstream,
+                                 AXPositionAdjustmentBehavior::kMoveRight);
     EXPECT_TRUE(ax_position_right.IsValid());
     EXPECT_FALSE(ax_position_right.IsTextPosition());
-    EXPECT_EQ(ax_root, ax_position_left.ContainerObject());
-    EXPECT_EQ(2, ax_position_left.ChildIndex());
-    EXPECT_EQ(nullptr, ax_position_left.ChildAfterTreePosition());
+    EXPECT_EQ(ax_container, ax_position_right.ContainerObject());
+    EXPECT_EQ(1, ax_position_right.ChildIndex());
+    EXPECT_EQ(ax_after, ax_position_right.ChildAfterTreePosition());
   }
 }
 
@@ -773,19 +909,107 @@ TEST_F(AccessibilityTest, DISABLED_FromPositionInARIAHidden) {
 // in the layout tree.
 //
 
-TEST_F(AccessibilityTest, PositionInCanvas) {}
+TEST_F(AccessibilityTest, PositionInCanvas) {
+  SetBodyInnerHTML(R"HTML(
+      <canvas id="canvas1" width="100" height="100">Fallback text</canvas>
+      <canvas id="canvas2" width="100" height="100">
+      <button id="button">Fallback button</button>
+    </canvas>
+    )HTML");
+
+  const Node* canvas_1 = GetElementById("canvas1");
+  ASSERT_NE(nullptr, canvas_1);
+  const Node* text = canvas_1->firstChild();
+  ASSERT_NE(nullptr, text);
+  ASSERT_TRUE(text->IsTextNode());
+  const Node* canvas_2 = GetElementById("canvas2");
+  ASSERT_NE(nullptr, canvas_2);
+  const Node* button = GetElementById("button");
+  ASSERT_NE(nullptr, button);
+
+  const AXObject* ax_canvas_1 = GetAXObjectByElementId("canvas1");
+  ASSERT_NE(nullptr, ax_canvas_1);
+  ASSERT_EQ(AccessibilityRole::kCanvasRole, ax_canvas_1->RoleValue());
+  const AXObject* ax_text = ax_canvas_1->FirstChild();
+  ASSERT_NE(nullptr, ax_text);
+  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_text->RoleValue());
+  const AXObject* ax_canvas_2 = GetAXObjectByElementId("canvas2");
+  ASSERT_NE(nullptr, ax_canvas_2);
+  ASSERT_EQ(AccessibilityRole::kCanvasRole, ax_canvas_2->RoleValue());
+  const AXObject* ax_button = GetAXObjectByElementId("button");
+  ASSERT_NE(nullptr, ax_button);
+  ASSERT_EQ(AccessibilityRole::kButtonRole, ax_button->RoleValue());
+
+  const auto ax_position_1 =
+      AXPosition::CreateFirstPositionInObject(*ax_canvas_1);
+  EXPECT_FALSE(ax_position_1.IsTextPosition());
+  EXPECT_EQ(ax_canvas_1, ax_position_1.ContainerObject());
+  EXPECT_EQ(0, ax_position_1.ChildIndex());
+  EXPECT_EQ(ax_text, ax_position_1.ChildAfterTreePosition());
+
+  const auto position_1 = ax_position_1.ToPositionWithAffinity();
+  EXPECT_EQ(canvas_1, position_1.AnchorNode());
+  EXPECT_TRUE(position_1.GetPosition().IsBeforeChildren());
+  EXPECT_EQ(text, position_1.GetPosition().ComputeNodeAfterPosition());
+
+  const auto ax_position_from_dom_1 = AXPosition::FromPosition(position_1);
+  EXPECT_EQ(ax_position_1, ax_position_from_dom_1);
+
+  const auto ax_position_2 = AXPosition::CreatePositionBeforeObject(*ax_text);
+  EXPECT_TRUE(ax_position_2.IsTextPosition());
+  EXPECT_EQ(ax_text, ax_position_2.ContainerObject());
+  EXPECT_EQ(0, ax_position_2.TextOffset());
+
+  const auto position_2 = ax_position_2.ToPositionWithAffinity();
+  EXPECT_EQ(text, position_2.AnchorNode());
+  EXPECT_EQ(0, position_2.GetPosition().OffsetInContainerNode());
+
+  const auto ax_position_from_dom_2 = AXPosition::FromPosition(position_2);
+  EXPECT_EQ(ax_position_2, ax_position_from_dom_2);
+
+  const auto ax_position_3 =
+      AXPosition::CreateLastPositionInObject(*ax_canvas_2);
+  EXPECT_FALSE(ax_position_3.IsTextPosition());
+  EXPECT_EQ(ax_canvas_2, ax_position_3.ContainerObject());
+  EXPECT_EQ(1, ax_position_3.ChildIndex());
+  EXPECT_EQ(nullptr, ax_position_3.ChildAfterTreePosition());
+
+  const auto position_3 = ax_position_3.ToPositionWithAffinity();
+  EXPECT_EQ(canvas_2, position_3.AnchorNode());
+  // There is a line break between the start of the canvas and the button.
+  EXPECT_EQ(2, position_3.GetPosition().ComputeOffsetInContainerNode());
+
+  const auto ax_position_from_dom_3 = AXPosition::FromPosition(position_3);
+  EXPECT_EQ(ax_position_3, ax_position_from_dom_3);
+
+  const auto ax_position_4 = AXPosition::CreatePositionBeforeObject(*ax_button);
+  EXPECT_FALSE(ax_position_4.IsTextPosition());
+  EXPECT_EQ(ax_canvas_2, ax_position_4.ContainerObject());
+  EXPECT_EQ(0, ax_position_4.ChildIndex());
+  EXPECT_EQ(ax_button, ax_position_4.ChildAfterTreePosition());
+
+  const auto position_4 = ax_position_4.ToPositionWithAffinity();
+  EXPECT_EQ(canvas_2, position_4.AnchorNode());
+  // There is a line break between the start of the canvas and the button.
+  EXPECT_EQ(1, position_4.GetPosition().ComputeOffsetInContainerNode());
+  EXPECT_EQ(button, position_4.GetPosition().ComputeNodeAfterPosition());
+
+  const auto ax_position_from_dom_4 = AXPosition::FromPosition(position_4);
+  EXPECT_EQ(ax_position_4, ax_position_from_dom_4);
+}
 
 //
 // Some layout objects, e.g. list bullets and CSS::before/after content, appear
 // in the accessibility tree but are not present in the DOM.
 //
 
-TEST_F(AccessibilityTest, DISABLED_PositionBeforeListMarker) {
+TEST_F(AccessibilityTest, PositionBeforeListMarker) {
   SetBodyInnerHTML(R"HTML(
       <ul id="list">
         <li id="listItem">Item.</li>
       </ul>
       )HTML");
+
   const Node* list = GetElementById("list");
   ASSERT_NE(nullptr, list);
   const Node* item = GetElementById("listItem");
@@ -793,6 +1017,7 @@ TEST_F(AccessibilityTest, DISABLED_PositionBeforeListMarker) {
   const Node* text = item->firstChild();
   ASSERT_NE(nullptr, text);
   ASSERT_TRUE(text->IsTextNode());
+
   const AXObject* ax_item = GetAXObjectByElementId("listItem");
   ASSERT_NE(nullptr, ax_item);
   ASSERT_EQ(AccessibilityRole::kListItemRole, ax_item->RoleValue());
@@ -801,47 +1026,63 @@ TEST_F(AccessibilityTest, DISABLED_PositionBeforeListMarker) {
   ASSERT_NE(nullptr, ax_marker);
   ASSERT_EQ(AccessibilityRole::kListMarkerRole, ax_marker->RoleValue());
 
+  //
+  // Test adjusting invalid DOM positions to the left.
+  //
+
   const auto ax_position_1 = AXPosition::CreateFirstPositionInObject(*ax_item);
+  EXPECT_EQ(ax_item, ax_position_1.ContainerObject());
+  EXPECT_FALSE(ax_position_1.IsTextPosition());
+  EXPECT_EQ(0, ax_position_1.ChildIndex());
+  EXPECT_EQ(ax_marker, ax_position_1.ChildAfterTreePosition());
+
   const auto position_1 = ax_position_1.ToPositionWithAffinity(
       AXPositionAdjustmentBehavior::kMoveLeft);
   EXPECT_EQ(list, position_1.AnchorNode());
-  EXPECT_TRUE(position_1.GetPosition().IsBeforeChildren());
+  // There is a line break between the start of the list and the first item.
+  EXPECT_EQ(1, position_1.GetPosition().OffsetInContainerNode());
   EXPECT_EQ(item, position_1.GetPosition().ComputeNodeAfterPosition());
 
   const auto ax_position_from_dom_1 = AXPosition::FromPosition(position_1);
-  EXPECT_EQ(ax_position_1, ax_position_from_dom_1);
-  EXPECT_EQ(ax_marker, ax_position_from_dom_1.ChildAfterTreePosition());
+  EXPECT_EQ(
+      ax_position_1.AsValidDOMPosition(AXPositionAdjustmentBehavior::kMoveLeft),
+      ax_position_from_dom_1);
+  EXPECT_EQ(ax_item, ax_position_from_dom_1.ChildAfterTreePosition());
 
   const auto ax_position_2 = AXPosition::CreatePositionBeforeObject(*ax_marker);
+  EXPECT_EQ(ax_item, ax_position_2.ContainerObject());
+  EXPECT_FALSE(ax_position_2.IsTextPosition());
+  EXPECT_EQ(0, ax_position_2.ChildIndex());
+  EXPECT_EQ(ax_marker, ax_position_2.ChildAfterTreePosition());
+
   const auto position_2 = ax_position_2.ToPositionWithAffinity(
       AXPositionAdjustmentBehavior::kMoveLeft);
   EXPECT_EQ(list, position_2.AnchorNode());
-  EXPECT_TRUE(position_2.GetPosition().IsBeforeChildren());
+  // There is a line break between the start of the list and the first item.
+  EXPECT_EQ(1, position_2.GetPosition().OffsetInContainerNode());
   EXPECT_EQ(item, position_2.GetPosition().ComputeNodeAfterPosition());
 
   const auto ax_position_from_dom_2 = AXPosition::FromPosition(position_2);
-  EXPECT_EQ(ax_position_2, ax_position_from_dom_2);
-  EXPECT_EQ(ax_marker, ax_position_from_dom_2.ChildAfterTreePosition());
+  EXPECT_EQ(
+      ax_position_2.AsValidDOMPosition(AXPositionAdjustmentBehavior::kMoveLeft),
+      ax_position_from_dom_2);
+  EXPECT_EQ(ax_item, ax_position_from_dom_2.ChildAfterTreePosition());
+
+  //
+  // Test adjusting the same invalid positions to the right.
+  //
 
   const auto position_3 = ax_position_1.ToPositionWithAffinity(
       AXPositionAdjustmentBehavior::kMoveRight);
-  EXPECT_EQ(list, position_3.AnchorNode());
+  EXPECT_EQ(item, position_3.AnchorNode());
   EXPECT_TRUE(position_3.GetPosition().IsBeforeChildren());
-  EXPECT_EQ(item, position_3.GetPosition().ComputeNodeAfterPosition());
-
-  const auto ax_position_from_dom_3 = AXPosition::FromPosition(position_3);
-  EXPECT_EQ(ax_position_1, ax_position_from_dom_3);
-  EXPECT_EQ(ax_marker, ax_position_from_dom_3.ChildAfterTreePosition());
+  EXPECT_EQ(text, position_3.GetPosition().ComputeNodeAfterPosition());
 
   const auto position_4 = ax_position_2.ToPositionWithAffinity(
       AXPositionAdjustmentBehavior::kMoveRight);
-  EXPECT_EQ(list, position_4.AnchorNode());
+  EXPECT_EQ(item, position_4.AnchorNode());
   EXPECT_TRUE(position_4.GetPosition().IsBeforeChildren());
-  EXPECT_EQ(item, position_4.GetPosition().ComputeNodeAfterPosition());
-
-  const auto ax_position_from_dom_4 = AXPosition::FromPosition(position_4);
-  EXPECT_EQ(ax_position_2, ax_position_from_dom_4);
-  EXPECT_EQ(ax_marker, ax_position_from_dom_4.ChildAfterTreePosition());
+  EXPECT_EQ(text, position_4.GetPosition().ComputeNodeAfterPosition());
 }
 
 TEST_F(AccessibilityTest, PositionAfterListMarker) {
@@ -850,11 +1091,13 @@ TEST_F(AccessibilityTest, PositionAfterListMarker) {
         <li id="listItem">Item.</li>
       </ol>
       )HTML");
+
   const Node* item = GetElementById("listItem");
   ASSERT_NE(nullptr, item);
   const Node* text = item->firstChild();
   ASSERT_NE(nullptr, text);
   ASSERT_TRUE(text->IsTextNode());
+
   const AXObject* ax_item = GetAXObjectByElementId("listItem");
   ASSERT_NE(nullptr, ax_item);
   ASSERT_EQ(AccessibilityRole::kListItemRole, ax_item->RoleValue());
@@ -869,7 +1112,7 @@ TEST_F(AccessibilityTest, PositionAfterListMarker) {
   const auto ax_position = AXPosition::CreatePositionAfterObject(*ax_marker);
   const auto position = ax_position.ToPositionWithAffinity();
   EXPECT_EQ(item, position.AnchorNode());
-  EXPECT_EQ(0, position.GetPosition().OffsetInContainerNode());
+  EXPECT_TRUE(position.GetPosition().IsBeforeChildren());
   EXPECT_EQ(text, position.GetPosition().ComputeNodeAfterPosition());
 
   const auto ax_position_from_dom = AXPosition::FromPosition(position);
@@ -970,44 +1213,60 @@ TEST_F(AccessibilityTest, PositionBeforeAndAfterTable) {
 
 TEST_F(AccessibilityTest, PositionAtStartAndEndOfTable) {
   SetBodyInnerHTML(kHTMLTable);
-  const Node* table = GetElementById("table");
-  ASSERT_NE(nullptr, table);
-  const Node* last_cell = GetElementById("lastCell");
-  ASSERT_NE(nullptr, last_cell);
-  const Node* last_cell_text = last_cell->firstChild();
-  ASSERT_NE(nullptr, last_cell_text);
-  ASSERT_TRUE(last_cell_text->IsTextNode());
+
+  // In the accessibility tree, the thead and tbody elements are ignored, but
+  // they are used as anchors when converting an AX position to a DOM position
+  // because they are the closest anchor to the first and last unignored AX
+  // positions inside the table.
+  const Node* thead = GetElementById("thead");
+  ASSERT_NE(nullptr, thead);
+  const Node* header_row = GetElementById("headerRow");
+  ASSERT_NE(nullptr, header_row);
+  const Node* tbody = GetElementById("tbody");
+  ASSERT_NE(nullptr, tbody);
+
   const AXObject* ax_table = GetAXObjectByElementId("table");
   ASSERT_NE(nullptr, ax_table);
   ASSERT_EQ(AccessibilityRole::kTableRole, ax_table->RoleValue());
+  const AXObject* ax_header_row = GetAXObjectByElementId("headerRow");
+  ASSERT_NE(nullptr, ax_header_row);
+  ASSERT_EQ(AccessibilityRole::kRowRole, ax_header_row->RoleValue());
 
   const auto ax_position_at_start =
       AXPosition::CreateFirstPositionInObject(*ax_table);
   const auto position_at_start = ax_position_at_start.ToPositionWithAffinity();
-  EXPECT_EQ(table, position_at_start.AnchorNode());
-  EXPECT_TRUE(position_at_start.GetPosition().IsBeforeChildren());
+  EXPECT_EQ(thead, position_at_start.AnchorNode());
+  EXPECT_EQ(1, position_at_start.GetPosition().OffsetInContainerNode());
+  EXPECT_EQ(header_row,
+            position_at_start.GetPosition().ComputeNodeAfterPosition());
 
   const auto ax_position_at_start_from_dom =
       AXPosition::FromPosition(position_at_start);
   EXPECT_EQ(ax_position_at_start, ax_position_at_start_from_dom);
+  EXPECT_EQ(ax_header_row,
+            ax_position_at_start_from_dom.ChildAfterTreePosition());
 
   const auto ax_position_at_end =
       AXPosition::CreateLastPositionInObject(*ax_table);
   const auto position_at_end = ax_position_at_end.ToPositionWithAffinity();
-  EXPECT_EQ(table, position_at_end.AnchorNode());
-  EXPECT_TRUE(position_at_end.GetPosition().IsAfterChildren());
+  EXPECT_EQ(tbody, position_at_end.AnchorNode());
+  // There are three rows and a line break before and after each one.
+  EXPECT_EQ(6, position_at_end.GetPosition().OffsetInContainerNode());
 
   const auto ax_position_at_end_from_dom =
       AXPosition::FromPosition(position_at_end);
-  EXPECT_EQ(ax_position_at_end.AsValidDOMPosition(),
-            ax_position_at_end_from_dom);
+  EXPECT_EQ(ax_position_at_end, ax_position_at_end_from_dom);
   EXPECT_EQ(nullptr, ax_position_at_end_from_dom.ChildAfterTreePosition());
 }
 
 TEST_F(AccessibilityTest, PositionInTableHeader) {
   SetBodyInnerHTML(kHTMLTable);
+
   const Node* header_row = GetElementById("headerRow");
   ASSERT_NE(nullptr, header_row);
+  const Node* first_header_cell = GetElementById("firstHeaderCell");
+  ASSERT_NE(nullptr, first_header_cell);
+
   const AXObject* ax_first_header_cell =
       GetAXObjectByElementId("firstHeaderCell");
   ASSERT_NE(nullptr, ax_first_header_cell);
@@ -1023,30 +1282,39 @@ TEST_F(AccessibilityTest, PositionInTableHeader) {
       AXPosition::CreatePositionBeforeObject(*ax_first_header_cell);
   const auto position_before = ax_position_before.ToPositionWithAffinity();
   EXPECT_EQ(header_row, position_before.AnchorNode());
-  EXPECT_TRUE(position_before.GetPosition().IsBeforeChildren());
+  EXPECT_EQ(1, position_before.GetPosition().OffsetInContainerNode());
+  EXPECT_EQ(first_header_cell,
+            position_before.GetPosition().ComputeNodeAfterPosition());
 
   const auto ax_position_before_from_dom =
       AXPosition::FromPosition(position_before);
   EXPECT_EQ(ax_position_before, ax_position_before_from_dom);
+  EXPECT_EQ(ax_first_header_cell,
+            ax_position_before_from_dom.ChildAfterTreePosition());
 
   const auto ax_position_after =
       AXPosition::CreatePositionAfterObject(*ax_last_header_cell);
   const auto position_after = ax_position_after.ToPositionWithAffinity();
   EXPECT_EQ(header_row, position_after.AnchorNode());
-  EXPECT_TRUE(position_after.GetPosition().IsAfterChildren());
-  EXPECT_EQ(nullptr, position_after.GetPosition().ComputeNodeAfterPosition());
+  // There are three header cells and a line break before and after each one.
+  EXPECT_EQ(6, position_after.GetPosition().OffsetInContainerNode());
 
   const auto ax_position_after_from_dom =
       AXPosition::FromPosition(position_after);
   EXPECT_EQ(ax_position_after, ax_position_after_from_dom);
+  EXPECT_EQ(nullptr, ax_position_after_from_dom.ChildAfterTreePosition());
 }
 
 TEST_F(AccessibilityTest, PositionInTableRow) {
   SetBodyInnerHTML(kHTMLTable);
+
   const Node* first_row = GetElementById("firstRow");
   ASSERT_NE(nullptr, first_row);
+  const Node* first_cell = GetElementById("firstCell");
+  ASSERT_NE(nullptr, first_cell);
   const Node* last_row = GetElementById("lastRow");
   ASSERT_NE(nullptr, last_row);
+
   const AXObject* ax_first_cell = GetAXObjectByElementId("firstCell");
   ASSERT_NE(nullptr, ax_first_cell);
   ASSERT_EQ(AccessibilityRole::kRowHeaderRole, ax_first_cell->RoleValue());
@@ -1058,31 +1326,39 @@ TEST_F(AccessibilityTest, PositionInTableRow) {
       AXPosition::CreatePositionBeforeObject(*ax_first_cell);
   const auto position_before = ax_position_before.ToPositionWithAffinity();
   EXPECT_EQ(first_row, position_before.AnchorNode());
-  EXPECT_TRUE(position_before.GetPosition().IsBeforeChildren());
+  EXPECT_EQ(1, position_before.GetPosition().OffsetInContainerNode());
+  EXPECT_EQ(first_cell,
+            position_before.GetPosition().ComputeNodeAfterPosition());
 
   const auto ax_position_before_from_dom =
       AXPosition::FromPosition(position_before);
   EXPECT_EQ(ax_position_before, ax_position_before_from_dom);
+  EXPECT_EQ(ax_first_cell,
+            ax_position_before_from_dom.ChildAfterTreePosition());
 
   const auto ax_position_after =
       AXPosition::CreatePositionAfterObject(*ax_last_cell);
   const auto position_after = ax_position_after.ToPositionWithAffinity();
   EXPECT_EQ(last_row, position_after.AnchorNode());
-  EXPECT_TRUE(position_after.GetPosition().IsAfterChildren());
-  EXPECT_EQ(nullptr, position_after.GetPosition().ComputeNodeAfterPosition());
+  // There are three cells on the last row and a line break before and after
+  // each one.
+  EXPECT_EQ(6, position_after.GetPosition().OffsetInContainerNode());
 
   const auto ax_position_after_from_dom =
       AXPosition::FromPosition(position_after);
   EXPECT_EQ(ax_position_after, ax_position_after_from_dom);
+  EXPECT_EQ(nullptr, ax_position_after_from_dom.ChildAfterTreePosition());
 }
 
 TEST_F(AccessibilityTest, DISABLED_PositionInVirtualAOMNode) {
   ScopedAccessibilityObjectModelForTest(true);
   SetBodyInnerHTML(kAOM);
+
   const Node* parent = GetElementById("aomParent");
   ASSERT_NE(nullptr, parent);
   const Node* after = GetElementById("after");
   ASSERT_NE(nullptr, after);
+
   const AXObject* ax_parent = GetAXObjectByElementId("aomParent");
   ASSERT_NE(nullptr, ax_parent);
   ASSERT_EQ(AccessibilityRole::kGenericContainerRole, ax_parent->RoleValue());
