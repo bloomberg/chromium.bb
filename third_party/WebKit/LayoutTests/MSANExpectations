@@ -100,19 +100,6 @@ crbug.com/803276 inspector-protocol/memory/sampling-native-snapshot.js [ Skip ]
 crbug.com/803276 virtual/sampling-heap-profiler/inspector-protocol/memory/sampling-native-profile.js [ Skip ]
 crbug.com/803276 virtual/sampling-heap-profiler/inspector-protocol/memory/sampling-native-snapshot.js [ Skip ]
 
-# CORS test crash on MSAN
-crbug.com/838057 [ Linux ] virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-cookies-redirect.any.html [ Crash ]
-crbug.com/838057 [ Linux ] virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-cookies-redirect.any.worker.html [ Crash ]
-crbug.com/838057 [ Linux ] virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-preflight-star.any.html [ Crash ]
-crbug.com/838057 [ Linux ] virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-preflight-star.any.worker.html [ Crash ]
-crbug.com/838057 [ Linux ] virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-preflight.any.html [ Crash ]
-crbug.com/838057 [ Linux ] virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-preflight.any.worker.html [ Crash ]
-crbug.com/838057 [ Linux ] virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-redirect-preflight.any.html [ Crash ]
-crbug.com/838057 [ Linux ] virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-redirect-preflight.any.worker.html [ Crash ]
-# This next one is flaky as of 2018-08-09.
-crbug.com/838057 [ Linux ] virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Pass Crash ]
-crbug.com/838057 [ Linux ] virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Crash ]
-
 # Crashes on Linux Trusty MSAN
 crbug.com/842262 [ Linux ] virtual/enable_wasm/external/wpt/wasm/wasm_indexeddb_test.https.html [ Crash ]
 
