@@ -7,6 +7,7 @@
 
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -69,14 +70,6 @@ class ServiceWorkerUtils {
     return oss.str();
   }
 
-  // Sets |has_range| to true if |headers| specify a single range request, and
-  // |offset| and |size| to the range. Returns true on valid input (regardless
-  // of |has_range|), and false if there is more than one range or if the bounds
-  // overflow.
-  static bool ExtractSinglePartHttpRange(const net::HttpRequestHeaders& headers,
-                                         bool* has_range_out,
-                                         uint64_t* offset_out,
-                                         uint64_t* size_out);
 
   static bool ShouldBypassCacheDueToUpdateViaCache(
       bool is_main_script,

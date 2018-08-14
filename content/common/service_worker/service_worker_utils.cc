@@ -166,55 +166,6 @@ bool ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(
   return true;
 }
 
-bool ServiceWorkerUtils::ExtractSinglePartHttpRange(
-    const net::HttpRequestHeaders& headers,
-    bool* has_range_out,
-    uint64_t* offset_out,
-    uint64_t* length_out) {
-  std::string range_header;
-  *has_range_out = false;
-  if (!headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header))
-    return true;
-
-  std::vector<net::HttpByteRange> ranges;
-  if (!net::HttpUtil::ParseRangeHeader(range_header, &ranges))
-    return true;
-
-  // Multi-part (or invalid) ranges are not supported.
-  if (ranges.size() != 1)
-    return false;
-
-  // Safely parse the single range to our more-sane output format.
-  *has_range_out = true;
-  const net::HttpByteRange& byte_range = ranges[0];
-  if (byte_range.first_byte_position() < 0)
-    return false;
-  // Allow the range [0, -1] to be valid and specify the entire range.
-  if (byte_range.first_byte_position() == 0 &&
-      byte_range.last_byte_position() == -1) {
-    *has_range_out = false;
-    return true;
-  }
-  if (byte_range.last_byte_position() < 0)
-    return false;
-
-  uint64_t first_byte_position =
-      static_cast<uint64_t>(byte_range.first_byte_position());
-  uint64_t last_byte_position =
-      static_cast<uint64_t>(byte_range.last_byte_position());
-
-  base::CheckedNumeric<uint64_t> length = last_byte_position;
-  length -= first_byte_position;
-  length += 1;
-
-  if (!length.IsValid())
-    return false;
-
-  *offset_out = static_cast<uint64_t>(byte_range.first_byte_position());
-  *length_out = length.ValueOrDie();
-  return true;
-}
-
 bool ServiceWorkerUtils::ShouldBypassCacheDueToUpdateViaCache(
     bool is_main_script,
     blink::mojom::ServiceWorkerUpdateViaCache cache_mode) {
