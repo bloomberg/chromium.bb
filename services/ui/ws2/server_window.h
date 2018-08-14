@@ -21,6 +21,7 @@
 
 namespace aura {
 class Window;
+class WindowTargeter;
 }
 
 namespace ui {
@@ -74,6 +75,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
   const gfx::Insets& client_area() const { return client_area_; }
   void SetClientArea(const gfx::Insets& insets,
                      const std::vector<gfx::Rect>& additional_client_areas);
+
+  void SetHitTestMask(const base::Optional<gfx::Rect>& mask);
 
   void SetCaptureOwner(WindowTree* owner);
   WindowTree* capture_owner() const { return capture_owner_; }
@@ -161,6 +164,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
   // the client area. See SetClientArea() in mojom for details.
   gfx::Insets client_area_;
   std::vector<gfx::Rect> additional_client_areas_;
+
+  aura::WindowTargeter* window_targeter_ = nullptr;
 
   std::unique_ptr<ui::EventHandler> event_handler_;
 

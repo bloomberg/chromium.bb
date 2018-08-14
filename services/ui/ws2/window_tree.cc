@@ -1363,14 +1363,34 @@ void WindowTree::SetClientArea(
   }
 
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
-  DCHECK(server_window);  // Must exist because of preceeding conditionals.
+  DCHECK(server_window);  // Must exist because of preceding conditionals.
   server_window->SetClientArea(
       insets, additional_client_areas.value_or(std::vector<gfx::Rect>()));
 }
 
-void WindowTree::SetHitTestMask(Id window_id,
+void WindowTree::SetHitTestMask(Id transport_window_id,
                                 const base::Optional<gfx::Rect>& mask) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  const ClientWindowId window_id = MakeClientWindowId(transport_window_id);
+  aura::Window* window = GetWindowByClientId(window_id);
+  DVLOG(3) << "SetHitTestMask client window_id=" << window_id.ToString()
+           << " mask=" << (mask ? mask.value().ToString() : "null");
+  if (!window) {
+    DVLOG(1) << "SetHitTestMask failed (invalid window id)";
+    return;
+  }
+  if (!IsClientCreatedWindow(window)) {
+    DVLOG(1) << "SetHitTestMask failed (access denied)";
+    return;
+  }
+  const gfx::Rect window_local_bounds(window->bounds().size());
+  if (mask && !window_local_bounds.Contains(mask.value())) {
+    DVLOG(1) << "SetHitTestMask failed (mask extends beyond window bounds)";
+    return;
+  }
+
+  ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
+  DCHECK(server_window);  // Must exist because of preceding conditionals.
+  server_window->SetHitTestMask(mask);
 }
 
 void WindowTree::SetCanAcceptDrops(Id window_id, bool accepts_drops) {
@@ -1385,7 +1405,7 @@ void WindowTree::SetCanAcceptDrops(Id window_id, bool accepts_drops) {
   }
 
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
-  DCHECK(server_window);  // Must exist because of preceeding conditionals.
+  DCHECK(server_window);  // Must exist because of preceding conditionals.
   if (accepts_drops && !server_window->HasDragDropDelegate()) {
     auto drag_drop_delegate = std::make_unique<DragDropDelegate>(
         window_tree_client_, window, window_id);

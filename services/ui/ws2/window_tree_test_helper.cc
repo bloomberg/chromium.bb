@@ -96,6 +96,11 @@ void WindowTreeTestHelper::SetClientArea(
                               additional_client_areas);
 }
 
+void WindowTreeTestHelper::SetHitTestMask(aura::Window* window,
+                                          base::Optional<gfx::Rect> mask) {
+  window_tree_->SetHitTestMask(TransportIdForWindow(window), mask);
+}
+
 void WindowTreeTestHelper::SetWindowProperty(aura::Window* window,
                                              const std::string& name,
                                              const std::vector<uint8_t>& value,

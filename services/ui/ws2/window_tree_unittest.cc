@@ -613,6 +613,41 @@ TEST(WindowTreeTest, MouseDownInNonClientDragToClientWithChildWindow) {
   EXPECT_TRUE(window_tree_client->input_events().empty());
 }
 
+TEST(WindowTreeTest, SetHitTestMask) {
+  EventRecordingWindowDelegate window_delegate;
+  WindowServiceTestSetup setup;
+  setup.delegate()->set_delegate_for_next_top_level(&window_delegate);
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  top_level->SetBounds(gfx::Rect(10, 10, 100, 100));
+
+  TestWindowTreeClient* window_tree_client = setup.window_tree_client();
+  window_tree_client->ClearInputEvents();
+  window_delegate.ClearEvents();
+
+  // Set a hit test mask in the window's bounds that excludes the top half.
+  setup.window_tree_test_helper()->SetHitTestMask(top_level,
+                                                  gfx::Rect(0, 50, 100, 50));
+
+  // Events outside the hit test mask are not seen by the delegate or client.
+  test::EventGenerator event_generator(setup.root());
+  event_generator.MoveMouseTo(50, 30);
+  EXPECT_TRUE(window_tree_client->input_events().empty());
+  EXPECT_TRUE(window_delegate.events().empty());
+
+  // Events in the hit test mask are seen by the delegate and client.
+  event_generator.MoveMouseTo(50, 80);
+  EXPECT_EQ("POINTER_MOVED 40,70",
+            LocatedEventToEventTypeAndLocation(
+                window_tree_client->PopInputEvent().event.get()));
+  EXPECT_EQ("MOUSE_ENTERED 40,70", LocatedEventToEventTypeAndLocation(
+                                       window_delegate.PopEvent().get()));
+  EXPECT_EQ("MOUSE_MOVED 40,70", LocatedEventToEventTypeAndLocation(
+                                     window_delegate.PopEvent().get()));
+}
+
 TEST(WindowTreeTest, PointerWatcher) {
   WindowServiceTestSetup setup;
   TestWindowTreeClient* window_tree_client = setup.window_tree_client();

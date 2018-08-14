@@ -343,7 +343,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
                      const gfx::Insets& insets,
                      const base::Optional<std::vector<gfx::Rect>>&
                          additional_client_areas) override;
-  void SetHitTestMask(Id window_id,
+  void SetHitTestMask(Id transport_window_id,
                       const base::Optional<gfx::Rect>& mask) override;
   void SetCanAcceptDrops(Id window_id, bool accepts_drops) override;
   void SetWindowVisibility(uint32_t change_id,
