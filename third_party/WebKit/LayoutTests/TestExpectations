@@ -3916,6 +3916,9 @@ crbug.com/873547 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAu
 crbug.com/873547 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-event-fired.html [ Timeout Pass ]
 crbug.com/873454 css3/filters/effect-reference-image-hw.html [ Failure Pass ]
 
+# Sheriff failures 2018-08-14
+crbug.com/873435 virtual/user-activation-v2/fast/events/middleClickAutoscroll-in-iframe.html [ Timeout Pass ]
+
 crbug.com/715718 external/wpt/media-source/mediasource-activesourcebuffers.html [ Failure Pass ]
 crbug.com/715718 external/wpt/media-source/mediasource-remove.html [ Failure Pass ]
 crbug.com/715718 [ Win ] external/wpt/xhr/FormData-append.html [ Failure Pass ]
