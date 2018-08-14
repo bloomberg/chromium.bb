@@ -44,7 +44,15 @@
 #include "wayland-private.h"
 #include "wayland-os.h"
 
-#define DIV_ROUNDUP(n, a) ( ((n) + ((a) - 1)) / (a) )
+static inline uint32_t
+div_roundup(uint32_t n, size_t a)
+{
+	/* The cast to uint64_t is necessary to prevent overflow when rounding
+	 * values close to UINT32_MAX. After the division it is again safe to
+	 * cast back to uint32_t.
+	 */
+	return (uint32_t) (((uint64_t) n + (a - 1)) / a);
+}
 
 struct wl_buffer {
 	char data[4096];
@@ -734,7 +742,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 				break;
 			}
 
-			next = p + DIV_ROUNDUP(length, sizeof *p);
+			next = p + div_roundup(length, sizeof *p);
 			if (next > end) {
 				wl_log("message too short, "
 				       "object (%d), message %s(%s)\n",
@@ -793,7 +801,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 		case 'a':
 			length = *p++;
 
-			next = p + DIV_ROUNDUP(length, sizeof *p);
+			next = p + div_roundup(length, sizeof *p);
 			if (next > end) {
 				wl_log("message too short, "
 				       "object (%d), message %s(%s)\n",
@@ -1068,7 +1076,7 @@ buffer_size_for_closure(struct wl_closure *closure)
 			}
 
 			size = strlen(closure->args[i].s) + 1;
-			buffer_size += 1 + DIV_ROUNDUP(size, sizeof(uint32_t));
+			buffer_size += 1 + div_roundup(size, sizeof(uint32_t));
 			break;
 		case 'a':
 			if (closure->args[i].a == NULL) {
@@ -1077,7 +1085,7 @@ buffer_size_for_closure(struct wl_closure *closure)
 			}
 
 			size = closure->args[i].a->size;
-			buffer_size += (1 + DIV_ROUNDUP(size, sizeof(uint32_t)));
+			buffer_size += (1 + div_roundup(size, sizeof(uint32_t)));
 			break;
 		default:
 			break;
@@ -1139,11 +1147,11 @@ serialize_closure(struct wl_closure *closure, uint32_t *buffer,
 			size = strlen(closure->args[i].s) + 1;
 			*p++ = size;
 
-			if (p + DIV_ROUNDUP(size, sizeof *p) > end)
+			if (p + div_roundup(size, sizeof *p) > end)
 				goto overflow;
 
 			memcpy(p, closure->args[i].s, size);
-			p += DIV_ROUNDUP(size, sizeof *p);
+			p += div_roundup(size, sizeof *p);
 			break;
 		case 'a':
 			if (closure->args[i].a == NULL) {
@@ -1154,11 +1162,11 @@ serialize_closure(struct wl_closure *closure, uint32_t *buffer,
 			size = closure->args[i].a->size;
 			*p++ = size;
 
-			if (p + DIV_ROUNDUP(size, sizeof *p) > end)
+			if (p + div_roundup(size, sizeof *p) > end)
 				goto overflow;
 
 			memcpy(p, closure->args[i].a->data, size);
-			p += DIV_ROUNDUP(size, sizeof *p);
+			p += div_roundup(size, sizeof *p);
 			break;
 		default:
 			break;
