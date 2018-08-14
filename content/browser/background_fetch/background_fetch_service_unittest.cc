@@ -95,10 +95,11 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
    public:
     ScopedCustomBackgroundFetchService(BackgroundFetchServiceTest* test,
                                        const url::Origin& origin)
-        : scoped_service_(
-              &test->service_,
-              std::make_unique<BackgroundFetchServiceImpl>(test->context_,
-                                                           origin)) {}
+        : scoped_service_(&test->service_,
+                          std::make_unique<BackgroundFetchServiceImpl>(
+                              test->context_,
+                              origin,
+                              nullptr /* render_frame_host */)) {}
 
    private:
     base::AutoReset<std::unique_ptr<BackgroundFetchServiceImpl>>
@@ -288,7 +289,8 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
             embedded_worker_test_helper()->context_wrapper()));
 
     context_->InitializeOnIOThread();
-    service_ = std::make_unique<BackgroundFetchServiceImpl>(context_, origin());
+    service_ = std::make_unique<BackgroundFetchServiceImpl>(
+        context_, origin(), nullptr /* render_frame_host */);
   }
 
   void TearDown() override {
