@@ -48,6 +48,9 @@ bool RefCountedThreadSafeBase::Release() const {
 void RefCountedThreadSafeBase::AddRef() const {
   AddRefImpl();
 }
+void RefCountedThreadSafeBase::AddRefWithCheck() const {
+  AddRefWithCheckImpl();
+}
 #endif
 
 #if DCHECK_IS_ON()

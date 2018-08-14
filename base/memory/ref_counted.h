@@ -171,10 +171,12 @@ class BASE_EXPORT RefCountedThreadSafeBase {
   // Returns true if the object should self-delete.
   bool Release() const { return ReleaseImpl(); }
   void AddRef() const { AddRefImpl(); }
+  void AddRefWithCheck() const { AddRefWithCheckImpl(); }
 #else
   // Returns true if the object should self-delete.
   bool Release() const;
   void AddRef() const;
+  void AddRefWithCheck() const;
 #endif
 
  private:
@@ -197,6 +199,17 @@ class BASE_EXPORT RefCountedThreadSafeBase {
         << " MakeRefCounted.";
 #endif
     ref_count_.Increment();
+  }
+
+  ALWAYS_INLINE void AddRefWithCheckImpl() const {
+#if DCHECK_IS_ON()
+    DCHECK(!in_dtor_);
+    DCHECK(!needs_adopt_ref_)
+        << "This RefCounted object is created with non-zero reference count."
+        << " The first reference to such a object has to be made by AdoptRef or"
+        << " MakeRefCounted.";
+#endif
+    CHECK(ref_count_.Increment() > 0);
   }
 
   ALWAYS_INLINE bool ReleaseImpl() const {
@@ -379,9 +392,7 @@ class RefCountedThreadSafe : public subtle::RefCountedThreadSafeBase {
   explicit RefCountedThreadSafe()
       : subtle::RefCountedThreadSafeBase(T::kRefCountPreference) {}
 
-  void AddRef() const {
-    subtle::RefCountedThreadSafeBase::AddRef();
-  }
+  void AddRef() const { AddRefImpl(T::kRefCountPreference); }
 
   void Release() const {
     if (subtle::RefCountedThreadSafeBase::Release()) {
@@ -398,6 +409,14 @@ class RefCountedThreadSafe : public subtle::RefCountedThreadSafeBase {
   template <typename U>
   static void DeleteInternal(const U* x) {
     delete x;
+  }
+
+  void AddRefImpl(subtle::StartRefCountFromZeroTag) const {
+    subtle::RefCountedThreadSafeBase::AddRef();
+  }
+
+  void AddRefImpl(subtle::StartRefCountFromOneTag) const {
+    subtle::RefCountedThreadSafeBase::AddRefWithCheck();
   }
 
   DISALLOW_COPY_AND_ASSIGN(RefCountedThreadSafe);

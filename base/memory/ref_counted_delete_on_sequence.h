@@ -45,7 +45,7 @@ class RefCountedDeleteOnSequence : public subtle::RefCountedThreadSafeBase {
     DCHECK(owning_task_runner_);
   }
 
-  void AddRef() const { subtle::RefCountedThreadSafeBase::AddRef(); }
+  void AddRef() const { AddRefImpl(T::kRefCountPreference); }
 
   void Release() const {
     if (subtle::RefCountedThreadSafeBase::Release())
@@ -70,6 +70,14 @@ class RefCountedDeleteOnSequence : public subtle::RefCountedThreadSafeBase {
       delete t;
     else
       owning_task_runner_->DeleteSoon(FROM_HERE, t);
+  }
+
+  void AddRefImpl(subtle::StartRefCountFromZeroTag) const {
+    subtle::RefCountedThreadSafeBase::AddRef();
+  }
+
+  void AddRefImpl(subtle::StartRefCountFromOneTag) const {
+    subtle::RefCountedThreadSafeBase::AddRefWithCheck();
   }
 
   const scoped_refptr<SequencedTaskRunner> owning_task_runner_;
