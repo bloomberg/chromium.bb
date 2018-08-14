@@ -4,6 +4,9 @@
 
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -33,6 +36,10 @@
 #include "extensions/common/constants.h"
 #include "media/base/media_switches.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/media/webrtc/display_media_access_handler.h"
+#endif  //  defined(OS_ANDROID)
+
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"
 #include "chrome/browser/media/chromeos_login_media_access_handler.h"
@@ -47,7 +54,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
-#endif
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 using content::BrowserThread;
 using content::MediaCaptureDevices;
@@ -76,12 +83,6 @@ content::WebContents* WebContentsFromIds(int render_process_id,
   return web_contents;
 }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-inline CaptureAccessHandlerBase* ToCaptureAccessHandlerBase(
-    MediaAccessHandler* handler) {
-  return static_cast<CaptureAccessHandlerBase*>(handler);
-}
-#endif
 }  // namespace
 
 MediaCaptureDevicesDispatcher* MediaCaptureDevicesDispatcher::GetInstance() {
@@ -92,6 +93,11 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
     : is_device_enumeration_disabled_(false),
       media_stream_capture_indicator_(new MediaStreamCaptureIndicator()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+#if !defined(OS_ANDROID)
+  media_access_handlers_.push_back(
+      std::make_unique<DisplayMediaAccessHandler>());
+#endif  //  defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #if defined(OS_CHROMEOS)
@@ -338,9 +344,8 @@ void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(
           page_request_id, security_origin, stream_type, state));
 }
 
-void MediaCaptureDevicesDispatcher::OnCreatingAudioStream(
-    int render_process_id,
-    int render_frame_id) {
+void MediaCaptureDevicesDispatcher::OnCreatingAudioStream(int render_process_id,
+                                                          int render_frame_id) {
   // TODO(https://crbug.com/837606): Figure out how to simplify threading here.
   // Currently, this will either always be called on the UI thread, or always
   // on the IO thread, depending on how far along the work to migrate to the
@@ -419,21 +424,12 @@ bool MediaCaptureDevicesDispatcher::IsInsecureCapturingInProgress(
     int render_process_id,
     int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if BUILDFLAG(ENABLE_EXTENSIONS)
+
   for (const auto& handler : media_access_handlers_) {
-    if (handler->SupportsStreamType(
-            WebContentsFromIds(render_process_id, render_frame_id),
-            content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, nullptr) ||
-        handler->SupportsStreamType(
-            WebContentsFromIds(render_process_id, render_frame_id),
-            content::MEDIA_GUM_TAB_VIDEO_CAPTURE, nullptr)) {
-      if (ToCaptureAccessHandlerBase(handler.get())
-              ->IsInsecureCapturingInProgress(render_process_id,
-                                              render_frame_id))
-        return true;
-    }
+    if (handler->IsInsecureCapturingInProgress(render_process_id,
+                                               render_frame_id))
+      return true;
   }
-#endif
   return false;
 }
 
@@ -455,9 +451,10 @@ void MediaCaptureDevicesDispatcher::OnSetCapturingLinkSecured(
     bool is_secure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (stream_type != content::MEDIA_GUM_TAB_VIDEO_CAPTURE &&
-      stream_type != content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE)
+      stream_type != content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE &&
+      stream_type != content::MEDIA_DISPLAY_VIDEO_CAPTURE) {
     return;
-
+  }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&MediaCaptureDevicesDispatcher::UpdateCapturingLinkSecured,
@@ -473,19 +470,14 @@ void MediaCaptureDevicesDispatcher::UpdateCapturingLinkSecured(
     bool is_secure) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (stream_type != content::MEDIA_GUM_TAB_VIDEO_CAPTURE &&
-      stream_type != content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE)
+      stream_type != content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE &&
+      stream_type != content::MEDIA_DISPLAY_VIDEO_CAPTURE) {
     return;
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  for (const auto& handler : media_access_handlers_) {
-    if (handler->SupportsStreamType(
-            WebContentsFromIds(render_process_id, render_frame_id), stream_type,
-            nullptr)) {
-      ToCaptureAccessHandlerBase(handler.get())
-          ->UpdateCapturingLinkSecured(render_process_id, render_frame_id,
-                                       page_request_id, is_secure);
-      break;
-    }
   }
-#endif
+
+  for (const auto& handler : media_access_handlers_) {
+    handler->UpdateCapturingLinkSecured(render_process_id, render_frame_id,
+                                        page_request_id, is_secure);
+    break;
+  }
 }
