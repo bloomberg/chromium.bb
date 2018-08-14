@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -115,6 +116,7 @@ MojoAsyncResourceHandler::MojoAsyncResourceHandler(
                       mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                       base::SequencedTaskRunnerHandle::Get()),
       url_loader_client_(std::move(url_loader_client)),
+      report_transfer_size_async_timer_(std::make_unique<base::OneShotTimer>()),
       weak_factory_(this) {
   DCHECK(IsResourceTypeFrame(resource_type) ||
          resource_type == RESOURCE_TYPE_SERVICE_WORKER ||
@@ -304,6 +306,37 @@ void MojoAsyncResourceHandler::OnWillRead(
   controller->Resume();
 }
 
+void MojoAsyncResourceHandler::set_report_transfer_size_async_timer_for_testing(
+    std::unique_ptr<base::OneShotTimer> timer) {
+  report_transfer_size_async_timer_ = std::move(timer);
+}
+
+void MojoAsyncResourceHandler::SendTransferSizeUpdate() {
+  int64_t transfer_size_diff = CalculateRecentlyReceivedBytes();
+  if (transfer_size_diff > 0) {
+    url_loader_client_->OnTransferSizeUpdated(transfer_size_diff);
+  }
+}
+
+void MojoAsyncResourceHandler::EnsureTransferSizeUpdate() {
+  auto current_time = base::TimeTicks::Now();
+  if (earliest_time_next_transfer_size_report_.is_null() ||
+      earliest_time_next_transfer_size_report_ <= current_time) {
+    report_transfer_size_async_timer_->Stop();
+    SendTransferSizeUpdate();
+    earliest_time_next_transfer_size_report_ =
+        current_time + kTransferSizeReportInterval;
+  } else {
+    // Ensure that a single transfer update will eventually occur even if reads
+    // stop. Unretained is safe here because the callback will only live as long
+    // as |report_transfer_size_async_timer_|.
+    report_transfer_size_async_timer_->Start(
+        FROM_HERE, kTransferSizeReportInterval,
+        base::BindOnce(&MojoAsyncResourceHandler::SendTransferSizeUpdate,
+                       base::Unretained(this)));
+  }
+}
+
 void MojoAsyncResourceHandler::OnReadCompleted(
     int bytes_read,
     std::unique_ptr<ResourceController> controller) {
@@ -318,15 +351,8 @@ void MojoAsyncResourceHandler::OnReadCompleted(
     return;
   }
 
-  if (ShouldReportTransferSize(GetRequestInfo()) &&
-      (time_transfer_size_next_report_.is_null() ||
-       time_transfer_size_next_report_ <= base::TimeTicks::Now())) {
-    auto transfer_size_diff = CalculateRecentlyReceivedBytes();
-    if (transfer_size_diff > 0) {
-      url_loader_client_->OnTransferSizeUpdated(transfer_size_diff);
-      time_transfer_size_next_report_ =
-          base::TimeTicks::Now() + kTransferSizeReportInterval;
-    }
+  if (ShouldReportTransferSize(GetRequestInfo())) {
+    EnsureTransferSizeUpdate();
   }
 
   if (response_body_consumer_handle_.is_valid()) {
@@ -507,9 +533,9 @@ void MojoAsyncResourceHandler::OnResponseCompleted(
   }
 
   if (ShouldReportTransferSize(GetRequestInfo())) {
-    auto transfer_size_diff = CalculateRecentlyReceivedBytes();
-    if (transfer_size_diff > 0)
-      url_loader_client_->OnTransferSizeUpdated(transfer_size_diff);
+    // All received bytes will be reported.
+    report_transfer_size_async_timer_->Stop();
+    SendTransferSizeUpdate();
   }
 
   url_loader_client_->OnComplete(loader_status);

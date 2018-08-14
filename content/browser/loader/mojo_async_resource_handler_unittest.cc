@@ -19,6 +19,7 @@
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/timer/mock_timer.h"
 #include "content/browser/loader/mock_resource_loader.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -1521,6 +1522,62 @@ TEST_F(MojoAsyncResourceHandlerTest,
                   ->blocked_response_from_reaching_renderer());
   EXPECT_EQ(0, url_loader_client_.body_transfer_size());
   EXPECT_LT(0, request_->GetTotalReceivedBytes());
+}
+
+TEST_F(MojoAsyncResourceHandlerTest,
+       TransferSizeUpdateCalledWithoutResponseComplete) {
+  const char kResponseHeaders[] = "response headers";
+  const char kResponseData[] = "response data";
+  // Create a mock timer to control when the final transfersizeupdate is sent.
+  auto timer = std::make_unique<base::MockOneShotTimer>();
+  auto* raw_timer = timer.get();
+  handler_->set_report_transfer_size_async_timer_for_testing(std::move(timer));
+
+  // Create a test job so the underlying URLRequest will receive bytes.
+  net::URLRequestJobFactoryImpl test_job_factory_;
+  auto test_job = std::make_unique<net::URLRequestTestJob>(
+      request_.get(), request_context_->network_delegate(), kResponseHeaders,
+      kResponseData, true);
+  auto test_job_interceptor = std::make_unique<net::TestJobInterceptor>();
+  net::TestJobInterceptor* raw_test_job_interceptor =
+      test_job_interceptor.get();
+  EXPECT_TRUE(test_job_factory_.SetProtocolHandler(
+      url::kHttpScheme, std::move(test_job_interceptor)));
+  request_context_->set_job_factory(&test_job_factory_);
+  raw_test_job_interceptor->set_main_intercept_job(std::move(test_job));
+  request_->Start();
+
+  // Prepare for loader read complete.
+  ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
+  EXPECT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader_->OnWillStart(request_->url()));
+  EXPECT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
+  // Only headers are read by the time the response is started.
+  mock_loader_->OnReadCompleted(kResponseHeaders);
+
+  // Make the loader process another read of the rest of the URLTestJob data.
+  EXPECT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
+  mock_loader_->OnReadCompleted(kResponseData);
+
+  // Process the entire URL request.
+  url_request_delegate_.RunUntilComplete();
+
+  // All data received by the request.
+  EXPECT_EQ(
+      request_->GetTotalReceivedBytes(),
+      static_cast<int64_t>(strlen(kResponseHeaders) + strlen(kResponseData)));
+
+  // Wait for a transfer size update to be received.
+  url_loader_client_.RunUntilTransferSizeUpdated();
+  // Only the first read caused a transfer size update.
+  EXPECT_EQ(static_cast<int64_t>(strlen(kResponseHeaders)),
+            url_loader_client_.body_transfer_size());
+  // Firing the timer will cause the rest of the bytes to be reported.
+  // Without timer fire no transfer size updates would be received.
+  raw_timer->Fire();
+  url_loader_client_.RunUntilTransferSizeUpdated();
+  EXPECT_EQ(request_->GetTotalReceivedBytes(),
+            url_loader_client_.body_transfer_size());
 }
 
 INSTANTIATE_TEST_CASE_P(MojoAsyncResourceHandlerWithAllocationSizeTest,

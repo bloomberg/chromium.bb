@@ -87,6 +87,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   void RunUntilResponseBodyArrived();
   void RunUntilComplete();
   void RunUntilConnectionError();
+  void RunUntilTransferSizeUpdated();
 
  private:
   void OnConnectionError();
@@ -110,6 +111,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   base::OnceClosure quit_closure_for_on_start_loading_response_body_;
   base::OnceClosure quit_closure_for_on_complete_;
   base::OnceClosure quit_closure_for_on_connection_error_;
+  base::OnceClosure quit_closure_for_on_transfer_size_updated_;
 
   mojom::URLLoaderFactoryPtr url_loader_factory_;
   int64_t body_transfer_size_ = 0;
