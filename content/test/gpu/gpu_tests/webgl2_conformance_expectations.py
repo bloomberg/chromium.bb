@@ -53,10 +53,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/transform_feedback/' +
               'same-buffer-two-binding-points.html', bug=866089)
 
-    # Need to fix test, which uses a bad interpretation of the spec
-    self.Fail('conformance/offscreencanvas/offscreencanvas-resize.html',
-        bug=754733)
-
     # Too slow (take about one hour to run)
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
 
