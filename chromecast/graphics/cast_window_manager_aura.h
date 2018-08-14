@@ -22,6 +22,7 @@ class ScreenPositionClient;
 namespace chromecast {
 
 class CastFocusClientAura;
+class CastGestureHandler;
 class CastSystemGestureEventHandler;
 class CastSystemGestureDispatcher;
 class SideSwipeDetector;
@@ -71,6 +72,8 @@ class CastWindowManagerAura : public CastWindowManager,
   void SetColorInversion(bool enable) override;
 
   CastWindowTreeHost* window_tree_host() const;
+
+  CastGestureHandler* GetGestureHandler() const;
 
  private:
   const bool enable_input_;

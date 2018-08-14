@@ -11,6 +11,7 @@
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/common/extensions_api/accessibility_private.h"
 #include "chromecast/graphics/cast_focus_client_aura.h"
+#include "chromecast/graphics/cast_gesture_handler.h"
 #include "extensions/browser/event_router.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -24,12 +25,14 @@ TouchExplorationManager::TouchExplorationManager(
     aura::Window* root_window,
     wm::ActivationClient* activation_client,
     AccessibilityFocusRingController* accessibility_focus_ring_controller,
-    AccessibilitySoundPlayer* accessibility_sound_player)
+    AccessibilitySoundPlayer* accessibility_sound_player,
+    CastGestureHandler* cast_gesture_handler)
     : touch_exploration_enabled_(false),
       root_window_(root_window),
       activation_client_(activation_client),
       accessibility_focus_ring_controller_(accessibility_focus_ring_controller),
-      accessibility_sound_player_(accessibility_sound_player) {
+      accessibility_sound_player_(accessibility_sound_player),
+      cast_gesture_handler_(cast_gesture_handler) {
   DCHECK(root_window);
   root_window->GetHost()->GetEventSource()->AddEventRewriter(this);
   UpdateTouchExplorationState();
@@ -79,6 +82,11 @@ void TouchExplorationManager::HandleAccessibilityGesture(
       std::move(event_args)));
   event_router->DispatchEventWithLazyListener(
       extension_misc::kChromeVoxExtensionId, std::move(event));
+}
+
+void TouchExplorationManager::HandleTap(const gfx::Point touch_location) {
+  cast_gesture_handler_->HandleTapDownGesture(touch_location);
+  cast_gesture_handler_->HandleTapGesture(touch_location);
 }
 
 void TouchExplorationManager::OnWindowActivated(

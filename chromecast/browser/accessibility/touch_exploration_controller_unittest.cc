@@ -81,6 +81,9 @@ class MockTouchExplorationControllerDelegate
   void HandleAccessibilityGesture(ax::mojom::Gesture gesture) override {
     last_gesture_ = gesture;
   }
+  void HandleTap(const gfx::Point touch_location) override {
+    last_tap_ = touch_location;
+  }
 
   const std::vector<float> VolumeChanges() const { return volume_changes_; }
   ax::mojom::Gesture GetLastGesture() const { return last_gesture_; }
@@ -89,6 +92,7 @@ class MockTouchExplorationControllerDelegate
  private:
   std::vector<float> volume_changes_;
   ax::mojom::Gesture last_gesture_ = ax::mojom::Gesture::kNone;
+  gfx::Point last_tap_;
 };
 
 class MockAccessibilitySoundPlayer : public AccessibilitySoundPlayer {
