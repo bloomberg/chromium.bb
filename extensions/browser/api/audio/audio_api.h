@@ -31,6 +31,7 @@ class AudioAPI : public BrowserContextKeyedAPI, public AudioService::Observer {
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<AudioAPI>* GetFactoryInstance();
+  static const bool kServiceRedirectedInIncognito = true;
 
   // AudioService::Observer implementation.
   void OnDeviceChanged() override;

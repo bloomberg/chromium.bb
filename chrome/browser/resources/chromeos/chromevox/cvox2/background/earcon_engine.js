@@ -36,7 +36,7 @@ EarconEngine = function() {
   this.baseDelay = 0.045;
 
   /** @type {number} The master stereo panning, from -1 to 1. */
-  this.masterPan = 0;
+  this.masterPan = EarconEngine.CENTER_PAN_;
 
   /** @type {number} The master reverb level as an amplification factor. */
   this.masterReverb = 0.4;
@@ -156,6 +156,12 @@ EarconEngine.BASE_URL = chrome.extension.getURL('cvox2/background/earcons/');
  * The maximum value to pass to PannerNode.setPosition.
  */
 EarconEngine.MAX_PAN_ABS_X_POSITION = 4;
+
+/**
+ * Default (centered) pan position.
+ * @const {number}
+ */
+EarconEngine.CENTER_PAN_ = 0;
 
 /**
  * Fetches a sound asynchronously and loads its data into an AudioBuffer.
@@ -717,4 +723,11 @@ EarconEngine.prototype.setPositionForRect = function(rect, container) {
   x = (2 * x - 1) * EarconEngine.MAX_PAN_ABS_X_POSITION;
 
   this.masterPan = x;
+};
+
+/**
+ * Resets panning to default (centered).
+ */
+EarconEngine.prototype.resetPan = function() {
+  this.masterPan = EarconEngine.CENTER_PAN_;
 };
