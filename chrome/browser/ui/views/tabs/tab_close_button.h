@@ -49,6 +49,7 @@ class TabCloseButton : public views::ImageButton,
   void OnGestureEvent(ui::GestureEvent* event) override;
   const char* GetClassName() const override;
   void Layout() override;
+  gfx::Size CalculatePreferredSize() const override;
 
  protected:
   void PaintButtonContents(gfx::Canvas* canvas) override;
