@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS Test IDL implementation of CSS Painting API
-FAIL Partial interface CSS: original interface defined assert_true: Original CSS definition should have type interface expected true got false
+PASS Partial namespace CSS: original namespace defined
 PASS PaintWorkletGlobalScope interface: existence and properties of interface object
 PASS PaintRenderingContext2D interface: existence and properties of interface object
 PASS PaintSize interface: existence and properties of interface object
