@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #import "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #include "ios/chrome/browser/tabs/tab.h"
 #include "ios/chrome/browser/ui/activity_services/chrome_activity_item_thumbnail_generator.h"
 #include "ios/chrome/browser/ui/activity_services/share_to_data.h"
@@ -55,23 +54,19 @@ ShareToData* ShareToDataForTab(Tab* tab, const GURL& shareURL) {
   const GURL& finalURLToShare =
       !shareURL.is_empty() ? shareURL : tab.webState->GetVisibleURL();
 
-  web::NavigationItem* visibleItem =
-      tab.webState->GetNavigationManager()->GetVisibleItem();
   web::UserAgentType userAgent = web::UserAgentType::NONE;
-  if (visibleItem)
-    userAgent = visibleItem->GetUserAgentType();
-
-  auto* helper = FindTabHelper::FromWebState(tab.webState);
-  BOOL is_page_searchable =
-      (helper && helper->CurrentPageSupportsFindInPage() &&
-       !helper->IsFindUIActive());
+  if (tab.webState) {
+    web::NavigationItem* visibleItem =
+        tab.webState->GetNavigationManager()->GetVisibleItem();
+    if (visibleItem)
+      userAgent = visibleItem->GetUserAgentType();
+  }
 
   return [[ShareToData alloc] initWithShareURL:finalURLToShare
                                     visibleURL:tab.webState->GetVisibleURL()
                                          title:tab.title
                                isOriginalTitle:is_original_title
                                isPagePrintable:is_page_printable
-                              isPageSearchable:is_page_searchable
                                      userAgent:userAgent
                             thumbnailGenerator:thumbnail_generator];
 }

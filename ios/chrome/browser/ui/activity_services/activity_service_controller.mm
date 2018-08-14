@@ -268,12 +268,9 @@ NSString* const kActivityServicesSnackbarCategory =
                                        dispatcher:dispatcher];
         [applicationActivities addObject:bookmarkActivity];
       }
-
-      if (data.isPageSearchable) {
-        FindInPageActivity* findInPageActivity =
-            [[FindInPageActivity alloc] initWithDispatcher:dispatcher];
-        [applicationActivities addObject:findInPageActivity];
-      }
+      FindInPageActivity* findInPageActivity =
+          [[FindInPageActivity alloc] initWithDispatcher:dispatcher];
+      [applicationActivities addObject:findInPageActivity];
 
       if (data.userAgent != web::UserAgentType::NONE) {
         RequestDesktopOrMobileSiteActivity* requestActivity =

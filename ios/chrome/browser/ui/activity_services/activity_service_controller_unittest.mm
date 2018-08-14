@@ -16,7 +16,6 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
 #import "ios/chrome/browser/ui/activity_services/activities/bookmark_activity.h"
-#import "ios/chrome/browser/ui/activity_services/activities/find_in_page_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/print_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/request_desktop_or_mobile_site_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activity_type_util.h"
@@ -211,7 +210,6 @@ class ActivityServiceControllerTest : public PlatformTest {
                                         title:@""
                               isOriginalTitle:YES
                               isPagePrintable:YES
-                             isPageSearchable:YES
                                     userAgent:web::UserAgentType::MOBILE
                            thumbnailGenerator:DummyThumbnailGeneratorBlock()];
   }
@@ -368,7 +366,6 @@ TEST_F(ActivityServiceControllerTest, ActivityItemsForData) {
                                       title:@"foo"
                             isOriginalTitle:YES
                             isPagePrintable:YES
-                           isPageSearchable:YES
                                   userAgent:web::UserAgentType::DESKTOP
                          thumbnailGenerator:DummyThumbnailGeneratorBlock()];
   NSArray* items = [activityController activityItemsForData:data];
@@ -392,7 +389,6 @@ TEST_F(ActivityServiceControllerTest, ActivityItemsForDataWithPasswordAppEx) {
                    title:@"kung fu fighting"
          isOriginalTitle:YES
          isPagePrintable:YES
-        isPageSearchable:YES
                userAgent:web::UserAgentType::DESKTOP
       thumbnailGenerator:DummyThumbnailGeneratorBlock()];
   NSArray* items = [activityController activityItemsForData:data];
@@ -456,7 +452,6 @@ TEST_F(ActivityServiceControllerTest,
                    title:@"kung fu fighting"
          isOriginalTitle:YES
          isPagePrintable:YES
-        isPageSearchable:YES
                userAgent:web::UserAgentType::DESKTOP
       thumbnailGenerator:DummyThumbnailGeneratorBlock()];
   NSArray* items = [activityController activityItemsForData:data];
@@ -560,7 +555,6 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
                    title:@"bar"
          isOriginalTitle:YES
          isPagePrintable:YES
-        isPageSearchable:YES
                userAgent:web::UserAgentType::NONE
       thumbnailGenerator:DummyThumbnailGeneratorBlock()];
 
@@ -585,7 +579,6 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
                    title:@"baz"
          isOriginalTitle:YES
          isPagePrintable:NO
-        isPageSearchable:YES
                userAgent:web::UserAgentType::NONE
       thumbnailGenerator:DummyThumbnailGeneratorBlock()];
   items = [activityController applicationActivitiesForData:data
@@ -618,7 +611,6 @@ TEST_F(ActivityServiceControllerTest, HTTPActivities) {
                                       title:@"bar"
                             isOriginalTitle:YES
                             isPagePrintable:YES
-                           isPageSearchable:YES
                                   userAgent:web::UserAgentType::MOBILE
                          thumbnailGenerator:DummyThumbnailGeneratorBlock()];
 
@@ -634,7 +626,6 @@ TEST_F(ActivityServiceControllerTest, HTTPActivities) {
                                          title:@"baz"
                                isOriginalTitle:YES
                                isPagePrintable:YES
-                              isPageSearchable:YES
                                      userAgent:web::UserAgentType::MOBILE
                             thumbnailGenerator:DummyThumbnailGeneratorBlock()];
   items = [activityController applicationActivitiesForData:data
@@ -658,7 +649,6 @@ TEST_F(ActivityServiceControllerTest, BookmarkActivities) {
                                       title:@"bar"
                             isOriginalTitle:YES
                             isPagePrintable:YES
-                           isPageSearchable:YES
                                   userAgent:web::UserAgentType::NONE
                          thumbnailGenerator:DummyThumbnailGeneratorBlock()];
 
@@ -685,7 +675,6 @@ TEST_F(ActivityServiceControllerTest, BookmarkActivities) {
                    title:@"baz"
          isOriginalTitle:YES
          isPagePrintable:YES
-        isPageSearchable:YES
                userAgent:web::UserAgentType::NONE
       thumbnailGenerator:DummyThumbnailGeneratorBlock()];
   items = [activityController applicationActivitiesForData:data
@@ -717,7 +706,6 @@ TEST_F(ActivityServiceControllerTest, RequestMobileDesktopSite) {
                                       title:@"bar"
                             isOriginalTitle:YES
                             isPagePrintable:YES
-                           isPageSearchable:YES
                                   userAgent:web::UserAgentType::MOBILE
                          thumbnailGenerator:DummyThumbnailGeneratorBlock()];
   id mockDispatcher = OCMProtocolMock(@protocol(BrowserCommands));
@@ -742,7 +730,6 @@ TEST_F(ActivityServiceControllerTest, RequestMobileDesktopSite) {
                                          title:@"bar"
                                isOriginalTitle:YES
                                isPagePrintable:YES
-                              isPageSearchable:YES
                                      userAgent:web::UserAgentType::DESKTOP
                             thumbnailGenerator:DummyThumbnailGeneratorBlock()];
   mockDispatcher = OCMProtocolMock(@protocol(BrowserCommands));
@@ -844,61 +831,6 @@ TEST_F(ActivityServiceControllerTest, TestShareDidCompleteWithError) {
   EXPECT_NSEQ(error_title, provider.latestErrorAlertTitle);
   EXPECT_NSEQ(error_message, provider.latestErrorAlertMessage);
   EXPECT_FALSE(provider.latestSnackbarMessage);
-}
-
-// Verifies that the FindInPageActivity is sent to the UIActivityViewController
-// if and only if the activity is "searchable".
-TEST_F(ActivityServiceControllerTest, FindInPageActivity) {
-  ActivityServiceController* activityController =
-      [[ActivityServiceController alloc] init];
-
-  // Verify searchable data.
-  ShareToData* data = [[ShareToData alloc]
-        initWithShareURL:GURL("https://chromium.org/printable")
-              visibleURL:GURL("https://chromium.org/printable")
-                   title:@"bar"
-         isOriginalTitle:YES
-         isPagePrintable:YES
-        isPageSearchable:YES
-               userAgent:web::UserAgentType::NONE
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
-
-  NSArray* items =
-      [activityController applicationActivitiesForData:data
-                                            dispatcher:nil
-                                         bookmarkModel:bookmark_model_];
-  ASSERT_EQ(IsUIRefreshPhase1Enabled() ? 4U : 2U, [items count]);
-  BOOL foundFindInPageActivity = NO;
-  for (id item in items) {
-    if ([item class] == [FindInPageActivity class]) {
-      foundFindInPageActivity = YES;
-      break;
-    }
-  }
-  EXPECT_TRUE(foundFindInPageActivity);
-
-  // Verify non-searchable data.
-  data = [[ShareToData alloc]
-        initWithShareURL:GURL("https://chromium.org/unprintable")
-              visibleURL:GURL("https://chromium.org/unprintable")
-                   title:@"baz"
-         isOriginalTitle:YES
-         isPagePrintable:YES
-        isPageSearchable:NO
-               userAgent:web::UserAgentType::NONE
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
-  items = [activityController applicationActivitiesForData:data
-                                                dispatcher:nil
-                                             bookmarkModel:bookmark_model_];
-  EXPECT_EQ(IsUIRefreshPhase1Enabled() ? 3U : 1U, [items count]);
-  foundFindInPageActivity = NO;
-  for (id item in items) {
-    if ([item class] == [FindInPageActivity class]) {
-      foundFindInPageActivity = YES;
-      break;
-    }
-  }
-  EXPECT_FALSE(foundFindInPageActivity);
 }
 
 }  // namespace

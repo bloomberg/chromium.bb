@@ -19,7 +19,6 @@
                  title:(NSString*)title
        isOriginalTitle:(BOOL)isOriginalTitle
        isPagePrintable:(BOOL)isPagePrintable
-      isPageSearchable:(BOOL)isPageSearchable
              userAgent:(web::UserAgentType)userAgent
     thumbnailGenerator:(ThumbnailGeneratorBlock)thumbnailGenerator;
 
@@ -37,8 +36,6 @@
 @property(nonatomic, readonly, copy) NSString* title;
 @property(nonatomic, readonly, assign) BOOL isOriginalTitle;
 @property(nonatomic, readonly, assign) BOOL isPagePrintable;
-// Whether FindInPage can be enabled for this page.
-@property(nonatomic, readonly, assign) BOOL isPageSearchable;
 @property(nonatomic, readonly, assign) web::UserAgentType userAgent;
 @property(nonatomic, strong) UIImage* image;
 @property(nonatomic, copy) ThumbnailGeneratorBlock thumbnailGenerator;
