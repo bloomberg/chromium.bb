@@ -626,9 +626,9 @@ void GuestViewBase::ContentsMouseEvent(WebContents* source,
 }
 
 void GuestViewBase::ContentsZoomChange(bool zoom_in) {
-  zoom::PageZoom::Zoom(embedder_web_contents(), zoom_in
-                                                    ? content::PAGE_ZOOM_IN
-                                                    : content::PAGE_ZOOM_OUT);
+  if (!attached() || !embedder_web_contents()->GetDelegate())
+    return;
+  embedder_web_contents()->GetDelegate()->ContentsZoomChange(zoom_in);
 }
 
 void GuestViewBase::HandleKeyboardEvent(
