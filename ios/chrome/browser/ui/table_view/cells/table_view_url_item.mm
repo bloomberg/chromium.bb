@@ -63,7 +63,6 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
   cell.URLLabel.text = [self URLLabelText];
   cell.faviconBadgeView.image = self.badgeImage;
   cell.metadataLabel.text = self.metadata;
-  cell.metadataLabel.hidden = ([self.metadata length] == 0);
   cell.cellUniqueIdentifier = self.uniqueIdentifier;
   cell.accessibilityTraits |= UIAccessibilityTraitButton;
   // If the background color specified by the styler is opaque, use it as the
@@ -77,6 +76,8 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
   }
   if (styler.cellTitleColor)
     cell.titleLabel.textColor = styler.cellTitleColor;
+
+  [cell configureUILayout];
 }
 
 - (NSString*)uniqueIdentifier {
@@ -122,18 +123,21 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
 // |-accessibilityLabel| will return a lazily created label based on the
 // text values of the UILabel subviews.
 @property(nonatomic, assign) BOOL shouldGenerateAccessibilityLabel;
+// Horizontal StackView that holds url, title, and metadata labels.
+@property(nonatomic, strong) UIStackView* horizontalStack;
 @end
 
 @implementation TableViewURLCell
 @synthesize faviconView = _faviconView;
 @synthesize faviconContainerView = _faviconContainerView;
 @synthesize faviconBadgeView = _faviconBadgeView;
-@synthesize metadataLabel = _metadataLabel;
-@synthesize titleLabel = _titleLabel;
-@synthesize URLLabel = _URLLabel;
+@synthesize horizontalStack = _horizontalStack;
 @synthesize cellUniqueIdentifier = _cellUniqueIdentifier;
 @synthesize shouldGenerateAccessibilityLabel =
     _shouldGenerateAccessibilityLabel;
+@synthesize metadataLabel = _metadataLabel;
+@synthesize titleLabel = _titleLabel;
+@synthesize URLLabel = _URLLabel;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
               reuseIdentifier:(NSString*)reuseIdentifier {
@@ -157,11 +161,13 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
     _URLLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     _URLLabel.adjustsFontForContentSizeCategory = YES;
     _URLLabel.textColor = UIColorFromRGB(kSecondaryLabelLightGrayTextColor);
+    _URLLabel.hidden = YES;
     _metadataLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     _metadataLabel.textColor =
         UIColorFromRGB(kSecondaryLabelLightGrayTextColor);
     _metadataLabel.adjustsFontForContentSizeCategory = YES;
+    _metadataLabel.hidden = YES;
 
     // Use stack views to layout the subviews except for the favicon.
     UIStackView* verticalStack = [[UIStackView alloc]
@@ -175,21 +181,21 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
                                             UILayoutConstraintAxisHorizontal];
 
     // Horizontal stack view holds vertical stack view and metadata label.
-    UIStackView* horizontalStack = [[UIStackView alloc]
+    self.horizontalStack = [[UIStackView alloc]
         initWithArrangedSubviews:@[ verticalStack, _metadataLabel ]];
-    horizontalStack.axis = UILayoutConstraintAxisHorizontal;
-    horizontalStack.spacing = kTableViewSubViewHorizontalSpacing;
-    horizontalStack.distribution = UIStackViewDistributionFill;
-    horizontalStack.alignment = UIStackViewAlignmentFirstBaseline;
+    self.horizontalStack.axis = UILayoutConstraintAxisHorizontal;
+    self.horizontalStack.spacing = kTableViewSubViewHorizontalSpacing;
+    self.horizontalStack.distribution = UIStackViewDistributionFill;
+    self.horizontalStack.alignment = UIStackViewAlignmentFill;
 
     UIView* contentView = self.contentView;
     _faviconView.translatesAutoresizingMaskIntoConstraints = NO;
     _faviconContainerView.translatesAutoresizingMaskIntoConstraints = NO;
     _faviconBadgeView.translatesAutoresizingMaskIntoConstraints = NO;
-    horizontalStack.translatesAutoresizingMaskIntoConstraints = NO;
+    self.horizontalStack.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:_faviconContainerView];
     [contentView addSubview:_faviconBadgeView];
-    [contentView addSubview:horizontalStack];
+    [contentView addSubview:self.horizontalStack];
 
     [NSLayoutConstraint activateConstraints:@[
       // The favicon view is a fixed size, is pinned to the leading edge of the
@@ -219,16 +225,16 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
 
       // The stack view fills the remaining space, has an intrinsic height, and
       // is centered vertically.
-      [horizontalStack.leadingAnchor
+      [self.horizontalStack.leadingAnchor
           constraintEqualToAnchor:_faviconContainerView.trailingAnchor
                          constant:kTableViewSubViewHorizontalSpacing],
-      [horizontalStack.trailingAnchor
+      [self.horizontalStack.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
                          constant:-kTableViewHorizontalSpacing],
-      [horizontalStack.topAnchor
+      [self.horizontalStack.topAnchor
           constraintEqualToAnchor:self.contentView.topAnchor
                          constant:kTableViewVerticalSpacing],
-      [horizontalStack.bottomAnchor
+      [self.horizontalStack.bottomAnchor
           constraintEqualToAnchor:self.contentView.bottomAnchor
                          constant:-kTableViewVerticalSpacing]
     ]];
@@ -236,10 +242,32 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
   return self;
 }
 
+// Hide or show the metadata and URL labels depending on the presence of text.
+// Align the horizontal stack properly depending on if the metadata label will
+// be present or not.
+- (void)configureUILayout {
+  if ([self.metadataLabel.text length]) {
+    self.metadataLabel.hidden = NO;
+    // Align metadataLabel to first line of content in vertical stack.
+    self.horizontalStack.alignment = UIStackViewAlignmentFirstBaseline;
+  } else {
+    self.metadataLabel.hidden = YES;
+    self.horizontalStack.alignment = UIStackViewAlignmentFill;
+  }
+  if ([self.URLLabel.text length]) {
+    self.URLLabel.hidden = NO;
+  } else {
+    self.URLLabel.hidden = YES;
+  }
+}
+
 - (void)prepareForReuse {
   [super prepareForReuse];
   [self.faviconView configureWithAttributes:nil];
   self.faviconBadgeView.image = nil;
+  self.horizontalStack.alignment = UIStackViewAlignmentFill;
+  self.metadataLabel.hidden = YES;
+  self.URLLabel.hidden = YES;
 }
 
 - (void)setAccessibilityLabel:(NSString*)accessibilityLabel {

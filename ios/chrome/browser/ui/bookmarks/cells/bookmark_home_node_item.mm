@@ -61,6 +61,7 @@
       urlCell.URLLabel.text =
           base::SysUTF8ToNSString(_bookmarkNode->url().host());
       urlCell.accessibilityTraits |= UIAccessibilityTraitButton;
+      [urlCell configureUILayout];
     }
   } else {
     BookmarkTableCell* bookmarkCell =
