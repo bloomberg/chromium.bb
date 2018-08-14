@@ -11,6 +11,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/unified_consent/pref_names.h"
+#include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/sync/sync_observer_bridge.h"
@@ -19,6 +20,8 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_collapsible_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
+#import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
+#import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
@@ -75,7 +78,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface GoogleServicesSettingsMediator ()<PrefObserverDelegate,
+@interface GoogleServicesSettingsMediator ()<BooleanObserver,
+                                             PrefObserverDelegate,
                                              SyncObserverModelBridge> {
   // Bridge to listen to pref changes.
   std::unique_ptr<PrefObserverBridge> prefObserverBridge_;
@@ -92,6 +96,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, assign, readonly) PrefService* prefService;
 // Sync setup service.
 @property(nonatomic, assign, readonly) SyncSetupService* syncSetupService;
+// Preference value for the "Autocomplete searches and URLs" feature.
+@property(nonatomic, strong, readonly)
+    PrefBackedBoolean* autocompleteSearchPreference;
+// Preference value for the "Make searches and browsing better" feature.
+@property(nonatomic, strong, readonly)
+    PrefBackedBoolean* anonymizedDataCollectionPreference;
 
 // YES if the switch for |syncEverythingItem| is currently animating from one
 // state to another.
@@ -120,6 +130,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize authService = _authService;
 @synthesize prefService = _prefService;
 @synthesize syncSetupService = _syncSetupService;
+@synthesize autocompleteSearchPreference = _autocompleteSearchPreference;
+@synthesize anonymizedDataCollectionPreference =
+    _anonymizedDataCollectionPreference;
 @synthesize syncEverythingSwitchBeingAnimated =
     _syncEverythingSwitchBeingAnimated;
 @synthesize personalizedSectionBeingAnimated =
@@ -148,6 +161,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
     prefChangeRegistrar_.Init(prefService);
     prefObserverBridge_->ObserveChangesForPreference(kUnifiedConsentGiven,
                                                      &prefChangeRegistrar_);
+    _autocompleteSearchPreference = [[PrefBackedBoolean alloc]
+        initWithPrefService:prefService
+                   prefName:prefs::kSearchSuggestEnabled];
+    [_autocompleteSearchPreference setObserver:self];
+    _anonymizedDataCollectionPreference = [[PrefBackedBoolean alloc]
+        initWithPrefService:prefService
+                   prefName:unified_consent::prefs::
+                                kUrlKeyedAnonymizedDataCollectionEnabled];
+    [_anonymizedDataCollectionPreference setObserver:self];
   }
   return self;
 }
@@ -435,15 +457,6 @@ textItemWithItemType:(NSInteger)itemType
                                  enabled:enabled];
 }
 
-// Updates |item.on| and |item.enabled| according to its data type.
-- (void)updateSwitchValueWithItem:(SyncSwitchItem*)item enabled:(BOOL)enabled {
-  SyncSetupService::SyncableDatatype dataType =
-      static_cast<SyncSetupService::SyncableDatatype>(item.dataType);
-  syncer::ModelType modelType = self.syncSetupService->GetModelType(dataType);
-  item.on = self.syncSetupService->IsDataTypePreferred(modelType);
-  item.enabled = enabled;
-}
-
 // Updates the non-personalized section according to the user consent.
 - (void)updateNonPersonalizedSection {
   BOOL enabled = !self.isAuthenticated || !self.isConsentGiven;
@@ -463,14 +476,33 @@ textItemWithItemType:(NSInteger)itemType
   for (CollectionViewItem* item in items) {
     if ([item isKindOfClass:[SyncSwitchItem class]]) {
       SyncSwitchItem* switchItem = base::mac::ObjCCast<SyncSwitchItem>(item);
-      if (switchItem.commandID ==
-          GoogleServicesSettingsCommandIDToggleDataTypeSync) {
-        SyncSetupService::SyncableDatatype dataType =
-            static_cast<SyncSetupService::SyncableDatatype>(
-                switchItem.dataType);
-        syncer::ModelType modelType =
-            self.syncSetupService->GetModelType(dataType);
-        switchItem.on = self.syncSetupService->IsDataTypePreferred(modelType);
+      switch (switchItem.commandID) {
+        case GoogleServicesSettingsCommandIDToggleDataTypeSync: {
+          SyncSetupService::SyncableDatatype dataType =
+              static_cast<SyncSetupService::SyncableDatatype>(
+                  switchItem.dataType);
+          syncer::ModelType modelType =
+              self.syncSetupService->GetModelType(dataType);
+          switchItem.on = self.syncSetupService->IsDataTypePreferred(modelType);
+          break;
+        }
+        case GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService:
+          switchItem.on = self.autocompleteSearchPreference.value;
+          break;
+        case GoogleServicesSettingsCommandIDTogglePreloadPagesService:
+          // Needs to be implemented.
+          break;
+        case GoogleServicesSettingsCommandIDToggleImproveChromeService:
+          // Needs to be implemented.
+          break;
+        case GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService:
+          switchItem.on = self.anonymizedDataCollectionPreference.value;
+          break;
+        case GoogleServicesSettingsCommandIDOpenGoogleActivityControlsDialog:
+        case GoogleServicesSettingsCommandIDOpenEncryptionDialog:
+        case GoogleServicesSettingsCommandIDOpenManageSyncedDataWebPage:
+          NOTREACHED();
+          break;
       }
       switchItem.enabled = enabled;
     } else if ([item isKindOfClass:[CollectionViewTextItem class]]) {
@@ -515,7 +547,7 @@ textItemWithItemType:(NSInteger)itemType
 }
 
 - (void)toggleAutocompleteSearchesServiceWithValue:(BOOL)value {
-  // Needs to be implemented.
+  self.autocompleteSearchPreference.value = value;
 }
 
 - (void)togglePreloadPagesServiceWithValue:(BOOL)value {
@@ -527,7 +559,7 @@ textItemWithItemType:(NSInteger)itemType
 }
 
 - (void)toggleBetterSearchAndBrowsingServiceWithValue:(BOOL)value {
-  // Needs to be implemented.
+  self.anonymizedDataCollectionPreference.value = value;
 }
 
 #pragma mark - PrefObserverDelegate
@@ -576,6 +608,17 @@ textItemWithItemType:(NSInteger)itemType
         addIndex:PersonalizedSectionIdentifier - kSectionIdentifierEnumZero];
     [self.consumer reloadSections:sectionIndexToReload];
   }
+}
+
+#pragma mark - BooleanObserver
+
+- (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
+  [self updateNonPersonalizedSection];
+  CollectionViewModel* model = self.consumer.collectionViewModel;
+  NSUInteger index =
+      [model sectionForSectionIdentifier:NonPersonalizedSectionIdentifier];
+  NSIndexSet* sectionIndexToReload = [NSIndexSet indexSetWithIndex:index];
+  [self.consumer reloadSections:sectionIndexToReload];
 }
 
 @end
