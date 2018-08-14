@@ -15,7 +15,7 @@ cr.define('cr.FirstRun', function() {
     // Name of step.
     name_: null,
 
-    // Button leading to next tutorial step.
+    // Button leading to next tutorial step. For testing.
     nextButton_: null,
 
     // Default control for this step.
@@ -26,15 +26,19 @@ cr.define('cr.FirstRun', function() {
       var controlsContainer = this.getElementsByClassName('controls')[0];
       if (!controlsContainer)
         throw Error('Controls not found.');
-      this.nextButton_ =
-          controlsContainer.getElementsByClassName('next-button')[0];
-      if (!this.nextButton_)
+
+      var nextButtons = controlsContainer.getElementsByClassName('next-button');
+      if (nextButtons.length <= 0)
         throw Error('Next button not found.');
-      this.nextButton_.addEventListener(
-          'click', (function(e) {
-                     chrome.send('nextButtonClicked', [this.getName()]);
-                     e.stopPropagation();
-                   }).bind(this));
+      this.nextButton_ = nextButtons[0];
+      Array.prototype.forEach.call(nextButtons, function(nextButton) {
+        nextButton.addEventListener(
+            'click', (function(e) {
+                       chrome.send('nextButtonClicked', [this.getName()]);
+                       e.stopPropagation();
+                     }).bind(this));
+      }.bind(this));
+
       this.defaultControl_ = controlsContainer.children[0];
     },
 
@@ -266,9 +270,38 @@ cr.define('cr.FirstRun', function() {
     },
   };
 
+  var TrayStep = cr.ui.define('div');
+
+  TrayStep.prototype = {
+    __proto__: HelpStep.prototype,
+
+    decorate: function() {
+      HelpStep.prototype.decorate.call(this);
+      this.setUnifiedSystemTrayEnabled(false);
+    },
+
+    /**
+     * Updates UI when UnifiedSystemTray is enabled.
+     */
+    setUnifiedSystemTrayEnabled: function(enabled) {
+      Array.prototype.forEach.call(
+          this.getElementsByClassName('unified-system-tray-enabled'),
+          function(el) {
+            el.hidden = !enabled;
+          }.bind(this));
+      Array.prototype.forEach.call(
+          this.getElementsByClassName('unified-system-tray-disabled'),
+          function(el) {
+            el.hidden = enabled;
+          }.bind(this));
+    },
+  };
+
   var DecorateStep = function(el) {
     if (el.id == 'help')
       HelpStep.decorate(el);
+    else if (el.id == 'tray')
+      TrayStep.decorate(el);
     else if (el.classList.contains('bubble'))
       Bubble.decorate(el);
     else
