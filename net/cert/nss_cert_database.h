@@ -232,6 +232,13 @@ class NET_EXPORT NSSCertDatabase {
   // Check whether cert is stored in a hardware slot.
   bool IsHardwareBacked(const CERTCertificate* cert) const;
 
+  // TODO(https://crbug.com/844537): Remove this after we've collected logs that
+  // show device-wide certificates disappearing. Does nothing in the default
+  // implementation, but can be used in subclasses for logging user
+  // certificates. Will be called when the DB has changed. |log_reason| says why
+  // this has been invoked.
+  virtual void LogUserCertificates(const std::string& log_reason) const;
+
  protected:
   // Certificate listing implementation used by |ListCerts*| and
   // |ListCertsSync|. Static so it may safely be used on the worker thread.
@@ -239,9 +246,12 @@ class NET_EXPORT NSSCertDatabase {
   // |slot|.
   static ScopedCERTCertificateList ListCertsImpl(crypto::ScopedPK11Slot slot);
 
- protected:
   // Broadcasts notifications to all registered observers.
   void NotifyObserversCertDBChanged();
+
+  // TODO(https://crbug.com/844537): Remove this after we've collected logs that
+  // show device-wide certificates disappearing.
+  static std::string GetCertIssuerCommonName(const CERTCertificate* cert);
 
  private:
   // Registers |observer| to receive notifications of certificate changes.  The

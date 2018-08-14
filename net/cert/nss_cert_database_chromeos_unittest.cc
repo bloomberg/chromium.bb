@@ -286,6 +286,20 @@ TEST_F(NSSCertDatabaseChromeOSTest, ListCertsReadsSystemSlot) {
   EXPECT_TRUE(IsCertInCertificateList(cert_2.get(), certs));
 }
 
+// TODO(https://crbug.com/844537): Remove this after we've collected logs that
+// show device-wide certificates disappearing.
+TEST_F(NSSCertDatabaseChromeOSTest, LogUserCerts) {
+  scoped_refptr<X509Certificate> cert_1(ImportClientCertAndKeyFromFile(
+      GetTestCertsDirectory(), "client_1.pem", "client_1.pk8",
+      db_1_->GetPublicSlot().get()));
+
+  scoped_refptr<X509Certificate> cert_2(ImportClientCertAndKeyFromFile(
+      GetTestCertsDirectory(), "client_2.pem", "client_2.pk8",
+      db_1_->GetSystemSlot().get()));
+  db_1_->LogUserCertificates("UnitTest");
+  RunUntilIdle();
+}
+
 TEST_F(NSSCertDatabaseChromeOSTest, ListCertsDoesNotCrossReadSystemSlot) {
   scoped_refptr<X509Certificate> cert_1(
       ImportClientCertAndKeyFromFile(GetTestCertsDirectory(),
