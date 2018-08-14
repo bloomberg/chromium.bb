@@ -105,6 +105,12 @@ class TabletModeWindowDragDelegate {
   // the desired window tranform during dragging.
   gfx::Rect new_selector_item_bounds_;
 
+  // Flag to indicate whether a window is considered as moved. A window needs to
+  // be dragged vertically a small amount of distance to be considered as moved.
+  // The drag indicators will only show up after the window has been moved. Once
+  // the window is moved, it will stay as 'moved'.
+  bool did_move_ = false;
+
   base::WeakPtrFactory<TabletModeWindowDragDelegate> weak_ptr_factory_;
 
  private:
