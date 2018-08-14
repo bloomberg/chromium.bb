@@ -18,6 +18,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -113,7 +114,7 @@
 namespace {
 
 // Maximum delay for startup sound after 'loginPromptVisible' signal.
-const int kStartupSoundMaxDelayMs = 2000;
+const int kStartupSoundMaxDelayMs = 4000;
 
 // URL which corresponds to the login WebUI.
 const char kLoginURL[] = "chrome://oobe/login";
@@ -355,14 +356,6 @@ bool CanPlayStartupSound() {
       chromeos::CrasAudioHandler::Get()->GetPrimaryActiveOutputDevice(&device);
   return found && device.stable_device_id_version &&
          device.type != chromeos::AudioDeviceType::AUDIO_TYPE_OTHER;
-}
-
-// Returns true if it is too late to play startup sound.
-bool StartupSoundOutdated(base::TimeTicks login_prompt_visible_time) {
-  // Don't try to play startup sound if login prompt has been already visible
-  // for a long time.
-  return base::TimeTicks::Now() - login_prompt_visible_time >
-         base::TimeDelta::FromMilliseconds(kStartupSoundMaxDelayMs);
 }
 
 }  // namespace
@@ -1202,9 +1195,17 @@ void LoginDisplayHostWebUI::PlayStartupSoundIfPossible() {
   need_to_play_startup_sound_ = false;
   oobe_startup_sound_played_ = true;
 
-  if (StartupSoundOutdated(login_prompt_visible_time_))
-    return;
+  const base::TimeDelta time_since_login_prompt_visible =
+      base::TimeTicks::Now() - login_prompt_visible_time_;
+  UMA_HISTOGRAM_TIMES("Accessibility.OOBEStartupSoundDelay",
+                      time_since_login_prompt_visible);
 
+  // Don't try to play startup sound if login prompt has been already visible
+  // for a long time.
+  if (time_since_login_prompt_visible >
+      base::TimeDelta::FromMilliseconds(kStartupSoundMaxDelayMs)) {
+    return;
+  }
   AccessibilityManager::Get()->PlayEarcon(SOUND_STARTUP,
                                           PlaySoundOption::ALWAYS);
 }
