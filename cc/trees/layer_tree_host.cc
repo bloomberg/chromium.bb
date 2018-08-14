@@ -1332,8 +1332,8 @@ void LayerTreeHost::SetPageScaleFromImplSide(float page_scale) {
   // We should never process non-unit page_scale_delta for an OOPIF subframe.
   // TODO(wjmaclean): Remove this check as a pre-condition to closing the bug.
   // https://crbug.com/845097
-  CHECK(!settings_.is_layer_tree_for_subframe ||
-        page_scale == page_scale_factor_)
+  DCHECK(!settings_.is_layer_tree_for_subframe ||
+         page_scale == page_scale_factor_)
       << "Setting PSF in oopif subframe: old psf = " << page_scale_factor_
       << ", new psf = " << page_scale;
   page_scale_factor_ = page_scale;
