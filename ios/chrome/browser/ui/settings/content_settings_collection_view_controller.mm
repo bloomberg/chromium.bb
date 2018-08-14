@@ -122,10 +122,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return self;
 }
 
-- (void)dealloc {
-  [_disablePopupsSetting setObserver:nil];
-}
-
 - (void)loadModel {
   [super loadModel];
 

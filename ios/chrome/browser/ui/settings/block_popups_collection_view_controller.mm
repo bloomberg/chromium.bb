@@ -92,10 +92,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return self;
 }
 
-- (void)dealloc {
-  [_disablePopupsSetting setObserver:nil];
-}
-
 #pragma mark - SettingsRootCollectionViewController
 
 - (void)loadModel {

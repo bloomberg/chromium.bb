@@ -147,10 +147,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return self;
 }
 
-- (void)dealloc {
-  [_suggestionsEnabled setObserver:nil];
-}
-
 #pragma mark - SettingsRootCollectionViewController
 
 - (void)loadModel {

@@ -89,10 +89,6 @@ NSString* const kTranslateSettingsCategory = @"ChromeTranslateSettings";
   return self;
 }
 
-- (void)dealloc {
-  [_translationEnabled setObserver:nil];
-}
-
 #pragma mark - SettingsRootCollectionViewController
 
 - (void)loadModel {
