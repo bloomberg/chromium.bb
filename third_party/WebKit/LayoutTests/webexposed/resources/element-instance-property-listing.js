@@ -11,7 +11,7 @@ function listElementProperties(type, createElement) {
     debug('[' + type.toUpperCase() + ' NAMESPACE ELEMENT PROPERTIES]');
     var namespace = internals[type + 'Namespace']();
     debug('namespace ' + namespace);
-    var tags = internals[type + 'Tags']();
+    var tags = internals[type + 'Tags']().filter(tag => !(createElement(tag) instanceof HTMLUnknownElement));
     var tagProperties = {};
     var commonProperties = null; // Will be a map containing the intersection of properties across all elements as keys.
     tags.forEach(function(tag) {
