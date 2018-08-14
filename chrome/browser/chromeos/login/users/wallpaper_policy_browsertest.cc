@@ -340,7 +340,8 @@ class WallpaperPolicyTest : public LoginManagerTest,
   DISALLOW_COPY_AND_ASSIGN(WallpaperPolicyTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, PRE_SetResetClear) {
+// Disabled due to flakiness: https://crbug.com/873908.
+IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, DISABLED_PRE_SetResetClear) {
   RegisterUser(testUsers_[0]);
   RegisterUser(testUsers_[1]);
   StartupUtils::MarkOobeCompleted();
@@ -350,7 +351,9 @@ IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, PRE_SetResetClear) {
 // setting policy for a user that is not logged in doesn't affect the current
 // user.  Also verifies that after the policy has been cleared, the wallpaper
 // reverts to default.
-IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, SetResetClear) {
+//
+// Disabled due to flakiness: https://crbug.com/873908.
+IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, DISABLED_SetResetClear) {
   SetSystemSalt();
   LoginUser(testUsers_[0]);
 
