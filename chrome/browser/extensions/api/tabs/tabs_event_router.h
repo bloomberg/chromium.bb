@@ -54,32 +54,14 @@ class TabsEventRouter : public TabStripModelObserver,
   void OnBrowserSetLastActive(Browser* browser) override;
 
   // TabStripModelObserver:
-  void TabInsertedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* contents,
-                     int index,
-                     bool active) override;
-  void TabClosingAt(TabStripModel* tab_strip_model,
-                    content::WebContents* contents,
-                    int index) override;
-  void TabDetachedAt(content::WebContents* contents,
-                     int index,
-                     bool was_active) override;
-  void ActiveTabChanged(content::WebContents* old_contents,
-                        content::WebContents* new_contents,
-                        int index,
-                        int reason) override;
-  void TabSelectionChanged(TabStripModel* tab_strip_model,
-                           const ui::ListSelectionModel& old_model) override;
-  void TabMoved(content::WebContents* contents,
-                int from_index,
-                int to_index) override;
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
+
   void TabChangedAt(content::WebContents* contents,
                     int index,
                     TabChangeType change_type) override;
-  void TabReplacedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* old_contents,
-                     content::WebContents* new_contents,
-                     int index) override;
   void TabPinnedStateChanged(TabStripModel* tab_strip_model,
                              content::WebContents* contents,
                              int index) override;
@@ -102,7 +84,32 @@ class TabsEventRouter : public TabStripModelObserver,
                                     bool is_auto_discardable) override;
 
  private:
-  // "Synthetic" event. Called from TabInsertedAt if new tab is detected.
+  // Methods called from OnTabStripModelChanged.
+  void DispatchTabInsertedAt(TabStripModel* tab_strip_model,
+                             content::WebContents* contents,
+                             int index,
+                             bool active);
+  void DispatchTabClosingAt(TabStripModel* tab_strip_model,
+                            content::WebContents* contents,
+                            int index);
+  void DispatchTabDetachedAt(content::WebContents* contents,
+                             int index,
+                             bool was_active);
+  void DispatchActiveTabChanged(content::WebContents* old_contents,
+                                content::WebContents* new_contents,
+                                int index,
+                                int reason);
+  void DispatchTabSelectionChanged(TabStripModel* tab_strip_model,
+                                   const ui::ListSelectionModel& old_model);
+  void DispatchTabMoved(content::WebContents* contents,
+                        int from_index,
+                        int to_index);
+  void DispatchTabReplacedAt(content::WebContents* old_contents,
+                             content::WebContents* new_contents,
+                             int index);
+
+  // "Synthetic" event. Called from DispatchTabInsertedAt if new tab is
+  // detected.
   void TabCreatedAt(content::WebContents* contents, int index, bool active);
 
   // Internal processing of tab updated events. Intended to be called when
@@ -122,12 +129,6 @@ class TabsEventRouter : public TabStripModelObserver,
                      const std::string& event_name,
                      std::unique_ptr<base::ListValue> args,
                      EventRouter::UserGestureState user_gesture);
-
-  void DispatchEventsAcrossIncognito(
-      Profile* profile,
-      const std::string& event_name,
-      std::unique_ptr<base::ListValue> event_args,
-      std::unique_ptr<base::ListValue> cross_incognito_args);
 
   // Packages |changed_property_names| as a tab updated event for the tab
   // |contents| and dispatches the event to the extension.

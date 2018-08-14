@@ -173,7 +173,8 @@ class TabStripModelObserver {
   // TabStripModel before the |change| and after the |change| are applied.
   // When only selection/activation was changed without any change about
   // WebContents, |change| can be empty.
-  virtual void OnTabStripModelChanged(const TabStripModelChange& change,
+  virtual void OnTabStripModelChanged(TabStripModel* tab_strip_model,
+                                      const TabStripModelChange& change,
                                       const TabStripSelectionChange& selection);
 
   // A new WebContents was inserted into the TabStripModel at the

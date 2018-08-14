@@ -74,6 +74,7 @@ TabStripModelObserver::TabStripModelObserver() {
 }
 
 void TabStripModelObserver::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {}
 

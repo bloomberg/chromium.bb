@@ -44,6 +44,7 @@ class GlobalConfirmInfoBar : public TabStripModelObserver,
 
   // TabStripModelObserver:
   void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
   void TabChangedAt(content::WebContents* web_contents,
