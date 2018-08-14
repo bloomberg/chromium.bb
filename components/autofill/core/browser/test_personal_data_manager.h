@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 
 namespace autofill {
@@ -98,6 +99,11 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void SetAutofillWalletImportEnabled(bool autofill_wallet_import_enabled) {
     autofill_wallet_import_enabled_ = autofill_wallet_import_enabled;
+  }
+
+  void SetPaymentsCustomerData(
+      std::unique_ptr<PaymentsCustomerData> customer_data) {
+    payments_customer_data_ = std::move(customer_data);
   }
 
  private:

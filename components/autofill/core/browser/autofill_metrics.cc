@@ -703,6 +703,11 @@ void AutofillMetrics::LogSaveCardCardholderNameWasEdited(bool edited) {
 }
 
 // static
+void AutofillMetrics::LogPaymentsCustomerDataBillingIdIsValid(bool valid) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.PaymentsCustomerDataBillingIdIsValid", valid);
+}
+
+// static
 void AutofillMetrics::LogCardUploadDecisionMetrics(
     int upload_decision_metrics) {
   DCHECK(upload_decision_metrics);

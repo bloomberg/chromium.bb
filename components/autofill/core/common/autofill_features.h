@@ -34,6 +34,7 @@ extern const base::Feature kAutofillSkipComparingInferredLabels;
 extern const base::Feature kAutofillUpstreamDisallowElo;
 extern const base::Feature kAutofillUpstreamDisallowJcb;
 extern const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile;
+extern const base::Feature kAutofillUsePaymentsCustomerData;
 extern const base::Feature kAutomaticPasswordGeneration;
 extern const base::Feature kSingleClickAutofill;
 extern const base::Feature kAutofillPrefilledFields;

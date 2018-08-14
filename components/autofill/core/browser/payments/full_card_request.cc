@@ -11,9 +11,9 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_clock.h"
-#include "components/autofill/core/common/autofill_prefs.h"
 
 namespace autofill {
 namespace payments {
@@ -69,9 +69,8 @@ void FullCardRequest::GetFullCard(const CreditCard& card,
                          card.ShouldUpdateExpiration(AutofillClock::Now()));
   if (should_unmask_card_) {
     payments_client_->Prepare();
-    request_->billing_customer_number =
-        static_cast<int64_t>(payments_client_->GetPrefService()->GetDouble(
-            prefs::kAutofillBillingCustomerNumber));
+    request_->billing_customer_number = GetBillingCustomerId(
+        personal_data_manager_, payments_client_->GetPrefService());
   }
 
   ui_delegate_->ShowUnmaskPrompt(request_->card, reason,

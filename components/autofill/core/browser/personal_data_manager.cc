@@ -1149,6 +1149,10 @@ std::vector<CreditCard*> PersonalDataManager::GetCreditCards() const {
   return result;
 }
 
+PaymentsCustomerData* PersonalDataManager::GetPaymentsCustomerData() const {
+  return payments_customer_data_ ? payments_customer_data_.get() : nullptr;
+}
+
 void PersonalDataManager::Refresh() {
   LoadProfiles();
   LoadCreditCards();
