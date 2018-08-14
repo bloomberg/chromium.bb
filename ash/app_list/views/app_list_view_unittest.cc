@@ -258,8 +258,8 @@ class AppListViewFocusTest : public views::ViewsTestBase,
         std::make_unique<AnswerCardContentsRegistry>();
     fake_answer_card_view_ = std::make_unique<views::View>();
     fake_answer_card_view_->set_owned_by_client();
-    fake_answer_card_token_ =
-        answer_card_contents_registry_->Register(fake_answer_card_view_.get());
+    fake_answer_card_token_ = answer_card_contents_registry_->Register(
+        fake_answer_card_view_.get(), /*contents_native_view=*/nullptr);
 
     // Initialize app list view.
     delegate_ = std::make_unique<AppListTestViewDelegate>();

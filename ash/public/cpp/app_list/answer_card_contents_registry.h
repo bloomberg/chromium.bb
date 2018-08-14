@@ -10,6 +10,7 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/macros.h"
 #include "base/unguessable_token.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace views {
 class View;
@@ -32,17 +33,24 @@ class ASH_PUBLIC_EXPORT AnswerCardContentsRegistry {
 
   static AnswerCardContentsRegistry* Get();
 
-  // Register content with a View.
-  base::UnguessableToken Register(views::View* contents_view);
+  // Register content with a View and its relevant NativeView.
+  base::UnguessableToken Register(views::View* contents_view,
+                                  gfx::NativeView contents_native_view);
 
   // Unregister and release the associated resources.
   void Unregister(const base::UnguessableToken& token);
 
   // Get the view for the given token. Return nullptr for unknown token.
   views::View* GetView(const base::UnguessableToken& token);
+  gfx::NativeView GetNativeView(const base::UnguessableToken& token);
 
  private:
-  std::map<base::UnguessableToken, views::View*> contents_map_;
+  struct Entry {
+    views::View* view;
+    gfx::NativeView native_view;
+  };
+
+  std::map<base::UnguessableToken, Entry> contents_map_;
 
   DISALLOW_COPY_AND_ASSIGN(AnswerCardContentsRegistry);
 };

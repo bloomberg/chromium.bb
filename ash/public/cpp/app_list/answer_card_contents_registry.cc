@@ -30,9 +30,10 @@ AnswerCardContentsRegistry* AnswerCardContentsRegistry::Get() {
 }
 
 base::UnguessableToken AnswerCardContentsRegistry::Register(
-    views::View* contents_view) {
+    views::View* contents_view,
+    gfx::NativeView contents_native_view) {
   const base::UnguessableToken token = base::UnguessableToken::Create();
-  contents_map_[token] = contents_view;
+  contents_map_[token] = {contents_view, contents_native_view};
   return token;
 }
 
@@ -51,7 +52,16 @@ views::View* AnswerCardContentsRegistry::GetView(
   if (it == contents_map_.end())
     return nullptr;
 
-  return it->second;
+  return it->second.view;
+}
+
+gfx::NativeView AnswerCardContentsRegistry::GetNativeView(
+    const base::UnguessableToken& token) {
+  auto it = contents_map_.find(token);
+  if (it == contents_map_.end())
+    return nullptr;
+
+  return it->second.native_view;
 }
 
 }  // namespace app_list

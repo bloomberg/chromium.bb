@@ -10,6 +10,7 @@
 
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/search_result_base_view.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
@@ -18,6 +19,7 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
@@ -56,6 +58,35 @@ views::View* GetViewByToken(
   return nullptr;
 }
 
+// If there is a card native view identified by |token| in
+// AnswerCardContentsRegistry, exclude it from event handling.
+void ExcludeFromEventHandlingByToken(
+    const base::Optional<base::UnguessableToken>& token) {
+  if (!AnswerCardContentsRegistry::Get())
+    return;
+
+  DCHECK(token.has_value() && !token->is_empty());
+  gfx::NativeView card_native_view =
+      AnswerCardContentsRegistry::Get()->GetNativeView(token.value());
+  // |card_native_view| could be null in tests.
+  if (!card_native_view)
+    return;
+
+  // |card_native_view| is brought into View's hierarchy via a NativeViewHost.
+  // The window hierarchy looks like this:
+  //   widget window -> clipping window -> content_native_view
+  // Events should be targeted to the widget window and by-passing the sub tree
+  // started at clipping window. Walking up the window hierarchy to find the
+  // clipping window and make the cut there.
+  aura::Window* top_level = card_native_view->GetToplevelWindow();
+  DCHECK(top_level);
+  aura::Window* window = card_native_view;
+  while (window->parent() != top_level)
+    window = window->parent();
+
+  AppListView::ExcludeWindowFromEventHandling(window);
+}
+
 }  // namespace
 
 // Container of the search answer view.
@@ -92,8 +123,10 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
       RemoveAllChildViews(true /* delete_children */);
 
       result_view = GetViewByToken(new_token);
-      if (result_view)
+      if (result_view) {
         AddChildView(result_view);
+        ExcludeFromEventHandlingByToken(new_token);
+      }
     }
 
     base::string16 old_title;

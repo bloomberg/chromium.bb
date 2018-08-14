@@ -153,7 +153,7 @@ class ManagedWebContents : public content::WebContentsDelegate,
       web_view_->SetWebContents(web_contents_.get());
 
       embed_token_ = app_list::AnswerCardContentsRegistry::Get()->Register(
-          web_view_.get());
+          web_view_.get(), web_contents_->GetNativeView());
     } else {
       // TODO(dmblack): Handle Mash case. https://crbug.com/854787.
     }
