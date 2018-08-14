@@ -1240,7 +1240,9 @@
                     "name": "Enabled",
                     "params": {
                         "bypass_missing_via_disabled": "true",
-                        "warmup_fetch_callback_enabled": "true"
+                        "warmup_fetch_callback_enabled": "true",
+                        "warmup_url_fetch_init_http_rtt_multiplier": "12",
+                        "warmup_url_fetch_min_timeout_seconds": "30"
                     },
                     "enable_features": [
                         "DataReductionProxyRobustConnection"
