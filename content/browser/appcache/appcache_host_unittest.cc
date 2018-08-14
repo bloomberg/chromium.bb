@@ -180,8 +180,8 @@ TEST_F(AppCacheHostTest, Basic) {
 }
 
 TEST_F(AppCacheHostTest, SelectNoCache) {
-  scoped_refptr<MockQuotaManagerProxy> mock_quota_proxy(
-      new MockQuotaManagerProxy);
+  scoped_refptr<MockQuotaManagerProxy> mock_quota_proxy =
+      base::MakeRefCounted<MockQuotaManagerProxy>();
   service_.set_quota_manager_proxy(mock_quota_proxy.get());
 
   // Reset our mock frontend
@@ -255,7 +255,8 @@ TEST_F(AppCacheHostTest, ForeignFallbackEntry) {
   // Precondition, a cache with a fallback entry that is not marked as foreign.
   const int kCacheId = 22;
   const GURL kFallbackURL("http://origin/fallback_resource");
-  scoped_refptr<AppCache> cache = new AppCache(service_.storage(), kCacheId);
+  scoped_refptr<AppCache> cache =
+      base::MakeRefCounted<AppCache>(service_.storage(), kCacheId);
   cache->AddEntry(kFallbackURL, AppCacheEntry(AppCacheEntry::FALLBACK));
 
   AppCacheHost host(1, &mock_frontend_, &service_);
@@ -341,20 +342,22 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
   host.SetSwappableCache(nullptr);
   EXPECT_FALSE(host.swappable_cache_.get());
 
-  scoped_refptr<AppCacheGroup> group1(new AppCacheGroup(
-      service_.storage(), GURL(), service_.storage()->NewGroupId()));
+  const GURL kGroup1ManifestUrl("http://bar.com");
+  scoped_refptr<AppCacheGroup> group1 = base::MakeRefCounted<AppCacheGroup>(
+      service_.storage(), kGroup1ManifestUrl, service_.storage()->NewGroupId());
   host.SetSwappableCache(group1.get());
   EXPECT_FALSE(host.swappable_cache_.get());
 
-  AppCache* cache1 = new AppCache(service_.storage(), 111);
+  scoped_refptr<AppCache> cache1 =
+      base::MakeRefCounted<AppCache>(service_.storage(), 111);
   cache1->set_complete(true);
-  group1->AddCache(cache1);
+  group1->AddCache(cache1.get());
   host.SetSwappableCache(group1.get());
   EXPECT_EQ(cache1, host.swappable_cache_.get());
 
   mock_frontend_.last_host_id_ = -222;  // to verify we received OnCacheSelected
 
-  host.AssociateCompleteCache(cache1);
+  host.AssociateCompleteCache(cache1.get());
   EXPECT_FALSE(host.swappable_cache_.get());  // was same as associated cache
   EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_IDLE, host.GetStatus());
   // verify OnCacheSelected was called
@@ -362,41 +365,52 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
   EXPECT_EQ(cache1->cache_id(), mock_frontend_.last_cache_id_);
   EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_IDLE, mock_frontend_.last_status_);
 
-  AppCache* cache2 = new AppCache(service_.storage(), 222);
+  scoped_refptr<AppCache> cache2 =
+      base::MakeRefCounted<AppCache>(service_.storage(), 222);
   cache2->set_complete(true);
-  group1->AddCache(cache2);
-  EXPECT_EQ(cache2, host.swappable_cache_.get());  // updated to newest
+  group1->AddCache(cache2.get());
+  EXPECT_EQ(cache2.get(), host.swappable_cache_.get());  // updated to newest
 
-  scoped_refptr<AppCacheGroup> group2(
-      new AppCacheGroup(service_.storage(), GURL("http://foo.com"),
-                        service_.storage()->NewGroupId()));
-  AppCache* cache3 = new AppCache(service_.storage(), 333);
+  const GURL kGroup2ManifestUrl("http://foo.com/");
+  scoped_refptr<AppCacheGroup> group2 = base::MakeRefCounted<AppCacheGroup>(
+      service_.storage(), kGroup2ManifestUrl, service_.storage()->NewGroupId());
+  scoped_refptr<AppCache> cache3 =
+      base::MakeRefCounted<AppCache>(service_.storage(), 333);
   cache3->set_complete(true);
-  group2->AddCache(cache3);
+  group2->AddCache(cache3.get());
 
-  AppCache* cache4 = new AppCache(service_.storage(), 444);
+  scoped_refptr<AppCache> cache4 =
+      base::MakeRefCounted<AppCache>(service_.storage(), 444);
   cache4->set_complete(true);
-  group2->AddCache(cache4);
-  EXPECT_EQ(cache2, host.swappable_cache_.get());  // unchanged
+  group2->AddCache(cache4.get());
+  EXPECT_EQ(cache2.get(), host.swappable_cache_.get());  // unchanged
 
-  host.AssociateCompleteCache(cache3);
-  EXPECT_EQ(cache4, host.swappable_cache_.get());  // newest cache in group2
+  cache1.reset();
+  cache2.reset();
+
+  host.AssociateCompleteCache(cache3.get());
+  EXPECT_EQ(cache4.get(),
+            host.swappable_cache_.get());  // newest cache in group2
   EXPECT_FALSE(group1->HasCache());  // both caches in group1 have refcount 0
 
-  host.AssociateNoCache(GURL());
+  cache3.reset();
+  cache4.reset();
+
+  host.AssociateNoCache(kGroup1ManifestUrl);
   EXPECT_FALSE(host.swappable_cache_.get());
   EXPECT_FALSE(group2->HasCache());  // both caches in group2 have refcount 0
 
   // Host adds reference to newest cache when an update is complete.
-  AppCache* cache5 = new AppCache(service_.storage(), 555);
+  scoped_refptr<AppCache> cache5 =
+      base::MakeRefCounted<AppCache>(service_.storage(), 555);
   cache5->set_complete(true);
-  group2->AddCache(cache5);
+  group2->AddCache(cache5.get());
   host.group_being_updated_ = group2;
   host.OnUpdateComplete(group2.get());
   EXPECT_FALSE(host.group_being_updated_.get());
-  EXPECT_EQ(cache5, host.swappable_cache_.get());
+  EXPECT_EQ(cache5.get(), host.swappable_cache_.get());
 
-  group2->RemoveCache(cache5);
+  group2->RemoveCache(cache5.get());
   EXPECT_FALSE(group2->HasCache());
   host.group_being_updated_ = group2;
   host.OnUpdateComplete(group2.get());
@@ -405,8 +419,8 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
 }
 
 TEST_F(AppCacheHostTest, SelectCacheAllowed) {
-  scoped_refptr<MockQuotaManagerProxy> mock_quota_proxy(
-      new MockQuotaManagerProxy);
+  scoped_refptr<MockQuotaManagerProxy> mock_quota_proxy =
+      base::MakeRefCounted<MockQuotaManagerProxy>();
   MockAppCachePolicy mock_appcache_policy;
   mock_appcache_policy.can_create_return_value_ = true;
   service_.set_quota_manager_proxy(mock_quota_proxy.get());
@@ -446,8 +460,8 @@ TEST_F(AppCacheHostTest, SelectCacheAllowed) {
 }
 
 TEST_F(AppCacheHostTest, SelectCacheBlocked) {
-  scoped_refptr<MockQuotaManagerProxy> mock_quota_proxy(
-      new MockQuotaManagerProxy);
+  scoped_refptr<MockQuotaManagerProxy> mock_quota_proxy =
+      base::MakeRefCounted<MockQuotaManagerProxy>();
   MockAppCachePolicy mock_appcache_policy;
   mock_appcache_policy.can_create_return_value_ = false;
   service_.set_quota_manager_proxy(mock_quota_proxy.get());
