@@ -117,8 +117,8 @@ class ASH_EXPORT LoginUserView : public views::View,
   UserLabel* user_label_ = nullptr;
   LoginButton* dropdown_ = nullptr;
   TapButton* tap_button_ = nullptr;
-  // TODO(jdufault): Rename user_menu_ to menu_ or popup_menu_.
-  std::unique_ptr<LoginBubble> user_menu_;
+
+  std::unique_ptr<LoginBubble> menu_;
 
   // Show the domain information for public account user.
   UserDomainInfoView* user_domain_ = nullptr;

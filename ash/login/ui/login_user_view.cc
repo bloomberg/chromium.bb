@@ -322,7 +322,7 @@ views::View* LoginUserView::TestApi::dropdown() const {
 }
 
 LoginBubble* LoginUserView::TestApi::menu() const {
-  return view_->user_menu_.get();
+  return view_->menu_.get();
 }
 
 bool LoginUserView::TestApi::is_opaque() const {
@@ -414,7 +414,7 @@ LoginUserView::LoginUserView(
 
   hover_notifier_ = std::make_unique<HoverNotifier>(
       this, base::Bind(&LoginUserView::OnHover, base::Unretained(this)));
-  user_menu_ = std::make_unique<LoginBubble>();
+  menu_ = std::make_unique<LoginBubble>();
 }
 
 LoginUserView::~LoginUserView() = default;
@@ -519,8 +519,8 @@ void LoginUserView::ButtonPressed(views::Button* sender,
   // Handle click on the dropdown arrow.
   if (sender == dropdown_) {
     DCHECK(dropdown_);
-    if (!user_menu_->IsVisible()) {
-      user_menu_->ShowUserMenu(
+    if (!menu_->IsVisible()) {
+      menu_->ShowUserMenu(
           base::UTF8ToUTF16(current_user_->basic_user_info->display_name),
           base::UTF8ToUTF16(current_user_->basic_user_info->display_email),
           current_user_->basic_user_info->type, current_user_->is_device_owner,
@@ -528,7 +528,7 @@ void LoginUserView::ButtonPressed(views::Button* sender,
           current_user_->can_remove /*show_remove_user*/,
           on_remove_warning_shown_, on_remove_);
     } else {
-      user_menu_->Close();
+      menu_->Close();
     }
 
     return;
