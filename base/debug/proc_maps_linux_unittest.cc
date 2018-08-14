@@ -191,6 +191,11 @@ TEST(ProcMapsTest, Permissions) {
 // instrumentation for this function to force the variable to be local.
 __attribute__((no_sanitize_address))
 #endif
+#if HAS_FEATURE(safe_stack)
+// SafeStack places address-taken variables on the unsafe stack, but the default
+// stack region in /proc/self/maps is the safe stack.
+__attribute__((no_sanitize("safe-stack")))
+#endif
 void CheckProcMapsRegions(const std::vector<MappedMemoryRegion> &regions) {
   // We should be able to find both the current executable as well as the stack
   // mapped into memory. Use the address of |exe_path| as a way of finding the
