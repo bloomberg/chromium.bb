@@ -78,6 +78,9 @@ struct QUIC_EXPORT_PRIVATE QuicPacketHeader {
   // For Google QUIC, version flag in packets from the server means version
   // negotiation packet. For IETF QUIC, version flag means long header.
   bool version_flag;
+  // Indicates whether |possible_stateless_reset_token| contains a valid value
+  // parsed from the packet buffer. IETF QUIC only, always false for GQUIC.
+  bool has_possible_stateless_reset_token;
   QuicPacketNumberLength packet_number_length;
   ParsedQuicVersion version;
   // nonce contains an optional, 32-byte nonce value. If not included in the
@@ -88,6 +91,7 @@ struct QUIC_EXPORT_PRIVATE QuicPacketHeader {
   QuicIetfPacketHeaderForm form;
   // Short packet type is reflected in packet_number_length.
   QuicLongHeaderType long_packet_type;
+  // Only valid if |has_possible_stateless_reset_token| is true.
   // Stores last 16 bytes of a this packet, used to check whether this packet is
   // a stateless reset packet on decryption failure.
   QuicUint128 possible_stateless_reset_token;

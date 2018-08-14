@@ -55,7 +55,7 @@ class QuicSimpleServerSessionPeer {
   static void SetCryptoStream(QuicSimpleServerSession* s,
                               QuicCryptoServerStream* crypto_stream) {
     s->crypto_stream_.reset(crypto_stream);
-    s->static_streams()[kCryptoStreamId] = crypto_stream;
+    s->RegisterStaticStream(kCryptoStreamId, crypto_stream);
   }
 
   static QuicSpdyStream* CreateIncomingDynamicStream(QuicSimpleServerSession* s,

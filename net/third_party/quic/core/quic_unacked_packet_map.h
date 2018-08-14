@@ -165,6 +165,17 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   // RTT measurement purposes.
   void RemoveObsoletePackets();
 
+  // Try to aggregate acked contiguous stream frames. For noncontiguous stream
+  // frames or control frames, notify the session notifier they get acked
+  // immediately.
+  void MaybeAggregateAckedStreamFrame(const QuicTransmissionInfo& info,
+                                      QuicTime::Delta ack_delay);
+
+  // Notify the session notifier of any stream data aggregated in
+  // aggregated_stream_frame_.  No effect if the stream frame has an invalid
+  // stream id.
+  void NotifyAggregatedStreamFrameAcked(QuicTime::Delta ack_delay);
+
   // Called to start/stop letting session decide what to write.
   void SetSessionDecideWhatToWrite(bool session_decides_what_to_write);
 
@@ -172,6 +183,10 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
 
   bool session_decides_what_to_write() const {
     return session_decides_what_to_write_;
+  }
+
+  bool fix_is_useful_for_retransmission() const {
+    return fix_is_useful_for_retransmission_;
   }
 
  private:
@@ -228,11 +243,18 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Time that the last unacked crypto packet was sent.
   QuicTime last_crypto_packet_sent_time_;
 
+  // Aggregates acked stream data across multiple acked sent packets to save CPU
+  // by reducing the number of calls to the session notifier.
+  QuicStreamFrame aggregated_stream_frame_;
+
   // Receives notifications of frames being retransmitted or acknowledged.
   SessionNotifierInterface* session_notifier_;
 
   // If true, let session decides what to write.
   bool session_decides_what_to_write_;
+
+  // Latched value of quic_reloadable_flag_quic_fix_is_useful_for_retrans.
+  const bool fix_is_useful_for_retransmission_;
 };
 
 }  // namespace quic

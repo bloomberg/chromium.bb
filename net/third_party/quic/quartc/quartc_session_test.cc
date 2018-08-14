@@ -110,38 +110,41 @@ class FakeAlarmFactory : public QuicAlarmFactory {
       alarms_{alarm_later_};
 };
 
-// Used by the FakeTransportChannel.
-class FakeTransportChannelObserver {
+// Fake QuartcPacketTransport.  Assumes all methods run on the main test thread.
+class FakePacketTransport : public QuartcPacketTransport {
  public:
-  virtual ~FakeTransportChannelObserver() {}
-
-  // Called when the other peer is trying to send message.
-  virtual void OnTransportChannelReadPacket(const QuicString& data) = 0;
-};
-
-// Simulate the P2P communication transport. Used by the
-// QuartcSession::Transport.
-class FakeTransportChannel : QuicAlarm::Delegate {
- public:
-  explicit FakeTransportChannel(QuicAlarmFactory* alarm_factory,
-                                MockClock* clock)
+  explicit FakePacketTransport(QuicAlarmFactory* alarm_factory,
+                               MockClock* clock)
       : alarm_(alarm_factory->CreateAlarm(new AlarmDelegate(this))),
         clock_(clock) {}
 
-  void SetDestination(FakeTransportChannel* dest) {
+  void SetDestination(FakePacketTransport* dest) {
     if (!dest_) {
       dest_ = dest;
       dest_->SetDestination(this);
     }
+    if (delegate_) {
+      delegate_->OnTransportCanWrite();
+    }
   }
 
-  int SendPacket(const char* data, size_t len) {
+  int Write(const char* data,
+            size_t len,
+            const QuartcPacketTransport::PacketInfo& info) {
     // If the destination is not set.
     if (!dest_) {
       return -1;
     }
+
     // Advance the time 10us to ensure the RTT is never 0ms.
     clock_->AdvanceTime(QuicTime::Delta::FromMicroseconds(10));
+
+    if (packets_to_lose_ > 0) {
+      --packets_to_lose_;
+      return len;
+    }
+    last_packet_number_ = info.packet_number;
+
     if (async_) {
       packet_queue_.emplace_back(data, len);
       alarm_->Cancel();
@@ -152,32 +155,40 @@ class FakeTransportChannel : QuicAlarm::Delegate {
     return static_cast<int>(len);
   }
 
-  FakeTransportChannelObserver* observer() { return observer_; }
+  QuartcPacketTransport::Delegate* delegate() { return delegate_; }
 
-  void SetObserver(FakeTransportChannelObserver* observer) {
-    observer_ = observer;
+  void SetDelegate(QuartcPacketTransport::Delegate* delegate) override {
+    delegate_ = delegate;
+    if (dest_ && delegate_) {
+      delegate_->OnTransportCanWrite();
+    }
   }
 
   void SetAsync(bool async) { async_ = async; }
 
+  QuicPacketNumber last_packet_number() { return last_packet_number_; }
+
+  void set_packets_to_lose(QuicPacketCount count) { packets_to_lose_ = count; }
+
  private:
   class AlarmDelegate : public QuicAlarm::Delegate {
    public:
-    explicit AlarmDelegate(FakeTransportChannel* channel) : channel_(channel) {}
+    explicit AlarmDelegate(FakePacketTransport* transport)
+        : transport_(transport) {}
 
-    void OnAlarm() override { channel_->OnAlarm(); }
+    void OnAlarm() override { transport_->OnAlarm(); }
 
    private:
-    FakeTransportChannel* channel_;
+    FakePacketTransport* transport_;
   };
 
   void Send(const QuicString& data) {
     DCHECK(dest_);
-    DCHECK(dest_->observer());
-    dest_->observer()->OnTransportChannelReadPacket(data);
+    DCHECK(dest_->delegate());
+    dest_->delegate()->OnTransportReceived(data.data(), data.size());
   }
 
-  void OnAlarm() override {
+  void OnAlarm() {
     QUIC_LOG(WARNING) << "Sending packet: " << packet_queue_.front();
     Send(packet_queue_.front());
     packet_queue_.pop_front();
@@ -189,9 +200,9 @@ class FakeTransportChannel : QuicAlarm::Delegate {
   }
 
   // The writing destination of this channel.
-  FakeTransportChannel* dest_ = nullptr;
-  // The observer of this channel. Called when the received the data.
-  FakeTransportChannelObserver* observer_ = nullptr;
+  FakePacketTransport* dest_ = nullptr;
+  // Packet transport delegate.  Called when data is received.
+  QuartcPacketTransport::Delegate* delegate_ = nullptr;
   // If async, will send packets by running asynchronous tasks.
   bool async_ = false;
   // If async, packets are queued here to send.
@@ -200,31 +211,7 @@ class FakeTransportChannel : QuicAlarm::Delegate {
   QuicArenaScopedPtr<QuicAlarm> alarm_;
   // The test clock.  Used to ensure the RTT is not 0.
   MockClock* clock_;
-};
 
-// Used by the QuartcPacketWriter.
-class FakeTransport : public QuartcPacketTransport {
- public:
-  explicit FakeTransport(FakeTransportChannel* channel) : channel_(channel) {}
-
-  int Write(const char* buffer,
-            size_t buf_len,
-            const PacketInfo& info) override {
-    DCHECK(channel_);
-    if (packets_to_lose_ > 0) {
-      --packets_to_lose_;
-      return buf_len;
-    }
-    last_packet_number_ = info.packet_number;
-    return channel_->SendPacket(buffer, buf_len);
-  }
-
-  QuicPacketNumber last_packet_number() { return last_packet_number_; }
-
-  void set_packets_to_lose(QuicPacketCount count) { packets_to_lose_ = count; }
-
- private:
-  FakeTransportChannel* channel_;
   QuicPacketNumber last_packet_number_;
   QuicPacketCount packets_to_lose_ = 0;
 };
@@ -248,6 +235,10 @@ class FakeQuartcSessionDelegate : public QuartcSession::Delegate {
     last_incoming_stream_ = quartc_stream;
     last_incoming_stream_->SetDelegate(stream_delegate_);
   }
+
+  void OnCongestionControlChange(QuicBandwidth bandwidth_estimate,
+                                 QuicBandwidth pacing_rate,
+                                 QuicTime::Delta latest_rtt) override {}
 
   QuartcStream* incoming_stream() { return last_incoming_stream_; }
 
@@ -273,6 +264,7 @@ class FakeQuartcStreamDelegate : public QuartcStream::Delegate {
 
   void OnBufferChanged(QuartcStream* stream) override {}
 
+  bool has_data() { return !received_data_.empty(); }
   std::map<QuicStreamId, QuicString> data() { return received_data_; }
 
   QuicRstStreamErrorCode stream_error(QuicStreamId id) { return errors_[id]; }
@@ -280,50 +272,6 @@ class FakeQuartcStreamDelegate : public QuartcStream::Delegate {
  private:
   std::map<QuicStreamId, QuicString> received_data_;
   std::map<QuicStreamId, QuicRstStreamErrorCode> errors_;
-};
-
-class QuartcSessionForTest : public QuartcSession,
-                             public FakeTransportChannelObserver {
- public:
-  QuartcSessionForTest(std::unique_ptr<QuicConnection> connection,
-                       const QuicConfig& config,
-                       const QuicString& remote_fingerprint_value,
-                       Perspective perspective,
-                       QuicConnectionHelperInterface* helper,
-                       QuicClock* clock,
-                       std::unique_ptr<QuartcPacketWriter> writer)
-      : QuartcSession(std::move(connection),
-                      config,
-                      remote_fingerprint_value,
-                      perspective,
-                      helper,
-                      clock,
-                      std::move(writer)) {
-    stream_delegate_ = QuicMakeUnique<FakeQuartcStreamDelegate>();
-    session_delegate_ =
-        QuicMakeUnique<FakeQuartcSessionDelegate>((stream_delegate_.get()));
-
-    SetDelegate(session_delegate_.get());
-  }
-
-  // QuartcPacketWriter override.
-  void OnTransportChannelReadPacket(const QuicString& data) override {
-    OnTransportReceived(data.c_str(), data.length());
-  }
-
-  std::map<QuicStreamId, QuicString> data() { return stream_delegate_->data(); }
-
-  bool has_data() { return !data().empty(); }
-
-  FakeQuartcSessionDelegate* session_delegate() {
-    return session_delegate_.get();
-  }
-
-  FakeQuartcStreamDelegate* stream_delegate() { return stream_delegate_.get(); }
-
- private:
-  std::unique_ptr<FakeQuartcStreamDelegate> stream_delegate_;
-  std::unique_ptr<FakeQuartcSessionDelegate> session_delegate_;
 };
 
 class QuartcSessionTest : public QuicTest,
@@ -334,25 +282,27 @@ class QuartcSessionTest : public QuicTest,
   void Init() {
     // Quic crashes if packets are sent at time 0, and the clock defaults to 0.
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1000));
-    client_channel_ =
-        QuicMakeUnique<FakeTransportChannel>(&alarm_factory_, &clock_);
-    server_channel_ =
-        QuicMakeUnique<FakeTransportChannel>(&alarm_factory_, &clock_);
+    client_transport_ =
+        QuicMakeUnique<FakePacketTransport>(&alarm_factory_, &clock_);
+    server_transport_ =
+        QuicMakeUnique<FakePacketTransport>(&alarm_factory_, &clock_);
     // Make the channel asynchronous so that two peer will not keep calling each
     // other when they exchange information.
-    client_channel_->SetAsync(true);
-    client_channel_->SetDestination(server_channel_.get());
-
-    client_transport_ = QuicMakeUnique<FakeTransport>(client_channel_.get());
-    server_transport_ = QuicMakeUnique<FakeTransport>(server_channel_.get());
+    client_transport_->SetAsync(true);
+    client_transport_->SetDestination(server_transport_.get());
 
     client_writer_ = QuicMakeUnique<QuartcPacketWriter>(client_transport_.get(),
                                                         kDefaultMaxPacketSize);
     server_writer_ = QuicMakeUnique<QuartcPacketWriter>(server_transport_.get(),
                                                         kDefaultMaxPacketSize);
 
-    client_writer_->SetWritable();
-    server_writer_->SetWritable();
+    client_stream_delegate_ = QuicMakeUnique<FakeQuartcStreamDelegate>();
+    client_session_delegate_ = QuicMakeUnique<FakeQuartcSessionDelegate>(
+        client_stream_delegate_.get());
+
+    server_stream_delegate_ = QuicMakeUnique<FakeQuartcStreamDelegate>();
+    server_session_delegate_ = QuicMakeUnique<FakeQuartcSessionDelegate>(
+        server_stream_delegate_.get());
   }
 
   // The parameters are used to control whether the handshake will success or
@@ -361,23 +311,22 @@ class QuartcSessionTest : public QuicTest,
     Init();
     client_peer_ =
         CreateSession(Perspective::IS_CLIENT, std::move(client_writer_));
+    client_peer_->SetDelegate(client_session_delegate_.get());
     server_peer_ =
         CreateSession(Perspective::IS_SERVER, std::move(server_writer_));
-
-    client_channel_->SetObserver(client_peer_.get());
-    server_channel_->SetObserver(server_peer_.get());
+    server_peer_->SetDelegate(server_session_delegate_.get());
   }
 
-  std::unique_ptr<QuartcSessionForTest> CreateSession(
+  std::unique_ptr<QuartcSession> CreateSession(
       Perspective perspective,
       std::unique_ptr<QuartcPacketWriter> writer) {
     std::unique_ptr<QuicConnection> quic_connection =
         CreateConnection(perspective, writer.get());
     QuicString remote_fingerprint_value = "value";
     QuicConfig config;
-    return QuicMakeUnique<QuartcSessionForTest>(
-        std::move(quic_connection), config, remote_fingerprint_value,
-        perspective, this, &clock_, std::move(writer));
+    return QuicMakeUnique<QuartcSession>(std::move(quic_connection), config,
+                                         remote_fingerprint_value, perspective,
+                                         this, &clock_, std::move(writer));
   }
 
   std::unique_ptr<QuicConnection> CreateConnection(Perspective perspective,
@@ -413,7 +362,7 @@ class QuartcSessionTest : public QuicTest,
     ASSERT_NE(nullptr, outgoing_stream);
     EXPECT_TRUE(server_peer_->HasOpenDynamicStreams());
 
-    outgoing_stream->SetDelegate(server_peer_->stream_delegate());
+    outgoing_stream->SetDelegate(server_stream_delegate_.get());
 
     // Send a test message from peer 1 to peer 2.
     char kTestMessage[] = "Hello";
@@ -423,15 +372,14 @@ class QuartcSessionTest : public QuicTest,
     RunTasks();
 
     // Wait for peer 2 to receive messages.
-    ASSERT_TRUE(client_peer_->has_data());
+    ASSERT_TRUE(client_stream_delegate_->has_data());
 
-    QuartcStream* incoming =
-        client_peer_->session_delegate()->incoming_stream();
+    QuartcStream* incoming = client_session_delegate_->incoming_stream();
     ASSERT_TRUE(incoming);
     EXPECT_EQ(incoming->id(), stream_id);
     EXPECT_TRUE(client_peer_->HasOpenDynamicStreams());
 
-    EXPECT_EQ(client_peer_->data()[stream_id], kTestMessage);
+    EXPECT_EQ(client_stream_delegate_->data()[stream_id], kTestMessage);
     // Send a test message from peer 2 to peer 1.
     char kTestResponse[] = "Response";
     test::QuicTestMemSliceVector response(
@@ -439,15 +387,15 @@ class QuartcSessionTest : public QuicTest,
     incoming->WriteMemSlices(response.span(), /*fin=*/false);
     RunTasks();
     // Wait for peer 1 to receive messages.
-    ASSERT_TRUE(server_peer_->has_data());
+    ASSERT_TRUE(server_stream_delegate_->has_data());
 
-    EXPECT_EQ(server_peer_->data()[stream_id], kTestResponse);
+    EXPECT_EQ(server_stream_delegate_->data()[stream_id], kTestResponse);
   }
 
   // Test that client and server are not connected after handshake failure.
   void TestDisconnectAfterFailedHandshake() {
-    EXPECT_TRUE(!client_peer_->session_delegate()->connected());
-    EXPECT_TRUE(!server_peer_->session_delegate()->connected());
+    EXPECT_TRUE(!client_session_delegate_->connected());
+    EXPECT_TRUE(!server_session_delegate_->connected());
 
     EXPECT_FALSE(client_peer_->IsEncryptionEstablished());
     EXPECT_FALSE(client_peer_->IsCryptoHandshakeConfirmed());
@@ -471,14 +419,17 @@ class QuartcSessionTest : public QuicTest,
   FakeAlarmFactory alarm_factory_{&clock_};
   SimpleBufferAllocator buffer_allocator_;
 
-  std::unique_ptr<FakeTransportChannel> client_channel_;
-  std::unique_ptr<FakeTransportChannel> server_channel_;
-  std::unique_ptr<FakeTransport> client_transport_;
-  std::unique_ptr<FakeTransport> server_transport_;
+  std::unique_ptr<FakePacketTransport> client_transport_;
+  std::unique_ptr<FakePacketTransport> server_transport_;
   std::unique_ptr<QuartcPacketWriter> client_writer_;
   std::unique_ptr<QuartcPacketWriter> server_writer_;
-  std::unique_ptr<QuartcSessionForTest> client_peer_;
-  std::unique_ptr<QuartcSessionForTest> server_peer_;
+  std::unique_ptr<QuartcSession> client_peer_;
+  std::unique_ptr<QuartcSession> server_peer_;
+
+  std::unique_ptr<FakeQuartcStreamDelegate> client_stream_delegate_;
+  std::unique_ptr<FakeQuartcSessionDelegate> client_session_delegate_;
+  std::unique_ptr<FakeQuartcStreamDelegate> server_stream_delegate_;
+  std::unique_ptr<FakeQuartcSessionDelegate> server_session_delegate_;
 };
 
 TEST_F(QuartcSessionTest, StreamConnection) {
@@ -513,7 +464,7 @@ TEST_F(QuartcSessionTest, CancelQuartcStream) {
 
   uint32_t id = stream->id();
   EXPECT_FALSE(client_peer_->IsClosedStream(id));
-  stream->SetDelegate(client_peer_->stream_delegate());
+  stream->SetDelegate(client_stream_delegate_.get());
   client_peer_->CancelStream(id);
   EXPECT_EQ(stream->stream_error(),
             QuicRstStreamErrorCode::QUIC_STREAM_CANCELLED);
@@ -527,7 +478,7 @@ TEST_F(QuartcSessionTest, WriterGivesPacketNumberToTransport) {
   ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
 
   QuartcStream* stream = client_peer_->CreateOutgoingDynamicStream();
-  stream->SetDelegate(client_peer_->stream_delegate());
+  stream->SetDelegate(client_stream_delegate_.get());
 
   char kClientMessage[] = "Hello";
   test::QuicTestMemSliceVector stream_data(
@@ -548,9 +499,9 @@ TEST_F(QuartcSessionTest, CloseConnection) {
   ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
 
   client_peer_->CloseConnection("Connection closed by client");
-  EXPECT_FALSE(client_peer_->session_delegate()->connected());
+  EXPECT_FALSE(client_session_delegate_->connected());
   RunTasks();
-  EXPECT_FALSE(server_peer_->session_delegate()->connected());
+  EXPECT_FALSE(server_session_delegate_->connected());
 }
 
 TEST_F(QuartcSessionTest, StreamRetransmissionEnabled) {
@@ -561,7 +512,7 @@ TEST_F(QuartcSessionTest, StreamRetransmissionEnabled) {
 
   QuartcStream* stream = client_peer_->CreateOutgoingDynamicStream();
   QuicStreamId stream_id = stream->id();
-  stream->SetDelegate(client_peer_->stream_delegate());
+  stream->SetDelegate(client_stream_delegate_.get());
   stream->set_cancel_on_loss(false);
 
   client_transport_->set_packets_to_lose(1);
@@ -573,8 +524,8 @@ TEST_F(QuartcSessionTest, StreamRetransmissionEnabled) {
   RunTasks();
 
   // Stream data should make it despite packet loss.
-  ASSERT_TRUE(server_peer_->has_data());
-  EXPECT_EQ(server_peer_->data()[stream_id], kClientMessage);
+  ASSERT_TRUE(server_stream_delegate_->has_data());
+  EXPECT_EQ(server_stream_delegate_->data()[stream_id], kClientMessage);
 }
 
 TEST_F(QuartcSessionTest, StreamRetransmissionDisabled) {
@@ -585,7 +536,7 @@ TEST_F(QuartcSessionTest, StreamRetransmissionDisabled) {
 
   QuartcStream* stream = client_peer_->CreateOutgoingDynamicStream();
   QuicStreamId stream_id = stream->id();
-  stream->SetDelegate(client_peer_->stream_delegate());
+  stream->SetDelegate(client_stream_delegate_.get());
   stream->set_cancel_on_loss(true);
 
   client_transport_->set_packets_to_lose(1);
@@ -598,7 +549,7 @@ TEST_F(QuartcSessionTest, StreamRetransmissionDisabled) {
 
   // Send another packet to trigger loss detection.
   QuartcStream* stream_1 = client_peer_->CreateOutgoingDynamicStream();
-  stream_1->SetDelegate(client_peer_->stream_delegate());
+  stream_1->SetDelegate(client_stream_delegate_.get());
 
   char kMessage1[] = "Second message";
   test::QuicTestMemSliceVector stream_data_1(
@@ -608,13 +559,13 @@ TEST_F(QuartcSessionTest, StreamRetransmissionDisabled) {
 
   // QUIC should try to retransmit the first stream by loss detection.  Instead,
   // it will cancel itself.
-  EXPECT_THAT(server_peer_->data()[stream_id], testing::IsEmpty());
+  EXPECT_THAT(server_stream_delegate_->data()[stream_id], testing::IsEmpty());
 
   EXPECT_TRUE(client_peer_->IsClosedStream(stream_id));
   EXPECT_TRUE(server_peer_->IsClosedStream(stream_id));
-  EXPECT_EQ(client_peer_->stream_delegate()->stream_error(stream_id),
+  EXPECT_EQ(client_stream_delegate_->stream_error(stream_id),
             QUIC_STREAM_CANCELLED);
-  EXPECT_EQ(server_peer_->stream_delegate()->stream_error(stream_id),
+  EXPECT_EQ(server_stream_delegate_->stream_error(stream_id),
             QUIC_STREAM_CANCELLED);
 }
 

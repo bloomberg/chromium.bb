@@ -372,7 +372,9 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Return true if given stream is peer initiated.
   bool IsIncomingStream(QuicStreamId id) const;
 
-  StaticStreamMap& static_streams() { return static_stream_map_; }
+  // Register (|id|, |stream|) with the static stream map. Override previous
+  // registrations with the same id.
+  void RegisterStaticStream(QuicStreamId id, QuicStream* stream);
   const StaticStreamMap& static_streams() const { return static_stream_map_; }
 
   DynamicStreamMap& dynamic_streams() { return dynamic_stream_map_; }
@@ -541,11 +543,17 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // call stack of OnCanWrite.
   QuicStreamId currently_writing_stream_id_;
 
+  // The largest stream id in |static_stream_map_|.
+  QuicStreamId largest_static_stream_id_;
+
   // Whether a GoAway has been sent.
   bool goaway_sent_;
 
   // Whether a GoAway has been received.
   bool goaway_received_;
+
+  // Latched value of quic_reloadable_flag_quic_session_faster_get_stream.
+  const bool faster_get_stream_;
 
   QuicControlFrameManager control_frame_manager_;
 

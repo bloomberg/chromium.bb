@@ -256,7 +256,9 @@ QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
       alternative_decrypter_latch_(false),
       perspective_(perspective),
       validate_flags_(true),
-      data_producer_(nullptr) {
+      data_producer_(nullptr),
+      process_stateless_reset_at_client_only_(
+          GetQuicReloadableFlag(quic_process_stateless_reset_at_client_only)) {
   DCHECK(!supported_versions.empty());
   version_ = supported_versions_[0];
   decrypter_ = QuicMakeUnique<NullDecrypter>(perspective);
@@ -1182,15 +1184,37 @@ bool QuicFramer::ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
                                        const QuicEncryptedPacket& packet,
                                        char* decrypted_buffer,
                                        size_t buffer_length) {
+  DCHECK(!header->has_possible_stateless_reset_token);
   if (header->form == SHORT_HEADER) {
-    // Peak possible stateless reset token. Will only be used on decryption
-    // failure.
-    QuicStringPiece remaining = encrypted_reader->PeekRemainingPayload();
-    if (remaining.length() >= sizeof(header->possible_stateless_reset_token)) {
-      remaining.copy(
-          reinterpret_cast<char*>(&header->possible_stateless_reset_token),
-          sizeof(header->possible_stateless_reset_token),
-          remaining.length() - sizeof(header->possible_stateless_reset_token));
+    if (!process_stateless_reset_at_client_only_) {
+      // Peak possible stateless reset token. Will only be used on decryption
+      // failure.
+      QuicStringPiece remaining = encrypted_reader->PeekRemainingPayload();
+      if (remaining.length() >=
+          sizeof(header->possible_stateless_reset_token)) {
+        remaining.copy(
+            reinterpret_cast<char*>(&header->possible_stateless_reset_token),
+            sizeof(header->possible_stateless_reset_token),
+            remaining.length() -
+                sizeof(header->possible_stateless_reset_token));
+      }
+    } else {
+      QUIC_FLAG_COUNT(
+          quic_reloadable_flag_quic_process_stateless_reset_at_client_only);
+      if (perspective_ == Perspective::IS_CLIENT) {
+        // Peek possible stateless reset token. Will only be used on decryption
+        // failure.
+        QuicStringPiece remaining = encrypted_reader->PeekRemainingPayload();
+        if (remaining.length() >=
+            sizeof(header->possible_stateless_reset_token)) {
+          header->has_possible_stateless_reset_token = true;
+          memcpy(
+              &header->possible_stateless_reset_token,
+              &remaining.data()[remaining.length() -
+                                sizeof(header->possible_stateless_reset_token)],
+              sizeof(header->possible_stateless_reset_token));
+        }
+      }
     }
   }
 
@@ -1386,6 +1410,8 @@ bool QuicFramer::IsIetfStatelessResetPacket(
     const QuicPacketHeader& header) const {
   return perspective_ == Perspective::IS_CLIENT &&
          header.form == SHORT_HEADER &&
+         (!process_stateless_reset_at_client_only_ ||
+          header.has_possible_stateless_reset_token) &&
          visitor_->IsValidStatelessResetToken(
              header.possible_stateless_reset_token);
 }

@@ -144,7 +144,7 @@ WriteResult PacketDroppingTestWriter::WritePacket(
     }
     std::unique_ptr<PerPacketOptions> delayed_options;
     if (options != nullptr) {
-      delayed_options.reset(options->Clone());
+      delayed_options = options->Clone();
     }
     delayed_packets_.push_back(
         DelayedWrite(buffer, buf_len, self_address, peer_address,

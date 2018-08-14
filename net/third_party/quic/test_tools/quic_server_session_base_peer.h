@@ -19,7 +19,7 @@ class QuicServerSessionBasePeer {
   static void SetCryptoStream(QuicServerSessionBase* s,
                               QuicCryptoServerStream* crypto_stream) {
     s->crypto_stream_.reset(crypto_stream);
-    s->static_streams()[kCryptoStreamId] = crypto_stream;
+    s->RegisterStaticStream(kCryptoStreamId, crypto_stream);
   }
   static bool IsBandwidthResumptionEnabled(QuicServerSessionBase* s) {
     return s->bandwidth_resumption_enabled_;

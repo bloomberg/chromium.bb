@@ -769,6 +769,10 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // If not null, framer asks data_producer_ to write stream frame data. Not
   // owned. TODO(fayang): Consider add data producer to framer's constructor.
   QuicStreamFrameDataProducer* data_producer_;
+
+  // Latched value of
+  // quic_reloadable_flag_quic_process_stateless_reset_at_client_only.
+  const bool process_stateless_reset_at_client_only_;
 };
 
 }  // namespace quic

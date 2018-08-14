@@ -32,6 +32,7 @@ class QuartcCryptoServerStreamHelper : public QuicCryptoServerStream::Helper {
 // QuartcSession owns and manages a QUIC connection.
 class QUIC_EXPORT_PRIVATE QuartcSession
     : public QuicSession,
+      public QuartcPacketTransport::Delegate,
       public QuicCryptoClientStream::ProofHandler {
  public:
   QuartcSession(std::unique_ptr<QuicConnection> connection,
@@ -55,6 +56,8 @@ class QUIC_EXPORT_PRIVATE QuartcSession
   void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
 
   // QuicConnectionVisitorInterface overrides.
+  void OnCongestionWindowChange(QuicTime now) override;
+
   void OnConnectionClosed(QuicErrorCode error,
                           const QuicString& error_details,
                           ConnectionCloseSource source) override;
@@ -97,6 +100,11 @@ class QUIC_EXPORT_PRIVATE QuartcSession
     // Called when a new stream is received from the remote endpoint.
     virtual void OnIncomingStream(QuartcStream* stream) = 0;
 
+    // Called when network parameters change in response to an ack frame.
+    virtual void OnCongestionControlChange(QuicBandwidth bandwidth_estimate,
+                                           QuicBandwidth pacing_rate,
+                                           QuicTime::Delta latest_rtt) = 0;
+
     // Called when the connection is closed. This means all of the streams will
     // be closed and no new streams can be created.
     virtual void OnConnectionClosed(QuicErrorCode error_code,
@@ -110,11 +118,11 @@ class QUIC_EXPORT_PRIVATE QuartcSession
   void SetDelegate(Delegate* session_delegate);
 
   // Called when CanWrite() changes from false to true.
-  void OnTransportCanWrite();
+  void OnTransportCanWrite() override;
 
   // Called when a packet has been received and should be handled by the
   // QuicConnection.
-  bool OnTransportReceived(const char* data, size_t data_len);
+  void OnTransportReceived(const char* data, size_t data_len) override;
 
   // ProofHandler overrides.
   void OnProofValid(const QuicCryptoClientConfig::CachedState& cached) override;

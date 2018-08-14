@@ -126,7 +126,7 @@ class BbrSenderTest : public QuicTest {
     const RttStats* rtt_stats =
         endpoint->connection()->sent_packet_manager().GetRttStats();
     // Ownership of the sender will be overtaken by the endpoint.
-    BbrSender* sender = new BbrSender(
+    BbrSender* sender = BbrSender::Create(
         rtt_stats,
         QuicSentPacketManagerPeer::GetUnackedPacketMap(
             QuicConnectionPeer::GetSentPacketManager(endpoint->connection())),
@@ -330,7 +330,7 @@ TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes) {
 TEST_F(BbrSenderTest, SimpleTransferAckDecimation) {
   // Decrease the CWND gain so extra CWND is required with stretch acks.
   FLAGS_quic_bbr_cwnd_gain = 1.0;
-  sender_ = new BbrSender(
+  sender_ = BbrSender::Create(
       rtt_stats_,
       QuicSentPacketManagerPeer::GetUnackedPacketMap(
           QuicConnectionPeer::GetSentPacketManager(bbr_sender_.connection())),

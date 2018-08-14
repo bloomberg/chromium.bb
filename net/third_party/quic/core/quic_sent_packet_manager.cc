@@ -91,7 +91,9 @@ QuicSentPacketManager::QuicSentPacketManager(
       delayed_ack_time_(
           QuicTime::Delta::FromMilliseconds(kDefaultDelayedAckTimeMs)),
       rtt_updated_(false),
-      acked_packets_iter_(last_ack_frame_.packets.rbegin()) {
+      acked_packets_iter_(last_ack_frame_.packets.rbegin()),
+      aggregate_acked_stream_frames_(
+          GetQuicReloadableFlag(quic_aggregate_acked_stream_frames)) {
   SetSendAlgorithm(congestion_control_type);
 }
 
@@ -239,6 +241,10 @@ void QuicSentPacketManager::PostProcessAfterMarkingPacketHandled(
     QuicTime ack_receive_time,
     bool rtt_updated,
     QuicByteCount prior_bytes_in_flight) {
+  if (aggregate_acked_stream_frames_ && session_decides_what_to_write()) {
+    unacked_packets_.NotifyAggregatedStreamFrameAcked(
+        last_ack_frame_.ack_delay_time);
+  }
   InvokeLossDetection(ack_receive_time);
   // Ignore losses in RTO mode.
   if (consecutive_rto_count_ > 0 && !use_new_rto_) {
@@ -389,6 +395,18 @@ void QuicSentPacketManager::MarkForRetransmission(
       unacked_packets_.RetransmitFrames(*transmission_info, transmission_type);
     } else {
       unacked_packets_.NotifyFramesLost(*transmission_info, transmission_type);
+      if (unacked_packets_.fix_is_useful_for_retransmission()) {
+        if (transmission_type == LOSS_RETRANSMISSION) {
+          // Record the first packet sent after loss, which allows to wait 1
+          // more RTT before giving up on this lost packet.
+          transmission_info->retransmission =
+              unacked_packets_.largest_sent_packet() + 1;
+        } else {
+          // Clear the recorded first packet sent after loss when version or
+          // encryption changes.
+          transmission_info->retransmission = 0;
+        }
+      }
     }
     // Update packet state according to transmission type.
     transmission_info->state =
@@ -474,6 +492,10 @@ QuicPendingRetransmission QuicSentPacketManager::NextPendingRetransmission() {
 QuicPacketNumber QuicSentPacketManager::GetNewestRetransmission(
     QuicPacketNumber packet_number,
     const QuicTransmissionInfo& transmission_info) const {
+  if (unacked_packets_.fix_is_useful_for_retransmission() &&
+      session_decides_what_to_write()) {
+    return packet_number;
+  }
   QuicPacketNumber retransmission = transmission_info.retransmission;
   while (retransmission != 0) {
     packet_number = retransmission;
@@ -492,17 +514,29 @@ void QuicSentPacketManager::MarkPacketHandled(QuicPacketNumber packet_number,
   pending_retransmissions_.erase(newest_transmission);
 
   if (newest_transmission == packet_number) {
-    const bool new_data_acked =
-        unacked_packets_.NotifyFramesAcked(*info, ack_delay_time);
-    if (session_decides_what_to_write() && !new_data_acked &&
-        info->transmission_type != NOT_RETRANSMISSION) {
-      // Record as a spurious retransmission if this packet is a retransmission
-      // and no new data gets acked.
-      QUIC_DVLOG(1) << "Detect spurious retransmitted packet " << packet_number
-                    << " transmission type: "
-                    << QuicUtils::TransmissionTypeToString(
-                           info->transmission_type);
-      RecordSpuriousRetransmissions(*info, packet_number);
+    // Try to aggregate acked stream frames if acked packet is not a
+    // retransmission.
+    const bool fast_path = aggregate_acked_stream_frames_ &&
+                           session_decides_what_to_write() &&
+                           info->transmission_type == NOT_RETRANSMISSION;
+    if (fast_path) {
+      unacked_packets_.MaybeAggregateAckedStreamFrame(*info, ack_delay_time);
+    } else {
+      if (aggregate_acked_stream_frames_ && session_decides_what_to_write()) {
+        unacked_packets_.NotifyAggregatedStreamFrameAcked(ack_delay_time);
+      }
+      const bool new_data_acked =
+          unacked_packets_.NotifyFramesAcked(*info, ack_delay_time);
+      if (session_decides_what_to_write() && !new_data_acked &&
+          info->transmission_type != NOT_RETRANSMISSION) {
+        // Record as a spurious retransmission if this packet is a
+        // retransmission and no new data gets acked.
+        QUIC_DVLOG(1) << "Detect spurious retransmitted packet "
+                      << packet_number << " transmission type: "
+                      << QuicUtils::TransmissionTypeToString(
+                             info->transmission_type);
+        RecordSpuriousRetransmissions(*info, packet_number);
+      }
     }
   } else {
     DCHECK(!session_decides_what_to_write());

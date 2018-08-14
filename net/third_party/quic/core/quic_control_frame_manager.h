@@ -83,6 +83,12 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
   // sent.
   bool WillingToWrite() const;
 
+  // TODO(wub): Remove this function once
+  // quic_reloadable_flag_quic_donot_retransmit_old_window_update is deprecated.
+  bool donot_retransmit_old_window_updates() const {
+    return donot_retransmit_old_window_updates_;
+  }
+
  private:
   friend class test::QuicControlFrameManagerPeer;
 
@@ -94,6 +100,10 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
 
   // Writes pending retransmissions if any.
   void WritePendingRetransmission();
+
+  // Called when frame with |id| gets acked. Returns true if |id| gets acked for
+  // the first time, return false otherwise.
+  bool OnControlFrameIdAcked(QuicControlFrameId id);
 
   // Retrieves the next pending retransmission. This must only be called when
   // there are pending retransmissions.
@@ -121,6 +131,13 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
 
   // Pointer to the owning QuicSession object.
   QuicSession* session_;
+
+  // Last sent window update frame for each stream.
+  QuicSmallMap<QuicStreamId, QuicControlFrameId, 10> window_update_frames_;
+
+  // Latched value of
+  // FLAGS_quic_reloadable_flag_quic_donot_retransmit_old_window_update2.
+  const bool donot_retransmit_old_window_updates_;
 };
 
 }  // namespace quic

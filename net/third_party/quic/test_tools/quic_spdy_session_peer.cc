@@ -20,7 +20,7 @@ void QuicSpdySessionPeer::SetHeadersStream(QuicSpdySession* session,
                                            QuicHeadersStream* headers_stream) {
   session->headers_stream_.reset(headers_stream);
   if (headers_stream != nullptr) {
-    session->static_streams()[headers_stream->id()] = headers_stream;
+    session->RegisterStaticStream(headers_stream->id(), headers_stream);
   }
 }
 

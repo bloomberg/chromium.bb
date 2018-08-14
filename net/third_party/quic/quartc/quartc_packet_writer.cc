@@ -64,4 +64,9 @@ WriteResult QuartcPacketWriter::Flush() {
   return WriteResult(WRITE_STATUS_OK, 0);
 }
 
+void QuartcPacketWriter::SetPacketTransportDelegate(
+    QuartcPacketTransport::Delegate* delegate) {
+  packet_transport_->SetDelegate(delegate);
+}
+
 }  // namespace quic
