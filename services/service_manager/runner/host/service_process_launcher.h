@@ -11,19 +11,13 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/process/process.h"
-#include "base/synchronization/waitable_event.h"
-#include "mojo/public/cpp/platform/platform_channel.h"
-#include "mojo/public/cpp/system/invitation.h"
+#include "base/sequenced_task_runner.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/service_manager/runner/host/service_process_launcher_delegate.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
-
-namespace base {
-class CommandLine;
-}
 
 namespace service_manager {
 
@@ -36,8 +30,6 @@ class Identity;
 //
 // This class is not thread-safe. It should be created/used/destroyed on a
 // single thread.
-//
-// Note: Does not currently work on Windows before Vista.
 class ServiceProcessLauncher {
  public:
   using ProcessReadyCallback = base::OnceCallback<void(base::ProcessId)>;
@@ -55,29 +47,13 @@ class ServiceProcessLauncher {
                           SandboxType sandbox_type,
                           ProcessReadyCallback callback);
 
-  // Waits for the child process to terminate.
-  void Join();
-
  private:
-  void DidStart(ProcessReadyCallback callback);
-  void DoLaunch(std::unique_ptr<base::CommandLine> child_command_line);
+  class ProcessState;
 
-  ServiceProcessLauncherDelegate* delegate_ = nullptr;
-  SandboxType sandbox_type_ = SANDBOX_TYPE_NO_SANDBOX;
-  Identity target_;
-  base::FilePath service_path_;
-  base::Process child_process_;
-
-  // Used to initialize the Mojo IPC channel between parent and child.
-  base::Optional<mojo::PlatformChannel> channel_;
-  mojo::PlatformChannel::HandlePassingInfo handle_passing_info_;
-  mojo::OutgoingInvitation invitation_;
-
-  // Since Start() calls a method on another thread, we use an event to block
-  // the main thread if it tries to destruct |this| while launching the process.
-  base::WaitableEvent start_child_process_event_;
-
-  base::WeakPtrFactory<ServiceProcessLauncher> weak_factory_;
+  ServiceProcessLauncherDelegate* const delegate_;
+  const base::FilePath service_path_;
+  const scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
+  scoped_refptr<ProcessState> state_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceProcessLauncher);
 };

@@ -176,12 +176,12 @@ class RenderThreadImplBrowserTest : public testing::Test {
     content_renderer_client_.reset(new ContentRendererClient());
     SetRendererClientForTesting(content_renderer_client_.get());
 
-    main_message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
+    main_message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
     test_task_scheduler_.reset(new TestTaskScheduler);
     browser_threads_.reset(
-        new TestBrowserThreadBundle(TestBrowserThreadBundle::IO_MAINLOOP));
+        new TestBrowserThreadBundle(TestBrowserThreadBundle::REAL_IO_THREAD));
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-        blink::scheduler::GetSingleThreadTaskRunnerForTesting();
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
 
     InitializeMojo();
     mojo_ipc_support_.reset(new mojo::core::ScopedIPCSupport(
