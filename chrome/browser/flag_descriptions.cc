@@ -727,6 +727,16 @@ const char kEnablePixelCanvasRecordingDescription[] =
     "with the pixel and improves text rendering. This should be enabled when a "
     "device is using fractional scale factor.";
 
+const char kEnableResamplingInputEventsName[] =
+    "Enable resampling input events";
+const char kEnableResamplingInputEventsDescription[] =
+    "Predicts mouse and touch inputs position at rAF time based on previous "
+    "input";
+const char kEnableResamplingScrollEventsName[] =
+    "Enable resampling scroll events";
+const char kEnableResamplingScrollEventsDescription[] =
+    "Predicts the scroll amount at vsync time based on previous input";
+
 extern const char kEnableSyncUserConsentSeparateTypeName[] =
     "Enable separate sync type for consents";
 extern const char kEnableSyncUserConsentSeparateTypeDescription[] =
@@ -1573,11 +1583,6 @@ const char kSavePreviousDocumentResourcesUntilOnDOMContentLoaded[] =
     "Save resources until onDOMContentLoaded completes";
 const char kSavePreviousDocumentResourcesUntilOnLoad[] =
     "Save resources until onload completes";
-
-const char kScrollPredictionName[] = "Scroll prediction";
-const char kScrollPredictionDescription[] =
-    "Predicts the finger's future position during scrolls allowing time to "
-    "render the frame before the finger is there.";
 
 const char kServiceWorkerPaymentAppsName[] = "Service Worker payment apps";
 const char kServiceWorkerPaymentAppsDescription[] =

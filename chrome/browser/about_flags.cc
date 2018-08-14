@@ -133,6 +133,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display_switches.h"
+#include "ui/events/blink/blink_features.h"
 #include "ui/events/event_switches.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_features.h"
@@ -1228,6 +1229,18 @@ const FeatureEntry::FeatureVariation
          base::size(kAutofillCreditCardLocalCardMigrationWithoutSettingsPage),
          nullptr}};
 
+const FeatureEntry::FeatureParam kResamplingInputEventsLSQEnabled[] = {
+    {"predictor", "lsq"}};
+
+const FeatureEntry::FeatureParam kResamplingInputEventsKalmanEnabled[] = {
+    {"predictor", "kalman"}};
+
+const FeatureEntry::FeatureVariation kResamplingInputEventsFeatureVariations[] =
+    {{"lsq", kResamplingInputEventsLSQEnabled,
+      base::size(kResamplingInputEventsLSQEnabled), nullptr},
+     {"kalman", kResamplingInputEventsKalmanEnabled,
+      base::size(kResamplingInputEventsKalmanEnabled), nullptr}};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -1524,9 +1537,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAndroidSpellcheckerDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(spellcheck::kAndroidSpellCheckerNonLowEnd)},
 #endif  // ENABLE_SPELLCHECK && OS_ANDROID
-    {"enable-scroll-prediction", flag_descriptions::kScrollPredictionName,
-     flag_descriptions::kScrollPredictionDescription, kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kEnableScrollPrediction)},
     {"top-chrome-md", flag_descriptions::kTopChromeMd,
      flag_descriptions::kTopChromeMdDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kTopChromeMaterialDesignChoices)},
@@ -4263,6 +4273,20 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncUSSAutofillWalletDataName,
      flag_descriptions::kSyncUSSAutofillWalletDataDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncUSSAutofillWalletData)},
+
+    {"enable-resampling-input-events",
+     flag_descriptions::kEnableResamplingInputEventsName,
+     flag_descriptions::kEnableResamplingInputEventsDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kResamplingInputEvents,
+                                    kResamplingInputEventsFeatureVariations,
+                                    "ResamplingInputEvents")},
+
+    {"enable-resampling-scroll-events",
+     flag_descriptions::kEnableResamplingScrollEventsName,
+     flag_descriptions::kEnableResamplingScrollEventsDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kResamplingScrollEvents,
+                                    kResamplingInputEventsFeatureVariations,
+                                    "ResamplingScrollEvents")},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

@@ -456,6 +456,11 @@ extern const char kEnablePixelCanvasRecordingDescription[];
 extern const char kEnablePWAFullCodeCacheName[];
 extern const char kEnablePWAFullCodeCacheDescription[];
 
+extern const char kEnableResamplingInputEventsName[];
+extern const char kEnableResamplingInputEventsDescription[];
+extern const char kEnableResamplingScrollEventsName[];
+extern const char kEnableResamplingScrollEventsDescription[];
+
 extern const char kEnableSyncUserConsentSeparateTypeName[];
 extern const char kEnableSyncUserConsentSeparateTypeDescription[];
 
@@ -958,9 +963,6 @@ extern const char kSavePreviousDocumentResourcesDescription[];
 extern const char kSavePreviousDocumentResourcesNever[];
 extern const char kSavePreviousDocumentResourcesUntilOnDOMContentLoaded[];
 extern const char kSavePreviousDocumentResourcesUntilOnLoad[];
-
-extern const char kScrollPredictionName[];
-extern const char kScrollPredictionDescription[];
 
 extern const char kServiceWorkerPaymentAppsName[];
 extern const char kServiceWorkerPaymentAppsDescription[];

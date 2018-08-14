@@ -7,9 +7,6 @@
 
 namespace switches {
 
-// Enable scroll prediction for scroll update events.
-const char kEnableScrollPrediction[] = "enable-scroll-prediction";
-
 // Enable compensation for unstable pinch zoom. Some touch screens display
 // significant amount of wobble when moving a finger in a straight line. This
 // makes two finger scroll trigger an oscillating pinch zoom. See
