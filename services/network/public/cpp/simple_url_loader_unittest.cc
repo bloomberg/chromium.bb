@@ -27,6 +27,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -2344,6 +2345,38 @@ TEST_P(SimpleURLLoaderTest, MoreDataThanExpected) {
   EXPECT_FALSE(test_helper->response_body());
 }
 
+TEST_P(SimpleURLLoaderTest, DownloadProgressCallbackIncremental) {
+  // Make sure that intermediate states of download are reported to the
+  // progress callback.
+  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  loader_factory.AddEvents(
+      {TestLoaderEvent::kReceivedResponse, TestLoaderEvent::kBodyBufferReceived,
+       TestLoaderEvent::kBodyDataRead, TestLoaderEvent::kBodyDataRead});
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(GURL("foo://bar/"));
+
+  std::vector<uint64_t> progress;
+  test_helper->simple_url_loader()->SetOnDownloadProgressCallback(
+      base::BindLambdaForTesting(
+          [&](uint64_t current) { progress.push_back(current); }));
+  loader_factory.RunTest(test_helper.get(), false);
+
+  if (GetParam() == SimpleLoaderTestHelper::DownloadType::HEADERS_ONLY) {
+    EXPECT_EQ(0u, progress.size());
+  } else {
+    // Since the request doesn't complete this is guaranteed to receive
+    // all the in-progress events, as there is no risk of completion happening
+    // beforehand and cancelling them.
+    ASSERT_EQ(2u, progress.size());
+    EXPECT_EQ(1u, progress[0]);
+    EXPECT_EQ(2u, progress[1]);
+  }
+
+  // Clean the file up.
+  test_helper->DestroySimpleURLLoader();
+  scoped_task_environment_.RunUntilIdle();
+}
+
 TEST_P(SimpleURLLoaderTest, RetryOn5xx) {
   const GURL kInitialURL("foo://bar/initial");
   struct TestCase {
@@ -2961,6 +2994,24 @@ TEST_P(SimpleURLLoaderTest, OnUploadProgressCallback) {
   }
 }
 
+TEST_P(SimpleURLLoaderTest, OnDownloadProgressCallback) {
+  const uint32_t kResponseSize = 512 * 1024;
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(test_server_.GetURL(
+          base::StringPrintf("/response-size?%u", kResponseSize)));
+  uint64_t progress = 0;
+  test_helper->simple_url_loader()->SetOnDownloadProgressCallback(
+      base::BindLambdaForTesting([&](uint64_t current) {
+        EXPECT_GE(current, progress);
+        progress = current;
+      }));
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+  if (GetParam() == SimpleLoaderTestHelper::DownloadType::HEADERS_ONLY)
+    EXPECT_EQ(0u, progress);
+  else
+    EXPECT_EQ(kResponseSize, progress);
+}
+
 // Ensure that deleting the SimpleURLLoader in the upload progress
 // callback is safe
 TEST_P(SimpleURLLoaderTest, DeleteInOnUploadProgressCallback) {
@@ -2984,6 +3035,55 @@ TEST_P(SimpleURLLoaderTest, DeleteInOnUploadProgressCallback) {
 
   unowned_test_helper->StartSimpleLoader(url_loader_factory_.get());
 
+  run_loop.Run();
+}
+
+// Ensure that deleting the SimpleURLLoader in the upload progress
+// callback is safe --- first invocation.
+TEST_P(SimpleURLLoaderTest, DeleteInDownloadProgressCallback) {
+  if (GetParam() == SimpleLoaderTestHelper::DownloadType::HEADERS_ONLY)
+    return;  // No progress callback to delete stuff in.
+
+  const uint32_t kResponseSize = 512 * 1024;
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(test_server_.GetURL(
+          base::StringPrintf("/response-size?%u", kResponseSize)));
+
+  base::RunLoop run_loop;
+  auto callback = base::BindLambdaForTesting([&](uint64_t current) {
+    test_helper->DestroySimpleURLLoader();  // cleanup files.
+    scoped_task_environment_.RunUntilIdle();
+    test_helper.reset();
+    run_loop.Quit();
+  });
+
+  test_helper->simple_url_loader()->SetOnDownloadProgressCallback(callback);
+  test_helper->StartSimpleLoader(url_loader_factory_.get());
+  run_loop.Run();
+}
+
+// Ensure that deleting the SimpleURLLoader in the upload progress
+// callback is safe --- completion invocation.
+TEST_P(SimpleURLLoaderTest, DeleteInDownloadProgressCallback2) {
+  if (GetParam() == SimpleLoaderTestHelper::DownloadType::HEADERS_ONLY)
+    return;  // No progress callback to delete stuff in.
+
+  const uint32_t kResponseSize = 512 * 1024;
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(test_server_.GetURL(
+          base::StringPrintf("/response-size?%u", kResponseSize)));
+
+  base::RunLoop run_loop;
+  auto callback = base::BindLambdaForTesting([&](uint64_t current) {
+    if (current == kResponseSize) {
+      test_helper->DestroySimpleURLLoader();  // cleanup files.
+      scoped_task_environment_.RunUntilIdle();
+      test_helper.reset();
+      run_loop.Quit();
+    }
+  });
+  test_helper->simple_url_loader()->SetOnDownloadProgressCallback(callback);
+  test_helper->StartSimpleLoader(url_loader_factory_.get());
   run_loop.Run();
 }
 

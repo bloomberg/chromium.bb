@@ -121,6 +121,13 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   using UploadProgressCallback =
       base::RepeatingCallback<void(uint64_t position, uint64_t total)>;
 
+  // Callback used for reporting upload or download progress.
+  // |current| is the number of bytes transferred thus far for the current
+  // fetch attempt (so in case of retries, it might appear to go backwards). It
+  // is safe to delete the SimpleURLLoader during the callback.
+  using DownloadProgressCallback =
+      base::RepeatingCallback<void(uint64_t current)>;
+
   // Creates a SimpleURLLoader for |resource_request|. The request can be
   // started by calling any one of the Download methods once. The loader may not
   // be reused.
@@ -216,6 +223,16 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   // progress information. Callback may delete the SimpleURLLoader.
   virtual void SetOnUploadProgressCallback(
       UploadProgressCallback on_upload_progress_callback) = 0;
+
+  // Sets callback to be invoked to notify of body download progress.
+  // Note that this may be non-monotonic in case of retries.
+  // DownloadHeadersOnly() will disregard this setting, and never invoke the
+  // callback; otherwise it's guaranteed to fire at least once, with the final
+  // size.
+  //
+  // Callback may delete the SimpleURLLoader.
+  virtual void SetOnDownloadProgressCallback(
+      DownloadProgressCallback on_download_progress_callback) = 0;
 
   // Sets whether partially received results are allowed. Defaults to false.
   // When true, if an error is received after reading the body starts or the max
