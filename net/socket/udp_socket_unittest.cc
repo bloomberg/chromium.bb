@@ -290,12 +290,14 @@ TEST_F(UDPSocketTest, PartialRecv) {
   EXPECT_EQ(second_packet, received);
 }
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
+#if defined(OS_MACOSX) || defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
+    defined(OS_CHROMEOS)
 // - MacOS: requires root permissions on OSX 10.7+.
 // - Android: devices attached to testbots don't have default network, so
 // broadcasting to 255.255.255.255 returns error -109 (Address not reachable).
 // crbug.com/139144.
 // - Fuchsia: TODO(fuchsia): broadcast support is not implemented yet.
+// - ChromeOS: https://crbug.com/873851.
 #define MAYBE_LocalBroadcast DISABLED_LocalBroadcast
 #else
 #define MAYBE_LocalBroadcast LocalBroadcast

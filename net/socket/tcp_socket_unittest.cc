@@ -597,9 +597,15 @@ TEST_F(TCPSocketTest, SPWNotInterested) {
   TestSPWNotifications(false, 2u, 0u, 0u);
 }
 
+#if defined(OS_CHROMEOS)
+// https://crbug.com/873851.
+#define MAYBE_SPWNoAdvance DISABLED_SPWNoAdvance
+#else
+#define MAYBE_SPWNoAdvance SPWNoAdvance
+#endif
 // One notification should be received when the socket connects. One
 // additional notification should be received for each message read.
-TEST_F(TCPSocketTest, SPWNoAdvance) {
+TEST_F(TCPSocketTest, MAYBE_SPWNoAdvance) {
   TestSPWNotifications(true, 2u, 0u, 3u);
 }
 #endif  // defined(TCP_INFO) || defined(OS_LINUX)

@@ -6706,7 +6706,14 @@ TEST_F(URLRequestTestHTTP, TestPostChunkedDataJustAfterStart) {
   }
 }
 
-TEST_F(URLRequestTestHTTP, TestPostChunkedDataAfterStart) {
+#if defined(OS_CHROMEOS)
+// https://crbug.com/873851.
+#define MAYBE_TestPostChunkedDataAfterStart \
+  DISABLED_TestPostChunkedDataAfterStart
+#else
+#define MAYBE_TestPostChunkedDataAfterStart TestPostChunkedDataAfterStart
+#endif
+TEST_F(URLRequestTestHTTP, MAYBE_TestPostChunkedDataAfterStart) {
   ASSERT_TRUE(http_test_server()->Start());
 
   TestDelegate d;
