@@ -108,6 +108,14 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // Called when a surface has an active frame for the first time.
   void FirstSurfaceActivation(const SurfaceInfo& surface_info);
 
+  // Add |surface_id| as an observer for |sink_id|.
+  void AddActivationObserver(const FrameSinkId& sink_id,
+                             const SurfaceId& surface_id);
+
+  // Remove |surface_id| from the observers of |sink_id|.
+  void RemoveActivationObserver(const FrameSinkId& sink_id,
+                                const SurfaceId& surface_id);
+
   // Called when a CompositorFrame within |surface| has activated. |duration| is
   // a measure of the time the frame has spent waiting on dependencies to
   // arrive. If |duration| is base::nullopt, then that indicates that this frame
@@ -323,6 +331,10 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // reference.
   base::flat_map<FrameSinkId, base::flat_set<LocalSurfaceId>>
       persistent_references_by_frame_sink_id_;
+
+  // A map storing SurfaceIds interested in knowing about activation events
+  // happending in FrameSinkId.
+  base::flat_map<FrameSinkId, base::flat_set<SurfaceId>> activation_observers_;
 
   // Timer to remove old temporary references that aren't removed after an
   // interval of time. The timer will started/stopped so it only runs if there

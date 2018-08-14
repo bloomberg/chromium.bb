@@ -688,7 +688,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   scoped_refptr<HeadsUpDisplayLayer> hud_layer_;
 
-  // The number of SurfaceRanges that have (fallback,primary) set to
+  // The number of SurfaceLayers that have (fallback,primary) set to
   // viz::SurfaceRange.
   base::flat_map<viz::SurfaceRange, int> surface_ranges_;
 

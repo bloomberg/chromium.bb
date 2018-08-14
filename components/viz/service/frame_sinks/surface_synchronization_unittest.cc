@@ -137,6 +137,14 @@ class SurfaceSynchronizationTest : public testing::Test {
     supports_.erase(it);
   }
 
+  // Returns all the references where |surface_id| is the parent.
+  const base::flat_set<SurfaceId>& GetReferencesFrom(
+      const SurfaceId& surface_id) {
+    return frame_sink_manager()
+        .surface_manager()
+        ->GetSurfacesReferencedByParent(surface_id);
+  }
+
   FrameSinkManagerImpl& frame_sink_manager() { return frame_sink_manager_; }
 
   // Returns all the references where |surface_id| is the parent.
@@ -2695,6 +2703,56 @@ TEST_F(SurfaceSynchronizationTest, SetPreviousFrameSurfaceDoesntCrash) {
   // CompositorFrameSinkSupport.
   parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
                                          MakeDefaultCompositorFrame());
+}
+
+// This test verifies that a parent referencing a SurfaceRange get updated
+// whenever a child surface activates inside this range. This should also update
+// the SurfaceReferences tree.
+TEST_F(SurfaceSynchronizationTest, SurfaceReferencesChangeOnChildActivation) {
+  SetFrameSinkHierarchy(kParentFrameSink, kChildFrameSink1);
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 2);
+  const SurfaceId child_id3 = MakeSurfaceId(kChildFrameSink1, 3);
+  const SurfaceId child_id4 = MakeSurfaceId(kChildFrameSink2, 1);
+
+  parent_support().SubmitCompositorFrame(
+      parent_id.local_surface_id(),
+      MakeCompositorFrame(
+          empty_surface_ids(), {SurfaceRange(child_id1, child_id4)},
+          std::vector<TransferableResource>(), MakeDefaultDeadline()));
+
+  // Verify that no references exist.
+  EXPECT_THAT(GetReferencesFrom(parent_id), empty_surface_ids());
+
+  // Activate |child_id1|.
+  child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+
+  // Verify that a reference is acquired.
+  EXPECT_THAT(GetReferencesFrom(parent_id), UnorderedElementsAre(child_id1));
+
+  // Activate |child_id2|.
+  child_support1().SubmitCompositorFrame(child_id2.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+
+  // Verify that the reference is updated.
+  EXPECT_THAT(GetReferencesFrom(parent_id), UnorderedElementsAre(child_id2));
+
+  // Activate |child_id4| in a different frame sink.
+  child_support2().SubmitCompositorFrame(child_id4.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+
+  // Verify that the reference is updated.
+  EXPECT_THAT(GetReferencesFrom(parent_id), UnorderedElementsAre(child_id4));
+
+  // Activate |child_id3|.
+  child_support1().SubmitCompositorFrame(child_id3.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+
+  // Verify that the reference will not get updated since |child_id3| is in the
+  // fallback's FrameSinkId.
+  EXPECT_THAT(GetReferencesFrom(parent_id), UnorderedElementsAre(child_id4));
 }
 
 // This test verifies that once a frame sink become invalidated, it should
