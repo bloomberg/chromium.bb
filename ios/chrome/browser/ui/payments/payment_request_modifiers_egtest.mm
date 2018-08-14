@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/payments/core/features.h"
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
@@ -133,6 +134,10 @@ id<GREYMatcher> PaymentMethodCellMatcher(
 // Tests that modifiers should be applied if there is a selected server credit
 // card instrument and the modifiers are for basic-card.
 - (void)testModifierAppliedSelectedServerInstrumentWithoutTypeOrNetwork {
+  base::test::ScopedFeatureList featureList;
+  featureList.InitAndEnableFeature(
+      payments::features::kReturnGooglePayInBasicCard);
+
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)];
 
   [self addServerCardWithType:CREDIT];
@@ -157,6 +162,10 @@ id<GREYMatcher> PaymentMethodCellMatcher(
 // Tests that modifiers should be applied if there is a selected credit card
 // instrument and the modifiers are for basic-card of matching type.
 - (void)testModifierAppliedSelectedInstrumentWithMatchingSupportedType {
+  base::test::ScopedFeatureList featureList;
+  featureList.InitAndEnableFeature(
+      payments::features::kReturnGooglePayInBasicCard);
+
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)];
 
   [self addServerCardWithType:CREDIT];
@@ -195,6 +204,10 @@ id<GREYMatcher> PaymentMethodCellMatcher(
 // Tests that modifiers should be applied if there is a selected credit card
 // instrument and the modifiers are for basic-card of a matching network.
 - (void)testModifierAppliedSelectedInstrumentWithMatchingSupportedNetwork {
+  base::test::ScopedFeatureList featureList;
+  featureList.InitAndEnableFeature(
+      payments::features::kReturnGooglePayInBasicCard);
+
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)];
 
   [self addServerCardWithType:CREDIT];
@@ -238,6 +251,10 @@ id<GREYMatcher> PaymentMethodCellMatcher(
 // instrument and the modifiers are for basic-card of a matching network and
 // type.
 - (void)testModifierAppliedSelectedInstrumentWithMatchingNetworkAndType {
+  base::test::ScopedFeatureList featureList;
+  featureList.InitAndEnableFeature(
+      payments::features::kReturnGooglePayInBasicCard);
+
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)];
 
   [self addServerCardWithType:CREDIT];

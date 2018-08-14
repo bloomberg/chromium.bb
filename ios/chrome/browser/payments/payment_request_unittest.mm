@@ -1221,6 +1221,10 @@ TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_TypeMismatch) {
 // are both a match.
 TEST_F(PaymentRequestTest,
        PaymentDetailsModifier_BasicCard_NetworkAndTypeMatch) {
+  // Only Google Pay cards have a type.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kReturnGooglePayInBasicCard);
+
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
   test_personal_data_manager_.AddProfile(address);
   autofill::CreditCard credit_card = autofill::test::GetMaskedServerCardAmex();

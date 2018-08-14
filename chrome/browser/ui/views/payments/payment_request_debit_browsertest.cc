@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/payments/core/features.h"
 #include "content/public/test/browser_test_utils.h"
 
 namespace payments {
@@ -20,7 +21,9 @@ constexpr auto UNKNOWN = ::autofill::CreditCard::CardType::CARD_TYPE_UNKNOWN;
 // Tests for a merchant that requests a debit card.
 class PaymentRequestDebitTest : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestDebitTest() {}
+  PaymentRequestDebitTest() {
+    features_.InitAndEnableFeature(features::kReturnGooglePayInBasicCard);
+  }
 
   const std::string& GetOrCreateBillingAddressId() {
     if (billing_address_id_.empty()) {
@@ -48,6 +51,7 @@ class PaymentRequestDebitTest : public PaymentRequestBrowserTestBase {
   }
 
  private:
+  base::test::ScopedFeatureList features_;
   std::string billing_address_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestDebitTest);

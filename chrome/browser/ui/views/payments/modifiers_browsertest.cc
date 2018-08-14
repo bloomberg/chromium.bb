@@ -30,8 +30,12 @@ class PaymentRequestModifiersTest : public PaymentRequestBrowserTestBase {
   void SetUpInProcessBrowserTestFixture() override {
     PaymentRequestBrowserTestBase::SetUpInProcessBrowserTestFixture();
 
-    // Enable browser-side modifiers support.
-    feature_list_.InitAndEnableFeature(features::kWebPaymentsModifiers);
+    feature_list_.InitWithFeatures(
+        {
+            features::kWebPaymentsModifiers,
+            features::kReturnGooglePayInBasicCard,
+        },
+        {});
   }
 
  private:
