@@ -411,10 +411,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableScheduledScriptStreaming(
       base::FeatureList::IsEnabled(features::kScheduledScriptStreaming));
 
-  WebRuntimeFeatures::EnableFeatureFromString(
-      "FeaturePolicyForPermissions",
-      base::FeatureList::IsEnabled(features::kUseFeaturePolicyForPermissions));
-
   if (base::FeatureList::IsEnabled(features::kLazyFrameLoading))
     WebRuntimeFeatures::EnableLazyFrameLoading(true);
   if (base::FeatureList::IsEnabled(features::kLazyFrameVisibleLoadTimeMetrics))
