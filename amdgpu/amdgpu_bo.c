@@ -535,7 +535,7 @@ int amdgpu_find_bo_by_cpu_mapping(amdgpu_device_handle dev,
 				  amdgpu_bo_handle *buf_handle,
 				  uint64_t *offset_in_bo)
 {
-	int i;
+	uint32_t i;
 	struct amdgpu_bo *bo;
 
 	if (cpu == NULL || size == 0)
