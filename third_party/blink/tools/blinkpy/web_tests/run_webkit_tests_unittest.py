@@ -1510,6 +1510,58 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             'virtual/virtual_failures/failures/unexpected/text-image-checksum',
             expected_extensions=['.png'])
 
+    def test_new_platform_baseline_with_fallback(self):
+        # Test that we update the existing baseline in the platform-specific
+        # directory if the new baseline is different, with existing fallback
+        # baseline (which should not matter).
+        host = MockHost()
+        host.filesystem.write_text_file(
+            test.LAYOUT_TEST_DIR +
+            '/platform/test-mac-mac10.10/failures/unexpected/text-image-checksum-expected.png',
+            'wrong-png-baseline')
+
+        details, log_stream, _ = logging_run(
+            [
+                '--reset-results',
+                'failures/unexpected/text-image-checksum.html'
+            ],
+            tests_included=True, host=host)
+        file_list = host.filesystem.written_files.keys()
+        self.assertEqual(details.exit_code, 0)
+        self.assertEqual(len(file_list), 7)
+        # We should reset the platform image baseline.
+        self.assert_baselines(
+            file_list, log_stream,
+            'platform/test-mac-mac10.10/failures/unexpected/text-image-checksum',
+            expected_extensions=['.png'])
+
+    def test_new_platform_baseline_without_fallback(self):
+        # Test that we update the existing baseline in the platform-specific
+        # directory if the new baseline is different, without existing fallback
+        # baseline (which should not matter).
+        host = MockHost()
+        host.filesystem.write_text_file(
+            test.LAYOUT_TEST_DIR +
+            '/platform/test-mac-mac10.10/failures/unexpected/text-image-checksum-expected.png',
+            'wrong-png-baseline')
+        host.filesystem.remove(
+            test.LAYOUT_TEST_DIR + '/failures/unexpected/text-image-checksum-expected.png')
+
+        details, log_stream, _ = logging_run(
+            [
+                '--reset-results',
+                'failures/unexpected/text-image-checksum.html'
+            ],
+            tests_included=True, host=host)
+        file_list = host.filesystem.written_files.keys()
+        self.assertEqual(details.exit_code, 0)
+        self.assertEqual(len(file_list), 8)
+        # We should reset the platform image baseline.
+        self.assert_baselines(
+            file_list, log_stream,
+            'platform/test-mac-mac10.10/failures/unexpected/text-image-checksum',
+            expected_extensions=['.png'])
+
     def test_new_virtual_baseline_optimize(self):
         # Test removing existing baselines under flag-specific directory if the
         # actual results are the same as the fallback baselines.
