@@ -5110,7 +5110,7 @@ bool WebGLRenderingContextBase::CanUseTexImageByGPU(GLenum format,
 
 void WebGLRenderingContextBase::TexImageCanvasByGPU(
     TexImageFunctionID function_id,
-    HTMLCanvasElement* canvas,
+    CanvasRenderingContextHost* canvas,
     GLenum target,
     GLuint target_texture,
     GLint xoffset,
@@ -5118,14 +5118,18 @@ void WebGLRenderingContextBase::TexImageCanvasByGPU(
     const IntRect& source_sub_rectangle) {
   if (!canvas->Is3d()) {
     if (Extensions3DUtil::CanUseCopyTextureCHROMIUM(target) &&
-        canvas->GetOrCreateCanvas2DLayerBridge()) {
-      scoped_refptr<StaticBitmapImage> image =
-          canvas->GetCanvas2DLayerBridge()->NewImageSnapshot(
-              kPreferAcceleration);
-      if (!!image && image->CopyToTexture(
-                         ContextGL(), target, target_texture,
-                         unpack_premultiply_alpha_, unpack_flip_y_,
-                         IntPoint(xoffset, yoffset), source_sub_rectangle)) {
+        canvas->GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
+      SourceImageStatus source_image_status = kInvalidSourceImageStatus;
+      scoped_refptr<Image> image = canvas->GetSourceImageForCanvas(
+          &source_image_status, kPreferAcceleration,
+          FloatSize(source_sub_rectangle.Width(),
+                    source_sub_rectangle.Height()));
+      if (!!image &&
+          ToStaticBitmapImage(image.get())
+              ->CopyToTexture(ContextGL(), target, target_texture,
+                              unpack_premultiply_alpha_, unpack_flip_y_,
+                              IntPoint(xoffset, yoffset),
+                              source_sub_rectangle)) {
         return;
       }
     }
@@ -5153,7 +5157,8 @@ void WebGLRenderingContextBase::TexImageByGPU(
     GLint zoffset,
     CanvasImageSource* image,
     const IntRect& source_sub_rectangle) {
-  DCHECK(image->IsCanvasElement() || image->IsImageBitmap());
+  DCHECK(image->IsCanvasElement() || image->IsImageBitmap() ||
+         image->IsOffscreenCanvas());
   int width = source_sub_rectangle.Width();
   int height = source_sub_rectangle.Height();
 
@@ -5193,8 +5198,9 @@ void WebGLRenderingContextBase::TexImageByGPU(
     // glCopyTextureCHROMIUM has a DRAW_AND_READBACK path which will call
     // texImage2D. So, reset unpack buffer parameters before that.
     ScopedUnpackParametersResetRestore temporaryResetUnpack(this);
-    if (image->IsCanvasElement()) {
-      TexImageCanvasByGPU(function_id, static_cast<HTMLCanvasElement*>(image),
+    if (image->IsCanvasElement() || image->IsOffscreenCanvas()) {
+      TexImageCanvasByGPU(function_id,
+                          static_cast<CanvasRenderingContextHost*>(image),
                           copy_target, target_texture, copy_x_offset,
                           copy_y_offset, source_sub_rectangle);
     } else {

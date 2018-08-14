@@ -7,6 +7,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_async_blob_creator.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_2d_layer_bridge.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
@@ -59,6 +60,12 @@ bool CanvasRenderingContextHost::Is2d() const {
 
 CanvasResourceProvider*
 CanvasRenderingContextHost::GetOrCreateCanvasResourceProvider(
+    AccelerationHint hint) {
+  return GetOrCreateCanvasResourceProviderImpl(hint);
+}
+
+CanvasResourceProvider*
+CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
     AccelerationHint hint) {
   if (!ResourceProvider() && !did_fail_to_create_resource_provider_) {
     if (IsValidImageSize(Size())) {

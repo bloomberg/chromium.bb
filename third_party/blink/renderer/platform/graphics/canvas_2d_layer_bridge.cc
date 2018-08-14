@@ -309,8 +309,10 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
   AccelerationHint adjusted_hint =
       want_acceleration ? kPreferAcceleration : kPreferNoAcceleration;
 
+  // We call Impl directly here, to allow HTMLCanvasElement to call us
+  // in GetOrCreateCanvasResourceProvider.
   resource_provider =
-      resource_host_->GetOrCreateCanvasResourceProvider(adjusted_hint);
+      resource_host_->GetOrCreateCanvasResourceProviderImpl(adjusted_hint);
 
   if (!resource_provider)
     ReportResourceProviderCreationFailure();
@@ -566,7 +568,8 @@ bool Canvas2DLayerBridge::Restore() {
 
   if (shared_gl && shared_gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
     CanvasResourceProvider* resource_provider =
-        resource_host_->GetOrCreateCanvasResourceProvider(kPreferAcceleration);
+        resource_host_->GetOrCreateCanvasResourceProviderImpl(
+            kPreferAcceleration);
 
     if (!resource_provider)
       ReportResourceProviderCreationFailure();

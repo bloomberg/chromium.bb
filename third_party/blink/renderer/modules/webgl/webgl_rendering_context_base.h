@@ -1698,7 +1698,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                 Platform::ContextType context_type,
                                 bool* using_gpu_compositing);
   void TexImageCanvasByGPU(TexImageFunctionID,
-                           HTMLCanvasElement*,
+                           CanvasRenderingContextHost*,
                            GLenum,
                            GLuint,
                            GLint,

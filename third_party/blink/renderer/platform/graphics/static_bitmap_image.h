@@ -138,6 +138,8 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   bool is_origin_clean_ = true;
 };
 
+DEFINE_IMAGE_TYPE_CASTS(StaticBitmapImage);
+
 }  // namespace blink
 
 #endif

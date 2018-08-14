@@ -25,6 +25,10 @@ class FakeCanvasResourceHost : public CanvasResourceHost {
   void UpdateMemoryUsage() override {}
   CanvasResourceProvider* GetOrCreateCanvasResourceProvider(
       AccelerationHint hint) override {
+    return GetOrCreateCanvasResourceProviderImpl(hint);
+  }
+  CanvasResourceProvider* GetOrCreateCanvasResourceProviderImpl(
+      AccelerationHint hint) override {
     if (ResourceProvider())
       return ResourceProvider();
     CanvasResourceProvider::ResourceUsage usage =
