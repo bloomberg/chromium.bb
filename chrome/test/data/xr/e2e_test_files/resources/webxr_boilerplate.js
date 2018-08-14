@@ -169,15 +169,6 @@ function onXRFrame(t, frame) {
   hasPresentedFrame = true;
 }
 
-function checkIfArSessionWouldTriggerPermissionPrompt() {
-  arSessionRequestWouldTriggerPermissionPrompt = null;
-  navigator.permissions.query({name: 'camera'}).then( (permission) => {
-    arSessionRequestWouldTriggerPermissionPrompt = permission.state == 'prompt';
-  }, () => {
-    throw 'Permission query rejected';
-  });
-}
-
 // Try to get an XRDevice and set up a non-immersive session with it
 if (navigator.xr) {
   navigator.xr.requestDevice().then( (device) => {

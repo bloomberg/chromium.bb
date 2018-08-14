@@ -4,33 +4,14 @@
 
 package org.chromium.chrome.browser.vr;
 
-import android.content.DialogInterface;
-
-import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.permissions.PermissionDialogController;
+import org.chromium.chrome.browser.vr.util.PermissionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.WebContents;
 
 /**
  * WebXR for AR-specific implementation of the WebXrTestFramework.
  */
 public class WebXrArTestFramework extends WebXrTestFramework {
-    /**
-     * Checks whether an AR session request would prompt the user for Camera permissions.
-     *
-     * @param webContents The WebContents to check for the permission in.
-     * @return True if an AR session request will cause a permission prompt, false otherwise.
-     */
-    public static boolean arSessionRequestWouldTriggerPermissionPrompt(WebContents webContents) {
-        runJavaScriptOrFail("checkIfArSessionWouldTriggerPermissionPrompt()", POLL_TIMEOUT_SHORT_MS,
-                webContents);
-        pollJavaScriptBooleanOrFail("arSessionRequestWouldTriggerPermissionPrompt !== null",
-                POLL_TIMEOUT_SHORT_MS, webContents);
-        return Boolean.valueOf(runJavaScriptOrFail("arSessionRequestWouldTriggerPermissionPrompt",
-                POLL_TIMEOUT_SHORT_MS, webContents));
-    }
-
     /**
      * Must be constructed after the rule has been applied (e.g. in whatever method is
      * tagged with @Before).
@@ -52,35 +33,15 @@ public class WebXrArTestFramework extends WebXrTestFramework {
         // Requesting an AR session for the first time on a page will always prompt for camera
         // permissions, but not on subsequent requests, so check to see if we'll need to accept it
         // after requesting the session.
-        boolean expectPermissionPrompt = arSessionRequestWouldTriggerPermissionPrompt(webContents);
+        boolean expectPermissionPrompt = permissionRequestWouldTriggerPrompt("camera", webContents);
         // TODO(bsheedy): Rename enterPresentation since it's used for both presentation and AR?
         enterSessionWithUserGesture(webContents);
         if (expectPermissionPrompt) {
-            // Wait for the permission prompt to appear.
-            CriteriaHelper.pollUiThread(() -> {
-                return PermissionDialogController.getInstance().getCurrentDialogForTesting()
-                        != null;
-            }, "Camera permission prompt did not appear");
-            // Accept the permission prompt.
-            ThreadUtils.runOnUiThreadBlocking(() -> {
-                PermissionDialogController.getInstance()
-                        .getCurrentDialogForTesting()
-                        .getButton(DialogInterface.BUTTON_POSITIVE)
-                        .performClick();
-            });
+            PermissionUtils.waitForPermissionPrompt();
+            PermissionUtils.acceptPermissionPrompt();
         }
         pollJavaScriptBooleanOrFail("sessionInfos[sessionTypes.AR].currentSession != null",
                 POLL_TIMEOUT_LONG_MS, webContents);
-    }
-
-    /**
-     * Helper function to run arSessionRequestWouldTriggerPermissionPrompt with the first tab's
-     * WebContents.
-     *
-     * @return True if an AR session request will cause a permission prompt, false otherwise.
-     */
-    public boolean arSessionRequestWouldTriggerPermissionPrompt() {
-        return arSessionRequestWouldTriggerPermissionPrompt(mFirstTabWebContents);
     }
 
     /**

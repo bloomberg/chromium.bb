@@ -128,13 +128,13 @@ public class WebXrArSessionTest {
                         "test_ar_request_session_succeeds")),
                 PAGE_LOAD_TIMEOUT_S);
         Assert.assertTrue("First AR session request did not trigger permission prompt",
-                mWebXrArTestFramework.arSessionRequestWouldTriggerPermissionPrompt());
+                mWebXrArTestFramework.permissionRequestWouldTriggerPrompt("camera"));
         mWebXrArTestFramework.enterSessionWithUserGestureOrFail();
         mWebXrArTestFramework.endSession();
         // Manually run through the same steps as enterArSessionOrFail so that we don't trigger
         // its automatic permission acceptance.
         Assert.assertFalse("Second AR session request triggered permission prompt",
-                mWebXrArTestFramework.arSessionRequestWouldTriggerPermissionPrompt());
+                mWebXrArTestFramework.permissionRequestWouldTriggerPrompt("camera"));
         mWebXrArTestFramework.enterSessionWithUserGesture();
         mWebXrArTestFramework.pollJavaScriptBooleanOrFail(
                 "sessionInfos[sessionTypes.AR].currentSession != null", POLL_TIMEOUT_LONG_MS);

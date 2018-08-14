@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.vr.mock.MockVrDaydreamApi;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.NfcSimUtils;
+import org.chromium.chrome.browser.vr.util.PermissionUtils;
 import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -47,6 +48,7 @@ import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -530,5 +532,48 @@ public class VrBrowserTransitionTest {
         });
         Assert.assertTrue(
                 "Creating VrShell didn't fail when Async Reprojection failed.", failed.get());
+    }
+
+    /**
+     * Verifies that permissions granted outside of VR persist while in VR, even after the page is
+     * refreshed. Automation of a manutal test from https://crbug.com/861941.
+     */
+    @Test
+    @Restriction({RESTRICTION_TYPE_VIEWER_DAYDREAM})
+    @MediumTest
+    public void testPermissionsPersistWhenEnteringVrBrowser() throws InterruptedException {
+        // Permissions don't work on file:// URLs, so use a local server.
+        EmbeddedTestServer server =
+                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                server.getURL(VrBrowserTestFramework.getEmbeddedServerPathForHtmlTestFile(
+                        "test_permissions_persist_when_entering_vr_browser")),
+                PAGE_LOAD_TIMEOUT_S);
+        // Ensure that permission requests initially trigger a prompt.
+        Assert.assertTrue("Camera permission would not trigger prompt",
+                mVrBrowserTestFramework.permissionRequestWouldTriggerPrompt("camera"));
+        Assert.assertTrue("Microphone permission would not trigger prompt",
+                mVrBrowserTestFramework.permissionRequestWouldTriggerPrompt("microphone"));
+        // Request camera and microphone permissions.
+        mVrBrowserTestFramework.runJavaScriptOrFail(
+                "stepRequestPermission()", POLL_TIMEOUT_SHORT_MS);
+        // Accept the resulting prompt and wait for the permissions to be granted to the site.
+        PermissionUtils.waitForPermissionPrompt();
+        PermissionUtils.acceptPermissionPrompt();
+        mVrBrowserTestFramework.waitOnJavaScriptStep();
+        // Reload the page and ensure that the permissions are still granted.
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                server.getURL(VrBrowserTestFramework.getEmbeddedServerPathForHtmlTestFile(
+                        "test_permissions_persist_when_entering_vr_browser")),
+                PAGE_LOAD_TIMEOUT_S);
+        Assert.assertFalse("Camera permission would trigger prompt after reload",
+                mVrBrowserTestFramework.permissionRequestWouldTriggerPrompt("camera"));
+        Assert.assertFalse("Microphone permission would trigger prompt after reload",
+                mVrBrowserTestFramework.permissionRequestWouldTriggerPrompt("microphone"));
+        // Enter the VR Browser and ensure the permission request auto-succeeds.
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
+        mVrBrowserTestFramework.executeStepAndWait("stepRequestPermission()");
+        mVrBrowserTestFramework.endTest();
+        server.stopAndDestroyServer();
     }
 }
