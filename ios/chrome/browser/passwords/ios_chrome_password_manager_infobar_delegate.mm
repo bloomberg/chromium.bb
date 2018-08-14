@@ -52,6 +52,6 @@ bool IOSChromePasswordManagerInfoBarDelegate::LinkClicked(
        inIncognito:NO
       inBackground:NO
           appendTo:kCurrentTab];
-  [dispatcher_ openURL:command];
+  [dispatcher_ openURLInNewTab:command];
   return true;
 };

@@ -67,14 +67,14 @@ keyCommandsForConsumer:(id<KeyCommandsPlumbing>)consumer
   void (^newTab)() = ^{
     OpenNewTabCommand* newTabCommand = [OpenNewTabCommand command];
     newTabCommand.shouldFocusOmnibox = YES;
-    [weakDispatcher openURL:newTabCommand];
+    [weakDispatcher openURLInNewTab:newTabCommand];
   };
 
   void (^newIncognitoTab)() = ^{
     OpenNewTabCommand* newIncognitoTabCommand =
         [OpenNewTabCommand incognitoTabCommand];
     newIncognitoTabCommand.shouldFocusOmnibox = YES;
-    [weakDispatcher openURL:newIncognitoTabCommand];
+    [weakDispatcher openURLInNewTab:newIncognitoTabCommand];
   };
 
   const int browseLeftDescriptionID = useRTLLayout

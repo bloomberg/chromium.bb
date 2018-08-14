@@ -358,7 +358,7 @@ class UpgradeInfoBarDismissObserver
       // This URL can be opened in the application, just open in a new tab.
       OpenNewTabCommand* command =
           [OpenNewTabCommand commandWithURLFromChrome:URL];
-      [self.dispatcher openURL:command];
+      [self.dispatcher openURLInNewTab:command];
     } else {
       // This URL scheme is not understood, ask the system to open it.
       NSURL* launchURL = [NSURL URLWithString:urlString];

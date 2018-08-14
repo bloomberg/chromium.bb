@@ -231,7 +231,7 @@
                    didTriggerAction:(OverscrollAction)action {
   switch (action) {
     case OverscrollAction::NEW_TAB: {
-      [_dispatcher openURL:[OpenNewTabCommand command]];
+      [_dispatcher openURLInNewTab:[OpenNewTabCommand command]];
     } break;
     case OverscrollAction::CLOSE_TAB: {
       [_dispatcher closeCurrentTab];

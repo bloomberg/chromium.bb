@@ -310,7 +310,7 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
              action:^(const GURL& URL) {
                OpenNewTabCommand* command =
                    [OpenNewTabCommand commandWithURLFromChrome:URL];
-               [weakSelf.dispatcher openURL:command];
+               [weakSelf.dispatcher openURLInNewTab:command];
              }];
 
   _footerLabelLinkController.linkFont =

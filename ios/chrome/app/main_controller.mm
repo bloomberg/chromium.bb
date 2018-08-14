@@ -1343,7 +1343,7 @@ enum class ShowTabSwitcherSnapshotResult {
     OpenNewTabCommand* command = [OpenNewTabCommand
         commandWithIncognito:(self.currentBVC == self.otrBVC)];
     command.userInitiated = NO;
-    [self.currentBVC.dispatcher openURL:command];
+    [self.currentBVC.dispatcher openURLInNewTab:command];
   }
 
   if (firstRun) {
@@ -1544,7 +1544,7 @@ enum class ShowTabSwitcherSnapshotResult {
   });
 }
 
-- (void)openURL:(OpenNewTabCommand*)command {
+- (void)openURLInNewTab:(OpenNewTabCommand*)command {
   if (command.URL.is_valid()) {
     if ([command fromChrome]) {
       [self dismissModalsAndOpenSelectedTabInMode:ApplicationMode::NORMAL
@@ -1881,7 +1881,7 @@ enum class ShowTabSwitcherSnapshotResult {
   DCHECK(bvc);
   [bvc expectNewForegroundTab];
   self.currentBVC = bvc;
-  [self openURL:command];
+  [self openURLInNewTab:command];
 }
 
 - (void)startVoiceSearch {

@@ -3867,7 +3867,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   switch (action) {
     case OverscrollAction::NEW_TAB:
       [self.dispatcher
-          openURL:[OpenNewTabCommand commandWithIncognito:self.isOffTheRecord]];
+          openURLInNewTab:[OpenNewTabCommand
+                              commandWithIncognito:self.isOffTheRecord]];
       break;
     case OverscrollAction::CLOSE_TAB:
       [self.dispatcher closeCurrentTab];
@@ -4355,7 +4356,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (entry->type != sessions::TabRestoreService::TAB)
     return;
 
-  [self.dispatcher openURL:[OpenNewTabCommand command]];
+  [self.dispatcher openURLInNewTab:[OpenNewTabCommand command]];
   [self restoreTabWithSessionID:entry->id];
 }
 
@@ -4518,7 +4519,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // currently selected in the other mode. This is done with the |append|
   // parameter.
   command.appendTo = kLastTab;
-  [self.dispatcher openURL:command];
+  [self.dispatcher openURLInNewTab:command];
 }
 
 - (void)loadSessionTab:(const sessions::SessionTab*)sessionTab {
@@ -4764,7 +4765,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (void)openNewTab:(OpenNewTabCommand*)command {
-  [self.dispatcher openURL:command];
+  [self.dispatcher openURLInNewTab:command];
 }
 
 - (void)printTab {
@@ -5957,9 +5958,9 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
          inIncognito:YES
         inBackground:NO
             appendTo:kLastTab];
-    [self.dispatcher openURL:command];
+    [self.dispatcher openURLInNewTab:command];
   } else {
-    [self.dispatcher openURL:[OpenNewTabCommand command]];
+    [self.dispatcher openURLInNewTab:[OpenNewTabCommand command]];
   }
 }
 
