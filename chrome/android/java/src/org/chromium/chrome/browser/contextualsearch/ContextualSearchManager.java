@@ -116,7 +116,7 @@ public class ContextualSearchManager
     private final TabModelObserver mTabModelObserver;
 
     // The Ranker logger to use to write Tap Suppression Ranker logs to UMA.
-    private final ContextualSearchRankerLogger mTapSuppressionRankerLogger;
+    private final ContextualSearchInteractionRecorder mTapSuppressionInteractionRecorder;
 
     private final ContextualSearchSelectionClient mContextualSearchSelectionClient;
 
@@ -246,7 +246,7 @@ public class ContextualSearchManager
         mTranslateController = new ContextualSearchTranslateController(mPolicy, this);
         mInternalStateController = new ContextualSearchInternalStateController(
                 mPolicy, getContextualSearchInternalStateHandler());
-        mTapSuppressionRankerLogger = new ContextualSearchRankerLoggerImpl();
+        mTapSuppressionInteractionRecorder = new ContextualSearchRankerLoggerImpl();
         mContextualSearchSelectionClient = new ContextualSearchSelectionClient();
         mInProductHelp = new ContextualSearchIPH();
     }
@@ -1411,7 +1411,7 @@ public class ContextualSearchManager
         if (mInternalStateController.isStillWorkingOn(InternalState.DECIDING_SUPPRESSION)) {
             mInternalStateController.notifyFinishedWorkOn(InternalState.DECIDING_SUPPRESSION);
         } else {
-            mTapSuppressionRankerLogger.reset();
+            mTapSuppressionInteractionRecorder.reset();
         }
     }
 
@@ -1497,15 +1497,15 @@ public class ContextualSearchManager
     }
 
     @Override
-    public void logNonHeuristicFeatures(ContextualSearchRankerLogger rankerLogger) {
+    public void logNonHeuristicFeatures(ContextualSearchInteractionRecorder rankerLogger) {
         boolean didOptIn = !mPolicy.isUserUndecided();
-        rankerLogger.logFeature(ContextualSearchRankerLogger.Feature.DID_OPT_IN, didOptIn);
+        rankerLogger.logFeature(ContextualSearchInteractionRecorder.Feature.DID_OPT_IN, didOptIn);
         boolean isHttp = mPolicy.isBasePageHTTP(getBasePageURL());
-        rankerLogger.logFeature(ContextualSearchRankerLogger.Feature.IS_HTTP, isHttp);
+        rankerLogger.logFeature(ContextualSearchInteractionRecorder.Feature.IS_HTTP, isHttp);
         String contentLanguage = mContext.getDetectedLanguage();
         boolean isLanguageMismatch = mTranslateController.needsTranslation(contentLanguage);
-        rankerLogger.logFeature(
-                ContextualSearchRankerLogger.Feature.IS_LANGUAGE_MISMATCH, isLanguageMismatch);
+        rankerLogger.logFeature(ContextualSearchInteractionRecorder.Feature.IS_LANGUAGE_MISMATCH,
+                isLanguageMismatch);
     }
 
     /** Shows the given selection as the Search Term in the Bar. */
@@ -1529,7 +1529,7 @@ public class ContextualSearchManager
 
                 // Make sure we write to Ranker and reset at the end of every search, even if the
                 // panel was not showing because it was a suppressed tap.
-                mSearchPanel.getPanelMetrics().writeRankerLoggerOutcomesAndReset();
+                mSearchPanel.getPanelMetrics().writeInteractionOutcomesAndReset();
                 if (isSearchPanelShowing()) {
                     mSearchPanel.closePanel(reason, false);
                 } else {
@@ -1590,11 +1590,12 @@ public class ContextualSearchManager
                 // If it's chained we need to log the outcomes and reset, because we won't be hiding
                 // the panel at the end of the previous search (we'll update it to the new Search).
                 if (isSearchPanelShowing()) {
-                    mSearchPanel.getPanelMetrics().writeRankerLoggerOutcomesAndReset();
+                    mSearchPanel.getPanelMetrics().writeInteractionOutcomesAndReset();
                 }
                 // Set up the next batch of Ranker logging.
-                mTapSuppressionRankerLogger.setupLoggingForPage(getBaseWebContents());
-                mSearchPanel.getPanelMetrics().setRankerLogger(mTapSuppressionRankerLogger);
+                mTapSuppressionInteractionRecorder.setupLoggingForPage(getBaseWebContents());
+                mSearchPanel.getPanelMetrics().setInteractionRecorder(
+                        mTapSuppressionInteractionRecorder);
                 ContextualSearchUma.logRankerFeaturesAvailable(false);
                 mInternalStateController.notifyFinishedWorkOn(InternalState.TAP_GESTURE_COMMIT);
             }
@@ -1604,7 +1605,8 @@ public class ContextualSearchManager
             public void decideSuppression() {
                 mInternalStateController.notifyStartingWorkOn(InternalState.DECIDING_SUPPRESSION);
                 // TODO(donnd): Move handleShouldSuppressTap out of the Selection Controller.
-                mSelectionController.handleShouldSuppressTap(mContext, mTapSuppressionRankerLogger);
+                mSelectionController.handleShouldSuppressTap(
+                        mContext, mTapSuppressionInteractionRecorder);
             }
 
             /** Starts showing the Tap UI by selecting a word around the current caret. */
@@ -1777,8 +1779,8 @@ public class ContextualSearchManager
     }
 
     @VisibleForTesting
-    ContextualSearchRankerLogger getRankerLogger() {
-        return mTapSuppressionRankerLogger;
+    ContextualSearchInteractionRecorder getRankerLogger() {
+        return mTapSuppressionInteractionRecorder;
     }
 
     // ============================================================================================

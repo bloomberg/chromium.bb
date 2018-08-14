@@ -43,8 +43,9 @@ class SmallTextSuppression extends ContextualSearchHeuristic {
     }
 
     @Override
-    protected void logRankerTapSuppression(ContextualSearchRankerLogger logger) {
-        logger.logFeature(ContextualSearchRankerLogger.Feature.FONT_SIZE, mDecilizedFontSize);
+    protected void logRankerTapSuppression(ContextualSearchInteractionRecorder logger) {
+        logger.logFeature(
+                ContextualSearchInteractionRecorder.Feature.FONT_SIZE, mDecilizedFontSize);
     }
 
     /**

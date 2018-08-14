@@ -298,7 +298,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchNetworkCommunicator.java",
   "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchObserver.java",
   "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchPolicy.java",
-  "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchRankerLogger.java",
+  "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchInteractionRecorder.java",
   "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchRankerLoggerImpl.java",
   "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchRequest.java",
   "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchSelectionController.java",

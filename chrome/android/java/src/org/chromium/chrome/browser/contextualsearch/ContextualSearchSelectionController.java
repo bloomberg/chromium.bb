@@ -376,11 +376,11 @@ public class ContextualSearchSelectionController {
      * This should be called when the context is fully built (by gathering surrounding text
      * if needed, etc) but before showing any UX.
      * @param contextualSearchContext The {@link ContextualSearchContext} for the Tap gesture.
-     * @param rankerLogger The {@link ContextualSearchRankerLogger} currently being used to measure
-     *        or suppress the UI by Ranker.
+     * @param interactionRecorder The {@link ContextualSearchInteractionRecorder} currently being
+     * used to measure or suppress the UI by Ranker.
      */
     void handleShouldSuppressTap(ContextualSearchContext contextualSearchContext,
-            ContextualSearchRankerLogger rankerLogger) {
+            ContextualSearchInteractionRecorder interactionRecorder) {
         int x = (int) mX;
         int y = (int) mY;
 
@@ -401,16 +401,16 @@ public class ContextualSearchSelectionController {
 
         // Make sure Tap Suppression features are consistent.
         assert !ContextualSearchFieldTrial.isContextualSearchMlTapSuppressionEnabled()
-                || rankerLogger.isQueryEnabled()
+                || interactionRecorder.isQueryEnabled()
             : "Tap Suppression requires the Ranker Query feature to be enabled!";
 
         // If we're suppressing based on heuristics then Ranker doesn't need to know about it.
         @AssistRankerPrediction
         int tapPrediction = AssistRankerPrediction.UNDETERMINED;
         if (!shouldSuppressTapBasedOnHeuristics) {
-            tapHeuristics.logRankerTapSuppression(rankerLogger);
-            mHandler.logNonHeuristicFeatures(rankerLogger);
-            tapPrediction = rankerLogger.runPredictionForTapSuppression();
+            tapHeuristics.logRankerTapSuppression(interactionRecorder);
+            mHandler.logNonHeuristicFeatures(interactionRecorder);
+            tapPrediction = interactionRecorder.runPredictionForTapSuppression();
             ContextualSearchUma.logRankerPrediction(tapPrediction);
         }
 

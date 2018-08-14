@@ -64,18 +64,18 @@ abstract class ContextualSearchHeuristic {
     }
 
     /**
-     * Logs the heuristic to UMA through Ranker logging for the purpose of Tap Suppression.
-     * @param logger A logger to log to.
+     * Logs the heuristic to UMA and UKM through Ranker logging for the purpose of Tap Suppression.
+     * @param recorder A logger to log to.
      */
-    protected void logRankerTapSuppression(ContextualSearchRankerLogger logger) {
+    protected void logRankerTapSuppression(ContextualSearchInteractionRecorder recorder) {
         // Default is to not log.
     }
 
     /**
      * Logs a Ranker outcome using the heuristic for the purpose of Ranker Tap Suppression.
-     * @param logger A logger to log to.
+     * @param recorder A logger to log to.
      */
-    protected void logRankerTapSuppressionOutcome(ContextualSearchRankerLogger logger) {
+    protected void logRankerTapSuppressionOutcome(ContextualSearchInteractionRecorder recorder) {
         // Default is to not log.
     }
 

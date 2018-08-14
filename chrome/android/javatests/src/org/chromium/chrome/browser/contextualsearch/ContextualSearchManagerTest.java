@@ -147,7 +147,7 @@ public class ContextualSearchManagerTest {
                 new HashSet<Integer>(ContextualSearchRankerLoggerImpl.OUTCOMES.keySet());
         // We don't log whether the quick action was clicked unless we actually have a quick action.
         expectedOutcomes.remove(
-                ContextualSearchRankerLogger.Feature.OUTCOME_WAS_QUICK_ACTION_CLICKED);
+                ContextualSearchInteractionRecorder.Feature.OUTCOME_WAS_QUICK_ACTION_CLICKED);
         EXPECTED_RANKER_OUTCOMES = Collections.unmodifiableSet(expectedOutcomes);
     }
     // Integer values should contain @Feature values only.
@@ -157,12 +157,14 @@ public class ContextualSearchManagerTest {
         Set<Integer> expectedFeatures =
                 new HashSet<Integer>(ContextualSearchRankerLoggerImpl.FEATURES.keySet());
         // We don't log previous user impressions and CTR if not available for the current user.
-        expectedFeatures.remove(ContextualSearchRankerLogger.Feature.PREVIOUS_WEEK_CTR_PERCENT);
         expectedFeatures.remove(
-                ContextualSearchRankerLogger.Feature.PREVIOUS_WEEK_IMPRESSIONS_COUNT);
-        expectedFeatures.remove(ContextualSearchRankerLogger.Feature.PREVIOUS_28DAY_CTR_PERCENT);
+                ContextualSearchInteractionRecorder.Feature.PREVIOUS_WEEK_CTR_PERCENT);
         expectedFeatures.remove(
-                ContextualSearchRankerLogger.Feature.PREVIOUS_28DAY_IMPRESSIONS_COUNT);
+                ContextualSearchInteractionRecorder.Feature.PREVIOUS_WEEK_IMPRESSIONS_COUNT);
+        expectedFeatures.remove(
+                ContextualSearchInteractionRecorder.Feature.PREVIOUS_28DAY_CTR_PERCENT);
+        expectedFeatures.remove(
+                ContextualSearchInteractionRecorder.Feature.PREVIOUS_28DAY_IMPRESSIONS_COUNT);
         EXPECTED_RANKER_FEATURES = Collections.unmodifiableSet(expectedFeatures);
     }
 
@@ -1111,20 +1113,22 @@ public class ContextualSearchManagerTest {
     }
 
     /** @return The value of the given logged feature, or {@code null} if not logged. */
-    private Object loggedToRanker(@ContextualSearchRankerLogger.Feature int feature) {
+    private Object loggedToRanker(@ContextualSearchInteractionRecorder.Feature int feature) {
         return getRankerLogger().getFeaturesLogged().get(feature);
     }
 
     /** Asserts that all the expected features have been logged to Ranker. **/
     private void assertLoggedAllExpectedFeaturesToRanker() {
-        for (@ContextualSearchRankerLogger.Feature Integer feature : EXPECTED_RANKER_FEATURES) {
+        for (@ContextualSearchInteractionRecorder.Feature Integer feature :
+                EXPECTED_RANKER_FEATURES) {
             Assert.assertNotNull(loggedToRanker(feature));
         }
     }
 
     /** Asserts that all the expected outcomes have been logged to Ranker. **/
     private void assertLoggedAllExpectedOutcomesToRanker() {
-        for (@ContextualSearchRankerLogger.Feature Integer feature : EXPECTED_RANKER_OUTCOMES) {
+        for (@ContextualSearchInteractionRecorder.Feature Integer feature :
+                EXPECTED_RANKER_OUTCOMES) {
             Assert.assertNotNull("Expected this outcome to be logged: " + feature,
                     getRankerLogger().getOutcomesLogged().get(feature));
         }
@@ -1206,7 +1210,7 @@ public class ContextualSearchManagerTest {
 
         assertLoggedAllExpectedFeaturesToRanker();
         Assert.assertEquals(
-                true, loggedToRanker(ContextualSearchRankerLogger.Feature.IS_LONG_WORD));
+                true, loggedToRanker(ContextualSearchInteractionRecorder.Feature.IS_LONG_WORD));
         // The panel must be closed for outcomes to be logged.
         // Close the panel by clicking far away in order to make sure the outcomes get logged by
         // the hideContextualSearchUi call to writeRankerLoggerOutcomesAndReset.
