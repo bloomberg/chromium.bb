@@ -7,6 +7,10 @@
 #include "ui/base/material_design/material_design_controller.h"
 
 namespace {
+// TODO(pbos): Inline kHarmonyLayoutUnit calculations below as it's not really
+// respected (there's 3 * unit / 4 in use to express 12).
+// The Harmony layout unit. All distances are in terms of this unit.
+constexpr int kHarmonyLayoutUnit = 16;
 constexpr int kSmallSnapPoint = 320;
 constexpr int kMediumSnapPoint = 448;
 constexpr int kLargeSnapPoint = 512;
@@ -19,21 +23,25 @@ gfx::Insets HarmonyLayoutProvider::GetInsetsMetric(int metric) const {
     case views::INSETS_DIALOG_SUBSECTION:
       return gfx::Insets(kHarmonyLayoutUnit);
     case views::INSETS_CHECKBOX_RADIO_BUTTON: {
-      gfx::Insets insets = ChromeLayoutProvider::GetInsetsMetric(metric);
+      gfx::Insets insets = LayoutProvider::GetInsetsMetric(metric);
       // Material Design requires that checkboxes and radio buttons are aligned
       // flush to the left edge.
       return gfx::Insets(insets.top(), 0, insets.bottom(), insets.right());
     }
     case views::INSETS_VECTOR_IMAGE_BUTTON:
       return gfx::Insets(kHarmonyLayoutUnit / 4);
-    case INSETS_TOAST:
-      return gfx::Insets(0, kHarmonyLayoutUnit);
     case views::InsetsMetric::INSETS_LABEL_BUTTON:
       if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
         return gfx::Insets(kHarmonyLayoutUnit / 2, kHarmonyLayoutUnit / 2);
-      return ChromeLayoutProvider::GetInsetsMetric(metric);
+      return LayoutProvider::GetInsetsMetric(metric);
+    case INSETS_BOOKMARKS_BAR_BUTTON:
+      if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+        return gfx::Insets(8, 12);
+      return GetInsetsMetric(views::InsetsMetric::INSETS_LABEL_BUTTON);
+    case INSETS_TOAST:
+      return gfx::Insets(0, kHarmonyLayoutUnit);
     default:
-      return ChromeLayoutProvider::GetInsetsMetric(metric);
+      return LayoutProvider::GetInsetsMetric(metric);
   }
 }
 
@@ -99,6 +107,10 @@ int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
       return kHarmonyLayoutUnit * 12;
     case DISTANCE_SUBSECTION_HORIZONTAL_INDENT:
       return 0;
+    case DISTANCE_TOAST_CONTROL_VERTICAL:
+      return 8;
+    case DISTANCE_TOAST_LABEL_VERTICAL:
+      return 12;
     case views::DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING:
       return kHarmonyLayoutUnit / 2;
     case DISTANCE_UNRELATED_CONTROL_HORIZONTAL:
@@ -114,7 +126,7 @@ int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
     case DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH:
       return kMediumSnapPoint;
     default:
-      return ChromeLayoutProvider::GetDistanceMetric(metric);
+      return LayoutProvider::GetDistanceMetric(metric);
   }
 }
 

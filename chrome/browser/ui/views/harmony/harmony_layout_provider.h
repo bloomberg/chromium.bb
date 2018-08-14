@@ -11,9 +11,6 @@
 
 class HarmonyLayoutProvider : public ChromeLayoutProvider {
  public:
-  // The Harmony layout unit. All distances are in terms of this unit.
-  static constexpr int kHarmonyLayoutUnit = 16;
-
   HarmonyLayoutProvider() {}
   ~HarmonyLayoutProvider() override {}
 
