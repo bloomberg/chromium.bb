@@ -1321,17 +1321,26 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
   const float bottom_offset = active ? 0 : controller_->GetStrokeThickness();
   if (fill_id || paint_hover_effect ||
       (MD::IsRefreshUi() && (std::trunc(scale) != scale))) {
-    gfx::Path fill_path =
-        GetInteriorPath(scale, stroke_thickness, bottom_offset, bounds());
+    // When there's a border, we want the stroke to cover up the edge of the
+    // fill path (https://crbug.com/873003), so set the fill path halfway
+    // between the inner path and the border paths.  When there's no stroke,
+    // |stroke_thickness| is 0 and the fill, inner, and stroke paths are all
+    // identical.  Avoid doing this on pre-refresh since strokes may be
+    // transparent.
+    gfx::Path fill_path = GetInteriorPath(
+        scale, MD::IsRefreshUi() ? stroke_thickness / 2 : stroke_thickness,
+        bottom_offset, bounds());
     PaintTabBackgroundFill(canvas, fill_path, active, paint_hover_effect,
                            active_color, inactive_color, fill_id, y_inset);
     if (stroke_thickness > 0) {
-      gfx::Path stroke_path = GetBorderPath(
+      gfx::Path interior_path =
+          GetInteriorPath(scale, stroke_thickness, bottom_offset, bounds());
+      gfx::Path outer_path = GetBorderPath(
           scale, stroke_thickness, bottom_offset, false, false, bounds());
       gfx::ScopedCanvas scoped_canvas(clip ? canvas : nullptr);
       if (clip)
         canvas->sk_canvas()->clipPath(*clip, SkClipOp::kDifference, true);
-      PaintTabBackgroundStroke(canvas, fill_path, stroke_path, active,
+      PaintTabBackgroundStroke(canvas, interior_path, outer_path, active,
                                stroke_color);
     }
   } else {
@@ -1339,10 +1348,11 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
         active ? background_active_cache_ : background_inactive_cache_;
     if (!cache.CacheKeyMatches(scale, size(), active_color, inactive_color,
                                stroke_color, stroke_thickness)) {
-      gfx::Path fill_path =
-          GetInteriorPath(scale, stroke_thickness, bottom_offset, bounds());
-      gfx::Path stroke_path = GetBorderPath(
-          scale, stroke_thickness, bottom_offset, false, false, bounds());
+      // See the comment in the non-caching case above for why we divide
+      // |stroke_thickness| by 2 on refresh.
+      gfx::Path fill_path = GetInteriorPath(
+          scale, MD::IsRefreshUi() ? stroke_thickness / 2 : stroke_thickness,
+          bottom_offset, bounds());
       cc::PaintRecorder recorder;
 
       {
@@ -1354,10 +1364,14 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
         cache.fill_record = recorder.finishRecordingAsPicture();
       }
       if (stroke_thickness > 0) {
+        gfx::Path interior_path =
+            GetInteriorPath(scale, stroke_thickness, bottom_offset, bounds());
+        gfx::Path border_path = GetBorderPath(
+            scale, stroke_thickness, bottom_offset, false, false, bounds());
         gfx::Canvas cache_canvas(
             recorder.beginRecording(size().width(), size().height()), scale);
-        PaintTabBackgroundStroke(&cache_canvas, fill_path, stroke_path, active,
-                                 stroke_color);
+        PaintTabBackgroundStroke(&cache_canvas, interior_path, border_path,
+                                 active, stroke_color);
         cache.stroke_record = recorder.finishRecordingAsPicture();
       }
 
