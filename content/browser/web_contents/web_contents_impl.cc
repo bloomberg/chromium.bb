@@ -2695,7 +2695,8 @@ void WebContentsImpl::CreateNewWindow(
 
   // Any new WebContents opened while this WebContents is in fullscreen can be
   // used to confuse the user, so drop fullscreen.
-  ForSecurityDropFullscreen();
+  if (IsFullscreenForCurrentTab())
+    ExitFullscreen(true);
 
   if (params.opener_suppressed) {
     // When the opener is suppressed, the original renderer cannot access the
@@ -4365,7 +4366,8 @@ void WebContentsImpl::ViewSource(RenderFrameHostImpl* frame) {
 
   // Any new WebContents opened while this WebContents is in fullscreen can be
   // used to confuse the user, so drop fullscreen.
-  ForSecurityDropFullscreen();
+  if (IsFullscreenForCurrentTab())
+    ExitFullscreen(true);
 
   // We intentionally don't share the SiteInstance with the original frame so
   // that view source has a consistent process model and always ends up in a new
@@ -5076,7 +5078,8 @@ void WebContentsImpl::RunJavaScriptDialog(RenderFrameHost* render_frame_host,
 
   // Running a dialog causes an exit to webpage-initiated fullscreen.
   // http://crbug.com/728276
-  ForSecurityDropFullscreen();
+  if (IsFullscreenForCurrentTab())
+    ExitFullscreen(true);
 
   auto callback =
       base::BindOnce(&WebContentsImpl::OnDialogClosed, base::Unretained(this),
@@ -5145,7 +5148,8 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
 
   // Running a dialog causes an exit to webpage-initiated fullscreen.
   // http://crbug.com/728276
-  ForSecurityDropFullscreen();
+  if (IsFullscreenForCurrentTab())
+    ExitFullscreen(true);
 
   RenderFrameHostImpl* rfhi =
       static_cast<RenderFrameHostImpl*>(render_frame_host);
@@ -5727,15 +5731,6 @@ void WebContentsImpl::EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) {
   }
 }
 
-void WebContentsImpl::ForSecurityDropFullscreen() {
-  WebContentsImpl* web_contents = this;
-  while (web_contents) {
-    if (web_contents->IsFullscreenForCurrentTab())
-      web_contents->ExitFullscreen(true);
-    web_contents = web_contents->GetOuterWebContents();
-  }
-}
-
 void WebContentsImpl::SetAsFocusedWebContentsIfNecessary() {
   // Only change focus if we are not currently focused.
   WebContentsImpl* old_contents = GetFocusedWebContents();
@@ -5803,7 +5798,8 @@ void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
 void WebContentsImpl::DidCallFocus() {
   // Any explicit focusing of another window while this WebContents is in
   // fullscreen can be used to confuse the user, so drop fullscreen.
-  ForSecurityDropFullscreen();
+  if (IsFullscreenForCurrentTab())
+    ExitFullscreen(true);
 }
 
 RenderFrameHost* WebContentsImpl::GetFocusedFrameIncludingInnerWebContents() {

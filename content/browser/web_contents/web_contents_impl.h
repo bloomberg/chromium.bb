@@ -926,11 +926,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // |IsFullscreen| must return |true| when this method is called.
   bool IsPictureInPictureAllowedForFullscreenVideo() const;
 
-  // The WebContents is trying to take some action that would cause user
-  // confusion if taken while in fullscreen. If this WebContents or any outer
-  // WebContents is in fullscreen, drop it.
-  void ForSecurityDropFullscreen();
-
   // When inner or outer WebContents are present, become the focused
   // WebContentsImpl. This will activate this content's main frame RenderWidget
   // and indirectly all its subframe widgets.  GetFocusedRenderWidgetHost will
@@ -1021,8 +1016,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                            JavaScriptDialogsInMainAndSubframes);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
                            DialogsFromJavaScriptEndFullscreen);
-  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
-                           DialogsFromJavaScriptEndFullscreenEvenInInnerWC);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
                            PopupsFromJavaScriptEndFullscreen);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
