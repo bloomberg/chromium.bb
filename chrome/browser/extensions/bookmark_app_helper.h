@@ -82,13 +82,6 @@ class BookmarkAppHelper : public content::NotificationObserver {
   static bool BookmarkOrHostedAppInstalled(
       content::BrowserContext* browser_context, const GURL& url);
 
-  // Resize icons to the accepted sizes, and generate any that are missing. Does
-  // not update |web_app_info| except to update |generated_icon_color|.
-  static std::map<int, web_app::BitmapAndSource> ResizeIconsAndGenerateMissing(
-      std::vector<web_app::BitmapAndSource> icons,
-      std::set<int> sizes_to_generate,
-      WebApplicationInfo* web_app_info);
-
   // It is important that the linked app information in any extension that
   // gets created from sync matches the linked app information that came from
   // sync. If there are any changes, they will be synced back to other devices

@@ -208,9 +208,12 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
     for (const auto& icon : web_app_info_.icons)
       sizes_to_generate.insert(icon.width);
 
+    web_app_info_.generated_icon_color = SK_ColorTRANSPARENT;
     std::map<int, web_app::BitmapAndSource> size_map =
-        BookmarkAppHelper::ResizeIconsAndGenerateMissing(
-            downloaded_bitmaps_, sizes_to_generate, &web_app_info_);
+        web_app::ResizeIconsAndGenerateMissing(
+            downloaded_bitmaps_, sizes_to_generate, web_app_info_.app_url,
+            &web_app_info_.generated_icon_color);
+
     BookmarkAppHelper::UpdateWebAppIconsWithoutChangingLinks(size_map,
                                                              &web_app_info_);
     scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(service_));
@@ -302,23 +305,6 @@ bool BookmarkAppHelper::BookmarkOrHostedAppInstalled(
     }
   }
   return false;
-}
-
-// static
-std::map<int, web_app::BitmapAndSource>
-BookmarkAppHelper::ResizeIconsAndGenerateMissing(
-    std::vector<web_app::BitmapAndSource> icons,
-    std::set<int> sizes_to_generate,
-    WebApplicationInfo* web_app_info) {
-  SkColor generated_icon_color = SK_ColorTRANSPARENT;
-
-  std::map<int, web_app::BitmapAndSource> resized_bitmaps =
-      web_app::ResizeIconsAndGenerateMissing(icons, sizes_to_generate,
-                                             web_app_info->app_url,
-                                             &generated_icon_color);
-
-  web_app_info->generated_icon_color = generated_icon_color;
-  return resized_bitmaps;
 }
 
 // static
@@ -508,8 +494,10 @@ void BookmarkAppHelper::OnIconsDownloaded(
   // is not possible.
   web_app_info_.generated_icon_color = SK_ColorTRANSPARENT;
   std::map<int, web_app::BitmapAndSource> size_to_icons =
-      ResizeIconsAndGenerateMissing(downloaded_icons, SizesToGenerate(),
-                                    &web_app_info_);
+      web_app::ResizeIconsAndGenerateMissing(
+          downloaded_icons, SizesToGenerate(), web_app_info_.app_url,
+          &web_app_info_.generated_icon_color);
+
   ReplaceWebAppIcons(size_to_icons, &web_app_info_);
   web_app_icon_downloader_.reset();
 
