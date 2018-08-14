@@ -85,7 +85,7 @@ android_library("custom_tabs_support_java") {
   ]
   srcjar_deps = [ ":chrome_custom_tabs_service_aidl" ]
   android_manifest_for_lint = "src/customtabs/AndroidManifest.xml"
-  chromium_code = true
+  chromium_code = false
 }
 
 android_aidl("chrome_custom_tabs_service_aidl") {

@@ -235,6 +235,7 @@ public abstract class AsyncTask<Result> {
             allowCoreThreadTimeOut(true);
         }
 
+        @SuppressWarnings("NoAndroidAsyncTaskCheck")
         private static String getClassName(Runnable runnable) {
             Class blamedClass = runnable.getClass();
             try {
@@ -354,6 +355,7 @@ public abstract class AsyncTask<Result> {
         FINISHED,
     }
 
+    @SuppressWarnings("NoAndroidAsyncTaskCheck")
     public static void takeOverAndroidThreadPool() {
         ThreadPoolExecutor exec = (ThreadPoolExecutor) android.os.AsyncTask.THREAD_POOL_EXECUTOR;
         exec.setRejectedExecutionHandler(STEAL_RUNNABLE_HANDLER);
