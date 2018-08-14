@@ -551,14 +551,15 @@ int amdgpu_find_bo_by_cpu_mapping(amdgpu_device_handle dev,
 		bo = handle_table_lookup(&dev->bo_handles, i);
 		if (!bo || !bo->cpu_ptr || size > bo->alloc_size)
 			continue;
-		if (cpu >= bo->cpu_ptr && cpu < (bo->cpu_ptr + bo->alloc_size))
+		if (cpu >= bo->cpu_ptr &&
+		    cpu < (void*)((uintptr_t)bo->cpu_ptr + bo->alloc_size))
 			break;
 	}
 
 	if (i < dev->bo_handles.max_key) {
 		atomic_inc(&bo->refcount);
 		*buf_handle = bo;
-		*offset_in_bo = cpu - bo->cpu_ptr;
+		*offset_in_bo = (uintptr_t)cpu - (uintptr_t)bo->cpu_ptr;
 	} else {
 		*buf_handle = NULL;
 		*offset_in_bo = 0;
