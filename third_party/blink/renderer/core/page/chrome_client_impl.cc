@@ -57,7 +57,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
-#include "third_party/blink/renderer/core/exported/web_file_chooser_completion_impl.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
 #include "third_party/blink/renderer/core/exported/web_settings_impl.h"
@@ -584,17 +583,10 @@ void ChromeClientImpl::OpenFileChooser(
     LocalFrame* frame,
     scoped_refptr<FileChooser> file_chooser) {
   NotifyPopupOpeningObservers();
-  WebLocalFrameClient* client = WebLocalFrameImpl::FromFrame(frame)->Client();
-  if (!client)
-    return;
 
   Document* doc = frame->GetDocument();
   if (doc)
     doc->MaybeQueueSendDidEditFieldInInsecureContext();
-
-  const WebFileChooserParams& params = file_chooser->Params();
-  WebFileChooserCompletionImpl* chooser_completion =
-      new WebFileChooserCompletionImpl(std::move(file_chooser), this);
 
   static const wtf_size_t kMaximumPendingFileChooseRequests = 4;
   if (file_chooser_queue_.size() > kMaximumPendingFileChooseRequests) {
@@ -606,43 +598,33 @@ void ChromeClientImpl::OpenFileChooser(
     //
     // TODO(brettw): We might possibly want to require a user gesture to open
     // a file picker, which will address this issue in a better way.
-    //
-    // Choosing failed, so do callback with an empty list.
-    chooser_completion->DidChooseFile(WebVector<WebString>());
     return;
   }
-  file_chooser_queue_.push_back(chooser_completion);
+  file_chooser_queue_.push_back(file_chooser.get());
   if (file_chooser_queue_.size() == 1) {
     // Actually show the browse dialog when this is the first request.
-    if (client->RunFileChooser(params, chooser_completion))
+    if (file_chooser->OpenFileChooser(*this))
       return;
-    // Choosing failed, so do callback with an empty list.
-    chooser_completion->DidChooseFile(WebVector<WebString>());
-    // WebFileChooserCompletionImpl will call
-    // ChromeClientImpl::DidCompleteFileChooser().
+    // Choosing failed, so try the next chooser.
+    DidCompleteFileChooser(*file_chooser);
   }
 }
 
-void ChromeClientImpl::DidCompleteFileChooser(
-    WebFileChooserCompletionImpl& completion) {
+void ChromeClientImpl::DidCompleteFileChooser(FileChooser& chooser) {
   if (!file_chooser_queue_.IsEmpty() &&
-      file_chooser_queue_.front() != &completion) {
-    // This function is called even if |completion| wasn't stored in
+      file_chooser_queue_.front() != &chooser) {
+    // This function is called even if |chooser| wasn't stored in
     // file_chooser_queue_.
     return;
   }
   file_chooser_queue_.EraseAt(0);
   if (file_chooser_queue_.IsEmpty())
     return;
-  WebFileChooserCompletionImpl* next_completion = file_chooser_queue_.front();
-  LocalFrame* frame = next_completion->FrameOrNull();
-  WebLocalFrameClient* client =
-      frame ? WebLocalFrameImpl::FromFrame(frame)->Client() : nullptr;
-  if (client &&
-      client->RunFileChooser(next_completion->Params(), next_completion))
+  FileChooser* next_chooser = file_chooser_queue_.front();
+  if (next_chooser->OpenFileChooser(*this))
     return;
-  // Choosing failed, so do callback with an empty list.
-  next_completion->DidChooseFile(WebVector<WebString>());
+  // Choosing failed, so try the next chooser.
+  DidCompleteFileChooser(*next_chooser);
 }
 
 void ChromeClientImpl::EnumerateChosenDirectory(FileChooser* file_chooser) {
@@ -650,16 +632,11 @@ void ChromeClientImpl::EnumerateChosenDirectory(FileChooser* file_chooser) {
   if (!client)
     return;
 
-  WebFileChooserCompletionImpl* chooser_completion =
-      new WebFileChooserCompletionImpl(file_chooser);
-
   DCHECK(file_chooser);
   DCHECK(file_chooser->Params().selected_files.size());
-
-  // If the enumeration can't happen, call the callback with an empty list.
-  if (!client->EnumerateChosenDirectory(
-          file_chooser->Params().selected_files[0], chooser_completion))
-    chooser_completion->DidChooseFile(WebVector<WebString>());
+  if (client->EnumerateChosenDirectory(file_chooser->Params().selected_files[0],
+                                       file_chooser))
+    file_chooser->AddRef();
 }
 
 Cursor ChromeClientImpl::LastSetCursorForTesting() const {

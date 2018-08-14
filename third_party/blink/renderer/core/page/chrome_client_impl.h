@@ -44,7 +44,6 @@ namespace blink {
 class PagePopup;
 class PagePopupClient;
 class WebAutofillClient;
-class WebFileChooserCompletionImpl;
 class WebViewImpl;
 struct WebCursorInfo;
 
@@ -176,9 +175,9 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   // ChromeClientImpl:
   void SetNewWindowNavigationPolicy(WebNavigationPolicy);
 
-  // WebFileChooserCompletionImpl calls this function to kick pending
-  // file chooser requests.
-  void DidCompleteFileChooser(WebFileChooserCompletionImpl& completion);
+  // FileChooser calls this function to kick pending file chooser
+  // requests.
+  void DidCompleteFileChooser(FileChooser& file_chooser);
 
   void AutoscrollStart(WebFloatPoint viewport_point, LocalFrame*) override;
   void AutoscrollFling(WebFloatSize velocity, LocalFrame*) override;
@@ -249,7 +248,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
 
   WebViewImpl* web_view_;  // Weak pointer.
   HeapHashSet<WeakMember<PopupOpeningObserver>> popup_opening_observers_;
-  Vector<WebFileChooserCompletionImpl*> file_chooser_queue_;
+  Vector<FileChooser*> file_chooser_queue_;
   Cursor last_set_mouse_cursor_for_testing_;
   bool cursor_overridden_;
   bool did_request_non_empty_tool_tip_;
