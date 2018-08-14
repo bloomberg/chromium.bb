@@ -1060,11 +1060,11 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
          requester_info->IsNavigationPreload() ||
          requester_info->IsCertificateFetcherForSignedExchange());
   // Construct the IPC resource handler.
-  std::unique_ptr<ResourceHandler> handler;
-  handler = CreateBaseResourceHandler(
-      request, url_loader_options, std::move(mojo_request),
-      std::move(url_loader_client),
-      static_cast<ResourceType>(request_data.resource_type));
+  std::unique_ptr<ResourceHandler> handler =
+      std::make_unique<MojoAsyncResourceHandler>(
+          request, this, std::move(mojo_request), std::move(url_loader_client),
+          static_cast<ResourceType>(request_data.resource_type),
+          url_loader_options);
 
   // Prefetches outlive their child process.
   if (request_data.resource_type == RESOURCE_TYPE_PREFETCH) {
@@ -1081,20 +1081,6 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
       static_cast<RequestContextType>(request_data.fetch_request_context_type),
       requester_info->appcache_service(), child_id, route_id,
       std::move(handler));
-}
-
-std::unique_ptr<ResourceHandler>
-ResourceDispatcherHostImpl::CreateBaseResourceHandler(
-    net::URLRequest* request,
-    uint32_t url_loader_options,
-    network::mojom::URLLoaderRequest mojo_request,
-    network::mojom::URLLoaderClientPtr url_loader_client,
-    ResourceType resource_type) {
-  std::unique_ptr<ResourceHandler> handler;
-  handler.reset(new MojoAsyncResourceHandler(
-      request, this, std::move(mojo_request), std::move(url_loader_client),
-      resource_type, url_loader_options));
-  return handler;
 }
 
 std::unique_ptr<ResourceHandler>
