@@ -31,13 +31,16 @@ class FindInPageClient final : public blink::mojom::FindInPageClient {
 
   void SetNumberOfMatches(int request_id,
                           unsigned int current_number_of_matches,
-                          blink::mojom::FindMatchUpdateType final_update) final;
+                          blink::mojom::FindMatchUpdateType update_type) final;
 
   void SetActiveMatch(int request_id,
                       const gfx::Rect& active_match_rect,
-                      int active_match_ordinal) final;
+                      int active_match_ordinal,
+                      blink::mojom::FindMatchUpdateType update_type) final;
 
  private:
+  void HandleUpdateType(int request_id,
+                        blink::mojom::FindMatchUpdateType update_type);
   RenderFrameHostImpl* const frame_;
   FindRequestManager* const find_request_manager_;
   mojo::Binding<blink::mojom::FindInPageClient> binding_;
