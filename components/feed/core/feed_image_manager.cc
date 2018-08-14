@@ -7,6 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/feed/core/time_serialization.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher.h"
@@ -44,6 +47,9 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
         }
       })");
 
+void ReportFetchResult(FeedImageFetchResult result) {
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.Feed.ImageFetchResult", result);
+}
 }  // namespace
 
 FeedImageManager::FeedImageManager(
@@ -72,11 +78,16 @@ void FeedImageManager::FetchImagesFromDatabase(size_t url_index,
                                                ImageFetchedCallback callback) {
   if (url_index >= urls.size()) {
     // Already reached the last entry. Return an empty image.
-    std::move(callback).Run(gfx::Image());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), gfx::Image()));
     return;
   }
 
-  std::string image_id = urls[url_index];
+  const std::string& image_id = urls[url_index];
+  // Only take the first instance of the url so we get the worst-case time.
+  if (url_timers_.find(image_id) == url_timers_.end()) {
+    url_timers_.insert(std::make_pair(image_id, base::ElapsedTimer()));
+  }
   image_database_->LoadImage(
       image_id, base::BindOnce(&FeedImageManager::OnImageFetchedFromDatabase,
                                weak_ptr_factory_.GetWeakPtr(), url_index,
@@ -105,21 +116,37 @@ void FeedImageManager::OnImageDecodedFromDatabase(size_t url_index,
                                                   std::vector<std::string> urls,
                                                   ImageFetchedCallback callback,
                                                   const gfx::Image& image) {
+  const std::string& image_id = urls[url_index];
   if (image.IsEmpty()) {
     // If decoding the image failed, delete the DB entry.
-    image_database_->DeleteImage(urls[url_index]);
+    image_database_->DeleteImage(image_id);
     FetchImageFromNetwork(url_index, std::move(urls), std::move(callback));
     return;
   }
 
-  std::move(callback).Run(image);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), image));
+
+  // Report success if the url exists.
+  // This check is for concurrent access to the same url.
+  if (url_timers_.find(image_id) != url_timers_.end()) {
+    UMA_HISTOGRAM_TIMES("NewTabPage.Feed.ImageLoadFromCacheTime",
+                        url_timers_[image_id].Elapsed());
+    ClearUmaTimer(image_id);
+    ReportFetchResult(FeedImageFetchResult::kSuccessCached);
+  }
 }
 
 void FeedImageManager::FetchImageFromNetwork(size_t url_index,
                                              std::vector<std::string> urls,
                                              ImageFetchedCallback callback) {
-  GURL url(urls[url_index]);
+  const std::string& image_id = urls[url_index];
+  GURL url(image_id);
   if (!url.is_valid()) {
+    // Report failure.
+    ReportFetchResult(FeedImageFetchResult::kFailure);
+    ClearUmaTimer(image_id);
+
     // url is not valid, go to next URL.
     FetchImagesFromDatabase(url_index + 1, std::move(urls),
                             std::move(callback));
@@ -141,6 +168,10 @@ void FeedImageManager::OnImageFetchedFromNetwork(
     const std::string& image_data,
     const image_fetcher::RequestMetadata& request_metadata) {
   if (image_data.empty()) {
+    // Report failure.
+    ReportFetchResult(FeedImageFetchResult::kFailure);
+    ClearUmaTimer(urls[url_index]);
+
     // Fetching image failed, let's move to the next url.
     FetchImagesFromDatabase(url_index + 1, std::move(urls),
                             std::move(callback));
@@ -160,15 +191,31 @@ void FeedImageManager::OnImageDecodedFromNetwork(size_t url_index,
                                                  ImageFetchedCallback callback,
                                                  const std::string& image_data,
                                                  const gfx::Image& image) {
-  // Decoding urls[url_index] failed, let's move to the next url.
+  std::string image_id = urls[url_index];
   if (image.IsEmpty()) {
+    // Report failure.
+    ReportFetchResult(FeedImageFetchResult::kFailure);
+    ClearUmaTimer(image_id);
+
+    // Decoding failed, let's move to the next url.
     FetchImagesFromDatabase(url_index + 1, std::move(urls),
                             std::move(callback));
     return;
   }
 
-  image_database_->SaveImage(urls[url_index], image_data);
-  std::move(callback).Run(image);
+  image_database_->SaveImage(image_id, image_data);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), image));
+
+  // Report success if the url exists.
+  // This check is for concurrent access to the same url.
+  if (url_timers_.find(image_id) != url_timers_.end()) {
+    UMA_HISTOGRAM_TIMES("NewTabPage.Feed.ImageLoadFromNetworkTime",
+                        url_timers_[image_id].Elapsed());
+    ClearUmaTimer(image_id);
+    ReportFetchResult(FeedImageFetchResult::kSuccessFetched);
+  }
 }
 
 void FeedImageManager::DoGarbageCollectionIfNeeded() {
@@ -202,6 +249,10 @@ void FeedImageManager::OnGarbageCollectionDone(base::Time garbage_collected_day,
 
 void FeedImageManager::StopGarbageCollection() {
   garbage_collection_timer_.Stop();
+}
+
+void FeedImageManager::ClearUmaTimer(const std::string& url) {
+  url_timers_.erase(url);
 }
 
 }  // namespace feed

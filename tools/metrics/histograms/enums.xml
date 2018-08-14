@@ -19603,6 +19603,12 @@ Called by update_net_error_codes.py.-->
   <int value="7" label="Supervised User Interstitial"/>
 </enum>
 
+<enum name="FeedImageFetchResult">
+  <int value="0" label="Fetch cache success"/>
+  <int value="1" label="Fetch network success"/>
+  <int value="2" label="Fetch failure"/>
+</enum>
+
 <enum name="FetchRequestMode">
   <int value="0" label="SameOrigin"/>
   <int value="1" label="NoCORS"/>

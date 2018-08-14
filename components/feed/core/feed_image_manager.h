@@ -9,9 +9,14 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "components/feed/core/feed_image_database.h"
+
+namespace base {
+class ElapsedTimer;
+}  // namespace base
 
 namespace gfx {
 class Image;
@@ -25,6 +30,15 @@ struct RequestMetadata;
 namespace feed {
 
 using ImageFetchedCallback = base::OnceCallback<void(const gfx::Image&)>;
+
+// Enum for the result of the fetch, reported through UMA.
+// New values should be added at the end and things should not be renumbered.
+enum class FeedImageFetchResult {
+  kSuccessCached = 0,
+  kSuccessFetched = 1,
+  kFailure = 2,
+  kMaxValue = kFailure,
+};
 
 // FeedImageManager takes care of fetching images from the network and caching
 // them in the database.
@@ -84,6 +98,8 @@ class FeedImageManager {
   void OnGarbageCollectionDone(base::Time garbage_collected_day, bool success);
   void StopGarbageCollection();
 
+  void ClearUmaTimer(const std::string& url);
+
   // The day which image database already ran garbage collection against on.
   base::Time image_garbage_collected_day_;
 
@@ -91,6 +107,9 @@ class FeedImageManager {
 
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
   std::unique_ptr<FeedImageDatabase> image_database_;
+
+  // Track time it takes to get images.
+  base::flat_map<std::string, base::ElapsedTimer> url_timers_;
 
   base::WeakPtrFactory<FeedImageManager> weak_ptr_factory_;
 
