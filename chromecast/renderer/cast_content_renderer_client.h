@@ -67,6 +67,8 @@ class CastContentRendererClient
                       bool render_frame_has_played_media_before,
                       base::OnceClosure closure) override;
   bool IsIdleMediaSuspendEnabled() override;
+  bool IsBackgroundMediaSuspendEnabled(
+      content::RenderFrame* render_frame) override;
   void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() override;
 
  protected:

@@ -28,8 +28,8 @@ cast_source_set("renderer") {
   sources = [
     "cast_content_renderer_client.cc",
     "cast_content_renderer_client.h",
-    "cast_media_load_deferrer.cc",
-    "cast_media_load_deferrer.h",
+    "cast_media_playback_options.cc",
+    "cast_media_playback_options.h",
   ]
 
   public_deps = [
