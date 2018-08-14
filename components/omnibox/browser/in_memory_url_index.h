@@ -115,9 +115,6 @@ class InMemoryURLIndex : public KeyedService,
   // history database.
   void Init();
 
-  // Estimates the amount of memory used.
-  size_t EstimateMemoryUsage() const;
-
   // Scans the history index and returns a vector with all scored, matching
   // history items. This entry point simply forwards the call on to the
   // URLIndexPrivateData class. For a complete description of this function
