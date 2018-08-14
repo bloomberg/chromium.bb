@@ -6,6 +6,7 @@
 // Run with browser_tests --gtest_filter=ExtensionPreferenceApiTest.Standard
 
 var pn = chrome.privacy.network;
+var ps = chrome.privacy.services;
 // The collection of preferences to test, split into objects with a "root"
 // (the root object they preferences are exposed on) and a dictionary of
 // preference name -> default value.
@@ -140,5 +141,44 @@ chrome.test.runTests([
         {value: chrome.privacy.IPHandlingPolicy.DISABLE_NON_PROXIED_UDP,
          levelOfControl: 'controlled_by_this_extension'},
         'should receive disable_non_proxied_udp.'));
+  },
+  // Setting autofillEnabled should also set autofillAddressEnabled and
+  // autofillCreditCardEnabled.
+  function testSetAutofillEnabled() {
+    ps.autofillEnabled.set(
+      { value: false },
+      function() {
+        ps.autofillAddressEnabled.get(
+          {},
+          expect(
+            {value: false,
+             levelOfControl: 'controlled_by_this_extension'},
+            'autofillAddressEnabled should be disabled.'));
+
+        ps.autofillCreditCardEnabled.get(
+          {},
+          expect(
+            {value: false,
+             levelOfControl: 'controlled_by_this_extension'},
+            'autofillCreditCardEnabled should be disabled.'));
+
+        ps.autofillEnabled.set(
+          { value: true },
+          function() {
+            ps.autofillAddressEnabled.get(
+              {},
+              expect(
+                {value: true,
+                 levelOfControl: 'controlled_by_this_extension'},
+                'autofillAddressEnabled should be enabled.'));
+
+            ps.autofillCreditCardEnabled.get(
+              {},
+              expect(
+                {value: true,
+                 levelOfControl: 'controlled_by_this_extension'},
+                'autofillCreditCardEnabled should be enabled.'));
+          });
+      });
   }
 ]);

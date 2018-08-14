@@ -31,7 +31,10 @@ class CWVPreferencesTest : public PlatformTest {
   CWVPreferencesTest() {
     scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry =
         new user_prefs::PrefRegistrySyncable;
-    pref_registry->RegisterBooleanPref(autofill::prefs::kAutofillEnabled, true);
+    pref_registry->RegisterBooleanPref(
+        autofill::prefs::kAutofillCreditCardEnabled, true);
+    pref_registry->RegisterBooleanPref(autofill::prefs::kAutofillProfileEnabled,
+                                       true);
     pref_registry->RegisterBooleanPref(
         password_manager::prefs::kCredentialsEnableService, true);
     pref_registry->RegisterBooleanPref(prefs::kOfferTranslateEnabled, true);

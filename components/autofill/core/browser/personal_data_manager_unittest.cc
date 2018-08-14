@@ -1576,11 +1576,10 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeIsCached) {
   EXPECT_EQ(default_country,
             personal_data_->GetDefaultCountryCodeForNewAddress());
 
-  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(2);
-
   // Disabling Autofill blows away this cache and shouldn't account for Autofill
   // profiles.
   prefs::SetAutofillEnabled(prefs_.get(), false);
+  WaitForOnPersonalDataChanged();
   EXPECT_EQ(default_country,
             personal_data_->GetDefaultCountryCodeForNewAddress());
 
@@ -2009,7 +2008,6 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfileAutofillDisabled) {
 
   // Disable Profile autofill.
   prefs::SetProfileAutofillEnabled(personal_data_->pref_service_, false);
-  personal_data_->Refresh();
   WaitForOnPersonalDataChanged();
   personal_data_->ConvertWalletAddressesAndUpdateWalletCards();
 
@@ -2410,10 +2408,11 @@ TEST_F(PersonalDataManagerTest,
                                    base::TimeDelta::FromDays(1));
 
   SetServerCards(server_cards);
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
 
   // Disable Credit card autofill.
   prefs::SetCreditCardAutofillEnabled(personal_data_->pref_service_, false);
-  personal_data_->Refresh();
   WaitForOnPersonalDataChanged();
 
   // Check that profiles were saved.

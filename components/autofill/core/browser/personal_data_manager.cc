@@ -1446,27 +1446,26 @@ std::string PersonalDataManager::CountryCodeForCurrentTimezone() const {
 }
 
 void PersonalDataManager::SetPrefService(PrefService* pref_service) {
-  enabled_pref_ = std::make_unique<BooleanPrefMember>();
   wallet_enabled_pref_ = std::make_unique<BooleanPrefMember>();
   profile_enabled_pref_ = std::make_unique<BooleanPrefMember>();
   credit_card_enabled_pref_ = std::make_unique<BooleanPrefMember>();
   pref_service_ = pref_service;
-  // |pref_service_| can be nullptr in tests.
+  // |pref_service_| can be nullptr in tests. Using base::Unretained(this) is
+  // safe because observer instances are destroyed once |this| is destroyed.
   if (pref_service_) {
     credit_card_enabled_pref_->Init(
         prefs::kAutofillCreditCardEnabled, pref_service_,
-        base::Bind(&PersonalDataManager::Refresh, base::Unretained(this)));
+        base::BindRepeating(&PersonalDataManager::EnableAutofillPrefChanged,
+                            base::Unretained(this)));
     profile_enabled_pref_->Init(
         prefs::kAutofillProfileEnabled, pref_service_,
-        base::BindRepeating(&PersonalDataManager::Refresh,
+        base::BindRepeating(&PersonalDataManager::EnableAutofillPrefChanged,
                             base::Unretained(this)));
-    enabled_pref_->Init(prefs::kAutofillEnabled, pref_service_,
-                        base::Bind(&PersonalDataManager::EnabledPrefChanged,
-                                   base::Unretained(this)));
     wallet_enabled_pref_->Init(
         prefs::kAutofillWalletImportEnabled, pref_service_,
-        base::Bind(&PersonalDataManager::EnabledPrefChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(
+            &PersonalDataManager::EnableWalletIntegrationPrefChanged,
+            base::Unretained(this)));
   }
 }
 
@@ -1961,14 +1960,20 @@ std::string PersonalDataManager::MostCommonCountryCodeFromProfiles() const {
   return std::string();
 }
 
-void PersonalDataManager::EnabledPrefChanged() {
-  default_country_code_.clear();
+void PersonalDataManager::EnableWalletIntegrationPrefChanged() {
   if (!prefs::IsPaymentsIntegrationEnabled(pref_service_)) {
     // Re-mask all server cards when the user turns off wallet card
     // integration.
     ResetFullServerCards();
+    NotifyPersonalDataChanged();
   }
-  NotifyPersonalDataChanged();
+}
+
+void PersonalDataManager::EnableAutofillPrefChanged() {
+  default_country_code_.clear();
+
+  // Refresh our local cache and send notifications to observers.
+  Refresh();
 }
 
 bool PersonalDataManager::IsKnownCard(const CreditCard& credit_card) {

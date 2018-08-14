@@ -224,7 +224,12 @@ void AwBrowserContext::InitUserPrefService() {
   // We only use the autocomplete feature of Autofill, which is controlled via
   // the manager_delegate. We don't use the rest of Autofill, which is why it is
   // hardcoded as disabled here.
-  pref_registry->RegisterBooleanPref(autofill::prefs::kAutofillEnabled, false);
+  // TODO(crbug.com/873740): The following also disables autocomplete.
+  // Investigate what the intended behavior is.
+  pref_registry->RegisterBooleanPref(autofill::prefs::kAutofillProfileEnabled,
+                                     false);
+  pref_registry->RegisterBooleanPref(
+      autofill::prefs::kAutofillCreditCardEnabled, false);
   policy::URLBlacklistManager::RegisterProfilePrefs(pref_registry);
 
   pref_registry->RegisterStringPref(prefs::kWebRestrictionsAuthority,

@@ -46,7 +46,7 @@ class ExtensionPreferenceApiTest : public extensions::ExtensionApiTest {
     ASSERT_TRUE(pref);
     EXPECT_TRUE(pref->IsExtensionControlled());
     EXPECT_TRUE(prefs->GetBoolean(prefs::kAlternateErrorPagesEnabled));
-    EXPECT_TRUE(prefs->GetBoolean(autofill::prefs::kAutofillEnabled));
+    EXPECT_TRUE(prefs->GetBoolean(autofill::prefs::kAutofillEnabledDeprecated));
     EXPECT_TRUE(prefs->GetBoolean(autofill::prefs::kAutofillCreditCardEnabled));
     EXPECT_TRUE(prefs->GetBoolean(autofill::prefs::kAutofillProfileEnabled));
     EXPECT_FALSE(prefs->GetBoolean(prefs::kBlockThirdPartyCookies));
@@ -68,7 +68,8 @@ class ExtensionPreferenceApiTest : public extensions::ExtensionApiTest {
     ASSERT_TRUE(pref);
     EXPECT_FALSE(pref->IsExtensionControlled());
     EXPECT_FALSE(prefs->GetBoolean(prefs::kAlternateErrorPagesEnabled));
-    EXPECT_FALSE(prefs->GetBoolean(autofill::prefs::kAutofillEnabled));
+    EXPECT_FALSE(
+        prefs->GetBoolean(autofill::prefs::kAutofillEnabledDeprecated));
     EXPECT_FALSE(
         prefs->GetBoolean(autofill::prefs::kAutofillCreditCardEnabled));
     EXPECT_FALSE(prefs->GetBoolean(autofill::prefs::kAutofillProfileEnabled));
@@ -122,7 +123,7 @@ class ExtensionPreferenceApiTest : public extensions::ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, MAYBE_Standard) {
   PrefService* prefs = profile_->GetPrefs();
   prefs->SetBoolean(prefs::kAlternateErrorPagesEnabled, false);
-  prefs->SetBoolean(autofill::prefs::kAutofillEnabled, false);
+  prefs->SetBoolean(autofill::prefs::kAutofillEnabledDeprecated, false);
   prefs->SetBoolean(autofill::prefs::kAutofillCreditCardEnabled, false);
   prefs->SetBoolean(autofill::prefs::kAutofillProfileEnabled, false);
   prefs->SetBoolean(prefs::kBlockThirdPartyCookies, true);

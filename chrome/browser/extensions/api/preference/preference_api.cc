@@ -94,7 +94,7 @@ const PrefMappingEntry kPrefMapping[] = {
      APIPermission::kDataReductionProxy, APIPermission::kDataReductionProxy},
     {"alternateErrorPagesEnabled", prefs::kAlternateErrorPagesEnabled,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
-    {"autofillEnabled", autofill::prefs::kAutofillEnabled,
+    {"autofillEnabled", autofill::prefs::kAutofillEnabledDeprecated,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"autofillAddressEnabled", autofill::prefs::kAutofillProfileEnabled,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
@@ -786,9 +786,24 @@ ExtensionFunction::ResponseAction SetPreferenceFunction::Run() {
       transformer->BrowserToExtensionPref(browser_pref_value.get()));
   EXTENSION_FUNCTION_VALIDATE(extension_pref_value);
 
-  PreferenceAPI::Get(browser_context())
-      ->SetExtensionControlledPref(extension_id(), browser_pref, scope,
-                                   browser_pref_value.release());
+  PreferenceAPI* preference_api = PreferenceAPI::Get(browser_context());
+
+  // Set the new Autofill prefs if the extension sets the deprecated pref in
+  // order to maintain backward compatibility in the extensions preference API.
+  // TODO(crbug.com/870328): Remove this once the deprecated pref is retired.
+  if (autofill::prefs::kAutofillEnabledDeprecated == browser_pref) {
+    // |SetExtensionControlledPref| takes ownership of the base::Value pointer.
+    preference_api->SetExtensionControlledPref(
+        extension_id(), autofill::prefs::kAutofillCreditCardEnabled, scope,
+        new base::Value(browser_pref_value->GetBool()));
+    preference_api->SetExtensionControlledPref(
+        extension_id(), autofill::prefs::kAutofillProfileEnabled, scope,
+        new base::Value(browser_pref_value->GetBool()));
+  }
+
+  preference_api->SetExtensionControlledPref(
+      extension_id(), browser_pref, scope, browser_pref_value.release());
+
   return RespondNow(NoArguments());
 }
 

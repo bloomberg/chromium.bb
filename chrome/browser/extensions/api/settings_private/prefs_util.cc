@@ -118,7 +118,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   // Miscellaneous
   (*s_whitelist)[::prefs::kAlternateErrorPagesEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[autofill::prefs::kAutofillEnabled] =
+  (*s_whitelist)[autofill::prefs::kAutofillEnabledDeprecated] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[autofill::prefs::kAutofillProfileEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;

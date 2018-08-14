@@ -57,12 +57,13 @@
           "autofillEnabled": {
             "$ref": "types.ChromeSetting",
             "value": ["autofillEnabled", {"type":"boolean"}],
+            "deprecated": "Please use privacy.services.autofillAddressEnabled and privacy.services.autofillCreditCardEnabled. This remains for backward compatibility in this release and will be removed in the future.",
             "description": "If enabled, Chrome offers to automatically fill in forms. This preference's value is a boolean, defaulting to <code>true</code>."
           },
           "autofillAddressEnabled": {
             "$ref": "types.ChromeSetting",
             "value": ["autofillAddressEnabled", {"type":"boolean"}],
-            "description": "If enabled, Chrome offers to automatically fill in address forms. This preference's value is a boolean, defaulting to <code>true</code>."
+            "description": "If enabled, Chrome offers to automatically fill in addresses and other form data. This preference's value is a boolean, defaulting to <code>true</code>."
           },
           "autofillCreditCardEnabled": {
             "$ref": "types.ChromeSetting",
