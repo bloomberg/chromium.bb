@@ -402,6 +402,18 @@ void WebRtcRemoteEventLogManager::ClearCacheForBrowserContext(
   MaybeCancelUpload(delete_begin, delete_end, browser_context_id);
 }
 
+void WebRtcRemoteEventLogManager::RemovePendingLogsForNotEnabledBrowserContext(
+    BrowserContextId browser_context_id,
+    const base::FilePath& browser_context_dir) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(!BrowserContextEnabled(browser_context_id));
+  const base::FilePath remote_bound_logs_dir =
+      GetRemoteBoundWebRtcEventLogsDir(browser_context_dir);
+  if (!base::DeleteFile(remote_bound_logs_dir, /*recursive=*/true)) {
+    LOG(ERROR) << "Failed to delete  `" << remote_bound_logs_dir << ".";
+  }
+}
+
 void WebRtcRemoteEventLogManager::RenderProcessHostExitedDestroyed(
     int render_process_id) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());

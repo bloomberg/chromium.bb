@@ -118,6 +118,20 @@ PeerConnectionKey GetPeerConnectionKey(const RenderProcessHost* rph, int lid) {
   return PeerConnectionKey(rph->GetID(), lid, browser_context_id);
 }
 
+bool CreateRemoteBoundLogFile(const base::FilePath& dir,
+                              const base::FilePath::StringPieceType& extension,
+                              base::FilePath* file_path,
+                              base::File* file) {
+  *file_path =
+      dir.Append(kRemoteBoundWebRtcEventLogFileNamePrefix)
+          .InsertBeforeExtensionASCII("01234567890123456789012345678901")
+          .AddExtension(extension);
+  constexpr int file_flags = base::File::FLAG_CREATE | base::File::FLAG_WRITE |
+                             base::File::FLAG_EXCLUSIVE_WRITE;
+  file->Initialize(*file_path, file_flags);
+  return (file->IsValid() && file->created());
+}
+
 // This implementation does not upload files, nor pretends to have finished an
 // upload. Most importantly, it does not get rid of the locally-stored log file
 // after finishing a simulated upload; this is useful because it keeps the file
@@ -581,7 +595,12 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
 
   base::FilePath RemoteBoundLogsDir(
       const BrowserContext* browser_context) const {
-    return GetRemoteBoundWebRtcEventLogsDir(browser_context->GetPath());
+    return RemoteBoundLogsDir(browser_context->GetPath());
+  }
+
+  base::FilePath RemoteBoundLogsDir(
+      const base::FilePath& browser_context_base_dir) const {
+    return GetRemoteBoundWebRtcEventLogsDir(browser_context_base_dir);
   }
 
   // Initiate an arbitrary synchronous operation, allowing any tasks pending
@@ -898,8 +917,19 @@ class WebRtcEventLogManagerTestWithRemoteLoggingDisabled
 
 class WebRtcEventLogManagerTestPolicy : public WebRtcEventLogManagerTestBase {
  public:
-  WebRtcEventLogManagerTestPolicy() {
-    scoped_feature_list_.InitAndEnableFeature(features::kWebRtcRemoteEventLog);
+  ~WebRtcEventLogManagerTestPolicy() override = default;
+
+  // Defer to setup from the body.
+  void SetUp() override {}
+
+  void SetUp(bool feature_enabled) {
+    if (feature_enabled) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kWebRtcRemoteEventLog);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kWebRtcRemoteEventLog);
+    }
 
     // Avoid proactive pruning; it has the potential to mess up tests, as well
     // as keep pendings tasks around with a dangling reference to the unit
@@ -907,10 +937,10 @@ class WebRtcEventLogManagerTestPolicy : public WebRtcEventLogManagerTestBase {
     scoped_command_line_.GetProcessCommandLine()->AppendSwitchASCII(
         ::switches::kWebRtcRemoteEventLogUploadDelayMs, "0");
 
-    event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
-  }
+    CreateWebRtcEventLogManager(Compression::GZIP_PERFECT_ESTIMATION);
 
-  ~WebRtcEventLogManagerTestPolicy() override = default;
+    WebRtcEventLogManagerTestBase::SetUp();
+  }
 };
 
 class WebRtcEventLogManagerTestUploadSuppressionDisablingFlag
@@ -972,15 +1002,10 @@ class WebRtcEventLogManagerTestForNetworkConnectivity
     // creation of logs in a previous session.
     ASSERT_TRUE(CreateDirectory(remote_logs_dir));
 
-    const base::FilePath file_path =
-        remote_logs_dir.Append(kRemoteBoundWebRtcEventLogFileNamePrefix)
-            .InsertBeforeExtensionASCII("01234567890123456789012345678901")
-            .AddExtension(remote_log_extension_);
-    constexpr int file_flags = base::File::FLAG_CREATE |
-                               base::File::FLAG_WRITE |
-                               base::File::FLAG_EXCLUSIVE_WRITE;
-    file_ = base::File(file_path, file_flags);
-    ASSERT_TRUE(file_.IsValid() && file_.created());
+    base::FilePath file_path;
+    ASSERT_TRUE(CreateRemoteBoundLogFile(remote_logs_dir, remote_log_extension_,
+                                         &file_path, &file_));
+
     expected_files_.emplace_back(browser_context_id_, file_path,
                                  GetLastModificationTime(file_path));
   }
@@ -3586,6 +3611,8 @@ INSTANTIATE_TEST_CASE_P(,
 
 // This test is redundant; it is provided for completeness; see following tests.
 TEST_F(WebRtcEventLogManagerTestPolicy, StartsEnabledAllowsRemoteLogging) {
+  SetUp(true);  // Feature generally enabled (kill-switch not engaged).
+
   const bool allow_remote_logging = true;
   auto browser_context = CreateBrowserContext("name", allow_remote_logging);
 
@@ -3598,6 +3625,8 @@ TEST_F(WebRtcEventLogManagerTestPolicy, StartsEnabledAllowsRemoteLogging) {
 
 // This test is redundant; it is provided for completeness; see following tests.
 TEST_F(WebRtcEventLogManagerTestPolicy, StartsDisabledRejectsRemoteLogging) {
+  SetUp(true);  // Feature generally enabled (kill-switch not engaged).
+
   const bool allow_remote_logging = false;
   auto browser_context = CreateBrowserContext("name", allow_remote_logging);
 
@@ -3612,6 +3641,8 @@ TEST_F(WebRtcEventLogManagerTestPolicy, StartsDisabledRejectsRemoteLogging) {
 // the pref value.
 TEST_F(WebRtcEventLogManagerTestPolicy,
        StartsEnabledThenDisabledRejectsRemoteLogging1) {
+  SetUp(true);  // Feature generally enabled (kill-switch not engaged).
+
   bool allow_remote_logging = true;
   auto profile = CreateBrowserContext("name", allow_remote_logging);
 
@@ -3631,6 +3662,8 @@ TEST_F(WebRtcEventLogManagerTestPolicy,
 // the pref value.
 TEST_F(WebRtcEventLogManagerTestPolicy,
        StartsEnabledThenDisabledRejectsRemoteLogging2) {
+  SetUp(true);  // Feature generally enabled (kill-switch not engaged).
+
   bool allow_remote_logging = true;
   auto profile = CreateBrowserContext("name", allow_remote_logging);
 
@@ -3650,6 +3683,8 @@ TEST_F(WebRtcEventLogManagerTestPolicy,
 // the pref value.
 TEST_F(WebRtcEventLogManagerTestPolicy,
        StartsDisabledThenEnabledAllowsRemoteLogging1) {
+  SetUp(true);  // Feature generally enabled (kill-switch not engaged).
+
   bool allow_remote_logging = false;
   auto profile = CreateBrowserContext("name", allow_remote_logging);
 
@@ -3669,6 +3704,8 @@ TEST_F(WebRtcEventLogManagerTestPolicy,
 // the pref value.
 TEST_F(WebRtcEventLogManagerTestPolicy,
        StartsDisabledThenEnabledAllowsRemoteLogging2) {
+  SetUp(true);  // Feature generally enabled (kill-switch not engaged).
+
   bool allow_remote_logging = false;
   auto profile = CreateBrowserContext("name", allow_remote_logging);
 
@@ -3686,6 +3723,8 @@ TEST_F(WebRtcEventLogManagerTestPolicy,
 
 TEST_F(WebRtcEventLogManagerTestPolicy,
        StartsDisabledThenEnabledUploadsPendingLogFiles) {
+  SetUp(true);  // Feature generally enabled (kill-switch not engaged).
+
   bool allow_remote_logging = false;
   auto profile = CreateBrowserContext("name", allow_remote_logging);
 
@@ -3719,6 +3758,8 @@ TEST_F(WebRtcEventLogManagerTestPolicy,
 
 TEST_F(WebRtcEventLogManagerTestPolicy,
        StartsEnabledThenDisabledDoesNotUploadPendingLogFiles) {
+  SetUp(true);  // Feature generally enabled (kill-switch not engaged).
+
   SuppressUploading();
 
   std::list<WebRtcLogFileInfo> empty_list;
@@ -3750,6 +3791,8 @@ TEST_F(WebRtcEventLogManagerTestPolicy,
 
 TEST_F(WebRtcEventLogManagerTestPolicy,
        StartsEnabledThenDisabledDeletesPendingLogFiles) {
+  SetUp(true);  // Feature generally enabled (kill-switch not engaged).
+
   SuppressUploading();
 
   std::list<WebRtcLogFileInfo> empty_list;
@@ -3793,6 +3836,8 @@ TEST_F(WebRtcEventLogManagerTestPolicy,
 
 TEST_F(WebRtcEventLogManagerTestPolicy,
        StartsEnabledThenDisabledCancelsAndDeletesCurrentlyUploadedLogFile) {
+  SetUp(true);  // Feature generally enabled (kill-switch not engaged).
+
   // This factory expects exactly one log to be created, then cancelled.
   SetWebRtcEventLogUploaderFactoryForTesting(
       std::make_unique<NullWebRtcEventLogUploader::Factory>(true, 1));
@@ -3829,6 +3874,84 @@ TEST_F(WebRtcEventLogManagerTestPolicy,
   // cancelled, is enforced.
   // Deletion of the file not performed by NullWebRtcEventLogUploader; instead,
   // WebRtcEventLogUploaderImplTest.CancelOnOngoingUploadDeletesFile tests that.
+}
+
+// This test makes sure that if the policy was enabled in the past, but was
+// disabled while Chrome was not running, pending logs created during the
+// earlier session will be deleted from disk.
+TEST_F(WebRtcEventLogManagerTestPolicy,
+       PendingLogsFromPreviousSessionRemovedIfPolicyDisabledAtNewSessionStart) {
+  SetUp(true);  // Feature generally enabled (kill-switch not engaged).
+
+  SuppressUploading();
+
+  SetWebRtcEventLogUploaderFactoryForTesting(
+      std::make_unique<NullWebRtcEventLogUploader::Factory>(true, 0));
+
+  bool allow_remote_logging = true;
+  auto browser_context = CreateBrowserContext("name", allow_remote_logging);
+
+  const base::FilePath browser_context_dir =
+      RemoteBoundLogsDir(browser_context.get());
+  ASSERT_TRUE(base::DirectoryExists(browser_context_dir));
+
+  auto rph = std::make_unique<MockRenderProcessHost>(browser_context.get());
+  const auto key = GetPeerConnectionKey(rph.get(), kLid);
+
+  // Produce an empty log file in the BrowserContext. It's not uploaded
+  // because uploading is suppressed.
+  ASSERT_TRUE(PeerConnectionAdded(key));
+  ASSERT_TRUE(allow_remote_logging)
+      << "Must turn off after StartRemoteLogging, to test the right thing.";
+  ASSERT_EQ(StartRemoteLogging(key), allow_remote_logging);
+  ASSERT_TRUE(PeerConnectionRemoved(key));
+
+  // Reload the BrowserContext, but this time with the policy disabling
+  // the feature.
+  rph.reset();
+  browser_context.reset();
+  ASSERT_TRUE(base::DirectoryExists(browser_context_dir));  // Test sanity
+  allow_remote_logging = false;
+  browser_context = CreateBrowserContext("name", allow_remote_logging);
+
+  // Test focus - pending log files removed, as well as any potential metadata
+  // associated with remote-bound logging for |browser_context|.
+  ASSERT_FALSE(base::DirectoryExists(browser_context_dir));
+
+  // When NullWebRtcEventLogUploader::Factory is destroyed, it will show that
+  // the deleted log file was never uploaded.
+  UnsuppressUploading();
+  WaitForPendingTasks();
+}
+
+TEST_F(WebRtcEventLogManagerTestPolicy,
+       PendingLogsFromPreviousSessionRemovedIfRemoteLoggingKillSwitchEngaged) {
+  SetUp(false);  // Feature generally disabled (kill-switch engaged).
+
+  SetWebRtcEventLogUploaderFactoryForTesting(
+      std::make_unique<NullWebRtcEventLogUploader::Factory>(true, 0));
+
+  const std::string name = "name";
+  const base::FilePath browser_context_dir =
+      profiles_dir_.GetPath().AppendASCII(name);
+  const base::FilePath remote_bound_dir =
+      RemoteBoundLogsDir(browser_context_dir);
+  ASSERT_FALSE(base::PathExists(remote_bound_dir));
+
+  base::FilePath file_path;
+  base::File file;
+  ASSERT_TRUE(base::CreateDirectory(remote_bound_dir));
+  ASSERT_TRUE(CreateRemoteBoundLogFile(remote_bound_dir, remote_log_extension_,
+                                       &file_path, &file));
+  file.Close();
+
+  const bool allow_remote_logging = true;
+  auto browser_context = CreateBrowserContext(name, allow_remote_logging);
+  ASSERT_EQ(browser_context->GetPath(), browser_context_dir);  // Test sanity
+
+  WaitForPendingTasks();
+
+  EXPECT_FALSE(base::PathExists(remote_bound_dir));
 }
 
 TEST_F(WebRtcEventLogManagerTestUploadSuppressionDisablingFlag,

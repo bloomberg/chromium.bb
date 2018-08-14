@@ -139,6 +139,13 @@ class WebRtcRemoteEventLogManager final
                                    const base::Time& delete_begin,
                                    const base::Time& delete_end);
 
+  // Works on not-enabled BrowserContext-s, which means the logs are never made
+  // eligible for upload. Useful when a BrowserContext is loaded which in
+  // the past had remote-logging enabled, but no longer does.
+  void RemovePendingLogsForNotEnabledBrowserContext(
+      BrowserContextId browser_context_id,
+      const base::FilePath& browser_context_dir);
+
   // An implicit PeerConnectionRemoved() on all of the peer connections that
   // were associated with the renderer process.
   void RenderProcessHostExitedDestroyed(int render_process_id);
