@@ -44,7 +44,8 @@ class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
 
     result_view_ = std::make_unique<views::View>();
     result_view_->set_owned_by_client();
-    token_ = contents_registry_.Register(result_view_.get());
+    token_ = contents_registry_.Register(result_view_.get(),
+                                         /*contents_native_view=*/nullptr);
 
     SetUpSearchResult();
   }
