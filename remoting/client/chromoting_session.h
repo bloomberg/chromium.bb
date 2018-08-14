@@ -86,7 +86,8 @@ class ChromotingSession : public ClientInputInjector {
   using GetFeedbackDataCallback =
       base::OnceCallback<void(std::unique_ptr<FeedbackData>)>;
 
-  // Initiates a connection with the specified host.
+  // Initiates a connection with the specified host. This will start the
+  // connection immediately.
   ChromotingSession(base::WeakPtr<ChromotingSession::Delegate> delegate,
                     std::unique_ptr<protocol::CursorShapeStub> cursor_stub,
                     std::unique_ptr<protocol::VideoRenderer> video_renderer,
@@ -94,13 +95,6 @@ class ChromotingSession : public ClientInputInjector {
                     const ConnectToHostInfo& info);
 
   ~ChromotingSession() override;
-
-  // Starts the connection. Can be called no more than once.
-  void Connect();
-
-  // Terminates the current connection (if it hasn't already failed) and cleans
-  // up.
-  void Disconnect();
 
   // Gets the current feedback data and returns it to the callback on the
   // UI thread. If the session is never connected, then an empty feedback
@@ -134,7 +128,6 @@ class ChromotingSession : public ClientInputInjector {
   void SendClientMessage(const std::string& type, const std::string& data);
 
  private:
-  struct SessionContext;
   class Core;
 
   template <typename Functor, typename... Args>
@@ -143,16 +136,14 @@ class ChromotingSession : public ClientInputInjector {
                                   Args&&... args);
 
   // Used to obtain task runner references.
-  ChromotingClientRuntime* runtime_;
-
-  // Becomes null after the session is connected, and thereafter will not be
-  // reassigned.
-  std::unique_ptr<SessionContext> session_context_;
+  ChromotingClientRuntime* const runtime_;
 
   // Created when the session is connected, then used, and destroyed on the
   // network thread when the instance is destroyed.
   std::unique_ptr<Core> core_;
 
+  // TODO(yuweih): Looks like we should be able to move this into the Core and
+  // post a task to base::Unretained(core_) to get back the feedback.
   // Created when the session is created, then used, and destroyed on the
   // network thread when the instance is destroyed. This is stored out of
   // |core_| to allow accessing logs after |core_| becomes invalid.

@@ -50,7 +50,6 @@ void JniClient::ConnectToHost(const ConnectToHostInfo& info) {
       weak_ptr_, display_handler_->CreateCursorShapeStub(),
       display_handler_->CreateVideoRenderer(),
       std::make_unique<AudioPlayerAndroid>(), info));
-  session_->Connect();
 }
 
 void JniClient::DisconnectFromHost() {

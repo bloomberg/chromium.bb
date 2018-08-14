@@ -144,8 +144,6 @@ static void ResolveFeedbackDataCallback(
       [_displayHandler createVideoRenderer], std::move(audioStream), info));
   _gestureInterpreter.SetContext(_displayHandler.rendererProxy, _session.get());
   _keyboardInterpreter.SetContext(_session.get());
-
-  _session->Connect();
 }
 
 - (void)disconnectFromHost {
