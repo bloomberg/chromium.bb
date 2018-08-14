@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import re
 import mock
 
 from chromite.cbuildbot import cbuildbot_unittest
@@ -323,13 +324,53 @@ class RunTestSuiteTest(cros_test_lib.RunCommandTempDirTestCase):
 
   TEST_BOARD = 'betty'
   BUILD_ROOT = '/fake/root'
+  RESULTS_DIR = '/tmp/taco'
+  TEST_IMAGE_OUTSIDE_CHROOT = os.path.join(BUILD_ROOT, 'test.img')
+  VM_IMAGE_INSIDE_CHROOT = os.path.join(constants.CHROOT_SOURCE_ROOT,
+                                        constants.VM_IMAGE_BIN)
+  PRIVATE_KEY_OUTSIDE_CHROOT = os.path.join(BUILD_ROOT, 'rsa')
+  PRIVATE_KEY_INSIDE_CHROOT = os.path.join(constants.CHROOT_SOURCE_ROOT, 'rsa')
+  SSH_PORT = 9226
 
-  def _RunTestSuite(self, test_config):
-    vm_test_stages.RunTestSuite(self.BUILD_ROOT, self.TEST_BOARD, self.tempdir,
-                                '/tmp/taco', archive_dir='/fake/root',
-                                whitelist_chrome_crashes=False,
-                                test_config=test_config)
-    self.assertCommandContains(['--no_graphics', '--verbose'])
+  def setUp(self):
+    self.PatchObject(
+        path_util,
+        'FromChrootPath',
+        new=lambda path: re.sub(r'^{0}'.format(constants.CHROOT_SOURCE_ROOT),
+                                self.BUILD_ROOT,
+                                path)
+    )
+    self.PatchObject(
+        path_util,
+        'ToChrootPath',
+        new=lambda path: re.sub(r'^{0}'.format(self.BUILD_ROOT),
+                                constants.CHROOT_SOURCE_ROOT,
+                                path)
+    )
+
+  def _RunTestSuite(self, test_config, whitelist_chrome_crashes=False):
+    vm_test_stages.RunTestSuite(
+        self.BUILD_ROOT, self.TEST_BOARD, self.TEST_IMAGE_OUTSIDE_CHROOT,
+        self.RESULTS_DIR, archive_dir=self.BUILD_ROOT,
+        whitelist_chrome_crashes=whitelist_chrome_crashes,
+        test_config=test_config,
+        ssh_private_key=self.PRIVATE_KEY_OUTSIDE_CHROOT,
+        ssh_port=self.SSH_PORT)
+    self.assertCommandContains(['--board=%s' % self.TEST_BOARD])
+    if test_config.use_ctest:
+      self.assertCommandContains([
+          'bin/ctest', '--no_graphics', '--verbose',
+          '--target_image=%s' % self.TEST_IMAGE_OUTSIDE_CHROOT,
+          '--ssh_private_key=%s' % self.PRIVATE_KEY_OUTSIDE_CHROOT])
+      self.assertCommandContains(enter_chroot=True, expected=False)
+    else:
+      self.assertCommandContains([
+          'cros_run_vm_test', '--debug',
+          '--image-path=%s' % self.VM_IMAGE_INSIDE_CHROOT,
+          '--results-dir=%s' % self.RESULTS_DIR,
+          '--private-key=%s' % self.PRIVATE_KEY_INSIDE_CHROOT])
+      self.assertCommandContains(enter_chroot=True)
+      self.assertCommandContains(error_code_ok=True)
 
   def testFull(self):
     """Test running FULL config."""
@@ -368,6 +409,23 @@ class RunTestSuiteTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains(['--only_verify'])
     self.assertCommandContains(['--type=gce'])
     self.assertCommandContains(['--suite=gce-sanity'])
+
+  def testSmokeChromite(self):
+    """Test SMOKE config using chromite VM code path."""
+    config = config_lib.VMTestConfig(
+        constants.VM_SUITE_TEST_TYPE, test_suite='smoke', use_ctest=False)
+    self._RunTestSuite(config)
+    self.assertCommandContains(['--autotest=suite:smoke'])
+    self.assertCommandContains(['---test_that-args=-whitelist_chrome_crashes'],
+                               expected=False)
+
+  def testWhitelistChromeCrashes(self):
+    """Test SMOKE config with whitelisting chrome crashes."""
+    config = config_lib.VMTestConfig(
+        constants.VM_SUITE_TEST_TYPE, test_suite='smoke', use_ctest=False)
+    self._RunTestSuite(config, whitelist_chrome_crashes=True)
+    self.assertCommandContains(['--autotest=suite:smoke'])
+    self.assertCommandContains(['--test_that-args=--whitelist-chrome-crashes'])
 
 
 class UnmockedTests(cros_test_lib.TempDirTestCase):

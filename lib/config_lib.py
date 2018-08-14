@@ -331,13 +331,14 @@ class VMTestConfig(object):
     max_retries: Integer, maximum job retries allowed at suite level.
                  None for no max.
     warn_only: Boolean, failure on VM tests warns only.
+    use_ctest: Use the old ctest code path rather than the new chromite one.
   """
   DEFAULT_TEST_TIMEOUT = 90 * 60
 
   def __init__(self, test_type, test_suite=None,
                timeout=DEFAULT_TEST_TIMEOUT, retry=False,
                max_retries=constants.VM_TEST_MAX_RETRIES,
-               warn_only=False):
+               warn_only=False, use_ctest=True):
     """Constructor -- see members above."""
     self.test_type = test_type
     self.test_suite = test_suite
@@ -345,6 +346,7 @@ class VMTestConfig(object):
     self.retry = retry
     self.max_retries = max_retries
     self.warn_only = warn_only
+    self.use_ctest = use_ctest
 
 
   def __eq__(self, other):
@@ -359,15 +361,17 @@ class GCETestConfig(object):
     test_suite: Test suite to be run in GCETest.
     timeout: Number of seconds to wait before timing out waiting for
              results.
+    use_ctest: Use the old ctest code path rather than the new chromite one.
   """
   DEFAULT_TEST_TIMEOUT = 60 * 60
 
   def __init__(self, test_type, test_suite=None,
-               timeout=DEFAULT_TEST_TIMEOUT):
+               timeout=DEFAULT_TEST_TIMEOUT, use_ctest=True):
     """Constructor -- see members above."""
     self.test_type = test_type
     self.test_suite = test_suite
     self.timeout = timeout
+    self.use_ctest = use_ctest
 
   def __eq__(self, other):
     return self.__dict__ == other.__dict__
