@@ -273,11 +273,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuApiTest,
   VerifyMenuItem("parent", top_level_model_, top_level_index(),
                  ui::MenuModel::TYPE_SUBMENU, true);
 
-  // Since the extension submenu is shown, the previous separator should be in
-  // the model.
-  EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR,
-            top_level_model_->GetTypeAt(top_level_index() - 1));
-
   ui::MenuModel* submodel =
       top_level_model_->GetSubmenuModelAt(top_level_index());
   ASSERT_TRUE(submodel);
@@ -306,11 +301,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuApiTest,
   VerifyMenuItem("parent", top_level_model_, top_level_index(),
                  ui::MenuModel::TYPE_SUBMENU, true);
 
-  // Since the extension submenu is shown, the previous separator should be in
-  // the model.
-  EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR,
-            top_level_model_->GetTypeAt(top_level_index() - 1));
-
   ui::MenuModel* submodel =
       top_level_model_->GetSubmenuModelAt(top_level_index());
   ASSERT_TRUE(submodel);
@@ -338,11 +328,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuApiTest,
 
   VerifyMenuItem(extension()->name(), top_level_model_, top_level_index(),
                  ui::MenuModel::TYPE_SUBMENU, true);
-
-  // Since the extension submenu is shown, the previous separator should be in
-  // the model.
-  EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR,
-            top_level_model_->GetTypeAt(top_level_index() - 1));
 
   ui::MenuModel* submodel =
       top_level_model_->GetSubmenuModelAt(top_level_index());
@@ -377,11 +362,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuApiTest,
 
   VerifyMenuItem(extension()->name(), top_level_model_, top_level_index(),
                  ui::MenuModel::TYPE_SUBMENU, true);
-
-  // Since the extension submenu is shown, the previous separator should be in
-  // the model.
-  EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR,
-            top_level_model_->GetTypeAt(top_level_index() - 1));
 
   ui::MenuModel* submodel =
       top_level_model_->GetSubmenuModelAt(top_level_index());

@@ -571,28 +571,20 @@ static void VerifyMenuForSeparatorsTest(const MenuModel& menu) {
   // We expect to see the following items in the menu:
   //  radio1
   //  radio2
-  //  --separator-- (automatically added)
   //  normal1
-  //  --separator--
   //  normal2
-  //  --separator--
   //  radio3
   //  radio4
-  //  --separator--
   //  normal3
 
   int index = 0;
-  ASSERT_EQ(11, menu.GetItemCount());
+  ASSERT_EQ(7, menu.GetItemCount());
   ExpectLabelAndType("radio1", MenuModel::TYPE_RADIO, menu, index++);
   ExpectLabelAndType("radio2", MenuModel::TYPE_RADIO, menu, index++);
-  EXPECT_EQ(MenuModel::TYPE_SEPARATOR, menu.GetTypeAt(index++));
   ExpectLabelAndType("normal1", MenuModel::TYPE_COMMAND, menu, index++);
-  EXPECT_EQ(MenuModel::TYPE_SEPARATOR, menu.GetTypeAt(index++));
   ExpectLabelAndType("normal2", MenuModel::TYPE_COMMAND, menu, index++);
-  EXPECT_EQ(MenuModel::TYPE_SEPARATOR, menu.GetTypeAt(index++));
   ExpectLabelAndType("radio3", MenuModel::TYPE_RADIO, menu, index++);
   ExpectLabelAndType("radio4", MenuModel::TYPE_RADIO, menu, index++);
-  EXPECT_EQ(MenuModel::TYPE_SEPARATOR, menu.GetTypeAt(index++));
   ExpectLabelAndType("normal3", MenuModel::TYPE_COMMAND, menu, index++);
 }
 
