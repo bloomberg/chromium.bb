@@ -85,8 +85,8 @@ void WindowPortMus::SetCanAcceptDrops(bool can_accept_drops) {
   window_tree_client_->SetCanAcceptDrops(this, can_accept_drops);
 }
 
-void WindowPortMus::SetHitTestMask(const base::Optional<gfx::Rect>& rect) {
-  window_tree_client_->SetHitTestMask(this, rect);
+void WindowPortMus::SetHitTestMask(const base::Optional<gfx::Rect>& mask) {
+  window_tree_client_->SetHitTestMask(this, mask);
 }
 
 void WindowPortMus::Embed(ui::mojom::WindowTreeClientPtr client,

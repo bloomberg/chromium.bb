@@ -274,11 +274,8 @@ void WindowTreeClient::SetImeVisibility(WindowMus* window,
 void WindowTreeClient::SetHitTestMask(
     WindowMus* window,
     const base::Optional<gfx::Rect>& mask_rect) {
-  base::Optional<gfx::Rect> out_rect = base::nullopt;
-  if (mask_rect)
-    out_rect = mask_rect.value();
-
-  tree_->SetHitTestMask(window->server_id(), out_rect);
+  DCHECK(tree_);
+  tree_->SetHitTestMask(window->server_id(), mask_rect);
 }
 
 void WindowTreeClient::Embed(Window* window,

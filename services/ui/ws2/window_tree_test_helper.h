@@ -78,6 +78,7 @@ class WindowTreeTestHelper {
       const gfx::Insets& insets,
       base::Optional<std::vector<gfx::Rect>> additional_client_areas =
           base::Optional<std::vector<gfx::Rect>>());
+  void SetHitTestMask(aura::Window* window, base::Optional<gfx::Rect> mask);
   void SetWindowProperty(aura::Window* window,
                          const std::string& name,
                          const std::vector<uint8_t>& value,

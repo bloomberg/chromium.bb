@@ -459,6 +459,13 @@ void ServerWindow::SetClientArea(
   client_area_ = insets;
 }
 
+void ServerWindow::SetHitTestMask(const base::Optional<gfx::Rect>& mask) {
+  gfx::Insets insets;
+  if (mask)
+    insets = gfx::Rect(window_->bounds().size()).InsetsFrom(mask.value());
+  window_targeter_->SetInsets(insets);
+}
+
 void ServerWindow::SetCaptureOwner(WindowTree* owner) {
   capture_owner_ = owner;
   if (!IsTopLevel())
@@ -522,7 +529,9 @@ ServerWindow::ServerWindow(aura::Window* window,
     event_handler_ = std::make_unique<TopLevelEventHandler>(this);
   else
     event_handler_ = std::make_unique<ServerWindowEventHandler>(this);
-  window_->SetEventTargeter(std::make_unique<ServerWindowTargeter>(this));
+  auto server_window_targeter = std::make_unique<ServerWindowTargeter>(this);
+  window_targeter_ = server_window_targeter.get();
+  window_->SetEventTargeter(std::move(server_window_targeter));
   // In order for a window to receive events it must have a target_handler()
   // (see Window::CanAcceptEvent()). Normally the delegate is the TargetHandler,
   // but if the delegate is null, then so is the target_handler(). Set

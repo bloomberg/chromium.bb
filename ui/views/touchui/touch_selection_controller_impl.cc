@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -129,10 +130,11 @@ gfx::Image* GetHandleImage(gfx::SelectionBound::Type bound_type) {
 }
 
 // Calculates the bounds of the widget containing the selection handle based
-// on the SelectionBound's type and location
+// on the SelectionBound's type and location.
 gfx::Rect GetSelectionWidgetBounds(const gfx::SelectionBound& bound) {
   gfx::Size image_size = GetHandleImage(bound.type())->Size();
   int widget_width = image_size.width() + 2 * kSelectionHandleHorizPadding;
+  // Extend the widget height to handle touch events below the painted image.
   int widget_height = bound.GetHeight() + image_size.height() +
                       kSelectionHandleVerticalVisualOffset +
                       kSelectionHandleVertPadding;
@@ -200,20 +202,39 @@ gfx::Rect BoundToRect(const gfx::SelectionBound& bound) {
                            bound.edge_bottom_rounded());
 }
 
+// A WindowTargeter that insets the top of the touch handle's hit-test region.
+// This ensures that the client receives touch events above the painted image.
+// The widget extends its height to handle touch events below the painted image.
+class TouchHandleWindowTargeter : public aura::WindowTargeter {
+ public:
+  explicit TouchHandleWindowTargeter(aura::Window* window) : window_(window) {}
+  ~TouchHandleWindowTargeter() override = default;
+
+  void SetTopInset(int inset) { SetInsets(gfx::Insets(inset, 0, 0, 0)); }
+
+  // aura::WindowTargeter:
+  void OnSetInsets(const gfx::Insets& last_mouse_extend,
+                   const gfx::Insets& last_touch_extend) override {
+    // Send the targeter insets to the window service if this is a mus client.
+    // This helps the window service send events directly to the text window.
+    // OnSetInsets is generally only called when the insets actually change.
+    if (window_->env()->mode() == aura::Env::Mode::MUS) {
+      gfx::Rect mask(window_->bounds().size());
+      mask.Inset(touch_extend());
+      aura::WindowPortMus::Get(window_->GetRootWindow())->SetHitTestMask(mask);
+    }
+  }
+
+ private:
+  aura::Window* window_;
+  DISALLOW_COPY_AND_ASSIGN(TouchHandleWindowTargeter);
+};
+
 }  // namespace
 
 namespace views {
 
-typedef TouchSelectionControllerImpl::EditingHandleView EditingHandleView;
-
-// A WindowTargeter that shifts the hit-test target down - away from the text
-// cursor and expanding the hit-test area just below the visible drag handle.
-class TouchHandleWindowTargeter : public aura::WindowTargeter {
- public:
-  void SetHitTestOffset(int offset) {
-    SetInsets(gfx::Insets(offset, 0, -offset, 0));
-  }
-};
+using EditingHandleView = TouchSelectionControllerImpl::EditingHandleView;
 
 // A View that displays the text selection handle.
 class TouchSelectionControllerImpl::EditingHandleView
@@ -230,7 +251,7 @@ class TouchSelectionControllerImpl::EditingHandleView
     widget_.reset(CreateTouchSelectionPopupWidget(context, this));
 
     aura::Window* window = widget_->GetNativeWindow();
-    targeter_ = new TouchHandleWindowTargeter();
+    targeter_ = new TouchHandleWindowTargeter(window);
     window->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(targeter_));
 
     // We are owned by the TouchSelectionControllerImpl.
@@ -357,8 +378,9 @@ class TouchSelectionControllerImpl::EditingHandleView
       wm::ConvertPointFromScreen(window, &edge_bottom);
       selection_bound_.SetEdge(gfx::PointF(edge_top), gfx::PointF(edge_bottom));
     }
-    targeter_->SetHitTestOffset(selection_bound_.GetHeight() +
-                                kSelectionHandleVerticalVisualOffset);
+
+    targeter_->SetTopInset(selection_bound_.GetHeight() +
+                           kSelectionHandleVerticalVisualOffset);
   }
 
   void SetDrawInvisible(bool draw_invisible) {
