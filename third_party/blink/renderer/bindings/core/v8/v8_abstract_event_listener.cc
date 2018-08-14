@@ -70,8 +70,6 @@ V8AbstractEventListener::~V8AbstractEventListener() {
     DCHECK(listener_.IsEmpty());
     InstanceCounters::DecrementCounter(
         InstanceCounters::kJSEventListenerCounter);
-  } else {
-    listener_.Clear();
   }
 }
 
