@@ -1183,16 +1183,14 @@ void ChromePasswordProtectionService::OnWarningTriggerChanged() {
     return;
 
   // Clears captured enterprise password hashes or GSuite sync password hashes.
-  password_manager::HashPasswordManager hash_password_manager;
-  hash_password_manager.set_prefs(profile_->GetPrefs());
+  scoped_refptr<password_manager::PasswordStore> password_store =
+      PasswordStoreFactory::GetForProfile(profile_,
+                                          ServiceAccessType::EXPLICIT_ACCESS);
+
   if (GetSyncAccountType() == PasswordReuseEvent::GSUITE) {
-    hash_password_manager.ClearSavedPasswordHash(GetAccountInfo().email,
-                                                 /*is_gaia_password=*/true);
+    password_store->ClearGaiaPasswordHash(GetAccountInfo().email);
   }
-  hash_password_manager.ClearAllPasswordHash(/*is_gaia_password=*/false);
-  PasswordStoreFactory::GetForProfile(profile_,
-                                      ServiceAccessType::EXPLICIT_ACCESS)
-      ->SchedulePasswordHashUpdate(/*should_log_metrics*/ false);
+  password_store->ClearAllEnterprisePasswordHash();
 }
 
 void ChromePasswordProtectionService::OnEnterprisePasswordUrlChanged() {

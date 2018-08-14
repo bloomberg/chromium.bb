@@ -410,14 +410,23 @@ void PasswordStore::SaveSyncPasswordHash(
   }
 }
 
-void PasswordStore::ClearPasswordHash(const std::string& username) {
+void PasswordStore::ClearGaiaPasswordHash(const std::string& username) {
   hash_password_manager_.ClearSavedPasswordHash(username,
                                                 /*is_gaia_password=*/true);
-  // TODO(crbug.com/844134): Find a way to clear corresponding Gaia password
-  // hash when user logs out individual Gaia account in content area.
-  hash_password_manager_.ClearAllPasswordHash(/*is_gaia_password=*/true);
+  ScheduleTask(base::BindRepeating(&PasswordStore::ClearGaiaPasswordHashImpl,
+                                   this, username));
+}
+
+void PasswordStore::ClearAllGaiaPasswordHash() {
+  hash_password_manager_.ClearAllPasswordHash(/* is_gaia_password= */ true);
+  ScheduleTask(
+      base::BindRepeating(&PasswordStore::ClearAllGaiaPasswordHashImpl, this));
+}
+
+void PasswordStore::ClearAllEnterprisePasswordHash() {
+  hash_password_manager_.ClearAllPasswordHash(/* is_gaia_password= */ false);
   ScheduleTask(base::BindRepeating(
-      &PasswordStore::ClearProtectedPasswordHashImpl, this));
+      &PasswordStore::ClearAllEnterprisePasswordHashImpl, this));
 }
 
 void PasswordStore::SetPasswordStoreSigninNotifier(
@@ -579,11 +588,19 @@ void PasswordStore::SaveEnterprisePasswordURLs(
                                              enterprise_change_password_url);
 }
 
-void PasswordStore::ClearProtectedPasswordHashImpl() {
-  // TODO(crbug.com/844134): Find a way to clear corresponding Gaia password
-  // hash when user logs out individual Gaia account in content area.
+void PasswordStore::ClearGaiaPasswordHashImpl(const std::string& username) {
+  if (reuse_detector_)
+    reuse_detector_->ClearGaiaPasswordHash(username);
+}
+
+void PasswordStore::ClearAllGaiaPasswordHashImpl() {
   if (reuse_detector_)
     reuse_detector_->ClearAllGaiaPasswordHash();
+}
+
+void PasswordStore::ClearAllEnterprisePasswordHashImpl() {
+  if (reuse_detector_)
+    reuse_detector_->ClearAllEnterprisePasswordHash();
 }
 #endif
 

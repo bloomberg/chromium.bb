@@ -8,6 +8,7 @@
 #include "base/macros.h"
 
 #include "components/password_manager/core/browser/password_store_signin_notifier.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 
 class Profile;
@@ -17,7 +18,8 @@ namespace password_manager {
 // Responsible for subscribing to Chrome sign-in events and passing them to
 // PasswordStore.
 class PasswordStoreSigninNotifierImpl : public PasswordStoreSigninNotifier,
-                                        public SigninManagerBase::Observer {
+                                        public SigninManagerBase::Observer,
+                                        public AccountTrackerService::Observer {
  public:
   explicit PasswordStoreSigninNotifierImpl(Profile* profile);
   ~PasswordStoreSigninNotifierImpl() override;
@@ -33,6 +35,9 @@ class PasswordStoreSigninNotifierImpl : public PasswordStoreSigninNotifier,
 
   void GoogleSignedOut(const std::string& account_id,
                        const std::string& username) override;
+
+  // AccountTrackerService::Observer implementations.
+  void OnAccountRemoved(const AccountInfo& info) override;
 
  private:
   Profile* const profile_;

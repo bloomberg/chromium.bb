@@ -83,7 +83,9 @@ class MockPasswordStore : public PasswordStore {
                     metrics_util::SyncPasswordHashChange));
   MOCK_METHOD2(SaveEnterprisePasswordHash,
                void(const std::string&, const base::string16&));
-  MOCK_METHOD1(ClearPasswordHash, void(const std::string&));
+  MOCK_METHOD1(ClearGaiaPasswordHash, void(const std::string&));
+  MOCK_METHOD0(ClearAllGaiaPasswordHash, void());
+  MOCK_METHOD0(ClearAllEnterprisePasswordHash, void());
 #endif
 
   PasswordStoreSync* GetSyncInterface() { return this; }

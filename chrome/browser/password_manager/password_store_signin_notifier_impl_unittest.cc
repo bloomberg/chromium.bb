@@ -4,6 +4,7 @@
 
 #include "chrome/browser/password_manager/password_store_signin_notifier_impl.h"
 
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/test/base/testing_profile.h"
@@ -25,6 +26,8 @@ class PasswordStoreSigninNotifierImplTest : public testing::Test {
     testing_profile_.reset(builder.Build().release());
     fake_signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
         SigninManagerFactory::GetForProfile(testing_profile_.get()));
+    account_tracker_service_ =
+        AccountTrackerServiceFactory::GetForProfile(testing_profile_.get());
     store_ = new MockPasswordStore();
   }
 
@@ -36,6 +39,7 @@ class PasswordStoreSigninNotifierImplTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle;
   std::unique_ptr<TestingProfile> testing_profile_;
   FakeSigninManagerForTesting* fake_signin_manager_;  // Weak
+  AccountTrackerService* account_tracker_service_;    // Weak
   scoped_refptr<MockPasswordStore> store_;
 };
 
@@ -51,7 +55,7 @@ TEST_F(PasswordStoreSigninNotifierImplTest, Subscribed) {
           metrics_util::SyncPasswordHashChange::SAVED_ON_CHROME_SIGNIN));
   fake_signin_manager_->SignIn("accountid", "username", "password");
   testing::Mock::VerifyAndClearExpectations(store_.get());
-  EXPECT_CALL(*store_, ClearPasswordHash(_));
+  EXPECT_CALL(*store_, ClearAllGaiaPasswordHash());
   fake_signin_manager_->ForceSignOut();
   notifier.UnsubscribeFromSigninEvents();
 }
@@ -61,12 +65,35 @@ TEST_F(PasswordStoreSigninNotifierImplTest, Subscribed) {
 TEST_F(PasswordStoreSigninNotifierImplTest, Unsubscribed) {
   PasswordStoreSigninNotifierImpl notifier(testing_profile_.get());
   notifier.SubscribeToSigninEvents(store_.get());
-
   notifier.UnsubscribeFromSigninEvents();
   EXPECT_CALL(*store_, SaveGaiaPasswordHash(_, _, _)).Times(0);
-  EXPECT_CALL(*store_, ClearPasswordHash(_)).Times(0);
+  EXPECT_CALL(*store_, ClearAllGaiaPasswordHash()).Times(0);
   fake_signin_manager_->SignIn("accountid", "username", "secret");
   fake_signin_manager_->ForceSignOut();
+}
+
+// Checks that if a notifier is unsubscribed on sign-in events, then
+// a password store receives no sign-in notifications.
+TEST_F(PasswordStoreSigninNotifierImplTest, SignOutContentArea) {
+  PasswordStoreSigninNotifierImpl notifier(testing_profile_.get());
+  notifier.SubscribeToSigninEvents(store_.get());
+  EXPECT_CALL(
+      *store_,
+      SaveGaiaPasswordHash(
+          "username", base::ASCIIToUTF16("password"),
+          metrics_util::SyncPasswordHashChange::SAVED_ON_CHROME_SIGNIN));
+  fake_signin_manager_->SignIn("primary_accountid", "username", "password");
+  testing::Mock::VerifyAndClearExpectations(store_.get());
+
+  EXPECT_CALL(*store_, ClearGaiaPasswordHash("username2"));
+  account_tracker_service_->SeedAccountInfo("secondary_account_id",
+                                            "username2");
+  account_tracker_service_->RemoveAccount("secondary_account_id");
+  testing::Mock::VerifyAndClearExpectations(store_.get());
+
+  EXPECT_CALL(*store_, ClearAllGaiaPasswordHash());
+  fake_signin_manager_->ForceSignOut();
+  notifier.UnsubscribeFromSigninEvents();
 }
 
 }  // namespace

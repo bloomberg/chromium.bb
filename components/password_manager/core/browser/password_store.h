@@ -286,8 +286,14 @@ class PasswordStore : protected PasswordStoreSync,
   virtual void SaveSyncPasswordHash(const PasswordHashData& sync_password_data,
                                     metrics_util::SyncPasswordHashChange event);
 
-  // Clears the saved password hash for |username|.
-  virtual void ClearPasswordHash(const std::string& username);
+  // Clears the saved Gaia password hash for |username|.
+  virtual void ClearGaiaPasswordHash(const std::string& username);
+
+  // Clears all the Gaia password hash.
+  virtual void ClearAllGaiaPasswordHash();
+
+  // Clears all (non-Gaia) enterprise password hash.
+  virtual void ClearAllEnterprisePasswordHash();
 
   // Shouldn't be called more than once, |notifier| must be not nullptr.
   void SetPasswordStoreSigninNotifier(
@@ -493,8 +499,14 @@ class PasswordStore : protected PasswordStoreSync,
       const std::vector<GURL>& enterprise_login_urls,
       const GURL& enterprise_change_password_url);
 
-  // Synchronous implementation of ClearProtectedPasswordHash().
-  void ClearProtectedPasswordHashImpl();
+  // Synchronous implementation of ClearGaiaPasswordHash(...).
+  void ClearGaiaPasswordHashImpl(const std::string& username);
+
+  // Synchronous implementation of ClearAllGaiaPasswordHashImpl().
+  void ClearAllGaiaPasswordHashImpl();
+
+  // Synchronous implementation of ClearAllEnterprisePasswordHashImpl().
+  void ClearAllEnterprisePasswordHashImpl();
 #endif
 
   scoped_refptr<base::SequencedTaskRunner> main_task_runner() const {
