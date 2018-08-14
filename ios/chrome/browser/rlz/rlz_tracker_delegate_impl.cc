@@ -15,6 +15,7 @@
 #include "ios/chrome/browser/google/google_brand.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/web/public/web_thread.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 RLZTrackerDelegateImpl::RLZTrackerDelegateImpl() {}
 
@@ -58,8 +59,9 @@ bool RLZTrackerDelegateImpl::IsOnUIThread() {
   return web::WebThread::CurrentlyOn(web::WebThread::UI);
 }
 
-net::URLRequestContextGetter* RLZTrackerDelegateImpl::GetRequestContext() {
-  return GetApplicationContext()->GetSystemURLRequestContext();
+scoped_refptr<network::SharedURLLoaderFactory>
+RLZTrackerDelegateImpl::GetURLLoaderFactory() {
+  return GetApplicationContext()->GetSharedURLLoaderFactory();
 }
 
 bool RLZTrackerDelegateImpl::GetBrand(std::string* brand) {
