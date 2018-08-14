@@ -228,6 +228,9 @@ class PersonalDataManager : public KeyedService,
   // Returns all credit cards, server and local.
   virtual std::vector<CreditCard*> GetCreditCards() const;
 
+  // Returns the Payments customer data. Returns nullptr if no data is present.
+  virtual PaymentsCustomerData* GetPaymentsCustomerData() const;
+
   // Returns the profiles to suggest to the user, ordered by frecency.
   std::vector<AutofillProfile*> GetProfilesToSuggest() const;
 

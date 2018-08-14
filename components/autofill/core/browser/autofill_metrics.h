@@ -825,6 +825,10 @@ class AutofillMetrics {
   // from its prefilled value or not.
   static void LogSaveCardCardholderNameWasEdited(bool edited);
 
+  // Logs whether the PaymentsCustomerData's billing ID was valid at the time of
+  // use.
+  static void LogPaymentsCustomerDataBillingIdIsValid(bool valid);
+
   // |upload_decision_metrics| is a bitmask of |CardUploadDecisionMetric|.
   static void LogCardUploadDecisionMetrics(int upload_decision_metrics);
   static void LogCreditCardInfoBarMetric(

@@ -31,13 +31,12 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
+#include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_util.h"
-#include "components/prefs/pref_service.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "url/gurl.h"
 
@@ -460,13 +459,14 @@ int CreditCardSaveManager::GetDetectedValues() const {
     }
   }
 
-  // If the billing_customer_number Priority Preference is non-zero, it means
-  // the user has a Google Payments account. Include a bit for existence of this
-  // account (NOT the id itself), as it will help determine if a new Payments
-  // customer might need to be created when save is accepted.
-  if (static_cast<int64_t>(payments_client_->GetPrefService()->GetDouble(
-          prefs::kAutofillBillingCustomerNumber)) != 0)
+  // If the billing_customer_number is non-zero, it means the user has a Google
+  // Payments account. Include a bit for existence of this account (NOT the id
+  // itself), as it will help determine if a new Payments customer might need to
+  // be created when save is accepted.
+  if (payments::GetBillingCustomerId(personal_data_manager_,
+                                     payments_client_->GetPrefService()) != 0) {
     detected_values |= DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT;
+  }
 
   // If one of the following is true, signal that cardholder name will be
   // explicitly requested in the offer-to-save bubble:
@@ -518,9 +518,8 @@ void CreditCardSaveManager::SendUploadCardRequest() {
   if (observer_for_testing_)
     observer_for_testing_->OnSentUploadCardRequest();
   upload_request_.app_locale = app_locale_;
-  upload_request_.billing_customer_number =
-      static_cast<int64_t>(payments_client_->GetPrefService()->GetDouble(
-          prefs::kAutofillBillingCustomerNumber));
+  upload_request_.billing_customer_number = payments::GetBillingCustomerId(
+      personal_data_manager_, payments_client_->GetPrefService());
 
   AutofillMetrics::LogUploadAcceptedCardOriginMetric(
       uploading_local_card_
