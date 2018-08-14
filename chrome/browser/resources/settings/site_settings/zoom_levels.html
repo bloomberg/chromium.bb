@@ -25,6 +25,15 @@
       #empty {
         margin-top: 15px;
       }
+
+      .list-item .favicon-image {
+        flex-shrink: 0;
+      }
+
+      .list-item .middle {
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+      }
     </style>
     <div class="list-frame vertical-list" id="listContainer">
       <iron-list id="list" preserve-focus items="[[sites_]]"
