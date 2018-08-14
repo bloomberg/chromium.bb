@@ -34,7 +34,7 @@ struct od_ec_dec {
   const unsigned char *buf;
   /*An offset used to keep track of tell after reaching the end of the stream.
     This is constant throughout most of the decoding process, but becomes
-     important once we hit the end of the buffer and stop incrementing pointers
+     important once we hit the end of the buffer and stop incrementing bptr
      (and instead pretend cnt has lots of bits).*/
   int32_t tell_offs;
   /*The end of the current input buffer.*/
