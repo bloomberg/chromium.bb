@@ -6,6 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "ui/aura/screen_ozone.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "webrunner/browser/context_impl.h"
 #include "webrunner/browser/webrunner_browser_context.h"
 #include "webrunner/browser/webrunner_screen.h"
@@ -17,11 +19,22 @@ WebRunnerBrowserMainParts::WebRunnerBrowserMainParts(
     zx::channel context_channel)
     : context_channel_(std::move(context_channel)) {}
 
-WebRunnerBrowserMainParts::~WebRunnerBrowserMainParts() = default;
+WebRunnerBrowserMainParts::~WebRunnerBrowserMainParts() {
+  display::Screen::SetScreenInstance(nullptr);
+}
 
 void WebRunnerBrowserMainParts::PreMainMessageLoopRun() {
   DCHECK(!screen_);
-  screen_ = std::make_unique<WebRunnerScreen>();
+
+  auto platform_screen = ui::OzonePlatform::GetInstance()->CreateScreen();
+  if (platform_screen) {
+    screen_ = std::make_unique<aura::ScreenOzone>(std::move(platform_screen));
+  } else {
+    // Use dummy display::Screen for Ozone platforms that don't provide
+    // PlatformScreen.
+    screen_ = std::make_unique<WebRunnerScreen>();
+  }
+
   display::Screen::SetScreenInstance(screen_.get());
 
   DCHECK(!browser_context_);

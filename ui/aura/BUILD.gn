@@ -208,6 +208,8 @@ jumbo_component("aura") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
+    public += [ "screen_ozone.h" ]
+    sources += [ "screen_ozone.cc" ]
   }
 
   if (is_android) {

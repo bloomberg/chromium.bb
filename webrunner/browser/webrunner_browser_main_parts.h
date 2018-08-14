@@ -12,11 +12,14 @@
 #include "content/public/browser/browser_main_parts.h"
 #include "webrunner/fidl/chromium/web/cpp/fidl.h"
 
+namespace display {
+class Screen;
+}
+
 namespace webrunner {
 
 class ContextImpl;
 class WebRunnerBrowserContext;
-class WebRunnerScreen;
 
 class WebRunnerBrowserMainParts : public content::BrowserMainParts {
  public:
@@ -30,7 +33,7 @@ class WebRunnerBrowserMainParts : public content::BrowserMainParts {
  private:
   zx::channel context_channel_;
 
-  std::unique_ptr<WebRunnerScreen> screen_;
+  std::unique_ptr<display::Screen> screen_;
   std::unique_ptr<WebRunnerBrowserContext> browser_context_;
 
   std::unique_ptr<ContextImpl> context_impl_;
