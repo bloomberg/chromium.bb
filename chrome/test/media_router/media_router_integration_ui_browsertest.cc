@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_webui_impl.h"
 #include "chrome/common/pref_names.h"
@@ -20,7 +21,13 @@ namespace {
 const char kTestSinkName[] = "test-sink-1";
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, Dialog_Basic) {
+// Disabled due to flakiness: https://crbug.com/873912.
+#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+#define MAYBE_Dialog_Basic DISABLED_Dialog_Basic
+#else
+#define MAYBE_Dialog_Basic Dialog_Basic
+#endif
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MAYBE_Dialog_Basic) {
   OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
