@@ -7,8 +7,6 @@ crbug.com/829417 external/wpt/html/browsers/offline/appcache/workers/appcache-wo
 
 Bug(none) http/tests/misc/redirect-to-about-blank.html [ Timeout ]
 Bug(none) http/tests/security/cors-rfc1918 [ Crash Timeout ]
-Bug(none) http/tests/security/mime-type-execute-as-html-01.html [ Failure ]
-Bug(none) http/tests/security/mime-type-execute-as-html-04.html [ Failure ]
 Bug(none) http/tests/security/powerfulFeatureRestrictions/old-powerful-features-on-insecure-origin.html [ Pass Timeout ]
 
 # Only passes with Network Servce enabled (unfortunately these expectations still
