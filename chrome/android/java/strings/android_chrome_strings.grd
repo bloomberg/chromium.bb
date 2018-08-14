@@ -1190,6 +1190,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DATA_REDUCTION_TITLE" desc="Menu item for Data Saver, which allows users to save mobile data by compressing network traffic.">
         Data Saver
       </message>
+      <message name="IDS_DATA_REDUCTION_INITIAL_TITLE" desc="This title states that the below chart will contain the user's data savings after they have started browsing.">
+        Your data savings will appear here
+      </message>
       <message name="IDS_DATA_REDUCTION_SAVED_LABEL" desc="Summary text for the menu item that states the amount of mobile data that was saved by Data Saver (i.e. XX MB saved). Data Saver allows users to to reduce their mobile data usage by compressing network traffic.">
         <ph name="data">%1$s<ex>1.0 GB</ex></ph> saved
       </message>

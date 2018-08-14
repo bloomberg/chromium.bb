@@ -51,6 +51,7 @@ public class DataReductionStatsPreferenceTest {
 
     private static class TestDataReductionProxySettings extends DataReductionProxySettings {
         private long mLastUpdateInMillis;
+        private long[] mReceivedNetworkStatsHistory;
 
         /**
          * Returns the time that the data reduction statistics were last updated.
@@ -67,6 +68,16 @@ public class DataReductionStatsPreferenceTest {
          */
         public void setDataReductionLastUpdateTime(long lastUpdateInMillis) {
             mLastUpdateInMillis = lastUpdateInMillis;
+        }
+
+        @Override
+        public long[] getReceivedNetworkStatsHistory() {
+            if (mReceivedNetworkStatsHistory == null) return new long[0];
+            return mReceivedNetworkStatsHistory;
+        }
+
+        public void setReceivedNetworkStatsHistory(long[] receivedNetworkStatsHistory) {
+            mReceivedNetworkStatsHistory = receivedNetworkStatsHistory;
         }
     }
 
@@ -249,5 +260,34 @@ public class DataReductionStatsPreferenceTest {
         pref.updateReductionStatistics(now);
 
         Assert.assertEquals(numDaysDataSaverEnabled + 1, pref.getNumDaysInChart());
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    @Feature({"DataReduction"})
+    public void testShouldShowRealDataWhenEnoughDataIsUsed() throws Throwable {
+        DataReductionStatsPreference pref = new DataReductionStatsPreference(mContext, null);
+        long now = System.currentTimeMillis();
+        long lastUpdateTime = now - DateUtils.DAY_IN_MILLIS;
+        long dataSaverEnableTime = now - DateUtils.HOUR_IN_MILLIS;
+        mSettings.setDataReductionLastUpdateTime(lastUpdateTime);
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putLong(DataReductionProxySettings.DATA_REDUCTION_FIRST_ENABLED_TIME,
+                        dataSaverEnableTime)
+                .apply();
+
+        // User has only used 50KB so far.
+        mSettings.setReceivedNetworkStatsHistory(new long[] {50 * 1024});
+        pref.updateReductionStatistics(now);
+
+        Assert.assertFalse(pref.shouldShowRealData());
+
+        // User has now used 100KB.
+        mSettings.setReceivedNetworkStatsHistory(new long[] {100 * 1024});
+        pref.updateReductionStatistics(now);
+
+        Assert.assertTrue(pref.shouldShowRealData());
     }
 }
