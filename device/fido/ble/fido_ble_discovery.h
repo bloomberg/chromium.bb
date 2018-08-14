@@ -35,6 +35,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDiscovery
                      BluetoothDevice* device) override;
   void DeviceRemoved(BluetoothAdapter* adapter,
                      BluetoothDevice* device) override;
+  void AdapterPoweredChanged(BluetoothAdapter* adapter, bool powered) override;
 
   base::WeakPtrFactory<FidoBleDiscovery> weak_factory_;
 

@@ -79,4 +79,11 @@ void FidoBleDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
   }
 }
 
+void FidoBleDiscovery::AdapterPoweredChanged(BluetoothAdapter* adapter,
+                                             bool powered) {
+  if (!observer_)
+    return;
+  observer_->BluetoothAdapterPowerChanged(powered);
+}
+
 }  // namespace device

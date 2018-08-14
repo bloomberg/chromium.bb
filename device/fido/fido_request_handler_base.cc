@@ -161,6 +161,13 @@ void FidoRequestHandlerBase::DeviceRemoved(FidoDiscovery* discovery,
     observer_->FidoAuthenticatorRemoved(device->GetId());
 }
 
+void FidoRequestHandlerBase::BluetoothAdapterPowerChanged(bool is_powered_on) {
+  if (!observer_)
+    return;
+
+  observer_->BluetoothAdapterPowerChanged(is_powered_on);
+}
+
 void FidoRequestHandlerBase::AddAuthenticator(
     std::unique_ptr<FidoAuthenticator> authenticator) {
   DCHECK(authenticator &&
