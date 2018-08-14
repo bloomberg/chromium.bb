@@ -24,11 +24,18 @@ void PasswordStoreSigninNotifier::NotifySignin(const std::string& username,
   }
 }
 
-void PasswordStoreSigninNotifier::NotifySignedOut(const std::string& username) {
-  metrics_util::LogSyncPasswordHashChange(
-      metrics_util::SyncPasswordHashChange::CLEARED_ON_CHROME_SIGNOUT);
-  if (store_)
-    store_->ClearPasswordHash(username);
+void PasswordStoreSigninNotifier::NotifySignedOut(const std::string& username,
+                                                  bool primary_account) {
+  if (!store_)
+    return;
+
+  if (primary_account) {
+    metrics_util::LogSyncPasswordHashChange(
+        metrics_util::SyncPasswordHashChange::CLEARED_ON_CHROME_SIGNOUT);
+    store_->ClearAllGaiaPasswordHash();
+  } else {
+    store_->ClearGaiaPasswordHash(username);
+  }
 }
 
 }  // namespace password_manager
