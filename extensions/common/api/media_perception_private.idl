@@ -232,6 +232,13 @@ namespace mediaPerceptionPrivate {
     LABELED_REGION
   };
 
+  enum FramePerceptionType {
+    UNKNOWN_TYPE,
+    FACE_DETECTION,
+    PERSON_DETECTION,
+    MOTION_DETECTION
+  };
+
   dictionary Entity {
     // A unique id associated with the detected entity, which can be used to
     // track the entity over time.
@@ -320,6 +327,9 @@ namespace mediaPerceptionPrivate {
 
     // Human presence detection results for a video frame.
     VideoHumanPresenceDetection? videoHumanPresenceDetection;
+
+    // Indicates what types of frame perception were run.
+    FramePerceptionType[]? framePerceptionTypes;
   };
 
   // An estimate of the direction that the sound is coming from.

@@ -161,6 +161,13 @@ void InitializeFakeFramePerception(const int index,
   detection->set_motion_detected_likelihood(0.2);
   detection->set_light_condition(mri::VideoHumanPresenceDetection::BLACK_FRAME);
   detection->set_light_condition_likelihood(0.3);
+
+  // Add fake frame perception types.
+  frame_perception->add_perception_types(mri::FramePerception::FACE_DETECTION);
+  frame_perception->add_perception_types(
+      mri::FramePerception::PERSON_DETECTION);
+  frame_perception->add_perception_types(
+      mri::FramePerception::MOTION_DETECTION);
 }
 
 std::unique_ptr<media_perception::Point> MakePointIdl(float x, float y) {
@@ -269,6 +276,15 @@ void ValidateFramePerceptionResult(
             media_perception::LIGHT_CONDITION_BLACK_FRAME);
   ASSERT_TRUE(detection_result->light_condition_likelihood);
   EXPECT_EQ(*detection_result->light_condition_likelihood, 0.3);
+
+  // Validate frame perception types.
+  ASSERT_EQ(3u, frame_perception_result.frame_perception_types->size());
+  EXPECT_EQ(frame_perception_result.frame_perception_types->at(0),
+            media_perception::FRAME_PERCEPTION_TYPE_FACE_DETECTION);
+  EXPECT_EQ(frame_perception_result.frame_perception_types->at(1),
+            media_perception::FRAME_PERCEPTION_TYPE_PERSON_DETECTION);
+  EXPECT_EQ(frame_perception_result.frame_perception_types->at(2),
+            media_perception::FRAME_PERCEPTION_TYPE_MOTION_DETECTION);
 }
 
 void ValidateAudioPerceptionResult(

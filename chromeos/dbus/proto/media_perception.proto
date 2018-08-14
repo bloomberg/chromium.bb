@@ -224,6 +224,16 @@ message FramePerception {
 
   // Human presence detection results for a video frame.
   optional VideoHumanPresenceDetection video_human_presence_detection = 7;
+
+  enum PerceptionType {
+    UNKNOWN_TYPE = 0;
+    FACE_DETECTION = 1;
+    MOTION_DETECTION = 2;
+    PERSON_DETECTION = 3;
+  }
+
+  // Indicates what types of frame perception were run.
+  repeated PerceptionType perception_types = 8;
 }
 
 // Detection of human presence close to the camera.
