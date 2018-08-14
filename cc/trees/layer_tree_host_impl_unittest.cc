@@ -7516,6 +7516,44 @@ TEST_F(LayerTreeHostImplTest,
   CheckLayerScrollDelta(scroll_layer, ScrollOffsetToVector2dF(scroll_offset));
 }
 
+TEST_F(LayerTreeHostImplTest,
+       ExternalRootLayerScrollOffsetPreventedByUserNotScrollable) {
+  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(10, 20));
+  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  LayerImpl* clip_layer =
+      scroll_layer->test_properties()->parent->test_properties()->parent;
+  clip_layer->SetBounds(gfx::Size(10, 20));
+  scroll_layer->SetScrollable(gfx::Size(10, 20));
+  scroll_layer->SetDrawsContent(true);
+  host_impl_->active_tree()
+      ->InnerViewportScrollLayer()
+      ->test_properties()
+      ->user_scrollable_vertical = false;
+  host_impl_->active_tree()
+      ->InnerViewportScrollLayer()
+      ->test_properties()
+      ->user_scrollable_horizontal = false;
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+  // Draw first frame to clear any pending draws and check scroll.
+  DrawFrame();
+  CheckLayerScrollDelta(scroll_layer, gfx::Vector2dF(0.f, 0.f));
+  EXPECT_FALSE(host_impl_->active_tree()->needs_update_draw_properties());
+
+  // Set external scroll delta on delegate and notify LayerTreeHost.
+  gfx::ScrollOffset scroll_offset(10.f, 10.f);
+  host_impl_->SetSynchronousInputHandlerRootScrollOffset(scroll_offset);
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+  TestFrameData frame;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+  host_impl_->DrawLayers(&frame);
+  host_impl_->DidDrawAllLayers(frame);
+  EXPECT_TRUE(frame.has_no_damage);
+  CheckLayerScrollDelta(scroll_layer,
+                        ScrollOffsetToVector2dF(gfx::ScrollOffset()));
+}
+
 TEST_F(LayerTreeHostImplTest, OverscrollRoot) {
   InputHandlerScrollResult scroll_result;
   SetupScrollAndContentsLayers(gfx::Size(100, 100));

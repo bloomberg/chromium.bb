@@ -1656,10 +1656,11 @@ void LayerTreeImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 }
 
 bool LayerTreeImpl::DistributeRootScrollOffset(
-    const gfx::ScrollOffset& root_offset) {
+    const gfx::ScrollOffset& desired_root_offset) {
   if (!InnerViewportScrollNode() || !OuterViewportScrollLayer())
     return false;
 
+  gfx::ScrollOffset root_offset = desired_root_offset;
   ScrollTree& scroll_tree = property_trees()->scroll_tree;
 
   // If we get here, we have both inner/outer viewports, and need to distribute
@@ -1668,9 +1669,17 @@ bool LayerTreeImpl::DistributeRootScrollOffset(
       scroll_tree.current_scroll_offset(InnerViewportScrollNode()->element_id);
   gfx::ScrollOffset outer_viewport_offset =
       OuterViewportScrollLayer()->CurrentScrollOffset();
+  DCHECK(inner_viewport_offset + outer_viewport_offset == TotalScrollOffset());
+
+  // Setting the root scroll offset is driven by user actions so prevent
+  // it if it is not user scrollable in certain directions.
+  if (!InnerViewportScrollNode()->user_scrollable_horizontal)
+    root_offset.set_x(inner_viewport_offset.x() + outer_viewport_offset.x());
+
+  if (!InnerViewportScrollNode()->user_scrollable_vertical)
+    root_offset.set_y(inner_viewport_offset.y() + outer_viewport_offset.y());
 
   // It may be nothing has changed.
-  DCHECK(inner_viewport_offset + outer_viewport_offset == TotalScrollOffset());
   if (inner_viewport_offset + outer_viewport_offset == root_offset)
     return false;
 
