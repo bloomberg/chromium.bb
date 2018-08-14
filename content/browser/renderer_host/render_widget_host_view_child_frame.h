@@ -225,7 +225,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void UnregisterFrameSinkId();
 
   void UpdateViewportIntersection(const gfx::Rect& viewport_intersection,
-                                  const gfx::Rect& compositor_visible_rect);
+                                  const gfx::Rect& compositor_visible_rect,
+                                  bool occluded_or_obscured);
 
   // TODO(sunxd): Rename SetIsInert to UpdateIsInert.
   void SetIsInert();

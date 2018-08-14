@@ -230,7 +230,7 @@ TEST_F(RenderWidgetHostViewChildFrameTest, ViewportIntersectionUpdated) {
       process->sink().GetUniqueMessageMatching(
           ViewMsg_SetViewportIntersection::ID);
   ASSERT_TRUE(intersection_update);
-  std::tuple<gfx::Rect, gfx::Rect> sent_rects;
+  std::tuple<gfx::Rect, gfx::Rect, bool> sent_rects;
 
   ViewMsg_SetViewportIntersection::Read(intersection_update, &sent_rects);
   EXPECT_EQ(intersection_rect, std::get<0>(sent_rects));

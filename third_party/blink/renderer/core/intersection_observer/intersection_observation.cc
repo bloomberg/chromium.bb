@@ -16,6 +16,13 @@ namespace blink {
 namespace {
 
 bool IsOccluded(const Element& element, const IntersectionGeometry& geometry) {
+  DCHECK(RuntimeEnabledFeatures::IntersectionObserverV2Enabled());
+  if (element.GetDocument()
+          .GetFrame()
+          ->LocalFrameRoot()
+          .MayBeOccludedOrObscuredByRemoteAncestor()) {
+    return true;
+  }
   // TODO(layout-dev): This should hit-test the intersection rect, not the
   // target rect; it's not helpful to know that the portion of the target that
   // is clipped is also occluded. To do that, the intersection rect must be

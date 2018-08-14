@@ -2013,11 +2013,13 @@ void RenderWidget::OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
 
 void RenderWidget::OnSetViewportIntersection(
     const gfx::Rect& viewport_intersection,
-    const gfx::Rect& compositor_visible_rect) {
+    const gfx::Rect& compositor_visible_rect,
+    bool occluded_or_obscured) {
   if (auto* frame_widget = GetFrameWidget()) {
     DCHECK_EQ(popup_type_, WebPopupType::kWebPopupTypeNone);
     compositor_visible_rect_ = compositor_visible_rect;
-    frame_widget->SetRemoteViewportIntersection(viewport_intersection);
+    frame_widget->SetRemoteViewportIntersection(viewport_intersection,
+                                                occluded_or_obscured);
     layer_tree_view_->SetViewportVisibleRect(ViewportVisibleRect());
   }
 }

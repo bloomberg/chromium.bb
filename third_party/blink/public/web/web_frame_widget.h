@@ -116,10 +116,11 @@ class WebFrameWidget : public WebWidget {
   // ended.
   virtual void DragSourceSystemDragEnded() = 0;
 
-  // Constrains the viewport intersection for use by IntersectionObserver.
-  // This is needed for out-of-process iframes to know if they are clipped
-  // by ancestor frames in another process.
-  virtual void SetRemoteViewportIntersection(const WebRect&) {}
+  // Constrains the viewport intersection for use by IntersectionObserver,
+  // and indicates whether the frame may be painted over or obscured in the
+  // parent. This is needed for out-of-process iframes to know if they are
+  // clipped or obscured by ancestor frames in another process.
+  virtual void SetRemoteViewportIntersection(const WebRect&, bool) {}
 
   // Sets the inert bit on an out-of-process iframe, causing it to ignore
   // input.

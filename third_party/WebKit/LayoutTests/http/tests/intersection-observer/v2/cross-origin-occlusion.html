@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
+<style>
+pre, #log {
+  position: absolute;
+  top: 0;
+  left: 200px;
+}
+iframe {
+  width: 300px;
+  height: 150px;
+  border: none;
+}
+#occluder {
+  will-change: transform;
+  width: 100px;
+  height: 100px;
+  background-color: green;
+}
+</style>
+
+<iframe src="http://localhost:8080/intersection-observer/resources/v2-subframe.html"></iframe>
+<div id="occluder"></div>
+
+<script>
+function waitForFrame(f) {
+  requestAnimationFrame(() => {
+    setTimeout(f)
+  })
+}
+
+async_test(function(t) {
+  var iframe = document.querySelector("iframe");
+  var occluder = document.getElementById("occluder");
+
+  function step0(event) {
+    occluder.style.marginTop = "-150px";
+    assert_equals(JSON.stringify(event.data),
+                  JSON.stringify([true]));
+  }
+
+  function step1(event) {
+    occluder.style.marginTop = "";
+    assert_equals(JSON.stringify(event.data),
+                  JSON.stringify([false]));
+  }
+
+  function step2(event) {
+    assert_equals(JSON.stringify(event.data),
+                  JSON.stringify([true]));
+  }
+
+  var steps = [step0, step1, step2];
+
+  function handleMessage(event) {
+    if (steps.length) {
+      steps.shift()(event);
+      waitForFrame(() => {
+        iframe.contentWindow.postMessage("", "*");
+      });
+    } else {
+      t.done();
+    }
+  }
+
+  window.addEventListener("message", t.step_func(handleMessage));
+
+  iframe.onload = t.step_func(function() {
+    waitForFrame(function() {
+      iframe.contentWindow.postMessage("", "*")
+    });
+  });
+}, "Intersection observer V2 test with occlusion of target in iframe.");
+</script>

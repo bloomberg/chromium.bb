@@ -47,7 +47,8 @@ class WebRemoteFrameClient {
                                  const WebRect& screen_space_rect) {}
 
   virtual void UpdateRemoteViewportIntersection(
-      const WebRect& viewport_intersection) {}
+      const WebRect& viewport_intersection,
+      bool occluded_or_obscured) {}
 
   virtual void VisibilityChanged(bool visible) {}
 

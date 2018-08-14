@@ -697,14 +697,15 @@ void WebFrameWidgetImpl::WillCloseLayerTreeView() {
 }
 
 void WebFrameWidgetImpl::SetRemoteViewportIntersection(
-    const WebRect& viewport_intersection) {
+    const WebRect& viewport_intersection,
+    bool occluded_or_obscured) {
   // Remote viewports are only applicable to local frames with remote ancestors.
   DCHECK(LocalRootImpl()->Parent() &&
          LocalRootImpl()->Parent()->IsWebRemoteFrame() &&
          LocalRootImpl()->GetFrame());
 
   LocalRootImpl()->GetFrame()->SetViewportIntersectionFromParent(
-      viewport_intersection);
+      viewport_intersection, occluded_or_obscured);
 }
 
 void WebFrameWidgetImpl::SetIsInert(bool inert) {

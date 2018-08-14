@@ -461,9 +461,10 @@ IPC_MESSAGE_ROUTED1(ViewMsg_ForceRedraw, int /* snapshot_id */)
 
 // Sets the viewport intersection and compositor raster area on the widget for
 // an out-of-process iframe.
-IPC_MESSAGE_ROUTED2(ViewMsg_SetViewportIntersection,
+IPC_MESSAGE_ROUTED3(ViewMsg_SetViewportIntersection,
                     gfx::Rect /* viewport_intersection */,
-                    gfx::Rect /* compositor_visible_rect */)
+                    gfx::Rect /* compositor_visible_rect */,
+                    bool /* occluded or obscured */)
 
 // Sets the inert bit on an out-of-process iframe.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetIsInert, bool /* inert */)

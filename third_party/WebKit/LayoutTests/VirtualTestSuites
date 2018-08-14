@@ -722,5 +722,10 @@
     "prefix": "origin-policy",
     "base": "external/wpt/origin-policy",
     "args": ["--enable-features=OriginPolicy"]
+  },
+  {
+    "prefix": "intersection-observer-v2",
+    "base": "http/tests/intersection-observer",
+    "args": ["--enable-blink-features=IntersectionObserverV2"]
   }
 ]

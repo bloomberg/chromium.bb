@@ -74,6 +74,7 @@ void RemoteFrameView::UpdateViewportIntersectionsForSubtree() {
     return;
 
   IntRect viewport_intersection;
+  bool occluded_or_obscured = false;
   DocumentLifecycle::LifecycleState parent_state =
       owner->GetDocument().Lifecycle().GetState();
 
@@ -108,12 +109,33 @@ void RemoteFrameView::UpdateViewportIntersectionsForSubtree() {
     }
   }
 
-  if (viewport_intersection == last_viewport_intersection_)
+  if (parent_state >= DocumentLifecycle::kPrePaintClean &&
+      RuntimeEnabledFeatures::IntersectionObserverV2Enabled()) {
+    // TODO(layout-dev): As an optimization, we should only check for
+    // occlusion and effects if the remote frame needs it, i.e., if it has at
+    // least one active IntersectionObserver with trackVisibility:true.
+    if (owner->GetDocument()
+            .GetFrame()
+            ->LocalFrameRoot()
+            .MayBeOccludedOrObscuredByRemoteAncestor() ||
+        owner->HasDistortingVisualEffects()) {
+      occluded_or_obscured = true;
+    } else {
+      HitTestResult result(owner->HitTestForOcclusion());
+      occluded_or_obscured =
+          result.InnerNode() && result.InnerNode() != owner->GetNode();
+    }
+  }
+
+  if (viewport_intersection == last_viewport_intersection_ &&
+      occluded_or_obscured == last_occluded_or_obscured_) {
     return;
+  }
 
   last_viewport_intersection_ = viewport_intersection;
+  last_occluded_or_obscured_ = occluded_or_obscured;
   remote_frame_->Client()->UpdateRemoteViewportIntersection(
-      viewport_intersection);
+      viewport_intersection, occluded_or_obscured);
 }
 
 IntRect RemoteFrameView::GetCompositingRect() {

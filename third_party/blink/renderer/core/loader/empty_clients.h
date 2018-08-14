@@ -422,8 +422,8 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
                           bool has_user_gesture) const override {}
   void FrameRectsChanged(const IntRect& local_frame_rect,
                          const IntRect& transformed_frame_rect) override {}
-  void UpdateRemoteViewportIntersection(
-      const IntRect& viewport_intersection) override {}
+  void UpdateRemoteViewportIntersection(const IntRect& viewport_intersection,
+                                        bool occluded_or_obscured) override {}
   void AdvanceFocus(WebFocusType, LocalFrame* source) override {}
   void VisibilityChanged(bool visible) override {}
   void SetIsInert(bool) override {}
