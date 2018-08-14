@@ -829,7 +829,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     && ChromeFeatureList.isEnabled(
                                ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
                     && PrefServiceBridge.getInstance().isIncognitoModeEnabled();
-            final ToolbarButtonData secondSlotTabSwitcherButtonData = showIncognitoToggleButton
+            final ToolbarButtonData firstSlotTabSwitcherButtonData = showIncognitoToggleButton
                     ? createIncognitoToggleButton(
                               wrapBottomToolbarClickListenerForIPH(incognitoClickHandler),
                               mActivity)
@@ -841,9 +841,9 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     wrapBottomToolbarClickListenerForIPH(tabSwitcherClickHandler),
                     mAppMenuButtonHelper, mTabModelSelector, mOverviewModeBehavior,
                     mActivity.getContextualSearchManager(), mActivity.getWindowAndroid(),
+                    firstSlotTabSwitcherButtonData,
                     createNewTabButton(
-                            wrapBottomToolbarClickListenerForIPH(newTabClickHandler), mActivity),
-                    secondSlotTabSwitcherButtonData);
+                            wrapBottomToolbarClickListenerForIPH(newTabClickHandler), mActivity));
 
             Tab currentTab = tabModelSelector.getCurrentTab();
             maybeShowDuetHelpBubble(currentTab);
