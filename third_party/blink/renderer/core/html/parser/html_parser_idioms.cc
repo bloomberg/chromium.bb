@@ -372,6 +372,7 @@ enum class MetaAttribute {
 WTF::TextEncoding EncodingFromMetaAttributes(
     const HTMLAttributeList& attributes) {
   bool got_pragma = false;
+  bool has_charset = false;
   MetaAttribute mode = MetaAttribute::kNone;
   String charset;
 
@@ -382,15 +383,14 @@ WTF::TextEncoding EncodingFromMetaAttributes(
     if (ThreadSafeMatch(attribute_name, http_equivAttr)) {
       if (DeprecatedEqualIgnoringCase(attribute_value, "content-type"))
         got_pragma = true;
-    } else if (charset.IsEmpty()) {
-      if (ThreadSafeMatch(attribute_name, charsetAttr)) {
-        charset = attribute_value;
-        mode = MetaAttribute::kCharset;
-      } else if (ThreadSafeMatch(attribute_name, contentAttr)) {
-        charset = ExtractCharset(attribute_value);
-        if (charset.length())
-          mode = MetaAttribute::kPragma;
-      }
+    } else if (ThreadSafeMatch(attribute_name, charsetAttr)) {
+      has_charset = true;
+      charset = attribute_value;
+      mode = MetaAttribute::kCharset;
+    } else if (!has_charset && ThreadSafeMatch(attribute_name, contentAttr)) {
+      charset = ExtractCharset(attribute_value);
+      if (charset.length())
+        mode = MetaAttribute::kPragma;
     }
   }
 
