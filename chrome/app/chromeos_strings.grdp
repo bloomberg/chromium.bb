@@ -1926,7 +1926,7 @@
     Install apps from your other devices
   </message>
   <message name="IDS_LOGIN_RECOMMEND_APPS_SCREEN_DESCRIPTION" desc="The description of the 'Recommend Apps' section">
-    We found <ph name="NUMBER_OF_APPS">$1<ex>10</ex></ph> apps connected to your account that are optimized for this device.
+    We found <ph name="NUMBER_OF_APPS">$1<ex>10</ex></ph> apps from your account that can be used on this device.
   </message>
   <message name="IDS_LOGIN_RECOMMEND_APPS_SKIP" desc="The label on the button that skips installing any recommended apps">
     Skip
