@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
-import("//third_party/protobuf/proto_library.gni")
+import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -34,6 +34,8 @@ jumbo_static_library("browser") {
     "android_affiliation/facet_manager.cc",
     "android_affiliation/facet_manager.h",
     "android_affiliation/facet_manager_host.h",
+    "android_affiliation/lookup_affiliation_response_parser.cc",
+    "android_affiliation/lookup_affiliation_response_parser.h",
     "android_affiliation/test_affiliation_fetcher_factory.h",
     "browser_save_password_progress_logger.cc",
     "browser_save_password_progress_logger.h",
@@ -230,7 +232,7 @@ jumbo_static_library("browser") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
-proto_library("proto") {
+fuzzable_proto_library("proto") {
   sources = [
     "android_affiliation/affiliation_api.proto",
   ]
@@ -479,4 +481,18 @@ fuzzer_test("csv_reader_fuzzer") {
   ]
   seed_corpus = "import/password_csv_reader_corpus"
   dict = "import/password_csv_reader_fuzzer.dict"
+}
+
+if (use_libfuzzer) {
+  fuzzer_test("lookup_affiliation_response_parser_fuzzer") {
+    sources = [
+      "android_affiliation/lookup_affiliation_response_parser_fuzzer.cc",
+    ]
+    deps = [
+      ":browser",
+      ":proto",
+      "//base:base",
+      "//third_party/libprotobuf-mutator",
+    ]
+  }
 }
