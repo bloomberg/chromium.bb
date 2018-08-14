@@ -77,6 +77,14 @@ void LocalSiteCharacteristicsDataWriter::NotifyUsesNotificationsInBackground() {
   impl_->NotifyUsesNotificationsInBackground();
 }
 
+void LocalSiteCharacteristicsDataWriter::NotifyLoadTimePerformanceMeasurement(
+    base::TimeDelta cpu_usage_estimate,
+    uint64_t private_footprint_kb_estimate) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  impl_->NotifyLoadTimePerformanceMeasurement(cpu_usage_estimate,
+                                              private_footprint_kb_estimate);
+}
+
 LocalSiteCharacteristicsDataWriter::LocalSiteCharacteristicsDataWriter(
     scoped_refptr<internal::LocalSiteCharacteristicsDataImpl> impl,
     TabVisibility tab_visibility)

@@ -30,6 +30,9 @@ class LocalSiteCharacteristicsDataWriter
   void NotifyUpdatesTitleInBackground() override;
   void NotifyUsesAudioInBackground() override;
   void NotifyUsesNotificationsInBackground() override;
+  void NotifyLoadTimePerformanceMeasurement(
+      base::TimeDelta cpu_usage_estimate,
+      uint64_t private_footprint_kb_estimate) override;
 
   internal::LocalSiteCharacteristicsDataImpl* impl_for_testing() const {
     return impl_.get();

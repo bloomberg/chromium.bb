@@ -4,7 +4,6 @@
 
 #include "chrome/browser/resource_coordinator/tab_manager_resource_coordinator_signal_observer.h"
 
-#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
@@ -67,34 +66,6 @@ void TabManager::ResourceCoordinatorSignalObserver::
   g_browser_process->GetTabManager()
       ->stats_collector()
       ->RecordExpectedTaskQueueingDuration(web_contents, duration);
-}
-
-void TabManager::ResourceCoordinatorSignalObserver::
-    OnNonPersistentNotificationCreated(
-        content::WebContents* web_contents,
-        const PageNavigationIdentity& page_navigation_id) {
-  // TODO(sebmarchand): Add the wiring to forward this signal where it should be
-  // used.
-}
-
-void TabManager::ResourceCoordinatorSignalObserver::
-    OnLoadTimePerformanceEstimate(
-        content::WebContents* web_contents,
-        const PageNavigationIdentity& page_navigation_id,
-        base::TimeDelta cpu_usage_estimate,
-        uint64_t private_footprint_kb_estimate) {
-  auto* page_signal_receiver = PageSignalReceiver::GetInstance();
-  DCHECK_NE(nullptr, page_signal_receiver);
-
-  bool late_notification =
-      page_signal_receiver->GetNavigationIDForWebContents(web_contents) !=
-      page_navigation_id.navigation_id;
-
-  UMA_HISTOGRAM_BOOLEAN(
-      "ResourceCoordinator.Measurement.Memory.LateNotification",
-      late_notification);
-
-  // TODO(siggi): Persist the measurement associated to |url|'s site.
 }
 
 }  // namespace resource_coordinator
