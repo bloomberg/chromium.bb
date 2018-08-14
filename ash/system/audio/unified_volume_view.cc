@@ -32,7 +32,6 @@ const float kSliderIgnoreUpdateThreshold = 0.01;
 
 // References to the icons that correspond to different volume levels.
 const gfx::VectorIcon* const kVolumeLevelIcons[] = {
-    &kUnifiedMenuVolumeMuteIcon,    // Muted.
     &kUnifiedMenuVolumeLowIcon,     // Low volume.
     &kUnifiedMenuVolumeMediumIcon,  // Medium volume.
     &kUnifiedMenuVolumeHighIcon,    // High volume.
@@ -144,7 +143,8 @@ void UnifiedVolumeView::Update(bool by_user) {
   slider()->UpdateState(!is_muted);
 
   button()->SetToggled(!is_muted);
-  button()->SetVectorIcon(GetVolumeIconForLevel(is_muted ? 0.f : level));
+  button()->SetVectorIcon(is_muted ? kUnifiedMenuVolumeMuteIcon
+                                   : GetVolumeIconForLevel(level));
 
   more_button_->SetVisible(CrasAudioHandler::Get()->has_alternative_input() ||
                            CrasAudioHandler::Get()->has_alternative_output());

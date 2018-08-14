@@ -61,11 +61,9 @@ void UnifiedVolumeSliderController::SliderValueChanged(
   CrasAudioHandler::Get()->SetOutputVolumePercent(level);
 
   // If the volume is above certain level and it's muted, it should be unmuted.
-  // If the volume is below certain level and it's unmuted, it should be muted.
-  if (CrasAudioHandler::Get()->IsOutputMuted() ==
+  if (CrasAudioHandler::Get()->IsOutputMuted() &&
       level > CrasAudioHandler::Get()->GetOutputDefaultVolumeMuteThreshold()) {
-    CrasAudioHandler::Get()->SetOutputMute(
-        !CrasAudioHandler::Get()->IsOutputMuted());
+    CrasAudioHandler::Get()->SetOutputMute(false);
   }
 }
 
