@@ -459,7 +459,10 @@ const CGFloat kShadowRadius = 12.0f;
   self.sharedState.tableView.estimatedRowHeight =
       [BookmarkHomeSharedState cellHeightPt];
   self.tableView.sectionHeaderHeight = 0;
-  self.tableView.sectionFooterHeight = 0;
+  // Setting a sectionFooterHeight of 0 will be the same as not having a
+  // footerView, which shows a cell separator for the last cell. Removing this
+  // line will also create a default footer of height 30.
+  self.tableView.sectionFooterHeight = 1;
   self.sharedState.tableView.allowsMultipleSelectionDuringEditing = YES;
   if (!experimental_flags::IsBookmarksUIRebootEnabled()) {
     self.sharedState.tableView.separatorStyle =
