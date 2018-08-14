@@ -3538,8 +3538,16 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
   String text = before_unload_event.returnValue();
   beforeunload_dialog_histogram.Count(
       BeforeUnloadDialogHistogramEnum::kShowDialog);
-  if (chrome_client.OpenBeforeUnloadConfirmPanel(text, frame_, is_reload)) {
-    did_allow_navigation = true;
+  const TimeTicks beforeunload_confirmpanel_start = CurrentTimeTicks();
+  did_allow_navigation =
+      chrome_client.OpenBeforeUnloadConfirmPanel(text, frame_, is_reload);
+  const TimeTicks beforeunload_confirmpanel_end = CurrentTimeTicks();
+  if (did_allow_navigation) {
+    // Only record when a navigation occurs, since we want to understand
+    // the impact of the before unload dialog on overall input to navigation.
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "DocumentEventTiming.BeforeUnloadDialogDuration.ByNavigation",
+        beforeunload_confirmpanel_end - beforeunload_confirmpanel_start);
     return true;
   }
 
