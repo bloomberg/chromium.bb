@@ -2014,7 +2014,6 @@ class ChromeDownloadDirTest(ChromeDriverBaseTest):
     ChromeDriverTest._http_server.SetCallbackForPath(
         '/abc.csv', self.RespondWithCsvFile)
     download_dir = self.CreateTempDir()
-    download_name = os.path.join(download_dir, 'abc.csv')
     driver = self.CreateDriver(download_dir=download_dir)
     original_url = driver.GetCurrentUrl()
     driver.Load(ChromeDriverTest.GetHttpUrlForFile('/abc.csv'))
