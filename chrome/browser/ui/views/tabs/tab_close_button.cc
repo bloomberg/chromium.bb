@@ -119,6 +119,14 @@ void TabCloseButton::Layout() {
   }
 }
 
+gfx::Size TabCloseButton::CalculatePreferredSize() const {
+  int width = GetWidth();
+  gfx::Size size(width, width);
+  gfx::Insets insets = GetInsets();
+  size.Enlarge(insets.width(), insets.height());
+  return size;
+}
+
 void TabCloseButton::PaintButtonContents(gfx::Canvas* canvas) {
   canvas->SaveLayerAlpha(GetOpacity());
   ButtonState button_state = state();
