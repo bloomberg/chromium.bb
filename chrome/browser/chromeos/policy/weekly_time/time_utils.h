@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
@@ -55,6 +56,14 @@ std::vector<WeeklyTimeInterval> ConvertIntervalsToGmt(
 base::TimeDelta GetDeltaTillNextTimeInterval(
     const WeeklyTime& current_time,
     const std::vector<WeeklyTimeInterval>& weekly_time_intervals);
+
+// Takes in a vector of weekly time intervals. If |clock->Now()|
+// is inside one of the intervals, then the function returns the
+// interval that contains |clock->Now()|. Otherwise, return |base::nullopt|.
+// The intervals must have a defined
+base::Optional<WeeklyTimeInterval> GetIntervalForCurrentTime(
+    const std::vector<WeeklyTimeInterval>& intervals,
+    base::Clock* clock);
 
 }  // namespace weekly_time_utils
 }  // namespace policy
