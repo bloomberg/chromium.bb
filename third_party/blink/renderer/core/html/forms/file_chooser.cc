@@ -28,6 +28,11 @@
 
 #include "third_party/blink/renderer/core/html/forms/file_chooser.h"
 
+#include "third_party/blink/public/web/web_local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/page/chrome_client_impl.h"
+#include "third_party/blink/renderer/platform/wtf/date_math.h"
+
 namespace blink {
 
 FileChooserClient::~FileChooserClient() = default;
@@ -58,6 +63,48 @@ scoped_refptr<FileChooser> FileChooser::Create(
 
 FileChooser::~FileChooser() = default;
 
+bool FileChooser::OpenFileChooser(ChromeClientImpl& chrome_client_impl) {
+  LocalFrame* frame = FrameOrNull();
+  if (!frame)
+    return false;
+  chrome_client_impl_ = chrome_client_impl;
+
+  WebLocalFrameClient* client =
+      frame ? WebLocalFrameImpl::FromFrame(frame)->Client() : nullptr;
+  if (!client || !client->RunFileChooser(params_, this))
+    return false;
+
+  // Should be released on file choosing.
+  AddRef();
+  return true;
+}
+
+void FileChooser::DidChooseFile(const WebVector<WebString>& file_names) {
+  Vector<FileChooserFileInfo> file_info;
+  for (size_t i = 0; i < file_names.size(); ++i)
+    file_info.push_back(FileChooserFileInfo(file_names[i]));
+  ChooseFiles(file_info);
+}
+
+void FileChooser::DidChooseFile(const WebVector<SelectedFileInfo>& files) {
+  Vector<FileChooserFileInfo> file_info;
+  for (size_t i = 0; i < files.size(); ++i) {
+    if (files[i].file_system_url.IsEmpty()) {
+      file_info.push_back(
+          FileChooserFileInfo(files[i].path, files[i].display_name));
+    } else {
+      FileMetadata metadata;
+      metadata.modification_time = files[i].modification_time * kMsPerSecond;
+      metadata.length = files[i].length;
+      metadata.type = files[i].is_directory ? FileMetadata::kTypeDirectory
+                                            : FileMetadata::kTypeFile;
+      file_info.push_back(
+          FileChooserFileInfo(files[i].file_system_url, metadata));
+    }
+  }
+  ChooseFiles(file_info);
+}
+
 void FileChooser::ChooseFiles(const Vector<FileChooserFileInfo>& files) {
   // FIXME: This is inelegant. We should not be looking at params_ here.
   if (params_.selected_files.size() == files.size()) {
@@ -68,12 +115,21 @@ void FileChooser::ChooseFiles(const Vector<FileChooserFileInfo>& files) {
         break;
       }
     }
-    if (!was_changed)
+    if (!was_changed) {
+      DidCloseChooser();
       return;
+    }
   }
 
   if (client_)
     client_->FilesChosen(files);
+  DidCloseChooser();
+}
+
+void FileChooser::DidCloseChooser() {
+  if (chrome_client_impl_)
+    chrome_client_impl_->DidCompleteFileChooser(*this);
+  Release();
 }
 
 }  // namespace blink
