@@ -31,7 +31,9 @@ namespace ash {
 namespace {
 
 // Appearance.
-constexpr int kIconSizeDip = 24;
+constexpr int kIconSizeDip = 20;
+constexpr int kKeyboardLayoutPaddingLeftDip = 18;
+constexpr int kKeyboardLayoutPaddingRightDip = 24;
 constexpr int kPreferredHeightDip = 48;
 
 // Animation.
@@ -145,13 +147,15 @@ void DialogPlate::InitKeyboardLayoutContainer(
       keyboard_layout_container_->SetLayoutManager(
           std::make_unique<views::BoxLayout>(
               views::BoxLayout::Orientation::kHorizontal,
-              gfx::Insets(0, kPaddingDip), kSpacingDip));
+              gfx::Insets(0, kKeyboardLayoutPaddingLeftDip, 0,
+                          kKeyboardLayoutPaddingRightDip),
+              kSpacingDip));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
   gfx::FontList font_list =
-      assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(4);
+      assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(2);
 
   // Textfield.
   textfield_ = new views::Textfield();
