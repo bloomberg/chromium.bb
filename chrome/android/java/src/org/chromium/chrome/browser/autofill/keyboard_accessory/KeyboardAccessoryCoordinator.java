@@ -72,7 +72,7 @@ public class KeyboardAccessoryCoordinator {
         model.addObserver(new PropertyModelChangeProcessor<>(model, mViewHolder,
                 new LazyViewBinderAdapter<>(
                         new KeyboardAccessoryViewBinder(), this::onViewInflated)));
-        KeyboardAccessoryMetricsRecorder.recordModelChanges(model);
+        KeyboardAccessoryMetricsRecorder.registerMetricsObserver(model);
     }
 
     /**

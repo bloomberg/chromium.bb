@@ -368,30 +368,64 @@ public class KeyboardAccessoryControllerTest {
     }
 
     @Test
-    public void testRecordsContentImpressionsOnlyOnInitialShowing() {
+    public void testRecordsContentBarImpressionOnceAndContentsUpToOnce() {
         assertThat(RecordHistogram.getHistogramTotalCountForTesting(
                            KeyboardAccessoryMetricsRecorder.UMA_KEYBOARD_ACCESSORY_BAR_SHOWN),
                 is(0));
 
         // First showing contains actions only.
-        mModel.getActionList().add(new Action(null, 0, null));
+        mCoordinator.addTab(mTestTab);
         mMediator.keyboardVisibilityChanged(true);
 
+        assertThat(getShownMetricsCount(AccessoryBarContents.WITH_TABS), is(1));
+        assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(1));
+
+        // Adding a tabs doesn't change the total impression count but the specific bucket.
+        mModel.getActionList().add(new Action(null, 0, null));
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
         assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(1));
 
-        // Adding a tabs or suggestions now doesn't change the impression count
         KeyboardAccessoryData.PropertyProvider<Action> autofillSuggestionProvider =
                 new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
         Action suggestion = new Action("Suggestion", AUTOFILL_SUGGESTION, (a) -> {});
         mCoordinator.registerActionListProvider(autofillSuggestionProvider);
         autofillSuggestionProvider.notifyObservers(new Action[] {suggestion});
+        assertThat(getShownMetricsCount(AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS), is(1));
+
+        // The other changes were not recorded again - just the changes.
+        assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
+        assertThat(getShownMetricsCount(AccessoryBarContents.WITH_TABS), is(1));
+        assertThat(getShownMetricsCount(AccessoryBarContents.NO_CONTENTS), is(0));
+    }
+
+    @Test
+    public void testRecordsAgainIfExistingItemsChange() {
+        assertThat(RecordHistogram.getHistogramTotalCountForTesting(
+                           KeyboardAccessoryMetricsRecorder.UMA_KEYBOARD_ACCESSORY_BAR_SHOWN),
+                is(0));
+
+        // Add a tab and show, so the accessory is permanently visible.
         mCoordinator.addTab(mTestTab);
         mMediator.keyboardVisibilityChanged(true);
 
-        assertThat(getShownMetricsCount(AccessoryBarContents.WITH_TABS), is(0));
+        // Adding an action fills the bar impression bucket and the actions set once.
+        mModel.getActionList().set(
+                new Action[] {new Action("One", AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, null),
+                        new Action("Two", AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, null)});
+        assertThat(getActionImpressionCount(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC), is(1));
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
-        assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(1));
+
+        // Adding another action leaves bar impressions unchanged but affects the actions bucket.
+        mModel.getActionList().set(
+                new Action[] {new Action("Uno", AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, null),
+                        new Action("Dos", AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, null)});
+        assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
+        assertThat(getActionImpressionCount(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC), is(2));
+    }
+
+    private int getActionImpressionCount(@AccessoryAction int bucket) {
+        return RecordHistogram.getHistogramValueCountForTesting(
+                KeyboardAccessoryMetricsRecorder.UMA_KEYBOARD_ACCESSORY_ACTION_IMPRESSION, bucket);
     }
 
     private int getShownMetricsCount(@AccessoryBarContents int bucket) {
