@@ -5,13 +5,16 @@
 #ifndef ASH_SHELF_APP_LIST_SHELF_ITEM_DELEGATE_H_
 #define ASH_SHELF_APP_LIST_SHELF_ITEM_DELEGATE_H_
 
+#include <memory>
+
+#include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "base/macros.h"
 
 namespace ash {
 
 // ShelfItemDelegate for TYPE_APP_LIST.
-class AppListShelfItemDelegate : public ShelfItemDelegate {
+class ASH_EXPORT AppListShelfItemDelegate : public ShelfItemDelegate {
  public:
   AppListShelfItemDelegate();
   ~AppListShelfItemDelegate() override;
