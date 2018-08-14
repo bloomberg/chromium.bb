@@ -135,7 +135,13 @@ TEST_F(ContextMenuJsTest, GetImageUrlAtPoint) {
 }
 
 // Tests that __gCrWeb.getElementFromPoint function returns correct title.
-TEST_F(ContextMenuJsTest, GetImageTitleAtPoint) {
+// TODO(crbug.com/796418): This test is flaky on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_GetImageTitleAtPoint GetImageTitleAtPoint
+#else
+#define MAYBE_GetImageTitleAtPoint FLAKY_GetImageTitleAtPoint
+#endif
+TEST_F(ContextMenuJsTest, MAYBE_GetImageTitleAtPoint) {
   NSString* html =
       @"<img id='foo' title='Hello world!'"
        "style='width:200;height:200;' src='file:///bogus'/>";
@@ -620,8 +626,16 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
 
 // Tests that an image link does not return image and link details for a point
 // outside the element.
+// TODO(crbug.com/796418): This test is flaky on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_FindLinkImageAtPointOutsideElement \
+  FindLinkImageAtPointOutsideElement
+#else
+#define MAYBE_FindLinkImageAtPointOutsideElement \
+  FLAKY_FindLinkImageAtPointOutsideElement
+#endif
 TEST_F(ContextMenuJsFindElementAtPointTest,
-       FindLinkImageAtPointOutsideElement) {
+       MAYBE_FindLinkImageAtPointOutsideElement) {
   NSString* link_image =
       @"<a href='file:///linky'>"
        "<img id='foo' style='width:200;height:200;' src='file:///bogus'/>"
@@ -849,7 +863,15 @@ TEST_F(ContextMenuJsFindElementAtPointTest, MAYBE_LinkOfTextFromTallPage) {
 // Tests that a callout information about a link is displayed when
 // -webkit-touch-callout property is not specified. Please see:
 // https://developer.mozilla.org/en-US/docs/Web/CSS/-webkit-touch-callout
-TEST_F(ContextMenuJsFindElementAtPointTest, LinkOfTextWithoutCalloutProperty) {
+// TODO(crbug.com/796418): This test is flaky on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_LinkOfTextWithoutCalloutProperty LinkOfTextWithoutCalloutProperty
+#else
+#define MAYBE_LinkOfTextWithoutCalloutProperty \
+  FLAKY_LinkOfTextWithoutCalloutProperty
+#endif
+TEST_F(ContextMenuJsFindElementAtPointTest,
+       MAYBE_LinkOfTextWithoutCalloutProperty) {
   NSString* kLinkDest = @"http://destination/";
   NSString* kLinkHtml = @"<a href='%@'>link</a>";
 
