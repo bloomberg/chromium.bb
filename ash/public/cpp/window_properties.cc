@@ -61,6 +61,10 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       kFrameImageYInsetKey, mojom::kFrameImageYInset_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
+      kHideCaptionButtonsInTabletModeKey,
+      mojom::kHideCaptionButtonsInTabletMode_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterPrimitiveProperty(
       kFrameInactiveColorKey,
       ui::mojom::WindowManager::kFrameInactiveColor_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
@@ -129,6 +133,7 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::UnguessableToken,
                                    kFrameImageOverlayInactiveKey,
                                    nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kFrameImageYInsetKey, 0);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideCaptionButtonsInTabletModeKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideInOverviewKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideShelfWhenFullscreenKey, true);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool,

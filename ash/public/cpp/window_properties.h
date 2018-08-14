@@ -100,6 +100,11 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<int>* const
     kFrameImageYInsetKey;
 
+// A property to control the visibility of the frame captions buttons when in
+// tablet mode (when not in tablet mode, this property is ignored).
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kHideCaptionButtonsInTabletModeKey;
+
 // A property key to indicate whether we should hide this window in overview
 // mode and Alt + Tab.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const

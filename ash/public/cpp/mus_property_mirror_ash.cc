@@ -96,6 +96,10 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
   } else if (key == kFrameTextColorKey) {
     root_window->SetProperty(kFrameTextColorKey,
                              window->GetProperty(kFrameTextColorKey));
+  } else if (key == kHideCaptionButtonsInTabletModeKey) {
+    root_window->SetProperty(
+        kHideCaptionButtonsInTabletModeKey,
+        window->GetProperty(kHideCaptionButtonsInTabletModeKey));
   }
 }
 

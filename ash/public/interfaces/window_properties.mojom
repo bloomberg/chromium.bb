@@ -42,6 +42,10 @@ const string kFrameIsThemedByHostedApp_Property =
 // for tabless browser windows.
 const string kFrameTextColor_Property = "ash:frame-text-color";
 
+// See ash::kHideCaptionButtonsInTabletModeKey.
+const string kHideCaptionButtonsInTabletMode_Property =
+    "ash:hide-caption-buttons-in-tablet-mode";
+
 // True if the shelf should be hidden when this window is put into fullscreen.
 // Exposed because some windows want to explicitly opt-out of this.
 const string kHideShelfWhenFullscreen_Property =

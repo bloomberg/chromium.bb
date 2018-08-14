@@ -41,7 +41,6 @@
 -BrowserNonClientFrameViewAshTest.TopViewInset/*
 
 # Direct access to ash window frames, tablet mode, overview mode, etc.
--HomeLauncherBrowserNonClientFrameViewAshTest.*
 -HostedAppNonClientFrameViewAshTest.*
 -NonHomeLauncherBrowserNonClientFrameViewAshTest.*
 

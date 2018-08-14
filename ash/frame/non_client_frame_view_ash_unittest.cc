@@ -12,7 +12,9 @@
 #include "ash/frame/default_frame_header.h"
 #include "ash/frame/header_view.h"
 #include "ash/frame/wide_frame_view.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_layout_constants.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
@@ -25,7 +27,9 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/wm_event.h"
+#include "base/command_line.h"
 #include "base/containers/flat_set.h"
+#include "base/test/scoped_feature_list.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -947,5 +951,82 @@ TEST_P(NonClientFrameViewAshFrameColorTest, WideFrameInitialColor) {
 
 // Run frame color tests with and without custom wm::WindowStateDelegate.
 INSTANTIATE_TEST_CASE_P(, NonClientFrameViewAshFrameColorTest, testing::Bool());
+
+class HomeLauncherNonClientFrameViewAshTest : public AshTestBase {
+ public:
+  HomeLauncherNonClientFrameViewAshTest() = default;
+  ~HomeLauncherNonClientFrameViewAshTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        app_list::features::kEnableHomeLauncher);
+    AshTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(HomeLauncherNonClientFrameViewAshTest);
+};
+
+// Tests the visibility of the caption button container when
+// kHideCaptionButtonsInTabletModeKey is set.
+TEST_F(HomeLauncherNonClientFrameViewAshTest,
+       TabletModeBrowserCaptionButtonVisibility) {
+  auto* delegate = new NonClientFrameViewAshTestWidgetDelegate();
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(
+      delegate, kShellWindowId_DefaultContainer, gfx::Rect(100, 0, 400, 500));
+  widget->GetNativeWindow()->SetProperty(kHideCaptionButtonsInTabletModeKey,
+                                         true);
+
+  FrameCaptionButtonContainerView* caption_buttons =
+      delegate->non_client_frame_view()
+          ->GetHeaderView()
+          ->caption_button_container();
+
+  EXPECT_TRUE(caption_buttons->visible());
+  ash::Shell* shell = ash::Shell::Get();
+  ash::TabletModeController* tablet_mode_controller =
+      shell->tablet_mode_controller();
+  tablet_mode_controller->EnableTabletModeWindowManager(true);
+  EXPECT_FALSE(caption_buttons->visible());
+
+  shell->window_selector_controller()->ToggleOverview();
+  EXPECT_FALSE(caption_buttons->visible());
+  shell->window_selector_controller()->ToggleOverview();
+  EXPECT_FALSE(caption_buttons->visible());
+
+  tablet_mode_controller->EnableTabletModeWindowManager(false);
+  EXPECT_TRUE(caption_buttons->visible());
+}
+
+// Tests the visibility of the caption button container when
+// kHideCaptionButtonsInTabletModeKey is not set.
+TEST_F(HomeLauncherNonClientFrameViewAshTest,
+       TabletModeAppCaptionButtonVisibility) {
+  auto* delegate = new NonClientFrameViewAshTestWidgetDelegate();
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(
+      delegate, kShellWindowId_DefaultContainer, gfx::Rect(100, 0, 400, 500));
+
+  FrameCaptionButtonContainerView* caption_buttons =
+      delegate->non_client_frame_view()
+          ->GetHeaderView()
+          ->caption_button_container();
+
+  EXPECT_TRUE(caption_buttons->visible());
+  ash::Shell* shell = ash::Shell::Get();
+  ash::TabletModeController* tablet_mode_controller =
+      shell->tablet_mode_controller();
+  tablet_mode_controller->EnableTabletModeWindowManager(true);
+  EXPECT_TRUE(caption_buttons->visible());
+
+  shell->window_selector_controller()->ToggleOverview();
+  EXPECT_FALSE(caption_buttons->visible());
+  shell->window_selector_controller()->ToggleOverview();
+  EXPECT_TRUE(caption_buttons->visible());
+
+  tablet_mode_controller->EnableTabletModeWindowManager(false);
+  EXPECT_TRUE(caption_buttons->visible());
+}
 
 }  // namespace ash

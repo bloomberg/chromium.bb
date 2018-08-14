@@ -126,7 +126,7 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
   ash::Shell::Get()->AddShellObserver(this);
 
   // The ServiceManagerConnection may be nullptr in tests.
-  if (content::ServiceManagerConnection::GetForProcess()) {
+  if (content::ServiceManagerConnection::GetForProcess() && !IsMash()) {
     content::ServiceManagerConnection::GetForProcess()
         ->GetConnector()
         ->BindInterface(ash::mojom::kServiceName, &split_view_controller_);
@@ -188,6 +188,17 @@ void BrowserNonClientFrameViewAsh::Init() {
       aura::client::kAppType,
       static_cast<int>(browser->is_app() ? ash::AppType::CHROME_APP
                                          : ash::AppType::BROWSER));
+
+  // In tablet mode, to prevent accidental taps of the window controls, and to
+  // give more horizontal space for tabs and the new tab button especially in
+  // splitscreen view, we hide the window controls. We only do this when the
+  // Home Launcher feature is enabled, since it gives the user the ability to
+  // minimize all windows when pressing the Launcher button on the shelf.
+  window->SetProperty(
+      ash::kHideCaptionButtonsInTabletModeKey,
+      (browser->is_app() || !app_list::features::IsHomeLauncherEnabled())
+          ? false
+          : true);
 
   window_observer_.Add(IsMash() ? window->GetRootWindow() : window);
 
@@ -676,6 +687,7 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFrameHeaderOverlayImage(
 }
 
 bool BrowserNonClientFrameViewAsh::IsTabletMode() const {
+  DCHECK(!IsMash());
   return TabletModeClient::Get() &&
          TabletModeClient::Get()->tablet_mode_enabled();
 }
@@ -874,13 +886,9 @@ AvatarButtonStyle BrowserNonClientFrameViewAsh::GetAvatarButtonStyle() const {
 bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
   DCHECK(!IsMash());
 
-  // In tablet mode, to prevent accidental taps of the window controls, and to
-  // give more horizontal space for tabs and the new tab button especially in
-  // splitscreen view, we hide the window controls. We only do this when the
-  // Home Launcher feature is enabled, since it gives the user the ability to
-  // minimize all windows when pressing the Launcher button on the shelf.
-  if (app_list::features::IsHomeLauncherEnabled() && IsTabletMode() &&
-      !browser_view()->browser()->is_app()) {
+  if (frame()->GetNativeWindow()->GetProperty(
+          ash::kHideCaptionButtonsInTabletModeKey) &&
+      IsTabletMode()) {
     return false;
   }
 
@@ -919,6 +927,8 @@ bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
 }
 
 void BrowserNonClientFrameViewAsh::OnOverviewOrSplitviewModeChanged() {
+  // Not necessary as NonClientFrameViewAsh handles the caption button
+  // visibility logic in Mash.
   DCHECK(!IsMash());
 
   caption_button_container_->SetVisible(ShouldShowCaptionButtons());

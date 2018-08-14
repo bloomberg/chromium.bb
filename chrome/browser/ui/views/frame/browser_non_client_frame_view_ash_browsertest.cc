@@ -1304,6 +1304,10 @@ class NonHomeLauncherBrowserNonClientFrameViewAshTest
 
 IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
                        TabletModeBrowserCaptionButtonVisibility) {
+  // For OopAsh, this is tested by an ash unit test of the same name.
+  if (!features::IsAshInBrowserProcess())
+    return;
+
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
 
@@ -1327,6 +1331,10 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
 
 IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
                        TabletModeAppCaptionButtonVisibility) {
+  // For OopAsh, this is tested by an ash unit test of the same name.
+  if (!features::IsAshInBrowserProcess())
+    return;
+
   browser()->window()->Close();
 
   // Open a new app window.
