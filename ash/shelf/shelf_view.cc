@@ -989,14 +989,15 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
     // opacity 0 anyways.
     if (i == kBackButtonIndex && !IsTabletModeEnabled())
       continue;
-    if (i == kAppListButtonIndex)
-      app_list_button_position = shelf_->PrimaryAxisValue(x, y);
 
     // There is no spacing between the first two elements. Do not worry about y
     // since the back button only appears in tablet mode, which forces the shelf
     // to be bottom aligned.
     x = shelf_->PrimaryAxisValue(x + w + (i == 0 ? 0 : button_spacing), x);
     y = shelf_->PrimaryAxisValue(y, y + h + button_spacing);
+
+    if (i == kAppListButtonIndex)
+      app_list_button_position = shelf_->PrimaryAxisValue(x, y);
 
     if (i == separator_index) {
       // Place the separator halfway between the two icons it separates,
