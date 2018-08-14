@@ -36,13 +36,9 @@ using Type = display::DisplayList::Type;
 
 ScreenMus::ScreenMus(ScreenMusDelegate* delegate) : delegate_(delegate) {
   DCHECK(delegate);
-  display::Screen::SetScreenInstance(this);
 }
 
-ScreenMus::~ScreenMus() {
-  DCHECK_EQ(this, display::Screen::GetScreen());
-  display::Screen::SetScreenInstance(nullptr);
-}
+ScreenMus::~ScreenMus() = default;
 
 void ScreenMus::OnDisplaysChanged(
     std::vector<ui::mojom::WsDisplayPtr> ws_displays,
@@ -61,7 +57,6 @@ void ScreenMus::OnDisplaysChanged(
     handled_display_id = primary_display_id;
     for (auto& ws_display_ptr : ws_displays) {
       if (ws_display_ptr->display.id() == primary_display_id) {
-        // TODO(sky): Make WindowManagerFrameValues per display.
         WindowManagerFrameValues frame_values =
             ws_display_ptr->frame_decoration_values
                 .To<WindowManagerFrameValues>();

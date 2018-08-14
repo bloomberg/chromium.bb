@@ -19,9 +19,6 @@ class ViewsDelegate;
 namespace ui_devtools {
 class UiDevToolsServer;
 }
-namespace views {
-class MusClient;
-}
 namespace wm {
 class WMState;
 }
@@ -38,8 +35,6 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
   void ToolkitInitialized() override;
   void PreCreateThreads() override;
   void PreProfileInit() override;
-  void ServiceManagerConnectionStarted(
-      content::ServiceManagerConnection* connection) override;
   void PostBrowserStart() override;
   void PostMainMessageLoopRun() override;
 
@@ -52,10 +47,6 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
   std::unique_ptr<ui_devtools::UiDevToolsServer> devtools_server_;
 
   std::unique_ptr<wm::WMState> wm_state_;
-
-  // Only used when Ash is running out of process.
-  // TODO: make ash specific.
-  std::unique_ptr<views::MusClient> mus_client_;
 #endif
 
   // Manages the relaunch notification prompts.

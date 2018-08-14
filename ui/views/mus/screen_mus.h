@@ -15,6 +15,8 @@ class ScreenMusDelegate;
 
 // Screen implementation that gets information from
 // ui::mojom::ScreenProviderObserver.
+//
+// NOTE: this is not necessarily installed as the Screen implementation.
 class VIEWS_MUS_EXPORT ScreenMus : public display::ScreenBase,
                                    public ui::mojom::ScreenProviderObserver {
  public:

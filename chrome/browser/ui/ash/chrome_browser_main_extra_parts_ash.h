@@ -23,6 +23,10 @@ namespace ui {
 class UserActivityDetector;
 }
 
+namespace views {
+class MusClient;
+}
+
 class AccessibilityControllerClient;
 class AppListClientImpl;
 class AshShellInit;
@@ -115,6 +119,9 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   // Initialized in PostBrowserStart in all configs:
   std::unique_ptr<DataPromoNotification> data_promo_notification_;
   std::unique_ptr<NightLightClient> night_light_client_;
+
+  // Created for mash (both in single and multi-process).
+  std::unique_ptr<views::MusClient> mus_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAsh);
 };

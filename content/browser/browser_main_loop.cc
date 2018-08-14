@@ -1331,7 +1331,9 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   }
 
 #if defined(USE_AURA)
-  if (browser_is_viz_host) {
+  // In single process mash mode the aura::Env created here uses the
+  // WindowService, and needs to use the context-factory from aura.
+  if (browser_is_viz_host && !features::IsSingleProcessMash()) {
     env_->set_context_factory(GetContextFactory());
     env_->set_context_factory_private(GetContextFactoryPrivate());
   }
@@ -1558,9 +1560,9 @@ bool BrowserMainLoop::InitializeToolkit() {
 
   // Env creates the compositor. Aura widgets need the compositor to be created
   // before they can be initialized by the browser.
-  env_ = aura::Env::CreateInstance(features::IsAshInBrowserProcess()
-                                       ? aura::Env::Mode::LOCAL
-                                       : aura::Env::Mode::MUS);
+  env_ = aura::Env::CreateInstance(features::IsUsingWindowService()
+                                       ? aura::Env::Mode::MUS
+                                       : aura::Env::Mode::LOCAL);
 #endif  // defined(USE_AURA)
 
   if (parts_)

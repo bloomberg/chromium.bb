@@ -11,7 +11,7 @@
 NativeBrowserFrame* NativeBrowserFrameFactory::Create(
     BrowserFrame* browser_frame,
     BrowserView* browser_view) {
-  if (!features::IsAshInBrowserProcess())
+  if (features::IsUsingWindowService())
     return new BrowserFrameMash(browser_frame, browser_view);
   return new BrowserFrameAsh(browser_frame, browser_view);
 }

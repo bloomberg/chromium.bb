@@ -52,6 +52,9 @@ UI_BASE_EXPORT extern const base::Feature kMash;
 
 UI_BASE_EXPORT extern const base::Feature kSingleProcessMash;
 
+// Returns true if Chrome's aura usage is backed by the WindowService.
+UI_BASE_EXPORT bool IsUsingWindowService();
+
 // Returns true if ash is in process (the default). A value of false means ash
 // is running in a separate process (and is hosting the UI Service and Viz).
 UI_BASE_EXPORT bool IsAshInBrowserProcess();
