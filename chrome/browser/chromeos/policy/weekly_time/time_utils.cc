@@ -80,8 +80,8 @@ base::string16 WeeklyTimeToLocalizedString(const WeeklyTime& weekly_time,
   if (!weekly_time.timezone_offset()) {
     // Get offset to convert the WeeklyTime
     int offset;
-    if (!GetOffsetFromTimezoneToGmt(*icu::TimeZone::createDefault(), clock,
-                                    &offset)) {
+    auto local_time_zone = base::WrapUnique(icu::TimeZone::createDefault());
+    if (!GetOffsetFromTimezoneToGmt(*local_time_zone, clock, &offset)) {
       LOG(ERROR) << "Unable to obtain offset for time agnostic timezone";
       return base::string16();
     }
@@ -118,6 +118,18 @@ base::TimeDelta GetDeltaTillNextTimeInterval(
                                   current_time.GetDurationTo(interval.start()));
   }
   return till_next_interval;
+}
+
+base::Optional<WeeklyTimeInterval> GetIntervalForCurrentTime(
+    const std::vector<WeeklyTimeInterval>& intervals,
+    base::Clock* clock) {
+  WeeklyTime weekly_time_now = WeeklyTime::GetCurrentGmtWeeklyTime(clock);
+  for (const auto& interval : intervals) {
+    if (interval.Contains(weekly_time_now)) {
+      return interval;
+    }
+  }
+  return base::nullopt;
 }
 
 }  // namespace weekly_time_utils

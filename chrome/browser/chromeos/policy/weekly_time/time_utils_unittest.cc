@@ -23,9 +23,25 @@ namespace policy {
 namespace weekly_time_utils {
 
 namespace {
+
+enum {
+  kMonday = 1,
+  kTuesday = 2,
+  kWednesday = 3,
+  kThursday = 4,
+  kFriday = 5,
+  kSaturday = 6,
+  kSunday = 7,
+};
+
 constexpr int kMinutesInHour = 60;
+constexpr int kMillisecondsInHour = 3600000;
 constexpr base::TimeDelta kMinute = base::TimeDelta::FromMinutes(1);
 constexpr base::TimeDelta kHour = base::TimeDelta::FromHours(1);
+constexpr base::Time::Exploded kDaylightSavingsTime{2018, 8, 3, 8, 15, 0, 0, 0};
+constexpr base::Time::Exploded kNonDaylightSavingsTime{2018, 1, 0, 28,
+                                                       0,    0, 0, 0};
+
 }  // namespace
 
 class TimeUtilsTimezoneFunctionsTest : public testing::Test {
@@ -43,15 +59,15 @@ class TimeUtilsTimezoneFunctionsTest : public testing::Test {
   void SetDaylightSavings(bool is_daylight_savings) {
     if (is_daylight_savings) {
       // Friday July 13th
-      base::Time::Exploded exploded_daylight{2018, 7, 5, 13, 0, 0, 0, 0};
       base::Time test_time;
-      ASSERT_TRUE(base::Time::FromUTCExploded(exploded_daylight, &test_time));
+      ASSERT_TRUE(
+          base::Time::FromUTCExploded(kDaylightSavingsTime, &test_time));
       test_clock_.SetNow(test_time);
     } else {
       // Sunday January 28
-      base::Time::Exploded exploded_standard{2018, 1, 0, 28, 0, 0, 0, 0};
       base::Time test_time;
-      ASSERT_TRUE(base::Time::FromUTCExploded(exploded_standard, &test_time));
+      ASSERT_TRUE(
+          base::Time::FromUTCExploded(kNonDaylightSavingsTime, &test_time));
       test_clock_.SetNow(test_time);
     }
   }
@@ -143,6 +159,117 @@ TEST_F(TimeUtilsTimezoneFunctionsTest, GetOffsetFromTimezoneToGmtNoDaylight) {
   GetOffsetFromTimezoneToGmt("America/Los_Angeles", &test_clock_, &result2);
   EXPECT_EQ(result2, result);
 }
+
+class GetIntervalForCurrentTimeTest
+    : public testing::TestWithParam<
+          std::tuple<std::vector<WeeklyTimeInterval>,
+                     base::Optional<WeeklyTimeInterval>>> {
+ protected:
+  void SetUp() override {
+    // Wednesday August 8th at 15:00 GMT
+    base::Time test_time;
+    ASSERT_TRUE(base::Time::FromUTCExploded(kDaylightSavingsTime, &test_time));
+    test_clock_.SetNow(test_time);
+  }
+
+  std::vector<WeeklyTimeInterval> intervals() {
+    return std::get<0>(GetParam());
+  }
+  base::Optional<WeeklyTimeInterval> expected_result() {
+    return std::get<1>(GetParam());
+  }
+
+  base::SimpleTestClock test_clock_;
+};
+
+TEST_P(GetIntervalForCurrentTimeTest, Test) {
+  base::Optional<WeeklyTimeInterval> result =
+      GetIntervalForCurrentTime(intervals(), &test_clock_);
+  EXPECT_EQ(result, expected_result());
+}
+
+INSTANTIATE_TEST_CASE_P(
+    SameTimezoneNone,
+    GetIntervalForCurrentTimeTest,
+    testing::Values(std::make_tuple(
+        std::vector<WeeklyTimeInterval>{
+            WeeklyTimeInterval(
+                WeeklyTime(kTuesday, 10 * kMillisecondsInHour, 0),
+                WeeklyTime(kWednesday, 8 * kMillisecondsInHour, 0)),
+            WeeklyTimeInterval(
+                WeeklyTime(kSunday, 5 * kMillisecondsInHour, 0),
+                WeeklyTime(kSunday, 16 * kMillisecondsInHour, 0))},
+        base::nullopt)));
+
+INSTANTIATE_TEST_CASE_P(
+    SameTimezoneResult,
+    GetIntervalForCurrentTimeTest,
+    testing::Values(
+        std::make_tuple(
+            std::vector<WeeklyTimeInterval>{
+                WeeklyTimeInterval(
+                    WeeklyTime(kTuesday, 10 * kMillisecondsInHour, 0),
+                    WeeklyTime(kThursday, 8 * kMillisecondsInHour, 0)),
+                WeeklyTimeInterval(
+                    WeeklyTime(kSunday, 5 * kMillisecondsInHour, 0),
+                    WeeklyTime(kSunday, 16 * kMillisecondsInHour, 0))},
+            WeeklyTimeInterval(
+                WeeklyTime(kTuesday, 10 * kMillisecondsInHour, 0),
+                WeeklyTime(kThursday, 8 * kMillisecondsInHour, 0))),
+        std::make_tuple(
+            std::vector<WeeklyTimeInterval>{
+                WeeklyTimeInterval(
+                    WeeklyTime(kTuesday, 10 * kMillisecondsInHour, 0),
+                    WeeklyTime(kWednesday, 8 * kMillisecondsInHour, 0)),
+                WeeklyTimeInterval(
+                    WeeklyTime(kSunday, 5 * kMillisecondsInHour, 0),
+                    WeeklyTime(kWednesday, 16 * kMillisecondsInHour, 0))},
+            WeeklyTimeInterval(
+                WeeklyTime(kSunday, 5 * kMillisecondsInHour, 0),
+                WeeklyTime(kWednesday, 16 * kMillisecondsInHour, 0)))));
+
+INSTANTIATE_TEST_CASE_P(
+    DifferentTimezoneNone,
+    GetIntervalForCurrentTimeTest,
+    testing::Values(std::make_tuple(
+        std::vector<WeeklyTimeInterval>{
+            WeeklyTimeInterval(WeeklyTime(kTuesday,
+                                          10 * kMillisecondsInHour,
+                                          5 * kMillisecondsInHour),
+                               WeeklyTime(kWednesday,
+                                          17 * kMillisecondsInHour,
+                                          5 * kMillisecondsInHour)),
+            WeeklyTimeInterval(WeeklyTime(kSunday,
+                                          5 * kMillisecondsInHour,
+                                          5 * kMillisecondsInHour),
+                               WeeklyTime(kSunday,
+                                          16 * kMillisecondsInHour,
+                                          5 * kMillisecondsInHour))},
+        base::nullopt)));
+
+INSTANTIATE_TEST_CASE_P(
+    DifferentTimezoneResult,
+    GetIntervalForCurrentTimeTest,
+    testing::Values(std::make_tuple(
+        std::vector<WeeklyTimeInterval>{
+            WeeklyTimeInterval(WeeklyTime(kTuesday,
+                                          10 * kMillisecondsInHour,
+                                          -8 * kMillisecondsInHour),
+                               WeeklyTime(kWednesday,
+                                          8 * kMillisecondsInHour,
+                                          -8 * kMillisecondsInHour)),
+            WeeklyTimeInterval(WeeklyTime(kSunday,
+                                          5 * kMillisecondsInHour,
+                                          -8 * kMillisecondsInHour),
+                               WeeklyTime(kSunday,
+                                          16 * kMillisecondsInHour,
+                                          -8 * kMillisecondsInHour))},
+        WeeklyTimeInterval(WeeklyTime(kTuesday,
+                                      10 * kMillisecondsInHour,
+                                      -8 * kMillisecondsInHour),
+                           WeeklyTime(kWednesday,
+                                      8 * kMillisecondsInHour,
+                                      -8 * kMillisecondsInHour)))));
 
 }  // namespace weekly_time_utils
 }  // namespace policy

@@ -28,6 +28,12 @@ class WeeklyTime {
 
   WeeklyTime& operator=(const WeeklyTime& rhs);
 
+  bool operator==(const WeeklyTime& rhs) const {
+    return day_of_week_ == rhs.day_of_week() &&
+           milliseconds_ == rhs.milliseconds() &&
+           timezone_offset_ == rhs.timezone_offset();
+  }
+
   // Return DictionaryValue in format:
   // { "day_of_week" : int # value is from 1 to 7 (1 = Monday, 2 = Tuesday,
   // etc.)
