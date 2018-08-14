@@ -608,6 +608,7 @@ void PrintPreviewHandler::OnJavascriptDisallowed() {
   // this is necessary for refresh or navigation from the chrome://print page.
   weak_factory_.InvalidateWeakPtrs();
   preview_callbacks_.clear();
+  preview_failures_.clear();
   UnregisterForGaiaCookieChanges();
 }
 
@@ -1192,6 +1193,10 @@ void PrintPreviewHandler::OnPrintPreviewFailed(int request_id) {
     reported_failed_preview_ = true;
     ReportUserActionHistogram(PREVIEW_FAILED);
   }
+
+  // Keep track of failures.
+  bool inserted = preview_failures_.insert(request_id).second;
+  DCHECK(inserted);
   RejectJavascriptCallback(base::Value(callback_id),
                            base::Value("PREVIEW_FAILED"));
 }
@@ -1239,12 +1244,19 @@ void PrintPreviewHandler::SendPageLayoutReady(
 
 void PrintPreviewHandler::SendPagePreviewReady(int page_index,
                                                int preview_uid,
-                                               int preview_response_id) {
-  if (!ShouldReceiveRendererMessage(preview_response_id))
+                                               int preview_request_id) {
+  // With print compositing, by the time compositing finishes and this method
+  // gets called, the print preview may have failed. Since the failure message
+  // may have arrived first, check for this case and bail out instead of
+  // thinking this may be a bad IPC message.
+  if (base::ContainsKey(preview_failures_, preview_request_id))
+    return;
+
+  if (!ShouldReceiveRendererMessage(preview_request_id))
     return;
 
   FireWebUIListener("page-preview-ready", base::Value(page_index),
-                    base::Value(preview_uid), base::Value(preview_response_id));
+                    base::Value(preview_uid), base::Value(preview_request_id));
 }
 
 void PrintPreviewHandler::OnPrintPreviewCancelled(int request_id) {
