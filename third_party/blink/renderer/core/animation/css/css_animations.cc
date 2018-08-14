@@ -866,7 +866,8 @@ void CSSAnimations::CalculateTransitionUpdateForCustomProperty(
 void CSSAnimations::CalculateTransitionUpdateForStandardProperty(
     TransitionUpdateState& state,
     const CSSTransitionData::TransitionProperty& transition_property,
-    size_t transition_index) {
+    size_t transition_index,
+    const ComputedStyle& style) {
   if (transition_property.property_type !=
       CSSTransitionData::kTransitionKnownProperty) {
     return;
@@ -885,7 +886,10 @@ void CSSAnimations::CalculateTransitionUpdateForStandardProperty(
         property_list.length() ? property_list.properties()[i]->PropertyID()
                                : resolved_id;
     DCHECK_GE(longhand_id, firstCSSProperty);
-    const CSSProperty& property = CSSProperty::Get(longhand_id);
+    const CSSProperty& property =
+        CSSProperty::Get(longhand_id)
+            .ResolveDirectionAwareProperty(style.Direction(),
+                                           style.GetWritingMode());
     PropertyHandle property_handle = PropertyHandle(property);
 
     if (!animate_all && !property.IsInterpolable()) {
@@ -940,7 +944,7 @@ void CSSAnimations::CalculateTransitionUpdate(CSSAnimationUpdate& update,
       } else {
         DCHECK_EQ(property_pass, PropertyPass::kStandard);
         CalculateTransitionUpdateForStandardProperty(state, transition_property,
-                                                     transition_index);
+                                                     transition_index, style);
       }
     }
   }
