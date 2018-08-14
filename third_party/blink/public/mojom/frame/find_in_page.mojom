@@ -7,13 +7,6 @@ module blink.mojom;
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 interface FindInPage {
-  // If |options.find_next| is false, this is a "Start Find" call.
-  // It starts a new find-in-page session with id |request_id|.
-  // If |options.find_next| is true, this is a "Find Next" call.
-  // It asks the active/highlighted match for session with id |request_id|
-  // to be moved either forward if |options.forward| is true, or backwards
-  // if |options.forward| is false.
-  Find(int32 request_id, string search_text, FindOptions options);
 
   // Notifies the frame that we are no longer interested in searching. This
   // will abort any asynchronous scoping effort already under way and erase
@@ -68,17 +61,16 @@ interface FindInPage {
 // Per-frame client of FindInPage.
 interface FindInPageClient {
   // Sets the number of matches of the frame to |number_of_matches|.
-  // If |final_update| is kFinalUpdate, there will be no more update to the
-  // number of matches or active match for this frame.
+  // If |final_update| is true, there will be no more update to the number of
+  // matches or active match for this frame.
   SetNumberOfMatches(int32 request_id, uint32 number_of_matches,
                      FindMatchUpdateType update_type);
 
-  // Sets the current active match rect and ordinal.
-  // If |final_update| is kFinalUpdate, there will be no more update to the
-  // number of matches or active match for this frame.
+  // Sets the current active match rect and ordinal. This is the final
+  // find update for the frame, notifying the browser side that there will be
+  // no more update to number of matches or active match for this frame.
   SetActiveMatch(int32 request_id, gfx.mojom.Rect active_match_rect,
-                 int32 active_match_ordinal,
-                 FindMatchUpdateType update_type);
+                 int32 active_match_ordinal);
 };
 
 // This enum defines what actions the renderer should take next when
@@ -96,27 +88,4 @@ enum StopFindAction {
 enum FindMatchUpdateType {
   kFinalUpdate,
   kMoreUpdatesComing
-};
-
-struct FindOptions {
- // Whether to search forward or backward within the page.
-  bool forward;
-
-  // Whether search should be case-sensitive.
-  bool match_case;
-
-  // Whether this operation is the first request or a follow-up.
-  bool find_next;
-
-  // Whether this operation should look for matches only at the start of words.
-  bool word_start;
-
-  // When combined with wordStart, accepts a match in the middle of a word if
-  // the match begins with an uppercase letter followed by a lowercase or
-  // non-letter. Accepts several other intra-word matches.
-  bool medial_capital_as_word_start;
-
-  // Force a re-search of the frame: typically used when forcing a re-search
-  // after the frame navigates.
-  bool force;
 };

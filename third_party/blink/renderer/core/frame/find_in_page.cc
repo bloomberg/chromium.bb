@@ -39,8 +39,6 @@
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/page/focus_controller.h"
-#include "third_party/blink/renderer/core/page/page.h"
 
 namespace blink {
 
@@ -60,31 +58,19 @@ FindInPage::FindInPage(WebLocalFrameImpl& frame,
       WTF::BindRepeating(&FindInPage::BindToRequest, WrapWeakPersistent(this)));
 }
 
-void FindInPage::Find(int request_id,
-                      const String& search_text,
-                      mojom::blink::FindOptionsPtr options) {
-  DCHECK(!search_text.IsEmpty());
-  blink::WebPlugin* plugin = GetWebPluginForFind();
-  // Check if the plugin still exists in the document.
-  if (plugin) {
-    if (options->find_next) {
-      // Just navigate back/forward.
-      plugin->SelectFindResult(options->forward, request_id);
-      LocalFrame* core_frame = frame_->GetFrame();
-      core_frame->GetPage()->GetFocusController().SetFocusedFrame(core_frame);
-    } else if (!plugin->StartFind(search_text, options->match_case,
-                                  request_id)) {
-      // Send "no results"
-      ReportFindInPageMatchCount(request_id, 0 /* count */,
-                                 true /* final_update */);
-    }
-    return;
-  }
+void WebLocalFrameImpl::RequestFind(int identifier,
+                                    const WebString& search_text,
+                                    const WebFindOptions& options) {
+  find_in_page_->RequestFind(identifier, search_text, options);
+}
 
+void FindInPage::RequestFind(int identifier,
+                             const WebString& search_text,
+                             const WebFindOptions& options) {
   // Send "no results" if this frame has no visible content.
-  if (!frame_->HasVisibleContent() && !options->force) {
-    ReportFindInPageMatchCount(request_id, 0 /* count */,
-                               true /* final_update */);
+  if (!frame_->HasVisibleContent() && !options.force) {
+    frame_->ReportFindInPageMatchCount(identifier, 0 /* count */,
+                                       true /* finalUpdate */);
     return;
   }
 
@@ -92,27 +78,18 @@ void FindInPage::Find(int request_id,
   bool result = false;
   bool active_now = false;
 
-  WebFindOptions web_options;
-  web_options.forward = options->forward;
-  web_options.match_case = options->match_case;
-  web_options.find_next = options->find_next;
-  web_options.word_start = options->word_start;
-  web_options.medial_capital_as_word_start =
-      options->medial_capital_as_word_start;
-  web_options.force = options->force;
-
   // Search for an active match only if this frame is focused or if this is a
   // find next request.
-  if (frame_->IsFocused() || options->find_next) {
-    result = FindInternal(request_id, search_text, web_options,
-                          false /* wrap_within_frame */, &active_now);
+  if (frame_->IsFocused() || options.find_next) {
+    result = frame_->Find(identifier, search_text, options,
+                          false /* wrapWithinFrame */, &active_now);
   }
 
-  if (result && !options->find_next) {
+  if (result && !options.find_next) {
     // Indicate that at least one match has been found. 1 here means
     // possibly more matches could be coming.
-    ReportFindInPageMatchCount(request_id, 1 /* count */,
-                               false /* final_update */);
+    frame_->ReportFindInPageMatchCount(identifier, 1 /* count */,
+                                       false /* final_update */);
   }
 
   // There are three cases in which scoping is needed:
@@ -133,17 +110,17 @@ void FindInPage::Find(int request_id,
   //
   // If none of these cases are true, then we just report the current match
   // count without scoping.
-  if (/* (1) */ options->find_next && /* (2) */ current_selection.IsNull() &&
+  if (/* (1) */ options.find_next && /* (2) */ current_selection.IsNull() &&
       /* (3) */ !(result && !active_now)) {
     // Force report of the actual count.
-    EnsureTextFinder().IncreaseMatchCount(request_id, 0);
+    EnsureTextFinder().IncreaseMatchCount(identifier, 0);
     return;
   }
 
   // Start a new scoping request. If the scoping function determines that it
   // needs to scope, it will defer until later.
-  EnsureTextFinder().StartScopingStringMatches(request_id, search_text,
-                                               web_options);
+  EnsureTextFinder().StartScopingStringMatches(identifier, search_text,
+                                               options);
 }
 
 bool WebLocalFrameImpl::Find(int identifier,
@@ -151,15 +128,15 @@ bool WebLocalFrameImpl::Find(int identifier,
                              const WebFindOptions& options,
                              bool wrap_within_frame,
                              bool* active_now) {
-  return find_in_page_->FindInternal(identifier, search_text, options,
-                                     wrap_within_frame, active_now);
+  return find_in_page_->Find(identifier, search_text, options,
+                             wrap_within_frame, active_now);
 }
 
-bool FindInPage::FindInternal(int identifier,
-                              const WebString& search_text,
-                              const WebFindOptions& options,
-                              bool wrap_within_frame,
-                              bool* active_now) {
+bool FindInPage::Find(int identifier,
+                      const WebString& search_text,
+                      const WebFindOptions& options,
+                      bool wrap_within_frame,
+                      bool* active_now) {
   if (!frame_->GetFrame())
     return false;
 
@@ -230,11 +207,15 @@ void FindInPage::ActivateNearestFindResult(int request_id,
     // Something went wrong, so send a no-op reply (force the frame to report
     // the current match count) in case the host is waiting for a response due
     // to rate-limiting.
-    EnsureTextFinder().IncreaseMatchCount(request_id, 0);
+    int number_of_matches = EnsureTextFinder().TotalMatchCount();
+    mojom::blink::FindMatchUpdateType update_type =
+        mojom::blink::FindMatchUpdateType::kMoreUpdatesComing;
+    if (!EnsureTextFinder().FrameScoping() || !number_of_matches)
+      update_type = mojom::blink::FindMatchUpdateType::kFinalUpdate;
+    client_->SetNumberOfMatches(request_id, number_of_matches, update_type);
     return;
   }
-  ReportFindInPageSelection(request_id, ordinal, active_match_rect,
-                            true /* final_update */);
+  client_->SetActiveMatch(request_id, active_match_rect, ordinal);
 }
 
 void FindInPage::SetClient(mojom::blink::FindInPageClientPtr client) {
@@ -303,6 +284,10 @@ WebPluginContainer* FindInPage::PluginFindHandler() const {
   return plugin_find_handler_;
 }
 
+WebPlugin* WebLocalFrameImpl::GetWebPluginForFind() {
+  return find_in_page_->GetWebPluginForFind();
+}
+
 WebPlugin* FindInPage::GetWebPluginForFind() {
   if (frame_->GetDocument().IsPluginDocument())
     return frame_->GetDocument().To<WebPluginDocument>().Plugin();
@@ -327,19 +312,10 @@ void FindInPage::ContextDestroyed(ExecutionContext* context) {
 void WebLocalFrameImpl::ReportFindInPageMatchCount(int request_id,
                                                    int count,
                                                    bool final_update) {
-  find_in_page_->ReportFindInPageMatchCount(request_id, count, final_update);
-}
-
-void FindInPage::ReportFindInPageMatchCount(int request_id,
-                                            int count,
-                                            bool final_update) {
-  // In tests, |client_| might not be set.
-  if (!client_)
+  if (!Client())
     return;
-  client_->SetNumberOfMatches(
-      request_id, count,
-      final_update ? mojom::blink::FindMatchUpdateType::kFinalUpdate
-                   : mojom::blink::FindMatchUpdateType::kMoreUpdatesComing);
+  Client()->SendFindReply(request_id, count, -1 /* active_match_ordinal */,
+                          WebRect(), final_update);
 }
 
 void WebLocalFrameImpl::ReportFindInPageSelection(
@@ -347,21 +323,10 @@ void WebLocalFrameImpl::ReportFindInPageSelection(
     int active_match_ordinal,
     const blink::WebRect& selection_rect,
     bool final_update) {
-  find_in_page_->ReportFindInPageSelection(request_id, active_match_ordinal,
-                                           selection_rect, final_update);
-}
-
-void FindInPage::ReportFindInPageSelection(int request_id,
-                                           int active_match_ordinal,
-                                           const blink::WebRect& selection_rect,
-                                           bool final_update) {
-  // In tests, |client_| might not be set.
-  if (!client_)
+  if (!Client())
     return;
-  client_->SetActiveMatch(
-      request_id, selection_rect, active_match_ordinal,
-      final_update ? mojom::blink::FindMatchUpdateType::kFinalUpdate
-                   : mojom::blink::FindMatchUpdateType::kMoreUpdatesComing);
+  Client()->SendFindReply(request_id, -1 /* match_count */,
+                          active_match_ordinal, selection_rect, final_update);
 }
 
 }  // namespace blink

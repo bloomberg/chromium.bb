@@ -35,11 +35,15 @@ class CORE_EXPORT FindInPage final
     return new FindInPage(frame, interface_registry);
   }
 
-  bool FindInternal(int identifier,
-                    const WebString& search_text,
-                    const WebFindOptions&,
-                    bool wrap_within_frame,
-                    bool* active_now = nullptr);
+  void RequestFind(int identifier,
+                   const WebString& search_text,
+                   const WebFindOptions&);
+
+  bool Find(int identifier,
+            const WebString& search_text,
+            const WebFindOptions&,
+            bool wrap_within_frame,
+            bool* active_now = nullptr);
 
   void SetTickmarks(const WebVector<WebRect>&);
 
@@ -50,17 +54,7 @@ class CORE_EXPORT FindInPage final
   // coordinates.
   WebFloatRect ActiveFindMatchRect();
 
-  void ReportFindInPageMatchCount(int request_id, int count, bool final_update);
-
-  void ReportFindInPageSelection(int request_id,
-                                 int active_match_ordinal,
-                                 const blink::WebRect& selection_rect,
-                                 bool final_update);
-
   // mojom::blink::FindInPage overrides
-  void Find(int request_id,
-            const String& search_text,
-            mojom::blink::FindOptionsPtr) final;
 
   void SetClient(mojom::blink::FindInPageClientPtr) final;
 

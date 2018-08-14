@@ -46,6 +46,7 @@ class WebLocalFrameClient;
 class WebFrameWidget;
 class WebInputMethodController;
 class WebPerformance;
+class WebPlugin;
 class WebRange;
 class WebSecurityOrigin;
 class WebScriptExecutionCallback;
@@ -650,6 +651,12 @@ class WebLocalFrame : public WebFrame {
 
   // Find-in-page -----------------------------------------------------------
 
+  // Begins a find request, which includes finding the next find match (using
+  // find()) and scoping the frame for find matches if needed.
+  virtual void RequestFind(int identifier,
+                           const WebString& search_text,
+                           const WebFindOptions&) = 0;
+
   // Searches a frame for a given string.
   //
   // If a match is found, this function will select it (scrolling down to
@@ -679,11 +686,11 @@ class WebLocalFrame : public WebFrame {
   // default behavior will be restored.
   virtual void SetTickmarks(const WebVector<WebRect>&) = 0;
 
+  virtual WebPlugin* GetWebPluginForFind() = 0;
+
   // Notifies how many matches have been found in this frame so far, for a
   // given identifier.  |final_update| specifies whether this is the last
   // update for this frame.
-  // TODO(rakina): Make WebPluginContainer call FindInPage directly and remove
-  // this.
   virtual void ReportFindInPageMatchCount(int identifier,
                                           int count,
                                           bool final_update) = 0;
@@ -696,8 +703,6 @@ class WebLocalFrame : public WebFrame {
   // where on the screen the selection rect is currently located.
   // |final_update| specifies whether this is the last update for this
   // frame.
-  // TODO(rakina): Make WebPluginContainer call FindInPage directly and remove
-  // this.
   virtual void ReportFindInPageSelection(int identifier,
                                          int active_match_ordinal,
                                          const WebRect& selection,

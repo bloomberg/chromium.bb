@@ -1078,6 +1078,16 @@ IPC_MESSAGE_ROUTED2(FrameMsg_AdvanceFocus,
 IPC_MESSAGE_ROUTED1(FrameMsg_AdvanceFocusInForm,
                     blink::WebFocusType /* direction for advancing focus */)
 
+// Sent when the user wants to search for a word on the page (find-in-page).
+IPC_MESSAGE_ROUTED3(FrameMsg_Find,
+                    int /* request_id */,
+                    base::string16 /* search_text */,
+                    blink::WebFindOptions)
+
+// This message notifies the frame that the user has closed the find-in-page
+// window (and what action to take regarding the selection).
+IPC_MESSAGE_ROUTED1(FrameMsg_StopFinding, content::StopFindAction /* action */)
+
 // Copies the image at location x, y to the clipboard (if there indeed is an
 // image at that location).
 IPC_MESSAGE_ROUTED2(FrameMsg_CopyImageAt,
@@ -1689,6 +1699,19 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdatePageImportanceSignals,
 IPC_MESSAGE_ROUTED2(FrameHostMsg_AdvanceFocus,
                     blink::WebFocusType /* type */,
                     int32_t /* source_routing_id */)
+
+// Result of string search in the document.
+// Response to FrameMsg_Find with the results of the requested find-in-page
+// search, the number of matches found and the selection rect (in screen
+// coordinates) for the string found. If |final_update| is false, it signals
+// that this is not the last Find_Reply message - more will be sent as the
+// scoping effort continues.
+IPC_MESSAGE_ROUTED5(FrameHostMsg_Find_Reply,
+                    int /* request_id */,
+                    int /* number of matches */,
+                    gfx::Rect /* selection_rect */,
+                    int /* active_match_ordinal */,
+                    bool /* final_update */)
 
 // Sends hittesting data needed to perform hittesting on the browser process.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_HittestData, FrameHostMsg_HittestData_Params)
