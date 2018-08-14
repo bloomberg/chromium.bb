@@ -199,7 +199,6 @@
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element_collection.h"
 #include "third_party/blink/public/web/web_file_chooser_completion.h"
-#include "third_party/blink/public/web/web_find_options.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_frame_serializer.h"
 #include "third_party/blink/public/web/web_frame_serializer_cache_control_policy.h"
@@ -265,7 +264,6 @@ using blink::WebElement;
 using blink::WebElementCollection;
 using blink::WebExternalPopupMenu;
 using blink::WebExternalPopupMenuClient;
-using blink::WebFindOptions;
 using blink::WebFrame;
 using blink::WebFrameLoadType;
 using blink::WebFrameSerializer;
@@ -1925,7 +1923,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_GetSerializedHtmlWithLocalLinks,
                         OnGetSerializedHtmlWithLocalLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_SerializeAsMHTML, OnSerializeAsMHTML)
-    IPC_MESSAGE_HANDLER(FrameMsg_Find, OnFind)
     IPC_MESSAGE_HANDLER(FrameMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(FrameMsg_SuppressFurtherDialogs,
                         OnSuppressFurtherDialogs)
@@ -6287,29 +6284,6 @@ void RenderFrameImpl::OnWriteMHTMLToDiskComplete(
       main_thread_use_time));
 }
 
-void RenderFrameImpl::OnFind(int request_id,
-                             const base::string16& search_text,
-                             const WebFindOptions& options) {
-  DCHECK(!search_text.empty());
-
-  blink::WebPlugin* plugin = GetWebPluginForFind();
-  // Check if the plugin still exists in the document.
-  if (plugin) {
-    if (options.find_next) {
-      // Just navigate back/forward.
-      plugin->SelectFindResult(options.forward, request_id);
-      render_view_->webview()->SetFocusedFrame(frame_);
-    } else if (!plugin->StartFind(WebString::FromUTF16(search_text),
-                                  options.match_case, request_id)) {
-      // Send "no results".
-      frame_->ReportFindInPageMatchCount(request_id, 0, true);
-    }
-    return;
-  }
-
-  frame_->RequestFind(request_id, WebString::FromUTF16(search_text), options);
-}
-
 #define STATIC_ASSERT_ENUM(a, b)                            \
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enums: " #a)
@@ -7160,25 +7134,6 @@ void RenderFrameImpl::SetAccessibilityModeForTest(ui::AXMode new_mode) {
 scoped_refptr<network::SharedURLLoaderFactory>
 RenderFrameImpl::GetURLLoaderFactory() {
   return GetLoaderFactoryBundle();
-}
-
-blink::WebPlugin* RenderFrameImpl::GetWebPluginForFind() {
-  return frame_->GetWebPluginForFind();
-}
-
-void RenderFrameImpl::SendFindReply(int request_id,
-                                    int match_count,
-                                    int ordinal,
-                                    const WebRect& selection_rect,
-                                    bool final_status_update) {
-  DCHECK_GE(ordinal, -1);
-  WebRect converted_rect = selection_rect;
-
-  GetRenderWidget()->ConvertViewportToWindow(&converted_rect);
-
-  Send(new FrameHostMsg_Find_Reply(routing_id_, request_id, match_count,
-                                   converted_rect, ordinal,
-                                   final_status_update));
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
