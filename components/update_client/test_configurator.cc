@@ -12,7 +12,6 @@
 #include "components/services/patch/patch_service.h"
 #include "components/services/unzip/unzip_service.h"
 #include "components/update_client/activity_data_service.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -38,8 +37,6 @@ TestConfigurator::TestConfigurator()
       ondemand_time_(0),
       enabled_cup_signing_(false),
       enabled_component_updates_(true),
-      context_(base::MakeRefCounted<net::TestURLRequestContextGetter>(
-          base::ThreadTaskRunnerHandle::Get())),
       test_shared_loader_factory_(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
               &test_url_loader_factory_)) {
@@ -117,11 +114,6 @@ std::string TestConfigurator::ExtraRequestParams() const {
 
 std::string TestConfigurator::GetDownloadPreference() const {
   return download_preference_;
-}
-
-scoped_refptr<net::URLRequestContextGetter> TestConfigurator::RequestContext()
-    const {
-  return context_;
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

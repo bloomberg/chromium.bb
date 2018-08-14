@@ -43,7 +43,6 @@ class IOSConfigurator : public update_client::Configurator {
   std::string GetOSLongName() const override;
   std::string ExtraRequestParams() const override;
   std::string GetDownloadPreference() const override;
-  scoped_refptr<net::URLRequestContextGetter> RequestContext() const override;
   scoped_refptr<network::SharedURLLoaderFactory> URLLoaderFactory()
       const override;
   std::unique_ptr<service_manager::Connector> CreateServiceManagerConnector()
@@ -130,11 +129,6 @@ std::string IOSConfigurator::ExtraRequestParams() const {
 
 std::string IOSConfigurator::GetDownloadPreference() const {
   return configurator_impl_.GetDownloadPreference();
-}
-
-scoped_refptr<net::URLRequestContextGetter> IOSConfigurator::RequestContext()
-    const {
-  return GetApplicationContext()->GetSystemURLRequestContext();
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

@@ -162,12 +162,6 @@ std::string ChromeUpdateClientConfig::GetDownloadPreference() const {
   return std::string();
 }
 
-scoped_refptr<net::URLRequestContextGetter>
-ChromeUpdateClientConfig::RequestContext() const {
-  return content::BrowserContext::GetDefaultStoragePartition(context_)
-      ->GetURLRequestContext();
-}
-
 scoped_refptr<network::SharedURLLoaderFactory>
 ChromeUpdateClientConfig::URLLoaderFactory() const {
   return content::BrowserContext::GetDefaultStoragePartition(context_)
