@@ -18,7 +18,7 @@ void ChildProcessData::SetHandle(base::ProcessHandle process) {
   } else {
     BOOL result =
         ::DuplicateHandle(::GetCurrentProcess(), process, ::GetCurrentProcess(),
-                          &handle_to_set, PROCESS_QUERY_INFORMATION, FALSE, 0);
+                          &handle_to_set, 0, FALSE, DUPLICATE_SAME_ACCESS);
     auto err = GetLastError();
     CHECK(result) << process << " " << err;
   }
