@@ -365,7 +365,14 @@ void FileReaderLoader::OnDataPipeReadable(MojoResult result) {
              FailureType::kMojoPipeUnexpectedReadError);
       return;
     }
+
+    auto weak_this = weak_factory_.GetWeakPtr();
     OnReceivedData(static_cast<const char*>(buffer), num_bytes);
+    // OnReceivedData calls out to our client, which could delete |this|, so
+    // bail out if that happened.
+    if (!weak_this)
+      return;
+
     consumer_handle_->EndReadData(num_bytes);
     if (BytesLoaded() >= total_bytes_) {
       received_all_data_ = true;
