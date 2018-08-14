@@ -20,8 +20,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "base/win/com_init_util.h"
 #include "base/win/scoped_bstr.h"
-#include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_variant.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -113,13 +113,11 @@ class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatter {
   base::string16 ProcessTreeForOutput(
       const base::DictionaryValue& node,
       base::DictionaryValue* filtered_dict_result = nullptr) override;
-
-  // Initializes COM services when standalone dump events tool is used.
-  base::win::ScopedCOMInitializer com_initializer;
 };
 
 // static
 AccessibilityTreeFormatter* AccessibilityTreeFormatter::Create() {
+  base::win::AssertComInitialized();
   return new AccessibilityTreeFormatterWin();
 }
 

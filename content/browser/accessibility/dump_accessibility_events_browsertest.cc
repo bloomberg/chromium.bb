@@ -83,10 +83,9 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump() {
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       shell()->web_contents());
   base::ProcessId pid = base::GetCurrentProcId();
-  std::unique_ptr<AccessibilityEventRecorder> event_recorder(
-      AccessibilityEventRecorder::Create(
-          web_contents->GetRootBrowserAccessibilityManager(), pid));
-  event_recorder->set_only_web_events(true);
+  auto& event_recorder = AccessibilityEventRecorder::GetInstance(
+      web_contents->GetRootBrowserAccessibilityManager(), pid);
+  event_recorder.set_only_web_events(true);
 
   // Save a copy of the accessibility tree (as a text dump); we'll
   // log this for the user later if the test fails.
@@ -124,7 +123,7 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump() {
 
   // Dump the event logs, running them through any filters specified
   // in the HTML file.
-  std::vector<std::string> event_logs = event_recorder->event_logs();
+  std::vector<std::string> event_logs = event_recorder.event_logs();
   std::vector<std::string> result;
   for (size_t i = 0; i < event_logs.size(); ++i) {
     if (AccessibilityTreeFormatter::MatchesFilters(

@@ -10,12 +10,13 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/process/process_handle.h"
-#include "content/common/content_export.h"
 
 namespace content {
 
-using AccessibilityEventCallback = base::RepeatingCallback<void(std::string)>;
+using AccessibilityEventCallback =
+    base::RepeatingCallback<void(const std::string&)>;
 
 class BrowserAccessibilityManager;
 
@@ -32,12 +33,14 @@ class BrowserAccessibilityManager;
 //
 // The implementation is highly platform-specific; a subclass is needed for
 // each platform does most of the work.
+//
+// As currently designed, there should only be one instance of this class.
 class AccessibilityEventRecorder {
  public:
-  // Construct the right platform-specific subclass.
-  static AccessibilityEventRecorder* Create(
-      BrowserAccessibilityManager* manager,
-      base::ProcessId pid);
+  // Get the right platform-specific subclass.
+  static AccessibilityEventRecorder& GetInstance(
+      BrowserAccessibilityManager* manager = nullptr,
+      base::ProcessId pid = 0);
   virtual ~AccessibilityEventRecorder();
 
   void set_only_web_events(bool only_web_events) {
@@ -52,13 +55,15 @@ class AccessibilityEventRecorder {
   const std::vector<std::string>& event_logs() { return event_logs_; }
 
  protected:
-  explicit AccessibilityEventRecorder(BrowserAccessibilityManager* manager,
-                                      base::ProcessId pid);
+  AccessibilityEventRecorder(BrowserAccessibilityManager* manager,
+                             base::ProcessId pid);
 
-  void OnEvent(std::string event);
+  void OnEvent(const std::string& event);
 
-  BrowserAccessibilityManager* manager_;
+  BrowserAccessibilityManager* const manager_;
   bool only_web_events_ = false;
+
+  friend class base::NoDestructor<AccessibilityEventRecorder>;
 
  private:
   std::vector<std::string> event_logs_;
