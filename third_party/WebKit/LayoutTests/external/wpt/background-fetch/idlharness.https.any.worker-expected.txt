@@ -22,38 +22,22 @@ PASS BackgroundFetchRegistration interface: attribute uploadTotal
 PASS BackgroundFetchRegistration interface: attribute uploaded
 PASS BackgroundFetchRegistration interface: attribute downloadTotal
 PASS BackgroundFetchRegistration interface: attribute downloaded
-FAIL BackgroundFetchRegistration interface: attribute activeFetches assert_true: The prototype object must have a property "activeFetches" expected true got false
+FAIL BackgroundFetchRegistration interface: attribute state assert_true: The prototype object must have a property "state" expected true got false
+FAIL BackgroundFetchRegistration interface: attribute failureReason assert_true: The prototype object must have a property "failureReason" expected true got false
 PASS BackgroundFetchRegistration interface: attribute onprogress
 PASS BackgroundFetchRegistration interface: operation abort()
-FAIL BackgroundFetchActiveFetches interface: existence and properties of interface object assert_own_property: self does not have own property "BackgroundFetchActiveFetches" expected property "BackgroundFetchActiveFetches" missing
-FAIL BackgroundFetchActiveFetches interface object length assert_own_property: self does not have own property "BackgroundFetchActiveFetches" expected property "BackgroundFetchActiveFetches" missing
-FAIL BackgroundFetchActiveFetches interface object name assert_own_property: self does not have own property "BackgroundFetchActiveFetches" expected property "BackgroundFetchActiveFetches" missing
-FAIL BackgroundFetchActiveFetches interface: existence and properties of interface prototype object assert_own_property: self does not have own property "BackgroundFetchActiveFetches" expected property "BackgroundFetchActiveFetches" missing
-FAIL BackgroundFetchActiveFetches interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "BackgroundFetchActiveFetches" expected property "BackgroundFetchActiveFetches" missing
-FAIL BackgroundFetchActiveFetches interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "BackgroundFetchActiveFetches" expected property "BackgroundFetchActiveFetches" missing
-FAIL BackgroundFetchActiveFetches interface: operation match(RequestInfo, CacheQueryOptions) assert_own_property: self does not have own property "BackgroundFetchActiveFetches" expected property "BackgroundFetchActiveFetches" missing
-FAIL BackgroundFetchActiveFetches interface: operation matchAll(RequestInfo, CacheQueryOptions) assert_own_property: self does not have own property "BackgroundFetchActiveFetches" expected property "BackgroundFetchActiveFetches" missing
-FAIL BackgroundFetchActiveFetches interface: operation values() assert_own_property: self does not have own property "BackgroundFetchActiveFetches" expected property "BackgroundFetchActiveFetches" missing
-FAIL BackgroundFetchActiveFetch interface: existence and properties of interface object assert_own_property: self does not have own property "BackgroundFetchActiveFetch" expected property "BackgroundFetchActiveFetch" missing
-FAIL BackgroundFetchActiveFetch interface object length assert_own_property: self does not have own property "BackgroundFetchActiveFetch" expected property "BackgroundFetchActiveFetch" missing
-FAIL BackgroundFetchActiveFetch interface object name assert_own_property: self does not have own property "BackgroundFetchActiveFetch" expected property "BackgroundFetchActiveFetch" missing
-FAIL BackgroundFetchActiveFetch interface: existence and properties of interface prototype object assert_own_property: self does not have own property "BackgroundFetchActiveFetch" expected property "BackgroundFetchActiveFetch" missing
-FAIL BackgroundFetchActiveFetch interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "BackgroundFetchActiveFetch" expected property "BackgroundFetchActiveFetch" missing
-FAIL BackgroundFetchActiveFetch interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "BackgroundFetchActiveFetch" expected property "BackgroundFetchActiveFetch" missing
-FAIL BackgroundFetchActiveFetch interface: attribute responseReady assert_own_property: self does not have own property "BackgroundFetchActiveFetch" expected property "BackgroundFetchActiveFetch" missing
-PASS BackgroundFetchFetch interface: existence and properties of interface object
-PASS BackgroundFetchFetch interface object length
-PASS BackgroundFetchFetch interface object name
-PASS BackgroundFetchFetch interface: existence and properties of interface prototype object
-PASS BackgroundFetchFetch interface: existence and properties of interface prototype object's "constructor" property
-PASS BackgroundFetchFetch interface: existence and properties of interface prototype object's @@unscopables property
-PASS BackgroundFetchFetch interface: attribute request
+FAIL BackgroundFetchRegistration interface: operation match(RequestInfo, CacheQueryOptions) assert_own_property: interface prototype object missing non-static operation expected property "match" missing
+FAIL BackgroundFetchRegistration interface: operation matchAll(RequestInfo, CacheQueryOptions) assert_own_property: interface prototype object missing non-static operation expected property "matchAll" missing
+FAIL BackgroundFetchRecord interface: existence and properties of interface object assert_own_property: self does not have own property "BackgroundFetchRecord" expected property "BackgroundFetchRecord" missing
+FAIL BackgroundFetchRecord interface object length assert_own_property: self does not have own property "BackgroundFetchRecord" expected property "BackgroundFetchRecord" missing
+FAIL BackgroundFetchRecord interface object name assert_own_property: self does not have own property "BackgroundFetchRecord" expected property "BackgroundFetchRecord" missing
+FAIL BackgroundFetchRecord interface: existence and properties of interface prototype object assert_own_property: self does not have own property "BackgroundFetchRecord" expected property "BackgroundFetchRecord" missing
+FAIL BackgroundFetchRecord interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "BackgroundFetchRecord" expected property "BackgroundFetchRecord" missing
+FAIL BackgroundFetchRecord interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "BackgroundFetchRecord" expected property "BackgroundFetchRecord" missing
+FAIL BackgroundFetchRecord interface: attribute request assert_own_property: self does not have own property "BackgroundFetchRecord" expected property "BackgroundFetchRecord" missing
+FAIL BackgroundFetchRecord interface: attribute responseReady assert_own_property: self does not have own property "BackgroundFetchRecord" expected property "BackgroundFetchRecord" missing
 PASS BackgroundFetchEvent interface: existence and properties of interface object
-PASS BackgroundFetchSettledEvent interface: existence and properties of interface object
-PASS BackgroundFetchSettledFetches interface: existence and properties of interface object
-PASS BackgroundFetchSettledFetch interface: existence and properties of interface object
-PASS BackgroundFetchUpdateEvent interface: existence and properties of interface object
-PASS BackgroundFetchClickEvent interface: existence and properties of interface object
+PASS BackgroundFetchUpdateUIEvent interface: existence and properties of interface object
 PASS ServiceWorkerRegistration interface: attribute backgroundFetch
 PASS ServiceWorkerGlobalScope interface: existence and properties of interface object
 PASS ExtendableEvent interface: existence and properties of interface object
