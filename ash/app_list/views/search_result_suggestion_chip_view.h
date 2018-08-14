@@ -38,6 +38,7 @@ class APP_LIST_EXPORT SearchResultSuggestionChipView
   void Layout() override;
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   SuggestionChipView* suggestion_chip_view() { return suggestion_chip_view_; }
 
