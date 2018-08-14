@@ -113,6 +113,8 @@ class PerfBenchmark(benchmark.Benchmark):
       return 'windows'
     if target_os.startswith('linux'):
       return 'linux'
+    if target_os == 'cros':
+      return 'chromeos'
     return target_os
 
   def _GetVariationsBrowserArgs(self, finder_options):
