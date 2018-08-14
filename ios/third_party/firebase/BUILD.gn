@@ -5,6 +5,10 @@
 import("//ios/third_party/firebase/firebase.gni")
 
 source_set("firebase") {
+  assert(
+      ios_firebase_resources_target != "",
+      "ios_firebase_resources_target must be defined if Firebase SDK is enabled.")
+
   # From gn documentation:
   #   https://chromium.googlesource.com/chromium/src/+/master/tools/gn/docs/reference.md#ldflags
   # "ldflags are NOT pushed to dependents, so applying ldflags to source sets
@@ -16,7 +20,7 @@ source_set("firebase") {
   # target for ldflags specified in :firebase_config to be applied.
   public_configs = [ ":firebase_config" ]
   deps = [
-    ":resources",
+    ios_firebase_resources_target,
   ]
 }
 
@@ -33,16 +37,5 @@ config("firebase_config") {
     "FirebaseInstanceID.framework",
     "FirebaseNanoPB.framework",
     "nanopb.framework",
-  ]
-}
-
-bundle_data("resources") {
-  assert(ios_firebase_plist_path != "",
-         "ios_firebase_plist_path must be defined if Firebase SDK is enabled.")
-  sources = [
-    ios_firebase_plist_path,
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
 }
