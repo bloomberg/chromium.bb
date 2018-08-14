@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "net/base/completion_once_callback.h"
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/blob_storage/blob_storage_constants.h"
@@ -94,7 +95,10 @@ class STORAGE_EXPORT BlobReader {
   Status ReadSideData(const StatusCallback& done);
 
   // Returns the side data which has been already read with ReadSideData().
-  net::IOBufferWithSize* side_data() const { return side_data_.get(); }
+  net::IOBufferWithSize* side_data() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return side_data_.get();
+  }
 
   // Used to set the read position.
   // * This should be called after CalculateSize and before Read.
@@ -124,14 +128,21 @@ class STORAGE_EXPORT BlobReader {
 
   // Returns the remaining bytes to be read in the blob. This is populated
   // after CalculateSize, and is modified by SetReadRange.
-  uint64_t remaining_bytes() const { return remaining_bytes_; }
+  uint64_t remaining_bytes() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return remaining_bytes_;
+  }
 
   // Returns the net error code if there was an error. Defaults to net::OK.
-  int net_error() const { return net_error_; }
+  int net_error() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return net_error_;
+  }
 
   // Returns the total size of the blob. This is populated after CalculateSize
   // is called.
   uint64_t total_size() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(total_size_calculated_);
     return total_size_;
   }
@@ -144,10 +155,14 @@ class STORAGE_EXPORT BlobReader {
 
   BlobReader(const BlobDataHandle* blob_handle);
 
-  bool total_size_calculated() const { return total_size_calculated_; }
+  bool total_size_calculated() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return total_size_calculated_;
+  }
 
   void SetFileStreamProviderForTesting(
       std::unique_ptr<FileStreamReaderProvider> file_stream_provider) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     file_stream_provider_for_testing_ = std::move(file_stream_provider);
   }
 
@@ -225,6 +240,8 @@ class STORAGE_EXPORT BlobReader {
 
   net::CompletionOnceCallback size_callback_;
   net::CompletionOnceCallback read_callback_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<BlobReader> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(BlobReader);
