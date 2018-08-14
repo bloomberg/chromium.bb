@@ -90,21 +90,21 @@ class TimeUsageLimit {
   DISALLOW_COPY_AND_ASSIGN(TimeUsageLimit);
 };
 
-class Override {
+class TimeLimitOverride {
  public:
   enum class Action { kLock, kUnlock };
 
-  explicit Override(const base::Value& override_dict);
-  ~Override();
-  Override(Override&&);
-  Override& operator=(Override&&);
+  explicit TimeLimitOverride(const base::Value& override_dict);
+  ~TimeLimitOverride();
+  TimeLimitOverride(TimeLimitOverride&&);
+  TimeLimitOverride& operator=(TimeLimitOverride&&);
 
   Action action;
   base::Time created_at;
   base::Optional<base::TimeDelta> duration;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(Override);
+  DISALLOW_COPY_AND_ASSIGN(TimeLimitOverride);
 };
 
 }  // namespace internal
@@ -121,8 +121,8 @@ struct State {
   bool is_locked = false;
 
   // Which policy is responsible for the current state.
-  // If it is locked, one of [ override, fixed_limit, usage_limit ]
-  // If it is not locked, one of [ no_active_policy, override ]
+  // If it is locked, one of [ kOverride, kFixedLimit, kUsageLimit ]
+  // If it is not locked, one of [ kNoActivePolicy, kOverride ]
   ActivePolicies active_policy;
 
   // Whether time_usage_limit is currently active.
@@ -164,7 +164,7 @@ State GetState(const std::unique_ptr<base::DictionaryValue>& time_limit,
                const icu::TimeZone* const time_zone,
                const base::Optional<State>& previous_state);
 
-// Ruturns the expected time that the used time stored should be reseted.
+// Returns the expected time that the used time stored should be reset.
 base::Time GetExpectedResetTime(
     const std::unique_ptr<base::DictionaryValue>& time_limit,
     base::Time current_time,
