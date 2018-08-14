@@ -13,6 +13,7 @@
 #include "extensions/renderer/bindings/api_binding_types.h"
 #include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/script_context.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_scoped_user_gesture.h"
@@ -113,7 +114,8 @@ bool RequestSender::StartRequest(Source* source,
 
   // Set Service Worker specific params to default values.
   params->worker_thread_id = -1;
-  params->service_worker_version_id = kInvalidServiceWorkerVersionId;
+  params->service_worker_version_id =
+      blink::mojom::kInvalidServiceWorkerVersionId;
 
   binding::RequestThread thread =
       for_io_thread ? binding::RequestThread::IO : binding::RequestThread::UI;

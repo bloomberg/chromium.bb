@@ -64,7 +64,7 @@ void NotifyApiFunctionCalled(const std::string& extension_id,
 bool IsRequestFromServiceWorker(
     const ExtensionHostMsg_Request_Params& request_params) {
   return request_params.service_worker_version_id !=
-         extensions::kInvalidServiceWorkerVersionId;
+         blink::mojom::kInvalidServiceWorkerVersionId;
 }
 
 // Separate copy of ExtensionAPI used for IO thread extension functions. We need
