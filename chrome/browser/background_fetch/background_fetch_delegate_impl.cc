@@ -432,6 +432,7 @@ void BackgroundFetchDelegateImpl::UpdateOfflineItemAndUpdateObservers(
 }
 
 void BackgroundFetchDelegateImpl::OpenItem(
+    offline_items_collection::LaunchLocation location,
     const offline_items_collection::ContentId& id) {
   if (client())
     client()->OnUIActivated(id.id);

@@ -475,7 +475,7 @@ public class OfflinePageBridgeTest {
         loadUrlParams = getLoadUrlParamsForOpeningMhtmlFileOrContent(tempFileUrl);
         Assert.assertEquals(tempFileUrl, loadUrlParams.getUrl());
         extraHeaders = loadUrlParams.getVerbatimHeaders();
-        Assert.assertEquals("", extraHeaders);
+        Assert.assertNull(extraHeaders);
 
         // Cleans up.
         Assert.assertTrue(tempFile.delete());

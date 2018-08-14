@@ -36,7 +36,7 @@ class MockOfflineContentProvider : public OfflineContentProvider {
   void NotifyOnItemUpdated(const OfflineItem& item);
 
   // OfflineContentProvider implementation.
-  MOCK_METHOD1(OpenItem, void(const ContentId&));
+  MOCK_METHOD2(OpenItem, void(LaunchLocation, const ContentId&));
   MOCK_METHOD1(RemoveItem, void(const ContentId&));
   MOCK_METHOD1(CancelDownload, void(const ContentId&));
   MOCK_METHOD1(PauseDownload, void(const ContentId&));

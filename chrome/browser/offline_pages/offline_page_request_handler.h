@@ -105,6 +105,8 @@ class OfflinePageRequestHandler {
     FILE_URL_INTENT = 8,
     // Launched due to processing a content URL intent to view MHTML content.
     CONTENT_URL_INTENT = 9,
+    // Launched due to clicking "Open" link in the progress bar.
+    PROGRESS_BAR = 10,
     COUNT
   };
 

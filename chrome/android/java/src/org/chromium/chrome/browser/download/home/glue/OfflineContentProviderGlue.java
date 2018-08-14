@@ -8,6 +8,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
@@ -59,7 +60,7 @@ public class OfflineContentProviderGlue implements OfflineContentProvider.Observ
         if (LegacyHelpers.isLegacyDownload(item.id)) {
             mDownloadProvider.openItem(item);
         } else {
-            mProvider.openItem(item.id);
+            mProvider.openItem(LaunchLocation.DOWNLOAD_HOME, item.id);
         }
     }
 
