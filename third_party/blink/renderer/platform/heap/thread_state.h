@@ -438,6 +438,11 @@ class PLATFORM_EXPORT ThreadState final
   void LeaveSafePoint();
 
   void RecordStackEnd(intptr_t* end_of_stack) { end_of_stack_ = end_of_stack; }
+#if HAS_FEATURE(safe_stack)
+  void RecordUnsafeStackEnd(intptr_t* end_of_unsafe_stack) {
+    end_of_unsafe_stack_ = end_of_unsafe_stack;
+  }
+#endif
   NO_SANITIZE_ADDRESS void CopyStackUntilSafePointScope();
 
   // A region of non-weak PersistentNodes allocated on the given thread.
@@ -621,6 +626,9 @@ class PLATFORM_EXPORT ThreadState final
   void ClearSafePointScopeMarker() {
     safe_point_stack_copy_.clear();
     safe_point_scope_marker_ = nullptr;
+#if HAS_FEATURE(safe_stack)
+    safe_point_scope_unsafe_marker_ = nullptr;
+#endif
   }
 
   bool ShouldVerifyMarking() const;
@@ -707,8 +715,14 @@ class PLATFORM_EXPORT ThreadState final
   BlinkGC::StackState stack_state_;
   intptr_t* start_of_stack_;
   intptr_t* end_of_stack_;
-
   void* safe_point_scope_marker_;
+
+#if HAS_FEATURE(safe_stack)
+  intptr_t* start_of_unsafe_stack_;
+  intptr_t* end_of_unsafe_stack_;
+  void* safe_point_scope_unsafe_marker_;
+#endif
+
   Vector<Address> safe_point_stack_copy_;
   bool sweep_forbidden_;
   size_t no_allocation_count_;

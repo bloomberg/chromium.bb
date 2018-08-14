@@ -169,6 +169,13 @@ ThreadState::ThreadState()
       start_of_stack_(reinterpret_cast<intptr_t*>(WTF::GetStackStart())),
       end_of_stack_(reinterpret_cast<intptr_t*>(WTF::GetStackStart())),
       safe_point_scope_marker_(nullptr),
+#if HAS_FEATURE(safe_stack)
+      start_of_unsafe_stack_(
+          reinterpret_cast<intptr_t*>(__builtin___get_unsafe_stack_top())),
+      end_of_unsafe_stack_(
+          reinterpret_cast<intptr_t*>(__builtin___get_unsafe_stack_bottom())),
+      safe_point_scope_unsafe_marker_(nullptr),
+#endif
       sweep_forbidden_(false),
       no_allocation_count_(0),
       gc_forbidden_count_(0),
@@ -356,6 +363,21 @@ void ThreadState::VisitStack(MarkingVisitor* visitor) {
     heap_->CheckAndMarkPointer(visitor, ptr);
     VisitAsanFakeStackForPointer(visitor, ptr);
   }
+
+#if HAS_FEATURE(safe_stack)
+  start = reinterpret_cast<Address*>(start_of_unsafe_stack_);
+  end = reinterpret_cast<Address*>(end_of_unsafe_stack_);
+  safe_point_scope_marker =
+      reinterpret_cast<Address*>(safe_point_scope_unsafe_marker_);
+  current = safe_point_scope_marker ? safe_point_scope_marker : end;
+
+  for (; current < start; ++current) {
+    Address ptr = *current;
+    // SafeStack And MSan are not compatible
+    heap_->CheckAndMarkPointer(visitor, ptr);
+    VisitAsanFakeStackForPointer(visitor, ptr);
+  }
+#endif
 
   for (Address ptr : safe_point_stack_copy_) {
 #if defined(MEMORY_SANITIZER)
@@ -1268,6 +1290,10 @@ static void EnterSafePointAfterPushRegisters(void*,
                                              ThreadState* state,
                                              intptr_t* stack_end) {
   state->RecordStackEnd(stack_end);
+#if HAS_FEATURE(safe_stack)
+  state->RecordUnsafeStackEnd(
+      reinterpret_cast<intptr_t*>(__builtin___get_unsafe_stack_ptr()));
+#endif
   state->CopyStackUntilSafePointScope();
 }
 
@@ -1281,7 +1307,12 @@ void ThreadState::EnterSafePoint(BlinkGC::StackState stack_state,
   DCHECK(stack_state == BlinkGC::kNoHeapPointersOnStack || scope_marker);
   DCHECK(IsGCForbidden());
   stack_state_ = stack_state;
+#if HAS_FEATURE(safe_stack)
+  safe_point_scope_marker_ = __builtin_frame_address(0);
+  safe_point_scope_unsafe_marker_ = scope_marker;
+#else
   safe_point_scope_marker_ = scope_marker;
+#endif
   PushAllRegisters(nullptr, this, EnterSafePointAfterPushRegisters);
 }
 
@@ -1325,20 +1356,35 @@ void ThreadState::CopyStackUntilSafePointScope() {
   CHECK_LT(from, to);
   CHECK_LE(to, reinterpret_cast<Address*>(start_of_stack_));
   size_t slot_count = static_cast<size_t>(to - from);
+
+#if HAS_FEATURE(safe_stack)
+  Address* unsafe_to =
+      reinterpret_cast<Address*>(safe_point_scope_unsafe_marker_);
+  Address* unsafe_from = reinterpret_cast<Address*>(end_of_unsafe_stack_);
+  CHECK_LE(unsafe_from, unsafe_to);
+  CHECK_LE(unsafe_to, reinterpret_cast<Address*>(start_of_unsafe_stack_));
+  size_t unsafe_slot_count = static_cast<size_t>(unsafe_to - unsafe_from);
+#else
+  constexpr size_t unsafe_slot_count = 0;
+#endif
+
 // Catch potential performance issues.
 #if defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
   // ASan/LSan use more space on the stack and we therefore
   // increase the allowed stack copying for those builds.
-  DCHECK_LT(slot_count, 2048u);
+  DCHECK_LT(slot_count + unsafe_slot_count, 2048u);
 #else
-  DCHECK_LT(slot_count, 1024u);
+  DCHECK_LT(slot_count + unsafe_slot_count, 1024u);
 #endif
 
   DCHECK(!safe_point_stack_copy_.size());
-  safe_point_stack_copy_.resize(slot_count);
-  for (size_t i = 0; i < slot_count; ++i) {
+  safe_point_stack_copy_.resize(slot_count + unsafe_slot_count);
+  for (size_t i = 0; i < slot_count; ++i)
     safe_point_stack_copy_[i] = from[i];
-  }
+#if HAS_FEATURE(safe_stack)
+  for (size_t i = 0; i < unsafe_slot_count; ++i)
+    safe_point_stack_copy_[slot_count + i] = unsafe_from[i];
+#endif
 }
 
 void ThreadState::RegisterStaticPersistentNode(
