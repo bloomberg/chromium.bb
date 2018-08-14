@@ -45,17 +45,18 @@ constexpr int kIconLabelBubbleFadeInDurationMs = 250;
 constexpr int kIconLabelBubbleFadeOutDurationMs = 175;
 
 // The type of tweening for the animation.
-const gfx::Tween::Type kTweenType = gfx::Tween::EASE_IN_OUT;
+const gfx::Tween::Type kIconLabelBubbleTweenType = gfx::Tween::EASE_IN_OUT;
 
 // The time for the text to animate out, as well as in.
-constexpr int kSlideTimeMS = 600;
+constexpr int kIconLabelBubbleSlideTimeMs = 600;
 
 // The total time for the in and out text animation.
-constexpr int kAnimationDurationMS = 3000;
+constexpr int kIconLabelBubbleAnimationDurationMs = 3000;
 
 // The fraction of time taken for the text to animate out, as well as in.
-const double kOpenTimeFraction =
-    static_cast<double>(kSlideTimeMS) / kAnimationDurationMS;
+const double kIconLabelBubbleOpenTimeFraction =
+    static_cast<double>(kIconLabelBubbleSlideTimeMs) /
+    kIconLabelBubbleAnimationDurationMs;
 }  // namespace
 
 //////////////////////////////////////////////////////////////////
@@ -539,10 +540,10 @@ void IconLabelBubbleView::SetUpForInOutAnimation() {
   label_->SetElideBehavior(gfx::NO_ELIDE);
   label_->SetVisible(false);
 
-  slide_animation_.SetSlideDuration(kAnimationDurationMS);
-  slide_animation_.SetTweenType(kTweenType);
-  open_state_fraction_ =
-      gfx::Tween::CalculateValue(kTweenType, kOpenTimeFraction);
+  slide_animation_.SetSlideDuration(kIconLabelBubbleAnimationDurationMs);
+  slide_animation_.SetTweenType(kIconLabelBubbleTweenType);
+  open_state_fraction_ = gfx::Tween::CalculateValue(
+      kIconLabelBubbleTweenType, kIconLabelBubbleOpenTimeFraction);
 }
 
 void IconLabelBubbleView::AnimateIn(int string_id) {
