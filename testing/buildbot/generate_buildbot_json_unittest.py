@@ -15,12 +15,17 @@ import generate_buildbot_json
 class FakeBBGen(generate_buildbot_json.BBJSONGenerator):
   def __init__(self, waterfalls, test_suites, exceptions, luci_milo_cfg):
     super(FakeBBGen, self).__init__()
+    infra_config_dir = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), '..', '..',
+                    'infra', 'config', 'global'))
+    luci_milo_cfg_path = os.path.join(infra_config_dir, 'luci-milo.cfg')
+    luci_milo_dev_cfg_path = os.path.join(infra_config_dir, 'luci-milo-dev.cfg')
     self.files = {
       'waterfalls.pyl': waterfalls,
       'test_suites.pyl': test_suites,
       'test_suite_exceptions.pyl': exceptions,
-      os.path.join( '..', '..', 'infra', 'config', 'global', 'luci-milo.cfg'):
-          luci_milo_cfg,
+      luci_milo_cfg_path: luci_milo_cfg,
+      luci_milo_dev_cfg_path: '',
     }
 
   def read_file(self, relative_path):
