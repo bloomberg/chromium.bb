@@ -606,10 +606,6 @@ void ContentVerifier::BindURLLoaderFactoryRequestOnUIThread(
   if (shutdown_on_ui_)
     return;
 
-  network::mojom::URLLoaderFactoryParamsPtr params =
-      network::mojom::URLLoaderFactoryParams::New();
-  params->process_id = network::mojom::kBrowserProcessId;
-  params->is_corb_enabled = false;
   content::BrowserContext::GetDefaultStoragePartition(context_)
       ->GetURLLoaderFactoryForBrowserProcess()
       ->Clone(std::move(url_loader_factory_request));
