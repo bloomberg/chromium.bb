@@ -27,7 +27,7 @@ namespace {
 // Appearance.
 constexpr int kIconSizeDip = 24;
 constexpr int kLineHeightDip = 24;
-constexpr int kMaxWidthDip = 512;
+constexpr int kMaxWidthDip = 452;
 constexpr int kPaddingLeftDip = 12;
 constexpr int kPaddingRightDip = 24;
 constexpr int kPreferredHeightDip = 48;

@@ -16,6 +16,8 @@ namespace ash {
 namespace {
 
 // Appearance.
+constexpr int kLineHeightDip = 24;
+constexpr int kMaxWidthDip = 376;
 constexpr int kMinHeightDip = 32;
 
 // Helpers ---------------------------------------------------------------------
@@ -39,7 +41,7 @@ AssistantQueryView::AssistantQueryView() {
 AssistantQueryView::~AssistantQueryView() = default;
 
 gfx::Size AssistantQueryView::CalculatePreferredSize() const {
-  return gfx::Size(INT_MAX, GetHeightForWidth(INT_MAX));
+  return gfx::Size(kMaxWidthDip, GetHeightForWidth(kMaxWidthDip));
 }
 
 int AssistantQueryView::GetHeightForWidth(int width) const {
@@ -69,6 +71,7 @@ void AssistantQueryView::InitLayout() {
   label_ = new views::StyledLabel(base::string16(), /*listener=*/nullptr);
   label_->set_auto_color_readability_enabled(false);
   label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
+  label_->SetLineHeight(kLineHeightDip);
   AddChildView(label_);
 }
 
