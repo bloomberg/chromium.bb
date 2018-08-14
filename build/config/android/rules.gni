@@ -2296,6 +2296,7 @@ if (enable_java_templates) {
                                "emma_never_instrument",
                                "java_files",
                                "javac_args",
+                               "loadable_modules",
                                "no_build_hooks",
                                "secondary_abi_loadable_modules",
                                "uncompress_shared_libraries",
@@ -2482,8 +2483,6 @@ if (enable_java_templates) {
                             [ _native_libs_file_arg_dep ]
     assert(_all_native_libs_deps == _all_native_libs_deps)  # Mark as used.
 
-    _extra_native_libs_even_when_incremental = []
-    assert(_extra_native_libs_even_when_incremental == [])  # Mark as used.
     if (_native_libs_deps != []) {
       _create_stack_script_rule_name = "${_template_name}__stack_script"
       _final_deps += [ ":${_create_stack_script_rule_name}" ]
@@ -2491,10 +2490,6 @@ if (enable_java_templates) {
         stack_target_name = invoker.target_name
         deps = _native_libs_deps
       }
-    }
-
-    if (defined(invoker.loadable_modules) && invoker.loadable_modules != []) {
-      _extra_native_libs_even_when_incremental += invoker.loadable_modules
     }
 
     # Generate .apk.jar.info files if needed.
@@ -2566,13 +2561,10 @@ if (enable_java_templates) {
                  ":$_compile_resources_target",
                ]
 
-        if (_native_libs_deps != [] ||
-            _extra_native_libs_even_when_incremental != []) {
+        if (_native_libs_deps != []) {
           deps += _all_native_libs_deps
           native_libs_filearg = _native_libs_file_arg
           native_libs = _extra_native_libs
-          native_libs_even_when_incremental =
-              _extra_native_libs_even_when_incremental
         }
 
         if (_secondary_abi_native_libs_deps != []) {
@@ -2633,8 +2625,6 @@ if (enable_java_templates) {
         args += [ "--native-libs=$_native_libs_file_arg" ]
       }
       if (_extra_native_libs != []) {
-        # Don't pass in _extra_native_libs_even_when_incremental, since these are
-        # end up in the apk and are not side-loaded.
         _rebased_extra_native_libs =
             rebase_path(_extra_native_libs, root_build_dir)
         args += [ "--native-libs=$_rebased_extra_native_libs" ]
@@ -3638,6 +3628,9 @@ if (enable_java_templates) {
   #    proguard_jar_path: Optional. Path to custom proguard jar used for
   #      proguarding.
   #
+  #    proguard_android_sdk_dep: Optional. android_system_java_prebuilt() target
+  #      used as a library jar for synchronized proguarding.
+  #
   # Example:
   #   android_app_bundle("chrome_public_bundle") {
   #      base_module_target = "//chrome/android:chrome_public_apk"
@@ -3683,9 +3676,14 @@ if (enable_java_templates) {
     _build_config = "$target_gen_dir/${target_name}.build_config"
     _rebased_build_config = rebase_path(_build_config, root_build_dir)
     _build_config_target = "${target_name}__build_config"
+    if (defined(invoker.proguard_android_sdk_dep)) {
+      proguard_android_sdk_dep_ = invoker.proguard_android_sdk_dep
+    } else {
+      proguard_android_sdk_dep_ = "//third_party/android_tools:android_sdk_java"
+    }
     write_build_config(_build_config_target) {
       type = "android_app_bundle"
-      possible_config_deps = _module_targets
+      possible_config_deps = _module_targets + [ proguard_android_sdk_dep_ ]
       build_config = _build_config
     }
 
