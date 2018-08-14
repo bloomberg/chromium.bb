@@ -358,6 +358,8 @@ class CONTENT_EXPORT MediaStreamManager
   // StreamControls for requested device IDs.
   bool SetUpDeviceCaptureRequest(DeviceRequest* request,
                                  const MediaDeviceEnumeration& enumeration);
+  // Prepare |request| of type MEDIA_DISPLAY_CAPTURE.
+  bool SetUpDisplayCaptureRequest(DeviceRequest* request);
   // Prepare |request| of type MEDIA_GUM_DESKTOP_AUDIO_CAPTURE and/or
   // MEDIA_GUM_DESKTOP_VIDEO_CAPTURE for being posted to the UI by parsing
   // StreamControls for the requested desktop ID.

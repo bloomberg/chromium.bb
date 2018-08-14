@@ -156,6 +156,20 @@ class TestBrowserClient : public ContentBrowserClient {
   MediaObserver* media_observer_;
 };
 
+class MockMediaStreamUIProxy : public FakeMediaStreamUIProxy {
+ public:
+  MockMediaStreamUIProxy()
+      : FakeMediaStreamUIProxy(/*tests_use_fake_render_frame_hosts=*/true) {}
+  void RequestAccess(std::unique_ptr<MediaStreamRequest> request,
+                     ResponseCallback response_callback) override {
+    MockRequestAccess(request, response_callback);
+  }
+
+  MOCK_METHOD2(MockRequestAccess,
+               void(std::unique_ptr<MediaStreamRequest>& request,
+                    ResponseCallback& response_callback));
+};
+
 }  // namespace
 
 class MediaStreamManagerTest : public ::testing::Test {
@@ -378,6 +392,92 @@ TEST_F(MediaStreamManagerTest, DeviceID) {
   EXPECT_EQ(hashed_other_id.size(), 64U);
   for (const char& c : hashed_other_id)
     EXPECT_TRUE(base::IsAsciiDigit(c) || (c >= 'a' && c <= 'f'));
+}
+
+TEST_F(MediaStreamManagerTest, GetDisplayMediaRequest) {
+  media_stream_manager_->UseFakeUIFactoryForTests(base::BindRepeating([]() {
+    return std::make_unique<FakeMediaStreamUIProxy>(
+        /*tests_use_fake_render_frame_hosts=*/true);
+  }));
+
+  StreamControls controls(false /* request_audio */, true /* request_video */);
+  controls.video.stream_type = MEDIA_DISPLAY_VIDEO_CAPTURE;
+  const int render_process_id = 1;
+  const int render_frame_id = 1;
+  const int page_request_id = 1;
+
+  MediaStreamDevice video_device;
+  MediaStreamManager::GenerateStreamCallback generate_stream_callback =
+      base::BindOnce(
+          [](base::RunLoop* wait_loop, MediaStreamDevice* video_device,
+             MediaStreamRequestResult result, const std::string& label,
+             const MediaStreamDevices& audio_devices,
+             const MediaStreamDevices& video_devices) {
+            EXPECT_EQ(0u, audio_devices.size());
+            ASSERT_EQ(1u, video_devices.size());
+            *video_device = video_devices[0];
+            wait_loop->Quit();
+          },
+          &run_loop_, &video_device);
+  MediaStreamManager::DeviceStoppedCallback stopped_callback;
+  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
+                                    _, _, _, _, MEDIA_DISPLAY_VIDEO_CAPTURE,
+                                    MEDIA_REQUEST_STATE_PENDING_APPROVAL));
+  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
+                                    _, _, _, _, MEDIA_DISPLAY_VIDEO_CAPTURE,
+                                    MEDIA_REQUEST_STATE_OPENING));
+  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
+                                    _, _, _, _, MEDIA_DISPLAY_VIDEO_CAPTURE,
+                                    MEDIA_REQUEST_STATE_DONE));
+  media_stream_manager_->GenerateStream(
+      render_process_id, render_frame_id, page_request_id, controls,
+      MediaDeviceSaltAndOrigin(), false /* user_gesture */,
+      std::move(generate_stream_callback), std::move(stopped_callback));
+  run_loop_.Run();
+
+  EXPECT_EQ(MEDIA_DISPLAY_VIDEO_CAPTURE, video_device.type);
+  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
+                                    _, _, _, _, MEDIA_DISPLAY_VIDEO_CAPTURE,
+                                    MEDIA_REQUEST_STATE_CLOSING));
+  media_stream_manager_->StopStreamDevice(render_process_id, render_frame_id,
+                                          video_device.id,
+                                          video_device.session_id);
+}
+
+TEST_F(MediaStreamManagerTest, GetDisplayMediaRequestCallsUIProxy) {
+  media_stream_manager_->UseFakeUIFactoryForTests(base::BindRepeating(
+      [](base::RunLoop* run_loop) {
+        auto mock_ui = std::make_unique<MockMediaStreamUIProxy>();
+        EXPECT_CALL(*mock_ui, MockRequestAccess(_, _))
+            .WillOnce(testing::Invoke(
+                [run_loop](std::unique_ptr<MediaStreamRequest>& request,
+                           testing::Unused) {
+                  EXPECT_EQ(MEDIA_DISPLAY_VIDEO_CAPTURE, request->video_type);
+                  run_loop->Quit();
+                }));
+        return std::unique_ptr<FakeMediaStreamUIProxy>(std::move(mock_ui));
+      },
+      &run_loop_));
+  StreamControls controls(false /* request_audio */, true /* request_video */);
+  controls.video.stream_type = MEDIA_DISPLAY_VIDEO_CAPTURE;
+
+  MediaStreamManager::GenerateStreamCallback generate_stream_callback =
+      base::BindOnce([](MediaStreamRequestResult result,
+                        const std::string& label,
+                        const MediaStreamDevices& audio_devices,
+                        const MediaStreamDevices& video_devices) {});
+  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
+                                    _, _, _, _, MEDIA_DISPLAY_VIDEO_CAPTURE,
+                                    MEDIA_REQUEST_STATE_PENDING_APPROVAL));
+  media_stream_manager_->GenerateStream(
+      0, 0, 0, controls, MediaDeviceSaltAndOrigin(), false /* user_gesture */,
+      std::move(generate_stream_callback),
+      MediaStreamManager::DeviceStoppedCallback());
+  run_loop_.Run();
+
+  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(_, _, _, _, _, _))
+      .Times(testing::AtLeast(1));
+  media_stream_manager_->CancelAllRequests(0, 0);
 }
 
 }  // namespace content
