@@ -110,8 +110,6 @@ const char* EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_BACKGROUND_FETCH_CLICK";
     case ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_FAIL:
       return "_BACKGROUND_FETCH_FAIL";
-    case ServiceWorkerMetrics::EventType::BACKGROUND_FETCHED:
-      return "_BACKGROUND_FETCHED";
     case ServiceWorkerMetrics::EventType::NAVIGATION_HINT:
       return "_NAVIGATION_HINT";
     case ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT:
@@ -122,6 +120,8 @@ const char* EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_COOKIE_CHANGE";
     case ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE:
       return "_LONG_RUNNING_MESSAGE";
+    case ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_SUCCESS:
+      return "_BACKGROUND_FETCH_SUCCESS";
   }
   return "_UNKNOWN";
 }
@@ -249,8 +249,6 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Background Fetch Click";
     case EventType::BACKGROUND_FETCH_FAIL:
       return "Background Fetch Fail";
-    case EventType::BACKGROUND_FETCHED:
-      return "Background Fetched";
     case EventType::NAVIGATION_HINT:
       return "Navigation Hint";
     case EventType::CAN_MAKE_PAYMENT:
@@ -261,6 +259,8 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Cookie Change";
     case EventType::LONG_RUNNING_MESSAGE:
       return "Long Running Message";
+    case EventType::BACKGROUND_FETCH_SUCCESS:
+      return "Background Fetch Success";
   }
   NOTREACHED() << "Got unexpected event type: " << static_cast<int>(event_type);
   return "error";
@@ -615,9 +615,9 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.BackgroundFetchFailEvent.Time",
                                  time);
       break;
-    case EventType::BACKGROUND_FETCHED:
-      UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.BackgroundFetchedEvent.Time",
-                                 time);
+    case EventType::BACKGROUND_FETCH_SUCCESS:
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "ServiceWorker.BackgroundFetchSuccessEvent.Time", time);
       break;
     case EventType::CAN_MAKE_PAYMENT:
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.CanMakePaymentEvent.Time",

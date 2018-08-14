@@ -14,8 +14,8 @@ class Request;
 class Response;
 
 // Interface for providing developers access to the Request/Response pairs when
-// a background fetch has settled, either through the `backgroundfetched` event
-// in case of success, or `backgroundfetchfail` in case of failure.
+// a background fetch has settled, either through the `backgroundfetchsuccess`
+// event in case of success, or `backgroundfetchfail` in case of failure.
 class BackgroundFetchSettledFetch final : public BackgroundFetchFetch {
   DEFINE_WRAPPERTYPEINFO();
 

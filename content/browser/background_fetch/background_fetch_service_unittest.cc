@@ -468,7 +468,8 @@ TEST_F(BackgroundFetchServiceTest, FetchDuplicatedRegistrationFailure) {
 TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
   // This test starts a new Background Fetch, completes the registration, then
   // fetches all files to complete the job, and then verifies that the
-  // `backgroundfetched` event will be dispatched with the expected contents.
+  // `backgroundfetchsuccess` event will be dispatched with the expected
+  // contents.
 
   int64_t service_worker_registration_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
@@ -909,7 +910,7 @@ TEST_F(BackgroundFetchServiceTest, UniqueId) {
 
   // Calling UpdateUI for the aborted registration should fail (unlike, say,
   // calling UpdateUI before resolving the waitUntil promise of a
-  // backgroundfetched or backgroundfetchfail event, both of which should
+  // backgroundfetchsuccess or backgroundfetchfail event, both of which should
   // work even though that registration is no longer active).
   UpdateUI(aborted_registration_id.service_worker_registration_id(),
            aborted_registration_id.unique_id(),

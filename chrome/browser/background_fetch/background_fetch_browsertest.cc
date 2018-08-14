@@ -493,7 +493,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
                        FetchesRunToCompletionAndUpdateTitle_Fetched) {
   ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingEvent(
-      "RunFetchTillCompletion()", "backgroundfetched"));
+      "RunFetchTillCompletion()", "backgroundfetchsuccess"));
   base::RunLoop().RunUntilIdle();  // Give `updateUI` a chance to propagate.
   EXPECT_TRUE(
       base::StartsWith(offline_content_provider_observer_->latest_item().title,

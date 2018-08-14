@@ -169,22 +169,22 @@ class EmbeddedWorkerTestHelper {
   virtual void OnBackgroundFetchAbortEvent(
       const std::string& developer_id,
       const std::string& unique_id,
-      const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback callback);
   virtual void OnBackgroundFetchClickEvent(
       const std::string& developer_id,
-      mojom::BackgroundFetchState state,
+      const std::string& unique_id,
       mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback callback);
   virtual void OnBackgroundFetchFailEvent(
       const std::string& developer_id,
       const std::string& unique_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback);
-  virtual void OnBackgroundFetchedEvent(
+  virtual void OnBackgroundFetchSuccessEvent(
       const std::string& developer_id,
       const std::string& unique_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
-      mojom::ServiceWorker::DispatchBackgroundFetchedEventCallback callback);
+      mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
+          callback);
   virtual void OnCookieChangeEvent(
       const net::CanonicalCookie& cookie,
       ::network::mojom::CookieChangeCause cause,
@@ -269,22 +269,22 @@ class EmbeddedWorkerTestHelper {
   void OnBackgroundFetchAbortEventStub(
       const std::string& developer_id,
       const std::string& unique_id,
-      const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback callback);
   void OnBackgroundFetchClickEventStub(
       const std::string& developer_id,
-      mojom::BackgroundFetchState state,
+      const std::string& unique_id,
       mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback callback);
   void OnBackgroundFetchFailEventStub(
       const std::string& developer_id,
       const std::string& unique_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback);
-  void OnBackgroundFetchedEventStub(
+  void OnBackgroundFetchSuccessEventStub(
       const std::string& developer_id,
       const std::string& unique_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
-      mojom::ServiceWorker::DispatchBackgroundFetchedEventCallback callback);
+      mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
+          callback);
   void OnCookieChangeEventStub(
       const net::CanonicalCookie& cookie,
       ::network::mojom::CookieChangeCause cause,

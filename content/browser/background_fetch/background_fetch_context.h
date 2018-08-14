@@ -254,14 +254,11 @@ class CONTENT_EXPORT BackgroundFetchContext
   std::map<std::string, std::unique_ptr<BackgroundFetchJobController>>
       job_controllers_;
 
-  // Map from background fetch registration |unique_ids|s to {background fetch
-  // registration id, fetch state}. An entry in here means the fetch has
-  // completed. This information is needed after the fetch has completed.
+  // Map from |unique_id|s to |registration_id|s. An entry in here means the
+  // fetch has completed. This information is needed after the fetch has
+  // completed to dispatch the backgroundfetchclick event.
   // TODO(crbug.com/857122): Clean this up when the UI is no longer showing.
-  std::map<
-      std::string,
-      std::pair<BackgroundFetchRegistrationId, mojom::BackgroundFetchState>>
-      completed_fetches_;
+  std::map<std::string, BackgroundFetchRegistrationId> completed_fetches_;
 
   // Map from BackgroundFetchRegistrationIds to FetchCallbacks for active
   // fetches. Must be destroyed before |data_manager_| and

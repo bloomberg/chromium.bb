@@ -208,14 +208,15 @@ class ServiceWorkerMetrics {
     BACKGROUND_FETCH_ABORT = 23,
     BACKGROUND_FETCH_CLICK = 24,
     BACKGROUND_FETCH_FAIL = 25,
-    BACKGROUND_FETCHED = 26,
+    // BACKGROUND_FETCHED = 26,  // Obsolete
     NAVIGATION_HINT = 27,
     CAN_MAKE_PAYMENT = 28,
     ABORT_PAYMENT = 29,
     COOKIE_CHANGE = 30,
     LONG_RUNNING_MESSAGE = 31,
+    BACKGROUND_FETCH_SUCCESS = 32,
     // Add new events to record here.
-    kMaxValue = LONG_RUNNING_MESSAGE,
+    kMaxValue = BACKGROUND_FETCH_SUCCESS,
   };
 
   // Used for UMA. Append only.

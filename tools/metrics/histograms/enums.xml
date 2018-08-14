@@ -43060,6 +43060,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="28" label="CAN_MAKE_PAYMENT"/>
   <int value="29" label="ABORT_PAYMENT"/>
   <int value="30" label="COOKIE_CHANGE"/>
+  <int value="31" label="BACKGROUND_FETCH_SUCCESS"/>
 </enum>
 
 <enum name="ServiceWorkerPreparationType">

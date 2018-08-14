@@ -305,9 +305,9 @@ void WaitUntilObserver::MaybeCompleteEvent() {
       client->DidHandleBackgroundFetchFailEvent(event_id_, status,
                                                 event_dispatch_time_);
       break;
-    case kBackgroundFetched:
-      client->DidHandleBackgroundFetchedEvent(event_id_, status,
-                                              event_dispatch_time_);
+    case kBackgroundFetchSuccess:
+      client->DidHandleBackgroundFetchSuccessEvent(event_id_, status,
+                                                   event_dispatch_time_);
       break;
   }
   execution_context_ = nullptr;

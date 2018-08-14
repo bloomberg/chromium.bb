@@ -158,7 +158,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       int request_id,
       blink::mojom::ServiceWorkerEventStatus status,
       double dispatch_event_time) override;
-  void DidHandleBackgroundFetchedEvent(
+  void DidHandleBackgroundFetchSuccessEvent(
       int request_id,
       blink::mojom::ServiceWorkerEventStatus status,
       double dispatch_event_time) override;
@@ -284,22 +284,21 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void DispatchBackgroundFetchAbortEvent(
       const std::string& developer_id,
       const std::string& unique_id,
-      const std::vector<BackgroundFetchSettledFetch>& fetches,
       DispatchBackgroundFetchAbortEventCallback callback) override;
   void DispatchBackgroundFetchClickEvent(
       const std::string& developer_id,
-      mojom::BackgroundFetchState state,
+      const std::string& unique_id,
       DispatchBackgroundFetchClickEventCallback callback) override;
   void DispatchBackgroundFetchFailEvent(
       const std::string& developer_id,
       const std::string& unique_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       DispatchBackgroundFetchFailEventCallback callback) override;
-  void DispatchBackgroundFetchedEvent(
+  void DispatchBackgroundFetchSuccessEvent(
       const std::string& developer_id,
       const std::string& unique_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
-      DispatchBackgroundFetchedEventCallback callback) override;
+      DispatchBackgroundFetchSuccessEventCallback callback) override;
   void DispatchExtendableMessageEvent(
       mojom::ExtendableMessageEventPtr event,
       DispatchExtendableMessageEventCallback callback) override;
