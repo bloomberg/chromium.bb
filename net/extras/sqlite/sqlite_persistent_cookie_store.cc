@@ -207,7 +207,7 @@ class SQLitePersistentCookieStore::Backend
 
   // Commit any pending operations and close the database.  This must be called
   // before the object is destructed.
-  void Close(const base::Closure& callback);
+  void Close();
 
   // Post background delete of all cookies that match |cookies|.
   void DeleteAllInList(const std::list<CookieOrigin>& cookies);
@@ -301,7 +301,7 @@ class SQLitePersistentCookieStore::Backend
   // Commit our pending operations to the database.
   void Commit();
   // Close() executed on the background runner.
-  void InternalBackgroundClose(const base::Closure& callback);
+  void InternalBackgroundClose();
 
   void DeleteSessionCookiesOnStartup();
 
@@ -1419,29 +1419,23 @@ void SQLitePersistentCookieStore::Backend::Flush(base::OnceClosure callback) {
 // Fire off a close message to the background runner.  We could still have a
 // pending commit timer or Load operations holding references on us, but if/when
 // this fires we will already have been cleaned up and it will be ignored.
-void SQLitePersistentCookieStore::Backend::Close(
-    const base::Closure& callback) {
+void SQLitePersistentCookieStore::Backend::Close() {
   if (background_task_runner_->RunsTasksInCurrentSequence()) {
-    InternalBackgroundClose(callback);
+    InternalBackgroundClose();
   } else {
     // Must close the backend on the background runner.
-    PostBackgroundTask(FROM_HERE, base::Bind(&Backend::InternalBackgroundClose,
-                                             this, callback));
+    PostBackgroundTask(FROM_HERE,
+                       base::BindOnce(&Backend::InternalBackgroundClose, this));
   }
 }
 
-void SQLitePersistentCookieStore::Backend::InternalBackgroundClose(
-    const base::Closure& callback) {
+void SQLitePersistentCookieStore::Backend::InternalBackgroundClose() {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   // Commit any pending operations
   Commit();
 
   meta_table_.Reset();
   db_.reset();
-
-  // We're clean now.
-  if (!callback.is_null())
-    callback.Run();
 }
 
 void SQLitePersistentCookieStore::Backend::DatabaseErrorCallback(
@@ -1588,53 +1582,32 @@ SQLitePersistentCookieStore::SQLitePersistentCookieStore(
 
 void SQLitePersistentCookieStore::DeleteAllInList(
     const std::list<CookieOrigin>& cookies) {
-  if (backend_)
-    backend_->DeleteAllInList(cookies);
-}
-
-void SQLitePersistentCookieStore::Close(const base::Closure& callback) {
-  if (backend_) {
-    backend_->Close(callback);
-
-    // We release our reference to the Backend, though it will probably still
-    // have a reference if the background runner has not run
-    // Backend::InternalBackgroundClose() yet.
-    backend_ = nullptr;
-  }
+  backend_->DeleteAllInList(cookies);
 }
 
 void SQLitePersistentCookieStore::Load(const LoadedCallback& loaded_callback) {
   DCHECK(!loaded_callback.is_null());
-  if (backend_)
-    backend_->Load(loaded_callback);
-  else
-    loaded_callback.Run(std::vector<std::unique_ptr<CanonicalCookie>>());
+  backend_->Load(loaded_callback);
 }
 
 void SQLitePersistentCookieStore::LoadCookiesForKey(
     const std::string& key,
     const LoadedCallback& loaded_callback) {
   DCHECK(!loaded_callback.is_null());
-  if (backend_)
-    backend_->LoadCookiesForKey(key, loaded_callback);
-  else
-    loaded_callback.Run(std::vector<std::unique_ptr<CanonicalCookie>>());
+  backend_->LoadCookiesForKey(key, loaded_callback);
 }
 
 void SQLitePersistentCookieStore::AddCookie(const CanonicalCookie& cc) {
-  if (backend_)
-    backend_->AddCookie(cc);
+  backend_->AddCookie(cc);
 }
 
 void SQLitePersistentCookieStore::UpdateCookieAccessTime(
     const CanonicalCookie& cc) {
-  if (backend_)
-    backend_->UpdateCookieAccessTime(cc);
+  backend_->UpdateCookieAccessTime(cc);
 }
 
 void SQLitePersistentCookieStore::DeleteCookie(const CanonicalCookie& cc) {
-  if (backend_)
-    backend_->DeleteCookie(cc);
+  backend_->DeleteCookie(cc);
 }
 
 void SQLitePersistentCookieStore::SetForceKeepSessionState() {
@@ -1643,17 +1616,15 @@ void SQLitePersistentCookieStore::SetForceKeepSessionState() {
 
 void SQLitePersistentCookieStore::SetBeforeFlushCallback(
     base::RepeatingClosure callback) {
-  if (backend_)
-    backend_->SetBeforeFlushCallback(std::move(callback));
+  backend_->SetBeforeFlushCallback(std::move(callback));
 }
 
 void SQLitePersistentCookieStore::Flush(base::OnceClosure callback) {
-  if (backend_)
-    backend_->Flush(std::move(callback));
+  backend_->Flush(std::move(callback));
 }
 
 SQLitePersistentCookieStore::~SQLitePersistentCookieStore() {
-  Close(base::Closure());
+  backend_->Close();
 }
 
 }  // namespace net

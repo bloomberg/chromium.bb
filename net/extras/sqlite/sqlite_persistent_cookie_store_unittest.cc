@@ -892,37 +892,6 @@ TEST_F(SQLitePersistentCookieStoreTest, UpdateFromEncryption) {
   EXPECT_NE(contents.find("value123XYZ"), std::string::npos);
 }
 
-namespace {
-void WasCalledWithNoCookies(
-    bool* was_called_with_no_cookies,
-    std::vector<std::unique_ptr<CanonicalCookie>> cookies) {
-  *was_called_with_no_cookies = cookies.empty();
-}
-}
-
-TEST_F(SQLitePersistentCookieStoreTest, EmptyLoadAfterClose) {
-  // Create unencrypted cookie store and write something to it.
-  InitializeStore(false, false);
-  AddCookie("name", "value123XYZ", "foo.bar", "/", base::Time::Now());
-  DestroyStore();
-
-  // Create the cookie store, but immediately close it.
-  Create(false, false, false);
-  store_->Close(base::Closure());
-
-  // Expect any attempt to call Load() to synchronously respond with an empty
-  // vector of cookies after we've Close()d the database.
-  bool was_called_with_no_cookies = false;
-  store_->Load(base::Bind(WasCalledWithNoCookies, &was_called_with_no_cookies));
-  EXPECT_TRUE(was_called_with_no_cookies);
-
-  // Same with trying to load a specific cookie.
-  was_called_with_no_cookies = false;
-  store_->LoadCookiesForKey("foo.bar", base::Bind(WasCalledWithNoCookies,
-                                                  &was_called_with_no_cookies));
-  EXPECT_TRUE(was_called_with_no_cookies);
-}
-
 bool CompareCookies(std::unique_ptr<CanonicalCookie>& a,
                     std::unique_ptr<CanonicalCookie>& b) {
   return a->PartialCompare(*b.get());
