@@ -674,6 +674,14 @@ BluetoothDevice* BluetoothTestWinrt::SimulateLowEnergyDevice(
   return adapter_->GetDevice(data.address);
 }
 
+void BluetoothTestWinrt::SimulateDevicePaired(BluetoothDevice* device,
+                                              bool is_paired) {
+  auto* const ble_device =
+      static_cast<TestBluetoothDeviceWinrt*>(device)->ble_device();
+  DCHECK(ble_device);
+  ble_device->SimulateDevicePaired(is_paired);
+}
+
 void BluetoothTestWinrt::SimulateGattConnection(BluetoothDevice* device) {
   if (!GetParam() || !PlatformSupportsLowEnergy())
     return BluetoothTestWin::SimulateGattConnection(device);

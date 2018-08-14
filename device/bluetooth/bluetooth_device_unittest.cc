@@ -94,6 +94,32 @@ TEST(BluetoothDeviceTest, CanonicalizeAddressFormat_RejectsInvalidFormats) {
   }
 }
 
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, DeviceIsPaired) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(1);
+
+  // By default a device should not be paired.
+  EXPECT_FALSE(device->IsPaired());
+
+  // Connect to the device and simulate a paired state.
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
+  SimulateDevicePaired(device, true);
+  EXPECT_TRUE(device->IsPaired());
+
+  SimulateDevicePaired(device, false);
+  EXPECT_FALSE(device->IsPaired());
+}
+#endif
+
 // Verifies basic device properties, e.g. GetAddress, GetName, ...
 #if defined(OS_WIN)
 TEST_P(BluetoothTestWinrt, LowEnergyDeviceProperties) {

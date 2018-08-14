@@ -298,6 +298,8 @@ test("device_unittests") {
       "bluetooth/test/fake_bluetooth_le_device_winrt.h",
       "bluetooth/test/fake_bluetooth_le_manufacturer_data_winrt.cc",
       "bluetooth/test/fake_bluetooth_le_manufacturer_data_winrt.h",
+      "bluetooth/test/fake_device_information_pairing_winrt.cc",
+      "bluetooth/test/fake_device_information_pairing_winrt.h",
       "bluetooth/test/fake_device_information_winrt.cc",
       "bluetooth/test/fake_device_information_winrt.h",
       "bluetooth/test/fake_gatt_characteristic_winrt.cc",

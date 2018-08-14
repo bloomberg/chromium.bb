@@ -122,6 +122,7 @@ class BluetoothTestWinrt : public BluetoothTestWin,
   void InitWithoutDefaultAdapter() override;
   void InitWithFakeAdapter() override;
   BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal) override;
+  void SimulateDevicePaired(BluetoothDevice* device, bool is_paired) override;
   void SimulateGattConnection(BluetoothDevice* device) override;
   void SimulateGattConnectionError(
       BluetoothDevice* device,

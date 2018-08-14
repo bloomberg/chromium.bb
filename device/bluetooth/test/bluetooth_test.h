@@ -248,6 +248,9 @@ class BluetoothTestBase : public testing::Test {
   // name kTestDeviceName, no advertised UUIDs and address kTestDeviceAddress3.
   virtual BluetoothDevice* SimulateClassicDevice();
 
+  // Simulates a change in |device|'s pairing state.
+  virtual void SimulateDevicePaired(BluetoothDevice* device, bool is_paired) {}
+
   // Remembers |device|'s platform specific object to be used in a
   // subsequent call to methods such as SimulateGattServicesDiscovered that
   // accept a nullptr value to select this remembered characteristic. This
