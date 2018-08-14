@@ -111,8 +111,6 @@ std::string EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_COOKIE_CHANGE";
     case ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE:
       return "_LONG_RUNNING_MESSAGE";
-    case ServiceWorkerMetrics::EventType::NUM_TYPES:
-      NOTREACHED() << static_cast<int>(event_type);
   }
   return "_UNKNOWN";
 }
@@ -154,7 +152,6 @@ std::string GetWorkerPreparationSuffix(
   using Preparation = ServiceWorkerMetrics::WorkerPreparationType;
   switch (status) {
     case Preparation::UNKNOWN:
-    case Preparation::NUM_TYPES:
       break;
     case Preparation::START_DURING_STARTUP:
       return "_StartWorkerDuringStartup";
@@ -291,8 +288,6 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Cookie Change";
     case EventType::LONG_RUNNING_MESSAGE:
       return "Long Running Message";
-    case EventType::NUM_TYPES:
-      break;
   }
   NOTREACHED() << "Got unexpected event type: " << static_cast<int>(event_type);
   return "error";
@@ -407,12 +402,9 @@ void ServiceWorkerMetrics::CountControlledPageLoad(Site site,
                                                    const GURL& url,
                                                    bool is_main_frame_load) {
   DCHECK_NE(site, Site::OTHER);
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.PageLoad", static_cast<int>(site),
-                            static_cast<int>(Site::NUM_TYPES));
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.PageLoad", site);
   if (is_main_frame_load) {
-    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.MainFramePageLoad",
-                              static_cast<int>(site),
-                              static_cast<int>(Site::NUM_TYPES));
+    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.MainFramePageLoad", site);
   }
   if (ShouldExcludeSiteFromHistogram(site))
     return;
@@ -438,11 +430,10 @@ void ServiceWorkerMetrics::RecordStartWorkerStatus(
           EventTypeToSuffix(purpose),
       static_cast<uint32_t>(status),
       static_cast<uint32_t>(blink::ServiceWorkerStatusCode::kMaxValue));
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Purpose", purpose,
-                            EventType::NUM_TYPES);
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Purpose", purpose);
   if (status == blink::ServiceWorkerStatusCode::kErrorTimeout) {
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Timeout.StartPurpose",
-                              purpose, EventType::NUM_TYPES);
+                              purpose);
   }
 }
 
@@ -482,9 +473,7 @@ void ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
   WorkerPreparationType preparation =
       GetWorkerPreparationType(initial_worker_status, start_situation);
   UMA_HISTOGRAM_ENUMERATION(
-      "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type",
-      static_cast<int>(preparation),
-      static_cast<int>(WorkerPreparationType::NUM_TYPES));
+      "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type", preparation);
   std::string suffix =
       GetContentClient()->browser()->GetMetricSuffixForURL(url);
   if (!suffix.empty()) {
@@ -493,7 +482,7 @@ void ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
             "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type.") +
             suffix,
         static_cast<int>(preparation),
-        static_cast<int>(WorkerPreparationType::NUM_TYPES) - 1);
+        static_cast<int>(WorkerPreparationType::kMaxValue));
   }
 
   if (did_navigation_preload) {
@@ -505,8 +494,7 @@ void ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
     UMA_HISTOGRAM_ENUMERATION(
         "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type_"
         "NavigationPreloadEnabled",
-        static_cast<int>(preparation),
-        static_cast<int>(WorkerPreparationType::NUM_TYPES));
+        preparation);
   }
 
   // Don't record .Time if S13nServiceWorker is enabled.
@@ -540,9 +528,7 @@ void ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
 }
 
 void ServiceWorkerMetrics::RecordWorkerStopped(StopStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.WorkerStopped",
-                            static_cast<int>(status),
-                            static_cast<int>(StopStatus::NUM_TYPES));
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.WorkerStopped", status);
 }
 
 void ServiceWorkerMetrics::RecordStopWorkerTime(base::TimeDelta time) {
@@ -575,9 +561,7 @@ void ServiceWorkerMetrics::RecordEventDispatchingDelay(EventType event_type,
 }
 
 void ServiceWorkerMetrics::RecordEventTimeout(EventType event) {
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.RequestTimeouts.Count",
-                            static_cast<int>(event),
-                            static_cast<int>(EventType::NUM_TYPES));
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.RequestTimeouts.Count", event);
 }
 
 void ServiceWorkerMetrics::RecordEventDuration(EventType event,
@@ -679,7 +663,6 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
     case EventType::NAVIGATION_HINT:
     // The navigation hint should not be sent as an event.
     case EventType::UNKNOWN:
-    case EventType::NUM_TYPES:
       NOTREACHED() << "Invalid event type";
       break;
   }
@@ -793,8 +776,7 @@ void ServiceWorkerMetrics::RecordStartWorkerTiming(const StartTimes& times,
 
 void ServiceWorkerMetrics::RecordStartWorkerTimingClockConsistency(
     CrossProcessTimeDelta type) {
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartTiming.ClockConsistency", type,
-                            CrossProcessTimeDelta::NUM_TYPES);
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartTiming.ClockConsistency", type);
 }
 
 void ServiceWorkerMetrics::RecordStartStatusAfterFailure(
@@ -856,8 +838,7 @@ void ServiceWorkerMetrics::RecordNavigationPreloadResponse(
       GetWorkerPreparationType(initial_worker_status, start_situation);
 
   UMA_HISTOGRAM_ENUMERATION(
-      "ServiceWorker.NavPreload.WorkerPreparationType_MainFrame", preparation,
-      WorkerPreparationType::NUM_TYPES);
+      "ServiceWorker.NavPreload.WorkerPreparationType_MainFrame", preparation);
   UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.NavPreload.ResponseTime_MainFrame",
                              response_start);
   UMA_HISTOGRAM_BOOLEAN("ServiceWorker.NavPreload.FinishedFirst_MainFrame",
@@ -895,31 +876,28 @@ void ServiceWorkerMetrics::RecordContextRequestHandlerStatus(
     ServiceWorkerContextRequestHandler::CreateJobStatus status,
     bool is_installed,
     bool is_main_script) {
-  const int value = static_cast<int>(status);
-  const int max = static_cast<int>(
-      ServiceWorkerContextRequestHandler::CreateJobStatus::NUM_TYPES);
   if (is_installed) {
     if (is_main_script) {
       UMA_HISTOGRAM_ENUMERATION(
           "ServiceWorker.ContextRequestHandlerStatus.InstalledWorker."
           "MainScript",
-          value, max);
+          status);
     } else {
       UMA_HISTOGRAM_ENUMERATION(
           "ServiceWorker.ContextRequestHandlerStatus.InstalledWorker."
           "ImportedScript",
-          value, max);
+          status);
     }
   } else {
     if (is_main_script) {
       UMA_HISTOGRAM_ENUMERATION(
           "ServiceWorker.ContextRequestHandlerStatus.NewWorker.MainScript",
-          value, max);
+          status);
     } else {
       UMA_HISTOGRAM_ENUMERATION(
           "ServiceWorker.ContextRequestHandlerStatus.NewWorker."
           "ImportedScript",
-          value, max);
+          status);
     }
   }
 }

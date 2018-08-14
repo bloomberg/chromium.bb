@@ -67,8 +67,6 @@ std::string ServiceWorkerContextRequestHandler::CreateJobStatusToString(
       return "ERROR_UNINSTALLED_SCRIPT_IMPORT";
     case CreateJobStatus::ERROR_OUT_OF_RESOURCE_IDS:
       return "ERROR_OUT_OF_RESOURCE_IDS";
-    case CreateJobStatus::NUM_TYPES:
-      NOTREACHED();
   }
   NOTREACHED() << static_cast<int>(status);
   return "UNKNOWN";

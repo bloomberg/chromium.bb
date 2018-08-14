@@ -168,7 +168,7 @@ class ServiceWorkerMetrics {
     DETACH_BY_REGISTRY,
     TIMEOUT,
     // Add new types here.
-    NUM_TYPES
+    kMaxValue = TIMEOUT,
   };
 
   // Used for UMA. Append-only.
@@ -215,7 +215,7 @@ class ServiceWorkerMetrics {
     COOKIE_CHANGE = 30,
     LONG_RUNNING_MESSAGE = 31,
     // Add new events to record here.
-    NUM_TYPES
+    kMaxValue = LONG_RUNNING_MESSAGE,
   };
 
   // Used for UMA. Append only.
@@ -228,7 +228,7 @@ class ServiceWorkerMetrics {
     PLUS,
     INBOX,
     DOCS,
-    NUM_TYPES
+    kMaxValue = DOCS,
   };
 
   // Not used for UMA.
@@ -275,7 +275,7 @@ class ServiceWorkerMetrics {
     // existing ready process.
     START_IN_EXISTING_READY_PROCESS = 8,
     // Add new types here.
-    NUM_TYPES
+    kMaxValue = START_IN_EXISTING_READY_PROCESS,
   };
 
   // Used for UMA. Append only.
@@ -285,7 +285,7 @@ class ServiceWorkerMetrics {
     NEGATIVE,
     INACCURATE_CLOCK,
     // Add new types here.
-    NUM_TYPES
+    kMaxValue = INACCURATE_CLOCK,
   };
 
   // These are prefixed with "local" or "remote" to indicate whether the browser

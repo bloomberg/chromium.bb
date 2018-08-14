@@ -51,7 +51,7 @@ class CONTENT_EXPORT ServiceWorkerContextRequestHandler
     ERROR_OUT_OF_RESOURCE_IDS,
     // Add new types here.
 
-    NUM_TYPES
+    kMaxValue = ERROR_OUT_OF_RESOURCE_IDS,
   };
 
   ServiceWorkerContextRequestHandler(
