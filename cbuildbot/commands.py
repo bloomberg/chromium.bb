@@ -2277,7 +2277,8 @@ def UploadSymbols(buildroot, board=None, official=False, cnt=None,
   RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
 
-def PushImages(board, archive_url, dryrun, profile, sign_types=()):
+def PushImages(board, archive_url, dryrun, profile, sign_types=(),
+               buildroot=None):
   """Push the generated image to the release bucket for signing."""
   # Log the equivalent command for debugging purposes.
   log_cmd = ['pushimage', '--board=%s' % board]
@@ -2296,7 +2297,8 @@ def PushImages(board, archive_url, dryrun, profile, sign_types=()):
 
   try:
     return pushimage.PushImage(archive_url, board, profile=profile,
-                               sign_types=sign_types, dry_run=dryrun)
+                               sign_types=sign_types, dry_run=dryrun,
+                               buildroot=buildroot)
   except pushimage.PushError as e:
     logging.PrintBuildbotStepFailure()
     return e.args[1]

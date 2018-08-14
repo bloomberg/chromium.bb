@@ -75,14 +75,16 @@ class InputInsns(object):
   reads) is not exactly the same as the instruction file pushimage reads.
   """
 
-  def __init__(self, board, image_type=None):
+  def __init__(self, board, image_type=None, buildroot=None):
     """Initialization.
 
     Args:
       board: The board to look up details.
       image_type: The type of image we will be signing (see --sign-types).
+      buildroot: Buildroot in which to look for signing instructions.
     """
     self.board = board
+    self.buildroot = buildroot or constants.SOURCE_ROOT
 
     config = ConfigParser.ConfigParser()
     config.readfp(open(self.GetInsnFile('DEFAULT')))
@@ -127,7 +129,8 @@ class InputInsns(object):
     else:
       name = '%s.%s' % (self.board, image_type)
 
-    return os.path.join(signing.INPUT_INSN_DIR, '%s.instructions' % name)
+    return os.path.join(
+        self.buildroot, signing.INPUT_INSN_DIR_REL, '%s.instructions' % name)
 
   @staticmethod
   def SplitCfgField(val):
@@ -282,7 +285,7 @@ def MarkImageToBeSigned(ctx, tbs_base, insns_path, priority):
 
 def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
               sign_types=None, dry_run=False, mock=False, force_keysets=(),
-              force_channels=None):
+              force_channels=None, buildroot=constants.SOURCE_ROOT):
   """Push the image from the archive bucket to the release bucket.
 
   Args:
@@ -298,6 +301,7 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
     mock: Upload to a testing bucket rather than the real one.
     force_keysets: Set of keysets to use rather than what the inputs say.
     force_channels: Set of channels to use rather than what the inputs say.
+    buildroot: Buildroot in which to look for signing instructions.
 
   Returns:
     A dictionary that maps 'channel' -> ['gs://signer_instruction_uri1',
@@ -333,7 +337,7 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
   ctx = gs.GSContext(dry_run=dry_run)
 
   try:
-    input_insns = InputInsns(board)
+    input_insns = InputInsns(board, buildroot=buildroot)
   except MissingBoardInstructions as e:
     logging.warning('Missing base instruction file: %s', e)
     logging.warning('not uploading anything for signing')
@@ -490,7 +494,8 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
     # Now go through the subset for signing.
     for image_type, dst_name, suffix in files_to_sign:
       try:
-        input_insns = InputInsns(board, image_type=image_type)
+        input_insns = InputInsns(board, image_type=image_type,
+                                 buildroot=buildroot)
       except MissingBoardInstructions as e:
         logging.info('Nothing to sign: %s', e)
         continue
@@ -597,6 +602,8 @@ def GetParser():
   parser.add_argument('--sign-types', default=None, nargs='+',
                       choices=_SUPPORTED_IMAGE_TYPES,
                       help='only sign specified image types')
+  parser.add_argument('--buildroot', default=constants.SOURCE_ROOT, type='path',
+                      help='Buildroot to use. Defaults to current.')
   parser.add_argument('--yes', action='store_true', default=False,
                       help='answer yes to all prompts')
 
@@ -626,4 +633,5 @@ def main(argv):
   PushImage(opts.image_dir, opts.board, versionrev=opts.version,
             profile=opts.profile, priority=opts.priority,
             sign_types=opts.sign_types, dry_run=opts.dry_run, mock=opts.mock,
-            force_keysets=force_keysets, force_channels=opts.channels)
+            force_keysets=force_keysets, force_channels=opts.channels,
+            buildroot=opts.buildroot)

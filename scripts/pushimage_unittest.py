@@ -399,9 +399,10 @@ class MainTests(cros_test_lib.MockTestCase):
 
 
 def main(_argv):
-  # Use our local copy of insns for testing as the main one is not
-  # available in the public manifest.
-  signing.INPUT_INSN_DIR = signing.TEST_INPUT_INSN_DIR
+  # Use our local copy of insns for testing as the main one is not available in
+  # the public manifest. Even though _REL is a relative path, this works because
+  # os.join leaves absolute paths on the right hand side alone.
+  signing.INPUT_INSN_DIR_REL = signing.TEST_INPUT_INSN_DIR
 
   # Run the tests.
   cros_test_lib.main(level='notice', module=__name__)
