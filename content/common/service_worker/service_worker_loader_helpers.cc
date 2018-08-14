@@ -5,11 +5,13 @@
 #include "content/common/service_worker/service_worker_loader_helpers.h"
 
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/strings/stringprintf.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_util.h"
 #include "services/network/loader_util.h"
@@ -39,6 +41,58 @@ class BlobCompleteCaller : public blink::mojom::BlobReaderClient {
  private:
   BlobCompleteCallback callback_;
 };
+
+// Sets |has_range_out| to true if |headers| specify a single range request, and
+// |offset_out| and |size_out| to the range. Returns true on valid input
+// (regardless of |has_range_out|), and false if there is more than one range or
+// if the bounds overflow.
+bool ExtractSinglePartHttpRange(const net::HttpRequestHeaders& headers,
+                                bool* has_range_out,
+                                uint64_t* offset_out,
+                                uint64_t* length_out) {
+  std::string range_header;
+  *has_range_out = false;
+  if (!headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header))
+    return true;
+
+  std::vector<net::HttpByteRange> ranges;
+  if (!net::HttpUtil::ParseRangeHeader(range_header, &ranges))
+    return true;
+
+  // Multi-part (or invalid) ranges are not supported.
+  if (ranges.size() != 1)
+    return false;
+
+  // Safely parse the single range to our more-sane output format.
+  *has_range_out = true;
+  const net::HttpByteRange& byte_range = ranges[0];
+  if (byte_range.first_byte_position() < 0)
+    return false;
+  // Allow the range [0, -1] to be valid and specify the entire range.
+  if (byte_range.first_byte_position() == 0 &&
+      byte_range.last_byte_position() == -1) {
+    *has_range_out = false;
+    return true;
+  }
+  if (byte_range.last_byte_position() < 0)
+    return false;
+
+  uint64_t first_byte_position =
+      static_cast<uint64_t>(byte_range.first_byte_position());
+  uint64_t last_byte_position =
+      static_cast<uint64_t>(byte_range.last_byte_position());
+
+  base::CheckedNumeric<uint64_t> length = last_byte_position;
+  length -= first_byte_position;
+  length += 1;
+
+  if (!length.IsValid())
+    return false;
+
+  *offset_out = static_cast<uint64_t>(byte_range.first_byte_position());
+  *length_out = length.ValueOrDie();
+  return true;
+}
 
 }  // namespace
 
@@ -135,8 +189,7 @@ int ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
   // We don't support multiple range requests in one single URL request,
   // because we need to do multipart encoding here.
   // TODO(falken): Support multipart byte range requests.
-  if (!ServiceWorkerUtils::ExtractSinglePartHttpRange(headers, &byte_range_set,
-                                                      &offset, &length)) {
+  if (!ExtractSinglePartHttpRange(headers, &byte_range_set, &offset, &length)) {
     return net::ERR_REQUEST_RANGE_NOT_SATISFIABLE;
   }
 
