@@ -4,12 +4,8 @@
 
 #include "ui/events/blink/prediction/kalman_predictor.h"
 
-#include <algorithm>
-#include <cmath>
-
 namespace {
 
-constexpr double kMaxInterval = 50.0;
 // Influence of acceleration during each prediction sample
 constexpr float kAccelerationInfluence = 0.5f;
 // Influence of velocity during each prediction sample
@@ -18,6 +14,9 @@ constexpr float kVelocityInfluence = 1.0f;
 }  // namespace
 
 namespace ui {
+
+constexpr base::TimeDelta InputPredictor::kMaxTimeDelta;
+constexpr base::TimeDelta InputPredictor::kMaxResampleTime;
 
 KalmanPredictor::KalmanPredictor() = default;
 
@@ -30,17 +29,18 @@ void KalmanPredictor::Reset() {
 }
 
 void KalmanPredictor::Update(const InputData& cur_input) {
-  double dt(0);
-  if (!last_point_.time_stamp.is_null())
-    dt = (cur_input.time_stamp - last_point_.time_stamp).InMillisecondsF();
-  if (dt > kMaxInterval) {
-    Reset();
-    return;
+  base::TimeDelta dt;
+  if (!last_point_.time_stamp.is_null()) {
+    // When last point is kMaxTimeDelta away, consider it is incontinuous.
+    dt = cur_input.time_stamp - last_point_.time_stamp;
+    if (dt > kMaxTimeDelta)
+      Reset();
   }
 
+  double dt_ms = dt.InMillisecondsF();
   last_point_ = cur_input;
-  x_predictor_.Update(cur_input.pos.x(), dt);
-  y_predictor_.Update(cur_input.pos.y(), dt);
+  x_predictor_.Update(cur_input.pos.x(), dt_ms);
+  y_predictor_.Update(cur_input.pos.y(), dt_ms);
 }
 
 bool KalmanPredictor::HasPrediction() const {
@@ -51,11 +51,11 @@ bool KalmanPredictor::GeneratePrediction(base::TimeTicks frame_time,
                                          InputData* result) const {
   std::vector<InputData> pred_points;
 
-  double dt = (frame_time - last_point_.time_stamp).InMillisecondsF();
+  base::TimeDelta dt = frame_time - last_point_.time_stamp;
   // Kalman filter is not very good when predicting backwards. Besides,
   // predicting backwards means increasing latency. Thus disable prediction when
   // dt < 0.
-  if (!HasPrediction() || dt < 0)
+  if (!HasPrediction() || dt < base::TimeDelta::Min() || dt > kMaxResampleTime)
     return false;
 
   gfx::Vector2dF position(last_point_.pos.x(), last_point_.pos.y());
@@ -63,8 +63,10 @@ bool KalmanPredictor::GeneratePrediction(base::TimeTicks frame_time,
   gfx::Vector2dF velocity = PredictVelocity();
   gfx::Vector2dF acceleration = PredictAcceleration();
 
-  position += ScaleVector2d(velocity, kVelocityInfluence * dt) +
-              ScaleVector2d(acceleration, kAccelerationInfluence * dt * dt);
+  float dt_ms = dt.InMillisecondsF();
+  position +=
+      ScaleVector2d(velocity, kVelocityInfluence * dt_ms) +
+      ScaleVector2d(acceleration, kAccelerationInfluence * dt_ms * dt_ms);
 
   result->pos.set_x(position.x());
   result->pos.set_y(position.y());

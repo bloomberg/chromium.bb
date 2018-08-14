@@ -6,6 +6,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/events/blink/prediction/empty_predictor.h"
 #include "ui/events/blink/prediction/kalman_predictor.h"
 #include "ui/events/blink/prediction/least_squares_predictor.h"
@@ -36,15 +37,25 @@ ScrollPredictor::ScrollPredictor() {
 
 ScrollPredictor::~ScrollPredictor() = default;
 
-void ScrollPredictor::HandleEvent(
+void ScrollPredictor::ResetOnGestureScrollBegin(const WebGestureEvent& event) {
+  DCHECK(event.GetType() == WebInputEvent::kGestureScrollBegin);
+  // Only do resampling for scroll on touchscreen.
+  if (event.SourceDevice() == blink::kWebGestureDeviceTouchscreen) {
+    should_resample_scroll_events_ = true;
+    Reset();
+  }
+}
+
+void ScrollPredictor::ResampleScrollEvents(
     const EventWithCallback::OriginalEventList& original_events,
     base::TimeTicks frame_time,
     WebInputEvent* event) {
-  if (event->GetType() == WebInputEvent::kGestureScrollBegin) {
-    predictor_->Reset();
-    current_accumulated_delta_ = gfx::PointF();
-    last_accumulated_delta_ = gfx::PointF();
-  } else if (event->GetType() == WebInputEvent::kGestureScrollUpdate) {
+  if (!should_resample_scroll_events_)
+    return;
+
+  if (event->GetType() == WebInputEvent::kGestureScrollUpdate) {
+    TRACE_EVENT_BEGIN0("input", "ScrollPredictor::ResampleScrollEvents");
+
     // TODO(eirage): When scroll events are coalesced with pinch, we can have
     // empty original event list. In that case, we can't use the original events
     // to update the prediction. We don't want to use the aggregated event to
@@ -53,19 +64,42 @@ void ScrollPredictor::HandleEvent(
       return;
 
     for (auto& coalesced_event : original_events)
-      UpdatePrediction(coalesced_event.event_);
-    ResampleEvent(frame_time, event);
+      UpdatePrediction(coalesced_event.event_, frame_time);
+
+    if (should_resample_scroll_events_)
+      ResampleEvent(frame_time, event);
+
+    TRACE_EVENT_END2("input", "ScrollPredictor::ResampleScrollEvents",
+                     "OriginalPosition", current_accumulated_delta_.ToString(),
+                     "PredictedPosition", last_accumulated_delta_.ToString());
+  } else if (event->GetType() == WebInputEvent::kGestureScrollEnd) {
+    should_resample_scroll_events_ = false;
   }
 }
 
-void ScrollPredictor::UpdatePrediction(const WebScopedInputEvent& event) {
+void ScrollPredictor::Reset() {
+  predictor_->Reset();
+  current_accumulated_delta_ = gfx::PointF();
+  last_accumulated_delta_ = gfx::PointF();
+}
+
+void ScrollPredictor::UpdatePrediction(const WebScopedInputEvent& event,
+                                       base::TimeTicks frame_time) {
   DCHECK(event->GetType() == WebInputEvent::kGestureScrollUpdate);
   const WebGestureEvent& gesture_event =
       static_cast<const WebGestureEvent&>(*event);
+  // When fling, GSU is sending per frame, resampling is not needed.
+  if (gesture_event.data.scroll_update.inertial_phase ==
+      WebGestureEvent::kMomentumPhase) {
+    should_resample_scroll_events_ = false;
+    return;
+  }
+
   current_accumulated_delta_.Offset(gesture_event.data.scroll_update.delta_x,
                                     gesture_event.data.scroll_update.delta_y);
   InputPredictor::InputData data = {current_accumulated_delta_,
                                     gesture_event.TimeStamp()};
+
   predictor_->Update(data);
 }
 
@@ -74,20 +108,31 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
   DCHECK(event->GetType() == WebInputEvent::kGestureScrollUpdate);
   WebGestureEvent* gesture_event = static_cast<WebGestureEvent*>(event);
 
+  gfx::PointF predicted_accumulated_delta_ = current_accumulated_delta_;
   InputPredictor::InputData result;
   if (predictor_->HasPrediction() &&
       predictor_->GeneratePrediction(time_stamp, &result)) {
-    gfx::PointF predicted_accumulated_delta_ = result.pos;
-    gesture_event->data.scroll_update.delta_x =
-        predicted_accumulated_delta_.x() - last_accumulated_delta_.x();
-    gesture_event->data.scroll_update.delta_y =
-        predicted_accumulated_delta_.y() - last_accumulated_delta_.y();
+    predicted_accumulated_delta_ = result.pos;
     gesture_event->SetTimeStamp(time_stamp);
-    last_accumulated_delta_ = predicted_accumulated_delta_;
-  } else {
-    last_accumulated_delta_.Offset(gesture_event->data.scroll_update.delta_x,
-                                   gesture_event->data.scroll_update.delta_y);
   }
+
+  // If the last resampled GSU over predict the delta, new GSU might try to
+  // scroll back to make up the difference, which cause the scroll to jump back.
+  // So we set the new delta to 0 when predicted delta is in different direction
+  // to the original event.
+  gfx::Vector2dF new_delta =
+      predicted_accumulated_delta_ - last_accumulated_delta_;
+  gesture_event->data.scroll_update.delta_x =
+      (new_delta.x() * gesture_event->data.scroll_update.delta_x < 0)
+          ? 0
+          : new_delta.x();
+  gesture_event->data.scroll_update.delta_y =
+      (new_delta.y() * gesture_event->data.scroll_update.delta_y < 0)
+          ? 0
+          : new_delta.y();
+
+  last_accumulated_delta_.Offset(gesture_event->data.scroll_update.delta_x,
+                                 gesture_event->data.scroll_update.delta_y);
 }
 
 }  // namespace ui
