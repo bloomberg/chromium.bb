@@ -28,6 +28,7 @@ class GURL;
 
 namespace base {
 class Location;
+class OneShotTimer;
 }
 
 namespace net {
@@ -93,6 +94,8 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   void PauseReadingBodyFromNet() override;
   void ResumeReadingBodyFromNet() override;
 
+  void set_report_transfer_size_async_timer_for_testing(
+      std::unique_ptr<base::OneShotTimer> timer);
   void OnWritableForTesting();
   static void SetAllocationSizeForTesting(size_t size);
   static constexpr size_t kDefaultAllocationSize = 512 * 1024;
@@ -123,6 +126,8 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   // |reported_total_received_bytes_|, returns it, and updates
   // |reported_total_received_bytes_|.
   int64_t CalculateRecentlyReceivedBytes();
+  void SendTransferSizeUpdate();
+  void EnsureTransferSizeUpdate();
 
   // These functions can be overriden only for tests.
   virtual void ReportBadMessage(const std::string& error);
@@ -150,9 +155,6 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   bool did_defer_on_redirect_ = false;
   bool did_defer_on_response_started_ = false;
 
-  // The time transfer size should be reported next.
-  base::TimeTicks time_transfer_size_next_report_;
-  int64_t reported_total_received_bytes_ = 0;
   int64_t total_written_bytes_ = 0;
 
   // Pointer to parent's information about the read buffer. Only non-null while
@@ -170,6 +172,14 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   mojo::ScopedDataPipeConsumerHandle response_body_consumer_handle_;
 
   std::unique_ptr<network::UploadProgressTracker> upload_progress_tracker_;
+
+  // Timer to report transfer size after a read is completed but not reported.
+  // Gurantees that all received bytes will be reported eventually, regardless
+  // of read rate or completion, as long as the client is alive.
+  std::unique_ptr<base::OneShotTimer> report_transfer_size_async_timer_;
+  // The time transfer size should be reported next.
+  base::TimeTicks earliest_time_next_transfer_size_report_;
+  int64_t reported_total_received_bytes_ = 0;
 
   base::WeakPtrFactory<MojoAsyncResourceHandler> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(MojoAsyncResourceHandler);

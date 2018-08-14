@@ -56,6 +56,8 @@ void TestURLLoaderClient::OnTransferSizeUpdated(int32_t transfer_size_diff) {
   EXPECT_FALSE(has_received_completion_);
   EXPECT_GT(transfer_size_diff, 0);
   body_transfer_size_ += transfer_size_diff;
+  if (quit_closure_for_on_transfer_size_updated_)
+    std::move(quit_closure_for_on_transfer_size_updated_).Run();
 }
 
 void TestURLLoaderClient::OnUploadProgress(
@@ -153,6 +155,12 @@ void TestURLLoaderClient::RunUntilConnectionError() {
     return;
   base::RunLoop run_loop;
   quit_closure_for_on_connection_error_ = run_loop.QuitClosure();
+  run_loop.Run();
+}
+
+void TestURLLoaderClient::RunUntilTransferSizeUpdated() {
+  base::RunLoop run_loop;
+  quit_closure_for_on_transfer_size_updated_ = run_loop.QuitClosure();
   run_loop.Run();
 }
 
