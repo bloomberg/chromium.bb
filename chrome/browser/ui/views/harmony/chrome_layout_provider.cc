@@ -118,7 +118,3 @@ bool ChromeLayoutProvider::UseExtraDialogPadding() const {
 bool ChromeLayoutProvider::ShouldShowWindowIcon() const {
   return true;
 }
-
-bool ChromeLayoutProvider::IsHarmonyMode() const {
-  return false;
-}

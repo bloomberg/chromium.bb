@@ -22,7 +22,6 @@ class HarmonyLayoutProvider : public ChromeLayoutProvider {
   views::GridLayout::Alignment GetControlLabelGridAlignment() const override;
   bool UseExtraDialogPadding() const override;
   bool ShouldShowWindowIcon() const override;
-  bool IsHarmonyMode() const override;
   const views::TypographyProvider& GetTypographyProvider() const override;
   int GetSnappedDialogWidth(int min_width) const override;
 

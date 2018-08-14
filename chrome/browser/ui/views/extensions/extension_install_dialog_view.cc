@@ -342,21 +342,14 @@ void ExtensionInstallDialogView::AddedToWidget() {
                                                 prompt_->rating_count());
     prompt_->AppendRatingStars(AddResourceIcon, rating.get());
     rating_container->AddChildView(rating.release());
-    int rating_text_context, user_count_text_context;
-    if (provider->IsHarmonyMode()) {
-      rating_text_context = CONTEXT_BODY_TEXT_LARGE;
-      user_count_text_context = CONTEXT_BODY_TEXT_SMALL;
-    } else {
-      rating_text_context = user_count_text_context = CONTEXT_DEPRECATED_SMALL;
-    }
     auto rating_count = std::make_unique<RatingLabel>(prompt_->GetRatingCount(),
-                                                      rating_text_context);
+                                                      CONTEXT_BODY_TEXT_LARGE);
     rating_count->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     rating_container->AddChildView(rating_count.release());
     webstore_data_container->AddChildView(rating_container.release());
 
     auto user_count = std::make_unique<views::Label>(
-        prompt_->GetUserCount(), user_count_text_context, STYLE_SECONDARY);
+        prompt_->GetUserCount(), CONTEXT_BODY_TEXT_SMALL, STYLE_SECONDARY);
     user_count->SetAutoColorReadabilityEnabled(false);
     user_count->SetEnabledColor(SK_ColorGRAY);
     user_count->SetHorizontalAlignment(gfx::ALIGN_LEFT);

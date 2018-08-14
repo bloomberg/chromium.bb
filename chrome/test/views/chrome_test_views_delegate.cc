@@ -9,7 +9,7 @@
 ChromeTestViewsDelegate::ChromeTestViewsDelegate()
     : views::TestViewsDelegate() {
   // Overrides the LayoutProvider created by TestViewsDelegate.
-  set_layout_provider(std::make_unique<ChromeLayoutProvider>());
+  set_layout_provider(ChromeLayoutProvider::CreateLayoutProvider());
 }
 
 ChromeTestViewsDelegate::~ChromeTestViewsDelegate() {}

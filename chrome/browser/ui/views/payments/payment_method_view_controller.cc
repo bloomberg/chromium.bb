@@ -128,8 +128,8 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
     base::string16 missing_info;
     if (!instrument_->IsCompleteForPayment()) {
       missing_info = instrument_->GetMissingInfoLabel();
-      auto missing_info_label = std::make_unique<views::Label>(
-          missing_info, CONTEXT_DEPRECATED_SMALL);
+      auto missing_info_label =
+          std::make_unique<views::Label>(missing_info, CONTEXT_BODY_TEXT_SMALL);
       missing_info_label->SetEnabledColor(
           missing_info_label->GetNativeTheme()->GetSystemColor(
               ui::NativeTheme::kColorId_LinkEnabled));

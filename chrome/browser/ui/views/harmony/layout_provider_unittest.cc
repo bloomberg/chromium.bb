@@ -244,11 +244,10 @@ TEST_F(LayoutProviderTest, FontSizeRelativeToBase) {
 
   constexpr int kStyle = views::style::STYLE_PRIMARY;
 
-  // Typography described in chrome_typography.h requires a
-  // ChromeLayoutProvider.
-  ChromeLayoutProvider layout_provider;
+  std::unique_ptr<views::LayoutProvider> layout_provider =
+      ChromeLayoutProvider::CreateLayoutProvider();
 
-// Legacy code measures everything relative to a default-constructed FontList.
+// Everything's measured relative to a default-constructed FontList.
 // On Mac, subtract one since that is 13pt instead of 12pt.
 #if defined(OS_MACOSX)
   const int twelve = gfx::FontList().GetFontSize() - 1;
@@ -263,24 +262,12 @@ TEST_F(LayoutProviderTest, FontSizeRelativeToBase) {
   EXPECT_EQ(twelve,
             GetFont(views::style::CONTEXT_BUTTON, kStyle).GetFontSize());
 
-#if defined(OS_MACOSX)
-  // We never exposed UI on Mac using these constants so it doesn't matter that
-  // they are different. They only need to match under Harmony.
-  EXPECT_EQ(twelve + 9, GetFont(CONTEXT_HEADLINE, kStyle).GetFontSize());
-  EXPECT_EQ(twelve + 2,
-            GetFont(views::style::CONTEXT_DIALOG_TITLE, kStyle).GetFontSize());
-  EXPECT_EQ(twelve + 2, GetFont(CONTEXT_BODY_TEXT_LARGE, kStyle).GetFontSize());
-  EXPECT_EQ(twelve, GetFont(CONTEXT_DEPRECATED_SMALL, kStyle).GetFontSize());
-#else
   // E.g. Headline should give a 20pt font.
   EXPECT_EQ(twelve + 8, GetFont(CONTEXT_HEADLINE, kStyle).GetFontSize());
   // Titles should be 15pt. Etc.
   EXPECT_EQ(twelve + 3,
             GetFont(views::style::CONTEXT_DIALOG_TITLE, kStyle).GetFontSize());
   EXPECT_EQ(twelve + 1, GetFont(CONTEXT_BODY_TEXT_LARGE, kStyle).GetFontSize());
-  EXPECT_EQ(twelve - 1,
-            GetFont(CONTEXT_DEPRECATED_SMALL, kStyle).GetFontSize());
-#endif
 }
 
 // Ensure that line height can be overridden by Chrome's TypographyProvider for
