@@ -34,6 +34,7 @@
 #include "chrome/browser/chromeos/accessibility/ax_host_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/views/widget/widget_delegate.h"
 #endif
 
 using content::BrowserContext;
@@ -265,9 +266,12 @@ void AutomationManagerAura::PerformHitTest(
         views::Widget::GetWidgetForNativeWindow(window->parent());
     CHECK(widget);
     ui::AXNodeData node_data;
-    widget->GetContentsView()->GetAccessibleNodeData(&node_data);
+    widget->widget_delegate()->GetContentsView()->GetAccessibleNodeData(
+        &node_data);
     child_ax_tree_id =
         node_data.GetIntAttribute(ax::mojom::IntAttribute::kChildTreeId);
+    DCHECK_NE(child_ax_tree_id, ui::AXTreeIDRegistry::kNoAXTreeID);
+    DCHECK_NE(child_ax_tree_id, extensions::api::automation::kDesktopTreeID);
   } else {
     // For normal windows the (optional) child tree is an aura window property.
     child_ax_tree_id = window->GetProperty(ui::kChildAXTreeID);
