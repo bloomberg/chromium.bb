@@ -274,6 +274,7 @@ jumbo_source_set("testing") {
     "testing/dummy_page_holder.h",
     "testing/garbage_collected_script_wrappable.cc",
     "testing/garbage_collected_script_wrappable.h",
+    "testing/gc_object_liveness_observer.h",
     "testing/gc_observation.cc",
     "testing/gc_observation.h",
     "testing/internal_settings.cc",
