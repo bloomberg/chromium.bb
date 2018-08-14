@@ -36,7 +36,7 @@ void CacheStorageContextImpl::Init(
   is_incognito_ = user_data_directory.empty();
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   // This thread-hopping antipattern is needed here for some unit tests, where
