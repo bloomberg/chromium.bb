@@ -24,6 +24,9 @@ extern const char kIppDuplex[];
 extern const char kCollated[];
 extern const char kUncollated[];
 
+// Smart ptr wrapper for CUPS ipp_t
+using ScopedIppPtr = std::unique_ptr<ipp_t, void (*)(ipp_t*)>;
+
 // Returns the default ColorModel for |printer|.
 ColorModel DefaultColorModel(const CupsOptionProvider& printer);
 
@@ -56,6 +59,9 @@ bool CollateDefault(const CupsOptionProvider& printer);
 PRINTING_EXPORT void CapsAndDefaultsFromPrinter(
     const CupsOptionProvider& printer,
     PrinterSemanticCapsAndDefaults* printer_info);
+
+// Wraps |ipp| in unique_ptr with appropriate deleter
+PRINTING_EXPORT ScopedIppPtr WrapIpp(ipp_t* ipp);
 
 }  // namespace printing
 

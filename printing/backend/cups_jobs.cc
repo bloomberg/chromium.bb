@@ -17,6 +17,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
 #include "printing/backend/cups_deleters.h"
+#include "printing/backend/cups_ipp_util.h"
 
 namespace printing {
 namespace {
@@ -110,12 +111,6 @@ constexpr std::array<const char* const, 3> kPrinterAttributes{
 constexpr std::array<const char* const, 4> kPrinterInfo{
     {kPrinterMakeAndModel, kIppVersionsSupported, kIppFeaturesSupported,
      kDocumentFormatSupported}};
-
-using ScopedIppPtr = std::unique_ptr<ipp_t, void (*)(ipp_t*)>;
-
-ScopedIppPtr WrapIpp(ipp_t* ipp) {
-  return ScopedIppPtr(ipp, &ippDelete);
-}
 
 using ScopedHttpPtr = std::unique_ptr<http_t, HttpDeleter>;
 
