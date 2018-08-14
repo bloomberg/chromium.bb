@@ -91,7 +91,7 @@
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "components/webrtc_logging/browser/log_cleanup.h"
-#include "components/webrtc_logging/browser/log_list.h"
+#include "components/webrtc_logging/browser/text_log_list.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/plugin_data_remover.h"
@@ -548,8 +548,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
         base::BindOnce(
             &webrtc_logging::DeleteOldAndRecentWebRtcLogFiles,
-            webrtc_logging::LogList::GetWebRtcLogDirectoryForBrowserContextPath(
-                profile_->GetPath()),
+            webrtc_logging::TextLogList::
+                GetWebRtcLogDirectoryForBrowserContextPath(profile_->GetPath()),
             delete_begin_),
         CreatePendingTaskCompletionClosure());
 
