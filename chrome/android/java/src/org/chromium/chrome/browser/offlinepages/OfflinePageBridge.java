@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
+import android.text.TextUtils;
+
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
@@ -14,12 +16,15 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offlinepages.DeletePageResult;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -699,15 +704,18 @@ public class OfflinePageBridge {
     }
 
     /**
-     * Get the url to launch the offline page associated with the provided offline ID. Depending on
-     * whether it is trusted or not, either http/https or file URL will be returned in the callback.
+     * Get the the url params to open the offline page associated with the provided offline ID.
+     * Depending on whether it is trusted or not, either http/https or file URL will be returned in
+     * the callback.
      *
      * @param offlineId ID of the offline page.
+     * @param location Where the offline page is launched.
      * @param callback callback to pass back the url string if found. Will pass back
      * <code>null</code> if not.
      */
-    public void getLaunchUrlByOfflineId(long offlineId, Callback<String> callback) {
-        nativeGetLaunchUrlByOfflineId(mNativeOfflinePageBridge, offlineId, callback);
+    public void getLoadUrlParamsByOfflineId(
+            long offlineId, @LaunchLocation int location, Callback<LoadUrlParams> callback) {
+        nativeGetLoadUrlParamsByOfflineId(mNativeOfflinePageBridge, offlineId, location, callback);
     }
 
     /**
@@ -816,9 +824,16 @@ public class OfflinePageBridge {
     }
 
     @CalledByNative
-    private static LoadUrlParams createLoadUrlParams(String url, String extraHeaders) {
+    private static LoadUrlParams createLoadUrlParams(
+            String url, String extraHeaderKey, String extraHeaderValue) {
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-        loadUrlParams.setVerbatimHeaders(extraHeaders);
+        if (!TextUtils.isEmpty(extraHeaderKey) && !TextUtils.isEmpty(extraHeaderValue)) {
+            // Set both map-based and collapsed headers to support all use scenarios.
+            Map<String, String> headers = new HashMap<String, String>();
+            headers.put(extraHeaderKey, extraHeaderValue);
+            loadUrlParams.setExtraHeaders(headers);
+            loadUrlParams.setVerbatimHeaders(extraHeaderKey + ": " + extraHeaderValue);
+        }
         return loadUrlParams;
     }
 
@@ -889,8 +904,8 @@ public class OfflinePageBridge {
             long nativeOfflinePageBridge, WebContents webContents);
     private native void nativeCheckForNewOfflineContent(
             long nativeOfflinePageBridge, long freshnessTimeMillis, Callback<String> callback);
-    private native void nativeGetLaunchUrlByOfflineId(
-            long nativeOfflinePageBridge, long offlineId, Callback<String> callback);
+    private native void nativeGetLoadUrlParamsByOfflineId(long nativeOfflinePageBridge,
+            long offlineId, int location, Callback<LoadUrlParams> callback);
     private native boolean nativeIsShowingTrustedOfflinePage(
             long nativeOfflinePageBridge, WebContents webContents);
     private native void nativeGetLoadUrlParamsForOpeningMhtmlFileOrContent(

@@ -34991,6 +34991,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="Clicking notification"/>
   <int value="8" label="File URL intent"/>
   <int value="9" label="Content URL intent"/>
+  <int value="10" label="Progress bar"/>
 </enum>
 
 <enum name="OfflinePagesAggregatedRequestResult">

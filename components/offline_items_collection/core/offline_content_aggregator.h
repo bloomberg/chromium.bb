@@ -57,7 +57,7 @@ class OfflineContentAggregator : public OfflineContentProvider,
   void UnregisterProvider(const std::string& name_space);
 
   // OfflineContentProvider implementation.
-  void OpenItem(const ContentId& id) override;
+  void OpenItem(LaunchLocation location, const ContentId& id) override;
   void RemoveItem(const ContentId& id) override;
   void CancelDownload(const ContentId& id) override;
   void PauseDownload(const ContentId& id) override;

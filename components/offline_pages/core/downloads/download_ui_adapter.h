@@ -21,6 +21,7 @@
 #include "url/gurl.h"
 
 using ContentId = offline_items_collection::ContentId;
+using LaunchLocation = offline_items_collection::LaunchLocation;
 using OfflineItem = offline_items_collection::OfflineItem;
 using OfflineContentProvider = offline_items_collection::OfflineContentProvider;
 using OfflineContentAggregator =
@@ -57,7 +58,9 @@ class DownloadUIAdapter : public OfflineContentProvider,
     virtual void SetUIAdapter(DownloadUIAdapter* ui_adapter) = 0;
 
     // Opens an offline item.
-    virtual void OpenItem(const OfflineItem& item, int64_t offline_id) = 0;
+    virtual void OpenItem(const OfflineItem& item,
+                          int64_t offline_id,
+                          LaunchLocation launch_location) = 0;
 
     // Suppresses the download complete notification
     // depending on flags and origin.
@@ -80,7 +83,7 @@ class DownloadUIAdapter : public OfflineContentProvider,
       OfflinePageModel* model);
 
   // OfflineContentProvider implementation.
-  void OpenItem(const ContentId& id) override;
+  void OpenItem(LaunchLocation location, const ContentId& id) override;
   void RemoveItem(const ContentId& id) override;
   void CancelDownload(const ContentId& id) override;
   void PauseDownload(const ContentId& id) override;
@@ -151,7 +154,8 @@ class DownloadUIAdapter : public OfflineContentProvider,
       OfflineContentProvider::SingleItemCallback callback,
       std::vector<std::unique_ptr<SavePageRequest>> requests);
 
-  void OnPageGetForOpenItem(const OfflinePageItem* page);
+  void OnPageGetForOpenItem(LaunchLocation location,
+                            const OfflinePageItem* page);
   void OnPageGetForThumbnailAdded(const OfflinePageItem* page);
 
   void OnDeletePagesDone(DeletePageResult result);
