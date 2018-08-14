@@ -909,9 +909,8 @@ const Font& CanvasRenderingContext2D::AccessFont() {
 void CanvasRenderingContext2D::SetIsHidden(bool hidden) {
   if (IsPaintable())
     canvas()->GetCanvas2DLayerBridge()->SetIsHidden(hidden);
-  if (hidden) {
+  if (hidden)
     PruneLocalFontCache(0);
-  }
 }
 
 bool CanvasRenderingContext2D::IsTransformInvertible() const {
