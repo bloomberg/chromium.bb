@@ -5,7 +5,6 @@ Bug(none) external/wpt/clear-site-data/storage.https.html [ Failure ]
 Bug(none) external/wpt/clear-site-data/navigation.https.html [ Timeout ]
 crbug.com/829417 external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Timeout ]
 
-Bug(none) http/tests/misc/redirect-to-about-blank.html [ Timeout ]
 Bug(none) http/tests/security/cors-rfc1918 [ Crash Timeout ]
 Bug(none) http/tests/security/powerfulFeatureRestrictions/old-powerful-features-on-insecure-origin.html [ Pass Timeout ]
 
@@ -21,3 +20,7 @@ crbug.com/849670 http/tests/devtools/service-workers/service-worker-v8-cache.js 
 crbug.com/850689 http/tests/inspector-protocol/network/interception-cookie.js [ Failure ]
 crbug.com/850689 http/tests/inspector-protocol/network/interception-set-cookie.js [ Failure ]
 
+# This passes in content_shell but not in chrome with network service disabled,
+# because content_shell does not add the about: handler. With network service
+# enabled this fails in both content_shell and chrome.
+Bug(none) http/tests/misc/redirect-to-about-blank.html [ Timeout ]
