@@ -583,6 +583,7 @@ buildflag_header("chromecast_buildflags") {
     "ENABLE_CHROMECAST_EXTENSIONS=$enable_chromecast_extensions",
     "ENABLE_CAST_FRAGMENT=$enable_cast_fragment",
     "IS_ANDROID_THINGS_NON_PUBLIC=$is_android_things_non_public",
+    "USE_ANDROID_USER_AGENT=$use_android_user_agent",
     "USE_CHROMECAST_CDMS=$use_chromecast_cdms",
   ]
 }

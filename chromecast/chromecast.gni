@@ -83,6 +83,11 @@ declare_args() {
 
   # unified flag to pick monotonic_clock OR monotonic_clock_raw
   media_clock_monotonic_raw = !is_android && !is_cast_desktop_build
+
+  # Include 'Android' in user agent string to avoid being served desktop
+  # versions of websites.
+  # TODO(halliwell): consider making this default for all Cast hardware.
+  use_android_user_agent = false
 }
 
 declare_args() {
