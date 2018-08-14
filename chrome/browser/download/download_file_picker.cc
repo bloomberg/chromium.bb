@@ -4,7 +4,6 @@
 
 #include "chrome/browser/download/download_file_picker.h"
 
-#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -18,49 +17,13 @@ using download::DownloadItem;
 using content::DownloadManager;
 using content::WebContents;
 
-namespace {
-
-enum FilePickerResult {
-  FILE_PICKER_SAME,
-  FILE_PICKER_DIFFERENT_DIR,
-  FILE_PICKER_DIFFERENT_NAME,
-  FILE_PICKER_CANCEL,
-  FILE_PICKER_MAX,
-};
-
-// Record how the File Picker was used during a download. This UMA is only
-// recorded for profiles that do not always prompt for save locations on
-// downloads.
-void RecordFilePickerResult(const base::FilePath& suggested_path,
-                            const base::FilePath& actual_path) {
-  FilePickerResult result;
-  if (suggested_path == actual_path)
-    result = FILE_PICKER_SAME;
-  else if (actual_path.empty())
-    result = FILE_PICKER_CANCEL;
-  else if (suggested_path.DirName() != actual_path.DirName())
-    result = FILE_PICKER_DIFFERENT_DIR;
-  else
-    result = FILE_PICKER_DIFFERENT_NAME;
-
-  UMA_HISTOGRAM_ENUMERATION("Download.FilePickerResult",
-                            result,
-                            FILE_PICKER_MAX);
-}
-
-}  // namespace
-
 DownloadFilePicker::DownloadFilePicker(DownloadItem* item,
                                        const base::FilePath& suggested_path,
                                        const ConfirmationCallback& callback)
-    : suggested_path_(suggested_path),
-      file_selected_callback_(callback),
-      should_record_file_picker_result_(false) {
+    : suggested_path_(suggested_path), file_selected_callback_(callback) {
   const DownloadPrefs* prefs = DownloadPrefs::FromBrowserContext(
       content::DownloadItemUtils::GetBrowserContext(item));
   DCHECK(prefs);
-  // Only record UMA if we aren't prompting the user for all downloads.
-  should_record_file_picker_result_ = !prefs->PromptForDownload();
 
   WebContents* web_contents = content::DownloadItemUtils::GetWebContents(item);
   if (!web_contents || !web_contents->GetNativeView()) {
@@ -112,8 +75,6 @@ DownloadFilePicker::~DownloadFilePicker() {
 }
 
 void DownloadFilePicker::OnFileSelected(const base::FilePath& path) {
-  if (should_record_file_picker_result_)
-    RecordFilePickerResult(suggested_path_, path);
   file_selected_callback_.Run(path.empty()
                                   ? DownloadConfirmationResult::CANCELED
                                   : DownloadConfirmationResult::CONFIRMED,

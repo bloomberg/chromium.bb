@@ -92,10 +92,6 @@ TEST(QuarantineWinTest, LocalFile_DependsOnLocalConfig) {
 
     base::DeleteFile(test_file, false);
   }
-
-  // Bucket 1 is SUCCESS_WITHOUT_MOTW.
-  histogram_tester.ExpectUniqueSample("Download.AttachmentServices.Result", 1,
-                                      arraysize(kLocalSourceURLs));
 }
 
 // A file downloaded from the internet should be annotated with .. something.
@@ -128,10 +124,6 @@ TEST(QuarantineWinTest, DownloadedFile_DependsOnLocalConfig) {
       LOG(WARNING) << "Unexpected zone marker: " << motw_contents;
     base::DeleteFile(test_file, false);
   }
-
-  // Bucket 0 is SUCCESS_WITH_MOTW.
-  histogram_tester.ExpectUniqueSample("Download.AttachmentServices.Result", 0,
-                                      arraysize(kUntrustedURLs));
 }
 
 TEST(QuarantineWinTest, UnsafeReferrer_DependsOnLocalConfig) {
@@ -167,10 +159,6 @@ TEST(QuarantineWinTest, UnsafeReferrer_DependsOnLocalConfig) {
       LOG(WARNING) << "Unexpected zone marker: " << motw_contents;
     base::DeleteFile(test_file, false);
   }
-
-  // Bucket 0 is SUCCESS_WITH_MOTW.
-  histogram_tester.ExpectUniqueSample("Download.AttachmentServices.Result", 0,
-                                      unsafe_referrers.size());
 }
 
 // An empty source URL should result in a file that's treated the same as one
@@ -191,10 +179,6 @@ TEST(QuarantineWinTest, EmptySource_DependsOnLocalConfig) {
   // The actual assigned zone could be anything. So only testing that there is a
   // zone annotation.
   EXPECT_FALSE(motw_contents.empty());
-
-  // Bucket 0 is SUCCESS_WITH_MOTW.
-  histogram_tester.ExpectUniqueSample("Download.AttachmentServices.Result", 0,
-                                      1);
 }
 
 // Empty files aren't passed to AVScanFile. They are instead marked manually. If
@@ -214,9 +198,6 @@ TEST(QuarantineWinTest, EmptyFile) {
   ASSERT_TRUE(base::ReadFileToString(
       base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents));
   EXPECT_STREQ(kMotwForInternetZone, motw_contents.c_str());
-
-  // Attachment services shouldn't have been invoked at all.
-  histogram_tester.ExpectTotalCount("Download.AttachmentServices.Result", 0);
 }
 
 // If there is no client GUID supplied to the QuarantineFile() call, then rather

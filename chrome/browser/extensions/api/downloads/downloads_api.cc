@@ -642,12 +642,7 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
     download_item->SetUserData(kKey, base::WrapUnique(this));
   }
 
-  ~ExtensionDownloadsEventRouterData() override {
-    if (updated_ > 0) {
-      UMA_HISTOGRAM_PERCENTAGE("Download.OnChanged",
-                               (changed_fired_ * 100 / updated_));
-    }
-  }
+  ~ExtensionDownloadsEventRouterData() override = default;
 
   void set_is_download_completed(bool is_download_completed) {
     is_download_completed_ = is_download_completed;

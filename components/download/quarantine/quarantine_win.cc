@@ -36,28 +36,6 @@ namespace {
 const base::FilePath::CharType kZoneIdentifierStreamSuffix[] =
     FILE_PATH_LITERAL(":Zone.Identifier");
 
-// UMA enumeration for recording Download.AttachmentServicesResult.
-enum class AttachmentServicesResult : int {
-  SUCCESS_WITH_MOTW = 0,
-  SUCCESS_WITHOUT_MOTW = 1,
-  SUCCESS_WITHOUT_FILE = 2,
-  NO_ATTACHMENT_SERVICES = 3,
-  FAILED_TO_SET_PARAMETER = 4,
-  BLOCKED_WITH_FILE = 5,
-  BLOCKED_WITHOUT_FILE = 6,
-  INFECTED_WITH_FILE = 7,
-  INFECTED_WITHOUT_FILE = 8,
-  ACCESS_DENIED_WITH_FILE = 9,
-  ACCESS_DENIED_WITHOUT_FILE = 10,
-  OTHER_WITH_FILE = 11,
-  OTHER_WITHOUT_FILE = 12,
-};
-
-void RecordAttachmentServicesResult(AttachmentServicesResult type) {
-  base::UmaHistogramSparse("Download.AttachmentServices.Result",
-                           static_cast<int>(type));
-}
-
 bool ZoneIdentifierPresentForFile(const base::FilePath& path) {
   const DWORD kShare = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
   base::FilePath::StringType zone_identifier_path =
@@ -87,50 +65,6 @@ bool ZoneIdentifierPresentForFile(const base::FilePath& path) {
                              base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   return lines.size() > 1 && lines[0] == "[ZoneTransfer]" &&
          lines[1].find("ZoneId=") == 0;
-}
-
-void RecordAttachmentServicesSaveResult(const base::FilePath& file,
-                                        HRESULT hr) {
-  bool file_exists = base::PathExists(file);
-  switch (hr) {
-    case INET_E_SECURITY_PROBLEM:
-      RecordAttachmentServicesResult(
-          file_exists ? AttachmentServicesResult::BLOCKED_WITH_FILE
-                      : AttachmentServicesResult::BLOCKED_WITHOUT_FILE);
-      break;
-
-    case E_FAIL:
-      RecordAttachmentServicesResult(
-          file_exists ? AttachmentServicesResult::INFECTED_WITH_FILE
-                      : AttachmentServicesResult::INFECTED_WITHOUT_FILE);
-      break;
-
-    case E_ACCESSDENIED:
-    case ERROR_ACCESS_DENIED:
-      // ERROR_ACCESS_DENIED is not a valid HRESULT. However,
-      // IAttachmentExecute::Save() is known to return it and other system error
-      // codes in practice.
-      RecordAttachmentServicesResult(
-          file_exists ? AttachmentServicesResult::ACCESS_DENIED_WITH_FILE
-                      : AttachmentServicesResult::ACCESS_DENIED_WITHOUT_FILE);
-      break;
-
-    default:
-      if (SUCCEEDED(hr)) {
-        bool motw_exists = file_exists && ZoneIdentifierPresentForFile(file);
-        RecordAttachmentServicesResult(
-            file_exists ? motw_exists
-                              ? AttachmentServicesResult::SUCCESS_WITH_MOTW
-                              : AttachmentServicesResult::SUCCESS_WITHOUT_MOTW
-                        : AttachmentServicesResult::SUCCESS_WITHOUT_FILE);
-        return;
-      }
-
-      // Failure codes.
-      RecordAttachmentServicesResult(
-          file_exists ? AttachmentServicesResult::OTHER_WITH_FILE
-                      : AttachmentServicesResult::OTHER_WITHOUT_FILE);
-  }
 }
 
 // Sets the Zone Identifier on the file to "Internet" (3). Returns true if the
@@ -205,8 +139,6 @@ bool InvokeAttachmentServices(const base::FilePath& full_path,
   if (FAILED(hr)) {
     // The thread must have COM initialized.
     DCHECK_NE(CO_E_NOTINITIALIZED, hr);
-    RecordAttachmentServicesResult(
-        AttachmentServicesResult::NO_ATTACHMENT_SERVICES);
     return false;
   }
 
@@ -215,18 +147,12 @@ bool InvokeAttachmentServices(const base::FilePath& full_path,
   // where the final Save() call will also fail.
 
   hr = attachment_services->SetClientGuid(client_guid);
-  if (FAILED(hr)) {
-    RecordAttachmentServicesResult(
-        AttachmentServicesResult::FAILED_TO_SET_PARAMETER);
+  if (FAILED(hr))
     return false;
-  }
 
   hr = attachment_services->SetLocalPath(full_path.value().c_str());
-  if (FAILED(hr)) {
-    RecordAttachmentServicesResult(
-        AttachmentServicesResult::FAILED_TO_SET_PARAMETER);
+  if (FAILED(hr))
     return false;
-  }
 
   // The source URL could be empty if it was not a valid URL, or was not HTTP/S,
   // or the download was off-the-record. If so, user "about:internet" as a
@@ -239,11 +165,8 @@ bool InvokeAttachmentServices(const base::FilePath& full_path,
       source_url.empty() || source_url.size() > INTERNET_MAX_URL_LENGTH
           ? L"about:internet"
           : base::UTF8ToWide(source_url).c_str());
-  if (FAILED(hr)) {
-    RecordAttachmentServicesResult(
-        AttachmentServicesResult::FAILED_TO_SET_PARAMETER);
+  if (FAILED(hr))
     return false;
-  }
 
   // Only set referrer if one is present and shorter than
   // INTERNET_MAX_URL_LENGTH. Also, the source_url is authoritative for
@@ -252,11 +175,8 @@ bool InvokeAttachmentServices(const base::FilePath& full_path,
   if (!referrer_url.empty() && referrer_url.size() < INTERNET_MAX_URL_LENGTH) {
     hr = attachment_services->SetReferrer(
         base::UTF8ToWide(referrer_url).c_str());
-    if (FAILED(hr)) {
-      RecordAttachmentServicesResult(
-          AttachmentServicesResult::FAILED_TO_SET_PARAMETER);
+    if (FAILED(hr))
       return false;
-    }
   }
 
   {
@@ -265,7 +185,6 @@ bool InvokeAttachmentServices(const base::FilePath& full_path,
     SCOPED_UMA_HISTOGRAM_LONG_TIMER("Download.AttachmentServices.Duration");
     *save_result = attachment_services->Save();
   }
-  RecordAttachmentServicesSaveResult(full_path, *save_result);
   return true;
 }
 

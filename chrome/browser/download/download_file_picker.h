@@ -63,10 +63,6 @@ class DownloadFilePicker : public ui::SelectFileDialog::Listener {
   // For managing select file dialogs.
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 
-  // True if UMA regarding on the result of the file selection should be
-  // recorded.
-  bool should_record_file_picker_result_;
-
   DISALLOW_COPY_AND_ASSIGN(DownloadFilePicker);
 };
 

@@ -14,7 +14,6 @@
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/download/public/common/download_interrupt_reasons_utils.h"
@@ -22,38 +21,6 @@
 
 namespace download {
 namespace {
-
-const int kAllSpecialShFileOperationCodes[] = {
-    // Should be kept in sync with the case statement below.
-    ERROR_ACCESS_DENIED,
-    ERROR_SHARING_VIOLATION,
-    ERROR_INVALID_PARAMETER,
-    0x71,
-    0x72,
-    0x73,
-    0x74,
-    0x75,
-    0x76,
-    0x78,
-    0x79,
-    0x7A,
-    0x7C,
-    0x7D,
-    0x7E,
-    0x80,
-    0x81,
-    0x82,
-    0x83,
-    0x84,
-    0x85,
-    0x86,
-    0x87,
-    0x88,
-    0xB7,
-    0x402,
-    0x10000,
-    0x10074,
-};
 
 // Maps the result of a call to |SHFileOperation()| onto a
 // |DownloadInterruptReason|.
@@ -251,28 +218,6 @@ DownloadInterruptReason MapShFileOperationCodes(int code) {
     case 0x10074:
       result = DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
       break;
-  }
-
-  // Narrow down on the reason we're getting some catch-all interrupt reasons.
-  if (result == DOWNLOAD_INTERRUPT_REASON_FILE_FAILED) {
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-        "Download.MapWinShErrorFileFailed", code,
-        base::CustomHistogram::ArrayToCustomEnumRanges(
-            kAllSpecialShFileOperationCodes));
-  }
-
-  if (result == DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED) {
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-        "Download.MapWinShErrorAccessDenied", code,
-        base::CustomHistogram::ArrayToCustomEnumRanges(
-            kAllSpecialShFileOperationCodes));
-  }
-
-  if (result == DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR) {
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-        "Download.MapWinShErrorTransientError", code,
-        base::CustomHistogram::ArrayToCustomEnumRanges(
-            kAllSpecialShFileOperationCodes));
   }
 
   if (result != DOWNLOAD_INTERRUPT_REASON_NONE)

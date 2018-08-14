@@ -145,11 +145,6 @@ class CONTENT_EXPORT DownloadRequestCore
   // URLRequest to fail and the associated download will be interrupted.
   device::mojom::WakeLockPtr wake_lock_;
 
-  // The following are used to collect stats.
-  base::TimeTicks download_start_time_;
-  base::TimeTicks last_stream_pause_time_;
-  base::TimeDelta total_pause_time_;
-
   int64_t bytes_read_;
 
   int pause_count_;

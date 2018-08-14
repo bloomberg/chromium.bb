@@ -245,7 +245,6 @@ bool DownloadRequestCore::OnResponseStarted(
     const std::string& override_mime_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(20) << __func__ << "() " << DebugString();
-  download_start_time_ = base::TimeTicks::Now();
 
   download::DownloadInterruptReason result =
       request()->response_headers() ? download::HandleSuccessfulServerResponse(
@@ -361,7 +360,6 @@ bool DownloadRequestCore::OnReadCompleted(int bytes_read, bool* defer) {
   if (!stream_writer_->Write(read_buffer_, bytes_read)) {
     PauseRequest();
     *defer = was_deferred_ = true;
-    last_stream_pause_time_ = base::TimeTicks::Now();
   }
 
   read_buffer_ = nullptr;  // Drop our reference.
@@ -411,10 +409,6 @@ void DownloadRequestCore::OnResponseCompleted(
     request()->response_headers()->EnumerateHeader(nullptr, "Accept-Ranges",
                                                    &accept_ranges);
   }
-  download::RecordAcceptsRanges(accept_ranges, bytes_read_,
-                                has_strong_validators);
-  download::RecordNetworkBlockage(base::TimeTicks::Now() - download_start_time_,
-                                  total_pause_time_);
 
   // Send the info down the stream.  Conditional is in case we get
   // OnResponseCompleted without OnResponseStarted.
@@ -462,10 +456,6 @@ void DownloadRequestCore::ResumeRequest() {
     return;
 
   was_deferred_ = false;
-  if (!last_stream_pause_time_.is_null()) {
-    total_pause_time_ += (base::TimeTicks::Now() - last_stream_pause_time_);
-    last_stream_pause_time_ = base::TimeTicks();
-  }
 
   delegate_->OnReadyToRead();
 }

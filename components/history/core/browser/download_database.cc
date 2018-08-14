@@ -413,7 +413,6 @@ bool DownloadDatabase::DropDownloadTable() {
 }
 
 void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
-  SCOPED_UMA_HISTOGRAM_TIMER("Download.Database.QueryDownloadDuration");
   EnsureInProgressEntriesCleanedUp();
 
   results->clear();
@@ -488,11 +487,7 @@ void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
     } else if (info->danger_type == DownloadDangerType::INVALID) {
       dropped_reason = DROPPED_REASON_BAD_DANGER_TYPE;
     }
-    if (dropped_reason != DROPPED_REASON_MAX) {
-      UMA_HISTOGRAM_ENUMERATION("Download.DatabaseRecordDropped",
-                                dropped_reason,
-                                DROPPED_REASON_MAX + 1);
-    } else {
+    if (dropped_reason == DROPPED_REASON_MAX) {
       DCHECK(!base::ContainsKey(info_map, info->id));
       uint32_t id = info->id;
       info_map[id] = info.release();
@@ -559,7 +554,6 @@ void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
 
 bool DownloadDatabase::UpdateDownload(const DownloadRow& data) {
   // UpdateDownload() is called fairly frequently.
-  SCOPED_UMA_HISTOGRAM_TIMER("Download.Database.UpdateDownloadDuration");
   EnsureInProgressEntriesCleanedUp();
 
   DCHECK_NE(kInvalidDownloadId, data.id);
@@ -644,7 +638,6 @@ void DownloadDatabase::EnsureInProgressEntriesCleanedUp() {
 bool DownloadDatabase::CreateDownload(const DownloadRow& info) {
   DCHECK_NE(kInvalidDownloadId, info.id);
   DCHECK(!info.guid.empty());
-  SCOPED_UMA_HISTOGRAM_TIMER("Download.Database.CreateDownloadDuration");
   EnsureInProgressEntriesCleanedUp();
 
   if (info.url_chain.empty())

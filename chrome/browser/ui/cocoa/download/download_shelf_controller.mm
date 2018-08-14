@@ -334,17 +334,6 @@ const CGFloat kMDCloseButtonSize = 24;
   if ([self isVisible] == show)
     return;
 
-  if (!show) {
-    int numInProgress = 0;
-    for (NSUInteger i = 0; i < [downloadItemControllers_ count]; ++i) {
-      DownloadItem* item = [[downloadItemControllers_ objectAtIndex:i]download];
-      if (item->GetState() == DownloadItem::IN_PROGRESS)
-        ++numInProgress;
-    }
-    RecordDownloadShelfClose(
-        [downloadItemControllers_ count], numInProgress, !isUserAction);
-  }
-
   // Animate the shelf out, but not in.
   // TODO(rohitrao): We do not animate on the way in because Cocoa is already
   // doing a lot of work to set up the download arrow animation.  I've chosen to
