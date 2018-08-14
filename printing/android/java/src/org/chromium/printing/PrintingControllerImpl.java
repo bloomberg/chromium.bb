@@ -51,11 +51,6 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
 
     private PrintingContextInterface mPrintingContext;
 
-    /**
-     * The context of a query initiated by window.print(), stored here to allow syncrhonization
-     * with javascript.
-     */
-    private PrintingContextInterface mContextFromScriptInitiation;
     private int mRenderProcessId;
     private int mRenderFrameId;
 
@@ -190,7 +185,7 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
     }
 
     @Override
-    public void startPendingPrint(PrintingContextInterface printingContext) {
+    public void startPendingPrint() {
         boolean canStartPrint = false;
         if (mIsBusy) {
             Log.d(TAG, "Pending print can't be started. PrintingController is busy.");
@@ -202,12 +197,8 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
             canStartPrint = true;
         }
 
-        if (!canStartPrint) {
-            if (printingContext != null) printingContext.showSystemDialogDone();
-            return;
-        }
+        if (!canStartPrint) return;
 
-        mContextFromScriptInitiation = printingContext;
         mIsBusy = true;
         mPrintDocumentAdapterWrapper.print(mPrintManager, mPrintable.getTitle());
         mPrintManager = null;
@@ -217,7 +208,7 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
     public void startPrint(final Printable printable, PrintManagerDelegate printManager) {
         if (mIsBusy) return;
         setPendingPrint(printable, printManager, mRenderProcessId, mRenderFrameId);
-        startPendingPrint(null);
+        startPendingPrint();
     }
 
     @Override
@@ -313,10 +304,6 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
             mPrintingContext = null;
         }
 
-        if (mContextFromScriptInitiation != null) {
-            mContextFromScriptInitiation.showSystemDialogDone();
-            mContextFromScriptInitiation = null;
-        }
         mRenderProcessId = -1;
         mRenderFrameId = -1;
 

@@ -246,7 +246,7 @@ public class PrintingControllerTest {
                     new TabPrinter(currentTab), mockPrintManagerDelegate, -1, -1);
             TabModelUtils.closeCurrentTab(mActivityTestRule.getActivity().getCurrentTabModel());
             Assert.assertFalse("currentTab should be closed already.", currentTab.isInitialized());
-            printingController.startPendingPrint(null);
+            printingController.startPendingPrint();
         });
     }
 
