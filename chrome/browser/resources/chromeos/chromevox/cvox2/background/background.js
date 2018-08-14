@@ -213,11 +213,10 @@ Background.prototype = {
     var prevRange = this.currentRange_;
 
     // Specialization for math output.
-    var forceQueue = false;
+    var skipOutput = false;
     if (MathHandler.init(range)) {
-      MathHandler.instance.speak();
+      skipOutput = MathHandler.instance.speak();
       opt_focus = false;
-      forceQueue = true;
     }
 
     if (opt_focus)
@@ -286,7 +285,7 @@ Background.prototype = {
     o.withRichSpeechAndBraille(
         selectedRange || range, prevRange, Output.EventType.NAVIGATE);
 
-    o.withQueueMode(forceQueue ? cvox.QueueMode.QUEUE : cvox.QueueMode.FLUSH);
+    o.withQueueMode(cvox.QueueMode.FLUSH);
 
     if (msg)
       o.format(msg);
@@ -294,7 +293,8 @@ Background.prototype = {
     for (var prop in opt_speechProps)
       o.format('!' + prop);
 
-    o.go();
+    if (!skipOutput)
+      o.go();
   },
 
   /**

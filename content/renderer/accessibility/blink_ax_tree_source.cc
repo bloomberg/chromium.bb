@@ -903,7 +903,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
 
 // TODO(nektar): Turn off kHTMLAccessibilityMode for automation and Mac
 // and remove ifdef.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
       if (dst->role == ax::mojom::Role::kMath && element.InnerHTML().length()) {
         TruncateAndAddStringAttribute(dst,
                                       ax::mojom::StringAttribute::kInnerHtml,

@@ -1645,3 +1645,46 @@ TEST_F('BackgroundTest', 'DocumentTitleChanged', function() {
     mockFeedback.expectSpeech('New title').replay();
   });
 });
+
+TEST_F('BackgroundTest', 'MathContentViaInnerHtml', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*
+    <div role="math">
+      <semantics>
+        <mrow class="MJX-TeXAtom-ORD">
+          <mstyle displaystyle="true" scriptlevel="0">
+            <mi>a</mi>
+            <mo stretchy="false">(</mo>
+            <mi>y</mi>
+            <mo>+</mo>
+            <mi>m</mi>
+            <msup>
+              <mo stretchy="false">)</mo>
+              <mrow class="MJX-TeXAtom-ORD">
+                <mn>2</mn>
+              </mrow>
+            </msup>
+            <mo>+</mo>
+            <mi>b</mi>
+            <mo stretchy="false">(</mo>
+            <mi>y</mi>
+            <mo>+</mo>
+            <mi>m</mi>
+            <mo stretchy="false">)</mo>
+            <mo>+</mo>
+            <mi>c</mi>
+            <mo>=</mo>
+            <mn>0.</mn>
+          </mstyle>
+        </mrow>
+        <annotation encoding="application/x-tex">{\displaystyle a(y+m)^{2}+b(y+m)+c=0.}</annotation>
+      </semantics>
+    </div>
+  */}, function(root) {
+    mockFeedback
+        .call(doCmd('nextObject'))
+        .expectSpeech('a ( y + m ) squared + b ( y + m ) + c = 0 .')
+        .expectSpeech('Press up, down, left, or right to explore math.')
+        .replay();
+  });
+});
