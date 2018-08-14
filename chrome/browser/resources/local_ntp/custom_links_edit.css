@@ -46,7 +46,7 @@ body {
 }
 
 .field-title {
-  color: rgb(154, 160, 166);
+  color: rgb(95, 99, 104);
   font-size: 10px;
   font-weight: 500;
   margin-bottom: 4px;
@@ -57,7 +57,7 @@ body {
 }
 
 input {
-  background-color: rgb(232, 234, 237);
+  background-color: rgb(241, 243, 244);
   border: none;
   border-radius: 4px;
   caret-color: rgb(26, 115, 232);
