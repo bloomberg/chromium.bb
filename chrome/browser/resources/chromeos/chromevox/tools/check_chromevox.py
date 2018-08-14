@@ -46,6 +46,10 @@ _ACCESSIBILITY_PRIVATE_EXTERNS = (
     ChromeRootPath(
         'third_party/closure_compiler/externs/accessibility_private.js'))
 
+# Audio API externs file.
+_AUDIO_EXTERNS = (
+    ChromeRootPath('third_party/closure_compiler/externs/audio.js'))
+
 # Automation API externs file.
 _AUTOMATION_EXTERNS = (
     ChromeRootPath('third_party/closure_compiler/externs/automation.js'))
@@ -74,6 +78,7 @@ _COMMON_EXTERNS = [
     CVoxPath('chromevox/background/externs.js'),
     CVoxPath('host/chrome/externs.js'),
     _ACCESSIBILITY_PRIVATE_EXTERNS,
+    _AUDIO_EXTERNS,
     _AUTOMATION_EXTERNS,
     _CHROME_EXTERNS,
     _CHROME_EXTENSIONS_EXTERNS,

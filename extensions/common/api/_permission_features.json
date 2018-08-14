@@ -84,6 +84,14 @@
       "session_types": ["kiosk"]
     },
     {
+      "channel": "stable",
+      "extension_types": ["extension"],
+      "platforms": ["chromeos"],
+      "whitelist": [
+        "75C7F4B720314B6CB1B5817CD86089DB95CD2461"  // http://crbug.com/874102
+      ]
+    },
+    {
       "channel": "dev",
       "extension_types": ["platform_app"]
     },
