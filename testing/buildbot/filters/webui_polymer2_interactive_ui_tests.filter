@@ -1,0 +1,24 @@
+# crbug.com/738611: Need to test all of WebUI with Polymer 2 while the migration
+# is still ongoing.
+
+# There are overall very few WebUI interactive_ui_tests, so list them here
+# explicitly, instead of running all interactive_ui_tests.
+CrElementsActionMenuTest.All
+CrElementsCheckboxTest.All
+CrElementsInputTest.All
+CrElementsProfileAvatarSelectorFocusTest.All
+CrElementsToggleTest.All
+CrSettingsAnimatedPagesTest.All
+CrSettingsFocusRowBehavior.FocusTest
+CrSettingsSyncPageTest.All
+MaterialBookmarksFocusTest.All
+MaterialHistoryFocusTest.All
+PrintPreviewDestinationDialogInteractiveTest.FocusSearchBox
+PrintPreviewPrintHeaderInteractiveTest.FocusPrintOnReady
+SettingsUIBrowserTest.All
+
+# TODO(dpapad): The following tests are failing with optimize_webui=true. Fix
+# them and move them to the list above.
+-CrElementsActionMenuTest.All
+-CrElementsInputTest.All
+-MaterialBookmarksFocusTest.All
