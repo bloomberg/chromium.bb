@@ -14,6 +14,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -30,11 +31,12 @@ constexpr size_t kMaxTitleLength = 1024 * 1024;
 }  // namespace
 
 // static
-void BackgroundFetchServiceImpl::Create(
+void BackgroundFetchServiceImpl::CreateForWorker(
     blink::mojom::BackgroundFetchServiceRequest request,
     RenderProcessHost* render_process_host,
     const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(
@@ -42,24 +44,50 @@ void BackgroundFetchServiceImpl::Create(
           WrapRefCounted(static_cast<StoragePartitionImpl*>(
                              render_process_host->GetStoragePartition())
                              ->GetBackgroundFetchContext()),
-          origin, std::move(request)));
+          origin, nullptr /* render_frame_host */, std::move(request)));
+}
+
+// static
+void BackgroundFetchServiceImpl::CreateForFrame(
+    RenderProcessHost* render_process_host,
+    int render_frame_id,
+    blink::mojom::BackgroundFetchServiceRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  DCHECK(render_process_host);
+  auto* render_frame_host =
+      RenderFrameHost::FromID(render_process_host->GetID(), render_frame_id);
+  DCHECK(render_frame_host);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(
+          BackgroundFetchServiceImpl::CreateOnIoThread,
+          WrapRefCounted(static_cast<StoragePartitionImpl*>(
+                             render_process_host->GetStoragePartition())
+                             ->GetBackgroundFetchContext()),
+          render_frame_host->GetLastCommittedOrigin(), render_frame_host,
+          std::move(request)));
 }
 
 // static
 void BackgroundFetchServiceImpl::CreateOnIoThread(
     scoped_refptr<BackgroundFetchContext> background_fetch_context,
     url::Origin origin,
+    RenderFrameHost* render_frame_host,
     blink::mojom::BackgroundFetchServiceRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  mojo::MakeStrongBinding(
-      std::make_unique<BackgroundFetchServiceImpl>(
-          std::move(background_fetch_context), std::move(origin)),
-      std::move(request));
+
+  mojo::MakeStrongBinding(std::make_unique<BackgroundFetchServiceImpl>(
+                              std::move(background_fetch_context),
+                              std::move(origin), render_frame_host),
+                          std::move(request));
 }
 
 BackgroundFetchServiceImpl::BackgroundFetchServiceImpl(
     scoped_refptr<BackgroundFetchContext> background_fetch_context,
-    url::Origin origin)
+    url::Origin origin,
+    RenderFrameHost* render_frame_host)
     : background_fetch_context_(std::move(background_fetch_context)),
       origin_(std::move(origin)) {
   DCHECK(background_fetch_context_);

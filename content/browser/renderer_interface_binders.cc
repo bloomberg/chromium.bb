@@ -171,7 +171,7 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
             ->CreateService(origin, std::move(request));
       }));
   parameterized_binder_registry_.AddInterface(
-      base::BindRepeating(&BackgroundFetchServiceImpl::Create));
+      base::BindRepeating(&BackgroundFetchServiceImpl::CreateForWorker));
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(GetRestrictedCookieManager));
   parameterized_binder_registry_.AddInterface(
