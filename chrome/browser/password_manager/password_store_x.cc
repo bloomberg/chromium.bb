@@ -13,8 +13,11 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -66,6 +69,23 @@ std::unique_ptr<password_manager::LoginDatabase> DisableEncryption(
   return login_db;
 }
 
+// Returns the password_manager::metrics_util::LinuxBackendMigrationStatus
+// equivalent for |step|.
+password_manager::metrics_util::LinuxBackendMigrationStatus StepForMetrics(
+    PasswordStoreX::MigrationToLoginDBStep step) {
+  using password_manager::metrics_util::LinuxBackendMigrationStatus;
+  switch (step) {
+    case PasswordStoreX::NOT_ATTEMPTED:
+      return LinuxBackendMigrationStatus::kNotAttempted;
+    case PasswordStoreX::FAILED:
+      return LinuxBackendMigrationStatus::kFailed;
+    case PasswordStoreX::COPIED_ALL:
+      return LinuxBackendMigrationStatus::kCopiedAll;
+  }
+  NOTREACHED();
+  return LinuxBackendMigrationStatus::kNotAttempted;
+}
+
 }  // namespace
 
 PasswordStoreX::PasswordStoreX(
@@ -83,6 +103,10 @@ PasswordStoreX::PasswordStoreX(
                             prefs);
   migration_to_login_db_step_ =
       static_cast<MigrationToLoginDBStep>(migration_step_pref_.GetValue());
+
+  base::UmaHistogramEnumeration(
+      "PasswordManager.LinuxBackendMigration.Adoption",
+      StepForMetrics(migration_to_login_db_step_));
 }
 
 PasswordStoreX::~PasswordStoreX() {}
@@ -277,6 +301,8 @@ void PasswordStoreX::CheckMigration() {
           password_manager::features::kMigrateLinuxToLoginDB) ||
       migration_to_login_db_step_ == NOT_ATTEMPTED ||
       migration_to_login_db_step_ == FAILED) {
+    base::Time migration_to_native_started = base::Time::Now();
+
     ssize_t migrated = MigrateToNativeBackend();
 
     if (migrated > 0) {
@@ -293,11 +319,17 @@ void PasswordStoreX::CheckMigration() {
                    << "Falling back on default (unencrypted) store.";
       backend_.reset();
     }
+
+    base::UmaHistogramLongTimes(
+        "PasswordManager.LinuxBackendMigration.TimeIntoNative",
+        base::Time::Now() - migration_to_native_started);
   }
 
   if (base::FeatureList::IsEnabled(
           password_manager::features::kMigrateLinuxToLoginDB) &&
       backend_) {
+    base::Time migration_to_encrypted_started = base::Time::Now();
+
     // Clear the location of the encrypted login database, if it's not the
     // result of a successful migration.
     if (migration_to_login_db_step_ == NOT_ATTEMPTED ||
@@ -335,6 +367,10 @@ void PasswordStoreX::CheckMigration() {
         VLOG(1) << "Migration to encryption failed.";
         base::DeleteFile(encrypted_login_db_file_, false);
       }
+
+      base::UmaHistogramLongTimes(
+          "PasswordManager.LinuxBackendMigration.TimeIntoEncrypted",
+          base::Time::Now() - migration_to_encrypted_started);
     }
 
     // If the data is in the encrypted login database, serve from it.

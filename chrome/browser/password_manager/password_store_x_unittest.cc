@@ -17,11 +17,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/os_crypt/os_crypt_mocker.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -35,6 +37,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::PasswordForm;
+using password_manager::metrics_util::LinuxBackendMigrationStatus;
 using password_manager::PasswordStoreChange;
 using password_manager::PasswordStoreChangeList;
 using password_manager::UnorderedPasswordFormElementsAre;
@@ -444,6 +447,7 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
 
  protected:
   TestingPrefServiceSimple fake_pref_service_;
+  base::HistogramTester histogram_tester_;
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
@@ -695,6 +699,11 @@ TEST_P(PasswordStoreXTest, MigrationToEncryption) {
   store.reset();
   WaitForPasswordStore();
 
+  // This will report that it was migrated on the next run.
+  histogram_tester_.ExpectBucketCount(
+      "PasswordManager.LinuxBackendMigration.Adoption",
+      LinuxBackendMigrationStatus::kNotAttempted, 1);
+
   if (GetParam() == WORKING_BACKEND) {
     // Verify that the encrypted loginDB is up-to-date.
     std::vector<std::unique_ptr<PasswordForm>> stored_forms =
@@ -783,6 +792,10 @@ TEST_P(PasswordStoreXTest, MigrationToEncryption_OnlyOnce) {
   EXPECT_EQ(PasswordStoreX::COPIED_ALL, migration_step_pref_.GetValue());
   EXPECT_THAT(stored_forms, UnorderedElementsAre(Pointee(*old_credentials[4]),
                                                  Pointee(*old_credentials[5])));
+
+  histogram_tester_.ExpectBucketCount(
+      "PasswordManager.LinuxBackendMigration.Adoption",
+      LinuxBackendMigrationStatus::kCopiedAll, 1);
 }
 
 INSTANTIATE_TEST_CASE_P(NoBackend,

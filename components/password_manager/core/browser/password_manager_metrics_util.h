@@ -282,6 +282,16 @@ enum class PasswordType {
   PASSWORD_TYPE_COUNT
 };
 
+enum class LinuxBackendMigrationStatus {
+  // No migration was attempted (this value should not occur).
+  kNotAttempted = 0,
+  // The last attempt was not completed.
+  kFailed = 1,
+  // All the data is in the encrypted loginDB.
+  kCopiedAll = 2,
+  kMaxValue = kCopiedAll
+};
+
 // A version of the UMA_HISTOGRAM_BOOLEAN macro that allows the |name|
 // to vary over the program's runtime.
 void LogUMAHistogramBoolean(const std::string& name, bool sample);
