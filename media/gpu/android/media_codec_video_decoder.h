@@ -281,7 +281,8 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // Do we need a hw-secure codec?
   bool requires_secure_codec_ = false;
 
-  bool using_async_api_ = false;
+  // If non-null, we're using the asynchronous media codec API.
+  base::RepeatingClosure on_buffers_available_cb_;
 
   // Optional crypto object from the Cdm.
   base::android::ScopedJavaGlobalRef<jobject> media_crypto_;
