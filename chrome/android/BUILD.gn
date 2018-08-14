@@ -22,9 +22,6 @@ import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("channel.gni")
 import("java_sources.gni")
 import("static_initializers.gni")
-if (enable_arcore) {
-  import("//chrome/android/modules/ar/ar_module_tmpl.gni")
-}
 
 manifest_package = "org.chromium.chrome"
 
@@ -1687,14 +1684,7 @@ if (defined(expected_static_initializer_count)) {
   }
 }
 
-# Feature modules that go into Chrome Android application bundles.
-if (enable_arcore) {
-  ar_module_tmpl("ar_public_module") {
-    manifest_package = manifest_package
-  }
-}
-
-# Chrome Android application bundles.
+# Generate application bundles if possible.
 android_app_bundle("chrome_public_bundle") {
   bundle_name = "ChromePublicBundle"
   base_module_target = ":chrome_public_base_module"
@@ -1719,14 +1709,5 @@ android_app_bundle("monochrome_public_bundle") {
     # TODO(crbug.com/868770): Address proguard version skew.
     proguard_enabled = true
     proguard_jar_path = "//third_party/proguard/lib/proguard.6.0.3.jar"
-    proguard_android_sdk_dep = webview_framework_dep
-  }
-  if (enable_arcore) {
-    extra_modules = [
-      {
-        name = "ar"
-        module_target = ":ar_public_module"
-      },
-    ]
   }
 }
