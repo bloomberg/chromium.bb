@@ -33,8 +33,16 @@ const wchar_t* kMFDeviceName2 = L"Device 2";
 const wchar_t* kMFDeviceId5 = L"\\\\?\\usb#vid_0005&pid_0005&mi_00";
 const wchar_t* kMFDeviceName5 = L"Dazzle";
 
+const wchar_t* kMFDeviceId6 = L"\\\\?\\usb#vid_eb1a&pid_2860&mi_00";
+const wchar_t* kMFDeviceName6 = L"Empia Device";
+
 void GetMFSupportedFormats(const VideoCaptureDeviceDescriptor& device,
-                           VideoCaptureFormats* formats) {}
+                           VideoCaptureFormats* formats) {
+  if (device.device_id == base::SysWideToUTF8(kMFDeviceId6)) {
+    VideoCaptureFormat arbitrary_format;
+    formats->emplace_back(arbitrary_format);
+  }
+}
 
 // DirectShow devices
 const wchar_t* kDirectShowDeviceId0 = L"\\\\?\\usb#vid_0000&pid_0000&mi_00";
@@ -51,6 +59,9 @@ const wchar_t* kDirectShowDeviceName4 = L"Virtual Camera";
 
 const wchar_t* kDirectShowDeviceId5 = L"\\\\?\\usb#vid_0005&pid_0005&mi_00#5";
 const wchar_t* kDirectShowDeviceName5 = L"Dazzle";
+
+const wchar_t* kDirectShowDeviceId6 = L"\\\\?\\usb#vid_eb1a&pid_2860&mi_00";
+const wchar_t* kDirectShowDeviceName6 = L"Empia Device";
 
 void GetDirectShowSupportedFormats(const VideoCaptureDeviceDescriptor& device,
                                    VideoCaptureFormats* formats) {
@@ -426,7 +437,8 @@ HRESULT __stdcall MockMFEnumDeviceSources(IMFAttributes* attributes,
       new MockMFActivate(kMFDeviceId0, kMFDeviceName0, true, false),
       new MockMFActivate(kMFDeviceId1, kMFDeviceName1, true, true),
       new MockMFActivate(kMFDeviceId2, kMFDeviceName2, false, true),
-      new MockMFActivate(kMFDeviceId5, kMFDeviceName5, true, false)};
+      new MockMFActivate(kMFDeviceId5, kMFDeviceName5, true, false),
+      new MockMFActivate(kMFDeviceId6, kMFDeviceName6, true, false)};
   // Iterate once to get the match count and check for errors.
   *count = 0U;
   HRESULT hr;
@@ -456,7 +468,8 @@ HRESULT EnumerateStubDirectShowDevices(IEnumMoniker** enum_moniker) {
       new StubMoniker(kDirectShowDeviceId1, kDirectShowDeviceName1),
       new StubMoniker(kDirectShowDeviceId3, kDirectShowDeviceName3),
       new StubMoniker(kDirectShowDeviceId4, kDirectShowDeviceName4),
-      new StubMoniker(kDirectShowDeviceId5, kDirectShowDeviceName5)};
+      new StubMoniker(kDirectShowDeviceId5, kDirectShowDeviceName5),
+      new StubMoniker(kDirectShowDeviceId6, kDirectShowDeviceName6)};
 
   StubEnumMoniker* stub_enum_moniker = new StubEnumMoniker();
   for (StubMoniker* moniker : monikers)
@@ -511,7 +524,7 @@ TEST_F(VideoCaptureDeviceFactoryMFWinTest, GetDeviceDescriptors) {
       base::BindRepeating(&EnumerateStubDirectShowDevices));
   VideoCaptureDeviceDescriptors descriptors;
   factory_.GetDeviceDescriptors(&descriptors);
-  EXPECT_EQ(descriptors.size(), 6U);
+  EXPECT_EQ(descriptors.size(), 7U);
   for (auto it = descriptors.begin(); it != descriptors.end(); it++) {
     // Verify that there are no duplicates.
     EXPECT_EQ(FindDescriptorInRange(descriptors.begin(), it, it->device_id),
@@ -555,6 +568,15 @@ TEST_F(VideoCaptureDeviceFactoryMFWinTest, GetDeviceDescriptors) {
   EXPECT_NE(it, descriptors.end());
   EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_DIRECT_SHOW);
   EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kDirectShowDeviceName5));
+
+  // Devices that are listed in both MediaFoundation and DirectShow but are
+  // blacklisted for use with MediaFoundation are expected to get enumerated
+  // with VideoCaptureApi::WIN_DIRECT_SHOW.
+  it = FindDescriptorInRange(descriptors.begin(), descriptors.end(),
+                             base::SysWideToUTF8(kDirectShowDeviceId6));
+  EXPECT_NE(it, descriptors.end());
+  EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_DIRECT_SHOW);
+  EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kDirectShowDeviceName6));
 }
 
 }  // namespace media
