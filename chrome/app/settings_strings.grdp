@@ -2637,10 +2637,10 @@
     Enables the Assistant to show you related info, apps, and actions.
   </message>
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD" desc="Title for a toggle that lets the assistant detect hotword.">
-    "OK Google" detection
+    "Ok Google" detection
   </message>
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_DESCRIPTION" desc="Sub label for hotword-enable toggle.">
-    Access your Assistant any time you say "OK Google" when your screen is on.
+    Access your Assistant any time you say "Ok Google" when your screen is on.
   </message>
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_NOTIFICATION" desc="Title for a toggle that lets the assistant show you notifications.">
     Let Assistant show you notifications
