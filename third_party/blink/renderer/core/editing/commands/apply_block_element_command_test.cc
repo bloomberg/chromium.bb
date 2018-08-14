@@ -129,4 +129,20 @@ TEST_F(ApplyBlockElementCommandTest, InsertPlaceHolderAtDisconnectedPosition) {
       GetSelectionTextFromBody());
 }
 
+// https://crbug.com/873084
+TEST_F(ApplyBlockElementCommandTest, FormatBlockCrossingUserModifyBoundary) {
+  InsertStyleElement("*{-webkit-user-modify:read-write}");
+  Selection().SetSelection(
+      SetSelectionTextToBody(
+          "^<b style=\"-webkit-user-modify:read-only\"><button></button></b>|"),
+      SetSelectionOptions());
+  FormatBlockCommand* command =
+      FormatBlockCommand::Create(GetDocument(), HTMLNames::preTag);
+  // Shouldn't crash here.
+  EXPECT_FALSE(command->Apply());
+  EXPECT_EQ(
+      "^<b style=\"-webkit-user-modify:read-only\"><button>|</button></b>",
+      GetSelectionTextFromBody());
+}
+
 }  // namespace blink
