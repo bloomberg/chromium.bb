@@ -122,11 +122,6 @@ omap_drm.h (living in $TOP/omap)
  - License mismatch, missing DRM_IOCTL_OMAP_GEM_NEW and related struct
 Status: ?
 
-msm_drm.h (located in $TOP/freedreno/msm/)
- - License mismatch, missing MSM_PIPE_*, MSM_SUBMIT_*. Renamed
-drm_msm_gem_submit::flags, missing drm_msm_gem_submit::fence_fd.
-Status: ?
-
 exynos_drm.h (living in $TOP/exynos)
  - License mismatch, now using fixed size ints (but not everywhere). Lots of
 new stuff.
