@@ -80,8 +80,8 @@ v8::Local<v8::Value> V8AbstractEventListener::GetListenerOrNull(
     EventListener* listener) {
   if (listener && listener->GetType() == kJSEventListenerType) {
     v8::Local<v8::Object> v8_listener =
-        static_cast<V8AbstractEventListener*>(listener)->GetListenerObject(
-            event_target->GetExecutionContext());
+        static_cast<V8AbstractEventListener*>(listener)
+            ->GetListenerObjectInternal(event_target->GetExecutionContext());
     if (!v8_listener.IsEmpty())
       return v8_listener;
   }

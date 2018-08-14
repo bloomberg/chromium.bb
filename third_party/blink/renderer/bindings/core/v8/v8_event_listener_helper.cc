@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/custom_wrappable_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_error_handler.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener_or_event_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_window.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 
@@ -58,7 +59,7 @@ ListenerType* GetEventListenerInternal(
 }  // namespace
 
 // static
-V8AbstractEventListener* V8EventListenerHelper::GetEventListener(
+EventListener* V8EventListenerHelper::GetEventListener(
     ScriptState* script_state,
     v8::Local<v8::Value> value,
     bool is_attribute,
@@ -86,7 +87,7 @@ V8AbstractEventListener* V8EventListenerHelper::GetEventListener(
 }
 
 // static
-V8ErrorHandler* V8EventListenerHelper::EnsureErrorHandler(
+EventListener* V8EventListenerHelper::EnsureErrorHandler(
     ScriptState* script_state,
     v8::Local<v8::Value> value) {
   if (!value->IsObject())

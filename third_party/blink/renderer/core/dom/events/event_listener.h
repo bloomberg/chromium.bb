@@ -29,6 +29,7 @@
 
 namespace blink {
 
+class DOMWrapperWorld;
 class Event;
 class ExecutionContext;
 
@@ -50,6 +51,16 @@ class CORE_EXPORT EventListener : public CustomWrappableAdapter {
     return false;
   }
   virtual bool IsAttribute() const { return false; }
+
+  // Only DevTools is allowed to use this method.
+  // This method may return an empty handle.
+  virtual v8::Local<v8::Object> GetListenerObjectForInspector(
+      ExecutionContext* execution_context) {
+    return v8::Local<v8::Object>();
+  }
+
+  // Only DevTools is allowed to use this method.
+  virtual DOMWrapperWorld* GetWorldForInspector() const { return nullptr; }
 
   ListenerType GetType() const { return type_; }
 
