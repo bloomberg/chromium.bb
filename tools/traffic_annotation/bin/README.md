@@ -2,8 +2,9 @@
 We do not want every developer to have to build clang, and so we store pre-built
 binaries in a Google Cloud Storage bucket and retrieve them via gclient hooks.
 
-To roll new versions of the binaries, assuming you have write access
-to the chromium-tools-traffic_annotation bucket, run:
+To roll new versions of the binaries, you need to have write access to the
+chromium-tools-traffic_annotation bucket. If you don't, contact the OWNERS list
+in this folder, otherwise run:
 
 # On Linux:
 ```bash
