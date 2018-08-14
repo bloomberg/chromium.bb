@@ -146,9 +146,6 @@ bool MessageLoopTaskRunner::AddToIncomingQueue(const Location& from_here,
   }
 #endif
 
-  if (!delay.is_zero())
-    UMA_HISTOGRAM_LONG_TIMES("MessageLoop.DelayedTaskQueue.PostedDelay", delay);
-
   bool did_queue_task = false;
   bool was_empty;
   {
