@@ -701,8 +701,14 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
       ShouldSniffContent(url_request_.get(), response_.get())) {
     is_more_mime_sniffing_needed_ = true;
   }
-  if (!is_more_mime_sniffing_needed_ && !is_more_corb_sniffing_needed_)
+  if (!is_more_mime_sniffing_needed_ && !is_more_corb_sniffing_needed_) {
+    // Treat feed types as text/plain.
+    if (response_->head.mime_type == "application/rss+xml" ||
+        response_->head.mime_type == "application/atom+xml") {
+      response_->head.mime_type.assign("text/plain");
+    }
     SendResponseToClient();
+  }
 
   // Start reading...
   ReadMore();
