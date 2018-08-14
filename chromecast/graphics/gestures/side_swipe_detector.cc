@@ -57,7 +57,8 @@ SideSwipeDetector::SideSwipeDetector(CastGestureHandler* gesture_handler,
       bottom_gesture_start_height_(BottomGestureStartHeight()),
       gesture_handler_(gesture_handler),
       root_window_(root_window),
-      current_swipe_(CastSideSwipeOrigin::NONE) {
+      current_swipe_(CastSideSwipeOrigin::NONE),
+      current_pointer_id_(ui::PointerDetails::kUnknownPointerId) {
   DCHECK(gesture_handler);
   DCHECK(root_window);
   root_window_->GetHost()->GetEventSource()->AddEventRewriter(this);
@@ -135,6 +136,7 @@ ui::EventRewriteStatus SideSwipeDetector::RewriteEvent(
     }
 
     current_swipe_ = side_swipe_origin;
+    current_pointer_id_ = touch_event->pointer_details().id;
 
     // Let the subscribers know about the gesture begin.
     gesture_handler_->HandleSideSwipeBegin(side_swipe_origin, touch_location);
@@ -154,8 +156,14 @@ ui::EventRewriteStatus SideSwipeDetector::RewriteEvent(
     return ui::EVENT_REWRITE_DISCARD;
   }
 
+  // If no swipe in progress, just move on.
   if (current_swipe_ == CastSideSwipeOrigin::NONE) {
     return ui::EVENT_REWRITE_CONTINUE;
+  }
+
+  // If the finger involved is not the one we're looking for, discard it.
+  if (touch_event->pointer_details().id != current_pointer_id_) {
+    return ui::EVENT_REWRITE_DISCARD;
   }
 
   // A swipe is in progress, or has completed, so stop propagation of underlying
@@ -170,6 +178,7 @@ ui::EventRewriteStatus SideSwipeDetector::RewriteEvent(
             << touch_location.ToString();
     gesture_handler_->HandleSideSwipeEnd(current_swipe_, touch_location);
     current_swipe_ = CastSideSwipeOrigin::NONE;
+    current_pointer_id_ = ui::PointerDetails::kUnknownPointerId;
 
     // If the finger is still inside the touch margin at release, this is not
     // really a side swipe. Start streaming out events we stashed for later

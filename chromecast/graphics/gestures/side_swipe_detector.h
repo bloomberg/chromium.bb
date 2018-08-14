@@ -49,6 +49,7 @@ class SideSwipeDetector : public ui::EventRewriter {
   CastGestureHandler* gesture_handler_;
   aura::Window* root_window_;
   CastSideSwipeOrigin current_swipe_;
+  ui::PointerId current_pointer_id_;
   base::ElapsedTimer current_swipe_time_;
 
   std::deque<ui::TouchEvent> stashed_events_;
