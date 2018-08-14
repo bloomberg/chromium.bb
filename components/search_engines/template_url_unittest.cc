@@ -1666,9 +1666,10 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
                                                         search_terms_data_);
   EXPECT_EQ("http://bar/_/contextualsearch?", result);
 
-  // Test the current common case, which uses no home country.
-  TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(2, 1,
-                                                                 std::string());
+  // Test the current common case, which uses no home country or previous
+  // event.
+  TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
+      2, 1, std::string(), 0, 0);
   search_terms_args.contextual_search_params = params;
   result = url.url_ref().ReplaceSearchTerms(search_terms_args,
                                             search_terms_data_);
@@ -1678,9 +1679,10 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
       "ctxsl_coca=1",
       result);
 
-  // Test the home country case.
+  // Test the home country and non-zero event data case.
   search_terms_args.contextual_search_params =
-      TemplateURLRef::SearchTermsArgs::ContextualSearchParams(2, 2, "CH");
+      TemplateURLRef::SearchTermsArgs::ContextualSearchParams(2, 2, "CH",
+                                                              1657713458, 5);
   result =
       url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_);
 
@@ -1688,7 +1690,9 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
       "http://bar/_/contextualsearch?"
       "ctxs=2&"
       "ctxsl_coca=2&"
-      "ctxs_hc=CH",
+      "ctxs_hc=CH&"
+      "ctxsl_pid=1657713458&"
+      "ctxsl_per=5",
       result);
 }
 

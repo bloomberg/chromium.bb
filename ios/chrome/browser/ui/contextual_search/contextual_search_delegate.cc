@@ -273,7 +273,7 @@ std::string ContextualSearchDelegate::GetSearchTermResolutionUrlString(
 
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
       kContextualSearchRequestVersion, kContextualCardsNoIntegration,
-      std::string());
+      std::string(), 0L, 0);
 
   search_terms_args.contextual_search_params = params;
 
