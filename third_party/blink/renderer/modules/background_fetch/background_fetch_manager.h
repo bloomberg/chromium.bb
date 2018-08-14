@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCH_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCH_MANAGER_H_
 
+#include "base/time/time.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
@@ -77,12 +78,15 @@ class MODULES_EXPORT BackgroundFetchManager final
                     ScriptPromiseResolver* resolver,
                     const SkBitmap& icon);
   void DidFetch(ScriptPromiseResolver* resolver,
+                base::Time time_started,
                 mojom::blink::BackgroundFetchError error,
                 BackgroundFetchRegistration* registration);
   void DidGetRegistration(ScriptPromiseResolver* script_state,
+                          base::Time time_started,
                           mojom::blink::BackgroundFetchError error,
                           BackgroundFetchRegistration* registration);
   void DidGetDeveloperIds(ScriptPromiseResolver* script_state,
+                          base::Time time_started,
                           mojom::blink::BackgroundFetchError error,
                           const Vector<String>& developer_ids);
 
