@@ -680,7 +680,8 @@ void DriveInternalsWebUIHandler::UpdateGCacheContentsSection() {
 
   // Start updating the GCache contents section.
   Profile* profile = Profile::FromWebUI(web_ui());
-  const base::FilePath root_path = drive::util::GetCacheRootPath(profile);
+  const base::FilePath root_path =
+      drive::util::GetCacheRootPath(profile).DirName();
   base::ListValue* gcache_contents = new base::ListValue;
   base::DictionaryValue* gcache_summary = new base::DictionaryValue;
   base::PostTaskWithTraitsAndReply(
