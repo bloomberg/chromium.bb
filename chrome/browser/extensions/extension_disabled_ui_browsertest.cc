@@ -8,6 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -29,6 +30,7 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -229,19 +231,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
   // Install extension v1.
   InstallIncreasingPermissionExtensionV1();
 
-  // Note: This interceptor gets requests on the IO thread.
-  net::LocalHostTestURLRequestInterceptor interceptor(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-      base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
-  interceptor.SetResponseIgnoreQuery(
-      GURL("http://localhost/autoupdate/updates.xml"),
-      test_data_dir_.AppendASCII("permissions_increase")
-                    .AppendASCII("updates.xml"));
-  interceptor.SetResponseIgnoreQuery(
-      GURL("http://localhost/autoupdate/v2.crx"),
-      scoped_temp_dir_.GetPath().AppendASCII("permissions2.crx"));
+  content::URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](content::URLLoaderInterceptor::RequestParams* params) {
+        std::string path = params->url_request.url.path();
+        if (path == "/autoupdate/updates.xml") {
+          content::URLLoaderInterceptor::WriteResponse(
+              test_data_dir_.AppendASCII("permissions_increase")
+                  .AppendASCII("updates.xml"),
+              params->client.get());
+          return true;
+        } else if (path == "/autoupdate/v2.crx") {
+          content::URLLoaderInterceptor::WriteResponse(
+              scoped_temp_dir_.GetPath().AppendASCII("permissions2.crx"),
+              params->client.get());
+          return true;
+        }
+        return false;
+      }));
 
   sync_service->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
@@ -270,19 +276,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
 IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, RemoteInstall) {
   static const char extension_id[] = "pgdpcfcocojkjfbgpiianjngphoopgmo";
 
-  // Note: This interceptor gets requests on the IO thread.
-  net::LocalHostTestURLRequestInterceptor interceptor(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-      base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
-  interceptor.SetResponseIgnoreQuery(
-      GURL("http://localhost/autoupdate/updates.xml"),
-      test_data_dir_.AppendASCII("permissions_increase")
-          .AppendASCII("updates.xml"));
-  interceptor.SetResponseIgnoreQuery(
-      GURL("http://localhost/autoupdate/v2.crx"),
-      scoped_temp_dir_.GetPath().AppendASCII("permissions2.crx"));
+  content::URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](content::URLLoaderInterceptor::RequestParams* params) {
+        std::string path = params->url_request.url.path();
+        if (path == "/autoupdate/updates.xml") {
+          content::URLLoaderInterceptor::WriteResponse(
+              test_data_dir_.AppendASCII("permissions_increase")
+                  .AppendASCII("updates.xml"),
+              params->client.get());
+          return true;
+        } else if (path == "/autoupdate/v2.crx") {
+          content::URLLoaderInterceptor::WriteResponse(
+              scoped_temp_dir_.GetPath().AppendASCII("permissions2.crx"),
+              params->client.get());
+          return true;
+        }
+        return false;
+      }));
 
   sync_pb::EntitySpecifics specifics;
   specifics.mutable_extension()->set_id(extension_id);

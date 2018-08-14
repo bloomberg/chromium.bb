@@ -6,8 +6,6 @@
 # See https://crbug.com/769401
 
 # Uncategorized timeouts or test failures.
--ExtensionDisabledGlobalErrorTest.HigherPermissionsFromSync
--ExtensionDisabledGlobalErrorTest.RemoteInstall
 -ExtensionUnloadBrowserTest.UnloadWithContentScripts
 -ProxySettingsApiTest.ProxyEventsInvalidProxy
 -RegisterProtocolHandlerBrowserTest.CustomHandler
