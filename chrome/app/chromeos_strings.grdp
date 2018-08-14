@@ -5103,7 +5103,7 @@
     The Linux container didn't start. Please try again.
   </message>
   <message name="IDS_CROSTINI_INSTALLER_FETCH_SSH_KEYS_ERROR" desc="Text shown in the Crostini installer dialog when there is an error fetching ssh keys">
-    Error configuring the Linux container to access files. Please try again.
+    Error configuring Linux files. Please try again.
   </message>
   <message name="IDS_CROSTINI_INSTALLER_MOUNT_CONTAINER_ERROR" desc="Text shown in the Crostini installer dialog when the container ssh mount fails">
     Error mounting Linux files. Please try again.
