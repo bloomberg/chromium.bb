@@ -34,19 +34,6 @@ const int kWaveHeaderSizeBytes = 44;
 const base::FilePath::CharType kBaseFilename[] =
     FILE_PATH_LITERAL("audio_debug");
 
-// Get the ID for the render process host when there should only be one.
-bool GetRenderProcessHostId(base::ProcessId* id) {
-  content::RenderProcessHost::iterator it(
-      content::RenderProcessHost::AllHostsIterator());
-  *id = it.GetCurrentValue()->GetProcess().Pid();
-  EXPECT_NE(base::kNullProcessId, *id);
-  if (*id == base::kNullProcessId)
-    return false;
-  it.Advance();
-  EXPECT_TRUE(it.IsAtEnd());
-  return it.IsAtEnd();
-}
-
 // Get the expected AEC dump file name. The name will be
 // <temporary path>.<render process id>.aec_dump.<consumer id>, for example
 // "/tmp/.com.google.Chrome.Z6UC3P.12345.aec_dump.1".
@@ -183,8 +170,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   }
 
   // Verify that the expected AEC dump file exists and contains some data.
-  base::ProcessId render_process_id = base::kNullProcessId;
-  EXPECT_TRUE(GetRenderProcessHostId(&render_process_id));
+  base::ProcessId render_process_id =
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetProcess().Pid();
   base::FilePath file_path =
       GetExpectedAecDumpFileName(base_file_path, render_process_id);
   EXPECT_TRUE(base::PathExists(file_path));
