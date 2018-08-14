@@ -101,8 +101,11 @@ void TestURLRequestContext::Init() {
         std::unique_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
   }
   // In-memory cookie store.
-  if (!cookie_store())
-    context_storage_.set_cookie_store(std::make_unique<CookieMonster>(nullptr));
+  if (!cookie_store()) {
+    context_storage_.set_cookie_store(std::make_unique<CookieMonster>(
+        nullptr /* store */, nullptr /* channel_id_service */,
+        nullptr /* netlog */));
+  }
 
   // In-memory Channel ID service.  Must be created before the
   // HttpNetworkSession.

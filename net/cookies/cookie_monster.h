@@ -131,18 +131,19 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // class will take care of initializing it. The backing store is NOT owned by
   // this class, but it must remain valid for the duration of the cookie
   // monster's existence. If |store| is NULL, then no backing store will be
-  // updated.
-  explicit CookieMonster(scoped_refptr<PersistentCookieStore> store);
-
-  // Like above, but includes a non-owning pointer |channel_id_service| for the
+  // updated. |channel_id_service| is a non-owninng pointer for the
   // corresponding ChannelIDService used with this CookieStore. The
-  // |channel_id_service| must outlive the CookieMonster.
+  // |channel_id_service| must outlive the CookieMonster. |net_log| must outlive
+  // the CookieMonster. Both |channel_id_service| and |net_log| can be null.
   CookieMonster(scoped_refptr<PersistentCookieStore> store,
-                ChannelIDService* channel_id_service);
+                ChannelIDService* channel_id_service,
+                NetLog* net_log);
 
   // Only used during unit testing.
+  // |net_log| must outlive the CookieMonster.
   CookieMonster(scoped_refptr<PersistentCookieStore> store,
-                base::TimeDelta last_access_threshold);
+                base::TimeDelta last_access_threshold,
+                NetLog* net_log);
 
   ~CookieMonster() override;
 
@@ -214,7 +215,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
  private:
   CookieMonster(scoped_refptr<PersistentCookieStore> store,
                 ChannelIDService* channel_id_service,
-                base::TimeDelta last_access_threshold);
+                base::TimeDelta last_access_threshold,
+                NetLog* net_log);
 
   // For garbage collection constants.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestHostGarbageCollection);

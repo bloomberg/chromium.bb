@@ -51,9 +51,12 @@ scoped_refptr<net::SQLitePersistentCookieStore> CreatePersistentCookieStore(
 // Creates a CookieMonster configured by |config|.
 std::unique_ptr<net::CookieMonster> CreateCookieMonster(
     const CookieStoreConfig& config) {
+  // TODO(crbug.com/801910): Hook up logging by passing in a non-null netlog.
   if (config.path.empty()) {
     // Empty path means in-memory store.
-    return std::make_unique<net::CookieMonster>(nullptr);
+    return std::make_unique<net::CookieMonster>(
+        nullptr /* store */, nullptr /* channel_id_service */,
+        nullptr /* netlog */);
   }
 
   const bool restore_old_session_cookies =
@@ -61,8 +64,9 @@ std::unique_ptr<net::CookieMonster> CreateCookieMonster(
   scoped_refptr<net::SQLitePersistentCookieStore> persistent_store =
       CreatePersistentCookieStore(config.path, restore_old_session_cookies,
                                   config.crypto_delegate);
-  std::unique_ptr<net::CookieMonster> cookie_monster(
-      new net::CookieMonster(persistent_store.get()));
+  std::unique_ptr<net::CookieMonster> cookie_monster(new net::CookieMonster(
+      persistent_store.get(), nullptr /* channel_id_service */,
+      nullptr /* netlog */));
   if (restore_old_session_cookies)
     cookie_monster->SetPersistSessionCookies(true);
   return cookie_monster;

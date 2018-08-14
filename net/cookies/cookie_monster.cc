@@ -350,33 +350,30 @@ size_t CountCookiesForPossibleDeletion(
 
 }  // namespace
 
-CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store)
-    : CookieMonster(
-          std::move(store),
-          nullptr,
-          base::TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)) {}
-
 CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
-                             ChannelIDService* channel_id_service)
+                             ChannelIDService* channel_id_service,
+                             NetLog* net_log)
     : CookieMonster(
           std::move(store),
           channel_id_service,
-          base::TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)) {}
+          base::TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds),
+          net_log) {}
 
 CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
-                             base::TimeDelta last_access_threshold)
-    : CookieMonster(std::move(store), nullptr, last_access_threshold) {}
+                             base::TimeDelta last_access_threshold,
+                             NetLog* net_log)
+    : CookieMonster(std::move(store), nullptr, last_access_threshold, net_log) {
+}
 
 CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
                              ChannelIDService* channel_id_service,
-                             base::TimeDelta last_access_threshold)
+                             base::TimeDelta last_access_threshold,
+                             NetLog* net_log)
     : initialized_(false),
       started_fetching_all_cookies_(false),
       finished_fetching_all_cookies_(false),
       seen_global_task_(false),
-      // TODO(https://crbug.com/801910): Hook up Cookies logging by using a
-      // non-null NetLog.
-      net_log_(NetLogWithSource::Make(nullptr, NetLogSourceType::COOKIE_STORE)),
+      net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::COOKIE_STORE)),
       store_(std::move(store)),
       last_access_threshold_(last_access_threshold),
       channel_id_service_(channel_id_service),

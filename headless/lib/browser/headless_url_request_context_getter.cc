@@ -137,8 +137,9 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
         user_data_path_.Append(FILE_PATH_LITERAL("Cookies")), false, true,
         NULL);
     cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
+    // TODO(crbug.com/801910): Hook up logging by passing in a non-null netlog.
     std::unique_ptr<net::CookieStore> cookie_store =
-        CreateCookieStore(cookie_config);
+        CreateCookieStore(cookie_config, nullptr /* netlog*/);
     std::unique_ptr<net::ChannelIDService> channel_id_service =
         std::make_unique<net::ChannelIDService>(
             new net::DefaultChannelIDStore(nullptr));

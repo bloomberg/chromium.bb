@@ -67,12 +67,14 @@ CookieStoreConfig::~CookieStoreConfig() {
 }
 
 std::unique_ptr<net::CookieStore> CreateCookieStore(
-    const CookieStoreConfig& config) {
+    const CookieStoreConfig& config,
+    net::NetLog* net_log) {
   std::unique_ptr<net::CookieMonster> cookie_monster;
 
   if (config.path.empty()) {
     // Empty path means in-memory store.
-    cookie_monster.reset(new net::CookieMonster(nullptr));
+    cookie_monster = std::make_unique<net::CookieMonster>(
+        nullptr /* store */, nullptr /* channel_id_service */, net_log);
   } else {
     scoped_refptr<base::SequencedTaskRunner> client_task_runner =
         config.client_task_runner;
@@ -100,8 +102,8 @@ std::unique_ptr<net::CookieStore> CreateCookieStore(
             sqlite_store.get(),
             config.storage_policy.get());
 
-    cookie_monster.reset(new net::CookieMonster(persistent_store,
-                                                config.channel_id_service));
+    cookie_monster = std::make_unique<net::CookieMonster>(
+        persistent_store, config.channel_id_service, net_log);
     if (config.persist_session_cookies)
       cookie_monster->SetPersistSessionCookies(true);
   }
