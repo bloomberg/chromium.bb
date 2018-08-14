@@ -1475,6 +1475,14 @@ void HTMLCanvasElement::ReplaceExisting2dLayerBridge(
   UpdateMemoryUsage();
 }
 
+CanvasResourceProvider* HTMLCanvasElement::GetOrCreateCanvasResourceProvider(
+    AccelerationHint hint) {
+  if (Is2d())
+    return GetOrCreateCanvas2DLayerBridge()->GetOrCreateResourceProvider(hint);
+
+  return CanvasRenderingContextHost::GetOrCreateCanvasResourceProvider(hint);
+}
+
 bool HTMLCanvasElement::HasImageBitmapContext() const {
   if (!context_)
     return false;

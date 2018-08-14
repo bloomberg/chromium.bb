@@ -214,6 +214,8 @@ class CORE_EXPORT HTMLCanvasElement final
   unsigned GetMSAASampleCountFor2dContext() const override;
   SkFilterQuality FilterQuality() const override;
   bool LowLatencyEnabled() const override { return !!frame_dispatcher_; }
+  CanvasResourceProvider* GetOrCreateCanvasResourceProvider(
+      AccelerationHint hint) override;
 
   void DisableAcceleration(std::unique_ptr<Canvas2DLayerBridge>
                                unaccelerated_bridge_used_for_testing = nullptr);

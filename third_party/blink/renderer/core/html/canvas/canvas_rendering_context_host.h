@@ -79,8 +79,10 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
 
   // Partial CanvasResourceHost implementation
   void RestoreCanvasMatrixClipStack(cc::PaintCanvas*) const final;
-  CanvasResourceProvider* GetOrCreateCanvasResourceProvider(
+  CanvasResourceProvider* GetOrCreateCanvasResourceProviderImpl(
       AccelerationHint hint) final;
+  CanvasResourceProvider* GetOrCreateCanvasResourceProvider(
+      AccelerationHint hint) override;
 
   bool Is3d() const;
   bool Is2d() const;
