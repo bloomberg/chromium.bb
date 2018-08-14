@@ -65,9 +65,7 @@ namespace base {
 using SamplingParams = StackSamplingProfiler::SamplingParams;
 using Frame = StackSamplingProfiler::Frame;
 using Frames = std::vector<Frame>;
-using InternalFrame = StackSamplingProfiler::InternalFrame;
-using InternalFrames = std::vector<InternalFrame>;
-using InternalFrameSets = std::vector<std::vector<InternalFrame>>;
+using FrameSets = std::vector<std::vector<Frame>>;
 
 namespace {
 
@@ -277,12 +275,11 @@ NOINLINE const void* TargetThread::GetProgramCounter() {
 #endif
 }
 
-// Profile consists of a set of internal frame sets and other sampling
-// information.
+// Profile consists of a set of frame sets and other sampling information.
 struct Profile {
   Profile() = default;
   Profile(Profile&& other) = default;
-  Profile(const InternalFrameSets& frame_sets,
+  Profile(const FrameSets& frame_sets,
           int annotation_count,
           TimeDelta profile_duration,
           TimeDelta sampling_period);
@@ -291,8 +288,8 @@ struct Profile {
 
   Profile& operator=(Profile&& other) = default;
 
-  // The collected internal frame sets.
-  InternalFrameSets frame_sets;
+  // The collected frame sets.
+  FrameSets frame_sets;
 
   // The number of invocations of RecordAnnotations().
   int annotation_count;
@@ -304,7 +301,7 @@ struct Profile {
   TimeDelta sampling_period;
 };
 
-Profile::Profile(const InternalFrameSets& frame_sets,
+Profile::Profile(const FrameSets& frame_sets,
                  int annotation_count,
                  TimeDelta profile_duration,
                  TimeDelta sampling_period)
@@ -318,7 +315,7 @@ Profile::Profile(const InternalFrameSets& frame_sets,
 // this should run as quickly as possible.
 using ProfileCompletedCallback = Callback<void(Profile)>;
 
-// TestProfileBuilder collects internal frames produced by the profiler.
+// TestProfileBuilder collects frames produced by the profiler.
 class TestProfileBuilder : public StackSamplingProfiler::ProfileBuilder {
  public:
   TestProfileBuilder(const ProfileCompletedCallback& callback);
@@ -327,13 +324,13 @@ class TestProfileBuilder : public StackSamplingProfiler::ProfileBuilder {
 
   // StackSamplingProfiler::ProfileBuilder:
   void RecordAnnotations() override;
-  void OnSampleCompleted(InternalFrames internal_frames) override;
+  void OnSampleCompleted(Frames frames) override;
   void OnProfileCompleted(TimeDelta profile_duration,
                           TimeDelta sampling_period) override;
 
  private:
-  // The sets of internal frames recorded.
-  std::vector<InternalFrames> frame_sets_;
+  // The sets of frames recorded.
+  std::vector<Frames> frame_sets_;
 
   // The number of invocations of RecordAnnotations().
   int annotation_count_ = 0;
@@ -353,8 +350,8 @@ void TestProfileBuilder::RecordAnnotations() {
   ++annotation_count_;
 }
 
-void TestProfileBuilder::OnSampleCompleted(InternalFrames internal_frames) {
-  frame_sets_.push_back(std::move(internal_frames));
+void TestProfileBuilder::OnSampleCompleted(Frames frames) {
+  frame_sets_.push_back(std::move(frames));
 }
 
 void TestProfileBuilder::OnProfileCompleted(TimeDelta profile_duration,
@@ -473,11 +470,11 @@ std::vector<std::unique_ptr<TestProfilerInfo>> CreateProfilers(
   return profilers;
 }
 
-// Captures internal frames as specified by |params| on the TargetThread, and
-// returns them. Waits up to |profiler_wait_time| for the profiler to complete.
-InternalFrameSets CaptureFrameSets(const SamplingParams& params,
-                                   TimeDelta profiler_wait_time) {
-  InternalFrameSets frame_sets;
+// Captures frames as specified by |params| on the TargetThread, and returns
+// them. Waits up to |profiler_wait_time| for the profiler to complete.
+FrameSets CaptureFrameSets(const SamplingParams& params,
+                           TimeDelta profiler_wait_time) {
+  FrameSets frame_sets;
   WithTargetThread([&params, &frame_sets,
                     profiler_wait_time](PlatformThreadId target_thread_id) {
     TestProfilerInfo info(target_thread_id, params);
@@ -530,8 +527,8 @@ const void* MaybeFixupFunctionAddressForILT(const void* function_address) {
 // Searches through the frames in |sample|, returning an iterator to the first
 // frame that has an instruction pointer within |target_function|. Returns
 // sample.end() if no such frames are found.
-InternalFrames::const_iterator FindFirstFrameWithinFunction(
-    const InternalFrames& frames,
+Frames::const_iterator FindFirstFrameWithinFunction(
+    const Frames& frames,
     TargetFunction target_function) {
   uintptr_t function_start =
       reinterpret_cast<uintptr_t>(MaybeFixupFunctionAddressForILT(
@@ -548,12 +545,12 @@ InternalFrames::const_iterator FindFirstFrameWithinFunction(
 }
 
 // Formats a sample into a string that can be output for test diagnostics.
-std::string FormatSampleForDiagnosticOutput(const InternalFrames& frames) {
+std::string FormatSampleForDiagnosticOutput(const Frames& frames) {
   std::string output;
   for (const auto& frame : frames) {
     output += StringPrintf(
         "0x%p %s\n", reinterpret_cast<const void*>(frame.instruction_pointer),
-        frame.internal_module.filename.AsUTF8Unsafe().c_str());
+        frame.module.filename.AsUTF8Unsafe().c_str());
   }
   return output;
 }
@@ -650,11 +647,11 @@ void TestLibraryUnload(bool wait_until_unloaded) {
 
   // Look up the frames.
   ASSERT_EQ(1u, profile.frame_sets.size());
-  const InternalFrames& frames = profile.frame_sets[0];
+  const Frames& frames = profile.frame_sets[0];
 
   // Check that the stack contains a frame for
   // TargetThread::SignalAndWaitUntilSignaled().
-  InternalFrames::const_iterator end_frame = FindFirstFrameWithinFunction(
+  Frames::const_iterator end_frame = FindFirstFrameWithinFunction(
       frames, &TargetThread::SignalAndWaitUntilSignaled);
   ASSERT_TRUE(end_frame != frames.end())
       << "Function at "
@@ -687,9 +684,8 @@ void TestLibraryUnload(bool wait_until_unloaded) {
 
     // Check that the stack contains a frame for
     // TargetThread::CallThroughOtherLibrary().
-    InternalFrames::const_iterator other_library_frame =
-        FindFirstFrameWithinFunction(frames,
-                                     &TargetThread::CallThroughOtherLibrary);
+    Frames::const_iterator other_library_frame = FindFirstFrameWithinFunction(
+        frames, &TargetThread::CallThroughOtherLibrary);
     ASSERT_TRUE(other_library_frame != frames.end())
         << "Function at "
         << MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
@@ -732,8 +728,7 @@ class StackSamplingProfilerTest : public testing::Test {
 
 }  // namespace
 
-// Checks that the basic expected information is present in sampled internal
-// frames.
+// Checks that the basic expected information is present in sampled frames.
 //
 // macOS ASAN is not yet supported - crbug.com/718628.
 #if !(defined(ADDRESS_SANITIZER) && defined(OS_MACOSX))
@@ -746,19 +741,19 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Basic) {
   params.sampling_interval = TimeDelta::FromMilliseconds(0);
   params.samples_per_profile = 1;
 
-  InternalFrameSets frame_sets = CaptureFrameSets(params, AVeryLongTimeDelta());
+  FrameSets frame_sets = CaptureFrameSets(params, AVeryLongTimeDelta());
 
   // Check that the size of the frame sets are correct.
   ASSERT_EQ(1u, frame_sets.size());
-  const InternalFrames& frames = frame_sets[0];
+  const Frames& frames = frame_sets[0];
 
   // Check that all the modules are valid.
   for (const auto& frame : frames)
-    EXPECT_TRUE(frame.internal_module.is_valid);
+    EXPECT_TRUE(frame.module.is_valid);
 
   // Check that the stack contains a frame for
   // TargetThread::SignalAndWaitUntilSignaled().
-  InternalFrames::const_iterator loc = FindFirstFrameWithinFunction(
+  Frames::const_iterator loc = FindFirstFrameWithinFunction(
       frames, &TargetThread::SignalAndWaitUntilSignaled);
   ASSERT_TRUE(loc != frames.end())
       << "Function at "
@@ -801,11 +796,11 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Alloca) {
 
   // Look up the frames.
   ASSERT_EQ(1u, profile.frame_sets.size());
-  const InternalFrames& frames = profile.frame_sets[0];
+  const Frames& frames = profile.frame_sets[0];
 
   // Check that the stack contains a frame for
   // TargetThread::SignalAndWaitUntilSignaled().
-  InternalFrames::const_iterator end_frame = FindFirstFrameWithinFunction(
+  Frames::const_iterator end_frame = FindFirstFrameWithinFunction(
       frames, &TargetThread::SignalAndWaitUntilSignaled);
   ASSERT_TRUE(end_frame != frames.end())
       << "Function at "
@@ -815,7 +810,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Alloca) {
       << FormatSampleForDiagnosticOutput(frames);
 
   // Check that the stack contains a frame for TargetThread::CallWithAlloca().
-  InternalFrames::const_iterator alloca_frame =
+  Frames::const_iterator alloca_frame =
       FindFirstFrameWithinFunction(frames, &TargetThread::CallWithAlloca);
   ASSERT_TRUE(alloca_frame != frames.end())
       << "Function at "
@@ -929,20 +924,20 @@ PROFILER_TEST_F(StackSamplingProfilerTest, StopSafely) {
   });
 }
 
-// Checks that no internal frames are captured if the profiling is stopped
-// during the initial delay.
+// Checks that no frames are captured if the profiling is stopped during the
+// initial delay.
 PROFILER_TEST_F(StackSamplingProfilerTest, StopDuringInitialDelay) {
   SamplingParams params;
   params.initial_delay = TimeDelta::FromSeconds(60);
 
-  InternalFrameSets frame_sets =
+  FrameSets frame_sets =
       CaptureFrameSets(params, TimeDelta::FromMilliseconds(0));
 
   EXPECT_TRUE(frame_sets.empty());
 }
 
-// Checks that tasks can be stopped before completion and incomplete internal
-// frames are captured.
+// Checks that tasks can be stopped before completion and incomplete frames are
+// captured.
 PROFILER_TEST_F(StackSamplingProfilerTest, StopDuringInterSampleInterval) {
   // Test delegate that counts samples.
   class SampleRecordedEvent : public NativeStackSamplerTestDelegate {
@@ -1010,7 +1005,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, CanRunMultipleProfilers) {
   params.sampling_interval = TimeDelta::FromMilliseconds(0);
   params.samples_per_profile = 1;
 
-  InternalFrameSets frame_sets = CaptureFrameSets(params, AVeryLongTimeDelta());
+  FrameSets frame_sets = CaptureFrameSets(params, AVeryLongTimeDelta());
   ASSERT_EQ(1u, frame_sets.size());
 
   frame_sets = CaptureFrameSets(params, AVeryLongTimeDelta());
@@ -1072,7 +1067,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, SamplerIdleShutdown) {
   params.sampling_interval = TimeDelta::FromMilliseconds(0);
   params.samples_per_profile = 1;
 
-  InternalFrameSets frame_sets = CaptureFrameSets(params, AVeryLongTimeDelta());
+  FrameSets frame_sets = CaptureFrameSets(params, AVeryLongTimeDelta());
   ASSERT_EQ(1u, frame_sets.size());
 
   // Capture thread should still be running at this point.
@@ -1097,7 +1092,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest,
   params.sampling_interval = TimeDelta::FromMilliseconds(0);
   params.samples_per_profile = 1;
 
-  InternalFrameSets frame_sets = CaptureFrameSets(params, AVeryLongTimeDelta());
+  FrameSets frame_sets = CaptureFrameSets(params, AVeryLongTimeDelta());
   ASSERT_EQ(1u, frame_sets.size());
 
   // Capture thread should still be running at this point.
@@ -1315,13 +1310,12 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
 
   // Look up the frames.
   ASSERT_EQ(1u, profile.frame_sets.size());
-  const InternalFrames& frames = profile.frame_sets[0];
+  const Frames& frames = profile.frame_sets[0];
 
   // Check that the stack contains a frame for
   // TargetThread::CallThroughOtherLibrary().
-  InternalFrames::const_iterator other_library_frame =
-      FindFirstFrameWithinFunction(frames,
-                                   &TargetThread::CallThroughOtherLibrary);
+  Frames::const_iterator other_library_frame = FindFirstFrameWithinFunction(
+      frames, &TargetThread::CallThroughOtherLibrary);
   ASSERT_TRUE(other_library_frame != frames.end())
       << "Function at "
       << MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
@@ -1331,7 +1325,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
 
   // Check that the stack contains a frame for
   // TargetThread::SignalAndWaitUntilSignaled().
-  InternalFrames::const_iterator end_frame = FindFirstFrameWithinFunction(
+  Frames::const_iterator end_frame = FindFirstFrameWithinFunction(
       frames, &TargetThread::SignalAndWaitUntilSignaled);
   ASSERT_TRUE(end_frame != frames.end())
       << "Function at "

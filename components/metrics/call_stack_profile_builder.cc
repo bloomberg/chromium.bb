@@ -4,17 +4,27 @@
 
 #include "components/metrics/call_stack_profile_builder.h"
 
+#include <stddef.h>
+
+#include <cstring>
+#include <map>
+#include <string>
 #include <utility>
-#include <vector>
 
 #include "base/atomicops.h"
-#include "components/metrics/call_stack_profile_proto_encoder.h"
+#include "base/files/file_path.h"
+#include "base/logging.h"
+#include "base/metrics/metrics_hashes.h"
+#include "base/stl_util.h"
 
-using StackSamplingProfiler = base::StackSamplingProfiler;
+using base::StackSamplingProfiler;
 
 namespace metrics {
 
 namespace {
+
+// Identifies an unknown module.
+const size_t kUnknownModuleIndex = static_cast<size_t>(-1);
 
 // This global variables holds the current system state and is recorded with
 // every captured sample, done on a separate thread which is why updates to
@@ -39,7 +49,180 @@ void ChangeAtomicFlags(base::subtle::Atomic32* flags,
   }
 }
 
+// Provide a mapping from the C++ "enum" definition of various process mile-
+// stones to the equivalent protobuf "enum" definition. This table-lookup
+// conversion allows for the implementation to evolve and still be compatible
+// with the protobuf -- even if there are ever more than 32 defined proto
+// values, though never more than 32 could be in-use in a given C++ version
+// of the code.
+const ProcessPhase kProtoPhases[CallStackProfileBuilder::MILESTONES_MAX_VALUE] =
+    {
+        ProcessPhase::MAIN_LOOP_START,
+        ProcessPhase::MAIN_NAVIGATION_START,
+        ProcessPhase::MAIN_NAVIGATION_FINISHED,
+        ProcessPhase::FIRST_NONEMPTY_PAINT,
+
+        ProcessPhase::SHUTDOWN_START,
+};
+
+// These functions are used to encode protobufs. --------------------------
+
+// The protobuf expects the MD5 checksum prefix of the module name.
+uint64_t HashModuleFilename(const base::FilePath& filename) {
+  const base::FilePath::StringType basename = filename.BaseName().value();
+  // Copy the bytes in basename into a string buffer.
+  size_t basename_length_in_bytes =
+      basename.size() * sizeof(base::FilePath::CharType);
+  std::string name_bytes(basename_length_in_bytes, '\0');
+  memcpy(&name_bytes[0], &basename[0], basename_length_in_bytes);
+  return base::HashMetricName(name_bytes);
+}
+
+// Transcode |sample| into |proto_sample|, using base addresses in |modules| to
+// compute module instruction pointer offsets.
+void CopySampleToProto(
+    const CallStackProfileBuilder::Sample& sample,
+    const std::vector<CallStackProfileBuilder::Module>& modules,
+    CallStackProfile::Sample* proto_sample) {
+  for (const auto& frame : sample.frames) {
+    CallStackProfile::Entry* entry = proto_sample->add_entry();
+    // A frame may not have a valid module. If so, we can't compute the
+    // instruction pointer offset, and we don't want to send bare pointers,
+    // so leave call_stack_entry empty.
+    if (frame.module_index == kUnknownModuleIndex)
+      continue;
+    int64_t module_offset =
+        reinterpret_cast<const char*>(frame.instruction_pointer) -
+        reinterpret_cast<const char*>(modules[frame.module_index].base_address);
+    DCHECK_GE(module_offset, 0);
+    entry->set_address(static_cast<uint64_t>(module_offset));
+    entry->set_module_id_index(frame.module_index);
+  }
+}
+
+// Transcode Sample annotations into protobuf fields. The C++ code uses a
+// bit- field with each bit corresponding to an entry in an enumeration
+// while the protobuf uses a repeated field of individual values. Conversion
+// tables allow for arbitrary mapping, though no more than 32 in any given
+// version of the code.
+void CopyAnnotationsToProto(uint32_t new_milestones,
+                            CallStackProfile::Sample* sample_proto) {
+  for (size_t bit = 0; new_milestones != 0 && bit < sizeof(new_milestones) * 8;
+       ++bit) {
+    const uint32_t flag = 1U << bit;
+    if (new_milestones & flag) {
+      if (bit >= base::size(kProtoPhases)) {
+        NOTREACHED();
+        continue;
+      }
+      sample_proto->add_process_phase(kProtoPhases[bit]);
+      new_milestones ^= flag;  // Bit is set so XOR will clear it.
+    }
+  }
+}
+
+// Translates CallStackProfileParams's process to the corresponding execution
+// context Process.
+Process ToExecutionContextProcess(CallStackProfileParams::Process process) {
+  switch (process) {
+    case CallStackProfileParams::UNKNOWN_PROCESS:
+      return UNKNOWN_PROCESS;
+    case CallStackProfileParams::BROWSER_PROCESS:
+      return BROWSER_PROCESS;
+    case CallStackProfileParams::RENDERER_PROCESS:
+      return RENDERER_PROCESS;
+    case CallStackProfileParams::GPU_PROCESS:
+      return GPU_PROCESS;
+    case CallStackProfileParams::UTILITY_PROCESS:
+      return UTILITY_PROCESS;
+    case CallStackProfileParams::ZYGOTE_PROCESS:
+      return ZYGOTE_PROCESS;
+    case CallStackProfileParams::SANDBOX_HELPER_PROCESS:
+      return SANDBOX_HELPER_PROCESS;
+    case CallStackProfileParams::PPAPI_PLUGIN_PROCESS:
+      return PPAPI_PLUGIN_PROCESS;
+    case CallStackProfileParams::PPAPI_BROKER_PROCESS:
+      return PPAPI_BROKER_PROCESS;
+  }
+  NOTREACHED();
+  return UNKNOWN_PROCESS;
+}
+
+// Translates CallStackProfileParams's thread to the corresponding
+// SampledProfile Thread.
+Thread ToExecutionContextThread(CallStackProfileParams::Thread thread) {
+  switch (thread) {
+    case CallStackProfileParams::UNKNOWN_THREAD:
+      return UNKNOWN_THREAD;
+    case CallStackProfileParams::MAIN_THREAD:
+      return MAIN_THREAD;
+    case CallStackProfileParams::IO_THREAD:
+      return IO_THREAD;
+    case CallStackProfileParams::COMPOSITOR_THREAD:
+      return COMPOSITOR_THREAD;
+  }
+  NOTREACHED();
+  return UNKNOWN_THREAD;
+}
+
+// Translates CallStackProfileParams's trigger to the corresponding
+// SampledProfile TriggerEvent.
+SampledProfile::TriggerEvent ToSampledProfileTriggerEvent(
+    CallStackProfileParams::Trigger trigger) {
+  switch (trigger) {
+    case CallStackProfileParams::UNKNOWN:
+      return SampledProfile::UNKNOWN_TRIGGER_EVENT;
+    case CallStackProfileParams::PROCESS_STARTUP:
+      return SampledProfile::PROCESS_STARTUP;
+    case CallStackProfileParams::JANKY_TASK:
+      return SampledProfile::JANKY_TASK;
+    case CallStackProfileParams::THREAD_HUNG:
+      return SampledProfile::THREAD_HUNG;
+    case CallStackProfileParams::PERIODIC_COLLECTION:
+      return SampledProfile::PERIODIC_COLLECTION;
+  }
+  NOTREACHED();
+  return SampledProfile::UNKNOWN_TRIGGER_EVENT;
+}
+
 }  // namespace
+
+// CallStackProfileBuilder::Module --------------------------------------------
+
+CallStackProfileBuilder::Module::Module() : base_address(0u) {}
+
+CallStackProfileBuilder::Module::Module(uintptr_t base_address,
+                                        const std::string& id,
+                                        const base::FilePath& filename)
+    : base_address(base_address), id(id), filename(filename) {}
+
+CallStackProfileBuilder::Module::~Module() = default;
+
+// CallStackProfileBuilder::Frame ---------------------------------------------
+
+CallStackProfileBuilder::Frame::Frame(uintptr_t instruction_pointer,
+                                      size_t module_index)
+    : instruction_pointer(instruction_pointer), module_index(module_index) {}
+
+CallStackProfileBuilder::Frame::~Frame() = default;
+
+CallStackProfileBuilder::Frame::Frame()
+    : instruction_pointer(0), module_index(kUnknownModuleIndex) {}
+
+// CallStackProfileBuilder::Sample --------------------------------------------
+
+CallStackProfileBuilder::Sample::Sample() = default;
+
+CallStackProfileBuilder::Sample::Sample(const Sample& sample) = default;
+
+CallStackProfileBuilder::Sample::~Sample() = default;
+
+CallStackProfileBuilder::Sample::Sample(const Frame& frame) {
+  frames.push_back(std::move(frame));
+}
+
+CallStackProfileBuilder::Sample::Sample(const std::vector<Frame>& frames)
+    : frames(frames) {}
 
 CallStackProfileBuilder::CallStackProfileBuilder(
     const CompletedCallback& callback,
@@ -57,53 +240,86 @@ void CallStackProfileBuilder::RecordAnnotations() {
 }
 
 void CallStackProfileBuilder::OnSampleCompleted(
-    std::vector<StackSamplingProfiler::InternalFrame> internal_frames) {
-  DCHECK(sample_.frames.empty());
-
-  // Dedup modules and convert InternalFrames to Frames.
-  for (const auto& internal_frame : internal_frames) {
-    const base::ModuleCache::Module& module(internal_frame.internal_module);
+    std::vector<StackSamplingProfiler::Frame> frames) {
+  // Assemble sample_ first.
+  for (const auto& frame : frames) {
+    const base::ModuleCache::Module& module(frame.module);
     if (!module.is_valid) {
-      sample_.frames.emplace_back(internal_frame.instruction_pointer,
-                                  base::kUnknownModuleIndex);
+      sample_.frames.emplace_back(frame.instruction_pointer,
+                                  kUnknownModuleIndex);
       continue;
     }
 
+    // Dedup modules.
     auto loc = module_index_.find(module.base_address);
     if (loc == module_index_.end()) {
-      profile_.modules.emplace_back(module.base_address, module.id,
-                                    module.filename);
-      size_t index = profile_.modules.size() - 1;
+      modules_.emplace_back(module.base_address, module.id, module.filename);
+      size_t index = modules_.size() - 1;
       loc = module_index_.insert(std::make_pair(module.base_address, index))
                 .first;
     }
-    sample_.frames.emplace_back(internal_frame.instruction_pointer,
-                                loc->second);
+    // convert Frames to Frames.
+    sample_.frames.emplace_back(frame.instruction_pointer, loc->second);
   }
 
-  profile_.samples.push_back(std::move(sample_));
-  sample_ = StackSamplingProfiler::Sample();
+  // Write CallStackProfile::Sample protocol buffer message.
+  int existing_sample_index = -1;
+  auto location = sample_index_.find(sample_);
+  if (location != sample_index_.end())
+    existing_sample_index = location->second;
+
+  if (existing_sample_index != -1) {
+    CallStackProfile::Sample* sample_proto =
+        proto_profile_.mutable_sample(existing_sample_index);
+    sample_proto->set_count(sample_proto->count() + 1);
+    return;
+  }
+
+  CallStackProfile::Sample* sample_proto = proto_profile_.add_sample();
+  CopySampleToProto(sample_, modules_, sample_proto);
+  sample_proto->set_count(1);
+  CopyAnnotationsToProto(sample_.process_milestones & ~milestones_,
+                         sample_proto);
+  milestones_ = sample_.process_milestones;
+
+  sample_index_.insert(std::make_pair(
+      sample_, static_cast<int>(proto_profile_.sample_size()) - 1));
+
+  sample_ = Sample();
 }
 
 void CallStackProfileBuilder::OnProfileCompleted(
     base::TimeDelta profile_duration,
     base::TimeDelta sampling_period) {
-  profile_.profile_duration = profile_duration;
-  profile_.sampling_period = sampling_period;
+  proto_profile_.set_profile_duration_ms(profile_duration.InMilliseconds());
+  proto_profile_.set_sampling_period_ms(sampling_period.InMilliseconds());
 
-  // TODO(chengx): build the metrics.SampledProfile protocol message
-  // incrementally.
+  for (const auto& module : modules_) {
+    CallStackProfile::ModuleIdentifier* module_id =
+        proto_profile_.add_module_id();
+    module_id->set_build_id(module.id);
+    module_id->set_name_md5_prefix(HashModuleFilename(module.filename));
+  }
+
+  // Clear the caches etc.
+  modules_.clear();
+  module_index_.clear();
+  sample_index_.clear();
+
+  // Assemble SampledProfile protocol buffer message and run the associated
+  // callback to pass it.
   SampledProfile sampled_profile;
+  CallStackProfile* proto_profile =
+      sampled_profile.mutable_call_stack_profile();
+  *proto_profile = std::move(proto_profile_);
+
   sampled_profile.set_process(
       ToExecutionContextProcess(profile_params_.process));
   sampled_profile.set_thread(ToExecutionContextThread(profile_params_.thread));
   sampled_profile.set_trigger_event(
       ToSampledProfileTriggerEvent(profile_params_.trigger));
-  CopyProfileToProto(profile_, sampled_profile.mutable_call_stack_profile());
 
-  // Run the associated callback, passing the protocol message which encodes the
-  // collected profile.
-  callback_.Run(sampled_profile);
+  callback_.Run(std::move(sampled_profile));
 }
 
 // static
@@ -113,6 +329,40 @@ void CallStackProfileBuilder::SetProcessMilestone(int milestone) {
   DCHECK_EQ(0, base::subtle::NoBarrier_Load(&g_process_milestones) &
                    (1 << milestone));
   ChangeAtomicFlags(&g_process_milestones, 1 << milestone, 0);
+}
+
+// These operators permit types to be compared and used in a map of Samples.
+
+bool operator==(const CallStackProfileBuilder::Sample& a,
+                const CallStackProfileBuilder::Sample& b) {
+  return a.process_milestones == b.process_milestones && a.frames == b.frames;
+}
+
+bool operator!=(const CallStackProfileBuilder::Sample& a,
+                const CallStackProfileBuilder::Sample& b) {
+  return !(a == b);
+}
+
+bool operator<(const CallStackProfileBuilder::Sample& a,
+               const CallStackProfileBuilder::Sample& b) {
+  if (a.process_milestones != b.process_milestones)
+    return a.process_milestones < b.process_milestones;
+
+  return a.frames < b.frames;
+}
+
+bool operator==(const CallStackProfileBuilder::Frame& a,
+                const CallStackProfileBuilder::Frame& b) {
+  return a.instruction_pointer == b.instruction_pointer &&
+         a.module_index == b.module_index;
+}
+
+bool operator<(const CallStackProfileBuilder::Frame& a,
+               const CallStackProfileBuilder::Frame& b) {
+  if (a.module_index != b.module_index)
+    return a.module_index < b.module_index;
+
+  return a.instruction_pointer < b.instruction_pointer;
 }
 
 }  // namespace metrics

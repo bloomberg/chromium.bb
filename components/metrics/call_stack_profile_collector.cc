@@ -8,10 +8,40 @@
 #include <utility>
 
 #include "components/metrics/call_stack_profile_metrics_provider.h"
-#include "components/metrics/call_stack_profile_proto_encoder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace metrics {
+
+namespace {
+
+// Translates CallStackProfileParams's process to the corresponding execution
+// context Process.
+Process ToExecutionContextProcess(CallStackProfileParams::Process process) {
+  switch (process) {
+    case CallStackProfileParams::UNKNOWN_PROCESS:
+      return UNKNOWN_PROCESS;
+    case CallStackProfileParams::BROWSER_PROCESS:
+      return BROWSER_PROCESS;
+    case CallStackProfileParams::RENDERER_PROCESS:
+      return RENDERER_PROCESS;
+    case CallStackProfileParams::GPU_PROCESS:
+      return GPU_PROCESS;
+    case CallStackProfileParams::UTILITY_PROCESS:
+      return UTILITY_PROCESS;
+    case CallStackProfileParams::ZYGOTE_PROCESS:
+      return ZYGOTE_PROCESS;
+    case CallStackProfileParams::SANDBOX_HELPER_PROCESS:
+      return SANDBOX_HELPER_PROCESS;
+    case CallStackProfileParams::PPAPI_PLUGIN_PROCESS:
+      return PPAPI_PLUGIN_PROCESS;
+    case CallStackProfileParams::PPAPI_BROKER_PROCESS:
+      return PPAPI_BROKER_PROCESS;
+  }
+  NOTREACHED();
+  return UNKNOWN_PROCESS;
+}
+
+}  // namespace
 
 CallStackProfileCollector::CallStackProfileCollector(
     CallStackProfileParams::Process expected_process)

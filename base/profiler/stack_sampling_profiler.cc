@@ -5,6 +5,7 @@
 #include "base/profiler/stack_sampling_profiler.h"
 
 #include <algorithm>
+#include <map>
 #include <utility>
 
 #include "base/atomic_sequence_num.h"
@@ -25,8 +26,6 @@
 
 namespace base {
 
-const size_t kUnknownModuleIndex = static_cast<size_t>(-1);
-
 namespace {
 
 // This value is used to initialize the WaitableEvent object. This MUST BE set
@@ -41,73 +40,13 @@ const int kNullProfilerId = -1;
 
 }  // namespace
 
-// StackSamplingProfiler::Module ----------------------------------------------
-
-StackSamplingProfiler::Module::Module() : base_address(0u) {}
-
-StackSamplingProfiler::Module::Module(uintptr_t base_address,
-                                      const std::string& id,
-                                      const FilePath& filename)
-    : base_address(base_address), id(id), filename(filename) {}
-
-StackSamplingProfiler::Module::~Module() = default;
-
-// StackSamplingProfiler::Frame -----------------------------------------------
+// StackSamplingProfiler::Frame -------------------------------------
 
 StackSamplingProfiler::Frame::Frame(uintptr_t instruction_pointer,
-                                    size_t module_index)
-    : instruction_pointer(instruction_pointer), module_index(module_index) {}
+                                    ModuleCache::Module module)
+    : instruction_pointer(instruction_pointer), module(std::move(module)) {}
 
 StackSamplingProfiler::Frame::~Frame() = default;
-
-StackSamplingProfiler::Frame::Frame()
-    : instruction_pointer(0), module_index(kUnknownModuleIndex) {}
-
-// StackSamplingProfiler::InternalFrame -------------------------------------
-
-StackSamplingProfiler::InternalFrame::InternalFrame(
-    uintptr_t instruction_pointer,
-    ModuleCache::Module internal_module)
-    : instruction_pointer(instruction_pointer),
-      internal_module(std::move(internal_module)) {}
-
-StackSamplingProfiler::InternalFrame::~InternalFrame() = default;
-
-// StackSamplingProfiler::Sample ----------------------------------------------
-
-StackSamplingProfiler::Sample::Sample() = default;
-
-StackSamplingProfiler::Sample::Sample(const Sample& sample) = default;
-
-StackSamplingProfiler::Sample::~Sample() = default;
-
-StackSamplingProfiler::Sample::Sample(const Frame& frame) {
-  frames.push_back(std::move(frame));
-}
-
-StackSamplingProfiler::Sample::Sample(const std::vector<Frame>& frames)
-    : frames(frames) {}
-
-// StackSamplingProfiler::CallStackProfile ------------------------------------
-
-StackSamplingProfiler::CallStackProfile::CallStackProfile() = default;
-
-StackSamplingProfiler::CallStackProfile::CallStackProfile(
-    CallStackProfile&& other) = default;
-
-StackSamplingProfiler::CallStackProfile::~CallStackProfile() = default;
-
-StackSamplingProfiler::CallStackProfile&
-StackSamplingProfiler::CallStackProfile::operator=(CallStackProfile&& other) =
-    default;
-
-StackSamplingProfiler::CallStackProfile
-StackSamplingProfiler::CallStackProfile::CopyForTesting() const {
-  return CallStackProfile(*this);
-}
-
-StackSamplingProfiler::CallStackProfile::CallStackProfile(
-    const CallStackProfile& other) = default;
 
 // StackSamplingProfiler::SamplingThread --------------------------------------
 
@@ -752,46 +691,6 @@ void StackSamplingProfiler::Start() {
 void StackSamplingProfiler::Stop() {
   SamplingThread::GetInstance()->Remove(profiler_id_);
   profiler_id_ = kNullProfilerId;
-}
-
-// StackSamplingProfiler::Frame global functions ------------------------------
-
-bool operator==(const StackSamplingProfiler::Module& a,
-                const StackSamplingProfiler::Module& b) {
-  return a.base_address == b.base_address && a.id == b.id &&
-         a.filename == b.filename;
-}
-
-bool operator==(const StackSamplingProfiler::Sample& a,
-                const StackSamplingProfiler::Sample& b) {
-  return a.process_milestones == b.process_milestones && a.frames == b.frames;
-}
-
-bool operator!=(const StackSamplingProfiler::Sample& a,
-                const StackSamplingProfiler::Sample& b) {
-  return !(a == b);
-}
-
-bool operator<(const StackSamplingProfiler::Sample& a,
-               const StackSamplingProfiler::Sample& b) {
-  if (a.process_milestones != b.process_milestones)
-    return a.process_milestones < b.process_milestones;
-
-  return a.frames < b.frames;
-}
-
-bool operator==(const StackSamplingProfiler::Frame& a,
-                const StackSamplingProfiler::Frame& b) {
-  return a.instruction_pointer == b.instruction_pointer &&
-         a.module_index == b.module_index;
-}
-
-bool operator<(const StackSamplingProfiler::Frame& a,
-               const StackSamplingProfiler::Frame& b) {
-  if (a.module_index != b.module_index)
-    return a.module_index < b.module_index;
-
-  return a.instruction_pointer < b.instruction_pointer;
 }
 
 }  // namespace base

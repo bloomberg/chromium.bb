@@ -35,7 +35,6 @@ void _sigtramp(int, int, struct sigset*);
 namespace base {
 
 using Frame = StackSamplingProfiler::Frame;
-using InternalFrame = StackSamplingProfiler::InternalFrame;
 using ProfileBuilder = StackSamplingProfiler::ProfileBuilder;
 
 namespace {
@@ -270,7 +269,7 @@ class NativeStackSamplerMac : public NativeStackSampler {
 
   // StackSamplingProfiler::NativeStackSampler:
   void ProfileRecordingStarting() override;
-  std::vector<InternalFrame> RecordStackFrames(
+  std::vector<Frame> RecordStackFrames(
       StackBuffer* stack_buffer,
       ProfileBuilder* profile_builder) override;
 
@@ -331,12 +330,12 @@ void NativeStackSamplerMac::ProfileRecordingStarting() {
   module_cache_.Clear();
 }
 
-std::vector<InternalFrame> NativeStackSamplerMac::RecordStackFrames(
+std::vector<Frame> NativeStackSamplerMac::RecordStackFrames(
     StackBuffer* stack_buffer,
     ProfileBuilder* profile_builder) {
   x86_thread_state64_t thread_state;
 
-  const std::vector<InternalFrame> empty_internal_frames;
+  const std::vector<Frame> empty_frames;
 
   // Copy the stack.
 
@@ -348,19 +347,19 @@ std::vector<InternalFrame> NativeStackSamplerMac::RecordStackFrames(
     // default heap acquired by the target thread before it was suspended.
     ScopedSuspendThread suspend_thread(thread_port_);
     if (!suspend_thread.was_successful())
-      return empty_internal_frames;
+      return empty_frames;
 
     if (!GetThreadState(thread_port_, &thread_state))
-      return empty_internal_frames;
+      return empty_frames;
 
     auto stack_top = reinterpret_cast<uintptr_t>(thread_stack_base_address_);
     uintptr_t stack_bottom = thread_state.__rsp;
     if (stack_bottom >= stack_top)
-      return empty_internal_frames;
+      return empty_frames;
 
     uintptr_t stack_size = stack_top - stack_bottom;
     if (stack_size > stack_buffer->size())
-      return empty_internal_frames;
+      return empty_frames;
 
     profile_builder->RecordAnnotations();
 
@@ -380,16 +379,16 @@ std::vector<InternalFrame> NativeStackSamplerMac::RecordStackFrames(
 
   // Reserve enough memory for most stacks, to avoid repeated allocations.
   // Approximately 99.9% of recorded stacks are 128 frames or fewer.
-  std::vector<InternalFrame> internal_frames;
-  internal_frames.reserve(128);
+  std::vector<Frame> frames;
+  frames.reserve(128);
 
   // Avoid an out-of-bounds read bug in libunwind that can crash us in some
   // circumstances. If we're subject to that case, just record the first frame
   // and bail. See MayTriggerUnwInitLocalCrash for details.
   uintptr_t rip = thread_state.__rip;
   if (MayTriggerUnwInitLocalCrash(rip)) {
-    internal_frames.emplace_back(rip, module_cache_.GetModuleForAddress(rip));
-    return internal_frames;
+    frames.emplace_back(rip, module_cache_.GetModuleForAddress(rip));
+    return frames;
   }
 
   const auto continue_predicate = [this,
@@ -409,14 +408,12 @@ std::vector<InternalFrame> NativeStackSamplerMac::RecordStackFrames(
   };
 
   WalkStack(thread_state,
-            [&internal_frames](uintptr_t frame_ip,
-                               ModuleCache::Module internal_module) {
-              internal_frames.emplace_back(frame_ip,
-                                           std::move(internal_module));
+            [&frames](uintptr_t frame_ip, ModuleCache::Module module) {
+              frames.emplace_back(frame_ip, std::move(module));
             },
             continue_predicate);
 
-  return internal_frames;
+  return frames;
 }
 
 template <typename StackFrameCallback, typename ContinueUnwindPredicate>
