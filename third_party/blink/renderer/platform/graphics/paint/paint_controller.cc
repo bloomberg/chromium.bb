@@ -387,6 +387,7 @@ size_t PaintController::FindOutOfOrderCachedItemForward(
       ++num_indexed_items_;
 #endif
       AddToIndicesByClientMap(item.Client(), i, out_of_order_item_indices_);
+      next_item_to_index_ = i + 1;
     }
   }
 

@@ -1527,6 +1527,81 @@ TEST_P(PaintControllerTest, InvalidateAll) {
   EXPECT_TRUE(GetPaintController().CacheIsAllInvalid());
 }
 
+TEST_P(PaintControllerTest, InsertValidItemInFront) {
+  FakeDisplayItemClient first("first", LayoutRect(100, 100, 300, 300));
+  FakeDisplayItemClient second("second", LayoutRect(100, 100, 200, 200));
+  FakeDisplayItemClient third("third", LayoutRect(100, 100, 100, 100));
+  FakeDisplayItemClient fourth("fourth", LayoutRect(100, 100, 50, 50));
+  GraphicsContext context(GetPaintController());
+
+  InitRootChunk();
+  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
+  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 200, 200));
+  DrawRect(context, third, kBackgroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, fourth, kBackgroundType, FloatRect(100, 100, 50, 50));
+
+  EXPECT_EQ(0, NumCachedNewItems());
+  CommitAndFinishCycle();
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 4,
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(second, kBackgroundType),
+                      TestDisplayItem(third, kBackgroundType),
+                      TestDisplayItem(fourth, kBackgroundType));
+  EXPECT_TRUE(first.IsValid());
+  EXPECT_TRUE(second.IsValid());
+  EXPECT_TRUE(third.IsValid());
+  EXPECT_TRUE(fourth.IsValid());
+
+  // Simulate that a composited scrolling element is scrolled down, and "first"
+  // and "second" are scrolled out of the interest rect.
+  InitRootChunk();
+  DrawRect(context, third, kBackgroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, fourth, kBackgroundType, FloatRect(100, 100, 50, 50));
+
+  EXPECT_EQ(2, NumCachedNewItems());
+#if DCHECK_IS_ON()
+  EXPECT_EQ(2, NumSequentialMatches());
+  EXPECT_EQ(0, NumOutOfOrderMatches());
+  // We indexed "first" and "second" when finding the cached item for "third".
+  EXPECT_EQ(2, NumIndexedItems());
+#endif
+
+  CommitAndFinishCycle();
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
+                      TestDisplayItem(third, kBackgroundType),
+                      TestDisplayItem(fourth, kBackgroundType));
+  EXPECT_TRUE(first.IsValid());
+  EXPECT_TRUE(second.IsValid());
+  EXPECT_TRUE(third.IsValid());
+  EXPECT_TRUE(fourth.IsValid());
+
+  // Simulate "first" and "second" are scrolled back into the interest rect.
+  InitRootChunk();
+  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
+  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 200, 200));
+  DrawRect(context, third, kBackgroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, fourth, kBackgroundType, FloatRect(100, 100, 50, 50));
+
+  EXPECT_EQ(2, NumCachedNewItems());
+#if DCHECK_IS_ON()
+  EXPECT_EQ(2, NumSequentialMatches());
+  EXPECT_EQ(0, NumOutOfOrderMatches());
+  // We indexed "third" and "fourth" when finding the cached item for "first".
+  EXPECT_EQ(2, NumIndexedItems());
+#endif
+
+  CommitAndFinishCycle();
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 4,
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(second, kBackgroundType),
+                      TestDisplayItem(third, kBackgroundType),
+                      TestDisplayItem(fourth, kBackgroundType));
+  EXPECT_TRUE(first.IsValid());
+  EXPECT_TRUE(second.IsValid());
+  EXPECT_TRUE(third.IsValid());
+  EXPECT_TRUE(fourth.IsValid());
+}
+
 // Death tests don't work properly on Android.
 #if defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
