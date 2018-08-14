@@ -159,6 +159,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   std::unique_ptr<WebThread> CreateMainThread() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> CleanupTaskRunner() override;
   std::unique_ptr<WebRenderWidgetSchedulingState>
   NewRenderWidgetSchedulingState() override;
   void WillBeginFrame(const viz::BeginFrameArgs& args) override;
@@ -776,12 +777,14 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   scoped_refptr<MainThreadTaskQueue> v8_task_queue_;
   scoped_refptr<MainThreadTaskQueue> ipc_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> cleanup_task_queue_;
 
   scoped_refptr<base::SingleThreadTaskRunner> v8_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> control_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> cleanup_task_runner_;
 
   // Note |virtual_time_domain_| is lazily created.
   std::unique_ptr<AutoAdvancingVirtualTimeDomain> virtual_time_domain_;

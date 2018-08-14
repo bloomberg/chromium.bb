@@ -154,12 +154,10 @@ class CONTENT_EXPORT RenderWidget
 
   // Creates a new RenderWidget for a popup. |opener| is the RenderView that
   // this widget lives inside.
-  static RenderWidget* CreateForPopup(
-      RenderViewImpl* opener,
-      CompositorDependencies* compositor_deps,
-      blink::WebPopupType popup_type,
-      const ScreenInfo& screen_info,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  static RenderWidget* CreateForPopup(RenderViewImpl* opener,
+                                      CompositorDependencies* compositor_deps,
+                                      blink::WebPopupType popup_type,
+                                      const ScreenInfo& screen_info);
 
   // Creates a new RenderWidget that will be attached to a RenderFrame.
   static RenderWidget* CreateForFrame(int widget_routing_id,
@@ -541,7 +539,6 @@ class CONTENT_EXPORT RenderWidget
                bool swapped_out,
                bool hidden,
                bool never_visible,
-               scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                mojom::WidgetRequest widget_request = nullptr);
 
   // Avoid making RenderWidget other than as a refptr.
@@ -604,6 +601,8 @@ class CONTENT_EXPORT RenderWidget
   friend class RenderWidgetTest;
   friend class RenderViewImplTest;
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetPopupUnittest, EmulatingPopupRect);
+
+  static scoped_refptr<base::SingleThreadTaskRunner> GetCleanupTaskRunner();
 
   void DoDeferredClose();
   void NotifyOnClose();
@@ -1017,7 +1016,6 @@ class CONTENT_EXPORT RenderWidget
   scoped_refptr<MainThreadEventQueue> input_event_queue_;
 
   mojo::Binding<mojom::Widget> widget_binding_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   // IdleUserDetector is setup optionally on RenderWidget by its creator, so may
   // be null.
   std::unique_ptr<IdleUserDetector> idle_user_detector_;

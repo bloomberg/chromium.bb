@@ -64,6 +64,10 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       blink::scheduler::WebThreadScheduler* main_thread_scheduler);
   ~RendererBlinkPlatformImpl() override;
 
+  blink::scheduler::WebThreadScheduler* main_thread_scheduler() {
+    return main_thread_scheduler_;
+  }
+
   // Shutdown must be called just prior to shutting down blink.
   void Shutdown();
 

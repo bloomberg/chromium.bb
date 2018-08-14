@@ -238,6 +238,8 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
       MainThreadTaskQueue::QueueType::kV8));
   ipc_task_queue_ = NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
       MainThreadTaskQueue::QueueType::kIPC));
+  cleanup_task_queue_ = NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
+      MainThreadTaskQueue::QueueType::kCleanup));
 
   v8_task_runner_ =
       v8_task_queue_->CreateTaskRunner(TaskType::kMainThreadTaskQueueV8);
@@ -249,6 +251,8 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
       input_task_queue_->CreateTaskRunner(TaskType::kMainThreadTaskQueueInput);
   ipc_task_runner_ =
       ipc_task_queue_->CreateTaskRunner(TaskType::kMainThreadTaskQueueIPC);
+  cleanup_task_runner_ = cleanup_task_queue_->CreateTaskRunner(
+      TaskType::kMainThreadTaskQueueCleanup);
 
   // TaskQueueThrottler requires some task runners, then initialize
   // TaskQueueThrottler after task queues/runners are initialized.
@@ -674,6 +678,11 @@ MainThreadSchedulerImpl::IdleTaskRunner() {
 scoped_refptr<base::SingleThreadTaskRunner>
 MainThreadSchedulerImpl::IPCTaskRunner() {
   return ipc_task_runner_;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+MainThreadSchedulerImpl::CleanupTaskRunner() {
+  return cleanup_task_runner_;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

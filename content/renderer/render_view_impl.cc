@@ -422,10 +422,8 @@ content::mojom::WindowContainerType WindowFeaturesToContainerType(
 
 }  // namespace
 
-RenderViewImpl::RenderViewImpl(
-    CompositorDependencies* compositor_deps,
-    const mojom::CreateViewParams& params,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
+                               const mojom::CreateViewParams& params)
     : RenderWidget(params.main_frame_widget_routing_id,
                    compositor_deps,
                    blink::kWebPopupTypeNone,
@@ -433,8 +431,7 @@ RenderViewImpl::RenderViewImpl(
                    params.visual_properties.display_mode,
                    params.swapped_out,
                    params.hidden,
-                   params.never_visible,
-                   task_runner),
+                   params.never_visible),
       routing_id_(params.view_id),
       renderer_wide_named_frame_lookup_(
           params.renderer_wide_named_frame_lookup),
@@ -980,7 +977,7 @@ RenderViewImpl* RenderViewImpl::Create(
   if (g_create_render_view_impl)
     render_view = g_create_render_view_impl(compositor_deps, *params);
   else
-    render_view = new RenderViewImpl(compositor_deps, *params, task_runner);
+    render_view = new RenderViewImpl(compositor_deps, *params);
 
   render_view->Initialize(std::move(params), std::move(show_callback),
                           std::move(task_runner));
@@ -1470,10 +1467,9 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
 
 WebWidget* RenderViewImpl::CreatePopup(blink::WebLocalFrame* creator,
                                        blink::WebPopupType popup_type) {
-  RenderWidget* popup_widget = RenderWidget::CreateForPopup(
-      this, GetWidget()->compositor_deps(), popup_type,
-      GetWidget()->screen_info(),
-      creator->GetTaskRunner(blink::TaskType::kInternalDefault));
+  RenderWidget* popup_widget =
+      RenderWidget::CreateForPopup(this, GetWidget()->compositor_deps(),
+                                   popup_type, GetWidget()->screen_info());
   if (!popup_widget)
     return nullptr;
   popup_widget->ApplyEmulatedScreenMetricsForPopupWidget(GetWidget());

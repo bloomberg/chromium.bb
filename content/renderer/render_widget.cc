@@ -83,6 +83,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
@@ -94,6 +95,7 @@
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -395,7 +397,6 @@ RenderWidget::RenderWidget(
     bool swapped_out,
     bool hidden,
     bool never_visible,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     mojom::WidgetRequest widget_request)
     : routing_id_(widget_routing_id),
       compositor_deps_(compositor_deps),
@@ -434,7 +435,6 @@ RenderWidget::RenderWidget(
       was_shown_time_(base::TimeTicks::Now()),
       current_content_source_id_(0),
       widget_binding_(this, std::move(widget_request)),
-      task_runner_(task_runner),
       weak_ptr_factory_(this) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   // TODO(nasko, alexmos): ref count the process based on the lifetime of
@@ -503,8 +503,7 @@ RenderWidget* RenderWidget::CreateForPopup(
     RenderViewImpl* opener,
     CompositorDependencies* compositor_deps,
     blink::WebPopupType popup_type,
-    const ScreenInfo& screen_info,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    const ScreenInfo& screen_info) {
   mojom::WidgetPtr widget_channel;
   mojom::WidgetRequest widget_channel_request =
       mojo::MakeRequest(&widget_channel);
@@ -520,7 +519,7 @@ RenderWidget* RenderWidget::CreateForPopup(
   scoped_refptr<RenderWidget> widget(
       new RenderWidget(routing_id, compositor_deps, popup_type, screen_info,
                        blink::kWebDisplayModeUndefined, false, false, false,
-                       task_runner, std::move(widget_channel_request)));
+                       std::move(widget_channel_request)));
   ShowCallback opener_callback = base::BindOnce(
       &RenderViewImpl::ShowCreatedPopupWidget, opener->GetWeakPtr());
   widget->Init(std::move(opener_callback),
@@ -553,8 +552,6 @@ RenderWidget* RenderWidget::CreateForFrame(
     view->GetWidget()->UpdateWebViewWithDeviceScaleFactor();
     return view->GetWidget();
   }
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      frame->GetTaskRunner(blink::TaskType::kInternalDefault);
   scoped_refptr<RenderWidget> widget(
       g_create_render_widget
           ? g_create_render_widget(widget_routing_id, compositor_deps,
@@ -564,7 +561,7 @@ RenderWidget* RenderWidget::CreateForFrame(
           : new RenderWidget(widget_routing_id, compositor_deps,
                              blink::kWebPopupTypeNone, screen_info,
                              blink::kWebDisplayModeUndefined, false, hidden,
-                             false, task_runner));
+                             false));
   widget->for_oopif_ = true;
   // Init increments the reference count on |widget|, keeping it alive after
   // this function returns.
@@ -794,8 +791,8 @@ void RenderWidget::OnClose() {
   // If there is a Send call on the stack, then it could be dangerous to close
   // now.  Post a task that only gets invoked when there are no nested message
   // loops.
-  task_runner_->PostNonNestableTask(FROM_HERE,
-                                    base::BindOnce(&RenderWidget::Close, this));
+  GetCleanupTaskRunner()->PostNonNestableTask(
+      FROM_HERE, base::BindOnce(&RenderWidget::Close, this));
 
   // Balances the AddRef taken when we called AddRoute.
   Release();
@@ -1683,8 +1680,8 @@ void RenderWidget::CloseWidgetSoon() {
   // could be closed before the JS finishes executing.  So instead, post a
   // message back to the message loop, which won't run until the JS is
   // complete, and then the Close message can be sent.
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(&RenderWidget::DoDeferredClose, this));
+  GetCleanupTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&RenderWidget::DoDeferredClose, this));
 }
 
 void RenderWidget::Close() {
@@ -2087,7 +2084,6 @@ void RenderWidget::OnDragTargetDragLeave(const gfx::PointF& client_point,
     return;
 
   frame_widget
-
       ->DragTargetDragLeave(ConvertWindowPointToViewport(client_point),
                             screen_point);
 }
@@ -3275,6 +3271,14 @@ PepperPluginInstanceImpl* RenderWidget::GetFocusedPepperPluginInsideWidget() {
 gfx::Rect RenderWidget::ViewportVisibleRect() {
   return for_oopif_ ? compositor_visible_rect_
                     : gfx::Rect(compositor_viewport_pixel_size_);
+}
+
+// static
+scoped_refptr<base::SingleThreadTaskRunner>
+RenderWidget::GetCleanupTaskRunner() {
+  return RenderThreadImpl::current_blink_platform_impl()
+      ->main_thread_scheduler()
+      ->CleanupTaskRunner();
 }
 
 base::WeakPtr<RenderWidget> RenderWidget::AsWeakPtr() {

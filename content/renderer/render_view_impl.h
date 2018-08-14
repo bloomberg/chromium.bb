@@ -304,8 +304,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
 
  protected:
   RenderViewImpl(CompositorDependencies* compositor_deps,
-                 const mojom::CreateViewParams& params,
-                 scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+                 const mojom::CreateViewParams& params);
 
   void Initialize(mojom::CreateViewParamsPtr params,
                   RenderWidget::ShowCallback show_callback,

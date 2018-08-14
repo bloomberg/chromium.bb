@@ -84,6 +84,9 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
 
   virtual scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner();
 
+  // Returns the cleanup task runner, which is for cleaning up.
+  virtual scoped_refptr<base::SingleThreadTaskRunner> CleanupTaskRunner();
+
   // Creates a WebThread implementation for the renderer main thread.
   virtual std::unique_ptr<WebThread> CreateMainThread();
 

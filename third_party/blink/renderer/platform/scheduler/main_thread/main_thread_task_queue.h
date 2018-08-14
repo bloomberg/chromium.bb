@@ -57,9 +57,11 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     // TODO(altimin): Move to the top when histogram is renumbered.
     kDetached = 19,
 
+    kCleanup = 20,
+
     // Used to group multiple types when calculating Expected Queueing Time.
-    kOther = 20,
-    kCount = 21
+    kOther = 21,
+    kCount = 22
   };
 
   // Returns name of the given queue type. Returned string has application
