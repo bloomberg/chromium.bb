@@ -111,14 +111,6 @@ PASS XRStageBounds interface: existence and properties of interface prototype ob
 PASS XRStageBounds interface: existence and properties of interface prototype object's "constructor" property
 PASS XRStageBounds interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRStageBounds interface: attribute geometry
-PASS XRStageBoundsPoint interface: existence and properties of interface object
-PASS XRStageBoundsPoint interface object length
-PASS XRStageBoundsPoint interface object name
-PASS XRStageBoundsPoint interface: existence and properties of interface prototype object
-PASS XRStageBoundsPoint interface: existence and properties of interface prototype object's "constructor" property
-PASS XRStageBoundsPoint interface: existence and properties of interface prototype object's @@unscopables property
-PASS XRStageBoundsPoint interface: attribute x
-PASS XRStageBoundsPoint interface: attribute z
 PASS XRView interface: existence and properties of interface object
 PASS XRView interface object length
 PASS XRView interface object name
