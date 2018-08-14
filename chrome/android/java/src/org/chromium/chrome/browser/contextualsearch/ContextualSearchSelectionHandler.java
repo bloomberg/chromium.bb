@@ -73,7 +73,8 @@ interface ContextualSearchSelectionHandler {
     /**
      * Logs all the features that we can obtain without accessing heuristics, i.e. from global
      * state.
-     * @param rankerLogger The {@link ContextualSearchRankerLogger} to log the features to.
+     * @param interactionRecorder The {@link ContextualSearchInteractionRecorder} to log the
+     * features to.
      */
-    public void logNonHeuristicFeatures(ContextualSearchRankerLogger rankerLogger);
+    public void logNonHeuristicFeatures(ContextualSearchInteractionRecorder interactionRecorder);
 }

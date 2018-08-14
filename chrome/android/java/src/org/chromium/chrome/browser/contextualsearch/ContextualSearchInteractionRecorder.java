@@ -13,9 +13,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * An interface for logging to UMA via Ranker.
+ * An interface for recording user interactions.  One implementation does logging to Ranker.
  */
-public interface ContextualSearchRankerLogger {
+public interface ContextualSearchInteractionRecorder {
     // NOTE: this list needs to be kept in sync with the white list in
     // predictor_config_definitions.cc, the names list in ContextualSearchRankerLoggerImpl.java
     // and with ukm.xml!

@@ -49,9 +49,9 @@ class ShortTextRunSuppression extends ContextualSearchHeuristic {
     }
 
     @Override
-    protected void logRankerTapSuppression(ContextualSearchRankerLogger logger) {
-        logger.logFeature(
-                ContextualSearchRankerLogger.Feature.PORTION_OF_ELEMENT, mWordElementRatioDecile);
+    protected void logRankerTapSuppression(ContextualSearchInteractionRecorder logger) {
+        logger.logFeature(ContextualSearchInteractionRecorder.Feature.PORTION_OF_ELEMENT,
+                mWordElementRatioDecile);
     }
 
     /**

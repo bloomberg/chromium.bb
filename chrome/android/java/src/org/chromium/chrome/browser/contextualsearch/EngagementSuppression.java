@@ -88,31 +88,32 @@ public class EngagementSuppression extends ContextualSearchHeuristic {
     }
 
     @Override
-    protected void logRankerTapSuppression(ContextualSearchRankerLogger logger) {
+    protected void logRankerTapSuppression(ContextualSearchInteractionRecorder logger) {
         // These counters are updated in ContextualSearchPolcy when taps and opens are registered.
-        logger.logFeature(ContextualSearchRankerLogger.Feature.TAP_COUNT,
+        logger.logFeature(ContextualSearchInteractionRecorder.Feature.TAP_COUNT,
                 mPreferenceManager.readInt(
                         ChromePreferenceManager.CONTEXTUAL_SEARCH_ALL_TIME_TAP_COUNT));
-        logger.logFeature(ContextualSearchRankerLogger.Feature.OPEN_COUNT,
+        logger.logFeature(ContextualSearchInteractionRecorder.Feature.OPEN_COUNT,
                 mPreferenceManager.readInt(
                         ChromePreferenceManager.CONTEXTUAL_SEARCH_ALL_TIME_OPEN_COUNT));
-        logger.logFeature(ContextualSearchRankerLogger.Feature.QUICK_ANSWER_COUNT,
+        logger.logFeature(ContextualSearchInteractionRecorder.Feature.QUICK_ANSWER_COUNT,
                 mPreferenceManager.readInt(
                         ChromePreferenceManager.CONTEXTUAL_SEARCH_ALL_TIME_TAP_QUICK_ANSWER_COUNT));
         // These counters are updated in the #registerX static methods of this class.
-        logger.logFeature(ContextualSearchRankerLogger.Feature.ENTITY_IMPRESSIONS_COUNT,
+        logger.logFeature(ContextualSearchInteractionRecorder.Feature.ENTITY_IMPRESSIONS_COUNT,
                 mPreferenceManager.readInt(
                         ChromePreferenceManager.CONTEXTUAL_SEARCH_ENTITY_IMPRESSIONS_COUNT));
-        logger.logFeature(ContextualSearchRankerLogger.Feature.ENTITY_OPENS_COUNT,
+        logger.logFeature(ContextualSearchInteractionRecorder.Feature.ENTITY_OPENS_COUNT,
                 mPreferenceManager.readInt(
                         ChromePreferenceManager.CONTEXTUAL_SEARCH_ENTITY_OPENS_COUNT));
-        logger.logFeature(ContextualSearchRankerLogger.Feature.QUICK_ACTION_IMPRESSIONS_COUNT,
+        logger.logFeature(
+                ContextualSearchInteractionRecorder.Feature.QUICK_ACTION_IMPRESSIONS_COUNT,
                 mPreferenceManager.readInt(
                         ChromePreferenceManager.CONTEXTUAL_SEARCH_QUICK_ACTION_IMPRESSIONS_COUNT));
-        logger.logFeature(ContextualSearchRankerLogger.Feature.QUICK_ACTIONS_TAKEN_COUNT,
+        logger.logFeature(ContextualSearchInteractionRecorder.Feature.QUICK_ACTIONS_TAKEN_COUNT,
                 mPreferenceManager.readInt(
                         ChromePreferenceManager.CONTEXTUAL_SEARCH_QUICK_ACTIONS_TAKEN_COUNT));
-        logger.logFeature(ContextualSearchRankerLogger.Feature.QUICK_ACTIONS_IGNORED_COUNT,
+        logger.logFeature(ContextualSearchInteractionRecorder.Feature.QUICK_ACTIONS_IGNORED_COUNT,
                 mPreferenceManager.readInt(
                         ChromePreferenceManager.CONTEXTUAL_SEARCH_QUICK_ACTIONS_IGNORED_COUNT));
     }

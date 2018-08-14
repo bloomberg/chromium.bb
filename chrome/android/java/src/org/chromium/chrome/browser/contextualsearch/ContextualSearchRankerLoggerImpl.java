@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * Implements the UMA logging for Ranker that's used for Contextual Search Tap Suppression.
  */
-public class ContextualSearchRankerLoggerImpl implements ContextualSearchRankerLogger {
+public class ContextualSearchRankerLoggerImpl implements ContextualSearchInteractionRecorder {
     private static final String TAG = "ContextualSearch";
 
     // Names for all our features and labels.
@@ -233,7 +233,7 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchRankerL
     }
 
     /**
-     * Logs the given {@link ContextualSearchRankerLogger.Feature} with the given value
+     * Logs the given {@link ContextualSearchInteractionRecorder.Feature} with the given value
      * {@link Object}.
      * @param feature The feature to log.
      * @param value An {@link Object} value to log (must be convertible to a {@code long}).

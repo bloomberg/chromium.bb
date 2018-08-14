@@ -8,7 +8,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchHeuristics;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchIPH;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchRankerLogger;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchInteractionRecorder;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchUma;
 import org.chromium.chrome.browser.contextualsearch.EngagementSuppression;
 import org.chromium.chrome.browser.contextualsearch.QuickActionCategory;
@@ -56,10 +56,9 @@ public class ContextualSearchPanelMetrics {
     private long mPanelOpenedBeyondPeekDurationMs;
     // The current set of heuristics that should be logged with results seen when the panel closes.
     private ContextualSearchHeuristics mResultsSeenExperiments;
-    // The current set of heuristics to be logged through ranker with results seen when the panel
-    // closes.
-    private ContextualSearchRankerLogger mRankerLogger;
-    // Whether Ranker Outcomes are valid, because we showed the panel.
+    // The interaction recorder to use to record results seen when the panel closes.
+    private ContextualSearchInteractionRecorder mInteractionRecorder;
+    // Whether interaction Outcomes are valid, because we showed the panel.
     private boolean mAreOutcomesValid;
 
     /**
@@ -156,7 +155,7 @@ public class ContextualSearchPanelMetrics {
             ContextualSearchIPH.doSearchFinishedNotifications(profile, mWasSearchContentViewSeen,
                     mWasActivatedByTap, mWasContextualCardsDataShown);
 
-            writeRankerLoggerOutcomesAndReset();
+            writeInteractionOutcomesAndReset();
         }
 
         if (isStartingSearch) {
@@ -327,37 +326,38 @@ public class ContextualSearchPanelMetrics {
 
     /**
      * Sets up logging through Ranker for outcomes.
-     * @param rankerLogger The {@link ContextualSearchRankerLogger} currently being used to measure
-     *                     or suppress the UI by Ranker.
+     * @param interactionRecorder The {@link ContextualSearchInteractionRecorder} currently being
+     * used to measure to recorder user interaction outcomes.
      */
-    public void setRankerLogger(ContextualSearchRankerLogger rankerLogger) {
-        mRankerLogger = rankerLogger;
+    public void setInteractionRecorder(ContextualSearchInteractionRecorder interactionRecorder) {
+        mInteractionRecorder = interactionRecorder;
         mAreOutcomesValid = false;
     }
 
     /**
-     * Writes all the outcome features to the Ranker Logger and resets the logger.
+     * Writes all the outcome features to the Interaction Recorder and resets it.
      */
-    public void writeRankerLoggerOutcomesAndReset() {
-        if (mRankerLogger != null && mWasActivatedByTap && mAreOutcomesValid) {
+    public void writeInteractionOutcomesAndReset() {
+        if (mInteractionRecorder != null && mWasActivatedByTap && mAreOutcomesValid) {
             // Tell Ranker about the primary outcome.
-            mRankerLogger.logOutcome(ContextualSearchRankerLogger.Feature.OUTCOME_WAS_PANEL_OPENED,
+            mInteractionRecorder.logOutcome(
+                    ContextualSearchInteractionRecorder.Feature.OUTCOME_WAS_PANEL_OPENED,
                     mWasSearchContentViewSeen);
-            ContextualSearchUma.logRankerInference(
-                    mWasSearchContentViewSeen, mRankerLogger.getPredictionForTapSuppression());
-            mRankerLogger.logOutcome(
-                    ContextualSearchRankerLogger.Feature.OUTCOME_WAS_CARDS_DATA_SHOWN,
+            ContextualSearchUma.logRankerInference(mWasSearchContentViewSeen,
+                    mInteractionRecorder.getPredictionForTapSuppression());
+            mInteractionRecorder.logOutcome(
+                    ContextualSearchInteractionRecorder.Feature.OUTCOME_WAS_CARDS_DATA_SHOWN,
                     mWasContextualCardsDataShown);
             if (mWasQuickActionShown) {
-                mRankerLogger.logOutcome(
-                        ContextualSearchRankerLogger.Feature.OUTCOME_WAS_QUICK_ACTION_CLICKED,
+                mInteractionRecorder.logOutcome(ContextualSearchInteractionRecorder.Feature
+                                                        .OUTCOME_WAS_QUICK_ACTION_CLICKED,
                         mWasQuickActionClicked);
             }
             if (mResultsSeenExperiments != null) {
-                mResultsSeenExperiments.logRankerTapSuppressionOutcome(mRankerLogger);
+                mResultsSeenExperiments.logRankerTapSuppressionOutcome(mInteractionRecorder);
             }
-            mRankerLogger.writeLogAndReset();
-            mRankerLogger = null;
+            mInteractionRecorder.writeLogAndReset();
+            mInteractionRecorder = null;
         }
     }
 
