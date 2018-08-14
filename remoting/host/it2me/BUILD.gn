@@ -14,6 +14,9 @@ if (is_mac) {
   import("//build/config/mac/rules.gni")
   import("//third_party/icu/config.gni")
 }
+if (is_chromeos) {
+  import("//ui/ozone/ozone.gni")
+}
 
 source_set("common") {
   sources = [
@@ -49,7 +52,6 @@ source_set("common") {
     "//remoting/resources",
     "//remoting/signaling",
   ]
-
   if (is_desktop_linux) {
     deps += [
       "//build/config/linux/gtk",
@@ -59,6 +61,24 @@ source_set("common") {
       # our own through the indirect dependency to harfbuzz-ng here.
       "//third_party:freetype_harfbuzz",
     ]
+  }
+}
+
+if (is_chromeos) {
+  source_set("chrome_os_host") {
+    sources = [
+      "it2me_native_messaging_host_chromeos.cc",
+      "it2me_native_messaging_host_chromeos.h",
+    ]
+
+    deps = [
+      ":common",
+      "//skia",
+    ]
+
+    if (use_ozone) {
+      deps += [ "//ui/ozone" ]
+    }
   }
 }
 

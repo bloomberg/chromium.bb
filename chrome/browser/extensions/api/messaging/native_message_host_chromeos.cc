@@ -12,12 +12,9 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
-#include "base/task/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -26,17 +23,9 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/url_pattern.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/host/chromoting_host_context.h"
-#include "remoting/host/it2me/it2me_native_messaging_host.h"
-#include "remoting/host/policy_watcher.h"
-#include "ui/events/system_input_injector.h"
+#include "remoting/host/it2me/it2me_native_messaging_host_chromeos.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
-
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_platform.h"
-#endif
 
 namespace extensions {
 
@@ -102,52 +91,14 @@ struct BuiltInHost {
   std::unique_ptr<NativeMessageHost> (*create_function)();
 };
 
-#if defined(USE_OZONE)
-class OzoneSystemInputInjectorAdaptor : public ui::SystemInputInjectorFactory {
- public:
-  std::unique_ptr<ui::SystemInputInjector> CreateSystemInputInjector()
-      override {
-    return ui::OzonePlatform::GetInstance()->CreateSystemInputInjector();
-  }
-};
-
-base::LazyInstance<OzoneSystemInputInjectorAdaptor>::Leaky
-    g_ozone_system_input_injector_adaptor = LAZY_INSTANCE_INITIALIZER;
-#endif
-
-ui::SystemInputInjectorFactory* GetInputInjector() {
-  ui::SystemInputInjectorFactory* system = ui::GetSystemInputInjectorFactory();
-  if (system)
-    return system;
-
-#if defined(USE_OZONE)
-  return g_ozone_system_input_injector_adaptor.Pointer();
-#endif
-
-  return nullptr;
-}
-
 std::unique_ptr<NativeMessageHost> CreateIt2MeHost() {
-  std::unique_ptr<remoting::It2MeHostFactory> host_factory(
-      new remoting::It2MeHostFactory());
-  std::unique_ptr<remoting::ChromotingHostContext> context =
-      remoting::ChromotingHostContext::CreateForChromeOS(
-          base::WrapRefCounted(g_browser_process->system_request_context()),
-          content::BrowserThread::GetTaskRunnerForThread(
-              content::BrowserThread::IO),
-          content::BrowserThread::GetTaskRunnerForThread(
-              content::BrowserThread::UI),
-          base::CreateSingleThreadTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
-          GetInputInjector());
-  std::unique_ptr<remoting::PolicyWatcher> policy_watcher =
-      remoting::PolicyWatcher::CreateWithPolicyService(
-          g_browser_process->policy_service());
-  std::unique_ptr<NativeMessageHost> host(
-      new remoting::It2MeNativeMessagingHost(
-          /*needs_elevation=*/false, std::move(policy_watcher),
-          std::move(context), std::move(host_factory)));
-  return host;
+  return remoting::CreateIt2MeNativeMessagingHostForChromeOS(
+      g_browser_process->system_request_context(),
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::IO),
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::UI),
+      g_browser_process->policy_service());
 }
 
 // If you modify the list of allowed_origins, don't forget to update
