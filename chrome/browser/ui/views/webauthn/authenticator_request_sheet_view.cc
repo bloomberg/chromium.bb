@@ -15,8 +15,10 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 
 using views::BoxLayout;
 
@@ -32,8 +34,14 @@ void AuthenticatorRequestSheetView::InitChildViews() {
       views::LayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
 
-  std::unique_ptr<views::View> header_row = CreateHeaderRow();
-  AddChildView(header_row.release());
+  std::unique_ptr<views::View> upper_half = CreateIllustrationWithOverlays();
+  AddChildView(upper_half.release());
+
+  auto title_label = std::make_unique<views::Label>(
+      model()->GetStepTitle(), views::style::CONTEXT_DIALOG_TITLE,
+      views::style::STYLE_PRIMARY);
+  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  AddChildView(title_label.release());
 
   auto description_label = std::make_unique<views::Label>(
       model()->GetStepDescription(), CONTEXT_BODY_TEXT_LARGE,
@@ -61,31 +69,37 @@ void AuthenticatorRequestSheetView::ButtonPressed(views::Button* sender,
   model()->OnBack();
 }
 
-std::unique_ptr<views::View> AuthenticatorRequestSheetView::CreateHeaderRow() {
-  auto header_row = std::make_unique<views::View>();
-  header_row->SetLayoutManager(std::make_unique<BoxLayout>(
-      BoxLayout::kHorizontal, gfx::Insets(),
-      views::LayoutProvider::Get()->GetDistanceMetric(
-          views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
+std::unique_ptr<views::View>
+AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
+  auto image_with_overlays = std::make_unique<views::View>();
+  image_with_overlays->SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  auto title_label = std::make_unique<views::Label>(
-      model()->GetStepTitle(), views::style::CONTEXT_DIALOG_TITLE,
-      views::style::STYLE_PRIMARY);
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  auto image_view = std::make_unique<views::ImageView>();
+  image_view->SetImage(model()->GetStepIllustration());
+  image_with_overlays->AddChildView(image_view.release());
 
   if (model()->IsBackButtonVisible()) {
     std::unique_ptr<views::ImageButton> back_arrow(
         views::CreateVectorImageButton(this));
     back_arrow->SetFocusForPlatform();
     back_arrow->SetAccessibleName(l10n_util::GetStringUTF16(IDS_BACK_BUTTON));
+
+    auto color_reference = std::make_unique<views::Label>(
+        base::string16(), views::style::CONTEXT_DIALOG_TITLE,
+        views::style::STYLE_PRIMARY);
     views::SetImageFromVectorIcon(
         back_arrow.get(), vector_icons::kBackArrowIcon,
-        color_utils::DeriveDefaultIconColor(title_label->enabled_color()));
+        color_utils::DeriveDefaultIconColor(color_reference->enabled_color()));
+    back_arrow->SizeToPreferredSize();
     back_arrow_button_ = back_arrow.get();
-    header_row->AddChildView(back_arrow.release());
+
+    // The |overlaly_container| will be stretched to fill |image_with_overlays|
+    // while allowing |back_arrow| to be absolutely positioned inside it, and
+    // rendered on top of the image due to being higher in the z-order.
+    auto overlay_container = std::make_unique<views::View>();
+    overlay_container->AddChildView(back_arrow.release());
+    image_with_overlays->AddChildView(overlay_container.release());
   }
 
-  header_row->AddChildView(title_label.release());
-
-  return header_row;
+  return image_with_overlays;
 }

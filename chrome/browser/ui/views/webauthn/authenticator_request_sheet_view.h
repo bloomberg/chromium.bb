@@ -18,13 +18,19 @@ class AuthenticatorRequestSheetModel;
 // dialog. Each sheet corresponds to a given step of the authentication flow,
 // and encapsulates the controls above the Ok/Cancel buttons, namely:
 //  -- an optional `back icon`,
+//  -- a pretty illustration in the top half of the dialog,
 //  -- the title of the current step,
 //  -- the description of the current step, and
 //  -- an optional view with step-specific content, added by subclasses, filling
 //     the rest of the space.
 //
 // +-------------------------------------------------+
-// | (<-)  Title of the current step                 |
+// | (<-)  . . . . . . . . . . . . . . . . . . . .   |
+// | . . . . . . . . . . . . . . . . . . . . . . .   |
+// | . . . I L L U S T R A T I O N   H E R E . . .   |
+// | . . . . . . . . . . . . . . . . . . . . . . .   |
+// |                                                 |
+// | Title of the current step                       |
 // |                                                 |
 // | Description text explaining to the user what    |
 // | this step is all about.                         |
@@ -63,9 +69,9 @@ class AuthenticatorRequestSheetView : public views::View,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
-  // Creates the header row of the sheet, containing an optional back arrow,
-  // followed by the title of the sheet.
-  std::unique_ptr<views::View> CreateHeaderRow();
+  // Creates the upper half of the sheet, consisting of a pretty illustration
+  // overlayed with absolutely positioned controls rendered on top.
+  std::unique_ptr<views::View> CreateIllustrationWithOverlays();
 
   std::unique_ptr<AuthenticatorRequestSheetModel> model_;
   views::Button* back_arrow_button_ = nullptr;
