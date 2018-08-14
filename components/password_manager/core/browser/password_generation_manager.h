@@ -40,6 +40,11 @@ class PasswordGenerationManager {
                             PasswordManagerDriver* driver);
   virtual ~PasswordGenerationManager();
 
+  // Instructs the PasswordRequirementsService to fetch requirements for
+  // |origin|. This needs to be called to enable domain-wide password
+  // requirements overrides.
+  void PrefetchSpec(const GURL& origin);
+
   // Stores password requirements received from the autofill server for the
   // |forms| and fetches domain-wide requirements.
   void ProcessPasswordRequirements(

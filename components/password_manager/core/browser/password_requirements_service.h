@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/containers/mru_cache.h"
+#include "base/macros.h"
 #include "components/autofill/core/browser/password_requirements_spec_fetcher.h"
 #include "components/autofill/core/browser/proto/password_requirements.pb.h"
 #include "components/autofill/core/common/signatures_util.h"
@@ -52,9 +53,17 @@ class PasswordRequirementsService : public KeyedService {
                autofill::FieldSignature field_signature,
                const autofill::PasswordRequirementsSpec& spec);
 
+#if defined(UNIT_TEST)
+  // Wipes MRU cached data to ensure that it gets fetched again.
+  // This style of delegation is used because UNIT_TEST is only available in
+  // header files as per presubmit checks.
+  void ClearDataForTesting() { ClearDataForTestingImpl(); }
+#endif
+
  private:
   void OnFetchedRequirements(const GURL& main_frame_domain,
                              const autofill::PasswordRequirementsSpec& spec);
+  void ClearDataForTestingImpl();
 
   using FullSignature =
       std::pair<autofill::FormSignature, autofill::FieldSignature>;

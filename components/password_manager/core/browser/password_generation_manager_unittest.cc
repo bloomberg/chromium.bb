@@ -333,10 +333,11 @@ TEST_F(PasswordGenerationManagerTest, ProcessPasswordRequirements) {
                                             ? SYNCING_NORMAL_ENCRYPTION
                                             : NOT_SYNCING));
 
+    GetGenerationManager()->PrefetchSpec(origin.GetOrigin());
+
     // Processs the password requirements with expected side effects of
     // either storing the requirements from the AutofillQueryResponseContents)
-    // in the PasswordRequirementsService or triggering a lookup for the
-    // domain that is stored in the PasswordRequirementsService.
+    // in the PasswordRequirementsService.
     GetGenerationManager()->ProcessPasswordRequirements(forms);
 
     // Validate the result.

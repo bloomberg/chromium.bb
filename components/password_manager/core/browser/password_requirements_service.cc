@@ -69,6 +69,12 @@ void PasswordRequirementsService::PrefetchSpec(const GURL& main_frame_domain) {
     return;
   }
 
+  // No need to fetch the same data multiple times.
+  if (specs_for_domains_.Get(main_frame_domain) != specs_for_domains_.end()) {
+    VLOG(1) << "PasswordRequirementsService::PrefetchSpec has an entry already";
+    return;
+  }
+
   // Using base::Unretained(this) is safe here because the
   // PasswordRequirementsService owns fetcher_. If |this| is deleted, so is
   // the |fetcher_|, and no callback can happen.
@@ -94,6 +100,11 @@ void PasswordRequirementsService::AddSpec(
           << field_signature << ", " << spec << ")";
   specs_for_signatures_.Put(std::make_pair(form_signature, field_signature),
                             spec);
+}
+
+void PasswordRequirementsService::ClearDataForTestingImpl() {
+  specs_for_domains_.Clear();
+  specs_for_signatures_.Clear();
 }
 
 }  // namespace password_manager
