@@ -127,6 +127,17 @@ void TabletModeWindowDragDelegate::ContinueWindowDrag(
     const gfx::Point& location_in_screen,
     UpdateDraggedWindowType type,
     const gfx::Rect& target_bounds) {
+  if (!did_move_) {
+    const gfx::Rect work_area_bounds =
+        display::Screen::GetScreen()
+            ->GetDisplayNearestWindow(dragged_window_)
+            .work_area();
+    if (location_in_screen.y() >=
+        GetIndicatorsVerticalThreshold(work_area_bounds)) {
+      did_move_ = true;
+    }
+  }
+
   if (type == UpdateDraggedWindowType::UPDATE_BOUNDS) {
     // UPDATE_BOUNDS is used when dragging tab(s) out of a browser window.
     // Changing bounds might delete ourselves as the dragged (browser) window
@@ -188,6 +199,7 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
   }
 
   dragged_window_ = nullptr;
+  did_move_ = false;
 }
 
 bool TabletModeWindowDragDelegate::ShouldOpenOverviewWhenDragStarts() {
@@ -215,8 +227,10 @@ SplitViewController::SnapPosition TabletModeWindowDragDelegate::GetSnapPosition(
 
   // The user has to drag pass the indicator vertical threshold to snap the
   // window.
-  if (location_in_screen.y() < GetIndicatorsVerticalThreshold(work_area_bounds))
+  if (!did_move_ && location_in_screen.y() <
+                        GetIndicatorsVerticalThreshold(work_area_bounds)) {
     return SplitViewController::NONE;
+  }
 
   const bool is_landscape =
       split_view_controller_->IsCurrentScreenOrientationLandscape();
@@ -287,11 +301,14 @@ IndicatorState TabletModeWindowDragDelegate::GetIndicatorState(
 
   // If the event location hasn't passed the indicator vertical threshold, do
   // not show the drag indicators.
-  gfx::Rect work_area_bounds = display::Screen::GetScreen()
-                                   ->GetDisplayNearestWindow(dragged_window_)
-                                   .work_area();
-  if (location_in_screen.y() < GetIndicatorsVerticalThreshold(work_area_bounds))
+  const gfx::Rect work_area_bounds =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(dragged_window_)
+          .work_area();
+  if (!did_move_ && location_in_screen.y() <
+                        GetIndicatorsVerticalThreshold(work_area_bounds)) {
     return IndicatorState::kNone;
+  }
 
   // If the event location has passed the maximize vertical threshold, and the
   // event location is not in snap indicator area, and overview mode is not
