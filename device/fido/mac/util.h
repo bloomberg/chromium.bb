@@ -47,8 +47,6 @@ base::Optional<std::vector<uint8_t>> GenerateSignature(
 std::unique_ptr<ECPublicKey> SecKeyRefToECPublicKey(SecKeyRef public_key_ref)
     API_AVAILABLE(macosx(10.12.2));
 
-std::vector<uint8_t> TouchIdAaguid();
-
 }  // namespace mac
 }  // namespace fido
 }  // namespace device
