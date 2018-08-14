@@ -33,7 +33,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   ~AuthenticatorRequestClientDelegate() override;
 
   // Notifies the delegate that the request is actually starting.
-  virtual void DidStartRequest();
+  virtual void DidStartRequest(base::OnceClosure cancel_callback);
 
   // Returns true if the given relying party ID is permitted to receive
   // individual attestation certificates. This:

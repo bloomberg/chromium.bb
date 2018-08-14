@@ -473,7 +473,9 @@ void AuthenticatorImpl::MakeCredential(
 
   DCHECK(make_credential_response_callback_.is_null());
   make_credential_response_callback_ = std::move(callback);
-  request_delegate_->DidStartRequest();
+  request_delegate_->DidStartRequest(
+      base::BindOnce(&AuthenticatorImpl::Cancel,
+                     weak_factory_.GetWeakPtr()) /* cancel_callback */);
 
   timer_->Start(
       FROM_HERE, options->adjusted_timeout,
@@ -569,7 +571,9 @@ void AuthenticatorImpl::GetAssertion(
 
   DCHECK(get_assertion_response_callback_.is_null());
   get_assertion_response_callback_ = std::move(callback);
-  request_delegate_->DidStartRequest();
+  request_delegate_->DidStartRequest(
+      base::BindOnce(&AuthenticatorImpl::Cancel,
+                     weak_factory_.GetWeakPtr()) /* cancel_callback */);
 
   timer_->Start(
       FROM_HERE, options->adjusted_timeout,
@@ -803,6 +807,16 @@ void AuthenticatorImpl::OnTimeout() {
         std::move(get_assertion_response_callback_),
         blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
   }
+}
+
+void AuthenticatorImpl::Cancel() {
+  // If response callback is invoked already, then ignore cancel request.
+  if (!make_credential_response_callback_ && !get_assertion_response_callback_)
+    return;
+
+  // Response from user cancellation is indistinguishable from error due to
+  // timeout.
+  OnTimeout();
 }
 
 void AuthenticatorImpl::InvokeCallbackAndCleanup(

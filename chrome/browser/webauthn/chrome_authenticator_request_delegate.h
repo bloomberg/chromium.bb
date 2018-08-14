@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -62,7 +63,7 @@ class ChromeAuthenticatorRequestDelegate
   content::BrowserContext* browser_context() const;
 
   // content::AuthenticatorRequestClientDelegate:
-  void DidStartRequest() override;
+  void DidStartRequest(base::OnceClosure cancel_callback) override;
   bool ShouldPermitIndividualAttestation(
       const std::string& relying_party_id) override;
   void ShouldReturnAttestation(
@@ -79,9 +80,11 @@ class ChromeAuthenticatorRequestDelegate
 
   // AuthenticatorRequestDialogModel::Observer:
   void OnModelDestroyed() override;
+  void OnCancelRequest() override;
 
   content::RenderFrameHost* const render_frame_host_;
   AuthenticatorRequestDialogModel* weak_dialog_model_ = nullptr;
+  base::OnceClosure cancel_callback_;
 
   base::WeakPtrFactory<ChromeAuthenticatorRequestDelegate> weak_ptr_factory_;
 
