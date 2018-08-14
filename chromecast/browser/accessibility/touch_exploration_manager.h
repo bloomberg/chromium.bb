@@ -16,6 +16,9 @@
 #include "ui/wm/public/activation_client.h"
 
 namespace chromecast {
+
+class CastGestureHandler;
+
 namespace shell {
 
 // Responsible for initializing TouchExplorationController when spoken feedback
@@ -29,7 +32,8 @@ class TouchExplorationManager : public ui::EventRewriter,
       aura::Window* root_window,
       wm::ActivationClient* activation_client,
       AccessibilityFocusRingController* accessibility_focus_ring_controller,
-      AccessibilitySoundPlayer* accessibility_sound_player);
+      AccessibilitySoundPlayer* accessibility_sound_player,
+      CastGestureHandler* cast_gesture_handler);
   ~TouchExplorationManager() override;
 
   // Enable or disable touch exploration.
@@ -46,6 +50,7 @@ class TouchExplorationManager : public ui::EventRewriter,
 
   // TouchExplorationControllerDelegate overrides:
   void HandleAccessibilityGesture(ax::mojom::Gesture gesture) override;
+  void HandleTap(const gfx::Point touch_location) override;
 
   // wm::ActivationChangeObserver overrides:
   void OnWindowActivated(
@@ -68,6 +73,7 @@ class TouchExplorationManager : public ui::EventRewriter,
   wm::ActivationClient* activation_client_;
   AccessibilityFocusRingController* accessibility_focus_ring_controller_;
   AccessibilitySoundPlayer* accessibility_sound_player_;
+  CastGestureHandler* cast_gesture_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationManager);
 };

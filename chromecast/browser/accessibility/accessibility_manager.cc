@@ -6,6 +6,7 @@
 
 #include "chromecast/graphics/accessibility/focus_ring_controller.h"
 #include "chromecast/graphics/accessibility/fullscreen_magnification_controller.h"
+#include "chromecast/graphics/cast_window_manager_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/wm/public/activation_client.h"
@@ -14,11 +15,11 @@ namespace chromecast {
 namespace shell {
 
 AccessibilityManager::AccessibilityManager(
-    aura::WindowTreeHost* window_tree_host)
-    : window_tree_host_(window_tree_host),
+    CastWindowManagerAura* window_manager)
+    : window_tree_host_(window_manager->window_tree_host()),
       accessibility_sound_proxy_(std::make_unique<AccessibilitySoundPlayer>()) {
-  DCHECK(window_tree_host);
-  aura::Window* root_window = window_tree_host->window()->GetRootWindow();
+  DCHECK(window_tree_host_);
+  aura::Window* root_window = window_tree_host_->window()->GetRootWindow();
   wm::ActivationClient* activation_client =
       wm::GetActivationClient(root_window);
   focus_ring_controller_ =
@@ -28,7 +29,8 @@ AccessibilityManager::AccessibilityManager(
   touch_exploration_manager_ = std::make_unique<TouchExplorationManager>(
       root_window, activation_client,
       accessibility_focus_ring_controller_.get(),
-      &accessibility_sound_proxy_);
+      &accessibility_sound_proxy_,
+      window_manager->GetGestureHandler());
   triple_tap_detector_ = std::make_unique<TripleTapDetector>(root_window, this);
   magnification_controller_ =
       std::make_unique<FullscreenMagnificationController>(root_window);

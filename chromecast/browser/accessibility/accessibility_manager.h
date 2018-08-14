@@ -19,6 +19,7 @@ class WindowTreeHost;
 
 namespace chromecast {
 
+class CastWindowManagerAura;
 class FocusRingController;
 class MagnificationController;
 
@@ -28,7 +29,7 @@ namespace shell {
 // to the responsible party.
 class AccessibilityManager : public TripleTapDetectorDelegate {
  public:
-  explicit AccessibilityManager(aura::WindowTreeHost* window_tree_host);
+  explicit AccessibilityManager(CastWindowManagerAura* window_manager);
   ~AccessibilityManager() override;
 
   // Sets the focus ring color.

@@ -535,8 +535,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   cast_browser_process_->SetAccessibilityManager(
-      std::make_unique<AccessibilityManager>(
-          window_manager_->window_tree_host()));
+      std::make_unique<AccessibilityManager>(window_manager_.get()));
 #endif  // BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
 
 #else   // defined(USE_AURA)

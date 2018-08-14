@@ -324,4 +324,8 @@ void CastWindowManagerAura::CastWindowManagerAura::SetColorInversion(
   window_tree_host_->window()->layer()->SetLayerInverted(enable);
 }
 
+CastGestureHandler* CastWindowManagerAura::GetGestureHandler() const {
+  return system_gesture_dispatcher_.get();
+}
+
 }  // namespace chromecast

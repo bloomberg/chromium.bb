@@ -611,6 +611,8 @@ void TouchExplorationController::MaybeSendSimulatedTapInLiftActivationBounds(
       lift_activation_bounds_.Contains(location)) {
     accessibility_sound_player_->PlayTouchTypeEarcon();
     SendSimulatedTap();
+  } else {
+    delegate_->HandleTap(location);
   }
 }
 
