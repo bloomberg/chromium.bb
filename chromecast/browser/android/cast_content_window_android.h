@@ -28,9 +28,10 @@ class CastContentWindowAndroid : public CastContentWindow {
   void CreateWindowForWebContents(
       content::WebContents* web_contents,
       CastWindowManager* window_manager,
-      bool is_visible,
       CastWindowManager::WindowId z_order,
       VisibilityPriority visibility_priority) override;
+  void GrantScreenAccess() override;
+  void RevokeScreenAccess() override;
   void EnableTouchInput(bool enabled) override;
   void RequestVisibility(VisibilityPriority visibility_priority) override;
   void NotifyVisibilityChange(VisibilityType visibility_type) override;

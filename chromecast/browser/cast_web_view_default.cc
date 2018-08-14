@@ -141,7 +141,6 @@ void CastWebViewDefault::CloseContents(content::WebContents* source) {
 }
 
 void CastWebViewDefault::InitializeWindow(CastWindowManager* window_manager,
-                                          bool is_visible,
                                           CastWindowManager::WindowId z_order,
                                           VisibilityPriority initial_priority) {
   if (media::CastMediaShlib::ClearVideoPlaneImage) {
@@ -150,8 +149,16 @@ void CastWebViewDefault::InitializeWindow(CastWindowManager* window_manager,
 
   DCHECK(window_manager);
   window_->CreateWindowForWebContents(web_contents_.get(), window_manager,
-                                      is_visible, z_order, initial_priority);
+                                      z_order, initial_priority);
   web_contents_->Focus();
+}
+
+void CastWebViewDefault::GrantScreenAccess() {
+  window_->GrantScreenAccess();
+}
+
+void CastWebViewDefault::RevokeScreenAccess() {
+  window_->RevokeScreenAccess();
 }
 
 content::WebContents* CastWebViewDefault::OpenURLFromTab(

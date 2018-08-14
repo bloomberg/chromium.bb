@@ -9,6 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/CastContentWindowAndroid_jni.h"
@@ -61,7 +62,6 @@ CastContentWindowAndroid::~CastContentWindowAndroid() {
 void CastContentWindowAndroid::CreateWindowForWebContents(
     content::WebContents* web_contents,
     CastWindowManager* /* window_manager */,
-    bool /* is_visible */,
     CastWindowManager::WindowId /* z_order */,
     VisibilityPriority visibility_priority) {
   DCHECK(web_contents);
@@ -72,6 +72,14 @@ void CastContentWindowAndroid::CreateWindowForWebContents(
   Java_CastContentWindowAndroid_createWindowForWebContents(
       env, java_window_, java_web_contents,
       static_cast<int>(visibility_priority));
+}
+
+void CastContentWindowAndroid::GrantScreenAccess() {
+  NOTIMPLEMENTED();
+}
+
+void CastContentWindowAndroid::RevokeScreenAccess() {
+  NOTIMPLEMENTED();
 }
 
 void CastContentWindowAndroid::EnableTouchInput(bool enabled) {
