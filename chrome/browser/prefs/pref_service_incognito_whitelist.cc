@@ -51,7 +51,7 @@ namespace {
 
 // List of keys that can be changed in the user prefs file by the incognito
 // profile.
-const char* persistent_pref_names[] = {
+const char* const kPersistentPrefNames[] = {
 #if defined(OS_CHROMEOS)
     // Accessibility preferences should be persisted if they are changed in
     // incognito mode.
@@ -171,8 +171,8 @@ const char* persistent_pref_names[] = {
 // This list is temporarily added for transition of incognito preferences
 // storage default, from on disk to in memory. All items in this list will be
 // audited, checked with owners, and removed or transfered to
-// |persistent_pref_names|.
-const char* temporary_incognito_whitelist[] = {
+// |kPersistentPrefNames|.
+const char* const kTemporaryIncognitoWhitelist[] = {
 // ash/public/cpp/ash_pref_names.h
 #if defined(OS_CHROMEOS)
     ash::prefs::kDetachableBaseDevices, ash::prefs::kEnableStylusTools,
@@ -838,14 +838,14 @@ namespace prefs {
 
 std::vector<const char*> GetIncognitoPersistentPrefsWhitelist() {
   std::vector<const char*> whitelist;
-  whitelist.insert(whitelist.end(), persistent_pref_names,
-                   persistent_pref_names + base::size(persistent_pref_names));
+  whitelist.insert(whitelist.end(), kPersistentPrefNames,
+                   kPersistentPrefNames + base::size(kPersistentPrefNames));
 
   // TODO(https://crbug.com/861722): Remove after the list is audited and
   // emptied.
-  whitelist.insert(whitelist.end(), temporary_incognito_whitelist,
-                   temporary_incognito_whitelist +
-                       base::size(temporary_incognito_whitelist));
+  whitelist.insert(
+      whitelist.end(), kTemporaryIncognitoWhitelist,
+      kTemporaryIncognitoWhitelist + base::size(kTemporaryIncognitoWhitelist));
   return whitelist;
 }
 
