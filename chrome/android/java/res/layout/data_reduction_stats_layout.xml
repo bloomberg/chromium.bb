@@ -11,7 +11,19 @@
     android:clipToPadding="false"
     android:orientation="vertical" >
 
+    <TextView
+        android:id="@+id/initial_data_savings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center_horizontal"
+        android:drawablePadding="3dp"
+        android:drawableTop="@drawable/data_reduction_big"
+        android:text="@string/data_reduction_initial_title"
+        android:textAppearance="@style/BlackDisabledText1" />
+
     <LinearLayout
+        android:id="@+id/data_savings_summary_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -68,6 +80,7 @@
     <include layout="@layout/data_usage_chart" />
 
     <FrameLayout
+        android:id="@+id/chart_dates"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
