@@ -305,9 +305,8 @@ bool ARCoreImpl::TransformRayToScreenSpace(const mojom::XRRayPtr& ray,
   gfx::Transform proj_view_transform = projection_transform * view_transform;
 
   // Transform the ray into screen space.
-  gfx::Point3F screen_point_3d{ray->origin[0] + ray->direction[0],
-                               ray->origin[1] + ray->direction[1],
-                               ray->origin[2] + ray->direction[2]};
+  gfx::Point3F screen_point_3d = ray->origin + ray->direction;
+
   proj_view_transform.TransformPoint(&screen_point_3d);
   if (screen_point_3d.x() < -1 || screen_point_3d.x() > 1 ||
       screen_point_3d.y() < -1 || screen_point_3d.y() > 1) {

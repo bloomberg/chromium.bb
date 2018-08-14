@@ -137,10 +137,8 @@ struct VRPose {
 };
 
 struct XRRay {
-  // TODO(https://crbug.com/845293): use Point3F and Vector3F from
-  // ui/gfx/geometry and inline directly in requestHitTest().
-  array<float, 3> origin;
-  array<float, 3> direction;
+  gfx.mojom.Point3F origin;
+  gfx.mojom.Vector3dF direction;
 };
 
 struct XRHitResult {

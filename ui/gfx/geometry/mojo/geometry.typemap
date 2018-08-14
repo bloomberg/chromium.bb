@@ -6,6 +6,7 @@ mojom = "//ui/gfx/geometry/mojo/geometry.mojom"
 public_headers = [
   "//ui/gfx/geometry/point.h",
   "//ui/gfx/geometry/point_f.h",
+  "//ui/gfx/geometry/point3_f.h",
   "//ui/gfx/geometry/size.h",
   "//ui/gfx/geometry/rect.h",
   "//ui/gfx/geometry/rect_f.h",
@@ -14,6 +15,7 @@ public_headers = [
   "//ui/gfx/geometry/insets.h",
   "//ui/gfx/geometry/vector2d.h",
   "//ui/gfx/geometry/vector2d_f.h",
+  "//ui/gfx/geometry/vector3d_f.h",
 ]
 traits_headers = [ "//ui/gfx/geometry/mojo/geometry_struct_traits.h" ]
 deps = [
@@ -22,6 +24,7 @@ deps = [
 type_mappings = [
   "gfx.mojom.Point=gfx::Point",
   "gfx.mojom.PointF=gfx::PointF",
+  "gfx.mojom.Point3F=gfx::Point3F",
   "gfx.mojom.Size=gfx::Size",
   "gfx.mojom.SizeF=gfx::SizeF",
   "gfx.mojom.Rect=gfx::Rect",
@@ -30,5 +33,6 @@ type_mappings = [
   "gfx.mojom.InsetsF=gfx::InsetsF",
   "gfx.mojom.Vector2d=gfx::Vector2d",
   "gfx.mojom.Vector2dF=gfx::Vector2dF",
+  "gfx.mojom.Vector3dF=gfx::Vector3dF",
   "gfx.mojom.ScrollOffset=gfx::ScrollOffset",
 ]
