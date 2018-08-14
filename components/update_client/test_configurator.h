@@ -20,11 +20,6 @@
 
 class PrefService;
 
-namespace net {
-class TestURLRequestContextGetter;
-class URLRequestContextGetter;
-}  // namespace net
-
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
@@ -91,7 +86,6 @@ class TestConfigurator : public Configurator {
   std::string GetOSLongName() const override;
   std::string ExtraRequestParams() const override;
   std::string GetDownloadPreference() const override;
-  scoped_refptr<net::URLRequestContextGetter> RequestContext() const override;
   scoped_refptr<network::SharedURLLoaderFactory> URLLoaderFactory()
       const override;
   std::unique_ptr<service_manager::Connector> CreateServiceManagerConnector()
@@ -137,7 +131,6 @@ class TestConfigurator : public Configurator {
 
   std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
-  scoped_refptr<net::TestURLRequestContextGetter> context_;
 
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   network::TestURLLoaderFactory test_url_loader_factory_;
