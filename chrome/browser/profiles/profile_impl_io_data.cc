@@ -32,6 +32,8 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/predictor.h"
+#include "chrome/browser/net/profile_network_context_service.h"
+#include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/net/quota_policy_channel_id_store.h"
 #include "chrome/browser/net/reporting_permissions_checker.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_io_data.h"
@@ -116,19 +118,6 @@ net::BackendType ChooseCacheBackendType(const base::CommandLine& command_line) {
   return net::CACHE_BACKEND_DEFAULT;
 }
 
-void MaybeDeleteMediaCache(const base::FilePath& media_cache_path) {
-  if (!base::FeatureList::IsEnabled(features::kUseSameCacheForMedia) ||
-      media_cache_path.empty()) {
-    return;
-  }
-  base::PostTaskWithTraits(
-      FROM_HERE,
-      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(base::IgnoreResult(&base::DeleteFile), media_cache_path,
-                     true /* recursive */));
-}
-
 }  // namespace
 
 using content::BrowserThread;
@@ -188,12 +177,9 @@ void ProfileImplIOData::Handle::Init(
 
   io_data_->lazy_params_.reset(lazy_params);
 
-  PrefService* pref_service = profile_->GetPrefs();
   // Keep track of profile path and cache sizes separately so we can use them
   // on demand when creating storage isolated URLRequestContextGetters.
   io_data_->profile_path_ = profile_path;
-  io_data_->app_cache_max_size_ =
-      pref_service->GetInteger(prefs::kDiskCacheSize);
   io_data_->app_media_cache_max_size_ = media_cache_max_size;
 
   io_data_->predictor_.reset(predictor);
@@ -324,11 +310,24 @@ ProfileImplIOData::Handle::CreateIsolatedAppRequestContextGetter(
       protocol_handler_interceptor(
           ProtocolHandlerRegistryFactory::GetForBrowserContext(profile_)
               ->CreateJobInterceptorFactory());
+  base::FilePath relative_partition_path;
+  // This method is passed the absolute partition path, but
+  // ProfileNetworkContext works in terms of relative partition paths.
+  bool result = profile_->GetPath().AppendRelativePath(
+      partition_path, &relative_partition_path);
+  DCHECK(result);
+  network::mojom::NetworkContextRequest network_context_request;
+  network::mojom::NetworkContextParamsPtr network_context_params;
+  ProfileNetworkContextServiceFactory::GetForContext(profile_)
+      ->SetUpProfileIODataNetworkContext(in_memory, relative_partition_path,
+                                         &network_context_request,
+                                         &network_context_params);
   scoped_refptr<ChromeURLRequestContextGetter> context =
       ChromeURLRequestContextGetter::CreateForIsolatedApp(
           profile_, io_data_, descriptor,
           std::move(protocol_handler_interceptor), protocol_handlers,
-          std::move(request_interceptors));
+          std::move(request_interceptors), std::move(network_context_request),
+          std::move(network_context_params));
   app_request_context_getter_map_[descriptor] = context;
 
   return context.get();
@@ -426,7 +425,6 @@ ProfileImplIOData::LazyParams::~LazyParams() {}
 
 ProfileImplIOData::ProfileImplIOData()
     : ProfileIOData(Profile::REGULAR_PROFILE),
-      app_cache_max_size_(0),
       app_media_cache_max_size_(0) {
 }
 
@@ -524,128 +522,6 @@ void ProfileImplIOData::
   extensions_context->set_cookie_store(extensions_cookie_store_.get());
 }
 
-net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
-    net::URLRequestContext* main_context,
-    const StoragePartitionDescriptor& partition_descriptor,
-    std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
-        protocol_handler_interceptor,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) const {
-  if (!partition_descriptor.in_memory) {
-    MaybeDeleteMediaCache(
-        partition_descriptor.path.Append(chrome::kMediaCacheDirname));
-  }
-
-  // Copy most state from the main context.
-  AppRequestContext* context = new AppRequestContext();
-  context->CopyFrom(main_context);
-
-  base::FilePath cookie_path = partition_descriptor.path.Append(
-      chrome::kCookieFilename);
-  base::FilePath channel_id_path =
-      partition_descriptor.path.Append(chrome::kChannelIDFilename);
-  base::FilePath cache_path =
-      partition_descriptor.path.Append(chrome::kCacheDirname);
-
-  // Use a separate HTTP disk cache for isolated apps.
-  std::unique_ptr<net::HttpCache::BackendFactory> app_backend;
-  if (partition_descriptor.in_memory) {
-    app_backend = net::HttpCache::DefaultBackend::InMemory(0);
-  } else {
-    app_backend.reset(new net::HttpCache::DefaultBackend(
-        net::DISK_CACHE,
-        ChooseCacheBackendType(*base::CommandLine::ForCurrentProcess()),
-        cache_path, app_cache_max_size_));
-  }
-
-  std::unique_ptr<net::CookieStore> cookie_store;
-  scoped_refptr<net::SQLiteChannelIDStore> channel_id_db;
-  // Create a single task runner to use with the CookieStore and ChannelIDStore.
-  scoped_refptr<base::SequencedTaskRunner> cookie_background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
-  if (partition_descriptor.in_memory) {
-    cookie_path = base::FilePath();
-  }
-  content::CookieStoreConfig cookie_config(cookie_path, false, false, nullptr);
-  if (!partition_descriptor.in_memory) {
-    // Use an app-specific cookie store.
-    DCHECK(!cookie_path.empty());
-
-    // TODO(creis): We should have a cookie delegate for notifying the cookie
-    // extensions API, but we need to update it to understand isolated apps
-    // first.
-    cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
-    channel_id_db = new net::SQLiteChannelIDStore(
-        channel_id_path, cookie_background_task_runner);
-  }
-  std::unique_ptr<net::ChannelIDService> channel_id_service(
-      new net::ChannelIDService(
-          new net::DefaultChannelIDStore(channel_id_db.get())));
-  cookie_config.channel_id_service = channel_id_service.get();
-  cookie_config.background_task_runner = cookie_background_task_runner;
-  cookie_store =
-      content::CreateCookieStore(cookie_config, main_context->net_log());
-  cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
-
-  // Build a new HttpNetworkSession that uses the new ChannelIDService.
-  // TODO(mmenke):  It's weird to combine state from
-  // main_request_context_storage() objects and the argument to this method,
-  // |main_context|.  Remove |main_context| as an argument, and just use
-  // main_context() instead.
-  net::HttpNetworkSession* network_session =
-      main_context->http_transaction_factory()->GetSession();
-  net::HttpNetworkSession::Context session_context = network_session->context();
-  session_context.channel_id_service = channel_id_service.get();
-  std::unique_ptr<net::HttpNetworkSession> http_network_session(
-      new net::HttpNetworkSession(network_session->params(), session_context));
-  std::unique_ptr<net::HttpCache> app_http_cache =
-      CreateMainHttpFactory(http_network_session.get(), std::move(app_backend));
-
-  // Transfer ownership of the ChannelIDStore and the HttpNetworkSession to the
-  // AppRequestContext.
-  context->SetChannelIDService(std::move(channel_id_service));
-  context->SetHttpNetworkSession(std::move(http_network_session));
-
-  // Transfer ownership of the cookies and cache to AppRequestContext.
-  context->SetCookieStore(std::move(cookie_store));
-  context->SetHttpTransactionFactory(std::move(app_http_cache));
-
-  std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory(
-      new net::URLRequestJobFactoryImpl());
-  InstallProtocolHandlers(job_factory.get(), protocol_handlers);
-  // The data reduction proxy interceptor should be as close to the network
-  // as possible.
-  request_interceptors.insert(
-      request_interceptors.begin(),
-      data_reduction_proxy_io_data()->CreateInterceptor());
-
-  std::unique_ptr<net::URLRequestJobFactory> top_job_factory(
-      SetUpJobFactoryDefaults(
-          std::move(job_factory), std::move(request_interceptors),
-          std::move(protocol_handler_interceptor), context->network_delegate(),
-          context->host_resolver()));
-  context->SetJobFactory(std::move(top_job_factory));
-
-#if BUILDFLAG(ENABLE_REPORTING)
-  if (context->reporting_service()) {
-    context->SetReportingService(net::ReportingService::Create(
-        context->reporting_service()->GetPolicy(), context));
-  }
-
-  if (context->network_error_logging_service()) {
-    context->SetNetworkErrorLoggingService(
-        net::NetworkErrorLoggingService::Create(
-            net::NetworkErrorLoggingDelegate::Create()));
-    context->network_error_logging_service()->SetReportingService(
-        context->reporting_service());
-  }
-#endif  // BUILDFLAG(ENABLE_REPORTING)
-
-  return context;
-}
-
 net::URLRequestContext* ProfileImplIOData::InitializeMediaRequestContext(
     net::URLRequestContext* original_context,
     const StoragePartitionDescriptor& partition_descriptor,
@@ -700,22 +576,6 @@ net::URLRequestContext*
 ProfileImplIOData::AcquireMediaRequestContext() const {
   DCHECK(media_request_context_);
   return media_request_context_.get();
-}
-
-net::URLRequestContext* ProfileImplIOData::AcquireIsolatedAppRequestContext(
-    net::URLRequestContext* main_context,
-    const StoragePartitionDescriptor& partition_descriptor,
-    std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
-        protocol_handler_interceptor,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) const {
-  // We create per-app contexts on demand, unlike the others above.
-  net::URLRequestContext* app_request_context = InitializeAppRequestContext(
-      main_context, partition_descriptor,
-      std::move(protocol_handler_interceptor), protocol_handlers,
-      std::move(request_interceptors));
-  DCHECK(app_request_context);
-  return app_request_context;
 }
 
 net::URLRequestContext*

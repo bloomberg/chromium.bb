@@ -16,6 +16,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -97,6 +98,20 @@ enum class NetworkContextType {
   kSafeBrowsing,
   kProfile,
   kIncognitoProfile,
+  kOnDiskApp,
+  kInMemoryApp,
+  kOnDiskAppWithIncognitoProfile,
+};
+
+// This list should be kept in sync with the NetworkContextType enum.
+const NetworkContextType kNetworkContextTypes[] = {
+    NetworkContextType::kSystem,
+    NetworkContextType::kSafeBrowsing,
+    NetworkContextType::kProfile,
+    NetworkContextType::kIncognitoProfile,
+    NetworkContextType::kOnDiskApp,
+    NetworkContextType::kInMemoryApp,
+    NetworkContextType::kOnDiskAppWithIncognitoProfile,
 };
 
 struct TestCase {
@@ -166,11 +181,18 @@ class NetworkContextConfigurationBrowserTest
         &NetworkContextConfigurationBrowserTest::HandleCacheRandom));
     embedded_test_server()->StartAcceptingConnections();
 
-    if (GetParam().network_context_type ==
-        NetworkContextType::kIncognitoProfile) {
+    if (is_incognito())
       incognito_ = CreateIncognitoBrowser();
-    }
     SimulateNetworkServiceCrashIfNecessary();
+  }
+
+  // Returns true if the NetworkContext being tested is associated with an
+  // incognito profile.
+  bool is_incognito() const {
+    return GetParam().network_context_type ==
+               NetworkContextType::kIncognitoProfile ||
+           GetParam().network_context_type ==
+               NetworkContextType::kOnDiskAppWithIncognitoProfile;
   }
 
   void TearDownOnMainThread() override {
@@ -191,8 +213,48 @@ class NetworkContextConfigurationBrowserTest
             .c_str());
   }
 
-  network::mojom::URLLoaderFactory* loader_factory() const {
-    switch (GetParam().network_context_type) {
+  content::StoragePartition* GetStoragePartition() {
+    return GetStoragePartitionForContextType(GetParam().network_context_type);
+  }
+
+  content::StoragePartition* GetStoragePartitionForContextType(
+      NetworkContextType network_context_type) {
+    const GURL kOnDiskUrl("chrome-guest://foo/persist");
+    const GURL kInMemoryUrl("chrome-guest://foo/");
+    switch (network_context_type) {
+      case NetworkContextType::kSystem:
+      case NetworkContextType::kSafeBrowsing:
+        NOTREACHED() << "Network context has no storage partition";
+        return nullptr;
+      case NetworkContextType::kProfile:
+        return content::BrowserContext::GetDefaultStoragePartition(
+            browser()->profile());
+      case NetworkContextType::kIncognitoProfile:
+        DCHECK(incognito_);
+        return content::BrowserContext::GetDefaultStoragePartition(
+            incognito_->profile());
+      case NetworkContextType::kOnDiskApp:
+        return content::BrowserContext::GetStoragePartitionForSite(
+            browser()->profile(), kOnDiskUrl);
+      case NetworkContextType::kInMemoryApp:
+        return content::BrowserContext::GetStoragePartitionForSite(
+            browser()->profile(), kInMemoryUrl);
+      case NetworkContextType::kOnDiskAppWithIncognitoProfile:
+        DCHECK(incognito_);
+        return content::BrowserContext::GetStoragePartitionForSite(
+            incognito_->profile(), kOnDiskUrl);
+    }
+    NOTREACHED();
+    return nullptr;
+  }
+
+  network::mojom::URLLoaderFactory* loader_factory() {
+    return GetLoaderFactoryForContextType(GetParam().network_context_type);
+  }
+
+  network::mojom::URLLoaderFactory* GetLoaderFactoryForContextType(
+      NetworkContextType network_context_type) {
+    switch (network_context_type) {
       case NetworkContextType::kSystem:
         return g_browser_process->system_network_context_manager()
             ->GetURLLoaderFactory();
@@ -201,14 +263,11 @@ class NetworkContextConfigurationBrowserTest
             ->GetURLLoaderFactory()
             .get();
       case NetworkContextType::kProfile:
-        return content::BrowserContext::GetDefaultStoragePartition(
-                   browser()->profile())
-            ->GetURLLoaderFactoryForBrowserProcess()
-            .get();
       case NetworkContextType::kIncognitoProfile:
-        DCHECK(incognito_);
-        return content::BrowserContext::GetDefaultStoragePartition(
-                   incognito_->profile())
+      case NetworkContextType::kOnDiskApp:
+      case NetworkContextType::kInMemoryApp:
+      case NetworkContextType::kOnDiskAppWithIncognitoProfile:
+        return GetStoragePartitionForContextType(network_context_type)
             ->GetURLLoaderFactoryForBrowserProcess()
             .get();
     }
@@ -216,21 +275,24 @@ class NetworkContextConfigurationBrowserTest
     return nullptr;
   }
 
-  network::mojom::NetworkContext* network_context() const {
-    switch (GetParam().network_context_type) {
+  network::mojom::NetworkContext* network_context() {
+    return GetNetworkContextForContextType(GetParam().network_context_type);
+  }
+
+  network::mojom::NetworkContext* GetNetworkContextForContextType(
+      NetworkContextType network_context_type) {
+    switch (network_context_type) {
       case NetworkContextType::kSystem:
         return g_browser_process->system_network_context_manager()
             ->GetContext();
       case NetworkContextType::kSafeBrowsing:
         return g_browser_process->safe_browsing_service()->GetNetworkContext();
       case NetworkContextType::kProfile:
-        return content::BrowserContext::GetDefaultStoragePartition(
-                   browser()->profile())
-            ->GetNetworkContext();
       case NetworkContextType::kIncognitoProfile:
-        DCHECK(incognito_);
-        return content::BrowserContext::GetDefaultStoragePartition(
-                   incognito_->profile())
+      case NetworkContextType::kOnDiskApp:
+      case NetworkContextType::kInMemoryApp:
+      case NetworkContextType::kOnDiskAppWithIncognitoProfile:
+        return GetStoragePartitionForContextType(network_context_type)
             ->GetNetworkContext();
     }
     NOTREACHED();
@@ -243,8 +305,11 @@ class NetworkContextConfigurationBrowserTest
       case NetworkContextType::kSafeBrowsing:
         return StorageType::kNone;
       case NetworkContextType::kProfile:
+      case NetworkContextType::kOnDiskApp:
         return StorageType::kDisk;
       case NetworkContextType::kIncognitoProfile:
+      case NetworkContextType::kInMemoryApp:
+      case NetworkContextType::kOnDiskAppWithIncognitoProfile:
         return StorageType::kMemory;
     }
     NOTREACHED();
@@ -255,9 +320,12 @@ class NetworkContextConfigurationBrowserTest
     switch (GetParam().network_context_type) {
       case NetworkContextType::kSystem:
       case NetworkContextType::kIncognitoProfile:
+      case NetworkContextType::kInMemoryApp:
+      case NetworkContextType::kOnDiskAppWithIncognitoProfile:
         return StorageType::kMemory;
       case NetworkContextType::kSafeBrowsing:
       case NetworkContextType::kProfile:
+      case NetworkContextType::kOnDiskApp:
         return StorageType::kDisk;
     }
     NOTREACHED();
@@ -272,8 +340,11 @@ class NetworkContextConfigurationBrowserTest
       case NetworkContextType::kSafeBrowsing:
         return g_browser_process->local_state();
       case NetworkContextType::kProfile:
+      case NetworkContextType::kInMemoryApp:
+      case NetworkContextType::kOnDiskApp:
         return browser()->profile()->GetPrefs();
       case NetworkContextType::kIncognitoProfile:
+      case NetworkContextType::kOnDiskAppWithIncognitoProfile:
         // Incognito actually uses the non-incognito prefs, so this should end
         // up being the same pref store as in the KProfile case.
         return browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
@@ -297,10 +368,13 @@ class NetworkContextConfigurationBrowserTest
             ->FlushProxyConfigMonitorForTesting();
         break;
       case NetworkContextType::kProfile:
+      case NetworkContextType::kInMemoryApp:
+      case NetworkContextType::kOnDiskApp:
         ProfileNetworkContextServiceFactory::GetForContext(browser()->profile())
             ->FlushProxyConfigMonitorForTesting();
         break;
       case NetworkContextType::kIncognitoProfile:
+      case NetworkContextType::kOnDiskAppWithIncognitoProfile:
         ProfileNetworkContextServiceFactory::GetForContext(
             browser()->profile()->GetOffTheRecordProfile())
             ->FlushProxyConfigMonitorForTesting();
@@ -419,15 +493,11 @@ class NetworkContextConfigurationBrowserTest
             ->FlushNetworkInterfaceForTesting();
         break;
       case NetworkContextType::kProfile:
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile())
-            ->FlushNetworkInterfaceForTesting();
-        break;
       case NetworkContextType::kIncognitoProfile:
-        DCHECK(incognito_);
-        content::BrowserContext::GetDefaultStoragePartition(
-            incognito_->profile())
-            ->FlushNetworkInterfaceForTesting();
+      case NetworkContextType::kInMemoryApp:
+      case NetworkContextType::kOnDiskApp:
+      case NetworkContextType::kOnDiskAppWithIncognitoProfile:
+        GetStoragePartition()->FlushNetworkInterfaceForTesting();
         break;
     }
   }
@@ -437,8 +507,11 @@ class NetworkContextConfigurationBrowserTest
       case NetworkContextType::kSystem:
       case NetworkContextType::kSafeBrowsing:
       case NetworkContextType::kProfile:
+      case NetworkContextType::kInMemoryApp:
+      case NetworkContextType::kOnDiskApp:
         return browser()->profile();
       case NetworkContextType::kIncognitoProfile:
+      case NetworkContextType::kOnDiskAppWithIncognitoProfile:
         DCHECK(incognito_);
         return incognito_->profile();
     }
@@ -446,10 +519,16 @@ class NetworkContextConfigurationBrowserTest
 
   // Gets all cookies for given URL, as a single string.
   std::string GetCookies(const GURL& url) {
+    return GetCookiesForContextType(GetParam().network_context_type, url);
+  }
+
+  std::string GetCookiesForContextType(NetworkContextType network_context_type,
+                                       const GURL& url) {
     std::string cookies;
     base::RunLoop run_loop;
     network::mojom::CookieManagerPtr cookie_manager;
-    network_context()->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+    GetNetworkContextForContextType(network_context_type)
+        ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
     cookie_manager->GetCookieList(
         url, net::CookieOptions(),
         base::BindOnce(
@@ -461,6 +540,28 @@ class NetworkContextConfigurationBrowserTest
             &cookies, &run_loop));
     run_loop.Run();
     return cookies;
+  }
+
+  void ForEachOtherContext(
+      base::RepeatingCallback<void(NetworkContextType network_context_type)>
+          callback) {
+    // Create Incognito Profile if needed.
+    if (!incognito_)
+      incognito_ = CreateIncognitoBrowser();
+
+    // True if the |network_context_type| corresponding to GetParam() has been
+    // found. Used to verify that kNetworkContextTypes is kept up to date, and
+    // contains no duplicates.
+    bool found_matching_type = false;
+    for (const auto network_context_type : kNetworkContextTypes) {
+      if (network_context_type == GetParam().network_context_type) {
+        EXPECT_FALSE(found_matching_type);
+        found_matching_type = true;
+        continue;
+      }
+      callback.Run(network_context_type);
+    }
+    EXPECT_TRUE(found_matching_type);
   }
 
  private:
@@ -620,6 +721,48 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Cache) {
     EXPECT_EQ(*simple_loader_helper.response_body(),
               *simple_loader_helper2.response_body());
   }
+}
+
+// Make sure that NetworkContexts can't access each other's disk caches.
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CacheIsolation) {
+  // Make a request whose response should be cached.
+  GURL request_url = embedded_test_server()->GetURL("/cachetime");
+  std::unique_ptr<network::ResourceRequest> request =
+      std::make_unique<network::ResourceRequest>();
+  request->url = request_url;
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader =
+      network::SimpleURLLoader::Create(std::move(request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory(), simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+
+  ASSERT_TRUE(simple_loader_helper.response_body());
+  EXPECT_GT(simple_loader_helper.response_body()->size(), 0u);
+
+  // Stop the server.
+  ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+
+  // Make the request again, for each other network context, and make sure the
+  // response is not cached.
+  ForEachOtherContext(
+      base::BindLambdaForTesting([&](NetworkContextType network_context_type) {
+        std::unique_ptr<network::ResourceRequest> request2 =
+            std::make_unique<network::ResourceRequest>();
+        request2->url = request_url;
+        content::SimpleURLLoaderTestHelper simple_loader_helper2;
+        std::unique_ptr<network::SimpleURLLoader> simple_loader2 =
+            network::SimpleURLLoader::Create(std::move(request2),
+                                             TRAFFIC_ANNOTATION_FOR_TESTS);
+        simple_loader2->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+            GetLoaderFactoryForContextType(network_context_type),
+            simple_loader_helper2.GetCallback());
+        simple_loader_helper2.WaitForCallback();
+        EXPECT_FALSE(simple_loader_helper2.response_body());
+        EXPECT_EQ(net::ERR_CONNECTION_REFUSED, simple_loader2->NetError());
+      }));
 }
 
 // Make sure an on-disk cache is used when expected. PRE_DiskCache populates the
@@ -1078,6 +1221,19 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CookiesEnabled) {
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
+                       CookieIsolation) {
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent);
+  EXPECT_FALSE(GetCookies(embedded_test_server()->base_url()).empty());
+
+  ForEachOtherContext(
+      base::BindLambdaForTesting([&](NetworkContextType network_context_type) {
+        EXPECT_TRUE(GetCookiesForContextType(network_context_type,
+                                             embedded_test_server()->base_url())
+                        .empty());
+      }));
+}
+
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        PRE_ThirdPartyCookiesBlocked) {
   // The system and SafeBrowsing network contexts don't support the third party
   // cookie blocking options, since they have no notion of third parties.
@@ -1104,8 +1260,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
     return;
 
   // The preference is expected to be reset in incognito mode.
-  if (GetParam().network_context_type ==
-      NetworkContextType::kIncognitoProfile) {
+  if (is_incognito()) {
     EXPECT_FALSE(GetPrefService()->GetBoolean(prefs::kBlockThirdPartyCookies));
     return;
   }
@@ -1519,10 +1674,39 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
 // |NetworkServiceTestHelper| doesn't work on browser_tests on OSX.
 // See https://crbug.com/757088
 #if defined(OS_MACOSX)
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#define INSTANTIATE_EXTENSION_TESTS(TestFixture)                          \
+  INSTANTIATE_TEST_CASE_P(                                                \
+      OnDiskApp, TestFixture,                                             \
+      ::testing::Values(TestCase({NetworkServiceState::kDisabled,         \
+                                  NetworkContextType::kOnDiskApp}),       \
+                        TestCase({NetworkServiceState::kEnabled,          \
+                                  NetworkContextType::kOnDiskApp})));     \
+                                                                          \
+  INSTANTIATE_TEST_CASE_P(                                                \
+      InMemoryApp, TestFixture,                                           \
+      ::testing::Values(TestCase({NetworkServiceState::kDisabled,         \
+                                  NetworkContextType::kInMemoryApp}),     \
+                        TestCase({NetworkServiceState::kEnabled,          \
+                                  NetworkContextType::kInMemoryApp})));   \
+                                                                          \
+  INSTANTIATE_TEST_CASE_P(                                                \
+      OnDiskAppWithIncognitoProfile, TestFixture,                         \
+      ::testing::Values(                                                  \
+          TestCase({NetworkServiceState::kDisabled,                       \
+                    NetworkContextType::kOnDiskAppWithIncognitoProfile}), \
+          TestCase({NetworkServiceState::kEnabled,                        \
+                    NetworkContextType::kOnDiskAppWithIncognitoProfile})));
+#else  // !BUILDFLAG(ENABLE_EXTENSIONS)
+#define INSTANTIATE_EXTENSION_TESTS(TestFixture)
+#endif  // !BUILDFLAG(ENABLE_EXTENSIONS)
+
 // Instantiates tests with a prefix indicating which NetworkContext is being
 // tested, and a suffix of "/0" if the network service is disabled and "/1" if
 // it's enabled.
 #define INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(TestFixture)               \
+  INSTANTIATE_EXTENSION_TESTS(TestFixture)                                 \
   INSTANTIATE_TEST_CASE_P(                                                 \
       SystemNetworkContext, TestFixture,                                   \
       ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
@@ -1550,15 +1734,46 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
                                   NetworkContextType::kIncognitoProfile}), \
                         TestCase({NetworkServiceState::kEnabled,           \
                                   NetworkContextType::kIncognitoProfile})))
-
 #else  // !defined(OS_MACOSX)
 // Instiates tests with a prefix indicating which NetworkContext is being
 // tested, and a suffix of "/0" if the network service is disabled, "/1" if it's
 // enabled, and "/2" if it's enabled and restarted.
-//
-// TODO(mmenke): Enabled tests for the SafeBrowsing NetworkContext, once it
-// works with the network service enabled.
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#define INSTANTIATE_EXTENSION_TESTS(TestFixture)                          \
+  INSTANTIATE_TEST_CASE_P(                                                \
+      OnDiskApp, TestFixture,                                             \
+      ::testing::Values(TestCase({NetworkServiceState::kDisabled,         \
+                                  NetworkContextType::kOnDiskApp}),       \
+                        TestCase({NetworkServiceState::kEnabled,          \
+                                  NetworkContextType::kOnDiskApp}),       \
+                        TestCase({NetworkServiceState::kRestarted,        \
+                                  NetworkContextType::kOnDiskApp})));     \
+                                                                          \
+  INSTANTIATE_TEST_CASE_P(                                                \
+      InMemoryApp, TestFixture,                                           \
+      ::testing::Values(TestCase({NetworkServiceState::kDisabled,         \
+                                  NetworkContextType::kInMemoryApp}),     \
+                        TestCase({NetworkServiceState::kEnabled,          \
+                                  NetworkContextType::kInMemoryApp}),     \
+                        TestCase({NetworkServiceState::kRestarted,        \
+                                  NetworkContextType::kInMemoryApp})));   \
+                                                                          \
+  INSTANTIATE_TEST_CASE_P(                                                \
+      OnDiskAppWithIncognitoProfile, TestFixture,                         \
+      ::testing::Values(                                                  \
+          TestCase({NetworkServiceState::kDisabled,                       \
+                    NetworkContextType::kOnDiskAppWithIncognitoProfile}), \
+          TestCase({NetworkServiceState::kEnabled,                        \
+                    NetworkContextType::kOnDiskAppWithIncognitoProfile}), \
+          TestCase({NetworkServiceState::kRestarted,                      \
+                    NetworkContextType::kOnDiskAppWithIncognitoProfile})));
+#else  // !BUILDFLAG(ENABLE_EXTENSIONS)
+#define INSTANTIATE_EXTENSION_TESTS(TestFixture)
+#endif  // !BUILDFLAG(ENABLE_EXTENSIONS)
+
 #define INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(TestFixture)               \
+  INSTANTIATE_EXTENSION_TESTS(TestFixture)                                 \
   INSTANTIATE_TEST_CASE_P(                                                 \
       SystemNetworkContext, TestFixture,                                   \
       ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
@@ -1593,7 +1808,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
                         TestCase({NetworkServiceState::kEnabled,           \
                                   NetworkContextType::kIncognitoProfile}), \
                         TestCase({NetworkServiceState::kRestarted,         \
-                                  NetworkContextType::kIncognitoProfile})))
+                                  NetworkContextType::kIncognitoProfile})));
+
 #endif  // !defined(OS_MACOSX)
 
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(NetworkContextConfigurationBrowserTest);

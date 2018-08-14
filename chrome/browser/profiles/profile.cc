@@ -257,9 +257,11 @@ bool Profile::ShouldPersistSessionCookies() {
   return false;
 }
 
-network::mojom::NetworkContextPtr Profile::CreateMainNetworkContext() {
+network::mojom::NetworkContextPtr Profile::CreateNetworkContext(
+    bool in_memory,
+    const base::FilePath& relative_partition_path) {
   return ProfileNetworkContextServiceFactory::GetForContext(this)
-      ->CreateMainNetworkContext();
+      ->CreateNetworkContext(in_memory, relative_partition_path);
 }
 
 bool Profile::IsNewProfile() {

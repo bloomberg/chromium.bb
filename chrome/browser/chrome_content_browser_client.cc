@@ -60,8 +60,6 @@
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 #include "chrome/browser/net/predictor.h"
-#include "chrome/browser/net/profile_network_context_service.h"
-#include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/net_benchmarking.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
@@ -4465,26 +4463,7 @@ ChromeContentBrowserClient::CreateNetworkContext(
     bool in_memory,
     const base::FilePath& relative_partition_path) {
   Profile* profile = Profile::FromBrowserContext(context);
-  // If the relative partition path is empty, this is creating the Profile's
-  // main NetworkContext.
-  if (relative_partition_path.empty()) {
-    // TODO(mmenke): Look into calling ProfileNetworkContextServiceFactory, once
-    // ProfileIOData is removed. Currently, TestProfile (used in unit tests)
-    // needs to be able to bypass ProfileNetworkContextServiceFactory, since
-    // TestProfile bypasses ProfileIOData's URLRequestContext creation logic.
-    return profile->CreateMainNetworkContext();
-  }
-
-  // TODO(mmenke):  Share this with the non-network service code path once
-  // ProfileNetworkContextServiceFactory can create a fully functional
-  // NetworkContext for Apps when the network service is disabled.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    return ProfileNetworkContextServiceFactory::GetForContext(context)
-        ->CreateNetworkContextForPartition(in_memory, relative_partition_path);
-  }
-
-  return ContentBrowserClient::CreateNetworkContext(context, in_memory,
-                                                    relative_partition_path);
+  return profile->CreateNetworkContext(in_memory, relative_partition_path);
 }
 
 bool ChromeContentBrowserClient::AllowRenderingMhtmlOverHttp(

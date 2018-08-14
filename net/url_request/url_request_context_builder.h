@@ -302,6 +302,10 @@ class NET_EXPORT URLRequestContextBuilder {
       std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer);
 
   void SetCertVerifier(std::unique_ptr<CertVerifier> cert_verifier);
+  // Same as above, but does not take ownership. The CertVerifier must outlive
+  // the created URLRequestContext.
+  // TODO(mmenke): Remove once no longer needed.
+  void SetSharedCertVerifier(CertVerifier* shared_cert_verifier);
 
 #if BUILDFLAG(ENABLE_REPORTING)
   void set_reporting_policy(std::unique_ptr<ReportingPolicy> reporting_policy);
@@ -408,6 +412,7 @@ class NET_EXPORT URLRequestContextBuilder {
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   HttpAuthHandlerFactory* shared_http_auth_handler_factory_;
   std::unique_ptr<CertVerifier> cert_verifier_;
+  CertVerifier* shared_cert_verifier_;
   std::unique_ptr<CTVerifier> ct_verifier_;
   std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer_;
 #if BUILDFLAG(ENABLE_REPORTING)
