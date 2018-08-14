@@ -65,10 +65,10 @@ public class CastWebContentsService extends Service {
     }
 
     @Override
-    public void onDestroy() {
-        if (DEBUG) Log.d(TAG, "onDestroy");
+    public boolean onUnbind(Intent intent) {
+        if (DEBUG) Log.d(TAG, "onUnbind");
         mWebContentsState.reset();
-        super.onDestroy();
+        return super.onUnbind(intent);
     }
 
     @Override
