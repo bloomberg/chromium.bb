@@ -203,6 +203,49 @@ TEST_F(FidoMakeCredentialHandlerTest,
   EXPECT_FALSE(callback().was_called());
 }
 
+// TODO(crbug.com/873710): Platform authenticators are temporarily disabled if
+// AuthenticatorAttachment is unset (kAny).
+TEST_F(FidoMakeCredentialHandlerTest,
+       PlatformDeviceAuthenticatorSelectionCriteriaAnyAttachmentPlatform) {
+  auto request_handler =
+      CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria(
+              AuthenticatorSelectionCriteria::AuthenticatorAttachment::kAny,
+              false /* require_resident_key */,
+              UserVerificationRequirement::kPreferred));
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation(
+      test_data::kTestGetInfoResponsePlatformDevice);
+  discovery()->AddDevice(std::move(device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(callback().was_called());
+}
+
+// A cross-platform authenticator can respond to a request with
+// AuthenticatorAttachment::kAny.
+TEST_F(FidoMakeCredentialHandlerTest,
+       PlatformDeviceAuthenticatorSelectionCriteriaAnyAttachmentCrossPlatform) {
+  auto request_handler =
+      CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria(
+              AuthenticatorSelectionCriteria::AuthenticatorAttachment::kAny,
+              false /* require_resident_key */,
+              UserVerificationRequirement::kPreferred));
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation(
+      test_data::kTestAuthenticatorGetInfoResponse);
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorMakeCredential,
+      test_data::kTestMakeCredentialResponse);
+  discovery()->AddDevice(std::move(device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(callback().was_called());
+}
+
 TEST_F(FidoMakeCredentialHandlerTest,
        PlatformDeviceAuthenticatorSelectionCriteria) {
   auto request_handler =
@@ -215,7 +258,7 @@ TEST_F(FidoMakeCredentialHandlerTest,
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
   auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation(
-      test_data::kTestGetInfoResponseCrossPlatformDevice);
+      test_data::kTestAuthenticatorGetInfoResponse);
   discovery()->AddDevice(std::move(device));
 
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
@@ -251,7 +294,8 @@ TEST_F(FidoMakeCredentialHandlerTest,
               UserVerificationRequirement::kRequired));
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
-  auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation();
+  auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation(
+      test_data::kTestGetInfoResponsePlatformDevice);
   device->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorMakeCredential,
       test_data::kTestMakeCredentialResponse);
