@@ -166,7 +166,7 @@ void AssistantInteractionController::OnInteractionStarted(
     // this, we temporarily pend an empty text query to commit until we can do
     // development to expose something more meaningful.
     if (assistant_interaction_model_.pending_query().type() ==
-        AssistantQueryType::kEmpty) {
+        AssistantQueryType::kNull) {
       assistant_interaction_model_.SetPendingQuery(
           std::make_unique<AssistantTextQuery>());
     }

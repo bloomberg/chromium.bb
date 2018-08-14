@@ -13,10 +13,9 @@ namespace ash {
 
 // AssistantQueryType ----------------------------------------------------------
 
-// TODO(dmblack): Rename kEmpty to kNull.
 // Defines possible types of an Assistant query.
 enum class AssistantQueryType {
-  kEmpty,  // See AssistantEmptyQuery.
+  kNull,   // See AssistantNullQuery.
   kText,   // See AssistantTextQuery.
   kVoice,  // See AssistantVoiceQuery.
 };
@@ -43,21 +42,20 @@ class AssistantQuery {
   DISALLOW_COPY_AND_ASSIGN(AssistantQuery);
 };
 
-// AssistantEmptyQuery ---------------------------------------------------------
+// AssistantNullQuery ----------------------------------------------------------
 
-// TODO(dmblack): Rename to AssistantNullQuery.
-// An empty Assistant query used to signify the absence of an Assistant query.
-class AssistantEmptyQuery : public AssistantQuery {
+// An null Assistant query used to signify the absence of an Assistant query.
+class AssistantNullQuery : public AssistantQuery {
  public:
-  AssistantEmptyQuery() : AssistantQuery(AssistantQueryType::kEmpty) {}
+  AssistantNullQuery() : AssistantQuery(AssistantQueryType::kNull) {}
 
-  ~AssistantEmptyQuery() override = default;
+  ~AssistantNullQuery() override = default;
 
   // AssistantQuery:
   bool Empty() const override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AssistantEmptyQuery);
+  DISALLOW_COPY_AND_ASSIGN(AssistantNullQuery);
 };
 
 // AssistantTextQuery ----------------------------------------------------------

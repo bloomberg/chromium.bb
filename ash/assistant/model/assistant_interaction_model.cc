@@ -11,8 +11,8 @@
 namespace ash {
 
 AssistantInteractionModel::AssistantInteractionModel()
-    : committed_query_(std::make_unique<AssistantEmptyQuery>()),
-      pending_query_(std::make_unique<AssistantEmptyQuery>()) {}
+    : committed_query_(std::make_unique<AssistantNullQuery>()),
+      pending_query_(std::make_unique<AssistantNullQuery>()) {}
 
 AssistantInteractionModel::~AssistantInteractionModel() = default;
 
@@ -70,35 +70,35 @@ void AssistantInteractionModel::SetMicState(MicState mic_state) {
 }
 
 void AssistantInteractionModel::ClearCommittedQuery() {
-  if (committed_query_->type() == AssistantQueryType::kEmpty)
+  if (committed_query_->type() == AssistantQueryType::kNull)
     return;
 
-  committed_query_ = std::make_unique<AssistantEmptyQuery>();
+  committed_query_ = std::make_unique<AssistantNullQuery>();
   NotifyCommittedQueryCleared();
 }
 
 void AssistantInteractionModel::SetPendingQuery(
     std::unique_ptr<AssistantQuery> pending_query) {
-  DCHECK(pending_query->type() != AssistantQueryType::kEmpty);
+  DCHECK(pending_query->type() != AssistantQueryType::kNull);
   pending_query_ = std::move(pending_query);
   NotifyPendingQueryChanged();
 }
 
 void AssistantInteractionModel::CommitPendingQuery() {
-  DCHECK_NE(pending_query_->type(), AssistantQueryType::kEmpty);
+  DCHECK_NE(pending_query_->type(), AssistantQueryType::kNull);
 
   committed_query_ = std::move(pending_query_);
-  pending_query_ = std::make_unique<AssistantEmptyQuery>();
+  pending_query_ = std::make_unique<AssistantNullQuery>();
 
   NotifyCommittedQueryChanged();
   NotifyPendingQueryCleared();
 }
 
 void AssistantInteractionModel::ClearPendingQuery() {
-  if (pending_query_->type() == AssistantQueryType::kEmpty)
+  if (pending_query_->type() == AssistantQueryType::kNull)
     return;
 
-  pending_query_ = std::make_unique<AssistantEmptyQuery>();
+  pending_query_ = std::make_unique<AssistantNullQuery>();
   NotifyPendingQueryCleared();
 }
 

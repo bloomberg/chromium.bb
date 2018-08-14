@@ -6,9 +6,9 @@
 
 namespace ash {
 
-// AssistantEmptyQuery ---------------------------------------------------------
+// AssistantNullQuery ----------------------------------------------------------
 
-bool AssistantEmptyQuery::Empty() const {
+bool AssistantNullQuery::Empty() const {
   return true;
 }
 

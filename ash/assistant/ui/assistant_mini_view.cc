@@ -128,8 +128,8 @@ void AssistantMiniView::OnResponseChanged(const AssistantResponse& response) {
                            voice_query.low_confidence_speech();
       break;
     }
-    case AssistantQueryType::kEmpty:
-      // It shouldn't be possible to commit a query of type kEmpty.
+    case AssistantQueryType::kNull:
+      // It shouldn't be possible to commit a query of type kNull.
       NOTREACHED();
       break;
   }
