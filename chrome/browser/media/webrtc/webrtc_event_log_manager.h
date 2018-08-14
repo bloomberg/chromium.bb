@@ -229,6 +229,11 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
       BrowserContextId browser_context_id,
       base::OnceClosure reply);
 
+  void RemovePendingRemoteBoundLogsForNotEnabledBrowserContext(
+      BrowserContextId browser_context_id,
+      const base::FilePath& browser_context_dir,
+      base::OnceClosure reply);
+
   void PeerConnectionAddedInternal(PeerConnectionKey key,
                                    const std::string& peer_connection_id,
                                    base::OnceCallback<void(bool)> reply);

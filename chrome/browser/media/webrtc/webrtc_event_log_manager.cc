@@ -130,8 +130,6 @@ WebRtcEventLogManager::~WebRtcEventLogManager() {
   g_webrtc_event_log_manager = nullptr;
 }
 
-// TODO(crbug.com/775415): If a BrowserContext had the policy as active in
-// the past, but no longer does, purge pending log files from before.
 void WebRtcEventLogManager::EnableForBrowserContext(
     BrowserContext* browser_context,
     base::OnceClosure reply) {
@@ -147,7 +145,18 @@ void WebRtcEventLogManager::EnableForBrowserContext(
   StartListeningForPrefChangeForBrowserContext(browser_context);
 
   if (!IsRemoteLoggingAllowedForBrowserContext(browser_context)) {
-    MaybeReply(FROM_HERE, std::move(reply));
+    // If remote-bound logging was enabled during a previous Chrome session,
+    // it might have produced some pending log files, which we will now
+    // wish to remove.
+    // |this| is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+    // will not be dereferenced after destruction.
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &WebRtcEventLogManager::
+                RemovePendingRemoteBoundLogsForNotEnabledBrowserContext,
+            base::Unretained(this), GetBrowserContextId(browser_context),
+            browser_context->GetPath(), std::move(reply)));
     return;
   }
 
@@ -670,6 +679,19 @@ void WebRtcEventLogManager::DisableRemoteBoundLoggingForBrowserContext(
   // Note that the BrowserContext might never have been enabled in the
   // remote-bound manager; that's not a problem.
   remote_logs_manager_.DisableForBrowserContext(browser_context_id);
+
+  MaybeReply(FROM_HERE, std::move(reply));
+}
+
+void WebRtcEventLogManager::
+    RemovePendingRemoteBoundLogsForNotEnabledBrowserContext(
+        BrowserContextId browser_context_id,
+        const base::FilePath& browser_context_dir,
+        base::OnceClosure reply) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
+  remote_logs_manager_.RemovePendingLogsForNotEnabledBrowserContext(
+      browser_context_id, browser_context_dir);
 
   MaybeReply(FROM_HERE, std::move(reply));
 }
