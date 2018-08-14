@@ -11,6 +11,7 @@
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/bindings/api_event_listeners.h"
 #include "extensions/renderer/bindings/exception_handler.h"
+#include "extensions/renderer/bindings/listener_tracker.h"
 #include "extensions/renderer/bindings/test_js_runner.h"
 #include "gin/handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -38,8 +39,10 @@ TEST_F(EventEmitterUnittest, TestDispatchMethod) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
 
+  ListenerTracker tracker;
   auto listeners = std::make_unique<UnfilteredEventListeners>(
-      base::DoNothing(), binding::kNoListenerMax, true);
+      base::DoNothing(), "event", "context", binding::kNoListenerMax, true,
+      &tracker);
 
   auto log_error = [](std::vector<std::string>* errors,
                       v8::Local<v8::Context> context,
@@ -139,8 +142,10 @@ TEST_F(EventEmitterUnittest, ListenersDestroyingContext) {
                                     info.GetIsolate()->GetCurrentContext());
   };
 
+  ListenerTracker tracker;
   auto listeners = std::make_unique<UnfilteredEventListeners>(
-      base::DoNothing(), binding::kNoListenerMax, true);
+      base::DoNothing(), "event", "context", binding::kNoListenerMax, true,
+      &tracker);
   ExceptionHandler exception_handler(base::BindRepeating(
       [](v8::Local<v8::Context> context, const std::string& error) {}));
   gin::Handle<EventEmitter> event = gin::CreateHandle(

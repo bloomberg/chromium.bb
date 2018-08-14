@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/constants.h"
@@ -326,6 +327,14 @@ v8::Local<v8::Object> CreateFullBinding(
   return root_binding;
 }
 
+std::string GetContextOwner(v8::Local<v8::Context> context) {
+  ScriptContext* script_context = GetScriptContextFromV8ContextChecked(context);
+  const std::string& extension_id = script_context->GetExtensionID();
+  bool id_is_valid = crx_file::id_util::IdIsValid(extension_id);
+  CHECK(id_is_valid || script_context->url().is_valid());
+  return id_is_valid ? extension_id : script_context->url().spec();
+}
+
 }  // namespace
 
 NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
@@ -338,6 +347,7 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
                      base::Unretained(this)),
           base::Bind(&NativeExtensionBindingsSystem::OnEventListenerChanged,
                      base::Unretained(this)),
+          base::Bind(&GetContextOwner),
           base::Bind(&APIActivityLogger::LogAPICall),
           base::Bind(&AddConsoleError),
           APILastError(base::Bind(&GetLastErrorParents),
@@ -753,48 +763,70 @@ void NativeExtensionBindingsSystem::OnEventListenerChanged(
     bool update_lazy_listeners,
     v8::Local<v8::Context> context) {
   ScriptContext* script_context = GetScriptContextFromV8ContextChecked(context);
+  // We only remove a lazy listener if the listener removal was triggered
+  // manually by the extension and the context is a lazy context.
   // Note: Check context_type() first to avoid accessing ExtensionFrameHelper on
   // a worker thread.
   bool is_lazy =
       update_lazy_listeners &&
       (script_context->context_type() == Feature::SERVICE_WORKER_CONTEXT ||
        ExtensionFrameHelper::IsContextForEventPage(script_context));
-  // We only remove a lazy listener if the listener removal was triggered
-  // manually by the extension.
 
-  if (filter) {  // Filtered event listeners.
-    DCHECK(filter);
-    if (change == binding::EventListenersChanged::HAS_LISTENERS) {
-      ipc_message_sender_->SendAddFilteredEventListenerIPC(
-          script_context, event_name, *filter, is_lazy);
-    } else {
-      DCHECK_EQ(binding::EventListenersChanged::NO_LISTENERS, change);
-      ipc_message_sender_->SendRemoveFilteredEventListenerIPC(
-          script_context, event_name, *filter, is_lazy);
-    }
-  } else {  // Unfiltered event listeners.
-    if (change == binding::EventListenersChanged::HAS_LISTENERS) {
-      // TODO(devlin): The JS bindings code only adds one listener per extension
-      // per event per process, whereas this is one listener per context per
-      // event per process. Typically, this won't make a difference, but it
-      // could if there are multiple contexts for the same extension (e.g.,
-      // multiple frames). In that case, it would result in extra IPCs being
-      // sent. I'm not sure it's a big enough deal to warrant refactoring.
+  switch (change) {
+    case binding::EventListenersChanged::
+        kFirstUnfilteredListenerForContextOwnerAdded:
+      // Send a message to add a new listener since this is the first listener
+      // for the context owner (e.g., extension).
       ipc_message_sender_->SendAddUnfilteredEventListenerIPC(script_context,
                                                              event_name);
+      // Check if we need to add a lazy listener as well.
+      FALLTHROUGH;
+    case binding::EventListenersChanged::
+        kFirstUnfilteredListenerForContextAdded: {
+      // If the listener is the first for the event page, we need to
+      // specifically add a lazy listener.
       if (is_lazy) {
         ipc_message_sender_->SendAddUnfilteredLazyEventListenerIPC(
             script_context, event_name);
       }
-    } else {
-      DCHECK_EQ(binding::EventListenersChanged::NO_LISTENERS, change);
+      break;
+    }
+    case binding::EventListenersChanged::
+        kLastUnfilteredListenerForContextOwnerRemoved:
+      // Send a message to remove a listener since this is the last listener
+      // for the context owner (e.g., extension).
       ipc_message_sender_->SendRemoveUnfilteredEventListenerIPC(script_context,
                                                                 event_name);
+      // Check if we need to remove a lazy listener as well.
+      FALLTHROUGH;
+    case binding::EventListenersChanged::
+        kLastUnfilteredListenerForContextRemoved: {
+      // If the listener was the last for the event page, we need to remove
+      // the lazy listener entry.
       if (is_lazy) {
         ipc_message_sender_->SendRemoveUnfilteredLazyEventListenerIPC(
             script_context, event_name);
       }
+      break;
     }
+    // TODO(https://crbug.com/873017): This is broken, since we'll only add or
+    // remove a lazy listener if it was the first/last for the context owner.
+    // This means that if an extension registers a filtered listener on a page
+    // and *then* adds one in the event page, we won't properly add the listener
+    // as lazy.  This is an issue for both native and JS bindings, so for now,
+    // let's settle for parity.
+    case binding::EventListenersChanged::
+        kFirstListenerWithFilterForContextOwnerAdded:
+      DCHECK(filter);
+      ipc_message_sender_->SendAddFilteredEventListenerIPC(
+          script_context, event_name, *filter, is_lazy);
+      break;
+    case binding::EventListenersChanged::
+        kLastListenerWithFilterForContextOwnerRemoved:
+      DCHECK(filter);
+      ipc_message_sender_->SendRemoveFilteredEventListenerIPC(
+          script_context, event_name, *filter, is_lazy);
+      break;
   }
 }
 

@@ -9,9 +9,10 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "extensions/common/event_filter.h"
 #include "extensions/renderer/bindings/api_binding_types.h"
+#include "extensions/renderer/bindings/api_event_listeners.h"
 #include "extensions/renderer/bindings/event_emitter.h"
+#include "extensions/renderer/bindings/listener_tracker.h"
 #include "v8/include/v8.h"
 
 namespace base {
@@ -28,20 +29,14 @@ struct EventFilteringInfo;
 // single thread.
 class APIEventHandler {
  public:
-  // The callback to be called when event listeners change.
-  // |update_lazy_listeners| indicates that the change was due to an extension
-  // calling addListener or removeListener on an event that supports lazy
-  // listeners, rather than through something like context destruction or
-  // removing a listener from an event that doesn't support lazy listeners.
-  // See also APIEventListeners.
-  using EventListenersChangedMethod =
-      base::Callback<void(const std::string& event_name,
-                          binding::EventListenersChanged,
-                          const base::DictionaryValue* filter,
-                          bool update_lazy_listeners,
-                          v8::Local<v8::Context>)>;
+  // A callback to retrieve the owner of the context's identity. This allows us
+  // to associate multiple listeners from different v8::Contexts with the same
+  // owner (e.g., extension).
+  using ContextOwnerIdGetter =
+      base::RepeatingCallback<std::string(v8::Local<v8::Context>)>;
 
-  APIEventHandler(const EventListenersChangedMethod& listeners_changed,
+  APIEventHandler(const APIEventListeners::ListenersUpdated& listeners_changed,
+                  const ContextOwnerIdGetter& context_owner_id_getter,
                   ExceptionHandler* exception_handler);
   ~APIEventHandler();
 
@@ -107,10 +102,12 @@ class APIEventHandler {
                                         v8::Local<v8::Context> context);
 
  private:
-  EventListenersChangedMethod listeners_changed_;
+  APIEventListeners::ListenersUpdated listeners_changed_;
 
-  // The associated EventFilter; shared across all contexts and events.
-  EventFilter event_filter_;
+  ContextOwnerIdGetter context_owner_id_getter_;
+
+  // The shared ListenerTracker for all listeners in the system.
+  ListenerTracker listener_tracker_;
 
   // The exception handler associated with the bindings system; guaranteed to
   // outlive this object.

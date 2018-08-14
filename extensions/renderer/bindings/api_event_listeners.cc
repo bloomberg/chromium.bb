@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "content/public/renderer/v8_value_converter.h"
-#include "extensions/common/event_filter.h"
 #include "extensions/common/event_filtering_info.h"
 #include "extensions/common/event_matcher.h"
+#include "extensions/renderer/bindings/listener_tracker.h"
 #include "gin/converter.h"
 
 namespace extensions {
@@ -78,11 +78,17 @@ bool ValidateFilter(v8::Local<v8::Context> context,
 
 UnfilteredEventListeners::UnfilteredEventListeners(
     const ListenersUpdated& listeners_updated,
+    const std::string& event_name,
+    const std::string& context_owner_id,
     int max_listeners,
-    bool supports_lazy_listeners)
+    bool supports_lazy_listeners,
+    ListenerTracker* listener_tracker)
     : listeners_updated_(listeners_updated),
+      event_name_(event_name),
+      context_owner_id_(context_owner_id),
       max_listeners_(max_listeners),
-      supports_lazy_listeners_(supports_lazy_listeners) {
+      supports_lazy_listeners_(supports_lazy_listeners),
+      listener_tracker_(listener_tracker) {
   DCHECK(max_listeners_ == binding::kNoListenerMax || max_listeners_ > 0);
 }
 UnfilteredEventListeners::~UnfilteredEventListeners() = default;
@@ -107,8 +113,21 @@ bool UnfilteredEventListeners::AddListener(v8::Local<v8::Function> listener,
   listeners_.push_back(
       v8::Global<v8::Function>(context->GetIsolate(), listener));
   if (listeners_.size() == 1) {
-    listeners_updated_.Run(binding::EventListenersChanged::HAS_LISTENERS,
-                           nullptr, supports_lazy_listeners_, context);
+    // NOTE: |listener_tracker_| is null for unmanaged events, in which case we
+    // send no notifications.
+    if (listener_tracker_) {
+      bool was_first_listener_for_context_owner =
+          listener_tracker_->AddUnfilteredListener(context_owner_id_,
+                                                   event_name_);
+      binding::EventListenersChanged changed =
+          was_first_listener_for_context_owner
+              ? binding::EventListenersChanged::
+                    kFirstUnfilteredListenerForContextOwnerAdded
+              : binding::EventListenersChanged::
+                    kFirstUnfilteredListenerForContextAdded;
+      listeners_updated_.Run(event_name_, changed, nullptr,
+                             supports_lazy_listeners_, context);
+    }
   }
 
   return true;
@@ -122,8 +141,8 @@ void UnfilteredEventListeners::RemoveListener(v8::Local<v8::Function> listener,
 
   listeners_.erase(iter);
   if (listeners_.empty()) {
-    listeners_updated_.Run(binding::EventListenersChanged::NO_LISTENERS,
-                           nullptr, supports_lazy_listeners_, context);
+    bool update_lazy_listeners = supports_lazy_listeners_;
+    NotifyListenersEmpty(context, update_lazy_listeners);
   }
 }
 
@@ -150,11 +169,32 @@ void UnfilteredEventListeners::Invalidate(v8::Local<v8::Context> context) {
   if (!listeners_.empty()) {
     listeners_.clear();
     // We don't want to update stored lazy listeners in this case, since the
-    // extension didn't unregister interest in the event.
-    bool update_lazy_listeners = false;
-    listeners_updated_.Run(binding::EventListenersChanged::NO_LISTENERS,
-                           nullptr, update_lazy_listeners, context);
+    // extension didn't explicitly unregister interest in the event.
+    constexpr bool update_lazy_listeners = false;
+    NotifyListenersEmpty(context, update_lazy_listeners);
   }
+}
+
+void UnfilteredEventListeners::NotifyListenersEmpty(
+    v8::Local<v8::Context> context,
+    bool update_lazy_listeners) {
+  DCHECK(listeners_.empty());
+  // NOTE: |listener_tracker_| is null for unmanaged events, in which case we
+  // send no notifications.
+  if (!listener_tracker_)
+    return;
+
+  bool was_last_listener_for_context_owner =
+      listener_tracker_->RemoveUnfilteredListener(context_owner_id_,
+                                                  event_name_);
+  binding::EventListenersChanged changed =
+      was_last_listener_for_context_owner
+          ? binding::EventListenersChanged::
+                kLastUnfilteredListenerForContextOwnerRemoved
+          : binding::EventListenersChanged::
+                kLastUnfilteredListenerForContextRemoved;
+  listeners_updated_.Run(event_name_, changed, nullptr, update_lazy_listeners,
+                         context);
 }
 
 struct FilteredEventListeners::ListenerData {
@@ -173,14 +213,16 @@ struct FilteredEventListeners::ListenerData {
 FilteredEventListeners::FilteredEventListeners(
     const ListenersUpdated& listeners_updated,
     const std::string& event_name,
+    const std::string& context_owner_id,
     int max_listeners,
     bool supports_lazy_listeners,
-    EventFilter* event_filter)
+    ListenerTracker* listener_tracker)
     : listeners_updated_(listeners_updated),
       event_name_(event_name),
+      context_owner_id_(context_owner_id),
       max_listeners_(max_listeners),
       supports_lazy_listeners_(supports_lazy_listeners),
-      event_filter_(event_filter) {}
+      listener_tracker_(listener_tracker) {}
 FilteredEventListeners::~FilteredEventListeners() = default;
 
 bool FilteredEventListeners::AddListener(v8::Local<v8::Function> listener,
@@ -200,22 +242,26 @@ bool FilteredEventListeners::AddListener(v8::Local<v8::Function> listener,
   if (!ValidateFilter(context, filter, &filter_dict, error))
     return false;
 
-  int filter_id = event_filter_->AddEventMatcher(
-      event_name_,
-      std::make_unique<EventMatcher>(std::move(filter_dict), kIgnoreRoutingId));
+  base::DictionaryValue* filter_weak = filter_dict.get();
+  int filter_id = -1;
+  bool was_first_of_kind = false;
+  std::tie(was_first_of_kind, filter_id) =
+      listener_tracker_->AddFilteredListener(context_owner_id_, event_name_,
+                                             std::move(filter_dict),
+                                             kIgnoreRoutingId);
 
   if (filter_id == -1) {
     *error = "Could not add listener";
     return false;
   }
 
-  const EventMatcher* matcher = event_filter_->GetEventMatcher(filter_id);
-  DCHECK(matcher);
   listeners_.push_back(
       {v8::Global<v8::Function>(context->GetIsolate(), listener), filter_id});
-  if (value_counter_.Add(*matcher->value())) {
-    listeners_updated_.Run(binding::EventListenersChanged::HAS_LISTENERS,
-                           matcher->value(), supports_lazy_listeners_, context);
+  if (was_first_of_kind) {
+    listeners_updated_.Run(event_name_,
+                           binding::EventListenersChanged::
+                               kFirstListenerWithFilterForContextOwnerAdded,
+                           filter_weak, supports_lazy_listeners_, context);
   }
 
   return true;
@@ -245,7 +291,7 @@ size_t FilteredEventListeners::GetNumListeners() {
 std::vector<v8::Local<v8::Function>> FilteredEventListeners::GetListeners(
     const EventFilteringInfo* filter,
     v8::Local<v8::Context> context) {
-  std::set<int> ids = event_filter_->MatchEvent(
+  std::set<int> ids = listener_tracker_->GetMatchingFilteredListeners(
       event_name_, filter ? *filter : EventFilteringInfo(), kIgnoreRoutingId);
 
   std::vector<v8::Local<v8::Function>> listeners;
@@ -267,15 +313,18 @@ void FilteredEventListeners::InvalidateListener(
     const ListenerData& listener,
     bool was_manual,
     v8::Local<v8::Context> context) {
-  EventMatcher* matcher = event_filter_->GetEventMatcher(listener.filter_id);
-  DCHECK(matcher);
-  if (value_counter_.Remove(*matcher->value())) {
-    listeners_updated_.Run(binding::EventListenersChanged::NO_LISTENERS,
-                           matcher->value(),
-                           was_manual && supports_lazy_listeners_, context);
+  bool was_last_of_kind = false;
+  std::unique_ptr<base::DictionaryValue> filter;
+  std::tie(was_last_of_kind, filter) =
+      listener_tracker_->RemoveFilteredListener(context_owner_id_, event_name_,
+                                                listener.filter_id);
+  if (was_last_of_kind) {
+    listeners_updated_.Run(event_name_,
+                           binding::EventListenersChanged::
+                               kLastListenerWithFilterForContextOwnerRemoved,
+                           filter.get(), was_manual && supports_lazy_listeners_,
+                           context);
   }
-
-  event_filter_->RemoveEventMatcher(listener.filter_id);
 }
 
 }  // namespace extensions
