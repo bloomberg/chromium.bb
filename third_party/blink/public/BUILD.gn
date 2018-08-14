@@ -885,17 +885,13 @@ group("generate_mojo_bindings") {
     # Blink public API exposes a number of Mojo interfaces; omitting it will
     # cause non-deterministic compile failures for code that uses the regular
     # variant of the generated files.
-    ":core_mojo_bindings__generator",
-    ":core_mojo_bindings_blink__generator",
-    ":embedded_frame_sink_mojo_bindings_blink__generator",
-    ":media_devices_mojo_bindings__generator",
-    ":media_devices_mojo_bindings_blink__generator",
-    ":mojo_bindings__generator",
-    ":mojo_bindings_blink__generator",
-    "mojom:mojom_core__generator",
-    "mojom:mojom_core_blink__generator",
-    "mojom:mojom_platform__generator",
-    "mojom:mojom_platform_blink__generator",
+    ":core_mojo_bindings_blink_headers",
+    ":core_mojo_bindings_headers",
+    ":embedded_frame_sink_mojo_bindings_blink_headers",
+    ":media_devices_mojo_bindings_blink_headers",
+    ":media_devices_mojo_bindings_headers",
+    ":mojo_bindings_blink_headers",
+    ":mojo_bindings_headers",
   ]
 }
 
@@ -928,7 +924,7 @@ source_set("shared_typemap_traits") {
   ]
   deps = [
     ":blink_headers",
-    ":mojo_bindings_shared__generator",
+    ":mojo_bindings_headers",
     "//mojo/public/cpp/bindings:struct_traits",
   ]
 }

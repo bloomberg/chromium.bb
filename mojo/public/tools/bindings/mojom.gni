@@ -593,6 +593,7 @@ template("mojom") {
     ]
     generator_shared_target_name = "${target_name}_shared__generator"
     action(generator_shared_target_name) {
+      visibility = [ ":*" ]
       script = mojom_generator_script
       inputs = mojom_generator_sources + jinja2_sources
       sources = invoker.sources
@@ -780,6 +781,7 @@ template("mojom") {
 
       generator_target_name = "${target_name}${variant_suffix}__generator"
       action(generator_target_name) {
+        visibility = [ ":*" ]
         script = mojom_generator_script
         inputs = mojom_generator_sources + jinja2_sources
         sources = invoker.sources
@@ -925,6 +927,21 @@ template("mojom") {
       }
     }
 
+    group("${target_name}${variant_suffix}_headers") {
+      public_deps = []
+      if (enabled_sources != []) {
+        public_deps += [
+          ":$generator_cpp_message_ids_target_name",
+          ":$generator_shared_target_name",
+          ":$generator_target_name",
+        ]
+      }
+      foreach(d, all_deps) {
+        full_name = get_label_info("$d", "label_no_toolchain")
+        public_deps += [ "${full_name}${variant_suffix}_headers" ]
+      }
+    }
+
     if (defined(invoker.component_macro_prefix)) {
       output_target_type = "component"
     } else {
@@ -958,8 +975,7 @@ template("mojom") {
       deps = [
         ":$generator_cpp_message_ids_target_name",
         "//mojo/public/cpp/bindings:struct_traits",
-        "//mojo/public/interfaces/bindings:bindings__generator",
-        "//mojo/public/interfaces/bindings:bindings_shared__generator",
+        "//mojo/public/interfaces/bindings:bindings_headers",
       ]
       public_deps = [
         ":$shared_cpp_library_target_name",
