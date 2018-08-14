@@ -15,6 +15,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/resources/single_release_callback.h"
@@ -37,22 +38,22 @@ namespace content {
 
 DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
                                        DelegatedFrameHostClient* client,
-                                       bool enable_viz,
                                        bool should_register_frame_sink_id)
     : frame_sink_id_(frame_sink_id),
       client_(client),
-      enable_viz_(enable_viz),
+      enable_viz_(
+          base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
       should_register_frame_sink_id_(should_register_frame_sink_id),
+      host_frame_sink_manager_(GetHostFrameSinkManager()),
       frame_evictor_(std::make_unique<viz::FrameEvictor>(this)) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->GetContextFactory()->AddObserver(this);
-  viz::HostFrameSinkManager* host_frame_sink_manager =
-      factory->GetContextFactoryPrivate()->GetHostFrameSinkManager();
-  host_frame_sink_manager->RegisterFrameSinkId(frame_sink_id_, this);
-  host_frame_sink_manager->EnableSynchronizationReporting(
+  DCHECK(host_frame_sink_manager_);
+  host_frame_sink_manager_->RegisterFrameSinkId(frame_sink_id_, this);
+  host_frame_sink_manager_->EnableSynchronizationReporting(
       frame_sink_id_, "Compositing.MainFrameSynchronization.Duration");
-  host_frame_sink_manager->SetFrameSinkDebugLabel(frame_sink_id_,
-                                                  "DelegatedFrameHost");
+  host_frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id_,
+                                                   "DelegatedFrameHost");
   CreateCompositorFrameSinkSupport();
 }
 
@@ -62,10 +63,8 @@ DelegatedFrameHost::~DelegatedFrameHost() {
   factory->GetContextFactory()->RemoveObserver(this);
 
   ResetCompositorFrameSinkSupport();
-
-  viz::HostFrameSinkManager* host_frame_sink_manager =
-      factory->GetContextFactoryPrivate()->GetHostFrameSinkManager();
-  host_frame_sink_manager->InvalidateFrameSinkId(frame_sink_id_);
+  DCHECK(host_frame_sink_manager_);
+  host_frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 void DelegatedFrameHost::WasShown(
@@ -142,15 +141,14 @@ void DelegatedFrameHost::ProcessCopyOutputRequest(
         gfx::Vector2d(area.width(), area.height()),
         gfx::Vector2d(result_selection.width(), result_selection.height()));
   }
-
-  GetHostFrameSinkManager()->RequestCopyOfOutput(
+  DCHECK(host_frame_sink_manager_);
+  host_frame_sink_manager_->RequestCopyOfOutput(
       viz::SurfaceId(frame_sink_id_, pending_local_surface_id_),
       std::move(request));
 }
 
 bool DelegatedFrameHost::CanCopyFromCompositingSurface() const {
-  return (enable_viz_ || support_) && HasFallbackSurface() &&
-         active_device_scale_factor_ != 0.f;
+  return HasFallbackSurface() && active_device_scale_factor_ != 0.f;
 }
 
 bool DelegatedFrameHost::TransformPointToLocalCoordSpaceLegacy(
@@ -353,10 +351,8 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
       client_->DidReceiveFirstFrameAfterNavigation();
     }
   } else {
-    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    viz::HostFrameSinkManager* host_frame_sink_manager =
-        factory->GetContextFactoryPrivate()->GetHostFrameSinkManager();
-    host_frame_sink_manager->DropTemporaryReference(surface_info.id());
+    DCHECK(host_frame_sink_manager_);
+    host_frame_sink_manager_->DropTemporaryReference(surface_info.id());
     return;
   }
 
@@ -365,10 +361,8 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
   // surface either. Since we won't use the fallback surface, we drop the
   // temporary reference here to save resources.
   if (!HasPrimarySurface()) {
-    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    viz::HostFrameSinkManager* host_frame_sink_manager =
-        factory->GetContextFactoryPrivate()->GetHostFrameSinkManager();
-    host_frame_sink_manager->DropTemporaryReference(surface_info.id());
+    DCHECK(host_frame_sink_manager_);
+    host_frame_sink_manager_->DropTemporaryReference(surface_info.id());
     return;
   }
 
@@ -416,7 +410,8 @@ void DelegatedFrameHost::EvictDelegatedFrame() {
   if (!HasSavedFrame())
     return;
   std::vector<viz::SurfaceId> surface_ids = {GetCurrentSurfaceId()};
-  GetHostFrameSinkManager()->EvictSurfaces(surface_ids);
+  DCHECK(host_frame_sink_manager_);
+  host_frame_sink_manager_->EvictSurfaces(surface_ids);
   frame_evictor_->DiscardedFrame();
 }
 
@@ -502,11 +497,9 @@ void DelegatedFrameHost::CreateCompositorFrameSinkSupport() {
   DCHECK(!support_);
   constexpr bool is_root = false;
   constexpr bool needs_sync_points = true;
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  support_ = factory->GetContextFactoryPrivate()
-                 ->GetHostFrameSinkManager()
-                 ->CreateCompositorFrameSinkSupport(this, frame_sink_id_,
-                                                    is_root, needs_sync_points);
+  DCHECK(host_frame_sink_manager_);
+  support_ = host_frame_sink_manager_->CreateCompositorFrameSinkSupport(
+      this, frame_sink_id_, is_root, needs_sync_points);
   if (compositor_ && should_register_frame_sink_id_)
     compositor_->AddFrameSink(frame_sink_id_);
   if (needs_begin_frame_)
@@ -533,9 +526,8 @@ bool DelegatedFrameHost::IsPrimarySurfaceEvicted() const {
 }
 
 void DelegatedFrameHost::WindowTitleChanged(const std::string& title) {
-  auto* host_frame_sink_manager = GetHostFrameSinkManager();
-  if (host_frame_sink_manager)
-    host_frame_sink_manager->SetFrameSinkDebugLabel(frame_sink_id_, title);
+  if (host_frame_sink_manager_)
+    host_frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id_, title);
 }
 
 void DelegatedFrameHost::TakeFallbackContentFrom(DelegatedFrameHost* other) {

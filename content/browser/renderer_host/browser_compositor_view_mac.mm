@@ -60,9 +60,7 @@ BrowserCompositorMac::BrowserCompositorMac(
   // content (otherwise this solid color will be flashed during navigation).
   root_layer_->SetColor(SK_ColorTRANSPARENT);
   delegated_frame_host_.reset(new DelegatedFrameHost(
-      frame_sink_id, this,
-      base::FeatureList::IsEnabled(features::kVizDisplayCompositor),
-      true /* should_register_frame_sink_id */));
+      frame_sink_id, this, true /* should_register_frame_sink_id */));
 
   SetRenderWidgetHostIsHidden(render_widget_host_is_hidden);
   SetNSViewAttachedToWindow(false);
