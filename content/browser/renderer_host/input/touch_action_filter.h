@@ -67,6 +67,9 @@ class CONTENT_EXPORT TouchActionFilter {
 
   void OnHasTouchEventHandlers(bool has_handlers);
 
+  // Debugging only.
+  void AppendToGestureSequenceForDebugging(const char* str);
+
  private:
   friend class MockRenderWidgetHost;
   friend class TouchActionFilterTest;
@@ -112,6 +115,9 @@ class CONTENT_EXPORT TouchActionFilter {
 
   // Whitelisted touch action received from the compositor.
   base::Optional<cc::TouchAction> white_listed_touch_action_;
+
+  // Debugging only.
+  std::string gesture_sequence_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchActionFilter);
 };
