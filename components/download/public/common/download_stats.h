@@ -27,7 +27,6 @@ namespace base {
 class FilePath;
 class Time;
 class TimeDelta;
-class TimeTicks;
 }  // namespace base
 
 namespace download {
@@ -230,7 +229,6 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadCountWithSource(
 
 // Record COMPLETED_COUNT and how long the download took.
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadCompleted(
-    const base::TimeTicks& start,
     int64_t download_len,
     bool is_parallelizable,
     DownloadSource download_source);
@@ -281,43 +279,16 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadMimeTypeForNormalProfile(
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadContentDisposition(
     const std::string& content_disposition);
 
-// Record the number of buffers piled up by the IO thread
-// before the file thread gets to draining them.
-COMPONENTS_DOWNLOAD_EXPORT void RecordFileThreadReceiveBuffers(
-    size_t num_buffers);
-
-// Record the time of both the first open and all subsequent opens since the
-// download completed.
-COMPONENTS_DOWNLOAD_EXPORT void RecordOpen(const base::Time& end, bool first);
-
-// Record whether or not the server accepts ranges, and the download size. Also
-// counts if a strong validator is supplied. The combination of range request
-// support and ETag indicates downloads that are candidates for partial
-// resumption.
-COMPONENTS_DOWNLOAD_EXPORT void RecordAcceptsRanges(
-    const std::string& accepts_ranges,
-    int64_t download_len,
-    bool has_strong_validator);
+// Record the time of all opens since the download completed.
+COMPONENTS_DOWNLOAD_EXPORT void RecordOpen(const base::Time& end);
 
 // Record the number of completed unopened downloads when a download is opened.
 COMPONENTS_DOWNLOAD_EXPORT void RecordOpensOutstanding(int size);
-
-// Record how long we block the file thread at a time.
-COMPONENTS_DOWNLOAD_EXPORT void RecordContiguousWriteTime(
-    base::TimeDelta time_blocked);
-
-// Record the percentage of time we had to block the network (i.e.
-// how often, for each download, something other than the network
-// was the bottleneck).
-COMPONENTS_DOWNLOAD_EXPORT void RecordNetworkBlockage(
-    base::TimeDelta resource_handler_lifetime,
-    base::TimeDelta resource_handler_blocked_time);
 
 // Record overall bandwidth stats at the file end.
 // Does not count in any hash computation or file open/close time.
 COMPONENTS_DOWNLOAD_EXPORT void RecordFileBandwidth(
     size_t length,
-    base::TimeDelta disk_write_time,
     base::TimeDelta elapsed_time);
 
 // Records the size of the download from content-length header.
@@ -395,13 +366,6 @@ enum OriginStateOnResumption {
   ORIGIN_STATE_ON_RESUMPTION_CONTENT_DISPOSITION_CHANGED = 1 << 2,
   ORIGIN_STATE_ON_RESUMPTION_MAX = 1 << 3
 };
-
-// Record the state of the origin information across a download resumption
-// request. |state| is a combination of values from OriginStateOnResumption
-// enum.
-COMPONENTS_DOWNLOAD_EXPORT void RecordOriginStateOnResumption(
-    bool is_partial,
-    OriginStateOnResumption state);
 
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadConnectionSecurity(
     const GURL& download_url,

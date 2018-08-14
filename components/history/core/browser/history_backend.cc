@@ -1281,8 +1281,6 @@ void HistoryBackend::RemoveDownloads(const std::set<uint32_t>& ids) {
   if (downloads_count_after > downloads_count_before)
     return;
   size_t num_downloads_deleted = downloads_count_before - downloads_count_after;
-  UMA_HISTOGRAM_COUNTS("Download.DatabaseRemoveDownloadsCount",
-                       num_downloads_deleted);
   DCHECK_GE(ids.size(), num_downloads_deleted);
 }
 

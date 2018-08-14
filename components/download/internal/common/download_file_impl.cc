@@ -378,11 +378,6 @@ void DownloadFileImpl::RenameWithRetryInternal(
     return;
   }
 
-  if (!parameters->time_of_first_failure.is_null()) {
-    RecordDownloadFileRenameResultAfterRetry(
-        base::TimeTicks::Now() - parameters->time_of_first_failure, reason);
-  }
-
   if (reason == DOWNLOAD_INTERRUPT_REASON_NONE &&
       (parameters->option & ANNOTATE_WITH_SOURCE_INFORMATION)) {
     // Doing the annotation after the rename rather than before leaves
@@ -498,14 +493,12 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
         break;
       case InputStream::HAS_DATA: {
         ++num_buffers;
-        base::TimeTicks write_start(base::TimeTicks::Now());
         should_terminate = CalculateBytesToWrite(
             source_stream, incoming_data_size, &bytes_to_write);
         DCHECK_GE(incoming_data_size, bytes_to_write);
         reason = WriteDataToFile(
             source_stream->offset() + source_stream->bytes_written(),
             incoming_data->data(), bytes_to_write);
-        disk_writes_time_ += (base::TimeTicks::Now() - write_start);
         bytes_seen_ += bytes_to_write;
         total_incoming_data_size += bytes_to_write;
         if (reason == DOWNLOAD_INTERRUPT_REASON_NONE) {
@@ -547,11 +540,6 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
                                   weak_factory_.GetWeakPtr(), source_stream,
                                   MOJO_RESULT_OK));
   }
-
-  if (total_incoming_data_size)
-    RecordFileThreadReceiveBuffers(num_buffers);
-
-  RecordContiguousWriteTime(now - start);
 
   if (state == InputStream::COMPLETE)
     OnStreamCompleted(source_stream);
@@ -602,7 +590,7 @@ void DownloadFileImpl::NotifyObserver(SourceStream* source_stream,
 
     // All the stream reader are completed, shut down file IO processing.
     if (IsDownloadCompleted()) {
-      RecordFileBandwidth(bytes_seen_, disk_writes_time_,
+      RecordFileBandwidth(bytes_seen_,
                           base::TimeTicks::Now() - download_start_);
       if (record_stream_bandwidth_) {
         RecordParallelizableDownloadStats(

@@ -308,7 +308,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
 
   // Statistics
   size_t bytes_seen_;
-  base::TimeDelta disk_writes_time_;
   base::TimeTicks download_start_;
   RateEstimator rate_estimator_;
   int num_active_streams_;

@@ -8,11 +8,6 @@
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "components/download/public/common/download_danger_type.h"
 
-// Record the total number of items and the number of in-progress items showing
-// in the shelf when it closes.  Set |autoclose| to true when the shelf is
-// closing itself, false when the user explicitly closed it.
-void RecordDownloadShelfClose(int size, int in_progress, bool autoclose);
-
 // Used for counting UMA stats. Similar to content's
 // download_stats::DownloadCountTypes but from the chrome layer.
 enum ChromeDownloadCountTypes {
