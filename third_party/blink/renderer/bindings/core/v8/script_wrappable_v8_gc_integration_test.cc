@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/core/testing/death_aware_script_wrappable.h"
+#include "third_party/blink/renderer/core/testing/gc_object_liveness_observer.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -25,16 +26,6 @@ void RunV8FullGc(v8::Isolate* isolate) {
   V8GCController::CollectGarbage(isolate, false);
 }
 
-template <typename T>
-class ObjectObserver {
- public:
-  void Observe(T* object) { holder_ = object; }
-  bool ObjectDied() const { return nullptr == holder_.Get(); }
-
- private:
-  WeakPersistent<T> holder_;
-};
-
 }  // namespace v8_gc_integration_test
 
 // =============================================================================
@@ -47,7 +38,7 @@ TEST(ScriptWrappableV8GCIntegrationTest, V8ReportsLiveObjectsDuringFullGc) {
   v8::Isolate* isolate = scope.GetIsolate();
 
   v8::Persistent<v8::Value> holder;
-  v8_gc_integration_test::ObjectObserver<DeathAwareScriptWrappable> observer;
+  GCObjectLivenessObserver<DeathAwareScriptWrappable> observer;
   {
     v8::HandleScope handle_scope(isolate);
     DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
@@ -58,7 +49,7 @@ TEST(ScriptWrappableV8GCIntegrationTest, V8ReportsLiveObjectsDuringFullGc) {
 
   v8_gc_integration_test::RunV8FullGc(isolate);
   v8_gc_integration_test::PreciselyCollectGarbage();
-  EXPECT_FALSE(observer.ObjectDied());
+  EXPECT_FALSE(observer.WasCollected());
   holder.Reset();
 }
 
@@ -66,7 +57,7 @@ TEST(ScriptWrappableV8GCIntegrationTest, V8ReportsLiveObjectsDuringScavenger) {
   V8TestingScope scope;
   v8::Isolate* isolate = scope.GetIsolate();
 
-  v8_gc_integration_test::ObjectObserver<DeathAwareScriptWrappable> observer;
+  GCObjectLivenessObserver<DeathAwareScriptWrappable> observer;
   {
     v8::HandleScope handle_scope(isolate);
     DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
@@ -90,7 +81,7 @@ TEST(ScriptWrappableV8GCIntegrationTest, V8ReportsLiveObjectsDuringScavenger) {
   v8_gc_integration_test::RunV8Scavenger(isolate);
   v8_gc_integration_test::PreciselyCollectGarbage();
 
-  EXPECT_FALSE(observer.ObjectDied());
+  EXPECT_FALSE(observer.WasCollected());
 }
 
 TEST(ScriptWrappableV8GCIntegrationTest,
@@ -99,7 +90,7 @@ TEST(ScriptWrappableV8GCIntegrationTest,
   v8::Isolate* isolate = scope.GetIsolate();
 
   v8::Persistent<v8::Value> holder;
-  v8_gc_integration_test::ObjectObserver<DeathAwareScriptWrappable> observer;
+  GCObjectLivenessObserver<DeathAwareScriptWrappable> observer;
   {
     v8::HandleScope handle_scope(isolate);
     DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
@@ -113,7 +104,7 @@ TEST(ScriptWrappableV8GCIntegrationTest,
   v8_gc_integration_test::RunV8FullGc(isolate);
   v8_gc_integration_test::PreciselyCollectGarbage();
 
-  EXPECT_FALSE(observer.ObjectDied());
+  EXPECT_FALSE(observer.WasCollected());
   holder.Reset();
 }
 
@@ -122,7 +113,7 @@ TEST(ScriptWrappableV8GCIntegrationTest,
   V8TestingScope scope;
   v8::Isolate* isolate = scope.GetIsolate();
 
-  v8_gc_integration_test::ObjectObserver<DeathAwareScriptWrappable> observer;
+  GCObjectLivenessObserver<DeathAwareScriptWrappable> observer;
   {
     v8::HandleScope handle_scope(isolate);
     DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
@@ -136,7 +127,7 @@ TEST(ScriptWrappableV8GCIntegrationTest,
   v8_gc_integration_test::RunV8FullGc(isolate);
   v8_gc_integration_test::PreciselyCollectGarbage();
 
-  EXPECT_TRUE(observer.ObjectDied());
+  EXPECT_TRUE(observer.WasCollected());
 }
 
 }  // namespace blink
