@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_manager.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -315,15 +316,20 @@ void BackgroundFetchManager::DidLoadIcons(
     mojom::blink::BackgroundFetchOptionsPtr options,
     ScriptPromiseResolver* resolver,
     const SkBitmap& icon) {
-  bridge_->Fetch(id, std::move(web_requests), std::move(options), icon,
-                 WTF::Bind(&BackgroundFetchManager::DidFetch,
-                           WrapPersistent(this), WrapPersistent(resolver)));
+  bridge_->Fetch(
+      id, std::move(web_requests), std::move(options), icon,
+      WTF::Bind(&BackgroundFetchManager::DidFetch, WrapPersistent(this),
+                WrapPersistent(resolver), base::Time::Now()));
 }
 
 void BackgroundFetchManager::DidFetch(
     ScriptPromiseResolver* resolver,
+    base::Time time_started,
     mojom::blink::BackgroundFetchError error,
     BackgroundFetchRegistration* registration) {
+  UMA_HISTOGRAM_TIMES("BackgroundFetch.Manager.FetchDuration",
+                      base::Time::Now() - time_started);
+
   ScriptState* script_state = resolver->GetScriptState();
   ScriptState::Scope scope(script_state);
 
@@ -370,7 +376,8 @@ ScriptPromise BackgroundFetchManager::get(ScriptState* script_state,
 
   bridge_->GetRegistration(
       id, WTF::Bind(&BackgroundFetchManager::DidGetRegistration,
-                    WrapPersistent(this), WrapPersistent(resolver)));
+                    WrapPersistent(this), WrapPersistent(resolver),
+                    base::Time::Now()));
 
   return promise;
 }
@@ -440,8 +447,12 @@ Vector<WebServiceWorkerRequest> BackgroundFetchManager::CreateWebRequestVector(
 
 void BackgroundFetchManager::DidGetRegistration(
     ScriptPromiseResolver* resolver,
+    base::Time time_started,
     mojom::blink::BackgroundFetchError error,
     BackgroundFetchRegistration* registration) {
+  UMA_HISTOGRAM_TIMES("BackgroundFetch.Manager.GetDuration",
+                      base::Time::Now() - time_started);
+
   ScriptState* script_state = resolver->GetScriptState();
   ScriptState::Scope scope(script_state);
 
@@ -485,17 +496,21 @@ ScriptPromise BackgroundFetchManager::getIds(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  bridge_->GetDeveloperIds(
-      WTF::Bind(&BackgroundFetchManager::DidGetDeveloperIds,
-                WrapPersistent(this), WrapPersistent(resolver)));
+  bridge_->GetDeveloperIds(WTF::Bind(
+      &BackgroundFetchManager::DidGetDeveloperIds, WrapPersistent(this),
+      WrapPersistent(resolver), base::Time::Now()));
 
   return promise;
 }
 
 void BackgroundFetchManager::DidGetDeveloperIds(
     ScriptPromiseResolver* resolver,
+    base::Time time_started,
     mojom::blink::BackgroundFetchError error,
     const Vector<String>& developer_ids) {
+  UMA_HISTOGRAM_TIMES("BackgroundFetch.Manager.GetIdsDuration",
+                      base::Time::Now() - time_started);
+
   ScriptState::Scope scope(resolver->GetScriptState());
 
   switch (error) {
