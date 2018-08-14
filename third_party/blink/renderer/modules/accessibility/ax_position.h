@@ -18,6 +18,9 @@
 namespace blink {
 
 class AXObject;
+class ContainerNode;
+class Document;
+class Node;
 
 // When converting to a DOM position from an |AXPosition| or vice versa, and the
 // corresponding position is invalid, doesn't exist, or is inside an ignored
@@ -39,19 +42,44 @@ class MODULES_EXPORT AXPosition final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  static const AXPosition CreatePositionBeforeObject(const AXObject& child);
-  static const AXPosition CreatePositionAfterObject(const AXObject& child);
+  //
+  // Convert between DOM and AX positions and vice versa.
+  // |Create...| and |FromPosition| methods will by default skip over any
+  // ignored object and return the next unignored position to the right of that
+  // object.
+  //
+
+  static const AXPosition CreatePositionBeforeObject(
+      const AXObject& child,
+      const AXPositionAdjustmentBehavior =
+          AXPositionAdjustmentBehavior::kMoveRight);
+  static const AXPosition CreatePositionAfterObject(
+      const AXObject& child,
+      const AXPositionAdjustmentBehavior =
+          AXPositionAdjustmentBehavior::kMoveRight);
   static const AXPosition CreateFirstPositionInObject(
-      const AXObject& container);
-  static const AXPosition CreateLastPositionInObject(const AXObject& container);
+      const AXObject& container,
+      const AXPositionAdjustmentBehavior =
+          AXPositionAdjustmentBehavior::kMoveRight);
+  static const AXPosition CreateLastPositionInObject(
+      const AXObject& container,
+      const AXPositionAdjustmentBehavior =
+          AXPositionAdjustmentBehavior::kMoveRight);
   static const AXPosition CreatePositionInTextObject(
       const AXObject& container,
       const int offset,
-      const TextAffinity = TextAffinity::kDownstream);
+      const TextAffinity = TextAffinity::kDownstream,
+      const AXPositionAdjustmentBehavior =
+          AXPositionAdjustmentBehavior::kMoveRight);
   static const AXPosition FromPosition(
       const Position&,
-      const TextAffinity = TextAffinity::kDownstream);
-  static const AXPosition FromPosition(const PositionWithAffinity&);
+      const TextAffinity = TextAffinity::kDownstream,
+      const AXPositionAdjustmentBehavior =
+          AXPositionAdjustmentBehavior::kMoveRight);
+  static const AXPosition FromPosition(
+      const PositionWithAffinity&,
+      const AXPositionAdjustmentBehavior =
+          AXPositionAdjustmentBehavior::kMoveRight);
 
   // Creates an empty position. |IsValid| will return false.
   AXPosition();
@@ -104,13 +132,13 @@ class MODULES_EXPORT AXPosition final {
   // tree appear as children of its immediate unignored parent.
   const AXPosition AsUnignoredPosition(
       const AXPositionAdjustmentBehavior =
-          AXPositionAdjustmentBehavior::kMoveLeft) const;
+          AXPositionAdjustmentBehavior::kMoveRight) const;
 
   // Adjusts the position by skipping over any objects that don't have a
   // corresponding |node| in the DOM tree, e.g. list bullets.
   const AXPosition AsValidDOMPosition(
       const AXPositionAdjustmentBehavior =
-          AXPositionAdjustmentBehavior::kMoveLeft) const;
+          AXPositionAdjustmentBehavior::kMoveRight) const;
 
   // Converts to a DOM position.
   const PositionWithAffinity ToPositionWithAffinity(
@@ -120,6 +148,18 @@ class MODULES_EXPORT AXPosition final {
  private:
   // Only used by static Create... methods.
   explicit AXPosition(const AXObject& container);
+
+  // Searches the DOM tree starting from a particular child node within a
+  // particular container node, and in the direction indicated by the adjustment
+  // behavior, until it finds a node whose corresponding AX object is not
+  // ignored. Returns nullptr if an unignored object is not found within the
+  // provided container node. The container node could be nullptr if the whole
+  // DOM tree needs to be searched.
+  static const AXObject* FindNeighboringUnignoredObject(
+      const Document& document,
+      const Node& child_node,
+      const ContainerNode* container_node,
+      const AXPositionAdjustmentBehavior adjustment_behavior);
 
   // The |AXObject| in which the position is present.
   // Only valid during a single document lifecycle hence no need to maintain a

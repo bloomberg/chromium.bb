@@ -1,6 +1,6 @@
 AXWebArea
 ++AXGroup
-++++AXImage
+++++AXGroup
 ++++++AXStaticText AXValue='Static fallback'
 ++++AXGroup
 ++++++AXLink AXTitle='Interactive fallback'
