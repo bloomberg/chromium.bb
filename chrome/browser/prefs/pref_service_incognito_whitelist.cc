@@ -25,7 +25,6 @@
 #include "components/rappor/rappor_pref_names.h"
 #include "components/reading_list/core/reading_list_pref_names.h"
 #include "components/search_engines/search_engines_pref_names.h"
-#include "components/startup_metric_utils/browser/pref_names.h"
 #include "components/suggestions/suggestions_pref_names.h"
 #include "components/ukm/ukm_pref_names.h"
 #include "components/variations/pref_names.h"
@@ -810,11 +809,6 @@ const char* temporary_incognito_whitelist[] = {
     prefs::kSyncedDefaultSearchProviderGUID,
     prefs::kDefaultSearchProviderEnabled, prefs::kSearchProviderOverrides,
     prefs::kSearchProviderOverridesVersion, prefs::kCountryIDAtInstall,
-
-    // components/startup_metric_utils/browser/pref_names.h
-    startup_metric_utils::prefs::kLastStartupTimestamp,
-    startup_metric_utils::prefs::kLastStartupVersion,
-    startup_metric_utils::prefs::kSameVersionStartupCount,
 
     // components/suggestions/suggestions_pref_names.h
     suggestions::prefs::kSuggestionsBlacklist,
