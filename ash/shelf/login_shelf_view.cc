@@ -112,6 +112,8 @@ class LoginShelfButton : public views::LabelButton {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
 
+    SetTextSubpixelRenderingEnabled(false);
+
     SetImageLabelSpacing(kImageLabelSpacingDp);
     SetTextColor(views::Button::STATE_NORMAL,
                  login_constants::kButtonEnabledColor);
