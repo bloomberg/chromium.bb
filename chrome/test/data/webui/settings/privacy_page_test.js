@@ -326,9 +326,130 @@ cr.define('settings_privacy_page', function() {
     });
   }
 
-  if (cr.isMac || cr.isWin)
+  function registerPrivacyPageSoundTests() {
+    suite('PrivacyPageSound', function() {
+      /** @type {settings.TestPrivacyPageBrowserProxy} */
+      let testBrowserProxy;
+
+      /** @type {SettingsPrivacyPageElement} */
+      let page;
+
+      function flushAsync() {
+        Polymer.dom.flush();
+        return new Promise(resolve => {
+          page.async(resolve);
+        });
+      }
+
+      function getToggleElement() {
+        return page.$$('settings-animated-pages')
+            .queryEffectiveChildren('settings-subpage')
+            .queryEffectiveChildren('#block-autoplay-setting');
+      }
+
+      setup(() => {
+        loadTimeData.overrideValues({
+          enableSoundContentSetting: true,
+          enableBlockAutoplayContentSetting: true
+        });
+
+        testBrowserProxy = new TestPrivacyPageBrowserProxy();
+        settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
+        PolymerTest.clearBody();
+
+        settings.router.navigateTo(settings.routes.SITE_SETTINGS_SOUND);
+        page = document.createElement('settings-privacy-page');
+        document.body.appendChild(page);
+        return flushAsync();
+      });
+
+      teardown(() => {
+        page.remove();
+      });
+
+      test('UpdateStatus', () => {
+        assertTrue(getToggleElement().hasAttribute('disabled'));
+        assertFalse(getToggleElement().hasAttribute('checked'));
+
+        cr.webUIListenerCallback(
+            'onBlockAutoplayStatusChanged',
+            {pref: {value: true}, enabled: true});
+
+        return flushAsync().then(() => {
+          // Check that we are on and enabled.
+          assertFalse(getToggleElement().hasAttribute('disabled'));
+          assertTrue(getToggleElement().hasAttribute('checked'));
+
+          // Toggle the pref off.
+          cr.webUIListenerCallback(
+              'onBlockAutoplayStatusChanged',
+              {pref: {value: false}, enabled: true});
+
+          return flushAsync().then(() => {
+            // Check that we are off and enabled.
+            assertFalse(getToggleElement().hasAttribute('disabled'));
+            assertFalse(getToggleElement().hasAttribute('checked'));
+
+            // Disable the autoplay status toggle.
+            cr.webUIListenerCallback(
+                'onBlockAutoplayStatusChanged',
+                {pref: {value: false}, enabled: false});
+
+            return flushAsync().then(() => {
+              // Check that we are off and disabled.
+              assertTrue(getToggleElement().hasAttribute('disabled'));
+              assertFalse(getToggleElement().hasAttribute('checked'));
+            });
+          });
+        });
+      });
+
+      test('Hidden', () => {
+        assertTrue(
+            loadTimeData.getBoolean('enableBlockAutoplayContentSetting'));
+        assertFalse(getToggleElement().hidden);
+
+        loadTimeData.overrideValues({enableBlockAutoplayContentSetting: false});
+
+        page.remove();
+        page = document.createElement('settings-privacy-page');
+        document.body.appendChild(page);
+
+        return flushAsync().then(() => {
+          assertFalse(
+              loadTimeData.getBoolean('enableBlockAutoplayContentSetting'));
+          assertTrue(getToggleElement().hidden);
+        });
+      });
+
+      test('Click', () => {
+        assertTrue(getToggleElement().hasAttribute('disabled'));
+        assertFalse(getToggleElement().hasAttribute('checked'));
+
+        cr.webUIListenerCallback(
+            'onBlockAutoplayStatusChanged',
+            {pref: {value: true}, enabled: true});
+
+        return flushAsync().then(() => {
+          // Check that we are on and enabled.
+          assertFalse(getToggleElement().hasAttribute('disabled'));
+          assertTrue(getToggleElement().hasAttribute('checked'));
+
+          // Click on the toggle and wait for the proxy to be called.
+          getToggleElement().click();
+          return testBrowserProxy.whenCalled('setBlockAutoplayEnabled')
+              .then((enabled) => {
+                assertFalse(enabled);
+              });
+        });
+      });
+    });
+  }
+
+  if (cr.isMac || cr.isWindows)
     registerNativeCertificateManagerTests();
 
   registerClearBrowsingDataTests();
   registerPrivacyPageTests();
+  registerPrivacyPageSoundTests();
 });

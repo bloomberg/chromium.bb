@@ -22,6 +22,7 @@
 #include "chrome/browser/content_settings/web_site_settings_uma_util.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/media/unified_autoplay_config.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -34,11 +35,14 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/crx_file/id_util.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -54,9 +58,6 @@
 #include "ui/base/text/bytes_formatting.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/common/pref_names.h"
-#include "components/prefs/pref_change_registrar.h"
-#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #endif
 
@@ -184,7 +185,10 @@ void ConvertSiteGroupMapToListValue(
 }  // namespace
 
 SiteSettingsHandler::SiteSettingsHandler(Profile* profile)
-    : profile_(profile), observer_(this), local_storage_helper_(nullptr) {}
+    : profile_(profile),
+      observer_(this),
+      pref_change_registrar_(nullptr),
+      local_storage_helper_(nullptr) {}
 
 SiteSettingsHandler::~SiteSettingsHandler() {
 }
@@ -269,6 +273,10 @@ void SiteSettingsHandler::RegisterMessages() {
       "removeZoomLevel",
       base::BindRepeating(&SiteSettingsHandler::HandleRemoveZoomLevel,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setBlockAutoplayEnabled",
+      base::BindRepeating(&SiteSettingsHandler::HandleSetBlockAutoplayEnabled,
+                          base::Unretained(this)));
 }
 
 void SiteSettingsHandler::OnJavascriptAllowed() {
@@ -297,9 +305,16 @@ void SiteSettingsHandler::OnJavascriptAllowed() {
               base::Bind(&SiteSettingsHandler::OnZoomLevelChanged,
                          base::Unretained(this)));
 
-#if defined(OS_CHROMEOS)
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(profile_->GetPrefs());
+
+  // If the block autoplay pref changes send the new status.
+  pref_change_registrar_->Add(
+      prefs::kBlockAutoplayEnabled,
+      base::Bind(&SiteSettingsHandler::SendBlockAutoplayStatus,
+                 base::Unretained(this)));
+
+#if defined(OS_CHROMEOS)
   pref_change_registrar_->Add(
       prefs::kEnableDRM,
       base::Bind(&SiteSettingsHandler::OnPrefEnableDrmChanged,
@@ -311,6 +326,7 @@ void SiteSettingsHandler::OnJavascriptDisallowed() {
   observer_.RemoveAll();
   notification_registrar_.RemoveAll();
   host_zoom_map_subscription_.reset();
+  pref_change_registrar_->Remove(prefs::kBlockAutoplayEnabled);
 #if defined(OS_CHROMEOS)
   pref_change_registrar_->Remove(prefs::kEnableDRM);
 #endif
@@ -375,6 +391,14 @@ void SiteSettingsHandler::OnContentSettingChanged(
         base::Value(secondary_pattern == ContentSettingsPattern::Wildcard()
                         ? ""
                         : secondary_pattern.ToString()));
+  }
+
+  // If the default sound content setting changed then we should send block
+  // autoplay status.
+  if (primary_pattern == ContentSettingsPattern() &&
+      secondary_pattern == ContentSettingsPattern() &&
+      content_type == CONTENT_SETTINGS_TYPE_SOUND) {
+    SendBlockAutoplayStatus();
   }
 }
 
@@ -1114,6 +1138,43 @@ void SiteSettingsHandler::HandleRemoveZoomLevel(const base::ListValue* args) {
   host_zoom_map = content::HostZoomMap::GetDefaultForBrowserContext(profile_);
   double default_level = host_zoom_map->GetDefaultZoomLevel();
   host_zoom_map->SetZoomLevelForHost(origin, default_level);
+}
+
+void SiteSettingsHandler::SendBlockAutoplayStatus() {
+  if (!IsJavascriptAllowed())
+    return;
+
+  base::DictionaryValue status;
+
+  // Whether the block autoplay toggle should be checked.
+  base::DictionaryValue pref;
+  pref.SetKey(
+      "value",
+      base::Value(
+          UnifiedAutoplayConfig::ShouldBlockAutoplay(profile_) &&
+          UnifiedAutoplayConfig::IsBlockAutoplayUserModifiable(profile_)));
+  status.SetKey("pref", std::move(pref));
+
+  // Whether the block autoplay toggle should be enabled.
+  status.SetKey("enabled",
+                base::Value(UnifiedAutoplayConfig::IsBlockAutoplayUserModifiable(
+                    profile_)));
+
+  FireWebUIListener("onBlockAutoplayStatusChanged", status);
+}
+
+void SiteSettingsHandler::HandleSetBlockAutoplayEnabled(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  if (!UnifiedAutoplayConfig::IsBlockAutoplayUserModifiable(profile_))
+    return;
+
+  CHECK_EQ(1U, args->GetSize());
+  bool value;
+  CHECK(args->GetBoolean(0, &value));
+
+  profile_->GetPrefs()->SetBoolean(prefs::kBlockAutoplayEnabled, value);
 }
 
 void SiteSettingsHandler::SetBrowsingDataLocalStorageHelperForTesting(

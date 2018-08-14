@@ -23,6 +23,10 @@ class UnifiedAutoplayConfig {
   // setting value is not block.
   static bool ShouldBlockAutoplay(Profile*);
 
+  // Checks whether the block autoplay toggle button should be enabled. If it is
+  // false it will still be visible but will be disabled.
+  static bool IsBlockAutoplayUserModifiable(Profile*);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(UnifiedAutoplayConfig);
 };

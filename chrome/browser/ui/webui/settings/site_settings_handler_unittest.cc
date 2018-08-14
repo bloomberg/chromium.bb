@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -151,6 +152,36 @@ class SiteSettingsHandlerTest : public testing::Test {
   TestingProfile* profile() { return &profile_; }
   content::TestWebUI* web_ui() { return &web_ui_; }
   SiteSettingsHandler* handler() { return &handler_; }
+
+  void ValidateBlockAutoplay(bool expected_value, bool expected_enabled) {
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
+
+    std::string event_name;
+    ASSERT_TRUE(data.arg1()->GetAsString(&event_name));
+    EXPECT_EQ("onBlockAutoplayStatusChanged", event_name);
+
+    const base::DictionaryValue* event_data = nullptr;
+    ASSERT_TRUE(data.arg2()->GetAsDictionary(&event_data));
+
+    bool enabled;
+    ASSERT_TRUE(event_data->GetBoolean("enabled", &enabled));
+    EXPECT_EQ(expected_enabled, enabled);
+
+    const base::DictionaryValue* pref_data = nullptr;
+    ASSERT_TRUE(event_data->GetDictionary("pref", &pref_data));
+
+    bool value;
+    ASSERT_TRUE(pref_data->GetBoolean("value", &value));
+    EXPECT_EQ(expected_value, value);
+  }
+
+  void SetSoundContentSettingDefault(ContentSetting value) {
+    HostContentSettingsMap* content_settings =
+        HostContentSettingsMapFactory::GetForProfile(profile());
+    content_settings->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SOUND,
+                                               value);
+  }
 
   void ValidateDefault(const ContentSetting expected_setting,
                        const site_settings::SiteSettingSource expected_source,
@@ -1231,6 +1262,44 @@ TEST_F(SiteSettingsHandlerTest, SessionOnlyException) {
   EXPECT_EQ(1U, web_ui()->call_data().size());
   histograms.ExpectTotalCount(uma_base, 1);
   histograms.ExpectTotalCount(uma_base + ".SessionOnly", 1);
+}
+
+TEST_F(SiteSettingsHandlerTest, BlockAutoplay_SoundSettingUpdate) {
+  SetSoundContentSettingDefault(CONTENT_SETTING_BLOCK);
+  base::RunLoop().RunUntilIdle();
+
+  // Check that we are not checked or enabled.
+  ValidateBlockAutoplay(false, false);
+
+  SetSoundContentSettingDefault(CONTENT_SETTING_ALLOW);
+  base::RunLoop().RunUntilIdle();
+
+  // Check that we are checked and enabled.
+  ValidateBlockAutoplay(true, true);
+}
+
+TEST_F(SiteSettingsHandlerTest, BlockAutoplay_PrefUpdate) {
+  profile()->GetPrefs()->SetBoolean(prefs::kBlockAutoplayEnabled, false);
+  base::RunLoop().RunUntilIdle();
+
+  // Check that we are not checked but are enabled.
+  ValidateBlockAutoplay(false, true);
+
+  profile()->GetPrefs()->SetBoolean(prefs::kBlockAutoplayEnabled, true);
+  base::RunLoop().RunUntilIdle();
+
+  // Check that we are checked and enabled.
+  ValidateBlockAutoplay(true, true);
+}
+
+TEST_F(SiteSettingsHandlerTest, BlockAutoplay_Update) {
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kBlockAutoplayEnabled));
+
+  base::ListValue data;
+  data.AppendBoolean(false);
+
+  handler()->HandleSetBlockAutoplayEnabled(&data);
+  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(prefs::kBlockAutoplayEnabled));
 }
 
 }  // namespace settings

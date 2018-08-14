@@ -3092,6 +3092,9 @@
   <message name="IDS_SETTINGS_SITE_NO_SITES_ADDED" desc="Explanation for not showing a list of site exceptions">
     No sites added
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_BLOCK_AUTOPLAY" desc="A label for a toggle in site settings to block autoplay. If the toggle is on then Chrome will block autoplay by default and use an algorithm to determine which sites should still be able to autoplay. If the toggle is off then autoplay will be enabled for all sites.">
+    Let Chrome choose when sites can play sound (recommended)
+  </message>
 
   <message name="IDS_SETTINGS_NO_USB_DEVICES_FOUND" desc="Explanation for not showing USB devices in site settings.">
     No USB devices found

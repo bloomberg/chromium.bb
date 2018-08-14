@@ -39,6 +39,7 @@
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
+#include "media/base/media_switches.h"
 #include "services/device/public/cpp/device_features.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -2442,6 +2443,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_PAYMENT_HANDLER_ALLOW_RECOMMENDED},
     {"siteSettingsPaymentHandlerBlock",
      IDS_SETTINGS_SITE_SETTINGS_PAYMENT_HANDLER_BLOCK},
+    {"siteSettingsBlockAutoplaySetting",
+     IDS_SETTINGS_SITE_SETTINGS_BLOCK_AUTOPLAY},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
@@ -2456,6 +2459,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "enableSoundContentSetting",
       base::FeatureList::IsEnabled(features::kSoundContentSetting));
+
+  html_source->AddBoolean(
+      "enableBlockAutoplayContentSetting",
+      base::FeatureList::IsEnabled(media::kAutoplaySoundSettings));
 
   html_source->AddBoolean(
       "enableClipboardContentSetting",
