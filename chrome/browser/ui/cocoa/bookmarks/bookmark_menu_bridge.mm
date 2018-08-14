@@ -245,7 +245,7 @@ void BookmarkMenuBridge::ClearBookmarkMenu() {
 void BookmarkMenuBridge::AddNodeAsSubmenu(NSMenu* menu,
                                           const BookmarkNode* node,
                                           NSImage* image) {
-  NSString* title = base::SysUTF16ToNSString(node->GetTitle());
+  NSString* title = [BookmarkMenuCocoaController menuTitleForNode:node];
   base::scoped_nsobject<NSMenuItem> items(
       [[NSMenuItem alloc] initWithTitle:title action:nil keyEquivalent:@""]);
   [items setImage:image];
