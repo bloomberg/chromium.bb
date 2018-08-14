@@ -4,6 +4,7 @@
 
 #include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/resource_coordinator/time.h"
@@ -209,6 +210,37 @@ void LocalSiteCharacteristicsWebContentsObserver::
   }
 }
 
+void LocalSiteCharacteristicsWebContentsObserver::OnLoadTimePerformanceEstimate(
+    content::WebContents* contents,
+    const PageNavigationIdentity& page_navigation_id,
+    base::TimeDelta cpu_usage_estimate,
+    uint64_t private_footprint_kb_estimate) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (web_contents() != contents)
+    return;
+
+  DCHECK_NE(nullptr, page_signal_receiver_);
+
+  bool late_notification = page_signal_receiver_->GetNavigationIDForWebContents(
+                               contents) != page_navigation_id.navigation_id;
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "ResourceCoordinator.Measurement.Memory.LateNotification",
+      late_notification);
+
+  // Don't notify the writer if the origin of this navigation event isn't the
+  // same as the one tracked by the writer.
+  // TODO(siggi): Deal with late notifications by getting a writer for
+  //     the measurement's origin.
+  if (!late_notification || url::Origin::Create(GURL(page_navigation_id.url))
+                                .IsSameOriginWith(writer_origin_)) {
+    if (writer_) {
+      writer_->NotifyLoadTimePerformanceMeasurement(
+          cpu_usage_estimate, private_footprint_kb_estimate);
+    }
+  }
+}
+
 bool LocalSiteCharacteristicsWebContentsObserver::ShouldIgnoreFeatureUsageEvent(
     FeatureType feature_type) {
   // The feature usage should be ignored if there's no writer for this tab.
@@ -256,7 +288,7 @@ void LocalSiteCharacteristicsWebContentsObserver::
   if (ShouldIgnoreFeatureUsageEvent(feature_type))
     return;
 
-    (writer_.get()->*method)();
+  (writer_.get()->*method)();
 }
 
 void LocalSiteCharacteristicsWebContentsObserver::OnSiteLoaded() {

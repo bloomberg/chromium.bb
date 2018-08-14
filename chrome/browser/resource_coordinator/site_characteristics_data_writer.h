@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_SITE_CHARACTERISTICS_DATA_WRITER_H_
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_SITE_CHARACTERISTICS_DATA_WRITER_H_
 
+#include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_tab_visibility.h"
 
 namespace resource_coordinator {
@@ -27,6 +28,11 @@ class SiteCharacteristicsDataWriter {
   virtual void NotifyUpdatesTitleInBackground() = 0;
   virtual void NotifyUsesAudioInBackground() = 0;
   virtual void NotifyUsesNotificationsInBackground() = 0;
+
+  // Records performance measurements.
+  virtual void NotifyLoadTimePerformanceMeasurement(
+      base::TimeDelta cpu_usage_estimate,
+      uint64_t private_footprint_kb_estimate) = 0;
 };
 
 }  // namespace resource_coordinator

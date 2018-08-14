@@ -19,6 +19,14 @@ namespace internal {
 
 namespace {
 
+// The sample weighing factor for the exponential moving averages for
+// performance measurements. A factor of 1/2 gives each sample an equal weight
+// to the entire previous history. As we don't know much noise there is to the
+// measurement, this is essentially a shot in the dark.
+// TODO(siggi): Consider adding UMA metrics to capture e.g. the fractional delta
+//      from the current average, or some such.
+constexpr float kSampleWeightFactor = 0.5;
+
 base::TimeDelta GetTickDeltaSinceEpoch() {
   return NowTicks() - base::TimeTicks::UnixEpoch();
 }
@@ -137,6 +145,15 @@ void LocalSiteCharacteristicsDataImpl::NotifyUsesNotificationsInBackground() {
       "NotificationsUsageInBackground");
 }
 
+void LocalSiteCharacteristicsDataImpl::NotifyLoadTimePerformanceMeasurement(
+    base::TimeDelta cpu_usage_estimate,
+    uint64_t private_footprint_kb_estimate) {
+  is_dirty_ = true;
+
+  cpu_usage_estimate_.AppendDatum(cpu_usage_estimate.InMicroseconds());
+  private_footprint_kb_estimate_.AppendDatum(private_footprint_kb_estimate);
+}
+
 void LocalSiteCharacteristicsDataImpl::ExpireAllObservationWindowsForTesting() {
   auto params = GetSiteCharacteristicsDatabaseParams();
   base::TimeDelta longest_observation_window =
@@ -152,7 +169,9 @@ LocalSiteCharacteristicsDataImpl::LocalSiteCharacteristicsDataImpl(
     const url::Origin& origin,
     OnDestroyDelegate* delegate,
     LocalSiteCharacteristicsDatabase* database)
-    : origin_(origin),
+    : cpu_usage_estimate_(kSampleWeightFactor),
+      private_footprint_kb_estimate_(kSampleWeightFactor),
+      origin_(origin),
       loaded_tabs_count_(0U),
       loaded_tabs_in_background_count_(0U),
       database_(database),
@@ -185,6 +204,17 @@ LocalSiteCharacteristicsDataImpl::~LocalSiteCharacteristicsDataImpl() {
   // not completed, add some metrics to measure if this is really an issue.
   if (is_dirty_ && fully_initialized_) {
     DCHECK(site_characteristics_.IsInitialized());
+
+    // Update the proto with the most current performance measurement averages.
+    if (cpu_usage_estimate_.num_datums() ||
+        private_footprint_kb_estimate_.num_datums()) {
+      auto* estimates = site_characteristics_.mutable_load_time_estimates();
+      if (cpu_usage_estimate_.num_datums())
+        estimates->set_avg_cpu_usage_us(cpu_usage_estimate_.value());
+      if (private_footprint_kb_estimate_.num_datums()) {
+        estimates->set_avg_footprint_kb(private_footprint_kb_estimate_.value());
+      }
+    }
     database_->WriteSiteCharacteristicsIntoDB(origin_, site_characteristics_);
   }
 }
@@ -264,6 +294,11 @@ void LocalSiteCharacteristicsDataImpl::
 
   // Reset all the observations.
   InitWithDefaultValues(false);
+
+  // Clear the performance estimates, both the local state and the proto.
+  cpu_usage_estimate_.Clear();
+  private_footprint_kb_estimate_.Clear();
+  site_characteristics_.clear_load_time_estimates();
 
   // Set the last loaded time to the current time if there's some loaded
   // instances of this site.
@@ -381,6 +416,17 @@ void LocalSiteCharacteristicsDataImpl::OnInitCallback(
     if (!site_characteristics_.has_last_loaded()) {
       site_characteristics_.set_last_loaded(
           db_site_characteristics->last_loaded());
+    }
+
+    // If there was on-disk data, update the in-memory performance averages.
+    if (db_site_characteristics->has_load_time_estimates()) {
+      const auto& estimates = db_site_characteristics->load_time_estimates();
+      if (estimates.has_avg_cpu_usage_us())
+        cpu_usage_estimate_.PrependDatum(estimates.avg_cpu_usage_us());
+      if (estimates.has_avg_footprint_kb()) {
+        private_footprint_kb_estimate_.PrependDatum(
+            estimates.avg_footprint_kb());
+      }
     }
   } else {
     // Init all the fields that haven't been initialized with a default value.

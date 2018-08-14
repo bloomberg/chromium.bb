@@ -3044,6 +3044,7 @@ test("unit_tests") {
       "../browser/resource_coordinator/background_tab_navigation_throttle_unittest.cc",
       "../browser/resource_coordinator/decision_details_unittest.cc",
       "../browser/resource_coordinator/discard_metrics_lifecycle_unit_observer_unittest.cc",
+      "../browser/resource_coordinator/exponential_moving_average_unittest.cc",
       "../browser/resource_coordinator/intervention_policy_database_unittest.cc",
       "../browser/resource_coordinator/leveldb_site_characteristics_database_unittest.cc",
       "../browser/resource_coordinator/lifecycle_unit_base_unittest.cc",

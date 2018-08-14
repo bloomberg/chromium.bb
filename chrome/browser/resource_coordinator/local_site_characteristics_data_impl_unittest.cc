@@ -408,6 +408,19 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
   test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   auto last_loaded = local_site_data->last_loaded_time_for_testing();
 
+  // Add a couple of performance samples.
+  local_site_data->NotifyLoadTimePerformanceMeasurement(
+      base::TimeDelta::FromMicroseconds(1000), 2000u);
+  local_site_data->NotifyLoadTimePerformanceMeasurement(
+      base::TimeDelta::FromMicroseconds(500), 1000u);
+
+  // Make sure the local performance samples are averaged as expected.
+  EXPECT_EQ(2U, local_site_data->cpu_usage_estimate().num_datums());
+  EXPECT_EQ(750.0, local_site_data->cpu_usage_estimate().value());
+
+  EXPECT_EQ(2U, local_site_data->private_footprint_kb_estimate().num_datums());
+  EXPECT_EQ(1500.0, local_site_data->private_footprint_kb_estimate().value());
+
   // This protobuf should have a valid |last_loaded| field and valid observation
   // durations for each features, but the |use_timestamp| field shouldn't have
   // been initialized for the features that haven't been used.
@@ -427,6 +440,8 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
   EXPECT_TRUE(local_site_data->site_characteristics_for_testing()
                   .uses_notifications_in_background()
                   .has_observation_duration());
+  EXPECT_FALSE(local_site_data->site_characteristics_for_testing()
+                   .has_load_time_estimates());
 
   // Initialize a fake protobuf that indicates that this site updates its title
   // while in background and set a fake last loaded time (this should be
@@ -445,6 +460,11 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
       unused_feature_proto);
   test_proto->set_last_loaded(42);
 
+  // Set the previously saved performance averages.
+  auto* estimates = test_proto->mutable_load_time_estimates();
+  estimates->set_avg_cpu_usage_us(250);
+  estimates->set_avg_footprint_kb(500);
+
   // Run the callback to indicate that the initialization has completed.
   std::move(read_cb).Run(test_proto);
 
@@ -458,11 +478,30 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
             local_site_data->UsesNotificationsInBackground());
   EXPECT_EQ(last_loaded, local_site_data->last_loaded_time_for_testing());
 
+  // Make sure the local performance samples have been updated with the previous
+  // averages.
+  EXPECT_EQ(3U, local_site_data->cpu_usage_estimate().num_datums());
+  EXPECT_EQ(562.5, local_site_data->cpu_usage_estimate().value());
+
+  EXPECT_EQ(3U, local_site_data->private_footprint_kb_estimate().num_datums());
+  EXPECT_EQ(1125, local_site_data->private_footprint_kb_estimate().value());
+
   EXPECT_TRUE(
       local_site_data->site_characteristics_for_testing().IsInitialized());
 
+  // Verify that the in-memory data is flushed to the protobuffer on write.
   EXPECT_CALL(mock_db,
-              WriteSiteCharacteristicsIntoDB(::testing::_, ::testing::_));
+              WriteSiteCharacteristicsIntoDB(::testing::_, ::testing::_))
+      .WillOnce(::testing::Invoke(
+          [](const url::Origin& origin, const SiteCharacteristicsProto& proto) {
+            ASSERT_TRUE(proto.has_load_time_estimates());
+            const auto& estimates = proto.load_time_estimates();
+            ASSERT_TRUE(estimates.has_avg_cpu_usage_us());
+            EXPECT_EQ(562.5, estimates.avg_cpu_usage_us());
+            ASSERT_TRUE(estimates.has_avg_footprint_kb());
+            EXPECT_EQ(1125, estimates.avg_footprint_kb());
+          }));
+
   local_site_data = nullptr;
   ::testing::Mock::VerifyAndClear(&mock_db);
 }
@@ -489,7 +528,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, LateAsyncReadDoesntEraseData) {
 
   // Releasing |local_site_data_writer| should cause this object to get
   // destroyed but there shouldn't be any write operation as the read hasn't
-  // complete.
+  // completed.
   EXPECT_CALL(destroy_delegate_,
               OnLocalSiteCharacteristicsDataImplDestroyed(::testing::_));
   EXPECT_CALL(mock_db,
@@ -518,6 +557,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
             local_site_data->UsesAudioInBackground());
   local_site_data->NotifySiteUnloaded(TabVisibility::kBackground);
 
+  // TODO(sebmarchand): Test that data is cleared here.
   local_site_data->ClearObservationsAndInvalidateReadOperation();
 
   EXPECT_TRUE(read_cb.IsCancelled());
@@ -576,6 +616,46 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, BackgroundedCountTests) {
 
   local_site_data->NotifySiteUnloaded(TabVisibility::kBackground);
   local_site_data_copy->NotifySiteUnloaded(TabVisibility::kForeground);
+}
+
+TEST_F(LocalSiteCharacteristicsDataImplTest,
+       OptionalFieldsNotPopulatedWhenClean) {
+  ::testing::StrictMock<MockLocalSiteCharacteristicsDatabase> mock_db;
+  LocalSiteCharacteristicsDatabase::ReadSiteCharacteristicsFromDBCallback
+      read_cb;
+
+  auto local_site_data = GetDataImplAndInterceptReadCallback(
+      kDummyOrigin, &destroy_delegate_, &mock_db, &read_cb);
+
+  EXPECT_EQ(0u, local_site_data->cpu_usage_estimate().num_datums());
+  EXPECT_EQ(0u, local_site_data->private_footprint_kb_estimate().num_datums());
+
+  base::Optional<SiteCharacteristicsProto> test_proto =
+      SiteCharacteristicsProto();
+
+  // Run the callback to indicate that the initialization has completed.
+  std::move(read_cb).Run(test_proto);
+
+  // There still should be no perf data.
+  EXPECT_EQ(0u, local_site_data->cpu_usage_estimate().num_datums());
+  EXPECT_EQ(0u, local_site_data->private_footprint_kb_estimate().num_datums());
+
+  // Dirty the record to force a write.
+  local_site_data->NotifySiteLoaded();
+  local_site_data->NotifyLoadedSiteBackgrounded();
+  local_site_data->NotifyUsesAudioInBackground();
+
+  // Verify that the saved protobuffer isn't populated with the perf fields.
+  EXPECT_CALL(mock_db,
+              WriteSiteCharacteristicsIntoDB(::testing::_, ::testing::_))
+      .WillOnce(::testing::Invoke(
+          [](const url::Origin& origin, const SiteCharacteristicsProto& proto) {
+            ASSERT_FALSE(proto.has_load_time_estimates());
+          }));
+
+  local_site_data->NotifySiteUnloaded(TabVisibility::kBackground);
+  local_site_data = nullptr;
+  ::testing::Mock::VerifyAndClear(&mock_db);
 }
 
 }  // namespace internal

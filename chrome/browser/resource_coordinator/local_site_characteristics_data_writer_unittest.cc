@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_impl.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_feature_usage.h"
@@ -117,6 +118,14 @@ TEST_F(LocalSiteCharacteristicsDataWriterTest, TestModifiers) {
             test_impl_->UsesAudioInBackground());
   EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
             test_impl_->UsesNotificationsInBackground());
+
+  writer_->NotifyLoadTimePerformanceMeasurement(
+      base::TimeDelta::FromMicroseconds(101), 1005);
+  EXPECT_EQ(1u, test_impl_->cpu_usage_estimate().num_datums());
+  EXPECT_EQ(101.0, test_impl_->cpu_usage_estimate().value());
+
+  EXPECT_EQ(1u, test_impl_->private_footprint_kb_estimate().num_datums());
+  EXPECT_EQ(1005.0, test_impl_->private_footprint_kb_estimate().value());
 
   writer_->NotifySiteUnloaded();
 }

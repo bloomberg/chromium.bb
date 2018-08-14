@@ -26,6 +26,9 @@ class LocalSiteCharacteristicsNoopDataWriter
   void NotifyUpdatesTitleInBackground() override;
   void NotifyUsesAudioInBackground() override;
   void NotifyUsesNotificationsInBackground() override;
+  void NotifyLoadTimePerformanceMeasurement(
+      base::TimeDelta cpu_usage_estimate,
+      uint64_t private_footprint_kb_estimate) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LocalSiteCharacteristicsNoopDataWriter);

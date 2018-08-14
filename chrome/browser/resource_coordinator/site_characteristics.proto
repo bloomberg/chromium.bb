@@ -17,8 +17,17 @@ message SiteCharacteristicsFeatureProto {
   required int64 use_timestamp = 2;
 }
 
+// Contains decaying average performance measurement estimates.
+// Next Id: 3
+message SiteCharacteristicsPerformanceMeasurement {
+  // A decaying average of the CPU usage measurements. Units: microseconds.
+  optional float avg_cpu_usage_us = 1;
+  // A decaying average of the process footprint measurements. Units: kilobytes.
+  optional float avg_footprint_kb = 2;
+};
+
 // Defines the characteristics that we want to track about a given site.
-// Next Id: 6
+// Next Id: 7
 message SiteCharacteristicsProto {
   // The last time this site has been in the loaded state, in seconds since
   // epoch.
@@ -29,4 +38,9 @@ message SiteCharacteristicsProto {
   required SiteCharacteristicsFeatureProto updates_title_in_background = 3;
   required SiteCharacteristicsFeatureProto uses_audio_in_background = 4;
   required SiteCharacteristicsFeatureProto uses_notifications_in_background = 5;
+
+  // Load time performance measurement estimates. This maintains a decaying
+  // average of the resource usage of a page until shortly after it becomes
+  // idle.
+  optional SiteCharacteristicsPerformanceMeasurement load_time_estimates = 6;
 }

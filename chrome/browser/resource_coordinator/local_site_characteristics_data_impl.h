@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "chrome/browser/resource_coordinator/exponential_moving_average.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_database.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_feature_usage.h"
 #include "chrome/browser/resource_coordinator/site_characteristics.pb.h"
@@ -82,6 +83,15 @@ class LocalSiteCharacteristicsDataImpl
   SiteFeatureUsage UsesAudioInBackground() const;
   SiteFeatureUsage UsesNotificationsInBackground() const;
 
+  // Accessors for load-time performance measurement estimates.
+  // If |num_datum| is zero, there's no estimate available.
+  const ExponentialMovingAverage& cpu_usage_estimate() const {
+    return cpu_usage_estimate_;
+  }
+  const ExponentialMovingAverage& private_footprint_kb_estimate() const {
+    return private_footprint_kb_estimate_;
+  }
+
   // Must be called when a feature is used, calling this function updates the
   // last observed timestamp for this feature.
   void NotifyUpdatesFaviconInBackground();
@@ -89,8 +99,10 @@ class LocalSiteCharacteristicsDataImpl
   void NotifyUsesAudioInBackground();
   void NotifyUsesNotificationsInBackground();
 
-  // TODO(sebmarchand): Add the methods necessary to record other types of
-  // observations (e.g. memory and CPU usage).
+  // Call when a load-time performance measurement becomes available.
+  void NotifyLoadTimePerformanceMeasurement(
+      base::TimeDelta cpu_usage_estimate,
+      uint64_t private_footprint_kb_estimate);
 
   base::TimeDelta last_loaded_time_for_testing() const {
     return InternalRepresentationToTimeDelta(
@@ -204,6 +216,10 @@ class LocalSiteCharacteristicsDataImpl
   // This site's characteristics, contains the features and other values are
   // measured.
   SiteCharacteristicsProto site_characteristics_;
+
+  // The in-memory storage for the moving performance averages.
+  ExponentialMovingAverage cpu_usage_estimate_;
+  ExponentialMovingAverage private_footprint_kb_estimate_;
 
   // This site's origin.
   const url::Origin origin_;

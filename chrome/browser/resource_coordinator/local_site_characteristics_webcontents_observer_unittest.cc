@@ -39,6 +39,8 @@ class LenientMockDataWriter : public SiteCharacteristicsDataWriter {
   MOCK_METHOD0(NotifyUpdatesTitleInBackground, void());
   MOCK_METHOD0(NotifyUsesAudioInBackground, void());
   MOCK_METHOD0(NotifyUsesNotificationsInBackground, void());
+  MOCK_METHOD2(NotifyLoadTimePerformanceMeasurement,
+               void(base::TimeDelta, uint64_t));
 
   const url::Origin& Origin() const { return origin_; }
 
@@ -384,6 +386,33 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   // shouldn't get notified about this event.
   nav_id.url = "https://not-the-same-url.com";
   observer()->OnNonPersistentNotificationCreated(web_contents(), nav_id);
+  ::testing::Mock::VerifyAndClear(mock_writer);
+
+  EXPECT_CALL(*mock_writer, OnDestroy());
+}
+
+TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
+       OnLoadTimePerformanceMeasurement) {
+  MockDataWriter* mock_writer = NavigateAndReturnMockWriter(kTestUrl1);
+  TabLoadTracker::Get()->TransitionStateForTesting(web_contents(),
+                                                   LoadingState::LOADED);
+
+  constexpr base::TimeDelta kExpectedCPUTime =
+      base::TimeDelta::FromMicroseconds(1003);
+  constexpr uint64_t kExpectedMemory = 123u;
+  auto nav_id = GetNavIdForWebContents();
+  EXPECT_CALL(*mock_writer, NotifyLoadTimePerformanceMeasurement(
+                                kExpectedCPUTime, kExpectedMemory));
+  observer()->OnLoadTimePerformanceEstimate(web_contents(), nav_id,
+                                            kExpectedCPUTime, kExpectedMemory);
+  ::testing::Mock::VerifyAndClear(mock_writer);
+
+  // Verify that a late notification is not persisted (for now).
+  // TODO(siggi): Fix late notifications such that they persist to another
+  //     writer.
+  nav_id.navigation_id++;
+  observer()->OnLoadTimePerformanceEstimate(web_contents(), nav_id,
+                                            kExpectedCPUTime, kExpectedMemory);
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   EXPECT_CALL(*mock_writer, OnDestroy());
