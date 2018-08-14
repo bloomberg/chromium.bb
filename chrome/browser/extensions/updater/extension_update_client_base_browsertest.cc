@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/updater/extension_update_client_base_browsertest.h"
 
+#include "base/bind.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
@@ -13,7 +14,6 @@
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "components/update_client/url_loader_post_interceptor.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/updater/update_service.h"
 #include "extensions/browser/updater/update_service_factory.h"
 #include "extensions/common/extension_features.h"
@@ -158,11 +158,11 @@ void ExtensionUpdateClientBaseTest::SetUpOnMainThread() {
   ASSERT_TRUE(update_service_);
 }
 
-void ExtensionUpdateClientBaseTest::SetUpNetworkInterceptors() {
-  auto io_thread = content::BrowserThread::GetTaskRunnerForThread(
-      content::BrowserThread::IO);
-  ASSERT_TRUE(io_thread);
+void ExtensionUpdateClientBaseTest::TearDownOnMainThread() {
+  get_interceptor_.reset();
+}
 
+void ExtensionUpdateClientBaseTest::SetUpNetworkInterceptors() {
   const auto update_urls = GetUpdateUrls();
   ASSERT_TRUE(!update_urls.empty());
   const GURL update_url = update_urls.front();
@@ -180,10 +180,9 @@ void ExtensionUpdateClientBaseTest::SetUpNetworkInterceptors() {
       ping_urls, &https_server_for_ping_);
   https_server_for_ping_.StartAcceptingConnections();
 
-  get_interceptor_ = std::make_unique<net::LocalHostTestURLRequestInterceptor>(
-      io_thread, base::CreateTaskRunnerWithTraits(
-                     {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-                      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+  get_interceptor_ =
+      std::make_unique<content::URLLoaderInterceptor>(base::BindRepeating(
+          &ExtensionUpdateClientBaseTest::OnRequest, base::Unretained(this)));
 }
 
 update_client::UpdateClient::Observer::Events
@@ -195,6 +194,15 @@ ExtensionUpdateClientBaseTest::WaitOnComponentUpdaterCompleteEvent(
   update_service_->RemoveUpdateClientObserver(&waiter);
 
   return event;
+}
+
+bool ExtensionUpdateClientBaseTest::OnRequest(
+    content::URLLoaderInterceptor::RequestParams* params) {
+  if (params->url_request.url.host() != "localhost")
+    return false;
+
+  get_interceptor_count_++;
+  return callback_ && callback_.Run(params);
 }
 
 }  // namespace extensions

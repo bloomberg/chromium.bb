@@ -14,15 +14,6 @@
 -SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
 -WebViewTest.WebViewInBackgroundPage
 
-
-# These tests uses net::URLRequestFilter (through TestRequestInterceptor) to
-# mock out network responses, and use URLFetcherDownloader to issue requests,
-# which has yet to be switched from URLFetcher.
-# https://crbug.com/871542
--PolicyUpdateServiceTest.Backoff
--PolicyUpdateServiceTest.FailedUpdateRetries
--PolicyUpdateServiceTest.PolicyCorruptedOnStartup
-
 # Domain Reliability has yet to be hookup to the NetworkService.
 # https://crbug.com/853251
 -DomainReliabilityBrowserTest.Upload
@@ -39,11 +30,6 @@
 -ProfileBrowserTest.URLFetcherUsingMainContextDuringShutdown
 -ProfileBrowserTest.URLFetcherUsingMediaContextDuringShutdown
 -ProfileWithoutMediaCacheBrowserTest.NoSeparateMediaCache
-
-# components/update_client/ still uses URLFetcher.
-# After bug 844973 was fixed, these two still fail/crash:
--UpdateServiceTest.PolicyCorrupted
--UpdateServiceTest.SuccessfulUpdate
 
 # about:net-internals should be largely removed before shipping the network
 # service.

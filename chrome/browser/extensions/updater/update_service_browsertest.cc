@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/extensions/content_verifier_test_utils.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
@@ -97,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, NoUpdate) {
       << update_interceptor_->GetRequestsAsString();
 
   // No update, thus no download nor ping activities.
-  EXPECT_EQ(0, get_interceptor_->GetHitCount());
+  EXPECT_EQ(0, get_interceptor_count());
   EXPECT_EQ(0, ping_interceptor_->GetCount())
       << ping_interceptor_->GetRequestsAsString();
 
@@ -155,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, UpdateCheckError) {
       << update_interceptor_->GetRequestsAsString();
 
   // Error, thus no download nor ping activities.
-  EXPECT_EQ(0, get_interceptor_->GetHitCount());
+  EXPECT_EQ(0, get_interceptor_count());
   EXPECT_EQ(0, ping_interceptor_->GetCount())
       << ping_interceptor_->GetRequestsAsString();
 
@@ -224,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, TwoUpdateCheckErrors) {
       << update_interceptor_->GetRequestsAsString();
 
   // Error, thus no download nor ping activities.
-  EXPECT_EQ(0, get_interceptor_->GetHitCount());
+  EXPECT_EQ(0, get_interceptor_count());
   EXPECT_EQ(0, ping_interceptor_->GetCount())
       << ping_interceptor_->GetRequestsAsString();
 }
@@ -246,8 +247,15 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, SuccessfulUpdate) {
   ASSERT_TRUE(ping_interceptor_->ExpectRequest(
       std::make_unique<update_client::PartialMatch>("eventtype"),
       ping_response));
-  get_interceptor_->SetResponseIgnoreQuery(
-      GURL("http://localhost/download/v1.crx"), crx_path);
+  set_interceptor_hook(base::BindLambdaForTesting(
+      [&](content::URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url.path() != "/download/v1.crx")
+          return false;
+
+        content::URLLoaderInterceptor::WriteResponse(crx_path,
+                                                     params->client.get());
+        return true;
+      }));
 
   const Extension* extension =
       InstallExtension(crx_path, 1, Manifest::EXTERNAL_POLICY_DOWNLOAD);
@@ -283,7 +291,7 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, SuccessfulUpdate) {
 
   ASSERT_EQ(1, update_interceptor_->GetCount())
       << update_interceptor_->GetRequestsAsString();
-  EXPECT_EQ(1, get_interceptor_->GetHitCount());
+  EXPECT_EQ(1, get_interceptor_count());
 
   const std::string update_request =
       std::get<0>(update_interceptor_->GetRequests()[0]);
@@ -311,8 +319,15 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, PolicyCorrupted) {
   ASSERT_TRUE(ping_interceptor_->ExpectRequest(
       std::make_unique<update_client::PartialMatch>("eventtype"),
       ping_response));
-  get_interceptor_->SetResponseIgnoreQuery(
-      GURL("http://localhost/download/v1.crx"), crx_path);
+  set_interceptor_hook(base::BindLambdaForTesting(
+      [&](content::URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url.path() != "/download/v1.crx")
+          return false;
+
+        content::URLLoaderInterceptor::WriteResponse(crx_path,
+                                                     params->client.get());
+        return true;
+      }));
 
   // Setup fake policy and update check objects.
   content_verifier_test::ForceInstallProvider policy(kExtensionId);
@@ -353,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, PolicyCorrupted) {
 
   ASSERT_EQ(1, update_interceptor_->GetCount())
       << update_interceptor_->GetRequestsAsString();
-  EXPECT_EQ(1, get_interceptor_->GetHitCount());
+  EXPECT_EQ(1, get_interceptor_count());
 
   // Make sure that the update check request is formed correctly when the
   // extension is corrupted:
@@ -409,7 +424,7 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, UninstallExtensionWhileUpdating) {
 
   EXPECT_EQ(0, update_interceptor_->GetCount())
       << update_interceptor_->GetRequestsAsString();
-  EXPECT_EQ(0, get_interceptor_->GetHitCount());
+  EXPECT_EQ(0, get_interceptor_count());
 }
 
 class PolicyUpdateServiceTest : public ExtensionUpdateClientBaseTest {
@@ -455,8 +470,15 @@ class PolicyUpdateServiceTest : public ExtensionUpdateClientBaseTest {
     const base::FilePath ping_response =
         test_data_dir_.AppendASCII("updater/ping_reply_1.xml");
 
-    get_interceptor_->SetResponseIgnoreQuery(
-        GURL("http://localhost/download/v1.crx"), crx_path);
+    set_interceptor_hook(base::BindLambdaForTesting(
+        [=](content::URLLoaderInterceptor::RequestParams* params) {
+          if (params->url_request.url.path() != "/download/v1.crx")
+            return false;
+
+          content::URLLoaderInterceptor::WriteResponse(crx_path,
+                                                       params->client.get());
+          return true;
+        }));
     ASSERT_TRUE(update_interceptor_->ExpectRequest(
         std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
         update_response));
@@ -540,7 +562,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUpdateServiceTest, FailedUpdateRetries) {
 
   ASSERT_EQ(1, update_interceptor_->GetCount())
       << update_interceptor_->GetRequestsAsString();
-  EXPECT_EQ(1, get_interceptor_->GetHitCount());
+  EXPECT_EQ(1, get_interceptor_count());
 
   // Make sure that the update check request is formed correctly when the
   // extension is corrupted:
@@ -594,7 +616,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUpdateServiceTest, Backoff) {
 
   ASSERT_EQ(4, update_interceptor_->GetCount())
       << update_interceptor_->GetRequestsAsString();
-  EXPECT_EQ(4, get_interceptor_->GetHitCount());
+  EXPECT_EQ(4, get_interceptor_count());
 
   const std::vector<base::TimeDelta>& calls = delay_tracker.calls();
 
@@ -640,7 +662,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUpdateServiceTest, PRE_PolicyCorruptedOnStartup) {
 
   EXPECT_EQ(0, update_interceptor_->GetCount())
       << update_interceptor_->GetRequestsAsString();
-  EXPECT_EQ(0, get_interceptor_->GetHitCount());
+  EXPECT_EQ(0, get_interceptor_count());
 }
 
 // Now actually test what happens on the next startup after the PRE test above.
@@ -665,7 +687,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUpdateServiceTest, PolicyCorruptedOnStartup) {
 
   ASSERT_EQ(1, update_interceptor_->GetCount())
       << update_interceptor_->GetRequestsAsString();
-  EXPECT_EQ(1, get_interceptor_->GetHitCount());
+  EXPECT_EQ(1, get_interceptor_count());
 
   const std::string update_request =
       std::get<0>(update_interceptor_->GetRequests()[0]);
