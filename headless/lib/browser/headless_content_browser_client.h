@@ -59,6 +59,7 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
   void ResourceDispatcherHostCreated() override;
   bool DoesSiteRequireDedicatedProcess(content::BrowserContext* browser_context,
                                        const GURL& effective_site_url) override;
+  bool ShouldEnableStrictSiteIsolation() override;
 
  private:
   std::unique_ptr<base::Value> GetBrowserServiceManifestOverlay();

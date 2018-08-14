@@ -840,21 +840,21 @@
     'ppapi_unittests': {},
     'remoting_unittests': {},
     'services_unittests': {},
+    'sync_integration_tests': {},
+    'unit_tests': {},
 
-    'site_per_process_content_browsertests': {
+    'not_site_per_process_content_browsertests': {
       'args': [
-        '--site-per-process'
+        '--disable-site-isolation-trials'
       ],
       'test': 'content_browsertests',
     },
-    'site_per_process_content_unittests': {
+    'not_site_per_process_content_unittests': {
       'args': [
-        '--site-per-process',
+        '--disable-site-isolation-trials'
       ],
       'test': 'content_unittests',
     },
-    'sync_integration_tests': {},
-    'unit_tests': {},
   },
 
   'client_v8_chromium_isolated_scripts': {
@@ -1975,58 +1975,58 @@
     },
   },
 
-  'site_isolation_chromium_gtests': {
-    'site_per_process_content_browsertests': {
+  'not_site_isolation_chromium_gtests': {
+    'not_site_per_process_content_browsertests': {
       'args': [
-        '--site-per-process'
+        '--disable-site-isolation-trials'
       ],
       'test': 'content_browsertests',
     },
-    'site_per_process_content_unittests': {
+    'not_site_per_process_content_unittests': {
       'args': [
-        '--site-per-process',
+        '--disable-site-isolation-trials'
       ],
       'test': 'content_unittests',
     },
   },
 
-  'site_isolation_chromium_linux_gtests': {
-    'site_per_process_components_browsertests': {
+  'not_site_isolation_chromium_linux_gtests': {
+    'not_site_per_process_components_browsertests': {
       'args': [
-        '--site-per-process',
+        '--disable-site-isolation-trials'
       ],
       'test': 'components_browsertests',
     },
-    'site_per_process_components_unittests': {
+    'not_site_per_process_components_unittests': {
       'args': [
-        '--site-per-process',
+        '--disable-site-isolation-trials'
       ],
       'test': 'components_unittests',
     },
-    'site_per_process_extensions_browsertests': {
+    'not_site_per_process_extensions_browsertests': {
       'args': [
-        '--site-per-process',
+        '--disable-site-isolation-trials'
       ],
       'test': 'extensions_browsertests',
     },
-    'site_per_process_extensions_unittests': {
+    'not_site_per_process_extensions_unittests': {
       'args': [
-        '--site-per-process',
+        '--disable-site-isolation-trials'
       ],
       'test': 'extensions_unittests',
     },
   },
 
-  'site_isolation_android_fyi_specific_gtests': {
-    # TODO(kbr): a couple of these look like accidents.
-    # content_browsertests and content_unittests are already run on
-    # this bot in site-per-process mode.
-    'content_browsertests': {
+  'site_isolation_android_fyi_gtests': {
+    'site_per_process_browser_tests': {
+      'args': [
+        '--site-per-process'
+      ],
       'swarming': {
-        'shards': 6,
+        'shards': 10,
       },
+      'test': 'browser_tests',
     },
-    'content_unittests': {},
     'site_per_process_components_browsertests': {
       'args': [
         '--site-per-process',
@@ -2038,6 +2038,27 @@
         '--site-per-process',
       ],
       'test': 'components_unittests',
+    },
+    'site_per_process_content_browsertests': {
+      'args': [
+        '--site-per-process'
+      ],
+      'swarming': {
+        'shards': 6,
+      },
+      'test': 'content_browsertests',
+    },
+    'site_per_process_content_unittests': {
+      'args': [
+        '--site-per-process'
+      ],
+      'test': 'content_unittests',
+    },
+    'site_per_process_unit_tests': {
+      'args': [
+        '--site-per-process'
+      ],
+      'test': 'unit_tests',
     },
   },
 
@@ -2279,8 +2300,8 @@
     'network_service_gtests',
     'non_android_chromium_gtests',
     'non_android_and_cast_and_chromeos_chromium_gtests',
-    'site_isolation_chromium_gtests',
-    'site_isolation_chromium_linux_gtests',
+    'not_site_isolation_chromium_gtests',
+    'not_site_isolation_chromium_linux_gtests',
     'vr_platform_specific_chromium_gtests',
     'gl_gtests',
   ],
@@ -2294,8 +2315,8 @@
     'network_service_gtests',
     'non_android_chromium_gtests',
     'non_android_and_cast_and_chromeos_chromium_gtests',
-    'site_isolation_chromium_gtests',
-    'site_isolation_chromium_linux_gtests',
+    'not_site_isolation_chromium_gtests',
+    'not_site_isolation_chromium_linux_gtests',
     'vr_platform_specific_chromium_gtests',
   ],
 
@@ -2653,11 +2674,6 @@
 
   'sandboxed_chromium_memory_linux_gtests': [
     'chromium_browser_tests',
-  ],
-
-  'site_isolation_android_fyi_gtests': [
-    'site_isolation_android_fyi_specific_gtests',
-    'site_isolation_chromium_gtests',
   ],
 
   'system_webview_and_webview_ui_instrumentation_tests': [
