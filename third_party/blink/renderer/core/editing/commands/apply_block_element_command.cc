@@ -94,9 +94,9 @@ void ApplyBlockElementCommand::DoApply(EditingState* editing_state) {
   VisibleSelection selection =
       SelectionForParagraphIteration(EndingVisibleSelection());
   VisiblePosition start_of_selection = selection.VisibleStart();
+  ABORT_EDITING_COMMAND_IF(start_of_selection.IsNull());
   VisiblePosition end_of_selection = selection.VisibleEnd();
-  DCHECK(!start_of_selection.IsNull());
-  DCHECK(!end_of_selection.IsNull());
+  ABORT_EDITING_COMMAND_IF(end_of_selection.IsNull());
   ContainerNode* start_scope = nullptr;
   int start_index = IndexForVisiblePosition(start_of_selection, start_scope);
   ContainerNode* end_scope = nullptr;
