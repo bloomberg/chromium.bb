@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1601 tests; 1467 PASS, 134 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1601 tests; 1478 PASS, 123 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS SVGElement interface: existence and properties of interface object
@@ -492,13 +492,13 @@ PASS SVGDescElement interface object name
 PASS SVGDescElement interface: existence and properties of interface prototype object
 PASS SVGDescElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGDescElement interface: existence and properties of interface prototype object's @@unscopables property
-FAIL SVGDescElement must be primary interface of objects.Desc assert_equals: objects.Desc's prototype is not SVGDescElement.prototype expected object "[object SVGDescElement]" but got object "[object SVGElement]"
-FAIL Stringification of objects.Desc assert_equals: class string of objects.Desc expected "[object SVGDescElement]" but got "[object SVGElement]"
-PASS SVGElement interface: objects.Desc must inherit property "className" with the proper type
-PASS SVGElement interface: objects.Desc must inherit property "ownerSVGElement" with the proper type
-PASS SVGElement interface: objects.Desc must inherit property "viewportElement" with the proper type
-FAIL SVGElement interface: objects.Desc must inherit property "correspondingElement" with the proper type assert_inherits: property "correspondingElement" not found in prototype chain
-FAIL SVGElement interface: objects.Desc must inherit property "correspondingUseElement" with the proper type assert_inherits: property "correspondingUseElement" not found in prototype chain
+PASS SVGDescElement must be primary interface of objects.desc
+PASS Stringification of objects.desc
+PASS SVGElement interface: objects.desc must inherit property "className" with the proper type
+PASS SVGElement interface: objects.desc must inherit property "ownerSVGElement" with the proper type
+PASS SVGElement interface: objects.desc must inherit property "viewportElement" with the proper type
+FAIL SVGElement interface: objects.desc must inherit property "correspondingElement" with the proper type assert_inherits: property "correspondingElement" not found in prototype chain
+FAIL SVGElement interface: objects.desc must inherit property "correspondingUseElement" with the proper type assert_inherits: property "correspondingUseElement" not found in prototype chain
 PASS SVGMetadataElement interface: existence and properties of interface object
 PASS SVGMetadataElement interface object length
 PASS SVGMetadataElement interface object name
@@ -602,20 +602,20 @@ PASS SVGSwitchElement interface object name
 PASS SVGSwitchElement interface: existence and properties of interface prototype object
 PASS SVGSwitchElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGSwitchElement interface: existence and properties of interface prototype object's @@unscopables property
-FAIL SVGSwitchElement must be primary interface of objects.Switch assert_equals: objects.Switch's prototype is not SVGSwitchElement.prototype expected object "[object SVGSwitchElement]" but got object "[object SVGElement]"
-FAIL Stringification of objects.Switch assert_equals: class string of objects.Switch expected "[object SVGSwitchElement]" but got "[object SVGElement]"
-FAIL SVGGraphicsElement interface: objects.Switch must inherit property "transform" with the proper type assert_inherits: property "transform" not found in prototype chain
-FAIL SVGGraphicsElement interface: objects.Switch must inherit property "getBBox(SVGBoundingBoxOptions)" with the proper type assert_inherits: property "getBBox" not found in prototype chain
-FAIL SVGGraphicsElement interface: calling getBBox(SVGBoundingBoxOptions) on objects.Switch with too few arguments must throw TypeError assert_inherits: property "getBBox" not found in prototype chain
-FAIL SVGGraphicsElement interface: objects.Switch must inherit property "getCTM()" with the proper type assert_inherits: property "getCTM" not found in prototype chain
-FAIL SVGGraphicsElement interface: objects.Switch must inherit property "getScreenCTM()" with the proper type assert_inherits: property "getScreenCTM" not found in prototype chain
-FAIL SVGGraphicsElement interface: objects.Switch must inherit property "requiredExtensions" with the proper type assert_inherits: property "requiredExtensions" not found in prototype chain
-FAIL SVGGraphicsElement interface: objects.Switch must inherit property "systemLanguage" with the proper type assert_inherits: property "systemLanguage" not found in prototype chain
-PASS SVGElement interface: objects.Switch must inherit property "className" with the proper type
-PASS SVGElement interface: objects.Switch must inherit property "ownerSVGElement" with the proper type
-PASS SVGElement interface: objects.Switch must inherit property "viewportElement" with the proper type
-FAIL SVGElement interface: objects.Switch must inherit property "correspondingElement" with the proper type assert_inherits: property "correspondingElement" not found in prototype chain
-FAIL SVGElement interface: objects.Switch must inherit property "correspondingUseElement" with the proper type assert_inherits: property "correspondingUseElement" not found in prototype chain
+PASS SVGSwitchElement must be primary interface of objects.switch
+PASS Stringification of objects.switch
+PASS SVGGraphicsElement interface: objects.switch must inherit property "transform" with the proper type
+PASS SVGGraphicsElement interface: objects.switch must inherit property "getBBox(SVGBoundingBoxOptions)" with the proper type
+PASS SVGGraphicsElement interface: calling getBBox(SVGBoundingBoxOptions) on objects.switch with too few arguments must throw TypeError
+PASS SVGGraphicsElement interface: objects.switch must inherit property "getCTM()" with the proper type
+PASS SVGGraphicsElement interface: objects.switch must inherit property "getScreenCTM()" with the proper type
+PASS SVGGraphicsElement interface: objects.switch must inherit property "requiredExtensions" with the proper type
+PASS SVGGraphicsElement interface: objects.switch must inherit property "systemLanguage" with the proper type
+PASS SVGElement interface: objects.switch must inherit property "className" with the proper type
+PASS SVGElement interface: objects.switch must inherit property "ownerSVGElement" with the proper type
+PASS SVGElement interface: objects.switch must inherit property "viewportElement" with the proper type
+FAIL SVGElement interface: objects.switch must inherit property "correspondingElement" with the proper type assert_inherits: property "correspondingElement" not found in prototype chain
+FAIL SVGElement interface: objects.switch must inherit property "correspondingUseElement" with the proper type assert_inherits: property "correspondingUseElement" not found in prototype chain
 PASS SVGStyleElement interface: existence and properties of interface object
 PASS SVGStyleElement interface object length
 PASS SVGStyleElement interface object name
