@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "ui/gfx/animation/animation_container.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/animation/bounds_animator.h"
@@ -456,8 +457,8 @@ class TabStrip : public views::View,
   void UpdateStackedLayoutFromMouseEvent(views::View* source,
                                          const ui::MouseEvent& event);
 
-  // Computes and stores tab hover opacities derived from contrast ratios.
-  void UpdateOpacities();
+  // Computes and stores values derived from contrast ratios.
+  void UpdateContrastRatioValues();
 
   // -- Tab Resize Layout -----------------------------------------------------
 
@@ -689,6 +690,8 @@ class TabStrip : public views::View,
   float hover_opacity_min_ = 1.0f;
   float hover_opacity_max_ = 1.0f;
   float radial_highlight_opacity_ = 1.0f;
+
+  SkColor separator_color_ = gfx::kPlaceholderColor;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };
