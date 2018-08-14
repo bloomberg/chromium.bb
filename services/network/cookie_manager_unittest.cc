@@ -240,7 +240,9 @@ class CookieManagerTest : public testing::Test {
       scoped_refptr<SessionCleanupCookieStore> cleanup_store,
       scoped_refptr<SessionCleanupChannelIDStore> channel_id_store) {
     connection_error_seen_ = false;
-    cookie_monster_ = std::make_unique<net::CookieMonster>(std::move(store));
+    cookie_monster_ = std::make_unique<net::CookieMonster>(
+        std::move(store), nullptr /*channel_id_service */,
+        nullptr /* netlog */);
     cookie_service_ = std::make_unique<CookieManager>(
         cookie_monster_.get(), std::move(cleanup_store),
         std::move(channel_id_store), nullptr);

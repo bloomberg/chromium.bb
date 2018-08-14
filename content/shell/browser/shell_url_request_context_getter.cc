@@ -123,7 +123,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     builder.set_net_log(net_log_);
     builder.set_network_delegate(CreateNetworkDelegate());
     std::unique_ptr<net::CookieStore> cookie_store =
-        CreateCookieStore(CookieStoreConfig());
+        CreateCookieStore(CookieStoreConfig(), net_log_);
     std::unique_ptr<net::ChannelIDService> channel_id_service =
         std::make_unique<net::ChannelIDService>(
             new net::DefaultChannelIDStore(nullptr));

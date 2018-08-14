@@ -1220,7 +1220,7 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   // Create a cookie on a scheme that doesn't handle cookies by default,
   // and save it.
   std::unique_ptr<CookieMonster> cookie_monster =
-      std::make_unique<CookieMonster>(store_.get());
+      std::make_unique<CookieMonster>(store_.get(), nullptr, nullptr);
   cookie_monster->SetCookieableSchemes({"gopher", "http"});
   ResultSavingCookieCallback<bool> set_cookie_callback;
   cookie_monster->SetCookieWithOptionsAsync(
@@ -1254,7 +1254,8 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   // instances, so they should complete before the new PersistentCookieStore
   // starts looking at the state on disk.
   Create(false, false, true /* want current thread to invoke cookie monster */);
-  cookie_monster = std::make_unique<CookieMonster>(store_.get());
+  cookie_monster =
+      std::make_unique<CookieMonster>(store_.get(), nullptr, nullptr);
   cookie_monster->SetCookieableSchemes({"gopher", "http"});
 
   // Now try to get the cookie back.
@@ -1279,7 +1280,7 @@ TEST_F(SQLitePersistentCookieStoreTest, OpsIfInitFailed) {
       base::CreateDirectory(temp_dir_.GetPath().Append(kCookieFilename)));
   Create(false, false, true /* want current thread to invoke cookie monster */);
   std::unique_ptr<CookieMonster> cookie_monster =
-      std::make_unique<CookieMonster>(store_.get());
+      std::make_unique<CookieMonster>(store_.get(), nullptr, nullptr);
 
   ResultSavingCookieCallback<bool> set_cookie_callback;
   cookie_monster->SetCookieWithOptionsAsync(

@@ -61,7 +61,8 @@ SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
                                              nullptr);
     cookie_config.channel_id_service = channel_id_service_.get();
     cookie_config.background_task_runner = background_task_runner;
-    safe_browsing_cookie_store_ = content::CreateCookieStore(cookie_config);
+    safe_browsing_cookie_store_ =
+        content::CreateCookieStore(cookie_config, nullptr /* netlog */);
     safe_browsing_request_context_->set_cookie_store(
         safe_browsing_cookie_store_.get());
 

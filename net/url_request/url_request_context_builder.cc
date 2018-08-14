@@ -457,7 +457,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     storage->set_cookie_store(std::move(cookie_store_));
     storage->set_channel_id_service(std::move(channel_id_service_));
   } else {
-    std::unique_ptr<CookieStore> cookie_store(new CookieMonster(nullptr));
+    std::unique_ptr<CookieStore> cookie_store(
+        new CookieMonster(nullptr /* store */, nullptr /* channel_id_service */,
+                          context->net_log()));
     std::unique_ptr<ChannelIDService> channel_id_service(
         new ChannelIDService(new DefaultChannelIDStore(NULL)));
     cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());

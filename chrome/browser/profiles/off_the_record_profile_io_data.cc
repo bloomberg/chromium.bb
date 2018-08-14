@@ -237,7 +237,8 @@ void OffTheRecordProfileIOData::
   content::CookieStoreConfig cookie_config;
   // Enable cookies for chrome-extension URLs.
   cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
-  extensions_cookie_store_ = content::CreateCookieStore(cookie_config);
+  extensions_cookie_store_ = content::CreateCookieStore(
+      cookie_config, profile_params->io_thread->net_log());
   extensions_context->set_cookie_store(extensions_cookie_store_.get());
 }
 
@@ -256,8 +257,8 @@ net::URLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
   // Use a separate in-memory cookie store for the app.
   // TODO(creis): We should have a cookie delegate for notifying the cookie
   // extensions API, but we need to update it to understand isolated apps first.
-  std::unique_ptr<net::CookieStore> cookie_store =
-      content::CreateCookieStore(content::CookieStoreConfig());
+  std::unique_ptr<net::CookieStore> cookie_store = content::CreateCookieStore(
+      content::CookieStoreConfig(), main_context->net_log());
   std::unique_ptr<net::ChannelIDService> channel_id_service(
       new net::ChannelIDService(new net::DefaultChannelIDStore(nullptr)));
   cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
