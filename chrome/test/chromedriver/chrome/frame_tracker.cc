@@ -16,7 +16,7 @@
 FrameTracker::FrameTracker(DevToolsClient* client,
                            WebView* web_view,
                            const BrowserInfo* browser_info)
-    : web_view_(web_view), browser_info_(browser_info) {
+    : web_view_(web_view) {
   client->AddListener(this);
 }
 
@@ -60,24 +60,15 @@ Status FrameTracker::OnConnected(DevToolsClient* client) {
   frame_to_context_map_.clear();
   frame_to_target_map_.clear();
   // Enable target events to allow tracking iframe targets creation.
-  if (browser_info_->major_version == 65) {
-    base::DictionaryValue params;
-    params.SetBoolean("value", true);
-    Status status = client->SendCommand("Target.setAttachToFrames", params);
-    if (status.IsError())
-      return status;
-  }
-  if (browser_info_->major_version >= 65) {
-    base::DictionaryValue params;
-    params.SetBoolean("autoAttach", true);
-    params.SetBoolean("waitForDebuggerOnStart", false);
-    Status status = client->SendCommand("Target.setAutoAttach", params);
-    if (status.IsError())
-      return status;
-  }
-  // Enable runtime events to allow tracking execution context creation.
   base::DictionaryValue params;
-  Status status = client->SendCommand("Runtime.enable", params);
+  params.SetBoolean("autoAttach", true);
+  params.SetBoolean("waitForDebuggerOnStart", false);
+  Status status = client->SendCommand("Target.setAutoAttach", params);
+  if (status.IsError())
+    return status;
+  // Enable runtime events to allow tracking execution context creation.
+  params.Clear();
+  status = client->SendCommand("Runtime.enable", params);
   if (status.IsError())
     return status;
   return client->SendCommand("Page.enable", params);
