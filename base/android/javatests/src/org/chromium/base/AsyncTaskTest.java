@@ -35,6 +35,7 @@ public class AsyncTaskTest {
         }
     }
 
+    @SuppressWarnings("NoAndroidAsyncTaskCheck")
     private static class SpecialOsAsyncTask extends android.os.AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... params) {
