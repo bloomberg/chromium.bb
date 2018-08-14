@@ -77,10 +77,6 @@ void AccessibilityManager::SetScreenReader(bool enable) {
   touch_exploration_manager_->Enable(enable);
 }
 
-void AccessibilityManager::EnableTouchExploration(bool enable) {
-  SetScreenReader(enable);
-}
-
 void AccessibilityManager::SetTouchAccessibilityAnchorPoint(
     const gfx::Point& anchor_point) {
   touch_exploration_manager_->SetTouchAccessibilityAnchorPoint(anchor_point);

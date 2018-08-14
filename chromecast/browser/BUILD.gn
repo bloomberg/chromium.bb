@@ -289,7 +289,6 @@ cast_source_set("browser") {
       sources += [
         "accessibility/accessibility_manager.cc",
         "accessibility/accessibility_manager.h",
-        "accessibility/accessibility_sound_delegate.h",
         "accessibility/accessibility_sound_player.h",
         "accessibility/accessibility_sound_proxy.h",
         "accessibility/accessibility_sound_proxy.cc",
