@@ -93,6 +93,10 @@ void DatabaseTask::ReportStorageError() {
                                 storage_error_);
 }
 
+bool DatabaseTask::HasStorageError() {
+  return storage_error_ != BackgroundFetchStorageError::kNone;
+}
+
 std::string DatabaseTask::HistogramName() const {
   NOTREACHED() << "HistogramName needs to be provided.";
   return "GeneralDatabaseTask";

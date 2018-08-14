@@ -25,6 +25,7 @@
 #include "content/browser/background_fetch/background_fetch_test_data_manager.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/background_fetch/storage/image_helpers.h"
+#include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/background_fetch_response.h"
@@ -426,6 +427,39 @@ class BackgroundFetchDataManagerTest
     return result;
   }
 
+  void DeleteFromCache(const ServiceWorkerFetchRequest& request) {
+    CacheStorageCacheHandle handle;
+    {
+      base::RunLoop run_loop;
+      background_fetch_data_manager_->cache_manager()->OpenCache(
+          origin(), CacheStorageOwner::kBackgroundFetch,
+          kExampleUniqueId /* cache_name */,
+          base::BindOnce(&BackgroundFetchDataManagerTest::DidOpenCache,
+                         base::Unretained(this), run_loop.QuitClosure(),
+                         &handle));
+      run_loop.Run();
+    }
+
+    DCHECK(handle.value());
+
+    {
+      base::RunLoop run_loop;
+      std::vector<blink::mojom::BatchOperationPtr> operation_ptr_vec;
+      operation_ptr_vec.push_back(blink::mojom::BatchOperation::New());
+      operation_ptr_vec[0]->operation_type =
+          blink::mojom::OperationType::kDelete;
+      operation_ptr_vec[0]->request = request;
+
+      handle.value()->BatchOperation(
+          std::move(operation_ptr_vec),
+          base::BindOnce(&BackgroundFetchDataManagerTest::DidDeleteFromCache,
+                         base::Unretained(this), run_loop.QuitClosure()),
+          base::DoNothing());
+
+      run_loop.Run();
+    }
+  }
+
   // Returns the title and the icon.
   std::pair<std::string, SkBitmap> GetUIOptions(
       int64_t service_worker_registration_id) {
@@ -611,6 +645,22 @@ class BackgroundFetchDataManagerTest
     } else {
       *out_result = false;
     }
+    std::move(quit_closure).Run();
+  }
+
+  void DidOpenCache(base::OnceClosure quit_closure,
+                    CacheStorageCacheHandle* out_handle,
+                    CacheStorageCacheHandle handle,
+                    blink::mojom::CacheStorageError error) {
+    DCHECK(out_handle);
+    DCHECK_EQ(error, blink::mojom::CacheStorageError::kSuccess);
+    *out_handle = std::move(handle);
+    std::move(quit_closure).Run();
+  }
+
+  void DidDeleteFromCache(base::OnceClosure quit_closure,
+                          blink::mojom::CacheStorageError error) {
+    DCHECK_EQ(error, blink::mojom::CacheStorageError::kSuccess);
     std::move(quit_closure).Run();
   }
 
@@ -1237,7 +1287,8 @@ TEST_F(BackgroundFetchDataManagerTest, GetSettledFetchesForRegistration) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
-  std::vector<ServiceWorkerFetchRequest> requests(2u);
+  std::vector<ServiceWorkerFetchRequest> requests =
+      CreateValidRequests(origin(), 2u /* num_requests */);
   BackgroundFetchOptions options;
   blink::mojom::BackgroundFetchError error;
   BackgroundFetchRegistrationId registration_id(
@@ -1689,6 +1740,41 @@ TEST_F(BackgroundFetchDataManagerTest, StorageErrorsReported) {
     histogram_tester.ExpectBucketCount(
         "BackgroundFetch.Storage.CreateMetadataTask",
         1 /* kServiceWorkerStorageError */, 1);
+  }
+
+  scoped_refptr<BackgroundFetchRequestInfo> request_info;
+  PopNextRequest(registration_id, &request_info);
+  ASSERT_TRUE(request_info);
+  AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
+                                                 true /* success */);
+  MarkRequestAsComplete(registration_id, request_info.get());
+
+  bool succeeded = false;
+  std::vector<BackgroundFetchSettledFetch> settled_fetches;
+
+  {
+    GetSettledFetchesForRegistration(registration_id,
+                                     base::nullopt /* request_to_match */,
+                                     &error, &succeeded, &settled_fetches);
+
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  }
+
+  // Delete an expected entry to get a CachStorageError.
+  EXPECT_TRUE(MatchCache(requests[0]));
+  DeleteFromCache(requests[0]);
+  ASSERT_FALSE(MatchCache(requests[0]));
+
+  {
+    base::HistogramTester histogram_tester;
+    GetSettledFetchesForRegistration(registration_id,
+                                     base::nullopt /* request_to_match */,
+                                     &error, &succeeded, &settled_fetches);
+
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+    histogram_tester.ExpectBucketCount(
+        "BackgroundFetch.Storage.GetSettledFetchesTask",
+        2 /* kCacheStorageError */, 1);
   }
 }
 

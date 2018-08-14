@@ -43,14 +43,12 @@ class DeleteRegistrationTask : public background_fetch::DatabaseTask {
 
   void FinishWithError(blink::mojom::BackgroundFetchError error) override;
 
+  std::string HistogramName() const override;
+
   int64_t service_worker_registration_id_;
   url::Origin origin_;
   std::string unique_id_;
   HandleBackgroundFetchErrorCallback callback_;
-
-  // The error to report once all async work is completed.
-  blink::mojom::BackgroundFetchError error_ =
-      blink::mojom::BackgroundFetchError::NONE;
 
   base::WeakPtrFactory<DeleteRegistrationTask> weak_factory_;  // Keep as last.
 
