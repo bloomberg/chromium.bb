@@ -4,9 +4,9 @@
 
 #include "content/browser/accessibility/accessibility_event_recorder.h"
 
-#include <string>
-
 #import <Cocoa/Cocoa.h>
+
+#include <string>
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -20,14 +20,15 @@ namespace content {
 // watch for NSAccessibility events.
 class AccessibilityEventRecorderMac : public AccessibilityEventRecorder {
  public:
-  explicit AccessibilityEventRecorderMac(BrowserAccessibilityManager* manager,
-                                         base::ProcessId pid);
   ~AccessibilityEventRecorderMac() override;
 
   // Callback executed every time we receive an event notification.
   void EventReceived(AXUIElementRef element, CFStringRef notification);
 
  private:
+  AccessibilityEventRecorderMac(BrowserAccessibilityManager* manager,
+                                base::ProcessId pid);
+
   // Add one notification to the list of notifications monitored by our
   // observer.
   void AddNotification(NSString* notification);
@@ -43,6 +44,9 @@ class AccessibilityEventRecorderMac : public AccessibilityEventRecorder {
   // The AXObserver we use to monitor AX notifications.
   base::ScopedCFTypeRef<AXObserverRef> observer_ref_;
   CFRunLoopSourceRef observer_run_loop_source_;
+
+  friend class base::NoDestructor<AccessibilityEventRecorderMac>;
+  DISALLOW_COPY_AND_ASSIGN(AccessibilityEventRecorderMac);
 };
 
 // Callback function registered using AXObserverCreate.
@@ -57,10 +61,12 @@ static void EventReceivedThunk(
 }
 
 // static
-AccessibilityEventRecorder* AccessibilityEventRecorder::Create(
+AccessibilityEventRecorder& AccessibilityEventRecorder::GetInstance(
     BrowserAccessibilityManager* manager,
     base::ProcessId pid) {
-  return new AccessibilityEventRecorderMac(manager, pid);
+  static base::NoDestructor<AccessibilityEventRecorderMac> instance(manager,
+                                                                    pid);
+  return *instance;
 }
 
 AccessibilityEventRecorderMac::AccessibilityEventRecorderMac(
@@ -126,7 +132,7 @@ std::string AccessibilityEventRecorderMac::GetAXAttributeValue(
     return base::SysCFStringRefToUTF8(value_string);
 
   // TODO(dmazzoni): And if it's not a string, can we return something better?
-  return std::string();
+  return {};
 }
 
 void AccessibilityEventRecorderMac::EventReceived(AXUIElementRef element,

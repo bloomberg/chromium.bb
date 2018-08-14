@@ -5,22 +5,33 @@
 #ifndef AX_EVENT_SERVER_H_
 #define AX_EVENT_SERVER_H_
 
-#include <string>
-
+#include "base/process/process_handle.h"
+#include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_event_recorder.h"
 
-namespace content {
+#if defined(OS_WIN)
+#include "base/win/scoped_com_initializer.h"
+#endif
 
-class AXEventServer {
+namespace tools {
+
+class AXEventServer final {
  public:
-  explicit AXEventServer(int pid);
-
+  explicit AXEventServer(base::ProcessId pid);
   ~AXEventServer();
 
  private:
-  std::unique_ptr<AccessibilityEventRecorder> recorder_;
+  void OnEvent(const std::string& event) const;
+
+#if defined(OS_WIN)
+  // Only one COM initializer per thread is permitted.
+  base::win::ScopedCOMInitializer com_initializer_;
+#endif
+  content::AccessibilityEventRecorder& recorder_;
+
+  DISALLOW_COPY_AND_ASSIGN(AXEventServer);
 };
 
-}  // namespace content
+}  // namespace tools
 
 #endif  // AX_EVENT_SERVER_H_

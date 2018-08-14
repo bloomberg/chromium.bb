@@ -3,14 +3,19 @@
 // found in the LICENSE file.
 
 #include <iostream>
+#include <memory>
 #include <string>
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "tools/accessibility/inspect/ax_event_server.h"
 
-char kPidSwitch[] = "pid";
+namespace {
+
+constexpr char kPidSwitch[] = "pid";
 
 // Convert from string to int, whether in 0x hex format or decimal format.
 bool StringToInt(std::string str, int* result) {
@@ -22,23 +27,23 @@ bool StringToInt(std::string str, int* result) {
                 : base::StringToInt(str, result);
 }
 
-int main(int argc, char** argv) {
-  base::AtExitManager at_exit_manager;
-  // TODO(aleventhal) Want callback after Ctrl+C or some global keystroke:
-  // base::AtExitManager::RegisterCallback(content::OnExit, nullptr);
+}  // namespace
 
+int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
-  std::string pid_str =
+  const std::string pid_str =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kPidSwitch);
   int pid;
-  if (!pid_str.empty()) {
-    if (StringToInt(pid_str, &pid)) {
-      std::unique_ptr<content::AXEventServer> server(
-          new content::AXEventServer(pid));
-    }
-  } else {
-    std::cout << "* Error: No process id provided via --pid=[process-id].";
+  if (pid_str.empty() || !StringToInt(pid_str, &pid)) {
+    std::cout << "* Error: No process id provided via --pid=[process-id]."
+              << std::endl;
+    return 1;
   }
+
+  base::AtExitManager exit_manager;
+  base::MessageLoopForUI message_loop;
+  const auto server = std::make_unique<tools::AXEventServer>(pid);
+  base::RunLoop().Run();
 
   return 0;
 }
