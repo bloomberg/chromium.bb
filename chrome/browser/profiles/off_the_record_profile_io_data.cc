@@ -18,6 +18,8 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
+#include "chrome/browser/net/profile_network_context_service.h"
+#include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -145,11 +147,24 @@ OffTheRecordProfileIOData::Handle::CreateIsolatedAppRequestContextGetter(
       protocol_handler_interceptor(
           ProtocolHandlerRegistryFactory::GetForBrowserContext(profile_)
               ->CreateJobInterceptorFactory());
+  base::FilePath relative_partition_path;
+  // This method is passed the absolute partition path, but
+  // ProfileNetworkContext works in terms of relative partition paths.
+  bool result = profile_->GetPath().AppendRelativePath(
+      partition_path, &relative_partition_path);
+  DCHECK(result);
+  network::mojom::NetworkContextRequest network_context_request;
+  network::mojom::NetworkContextParamsPtr network_context_params;
+  ProfileNetworkContextServiceFactory::GetForContext(profile_)
+      ->SetUpProfileIODataNetworkContext(in_memory, relative_partition_path,
+                                         &network_context_request,
+                                         &network_context_params);
   scoped_refptr<ChromeURLRequestContextGetter> context =
       ChromeURLRequestContextGetter::CreateForIsolatedApp(
           profile_, io_data_, descriptor,
           std::move(protocol_handler_interceptor), protocol_handlers,
-          std::move(request_interceptors));
+          std::move(request_interceptors), std::move(network_context_request),
+          std::move(network_context_params));
   app_request_context_getter_map_[descriptor] = context;
 
   return context;
@@ -242,69 +257,6 @@ void OffTheRecordProfileIOData::
   extensions_context->set_cookie_store(extensions_cookie_store_.get());
 }
 
-net::URLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
-    net::URLRequestContext* main_context,
-    const StoragePartitionDescriptor& partition_descriptor,
-    std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
-        protocol_handler_interceptor,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) const {
-  AppRequestContext* context = new AppRequestContext();
-
-  // Copy most state from the main context.
-  context->CopyFrom(main_context);
-
-  // Use a separate in-memory cookie store for the app.
-  // TODO(creis): We should have a cookie delegate for notifying the cookie
-  // extensions API, but we need to update it to understand isolated apps first.
-  std::unique_ptr<net::CookieStore> cookie_store = content::CreateCookieStore(
-      content::CookieStoreConfig(), main_context->net_log());
-  std::unique_ptr<net::ChannelIDService> channel_id_service(
-      new net::ChannelIDService(new net::DefaultChannelIDStore(nullptr)));
-  cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
-  context->SetCookieStore(std::move(cookie_store));
-
-  // Build a new HttpNetworkSession that uses the new ChannelIDService.
-  net::HttpNetworkSession* network_session =
-      main_request_context()->http_transaction_factory()->GetSession();
-  net::HttpNetworkSession::Context session_context = network_session->context();
-  session_context.channel_id_service = channel_id_service.get();
-  std::unique_ptr<net::HttpNetworkSession> http_network_session(
-      new net::HttpNetworkSession(network_session->params(), session_context));
-
-  // Use a separate in-memory cache for the app.
-  std::unique_ptr<net::HttpCache> app_http_cache = CreateMainHttpFactory(
-      http_network_session.get(), net::HttpCache::DefaultBackend::InMemory(0));
-
-  context->SetChannelIDService(std::move(channel_id_service));
-  context->SetHttpNetworkSession(std::move(http_network_session));
-  context->SetHttpTransactionFactory(std::move(app_http_cache));
-
-  std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory(
-      new net::URLRequestJobFactoryImpl());
-  InstallProtocolHandlers(job_factory.get(), protocol_handlers);
-  std::unique_ptr<net::URLRequestJobFactory> top_job_factory;
-  top_job_factory = SetUpJobFactoryDefaults(
-      std::move(job_factory), std::move(request_interceptors),
-      std::move(protocol_handler_interceptor), context->network_delegate(),
-      context->host_resolver());
-  context->SetJobFactory(std::move(top_job_factory));
-#if BUILDFLAG(ENABLE_REPORTING)
-  if (context->reporting_service()) {
-    context->SetReportingService(net::ReportingService::Create(
-        context->reporting_service()->GetPolicy(), context));
-  }
-  if (context->network_error_logging_service()) {
-    context->SetNetworkErrorLoggingService(
-        net::NetworkErrorLoggingService::Create(
-            net::NetworkErrorLoggingDelegate::Create()));
-    context->network_error_logging_service()->SetReportingService(
-        context->reporting_service());
-  }
-#endif  // BUILDFLAG(ENABLE_REPORTING)
-  return context;
-}
-
 net::URLRequestContext*
 OffTheRecordProfileIOData::InitializeMediaRequestContext(
     net::URLRequestContext* original_context,
@@ -318,23 +270,6 @@ net::URLRequestContext*
 OffTheRecordProfileIOData::AcquireMediaRequestContext() const {
   NOTREACHED();
   return NULL;
-}
-
-net::URLRequestContext*
-OffTheRecordProfileIOData::AcquireIsolatedAppRequestContext(
-    net::URLRequestContext* main_context,
-    const StoragePartitionDescriptor& partition_descriptor,
-    std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
-        protocol_handler_interceptor,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) const {
-  // We create per-app contexts on demand, unlike the others above.
-  net::URLRequestContext* app_request_context = InitializeAppRequestContext(
-      main_context, partition_descriptor,
-      std::move(protocol_handler_interceptor), protocol_handlers,
-      std::move(request_interceptors));
-  DCHECK(app_request_context);
-  return app_request_context;
 }
 
 net::URLRequestContext*

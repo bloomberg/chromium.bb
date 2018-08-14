@@ -85,12 +85,17 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
       std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors)
+      content::URLRequestInterceptorScopedVector request_interceptors,
+      network::mojom::NetworkContextRequest network_context_request,
+      network::mojom::NetworkContextParamsPtr network_context_params)
       : profile_io_data_(profile_io_data),
         partition_descriptor_(partition_descriptor),
+        io_thread_(g_browser_process->io_thread()),
         main_request_context_getter_(main_context),
         protocol_handler_interceptor_(std::move(protocol_handler_interceptor)),
-        request_interceptors_(std::move(request_interceptors)) {
+        request_interceptors_(std::move(request_interceptors)),
+        network_context_request_(std::move(network_context_request)),
+        network_context_params_(std::move(network_context_params)) {
     std::swap(protocol_handlers_, *protocol_handlers);
   }
 
@@ -101,20 +106,25 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
     // factory is actually destroyed. Thus it is safe to destructively pass
     // state onwards.
     return profile_io_data_->GetIsolatedAppRequestContext(
-        main_request_context_getter_->GetURLRequestContext(),
+        io_thread_, main_request_context_getter_->GetURLRequestContext(),
         partition_descriptor_, std::move(protocol_handler_interceptor_),
-        &protocol_handlers_, std::move(request_interceptors_));
+        &protocol_handlers_, std::move(request_interceptors_),
+        std::move(network_context_request_),
+        std::move(network_context_params_));
   }
 
  private:
   const ProfileIOData* const profile_io_data_;
   const StoragePartitionDescriptor partition_descriptor_;
+  IOThread* io_thread_;
   scoped_refptr<ChromeURLRequestContextGetter>
       main_request_context_getter_;
   std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
       protocol_handler_interceptor_;
   content::ProtocolHandlerMap protocol_handlers_;
   content::URLRequestInterceptorScopedVector request_interceptors_;
+  network::mojom::NetworkContextRequest network_context_request_;
+  network::mojom::NetworkContextParamsPtr network_context_params_;
 };
 
 // Factory that creates the media URLRequestContext for a given isolated
@@ -259,14 +269,17 @@ ChromeURLRequestContextGetter::CreateForIsolatedApp(
     std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor,
     content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
+    content::URLRequestInterceptorScopedVector request_interceptors,
+    network::mojom::NetworkContextRequest network_context_request,
+    network::mojom::NetworkContextParamsPtr network_context_params) {
   ChromeURLRequestContextGetter* main_context =
       static_cast<ChromeURLRequestContextGetter*>(profile->GetRequestContext());
   return ChromeURLRequestContextGetter::CreateAndInit(
       std::make_unique<FactoryForIsolatedApp>(
           profile_io_data, partition_descriptor, main_context,
           std::move(protocol_handler_interceptor), protocol_handlers,
-          std::move(request_interceptors)));
+          std::move(request_interceptors), std::move(network_context_request),
+          std::move(network_context_params)));
 }
 
 // static

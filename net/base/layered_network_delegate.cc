@@ -6,13 +6,23 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
+
 namespace net {
 
 LayeredNetworkDelegate::LayeredNetworkDelegate(
     std::unique_ptr<NetworkDelegate> nested_network_delegate)
-    : nested_network_delegate_(std::move(nested_network_delegate)) {}
+    : owned_nested_network_delegate_(std::move(nested_network_delegate)),
+      nested_network_delegate_(owned_nested_network_delegate_.get()) {}
 
 LayeredNetworkDelegate::~LayeredNetworkDelegate() = default;
+
+std::unique_ptr<NetworkDelegate>
+LayeredNetworkDelegate::CreatePassThroughNetworkDelegate(
+    NetworkDelegate* unowned_nested_network_delegate) {
+  return base::WrapUnique<NetworkDelegate>(
+      new LayeredNetworkDelegate(unowned_nested_network_delegate));
+}
 
 int LayeredNetworkDelegate::OnBeforeURLRequest(URLRequest* request,
                                                CompletionOnceCallback callback,
@@ -299,5 +309,9 @@ bool LayeredNetworkDelegate::OnCanUseReportingClient(
 void LayeredNetworkDelegate::OnCanUseReportingClientInternal(
     const url::Origin& origin,
     const GURL& endpoint) const {}
+
+LayeredNetworkDelegate::LayeredNetworkDelegate(
+    NetworkDelegate* unowned_nested_network_delegate)
+    : nested_network_delegate_(unowned_nested_network_delegate) {}
 
 }  // namespace net

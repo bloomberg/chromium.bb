@@ -296,9 +296,11 @@ class Profile : public content::BrowserContext {
   virtual bool ShouldRestoreOldSessionCookies();
   virtual bool ShouldPersistSessionCookies();
 
-  // Creates the main NetworkContext for the profile, or returns nullptr to
-  // defer NetworkContext creation to the caller.
-  virtual network::mojom::NetworkContextPtr CreateMainNetworkContext();
+  // Creates NetworkContext for the specified isolated app (or for the profile
+  // itself, if |relative_path| is empty).
+  virtual network::mojom::NetworkContextPtr CreateNetworkContext(
+      bool in_memory,
+      const base::FilePath& relative_partition_path);
 
   // Stop sending accessibility events until ResumeAccessibilityEvents().
   // Calls to Pause nest; no events will be sent until the number of

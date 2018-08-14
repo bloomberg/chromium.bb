@@ -1014,7 +1014,9 @@ Profile::ExitType TestingProfile::GetLastSessionExitType() {
   return last_session_exited_cleanly_ ? EXIT_NORMAL : EXIT_CRASHED;
 }
 
-network::mojom::NetworkContextPtr TestingProfile::CreateMainNetworkContext() {
+network::mojom::NetworkContextPtr TestingProfile::CreateNetworkContext(
+    bool in_memory,
+    const base::FilePath& relative_partition_path) {
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     network::mojom::NetworkContextPtr network_context;
     mojo::MakeRequest(&network_context);

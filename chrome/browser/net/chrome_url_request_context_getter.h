@@ -14,6 +14,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 class ChromeURLRequestContextFactory;
 class Profile;
@@ -67,7 +68,9 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter {
       std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors);
+      content::URLRequestInterceptorScopedVector request_interceptors,
+      network::mojom::NetworkContextRequest network_context_request,
+      network::mojom::NetworkContextParamsPtr network_context_params);
 
   // Create an instance for an original profile for media with isolated
   // storage. This is expected to get called on UI thread.

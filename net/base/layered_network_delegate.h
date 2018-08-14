@@ -41,6 +41,12 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
       std::unique_ptr<NetworkDelegate> nested_network_delegate);
   ~LayeredNetworkDelegate() override;
 
+  // Allows creating a LayeredNetworkDelegate that passes through calls to a
+  // NetworkDelegate it does not own.
+  // TODO(mmenke): Remove this once no longer needed.
+  static std::unique_ptr<NetworkDelegate> CreatePassThroughNetworkDelegate(
+      NetworkDelegate* unowned_nested_network_delegate);
+
   // NetworkDelegate implementation:
   int OnBeforeURLRequest(URLRequest* request,
                          CompletionOnceCallback callback,
@@ -191,7 +197,11 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
                                                const GURL& endpoint) const;
 
  private:
-  std::unique_ptr<NetworkDelegate> nested_network_delegate_;
+  explicit LayeredNetworkDelegate(
+      NetworkDelegate* unowned_nested_network_delegate);
+
+  std::unique_ptr<NetworkDelegate> owned_nested_network_delegate_;
+  NetworkDelegate* nested_network_delegate_ = nullptr;
 };
 
 }  // namespace net
