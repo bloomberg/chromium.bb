@@ -50,8 +50,7 @@ SurfaceHitTestReadyNotifier::SurfaceHitTestReadyNotifier(
 
 void SurfaceHitTestReadyNotifier::WaitForSurfaceReady(
     RenderWidgetHostViewBase* root_view) {
-  viz::SurfaceId root_surface_id = root_view->GetCurrentSurfaceId();
-  while (!ContainsSurfaceId(root_surface_id)) {
+  while (!ContainsSurfaceId(root_view->GetCurrentSurfaceId())) {
     // TODO(kenrb): Need a better way to do this. Needs investigation on
     // whether we can add a callback through RenderWidgetHostViewBaseObserver
     // from OnSwapCompositorFrame and avoid this busy waiting. A callback on
