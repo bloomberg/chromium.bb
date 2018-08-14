@@ -44,7 +44,6 @@ class GCMDriver;
 }
 
 namespace network {
-class NetworkQualityTracker;
 class TestNetworkConnectionTracker;
 }
 
@@ -173,7 +172,6 @@ class TestingBrowserProcess : public BrowserProcess {
   std::unique_ptr<policy::ChromeBrowserPolicyConnector>
       browser_policy_connector_;
   bool created_browser_policy_connector_ = false;
-  std::unique_ptr<network::NetworkQualityTracker> network_quality_tracker_;
   std::unique_ptr<ProfileManager> profile_manager_;
   std::unique_ptr<NotificationUIManager> notification_ui_manager_;
   std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge_;

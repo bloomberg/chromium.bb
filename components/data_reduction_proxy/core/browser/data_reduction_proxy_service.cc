@@ -36,7 +36,6 @@ DataReductionProxyService::DataReductionProxyService(
     net::URLRequestContextGetter* request_context_getter,
     std::unique_ptr<DataStore> store,
     std::unique_ptr<DataReductionProxyPingbackClient> pingback_client,
-    network::NetworkQualityTracker* network_quality_tracker,
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
@@ -49,11 +48,8 @@ DataReductionProxyService::DataReductionProxyService(
       io_task_runner_(io_task_runner),
       db_task_runner_(db_task_runner),
       initialized_(false),
-      network_quality_tracker_(network_quality_tracker),
-      effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       weak_factory_(this) {
   DCHECK(settings);
-  DCHECK(network_quality_tracker_);
   db_task_runner_->PostTask(FROM_HERE,
                             base::BindOnce(&DBDataOwner::InitializeOnDBThread,
                                            db_data_owner_->GetWeakPtr()));
@@ -62,14 +58,10 @@ DataReductionProxyService::DataReductionProxyService(
         new DataReductionProxyCompressionStats(this, prefs_, commit_delay));
   }
   event_store_.reset(new DataReductionProxyEventStore());
-  network_quality_tracker_->AddEffectiveConnectionTypeObserver(this);
-  network_quality_tracker_->AddRTTAndThroughputEstimatesObserver(this);
 }
 
 DataReductionProxyService::~DataReductionProxyService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  network_quality_tracker_->RemoveEffectiveConnectionTypeObserver(this);
-  network_quality_tracker_->RemoveRTTAndThroughputEstimatesObserver(this);
   compression_stats_.reset();
   db_task_runner_->DeleteSoon(FROM_HERE, db_data_owner_.release());
 }
@@ -79,14 +71,6 @@ void DataReductionProxyService::SetIOData(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   io_data_ = io_data;
   initialized_ = true;
-
-  // Notify IO data of the current network quality estimates.
-  OnEffectiveConnectionTypeChanged(effective_connection_type_);
-  if (http_rtt_) {
-    OnRTTOrThroughputEstimatesComputed(http_rtt_.value(), base::TimeDelta(),
-                                       INT32_MAX);
-  }
-
   for (DataReductionProxyServiceObserver& observer : observer_list_)
     observer.OnServiceInitialized();
 
@@ -127,34 +111,6 @@ void DataReductionProxyService::ReadPersistedClientConfig() {
       base::BindOnce(
           &DataReductionProxyIOData::SetDataReductionProxyConfiguration,
           io_data_, config_value));
-}
-
-void DataReductionProxyService::OnEffectiveConnectionTypeChanged(
-    net::EffectiveConnectionType type) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  effective_connection_type_ = type;
-
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &DataReductionProxyIOData::OnEffectiveConnectionTypeChanged, io_data_,
-          type));
-}
-
-void DataReductionProxyService::OnRTTOrThroughputEstimatesComputed(
-    base::TimeDelta http_rtt,
-    base::TimeDelta transport_rtt,
-    int32_t downstream_throughput_kbps) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  http_rtt_ = http_rtt;
-
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &DataReductionProxyIOData::OnRTTOrThroughputEstimatesComputed,
-          io_data_, http_rtt));
 }
 
 void DataReductionProxyService::Shutdown() {
@@ -255,18 +211,6 @@ void DataReductionProxyService::OnCacheCleared(const base::Time start,
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&DataReductionProxyIOData::OnCacheCleared,
                                 io_data_, start, end));
-}
-
-net::EffectiveConnectionType
-DataReductionProxyService::GetEffectiveConnectionType() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return effective_connection_type_;
-}
-
-base::Optional<base::TimeDelta> DataReductionProxyService::GetHttpRttEstimate()
-    const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return http_rtt_;
 }
 
 void DataReductionProxyService::LoadHistoricalDataUsage(

@@ -112,7 +112,6 @@ DataReductionProxyIOData::DataReductionProxyIOData(
       basic_url_request_context_getter_(
           new BasicHTTPURLRequestContextGetter(user_agent, io_task_runner)),
       channel_(channel),
-      effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       weak_factory_(this) {
   DCHECK(net_log);
   DCHECK(io_task_runner_);
@@ -181,7 +180,6 @@ DataReductionProxyIOData::DataReductionProxyIOData(
       io_task_runner_(io_task_runner),
       ui_task_runner_(ui_task_runner),
       url_request_context_getter_(nullptr),
-      effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       weak_factory_(this) {
   DCHECK(ui_task_runner_);
   DCHECK(io_task_runner_);
@@ -458,24 +456,6 @@ void DataReductionProxyIOData::UpdateProxyRequestHeaders(
       FROM_HERE,
       base::BindOnce(&DataReductionProxyService::SetProxyRequestHeaders,
                      service_, std::move(headers)));
-}
-
-void DataReductionProxyIOData::OnEffectiveConnectionTypeChanged(
-    net::EffectiveConnectionType type) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  effective_connection_type_ = type;
-}
-
-void DataReductionProxyIOData::OnRTTOrThroughputEstimatesComputed(
-    base::TimeDelta http_rtt) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  config_->OnRTTOrThroughputEstimatesComputed(http_rtt);
-}
-
-net::EffectiveConnectionType
-DataReductionProxyIOData::GetEffectiveConnectionType() const {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  return effective_connection_type_;
 }
 
 }  // namespace data_reduction_proxy

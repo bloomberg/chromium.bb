@@ -22,8 +22,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/http/http_request_headers.h"
-#include "net/nqe/effective_connection_type.h"
-#include "services/network/public/cpp/network_quality_tracker.h"
 
 class PrefService;
 
@@ -50,9 +48,7 @@ class DataReductionProxySettings;
 // Contains and initializes all Data Reduction Proxy objects that have a
 // lifetime based on the UI thread.
 class DataReductionProxyService
-    : public DataReductionProxyEventStorageDelegate,
-      public network::NetworkQualityTracker::EffectiveConnectionTypeObserver,
-      public network::NetworkQualityTracker::RTTAndThroughputEstimatesObserver {
+    : public DataReductionProxyEventStorageDelegate {
  public:
   // The caller must ensure that |settings|, |prefs|, |request_context|, and
   // |io_task_runner| remain alive for the lifetime of the
@@ -66,13 +62,12 @@ class DataReductionProxyService
       net::URLRequestContextGetter* request_context_getter,
       std::unique_ptr<DataStore> store,
       std::unique_ptr<DataReductionProxyPingbackClient> pingback_client,
-      network::NetworkQualityTracker* network_quality_tracker,
       const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       const base::TimeDelta& commit_delay);
 
-  ~DataReductionProxyService() override;
+  virtual ~DataReductionProxyService();
 
   // Sets the DataReductionProxyIOData weak pointer.
   void SetIOData(base::WeakPtr<DataReductionProxyIOData> io_data);
@@ -143,10 +138,6 @@ class DataReductionProxyService
   // cleared.
   void OnCacheCleared(const base::Time start, const base::Time end);
 
-  // Returns the current network quality estimates.
-  net::EffectiveConnectionType GetEffectiveConnectionType() const;
-  base::Optional<base::TimeDelta> GetHttpRttEstimate() const;
-
   // Sets |proxy_request_headers_| with a forwarded value from the IO thread.
   void SetProxyRequestHeaders(net::HttpRequestHeaders headers) {
     proxy_request_headers_ = headers;
@@ -180,14 +171,6 @@ class DataReductionProxyService
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
                            TestLoFiSessionStateHistograms);
-
-  void OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType type) override;
-
-  void OnRTTOrThroughputEstimatesComputed(
-      base::TimeDelta http_rtt,
-      base::TimeDelta transport_rtt,
-      int32_t downstream_throughput_kbps) override;
 
   // Loads the Data Reduction Proxy configuration from |prefs_| and applies it.
   void ReadPersistedClientConfig();
@@ -225,14 +208,6 @@ class DataReductionProxyService
   net::HttpRequestHeaders proxy_request_headers_;
 
   bool initialized_;
-
-  // Must be accessed on UI thread. Guaranteed to be non-null during the
-  // lifetime of |this|.
-  network::NetworkQualityTracker* network_quality_tracker_;
-
-  // Current network quality estimates.
-  net::EffectiveConnectionType effective_connection_type_;
-  base::Optional<base::TimeDelta> http_rtt_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
