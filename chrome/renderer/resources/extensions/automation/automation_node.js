@@ -946,6 +946,7 @@ var stringAttributes = [
     'display',
     'htmlTag',
     'imageDataUrl',
+    'innerHtml',
     'language',
     'liveRelevant',
     'liveStatus',

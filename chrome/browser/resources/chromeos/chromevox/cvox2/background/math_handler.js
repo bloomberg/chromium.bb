@@ -16,28 +16,42 @@ goog.provide('MathHandler');
 MathHandler = function(node) {
   /** @private {!chrome.automation.AutomationNode} */
   this.node_ = node;
-
-  // A math ml structure can exist either as a data attribute or a full tree. We
-  // want the serialization of the tree in the latter case.
-  var ns = node.htmlAttributes['xmlns'];
-  if (node.role == chrome.automation.RoleType.MATH && ns &&
-      ns.toLowerCase().indexOf('mathml') != -1) {
-    var mathMlRoot = MathHandler.createMathMlDom_(node);
-    this.mathml_ = mathMlRoot.outerHTML;
-  } else {
-    this.mathml_ = node.htmlAttributes['data-mathml'];
-  }
 };
 
 MathHandler.prototype = {
   /**
    * Speaks the current node.
+   * @return {boolean} Whether any math was spoken.
    */
   speak: function() {
-    cvox.ChromeVox.tts.speak(SRE.walk(this.mathml_), cvox.QueueMode.FLUSH);
+    var mathml;
 
+    // Math can exist either as explicit innerHtml (handled by the Blink
+    // renderer for nodes with role math) or as a data attribute.
+    if (this.node_.role == chrome.automation.RoleType.MATH &&
+        this.node_.innerHtml)
+      mathml = this.node_.innerHtml;
+    else
+      mathml = this.node_.htmlAttributes['data-mathml'];
+
+    if (!mathml)
+      return false;
+
+    var text;
+
+    try {
+      text = SRE.walk(mathml);
+    } catch (e) {
+      // Swallow exceptions from third party library.
+    }
+
+    if (!text)
+      return false;
+
+    cvox.ChromeVox.tts.speak(text, cvox.QueueMode.FLUSH);
     cvox.ChromeVox.tts.speak(
         Msgs.getMsg('hint_math_keyboard'), cvox.QueueMode.QUEUE);
+    return true;
   }
 };
 
@@ -78,28 +92,4 @@ MathHandler.onKeyDown = function(evt) {
   if (output)
     cvox.ChromeVox.tts.speak(output, cvox.QueueMode.FLUSH);
   return false;
-};
-
-/**
- * @private
- */
-MathHandler.createMathMlDom_ = function(node) {
-  if (!node.htmlTag && node.role != chrome.automation.RoleType.STATIC_TEXT)
-    return null;
-
-  var domNode;
-  if (node.htmlTag)
-    domNode = document.createElement(node.htmlTag);
-  else
-    domNode = document.createTextNode(node.name);
-  for (var key in node.htmlAttributes)
-    domNode.setAttribute(key, node.htmlAttributes[key]);
-
-  for (var i = 0; i < node.children.length; i++) {
-    var child = MathHandler.createMathMlDom_(node.children[i]);
-    if (child)
-      domNode.appendChild(child);
-  }
-
-  return domNode;
 };

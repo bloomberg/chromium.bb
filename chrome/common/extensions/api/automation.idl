@@ -854,6 +854,9 @@
     // 'false' | 'true' | 'mixed'
     DOMString? checked;
 
+    // The inner html of this element. Only populated for math content.
+    DOMString? innerHtml;
+
     // The RGBA foreground color of this subtree, as an integer.
     long? color;
 

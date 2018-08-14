@@ -532,8 +532,8 @@ chrome.automation.AutomationNode.prototype.location;
 /**
  * Computes the bounding box of a subrange of this node in global screen
  * coordinates. Returns the same as |location| if range information is not
- * available; bounds are clipped by ancestors. The start and end indices are
- * zero-based offsets into the node's "name" string attribute.
+ * available. The start and end indices are zero-based offsets into the node's
+ * "name" string attribute.
  * @param {number} startIndex
  * @param {number} endIndex
  * @return {!chrome.automation.Rect}
@@ -1199,6 +1199,13 @@ chrome.automation.AutomationNode.prototype.restriction;
  * @see https://developer.chrome.com/extensions/automation#type-checked
  */
 chrome.automation.AutomationNode.prototype.checked;
+
+/**
+ * The inner html of this element. Only populated for math content.
+ * @type {(string|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-innerHtml
+ */
+chrome.automation.AutomationNode.prototype.innerHtml;
 
 /**
  * The RGBA foreground color of this subtree, as an integer.
