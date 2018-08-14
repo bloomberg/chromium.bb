@@ -504,12 +504,10 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
       return;
 
     view->delegated_frame_host_client_ = std::move(delegated_frame_host_client);
-    const bool enable_viz =
-        base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
     view->delegated_frame_host_ = nullptr;
     view->delegated_frame_host_ = std::make_unique<DelegatedFrameHost>(
         view->frame_sink_id_, view->delegated_frame_host_client_.get(),
-        enable_viz, false /* should_register_frame_sink_id */);
+        false /* should_register_frame_sink_id */);
   }
 
   FakeRenderWidgetHostViewAura* CreateView(bool is_guest_view_hack) {

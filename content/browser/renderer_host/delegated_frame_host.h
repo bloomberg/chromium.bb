@@ -73,7 +73,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   // responsible for doing the appropriate [un]registration.
   DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
                      DelegatedFrameHostClient* client,
-                     bool enable_viz,
                      bool should_register_frame_sink_id);
   ~DelegatedFrameHost() override;
 
@@ -238,6 +237,8 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // This is the last root background color from a swapped frame.
   SkColor background_color_;
+
+  viz::HostFrameSinkManager* const host_frame_sink_manager_;
 
   // State for rendering into a Surface.
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
