@@ -48,8 +48,8 @@ class APIBindingsSystem {
       const GetAPISchemaMethod& get_api_schema,
       const BindingAccessChecker::AvailabilityCallback& is_available,
       const APIRequestHandler::SendRequestMethod& send_request,
-      const APIEventHandler::EventListenersChangedMethod&
-          event_listeners_changed,
+      const APIEventListeners::ListenersUpdated& event_listeners_changed,
+      const APIEventHandler::ContextOwnerIdGetter& context_owner_getter,
       const APIBinding::OnSilentRequest& on_silent_request,
       const binding::AddConsoleError& add_console_error,
       APILastError last_error);

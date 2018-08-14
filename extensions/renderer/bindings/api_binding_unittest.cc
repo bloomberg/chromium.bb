@@ -198,8 +198,12 @@ class APIBindingUnittest : public APIBindingTest {
       on_silent_request_ = base::DoNothing();
     if (!availability_callback_)
       availability_callback_ = base::Bind(&AllowAllFeatures);
+    auto get_context_owner = [](v8::Local<v8::Context>) {
+      return std::string();
+    };
     event_handler_ = std::make_unique<APIEventHandler>(
-        base::Bind(&OnEventListenersChanged), nullptr);
+        base::Bind(&OnEventListenersChanged),
+        base::BindRepeating(get_context_owner), nullptr);
     access_checker_ =
         std::make_unique<BindingAccessChecker>(availability_callback_);
     binding_ = std::make_unique<APIBinding>(

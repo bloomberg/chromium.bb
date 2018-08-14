@@ -65,8 +65,11 @@ class GinPortTest : public APIBindingTest {
 
   void SetUp() override {
     APIBindingTest::SetUp();
-    event_handler_ =
-        std::make_unique<APIEventHandler>(base::DoNothing(), nullptr);
+    auto get_context_owner = [](v8::Local<v8::Context> context) {
+      return std::string();
+    };
+    event_handler_ = std::make_unique<APIEventHandler>(
+        base::DoNothing(), base::BindRepeating(get_context_owner), nullptr);
     delegate_ = std::make_unique<testing::StrictMock<TestPortDelegate>>();
   }
 

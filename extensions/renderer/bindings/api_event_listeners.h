@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "extensions/common/value_counter.h"
 #include "extensions/renderer/bindings/api_binding_types.h"
 #include "v8/include/v8.h"
 
@@ -19,7 +18,7 @@ class DictionaryValue;
 }
 
 namespace extensions {
-class EventFilter;
+class ListenerTracker;
 struct EventFilteringInfo;
 
 // A base class to hold listeners for a given event. This allows for adding,
@@ -33,7 +32,8 @@ class APIEventListeners {
   // change was "manual" (i.e., triggered by a direct call from the extension
   // rather than something like the context being destroyed).
   using ListenersUpdated =
-      base::Callback<void(binding::EventListenersChanged,
+      base::Callback<void(const std::string& event_name,
+                          binding::EventListenersChanged,
                           const base::DictionaryValue* filter,
                           bool update_lazy_listeners,
                           v8::Local<v8::Context> context)>;
@@ -80,8 +80,11 @@ class APIEventListeners {
 class UnfilteredEventListeners final : public APIEventListeners {
  public:
   UnfilteredEventListeners(const ListenersUpdated& listeners_updated,
+                           const std::string& event_name,
+                           const std::string& context_owner_id,
                            int max_listeners,
-                           bool supports_lazy_listeners);
+                           bool supports_lazy_listeners,
+                           ListenerTracker* listener_tracker);
   ~UnfilteredEventListeners() override;
 
   bool AddListener(v8::Local<v8::Function> listener,
@@ -98,6 +101,10 @@ class UnfilteredEventListeners final : public APIEventListeners {
   void Invalidate(v8::Local<v8::Context> context) override;
 
  private:
+  // Notifies that all the listeners for this context are now removed.
+  void NotifyListenersEmpty(v8::Local<v8::Context> context,
+                            bool update_lazy_listeners);
+
   // The event listeners associated with this event.
   // TODO(devlin): Having these listeners held as v8::Globals means that we
   // need to worry about cycles when a listener holds a reference to the event,
@@ -110,11 +117,22 @@ class UnfilteredEventListeners final : public APIEventListeners {
 
   ListenersUpdated listeners_updated_;
 
+  // This event's name.
+  std::string event_name_;
+
+  // The owner of the context these listeners belong to.
+  std::string context_owner_id_;
+
   // The maximum number of supported listeners.
   int max_listeners_;
 
   // Whether the event supports lazy listeners.
   bool supports_lazy_listeners_;
+
+  // The listener tracker to notify of added or removed listeners. This may be
+  // null if this is a set of listeners for an unmanaged event. If
+  // non-null, required to outlive this object.
+  ListenerTracker* listener_tracker_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(UnfilteredEventListeners);
 };
@@ -127,9 +145,10 @@ class FilteredEventListeners final : public APIEventListeners {
  public:
   FilteredEventListeners(const ListenersUpdated& listeners_updated,
                          const std::string& event_name,
+                         const std::string& context_owner_id,
                          int max_listeners,
                          bool supports_lazy_listeners,
-                         EventFilter* event_filter);
+                         ListenerTracker* listener_tracker);
   ~FilteredEventListeners() override;
 
   bool AddListener(v8::Local<v8::Function> listener,
@@ -157,7 +176,11 @@ class FilteredEventListeners final : public APIEventListeners {
 
   ListenersUpdated listeners_updated_;
 
+  // This event's name.
   std::string event_name_;
+
+  // The owner of the context these listeners belong to.
+  std::string context_owner_id_;
 
   // The maximum number of supported listeners.
   int max_listeners_;
@@ -165,10 +188,9 @@ class FilteredEventListeners final : public APIEventListeners {
   // Whether the event supports lazy listeners.
   bool supports_lazy_listeners_;
 
-  // The associated EventFilter; required to outlive this object.
-  EventFilter* event_filter_ = nullptr;
-
-  ValueCounter value_counter_;
+  // The listener tracker to notify of added or removed listeners. Required to
+  // outlive this object.
+  ListenerTracker* listener_tracker_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FilteredEventListeners);
 };
