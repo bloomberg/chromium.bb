@@ -193,6 +193,34 @@ void StartServerOnIOThread(uint16_t port,
                            const HttpRequestHandlerFunc& handle_request_func) {
   std::unique_ptr<HttpServer> temp_server;
 
+// On Linux and Windows, we listen to IPv6 first, and then optionally listen
+// to IPv4 (depending on |need_ipv4| below). The reason is listening to an
+// IPv6 port may automatically listen to the same IPv4 port as well, and would
+// return an error if the IPv4 port is already in use.
+//
+// On Mac, however, we listen to IPv4 first before listening to IPv6. If we
+// were to listen to IPv6 first, it would succeed whether the corresponding
+// IPv4 port is in use or not, and we wouldn't know if we ended up listening
+// to both IPv4 and IPv6 ports, or only IPv6 port. Listening to IPv4 first
+// ensures that we successfully listen to both IPv4 and IPv6.
+
+#if defined(OS_MACOSX)
+  temp_server.reset(new HttpServer(handle_request_func));
+  int ipv4_status = temp_server->Start(port, allow_remote, true);
+  if (ipv4_status == net::OK) {
+    lazy_tls_server_ipv4.Pointer()->Set(temp_server.release());
+  } else if (ipv4_status == net::ERR_ADDRESS_IN_USE) {
+    // ERR_ADDRESS_IN_USE causes an immediate exit, since it indicates the port
+    // is being used by another process. Other errors are assumed to indicate
+    // that IPv4 isn't available for some reason, e.g., on an IPv6-only host.
+    // Thus the error doesn't cause an exit immediately. The HttpServer::Start
+    // method has already printed a message indicating what has happened. Later,
+    // near the end of this function, we exit if both IPv4 and IPv6 failed.
+    printf("IPv4 port not available. Exiting...\n");
+    exit(1);
+  }
+#endif
+
   temp_server.reset(new HttpServer(handle_request_func));
   int ipv6_status = temp_server->Start(port, allow_remote, false);
   if (ipv6_status == net::OK) {
@@ -202,6 +230,7 @@ void StartServerOnIOThread(uint16_t port,
     exit(1);
   }
 
+#if !defined(OS_MACOSX)
   // In some cases, binding to an IPv6 port also binds to the same IPv4 port.
   // The following code determines if it is necessary to bind to IPv4 port.
   enum class NeedIPv4 { NOT_NEEDED, UNKNOWN, NEEDED } need_ipv4;
@@ -212,9 +241,7 @@ void StartServerOnIOThread(uint16_t port,
 // Currently, the network layer provides no way for us to control dual-protocol
 // bind option, or to query the current setting of that option, so we do our
 // best to determine the current setting. See https://crbug.com/858892.
-#if defined(OS_MACOSX)
-    need_ipv4 = NeedIPv4::NEEDED;
-#elif defined(OS_LINUX)
+#if defined(OS_LINUX)
     // On Linux, dual-protocol bind is controlled by a system file.
     // ChromeOS builds also have OS_LINUX defined, so the code below applies.
     std::string bindv6only;
@@ -257,6 +284,7 @@ void StartServerOnIOThread(uint16_t port,
       }
     }
   }
+#endif  // !defined(OS_MACOSX)
 
   if (ipv4_status != net::OK && ipv6_status != net::OK) {
     printf("Unable to start server with either IPv4 or IPv6. Exiting...\n");
