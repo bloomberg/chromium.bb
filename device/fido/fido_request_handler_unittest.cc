@@ -110,6 +110,10 @@ class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
   }
   ~FakeFidoRequestHandler() override = default;
 
+  base::WeakPtr<FidoRequestHandlerBase> GetWeakPtr() override {
+    return weak_factory_.GetWeakPtr();
+  }
+
   void DispatchRequest(FidoAuthenticator* authenticator) override {
     static_cast<FakeFidoAuthenticator*>(authenticator)
         ->RunFakeTask(

@@ -179,6 +179,10 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
 
 GetAssertionRequestHandler::~GetAssertionRequestHandler() = default;
 
+base::WeakPtr<FidoRequestHandlerBase> GetAssertionRequestHandler::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void GetAssertionRequestHandler::DispatchRequest(
     FidoAuthenticator* authenticator) {
   // The user verification field of the request may be adjusted to the

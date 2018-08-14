@@ -7,8 +7,11 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "device/fido/fido_device.h"
 #include "device/fido/fido_task.h"
@@ -118,7 +121,6 @@ void FidoRequestHandlerBase::Start() {
   MaybeAddPlatformAuthenticator();
 }
 
-
 void FidoRequestHandlerBase::DiscoveryStarted(FidoDiscovery* discovery,
                                               bool success) {
   if (discovery->transport() == FidoTransportProtocol::kBluetoothLowEnergy) {
@@ -175,8 +177,13 @@ void FidoRequestHandlerBase::AddAuthenticator(
   FidoAuthenticator* authenticator_ptr = authenticator.get();
   active_authenticators_.emplace(authenticator->GetId(),
                                  std::move(authenticator));
-  if (!ShouldDeferRequestDispatchToUi(*authenticator_ptr))
-    DispatchRequest(authenticator_ptr);
+  if (!ShouldDeferRequestDispatchToUi(*authenticator_ptr)) {
+    // Post |DispatchRequest| into its own task. This avoids hairpinning, even
+    // if the authenticator immediately invokes the request callback.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&FidoRequestHandlerBase::DispatchRequest,
+                                  GetWeakPtr(), authenticator_ptr));
+  }
 
   if (observer_)
     observer_->FidoAuthenticatorAdded(*authenticator_ptr);
