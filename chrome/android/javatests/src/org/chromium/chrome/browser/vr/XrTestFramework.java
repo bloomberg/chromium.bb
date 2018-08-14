@@ -99,6 +99,22 @@ public abstract class XrTestFramework {
     }
 
     /**
+     * Checks whether a request for the given permission would trigger a permission prompt.
+     *
+     * @param permission The name of the permission to check.
+     * @param webContents The WebContents to run the JavaScript in.
+     * @return True if the permission request would trigger a prompt, false otherwise.
+     */
+    public static boolean permissionRequestWouldTriggerPrompt(
+            String permission, WebContents webContents) {
+        runJavaScriptOrFail("checkPermissionRequestWouldTriggerPrompt('" + permission + "')",
+                POLL_TIMEOUT_SHORT_MS, webContents);
+        pollJavaScriptBooleanOrFail("wouldPrompt !== null", POLL_TIMEOUT_SHORT_MS, webContents);
+        return Boolean.valueOf(
+                runJavaScriptOrFail("wouldPrompt", POLL_TIMEOUT_SHORT_MS, webContents));
+    }
+
+    /**
      * Helper function to run the given JavaScript, return the return value, and fail if a
      * timeout/interrupt occurs so we don't have to catch or declare exceptions all the time.
      *
@@ -373,6 +389,16 @@ public abstract class XrTestFramework {
                 pollJavaScriptBoolean("isInitializationComplete()", POLL_TIMEOUT_LONG_MS,
                         mRule.getWebContents()));
         return result;
+    }
+
+    /**
+     * Helper method to run permissionRequestWouldTriggerPrompt with the first tab's WebContents.
+     *
+     * @param permission The name of the permission to check.
+     * @return True if the permission request would trigger a prompt, false otherwise.
+     */
+    public boolean permissionRequestWouldTriggerPrompt(String permission) {
+        return permissionRequestWouldTriggerPrompt(permission, mFirstTabWebContents);
     }
 
     /**

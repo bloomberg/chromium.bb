@@ -6,9 +6,19 @@ var testPassed = false;
 var resultString = "";
 var javascriptDone = false;
 var initializationSteps = {load: false};
+var wouldPrompt = null;
 
 function finishJavaScriptStep() {
   javascriptDone = true;
+}
+
+function checkPermissionRequestWouldTriggerPrompt(permissionName) {
+  wouldPrompt = null;
+  navigator.permissions.query({ name: permissionName }).then( (p) => {
+    wouldPrompt = p.state == 'prompt';
+  }, (err) => {
+    throw 'Permission query rejected: ' + err;
+  });
 }
 
 // Used to check when JavaScript is in an acceptable state to start testing
