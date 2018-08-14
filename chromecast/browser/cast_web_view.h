@@ -98,6 +98,9 @@ class CastWebView {
     // Enable/Force 720p resolution for this CastWebView instance.
     bool force_720p_resolution = false;
 
+    // True if this CastWebView is for running a remote control app.
+    bool is_remote_control_mode = false;
+
     CreateParams();
   };
 

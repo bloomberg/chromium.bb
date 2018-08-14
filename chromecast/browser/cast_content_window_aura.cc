@@ -67,19 +67,15 @@ class TouchBlocker : public ui::EventHandler, public aura::WindowObserver {
 
 // static
 std::unique_ptr<CastContentWindow> CastContentWindow::Create(
-    CastContentWindow::Delegate* delegate,
-    bool is_headless,
-    bool enable_touch_input) {
-  return base::WrapUnique(
-      new CastContentWindowAura(delegate, enable_touch_input));
+    const CastContentWindow::CreateParams& params) {
+  return base::WrapUnique(new CastContentWindowAura(params));
 }
 
 CastContentWindowAura::CastContentWindowAura(
-    CastContentWindow::Delegate* delegate,
-    bool is_touch_enabled)
-    : delegate_(delegate),
+    const CastContentWindow::CreateParams& params)
+    : delegate_(params.delegate),
       gesture_dispatcher_(std::make_unique<CastGestureDispatcher>(delegate_)),
-      is_touch_enabled_(is_touch_enabled),
+      is_touch_enabled_(params.enable_touch_input),
       window_(nullptr),
       has_screen_access_(false) {
   DCHECK(delegate_);
@@ -173,6 +169,8 @@ void CastContentWindowAura::HandleTapDownGesture(
 void CastContentWindowAura::HandleTapGesture(const gfx::Point& touch_location) {
   gesture_dispatcher_->HandleTapGesture(touch_location);
 }
+
+CastContentWindow::CreateParams::CreateParams() {}
 
 }  // namespace shell
 }  // namespace chromecast

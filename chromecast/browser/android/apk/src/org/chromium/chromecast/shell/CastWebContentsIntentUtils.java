@@ -89,10 +89,18 @@ public class CastWebContentsIntentUtils {
     static final String INTENT_EXTRA_WEB_CONTENTS =
             "com.google.android.apps.castshell.intent.extra.WEB_CONTENTS";
 
-    /** Key of extra value of the intent to start a web content, value is true is touch is enabled.
+    /** Key of extra value of the intent to start a web content, value is true if cast app supports
+     *  touch input.
      */
     static final String INTENT_EXTRA_TOUCH_INPUT_ENABLED =
             "com.google.android.apps.castshell.intent.extra.ENABLE_TOUCH";
+
+    /** Key of extra value of the intent to start a web content, value is true is if cast app is
+     *  a remote control app.
+     */
+    static final String INTENT_EXTRA_REMOTE_CONTROL_MODE =
+            "com.google.android.apps.castshell.intent.extra.REMOTE_CONTROL_MODE";
+
     /**
      * Key of extra value of the intent ACTION_REQUEST_VISIBILITY, value is visibility priority
      * (int).
@@ -284,7 +292,8 @@ public class CastWebContentsIntentUtils {
 
     // CastWebContentsComponent.Receiver -> Host activity of CastWebContentsFragment
     public static Intent requestStartCastFragment(WebContents webContents, String appId,
-            int visibilityPriority, boolean enableTouch, String instanceId) {
+            int visibilityPriority, boolean enableTouch, String instanceId,
+            boolean isRemoteControlMode) {
         Intent intent = new Intent();
         intent.setAction(CastIntents.ACTION_SHOW_WEB_CONTENT);
         intent.putExtra(INTENT_EXTRA_URI, getInstanceUri(instanceId).toString());
@@ -292,6 +301,7 @@ public class CastWebContentsIntentUtils {
         intent.putExtra(INTENT_EXTRA_VISIBILITY_PRIORITY, visibilityPriority);
         intent.putExtra(INTENT_EXTRA_TOUCH_INPUT_ENABLED, enableTouch);
         intent.putExtra(INTENT_EXTRA_WEB_CONTENTS, webContents);
+        intent.putExtra(INTENT_EXTRA_REMOTE_CONTROL_MODE, isRemoteControlMode);
         return intent;
     }
 
@@ -349,6 +359,16 @@ public class CastWebContentsIntentUtils {
     // Used by ACTION_VIEW, ACTION_SHOW_WEB_CONTENT
     public static boolean isTouchable(Intent in) {
         return isTouchable(in.getExtras());
+    }
+
+    // Used by ACTION_SHOW_WEB_CONTENT
+    public static boolean isRemoteControlMode(Bundle bundle) {
+        return bundle.getBoolean(INTENT_EXTRA_REMOTE_CONTROL_MODE);
+    }
+
+    // Used by ACTION_SHOW_WEB_CONTENT
+    public static boolean isRemoteControlMode(Intent in) {
+        return isRemoteControlMode(in.getExtras());
     }
 
     // CastWebContentsComponent -> CastWebContentsSurfaceHelper and host activity of

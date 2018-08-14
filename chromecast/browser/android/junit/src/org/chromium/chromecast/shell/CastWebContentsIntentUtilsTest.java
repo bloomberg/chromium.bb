@@ -161,7 +161,7 @@ public class CastWebContentsIntentUtilsTest {
     @Test
     public void testRequestStartCastFragment() {
         Intent in = CastWebContentsIntentUtils.requestStartCastFragment(
-                mWebContents, APP_ID, 3, true, INSTANCE_ID);
+                mWebContents, APP_ID, 3, true, INSTANCE_ID, true);
         Assert.assertNull(in.getData());
         String uri = CastWebContentsIntentUtils.getUriString(in);
         Assert.assertNotNull(uri);
@@ -172,6 +172,7 @@ public class CastWebContentsIntentUtilsTest {
         Assert.assertEquals(APP_ID, CastWebContentsIntentUtils.getAppId(in));
         Assert.assertEquals(3, CastWebContentsIntentUtils.getVisibilityPriority(in));
         Assert.assertEquals(CastIntents.ACTION_SHOW_WEB_CONTENT, in.getAction());
+        Assert.assertTrue(CastWebContentsIntentUtils.isRemoteControlMode(in));
     }
 
     @Test
@@ -220,5 +221,19 @@ public class CastWebContentsIntentUtilsTest {
         String uri = CastWebContentsIntentUtils.getUriString(in);
         Assert.assertNotNull(uri);
         Assert.assertEquals(EXPECTED_URI, uri);
+    }
+
+    @Test
+    public void testIsRemoteControlModeTrue() {
+        Intent in = CastWebContentsIntentUtils.requestStartCastFragment(
+                mWebContents, APP_ID, 3, true, INSTANCE_ID, true);
+        Assert.assertTrue(CastWebContentsIntentUtils.isRemoteControlMode(in));
+    }
+
+    @Test
+    public void testIsRemoteControlModeFalse() {
+        Intent in = CastWebContentsIntentUtils.requestStartCastFragment(
+                mWebContents, APP_ID, 3, false, INSTANCE_ID, false);
+        Assert.assertFalse(CastWebContentsIntentUtils.isRemoteControlMode(in));
     }
 }
