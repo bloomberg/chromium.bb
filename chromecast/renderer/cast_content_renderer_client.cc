@@ -13,7 +13,7 @@
 #include "chromecast/media/base/media_codec_support.h"
 #include "chromecast/media/base/supported_codec_profile_levels_memo.h"
 #include "chromecast/public/media/media_capabilities_shlib.h"
-#include "chromecast/renderer/cast_media_load_deferrer.h"
+#include "chromecast/renderer/cast_media_playback_options.h"
 #include "chromecast/renderer/media/key_systems_cast.h"
 #include "chromecast/renderer/media/media_caps_observer_impl.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
@@ -147,7 +147,7 @@ void CastContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
   DCHECK(render_frame);
   // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
-  new CastMediaLoadDeferrer(render_frame);
+  new CastMediaPlaybackOptions(render_frame);
 
   if (!app_media_capabilities_observer_binding_.is_bound()) {
     mojom::ApplicationMediaCapabilitiesObserverPtr observer;
@@ -279,13 +279,20 @@ bool CastContentRendererClient::DeferMediaLoad(
 bool CastContentRendererClient::RunWhenInForeground(
     content::RenderFrame* render_frame,
     base::OnceClosure closure) {
-  auto* media_load_deferrer = CastMediaLoadDeferrer::Get(render_frame);
-  DCHECK(media_load_deferrer);
-  return media_load_deferrer->RunWhenInForeground(std::move(closure));
+  auto* playback_options = CastMediaPlaybackOptions::Get(render_frame);
+  DCHECK(playback_options);
+  return playback_options->RunWhenInForeground(std::move(closure));
 }
 
 bool CastContentRendererClient::IsIdleMediaSuspendEnabled() {
   return false;
+}
+
+bool CastContentRendererClient::IsBackgroundMediaSuspendEnabled(
+    content::RenderFrame* render_frame) {
+  auto* playback_options = CastMediaPlaybackOptions::Get(render_frame);
+  DCHECK(playback_options);
+  return playback_options->IsBackgroundSuspendEnabled();
 }
 
 void CastContentRendererClient::

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/renderer/cast_media_load_deferrer.h"
+#include "chromecast/renderer/cast_media_playback_options.h"
 
 #include <string>
 #include <vector>
@@ -15,27 +15,29 @@
 
 namespace chromecast {
 
-CastMediaLoadDeferrer::CastMediaLoadDeferrer(content::RenderFrame* render_frame)
+CastMediaPlaybackOptions::CastMediaPlaybackOptions(
+    content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame),
-      content::RenderFrameObserverTracker<CastMediaLoadDeferrer>(render_frame),
-      render_frame_action_blocked_(false) {
+      content::RenderFrameObserverTracker<CastMediaPlaybackOptions>(
+          render_frame),
+      render_frame_action_blocked_(false),
+      background_suspend_enabled_(true) {
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
       base::BindRepeating(
-          &CastMediaLoadDeferrer::OnMediaLoadDeferrerAssociatedRequest,
+          &CastMediaPlaybackOptions::OnMediaPlaybackOptionsAssociatedRequest,
           base::Unretained(this)));
 }
 
-CastMediaLoadDeferrer::~CastMediaLoadDeferrer() {
+CastMediaPlaybackOptions::~CastMediaPlaybackOptions() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void CastMediaLoadDeferrer::OnDestruct() {
+void CastMediaPlaybackOptions::OnDestruct() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   delete this;
 }
 
-
-bool CastMediaLoadDeferrer::RunWhenInForeground(base::OnceClosure closure) {
+bool CastMediaPlaybackOptions::RunWhenInForeground(base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!render_frame_action_blocked_) {
     std::move(closure).Run();
@@ -47,8 +49,12 @@ bool CastMediaLoadDeferrer::RunWhenInForeground(base::OnceClosure closure) {
   return true;
 }
 
-// MediaLoadDeferrer implementation
-void CastMediaLoadDeferrer::UpdateMediaLoadStatus(bool blocked) {
+bool CastMediaPlaybackOptions::IsBackgroundSuspendEnabled() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return background_suspend_enabled_;
+}
+
+void CastMediaPlaybackOptions::SetMediaLoadingBlocked(bool blocked) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   render_frame_action_blocked_ = blocked;
   if (blocked) {
@@ -65,8 +71,12 @@ void CastMediaLoadDeferrer::UpdateMediaLoadStatus(bool blocked) {
   LOG(INFO) << "Render frame actions are unblocked.";
 }
 
-void CastMediaLoadDeferrer::OnMediaLoadDeferrerAssociatedRequest(
-    chromecast::shell::mojom::MediaLoadDeferrerAssociatedRequest request) {
+void CastMediaPlaybackOptions::SetBackgroundSuspendEnabled(bool enabled) {
+  background_suspend_enabled_ = enabled;
+}
+
+void CastMediaPlaybackOptions::OnMediaPlaybackOptionsAssociatedRequest(
+    chromecast::shell::mojom::MediaPlaybackOptionsAssociatedRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
