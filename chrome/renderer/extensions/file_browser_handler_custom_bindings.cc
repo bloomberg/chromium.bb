@@ -35,7 +35,7 @@ void FileBrowserHandlerCustomBindings::GetExternalFileEntry(
 #if defined(OS_CHROMEOS)
     CHECK(args.Length() == 1);
     CHECK(args[0]->IsObject());
-    v8::Local<v8::Object> file_def = args[0]->ToObject();
+    v8::Local<v8::Object> file_def = args[0].As<v8::Object>();
     v8::Isolate* isolate = args.GetIsolate();
     std::string file_system_name(*v8::String::Utf8Value(
         isolate,
@@ -48,8 +48,8 @@ void FileBrowserHandlerCustomBindings::GetExternalFileEntry(
         file_def->Get(v8::String::NewFromUtf8(isolate, "fileFullPath"))));
     bool is_directory =
         file_def->Get(v8::String::NewFromUtf8(isolate, "fileIsDirectory"))
-            ->ToBoolean()
-            ->Value();
+            ->BooleanValue(context->v8_context())
+            .FromMaybe(false);
     blink::WebDOMFileSystem::EntryType entry_type =
         is_directory ? blink::WebDOMFileSystem::kEntryTypeDirectory
                      : blink::WebDOMFileSystem::kEntryTypeFile;
