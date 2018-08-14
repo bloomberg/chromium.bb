@@ -83,7 +83,8 @@ void BrowserTabStripTracker::MaybeTrackBrowser(Browser* browser) {
   TabStripModelChange change(TabStripModelChange::kInserted, deltas);
   TabStripSelectionChange selection(tab_strip_model->GetActiveWebContents(),
                                     tab_strip_model->selection_model());
-  tab_strip_model_observer_->OnTabStripModelChanged(change, selection);
+  tab_strip_model_observer_->OnTabStripModelChanged(tab_strip_model, change,
+                                                    selection);
 }
 
 void BrowserTabStripTracker::OnBrowserAdded(Browser* browser) {

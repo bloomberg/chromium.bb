@@ -358,7 +358,7 @@ void TabStripModel::InsertWebContentsAt(int index,
       TabStripModelChange::kInserted,
       TabStripModelChange::CreateInsertDelta(raw_contents, index));
   for (auto& observer : observers_)
-    observer.OnTabStripModelChanged(change, selection);
+    observer.OnTabStripModelChanged(this, change, selection);
 }
 
 std::unique_ptr<content::WebContents> TabStripModel::ReplaceWebContentsAt(
@@ -395,7 +395,7 @@ std::unique_ptr<content::WebContents> TabStripModel::ReplaceWebContentsAt(
                              TabStripModelChange::CreateReplaceDelta(
                                  old_contents.get(), raw_new_contents, index));
   for (auto& observer : observers_)
-    observer.OnTabStripModelChanged(change, selection);
+    observer.OnTabStripModelChanged(this, change, selection);
 
   return old_contents;
 }
@@ -514,6 +514,10 @@ void TabStripModel::SendDetachWebContentsNotifications(
   selection.new_model = selection_model_;
   selection.reason = TabStripModelObserver::CHANGE_REASON_NONE;
 
+  TabStripModelChange change(TabStripModelChange::kRemoved, deltas);
+  for (auto& observer : observers_)
+    observer.OnTabStripModelChanged(this, change, selection);
+
   for (auto& dwc : notifications->detached_web_contents) {
     if (notifications->selection_model.IsSelected(
             dwc->index_before_any_removals)) {
@@ -547,10 +551,6 @@ void TabStripModel::SendDetachWebContentsNotifications(
     for (auto& observer : observers_)
       observer.TabStripEmpty();
   }
-
-  TabStripModelChange change(TabStripModelChange::kRemoved, deltas);
-  for (auto& observer : observers_)
-    observer.OnTabStripModelChanged(change, selection);
 }
 
 void TabStripModel::ActivateTabAt(int index, bool user_gesture) {
@@ -1529,7 +1529,7 @@ TabStripSelectionChange TabStripModel::SetSelection(
       (selection.active_tab_changed() || selection.selection_changed())) {
     TabStripModelChange change;
     for (auto& observer : observers_)
-      observer.OnTabStripModelChanged(change, selection);
+      observer.OnTabStripModelChanged(this, change, selection);
   }
 
   return selection;
@@ -1575,7 +1575,7 @@ void TabStripModel::MoveWebContentsAtImpl(int index,
       TabStripModelChange::kMoved,
       TabStripModelChange::CreateMoveDelta(web_contents, index, to_position));
   for (auto& observer : observers_)
-    observer.OnTabStripModelChanged(change, selection);
+    observer.OnTabStripModelChanged(this, change, selection);
 }
 
 void TabStripModel::MoveSelectedTabsToImpl(int index,

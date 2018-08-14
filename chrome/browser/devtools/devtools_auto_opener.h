@@ -16,6 +16,7 @@ class DevToolsAutoOpener : public TabStripModelObserver {
  private:
   // TabStripModelObserver overrides.
   void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
 
