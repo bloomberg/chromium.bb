@@ -1004,10 +1004,16 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
         LOG(WARNING) << "Profile child status has changed.";
         storage.RemoveProfile(profile->GetPath());
       }
-      // Notify ARC about user type change via prefs.
-      const arc::ArcSupervisionTransition supervisionTransition =
-          user_is_child ? arc::ArcSupervisionTransition::REGULAR_TO_CHILD
-                        : arc::ArcSupervisionTransition::CHILD_TO_REGULAR;
+      arc::ArcSupervisionTransition supervisionTransition;
+      if (!profile->GetPrefs()->GetBoolean(arc::prefs::kArcSignedIn)) {
+        // No transition is necessary if user never enabled ARC.
+        supervisionTransition = arc::ArcSupervisionTransition::NO_TRANSITION;
+      } else {
+        // Notify ARC about user type change via prefs if user enabled ARC.
+        supervisionTransition =
+            user_is_child ? arc::ArcSupervisionTransition::REGULAR_TO_CHILD
+                          : arc::ArcSupervisionTransition::CHILD_TO_REGULAR;
+      }
       profile->GetPrefs()->SetInteger(arc::prefs::kArcSupervisionTransition,
                                       static_cast<int>(supervisionTransition));
     }
