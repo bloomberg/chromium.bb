@@ -183,6 +183,10 @@ class CONTENT_EXPORT FrameConnectorDelegate {
     return compositor_visible_rect_;
   }
 
+  // Returns whether the current view may be occluded or distorted (e.g, with
+  // CSS opacity or transform) in the parent view.
+  bool occluded_or_obscured() const { return occluded_or_obscured_; }
+
   // Returns the viz::LocalSurfaceId propagated from the parent to be used by
   // this child frame.
   const viz::LocalSurfaceId& local_surface_id() const {
@@ -265,6 +269,8 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   gfx::Rect viewport_intersection_rect_;
 
   gfx::Rect compositor_visible_rect_;
+
+  bool occluded_or_obscured_ = false;
 
   ScreenInfo screen_info_;
   gfx::Size local_frame_size_in_dip_;

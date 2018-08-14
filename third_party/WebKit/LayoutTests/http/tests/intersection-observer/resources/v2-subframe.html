@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<div id="target">target</div>
+<script>
+var results = [];
+
+function waitForNotification(f) {
+  requestAnimationFrame(function () {
+    setTimeout(function () { setTimeout(f); });
+  });
+}
+
+onload = () => {
+  var target = document.getElementById("target");
+  var observer = new IntersectionObserver(entries => {
+    results = entries;
+  }, { trackVisibility: true });
+  observer.observe(document.getElementById("target"));
+  window.addEventListener("message", event => {
+    waitForNotification(() => {
+      window.parent.postMessage(results.map(e => { return e.isVisible }), "*");
+      results = [];
+    });
+  });
+};
+</script>

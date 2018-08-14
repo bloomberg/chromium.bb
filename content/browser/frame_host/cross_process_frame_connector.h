@@ -164,7 +164,8 @@ class CONTENT_EXPORT CrossProcessFrameConnector
       const viz::SurfaceId& surface_id,
       const FrameVisualProperties& visual_properties);
   void OnUpdateViewportIntersection(const gfx::Rect& viewport_intersection,
-                                    const gfx::Rect& compositor_visible_rect);
+                                    const gfx::Rect& compositor_visible_rect,
+                                    bool occluded_or_obscured);
   void OnVisibilityChanged(bool visible);
   void OnSetIsInert(bool);
   void OnSetInheritedEffectiveTouchAction(cc::TouchAction);

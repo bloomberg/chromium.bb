@@ -472,12 +472,13 @@ void RenderWidgetHostViewChildFrame::UnregisterFrameSinkId() {
 
 void RenderWidgetHostViewChildFrame::UpdateViewportIntersection(
     const gfx::Rect& viewport_intersection,
-    const gfx::Rect& compositor_visible_rect) {
+    const gfx::Rect& compositor_visible_rect,
+    bool occluded_or_obscured) {
   if (host()) {
     host()->SetIntersectsViewport(!viewport_intersection.IsEmpty());
-    host()->Send(new ViewMsg_SetViewportIntersection(host()->GetRoutingID(),
-                                                     viewport_intersection,
-                                                     compositor_visible_rect));
+    host()->Send(new ViewMsg_SetViewportIntersection(
+        host()->GetRoutingID(), viewport_intersection, compositor_visible_rect,
+        occluded_or_obscured));
   }
 }
 
@@ -813,7 +814,8 @@ void RenderWidgetHostViewChildFrame::WillSendScreenRects() {
   // until somebody figures that out. RWHVCF::Init() is too early.
   if (frame_connector_) {
     UpdateViewportIntersection(frame_connector_->viewport_intersection_rect(),
-                               frame_connector_->compositor_visible_rect());
+                               frame_connector_->compositor_visible_rect(),
+                               frame_connector_->occluded_or_obscured());
     SetIsInert();
     UpdateInheritedEffectiveTouchAction();
     UpdateRenderThrottlingStatus();

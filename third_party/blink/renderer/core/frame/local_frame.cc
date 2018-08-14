@@ -1298,9 +1298,12 @@ WebPluginContainerImpl* LocalFrame::GetWebPluginContainer(Node* node) const {
 }
 
 void LocalFrame::SetViewportIntersectionFromParent(
-    const IntRect& viewport_intersection) {
-  if (remote_viewport_intersection_ != viewport_intersection) {
+    const IntRect& viewport_intersection,
+    bool occluded_or_obscured) {
+  if (remote_viewport_intersection_ != viewport_intersection ||
+      occluded_or_obscured_by_ancestor_ != occluded_or_obscured) {
     remote_viewport_intersection_ = viewport_intersection;
+    occluded_or_obscured_by_ancestor_ = occluded_or_obscured;
     if (View()) {
       View()->SetNeedsIntersectionObservation(LocalFrameView::kRequired);
       View()->ScheduleAnimation();

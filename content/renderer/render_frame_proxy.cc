@@ -693,7 +693,8 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
   // the intersection rects.
   gfx::Rect new_compositor_visible_rect = web_frame_->GetCompositingRect();
   if (new_compositor_visible_rect != last_compositor_visible_rect_)
-    UpdateRemoteViewportIntersection(last_intersection_rect_);
+    UpdateRemoteViewportIntersection(last_intersection_rect_,
+                                     last_occluded_or_obscured_);
 }
 
 void RenderFrameProxy::OnSetHasReceivedUserGestureBeforeNavigation(bool value) {
@@ -813,12 +814,14 @@ void RenderFrameProxy::FrameRectsChanged(
 }
 
 void RenderFrameProxy::UpdateRemoteViewportIntersection(
-    const blink::WebRect& viewport_intersection) {
+    const blink::WebRect& viewport_intersection,
+    bool occluded_or_obscured) {
   last_intersection_rect_ = viewport_intersection;
   last_compositor_visible_rect_ = web_frame_->GetCompositingRect();
+  last_occluded_or_obscured_ = occluded_or_obscured;
   Send(new FrameHostMsg_UpdateViewportIntersection(
       routing_id_, gfx::Rect(viewport_intersection),
-      last_compositor_visible_rect_));
+      last_compositor_visible_rect_, last_occluded_or_obscured_));
 }
 
 void RenderFrameProxy::VisibilityChanged(bool visible) {

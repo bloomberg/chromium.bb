@@ -309,10 +309,13 @@ class CORE_EXPORT LocalFrame final : public Frame,
   WebPluginContainerImpl* GetWebPluginContainer(Node* = nullptr) const;
 
   // Called on a view for a LocalFrame with a RemoteFrame parent. This makes
-  // viewport intersection available that accounts for remote ancestor frames
-  // and their respective scroll positions, clips, etc.
-  void SetViewportIntersectionFromParent(const IntRect&);
+  // viewport intersection and occlusion/obscuration available that accounts for
+  // remote ancestor frames and their respective scroll positions, clips, etc.
+  void SetViewportIntersectionFromParent(const IntRect&, bool);
   IntRect RemoteViewportIntersection() { return remote_viewport_intersection_; }
+  bool MayBeOccludedOrObscuredByRemoteAncestor() const {
+    return occluded_or_obscured_by_ancestor_;
+  }
 
   // Replaces the initial empty document with a Document suitable for
   // |mime_type| and populated with the contents of |data|. Only intended for
@@ -467,6 +470,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   mutable mojom::blink::ReportingServiceProxyPtr reporting_service_;
 
   IntRect remote_viewport_intersection_;
+  bool occluded_or_obscured_by_ancestor_ = false;
   std::unique_ptr<FrameResourceCoordinator> frame_resource_coordinator_;
 
   // Used to keep track of which ComputedAccessibleNodes have already been

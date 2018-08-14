@@ -336,12 +336,14 @@ void CrossProcessFrameConnector::OnSynchronizeVisualProperties(
 
 void CrossProcessFrameConnector::OnUpdateViewportIntersection(
     const gfx::Rect& viewport_intersection,
-    const gfx::Rect& compositor_visible_rect) {
+    const gfx::Rect& compositor_visible_rect,
+    bool occluded_or_obscured) {
   viewport_intersection_rect_ = viewport_intersection;
   compositor_visible_rect_ = compositor_visible_rect;
+  occluded_or_obscured_ = occluded_or_obscured;
   if (view_)
-    view_->UpdateViewportIntersection(viewport_intersection,
-                                      compositor_visible_rect);
+    view_->UpdateViewportIntersection(
+        viewport_intersection, compositor_visible_rect, occluded_or_obscured);
 
   if (IsVisible()) {
     // MaybeLogCrash will check 1) if there was a crash or not and 2) if the

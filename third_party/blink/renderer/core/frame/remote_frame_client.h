@@ -51,7 +51,8 @@ class RemoteFrameClient : public FrameClient {
                                  const IntRect& screen_space_rect) = 0;
 
   virtual void UpdateRemoteViewportIntersection(
-      const IntRect& viewport_intersection) = 0;
+      const IntRect& viewport_intersection,
+      bool occluded_or_obscured) = 0;
 
   virtual void AdvanceFocus(WebFocusType, LocalFrame* source) = 0;
 

@@ -568,6 +568,7 @@ class UpdateViewportIntersectionMessageFilter
 
   gfx::Rect GetCompositingRect() const { return compositing_rect_; }
   gfx::Rect GetViewportIntersection() const { return viewport_intersection_; }
+  bool GetOccludedOrObscured() const { return occluded_or_obscured_; }
 
   void Wait() {
     DCHECK(!run_loop_);
@@ -588,7 +589,8 @@ class UpdateViewportIntersectionMessageFilter
   ~UpdateViewportIntersectionMessageFilter() override {}
 
   void OnUpdateViewportIntersection(const gfx::Rect& viewport_intersection,
-                                    const gfx::Rect& compositing_rect) {
+                                    const gfx::Rect& compositing_rect,
+                                    bool occluded_or_obscured) {
     // The message is going to be posted to UI thread after
     // OnUpdateViewportIntersection returns. This additional post on the IO
     // thread guarantees that by the time OnUpdateViewportIntersectionOnUI runs,
@@ -597,21 +599,26 @@ class UpdateViewportIntersectionMessageFilter
         content::BrowserThread::IO, FROM_HERE,
         base::BindOnce(&UpdateViewportIntersectionMessageFilter::
                            OnUpdateViewportIntersectionPostOnIO,
-                       this, viewport_intersection, compositing_rect));
+                       this, viewport_intersection, compositing_rect,
+                       occluded_or_obscured));
   }
   void OnUpdateViewportIntersectionPostOnIO(
       const gfx::Rect& viewport_intersection,
-      const gfx::Rect& compositing_rect) {
+      const gfx::Rect& compositing_rect,
+      bool occluded_or_obscured) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::BindOnce(&UpdateViewportIntersectionMessageFilter::
                            OnUpdateViewportIntersectionOnUI,
-                       this, viewport_intersection, compositing_rect));
+                       this, viewport_intersection, compositing_rect,
+                       occluded_or_obscured));
   }
   void OnUpdateViewportIntersectionOnUI(const gfx::Rect& viewport_intersection,
-                                        const gfx::Rect& compositing_rect) {
+                                        const gfx::Rect& compositing_rect,
+                                        bool occluded_or_obscured) {
     viewport_intersection_ = viewport_intersection;
     compositing_rect_ = compositing_rect;
+    occluded_or_obscured_ = occluded_or_obscured;
     msg_received_ = true;
     if (run_loop_)
       run_loop_->Quit();
@@ -620,6 +627,7 @@ class UpdateViewportIntersectionMessageFilter
   bool msg_received_;
   gfx::Rect compositing_rect_;
   gfx::Rect viewport_intersection_;
+  bool occluded_or_obscured_ = false;
   DISALLOW_COPY_AND_ASSIGN(UpdateViewportIntersectionMessageFilter);
 };
 

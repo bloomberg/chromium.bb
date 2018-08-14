@@ -88,6 +88,7 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   Member<RemoteFrame> remote_frame_;
   bool is_attached_;
   IntRect last_viewport_intersection_;
+  bool last_occluded_or_obscured_ = false;
   IntRect frame_rect_;
   bool self_visible_;
   bool parent_visible_;
