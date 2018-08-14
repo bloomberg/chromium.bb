@@ -544,7 +544,6 @@ group("gn_all") {
 
   if (is_mac) {
     deps += [
-      "//third_party/apple_sample_code",
       "//third_party/breakpad:crash_inspector",
       "//third_party/breakpad:dump_syms",
       "//third_party/molokocacao",

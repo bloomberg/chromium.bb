@@ -1,6 +1,5 @@
 include_rules = [
   "+chrome/browser/ui/views",
-  "+third_party/apple_sample_code",  # Apple code ImageAndTextCell.
   "+third_party/molokocacao",  # For NSBezierPath additions.
   "+third_party/ocmock",  # For unit tests.
 ]
