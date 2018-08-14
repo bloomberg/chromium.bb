@@ -544,8 +544,17 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
 }
 
 // Tests that image details are not reutrned for a point outside of the element.
+// TODO(crbug.com/796418): This test is flaky on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_FindImageElementAtPointOutsideElement \
+  FindImageElementAtPointOutsideElement
+#else
+#define MAYBE_FindImageElementAtPointOutsideElement \
+  FLAKY_FindImageElementAtPointOutsideElement
+#endif
+
 TEST_F(ContextMenuJsFindElementAtPointTest,
-       FindImageElementAtPointOutsideElement) {
+       MAYBE_FindImageElementAtPointOutsideElement) {
   NSString* image =
       @"<img id='foo' style='width:200;height:200;' src='file:///bogus'/>";
 
