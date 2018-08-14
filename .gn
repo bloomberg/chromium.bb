@@ -81,22 +81,35 @@ check_targets = [
   "//build/*",
   "//cc/*",
 
-  #"//chrome/*",  # Epic number of errors.
+  #"//chrome/android/*",  # 13 errors
   "//chrome/app/*",
   "//chrome/app_shim/*",
+  #"//chrome/browser/*",  # ~1300 errors
   "//chrome/browser/android/*",
   "//chrome/browser/vr/*",
   "//chrome/browser/chromeos/*",
   "//chrome/browser/extensions/*",
   "//chrome/browser/resource_coordinator/*",
   "//chrome/browser/ui/*",
+  "//chrome/build/*",
+  #"//chrome/child/*",  # 1 error on Windows
   "//chrome/chrome_cleaner/*",
+  #"//chrome/chrome_watcher/*",  # 3 errors on Windows
   "//chrome/common/*",
+  #"//chrome/elevation_service/*",  # 1 error on Windows
+  #"//chrome/gpu/*",  # 7 errors
   "//chrome/installer/*",
-  "//chrome/profiling",
-  "//chrome/third_party/mozilla_security_manager/*",
+  #"//chrome/install_static/*",  # 8 errors on Windows
+  "//chrome/nacl/*",
+  #"//chrome/notification_helper/*",  # 4 errors on Windows
+  #"//chrome/renderer/*",  # ~30 errors
+  #"//chrome/service/*",  # 2 errors
+  #"//chrome/services/*",  # ~30 errors
+  #"//chrome/test/*",  # ~3000 errors
+  "//chrome/third_party/*",
   "//chrome/tools/*",
   "//chrome/utility/*",
+
   "//chromecast/*",
   "//chromeos/*",
   "//chrome_elf/*",
