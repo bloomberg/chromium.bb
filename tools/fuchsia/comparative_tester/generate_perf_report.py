@@ -162,18 +162,39 @@ def CompareTargets(linux: TargetStats, fuchsia: TargetStats) -> Dict[str, Any]:
   lines up the values, compares them to each other, and writes them into a
   dictionary that can be JSONified.
   """
-  assert linux.name == fuchsia.name
-  paired_tests = ZipListsByPredicate(linux.tests, fuchsia.tests,
+  if linux and fuchsia:
+    assert linux.name == fuchsia.name
+    paired_tests = ZipListsByPredicate(linux.tests, fuchsia.tests,
                                      lambda test: test.name)
-
-  paired_tests = MapDictValues(paired_tests, CompareTests)
-  return {"name": linux.name, "tests": paired_tests}
+    paired_tests = MapDictValues(paired_tests, CompareTests)
+    return {"name": linux.name, "tests": paired_tests}
+  else:
+    # One of them has to be non-null, by the way ZipListsByPredicate functions
+    assert linux or fuchsia
+    if linux:
+      logging.error("Fuchsia was missing test target {}".format(linux.name))
+    else:
+      logging.error("Linux was missing test target {}".format(fuchsia.name))
+    return None
 
 
 def CompareTests(linux: TestStats, fuchsia: TestStats) -> Dict[str, Any]:
-  assert linux != None or fuchsia != None
-  if linux != None and fuchsia != None:
-    assert linux.name == fuchsia.name
+  if not linux and not fuchsia:
+    logging.error("Two null TestStats objects were passed to CompareTests.")
+    return {}
+
+  if not linux or not fuchsia:
+    if linux:
+      name = linux.name
+      failing_os = "Fuchsia"
+    else:
+      name = fuchsia.name
+      failing_os = "Linux"
+    logging.error("%s failed to produce output for the test %s",
+                  failing_os, name)
+    return {}
+
+  assert linux.name == fuchsia.name
   paired_lines = ZipListsByPredicate(linux.lines, fuchsia.lines,
                                      lambda line: line.desc)
   paired_lines = MapDictValues(paired_lines, CompareLines)
@@ -192,36 +213,36 @@ def CompareTests(linux: TestStats, fuchsia: TestStats) -> Dict[str, Any]:
     result["fuchsia_avg"] = fuchsia.time_avg
     result["fuchsia_dev"] = fuchsia.time_dev
     result["fuchsia_cv"] = fuchsia.cv
+  return result
 
 
 def CompareLines(linux: LineStats, fuchsia: LineStats) -> Dict[str, Any]:
-  """CompareLines wraps two LineStats objects up as a JSON-dumpable dict, with
-  missing values written as -1 (which specifically doesn't make sense for time
-  elapsed measurements). It also logs a warning every time a line is given which
-  can't be matched up. If both lines passed are None, or their units or
-  descriptions are not the same(which should never happen) this function fails.
+  """CompareLines wraps two LineStats objects up as a JSON-dumpable dict.
+  It also logs a warning every time a line is given which can't be matched up.
+  If both lines passed are None, or their units or descriptions are not the same
+  (which should never happen) this function fails.
   """
-  assert linux != None or fuchsia != None
-  result = {}  # type: Dict[str, Any]
   if linux != None and fuchsia != None:
     assert linux.desc == fuchsia.desc
     assert linux.unit == fuchsia.unit
+  assert linux != None or fuchsia != None
 
-  if linux:
-    result["desc"] = linux.desc
-    result["unit"] = linux.unit
-    result["linux_avg"] = linux.time_avg
-    result["linux_dev"] = linux.time_dev
-    result["linux_cv"] = linux.cv
+  # ref_test is because we don't actually care which test we get the values
+  # from, as long as we get values for the name and description
+  ref_test = linux if linux else fuchsia
+  result = {"desc": ref_test.desc, "unit": ref_test.unit}
 
   if fuchsia == None:
     logging.warning("Fuchsia is missing test line {}".format(linux.desc))
   else:
-    result["desc"] = fuchsia.desc
-    result["unit"] = fuchsia.unit
     result["fuchsia_avg"] = fuchsia.time_avg
     result["fuchsia_dev"] = fuchsia.time_dev
     result["fuchsia_cv"] = fuchsia.cv
+
+  if linux:
+    result["linux_avg"] = linux.time_avg
+    result["linux_dev"] = linux.time_dev
+    result["linux_cv"] = linux.cv
 
   return result
 
@@ -280,9 +301,10 @@ def main():
                                        lambda target: target.name)
   for name, targets in paired_targets.items():
     comparison_dict = CompareTargets(*targets)
-    with open("{}/{}.json".format(target_spec.results_dir, name),
-              "w") as outfile:
-      json.dump(comparison_dict, outfile, indent=2)
+    if comparison_dict:
+      with open("{}/{}.json".format(target_spec.results_dir, name),
+                "w") as outfile:
+        json.dump(comparison_dict, outfile, indent=2)
 
 
 if __name__ == "__main__":
