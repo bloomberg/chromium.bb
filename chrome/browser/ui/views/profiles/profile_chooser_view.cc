@@ -1359,7 +1359,7 @@ views::View* ProfileChooserView::CreateSupervisedUserDisclaimerView() {
                                            kMenuEdgeMargin, horizontal_margin));
 
   views::Label* disclaimer = new views::Label(
-      avatar_menu_->GetSupervisedUserInformation(), CONTEXT_DEPRECATED_SMALL);
+      avatar_menu_->GetSupervisedUserInformation(), CONTEXT_BODY_TEXT_SMALL);
   disclaimer->SetMultiLine(true);
   disclaimer->SetAllowCharacterBreak(true);
   disclaimer->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -1553,12 +1553,12 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
     primary_account_removal_label->AddStyleRange(
         gfx::Range(offsets[1], offsets[1] + settings_text.size()),
         views::StyledLabel::RangeStyleInfo::CreateForLink());
-    primary_account_removal_label->SetTextContext(CONTEXT_DEPRECATED_SMALL);
+    primary_account_removal_label->SetTextContext(CONTEXT_BODY_TEXT_SMALL);
     layout->AddView(primary_account_removal_label);
   } else {
     views::Label* content_label = new views::Label(
         l10n_util::GetStringUTF16(IDS_PROFILES_ACCOUNT_REMOVAL_TEXT),
-        CONTEXT_DEPRECATED_SMALL);
+        CONTEXT_BODY_TEXT_SMALL);
     content_label->SetMultiLine(true);
     content_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->AddView(content_label);

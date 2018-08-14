@@ -47,18 +47,6 @@
 
 namespace {
 
-// If we don't clamp the maximum width, then very long URLs and titles can make
-// the bubble arbitrarily wide.
-const int kMaxContentsWidth = 500;
-
-// The new default width for the content settings bubble. The review process to
-// the width on per-bubble basis is tracked with https://crbug.com/649650.
-const int kMaxDefaultContentsWidth = 320;
-
-// When we have multiline labels, we should set a minimum width lest we get very
-// narrow bubbles with lots of line-wrapping.
-const int kMinMultiLineContentsWidth = 250;
-
 // Display a maximum of 4 visible items in a list before scrolling.
 const int kMaxVisibleListItems = 4;
 
@@ -402,33 +390,10 @@ void ContentSettingBubbleContents::WindowClosing() {
 }
 
 gfx::Size ContentSettingBubbleContents::CalculatePreferredSize() const {
-  gfx::Size preferred_size(views::View::CalculatePreferredSize());
-  int preferred_width =
-      (!content_setting_bubble_model_->bubble_content().domain_lists.empty() &&
-       (kMinMultiLineContentsWidth > preferred_size.width()))
-          ? kMinMultiLineContentsWidth
-          : preferred_size.width();
-  if (content_setting_bubble_model_->AsSubresourceFilterBubbleModel()) {
-    preferred_size.set_width(std::min(preferred_width,
-                                      kMaxDefaultContentsWidth));
-  } else {
-    preferred_size.set_width(std::min(preferred_width, kMaxContentsWidth));
-  }
-
-  // These bubbles should all be the "small" dialog width, but only when in
-  // Harmony mode.
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  if (provider->IsHarmonyMode()) {
-    // Subtract out this dialog's margins. The margins are imposed by
-    // DialogClientView around this view, so this view's width plus the width of
-    // these margins must equal the desired width, which is
-    // GetSnappedDialogWidth(0).
-    preferred_size.set_width(provider->GetSnappedDialogWidth(0) -
-                             margins().width());
-    preferred_size.set_height(GetHeightForWidth(preferred_size.width()));
-  }
-
-  return preferred_size;
+  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+                        DISTANCE_BUBBLE_PREFERRED_WIDTH) -
+                    margins().width();
+  return gfx::Size(width, GetHeightForWidth(width));
 }
 
 void ContentSettingBubbleContents::OnListItemAdded(
@@ -466,7 +431,7 @@ base::string16 ContentSettingBubbleContents::GetWindowTitle() const {
 }
 
 bool ContentSettingBubbleContents::ShouldShowCloseButton() const {
-  return ChromeLayoutProvider::Get()->IsHarmonyMode();
+  return true;
 }
 
 void ContentSettingBubbleContents::Init() {

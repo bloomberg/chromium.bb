@@ -59,13 +59,12 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
                         views::GridLayout::kFixedSize, views::GridLayout::FIXED,
                         textfield_width, 0);
 
-  const int icon_size = layout_provider->IsHarmonyMode()
-                            ? extension_misc::EXTENSION_ICON_SMALL
-                            : extension_misc::EXTENSION_ICON_MEDIUM;
   views::ImageView* icon_image_view = new views::ImageView();
-  gfx::Size image_size(icon_size, icon_size);
+  gfx::Size image_size(extension_misc::EXTENSION_ICON_SMALL,
+                       extension_misc::EXTENSION_ICON_SMALL);
   gfx::ImageSkia image(
-      std::make_unique<WebAppInfoImageSource>(icon_size, web_app_info_.icons),
+      std::make_unique<WebAppInfoImageSource>(
+          extension_misc::EXTENSION_ICON_SMALL, web_app_info_.icons),
       image_size);
   icon_image_view->SetImageSize(image_size);
   icon_image_view->SetImage(image);

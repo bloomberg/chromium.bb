@@ -131,10 +131,6 @@ bool HarmonyLayoutProvider::ShouldShowWindowIcon() const {
   return false;
 }
 
-bool HarmonyLayoutProvider::IsHarmonyMode() const {
-  return true;
-}
-
 int HarmonyLayoutProvider::GetSnappedDialogWidth(int min_width) const {
   for (int snap_point : {kSmallSnapPoint, kMediumSnapPoint, kLargeSnapPoint}) {
     if (min_width <= snap_point)

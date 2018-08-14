@@ -128,9 +128,6 @@ const gfx::FontList& LegacyTypographyProvider::GetFont(int context,
     case CONTEXT_BODY_TEXT_SMALL:
       size_delta = ui::kLabelFontSizeDelta;
       break;
-    case CONTEXT_DEPRECATED_SMALL:
-      size_delta = ui::ResourceBundle::kSmallFontDelta;
-      break;
   }
 
   switch (style) {

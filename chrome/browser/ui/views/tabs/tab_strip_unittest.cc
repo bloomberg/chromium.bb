@@ -431,7 +431,7 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
     return;
   }
 
-  tab_strip_->SetBounds(0, 0, 320, 20);
+  tab_strip_->SetBounds(0, 0, 360, 20);
   controller_->AddTab(0, false);
   controller_->AddTab(1, true);
   controller_->AddTab(2, false);
@@ -507,7 +507,7 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenNotStacked) {
 
   // Set the tab strip width to be wide enough for three tabs to show all
   // three icons, but not enough for five tabs to show all three icons.
-  tab_strip_->SetBounds(0, 0, 320, 20);
+  tab_strip_->SetBounds(0, 0, 360, 20);
   controller_->AddTab(0, false);
   controller_->AddTab(1, true);
   controller_->AddTab(2, false);

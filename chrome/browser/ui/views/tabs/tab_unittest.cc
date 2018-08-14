@@ -683,11 +683,12 @@ TEST_F(TabTest, ExtraAlertPaddingNotShownOnSmallActiveTab) {
   tab.SetData(data);
 
   tab.SetBounds(0, 0, 200, 50);
+  EXPECT_TRUE(GetTabIcon(tab)->visible());
   const views::View* close = GetCloseButton(tab);
   const views::View* alert = GetAlertIndicator(tab);
   const int original_spacing = close->x() - alert->bounds().right();
 
-  tab.SetBounds(0, 0, 60, 50);
+  tab.SetBounds(0, 0, 70, 50);
   EXPECT_FALSE(GetTabIcon(tab)->visible());
   EXPECT_TRUE(close->visible());
   EXPECT_TRUE(alert->visible());

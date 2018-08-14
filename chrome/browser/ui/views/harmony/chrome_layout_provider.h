@@ -91,14 +91,6 @@ class ChromeLayoutProvider : public views::LayoutProvider {
   // Returns whether to show the icon next to the title text on a dialog.
   virtual bool ShouldShowWindowIcon() const;
 
-  // DEPRECATED.  Returns whether Harmony mode is enabled.
-  //
-  // Instead of using this, create a generic solution that works for all UI
-  // types, e.g. by adding a new LayoutDistance value that means what you need.
-  //
-  // TODO(pkasting): Fix callers and remove this.
-  virtual bool IsHarmonyMode() const;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeLayoutProvider);
 };

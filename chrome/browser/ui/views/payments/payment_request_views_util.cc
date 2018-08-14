@@ -139,7 +139,7 @@ std::unique_ptr<views::View> GetShippingAddressLabel(
 std::unique_ptr<views::Label> GetLabelForMissingInformation(
     const base::string16& missing_info) {
   std::unique_ptr<views::Label> label =
-      std::make_unique<views::Label>(missing_info, CONTEXT_DEPRECATED_SMALL);
+      std::make_unique<views::Label>(missing_info, CONTEXT_BODY_TEXT_SMALL);
   label->set_id(static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
   // Missing information typically has a nice shade of blue.
   label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
