@@ -27,7 +27,6 @@
 namespace base {
 
 using Frame = StackSamplingProfiler::Frame;
-using InternalFrame = StackSamplingProfiler::InternalFrame;
 using ProfileBuilder = StackSamplingProfiler::ProfileBuilder;
 
 // Stack recording functions --------------------------------------------------
@@ -358,15 +357,13 @@ class NativeStackSamplerWin : public NativeStackSampler {
 
   // StackSamplingProfiler::NativeStackSampler:
   void ProfileRecordingStarting() override;
-  std::vector<InternalFrame> RecordStackFrames(
+  std::vector<Frame> RecordStackFrames(
       StackBuffer* stack_buffer,
       ProfileBuilder* profile_builder) override;
 
  private:
-  // Creates a set of internal frames with the information represented by
-  // |stack|.
-  std::vector<InternalFrame> CreateInternalFrames(
-      const std::vector<RecordedFrame>& stack);
+  // Creates a set of frames with the information represented by |stack|.
+  std::vector<Frame> CreateFrames(const std::vector<RecordedFrame>& stack);
 
   win::ScopedHandle thread_handle_;
 
@@ -375,7 +372,7 @@ class NativeStackSamplerWin : public NativeStackSampler {
   // The stack base address corresponding to |thread_handle_|.
   const void* const thread_stack_base_address_;
 
-  // The internal module objects, indexed by the module handle.
+  // The module objects, indexed by the module handle.
   std::map<HMODULE, ModuleCache::Module> module_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeStackSamplerWin);
@@ -395,7 +392,7 @@ void NativeStackSamplerWin::ProfileRecordingStarting() {
   module_cache_.clear();
 }
 
-std::vector<InternalFrame> NativeStackSamplerWin::RecordStackFrames(
+std::vector<Frame> NativeStackSamplerWin::RecordStackFrames(
     StackBuffer* stack_buffer,
     ProfileBuilder* profile_builder) {
   DCHECK(stack_buffer);
@@ -405,38 +402,38 @@ std::vector<InternalFrame> NativeStackSamplerWin::RecordStackFrames(
                               stack_buffer->buffer(), stack_buffer->size(),
                               &stack, profile_builder, test_delegate_);
 
-  return CreateInternalFrames(stack);
+  return CreateFrames(stack);
 }
 
-std::vector<InternalFrame> NativeStackSamplerWin::CreateInternalFrames(
+std::vector<Frame> NativeStackSamplerWin::CreateFrames(
     const std::vector<RecordedFrame>& stack) {
-  std::vector<InternalFrame> internal_frames;
-  internal_frames.reserve(stack.size());
+  std::vector<Frame> frames;
+  frames.reserve(stack.size());
 
   for (const auto& frame : stack) {
     auto frame_ip = reinterpret_cast<uintptr_t>(frame.instruction_pointer);
 
     HMODULE module_handle = frame.module.Get();
     if (!module_handle) {
-      internal_frames.emplace_back(frame_ip, ModuleCache::Module());
+      frames.emplace_back(frame_ip, ModuleCache::Module());
       continue;
     }
 
     auto loc = module_cache_.find(module_handle);
     if (loc != module_cache_.end()) {
-      internal_frames.emplace_back(frame_ip, loc->second);
+      frames.emplace_back(frame_ip, loc->second);
       continue;
     }
 
-    ModuleCache::Module internal_module =
+    ModuleCache::Module module =
         ModuleCache::CreateModuleForHandle(module_handle);
-    if (internal_module.is_valid)
-      module_cache_.insert(std::make_pair(module_handle, internal_module));
+    if (module.is_valid)
+      module_cache_.insert(std::make_pair(module_handle, module));
 
-    internal_frames.emplace_back(frame_ip, std::move(internal_module));
+    frames.emplace_back(frame_ip, std::move(module));
   }
 
-  return internal_frames;
+  return frames;
 }
 
 // NativeStackSampler ---------------------------------------------------------

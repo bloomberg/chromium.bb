@@ -231,12 +231,10 @@ ThreadProfiler::GetReceiverCallback() {
   // like
   //
   //   void ReceiveCompletedProfile(
-  //       const metrics::CallStackProfileParams& profile_params,
   //       base::TimeTicks profile_start_time,
-  //       base::StackSamplingProfiler::CallStackProfile profile);
+  //       metrics::SampledProfile profile);
   //
-  // and this function should bind the passed profile_params and
-  // base::TimeTicks::Now() to those functions.
+  // and this function should bind base::TimeTicks::Now() to those functions.
   base::TimeTicks profile_start_time = base::TimeTicks::Now();
   if (GetProcess() == CallStackProfileParams::BROWSER_PROCESS) {
     return metrics::CallStackProfileMetricsProvider::

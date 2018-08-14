@@ -13,9 +13,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
-using InternalFrame = base::StackSamplingProfiler::InternalFrame;
+using Frame = base::StackSamplingProfiler::Frame;
 using Module = base::ModuleCache::Module;
-using CallStackProfile = base::StackSamplingProfiler::CallStackProfile;
 
 namespace metrics {
 
@@ -41,12 +40,13 @@ TEST(CallStackProfileBuilderTest, SetProcessMilestone) {
       base::BindRepeating(&SaveProfile, base::Unretained(&proto)),
       kProfileParams);
 
+  // The default milestone is 0.
   profile_builder->RecordAnnotations();
-  profile_builder->OnSampleCompleted(std::vector<InternalFrame>());
+  profile_builder->OnSampleCompleted(std::vector<Frame>());
 
   CallStackProfileBuilder::SetProcessMilestone(1);
   profile_builder->RecordAnnotations();
-  profile_builder->OnSampleCompleted(std::vector<InternalFrame>());
+  profile_builder->OnSampleCompleted(std::vector<Frame>());
 
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
 
@@ -84,18 +84,18 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
 
   const uintptr_t module_base_address1 = 0x1000;
   Module module1 = {module_base_address1, "1", module_path};
-  InternalFrame frame1 = {module_base_address1 + 0x10, module1};
+  Frame frame1 = {module_base_address1 + 0x10, module1};
 
   const uintptr_t module_base_address2 = 0x1100;
   Module module2 = {module_base_address2, "2", module_path};
-  InternalFrame frame2 = {module_base_address2 + 0x10, module2};
+  Frame frame2 = {module_base_address2 + 0x10, module2};
 
   const uintptr_t module_base_address3 = 0x1010;
   Module module3 = {module_base_address3, "3", module_path};
-  InternalFrame frame3 = {module_base_address3 + 0x10, module3};
+  Frame frame3 = {module_base_address3 + 0x10, module3};
 
-  std::vector<InternalFrame> frames1 = {frame1, frame2};
-  std::vector<InternalFrame> frames2 = {frame3};
+  std::vector<Frame> frames1 = {frame1, frame2};
+  std::vector<Frame> frames2 = {frame3};
 
   profile_builder->OnSampleCompleted(frames1);
   profile_builder->OnSampleCompleted(frames2);
@@ -142,6 +142,100 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
   EXPECT_EQ(100, profile.sampling_period_ms());
 }
 
+TEST(CallStackProfileBuilderTest, SamplesDeduped) {
+  SampledProfile proto;
+
+  // Set up a callback to record the CallStackProfile to local variable |proto|.
+  auto profile_builder = std::make_unique<CallStackProfileBuilder>(
+      base::BindRepeating(&SaveProfile, base::Unretained(&proto)),
+      kProfileParams);
+
+#if defined(OS_WIN)
+  base::FilePath module_path(L"c:\\some\\path\\to\\chrome.exe");
+#else
+  base::FilePath module_path("/some/path/to/chrome");
+#endif
+
+  const uintptr_t module_base_address1 = 0x1000;
+  Module module1 = {module_base_address1, "1", module_path};
+  Frame frame1 = {module_base_address1 + 0x10, module1};
+
+  const uintptr_t module_base_address2 = 0x1100;
+  Module module2 = {module_base_address2, "2", module_path};
+  Frame frame2 = {module_base_address2 + 0x10, module2};
+
+  std::vector<Frame> frames = {frame1, frame2};
+
+  // Two samples are completed with the same frames. They also have the same
+  // process milestone therefore they are deduped to one.
+  CallStackProfileBuilder::SetProcessMilestone(0);
+
+  profile_builder->RecordAnnotations();
+  profile_builder->OnSampleCompleted(frames);
+
+  profile_builder->RecordAnnotations();
+  profile_builder->OnSampleCompleted(frames);
+
+  profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
+
+  ASSERT_TRUE(proto.has_process());
+  ASSERT_EQ(BROWSER_PROCESS, proto.process());
+  ASSERT_TRUE(proto.has_thread());
+  ASSERT_EQ(MAIN_THREAD, proto.thread());
+  ASSERT_TRUE(proto.has_trigger_event());
+  ASSERT_EQ(SampledProfile::PROCESS_STARTUP, proto.trigger_event());
+
+  ASSERT_TRUE(proto.has_call_stack_profile());
+  ASSERT_EQ(1, proto.call_stack_profile().sample_size());
+}
+
+TEST(CallStackProfileBuilderTest, SamplesNotDeduped) {
+  SampledProfile proto;
+
+  // Set up a callback to record the CallStackProfile to local variable |proto|.
+  auto profile_builder = std::make_unique<CallStackProfileBuilder>(
+      base::BindRepeating(&SaveProfile, base::Unretained(&proto)),
+      kProfileParams);
+
+#if defined(OS_WIN)
+  base::FilePath module_path(L"c:\\some\\path\\to\\chrome.exe");
+#else
+  base::FilePath module_path("/some/path/to/chrome");
+#endif
+
+  const uintptr_t module_base_address1 = 0x1000;
+  Module module1 = {module_base_address1, "1", module_path};
+  Frame frame1 = {module_base_address1 + 0x10, module1};
+
+  const uintptr_t module_base_address2 = 0x1100;
+  Module module2 = {module_base_address2, "2", module_path};
+  Frame frame2 = {module_base_address2 + 0x10, module2};
+
+  std::vector<Frame> frames = {frame1, frame2};
+
+  // Two samples are completed with the same frames but different process
+  // milestones. They are considered as different samples threfore not deduped.
+  CallStackProfileBuilder::SetProcessMilestone(2);
+  profile_builder->RecordAnnotations();
+  profile_builder->OnSampleCompleted(frames);
+
+  CallStackProfileBuilder::SetProcessMilestone(4);
+  profile_builder->RecordAnnotations();
+  profile_builder->OnSampleCompleted(frames);
+
+  profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
+
+  ASSERT_TRUE(proto.has_process());
+  ASSERT_EQ(BROWSER_PROCESS, proto.process());
+  ASSERT_TRUE(proto.has_thread());
+  ASSERT_EQ(MAIN_THREAD, proto.thread());
+  ASSERT_TRUE(proto.has_trigger_event());
+  ASSERT_EQ(SampledProfile::PROCESS_STARTUP, proto.trigger_event());
+
+  ASSERT_TRUE(proto.has_call_stack_profile());
+  ASSERT_EQ(2, proto.call_stack_profile().sample_size());
+}
+
 TEST(CallStackProfileBuilderTest, Modules) {
   SampledProfile proto;
 
@@ -152,7 +246,7 @@ TEST(CallStackProfileBuilderTest, Modules) {
 
   const uintptr_t module_base_address1 = 0x1000;
   Module module1;  // module1 has no information hence invalid.
-  InternalFrame frame1 = {module_base_address1 + 0x10, module1};
+  Frame frame1 = {module_base_address1 + 0x10, module1};
 
   const uintptr_t module_base_address2 = 0x1100;
 #if defined(OS_WIN)
@@ -163,9 +257,9 @@ TEST(CallStackProfileBuilderTest, Modules) {
   base::FilePath module_path("/some/path/to/chrome");
 #endif
   Module module2 = {module_base_address2, "2", module_path};
-  InternalFrame frame2 = {module_base_address2 + 0x10, module2};
+  Frame frame2 = {module_base_address2 + 0x10, module2};
 
-  std::vector<InternalFrame> frames = {frame1, frame2};
+  std::vector<Frame> frames = {frame1, frame2};
 
   profile_builder->OnSampleCompleted(frames);
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
@@ -177,8 +271,12 @@ TEST(CallStackProfileBuilderTest, Modules) {
   ASSERT_EQ(2, profile.sample(0).entry_size());
 
   ASSERT_FALSE(profile.sample(0).entry(0).has_module_id_index());
+  ASSERT_FALSE(profile.sample(0).entry(0).has_address());
+
   ASSERT_TRUE(profile.sample(0).entry(1).has_module_id_index());
   EXPECT_EQ(0, profile.sample(0).entry(1).module_id_index());
+  ASSERT_TRUE(profile.sample(0).entry(1).has_address());
+  EXPECT_EQ(0x10ULL, profile.sample(0).entry(1).address());
 
   ASSERT_EQ(1, profile.module_id().size());
   ASSERT_TRUE(profile.module_id(0).has_build_id());
@@ -206,12 +304,12 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
 #endif
 
   Module module1 = {module_base_address, "1", module_path};
-  InternalFrame frame1 = {module_base_address + 0x10, module1};
+  Frame frame1 = {module_base_address + 0x10, module1};
 
   Module module2 = {module_base_address, "1", module_path};
-  InternalFrame frame2 = {module_base_address + 0x20, module2};
+  Frame frame2 = {module_base_address + 0x20, module2};
 
-  std::vector<InternalFrame> frames = {frame1, frame2};
+  std::vector<Frame> frames = {frame1, frame2};
 
   profile_builder->OnSampleCompleted(frames);
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
@@ -226,8 +324,13 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
   // the same module and therefore deduped.
   ASSERT_TRUE(profile.sample(0).entry(0).has_module_id_index());
   EXPECT_EQ(0, profile.sample(0).entry(0).module_id_index());
+  ASSERT_TRUE(profile.sample(0).entry(0).has_address());
+  EXPECT_EQ(0x10ULL, profile.sample(0).entry(0).address());
+
   ASSERT_TRUE(profile.sample(0).entry(1).has_module_id_index());
   EXPECT_EQ(0, profile.sample(0).entry(1).module_id_index());
+  ASSERT_TRUE(profile.sample(0).entry(1).has_address());
+  EXPECT_EQ(0x20ULL, profile.sample(0).entry(1).address());
 
   ASSERT_EQ(1, profile.module_id().size());
   ASSERT_TRUE(profile.module_id(0).has_build_id());
