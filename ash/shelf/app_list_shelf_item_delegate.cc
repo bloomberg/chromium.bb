@@ -51,7 +51,7 @@ void AppListShelfItemDelegate::ItemSelected(std::unique_ptr<ui::Event> event,
       Shell::Get()->GetPrimaryRootWindow()->GetChildById(
           kShellWindowId_AppListTabletModeContainer);
   aura::Window::Windows windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
   for (auto* window : windows) {
     if (!app_list_container->Contains(window) &&
         !wm::GetWindowState(window)->IsMinimized()) {

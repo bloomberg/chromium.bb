@@ -1799,6 +1799,7 @@ test("ash_unittests") {
     "screen_util_unittest.cc",
     "session/session_controller_unittest.cc",
     "shelf/app_list_button_unittest.cc",
+    "shelf/app_list_shelf_item_delegate_unittest.cc",
     "shelf/back_button_unittest.cc",
     "shelf/login_shelf_view_unittest.cc",
     "shelf/shelf_application_menu_model_unittest.cc",
