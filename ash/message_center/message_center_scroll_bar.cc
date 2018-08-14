@@ -68,4 +68,11 @@ void MessageCenterScrollBar::OnGestureEvent(ui::GestureEvent* event) {
     observer_->OnMessageCenterScrolled();
 }
 
+bool MessageCenterScrollBar::OnScroll(float dx, float dy) {
+  bool result = views::OverlayScrollBar::OnScroll(dx, dy);
+  if (observer_)
+    observer_->OnMessageCenterScrolled();
+  return result;
+}
+
 }  // namespace ash
