@@ -65,6 +65,8 @@ class GetSettledFetchesTask : public DatabaseTask {
 
   void FinishWithError(blink::mojom::BackgroundFetchError error) override;
 
+  std::string HistogramName() const override;
+
   BackgroundFetchRegistrationId registration_id_;
   std::unique_ptr<BackgroundFetchRequestMatchParams> match_params_;
   SettledFetchesCallback settled_fetches_callback_;

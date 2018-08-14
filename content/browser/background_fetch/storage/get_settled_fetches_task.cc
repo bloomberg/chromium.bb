@@ -50,8 +50,7 @@ void GetSettledFetchesTask::DidOpenCache(
     CacheStorageCacheHandle handle,
     blink::mojom::CacheStorageError error) {
   if (error != blink::mojom::CacheStorageError::kSuccess) {
-    // TODO(crbug.com/780025): Log failures to UMA.
-    error_ = blink::mojom::BackgroundFetchError::STORAGE_ERROR;
+    SetStorageError(BackgroundFetchStorageError::kCacheStorageError);
   } else {
     DCHECK(handle.value());
     handle_ = std::move(handle);
@@ -66,9 +65,8 @@ void GetSettledFetchesTask::DidGetCompletedRequests(
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kOk:
       break;
-    // TODO(crbug.com/780025): Log failures to UMA.
     case DatabaseStatus::kFailed:
-      error_ = blink::mojom::BackgroundFetchError::STORAGE_ERROR;
+      SetStorageError(BackgroundFetchStorageError::kServiceWorkerStorageError);
       break;
     case DatabaseStatus::kNotFound:
       background_fetch_succeeded_ = false;
@@ -82,7 +80,7 @@ void GetSettledFetchesTask::DidGetCompletedRequests(
     if (!completed_requests_.back().ParseFromString(
             serialized_completed_request)) {
       // Service worker database has been corrupted. Abandon fetches.
-      error_ = blink::mojom::BackgroundFetchError::STORAGE_ERROR;
+      SetStorageError(BackgroundFetchStorageError::kServiceWorkerStorageError);
       background_fetch_succeeded_ = false;
       AbandonFetches(registration_id_.service_worker_registration_id());
       break;
@@ -94,6 +92,11 @@ void GetSettledFetchesTask::DidGetCompletedRequests(
 }
 
 void GetSettledFetchesTask::GetResponses() {
+  // Handle potential errors.
+  if (HasStorageError()) {
+    FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+    return;
+  }
   if (error_ != blink::mojom::BackgroundFetchError::NONE) {
     FinishWithError(error_);
     return;
@@ -166,8 +169,19 @@ void GetSettledFetchesTask::DidMatchRequest(
     base::OnceClosure callback,
     blink::mojom::CacheStorageError error,
     blink::mojom::FetchAPIResponsePtr cache_response) {
-  if (error != blink::mojom::CacheStorageError::kSuccess) {
-    DCHECK(settled_fetch);
+  DCHECK(settled_fetch);
+
+  // Handle error cases.
+  if (error == blink::mojom::CacheStorageError::kErrorNotFound) {
+    // If we are matching everything then we expect to find all responses
+    // in the cache.
+    if (!match_params_->FilterByRequest())
+      SetStorageError(BackgroundFetchStorageError::kCacheStorageError);
+  } else if (error != blink::mojom::CacheStorageError::kSuccess) {
+    SetStorageError(BackgroundFetchStorageError::kCacheStorageError);
+  }
+
+  if (!cache_response) {
     FillUncachedResponse(settled_fetch, std::move(callback));
     return;
   }
@@ -192,11 +206,18 @@ void GetSettledFetchesTask::FillUncachedResponse(
 
 void GetSettledFetchesTask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
+  if (HasStorageError())
+    error = blink::mojom::BackgroundFetchError::STORAGE_ERROR;
+  ReportStorageError();
   std::move(settled_fetches_callback_)
       .Run(error, background_fetch_succeeded_, std::move(settled_fetches_),
            {} /* blob_data_handles */);
   Finished();  // Destroys |this|.
 }
+
+std::string GetSettledFetchesTask::HistogramName() const {
+  return "GetSettledFetchesTask";
+};
 
 }  // namespace background_fetch
 

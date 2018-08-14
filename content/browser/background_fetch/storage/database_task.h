@@ -103,6 +103,7 @@ class DatabaseTask : public DatabaseTaskHost {
   void SetStorageError(BackgroundFetchStorageError error);
   void SetStorageErrorAndFinish(BackgroundFetchStorageError error);
   void ReportStorageError();
+  bool HasStorageError();
 
  private:
   // Each task must override this function and perform the following steps:

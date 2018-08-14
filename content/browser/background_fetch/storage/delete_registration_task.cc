@@ -57,12 +57,9 @@ DeleteRegistrationTask::~DeleteRegistrationTask() = default;
 
 void DeleteRegistrationTask::Start() {
   base::RepeatingClosure barrier_closure = base::BarrierClosure(
-      2u, base::BindOnce(
-              [](base::WeakPtr<DeleteRegistrationTask> task) {
-                if (task)
-                  task->FinishWithError(task->error_);
-              },
-              weak_factory_.GetWeakPtr()));
+      2u, base::BindOnce(&DeleteRegistrationTask::FinishWithError,
+                         weak_factory_.GetWeakPtr(),
+                         blink::mojom::BackgroundFetchError::NONE));
 
 #if DCHECK_IS_ON()
   // Get the registration |developer_id| to check it was deactivated.
@@ -97,7 +94,7 @@ void DeleteRegistrationTask::DidGetRegistration(
           base::BindOnce(&DCheckRegistrationNotActive, unique_id_));
     } else {
       // Service worker database has been corrupted. Abandon all fetches.
-      error_ = blink::mojom::BackgroundFetchError::STORAGE_ERROR;
+      SetStorageError(BackgroundFetchStorageError::kServiceWorkerStorageError);
       AbandonFetches(service_worker_registration_id_);
       std::move(done_closure).Run();
     }
@@ -125,7 +122,7 @@ void DeleteRegistrationTask::DidDeleteRegistration(
     case DatabaseStatus::kNotFound:
       break;
     case DatabaseStatus::kFailed:
-      error_ = blink::mojom::BackgroundFetchError::STORAGE_ERROR;
+      SetStorageError(BackgroundFetchStorageError::kServiceWorkerStorageError);
       break;
   }
   std::move(done_closure).Run();
@@ -136,15 +133,22 @@ void DeleteRegistrationTask::DidDeleteCache(
     blink::mojom::CacheStorageError error) {
   if (error != blink::mojom::CacheStorageError::kSuccess &&
       error != blink::mojom::CacheStorageError::kErrorNotFound) {
-    error_ = blink::mojom::BackgroundFetchError::STORAGE_ERROR;
+    SetStorageError(BackgroundFetchStorageError::kCacheStorageError);
   }
   std::move(done_closure).Run();
 }
 
 void DeleteRegistrationTask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
+  if (HasStorageError())
+    error = blink::mojom::BackgroundFetchError::STORAGE_ERROR;
+  ReportStorageError();
   std::move(callback_).Run(error);
   Finished();  // Destroys |this|.
+}
+
+std::string DeleteRegistrationTask::HistogramName() const {
+  return "DeleteRegistrationTask";
 }
 
 }  // namespace background_fetch
