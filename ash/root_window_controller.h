@@ -54,7 +54,7 @@ class SystemModalContainerLayoutManager;
 class SystemTray;
 class SystemWallpaperController;
 class TouchExplorationManager;
-class TouchHudDebug;
+class TouchObserverHUD;
 class WallpaperWidgetController;
 class WindowManager;
 class WorkspaceController;
@@ -114,8 +114,10 @@ class ASH_EXPORT RootWindowController {
 
   Shelf* shelf() const { return shelf_.get(); }
 
-  TouchHudDebug* touch_hud_debug() const { return touch_hud_debug_; }
-  void set_touch_hud_debug(TouchHudDebug* hud) { touch_hud_debug_ = hud; }
+  TouchObserverHUD* touch_observer_hud() const { return touch_observer_hud_; }
+  void set_touch_observer_hud(TouchObserverHUD* hud) {
+    touch_observer_hud_ = hud;
+  }
 
   wm::RootWindowLayoutManager* root_window_layout_manager() {
     return root_window_layout_manager_;
@@ -297,7 +299,7 @@ class ASH_EXPORT RootWindowController {
   // Heads-up displays for touch events for this root. Not owned. Manages its
   // own lifetime. Whenever the widget showing a HUD is being destroyed (e.g.
   // because of detaching a display), the HUD deletes itself.
-  TouchHudDebug* touch_hud_debug_ = nullptr;
+  TouchObserverHUD* touch_observer_hud_ = nullptr;
 
   std::unique_ptr<::wm::ScopedCaptureClient> capture_client_;
 

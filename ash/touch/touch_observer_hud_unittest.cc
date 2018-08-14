@@ -10,7 +10,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/touch/touch_devices_controller.h"
-#include "ash/touch/touch_hud_debug.h"
+#include "ash/touch/touch_observer_hud.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
@@ -117,31 +117,31 @@ class TouchObserverHUDTest : public AshTestBase {
   }
 
   void CheckInternalDisplay() {
-    ASSERT_TRUE(GetInternalTouchHudDebug());
-    EXPECT_EQ(internal_display_id(), GetInternalTouchHudDebug()->display_id());
+    ASSERT_TRUE(GetInternalTouchHud());
+    EXPECT_EQ(internal_display_id(), GetInternalTouchHud()->display_id_);
     EXPECT_EQ(GetInternalRootWindow(),
-              GetRootWindowForTouchHud(GetInternalTouchHudDebug()));
+              GetRootWindowForTouchHud(GetInternalTouchHud()));
     EXPECT_EQ(GetInternalRootWindow(),
-              GetWidgetForTouchHud(GetInternalTouchHudDebug())
+              GetWidgetForTouchHud(GetInternalTouchHud())
                   ->GetNativeView()
                   ->GetRootWindow());
     EXPECT_EQ(GetInternalDisplay().size(),
-              GetWidgetForTouchHud(GetInternalTouchHudDebug())
+              GetWidgetForTouchHud(GetInternalTouchHud())
                   ->GetWindowBoundsInScreen()
                   .size());
   }
 
   void CheckExternalDisplay() {
-    ASSERT_TRUE(GetExternalTouchHudDebug());
-    EXPECT_EQ(external_display_id(), GetExternalTouchHudDebug()->display_id());
+    ASSERT_TRUE(GetExternalTouchHud());
+    EXPECT_EQ(external_display_id(), GetExternalTouchHud()->display_id_);
     EXPECT_EQ(GetExternalRootWindow(),
-              GetRootWindowForTouchHud(GetExternalTouchHudDebug()));
+              GetRootWindowForTouchHud(GetExternalTouchHud()));
     EXPECT_EQ(GetExternalRootWindow(),
-              GetWidgetForTouchHud(GetExternalTouchHudDebug())
+              GetWidgetForTouchHud(GetExternalTouchHud())
                   ->GetNativeView()
                   ->GetRootWindow());
     EXPECT_EQ(GetExternalDisplay().size(),
-              GetWidgetForTouchHud(GetExternalTouchHudDebug())
+              GetWidgetForTouchHud(GetExternalTouchHud())
                   ->GetWindowBoundsInScreen()
                   .size());
   }
@@ -202,20 +202,20 @@ class TouchObserverHUDTest : public AshTestBase {
     return RootWindowController::ForWindow(root);
   }
 
-  TouchHudDebug* GetInternalTouchHudDebug() {
-    return GetInternalRootController()->touch_hud_debug();
+  TouchObserverHUD* GetInternalTouchHud() {
+    return GetInternalRootController()->touch_observer_hud();
   }
 
-  TouchHudDebug* GetExternalTouchHudDebug() {
-    return GetExternalRootController()->touch_hud_debug();
+  TouchObserverHUD* GetExternalTouchHud() {
+    return GetExternalRootController()->touch_observer_hud();
   }
 
-  TouchHudDebug* GetPrimaryTouchHudDebug() {
-    return GetPrimaryRootController()->touch_hud_debug();
+  TouchObserverHUD* GetPrimaryTouchHud() {
+    return GetPrimaryRootController()->touch_observer_hud();
   }
 
-  TouchHudDebug* GetSecondaryTouchHudDebug() {
-    return GetSecondaryRootController()->touch_hud_debug();
+  TouchObserverHUD* GetSecondaryTouchHud() {
+    return GetSecondaryRootController()->touch_observer_hud();
   }
 
   display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
