@@ -54,7 +54,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/unified/unified_system_tray.h"
-#include "ash/touch/touch_hud_debug.h"
+#include "ash/touch/touch_observer_hud.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -1017,31 +1017,17 @@ void HandleActiveMagnifierZoom(int delta_index) {
 }
 
 bool CanHandleTouchHud() {
-  // TODO(crbug.com/612331): Mash support.
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
-    return false;
-
-  return RootWindowController::ForTargetRootWindow()->touch_hud_debug();
+  return RootWindowController::ForTargetRootWindow()->touch_observer_hud();
 }
 
 void HandleTouchHudClear() {
-  // TODO(crbug.com/612331): Mash support.
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
-    NOTIMPLEMENTED();
-    return;
-  }
-  RootWindowController::ForTargetRootWindow()->touch_hud_debug()->Clear();
+  RootWindowController::ForTargetRootWindow()->touch_observer_hud()->Clear();
 }
 
 void HandleTouchHudModeChange() {
-  // TODO(crbug.com/612331): Mash support.
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
-    NOTIMPLEMENTED();
-    return;
-  }
-  RootWindowController* controller =
-      RootWindowController::ForTargetRootWindow();
-  controller->touch_hud_debug()->ChangeToNextMode();
+  RootWindowController::ForTargetRootWindow()
+      ->touch_observer_hud()
+      ->ChangeToNextMode();
 }
 
 }  // namespace

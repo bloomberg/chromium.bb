@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "ash/touch/touch_hud_debug.h"
+#include "ash/touch/touch_observer_hud.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -175,7 +175,7 @@ void CollectTouchHudDebugLog(system_logs::SystemLogsResponse* response) {
     return;
   }
   std::unique_ptr<base::DictionaryValue> dictionary =
-      ash::TouchHudDebug::GetAllAsDictionary();
+      ash::TouchObserverHUD::GetAllAsDictionary();
   if (!dictionary->empty()) {
     std::string touch_log;
     JSONStringValueSerializer json(&touch_log);

@@ -7,25 +7,31 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "base/macros.h"
+#include "base/values.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/manager/display_configurator.h"
 #include "ui/events/event_handler.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace views {
+class Label;
+class View;
 class Widget;
 }
 
 namespace ash {
+class TouchHudCanvas;
+class TouchLog;
 
-// An event filter which handles system level gesture events. Objects of this
-// class manage their own lifetime.
-// TODO(jamescook): Collapse with TouchHudDebug, the only subclass.
+// A heads-up display to show touch traces on the screen and log touch events.
+// Implemented as an event filter which handles system level gesture events.
+// Objects of this class manage their own lifetime.
 class ASH_EXPORT TouchObserverHUD
     : public ui::EventHandler,
       public views::WidgetObserver,
@@ -33,46 +39,50 @@ class ASH_EXPORT TouchObserverHUD
       public display::DisplayConfigurator::Observer,
       public WindowTreeHostManager::Observer {
  public:
-  // Called to clear touch points and traces from the screen. Default
-  // implementation does nothing. Sub-classes should implement appropriately.
-  virtual void Clear();
+  enum Mode {
+    FULLSCREEN,
+    REDUCED_SCALE,
+    INVISIBLE,
+  };
+
+  explicit TouchObserverHUD(aura::Window* initial_root);
+  ~TouchObserverHUD() override;
+
+  // Clears touch points and traces from the screen.
+  void Clear();
 
   // Removes the HUD from the screen.
   void Remove();
 
-  int64_t display_id() const { return display_id_; }
+  // Returns the log of touch events for all displays as a dictionary mapping id
+  // of each display to its touch log.
+  static std::unique_ptr<base::DictionaryValue> GetAllAsDictionary();
 
- protected:
-  // |widget_name| is set on Widget::InitParams::name, and is used purely for
-  // debugging.
-  TouchObserverHUD(aura::Window* initial_root, const std::string& widget_name);
+  // Changes the display mode (e.g. scale, visibility). Calling this repeatedly
+  // cycles between a fixed number of display modes.
+  void ChangeToNextMode();
 
-  ~TouchObserverHUD() override;
+  // Returns log of touch events as a list value. Each item in the list is a
+  // trace of one touch point.
+  std::unique_ptr<base::ListValue> GetLogAsList() const;
 
-  virtual void SetHudForRootWindowController(
-      RootWindowController* controller) = 0;
-  virtual void UnsetHudForRootWindowController(
-      RootWindowController* controller) = 0;
-
-  views::Widget* widget() { return widget_; }
-
-  // Overriden from ui::EventHandler.
+  // ui::EventHandler:
   void OnTouchEvent(ui::TouchEvent* event) override;
 
-  // Overridden from views::WidgetObserver.
+  // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
 
-  // Overridden from display::DisplayObserver.
+  // display::DisplayObserver:
   void OnDisplayAdded(const display::Display& new_display) override;
   void OnDisplayRemoved(const display::Display& old_display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
-  // Overriden from display::DisplayConfigurator::Observer.
+  // display::DisplayConfigurator::Observer:
   void OnDisplayModeChanged(
       const display::DisplayConfigurator::DisplayStateList& outputs) override;
 
-  // Overriden form WindowTreeHostManager::Observer.
+  // WindowTreeHostManager::Observer:
   void OnDisplaysInitialized() override;
   void OnDisplayConfigurationChanging() override;
   void OnDisplayConfigurationChanged() override;
@@ -80,10 +90,23 @@ class ASH_EXPORT TouchObserverHUD
  private:
   friend class TouchObserverHUDTest;
 
+  void SetMode(Mode mode);
+
+  void UpdateTouchPointLabel(int index);
+
   const int64_t display_id_;
   aura::Window* root_window_;
-
   views::Widget* widget_;
+
+  static constexpr int kMaxTouchPoints = 32;
+
+  Mode mode_;
+
+  std::unique_ptr<TouchLog> touch_log_;
+
+  TouchHudCanvas* canvas_;
+  views::View* label_container_;
+  views::Label* touch_labels_[kMaxTouchPoints];
 
   DISALLOW_COPY_AND_ASSIGN(TouchObserverHUD);
 };
