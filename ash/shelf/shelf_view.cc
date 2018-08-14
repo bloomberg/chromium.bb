@@ -945,7 +945,10 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
 
   const int available_size = shelf_->PrimaryAxisValue(width(), height());
   const int separator_index = GetSeparatorIndex();
-  separator_->SetVisible(separator_index != -1);
+  // Don't show the separator if it isn't needed, or would appear after all
+  // visible items.
+  separator_->SetVisible(separator_index != -1 &&
+                         separator_index < last_visible_index_);
   int app_list_button_position;
 
   int x = 0;
