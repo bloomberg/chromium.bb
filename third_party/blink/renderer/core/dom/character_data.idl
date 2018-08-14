@@ -20,7 +20,7 @@
 // https://dom.spec.whatwg.org/#interface-characterdata
 
 interface CharacterData : Node {
-    attribute [TreatNullAs=NullString] DOMString data;
+    attribute [TreatNullAs=EmptyString] DOMString data;
     readonly attribute unsigned long length;
     [RaisesException] DOMString substringData(unsigned long offset, unsigned long count);
     void appendData(DOMString data);
