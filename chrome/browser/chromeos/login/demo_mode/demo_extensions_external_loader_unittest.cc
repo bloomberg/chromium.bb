@@ -140,7 +140,7 @@ class DemoExtensionsExternalLoaderTest : public testing::Test {
                          bool wait_for_offline_resources_load) {
     if (mount_demo_resources) {
       image_loader_client_->SetMountPathForComponent(
-          "demo_mode_resources", offline_demo_resources_.GetPath());
+          "demo-mode-resources", offline_demo_resources_.GetPath());
     }
     ASSERT_TRUE(DemoSession::StartIfInDemoMode());
 

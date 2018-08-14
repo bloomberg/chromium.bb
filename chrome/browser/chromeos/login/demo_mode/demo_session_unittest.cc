@@ -22,7 +22,7 @@ namespace chromeos {
 
 namespace {
 
-constexpr char kOfflineResourcesComponent[] = "demo_mode_resources";
+constexpr char kOfflineResourcesComponent[] = "demo-mode-resources";
 constexpr char kTestDemoModeResourcesMountPoint[] =
     "/run/imageloader/demo_mode_resources";
 constexpr char kDemoAppsImageFile[] = "android_demo_apps.squash";

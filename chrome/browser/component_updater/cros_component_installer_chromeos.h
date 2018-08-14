@@ -98,6 +98,9 @@ class CrOSComponentManager {
     kForce,
     // Do not update if a compatible component is installed.
     kDontForce,
+    // Do not run updater, even if a compatible component is not installed at
+    // the moment.
+    kSkip
   };
 
   class Delegate {

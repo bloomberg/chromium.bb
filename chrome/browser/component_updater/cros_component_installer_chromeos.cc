@@ -320,7 +320,8 @@ void CrOSComponentManager::StartInstall(
   // Check whether an installed component was found during registration, and
   // determine whether OnDemandUpdater should be started accordingly.
   const bool is_compatible = IsCompatible(name);
-  if (is_compatible && update_policy != UpdatePolicy::kForce) {
+  if (update_policy == UpdatePolicy::kSkip ||
+      (is_compatible && update_policy != UpdatePolicy::kForce)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(install_callback),
                                   update_client::Error::NONE));
