@@ -112,12 +112,26 @@ class CastContentWindow {
     virtual ~Delegate() {}
   };
 
+  // The parameters used to create a CastContentWindow instance.
+  struct CreateParams {
+    // The delegate for the CastContentWindow. Must be non-null.
+    Delegate* delegate = nullptr;
+
+    // True if this CastContentWindow is for a headless build.
+    bool is_headless = false;
+
+    // Enable touch input for this CastContentWindow instance.
+    bool enable_touch_input = false;
+
+    // True if this CastContentWindow is for running a remote control app.
+    bool is_remote_control_mode = false;
+
+    CreateParams();
+  };
+
   // Creates the platform specific CastContentWindow. |delegate| should outlive
   // the created CastContentWindow.
-  static std::unique_ptr<CastContentWindow> Create(
-      CastContentWindow::Delegate* delegate,
-      bool is_headless,
-      bool enable_touch_input);
+  static std::unique_ptr<CastContentWindow> Create(const CreateParams& params);
 
   virtual ~CastContentWindow() {}
 

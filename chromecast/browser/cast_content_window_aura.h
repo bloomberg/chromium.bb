@@ -56,7 +56,7 @@ class CastContentWindowAura : public CastContentWindow,
   friend class CastContentWindow;
 
   // This class should only be instantiated by CastContentWindow::Create.
-  CastContentWindowAura(Delegate* delegate, bool is_touch_enabled);
+  CastContentWindowAura(const CastContentWindow::CreateParams& params);
 
   CastContentWindow::Delegate* const delegate_;
 

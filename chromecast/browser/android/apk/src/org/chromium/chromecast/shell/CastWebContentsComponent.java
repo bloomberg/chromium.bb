@@ -102,7 +102,8 @@ public class CastWebContentsComponent {
         @Override
         public void start(StartParams params) {
             if (!sendIntent(CastWebContentsIntentUtils.requestStartCastFragment(params.webContents,
-                        params.appId, params.visibilityPriority, mEnableTouchInput, mInstanceId))) {
+                        params.appId, params.visibilityPriority, mEnableTouchInput, mInstanceId,
+                        mIsRemoteControlMode))) {
                 // No intent receiver to handle SHOW_WEB_CONTENT in fragment
                 startCastActivity(params.context, params.webContents, mEnableTouchInput);
             }
@@ -168,19 +169,24 @@ public class CastWebContentsComponent {
     private Delegate mDelegate;
     private boolean mStarted;
     private boolean mEnableTouchInput;
+    private final boolean mIsRemoteControlMode;
 
     public CastWebContentsComponent(String instanceId,
             OnComponentClosedHandler onComponentClosedHandler, OnKeyDownHandler onKeyDownHandler,
-            SurfaceEventHandler surfaceEventHandler, boolean isHeadless, boolean enableTouchInput) {
+            SurfaceEventHandler surfaceEventHandler, boolean isHeadless, boolean enableTouchInput,
+            boolean isRemoteControlMode) {
         if (DEBUG) {
             Log.d(TAG,
                     "New CastWebContentsComponent. Instance ID: " + instanceId + "; isHeadless: "
-                            + isHeadless + "; enableTouchInput:" + enableTouchInput);
+                            + isHeadless + "; enableTouchInput:" + enableTouchInput
+                            + "; isRemoteControlMode:" + isRemoteControlMode);
         }
         mComponentClosedHandler = onComponentClosedHandler;
         mKeyDownHandler = onKeyDownHandler;
         mInstanceId = instanceId;
         mSurfaceEventHandler = surfaceEventHandler;
+        mIsRemoteControlMode = isRemoteControlMode;
+
         if (BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE || isHeadless) {
             if (DEBUG) Log.d(TAG, "Creating service delegate...");
             mDelegate = new ServiceDelegate();

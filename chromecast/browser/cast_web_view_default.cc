@@ -51,6 +51,16 @@ std::unique_ptr<content::WebContents> CreateWebContents(
   return content::WebContents::Create(create_params);
 }
 
+shell::CastContentWindow::CreateParams CreateWindowParams(
+    const CastWebView::CreateParams& params) {
+  shell::CastContentWindow::CreateParams window_params;
+  window_params.delegate = params.delegate;
+  window_params.enable_touch_input = params.enable_touch_input;
+  window_params.is_headless = params.is_headless;
+  window_params.is_remote_control_mode = params.is_remote_control_mode;
+  return window_params;
+}
+
 }  // namespace
 
 CastWebViewDefault::CastWebViewDefault(
@@ -68,15 +78,14 @@ CastWebViewDefault::CastWebViewDefault(
       allow_media_access_(params.allow_media_access),
       enabled_for_dev_(params.enabled_for_dev),
       web_contents_(CreateWebContents(browser_context_, site_instance_)),
-      window_(shell::CastContentWindow::Create(params.delegate,
-                                               params.is_headless,
-                                               params.enable_touch_input)),
+      window_(shell::CastContentWindow::Create(CreateWindowParams(params))),
       did_start_navigation_(false) {
   DCHECK(delegate_);
   DCHECK(web_contents_manager_);
   DCHECK(browser_context_);
   DCHECK(window_);
   content::WebContentsObserver::Observe(web_contents_.get());
+
   web_contents_->SetDelegate(this);
 #if defined(USE_AURA)
   web_contents_->GetNativeView()->SetName(params.activity_id);

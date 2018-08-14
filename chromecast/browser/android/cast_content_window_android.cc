@@ -26,31 +26,29 @@ namespace {
 base::android::ScopedJavaLocalRef<jobject> CreateJavaWindow(
     jlong native_window,
     bool is_headless,
-    bool enable_touch_input) {
+    bool enable_touch_input,
+    bool is_remote_control_mode) {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_CastContentWindowAndroid_create(env, native_window, is_headless,
-                                              enable_touch_input);
+                                              enable_touch_input,
+                                              is_remote_control_mode);
 }
 
 }  // namespace
 
 // static
 std::unique_ptr<CastContentWindow> CastContentWindow::Create(
-    CastContentWindow::Delegate* delegate,
-    bool is_headless,
-    bool enable_touch_input) {
-  return base::WrapUnique(
-      new CastContentWindowAndroid(delegate, is_headless, enable_touch_input));
+    const CastContentWindow::CreateParams& params) {
+  return base::WrapUnique(new CastContentWindowAndroid(params));
 }
 
 CastContentWindowAndroid::CastContentWindowAndroid(
-    CastContentWindow::Delegate* delegate,
-    bool is_headless,
-    bool enable_touch_input)
-    : delegate_(delegate),
+    const CastContentWindow::CreateParams& params)
+    : delegate_(params.delegate),
       java_window_(CreateJavaWindow(reinterpret_cast<jlong>(this),
-                                    is_headless,
-                                    enable_touch_input)) {
+                                    params.is_headless,
+                                    params.enable_touch_input,
+                                    params.is_remote_control_mode)) {
   DCHECK(delegate_);
 }
 
@@ -140,6 +138,8 @@ base::android::ScopedJavaLocalRef<jstring> CastContentWindowAndroid::GetId(
     const base::android::JavaParamRef<jobject>& jcaller) {
   return ConvertUTF8ToJavaString(env, delegate_->GetId());
 }
+
+CastContentWindow::CreateParams::CreateParams() {}
 
 }  // namespace shell
 }  // namespace chromecast
