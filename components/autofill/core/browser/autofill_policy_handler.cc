@@ -22,9 +22,13 @@ void AutofillPolicyHandler::ApplyPolicySettings(
     const policy::PolicyMap& policies,
     PrefValueMap* prefs) {
   const base::Value* value = policies.GetValue(policy_name());
-  bool auto_fill_enabled;
-  if (value && value->GetAsBoolean(&auto_fill_enabled) && !auto_fill_enabled)
-    prefs->SetBoolean(autofill::prefs::kAutofillEnabled, false);
+  bool autofill_enabled;
+  if (value && value->GetAsBoolean(&autofill_enabled) && !autofill_enabled) {
+    prefs->SetBoolean(autofill::prefs::kAutofillEnabledDeprecated, false);
+    // Disable the fine-grained prefs if the master pref is disabled by policy.
+    prefs->SetBoolean(autofill::prefs::kAutofillCreditCardEnabled, false);
+    prefs->SetBoolean(autofill::prefs::kAutofillProfileEnabled, false);
+  }
 }
 
 }  // namespace autofill

@@ -370,15 +370,15 @@ NSString* GetTextFieldForID(int categoryId) {
                                             expectedState, YES)]
         performAction:chrome_test_util::TurnSettingsSwitchOn(!expectedState)];
 
-    // Expect Autofill address and credit card switches to be disabled when
-    // Autofill toggle is off and enabled when it is on.
+    // Expect address and credit card switches to be off when Autofill toggle is
+    // off and on when Autofill toggle is on.
     [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                            @"addressItem_switch", YES,
-                                            !expectedState)]
+                                            @"addressItem_switch",
+                                            !expectedState, YES)]
         assertWithMatcher:grey_notNil()];
     [[EarlGrey
         selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                     @"cardItem_switch", YES, !expectedState)]
+                                     @"cardItem_switch", !expectedState, YES)]
         assertWithMatcher:grey_notNil()];
 
     // Expect Autofill addresses and credit cards to remain visible.

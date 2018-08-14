@@ -261,8 +261,10 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
                                &test_personal_data_manager_) {
     std::unique_ptr<TestingPrefServiceSimple> prefs(
         new TestingPrefServiceSimple());
-    prefs->registry()->RegisterBooleanPref(autofill::prefs::kAutofillEnabled,
-                                           true);
+    prefs->registry()->RegisterBooleanPref(
+        autofill::prefs::kAutofillCreditCardEnabled, true);
+    prefs->registry()->RegisterBooleanPref(
+        autofill::prefs::kAutofillProfileEnabled, true);
     test_autofill_client_.SetPrefs(std::move(prefs));
     mock_autofill_download_manager_ = new MockAutofillDownloadManager(
         &test_autofill_driver_, &mock_autofill_manager_);

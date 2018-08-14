@@ -30,7 +30,7 @@ const char kAutofillCreditCardSigninPromoImpressionCount[] =
     "autofill.credit_card_signin_promo_impression_count";
 
 // Boolean that is true if Autofill is enabled and allowed to save data.
-const char kAutofillEnabled[] = "autofill.enabled";
+const char kAutofillEnabledDeprecated[] = "autofill.enabled";
 
 // Boolean that is true if Japan address city field has been migrated to be a
 // part of the street field.
@@ -75,7 +75,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
       prefs::kAutofillCreditCardSigninPromoImpressionCount, 0);
   registry->RegisterBooleanPref(
-      prefs::kAutofillEnabled, true,
+      prefs::kAutofillEnabledDeprecated, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kAutofillProfileEnabled, true,
@@ -101,20 +101,20 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 }
 
 bool IsAutocompleteEnabled(const PrefService* prefs) {
-  // Autocomplete is always enabled as part of Autofill.
-  return IsAutofillEnabled(prefs);
+  return IsProfileAutofillEnabled(prefs);
 }
 
 bool IsAutofillEnabled(const PrefService* prefs) {
-  return prefs->GetBoolean(kAutofillEnabled);
+  return IsProfileAutofillEnabled(prefs) || IsCreditCardAutofillEnabled(prefs);
 }
 
 void SetAutofillEnabled(PrefService* prefs, bool enabled) {
-  prefs->SetBoolean(kAutofillEnabled, enabled);
+  SetProfileAutofillEnabled(prefs, enabled);
+  SetCreditCardAutofillEnabled(prefs, enabled);
 }
 
 bool IsAutofillManaged(const PrefService* prefs) {
-  return prefs->IsManagedPreference(kAutofillEnabled);
+  return prefs->IsManagedPreference(kAutofillEnabledDeprecated);
 }
 
 bool IsProfileAutofillEnabled(const PrefService* prefs) {

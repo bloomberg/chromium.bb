@@ -1780,11 +1780,14 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'example_value': False,
       'id': 18,
       'caption': '''Enable AutoFill''',
       'tags': [],
-      'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s AutoFill feature and allows users to auto complete web forms using previously stored information such as address or credit card information.
+      'desc': '''This policy is deprecated in M70, please use AutofillAddressEnabled and AutofillCreditCardEnabled instead.
+
+      Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s AutoFill feature and allows users to auto complete web forms using previously stored information such as address or credit card information.
 
       If you disable this setting, AutoFill will be inaccessible to users.
 

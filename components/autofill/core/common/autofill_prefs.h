@@ -20,7 +20,8 @@ extern const char kAutofillAcceptSaveCreditCardPromptState[];
 extern const char kAutofillBillingCustomerNumber[];
 extern const char kAutofillCreditCardEnabled[];
 extern const char kAutofillCreditCardSigninPromoImpressionCount[];
-extern const char kAutofillEnabled[];
+// Please use kAutofillCreditCardEnabled and kAutofillProfileEnabled instead.
+extern const char kAutofillEnabledDeprecated[];
 extern const char kAutofillJapanCityFieldMigrated[];
 extern const char kAutofillLastVersionDeduped[];
 extern const char kAutofillLastVersionDisusedAddressesDeleted[];

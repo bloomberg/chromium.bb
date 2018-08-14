@@ -212,7 +212,9 @@ void GetFormAndField(autofill::FormData* form,
     prefObserverBridge_ = std::make_unique<PrefObserverBridge>(self);
     prefChangeRegistrar_.Init(prefService);
     prefObserverBridge_->ObserveChangesForPreference(
-        autofill::prefs::kAutofillEnabled, &prefChangeRegistrar_);
+        autofill::prefs::kAutofillCreditCardEnabled, &prefChangeRegistrar_);
+    prefObserverBridge_->ObserveChangesForPreference(
+        autofill::prefs::kAutofillProfileEnabled, &prefChangeRegistrar_);
 
     jsAutofillManager_ = [[JsAutofillManager alloc]
         initWithReceiver:webState_->GetJSInjectionReceiver()];

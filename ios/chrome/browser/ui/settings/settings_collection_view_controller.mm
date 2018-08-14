@@ -313,7 +313,9 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
         password_manager::prefs::kCredentialsEnableService,
         &_prefChangeRegistrar);
     _prefObserverBridge->ObserveChangesForPreference(
-        autofill::prefs::kAutofillEnabled, &_prefChangeRegistrar);
+        autofill::prefs::kAutofillCreditCardEnabled, &_prefChangeRegistrar);
+    _prefObserverBridge->ObserveChangesForPreference(
+        autofill::prefs::kAutofillProfileEnabled, &_prefChangeRegistrar);
 
     _settingsMainPageDispatcher = self;
     _dispatcher = dispatcher;
@@ -1258,7 +1260,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     [self reconfigureCellsForItems:@[ _savePasswordsDetailItem ]];
   }
 
-  if (preferenceName == autofill::prefs::kAutofillEnabled) {
+  if (preferenceName == autofill::prefs::kAutofillCreditCardEnabled ||
+      preferenceName == autofill::prefs::kAutofillProfileEnabled) {
     BOOL autofillEnabled =
         autofill::prefs::IsAutofillEnabled(_browserState->GetPrefs());
     NSString* autofillDetail =

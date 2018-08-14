@@ -36,7 +36,7 @@ AutofillProfileDataTypeController::AutofillProfileDataTypeController(
       currently_enabled_(IsEnabled()) {
   pref_registrar_.Init(sync_client_->GetPrefService());
   pref_registrar_.Add(
-      autofill::prefs::kAutofillEnabled,
+      autofill::prefs::kAutofillProfileEnabled,
       base::Bind(&AutofillProfileDataTypeController::OnUserPrefChanged,
                  base::AsWeakPtr(this)));
 }
@@ -134,7 +134,8 @@ bool AutofillProfileDataTypeController::IsEnabled() {
   DCHECK(CalledOnValidThread());
 
   // Require the user-visible pref to be enabled to sync Autofill Profile data.
-  return autofill::prefs::IsAutofillEnabled(sync_client_->GetPrefService());
+  return autofill::prefs::IsProfileAutofillEnabled(
+      sync_client_->GetPrefService());
 }
 
 void AutofillProfileDataTypeController::DisableForPolicy() {
