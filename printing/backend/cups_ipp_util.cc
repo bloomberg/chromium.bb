@@ -334,4 +334,8 @@ void CapsAndDefaultsFromPrinter(const CupsOptionProvider& printer,
   ExtractResolutions(printer, printer_info);
 }
 
+ScopedIppPtr WrapIpp(ipp_t* ipp) {
+  return ScopedIppPtr(ipp, &ippDelete);
+}
+
 }  //  namespace printing
