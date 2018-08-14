@@ -259,10 +259,6 @@ void InputHandlerProxy::DispatchSingleInputEvent(
     const base::TimeTicks now) {
   if (compositor_event_queue_ &&
       IsGestureScrollOrPinch(event_with_callback->event().GetType())) {
-    if (scroll_predictor_)
-      scroll_predictor_->HandleEvent(event_with_callback->original_events(),
-                                     now, event_with_callback->event_pointer());
-
     // Report the coalesced count only for continuous events to avoid the noise
     // from non-continuous events.
     if (IsContinuousGestureEvent(event_with_callback->event().GetType())) {
@@ -294,6 +290,7 @@ void InputHandlerProxy::DispatchSingleInputEvent(
           &monitored_latency_info);
 
   current_overscroll_params_.reset();
+
   InputHandlerProxy::EventDisposition disposition =
       HandleInputEvent(event_with_callback->event());
 
@@ -326,8 +323,17 @@ void InputHandlerProxy::DispatchQueuedInputEvents() {
 
   // Calling |NowTicks()| is expensive so we only want to do it once.
   base::TimeTicks now = tick_clock_->NowTicks();
-  while (!compositor_event_queue_->empty())
-    DispatchSingleInputEvent(compositor_event_queue_->Pop(), now);
+  while (!compositor_event_queue_->empty()) {
+    std::unique_ptr<EventWithCallback> event_with_callback =
+        compositor_event_queue_->Pop();
+    if (scroll_predictor_) {
+      scroll_predictor_->ResampleScrollEvents(
+          event_with_callback->original_events(), now,
+          event_with_callback->event_pointer());
+    }
+
+    DispatchSingleInputEvent(std::move(event_with_callback), now);
+  }
 }
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
@@ -612,6 +618,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "InputHandlerProxy::HandleGestureScrollBegin");
+
+  if (compositor_event_queue_ && scroll_predictor_)
+    scroll_predictor_->ResetOnGestureScrollBegin(gesture_event);
 
 #ifndef NDEBUG
   expect_scroll_update_end_ = true;

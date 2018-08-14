@@ -26,19 +26,26 @@ class ScrollPredictor {
   ScrollPredictor();
   ~ScrollPredictor();
 
-  // Resampling gesture scroll events. Each prediction starts with a GSB.
-  // On each GSU, updates the prediction with events in original events list,
-  // and apply the prediction to the GSU event.
-  void HandleEvent(const EventWithCallback::OriginalEventList& original_events,
-                   base::TimeTicks frame_time,
-                   blink::WebInputEvent* event);
+  void ResetOnGestureScrollBegin(const blink::WebGestureEvent& event);
+  // Resampling GestureScrollUpdate events. Updates the prediction with events
+  // in original events list, and apply the prediction to the aggregated GSU
+  // event.
+  void ResampleScrollEvents(
+      const EventWithCallback::OriginalEventList& original_events,
+      base::TimeTicks frame_time,
+      blink::WebInputEvent* event);
+
+  // Reset predictor and clear accumulated delta. This should be called on
+  // GestureScrollBegin.
+  void Reset();
 
  private:
   friend class test::InputHandlerProxyEventQueueTest;
   friend class test::ScrollPredictorTest;
 
   // Update the prediction with GestureScrollUpdate deltaX and deltaY
-  void UpdatePrediction(const WebScopedInputEvent& event);
+  void UpdatePrediction(const WebScopedInputEvent& event,
+                        base::TimeTicks frame_time);
 
   // Apply resampled deltaX/deltaY to gesture events
   void ResampleEvent(base::TimeTicks frame_time, blink::WebInputEvent* event);
@@ -50,6 +57,8 @@ class ScrollPredictor {
   // Accumulated delta from last vsync, use to calculate delta_x and delta_y for
   // the aggregated event.
   gfx::PointF last_accumulated_delta_;
+
+  bool should_resample_scroll_events_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollPredictor);
 };

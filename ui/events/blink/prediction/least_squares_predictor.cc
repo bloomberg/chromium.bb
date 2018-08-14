@@ -4,7 +4,7 @@
 
 #include "ui/events/blink/prediction/least_squares_predictor.h"
 
-#include <cmath>
+#include "base/trace_event/trace_event.h"
 
 namespace ui {
 
@@ -47,12 +47,11 @@ void LeastSquaresPredictor::Reset() {
 }
 
 void LeastSquaresPredictor::Update(const InputData& cur_input) {
-  // Reset curve if last point is 50 milliseconds away.
-  constexpr double max_interval_millisecond = 50.0;
-  if (!time_.empty() &&
-      (cur_input.time_stamp - time_.back()).InMillisecondsF() >
-          max_interval_millisecond)
-    Reset();
+  if (!time_.empty()) {
+    // When last point is kMaxTimeDelta away, consider it is incontinuous.
+    if (cur_input.time_stamp - time_.back() > kMaxTimeDelta)
+      Reset();
+  }
 
   x_queue_.push_back(cur_input.pos.x());
   y_queue_.push_back(cur_input.pos.y());
@@ -78,7 +77,7 @@ gfx::Matrix3F LeastSquaresPredictor::GetXMatrix() const {
 
 bool LeastSquaresPredictor::GeneratePrediction(base::TimeTicks frame_time,
                                                InputData* result) const {
-  if (!HasPrediction())
+  if (!HasPrediction() || frame_time - time_.back() > kMaxResampleTime)
     return false;
 
   gfx::Matrix3F time_matrix = GetXMatrix();
