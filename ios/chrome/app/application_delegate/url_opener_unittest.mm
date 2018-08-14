@@ -218,9 +218,7 @@ TEST_F(URLOpenerTest, HandleOpenURLWithNoOpenTab) {
   AppState* appState =
       [[AppState alloc] initWithBrowserLauncher:controller
                              startupInformation:controller
-                            applicationDelegate:mainApplicationDelegate
-                                         window:controller.window
-                                  shouldOpenNTP:YES];
+                            applicationDelegate:mainApplicationDelegate];
   controller.appState = appState;
 
   NSDictionary<NSString*, id>* options = nil;

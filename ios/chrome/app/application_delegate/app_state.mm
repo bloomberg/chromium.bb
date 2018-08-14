@@ -81,9 +81,6 @@ NSString* const kStartupAttemptReset = @"StartupAttempReset";
   base::TimeTicks _sessionStartTime;
   // YES if the app is currently in the process of terminating.
   BOOL _appIsTerminating;
-  // Indicates if an NTP tab should be opened once the application has become
-  // active.
-  BOOL _shouldOpenNTPTabOnActive;
   // Interstitial view used to block any incognito tabs after backgrounding.
   UIView* _incognitoBlocker;
   // Whether the application is currently in the background.
@@ -291,17 +288,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
                                                  browserViewInformation]];
   [memoryHelper resetForegroundMemoryWarningCount];
 
-  // Check if a NTP tab should be opened; the tab will actually be opened in
-  // |applicationDidBecomeActive| after the application gets prepared to
-  // record user actions.
-  // TODO(crbug.com/623491): opening a tab when the application is launched
-  // without a tab should not be counted as a user action. Revisit the way tab
-  // creation is counted.
-  _shouldOpenNTPTabOnActive = [tabOpener
-      shouldOpenNTPTabOnActivationOfTabModel:[[_browserLauncher
-                                                 browserViewInformation]
-                                                 currentTabModel]];
-
   ios::ChromeBrowserState* currentBrowserState =
       [[_browserLauncher browserViewInformation] currentBrowserState];
   if ([SignedInAccountsViewController
@@ -354,7 +340,13 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
                           startupInformation:_startupInformation
                       browserViewInformation:[_browserLauncher
                                                  browserViewInformation]];
-  } else if (_shouldOpenNTPTabOnActive) {
+  } else if ([tabOpener shouldOpenNTPTabOnActivationOfTabModel:
+                            [[_browserLauncher browserViewInformation]
+                                currentTabModel]]) {
+    // Opens an NTP if needed.
+    // TODO(crbug.com/623491): opening a tab when the application is launched
+    // without a tab should not be counted as a user action. Revisit the way tab
+    // creation is counted.
     if (![tabSwitcher openNewTabFromTabSwitcher]) {
       BrowserViewController* bvc =
           [[_browserLauncher browserViewInformation] currentBVC];
@@ -367,7 +359,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     [[[_browserLauncher browserViewInformation] currentBVC]
         presentBubblesIfEligible];
   }
-  _shouldOpenNTPTabOnActive = NO;
 
   [MetricsMediator logStartupDuration:_startupInformation];
 }
@@ -503,25 +494,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
   // Start recording info about this session.
   [[PreviousSessionInfo sharedInstance] beginRecordingCurrentSession];
-}
-
-@end
-
-@implementation AppState (Testing)
-
-- (instancetype)
-initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
-     startupInformation:(id<StartupInformation>)startupInformation
-    applicationDelegate:(MainApplicationDelegate*)applicationDelegate
-                 window:(UIWindow*)window
-          shouldOpenNTP:(BOOL)shouldOpenNTP {
-  self = [self initWithBrowserLauncher:browserLauncher
-                    startupInformation:startupInformation
-                   applicationDelegate:applicationDelegate];
-  if (self) {
-    _shouldOpenNTPTabOnActive = shouldOpenNTP;
-  }
-  return self;
 }
 
 @end
