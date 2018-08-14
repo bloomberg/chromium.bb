@@ -769,10 +769,6 @@
       status: "stable",
     },
     {
-      name: "NetInfoDownlink",
-      status: "stable",
-    },
-    {
       name: "NetInfoDownlinkHeader",
       status: "stable",
     },
@@ -781,23 +777,11 @@
       status: "stable",
     },
     {
-      name: "NetInfoEffectiveType",
-      status: "stable",
-    },
-    {
       name: "NetInfoEffectiveTypeHeader",
       status: "stable",
     },
     {
-      name: "NetInfoRtt",
-      status: "stable",
-    },
-    {
       name: "NetInfoRttHeader",
-      status: "stable",
-    },
-    {
-      name: "NetInfoSaveData",
       status: "stable",
     },
     {
