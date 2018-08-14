@@ -108,7 +108,13 @@ float GetScaleFactorForNativeView(gfx::NativeView view) {
     return 1.0f;
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestView(view);
-  DCHECK(display.is_valid());
+
+  // GetDisplayNearestView() may return null Display if the |view| is not shown
+  // on the screen and there is no primary display. In that case use scale
+  // factor 1.0.
+  if (!display.is_valid())
+    return 1.0f;
+
   return display.device_scale_factor();
 }
 

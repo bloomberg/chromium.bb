@@ -79,6 +79,7 @@ component("service_lib") {
     "//services/network/public/cpp",
     "//ui/aura",
     "//ui/display",
+    "//ui/ozone",
     "//ui/platform_window",
   ]
 

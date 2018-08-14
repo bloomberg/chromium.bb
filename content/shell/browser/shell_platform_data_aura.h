@@ -18,6 +18,10 @@ class WindowParentingClient;
 }
 }
 
+namespace display {
+class Screen;
+}
+
 namespace gfx {
 class Size;
 }
@@ -35,6 +39,8 @@ class ShellPlatformDataAura {
   aura::WindowTreeHost* host() { return host_.get(); }
 
  private:
+  std::unique_ptr<display::Screen> screen_;
+
   std::unique_ptr<aura::WindowTreeHost> host_;
   std::unique_ptr<aura::client::FocusClient> focus_client_;
   std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;

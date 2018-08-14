@@ -7,7 +7,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/shell/browser/shell_platform_data_aura.h"
 #include "ui/aura/env.h"
-#include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 
@@ -16,8 +15,6 @@ namespace content {
 // static
 void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
   CHECK(!platform_);
-  aura::TestScreen* screen = aura::TestScreen::Create(gfx::Size());
-  display::Screen::SetScreenInstance(screen);
   platform_ = new ShellPlatformDataAura(default_window_size);
 }
 
@@ -26,17 +23,13 @@ void Shell::PlatformExit() {
   platform_ = nullptr;
 }
 
-void Shell::PlatformCleanUp() {
-}
+void Shell::PlatformCleanUp() {}
 
-void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
-}
+void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {}
 
-void Shell::PlatformSetAddressBarURL(const GURL& url) {
-}
+void Shell::PlatformSetAddressBarURL(const GURL& url) {}
 
-void Shell::PlatformSetIsLoading(bool loading) {
-}
+void Shell::PlatformSetIsLoading(bool loading) {}
 
 void Shell::PlatformCreateWindow(int width, int height) {
   CHECK(platform_);
@@ -56,14 +49,12 @@ void Shell::PlatformSetContents() {
   content->Show();
 }
 
-void Shell::PlatformResizeSubViews() {
-}
+void Shell::PlatformResizeSubViews() {}
 
 void Shell::Close() {
   delete this;
 }
 
-void Shell::PlatformSetTitle(const base::string16& title) {
-}
+void Shell::PlatformSetTitle(const base::string16& title) {}
 
 }  // namespace content
