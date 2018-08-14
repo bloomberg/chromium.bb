@@ -59,6 +59,7 @@ crypto_sources = [
   "src/crypto/bytestring/internal.h",
   "src/crypto/bytestring/unicode.c",
   "src/crypto/chacha/chacha.c",
+  "src/crypto/chacha/internal.h",
   "src/crypto/cipher_extra/cipher_extra.c",
   "src/crypto/cipher_extra/derive_key.c",
   "src/crypto/cipher_extra/e_aesccm.c",
