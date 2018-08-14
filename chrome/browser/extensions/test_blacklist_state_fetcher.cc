@@ -6,28 +6,11 @@
 
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/safe_browsing/db/v4_test_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace extensions {
 namespace {
-
-static const char kUrlPrefix[] = "https://prefix.com/foo";
-static const char kBackupConnectUrlPrefix[] = "https://alt1-prefix.com/foo";
-static const char kBackupHttpUrlPrefix[] = "https://alt2-prefix.com/foo";
-static const char kBackupNetworkUrlPrefix[] = "https://alt3-prefix.com/foo";
-static const char kClient[] = "unittest";
-static const char kAppVer[] = "1.0";
-
-safe_browsing::SafeBrowsingProtocolConfig CreateSafeBrowsingProtocolConfig() {
-  safe_browsing::SafeBrowsingProtocolConfig config;
-  config.client_name = kClient;
-  config.url_prefix = kUrlPrefix;
-  config.backup_connect_error_url_prefix = kBackupConnectUrlPrefix;
-  config.backup_http_error_url_prefix = kBackupHttpUrlPrefix;
-  config.backup_network_error_url_prefix = kBackupNetworkUrlPrefix;
-  config.version = kAppVer;
-  return config;
-}
 
 class DummySharedURLLoaderFactory : public network::SharedURLLoaderFactory {
  public:
@@ -68,7 +51,7 @@ class DummySharedURLLoaderFactory : public network::SharedURLLoaderFactory {
 
 TestBlacklistStateFetcher::TestBlacklistStateFetcher(
     BlacklistStateFetcher* fetcher) : fetcher_(fetcher) {
-  fetcher_->SetSafeBrowsingConfig(CreateSafeBrowsingProtocolConfig());
+  fetcher_->SetSafeBrowsingConfig(safe_browsing::GetTestV4ProtocolConfig());
 
   url_loader_factory_ = base::MakeRefCounted<DummySharedURLLoaderFactory>();
   fetcher_->url_loader_factory_ = url_loader_factory_.get();

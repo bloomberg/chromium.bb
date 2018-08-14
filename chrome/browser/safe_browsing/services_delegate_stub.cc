@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "components/safe_browsing/db/v4_local_database_manager.h"
+#include "components/safe_browsing/android/remote_database_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 
@@ -34,11 +34,21 @@ void ServicesDelegateStub::InitializeCsdService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {}
 
 const scoped_refptr<SafeBrowsingDatabaseManager>&
-ServicesDelegateStub::v4_local_database_manager() const {
-  return v4_local_database_manager_;
+ServicesDelegateStub::database_manager() const {
+  return database_manager_;
 }
 
-void ServicesDelegateStub::Initialize(bool v4_enabled) {}
+void ServicesDelegateStub::Initialize() {
+  if (!database_manager_set_for_tests_) {
+    database_manager_ =
+        base::WrapRefCounted(new RemoteSafeBrowsingDatabaseManager());
+  }
+}
+void ServicesDelegateStub::SetDatabaseManagerForTest(
+    SafeBrowsingDatabaseManager* database_manager) {
+  database_manager_set_for_tests_ = true;
+  database_manager_ = database_manager;
+}
 
 void ServicesDelegateStub::ShutdownServices() {}
 
@@ -68,9 +78,13 @@ DownloadProtectionService* ServicesDelegateStub::GetDownloadService() {
 
 void ServicesDelegateStub::StartOnIOThread(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const V4ProtocolConfig& v4_config) {}
+    const V4ProtocolConfig& v4_config) {
+  database_manager_->StartOnIOThread(url_loader_factory, v4_config);
+}
 
-void ServicesDelegateStub::StopOnIOThread(bool shutdown) {}
+void ServicesDelegateStub::StopOnIOThread(bool shutdown) {
+  database_manager_->StopOnIOThread(shutdown);
+}
 
 void ServicesDelegateStub::CreatePasswordProtectionService(Profile* profile) {}
 void ServicesDelegateStub::RemovePasswordProtectionService(Profile* profile) {}

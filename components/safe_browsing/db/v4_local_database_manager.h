@@ -278,11 +278,6 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
                                     const FullHashToStoreAndHashPrefixesMap&
                                         full_hash_to_store_and_hash_prefixes);
 
-  // Make callbacks about the completion of database update process. This is
-  // currently used by the extension blacklist checker to disable any installed
-  // extensions that have been blacklisted since.
-  void PostUpdateNotificationOnUIThread();
-
   // When the database is ready to use, process the checks that were queued
   // while the database was loading from disk.
   void ProcessQueuedChecks();

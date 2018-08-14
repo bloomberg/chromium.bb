@@ -6,6 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
+#include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/test_database_manager.h"
@@ -14,24 +15,25 @@
 namespace safe_browsing {
 
 // TestSafeBrowsingService functions:
-TestSafeBrowsingService::TestSafeBrowsingService(
-    V4FeatureList::V4UsageStatus v4_usage_status)
-    : SafeBrowsingService(v4_usage_status),
-      protocol_manager_delegate_disabled_(false),
-      serialized_download_report_(base::EmptyString()) {}
+TestSafeBrowsingService::TestSafeBrowsingService()
+    : SafeBrowsingService(),
+      serialized_download_report_(base::EmptyString()),
+      use_v4_local_db_manager_(false) {
+#if defined(FULL_SAFE_BROWSING)
+  services_delegate_ = ServicesDelegate::CreateForTest(this, this);
+#endif  // defined(FULL_SAFE_BROWSING)
+}
 
 TestSafeBrowsingService::~TestSafeBrowsingService() {}
-
-SafeBrowsingProtocolConfig TestSafeBrowsingService::GetProtocolConfig() const {
-  if (protocol_config_)
-    return *protocol_config_;
-  return SafeBrowsingService::GetProtocolConfig();
-}
 
 V4ProtocolConfig TestSafeBrowsingService::GetV4ProtocolConfig() const {
   if (v4_protocol_config_)
     return *v4_protocol_config_;
   return SafeBrowsingService::GetV4ProtocolConfig();
+}
+
+void TestSafeBrowsingService::UseV4LocalDatabaseManager() {
+  use_v4_local_db_manager_ = true;
 }
 
 std::string TestSafeBrowsingService::serilized_download_report() {
@@ -44,11 +46,7 @@ void TestSafeBrowsingService::ClearDownloadReport() {
 
 void TestSafeBrowsingService::SetDatabaseManager(
     TestSafeBrowsingDatabaseManager* database_manager) {
-  database_manager_ = database_manager;
-  // Since TestSafeBrowsingDatabaseManager does not implement
-  // SafeBrowsingProtocolManagerDelegate, when it is used we need to disable
-  // protocol_manager_delegate.
-  protocol_manager_delegate_disabled_ = true;
+  SetDatabaseManagerForTest(database_manager);
 }
 
 void TestSafeBrowsingService::SetUIManager(
@@ -57,23 +55,10 @@ void TestSafeBrowsingService::SetUIManager(
   ui_manager_ = ui_manager;
 }
 
-SafeBrowsingDatabaseManager* TestSafeBrowsingService::CreateDatabaseManager() {
-  if (database_manager_)
-    return database_manager_.get();
-  return SafeBrowsingService::CreateDatabaseManager();
-}
-
 SafeBrowsingUIManager* TestSafeBrowsingService::CreateUIManager() {
   if (ui_manager_)
     return ui_manager_.get();
   return SafeBrowsingService::CreateUIManager();
-}
-
-SafeBrowsingProtocolManagerDelegate*
-TestSafeBrowsingService::GetProtocolManagerDelegate() {
-  if (protocol_manager_delegate_disabled_)
-    return nullptr;
-  return SafeBrowsingService::GetProtocolManagerDelegate();
 }
 
 void TestSafeBrowsingService::SendSerializedDownloadReport(
@@ -81,38 +66,80 @@ void TestSafeBrowsingService::SendSerializedDownloadReport(
   serialized_download_report_ = report;
 }
 
-void TestSafeBrowsingService::SetProtocolConfig(
-    SafeBrowsingProtocolConfig* protocol_config) {
-  protocol_config_.reset(protocol_config);
+const scoped_refptr<SafeBrowsingDatabaseManager>&
+TestSafeBrowsingService::database_manager() const {
+  if (test_database_manager_)
+    return test_database_manager_;
+  return SafeBrowsingService::database_manager();
 }
 
 void TestSafeBrowsingService::SetV4ProtocolConfig(
     V4ProtocolConfig* v4_protocol_config) {
   v4_protocol_config_.reset(v4_protocol_config);
 }
+// ServicesDelegate::ServicesCreator:
+bool TestSafeBrowsingService::CanCreateDatabaseManager() {
+  return !use_v4_local_db_manager_;
+}
+bool TestSafeBrowsingService::CanCreateDownloadProtectionService() {
+  return false;
+}
+bool TestSafeBrowsingService::CanCreateIncidentReportingService() {
+  return true;
+}
+bool TestSafeBrowsingService::CanCreateResourceRequestDetector() {
+  return false;
+}
+
+SafeBrowsingDatabaseManager* TestSafeBrowsingService::CreateDatabaseManager() {
+  DCHECK(!use_v4_local_db_manager_);
+#if defined(FULL_SAFE_BROWSING)
+  return new TestSafeBrowsingDatabaseManager();
+#else
+  NOTIMPLEMENTED();
+  return nullptr;
+#endif  // defined(FULL_SAFE_BROWSING)
+}
+
+DownloadProtectionService*
+TestSafeBrowsingService::CreateDownloadProtectionService() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+IncidentReportingService*
+TestSafeBrowsingService::CreateIncidentReportingService() {
+#if defined(FULL_SAFE_BROWSING)
+  return new IncidentReportingService(nullptr);
+#else
+  NOTIMPLEMENTED();
+  return nullptr;
+#endif  // defined(FULL_SAFE_BROWSING)
+}
+ResourceRequestDetector*
+TestSafeBrowsingService::CreateResourceRequestDetector() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
 
 // TestSafeBrowsingServiceFactory functions:
-TestSafeBrowsingServiceFactory::TestSafeBrowsingServiceFactory(
-    V4FeatureList::V4UsageStatus v4_usage_status)
-    : test_safe_browsing_service_(nullptr),
-      test_protocol_config_(nullptr),
-      v4_usage_status_(v4_usage_status) {}
+TestSafeBrowsingServiceFactory::TestSafeBrowsingServiceFactory()
+    : test_safe_browsing_service_(nullptr), use_v4_local_db_manager_(false) {}
 
 TestSafeBrowsingServiceFactory::~TestSafeBrowsingServiceFactory() {}
 
 SafeBrowsingService*
 TestSafeBrowsingServiceFactory::CreateSafeBrowsingService() {
   // Instantiate TestSafeBrowsingService.
-  test_safe_browsing_service_ = new TestSafeBrowsingService(v4_usage_status_);
+  test_safe_browsing_service_ = new TestSafeBrowsingService();
   // Plug-in test member clases accordingly.
+  if (use_v4_local_db_manager_)
+    test_safe_browsing_service_->UseV4LocalDatabaseManager();
   if (test_ui_manager_)
     test_safe_browsing_service_->SetUIManager(test_ui_manager_.get());
   if (test_database_manager_) {
     test_safe_browsing_service_->SetDatabaseManager(
         test_database_manager_.get());
   }
-  if (test_protocol_config_)
-    test_safe_browsing_service_->SetProtocolConfig(test_protocol_config_);
   return test_safe_browsing_service_;
 }
 
@@ -130,10 +157,8 @@ void TestSafeBrowsingServiceFactory::SetTestDatabaseManager(
     TestSafeBrowsingDatabaseManager* database_manager) {
   test_database_manager_ = database_manager;
 }
-
-void TestSafeBrowsingServiceFactory::SetTestProtocolConfig(
-    const SafeBrowsingProtocolConfig& protocol_config) {
-  test_protocol_config_ = new SafeBrowsingProtocolConfig(protocol_config);
+void TestSafeBrowsingServiceFactory::UseV4LocalDatabaseManager() {
+  use_v4_local_db_manager_ = true;
 }
 
 // TestSafeBrowsingUIManager functions:

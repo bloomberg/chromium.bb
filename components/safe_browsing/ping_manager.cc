@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
@@ -73,20 +74,14 @@ namespace safe_browsing {
 // static
 std::unique_ptr<PingManager> PingManager::Create(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const SafeBrowsingProtocolConfig& config) {
+    const V4ProtocolConfig& config) {
   return base::WrapUnique(new PingManager(url_loader_factory, config));
 }
 
 PingManager::PingManager(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const SafeBrowsingProtocolConfig& config)
-    : client_name_(config.client_name),
-      url_loader_factory_(url_loader_factory),
-      url_prefix_(config.url_prefix) {
-  DCHECK(!url_prefix_.empty());
-
-  version_ = ProtocolManagerHelper::Version();
-}
+    const V4ProtocolConfig& config)
+    : config_(config), url_loader_factory_(url_loader_factory) {}
 
 PingManager::~PingManager() {}
 
@@ -157,10 +152,8 @@ GURL PingManager::SafeBrowsingHitUrl(
          hit_report.threat_type == SB_THREAT_TYPE_URL_BINARY_MALWARE ||
          hit_report.threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING ||
          hit_report.threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE);
-  std::string url = ProtocolManagerHelper::ComposeUrl(
-      url_prefix_, "report", client_name_, version_, std::string(),
-      hit_report.extended_reporting_level);
-
+  std::string url =
+      GetReportUrl(config_, "report", &hit_report.extended_reporting_level);
   std::string threat_list = "none";
   switch (hit_report.threat_type) {
     case SB_THREAT_TYPE_URL_MALWARE:
@@ -235,14 +228,7 @@ GURL PingManager::SafeBrowsingHitUrl(
 }
 
 GURL PingManager::ThreatDetailsUrl() const {
-  std::string url = base::StringPrintf(
-      "%s/clientreport/malware?client=%s&appver=%s&pver=1.0",
-      url_prefix_.c_str(), client_name_.c_str(), version_.c_str());
-  std::string api_key = google_apis::GetAPIKey();
-  if (!api_key.empty()) {
-    base::StringAppendF(&url, "&key=%s",
-                        net::EscapeQueryParamValue(api_key, true).c_str());
-  }
+  std::string url = GetReportUrl(config_, "clientreport/malware");
   return GURL(url);
 }
 

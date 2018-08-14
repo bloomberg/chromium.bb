@@ -36,9 +36,9 @@
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
-#include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/test_extension_event_observer.h"
+#include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/safe_browsing_private.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
@@ -115,8 +115,7 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
 };
 
-class FakeSafeBrowsingService : public SafeBrowsingService,
-                                public ServicesDelegate::ServicesCreator {
+class FakeSafeBrowsingService : public TestSafeBrowsingService {
  public:
   FakeSafeBrowsingService()
       : test_shared_loader_factory_(
@@ -124,12 +123,13 @@ class FakeSafeBrowsingService : public SafeBrowsingService,
                 &test_url_loader_factory_)),
         download_report_count_(0) {
     services_delegate_ = ServicesDelegate::CreateForTest(this, this);
+    mock_database_manager_ = new MockSafeBrowsingDatabaseManager();
   }
 
   // Returned pointer has the same lifespan as the database_manager_ refcounted
   // object.
   MockSafeBrowsingDatabaseManager* mock_database_manager() {
-    return mock_database_manager_;
+    return mock_database_manager_.get();
   }
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
@@ -148,40 +148,24 @@ class FakeSafeBrowsingService : public SafeBrowsingService,
   int download_report_count() { return download_report_count_; }
 
  protected:
-  ~FakeSafeBrowsingService() override { mock_database_manager_ = nullptr; }
-
-  SafeBrowsingDatabaseManager* CreateDatabaseManager() override {
-    mock_database_manager_ = new MockSafeBrowsingDatabaseManager();
-    return mock_database_manager_;
-  }
-
-  SafeBrowsingProtocolManagerDelegate* GetProtocolManagerDelegate() override {
-    // Our SafeBrowsingDatabaseManager doesn't implement this delegate.
-    return NULL;
-  }
+  ~FakeSafeBrowsingService() override {}
 
   void RegisterAllDelayedAnalysis() override {}
 
  private:
   // ServicesDelegate::ServicesCreator:
-  bool CanCreateDownloadProtectionService() override { return false; }
+  bool CanCreateDatabaseManager() override { return true; }
   bool CanCreateIncidentReportingService() override { return true; }
-  bool CanCreateResourceRequestDetector() override { return false; }
-  DownloadProtectionService* CreateDownloadProtectionService() override {
-    NOTREACHED();
-    return nullptr;
+  safe_browsing::SafeBrowsingDatabaseManager* CreateDatabaseManager() override {
+    return mock_database_manager_.get();
   }
   IncidentReportingService* CreateIncidentReportingService() override {
     return new IncidentReportingService(nullptr);
   }
-  ResourceRequestDetector* CreateResourceRequestDetector() override {
-    NOTREACHED();
-    return nullptr;
-  }
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
-  MockSafeBrowsingDatabaseManager* mock_database_manager_;
+  scoped_refptr<MockSafeBrowsingDatabaseManager> mock_database_manager_;
   int download_report_count_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingService);
@@ -229,27 +213,12 @@ ACTION_P(TrustSignature, contents) {
   chain->add_element()->set_certificate(contents.data(), contents.size());
 }
 
-// We can't call OnSafeBrowsingResult directly because SafeBrowsingCheck does
-// not have any copy constructor which means it can't be stored in a callback
-// easily.  Note: check will be deleted automatically when the callback is
-// deleted.
-void OnSafeBrowsingResult(
-    LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck* check) {
-  check->OnSafeBrowsingResult();
-}
-
 ACTION_P(CheckDownloadUrlDone, threat_type) {
-  // TODO(nparker): Remove use of SafeBrowsingCheck and instead call
-  // client->OnCheckDownloadUrlResult(..) directly.
-  LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck* check =
-      new LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck(
-          arg0, std::vector<SBFullHash>(), arg1, BINURL,
-          CreateSBThreatTypeSet({SB_THREAT_TYPE_URL_BINARY_MALWARE}));
-  for (size_t i = 0; i < check->url_results.size(); ++i)
-    check->url_results[i] = threat_type;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&OnSafeBrowsingResult, base::Owned(check)));
+      base::BindOnce(
+          &SafeBrowsingDatabaseManager::Client::OnCheckDownloadUrlResult,
+          base::Unretained(arg1), arg0, threat_type));
 }
 
 class DownloadProtectionServiceTest : public testing::Test {

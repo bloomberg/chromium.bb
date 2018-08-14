@@ -9,8 +9,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/safe_browsing/crx_info.pb.h"
+#include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_status.h"
@@ -34,7 +34,7 @@ void BlacklistStateFetcher::Request(const std::string& id,
   if (!safe_browsing_config_) {
     if (g_browser_process && g_browser_process->safe_browsing_service()) {
       SetSafeBrowsingConfig(
-          g_browser_process->safe_browsing_service()->GetProtocolConfig());
+          g_browser_process->safe_browsing_service()->GetV4ProtocolConfig());
     } else {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(callback, BLACKLISTED_UNKNOWN));
@@ -63,7 +63,8 @@ void BlacklistStateFetcher::SendRequest(const std::string& id) {
   std::string request_str;
   request.SerializeToString(&request_str);
 
-  GURL request_url = RequestUrl();
+  GURL request_url = GURL(safe_browsing::GetReportUrl(
+      *safe_browsing_config_, "clientreport/crx-list-info"));
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("extension_blacklist", R"(
         semantics {
@@ -111,24 +112,9 @@ void BlacklistStateFetcher::SendRequest(const std::string& id) {
 }
 
 void BlacklistStateFetcher::SetSafeBrowsingConfig(
-    const safe_browsing::SafeBrowsingProtocolConfig& config) {
-  safe_browsing_config_.reset(
-      new safe_browsing::SafeBrowsingProtocolConfig(config));
-}
-
-GURL BlacklistStateFetcher::RequestUrl() const {
-  std::string url = base::StringPrintf(
-      "%s/%s?client=%s&appver=%s&pver=2.2",
-      safe_browsing_config_->url_prefix.c_str(),
-      "clientreport/crx-list-info",
-      safe_browsing_config_->client_name.c_str(),
-      safe_browsing_config_->version.c_str());
-  std::string api_key = google_apis::GetAPIKey();
-  if (!api_key.empty()) {
-    base::StringAppendF(&url, "&key=%s",
-                        net::EscapeQueryParamValue(api_key, true).c_str());
-  }
-  return GURL(url);
+    const safe_browsing::V4ProtocolConfig& config) {
+  safe_browsing_config_ =
+      std::make_unique<safe_browsing::V4ProtocolConfig>(config);
 }
 
 void BlacklistStateFetcher::OnURLLoaderComplete(

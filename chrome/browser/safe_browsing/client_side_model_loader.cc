@@ -15,9 +15,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/load_flags.h"
@@ -176,7 +176,7 @@ void ModelLoader::OnURLLoaderComplete(
   int response_code = 0;
   if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers)
     response_code = url_loader_->ResponseInfo()->headers->response_code();
-  SafeBrowsingProtocolManager::RecordHttpResponseOrErrorCode(
+  V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
       kUmaModelDownloadResponseMetricName, url_loader_->NetError(),
       response_code);
 

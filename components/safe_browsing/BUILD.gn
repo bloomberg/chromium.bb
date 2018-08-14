@@ -71,6 +71,7 @@ source_set("ping_manager_unittest") {
   deps = [
     ":ping_manager",
     "//base:base",
+    "//components/safe_browsing/db:v4_test_util",
     "//net:net",
     "//net:test_support",
     "//testing/gtest",

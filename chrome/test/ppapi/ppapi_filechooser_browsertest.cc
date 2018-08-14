@@ -22,6 +22,7 @@
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "components/safe_browsing/db/test_database_manager.h"
 
 using safe_browsing::DownloadProtectionService;
@@ -39,21 +40,6 @@ struct SafeBrowsingTestConfiguration {
       result_map;
   safe_browsing::DownloadCheckResult default_result =
       safe_browsing::DownloadCheckResult::SAFE;
-};
-
-class FakeDatabaseManager
-    : public safe_browsing::TestSafeBrowsingDatabaseManager {
- public:
-  bool IsSupported() const override { return true; }
-  bool MatchDownloadWhitelistUrl(const GURL& url) override {
-    // This matches the behavior in RunTestViaHTTP().
-    return url.SchemeIsHTTPOrHTTPS() && url.has_path() &&
-           base::StartsWith(url.path(), "/test_case.html",
-                            base::CompareCase::SENSITIVE);
-  }
-
- protected:
-  ~FakeDatabaseManager() override {}
 };
 
 class FakeDownloadProtectionService : public DownloadProtectionService {
@@ -93,9 +79,7 @@ class FakeDownloadProtectionService : public DownloadProtectionService {
   const SafeBrowsingTestConfiguration* test_configuration_;
 };
 
-class TestSafeBrowsingService
-    : public safe_browsing::ServicesDelegate::ServicesCreator,
-      public safe_browsing::SafeBrowsingService {
+class TestSafeBrowsingService : public safe_browsing::TestSafeBrowsingService {
  public:
   explicit TestSafeBrowsingService(const SafeBrowsingTestConfiguration* config)
       : test_configuration_(config) {
@@ -106,18 +90,8 @@ class TestSafeBrowsingService
  private:
   // safe_browsing::ServicesDelegate::ServicesCreator
   bool CanCreateDownloadProtectionService() override { return true; }
-  bool CanCreateIncidentReportingService() override { return false; }
-  bool CanCreateResourceRequestDetector() override { return false; }
   DownloadProtectionService* CreateDownloadProtectionService() override {
     return new FakeDownloadProtectionService(test_configuration_);
-  }
-  safe_browsing::IncidentReportingService* CreateIncidentReportingService()
-      override {
-    return nullptr;
-  }
-  safe_browsing::ResourceRequestDetector* CreateResourceRequestDetector()
-      override {
-    return nullptr;
   }
 
   const SafeBrowsingTestConfiguration* test_configuration_;

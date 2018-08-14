@@ -62,7 +62,6 @@ source_set("chromeos") {
     "//chrome/browser/devtools",
     "//chrome/browser/extensions",
     "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
-    "//chrome/browser/safe_browsing:chunk_proto",
     "//chrome/browser/ssl:proto",
     "//chrome/common",
     "//chrome/common/extensions/api",

@@ -34,8 +34,7 @@ class BlacklistStateFetcher {
 
   virtual void Request(const std::string& id, const RequestCallback& callback);
 
-  void SetSafeBrowsingConfig(
-      const safe_browsing::SafeBrowsingProtocolConfig& config);
+  void SetSafeBrowsingConfig(const safe_browsing::V4ProtocolConfig& config);
 
  protected:
   void OnURLLoaderComplete(network::SimpleURLLoader* url_loader,
@@ -55,8 +54,7 @@ class BlacklistStateFetcher {
 
   void SendRequest(const std::string& id);
 
-  std::unique_ptr<safe_browsing::SafeBrowsingProtocolConfig>
-      safe_browsing_config_;
+  std::unique_ptr<safe_browsing::V4ProtocolConfig> safe_browsing_config_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // SimpleURLLoader -> (owned loader, extension id).
