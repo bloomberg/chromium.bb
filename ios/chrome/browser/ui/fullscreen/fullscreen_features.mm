@@ -16,6 +16,7 @@ namespace {
 const char kContentInsetChoiceValue[] = "content-inset";
 const char kSafeAreaChoiceValue[] = "safe-area";
 const char kHybridChoiceValue[] = "hybrid";
+const char kSmoothScrollingChoiceValue[] = "smooth";
 }
 
 namespace fullscreen {
@@ -32,7 +33,8 @@ const flags_ui::FeatureEntry::Choice kViewportAdjustmentExperimentChoices[] = {
      "safe-area"},
     {"Use Hybrid Implementation",
      kViewportAdjustmentExperimentCommandLineSwitch, "hybrid"},
-};
+    {"Use Smooth Scrolling Workaround",
+     kViewportAdjustmentExperimentCommandLineSwitch, "smooth"}};
 
 ViewportAdjustmentExperiment GetActiveViewportExperiment() {
   const base::CommandLine* command_line =
@@ -46,6 +48,8 @@ ViewportAdjustmentExperiment GetActiveViewportExperiment() {
       return ViewportAdjustmentExperiment::SAFE_AREA;
     if (viewport_experiment == std::string(kHybridChoiceValue))
       return ViewportAdjustmentExperiment::HYBRID;
+    if (viewport_experiment == std::string(kSmoothScrollingChoiceValue))
+      return ViewportAdjustmentExperiment::SMOOTH_SCROLLING;
   }
   return ViewportAdjustmentExperiment::FRAME;
 }

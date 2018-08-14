@@ -17,7 +17,7 @@ extern const char kViewportAdjustmentExperimentCommandLineSwitch[];
 // The available viewport adjustment experiments.  The choices in this array
 // correspond with the ViewportAdjustmentExperiment values.
 extern const flags_ui::FeatureEntry::Choice
-    kViewportAdjustmentExperimentChoices[4];
+    kViewportAdjustmentExperimentChoices[5];
 
 // Enum type describing viewport adjustment experiments.
 enum class ViewportAdjustmentExperiment : short {
@@ -28,6 +28,8 @@ enum class ViewportAdjustmentExperiment : short {
               // container view.
   HYBRID,  // Translates the web view up and down and updates the viewport using
            // safe area insets.
+  SMOOTH_SCROLLING,  // Adjusts the viewport using the smooth scrolling
+                     // workaround.
 };
 
 // Convenience method for retrieving the active viewport adjustment experiment
