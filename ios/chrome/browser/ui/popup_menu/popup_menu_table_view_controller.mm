@@ -171,14 +171,14 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
          [self.tableViewModel itemsInSectionWithIdentifier:sectionIdentifier]) {
       CGSize sizeForCell = [item cellSizeForWidth:self.view.bounds.size.width];
       width = MAX(width, ceil(sizeForCell.width));
-      height += ceil(sizeForCell.height);
+      height += sizeForCell.height;
     }
     // Add the separator height (only available the non-final sections).
     height += [self tableView:self.tableView heightForFooterInSection:section];
   }
   height +=
       self.tableView.contentInset.top + self.tableView.contentInset.bottom;
-  return CGSizeMake(width, height);
+  return CGSizeMake(width, ceil(height));
 }
 
 #pragma mark - UITableViewDelegate
