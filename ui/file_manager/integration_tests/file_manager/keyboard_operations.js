@@ -5,22 +5,23 @@
 'use strict';
 
 /**
- * Waits until a dialog with an OK button is shown and accepts it.
+ * Waits until a dialog with an OK button is shown, and accepts it by clicking
+ * on the dialog's OK button.
  *
- * @param {string} windowId Target window ID.
- * @return {Promise} Promise to be fulfilled after clicking the OK button in the
- *     dialog.
+ * @param {string} windowId Window ID.
+ * @return {Promise} Promise to be fulfilled after clicking the OK button.
  */
 function waitAndAcceptDialog(windowId) {
-  return remoteCall.waitForElement(windowId, '.cr-dialog-ok').
-      then(remoteCall.callRemoteTestUtil.bind(remoteCall,
-                                              'fakeMouseClick',
-                                              windowId,
-                                              ['.cr-dialog-ok'],
-                                              null)).
-      then(function(result) {
-        chrome.test.assertTrue(result);
-        return remoteCall.waitForElementLost(windowId, '.cr-dialog-container');
+  const dialogButton = '.cr-dialog-ok';
+  return remoteCall.waitForElement(windowId, dialogButton)
+      .then(function() {
+        return remoteCall.callRemoteTestUtil(
+            'fakeMouseClick', windowId, [dialogButton]);
+      })
+      .then(function(result) {
+        chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
+        const dialog = '.cr-dialog-container';
+        return remoteCall.waitForElementLost(windowId, dialog);
       });
 }
 
