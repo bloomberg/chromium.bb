@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view_base.h"
 
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -51,10 +50,6 @@ PageInfoBubbleViewBase::PageInfoBubbleViewBase(
   set_parent_window(parent_window);
   if (!anchor_view)
     SetAnchorRect(anchor_rect);
-
-  // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(gfx::Insets(
-      GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
 }
 
 int PageInfoBubbleViewBase::GetDialogButtons() const {

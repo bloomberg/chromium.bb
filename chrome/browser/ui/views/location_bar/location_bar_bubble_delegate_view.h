@@ -59,6 +59,8 @@ class LocationBarBubbleDelegateView : public views::BubbleDialogDelegateView,
   void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
 
+  gfx::Rect GetAnchorBoundsInScreen() const override;
+
   // If the bubble is not anchored to a view, places the bubble in the top right
   // (left in RTL) of the |screen_bounds| that contain web contents's browser
   // window. Because the positioning is based on the size of the bubble, this
