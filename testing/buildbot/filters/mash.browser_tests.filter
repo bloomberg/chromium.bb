@@ -35,7 +35,6 @@
 -AutomationManagerAuraBrowserTest.*
 
 # The browser frame is a work in progress.
--BrowserNonClientFrameViewAshBackButtonTest.*
 -BrowserNonClientFrameViewAshTest.AvatarDisplayOnTeleportedWindow/*
 -BrowserNonClientFrameViewAshTest.HeaderHeightForSnappedBrowserInSplitView/*
 -BrowserNonClientFrameViewAshTest.ImmersiveModeTopViewInset/*

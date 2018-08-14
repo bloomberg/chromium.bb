@@ -1033,6 +1033,19 @@ class BrowserNonClientFrameViewAshBackButtonTest
 // Test if the V1 apps' frame has a back button.
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshBackButtonTest,
                        V1BackButton) {
+  // Normal browser windows don't have a frame back button.
+  if (features::IsAshInBrowserProcess()) {
+    BrowserNonClientFrameViewAsh* frame_view =
+        GetFrameViewAsh(BrowserView::GetBrowserViewForBrowser(browser()));
+    EXPECT_FALSE(frame_view->back_button_);
+  } else {
+    EXPECT_EQ(ash::FrameBackButtonState::kNone,
+              BrowserView::GetBrowserViewForBrowser(browser())
+                  ->GetWidget()
+                  ->GetNativeWindow()
+                  ->GetProperty(ash::kFrameBackButtonStateKey));
+  }
+
   browser()->window()->Close();
 
   // Open a new app window.
@@ -1045,20 +1058,38 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshBackButtonTest,
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
-  ASSERT_TRUE(frame_view->back_button_);
-  EXPECT_TRUE(frame_view->back_button_->visible());
-  // The back button should be disabled initially.
-  EXPECT_FALSE(frame_view->back_button_->enabled());
+  aura::Window* app_window = frame_view->GetWidget()->GetNativeWindow();
+
+  if (features::IsAshInBrowserProcess()) {
+    ASSERT_TRUE(frame_view->back_button_);
+    EXPECT_TRUE(frame_view->back_button_->visible());
+    // The back button should be disabled initially.
+    EXPECT_FALSE(frame_view->back_button_->enabled());
+  } else {
+    EXPECT_EQ(ash::FrameBackButtonState::kDisabled,
+              app_window->GetProperty(ash::kFrameBackButtonStateKey));
+  }
 
   // Nagivate to a page. The back button should now be enabled.
   const GURL kAppStartURL("http://example.org/");
   NavigateParams nav_params(browser, kAppStartURL, ui::PAGE_TRANSITION_LINK);
   ui_test_utils::NavigateToURL(&nav_params);
-  EXPECT_TRUE(frame_view->back_button_->enabled());
+
+  if (features::IsAshInBrowserProcess()) {
+    EXPECT_TRUE(frame_view->back_button_->enabled());
+  } else {
+    EXPECT_EQ(ash::FrameBackButtonState::kEnabled,
+              app_window->GetProperty(ash::kFrameBackButtonStateKey));
+  }
 
   // Go back to the blank. The back button should be disabled again.
   chrome::GoBack(browser, WindowOpenDisposition::CURRENT_TAB);
-  EXPECT_FALSE(frame_view->back_button_->enabled());
+  if (features::IsAshInBrowserProcess()) {
+    EXPECT_FALSE(frame_view->back_button_->enabled());
+  } else {
+    EXPECT_EQ(ash::FrameBackButtonState::kDisabled,
+              app_window->GetProperty(ash::kFrameBackButtonStateKey));
+  }
 }
 
 // Test the normal type browser's kTopViewInset is always 0.
