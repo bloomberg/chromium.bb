@@ -4,7 +4,7 @@
 
 Author: hayato@chromium.org
 
-The `Source/core/dom` directory contains the implementation of [DOM].
+The `renderer/core/dom` directory contains the implementation of [DOM].
 
 [dom]: https://dom.spec.whatwg.org/
 [dom standard]: https://dom.spec.whatwg.org/
@@ -30,8 +30,8 @@ directory.
 
 # Node and Node Tree
 
-In this README, we draw a tree in left-to-right direction. `A` is the root of
-the tree.
+In this README, we draw a tree in left-to-right direction in _ascii-art_
+notation. `A` is the root of the tree.
 
 ```text
 A
@@ -62,6 +62,8 @@ That means:
   child.
 - Parent can't tell how many children it has in O(1).
 
+![next sibling and previous sibling](https://hayato.io/2017/dom/next-sibling.svg)
+
 Further info:
 
 - `Node`, `ContainerNode`
@@ -89,6 +91,10 @@ void foo(const Node& node) {
 }
 ```
 
+Tree order is:
+
+![tree order](https://hayato.io/2017/dom/tree-order.svg)
+
 However, traversing a tree in this way might be error-prone. Instead, you can
 use `NodeTraversal` and `ElementTraversal`. They provides a C++11's range-based
 for loops, such as:
@@ -110,10 +116,8 @@ for (Node& node : NodeTraversal::startsAt(root)) {
 ```
 
 e.g. Given the root _A_, this traverses _A_, _B_, _C_, _D_, _E_, and _F_ in this
-order.
-
-There are several other useful range-based for loops for each purpose. The cost
-of using range-based for loops is zero because everything can be inlined.
+order.There are several other useful range-based for loops for each purpose. The
+cost of using range-based for loops is zero because everything can be inlined.
 
 Further info:
 
@@ -132,6 +136,8 @@ host**, or just a **host** if the context is clear.
   shadow tree is therefore never alone.
 - The node tree of a shadow root’s host is sometimes referred to as the **light
   tree**.
+
+![shadow tree](https://hayato.io/2017/dom/shadow-tree.svg)
 
 For example, given the example node tree:
 
@@ -283,7 +289,12 @@ Further Info:
 
 In the previous picture, you might think that more than one node trees, a
 document tree and a shadow tree, were _connected_ to each other. That is _true_
-in some sense. The following is a more complex example:
+in some sense. We call this _super tree_ as _composed tree_, which is a _tree of
+trees_.
+
+![super tree](https://hayato.io/2017/dom/super-tree.svg)
+
+The following is a complex example:
 
 ```text
 document
@@ -469,6 +480,8 @@ Since the Web Platform got Shadow DOM, we now have a composed tree which is
 composed of multiple node trees, instead of a single node tree. That means We
 have to _flatten_ the composed tree to the one node tree, called a _flat tree_,
 from which a layout tree is constructed.
+
+![flat tree](https://hayato.io/2017/dom/flat-tree.svg)
 
 For example, given the following composed tree,
 
@@ -736,7 +749,11 @@ of cryptogram to you.
 In this README, I'll explain how an event is dispatched and how its event path
 is calculated briefly by using some relatively-understandable examples.
 
-Here is the example composed tree:
+Basically, an event is dispatched across shadow trees.
+
+![event dispatch](https://hayato.io/2017/dom/event-dispatch.svg)
+
+Let me show more complex example composed tree, involving a slot:
 
 ```text
 A
