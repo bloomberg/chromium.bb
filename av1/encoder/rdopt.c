@@ -6510,7 +6510,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   const int have_newmv = have_nearmv_in_inter_mode(mbmi->mode);
   const int ref_mv_idx = mbmi->ref_mv_idx + (have_newmv ? 1 : 0);
   MV *const best_mv = &x->best_mv.as_mv;
-  const int search_range = 3;
+  const int search_range = SEARCH_RANGE_8P;
   const int sadpb = x->sadperbit16;
   // Allow joint search multiple times iteratively for each reference frame
   // and break out of the search loop if it couldn't find a better mv.
@@ -7153,7 +7153,7 @@ static void compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   int bestsme = INT_MAX;
   int sadpb = x->sadperbit16;
   MV *const best_mv = &x->best_mv.as_mv;
-  int search_range = 3;
+  int search_range = SEARCH_RANGE_8P;
 
   MvLimits tmp_mv_limits = x->mv_limits;
 

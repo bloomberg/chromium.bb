@@ -31,6 +31,11 @@ extern "C" {
 // for Block_16x16
 #define BORDER_MV_PIXELS_B16 (16 + AOM_INTERP_EXTEND)
 
+#define SEARCH_RANGE_8P 3
+#define SEARCH_GRID_STRIDE_8P (2 * SEARCH_RANGE_8P + 1)
+#define SEARCH_GRID_CENTER_8P \
+  (SEARCH_RANGE_8P * SEARCH_GRID_STRIDE_8P + SEARCH_RANGE_8P)
+
 // motion search site
 typedef struct search_site {
   MV mv;
@@ -42,6 +47,11 @@ typedef struct search_site_config {
   int ss_count;
   int searches_per_step;
 } search_site_config;
+
+typedef struct {
+  MV coord;
+  int coord_offset;
+} search_neighbors;
 
 void av1_init_dsmotion_compensation(search_site_config *cfg, int stride);
 void av1_init3smotion_compensation(search_site_config *cfg, int stride);

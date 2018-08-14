@@ -2021,8 +2021,16 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
                              const uint8_t *mask, int mask_stride,
                              int invert_mask, const MV *center_mv,
                              const uint8_t *second_pred) {
-  const MV neighbors[8] = { { -1, 0 },  { 0, -1 }, { 0, 1 },  { 1, 0 },
-                            { -1, -1 }, { 1, -1 }, { -1, 1 }, { 1, 1 } };
+  static const search_neighbors neighbors[8] = {
+    { { -1, 0 }, -1 * SEARCH_GRID_STRIDE_8P + 0 },
+    { { 0, -1 }, 0 * SEARCH_GRID_STRIDE_8P - 1 },
+    { { 0, 1 }, 0 * SEARCH_GRID_STRIDE_8P + 1 },
+    { { 1, 0 }, 1 * SEARCH_GRID_STRIDE_8P + 0 },
+    { { -1, -1 }, -1 * SEARCH_GRID_STRIDE_8P - 1 },
+    { { 1, -1 }, 1 * SEARCH_GRID_STRIDE_8P - 1 },
+    { { -1, 1 }, -1 * SEARCH_GRID_STRIDE_8P + 1 },
+    { { 1, 1 }, 1 * SEARCH_GRID_STRIDE_8P + 1 }
+  };
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct buf_2d *const what = &x->plane[0].src;
   const struct buf_2d *const in_what = &xd->plane[0].pre[0];
@@ -2030,6 +2038,10 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
   MV *best_mv = &x->best_mv.as_mv;
   unsigned int best_sad = INT_MAX;
   int i, j;
+  uint8_t do_refine_search_grid[SEARCH_GRID_STRIDE_8P * SEARCH_GRID_STRIDE_8P] =
+      { 0 };
+  int grid_center = SEARCH_GRID_CENTER_8P;
+  int grid_coord = grid_center;
 
   clamp_mv(best_mv, x->mv_limits.col_min, x->mv_limits.col_max,
            x->mv_limits.row_min, x->mv_limits.row_max);
@@ -2051,13 +2063,20 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
                  mvsad_err_cost(x, best_mv, &fcenter_mv, error_per_bit);
   }
 
+  do_refine_search_grid[grid_coord] = 1;
+
   for (i = 0; i < search_range; ++i) {
     int best_site = -1;
 
     for (j = 0; j < 8; ++j) {
-      const MV mv = { best_mv->row + neighbors[j].row,
-                      best_mv->col + neighbors[j].col };
+      grid_coord = grid_center + neighbors[j].coord_offset;
+      if (do_refine_search_grid[grid_coord] == 1) {
+        continue;
+      }
+      const MV mv = { best_mv->row + neighbors[j].coord.row,
+                      best_mv->col + neighbors[j].coord.col };
 
+      do_refine_search_grid[grid_coord] = 1;
       if (is_mv_in(&x->mv_limits, &mv)) {
         unsigned int sad;
         if (mask) {
@@ -2087,8 +2106,9 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
     if (best_site == -1) {
       break;
     } else {
-      best_mv->row += neighbors[best_site].row;
-      best_mv->col += neighbors[best_site].col;
+      best_mv->row += neighbors[best_site].coord.row;
+      best_mv->col += neighbors[best_site].coord.col;
+      grid_center += neighbors[best_site].coord_offset;
     }
   }
   return best_sad;
