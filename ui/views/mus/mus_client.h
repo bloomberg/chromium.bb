@@ -27,7 +27,6 @@ class WindowTreeClient;
 
 namespace base {
 class SingleThreadTaskRunner;
-class Thread;
 }
 
 namespace service_manager {
@@ -88,6 +87,10 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
     // Connect to the accessibility host service in the browser (e.g. to support
     // ChromeVox).
     bool use_accessibility_host = false;
+
+    // Set to true if the WindowService is running in the same process and on
+    // the same thread as MusClient.
+    bool running_in_ws_process = false;
   };
 
   // Most clients should use AuraInit, which creates a MusClient.
@@ -110,6 +113,10 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   // Returns the properties to supply to mus when creating a window.
   static std::map<std::string, std::vector<uint8_t>>
   ConfigurePropertiesFromParams(const Widget::InitParams& init_params);
+
+  aura::PropertyConverter* property_converter() {
+    return property_converter_.get();
+  }
 
   aura::WindowTreeClient* window_tree_client() { return window_tree_client_; }
 
@@ -178,8 +185,6 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   static MusClient* instance_;
 
   service_manager::Identity identity_;
-
-  std::unique_ptr<base::Thread> io_thread_;
 
   base::ObserverList<MusClientObserver> observer_list_;
 

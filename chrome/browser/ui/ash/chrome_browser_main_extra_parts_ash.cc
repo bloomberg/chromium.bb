@@ -50,6 +50,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -143,13 +144,27 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
   if (!features::IsAshInBrowserProcess()) {
     // ash::Shell will not be created because ash is running out-of-process.
     ash::Shell::SetIsBrowserProcessWithMash();
-    DCHECK(views::MusClient::Exists());
-    views::MusClient* mus_client = views::MusClient::Get();
-    aura::WindowTreeClientDelegate* delegate = mus_client;
+  }
+  if (features::IsUsingWindowService()) {
+    // Start up the window service and the ash system UI service.
+    connection->GetConnector()->StartService(
+        service_manager::Identity(ui::mojom::kServiceName));
+    connection->GetConnector()->StartService(
+        service_manager::Identity(ash::mojom::kServiceName));
+
+    views::MusClient::InitParams params;
+    params.connector = connection->GetConnector();
+    params.io_task_runner = content::BrowserThread::GetTaskRunnerForThread(
+        content::BrowserThread::IO);
+    // WMState has already been created, so don't have MusClient create it.
+    params.create_wm_state = false;
+    params.running_in_ws_process = features::IsSingleProcessMash();
+    params.create_cursor_factory = !features::IsSingleProcessMash();
+    mus_client_ = std::make_unique<views::MusClient>(params);
     // Register ash-specific window properties with Chrome's property converter.
     // Values of registered properties will be transported between the services.
-    ash::RegisterWindowProperties(delegate->GetPropertyConverter());
-    mus_client->SetMusPropertyMirror(
+    ash::RegisterWindowProperties(mus_client_->property_converter());
+    mus_client_->SetMusPropertyMirror(
         std::make_unique<ash::MusPropertyMirrorAsh>());
   }
 }

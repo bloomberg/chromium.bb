@@ -51,12 +51,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
-#if defined(OS_CHROMEOS)
-#include "ash/public/interfaces/constants.mojom.h"
-#include "content/public/common/content_switches.h"
-#include "ui/base/ui_base_features.h"
-#endif  // defined(OS_CHROMEOS)
-
 ChromeBrowserMainExtraPartsViews::ChromeBrowserMainExtraPartsViews() {
 }
 
@@ -150,31 +144,6 @@ void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
 
   exit(EXIT_FAILURE);
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
-}
-
-void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
-    content::ServiceManagerConnection* connection) {
-  DCHECK(connection);
-#if defined(OS_CHROMEOS)
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL ||
-      features::IsAshInBrowserProcess()) {
-    return;
-  }
-
-  // Start up the window service and the ash system UI service.
-  connection->GetConnector()->StartService(
-      service_manager::Identity(ui::mojom::kServiceName));
-  connection->GetConnector()->StartService(
-      service_manager::Identity(ash::mojom::kServiceName));
-
-  views::MusClient::InitParams params;
-  params.connector = connection->GetConnector();
-  params.io_task_runner = content::BrowserThread::GetTaskRunnerForThread(
-      content::BrowserThread::IO);
-  // WMState is owned as a member, so don't have MusClient create it.
-  params.create_wm_state = false;
-  mus_client_ = std::make_unique<views::MusClient>(params);
-#endif  // defined(OS_CHROMEOS)
 }
 
 void ChromeBrowserMainExtraPartsViews::PostBrowserStart() {

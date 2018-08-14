@@ -8,7 +8,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/thread.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/gpu/gpu.h"
 #include "services/ui/public/cpp/input_devices/input_device_client.h"
@@ -97,9 +96,13 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
   service_manager::Connector* connector = params.connector;
 
   if (!params.window_tree_client) {
+    // If this process is running in the WindowService, then discardable memory
+    // should have already been created.
+    const bool create_discardable_memory = !params.running_in_ws_process;
     owned_window_tree_client_ =
         aura::WindowTreeClient::CreateForWindowTreeFactory(
-            connector, this, true, std::move(params.io_task_runner));
+            connector, this, create_discardable_memory,
+            std::move(params.io_task_runner));
     window_tree_client_ = owned_window_tree_client_.get();
     aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client_);
   } else {
@@ -109,13 +112,17 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
   pointer_watcher_event_router_ =
       std::make_unique<PointerWatcherEventRouter>(window_tree_client_);
 
-  if (connector) {
+  if (connector && !params.running_in_ws_process) {
     input_device_client_ = std::make_unique<ui::InputDeviceClient>();
     ui::mojom::InputDeviceServerPtr input_device_server;
     connector->BindInterface(ui::mojom::kServiceName, &input_device_server);
     input_device_client_->Connect(std::move(input_device_server));
 
     screen_ = std::make_unique<ScreenMus>(this);
+    display::Screen::SetScreenInstance(screen_.get());
+
+    // NOTE: this deadlocks if |running_in_ws_process| is true (because the main
+    // thread is running the WindowService).
     window_tree_client_->WaitForDisplays();
 
     ui::mojom::ClipboardHostPtr clipboard_host_ptr;
@@ -154,6 +161,11 @@ MusClient::~MusClient() {
         ViewsDelegate::DesktopWindowTreeHostFactory());
   }
 
+  if (screen_) {
+    display::Screen::SetScreenInstance(nullptr);
+    screen_.reset();
+  }
+
   DCHECK_EQ(instance_, this);
   instance_ = nullptr;
   DCHECK(aura::Env::GetInstance());
@@ -162,6 +174,19 @@ MusClient::~MusClient() {
 // static
 bool MusClient::ShouldCreateDesktopNativeWidgetAura(
     const Widget::InitParams& init_params) {
+  const bool from_window_service =
+      (init_params.context &&
+       init_params.context->env()->mode() == aura::Env::Mode::LOCAL) ||
+      (init_params.parent &&
+       init_params.parent->env()->mode() == aura::Env::Mode::LOCAL);
+  // |from_window_service| is true if the aura::Env has a mode of LOCAL. If
+  // the mode is LOCAL there are two envs, one used by the window service
+  // (LOCAL), and the other for non-window-service code. Windows created with
+  // LOCAL should use NativeWidgetAura (which happens if false is returned
+  // here).
+  if (from_window_service)
+    return false;
+
   // TYPE_CONTROL and child widgets require a NativeWidgetAura.
   return init_params.type != Widget::InitParams::TYPE_CONTROL &&
          !init_params.child;
@@ -363,8 +388,10 @@ void MusClient::OnDisplaysChanged(
     int64_t primary_display_id,
     int64_t internal_display_id,
     int64_t display_id_for_new_windows) {
-  screen_->OnDisplaysChanged(std::move(ws_displays), primary_display_id,
-                             internal_display_id, display_id_for_new_windows);
+  if (screen_) {
+    screen_->OnDisplaysChanged(std::move(ws_displays), primary_display_id,
+                               internal_display_id, display_id_for_new_windows);
+  }
 }
 
 void MusClient::OnWindowManagerFrameValuesChanged() {

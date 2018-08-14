@@ -74,7 +74,7 @@ constexpr SkColor kNormalWindowTitleTextColor = SkColorSetRGB(40, 40, 40);
 constexpr SkColor kIncognitoWindowTitleTextColor = SK_ColorWHITE;
 
 bool IsMash() {
-  return !features::IsAshInBrowserProcess();
+  return features::IsUsingWindowService();
 }
 
 bool IsV1AppBackButtonEnabled() {
