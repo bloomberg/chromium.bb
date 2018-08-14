@@ -2708,7 +2708,6 @@ crbug.com/626703 external/wpt/payment-request/payment-response/rejects_if_not_ac
 crbug.com/626703 external/wpt/infrastructure/server/secure-context.https.any.serviceworker.html [ Skip ]
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-with-activation-succeeds.html [ Timeout ]
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-without-activation-fails.tentative.html [ Timeout ]
-crbug.com/626703 external/wpt/svg/painting/reftests/paint-order-001.svg [ Failure ]
 crbug.com/366553 external/wpt/svg/text/reftests/text-inline-size-007.svg [ Failure ]
 crbug.com/366553 external/wpt/svg/text/reftests/text-inline-size-005.svg [ Failure ]
 crbug.com/366558 external/wpt/svg/text/reftests/text-multiline-002.svg [ Failure ]
