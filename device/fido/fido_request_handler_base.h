@@ -8,6 +8,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -43,11 +44,34 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   using AddPlatformAuthenticatorCallback =
       base::OnceCallback<std::unique_ptr<FidoAuthenticator>()>;
 
-  class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorMapObserver {
-   public:
-    virtual ~AuthenticatorMapObserver();
+  enum class RequestType { kMakeCredential, kGetAssertion };
 
-    virtual void BluetoothAdapterIsAvailable() = 0;
+  // Encapsulates data required to initiate WebAuthN UX dialog. Once all
+  // components of TransportAvailabilityInfo is set,
+  // AuthenticatorRequestClientDelegate should be notified.
+  // TODO(hongjunchoi): Add async calls to notify embedder when Bluetooth is
+  // powered on/off.
+  struct COMPONENT_EXPORT(DEVICE_FIDO) TransportAvailabilityInfo {
+    TransportAvailabilityInfo();
+    TransportAvailabilityInfo(const TransportAvailabilityInfo& other);
+    TransportAvailabilityInfo& operator=(
+        const TransportAvailabilityInfo& other);
+    ~TransportAvailabilityInfo();
+
+    RequestType request_type = RequestType::kMakeCredential;
+    std::set<FidoTransportProtocol> available_transports;
+    bool has_recognized_mac_touch_id_credential = false;
+    bool is_ble_powered = false;
+    bool can_power_on_ble_adapter = false;
+  };
+
+  class COMPONENT_EXPORT(DEVICE_FIDO) TransportAvailabilityObserver {
+   public:
+    virtual ~TransportAvailabilityObserver();
+
+    virtual void OnTransportAvailabilityEnumerated(
+        TransportAvailabilityInfo data) = 0;
+    virtual void BluetoothAdapterPowerChanged(bool is_powered_on) = 0;
     virtual void FidoAuthenticatorAdded(
         const FidoAuthenticator& authenticator) = 0;
     virtual void FidoAuthenticatorRemoved(base::StringPiece device_id) = 0;
@@ -76,7 +100,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   // https://w3c.github.io/webauthn/#iface-pkcredential
   void CancelOngoingTasks(base::StringPiece exclude_device_id = nullptr);
 
-  void set_observer(AuthenticatorMapObserver* observer) {
+  void set_observer(TransportAvailabilityObserver* observer) {
     DCHECK(!observer_) << "Only one observer is supported.";
     observer_ = observer;
   }
@@ -97,8 +121,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   std::vector<std::unique_ptr<FidoDiscovery>>& discoveries() {
     return discoveries_;
   }
-
-  AuthenticatorMapObserver* observer() const { return observer_; }
+  TransportAvailabilityInfo& transport_availability_info() {
+    return transport_availability_info_;
+  }
+  TransportAvailabilityObserver* observer() const { return observer_; }
 
  private:
   // FidoDiscovery::Observer
@@ -108,12 +134,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
 
   void AddAuthenticator(std::unique_ptr<FidoAuthenticator> authenticator);
   void MaybeAddPlatformAuthenticator();
+  void NotifyObserverUiData();
 
   AuthenticatorMap active_authenticators_;
   std::vector<std::unique_ptr<FidoDiscovery>> discoveries_;
-  AuthenticatorMapObserver* observer_ = nullptr;
-
+  TransportAvailabilityObserver* observer_ = nullptr;
+  TransportAvailabilityInfo transport_availability_info_;
+  base::RepeatingClosure notify_observer_callback_;
   AddPlatformAuthenticatorCallback add_platform_authenticator_;
+
+  base::WeakPtrFactory<FidoRequestHandlerBase> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(FidoRequestHandlerBase);
 };
 

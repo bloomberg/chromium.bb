@@ -40,15 +40,19 @@ AuthenticatorRequestClientDelegate::GetTouchIdAuthenticatorConfig() const {
 }
 #endif
 
-void AuthenticatorRequestClientDelegate::BluetoothAdapterIsAvailable() {}
+void AuthenticatorRequestClientDelegate::UpdateLastTransportUsed(
+    device::FidoTransportProtocol transport) {}
+
+void AuthenticatorRequestClientDelegate::OnTransportAvailabilityEnumerated(
+    device::FidoRequestHandlerBase::TransportAvailabilityInfo data) {}
+
+void AuthenticatorRequestClientDelegate::BluetoothAdapterPowerChanged(
+    bool is_powered_on) {}
 
 void AuthenticatorRequestClientDelegate::FidoAuthenticatorAdded(
     const device::FidoAuthenticator& authenticator) {}
 
 void AuthenticatorRequestClientDelegate::FidoAuthenticatorRemoved(
     base::StringPiece device_id) {}
-
-void AuthenticatorRequestClientDelegate::UpdateLastTransportUsed(
-    device::FidoTransportProtocol transport) {}
 
 }  // namespace content

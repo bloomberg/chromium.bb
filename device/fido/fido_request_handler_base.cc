@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
@@ -17,6 +18,10 @@ namespace device {
 
 namespace {
 
+// Number of async calls we need to wait before notifying the embedder layer
+// of FidoUiAprioriData.
+constexpr size_t kNumAsyncTransportInfoCallbacks = 2;
+
 bool ShouldDeferRequestDispatchToUi(const FidoAuthenticator& authenticator) {
   // TODO(hongjunchoi): Change this to be dependent on authenticator transport
   // type once UI component is in place.
@@ -25,8 +30,27 @@ bool ShouldDeferRequestDispatchToUi(const FidoAuthenticator& authenticator) {
 
 }  // namespace
 
-FidoRequestHandlerBase::AuthenticatorMapObserver::~AuthenticatorMapObserver() =
+// FidoRequestHandlerBase::TransportAvailabilityInfo --------------------------
+
+FidoRequestHandlerBase::TransportAvailabilityInfo::TransportAvailabilityInfo() =
     default;
+
+FidoRequestHandlerBase::TransportAvailabilityInfo::TransportAvailabilityInfo(
+    const TransportAvailabilityInfo& data) = default;
+
+FidoRequestHandlerBase::TransportAvailabilityInfo&
+FidoRequestHandlerBase::TransportAvailabilityInfo::operator=(
+    const TransportAvailabilityInfo& other) = default;
+
+FidoRequestHandlerBase::TransportAvailabilityInfo::
+    ~TransportAvailabilityInfo() = default;
+
+// FidoRequestHandlerBase::TransportAvailabilityObserver ----------------------
+
+FidoRequestHandlerBase::TransportAvailabilityObserver::
+    ~TransportAvailabilityObserver() = default;
+
+// FidoRequestHandlerBase -----------------------------------------------------
 
 FidoRequestHandlerBase::FidoRequestHandlerBase(
     service_manager::Connector* connector,
@@ -39,7 +63,8 @@ FidoRequestHandlerBase::FidoRequestHandlerBase(
     service_manager::Connector* connector,
     const base::flat_set<FidoTransportProtocol>& transports,
     AddPlatformAuthenticatorCallback add_platform_authenticator)
-    : add_platform_authenticator_(std::move(add_platform_authenticator)) {
+    : add_platform_authenticator_(std::move(add_platform_authenticator)),
+      weak_factory_(this) {
   for (const auto transport : transports) {
     // Construction of CaBleDiscovery is handled by the implementing class as it
     // requires an extension passed on from the relying party.
@@ -62,6 +87,11 @@ FidoRequestHandlerBase::FidoRequestHandlerBase(
     discovery->set_observer(this);
     discoveries_.push_back(std::move(discovery));
   }
+
+  notify_observer_callback_ = base::BarrierClosure(
+      kNumAsyncTransportInfoCallbacks,
+      base::BindOnce(&FidoRequestHandlerBase::NotifyObserverUiData,
+                     weak_factory_.GetWeakPtr()));
 }
 
 FidoRequestHandlerBase::~FidoRequestHandlerBase() = default;
@@ -88,22 +118,21 @@ void FidoRequestHandlerBase::Start() {
   MaybeAddPlatformAuthenticator();
 }
 
-void FidoRequestHandlerBase::MaybeAddPlatformAuthenticator() {
-  if (!add_platform_authenticator_)
-    return;
-
-  auto authenticator = std::move(add_platform_authenticator_).Run();
-  if (!authenticator)
-    return;
-
-  AddAuthenticator(std::move(authenticator));
-}
 
 void FidoRequestHandlerBase::DiscoveryStarted(FidoDiscovery* discovery,
                                               bool success) {
-  if (discovery->transport() == FidoTransportProtocol::kBluetoothLowEnergy &&
-      observer_) {
-    observer_->BluetoothAdapterIsAvailable();
+  if (discovery->transport() == FidoTransportProtocol::kBluetoothLowEnergy) {
+    // For FidoBleDiscovery, discovery is started with |success| set to true
+    // if device::BluetoothAdapter is present in the system.
+    if (!success) {
+      transport_availability_info_.available_transports.erase(
+          FidoTransportProtocol::kBluetoothLowEnergy);
+      transport_availability_info_.available_transports.erase(
+          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
+    }
+
+    DCHECK(notify_observer_callback_);
+    notify_observer_callback_.Run();
   }
 }
 
@@ -139,12 +168,34 @@ void FidoRequestHandlerBase::AddAuthenticator(
   FidoAuthenticator* authenticator_ptr = authenticator.get();
   active_authenticators_.emplace(authenticator->GetId(),
                                  std::move(authenticator));
-
   if (!ShouldDeferRequestDispatchToUi(*authenticator_ptr))
     DispatchRequest(authenticator_ptr);
 
   if (observer_)
     observer_->FidoAuthenticatorAdded(*authenticator_ptr);
+}
+
+void FidoRequestHandlerBase::MaybeAddPlatformAuthenticator() {
+  std::unique_ptr<FidoAuthenticator> authenticator;
+  if (add_platform_authenticator_)
+    authenticator = std::move(add_platform_authenticator_).Run();
+
+  if (authenticator) {
+    AddAuthenticator(std::move(authenticator));
+  } else {
+    transport_availability_info_.available_transports.erase(
+        FidoTransportProtocol::kInternal);
+  }
+
+  DCHECK(notify_observer_callback_);
+  notify_observer_callback_.Run();
+}
+
+void FidoRequestHandlerBase::NotifyObserverUiData() {
+  if (!observer_)
+    return;
+
+  observer_->OnTransportAvailabilityEnumerated(transport_availability_info_);
 }
 
 }  // namespace device
