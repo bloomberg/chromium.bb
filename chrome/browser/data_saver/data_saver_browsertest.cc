@@ -4,6 +4,9 @@
 
 #include <string>
 
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -11,12 +14,133 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
+
+namespace {
+
+// Test version of the observer. Used to wait for the event when the network
+// quality tracker sends the network quality change notification.
+class TestEffectiveConnectionTypeObserver
+    : public network::NetworkQualityTracker::EffectiveConnectionTypeObserver {
+ public:
+  explicit TestEffectiveConnectionTypeObserver(
+      network::NetworkQualityTracker* tracker)
+      : run_loop_wait_effective_connection_type_(
+            net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
+        run_loop_(std::make_unique<base::RunLoop>()),
+        tracker_(tracker),
+        effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+    tracker_->AddEffectiveConnectionTypeObserver(this);
+  }
+
+  ~TestEffectiveConnectionTypeObserver() override {
+    tracker_->RemoveEffectiveConnectionTypeObserver(this);
+  }
+
+  void WaitForNotification(
+      net::EffectiveConnectionType run_loop_wait_effective_connection_type) {
+    if (effective_connection_type_ == run_loop_wait_effective_connection_type)
+      return;
+    ASSERT_NE(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+              run_loop_wait_effective_connection_type);
+    run_loop_wait_effective_connection_type_ =
+        run_loop_wait_effective_connection_type;
+    run_loop_->Run();
+    run_loop_.reset(new base::RunLoop());
+  }
+
+ private:
+  // NetworkQualityTracker::EffectiveConnectionTypeObserver implementation:
+  void OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType type) override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    net::EffectiveConnectionType queried_type =
+        tracker_->GetEffectiveConnectionType();
+    EXPECT_EQ(type, queried_type);
+
+    effective_connection_type_ = type;
+    if (effective_connection_type_ != run_loop_wait_effective_connection_type_)
+      return;
+    run_loop_->Quit();
+  }
+
+  net::EffectiveConnectionType run_loop_wait_effective_connection_type_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  network::NetworkQualityTracker* tracker_;
+  net::EffectiveConnectionType effective_connection_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestEffectiveConnectionTypeObserver);
+};
+
+// Test version of the observer. Used to wait for the event when the network
+// quality tracker sends the network quality change notification.
+class TestRTTAndThroughputEstimatesObserver
+    : public network::NetworkQualityTracker::RTTAndThroughputEstimatesObserver {
+ public:
+  explicit TestRTTAndThroughputEstimatesObserver(
+      network::NetworkQualityTracker* tracker)
+      : tracker_(tracker),
+        downstream_throughput_kbps_(std::numeric_limits<int32_t>::max()) {
+    tracker_->AddRTTAndThroughputEstimatesObserver(this);
+  }
+
+  ~TestRTTAndThroughputEstimatesObserver() override {
+    tracker_->RemoveRTTAndThroughputEstimatesObserver(this);
+  }
+
+  void WaitForNotification(base::TimeDelta expected_http_rtt) {
+    // It's not meaningful to wait for notification with RTT set to
+    // base::TimeDelta() since that value implies that the network quality
+    // estimate was unavailable.
+    EXPECT_NE(base::TimeDelta(), expected_http_rtt);
+    http_rtt_notification_wait_ = expected_http_rtt;
+    if (http_rtt_notification_wait_ == http_rtt_)
+      return;
+
+    // WaitForNotification should not be called twice.
+    EXPECT_EQ(nullptr, run_loop_);
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+    EXPECT_EQ(expected_http_rtt, http_rtt_);
+    run_loop_.reset();
+  }
+
+ private:
+  // RTTAndThroughputEstimatesObserver implementation:
+  void OnRTTOrThroughputEstimatesComputed(
+      base::TimeDelta http_rtt,
+      base::TimeDelta transport_rtt,
+      int32_t downstream_throughput_kbps) override {
+    EXPECT_EQ(http_rtt, tracker_->GetHttpRTT());
+    EXPECT_EQ(downstream_throughput_kbps,
+              tracker_->GetDownstreamThroughputKbps());
+
+    http_rtt_ = http_rtt;
+    downstream_throughput_kbps_ = downstream_throughput_kbps;
+
+    if (run_loop_ && http_rtt == http_rtt_notification_wait_)
+      run_loop_->Quit();
+  }
+
+  network::NetworkQualityTracker* tracker_;
+  // May be null.
+  std::unique_ptr<base::RunLoop> run_loop_;
+  base::TimeDelta http_rtt_;
+  int32_t downstream_throughput_kbps_;
+  base::TimeDelta http_rtt_notification_wait_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestRTTAndThroughputEstimatesObserver);
+};
+
+}  // namespace
 
 class DataSaverBrowserTest : public InProcessBrowserTest {
  protected:
@@ -67,6 +191,20 @@ class DataSaverWithServerBrowserTest : public InProcessBrowserTest {
     content::RunAllPendingInMessageLoop();
   }
 
+  net::EffectiveConnectionType GetEffectiveConnectionType() const {
+    return DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+               browser()->profile())
+        ->data_reduction_proxy_service()
+        ->GetEffectiveConnectionType();
+  }
+
+  base::Optional<base::TimeDelta> GetHttpRttEstimate() const {
+    return DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+               browser()->profile())
+        ->data_reduction_proxy_service()
+        ->GetHttpRttEstimate();
+  }
+
   std::unique_ptr<net::test_server::HttpResponse> VerifySaveDataHeader(
       const net::test_server::HttpRequest& request) {
     auto save_data_header_it = request.headers.find("save-data");
@@ -115,4 +253,64 @@ IN_PROC_BROWSER_TEST_F(DataSaverWithServerBrowserTest, ReloadPage) {
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   content::WaitForLoadStop(
       browser()->tab_strip_model()->GetActiveWebContents());
+}
+
+// Test that the data saver receives changes in effective connection type.
+IN_PROC_BROWSER_TEST_F(DataSaverWithServerBrowserTest,
+                       EffectiveConnectionType) {
+  Init();
+
+  // Add a test observer. To determine if data reduction proxy component has
+  // received the network quality change notification, we check if the test
+  // observer has received the notification. Note that all the observers are
+  // notified in the same message loop by the network quality tracker.
+  TestEffectiveConnectionTypeObserver observer(
+      g_browser_process->network_quality_tracker());
+
+  g_browser_process->network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EFFECTIVE_CONNECTION_TYPE_4G);
+  observer.WaitForNotification(net::EFFECTIVE_CONNECTION_TYPE_4G);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_4G, GetEffectiveConnectionType());
+
+  g_browser_process->network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EFFECTIVE_CONNECTION_TYPE_2G);
+  observer.WaitForNotification(net::EFFECTIVE_CONNECTION_TYPE_2G);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, GetEffectiveConnectionType());
+
+  g_browser_process->network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EFFECTIVE_CONNECTION_TYPE_3G);
+  observer.WaitForNotification(net::EFFECTIVE_CONNECTION_TYPE_3G);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_3G, GetEffectiveConnectionType());
+}
+
+// Test that the data saver receives changes in HTTP RTT estimate.
+IN_PROC_BROWSER_TEST_F(DataSaverWithServerBrowserTest, HttpRttEstimate) {
+  Init();
+
+  // Add a test observer. To determine if data reduction proxy component has
+  // received the network quality change notification, we check if the test
+  // observer has received the notification. Note that all the observers are
+  // notified in the same message loop by the network quality tracker.
+  TestRTTAndThroughputEstimatesObserver observer(
+      g_browser_process->network_quality_tracker());
+
+  g_browser_process->network_quality_tracker()
+      ->ReportRTTsAndThroughputForTesting(
+          base::TimeDelta::FromMilliseconds(100), 0);
+  observer.WaitForNotification(base::TimeDelta::FromMilliseconds(100));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(100), GetHttpRttEstimate());
+
+  g_browser_process->network_quality_tracker()
+      ->ReportRTTsAndThroughputForTesting(
+          base::TimeDelta::FromMilliseconds(500), 0);
+  observer.WaitForNotification(base::TimeDelta::FromMilliseconds(500));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(500), GetHttpRttEstimate());
 }
