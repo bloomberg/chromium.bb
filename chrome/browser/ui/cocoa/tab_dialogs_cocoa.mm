@@ -15,10 +15,6 @@
 #include "ui/base/ui_features.h"
 
 #if !BUILDFLAG(MAC_VIEWS_BROWSER)
-#import "chrome/browser/ui/cocoa/content_settings/collected_cookies_mac.h"
-#endif
-
-#if !BUILDFLAG(MAC_VIEWS_BROWSER)
 // static
 void TabDialogs::CreateForWebContents(content::WebContents* contents) {
   DCHECK(contents);
@@ -53,12 +49,7 @@ gfx::NativeView TabDialogsCocoa::GetDialogParentView() const {
 }
 
 void TabDialogsCocoa::ShowCollectedCookies() {
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
   NOTREACHED() << "MacViewsBrowser builds can't use Cocoa dialogs";
-#else
-  // Deletes itself on close.
-  new CollectedCookiesMac(web_contents_);
-#endif
 }
 
 void TabDialogsCocoa::ShowHungRendererDialog(

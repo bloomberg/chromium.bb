@@ -32,10 +32,6 @@
 #include "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
-#if !BUILDFLAG(MAC_VIEWS_BROWSER)
-#import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
-#endif
-
 using content::WebContents;
 
 namespace {
@@ -315,17 +311,7 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame, NSPoint location) {
         web_contents, origin, this);
     bubbleWindow_.reset([bubble retain]);
   } else {
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
     NOTREACHED() << "MacViews Browser can't host Cocoa dialogs";
-#else
-    ContentSettingBubbleController* bubbleController =
-        [ContentSettingBubbleController showForModel:model
-                                         webContents:web_contents
-                                        parentWindow:[field window]
-                                          decoration:this
-                                          anchoredAt:anchor];
-    bubbleWindow_.reset([[bubbleController window] retain]);
-#endif
   }
 
   return true;

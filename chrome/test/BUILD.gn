@@ -1997,8 +1997,6 @@ test("browser_tests") {
         ## not compile and should be removed (along with test file) when the
         ## corresponding release code is deleted.
         # "../browser/ui/cocoa/constrained_window/constrained_window_mac_browsertest.mm",
-        # "../browser/ui/cocoa/content_settings/collected_cookies_mac_browsertest.mm",
-        # "../browser/ui/cocoa/content_settings/content_setting_bubble_cocoa_browsertest.mm",
         # "../browser/ui/cocoa/extensions/extension_install_dialog_controller_browsertest.mm",
         # "../browser/ui/cocoa/extensions/windowed_install_dialog_controller_browsertest.mm",
         # "../browser/ui/cocoa/page_info/page_info_bubble_views_mac_browsertest.mm",
@@ -4154,9 +4152,6 @@ test("unit_tests") {
         "../browser/ui/cocoa/constrained_window/constrained_window_button_unittest.mm",
         "../browser/ui/cocoa/constrained_window/constrained_window_custom_window_unittest.mm",
         "../browser/ui/cocoa/constrained_window/constrained_window_sheet_controller_unittest.mm",
-        "../browser/ui/cocoa/content_settings/collected_cookies_mac_unittest.mm",
-        "../browser/ui/cocoa/content_settings/cookie_details_unittest.mm",
-        "../browser/ui/cocoa/content_settings/cookie_details_view_controller_unittest.mm",
         "../browser/ui/cocoa/download/download_item_button_unittest.mm",
         "../browser/ui/cocoa/download/download_item_cell_unittest.mm",
         "../browser/ui/cocoa/download/download_item_controller_unittest.mm",
@@ -4261,7 +4256,6 @@ test("unit_tests") {
         "../browser/ui/cocoa/touchbar/credit_card_autofill_touch_bar_controller_unittest.mm",
         "../browser/ui/cocoa/touchbar/text_suggestions_touch_bar_controller_unittest.mm",
         "../browser/ui/cocoa/url_drop_target_unittest.mm",
-        "../browser/ui/cocoa/vertical_gradient_view_unittest.mm",
         "../browser/ui/cocoa/view_resizer_pong.h",
         "../browser/ui/cocoa/view_resizer_pong.mm",
         "../browser/ui/cocoa/window_size_autosaver_unittest.mm",
@@ -4272,9 +4266,6 @@ test("unit_tests") {
 
     if (mac_views_browser) {
       sources -= [
-        "../browser/ui/cocoa/content_settings/collected_cookies_mac_unittest.mm",
-        "../browser/ui/cocoa/content_settings/cookie_details_unittest.mm",
-        "../browser/ui/cocoa/content_settings/cookie_details_view_controller_unittest.mm",
         "../browser/ui/cocoa/extensions/chooser_dialog_cocoa_controller_unittest.mm",
         "../browser/ui/cocoa/extensions/extension_install_view_controller_unittest.mm",
         "../browser/ui/cocoa/extensions/extension_installed_bubble_controller_unittest.mm",
