@@ -14,9 +14,9 @@
 #include "chrome/browser/vr/renderers/base_renderer.h"
 #include "chrome/browser/vr/renderers/external_textured_quad_renderer.h"
 #include "chrome/browser/vr/renderers/radial_gradient_quad_renderer.h"
+#include "chrome/browser/vr/renderers/texture_copy_renderer.h"
 #include "chrome/browser/vr/renderers/textured_quad_renderer.h"
 #include "chrome/browser/vr/renderers/transparent_quad_renderer.h"
-#include "chrome/browser/vr/renderers/web_vr_renderer.h"
 #include "chrome/browser/vr/vr_gl_util.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/vector3d_f.h"
@@ -43,7 +43,7 @@ void UiElementRenderer::Init() {
   textured_quad_renderer_ = std::make_unique<TexturedQuadRenderer>();
   radial_gradient_quad_renderer_ =
       std::make_unique<RadialGradientQuadRenderer>();
-  webvr_renderer_ = std::make_unique<WebVrRenderer>();
+  texture_copy_renderer_ = std::make_unique<TextureCopyRenderer>();
   reticle_renderer_ = std::make_unique<Reticle::Renderer>();
   laser_renderer_ = std::make_unique<Laser::Renderer>();
   controller_renderer_ = std::make_unique<Controller::Renderer>();
@@ -135,12 +135,13 @@ void UiElementRenderer::DrawReticle(
   reticle_renderer_->Draw(opacity, model_view_proj_matrix);
 }
 
-void UiElementRenderer::DrawWebVr(int texture_data_handle,
-                                  const float (&uv_transform)[16],
-                                  float xborder,
-                                  float yborder) {
-  FlushIfNecessary(webvr_renderer_.get());
-  webvr_renderer_->Draw(texture_data_handle, uv_transform, xborder, yborder);
+void UiElementRenderer::DrawTextureCopy(int texture_data_handle,
+                                        const float (&uv_transform)[16],
+                                        float xborder,
+                                        float yborder) {
+  FlushIfNecessary(texture_copy_renderer_.get());
+  texture_copy_renderer_->Draw(texture_data_handle, uv_transform, xborder,
+                               yborder);
 }
 
 void UiElementRenderer::DrawShadow(const gfx::Transform& model_view_proj_matrix,

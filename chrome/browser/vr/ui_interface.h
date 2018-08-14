@@ -86,17 +86,17 @@ class UiInterface : public BrowserUiInterface, public KeyboardUiInterface {
       UserFriendlyElementName element_name,
       const gfx::PointF& position) = 0;
   virtual bool IsContentVisibleAndOpaque() = 0;
-  virtual bool IsContentOverlayTextureEmpty() = 0;
   virtual void SetContentUsesQuadLayer(bool uses_quad_buffers) = 0;
   virtual gfx::Transform GetContentWorldSpaceTransform() = 0;
   virtual bool OnBeginFrame(const base::TimeTicks&, const gfx::Transform&) = 0;
   virtual bool SceneHasDirtyTextures() const = 0;
   virtual void UpdateSceneTextures() = 0;
   virtual void Draw(const RenderInfo&) = 0;
-  virtual void DrawWebVr(int texture_data_handle,
-                         const float (&uv_transform)[16],
-                         float xborder,
-                         float yborder) = 0;
+  virtual void DrawContent(const float (&uv_transform)[16],
+                           float xborder,
+                           float yborder) = 0;
+  virtual void DrawWebXr(int texture_data_handle,
+                         const float (&uv_transform)[16]) = 0;
   virtual void DrawWebVrOverlayForeground(const RenderInfo&) = 0;
   virtual bool HasWebXrOverlayElementsToDraw() = 0;
   virtual void HandleInput(base::TimeTicks current_time,

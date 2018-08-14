@@ -1272,7 +1272,7 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
 
     glClear(GL_COLOR_BUFFER_BIT);
 
-    DrawContentQuad(!ui_->IsContentOverlayTextureEmpty());
+    DrawContentQuad();
 
     acquired_frame_.Unbind();
   }
@@ -1617,18 +1617,17 @@ void VrShellGl::DrawWebVr() {
     CHECK(buffer);
 
     // Use an identity UV transform, the image is already oriented correctly.
-    ui_->DrawWebVr(buffer->local_texture, kWebVrIdentityUvTransform, 0, 0);
+    ui_->DrawWebXr(buffer->local_texture, kWebVrIdentityUvTransform);
   } else {
     // Apply the UV transform from the SurfaceTexture, that's usually a Y flip.
-    ui_->DrawWebVr(webvr_texture_id_, webvr_surface_texture_uv_transform_, 0,
-                   0);
+    ui_->DrawWebXr(webvr_texture_id_, webvr_surface_texture_uv_transform_);
   }
 }
 
-void VrShellGl::DrawContentQuad(bool draw_overlay_texture) {
+void VrShellGl::DrawContentQuad() {
   // Add a 2 pixel border to avoid aliasing issues at the edge of the texture.
   constexpr float kBorder = 2;
-  TRACE_EVENT0("gpu", "VrShellGl::DrawContentQuad");
+  TRACE_EVENT0("gpu", __func__);
   // Don't need face culling, depth testing, blending, etc. Turn it all off.
   glDisable(GL_CULL_FACE);
   glDisable(GL_SCISSOR_TEST);
@@ -1641,16 +1640,10 @@ void VrShellGl::DrawContentQuad(bool draw_overlay_texture) {
       content_tex_buffer_size_.height() * kContentVignetteBorder - kBorder,
       content_tex_buffer_size_.width() + 2 * kBorder,
       content_tex_buffer_size_.height() + 2 * kBorder);
-  ui_->DrawWebVr(content_texture_id_, kContentUvTransform,
-                 kBorder / content_tex_buffer_size_.width(),
-                 kBorder / content_tex_buffer_size_.height());
-  if (draw_overlay_texture) {
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-    ui_->DrawWebVr(content_overlay_texture_id_, kContentUvTransform,
+
+  ui_->DrawContent(kContentUvTransform,
                    kBorder / content_tex_buffer_size_.width(),
                    kBorder / content_tex_buffer_size_.height());
-  }
 }
 
 void VrShellGl::OnPause() {
