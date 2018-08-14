@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WEBRTC_LOGGING_BROWSER_LOG_LIST_H_
-#define COMPONENTS_WEBRTC_LOGGING_BROWSER_LOG_LIST_H_
+#ifndef COMPONENTS_WEBRTC_LOGGING_BROWSER_TEXT_LOG_LIST_H_
+#define COMPONENTS_WEBRTC_LOGGING_BROWSER_TEXT_LOG_LIST_H_
 
 #include "base/files/file_path.h"
 
@@ -15,7 +15,7 @@ class BrowserContext;
 
 namespace webrtc_logging {
 
-class LogList {
+class TextLogList {
  public:
   // Creates the upload list for a browser context. The upload list loads and
   // parses a text file list of WebRTC logs stored locally and/or uploaded.
@@ -35,4 +35,4 @@ class LogList {
 
 }  // namespace webrtc_logging
 
-#endif  // COMPONENTS_WEBRTC_LOGGING_BROWSER_LOG_LIST_H_
+#endif  // COMPONENTS_WEBRTC_LOGGING_BROWSER_TEXT_LOG_LIST_H_

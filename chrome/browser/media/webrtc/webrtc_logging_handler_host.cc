@@ -18,7 +18,7 @@
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #include "chrome/browser/media/webrtc/webrtc_rtp_dump_handler.h"
 #include "chrome/common/media/webrtc_logging_messages.h"
-#include "components/webrtc_logging/browser/log_list.h"
+#include "components/webrtc_logging/browser/text_log_list.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -417,7 +417,7 @@ base::FilePath WebRtcLoggingHandlerHost::GetLogDirectoryAndEnsureExists() {
   // profile has been deleted and removed from disk. If that happens it will be
   // cleaned up (at a higher level) the next browser restart.
   base::FilePath log_dir_path =
-      webrtc_logging::LogList::GetWebRtcLogDirectoryForBrowserContextPath(
+      webrtc_logging::TextLogList::GetWebRtcLogDirectoryForBrowserContextPath(
           browser_context_directory_path_);
   base::File::Error error;
   if (!base::CreateDirectoryAndGetError(log_dir_path, &error)) {
