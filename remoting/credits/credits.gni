@@ -38,7 +38,7 @@ template("remoting_credits") {
       "--gn-target",
       invoker.gn_target,
       "--gn-out-dir",
-      rebase_path(root_build_dir),
+      ".",
     ]
   }
 

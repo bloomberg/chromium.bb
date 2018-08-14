@@ -459,8 +459,8 @@ proto_library("javascript_parser_proto") {
 }
 
 fuzzer_test("javascript_parser_proto_fuzzer") {
+  generated_sources = [ "$target_gen_dir/javascript_parser_proto_to_string.cc" ]
   sources = [
-    "$target_gen_dir/javascript_parser_proto_to_string.cc",
     "javascript_parser_proto_fuzzer.cc",
     "javascript_parser_proto_to_string.h",
   ]

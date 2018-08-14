@@ -46,7 +46,7 @@ grit("test_resources") {
 
   grit_flags = [
     "-E",
-    "generated_resources_dir=" + rebase_path(target_gen_dir),
+    "generated_resources_dir=" + rebase_path(target_gen_dir, root_build_dir),
   ]
 
   deps = [

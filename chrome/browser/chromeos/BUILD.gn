@@ -2396,12 +2396,12 @@ action("device_policy_remover_generate") {
 
   args = [
     # generated file name
-    rebase_path(device_policy_remover_path),
+    rebase_path(device_policy_remover_path, root_build_dir),
 
     # directories for PATH variable to compile generated file
-    rebase_path(descriptor_pool_path),
-    rebase_path(symbol_database_path),
-    rebase_path(chrome_device_policy_pb2_path),
+    rebase_path(descriptor_pool_path, root_build_dir),
+    rebase_path(symbol_database_path, root_build_dir),
+    rebase_path(chrome_device_policy_pb2_path, root_build_dir),
   ]
 
   public_deps = [

@@ -178,6 +178,10 @@ template("fuzzer_test") {
         configs -= invoker.suppressed_configs
       }
 
+      if (defined(invoker.generated_sources)) {
+        sources += invoker.generated_sources
+      }
+
       if (is_mac) {
         sources += [ "//testing/libfuzzer/libfuzzer_exports.h" ]
       }

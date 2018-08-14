@@ -236,7 +236,7 @@ template("cast_test_group") {
 
     args = [
       "-o",
-      rebase_path("$_output_prefix.tests"),
+      rebase_path("$_output_prefix.tests", root_build_dir),
       "create_list",
     ]
 
@@ -262,7 +262,7 @@ template("cast_test_group") {
 
     args = [
       "-o",
-      rebase_path("$_output_prefix.filters"),
+      rebase_path("$_output_prefix.filters", root_build_dir),
       "create_list",
     ]
 
@@ -395,9 +395,9 @@ template("cast_test_group_list") {
 
     args = [
       "-o",
-      rebase_path(invoker.build_list_path),
+      rebase_path(invoker.build_list_path, root_build_dir),
       "-t",
-      rebase_path(_shared_dir),
+      rebase_path(_shared_dir, root_build_dir),
       "pack_build",
     ]
 
@@ -422,11 +422,11 @@ template("cast_test_group_list") {
 
     args = [
       "-o",
-      rebase_path(invoker.run_list_path),
+      rebase_path(invoker.run_list_path, root_build_dir),
       "-d",
-      rebase_path(invoker.runtime_deps_path),
+      rebase_path(invoker.runtime_deps_path, root_build_dir),
       "-t",
-      rebase_path(_shared_dir),
+      rebase_path(_shared_dir, root_build_dir),
       "pack_run",
     ]
 

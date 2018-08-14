@@ -39,14 +39,14 @@ template("generate_resource_rewriter") {
     deps = invoker.deps + [ ":${_build_config_target_name}" ]
     script = "//build/android/gyp/generate_resource_rewriter.py"
 
-    _rebased_build_config = rebase_path(_build_config)
+    _rebased_build_config = rebase_path(_build_config, root_build_dir)
     args = [
       "--package-name",
       invoker.package_name,
       "--dep-packages",
       "@FileArg($_rebased_build_config:resources:extra_package_names)",
       "--srcjar",
-      rebase_path(_srcjar),
+      rebase_path(_srcjar, root_build_dir),
     ]
     outputs = [
       _srcjar,

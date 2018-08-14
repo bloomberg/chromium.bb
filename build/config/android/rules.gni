@@ -1822,7 +1822,8 @@ if (enable_java_templates) {
         inputs = [
           invoker.build_config,
         ]
-        _rebased_build_config = rebase_path(invoker.build_config)
+        _rebased_build_config =
+            rebase_path(invoker.build_config, root_build_dir)
         defines += [
           "COMPRESSED_LOCALE_LIST=" +
               "@FileArg($_rebased_build_config:compressed_locales_java_list)",
