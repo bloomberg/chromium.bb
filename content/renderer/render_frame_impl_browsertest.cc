@@ -482,7 +482,8 @@ TEST_F(RenderFrameImplTest, ZoomLimit) {
 TEST_F(RenderFrameImplTest, NoCrashWhenDeletingFrameDuringFind) {
   blink::WebFindOptions options;
   options.force = true;
-  frame()->GetWebFrame()->Find(1, "foo", options, false);
+  FrameMsg_Find find_message(0, 1, base::ASCIIToUTF16("foo"), options);
+  frame()->OnMessageReceived(find_message);
 
   FrameMsg_Delete delete_message(0);
   frame()->OnMessageReceived(delete_message);

@@ -47,6 +47,15 @@ class CONTENT_EXPORT FindRequestManager {
   // activated, cleared, or remain highlighted.
   void StopFinding(StopFindAction action);
 
+  // Called when a reply is received from a frame with the results from a
+  // find request.
+  void OnFindReply(RenderFrameHostImpl* rfh,
+                   int request_id,
+                   int number_of_matches,
+                   const gfx::Rect& selection_rect,
+                   int active_match_ordinal,
+                   bool final_update);
+
   // Handles the final update from |rfh| for the find request with id
   // |request_id|.
   void HandleFinalUpdateForFrame(RenderFrameHostImpl* rfh, int request_id);
@@ -134,9 +143,9 @@ class CONTENT_EXPORT FindRequestManager {
   // with ID |request_id|. Advances the |find_request_queue_| if appropriate.
   void AdvanceQueue(int request_id);
 
-  // Sends find request |request| through mojo to the RenderFrame associated
-  // with |rfh|.
-  void SendFindRequest(const FindRequest& request, RenderFrameHost* rfh);
+  // Sends a find IPC containing the find request |request| to the RenderFrame
+  // associated with |rfh|.
+  void SendFindIPC(const FindRequest& request, RenderFrameHost* rfh);
 
   // Returns the initial frame in search order. This will be either the first
   // frame, if searching forward, or the last frame, if searching backward.

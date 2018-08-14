@@ -865,6 +865,7 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                         OnUnregisterProtocolHandler)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdatePageImportanceSignals,
                         OnUpdatePageImportanceSignals)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_Find_Reply, OnFindReply)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
 #if BUILDFLAG(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PepperInstanceCreated,
@@ -4588,6 +4589,22 @@ void WebContentsImpl::OnUpdatePageImportanceSignals(
   // TODO(nick, kouhei): Fix this for oopifs; currently all frames' state gets
   // written to this one field.
   page_importance_signals_ = signals;
+}
+
+void WebContentsImpl::OnFindReply(RenderFrameHostImpl* source,
+                                  int request_id,
+                                  int number_of_matches,
+                                  const gfx::Rect& selection_rect,
+                                  int active_match_ordinal,
+                                  bool final_update) {
+  if (active_match_ordinal > 0)
+    SetFocusedFrame(source->frame_tree_node(), source->GetSiteInstance());
+
+  // Forward the find reply to the FindRequestManager, along with the
+  // RenderFrameHost associated with the frame that the reply came from.
+  GetOrCreateFindRequestManager()->OnFindReply(
+      source, request_id, number_of_matches, selection_rect,
+      active_match_ordinal, final_update);
 }
 
 #if defined(OS_ANDROID)
