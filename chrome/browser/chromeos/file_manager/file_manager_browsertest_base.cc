@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -48,6 +49,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/test/test_api.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/browser/process_manager.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "media/base/media_switches.h"
@@ -1014,6 +1016,9 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
 
   display_service_ =
       std::make_unique<NotificationDisplayServiceTester>(profile());
+
+  extensions::ProcessManager::SetEventPageIdleTimeForTesting(
+      TestTimeouts::action_max_timeout().InMilliseconds());
 
   // The test resources are setup: enable and add default ChromeOS component
   // extensions now and not before: crbug.com/831074, crbug.com/804413
